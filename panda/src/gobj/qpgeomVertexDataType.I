@@ -28,6 +28,7 @@ qpGeomVertexDataType(const qpGeomVertexDataType &copy) :
   _num_components(copy._num_components),
   _num_values(copy._num_values),
   _numeric_type(copy._numeric_type),
+  _contents(copy._contents),
   _start(copy._start),
   _component_bytes(copy._component_bytes),
   _total_bytes(copy._total_bytes)
@@ -45,6 +46,7 @@ operator = (const qpGeomVertexDataType &copy) {
   _num_components = copy._num_components;
   _num_values = copy._num_values;
   _numeric_type = copy._numeric_type;
+  _contents = copy._contents;
   _start = copy._start;
   _component_bytes = copy._component_bytes;
   _total_bytes = copy._total_bytes;
@@ -85,7 +87,7 @@ get_num_components() const {
 //               into each element.  This is usually, but not always,
 //               the same thing as get_num_components(); the
 //               difference is in the case of a composite numeric type
-//               like NT_packed_argb, which has four numeric values
+//               like NT_packed_8888, which has four numeric values
 //               per component.
 ////////////////////////////////////////////////////////////////////
 INLINE int qpGeomVertexDataType::
@@ -102,6 +104,17 @@ get_num_values() const {
 INLINE qpGeomVertexDataType::NumericType qpGeomVertexDataType::
 get_numeric_type() const {
   return _numeric_type;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexDataType::get_contents
+//       Access: Published
+//  Description: Returns the token representing the semantic meaning of
+//               the stored value.
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomVertexDataType::Contents qpGeomVertexDataType::
+get_contents() const {
+  return _contents;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -167,6 +180,9 @@ compare_to(const qpGeomVertexDataType &other) const {
   }
   if (_numeric_type != other._numeric_type) {
     return (int)_numeric_type - (int)other._numeric_type;
+  }
+  if (_contents != other._contents) {
+    return (int)_contents - (int)other._contents;
   }
   if (_start != other._start) {
     return _start - other._start;

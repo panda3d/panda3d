@@ -25,11 +25,13 @@
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexDataType::
 qpGeomVertexDataType(const InternalName *name, int num_components,
-                     NumericType numeric_type, int start) :
+                     NumericType numeric_type, Contents contents,
+                     int start) :
   _name(name),
   _num_components(num_components),
   _num_values(num_components),
   _numeric_type(numeric_type),
+  _contents(contents),
   _start(start)
 {
   nassertv(num_components > 0 && start >= 0);
@@ -39,11 +41,11 @@ qpGeomVertexDataType(const InternalName *name, int num_components,
     _component_bytes = 2;  // sizeof(PN_uint16)
     break;
 
-  case NT_ufloat8:
+  case NT_uint8:
     _component_bytes = 1;
     break;
 
-  case NT_packed_argb:
+  case NT_packed_8888:
     _component_bytes = 4;  // sizeof(PN_uint32)
     _num_values *= 4;
     break;
@@ -65,7 +67,7 @@ qpGeomVertexDataType(const InternalName *name, int num_components,
 const qpGeomVertexDataType &qpGeomVertexDataType::
 error() {
   static qpGeomVertexDataType error_result
-    (InternalName::get_error(), 1, NT_ufloat8, 0);
+    (InternalName::get_error(), 1, NT_uint8, C_other, 0);
   return error_result;
 }
 
@@ -105,10 +107,10 @@ copy_records(unsigned char *to, int to_stride,
       // An easy case.
     copy_no_convert(to, to_stride, from, from_stride, from_type, num_records);
 
-  } else if (get_numeric_type() == NT_ufloat8 && from_type->get_numeric_type() == NT_packed_argb &&
+  } else if (get_numeric_type() == NT_uint8 && from_type->get_numeric_type() == NT_packed_8888 &&
              get_num_values() == from_type->get_num_values()) {
     copy_argb_to_uint8(to, to_stride, from, from_stride, from_type, num_records);
-  } else if (get_numeric_type() == NT_packed_argb && from_type->get_numeric_type() == NT_ufloat8 &&
+  } else if (get_numeric_type() == NT_packed_8888 && from_type->get_numeric_type() == NT_uint8 &&
              get_num_values() == from_type->get_num_values()) {
     copy_uint8_to_argb(to, to_stride, from, from_stride, from_type, num_records);
   } else {
@@ -230,10 +232,10 @@ get_value(const unsigned char *data, int n) const {
   case NT_uint16:
     return (float)data[n];
 
-  case NT_ufloat8:
+  case NT_uint8:
     return (float)data[n] / 255.0f;
 
-  case qpGeomVertexDataType::NT_packed_argb:
+  case qpGeomVertexDataType::NT_packed_8888:
     {
       int element = n / 4;
       const PN_uint32 *int_array = (const PN_uint32 *)data;
@@ -274,11 +276,11 @@ set_value(unsigned char *data, int n, float value) const {
     data[n] = (int)value;
     break;
 
-  case NT_ufloat8:
+  case NT_uint8:
     data[n] = (int)(value * 255.0f);
     break;
 
-  case qpGeomVertexDataType::NT_packed_argb:
+  case qpGeomVertexDataType::NT_packed_8888:
     {
       int element = n / 4;
 

@@ -24,7 +24,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE CLP(GeomMunger)::
 CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state) :
-  ColorMunger(gsg, state, 4, qpGeomVertexDataType::NT_ufloat8),
+  ColorMunger(gsg, state, 4, qpGeomVertexDataType::NT_uint8,
+              qpGeomVertexDataType::C_rgba),
   _gsg(gsg),
   _texture(state->get_texture()),
   _tex_gen(state->get_tex_gen())

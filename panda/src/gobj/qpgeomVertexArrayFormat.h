@@ -53,25 +53,35 @@ PUBLISHED:
   qpGeomVertexArrayFormat();
   qpGeomVertexArrayFormat(const qpGeomVertexArrayFormat &copy);
   qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
-                          qpGeomVertexDataType::NumericType numeric_type0);
+                          qpGeomVertexDataType::NumericType numeric_type0,
+                          qpGeomVertexDataType::Contents contents0);
   qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
                           qpGeomVertexDataType::NumericType numeric_type0,
-                          const InternalName *name1, int num_components1,
-                          qpGeomVertexDataType::NumericType numeric_type1);
-  qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
-                          qpGeomVertexDataType::NumericType numeric_type0,
+                          qpGeomVertexDataType::Contents contents0,
                           const InternalName *name1, int num_components1,
                           qpGeomVertexDataType::NumericType numeric_type1,
-                          const InternalName *name2, int num_components2,
-                          qpGeomVertexDataType::NumericType numeric_type2);
+                          qpGeomVertexDataType::Contents contents1);
   qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
                           qpGeomVertexDataType::NumericType numeric_type0,
+                          qpGeomVertexDataType::Contents contents0,
                           const InternalName *name1, int num_components1,
                           qpGeomVertexDataType::NumericType numeric_type1,
+                          qpGeomVertexDataType::Contents contents1,
                           const InternalName *name2, int num_components2,
                           qpGeomVertexDataType::NumericType numeric_type2,
+                          qpGeomVertexDataType::Contents contents2);
+  qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
+                          qpGeomVertexDataType::NumericType numeric_type0,
+                          qpGeomVertexDataType::Contents contents0,
+                          const InternalName *name1, int num_components1,
+                          qpGeomVertexDataType::NumericType numeric_type1,
+                          qpGeomVertexDataType::Contents contents1,
+                          const InternalName *name2, int num_components2,
+                          qpGeomVertexDataType::NumericType numeric_type2,
+                          qpGeomVertexDataType::Contents contents2,
                           const InternalName *name3, int num_components3,
-                          qpGeomVertexDataType::NumericType numeric_type3);
+                          qpGeomVertexDataType::NumericType numeric_type3,
+                          qpGeomVertexDataType::Contents contents3);
   void operator = (const qpGeomVertexArrayFormat &copy);
   ~qpGeomVertexArrayFormat();
 
@@ -85,6 +95,7 @@ PUBLISHED:
 
   int add_data_type(const InternalName *name, int num_components,
                     qpGeomVertexDataType::NumericType numeric_type,
+                    qpGeomVertexDataType::Contents contents,
                     int start = -1);
   int add_data_type(const qpGeomVertexDataType &data_type);
   void remove_data_type(const InternalName *name);

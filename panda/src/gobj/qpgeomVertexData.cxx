@@ -18,6 +18,7 @@
 
 #include "qpgeomVertexData.h"
 #include "qpgeomVertexIterator.h"
+#include "qpgeomVertexReader.h"
 #include "pStatTimer.h"
 #include "bamReader.h"
 #include "bamWriter.h"
@@ -358,7 +359,8 @@ convert_to(const qpGeomVertexFormat *new_format) const {
 ////////////////////////////////////////////////////////////////////
 CPT(qpGeomVertexData) qpGeomVertexData::
 scale_color(const LVecBase4f &color_scale, int num_components,
-            qpGeomVertexDataType::NumericType numeric_type) const {
+            qpGeomVertexDataType::NumericType numeric_type,
+            qpGeomVertexDataType::Contents contents) const {
   int old_color_array = _format->get_array_with(InternalName::get_color());
   if (old_color_array == -1) {
     // Oops, no color anyway.
@@ -376,7 +378,7 @@ scale_color(const LVecBase4f &color_scale, int num_components,
 
   PT(qpGeomVertexData) new_data = replace_data_type
     (InternalName::get_color(), num_components, numeric_type,
-     get_usage_hint(), true);
+     contents, get_usage_hint(), true);
 
   // Now go through and apply the scale, copying it to the new data.
   qpGeomVertexIterator from(this, InternalName::get_color());
@@ -385,9 +387,9 @@ scale_color(const LVecBase4f &color_scale, int num_components,
   for (int i = 0; i < num_vertices; i++) {
     Colorf color = from.get_data4f();
     to.set_data4f(color[0] * color_scale[0],
-                 color[1] * color_scale[1],
-                 color[2] * color_scale[2],
-                 color[3] * color_scale[3]);
+                  color[1] * color_scale[1],
+                  color[2] * color_scale[2],
+                  color[3] * color_scale[3]);
   }
 
   return new_data;
@@ -405,7 +407,8 @@ scale_color(const LVecBase4f &color_scale, int num_components,
 ////////////////////////////////////////////////////////////////////
 CPT(qpGeomVertexData) qpGeomVertexData::
 set_color(const Colorf &color, int num_components,
-          qpGeomVertexDataType::NumericType numeric_type) const {
+          qpGeomVertexDataType::NumericType numeric_type,
+          qpGeomVertexDataType::Contents contents) const {
   int num_vertices = get_num_vertices();
 
   if (gobj_cat.is_debug()) {
@@ -417,7 +420,7 @@ set_color(const Colorf &color, int num_components,
 
   PT(qpGeomVertexData) new_data = replace_data_type
     (InternalName::get_color(), num_components, numeric_type,
-     get_usage_hint(), true);
+     contents, get_usage_hint(), true);
 
   // Now go through and set the new color value.
   qpGeomVertexIterator to(new_data, InternalName::get_color());
@@ -489,6 +492,7 @@ animate_vertices() const {
 PT(qpGeomVertexData) qpGeomVertexData::
 replace_data_type(const InternalName *name, int num_components,
                   qpGeomVertexDataType::NumericType numeric_type,
+                  qpGeomVertexDataType::Contents contents,
                   qpGeomUsageHint::UsageHint usage_hint,
                   bool keep_animation) const {
   PT(qpGeomVertexFormat) new_format = new qpGeomVertexFormat(*_format);
@@ -515,7 +519,7 @@ replace_data_type(const InternalName *name, int num_components,
   int new_type_array = -1;
   if (num_components != 0) {
     PT(qpGeomVertexArrayFormat) type_array_format = 
-      new qpGeomVertexArrayFormat(name, num_components, numeric_type);
+      new qpGeomVertexArrayFormat(name, num_components, numeric_type, contents);
     new_type_array = new_format->add_array(type_array_format);
   }
     
@@ -637,7 +641,7 @@ set_data(int array, const qpGeomVertexDataType *data_type,
       
     break;
 
-  case qpGeomVertexDataType::NT_ufloat8:
+  case qpGeomVertexDataType::NT_uint8:
     {
       int i = 0;
       int min_values = min(num_values, data_type->get_num_values());
@@ -655,7 +659,7 @@ set_data(int array, const qpGeomVertexDataType *data_type,
     }
     break;
 
-  case qpGeomVertexDataType::NT_packed_argb:
+  case qpGeomVertexDataType::NT_packed_8888:
     {
       if (num_values == 4) {
         *(PN_uint32 *)&array_data[element] = pack_argb(data);
@@ -734,7 +738,7 @@ get_data(int array, const qpGeomVertexDataType *data_type,
     }
     break;
 
-  case qpGeomVertexDataType::NT_ufloat8:
+  case qpGeomVertexDataType::NT_uint8:
     {
       int i = 0;
       int min_values = min(num_values, data_type->get_num_values());
@@ -751,7 +755,7 @@ get_data(int array, const qpGeomVertexDataType *data_type,
     }
     break;
 
-  case qpGeomVertexDataType::NT_packed_argb:
+  case qpGeomVertexDataType::NT_packed_8888:
     {
       if (num_values == 4) {
         unpack_argb(data, *(PN_uint32 *)&array_data[element]);
@@ -841,7 +845,7 @@ set_data(int array, const qpGeomVertexDataType *data_type,
       
     break;
 
-  case qpGeomVertexDataType::NT_ufloat8:
+  case qpGeomVertexDataType::NT_uint8:
     {
       int i = 0;
       int min_values = min(num_values, data_type->get_num_values());
@@ -858,7 +862,7 @@ set_data(int array, const qpGeomVertexDataType *data_type,
     }
     break;
 
-  case qpGeomVertexDataType::NT_packed_argb:
+  case qpGeomVertexDataType::NT_packed_8888:
     {
       if (num_values == 4) {
         *(PN_uint32 *)&array_data[element] = pack_argb(data);
@@ -929,7 +933,7 @@ get_data(int array, const qpGeomVertexDataType *data_type,
     }
     break;
 
-  case qpGeomVertexDataType::NT_ufloat8:
+  case qpGeomVertexDataType::NT_uint8:
     {
       int i = 0;
       int min_values = min(num_values, data_type->get_num_values());
@@ -946,7 +950,7 @@ get_data(int array, const qpGeomVertexDataType *data_type,
     }
     break;
 
-  case qpGeomVertexDataType::NT_packed_argb:
+  case qpGeomVertexDataType::NT_packed_8888:
     {
       if (num_values == 4) {
         unpack_argb(data, *(PN_uint32 *)&array_data[element]);
@@ -1189,6 +1193,7 @@ make_animated_vertices(qpGeomVertexData::CDWriter &cdata) {
   // array.
   cdata->_animated_vertices = replace_data_type
     (InternalName::get_transform_blend(), 0, qpGeomVertexDataType::NT_uint16,
+     qpGeomVertexDataType::C_index,
      min(get_usage_hint(), qpGeomUsageHint::UH_dynamic), false);
 
   // Now fill it up with the appropriate data.
@@ -1227,8 +1232,8 @@ update_animated_vertices(qpGeomVertexData::CDWriter &cdata) {
   PT(qpGeomVertexData) new_data = cdata->_animated_vertices;
 
   // Now go through and apply the scale, copying it to the new data.
-  qpGeomVertexIterator from(this, InternalName::get_vertex());
-  qpGeomVertexIterator blendi(this, InternalName::get_transform_blend());
+  qpGeomVertexReader from(this, InternalName::get_vertex());
+  qpGeomVertexReader blendi(this, InternalName::get_transform_blend());
   qpGeomVertexIterator to(new_data, InternalName::get_vertex());
 
   if (from.get_data_type()->get_num_values() == 4) {

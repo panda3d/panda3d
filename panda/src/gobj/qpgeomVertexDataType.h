@@ -35,14 +35,25 @@
 class EXPCL_PANDA qpGeomVertexDataType {
 PUBLISHED:
   enum NumericType {
-    NT_uint16,       // A short integer 0..65535
-    NT_ufloat8,      // A floating-point number 0..1 packed into a byte
-    NT_float32,      // A true floating-point number
-    NT_packed_argb,  // DirectX style color specification
+    NT_uint8,        // An integer 0..255
+    NT_uint16,       // An integer 0..65535
+    NT_packed_8888,  // DirectX style, four byte values packed in a dword
+    NT_float32,      // A floating-point number
+  };
+
+  enum Contents {
+    C_other,        // Arbitrary meaning, leave it alone
+    C_point,        // A point in 3-space or 4-space
+    C_vector,       // A surface normal, tangent, or binormal
+    C_texcoord,     // A texture coordinate
+    C_rgba,         // RGB or RGBA, OpenGL-style order
+    C_argb,         // RGBA, DirectX-style packed color
+    C_index,        // An index value into some other table
   };
 
   INLINE qpGeomVertexDataType(const InternalName *name, int num_components,
-                              NumericType numeric_type, int start);
+                              NumericType numeric_type, Contents contents,
+                              int start);
   INLINE qpGeomVertexDataType(const qpGeomVertexDataType &copy);
   INLINE void operator = (const qpGeomVertexDataType &copy);
 
@@ -52,6 +63,7 @@ PUBLISHED:
   INLINE int get_num_components() const;
   INLINE int get_num_values() const;
   INLINE NumericType get_numeric_type() const;
+  INLINE Contents get_contents() const;
   INLINE int get_start() const;
   INLINE int get_component_bytes() const;
   INLINE int get_total_bytes() const;
@@ -98,6 +110,7 @@ private:
   int _num_components;
   int _num_values;
   NumericType _numeric_type;
+  Contents _contents;
   int _start;
   int _component_bytes;
   int _total_bytes;

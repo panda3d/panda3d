@@ -97,16 +97,19 @@ PUBLISHED:
   CPT(qpGeomVertexData) convert_to(const qpGeomVertexFormat *new_format) const;
   CPT(qpGeomVertexData) 
     scale_color(const LVecBase4f &color_scale, int num_components,
-                qpGeomVertexDataType::NumericType numeric_type) const;
+                qpGeomVertexDataType::NumericType numeric_type,
+                qpGeomVertexDataType::Contents contents) const;
   CPT(qpGeomVertexData) 
     set_color(const Colorf &color, int num_components,
-              qpGeomVertexDataType::NumericType numeric_type) const;
+              qpGeomVertexDataType::NumericType numeric_type,
+              qpGeomVertexDataType::Contents contents) const;
 
   CPT(qpGeomVertexData) animate_vertices() const;
 
   PT(qpGeomVertexData) 
     replace_data_type(const InternalName *name, int num_components,
                       qpGeomVertexDataType::NumericType numeric_type,
+                      qpGeomVertexDataType::Contents contents,
                       qpGeomUsageHint::UsageHint usage_hint,
                       bool keep_animation) const;
 

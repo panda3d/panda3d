@@ -2162,7 +2162,7 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
   if (_vertex_data->get_array_info(InternalName::get_color(),
                                    array_data, num_components, numeric_type, 
                                    start, stride) &&
-      numeric_type != qpGeomVertexDataType::NT_packed_argb) {
+      numeric_type != qpGeomVertexDataType::NT_packed_8888) {
     const unsigned char *client_pointer = setup_array_data(array_data);
     GLP(ColorPointer)(num_components, get_numeric_type(numeric_type), 
                       stride, client_pointer + start);
@@ -4435,13 +4435,13 @@ get_numeric_type(qpGeomVertexDataType::NumericType numeric_type) {
   case qpGeomVertexDataType::NT_uint16:
     return GL_UNSIGNED_SHORT;
 
-  case qpGeomVertexDataType::NT_ufloat8:
+  case qpGeomVertexDataType::NT_uint8:
     return GL_UNSIGNED_BYTE;
     
   case qpGeomVertexDataType::NT_float32:
     return GL_FLOAT;
 
-  case qpGeomVertexDataType::NT_packed_argb:
+  case qpGeomVertexDataType::NT_packed_8888:
     break;
   }
 

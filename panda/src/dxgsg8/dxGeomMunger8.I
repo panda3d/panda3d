@@ -24,7 +24,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE DXGeomMunger8::
 DXGeomMunger8(GraphicsStateGuardian *gsg, const RenderState *state) :
-  ColorMunger(gsg, state, 1, qpGeomVertexDataType::NT_packed_argb)
+  ColorMunger(gsg, state, 1, qpGeomVertexDataType::NT_packed_8888,
+              qpGeomVertexDataType::C_argb)
 {
 }
 

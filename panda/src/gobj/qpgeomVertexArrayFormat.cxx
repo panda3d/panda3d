@@ -48,14 +48,15 @@ qpGeomVertexArrayFormat() :
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexArrayFormat::
 qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
-                        qpGeomVertexDataType::NumericType numeric_type0) :
+                        qpGeomVertexDataType::NumericType numeric_type0,
+                        qpGeomVertexDataType::Contents contents0) :
   _is_registered(false),
   _stride(0),
   _total_bytes(0),
   _pad_to(1),
   _data_types_unsorted(false)
 {
-  add_data_type(name0, num_components0, numeric_type0);
+  add_data_type(name0, num_components0, numeric_type0, contents0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -66,39 +67,18 @@ qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
 qpGeomVertexArrayFormat::
 qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
                         qpGeomVertexDataType::NumericType numeric_type0,
-                        const InternalName *name1, int num_components1,
-                        qpGeomVertexDataType::NumericType numeric_type1) :
-  _is_registered(false),
-  _stride(0),
-  _total_bytes(0),
-  _pad_to(1),
-  _data_types_unsorted(false)
-{
-  add_data_type(name0, num_components0, numeric_type0);
-  add_data_type(name1, num_components1, numeric_type1);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexArrayFormat::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-qpGeomVertexArrayFormat::
-qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
-                        qpGeomVertexDataType::NumericType numeric_type0,
+                        qpGeomVertexDataType::Contents contents0,
                         const InternalName *name1, int num_components1,
                         qpGeomVertexDataType::NumericType numeric_type1,
-                        const InternalName *name2, int num_components2,
-                        qpGeomVertexDataType::NumericType numeric_type2) :
+                        qpGeomVertexDataType::Contents contents1) :
   _is_registered(false),
   _stride(0),
   _total_bytes(0),
   _pad_to(1),
   _data_types_unsorted(false)
 {
-  add_data_type(name0, num_components0, numeric_type0);
-  add_data_type(name1, num_components1, numeric_type1);
-  add_data_type(name2, num_components2, numeric_type2);
+  add_data_type(name0, num_components0, numeric_type0, contents0);
+  add_data_type(name1, num_components1, numeric_type1, contents1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -109,22 +89,52 @@ qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
 qpGeomVertexArrayFormat::
 qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
                         qpGeomVertexDataType::NumericType numeric_type0,
+                        qpGeomVertexDataType::Contents contents0,
                         const InternalName *name1, int num_components1,
                         qpGeomVertexDataType::NumericType numeric_type1,
+                        qpGeomVertexDataType::Contents contents1,
                         const InternalName *name2, int num_components2,
                         qpGeomVertexDataType::NumericType numeric_type2,
-                        const InternalName *name3, int num_components3,
-                        qpGeomVertexDataType::NumericType numeric_type3) :
+                        qpGeomVertexDataType::Contents contents2) :
   _is_registered(false),
   _stride(0),
   _total_bytes(0),
   _pad_to(1),
   _data_types_unsorted(false)
 {
-  add_data_type(name0, num_components0, numeric_type0);
-  add_data_type(name1, num_components1, numeric_type1);
-  add_data_type(name2, num_components2, numeric_type2);
-  add_data_type(name3, num_components3, numeric_type3);
+  add_data_type(name0, num_components0, numeric_type0, contents0);
+  add_data_type(name1, num_components1, numeric_type1, contents1);
+  add_data_type(name2, num_components2, numeric_type2, contents2);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexArrayFormat::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+qpGeomVertexArrayFormat::
+qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
+                        qpGeomVertexDataType::NumericType numeric_type0,
+                        qpGeomVertexDataType::Contents contents0,
+                        const InternalName *name1, int num_components1,
+                        qpGeomVertexDataType::NumericType numeric_type1,
+                        qpGeomVertexDataType::Contents contents1,
+                        const InternalName *name2, int num_components2,
+                        qpGeomVertexDataType::NumericType numeric_type2,
+                        qpGeomVertexDataType::Contents contents2,
+                        const InternalName *name3, int num_components3,
+                        qpGeomVertexDataType::NumericType numeric_type3,
+                        qpGeomVertexDataType::Contents contents3) :
+  _is_registered(false),
+  _stride(0),
+  _total_bytes(0),
+  _pad_to(1),
+  _data_types_unsorted(false)
+{
+  add_data_type(name0, num_components0, numeric_type0, contents0);
+  add_data_type(name1, num_components1, numeric_type1, contents1);
+  add_data_type(name2, num_components2, numeric_type2, contents2);
+  add_data_type(name3, num_components3, numeric_type3, contents3);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -194,17 +204,19 @@ qpGeomVertexArrayFormat::
 ////////////////////////////////////////////////////////////////////
 int qpGeomVertexArrayFormat::
 add_data_type(const InternalName *name, int num_components, 
-              qpGeomVertexDataType::NumericType numeric_type, int start) {
+              qpGeomVertexDataType::NumericType numeric_type, 
+              qpGeomVertexDataType::Contents contents, int start) {
   if (start < 0) {
     start = _total_bytes;
 
-    qpGeomVertexDataType temp_data_type(name, num_components, numeric_type, 0);
+    qpGeomVertexDataType temp_data_type
+      (name, num_components, numeric_type, contents, 0);
     int pad_to = temp_data_type.get_component_bytes();
     start = ((start + pad_to - 1) / pad_to) * pad_to;
   }
 
   return add_data_type(qpGeomVertexDataType(name, num_components, 
-                                            numeric_type, start));
+                                            numeric_type, contents, start));
 }
 
 ////////////////////////////////////////////////////////////////////

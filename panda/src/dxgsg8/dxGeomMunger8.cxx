@@ -45,7 +45,8 @@ munge_format_impl(const qpGeomVertexFormat *orig) {
 
   if (vertex_type != (const qpGeomVertexDataType *)NULL) {
     new_array_format->add_data_type
-      (InternalName::get_vertex(), 3, qpGeomVertexDataType::NT_float32);
+      (InternalName::get_vertex(), 3, qpGeomVertexDataType::NT_float32,
+       qpGeomVertexDataType::C_point);
   } else {
     // If we don't have a vertex type, not much we can do.
     return orig;
@@ -53,12 +54,14 @@ munge_format_impl(const qpGeomVertexFormat *orig) {
 
   if (normal_type != (const qpGeomVertexDataType *)NULL) {
     new_array_format->add_data_type
-      (InternalName::get_normal(), 3, qpGeomVertexDataType::NT_float32);
+      (InternalName::get_normal(), 3, qpGeomVertexDataType::NT_float32,
+       qpGeomVertexDataType::C_vector);
   }
 
   if (color_type != (const qpGeomVertexDataType *)NULL) {
     new_array_format->add_data_type
-      (InternalName::get_color(), 1, qpGeomVertexDataType::NT_packed_argb);
+      (InternalName::get_color(), 1, qpGeomVertexDataType::NT_packed_8888,
+       qpGeomVertexDataType::C_argb);
   }
 
   // To support multitexture, we will need to add all of the relevant
@@ -67,7 +70,7 @@ munge_format_impl(const qpGeomVertexFormat *orig) {
   if (texcoord_type != (const qpGeomVertexDataType *)NULL) {
     new_array_format->add_data_type
       (InternalName::get_texcoord(), texcoord_type->get_num_values(),
-       qpGeomVertexDataType::NT_float32);
+       qpGeomVertexDataType::NT_float32, qpGeomVertexDataType::C_texcoord);
   }
 
   PT(qpGeomVertexFormat) new_format = new qpGeomVertexFormat(new_array_format);

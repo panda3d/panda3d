@@ -1921,16 +1921,18 @@ make_vertex_data(const EggRenderState *render_state,
   PT(qpGeomVertexArrayFormat) array_format = new qpGeomVertexArrayFormat;
   array_format->add_data_type
     (InternalName::get_vertex(), vertex_pool->get_num_dimensions(),
-     qpGeomVertexDataType::NT_float32);
+     qpGeomVertexDataType::NT_float32, qpGeomVertexDataType::C_point);
 
   if (vertex_pool->has_normals()) {
     array_format->add_data_type
-      (InternalName::get_normal(), 3, qpGeomVertexDataType::NT_float32);
+      (InternalName::get_normal(), 3, 
+       qpGeomVertexDataType::NT_float32, qpGeomVertexDataType::C_vector);
   }
 
   if (vertex_pool->has_colors()) {
     array_format->add_data_type
-      (InternalName::get_color(), 1, qpGeomVertexDataType::NT_packed_argb);
+      (InternalName::get_color(), 1, 
+       qpGeomVertexDataType::NT_packed_8888, qpGeomVertexDataType::C_argb);
   }
 
   vector_string uv_names;
@@ -1942,7 +1944,9 @@ make_vertex_data(const EggRenderState *render_state,
       name = string();
     }
     PT(InternalName) iname = InternalName::get_texcoord_name(name);
-    array_format->add_data_type(iname, 2, qpGeomVertexDataType::NT_float32);
+    array_format->add_data_type
+      (iname, 2,
+       qpGeomVertexDataType::NT_float32, qpGeomVertexDataType::C_texcoord);
   }
 
   PT(qpGeomVertexFormat) temp_format = new qpGeomVertexFormat(array_format);
@@ -1956,7 +1960,8 @@ make_vertex_data(const EggRenderState *render_state,
     blend_palette = new TransformBlendPalette;
     PT(qpGeomVertexArrayFormat) blend_array_format = new qpGeomVertexArrayFormat;
     blend_array_format->add_data_type
-      (InternalName::get_transform_blend(), 1, qpGeomVertexDataType::NT_uint16);
+      (InternalName::get_transform_blend(), 1, 
+       qpGeomVertexDataType::NT_uint16, qpGeomVertexDataType::C_index);
     temp_format->add_array(blend_array_format);
 
     // We'll also assign the character name to the vertex data, so it

@@ -36,7 +36,8 @@ class EXPCL_PANDA ColorMunger : public qpGeomMunger {
 public:
   ColorMunger(const GraphicsStateGuardianBase *gsg, const RenderState *state,
               int num_components,
-              qpGeomVertexDataType::NumericType numeric_type);
+              qpGeomVertexDataType::NumericType numeric_type,
+              qpGeomVertexDataType::Contents contents);
   virtual ~ColorMunger();
 
 protected:
@@ -47,6 +48,7 @@ protected:
 private:
   int _num_components;
   qpGeomVertexDataType::NumericType _numeric_type;
+  qpGeomVertexDataType::Contents _contents;
   CPT(ColorAttrib) _color;
   CPT(ColorScaleAttrib) _color_scale;
 

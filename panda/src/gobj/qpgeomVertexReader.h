@@ -1,0 +1,153 @@
+// Filename: qpgeomVertexReader.h
+// Created by:  drose (25Mar05)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef qpGEOMVERTEXREADER_H
+#define qpGEOMVERTEXREADER_H
+
+#include "pandabase.h"
+#include "qpgeomVertexData.h"
+#include "qpgeomVertexDataType.h"
+#include "internalName.h"
+#include "luse.h"
+#include "pointerTo.h"
+
+////////////////////////////////////////////////////////////////////
+//       Class : qpGeomVertexReader
+// Description : This object provides a high-level interface for
+//               quickly reading a sequence of numeric values from a
+//               vertex table. 
+//
+//               It is particularly optimized for reading a column of
+//               data values for a series of vertices, without
+//               changing data types between each number.  Although
+//               you can use one GeomVertexReader to read one complete
+//               row at a time, by calling set_data_type() repeatedly
+//               for each vertex, it is faster to use a different
+//               GeomVertexReader for each data type.
+//
+//               This is part of the experimental Geom rewrite.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA qpGeomVertexReader {
+PUBLISHED:
+  INLINE qpGeomVertexReader(const qpGeomVertexData *vertex_data);
+  INLINE qpGeomVertexReader(const qpGeomVertexData *vertex_data,
+                            const string &name);
+  INLINE qpGeomVertexReader(const qpGeomVertexData *vertex_data,
+                            const InternalName *name);
+  INLINE ~qpGeomVertexReader();
+
+  INLINE const qpGeomVertexData *get_vertex_data() const;
+
+  INLINE void set_data_type(int data_type);
+  INLINE void set_data_type(const string &name);
+  INLINE void set_data_type(const InternalName *name);
+  void set_data_type(int array, const qpGeomVertexDataType *data_type);
+
+  INLINE int get_array() const;
+  INLINE const qpGeomVertexDataType *get_data_type() const;
+
+  INLINE void set_vertex(int vertex);
+
+  INLINE int get_start_vertex() const;
+  INLINE int get_read_vertex() const;
+
+  INLINE float get_data1f();
+  INLINE const LVecBase2f &get_data2f();
+  INLINE const LVecBase3f &get_data3f();
+  INLINE const LVecBase4f &get_data4f();
+
+  INLINE int get_data1i();
+
+private:
+  class Reader;
+
+  INLINE void set_pointer();
+  INLINE const unsigned char *inc_pointer();
+  Reader *make_reader() const;
+
+  CPT(qpGeomVertexData) _vertex_data;
+  int _array;
+  const qpGeomVertexDataType *_data_type;
+  int _stride;
+
+  CPTA_uchar _data;
+  const unsigned char *_pointer;
+
+  int _start_vertex;
+  int _read_vertex;
+
+  Reader *_reader;
+
+  // This union is handy for unpacking an NT_packed_8888 value.
+  typedef union {
+    unsigned char _b[4];
+    PN_uint32 _i;
+  } packed_8888;
+
+  // This nested class provides the implementation for unpacking data
+  // in a very general way, but also provides the hooks for
+  // implementing the common, very direct code paths (for instance,
+  // 3-component float32 to LVecBase3f) as quickly as possible.
+  class Reader {
+  public:
+    virtual ~Reader();
+    virtual float get_data1f(const unsigned char *pointer);
+    virtual const LVecBase2f &get_data2f(const unsigned char *pointer);
+    virtual const LVecBase3f &get_data3f(const unsigned char *pointer);
+    virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
+    virtual int get_data1i(const unsigned char *pointer);
+
+    INLINE float maybe_scale_color(unsigned int value);
+    INLINE void maybe_scale_color(unsigned int a, unsigned int b);
+    INLINE void maybe_scale_color(unsigned int a, unsigned int b,
+                                  unsigned int c);
+    INLINE void maybe_scale_color(unsigned int a, unsigned int b,
+                                  unsigned int c, unsigned int d);
+
+    const qpGeomVertexDataType *_data_type;
+    LVecBase2f _v2;
+    LVecBase3f _v3;
+    LVecBase4f _v4;
+  };
+
+  // This is a specialization on the generic Reader that handles
+  // points, which are special because the fourth component, if
+  // omitted, is 1.0.
+  class Reader_point : public Reader {
+  public:
+    virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
+  };
+
+
+  // These are the specializations on the generic Reader that handle
+  // the direct code paths.
+
+  class Reader_float_3 : public Reader {
+  public:
+    virtual const LVecBase3f &get_data3f(const unsigned char *pointer);
+  };
+
+  class Reader_uint16_1 : public Reader {
+  public:
+    virtual int get_data1i(const unsigned char *pointer);
+  };
+};
+
+#include "qpgeomVertexReader.I"
+
+#endif

@@ -30,10 +30,12 @@ TypeHandle ColorMunger::_type_handle;
 ColorMunger::
 ColorMunger(const GraphicsStateGuardianBase *gsg, const RenderState *state,
             int num_components,
-            qpGeomVertexDataType::NumericType numeric_type) :
+            qpGeomVertexDataType::NumericType numeric_type,
+            qpGeomVertexDataType::Contents contents) :
   qpGeomMunger(gsg, state),
   _num_components(num_components),
-  _numeric_type(numeric_type)
+  _numeric_type(numeric_type),
+  _contents(contents)
 {
   _color = state->get_color();
   _color_scale = state->get_color_scale();
@@ -69,12 +71,14 @@ munge_data_impl(const qpGeomVertexData *data) {
                 color[2] * cs[2],
                 color[3] * cs[3]);
     }
-    new_data = new_data->set_color(color, _num_components, _numeric_type);
+    new_data = new_data->set_color(color, _num_components, _numeric_type,
+                                   _contents);
 
   } else if (_color_scale != (ColorScaleAttrib *)NULL &&
              _color_scale->has_scale()) {
     const LVecBase4f &cs = _color_scale->get_scale();
-    new_data = new_data->scale_color(cs, _num_components, _numeric_type);
+    new_data = new_data->scale_color(cs, _num_components, _numeric_type,
+                                     _contents);
   }
 
   return qpGeomMunger::munge_data_impl(new_data);
