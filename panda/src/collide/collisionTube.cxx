@@ -368,6 +368,9 @@ recalc_internals() {
   look_at(_mat, direction, LVector3f(0.0f, 0.0f, 1.0f), CS_zup_right);
   _mat.set_row(3, _a);
   _inv_mat.invert_from(_mat);
+
+  mark_viz_stale();
+  mark_bound_stale();
 }
 
 ////////////////////////////////////////////////////////////////////
