@@ -32,7 +32,7 @@
 #include "typedObject.h"
 #include "anotherPandaHeaderFile.h"
 
-#include "systemHeaderFile.h"
+#include <systemHeaderFile.h>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : SampleClass
