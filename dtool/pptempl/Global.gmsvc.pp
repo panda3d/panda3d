@@ -53,9 +53,13 @@
 #define install_parser_inc_dir $[install_parser_inc_dir]
 
 // Define this if we want to make .sbr files.
+#if $[USE_BROWSEINFO]
 #defer BROWSEINFO_FLAG /Fr"$[osfilename $[target:%.obj=%.sbr]]"
-#defer CFLAGS_SHARED
+#else
+#define BROWSEINFO_FLAG
+#endif
 
+#defer CFLAGS_SHARED
 #defer OPTFLAGS /O2 /Ob1 /Ogity /G6
 
 #defer CDEFINES_OPT1 _DEBUG
