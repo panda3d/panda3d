@@ -343,6 +343,22 @@ determine_primitive_home(EggPrimitive *egg_primitive) {
       return NULL;
     }
 
+    if (!vertex->_dxyzs.empty() ||
+        !vertex->_dnormals.empty() ||
+        !vertex->_drgbas.empty()) {
+      // This vertex has some morph slider definitions; therefore, the
+      // primitive is dynamic.
+      return NULL;
+    }
+    EggVertex::const_uv_iterator uvi;
+    for (uvi = vertex->uv_begin(); uvi != vertex->uv_end(); ++uvi) {
+      if (!(*uvi)->_duvs.empty()) {
+        // Ditto: the vertex has some UV morphs; therefore the
+        // primitive is dynamic.
+        return NULL;
+      }
+    }
+
     EggGroupNode *vertex_home;
 
     if (vertex->gref_size() == 0) {
