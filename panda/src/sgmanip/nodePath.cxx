@@ -997,7 +997,8 @@ remove_node() {
 
   // Set the chain to stop here, so that any NodePaths sharing this
   // one will now begin at this "deleted" node.
-  (*_head) = ArcComponent(dnode);
+  ArcComponent here(dnode.p());
+  (*_head) = here;
 
   // Now remove our own chain reference.  If there were no other
   // sharing NodePaths, this will also delete the complete chain,
