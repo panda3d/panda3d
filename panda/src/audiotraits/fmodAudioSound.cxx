@@ -41,7 +41,7 @@
 //               of a loop, but really ends).
 ////////////////////////////////////////////////////////////////////
 signed char
-pandaFmodFinishedCallback_Stream( FSOUND_STREAM *audio, void *buff, int len, int p_sound ) {
+pandaFmodFinishedCallback_Stream( FSOUND_STREAM *audio, void *buff, int len, void *p_sound ) {
     FmodAudioSound* sound = (FmodAudioSound*)p_sound;
     assert(sound); //sanity test
     sound->finished();
@@ -62,7 +62,7 @@ panda_Fmod_finished_callback( FSOUND_STREAM *audio, FmodAudioSound* sound ) {
         <<", sound="<<((void*)sound)<<")");
     FSOUND_STREAMCALLBACK callback = pandaFmodFinishedCallback_Stream;
                                 //actual stream, callback func, pointer to FmodAudioSound
-    FSOUND_Stream_SetEndCallback( audio, callback, (int)sound );
+    FSOUND_Stream_SetEndCallback( audio, callback, sound );
 }
 
 ////////////////////////////////////////////////////////////////////

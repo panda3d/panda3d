@@ -238,10 +238,10 @@ get_sound(const string &file_name, bool positional) {
   string suffix = downcase(path.get_extension());
   
   if (suffix == "mid" || suffix == "rmi" || suffix == "midi") {
-    stream = FSOUND_Stream_OpenFile(os_path.c_str(), 0, 0);
+    stream = FSOUND_Stream_Open(os_path.c_str(), 0, 0, 0);
   } else {
-    stream = FSOUND_Stream_OpenFile((const char*)(entry->data),
-                                    flags, entry->size);
+    stream = FSOUND_Stream_Open((const char*)(entry->data),
+                                flags, 0, entry->size);
   }
   if (stream == NULL) {
     audio_error("FmodAudioManager::get_sound failed.");
