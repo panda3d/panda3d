@@ -2,6 +2,9 @@
 #define USE_NET yes
 
 #begin ss_lib_target
+
+#if $[or $[<= $[OPTIMIZE],3], $[ne $[DO_PSTATS],]]
+
   #define TARGET pstatserver
   #define LOCAL_LIBS pandatoolbase
   #define OTHER_LIBS \
@@ -25,6 +28,11 @@
     pStatReader.h pStatServer.h pStatStripChart.I pStatStripChart.h \
     pStatThreadData.I pStatThreadData.h pStatView.I pStatView.h \
     pStatViewLevel.I pStatViewLevel.h
+#else
+  #define TARGET
+  #define SOURCES
+  #define INSTALL_HEADERS  
+#endif  	
 
 #end ss_lib_target
 
