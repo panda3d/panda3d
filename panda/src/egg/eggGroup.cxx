@@ -287,9 +287,11 @@ write(ostream &out, int indent_level) const {
 
   EggRenderMode::write(out, indent_level + 2);
 
-  write_vertex_ref(out, indent_level + 2);
-
+  // We have to write the children nodes before we write the vertex
+  // references, since we might be referencing a vertex that's defined
+  // in one of those children nodes!
   EggGroupNode::write(out, indent_level + 2);
+  write_vertex_ref(out, indent_level + 2);
 
   indent(out, indent_level) << "}\n";
 }
