@@ -314,3 +314,66 @@ send_datagram(const NetDatagram &datagram) {
 
   return true;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Connection::send_raw_datagram
+//       Access: Private
+//  Description: This method is intended only to be called by
+//               ConnectionWriter.  It atomically writes the given
+//               datagram to the socket, without the Datagram header.
+////////////////////////////////////////////////////////////////////
+bool Connection::
+send_raw_datagram(const NetDatagram &datagram) {
+  nassertr(_socket != (PRFileDesc *)NULL, false);
+
+  PR_Lock(_write_mutex);
+
+  PRInt32 bytes_sent;
+  PRInt32 result;
+  if (PR_GetDescType(_socket) == PR_DESC_SOCKET_UDP) {
+    string data = datagram.get_message();
+    bytes_sent = data.length();
+    result = PR_SendTo(_socket,
+                       data.data(), bytes_sent,
+                       0,
+                       datagram.get_address().get_addr(),
+                       PR_INTERVAL_NO_TIMEOUT);
+  } else {
+    string data = datagram.get_message();
+    bytes_sent = data.length();
+    result = PR_Send(_socket,
+                     data.data(), bytes_sent,
+                     0,
+                     PR_INTERVAL_NO_TIMEOUT);
+  }
+
+  PRErrorCode errcode = PR_GetError();
+
+  PR_Unlock(_write_mutex);
+
+  if (result < 0) {
+    if (errcode == PR_CONNECT_RESET_ERROR
+#ifdef PR_SOCKET_SHUTDOWN_ERROR
+        || errcode == PR_SOCKET_SHUTDOWN_ERROR
+        || errcode == PR_CONNECT_ABORTED_ERROR
+#endif
+        ) {
+      // The connection has been reset; tell our manager about it
+      // and ignore it.
+      if (_manager != (ConnectionManager *)NULL) {
+        _manager->connection_reset(this);
+      }
+
+    } else if (errcode != PR_PENDING_INTERRUPT_ERROR) {
+      pprerror("PR_SendTo");
+    }
+
+    return false;
+
+  } else if (result != bytes_sent) {
+    net_cat.error() << "Not enough bytes sent to socket.\n";
+    return false;
+  }
+
+  return true;
+}

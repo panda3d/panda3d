@@ -54,6 +54,8 @@ PUBLISHED:
             const PT(Connection) &connection,
             const NetAddress &address);
 
+  bool send_raw(const Datagram &datagram, const PT(Connection) &connection);
+
   bool is_valid_for_udp(const Datagram &datagram) const;
 
   ConnectionManager *get_manager() const;

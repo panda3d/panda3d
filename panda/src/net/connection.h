@@ -60,6 +60,7 @@ PUBLISHED:
 
 private:
   bool send_datagram(const NetDatagram &datagram);
+  bool send_raw_datagram(const NetDatagram &datagram);
 
   ConnectionManager *_manager;
   PRFileDesc *_socket;

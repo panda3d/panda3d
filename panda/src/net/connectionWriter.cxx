@@ -173,6 +173,37 @@ send(const Datagram &datagram, const PT(Connection) &connection,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConnectionWriter::send_raw
+//       Access: Public
+//  Description: Enqueues a datagram for transmission on the indicated
+//               socket, *without* sending the Datagram header.  This
+//               will not be intelligible to a ConnectionReader on the
+//               other end, which will expect to receive a Datagram
+//               header.  However, it may be necessary to send raw
+//               data to some other kind of client (like a proxy
+//               server).
+//
+//               The data is always sent immediately, regardless of
+//               whether this is a queued connection or not.
+////////////////////////////////////////////////////////////////////
+bool ConnectionWriter::
+send_raw(const Datagram &datagram, const PT(Connection) &connection) {
+  nassertr(connection != (Connection *)NULL, false);
+  nassertr(PR_GetDescType(connection->get_socket()) == PR_DESC_SOCKET_TCP, false);
+
+  if (net_cat.is_debug()) {
+    net_cat.debug()
+      << "Sending TCP raw datagram of " << datagram.get_length()
+      << " bytes\n";
+  }
+
+  NetDatagram copy(datagram);
+  copy.set_connection(connection);
+
+  return connection->send_raw_datagram(copy);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConnectionWriter::is_valid_for_udp
 //       Access: Public
 //  Description: Returns true if the datagram is small enough to be
