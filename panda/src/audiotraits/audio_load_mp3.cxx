@@ -374,7 +374,7 @@ static void read_file(Filename filename, unsigned char** buf,
 
   initialize();
   my_buf_head = my_buf_curr = (BufferPart*)0L;
-  if (open_stream((char*)(filename.c_str()), -1)) {
+  if (open_stream((char*)(filename.to_os_specific().c_str()), -1)) {
     long leftFrames, newFrame;
 
     read_frame_init();
