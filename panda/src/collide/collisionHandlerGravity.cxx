@@ -63,9 +63,16 @@ CollisionHandlerGravity::
 float CollisionHandlerGravity::
 set_highest_collision(const NodePath &target_node_path, const NodePath &from_node_path, const Entries &entries) {
   // Get the maximum height for all collisions with this node.
+  // This is really the distance to-the-ground, so it will
+  // be negative when the avatar is above the ground.
+  // Larger values (less negative) are higher elevation (assuming
+  // the avatar is right-side-up (or the ray is plumb)).
   bool got_max = false;
+  bool got_min = false;
   float max_height = 0.0f;
+  float min_height = 0.0f;
   CollisionEntry *highest = NULL;
+  CollisionEntry *lowest = NULL;
 
   Entries::const_iterator ei;
   for (ei = entries.begin(); ei != entries.end(); ++ei) {
@@ -81,12 +88,26 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
       }
 
       float height = point[2];
-      if (!got_max || height > max_height) {
+      if (height < _offset  &&
+         (!got_max || height > max_height)) {
         got_max = true;
         max_height = height;
         highest = entry;
       }
+      if (!got_min || height < min_height) {
+        got_min = true;
+        min_height = height;
+        lowest = entry;
+      }
     }
+  }
+  if (!got_max && got_min) {
+    // We've fallen through the world, but we're also under some walkable
+    // geometry.
+    // Move us up to the lowest surface:
+    got_max = true;
+    max_height = min_height;
+    highest = lowest;
   }
   //#*#_has_contact = got_max;
 
@@ -99,7 +120,7 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
     highest->write(cout, 2);
     cout<<endl;
   #endif
-
+  
   // We only collide with things we are impacting with.
   // Remove the collisions:
   _current_colliding.clear();
@@ -144,7 +165,7 @@ handle_entries() {
       float max_height = set_highest_collision(def._target, from_node_path, entries);
 
       // Now set our height accordingly.
-      float adjust = max_height + _offset;
+      float adjust = max_height; // #*# + _offset;
       if (_current_velocity > 0.0f || !IS_THRESHOLD_ZERO(adjust, 0.001)) {
         if (collide_cat.is_debug()) {
           collide_cat.debug()
@@ -202,6 +223,7 @@ handle_entries() {
 
   return okflag;
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerGravity::apply_linear_force
 //       Access: Protected, Virtual
