@@ -1,0 +1,161 @@
+#!/bin/bash
+
+usage="build [\"\"|new|uninstall|install|clean|only|genpy [\"\"|dtool|panda|direct|<relative path>] ]"
+usage=$(cat <<-EOS
+Usage: ./$(basename $0) [ mode [ module [ package ] ] ]
+  
+  [Be sure to cd to the panda3d directory first.]
+  
+  mode      ""|new|uninstall|install|clean|only|genpy|--help
+  module    ""|dtool|panda|direct|<relative path>
+  package   one of the */src/* directories.
+
+  Examples:
+    ./build new
+    ./build install
+    ./build install panda
+    ./build clean
+    ./build clean panda
+    ./build genpy
+    ./build only panda express
+    ./build quick panda express
+
+EOS
+)
+
+mode=$1
+module=$2
+base=$(pwd)
+wantGenPy=1
+
+#trap "exit" INT
+if [ "$mode" == "--help" ]; then
+    echo "$usage"
+    exit
+fi
+
+echo -e "\nSetting up build environment\n"
+if [ -f ./build_env ]; then
+  source ./build_env || exit
+fi
+
+modules="dtool panda pandatool direct $modules"
+
+if [ "$module" != "" ]; then
+    modules="$module"
+fi
+
+case "$mode" in
+( only )
+    cd $base/$module        || exit
+    ppremake                || exit
+    make uninstall install  || exit
+	modules_ppremake=""
+	modules_clean=""
+	modules_uninstall=""
+	modules_install=""
+    ;;
+( quick )
+    cd $base/$module/src/$3 || exit
+    make                    || exit
+    cd $base/$module        || exit
+    make install            || exit
+    wantGenPy=0
+	modules_ppremake=""
+	modules_clean=""
+	modules_uninstall=""
+	modules_install=""
+    ;;
+( new )
+	# ...build the newest version of the code:
+	echo -e "\nUpdating cvs\n"
+	cd "$base"   || exit
+	./cvs_update || exit
+	cd "$base"   || exit
+	# This next command is allowed to fail (no || exit):
+	echo -e "\nBuilding tags file\n"
+	ctags -nR -h '+.I' --langmap='c:+.I' -h '+.T' --langmap='c:+.T' --fields=fmisS
+	modules_ppremake=$modules
+	modules_clean="direct $modules_clean"
+	modules_uninstall=$modules
+	modules_install=$modules
+	;;
+( ppremake )
+	modules_ppremake=$modules
+	modules_clean=""
+	modules_uninstall=""
+	modules_install=""
+	;;
+( clean )
+	modules_ppremake=$modules
+	modules_clean=$modules
+	modules_uninstall=""
+	modules_install=""
+	;;
+( uninstall )
+	modules_ppremake=$modules
+	modules_clean=""
+	modules_uninstall=$modules
+	modules_install=""
+	;;
+( install )
+	modules_ppremake=$modules
+	modules_clean=""
+	modules_uninstall=$modules
+	modules_install=$modules
+	;;
+( "" )
+	modules_ppremake=$modules
+	# Some modules are small enough that we clean them for good measure:
+	modules_clean="direct $modules_clean"
+	modules_uninstall=$modules
+	modules_install=$modules
+	;;
+( genpy )
+	modules_ppremake=""
+	modules_clean=""
+	modules_uninstall=""
+	modules_install=""
+	;;
+( * )
+	echo -e "\nThat mode is not recognized ($mode)"
+	echo "$usage"
+	exit 1
+	;;
+esac
+
+echo "    modules_ppremake  =$modules_ppremake"
+echo "    modules_clean     =$modules_clean"
+echo "    modules_uninstall =$modules_uninstall"
+echo "    modules_install   =$modules_install"
+
+for i in $modules_ppremake; do
+	echo -e "\nStarting Ppremake of $i\n"
+	cd "$base/$i" || exit
+	ppremake    || exit
+done
+for i in $modules_clean; do
+	echo -e "\nStarting Clean of $i\n"
+	cd "$base/$i"   || exit
+	make clean      || exit
+done
+for i in $modules_uninstall; do
+	echo -e "\nStarting Uninstall of $i\n"
+	cd "$base/$i"   || exit
+	make uninstall  || exit
+done
+for i in $modules_install; do
+	echo -e "\nStarting Install (build) of $i\n"
+	cd "$base/$i"    || exit
+	make install   || exit
+done
+
+if (($wantGenPy)); then
+    # Generate Python code:
+    echo "Generating Python/C++ interface code"
+    #cd $base || exit
+    genPyCode || exit
+fi
+
+echo "done"
+
