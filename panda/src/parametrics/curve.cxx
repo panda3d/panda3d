@@ -1,9 +1,9 @@
 // Filename: curve.C
 // Created by:  drose (14Mar97)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 // Copyright (C) 1992,93,94,95,96,97  Walt Disney Imagineering, Inc.
-// 
+//
 // These  coded  instructions,  statements,  data   structures   and
 // computer  programs contain unpublished proprietary information of
 // Walt Disney Imagineering and are protected by  Federal  copyright
@@ -18,7 +18,6 @@
 
 #include "curve.h"
 #include "config_parametrics.h"
-#include "hermiteCurve.h"
 #include "nurbsCurve.h"
 #include "curveDrawer.h"
 
@@ -101,7 +100,7 @@ set_curve_type(int type) {
   case PCT_T:
     _num_dimensions = 1;
     break;
-    
+
   default:
     assert(0);
   }
@@ -204,7 +203,7 @@ calc_length(double from, double to) const {
 //               new value of t.  This function is quite expensive.
 ////////////////////////////////////////////////////////////////////
 double ParametricCurve::
-compute_t(double start_t, double length_offset, double guess, 
+compute_t(double start_t, double length_offset, double guess,
 	  double threshold) const {
   if (length_offset > 0.0) {
     // If the length_offset is positive, we are looking forward.
@@ -234,7 +233,7 @@ compute_t(double start_t, double length_offset, double guess,
   double actual_length = calc_length(start_t, guess);
   double max_t = get_max_t();
   bool clamped = false;
-  
+
   // Are we close enough yet?
   cerr << "Got " << actual_length << " wanted " << length_offset << "\n";
   while (fabs(actual_length - length_offset) > threshold) {
@@ -242,18 +241,18 @@ compute_t(double start_t, double length_offset, double guess,
     // the t_offset should be if the curve were evenly distributed
     // across its entire range.
     guess = (guess - start_t) * length_offset / actual_length + start_t;
-    
+
     // Clamp it to the end of the curve.
     if (guess > max_t) {
       if (clamped) {
 	return max_t;
-      } 
+      }
       clamped = true;
       guess = max_t;
     } else {
       clamped = false;
     }
-    
+
     actual_length = calc_length(start_t, guess);
     cerr << "Got " << actual_length << " wanted " << length_offset << "\n";
   }
@@ -285,7 +284,7 @@ convert_to_nurbs(NurbsCurve &nc) const {
       nc.append_cv(bz_segs[i]._v[0]);
       nc.append_cv(bz_segs[i]._v[1]);
       nc.append_cv(bz_segs[i]._v[2]);
-      if (i == bz_segs.size()-1 || 
+      if (i == bz_segs.size()-1 ||
 	  !bz_segs[i]._v[3].almost_equal(bz_segs[i+1]._v[0], 0.0001)) {
 	nc.append_cv(bz_segs[i]._v[3]);
       }
@@ -300,12 +299,12 @@ convert_to_nurbs(NurbsCurve &nc) const {
 
     for (i = 0; i<bz_segs.size(); i++) {
       t = bz_segs[i]._t;
-      
+
       nc.set_knot(ki, t);
       nc.set_knot(ki+1, t);
       nc.set_knot(ki+2, t);
       ki += 3;
-      if (i == bz_segs.size()-1 || 
+      if (i == bz_segs.size()-1 ||
 	  !bz_segs[i]._v[3].almost_equal(bz_segs[i+1]._v[0], 0.0001)) {
 	nc.set_knot(ki, t);
 	ki++;
@@ -315,7 +314,7 @@ convert_to_nurbs(NurbsCurve &nc) const {
   nc.recompute();
 
   return nc.is_valid();
-}  
+}
 
 
 ////////////////////////////////////////////////////////////////////
@@ -345,7 +344,7 @@ ascii_draw() const {
     minz = min(minz, p[2]);
     maxz = max(maxz, p[2]);
   }
-  
+
   // Set up the 2-d character buffer we will draw into.
   static const int rows = 40;
   static const int cols = 78;
@@ -384,7 +383,7 @@ ascii_draw() const {
   cout << "\n" << flush;
 }
 
-  
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ParametricCurve::register_drawer
@@ -499,12 +498,12 @@ r_calc_length(double t1, double t2, const LVector3f &p1, const LVector3f &p2,
     double tmid;
     LVector3f pmid;
     float left, right;
-    
+
     // Calculate the point on the curve midway between the two
     // endpoints.
     tmid = (t1+t2)/2.0;
     get_point(tmid, pmid);
-    
+
     // Did we increase the length of the segment measurably?
     left = (p1 - pmid).length();
     right = (pmid - p2).length();
@@ -530,13 +529,13 @@ r_calc_length(double t1, double t2, const LVector3f &p1, const LVector3f &p2,
 void ParametricCurve::
 write_datagram(BamWriter *, Datagram &) {
   // TODO: write the write_datagram.
-} 
+}
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PiecewiseCurve::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PiecewiseCurve::
 PiecewiseCurve() {
@@ -627,7 +626,7 @@ get_2ndtangent(double t, LVector3f &tangent2) const {
 //               tangent value at that point.
 ////////////////////////////////////////////////////////////////////
 bool PiecewiseCurve::
-adjust_point(double t, 
+adjust_point(double t,
 	     float px, float py, float pz) {
   const ParametricCurve *curve;
   bool result = find_curve(curve, t);
@@ -652,7 +651,7 @@ adjust_point(double t,
 //               at the point.
 ////////////////////////////////////////////////////////////////////
 bool PiecewiseCurve::
-adjust_tangent(double t, 
+adjust_tangent(double t,
 	       float tx, float ty, float tz) {
   const ParametricCurve *curve;
   bool result = find_curve(curve, t);
@@ -676,7 +675,7 @@ adjust_tangent(double t,
 //               point (px, py, pz) with the tangent (tx, ty, tz).
 ////////////////////////////////////////////////////////////////////
 bool PiecewiseCurve::
-adjust_pt(double t, 
+adjust_pt(double t,
 	  float px, float py, float pz,
 	  float tx, float ty, float tz) {
   const ParametricCurve *curve;
@@ -747,7 +746,7 @@ get_curveseg(int ti) {
 //               tlength is subtracted from that of the following
 //               segment, so that the overall length of the curve is
 //               not changed.
-//////////////////////////////////////////////////////////////////// 
+////////////////////////////////////////////////////////////////////
 bool PiecewiseCurve::
 insert_curveseg(int ti, ParametricCurve *seg, double tlength) {
   if (ti<0 || ti>_segs.size()) {
@@ -758,11 +757,11 @@ insert_curveseg(int ti, ParametricCurve *seg, double tlength) {
     _segs.push_back(Curveseg(seg, get_max_t() + tlength));
 
   } else if (ti==0) {
-    _segs.insert(_segs.begin(), 
+    _segs.insert(_segs.begin(),
 		 Curveseg(seg, tlength));
 
   } else {
-    _segs.insert(_segs.begin() + ti, 
+    _segs.insert(_segs.begin() + ti,
 		 Curveseg(seg, _segs[ti-1]._tend + tlength));
   }
 
@@ -887,7 +886,7 @@ make_nurbs(int order, int num_cvs,
   for (int i=0; i<num_cvs - order + 1; i++) {
     if (knots[i+order] > knots[i+order-1]) {
       int ti = get_num_segs();
-      bool result = 
+      bool result =
 	insert_curveseg(ti, new CubicCurveseg(order, knots+i, cvs+i),
 			knots[i+order] - knots[i+order-1]);
       assert(result);
@@ -1014,7 +1013,7 @@ find_curve(const ParametricCurve *&curve, double &t) const {
       ti--;
       t = 1.0;
     }
-    
+
     if (ti >= _segs.size()) {
       if (_segs.empty()) {
 	curve = NULL;
@@ -1075,7 +1074,7 @@ current_seg_range(double t) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CubicCurveseg::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CubicCurveseg::
 CubicCurveseg() {
@@ -1094,17 +1093,6 @@ CubicCurveseg(const LMatrix4f &basis) {
   Bz = basis.get_col(2);
   Bw = basis.get_col(3);
   rational = true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CubicCurveseg::Constructor
-//       Access: Public
-//  Description: Creates the curveseg as a Hermite segment.
-////////////////////////////////////////////////////////////////////
-CubicCurveseg::
-CubicCurveseg(const HermiteCurveCV &cv0,
-	      const HermiteCurveCV &cv1) {
-  hermite_basis(cv0, cv1);
 }
 
 
@@ -1136,7 +1124,7 @@ CubicCurveseg(int order, const double knots[], const LVector4f cvs[]) {
 //     Function: CubicCurveseg::get_point
 //       Access: Public, Scheme, Virtual
 //  Description: Computes the surface point at a given parametric
-//               point t.  
+//               point t.
 ////////////////////////////////////////////////////////////////////
 bool CubicCurveseg::
 get_point(double t, LVector3f &point) const {
@@ -1183,36 +1171,6 @@ get_2ndtangent(double t, LVector3f &tangent2) const {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CubicCurveseg::hermite_basis
-//       Access: Public
-//  Description: Defines the curve segment as a Hermite.  This only
-//               sets up the basis vectors, so the curve will be
-//               computed correctly; it does not retain the CV's.
-////////////////////////////////////////////////////////////////////
-void CubicCurveseg::
-hermite_basis(const HermiteCurveCV &cv0,
-	      const HermiteCurveCV &cv1,
-	      double tlength) {
-  static LMatrix4f 
-    Mh(2, -3, 0, 1,
-       -2, 3, 0, 0,
-       1, -2, 1, 0,
-       1, -1, 0, 0);
-
-  LVector4f Gx(cv0._p[0], cv1._p[0],
-	    cv0._out[0]*tlength, cv1._in[0]*tlength);
-  LVector4f Gy(cv0._p[1], cv1._p[1],
-	    cv0._out[1]*tlength, cv1._in[1]*tlength);
-  LVector4f Gz(cv0._p[2], cv1._p[2], 
-	    cv0._out[2]*tlength, cv1._in[2]*tlength);
-
-  Bx = Gx * Mh;
-  By = Gy * Mh;
-  Bz = Gz * Mh;
-  rational = false;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CubicCurveseg::bezier_basis
 //       Access: Public
 //  Description: Defines the curve segment as a Bezier.  This only
@@ -1221,7 +1179,7 @@ hermite_basis(const HermiteCurveCV &cv0,
 ////////////////////////////////////////////////////////////////////
 void CubicCurveseg::
 bezier_basis(const BezierSeg &seg) {
-  static LMatrix4f 
+  static LMatrix4f
     Mb(-1, 3, -3, 1,
        3, -6, 3, 0,
        -3, 3, 0, 0,
@@ -1295,7 +1253,7 @@ nurbs_blending_function(int order, int i, int j,
 }
 
 void
-compute_nurbs_basis(int order, 
+compute_nurbs_basis(int order,
 		    const double knots_in[],
 		    LMatrix4f &basis) {
   int i;
@@ -1331,7 +1289,7 @@ compute_nurbs_basis(int order,
     basis.set_row(i, LVector4f::zero());
   }
 }
-  
+
 
 
 ////////////////////////////////////////////////////////////////////
@@ -1402,14 +1360,14 @@ GetBezierSeg(BezierSeg &seg) const {
 
 
 // We need this operator since Performer didn't supply it.
-inline LVector4f 
+inline LVector4f
 operator * (const LMatrix4f &M, const LVector4f &v) {
   return LVector4f(M(0,0)*v[0] + M(0,1)*v[1] + M(0,2)*v[2] + M(0,3)*v[3],
 		M(1,0)*v[0] + M(1,1)*v[1] + M(1,2)*v[2] + M(1,3)*v[3],
 		M(2,0)*v[0] + M(2,1)*v[1] + M(2,2)*v[2] + M(2,3)*v[3],
 		M(3,0)*v[0] + M(3,1)*v[1] + M(3,2)*v[2] + M(3,3)*v[3]);
 }
-		
+
 ////////////////////////////////////////////////////////////////////
 //     Function: compute_seg_col
 //  Description: Interprets the parameters for a particular column of
@@ -1419,7 +1377,7 @@ operator * (const LMatrix4f &M, const LVector4f &v) {
 static bool
 compute_seg_col(int c,
 		int rtype, double t, const LVector4f &v,
-		const LMatrix4f &B, 
+		const LMatrix4f &B,
 		const LMatrix4f &Bi,
 		const LMatrix4f &G,
 		const LMatrix4f &GB,
@@ -1439,7 +1397,7 @@ compute_seg_col(int c,
       P.set_col(c, v);
     }
     break;
-    
+
     // RT_tangent defines the tangent to the curve at t.  This is
     // the vector [ 3t^2 2t 1 0 ].
   case RT_TANGENT:
@@ -1451,7 +1409,7 @@ compute_seg_col(int c,
       P.set_col(c, v);
     }
     break;
-    
+
     // RT_cv defines the cth control point.  This is the cth column
     // vector from Bi.
   case RT_CV:
@@ -1462,7 +1420,7 @@ compute_seg_col(int c,
       P.set_col(c, v);
     }
     break;
-    
+
   default:
     cerr << "Invalid rebuild type in compute_seg\n";
     return false;
@@ -1527,7 +1485,7 @@ compute_seg(int rtype0, double t0, const LVector4f &v0,
 	    int rtype1, double t1, const LVector4f &v1,
 	    int rtype2, double t2, const LVector4f &v2,
 	    int rtype3, double t3, const LVector4f &v3,
-	    const LMatrix4f &B, 
+	    const LMatrix4f &B,
 	    const LMatrix4f &Bi,
 	    LMatrix4f &G) {
 
@@ -1582,7 +1540,7 @@ compute_seg(int rtype0, double t0, const LVector4f &v0,
 ////////////////////////////////////////////////////////////////////
 //     Function: CubicCurveseg::Destructor
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CubicCurveseg::
 ~CubicCurveseg() {

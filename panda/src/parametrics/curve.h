@@ -1,9 +1,9 @@
 // Filename: curve.h
 // Created by:  drose (14Mar97)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 // Copyright (C) 1992,93,94,95,96,97  Walt Disney Imagineering, Inc.
-// 
+//
 // These  coded  instructions,  statements,  data   structures   and
 // computer  programs contain unpublished proprietary information of
 // Walt Disney Imagineering and are protected by  Federal  copyright
@@ -16,7 +16,7 @@
 #define CURVE_H
 
 ////////////////////////////////////////////////////////////////////
-// Includes 
+// Includes
 ////////////////////////////////////////////////////////////////////
 
 #include "pandabase.h"
@@ -32,7 +32,7 @@ using namespace std;
 
 
 ////////////////////////////////////////////////////////////////////
-// Defines 
+// Defines
 ////////////////////////////////////////////////////////////////////
 
 // Parametric curve semantic types.  A parametric curve may have one
@@ -71,8 +71,6 @@ END_PUBLISH //]
 
 
 class ParametricCurveDrawer;
-class HermiteCurveCV;
-class HermiteCurve;
 class NurbsCurve;
 
 
@@ -102,10 +100,9 @@ PUBLISHED:
 
   float calc_length() const;
   float calc_length(double from, double to) const;
-  double compute_t(double start_t, double length_offset, double guess, 
+  double compute_t(double start_t, double length_offset, double guess,
 		   double threshold) const;
 
-  ////bool convert_to_hermite(HermiteCurve &hc) const;
   bool convert_to_nurbs(NurbsCurve &nc) const;
 
   void ascii_draw() const;
@@ -130,7 +127,7 @@ public:
 
   ParametricCurve();
 
-  virtual void write_datagram(BamWriter *, Datagram &); 
+  virtual void write_datagram(BamWriter *, Datagram &);
 
   virtual bool GetBezierSegs(BezierSegs &) const {
     return false;
@@ -170,7 +167,7 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
- 
+
 private:
   static TypeHandle _type_handle;
 };
@@ -198,11 +195,11 @@ PUBLISHED:
   virtual bool get_pt(double t, LVector3f &point, LVector3f &tangent) const;
   virtual bool get_2ndtangent(double t, LVector3f &tangent2) const;
 
-  bool adjust_point(double t, 
+  bool adjust_point(double t,
 		       float px, float py, float pz);
-  bool adjust_tangent(double t, 
+  bool adjust_tangent(double t,
 			 float tx, float ty, float tz);
-  bool adjust_pt(double t, 
+  bool adjust_pt(double t,
 		    float px, float py, float pz,
 		    float tx, float ty, float tz);
 
@@ -219,7 +216,7 @@ public:
 
   bool remove_curveseg(int ti);
   void remove_all_curvesegs();
-  
+
   double get_tlength(int ti) const;
   double get_tstart(int ti) const;
   double get_tend(int ti) const;
@@ -272,13 +269,13 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
- 
+
 private:
   static TypeHandle _type_handle;
 };
 
 
-  
+
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : CubicCurveseg
@@ -322,19 +319,14 @@ PUBLISHED:
 public:
   CubicCurveseg();
   CubicCurveseg(const LMatrix4f &basis);
-  CubicCurveseg(const HermiteCurveCV &cv0,
-		const HermiteCurveCV &cv1);
   CubicCurveseg(const BezierSeg &seg);
   CubicCurveseg(int order, const double knots[], const LVector4f cvs[]);
 
-  void hermite_basis(const HermiteCurveCV &cv0,
-		     const HermiteCurveCV &cv1,
-		     double tlength = 1.0);
   void bezier_basis(const BezierSeg &seg);
   void nurbs_basis(int order, const double knots[], const LVector4f cvs[]);
 
   // evaluate_point() and evaluate_vector() both evaluate the curve at
-  // a given point by applying the basis vector against the vector 
+  // a given point by applying the basis vector against the vector
   // [t3 t2 t 1] (or some derivative).  The difference between the
   // two is that evaluate_point() is called only with the vector
   // [t3 t2 t 1] and computes a point in three-space and will scale by
@@ -363,7 +355,7 @@ public:
 			     int rtype1, double t1, const LVector4f &v1,
 			     int rtype2, double t2, const LVector4f &v2,
 			     int rtype3, double t3, const LVector4f &v3,
-			     const LMatrix4f &B, 
+			     const LMatrix4f &B,
 			     const LMatrix4f &Bi,
 			     LMatrix4f &G);
 
@@ -387,14 +379,14 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
- 
+
 private:
   static TypeHandle _type_handle;
 };
 
 // This function is used internally to build the NURBS basis matrix
 // based on a given knot sequence.
-void compute_nurbs_basis(int order, 
+void compute_nurbs_basis(int order,
 			 const double knots_in[],
 			 LMatrix4f &basis);
 
