@@ -89,6 +89,10 @@ public:
                                PathConvert path_convert);
 
 
+  // Set this true to treat errors as warnings and generate output
+  // anyway.
+  bool _allow_errors;
+
 protected:
   PathConvert _tpc;
   Filename _tpc_directory;

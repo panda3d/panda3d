@@ -28,6 +28,7 @@
 ////////////////////////////////////////////////////////////////////
 SomethingToEggConverter::
 SomethingToEggConverter() {
+  _allow_errors = false;
   _tpc = PC_absolute;
   _mpc = PC_absolute;
   _merge_externals = false;
@@ -43,6 +44,7 @@ SomethingToEggConverter() {
 ////////////////////////////////////////////////////////////////////
 SomethingToEggConverter::
 SomethingToEggConverter(const SomethingToEggConverter &copy) :
+  _allow_errors(copy._allow_errors),
   _tpc(copy._tpc),
   _tpc_directory(copy._tpc_directory),
   _mpc(copy._mpc),
@@ -124,7 +126,9 @@ handle_external_reference(EggGroupNode *egg_parent,
     if (!ext->convert_file(as_found)) {
       delete ext;
       nout << "Unable to read external reference: " << orig_filename << "\n";
-      _error = true;
+      if (!_allow_errors) {
+        _error = true;
+      }
       return false;
     }
 

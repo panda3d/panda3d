@@ -90,6 +90,7 @@ run() {
   converter.set_texture_path_convert(_texture_path_convert, _make_rel_dir);
   converter.set_model_path_convert(_model_path_convert, _make_rel_dir);
   converter._compose_transforms = _compose_transforms;
+  converter._allow_errors = _allow_errors;
 
   if (!converter.convert_flt(header)) {
     nout << "Errors in conversion.\n";

@@ -77,6 +77,7 @@ protected:
   bool _append_to_sys_paths;
 
   bool _merge_externals;
+  bool _allow_errors;
 };
 
 #endif

@@ -51,6 +51,11 @@ SomethingToEgg(const string &format_name,
      "Specify the coordinate system of the input " + _format_name +
      " file.  Normally, this can inferred from the file itself.");
 
+  add_option
+    ("ignore", "", 0,
+     "Ignore non-fatal errors and generate an egg file anyway.",
+     &SomethingToEgg::dispatch_none, &_allow_errors);
+
   _input_units = DU_invalid;
   _output_units = DU_invalid;
   _texture_path_convert = SomethingToEggConverter::PC_unchanged;

@@ -663,7 +663,9 @@ parse_comment(const string &comment, const string &name,
   if (p >= comment.length() || comment[p] != '{') {
     nout << "No opening brace in comment for "
          << name << "\n\n";
-    _error = true;
+    if (!_allow_errors) {
+      _error = true;
+    }
     return false;
   }
 
@@ -677,7 +679,9 @@ parse_comment(const string &comment, const string &name,
   if (q == p) {
     nout << "No closing brace in comment for "
          << name << "\n\n";
-    _error = true;
+    if (!_allow_errors) {
+      _error = true;
+    }
     return false;
   }
 
@@ -686,7 +690,9 @@ parse_comment(const string &comment, const string &name,
   if (!egg_node->parse_egg(egg_syntax)) {
     nout << "Syntax error in comment for "
          << name << "\n\n";
-    _error = true;
+    if (!_allow_errors) {
+      _error = true;
+    }
     return false;
   }
 
