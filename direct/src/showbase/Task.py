@@ -272,10 +272,10 @@ from ShowBaseGlobal import * # to get taskMgr, and run()
 
 # sequence
 
-def seq1(self):
+def seq1(state):
     print 'seq1'
     return Task.done
-def seq2(self):
+def seq2(state):
     print 'seq2'
     return Task.done
 
@@ -286,13 +286,13 @@ run()
 
 # timeline
 
-def keyframe1(self):
+def keyframe1(state):
     print 'keyframe1'
     return Task.done
-def keyframe2(self):
+def keyframe2(state):
     print 'keyframe2'
     return Task.done
-def keyframe3(self):
+def keyframe3(state):
     print 'keyframe3'
     return Task.done
     
@@ -307,7 +307,7 @@ run()
 
 # do later - returns a sequence
 
-def foo(self):
+def foo(state):
     print 'later...'
     return Task.done
 
@@ -319,12 +319,12 @@ run()
 
 someValue = 1
 
-def func(self):
-    if (self.someValue > 10):
+def func(state):
+    if (state.someValue > 10):
         print 'true!'
         return Task.done
     else:
-        self.someValue = self.someValue + 1
+        state.someValue = state.someValue + 1
         return Task.cont
 
 task = Task.Task(func)

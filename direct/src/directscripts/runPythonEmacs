@@ -1,7 +1,5 @@
 #! /bin/sh
 
-### NOTE: YOU MUST UPDATE THE PATHS TO YOUR HOME DIRECTORY AND EMACS BELOW
-
 # Under Windows/Cygwin, we have to de-cygwinify the semicolon 
 # separated PYTHONPATH
 
@@ -38,15 +36,14 @@ if [ "$TOONTOWN" ]; then
 fi
 
 # Export the proper home environment variable
-HOME="C:\Cygwin\usr\YOUR_HOME_DIR_HERE"
+HOME=`cygpath -w $HOME`
 export HOME
 
 # Now start up emacs
-# UPDATE THE PATH TO YOUR COPY OF EMACS HERE
 if [ "$1" != "" ]; then
-    exec "C:\Program Files\emacs-20.7\bin\runemacs" $1
+    exec runemacs $1
 else
-    exec "C:\Program Files\emacs-20.7\bin\runemacs"
+    exec runemacs
 fi
 
 
