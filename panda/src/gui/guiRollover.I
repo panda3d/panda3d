@@ -8,9 +8,11 @@ INLINE GuiRollover::GuiRollover(void) {
 
 INLINE void GuiRollover::enter(void) {
   if (_state) {
+#ifdef _DEBUG
     if (gui_cat->is_debug())
       gui_cat->debug() << "entered '" << *this
 		       << "' more then once without exit" << endl;
+#endif
   } else if (_mgr != (GuiManager*)0L) {
     _mgr->remove_label(_off);
     if (_alt_root.is_null())
@@ -23,9 +25,11 @@ INLINE void GuiRollover::enter(void) {
 
 INLINE void GuiRollover::exit(void) {
   if (!_state) {
+#ifdef _DEBUG
     if (gui_cat->is_debug())
       gui_cat->debug() << "exited '" << *this
 		       << "' more then once without enter" << endl;
+#endif
   } else if (_mgr != (GuiManager*)0L) {
     _mgr->remove_label(_on);
     if (_alt_root.is_null())

@@ -58,12 +58,16 @@ void GuiSign::unmanage(void) {
 }
 
 int GuiSign::freeze() {
+#ifdef _DEBUG
   gui_cat->spam() << "GuiSign::freeze (" << this->get_name() << ")" << endl;
+#endif
   return _sign->freeze();
 }
 
 int GuiSign::thaw() {
+#ifdef _DEBUG
   gui_cat->spam() << "GuiSign::thaw (" << this->get_name() << ")" << endl;
+#endif
   return _sign->thaw();
 }
 

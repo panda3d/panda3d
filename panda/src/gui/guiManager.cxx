@@ -22,21 +22,27 @@ GuiManager* GuiManager::get_ptr(GraphicsWindow* w, MouseAndKeyboard* mak,
 				Node *root2d) {
   GuiManager* ret;
   if (_map == (GuiMap*)0L) {
+#ifdef _DEBUG
     if (gui_cat->is_debug())
       gui_cat->debug() << "allocating a manager map" << endl;
+#endif
     _map = new GuiMap;
   }
   GuiMap::const_iterator gi;
   gi = _map->find(w);
   if (gi != _map->end()) {
     ret = (*gi).second;
+#ifdef _DEBUG
     if (gui_cat->is_debug())
       gui_cat->debug() << "a manager for this window already exists (0x"
 		       << (void*)ret << ")" << endl;
+#endif
   } else {
     // going to allocate a new GuiManager for this window
+#ifdef _DEBUG
     if (gui_cat->is_debug())
       gui_cat->debug() << "allocating a new manager for this window" << endl;
+#endif
     // first see if there is a mouseWatcher already under the MouseAndKeyboard
     bool has_watcher = false;
     TypeHandle dgt = DataRelation::get_class_type();
@@ -50,8 +56,10 @@ GuiManager* GuiManager::get_ptr(GraphicsWindow* w, MouseAndKeyboard* mak,
     if (!has_watcher) {
       // there isn't already a mousewatcher in the data graph, so we'll make
       // one and re-parent everything to it.
+#ifdef _DEBUG
       if (gui_cat->is_debug())
 	gui_cat->debug() << "no MouseWatcher found, making one" << endl;
+#endif
       watcher = new MouseWatcher("GUI watcher");
       DataRelation* tmp = new DataRelation(mak, watcher);
       for (int j=0; j<mak->get_num_children(dgt); ++j) {
@@ -60,29 +68,38 @@ GuiManager* GuiManager::get_ptr(GraphicsWindow* w, MouseAndKeyboard* mak,
 	  // it's not the node we just created, so reparent it to ours
 	  rel->change_parent(watcher);
       }
-    } else if (gui_cat->is_debug())
+    } else {
+      if (gui_cat->is_debug())
       gui_cat->debug() << "found a MouseWatcher, don't have to make one"
 		       << endl;
+    }
     // now setup event triggers for the watcher
-    if (has_watcher && !watcher->get_button_down_pattern().empty())
+#ifdef _DEBUG
+    if (has_watcher && !watcher->get_button_down_pattern().empty()) {
       gui_cat->warning() << "overwriting existing button down pattern '"
 			 << watcher->get_button_down_pattern()
 			 << "' with 'gui-%r-%b'" << endl;
-    watcher->set_button_down_pattern("gui-%r-%b");
-    if (has_watcher && !watcher->get_button_up_pattern().empty())
+    }
+    if (has_watcher && !watcher->get_button_up_pattern().empty()) {
       gui_cat->warning() << "overwriting existing button up pattern '"
 			 << watcher->get_button_up_pattern()
 			 << "' with 'gui-%r-%b-up'" << endl;
-    watcher->set_button_up_pattern("gui-%r-%b-up");
-    if (has_watcher && !watcher->get_enter_pattern().empty())
+    }
+    if (has_watcher && !watcher->get_enter_pattern().empty()) {
       gui_cat->warning() << "overwriting existing enter pattern '"
 			 << watcher->get_enter_pattern()
 			 << "' with 'gui-in-%r'" << endl;
-    watcher->set_enter_pattern("gui-in-%r");
-    if (has_watcher && !watcher->get_leave_pattern().empty())
+    }
+
+    if (has_watcher && !watcher->get_leave_pattern().empty()) {
       gui_cat->warning() << "overwriting existing exit pattern '"
 			 << watcher->get_leave_pattern()
 			 << "' with 'gui-out-%r'" << endl;
+    }
+#endif
+    watcher->set_button_down_pattern("gui-%r-%b");
+    watcher->set_button_up_pattern("gui-%r-%b-up");
+    watcher->set_enter_pattern("gui-in-%r");
     watcher->set_leave_pattern("gui-out-%r");
 
     if (root2d == (Node *)NULL) {
@@ -110,15 +127,19 @@ GuiManager* GuiManager::get_ptr(GraphicsWindow* w, MouseAndKeyboard* mak,
       DisplayRegion *dr = layer->make_display_region();
       nassertr(dr != (DisplayRegion*)0L, NULL);
       dr->set_camera(cam);
+#ifdef _DEBUG
       if (gui_cat->is_debug())
 	gui_cat->debug() << "2D layer created" << endl;
+#endif
     }
 
     // now make the manager for this window
     ret = new GuiManager(watcher, root2d);
+#ifdef _DEBUG
     if (gui_cat->is_debug())
       gui_cat->debug() << "new manager allocated (0x" << (void*)ret << ")"
 		       << endl;
+#endif
     (*_map)[w] = ret;
   }
   return ret;

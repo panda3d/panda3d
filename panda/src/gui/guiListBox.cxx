@@ -44,8 +44,10 @@ void GuiListBox::recompute_frame(void) {
       tp = frm[3];
     (*i)->freeze();
     int lvl = (*i)->thaw();
+#ifdef _DEBUG
     gui_cat->debug() << "in recompute: freeze lvl (" << (*i)->get_name()
 		     << ") = " << lvl << endl;
+#endif
   }
   _left = lft;
   _right = rgt;

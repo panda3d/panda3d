@@ -38,10 +38,11 @@ inline void GetExtents(GuiLabel* x, GuiLabel* y, float& l, float& r, float& b,
 static void enter_rollover(CPT_Event e) {
   GuiRollover* val = find_in_rollovers_map(e->get_name());
   if (val == (GuiRollover *)NULL) {
-    if (gui_cat.is_debug()) {
+#ifdef _DEBUG
+    if (gui_cat.is_debug())
       gui_cat.debug()
 	<< "Ignoring event " << e->get_name() << " for deleted rollover\n";
-    }
+#endif
     return;
   }
   val->enter();
@@ -50,10 +51,11 @@ static void enter_rollover(CPT_Event e) {
 static void exit_rollover(CPT_Event e) {
   GuiRollover* val = find_in_rollovers_map(e->get_name());
   if (val == (GuiRollover *)NULL) {
-    if (gui_cat.is_debug()) {
+#ifdef _DEBUG
+    if (gui_cat.is_debug())
       gui_cat.debug()
 	<< "Ignoring event " << e->get_name() << " for deleted rollover\n";
-    }
+#endif
     return;
   }
   val->exit();
