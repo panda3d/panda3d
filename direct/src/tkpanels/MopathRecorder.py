@@ -784,9 +784,7 @@ class MopathRecorder(AppShell, PandaObject):
     def extractPointSetFromCurveCollection(self):
         # Use curve to compute new point set
         # Record maxT
-        print 'before', self.maxT
         self.maxT = self.curveCollection.getMaxT()
-        print 'after', self.maxT
         # Determine num samples
         # Limit point set to 1000 points and samples per second to 30
         samplesPerSegment = min(30.0, 1000.0/self.curveCollection.getMaxT())
