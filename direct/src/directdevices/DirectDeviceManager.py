@@ -6,6 +6,7 @@ from PandaModules import *
 ANALOG_MIN = -0.95
 ANALOG_MAX = 0.95
 ANALOG_DEADBAND = 0.125
+ANALOG_CENTER = 0.0
 
 try:
     myBase = base
@@ -97,6 +98,8 @@ class DirectAnalogs(AnalogNode, DirectObject):
                                                   ANALOG_MIN)
         self.analogMax = myBase.config.GetFloat('vrpn-analog-max',
                                                   ANALOG_MAX)
+        self.analogMax = myBase.config.GetFloat('vrpn-analog-center',
+                                                  ANALOG_CENTER)
         self.analogRange = self.analogMax - self.analogMin
 
     
@@ -114,7 +117,10 @@ class DirectAnalogs(AnalogNode, DirectObject):
     def disable(self):
         self.nodePath.reparentTo(myBase.dataUnused)
     
-    def normalize(self, val, minVal = -1, maxVal = 1):
+    def normalizeWithoutCentering(self, val, minVal = -1, maxVal = 1):
+        #
+        # This is the old code that doesn't incorporate the centering fix
+        #
         # First record sign
         if val < 0:
             sign = -1
@@ -122,12 +128,32 @@ class DirectAnalogs(AnalogNode, DirectObject):
             sign = 1
         # Zero out values in deadband
         val = sign * max(abs(val) - self.analogDeadband, 0.0)
-        # Now clamp value between minVal and maxVal
+        # Clamp value between analog range min and max and scale about center
         val = min( max( val, self.analogMin ), self.analogMax )
-#        val = CLAMP(val, self.analogMin, self.analogMax)
+        # Normalize values to given minVal and maxVal range
         return (((maxVal - minVal) *
                  ((val - self.analogMin) / self.analogRange)) + minVal)
-    
+
+
+    def normalize(self, val, minVal = -1, maxVal = 1):
+        max = self.analogMax
+        min = self.analogMin
+        center = self.analogCenter
+        deadband = self.analogDeadband
+        range = self.analogRange
+        # Clamp value between min and max and scale around center
+        if (val >= center):
+            val = (val - center) / (max - center)
+        else:
+            val = (val - center) / (center - min)            
+        # Zero out values in deadband
+        if (abs(val) <= deadband):
+            val = 0.0
+        # Normalize values to given minVal and maxVal range
+        return (((maxVal - minVal) *
+                 ((val - min) / range)) + minVal)
+
+            
     def normalizeChannel(self, chan, minVal = -1, maxVal = 1):
         try:
             return self.normalize(self[chan], minVal, maxVal)
