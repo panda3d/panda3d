@@ -43,7 +43,7 @@
     // This library is on a metalib, so we can't build it, but we
     // should build all the obj's that go into it.
     #set deferred_objs $[deferred_objs] \
-      $[patsubst %.c %.cxx %.yxx %.lxx,$[so_dir]/%.obj,%,,$[get_sources] $[get_igateoutput]]
+      $[patsubst %.c %.cxx %.yxx %.lxx,$[so_dir]\%.obj,%,,$[get_sources] $[get_igateoutput]]
   #endif
 #end lib_target
 
@@ -53,12 +53,12 @@
 // $[bin_targets] the list of binaries.  $[test_bin_targets] is the
 // list of binaries that are to be built only when specifically asked
 // for.
-#define lib_targets $[patsubst %,$[so_dir]/lib%$[dllext].dll,$[TARGET(metalib_target noinst_lib_target)] $[real_lib_targets]]
-#define static_lib_targets $[TARGET(static_lib_target):%=$[st_dir]/lib%$[dllext].lib]
+#define lib_targets $[patsubst %,$[so_dir]\lib%$[dllext].dll,$[TARGET(metalib_target noinst_lib_target)] $[real_lib_targets]]
+#define static_lib_targets $[TARGET(static_lib_target):%=$[st_dir]\lib%$[dllext].lib]
 #define bin_targets \
-    $[TARGET(bin_target noinst_bin_target):%=$[st_dir]/%.exe] \
-    $[TARGET(sed_bin_target):%=$[st_dir]/%]
-#define test_bin_targets $[TARGET(test_bin_target):%=$[st_dir]/%.exe]
+    $[TARGET(bin_target noinst_bin_target):%=$[st_dir]\%.exe] \
+    $[TARGET(sed_bin_target):%=$[st_dir]\%]
+#define test_bin_targets $[TARGET(test_bin_target):%=$[st_dir]\%.exe]
 
 // And these variables will define the various things we need to
 // install.
@@ -121,11 +121,11 @@
 // each directory named in the $[complete_local_libs], above, plus
 // whatever else the user might have explicitly named in
 // $[LOCAL_INCS].
-#defer complete_ipath $[all_libs $[RELDIR],$[complete_local_libs]] $[RELDIR($[LOCAL_INCS:%=%/])]
+#defer complete_ipath $[all_libs $[RELDIR],$[complete_local_libs]] $[RELDIR($[LOCAL_INCS:%=%\])]
 
 // $[target_ipath] is the proper ipath to put on the command line,
 // from the context of a particular target.
-#defer target_ipath $[other_trees:%=%/include] $[TOPDIR] $[sort $[complete_ipath]] $[get_ipath]
+#defer target_ipath $[other_trees:%=%\include] $[TOPDIR] $[sort $[complete_ipath]] $[get_ipath]
 
 // $[file_ipath] is the ipath from the context of a particular source
 // file, given in $[file].  It uses the all_sources map to look up
@@ -142,11 +142,11 @@
 
 // $[complete_lpath] is rather like $[complete_ipath]: the list of
 // directories (from within this tree) we should add to our -L list.
-#defer complete_lpath $[static_libs $[RELDIR:%=%/$[st_dir]],$[actual_local_libs]] $[dynamic_libs $[RELDIR:%=%/$[so_dir]],$[actual_local_libs]]
+#defer complete_lpath $[static_libs $[RELDIR:%=%\$[st_dir]],$[actual_local_libs]] $[dynamic_libs $[RELDIR:%=%\$[so_dir]],$[actual_local_libs]]
 
 // $[lpath] is like $[target_ipath]: it's the list of directories we
 // should add to our -L list, from the context of a particular target.
-#defer lpath $[other_trees:%=%/lib] $[sort $[complete_lpath]] $[get_lpath]
+#defer lpath $[other_trees:%=%\lib] $[sort $[complete_lpath]] $[get_lpath]
 
 // And $[libs] is the set of libraries we will link with.
 #defer libs $[unique $[actual_local_libs:%=%$[dllext]] $[patsubst %:c,,%:m %,%$[dllext],$[OTHER_LIBS]] $[get_libs]]
@@ -177,10 +177,10 @@ test : $[test_bin_targets]
 // It does assume that the odirs are not '.', however.
 clean :
 #if $[so_sources]
-	rm -rf $[so_dir]
+	rmdir /s /q $[so_dir]
 #endif
 #if $[st_sources]
-	rm -rf $[st_dir]
+	rmdir /s /q $[st_dir]
 #endif
 
 // 'cleanall' is not much more thorough than 'clean': At the moment,
@@ -188,21 +188,21 @@ clean :
 // dependency cache file.
 cleanall : clean
 #if $[yxx_so_sources] $[yxx_st_sources] $[lxx_so_sources] $[lxx_st_sources]
-	rm -f $[patsubst %.yxx %.lxx,%.cxx,$[yxx_so_sources] $[yxx_st_sources] $[lxx_so_sources] $[lxx_st_sources]]
+	del /f $[patsubst %.yxx %.lxx,%.cxx,$[yxx_so_sources] $[yxx_st_sources] $[lxx_so_sources] $[lxx_st_sources]]
 #endif
 #if $[ne $[DEPENDENCY_CACHE_FILENAME],]
-	rm -f $[DEPENDENCY_CACHE_FILENAME]
+	del /f $[DEPENDENCY_CACHE_FILENAME]
 #endif
 
 // Now, 'install' and 'uninstall'.  These simply copy files into the
 // install directory (or remove them).  The 'install' rule also makes
 // the directories if necessary.
 #define installed_files \
-     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
-     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
-     $[INSTALL_PARSER_INC:%=$[install_parser_inc_dir]/%] \
-     $[INSTALL_DATA:%=$[install_data_dir]/%] \
-     $[INSTALL_CONFIG:%=$[install_config_dir]/%]
+     $[INSTALL_SCRIPTS:%=$[install_bin_dir]\%] \
+     $[INSTALL_HEADERS:%=$[install_headers_dir]\%] \
+     $[INSTALL_PARSER_INC:%=$[install_parser_inc_dir]\%] \
+     $[INSTALL_DATA:%=$[install_data_dir]\%] \
+     $[INSTALL_CONFIG:%=$[install_config_dir]\%]
 
 #define install_targets \
      $[sort \
@@ -217,11 +217,12 @@ cleanall : clean
      $[TARGET(metalib_target lib_target static_lib_target):%=install-lib%] \
      $[TARGET(bin_target):%=install-%] \
      $[installed_files]
+
 install : all $[install_targets]
 
 uninstall : $[TARGET(metalib_target lib_target static_lib_target):%=uninstall-lib%] $[TARGET(bin_target):%=uninstall-%]
 #if $[installed_files]
-	rm -f $[sort $[installed_files]]
+	del /f $[sort $[installed_files]]
 #endif
 
 
@@ -239,9 +240,8 @@ uninstall : $[TARGET(metalib_target lib_target static_lib_target):%=uninstall-li
     $[if $[install_config],$[install_config_dir]] \
     $[if $[install_igatedb],$[install_igatedb_dir]] \
     ]
-$[directory] :
-	@test -d $[directory] || echo mkdir -p $[directory]
-	@test -d $[directory] || mkdir -p $[directory]
+$[osfilename $[directory]] :
+	mkdir $[osfilename $[directory]]
 #end directory
 
 
@@ -288,17 +288,17 @@ $[directory] :
 // component libraries.  If it is nonempty, then we do need to
 // generate a module, and $[igatemout] is the name of the .cxx file
 // that interrogate will produce to make this module.
-#define igatemscan $[components $[get_igatedb:%=$[RELDIR]/$[so_dir]/%],$[active_component_libs]]
+#define igatemscan $[components $[get_igatedb:%=$[RELDIR]\$[so_dir]\%],$[active_component_libs]]
 #define igatemout $[if $[igatemscan],lib$[TARGET]_module.cxx]
 
 #if $[build_it]
   // Now output the rule to actually link the library from all of its
   // various .obj files.
   #define sources \
-   $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]/%.obj,%,,$[get_sources] $[igateoutput] $[igatemout]]] \
-   $[components $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[RELDIR]/$[so_dir]/%.obj,%,,$[get_sources] $[get_igateoutput]]],$[active_component_libs]]
-lib_$[TARGET]_so = $[sources]
-  #define target $[so_dir]/lib$[TARGET]$[dllext].dll
+   $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]\%.obj,%,,$[get_sources] $[igateoutput] $[igatemout]]] \
+   $[components $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[RELDIR]\$[so_dir]\%.obj,%,,$[get_sources] $[get_igateoutput]]],$[active_component_libs]]
+lib_$[TARGET]_so = $[osfilename $[sources]]
+  #define target $[so_dir]\lib$[TARGET]$[dllext].dll
   #define sources $(lib_$[TARGET]_so)
 $[target] : $[sources]
   #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
@@ -312,31 +312,31 @@ $[target] : $[sources]
 // everything that goes along with it.
 #define installed_files \
     $[if $[build_it], \
-      $[install_lib_dir]/lib$[TARGET]$[dllext].dll \
-      $[install_lib_dir]/lib$[TARGET]$[dllext].lib \
+      $[install_lib_dir]\lib$[TARGET]$[dllext].dll \
+      $[install_lib_dir]\lib$[TARGET]$[dllext].lib \
     ] \
-    $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
-    $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
-    $[INSTALL_DATA:%=$[install_data_dir]/%] \
-    $[INSTALL_CONFIG:%=$[install_config_dir]/%] \
-    $[igatedb:%=$[install_igatedb_dir]/%]
+    $[INSTALL_SCRIPTS:%=$[install_bin_dir]\%] \
+    $[INSTALL_HEADERS:%=$[install_headers_dir]\%] \
+    $[INSTALL_DATA:%=$[install_data_dir]\%] \
+    $[INSTALL_CONFIG:%=$[install_config_dir]\%] \
+    $[igatedb:%=$[install_igatedb_dir]\%]
 
 install-lib$[TARGET] : $[installed_files]
 
 uninstall-lib$[TARGET] :
 #if $[installed_files]
-	rm -f $[sort $[installed_files]]
+	del /f $[sort $[installed_files]]
 #endif
 
-$[install_lib_dir]/lib$[TARGET]$[dllext].dll : $[so_dir]/lib$[TARGET]$[dllext].dll
+$[install_lib_dir]\lib$[TARGET]$[dllext].dll : $[so_dir]\lib$[TARGET]$[dllext].dll
 #define local lib$[TARGET]$[dllext].dll
 #define dest $[install_lib_dir]
-	cd ./$[so_dir]; $[INSTALL]
+	copy $[so_dir]\$[local] $[dest]
 
-$[install_lib_dir]/lib$[TARGET]$[dllext].lib : $[so_dir]/lib$[TARGET]$[dllext].lib
+$[install_lib_dir]\lib$[TARGET]$[dllext].lib : $[so_dir]\lib$[TARGET]$[dllext].lib
 #define local lib$[TARGET]$[dllext].lib
 #define dest $[install_lib_dir]
-	cd ./$[so_dir]; $[INSTALL]
+	copy $[so_dir]\$[local] $[dest]
 
 #if $[igatescan]
 // Now, some additional rules to generate and compile the interrogate
@@ -351,19 +351,19 @@ $[install_lib_dir]/lib$[TARGET]$[dllext].lib : $[so_dir]/lib$[TARGET]$[dllext].l
   #define igatemod $[TARGET]
 #endif
 
-$[install_igatedb_dir]/$[igatedb] : $[so_dir]/$[igatedb]
+$[install_igatedb_dir]\$[igatedb] : $[so_dir]\$[igatedb]
 #define local $[igatedb]
 #define dest $[install_igatedb_dir]
-	cd ./$[so_dir]; $[INSTALL]
+	copy $[so_dir]\$[local] $[dest]
 
-lib$[TARGET]_igatescan = $[igatescan]
-$[so_dir]/$[igatedb] $[so_dir]/$[igateoutput] : $[filter-out .c .cxx,$[igatescan]]
-	interrogate -od $[so_dir]/$[igatedb] -oc $[so_dir]/$[igateoutput] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $(lib$[TARGET]_igatescan)
+lib$[TARGET]_igatescan = $[osfilename $[igatescan]]
+$[so_dir]\$[igatedb] $[so_dir]\$[igateoutput] : $[filter-out .c .cxx,$[igatescan]]
+	interrogate -od $[so_dir]\$[igatedb] -oc $[so_dir]\$[igateoutput] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $(lib$[TARGET]_igatescan)
 
-#define target $[igateoutput:%.cxx=$[so_dir]/%.obj]
-#define source $[so_dir]/$[igateoutput]
+#define target $[igateoutput:%.cxx=$[so_dir]\%.obj]
+#define source $[so_dir]\$[igateoutput]
 #define ipath . $[target_ipath]
-#define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=-D%]
+#define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]
 $[target] : $[source]
 	$[COMPILE_C++]
 #endif  // $[igatescan]
@@ -376,16 +376,16 @@ $[target] : $[source]
 #define igatelib lib$[TARGET]
 #define igatemod $[TARGET]
 
-lib$[TARGET]_igatemscan = $[igatemscan]
-#define target $[so_dir]/$[igatemout]
+lib$[TARGET]_igatemscan = $[osfilename $[igatemscan]]
+#define target $[so_dir]\$[igatemout]
 #define sources $(lib$[TARGET]_igatemscan)
 $[target] : $[sources]
 	interrogate_module -oc $[target] -module "$[igatemod]" -library "$[igatelib]" -python $[sources]
 
-#define target $[igatemout:%.cxx=$[so_dir]/%.obj]
-#define source $[so_dir]/$[igatemout]
+#define target $[igatemout:%.cxx=$[so_dir]\%.obj]
+#define source $[so_dir]\$[igatemout]
 #define ipath . $[target_ipath]
-#define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=-D%]
+#define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]
 $[target] : $[source]
 	$[COMPILE_C++]
 #endif  // $[igatescan]
@@ -404,8 +404,8 @@ $[target] : $[source]
 /////////////////////////////////////////////////////////////////////
 
 #forscopes noinst_lib_target
-lib_$[TARGET]_so = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]/%.obj,%,,$[get_sources]]]
-#define target $[so_dir]/lib$[TARGET]$[dllext].dll
+lib_$[TARGET]_so = $[osfilename $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]\%.obj,%,,$[get_sources]]]]
+#define target $[so_dir]\lib$[TARGET]$[dllext].dll
 #define sources $(lib_$[TARGET]_so)
 $[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
@@ -425,8 +425,8 @@ $[target] : $[sources]
 /////////////////////////////////////////////////////////////////////
 
 #forscopes static_lib_target
-lib_$[TARGET]_a = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.obj,%,,$[get_sources]]]
-#define target $[st_dir]/lib$[TARGET]$[dllext].lib
+lib_$[TARGET]_a = $[osfilename $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]\%.obj,%,,$[get_sources]]]]
+#define target $[st_dir]\lib$[TARGET]$[dllext].lib
 #define sources $(lib_$[TARGET]_a)
 $[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
@@ -436,23 +436,23 @@ $[target] : $[sources]
 #endif
 
 #define installed_files \
-    $[install_lib_dir]/lib$[TARGET]$[dllext].lib \
-    $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
-    $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
-    $[INSTALL_DATA:%=$[install_data_dir]/%] \
-    $[INSTALL_CONFIG:%=$[install_config_dir]/%]
+    $[install_lib_dir]\lib$[TARGET]$[dllext].lib \
+    $[INSTALL_SCRIPTS:%=$[install_bin_dir]\%] \
+    $[INSTALL_HEADERS:%=$[install_headers_dir]\%] \
+    $[INSTALL_DATA:%=$[install_data_dir]\%] \
+    $[INSTALL_CONFIG:%=$[install_config_dir]\%]
 
 install-lib$[TARGET] : $[installed_files]
 
 uninstall-lib$[TARGET] :
 #if $[installed_files]
-	rm -f $[sort $[installed_files]]
+	del /f $[sort $[installed_files]]
 #endif
 
-$[install_lib_dir]/lib$[TARGET]$[dllext].lib : $[st_dir]/lib$[TARGET]$[dllext].lib
+$[install_lib_dir]\lib$[TARGET]$[dllext].lib : $[st_dir]\lib$[TARGET]$[dllext].lib
 #define local lib$[TARGET]$[dllext].lib
 #define dest $[install_lib_dir]
-	cd ./$[st_dir]; $[INSTALL]
+	copy $[st_dir]\$[local] $[dest]
 
 #end static_lib_target
 
@@ -465,26 +465,26 @@ $[install_lib_dir]/lib$[TARGET]$[dllext].lib : $[st_dir]/lib$[TARGET]$[dllext].l
 /////////////////////////////////////////////////////////////////////
 
 #forscopes sed_bin_target
-#define target $[st_dir]/$[TARGET]
+#define target $[st_dir]\$[TARGET]
 #define source $[SOURCE]
 $[target] : $[source]
 	$[SED] $[COMMAND] $[source] >$[target]
 	chmod +x $[target]
 
 #define installed_files \
-    $[install_bin_dir]/$[TARGET]
+    $[install_bin_dir]\$[TARGET]
 
 install-$[TARGET] : $[installed_files]
 
 uninstall-$[TARGET] :
 #if $[installed_files]
-	rm -f $[sort $[installed_files]]
+	del /f $[sort $[installed_files]]
 #endif
 
 #define local $[TARGET]
 #define dest $[install_bin_dir]
-$[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET]
-	cd ./$[st_dir]; $[INSTALL_PROG]
+$[install_bin_dir]\$[TARGET] : $[st_dir]\$[TARGET]
+	copy $[st_dir]\$[local] $[dest]
 
 #end sed_bin_target
 
@@ -495,8 +495,8 @@ $[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET]
 /////////////////////////////////////////////////////////////////////
 
 #forscopes bin_target
-bin_$[TARGET] = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.obj,%,,$[get_sources]]]
-#define target $[st_dir]/$[TARGET].exe
+bin_$[TARGET] = $[osfilename $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]\%.obj,%,,$[get_sources]]]]
+#define target $[st_dir]\$[TARGET].exe
 #define sources $(bin_$[TARGET])
 #define ld $[get_ld]
 $[target] : $[sources]
@@ -513,23 +513,23 @@ $[target] : $[sources]
 #endif
 
 #define installed_files \
-    $[install_bin_dir]/$[TARGET].exe \
-    $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
-    $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
-    $[INSTALL_DATA:%=$[install_data_dir]/%] \
-    $[INSTALL_CONFIG:%=$[install_config_dir]/%]
+    $[install_bin_dir]\$[TARGET].exe \
+    $[INSTALL_SCRIPTS:%=$[install_bin_dir]\%] \
+    $[INSTALL_HEADERS:%=$[install_headers_dir]\%] \
+    $[INSTALL_DATA:%=$[install_data_dir]\%] \
+    $[INSTALL_CONFIG:%=$[install_config_dir]\%]
 
 install-$[TARGET] : $[installed_files]
 
 uninstall-$[TARGET] :
 #if $[installed_files]
-	rm -f $[sort $[installed_files]]
+	del /f $[sort $[installed_files]]
 #endif
 
-$[install_bin_dir]/$[TARGET].exe : $[st_dir]/$[TARGET].exe
+$[install_bin_dir]\$[TARGET].exe : $[st_dir]\$[TARGET].exe
 #define local $[TARGET].exe
 #define dest $[install_bin_dir]
-	cd ./$[st_dir]; $[INSTALL_PROG]
+	copy $[st_dir]\$[local] $[dest]
 
 #end bin_target
 
@@ -541,8 +541,8 @@ $[install_bin_dir]/$[TARGET].exe : $[st_dir]/$[TARGET].exe
 /////////////////////////////////////////////////////////////////////
 
 #forscopes noinst_bin_target test_bin_target
-bin_$[TARGET] = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.obj,%,,$[get_sources]]]
-#define target $[st_dir]/$[TARGET]
+bin_$[TARGET] = $[osfilename $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]\%.obj,%,,$[get_sources]]]]
+#define target $[st_dir]\$[TARGET]
 #define sources $(bin_$[TARGET])
 $[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
@@ -567,8 +567,8 @@ $[target] : $[sources]
 #define source $[file]
 $[target] : $[source]
 	$[BISON] $[YFLAGS] -y $[if $[YACC_PREFIX],-d --name-prefix=$[YACC_PREFIX]] $[source]
-	mv y.tab.c $[target]
-	mv y.tab.h $[patsubst %.yxx,%.h,$[source]]
+	move y.tab.c $[target]
+	move y.tab.h $[patsubst %.yxx,%.h,$[source]]
 
 #end file
 
@@ -579,16 +579,16 @@ $[target] : $[source]
 $[target] : $[source]
 	$[FLEX] $[LFLAGS] $[if $[YACC_PREFIX],-P$[YACC_PREFIX]] -olex.yy.c $[source]
 	$[SED] '/#include <unistd.h>/d' lex.yy.c > $[target]
-	rm lex.yy.c
+	del lex.yy.c
 
 #end file
 
 // Rules to compile ordinary C files that appear on a shared library.
 #foreach file $[sort $[c_so_sources]]
-#define target $[patsubst %.c,$[so_dir]/%.obj,$[file]]
+#define target $[patsubst %.c,$[so_dir]\%.obj,$[file]]
 #define source $[file]
 #define ipath $[file_ipath]
-#define flags $[cflags] $[CFLAGS_SHARED] $[all_sources $[building_var:%=-D%],$[file]]
+#define flags $[cflags] $[CFLAGS_SHARED] $[all_sources $[building_var:%=/D%],$[file]]
 $[target] : $[source] $[dependencies $[source]]
 	$[COMPILE_C]
 
@@ -597,10 +597,10 @@ $[target] : $[source] $[dependencies $[source]]
 // Rules to compile ordinary C files that appear on a static library
 // or in an executable.
 #foreach file $[sort $[c_st_sources]]
-#define target $[patsubst %.c,$[st_dir]/%.obj,$[file]]
+#define target $[patsubst %.c,$[st_dir]\%.obj,$[file]]
 #define source $[file]
 #define ipath $[file_ipath]
-#define flags $[cflags] $[all_sources $[building_var:%=-D%],$[file]]
+#define flags $[cflags] $[all_sources $[building_var:%=/D%],$[file]]
 $[target] : $[source] $[dependencies $[source]]
 	$[COMPILE_C]
 
@@ -608,10 +608,10 @@ $[target] : $[source] $[dependencies $[source]]
 
 // Rules to compile C++ files that appear on a shared library.
 #foreach file $[sort $[cxx_so_sources]]
-#define target $[patsubst %.cxx,$[so_dir]/%.o,$[file]]
+#define target $[patsubst %.cxx,$[so_dir]\%.obj,$[file]]
 #define source $[file]
 #define ipath $[file_ipath]
-#define flags $[c++flags] $[CFLAGS_SHARED]
+#define flags $[c++flags] $[CFLAGS_SHARED] $[all_sources $[building_var:%=/D%],$[file]]
 // Yacc must run before some files can be compiled, so all files
 // depend on yacc having run.
 $[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.cxx]
@@ -622,10 +622,10 @@ $[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.cxx]
 // Rules to compile C++ files that appear on a static library or in an
 // executable.
 #foreach file $[sort $[cxx_st_sources]]
-#define target $[patsubst %.cxx,$[st_dir]/%.o,$[file]]
+#define target $[patsubst %.cxx,$[st_dir]\%.obj,$[file]]
 #define source $[file]
 #define ipath $[file_ipath]
-#define flags $[c++flags]
+#define flags $[c++flags] $[all_sources $[building_var:%=/D%],$[file]]
 $[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.cxx]
 	$[COMPILE_C++]
 
@@ -633,10 +633,10 @@ $[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.cxx]
 
 // Rules to compile generated C++ files that appear on a shared library.
 #foreach file $[sort $[yxx_so_sources] $[lxx_so_sources]]
-#define target $[patsubst %.lxx %.yxx,$[so_dir]/%.o,$[file]]
+#define target $[patsubst %.lxx %.yxx,$[so_dir]\%.obj,$[file]]
 #define source $[patsubst %.lxx %.yxx,%.cxx,$[file]]
 #define ipath $[file_ipath]
-#define flags $[noopt_c++flags] $[CFLAGS_SHARED]
+#define flags $[noopt_c++flags] $[CFLAGS_SHARED] $[all_sources $[building_var:%=/D%],$[file]]
 // Yacc must run before some files can be compiled, so all files
 // depend on yacc having run.
 $[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.cxx]
@@ -647,10 +647,10 @@ $[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.cxx]
 // Rules to compile generated C++ files that appear on a static
 // library or in an executable.
 #foreach file $[sort $[yxx_st_sources] $[lxx_st_sources]]
-#define target $[patsubst %.lxx %.yxx,$[st_dir]/%.o,$[file]]
+#define target $[patsubst %.lxx %.yxx,$[st_dir]\%.obj,$[file]]
 #define source $[patsubst %.lxx %.yxx,%.cxx,$[file]]
 #define ipath $[file_ipath]
-#define flags $[noopt_c++flags]
+#define flags $[noopt_c++flags] $[all_sources $[building_var:%=/D%],$[file]]
 $[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.cxx]
 	$[COMPILE_C++]
 
@@ -659,38 +659,38 @@ $[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.cxx]
 // And now the rules to install the auxiliary files, like headers and
 // data files.
 #foreach file $[install_scripts]
-$[install_bin_dir]/$[file] : $[file]
+$[install_bin_dir]\$[file] : $[file]
 #define local $[file]
 #define dest $[install_bin_dir]
-	$[INSTALL_PROG]
+	copy $[local] $[dest]
 #end file
 
 #foreach file $[install_headers]
-$[install_headers_dir]/$[file] : $[file]
+$[install_headers_dir]\$[file] : $[file]
 #define local $[file]
 #define dest $[install_headers_dir]
-	$[INSTALL]
+	copy $[local] $[dest]
 #end file
 
 #foreach file $[install_parser_inc]
-$[install_parser_inc_dir]/$[file] : $[file]
+$[install_parser_inc_dir]\$[file] : $[file]
 #define local $[file]
 #define dest $[install_parser_inc_dir]
-	$[INSTALL]
+	copy $[local] $[dest]
 #end file
 
 #foreach file $[install_data]
-$[install_data_dir]/$[file] : $[file]
+$[install_data_dir]\$[file] : $[file]
 #define local $[file]
 #define dest $[install_data_dir]
-	$[INSTALL]
+	copy $[local] $[dest]
 #end file
 
 #foreach file $[install_config]
-$[install_config_dir]/$[file] : $[file]
+$[install_config_dir]\$[file] : $[file]
 #define local $[file]
 #define dest $[install_config_dir]
-	$[INSTALL]
+	copy $[local] $[dest]
 #end file
 
 
@@ -748,46 +748,41 @@ all : $[subdirs]
 test : $[subdirs:%=test-%]
 clean : $[subdirs:%=clean-%]
 cleanall : $[subdirs:%=cleanall-%]
-install : $[if $[CONFIG_HEADER],$[install_headers_dir] $[install_headers_dir]/$[CONFIG_HEADER]] $[subdirs:%=install-%]
+install : $[if $[CONFIG_HEADER],$[install_headers_dir] $[install_headers_dir]\$[CONFIG_HEADER]] $[subdirs:%=install-%]
 uninstall : $[subdirs:%=uninstall-%]
 #if $[CONFIG_HEADER]
-	rm -f $[install_headers_dir]/$[CONFIG_HEADER]
+	del /f $[install_headers_dir]\$[CONFIG_HEADER]
 #endif
-
-// Somehow, something in the cttools confuses some shells, so that
-// when we are attached, 'cd foo' doesn't work, but 'cd ./foo' does.
-// Weird.  We get around this by putting a ./ in front of each cd
-// target below.
 
 #formap dirname subdirs
 #define depends 
 $[dirname] : $[dirnames $[if $[build_directory],$[DIRNAME]],$[DEPEND_DIRS]]
-	cd ./$[PATH]; $(MAKE) all
+	cd $[osfilename $[PATH]] && $(MAKE) /nologo all
 #end dirname
 
 #formap dirname subdirs
 test-$[dirname] :
-	cd ./$[PATH]; $(MAKE) test
+	cd $[osfilename $[PATH]] && $(MAKE) /nologo test
 #end dirname
 
 #formap dirname subdirs
 clean-$[dirname] :
-	cd ./$[PATH]; $(MAKE) clean
+	cd $[osfilename $[PATH]] && $(MAKE) /nologo clean
 #end dirname
 
 #formap dirname subdirs
 cleanall-$[dirname] :
-	cd ./$[PATH]; $(MAKE) cleanall
+	cd $[osfilename $[PATH]] && $(MAKE) /nologo cleanall
 #end dirname
 
 #formap dirname subdirs
 install-$[dirname] : $[patsubst %,install-%,$[dirnames $[if $[build_directory],$[DIRNAME]],$[DEPEND_DIRS]]]
-	cd ./$[PATH]; $(MAKE) install
+	cd $[osfilename $[PATH]] && $(MAKE) /nologo install
 #end dirname
 
 #formap dirname subdirs
 uninstall-$[dirname] :
-	cd ./$[PATH]; $(MAKE) uninstall
+	cd $[osfilename $[PATH]] && $(MAKE) /nologo uninstall
 #end dirname
 
 #if $[ne $[CONFIG_HEADER],]
@@ -795,10 +790,10 @@ $[install_headers_dir] :
 	@test -d $[install_headers_dir] || echo mkdir -p $[install_headers_dir]
 	@test -d $[install_headers_dir] || mkdir -p $[install_headers_dir]
 
-$[install_headers_dir]/$[CONFIG_HEADER] : $[CONFIG_HEADER]
+$[install_headers_dir]\$[CONFIG_HEADER] : $[CONFIG_HEADER]
 #define local $[CONFIG_HEADER]
 #define dest $[install_headers_dir]
-	$[INSTALL]
+	copy $[local] $[dest]
 #endif
 
 #end Makefile

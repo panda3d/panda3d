@@ -44,6 +44,14 @@
   #end file
 #end decygwin
 
+#define install_lib_dir $[decygwin %,%,$[install_lib_dir]]
+#define install_bin_dir $[decygwin %,%,$[install_bin_dir]]
+#define install_headers_dir $[decygwin %,%,$[install_headers_dir]]
+#define install_data_dir $[decygwin %,%,$[install_data_dir]]
+#define install_igatedb_dir $[decygwin %,%,$[install_igatedb_dir]]
+#define install_config_dir $[decygwin %,%,$[install_config_dir]]
+#define install_parser_inc_dir $[decygwin %,%,$[install_parser_inc_dir]]
+
 // Define this if we want to make .sbr files.
 #defer BROWSEINFO_FLAG /Fr"$[osfilename $[target:%.obj=%.sbr]]"
 #defer CFLAGS_SHARED
@@ -76,18 +84,16 @@
 #defer interrogate_ipath $[decygwin %,-I"%",$[target_ipath]]
 #defer interrogate_spath $[decygwin %,-S"%",$[install_parser_inc_dir]]
 
-#defer extra_cflags /nologo /W3 /EHsc /Zm250 /D_WINDOWS /DWIN32 /D_WINDLL /DSTRICT /DPENV_WIN32 /DWIN32_VC
-#defer extra_so_ldflags /DLL /NOLOGO
-#defer extra_bin_ldflags /NOLOGO
+#defer extra_cflags /W3 /EHsc /Zm250 /DWIN32_VC /DWIN32
 
-#defer COMPILE_C cl /c /Fo"$[osfilename $[target]]" $[decygwin %,/I"%",$[ipath]] $[flags] $[extra_cflags] $[source]
+#defer COMPILE_C cl /nologo /c /Fo"$[osfilename $[target]]" $[decygwin %,/I"%",$[ipath]] $[flags] $[extra_cflags] $[source]
 #defer COMPILE_C++ $[COMPILE_C]
 
 #defer STATIC_LIB_C lib /nologo $[sources] /OUT:"$[osfilename $[target]]" 
 #defer STATIC_LIB_C++ $[STATIC_LIB_C]
 
-#defer SHARED_LIB_C link $[LDFLAGS_OPT$[OPTIMIZE]] $[extra_so_ldflags] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
+#defer SHARED_LIB_C link /nologo /dll $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
 #defer SHARED_LIB_C++ $[SHARED_LIB_C]
 
-#defer LINK_BIN_C link $[LDFLAGS_OPT$[OPTIMIZE]] $[extra_bin_ldflags] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
+#defer LINK_BIN_C link /nologo $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
 #defer LINK_BIN_C++ $[LINK_BIN_C]
