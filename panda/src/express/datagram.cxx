@@ -22,7 +22,7 @@
 #include <notify.h>
 
 // for sprintf().
-#include <stdio.h>  
+#include <stdio.h>
 
 TypeHandle Datagram::_type_handle;
 
@@ -73,7 +73,8 @@ dump_hex(ostream &out) const {
     }
     out << "  ";
     for (p = line; p < line + 16 && p < num_bytes; p++) {
-      if (isgraph(message[p]) || message[p] == ' ') {
+      // must cast to (unsigned char) to avoid conversion to large negative integers outside of 0xFF range
+      if (isgraph((unsigned char)message[p]) || message[p] == ' ') {
         out << (char)message[p];
       } else {
         out << ".";
