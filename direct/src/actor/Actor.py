@@ -963,7 +963,10 @@ class Actor(PandaObject, NodePath):
                 control.loop(restart)
         else:
             for control in self.getAnimControls(animName, partName):
-                control.loop(restart, fromFrame, toFrame)
+                if toFrame == None:
+                    control.loop(restart, fromFrame, control.getNumFrames() - 1)
+                else:
+                    control.loop(restart, fromFrame, toFrame)
 
     def pingpong(self, animName, fromFrame, toFrame, restart=1, partName=None):
         """pingpong(self, string, fromFrame, toFrame, int=1, string=None)
