@@ -36,6 +36,7 @@ lilsmiley.egg : misc
 objectHandles.egg : misc
 smiley.egg : misc
 sphere.egg : misc
+dialog_box_gui : misc
 
 4map.rgb : 256 256 omit
 
