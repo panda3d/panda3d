@@ -1160,8 +1160,7 @@ class Actor(PandaObject, NodePath):
         return None
 
             
-    def loadModel(self, modelPath, partName="modelRoot", lodName="lodRoot",
-                  copy = 1):
+    def loadModel(self, modelPath, partName="modelRoot", lodName="lodRoot", copy = 1):
         """loadModel(self, string, string="modelRoot", string="lodRoot",
         bool = 0)
         Actor model loader. Takes a model name (ie file path), a part
@@ -1179,7 +1178,9 @@ class Actor(PandaObject, NodePath):
 
         if (model == None):
             print "model = None!!!"
-            
+        return self.prepareModel(model, partName, lodName)
+
+    def prepareModel(self, model, partName="modelRoot", lodName="lodRoot"):
         bundle = model.find("**/+PartBundleNode")
         if (bundle.isEmpty()):
             Actor.notify.warning("%s is not a character!" % (modelPath))

@@ -7,7 +7,7 @@
     # Initialize class variable for source file and node for node path textures
     # Will use instance copy of this in functions below
     # For now hardcode in a toontown model
-    sourceFileName = 'phase_5/models/props/suit-particles'
+    sourceFileName = 'phase_3.5/models/props/suit-particles'
     sourceNodeName = '**/fire'
 
     def getSourceFileName(self):

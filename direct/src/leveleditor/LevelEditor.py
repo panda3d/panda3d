@@ -35,7 +35,7 @@ COLOR_TYPES = ['wall_color', 'window_color',
                'door_awning_color', 'cornice_color',
                'prop_color']
 # The list of dna components maintained in the style attribute dictionary
-DNA_TYPES = ['wall', 'window', 'sign', 'door', 'cornice', 'toon_landmark',
+DNA_TYPES = ['wall', 'window', 'sign', 'door_double', 'door_single', 'cornice', 'toon_landmark',
              'prop', 'street']
 BUILDING_TYPES = ['10_10', '20', '10_20', '20_10', '10_10_10',
                   '4_21', '3_22', '4_13_8', '3_13_9', '10',
@@ -468,7 +468,8 @@ class LevelEditor(NodePath, PandaObject):
             ('select_baseline_style', self.panel.setSignBaselineStyle),
             ('select_door_color', self.setDNATargetColor),
             ('select_door_orientation', self.setDNATargetOrientation),
-            ('select_door_texture', self.setDNATargetCode, ['door']),
+            ('select_door_single_texture', self.setDNATargetCode, ['door']),
+            ('select_door_double_texture', self.setDNATargetCode, ['door']),
             ('select_door_awning_texture', self.setDNATargetCode,
              ['door_awning']),
             ('select_door_awning_color', self.setDNATargetColor),
@@ -1506,16 +1507,22 @@ class LevelEditor(NodePath, PandaObject):
         return newDNACornice
 
     def createDoor(self, type):
-        if not (self.getCurrent('door_texture')):
-            doorStyles = self.styleManager.attributeDictionary['door_texture'].getList()[:-1]
-            defaultDoorStyle = doorStyles[randint(0, len(doorStyles) - 1)]
-            self.setCurrent('door_texture', defaultDoorStyle)
         if (type == 'landmark_door'):
             newDNADoor = DNADoor('door')
+            if not (self.getCurrent('door_double_texture')):
+                doorStyles = self.styleManager.attributeDictionary['door_double_texture'].getList()[1:]
+                defaultDoorStyle = whrandom.choice(doorStyles)
+                self.setCurrent('door_double_texture', defaultDoorStyle)
+            newDNADoor.setCode(self.getCurrent('door_double_texture'))
+            newDNADoor.setColor(self.getCurrent('door_color'))
         elif (type == 'door'):
             newDNADoor = DNAFlatDoor('door')
-        newDNADoor.setCode(self.getCurrent('door_texture'))
-        newDNADoor.setColor(self.getCurrent('door_color'))
+            if not (self.getCurrent('door_single_texture')):
+                doorStyles = self.styleManager.attributeDictionary['door_single_texture'].getList()[1:]
+                defaultDoorStyle = whrandom.choice(doorStyles)
+                self.setCurrent('door_single_texture', defaultDoorStyle)
+            newDNADoor.setCode(self.getCurrent('door_single_texture'))
+            newDNADoor.setColor(self.getCurrent('door_color'))
         return newDNADoor
 
     def createSign(self):
@@ -1697,7 +1704,7 @@ class LevelEditor(NodePath, PandaObject):
             elif direct.gotAlt(modifiers):
                 menuMode = 'door_orientation'
             else:
-                menuMode = 'door_texture'
+                menuMode = 'door_double_texture'
         else:
             # Do sign operations
             if direct.gotControl(modifiers):
@@ -1757,7 +1764,7 @@ class LevelEditor(NodePath, PandaObject):
                 elif direct.gotAlt(modifiers):
                     menuMode = 'door_orientation'
                 else:
-                    menuMode = 'door_texture'
+                    menuMode = 'door_single_texture'
             else:
                 # Do window operations
                 if direct.gotControl(modifiers):
@@ -3921,7 +3928,10 @@ class LevelStyleManager:
             elif (dnaType == 'sign'):
                 attribute.setMenu(self.createDNAPieMenu(dnaType, dnaList,
                                                          sf = 0.05))
-            elif (dnaType == 'door'):
+            elif (dnaType == 'door_double'):
+                attribute.setMenu(self.createDNAPieMenu(dnaType, dnaList,
+                                                         sf = 0.035))
+            elif (dnaType == 'door_single'):
                 attribute.setMenu(self.createDNAPieMenu(dnaType, dnaList,
                                                          sf = 0.035))
             elif (dnaType == 'cornice'):
@@ -4425,7 +4435,7 @@ class DNAWallStyle:
             file.write('window_count: %s\n' % self['window_count'])
         if self['window_awning_texture']:
             writeAttributes(file, 'window_awning')
-        if self['door_texture']:
+        if self['door_single_texture']:
             writeAttributes(file, 'door')
         if self['door_awning_texture']:
             writeAttributes(file, 'door_awning')
