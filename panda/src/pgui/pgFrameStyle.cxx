@@ -173,25 +173,12 @@ generate_bevel_geom(const LVecBase4f &frame, bool in) {
   //
   // Vertices:
   //
-  //  fan:
-  //  2 * * * * * * * * * * * * * * * * * * * * * 1
-  //    *                                       * *
-  //      *                                   *   *
-  //        *                               *     *
-  //          3 * * * * * * * * * * * * * 0       *
-  //          *                           *       *
-  //          *                           *       *
-  //          *                           *       *
-  //          *                           *       *
-  //          *                           *       *
-  //          4 * * * * * * * * * * * * * 5       *
-  //                                        *     *
-  //  tristrip:                               *   *
-  //  4                                         * *
-  //  * *                                         6
-  //  *   *
-  //  *     *
-  //  *       5
+  //  tristrip 1:
+  //  4 * * * * * * * * * * * * * * * * * * * * * 6
+  //  * *                                       *
+  //  *   *                                   *
+  //  *     *                               *
+  //  *       5 * * * * * * * * * * * * * 7
   //  *       *
   //  *       *
   //  *       *
@@ -202,6 +189,23 @@ generate_bevel_geom(const LVecBase4f &frame, bool in) {
   //  *   *                                   *
   //  * *                                       *
   //  2 * * * * * * * * * * * * * * * * * * * * * 0
+  // 
+  //  tristrip 2:
+  //                                              1
+  //                                            * *
+  //                                          *   *
+  //                                        *     *
+  //          5 * * * * * * * * * * * * * 3       *
+  //          *                           *       *
+  //          *                           *       *
+  //          *                           *       *
+  //          *                           *       *
+  //          *                           *       *
+  //          4 * * * * * * * * * * * * * 2       *
+  //                                        *     *
+  //                                          *   *
+  //                                            * *
+  //                                              0
 
   PT(GeomNode) gnode = new GeomNode("bevel");
 
@@ -248,67 +252,52 @@ generate_bevel_geom(const LVecBase4f &frame, bool in) {
               min(_color[2] * top_color_scale, 1.0f),
               _color[3]);
 
-  {
-    // First, the fan.
-    Geom *geom = new GeomTrifan;
-    gnode->add_geom(geom);
+  // Now make the tristrips.
+  Geom *geom = new GeomTristrip;
+  gnode->add_geom(geom);
     
-    PTA_int lengths(0);
-    lengths.push_back(8);
-    
-    PTA_Vertexf verts;
-    verts.push_back(Vertexf(inner_right, 0.0, inner_top));
-    verts.push_back(Vertexf(right, 0.0, top));
-    verts.push_back(Vertexf(left, 0.0, top));
-    verts.push_back(Vertexf(inner_left, 0.0, inner_top));
-    verts.push_back(Vertexf(inner_left, 0.0, inner_bottom));
-    verts.push_back(Vertexf(inner_right, 0.0, inner_bottom));
-    verts.push_back(Vertexf(right, 0.0, bottom));
-    verts.push_back(Vertexf(right, 0.0, top));
-    
-    geom->set_num_prims(1);
-    geom->set_lengths(lengths);
-    
-    geom->set_coords(verts, G_PER_VERTEX);
-    
-    PTA_Colorf colors;
-    colors.push_back(ctop);
-    colors.push_back(ctop);
-    colors.push_back(_color);
-    colors.push_back(_color);
-    colors.push_back(cright);
-    colors.push_back(cright);
-    geom->set_colors(colors, G_PER_COMPONENT);
-  }
+  PTA_int lengths;
+  PTA_Vertexf verts;
+  PTA_Colorf colors;
 
-  {
-    // Now, the strip.
-    Geom *geom = new GeomTristrip;
-    gnode->add_geom(geom);
+  // Tristrip 1.
+  lengths.push_back(8);
     
-    PTA_int lengths(0);
-    lengths.push_back(6);
-    
-    PTA_Vertexf verts;
-    verts.push_back(Vertexf(right, 0.0, bottom));
-    verts.push_back(Vertexf(inner_right, 0.0, inner_bottom));
-    verts.push_back(Vertexf(left, 0.0, bottom));
-    verts.push_back(Vertexf(inner_left, 0.0, inner_bottom));
-    verts.push_back(Vertexf(left, 0.0, top));
-    verts.push_back(Vertexf(inner_left, 0.0, inner_top));
-    
-    geom->set_num_prims(1);
-    geom->set_lengths(lengths);
-    
-    geom->set_coords(verts, G_PER_VERTEX);
-    
-    PTA_Colorf colors;
-    colors.push_back(cbottom);
-    colors.push_back(cbottom);
-    colors.push_back(cleft);
-    colors.push_back(cleft);
-    geom->set_colors(colors, G_PER_COMPONENT);
-  }
+  verts.push_back(Vertexf(right, 0.0, bottom));
+  verts.push_back(Vertexf(inner_right, 0.0, inner_bottom));
+  verts.push_back(Vertexf(left, 0.0, bottom));
+  verts.push_back(Vertexf(inner_left, 0.0, inner_bottom));
+  verts.push_back(Vertexf(left, 0.0, top));
+  verts.push_back(Vertexf(inner_left, 0.0, inner_top));
+  verts.push_back(Vertexf(right, 0.0, top));
+  verts.push_back(Vertexf(inner_right, 0.0, inner_top));
+  
+  colors.push_back(cbottom);
+  colors.push_back(cbottom);
+  colors.push_back(cleft);
+  colors.push_back(cleft);
+  colors.push_back(ctop);
+  colors.push_back(ctop);
+
+  // Tristrip 2.
+  lengths.push_back(6);
+
+  verts.push_back(Vertexf(right, 0.0, bottom));
+  verts.push_back(Vertexf(right, 0.0, top));
+  verts.push_back(Vertexf(inner_right, 0.0, inner_bottom));
+  verts.push_back(Vertexf(inner_right, 0.0, inner_top));
+  verts.push_back(Vertexf(inner_left, 0.0, inner_bottom));
+  verts.push_back(Vertexf(inner_left, 0.0, inner_top));
+
+  colors.push_back(cright);
+  colors.push_back(cright);
+  colors.push_back(_color);
+  colors.push_back(_color);
+
+  geom->set_num_prims(2);
+  geom->set_lengths(lengths);
+  geom->set_coords(verts, G_PER_VERTEX);
+  geom->set_colors(colors, G_PER_COMPONENT);
   
   return gnode.p();
 }
