@@ -94,7 +94,9 @@ enable_multisample(bool val) {
     if (val) {
       GLP(Enable)(GL_MULTISAMPLE);
     } else {
-      GLP(Disable)(GL_MULTISAMPLE);
+      if (!_multisample_alpha_one_enabled && !_multisample_alpha_mask_enabled) {
+        GLP(Disable)(GL_MULTISAMPLE);
+      }
     }
   }
 }
@@ -262,8 +264,12 @@ enable_multisample_alpha_one(bool val) {
       _multisample_alpha_one_enabled = val;
       if (val) {
         GLP(Enable)(GL_SAMPLE_ALPHA_TO_ONE);
+        GLP(Enable)(GL_MULTISAMPLE);
       } else {
         GLP(Disable)(GL_SAMPLE_ALPHA_TO_ONE);
+        if (!_multisample_enabled) {
+          GLP(Disable)(GL_MULTISAMPLE);
+        }
       }
     }
   }
@@ -280,8 +286,12 @@ enable_multisample_alpha_mask(bool val) {
     _multisample_alpha_mask_enabled = val;
     if (val) {
       GLP(Enable)(GL_SAMPLE_ALPHA_TO_COVERAGE);
+      GLP(Enable)(GL_MULTISAMPLE);
     } else {
       GLP(Disable)(GL_SAMPLE_ALPHA_TO_COVERAGE);
+      if (!_multisample_enabled) {
+        GLP(Disable)(GL_MULTISAMPLE);
+      }
     }
   }
 }

@@ -438,8 +438,15 @@ reset() {
     _buffer_mask &= ~RenderBuffer::T_back;
   }
 
-  // Set up the specific state values to GL's known initial values.
+  // Ensure the initial state is what we say it should be (in some
+  // cases, we don't want the GL default settings; in others, we have
+  // to force the point with some drivers that aren't strictly
+  // compliant w.r.t. initial settings).
   GLP(FrontFace)(GL_CCW);
+  GLP(Disable)(GL_MULTISAMPLE);
+  GLP(Disable)(GL_LINE_SMOOTH);
+  GLP(Disable)(GL_POINT_SMOOTH);
+  GLP(Disable)(GL_POLYGON_SMOOTH);
 
   // Set up all the enabled/disabled flags to GL's known initial
   // values: everything off.
