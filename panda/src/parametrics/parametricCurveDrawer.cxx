@@ -34,11 +34,11 @@ TypeHandle ParametricCurveDrawer::_type_handle;
 ////////////////////////////////////////////////////////////////////
 ParametricCurveDrawer::
 ParametricCurveDrawer() {
-  _lines.set_color(1.0, 1.0, 1.0);
-  _ticks.set_color(1.0, 0.0, 0.0);
+  _lines.set_color(1.0f, 1.0f, 1.0f);
+  _ticks.set_color(1.0f, 0.0f, 0.0f);
   _tick_scale = 0.1;
   _num_segs = 100.0;
-  _num_ticks = 0.0;
+  _num_ticks = 0.0f;
   _frame_accurate = false;
   _geom_node = new GeomNode;
   _drawn = false;
@@ -357,7 +357,7 @@ draw() {
   scale = max_t / (float)(total_segs-1);
 
   // Now draw the time tick marks.
-  if (_num_ticks > 0.0) {
+  if (_num_ticks > 0.0f) {
     int total_ticks = (int)floor(max_t * _num_ticks + 0.5);
     ParametricCurve *xyz_curve = _curves->get_default_curve();
     ParametricCurve *hpr_curve = _curves->get_hpr_curve();
@@ -384,7 +384,7 @@ draw() {
           NodeRelation *arc = new RenderRelation(_geom_node, _tick_geometry);
           _tick_arcs.push_back(arc);
 
-          LVecBase3f hpr(0.0, 0.0, 0.0);
+          LVecBase3f hpr(0.0f, 0.0f, 0.0f);
           if (hpr_curve != (ParametricCurve *)NULL) {
             hpr_curve->get_point(t0, hpr);
           }
@@ -462,15 +462,15 @@ get_tick_marks(const LVecBase3f &tangent, LVecBase3f &t1, LVecBase3f &t2) {
   // unit vector.
   if (fabs(tn[0]) <= fabs(tn[1]) && fabs(tn[0]) <= fabs(tn[2])) {
     // X is smallest.
-    t1 = tn.cross(LVector3f(1.0, 0.0, 0.0));
+    t1 = tn.cross(LVector3f(1.0f, 0.0f, 0.0f));
 
   } else if (fabs(tn[1]) <= fabs(tn[2])) {
     // Y is smallest.
-    t1 = tn.cross(LVector3f(0.0, 1.0, 0.0));
+    t1 = tn.cross(LVector3f(0.0f, 1.0f, 0.0f));
 
   } else {
     // Z is smallest.
-    t1 = tn.cross(LVector3f(0.0, 0.0, 1.0));
+    t1 = tn.cross(LVector3f(0.0f, 0.0f, 1.0f));
   }
 
   t2 = tn.cross(t1);

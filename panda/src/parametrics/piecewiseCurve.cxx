@@ -64,12 +64,12 @@ is_valid() const {
 //     Function: PiecewiseCurve::get_max_t
 //       Access: Published, Virtual
 //  Description: Returns the upper bound of t for the entire curve.
-//               The curve is defined in the range 0.0 <= t <=
+//               The curve is defined in the range 0.0f <= t <=
 //               get_max_t().
 ////////////////////////////////////////////////////////////////////
 float PiecewiseCurve::
 get_max_t() const {
-  return _segs.empty() ? 0.0 : _segs.back()._tend;
+  return _segs.empty() ? 0.0f : _segs.back()._tend;
 }
 
 
@@ -77,7 +77,7 @@ get_max_t() const {
 //     Function: PiecewiseCurve::get_point
 //       Access: Published, Virtual
 //  Description: Returns the point of the curve at a given parametric
-//               point t.  Returns true if t is in the valid range 0.0
+//               point t.  Returns true if t is in the valid range 0.0f
 //               <= t <= get_max_t(); if t is outside this range, sets
 //               point to the value of the curve at the beginning or
 //               end (whichever is nearer) and returns false.
@@ -147,10 +147,10 @@ adjust_point(float t,
     return false;
   }
 
-  rebuild_curveseg(RT_CV | RT_KEEP_ORIG, 0.0, LVecBase4f(),
-                   RT_POINT, t, LVecBase4f(px, py, pz, 1.0),
+  rebuild_curveseg(RT_CV | RT_KEEP_ORIG, 0.0f, LVecBase4f(),
+                   RT_POINT, t, LVecBase4f(px, py, pz, 1.0f),
                    RT_TANGENT | RT_KEEP_ORIG, t, LVecBase4f(),
-                   RT_CV | RT_KEEP_ORIG, 0.0, LVecBase4f());
+                   RT_CV | RT_KEEP_ORIG, 0.0f, LVecBase4f());
   return true;
 }
 
@@ -172,10 +172,10 @@ adjust_tangent(float t,
     return false;
   }
 
-  rebuild_curveseg(RT_CV | RT_KEEP_ORIG, 0.0, LVecBase4f(),
+  rebuild_curveseg(RT_CV | RT_KEEP_ORIG, 0.0f, LVecBase4f(),
                    RT_POINT | RT_KEEP_ORIG, t, LVecBase4f(),
-                   RT_TANGENT, t, LVecBase4f(tx, ty, tz, 0.0),
-                   RT_CV | RT_KEEP_ORIG, 0.0, LVecBase4f());
+                   RT_TANGENT, t, LVecBase4f(tx, ty, tz, 0.0f),
+                   RT_CV | RT_KEEP_ORIG, 0.0f, LVecBase4f());
   return true;
 }
 
@@ -197,10 +197,10 @@ adjust_pt(float t,
     return false;
   }
 
-  rebuild_curveseg(RT_CV | RT_KEEP_ORIG, 0.0, LVecBase4f(),
-                   RT_POINT, t, LVecBase4f(px, py, pz, 1.0),
-                   RT_TANGENT, t, LVecBase4f(tx, ty, tz, 0.0),
-                   RT_CV | RT_KEEP_ORIG, 0.0, LVecBase4f());
+  rebuild_curveseg(RT_CV | RT_KEEP_ORIG, 0.0f, LVecBase4f(),
+                   RT_POINT, t, LVecBase4f(px, py, pz, 1.0f),
+                   RT_TANGENT, t, LVecBase4f(tx, ty, tz, 0.0f),
+                   RT_CV | RT_KEEP_ORIG, 0.0f, LVecBase4f());
   return true;
 }
 
@@ -339,7 +339,7 @@ get_tlength(int ti) const {
 float PiecewiseCurve::
 get_tstart(int ti) const {
   assert(ti >= 0 && ti <= (int)_segs.size());
-  return (ti==0) ? 0.0 : _segs[ti-1]._tend;
+  return (ti==0) ? 0.0f : _segs[ti-1]._tend;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -482,7 +482,7 @@ find_curve(const ParametricCurve *&curve, float &t) const {
 
   int ti;
   for (ti = _last_ti; ti < (int)_segs.size(); ti++) {
-    if (_segs[ti]._tend+0.00001 > t) {
+    if (_segs[ti]._tend+0.00001f > t) {
       break;
     }
   }
@@ -499,7 +499,7 @@ find_curve(const ParametricCurve *&curve, float &t) const {
   if (t < 0) {
     // Oops.
     curve = _segs[0]._curve;
-    t = 0.0;
+    t = 0.0f;
     return false;
   }
 
@@ -510,19 +510,19 @@ find_curve(const ParametricCurve *&curve, float &t) const {
     // screwed.  There's one exception: if we were right on a border between
     // curves, try the curve before.
 
-    if (ti > 0 && t < _segs[ti-1]._tend+0.0001) {
+    if (ti > 0 && t < _segs[ti-1]._tend+0.0001f) {
       ti--;
-      t = 1.0;
+      t = 1.0f;
     }
 
     if (ti >= (int)_segs.size()) {
       if (_segs.empty()) {
         curve = NULL;
-        t = 0.0;
+        t = 0.0f;
         return false;
       } else {
         curve = _segs.back()._curve;
-        t = 1.0;
+        t = 1.0f;
         return false;
       }
     } else if (!_segs[ti]._curve->is_valid()) {

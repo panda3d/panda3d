@@ -31,7 +31,7 @@
 
 TypeHandle HermiteCurve::_type_handle;
 
-static const LVecBase3f zerovec_3f = LVecBase3f(0.0, 0.0, 0.0);
+static const LVecBase3f zerovec_3f = LVecBase3f(0.0f, 0.0f, 0.0f);
 // This is returned occasionally from some of the functions, and is
 // used from time to time as an initializer.
 
@@ -98,7 +98,7 @@ set_in(const LVecBase3f &in) {
   switch (_type) {
   case HC_G1:
     l = _in.length();
-    if (l!=0.0) {
+    if (l!=0.0f) {
       _out = _in * _out.length() / l;
     }
     break;
@@ -124,7 +124,7 @@ set_out(const LVecBase3f &out) {
   switch (_type) {
   case HC_G1:
     l = _out.length();
-    if (l!=0.0) {
+    if (l!=0.0f) {
       _in = _out * _in.length() / l;
     }
     break;
@@ -329,7 +329,7 @@ get_num_cvs() const {
 int HermiteCurve::
 insert_cv(float t) {
   if (!is_valid() || t >= get_max_t()) {
-    int n = append_cv(HC_SMOOTH, 0.0, 0.0, 0.0);
+    int n = append_cv(HC_SMOOTH, 0.0f, 0.0f, 0.0f);
     set_cv_tstart(n, t);
     return n;
   }
@@ -343,7 +343,7 @@ insert_cv(float t) {
   LVecBase3f tan;
   cv._type = HC_SMOOTH;
   get_pt(t, cv._p, tan);
-  cv._out = cv._in = tan / 2.0;
+  cv._out = cv._in = tan * 0.5f;
 
   _points.insert(_points.begin() + n + 1, cv);
   bool result =
@@ -374,7 +374,7 @@ append_cv(int type, float x, float y, float z) {
   _points.push_back(cv);
   if (_points.size()>1) {
     bool result =
-      insert_curveseg(_segs.size(), new CubicCurveseg, 1.0);
+      insert_curveseg(_segs.size(), new CubicCurveseg, 1.0f);
     nassertr(result, 0);
   }
 
@@ -519,7 +519,7 @@ set_cv_tstart(int n, float tstart) {
   if (n <= 0 || n >= (int)_points.size()) {
     return false;
   }
-  if (fabs(tstart - get_cv_tstart(n)) > 0.0001) {
+  if (fabs(tstart - get_cv_tstart(n)) > 0.0001f) {
     set_tlength(n-1, tstart - get_tstart(n-1));
     recompute_basis();
     invalidate_all();
@@ -627,7 +627,7 @@ get_cv_out(int n, LVecBase3f &v) const {
 float HermiteCurve::
 get_cv_tstart(int n) const {
   if (n<0) {
-    return 0.0;
+    return 0.0f;
   } else if (n >= (int)_points.size()) {
     return get_max_t();
   }
@@ -757,8 +757,8 @@ format_egg(ostream &out, const string &name, const string &curve_type,
     bool show_out = (i != (int)_points.size()-1);
     _points[i].format_egg(out, indent_level + 2, _num_dimensions,
                           show_in, show_out,
-                          show_in ? get_tlength(i-1) : 0.0,
-                          show_out ? get_tlength(i) : 0.0);
+                          show_in ? get_tlength(i-1) : 0.0f,
+                          show_out ? get_tlength(i) : 0.0f);
   }
   indent(out, indent_level) << "}\n";
 
@@ -821,7 +821,7 @@ wrap_hpr(const LVecBase3f &hpr1, LVecBase3f &hpr2) {
 ////////////////////////////////////////////////////////////////////
 void HermiteCurve::
 invalidate_cv(int n, bool redo_all) {
-  float t1 = 0.0, t2 = get_max_t();
+  float t1 = 0.0f, t2 = get_max_t();
   if (n>0 && _points[n-1]._type!=HC_CUT) {
     const HermiteCurveCV &p1 = _points[n-1];
     HermiteCurveCV p2(_points[n]);

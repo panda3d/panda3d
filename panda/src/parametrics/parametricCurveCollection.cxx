@@ -337,7 +337,7 @@ make_even(float max_t, float segments_per_unit) {
   // approximately the same length as all the others.
   CurveFitter fitter;
 
-  int num_segments = max(1, (int)floor(segments_per_unit * xyz_curve->get_max_t() + 0.5));
+  int num_segments = max(1, (int)floor(segments_per_unit * xyz_curve->get_max_t() + 0.5f));
 
   if (parametrics_cat.is_debug()) {
     parametrics_cat.debug()
@@ -353,13 +353,16 @@ make_even(float max_t, float segments_per_unit) {
       << num_segments << " segments of " << segment_length << " units each.\n";
   }
 
-  float last_t = 0.0;
-  fitter.add_xyz(0.0, LVecBase3f(last_t, 0.0, 0.0));
+  float last_t = 0.0f;
+  fitter.add_xyz(0.0f, LVecBase3f(last_t, 0.0f, 0.0f));
+  float val_inc= 1.0f/(num_segments * max_t);
+  float val=val_inc;
 
-  for (int i = 0; i < num_segments; i++) {
+  for (int i = 0; i < num_segments; i++,val+=val_inc) {
     float next_t = xyz_curve->find_length(last_t, segment_length);
-    fitter.add_xyz((float)(i + 1) / num_segments * max_t,
-                   LVecBase3f(next_t, 0.0, 0.0));
+    fitter.add_xyz(/*(float)(i + 1)/(num_segments * max_t),*/
+                   val,
+                   LVecBase3f(next_t, 0.0f, 0.0f));
 
     if (parametrics_cat.is_spam()) {
       parametrics_cat.spam()
@@ -425,13 +428,13 @@ face_forward(float segments_per_unit) {
   float max_t = get_max_t();
   int num_segments = (int)floor(segments_per_unit * max_t + 0.5);
 
-  LVecBase3f hpr(0.0, 0.0, 0.0);
+  LVecBase3f hpr(0.0f, 0.0f, 0.0f);
 
   // We compute the first HPR point a little point into the beginning
-  // of the curve, instead of at 0.0, because the tangent at 0.0 is
+  // of the curve, instead of at 0.0f, because the tangent at 0.0f is
   // likely to be zero.
   determine_hpr(0.001, xyz_curve, hpr);
-  fitter.add_hpr(0.0, hpr);
+  fitter.add_hpr(0.0f, hpr);
 
   for (int i = 0; i < num_segments; i++) {
     float t = (float)(i + 1) / num_segments * max_t;
@@ -462,10 +465,10 @@ reset_max_t(float max_t) {
   PT(NurbsCurve) nurbs = new NurbsCurve;
   nurbs->set_curve_type(PCT_T);
   nurbs->set_order(2);
-  nurbs->append_cv(LVecBase3f(0.0, 0.0, 0.0));
-  nurbs->append_cv(LVecBase3f(get_max_t(), 0.0, 0.0));
-  nurbs->set_knot(0, 0.0);
-  nurbs->set_knot(1, 0.0);
+  nurbs->append_cv(LVecBase3f(0.0f, 0.0f, 0.0f));
+  nurbs->append_cv(LVecBase3f(get_max_t(), 0.0f, 0.0f));
+  nurbs->set_knot(0, 0.0f);
+  nurbs->set_knot(1, 0.0f);
   nurbs->set_knot(2, max_t);
   nurbs->set_knot(3, max_t);
   nurbs->recompute();
@@ -560,14 +563,14 @@ evaluate(float t, LVecBase3f &xyz, LVecBase3f &hpr) const {
 ////////////////////////////////////////////////////////////////////
 bool ParametricCurveCollection::
 evaluate(float t, LMatrix4f &result, CoordinateSystem cs) const {
-  LVecBase3f xyz(0.0, 0.0, 0.0);
-  LVecBase3f hpr(0.0, 0.0, 0.0);
+  LVecBase3f xyz(0.0f, 0.0f, 0.0f);
+  LVecBase3f hpr(0.0f, 0.0f, 0.0f);
 
   if (!evaluate(t, xyz, hpr)) {
     return false;
   }
 
-  compose_matrix(result, LVecBase3f(1.0, 1.0, 1.0), hpr, xyz, cs);
+  compose_matrix(result, LVecBase3f(1.0f, 1.0f, 1.0f), hpr, xyz, cs);
   return true;
 }
 
@@ -576,7 +579,7 @@ evaluate(float t, LMatrix4f &result, CoordinateSystem cs) const {
 //       Access: Published
 //  Description: Determines the value of t that should be passed to
 //               the XYZ and HPR curves, after applying the given
-//               value of t to all the timewarps.  Return -1.0 if the
+//               value of t to all the timewarps.  Return -1.0f if the
 //               value of t exceeds one of the timewarps' ranges.
 ////////////////////////////////////////////////////////////////////
 float ParametricCurveCollection::
@@ -590,7 +593,7 @@ evaluate_t(float t) const {
 
     if (curve->get_curve_type() == PCT_T) {
       if (!curve->get_point(t0, point)) {
-        return -1.0;
+        return -1.0f;
       }
       t0 = point[0];
     }
@@ -615,7 +618,7 @@ adjust_xyz(float t, const LVecBase3f &xyz) {
   }
 
   float t0 = evaluate_t(t);
-  if (t0 >= 0.0 && t < xyz_curve->get_max_t()) {
+  if (t0 >= 0.0f && t < xyz_curve->get_max_t()) {
     return xyz_curve->adjust_point(t, xyz[0], xyz[1], xyz[2]);
   }
   return false;
@@ -637,7 +640,7 @@ adjust_hpr(float t, const LVecBase3f &hpr) {
   }
 
   float t0 = evaluate_t(t);
-  if (t0 >= 0.0 && t < hpr_curve->get_max_t()) {
+  if (t0 >= 0.0f && t < hpr_curve->get_max_t()) {
     return hpr_curve->adjust_point(t, hpr[0], hpr[1], hpr[2]);
   }
   return false;
@@ -927,7 +930,7 @@ determine_hpr(float t, ParametricCurve *xyz_curve, LVecBase3f &hpr) const {
     return false;
   }
 
-  if (tangent.length_squared() == 0.0) {
+  if (tangent.length_squared() == 0.0f) {
     return false;
   }
 

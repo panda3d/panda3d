@@ -121,7 +121,7 @@ get_num_samples() const {
 ////////////////////////////////////////////////////////////////////
 float CurveFitter::
 get_sample_t(int n) const {
-  nassertr(n >= 0 && n < (int)_data.size(), 0.0);
+  nassertr(n >= 0 && n < (int)_data.size(), 0.0f);
   return _data[n]._t;
 }
 
@@ -191,8 +191,8 @@ sample(ParametricCurveCollection *curves, int count) {
   float t, last_t, d;
   DataPoint dp;
 
-  last_t = 0.0;
-  d = 0.0;
+  last_t = 0.0f;
+  d = 0.0f;
   int i;
   for (i = 0; i < count; i++) {
     t = max_t * (float)i / (float)(count-1);
@@ -222,22 +222,22 @@ sample(ParametricCurveCollection *curves, int count) {
 void CurveFitter::
 wrap_hpr() {
   Data::iterator di;
-  LVecBase3f last(0.0, 0.0, 0.0);
-  LVecBase3f net(0.0, 0.0, 0.0);
+  LVecBase3f last(0.0f, 0.0f, 0.0f);
+  LVecBase3f net(0.0f, 0.0f, 0.0f);
 
   for (di = _data.begin(); di != _data.end(); ++di) {
     int i;
     for (i = 0; i < 3; i++) {
       (*di)._hpr[i] += net[i];
 
-      while (((*di)._hpr[i] - last[i]) > 180.0) {
-        (*di)._hpr[i] -= 360.0;
-        net[i] -= 360.0;
+      while (((*di)._hpr[i] - last[i]) > 180.0f) {
+        (*di)._hpr[i] -= 360.0f;
+        net[i] -= 360.0f;
       }
 
-      while (((*di)._hpr[i] - last[i]) < -180.0) {
-        (*di)._hpr[i] += 360.0;
-        net[i] += 360.0;
+      while (((*di)._hpr[i] - last[i]) < -180.0f) {
+        (*di)._hpr[i] += 360.0f;
+        net[i] += 360.0f;
       }
 
       last[i] = (*di)._hpr[i];
@@ -276,7 +276,7 @@ desample(float factor) {
       out++;
       count -= factor;
     }
-    count += 1.0;
+    count += 1.0f;
   }
 
   _data[out] = _data.back();
@@ -301,11 +301,11 @@ compute_tangents(float scale) {
 
   if (_got_xyz) {
     closed =
-      (_data.front()._xyz.almost_equal(_data.back()._xyz, 0.001));
+      (_data.front()._xyz.almost_equal(_data.back()._xyz, 0.001f));
 
   } else if (_got_hpr) {
     closed =
-      (_data.front()._hpr.almost_equal(_data.back()._hpr, 0.001));
+      (_data.front()._hpr.almost_equal(_data.back()._hpr, 0.001f));
   }
 
   int i;
@@ -346,18 +346,18 @@ compute_tangents(float scale) {
     if (_got_xyz) {
       _data[0]._tangent =
         (_data[1]._xyz - _data[0]._xyz) * scale /
-        ((_data[1]._t - _data[0]._t) * 2.0);
+        ((_data[1]._t - _data[0]._t) * 2.0f);
       _data[len-1]._tangent =
         (_data[len-1]._xyz - _data[len-2]._xyz) * scale /
-        ((_data[len-1]._t - _data[len-2]._t) * 2.0);
+        ((_data[len-1]._t - _data[len-2]._t) * 2.0f);
     }
     if (_got_hpr) {
       _data[0]._tangent =
         (_data[1]._hpr - _data[0]._hpr) * scale /
-        ((_data[1]._t - _data[0]._t) * 2.0);
+        ((_data[1]._t - _data[0]._t) * 2.0f);
       _data[len-1]._tangent =
         (_data[len-1]._hpr - _data[len-2]._hpr) * scale /
-        ((_data[len-1]._t - _data[len-2]._t) * 2.0);
+        ((_data[len-1]._t - _data[len-2]._t) * 2.0f);
     }
   }
 }
@@ -443,11 +443,12 @@ make_nurbs() const {
 
     int i;
     float k1, k2 = nc->get_knot(num_knots-1);
+    const float one_third = 1.0f/3.0f;
     for (i = 3; i < num_knots - 4; i += 3) {
       k1 = nc->get_knot(i-1);
       k2 = nc->get_knot(i+2);
-      nc->set_knot(i, (k1 + k1 + k2) / 3.0);
-      nc->set_knot(i+1, (k1 + k2 + k2) / 3.0);
+      nc->set_knot(i, (k1 + k1 + k2) * one_third);
+      nc->set_knot(i+1, (k1 + k2 + k2) * one_third);
     }
 
     // The last knot must have the terminal value.

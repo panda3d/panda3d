@@ -82,7 +82,7 @@ NurbsPPCurve::
 //     Function: NurbsPPCurve::get_max_t
 //       Access: Published, Virtual
 //  Description: Returns the upper bound of t for the entire curve.
-//               The curve is defined in the range 0.0 <= t <=
+//               The curve is defined in the range 0.0f <= t <=
 //               get_max_t().
 ////////////////////////////////////////////////////////////////////
 float NurbsPPCurve::
@@ -92,7 +92,7 @@ get_max_t() const {
 
   } else {
     if (_knots.empty()) {
-      return 0.0;
+      return 0.0f;
     } else {
       return _knots.back();
     }
@@ -279,12 +279,12 @@ set_knot(int n, float t) {
 ////////////////////////////////////////////////////////////////////
 float NurbsPPCurve::
 get_knot(int n) const {
-  nassertr(n >= 0 && n < get_num_knots(), 0.0);
+  nassertr(n >= 0 && n < get_num_knots(), 0.0f);
 
   if (_nurbs_valid) {
     return _nurbs.knot(n);
   } else {
-    nassertr(n >= 0 && n < (int)_knots.size(), 0.0);
+    nassertr(n >= 0 && n < (int)_knots.size(), 0.0f);
     return _knots[n];
   }
 }
@@ -308,7 +308,7 @@ recompute() {
 //     Function: NurbsPPCurve::get_point
 //       Access: Public, Virtual
 //  Description: Returns the point of the curve at a given parametric
-//               point t.  Returns true if t is in the valid range 0.0
+//               point t.  Returns true if t is in the valid range 0.0f
 //               <= t <= get_max_t(); if t is outside this range, sets
 //               point to the value of the curve at the beginning or
 //               end (whichever is nearer) and returns false.
@@ -320,8 +320,8 @@ get_point(float t, LVecBase3f &point) const {
   bool in_range = true;
   float max_t = get_max_t();
 
-  if (t < 0.0) {
-    t = 0.0;
+  if (t < 0.0f) {
+    t = 0.0f;
     in_range = false;
 
   } else if (t > max_t) {
@@ -338,7 +338,7 @@ get_point(float t, LVecBase3f &point) const {
 //     Function: NurbsPPCurve::get_tangent
 //       Access: Public, Virtual
 //  Description: Returns the tangent of the curve at a given parametric
-//               point t.  Returns true if t is in the valid range 0.0
+//               point t.  Returns true if t is in the valid range 0.0f
 //               <= t <= get_max_t(); if t is outside this range, sets
 //               tangent to the value of the curve at the beginning or
 //               end (whichever is nearer) and returns false.
@@ -350,8 +350,8 @@ get_tangent(float t, LVecBase3f &tangent) const {
   bool in_range = true;
   float max_t = get_max_t();
 
-  if (t < 0.0) {
-    t = 0.0;
+  if (t < 0.0f) {
+    t = 0.0f;
     in_range = false;
 
   } else if (t > max_t) {
@@ -377,8 +377,8 @@ get_pt(float t, LVecBase3f &point, LVecBase3f &tangent) const {
   bool in_range = true;
   float max_t = get_max_t();
 
-  if (t < 0.0) {
-    t = 0.0;
+  if (t < 0.0f) {
+    t = 0.0f;
     in_range = false;
 
   } else if (t > max_t) {
@@ -398,7 +398,7 @@ get_pt(float t, LVecBase3f &point, LVecBase3f &tangent) const {
 //       Access: Public, Virtual
 //  Description: Returns the second derivative of the curve at a given
 //               parametric point t.  Returns true if t is in the
-//               valid range 0.0 <= t <= get_max_t(); if t is outside
+//               valid range 0.0f <= t <= get_max_t(); if t is outside
 //               this range, sets tangent to the value of the curve at
 //               the beginning or end (whichever is nearer) and
 //               returns false.
@@ -410,8 +410,8 @@ get_2ndtangent(float t, LVecBase3f &tangent2) const {
   bool in_range = true;
   float max_t = get_max_t();
 
-  if (t < 0.0) {
-    t = 0.0;
+  if (t < 0.0f) {
+    t = 0.0f;
     in_range = false;
 
   } else if (t > max_t) {
@@ -539,11 +539,11 @@ append_cv_impl(const LVecBase4f &cv) {
 
   if (_knots.empty()) {
     for (int i = 0; i < _order; i++) {
-      _knots.push_back(0.0);
+      _knots.push_back(0.0f);
     }
-    _knots.push_back(1.0);
+    _knots.push_back(1.0f);
   } else {
-    _knots.push_back(_knots.back() + 1.0);
+    _knots.push_back(_knots.back() + 1.0f);
   }
 
   return _points.size() - 1;

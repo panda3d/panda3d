@@ -157,12 +157,12 @@ get_num_knots() const {
 bool ClassicNurbsCurve::
 insert_cv(float t) {
   if (_cvs.empty()) {
-    append_cv(0.0, 0.0, 0.0);
+    append_cv(0.0f, 0.0f, 0.0f);
     return true;
   }
 
   if (t <= 0) {
-    t = 0.0;
+    t = 0.0f;
   }
 
   int k = find_cv(t);
@@ -183,11 +183,11 @@ insert_cv(float t) {
     int nk = i + k - (_order-1);
     float ti = get_knot(nk);
     float d = get_knot(nk + _order-1) - ti;
-    if (d == 0.0) {
+    if (d == 0.0f) {
       new_cvs[i] = _cvs[nk-1]._p;
     } else {
       float a = (t - ti) / d;
-      new_cvs[i] = (1.0-a)*_cvs[nk-1]._p + a*_cvs[nk]._p;
+      new_cvs[i] = (1.0f-a)*_cvs[nk-1]._p + a*_cvs[nk]._p;
     }
   }
 
@@ -289,7 +289,7 @@ set_knot(int n, float t) {
 float ClassicNurbsCurve::
 get_knot(int n) const {
   if (n < _order || _cvs.empty()) {
-    return 0.0;
+    return 0.0f;
   } else if (n-1 >= (int)_cvs.size()) {
     return _cvs.back()._t;
   } else {
@@ -514,7 +514,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 int ClassicNurbsCurve::
 append_cv_impl(const LVecBase4f &v) {
-  _cvs.push_back(CV(v, get_knot(_cvs.size())+1.0));
+  _cvs.push_back(CV(v, get_knot(_cvs.size())+1.0f));
   return _cvs.size()-1;
 }
 

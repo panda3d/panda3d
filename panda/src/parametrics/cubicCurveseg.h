@@ -76,7 +76,7 @@ public:
 
   void hermite_basis(const HermiteCurveCV &cv0,
                      const HermiteCurveCV &cv1,
-                     float tlength = 1.0);
+                     float tlength = 1.0f);
   void bezier_basis(const BezierSeg &seg);
   void nurbs_basis(int order, const float knots[], const LVecBase4f cvs[]);
 
@@ -92,10 +92,10 @@ public:
   // would be zero anyway).
 
   void evaluate_point(const LVecBase4f &tv, LVecBase3f &result) const {
-    float h = (rational) ? tv.dot(Bw) : 1.0;
-    result.set(tv.dot(Bx) / h,
-               tv.dot(By) / h,
-               tv.dot(Bz) / h);
+    float recip_h = (rational) ? 1.0f/tv.dot(Bw) : 1.0f;
+    result.set(tv.dot(Bx) * recip_h,
+               tv.dot(By) * recip_h,
+               tv.dot(Bz) * recip_h);
   }
 
   void evaluate_vector(const LVecBase4f &tv, LVecBase3f &result) const {

@@ -31,13 +31,13 @@ TypeHandle NurbsCurveDrawer::_type_handle;
 ////////////////////////////////////////////////////////////////////
 NurbsCurveDrawer::
 NurbsCurveDrawer() {
-  set_cv_color(1.0, 0.0, 0.0);
-  set_hull_color(1.0, 0.5, 0.5);
-  set_knot_color(0.0, 0.0, 1.0);
+  set_cv_color(1.0f, 0.0f, 0.0f);
+  set_hull_color(1.0f, 0.5, 0.5);
+  set_knot_color(0.0f, 0.0f, 1.0f);
 
-  _cvs.set_thickness(4.0);
-  _hull.set_thickness(1.0);
-  _knots.set_thickness(4.0);
+  _cvs.set_thickness(4.0f);
+  _hull.set_thickness(1.0f);
+  _knots.set_thickness(4.0f);
 
   _show_cvs = true;
   _show_hull = true;
@@ -130,7 +130,7 @@ draw() {
     _num_cvs = nurbs->get_num_cvs();
     _knotnums.erase(_knotnums.begin(), _knotnums.end());
 
-    float lt = -1.0;
+    float lt = -1.0f;
     int ki = -1;
     for (i = 0; i < _num_cvs; i++) {
       float t = nurbs->get_knot(i);

@@ -25,7 +25,7 @@
 INLINE float ParametricCurveDrawer::
 get_max_t() const {
   if (_curves == (ParametricCurveCollection *)NULL) {
-    return 0.0;
+    return 0.0f;
   } else {
     return _curves->get_max_t();
   }

@@ -123,7 +123,7 @@ filter_row(StoreType dest[], int dest_len,
   // Similarly, if we are expanding the row, we want to start the new row at
   // the far left edge of the original pixel, not in the center.  So we will
   // have a non-zero offset.
-  int offset = (int)floor(iscale/2.0);
+  int offset = (int)floor(iscale*0.5);
 
   for (int dest_x=0; dest_x<dest_len; dest_x++) {
     double center = (dest_x-offset)/scale;
@@ -487,12 +487,12 @@ box_filter_line(const PNMImage &image,
                 double x0, int y, double x1, double y_contrib,
                 double &red, double &grn, double &blu, double &alpha,
                 double &pixel_count) {
-  int x = (int)floor(x0);
+  int x = (int)x0;
   // Get the first (partial) xel
   box_filter_xel(image, x, y, (double)(x+1)-x0, y_contrib,
                  red, grn, blu, alpha, pixel_count);
 
-  int x_last = (int)floor(x1);
+  int x_last = (int)x1;
   if (x < x_last) {
     x++;
     while (x < x_last) {
@@ -518,12 +518,14 @@ box_filter_region(const PNMImage &image,
   double red = 0.0, grn = 0.0, blu = 0.0, alpha = 0.0;
   double pixel_count = 0.0;
 
-  int y = (int)floor(y0);
+  assert(y0 >=0 && y1 >=0);
+
+  int y = (int)y0;
   // Get the first (partial) row
   box_filter_line(image, x0, y, x1, (double)(y+1)-y0,
                   red, grn, blu, alpha, pixel_count);
 
-  int y_last = (int)floor(y1);
+  int y_last = (int)y1;
   if (y < y_last) {
     y++;
     while (y < y_last) {

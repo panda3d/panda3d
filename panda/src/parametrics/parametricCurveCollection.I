@@ -58,7 +58,7 @@ get_curve(int index) const {
 INLINE float ParametricCurveCollection::
 get_max_t() const {
   if (_curves.empty()) {
-    return 0.0;
+    return 0.0f;
   }
   return _curves.back()->get_max_t();
 }

@@ -94,7 +94,8 @@ CubicCurveseg::
 ////////////////////////////////////////////////////////////////////
 bool CubicCurveseg::
 get_point(float t, LVecBase3f &point) const {
-  evaluate_point(LVecBase4f(t*t*t, t*t, t, 1.0), point);
+  float t_sqrd = t*t;
+  evaluate_point(LVecBase4f(t*t_sqrd, t_sqrd, t, 1.0f), point);
   return true;
 }
 
@@ -106,7 +107,7 @@ get_point(float t, LVecBase3f &point) const {
 ////////////////////////////////////////////////////////////////////
 bool CubicCurveseg::
 get_tangent(float t, LVecBase3f &tangent) const {
-  evaluate_vector(LVecBase4f(3.0*t*t, 2.0*t, 1.0, 0.0), tangent);
+  evaluate_vector(LVecBase4f(3.0f*t*t, 2.0f*t, 1.0f, 0.0f), tangent);
   return true;
 }
 
@@ -118,8 +119,9 @@ get_tangent(float t, LVecBase3f &tangent) const {
 ////////////////////////////////////////////////////////////////////
 bool CubicCurveseg::
 get_pt(float t, LVecBase3f &point, LVecBase3f &tangent) const {
-  evaluate_point(LVecBase4f(t*t*t, t*t, t, 1.0), point);
-  evaluate_vector(LVecBase4f(3.0*t*t, 2.0*t, 1.0, 0.0), tangent);
+  float t_sqrd=t*t;
+  evaluate_point(LVecBase4f(t*t_sqrd, t_sqrd, t, 1.0f), point);
+  evaluate_vector(LVecBase4f(3.0f*t_sqrd, /*2.0f*t*/t+t, 1.0f, 0.0f), tangent);
   return true;
 }
 
@@ -131,7 +133,7 @@ get_pt(float t, LVecBase3f &point, LVecBase3f &tangent) const {
 ////////////////////////////////////////////////////////////////////
 bool CubicCurveseg::
 get_2ndtangent(float t, LVecBase3f &tangent2) const {
-  evaluate_vector(LVecBase4f(6.0*t, 2.0, 0.0, 0.0), tangent2);
+  evaluate_vector(LVecBase4f(6.0f*t, 2.0f, 0.0f, 0.0f), tangent2);
   return true;
 }
 
@@ -148,10 +150,10 @@ hermite_basis(const HermiteCurveCV &cv0,
               const HermiteCurveCV &cv1,
               float tlength) {
   static LMatrix4f
-    Mh(2, -3, 0, 1,
-       -2, 3, 0, 0,
-       1, -2, 1, 0,
-       1, -1, 0, 0);
+    Mh( 2.0f, -3.0f, 0.0f, 1.0f,
+       -2.0f,  3.0f, 0.0f, 0.0f,
+        1.0f, -2.0f, 1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f, 0.0f);
 
   LVecBase4f Gx(cv0._p[0], cv1._p[0],
                 cv0._out[0]*tlength, cv1._in[0]*tlength);
@@ -176,10 +178,10 @@ hermite_basis(const HermiteCurveCV &cv0,
 void CubicCurveseg::
 bezier_basis(const BezierSeg &seg) {
   static LMatrix4f
-    Mb(-1, 3, -3, 1,
-       3, -6, 3, 0,
-       -3, 3, 0, 0,
-       1, 0, 0, 0);
+    Mb(-1.0f,  3.0f, -3.0f, 1.0f,
+        3.0f, -6.0f,  3.0f, 0.0f,
+       -3.0f,  3.0f,  0.0f, 0.0f,
+        1.0f,  0.0f,  0.0f, 0.0f);
 
   LVecBase4f Gx(seg._v[0][0], seg._v[1][0], seg._v[2][0], seg._v[3][0]);
   LVecBase4f Gy(seg._v[0][1], seg._v[1][1], seg._v[2][1], seg._v[3][1]);
@@ -199,9 +201,9 @@ nurbs_blending_function(int order, int i, int j,
 
   if (j==1) {
     if (i==order-1 && knots[i] < knots[i+1]) {
-      r.set(0.0, 0.0, 0.0, 1.0);
+      r.set(0.0f, 0.0f, 0.0f, 1.0f);
     } else {
-      r.set(0.0, 0.0, 0.0, 0.0);
+      r.set(0.0f, 0.0f, 0.0f, 0.0f);
     }
 
   } else {
@@ -212,35 +214,35 @@ nurbs_blending_function(int order, int i, int j,
     float d1 = knots[i+j] - knots[i+1];
 
     // First term.  Division by zero is defined to equal zero.
-    if (d0 != 0.0) {
-      if (d1 != 0.0) {
+    if (d0 != 0.0f) {
+      if (d1 != 0.0f) {
         r = bi0 / d0 - bi1 / d1;
       } else {
         r = bi0 / d0;
       }
 
-    } else if (d1 != 0.0) {
+    } else if (d1 != 0.0f) {
       r = - bi1 / d1;
 
     } else {
-      r.set(0.0, 0.0, 0.0, 0.0);
+      r.set(0.0f, 0.0f, 0.0f, 0.0f);
     }
 
     // scale by t.
     r[0] = r[1];
     r[1] = r[2];
     r[2] = r[3];
-    r[3] = 0.0;
+    r[3] = 0.0f;
 
     // Second term.
-    if (d0 != 0.0) {
-      if (d1 != 0.0) {
+    if (d0 != 0.0f) {
+      if (d1 != 0.0f) {
         r += bi0 * (- knots[i] / d0) + bi1 * (knots[i+j] / d1);
       } else {
         r += bi0 * (- knots[i] / d0);
       }
 
-    } else if (d1 != 0.0) {
+    } else if (d1 != 0.0f) {
       r += bi1 * (knots[i+j] / d1);
     }
   }
@@ -307,7 +309,7 @@ nurbs_basis(int order, const float knots[], const LVecBase4f cvs[]) {
   // elements.
   LVecBase4f c[4];
   for (int i = 0; i < 4; i++) {
-    c[i] = (i<order) ? cvs[i] : LVecBase4f(0.0, 0.0, 0.0, 0.0);
+    c[i] = (i<order) ? cvs[i] : LVecBase4f(0.0f, 0.0f, 0.0f, 0.0f);
   }
 
   Bx = LVecBase4f(c[0][0], c[1][0], c[2][0], c[3][0]) * B;
@@ -329,10 +331,10 @@ nurbs_basis(int order, const float knots[], const LVecBase4f cvs[]) {
 bool CubicCurveseg::
 get_bezier_seg(BezierSeg &seg) const {
   static LMatrix4f
-    Mbi(0.0, 0.0, 0.0, 1.0,
-        0.0, 0.0, 1.0/3.0, 1.0,
-        0.0, 1.0/3.0, 2.0/3.0, 1.0,
-        1.0, 1.0, 1.0, 1.0);
+    Mbi(0.0f, 0.0f, 0.0f, 1.0f,
+        0.0f, 0.0f, 1.0f/3.0f, 1.0f,
+        0.0f, 1.0f/3.0f, 2.0f/3.0f, 1.0f,
+        1.0f, 1.0f, 1.0f, 1.0f);
 
   LVecBase4f Gx = Bx * Mbi;
   LVecBase4f Gy = By * Mbi;
@@ -353,7 +355,6 @@ get_bezier_seg(BezierSeg &seg) const {
 
   return true;
 }
-
 
 // We need this operator since Performer didn't supply it.
 inline LVecBase4f
@@ -390,10 +391,14 @@ compute_seg_col(int c,
   switch (rtype & RT_BASE_TYPE) {
     // RT_point defines the point on the curve at t.  This is the vector
     // [ t^3 t^2 t^1 t^0 ].
+    float t_sqrd,t_cubed;
+
   case RT_POINT:
-    T.set_col(c, LVecBase4f(t*t*t, t*t, t, 1.0));
+    t_sqrd = t*t;
+    t_cubed = t_sqrd*t;
+    T.set_col(c, LVecBase4f(t_cubed, t_sqrd, t, 1.0f));
     if (keep_orig) {
-      LVecBase4f vec(t*t*t, t*t, t, 1.0);
+      LVecBase4f vec(t_cubed, t_sqrd, t, 1.0f);
       LVecBase4f ov = col_mult(GB, vec);
       if (parametrics_cat.is_debug()) {
         parametrics_cat.debug()
@@ -408,9 +413,10 @@ compute_seg_col(int c,
     // RT_tangent defines the tangent to the curve at t.  This is
     // the vector [ 3t^2 2t 1 0 ].
   case RT_TANGENT:
-    T.set_col(c, LVecBase4f(3.0*t*t, 2.0*t, 1.0, 0.0));
+    t_sqrd = t*t;
+    T.set_col(c, LVecBase4f(3.0f*t_sqrd, t+t, 1.0f, 0.0f));
     if (keep_orig) {
-      LVecBase4f vec(3.0*t*t, 2.0*t, 1.0, 0.0);
+      LVecBase4f vec(3.0f*t_sqrd, /*2.0f*t*/t+t, 1.0f, 0.0f);
       LVecBase4f ov = col_mult(GB, vec);
       if (parametrics_cat.is_debug()) {
         parametrics_cat.debug()

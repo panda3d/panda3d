@@ -716,7 +716,7 @@ update_cursor() {
   } else {
     double elapsed_time = 
       ClockObject::get_global_clock()->get_frame_time() - _blink_start;
-    int cycle = (int)floor(elapsed_time * _blink_rate * 2.0);
+    int cycle = (int)(elapsed_time * _blink_rate * 2.0f);
     bool visible = ((cycle & 1) == 0);
     show_hide_cursor(visible);
   }

@@ -34,7 +34,7 @@ append_cv(float x, float y, float z) {
 ////////////////////////////////////////////////////////////////////
 INLINE int NurbsCurveInterface::
 append_cv(const LVecBase3f &v) {
-  return append_cv(LVecBase4f(v[0], v[1], v[2], 1.0));
+  return append_cv(LVecBase4f(v[0], v[1], v[2], 1.0f));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -67,7 +67,7 @@ set_cv_point(int n, float x, float y, float z) {
 INLINE bool NurbsCurveInterface::
 set_cv_point(int n, const LVecBase3f &v) {
   nassertr(n >= 0 && n < get_num_cvs(), false);
-  return set_cv(n, LVecBase4f(v[0], v[1], v[2], 1.0) * get_cv_weight(n));
+  return set_cv(n, LVecBase4f(v[0], v[1], v[2], 1.0f) * get_cv_weight(n));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -79,7 +79,7 @@ INLINE LVecBase3f NurbsCurveInterface::
 get_cv_point(int n) const {
   nassertr(n >= 0 && n < get_num_cvs(), LVecBase3f::zero());
   LVecBase4f p = get_cv(n);
-  nassertr(p[3] != 0.0, LVecBase3f::zero());
+  nassertr(p[3] != 0.0f, LVecBase3f::zero());
   return LVecBase3f(p[0], p[1], p[2]) / p[3];
 }
 

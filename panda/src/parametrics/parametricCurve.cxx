@@ -90,14 +90,14 @@ is_valid() const {
 //     Function: ParametricCurve::get_max_t
 //       Access: Published, Virtual
 //  Description: Returns the upper bound of t for the entire curve.
-//               The curve is defined in the range 0.0 <= t <=
+//               The curve is defined in the range 0.0f <= t <=
 //               get_max_t().  This base class function always returns
-//               1.0; derived classes might override this to return
+//               1.0f; derived classes might override this to return
 //               something else.
 ////////////////////////////////////////////////////////////////////
 float ParametricCurve::
 get_max_t() const {
-  return 1.0;
+  return 1.0f;
 }
 
 
@@ -184,7 +184,7 @@ get_num_dimensions() const {
 ////////////////////////////////////////////////////////////////////
 float ParametricCurve::
 calc_length() const {
-  return calc_length(0.0, get_max_t());
+  return calc_length(0.0f, get_max_t());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -200,17 +200,20 @@ calc_length(float from, float to) const {
 
   // Normally we expect from < to.  If they came in backwards, reverse
   // them.
-  if (to < from) {
+  float to_minus_from = to - from;
+
+  if (to_minus_from < 0.0f) {
     float temp = to;
     to = from;
     from = temp;
+    to_minus_from=-to_minus_from;
   }
 
   // Start with a segment for each unit of t.
-  int num_segs = (int)floor(to - from + 1);
+  int num_segs = (int)(to_minus_from) + 1;
   t2 = from;
   get_point(t2, p2);
-  float net = 0.0;
+  float net = 0.0f;
 
   for (int i = 1; i <= num_segs; i++) {
     t1 = t2;
@@ -240,8 +243,8 @@ calc_length(float from, float to) const {
 ////////////////////////////////////////////////////////////////////
 float ParametricCurve::
 find_length(float start_t, float length_offset) const {
-  nassertr(length_offset >= 0.0, start_t);
-  nassertr(start_t >= 0.0 && start_t <= get_max_t(), start_t);
+  nassertr(length_offset >= 0.0f, start_t);
+  nassertr(start_t >= 0.0f && start_t <= get_max_t(), start_t);
 
   float t1, t2;
   LPoint3f p1, p2;
@@ -251,7 +254,7 @@ find_length(float start_t, float length_offset) const {
   int num_segs = (int)floor(max_t - start_t + 1);
   t2 = start_t;
   get_point(t2, p2);
-  float net = 0.0;
+  float net = 0.0f;
 
   for (int i = 1; i <= num_segs; i++) {
     t1 = t2;
@@ -502,32 +505,32 @@ convert_to_hermite(HermiteCurve *hc) const {
 
   int i, n;
   if (!bz_segs.empty()) {
-    float scale_in = 0.0;
+    float scale_in = 0.0f;
     float scale_out = bz_segs[0]._t;
     n = hc->append_cv(HC_SMOOTH, bz_segs[0]._v[0]);
-    hc->set_cv_out(n, 3.0 * (bz_segs[0]._v[1] - bz_segs[0]._v[0]) / scale_out);
+    hc->set_cv_out(n, 3.0f * (bz_segs[0]._v[1] - bz_segs[0]._v[0]) / scale_out);
 
     for (i = 0; i < (int)bz_segs.size()-1; i++) {
       scale_in = scale_out;
       scale_out = bz_segs[i+1]._t - bz_segs[i]._t;
 
-      if (!bz_segs[i]._v[3].almost_equal(bz_segs[i+1]._v[0], 0.0001)) {
+      if (!bz_segs[i]._v[3].almost_equal(bz_segs[i+1]._v[0], 0.0001f)) {
         // Oops, we have a cut.
         hc->set_cv_type(n, HC_CUT);
       }
 
       n = hc->append_cv(HC_FREE, bz_segs[i+1]._v[0]);
-      hc->set_cv_in(n, 3.0 * (bz_segs[i]._v[3] - bz_segs[i]._v[2]) / scale_in);
+      hc->set_cv_in(n, 3.0f * (bz_segs[i]._v[3] - bz_segs[i]._v[2]) / scale_in);
       hc->set_cv_tstart(n, bz_segs[i]._t);
 
-      hc->set_cv_out(n, 3.0 * (bz_segs[i+1]._v[1] - bz_segs[i+1]._v[0]) / scale_out);
+      hc->set_cv_out(n, 3.0f * (bz_segs[i+1]._v[1] - bz_segs[i+1]._v[0]) / scale_out);
     }
 
     // Now the last CV.
     scale_in = scale_out;
     i = bz_segs.size()-1;
     n = hc->append_cv(HC_SMOOTH, bz_segs[i]._v[3]);
-    hc->set_cv_in(n, 3.0 * (bz_segs[i]._v[3] - bz_segs[i]._v[2]) / scale_in);
+    hc->set_cv_in(n, 3.0f * (bz_segs[i]._v[3] - bz_segs[i]._v[2]) / scale_in);
     hc->set_cv_tstart(n, bz_segs[i]._t);
   }
 
@@ -538,12 +541,12 @@ convert_to_hermite(HermiteCurve *hc) const {
       LVector3f in = hc->get_cv_in(n);
       LVector3f out = hc->get_cv_out(n);
 
-      if (in.almost_equal(out, 0.0001)) {
+      if (in.almost_equal(out, 0.0001f)) {
         hc->set_cv_type(n, HC_SMOOTH);
       } else {
         in.normalize();
         out.normalize();
-        if (in.almost_equal(out, 0.0001)) {
+        if (in.almost_equal(out, 0.0001f)) {
           hc->set_cv_type(n, HC_G1);
         }
       }
@@ -580,17 +583,17 @@ convert_to_nurbs(ParametricCurve *nc) const {
       nurbs->append_cv(bz_segs[i]._v[1]);
       nurbs->append_cv(bz_segs[i]._v[2]);
       if (i == (int)bz_segs.size()-1 ||
-          !bz_segs[i]._v[3].almost_equal(bz_segs[i+1]._v[0], 0.0001)) {
+          !bz_segs[i]._v[3].almost_equal(bz_segs[i+1]._v[0], 0.0001f)) {
         nurbs->append_cv(bz_segs[i]._v[3]);
       }
     }
 
     float t;
     int ki = 4;
-    nurbs->set_knot(0, 0.0);
-    nurbs->set_knot(1, 0.0);
-    nurbs->set_knot(2, 0.0);
-    nurbs->set_knot(3, 0.0);
+    nurbs->set_knot(0, 0.0f);
+    nurbs->set_knot(1, 0.0f);
+    nurbs->set_knot(2, 0.0f);
+    nurbs->set_knot(3, 0.0f);
 
     for (i = 0; i < (int)bz_segs.size(); i++) {
       t = bz_segs[i]._t;
@@ -599,8 +602,8 @@ convert_to_nurbs(ParametricCurve *nc) const {
       nurbs->set_knot(ki+1, t);
       nurbs->set_knot(ki+2, t);
       ki += 3;
-      if (i == (int)bz_segs.size()-1 ||
-          !bz_segs[i]._v[3].almost_equal(bz_segs[i+1]._v[0], 0.0001)) {
+      if (i == ((int)bz_segs.size())-1 ||
+          !bz_segs[i]._v[3].almost_equal(bz_segs[i+1]._v[0], 0.0001f)) {
         nurbs->set_knot(ki, t);
         ki++;
       }
@@ -743,13 +746,13 @@ format_egg(ostream &, const string &, const string &, int) const {
 float ParametricCurve::
 r_calc_length(float t1, float t2, const LPoint3f &p1, const LPoint3f &p2,
               float seglength) const {
-  static const float length_tolerance = 0.0000001;
-  static const float t_tolerance = 0.000001;
+  static const float length_tolerance = 0.0000001f;
+  static const float t_tolerance = 0.000001f;
 
   if (t2 - t1 < t_tolerance) {
     // Stop recursing--we've just walked off the limit for
     // representing smaller values of t.
-    return 0.0;
+    return 0.0f;
   } else {
     float tmid;
     LPoint3f pmid;
@@ -757,7 +760,7 @@ r_calc_length(float t1, float t2, const LPoint3f &p1, const LPoint3f &p2,
 
     // Calculate the point on the curve midway between the two
     // endpoints.
-    tmid = (t1+t2)/2.0;
+    tmid = (t1+t2)*0.5f;
     get_point(tmid, pmid);
 
     // Did we increase the length of the segment measurably?
@@ -792,8 +795,8 @@ r_find_length(float target_length, float &found_t,
               float t1, float t2,
               const LPoint3f &p1, const LPoint3f &p2,
               float &seglength) const {
-  static const float length_tolerance = 0.0000001;
-  static const float t_tolerance = 0.000001;
+  static const float length_tolerance = 0.0000001f;
+  static const float t_tolerance = 0.000001f;
 
   if (target_length < t_tolerance) {
     // Stop recursing--we've just walked off the limit for
@@ -808,7 +811,7 @@ r_find_length(float target_length, float &found_t,
 
     // Calculate the point on the curve midway between the two
     // endpoints.
-    tmid = (t1+t2)/2.0;
+    tmid = (t1+t2)*0.5f;
     get_point(tmid, pmid);
 
     // Did we increase the length of the segment measurably?
