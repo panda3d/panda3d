@@ -161,6 +161,19 @@ is_valid() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_sort
+//       Access: Published
+//  Description: Returns the sorting order of this particular
+//               GraphicsOutput.  The various GraphicsOutputs within a
+//               particular thread will be rendered in the indicated
+//               order.
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsOutput::
+get_sort() const {
+  return _sort;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::win_display_regions_changed
 //       Access: Public
 //  Description: Intended to be called when the active state on a
@@ -171,6 +184,19 @@ is_valid() const {
 INLINE void GraphicsOutput::
 win_display_regions_changed() {
   _display_regions_stale = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::operator <
+//       Access: Public
+//  Description: The sorting operator is used to order the
+//               GraphicsOutput object in order by their sort number,
+//               so that they will render in the correct order in the
+//               GraphicsEngine.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsOutput::
+operator < (const GraphicsOutput &other) const {
+  return _sort < other._sort;
 }
 
 

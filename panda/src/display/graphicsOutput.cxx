@@ -18,6 +18,7 @@
 
 #include "graphicsOutput.h"
 #include "graphicsPipe.h"
+#include "graphicsEngine.h"
 #include "config_display.h"
 #include "mutexHolder.h"
 #include "hardwareChannel.h"
@@ -49,6 +50,7 @@ GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   _has_size = false;
   _is_valid = false;
   _copy_texture = false;
+  _sort = 0;
 
   _display_regions_stale = false;
 
@@ -110,6 +112,22 @@ GraphicsOutput::
 bool GraphicsOutput::
 is_active() const {
   return is_valid();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::set_sort
+//       Access: Published
+//  Description: Adjusts the sorting order of this particular
+//               GraphicsOutput, relative to other GraphicsOutputs.
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+set_sort(int sort) {
+  if (_sort != sort) {
+    if (_gsg != (GraphicsStateGuardian *)NULL &&
+        _gsg->get_engine() != (GraphicsEngine *)NULL) {
+      _gsg->get_engine()->set_window_sort(this, sort);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

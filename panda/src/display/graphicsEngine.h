@@ -29,8 +29,10 @@
 #include "thread.h"
 #include "pmutex.h"
 #include "conditionVar.h"
-#include "pset.h"
 #include "pStatCollector.h"
+#include "pset.h"
+#include "ordered_vector.h"
+#include "indirectLess.h"
 
 class Pipeline;
 class DisplayRegion;
@@ -71,8 +73,10 @@ PUBLISHED:
   PT(GraphicsStateGuardian) make_gsg(GraphicsPipe *pipe,
                                      const FrameBufferProperties &properties);
 
-  GraphicsWindow *make_window(GraphicsStateGuardian *gsg, const string &name);
+  GraphicsWindow *make_window(GraphicsStateGuardian *gsg, const string &name,
+                              int sort);
   GraphicsOutput *make_buffer(GraphicsStateGuardian *gsg, const string &name,
+                              int sort,
                               int x_size, int y_size, bool want_texture);
 
   bool remove_window(GraphicsOutput *window);
@@ -97,8 +101,10 @@ public:
   };
 
 private:
-  typedef pset< PT(GraphicsOutput) > Windows;
+  typedef ov_multiset< PT(GraphicsOutput), IndirectLess<GraphicsOutput> > Windows;
   typedef pset< PT(GraphicsStateGuardian) > GSGs;
+
+  void set_window_sort(GraphicsOutput *window, int sort);
 
   void cull_and_draw_together(const Windows &wlist);
   void cull_and_draw_together(GraphicsStateGuardian *gsg, DisplayRegion *dr);
@@ -106,8 +112,8 @@ private:
   void cull_bin_draw(const Windows &wlist);
   void cull_bin_draw(GraphicsStateGuardian *gsg, DisplayRegion *dr);
 
-  void process_events(const GraphicsEngine::Windows &wlist);
-  void flip_windows(const GraphicsEngine::Windows &wlist);
+  void process_events(const Windows &wlist);
+  void flip_windows(const Windows &wlist);
   void do_sync_frame();
   void do_flip_frame();
   INLINE void close_gsg(GraphicsPipe *pipe, GraphicsStateGuardian *gsg);
@@ -124,6 +130,7 @@ private:
   void do_add_window(GraphicsOutput *window, GraphicsStateGuardian *gsg,
                      const GraphicsThreadingModel &threading_model);
   void do_remove_window(GraphicsOutput *window);
+  void do_resort_windows();
   void terminate_threads();
 
   // The WindowRenderer class records the stages of the pipeline that
@@ -134,6 +141,7 @@ private:
     void add_gsg(GraphicsStateGuardian *gsg);
     void add_window(Windows &wlist, GraphicsOutput *window);
     void remove_window(GraphicsOutput *window);
+    void resort_windows();
     void do_frame(GraphicsEngine *engine);
     void do_flip(GraphicsEngine *engine);
     void do_release(GraphicsEngine *engine);
@@ -145,8 +153,11 @@ private:
     Windows _cdraw;   // cull-and-draw-together stage
     Windows _draw;    // draw stage
     Windows _window;  // window stage, i.e. process windowing events 
+
+    // These two are not kept sorted.
     Windows _pending_release; // moved from _draw, pending release_gsg.
     Windows _pending_close;   // moved from _window, pending close.
+
     GSGs _gsgs;       // draw stage
     Mutex _wl_lock;
   };
@@ -166,6 +177,7 @@ private:
 
   Pipeline *_pipeline;
   Windows _windows;
+  bool _windows_sorted;
 
   WindowRenderer _app;
   typedef pmap<string, PT(RenderThread) > Threads;
@@ -192,7 +204,9 @@ private:
   static PStatCollector _transform_states_unused_pcollector;
   static PStatCollector _render_states_pcollector;
   static PStatCollector _render_states_unused_pcollector;
+
   friend class WindowRenderer;
+  friend class GraphicsOutput;
 };
 
 #include "graphicsEngine.I"

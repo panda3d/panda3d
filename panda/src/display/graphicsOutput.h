@@ -83,6 +83,9 @@ PUBLISHED:
 
   virtual bool is_active() const;
 
+  INLINE int get_sort() const;
+  void set_sort(int sort);
+
   GraphicsChannel *get_channel(int index);
   void remove_channel(int index);
 
@@ -103,6 +106,8 @@ public:
 public:
   // These are not intended to be called directly by the user.
   INLINE void win_display_regions_changed();
+
+  INLINE bool operator < (const GraphicsOutput &other) const;
 
   virtual void request_open();
   virtual void request_close();
@@ -145,6 +150,8 @@ protected:
 private:
   INLINE void determine_display_regions() const;
   void do_determine_display_regions();
+
+  int _sort;
 
 protected:
   Mutex _lock; 

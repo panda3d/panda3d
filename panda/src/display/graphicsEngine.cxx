@@ -67,6 +67,8 @@ GraphicsEngine(Pipeline *pipeline) :
     _pipeline = Pipeline::get_render_pipeline();
   }
 
+  _windows_sorted = true;
+
   // Default frame buffer properties.
   _frame_buffer_properties.set_depth_bits(1);
   _frame_buffer_properties.set_color_bits(1);
@@ -203,7 +205,7 @@ make_gsg(GraphicsPipe *pipe, const FrameBufferProperties &properties) {
 //               later.
 ////////////////////////////////////////////////////////////////////
 GraphicsWindow *GraphicsEngine::
-make_window(GraphicsStateGuardian *gsg, const string &name) {
+make_window(GraphicsStateGuardian *gsg, const string &name, int sort) {
   GraphicsThreadingModel threading_model = get_threading_model();
 
   nassertr(gsg != (GraphicsStateGuardian *)NULL, NULL);
@@ -213,6 +215,7 @@ make_window(GraphicsStateGuardian *gsg, const string &name) {
 
   // TODO: ask the window thread to make the window.
   PT(GraphicsWindow) window = gsg->get_pipe()->make_window(gsg, name);
+  window->_sort = sort;
   do_add_window(window, gsg, threading_model);
   return window;
 }
@@ -232,9 +235,9 @@ make_window(GraphicsStateGuardian *gsg, const string &name) {
 ////////////////////////////////////////////////////////////////////
 GraphicsOutput *GraphicsEngine::
 make_buffer(GraphicsStateGuardian *gsg, const string &name, 
-            int x_size, int y_size, bool want_texture) {
+            int sort, int x_size, int y_size, bool want_texture) {
   if (show_buffers) {
-    GraphicsWindow *window = make_window(gsg, name);
+    GraphicsWindow *window = make_window(gsg, name, sort);
     if (window != (GraphicsWindow *)NULL) {
       WindowProperties props;
       props.set_size(x_size, y_size);
@@ -261,6 +264,7 @@ make_buffer(GraphicsStateGuardian *gsg, const string &name,
   // TODO: ask the window thread to make the buffer.
   PT(GraphicsBuffer) buffer = 
     gsg->get_pipe()->make_buffer(gsg, name, x_size, y_size, want_texture);
+  buffer->_sort = sort;
   do_add_window(buffer, gsg, threading_model);
   return buffer;
 }
@@ -377,6 +381,10 @@ render_frame() {
   // threads tries to call any methods on the GraphicsEngine.  So
   // don't do that.
   MutexHolder holder(_lock);
+
+  if (!_windows_sorted) {
+    do_resort_windows();
+  }
 
   if (_flip_state != FS_flip) {
     do_flip_frame();
@@ -500,6 +508,23 @@ render_subframe(GraphicsStateGuardian *gsg, DisplayRegion *dr,
   } else {
     cull_and_draw_together(gsg, dr);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::set_window_sort
+//       Access: Private
+//  Description: Changes the sort value of a particular window (or
+//               buffer) on the GraphicsEngine.  This requires
+//               securing the mutex.
+//
+//               Users shouldn't call this directly; use
+//               GraphicsOutput::set_sort() instead.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+set_window_sort(GraphicsOutput *window, int sort) {
+  MutexHolder holder(_lock);
+  window->_sort = sort;
+  _windows_sorted = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -895,7 +920,8 @@ do_add_window(GraphicsOutput *window, GraphicsStateGuardian *gsg,
               const GraphicsThreadingModel &threading_model) {
   if (window != (GraphicsOutput *)NULL) {
     MutexHolder holder(_lock);
-    _windows.insert(window);
+    _windows_sorted = false;
+    _windows.push_back(window);
 
     WindowRenderer *cull = get_window_renderer(threading_model.get_cull_name());
     WindowRenderer *draw = get_window_renderer(threading_model.get_draw_name());
@@ -937,6 +963,10 @@ do_remove_window(GraphicsOutput *window) {
   PT(GraphicsPipe) pipe = window->get_pipe();
   window->_pipe = (GraphicsPipe *)NULL;
 
+  if (!_windows_sorted) {
+    do_resort_windows();
+  }
+
   // Now remove the window from all threads that know about it.
   _app.remove_window(window);
   Threads::const_iterator ti;
@@ -948,6 +978,26 @@ do_remove_window(GraphicsOutput *window) {
   // If the window happened to be controlled by the app thread, we
   // might as well close it now rather than waiting for next frame.
   _app.do_pending(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::do_resort_windows
+//       Access: Private
+//  Description: Resorts all of the Windows lists.  This may need to
+//               be done if one or more of the windows' sort
+//               properties has changed.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+do_resort_windows() {
+  _windows_sorted = true;
+
+  _app.resort_windows();
+  Threads::const_iterator ti;
+  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
+    RenderThread *thread = (*ti).second;
+    thread->resort_windows();
+  }
+  _windows.sort();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1077,7 +1127,7 @@ remove_window(GraphicsOutput *window) {
     // Move it to the pending release thread so we can release the GSG
     // when the thread next runs.  We can't do this immediately,
     // because we might not have been called from the subthread.
-    _pending_release.insert(ptwin);
+    _pending_release.push_back(ptwin);
     _cdraw.erase(wi);
   }
 
@@ -1089,7 +1139,7 @@ remove_window(GraphicsOutput *window) {
     // Move it to the pending release thread so we can release the GSG
     // when the thread next runs.  We can't do this immediately,
     // because we might not have been called from the subthread.
-    _pending_release.insert(ptwin);
+    _pending_release.push_back(ptwin);
     _draw.erase(wi);
   }
 
@@ -1106,11 +1156,27 @@ remove_window(GraphicsOutput *window) {
     // it can be closed later.  We can't close it immediately, because
     // we might not have been called from the subthread.
     if (ptwin->is_valid()) {
-      _pending_close.insert(ptwin);
+      _pending_close.push_back(ptwin);
     }
 
     _window.erase(wi);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::WindowRenderer::resort_windows
+//       Access: Public
+//  Description: Resorts all the lists of windows, assuming they may
+//               have become unsorted.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::WindowRenderer::
+resort_windows() {
+  MutexHolder holder(_wl_lock);
+
+  _cull.sort();
+  _cdraw.sort();
+  _draw.sort();
+  _window.sort();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1242,7 +1308,7 @@ do_pending(GraphicsEngine *engine) {
       } else {
         // If the GSG hasn't been released yet, we have to save the
         // close operation for next frame.
-        new_pending_close.insert(win);
+        new_pending_close.push_back(win);
       }
     }
     _pending_close.swap(new_pending_close);
