@@ -390,6 +390,10 @@ setup_colormap(const PIXELFORMATDESCRIPTOR &pixelformat) {
 }
 
 #ifdef _DEBUG
+
+//typedef enum {Software, MCD, ICD} OGLDriverType;
+static char *OGLDrvStrings[3] = {"Software","MCD","ICD"};
+
 ////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsWindow::print_pfd
 //       Access: Private, Static
