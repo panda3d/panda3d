@@ -12,6 +12,7 @@
 
 #include <notify.h>
 #include <pnmImage.h>
+#include <pnmFileType.h>
 
 bool Palette::TexturePlacement::
 intersects(int hleft, int htop, int xsize, int ysize) const {
@@ -149,6 +150,7 @@ Palette(const Filename &filename, PaletteGroup *group,
   _index = -1;
   _palette_changed = false;
   _new_palette = false;
+  _uses_alpha = (_components == 2 || _components == 4);
 }
 
 Palette::
@@ -163,6 +165,7 @@ Palette(PaletteGroup *group, int index,
 {
   _palette_changed = false;
   _new_palette = true;
+  _uses_alpha = (_components == 2 || _components == 4);
 }
 
 Palette::
@@ -177,6 +180,29 @@ Palette::
 Filename Palette::
 get_filename() const {
   return _filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Palette::has_alpha_filename
+//       Access: Public
+//  Description: Returns true if this texture requires a separate
+//               alpha image file.
+////////////////////////////////////////////////////////////////////
+bool Palette::
+has_alpha_filename() const {
+  return _uses_alpha && (_attrib_file->_alpha_type != (PNMFileType *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Palette::get_alpha_filename
+//       Access: Public
+//  Description: Returns the filename for the alpha channel to which
+//               this texture will be copied, assuming it is not
+//               placed on a palette.
+////////////////////////////////////////////////////////////////////
+Filename Palette::
+get_alpha_filename() const {
+  return _attrib_file->make_alpha_filename(_filename);
 }
 
 Filename Palette::
@@ -331,15 +357,18 @@ finalize_palette() {
     char index_str[128];
     sprintf(index_str, "%03d", _index);
     _basename = _group->get_name() + "-palette." + index_str + ".rgb";
+    _basename = _attrib_file->make_color_filename(_basename);
 
     Filename dirname = _group->get_full_dirname(_attrib_file);
     _filename = _basename;
     _filename.set_dirname(dirname.get_fullpath());
   } else {
+    _filename = _attrib_file->make_color_filename(_filename);
     _basename = _filename.get_basename();
   }
 
-  _components = check_uses_alpha() ? 4 : 3;
+  _uses_alpha = check_uses_alpha();
+  _components = _uses_alpha ? 4 : 3;
 
   if (_texplace.size() == 1) {
     // If we packed exactly one texture, never mind.
@@ -388,7 +417,7 @@ generate_image() {
   }
 
   _filename.make_dir();
-  if (!palette.write(_filename)) {
+  if (!_attrib_file->write_image_file(palette, _filename, get_alpha_filename())) {
     nout << "Error in writing.\n";
     okflag = false;
   }
@@ -402,11 +431,17 @@ refresh_image() {
     nout << "Palette image " << _filename << " does not exist, rebuilding.\n";
     return generate_image();
   }
+  Filename alpha_filename = get_alpha_filename();
+  if (has_alpha_filename() && !alpha_filename.exists()) {
+    nout << "Palette alpha image " << alpha_filename
+	 << " does not exist, rebuilding.\n";
+    return generate_image();
+  }
 
   bool okflag = true;
 
   PNMImage palette;
-  if (!palette.read(_filename)) {
+  if (!_attrib_file->read_image_file(palette, _filename, alpha_filename)) {
     nout << "Unable to read old palette image " << _filename 
 	 << ", rebuilding.\n";
     return generate_image();
@@ -440,7 +475,7 @@ refresh_image() {
   }
 
   if (any_changed) {
-    if (!palette.write(_filename)) {
+    if (!_attrib_file->write_image_file(palette, _filename, alpha_filename)) {
       nout << "Error in writing.\n";
       okflag = false;
     }

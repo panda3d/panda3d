@@ -414,6 +414,15 @@ needs_refresh() {
     } else {
       // Compare to the resized file.
       target_filename = get_new_filename();
+
+      if (has_alpha_filename()) {
+	// If we have an alpha file, compare to the older of the two
+	// files.
+	Filename alpha_filename = get_alpha_filename();
+	if (target_filename.compare_timestamps(alpha_filename, true, true) > 0) {
+	  target_filename = alpha_filename;
+	}
+      }
     }
 
     if (!any_change) {
@@ -474,8 +483,32 @@ Filename TexturePacking::
 get_new_filename() const {
   Filename dirname = _group->get_full_dirname(_attrib_file);
   Filename new_filename(dirname, _texture->get_name());
+  new_filename = _attrib_file->make_color_filename(new_filename);
   new_filename.standardize();
   return new_filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePacking::has_alpha_filename
+//       Access: Public
+//  Description: Returns true if this texture requires a separate
+//               alpha image file.
+////////////////////////////////////////////////////////////////////
+bool TexturePacking::
+has_alpha_filename() const {
+  return _uses_alpha && (_attrib_file->_alpha_type != (PNMFileType *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePacking::get_alpha_filename
+//       Access: Public
+//  Description: Returns the filename for the alpha channel to which
+//               this texture will be copied, assuming it is not
+//               placed on a palette.
+////////////////////////////////////////////////////////////////////
+Filename TexturePacking::
+get_alpha_filename() const {
+  return _attrib_file->make_alpha_filename(get_new_filename());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -556,7 +589,7 @@ transfer() {
   }
   
   new_filename.make_dir();
-  if (!image->write(new_filename)) {
+  if (!_attrib_file->write_image_file(*image, new_filename, get_alpha_filename())) {
     nout << "Error in writing.\n";
     okflag = false;
   }

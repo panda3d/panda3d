@@ -21,6 +21,8 @@ class PaletteGroup;
 class Palette;
 class SourceEgg;
 class EggPalettize;
+class PNMImage;
+class PNMFileType;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : AttribFile
@@ -76,6 +78,14 @@ public:
 			  int &num_palettes,
 			  int &orig_size, int &resized_size, 
 			  int &palette_size, int &unplaced_size) const;
+
+  Filename make_color_filename(const Filename &filename) const;
+  Filename make_alpha_filename(const Filename &filename) const;
+
+  bool write_image_file(PNMImage &image, const Filename &filename,
+			const Filename &alpha_filename) const;
+  bool read_image_file(PNMImage &image, const Filename &filename,
+		       const Filename &alpha_filename) const;
 
 private:
   typedef vector<UserAttribLine *> UserLines;
@@ -140,6 +150,9 @@ public:
   int _default_margin;
   bool _force_power_2;
   bool _aggressively_clean_mapdir;
+
+  PNMFileType *_color_type;
+  PNMFileType *_alpha_type;
 
   int _txa_fd;
   fstream _txa_fstrm;

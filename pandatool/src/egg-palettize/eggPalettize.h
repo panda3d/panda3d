@@ -14,6 +14,7 @@
 #include <vector>
 
 class PTexture;
+class PNMFileType;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : EggPalettize
@@ -54,6 +55,10 @@ public:
   bool _got_force_power_2;
   bool _aggressively_clean_mapdir;
   bool _got_aggressively_clean_mapdir;
+  string _image_type;
+  bool _got_image_type;
+  PNMFileType *_color_type;
+  PNMFileType *_alpha_type;
 
   // The following values relate specifically to egg files.  They're
   // not saved for future sessions.

@@ -11,6 +11,8 @@
 #include "textureOmitReason.h"
 
 #include <pnmImage.h>
+#include <pnmFileTypeRegistry.h>
+#include <pnmFileType.h>
 #include <stdio.h>
 
 ////////////////////////////////////////////////////////////////////
@@ -123,6 +125,15 @@ EggPalettize() : EggMultiFilter(true) {
      "textures from previous passes.",
      &EggPalettize::dispatch_none, &_got_aggressively_clean_mapdir);
   add_option
+    ("type", "imagetype[,alphatype]", 0, 
+     "Specify the type of image file to output.  All image files, whether "
+     "palettes or unplaced textures, will be converted to files of this "
+     "type.  If the optional alpha type is specified, then an alpha channel, "
+     "if present, will be written as a separate file of the indicated "
+     "type--useful if the primary image type does not support alpha.  "
+     "Use '-type list' to show the available image types.",
+     &EggPalettize::dispatch_string, &_got_image_type, &_image_type);
+  add_option
     ("r", "", 0, 
      "Respect any repeat/clamp flags given in the egg files.  The "
      "default is to override a repeat flag if a texture's UV's don't "
@@ -168,6 +179,8 @@ EggPalettize() : EggMultiFilter(true) {
   _fuzz_factor = 0.01;
   _aggressively_clean_mapdir = false;
   _force_power_2 = false;
+  _color_type = (PNMFileType *)NULL;
+  _alpha_type = (PNMFileType *)NULL;
 }
 
 
@@ -184,6 +197,65 @@ handle_args(ProgramBase::Args &args) {
   if (_describe_input_file) {
     describe_input_file();
     exit(1);
+  }
+
+  if (_got_image_type) {
+    PNMFileTypeRegistry *registry = PNMFileTypeRegistry::get_ptr();
+
+    if (_image_type == "list") {
+      nout << "Known image types are:\n";
+      registry->write_types(nout, 2);
+      nout << "\n";
+      exit(1);
+    }
+
+    string color_name = _image_type;
+    string alpha_name;
+    size_t comma = _image_type.find(',');
+    if (comma != string::npos) {
+      // If we have a comma in the image_type, it's two types: a color
+      // type and an alpha type.
+      color_name = _image_type.substr(0, comma);
+      alpha_name = _image_type.substr(comma + 1);
+    }
+
+    bool okflag = true;
+
+    if (!color_name.empty()) {
+      _color_type = registry->get_type_from_extension(color_name);
+      if (_color_type == (PNMFileType *)NULL) {
+	nout << "Image file type '" << color_name << "' is unknown.\n";
+	okflag = false;
+      }
+    }
+
+    if (!alpha_name.empty()) {
+      _alpha_type = registry->get_type_from_extension(alpha_name);
+      if (_alpha_type == (PNMFileType *)NULL) {
+	nout << "Image file type '" << alpha_name << "' is unknown.\n";
+	okflag = false;
+      }
+    }
+
+    if (!okflag) {
+      nout << "\nKnown image types are:\n";
+      registry->write_types(nout, 2);
+      nout << "\n";
+      exit(1);
+    }
+
+    /*
+    if (_color_type != (PNMFileType *)NULL && 
+	_alpha_type != (PNMFileType *)NULL) {
+      nout << "Writing color components to " << _color_type->get_name()
+	   << " and alpha components to " << _alpha_type->get_name()
+	   << " files.\n";
+
+    } else if (_color_type != (PNMFileType *)NULL) {
+      nout << "Converting images to " << _color_type->get_name()
+	   << " files.\n";
+    }
+    */
   }
 
   Args egg_names;

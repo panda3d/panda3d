@@ -35,6 +35,8 @@ public:
   ~Palette();
 
   Filename get_filename() const;
+  bool has_alpha_filename() const;
+  Filename get_alpha_filename() const;
   Filename get_basename() const;
 
   PaletteGroup *get_group() const;
@@ -88,6 +90,7 @@ private:
   PaletteGroup *_group;
   int _index;
   int _xsize, _ysize, _components;
+  bool _uses_alpha;
   bool _palette_changed;
   bool _new_palette;
   

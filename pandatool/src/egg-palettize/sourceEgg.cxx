@@ -290,6 +290,11 @@ update_trefs() {
 	// This texture wasn't palettized, so just rename the
 	// reference to the new one.
 	eggtex->set_filename(_attrib_file->write_egg_filename(packing->get_new_filename()));
+	if (packing->has_alpha_filename()) {
+	  eggtex->set_alpha_file(_attrib_file->write_egg_filename(packing->get_alpha_filename()));
+	} else {
+	  eggtex->clear_alpha_file();
+	}
 
       } else {
 	// This texture was palettized, so redirect the tref to point

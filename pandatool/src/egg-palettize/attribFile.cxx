@@ -13,6 +13,10 @@
 #include "palette.h"
 #include "sourceEgg.h"
 
+#include <pnmImage.h>
+#include <pnmFileType.h>
+#include <pnmFileTypeRegistry.h>
+
 #include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
@@ -53,6 +57,8 @@ AttribFile(const Filename &filename) {
   _default_margin = 2;
   _force_power_2 = false;
   _aggressively_clean_mapdir = false;
+  _color_type = (PNMFileType *)NULL;
+  _alpha_type = (PNMFileType *)NULL;
 }
 
 string AttribFile::
@@ -107,6 +113,12 @@ open_and_lock(bool lock) {
 
   if (lock) {
     if (fcntl(_txa_fd, F_SETLK, &fl) < 0) {
+      if (errno != EACCES) {
+	perror(_txa_filename.c_str());
+	nout << "Unable to lock file; try running with -nolock.\n";
+	return false;
+      }
+
       nout << "Waiting for lock on " << _txa_filename << "\n";
       while (fcntl(_txa_fd, F_SETLKW, &fl) < 0) {
 	if (errno != EINTR) {
@@ -251,6 +263,10 @@ update_params(EggPalettize *prog) {
   }
   if (prog->_got_aggressively_clean_mapdir) {
     _aggressively_clean_mapdir = prog->_aggressively_clean_mapdir;
+  }
+  if (prog->_got_image_type) {
+    _color_type = prog->_color_type;
+    _alpha_type = prog->_alpha_type;
   }
 
   if (!_rel_dirname.empty()) {
@@ -655,6 +671,13 @@ transfer_unplaced_images(bool force_redo_all) {
 	  nout << "Deleting " << new_filename << "\n";
 	  new_filename.unlink();
 	}
+	if (packing->has_alpha_filename()) {
+	  Filename alpha_filename = packing->get_alpha_filename();
+	  if (alpha_filename.exists()) {
+	    nout << "Deleting " << alpha_filename << "\n";
+	    alpha_filename.unlink();
+	  }
+	}
       }
     }
   }
@@ -780,6 +803,110 @@ collect_statistics(int &num_textures, int &num_placed, int &num_palettes,
 }  
 
 
+////////////////////////////////////////////////////////////////////
+//     Function: AttribFile::make_color_filename
+//       Access: Public
+//  Description: Adjusts an image filename to a suitable filename for
+//               saving the color channel.
+////////////////////////////////////////////////////////////////////
+Filename AttribFile::
+make_color_filename(const Filename &filename) const {
+  Filename color_filename = filename;
+  if (_color_type != (PNMFileType *)NULL) {
+    color_filename.set_extension(_color_type->get_suggested_extension());
+  }
+  return color_filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AttribFile::make_alpha_filename
+//       Access: Public
+//  Description: Adjusts an image filename to a suitable filename for
+//               saving the alpha channel, if one is to be saved.
+////////////////////////////////////////////////////////////////////
+Filename AttribFile::
+make_alpha_filename(const Filename &filename) const {
+  Filename alpha_filename;
+  if (_alpha_type != (PNMFileType *)NULL) {
+    alpha_filename = filename;
+    alpha_filename.set_basename
+      (filename.get_basename_wo_extension() + "_alpha." + 
+       _alpha_type->get_suggested_extension());
+  }
+  return alpha_filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AttribFile::write_image_file
+//       Access: Public
+//  Description: Writes out the indicated image, either as a single
+//               file with or without alpha, or as two separate files
+//               if necessary.
+////////////////////////////////////////////////////////////////////
+bool AttribFile::
+write_image_file(PNMImage &image, const Filename &filename,
+		 const Filename &alpha_filename) const {
+  if (!image.has_alpha() || _alpha_type == (PNMFileType *)NULL) {
+    if (!alpha_filename.empty() && alpha_filename.exists()) {
+      alpha_filename.unlink();
+    }
+    return image.write(filename, _color_type);
+  }
+
+  // Write out a separate color image and an alpha channel image.
+  PNMImage alpha_image(image.get_x_size(), image.get_y_size(), 1,
+		       image.get_maxval());
+  for (int y = 0; y < image.get_y_size(); y++) {
+    for (int x = 0; x < image.get_x_size(); x++) {
+      alpha_image.set_gray_val(x, y, image.get_alpha_val(x, y));
+    }
+  }
+
+  image.remove_alpha();
+  return
+    image.write(filename, _color_type) && 
+    alpha_image.write(alpha_filename, _alpha_type);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AttribFile::read_image_file
+//       Access: Public
+//  Description: Reads in the indicated image, either as a single
+//               file with or without alpha, or as two separate files
+//               if necessary.
+////////////////////////////////////////////////////////////////////
+bool AttribFile::
+read_image_file(PNMImage &image, const Filename &filename,
+		const Filename &alpha_filename) const {
+  image.set_type(_color_type);
+  if (!image.read(filename)) {
+    return false;
+  }
+
+  if (!alpha_filename.empty() && alpha_filename.exists()) {
+    // Read in a separate color image and an alpha channel image.
+    PNMImage alpha_image;
+    alpha_image.set_type(_alpha_type);
+    if (!alpha_image.read(alpha_filename)) {
+      return false;
+    }
+    if (image.get_x_size() != alpha_image.get_x_size() ||
+	image.get_y_size() != alpha_image.get_y_size()) {
+      return false;
+    }
+
+    image.add_alpha();
+    for (int y = 0; y < image.get_y_size(); y++) {
+      for (int x = 0; x < image.get_x_size(); x++) {
+	image.set_alpha(x, y, alpha_image.get_gray(x, y));
+      }
+    }
+  }
+
+  return true;
+}
+
+
 bool AttribFile::
 read_txa(istream &infile) {
   string line;
@@ -901,7 +1028,16 @@ write_pi(ostream &out) const {
       << "  pal_ysize " << _pal_ysize << "\n"
       << "  default_margin " << _default_margin << "\n"
       << "  force_power_2 " << _force_power_2 << "\n"
-      << "  aggressively_clean_mapdir " << _aggressively_clean_mapdir << "\n";
+      << "  aggressively_clean_mapdir " << _aggressively_clean_mapdir << "\n"
+      << "  color_type";
+  if (_color_type != (PNMFileType *)NULL) {
+    out << " " << _color_type->get_suggested_extension();
+  }
+  out << "\n  alpha_type";
+  if (_alpha_type != (PNMFileType *)NULL) {
+    out << " " << _alpha_type->get_suggested_extension();
+  }
+  out << "\n";
 
   if (_optimal) {
     out << "\npacking is optimal\n";
@@ -1012,6 +1148,26 @@ parse_params(const vector_string &words, istream &infile,
       _force_power_2 = (atoi(value.c_str()) != 0);
     } else if (param == "aggressively_clean_mapdir") {
       _aggressively_clean_mapdir = (atoi(value.c_str()) != 0);
+    } else if (param == "color_type") {
+      if (value.empty()) {
+	_color_type = (PNMFileType *)NULL;
+      } else {
+	PNMFileTypeRegistry *registry = PNMFileTypeRegistry::get_ptr();
+	_color_type = registry->get_type_from_extension(value);
+	if (_color_type == (PNMFileType *)NULL) {
+	  nout << "Warning: unknown image file type: " << value << "\n";
+	}
+      }
+    } else if (param == "alpha_type") {
+      if (value.empty()) {
+	_alpha_type = (PNMFileType *)NULL;
+      } else {
+	PNMFileTypeRegistry *registry = PNMFileTypeRegistry::get_ptr();
+	_alpha_type = registry->get_type_from_extension(value);
+	if (_alpha_type == (PNMFileType *)NULL) {
+	  nout << "Warning: unknown image file type: " << value << "\n";
+	}
+      }
     } else {
       nout << "Unexpected keyword: " << param << "\n";
       return false;

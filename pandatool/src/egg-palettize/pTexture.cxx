@@ -382,7 +382,7 @@ read_image() {
   }
 
   PNMImage *image = new PNMImage;
-  if (image->read(_filename)) {
+  if (_attrib_file->read_image_file(*image, _filename, Filename())) {
     return image;
   }
 
@@ -431,5 +431,6 @@ read_image_header(const Filename &filename, int &xsize, int &ysize,
   xsize = header.get_x_size();
   ysize = header.get_y_size();
   zsize = header.get_num_channels();
+
   return true;
 }
