@@ -670,13 +670,17 @@ static void test12(GuiManager* mgr, Node* font) {
 }
 
 static void test13(GuiManager* mgr, Node* font) {
-  GuiLabel* ul = GuiLabel::make_simple_text_label("upup", font);
-  GuiSign* us = new GuiSign("up_arrow", ul);
-  us->set_scale(0.1);
-  GuiLabel* dl = GuiLabel::make_simple_text_label("dndn", font);
-  GuiSign* ds = new GuiSign("down_arrow", dl);
+  GuiLabel* ul1 = GuiLabel::make_simple_text_label("upup", font);
+  GuiLabel* ul2 = GuiLabel::make_simple_text_label("upup", font);
+  GuiLabel* ul3 = GuiLabel::make_simple_text_label("upup", font);
+  GuiButton* ub = new GuiButton("up_arrow", ul1, ul2, ul3);
+  ub->set_scale(0.1);
+  GuiLabel* dl1 = GuiLabel::make_simple_text_label("dndn", font);
+  GuiLabel* dl2 = GuiLabel::make_simple_text_label("dndn", font);
+  GuiLabel* dl3 = GuiLabel::make_simple_text_label("dndn", font);
+  GuiButton* db = new GuiButton("down_arrow", dl1, dl2, dl3);
   dl->set_scale(0.1);
-  lb1 = new GuiListBox("list_box", 4, us, ds);
+  lb1 = new GuiListBox("list_box", 4, ub, db);
   GuiLabel* l1 = GuiLabel::make_simple_text_label("hyena", font);
   GuiSign* s1 = new GuiSign("hyena", l1);
   s1->set_scale(0.1);
@@ -707,8 +711,16 @@ static void test13(GuiManager* mgr, Node* font) {
   l3->set_width(w);
   l4->set_width(w);
   l5->set_width(w);
-  ul->set_background_color(0., 0., 0., 1.);
-  dl->set_background_color(0., 0., 0., 1.);
+  ul1->set_background_color(0., 0., 0., 1.);
+  ul2->set_background_color(0., 0., 0., 1.);
+  ul3->set_background_color(0., 0., 0., 1.);
+  ul2->set_foreground_color(1., 0., 0., 1.);
+  ul3->set_foreground_color(1., 1., 1., 0.5);
+  dl1->set_background_color(0., 0., 0., 1.);
+  dl2->set_background_color(0., 0., 0., 1.);
+  dl3->set_background_color(0., 0., 0., 1.);
+  dl2->set_foreground_color(1., 0., 0., 1.);
+  dl3->set_foreground_color(1., 1., 1., 0.5);
   l1->set_background_color(0., 0., 0., 1.);
   l2->set_background_color(0., 0., 0., 1.);
   l3->set_background_color(0., 0., 0., 1.);
@@ -720,8 +732,8 @@ static void test13(GuiManager* mgr, Node* font) {
   lb1->add_item(s4);
   lb1->add_item(s5);
   lb1->thaw();
-  lb1->recompute();
   lb1->manage(mgr, event_handler);
+  lb1->start_behavior();
 }
 
 static void setup_gui(void) {
