@@ -194,39 +194,41 @@ underflow() {
 ////////////////////////////////////////////////////////////////////
 size_t BioStreamBuf::
 write_chars(const char *start, size_t length) {
-  size_t wrote_so_far = 0;
+  if (length != 0) {
+    size_t wrote_so_far = 0;
 
-  int write_count = BIO_write(*_source, start, length);
-  while (write_count != (int)(length - wrote_so_far)) {
-    if (write_count <= 0) {
-      _is_closed = !BIO_should_retry(*_source);
-      if (_is_closed) {
-        return wrote_so_far;
-      }
-
-      // Block on the underlying socket before we try to write some
-      // more.
-      int fd = -1;
-      BIO_get_fd(*_source, &fd);
-      if (fd < 0) {
-        downloader_cat.warning()
-          << "socket BIO has no file descriptor.\n";
+    int write_count = BIO_write(*_source, start, length);
+    while (write_count != (int)(length - wrote_so_far)) {
+      if (write_count <= 0) {
+        _is_closed = !BIO_should_retry(*_source);
+        if (_is_closed) {
+          return wrote_so_far;
+        }
+        
+        // Block on the underlying socket before we try to write some
+        // more.
+        int fd = -1;
+        BIO_get_fd(*_source, &fd);
+        if (fd < 0) {
+          downloader_cat.warning()
+            << "socket BIO has no file descriptor.\n";
+        } else {
+          downloader_cat.spam()
+            << "waiting to write to BIO.\n";
+          fd_set wset;
+          FD_ZERO(&wset);
+          FD_SET(fd, &wset);
+          select(fd + 1, NULL, &wset, NULL, NULL);
+        }        
+        
       } else {
-        downloader_cat.spam()
-          << "waiting to write to BIO.\n";
-        fd_set wset;
-        FD_ZERO(&wset);
-        FD_SET(fd, &wset);
-        select(fd + 1, NULL, &wset, NULL, NULL);
-      }        
-
-    } else {
-      // wrote some characters.
-      wrote_so_far += write_count;
+        // wrote some characters.
+        wrote_so_far += write_count;
+      }
+      
+      // Try to write some more.
+      write_count = BIO_write(*_source, start + wrote_so_far, length - wrote_so_far);
     }
-
-    // Try to write some more.
-    write_count = BIO_write(*_source, start + wrote_so_far, length - wrote_so_far);
   }
 
   return length;

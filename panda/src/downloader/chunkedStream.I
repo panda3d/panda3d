@@ -47,15 +47,3 @@ open(BioStreamPtr *source, HTTPChannel *doc) {
   _buf.open_read(source, doc);
   return *this;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: IChunkedStream::close
-//       Access: Public
-//  Description: Resets the ChunkedStream to empty, but does not actually
-//               close the source CHUNKED unless owns_source was true.
-////////////////////////////////////////////////////////////////////
-INLINE IChunkedStream &IChunkedStream::
-close() {
-  _buf.close_read();
-  return *this;
-}

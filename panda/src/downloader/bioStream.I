@@ -49,18 +49,6 @@ open(BioPtr *source) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: IBioStream::close
-//       Access: Public
-//  Description: Resets the BioStream to empty, but does not actually
-//               close the source BIO unless owns_source was true.
-////////////////////////////////////////////////////////////////////
-INLINE IBioStream &IBioStream::
-close() {
-  _buf.close();
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: OBioStream::Constructor
 //       Access: Public
 //  Description:
@@ -92,18 +80,6 @@ open(BioPtr *source) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OBioStream::close
-//       Access: Public
-//  Description: Resets the BioStream to empty, but does not actually
-//               close the source BIO unless owns_source was true.
-////////////////////////////////////////////////////////////////////
-INLINE OBioStream &OBioStream::
-close() {
-  _buf.close();
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: BioStream::Constructor
 //       Access: Public
 //  Description:
@@ -131,17 +107,5 @@ INLINE BioStream &BioStream::
 open(BioPtr *source) {
   clear((ios_iostate)0);
   _buf.open(source);
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BioStream::close
-//       Access: Public
-//  Description: Resets the BioStream to empty, but does not actually
-//               close the source BIO unless owns_source was true.
-////////////////////////////////////////////////////////////////////
-INLINE BioStream &BioStream::
-close() {
-  _buf.close();
   return *this;
 }

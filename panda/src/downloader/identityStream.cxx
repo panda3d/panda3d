@@ -38,4 +38,15 @@ is_closed() {
   return false;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: IIdentityStream::close
+//       Access: Public, Virtual
+//  Description: Resets the IdentityStream to empty, but does not actually
+//               close the source BIO unless owns_source was true.
+////////////////////////////////////////////////////////////////////
+void IIdentityStream::
+close() {
+  _buf.close_read();
+}
+
 #endif  // HAVE_SSL

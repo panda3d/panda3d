@@ -37,4 +37,15 @@ is_closed() {
   return false;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: IChunkedStream::close
+//       Access: Public, Virtual
+//  Description: Resets the ChunkedStream to empty, but does not actually
+//               close the source BIO unless owns_source was true.
+////////////////////////////////////////////////////////////////////
+void IChunkedStream::
+close() {
+  _buf.close_read();
+}
+
 #endif  // HAVE_SSL

@@ -45,9 +45,9 @@ public:
   INLINE IChunkedStream(BioStreamPtr *source, HTTPChannel *doc);
 
   INLINE IChunkedStream &open(BioStreamPtr *source, HTTPChannel *doc);
-  INLINE IChunkedStream &close();
 
   virtual bool is_closed();
+  virtual void close();
 
 private:
   ChunkedStreamBuf _buf;

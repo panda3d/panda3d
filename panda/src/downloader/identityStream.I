@@ -51,15 +51,3 @@ open(BioStreamPtr *source, HTTPChannel *doc,
   _buf.open_read(source, doc, has_content_length, content_length);
   return *this;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: IIdentityStream::close
-//       Access: Public
-//  Description: Resets the IdentityStream to empty, but does not actually
-//               close the source IDENTITY unless owns_source was true.
-////////////////////////////////////////////////////////////////////
-INLINE IIdentityStream &IIdentityStream::
-close() {
-  _buf.close_read();
-  return *this;
-}

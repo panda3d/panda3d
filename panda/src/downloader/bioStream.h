@@ -42,9 +42,9 @@ public:
   INLINE IBioStream(BioPtr *source);
 
   INLINE IBioStream &open(BioPtr *source);
-  INLINE IBioStream &close();
 
   virtual bool is_closed();
+  virtual void close();
 
 private:
   BioStreamBuf _buf;
@@ -65,9 +65,9 @@ public:
   INLINE OBioStream(BioPtr *source);
 
   INLINE OBioStream &open(BioPtr *source);
-  INLINE OBioStream &close();
 
   virtual bool is_closed();
+  virtual void close();
 
 private:
   BioStreamBuf _buf;
@@ -84,9 +84,9 @@ public:
   INLINE BioStream(BioPtr *source);
 
   INLINE BioStream &open(BioPtr *source);
-  INLINE BioStream &close();
 
   virtual bool is_closed();
+  virtual void close();
 
 private:
   BioStreamBuf _buf;

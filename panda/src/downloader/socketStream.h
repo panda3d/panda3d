@@ -48,6 +48,7 @@ PUBLISHED:
   bool receive_datagram(Datagram &dg);
 
   virtual bool is_closed() = 0;
+  virtual void close() = 0;
 
 private:
   size_t _data_expected;
@@ -70,6 +71,7 @@ PUBLISHED:
   bool send_datagram(const Datagram &dg);
 
   virtual bool is_closed() = 0;
+  virtual void close() = 0;
 
   INLINE void set_collect_tcp(bool collect_tcp);
   INLINE bool get_collect_tcp() const;
@@ -99,6 +101,7 @@ PUBLISHED:
   bool send_datagram(const Datagram &dg);
 
   virtual bool is_closed() = 0;
+  virtual void close() = 0;
 
   INLINE void set_collect_tcp(bool collect_tcp);
   INLINE bool get_collect_tcp() const;

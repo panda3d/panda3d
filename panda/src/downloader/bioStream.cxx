@@ -38,6 +38,17 @@ is_closed() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: IBioStream::close
+//       Access: Public, Virtual
+//  Description: Resets the BioStream to empty, but does not actually
+//               close the source BIO unless owns_source was true.
+////////////////////////////////////////////////////////////////////
+void IBioStream::
+close() {
+  _buf.close();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: OBioStream::is_closed
 //       Access: Public, Virtual
 //  Description: Returns true if the last write fail condition was
@@ -55,6 +66,17 @@ is_closed() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: OBioStream::close
+//       Access: Public, Virtual
+//  Description: Resets the BioStream to empty, but does not actually
+//               close the source BIO unless owns_source was true.
+////////////////////////////////////////////////////////////////////
+void OBioStream::
+close() {
+  _buf.close();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BioStream::is_closed
 //       Access: Public, Virtual
 //  Description: Returns true if the last eof or failure condition was
@@ -69,6 +91,17 @@ is_closed() {
   }
   clear();
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BioStream::close
+//       Access: Public, Virtual
+//  Description: Resets the BioStream to empty, but does not actually
+//               close the source BIO unless owns_source was true.
+////////////////////////////////////////////////////////////////////
+void BioStream::
+close() {
+  _buf.close();
 }
 
 #endif  // HAVE_SSL
