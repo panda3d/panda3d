@@ -108,6 +108,12 @@ typedef ios::iostate ios_iostate;
 typedef ios::seekdir ios_seekdir;
 #endif
 
+#ifdef WIN32_VC
+// include win32 defns for everything up to WinServer2003, and assume I'm smart
+// enough to use GetProcAddress for backward compat on w95/w98 for
+// newer fns
+#define _WIN32_WINNT 0x0502
+#endif  // WIN32_VC
 
 #if defined(WIN32_VC) && defined(FORCE_INLINING)
 // If FORCE_INLINING is defined, we use the keyword __forceinline,

@@ -19,10 +19,8 @@
 #ifndef DXGSG8BASE_H
 #define DXGSG8BASE_H
 
-// include win32 defns for everything up to WinServer2003, and assume I'm smart enough to
-// use GetProcAddress for backward compat on newer fns
-// Note DX8 cannot be installed on w95, so OK to assume base of win98
-#define _WIN32_WINNT 0x0502
+#include "pandabase.h"
+#include "graphicsWindow.h"
 
 #define WIN32_LEAN_AND_MEAN   // get rid of mfc win32 hdr stuff
 #ifndef STRICT
@@ -37,9 +35,6 @@
 #include <d3dx8.h>
 #include <dxerr8.h>
 #undef WIN32_LEAN_AND_MEAN
-
-#include "pandabase.h"
-#include "graphicsWindow.h"
 
 #if D3D_SDK_VERSION != 220
 #error you have DX 8.0 headers, not DX 8.1, you need to install DX 8.1 SDK!
