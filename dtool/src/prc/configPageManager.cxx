@@ -106,7 +106,7 @@ reload_implicit_pages() {
   if (!prc_dir_envvars.empty()) {
     vector_string prc_dir_envvar_list;
     ConfigDeclaration::extract_words(prc_dir_envvars, prc_dir_envvar_list);
-    for (size_t i = 0; i < prc_dir_envvar_list.size(); i++) {
+    for (size_t i = 0; i < prc_dir_envvar_list.size(); ++i) {
       string prc_dir = ExecutionEnvironment::get_environment_variable(prc_dir_envvar_list[i]);
       if (!prc_dir.empty()) {
         _search_path.append_directory(Filename::from_os_specific(prc_dir));
@@ -122,7 +122,7 @@ reload_implicit_pages() {
   if (!prc_path_envvars.empty()) {
     vector_string prc_path_envvar_list;
     ConfigDeclaration::extract_words(prc_path_envvars, prc_path_envvar_list);
-    for (size_t i = 0; i < prc_path_envvar_list.size(); i++) {
+    for (size_t i = 0; i < prc_path_envvar_list.size(); ++i) {
       string prc_path = ExecutionEnvironment::get_environment_variable(prc_path_envvar_list[i]);
       if (!prc_path.empty()) {
         _search_path.append_path(prc_path);
@@ -149,7 +149,7 @@ reload_implicit_pages() {
     vector_string pat_list;
     ConfigDeclaration::extract_words(prc_patterns, pat_list);
     _prc_patterns.reserve(pat_list.size());
-    for (size_t i = 0; i < pat_list.size(); i++) {
+    for (size_t i = 0; i < pat_list.size(); ++i) {
       GlobPattern glob(pat_list[i]);
 #ifdef WIN32
       // On windows, the file system is case-insensitive, so the
@@ -168,7 +168,7 @@ reload_implicit_pages() {
     vector_string pat_list;
     ConfigDeclaration::extract_words(prc_executable_patterns, pat_list);
     _prc_executable_patterns.reserve(pat_list.size());
-    for (size_t i = 0; i < pat_list.size(); i++) {
+    for (size_t i = 0; i < pat_list.size(); ++i) {
       GlobPattern glob(pat_list[i]);
 #ifdef WIN32
       glob.set_case_sensitive(false);
@@ -188,7 +188,7 @@ reload_implicit_pages() {
 
   // We walk through the list of directories in forward order, so that
   // the most important directories are visited first.
-  for (int di = 0; di < _search_path.get_num_directories(); di++) {
+  for (int di = 0; di < _search_path.get_num_directories(); ++di) {
     const Filename &directory = _search_path.get_directory(di);
     if (directory.is_directory()) {
       Filename canonical(directory, ".");
@@ -258,12 +258,11 @@ reload_implicit_pages() {
       IPipeStream ifs(command);
 
       ConfigPage *page = new ConfigPage(filename, true, i);
-      i++;
+      ++i;
       _implicit_pages.push_back(page);
       _pages_sorted = false;
       
       page->read_prc(ifs);
-
     } else if ((file._file_flags & FF_read) != 0) {
       // Just read the file.
       filename.set_text();
@@ -272,10 +271,9 @@ reload_implicit_pages() {
       if (!filename.open_read(in)) {
         prc_cat.error()
           << "Unable to read " << filename << "\n";
-        
       } else {
         ConfigPage *page = new ConfigPage(filename, true, i);
-        i++;
+        ++i;
         _implicit_pages.push_back(page);
         _pages_sorted = false;
         
@@ -303,7 +301,7 @@ reload_implicit_pages() {
 ConfigPage *ConfigPageManager::
 make_explicit_page(const string &name) {
   ConfigPage *page = new ConfigPage(name, false, _next_page_seq);
-  _next_page_seq++;
+  ++_next_page_seq;
   _explicit_pages.push_back(page);
   _pages_sorted = false;
   return page;
@@ -329,7 +327,6 @@ delete_explicit_page(ConfigPage *page) {
       return true;
     }
   }
-
   return false;
 }
 
