@@ -11,35 +11,29 @@
 ////////////////////////////////////////////////////////////////////
 #include <pandabase.h>
 #include <filename.h>
-#include <tokenBoard.h>
 #include <buffer.h>
-#include "asyncUtility.h"
 #include <patchfile.h>
-
-class PatcherToken;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Patcher 
-// Description : Applys a patch asynchronously
+// Description : Applys a patch synchronously 
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS Patcher : public AsyncUtility {
+class EXPCL_PANDAEXPRESS Patcher {
 PUBLISHED:
+  enum PatcherStatus {
+    PS_success = 1,
+    PS_error = -1,
+  };
+
   Patcher(void);
   Patcher(PT(Buffer) buffer);
   virtual ~Patcher(void);
 
-  int request_patch(const Filename &patch,
-		    const Filename &infile, const string &event_name);
-
-  bool patch(Filename &patch, Filename &infile);
+  int initialize(Filename &patch, Filename &infile);
+  int run(void);
 
 private:
   void init(PT(Buffer) buffer);
-  virtual bool process_request(void);
-
-  typedef TokenBoard<PatcherToken> PatcherTokenBoard;
-  PatcherTokenBoard *_token_board;
-
   PT(Buffer) _buffer;
 };
 
