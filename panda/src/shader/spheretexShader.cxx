@@ -99,7 +99,7 @@ apply(Node *node, const AllAttributesWrapper &init_state,
 
   // Turn lighting off - we still want to issue normals, though
   trans.set_transition(new LightTransition(LightTransition::all_off()));
-  gsg->enable_normals(true);
+  gsg->force_normals();
 
   // Do some extra work if we're doing the 2-pass version (e.g. the
   // object we are shading is textured)
@@ -124,7 +124,7 @@ apply(Node *node, const AllAttributesWrapper &init_state,
   DirectRenderTraverser drt(gsg, RenderRelation::get_class_type());
   gsg->render_subgraph(&drt, node, init_state, trans);
 
-  gsg->enable_normals(false);
+  gsg->undo_force_normals();
 }
 
 

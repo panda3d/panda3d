@@ -107,7 +107,8 @@ public:
   virtual void prepare_display_region()=0;
   virtual bool prepare_lens();
 
-  INLINE void enable_normals(bool val) { _normals_enabled = val; }
+  INLINE int force_normals();
+  INLINE int undo_force_normals();
 
   virtual bool begin_frame();
   virtual bool begin_scene();
@@ -236,8 +237,10 @@ protected:
   CPT(DisplayRegion) _current_display_region;
   CPT(Lens) _current_lens;
 
-  // This is used by wants_normals()
-  bool _normals_enabled;
+  // This is used by wants_normals().  It's used as a semaphore:
+  // increment it to enable normals, and decrement it when you're
+  // done.  The graphics engine will apply normals if it is nonzero.
+  int _force_normals;
 
   CoordinateSystem _coordinate_system;
 

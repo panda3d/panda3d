@@ -556,7 +556,6 @@ dx_init(void) {
     _pD3DDevice->SetRenderState(D3DRS_ANTIALIASEDLINEENABLE, false);
 
     _color_material_enabled = false;
-    _normals_enabled = false;
 
     _depth_test_enabled = D3DZB_FALSE;
     _pD3DDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
@@ -4067,16 +4066,6 @@ end_frame() {
   // but we override gsg::end_frame, so need to explicitly call it here
   // (currently it's an empty fn)
   GraphicsStateGuardian::end_frame();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::wants_normals
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE bool DXGraphicsStateGuardian9::
-wants_normals() const {
-    return (_lighting_enabled || _normals_enabled);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -162,6 +162,39 @@ clear(DisplayRegion *dr) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::force_normals
+//       Access: Public
+//  Description: Temporarily forces the GSG to issue normals to the
+//               graphics pipe.  Normally, the GSG will issue normals
+//               only if lighting is on.
+//
+//               This call must be matched with exactly one call to
+//               undo_force_normals().
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsStateGuardian::
+force_normals() {
+  nassertr(_force_normals >= 0, _force_normals);
+  _force_normals++;
+  return _force_normals;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::undo_force_normals
+//       Access: Public
+//  Description: Undoes the effect of a previous call to
+//               force_normals().
+//
+//               This call must be matched with one-to-one with a
+//               previous call to force_normals().
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsStateGuardian::
+undo_force_normals() {
+  _force_normals--;
+  nassertr(_force_normals >= 0, _force_normals);
+  return _force_normals;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::reset_if_new
 //       Access: Public
 //  Description: Calls reset() to initialize the GSG, but only if it

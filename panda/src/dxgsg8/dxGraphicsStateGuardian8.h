@@ -134,7 +134,6 @@ public:
   virtual void end_scene();
   virtual void end_frame();
 
-  virtual bool wants_normals(void) const;
   virtual bool wants_texcoords(void) const;
 
   virtual bool depth_offset_decals();

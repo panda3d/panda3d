@@ -114,7 +114,7 @@ reset() {
   _depth_clear_value = 1.0f;
   _stencil_clear_value = 0.0f;
   _accum_clear_value.set(0.0f, 0.0f, 0.0f, 0.0f);
-  _normals_enabled = false;
+  _force_normals = 0;
 
   //Color and alpha transform variables
   _color_transform_enabled = 0;
@@ -420,7 +420,7 @@ end_frame() {
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
 wants_normals() const {
-  return _normals_enabled;
+  return (_lighting_enabled || (_force_normals != 0));
 }
 
 ////////////////////////////////////////////////////////////////////

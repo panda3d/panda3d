@@ -1418,7 +1418,6 @@ draw_tristrip(GeomTristrip *geom, GeomContext *gc) {
     return;
   }
 
-
 #ifdef DO_PSTATS
   //  PStatTimer timer(_draw_primitive_pcollector);
   // Using PStatTimer may cause a compiler crash.
@@ -1500,6 +1499,7 @@ draw_tristrip(GeomTristrip *geom, GeomContext *gc) {
     }
     GLP(End)();
   }
+
   report_my_gl_errors();
   DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
 }
@@ -1811,9 +1811,8 @@ prepare_geom(Geom *geom) {
 
   // We need to temporarily force normals and UV's on, so the display
   // list will have them built in.
-  bool old_normals_enabled = _normals_enabled;
   bool old_texturing_enabled = _texturing_enabled;
-  _normals_enabled = true;
+  force_normals();
   _texturing_enabled = true;
 
 #ifdef DO_PSTATS
@@ -1842,7 +1841,7 @@ prepare_geom(Geom *geom) {
   ggc->_num_verts = (int)(num_verts + 0.5);
 #endif
 
-  _normals_enabled = old_normals_enabled;
+  undo_force_normals();
   _texturing_enabled = old_texturing_enabled;
 
   report_my_gl_errors();
@@ -2541,16 +2540,6 @@ bind_light(Spotlight *light, int light_id) {
   GLP(Lightf)(id, GL_QUADRATIC_ATTENUATION, att[2]);
 
   report_my_gl_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::wants_normals
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-bool CLP(GraphicsStateGuardian)::
-wants_normals() const {
-  return (_lighting_enabled || _normals_enabled);
 }
 
 ////////////////////////////////////////////////////////////////////
