@@ -85,9 +85,12 @@
 // For sparkle particles, we can have 4 vertices per sparkle, and a
 // particle pool size of 1024 particles
 
+// for sprites, 1000 prims, 6 verts/prim, 24 bytes/vert
 const int VERT_BUFFER_SIZE = (32*6*1024L);
 
-// for sprites, 1000 prims, 6 verts/prim, 24 bytes/vert
+// if defined, pandadx only handles 1 panda display region
+// note multiple region code doesnt work now (see prepare_display_region,set_clipper)
+#define NO_MULTIPLE_DISPLAY_REGIONS
 
 TypeHandle DXGraphicsStateGuardian::_type_handle;
 
@@ -103,8 +106,6 @@ TypeHandle DXGraphicsStateGuardian::_type_handle;
 #define DXGSG_MAX_LIGHTS 8
 
 static D3DMATRIX matIdentity;
-
-#define Colorf_to_D3DCOLOR(out_color) (D3DRGBA((out_color)[0], (out_color)[1], (out_color)[2], (out_color)[3]))
 
 #ifdef COUNT_DRAWPRIMS
 
@@ -135,6 +136,67 @@ static void CountDPs(DWORD nVerts,DWORD nTris) {
 #if defined(DO_PSTATS) || defined(PRINT_TEXSTATS)
 static bool bTexStatsRetrievalImpossible=false;
 #endif
+
+//#define Colorf_to_D3DCOLOR(out_color) (D3DRGBA((out_color)[0], (out_color)[1], (out_color)[2], (out_color)[3]))
+
+INLINE DWORD
+//Colorf_to_D3DCOLOR(float *alpha,float *red,float *grn,float *blue) {
+Colorf_to_D3DCOLOR(Colorf &cColorf) {
+// MS VC defines _M_IX86 for x86.  gcc should define _X86_
+//#if defined(_M_IX86) || defined(_X86_)
+#if 1
+    DWORD d3dcolor,tempcolorval=255;
+//    DWORD *Colorf_addr=(DWORD*)&cColorf;
+    // note the default FPU rounding mode will give 255*0.5f=0x80, not 0x7F as VC would force it to by resetting rounding mode
+    // dont think this makes much difference
+
+    __asm {
+;        push eax
+        push ebx   ; want to save this in case this fn is inlined
+        push ecx
+;        mov ecx, Colorf_addr  ; must be a better way to do this w/o using ecx
+        mov ecx, cColorf
+        fild tempcolorval
+        fld [ecx]
+        fmul ST(0),ST(1)
+        fistp tempcolorval  ; no way to store directly to int register
+        mov eax, tempcolorval
+        shl eax, 16
+
+        fld DWORD PTR [ecx+4]  ;grn
+        fmul ST(0),ST(1)
+        fistp tempcolorval   
+        mov ebx,tempcolorval
+        shl ebx, 8
+        or eax,ebx
+
+        fld DWORD PTR [ecx+8]  ;blue
+        fmul ST(0),ST(1)
+        fistp tempcolorval
+        or eax,tempcolorval
+
+        fld DWORD PTR [ecx+12] ;alpha
+        fmul ST(0),ST(1)
+        fistp tempcolorval
+        ; simulate pop 255.0 off FP stack w/o store, mark top as empty and increment stk ptr
+        ffree ST(0)
+        fincstp
+        mov ebx,tempcolorval
+        shl ebx, 24
+        or eax,ebx
+        mov d3dcolor,eax
+        pop ecx
+        pop ebx
+;        pop eax
+    }
+
+//   dxgsg_cat.debug() << (void*)d3dcolor << endl;
+
+   return d3dcolor;
+#else //!_X86_
+   return D3DRGBA(cColorf[0], cColorf[1], cColorf[2], cColorf[3]);
+#endif //!_X86_
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::Constructor
@@ -311,6 +373,9 @@ init_dx(  LPDIRECTDRAW7     context,
 #endif
 
     _last_testcooplevel_result = S_OK;
+
+    // only 1 channel on dx currently
+    _panda_gfx_channel = _win->get_channel(0);
 
     HRESULT hr;
 
@@ -617,8 +682,6 @@ enable_light(int light, bool val) {
     return TRUE;
 }
 
-
-
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::prepare_display_region
 //       Access: Public, Virtual
@@ -630,10 +693,10 @@ prepare_display_region() {
     if (_current_display_region == (DisplayRegion*)0L) {
         dxgsg_cat.error()
         << "Invalid NULL display region in prepare_display_region()\n";
-
     } else if (_current_display_region != _actual_display_region) {
         _actual_display_region = _current_display_region;
-/*
+
+#ifndef NO_MULTIPLE_DISPLAY_REGIONS
     int l, b, w, h;
     _actual_display_region->get_region_pixels(l, b, w, h);
     GLint x = GLint(l);
@@ -641,8 +704,8 @@ prepare_display_region() {
     GLsizei width = GLsizei(w);
     GLsizei height = GLsizei(h);
 #ifdef WBD_GL_MODE
-    call_glScissor( x, y, width, height );
-    call_glViewport( x, y, width, height );
+//    call_glScissor( x, y, width, height );
+//    call_glViewport( x, y, width, height );
 #else
     if ( _scissor_x != x || _scissor_y != y ||
             _scissor_width != width || _scissor_height != height )
@@ -654,11 +717,11 @@ prepare_display_region() {
         set_clipper(cliprect);
         }
 #endif   //WBD_GL_MODE
-*/
+#endif
     }
 }
 
-#if 0
+#ifndef NO_MULTIPLE_DISPLAY_REGIONS
 ////////////////////////////////////////////////////////////////////
 //     Function: set_clipper
 //       Access:
@@ -761,20 +824,30 @@ render_frame() {
 
     if (_clear_buffer_type != 0) {
       // First, clear the entire window.
-      PT(DisplayRegion) win_dr =
-        _win->make_scratch_display_region(_win->get_width(), _win->get_height());
-      clear(get_render_buffer(_clear_buffer_type), win_dr);
+      #ifndef NO_MULTIPLE_DISPLAY_REGIONS
+        PT(DisplayRegion) win_dr = _win->make_scratch_display_region(_win->get_width(), _win->get_height());
+        clear(get_render_buffer(_clear_buffer_type), win_dr);
+      #else
+        clear(get_render_buffer(_clear_buffer_type));     
+      #endif
     }
 
-    // Now render each of our layers in order.
+#if 0
     int max_channel_index = _win->get_max_channel_index();
     for (int c = 0; c < max_channel_index; c++) {
         if (_win->is_channel_defined(c)) {
-            GraphicsChannel *chan = _win->get_channel(c);
-            if (chan->is_active()) {
-                int num_layers = chan->get_num_layers();
+#endif
+
+    // only 1 channel on dx currently
+    assert(_win->get_max_channel_index()==1);
+    assert(_win->is_channel_defined(0));
+
+            if(_panda_gfx_channel->is_active()) {
+                // Now render each of our layers in order.
+
+                int num_layers = _panda_gfx_channel->get_num_layers();
                 for (int l = 0; l < num_layers; l++) {
-                    GraphicsLayer *layer = chan->get_layer(l);
+                    GraphicsLayer *layer = _panda_gfx_channel->get_layer(l);
                     if (layer->is_active()) {
                         int num_drs = layer->get_num_drs();
                         for (int d = 0; d < num_drs; d++) {
@@ -793,8 +866,10 @@ render_frame() {
                     }       //      if (layer->is_active())
                 }
             }       //      if (chan->is_active())
+#if 0
         }
     }   //  for (int c = 0; c < max_channel_index; c++)
+#endif
 
     // Now we're done with the frame processing.  Clean up.
 
@@ -1125,10 +1200,11 @@ render_subgraph(RenderTraverser *traverser,
     }
 #endif
 
+    HRESULT hr;
+
     // We load the projection matrix directly.
-    HRESULT res =
-    _d3dDevice->SetTransform(D3DTRANSFORMSTATE_PROJECTION,
-                             (LPD3DMATRIX) _current_projection_mat.get_data());
+    hr = _d3dDevice->SetTransform(D3DTRANSFORMSTATE_PROJECTION,
+                                 (LPD3DMATRIX) _current_projection_mat.get_data());
 
     // We infer the modelview matrix by doing a wrt on the projection
     // node.
@@ -1159,9 +1235,8 @@ render_subgraph(RenderTraverser *traverser,
     // We must now restore the projection matrix from before.  We could
     // do a push/pop matrix if we were using D3DX
     if (_projection_mat_stack_count > 0)
-        _d3dDevice->SetTransform(D3DTRANSFORMSTATE_PROJECTION,
-                                 (LPD3DMATRIX) _current_projection_mat.get_data());
-
+        hr =_d3dDevice->SetTransform(D3DTRANSFORMSTATE_PROJECTION,
+                                    (LPD3DMATRIX) _current_projection_mat.get_data());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1355,46 +1430,34 @@ wants_colors() const {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_prim_inner_loop(int nVerts, const Geom *geom, DWORD perFlags) {
+    perFlags &= ~PER_COORD;  // should always be set anyway
 
     for(;nVerts > 0;nVerts--) {
 
         GET_NEXT_VERTEX();   // coord info will always be perVertex
 
-        switch (perFlags) {
-            case 0x3:
-                GET_NEXT_NORMAL();
-            case 0x1:
-                break;
-            case 0x5:
-            case 0x4:
-                GET_NEXT_COLOR();
-                break;
-            case 0x7:
-            case 0x6:
-                GET_NEXT_COLOR();
-            case 0x2:
-                GET_NEXT_NORMAL();
-                break;
-            case 0x9:
-            case 0x8:
-                GET_NEXT_TEXCOORD();
-                break;
-            case 0xB:
-            case 0xA:
-                GET_NEXT_NORMAL();
-                GET_NEXT_TEXCOORD();
-                break;
-            case 0xD:
-            case 0xC:
-                GET_NEXT_COLOR();
-                GET_NEXT_TEXCOORD();
-                break;
-            case 0xF:
-            case 0xE:
-                GET_NEXT_NORMAL();
-                GET_NEXT_COLOR();
-                GET_NEXT_TEXCOORD();
-                break;
+        if(perFlags==0xC) {
+            // break out the common case first
+            GET_NEXT_TEXCOORD();
+            GET_NEXT_COLOR();
+        } else {
+            switch (perFlags) {
+                case 0x4:
+                    GET_NEXT_COLOR();
+                    break;
+                case 0x6:
+                    GET_NEXT_COLOR();
+                case 0x2:
+                    GET_NEXT_NORMAL();
+                    break;
+                case 0xE:
+                    GET_NEXT_COLOR();
+                case 0xA:
+                    GET_NEXT_NORMAL();
+                case 0x8:
+                    GET_NEXT_TEXCOORD();
+                    break;
+            }
         }
 
         add_to_FVFBuf((void *)&p_vertex, sizeof(D3DVECTOR));
@@ -1570,12 +1633,13 @@ draw_line(GeomLine* geom, GeomContext *gc) {
 #ifdef _DEBUG
     static BOOL bPrintedMsg=FALSE;
 
+    // note: need to implement approximation of non-1.0 width lines with quads
+
     if (!bPrintedMsg && (geom->get_width()!=1.0f)) {
         bPrintedMsg=TRUE;
         dxgsg_cat.warning() << "DX does not support drawing lines with a non-1.0f pixel width, setting width to 1.0f!\n";
     }
 #endif
-
 
     int nPrims = geom->get_num_prims();
 
@@ -2628,31 +2692,31 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 #endif
             _pCurFvfBufPtr = _pFvfBufBasePtr;            // _pCurFvfBufPtr changes,  _pFvfBufBasePtr doesn't
 
-                        if(perComp==0x0) {
-                                draw_prim_inner_loop(nVerts, geom, perVertex);
-                        } else {
-                                if(trilisttype==D3DPT_TRIANGLEFAN) {
-                                   // in flat shade mode, D3D fans color using the 2nd vertex. 
-                                   // (note: differs from OGL, which always uses last vtx for strips&fans
-                                   // perComp attribs should not be fetched for first & last verts, they will
-                                   // be associated with middle n-2 verts
-        
-                                        draw_prim_inner_loop(1, geom, perVertex);
-        
-                                        draw_prim_inner_loop(nVerts-2, geom, perVertex | perComp);
-        
-                                        draw_prim_inner_loop(1, geom, perVertex);
-                                } else {
-                                   // in flat shade mode, D3D strips color using the 1st vertex. 
-                                   // (note: differs from OGL, which always uses last vtx for strips&fans
-        
-                                        // Store all but last 2 verts
-                                        draw_prim_inner_loop(nVerts-2, geom, perVertex | perComp);
-        
-                                        // perComp attribs should not be fetched for last 2 verts
-                                        draw_prim_inner_loop(2, geom, perVertex);
-                                }
-                        }
+            if(perComp==0x0) {
+                    draw_prim_inner_loop(nVerts, geom, perVertex);
+            } else {
+                    if(trilisttype==D3DPT_TRIANGLESTRIP) {
+                       // in flat shade mode, D3D strips color using the 1st vertex. 
+                       // (note: differs from OGL, which always uses last vtx for strips&fans
+
+                            // Store all but last 2 verts
+                            draw_prim_inner_loop(nVerts-2, geom, perVertex | perComp);
+
+                            // perComp attribs should not be fetched for last 2 verts
+                            draw_prim_inner_loop(2, geom, perVertex);
+                    } else {
+                       // in flat shade mode, D3D fans color using the 2nd vertex. 
+                       // (note: differs from OGL, which always uses last vtx for strips&fans
+                       // perComp attribs should not be fetched for first & last verts, they will
+                       // be associated with middle n-2 verts
+
+                            draw_prim_inner_loop(1, geom, perVertex);
+
+                            draw_prim_inner_loop(nVerts-2, geom, perVertex | perComp);
+
+                            draw_prim_inner_loop(1, geom, perVertex);
+                    }
+            }
 
             HRESULT hr = _d3dDevice->DrawPrimitive(trilisttype,  p_flags, _pFvfBufBasePtr, nVerts, NULL);
             TestDrawPrimFailure(DrawPrim,hr,_pDD,nVerts,nVerts-2);
@@ -6027,9 +6091,8 @@ HRESULT SetViewMatrix( D3DMATRIX& mat, D3DVECTOR& vFrom, D3DVECTOR& vAt,
 GeomNodeContext *DXGraphicsStateGuardian::
 prepare_geom_node(GeomNode *node) {
 
-  if(!link_tristrips)
-    return NULL;
-    
+
+ if(link_tristrips) {
   for(int iGeom=0;iGeom<node->get_num_geoms();iGeom++) {
     dDrawable *drawable1 = node->get_geom(iGeom);
     
@@ -6272,105 +6335,188 @@ prepare_geom_node(GeomNode *node) {
            me->set_##ATTRNAME##s(old_##ATTRNAME##s, ATTRNAME##binding, new_##ATTRNAME##_indices);     \
         }                                                                                             \
     }
-/*    
-int ii;
-for( ii=0;ii<old_coords.size();ii++) 
-    dxgsg_cat.debug() << "old coord[" << ii <<"] " << old_coords[ii] << endl;
-dxgsg_cat.debug() << "=================\n";
-for(ii=0;ii<new_coords.size();ii++) 
-    dxgsg_cat.debug() << "new coord[" << ii <<"] " << new_coords[ii] << endl;
-dxgsg_cat.debug() << "=================\n";
+    /*    
+    int ii;
+    for( ii=0;ii<old_coords.size();ii++) 
+        dxgsg_cat.debug() << "old coord[" << ii <<"] " << old_coords[ii] << endl;
+    dxgsg_cat.debug() << "=================\n";
+    for(ii=0;ii<new_coords.size();ii++) 
+        dxgsg_cat.debug() << "new coord[" << ii <<"] " << new_coords[ii] << endl;
+    dxgsg_cat.debug() << "=================\n";
+    
+    for( ii=0;ii<old_normals.size();ii++) 
+        dxgsg_cat.debug() << "old norm[" << ii <<"] " << old_normals[ii] << endl;
+    dxgsg_cat.debug() << "=================\n";
+    for(ii=0;ii<new_normals.size();ii++) 
+        dxgsg_cat.debug() << "new norm[" << ii <<"] " << new_normals[ii] << endl;
+    
+    if(old_color_indices!=NULL) {
+    
+    for( ii=0;ii<old_color_indices.size();ii++) 
+        dxgsg_cat.debug() << "old colorindex[" << ii <<"] " << old_color_indices[ii] << endl;
+    dxgsg_cat.debug() << "=================\n";
+    for( ii=0;ii<new_color_indices.size();ii++) 
+        dxgsg_cat.debug() << "new colorindex[" << ii <<"] " << new_color_indices[ii] << endl;
+    }
+    */
 
-for( ii=0;ii<old_normals.size();ii++) 
-    dxgsg_cat.debug() << "old norm[" << ii <<"] " << old_normals[ii] << endl;
-dxgsg_cat.debug() << "=================\n";
-for(ii=0;ii<new_normals.size();ii++) 
-    dxgsg_cat.debug() << "new norm[" << ii <<"] " << new_normals[ii] << endl;
+    SET_NEW_ATTRIBS(color);
+    SET_NEW_ATTRIBS(normal);
+    SET_NEW_ATTRIBS(texcoord);
 
-if(old_color_indices!=NULL) {
-
-for( ii=0;ii<old_color_indices.size();ii++) 
-    dxgsg_cat.debug() << "old colorindex[" << ii <<"] " << old_color_indices[ii] << endl;
-dxgsg_cat.debug() << "=================\n";
-for( ii=0;ii<new_color_indices.size();ii++) 
-    dxgsg_cat.debug() << "new colorindex[" << ii <<"] " << new_color_indices[ii] << endl;
-}
-*/
-
-  SET_NEW_ATTRIBS(color);
-  SET_NEW_ATTRIBS(normal);
-  SET_NEW_ATTRIBS(texcoord);
-
-  me->make_dirty();
- }
-
- return NULL;
-
-#if 0
-  // Make sure we have at least some static Geoms in the GeomNode;
-  // otherwise there's no point in building a display list.
-  int num_geoms = node->get_num_geoms();
-  bool all_dynamic = true;
-  int i;
-
-  for (i = 0; (i < num_geoms) && all_dynamic; i++) {
-    dDrawable *geom = node->get_geom(i);
-    all_dynamic = geom->is_dynamic();
+    me->make_dirty();
   }
-  if (all_dynamic) {
+ } // if(link_tristrips)
+
+  // for now, only using vertexbufs for static Geom, so
+  // Make sure we have at least some static Geoms in the GeomNode;
+  int cNumVerts=0,i,num_geoms = node->get_num_geoms();
+
+  // need to always put in space for color because we might have some scene-graph color we need to add?
+  // will that even work?  I think we'd have to overwrite all the VB colors dynamically, and then restore
+  // them from somewhere if the global color goes away
+
+  DWORD fvfFlags=D3DFVF_XYZ;// | D3DFVF_DIFFUSE;
+
+  for (i = 0; (i < num_geoms); i++) {
+    dDrawable *drawable1 = node->get_geom(i);
+    if(!drawable1->is_of_type(Geom::get_class_type()))
+      continue;
+    
+    Geom *geom=DCAST(Geom, drawable1);
+    assert(geom!=NULL);
+
+    if(!geom->is_dynamic()) {
+        cNumVerts+=geom->get_num_vertices();
+        if(geom->get_binding(G_COLOR) != G_OFF)
+            fvfFlags |= D3DFVF_DIFFUSE;
+        if(geom->get_binding(G_NORMAL) != G_OFF)
+            fvfFlags |= D3DFVF_NORMAL;
+        if(geom->get_binding(G_TEXCOORD) != G_OFF) 
+            fvfFlags |= (D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0));
+    }
+  }
+
+  if(cNumVerts==0) {
     // Never mind.
     return (GeomNodeContext *)NULL;
   }
 
   // Ok, we've got something; use it.
-  DXGeomNodeContext *ggnc = new DXGeomNodeContext(node);
+  DXGeomNodeContext *dx_gnc = new DXGeomNodeContext(node);
 
-#if 0
-  ggnc->_index = DXGenLists(1);
-  if (ggnc->_index == 0) {
-    DXgsg_cat.error() << "Ran out of display list indices.\n";
-    delete ggnc;
-    return (GeomNodeContext *)NULL;
+  assert(dx_gnc!=NULL);
+
+  // right now there is a 1-1 correspondence b/w vertbufs and geomnodecontexts.
+  // later multiple geomnodecontexts will use the same vertbuf
+
+  HRESULT hr;
+  LPDIRECT3D7 pD3D;
+
+  assert(_d3dDevice!=NULL);
+  hr=_d3dDevice->GetDirect3D(&pD3D);
+  assert(!FAILED(hr));
+  LPDIRECT3DVERTEXBUFFER7 pD3DVertexBuffer;
+  DX_DECLARE_CLEAN(D3DVERTEXBUFFERDESC, VBdesc);
+
+  VBdesc.dwCaps = D3DVBCAPS_WRITEONLY;
+  VBdesc.dwCaps |= _bIsTNLDevice ? 0x0 : D3DVBCAPS_SYSTEMMEMORY;
+  VBdesc.dwFVF=fvfFlags;
+  VBdesc.dwNumVertices=cNumVerts;
+
+  hr=pD3D->CreateVertexBuffer(&VBdesc,&pD3DVertexBuffer,0x0);
+  if(FAILED(hr)) {
+    dxgsg_cat.error() << "error creating vertex buffer: " << ConvD3DErrorToString(hr) << endl;
+    delete dx_gnc;
+    exit(1);
   }
-#endif
 
-  // We need to temporarily force normals and UV's on, so the display
-  // list will have them built in.
-  bool old_normals_enabled = _normals_enabled;
-  bool old_texturing_enabled = _texturing_enabled;
-  bool old_vertex_colors_enabled = _vertex_colors_enabled;
-  _normals_enabled = true;
-  _texturing_enabled = true;
-  _vertex_colors_enabled = true;
+  dx_gnc->_pVB = pD3DVertexBuffer;
 
-#ifdef DO_PSTATS
-  // Count up the number of vertices we're about to render, by
-  // checking the PStats vertex counters now, and at the end.  This is
-  // kind of hacky, but this is debug code.
-  float num_verts_before = 
-    _vertices_tristrip_pcollector.get_level() +
-    _vertices_trifan_pcollector.get_level() +
-    _vertices_tri_pcollector.get_level() +
-    _vertices_other_pcollector.get_level();
-#endif
+  if(!_bIsTNLDevice) {
+      // create VB for ProcessVerts to xform to
 
-  // Now define the display list.
-  DXNewList(ggnc->_index, DX_COMPILE);
-  for (i = 0; i < num_geoms; i++) {
-    dDrawable *geom = node->get_geom(i);
-    if (geom->is_dynamic()) {
-      // Wait, this is a dynamic Geom.  We can't safely put it in the
-      // display list, because it may change from one frame to the
-      // next; instead, we'll keep it out.
-      ggnc->_dynamic_geoms.push_back(geom);
+      fvfFlags&=~D3DFVF_XYZ;    // switch to xformed vert type
+      fvfFlags&=~D3DFVF_NORMAL; // xformed verts are also lighted, so no normals allowed
+      fvfFlags|=D3DFVF_XYZRHW; 
+      VBdesc.dwFVF=fvfFlags;
+
+      hr=pD3D->CreateVertexBuffer(&VBdesc,&pD3DVertexBuffer,0x0);
+      if(FAILED(hr)) {
+          dxgsg_cat.error() << "error creating xformed vertex buffer: " << ConvD3DErrorToString(hr) << endl;
+          delete dx_gnc;
+          exit(1);
+      }
+
+      dx_gnc->_pXformed_VB = pD3DVertexBuffer;
+  }
+
+  pD3D->Release();
+
+  dx_gnc->_num_verts=cNumVerts;
+  dx_gnc->_start_index=0;   
+
+  DWORD *pVertData=NULL;
+  DWORD dwVBFlags = DDLOCK_NOOVERWRITE | DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR |
+                    DDLOCK_WAIT | DDLOCK_DISCARDCONTENTS;
+
+  hr=dx_gnc->_pVB->Lock(dwVBFlags,(LPVOID*)&pVertData,NULL);
+  if(FAILED(hr)) {
+        dxgsg_cat.error() << "error locking vertex buffer: " << ConvD3DErrorToString(hr) << endl;
+        delete dx_gnc;
+        exit(1);
+  }
+
+  assert(pVertData!=NULL);
+
+  for (i = 0; (i < num_geoms); i++) {
+    dDrawable *drawable1 = node->get_geom(i);
+    if(!drawable1->is_of_type(Geom::get_class_type()))
+      continue;
+    
+    Geom *geom=DCAST(Geom, drawable1);
+    assert(geom!=NULL);
+
+    if(geom->is_dynamic()) {
+      dx_gnc->_other_geoms.push_back(geom);
     } else {
-      // A static Geom becomes part of the display list.
-      geom->draw(this);
+#if 0
+        PTA_Vertexf coords;
+        PTA_Normalf norms;
+        PTA_Colorf colors;
+        PTA_TexCoordf texcoords;
+        GeomBindType TexCoordBinding,ColorBinding,NormalBinding,CoordBinding;
+        PTA_ushort vindexes,nindexes,tindexes,cindexes;
+
+        geom->get_coords(coords,CoordBinding,vindexes);
+        geom->get_normals(norms,NormalBinding,nindexes);
+        geom->get_colors(colors,ColorBinding,cindexes);
+        geom->get_texcoords(texcoords,TexCoordBinding,tindexes);
+
+        //// copy geometry into pVertData
+       just use lengths array and copy it straight in, we dont need to know type, right
+       no that wont work because of per-prim and per-component info
+           need to call draw fns with special flag to not call drawp
+#endif
+
     }
   }
-  DXEndList();
 
-#ifdef DO_PSTATS
+  hr=dx_gnc->_pVB->Unlock();
+  if(FAILED(hr)) {
+      dxgsg_cat.error() << "error unlocking vertex buffer: " << ConvD3DErrorToString(hr) << endl;
+      delete dx_gnc;
+      exit(1);
+  }
+
+  hr=dx_gnc->_pVB->Optimize(_d3dDevice,0x0);
+  if(FAILED(hr)) {
+      dxgsg_cat.error() << "error optimizing vertex buffer: " << ConvD3DErrorToString(hr) << endl;
+      delete dx_gnc;
+      exit(1);
+  }
+
+#if 0  //DO_PSTATS
   float num_verts_after = 
     _vertices_tristrip_pcollector.get_level() +
     _vertices_trifan_pcollector.get_level() +
@@ -6380,19 +6526,14 @@ for( ii=0;ii<new_color_indices.size();ii++)
   ggnc->_num_verts = (int)(num_verts + 0.5);
 #endif
 
-  _normals_enabled = old_normals_enabled;
-  _texturing_enabled = old_texturing_enabled;
-  _vertex_colors_enabled = old_vertex_colors_enabled;
-
-  bool inserted = mark_prepared_geom_node(ggnc);
+  bool inserted = mark_prepared_geom_node(dx_gnc);
 
   // If this assertion fails, the same GeomNode was prepared twice,
   // which shouldn't be possible, since the GeomNode itself should
   // detect this.
   nassertr(inserted, NULL);
 
-  return ggnc;
-#endif
+  return dx_gnc;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -6403,33 +6544,69 @@ for( ii=0;ii<new_color_indices.size();ii++)
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_geom_node(GeomNode *node, GeomNodeContext *gnc) {
-#if 0
+
+  int i,num_geoms = node->get_num_geoms();
+
   if (gnc == (GeomNodeContext *)NULL) {
+
     // We don't have a saved context; just draw the GeomNode in
     // immediate mode.
-    int num_geoms = node->get_num_geoms();
-    for (int i = 0; i < num_geoms; i++) {
+    for (i = 0; i < num_geoms; i++) {
       node->get_geom(i)->draw(this);
     }
-
-  } else {
-    // We do have a saved context; use it.
-    add_to_geom_node_record(gnc);
-    DXGeomNodeContext *ggnc = DCAST(DXGeomNodeContext, gnc);
-    DXCallList(ggnc->_index);
-
-#ifdef DO_PSTATS
-    DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
-    _vertices_display_list_pcollector.add_level(ggnc->_num_verts);
-#endif
-
-    // Also draw all the dynamic Geoms.
-    int num_geoms = ggnc->_dynamic_geoms.size();
-    for (int i = 0; i < num_geoms; i++) {
-      ggnc->_dynamic_geoms[i]->draw(this);
-    }
+    return;
   }
+
+  // We do have a saved context; use it.
+  add_to_geom_node_record(gnc);
+  DXGeomNodeContext *dx_gnc = DCAST(DXGeomNodeContext, gnc);
+
+  #ifdef _DEBUG
+     assert(dx_gnc->_pVB!=NULL);
+     if(_bIsTNLDevice) 
+        assert(dx_gnc->_pXformed_VB!=NULL);
+  #endif
+  
+  if(!_bIsTNLDevice) {
+      HRESULT hr;
+    
+      DWORD PVOp=D3DVOP_CLIP | D3DVOP_TRANSFORM | D3DVOP_EXTENTS;
+    
+      D3DVERTEXBUFFERDESC VBdesc;
+      VBdesc.dwSize=sizeof(VBdesc);
+      hr=dx_gnc->_pVB->GetVertexBufferDesc(&VBdesc);   // would be useful to keep fvf in vertbuf struct to avoid having to do this
+      if(FAILED(hr)) {
+        dxgsg_cat.error() << "error in getvbdesc: " << ConvD3DErrorToString(hr) << endl;
+        exit(1);
+      }
+    
+      if(VBdesc.dwFVF & D3DFVF_NORMAL) {
+          PVOp|=D3DVOP_LIGHT;
+      }
+    
+      hr=dx_gnc->_pXformed_VB->ProcessVertices(PVOp,0,dx_gnc->_num_verts,dx_gnc->_pVB,0,_d3dDevice,0x0);
+      if(FAILED(hr)) {
+        dxgsg_cat.error() << "error in ProcessVertices: " << ConvD3DErrorToString(hr) << endl;
+        exit(1);
+      }
+  }
+
+
+  for (i = 0; i < num_geoms; i++) {
+      node->get_geom(i)->draw(this);
+  }
+
+#if 0 //def DO_PSTATS
+    DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
+    _vertices_display_list_pcollector.add_level(dx_gnc->_num_verts);
 #endif
+
+
+  // Also draw all the dynamic Geoms.
+  for (i = 0; i < num_geoms; i++) {
+      dx_gnc->_other_geoms[i]->draw(this);
+  }
+
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -6441,19 +6618,16 @@ draw_geom_node(GeomNode *node, GeomNodeContext *gnc) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 release_geom_node(GeomNodeContext *gnc) {
-#if 0
   if (gnc != (GeomNodeContext *)NULL) {
-    DXGeomNodeContext *ggnc = DCAST(DXGeomNodeContext, gnc);
-    DXDeleteLists(ggnc->_index, 1);
+    DXGeomNodeContext *dx_gnc = DCAST(DXGeomNodeContext, gnc);
 
-    bool erased = unmark_prepared_geom_node(ggnc);
+    bool erased = unmark_prepared_geom_node(dx_gnc);
 
     // If this assertion fails, a GeomNode was released that hadn't
     // been prepared (or a GeomNode was released twice).
     nassertv(erased);
     
-    ggnc->_node->clear_gsg(this);
-    delete ggnc;
+    dx_gnc->_node->clear_gsg(this);
+    delete dx_gnc;  // should release vertex buffer
   }
-#endif
 }

@@ -32,6 +32,9 @@
 #include <geomNode.h>
 #include "pvector.h"
 
+#define D3D_OVERLOADS   //  get D3DVECTOR '+' operator, etc from d3dtypes.h
+#include <d3d.h>
+
 ////////////////////////////////////////////////////////////////////
 //       Class : DXGeomNodeContext
 // Description :
@@ -39,22 +42,22 @@
 class EXPCL_PANDADX DXGeomNodeContext : public GeomNodeContext {
 public:
   INLINE DXGeomNodeContext(GeomNode *node);
+  ~DXGeomNodeContext();
 
-#if 0
-  // The DX display list index that draws the contents of this
-  // GeomNode.
-  DXuint _index;
-#endif
   // A list of the dynamic Geoms within the GeomNode; these aren't
-  // part of the above display list.
+  // part of the above display list and must be drawn separately
   typedef pvector<PT(dDrawable) > Geoms;
-  Geoms _dynamic_geoms;
+  Geoms _other_geoms;
 
-#ifdef DO_PSTATS
-  // The number of vertices represented by the display list.  This is
-  // strictly for the benefit of PStats reporting.
-  int _num_verts;
-#endif
+  // VB's are already reference-counted by D3D, no need to make separate panda object to do that
+  // but we will want a way to know if VB has already been xformed by ProcessVerts this frame
+  // if multiple geomnodes share VBs
+
+  LPDIRECT3DVERTEXBUFFER7 _pVB;
+  LPDIRECT3DVERTEXBUFFER7 _pXformed_VB;
+
+  int _start_index;   // starting offset of this geom's verts within the VB
+  int _num_verts;     // number of verts used by this geomcontext within the VB
 
 public:
   static TypeHandle get_class_type() {

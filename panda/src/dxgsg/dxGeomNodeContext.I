@@ -19,14 +19,13 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: dxGeomNodeContext::Constructor
-//       Access: Public
+//       Access: Public                                 
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE DXGeomNodeContext::
-DXGeomNodeContext(GeomNode *node) :
-  GeomNodeContext(node)
+DXGeomNodeContext(GeomNode *node) : GeomNodeContext(node)
 {
-#ifdef DO_PSTATS
   _num_verts = 0;
-#endif
+  _pVB = NULL;
+  _pXformed_VB = NULL;
 }

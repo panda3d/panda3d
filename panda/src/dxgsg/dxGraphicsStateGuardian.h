@@ -355,6 +355,8 @@ protected:
   bool _alpha_test_enabled;
   int _decal_level;
 
+  GraphicsChannel *_panda_gfx_channel;  // cache the 1 channel dx supports
+
   // Cur Texture State
   TextureApplyProperty::Mode _CurTexBlendMode;
   Texture::FilterType _CurTexMagFilter,_CurTexMinFilter;
