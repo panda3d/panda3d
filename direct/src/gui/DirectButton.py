@@ -4,6 +4,7 @@ from PGTop import *
 from PGButton import *
 from PGItem import *
 from PGFrameStyle import *
+import types
 import __builtin__
 
 NORMAL = 'normal'
@@ -26,7 +27,9 @@ __builtin__.guiTop = aspect2d.attachNewNode(PGTop('DirectGuiTop'))
 guiTop.node().setMouseWatcher(base.mouseWatcher.node())
 
 class DirectGuiObject(PandaObject):
-    def __init__(self, optiondefs, **kw):
+    def __init__(self, optiondefs, dynamicGroups, **kw):
+        # Default id of all gui object, subclasses should override this
+        self.guiId = 'guiObject'
 	# Mapping from each megawidget option to a list of information
 	# about the option
 	#   - default value
@@ -51,6 +54,10 @@ class DirectGuiObject(PandaObject):
 	#   - the name of the component group of this component, if any
 	self.__componentInfo = {}
 
+	# Mapping from alias names to the names of components or
+	# sub-components.
+	self.__componentAliases = {}
+
 	# Contains information about the keywords provided to the
 	# constructor.  It is a mapping from the keyword to a tuple
 	# containing:
@@ -65,9 +72,16 @@ class DirectGuiObject(PandaObject):
 	# unused options given to the constructor.
 	#
 	# self._constructorKeywords = {}
-        self.defineoptions(kw, optiondefs)
+
+        # List of dynamic component groups.  If a group is included in
+        # this list, then it not an error if a keyword argument for
+        # the group is given to the constructor or to configure(), but
+        # no components with this group have been created.
+        # self._dynamicGroups = ()
+
+        self.defineoptions(kw, optiondefs, dynamicGroups)
         
-    def defineoptions(self, keywords, optionDefs):
+    def defineoptions(self, keywords, optionDefs, dynamicGroups = ()):
 	# Create options, providing the default value and the method
 	# to call when the value is changed.  If any option created by
 	# base classes has the same name as one in <optionDefs>, the
@@ -79,9 +93,14 @@ class DirectGuiObject(PandaObject):
 	if not hasattr(self, '_constructorKeywords'):
 	    tmp = {}
 	    for option, value in keywords.items():
-		tmp[option] = value
+		tmp[option] = [value, 0]
             self._constructorKeywords = tmp
 	    self._optionInfo = {}
+        # Initialize dictionary of dynamic groups
+        if not hasattr(self, '_dynamicGroups'):
+            self._dynamicGroups = ()
+        self._dynamicGroups = self._dynamicGroups + tuple(dynamicGroups)
+        # Reconcile command line and default options
         self.addoptions(optionDefs)
         
     def addoptions(self, optionDefs):
@@ -105,7 +124,7 @@ class DirectGuiObject(PandaObject):
                 if not optionInfo_has_key(name):
                     if keywords_has_key(name):
                         # Overridden by keyword, use keyword value
-                        value = keywords[name]
+                        value = keywords[name][0]
                         optionInfo[name] = [default, value, function]
                         del keywords[name]
                     else:
@@ -127,8 +146,15 @@ class DirectGuiObject(PandaObject):
 	    unusedOptions = []
 	    keywords = self._constructorKeywords
 	    for name in keywords.keys():
-                # This keyword argument has not been used.
-                unusedOptions.append(name)
+                print name
+		used = keywords[name][1]
+		if not used:
+                    # This keyword argument has not been used.  If it
+                    # does not refer to a dynamic group, mark it as
+                    # unused.
+                    index = string.find(name, '_')
+                    if index < 0 or name[:index] not in self._dynamicGroups:
+                        unusedOptions.append(name)
 	    self._constructorKeywords = {}
 	    if len(unusedOptions) > 0:
 		if len(unusedOptions) == 1:
@@ -195,6 +221,8 @@ class DirectGuiObject(PandaObject):
 	optionInfo_has_key = optionInfo.has_key
 	componentInfo = self.__componentInfo
 	componentInfo_has_key = componentInfo.has_key
+	componentAliases = self.__componentAliases
+	componentAliases_has_key = componentAliases.has_key
 	VALUE = _OPT_VALUE
 	FUNCTION = _OPT_FUNCTION
         
@@ -227,17 +255,38 @@ class DirectGuiObject(PandaObject):
 		    # This option may be of the form <component>_<option>.
 		    component = option[:index]
 		    componentOption = option[(index + 1):]
+
+		    # Expand component alias
+		    if componentAliases_has_key(component):
+			component, subComponent = componentAliases[component]
+			if subComponent is not None:
+			    componentOption = subComponent + '_' \
+				    + componentOption
+
+			# Expand option string to write on error
+			option = component + '_' + componentOption
+
                     # Does this component exist
 		    if componentInfo_has_key(component):
 			# Get the configure func for the named component
-			componentConfigFunc = componentInfo[component][1]
+			componentConfigFuncs = [componentInfo[component][1]]
 		    else:
-			componentConfigFunc = None
-                        raise KeyError, 'Unknown option "' + option + \
-                              '" for ' + self.__class__.__name__
+			# Check if this is a group name and configure all
+			# components in the group.
+			componentConfigFuncs = []
+			for info in componentInfo.values():
+			    if info[4] == component:
+			        componentConfigFuncs.append(info[1])
 
-		    # Add the configure method and option/value to dictionary.
-                    if componentConfigFunc:
+                        if len(componentConfigFuncs) == 0 and \
+                                component not in self._dynamicGroups:
+			    raise KeyError, 'Unknown option "' + option + \
+				    '" for ' + self.__class__.__name__
+
+		    # Add the configure method(s) (may be more than
+		    # one if this is configuring a component group)
+		    # and option/value to dictionary.
+		    for componentConfigFunc in componentConfigFuncs:
 			if not indirectOptions_has_key(componentConfigFunc):
 			    indirectOptions[componentConfigFunc] = {}
 			indirectOptions[componentConfigFunc][componentOption] \
@@ -273,10 +322,27 @@ class DirectGuiObject(PandaObject):
 		component = option[:index]
 		componentOption = option[(index + 1):]
 
+		# Expand component alias
+		if self.__componentAliases.has_key(component):
+		    component, subComponent = self.__componentAliases[
+                        component]
+		    if subComponent is not None:
+			componentOption = subComponent + '_' + componentOption
+
+		    # Expand option string to write on error
+		    option = component + '_' + componentOption
+
 		if self.__componentInfo.has_key(component):
 		    # Call cget on the component.
 		    componentCget = self.__componentInfo[component][3]
 		    return componentCget(componentOption)
+		else:
+		    # If this is a group name, call cget for one of
+		    # the components in the group.
+		    for info in self.__componentInfo.values():
+			if info[4] == component:
+			    componentCget = info[3]
+			    return componentCget(componentOption)
 
         # Option not found
 	raise KeyError, 'Unknown option "' + option + \
@@ -285,7 +351,8 @@ class DirectGuiObject(PandaObject):
     # Allow index style refererences
     __getitem__ = cget
     
-    def createcomponent(self, componentName, widgetClass, *widgetArgs, **kw):
+    def createcomponent(self, componentName, componentAliases, componentGroup,
+                        widgetClass, *widgetArgs, **kw):
 	"""Create a component (during construction or later)."""
         # Check for invalid component name
 	if '_' in componentName:
@@ -296,6 +363,29 @@ class DirectGuiObject(PandaObject):
 	    keywords = self._constructorKeywords
 	else:
 	    keywords = {}
+
+	for alias, component in componentAliases:
+	    # Create aliases to the component and its sub-components.
+	    index = string.find(component, '_')
+	    if index < 0:
+		self.__componentAliases[alias] = (component, None)
+	    else:
+		mainComponent = component[:index]
+		subComponent = component[(index + 1):]
+		self.__componentAliases[alias] = (mainComponent, subComponent)
+
+	    # Remove aliases from the constructor keyword arguments by
+	    # replacing any keyword arguments that begin with *alias*
+	    # with corresponding keys beginning with *component*.
+
+	    alias = alias + '_'
+	    aliasLen = len(alias)
+	    for option in keywords.keys():
+		if len(option) > aliasLen and option[:aliasLen] == alias:
+		    newkey = component + '_' + option[aliasLen:]
+		    keywords[newkey] = keywords[option]
+		    del keywords[option]
+
         # Find any keyword arguments for this component
 	componentPrefix = componentName + '_'
 	nameLen = len(componentPrefix)
@@ -303,9 +393,22 @@ class DirectGuiObject(PandaObject):
 	    if len(option) > nameLen and option[:nameLen] == componentPrefix:
 		# The keyword argument refers to this component, so add
 		# this to the options to use when constructing the widget.
-		kw[option[nameLen:]] = keywords[option]
+		kw[option[nameLen:]] = keywords[option][0]
                 # And delete it from main construction keywords
 		del keywords[option]
+	    else:
+		# Check if this keyword argument refers to the group
+		# of this component.  If so, add this to the options
+		# to use when constructing the widget.  Mark the
+		# keyword argument as being used, but do not remove it
+		# since it may be required when creating another
+		# component.
+		index = string.find(option, '_')
+		if index >= 0 and componentGroup == option[:index]:
+		    rest = option[(index + 1):]
+		    kw[rest] = keywords[option][0]
+		    keywords[option][1] = 1
+
         # Return None if no widget class is specified
 	if widgetClass is None:
 	    return None
@@ -319,7 +422,7 @@ class DirectGuiObject(PandaObject):
 	widget = apply(widgetClass, widgetArgs, kw)
 	componentClass = widget.__class__.__name__
 	self.__componentInfo[componentName] = (widget, widget.configure,
-		componentClass, widget.cget)
+		componentClass, widget.cget, componentGroup)
 	return widget
 
     def component(self, name):
@@ -336,6 +439,16 @@ class DirectGuiObject(PandaObject):
 	else:
 	    component = name[:index]
 	    remainingComponents = name[(index + 1):]
+
+	# Expand component alias
+	if self.__componentAliases.has_key(component):
+	    component, subComponent = self.__componentAliases[component]
+	    if subComponent is not None:
+		if remainingComponents is None:
+		    remainingComponents = subComponent
+		else:
+		    remainingComponents = subComponent + '_' \
+			    + remainingComponents
 
 	widget = self.__componentInfo[component][0]
 	if remainingComponents is None:
@@ -367,10 +480,10 @@ class DirectGuiObject(PandaObject):
 	self._optionInfo = {}
 
     def bind(self, sequence, command):
-        self.accept(self.idString + '_' + sequence, command)
+        self.accept(sequence + '-' + self.guiId, command)
         
     def unbind(self, sequence):
-        self.ignore(self.idString + '_' + sequence)
+        self.ignore(sequence + '-' + self.guiId)
 
 class DirectButton(DirectGuiObject, NodePath):
     def __init__(self, parent = guiTop, **kw):
@@ -386,22 +499,25 @@ class DirectButton(DirectGuiObject, NodePath):
         #  - a VBase4(L,R,B,T)
         #  - a bounding box object
         optiondefs = (
+            ('image',         None,       self.setImage),
+            ('geom',          None,       self.setGeom),
             ('text',          '',         self.setText),
-            ('geom',          None,       None),
-            ('image',         None,       None),
+            ('command',       None,       self.setCommand),
             ('relief',        FLAT,       self.setRelief),
             ('frameColor',    (1,1,1,1),  self.setFrameColor),
             ('borderWidth',   (.1,.1),    self.setBorderWidth),
             ('frameSize',     None,       self.setFrameSize),
+            ('pressEffect',   1,          None),
+            ('padSX',         1.2,        None),
+            ('padSZ',         1.1,        None),
             ('pos',           None,       None),
             ('scale',         None,       None),
             ('state',         NORMAL,     self.setState),
-            ('command',       None,       None),
             ('rolloverSound', None,       None),
             ('clickSound',    None,       None),
             )
         # Update options to reflect keyword parameters
-        apply(DirectGuiObject.__init__, (self, optiondefs), kw)
+        apply(DirectGuiObject.__init__, (self, optiondefs, ('text',)), kw)
         # Initialize the superclass
         NodePath.__init__(self)
         # Create a button
@@ -415,18 +531,26 @@ class DirectButton(DirectGuiObject, NodePath):
         self.stateNodePath = []
         for i in range(4):
             self.stateNodePath.append(NodePath(self.guiItem.getStateDef(i)))
-        # Adjust frame
-        self.frameStyle = [PGFrameStyle(),
-                           PGFrameStyle(),
-                           PGFrameStyle(),
-                           PGFrameStyle()]
+        if self['pressEffect']:
+            np = self.stateNodePath[1].attachNewNode('pressEffect')
+            np.setScale(0.98)
+            self.stateNodePath[1] = np
+        # Initialize frame style
+        self.frameStyle = []
+        for i in range(4):
+            self.frameStyle.append(PGFrameStyle())
+        # For holding bounds info
+        self.ll = Point3(0)
+        self.ur = Point3(0)
+        # Call initialization functions if necessary
         # To avoid doing things redundantly
         self.fInit = 1
-        # Call initialization functions if necessary
         self.initialiseoptions(DirectButton)
         self.fInit = 0
+        # Allow changes to take effect
         self.updateFrameStyle()
-        self.setFrameSize()
+        if not self['frameSize']:
+            self.setFrameSize()
         # Update pose
         if self['pos']:
             if type(self['pos']) == type(()):
@@ -463,15 +587,32 @@ class DirectButton(DirectGuiObject, NodePath):
         if not self.fInit:
             self.updateFrameStyle()
 
-    def setFrameSize(self):
+    def resetFrameSize(self):
+        self.setFrameSize(fClearFrame = 1)
+        
+    def setFrameSize(self, fClearFrame = 0):
         if self['frameSize']:
+            # Use user specified bounds
             bounds = self['frameSize']
-            self.guiItem.setFrame(bounds[0], bounds[1],
-                                  bounds[2], bounds[3])
         else:
-            bounds = self.component('text0').textNode.getCardActual()
-            self.guiItem.setFrame(bounds[0] - 0.4, bounds[1] + 0.4,
-                                  bounds[2] - 0.15, bounds[3] + 0.15)
+            # Use ready state to compute bounds
+            frameType = self.frameStyle[0].getType()
+            if fClearFrame and (frameType != PGFrameStyle.TNone):
+                self.frameStyle[0].setType(PGFrameStyle.TNone)
+                self.guiItem.setFrameStyle(0, self.frameStyle[0])
+                # To force an update of the button
+                self.guiItem.getStateDef(0)
+            # Clear out frame before computing bounds
+            self.stateNodePath[0].calcTightBounds(self.ll, self.ur)
+            # Scale bounds to give a pad around graphics
+            bounds = (self.ll[0] * self['padSX'], self.ur[0] * self['padSX'],
+                      self.ll[2] * self['padSZ'], self.ur[2] * self['padSZ'])
+            # Restore frame style if necessary
+            if (frameType != PGFrameStyle.TNone):
+                self.frameStyle[0].setType(frameType)
+                self.guiItem.setFrameStyle(0, self.frameStyle[0])
+        # Set frame to new dimensions
+        self.guiItem.setFrame(bounds[0], bounds[1],bounds[2], bounds[3])
 
     def setFrameColor(self):
         color = self['frameColor']
@@ -488,6 +629,11 @@ class DirectButton(DirectGuiObject, NodePath):
             self.updateFrameStyle()
 
     def setText(self):
+        if not self['text']:
+            print "No Text"
+            return
+        else:
+            print "SetText"
         if ((type(self['text']) == type(())) or
             (type(self['text']) == type([]))):
             text = self['text']
@@ -497,12 +643,58 @@ class DirectButton(DirectGuiObject, NodePath):
             component = 'text' + `i`
             if not self.hascomponent(component):
                 self.createcomponent(
-                    component, OnscreenText.OnscreenText,
+                    component, (), 'text',
+                    OnscreenText.OnscreenText,
                     (), parent = self.stateNodePath[i],
                     text = text[i], scale = 1,
                     mayChange = 1)
             else:
                 self[component + '_text'] = text[i]
+
+    def setGeom(self):
+        if not self['geom']:
+            print "No Geom"
+            return
+        else:
+            print "SetGeom"
+        if ((type(self['geom']) == type(())) or
+            (type(self['geom']) == type([]))):
+            geom = self['geom']
+        else:
+            geom = (self['geom'],) * 4
+        for i in range(4):
+            component = 'geom' + `i`
+            if not self.hascomponent(component):
+                self.createcomponent(
+                    component, (), 'geom',
+                    OnscreenGeom,
+                    (), parent = self.stateNodePath[i],
+                    geom = geom[i], scale = 1)
+            else:
+                self[component + '_geom'] = geom[i]
+
+    def setImage(self):
+        if not self['image']:
+            print "No Image"
+            return
+        else:
+            print "SetImage"
+        if ((type(self['image']) == type(())) or
+            (type(self['image']) == type([]))):
+            if len(self['image']) == 4:
+                image = self['image']
+            else:
+                image = (self['image'],) * 4
+        for i in range(4):
+            component = 'image' + `i`
+            if not self.hascomponent(component):
+                self.createcomponent(
+                    component, (), 'image',
+                    OnscreenImage,
+                    (), parent = self.stateNodePath[i],
+                    image = image[i], scale = 1)
+            else:
+                self[component + '_image'] = image[i]
 
     def setState(self):
         if type(self['state']) == type(0):
@@ -511,12 +703,12 @@ class DirectButton(DirectGuiObject, NodePath):
             self.guiItem.setActive(1)
         else:
             self.guiItem.setActive(0)
-            
-    def setImage(self):
-        pass
-    def setGeom(self):
-        pass
 
+    def setCommand(self):
+        self.unbind('click')
+        if self['command']:
+            self.bind('click', self['command'])
+            
 class DirectLabel(DirectGuiObject, PGItem):
     def __init__(self, parent = None, **kw):
         # Pass in a background texture, and/or a geometry object,
@@ -536,7 +728,7 @@ class DirectLabel(DirectGuiObject, PGItem):
             ('textPos',       (0,0,0),    self.setTextPos),
             ('textScale',     (1,1,1),    self.setTextPos),
             )
-        apply(DirectGuiObject.__init__, (self, optiondefs), kw)            
+        apply(DirectGuiObject.__init__, (self, optiondefs, ()), kw)            
         self.initialiseoptions(DirectLabel)
 
     def setImage(self):
@@ -566,3 +758,262 @@ class DirectLabel(DirectGuiObject, PGItem):
     def setState(self):
         pass
 
+
+class OnscreenGeom(PandaObject, NodePath):
+    def __init__(self, geom = None,
+                 pos = None,
+                 hpr = None,
+                 scale = None,
+                 color = None,
+                 parent = aspect2d):
+        """__init__(self, ...)
+
+        Make a geom node from string or a node path,
+        put it into the 2d sg and set it up with all the indicated parameters.
+
+        The parameters are as follows:
+
+          geom: the actual geometry to display or a file name.
+                This may be omitted and specified later via setGeom()
+                if you don't have it available.
+
+          pos: the x, y, z position of the geometry on the screen.
+               This maybe a 3-tuple of floats or a vector.
+               y should be zero
+
+          hpr: the h,p,r of the geometry on the screen.
+               This maybe a 3-tuple of floats or a vector.
+
+          scale: the size of the geometry.  This may either be a single
+                 float, a 3-tuple of floats, or a vector, specifying a
+                 different x, y, z scale.  y should be 1
+
+          color: the (r, g, b, a) color of the geometry.  This is
+                 normally a 4-tuple of floats or ints.
+
+          parent: the NodePath to parent the geometry to initially.
+        """
+        # We ARE a node path.  Initially, we're an empty node path.
+        NodePath.__init__(self)
+        # Assign geometry
+        if isinstance(geom, NodePath):
+            self.assign(geom.copyTo(parent))
+        elif type(geom) == type(''):
+            self.assign(loader.loadModelCopy(geom))
+            self.reparentTo(parent)
+
+        # Adjust pose
+        # Set pos
+        if (isinstance(pos, types.TupleType) or
+            isinstance(pos, types.ListType)):
+            apply(self.setPos, pos)
+        elif isinstance(pos, VBase3):
+            self.setPos(pos)
+        # Hpr
+        if (isinstance(hpr, types.TupleType) or
+            isinstance(hpr, types.ListType)):
+            apply(self.setHpr, hpr)
+        elif isinstance(hpr, VBase3):
+            self.setPos(hpr)
+        # Scale
+        if (isinstance(scale, types.TupleType) or
+            isinstance(scale, types.ListType)):
+            apply(self.setScale, scale)
+        elif isinstance(scale, VBase3):
+            self.setPos(scale)
+        elif (isinstance(scale, types.FloatType) or
+              isinstance(scale, types.IntType)):
+            self.setScale(scale)
+
+        # Set color
+        if color:
+            # Set color, if specified
+            self.setColor(color[0], color[1], color[2], color[3])
+
+    def setGeom(self, geom):
+        # Assign geometry
+        self.removeNode()
+        # Assign geometry
+        if isinstance(geom, NodePath):
+            self.assign(geom.copyTo(parent))
+        elif type(geom) == type(''):
+            self.assign(loader.loadModelCopy(geom))
+            self.reparentTo(parent)
+
+    def getGeom(self):
+        return self
+    
+    def configure(self, option=None, **kw):
+	for option, value in kw.items():
+            # Use option string to access setter function
+            try:
+                setter = eval('self.set' +
+                              string.upper(option[0]) + option[1:])
+                if (((setter == self.setPos) or
+                     (setter == self.setHpr) or
+                     (setter == self.setScale)) and
+                    (isinstance(value, types.TupleType) or
+                     isinstance(value, types.ListType))):
+                    apply(setter,value)
+                else:
+                    setter(value)
+            except AttributeError:
+                print 'OnscreenText.configure: invalid option:', option
+
+    # Allow index style references
+    def __setitem__(self, key, value):
+        apply(self.configure, (), {key: value})
+        
+    def cget(self, option):
+	# Get current configuration setting.
+        # This is for compatability with DirectGui functions
+        getter = eval('self.get' + string.upper(option[0]) + option[1:])
+        return getter()
+
+    # Allow index style refererences
+    __getitem__ = cget
+    
+
+
+class OnscreenImage(PandaObject, NodePath):
+    def __init__(self, image = None,
+                 pos = None,
+                 hpr = None,
+                 scale = None,
+                 color = None,
+                 parent = aspect2d):
+        """__init__(self, ...)
+
+        Make a image node from string or a node path,
+        put it into the 2d sg and set it up with all the indicated parameters.
+
+        The parameters are as follows:
+
+          image: the actual geometry to display or a file name.
+                This may be omitted and specified later via setImage()
+                if you don't have it available.
+
+          pos: the x, y, z position of the geometry on the screen.
+               This maybe a 3-tuple of floats or a vector.
+               y should be zero
+
+          hpr: the h,p,r of the geometry on the screen.
+               This maybe a 3-tuple of floats or a vector.
+
+          scale: the size of the geometry.  This may either be a single
+                 float, a 3-tuple of floats, or a vector, specifying a
+                 different x, y, z scale.  y should be 1
+
+          color: the (r, g, b, a) color of the geometry.  This is
+                 normally a 4-tuple of floats or ints.
+
+          parent: the NodePath to parent the geometry to initially.
+        """
+        # We ARE a node path.  Initially, we're an empty node path.
+        NodePath.__init__(self)
+        # Assign geometry
+        if isinstance(image, NodePath):
+            self.assign(image.copyTo(parent))
+        elif type(image) == type(()):
+            model = loader.loadModelOnce(image[0])
+            self.assign(model.find(image[1]))
+            self.reparentTo(parent)
+            model.removeNode()
+
+        # Adjust pose
+        # Set pos
+        if (isinstance(pos, types.TupleType) or
+            isinstance(pos, types.ListType)):
+            apply(self.setPos, pos)
+        elif isinstance(pos, VBase3):
+            self.setPos(pos)
+        # Hpr
+        if (isinstance(hpr, types.TupleType) or
+            isinstance(hpr, types.ListType)):
+            apply(self.setHpr, hpr)
+        elif isinstance(hpr, VBase3):
+            self.setPos(hpr)
+        # Scale
+        if (isinstance(scale, types.TupleType) or
+            isinstance(scale, types.ListType)):
+            apply(self.setScale, scale)
+        elif isinstance(scale, VBase3):
+            self.setPos(scale)
+        elif (isinstance(scale, types.FloatType) or
+              isinstance(scale, types.IntType)):
+            self.setScale(scale)
+
+        # Set color
+        if color:
+            # Set color, if specified
+            self.setColor(color[0], color[1], color[2], color[3])
+
+    def setImage(self, image):
+        # Assign geometry
+        self.removeNode()
+        if isinstance(image, NodePath):
+            self.assign(image.copyTo(parent))
+        elif type(image) == type(()):
+            model = loader.loadModelOnce(image[0])
+            self.assign(model.find(image[1]))
+            self.reparentTo(parent)
+            model.removeNode()
+
+    def getImage(self):
+        return self
+    
+    def configure(self, option=None, **kw):
+	for option, value in kw.items():
+            # Use option string to access setter function
+            try:
+                setter = eval('self.set' +
+                              string.upper(option[0]) + option[1:])
+                if (((setter == self.setPos) or
+                     (setter == self.setHpr) or
+                     (setter == self.setScale)) and
+                    (isinstance(value, types.TupleType) or
+                     isinstance(value, types.ListType))):
+                    apply(setter,value)
+                else:
+                    setter(value)
+            except AttributeError:
+                print 'OnscreenText.configure: invalid option:', option
+
+    # Allow index style references
+    def __setitem__(self, key, value):
+        apply(self.configure, (), {key: value})
+        
+    def cget(self, option):
+	# Get current configuration setting.
+        # This is for compatability with DirectGui functions
+        getter = eval('self.get' + string.upper(option[0]) + option[1:])
+        return getter()
+
+    # Allow index style refererences
+    __getitem__ = cget
+    
+
+
+"""
+EXAMPLE CODE
+import DirectButton
+smiley = loader.loadModel('models/directmodels/smiley')
+db = DirectButton.DirectButton(geom = smiley, text = 'hi',
+                               scale = .15, relief = 'raised')
+db['text_pos'] = (.8, -.8)
+db['text_scale'] = .5
+db['geom1_color'] = VBase4(1,0,0,1)
+db['text2_text'] = 'bye'
+
+def dummyCmd():
+    print 'Amazing!'
+
+db['command'] = dummyCmd
+
+rolloverSmiley = db.component('geom2')
+def shrink():
+    rolloverSmiley.setScale(1)
+    rolloverSmiley.lerpScale(.1,.1,.1, 1.0, blendType = 'easeInOut',
+                             task = 'shrink')
+db.bind('enter', shrink)
+"""

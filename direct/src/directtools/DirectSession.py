@@ -35,7 +35,7 @@ class DirectSession(PandaObject):
         self.drList = DisplayRegionList()
         self.iRayList = map(lambda x: x.iRay, self.drList)
         self.dr = self.drList[0]
-        self.camera = self.dr.cam
+        self.camera = base.cameraList[0]
         self.iRay = self.dr.iRay
 
         self.cameraControl = DirectCameraControl()
