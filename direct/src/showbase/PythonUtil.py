@@ -374,10 +374,11 @@ def replace(list, old, new, all=0):
         list[i] = new
         return 1
     else:
-        numReplaced = list.count(old)
-        for i in xrange(numReplaced):
-            ind = list.index(old)
-            list[ind] = new
+        numReplaced = 0
+        for i in xrange(len(list)):
+            if list[i] == old:
+                numReplaced += 1
+                list[i] = new
         return numReplaced
 
 def reduceAngle(deg):
