@@ -5,7 +5,7 @@
 
 INLINE_MATHUTIL FLOATNAME(LMatrix3)
 make_xi_mat(const FLOATNAME(LVector2) &x) {
-  return FLOATNAME(LMatrix3)(1,     0,     0,
+  return FLOATNAME(LMatrix3)(1.0f,     0,     0,
 			   0,  x[0],  x[1],
 			   0, -x[1],  x[0]);
 }
@@ -13,7 +13,7 @@ make_xi_mat(const FLOATNAME(LVector2) &x) {
 
 INLINE_MATHUTIL FLOATNAME(LMatrix3)
 make_x_mat(const FLOATNAME(LVector2) &x) {
-  return FLOATNAME(LMatrix3)(1,     0,     0,
+  return FLOATNAME(LMatrix3)(1.0f,     0,     0,
 			   0,  x[1],  x[0],
 			   0, -x[0],  x[1]);
 }
@@ -22,7 +22,7 @@ make_x_mat(const FLOATNAME(LVector2) &x) {
 INLINE_MATHUTIL FLOATNAME(LMatrix3)
 make_y_mat(const FLOATNAME(LVector2) &y) {
   return FLOATNAME(LMatrix3)(y[1],     0, -y[0],
-  			      0,     1,     0,
+  			      0,     1.0f,     0,
 			   y[0],     0,  y[1]);
 }
 
@@ -31,7 +31,7 @@ INLINE_MATHUTIL FLOATNAME(LMatrix3)
 make_z_mat(const FLOATNAME(LVector2) &z) {
   return FLOATNAME(LMatrix3)(z[1], -z[0],     0,
 			   z[0],  z[1],     0,
-			      0,     0,     1);
+			      0,     0,     1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -61,8 +61,8 @@ heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
 
     FLOATNAME(LVector2) y(up[0], up[2]);
     FLOATTYPE d = dot(y, y);
-    if (d==0.0) {
-      y = FLOATNAME(LVector2)(0.0, 1.0);
+    if (d==0.0f) {
+      y = FLOATNAME(LVector2)(0.0f, 1.0f);
     } else {
       y /= csqrt(d);
     }
@@ -73,8 +73,8 @@ heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
     
     FLOATNAME(LVector2) x(up[1], up[0]*y[0]+up[2]*y[1]);
     d = dot(x, x);
-    if (d==0.0) {
-      x = FLOATNAME(LVector2)(0.0, 1.0);
+    if (d==0.0f) {
+      x = FLOATNAME(LVector2)(0.0f, 1.0f);
     } else {
       x /= csqrt(d);
     }
@@ -91,8 +91,8 @@ heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
     FLOATNAME(LVector2) z(fwd[0]*y[1] - fwd[2]*y[0],
 			-fwd[0]*y[0]*x[0] + fwd[1]*x[1] - fwd[2]*y[1]*x[0]);
     d = dot(z, z);
-    if (d==0.0) {
-      z = FLOATNAME(LVector2)(0.0, 1.0);
+    if (d==0.0f) {
+      z = FLOATNAME(LVector2)(0.0f, 1.0f);
     } else {
       z /= csqrt(d);
     }
@@ -118,8 +118,8 @@ heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
 
     FLOATNAME(LVector2) z(up[0], up[1]);
     FLOATTYPE d = dot(z, z);
-    if (d==0.0) {
-      z = FLOATNAME(LVector2)(0.0, 1.0);
+    if (d==0.0f) {
+      z = FLOATNAME(LVector2)(0.0f, 1.0f);
     } else {
       z /= csqrt(d);
     }
@@ -130,8 +130,8 @@ heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
 
     FLOATNAME(LVector2) x(up[0]*z[0] + up[1]*z[1], up[2]);
     d = dot(x, x);
-    if (d==0.0) {
-      x = FLOATNAME(LVector2)(1.0, 0.0);
+    if (d==0.0f) {
+      x = FLOATNAME(LVector2)(1.0f, 0.0f);
     } else {
       x /= csqrt(d);
     }
@@ -148,8 +148,8 @@ heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
     FLOATNAME(LVector2) y(fwd[0]*z[1] - fwd[1]*z[0],
 			-fwd[0]*x[1]*z[0] - fwd[1]*x[1]*z[1] + fwd[2]*x[0]);
     d = dot(y, y);
-    if (d==0.0) {
-      y = FLOATNAME(LVector2)(0.0, 1.0);
+    if (d==0.0f) {
+      y = FLOATNAME(LVector2)(0.0f, 1.0f);
     } else {
       y /= csqrt(d);
     }
@@ -197,8 +197,8 @@ look_at(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
     
     FLOATNAME(LVector2) z(fwd[0], fwd[1]);
     FLOATTYPE d = dot(z, z);
-    if (d==0.0) {
-      z = FLOATNAME(LVector2)(0.0, 1.0);
+    if (d==0.0f) {
+      z = FLOATNAME(LVector2)(0.0f, 1.0f);
     } else {
       z /= csqrt(d);
     }
@@ -209,8 +209,8 @@ look_at(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
     
     FLOATNAME(LVector2) x(fwd[0]*z[0] + fwd[1]*z[1], fwd[2]);
     d = dot(x, x);
-    if (d==0.0) {
-      x = FLOATNAME(LVector2)(1.0, 0.0);
+    if (d==0.0f) {
+      x = FLOATNAME(LVector2)(1.0f, 0.0f);
     } else {
       x /= csqrt(d);
     }
@@ -227,8 +227,8 @@ look_at(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
     FLOATNAME(LVector2) y(up[0]*z[1] - up[1]*z[0],
 			-up[0]*x[1]*z[0] - up[1]*x[1]*z[1] + up[2]*x[0]);
     d = dot(y, y);
-    if (d==0.0) {
-      y = FLOATNAME(LVector2)(0.0, 1.0);
+    if (d==0.0f) {
+      y = FLOATNAME(LVector2)(0.0f, 1.0f);
     } else {
       y /= csqrt(d);
     }
@@ -254,8 +254,8 @@ look_at(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
     
     FLOATNAME(LVector2) y(fwd[0], fwd[2]);
     FLOATTYPE d = dot(y, y);
-    if (d==0.0) {
-      y = FLOATNAME(LVector2)(0.0, 1.0);
+    if (d==0.0f) {
+      y = FLOATNAME(LVector2)(0.0f, 1.0f);
     } else {
       y /= csqrt(d);
     }
@@ -266,8 +266,8 @@ look_at(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
     
     FLOATNAME(LVector2) x(fwd[1], fwd[0]*y[0]+fwd[2]*y[1]);
     d = dot(x, x);
-    if (d==0.0) {
-      x = FLOATNAME(LVector2)(0.0, 1.0);
+    if (d==0.0f) {
+      x = FLOATNAME(LVector2)(0.0f, 1.0f);
     } else {
       x /= csqrt(d);
     }
@@ -284,8 +284,8 @@ look_at(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
     FLOATNAME(LVector2) z(up[0]*y[1] - up[2]*y[0],
 			-up[0]*y[0]*x[0] + up[1]*x[1] - up[2]*y[1]*x[0]);
     d = dot(z, z);
-    if (d==0.0) {
-      z = FLOATNAME(LVector2)(0.0, 1.0);
+    if (d==0.0f) {
+      z = FLOATNAME(LVector2)(0.0f, 1.0f);
     } else {
       z /= csqrt(d);
     }

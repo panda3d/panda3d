@@ -20,8 +20,8 @@ make_copy() const {
 
 LPoint3f BoundingSphere::
 get_min() const {
-  nassertr(!is_empty(), LPoint3f(0.0, 0.0, 0.0));
-  nassertr(!is_infinite(), LPoint3f(0.0, 0.0, 0.0));
+  nassertr(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
+  nassertr(!is_infinite(), LPoint3f(0.0f, 0.0f, 0.0f));
   return LPoint3f(_center[0] - _radius,
 		  _center[1] - _radius,
 		  _center[2] - _radius);
@@ -29,8 +29,8 @@ get_min() const {
 
 LPoint3f BoundingSphere::
 get_max() const {
-  nassertr(!is_empty(), LPoint3f(0.0, 0.0, 0.0));
-  nassertr(!is_infinite(), LPoint3f(0.0, 0.0, 0.0));
+  nassertr(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
+  nassertr(!is_infinite(), LPoint3f(0.0f, 0.0f, 0.0f));
   return LPoint3f(_center[0] + _radius,
 		  _center[1] + _radius,
 		  _center[2] + _radius);
@@ -38,8 +38,8 @@ get_max() const {
 
 LPoint3f BoundingSphere::
 get_approx_center() const {
-  nassertr(!is_empty(), LPoint3f(0.0, 0.0, 0.0));
-  nassertr(!is_infinite(), LPoint3f(0.0, 0.0, 0.0));
+  nassertr(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
+  nassertr(!is_infinite(), LPoint3f(0.0f, 0.0f, 0.0f));
   return get_center();
 }
 
@@ -50,33 +50,37 @@ xform(const LMatrix4f &mat) {
   if (!is_empty() && !is_infinite()) {
     // First, determine the longest axis of the matrix, in case it
     // contains a non-proportionate scale.
-    LVector3f x = mat.get_row3(0);
-    LVector3f y = mat.get_row3(1);
-    LVector3f z = mat.get_row3(2);
+
+/*
+    LVector3f x,y,z;
+	mat.get_row3(x,0);
+	mat.get_row3(y,1);
+	mat.get_row3(z,2);
+
     float xd = dot(x, x);
     float yd = dot(y, y);
     float zd = dot(z, z);
-    
-    float scale;
-    if (xd < yd) {
-      if (yd < zd) {
-	scale = sqrtf(zd);
-      } else {
-	scale = sqrtf(yd);
-      }
-    } else {
-      if (xd < zd) {
-	scale = sqrtf(zd);
-      } else {
-	scale = sqrtf(xd);
-      }
-    }
-    
+*/	
+    float xd,yd,zd,scale;
+
+	#define ROW_DOTTED(mat,ROWNUM)                        \
+	    (mat._m.m._##ROWNUM##0*mat._m.m._##ROWNUM##0 +    \
+	     mat._m.m._##ROWNUM##1*mat._m.m._##ROWNUM##1 +    \
+	     mat._m.m._##ROWNUM##2*mat._m.m._##ROWNUM##2)
+
+    xd = ROW_DOTTED(mat,0);
+    yd = ROW_DOTTED(mat,1);
+    zd = ROW_DOTTED(mat,2);
+
+	scale = max(xd,yd);
+	scale = max(scale,zd);
+	scale = sqrtf(scale);
+
+    // Transform the radius
+    _radius *= scale;
+
     // Transform the center
     _center = _center * mat;
-    
-    // And the radius.
-    _radius *= scale;
   }
 }
 
@@ -115,7 +119,7 @@ extend_by_point(const LPoint3f &point) {
 
   if (is_empty()) {
     _center = point;
-    _radius = 0.0;
+    _radius = 0.0f;
     _flags = 0;
   } else if (!is_infinite()) {
     LVector3f v = point - _center;
@@ -157,7 +161,7 @@ extend_by_finite(const FiniteBoundingVolume *volume) {
   LVector3f max1 = volume->get_max();
 
   if (is_empty()) {
-    _center = (min1 + max1) * 0.5;
+    _center = (min1 + max1) * 0.5f;
     _radius = length(LVector3f(max1 - _center));
     _flags = 0;
   } else {
@@ -211,7 +215,7 @@ around_points(const LPoint3f *first, const LPoint3f *last) {
     // thing as an empty sphere, because our volume contains one
     // point; an empty sphere contains no points.
     _center = min_box;
-    _radius = 0.0;
+    _radius = 0.0f;
 
   } else {
     // More than one point; we have a nonzero radius.
@@ -234,10 +238,10 @@ around_points(const LPoint3f *first, const LPoint3f *last) {
     }
 
     // Now take the center of the bounding box as the center of the sphere.
-    _center = (min_box + max_box) / 2.0;
+    _center = (min_box + max_box) * 0.5f;
     
     // Now walk back through to get the max distance from center.
-    float max_dist2 = 0.0;
+    float max_dist2 = 0.0f;
     for (p = first; p != last; ++p) {
       LVector3f v = (*p) - _center;
       float dist2 = dot(v, v);
@@ -313,7 +317,7 @@ around_finite(const BoundingVolume **first,
   }
 
   // Now take the center of the bounding box as the center of the sphere.
-  _center = (min_box + max_box) * 0.5;
+  _center = (min_box + max_box) * 0.5f;
 
   if (any_unknown) {
     // If we have any volumes in the list that we don't know what to
@@ -324,7 +328,7 @@ around_finite(const BoundingVolume **first,
   } else {
     // Otherwise, we do understand all the volumes in the list; make
     // the sphere as tight as we can.
-    _radius = 0.0;
+    _radius = 0.0f;
     for (p = first; p != last; ++p) {
       if (!(*p)->is_empty()) {
 	if ((*p)->is_of_type(BoundingSphere::get_class_type())) {
@@ -385,35 +389,35 @@ contains_lineseg(const LPoint3f &a, const LPoint3f &b) const {
     // using the quadratic equation.
     float A = dot(delta, delta);
     
-    nassertr(A != 0.0, 0);    // Trivial line segment.
+    nassertr(A != 0.0f, 0);    // Trivial line segment.
 
     LVector3f fc = from - _center;
-    float B = 2.0 * dot(delta, fc);
+    float B = 2.0f * dot(delta, fc);
     float C = dot(fc, fc) - _radius * _radius;
     
-    float radical = B*B - 4.0*A*C;
+    float radical = B*B - 4.0f*A*C;
 
     if (IS_NEARLY_ZERO(radical)) {
       // Tangent.
-      t1 = t2 = -B / (2.0*A);
-      return (t1 >= 0.0 && t1 <= 1.0) ? 
+      t1 = t2 = -B / (2.0f*A);
+      return (t1 >= 0.0f && t1 <= 1.0f) ? 
 	         IF_possible | IF_some : IF_no_intersection;
     }
     
-    if (radical < 0.0) {
+    if (radical < 0.0f) {
       // No real roots: no intersection with the line.
       return IF_no_intersection;
     }
     
-	float reciprocal_2A = 1.0f/(2.0*A);
+	float reciprocal_2A = 1.0f/(2.0f*A);
     float sqrt_radical = sqrtf(radical);
 
     t1 = ( -B - sqrt_radical ) * reciprocal_2A;
     t2 = ( -B + sqrt_radical ) * reciprocal_2A;
     
-    if (t1 >= 0.0 && t2 <= 1.0) {
+    if (t1 >= 0.0f && t2 <= 1.0f) {
       return IF_possible | IF_some | IF_all;
-    } else if (t1 <= 1.0 && t2 >= 0.0) {
+    } else if (t1 <= 1.0f && t2 >= 0.0f) {
       return IF_possible | IF_some;
     } else {
       return IF_no_intersection;
