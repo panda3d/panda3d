@@ -2,11 +2,12 @@
 #define DIRECTORY_IF_AUDIO yes
 
 #begin lib_target
-  #define USE_RAD_MSS yes
   #define TARGET miles_audio
+  #define TARGET_IF_RAD_MSS yes
+  #define USE_RAD_MSS yes
   #define BUILDING_DLL BUILDING_MILES_AUDIO
   #define LOCAL_LIBS audio
-  #define WIN_SYS_LIBS $[WIN_SYS_LIBS] Mss32.lib user32.lib advapi32.lib
+  #define WIN_SYS_LIBS $[WIN_SYS_LIBS] user32.lib advapi32.lib
   
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx  
 
