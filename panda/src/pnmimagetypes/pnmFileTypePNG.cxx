@@ -58,7 +58,7 @@ PNMFileTypePNG() {
   // dereferencing convention on the notify category.
   if (pnmimage_png_cat->is_debug()) {
     pnmimage_png_cat->debug()
-      << "PNG version " << png_libpng_ver << "\n";
+      << "PNG version " << PNG_LIBPNG_VER << "\n";
   }
 }
 
