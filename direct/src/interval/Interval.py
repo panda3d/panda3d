@@ -144,6 +144,8 @@ class Interval(DirectObject):
         """ popupControls()
             Popup control panel for interval.
         """
+        base.wantTk = 1
+        import TkGlobal
         import fpformat
         import string
         # I moved this here because Toontown does not ship Tk
@@ -152,10 +154,10 @@ class Interval(DirectObject):
         import EntryScale
         if tl == None:
             tl = Toplevel()
-            tl.title(self.getName() + ' Interval Controls')
+            tl.title(' Interval Controls')
         outerFrame = Frame(tl)
         self.es = es = EntryScale.EntryScale(
-            outerFrame, text = 'Time',
+            outerFrame, text = self.getName(),
             min = 0, max = string.atof(fpformat.fix(self.duration, 2)),
             command = lambda t, s = self: s.setT(t))
         # So when you drag scale with mouse its like you started a playback

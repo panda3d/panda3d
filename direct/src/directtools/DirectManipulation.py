@@ -541,11 +541,17 @@ class ObjectHandles(NodePath,PandaObject):
 
     def toggleWidget(self):
         if self.fActive:
-            self.scalingNode.reparentTo(hidden)
-            self.fActive = 0
+            self.deactivate()
         else:
-            self.scalingNode.reparentTo(self)
-            self.fActive = 1
+            self.activate()
+
+    def activate(self):
+        self.scalingNode.reparentTo(self)
+        self.fActive = 1
+
+    def deactivate(self):
+        self.scalingNode.reparentTo(hidden)
+        self.fActive = 0
 
     def showWidgetIfActive(self):
         if self.fActive:
