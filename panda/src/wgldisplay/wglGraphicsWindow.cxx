@@ -550,17 +550,18 @@ int wglGraphicsWindow::choose_visual(void) {
        if (wgldisplay_cat->is_debug()) {
 	 if (mask & W_ALPHA)
 	   wgldisplay_cat->debug() << "want alpha, pfd says '"
-				   << pfd.cAlphaBits << "'" << endl;
+				   << (int)(pfd.cAlphaBits) << "'" << endl;
 	 if (mask & W_DEPTH)
 	   wgldisplay_cat->debug() << "want depth, pfd says '"
-				   << pfd.cDepthBits << "'" << endl;
+				   << (int)(pfd.cDepthBits) << "'" << endl;
 	 if (mask & W_STENCIL)
 	   wgldisplay_cat->debug() << "want stencil, pfd says '"
-				   << pfd.cStencilBits << "'" << endl;
+				   << (int)(pfd.cStencilBits) << "'" << endl;
 	 wgldisplay_cat->debug() << "final flag check "
-				 << (pfd.dwFlags & dwReqFlags) << " =? "
-				 << dwReqFlags << endl;
-	 wgldisplay_cat->debug() << "pfd bits = " << pfd.cColorBits << endl;
+				 << (int)(pfd.dwFlags & dwReqFlags) << " =? "
+				 << (int)dwReqFlags << endl;
+	 wgldisplay_cat->debug() << "pfd bits = " << (int)(pfd.cColorBits)
+				 << endl;
 	 wgldisplay_cat->debug() << "cur_bpp = " << cur_bpp << endl;
        }
 
