@@ -54,7 +54,7 @@ class Dial(Pmw.MegaWidget):
         dim = self['edgeLength']
         self.sfGridDelta = dim / 10
         half = self.half = int(dim/2.0)
-        radius = self.radius = half - 2
+        radius = self.radius = half - 4
 
         # Running total which increments/decrements every time around dial
         self.baseVal = 0.0
@@ -75,6 +75,10 @@ class Dial(Pmw.MegaWidget):
                                             scrollregion = ((- half),(- half),
                                                             half, half))
         self._canvas.grid(rowspan = 2, columnspan = 2)
+
+        # The shuttle ring
+        self._canvas.create_oval(-half, -half, half, half,
+                                 fill = 'white', tags = ('ring',))
 
         # The dial face
         self._canvas.create_oval(-radius, -radius, radius, radius,
@@ -144,6 +148,11 @@ class Dial(Pmw.MegaWidget):
                                     command = self.reset)
 
         # Add event bindings
+        self._canvas.tag_bind('ring', '<Enter>', self.highlightRing)
+        self._canvas.tag_bind('ring', '<Leave>', self.restoreRing)
+        self._canvas.tag_bind('ring', '<ButtonPress-1>', self.ringMouseDown)
+        self._canvas.tag_bind('ring', '<B1-Motion>', self.ringMouseMotion)
+        self._canvas.tag_bind('ring', '<ButtonRelease-1>', self.ringMouseUp)
         self._canvas.tag_bind('dial', '<ButtonPress-1>', self.mouseDown)
         self._canvas.tag_bind('dial', '<B1-Motion>', self.mouseMotion)
         self._canvas.tag_bind('dial', '<Shift-B1-Motion>', self.shiftMouseMotion)
@@ -338,6 +347,43 @@ class Dial(Pmw.MegaWidget):
     def expDown(self,event):
         self.setScaleFactorExp(max(-MAX_EXP, self.exp - 1), 0)
 
+    def ringMouseDown(self,event):
+        apply(self.onPress, self['callbackData'])
+        self.startRingAngle = self.computeRingAngle(event)
+        self.deltaRingAngle = 0.0
+        self.velocityTask = self.after(100, self.ringComputeVelocity)
+
+    def ringMouseMotion(self, event):
+        # What is the current ring angle
+        ringAngle = self.computeRingAngle(event)
+        self.deltaRingAngle = ringAngle - self.startRingAngle
+
+    def ringComputeVelocity(self):
+        # Compute new exponent based upon current ring position
+        exp = self.deltaRingAngle/POINTFIVE_PI
+        # Set resulting scale factor
+        self.setScaleFactorExp(exp, fUpdateIndicator = 1)
+        # Update value and entry
+        delta = self.delta
+        self.value = newValue = self.value + delta * self.deltaRingAngle
+        self.set(newValue)
+        self.updateIndicator(self.value)
+        self.velocityTask = self.after(100, self.ringComputeVelocity)
+
+    def computeRingAngle(self, event):
+        x = self._canvas.canvasx(event.x)
+        y = self._canvas.canvasy(event.y)
+        rawAngle = math.atan2(y,x)
+        # Convert to dial coords
+        dialAngle = rawAngle + TWO_PI
+        return dialAngle
+
+    def ringMouseUp(self, event):
+        self.after_cancel(self.velocityTask)
+        # reset indicator
+        self.updateIndicator(self.value)
+        apply(self.onRelease, self['callbackData'])
+
     def knobMouseDown(self,event):
         apply(self.onPress, self['callbackData'])
         self.lasty = self._canvas.canvasy(event.y)
@@ -425,6 +471,12 @@ class Dial(Pmw.MegaWidget):
 
     def restoreSFMarker(self, event):
         self._canvas.itemconfigure('sfMarker', fill = '#A0A0A0')
+
+    def highlightRing(self, event):
+        self._canvas.itemconfigure('ring', fill = '#A0A0A0')
+
+    def restoreRing(self, event):
+        self._canvas.itemconfigure('ring', fill = 'white')
 
     def highlightKnob(self, event):
         self._canvas.itemconfigure('velocityKnob', fill = '#252525')

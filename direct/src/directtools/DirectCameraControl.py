@@ -140,10 +140,10 @@ class DirectCameraControl(PandaObject):
         taskMgr.spawnMethodNamed(self.HPPanTask, 'manipulateCamera')
 
     def XZTranslateOrHPanYZoomTask(self, state):
-        if direct.fShift | direct.fControl:
-            return self.HPanYZoomTask(state)
-        else:
+        if direct.fShift:
             return self.XZTranslateTask(state)
+        else:
+            return self.HPanYZoomTask(state)
 
     def XZTranslateOrHPPanTask(self, state):
         if direct.fShift:

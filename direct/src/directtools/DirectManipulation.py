@@ -227,12 +227,12 @@ class DirectManipulationControl(PandaObject):
                 # Mouse started elsewhere in the outer frame, rotate
                 self.rotate2D(state)
             else:
-                # Mouse starte in central region, xlate
+                # Mouse started in central region, xlate
                 # Mode depends on shift key
                 if direct.fShift:
-                    self.xlateCamXY(state)
-                else:
                     self.xlateCamXZ(state)
+                else:
+                    self.xlateCamXY(state)
         if self.fSetCoa:
             # Update coa based on current widget position
             direct.selected.last.mCoa2Dnp.assign(
