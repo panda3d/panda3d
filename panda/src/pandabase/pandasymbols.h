@@ -71,6 +71,14 @@
   #define EXPTP_PANDAGL extern
 #endif
 
+#ifdef BUILDING_PANDACR
+  #define EXPCL_PANDACR __declspec(dllexport)
+  #define EXPTP_PANDACR
+#else
+  #define EXPCL_PANDACR __declspec(dllimport)
+  #define EXPTP_PANDACR extern
+#endif
+
 #ifdef BUILDING_PANDAGLUT
   #define EXPCL_PANDAGLUT __declspec(dllexport)
   #define EXPTP_PANDAGLUT
@@ -138,6 +146,9 @@
 
 #define EXPCL_PANDAGL
 #define EXPTP_PANDAGL
+
+#define EXPCL_PANDACR
+#define EXPTP_PANDACR
 
 #define EXPCL_PANDAGLUT
 #define EXPTP_PANDAGLUT

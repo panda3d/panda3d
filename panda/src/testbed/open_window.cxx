@@ -31,7 +31,9 @@
 #ifdef USE_GLX
   #include "glxGraphicsPipe.h"
 #else
+  #include "wglGraphicsPipe.h"
   #include "wdxGraphicsPipe.h"
+  #include "wcrGraphicsPipe.h"
 #endif
 
 
@@ -70,7 +72,22 @@ main(int argc, char *argv[]) {
 #ifdef USE_GLX
   pipe = new glxGraphicsPipe(pipe_spec);
 #else
-  pipe = new wdxGraphicsPipe(pipe_spec);
+  // Yes, this is a stupid hard coded switch, but this is a test app, and
+  // I'm just making it easier to see the choices (and switch between them).
+  switch (2) {
+    case 1:
+      // ...OpenGL pipe
+      pipe = new wglGraphicsPipe(pipe_spec);
+      break;
+    case 2:
+      // ...Chromium OpenGL pipe (cr == chromium)
+      pipe = new wcrGraphicsPipe(pipe_spec);
+      break;
+    default:
+      // ...DirectX pipe
+      pipe = new wdxGraphicsPipe(pipe_spec);
+      break;
+  }
 #endif
 
   // Now create a window on that pipe.

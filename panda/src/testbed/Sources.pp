@@ -10,7 +10,7 @@
 #if $[LINK_ALL_STATIC]
   // If we're statically linking, we need to explicitly link with
   // at least one graphics renderer.
-  #define LOCAL_LIBS pandagl pandadx $[LOCAL_LIBS]
+  #define LOCAL_LIBS pandacr pandagl pandadx $[LOCAL_LIBS]
 
   // And we might like to have the egg loader available.
   #define LOCAL_LIBS pandaegg $[LOCAL_LIBS]
@@ -39,7 +39,7 @@
   #define SOURCES \
     open_window.cxx
 
-  #define LOCAL_LIBS $[LOCAL_LIBS] pandagl pandadx
+  #define LOCAL_LIBS $[LOCAL_LIBS] pandacr pandagl pandadx
 #end test_bin_target
 
 #if $[HAVE_DX]
