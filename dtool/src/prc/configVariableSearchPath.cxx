@@ -68,7 +68,9 @@ reload_search_path() {
   for (int i = 0; i < num_unique_references; i++) {
     string dirname = _core->get_unique_reference(i)->get_string_value();
     string expanded = ExecutionEnvironment::expand_string(dirname);
-    _value.append_directory(Filename::from_os_specific(expanded));
+    if (!expanded.empty()) {
+      _value.append_directory(Filename::from_os_specific(expanded));
+    }
   }
   _value.append_path(_postfix);
 
