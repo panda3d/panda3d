@@ -31,6 +31,7 @@ public:
   enum Mode {
     M_filled,
     M_wireframe,
+    // M_point
 
     // Perhaps others to be added later.
   };
