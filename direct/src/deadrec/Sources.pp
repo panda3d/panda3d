@@ -4,16 +4,16 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx
 
   #define SOURCES \
-  correction.h prediction.h  
+    smoothMover.h smoothMover.I
   
   #define INCLUDED_SOURCES \  
-    correction.cxx prediction.cxx
+    smoothMover.cxx
 
   #define INSTALL_HEADERS \
-    correction.h prediction.h
+    smoothMover.h smoothMover.I
 
   #define IGATESCAN \
-    correction.h prediction.h
+    all
 
   #define LOCAL_LIBS \
     directbase
