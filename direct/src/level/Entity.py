@@ -71,18 +71,20 @@ class Entity(DirectObject):
         self.__dict__[attrib] = value
 
     if __debug__:
-        def getAttribDescriptors(self):
+        def getAttribDescriptors(entClass):
+            """pass in an Entity class"""
             # lazy compilation
-            if not self.__class__.__dict__.has_key('_attribDescs'):
-                self.compileAttribDescs()
-            return self.__class__.__dict__['_attribDescs']
+            if not entClass.__dict__.has_key('_attribDescs'):
+                entClass.compileAttribDescs(entClass)
+            return entClass.__dict__['_attribDescs']
+        getAttribDescriptors = staticmethod(getAttribDescriptors)
 
-        def compileAttribDescs(self):
+        def compileAttribDescs(entClass):
             Entity.notify.debug('compiling attrib descriptors for %s' %
-                                self.__class__.__name__)
+                                entClass.__name__)
             # create a complete list of attribute descriptors, pulling in
             # the attribs from the entire class heirarchy
-            def getClassList(obj, self=self):
+            def getClassList(obj):
                 """returns list, ordered from most-derived to base classes,
                 depth-first. Multiple inheritance base classes that do not
                 derive from Entity are listed before those that do.
@@ -107,7 +109,7 @@ class Entity(DirectObject):
                 classList = classList + nonEntityBases + entityBases
                 return classList
 
-            def getUniqueClassList(obj, self=self):
+            def getUniqueClassList(obj):
                 classList = getClassList(obj)
                 # remove duplicates, leaving the last instance
                 uniqueList = []
@@ -116,7 +118,7 @@ class Entity(DirectObject):
                         uniqueList.append(classList[i])
                 return uniqueList
 
-            classList = getUniqueClassList(self.__class__)
+            classList = getUniqueClassList(entClass)
 
             # work backwards, through the class list, from Entity to the
             # most-derived class, aggregating attribute descriptors.
@@ -135,7 +137,7 @@ class Entity(DirectObject):
                 cl = classList.pop()
                 Entity.notify.debug('looking for attribs on %s' % cl.__name__)
 
-                def getClassAttr(cl, name, self=self):
+                def getClassAttr(cl, name):
                     """grab an attribute, such as __attribs__, off of a class"""
                     if cl.__dict__.has_key(name):
                         return cl.__dict__[name]
@@ -177,7 +179,8 @@ class Entity(DirectObject):
             # we now have an ordered list of all of the attribute descriptors
             # for this class. Cache it on the class object
             Entity.notify.debug('all attribs: %s' % allAttribs)
-            self.__class__.__dict__['_attribDescs'] = allAttribs
+            entClass.__dict__['_attribDescs'] = allAttribs
+        compileAttribDescs = staticmethod(compileAttribDescs)
 
         # support for level editing
         def handleAttribChange(self, attrib, value):
@@ -201,11 +204,6 @@ class Entity(DirectObject):
             in your derived class
             """
             pass
-
-        """
-        def getAttribInfo(self):
-            return self.attribs
-        """
 
         def debugPrint(self, message):
             """for debugging"""
