@@ -35,7 +35,7 @@ class EntityTypeRegistry:
                 filename = base + ".py"
             return filename
         
-        hv.hashFile(Filename.fromOsSpecific(getPyExtVersion(EntityTypes.__file__))
+        hv.hashFile(Filename.fromOsSpecific(getPyExtVersion(EntityTypes.__file__)))
         s = str(hv.asHex())
         s += '.'
         hv.hashFile(Filename.fromOsSpecific(getPyExtVersion(self.entTypeModule.__file__)))
