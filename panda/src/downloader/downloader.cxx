@@ -14,6 +14,7 @@
 #include <math.h>
 
 #if !defined(WIN32_VC)
+  #define errno wsaGetLastError()
   #include <sys/time.h>
   #include <netinet/in.h>
   #include <arpa/inet.h>
@@ -116,7 +117,8 @@ connect_to_server(const string &name, uint port) {
     else {
       downloader_cat.error()
         << "Downloader::connect_to_server() - gethostbyname() failed: "
-        << strerror(errno) << endl;
+        //<< strerror(errno) << endl;
+ 	<< errno << endl;
       return false;
     }
   } else
@@ -140,7 +142,8 @@ connect_to_server(void) {
   if (_socket == (int)0xffffffff) {
     downloader_cat.error()
       << "Downloader::connect_to_server() - socket failed: "
-      << strerror(errno) << endl;
+      //<< strerror(errno) << endl;
+      << errno << endl;
     return false;
   }
 
@@ -149,7 +152,8 @@ connect_to_server(void) {
   if (connect(_socket, (struct sockaddr *)&_sin, sizeof(_sin)) < 0) {
     downloader_cat.error()
       << "Downloader::connect_to_server() - connect() failed: "
-      << strerror(errno) << endl;
+      //<< strerror(errno) << endl;
+      << errno << endl;
     disconnect_from_server();
     _connected = false;
   }
@@ -203,7 +207,8 @@ safe_send(int socket, const char *data, int length, long timeout) {
       return SS_timeout;
     } else if (sret == -1) {
       downloader_cat.error()
-        << "Downloader::safe_send() - error: " << strerror(errno) << endl;
+        //<< "Downloader::safe_send() - error: " << strerror(errno) << endl;
+        << "Downloader::safe_send() - error: " << errno << endl;
       return SS_error;
     }
     int ret = send(socket, data, length, 0);
@@ -211,7 +216,8 @@ safe_send(int socket, const char *data, int length, long timeout) {
       bytes += ret;
     else {
       downloader_cat.error()
-        << "Downloader::safe_send() - error: " << strerror(errno) << endl;
+        //<< "Downloader::safe_send() - error: " << strerror(errno) << endl;
+        << "Downloader::safe_send() - error: " << errno << endl;
       return SS_error;
     }
   }
@@ -246,7 +252,8 @@ fast_receive(int socket, DownloadStatus *status, int rec_size) {
   } else if (sret == -1) {
     downloader_cat.error()
       << "Downloader::fast_receive() - select() error: " 
-      << strerror(errno) << endl;
+      //<< strerror(errno) << endl;
+      << errno << endl;
     return FR_error;
   }
   int ret = recv(socket, status->_next_in, rec_size, 0);
@@ -255,7 +262,8 @@ fast_receive(int socket, DownloadStatus *status, int rec_size) {
   } else if (ret == -1) {
     downloader_cat.error()
       << "Downloader::fast_receive() - recv() error: " 
-      << strerror(errno) << endl;
+      //<< strerror(errno) << endl;
+      << errno << endl;
     return FR_error;
   }
   if (downloader_cat.is_debug())
