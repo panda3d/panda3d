@@ -61,7 +61,7 @@ EggPalettize() : EggMultiFilter(true) {
 
 
   clear_runlines();
-  add_runline("[opts] attribfile.txa file.egg [file.egg ...]");
+  add_runline("[opts] file.egg [file.egg ...]");
 
   // We always have EggMultiBase's -f on: force complete load.  In
   // fact, we use -f for our own purposes, below.
