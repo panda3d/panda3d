@@ -647,6 +647,8 @@ void DXGraphicsStateGuardian::
 render_frame(const AllAttributesWrapper &initial_state) {
 	if (!_dx_ready)	return;
 
+    _lighting_enabled_this_frame = false;
+
 	_win->begin_frame();
 	_d3dDevice->BeginScene();
 
@@ -700,7 +702,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
 
 	_d3dDevice->EndScene();  // FPS meter drawing MUST occur after EndScene, since it uses GDI
 
-	if(_lighting_enabled) { 
+	if (_lighting_enabled_this_frame) {
 		// Let's turn off all the lights we had on, and clear the light
 		// cache--to force the lights to be reissued next frame, in case
 		// their parameters or positions have changed between frames.

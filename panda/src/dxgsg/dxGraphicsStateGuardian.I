@@ -96,8 +96,9 @@ enable_point_smooth(bool val) {
 INLINE void DXGraphicsStateGuardian::
 enable_lighting(bool val) {
   if (_lighting_enabled != val) {   
-    _lighting_enabled = val;
  	_d3dDevice->SetRenderState(D3DRENDERSTATE_LIGHTING, (DWORD)val);
+	if(_lighting_enabled = val)
+      _lighting_enabled_this_frame = true;
   }
 }
 
