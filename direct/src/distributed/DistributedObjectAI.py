@@ -18,6 +18,8 @@ class DistributedObjectAI(DirectObject.DirectObject):
             self.DistributedObjectAI_initialized
         except:
             self.DistributedObjectAI_initialized = 1
+
+            self.accountName=''
             # Record the repository
             self.air = air
             # Record our distributed class
@@ -96,6 +98,8 @@ class DistributedObjectAI(DirectObject.DirectObject):
                 if self.air:
                     self.air.deallocateChannel(self.doId)
             self.air = None
+            if hasattr(self, 'parentId'):
+                del self.parentId
             del self.zoneId
 
     def isDeleted(self):
@@ -155,8 +159,10 @@ class DistributedObjectAI(DirectObject.DirectObject):
         # does not include the quiet zone.
         return 'DOLogicalChangeZone-%s' % self.doId
     
-    def handleZoneChange(self, newZoneId, oldZoneId):
-        assert oldZoneId == self.zoneId
+    def handleZoneChange(self, newParentId, newZoneId, oldParentId, oldZoneId):
+        assert oldParentId == self.parentId
+        ##assert oldZoneId == self.zoneId
+        self.parentId = newParentId
         self.zoneId = newZoneId
         self.air.changeDOZoneInTables(self, newZoneId, oldZoneId)
         messenger.send(self.getZoneChangeEvent(), [newZoneId, oldZoneId])
@@ -187,19 +193,23 @@ class DistributedObjectAI(DirectObject.DirectObject):
         return self.air.getCollTrav(self.zoneId)
 
     def sendUpdate(self, fieldName, args = []):
+        assert self.notify.debugStateCall(self)
         if self.air:
             self.air.sendUpdate(self, fieldName, args)
 
     def sendUpdateToAvatarId(self, avId, fieldName, args):
+        assert self.notify.debugStateCall(self)
         channelId = avId + 1
         self.sendUpdateToChannel(channelId, fieldName, args)
 
     def sendUpdateToChannel(self, channelId, fieldName, args):
+        assert self.notify.debugStateCall(self)
         if self.air:
             self.air.sendUpdateToChannel(self, channelId, fieldName, args)
 
     def generateWithRequired(self, zoneId, optionalFields=[]):
-        # have we already allocated a doId?
+        assert self.notify.debugStateCall(self)
+        # have we already allocated a doId?      
         if self.__preallocDoId:
             self.__preallocDoId = 0
             return self.generateWithRequiredAndId(
@@ -207,44 +217,80 @@ class DistributedObjectAI(DirectObject.DirectObject):
             
         # The repository is the one that really does the work
         self.air.generateWithRequired(self, zoneId, optionalFields)
+        if wantOtpServer:
+            #HACK:
+            parentId = simbase.air.districtId
+            self.parentId = parentId
         self.zoneId = zoneId
         self.generate()
 
     # this is a special generate used for estates, or anything else that
     # needs to have a hard coded doId as assigned by the server
     def generateWithRequiredAndId(self, doId, zoneId, optionalFields=[]):
+        assert self.notify.debugStateCall(self)
         # have we already allocated a doId?
         if self.__preallocDoId:
+            assert doId == self.__preallocDoId
             self.__preallocDoId = 0
-            assert doId == self.doId
 
         # The repository is the one that really does the work
         self.air.generateWithRequiredAndId(self, doId, zoneId, optionalFields)
+        if wantOtpServer:
+            #HACK:
+            parentId = simbase.air.districtId
+            self.parentId = parentId
         self.zoneId = zoneId
         self.generate()
 
-    def generate(self):
-        # Inheritors should put functions that require self.zoneId or
-        # other networked info in this function.
-        assert(self.notify.debug('generate(): %s' % (self.doId)))
-        pass
+    if wantOtpServer:
+        def generateOtpObject(self, parentId, zoneId, optionalFields=[], doId=None):
+            assert self.notify.debugStateCall(self)
+            # have we already allocated a doId?
+            if self.__preallocDoId:
+                assert doId is None or doId == self.__preallocDoId
+                doId=self.__preallocDoId
+                self.__preallocDoId = 0
+                
+            # The repository is the one that really does the work
+            self.air.sendGenerateOtpObject(
+                    self, parentId, zoneId, optionalFields, doId=doId)
+            self.parentId = parentId
+            self.zoneId = zoneId
+            self.generate()
 
-    def sendGenerateWithRequired(self, repository, zoneId, optionalFields=[]):
+    def generate(self):
+        """
+        Inheritors should put functions that require self.zoneId or
+        other networked info in this function.
+        """
+        assert self.notify.debugStateCall(self)
+
+    if wantOtpServer:
+        def generateInit(self):
+            """
+            First generate (not from cache).
+            """
+            assert self.notify.debugStateCall(self)
+
+    def sendGenerateWithRequired(self, repository, parentId, zoneId, optionalFields=[]):
+        assert self.notify.debugStateCall(self)
+        if not wantOtpServer:
+            parentId = 0
         # Make the dclass do the hard work
-        dg = self.dclass.aiFormatGenerate(self, self.doId, zoneId,
-                                          repository.districtId,
-                                          repository.ourChannel,
-                                          optionalFields)
+        dg = self.dclass.aiFormatGenerate(
+                self, self.doId, parentId, zoneId,
+                repository.serverId,
+                repository.ourChannel,
+                optionalFields)
         repository.send(dg)
-        self.zoneId = zoneId
             
     def initFromServerResponse(self, valDict):
+        assert self.notify.debugStateCall(self)
         # This is a special method used for estates, etc., which get
         # their fields set from the database indirectly by way of the
         # AI.  The input parameter is a dictionary of field names to
         # datagrams that describes the initial field values from the
         # database.
-        assert(self.notify.debug("initFromServerResponse(%s)" % (valDict.keys(),)))
 
         dclass = self.dclass
         for key, value in valDict.items():
@@ -252,6 +298,7 @@ class DistributedObjectAI(DirectObject.DirectObject):
             dclass.directUpdate(self, key, value)
 
     def requestDelete(self):
+        assert self.notify.debugStateCall(self)
         if not self.air:
             doId = "none"
             if hasattr(self, "doId"):
