@@ -86,37 +86,51 @@ class DirectCheckButton(DirectButton):
             # Ok, they didn't set specific bounds,
             #  let's add room for the label indicator
             #  get the difference in height
-            
-            diff = self.indicator.getHeight() + (2*self['boxBorder']) - (self.bounds[3] - self.bounds[2])
+
+            ibw = self.indicator['borderWidth']
+            indicatorWidth = (self.indicator.getWidth() + (2*ibw[0]))
+            indicatorHeight = (self.indicator.getHeight() + (2*ibw[1]))
+            diff = (indicatorHeight + (2*self['boxBorder']) -
+                    (self.bounds[3] - self.bounds[2]))
+            print diff, self.bounds[3], self.bounds[2]
             # If background is smaller then indicator, enlarge background
             if diff > 0:
                 if self['boxPlacement'] == 'left':            #left
-                    self.bounds[0] += -(self.indicator.getWidth() + (2*self['boxBorder']))
+                    self.bounds[0] += -(indicatorWidth + (2*self['boxBorder']))
                     self.bounds[3] += diff/2
                     self.bounds[2] -= diff/2
                 elif self['boxPlacement'] == 'below':          #below
-                    self.bounds[2] += -(self.indicator.getHeight() + (2*self['boxBorder']))
+                    self.bounds[2] += -(indicatorHeight+(2*self['boxBorder']))
                 elif self['boxPlacement'] == 'right':          #right
-                    self.bounds[1] += self.indicator.getWidth() + (2*self['boxBorder'])
+                    self.bounds[1] += indicatorWidth + (2*self['boxBorder'])
                     self.bounds[3] += diff/2
                     self.bounds[2] -= diff/2
                 else:                                    #above
-                    self.bounds[3] += self.indicator.getHeight() + (2*self['boxBorder'])
+                    self.bounds[3] += indicatorHeight + (2*self['boxBorder'])
 
             # Else make space on correct side for indicator
             else:
                 if self['boxPlacement'] == 'left':            #left
-                    self.bounds[0] += -(self.indicator.getWidth() + (2*self['boxBorder']))
+                    self.bounds[0] += -(indicatorWidth + (2*self['boxBorder']))
                 elif self['boxPlacement'] == 'below':          #below
-                    self.bounds[2] += -(self.indicator.getHeight() + (2*self['boxBorder']))
+                    self.bounds[2] += -(indicatorHeight + (2*self['boxBorder']))
                 elif self['boxPlacement'] == 'right':          #right
-                    self.bounds[1] += self.indicator.getWidth() + (2*self['boxBorder'])
+                    self.bounds[1] += indicatorWidth + (2*self['boxBorder'])
                 else:                                    #above
-                    self.bounds[3] += self.indicator.getHeight() + (2*self['boxBorder'])
+                    self.bounds[3] += indicatorHeight + (2*self['boxBorder'])
 
         # Set frame to new dimensions
-        self.guiItem.setFrame(self.bounds[0], self.bounds[1],
-                              self.bounds[2], self.bounds[3])  #3 is top border!!
+        if ((frameType != PGFrameStyle.TNone) and
+            (frameType != PGFrameStyle.TFlat)):
+            bw = self['borderWidth']
+        else:
+            bw = (0,0)
+        # Set frame to new dimensions
+        self.guiItem.setFrame(
+            self.bounds[0] - bw[0],
+            self.bounds[1] + bw[0],
+            self.bounds[2] - bw[1],
+            self.bounds[3] + bw[1])
 
         # If they didn't specify a position, put it in the center of new area
         if not self.indicator['pos']:
@@ -125,17 +139,19 @@ class DirectCheckButton(DirectButton):
             newpos = [0,0,0]
 
             if self['boxPlacement'] == 'left':            #left
-                newpos[0] += bbounds[0]-lbounds[0] + self['boxBorder']
+                newpos[0] += bbounds[0]-lbounds[0] + self['boxBorder'] + ibw[0]
                 dropValue = (bbounds[3]-bbounds[2]-lbounds[3]+lbounds[2])/2 + self['boxBorder']
-                newpos[2] += bbounds[3]-lbounds[3] + self['boxBorder'] - dropValue
+                newpos[2] += (bbounds[3]-lbounds[3] + self['boxBorder'] -
+                              dropValue)
             elif self['boxPlacement'] == 'right':            #right
-                newpos[0] += bbounds[1]-lbounds[1] - self['boxBorder']
+                newpos[0] += bbounds[1]-lbounds[1] - self['boxBorder'] - ibw[0]
                 dropValue = (bbounds[3]-bbounds[2]-lbounds[3]+lbounds[2])/2 + self['boxBorder']
-                newpos[2] += bbounds[3]-lbounds[3] + self['boxBorder'] - dropValue
+                newpos[2] += (bbounds[3]-lbounds[3] + self['boxBorder']
+                              - dropValue)
             elif self['boxPlacement'] == 'above':            #above
-                newpos[2] += bbounds[3]-lbounds[3] - self['boxBorder']
+                newpos[2] += bbounds[3]-lbounds[3] - self['boxBorder'] - ibw[1]
             else:                                      #below
-                newpos[2] += bbounds[2]-lbounds[2] + self['boxBorder']
+                newpos[2] += bbounds[2]-lbounds[2] + self['boxBorder'] + ibw[1]
 
             self.indicator.setPos(newpos[0],newpos[1],newpos[2])
 

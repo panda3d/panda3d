@@ -1,0 +1,252 @@
+from DirectButton import *
+from DirectLabel import *
+
+class DirectOptionMenu(DirectButton):
+    """
+    DirectOptionMenu(parent) - Create a DirectButton which pops up a
+    menu which can be used to select from a list of items.
+    Execute button command (passing the selected item through) if defined
+    To cancel the popup menu click anywhere on the screen outside of the
+    popup menu.  No command is executed in this case.
+    """
+    def __init__(self, parent = aspect2d, **kw):
+        # Inherits from DirectButton
+        optiondefs = (
+            # List of items to display on the popup menu
+            ('items',       [],             self.setItems),
+            # Initial item to display on menu button
+            # Can be an interger index or the same string as the button
+            ('initialitem', None,           INITOPT),
+            # Amount of padding to place around popup button indicator
+            ('popupMarkerBorder', (.1, .1), None),
+            # Background color to use to highlight popup menu items
+            ('highlightColor', (.5,.5,.5,1),None),
+            # Alignment to use for text on popup menu button
+            # Changing this breaks button layout
+            ('text_align',  TextNode.ALeft, None),
+            # Remove press effect because it looks a bit funny 
+            ('pressEffect',     0,          INITOPT),
+           )
+        # Merge keyword options with default options
+        self.defineoptions(kw, optiondefs)
+        # Initialize superclasses
+        DirectButton.__init__(self, parent)
+        # This is created when you set the menu's items
+        self.popupMenu = None
+        self.selectedIndex = None
+        # Record any user specified frame size
+        self.initFrameSize = self['frameSize']
+        # Create a small rectangular marker to distinguish this button
+        # as a popup menu button
+        self.popupMarker = self.createcomponent(
+            'popupMarker', (), None,
+            DirectFrame, (self,),
+            frameSize = (-0.5, 0.5, -0.2, 0.2),
+            scale = 0.4,
+            relief = RAISED)
+        # This needs to popup the menu too
+        self.popupMarker.bind(B1PRESS, self.showPopupMenu)
+        # Make popup marker have the same click sound
+        self.popupMarker.guiItem.setSound(
+            B1PRESS + self.popupMarker.guiId,self['clickSound'])
+        # A big screen encompassing frame to catch the cancel clicks
+        self.cancelFrame = self.createcomponent(
+            'cancelframe', (), None,
+            DirectFrame, (self,),
+            frameSize = (-1,1,-1,1),
+            relief = None)
+        self.cancelFrame.bind(B1PRESS, self.hidePopupMenu)
+        # Default action on press is to show popup menu
+        self.bind(B1PRESS, self.showPopupMenu)
+        # Call option initialization functions
+        self.initialiseoptions(DirectOptionMenu)
+        # Need to call this since we explicitly set frame size
+        self.resetFrameSize()
+
+    def setItems(self):
+        """
+        self['items'] = itemList
+        Create new popup menu to reflect specified set of items
+        """
+        # Remove old component if it exits
+        if self.popupMenu != None:
+            self.destroycomponent('popupMenu')
+        # Create new component
+        self.popupMenu = self.createcomponent('popupMenu', (), None,
+                                              DirectFrame, (self,),
+                                              relief = 'raised',
+                                              )
+        if not self['items']:
+            return
+        # Create a new component for each item
+        # Find the maximum extents of all items
+        itemIndex = 0
+        self.minX = self.maxX = self.minZ = self.maxZ = None
+        for item in self['items']:
+            c = self.createcomponent(
+                'item%d' % itemIndex, (), 'item',
+                DirectButton, (self.popupMenu,),
+                text = item, text_align = TextNode.ALeft,
+                command = lambda i = itemIndex: self.set(i))
+            bounds = c.getBounds()
+            if self.minX == None:
+                self.minX = bounds[0]
+            elif bounds[0] < self.minX:
+                self.minX = bounds[0]
+            if self.maxX == None:
+                self.maxX = bounds[1]
+            elif bounds[1] > self.maxX:
+                self.maxX = bounds[1]
+            if self.minZ == None:
+                self.minZ = bounds[2]
+            elif bounds[2] < self.minZ:
+                self.minZ = bounds[2]
+            if self.maxZ == None:
+                self.maxZ = bounds[3]
+            elif bounds[3] > self.maxZ:
+                self.maxZ = bounds[3]
+            itemIndex += 1
+        # Calc max width and height
+        self.maxWidth = self.maxX - self.minX
+        self.maxHeight = self.maxZ - self.minZ
+        # Adjust frame size for each item and bind actions to mouse events
+        for i in range(itemIndex):
+            item = self.component('item%d' %i)
+            # So entire extent of item's slot on popup is reactive to mouse
+            item['frameSize'] = (self.minX, self.maxX, self.minZ, self.maxZ)
+            # Move it to its correct position on the popup
+            item.setPos(-self.minX, 0 , -self.maxZ - i * self.maxHeight)
+            item.bind(B1RELEASE, self.hidePopupMenu)
+            # Highlight background when mouse is in item
+            item.bind(ENTER, lambda x, item=item: self._highlightItem(item))
+            # Restore specified color upon exiting
+            fc = item['frameColor']
+            item.bind(
+                EXIT,lambda x,item=item,fc=fc: self._unhighlightItem(item,fc))
+        # Set popup menu frame size to encompass all items
+        f = self.component('popupMenu')
+        f['frameSize'] = (0, self.maxWidth, -self.maxHeight * itemIndex, 0)
+
+        # Determine what initial item to display and set text accordingly
+        if self['initialitem']:
+            self.set(self['initialitem'], fCommand = 0)
+        else:
+            # No initial item specified, just use first item
+            self.set(0, fCommand = 0)
+            
+        # Position popup Marker to the right of the button
+        pm = self.popupMarker
+        pmw = (pm.getWidth() * pm.getScale()[0] +
+               2 * self['popupMarkerBorder'][0])
+        if self.initFrameSize:
+            # Use specified frame size
+            bounds = list(self.initFrameSize)
+        else:
+            # Or base it upon largest item
+            bounds = [self.minX, self.maxX, self.minZ, self.maxZ]
+        pm.setPos(bounds[1] + pmw/2.0, 0,
+                  bounds[2] + (bounds[3] - bounds[2])/2.0)
+        # Adjust popup menu button to fit all items (or use user specified
+        # frame size
+        bounds[1] += pmw
+        self['frameSize'] = (bounds[0], bounds[1], bounds[2], bounds[3])
+        # Set initial state
+        self.hidePopupMenu()
+
+    def showPopupMenu(self, event = None):
+        """
+        Make popup visible and try to position it just to right of
+        mouse click with currently selected item aligned with button.
+        Adjust popup position if default position puts it outside of
+        visible screen region
+        """
+        b = self.getBounds()
+        fb = self.popupMenu.getBounds()
+        # Where did the user click his mouse?
+        if (base.mouseWatcherNode.hasMouse()):
+            xPos = base.mouseWatcherNode.getMouseX()
+            self.popupMenu.setX(render2d, xPos)
+        else:
+            # If no mouse watcher, use midpoint of menu button
+            xPos = (b[1] - b[0])/2.0 - fb[0]
+            self.popupMenu.setX(xPos)
+        # Try to set height to line up selected item with button
+        self.popupMenu.setZ((self.selectedIndex + 1)*self.maxHeight - fb[3])
+        # Make sure the whole popup menu is visible
+        pos = self.popupMenu.getPos(render2d)
+        scale = self.popupMenu.getScale(render2d)
+        # How are we doing relative to the right side of the screen
+        maxX = pos[0] + fb[1] * scale[0]
+        if maxX > 1.0:
+            # Need to move menu to the left
+            self.popupMenu.setX(render2d, pos[0] + (1.0 - maxX))
+        # How about up and down?
+        minZ = pos[2] + fb[2] * scale[2]
+        maxZ = pos[2] + fb[3] * scale[2]
+        if minZ < -1.0:
+            # Menu too low, move it up
+            self.popupMenu.setZ(render2d, pos[2] + (-1.0 - minZ))
+        elif maxZ > 1.0:
+            # Menu too high, move it down
+            self.popupMenu.setZ(render2d, pos[2] + (1.0 - maxZ))
+        # Show the menu in its new position
+        self.popupMenu.show()
+        # Also display cancel frame to catch clicks outside of the popup
+        self.cancelFrame.show()
+        # Position and scale cancel frame to fill entire window
+        self.cancelFrame.setPos(render2d,0,0,0)
+        self.cancelFrame.setScale(render2d,1,1,1)
+
+    def hidePopupMenu(self, event = None):
+        """ Put away popup and cancel frame """
+        self.popupMenu.hide()
+        self.cancelFrame.hide()
+
+    def _highlightItem(self, item):
+        item['frameColor'] = self['highlightColor']
+
+    def _unhighlightItem(self, item, frameColor):
+        item['frameColor'] = frameColor
+
+    def index(self, index):
+        intIndex = None
+        if isinstance(index, types.IntType):
+            intIndex = index
+        elif index in self['items']:
+            i = 0
+            for item in self['items']:
+                if item == index:
+                    intIndex = i
+                    break
+                i += 1
+        return intIndex
+
+    def set(self, index, fCommand = 1):
+        # Item was selected, record item and call command if any
+        newIndex = self.index(index)
+        if newIndex is not None:
+            self.selectedIndex = newIndex
+            item = self['items'][self.selectedIndex]
+            self['text'] = item
+            if fCommand and self['command']:
+                # Pass any extra args to command
+                apply(self['command'], [item] + self['extraArgs'])
+
+    def get(self):
+        """ Get currently selected item """
+        return self['items'][self.selectedIndex]
+        
+    def commandFunc(self, event):
+        """
+        Override popup menu button's command func
+        Command is executed in response to selecting menu items
+        """
+        pass
+        
+
+
+
+
+
+
+

@@ -856,12 +856,12 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             self.setFrameSize(fClearFrame = 1)
         
     def setFrameSize(self, fClearFrame = 0):
+        # Use ready state to determine frame Type
+        frameType = self.getFrameType()
         if self['frameSize']:
             # Use user specified bounds
             self.bounds = self['frameSize']
         else:
-            # Use ready state to compute bounds
-            frameType = self.frameStyle[0].getType()
             if fClearFrame and (frameType != PGFrameStyle.TNone):
                 self.frameStyle[0].setType(PGFrameStyle.TNone)
                 self.guiItem.setFrameStyle(0, self.frameStyle[0])
@@ -873,9 +873,17 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             if (frameType != PGFrameStyle.TNone):
                 self.frameStyle[0].setType(frameType)
                 self.guiItem.setFrameStyle(0, self.frameStyle[0])
+        if ((frameType != PGFrameStyle.TNone) and
+            (frameType != PGFrameStyle.TFlat)):
+            bw = self['borderWidth']
+        else:
+            bw = (0,0)
         # Set frame to new dimensions
-        self.guiItem.setFrame(self.bounds[0], self.bounds[1],
-                              self.bounds[2], self.bounds[3])
+        self.guiItem.setFrame(
+            self.bounds[0] - bw[0],
+            self.bounds[1] + bw[0],
+            self.bounds[2] - bw[1],
+            self.bounds[3] + bw[1])
 
 
     def getBounds(self, state = 0):
@@ -898,6 +906,9 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         y = self.bounds[2] + (self.bounds[3] - self.bounds[2])/2.0
         return (x,y)
 
+    def getFrameType(self, state = 0):
+        return self.frameStyle[state].getType()
+    
     def updateFrameStyle(self):
         if not self.fInit:
             for i in range(self['numStates']):

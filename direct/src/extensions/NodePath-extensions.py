@@ -44,6 +44,11 @@
         for child in self.getChildrenAsList():
             print child.getName()
 
+    def removeChildren(self):
+        """Deletes the children of the bottom node of a node path"""
+        for child in self.getChildrenAsList():
+            child.removeNode()
+
     def toggleVis(self):
         """Toggles visibility of a nodePath"""
         if self.isHidden():
