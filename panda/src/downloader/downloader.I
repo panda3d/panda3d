@@ -48,3 +48,23 @@ INLINE bool Downloader::
 is_download_enabled(void) const {
   return _download_enabled;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Downloader::change_buffer_size
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool Downloader::
+change_buffer_size(int size) {
+  if (size == _buffer_size)
+    return true;
+  nassertr(size > 0, false);
+#ifdef HAVE_IPC
+    _buffer_lock.lock();
+#endif
+  _new_buffer_size = size;
+#ifdef HAVE_IPC
+    _buffer_lock.unlock();
+#endif
+  return true;
+}

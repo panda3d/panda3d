@@ -93,6 +93,8 @@ init(PT(Buffer) buffer) {
   _download_enabled = true;
   // We need to flush after every write in case we're interrupted
   _dest_stream.setf(ios::unitbuf, 0);
+  _buffer_size = _buffer->get_length();
+  _new_buffer_size = 0;
 
 #if defined(WIN32)
   WSAData mydata;
@@ -205,19 +207,6 @@ disconnect_from_server(void) {
 #endif
 
   _connected = false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Downloader::change_buffer_size
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-void Downloader::
-change_buffer_size(int size) {
-  if (_buffer->get_length() == size)
-    return;
-  _buffer.clear();
-  _buffer = new Buffer(size);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -526,7 +515,7 @@ download(const string &file_name, Filename file_dest,
 
       // Ensure we have enough room in the buffer to download read_size
       // If we don't have enough room, write the buffer to disk
-      if (status._bytes_in_buffer + read_size > downloader_buffer_size) {
+      if (status._bytes_in_buffer + read_size > _buffer_size) {
 	if (downloader_cat.is_debug())
 	  downloader_cat.debug()
 	    << "Downloader::download() - Flushing buffer" << endl;
@@ -757,6 +746,22 @@ write_to_disk(DownloadStatus &status) {
   }
 
   status.reset();
+
+  // Now see if we need to adjust the buffer size
+  if (_new_buffer_size > 0) {
+#ifdef HAVE_IPC
+    _buffer_lock.lock();
+#endif
+
+    _buffer.clear();
+    _buffer = new Buffer(_new_buffer_size);
+    _buffer_size = _new_buffer_size;
+    _new_buffer_size = 0;
+
+#ifdef HAVE_IPC
+    _buffer_lock.unlock();
+#endif
+  }
 
   return true;
 }

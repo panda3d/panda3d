@@ -46,12 +46,11 @@ PUBLISHED:
 			int last_byte, int total_bytes, 
 			bool partial_content = true);
 
-  void change_buffer_size(int size);
-
   INLINE void set_bandwidth(float bytes);
   INLINE float get_bandwidth(void) const;
   INLINE void enable_download(bool val);
   INLINE bool is_download_enabled(void) const;
+  INLINE bool change_buffer_size(int size);
 
 private:
   class DownloadStatus {
@@ -100,6 +99,7 @@ private:
 
 #ifdef HAVE_IPC
   mutex _bandwidth_frequency_lock;
+  mutex _buffer_lock;
 #endif
 
   int _socket;
@@ -107,6 +107,8 @@ private:
   float _bandwidth;
   bool _download_enabled;
   ofstream _dest_stream;
+  int _new_buffer_size;
+  int _buffer_size;
 
   string _server_name;
   struct sockaddr_in _sin;
