@@ -2202,11 +2202,12 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
 
         bool bCouldntFindValidZBuf;
         if(!_dxgsg->scrn.bIsLowVidMemCard) {
-            if(dx_pick_best_screenres) {
-              if((_dxgsg->scrn.MaxAvailVidMem == UNKNOWN_VIDMEM_SIZE) || is_badvidmem_card(&_dxgsg->scrn.DXDeviceID)) {
-                    wdxdisplay_cat.info() << "pick_best_screenres: defaulted 800x600 based on no reliable vidmem size\n";
-                    dwRenderWidth=800;  dwRenderHeight=600;
-              } else {
+
+            bool bUseDefaultSize=dx_pick_best_screenres&&
+                                 ((_dxgsg->scrn.MaxAvailVidMem == UNKNOWN_VIDMEM_SIZE) || 
+                                  is_badvidmem_card(&_dxgsg->scrn.DXDeviceID));
+                
+            if(dx_pick_best_screenres && !bUseDefaultSize) {
                 typedef struct {
                     UINT memlimit;
                     DWORD scrnX,scrnY;
@@ -2246,14 +2247,19 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
                     }
                 }
                 // otherwise just go with whatever was specified (we probably shouldve marked this card as lowmem if it gets to end of loop w/o breaking
-              }
+            }
 
-            } else {
+            if(pixFmt==D3DFMT_UNKNOWN) {
+
+                if(bUseDefaultSize) {
+                    wdxdisplay_cat.info() << "pick_best_screenres: defaulted 800x600 based on no reliable vidmem size\n";
+                    dwRenderWidth=800;  dwRenderHeight=600;
+                }
+
                 search_for_valid_displaymode(dwRenderWidth,dwRenderHeight,bNeedZBuffer,bWantStencil,
                                          &_dxgsg->scrn.SupportedScreenDepthsMask,
                                          &bCouldntFindValidZBuf,
                                          &pixFmt);
-
 
                 // note I'm not saving refresh rate, will just use adapter default at given res for now
 
@@ -2952,6 +2958,19 @@ get_depth_bitwidth(void) {
 //    DX_DECLARE_CLEAN(DDSURFACEDESC2, ddsd);
 //    _dxgsg->_zbuf->GetSurfaceDesc(&ddsd);
 //  return ddsd.ddpfPixelFormat.dwRGBBitCount;
+}
+
+void wdxGraphicsWindow::
+get_framebuffer_format(PixelBuffer::Type &fb_type, PixelBuffer::Format &fb_format) {
+    assert(_dxgsg!=NULL);
+
+    fb_type = PixelBuffer::T_unsigned_byte; 
+    // this is sortof incorrect, since for F_rgb5 it's really 5 bits per channel
+    //would have to change a lot of texture stuff to make this correct though
+
+    if(IS_16BPP_DISPLAY_FORMAT(_dxgsg->scrn.PresParams.BackBufferFormat)) 
+        fb_format = PixelBuffer::F_rgb5; 
+     else fb_format = PixelBuffer::F_rgb; 
 }
 
 // Global system parameters we want to modify during our run
