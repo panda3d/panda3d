@@ -36,6 +36,11 @@ class DistributedObjectAI(DirectObject.DirectObject):
     #    """
     #    print ("Destructing: " + self.__class__.__name__)
 
+    def getDeleteEvent(self):
+        if hasattr(self, 'doId'):
+            return 'distObjDelete-%s' % self.doId
+        return None
+
     def delete(self):
         """
         Inheritors should redefine this to take appropriate action on delete
@@ -46,6 +51,7 @@ class DistributedObjectAI(DirectObject.DirectObject):
         if self.air is not None:
             # self.doId may not exist.  The __dict__ syntax works around that.
             assert(self.notify.debug('delete(): %s' % (self.__dict__.get("doId"))))
+
             # Clean up all the pending barriers.
             for barrier in self.__barriers.values():
                 barrier.cleanup()
