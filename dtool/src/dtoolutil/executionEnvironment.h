@@ -29,6 +29,8 @@ public:
   INLINE static bool has_environment_variable(const string &var);
   INLINE static string get_environment_variable(const string &var);
 
+  static string expand_string(const string &str);
+
   INLINE static int get_num_args();
   INLINE static string get_arg(int n);
   

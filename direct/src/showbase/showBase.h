@@ -16,6 +16,7 @@
 #include <pointerTo.h>
 #include <nodePath.h>
 #include <dconfig.h>
+#include <dSearchPath.h>
 
 ConfigureDecl(config_showbase, EXPCL_DIRECT, EXPTP_DIRECT);
 typedef Config::Config<ConfigureGetConfig_config_showbase> ConfigShowbase;
@@ -24,6 +25,8 @@ class CollisionTraverser;
 class Camera;
 
 BEGIN_PUBLISH
+
+EXPCL_DIRECT DSearchPath &get_particle_path();
 
 EXPCL_DIRECT PT(GraphicsPipe) make_graphics_pipe();
 EXPCL_DIRECT PT(GraphicsWindow) 

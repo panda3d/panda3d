@@ -35,9 +35,16 @@
 #include <orthoProjection.h>
 #include <appTraverser.h>
 #include <collisionTraverser.h>
+#include <get_config_path.h>
 
 ConfigureDef(config_showbase);
 ConfigureFn(config_showbase) {
+}
+
+DSearchPath &
+get_particle_path() {
+  static DSearchPath *particle_path = NULL;
+  return get_config_path("particle-path", particle_path);
 }
 
 static CollisionTraverser *collision_traverser = NULL;
