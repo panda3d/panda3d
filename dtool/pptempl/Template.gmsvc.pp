@@ -18,11 +18,23 @@
 // $DTOOL/pptempl/System.pp
 // The user's PPREMAKE_CONFIG file.
 // $DTOOL/pptempl/Global.pp
-// $DTOOL/pptempl/Global.msvc.pp
+// $DTOOL/pptempl/Global.gmsvc.pp
 // All of the Sources.pp files in the current source hierarchy
 // $DTOOL/Depends.pp, once for each Sources.pp file
-// Template.msvc.pp (this file), once for each Sources.pp file
+// Template.gmsvc.pp (this file), once for each Sources.pp file
 
+#defun decygwin frompat,topat,path
+  #foreach file $[path]
+    #if $[isfullpath $[file]]
+      $[patsubstw $[frompat],$[topat],$[cygpath_w $[file]]]
+    #else
+      $[patsubstw $[frompat],$[topat],$[osfilename $[file]]]
+    #endif
+  #end file
+#end decygwin
+
+#define dtool_ver_dir_cyg $[DTOOL_INSTALL]/src/dtoolbase
+#define dtool_ver_dir $[decygwin %,%,$[dtool_ver_dir_cyg]]
 
 //////////////////////////////////////////////////////////////////////
 #if $[or $[eq $[DIR_TYPE], src],$[eq $[DIR_TYPE], metalib]]
@@ -320,10 +332,15 @@ $[directory]/stamp :
 $[varname] = $[sources]
   #define target $[so_dir]/lib$[TARGET]$[dllext].dll
   #define sources $($[varname])
-$[target] : $[sources] $[so_dir]/stamp
+  #define flags   $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]
+$[target] : $[sources] $[so_dir]/stamp $[dtool_ver_dir_cyg]/version.rc
+   //  first generate builddate for rc compiler
+	cl /nologo /EP "$[dtool_ver_dir]\verdate.cpp"  > "$[dtool_ver_dir]\verdate.h"
+	rc /n /fo"$[ver_resource]" $[filter /D%, $[flags]]   "$[dtool_ver_dir]\version.rc"
+	rm -f "$[dtool_ver_dir]\verdate.h"
   #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 	$[SHARED_LIB_C++]
-  #else
+  #else  
 	$[SHARED_LIB_C]
   #endif
 

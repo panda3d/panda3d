@@ -25,6 +25,19 @@
 // Template.msvc.pp (this file), once for each Sources.pp file
 
 
+#defun decygwin frompat,topat,path
+  #foreach file $[path]
+    #if $[isfullpath $[file]]
+      $[patsubstw $[frompat],$[topat],$[cygpath_w $[file]]]
+    #else
+      $[patsubstw $[frompat],$[topat],$[osfilename $[file]]]
+    #endif
+  #end file
+#end decygwin
+
+#define dtool_ver_dir_cyg $[DTOOL_INSTALL]/src/dtoolbase
+#define dtool_ver_dir $[decygwin %,%,$[dtool_ver_dir_cyg]]
+
 //////////////////////////////////////////////////////////////////////
 #if $[or $[eq $[DIR_TYPE], src],$[eq $[DIR_TYPE], metalib]]
 //////////////////////////////////////////////////////////////////////
@@ -302,7 +315,12 @@ $[osfilename $[directory]] :
 $[varname] = $[osfilename $[sources]]
   #define target $[so_dir]\lib$[TARGET]$[dllext].dll
   #define sources $($[varname])
-$[target] : $[sources]
+  #define flags   $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]  
+$[target] : $[sources] "$[dtool_ver_dir]\version.rc"
+    //  first generate builddate for rc compiler
+	cl /nologo /EP "$[dtool_ver_dir]\verdate.cpp"  > "$[dtool_ver_dir]\verdate.h"
+	rc /n /fo"$[ver_resource]" $[filter /D%, $[flags]] "$[dtool_ver_dir]\version.rc"
+	rm -f "$[dtool_ver_dir]\verdate.h"
   #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 	$[SHARED_LIB_C++]
   #else
