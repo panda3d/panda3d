@@ -161,8 +161,7 @@ class DirectJoybox(PandaObject):
                 val =  max(val - ANALOG_DEADBAND, 0.0)
             # Now clamp value between minVal and maxVal
             val = CLAMP(val, ANALOG_MIN, ANALOG_MAX)
-            self.aList[chan] = (((maxVal - minVal) * ((val - ANALOG_MIN) / ANALOG_RANGE))
-                                + minVal)
+            self.aList[chan] = (2.0 * ((val - ANALOG_MIN) / ANALOG_RANGE)) - 1
         # Update buttons
         for i in range(len(self.buttons)):
             try:

@@ -99,7 +99,7 @@ class DirectAnalogs(AnalogNode, PandaObject):
     def disable(self):
         self.nodePath.reparentTo(base.dataUnused)
     
-    def normalize(self, val, minVal = -1, maxVal = -1):
+    def normalize(self, val, minVal = -1, maxVal = 1):
         # First record sign
         if val < 0:
             sign = -1
