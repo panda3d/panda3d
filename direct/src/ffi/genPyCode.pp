@@ -14,7 +14,7 @@
 #define install_igatedb_dir $[or $[INSTALL_IGATEDB_DIR],$[install_dir]/etc]
 
 #define python python
-#if $[< $[OPTIMIZE],3]
+#if $[and $[WINDOWS_PLATFORM],$[< $[OPTIMIZE],3]]
   #define python $[python]_d
 #endif
 
