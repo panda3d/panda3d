@@ -36,6 +36,7 @@
 ////////////////////////////////////////////////////////////////////
 DCFile::
 DCFile() {
+  _all_classes_valid = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -232,7 +233,9 @@ write(ostream &out, bool brief) const {
 
   Classes::const_iterator ci;
   for (ci = _classes.begin(); ci != _classes.end(); ++ci) {
-    (*ci)->write(out, brief, 0);
+    if (!(*ci)->is_bogus_class()) {
+      (*ci)->write(out, brief, 0);
+    }
     out << "\n";
   }
 
@@ -276,6 +279,19 @@ get_class_by_name(const string &name) {
   }
 
   return (DCClass *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCFile::all_classes_valid
+//       Access: Published
+//  Description: Returns true if all of the classes read from the DC
+//               file were defined and valid, or false if any of them
+//               were undefined ("bogus classes").  If this is true,
+//               we might have read a partial file.
+////////////////////////////////////////////////////////////////////
+bool DCFile::
+all_classes_valid() const {
+  return _all_classes_valid;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -379,6 +395,11 @@ add_class(DCClass *dclass) {
 
   dclass->_number = get_num_classes();
   _classes.push_back(dclass);
+
+  if (dclass->is_bogus_class()) {
+    _all_classes_valid = false;
+  }
+
   return true;
 }
 

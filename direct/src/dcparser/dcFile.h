@@ -50,6 +50,8 @@ PUBLISHED:
   DCClass *get_class(int n);
   DCClass *get_class_by_name(const string &name);
 
+  bool all_classes_valid() const;
+
   int get_num_import_modules() const;
   string get_import_module(int n) const;
   int get_num_import_symbols(int n) const;
@@ -78,6 +80,8 @@ public:
 
   typedef pvector<Import> Imports;
   Imports _imports;
+
+  bool _all_classes_valid;
 
 public:
   // This map is built up during parsing for the convenience of the parser.

@@ -93,6 +93,20 @@ main(int argc, char *argv[]) {
     }
   }
 
+  if (!file.all_classes_valid() && !dump_brief) {
+    cerr << "File is incomplete.  The following classes are undefined:\n";
+
+    int num_classes = file.get_num_classes();
+    for (int i = 0; i < num_classes; i++) {
+      DCClass *dclass = file.get_class(i);
+      if (dclass->is_bogus_class()) {
+        cerr << "  " << dclass->get_name() << "\n";
+      }
+    }
+
+    return (1);
+  }
+
   if (dump_verbose || dump_brief) {
     if (!file.write(cout, dump_brief)) {
       return (1);

@@ -44,6 +44,8 @@ PUBLISHED:
   int get_num_inherited_fields() const;
   DCField *get_inherited_field(int n) const;
 
+  bool is_bogus_class() const;
+
 #ifdef HAVE_PYTHON
   void set_class_def(PyObject *class_def);
   PyObject *get_class_def() const;
@@ -70,7 +72,7 @@ PUBLISHED:
 #endif 
 
 public:
-  DCClass(const string &name);
+  DCClass(const string &name, bool bogus_class = false);
   ~DCClass();
 
   void write(ostream &out, bool brief, int indent_level) const;
@@ -83,6 +85,7 @@ private:
 
   // These members define the primary interface to the distributed
   // class as read from the file.
+  bool _bogus_class;
   int _number;
   string _name;
 
