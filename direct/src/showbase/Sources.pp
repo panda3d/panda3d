@@ -3,9 +3,7 @@
   #define LOCAL_LIBS \
     directbase
   #define OTHER_LIBS \
-    linmath:c \
-    event:c \
-    putil:c panda:m \
+    display:c linmath:c event:c putil:c panda:m \
     express:c pandaexpress:m \
     interrogatedb:c dconfig:c dtoolconfig:m \
     dtoolutil:c dtoolbase:c dtool:m
