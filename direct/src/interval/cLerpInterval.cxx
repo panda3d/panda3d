@@ -72,7 +72,7 @@ compute_delta(double t) const {
   case BT_ease_out:
     {
       double t2 = t * t;
-      return ((3.0 * t2) - (t2 * t)) * 0.5;
+      return ((3.0 * t) - (t2 * t)) * 0.5;
     }
 
   case BT_ease_in_out:
