@@ -102,6 +102,7 @@ class ShowBase(DirectObject.DirectObject):
         self.aspectRatio = ConfigVariableDouble('aspect-ratio', 0)
 
         self.windowType = self.config.GetString('window-type', 'onscreen')
+        self.requireWindow = self.config.GetBool('require-window', 1)
 
         # base.win is the main, or only window; base.winList is a list of
         # *all* windows.  Similarly with base.camList.
@@ -483,20 +484,11 @@ class ShowBase(DirectObject.DirectObject):
                     self.closeWindow(self.win)
 
         if self.win == None:
-            # This doesn't really need to be an error condition, but I
-            # figure any app that includes ShowBase really wants to
-            # have a window open.
-
-            # For toontown, it is possible that window open failed
-            # because of a graphics card issue. In that case, take
-            # user to the appropriate page.
-
-            self.notify.error("Unable to open '%s' window." % (self.windowType))
-            try:
-                launcher.setPandaErrorCode(14)
-                sys.exit(1)
-            except:
-                pass
+            self.notify.warning("Unable to open '%s' window." % (self.windowType))
+            if self.requireWindow:
+                # Unless require-window is set to false, it is an
+                # error not to open a window.
+                raise StandardError, 'Could not open window.'
 
         return (self.win != None)
 
@@ -860,12 +852,12 @@ class ShowBase(DirectObject.DirectObject):
         """
         
         if self.buttonThrowers != None:
-          for bt in self.buttonThrowers:
-            mw = bt.getParent()
-            mk = mw.getParent()
-            bt.removeNode()
-            mw.removeNode()
-            mk.removeNode()
+            for bt in self.buttonThrowers:
+                mw = bt.getParent()
+                mk = mw.getParent()
+                bt.removeNode()
+                mw.removeNode()
+                mk.removeNode()
         
         # For each mouse/keyboard device, we create
         #  - MouseAndKeyboard
