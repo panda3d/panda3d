@@ -25,6 +25,7 @@
 #include "nearly_zero.h"
 #include "cmath.h"
 #include "deg_2_rad.h"
+#include "compose_matrix.h"
 
 #include <notify.h>
 

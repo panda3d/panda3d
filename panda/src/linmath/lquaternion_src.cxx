@@ -17,7 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_linmath.h"
-#include "compose_matrix_src.h"
+#include "lmatrix.h"
+#include "luse.h"
 
 TypeHandle FLOATNAME(LQuaternion)::_type_handle;
 

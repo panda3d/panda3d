@@ -35,7 +35,7 @@
 #include <pandabase.h>
 #include <math.h>
 #include "lmatrix.h"
-#include "luse.h"
+#include "lvector3.h"
 
 #include "fltnames.h"
 #include "compose_matrix_src.h"
