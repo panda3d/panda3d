@@ -1,18 +1,12 @@
+
 Panda Audio Documentation
 -------------------------
 
 Contents:
-
     Introduction
-    
     Example Usage
-    
-    Advanced Usage
-    
+    Discussion
     Implementing an Alternative Sound System
-    
-    Differences From the Prior System
-    
     Summary
     
 
@@ -24,42 +18,53 @@ Introduction
 Example Usage
 -------------
 
-effects = AudioManager.createAudioManager()
-music = AudioManager.createAudioManager()
+Python Example:
+	effects = AudioManager.createAudioManager()
+	music = AudioManager.createAudioManager()
 
-bang = effects.load("bang")
-background = music.load("background_music")
+	bang = effects.load("bang")
+	background = music.load("background_music")
 
-background.play()
-bang.play()
+	background.play()
+	bang.play()
+
+C++ Example:
+	AudioManager effects = AudioManager::create_AudioManager();
+	AudioManager music = AudioManager::create_AudioManager();
+
+	bang = effects.get_sound("bang");
+	background = music.get_sound("background_music");
+
+	background.play();
+	bang.play();
 
 
-Differences From the Prior System
----------------------------------
+Discussion
+----------
 
-General:
+AudioManager, and AudioSound:
 
-The prior system had a lot of neat ideas in it, but we decided to go for something different anyway.
+The AudioManager is a combination of a file cache and a category
+of sounds (e.g. sound effects, battle sounds, or music).
 
-AudioPool, AudioManager, and AudioSound:
+The first step is to decide which AudioManager to use and load it.
 
-In the prior system, an AudioPool would be used to load sounds; a AudioManager would create an AudioSound; and you would pass the AudioSound back to the AudioManager to operate on it.  This has been turned around quite a bit.  It's now more object-oriented, in my opinion.
+Once you have an AudioManager (e.g. effectsManager), a call to 
+get_sound(<file>) on that manager should get you an AudioSound
+(e.g. mySound = effectsManager.getSound("bang")).
 
-The AudioManager is now a combination of the AudioPool and a category of sounds (e.g. sound effects, or music).  It has many other functions removed -- or, if you like, moved to AudioSound.  In the new system, you tell the sound itself to change its volume, loop, start time, play, stop, etc.  There is no need to involve the AudioManager explicitly in these operations.
+After getting a sound from an AudioManager, you can tell the sound 
+change its volume, loop, start time, play, stop, etc.  There is no 
+need to involve the AudioManager explicitly in these operations.
 
-In the old system, when you were done with a sound, you would explicitly give it back to the AudioPool.  In the new system, you just delete the sound when you're done with it.  (The AudioSound knows which AudioManager it is associated with, and will do the right thing).
+Simply delete the sound when you're done with it.  (The AudioSound 
+knows which AudioManager it is associated with, and will do the right
+thing).
 
-Sound, SoundPlayer, and SoundPlaying:
-
-The prior system took a much larger role in the way alternative (i.e. external, or platform specific) music systems were integrated.  The new system, provides an API for the rest of Panda; and leaves a lot of leaway to the low level sound system.  This is good and bad.  On the good side: it's easier to understand, and it allows for widely varrying low level systems.  On the bad side: it may be harder to keep the behavior consistent accross implementations (please try hard to keep them consistent, when adding an implementation), and there is less work already done when starting a new implementation.
-
-In the prior system, there were sounds (that you didn't play), sound playings (that you did play), and sound players (which were lackies for the AudioManager).  The newer system has AudioManagers (which manage sounds), and AudioSounds (which play sounds, i.e. they are sound objects).
-
-MIDI Meant Music:
-
-In the prior system, MIDI files were background music; while wave and mp3 were effects.  You couldn't have mp3 background music, for example.  In the newer system, you may create any number of categories (i.e. AudioManagers), which are not restricted to the type of sound they manage.  You may now have MIDI and mp3 background music, for example.
-
-AudioManager.loadSound():
-
-In the newer system, you create an AudioManager (e.g. effectsManager), and call get_sound(<file>) on that manager (e.g. mySound = effectsManager.getSound("bang")).
+The audio system, provides an API for the rest of Panda; and leaves a 
+lot of leaway to the low level sound system.  This is good and bad.  
+On the good side: it's easier to understand, and it allows for widely
+varrying low level systems.  On the bad side: it may be harder to keep
+the behavior consistent accross implementations (please try to keep 
+them consistent, when adding an implementation).
 

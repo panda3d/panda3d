@@ -23,28 +23,28 @@ Classes:
 ----------------------------------------------------------------------
 
 ParticleSystem- This is the big one you want to make/use.
-		All of the pluggable/swappable components are
-		stored and managed in here.
+                All of the pluggable/swappable components are
+                stored and managed in here.
 
 ParticleSystemManager- This manages all particle systems and should be
-		       updated once per frame in the data-flow graph.
+                       updated once per frame in the data-flow graph.
 
 BaseParticleRenderer- pure virtual abstract base class for the pluggable
-		      renderers
+                      renderers
 
 PointParticleRenderer- Renderer for drawing particles as point primitives.
 
 GeomParticleRenderer- Renderer for drawing particles as geometric instances
-		      in the scene graph
+                      in the scene graph
 
 SparkleParticleRenderer- Renderer for drawing particles as sparkles 
-			 (axial lines, looking better than they sound).
+                         (axial lines, looking better than they sound).
 
 SpriteParticleRenderer- Renderer for drawing particles as sprites
-			(uses panda Textures).
+                        (uses panda Textures).
 
 BaseParticleEmitter- pure virtual abstract base class for the pluggable
-		     emitters
+                     emitters
 
 PointEmitter- point particle emitter (0d)
 LineEmitter- line particle emitter (1d)
@@ -56,12 +56,12 @@ SphereVolumeEmitter- Sphere emitter (3d)
 SphereSurfaceEmitter- Sphere emitter (3d)
 
 BaseParticleFactory- pure virtual abstract base class for the pluggable
-		     factories
+                     factories
 
 PointParticleFactory- factory for point particles (orientation-independent)
 
 OrientedParticleFactory- factory for oriented particles (angular 
-			 velocity and orientation)
+                         velocity and orientation)
 
 ----------------------------------------------------------------------
 Usage:
@@ -98,7 +98,7 @@ to have assigned to it a birth parent node and a render parent node.
 
 The birth parent node, accessed with set/get_birth_node, is the node that
 the system looks to when transforming a newly-born particle into world-space.
-If i wanted to attach a particle system to jafar's hands or herc's head, for
+If I wanted to attach a particle system to jafar's hands or herc's head, for
 instance, i would call set_birth_node on the appropriate node.  This only
 needs to be set once, but take care that the node doesn't get destroyed (BAD
 things happen...).
