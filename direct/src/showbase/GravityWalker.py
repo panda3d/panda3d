@@ -158,7 +158,7 @@ class GravityWalker(DirectObject.DirectObject):
         """
         # This is a sphere on the ground to detect barrier collisions
         self.avatarRadius = avatarRadius
-        self.cSphere = CollisionSphere(0.0, 0.0, avatarRadius+0.5, avatarRadius)
+        self.cSphere = CollisionSphere(0.0, 0.0, avatarRadius, avatarRadius)
         cSphereNode = CollisionNode('GW.cWallSphereNode')
         cSphereNode.addSolid(self.cSphere)
         cSphereNodePath = self.avatarNodePath.attachNewNode(cSphereNode)

@@ -154,7 +154,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         reverse = inputState.isSet("reverse")
         turnLeft = inputState.isSet("turnLeft")
         turnRight = inputState.isSet("turnRight")
-        slide = inputState.isSet(self.slideName)
+        slide = inputState.isSet(self.slideName) or 0
         #jump = inputState.isSet("jump")
         # Determine what the speeds are based on the buttons:
         self.speed=(forward and self.avatarControlForwardSpeed or 
@@ -195,6 +195,10 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         else:
             self.vel.set(0.0, 0.0, 0.0)
         return Task.cont
+    
+    def doDeltaPos(self):
+        assert(self.debugPrint("doDeltaPos()"))
+        pass
     
     def reset(self):
         assert(self.debugPrint("reset()"))

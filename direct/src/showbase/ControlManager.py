@@ -27,9 +27,7 @@ class ControlManager:
         
         self.enableJumpCounter = 1
         
-        self.swimControls=GravityWalker.GravityWalker(
-                    gravity = -32.1740 * 2.0)
-        #self.swimControls=NonPhysicsWalker.NonPhysicsWalker()
+        self.swimControls=NonPhysicsWalker.NonPhysicsWalker()
         self.ghostControls=GhostWalker.GhostWalker()
         if __debug__:
             self.devControls=DevWalker.DevWalker()
