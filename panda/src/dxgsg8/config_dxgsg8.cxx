@@ -107,7 +107,7 @@ parse_decal_type(const string &type) {
 }
 
 ConfigureFn(config_dxgsg) {
-  init_libdxgsg();
+  init_libdxgsg8();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -119,7 +119,7 @@ ConfigureFn(config_dxgsg) {
 //               called explicitly, but special cases exist.
 ////////////////////////////////////////////////////////////////////
 void
-init_libdxgsg() {
+init_libdxgsg8() {
   static bool initialized = false;
   if (initialized) {
     return;

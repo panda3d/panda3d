@@ -160,12 +160,12 @@ typedef struct {
       HMONITOR          hMon;
       RECT              view_rect,clip_rect;
       DWORD             MaxAvailVidMem;
+      ushort            CardIDNum;  // adapter ID
+      ushort            depth_buffer_bitdepth;  //GetSurfaceDesc is not reliable so must store this explicitly
       bool              bIsLowVidMemCard;
       bool              bIsTNLDevice;
       bool              bIsDX81;
-      ushort            depth_buffer_bitdepth;  //GetSurfaceDesc is not reliable so must store this explicitly
-      ushort            CardIDNum;  // adapter ID
-      DWORD             dwSupportedScreenDepthsMask;
+      DWORD             SupportedScreenDepthsMask;
       DWORD             SupportedTexFmtsMask;
       D3DCAPS8          d3dcaps;
       D3DDISPLAYMODE    DisplayMode;

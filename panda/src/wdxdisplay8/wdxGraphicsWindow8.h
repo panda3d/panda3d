@@ -38,8 +38,8 @@ typedef HRESULT (WINAPI * LPDIRECTDRAWCREATEEX)(GUID FAR * lpGuid, LPVOID  *lplp
 
 typedef struct {
    UINT    cardID;
-   char    szDriver[MAX_DDDEVICEID_STRING];
-   char    szDescription[MAX_DDDEVICEID_STRING];
+   char    szDriver[MAX_DEVICE_IDENTIFIER_STRING];
+   char    szDescription[MAX_DEVICE_IDENTIFIER_STRING];
    GUID    guidDeviceIdentifier;
    HMONITOR hMon;
 } DXDeviceInfo;
@@ -74,7 +74,7 @@ public:
 
   void handle_window_move( int x, int y );
   void handle_mouse_motion( int x, int y );
-  void handle_mouse_exit( HCURSOR hMouseCursor );
+  void handle_mouse_exit(void);
   void handle_keypress( ButtonHandle key, int x, int y );
   void handle_keyrelease( ButtonHandle key);
   void dx_setup();
@@ -85,14 +85,15 @@ public:
   virtual int get_depth_bitwidth(void);
 
 protected:
-  void CreateScreenBuffersAndDevice(LPDIRECTDRAW7 pDD,LPDIRECT3D7 pD3DI);
   ButtonHandle lookup_key(WPARAM wparam) const;
 //  virtual void config(void);
   void config_single_window(void);
   void config_window(wdxGraphicsWindowGroup *pParentGroup);
   void finish_window_setup(void);
   bool search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevinfo);
+  bool wdxGraphicsWindow::FindBestDepthFormat(DXScreenData &Display,D3DFORMAT *pBestFmt,bool bWantStencil);
   void setup_colormap(void);
+  INLINE void track_mouse_leaving(HWND hwnd);
 
 public:
   UINT_PTR _PandaPausedTimer;
@@ -159,7 +160,7 @@ public:
     bool      _bLoadedCustomCursor;
     bool      _bClosingAllWindows;
     bool      _bIsDX81;
-    UINT       _numMonitors,_numAdapters;
+    DWORD      _numMonitors,_numAdapters;
     LPDIRECT3D8 _pD3D8;
     HINSTANCE _hDDrawDLL,_hD3D8_DLL;
     LPDIRECTDRAWCREATEEX  _pDDCreateEx;
