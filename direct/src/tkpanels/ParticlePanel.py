@@ -595,42 +595,34 @@ class ParticlePanel(AppShell):
                                           activebackground = '#909090')
         forceMenu = Menu(self.addForceButton)
         self.addForceButton['menu'] = forceMenu
+        # DERIVED FROM LINEAR FORCE
+        # This also has: setVector
         forceMenu.add_command(label = 'Add Linear Vector Force',
                             command = self.addLinearVectorForce)
-        forceMenu.add_command(label = 'Add Linear Friction Force',
-                            command = self.addLinearFrictionForce)
-        """
-        # derive from RANDOM derives from Linear Force
-        # setAmplitude        	<function setAmplitude at 01CAE3DC>
-        # setMassDependent    	<function setMassDependent at 01CAE08C>
-        # setVectorMasks      	<function setVectorMasks at 01CAFF0C>
-        forceMenu.add_command(label = 'Add Linear Jitter Force',
-                            command = self.addLinearJitterForce)
+        # Parameters: setAmplitude, setMassDependent, setVectorMasks
         forceMenu.add_command(label = 'Add Linear Noise Force',
                             command = self.addLinearNoiseForce)
-        # setCoef             	<function setCoef at 01CAF14C>
-        # setLength           	<function setLength at 01C7F34C>
-        # setRadius           	<function setRadius at 01CAF08C>
+        forceMenu.add_command(label = 'Add Linear Jitter Force',
+                            command = self.addLinearJitterForce)
+        # This also has setCoef
+        forceMenu.add_command(label = 'Add Linear Friction Force',
+                            command = self.addLinearFrictionForce)
+        # This also has: setCoef, setLength, setRadius,
         forceMenu.add_command(label = 'Add Linear Cylinder Vortex Force',
                             command = self.addLinearCylinderVortexForce)
-        forceMenu.add_command(label = 'Add Linear User Defined Force',
-                            command = self.addLinearUserDefinedForce)
-        # Also friction
-
-        # Linear Distance force
-        # setFalloffType      	<function setFalloffType at 01F300BC>
-        # setForceCenter      	<function setForceCenter at 01F3005C>
-        # setRadius           	<function setRadius at 01F3031C>
+        
+        # DERIVED FROM LINEAR DISTANCE FORCE
+        # Parameters: setFalloffType, setForceCenter, setRadius
         forceMenu.add_command(label = 'Add Linear Sink Force',
                             command = self.addLinearSinkForce)
         forceMenu.add_command(label = 'Add Linear Source Force',
                             command = self.addLinearSourceForce)
+        """
+        # Avoid for now
+        forceMenu.add_command(label = 'Add Linear User Defined Force',
+                            command = self.addLinearUserDefinedForce)
+        """
 
-        forceMenu.add_command(label = 'Add Linear Distance Force',
-                            command = self.addLinearDistanceForce)
-        forceMenu.add_command(label = 'Add Linear Random Force',
-                            command = self.addLinearRandomForce)
-        """                 
         self.addForceButton.pack(expand = 0)
 
         # Notebook to hold force widgets as the are added
@@ -943,8 +935,8 @@ class ParticlePanel(AppShell):
         else:
             forceGroup.disable()
 
-    def toggleForce(self, force, pagename, variableName):
-        v = self.getVariable(pagename, variableName)
+    def toggleForce(self, force, pageName, variableName):
+        v = self.getVariable(pageName, variableName)
         if v.get():
             if (force.isLinear() == 1):
                 physicsMgr.addLinearForce(force)
@@ -956,7 +948,6 @@ class ParticlePanel(AppShell):
             else:
                 physicsMgr.removeAngularForce(force)
                     
-
     def getWidget(self, category, text):
         return self.widgetDict[category + '-' + text]
 
@@ -1552,26 +1543,22 @@ class ParticlePanel(AppShell):
         else:
             self.forceGroupNotebook.pack_forget()
 
-    def addLinearCylinderVortexForce(self):
-        self.addForce(LinearCylinderVortexForce())
-    def addLinearDistanceForce(self):
-        self.addForce(LinearDistanceForce())
+    def addLinearVectorForce(self):
+        self.addForce(LinearVectorForce())
     def addLinearFrictionForce(self):
         self.addForce(LinearFrictionForce())
     def addLinearJitterForce(self):
         self.addForce(LinearJitterForce())
     def addLinearNoiseForce(self):
         self.addForce(LinearNoiseForce())
-    def addLinearRandomForce(self):
-        self.addForce(LinearRandomForce())
     def addLinearSinkForce(self):
-        self.addForce(LinearSingForce())
+        self.addForce(LinearSinkForce())
     def addLinearSourceForce(self):
         self.addForce(LinearSourceForce())
+    def addLinearCylinderVortexForce(self):
+        self.addForce(LinearCylinderVortexForce())
     def addLinearUserDefinedForce(self):
         self.addForce(LinearUserDefinedForce())
-    def addLinearVectorForce(self):
-        self.addForce(LinearVectorForce())
 
     def addForce(self, f):
         if self.forceGroup == None:
@@ -1629,87 +1616,114 @@ class ParticlePanel(AppShell):
             if f.getClassType().eq(force.getClassType()):
                 count += 1
         if isinstance(force, LinearVectorForce):
-            # Vector
             self.createLinearVectorForceWidget(
                 forcePage, pageName, count, force)
+        elif isinstance(force, LinearNoiseForce):
+            self.createLinearRandomForceWidget(
+                forcePage, pageName, count, force, 'Noise')
+        elif isinstance(force, LinearJitterForce):
+            self.createLinearRandomForceWidget(
+                forcePage, pageName, count, force, 'Jitter')
         elif isinstance(force, LinearFrictionForce):
-            # Coef
             self.createLinearFrictionForceWidget(
                 forcePage, pageName, count, force)
         elif isinstance(force, LinearCylinderVortexForce):
-            # Coef, length, radius
             self.createLinearCylinderVortexForceWidget(
                 forcePage, pageName, count, force)
-        elif isinstance(force, LinearDistanceForce):
-            # No constructor
-            # Falloff type, force center, radius
-            pass
-        elif isinstance(force, LinearJitterForce):
-            # Nothing
-            pass
-        elif isinstance(force, LinearNoiseForce):
-            # Nothing
-            pass
-        elif isinstance(force, LinearRandomForce):
-            # Nothing
-            pass
         elif isinstance(force, LinearSinkForce):
-            # Nothing
-            pass
+            self.createLinearDistanceForceWidget(
+                forcePage, pageName, count, force, 'Sink')
         elif isinstance(force, LinearSourceForce):
-            # Nothing
-            pass
+            self.createLinearDistanceForceWidget(
+                forcePage, pageName, count, force, 'Source')
         elif isinstance(force, LinearUserDefinedForce):
             # Nothing
             pass
         self.forceGroupNotebook.setnaturalsize()
 
-    def createLinearVectorForceWidget(self, forcePage, pageName,
-                                      count, force):
-        name = 'Vector Force-' + `count`
-        cbName = name + ' Active'
-        def setVec(vec, f = force):
-            f.setVector(vec[0], vec[1], vec[2])
+    def createLinearForceWidgets(self, frame, pageName, forceName, force):
+        def setAmplitude(amp, f = force):
+            f.setAmplitude(amp)
+        def toggleMassDependent(s=self, f=force, p=pageName, n=forceName):
+            v = s.getVariable(p, n+' Mass Dependent')
+            f.setMassDependent(v.get())
+        def setVectorMasks(s=self, f=force, p=pageName, n=forceName):
+            xMask = s.getVariable(p, n+' Mask X').get()
+            yMask = s.getVariable(p, n+' Mask Y').get()
+            zMask = s.getVariable(p, n+' Mask Z').get()
+            f.setVectorMasks(xMask, yMask, zMask)
+        self.createFloater(frame, pageName, forceName + ' Amplitude',
+                           'Force amplitude multiplier',
+                           command = setAmplitude)
+        cbf = Frame(frame, relief = FLAT)
+        self.createCheckbutton(cbf, pageName, forceName + ' Mass Dependent',
+                               ('On: force depends on mass; ' +
+                                'Off: force does not depend on mass'),
+                               toggleMassDependent, 0)
+        self.createCheckbutton(cbf, pageName, forceName + ' Mask X',
+                               'On: enable force along X axis',
+                               setVectorMasks, 1)
+        self.createCheckbutton(cbf, pageName, forceName + ' Mask Y',
+                               'On: enable force along X axis',
+                               setVectorMasks, 1)
+        self.createCheckbutton(cbf, pageName, forceName + ' Mask Z',
+                               'On: enable force along X axis',
+                               setVectorMasks, 1)
+        cbf.pack(fill = 'x', expand = 0)
+
+    def createForceActiveWidget(self, frame, pageName, forceName, force):
+        cbName = forceName + ' Active'
         def toggle(s = self, f = force, p = pageName, n = cbName):
             s.toggleForce(f, p, n)
-        frame = Frame(forcePage, relief = RAISED, borderwidth = 2)
-        self.createVector3Entry(frame, pageName, name,
-                                'Set force direction and magnitude',
-                                command = setVec)
         self.createCheckbutton(frame, pageName, cbName,
                                'On: force is enabled; Off: force is disabled',
                                toggle, 1)
+
+    def createLinearVectorForceWidget(self, forcePage, pageName,
+                                      count, force):
+        def setVec(vec, f = force):
+            f.setVector(vec[0], vec[1], vec[2])
+        forceName = 'Vector Force-' + `count`
+        frame = Frame(forcePage, relief = RAISED, borderwidth = 2)
+        self.createLinearForceWidgets(frame, pageName, forceName, force)
+        self.createVector3Entry(frame, pageName, forceName,
+                                'Set force direction and magnitude',
+                                command = setVec)
+        self.createForceActiveWidget(frame, pageName, forceName, force)
+        frame.pack(fill = 'x', expand =0)
+
+    def createLinearRandomForceWidget(self, forcePage, pageName, count,
+                                force, type):
+        forceName = type + ' Force-' + `count`
+        frame = Frame(forcePage, relief = RAISED, borderwidth = 2)
+        self.createLinearForceWidgets(frame, pageName, forceName, force)
+        self.createForceActiveWidget(frame, pageName, forceName, force)
         frame.pack(fill = 'x', expand =0)
 
     def createLinearFrictionForceWidget(self, forcePage, pageName,
                                         count, force):
-        name = 'Friction Force-' + `count`
-        cbName = name + ' Active'
         def setCoef(coef, f = force):
             f.setCoef(coef)
-        def toggle(s = self, f = force, p = pageName, n = cbName):
-            s.toggleForce(f, p, n)
+        forceName = 'Friction Force-' + `count`
         frame = Frame(forcePage, relief = RAISED, borderwidth = 2)
-        self.createFloater(frame, pageName, name,
+        self.createLinearForceWidgets(frame, pageName, forceName, force)
+        self.createFloater(frame, pageName, forceName,
                            'Set linear friction force',
                            command = setCoef, min = None)
-        self.createCheckbutton(frame, pageName, cbName,
-                               'On: force is enabled; Off: force is disabled',
-                               toggle, 1)
+        self.createForceActiveWidget(frame, pageName, forceName, force)
         frame.pack(fill = 'x', expand =0)
 
     def createLinearCylinderVortexForceWidget(self, forcePage, pageName,
                                               count, force):
-        cbName = 'Vortex Force-' + `count` + ' Active'
+        forceName = 'Vortex Force-' + `count`
         def setCoef(coef, f = force):
             f.setCoef(coef)
         def setLength(length, f = force):
             f.setLength(length)
         def setRadius(radius, f = force):
             f.setRadius(radius)
-        def toggle(s = self, f = force, p = pageName, n = cbName):
-            s.toggleForce(f, p, n)
         frame = Frame(forcePage, relief = RAISED, borderwidth = 2)
+        self.createLinearForceWidgets(frame, pageName, forceName, force)
         self.createFloater(frame, pageName, 'Coefficient',
                            'Set linear cylinder vortex coefficient',
                            command = setCoef)
@@ -1719,9 +1733,41 @@ class ParticlePanel(AppShell):
         self.createFloater(frame, pageName, 'Radius',
                            'Set linear cylinder vortex radius',
                            command = setRadius)
-        self.createCheckbutton(frame, pageName, cbName,
-                               'On: force is enabled; Off: force is disabled',
-                               toggle, 1)
+        self.createForceActiveWidget(frame, pageName, forceName, force)
+        frame.pack(fill = 'x', expand =0)
+
+    def createLinearDistanceForceWidget(self, forcePage, pageName,
+                                        count, force, type):
+        def setFalloffType(type, f=force):
+            if type == 'FT_ONE_OVER_R':
+                #f.setFalloffType(LinearDistanceForce.FTONEOVERR)
+                f.setFalloffType(0)
+            if type == 'FT_ONE_OVER_R_SQUARED':
+                #f.setFalloffType(LinearDistanceForce.FTONEOVERRSQUARED)
+                f.setFalloffType(1)
+            if type == 'FT_ONE_OVER_R_CUBED':
+                #f.setFalloffType(LinearDistanceForce.FTONEOVERRCUBED)
+                f.setFalloffType(2)
+        def setForceCenter(vec, f = force):
+            f.setForceCenter(Point3(vec[0], vec[1], vec[2]))
+        def setRadius(radius, f = force):
+            f.setRadius(radius)
+        forceName = type + ' Force-' + `count`
+        frame = Frame(forcePage, relief = RAISED, borderwidth = 2)
+        self.createLinearForceWidgets(frame, pageName, forceName, force)
+        self.createOptionMenu(frame, pageName, forceName + ' Falloff Type',
+                              'Set force falloff type',
+                              ('FT_ONE_OVER_R',
+                               'FT_ONE_OVER_R_SQUARED',
+                               'FT_ONE_OVER_R_CUBED'),
+                              command = setFalloffType)
+        self.createVector3Entry(frame, pageName, forceName + ' Force Center',
+                                'Set center of force',
+                                command = setForceCenter)
+        self.createFloater(frame, pageName, forceName + ' Radius',
+                           'Set falloff radius',
+                           command = setRadius)
+        self.createForceActiveWidget(frame, pageName, forceName, force)
         frame.pack(fill = 'x', expand =0)
 
 ######################################################################
