@@ -84,6 +84,10 @@ set_attributes(EggPrimitive &primitive, MayaFile &file) {
     tex.set_wrap_u(_wrap_u ? EggTexture::WM_repeat : EggTexture::WM_clamp);
     tex.set_wrap_v(_wrap_v ? EggTexture::WM_repeat : EggTexture::WM_clamp);
 
+    // Let's mipmap all textures by default.
+    tex.set_minfilter(EggTexture::FT_linear_mipmap_linear);
+    tex.set_magfilter(EggTexture::FT_linear);
+
     LMatrix3d mat = compute_texture_matrix();
     if (!mat.almost_equal(LMatrix3d::ident_mat())) {
       tex.set_transform(mat);
