@@ -5,6 +5,25 @@ import Particles
 import ForceGroup
 import DirectNotifyGlobal
 
+
+# NOTE: these two calls were moved here from BattleParticles
+# to avoid DIRECT depending on TOONTOWN! - gregw
+def startParticleEffect(effect, parent, worldRelative=1):
+    assert(effect != None and parent != None)
+    #notify.debug('startParticleEffect() - name: %s' % effect.getName())
+    particles = effect.getParticlesNamed('particles-1')
+    if (worldRelative == 1):
+        particles.setRenderParent(render.node())
+    effect.enable()
+    effect.reparentTo(parent)
+
+def cleanupParticleEffect(effect):
+    assert(effect != None)
+    #notify.debug('cleanupParticleEffect() - %s' % effect.getName())
+    effect.disable()
+    effect.reparentTo(hidden)
+    effect.cleanup()
+
 class ParticleEffect(NodePath):
 
     notify = DirectNotifyGlobal.directNotify.newCategory('ParticleEffect')
@@ -195,7 +214,6 @@ class ParticleEffect(NodePath):
     def loadConfig(self, filename):
         """loadConfig(filename)"""
         execfile(filename.toOsSpecific())
-
 
 
 

@@ -3,7 +3,7 @@
 from PandaModules import *
 from Interval import *
 
-import BattleParticles
+import ParticleEffect
 
 class ParticleInterval(Interval):
     # Name counter
@@ -43,19 +43,20 @@ class ParticleInterval(Interval):
         # Update particle effect based on current time
         if (t >= self.getDuration()):
             # If duration reached or stop event received, stop particle effect 
-            BattleParticles.cleanupParticleEffect(self.particleEffect)
+            ParticleEffect.cleanupParticleEffect(self.particleEffect)
             self.ignore(self.stopEvent)
             self.cleanedUp = 1
         elif (event == IVAL_INIT):
             # IVAL_INIT event, start new particle effect
-            BattleParticles.startParticleEffect(self.particleEffect,
+            ParticleEffect.startParticleEffect(self.particleEffect,
                                                 self.parent, self.worldRelative)
             # Accept event to kill particle effect 
             self.acceptOnce(self.stopEvent,
                         lambda s = self: 
-                BattleParticles.cleanupParticleEffect(s.particleEffect))
+                ParticleEffect.cleanupParticleEffect(s.particleEffect))
         # Print debug information
         assert(self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t)))
             
+
 
 
