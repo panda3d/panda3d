@@ -1,38 +1,20 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
 
-#begin static_lib_target
+#begin lib_target
   #define TARGET framework
+  #define BUILDING_DLL BUILDING_FRAMEWORK
   #define LOCAL_LIBS \
-    putil collide loader sgmanip chan text chancfg cull \
+    pgraph putil collide loader sgmanip chan text chancfg cull \
     pnmimage pnmimagetypes event
 
   #define SOURCES \
-    config_framework.cxx config_framework.h framework.cxx framework.h
+    config_framework.cxx config_framework.h \
+    pandaFramework.cxx pandaFramework.I pandaFramework.h \
+    windowFramework.cxx windowFramework.I windowFramework.h
 
   #define INSTALL_HEADERS \
-    framework.h
+    pandaFramework.I pandaFramework.h \
+    windowFramework.I windowFramework.h
 
-#end static_lib_target
-
-
-#if $[HAVE_DX]
-  // USE_DX ensures DirectX dirs are on include&link lines
-  #define USE_DX yes
-  
-  #begin static_lib_target
-    #define TARGET framework_multimon
-    #define LOCAL_LIBS \
-      putil collide loader sgmanip chan text chancfg cull \
-      pnmimage pnmimagetypes event wdxdisplay
-
-    #define SOURCES \
-      config_framework.cxx config_framework.h framework_multimon.cxx framework.h
-
-    #define INSTALL_HEADERS \
-      framework.h
-
-  #end static_lib_target
-#endif
-
-
+#end lib_target

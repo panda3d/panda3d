@@ -19,14 +19,14 @@
 #ifndef CONFIG_FRAMEWORK_H
 #define CONFIG_FRAMEWORK_H
 
-#include <pandabase.h>
-#include <notifyCategoryProxy.h>
-#include <collideMask.h>
+#include "pandabase.h"
+#include "notifyCategoryProxy.h"
 
-NotifyCategoryDecl(framework, EXPCL_EMPTY, EXPCL_EMPTY);
+NotifyCategoryDecl(framework, EXPCL_FRAMEWORK, EXPCL_FRAMEWORK);
 
 // Configure variables for framework package.
-extern const double drive_height;
-extern const CollideMask drive_mask;
+extern const int win_width;
+extern const int win_height;
+extern const bool fullscreen;
 
 #endif

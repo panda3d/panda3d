@@ -1,0 +1,139 @@
+// Filename: pandaFramework.I
+// Created by:  drose (02Apr02)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::get_graphics_engine
+//       Access: Public
+//  Description: Returns the GraphicsEngine that is used to render all
+//               the windows in the framework.  Normally there's no
+//               reason for user code to mess with this.
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsEngine *PandaFramework::
+get_graphics_engine() {
+  return &_engine;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::get_data_root
+//       Access: Public
+//  Description: Returns the root of the data graph.  This is the
+//               graph of nodes that is traversed to control the
+//               inputs from user devices like the mouse and keyboard.
+////////////////////////////////////////////////////////////////////
+INLINE const qpNodePath &PandaFramework::
+get_data_root() const {
+  return _data_root;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::get_event_handler
+//       Access: Public
+//  Description: Returns the EventHandler object that serves events in
+//               the framework.  This is primarily used to dispatch on
+//               keypresses and such.
+////////////////////////////////////////////////////////////////////
+INLINE EventHandler &PandaFramework::
+get_event_handler() {
+  return _event_handler;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::set_window_title
+//       Access: Public
+//  Description: Specifies the title that is set for all subsequently
+//               created windows.
+////////////////////////////////////////////////////////////////////
+INLINE void PandaFramework::
+set_window_title(const string &title) {
+  _window_title = title;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::get_num_windows
+//       Access: Public
+//  Description: Returns the number of windows that are currently
+//               open.
+////////////////////////////////////////////////////////////////////
+INLINE int PandaFramework::
+get_num_windows() const {
+  return _windows.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::get_window
+//       Access: Public
+//  Description: Returns the nth window currently open.
+////////////////////////////////////////////////////////////////////
+INLINE WindowFramework *PandaFramework::
+get_window(int n) const {
+  nassertr(n >= 0 && n < (int)_windows.size(), NULL);
+  return _windows[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::get_wireframe
+//       Access: Public
+//  Description: Returns the current state of the wireframe flag.
+////////////////////////////////////////////////////////////////////
+INLINE bool PandaFramework::
+get_wireframe() const {
+  return _wireframe_enabled;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::get_texture
+//       Access: Public
+//  Description: Returns the current state of the texture flag.
+////////////////////////////////////////////////////////////////////
+INLINE bool PandaFramework::
+get_texture() const {
+  return _texture_enabled;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::get_two_sided
+//       Access: Public
+//  Description: Returns the current state of the two_sided flag.
+////////////////////////////////////////////////////////////////////
+INLINE bool PandaFramework::
+get_two_sided() const {
+  return _two_sided_enabled;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::get_lighting
+//       Access: Public
+//  Description: Returns the current state of the lighting flag.
+////////////////////////////////////////////////////////////////////
+INLINE bool PandaFramework::
+get_lighting() const {
+  return _lighting_enabled;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::set_exit_flag
+//       Access: Public
+//  Description: Sets the flag that indicates it is time for the
+//               application to exit.  The application will actually
+//               exit at the end of the current frame.
+////////////////////////////////////////////////////////////////////
+INLINE void PandaFramework::
+set_exit_flag() {
+  _exit_flag = true;
+}

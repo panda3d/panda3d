@@ -26,7 +26,6 @@ NotifyCategoryDef(framework, "");
 ConfigureFn(config_framework) {
 }
 
-// This is the height above the ground your eye should maintain while
-// driving using the "D" interface.
-const double drive_height = config_framework.GetDouble("drive-height", 6.0);
-const CollideMask drive_mask = config_framework.GetInt("drive-mask", ~0);
+const int win_width = config_framework.GetInt("win-width", 640);
+const int win_height = config_framework.GetInt("win-height", 480);
+const bool fullscreen = config_framework.GetBool("fullscreen", false);

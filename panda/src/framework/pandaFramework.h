@@ -1,0 +1,131 @@
+// Filename: pandaFramework.h
+// Created by:  drose (02Apr02)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef PANDAFRAMEWORK_H
+#define PANDAFRAMEWORK_H
+
+#include "pandabase.h"
+
+#include "windowFramework.h"
+
+#include "qpnodePath.h"
+#include "eventHandler.h"
+#include "graphicsPipe.h"
+#include "graphicsEngine.h"
+#include "graphicsWindow.h"
+#include "pointerTo.h"
+
+#include "pvector.h"
+
+////////////////////////////////////////////////////////////////////
+//       Class : PandaFramework
+// Description : This class serves to provide a high-level framework
+//               for basic applications that use Panda in simple ways
+//               (like opening a window to view models, etc.).
+////////////////////////////////////////////////////////////////////
+class EXPCL_FRAMEWORK PandaFramework {
+public:
+  PandaFramework();
+  virtual ~PandaFramework();
+
+  void open_framework(int &argc, char **&argv);
+  void close_framework();
+
+  GraphicsPipe *get_default_pipe();
+  INLINE GraphicsEngine *get_graphics_engine();
+  INLINE const qpNodePath &get_data_root() const;
+  INLINE EventHandler &get_event_handler();
+
+  INLINE void set_window_title(const string &title);
+  virtual void get_default_window_props(GraphicsWindow::Properties &props);
+
+  WindowFramework *open_window(GraphicsPipe *pipe = NULL);
+  WindowFramework *open_window(const GraphicsWindow::Properties &props,
+                               GraphicsPipe *pipe = NULL);
+
+  INLINE int get_num_windows() const;
+  INLINE WindowFramework *get_window(int n) const;
+  void close_window(int n);
+  void close_all_windows();
+
+  void report_frame_rate(ostream &out) const;
+  void reset_frame_rate();
+
+  void set_wireframe(bool enable);
+  void set_texture(bool enable);
+  void set_two_sided(bool enable);
+  void set_lighting(bool enable);
+
+  INLINE bool get_wireframe() const;
+  INLINE bool get_texture() const;
+  INLINE bool get_two_sided() const;
+  INLINE bool get_lighting() const;
+
+  void enable_default_keys();
+
+  virtual bool do_frame();
+  void main_loop();
+
+  INLINE void set_exit_flag();
+
+protected:
+  virtual WindowFramework *make_window_framework();
+  virtual void make_default_pipe();
+  virtual void do_enable_default_keys();
+
+  static void event_esc(CPT_Event, void *data);
+  static void event_f(CPT_Event, void *data);
+  static void event_w(CPT_Event, void *data);
+  static void event_t(CPT_Event, void *data);
+  static void event_b(CPT_Event, void *data);
+  static void event_l(CPT_Event, void *data);
+  static void event_S(CPT_Event, void *data);
+
+
+private:
+  bool _is_open;
+  bool _made_default_pipe;
+
+  string _window_title;
+
+  PT(GraphicsPipe) _default_pipe;
+  GraphicsEngine _engine;
+
+  qpNodePath _data_root;
+  EventHandler _event_handler;
+
+  typedef pvector<WindowFramework *> Windows;
+  Windows _windows;
+
+  // For counting frame rate.
+  double _start_time;
+  int _frame_count;
+
+  bool _wireframe_enabled;
+  bool _texture_enabled;
+  bool _two_sided_enabled;
+  bool _lighting_enabled;
+
+  bool _default_keys_enabled;
+
+  bool _exit_flag;
+};
+
+#include "pandaFramework.I"
+
+#endif

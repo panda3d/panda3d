@@ -21,7 +21,36 @@
 
 /* See dtoolsymbols.h for a rant on the purpose of this file.  */
 
+/* Note that the symbols declared in this file appear in alphabetical
+   order.  Also note that we must use C-style comments only here, not
+   C++-style comments, since this file is occasionally included by a C
+   file. */
+
 #if defined(WIN32_VC) && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
+
+#ifdef BUILDING_FRAMEWORK
+  #define EXPCL_FRAMEWORK __declspec(dllexport)
+  #define EXPTP_FRAMEWORK
+#else
+  #define EXPCL_FRAMEWORK __declspec(dllimport)
+  #define EXPTP_FRAMEWORK extern
+#endif
+
+#ifdef BUILDING_LINUX_AUDIO
+  #define EXPCL_LINUX_AUDIO __declspec(dllexport)
+  #define EXPTP_LINUX_AUDIO
+#else
+  #define EXPCL_LINUX_AUDIO __declspec(dllimport)
+  #define EXPTP_LINUX_AUDIO extern
+#endif
+
+#ifdef BUILDING_MILES_AUDIO
+  #define EXPCL_MILES_AUDIO __declspec(dllexport)
+  #define EXPTP_MILES_AUDIO
+#else
+  #define EXPCL_MILES_AUDIO __declspec(dllimport)
+  #define EXPTP_MILES_AUDIO extern
+#endif
 
 #ifdef BUILDING_PANDA
   #define EXPCL_PANDA __declspec(dllexport)
@@ -29,6 +58,14 @@
 #else
   #define EXPCL_PANDA __declspec(dllimport)
   #define EXPTP_PANDA extern
+#endif
+
+#ifdef BUILDING_PANDACR
+  #define EXPCL_PANDACR __declspec(dllexport)
+  #define EXPTP_PANDACR
+#else
+  #define EXPCL_PANDACR __declspec(dllimport)
+  #define EXPTP_PANDACR extern
 #endif
 
 #ifdef BUILDING_PANDADX
@@ -71,14 +108,6 @@
   #define EXPTP_PANDAGL extern
 #endif
 
-#ifdef BUILDING_PANDACR
-  #define EXPCL_PANDACR __declspec(dllexport)
-  #define EXPTP_PANDACR
-#else
-  #define EXPCL_PANDACR __declspec(dllimport)
-  #define EXPTP_PANDACR extern
-#endif
-
 #ifdef BUILDING_PANDAGLUT
   #define EXPCL_PANDAGLUT __declspec(dllexport)
   #define EXPTP_PANDAGLUT
@@ -111,26 +140,22 @@
   #define EXPTP_SHADER extern
 #endif
 
-#ifdef BUILDING_MILES_AUDIO
-  #define EXPCL_MILES_AUDIO __declspec(dllexport)
-  #define EXPTP_MILES_AUDIO
-#else
-  #define EXPCL_MILES_AUDIO __declspec(dllimport)
-  #define EXPTP_MILES_AUDIO extern
-#endif
-
-#ifdef BUILDING_LINUX_AUDIO
-  #define EXPCL_LINUX_AUDIO __declspec(dllexport)
-  #define EXPTP_LINUX_AUDIO
-#else
-  #define EXPCL_LINUX_AUDIO __declspec(dllimport)
-  #define EXPTP_LINUX_AUDIO extern
-#endif
-
 #else   /* !WIN32_VC */
+
+#define EXPCL_FRAMEWORK
+#define EXPTP_FRAMEWORK
+
+#define EXPCL_LINUX_AUDIO
+#define EXPTP_LINUX_AUDIO
+
+#define EXPCL_MILES_AUDIO
+#define EXPTP_MILES_AUDIO
 
 #define EXPCL_PANDA
 #define EXPTP_PANDA
+
+#define EXPCL_PANDACR
+#define EXPTP_PANDACR
 
 #define EXPCL_PANDADX
 #define EXPTP_PANDADX
@@ -147,9 +172,6 @@
 #define EXPCL_PANDAGL
 #define EXPTP_PANDAGL
 
-#define EXPCL_PANDACR
-#define EXPTP_PANDACR
-
 #define EXPCL_PANDAGLUT
 #define EXPTP_PANDAGLUT
 
@@ -161,15 +183,6 @@
 
 #define EXPCL_SHADER
 #define EXPTP_SHADER
-
-#define EXPCL_MILES_AUDIO
-#define EXPTP_MILES_AUDIO
-
-#define EXPCL_LINUX_AUDIO
-#define EXPTP_LINUX_AUDIO
-
-#define EXPCL_FRAMEWORK
-#define EXPTP_FRAMEWORK
 
 #endif  /* WIN32_VC */
 
