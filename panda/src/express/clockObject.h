@@ -81,9 +81,9 @@ PUBLISHED:
   INLINE double get_real_time() const;
 
   INLINE void reset();
-  INLINE void set_real_time(double time);
-  INLINE void set_frame_time(double time);
-  INLINE void set_frame_count(int frame_count);
+  void set_real_time(double time);
+  void set_frame_time(double time);
+  void set_frame_count(int frame_count);
 
   INLINE int get_frame_count() const;
   INLINE double get_frame_rate() const;

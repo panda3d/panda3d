@@ -36,6 +36,7 @@ NotifyCategoryDecl(express, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
 bool EXPCL_PANDAEXPRESS get_leak_memory();
 bool EXPCL_PANDAEXPRESS get_never_destruct();
 bool EXPCL_PANDAEXPRESS get_use_high_res_clock();
+bool EXPCL_PANDAEXPRESS get_paranoid_clock();
 
 extern const int patchfile_window_size;
 extern const int patchfile_increment_size;

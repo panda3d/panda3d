@@ -88,15 +88,15 @@ get_never_destruct() {
 // it is available.
 bool
 get_use_high_res_clock() {
-  static bool got_use_high_res_clock = false;
-  static bool use_high_res_clock;
+  return config_express.GetBool("use-high-res-clock", true);
+}
 
-  if (!got_use_high_res_clock) {
-    use_high_res_clock = config_express.GetBool("use-high-res-clock", true);
-    got_use_high_res_clock = true;
-  }
-
-  return use_high_res_clock;
+// Set this to true to double-check the results of the high-resolution
+// clock against the system clock.  This has no effect if NDEBUG is
+// defined.
+bool
+get_paranoid_clock() {
+  return config_express.GetBool("paranoid-clock", false);
 }
 
 const int patchfile_window_size =

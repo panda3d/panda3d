@@ -18,6 +18,7 @@
 
 
 #include "clockObject.h"
+#include "config_express.h"
 
 ClockObject *ClockObject::_global_clock = (ClockObject *)NULL;
 
@@ -37,6 +38,64 @@ ClockObject() {
   _reported_frame_time = 0.0;
   _dt = 0.0;
   _max_dt = -1.0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::set_real_time
+//       Access: Published
+//  Description: Resets the clock to the indicated time.  This
+//               changes only the real time of the clock as reported
+//               by get_real_time(), but does not immediately change
+//               the time reported by get_frame_time()--that will
+//               change after the next call to tick().  Also see
+//               reset(), set_frame_time(), and set_frame_count().
+////////////////////////////////////////////////////////////////////
+void ClockObject::
+set_real_time(double time) {
+#ifndef NDEBUG
+  if (this == _global_clock) {
+    express_cat.warning()
+      << "Adjusting global clock's real time by " << time - get_real_time()
+      << " seconds.\n";
+  }
+#endif  // NDEBUG
+  _start_time = _true_clock->get_real_time() - time;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::set_frame_time
+//       Access: Published
+//  Description: Changes the time as reported for the current frame to
+//               the indicated time.  Normally, the way to adjust the
+//               frame time is via tick(); this function is provided
+//               only for occasional special adjustments.
+////////////////////////////////////////////////////////////////////
+void ClockObject::
+set_frame_time(double time) {
+  if (this == _global_clock) {
+    express_cat.warning()
+      << "Adjusting global clock's frame time by " << time - get_frame_time()
+      << " seconds.\n";
+  }
+  _actual_frame_time = time;
+  _reported_frame_time = time;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::set_frame_count
+//       Access: Published
+//  Description: Resets the number of frames counted to the indicated
+//               number.  Also see reset(), set_real_time(), and
+//               set_frame_time().
+////////////////////////////////////////////////////////////////////
+void ClockObject::
+set_frame_count(int frame_count) {
+  if (this == _global_clock) {
+    express_cat.warning()
+      << "Adjusting global clock's frame count by " 
+      << frame_count - get_frame_count() << " frames.\n";
+  }
+  _frame_count = frame_count;
 }
 
 ////////////////////////////////////////////////////////////////////

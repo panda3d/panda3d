@@ -114,47 +114,6 @@ reset() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClockObject::set_real_time
-//       Access: Published
-//  Description: Resets the clock to the indicated time.  This
-//               changes only the real time of the clock as reported
-//               by get_real_time(), but does not immediately change
-//               the time reported by get_frame_time()--that will
-//               change after the next call to tick().  Also see
-//               reset(), set_frame_time(), and set_frame_count().
-////////////////////////////////////////////////////////////////////
-INLINE void ClockObject::
-set_real_time(double time) {
-  _start_time = _true_clock->get_real_time() - time;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ClockObject::set_frame_time
-//       Access: Published
-//  Description: Changes the time as reported for the current frame to
-//               the indicated time.  Normally, the way to adjust the
-//               frame time is via tick(); this function is provided
-//               only for occasional special adjustments.
-////////////////////////////////////////////////////////////////////
-INLINE void ClockObject::
-set_frame_time(double time) {
-  _actual_frame_time = time;
-  _reported_frame_time = time;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ClockObject::set_frame_count
-//       Access: Published
-//  Description: Resets the number of frames counted to the indicated
-//               number.  Also see reset(), set_real_time(), and
-//               set_frame_time().
-////////////////////////////////////////////////////////////////////
-INLINE void ClockObject::
-set_frame_count(int frame_count) {
-  _frame_count = frame_count;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::get_frame_count
 //       Access: Published
 //  Description: Returns the number of times tick() has been called
