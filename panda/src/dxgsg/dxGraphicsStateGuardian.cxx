@@ -826,11 +826,12 @@ dx_init(  LPDIRECTDRAW7     context,
             if((pCurPixFmt->dwRGBBitCount==16) && 
         #ifdef MAKE_FPSMETER_TRANSPARENT    
                (pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS) &&
-               (pCurPixFmt->dwRGBAlphaBitMask==0x8000))
+               (pCurPixFmt->dwRGBAlphaBitMask==0x8000)
         #else
                ((pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS)==0) && 
-               (pCurPixFmt->dwBBitMask==0x001F))
+               (pCurPixFmt->dwBBitMask==0x001F)
         #endif
+               )  // emacs gets confused if we don't match parens accurately.
                break;
         }
 
@@ -4451,7 +4452,7 @@ apply_fog(Fog *fog) {
     // should probably avoid doing redundant SetRenderStates, but whatever
     _d3dDevice->SetRenderState((D3DRENDERSTATETYPE)_doFogType, d3dfogmode);
 
-    Colorf  fog_colr = fog->get_color();
+    const Colorf &fog_colr = fog->get_color();
     _d3dDevice->SetRenderState(D3DRENDERSTATE_FOGCOLOR,
                    MY_D3DRGBA(fog_colr[0], fog_colr[1], fog_colr[2], 0.0f));  // Alpha bits are not used
 
@@ -4461,19 +4462,26 @@ apply_fog(Fog *fog) {
     switch (panda_fogmode) {
         case Fog::M_linear:
             {
-                float fog_start,fog_end;
-                fog->get_range(fog_start,fog_end);
+                // Linear fog may be world-relative or
+                // camera-relative.  The fog object knows how to
+                // decode its parameters into camera-relative
+                // properties.
+                float fog_start, fog_end;
+                fog->compute_linear_range(fog_start, fog_end,
+                                          _current_projection_node,
+                                          _coordinate_system);
 
                 _d3dDevice->SetRenderState( D3DRENDERSTATE_FOGSTART,
-                            *((LPDWORD) (&fog_start)) );
+                                            *((LPDWORD) (&fog_start)) );
                 _d3dDevice->SetRenderState( D3DRENDERSTATE_FOGEND,
-                            *((LPDWORD) (&fog_end)) );
+                                            *((LPDWORD) (&fog_end)) );
             }
             break;
         case Fog::M_exponential:
         case Fog::M_exponential_squared:
             {
-                float fog_density = fog->get_density();
+                // Exponential fog is always camera-relative.
+                float fog_density = fog->get_exp_density();
                 _d3dDevice->SetRenderState( D3DRENDERSTATE_FOGDENSITY,
                             *((LPDWORD) (&fog_density)) );
             }
