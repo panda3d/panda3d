@@ -6,7 +6,7 @@ class SfxPlayer:
     Play sound effects, potentially localized.
     """
 
-    UseInverseSquare = 0
+    UseInverseSquare = 1
 
     def __init__(self):
         # Distance at which sounds can no longer be heard
@@ -14,7 +14,8 @@ class SfxPlayer:
         self.cutoffDistance = 120.0
 
         # cutoff for inverse square attenuation
-        #self.cutoffDistance = 300.0
+        if SfxPlayer.UseInverseSquare:
+            self.cutoffDistance = 300.0
         # volume attenuates according to the inverse square of the
         # distance from the source. volume = 1/(distance^2)
         # this is the volume at which a sound is nearly inaudible
