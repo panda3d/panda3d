@@ -10,6 +10,8 @@
 
 #include "fltBead.h"
 
+class FltInstanceDefinition;
+
 ////////////////////////////////////////////////////////////////////
 // 	 Class : FltInstanceRef
 // Description : This bead appears in the hierarchy to refer to a
