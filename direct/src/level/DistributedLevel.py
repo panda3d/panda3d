@@ -63,6 +63,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
             )
         self.zonesEnteredList = []
         self.fColorZones = 0
+        self.scenarioIndex = 0
 
     def generate(self):
         DistributedLevel.notify.debug('generate')
@@ -118,6 +119,15 @@ class DistributedLevel(DistributedObject.DistributedObject,
         DistributedLevel.notify.debug('setStartTimestamp: %s' % timestamp)
         self.startTime = globalClockDelta.networkToLocalTime(timestamp,bits=32)
 
+        # ugly hack: we treat a few DC fields as if they were required,
+        # and use 'levelAnnounceGenerate()' in place of regular old
+        # announceGenerate(). Note that we have to call
+        # gotAllRequired() in the last 'faux-required' DC update
+        # handler. If you add another field, move this to the last one.
+        self.privGotAllRequired()
+
+        """
+        # this is no longer used
     def setScenarioIndex(self, scenarioIndex):
         self.scenarioIndex = scenarioIndex
 
@@ -127,6 +137,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # gotAllRequired() in the last 'faux-required' DC update
         # handler. If you add another field, move this to the last one.
         self.privGotAllRequired()
+        """
 
     def privGotAllRequired(self):
         self.levelAnnounceGenerate()

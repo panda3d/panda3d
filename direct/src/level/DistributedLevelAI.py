@@ -40,7 +40,10 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
 
         self.sendUpdate('setZoneIds', [self.zoneIds])
         self.sendUpdate('setStartTimestamp', [self.startTimestamp])
-        self.sendUpdate('setScenarioIndex', [self.scenarioIndex])
+        # this is no longer used
+        #self.sendUpdate('setScenarioIndex', [self.scenarioIndex])
+        if __dev__:
+            assert self.scenarioIndex == 0
 
     def getLevelZoneId(self):
         """no entities should be generated in the level's zone; it causes
