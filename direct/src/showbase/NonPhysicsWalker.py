@@ -101,8 +101,8 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         # activate the collider with the traverser and pusher
         self.collisionsOn()
         
-        self.pusher.addColliderNode(self.cSphereNode, avatarNodePath.node())
-        self.lifter.addColliderNode(self.cRayNode, avatarNodePath.node())
+        self.pusher.addCollider(self.cSphereNodePath, avatarNodePath)
+        self.lifter.addCollider(self.cRayNodePath, avatarNodePath)
 
     def deleteCollisions(self):
         del self.cTrav
