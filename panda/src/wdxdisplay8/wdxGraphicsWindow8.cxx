@@ -1343,7 +1343,7 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
             pWindowClassName=WDX_WINDOWCLASSNAME;
         }
 
-        wdxdisplay_cat.info() << "opening " << xsize << "x" << ysize
+        wdxdisplay_cat.info() << "opening " << props->_xsize << "x" << props->_ysize
                               << ((_windows[devnum]->_props._fullscreen) ? " fullscreen" : " regular") << " window\n";
 
         if((xsize==0) || (ysize==0)) {

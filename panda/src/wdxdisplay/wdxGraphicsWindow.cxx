@@ -1237,7 +1237,7 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
         UINT xsize = win_rect.right-win_rect.left;
         UINT ysize = win_rect.bottom-win_rect.top;
 
-        wdxdisplay_cat.info() << "opening " << xsize << "x" << ysize << " regular window\n";
+        wdxdisplay_cat.info() << "opening " << props->_xsize << "x" << props->_ysize << " regular window\n";
 
         _hParentWindow =
             CreateWindow(WDX_WINDOWCLASSNAME, props->_title.c_str(),
