@@ -40,5 +40,11 @@ class BulletinBoard:
         if postName in self._dict:
             del self._dict[postName]
 
+    def removeIfEqual(self, postName, value):
+        # only remove the post if its value is a particular value
+        if self.has(postName):
+            if self.get(postName) == value:
+                self.remove(postName)
+
     def __repr__(self):
         return str(self._dict)
