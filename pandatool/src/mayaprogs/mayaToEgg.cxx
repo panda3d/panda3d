@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "mayaToEgg.h"
-#include "mayaParameters.h"
 #include "mayaToEggConverter.h"
 #include "config_mayaegg.h"
 
@@ -45,14 +44,14 @@ MayaToEgg() :
      "Generate polygon output only.  Tesselate all NURBS surfaces to "
      "polygons via the built-in Maya tesselator.  The tesselation will "
      "be based on the tolerance factor given by -ptol.",
-     &MayaToEgg::dispatch_none, &MayaParameters::polygon_output);
+     &MayaToEgg::dispatch_none, &_polygon_output);
 
   add_option
     ("ptol", "tolerance", 0,
      "Specify the fit tolerance for Maya polygon tesselation.  The smaller "
      "the number, the more polygons will be generated.  The default is "
      "0.01.",
-     &MayaToEgg::dispatch_double, NULL, &MayaParameters::polygon_tolerance);
+     &MayaToEgg::dispatch_double, NULL, &_polygon_tolerance);
 
   add_option
     ("notrans", "", 0,
@@ -61,7 +60,7 @@ MayaToEgg() :
      "one big transform space.  Using this option doesn't change the "
      "position of objects in the scene, just the number of explicit "
      "transforms appearing in the resulting egg file.",
-     &MayaToEgg::dispatch_none, &MayaParameters::ignore_transforms);
+     &MayaToEgg::dispatch_none, &_ignore_transforms);
 
   add_option
     ("v", "", 0,
@@ -92,6 +91,11 @@ run() {
     nout << "Unable to initialize Maya.\n";
     exit(1);
   }
+
+  // Copy in the command-line parameters.
+  converter._polygon_output = _polygon_output;
+  converter._polygon_tolerance = _polygon_tolerance;
+  converter._ignore_transforms = _ignore_transforms;
 
   // Set the coordinate system to match Maya's.
   if (!_got_coordinate_system) {

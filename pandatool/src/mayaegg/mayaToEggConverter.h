@@ -94,6 +94,10 @@ public:
   MayaShaders _shaders;
   EggTextureCollection _textures;
   PT(MayaApi) _maya;
+
+  bool _polygon_output;
+  double _polygon_tolerance;
+  bool _ignore_transforms;
 };
 
 

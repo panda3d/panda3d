@@ -18,7 +18,6 @@
 
 #include "mayaToEggConverter.h"
 #include "mayaShader.h"
-#include "mayaParameters.h"
 #include "maya_funcs.h"
 #include "config_mayaegg.h"
 
@@ -70,6 +69,9 @@ MayaToEggConverter(const string &program_name) :
   _shaders(this)
 {
   _maya = MayaApi::open_api(program_name);
+  _polygon_output = false;
+  _polygon_tolerance = 0.01;
+  _ignore_transforms = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -328,7 +330,7 @@ process_node(const MDagPath &dag_path, EggData &data) {
 ////////////////////////////////////////////////////////////////////
 void MayaToEggConverter::
 get_transform(const MDagPath &dag_path, EggGroup *egg_group) {
-  if (MayaParameters::ignore_transforms) {
+  if (_ignore_transforms) {
     return;
   }
 
@@ -417,13 +419,13 @@ make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface &surface,
 
   MayaShader *shader = _shaders.find_shader_for_node(surface.object());
 
-  if (MayaParameters::polygon_output) {
+  if (_polygon_output) {
     // If we want polygon output only, tesselate the NURBS and output
     // that.
     MTesselationParams params;
     params.setFormatType(MTesselationParams::kStandardFitFormat);
     params.setOutputType(MTesselationParams::kQuads);
-    params.setStdFractionalTolerance(MayaParameters::polygon_tolerance);
+    params.setStdFractionalTolerance(_polygon_tolerance);
 
     // We'll create the tesselation as a sibling of the NURBS surface.
     // That way we inherit all of the transformations.

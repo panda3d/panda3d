@@ -17,7 +17,6 @@
   #define SOURCES \
     config_mayaegg.cxx config_mayaegg.h \
     mayaApi.cxx mayaApi.h \
-    mayaParameters.cxx mayaParameters.h \
     mayaShader.cxx mayaShader.h \
     mayaShaders.cxx mayaShaders.h \
     mayaToEggConverter.cxx mayaToEggConverter.h \
