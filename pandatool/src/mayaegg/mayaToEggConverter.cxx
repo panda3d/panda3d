@@ -1224,6 +1224,13 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
       shader = default_shader;
     }
 
+    // Since a texture completely replaces a polygon or vertex color,
+    // we need to know up front whether we have a texture.
+    bool has_texture = false;
+    if (shader != (MayaShader *)NULL) {
+      has_texture = shader->_has_texture;
+    }
+
     // Get the vertices for the polygon.
     long num_verts = pi.polygonVertexCount();
     for (long i = 0; i < num_verts; i++) {
@@ -1257,7 +1264,7 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
         }
       }
 
-      if (pi.hasColor()) {
+      if (pi.hasColor() && !has_texture) {
         MColor c;
         status = pi.getColor(c, i);
         if (!status) {
