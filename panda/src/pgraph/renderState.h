@@ -22,9 +22,11 @@
 #include "pandabase.h"
 
 #include "renderAttrib.h"
-#include "typedWritableReferenceCount.h"
+#include "cachedTypedWritableReferenceCount.h"
 #include "pointerTo.h"
 #include "ordered_vector.h"
+#include "updateSeq.h"
+#include "pStatCollector.h"
 
 class GraphicsStateGuardianBase;
 class FogAttrib;
@@ -44,7 +46,7 @@ class FactoryParams;
 //               instead of modifying a RenderState object, create a
 //               new one.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA RenderState : public TypedWritableReferenceCount {
+class EXPCL_PANDA RenderState : public CachedTypedWritableReferenceCount {
 protected:
   RenderState();
 
@@ -90,6 +92,8 @@ PUBLISHED:
   const RenderAttrib *get_attrib(TypeHandle type) const;
   int get_override(TypeHandle type) const;
 
+  int unref() const;
+
   void output(ostream &out) const;
   void write(ostream &out, int indent_level) const;
 
@@ -131,16 +135,16 @@ private:
     bool _inverted;
   };
   typedef pvector<CompositionCycleDescEntry> CompositionCycleDesc;
-  typedef pset<const RenderState *> VisitedStates;
 
   static CPT(RenderState) return_new(RenderState *state);
   CPT(RenderState) do_compose(const RenderState *other) const;
   CPT(RenderState) do_invert_compose(const RenderState *other) const;
   static bool r_detect_cycles(const RenderState *start_state,
                               const RenderState *current_state,
-                              int length,
-                              VisitedStates &visited_this_cycle,
-                              CompositionCycleDesc &cycle_desc);
+                              int length, UpdateSeq this_seq,
+                              CompositionCycleDesc *cycle_desc);
+
+  void remove_cache_pointers();
 
   void determine_bin_index();
   void determine_fog();
@@ -182,6 +186,12 @@ private:
   typedef phash_map<const RenderState *, Composition, pointer_hash> CompositionCache;
   CompositionCache _composition_cache;
   CompositionCache _invert_composition_cache;
+
+  // This is used to mark nodes as we visit them to detect cycles.
+  UpdateSeq _cycle_detect;
+  static UpdateSeq _last_cycle_detect;
+
+  static PStatCollector _cache_update_pcollector;
 
 private:
   // This is the actual data within the RenderState: a set of
@@ -239,9 +249,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWritableReferenceCount::init_type();
+    CachedTypedWritableReferenceCount::init_type();
     register_type(_type_handle, "RenderState",
-                  TypedWritableReferenceCount::get_class_type());
+                  CachedTypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

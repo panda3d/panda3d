@@ -187,6 +187,7 @@ PUBLISHED:
   float calc_width(int character) const;
   INLINE float calc_width(const string &line) const;
 
+  virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 
   // The following functions return information about the text that
@@ -242,6 +243,8 @@ private:
   PT(PandaNode) make_frame();
   PT(PandaNode) make_card();
   PT(PandaNode) make_card_with_border();
+
+  static int count_geoms(PandaNode *node);
 
   PT(PandaNode) _internal_geom;
 

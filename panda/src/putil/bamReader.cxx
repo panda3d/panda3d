@@ -420,9 +420,11 @@ read_handle(DatagramIterator &scan) {
       TypeRegistry::ptr()->record_derivation(type, parent_type);
     } else {
       if (type.get_parent_towards(parent_type) != parent_type) {
-        bam_cat.warning()
-          << "Bam file indicates a derivation of " << type
-          << " from " << parent_type << " which is no longer true.\n";
+        if (bam_cat.is_debug()) {
+          bam_cat.debug()
+            << "Bam file indicates a derivation of " << type
+            << " from " << parent_type << " which is no longer true.\n";
+        }
       }
     }
   }

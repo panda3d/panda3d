@@ -39,6 +39,7 @@ extern ConfigVariableBool allow_unrelated_wrt;
 extern ConfigVariableBool paranoid_compose;
 extern ConfigVariableBool compose_componentwise;
 extern ConfigVariableBool paranoid_const;
+extern ConfigVariableBool auto_break_cycles;
 
 extern ConfigVariableBool polylight_info;
 extern ConfigVariableDouble lod_fade_time;

@@ -4,6 +4,7 @@
 #include "bitMask.cxx"
 #include "buttonHandle.cxx"
 #include "buttonRegistry.cxx"
+#include "cachedTypedWritableReferenceCount.cxx"
 #include "config_util.cxx"
 #include "configurable.cxx"
 #include "cycleData.cxx"

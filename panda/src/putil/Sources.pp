@@ -13,6 +13,7 @@
     bitMask.h \
     buttonHandle.I \
     buttonHandle.h buttonRegistry.I buttonRegistry.h \
+    cachedTypedWritableReferenceCount.h cachedTypedWritableReferenceCount.I \
     collideMask.h \
     portalMask.h \
     compareTo.I compareTo.h \
@@ -55,6 +56,7 @@
  #define INCLUDED_SOURCES \
     bamReader.cxx bamReaderParam.cxx bamWriter.cxx bitMask.cxx \
     buttonHandle.cxx buttonRegistry.cxx \
+    cachedTypedWritableReferenceCount.cxx \
     config_util.cxx configurable.cxx \
     cycleData.cxx \
     cycleDataReader.cxx \
@@ -85,7 +87,9 @@
     bam.h bamReader.I bamReader.h bamReaderParam.I bamReaderParam.h \
     bamWriter.I bamWriter.h bitMask.I bitMask.h \
     buttonHandle.I buttonHandle.h buttonRegistry.I \
-    buttonRegistry.h collideMask.h portalMask.h \
+    buttonRegistry.h \
+    cachedTypedWritableReferenceCount.h cachedTypedWritableReferenceCount.I \
+    collideMask.h portalMask.h \
     compareTo.I compareTo.h \
     config_util.h configurable.h factory.I factory.h \
     cycleData.h cycleData.I \

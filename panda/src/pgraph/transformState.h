@@ -21,11 +21,13 @@
 
 #include "pandabase.h"
 
-#include "typedWritableReferenceCount.h"
+#include "cachedTypedWritableReferenceCount.h"
 #include "pointerTo.h"
 #include "luse.h"
 #include "pset.h"
 #include "event.h"
+#include "updateSeq.h"
+#include "pStatCollector.h"
 
 class GraphicsStateGuardianBase;
 class FactoryParams;
@@ -52,7 +54,7 @@ class FactoryParams;
 //               instead of modifying a TransformState object, create a
 //               new one.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TransformState : public TypedWritableReferenceCount {
+class EXPCL_PANDA TransformState : public CachedTypedWritableReferenceCount {
 protected:
   TransformState();
 
@@ -125,6 +127,8 @@ PUBLISHED:
   CPT(TransformState) compose(const TransformState *other) const;
   CPT(TransformState) invert_compose(const TransformState *other) const;
 
+  int unref() const;
+
   void output(ostream &out) const;
   void write(ostream &out, int indent_level) const;
 
@@ -147,16 +151,16 @@ private:
     bool _inverted;
   };
   typedef pvector<CompositionCycleDescEntry> CompositionCycleDesc;
-  typedef pset<const TransformState *> VisitedStates;
 
   static CPT(TransformState) return_new(TransformState *state);
   CPT(TransformState) do_compose(const TransformState *other) const;
   CPT(TransformState) do_invert_compose(const TransformState *other) const;
   static bool r_detect_cycles(const TransformState *start_state,
                               const TransformState *current_state,
-                              int length,
-                              VisitedStates &visited_this_cycle,
-                              CompositionCycleDesc &cycle_desc);
+                              int length, UpdateSeq this_seq,
+                              CompositionCycleDesc *cycle_desc);
+
+  void remove_cache_pointers();
 
 private:
   typedef phash_set<const TransformState *, indirect_less_hash<const TransformState *> > States;
@@ -190,6 +194,12 @@ private:
   typedef phash_map<const TransformState *, Composition, pointer_hash> CompositionCache;
   CompositionCache _composition_cache;
   CompositionCache _invert_composition_cache;
+
+  // This is used to mark nodes as we visit them to detect cycles.
+  UpdateSeq _cycle_detect;
+  static UpdateSeq _last_cycle_detect;
+
+  static PStatCollector _cache_update_pcollector;
 
 private:
   // This is the actual data within the TransformState.
@@ -248,9 +258,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWritableReferenceCount::init_type();
+    CachedTypedWritableReferenceCount::init_type();
     register_type(_type_handle, "TransformState",
-                  TypedWritableReferenceCount::get_class_type());
+                  CachedTypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -144,6 +144,13 @@ ConfigVariableBool paranoid_const
           "RenderAttrib, TransformState, and RenderEffect.  This has no effect "
           "if NDEBUG is defined."));
 
+ConfigVariableBool auto_break_cycles
+("auto-break-cycles", true,
+ PRC_DESC("Set this true to automatically detect and break reference-count "
+          "cycles in the TransformState and RenderState caches.  When this "
+          "is false, you must explicitly call TransformState.clear_cache() "
+          "from time to time to prevent gradual memory bloat."));
+
 ConfigVariableBool polylight_info
 ("polylight-info", false,
  PRC_DESC("Set this true to view some info statements regarding the polylight. "

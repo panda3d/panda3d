@@ -140,6 +140,24 @@ calc_width(int character) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextNode::output
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void TextNode::
+output(ostream &out) const {
+  PandaNode::output(out);
+
+  check_rebuild();
+  int geom_count = 0;
+  if (_internal_geom != (PandaNode *)NULL) {
+    geom_count = count_geoms(_internal_geom);
+  }
+
+  out << " (" << geom_count << " geoms)";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextNode::write
 //       Access: Published, Virtual
 //  Description:
@@ -182,7 +200,8 @@ PT(PandaNode) TextNode::
 generate() {
   if (text_cat.is_debug()) {
     text_cat.debug()
-      << "Rebuilding " << *this << " with '" << get_text() << "'\n";
+      << "Rebuilding " << get_type() << " " << get_name()
+      << " with '" << get_text() << "'\n";
   }
 
   // The strategy here will be to assemble together a bunch of
@@ -773,4 +792,28 @@ make_card_with_border() {
   card_geode->add_geom(geoset);
 
   return card_geode.p();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::count_geoms
+//       Access: Private, Static
+//  Description: Recursively counts the number of Geoms at the
+//               indicated node and below.  Strictly for reporting
+//               this count on output.
+////////////////////////////////////////////////////////////////////
+int TextNode::
+count_geoms(PandaNode *node) {
+  int num_geoms = 0;
+
+  if (node->is_geom_node()) {
+    GeomNode *geom_node = DCAST(GeomNode, node);
+    num_geoms += geom_node->get_num_geoms();
+  }
+
+  Children children = node->get_children();
+  for (int i = 0; i < children.get_num_children(); ++i) {
+    num_geoms += count_geoms(children.get_child(i));
+  }
+
+  return num_geoms;
 }

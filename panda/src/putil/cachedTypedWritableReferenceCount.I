@@ -1,5 +1,5 @@
-// Filename: referenceCount.I
-// Created by:  drose (23Oct98)
+// Filename: cachedTypedWritableReferenceCount.I
+// Created by:  drose (25Jan05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,14 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-template<class Base>
-TypeHandle RefCountProxy<Base>::_type_handle;
-
-template<class Base>
-TypeHandle RefCountObj<Base>::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ReferenceCount::Constructor
+//     Function: CachedTypedWritableReferenceCount::Constructor
 //       Access: Protected
 //  Description: The ReferenceCount constructor is protected because
 //               you almost never want to create just a ReferenceCount
@@ -35,17 +30,13 @@ TypeHandle RefCountObj<Base>::_type_handle;
 //               reference-counting to some other class via
 //               inheritance.
 ////////////////////////////////////////////////////////////////////
-INLINE ReferenceCount::
-ReferenceCount() {
-  _weak_list = (WeakReferenceList *)NULL;
-  _ref_count = 0;
-#ifdef DO_MEMORY_USAGE
-  MemoryUsage::record_pointer(this);
-#endif
+INLINE CachedTypedWritableReferenceCount::
+CachedTypedWritableReferenceCount() {
+  _cache_ref_count = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ReferenceCount::Copy Constructor
+//     Function: CachedTypedWritableReferenceCount::Copy Constructor
 //       Access: Protected
 //  Description: The copies of reference-counted objects do not
 //               themselves inherit the reference count!
@@ -54,17 +45,13 @@ ReferenceCount() {
 //               never want to create just a ReferenceCount object by
 //               itself, and it's probably a mistake if you try.
 ////////////////////////////////////////////////////////////////////
-INLINE ReferenceCount::
-ReferenceCount(const ReferenceCount &) {
-  _weak_list = (WeakReferenceList *)NULL;
-  _ref_count = 0;
-#ifdef DO_MEMORY_USAGE
-  MemoryUsage::record_pointer(this);
-#endif
+INLINE CachedTypedWritableReferenceCount::
+CachedTypedWritableReferenceCount(const CachedTypedWritableReferenceCount &copy) : TypedWritableReferenceCount(copy) {
+  _cache_ref_count = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ReferenceCount::Copy Assignment Operator
+//     Function: CachedTypedWritableReferenceCount::Copy Assignment Operator
 //       Access: Protected
 //  Description: The copies of reference-counted objects do not
 //               themselves inherit the reference count!
@@ -76,8 +63,8 @@ ReferenceCount(const ReferenceCount &) {
 //               derived class that implements this operator and then
 //               calls up the inheritance chain.
 ////////////////////////////////////////////////////////////////////
-INLINE void ReferenceCount::
-operator = (const ReferenceCount &) {
+INLINE void CachedTypedWritableReferenceCount::
+operator = (const CachedTypedWritableReferenceCount &copy) {
   nassertv(this != NULL);
 
   // If this assertion fails, our own pointer was recently deleted.
@@ -87,11 +74,13 @@ operator = (const ReferenceCount &) {
   // instance of a class that derives from ReferenceCount.  Or maybe
   // your headers are out of sync, and you need to make clean in
   // direct or some higher tree.
-  nassertv(_ref_count != -100);
+  nassertv(_cache_ref_count != -100);
+
+  TypedWritableReferenceCount::operator = (copy);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ReferenceCount::Destructor
+//     Function: CachedTypedWritableReferenceCount::Destructor
 //       Access: Protected
 //  Description: The ReferenceCount destructor is protected to
 //               discourage users from accidentally trying to delete a
@@ -101,8 +90,8 @@ operator = (const ReferenceCount &) {
 //               to something that inherits from ReferenceCount, not
 //               just a plain old ReferenceCount object.
 ////////////////////////////////////////////////////////////////////
-INLINE ReferenceCount::
-~ReferenceCount() {
+INLINE CachedTypedWritableReferenceCount::
+~CachedTypedWritableReferenceCount() {
   nassertv(this != NULL);
 
   // If this assertion fails, we're trying to delete an object that
@@ -112,12 +101,12 @@ INLINE ReferenceCount::
   // automatic (local variable) instance of a class that derives from
   // ReferenceCount.  Or maybe your headers are out of sync, and you
   // need to make clean in direct or some higher tree.
-  nassertv(_ref_count != -100);
+  nassertv(_cache_ref_count != -100);
 
   // If this assertion fails, the reference counts are all screwed
   // up altogether.  Maybe some errant code stomped all over memory
   // somewhere.
-  nassertv(_ref_count >= 0);
+  nassertv(_cache_ref_count >= 0);
 
   // If this assertion fails, someone tried to delete this object
   // while its reference count was still positive.  Maybe you tried
@@ -129,47 +118,33 @@ INLINE ReferenceCount::
   // constructor for a ReferenceCount object, and then bitwise
   // copied a dynamically allocated value--reference count and
   // all--onto a locally allocated one.
-  nassertv(_ref_count == 0);
-
-  // Tell our weak reference holders that we're going away now.
-  if (_weak_list != (WeakReferenceList *)NULL) {
-    delete _weak_list;
-    _weak_list = (WeakReferenceList *)NULL;
-  }
+  nassertv(_cache_ref_count == 0);
 
 #ifndef NDEBUG
   // Ok, all clear to delete.  Now set the reference count to -100,
   // so we'll have a better chance of noticing if we happen to have
   // a stray pointer to it still out there.
-  _ref_count = -100;
-#endif
-
-#ifdef DO_MEMORY_USAGE
-  MemoryUsage::remove_pointer(this);
+  _cache_ref_count = -100;
 #endif
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ReferenceCount::get_ref_count
+//     Function: CachedTypedWritableReferenceCount::get_cache_ref_count
 //       Access: Public
 //  Description: Returns the current reference count.
 ////////////////////////////////////////////////////////////////////
-INLINE int ReferenceCount::
-get_ref_count() const {
+INLINE int CachedTypedWritableReferenceCount::
+get_cache_ref_count() const {
 #ifndef NDEBUG
-  test_ref_count_integrity();
+  test_cache_ref_count_integrity();
 #endif
-  return _ref_count;
+  return _cache_ref_count;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ReferenceCount::ref
+//     Function: CachedTypedWritableReferenceCount::cache_ref
 //       Access: Public
-//  Description: Explicitly increments the reference count.  User code
-//               should avoid using ref() and unref() directly, which
-//               can result in missed reference counts.  Instead, let
-//               a PointerTo object manage the reference counting
-//               automatically.
+//  Description: Explicitly increments the reference count.
 //
 //               This function is const, even though it changes the
 //               object, because generally fiddling with an object's
@@ -180,8 +155,8 @@ get_ref_count() const {
 //
 //               The return value is the new reference count.
 ////////////////////////////////////////////////////////////////////
-INLINE int ReferenceCount::
-ref() const {
+INLINE int CachedTypedWritableReferenceCount::
+cache_ref() const {
   nassertr(this != NULL, 0);
 
   // If this assertion fails, we're trying to delete an object that
@@ -191,18 +166,19 @@ ref() const {
   // automatic (local variable) instance of a class that derives from
   // ReferenceCount.  Or maybe your headers are out of sync, and you
   // need to make clean in direct or some higher tree.
-  nassertr(_ref_count != -100, 0);
+  nassertr(_cache_ref_count != -100, 0);
 
   // If this assertion fails, the reference counts are all screwed
   // up altogether.  Maybe some errant code stomped all over memory
   // somewhere.
-  nassertr(_ref_count >= 0, 0);
+  nassertr(_cache_ref_count >= 0, 0);
 
-  return AtomicAdjust::inc(((ReferenceCount *)this)->_ref_count);
+  ref();
+  return AtomicAdjust::inc(((CachedTypedWritableReferenceCount *)this)->_cache_ref_count);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ReferenceCount::unref
+//     Function: CachedTypedWritableReferenceCount::cache_unref
 //       Access: Public
 //  Description: Explicitly decrements the reference count.  Note that
 //               the object will not be implicitly deleted by unref()
@@ -226,8 +202,8 @@ ref() const {
 //
 //               The return value is the new reference count.
 ////////////////////////////////////////////////////////////////////
-INLINE int ReferenceCount::
-unref() const {
+INLINE int CachedTypedWritableReferenceCount::
+cache_unref() const {
   nassertr(this != NULL, false);
 
   // If this assertion fails, we're trying to delete an object that
@@ -237,29 +213,31 @@ unref() const {
   // automatic (local variable) instance of a class that derives from
   // ReferenceCount.  Or maybe your headers are out of sync, and you
   // need to make clean in direct or some higher tree.
-  nassertr(_ref_count != -100, false);
+  nassertr(_cache_ref_count != -100, false);
 
   // If this assertion fails, the reference counts are all screwed
   // up altogether.  Maybe some errant code stomped all over memory
   // somewhere.
-  nassertr(_ref_count >= 0, false);
+  nassertr(_cache_ref_count >= 0, false);
 
   // If this assertion fails, you tried to unref an object with a
   // zero reference count.  Are you using ref() and unref()
   // directly?  Are you sure you can't use PointerTo's?
-  nassertr(_ref_count > 0, false);
-  return AtomicAdjust::dec(((ReferenceCount *)this)->_ref_count);
+  nassertr(_cache_ref_count > 0, false);
+
+  unref();
+  return AtomicAdjust::dec(((CachedTypedWritableReferenceCount *)this)->_cache_ref_count);
 }
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ReferenceCount::test_ref_count_integrity
+//     Function: CachedTypedWritableReferenceCount::test_cache_ref_count_integrity
 //       Access: Public
 //  Description: Does some easy checks to make sure that the reference
 //               count isn't completely bogus.
 ////////////////////////////////////////////////////////////////////
-INLINE void ReferenceCount::
-test_ref_count_integrity() const {
+INLINE void CachedTypedWritableReferenceCount::
+test_cache_ref_count_integrity() const {
 #ifndef NDEBUG
   nassertv(this != NULL);
 
@@ -270,71 +248,19 @@ test_ref_count_integrity() const {
   // automatic (local variable) instance of a class that derives from
   // ReferenceCount.  Or maybe your headers are out of sync, and you
   // need to make clean in direct or some higher tree.
-  nassertv(_ref_count != -100);
+  nassertv(_cache_ref_count != -100);
 
   // If this assertion fails, the reference counts are all screwed
   // up altogether.  Maybe some errant code stomped all over memory
   // somewhere.
-  nassertv(_ref_count >= 0);
+  nassertv(_cache_ref_count >= 0);
+
+  test_ref_count_integrity();
 #endif
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ReferenceCount::has_weak_list
-//       Access: Public
-//  Description: Returns true if this particular ReferenceCount object
-//               has a WeakReferenceList created, false otherwise.  In
-//               general, this will be true if there was ever a
-//               WeakPointerTo created for this object (even if there
-//               is not any for it now).
-////////////////////////////////////////////////////////////////////
-INLINE bool ReferenceCount::
-has_weak_list() const {
-  return _weak_list != (WeakReferenceList *)NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ReferenceCount::get_weak_list
-//       Access: Public
-//  Description: Returns the WeakReferenceList associated with this
-//               ReferenceCount object.  If there has never been a
-//               WeakReferenceList associated with this object,
-//               creates one now.
-////////////////////////////////////////////////////////////////////
-INLINE WeakReferenceList *ReferenceCount::
-get_weak_list() const {
-  if (_weak_list == (WeakReferenceList *)NULL) {
-    ((ReferenceCount *)this)->_weak_list = new WeakReferenceList;
-  }
-  return _weak_list;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ReferenceCount::weak_ref
-//       Access: Public
-//  Description: Adds the indicated PointerToVoid as a weak reference
-//               to this object.
-////////////////////////////////////////////////////////////////////
-INLINE void ReferenceCount::
-weak_ref(WeakPointerToVoid *ptv) {
-  get_weak_list()->add_reference(ptv);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ReferenceCount::weak_unref
-//       Access: Public
-//  Description: Removes the indicated PointerToVoid as a weak reference
-//               to this object.  It must have previously been added
-//               via a call to weak_ref().
-////////////////////////////////////////////////////////////////////
-INLINE void ReferenceCount::
-weak_unref(WeakPointerToVoid *ptv) {
-  nassertv(has_weak_list());
-  _weak_list->clear_reference(ptv);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: unref_delete
+//     Function: cache_unref_delete
 //  Description: This global helper function will unref the given
 //               ReferenceCount object, and if the reference count
 //               reaches zero, automatically delete it.  It can't be a
@@ -345,13 +271,9 @@ weak_unref(WeakPointerToVoid *ptv) {
 ////////////////////////////////////////////////////////////////////
 template<class RefCountType>
 INLINE void
-unref_delete(RefCountType *ptr) {
-  // Although it may be tempting to try to upcast ptr to a
-  // ReferenceCount object (particularly to get around inheritance
-  // issues), resist that temptation, since some classes (in
-  // particular, TransformState and RenderState) rely on a non-virtual
-  // overloading of the unref() method.
-  if (ptr->unref() == 0) {
+cache_unref_delete(RefCountType *ptr) {
+  ptr->cache_unref();
+  if (ptr->get_ref_count() == 0) {
 #ifndef NDEBUG
     if (get_leak_memory()) {
       // In leak-memory mode, we don't actually delete the pointer,
@@ -371,104 +293,3 @@ unref_delete(RefCountType *ptr) {
   }
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: RefCountProxy::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-template<class Base>
-INLINE RefCountProxy<Base>::
-RefCountProxy() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RefCountProxy::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-template<class Base>
-INLINE RefCountProxy<Base>::
-RefCountProxy(const Base &copy) : _base(copy) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RefCountProxy::Base Typecast Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-template<class Base>
-INLINE RefCountProxy<Base>::
-operator Base &() {
-  return _base;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RefCountProxy::Base Typecast Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-template<class Base>
-INLINE RefCountProxy<Base>::
-operator const Base &() const {
-  return _base;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RefCountProxy::init_type
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-template<class Base>
-void RefCountProxy<Base>::
-init_type() {
-  do_init_type(Base);
-  register_type(_type_handle,
-                "RefCountProxy<" + get_type_handle(Base).get_name() + ">",
-                get_type_handle(Base));
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: RefCountObj::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-template<class Base>
-INLINE RefCountObj<Base>::
-RefCountObj() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RefCountObj::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-template<class Base>
-INLINE RefCountObj<Base>::
-RefCountObj(const Base &copy) : Base(copy) {
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: RefCountObj::init_type
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-template<class Base>
-void RefCountObj<Base>::
-init_type() {
-#ifdef HAVE_RTTI
-  // If we have RTTI, we can determine the name of the base type.
-  string base_name = typeid(Base).name();
-#else
-  string base_name = "unknown";
-#endif
-
-  TypeHandle base_type = register_dynamic_type(base_name);
-
-  ReferenceCount::init_type();
-  _type_handle =
-    register_dynamic_type("RefCountObj<" + base_name + ">",
-                          base_type, ReferenceCount::get_class_type());
-}

@@ -18,6 +18,7 @@
 
 #include "config_util.h"
 #include "bamReaderParam.h"
+#include "cachedTypedWritableReferenceCount.h"
 #include "clockObject.h"
 #include "configurable.h"
 #include "datagram.h"
@@ -57,6 +58,7 @@ ConfigVariableSearchPath sound_path
 
 ConfigureFn(config_util) {
   BamReaderParam::init_type();
+  CachedTypedWritableReferenceCount::init_type();
   Configurable::init_type();
   Datagram::init_type();
   FactoryParam::init_type();
