@@ -157,7 +157,7 @@ open_read(const Filename &multifile_name) {
 //       Access: Published
 //  Description: Opens the named Multifile on disk for writing.  If
 //               there already exists a file by that name, it is
-//               deleted.  The Multifile is then prepared for
+//               truncated.  The Multifile is then prepared for
 //               accepting a brand new set of subfiles, which will be
 //               written to the indicated filename.  Individual
 //               subfiles may not be extracted or read.
@@ -170,7 +170,7 @@ open_write(const Filename &multifile_name) {
   close();
   Filename fname = multifile_name;
   fname.set_binary();
-  if (!fname.open_write(_write_file)) {
+  if (!fname.open_write(_write_file, true)) {
     return false;
   }
   _write = &_write_file;
@@ -799,7 +799,7 @@ extract_subfile(int index, const Filename &filename) {
   fname.set_binary();
   fname.make_dir();
   ofstream out;
-  if (!fname.open_write(out)) {
+  if (!fname.open_write(out, true)) {
     express_cat.info()
       << "Unable to write to file " << filename << "\n";
     return false;
