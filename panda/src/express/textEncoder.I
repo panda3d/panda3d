@@ -334,7 +334,8 @@ unicode_isdigit(int character) {
     // The digits aren't actually listed in the map.
     return (character >= '0' && character <= '9');
   }
-  return isdigit(entry->_ascii_equiv);
+  // This silly test (!= 0) is necessary to prevent a VC++ warning.
+  return (isdigit(entry->_ascii_equiv) != 0);
 }
 
 ////////////////////////////////////////////////////////////////////
