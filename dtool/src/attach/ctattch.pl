@@ -196,7 +196,7 @@ sub CTAttachCompute {
          if ( $flav eq "install" ) {
             # oh my! are we ever in trouble
             # want some sort of default, but couldn't get to what we wanted
-            print STDERR "you are in a strange alien universe\n" ;
+            print STDERR "ctattach to install failed\n" ;
             $spec = "" ;
             $done = 1 ;
          } elsif ( $flav eq "release" ) {
