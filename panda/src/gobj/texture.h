@@ -70,9 +70,11 @@ PUBLISHED:
   };
 
   enum WrapMode {
-    WM_clamp,
+    WM_clamp,  // coords that would be outside [0-1] are clamped to 0 or 1
     WM_repeat,
-
+    WM_mirror,
+    WM_mirror_once,   // mirror once, then clamp
+    WM_border_color,  // coords outside [0-1] use explict border color
     // Returned by string_wrap_mode() for an invalid match.
     WM_invalid
   };
@@ -90,6 +92,7 @@ PUBLISHED:
   void set_minfilter(FilterType filter);
   void set_magfilter(FilterType filter);
   void set_anisotropic_degree(int anisotropic_degree);
+  void set_border_color(const Colorf &color);
 
   INLINE WrapMode get_wrapu() const;
   INLINE WrapMode get_wrapv() const;
@@ -146,6 +149,7 @@ private:
   FilterType _magfilter;
   int _anisotropic_degree;
   bool _keep_ram_image;
+  Colorf _border_color;
 
   // A Texture keeps a list (actually, a map) of all the GSG's that it
   // has been prepared into.  Each GSG conversely keeps a list (a set)

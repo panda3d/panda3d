@@ -126,6 +126,7 @@ Texture() : ImageBuffer() {
   _pbuffer = new PixelBuffer;
   _has_requested_size = false;
   _all_dirty_flags = 0;
+  memset(&_border_color,0,sizeof(Colorf));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -296,6 +297,16 @@ set_anisotropic_degree(int anisotropic_degree) {
     mark_dirty(DF_filter);
     _anisotropic_degree = anisotropic_degree;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: set_border_color
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void Texture::
+set_border_color(const Colorf &color) {
+   memcpy(&_border_color,&color,sizeof(Colorf));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -552,6 +563,12 @@ string_wrap_mode(const string &string) {
     return WM_repeat;
   } else if (cmp_nocase_uh(string, "clamp") == 0) {
     return WM_clamp;
+  } else if (cmp_nocase_uh(string, "mirror") == 0) {
+    return WM_clamp;
+  } else if (cmp_nocase_uh(string, "mirror_once") == 0) {
+    return WM_clamp;
+  } else if (cmp_nocase_uh(string, "border_color") == 0) {
+    return WM_border_color;
   } else {
     return WM_invalid;
   }
