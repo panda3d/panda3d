@@ -27,7 +27,8 @@ CLIENT_OBJECT_DISABLE =                      25
 CLIENT_OBJECT_DISABLE_RESP =                 25
 CLIENT_OBJECT_DELETE =                       27
 CLIENT_OBJECT_DELETE_RESP =                  27
-CLIENT_SET_ZONE =                            29
+if not wantOtpServer:        
+    CLIENT_SET_ZONE =                            29
 CLIENT_REMOVE_ZONE =                         30
 CLIENT_SET_SHARD =                           31
 CLIENT_SET_AVATAR =                          32
@@ -43,7 +44,11 @@ CLIENT_DISCONNECT =                          37
 CLIENT_CHANGE_IP_ADDRESS_RESP =              45
 CLIENT_GET_STATE =                           46
 CLIENT_GET_STATE_RESP =                      47
-CLIENT_DONE_SET_ZONE_RESP =                  48
+if wantOtpServer:        
+    CLIENT_DONE_INTEREST_RESP =                  48
+else:
+    CLIENT_DONE_SET_ZONE_RESP =                  48
+    
 CLIENT_DELETE_AVATAR =                       49
 
 # I think this is 5 to look like a CLIENT_GET_AVATARS_RESP

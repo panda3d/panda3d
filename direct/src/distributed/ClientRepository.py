@@ -29,7 +29,11 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         self.setClientDatagram(1)
 
         self.recorder = base.recorder
-
+        if wantOtpServer:        
+            # this is used to imulate the old setzone behavior 
+            # with set locationa and set interest        
+            self.old_setzone_interest_handle = None
+        
         # Dict of {DistributedObject ids : DistributedObjects}
         self.doId2do = {}
         if wantOtpServer:
@@ -63,6 +67,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         if wantOtpServer:
             # Top level Interest Manager
             self._interestIdAssign = 1
+            self._interestIdScops = 100;
             self._interests = {}
 
         # By default, the ClientRepository is set up to respond to
@@ -612,8 +617,8 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
                 self.handleGenerateWithRequired(di)
             elif msgType == CLIENT_CREATE_OBJECT_REQUIRED_OTHER:
                 self.handleGenerateWithRequiredOther(di)
-            elif msgType == CLIENT_DONE_SET_ZONE_RESP:
-                self.handleSetZoneDone()                    
+            elif msgType == CLIENT_DONE_INTEREST_RESP:
+                self.handleInterestDoneMessage(di)                    
             elif msgType == CLIENT_OBJECT_LOCATION:
                 self.handleObjectLocation(di)
         else:
@@ -708,26 +713,46 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         self.send(datagram)
 
     if wantOtpServer:
-        def sendSetZoneMsg(self, zoneId, visibleZoneList=None, parent=None):
-            datagram = PyDatagram()
-            # Add message type
-            datagram.addUint16(CLIENT_SET_ZONE)       
-            # Add Parent
-            if parent is not None:
-                datagram.addUint32(parent)
-            else:
-                datagram.addUint32(base.localAvatar.defaultShard)
-            # Add zone id
-            datagram.addUint32(zoneId)
-            # if we have an explicit list of visible zones, add them
+        def sendImulateSetZone(self, zoneId, visibleZoneList=None, parentIdin=None, event=None):
+            """
+            This Will Move The avatar and set an interest to that location ..            
+            """
+            parentId = parentIdin;
+            if parentId is None:
+                parentId = base.localAvatar.defaultShard;
+                
+            MyAvID = base.localAvatar.doId;
+            # move thwe avatar..
+            self.sendSetLocation(MyAvID,parentId,zoneId);                
+            # move the interest..
+
+            InterestZones = zoneId;
             if visibleZoneList is not None:
-                vzl = list(visibleZoneList)
-                vzl.sort()
-                assert PythonUtil.uniqueElements(vzl)
-                for zone in vzl:
-                    datagram.addUint32(zone)
-            # send the message
+                InterestZones = visibleZoneList
+            
+            if(self.old_setzone_interest_handle == None):
+                self.old_setzone_interest_handle = self.addInterest(parentId, InterestZones, "OldSetZone Imulator", event)
+            else:
+                self.alterInterest(self.old_setzone_interest_handle,parentId, InterestZones, "OldSetZone Imulator", event)                    
+
+        def sendImulateSetZoneOff(self):
+            MyAvID = base.localAvatar.doId;
+            self.sendSetLocation(MyAvID,0,0);                
+            if self.old_setzone_interest_handle is not None:            
+                self.removeInterest(self.old_setzone_interest_handle)
+                self.old_setzone_interest_handle = None
+        
+
+        def  sendSetLocation(self,doId,parentId,zoneId):
+            datagram = PyDatagram()
+            datagram.addUint16(CLIENT_OBJECT_LOCATION)       
+            datagram.addUint32(doId)       
+            datagram.addUint32(parentId)       
+            datagram.addUint32(zoneId)       
             self.send(datagram)        
+                    
+        
+        
     else:
         def sendSetZoneMsg(self, zoneId, visibleZoneList=None):
             datagram = PyDatagram()
@@ -753,10 +778,11 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             di.getDatagram().dumpHex(ostream)
 
         msgType = self.getMsgType()
-        
-        # watch for setZoneDones
-        if msgType == CLIENT_DONE_SET_ZONE_RESP:
-            self.handleSetZoneDone()
+       
+
+        if not wantOtpServer:
+            if msgType == CLIENT_DONE_SET_ZONE_RESP:
+                self.handleSetZoneDone()
 
         if self.handler == None:
             self.handleUnexpectedMsgType(msgType, di)
@@ -792,58 +818,110 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
     
     if wantOtpServer:
         # interest managment 
-        def addInterest(self, parentId, zoneId, description):
+        def addInterest(self, parentId, zoneIdList, description, event=None):
             """
             Part of the new otp-server code.
             """
             self._interestIdAssign += 1
-            self._interests[self._interestIdAssign] = description
+            self._interestIdScops  += 1
+            self._interests[self._interestIdAssign] = [ description ,self._interestIdScops, event , "Active" ]
             contextId = self._interestIdAssign
-            self._sendAddInterest(contextId, parentId, zoneId)
+            scopeId = self._interestIdScops
+            self._sendAddInterest(contextId, scopeId, parentId, zoneIdList)
             assert self.printInterests()
             return contextId
             
-        def removeInterest(self,  contextId):        
+        def removeInterest(self,  contextId, event=None):        
             """
             Part of the new otp-server code.
             """
             answer = 0
             if  self._interests.has_key(contextId):
-                self._sendRemoveInterest(contextId)
-                del self._interests[contextId]
+                if event is not None:
+                    self._interestIdScops  += 1                
+                    self._interests[contextId][2] = event                    
+                    self._interests[contextId][1] = self._interestIdScops
+                    self._sendRemoveInterest(contextId)
+                    del self._interests[contextId]
+                else:
+                    self._interests[contextId][3] = "PendingDel"
+                    self._interests[contextId][2] = None
+                    self._interests[contextId][1] = 0 
+                    self._sendRemoveInterest(contextId)                
+                    
                 answer = 1                                
             assert self.printInterests()            
             return answer
 
-        def alterInterest(self, contextId, parentId, zoneId, description = None):
+        def alterInterest(self, contextId, parentId, zoneIdList, description = None, event=None):
             """
             Part of the new otp-server code.        
                 Removes old and adds new.. 
             """
-            print 'new'
             answer = 0
             if  self._interests.has_key(contextId):
+                self._interestIdScops  += 1
                 if description is not None:
-                    self._interests[contextId] = description
-                self._sendAddInterest(contextId, parentId, zoneId)
+                    self._interests[contextId][0] = description
+                    
+                self._interests[contextId][1] = self._interestIdScops;
+                self._interests[contextId][2] = event;               
+                self._sendAddInterest(contextId,self._interestIdScops, parentId, zoneIdList)
                 answer = 1
                 assert self.printInterests()
             else:
                 self.notify.warning("alterInterest: contextId not found: %s" % (contextId))
             return answer
             
+            
+        def GetInterestScopeID(self, contextId):
+            """
+            Part of the new otp-server code.        
+                 Return a ScopeId Id for an Interest
+            """
+            answer = 0
+            if  self._interests.has_key(contextId):
+                answer = self._interests[contextId][1];
+            else:
+                self.notify.warning("GetInterestScopeID: contextId not found: %s" % (contextId))
+            return answer
+            
+
+        def GetInterestScopeEvent(self, contextId):
+            """
+            Part of the new otp-server code.        
+                 Return a ScopeId Id for an Interest
+            """
+            answer = None
+            if  self._interests.has_key(contextId):
+                answer = self._interests[contextId][2];
+            else:
+                self.notify.warning("GetInterestScopeEvent: contextId not found: %s" % (contextId))
+            return answer
+                       
+            
+        def _PonderRemoveFlaggedInterest(self, handle):
+            """
+            Part of the new otp-server code.        
+                 Return a ScopeId Id for an Interest
+            """
+            answer = None
+            if  self._interests.has_key(handle):
+                    if self._interests[handle][3] == "PendingDel":
+                        del self._interests[handle]
+                    
         if __debug__:
             def printInterests(self):
                 """
                 Part of the new otp-server code.        
                 """
                 print "*********************** Interest Sets **************"
-                for i in self._interests.keys():
-                     print "Interest ID:%s, Description=%s"%(i, self._interests[i])
+                for i in self._interests.keys():                     
+                     print "Interest ID:%s, Description=%s Scope=%s Event=%s Mode=%s"%(i, self._interests[i][0],self._interests[i][1],self._interests[i][2],self._interests[i][3])
                 print "****************************************************"
                 return 1 # for assert()
         
-        def _sendAddInterest(self, contextId, parentId, zoneId):
+        def _sendAddInterest(self, contextId, scopeId, parentId, zoneIdList):
             """
             Part of the new otp-server code.
 
@@ -856,8 +934,20 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             # Add message type
             datagram.addUint16(CLIENT_ADD_INTEREST)
             datagram.addUint16(contextId)
+            datagram.addUint32(scopeId)
             datagram.addUint32(parentId)
-            datagram.addUint32(zoneId)
+                
+            print zoneIdList                
+                                    
+            if isinstance(zoneIdList,types.ListType):
+                vzl = list(zoneIdList)
+                vzl.sort()
+                PythonUtil.uniqueElements(vzl)
+                for zone in vzl:
+                    datagram.addUint32(zone)                       
+            else:
+               datagram.addUint32(zoneIdList)                       
+
             self.send(datagram)
 
         def _sendRemoveInterest(self, contextId):
@@ -874,7 +964,29 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             datagram.addUint16(CLIENT_REMOVE_INTEREST)
             datagram.addUint16(contextId)
             self.send(datagram)
-
+            
+        def handleInterestDoneMessage(self, di):
+            """
+              This handles the interest done messages and may dispatch a 
+              action based on the ID , Context
+            """            
+            id = di.getUint16()
+            scope = di.getUint32()            
+            expect_scope = self.GetInterestScopeID(id)
+            print "handleInterestDoneMessage--> Received ID:%s Scope:%s"%(id,scope);
+            if expect_scope == scope:
+                print "handleInterestDoneMessage--> Scope Match:%s Scope:%s"%(id,scope);
+                event = self.GetInterestScopeEvent(id)                
+                if event is not None:
+                    print "handleInterestDoneMessage--> Send Event : %s"%(event);
+                    messenger.send(event)           
+                else:                    
+                    print "handleInterestDoneMessage--> No Event ";
+                self._PonderRemoveFlaggedInterest(id)                    
+            else:
+                print "handleInterestDoneMessage--> Scope MisMatch :%s :%s"%(expect_scope,scope);
+                                
+            assert self.printInterests()                    
 
     def sendHeartbeat(self):
         datagram = PyDatagram()
