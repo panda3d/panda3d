@@ -70,6 +70,7 @@ PUBLISHED:
     OT_window            = 0x0001,
     OT_fullscreen_window = 0x0002,
     OT_buffer            = 0x0004,
+    OT_texture_buffer    = 0x0008,
   };
 
   INLINE bool is_valid() const;

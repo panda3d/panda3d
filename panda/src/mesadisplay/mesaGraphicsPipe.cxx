@@ -32,7 +32,7 @@ TypeHandle MesaGraphicsPipe::_type_handle;
 ////////////////////////////////////////////////////////////////////
 MesaGraphicsPipe::
 MesaGraphicsPipe() {
-  _supported_types = OT_buffer;
+  _supported_types = OT_buffer | OT_texture_buffer;
   _is_valid = true;
 }
 
