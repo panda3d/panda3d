@@ -3,6 +3,9 @@ import GuiManager
 import GuiFrame
 import Vec3
 
+#import ClockObject
+#clock = ClockObject.ClockObject.getGlobalClock()
+
 guiMgr = GuiManager.GuiManager.getPtr(base.win, base.mak.node())
 font = (loader.loadModelOnce("phase_3/models/fonts/ttf-comic")).node()
 
@@ -76,7 +79,7 @@ class Frame:
             self.frame.packItem(item.getGuiItem(), relation,
                                 otherItem.getGuiItem(), self.offset)
         else:
-            print "warning: tried to pack item that aren't in frame"
+            print "warning: tried to pack item that isn't in frame"
             
     # convenience functions
     def makeVertical(self):
@@ -88,7 +91,9 @@ class Frame:
                           self.items[itemNum - 1])
             self.packItem(self.items[itemNum], GuiFrame.GuiFrame.ALIGNLEFT,
                           self.items[itemNum - 1])
+        #print "MakeVert: done packing: t = %.3f" % clock.getRealTime()
         self.frame.recompute()
+        #print "MakeVert: done recompute: t = %.3f" % clock.getRealTime()
             
     def makeHorizontal(self):
         # remove any previous packing
