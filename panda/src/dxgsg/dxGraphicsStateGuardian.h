@@ -377,7 +377,7 @@ public:
 		  LPDIRECT3D7          d3d,
 		  LPDIRECT3DDEVICE7    d3dDevice,
 		  RECT  viewrect);
-   friend HRESULT CALLBACK DXGraphicsStateGuardian::EnumTexFmtsCallback( LPDDPIXELFORMAT pddpf, VOID* param );
+   friend HRESULT CALLBACK EnumTexFmtsCallback( LPDDPIXELFORMAT pddpf, VOID* param );
 
 private:
   static TypeHandle _type_handle;

@@ -1032,7 +1032,7 @@ CreateTexture( HDC PrimaryDC, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, 
              {
               for(i=0,pCurPixFmt=&pTexPixFmts[cNumTexPixFmts-1];i<cNumTexPixFmts;i++,pCurPixFmt--) {
                   if((pCurPixFmt->dwRGBBitCount==8) && (pCurPixFmt->dwFlags & DDPF_LUMINANCE) &&
-                     (pCurPixFmt->dwLuminanceBitMask=0xFF)) {
+                     (pCurPixFmt->dwLuminanceBitMask==0xFF)) {
                         ConvNeeded=ConvLum8to8;
                         goto found_matching_format;
                   }
@@ -1105,7 +1105,7 @@ CreateTexture( HDC PrimaryDC, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, 
 
     ft =_tex->get_magfilter();
     if((ft!=Texture::FT_linear) && ft!=Texture::FT_nearest) {
-        if(ft=Texture::FT_nearest_mipmap_nearest)
+        if(ft==Texture::FT_nearest_mipmap_nearest)
             ft=Texture::FT_nearest;
          else ft=Texture::FT_linear;
     }
