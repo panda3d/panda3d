@@ -55,6 +55,7 @@ add_match_name_glob(const string &name, int flags) {
   Component comp;
   comp._type = CT_match_name_glob;
   comp._name = name;
+  comp._glob.set_pattern(name);
   comp._flags = flags;
   _path.push_back(comp);
 }
@@ -85,6 +86,40 @@ add_match_inexact_type(TypeHandle type, int flags) {
   Component comp;
   comp._type = CT_match_inexact_type;
   comp._type_handle = type;
+  comp._flags = flags;
+  _path.push_back(comp);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FindApproxPath::add_match_tag
+//       Access: Public
+//  Description: Adds a component that will match a node that has a
+//               tag with the indicated key, no matter what the value
+//               is.
+////////////////////////////////////////////////////////////////////
+INLINE void FindApproxPath::
+add_match_tag(const string &name, int flags) {
+  Component comp;
+  comp._type = CT_match_tag;
+  comp._name = name;
+  comp._flags = flags;
+  _path.push_back(comp);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FindApproxPath::add_match_tag_value
+//       Access: Public
+//  Description: Adds a component that will match a node that has a
+//               tag with the indicated key.  The value may be "*" to
+//               match any value, or a particular glob pattern to
+//               match only those nodes with the indicated value.
+////////////////////////////////////////////////////////////////////
+INLINE void FindApproxPath::
+add_match_tag_value(const string &name, const string &value, int flags) {
+  Component comp;
+  comp._type = CT_match_tag_value;
+  comp._name = name;
+  comp._glob.set_pattern(value);
   comp._flags = flags;
   _path.push_back(comp);
 }

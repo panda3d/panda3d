@@ -62,12 +62,15 @@ class GlobPattern;
 //   **         -- matches any sequence of zero or more nodes.
 //   +typename  -- matches any node that is or derives from the given type.
 //   -typename  -- matches any node that is the given type exactly.
+//   =tag       -- matches any node that has the indicated tag.
+//   =tag=value -- matches any node whose tag matches the indicated value.
 //
 // Furthermore, a node name may itself contain standard filename
 // globbing characters, like *, ?, and [a-z], that will be accepted as
 // a partial match.  (In fact, the '*' special name may be seen as
 // just a special case of this.)  The globbing characters may not be
-// used with the typename matches.
+// used with the typename matches or with tag matches, but they may
+// be used to match a tag's value in the =tag=value syntax.
 //
 // The special characters "@@", appearing at the beginning of a node
 // name, indicate a stashed node.  Normally, stashed nodes are not

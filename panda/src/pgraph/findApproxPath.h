@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 
+#include "globPattern.h"
 #include "typeHandle.h"
 #include "pvector.h"
 
@@ -45,6 +46,8 @@ public:
   INLINE void add_match_name_glob(const string &glob, int flags);
   INLINE void add_match_exact_type(TypeHandle type, int flags);
   INLINE void add_match_inexact_type(TypeHandle type, int flags);
+  INLINE void add_match_tag(const string &key, int flags);
+  INLINE void add_match_tag_value(const string &key, const string &value, int flags);
   INLINE void add_match_one(int flags);
   INLINE void add_match_many(int flags);
   INLINE void add_match_pointer(PandaNode *pointer, int flags);
@@ -70,6 +73,8 @@ private:
     CT_match_name_glob,
     CT_match_exact_type,
     CT_match_inexact_type,
+    CT_match_tag,
+    CT_match_tag_value,
     CT_match_one,
     CT_match_many,
     CT_match_pointer
@@ -85,6 +90,7 @@ private:
 
     ComponentType _type;
     string _name;
+    GlobPattern _glob;
     TypeHandle _type_handle;
     PandaNode *_pointer;
     int _flags;

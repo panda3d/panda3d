@@ -19,7 +19,6 @@
 #include "findApproxPath.h"
 #include "config_pgraph.h"
 
-#include "globPattern.h"
 #include "pandaNode.h"
 
 
@@ -40,10 +39,7 @@ matches(PandaNode *node) const {
 
   case CT_match_name_glob:
     // Match the node's name according to filename globbing rules.
-    {
-      GlobPattern pattern(_name);
-      return (pattern.matches(node->get_name()));
-    }
+    return (_glob.matches(node->get_name()));
 
   case CT_match_exact_type:
     // Match the node's type exactly.
@@ -53,6 +49,17 @@ matches(PandaNode *node) const {
     // Match the node's type inexactly: it's a match if the node
     // is the type, or is derived from the type.
     return (node->is_of_type(_type_handle));
+
+  case CT_match_tag:
+    // Match the node's tag only.
+    return (node->has_tag(_name));
+
+  case CT_match_tag_value:
+    // Match the node's tag and value.
+    if (node->has_tag(_name)) {
+      return _glob.matches(node->get_tag(_name));
+    }
+    return false;
 
   case CT_match_one:
   case CT_match_many:
@@ -77,14 +84,28 @@ matches(PandaNode *node) const {
 void FindApproxPath::Component::
 output(ostream &out) const {
   out << _type;
-  if (_type == CT_match_name || _type == CT_match_name_glob) {
+  switch (_type) {
+  case CT_match_name:
+  case CT_match_name_glob:
+  case CT_match_tag:
     out << " \"" << _name << "\"";
+    break;
 
-  } else if (_type == CT_match_exact_type || _type == CT_match_inexact_type) {
+  case CT_match_tag_value:
+    out << " \"" << _name << "\"=\"" << _glob << "\"";
+    break;
+
+  case CT_match_exact_type:
+  case CT_match_inexact_type:
     out << " " << _type_handle;
+    break;
 
-  } else if (_type == CT_match_pointer) {
+  case CT_match_pointer:
     out << " (" << *_pointer << ")";
+    break;
+
+  default:
+    break;
   }
 }
 
@@ -213,13 +234,7 @@ add_component(string str_component) {
 
   } else if (!str_component.empty() && str_component[0] == '-') {
     string type_name = str_component.substr(1);
-
-    // *** for now, as a quick hack, if a type exists with the ""
-    // prefix on the named type, we search for that type instead.
-    TypeHandle handle = TypeRegistry::ptr()->find_type("" + type_name);
-    if (handle == TypeHandle::none()) {
-      handle = TypeRegistry::ptr()->find_type(type_name);
-    }
+    TypeHandle handle = TypeRegistry::ptr()->find_type(type_name);
 
     if (handle == TypeHandle::none()) {
       pgraph_cat.error()
@@ -232,13 +247,7 @@ add_component(string str_component) {
 
   } else if (!str_component.empty() && str_component[0] == '+') {
     string type_name = str_component.substr(1);
-
-    // *** for now, as a quick hack, if a type exists with the ""
-    // prefix on the named type, we search for that type instead.
-    TypeHandle handle = TypeRegistry::ptr()->find_type("" + type_name);
-    if (handle == TypeHandle::none()) {
-      handle = TypeRegistry::ptr()->find_type(type_name);
-    }
+    TypeHandle handle = TypeRegistry::ptr()->find_type(type_name);
 
     if (handle == TypeHandle::none()) {
       pgraph_cat.error()
@@ -247,6 +256,19 @@ add_component(string str_component) {
 
     } else {
       add_match_inexact_type(handle, flags);
+    }
+
+  } else if (!str_component.empty() && str_component[0] == '=') {
+    size_t equals = str_component.find('=', 1);
+    if (equals != string::npos) {
+      // =key=value
+      string tag_key = str_component.substr(1, equals - 1);
+      string tag_value = str_component.substr(equals + 1);
+      add_match_tag_value(tag_key, tag_value, flags);
+    } else {
+      // =key
+      string tag_key = str_component.substr(1);
+      add_match_tag(tag_key, flags);
     }
 
   } else {
@@ -290,6 +312,12 @@ operator << (ostream &out, FindApproxPath::ComponentType type) {
 
   case FindApproxPath::CT_match_inexact_type:
     return out << "match_inexact_type";
+
+  case FindApproxPath::CT_match_tag:
+    return out << "match_tag";
+
+  case FindApproxPath::CT_match_tag_value:
+    return out << "match_tag_value";
 
   case FindApproxPath::CT_match_one:
     return out << "match_one";
