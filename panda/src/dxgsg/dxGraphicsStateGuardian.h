@@ -218,6 +218,10 @@ protected:
   LPDDPIXELFORMAT   _pTexPixFmts;
   DXTextureContext  *_pCurTexContext;
 
+  bool              _bTransformIssued;  // decaling needs to tell when a transform has been issued
+  D3DMATRIX         _SavedTransform;   
+
+
   RenderBuffer::Type _cur_read_pixel_buffer;  // source for copy_pixel_buffer operation
 
   D3DDEVICEDESC7    _D3DDevDesc;

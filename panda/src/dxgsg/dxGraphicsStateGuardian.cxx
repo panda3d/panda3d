@@ -4102,6 +4102,7 @@ issue_transform(const TransformAttribute *attrib) {
 
     _d3dDevice->SetTransform(D3DTRANSFORMSTATE_WORLD/*VIEW*/,
                              (LPD3DMATRIX) attrib->get_matrix().get_data());
+    _bTransformIssued = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4904,9 +4905,15 @@ begin_decal(GeomNode *base_geom) {
 
     _decal_level++;
 
-#ifndef DISABLE_POLYGON_OFFSET_DECALING
+#ifndef DISABLE_DECALING
+
+    // need to save current xform matrix in case it is changed during subrendering, so subsequent decal draws use same xform
+    _bTransformIssued = false;
+    _d3dDevice->GetTransform( D3DTRANSFORMSTATE_WORLD, &_SavedTransform);
+
+ #ifndef DISABLE_POLYGON_OFFSET_DECALING
     if (dx_decal_type == GDT_offset) {
-#define POLYGON_OFFSET_MULTIPLIER 2
+ #define POLYGON_OFFSET_MULTIPLIER 2
 
         // note: zbias seems inconsitently supported.  may be possible to fake it by
         //       adding (delta * element[4,3]) to element [3,3] of a regular matrix
@@ -4918,15 +4925,14 @@ begin_decal(GeomNode *base_geom) {
         base_geom->draw(this);
         _d3dDevice->SetRenderState(D3DRENDERSTATE_ZBIAS, POLYGON_OFFSET_MULTIPLIER * _decal_level); // _decal_level better not be higher than 8!
     } else
-#endif
+ #endif
 
-#ifndef DISABLE_DECALING
     {
         if (_decal_level > 1)
             base_geom->draw(this);  // If we're already decaling, just draw the geometry.
         else {
             // First turn off writing the depth buffer to render the base geometry.
-            _d3dDevice->GetRenderState(D3DRENDERSTATE_ZWRITEENABLE, (unsigned long *)&_depth_write_enabled);  //save cur val
+            _d3dDevice->GetRenderState(D3DRENDERSTATE_ZWRITEENABLE, (DWORD *)&_depth_write_enabled);  //save cur val
             _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
 
             // Now render the base geometry.
@@ -4998,6 +5004,10 @@ end_decal(GeomNode *base_geom) {
 
             // No need to have texturing on for this.
             enable_texturing(false);
+
+            // if current xform has changed, reset to saved xform
+            if(_bTransformIssued) 
+                _d3dDevice->SetTransform( D3DTRANSFORMSTATE_WORLD, &_SavedTransform);
 
             base_geom->draw(this);
 
