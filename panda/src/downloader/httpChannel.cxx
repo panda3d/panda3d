@@ -785,6 +785,12 @@ reached_done_state() {
     
   } else {
     // Oops, we have to download the body now.
+    // We shouldn't already be in the middle of reading some other
+    // body when we come here.
+    if (_body_stream != NULL) {
+      delete _body_stream;
+      _body_stream = (ISocketStream *)NULL;
+    }
     _body_stream = read_body();
     if (_body_stream == (ISocketStream *)NULL) {
       if (downloader_cat.is_debug()) {
@@ -1375,6 +1381,12 @@ run_setup_ssl() {
       << "performing SSL handshake\n";
   }
   _state = S_ssl_handshake;
+
+  // We start the connect timer over again when we reach the SSL
+  // handshake.
+  _started_connecting_time = 
+    ClockObject::get_global_clock()->get_real_time();
+
   return false;
 }
 
@@ -1389,8 +1401,16 @@ bool HTTPChannel::
 run_ssl_handshake() {
   if (BIO_do_handshake(_sbio) <= 0) {
     if (BIO_should_retry(_sbio)) {
-      return true;
+      double elapsed =
+        ClockObject::get_global_clock()->get_real_time() -
+        _started_connecting_time;
+      if (elapsed <= get_connect_timeout()) {
+        // Keep trying.
+        return true;
+      }
+      // Time to give up on the handshake.
     }
+
     downloader_cat.info()
       << "Could not establish SSL handshake with " 
       << _request.get_url().get_server_and_port() << "\n";
@@ -1852,9 +1872,9 @@ run_begin_body() {
   } else {
     // We shouldn't already be in the middle of reading some other
     // body when we come here.
-    nassertd(_body_stream == NULL) {
-      reset_to_new();
-      return false;
+    if (_body_stream != NULL) {
+      delete _body_stream;
+      _body_stream = (ISocketStream *)NULL;
     }
     _body_stream = read_body();
     if (_body_stream == (ISocketStream *)NULL) {
