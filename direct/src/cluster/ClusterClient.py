@@ -13,6 +13,8 @@ class ClusterClient(DirectObject.DirectObject):
     MGR_NUM = 1000000
 
     def __init__(self, configList, clusterSyncFlag):
+        # Set name so cluster __call__ function can be used in Intervals
+        self.__name__ = 'cluster'
         # First start up servers using direct daemon
         # What is the name of the client machine?
         clusterDaemonClient = base.config.GetString(
