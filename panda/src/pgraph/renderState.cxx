@@ -692,6 +692,7 @@ clear_cache() {
       if (state->_self_compose != (RenderState *)NULL && 
           state->_self_compose != state) {
         unref_delete((RenderState *)state->_self_compose);
+        state->_self_compose = (RenderState *)NULL;
       }
     }
 

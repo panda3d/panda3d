@@ -723,6 +723,7 @@ clear_cache() {
       if (state->_self_compose != (TransformState *)NULL && 
           state->_self_compose != state) {
         unref_delete((TransformState *)state->_self_compose);
+        state->_self_compose = (TransformState *)NULL;
       }
     }
 
