@@ -382,8 +382,7 @@ MemoryUsage() {
   // tracks the total memory allocation.  However, it only works for
   // certain build environments.
 #if defined(WIN32_VC) && defined(_DEBUG)
-  _count_memory_usage =
-    config_express.GetBool("count-memory-usage", true);
+  _count_memory_usage = config_express.GetBool("count-memory-usage", false);
 #else
   _count_memory_usage = false;
 #endif
