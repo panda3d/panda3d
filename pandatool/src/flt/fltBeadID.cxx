@@ -123,7 +123,15 @@ build_record(FltRecordWriter &writer) const {
 FltError FltBeadID::
 write_ancillary(FltRecordWriter &writer) const {
   if (_id.length() > 7) {
-    Datagram dc(_id);
+
+    // Although the manual mentions nothing of this, it is essential
+    // that the length of the record be a multiple of 4 bytes.
+    string id = _id;
+    while ((id.length() % 4) != 0) {
+      id += '\0';
+    }
+    Datagram dc(id);
+
     FltError result = writer.write_record(FO_long_id, dc);
     if (result != FE_ok) {
       return result;

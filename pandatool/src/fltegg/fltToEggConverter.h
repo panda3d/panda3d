@@ -54,6 +54,7 @@ private:
   typedef vector< PT(EggVertex) > EggVertices;
 
   void convert_record(const FltRecord *flt_record, FltToEggLevelState &state);
+  void dispatch_record(const FltRecord *flt_record, FltToEggLevelState &state);
   void convert_lod(const FltLOD *flt_lod, FltToEggLevelState &state);
   void convert_group(const FltGroup *flt_group, FltToEggLevelState &state);
   void convert_object(const FltObject *flt_object, FltToEggLevelState &state);
@@ -65,6 +66,8 @@ private:
   void setup_geometry(const FltGeometry *flt_geom, FltToEggLevelState &state,
 		      EggPrimitive *egg_prim, EggVertexPool *egg_vpool,
 		      const EggVertices &vertices);
+
+  void convert_subfaces(const FltRecord *flt_record, FltToEggLevelState &state);
 
   void set_transform(const FltBead *flt_bead, EggGroup *egg_group);
   bool parse_comment(const FltBeadID *flt_bead, EggNode *egg_node);

@@ -106,32 +106,42 @@ convert_record(const FltRecord *flt_record, FltToEggLevelState &state) {
 
   for (int i = 0; i < num_children; i++) {
     const FltRecord *child = flt_record->get_child(i);
+    dispatch_record(child, state);
+  }
+}
 
-    if (child->is_of_type(FltLOD::get_class_type())) {
-      convert_lod(DCAST(FltLOD, child), state);
-
-    } else if (child->is_of_type(FltGroup::get_class_type())) {
-      convert_group(DCAST(FltGroup, child), state);
-
-    } else if (child->is_of_type(FltObject::get_class_type())) {
-      convert_object(DCAST(FltObject, child), state);
-
-    } else if (child->is_of_type(FltFace::get_class_type())) {
-      convert_face(DCAST(FltFace, child), state);
-
-    } else if (child->is_of_type(FltExternalReference::get_class_type())) {
-      convert_ext_ref(DCAST(FltExternalReference, child), state);
-
-      // Fallbacks.
-    } else if (child->is_of_type(FltBeadID::get_class_type())) {
-      convert_bead_id(DCAST(FltBeadID, child), state);
-
-    } else if (child->is_of_type(FltBead::get_class_type())) {
-      convert_bead(DCAST(FltBead, child), state);
-
-    } else {
-      convert_record(child, state);
-    }
+////////////////////////////////////////////////////////////////////
+//     Function: FltToEggConverter::dispatch_record
+//       Access: Private
+//  Description: Determines what kind of record this is and calls the
+//               appropriate convert function.
+////////////////////////////////////////////////////////////////////
+void FltToEggConverter::
+dispatch_record(const FltRecord *flt_record, FltToEggLevelState &state) {
+  if (flt_record->is_of_type(FltLOD::get_class_type())) {
+    convert_lod(DCAST(FltLOD, flt_record), state);
+    
+  } else if (flt_record->is_of_type(FltGroup::get_class_type())) {
+    convert_group(DCAST(FltGroup, flt_record), state);
+    
+  } else if (flt_record->is_of_type(FltObject::get_class_type())) {
+    convert_object(DCAST(FltObject, flt_record), state);
+    
+  } else if (flt_record->is_of_type(FltFace::get_class_type())) {
+    convert_face(DCAST(FltFace, flt_record), state);
+    
+  } else if (flt_record->is_of_type(FltExternalReference::get_class_type())) {
+    convert_ext_ref(DCAST(FltExternalReference, flt_record), state);
+    
+    // Fallbacks.
+  } else if (flt_record->is_of_type(FltBeadID::get_class_type())) {
+    convert_bead_id(DCAST(FltBeadID, flt_record), state);
+    
+  } else if (flt_record->is_of_type(FltBead::get_class_type())) {
+    convert_bead(DCAST(FltBead, flt_record), state);
+    
+  } else {
+    convert_record(flt_record, state);
   }
 }
 
@@ -323,10 +333,19 @@ setup_geometry(const FltGeometry *flt_geom, FltToEggLevelState &state,
 	       EggPrimitive *egg_prim, EggVertexPool *egg_vpool,
 	       const FltToEggConverter::EggVertices &vertices) {
 
-  // Add the primitive to its appropriate parent.
+  // Determine what the appropriate parent will be.
   EggGroupNode *egg_parent = 
     state.get_synthetic_group(flt_geom->get_id(), flt_geom->get_transform());
-  egg_parent->add_child(egg_prim);
+
+  // Create a new state to reflect the new parent.
+  FltToEggLevelState next_state(state);
+  next_state._egg_parent = egg_parent;
+
+  // Check for decals onto the primitive.
+  convert_subfaces(flt_geom, next_state);
+
+  // Add the primitive to its new home.
+  next_state._egg_parent->add_child(egg_prim);
 
   // Now examine the vertices.
   EggVertices::const_iterator vi;
@@ -412,6 +431,47 @@ setup_geometry(const FltGeometry *flt_geom, FltToEggLevelState &state,
   }
 
   parse_comment(flt_geom, egg_prim);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltToEggConverter::convert_subfaces
+//       Access: Public
+//  Description: Records all of the subfaces of the indicated group as
+//               coplanar polygons (i.e. decals) of the group.
+//               
+//               If coplanar polygons exist, the state is modified so
+//               that _egg_parent is the new group to which the base
+//               polygons should be added.  Therefore, subfaces should
+//               be defined before the ordinary children are
+//               processed.
+////////////////////////////////////////////////////////////////////
+void FltToEggConverter::
+convert_subfaces(const FltRecord *flt_record, FltToEggLevelState &state) {
+  int num_subfaces = flt_record->get_num_subfaces();
+  if (num_subfaces == 0) {
+    // No subfaces.
+    return;
+  }
+
+  // Create a new group to contain the base polygons.
+  EggGroup *egg_group = new EggGroup("decal_base");
+  state._egg_parent->add_child(egg_group);
+  state._egg_parent = egg_group;
+
+  egg_group->set_decal_flag(true);
+
+  // Now create a nested group to hold the decals.
+  EggGroup *decal_group = new EggGroup("decals");
+  egg_group->add_child(decal_group);
+  egg_group = decal_group;
+
+  FltToEggLevelState next_state(state);
+  next_state._egg_parent = decal_group;
+
+  for (int i = 0; i < num_subfaces; i++) {
+    const FltRecord *subface = flt_record->get_subface(i);
+    dispatch_record(subface, next_state);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -563,5 +623,8 @@ make_egg_texture(const FltTexture *flt_texture) {
   PT(EggTexture) egg_texture = new EggTexture(tref_name, filename);
 
   _textures.insert(Textures::value_type(flt_texture, egg_texture));
+
+  ////*** Texture properties.
+
   return egg_texture;
 }
