@@ -17,6 +17,10 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "softNodeDesc.h"
+#include "config_softegg.h"
+#include "eggGroup.h"
+#include "eggXfmSAnim.h"
+#include "softToEggConverter.h"
 
 TypeHandle SoftNodeDesc::_type_handle;
 

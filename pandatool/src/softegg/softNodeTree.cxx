@@ -27,6 +27,7 @@
 #include "eggTable.h"
 #include "eggXfmSAnim.h"
 #include "eggData.h"
+#include "softToEggConverter.h"
 #include "dcast.h"
 
 #include <SAA.h>

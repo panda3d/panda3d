@@ -19,6 +19,14 @@
 #ifndef SOFTTOEGGCONVERTER_H
 #define SOFTTOEGGCONVERTER_H
 
+#include "pandatoolbase.h"
+#include "somethingToEggConverter.h"
+#include "softNodeTree.h"
+
+#include "eggTextureCollection.h"
+#include "distanceUnit.h"
+#include "coordinateSystem.h"
+
 #ifdef _MIN
 #undef _MIN
 #endif
@@ -26,16 +34,8 @@
 #undef _MAX
 #endif
 
-#include "pandatoolbase.h"
-#include "somethingToEggConverter.h"
-#include "softNodeTree.h"
-
 #include <SAA.h>
 #include <SI_macros.h>
-
-#include "eggTextureCollection.h"
-#include "distanceUnit.h"
-#include "coordinateSystem.h"
 
 class EggData;
 class EggGroup;
@@ -173,5 +173,6 @@ public:
   static TransformType string_transform_type(const string &arg);
 };
 
+extern const int TEX_PER_MAT;
 
 #endif

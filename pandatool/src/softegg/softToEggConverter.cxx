@@ -39,7 +39,7 @@
 
 SoftToEggConverter stec;
 
-static const int    TEX_PER_MAT = 1;
+const int    TEX_PER_MAT = 1;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SoftToEggConverter::Constructor
