@@ -9,7 +9,7 @@ $WIN_INSTALLDIR="\\\\nufat\\mass\\pandabuilds\\win";
 
 #$DEBUG_TREECOPY = 1;
 
-# $DEBUG_GENERATE_PYTHON_CODE_ONLY = 1;
+$DEBUG_GENERATE_PYTHON_CODE_ONLY = 0;
 $DONT_ARCHIVE_OLD_BUILDS = 0;
 
 
@@ -195,11 +195,11 @@ sub make_bsc_file() {
 sub gen_python_code() {
 
     # ETC_PATH required by generatePythonCode
-    $ENV{'ETC_PATH'}='/home/builder/player/panda/etc /home/builder/player/direct/etc /home/builder/player/dtool/etc';
+    $ENV{'ETC_PATH'}='/home/builder/player/panda/etc /home/builder/player/direct/etc /home/builder/player/dtool/etc /home/builder/player/toontown/etc';
     my $origpath=$ENV{'PATH'};
-    $ENV{'PATH'}="/usr/lib:/c/python16:/bin:/contrib/bin:/mscommon/Tools/WinNT:/mscommon/MSDev98/Bin:/mscommon/Tools:/msvc98/bin:/home/builder/player/dtool/bin:/home/builder/player/dtool/lib:/home/builder/player/direct/bin:/home/builder/player/direct/lib:/home/builder/player/panda/lib:/home/builder/player/panda/bin:/usr/local/bin:.:/c/WINNT/system32:/c/WINNT:/c/WINNT/System32/Wbem:/c/bin:/c/PROGRA~1/TCL/bin:/mspsdk/Bin/:/mspsdk/Bin/WinNT:/mscommon/Tools/WinNT:/mscommon/MSDev98/Bin:/mscommon/Tools:/msvc98/bin::/usr/local/panda/bin:/home/builder/scripts";
+    $ENV{'PATH'}="/usr/lib:/c/python16:/bin:/contrib/bin:/mscommon/Tools/WinNT:/mscommon/MSDev98/Bin:/mscommon/Tools:/msvc98/bin:/home/builder/player/dtool/bin:/home/builder/player/dtool/lib:/home/builder/player/direct/bin:/home/builder/player/direct/lib::/home/builder/player/toontown/bin:/home/builder/player/toontown/lib:/home/builder/player/panda/lib:/home/builder/player/panda/bin:/usr/local/bin:.:/c/WINNT/system32:/c/WINNT:/c/WINNT/System32/Wbem:/c/bin:/c/PROGRA~1/TCL/bin:/mspsdk/Bin/:/mspsdk/Bin/WinNT:/mscommon/Tools/WinNT:/mscommon/MSDev98/Bin:/mscommon/Tools:/msvc98/bin::/usr/local/panda/bin:/home/builder/scripts";
     my $directsrcroot=$WINBLDROOT."\\direct\\src";
-    $ENV{'PYTHONPATH'}=$WINBLDROOT."\\panda\\lib;".$WINBLDROOT."\\direct\\lib;".$WINBLDROOT."\\dtool\\lib;".$directsrcroot."\\leveleditor;".$directsrcroot."\\tkpanels;".$directsrcroot."\\tkwidgets;".$directsrcroot."\\directutil;".$directsrcroot."\\showbase;".$directsrcroot."\\distributed;".$directsrcroot."\\actor;".$directsrcroot."\\ffi;";
+    $ENV{'PYTHONPATH'}=$WINBLDROOT."\\panda\\lib;".$WINBLDROOT."\\direct\\lib;".$WINBLDROOT."\\toontown\\lib;".$WINBLDROOT."\\dtool\\lib;".$directsrcroot."\\leveleditor;".$directsrcroot."\\tkpanels;".$directsrcroot."\\tkwidgets;".$directsrcroot."\\directutil;".$directsrcroot."\\showbase;".$directsrcroot."\\distributed;".$directsrcroot."\\actor;".$directsrcroot."\\ffi;";
     $ENV{'TCSH_NO_CHANGEPATH'}='1';
 
     &logmsg($ENV{'PYTHONPATH'}."\n");
@@ -219,7 +219,12 @@ sub gen_python_code() {
     $outputdir.= "\\Opt".$ENV{'PANDA_OPTIMIZE'}."-Win32";
     &mymkdir($outputdir);
 
-    $genpyth_str.="generatePythonCode -v -d '".$outputdir."' -e '".$WINBLDROOT."\\direct\\src\\extensions' -i libdtool libpandaexpress libpanda libdirect libtoontown";
+    my $genargstr="-v -d";
+    if($ENV{'PANDA_OPTIMIZE'} > 2) {
+        $genargstr="-O ".$genargstr;
+    }
+
+    $genpyth_str.="generatePythonCode ".$genargstr." '".$outputdir."' -e '".$WINBLDROOT."\\direct\\src\\extensions' -i libdtool libpandaexpress libpanda libdirect libtoontown";
     
     &myexecstr($genpyth_str,"generate python code failed!!!","DO_LOG","NO_PANDA_ATTACH");
     
