@@ -1,10 +1,10 @@
-#begin lib_target
+#begin ss_lib_target
   #define TARGET cvscopy
   #define LOCAL_LIBS \
     progbase pandatoolbase
 
   #define OTHER_LIBS \
-    dconfig:c dtool:m
+    linmath:c panda:m dconfig:c dtool:m pystub
 
   #define SOURCES \
     cvsCopy.cxx cvsCopy.h cvsSourceDirectory.cxx cvsSourceDirectory.h \
@@ -13,7 +13,7 @@
   #define INSTALL_HEADERS \
     cvsCopy.h
 
-#end lib_target
+#end ss_lib_target
 
 #begin test_bin_target
   #define TARGET testcopy

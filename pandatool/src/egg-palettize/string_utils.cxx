@@ -27,9 +27,9 @@ trim_right(const string &str) {
   return str.substr(begin, end - begin);
 }
 
-vector<string>
+vector_string
 extract_words(const string &str) {
-  vector<string> result;
+  vector_string result;
 
   size_t pos = 0;
   while (pos < str.length() && isspace(str[pos])) {

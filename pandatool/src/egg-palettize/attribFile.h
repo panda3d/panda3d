@@ -9,6 +9,7 @@
 #include <pandatoolbase.h>
 
 #include <filename.h>
+#include <vector_string.h>
 
 #include <map>
 #include <vector>
@@ -97,23 +98,23 @@ private:
   bool write_txa(ostream &outfile) const;
   bool write_pi(ostream &outfile) const;
 
-  bool parse_params(const vector<string> &words, istream &infile, 
+  bool parse_params(const vector_string &words, istream &infile, 
 		    string &line, int &line_num);
-  bool parse_packing(const vector<string> &words, istream &infile, 
+  bool parse_packing(const vector_string &words, istream &infile, 
 		     string &line, int &line_num);
-  bool parse_texture(const vector<string> &words, istream &infile, 
+  bool parse_texture(const vector_string &words, istream &infile, 
 		     string &line, int &line_num);
-  bool parse_pathname(const vector<string> &words, istream &infile, 
+  bool parse_pathname(const vector_string &words, istream &infile, 
 		      string &line, int &line_num);
-  bool parse_egg(const vector<string> &words, istream &infile, 
+  bool parse_egg(const vector_string &words, istream &infile, 
 		 string &line, int &line_num, bool force_redo_all);
-  bool parse_group(const vector<string> &words, istream &infile, 
+  bool parse_group(const vector_string &words, istream &infile, 
 		   string &line, int &line_num);
-  bool parse_palette(const vector<string> &words, istream &infile, 
+  bool parse_palette(const vector_string &words, istream &infile, 
 		     string &line, int &line_num);
-  bool parse_unplaced(const vector<string> &words, istream &infile, 
+  bool parse_unplaced(const vector_string &words, istream &infile, 
 		      string &line, int &line_num);
-  bool parse_surprises(const vector<string> &words, istream &infile, 
+  bool parse_surprises(const vector_string &words, istream &infile, 
 		       string &line, int &line_num);
 
   bool _optimal;

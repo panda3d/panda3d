@@ -316,7 +316,7 @@ list_names(ostream &out) const {
 
 bool UserAttribLine::
 keyword_line(const string &line) {
-  vector<string> words = extract_words(line);
+  vector_string words = extract_words(line);
   assert(!words.empty());
 
   if (words[0] == ":margin") {
@@ -391,10 +391,10 @@ texture_line(const string &line) {
   }
 
   // Split the line into two parts at the colon.
-  vector<string> names = extract_words(line.substr(0, colon));
-  vector<string> params = extract_words(line.substr(colon + 2));
+  vector_string names = extract_words(line.substr(0, colon));
+  vector_string params = extract_words(line.substr(colon + 2));
 
-  vector<string>::const_iterator ni;
+  vector_string::const_iterator ni;
   for (ni = names.begin(); ni != names.end(); ++ni) {
     _patterns.push_back(GlobPattern(*ni));
   }
@@ -467,7 +467,7 @@ texture_line(const string &line) {
 
 bool UserAttribLine::
 old_style_line(const string &line) {
-  vector<string> words = extract_words(line);
+  vector_string words = extract_words(line);
   assert(!words.empty());
 
   if (words.size() != 3 && words.size() != 4) {

@@ -15,6 +15,10 @@
 #include <stdio.h> // for perror
 #include <errno.h>
 
+#if defined(WIN32_VC)
+#include <direct.h>
+#endif
+
 bool CVSSourceTree::_got_start_fullpath = false;
 string CVSSourceTree::_start_fullpath;
 

@@ -9,6 +9,7 @@
 #include <pandatoolbase.h>
 
 #include <globPattern.h>
+#include <vector_string.h>
 
 #include <vector>
 
@@ -63,7 +64,7 @@ private:
 
   typedef vector<GlobPattern> Patterns;
   Patterns _patterns;
-  typedef vector<string> Names;
+  typedef vector_string Names;
   Names _names;
 
   ostream &list_patterns(ostream &out) const;

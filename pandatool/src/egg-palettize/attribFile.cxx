@@ -20,13 +20,21 @@
 #include <set>
 #include <fcntl.h>
 
+#ifdef WIN32_VC
+#include <io.h>
+#include <share.h>
+#include <sys/stat.h>
+#endif
+
 AttribFile::
 AttribFile(const Filename &filename) {
   _name = filename.get_basename_wo_extension();
   _txa_filename = filename;
   _txa_filename.set_extension("txa");
+  _txa_filename.set_text();
   _pi_filename = filename;
   _pi_filename.set_extension("pi");
+  _pi_filename.set_text();
   _txa_fd = -1;
 
 
@@ -58,7 +66,34 @@ open_and_lock(bool lock) {
     nout << "Attributes file " << _txa_filename << " does not exist.\n";
   }
 
+#ifdef WIN32_VC
+  if (lock) {
+    nout << "File locking unimplemented on Windows.  Specify -nolock.\n";
+    return false;
+  }
+
+  /*
+  _txa_fd = _sopen(_txa_filename.c_str(), _O_RDWR | _O_CREAT, _SH_DENYRW,
+		   _S_IREAD | _S_IWRITE);
+
+  if (_txa_fd < 0) {
+    perror(_txa_filename.c_str());
+    return false;
+  }
+
+  _txa_fstrm.attach(_txa_fd);
+  */
+
+  if (!_txa_filename.open_read_write(_txa_fstrm)) {
+    cerr << "Unable to read " << _txa_filename << "\n";
+    return false;
+  }
+  return true;
+
+#else
+  // Unix-style
   _txa_fd = open(_txa_filename.c_str(), O_RDWR | O_CREAT, 0666);
+
   if (_txa_fd < 0) {
     perror(_txa_filename.c_str());
     return false;
@@ -83,6 +118,7 @@ open_and_lock(bool lock) {
   }
 
   _txa_fstrm.attach(_txa_fd);
+#endif
 
   return true;
 }
@@ -107,8 +143,8 @@ read(bool force_redo_all) {
     if (!_pi_filename.exists()) {
       nout << "Palette information file " << _pi_filename << " does not exist.\n";
     } else {
-      ifstream infile(_pi_filename.c_str());
-      if (!infile) {
+      ifstream infile;
+      if (!_pi_filename.open_read(infile)) {
 	nout << "Palette information file " << _pi_filename << " exists, but cannot be read.\n";
 	return false;
       }
@@ -126,17 +162,23 @@ write() {
 
   if (_txa_needs_rewrite) {
     // Rewind and truncate the file for writing.
+#ifdef WIN32_VC
+    _txa_fstrm.close();
+    _txa_filename.unlink();
+    _txa_filename.open_read_write(_txa_fstrm);
+#else
     _txa_fstrm.clear();
     _txa_fstrm.seekp(0, ios::beg);
     ftruncate(_txa_fd, 0);
+#endif
 
     okflag = write_txa(_txa_fstrm) && okflag;
     _txa_fstrm << flush;
   }
 
   {
-    ofstream outfile(_pi_filename.c_str(), ios::out, 0666);
-    if (!outfile) {
+    ofstream outfile;
+    if (!_pi_filename.open_write(outfile)) {
       nout << "Unable to write file " << _pi_filename << "\n";
       return false;
     }
@@ -782,7 +824,7 @@ read_pi(istream &infile, bool force_redo_all) {
       }
     }
 
-    vector<string> words = extract_words(line);
+    vector_string words = extract_words(line);
     bool okflag = true;
 
     if (words.empty()) {
@@ -942,7 +984,7 @@ write_pi(ostream &out) const {
 }
 
 bool AttribFile::
-parse_params(const vector<string> &words, istream &infile, 
+parse_params(const vector_string &words, istream &infile, 
 	     string &line, int &line_num) {
   if (words.size() != 1) {
     nout << "Unexpected keywords on line.\n";
@@ -967,9 +1009,9 @@ parse_params(const vector<string> &words, istream &infile,
     } else if (param == "default_margin") {
       _default_margin = atoi(value.c_str());
     } else if (param == "force_power_2") {
-      _force_power_2 = atoi(value.c_str());
+      _force_power_2 = (atoi(value.c_str()) != 0);
     } else if (param == "aggressively_clean_mapdir") {
-      _aggressively_clean_mapdir = atoi(value.c_str());
+      _aggressively_clean_mapdir = (atoi(value.c_str()) != 0);
     } else {
       nout << "Unexpected keyword: " << param << "\n";
       return false;
@@ -984,7 +1026,7 @@ parse_params(const vector<string> &words, istream &infile,
 }
 
 bool AttribFile::
-parse_packing(const vector<string> &words, istream &infile, 
+parse_packing(const vector_string &words, istream &infile, 
 	      string &line, int &line_num) {
   if (!(words.size() == 3 && words[1] == "is" &&
 	(words[2] == "optimal" || words[2] == "suboptimal"))) {
@@ -1001,7 +1043,7 @@ parse_packing(const vector<string> &words, istream &infile,
 
 
 bool AttribFile::
-parse_texture(const vector<string> &words, istream &infile, 
+parse_texture(const vector_string &words, istream &infile, 
 	      string &line, int &line_num) {
   if (words.size() != 1) {
     nout << "Unexpected words on line.\n";
@@ -1012,7 +1054,7 @@ parse_texture(const vector<string> &words, istream &infile,
   line = trim_right(line);
   line_num++;
   while (!infile.eof() && !line.empty() && isspace(line[0])) {
-    vector<string> twords = extract_words(line);
+    vector_string twords = extract_words(line);
     if (twords.size() < 1) {
       nout << "Expected texture name and additional parameters.\n";
       return false;
@@ -1050,7 +1092,7 @@ parse_texture(const vector<string> &words, istream &infile,
 }
 
 bool AttribFile::
-parse_pathname(const vector<string> &words, istream &infile, 
+parse_pathname(const vector_string &words, istream &infile, 
 	       string &line, int &line_num) {
   if (words.size() != 1) {
     nout << "Unexpected words on line.\n";
@@ -1063,7 +1105,7 @@ parse_pathname(const vector<string> &words, istream &infile,
   PTexture *texture = NULL;
 
   while (!infile.eof() && !line.empty() && isspace(line[0])) {
-    vector<string> twords = extract_words(line);
+    vector_string twords = extract_words(line);
     if (twords.size() == 1) {
       // Only one word on the line means it's an alternate filename
       // for the previous texture.
@@ -1093,7 +1135,7 @@ parse_pathname(const vector<string> &words, istream &infile,
 }
 
 bool AttribFile::
-parse_egg(const vector<string> &words, istream &infile, 
+parse_egg(const vector_string &words, istream &infile, 
 	  string &line, int &line_num, bool force_redo_all) {
   if (words.size() < 2) {
     nout << "Egg filename expected.\n";
@@ -1113,7 +1155,7 @@ parse_egg(const vector<string> &words, istream &infile,
   line = trim_right(line);
   line_num++;
   while (!infile.eof() && !line.empty() && isspace(line[0])) {
-    vector<string> twords = extract_words(line);
+    vector_string twords = extract_words(line);
     if (twords.size() < 1) {
       nout << "Expected texture name\n";
       return false;
@@ -1168,7 +1210,7 @@ parse_egg(const vector<string> &words, istream &infile,
   
 
 bool AttribFile::
-parse_group(const vector<string> &words, istream &infile, 
+parse_group(const vector_string &words, istream &infile, 
 	    string &line, int &line_num) {
   if (words.size() == 2) {
     // Just a group name by itself; ignore it.
@@ -1194,7 +1236,7 @@ parse_group(const vector<string> &words, istream &infile,
 }
 
 bool AttribFile::
-parse_palette(const vector<string> &words, istream &infile, 
+parse_palette(const vector_string &words, istream &infile, 
 	      string &line, int &line_num) {
   if (words.size() != 8) {
     nout << "Palette filename, group, size, and number of components expected.\n";
@@ -1224,7 +1266,7 @@ parse_palette(const vector<string> &words, istream &infile,
   line = trim_right(line);
   line_num++;
   while (!infile.eof() && !line.empty() && isspace(line[0])) {
-    vector<string> twords = extract_words(line);
+    vector_string twords = extract_words(line);
     if (twords.size() != 9) {
       nout << "Expected texture placement line.\n";
       return false;
@@ -1266,7 +1308,7 @@ parse_palette(const vector<string> &words, istream &infile,
 
   
 bool AttribFile::
-parse_unplaced(const vector<string> &words, istream &infile, 
+parse_unplaced(const vector_string &words, istream &infile, 
 	       string &line, int &line_num) {
   if (words.size() != 6) {
     nout << "Unplaced texture description expected.\n";
@@ -1311,7 +1353,7 @@ parse_unplaced(const vector<string> &words, istream &infile,
 }
 
 bool AttribFile::
-parse_surprises(const vector<string> &words, istream &infile, 
+parse_surprises(const vector_string &words, istream &infile, 
 		string &line, int &line_num) {
   if (words.size() != 1) {
     nout << "Unexpected words on line.\n";
