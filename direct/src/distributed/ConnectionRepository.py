@@ -14,10 +14,8 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
     connection (and exchange datagrams) with a gameserver.  This
     includes ClientRepository and AIRepository.
     """
-    
     notify = DirectNotifyGlobal.directNotify.newCategory("ConnectionRepository")
     taskPriority = -30
-
 
     def __init__(self, config):
         DirectObject.DirectObject.__init__(self)
@@ -32,14 +30,14 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
         # This is not as robust a socket library as NSPR's, but the
         # HTTPClient interface does a good job of negotiating the
         # connection over an HTTP proxy if one is in use.
-
+        #
         # Set it to 'nspr' to use Panda's net interface
         # (e.g. QueuedConnectionManager, etc.) to establish the
         # connection, which ultimately uses the NSPR socket library.
         # This is a much better socket library, but it may be more
         # than you need for most applications; and there is no support
         # for proxies.
-
+        #
         # Set it to 'default' to use the HTTPClient interface if a
         # proxy is in place, but the NSPR interface if we don't have a
         # proxy.
@@ -133,10 +131,11 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
                 self.dclassesByNumber[number] = dclass
 
     def importModule(self, dcImports, moduleName, importSymbols):
-        """ Imports the indicated moduleName and all of its symbols
+        """
+        Imports the indicated moduleName and all of its symbols
         into the current namespace.  This more-or-less reimplements
-        the Python import command. """
-
+        the Python import command.
+        """
         module = __import__(moduleName, globals(), locals(), importSymbols)
 
         if importSymbols:
@@ -152,10 +151,8 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
             for symbolName in importSymbols:
                 if hasattr(module, symbolName):
                     dcImports[symbolName] = getattr(module, symbolName)
-
                 else:
                     raise StandardError, 'Symbol %s not defined in module %s.' % (symbolName, moduleName)
-
         else:
             # "import moduleName"
 
@@ -242,7 +239,8 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
                 failureCallback(0, '', *failureArgs)
 
     def disconnect(self):
-        """Closes the previously-established connection.
+        """
+        Closes the previously-established connection.
         """
         self.notify.info("Closing connection to server.")
         CConnectionRepository.disconnect(self)
@@ -373,13 +371,17 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
             self.setSimulatedDisconnect(0)
 
     def doFind(self, str):
-        """ returns list of distributed objects with matching str in value """
+        """
+        Returns list of distributed objects with matching str in value.
+        """
         for value in self.doId2do.values():
             if `value`.find(str) >= 0:
                 return value
 
     def doFindAll(self, str):
-        """ returns list of distributed objects with matching str in value """
+        """
+        Returns list of distributed objects with matching str in value.
+        """
         matches = []
         for value in self.doId2do.values():
             if `value`.find(str) >= 0:
