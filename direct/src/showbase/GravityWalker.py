@@ -257,7 +257,7 @@ class GravityWalker(DirectObject.DirectObject):
             self.jumpDelayTask.remove()
         self.mayJump = 0
         self.jumpDelayTask=taskMgr.doMethodLater(
-            0.1,
+            0.5,
             self.setMayJump,
             "jumpDelay-%s"%id(self))
 
@@ -291,7 +291,7 @@ class GravityWalker(DirectObject.DirectObject):
             self.rotationSpeed = 0
             jump = 0
 
-        if 0:
+        if 1:
             onScreenDebug.add("airborneHeight", self.lifter.getAirborneHeight()) #*#
             onScreenDebug.add("falling", self.falling) #*#
             onScreenDebug.add("isOnGround", self.lifter.isOnGround()) #*#

@@ -34,6 +34,7 @@ CollisionHandlerGravity::
 CollisionHandlerGravity() {
   _offset = 0.0f;
   _airborne_height = 0.0f;
+  _impact_velocity = 0.0f;
   _gravity = 32.174f;
   _current_velocity = 0.0f;
   _max_velocity = 400.0f;
@@ -140,6 +141,7 @@ handle_entries() {
           
           if (_airborne_height < 0.001f && _current_velocity < 0.001f) {
             // ...the node is under the floor, so it has landed.
+            _impact_velocity = _current_velocity;
             // These values are used by is_on_ground().
             _current_velocity = _airborne_height = 0.0f;
           }

@@ -69,6 +69,21 @@ is_on_ground() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerGravity::get_impact_velocity
+//       Access: Public
+//  Description: How hard did the object hit the ground.
+//               This value is set on impact with the ground.
+//               You may want to watch (poll) on is_on_groun() and
+//               when that is true, call get_impact_velocity().
+//               Normally I avoid polling, but we are calling
+//               is_on_ground() frequently anyway.
+////////////////////////////////////////////////////////////////////
+INLINE float CollisionHandlerGravity::
+get_impact_velocity() const {
+  return _impact_velocity;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerGravity::add_velocity
 //       Access: Public
 //  Description: Adds the sepcified amount to the current velocity.
