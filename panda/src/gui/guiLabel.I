@@ -6,7 +6,10 @@
 INLINE GuiLabel::GuiLabel(void) : _type(GuiLabel::NONE), _scale(1.),
 				  _pos(0., 0., 0.), _tex((Texture*)0L),
 				  _arc((RenderRelation*)0L),
-				  _internal((RenderRelation*)0L) {
+				  _internal((RenderRelation*)0L),
+				  _foreground(1., 1., 1., 1.),
+				  _background(0., 0., 0., 0.),
+				  _have_background(false) {
 }
 
 INLINE Node* GuiLabel::get_geometry(void) const {
@@ -26,6 +29,10 @@ INLINE void GuiLabel::set_scale(float f) {
   recompute_transform();
 }
 
+INLINE void GuiLabel::set_pos(float x, float y, float z) {
+  this->set_pos(LVector3f(x, y, z));
+}
+
 INLINE void GuiLabel::set_pos(const LVector3f& p) {
   _pos = p;
   recompute_transform();
@@ -37,4 +44,22 @@ INLINE float GuiLabel::get_scale(void) const {
 
 INLINE LVector3f GuiLabel::get_pos(void) const {
   return _pos;
+}
+
+INLINE void GuiLabel::set_foreground_color(float r, float g, float b,
+					   float a) {
+  this->set_foreground_color(Colorf(r, g, b, a));
+}
+
+INLINE void GuiLabel::set_background_color(float r, float g, float b,
+					   float a) {
+  this->set_background_color(Colorf(r, g, b, a));
+}
+
+INLINE Colorf GuiLabel::get_foreground_color(void) const {
+  return _foreground;
+}
+
+INLINE Colorf GuiLabel::get_background_color(void) const {
+  return _background;
 }

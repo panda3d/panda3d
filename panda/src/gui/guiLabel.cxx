@@ -7,6 +7,7 @@
 
 #include <textNode.h>
 #include <transformTransition.h>
+#include <colorTransition.h>
 
 void GuiLabel::recompute_transform(void) {
   switch (_type) {
@@ -24,6 +25,39 @@ void GuiLabel::recompute_transform(void) {
 	LMatrix4f::translate_mat(_pos);
       _internal->set_transition(new TransformTransition(mat));
     }
+    break;
+  default:
+    gui_cat->warning() << "recompute_transform on invalid label type ("
+		       << _type << ")" << endl;
+  }
+  set_properties();
+}
+
+void GuiLabel::set_properties(void) {
+  switch (_type) {
+  case SIMPLE_TEXT:
+    {
+      TextNode* n = DCAST(TextNode, _geom);
+      n->set_text_color(_foreground);
+      if (!_have_background) {
+	n->clear_card();
+	if (gui_cat->is_debug())
+	  gui_cat->debug() << "cleared card" << endl;
+      } else {
+	n->set_card_color(_background);
+	n->set_card_as_margin(0., 0., 0., 0.);
+	if (gui_cat->is_debug()) {
+	  gui_cat->debug() << "set card color" << endl;
+	  if (n->has_card())
+	    gui_cat->debug() << ".. and a card was made" << endl;
+	  else
+	    gui_cat->debug() << ".. but there is no card" << endl;
+	}
+      }
+    }
+    break;
+  case SIMPLE_TEXTURE:
+    _internal->set_transition(new ColorTransition(_foreground));
     break;
   default:
     gui_cat->warning() << "recompute_transform on invalid label type ("
@@ -98,7 +132,7 @@ GuiLabel* GuiLabel::make_simple_text_label(const string& text, Node* font) {
   ret->_geom = n;
   n->set_font(font);
   n->set_align(TM_ALIGN_CENTER);
-  n->set_text_color(1., 1., 1., 1.);
+  n->set_text_color(ret->get_foreground_color());
   n->set_text(text);
   ret->set_scale(1.);
   ret->set_pos(LVector3f(0., 0., 0.));
@@ -157,4 +191,23 @@ void GuiLabel::get_extents(float& l, float& r, float& b, float& t) {
     l = b = 0.;
     r = t = 1.;
   }
+}
+
+void GuiLabel::set_foreground_color(const Colorf& color) {
+  _foreground = color;
+  set_properties();
+}
+
+void GuiLabel::set_background_color(const Colorf& color) {
+  static Colorf zero(0., 0., 0., 0.);
+
+  _background = color;
+  _have_background = (color != zero);
+  if (gui_cat->is_debug()) {
+    if (_have_background)
+      gui_cat->debug() << "setting background" << endl;
+    else
+      gui_cat->debug() << "setting no background" << endl;
+  }
+  set_properties();
 }

@@ -29,6 +29,9 @@ private:
 
   float _scale;
   LVector3f _pos;
+  Colorf _foreground;
+  bool _have_background;
+  Colorf _background;
 
   INLINE Node* get_geometry(void) const;
   INLINE void set_arc(RenderRelation*);
@@ -37,6 +40,7 @@ private:
   friend GuiManager;
 
   void recompute_transform(void);
+  void set_properties(void);
 public:
   INLINE GuiLabel(void);
   virtual ~GuiLabel(void);
@@ -47,10 +51,19 @@ public:
   void get_extents(float&, float&, float&, float&);
 
   INLINE void set_scale(float);
+  INLINE void set_pos(float, float, float);
   INLINE void set_pos(const LVector3f&);
 
   INLINE float get_scale(void) const;
   INLINE LVector3f get_pos(void) const;
+
+  INLINE void set_foreground_color(float, float, float, float);
+  void set_foreground_color(const Colorf&);
+  INLINE void set_background_color(float, float, float, float);
+  void set_background_color(const Colorf&);
+
+  INLINE Colorf get_foreground_color(void) const;
+  INLINE Colorf get_background_color(void) const;
 };
 
 #include "guiLabel.I"
