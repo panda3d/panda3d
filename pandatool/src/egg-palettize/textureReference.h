@@ -54,6 +54,9 @@ public:
   EggFile *get_egg_file() const;
   SourceTextureImage *get_source() const;
   TextureImage *get_texture() const;
+  const string &get_tref_name() const;
+
+  bool operator < (const TextureReference &other) const;
 
   bool has_uvs() const;
   const TexCoordd &get_min_uv() const;
@@ -61,6 +64,8 @@ public:
 
   EggTexture::WrapMode get_wrap_u() const;
   EggTexture::WrapMode get_wrap_v() const;
+
+  bool is_equivalent(const TextureReference &other) const;
 
   void set_placement(TexturePlacement *placement);
   void clear_placement();
@@ -90,6 +95,7 @@ private:
   EggTexture *_egg_tex;
   EggData *_egg_data;
 
+  string _tref_name;
   LMatrix3d _tex_mat, _inv_tex_mat;
   SourceTextureImage *_source_texture;
   TexturePlacement *_placement;

@@ -84,6 +84,7 @@ from_egg(EggFile *egg_file, EggData *data, EggTexture *egg_tex) {
   _egg_file = egg_file;
   _egg_tex = egg_tex;
   _egg_data = data;
+  _tref_name = egg_tex->get_name();
 
   if (_egg_tex->has_transform()) {
     _tex_mat = _egg_tex->get_transform();
@@ -167,6 +168,28 @@ get_texture() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureReference::get_tref_name
+//       Access: Public
+//  Description: Returns the name of the EggTexture entry that
+//               references this texture.
+////////////////////////////////////////////////////////////////////
+const string &TextureReference::
+get_tref_name() const {
+  return _tref_name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureReference::operator <
+//       Access: Public
+//  Description: Defines an ordering of TextureReference pointers in
+//               alphabetical order by their tref name.
+////////////////////////////////////////////////////////////////////
+bool TextureReference::
+operator < (const TextureReference &other) const {
+  return _tref_name < other._tref_name;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureReference::has_uvs
 //       Access: Public
 //  Description: Returns true if this TextureReference actually uses
@@ -223,6 +246,48 @@ get_wrap_u() const {
 EggTexture::WrapMode TextureReference::
 get_wrap_v() const {
   return _wrap_v;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureReference::is_equivalent
+//       Access: Public
+//  Description: Returns true if all essential properties of this
+//               TextureReference are the same as that of the other,
+//               or false if any of them differ.  This is useful when
+//               reading a new egg file and comparing its references
+//               to its previously-defined references.
+////////////////////////////////////////////////////////////////////
+bool TextureReference::
+is_equivalent(const TextureReference &other) const {
+  if (_source_texture != other._source_texture) {
+    return false;
+  }
+  if (!_properties.egg_properties_match(other._properties)) {
+    return false;
+  }
+  if (_uses_alpha != other._uses_alpha) {
+    return false;
+  }
+  if (_any_uvs != other._any_uvs) {
+    return false;
+  }
+  if (_wrap_u != other._wrap_u ||
+      _wrap_v != other._wrap_v) {
+    return false;
+  }
+  if (_any_uvs) {
+    if (!_min_uv.almost_equal(other._min_uv, 0.00001)) {
+      return false;
+    }
+    if (!_max_uv.almost_equal(other._max_uv, 0.00001)) {
+      return false;
+    }
+  }
+  if (!_tex_mat.almost_equal(other._tex_mat, 0.00001)) {
+    return false;
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -734,6 +799,8 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   // We don't write _egg_tex or _egg_data; that's specific to the
   // session.
 
+  datagram.add_string(_tref_name);
+
   _tex_mat.write_datagram(datagram);
   _inv_tex_mat.write_datagram(datagram);
 
@@ -814,6 +881,10 @@ void TextureReference::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
   manager->read_pointer(scan);  // _egg_file
+
+  if (Palettizer::_read_pi_version >= 11) {
+    _tref_name = scan.get_string();
+  }
 
   _tex_mat.read_datagram(scan);
   _inv_tex_mat.read_datagram(scan);

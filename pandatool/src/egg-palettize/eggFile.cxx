@@ -35,6 +35,9 @@
 #include "bamWriter.h"
 #include "executionEnvironment.h"
 #include "dSearchPath.h"
+#include "indirectLess.h"
+
+#include <algorithm>
 
 TypeHandle EggFile::_type_handle;
 
@@ -99,15 +102,16 @@ void EggFile::
 scan_textures() {
   nassertv(_data != (EggData *)NULL);
 
+  // Extract the set of textures referenced by this egg file.
   EggTextureCollection tc;
   tc.find_used_textures(_data);
+  
+  // Make sure each tref name is unique within a given file.
+  tc.uniquify_trefs();
 
-  // Remove the old TextureReference objects.
-  Textures::iterator ti;
-  for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
-    delete (*ti);
-  }
-  _textures.clear();
+  // Now build up a list of new TextureReference objects that
+  // represent the textures actually used and their uv range, etc.
+  Textures new_textures;
 
   EggTextureCollection::iterator eti;
   for (eti = tc.begin(); eti != tc.end(); ++eti) {
@@ -123,9 +127,77 @@ scan_textures() {
       delete ref;
 
     } else {
-      _textures.push_back(ref);
+      new_textures.push_back(ref);
     }
   }
+
+  // Sort the new references into order so we can compare them with
+  // the original references.
+  sort(new_textures.begin(), new_textures.end(), 
+       IndirectLess<TextureReference>());
+  
+  // Sort the original references too.  This should already be sorted
+  // from the previous run, but we might as well be neurotic about it.
+  sort(_textures.begin(), _textures.end(), 
+       IndirectLess<TextureReference>());
+
+  // Now go through and merge the lists.
+  Textures combined_textures;
+  Textures::const_iterator ai = _textures.begin();
+  Textures::const_iterator bi = new_textures.begin();
+
+  while (ai != _textures.end() && bi != new_textures.end()) {
+    TextureReference *aref = (*ai);
+    TextureReference *bref = (*bi);
+
+    if ((*aref) < (*bref)) {
+      // Here's a texture reference in the original list, but not in
+      // the new list.  Remove it.
+      delete aref;
+      ++ai;
+
+    } else if ((*bref) < (*aref)) {
+      // Here's a texture reference in the new list, but not in the
+      // original list.  Add it.
+      combined_textures.push_back(bref);
+      ++bi;
+
+    } else { // (*bref) == (*aref)
+      // Here's a texture reference that was in both lists.  Compare it.
+      if (aref->is_equivalent(*bref)) {
+        // It hasn't changed substantially, so keep the original
+        // (which still has the placement references from a previous
+        // pass).
+        combined_textures.push_back(aref);
+        delete bref;
+
+      } else {
+        // It has changed, so drop the original and keep the new one.
+        combined_textures.push_back(bref);
+        delete aref;
+      }
+      ++ai;
+      ++bi;
+    }
+  }
+
+  while (bi != new_textures.end()) {
+    TextureReference *bref = (*bi);
+    // Here's a texture reference in the new list, but not in the
+    // original list.  Add it.
+    combined_textures.push_back(bref);
+    ++bi;
+  }
+
+  while (ai != _textures.end()) {
+    TextureReference *aref = (*ai);
+    // Here's a texture reference in the original list, but not in
+    // the new list.  Remove it.
+    delete aref;
+    ++ai;
+  }
+
+  _textures.swap(combined_textures);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -306,7 +378,7 @@ build_cross_links() {
 
     // Actually, this may count the same egg file multiple times for a
     // particular SourceTextureImage, since a given texture may be
-    // reference multiples times within an egg file.  No harm done,
+    // referenced multiples times within an egg file.  No harm done,
     // however.
     reference->get_source()->increment_egg_count();
   }
@@ -706,4 +778,12 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _is_surprise = scan.get_bool();
   _is_stale = scan.get_bool();
+
+  if (Palettizer::_read_pi_version < 11) {
+    // If this file was written by a version of egg-palettize prior to
+    // 11, we didn't store the tref names on the texture references.
+    // Since we need that information now, it follows that every egg
+    // file is stale.
+    _is_stale = true;
+  }
 }
