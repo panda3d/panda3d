@@ -62,6 +62,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         
         self.isAirborne = 0
         self.highMark = 0
+        self.ship = None
 
     def setWalkSpeed(self, forward, jump, reverse, rotate):
         assert(self.debugPrint("setWalkSpeed()"))
@@ -75,13 +76,14 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         return (self.__speed, self.__rotationSpeed)
 
     def setAvatar(self, ship):
-        self.ship = ship
         if ship is None:
             self.takedownPhysics()
+            self.ship = None
         else:
             #self.setupShip()
             print "setAvatar, wallbitmask = %s" % self.wallBitmask
             self.setupPhysics(ship)
+            self.ship = ship
             
             #*# Debug:
             if not hasattr(ship, "acceleration"):
@@ -221,7 +223,9 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             del self.phys
             for i in self.nodes:
                 i.removeNode()
-
+        if self.ship != None:
+            self.ship.worldVelocity = Vec3.zero()
+            
     def setupPhysics(self, avatarNodePath):
         assert(self.debugPrint("setupPhysics()"))
         if avatarNodePath is None:
