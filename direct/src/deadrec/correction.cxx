@@ -140,7 +140,7 @@ void SplineCorrection::step(void) {
       _curr_v = (3.0f * tmp * tmp * A) + (2.0f * tmp * B) + C;
       time += ClockObject::get_global_clock()->get_dt();
       if(correction_cat.is_spam()) {
-         correction_cat->spam() << "new possition = " << _curr_p << endl;
+         correction_cat->spam() << "new position = " << _curr_p << endl;
          correction_cat->spam() << "new vel = " << _curr_v << endl;
       }
     } else
