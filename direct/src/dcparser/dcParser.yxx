@@ -115,13 +115,16 @@ dc_cleanup_parser() {
 %token START_DC
 %token START_PARAMETER_VALUE
 
-%type <u.flag> kw_struct_or_kw_dclass
-%type <u.dclass> dclass_name
-%type <u.dclass> dclass
-%type <u.dswitch> switch
 %type <u.atomic> atomic_name
 %type <u.s_int> server_flags
+%type <u.dclass> dclass_or_struct
+%type <u.dclass> dclass_name
+%type <u.dclass> dclass
 %type <u.field> dclass_field
+%type <u.dclass> struct_name
+%type <u.dclass> struct
+%type <u.field> struct_field
+%type <u.dswitch> switch
 %type <u.field> switch_field
 %type <u.field> atomic_field
 %type <u.field> molecular_field
@@ -152,7 +155,7 @@ grammar:
 dc:
         empty
         | dc ';'
-        | dc dclass
+        | dc dclass_or_struct
 {
   if (!dc_file->add_class($2)) {
     DCClass *old_class = dc_file->get_class_by_name($2->get_name());
@@ -172,44 +175,6 @@ dc:
         | dc import
         | dc typedef_decl
         ;
-
-dclass:
-        kw_struct_or_kw_dclass optional_name 
-{
-  $$ = current_class;
-  current_class = new DCClass($2, $1, false);
-}
-        dclass_derivation '{' dclass_fields '}'
-{
-  $$ = current_class;
-  current_class = $<u.dclass>3;
-}
-        ;
-
-kw_struct_or_kw_dclass:
-	KW_STRUCT
-{
-  $$ = true;
-}
-	| KW_DCLASS
-{
-  $$ = false;
-}
-	;
-
-dclass_name:
-        IDENTIFIER
-{
-  DCClass *dclass = dc_file->get_class_by_name($1);
-  if (dclass == (DCClass *)NULL) {
-    // Create a bogus class as a forward reference.
-    dclass = new DCClass($1, false, true);
-    dc_file->add_class(dclass);
-  }
-  
-  $$ = dclass;
-}
-	;
 
 slash_identifier:
         IDENTIFIER
@@ -274,19 +239,54 @@ typedef_decl:
 }
 	;
 
-dclass_derivation:
-        empty
-        | ':' base_list
+dclass_or_struct:
+        dclass
+	| struct
+	;
+
+dclass:
+        KW_DCLASS optional_name 
+{
+  $$ = current_class;
+  current_class = new DCClass($2, false, false);
+}
+        dclass_derivation '{' dclass_fields '}'
+{
+  $$ = current_class;
+  current_class = $<u.dclass>3;
+}
         ;
 
-base_list:
+dclass_name:
+        IDENTIFIER
+{
+  DCClass *dclass = dc_file->get_class_by_name($1);
+  if (dclass == (DCClass *)NULL) {
+    // Create a bogus class as a forward reference.
+    dclass = new DCClass($1, false, true);
+    dc_file->add_class(dclass);
+  }
+  if (dclass->is_struct()) {
+    yyerror("struct name not allowed");
+  }
+  
+  $$ = dclass;
+}
+	;
+
+dclass_derivation:
+        empty
+        | ':' dclass_base_list
+        ;
+
+dclass_base_list:
         dclass_name
 {
   if ($1 != (DCClass *)NULL) {
     current_class->add_parent($1);
   }
 }
-        | base_list ',' dclass_name
+        | dclass_base_list ',' dclass_name
 {
   if ($3 != (DCClass *)NULL) {
     current_class->add_parent($3);
@@ -306,7 +306,11 @@ dclass_fields:
         ;
 
 dclass_field:
-	atomic_field
+	atomic_field server_flags
+{
+  $$ = $1;
+  $$->set_flags($2);
+}
 	| molecular_field
 	| unnamed_parameter server_flags ';'
 {
@@ -320,17 +324,90 @@ dclass_field:
 }
 	;
 
+struct:
+        KW_STRUCT optional_name 
+{
+  $$ = current_class;
+  current_class = new DCClass($2, true, false);
+}
+        struct_derivation '{' struct_fields '}'
+{
+  $$ = current_class;
+  current_class = $<u.dclass>3;
+}
+        ;
+
+struct_name:
+        IDENTIFIER
+{
+  DCClass *dstruct = dc_file->get_class_by_name($1);
+  if (dstruct == (DCClass *)NULL) {
+    // Create a bogus class as a forward reference.
+    dstruct = new DCClass($1, false, true);
+    dc_file->add_class(dstruct);
+  }
+  if (!dstruct->is_struct()) {
+    yyerror("struct name required");
+  }
+  
+  $$ = dstruct;
+}
+	;
+
+struct_derivation:
+        empty
+        | ':' struct_base_list
+        ;
+
+struct_base_list:
+        struct_name
+{
+  if ($1 != (DCClass *)NULL) {
+    current_class->add_parent($1);
+  }
+}
+        | struct_base_list ',' struct_name
+{
+  if ($3 != (DCClass *)NULL) {
+    current_class->add_parent($3);
+  }
+}
+        ;
+
+struct_fields:
+        empty
+        | struct_fields ';'
+        | struct_fields struct_field
+{
+  if (!current_class->add_field($2)) {
+    yyerror("Duplicate field name: " + $2->get_name());
+  }
+}
+        ;
+
+struct_field:
+	atomic_field
+	| molecular_field
+	| unnamed_parameter ';'
+{
+  $$ = $1;
+}
+	| named_parameter
+{
+  $$ = $1;
+}
+	;
+
 atomic_field:
         IDENTIFIER '('
 {
   $$ = current_atomic;
   current_atomic = new DCAtomicField($1);
 }
-        parameter_list ')' server_flags
+        parameter_list ')'
 {
   $$ = current_atomic;
   current_atomic = $<u.atomic>3;
-  $$->set_flags($6);
 }
         ;
 
@@ -454,6 +531,9 @@ type_name:
     // Maybe it's a class name.
     DCClass *dclass = dc_file->get_class_by_name($1);
     if (dclass != (DCClass *)NULL) {
+      if (!dclass->is_struct()) {
+        yyerror("cannot embed a dclass object within a message; use a struct");
+      }
       // Create an implicit typedef for this.
       dtypedef = new DCTypedef(new DCClassParameter(dclass), true);
     } else {
@@ -473,9 +553,9 @@ type_name:
 
   $$ = dtypedef->make_new_parameter();
 }
-	| dclass
+	| struct
 {
-  // This is an inline class definition.
+  // This is an inline struct definition.
   dc_file->add_thing_to_delete($1);
   $$ = new DCClassParameter($1);
 }

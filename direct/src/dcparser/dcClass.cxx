@@ -805,6 +805,10 @@ void DCClass::
 generate_hash(HashGenerator &hashgen) const {
   hashgen.add_string(_name);
 
+  if (is_struct()) {
+    hashgen.add_int(1);
+  }
+
   hashgen.add_int(_parents.size());
   Parents::const_iterator pi;
   for (pi = _parents.begin(); pi != _parents.end(); ++pi) {
