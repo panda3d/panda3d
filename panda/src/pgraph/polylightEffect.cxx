@@ -136,7 +136,7 @@ do_poly_light(const SceneSetup *scene, const CullTraverserData *data, const Tran
   float min_dist; // hold the dist from light that avatar is closer to
   int num_lights = 0; // Keep track of number of lights for division
   float light_scale; // Variable to calculate attenuation 
-  float weight_scale; // Variable to compensate snap of color when you walk inside the light volume
+  float weight_scale = 1.0f; // Variable to compensate snap of color when you walk inside the light volume
   float Rcollect, Gcollect, Bcollect;
 
   PStatTimer timer(_cull_pcollector);
