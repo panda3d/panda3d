@@ -44,7 +44,7 @@ int dcyyparse();
 class DCTokenType {
 public:
   union U {
-    int integer;
+    PN_int64 integer;
     double real;
     DCClass *dclass;
     DCAtomicField *atomic;

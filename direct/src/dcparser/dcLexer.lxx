@@ -130,7 +130,7 @@ input_chars(char *buffer, int &result, int max_size) {
       // from the stream, copy it into the current_line array.  This
       // is because the \n.* rule below, which fills current_line
       // normally, doesn't catch the first line.
-      strncpy(current_line, yytext, max_error_width);
+      strncpy(current_line, dcyytext, max_error_width);
       current_line[max_error_width] = '\0';
       line_number++;
       col_number = 0;
@@ -318,7 +318,7 @@ REALNUM          ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   // New line.  Save a copy of the line so we can print it out for the
   // benefit of the user in case we get an error.
 
-  strncpy(current_line, yytext+1, max_error_width);
+  strncpy(current_line, dcyytext+1, max_error_width);
   current_line[max_error_width] = '\0';
   line_number++;
   col_number=0;
@@ -464,7 +464,7 @@ mol[0-9]+ {
   // A molecular keyword.
   accept();
   dcyylval.u.integer = atoi(dcyytext + 3); 
-  dcyylval.str = yytext;
+  dcyylval.str = dcyytext;
   return KW_MOL; 
 }
 
@@ -515,17 +515,47 @@ mol[0-9]+ {
 
 {INTEGERNUM} { 
   // An integer number.
-  accept(); 
-  dcyylval.u.integer = atoi(dcyytext); 
-  dcyylval.str = yytext;
+  accept();
+
+  // atoll isn't fully portable, so we'll decode the integer by hand.
+  dcyylval.u.integer = 0;
+  bool neg = false;
+  const char *p = dcyytext;
+  if (*p == '-') {
+    neg = true;
+    ++p;
+  } else if (*p == '+') {
+    ++p;
+  }
+  while (*p != '\0') {
+    dcyylval.u.integer = dcyylval.u.integer * 10 + (*p - '0');
+    ++p;
+  }
+  if (neg) {
+    dcyylval.u.integer = -dcyylval.u.integer;
+  }
+  
+  dcyylval.str = dcyytext;
   return INTEGER; 
 }
 
 {HEXNUM} {
   // A hexadecimal integer number.
   accept(); 
-  dcyylval.u.integer = strtoul(yytext+2, NULL, 16);
-  dcyylval.str = yytext;
+
+  // As above, we'll decode the hex string by hand.
+  dcyylval.u.integer = 0;
+  const char *p = dcyytext + 2;
+  while (*p != '\0') {
+    if (isalpha(*p)) {
+      dcyylval.u.integer = dcyylval.u.integer * 16 + (tolower(*p) - 'a' + 10);
+    } else {
+      dcyylval.u.integer = dcyylval.u.integer * 16 + (*p - '0');
+    }
+    ++p;
+  }
+
+  dcyylval.str = dcyytext;
   return INTEGER; 
 }
 
@@ -533,7 +563,7 @@ mol[0-9]+ {
   // A floating-point number.
   accept(); 
   dcyylval.u.real = atof(dcyytext); 
-  dcyylval.str = yytext;
+  dcyylval.str = dcyytext;
   return REAL; 
 }
 
@@ -554,7 +584,7 @@ mol[0-9]+ {
 [A-Za-z_][A-Za-z_0-9]* { 
   // Identifier.
   accept();
-  dcyylval.str = yytext;
+  dcyylval.str = dcyytext;
   return IDENTIFIER;
 }
 

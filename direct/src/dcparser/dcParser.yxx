@@ -386,7 +386,7 @@ parameter_definition:
 parameter_value:
 	INTEGER
 {
-  current_packer->pack_int($1);
+  current_packer->pack_int64($1);
 }
         | REAL
 {
@@ -427,7 +427,7 @@ parameter_value:
         | INTEGER '*' INTEGER
 {
   for (int i = 0; i < $3; i++) {
-    current_packer->pack_int($1);
+    current_packer->pack_int64($1);
   }
 }
         | REAL '*' INTEGER
