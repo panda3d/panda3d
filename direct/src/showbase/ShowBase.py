@@ -42,6 +42,8 @@ class ShowBase(DirectObject.DirectObject):
     def __init__(self):
         # Get the dconfig object
         self.config = ConfigConfigureGetConfigConfigShowbase
+        # Setup wantVerifyPdb as soon as reasonable:
+        Verify.wantVerifyPdb = self.config.GetBool('want-verify-pdb', 0)
         
         self.printEnvDebugInfo()
 

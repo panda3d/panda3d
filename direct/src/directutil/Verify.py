@@ -1,22 +1,24 @@
 """
 You can use verify() just like assert, with these small differences:
-    - you may need to "from Verify import *", if someone hasn't done it
+    - you may need to "import Verify", if someone hasn't done it
       for you.
     - unlike assert where using parenthises are optional, verify()
       requires them.
       e.g.:
         assert foo  # OK
-        assert(foo) # OK
         verify foo  # Error
+        assert(foo) # OK
         verify(foo) # OK
     - verify() will print something like the following before raising
       an exception:
-      
         verify failed:
             File "direct/src/showbase/ShowBase.py", line 60
     - verify() will optionally start pdb for you (this is currently
-      true by default).
-    - verify() will still function in the release build.
+      false by default).  You can either edit Verify.py to set
+      wantVerifyPdb = 1 or if you are using ShowBase you can set
+      want-verify-pdb 1 in your Configrc to start pdb automatically.
+    - verify() will still function in the release build.  It will
+      not be removed by -O like assert will.
 
 verify() will also throw an AssertionError, but you can ignore that if you
 like (I don't suggest trying to catch it, it's just doing it so that it can
@@ -35,8 +37,12 @@ you don't always have the time to write proper error handling, go ahead
 and use verify() -- that's what it's for.
 
 Please use assert (properly) and do proper error handling; and use verify()
-only where it helps you resist using assert for error handling.
+only when debugging (i.e. when it won't be checked-in) or where it helps 
+you resist using assert for error handling.
 """
+
+wantVerifyPdb = 0 # Set to true to load pdb on failure.
+
 
 def verify(assertion):
     """
@@ -49,7 +55,10 @@ def verify(assertion):
         print "    File \"%s\", line %d"%(
                 sys._getframe(1).f_code.co_filename,
                 sys._getframe(1).f_lineno)
-        if 1:
+        if wantVerifyPdb:
             import pdb
             pdb.set_trace()
         raise AssertionError
+
+if not hasattr(__builtins__, "verify"):
+    __builtins__["verify"] = verify
