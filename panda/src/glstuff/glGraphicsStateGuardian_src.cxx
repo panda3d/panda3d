@@ -263,6 +263,27 @@ reset() {
   free_pointers();
   GraphicsStateGuardian::reset();
 
+  // Output the vendor and version strings.
+  show_gl_string("GL_VENDOR", GL_VENDOR);
+  show_gl_string("GL_RENDERER", GL_RENDERER);
+  get_gl_version();
+
+  // Save the extensions tokens.
+  save_extensions((const char *)glGetString(GL_EXTENSIONS));
+  get_extra_extensions();
+  report_extensions();
+
+  _supports_bgr = has_extension("GL_EXT_bgra");
+  _supports_multisample = has_extension("GL_ARB_multisample");
+
+  _edge_clamp = GL_CLAMP;
+  if (has_extension("GL_SGIS_texture_edge_clamp") ||
+      is_at_least_version(1, 2)) {
+    _edge_clamp = GL_CLAMP_TO_EDGE;
+  }
+
+  report_my_gl_errors();
+
   _buffer_mask = 0;
 
   // All GL implementations have the following buffers. (?)
@@ -416,25 +437,6 @@ reset() {
         << "frame buffer depth = " << num_red_bits
         << " bits/channel, enabling dithering\n";
     }
-  }
-
-  // Output the vendor and version strings.
-  show_gl_string("GL_VENDOR", GL_VENDOR);
-  show_gl_string("GL_RENDERER", GL_RENDERER);
-  get_gl_version();
-
-  // Save the extensions tokens.
-  save_extensions((const char *)glGetString(GL_EXTENSIONS));
-  get_extra_extensions();
-  report_extensions();
-
-  _supports_bgr = has_extension("GL_EXT_bgra");
-  _supports_multisample = has_extension("GL_ARB_multisample");
-
-  _edge_clamp = GL_CLAMP;
-  if (has_extension("GL_SGIS_texture_edge_clamp") ||
-      is_at_least_version(1, 2)) {
-    _edge_clamp = GL_CLAMP_TO_EDGE;
   }
 
   _error_count = 0;
