@@ -1,0 +1,36 @@
+#! /bin/sh
+
+if [ -z "$CYGWIN_ROOT" ]; then
+  # Add our LD_LIBRARY_PATH to the python path so we can pull in panda modules
+  PYTHONPATH="$DIRECT"/src/all/python:"$DIRECT"/lib/py:"$LD_LIBRARY_PATH"
+  export PYTHONPATH
+
+  # Run unbuffered output, with any options passed in
+  exec python -u $*
+  exit 1
+fi
+
+# Under Windows/Cygwin, we have to do this whole thing a little differently.
+
+# First, we have to mangle the LD_LIBRARY_PATH into a series of Windows
+# paths separated by semicolons.
+PYTHONPATH=
+for path in `echo $LD_LIBRARY_PATH | sed 'y/:/ /'`; do
+  PYTHONPATH=$PYTHONPATH\;`cygpath -w $path`
+done
+
+# And now prefix that with the python source directories.
+PYTHONPATH=`cygpath -w $DIRECT/src/all/python`\;`cygpath -w $DIRECT/lib/py`$PYTHONPATH
+export PYTHONPATH
+
+# We can't run with -u under windows for some reason.  But we do need to
+# make a distinction between python_d and python.  We'll accept the user
+# parameter -d to indicate we should run python_d.
+
+if [ x"$1" = x"-d" ]; then
+  shift 1
+  exec python_d $*
+else
+  exec python $*
+fi
+

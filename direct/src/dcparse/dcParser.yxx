@@ -1,0 +1,295 @@
+// Filename: dcParser.yxx
+// Created by:  drose (05Oct00)
+// 
+////////////////////////////////////////////////////////////////////
+
+%{
+#include "dcLexerDefs.h"
+#include "dcParserDefs.h"
+#include "dcFile.h"
+#include "dcClass.h"
+#include "dcAtomicField.h"
+
+// Because our token type contains objects of type string, which
+// require correct copy construction (and not simply memcpying), we
+// cannot use bison's built-in auto-stack-grow feature.  As an easy
+// solution, we ensure here that we have enough yacc stack to start
+// with, and that it doesn't ever try to grow.
+#define YYINITDEPTH 1000
+#define YYMAXDEPTH 1000
+
+static DCFile *dc_file = (DCFile *)NULL;
+static DCClass *current_class = (DCClass *)NULL;
+static DCAtomicField *current_atomic = (DCAtomicField *)NULL;
+static DCMolecularField *current_molecular = (DCMolecularField *)NULL;
+
+////////////////////////////////////////////////////////////////////
+// Defining the interface to the parser.
+////////////////////////////////////////////////////////////////////
+
+void
+dc_init_parser(istream &in, const string &filename, DCFile &file) {
+  dc_file = &file;
+  dc_init_lexer(in, filename);
+}
+
+void
+dc_cleanup_parser() {
+  dc_file = (DCFile *)NULL;
+}
+
+%}
+
+%token <u.integer> INTEGER
+%token <u.real> REAL
+%token <str> STRING IDENTIFIER
+
+%token KW_DCLASS 
+
+%token KW_INT8
+%token KW_INT16
+%token KW_INT32
+%token KW_INT64
+%token KW_UINT8
+%token KW_UINT16
+%token KW_UINT32
+%token KW_UINT64
+%token KW_FLOAT64
+%token KW_STRING
+
+%token KW_MOL
+
+%token KW_REQUIRED
+%token KW_BROADCAST
+%token KW_P2P
+%token KW_RAM
+%token KW_DB
+%token KW_CLSEND
+%token KW_CLRECV
+%token KW_AISEND
+%token KW_AIRECV
+
+%type <u.dclass> dclass_name
+%type <u.atomic> atomic_name
+%type <u.subatomic> type_token
+
+%%
+
+dc:
+	empty
+	| dc ';'
+	| dc dclass
+	;
+
+dclass:
+	KW_DCLASS IDENTIFIER 
+{
+  current_class = new DCClass;
+  current_class->_name = $2;
+  if (!dc_file->add_class(current_class)) {
+    yyerror("Duplicate class name: " + current_class->_name);
+  }
+}
+	dclass_derivation '{' dclass_fields '}'
+	;
+
+dclass_name:
+	IDENTIFIER
+{
+  DCFile::ClassesByName::const_iterator ni;
+  ni = dc_file->_classes_by_name.find($1);
+  if (ni == dc_file->_classes_by_name.end()) {
+    yyerror("Unknown class: " + $1);
+    $$ = (DCClass *)NULL;
+  } else {
+    $$ = (*ni).second;
+  }
+}
+
+dclass_derivation:
+	empty
+	| ':' base_list
+	;
+
+base_list:
+	dclass_name
+{
+  if ($1 != (DCClass *)NULL) {
+    current_class->_parents.push_back($1);
+  }
+}
+	| base_list ',' dclass_name
+{
+  if ($3 != (DCClass *)NULL) {
+    current_class->_parents.push_back($3);
+  }
+}
+	;
+
+dclass_fields:
+	empty
+	| dclass_fields ';'
+	| dclass_fields atomic_field
+	| dclass_fields molecular_field
+	;
+
+atomic_field:
+	IDENTIFIER '('
+{
+  current_atomic = new DCAtomicField;
+  current_atomic->_name = $1;
+  if (!current_class->add_field(current_atomic)) {
+    yyerror("Duplicate atomic field name: " + current_atomic->_name);
+  }
+}
+	parameter_list ')' atomic_flags
+	;
+
+atomic_name:
+	IDENTIFIER
+{
+  $$ = current_class->get_atomic_by_name($1);
+  if ($$ == (DCAtomicField *)NULL) {
+    yyerror("Unknown atomic field: " + $1);
+  }
+}
+
+parameter_list:
+	empty
+	| nonempty_parameter_list
+	;
+
+nonempty_parameter_list:
+	subatomic_type
+	| nonempty_parameter_list ',' subatomic_type
+	;
+
+subatomic_type:
+	type_token
+{
+  DCAtomicField::ElementType et;
+  et._type = $1;
+  et._divisor = 1;
+  current_atomic->_elements.push_back(et);
+}
+	| type_token '/' INTEGER
+{
+  DCAtomicField::ElementType et;
+  et._type = $1;
+  et._divisor = $3;
+  current_atomic->_elements.push_back(et);
+}
+	;
+
+type_token:
+	KW_INT8
+{
+  $$ = ST_int8;
+}
+	| KW_INT16
+{
+  $$ = ST_int16;
+}
+	| KW_INT32
+{
+  $$ = ST_int32;
+}
+	| KW_INT64
+{
+  $$ = ST_int64;
+}
+	| KW_UINT8
+{
+  $$ = ST_uint8;
+}
+	| KW_UINT16
+{
+  $$ = ST_uint16;
+}
+	| KW_UINT32
+{
+  $$ = ST_uint32;
+}
+	| KW_UINT64
+{
+  $$ = ST_uint64;
+}
+	| KW_FLOAT64
+{
+  $$ = ST_float64;
+}
+	| KW_STRING
+{
+  $$ = ST_string;
+}
+	;
+
+atomic_flags:
+	empty
+	| atomic_flags KW_REQUIRED
+{
+  current_atomic->_flags |= DCAtomicField::F_required;
+}
+	| atomic_flags KW_BROADCAST
+{
+  current_atomic->_flags |= DCAtomicField::F_broadcast;
+}
+	| atomic_flags KW_P2P
+{
+  current_atomic->_flags |= DCAtomicField::F_p2p;
+}
+	| atomic_flags KW_RAM
+{
+  current_atomic->_flags |= DCAtomicField::F_ram;
+}
+	| atomic_flags KW_DB
+{
+  current_atomic->_flags |= DCAtomicField::F_db;
+}
+	| atomic_flags KW_CLSEND
+{
+  current_atomic->_flags |= DCAtomicField::F_clsend;
+}
+	| atomic_flags KW_CLRECV
+{
+  current_atomic->_flags |= DCAtomicField::F_clrecv;
+}
+	| atomic_flags KW_AISEND
+{
+  current_atomic->_flags |= DCAtomicField::F_aisend;
+}
+	| atomic_flags KW_AIRECV
+{
+  current_atomic->_flags |= DCAtomicField::F_airecv;
+}
+	;
+
+molecular_field:
+	IDENTIFIER ':'
+{
+  current_molecular = new DCMolecularField;
+  current_molecular->_name = $1;
+  if (!current_class->add_field(current_molecular)) {
+    yyerror("Duplicate molecular field name: " + current_molecular->_name);
+  }
+}
+	molecular_atom_list
+	;
+
+molecular_atom_list:
+	atomic_name
+{
+  if ($1 != (DCAtomicField *)NULL) {
+    current_molecular->_fields.push_back($1);
+  }
+}
+	| molecular_atom_list ',' atomic_name
+{
+  if ($3 != (DCAtomicField *)NULL) {
+    current_molecular->_fields.push_back($3);
+  }
+}
+	;
+
+empty:
+	;

@@ -1,0 +1,415 @@
+/*
+// Filename: dcLexer.lxx
+// Created by:  drose (05Oct00)
+// 
+////////////////////////////////////////////////////////////////////
+*/
+
+%{
+#include "dcLexerDefs.h"
+#include "dcParserDefs.h"
+#include "dcParser.h"
+#include "indent.h"
+
+#include <assert.h>
+
+static int yyinput(void);        // declared by flex.
+extern "C" int dcyywrap();
+
+////////////////////////////////////////////////////////////////////
+// Static variables
+////////////////////////////////////////////////////////////////////
+
+// We'll increment line_number and col_number as we parse the file, so
+// that we can report the position of an error.
+static int line_number = 0;
+static int col_number = 0;
+
+// current_line holds as much of the current line as will fit.  Its
+// only purpose is for printing it out to report an error to the user.
+static const int max_error_width = 1024;
+static char current_line[max_error_width + 1];
+
+static int error_count = 0;
+static int warning_count = 0;
+
+// This is the pointer to the current input stream.
+static istream *inp = NULL;
+
+// This is the name of the dc file we're parsing.  We keep it so we
+// can print it out for error messages.
+static string dc_filename;
+
+
+////////////////////////////////////////////////////////////////////
+// Defining the interface to the lexer.
+////////////////////////////////////////////////////////////////////
+
+void
+dc_init_lexer(istream &in, const string &filename) {
+  inp = &in;
+  dc_filename = filename;
+  line_number = 0;
+  col_number = 0;
+  error_count = 0;
+  warning_count = 0;
+}
+
+int
+dc_error_count() {
+  return error_count;
+}
+
+int
+dc_warning_count() {
+  return warning_count;
+}
+
+
+////////////////////////////////////////////////////////////////////
+// Internal support functions.
+////////////////////////////////////////////////////////////////////
+
+int
+dcyywrap(void) {
+  return 1;
+}
+
+void
+dcyyerror(const string &msg) {
+  cerr << "\nError";
+  if (!dc_filename.empty()) {
+    cerr << " in " << dc_filename;
+  }
+  cerr 
+    << " at line " << line_number << ", column " << col_number << ":\n"
+    << current_line << "\n";
+  indent(cerr, col_number-1) 
+    << "^\n" << msg << "\n\n";
+  
+  error_count++;
+}
+
+void
+dcyywarning(const string &msg) {
+  cerr << "\nWarning";
+  if (!dc_filename.empty()) {
+    cerr << " in " << dc_filename;
+  }
+  cerr 
+    << " at line " << line_number << ", column " << col_number << ":\n"
+    << current_line << "\n";
+  indent(cerr, col_number-1) 
+    << "^\n" << msg << "\n\n";
+
+  warning_count++;
+}
+
+// Now define a function to take input from an istream instead of a
+// stdio FILE pointer.  This is flex-specific.
+static void
+input_chars(char *buffer, int &result, int max_size) {
+  assert(inp != NULL);
+  if (*inp) {
+    inp->read(buffer, max_size);
+    result = inp->gcount();
+
+    if (line_number == 0) {
+      // This is a special case.  If we are reading the very first bit
+      // from the stream, copy it into the current_line array.  This
+      // is because the \n.* rule below, which fills current_line
+      // normally, doesn't catch the first line.
+      strncpy(current_line, yytext, max_error_width);
+      current_line[max_error_width] = '\0';
+      line_number++;
+      col_number = 0;
+
+      // Truncate it at the newline.
+      char *end = strchr(current_line, '\n');
+      if (end != NULL) {
+	*end = '\0';
+      }
+    }
+
+  } else {
+    // End of file or I/O error.
+    result = 0;
+  }
+}
+#undef YY_INPUT
+#define YY_INPUT(buffer, result, max_size) input_chars(buffer, result, max_size)
+
+// read_char reads and returns a single character, incrementing the
+// supplied line and column numbers as appropriate.  A convenience
+// function for the scanning functions below.
+static int
+read_char(int &line, int &col) {
+  int c = yyinput();
+  if (c == '\n') {
+    line++;
+    col = 0;
+  } else {
+    col++;
+  }
+  return c;
+}
+
+// scan_quoted_string reads a string delimited by quotation marks and
+// returns it.
+static string
+scan_quoted_string() {
+  string result;
+
+  // We don't touch the current line number and column number during
+  // scanning, so that if we detect an error while scanning the string
+  // (e.g. an unterminated string), we'll report the error as
+  // occurring at the start of the string, not at the end--somewhat
+  // more convenient for the user.
+
+  // Instead of adjusting the global line_number and col_number
+  // variables, we'll operate on our own local variables for the
+  // interim.
+  int line = line_number;
+  int col = col_number;
+
+  int c;
+  c = read_char(line, col);
+  while (c != '"' && c != EOF) {
+    result += c;
+    c = read_char(line, col);
+  }
+
+  if (c == EOF) {
+    dcyyerror("This quotation mark is unterminated.");
+  }
+
+  line_number = line;
+  col_number = col;
+
+  return result;
+}
+
+// eat_c_comment scans past all characters up until the first */
+// encountered.
+static void
+eat_c_comment() {
+  // As above, we'll operate on our own local copies of line_number
+  // and col_number within this function.
+
+  int line = line_number;
+  int col = col_number;
+
+  int c, last_c;
+  
+  last_c = '\0';
+  c = read_char(line, col);
+  while (c != EOF && !(last_c == '*' && c == '/')) {
+    if (last_c == '/' && c == '*') {
+      dcyywarning("This comment contains a nested /* symbol--possibly unclosed?");
+    }
+    last_c = c;
+    c = read_char(line, col);
+  }
+
+  if (c == EOF) {
+    dcyyerror("This comment marker is unclosed.");
+  }
+
+  line_number = line;
+  col_number = col;
+}
+
+
+
+// accept() is called below as each piece is pulled off and
+// accepted by the lexer; it increments the current column number.
+inline void accept() {
+  col_number += yyleng;
+}
+
+%}
+
+INTEGERNUM       ([+-]?([0-9]+))
+REALNUM          ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
+
+%%
+
+%{
+%}
+
+\n.* {
+  // New line.  Save a copy of the line so we can print it out for the
+  // benefit of the user in case we get an error.
+
+  strncpy(current_line, yytext+1, max_error_width);
+  current_line[max_error_width] = '\0';
+  line_number++;
+  col_number=0;
+
+  // Return the whole line to the lexer, except the newline character,
+  // which we eat.
+  yyless(1);
+}
+
+[ \t] { 
+  // Eat whitespace.
+  accept();
+}
+
+"//".* { 
+  // Eat C++-style comments.
+  accept();
+}
+
+"/*" {
+  // Eat C-style comments.
+  accept();
+  eat_c_comment(); 
+}
+
+
+"dclass" {
+  accept();
+  return KW_DCLASS;
+}
+
+"int8" {
+  accept();
+  return KW_INT8;
+}
+
+"int16" {
+  accept();
+  return KW_INT16;
+}
+
+"int32" {
+  accept();
+  return KW_INT32;
+}
+
+"int64" {
+  accept();
+  return KW_INT64;
+}
+
+"uint8" {
+  accept();
+  return KW_UINT8;
+}
+
+"uint16" {
+  accept();
+  return KW_UINT16;
+}
+
+"uint32" {
+  accept();
+  return KW_UINT32;
+}
+
+"uint64" {
+  accept();
+  return KW_UINT64;
+}
+
+"float64" {
+  accept();
+  return KW_FLOAT64;
+}
+
+"string" {
+  accept();
+  return KW_STRING;
+}
+
+mol[0-9]+ {
+  // A molecular keyword.
+  accept();
+  dcyylval.u.integer = atoi(dcyytext + 3); 
+  dcyylval.str = yytext;
+  return KW_MOL; 
+}
+
+"required" {
+  accept();
+  return KW_REQUIRED;
+}
+
+"broadcast" {
+  accept();
+  return KW_BROADCAST;
+}
+
+"p2p" {
+  accept();
+  return KW_P2P;
+}
+
+"ram" {
+  accept();
+  return KW_RAM;
+}
+
+"db" {
+  accept();
+  return KW_DB;
+}
+
+"clsend" {
+  accept();
+  return KW_CLSEND;
+}
+
+"clrecv" {
+  accept();
+  return KW_CLRECV;
+}
+
+"aisend" {
+  accept();
+  return KW_AISEND;
+}
+
+"airecv" {
+  accept();
+  return KW_AIRECV;
+}
+
+{INTEGERNUM} { 
+  // An integer number.
+  accept(); 
+  dcyylval.u.integer = atoi(dcyytext); 
+  dcyylval.str = yytext;
+  return INTEGER; 
+}
+
+{REALNUM} { 
+  // A floating-point number.
+  accept(); 
+  dcyylval.u.real = atof(dcyytext); 
+  dcyylval.str = yytext;
+  return REAL; 
+}
+
+["] {
+  // Quoted string.
+  accept();
+  dcyylval.str = scan_quoted_string();
+  return STRING;
+}
+
+[A-Za-z_][A-Za-z_0-9]* { 
+  // Identifier.
+  accept();
+  dcyylval.str = yytext;
+  return IDENTIFIER;
+}
+
+
+. {
+  // Send any other printable character as itself.
+  accept(); 
+  return dcyytext[0];
+}
+  

@@ -1,0 +1,107 @@
+#!/usr/local/bin/python
+
+
+import getopt
+import sys
+import os
+import FFIConstants
+
+# Define a help string for the user
+helpString ="""
+generatePythonCode [opts] -i libtool libcode1 libcode2 ...
+
+Generates Python code for the C++ libraries listed.
+
+Example:
+ generatePythonCode -v -d $DIRECT/lib/py -e $DIRECT/src/all/python -i libdtool libpandaexpress libpanda libdirect
+
+Options:
+  -h          print this message
+  -v          verbose
+  -d dir      directory to write output code       
+  -e dir      directory to pull extension code from       
+  -i lib      interrogate library
+  -O          no C++ comments or assertion statements
+"""
+    
+# Initialize variables
+outputDir = ''
+extensionsDir = ''
+interrogateLib = ''
+codeLibs = []
+    
+
+# Extract the args the user passed in
+try:
+    opts, pargs = getopt.getopt(sys.argv[1:], 'hvOd:e:i:')
+except Exception, e:
+    # User passed in a bad option, print the error and the help, then exit
+    print e
+    print helpString
+    sys.exit()
+
+if len(opts)==0:
+    print helpString
+    sys.exit()
+
+
+# Store the option values into our variables
+for opt in opts:
+    flag, value = opt
+    if (flag == '-h'):
+        print helpString
+        sys.exit()
+    elif (flag == '-v'):
+        FFIConstants.notify.setVerbose(1)
+    elif (flag == '-d'):
+        outputDir = value
+    elif (flag == '-e'):
+        extensionsDir = value
+    elif (flag == '-i'):
+        interrogateLib = value
+    elif (flag == '-O'):
+        FFIConstants.wantComments = 0
+        FFIConstants.wantTypeChecking = 0
+    else:
+        FFIConstants.notify.error('illegal option: ' + flag)
+
+# Store the program arguments into the codeLibs
+codeLibs = pargs
+
+# Now do some error checking and verbose output
+if (not interrogateLib):
+    FFIConstants.notify.error('You must specify an interrogate library (-i lib)')
+else:
+    FFIConstants.notify.info('Setting interrogate library to: ' + interrogateLib)
+    FFIConstants.InterrogateModuleName = interrogateLib
+
+if (not outputDir):
+    FFIConstants.notify.info('Setting output directory to current directory')
+    outputDir = '.'
+elif (not os.path.exists(outputDir)):
+    FFIConstants.notify.error('Directory does not exists: ' + outputDir)
+else:
+    FFIConstants.notify.info('Setting output directory to: ' + outputDir)
+
+
+if (not extensionsDir):
+    FFIConstants.notify.info('Setting extensions directory to current directory')
+    extensionsDir = '.'
+elif (not os.path.exists(extensionsDir)):
+    FFIConstants.notify.error('Directory does not exists: ' + extensionsDir)
+else:
+    FFIConstants.notify.info('Setting extensions directory to: ' + extensionsDir)
+
+
+if (not codeLibs):
+    FFIConstants.notify.error('You must specify one or more libraries to generate code from')
+else:
+    FFIConstants.notify.info('Generating code for: ' + `codeLibs`)
+    FFIConstants.CodeModuleNameList = codeLibs
+
+# Ok, now we can start generating code
+import FFIInterrogateDatabase
+db = FFIInterrogateDatabase.FFIInterrogateDatabase()
+db.updateBindings()
+db.generateCode(outputDir, extensionsDir)
+
