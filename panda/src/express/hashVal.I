@@ -25,6 +25,7 @@
 INLINE HashVal::
 HashVal(void) {
   hv[0] = hv[1] = hv[2] = hv[3] = 0;
+  _bUseBrackets = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -71,5 +72,16 @@ set_value(int val, uint hashval) {
 ////////////////////////////////////////////////////////////////////
 INLINE void HashVal::
 output(ostream &out) const {
-  out << "[" << hv[0] << " " << hv[1] << " " << hv[2] << " " << hv[3] << "]";
+  if(_bUseBrackets)
+      out << "[";
+  out << hv[0] << " " << hv[1] << " " << hv[2] << " " << hv[3];
+  if(_bUseBrackets)
+      out << "]";
 }
+
+INLINE void HashVal::
+set_output_brackets(bool bUseBrackets) {
+  _bUseBrackets = bUseBrackets;
+}
+
+

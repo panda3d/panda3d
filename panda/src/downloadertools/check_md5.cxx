@@ -1,5 +1,5 @@
 // Filename: check_md5.cxx
-// Created by:  
+// Created by:
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,18 +18,48 @@
 
 #include <crypto_utils.h>
 #include <hashVal.h>
+#include <errno.h>
+#include <string.h>
 
 int
 main(int argc, char *argv[]) {
+  const char *usagestr="Usage: check_md5 [-dbfmt_output] <file>";
   if (argc < 2) {
-    cerr << "Usage: check_md5 <file>" << endl;
+    cerr << usagestr << endl;
     return 0;
   }
 
-  Filename source_file = argv[1];
+  bool bRemoveBrackets = (strcmp("-dbfmt_output",argv[1])==0);
+
+  Filename source_file;
+
+  if(bRemoveBrackets) {
+    if(argc<3) {
+        cerr << usagestr << endl;
+        return 0;
+    }
+    source_file = argv[2];
+  } else {
+    source_file = argv[1];
+  }
+
+  #ifdef WIN32_VC
+      if(_access(source_file.c_str(), 0) == -1) {  // does this exist on unix?
+          if(errno==ENOENT) {
+              cerr << usagestr << endl;
+              cerr << source_file << " not found!\n";
+              return -1;
+          }
+      }
+  #endif
 
   HashVal hash;
   md5_a_file(source_file, hash);
+
+  if(bRemoveBrackets) {
+      hash.set_output_brackets(false);
+  }
+
   cout << hash << endl;
 
   return 1;

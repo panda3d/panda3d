@@ -35,6 +35,9 @@ PUBLISHED:
   INLINE void set_value(int val, uint hash);
   INLINE void output(ostream &out) const;
   uint hv[4];
+public:
+  INLINE void set_output_brackets(bool bUseBrackets);
+  bool _bUseBrackets;
 };
 
 INLINE ostream &operator << (ostream &out, const HashVal &hv) {
