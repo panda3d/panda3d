@@ -48,7 +48,7 @@ extern const string http_direct_hosts;
 extern const bool http_try_all_direct;
 extern const string http_proxy_username;
 extern const bool http_proxy_tunnel;
-extern const double connect_timeout;
+extern const double http_connect_timeout;
 extern const double http_timeout;
 extern const int http_max_connect_count;
 extern const string http_client_certificate_filename;

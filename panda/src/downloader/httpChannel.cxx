@@ -51,7 +51,7 @@ HTTPChannel(HTTPClient *client) :
   _persistent_connection = false;
   _allow_proxy = true;
   _proxy_tunnel = http_proxy_tunnel;
-  _connect_timeout = connect_timeout;
+  _connect_timeout = http_connect_timeout;
   _http_timeout = http_timeout;
   _blocking_connect = false;
   _download_throttle = false;
