@@ -20,7 +20,7 @@
     audio_linux_traits.h audio_sound.h audio_sound.I audio_sound.cxx
 
   #define INSTALL_HEADERS \
-    audio.h audio_manager.h Audio_Pool.I audio_pool.h \
+    audio.h audio_manager.h audio_pool.I audio_pool.h \
     audio_trait.h audio_mikmod_traits.h \
     audio_win_traits.I audio_win_traits.h audio_null_traits.I \
     audio_null_traits.h audio_linux_traits.I audio_linux_traits.h \
