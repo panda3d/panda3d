@@ -58,11 +58,11 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
         self.dcSuffix = ''
 
     def readDCFile(self, dcFileNames = None):
-
-        """ Reads in the dc files listed in dcFileNames, or if
+        """
+        Reads in the dc files listed in dcFileNames, or if
         dcFileNames is None, reads in all of the dc files listed in
-        the Configrc file. """
-        
+        the Configrc file.
+        """
         dcFile = self.getDcFile()
         dcFile.clear()
         self.dclassesByName = {}
