@@ -73,7 +73,7 @@ write_prototypes(ostream &out) {
   Writers::iterator wi;
   for (wi = _writers.begin(); wi != _writers.end(); ++wi) {
     FunctionWriter *writer = (*wi);
-    (*wi)->write_prototype(out);
+    writer->write_prototype(out);
   }
 }
 
@@ -86,6 +86,7 @@ void FunctionWriters::
 write_code(ostream &out) {
   Writers::iterator wi;
   for (wi = _writers.begin(); wi != _writers.end(); ++wi) {
-    (*wi)->write_code(out);
+    FunctionWriter *writer = (*wi);
+    writer->write_code(out);
   }
 }
