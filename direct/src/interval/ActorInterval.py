@@ -123,8 +123,12 @@ class ActorInterval(Interval.Interval):
             # implicit.  This is necessary only to guard against
             # possible roundoff error in computing the final frame
             # from the duration.
-            for control in self.controls:
-                control.pose(self.endFrame)
+            if self.reverse:
+                for control in self.controls:
+                    control.pose(self.startFrame)
+            else:
+                for control in self.controls:
+                    control.pose(self.endFrame)
 
         else:
             # Otherwise, the user-specified duration determines which
