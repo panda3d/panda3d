@@ -206,6 +206,7 @@ private:
   static PT(NodePathComponent) get_top_component(PandaNode *child,
                                                    bool force);
   PT(NodePathComponent) get_generic_component(bool accept_ambiguity);
+  PT(NodePathComponent) r_get_generic_component(bool accept_ambiguity, bool &ambiguity_detected);
   void delete_component(NodePathComponent *component);
   static void sever_connection(PandaNode *parent_node, PandaNode *child_node);
   static void new_connection(PandaNode *parent_node, PandaNode *child_node);
@@ -292,6 +293,8 @@ private:
     // updated for the same reasons the bounding volume needs to be
     // updated.  So we update them together.
     CollideMask _net_collide_mask;
+
+    bool _fixed_internal_bound;
   };
 
   PipelineCycler<CData> _cycler;

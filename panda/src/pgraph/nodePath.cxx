@@ -449,7 +449,7 @@ output(ostream &out) const {
   if (_head == (NodePathComponent *)NULL) {
     out << "(empty)";
   } else {
-    r_output(out, _head);
+    _head->output(out);
   }
 }
 
@@ -3040,43 +3040,6 @@ r_get_partial_transform(NodePathComponent *comp, int n) const {
     CPT(TransformState) transform = comp->get_node()->get_transform();
     return r_get_partial_transform(comp->get_next(), n - 1)->compose(transform);
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::r_output
-//       Access: Private
-//  Description: The recursive implementation of output(), this writes
-//               the names of each node component in order from
-//               beginning to end, by first walking to the end of the
-//               linked list and then outputting from there.
-////////////////////////////////////////////////////////////////////
-void NodePath::
-r_output(ostream &out, NodePathComponent *comp) const {
-  PandaNode *node = comp->get_node();
-  NodePathComponent *next = comp->get_next();
-  if (next != (NodePathComponent *)NULL) {
-    // This is not the head of the list; keep going up.
-    r_output(out, next);
-    out << "/";
-
-    PandaNode *parent_node = next->get_node();
-    if (parent_node->find_stashed(node) >= 0) {
-      // The node is stashed.
-      out << "@@";
-
-    } else if (node->find_parent(parent_node) < 0) {
-      // Oops, there's an error.  This shouldn't happen.
-      out << ".../";
-    }
-  }
-
-  // Now output this component.
-  if (node->has_name()) {
-    out << node->get_name();
-  } else {
-    out << "-" << node->get_type();
-  }
-  //  out << "[" << comp->get_length() << "]";
 }
 
 ////////////////////////////////////////////////////////////////////

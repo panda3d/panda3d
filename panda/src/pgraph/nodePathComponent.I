@@ -135,3 +135,9 @@ get_collapsed() const {
   CDReader cdata(_cycler);
   return cdata->_next;
 }
+
+INLINE ostream &operator << (ostream &out, const NodePathComponent &comp) {
+  comp.output(out);
+  return out;
+}
+

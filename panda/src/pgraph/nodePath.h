@@ -528,7 +528,6 @@ private:
   CPT(RenderState) r_get_partial_state(NodePathComponent *comp, int n) const;
   CPT(TransformState) r_get_net_transform(NodePathComponent *comp) const;
   CPT(TransformState) r_get_partial_transform(NodePathComponent *comp, int n) const;
-  void r_output(ostream &out, NodePathComponent *comp) const;
 
   void find_matches(NodePathCollection &result,
                     const string &approx_path_str,

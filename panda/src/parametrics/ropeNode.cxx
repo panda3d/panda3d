@@ -201,22 +201,10 @@ write(ostream &out, int indent_level) const {
 //               called explicitly when the curve has changed
 //               properties outside of this node's knowledge.
 ////////////////////////////////////////////////////////////////////
-BoundingVolume *RopeNode::
+void RopeNode::
 reset_bound(const NodePath &rel_to) {
-  // First, get ourselves a fresh, empty bounding volume.
-  BoundingVolume *bound = PandaNode::recompute_internal_bound();
-  nassertr(bound != (BoundingVolume *)NULL, bound);
-
-  NurbsCurveEvaluator *curve = get_curve();
-  if (curve != (NurbsCurveEvaluator *)NULL) {
-    pvector<LPoint3f> verts;
-    get_curve()->get_vertices(verts, rel_to);
-
-    GeometricBoundingVolume *gbv;
-    DCAST_INTO_R(gbv, bound, bound);
-    gbv->around(&verts[0], &verts[verts.size() - 1]);
-  }
-  return bound;
+  do_recompute_bound(rel_to);
+  changed_internal_bound();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -229,7 +217,30 @@ reset_bound(const NodePath &rel_to) {
 ////////////////////////////////////////////////////////////////////
 BoundingVolume *RopeNode::
 recompute_internal_bound() {
-  return reset_bound(NodePath(this));
+  return do_recompute_bound(NodePath(this));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RopeNode::do_recompute_bound
+//       Access: Private
+//  Description: Does the actual internal recompute.
+////////////////////////////////////////////////////////////////////
+BoundingVolume *RopeNode::
+do_recompute_bound(const NodePath &rel_to) {
+  // First, get ourselves a fresh, empty bounding volume.
+  BoundingVolume *bound = PandaNode::recompute_internal_bound();
+  nassertr(bound != (BoundingVolume *)NULL, bound);
+  
+  NurbsCurveEvaluator *curve = get_curve();
+  if (curve != (NurbsCurveEvaluator *)NULL) {
+    pvector<LPoint3f> verts;
+    get_curve()->get_vertices(verts, rel_to);
+    
+    GeometricBoundingVolume *gbv;
+    DCAST_INTO_R(gbv, bound, bound);
+    gbv->around(&verts[0], &verts[verts.size() - 1]);
+  }
+  return bound;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -250,6 +261,7 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
               NurbsCurveResult *result) {
   PTA_Vertexf verts;
   PTA_TexCoordf uvs;
+  PTA_Colorf colors;
   PTA_int lengths;
 
   int num_verts = get_num_segs() + 1;
@@ -264,10 +276,13 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
     }
     lengths.push_back(num_verts);
   }
+
+  colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
   
   PT(Geom) geom = new GeomLinestrip;
   geom->set_num_prims(num_segments);
   geom->set_coords(verts);
+  geom->set_colors(colors, G_OVERALL);
   geom->set_lengths(lengths);
   
   CullableObject *object = new CullableObject(geom, data._state,
@@ -346,6 +361,7 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
 
   PTA_Vertexf verts;
   PTA_TexCoordf uvs;
+  PTA_Colorf colors;
   PTA_int lengths;
 
   int vi = 0;
@@ -404,6 +420,8 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
     lengths.push_back(length * 2);
     num_prims++;
   }
+
+  colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
   
   PT(Geom) geom = new GeomTristrip;
   geom->set_num_prims(num_prims);
@@ -411,6 +429,7 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
   if (uv_mode != UV_none) {
     geom->set_texcoords(uvs, G_PER_VERTEX);
   }
+  geom->set_colors(colors, G_OVERALL);
   geom->set_lengths(lengths);
   
   CullableObject *object = new CullableObject(geom, data._state,

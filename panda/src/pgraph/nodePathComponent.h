@@ -64,6 +64,8 @@ public:
 
   bool fix_length();
   NodePathComponent *uncollapse();
+
+  void output(ostream &out) const;
   
 private:
   void set_next(NodePathComponent *next);
@@ -108,6 +110,8 @@ private:
   static TypeHandle _type_handle;
   friend class PandaNode;
 };
+
+INLINE ostream &operator << (ostream &out, const NodePathComponent &comp);
 
 #include "nodePathComponent.I"
 

@@ -54,13 +54,32 @@ public:
 
 PUBLISHED:
   enum RenderMode {
+    // Render the rope as a one-pixel thread using a linestrip.
     RM_thread,
+
+    // Render the rope as a continuous triangle strip oriented to be
+    // perpendicular to the view vector.
     RM_billboard
   };
+
   enum UVMode {
+    // Don't generate UV's along the curve.
     UV_none,
+
+    // Generate UV's based on the parametric coordinates along the
+    // curve.
     UV_parametric,
+
+    // Generate UV's in proportion to spatial distance along the
+    // curve, by using the distance function to compute the length of
+    // each segment.
     UV_distance,
+
+    // As above, but don't bother to take the square root of each
+    // segment.  The distance is then in proportion to the
+    // sum-of-squares of the segments along the rope.  If the segments
+    // are similar in length, this approximates the proportion of
+    // UV_distance while avoiding hundreds of square root operations.
     UV_distance2,
   };
 
@@ -82,12 +101,13 @@ PUBLISHED:
   INLINE void set_thickness(float thickness);
   INLINE float get_thickness() const;
 
-  BoundingVolume *reset_bound(const NodePath &rel_to);
+  void reset_bound(const NodePath &rel_to);
 
 protected:
   virtual BoundingVolume *recompute_internal_bound();
 
 private:
+  BoundingVolume *do_recompute_bound(const NodePath &rel_to);
   void render_thread(CullTraverser *trav, CullTraverserData &data, 
                      NurbsCurveResult *result);
   void render_billboard(CullTraverser *trav, CullTraverserData &data, 

@@ -1644,6 +1644,29 @@ get_top_component(PandaNode *child_node, bool force) {
 ////////////////////////////////////////////////////////////////////
 PT(NodePathComponent) PandaNode::
 get_generic_component(bool accept_ambiguity) {
+  bool ambiguity_detected = false;
+  PT(NodePathComponent) result = 
+    r_get_generic_component(accept_ambiguity, ambiguity_detected);
+
+  if (!accept_ambiguity && ambiguity_detected) {
+    pgraph_cat.warning()
+      << "Chose: " << *result << "\n";
+    nassertr(!unambiguous_graph, result);
+  }
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::r_get_generic_component
+//       Access: Private
+//  Description: The recursive implementation of
+//               get_generic_component, this simply sets the flag when
+//               the ambiguity is detected (so we can report the
+//               bottom node that started the ambiguous search).
+////////////////////////////////////////////////////////////////////
+PT(NodePathComponent) PandaNode::
+r_get_generic_component(bool accept_ambiguity, bool &ambiguity_detected) {
   int num_parents = get_num_parents();
   if (num_parents == 0) {
     // No parents; no ambiguity.  This is the root.
@@ -1654,7 +1677,7 @@ get_generic_component(bool accept_ambiguity) {
   if (num_parents == 1) {
     // Only one parent; no ambiguity.
     PT(NodePathComponent) parent = 
-      get_parent(0)->get_generic_component(accept_ambiguity);
+      get_parent(0)->r_get_generic_component(accept_ambiguity, ambiguity_detected);
     result = get_component(parent, this);
 
   } else {
@@ -1664,11 +1687,10 @@ get_generic_component(bool accept_ambiguity) {
         << *this << " has " << num_parents
         << " parents; choosing arbitrary path to root.\n";
     }
-  
+    ambiguity_detected = true;
     PT(NodePathComponent) parent = 
-      get_parent(0)->get_generic_component(accept_ambiguity);
+      get_parent(0)->r_get_generic_component(accept_ambiguity, ambiguity_detected);
     result = get_component(parent, this);
-    nassertr(accept_ambiguity || !unambiguous_graph, result);
   }
 
   return result;

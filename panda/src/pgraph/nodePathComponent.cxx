@@ -163,6 +163,43 @@ uncollapse() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePathComponent::output
+//       Access: Public
+//  Description: The recursive implementation of NodePath::output(),
+//               this writes the names of each node component in order
+//               from beginning to end, by first walking to the end of
+//               the linked list and then outputting from there.
+////////////////////////////////////////////////////////////////////
+void NodePathComponent::
+output(ostream &out) const {
+  PandaNode *node = this->get_node();
+  NodePathComponent *next = this->get_next();
+  if (next != (NodePathComponent *)NULL) {
+    // This is not the head of the list; keep going up.
+    next->output(out);
+    out << "/";
+
+    PandaNode *parent_node = next->get_node();
+    if (parent_node->find_stashed(node) >= 0) {
+      // The node is stashed.
+      out << "@@";
+
+    } else if (node->find_parent(parent_node) < 0) {
+      // Oops, there's an error.  This shouldn't happen.
+      out << ".../";
+    }
+  }
+
+  // Now output this component.
+  if (node->has_name()) {
+    out << node->get_name();
+  } else {
+    out << "-" << node->get_type();
+  }
+  //  out << "[" << this->get_length() << "]";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePathComponent::set_next
 //       Access: Private
 //  Description: Sets the next pointer in the path.

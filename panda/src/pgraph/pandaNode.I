@@ -120,6 +120,7 @@ CData() {
   _transform = TransformState::make_identity();
   _draw_mask = DrawMask::all_on();
   _net_collide_mask = CollideMask::all_off();
+  _fixed_internal_bound = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -136,7 +137,8 @@ CData(const PandaNode::CData &copy) :
   _state(copy._state),
   _effects(copy._effects),
   _transform(copy._transform),
-  _draw_mask(copy._draw_mask)
+  _draw_mask(copy._draw_mask),
+  _fixed_internal_bound(copy._fixed_internal_bound)
 {
   _net_collide_mask = CollideMask::all_off();
 }
@@ -719,6 +721,8 @@ get_net_collide_mask() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PandaNode::
 set_bound(BoundingVolumeType type) {
+  CDWriter cdata(_cycler);
+  cdata->_fixed_internal_bound = false;
   BoundedObject::set_bound(type);
 }
 
@@ -733,6 +737,8 @@ set_bound(BoundingVolumeType type) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PandaNode::
 set_bound(const BoundingVolume &volume) {
+  CDWriter cdata(_cycler);
+  cdata->_fixed_internal_bound = true;
   _internal_bound.set_bound(volume);
   changed_internal_bound();
 }
@@ -758,7 +764,9 @@ get_bound() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const BoundingVolume &PandaNode::
 get_internal_bound() const {
-  if (is_bound_stale() || _internal_bound.is_bound_stale()) {
+  CDReader cdata(_cycler);
+  if (!cdata->_fixed_internal_bound && 
+      (is_bound_stale() || _internal_bound.is_bound_stale())) {
     ((PandaNode *)this)->recompute_internal_bound();
   }
   return _internal_bound.get_bound();
