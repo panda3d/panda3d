@@ -18,6 +18,7 @@
 
 #include "winStatsStripChart.h"
 #include "winStatsMonitor.h"
+#include "pStatCollectorDef.h"
 #include "numeric_types.h"
 
 static const int default_strip_chart_width = 400;
