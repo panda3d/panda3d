@@ -278,7 +278,7 @@
 // How about GLX?
 #define GLX_IPATH
 #define GLX_LPATH
-#defer HAVE_GLX $[HAVE_GL]
+#defer HAVE_WGL $[and $[HAVE_GL],$[UNIX_PLATFORM]]
 
 // Glut?
 #define GLUT_IPATH
@@ -298,7 +298,7 @@
 #if $[WINDOWS_PLATFORM]
   #define DX_IPATH
   #define DX_LPATH
-  #define DX_LIBS ddraw.lib dxguid.lib
+  #define DX_LIBS d3d8.lib d3dx8.lib dxerr8.lib
   #defer HAVE_DX $[libtest $[DX_LPATH],$[DX_LIBS]]
 #endif
 
