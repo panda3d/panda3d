@@ -115,7 +115,8 @@
 
 // $[build_pdbs] will be nonempty (true) if we should expect to
 // generate a .pdb file when we build a DLL or EXE.
-#if $[and $[eq $[USE_COMPILER], MSVC],$[<= $[OPTIMIZE],2]]
+// we now build pdb for all Opt values
+#if $[eq $[USE_COMPILER], MSVC]
   #define build_pdbs yes
 #else
   #define build_pdbs
