@@ -115,10 +115,10 @@ if [ "$TTMODELS" ]; then
 fi
 
 # Pirates models
-if [ "$PMODELS" ]; then
-    if [ "$debug" ]; then echo "PMODELS  $PMODELS"; fi
-    PMODELS=`cygpath -w $PMODELS`
-    export PMODELS
+if [ "$PMOCKUP" ]; then
+    if [ "$debug" ]; then echo "PMOCKUP  $PMOCKUP"; fi
+    PMOCKUP=`cygpath -w $PMOCKUP`
+    export PMOCKUP
 fi
 
 if [ "$BARMODELS" ]; then
