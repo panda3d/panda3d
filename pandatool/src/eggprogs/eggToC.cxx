@@ -67,6 +67,11 @@ EggToC() :
      &EggToC::dispatch_none, &_vertex_colors);
 
   add_option
+    ("p", "", 0,
+     "Generate a table of polygons that index into the above tables.",
+     &EggToC::dispatch_none, &_polygons);
+
+  add_option
     ("pn", "", 0,
      "Generate a table of normals per each polygon.",
      &EggToC::dispatch_none, &_polygon_normals);
@@ -75,11 +80,6 @@ EggToC() :
     ("pc", "", 0,
      "Generate a table of colors per each polygon.",
      &EggToC::dispatch_none, &_polygon_colors);
-
-  add_option
-    ("p", "", 0,
-     "Generate a table of polygons that index into the above tables.",
-     &EggToC::dispatch_none, &_polygons);
 
   add_option
     ("t", "", 0,
