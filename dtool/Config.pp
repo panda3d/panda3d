@@ -385,7 +385,8 @@
 // In general, it is safe to define these to be the same.  However,
 // don't define these to be '.', or you will be very sad the next time
 // you run 'make clean'.
-#defer ODIR Opt$[OPTIMIZE]-$[PLATFORM]$[USE_COMPILER]
+//#defer ODIR Opt$[OPTIMIZE]-$[PLATFORM]$[USE_COMPILER]
+#defer ODIR Opt$[OPTIMIZE]-$[PLATFORM]
 #defer ODIR_SHARED $[ODIR]
 #defer ODIR_STATIC $[ODIR]
 
