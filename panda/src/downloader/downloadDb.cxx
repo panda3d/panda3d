@@ -13,7 +13,15 @@
 ////////////////////////////////////////////////////////////////////
 // Defines
 ////////////////////////////////////////////////////////////////////
+
+// Written at the top of the file so we know this is a downloadDb
 PN_uint32 DownloadDb::_magic_number = 0xfeedfeed;
+
+// Written at the top of the file to signify we are not done
+// writing to the file yet. If you load a db with this magic 
+// number that means the previous time it got written out was 
+// probably interrupted in the middle of the write.
+PN_uint32 DownloadDb::_bogus_magic_number = 0x11111111;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::Constructor
@@ -62,7 +70,7 @@ output(ostream &out) const {
   _client_db.output(out);
   out << endl;
   out << "============================================================" << endl;
-  out << "  Server DB file: " << _server_db._filename << endl;
+  out << "  Server DB file: " << endl;
   out << "============================================================" << endl;
   _server_db.output(out);
   output_version_map(out);
@@ -235,6 +243,7 @@ read_db(Ramfile &file, bool want_server_info) {
   return db;
 }
 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::
 //       Access: Public
@@ -254,10 +263,14 @@ write_db(Filename &file, Db db, bool want_server_info) {
   downloader_cat.debug()
     << "Writing to file: " << file << endl;
 
+  // Initialize the write stream with a bogus header
+  db.write_bogus_header(write_stream);
   db.write(write_stream, want_server_info);
   if (want_server_info) {
     write_version_map(write_stream);
   }
+  // Now write the real header
+  db.write_header(write_stream);
   write_stream.close();
   return true;
 }
@@ -554,7 +567,18 @@ parse_header(uchar *start, int size) {
   PN_uint32 magic_number = di.get_uint32();
   downloader_cat.debug()
     << "Parsed magic number: " << magic_number << endl;
-  if (magic_number != _magic_number) {
+  // If the magic number is equal to the bogus magic number
+  // it signifies that the previous write was interrupted
+  if (magic_number == _bogus_magic_number) {
+    downloader_cat.error()
+      << "DownloadDb::parse_header() - "
+      << "Bogus magic number, previous write incomplete: " 
+      << magic_number << " expected: " << _magic_number << endl;
+    return -1;
+  }
+  // If the magic number does not match at all, something is 
+  // really wrong
+  else if (magic_number != _magic_number) {
     downloader_cat.error()
       << "DownloadDb::parse_header() - Invalid magic number: " 
       << magic_number << " expected: " << _magic_number << endl;
@@ -754,8 +778,6 @@ read(istream &read_stream, bool want_server_info) {
 ////////////////////////////////////////////////////////////////////
 bool DownloadDb::Db::
 write(ofstream &write_stream, bool want_server_info) {
-  write_header(write_stream);
-
   // Declare these outside the loop so we do not keep creating
   // and deleting them
   PN_int32 phase;
@@ -838,10 +860,28 @@ write(ofstream &write_stream, bool want_server_info) {
   return true;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: DownloadDb::Db::write_bogus_header
+//       Access: Private
+//  Description: Writes the bogus header uncompressed with platform-
+//               independent byte ordering. This header will get 
+//               overwritten with the real magic number as the last 
+//               step in the write
+////////////////////////////////////////////////////////////////////
+bool DownloadDb::Db::
+write_bogus_header(ofstream &write_stream) {
+  _datagram.clear();
 
+  // Write the db magic number
+  _datagram.add_uint32(_bogus_magic_number);
 
+  // Write the number of multifiles
+  _datagram.add_int32(get_num_multifiles());
 
-
+  string msg = _datagram.get_message();
+  write_stream.write(msg.data(), msg.length());
+  return true;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::Db::write_header
@@ -860,9 +900,13 @@ write_header(ofstream &write_stream) {
   _datagram.add_int32(get_num_multifiles());
 
   string msg = _datagram.get_message();
+  // Seek back to the beginning of the write stream
+  write_stream.seekp(0);
+  // Overwrite the old bogus header with the real header
   write_stream.write(msg.data(), msg.length());
   return true;
 }
+
 
 
 ////////////////////////////////////////////////////////////////////
