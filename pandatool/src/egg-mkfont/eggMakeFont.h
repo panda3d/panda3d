@@ -19,6 +19,7 @@ class CharBitmap;
 class EggGroup;
 class EggTexture;
 class EggVertexPool;
+class EggVertex;
 class FontFile;
 
 ////////////////////////////////////////////////////////////////////
@@ -40,6 +41,7 @@ protected:
 private:
   TexCoordd get_uv(double x, double y);
   LPoint2d get_xy(double x, double y);
+  EggVertex *make_vertex(const LPoint2d &xy);
 
   void copy_character(const CharPlacement &pl);
 
@@ -65,9 +67,12 @@ private:
   double _poly_pixels;
   double _scale_factor;
   double _gaussian_radius;
+  double _ds;
   double _ppu;
   bool _get_all;
   string _only_chars;
+  bool _small_caps;
+  double _small_caps_scale;
 
   FontFile *_font;
   typedef map<int, PT(EggGroup)> EggDefs;

@@ -101,12 +101,12 @@ EggMakeFont() : EggWriter(true, false) {
      &EggMakeFont::dispatch_double, NULL, &_poly_pixels);
 
   add_option
-    ("p", "n", 0, 
-     "Points per unit: the size of the egg characters relative to the "
-     "point size of the font.  This is the number of points per each "
-     "unit in the egg file.  Set it to zero to normalize the "
-     "font height to 1 unit. [12.0]",
-     &EggMakeFont::dispatch_double, NULL, &_ppu);
+    ("ds", "size", 0, 
+     "Specify the design size of the resulting font.  The design size of "
+     "a font is the height of a typical capital letter; it's the approximate "
+     "height of a line of text.  This sets the size of the polygons "
+     "accordingly.  [1.0]",
+     &EggMakeFont::dispatch_double, NULL, &_ds);
 
   add_option
     ("all", "", 0, 
@@ -123,6 +123,13 @@ EggMakeFont() : EggWriter(true, false) {
      "as the first or last character it loses its special meaning.",
      &EggMakeFont::dispatch_string, NULL, &_only_chars);
 
+  add_option
+    ("sc", "", 0, 
+     "Small caps: generate lowercase letters as small capitals.  This "
+     "allows the lowercase and capital letters to share the same space "
+     "on the texture map.",
+     &EggMakeFont::dispatch_none, &_small_caps);
+
   _fg.set(1.0, 1.0, 1.0, 1.0);
   _bg.set(0.0, 0.0, 0.0, 0.0);
   _output_xsize = 256;
@@ -132,7 +139,8 @@ EggMakeFont() : EggWriter(true, false) {
   _poly_pixels = 1.0;
   _scale_factor = 3.0;
   _gaussian_radius = 1.2;
-  _ppu = 12.0;
+  _ds = 1.0;
+  _small_caps_scale = 0.8;
 }
 
 
@@ -226,6 +234,19 @@ get_xy(double x, double y) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggMakeFont::make_vertex
+//       Access: Private
+//  Description: Allocates and returns a new vertex from the vertex
+//               pool representing the indicated 2-d coordinates.
+////////////////////////////////////////////////////////////////////
+EggVertex *EggMakeFont::
+make_vertex(const LPoint2d &xy) {
+  return
+    _vpool->make_new_vertex(LPoint3d::origin(_coordinate_system) + 
+			    LVector3d::rfu(xy[0], 0.0, xy[1], _coordinate_system));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggMakeFont::copy_character
 //       Access: Private
 //  Description: Copy the indicated character image to its home on the
@@ -245,13 +266,7 @@ copy_character(const CharPlacement &pl) {
   int width = bm->get_width();
   int height = bm->get_height();
 
-  // First, create an egg group to hold the character.
-
-  string group_name = format_string(character);
-  PT(EggGroup) group = new EggGroup(group_name);
-  _egg_defs[character] = group;
-
-  // Now copy the character into the image.
+  // Copy the character into the image.
   if (_output_image.has_alpha()) {
     for (int y = 0; y < height; y++) {
       for (int x = 0; x < width; x++) {
@@ -287,16 +302,22 @@ copy_character(const CharPlacement &pl) {
   TexCoordd uv_lr = get_uv(xp + width + b, yp + height + b);
   LPoint2d xy_ul = get_xy(-hoff - b, -voff - b);
   LPoint2d xy_lr = get_xy(-hoff + width + b, -voff + height + b);
+  LPoint2d dp = get_xy(dx, dy);
 
-  EggVertex *v1 = _vpool->make_new_vertex(LPoint3d(xy_ul[0], xy_lr[1], 0.0));
-  EggVertex *v2 = _vpool->make_new_vertex(LPoint3d(xy_lr[0], xy_lr[1], 0.0));
-  EggVertex *v3 = _vpool->make_new_vertex(LPoint3d(xy_lr[0], xy_ul[1], 0.0));
-  EggVertex *v4 = _vpool->make_new_vertex(LPoint3d(xy_ul[0], xy_ul[1], 0.0));
+  EggVertex *v1 = make_vertex(LPoint2d(xy_ul[0], xy_lr[1]));
+  EggVertex *v2 = make_vertex(LPoint2d(xy_lr[0], xy_lr[1]));
+  EggVertex *v3 = make_vertex(LPoint2d(xy_lr[0], xy_ul[1]));
+  EggVertex *v4 = make_vertex(LPoint2d(xy_ul[0], xy_ul[1]));
 
   v1->set_uv(TexCoordd(uv_ul[0], uv_lr[1]));
   v2->set_uv(TexCoordd(uv_lr[0], uv_lr[1]));
   v3->set_uv(TexCoordd(uv_lr[0], uv_ul[1]));
   v4->set_uv(TexCoordd(uv_ul[0], uv_ul[1]));
+
+  // Create an egg group to hold the polygon.
+  string group_name = format_string(character);
+  PT(EggGroup) group = new EggGroup(group_name);
+  _egg_defs[character] = group;
     
   EggPolygon *poly = new EggPolygon();
   group->add_child(poly);
@@ -310,12 +331,48 @@ copy_character(const CharPlacement &pl) {
   // Now create a single point where the origin of the next character
   // will be.
 
-  LPoint2d dp = get_xy(dx, dy);
-  
-  EggVertex *v0 = _vpool->make_new_vertex(LPoint3d(dp[0], dp[1], 0.0));
+  EggVertex *v0 = make_vertex(dp);
   EggPoint *point = new EggPoint;
   group->add_child(point);
   point->add_vertex(v0);
+
+  if (_small_caps && isupper(character)) {
+    // Now create the polygon representing the lowercase letter, for
+    // small caps mode.  This uses the same texture on a smaller
+    // polygon.
+    xy_ul *= _small_caps_scale;
+    xy_lr *= _small_caps_scale;
+    dp *= _small_caps_scale;
+    character = tolower(character);
+
+    EggVertex *v1 = make_vertex(LPoint2d(xy_ul[0], xy_lr[1]));
+    EggVertex *v2 = make_vertex(LPoint2d(xy_lr[0], xy_lr[1]));
+    EggVertex *v3 = make_vertex(LPoint2d(xy_lr[0], xy_ul[1]));
+    EggVertex *v4 = make_vertex(LPoint2d(xy_ul[0], xy_ul[1]));
+    
+    v1->set_uv(TexCoordd(uv_ul[0], uv_lr[1]));
+    v2->set_uv(TexCoordd(uv_lr[0], uv_lr[1]));
+    v3->set_uv(TexCoordd(uv_lr[0], uv_ul[1]));
+    v4->set_uv(TexCoordd(uv_ul[0], uv_ul[1]));
+
+    string group_name = format_string(character);
+    PT(EggGroup) group = new EggGroup(group_name);
+    _egg_defs[character] = group;
+    
+    EggPolygon *poly = new EggPolygon();
+    group->add_child(poly);
+    poly->set_texture(_tref);
+    
+    poly->add_vertex(v1);
+    poly->add_vertex(v2);
+    poly->add_vertex(v3);
+    poly->add_vertex(v4);
+
+    EggVertex *v0 = make_vertex(dp);
+    EggPoint *point = new EggPoint;
+    group->add_child(point);
+    point->add_vertex(v0);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -341,10 +398,13 @@ consider_scale_factor(double scale_factor) {
   bool ok = true;
   int num_chars = _font->get_num_chars();
   for (int i = 0; i < num_chars; i++) {
-    ok = _layout.place_character(_font->get_char(i));
-    if (!ok) {
-      // Out of room.
-      return false;
+    CharBitmap *bm = _font->get_char(i);
+    if (!(_small_caps && islower(bm->_character))) {
+      ok = _layout.place_character(bm);
+      if (!ok) {
+	// Out of room.
+	return false;
+      }
     }
   }
 
@@ -544,6 +604,9 @@ run() {
   if (!_only_chars.empty()) {
     _only_chars = expand_hyphen(_only_chars);
     nout << "Extracting only characters: " << _only_chars << "\n";
+    if (_small_caps) {
+      _only_chars = upcase(_only_chars);
+    }
   }
 
   _font = new PkFontFile();
@@ -575,8 +638,13 @@ run() {
 
   // If we specified 1.0 for both foreground and background alpha, we
   // don't really want to use alpha.
-  _use_alpha = _output_image.has_alpha() && 
-    (_fg[3] != 1.0 || _bg[3] != 1.0); 
+  _use_alpha = (_output_zsize != 3) && (_fg[3] != 1.0 || _bg[3] != 1.0); 
+  if (_use_alpha && _output_zsize == 1) {
+    // If we have only one channel and we're using alpha, then the
+    // gray channel becomes the alpha channel.
+    _fg[0] = _fg[3];
+    _bg[0] = _bg[3];
+  }
 
   _output_image.fill(_bg[0], _bg[1], _bg[2]); 
   if (_output_image.has_alpha()) {
@@ -623,11 +691,7 @@ run() {
   _group->set_switch_flag(true);
   _group->set_switch_fps(2.0);
 
-  if (_ppu <= 0.0) {
-    // If the user set ppu to 0, it means to normalize the character
-    // height.
-    _ppu = _font->get_ds();
-  }
+  _ppu = _font->get_ds() / _ds;
 
   // Now we can copy all the characters onto the actual image.
   CharLayout::Placements::const_iterator pi;
@@ -647,20 +711,22 @@ run() {
   // Also create an egg group indicating the font's design size.
   EggGroup *ds_group = new EggGroup("ds");
   _group->add_child(ds_group);
-  EggVertex *vtx = _vpool->make_new_vertex(LPoint3d(0.0, _font->get_ds() / _ppu, 0.0));
+  EggVertex *vtx = make_vertex(LPoint2d(0.0, _ds));
   EggPoint *point = new EggPoint;
   ds_group->add_child(point);
   point->add_vertex(vtx);
 
-  if (_use_alpha && _bg[3] == 0.0) {
-    // If we have a transparent background, then everything in the
-    // color channels is pointless--the color information is
-    // completely replaced.  Might as well fill it white.
-    _output_image.fill(_fg[0], _fg[1], _fg[2]); 
-
-  } else if (_use_alpha && _bg[3] == 1.0) {
-    // Similarly if we have a transparent foreground.
-    _output_image.fill(_bg[0], _bg[1], _bg[2]);
+  if (_use_alpha && _output_zsize != 1) {
+    if (_bg[3] == 0.0) {
+      // If we have a transparent background, then everything in the
+      // color channels is pointless--the color information is
+      // completely replaced.  Might as well fill it white.
+      _output_image.fill(_fg[0], _fg[1], _fg[2]); 
+      
+    } else if (_bg[3] == 1.0) {
+      // Similarly if we have a transparent foreground.
+      _output_image.fill(_bg[0], _bg[1], _bg[2]);
+    }
   }
 
   // All done!  Write everything out.

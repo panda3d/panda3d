@@ -84,8 +84,8 @@ if ttf2tfm $ttf -q -u -T "$enc" $fontname.tfm > ttfonts1.map 2>/dev/null; then
   tail -1 ttfonts1.map >ttfonts.map
   echo ttf2pk -q $fontname $dpi
   if ttf2pk -q $fontname $dpi >/dev/null 2>/dev/null; then
-    echo egg-mkfont -p 0 $* -o $egg $fontname.${dpi}pk
-    egg-mkfont -p 0 $* -o $egg $fontname.${dpi}pk
+    echo egg-mkfont $* -o $egg $fontname.${dpi}pk
+    egg-mkfont $* -o $egg $fontname.${dpi}pk
   fi
 fi
 status=$?

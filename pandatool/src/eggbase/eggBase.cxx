@@ -20,6 +20,8 @@ EggBase() {
      "'y-up', 'z-up', 'y-up-left', or 'z-up-left'.",
      &EggBase::dispatch_coordinate_system, 
      &_got_coordinate_system, &_coordinate_system);
+
+  _coordinate_system = CS_yup_right;
 }
 
 
