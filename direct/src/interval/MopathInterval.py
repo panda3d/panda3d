@@ -7,6 +7,8 @@ import Mopath
 class MopathInterval(Interval):
     # Name counter
     mopathNum = 1
+    # create MopathInterval DirectNotify category
+    notify = directNotify.newCategory('MopathInterval')
     # Class methods
     def __init__(self, mopath, node, name=None):
         """__init__(mopath, node, name)
@@ -28,6 +30,5 @@ class MopathInterval(Interval):
 	"""
         self.mopath.goTo(self.node, t)
         # Print debug information
-        self.notify.debug('MopathInterval.updateFunc() - %s: t = %f' %
-                          (self.name, t))
+        self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t))
 

@@ -6,6 +6,8 @@ from PandaModules import *
 import LerpBlendHelpers
 
 class LerpInterval(Interval):
+    # create LerpInterval DirectNotify category
+    notify = directNotify.newCategory('LerpInterval')
     # Class methods
     def __init__(self, name, duration, functorFunc, blendType='noBlend'):
         """__init__(name, duration, functorFunc, blendType)
@@ -31,8 +33,7 @@ class LerpInterval(Interval):
         # Evaluate the lerp
         self.lerp.setT(t)
         # Print debug information
-        self.notify.debug('LerpInterval.updateFunc() - %s: t = %f' %
-                          (self.name, t))
+        self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t))
 
     def getBlend(self, blendType):
         """__getBlend(self, string)
@@ -252,8 +253,9 @@ class LerpPosHprScaleInterval(LerpInterval):
 class LerpFunctionInterval(Interval):
     # Interval counter
     lerpFunctionIntervalNum = 1
+    # create LerpFunctionInterval DirectNotify category
+    notify = directNotify.newCategory('LerpFunctionInterval')
     # Class methods
-
     def __init__(self, function, fromData = 0, toData = 1, duration = 0.0,
                  blendType = 'noBlend', extraArgs = [], name = None):
         """__init__(function, duration, fromData, toData, name)
@@ -289,8 +291,7 @@ class LerpFunctionInterval(Interval):
             # Evaluate function
             apply(self.function, [data] + self.extraArgs)
         # Print debug information
-        self.notify.debug('LerpFunctionInterval.updateFunc() - %s: t = %f' %
-                          (self.name, t))
+        self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t))
             
     def getBlend(self, blendType):
         """__getBlend(self, string)

@@ -8,7 +8,8 @@ import DirectNotifyGlobal
 
 class ActorInterval(Interval):
 
-    notify = DirectNotifyGlobal.directNotify.newCategory('ActorInterval')
+    # create ActorInterval DirectNotify category
+    notify = directNotify.newCategory('ActorInterval')
 
     # Name counter
     animNum = 1
@@ -65,7 +66,7 @@ class ActorInterval(Interval):
         # Pose anim
         self.actor.pose(self.animName, frame)
         # Print debug information
-        self.notify.debug('ActorInterval.goToT() - %s pose to frame: %d' %
+        self.notify.debug('goToT() - %s pose to frame: %d' %
                           (self.name,frame))
         return frame
 
@@ -85,8 +86,7 @@ class ActorInterval(Interval):
                 self.ignore(self.stopEvent)
             # Print debug information
 	    self.notify.debug(
-                'ActorInterval.updateFunc() - %s stoping at frame: ' %
-                self.name +
+                'updateFunc() - %s stoping at frame: ' % self.name +
                 '%d Num frames: %d' % (frame, self.numFrames))
         elif self.loop == 1:
             if event == IVAL_INIT:
@@ -97,7 +97,7 @@ class ActorInterval(Interval):
                 self.accept(self.stopEvent, self.actor.stop)
                 # Print debug information
                 self.notify.debug(
-                    'ActorInterval.updateFunc() - IVAL_INIT %s looping anim' %
+                    'updateFunc() - IVAL_INIT %s looping anim' %
                     self.name)
         else:
             # Pose anim

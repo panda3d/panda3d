@@ -6,6 +6,8 @@ from Interval import *
 class SoundInterval(Interval):
     # Name counter
     soundNum = 1
+    # create SoundInterval DirectNotify category
+    notify = directNotify.newCategory('SoundInterval')
     # Class methods
     # Create a sound interval
     # If loop = 0, sound will play once, duration of the interval
@@ -71,8 +73,7 @@ class SoundInterval(Interval):
             # Accept event to kill sound
             self.accept(self.stopEvent, lambda s = self: AudioManager.stop(s.sound))
         # Print debug information
-        self.notify.debug('SoundInterval.updateFunc() - %s: t = %f' %
-                          (self.name, t))
+        self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t))
             
 
 

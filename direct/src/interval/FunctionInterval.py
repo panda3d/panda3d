@@ -13,6 +13,10 @@ from MessengerGlobal import *
 class FunctionInterval(Interval):
     # Name counter
     functionIntervalNum = 1
+
+    # create FunctionInterval DirectNotify category
+    notify = directNotify.newCategory('FunctionInterval')
+
     # Class methods
     def __init__(self, function, name = None, openEnded = 1, extraArgs = []):
         """__init__(function, name = None)
@@ -40,8 +44,7 @@ class FunctionInterval(Interval):
         apply(self.function, self.extraArgs)
         # Print debug information
         self.notify.debug(
-            'FunctionInterval.updateFunc() - %s: executing Function' %
-            self.name)
+            'updateFunc() - %s: executing Function' % self.name)
 
 ### FunctionInterval subclass for throwing events ###
 class EventInterval(FunctionInterval):
