@@ -475,7 +475,7 @@ class TaskManager:
             elif (ret == exit):
                 self.removeTask(task)
             else:
-                raise "Task named %s did not return cont, exit, or done" % task.name
+                raise StandardError, "Task named %s did not return cont, exit, or done" % task.name
         return len(self.taskList)
 
     def run(self):
