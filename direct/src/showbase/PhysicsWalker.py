@@ -59,6 +59,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         self.__slideSpeed=0.0
         self.__vel=Vec3(0.0)
         #self.__slideButton = 0
+        self.collisionsActive = 0
         
         self.isAirborne = 0
         self.highMark = 0
@@ -128,7 +129,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         cRayNode.setFromCollideMask(self.cRayBitMask)
         cRayNode.setIntoCollideMask(BitMask32.allOff())
 
-        if self.useLifter:
+        if 1 or self.useLifter:
             # set up floor collision mechanism
             self.lifter = CollisionHandlerFloor()
             self.lifter.setInPattern("enter%in")
@@ -139,10 +140,11 @@ class PhysicsWalker(DirectObject.DirectObject):
             # If this is too low, we actually "fall" off steep stairs
             # and float above them as we go down. I increased this
             # from 8.0 to 16.0 to prevent this
-            self.lifter.setMaxVelocity(16.0)
+            #self.lifter.setMaxVelocity(16.0)
 
             #self.bobNodePath = self.avatarNodePath.attachNewNode("bob")
-            self.lifter.addCollider(self.cRayNodePath, self.cRayNodePath)
+            #self.lifter.addCollider(self.cRayNodePath, self.cRayNodePath)
+            self.lifter.addCollider(self.cRayNodePath, self.avatarNodePath)
         else: # useCollisionHandlerQueue
             self.cRayQueue = CollisionHandlerQueue()
             self.cTrav.addCollider(self.cRayNodePath, self.cRayQueue)
@@ -270,11 +272,12 @@ class PhysicsWalker(DirectObject.DirectObject):
         self.floorOffset = floorOffset = 7.0
 
         self.avatarNodePath = self.setupPhysics(avatarNodePath)
-        if self.useHeightRay:
-            self.setupRay(floorBitmask, avatarRadius)
+        if 1 or self.useHeightRay:
+            #self.setupRay(floorBitmask, avatarRadius)
+            self.setupRay(floorBitmask, 0.0)
         self.setupSphere(wallBitmask|floorBitmask, avatarRadius)
 
-        self.collisionsOn()
+        self.setCollisionsActive(1)
 
     def setAirborneHeightFunc(self, getAirborneHeight):
         self.getAirborneHeight = getAirborneHeight
@@ -349,23 +352,49 @@ class PhysicsWalker(DirectObject.DirectObject):
 
         del self.pusher
 
-    def collisionsOff(self):
-        assert(self.debugPrint("collisionsOff()"))
-        self.cTrav.removeCollider(self.cSphereNodePath)
-        if self.useHeightRay:
-            self.cTrav.removeCollider(self.cRayNodePath)
-        # Now that we have disabled collisions, make one more pass
-        # right now to ensure we aren't standing in a wall.
-        self.oneTimeCollide()
-
-    def collisionsOn(self):
-        assert(self.debugPrint("collisionsOn()"))
-        self.cTrav.addCollider(self.cSphereNodePath, self.pusher)
-        if self.useHeightRay:
-            if self.useLifter:
-                self.cTrav.addCollider(self.cRayNodePath, self.lifter)
+    def setCollisionsActive(self, active = 1):
+        assert(self.debugPrint("collisionsActive(active=%s)"%(active,)))
+        if self.collisionsActive != active:
+            self.collisionsActive = active
+            if active:
+                self.cTrav.addCollider(self.cSphereNodePath, self.pusher)
+                if self.useHeightRay:
+                    if self.useLifter:
+                        self.cTrav.addCollider(self.cRayNodePath, self.lifter)
+                    else:
+                        self.cTrav.addCollider(self.cRayNodePath, self.cRayQueue)
             else:
-                self.cTrav.addCollider(self.cRayNodePath, self.cRayQueue)
+                self.cTrav.removeCollider(self.cSphereNodePath)
+                if self.useHeightRay:
+                    self.cTrav.removeCollider(self.cRayNodePath)
+                # Now that we have disabled collisions, make one more pass
+                # right now to ensure we aren't standing in a wall.
+                self.oneTimeCollide()
+
+    def getCollisionsActive(self):
+        assert(self.debugPrint("getCollisionsActive() returning=%s"%(
+            self.collisionsActive,)))
+        return self.collisionsActive
+
+    #def collisionsOff(self):
+    # replaced by setCollisionsActive
+    #    assert(self.debugPrint("collisionsOff()"))
+    #    self.cTrav.removeCollider(self.cSphereNodePath)
+    #    if self.useHeightRay:
+    #        self.cTrav.removeCollider(self.cRayNodePath)
+    #    # Now that we have disabled collisions, make one more pass
+    #    # right now to ensure we aren't standing in a wall.
+    #    self.oneTimeCollide()
+
+    #def collisionsOn(self):
+    # replaced by setCollisionsActive
+    #    assert(self.debugPrint("collisionsOn()"))
+    #    self.cTrav.addCollider(self.cSphereNodePath, self.pusher)
+    #    if self.useHeightRay:
+    #        if self.useLifter:
+    #            self.cTrav.addCollider(self.cRayNodePath, self.lifter)
+    #        else:
+    #            self.cTrav.addCollider(self.cRayNodePath, self.cRayQueue)
 
     def oneTimeCollide(self):
         """
@@ -375,7 +404,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         """
         assert(self.debugPrint("oneTimeCollide()"))
         tempCTrav = CollisionTraverser()
-        tempCTrav.addCollider(self.cSphereNodePath, self.pusher)
+        tempCTrav.addCollider(self.cRayNodePath, self.lifter)
         tempCTrav.traverse(render)
 
     def handleAvatarControls(self, task):
@@ -688,7 +717,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         #self.accept("arrow_down", self.moveInReverse, [1])
         #self.accept("arrow_down-up", self.moveInReverse, [0])
         
-        self.collisionsOn()
+        self.setCollisionsActive(1)
 
         if __debug__:
             self.accept("control-f3", self.spawnTest) #*#
@@ -734,7 +763,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         #self.ignore("arrow_down")
         #self.ignore("arrow_down-up")
         
-        self.collisionsOff()
+        self.setCollisionsActive(0)
 
         if __debug__:
             self.ignore("control-f3") #*#
