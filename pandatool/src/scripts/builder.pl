@@ -276,7 +276,7 @@ sub gen_python_code() {
     $ENV{'PATH'}.=$ENV{'WINTOOLS'}."/sdk/python/Tcl/bin:".$ENV{'WINTOOLS'}."/sdk/python/Tcl/lib";
     
     $ENV{'PYTHONPATH'}= $WINBLDROOT."\\direct\\src\\showbase;".$WINBLDROOT."\\panda\\lib;".$WINBLDROOT."\\dtool\\lib;".$WINBLDROOT."\\wintools\\bin;".$WINBLDROOT."\\wintools\\lib;";
-    $ENV{'PYTHONPATH'}.= $WINBLDROOT."\\wintools\\sdk\\python\\Python-2.0\\Lib;".$WINBLDROOT."\\wintools\\sdk\\python\\Python-2.0\\DLLs;";
+    $ENV{'PYTHONPATH'}.= $WINBLDROOT."\\wintools\\sdk\\python\\Python-2.2\\Lib;".$WINBLDROOT."\\wintools\\sdk\\python\\Python-2.2\\DLLs;";
     # direct/src/showbase/sitecustomize.py will add paths based on CTPROJS
     $ENV{'CTPROJS'}="TOONTOWN:personal DIRECT:personal PANDA:personal WINTOOLS:personal DTOOL:personal";
     
@@ -650,11 +650,6 @@ if($DEBUG_TREECOPY) {
     goto 'DBGTREECOPY';
 }
 
-if($DEBUG_GENERATE_PYTHON_CODE_ONLY) {
-    &gen_python_code();
-    exit(0);
-}
-   
 # goto 'SKIP_REMOVE';
 
 SKIP_REMOVE:
@@ -670,6 +665,12 @@ if($do_install_dir[$INSTALLNUM]) {
   }
 
   $ENV{'PANDA_OPTIMIZE'}='2';
+
+  if($DEBUG_GENERATE_PYTHON_CODE_ONLY) {
+    &gen_python_code();
+    exit(0);
+  }
+
   &buildall($INSTALLNUM);
 }
 
@@ -680,6 +681,12 @@ if($do_install_dir[$RELEASENUM]) {
     $ENV{'PANDA_BUILD_TYPE'} = 'gmsvc';
   }
   $ENV{'PANDA_OPTIMIZE'}='3';
+
+  if($DEBUG_GENERATE_PYTHON_CODE_ONLY) {
+    &gen_python_code();
+    exit(0);
+  }
+
   &buildall($RELEASENUM);
 }
 
@@ -694,6 +701,11 @@ if($do_install_dir[$DEBUGNUM]) {
     $ENV{'USE_BROWSEINFO'}='1';   # make .sbr files
     if(! $DEBUG_GENERATE_PYTHON_CODE_ONLY) {
        $ENV{'PANDA_OPTIMIZE'}='1';
+    }
+
+    if($DEBUG_GENERATE_PYTHON_CODE_ONLY) {
+      &gen_python_code();
+      exit(0);
     }
 
     &buildall($DEBUGNUM);
