@@ -32,9 +32,8 @@ TypeHandle CollisionHandlerPusher::_type_handle;
 ////////////////////////////////////////////////////////////////////
 class ShoveData {
 public:
-  LVector3f _shove;
+  LVector3f _vector;
   float _length;
-  LVector3f _normalized_shove;
   bool _valid;
 };
 
@@ -108,7 +107,7 @@ handle_entries() {
         
         typedef pvector<ShoveData> Shoves;
         Shoves shoves;
-        
+
         Entries::const_iterator ei;
         for (ei = entries.begin(); ei != entries.end(); ++ei) {
           CollisionEntry *entry = (*ei);
@@ -117,29 +116,39 @@ handle_entries() {
           
           if (!entry->has_into_surface_normal() ||
               !entry->has_into_depth()) {
+#ifndef NDEBUG          
             if (collide_cat.is_debug()) {
               collide_cat.debug()
                 << "Cannot shove on " << *from_node << " for collision into "
                 << *entry->get_into_node() << "; no normal/depth information.\n";
             }
+#endif
             
           } else {
             // Shove it just enough to clear the volume.
             if (entry->get_into_depth() != 0.0f) {
+              LVector3f normal = entry->get_into_surface_normal();
+              if (_horizontal) {
+                normal[2] = 0.0f;
+              }
+              // Just to be on the safe size, we normalize the normal
+              // vector, even though it really out to be unit-length
+              // already (unless we just forced it horizontal, above).
+              normal.normalize();
+
               ShoveData sd;
-              sd._shove =
-                entry->get_into_surface_normal() *
-                entry->get_into_depth();
+              sd._vector = normal;
+              sd._length = entry->get_into_depth();
+              sd._valid = true;
               
+#ifndef NDEBUG          
               if (collide_cat.is_debug()) {
                 collide_cat.debug()
                   << "Shove on " << *from_node << " from "
-                  << *entry->get_into_node() << ": " << sd._shove << "\n";
+                  << *entry->get_into_node() << ": " << sd._vector
+                  << " times " << sd._length << "\n";
               }
-              
-              sd._length = sd._shove.length();
-              sd._normalized_shove = sd._shove / sd._length;
-              sd._valid = true;
+#endif
               
               shoves.push_back(sd);
             }
@@ -149,7 +158,7 @@ handle_entries() {
         if (!shoves.empty()) {
           // Now we combine any two shoves that shove in largely the
           // same direction.  Hacky.
-          
+
           Shoves::iterator si;
           for (si = shoves.begin(); si != shoves.end(); ++si) {
             ShoveData &sd = (*si);
@@ -158,7 +167,7 @@ handle_entries() {
               ShoveData &sd2 = (*sj);
               if (sd2._valid) {
                 
-                float d = sd._normalized_shove.dot(sd2._normalized_shove);
+                float d = sd._vector.dot(sd2._vector);
                 if (collide_cat.is_debug()) {
                   collide_cat.debug()
                     << "Considering dot product " << d << "\n";
@@ -182,19 +191,17 @@ handle_entries() {
           for (si = shoves.begin(); si != shoves.end(); ++si) {
             const ShoveData &sd = (*si);
             if (sd._valid) {
-              net_shove += sd._shove;
+              net_shove += sd._vector * sd._length;
             }
           }
-          
-          if (_horizontal) {
-            net_shove[2] = 0.0f;
-          }
-          
+
+#ifndef NDEBUG          
           if (collide_cat.is_debug()) {
             collide_cat.debug()
               << "Net shove on " << *from_node << " is: "
               << net_shove << "\n";
           }
+#endif
           
           LMatrix4f mat;
           def.get_mat(mat);
