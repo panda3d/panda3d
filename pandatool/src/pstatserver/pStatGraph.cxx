@@ -31,10 +31,10 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PStatGraph::GuideBar::
-GuideBar(float height, const string &label, bool is_target) :
+GuideBar(float height, const string &label, PStatGraph::GuideBarStyle style) :
   _height(height),
   _label(label),
-  _is_target(is_target)
+  _style(style)
 {
 }
 
@@ -47,7 +47,7 @@ PStatGraph::GuideBar::
 GuideBar(const PStatGraph::GuideBar &copy) :
   _height(copy._height),
   _label(copy._label),
-  _is_target(copy._is_target)
+  _style(copy._style)
 {
 }
 
@@ -104,10 +104,99 @@ get_num_guide_bars() const {
 const PStatGraph::GuideBar &PStatGraph::
 get_guide_bar(int n) const {
 #ifndef NDEBUG
-  static GuideBar bogus_bar(0.0, "bogus", false);
+  static GuideBar bogus_bar(0.0, "bogus", GBS_normal);
   nassertr(n >= 0 && n < (int)_guide_bars.size(), bogus_bar);
 #endif
   return _guide_bars[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatGraph::get_num_user_guide_bars
+//       Access: Public
+//  Description: Returns the current number of user-defined guide
+//               bars.  Not all of these may be visible.
+////////////////////////////////////////////////////////////////////
+int PStatGraph::
+get_num_user_guide_bars() const {
+  return _user_guide_bars.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatGraph::get_user_guide_bar
+//       Access: Public
+//  Description: Returns the nth user-defined guide bar.
+////////////////////////////////////////////////////////////////////
+const PStatGraph::GuideBar &PStatGraph::
+get_user_guide_bar(int n) const {
+#ifndef NDEBUG
+  static GuideBar bogus_bar(0.0, "bogus", GBS_user);
+  nassertr(n >= 0 && n < (int)_user_guide_bars.size(), bogus_bar);
+#endif
+  return _user_guide_bars[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatGraph::move_user_guide_bar
+//       Access: Public
+//  Description: Adjusts the height of the nth user-defined guide bar.
+////////////////////////////////////////////////////////////////////
+void PStatGraph::
+move_user_guide_bar(int n, float height) {
+  nassertv(n >= 0 && n < (int)_user_guide_bars.size());
+  string label = format_number(height, _guide_bar_units, _unit_name);
+  _user_guide_bars[n]._height = height;
+  _user_guide_bars[n]._label = label;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatGraph::add_user_guide_bar
+//       Access: Public
+//  Description: Creates a new user guide bar and returns its index
+//               number.
+////////////////////////////////////////////////////////////////////
+int PStatGraph::
+add_user_guide_bar(float height) {
+  int n = (int)_user_guide_bars.size();
+  GuideBar bar = make_guide_bar(height);
+  bar._style = GBS_user;
+  _user_guide_bars.push_back(bar);
+
+  return n;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatGraph::remove_user_guide_bar
+//       Access: Public
+//  Description: Removes the user guide bar with the indicated index
+//               number.  All subsequent index numbers are adjusted
+//               down one.
+////////////////////////////////////////////////////////////////////
+void PStatGraph::
+remove_user_guide_bar(int n) {
+  nassertv(n >= 0 && n < (int)_user_guide_bars.size());
+  _user_guide_bars.erase(_user_guide_bars.begin() + n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatGraph::find_user_guide_bar
+//       Access: Public
+//  Description: Returns the index number of the first user guide bar
+//               found whose height is within the indicated range, or
+//               -1 if no user guide bars fall within the range.
+////////////////////////////////////////////////////////////////////
+int PStatGraph::
+find_user_guide_bar(float from_height, float to_height) const {
+  GuideBars::const_iterator gbi;
+  for (gbi = _user_guide_bars.begin();
+       gbi != _user_guide_bars.end();
+       ++gbi) {
+    const GuideBar &bar = (*gbi);
+    if (bar._height >= from_height && bar._height <= to_height) {
+      return (int)(gbi - _user_guide_bars.begin());
+    }
+  }
+
+  return -1;
 }
 
 
@@ -223,6 +312,22 @@ update_guide_bars(int num_bars, float scale) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PStatGraph::user_guide_bar_labels
+//       Access: Protected
+//  Description: Rederives the labels for the user-defined guide bars.
+////////////////////////////////////////////////////////////////////
+void PStatGraph::
+user_guide_bar_labels() {
+  GuideBars::iterator gbi;
+  for (gbi = _user_guide_bars.begin();
+       gbi != _user_guide_bars.end();
+       ++gbi) {
+    GuideBar &bar = (*gbi);
+    bar._label = format_number(bar._height, _guide_bar_units, _unit_name);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PStatGraph::make_guide_bar
 //       Access: Protected
 //  Description: Makes a guide bar for the indicated elapsed time or
@@ -232,14 +337,16 @@ PStatGraph::GuideBar PStatGraph::
 make_guide_bar(float value) const {
   string label = format_number(value, _guide_bar_units, _unit_name);
 
-  bool is_target = false;
+  GuideBarStyle style = GBS_normal;
 
   if ((_guide_bar_units & GBU_named) == 0) {
     // If it's a time unit, check to see if it matches our target
     // frame rate.
     float hz = 1.0 / value;
-    is_target = IS_NEARLY_EQUAL(hz, _target_frame_rate);
+    if (IS_THRESHOLD_EQUAL(hz, _target_frame_rate, 0.001)) {
+      style = GBS_target;
+    }
   }
 
-  return GuideBar(value, label, is_target);
+  return GuideBar(value, label, style);
 }

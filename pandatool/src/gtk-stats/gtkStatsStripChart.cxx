@@ -255,10 +255,15 @@ end_draw(int from_x, int to_x) {
 
     if (y >= 5) {
       // Only draw it if it's not too close to the top.
-      if (bar._is_target) {
+      switch (bar._style) {
+      case GBS_target:
         _pixmap.draw_line(_light_gc, from_x, y, to_x, y);
-      } else {
+        break;
+
+      case GBS_normal:
+      default:
         _pixmap.draw_line(_dark_gc, from_x, y, to_x, y);
+        break;
       }
     }
   }

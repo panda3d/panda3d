@@ -130,10 +130,15 @@ begin_draw() {
 
     if (x >= 5 && x <= get_xsize() - 5) {
       // Only draw it if it's not too close to either edge.
-      if (bar._is_target) {
+      switch (bar._style) {
+      case GBS_target:
         _pixmap.draw_line(_light_gc, x, text_height + 4, x, get_ysize());
-      } else {
+        break;
+
+      case GBS_normal:
+      default:
         _pixmap.draw_line(_dark_gc, x, text_height + 4, x, get_ysize());
+        break;
       }
     }
   }

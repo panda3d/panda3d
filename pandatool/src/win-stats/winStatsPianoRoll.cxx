@@ -134,6 +134,56 @@ set_horizontal_scale(float time_width) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WinStatsPianoRoll::move_user_guide_bar
+//       Access: Public, Virtual
+//  Description: Adjusts the height of the nth user-defined guide bar.
+////////////////////////////////////////////////////////////////////
+void WinStatsPianoRoll::
+move_user_guide_bar(int n, float height) {
+  RECT rect;
+  GetClientRect(_window, &rect);
+  rect.bottom = _top_margin;
+  InvalidateRect(_window, &rect, TRUE);
+
+  InvalidateRect(_graph_window, NULL, TRUE);
+
+  PStatPianoRoll::move_user_guide_bar(n, height);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsPianoRoll::add_user_guide_bar
+//       Access: Public, Virtual
+//  Description: Creates a new user guide bar and returns its index
+//               number.
+////////////////////////////////////////////////////////////////////
+int WinStatsPianoRoll::
+add_user_guide_bar(float height) {
+  RECT rect;
+  GetClientRect(_window, &rect);
+  rect.bottom = _top_margin;
+  InvalidateRect(_window, &rect, TRUE);
+
+  return PStatPianoRoll::add_user_guide_bar(height);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsPianoRoll::remove_user_guide_bar
+//       Access: Public, Virtual
+//  Description: Removes the user guide bar with the indicated index
+//               number.  All subsequent index numbers are adjusted
+//               down one.
+////////////////////////////////////////////////////////////////////
+void WinStatsPianoRoll::
+remove_user_guide_bar(int n) {
+  RECT rect;
+  GetClientRect(_window, &rect);
+  rect.bottom = _top_margin;
+  InvalidateRect(_window, &rect, TRUE);
+
+  return PStatPianoRoll::remove_user_guide_bar(n);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WinStatsPianoRoll::clear_region
 //       Access: Protected
 //  Description: Erases the chart area.
@@ -157,19 +207,7 @@ begin_draw() {
   // Draw in the guide bars.
   int num_guide_bars = get_num_guide_bars();
   for (int i = 0; i < num_guide_bars; i++) {
-    const GuideBar &bar = get_guide_bar(i);
-    int x = height_to_pixel(bar._height);
-
-    if (x > 0 && x < get_xsize() - 1) {
-      // Only draw it if it's not too close to either edge.
-      if (bar._is_target) {
-        SelectObject(_bitmap_dc, _light_pen);
-      } else {
-        SelectObject(_bitmap_dc, _dark_pen);
-      }
-      MoveToEx(_bitmap_dc, x, 0, NULL);
-      LineTo(_bitmap_dc, x, get_ysize());
-    }
+    draw_guide_bar(_bitmap_dc, get_guide_bar(i));
   }
 }
 
@@ -224,12 +262,18 @@ idle() {
 ////////////////////////////////////////////////////////////////////
 LONG WinStatsPianoRoll::
 window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-  /*
   switch (msg) {
+  case WM_LBUTTONDOWN:
+    if (_potential_drag_mode == DM_new_guide_bar) {
+      _drag_mode = DM_new_guide_bar;
+      SetCapture(_graph_window);
+      return 0;
+    }
+    break;
+
   default:
     break;
   }
-  */
 
   return WinStatsGraph::window_proc(hwnd, msg, wparam, lparam);
 }
@@ -243,13 +287,21 @@ LONG WinStatsPianoRoll::
 graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
   case WM_LBUTTONDOWN:
-    {
+    if (_potential_drag_mode == DM_none) {
       _drag_mode = DM_scale;
       PN_int16 x = LOWORD(lparam);
       _drag_scale_start = pixel_to_height(x);
       SetCapture(_graph_window);
+      return 0;
+
+    } else if (_potential_drag_mode == DM_guide_bar && _drag_guide_bar >= 0) {
+      _drag_mode = DM_guide_bar;
+      PN_int16 x = LOWORD(lparam);
+      _drag_start_x = x;
+      SetCapture(_graph_window);
+      return 0;
     }
-    return 0;
+    break;
 
   case WM_MOUSEMOVE: 
     if (_drag_mode == DM_scale) {
@@ -259,11 +311,38 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         set_horizontal_scale(_drag_scale_start / ratio);
       }
       return 0;
+
+    } else if (_drag_mode == DM_new_guide_bar) {
+      // We haven't created the new guide bar yet; we won't until the
+      // mouse comes within the graph's region.
+      PN_int16 x = LOWORD(lparam);
+      if (x >= 0 && x < get_xsize()) {
+        _drag_mode = DM_guide_bar;
+        _drag_guide_bar = 
+          WinStatsGraph::_monitor->add_user_guide_bar(WinStatsGraph::_thread_index, pixel_to_height(x));
+        return 0;
+      }
+
+    } else if (_drag_mode == DM_guide_bar) {
+      PN_int16 x = LOWORD(lparam);
+      WinStatsGraph::_monitor->move_user_guide_bar(WinStatsGraph::_thread_index, _drag_guide_bar, pixel_to_height(x));
+      return 0;
     }
     break;
 
   case WM_LBUTTONUP:
     if (_drag_mode == DM_scale) {
+      _drag_mode = DM_none;
+      ReleaseCapture();
+      return 0;
+
+    } else if (_drag_mode == DM_guide_bar) {
+      PN_int16 x = LOWORD(lparam);
+      if (x < 0 || x >= get_xsize()) {
+        WinStatsGraph::_monitor->remove_user_guide_bar(WinStatsGraph::_thread_index, _drag_guide_bar);
+      } else {
+        WinStatsGraph::_monitor->move_user_guide_bar(WinStatsGraph::_thread_index, _drag_guide_bar, pixel_to_height(x));
+      }
       _drag_mode = DM_none;
       ReleaseCapture();
       return 0;
@@ -292,21 +371,66 @@ additional_window_paint(HDC hdc) {
   SelectObject(hdc, hfnt);
   SetTextAlign(hdc, TA_LEFT | TA_BOTTOM);
   SetBkMode(hdc, TRANSPARENT);
-  SetTextColor(hdc, RGB(0, 0, 0));
 
+  int y = _top_margin;
+
+  int i;
   int num_guide_bars = get_num_guide_bars();
-  for (int i = 0; i < num_guide_bars; i++) {
-    const GuideBar &bar = get_guide_bar(i);
-    int x = height_to_pixel(bar._height);
-
-    const string &label = bar._label;
-    SIZE size;
-    GetTextExtentPoint32(hdc, label.data(), label.length(), &size);
-    x -= size.cx / 2;
-
-    TextOut(hdc, x + _graph_left, _top_margin,
-            label.data(), label.length()); 
+  for (i = 0; i < num_guide_bars; i++) {
+    draw_guide_label(hdc, y, get_guide_bar(i));
   }
+
+  int num_user_guide_bars = get_num_user_guide_bars();
+  for (i = 0; i < num_user_guide_bars; i++) {
+    draw_guide_label(hdc, y, get_user_guide_bar(i));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsPianoRoll::additional_graph_window_paint
+//       Access: Protected, Virtual
+//  Description: This is called during the servicing of WM_PAINT; it
+//               gives a derived class opportunity to do some further
+//               painting into the window (the outer window, not the
+//               graph window).
+////////////////////////////////////////////////////////////////////
+void WinStatsPianoRoll::
+additional_graph_window_paint(HDC hdc) {
+  int num_user_guide_bars = get_num_user_guide_bars();
+  for (int i = 0; i < num_user_guide_bars; i++) {
+    draw_guide_bar(hdc, get_user_guide_bar(i));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsPianoRoll::consider_drag_start
+//       Access: Protected, Virtual
+//  Description: Based on the mouse position within the window's
+//               client area, look for draggable things the mouse
+//               might be hovering over and return the apprioprate
+//               DragMode enum or DM_none if nothing is indicated.
+////////////////////////////////////////////////////////////////////
+WinStatsGraph::DragMode WinStatsPianoRoll::
+consider_drag_start(int mouse_x, int mouse_y, int width, int height) {
+  if (mouse_y >= _graph_top && mouse_y < _graph_top + get_ysize()) {
+    if (mouse_x >= _graph_left && mouse_x < _graph_left + get_xsize()) {
+      // See if the mouse is over a user-defined guide bar.
+      int x = mouse_x - _graph_left;
+      float from_height = pixel_to_height(x - 2);
+      float to_height = pixel_to_height(x + 2);
+      _drag_guide_bar = find_user_guide_bar(from_height, to_height);
+      if (_drag_guide_bar >= 0) {
+        return DM_guide_bar;
+      }
+
+    } else {
+      // The mouse is above or below the graph; maybe create a new
+      // guide bar.
+      return DM_new_guide_bar;
+    }
+  }
+
+  return WinStatsGraph::consider_drag_start(mouse_x, mouse_y, width, height);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -324,6 +448,79 @@ update_labels() {
                              get_label_collector(i), true);
   }
   _labels_changed = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsPianoRoll::draw_guide_bar
+//       Access: Private
+//  Description: Draws the line for the indicated guide bar on the
+//               graph.
+////////////////////////////////////////////////////////////////////
+void WinStatsPianoRoll::
+draw_guide_bar(HDC hdc, const PStatGraph::GuideBar &bar) {
+  int x = height_to_pixel(bar._height);
+
+  if (x > 0 && x < get_xsize() - 1) {
+    // Only draw it if it's not too close to either edge.
+    switch (bar._style) {
+    case GBS_target:
+      SelectObject(hdc, _light_pen);
+      break;
+
+    case GBS_user:
+      SelectObject(hdc, _user_guide_bar_pen);
+      break;
+      
+    case GBS_normal:
+      SelectObject(hdc, _dark_pen);
+      break;
+    }
+    MoveToEx(hdc, x, 0, NULL);
+    LineTo(hdc, x, get_ysize());
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsPianoRoll::draw_guide_label
+//       Access: Private
+//  Description: Draws the text for the indicated guide bar label at
+//               the top of the graph.
+////////////////////////////////////////////////////////////////////
+void WinStatsPianoRoll::
+draw_guide_label(HDC hdc, int y, const PStatGraph::GuideBar &bar) {
+  switch (bar._style) {
+  case GBS_target:
+    SetTextColor(hdc, _light_color);
+    break;
+    
+  case GBS_user:
+    SetTextColor(hdc, _user_guide_bar_color);
+    break;
+    
+  case GBS_normal:
+    SetTextColor(hdc, _dark_color);
+    break;
+  }
+
+  int x = height_to_pixel(bar._height);
+  const string &label = bar._label;
+  SIZE size;
+  GetTextExtentPoint32(hdc, label.data(), label.length(), &size);
+
+  if (bar._style != GBS_user) {
+    float from_height = pixel_to_height(x - size.cx / 2 - 1);
+    float to_height = pixel_to_height(x + size.cx / 2 + 1);
+    if (find_user_guide_bar(from_height, to_height) >= 0) {
+      // Omit the label: there's a user-defined guide bar in the same space.
+      return;
+    }
+  }
+
+  int this_x = _graph_left + x - size.cx / 2;
+  if (x >= 0 && x < get_xsize()) {
+    TextOut(hdc, this_x, y,
+            label.data(), label.length()); 
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

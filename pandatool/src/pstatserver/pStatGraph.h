@@ -55,14 +55,20 @@ public:
   INLINE int get_xsize() const;
   INLINE int get_ysize() const;
 
+  enum GuideBarStyle {
+    GBS_normal,
+    GBS_target,
+    GBS_user,
+  };
+  
   class GuideBar {
   public:
-    GuideBar(float height, const string &label, bool is_target);
+    GuideBar(float height, const string &label, GuideBarStyle style);
     GuideBar(const GuideBar &copy);
 
     float _height;
     string _label;
-    bool _is_target;
+    GuideBarStyle _style;
   };
 
   enum GuideBarUnits {
@@ -74,6 +80,13 @@ public:
 
   int get_num_guide_bars() const;
   const GuideBar &get_guide_bar(int n) const;
+
+  int get_num_user_guide_bars() const;
+  const GuideBar &get_user_guide_bar(int n) const;
+  void move_user_guide_bar(int n, float height);
+  int add_user_guide_bar(float height);
+  void remove_user_guide_bar(int n);
+  int find_user_guide_bar(float from_height, float to_height) const;
 
   INLINE void set_guide_bar_units(int unit_mask);
   INLINE int get_guide_bar_units() const;
@@ -87,6 +100,7 @@ public:
 protected:
   virtual void normal_guide_bars()=0;
   void update_guide_bars(int num_bars, float scale);
+  void user_guide_bar_labels();
   GuideBar make_guide_bar(float value) const;
 
   bool _labels_changed;
@@ -106,6 +120,7 @@ protected:
 
   typedef pvector<GuideBar> GuideBars;
   GuideBars _guide_bars;
+  GuideBars _user_guide_bars;
   int _guide_bar_units;
   string _unit_name;
 };

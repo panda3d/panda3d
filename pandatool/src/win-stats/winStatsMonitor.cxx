@@ -366,6 +366,63 @@ set_time_units(int unit_mask) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WinStatsMonitor::move_user_guide_bar
+//       Access: Public
+//  Description: Adjusts the height of the nth user-defined guide bar
+//               for all graphs that share the indicated thread.
+////////////////////////////////////////////////////////////////////
+void WinStatsMonitor::
+move_user_guide_bar(int thread_index, int n, float height) {
+  Graphs::iterator gi;
+  for (gi = _graphs.begin(); gi != _graphs.end(); ++gi) {
+    WinStatsGraph *graph = (*gi);
+    if (graph->get_thread_index() == thread_index) {
+      graph->move_user_guide_bar(n, height);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsMonitor::add_user_guide_bar
+//       Access: Public
+//  Description: Creates a new user guide bar and returns its index
+//               number for all graphs that share the indicated
+//               thread.
+////////////////////////////////////////////////////////////////////
+int WinStatsMonitor::
+add_user_guide_bar(int thread_index, float height) {
+  int result = -1;
+
+  Graphs::iterator gi;
+  for (gi = _graphs.begin(); gi != _graphs.end(); ++gi) {
+    WinStatsGraph *graph = (*gi);
+    if (graph->get_thread_index() == thread_index) {
+      result = graph->add_user_guide_bar(height);
+    }
+  }
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsMonitor::remove_user_guide_bar
+//       Access: Public
+//  Description: Removes the user guide bar with the indicated index
+//               number, for all graphs that share the indicated
+//               thread.
+////////////////////////////////////////////////////////////////////
+void WinStatsMonitor::
+remove_user_guide_bar(int thread_index, int n) {
+  Graphs::iterator gi;
+  for (gi = _graphs.begin(); gi != _graphs.end(); ++gi) {
+    WinStatsGraph *graph = (*gi);
+    if (graph->get_thread_index() == thread_index) {
+      graph->remove_user_guide_bar(n);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WinStatsMonitor::add_graph
 //       Access: Private
 //  Description: Adds the newly-created graph to the list of managed

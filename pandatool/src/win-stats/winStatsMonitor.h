@@ -72,6 +72,10 @@ public:
   int get_menu_id(const MenuDef &menu_def);
 
   void set_time_units(int unit_mask);
+
+  void move_user_guide_bar(int thread_index, int n, float height);
+  int add_user_guide_bar(int thread_index, float height);
+  void remove_user_guide_bar(int thread_index, int n);
   
 private:
   void add_graph(WinStatsGraph *graph);

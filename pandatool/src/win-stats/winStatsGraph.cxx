@@ -39,6 +39,7 @@ WinStatsGraph(WinStatsMonitor *monitor, int thread_index) :
   _window = 0;
   _graph_window = 0;
   _sizewe_cursor = LoadCursor(NULL, IDC_SIZEWE);
+  _hand_cursor = LoadCursor(NULL, IDC_HAND);
   _bitmap = 0;
   _bitmap_dc = 0;
 
@@ -47,8 +48,12 @@ WinStatsGraph(WinStatsMonitor *monitor, int thread_index) :
   _bitmap_xsize = 0;
   _bitmap_ysize = 0;
 
-  _dark_pen = CreatePen(PS_SOLID, 1, RGB(51, 51, 51));
-  _light_pen = CreatePen(PS_SOLID, 1, RGB(154, 154, 154));
+  _dark_color = RGB(51, 51, 51);
+  _light_color = RGB(154, 154, 154);
+  _user_guide_bar_color = RGB(130, 150, 255);
+  _dark_pen = CreatePen(PS_SOLID, 1, _dark_color);
+  _light_pen = CreatePen(PS_SOLID, 1, _light_color);
+  _user_guide_bar_pen = CreatePen(PS_DASH, 1, _user_guide_bar_color);
 
   _drag_mode = DM_none;
   _potential_drag_mode = DM_none;
@@ -67,6 +72,7 @@ WinStatsGraph::
 
   DeleteObject(_dark_pen);
   DeleteObject(_light_pen);
+  DeleteObject(_user_guide_bar_pen);
   
   Brushes::iterator bi;
   for (bi = _brushes.begin(); bi != _brushes.end(); ++bi) {
@@ -83,6 +89,17 @@ WinStatsGraph::
     DestroyWindow(_window);
     _window = 0;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsGraph::get_thread_index
+//       Access: Public
+//  Description: Returns the thread index associated with this
+//               particular graph.
+////////////////////////////////////////////////////////////////////
+int WinStatsGraph::
+get_thread_index() const {
+  return _thread_index;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -133,6 +150,37 @@ changed_graph_size(int graph_xsize, int graph_ysize) {
 ////////////////////////////////////////////////////////////////////
 void WinStatsGraph::
 set_time_units(int unit_mask) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsGraph::move_user_guide_bar
+//       Access: Public, Virtual
+//  Description: Adjusts the height of the nth user-defined guide bar.
+////////////////////////////////////////////////////////////////////
+void WinStatsGraph::
+move_user_guide_bar(int n, float height) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsGraph::add_user_guide_bar
+//       Access: Public, Virtual
+//  Description: Creates a new user guide bar and returns its index
+//               number.
+////////////////////////////////////////////////////////////////////
+int WinStatsGraph::
+add_user_guide_bar(float height) {
+  return -1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsGraph::remove_user_guide_bar
+//       Access: Public, Virtual
+//  Description: Removes the user guide bar with the indicated index
+//               number.  All subsequent index numbers are adjusted
+//               down one.
+////////////////////////////////////////////////////////////////////
+void WinStatsGraph::
+remove_user_guide_bar(int n) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -229,27 +277,34 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
   case WM_SETCURSOR:
     {
-      // Why is it so hard to ask what the cursor position within the
-      // window's client area is?
+      // Why is it so hard to ask for the cursor position within the
+      // window's client area?
       POINT point;
       GetCursorPos(&point);
       WINDOWINFO winfo;
       GetWindowInfo(hwnd, &winfo);
       const RECT &rect = winfo.rcClient;
+      int x = point.x - rect.left;
+      int y = point.y - rect.top;
+      int width = rect.right - rect.left;
+      int height = rect.bottom - rect.top;
 
-      // Display a double-headed arrow to drag the left or right margins.
-      if (point.x >= rect.left + _left_margin - 1 && point.x <= rect.left + _left_margin + 1) {
-        SetCursor(_sizewe_cursor);
-        _potential_drag_mode = DM_left_margin;
-        return TRUE;
-      }
-      if (point.x >= rect.right - _right_margin - 2 && point.x <= rect.right - _right_margin) {
-        SetCursor(_sizewe_cursor);
-        _potential_drag_mode = DM_right_margin;
-        return TRUE;
-      }
+      _potential_drag_mode = consider_drag_start(x, y, width, height);
 
-      _potential_drag_mode = DM_none;
+      switch (_potential_drag_mode) {
+      case DM_left_margin:
+      case DM_right_margin:
+        SetCursor(_sizewe_cursor);
+        return TRUE;
+
+      case DM_guide_bar:
+        SetCursor(_hand_cursor);
+        return TRUE;
+
+      default:
+      case DM_none:
+        break;
+      }
     }
     break;
 
@@ -340,6 +395,21 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     force_redraw();
     break;
 
+  case WM_LBUTTONDOWN:
+    // Vector any uncaught WM_LBUTTONDOWN into the main window, so we
+    // can drag margins, etc.
+    if (_potential_drag_mode != DM_none) {
+      PN_int16 x = LOWORD(lparam) + _graph_left;
+      PN_int16 y = HIWORD(lparam) + _graph_top;
+      return window_proc(_window, msg, wparam, MAKELPARAM(x, y));
+    }
+    break;
+
+  case WM_LBUTTONUP:
+    _drag_mode = DM_none;
+    ReleaseCapture();
+    break;
+
   case WM_PAINT:
     {
       // Repaint the graph by copying the backing pixmap in.
@@ -350,6 +420,8 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
              _bitmap_xsize, _bitmap_ysize,
              _bitmap_dc, 0, 0,
              SRCCOPY);
+
+      additional_graph_window_paint(hdc);
 
       EndPaint(hwnd, &ps);
       return 0;
@@ -372,6 +444,36 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 ////////////////////////////////////////////////////////////////////
 void WinStatsGraph::
 additional_window_paint(HDC hdc) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsGraph::additional_graph_window_paint
+//       Access: Protected, Virtual
+//  Description: This is called during the servicing of WM_PAINT; it
+//               gives a derived class opportunity to do some further
+//               painting into the graph window.
+////////////////////////////////////////////////////////////////////
+void WinStatsGraph::
+additional_graph_window_paint(HDC hdc) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsGraph::consider_drag_start
+//       Access: Protected, Virtual
+//  Description: Based on the mouse position within the window's
+//               client area, look for draggable things the mouse
+//               might be hovering over and return the apprioprate
+//               DragMode enum or DM_none if nothing is indicated.
+////////////////////////////////////////////////////////////////////
+WinStatsGraph::DragMode WinStatsGraph::
+consider_drag_start(int mouse_x, int mouse_y, int width, int height) {
+  if (mouse_x >= _left_margin - 2 && mouse_x <= _left_margin + 2) {
+    return DM_left_margin;
+  } else if (mouse_x >= width - _right_margin - 2 && mouse_x <= width - _right_margin + 2) {
+    return DM_right_margin;
+  }
+
+  return DM_none;
 }
 
 ////////////////////////////////////////////////////////////////////

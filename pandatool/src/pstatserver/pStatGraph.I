@@ -130,6 +130,7 @@ set_guide_bar_units(int guide_bar_units) {
   if (_guide_bar_units != guide_bar_units) {
     _guide_bar_units = guide_bar_units;
     normal_guide_bars();
+    user_guide_bar_labels();
   }
 }
 

@@ -47,6 +47,10 @@ public:
   virtual void set_time_units(int unit_mask);
   void set_vertical_scale(float value_height);
 
+  virtual void move_user_guide_bar(int n, float height);
+  virtual int add_user_guide_bar(float height);
+  virtual void remove_user_guide_bar(int n);
+
 protected:
   virtual void update_labels();
 
@@ -60,9 +64,13 @@ protected:
   LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   virtual LONG graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   virtual void additional_window_paint(HDC hdc);
+  virtual void additional_graph_window_paint(HDC hdc);
+  virtual DragMode consider_drag_start(int mouse_x, int mouse_y, 
+                                       int width, int height);
 
 private:
-  int draw_guide_label(HDC hdc, int x, float value, int last_y);
+  void draw_guide_bar(HDC hdc, int from_x, int to_x, const GuideBar &bar);
+  int draw_guide_label(HDC hdc, int x, const GuideBar &bar, int last_y);
   void create_window();
   static void register_window_class(HINSTANCE application);
 

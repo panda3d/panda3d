@@ -35,8 +35,21 @@ class WinStatsMonitor;
 ////////////////////////////////////////////////////////////////////
 class WinStatsGraph {
 public:
+  // What is the user adjusting by dragging the mouse in a window?
+  enum DragMode {
+    DM_none,
+    DM_scale,
+    DM_left_margin,
+    DM_right_margin,
+    DM_guide_bar,
+    DM_new_guide_bar,
+  };
+
+public:
   WinStatsGraph(WinStatsMonitor *monitor, int thread_index);
   virtual ~WinStatsGraph();
+
+  int get_thread_index() const;
 
   virtual void new_collector(int collector_index);
   virtual void new_data(int thread_index, int frame_number);
@@ -44,6 +57,10 @@ public:
   virtual void changed_graph_size(int graph_xsize, int graph_ysize);
 
   virtual void set_time_units(int unit_mask);
+
+  virtual void move_user_guide_bar(int n, float height);
+  virtual int add_user_guide_bar(float height);
+  virtual void remove_user_guide_bar(int n);
 
 protected:
   void close();
@@ -57,7 +74,9 @@ protected:
   virtual LONG graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
   virtual void additional_window_paint(HDC hdc);
-
+  virtual void additional_graph_window_paint(HDC hdc);
+  virtual DragMode consider_drag_start(int mouse_x, int mouse_y, 
+                                       int width, int height);
 
 protected:
   // Table of brushes for our various collectors.
@@ -71,6 +90,7 @@ protected:
   WinStatsLabelStack _label_stack;
 
   HCURSOR _sizewe_cursor;
+  HCURSOR _hand_cursor;
 
   HBITMAP _bitmap;
   HDC _bitmap_dc;
@@ -80,20 +100,18 @@ protected:
   int _left_margin, _right_margin;
   int _top_margin, _bottom_margin;
 
+  COLORREF _dark_color;
+  COLORREF _light_color;
+  COLORREF _user_guide_bar_color;
   HPEN _dark_pen;
   HPEN _light_pen;
+  HPEN _user_guide_bar_pen;
 
-  // What is the user adjusting by dragging the mouse in a window?
-  enum DragMode {
-    DM_none,
-    DM_scale,
-    DM_left_margin,
-    DM_right_margin,
-  };
   DragMode _drag_mode;
   DragMode _potential_drag_mode;
   int _drag_start_x, _drag_start_y;
   float _drag_scale_start;
+  int _drag_guide_bar;
 
 private:
   void setup_bitmap(int xsize, int ysize);
