@@ -132,6 +132,7 @@ class ClientRepository(DirectObject.DirectObject):
             distObj = self.doId2do[doId]
 	    distObj.generate()
             distObj.updateRequiredFields(cdc, di)
+            distObj.announceGenerate()
 
         # Is it in the cache? If so, pull it out, put it in the dictionaries,
         # and update it.
@@ -144,6 +145,7 @@ class ClientRepository(DirectObject.DirectObject):
             # and update it.
 	    distObj.generate()
             distObj.updateRequiredFields(cdc, di)
+            distObj.announceGenerate()
 
         # If it is not in the dictionary or the cache, then...
         else:
@@ -158,6 +160,7 @@ class ClientRepository(DirectObject.DirectObject):
             # Put the new do in both dictionaries
             self.doId2do[doId] = distObj
             self.doId2cdc[doId] = cdc
+            distObj.announceGenerate()
             
         return distObj
 
@@ -168,6 +171,7 @@ class ClientRepository(DirectObject.DirectObject):
             distObj = self.doId2do[doId]
 	    distObj.generate()
             distObj.updateRequiredOtherFields(cdc, di)
+            distObj.announceGenerate()
 
         # Is it in the cache? If so, pull it out, put it in the dictionaries,
         # and update it.
@@ -180,6 +184,7 @@ class ClientRepository(DirectObject.DirectObject):
             # and update it.
 	    distObj.generate()
             distObj.updateRequiredOtherFields(cdc, di)
+            distObj.announceGenerate()
 
         # If it is not in the dictionary or the cache, then...
         else:
@@ -194,6 +199,7 @@ class ClientRepository(DirectObject.DirectObject):
             distObj.generateInit()  # Only called when constructed
 	    distObj.generate()
             distObj.updateRequiredOtherFields(cdc, di)
+            distObj.announceGenerate()
             # Put the new do in both dictionaries
             # self.doId2do[doId] = distObj
             # self.doId2cdc[doId] = cdc

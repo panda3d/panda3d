@@ -68,6 +68,13 @@ class DistributedObject(PandaObject):
         messenger.send(self.uniqueName("disable"))
         return None
 
+    def announceGenerate(self):
+        """announceGenerate(self)
+        Sends a message to the world after the object has been
+        generated and all of its required fields filled in.
+        """
+        messenger.send(self.uniqueName("generate"), [self])
+
     def disable(self):
         """disable(self)
         Inheritors should redefine this to take appropriate action on disable
