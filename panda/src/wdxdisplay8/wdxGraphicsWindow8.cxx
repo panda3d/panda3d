@@ -284,7 +284,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             return 0;
         }
 
-        case WM_MOUSEMOVE:
+        case WM_MOUSEMOVE: {
             if(!DXREADY)
                 break;
 
@@ -301,11 +301,17 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                 track_mouse_leaving(hwnd);
             }
 
-            SET_MOUSE_COORD(x,LOWORD(lparam));
-            SET_MOUSE_COORD(y,HIWORD(lparam));
+            WORD newX=LOWORD(lparam);
+            WORD newY=HIWORD(lparam);
+
+            SET_MOUSE_COORD(x,newX);
+            SET_MOUSE_COORD(y,newY);
 
             handle_mouse_motion(x, y);
+            if((_dxgsg!=NULL) && (_dxgsg->scrn.pD3DDevice!=NULL))
+                _dxgsg->scrn.pD3DDevice->SetCursorPosition(newX,newY,D3DCURSOR_IMMEDIATE_UPDATE);
             return 0;
+        }
 
         // if cursor is invisible, make it visible when moving in the window bars,etc
         case WM_NCMOUSEMOVE: {
@@ -446,6 +452,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
         case WM_SETCURSOR:
             // Turn off any GDI window cursor 
+//  dx8 cursor not working yet
             SetCursor( NULL );
             _dxgsg->scrn.pD3DDevice->ShowCursor(true);
             return TRUE; // prevent Windows from setting cursor to window class cursor (see docs on WM_SETCURSOR)
@@ -2823,7 +2830,7 @@ void wdxGraphicsWindowGroup::initWindowGroup(void) {
 
         if(dx_preferred_deviceID!=-1) {
             if(dx_preferred_deviceID>=(int)_numAdapters) {
-                wdxdisplay_cat.fatal() << "invalid dx-preferred-deviceID, valid values are 0-" << _numAdapters << ", using default adapter instead\n";
+                wdxdisplay_cat.fatal() << "invalid 'dx-preferred-device-id', valid values are 0-" << _numAdapters-1 << ", using default adapter 0 instead\n";
             } else D3DAdapterNum=dx_preferred_deviceID;
         }
         if(_windows[0]->search_for_device(pD3D8,&(_DeviceInfoVec[D3DAdapterNum])))
