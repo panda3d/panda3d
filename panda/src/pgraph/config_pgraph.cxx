@@ -72,10 +72,8 @@
 #include "renderEffects.h"
 #include "renderModeAttrib.h"
 #include "renderState.h"
-#include "seaPatchNode.h"
 #include "selectiveChildNode.h"
 #include "sequenceNode.h"
-//#include "shaderNode.h"
 #include "showBoundsEffect.h"
 #include "spotlight.h"
 #include "switchNode.h"
@@ -226,10 +224,8 @@ init_libpgraph() {
   RenderEffects::init_type();
   RenderModeAttrib::init_type();
   RenderState::init_type();
-  SeaPatchNode::init_type();
   SelectiveChildNode::init_type();
   SequenceNode::init_type();
- // ShaderNode::init_type();
   ShowBoundsEffect::init_type();
   Spotlight::init_type();
   SwitchNode::init_type();

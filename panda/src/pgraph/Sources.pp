@@ -78,7 +78,6 @@
     renderEffects.I renderEffects.h \
     renderModeAttrib.I renderModeAttrib.h \
     renderState.I renderState.h \
-    seaPatchNode.I seaPatchNode.h \
     sceneGraphAnalyzer.h \
     sceneGraphReducer.I sceneGraphReducer.h \
     sceneSetup.I sceneSetup.h \
@@ -168,7 +167,6 @@
     renderEffects.cxx \
     renderModeAttrib.cxx \
     renderState.cxx \
-    seaPatchNode.cxx \
     sceneGraphAnalyzer.cxx \
     sceneGraphReducer.cxx \
     sceneSetup.cxx \
@@ -255,7 +253,6 @@
     renderEffects.I renderEffects.h \
     renderModeAttrib.I renderModeAttrib.h \
     renderState.I renderState.h \
-    seaPatchNode.I seaPatchNode.h \
     sceneGraphAnalyzer.h \
     sceneGraphReducer.I sceneGraphReducer.h \
     sceneSetup.I sceneSetup.h \
