@@ -35,71 +35,90 @@ ConfigureFn(config_display) {
   init_libdisplay();
 }
 
-// This is normally true; set it false to disable view-frustum culling
-// (primarily useful for debugging).
-const bool view_frustum_cull = config_display.GetBool("view-frustum-cull", true);
+ConfigVariableBool view_frustum_cull
+("view-frustum-cull", true,
+ "This is normally true; set it false to disable view-frustum culling "
+ "(primarily useful for debugging).");
 
-// Set this true to show the number of unused states in the pstats
-// graph for TransformState and RenderState counts.  This adds a bit
-// of per-frame overhead to count these things up.
-const bool pstats_unused_states = config_display.GetBool("pstats-unused-states", false);
+ConfigVariableBool pstats_unused_states
+("pstats-unused-states", false,
+"Set this true to show the number of unused states in the pstats "
+"graph for TransformState and RenderState counts.  This adds a bit "
+"of per-frame overhead to count these things up.");
 
-// This is the default threading model to use for new windows.  Use
-// empty string for single-threaded, or something like "cull/draw" for
-// a 3-stage pipeline.  See GraphicsEngine::set_threading_model().
 
 // Warning!  The code that uses this is currently experimental and
 // incomplete, and will almost certainly crash!  Do not set
 // threading-model to anything other than its default of a
 // single-threaded model unless you are developing Panda's threading
 // system!
-const string threading_model = config_display.GetString("threading-model", "");
+ConfigVariableString threading_model
+("threading-model", "",
+ "This is the default threading model to use for new windows.  Use "
+ "empty string for single-threaded, or something like \"cull/draw\" for "
+ "a 3-stage pipeline.  See GraphicsEngine::set_threading_model(). "
+ "EXPERIMENTAL and incomplete, do not use this!");
 
-// This indicates the initial setting of the auto-flip flag.  Set it
-// true (the default) to cause render_frame() to flip all the windows
-// before it returns (in single-threaded mode only), or false to wait
-// until an explicit call to flip_frame() or the next render_frame().
-const bool auto_flip = config_display.GetBool("auto-flip", true);
+ConfigVariableBool auto_flip
+("auto-flip", true,
+ "This indicates the initial setting of the auto-flip flag.  Set it "
+ "true (the default) to cause render_frame() to flip all the windows "
+ "before it returns (in single-threaded mode only), or false to wait "
+ "until an explicit call to flip_frame() or the next render_frame().");
 
-// Set this true to yield the timeslice at the end of the frame to be
-// more polite to other applications that are trying to run.
-const bool yield_timeslice = config_display.GetBool("yield-timeslice", false);
+ConfigVariableBool yield_timeslice
+("yield-timeslice", false,
+ "Set this true to yield the timeslice at the end of the frame to be "
+ "more polite to other applications that are trying to run.");
 
-const string screenshot_filename = config_display.GetString("screenshot-filename", "%~p-%a-%b-%d-%H-%M-%S-%Y-%~f.%~e");
-const string screenshot_extension = config_display.GetString("screenshot-extension", "jpg");
+ConfigVariableString screenshot_filename
+("screenshot-filename", "%~p-%a-%b-%d-%H-%M-%S-%Y-%~f.%~e",
+ "This specifies the filename pattern to be used to generate "
+ "screenshots captured via save_screenshot_default().  See "
+ "DisplayRegion::save_screenshot()."
+);
+ConfigVariableString screenshot_extension
+("screenshot-extension", "jpg",
+ "This specifies the default filename extension (and therefore the "
+ "default image type) to be used for saving screenshots.");
 
-// Set this true to cause offscreen GraphicsBuffers to be created as
-// GraphicsWindows, if possible, so that their contents may be viewed
-// interactively.  Handy during development of multipass algorithms.
-const bool show_buffers = config_display.GetBool("show-buffers", false);
+ConfigVariableBool show_buffers
+("show-buffers", false,
+ "Set this true to cause offscreen GraphicsBuffers to be created as "
+ "GraphicsWindows, if possible, so that their contents may be viewed "
+ "interactively.  Handy during development of multipass algorithms.");
 
-// Set this true to make GraphicsOutput::make_render_texture() try to
-// create a parasite buffer before it tries to create an offscreen
-// buffer.  This may be desired if you know your graphics API does not
-// support render-directly-to-texture and you want to minimize
-// framebuffer memory.
-const bool prefer_parasite_buffer = config_display.GetBool("prefer-parasite-buffer", true);
+ConfigVariableBool prefer_parasite_buffer
+("prefer-parasite-buffer", true,
+ "Set this true to make GraphicsOutput::make_render_texture() try to "
+ "create a parasite buffer before it tries to create an offscreen "
+ "buffer.  This may be desired if you know your graphics API does not "
+ "support render-directly-to-texture and you want to minimize "
+ "framebuffer memory.");
 
-// Set this true to make GraphicsOutput::make_render_texture() first
-// try to create a single-buffered offscreen buffer, before falling
-// back to a double-buffered one (or whatever kind the source window
-// has).  This is true by default to reduce waste of framebuffer
-// memory, but you may get a performance benefit by setting it to
-// false (since in that case the buffer can share a graphics context
-// with the window).
-const bool prefer_single_buffer = config_display.GetBool("prefer-single-buffer", true);
+ConfigVariableBool prefer_single_buffer
+("prefer-single-buffer", true,
+ "Set this true to make GraphicsOutput::make_render_texture() first "
+ "try to create a single-buffered offscreen buffer, before falling "
+ "back to a double-buffered one (or whatever kind the source window "
+ "has).  This is true by default to reduce waste of framebuffer "
+ "memory, but you may get a performance benefit by setting it to "
+ "false (since in that case the buffer can share a graphics context "
+ "with the window).");
 
 
+ConfigVariableBool copy_texture_inverted
+("copy-texture-inverted", false,
+ "Set this true to indicate that the GSG in use will invert textures when "
+ "it performs a framebuffer-to-texture copy operation, or false to indicate "
+ "that it does the right thing.  If this is not set, the default behavior is "
+ "determined by the GSG's internal logic.");
 
-// Use the variable load-display to specify the name of the default
-// graphics display library or GraphicsPipe to load.  It is the name
-// of a shared library (or * for all libraries named in aux-display),
-// optionally followed by the name of the particular GraphicsPipe
-// class to create.
-
-// Also use the variable aux-display to name each of the graphics
-// display libraries that are available on a particular platform.
-// This variable may be repeated several times.
+ConfigVariableBool window_inverted
+("window-inverted", false,
+ "Set this true to create all windows with the inverted flag set, so that "
+ "they will render upside-down and backwards.  Normally this is useful only "
+ "for debugging.");
 
 
 ////////////////////////////////////////////////////////////////////

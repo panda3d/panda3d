@@ -189,6 +189,19 @@ get_one_shot() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_inverted
+//       Access: Published
+//  Description: Returns the current setting of the inverted flag.
+//               When this is true, the scene is rendered into the
+//               window upside-down, flipped like a mirror along the X
+//               axis.  See set_inverted().
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsOutput::
+get_inverted() const {
+  return _inverted;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::clear_delete_flag
 //       Access: Published
 //  Description: Resets the delete flag, so the GraphicsOutput will

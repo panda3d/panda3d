@@ -21,29 +21,34 @@
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
+#include "configVariableBool.h"
+#include "configVariableString.h"
+#include "configVariableList.h"
 #include "dconfig.h"
 
-#include <string>
 #include "pvector.h"
 
 ConfigureDecl(config_display, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(display, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(gsg, EXPCL_PANDA, EXPTP_PANDA);
 
-extern const bool view_frustum_cull;
-extern const bool pstats_unused_states;
+extern ConfigVariableBool view_frustum_cull;
+extern ConfigVariableBool pstats_unused_states;
 
-extern const string threading_model;
-extern const bool auto_flip;
-extern const bool yield_timeslice;
+extern ConfigVariableString threading_model;
+extern ConfigVariableBool auto_flip;
+extern ConfigVariableBool yield_timeslice;
 
-extern const string screenshot_filename;
-extern const string screenshot_extension;
+extern ConfigVariableString screenshot_filename;
+extern ConfigVariableString screenshot_extension;
 
-extern const bool show_buffers;
+extern ConfigVariableBool show_buffers;
 
-extern const bool prefer_parasite_buffer;
-extern const bool prefer_single_buffer;
+extern ConfigVariableBool prefer_parasite_buffer;
+extern ConfigVariableBool prefer_single_buffer;
+
+extern ConfigVariableBool copy_texture_inverted;
+extern ConfigVariableBool window_inverted;
 
 extern EXPCL_PANDA void init_libdisplay();
 

@@ -69,9 +69,14 @@ TypeHandle GraphicsStateGuardian::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsStateGuardian::
-GraphicsStateGuardian(const FrameBufferProperties &properties) {
-  _properties = properties;
-  _coordinate_system = get_default_coordinate_system();
+GraphicsStateGuardian(const FrameBufferProperties &properties,
+                      CoordinateSystem internal_coordinate_system) :
+  _internal_coordinate_system(internal_coordinate_system),
+  _properties(properties)
+{
+  _coordinate_system = CS_invalid;
+  set_coordinate_system(get_default_coordinate_system());
+
   _current_display_region = (DisplayRegion*)0L;
   _current_lens = (Lens *)NULL;
   _needs_reset = true;
@@ -83,6 +88,10 @@ GraphicsStateGuardian(const FrameBufferProperties &properties) {
   // supported).  A derived GSG may set this differently if it
   // supports multitexturing.
   _max_texture_stages = 1;
+
+  // Initially, we set this to false; a GSG that knows it has this
+  // property should set it to true.
+  _copy_texture_inverted = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -287,11 +296,10 @@ clear(DrawableRegion *clearable) {
 //     Function: GraphicsStateGuardian::prepare_lens
 //       Access: Public, Virtual
 //  Description: Makes the current lens (whichever lens was most
-//               recently specified with push_lens()) active, so that
-//               it will transform future rendered geometry.  Normally
-//               this is only called from the draw process, and
-//               usually it is called immediately after a call to
-//               push_lens().
+//               recently specified with set_scene()) active, so
+//               that it will transform future rendered geometry.
+//               Normally this is only called from the draw process,
+//               and usually it is called by set_scene().
 //
 //               The return value is true if the lens is acceptable,
 //               false if it is not.
@@ -550,21 +558,31 @@ finish_decal() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_internal_coordinate_system
-//       Access: Public, Virtual
-//  Description: Should be overridden by derived classes to return the
-//               coordinate system used internally by the GSG, if any
-//               one particular coordinate system is used.  The
-//               default, CS_default, indicates that the GSG can use
-//               any coordinate system.
+//     Function: GraphicsStateGuardian::set_coordinate_system
+//       Access: Public
+//  Description: Changes the coordinate system in effect on this
+//               particular gsg.  This is also called the "external"
+//               coordinate system, since it is the coordinate system
+//               used by the scene graph, external to to GSG.
 //
-//               If this returns other than CS_default, the
-//               GraphicsEngine will automatically convert all
-//               transforms into the indicated coordinate system.
+//               Normally, this will be the default coordinate system,
+//               but it might be set differently at runtime.
 ////////////////////////////////////////////////////////////////////
-CoordinateSystem GraphicsStateGuardian::
-get_internal_coordinate_system() const {
-  return CS_default;
+void GraphicsStateGuardian::
+set_coordinate_system(CoordinateSystem cs) {
+  _coordinate_system = cs;
+
+  // Changing the external coordinate system changes the cs_transform.
+  if (_internal_coordinate_system == CS_default ||
+      _internal_coordinate_system == _coordinate_system) {
+    _cs_transform = TransformState::make_identity();
+
+  } else {
+    _cs_transform = 
+      TransformState::make_mat
+      (LMatrix4f::convert_mat(_coordinate_system,
+                              _internal_coordinate_system));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -66,7 +66,8 @@ class EXPCL_PANDA GraphicsStateGuardian : public GraphicsStateGuardianBase {
   // Interfaces all GSGs should have
   //
 public:
-  GraphicsStateGuardian(const FrameBufferProperties &properties);
+  GraphicsStateGuardian(const FrameBufferProperties &properties,
+                        CoordinateSystem internal_coordinate_system);
   virtual ~GraphicsStateGuardian();
 
 PUBLISHED:
@@ -82,9 +83,10 @@ PUBLISHED:
   INLINE const GraphicsThreadingModel &get_threading_model() const;
 
   INLINE int get_max_texture_stages() const;
+  INLINE bool get_copy_texture_inverted() const;
 
 public:
-  INLINE void set_scene(SceneSetup *scene_setup);
+  INLINE bool set_scene(SceneSetup *scene_setup);
   INLINE SceneSetup *get_scene() const;
 
   virtual PreparedGraphicsObjects *get_prepared_objects();
@@ -148,13 +150,11 @@ public:
                                             const DisplayRegion *dr);
   INLINE void pop_frame_buffer(FrameBufferStack &node);
 
-  INLINE LensStack push_lens(const Lens *lens);
-  INLINE void pop_lens(LensStack &stack);
-  INLINE bool set_lens(const Lens *lens);
-
-  INLINE void set_coordinate_system(CoordinateSystem cs);
+  void set_coordinate_system(CoordinateSystem cs);
   INLINE CoordinateSystem get_coordinate_system() const;
-  virtual CoordinateSystem get_internal_coordinate_system() const;
+  INLINE CoordinateSystem get_internal_coordinate_system() const;
+
+  INLINE const TransformState *get_cs_transform() const;
 
   virtual void issue_transform(const TransformState *transform);
   virtual void issue_color_scale(const ColorScaleAttrib *attrib);
@@ -250,6 +250,8 @@ protected:
   int _force_normals;
 
   CoordinateSystem _coordinate_system;
+  CoordinateSystem _internal_coordinate_system;
+  CPT(TransformState) _cs_transform;
 
   Colorf _scene_graph_color;
   bool _has_scene_graph_color;
@@ -277,6 +279,7 @@ protected:
 
   PT(PreparedGraphicsObjects) _prepared_objects;
   int _max_texture_stages;
+  bool _copy_texture_inverted;
 
 public:
   // Statistics

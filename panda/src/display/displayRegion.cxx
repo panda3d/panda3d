@@ -553,3 +553,37 @@ win_display_regions_changed() {
     _window->win_display_regions_changed();
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::do_compute_pixels
+//       Access: Private
+//  Description: The private implementation of compute_pixels, this
+//               assumes that we already have the lock.
+////////////////////////////////////////////////////////////////////
+void DisplayRegion::
+do_compute_pixels(int x_size, int y_size) {
+  if (display_cat.is_debug()) {
+    display_cat.debug()
+      << "DisplayRegion::do_compute_pixels(" << x_size << ", " << y_size << ")\n";
+  }
+
+  _pl = int((_l * x_size) + 0.5);
+  _pr = int((_r * x_size) + 0.5);
+
+  const GraphicsOutput *win = get_window();
+  nassertv(win != (GraphicsOutput *)NULL);
+  if (win->get_inverted()) {
+    // The window is inverted; compute the DisplayRegion accordingly.
+    _pb = int(((1.0f - _t) * y_size) + 0.5);
+    _pt = int(((1.0f - _b) * y_size) + 0.5);
+    _pbi = int((_t * y_size) + 0.5);
+    _pti = int((_b * y_size) + 0.5);
+
+  } else {
+    // The window is normal.
+    _pb = int((_b * y_size) + 0.5);
+    _pt = int((_t * y_size) + 0.5);
+    _pbi = int(((1.0f - _b) * y_size) + 0.5);
+    _pti = int(((1.0f - _t) * y_size) + 0.5);
+  }
+}

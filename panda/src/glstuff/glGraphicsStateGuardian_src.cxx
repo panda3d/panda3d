@@ -272,7 +272,7 @@ fix_component_ordering(GLenum external_format, PixelBuffer *pb) {
 ////////////////////////////////////////////////////////////////////
 CLP(GraphicsStateGuardian)::
 CLP(GraphicsStateGuardian)(const FrameBufferProperties &properties) :
-  GraphicsStateGuardian(properties) 
+  GraphicsStateGuardian(properties, CS_yup_right) 
 {
   _error_count = 0;
 #ifdef HAVE_CGGL
@@ -640,11 +640,10 @@ prepare_display_region() {
 //     Function: CLP(GraphicsStateGuardian)::prepare_lens
 //       Access: Public, Virtual
 //  Description: Makes the current lens (whichever lens was most
-//               recently specified with push_lens()) active, so that
-//               it will transform future rendered geometry.  Normally
-//               this is only called from the draw process, and
-//               usually it is called immediately after a call to
-//               push_lens().
+//               recently specified with set_scene()) active, so
+//               that it will transform future rendered geometry.
+//               Normally this is only called from the draw process,
+//               and usually it is called by set_scene().
 //
 //               The return value is true if the lens is acceptable,
 //               false if it is not.
@@ -671,6 +670,13 @@ prepare_lens() {
   LMatrix4f new_projection_mat =
     LMatrix4f::convert_mat(CS_yup_right, _current_lens->get_coordinate_system()) *
     projection_mat;
+
+  if (_scene_setup->get_inverted()) {
+    // If the scene is supposed to be inverted, then invert the
+    // projection matrix.
+    static LMatrix4f invert_mat = LMatrix4f::scale_mat(1.0f, -1.0f, 1.0f);
+    new_projection_mat *= invert_mat;
+  }
 
 #ifdef GSG_VERBOSE
   GLCAT.spam()
@@ -2820,24 +2826,6 @@ wants_texcoords() const {
 bool CLP(GraphicsStateGuardian)::
 depth_offset_decals() {
   return CLP(depth_offset_decals);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_internal_coordinate_system
-//       Access: Public, Virtual
-//  Description: Should be overridden by derived classes to return the
-//               coordinate system used internally by the GSG, if any
-//               one particular coordinate system is used.  The
-//               default, CS_default, indicates that the GSG can use
-//               any coordinate system.
-//
-//               If this returns other than CS_default, the
-//               GraphicsEngine will automatically convert all
-//               transforms into the indicated coordinate system.
-////////////////////////////////////////////////////////////////////
-CoordinateSystem CLP(GraphicsStateGuardian)::
-get_internal_coordinate_system() const {
-  return CS_yup_right;
 }
 
 ////////////////////////////////////////////////////////////////////

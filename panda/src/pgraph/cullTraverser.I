@@ -27,10 +27,12 @@
 INLINE void CullTraverser::
 set_scene(SceneSetup *scene_setup) {
   _scene_setup = scene_setup;
+  _initial_state = scene_setup->get_initial_state();
+
   const Camera *camera = scene_setup->get_camera_node();
   _tag_state_key = camera->get_tag_state_key();
   _has_tag_state_key = !_tag_state_key.empty();
-  _initial_state = camera->get_initial_state();
+  _camera_mask = camera->get_camera_mask();
 }
 
 ////////////////////////////////////////////////////////////////////

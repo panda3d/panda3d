@@ -33,49 +33,41 @@ GraphicsPipeSelection *GraphicsPipeSelection::_global_ptr = NULL;
 ////////////////////////////////////////////////////////////////////
 GraphicsPipeSelection::
 GraphicsPipeSelection() {
-  pset<string> got_display_modules;
+  // We declare these variables here instead of in config_display, in
+  // case this constructor is running at static init time.
+  ConfigVariableString load_display
+    ("load-display", "*",
+     "Specify the name of the default graphics display library or "
+     "GraphicsPipe to load.  It is the name of a shared library (or * for "
+     "all libraries named in aux-display), optionally followed by the "
+     "name of the particular GraphicsPipe class to create.");
+  
+  ConfigVariableList aux_display
+    ("aux-display",
+     "Names each of the graphics display libraries that are available on "
+     "a particular platform.  This variable may be repeated several "
+     "times.  These libraries will be tried one at a time if the library "
+     "specified by load_display cannot be loaded.");
 
-  // First get the name of the default module from the load-display
-  // variable.  We get this explicitly from Configrc now (instead of
-  // retrieving it in config_display), in case this constructor is
-  // running at static init time.
-  string load_display = config_display.GetString("load-display", "");
-  load_display = trim_right(load_display);
-  size_t space = load_display.rfind(' ');
-  if (space != string::npos) {
-    // If there's a space, it indicates the name of the GraphicsPipe
-    // class to prefer.
-    _default_pipe_name = load_display.substr(space + 1);
-    load_display = trim_right(load_display.substr(0, space));
-  }
-
-  // Everything else is the name of the .dll (or .so) file to load.
-  _default_display_module = load_display;
+  _default_display_module = load_display.get_word(0);
+  _default_pipe_name = load_display.get_word(1);
 
   if (_default_display_module == "*") {
     // '*' or empty string is the key for all display modules.
     _default_display_module = string();
 
   } else if (!_default_display_module.empty()) {
-    // Don't insert a particular display more than once.
-    if (got_display_modules.insert(_default_display_module).second) {
-      _display_modules.push_back(_default_display_module);
-    }
+    _display_modules.push_back(_default_display_module);
   }
 
   // Also get the set of modules named in the various aux-display
   // Configrc variables.  We'll want to know this when we call
   // load_modules() later.
-  Config::ConfigTable::Symbol disp;
-  config_display.GetAll("aux-display", disp);
-
-  Config::ConfigTable::Symbol::iterator ci;
-  for (ci = disp.begin(); ci != disp.end(); ++ci) {
-    string aux_display = trim_right((*ci).Val());
-
-    // Don't insert a particular display more than once.
-    if (got_display_modules.insert(aux_display).second) {
-      _display_modules.push_back(aux_display);
+  int num_aux = aux_display.get_num_unique_values();
+  for (int i = 0; i < num_aux; i++) {
+    string name = aux_display.get_unique_value(i);
+    if (name != _default_display_module) {
+      _display_modules.push_back(name);
     }
   }
 

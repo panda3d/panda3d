@@ -30,6 +30,7 @@
 #include "pStatClient.h"
 #include "pStatCollector.h"
 #include "mutexHolder.h"
+#include "cullFaceAttrib.h"
 #include "string_utils.h"
 
 #if defined(WIN32)
@@ -739,7 +740,7 @@ void GraphicsEngine::
 cull_and_draw_together(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
   nassertv(gsg != (GraphicsStateGuardian *)NULL);
 
-  PT(SceneSetup) scene_setup = setup_scene(dr->get_camera(), gsg);
+  PT(SceneSetup) scene_setup = setup_scene(gsg, dr);
   if (setup_gsg(gsg, scene_setup)) {
     DisplayRegionStack old_dr = gsg->push_display_region(dr);
     gsg->prepare_display_region();
@@ -819,7 +820,7 @@ cull_bin_draw(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
     cull_result = new CullResult(gsg);
   }
 
-  PT(SceneSetup) scene_setup = setup_scene(dr->get_camera(), gsg);
+  PT(SceneSetup) scene_setup = setup_scene(gsg, dr);
   if (scene_setup != (SceneSetup *)NULL) {
     BinCullHandler cull_handler(cull_result);
     do_cull(&cull_handler, scene_setup, gsg);
@@ -964,7 +965,14 @@ do_flip_frame() {
 //               reason.
 ////////////////////////////////////////////////////////////////////
 PT(SceneSetup) GraphicsEngine::
-setup_scene(const NodePath &camera, GraphicsStateGuardian *gsg) {
+setup_scene(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
+  GraphicsOutput *window = dr->get_window();
+  // The window pointer shouldn't be NULL, since we presumably got to
+  // this particular DisplayRegion by walking through a list on a
+  // window.
+  nassertr(window != (GraphicsOutput *)NULL, NULL);
+
+  NodePath camera = dr->get_camera();
   if (camera.is_empty()) {
     // No camera, no draw.
     return NULL;
@@ -1007,18 +1015,26 @@ setup_scene(const NodePath &camera, GraphicsStateGuardian *gsg) {
   // The render transform is the same as the world transform, except
   // it is converted into the GSG's internal coordinate system.  This
   // is the transform that the GSG will apply to all of its vertices.
-  CPT(TransformState) cs_transform = TransformState::make_identity();
-  CoordinateSystem external_cs = gsg->get_coordinate_system();
-  CoordinateSystem internal_cs = gsg->get_internal_coordinate_system();
-  if (internal_cs != CS_default && internal_cs != external_cs) {
-    cs_transform = 
-      TransformState::make_mat(LMatrix4f::convert_mat(external_cs, internal_cs));
+  CPT(TransformState) cs_transform = gsg->get_cs_transform();
+
+  CPT(RenderState) initial_state = camera_node->get_initial_state();
+
+  if (window->get_inverted()) {
+    // If the window is to be inverted, we must set the inverted flag
+    // on the SceneSetup object, so that the GSG will be able to
+    // invert the projection matrix at the last minute.
+    scene_setup->set_inverted(true);
+
+    // This also means we need to globally invert the sense of polygon
+    // vertex ordering.
+    initial_state = initial_state->compose(get_invert_polygon_state());
   }
 
   scene_setup->set_scene_root(scene_root);
   scene_setup->set_camera_path(camera);
   scene_setup->set_camera_node(camera_node);
   scene_setup->set_lens(lens);
+  scene_setup->set_initial_state(initial_state);
   scene_setup->set_camera_transform(camera_transform);
   scene_setup->set_world_transform(world_transform);
   scene_setup->set_cs_transform(cs_transform);
@@ -1041,7 +1057,6 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
   trav.set_cull_handler(cull_handler);
   trav.set_depth_offset_decals(gsg->depth_offset_decals());
   trav.set_scene(scene_setup);
-  trav.set_camera_mask(scene_setup->get_camera_node()->get_camera_mask());
   
   if (view_frustum_cull) {
     // If we're to be performing view-frustum culling, determine the
@@ -1108,21 +1123,12 @@ setup_gsg(GraphicsStateGuardian *gsg, SceneSetup *scene_setup) {
     return false;
   }
 
-  const Lens *lens = scene_setup->get_lens();
-  if (lens == (const Lens *)NULL) {
-    // No lens, no draw.
-    return false;
-  }
-
-  if (!gsg->set_lens(lens)) {
-    // The lens is inappropriate somehow.
+  if (!gsg->set_scene(scene_setup)) {
+    // The scene or lens is inappropriate somehow.
     display_cat.error()
-      << gsg->get_type() << " cannot render with " << lens->get_type()
-      << "\n";
+      << gsg->get_type() << " cannot render scene with specified lens.\n";
     return false;
   }
-
-  gsg->set_scene(scene_setup);
 
   return true;
 }
@@ -1269,6 +1275,26 @@ terminate_threads() {
   }
   
   _threads.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::get_invert_polygon_state
+//       Access: Protected, Static
+//  Description: Returns a RenderState for inverting the sense of
+//               polygon vertex ordering: if the scene graph specifies
+//               a clockwise ordering, this changes it to
+//               counterclockwise, and vice-versa.
+////////////////////////////////////////////////////////////////////
+const RenderState *GraphicsEngine::
+get_invert_polygon_state() {
+  // Once someone asks for this pointer, we hold its reference count
+  // and never free it.
+  static CPT(RenderState) state = (const RenderState *)NULL;
+  if (state == (const RenderState *)NULL) {
+    state = RenderState::make(CullFaceAttrib::make_reverse());
+  }
+
+  return state;
 }
 
 ////////////////////////////////////////////////////////////////////

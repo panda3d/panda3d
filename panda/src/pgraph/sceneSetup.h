@@ -50,7 +50,13 @@ public:
   INLINE void set_lens(const Lens *lens);
   INLINE const Lens *get_lens() const;
 
+  INLINE void set_inverted(bool inverted);
+  INLINE bool get_inverted() const;
+
   INLINE const NodePath &get_cull_center() const;
+
+  INLINE void set_initial_state(const RenderState *initial_state);
+  INLINE const RenderState *get_initial_state() const;
 
   INLINE void set_camera_transform(const TransformState *camera_transform);
   INLINE const TransformState *get_camera_transform() const;
@@ -68,6 +74,8 @@ private:
   NodePath _camera_path;
   PT(Camera) _camera_node;
   CPT(Lens) _lens;
+  bool _inverted;
+  CPT(RenderState) _initial_state;
   CPT(TransformState) _camera_transform;
   CPT(TransformState) _world_transform;
   CPT(TransformState) _cs_transform;

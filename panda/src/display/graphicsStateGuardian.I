@@ -140,17 +140,51 @@ get_max_texture_stages() const {
   return _max_texture_stages;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_copy_texture_inverted
+//       Access: Published
+//  Description: Returns true if this particular GSG has the property
+//               that any framebuffer-to-texture copy results in a
+//               texture that is upside-down and backwards from
+//               Panda's usual convention; that is, it copies into a
+//               texture from the bottom up instead of from the top
+//               down.
+//
+//               If this is true, then on offscreen GraphicsBuffer
+//               created for the purposes of rendering into a texture
+//               should be created with the invert flag set true, to
+//               compensate.  Panda will do this automatically if you
+//               create an offscreen buffer using
+//               GraphicsOutput::make_texture_buffer().
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_copy_texture_inverted() const {
+  // If this is set from a Config variable, that overrides.
+  if (copy_texture_inverted.has_value()) {
+    return copy_texture_inverted;
+  }
+
+  // Otherwise, use whatever behavior the GSG figured for itself.
+  return _copy_texture_inverted;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::set_scene
 //       Access: Public
 //  Description: Sets the SceneSetup object that indicates the initial
 //               camera position, etc.  This must be called before
-//               traversal begins.
+//               traversal begins.  Returns true if the scene is
+//               acceptable, false if something's wrong.
 ////////////////////////////////////////////////////////////////////
-INLINE void GraphicsStateGuardian::
+INLINE bool GraphicsStateGuardian::
 set_scene(SceneSetup *scene_setup) {
   _scene_setup = scene_setup;
+  _current_lens = scene_setup->get_lens();
+  if (_current_lens == (Lens *)NULL) {
+    return false;
+  }
+  return prepare_lens();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -315,10 +349,9 @@ get_current_display_region(void) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_current_lens
 //       Access: Public
-//  Description: Returns the current lens being rendered with, as set
-//               by the last call to push_lens() (or restored by
-//               pop_lens()).  This lens will be made active (if it is
-//               not already) by a call to prepare_lens().
+//  Description: Returns the current lens being used to render,
+//               according to the scene specified via the last call to
+//               set_scene().
 ////////////////////////////////////////////////////////////////////
 INLINE const Lens *GraphicsStateGuardian::
 get_current_lens() const {
@@ -403,78 +436,6 @@ pop_frame_buffer(FrameBufferStack &node) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::push_lens
-//       Access: Public
-//  Description: Saves the current lens information and sets up a new
-//               lens for rendering.  The return value from this
-//               function must eventually be passed to a matching
-//               pop_lens() call.
-//
-//               The new lens will not actually be made active for
-//               rendering until the next call to prepare_lens().
-//               This is a state-changing optimization.
-////////////////////////////////////////////////////////////////////
-INLINE LensStack GraphicsStateGuardian::
-push_lens(const Lens *lens) {
-  LensStack old;
-  old._lens = _current_lens;
-  old._stack_level = _lens_stack_level;
-  _lens_stack_level++;
-  _current_lens = lens;
-  return old;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::pop_lens
-//       Access: Public
-//  Description: Restores the lens previously in effect, before the
-//               matching call to push_lens().
-//
-//               The newly-restored lens will not actually be made
-//               active for rendering until the next call to
-//               prepare_lens().  This is a state-changing
-//               optimization.
-////////////////////////////////////////////////////////////////////
-INLINE void GraphicsStateGuardian::
-pop_lens(LensStack &node) {
-  nassertv(_lens_stack_level > 0);
-  _lens_stack_level--;
-  nassertv(node._stack_level == _lens_stack_level);
-  _current_lens = node._lens;
-  node._stack_level = -1;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::set_lens
-//       Access: Public
-//  Description: Sets a new lens for rendering without bothering to
-//               push or pop.  This replaces the lens most recently
-//               pushed, if any.  There is no need to call
-//               prepare_lens() following this call.
-//
-//               The return value is true if the lens is acceptable,
-//               false if it is not.
-////////////////////////////////////////////////////////////////////
-INLINE bool GraphicsStateGuardian::
-set_lens(const Lens *lens) {
-  _current_lens = lens;
-  return prepare_lens();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::set_coordinate_system
-//       Access: Public
-//  Description: Changes the coordinate system in effect on this
-//               particular gsg.  Normally, this will be the default
-//               coordinate system, but it might be set differently at
-//               runtime.
-////////////////////////////////////////////////////////////////////
-INLINE void GraphicsStateGuardian::
-set_coordinate_system(CoordinateSystem cs) {
-  _coordinate_system = cs;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_coordinate_system
 //       Access: Public
 //  Description: Returns the coordinate system in effect on this
@@ -485,6 +446,38 @@ set_coordinate_system(CoordinateSystem cs) {
 INLINE CoordinateSystem GraphicsStateGuardian::
 get_coordinate_system() const {
   return _coordinate_system;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_internal_coordinate_system
+//       Access: Public
+//  Description: Returns the coordinate system used internally by the
+//               GSG, if any one particular coordinate system is used.
+//               The default, CS_default, indicates that the GSG can
+//               use any coordinate system.
+//
+//               If this returns other than CS_default, the
+//               GraphicsEngine will automatically convert all
+//               transforms into the indicated coordinate system.
+////////////////////////////////////////////////////////////////////
+INLINE CoordinateSystem GraphicsStateGuardian::
+get_internal_coordinate_system() const {
+  return _coordinate_system;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_cs_transform
+//       Access: Public
+//  Description: Returns a transform that converts from the GSG's
+//               external coordinate system (as returned by
+//               get_coordinate_system()) to its internal coordinate
+//               system (as returned by
+//               get_internal_coordinate_system()).  This is used for
+//               rendering.
+////////////////////////////////////////////////////////////////////
+INLINE const TransformState *GraphicsStateGuardian::
+get_cs_transform() const {
+  return _cs_transform;
 }
 
 ////////////////////////////////////////////////////////////////////

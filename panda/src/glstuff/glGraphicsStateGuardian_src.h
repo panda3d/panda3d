@@ -134,7 +134,6 @@ public:
 
   virtual bool depth_offset_decals();
 
-  virtual CoordinateSystem get_internal_coordinate_system() const;
   virtual float compute_distance_to(const LPoint3f &point) const;
 
   void print_gfx_visual();

@@ -139,7 +139,6 @@ public:
 
   virtual bool depth_offset_decals();
 
-  virtual CoordinateSystem get_internal_coordinate_system() const;
   INLINE float compute_distance_to(const LPoint3f &point) const;
   virtual void set_color_clear_value(const Colorf& value);
 

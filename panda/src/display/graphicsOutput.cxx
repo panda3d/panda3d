@@ -25,6 +25,7 @@
 #include "renderBuffer.h"
 #include "indirectLess.h"
 #include "pStatTimer.h"
+#include "configVariableBool.h"
 
 TypeHandle GraphicsOutput::_type_handle;
 
@@ -57,6 +58,7 @@ GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   _sort = 0;
   _active = true;
   _one_shot = false;
+  _inverted = window_inverted;
   _delete_flag = false;
 
   int mode = gsg->get_properties().get_frame_buffer_mode();
@@ -69,6 +71,7 @@ GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   // which we may use internally for full-window operations like
   // clear() and get_screenshot().
   _default_display_region = make_display_region(0.0f, 1.0f, 0.0f, 1.0f);
+  _default_display_region->set_active(false);
 
   _display_regions_stale = false;
 
@@ -131,15 +134,17 @@ GraphicsOutput::
 //     Function: GraphicsOutput::detach_texture
 //       Access: Published
 //  Description: Disassociates the texture from the GraphicsOutput.
-//               It will no longer be filled as the frame renders, and
-//               it may be used (with its current contents) as a
-//               texture in its own right.
+//               The texture will no longer be filled as the frame
+//               renders, and it may be used (with its current
+//               contents) as an ordinary texture in its own right.
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
 detach_texture() {
   MutexHolder holder(_lock);
   _texture = NULL;
   _copy_texture = false;
+
+  set_inverted(window_inverted);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -160,6 +165,9 @@ setup_copy_texture(const string &name) {
   _texture->set_wrapv(Texture::WM_clamp);
 
   _copy_texture = true;
+
+  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+  set_inverted(_gsg->get_copy_texture_inverted());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -183,6 +191,40 @@ set_active(bool active) {
 bool GraphicsOutput::
 is_active() const {
   return _active && is_valid();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::set_inverted
+//       Access: Published
+//  Description: Changes the current setting of the inverted flag.
+//               When this is true, the scene is rendered into the
+//               window upside-down and backwards, that is, inverted
+//               as if viewed through a mirror placed on the floor.
+//
+//               This is primarily intended to support DirectX (and a
+//               few buggy OpenGL graphics drivers) that perform a
+//               framebuffer-to-texture copy upside-down from the
+//               usual OpenGL (and Panda) convention.  Panda will
+//               automatically set this flag for offscreen buffers on
+//               hardware that is known to do this, to compensate when
+//               rendering offscreen into a texture.
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+set_inverted(bool inverted) {
+  if (_inverted != inverted) {
+    _inverted = inverted;
+
+    if (_y_size != 0) {
+      // All of our DisplayRegions need to recompute their pixel
+      // positions now.
+      TotalDisplayRegions::iterator dri;
+      for (dri = _total_display_regions.begin(); 
+           dri != _total_display_regions.end(); 
+           ++dri) {
+        (*dri)->compute_pixels(_x_size, _y_size);
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -539,8 +581,9 @@ end_frame() {
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
   _gsg->end_frame();
 
-  // By default, we copy the framebuffer to the texture at the end of
-  // the frame.  GraphicsBuffer objects that are set up to render
+  // If _copy_texture is true, it means we should copy the framebuffer
+  // to the GraphicsOutput's associated texture after the frame has
+  // rendered.  GraphicsBuffer objects that are set up to render
   // directly into texture memory don't need to do this; they will set
   // _copy_texture to false.
   if (_copy_texture) {

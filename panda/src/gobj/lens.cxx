@@ -556,7 +556,7 @@ set_view_mat(const LMatrix4f &view_mat) {
   _lens_mat = view_mat;
   adjust_user_flags(UF_view_vector | UF_view_hpr | UF_iod_offset,
                     UF_view_mat);
-  adjust_comp_flags(CF_lens_mat_inv | CF_view_hpr | CF_view_vector | CF_iod_offset,
+  adjust_comp_flags(CF_projection_mat | CF_projection_mat_inv | CF_lens_mat_inv | CF_view_hpr | CF_view_vector | CF_iod_offset,
                     CF_lens_mat);
   throw_change_event();
 }

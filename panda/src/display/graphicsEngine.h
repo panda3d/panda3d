@@ -152,8 +152,7 @@ private:
   void do_flip_frame();
   INLINE void close_gsg(GraphicsPipe *pipe, GraphicsStateGuardian *gsg);
 
-  PT(SceneSetup) setup_scene(const NodePath &camera, 
-                             GraphicsStateGuardian *gsg);
+  PT(SceneSetup) setup_scene(GraphicsStateGuardian *gsg, DisplayRegion *dr);
   void do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
                GraphicsStateGuardian *gsg);
   void do_draw(CullResult *cull_result, SceneSetup *scene_setup,
@@ -166,6 +165,8 @@ private:
   void do_remove_window(GraphicsOutput *window);
   void do_resort_windows();
   void terminate_threads();
+
+  static const RenderState *get_invert_polygon_state();
 
   // The WindowRenderer class records the stages of the pipeline that
   // each thread (including the main thread, a.k.a. "app") should

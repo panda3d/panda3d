@@ -99,7 +99,7 @@ PUBLISHED:
 
 private:
   void win_display_regions_changed();
-  INLINE void do_compute_pixels(int x_size, int y_size);
+  void do_compute_pixels(int x_size, int y_size);
   Mutex _lock;
 
   float _l;

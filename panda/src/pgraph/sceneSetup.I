@@ -24,6 +24,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE SceneSetup::
 SceneSetup() {
+  _inverted = false;
+  _initial_state = RenderState::make_empty();
   _camera_transform = TransformState::make_identity();
   _world_transform = TransformState::make_identity();
   _cs_transform = TransformState::make_identity();
@@ -110,6 +112,32 @@ get_lens() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SceneSetup::set_inverted
+//       Access: Published
+//  Description: Changes the current setting of the inverted flag.
+//               When this is true, the scene is rendered into the
+//               window upside-down and backwards, that is, inverted
+//               as if viewed through a mirror placed on the floor.
+////////////////////////////////////////////////////////////////////
+INLINE void SceneSetup::
+set_inverted(bool inverted) {
+  _inverted = inverted;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneSetup::get_inverted
+//       Access: Published
+//  Description: Returns the current setting of the inverted flag.
+//               When this is true, the scene is rendered into the
+//               window upside-down, flipped like a mirror along the X
+//               axis.
+////////////////////////////////////////////////////////////////////
+INLINE bool SceneSetup::
+get_inverted() const {
+  return _inverted;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SceneSetup::get_cull_center
 //       Access: Public
 //  Description: Returns the point from which the culling operations
@@ -124,6 +152,29 @@ get_cull_center() const {
   } else {
     return _camera_node->get_cull_center();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneSetup::set_initial_state
+//       Access: Published
+//  Description: Sets the initial state which is applied to all nodes
+//               in the scene, as if it were set at the top of the
+//               scene graph.
+////////////////////////////////////////////////////////////////////
+INLINE void SceneSetup::
+set_initial_state(const RenderState *state) {
+  _initial_state = state;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneSetup::get_initial_state
+//       Access: Published
+//  Description: Returns the initial state as set by a previous call
+//               to set_initial_state().
+////////////////////////////////////////////////////////////////////
+INLINE const RenderState *SceneSetup::
+get_initial_state() const {
+  return _initial_state;
 }
 
 ////////////////////////////////////////////////////////////////////
