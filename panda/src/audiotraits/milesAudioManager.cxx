@@ -200,7 +200,7 @@ get_sound(const string& file_name) {
     // ...the sound was not found in the cache/pool.
     audio=load(path);
     if (audio) {
-      while (_sounds.size() >= _cache_limit) {
+      while (_sounds.size() >= (unsigned int)_cache_limit) {
         uncache_a_sound();
       }
       // Put it in the pool:
@@ -331,7 +331,7 @@ set_cache_limit(int count) {
   audio_debug("MilesAudioManager::set_cache_limit(count="
       <<count<<")");
   assert(is_valid());
-  while (_lru.size() > count) {
+  while (_lru.size() > (unsigned int) count) {
     uncache_a_sound();
   }
   _cache_limit=count;
