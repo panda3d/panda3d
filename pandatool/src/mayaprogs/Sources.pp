@@ -66,3 +66,33 @@
     mayaCopy.cxx mayaCopy.h
 
 #end bin_target
+
+
+#begin lib_target
+  #define USE_PACKAGES maya
+  #define TARGET mayapview
+  #define LOCAL_LIBS mayaegg maya
+  #define OTHER_LIBS \
+    egg:c pandaegg:m \
+    framework:m \
+    linmath:c putil:c panda:m \
+    express:c pandaexpress:m \
+    dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
+
+  #define UNIX_SYS_LIBS \
+    m
+
+  #if $[WINDOWS_PLATFORM]
+    // Explicitly export the maya initialize and shutdown functions.
+    #define LINKER_FLAGS $[LINKER_FLAGS] /export:initializePlugin /export:uninitializePlugin
+    // On Windows, Maya expects its plugins to be named with a .mll
+    // extension, but it's a perfectly normal dll otherwise.  This
+    // ppremake hack achieves that filename.
+    #define dlllib mll
+  #endif
+
+  #define SOURCES \
+    mayaPview.cxx
+
+#end lib_target
+  
