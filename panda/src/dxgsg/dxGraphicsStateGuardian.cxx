@@ -5632,7 +5632,9 @@ begin_decal(GeomNode *base_geom, AllTransitionsWrapper &attrib) {
             _d3dDevice->GetTransform( D3DTRANSFORMSTATE_WORLD, &_SavedTransform);
 
             // First turn off writing the depth buffer to render the base geometry.
-            _d3dDevice->GetRenderState(D3DRENDERSTATE_ZWRITEENABLE, (DWORD *)&_depth_write_enabled);  //save cur val
+            DWORD bIsDepthWriteEnabled;  // _depth_write_enabled is only char sized, cant use GetRenderState directly
+            _d3dDevice->GetRenderState(D3DRENDERSTATE_ZWRITEENABLE, &bIsDepthWriteEnabled);
+            _depth_write_enabled = (bIsDepthWriteEnabled!=0);
             _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
 
             // It is also important to update the current state to
