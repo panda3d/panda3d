@@ -52,28 +52,15 @@ class LogicGate(Entity):
          {'choiceSet':['or','and','xor','nand','nor','xnor']}),
         )
 
-class NodepathImpl:
-    isNodePath = 1
-    attribs = (
-        ('parent', 0, 'entId', {'type':'isNodePath'}),
-        ('pos', Point3(0,0,0), 'pos'),
-        ('hpr', Vec3(0,0,0), 'hpr'),
-        )
-
-# Note: this covers Nodepath and DistributedNodepath
-class Nodepath(Entity, NodepathImpl):
+class Nodepath(Entity):
     type = 'nodepath'
-    isNodePath = 1
-
-class NodepathAttribs:
-    isNodePath = 1
     attribs = (
-        ('parent', 0, 'entId', {'type':'isNodePath'}),
+        ('parent', 0, 'entId', {'type':'nodepath'}),
         ('pos', Point3(0,0,0), 'pos'),
         ('hpr', Vec3(0,0,0), 'hpr'),
         )
 
-class Zone(Entity, NodepathAttribs):
+class Zone(Entity, Nodepath):
     type = 'zone'
     delAttribs = (
         'parent',
@@ -116,7 +103,7 @@ class GagBarrel(BarrelBase):
         ('gagTrack', 0, 'choice', {'choiceSet':range(7)}),
         )
 
-class Switch(Entity, NodepathImpl):
+class Switch(Entity, Nodepath):
     output = 'bool'
     attribs = (
         ('scale', Vec3(1), 'scale'),
