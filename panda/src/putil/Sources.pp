@@ -4,8 +4,8 @@
 
 #begin lib_target
   #define TARGET putil
-
-  #define COMBINED_SOURCES composite1.cxx composite2.cxx
+ 
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx   
   
   #define SOURCES \
      bam.h bamReader.I bamReader.N bamReader.h bamReaderParam.I \
@@ -33,7 +33,7 @@
      vector_double.h vector_float.h vector_typedWritable.h \
      vector_uchar.h vector_ushort.h vector_writable.h \
      writable.I writable.h writableConfigurable.h \
-     writableParam.I writableParam.h $[COMBINED_SOURCES] 
+     writableParam.I writableParam.h 
     
  #define INCLUDED_SOURCES \
      bamReader.cxx bamReaderParam.cxx bamWriter.cxx bitMask.cxx \
