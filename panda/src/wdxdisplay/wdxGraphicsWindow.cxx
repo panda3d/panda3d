@@ -546,73 +546,73 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       handle_keyrelease(lookup_key(wparam));
       break;
 
-        case WM_LBUTTONDOWN:
-            button = 0;
-        case WM_MBUTTONDOWN:
-            if(button < 0)
-                button = 1;
-        case WM_RBUTTONDOWN:
-            if(!DXREADY) 
-              break;
-
-            if(button < 0)
-                button = 2;
-            SetCapture(hwnd);
-            SET_MOUSE_COORD(x,LOWORD(lparam));
-            SET_MOUSE_COORD(y,HIWORD(lparam));
-            handle_keypress(MouseButton::button(button), x, y);
-            return 0;
-
-        case WM_LBUTTONUP:
-            button = 0;
-        case WM_MBUTTONUP:
-            if(button < 0)
-                button = 1;
-        case WM_RBUTTONUP:
-            if(!DXREADY) 
-              break;
-
-            if(button < 0)
-                button = 2;
-            ReleaseCapture();
-            #if 0
-               SET_MOUSE_COORD(x,LOWORD(lparam));
-               SET_MOUSE_COORD(y,HIWORD(lparam));           
-            #endif
-            handle_keyrelease(MouseButton::button(button));
-            return 0;
-
-        case WM_MOVE:
-            if(!DXREADY)
-                break;
-            handle_window_move(LOWORD(lparam), HIWORD(lparam) );
-            return 0;
-
-        case WM_EXITSIZEMOVE:
-            #ifdef _DEBUG
-              wdxdisplay_cat.spam()  << "WM_EXITSIZEMOVE received"  << endl;
-            #endif
-            
-            if(_WindowAdjustingType==Resizing) {
-                handle_reshape(true);
-            }
-
-            _WindowAdjustingType = NotAdjusting;
-            return 0;
-
-        case WM_ENTERSIZEMOVE: {
-                if(_dxgsg==NULL)
-                    _dxgsg->SetDXReady(true);   // dont disable here because I want to see pic as I resize
-                _WindowAdjustingType = MovingOrResizing;
-            }
+    case WM_LBUTTONDOWN:
+        button = 0;
+    case WM_MBUTTONDOWN:
+        if(button < 0)
+            button = 1;
+    case WM_RBUTTONDOWN:
+        if(!DXREADY) 
+          break;
+    
+        if(button < 0)
+            button = 2;
+        SetCapture(hwnd);
+        SET_MOUSE_COORD(x,LOWORD(lparam));
+        SET_MOUSE_COORD(y,HIWORD(lparam));
+        handle_keypress(MouseButton::button(button), x, y);
+        return 0;
+    
+    case WM_LBUTTONUP:
+        button = 0;
+    case WM_MBUTTONUP:
+        if(button < 0)
+            button = 1;
+    case WM_RBUTTONUP:
+        if(!DXREADY) 
+          break;
+    
+        if(button < 0)
+            button = 2;
+        ReleaseCapture();
+        #if 0
+           SET_MOUSE_COORD(x,LOWORD(lparam));
+           SET_MOUSE_COORD(y,HIWORD(lparam));           
+        #endif
+        handle_keyrelease(MouseButton::button(button));
+        return 0;
+    
+    case WM_MOVE:
+        if(!DXREADY)
             break;
+        handle_window_move(LOWORD(lparam), HIWORD(lparam) );
+        return 0;
 
-        case WM_DISPLAYCHANGE: {
-#ifdef _DEBUG
+    case WM_EXITSIZEMOVE:
+        #ifdef _DEBUG
+          wdxdisplay_cat.spam()  << "WM_EXITSIZEMOVE received"  << endl;
+        #endif
+        
+        if(_WindowAdjustingType==Resizing) {
+            handle_reshape(true);
+        }
+    
+        _WindowAdjustingType = NotAdjusting;
+        return 0;
+    
+    case WM_ENTERSIZEMOVE: {
+            if(_dxgsg==NULL)
+                _dxgsg->SetDXReady(true);   // dont disable here because I want to see pic as I resize
+            _WindowAdjustingType = MovingOrResizing;
+        }
+        break;
+
+    case WM_DISPLAYCHANGE: {
+        #ifdef _DEBUG
             width = LOWORD(lparam);  height = HIWORD(lparam);
             DWORD newbitdepth=wparam;
             wdxdisplay_cat.spam() <<"WM_DISPLAYCHANGE received with width:" << width << "  height: " << height << " bpp: " << wparam<< endl;
-#endif
+        #endif
 
             //    unfortunately this doesnt seem to work because RestoreAllSurfaces doesn't
             //    seem to think we're back in the original displaymode even after I've received
@@ -630,9 +630,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           }
           break;
 
-        case WM_SIZE: {
-
-#ifdef _DEBUG
+      case WM_SIZE: {
+                #ifdef _DEBUG
                 {
                     width = LOWORD(lparam);  height = HIWORD(lparam);
                     wdxdisplay_cat.spam() << "WM_SIZE received with width:" << width << "  height: " << height << " flags: " <<
@@ -640,7 +639,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                     ((wparam == SIZE_MINIMIZED)? "SIZE_MINIMIZED " : "") << ((wparam == SIZE_RESTORED)? "SIZE_RESTORED " : "") <<
                     ((wparam == SIZE_MAXIMIZED)? "SIZE_MAXIMIZED " : "") << endl;
                 }
-#endif
+                #endif
                 // old comment -- added SIZE_RESTORED to handle 3dfx case
                 if(dx_full_screen || ((_dxgsg==NULL) || (_dxgsg->scrn.hWnd==NULL)) || ((wparam != SIZE_RESTORED) && (wparam != SIZE_MAXIMIZED)))
                     break;
@@ -1049,10 +1048,6 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
     assert(hUser32);
 
     _pfnGetMonitorInfo = (PFN_GETMONITORINFO) GetProcAddress(hUser32, "GetMonitorInfoA");
-
-    // Note: could use _TrackMouseEvent in comctrl32.dll (part of IE 3.0+) which emulates
-    // TrackMouseEvent on w95, but that requires another 500K of memory to hold that DLL,
-    // which is lame just to support w95, which probably has other issues anyway
     _pfnTrackMouseEvent = (PFN_TRACKMOUSEEVENT) GetProcAddress(hUser32, "TrackMouseEvent");
     FreeLibrary(hUser32);
 
