@@ -111,8 +111,8 @@ seekoff(streamoff off, ios::seek_dir dir, int mode) {
   // egptr().
 
   // Use this to determine the actual file position right now.
-  streamsize n = egptr() - gptr();
-  streampos cur_pos = _cur - n;
+  size_t n = egptr() - gptr();
+  streampos cur_pos = _cur - (streampos)n;
   streampos new_pos = cur_pos;
 
   // Now adjust the data pointer appropriately.
@@ -126,7 +126,7 @@ seekoff(streamoff off, ios::seek_dir dir, int mode) {
     break;
 
   case ios::end:
-    if (_end == 0) {
+    if (_end == (streampos)0) {
       // If the end of the file is unspecified, we have to seek to
       // find it.
       _source->seekg(off, ios::end);
@@ -175,7 +175,7 @@ overflow(int c) {
 ////////////////////////////////////////////////////////////////////
 int SubStreamBuf::
 sync() {
-  streamsize n = egptr() - gptr();
+  size_t n = egptr() - gptr();
   gbump(n);
 
   return 0;
@@ -200,14 +200,14 @@ underflow() {
 
   // Sometimes underflow() is called even if the buffer is not empty.
   if (gptr() >= egptr()) {
-    if (_end != 0 && _cur >= _end) {
+    if (_end != (streampos)0 && _cur >= _end) {
       // We're done.
       return EOF;
     }
     
     size_t buffer_size = egptr() - eback();
     size_t num_bytes;
-    if (_end == 0 || _end - _cur > (streampos)buffer_size) {
+    if (_end == (streampos)0 || _end - _cur > (streampos)buffer_size) {
       // We have enough bytes in the input stream to fill our buffer.
       num_bytes = buffer_size;
     } else {
@@ -226,7 +226,7 @@ underflow() {
       // Oops, we didn't read what we thought we would.
       if (read_count == 0) {
         _unused = buffer_size;
-        if (_end != 0) {
+        if (_end != (streampos)0) {
           _end = _cur;
         }
         return EOF;
