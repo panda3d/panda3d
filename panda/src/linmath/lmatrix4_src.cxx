@@ -242,7 +242,11 @@ decompose_mat(int index[4]) {
       }
     }
 
-    if (IS_NEARLY_ZERO(big)) {
+    // We throw the value out only if it's smaller than our "small"
+    // threshold squared.  This helps reduce overly-sensitive
+    // rejections.
+    if (IS_THRESHOLD_ZERO(big, (NEARLY_ZERO(FLOATTYPE) * NEARLY_ZERO(FLOATTYPE)))) {
+      //    if (IS_NEARLY_ZERO(big)) {
       return false;
     }
     vv[i] = 1.0f / big;

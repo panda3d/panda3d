@@ -818,7 +818,11 @@ invert_from(const FLOATNAME(LMatrix3) &other) {
 
   FLOATTYPE other_det = MATRIX3_DETERMINANT(other._m.m);
 
-  if (IS_NEARLY_ZERO(other_det)) {
+  // We throw the value out only if it's smaller than our "small"
+  // threshold squared.  This helps reduce overly-sensitive
+  // rejections.
+  if (IS_THRESHOLD_ZERO(other_det, (NEARLY_ZERO(FLOATTYPE) * NEARLY_ZERO(FLOATTYPE)))) {
+    //    if (IS_NEARLY_ZERO(other_det)) {
 #ifdef NOTIFY_DEBUG
     linmath_cat.warning() << "Tried to invert singular LMatrix3.\n";
 #endif
