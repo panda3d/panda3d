@@ -141,6 +141,37 @@ get_requested_properties() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::clear_rejected_properties
+//       Access: Published
+//  Description: Empties the set of failed properties that will be
+//               returned by get_rejected_properties().
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+clear_rejected_properties() {
+  MutexHolder holder(_lock);
+  _rejected_properties.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::get_rejected_properties
+//       Access: Published
+//  Description: Returns the set of properties that have recently been
+//               requested, but could not be applied to the window for
+//               some reason.  This set of properties will remain
+//               unchanged until they are changed by a new failed
+//               request, or clear_rejected_properties() is called.
+////////////////////////////////////////////////////////////////////
+WindowProperties GraphicsWindow::
+get_rejected_properties() const {
+  WindowProperties result;
+  {
+    MutexHolder holder(_lock);
+    result = _rejected_properties;
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::request_properties
 //       Access: Published
 //  Description: Requests a property change on the window.  For
@@ -700,12 +731,14 @@ process_events() {
     {
       MutexHolder holder(_lock);
       properties = _requested_properties;
-      _requested_properties = WindowProperties();
-    }
-    set_properties_now(properties);
-    if (properties.is_any_specified()) {
-      display_cat.info()
-        << "Unable to set window properties: " << properties << "\n";
+      _requested_properties.clear();
+
+      set_properties_now(properties);
+      if (properties.is_any_specified()) {
+        display_cat.info()
+          << "Unable to set window properties: " << properties << "\n";
+        _rejected_properties.add_properties(properties);
+      }
     }
   }
 }
@@ -748,7 +781,14 @@ set_properties_now(WindowProperties &properties) {
           chan->window_resized(_properties.get_x_size(), 
                                _properties.get_y_size());
         }
+
       } else {
+        // Since we can't even open the window, tag the
+        // _rejected_properties with all of the window properties that
+        // failed.
+        _rejected_properties.add_properties(_properties);
+
+        // And mark the window closed.
         _properties.set_open(false);
       }
 

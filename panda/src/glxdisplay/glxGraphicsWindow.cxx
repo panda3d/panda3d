@@ -156,6 +156,10 @@ void glxGraphicsWindow::
 process_events() {
   GraphicsWindow::process_events();
 
+  if (_xwindow == (Window)0) {
+    return;
+  }
+
   XEvent event;
   while (XCheckWindowEvent(_display, _xwindow, _event_mask, &event)) {
     WindowProperties properties;
@@ -273,6 +277,7 @@ void glxGraphicsWindow::
 set_properties_now(WindowProperties &properties) {
   GraphicsWindow::set_properties_now(properties);
   if (!properties.is_any_specified()) {
+    // The base class has already handled this case.
     return;
   }
 

@@ -72,6 +72,8 @@ PUBLISHED:
 
   WindowProperties get_properties() const;
   WindowProperties get_requested_properties() const;
+  void clear_rejected_properties();
+  WindowProperties get_rejected_properties() const;
   void request_properties(const WindowProperties &requested_properties);
   INLINE bool is_closed() const;
   INLINE bool is_active() const;
@@ -177,6 +179,7 @@ private:
   bool _display_regions_stale;
 
   WindowProperties _requested_properties;
+  WindowProperties _rejected_properties;
   string _window_event;
   
 public:
