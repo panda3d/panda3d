@@ -23,9 +23,11 @@
 #include "luse.h"
 #include "clockObject.h"
 #include "circBuffer.h"
+#include "nodePath.h"
 
 static const int max_position_reports = 10;
 static const int max_timestamp_delays = 10;
+
 
 ////////////////////////////////////////////////////////////////////
 //       Class : SmoothMover
@@ -91,6 +93,10 @@ PUBLISHED:
   INLINE const LPoint3f &get_smooth_pos() const;
   INLINE const LVecBase3f &get_smooth_hpr() const;
   INLINE const LMatrix4f &get_smooth_mat();
+
+  INLINE void apply_smooth_pos(NodePath &node) const;
+  INLINE void apply_smooth_hpr(NodePath &node) const;
+  INLINE void apply_smooth_mat(NodePath &node);
 
   INLINE float get_smooth_forward_velocity() const;
   INLINE float get_smooth_rotational_velocity() const;

@@ -303,6 +303,48 @@ get_smooth_hpr() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::apply_smooth_pos
+//       Access: Published
+//  Description: Applies the smoothed position to the indicated
+//               NodePath.  This is equivalent to calling
+//               node.set_pos(smooth_mover->get_smooth_pos()).  It
+//               exists as an optimization only, to avoid the overhead
+//               of passing the return value through Python.
+////////////////////////////////////////////////////////////////////
+INLINE void SmoothMover::
+apply_smooth_pos(NodePath &node) const {
+  node.set_pos(get_smooth_pos());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::apply_smooth_hpr
+//       Access: Published
+//  Description: Applies the smoothed orientation to the indicated
+//               NodePath.  This is equivalent to calling
+//               node.set_hpr(smooth_mover->get_smooth_hpr()).  It
+//               exists as an optimization only, to avoid the overhead
+//               of passing the return value through Python.
+////////////////////////////////////////////////////////////////////
+INLINE void SmoothMover::
+apply_smooth_hpr(NodePath &node) const {
+  node.set_hpr(get_smooth_hpr());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::apply_smooth_mat
+//       Access: Published
+//  Description: Applies the smoothed transform to the indicated
+//               NodePath.  This is equivalent to calling
+//               node.set_mat(smooth_mover->get_smooth_mat()).  It
+//               exists as an optimization only, to avoid the overhead
+//               of passing the return value through Python.
+////////////////////////////////////////////////////////////////////
+INLINE void SmoothMover::
+apply_smooth_mat(NodePath &node) {
+  node.set_mat(get_smooth_mat());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SmoothMover::get_smooth_mat
 //       Access: Published
 //  Description: Returns the complete smoothed transformation matrix

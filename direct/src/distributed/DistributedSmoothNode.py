@@ -104,7 +104,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         to specialize the behavior.
         """
         if self.smoother.computeSmoothPosition():
-            self.setMat(self.smoother.getSmoothMat())
+            self.smoother.applySmoothMat(self)
 
     def doSmoothTask(self, task):
         self.smoothPosition()
@@ -153,7 +153,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         """
         if (not self.isLocal()) and \
            self.smoother.getLatestPosition():
-            self.setMat(self.smoother.getSmoothMat())
+            self.smoother.applySmoothMat(self)
         self.smoother.clearPositions(1)
 
     def reloadPosition(self):
