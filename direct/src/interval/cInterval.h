@@ -91,6 +91,7 @@ PUBLISHED:
   double pause();
   void resume();
   void resume(double start_t);
+  void resume_until(double end_t);
   void finish();
   bool is_playing() const;
 

@@ -110,9 +110,23 @@ class Interval(DirectObject):
         self.__removeTask()
         return self.getT()
 
-    def resume(self, t0 = None):
-        if t0 != None:
-            self.setT(t0)
+    def resume(self, startT = None):
+        if startT != None:
+            self.setT(startT)
+        self.setupResume()
+        if not self.isPlaying():
+            self.__spawnTask()
+
+    def resumeUntil(self, endT):
+        duration = self.getDuration()
+        
+        if endT < 0 or endT >= duration:
+            self.__endT = duration
+            self.__endTAtEnd = 1
+        else:
+            self.__endT = endT
+            self.__endTAtEnd = 0
+
         self.setupResume()
         if not self.isPlaying():
             self.__spawnTask()

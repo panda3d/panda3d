@@ -188,6 +188,30 @@ resume(double start_t) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CInterval::resume_until
+//       Access: Published
+//  Description: Restarts the interval from the current point after a
+//               previous call to pause() (or a previous
+//               play-to-point-and-stop), to play until the indicated
+//               point and then stop.
+////////////////////////////////////////////////////////////////////
+void CInterval::
+resume_until(double end_t) {
+  double duration = get_duration();
+
+  if (end_t < 0.0 || end_t >= duration) {
+    _end_t = duration;
+    _end_t_at_end = true;
+  } else {
+    _end_t = end_t;
+    _end_t_at_end = false;
+  }
+
+  setup_resume();
+  _manager->add_c_interval(this, false);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CInterval::finish
 //       Access: Published
 //  Description: Stops the interval from playing and sets it to its
