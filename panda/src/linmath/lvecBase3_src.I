@@ -659,9 +659,15 @@ generate_hash(ChecksumHashGenerator &hashgen, FLOATTYPE threshold) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 write_datagram(Datagram &destination) const {
+#if FLOATTOKEN == 'f'
   destination.add_float32(_v.v._0);
   destination.add_float32(_v.v._1);
   destination.add_float32(_v.v._2);
+#else
+  destination.add_float64(_v.v._0);
+  destination.add_float64(_v.v._1);
+  destination.add_float64(_v.v._2);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -671,7 +677,13 @@ write_datagram(Datagram &destination) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 read_datagram(DatagramIterator &source) {
+#if FLOATTOKEN == 'f'
   _v.v._0 = source.get_float32();
   _v.v._1 = source.get_float32();
   _v.v._2 = source.get_float32();
+#else
+  _v.v._0 = source.get_float64();
+  _v.v._1 = source.get_float64();
+  _v.v._2 = source.get_float64();
+#endif
 }
