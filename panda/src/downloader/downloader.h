@@ -65,6 +65,7 @@ PUBLISHED:
   INLINE void set_disk_write_frequency(int frequency);
   INLINE int get_disk_write_frequency(void) const;
   INLINE int get_bytes_written(void) const;
+  INLINE int get_bytes_requested(void) const;
   INLINE float get_bytes_per_second(void) const;
 
 private:
@@ -82,6 +83,7 @@ private:
     char *_next_in;
     int _bytes_in_buffer;
     int _total_bytes_written;
+    int _total_bytes_requested;
     int _first_byte;
     int _last_byte;
     int _total_bytes;
@@ -124,6 +126,7 @@ private:
   DownloadStatus *_current_status;
   bool _got_any_data;
   int _total_bytes_written;
+  int _total_bytes_requested;
   bool _download_to_ram;
 
   double _tlast;

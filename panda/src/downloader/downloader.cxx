@@ -67,6 +67,8 @@ Downloader(void) {
   _ever_initiated = false;
   _TCP_stack_initialized = false;
   _total_bytes_written = 0;
+  _total_bytes_requested = 0;
+  _total_bytes_requested = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -433,6 +435,7 @@ cleanup(void) {
   disconnect_from_server();
   _dest_stream.close();
   _total_bytes_written = _current_status->_total_bytes_written;
+  _total_bytes_requested = _current_status->_total_bytes_requested;
   delete _current_status;
   // We must set this to NULL otherwise there is a bad pointer floating around
   _current_status = NULL;
@@ -542,6 +545,8 @@ run(void) {
         << "Downloader::run() - normal connection" << endl;
     fret = fast_receive(_socket, _current_status, _receive_size);
   }
+
+  _current_status->_total_bytes_requested += _receive_size;
 
   // Check for end of file
   if (fret == EU_eof) {
@@ -663,6 +668,8 @@ run_to_ram(void) {
         << "Downloader::run_to_ram() - normal connection" << endl;
     fret = fast_receive(_socket, _current_status, _receive_size);
   }
+
+  _current_status->_total_bytes_requested += _receive_size;
 
   // Check for end of file
   if (fret == EU_eof) {
@@ -1003,6 +1010,7 @@ DownloadStatus(char *buffer, int first_byte, int last_byte,
   // will get the total size of the file, not just the number
   // of bytes for this partial download
   _total_bytes_written = first_byte;
+  _total_bytes_requested = first_byte;
   _partial_content = partial_content;
   reset();
 }

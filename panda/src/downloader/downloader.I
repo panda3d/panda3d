@@ -111,6 +111,25 @@ get_bytes_written(void) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Downloader::get_bytes_requested
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE int Downloader::
+get_bytes_requested(void) const {
+  if (_ever_initiated == false) {
+    downloader_cat.warning()
+      << "Downloader::get_bytes_requested() - Download has not been "
+      << "initiated" << endl;
+    return 0;
+  }
+  if (_current_status != NULL)
+    return _current_status->_total_bytes_requested;
+  else
+    return _total_bytes_requested;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Downloader::get_bytes_per_second
 //       Access: Public
 //  Description:
