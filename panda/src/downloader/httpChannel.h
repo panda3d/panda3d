@@ -108,10 +108,10 @@ PUBLISHED:
   INLINE bool get_header(const URLSpec &url);
 
   INLINE void begin_post_form(const URLSpec &url, const string &body);
-  INLINE void begin_document(const URLSpec &url);
-  INLINE void begin_subdocument(const URLSpec &url, 
-                                size_t first_byte, size_t last_byte);
-  INLINE void begin_header(const URLSpec &url);
+  INLINE void begin_get_document(const URLSpec &url);
+  INLINE void begin_get_subdocument(const URLSpec &url, 
+                                    size_t first_byte, size_t last_byte);
+  INLINE void begin_get_header(const URLSpec &url);
   bool run();
 
   ISocketStream *read_body();

@@ -396,7 +396,7 @@ read_body() {
 //  Description: Specifies the name of a file to download the
 //               resulting document to.  This should be called
 //               immediately after get_document() or
-//               begin_document() or related functions.
+//               begin_get_document() or related functions.
 //
 //               In the case of the blocking I/O methods like
 //               get_document(), this function will download the
@@ -404,7 +404,7 @@ read_body() {
 //               successfully downloaded, false otherwise.
 //
 //               In the case of non-blocking I/O methods like
-//               begin_document(), this function simply indicates an
+//               begin_get_document(), this function simply indicates an
 //               intention to download to the indicated file.  It
 //               returns true if the file can be opened for writing,
 //               false otherwise, but the contents will not be
@@ -443,7 +443,7 @@ download_to_file(const Filename &filename) {
 //  Description: Specifies a Ramfile object to download the
 //               resulting document to.  This should be called
 //               immediately after get_document() or
-//               begin_document() or related functions.
+//               begin_get_document() or related functions.
 //
 //               In the case of the blocking I/O methods like
 //               get_document(), this function will download the
@@ -451,7 +451,7 @@ download_to_file(const Filename &filename) {
 //               was successfully downloaded, false otherwise.
 //
 //               In the case of non-blocking I/O methods like
-//               begin_document(), this function simply indicates an
+//               begin_get_document(), this function simply indicates an
 //               intention to download to the indicated Ramfile.  It
 //               returns true if the file can be opened for writing,
 //               false otherwise, but the contents will not be

@@ -182,7 +182,7 @@ get_persistent_connection() const {
 //               the data.
 //
 //               This only has effect on the nonblocking I/O methods
-//               like begin_document(), etc.  The blocking methods
+//               like begin_get_document(), etc.  The blocking methods
 //               like get_document() always use as much CPU and
 //               bandwidth as they can get.
 ////////////////////////////////////////////////////////////////////
@@ -361,7 +361,7 @@ get_header(const URLSpec &url) {
 //       Access: Published
 //  Description: Posts form data to a particular URL and retrieves the
 //               response, all using non-blocking I/O.  See
-//               begin_document() and post_form().
+//               begin_get_document() and post_form().
 //
 //               It is important to note that you *must* call run()
 //               repeatedly after calling this method until run()
@@ -376,7 +376,7 @@ begin_post_form(const URLSpec &url, const string &body) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::begin_document
+//     Function: HTTPChannel::begin_get_document
 //       Access: Published
 //  Description: Begins a non-blocking request to retrieve a given
 //               document.  This method will return immediately, even
@@ -390,12 +390,12 @@ begin_post_form(const URLSpec &url, const string &body) {
 //               is discarded.
 ////////////////////////////////////////////////////////////////////
 INLINE void HTTPChannel::
-begin_document(const URLSpec &url) {
+begin_get_document(const URLSpec &url) {
   begin_request("GET", url, string(), true, 0, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::begin_subdocument
+//     Function: HTTPChannel::begin_get_subdocument
 //       Access: Published
 //  Description: Begins a non-blocking request to retrieve only the
 //               specified byte range of the indicated document.  If
@@ -406,18 +406,19 @@ begin_document(const URLSpec &url) {
 //               the complete document.
 ////////////////////////////////////////////////////////////////////
 INLINE void HTTPChannel::
-begin_subdocument(const URLSpec &url, size_t first_byte, size_t last_byte) {
+begin_get_subdocument(const URLSpec &url, size_t first_byte, 
+                      size_t last_byte) {
   begin_request("GET", url, string(), true, first_byte, last_byte);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::begin_header
+//     Function: HTTPChannel::begin_get_header
 //       Access: Published
 //  Description: Begins a non-blocking request to retrieve a given
-//               header.  See begin_document() and get_header().
+//               header.  See begin_get_document() and get_header().
 ////////////////////////////////////////////////////////////////////
 INLINE void HTTPChannel::
-begin_header(const URLSpec &url) {
+begin_get_header(const URLSpec &url) {
   begin_request("HEAD", url, string(), true, 0, 0);
 }
 
