@@ -217,3 +217,121 @@ INLINE void PNMImageHeader::
 set_type(PNMFileType *type) {
   _type = type;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::record_color
+//       Access: Protected
+//  Description: Records the indicated color in the histogram.
+////////////////////////////////////////////////////////////////////
+INLINE void PNMImageHeader::
+record_color(PNMImageHeader::Histogram &hist, 
+             const PNMImageHeader::PixelSpec &color) {
+  Histogram::iterator hi = hist.find(color);
+  if (hi == hist.end()) {
+    hist.insert(Histogram::value_type(color, 1));
+  } else {
+    (*hi).second++;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::PixelSpec::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PNMImageHeader::PixelSpec::
+PixelSpec(xelval gray) :
+  _red(gray),
+  _green(gray),
+  _blue(gray),
+  _alpha(0)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::PixelSpec::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PNMImageHeader::PixelSpec::
+PixelSpec(xelval gray, xelval alpha) :
+  _red(gray),
+  _green(gray),
+  _blue(gray),
+  _alpha(alpha)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::PixelSpec::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PNMImageHeader::PixelSpec::
+PixelSpec(xelval red, xelval green, xelval blue) :
+  _red(red),
+  _green(green),
+  _blue(blue),
+  _alpha(0)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::PixelSpec::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PNMImageHeader::PixelSpec::
+PixelSpec(xelval red, xelval green, xelval blue, xelval alpha) :
+  _red(red),
+  _green(green),
+  _blue(blue),
+  _alpha(alpha)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::PixelSpec::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PNMImageHeader::PixelSpec::
+PixelSpec(const PixelSpec &copy) :
+  _red(copy._red),
+  _green(copy._green),
+  _blue(copy._blue),
+  _alpha(copy._alpha)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::PixelSpec::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void PNMImageHeader::PixelSpec::
+operator = (const PixelSpec &copy) {
+  _red = copy._red;
+  _green = copy._green;
+  _blue = copy._blue;
+  _alpha = copy._alpha;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::PixelSpec::Comparison Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool PNMImageHeader::PixelSpec::
+operator < (const PixelSpec &other) const {
+  if (_red != other._red) {
+    return _red < other._red;
+  }
+  if (_green != other._green) {
+    return _green < other._green;
+  }
+  if (_blue != other._blue) {
+    return _blue < other._blue;
+  }
+  return _alpha < other._alpha;
+}

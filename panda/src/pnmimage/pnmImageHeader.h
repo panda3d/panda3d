@@ -96,7 +96,33 @@ public:
 
   void output(ostream &out) const;
 
+public:
+  // These classes are used internally, but must be declared public
+  // for fiddly reasons.
+  class PixelSpec {
+  public:
+    INLINE PixelSpec(xelval gray);
+    INLINE PixelSpec(xelval gray, xelval alpha);
+    INLINE PixelSpec(xelval red, xelval green, xelval blue);
+    INLINE PixelSpec(xelval red, xelval green, xelval blue, xelval alpha);
+    INLINE PixelSpec(const PixelSpec &copy);
+    INLINE void operator = (const PixelSpec &copy);
+
+    INLINE bool operator < (const PixelSpec &other) const;
+    void output(ostream &out) const;
+
+    xelval _red, _green, _blue, _alpha;
+  };
+  typedef pmap<PixelSpec, int> Histogram;
+  typedef pvector<PixelSpec> Palette;
+
 protected:
+  bool compute_histogram(Histogram &hist, xel *array, xelval *alpha,
+                         int max_colors = 0);
+  bool compute_palette(Palette &palette, xel *array, xelval *alpha,
+                       int max_colors = 0);
+  INLINE void record_color(Histogram &hist, const PixelSpec &color);
+
   int _x_size, _y_size;
   int _num_channels;
   xelval _maxval;
@@ -105,6 +131,11 @@ protected:
 
 INLINE ostream &operator << (ostream &out, const PNMImageHeader &header) {
   header.output(out);
+  return out;
+}
+
+INLINE ostream &operator << (ostream &out, const PNMImageHeader::PixelSpec &pixel) {
+  pixel.output(out);
   return out;
 }
 

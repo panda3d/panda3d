@@ -347,6 +347,11 @@ make_writer(ostream *file, bool owns_file, const Filename &filename,
     delete file;
   }
 
+  if (!writer->is_valid()) {
+    delete writer;
+    writer = NULL;
+  }
+
   return writer;
 }
 
@@ -383,3 +388,114 @@ output(ostream &out) const {
   out << "image: " << _x_size << " by " << _y_size << " pixels, "
       << _num_channels << " channels, " << _maxval << " maxval.";
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::compute_histogram
+//       Access: Protected
+//  Description: Computes a histogram of the colors used in the
+//               indicated rgb/grayscale array and/or alpha array.
+//               This is most likely to be useful in a PNMWriter
+//               class, but it is defined at this level in case it has
+//               general utilty for PNMImages.
+//
+//               The max_colors parameter, if greater than zero,
+//               limits the maximum number of colors we are interested
+//               in.  If we encounter more than this number of colors,
+//               the function aborts before completion and returns
+//               false; otherwise, it returns true.
+////////////////////////////////////////////////////////////////////
+bool PNMImageHeader::
+compute_histogram(PNMImageHeader::Histogram &hist, 
+                  xel *array, xelval *alpha, int max_colors) {
+  int num_pixels = _x_size * _y_size;
+
+  switch (get_color_type()) {
+  case CT_invalid:
+    return false;
+
+  case CT_grayscale:
+    for (int pi = 0; pi < num_pixels; pi++) {
+      record_color(hist, PixelSpec(PPM_GETB(array[pi])));
+      if (max_colors > 0 && (int)hist.size() > max_colors) {
+        return false;
+      }
+    }
+    return true;
+
+  case CT_two_channel:
+    for (int pi = 0; pi < num_pixels; pi++) {
+      record_color(hist, PixelSpec(PPM_GETB(array[pi]), alpha[pi]));
+      if (max_colors > 0 && (int)hist.size() > max_colors) {
+        return false;
+      }
+    }
+    return true;
+
+  case CT_color:
+    for (int pi = 0; pi < num_pixels; pi++) {
+      record_color(hist, PixelSpec(PPM_GETR(array[pi]), PPM_GETG(array[pi]), PPM_GETB(array[pi])));
+      if (max_colors > 0 && (int)hist.size() > max_colors) {
+        return false;
+      }
+    }
+    return true;
+
+  case CT_four_channel:
+    for (int pi = 0; pi < num_pixels; pi++) {
+      record_color(hist, PixelSpec(PPM_GETR(array[pi]), PPM_GETG(array[pi]), PPM_GETB(array[pi]), alpha[pi]));
+      if (max_colors > 0 && (int)hist.size() > max_colors) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::compute_palette
+//       Access: Protected
+//  Description: Returns a linear list of all of the colors in the
+//               image, similar to compute_histogram().
+////////////////////////////////////////////////////////////////////
+bool PNMImageHeader::
+compute_palette(PNMImageHeader::Palette &palette, 
+                xel *array, xelval *alpha, int max_colors) {
+  Histogram hist;
+
+  int num_pixels = _x_size * _y_size;
+
+  // In case there are already entries in the palette, preserve them.
+  Palette::const_iterator pi;
+  for (pi = palette.begin(); pi != palette.end(); ++pi) {
+    hist.insert(Histogram::value_type(*pi, num_pixels + 1));
+  }
+
+  if (!compute_histogram(hist, array, alpha, max_colors)) {
+    return false;
+  }
+
+  // Now append the new entries discovered in the histogram onto the
+  // end of the palette.
+  palette.reserve(hist.size());
+  Histogram::const_iterator hi;
+  for (hi = hist.begin(); hi != hist.end(); ++hi) {
+    if ((*hi).second <= num_pixels) {
+      palette.push_back((*hi).first);
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::PixelSpec::output
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void PNMImageHeader::PixelSpec::
+output(ostream &out) const {
+  out << "(" << _red << ", " << _green << ", " << _blue << ", " << _alpha << ")";
+}
+
