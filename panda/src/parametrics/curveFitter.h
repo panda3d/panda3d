@@ -16,12 +16,8 @@
 #define CURVEFITTER_H
 
 #include <pandabase.h>
-
 #include <typedef.h>
-////#include <linMathOutput.h>
-#include "luse.h"
 #include <vector>
-////#include <Performer/pr/pfLinMath.h>
 
 class HermiteCurve;
 class NurbsCurve;
