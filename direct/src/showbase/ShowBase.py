@@ -38,6 +38,7 @@ class ShowBase:
         self.wantAnySound = self.config.GetBool('want-sound', 1)
         self.wantSfx = self.config.GetBool('audio-sfx-active', 1)
         self.wantMusic = self.config.GetBool('audio-music-active', 1)
+        self.wantFog = self.config.GetBool('want-fog', 1)
         if not (self.wantSfx or self.wantMusic):
             self.wantAnySound = None
         if not self.wantAnySound:
