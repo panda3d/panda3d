@@ -133,6 +133,8 @@ reached_node(Node *node, AllAttributesWrapper &render_state,
 
   AllTransitionsWrapper new_trans;
 
+  _gsg->_nodes_pcollector.add_level(1);
+
 #ifndef NDEBUG
   if (support_subrender == SD_on)
 #endif
@@ -144,6 +146,7 @@ reached_node(Node *node, AllAttributesWrapper &render_state,
     }
 
   if (node->is_of_type(GeomNode::get_class_type())) {
+    _gsg->_geom_nodes_pcollector.add_level(1);
     _gsg->set_state(render_state.get_attributes(), true);
     // Make sure the current display region is still in effect.
     _gsg->prepare_display_region();

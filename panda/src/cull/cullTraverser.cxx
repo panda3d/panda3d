@@ -526,6 +526,11 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
   int arc_num_sub_render = arc->get_num_sub_render_trans();
   bool has_decal = arc->has_transition(DecalTransition::get_class_type());
 
+  _gsg->_nodes_pcollector.add_level(1);
+  if (is_geom) {
+    _gsg->_geom_nodes_pcollector.add_level(1);
+  }
+
   if (has_decal) {
     // For the purposes of cull, we don't consider a DecalTransition
     // to be a sub_render transition.

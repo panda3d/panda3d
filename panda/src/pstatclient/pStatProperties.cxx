@@ -74,8 +74,11 @@ static LevelCollectorProperties level_properties[] = {
   { "Vertices:Triangles",               { 0.8, 0.8, 0.8 } },
   { "Vertices:Triangle fans",           { 0.8, 0.5, 0.2 } },
   { "Vertices:Triangle strips",         { 0.2, 0.5, 0.8 } },
-  { "Nodes",                            { 0.4, 0.2, 0.5 },  "", 1000.0 },
+  { "Nodes",                            { 0.4, 0.2, 0.8 },  "", 500.0 },
+  { "Nodes:GeomNodes",                  { 0.8, 0.2, 0.0 } },
   { "State changes",                    { 1.0, 0.5, 0.2 },  "", 500.0 },
+  { "State changes:Transforms",         { 0.2, 0.2, 0.8 }, },
+  { "State changes:Textures",           { 0.8, 0.2, 0.2 }, },
   { NULL }
 };
 

@@ -25,6 +25,10 @@ PStatCollector GraphicsStateGuardian::_vertices_trifan_pcollector("Vertices:Tria
 PStatCollector GraphicsStateGuardian::_vertices_tri_pcollector("Vertices:Triangles");
 PStatCollector GraphicsStateGuardian::_vertices_other_pcollector("Vertices:Other");
 PStatCollector GraphicsStateGuardian::_state_changes_pcollector("State changes");
+PStatCollector GraphicsStateGuardian::_transform_state_pcollector("State changes:Transforms");
+PStatCollector GraphicsStateGuardian::_texture_state_pcollector("State changes:Textures");
+PStatCollector GraphicsStateGuardian::_nodes_pcollector("Nodes");
+PStatCollector GraphicsStateGuardian::_geom_nodes_pcollector("Nodes:GeomNodes");
 #endif
 
 TypeHandle GraphicsStateGuardian::_type_handle;
@@ -156,7 +160,7 @@ set_state(const NodeAttributes &new_state, bool complete) {
 	  gsg_cat.debug()
 	    << "Issuing new attrib " << *(*new_i).second << "\n";
 	}
-        _state_changes_pcollector.add_level(1);	
+        record_state_change((*new_i).first);
 	(*new_i).second->issue(this);
 	
 	// And store the new value.
@@ -179,7 +183,7 @@ set_state(const NodeAttributes &new_state, bool complete) {
 	    << "Unissuing attrib " << *(*current_i).second 
 	    << " (previously set, not now)\n";
 	}
-        _state_changes_pcollector.add_level(1);	
+        record_state_change((*current_i).first);
 
 	PT(NodeAttribute) initial = (*current_i).second->make_initial();
 	initial->issue(this);
@@ -208,7 +212,7 @@ set_state(const NodeAttributes &new_state, bool complete) {
 	      << "Unissuing attrib " << *(*current_i).second 
 	      << " (previously set, now NULL)\n";
 	  }
-          _state_changes_pcollector.add_level(1);	
+          record_state_change((*current_i).first);
 
 	  // Issue the initial attribute before clearing the state.
 	  PT(NodeAttribute) initial = (*current_i).second->make_initial();
@@ -233,7 +237,7 @@ set_state(const NodeAttributes &new_state, bool complete) {
 	    gsg_cat.debug()
 	      << "Reissuing attrib " << *(*new_i).second << "\n";
 	  }
-          _state_changes_pcollector.add_level(1);	
+          record_state_change((*new_i).first);
 	  (*new_i).second->issue(this);
 
 	  // And store the new value.
@@ -259,7 +263,7 @@ set_state(const NodeAttributes &new_state, bool complete) {
 	gsg_cat.debug()
 	  << "Issuing new attrib " << *(*new_i).second << "\n";
       }
-      _state_changes_pcollector.add_level(1);	
+      record_state_change((*new_i).first);
       
       (*new_i).second->issue(this);
       
@@ -279,7 +283,7 @@ set_state(const NodeAttributes &new_state, bool complete) {
 	  << "Unissuing attrib " << *(*current_i).second 
 	  << " (previously set, end of list)\n";
       }
-      _state_changes_pcollector.add_level(1);	
+      record_state_change((*current_i).first);
       
       // If we're in the "complete state" model, that means this
       // attribute should now get the default initial value.
@@ -489,6 +493,11 @@ init_frame_pstats() {
   _vertices_other_pcollector.clear_level();
 
   _state_changes_pcollector.clear_level();
+  _transform_state_pcollector.clear_level();
+  _texture_state_pcollector.clear_level();
+
+  _nodes_pcollector.clear_level();
+  _geom_nodes_pcollector.clear_level();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -504,6 +513,25 @@ void GraphicsStateGuardian::
 add_to_texture_record(TextureContext *tc) {
   if (_current_textures.insert(tc).second) {
     _active_texusage_pcollector.add_level(tc->estimate_texture_memory());
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::record_state_change
+//       Access: Protected
+//  Description: Indicates a state change request for a property of
+//               the given type.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+record_state_change(TypeHandle type) {
+  _state_changes_pcollector.add_level(1);
+
+  // We can't use the get_class_type() methods since we don't have
+  // those header files available yet.
+  if (type.get_name() == "TransformTransition") {
+    _transform_state_pcollector.add_level(1);
+  } else if (type.get_name() == "TextureTransition") {
+    _texture_state_pcollector.add_level(1);
   }
 }
 #endif  // DO_PSTATS

@@ -139,10 +139,13 @@ protected:
   // usage record (and other frame-based measurements) in Pstats.
   void init_frame_pstats();
   void add_to_texture_record(TextureContext *tc);
+  void record_state_change(TypeHandle type);
   set<TextureContext *> _current_textures;
 #else
   INLINE void init_frame_pstats() { }
   INLINE void add_to_texture_record(TextureContext *) { }
+  INLINE void record_state_change(TypeHandle type) { }
+  INLINE void count_node(Node *) { }
 #endif
 
 protected:
@@ -170,6 +173,7 @@ protected:
 
   CoordinateSystem _coordinate_system;
 
+public:
   // Statistics
   static PStatCollector _total_texusage_pcollector;
   static PStatCollector _active_texusage_pcollector;
@@ -181,13 +185,17 @@ protected:
   static PStatCollector _vertices_tri_pcollector;
   static PStatCollector _vertices_other_pcollector;
   static PStatCollector _state_changes_pcollector;
+  static PStatCollector _transform_state_pcollector;
+  static PStatCollector _texture_state_pcollector;
+  static PStatCollector _nodes_pcollector;
+  static PStatCollector _geom_nodes_pcollector;
 
 private:
   typedef set<TextureContext *> Textures;
   Textures _prepared_textures;  // NOTE: on win32 another DLL (e.g. libpandadx.dll) cannot access set directly due to exported template issue
 
 public:
-	void traverse_prepared_textures(bool (*pertex_callbackfn)(TextureContext *,void *),void *callback_arg);
+  void traverse_prepared_textures(bool (*pertex_callbackfn)(TextureContext *,void *),void *callback_arg);
 
 // factory stuff
 public:
