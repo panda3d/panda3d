@@ -51,7 +51,7 @@ class ClusterServer(DirectObject.DirectObject):
             clusterSyncFlag = 0
         if clusterSyncFlag:
             self.startSwapCoordinator()
-            base.win.setSync(1)
+            base.graphicsEngine.setAutoFlip(0)
         # Send verification of startup to client
         self.daemon = DirectD()
         # These must be passed in as bootstrap arguments and stored in
