@@ -50,7 +50,7 @@ class Loader:
             phaseChecker(modelPath)
         node = ModelPool.loadModel(modelPath)
         if (node != None):
-            nodePath = NodePath(node)
+            nodePath = NodePath.anyPath(node)
         else:
             nodePath = None
         return nodePath
