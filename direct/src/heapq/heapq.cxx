@@ -18,9 +18,9 @@ static int _siftdown(PyObject *list, int startpos, int pos);
 static int _siftup(PyObject *list, int pos);
 
 #ifdef _WIN32
-extern __declspec(dllexport) void initlibheapq(void);
+extern "C" __declspec(dllexport) void initlibheapq(void);
 #else
-extern void initlibheapq();
+extern "C" void initlibheapq();
 #endif
 
 static PyObject *
