@@ -956,7 +956,8 @@ run_socks_proxy_greet_reply() {
   }
 
   if (reply[1] == 0x00) {
-    // No login method required.
+    // No login method required.  Proceed directly to the connect
+    // message.
     _state = S_socks_proxy_connect;
     return false;
   }
