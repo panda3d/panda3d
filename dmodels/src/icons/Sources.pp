@@ -6,5 +6,5 @@
   #define SOURCES \
       folder.gif minusnode.gif openfolder.gif plusnode.gif python.gif \
       sphere2.gif tk.gif
-#end install_dna
+#end install_icons
 
