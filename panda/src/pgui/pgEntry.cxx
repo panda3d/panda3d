@@ -501,7 +501,7 @@ setup(float width, int num_lines) {
 ////////////////////////////////////////////////////////////////////
 void PGEntry::
 set_text_def(int state, TextNode *node) {
-  nassertv(state >= 0 && state < 1.0f);  // Sanity check.
+  nassertv(state >= 0 && state < 1000);  // Sanity check.
   if (node == (TextNode *)NULL && state >= (int)_text_defs.size()) {
     // If we're setting it to NULL, we don't need to slot a new one.
     return;
