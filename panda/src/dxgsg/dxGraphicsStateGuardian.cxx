@@ -1919,7 +1919,6 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
     int nprims = geom->get_num_prims();
 
     if (nprims==0) {
-        dxgsg_cat.warning() << "draw_sprite() called with ZERO particles!!" << endl;
         return;
     }
 
