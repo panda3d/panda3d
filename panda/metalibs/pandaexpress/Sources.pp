@@ -6,7 +6,7 @@
 
 #define DIR_TYPE metalib
 #define BUILDING_DLL BUILDING_PANDAEXPRESS
-#define USE_NET yes
+#define USE_PACKAGES net
 
 #define COMPONENT_LIBS downloader event ipc express pandabase
 #define OTHER_LIBS dtoolconfig dtool

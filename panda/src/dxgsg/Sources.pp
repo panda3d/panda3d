@@ -2,7 +2,7 @@
 
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
-#define USE_DX yes
+#define USE_PACKAGES dx
 
 #begin lib_target
 

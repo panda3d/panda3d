@@ -1,6 +1,5 @@
 #define BUILD_DIRECTORY $[and $[HAVE_GTKMM],$[HAVE_NET]]
-#define USE_GTKMM yes
-#define USE_NET yes
+#define USE_PACKAGES net gtkmm
 
 #begin bin_target
   #define TARGET gtk-stats

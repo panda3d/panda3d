@@ -2,7 +2,7 @@
 // This package is temporarily disabled.
 #define BUILD_DIRECTORY
 //#define BUILD_DIRECTORY $[HAVE_DX]
-#define USE_DX yes
+#define USE_PACKAGES dx
 
 #begin ss_lib_target
   #define TARGET xfile

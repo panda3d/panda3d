@@ -4,9 +4,7 @@
 
 #begin lib_target
   #define TARGET express
-  #define USE_NSPR yes
-  #define USE_CRYPTO yes
-  #define USE_NET yes
+  #define USE_PACKAGES nspr crypto net
   
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 

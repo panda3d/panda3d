@@ -2,7 +2,7 @@
 
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
-#define USE_GL yes
+#define USE_PACKAGES gl glx
 
 #begin lib_target
   #define TARGET glxdisplay

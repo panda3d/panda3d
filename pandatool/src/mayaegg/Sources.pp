@@ -1,7 +1,7 @@
 #define BUILD_DIRECTORY $[HAVE_MAYA]
 
 #begin ss_lib_target
-  #define USE_MAYA yes
+  #define USE_PACKAGES maya
   #define TARGET mayaegg
   #define LOCAL_LIBS \
     maya converter pandatoolbase

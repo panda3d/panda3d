@@ -337,13 +337,21 @@
 #defer get_igatemscan \
   $[if $[and $[run_interrogate],$[components $[IGATESCAN],$[active_component_libs]]], \
     $[TARGET]]
+
+// This variable returns the set of external packages used by this
+// target, and by all the components shared by this target.
+#defer use_packages $[sort $[USE_PACKAGES] $[components $[USE_PACKAGES],$[active_component_libs]]]
     
 // This function returns the appropriate cflags for the target, based
 // on the various external packages this particular target claims to
 // require.
 #defun get_cflags
   #define alt_cflags $[stl_cflags] $[nspr_cflags] $[python_cflags]
-  
+
+  #foreach package $[use_packages]
+    #set alt_cflags $[alt_cflags] $[$[package]_cflags]
+  #end package
+
   #if $[ne $[USE_CRYPTO] $[components $[USE_CRYPTO],$[active_component_libs]],]
     #set alt_cflags $[alt_cflags] $[crypto_cflags]
   #endif
@@ -418,6 +426,10 @@
 #defun get_ipath
   #define alt_ipath $[stl_ipath] $[nspr_ipath] $[python_ipath]
   
+  #foreach package $[use_packages]
+    #set alt_ipath $[alt_ipath] $[$[package]_ipath]
+  #end package
+
   #if $[ne $[USE_CRYPTO] $[components $[USE_CRYPTO],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[crypto_ipath]
   #endif
@@ -491,6 +503,10 @@
 // directory names only; the -L switch is not included here.
 #defun get_lpath
   #define alt_lpath $[stl_lpath] $[nspr_lpath] $[python_lpath]
+
+  #foreach package $[use_packages]
+    #set alt_lpath $[alt_lpath] $[$[package]_lpath]
+  #end package
   
   #if $[WINDOWS_PLATFORM]  
     #set alt_lpath $[WIN32_PLATFORMSDK_LIBPATH] $[alt_lpath] 
@@ -569,6 +585,10 @@
 // included here.
 #defun get_libs
   #define alt_libs $[stl_libs] $[nspr_libs] $[python_libs] $[TARGET_LIBS]
+
+  #foreach package $[use_packages]
+    #set alt_libs $[alt_libs] $[$[package]_libs]
+  #end package
   
   #if $[ne $[USE_CRYPTO] $[components $[USE_CRYPTO],$[active_component_libs] $[transitive_link]],]
     #set alt_libs $[alt_libs] $[crypto_libs]
@@ -645,7 +665,7 @@
 
 // This function returns the appropriate value for ld for the target.
 #defun get_ld
-  #if $[ne $[USE_MAYA] $[components $[USE_MAYA],$[COMPONENT_LD]],]
+  #if $[filter maya,$[use_packages]]
     $[maya_ld]
   #endif
 #end get_ld

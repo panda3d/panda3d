@@ -1,13 +1,11 @@
 #define LOCAL_LIBS event ipc express pandabase
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
-#define USE_ZLIB yes
-#define USE_IPC yes
-#define USE_NET yes
+#define USE_PACKAGES zlib ipc net
 
 #begin lib_target
   #define TARGET downloader
-  
+
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx \
     $[if $[HAVE_NET], $[TARGET]_composite3.cxx] \
     $[if $[HAVE_ZLIB], $[TARGET]_composite4.cxx] \

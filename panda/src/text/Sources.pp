@@ -2,7 +2,7 @@
                    dtoolutil:c dtoolbase:c dtool:m
 
 #begin lib_target
-  #define USE_FREETYPE yes
+  #define USE_PACKAGES freetype
 
   #define TARGET text
   #define LOCAL_LIBS \

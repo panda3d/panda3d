@@ -1,8 +1,7 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
 #define BUILD_DIRECTORY $[and $[HAVE_NET],$[HAVE_NSPR]]
-#define USE_NET yes
-#define USE_NSPR yes
+#define USE_PACKAGES net nspr
 
 #begin lib_target
   #define TARGET net

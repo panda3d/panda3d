@@ -1,8 +1,7 @@
 #define LOCAL_LIBS express pandabase
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
-#define USE_NSPR yes
-#define USE_IPC yes
+#define USE_PACKAGES nspr ipc
 #define BUILD_DIRECTORY $[HAVE_IPC]
 
 #begin lib_target

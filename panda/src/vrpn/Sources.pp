@@ -7,7 +7,7 @@
   #define TARGET pvrpn
   #define LOCAL_LIBS \
     device dgraph
-  #define USE_VRPN yes
+  #define USE_PACKAGES vrpn
 
   #define SOURCES \
     config_vrpn.cxx config_vrpn.h vrpnClient.I vrpnClient.cxx \

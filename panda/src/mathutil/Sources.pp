@@ -5,7 +5,7 @@
   #define TARGET mathutil
   #define LOCAL_LIBS \
     linmath putil event express
-  #define USE_FFTW yes
+  #define USE_PACKAGES fftw
   #define UNIX_SYS_LIBS m
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 

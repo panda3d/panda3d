@@ -8,8 +8,6 @@
 #define BUILDING_DLL BUILDING_PANDACR
 #define BUILD_DIRECTORY $[HAVE_CHROMIUM]
 
-//#define USE_CHROMIUM yes
-
 #define COMPONENT_LIBS \
     crgsg wcrdisplay
 

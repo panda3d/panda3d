@@ -2,7 +2,7 @@
 
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
-#define USE_CHROMIUM yes
+#define USE_PACKAGES chromium
 
 #begin lib_target
   #define TARGET crgsg

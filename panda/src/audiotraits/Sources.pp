@@ -4,7 +4,7 @@
 #begin lib_target
   #define TARGET miles_audio
   #define BUILD_TARGET $[HAVE_RAD_MSS]
-  #define USE_RAD_MSS yes
+  #define USE_PACKAGES rad_mss
   #define BUILDING_DLL BUILDING_MILES_AUDIO
   #define LOCAL_LIBS audio
   #define WIN_SYS_LIBS $[WIN_SYS_LIBS] user32.lib advapi32.lib

@@ -1,7 +1,7 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
 
-#define USE_NURBSPP yes
+#define USE_PACKAGES nurbspp
 
 #begin lib_target
   #define TARGET parametrics

@@ -22,7 +22,7 @@
 #endif   // $[UNIX_PLATFORM]
 
 #begin bin_target
-  #define USE_MAYA yes
+  #define USE_PACKAGES maya
   #define TARGET $[binary_name]
   #define LOCAL_LIBS \
     mayaegg maya eggbase progbase
@@ -42,7 +42,7 @@
 
 
 #begin bin_target
-  #define USE_MAYA yes
+  #define USE_PACKAGES_maya
   #define TARGET mayacopy
   #define LOCAL_LIBS cvscopy maya progbase
 

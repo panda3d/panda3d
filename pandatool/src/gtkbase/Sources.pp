@@ -1,5 +1,5 @@
 #define BUILD_DIRECTORY $[HAVE_GTKMM]
-#define USE_GTKMM yes
+#define USE_PACKAGES gtkmm
 
 #begin ss_lib_target
   #define TARGET gtkbase

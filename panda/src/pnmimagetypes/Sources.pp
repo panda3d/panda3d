@@ -1,9 +1,6 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
-
-#define USE_TIFF yes
-#define USE_JPEG yes
-#define USE_JPEG2000 yes
+#define USE_PACKAGES tiff jpeg jpeg2000
 
 #begin lib_target
   #define TARGET pnmimagetypes
