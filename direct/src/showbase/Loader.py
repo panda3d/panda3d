@@ -75,12 +75,17 @@ class Loader:
 	ModelPool.releaseModel(modelPath)
             
     # texture loading funcs
-    def loadTexture(self, texturePath):
+    def loadTexture(self, texturePath, alphaPath = None):
         """loadTexture(self, string)
         Attempt to load a texture from the given file path using
         TexturePool class. Returns None if not found"""
-        Loader.notify.info("Loading texture: %s" % (texturePath) )
-        texture = TexturePool.loadTexture(texturePath)
+
+        if alphaPath == None:
+            Loader.notify.info("Loading texture: %s" % (texturePath) )
+            texture = TexturePool.loadTexture(texturePath)
+        else:
+            Loader.notify.info("Loading texture: %s %s" % (texturePath, alphaPath) )
+            texture = TexturePool.loadTexture(texturePath, alphaPath)
         return texture
 
     def unloadTexture(self, texture):

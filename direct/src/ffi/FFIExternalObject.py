@@ -201,12 +201,18 @@ class FFIExternalObject:
                 baseRepr = baseRepr + '\n' + lineStream.getLine()
         except:
             try:
-                # Ok, no write function, lets try output then
-                self.output(lineStream)
+                # Sometimes write insists on a seconds parameter.
+                self.write(lineStream, 0)
                 while lineStream.isTextAvailable():
                     baseRepr = baseRepr + '\n' + lineStream.getLine()
             except:
-                pass
+                try:
+                    # Ok, no write function, lets try output then
+                    self.output(lineStream)
+                    while lineStream.isTextAvailable():
+                        baseRepr = baseRepr + '\n' + lineStream.getLine()
+                except:
+                    pass
         # In any case, return the baseRepr
         return baseRepr
 
