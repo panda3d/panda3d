@@ -552,6 +552,13 @@ run() {
     state_file.close();
 
     pal = DCAST(Palettizer, obj);
+
+    if (pal->_read_pi_version > pal->_pi_version) {
+      nout << FilenameUnifier::make_user_filename(state_filename)
+           << " was written by a more recent version of egg-palettize "
+           << "than this one.  You will need to update your egg-palettize.\n";
+      exit(1);
+    }
   }
 
   if (_report_pi) {

@@ -229,6 +229,23 @@ force_replace() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureImage::mark_eggs_stale
+//       Access: Public
+//  Description: Marks all the egg files that reference this texture
+//               stale.  Should be called only when the texture
+//               properties change in some catastrophic way that will
+//               required every egg file referencing it to be
+//               regenerated, even if it is not palettized.
+////////////////////////////////////////////////////////////////////
+void TextureImage::
+mark_eggs_stale() {
+  Placement::iterator pi;
+  for (pi = _placement.begin(); pi != _placement.end(); ++pi) {
+    (*pi).second->mark_eggs_stale();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureImage::pre_txa_file
 //       Access: Public
 //  Description: Updates any internal state prior to reading the .txa
@@ -323,6 +340,15 @@ post_txa_file() {
   // session, we need to re-place ourself in all palette groups.
   if (_properties != _pre_txa_properties) {
     force_replace();
+
+    // The above will mark the egg files stale when the texture is
+    // palettized (since the UV's will certainly need to be
+    // recomputed), but sometimes we need to mark the egg files stale
+    // even when the texture is not palettized (if a critical property
+    // has changed).  The following accomplishes this:
+    if (!_properties.egg_properties_match(_pre_txa_properties)) {
+      mark_eggs_stale();
+    }
   }
 }
 

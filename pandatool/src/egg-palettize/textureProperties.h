@@ -49,6 +49,7 @@ public:
   void fully_define();
 
   void update_egg_tex(EggTexture *egg_tex) const;
+  bool egg_properties_match(const TextureProperties &other) const;
 
   bool operator < (const TextureProperties &other) const;
   bool operator == (const TextureProperties &other) const;

@@ -61,6 +61,7 @@ public:
   const PaletteGroups &get_groups() const;
   TexturePlacement *get_placement(PaletteGroup *group) const;
   void force_replace();
+  void mark_eggs_stale();
 
   void pre_txa_file();
   void post_txa_file();

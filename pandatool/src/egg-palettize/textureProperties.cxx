@@ -309,6 +309,21 @@ update_egg_tex(EggTexture *egg_tex) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureProperties::egg_properties_match
+//       Access: Public
+//  Description: Returns true if all of the properties that are
+//               reflected directly in an egg file match between this
+//               TextureProperties object and the other, or false if
+//               any of them differ.
+////////////////////////////////////////////////////////////////////
+bool TextureProperties::
+egg_properties_match(const TextureProperties &other) const {
+  return (_format == other._format &&
+          _minfilter == other._minfilter &&
+          _magfilter == other._magfilter);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureProperties::Ordering Operator
 //       Access: Public
 //  Description:
