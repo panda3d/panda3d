@@ -865,8 +865,10 @@ class DisplayRegionContext:
         # one display region per camera, since we are defining a
         # display region on a per-camera basis.  See note in
         # DisplayRegionList.__init__()
-        numDrs = self.camNode.getNumDrs()
-        self.dr = self.camNode.getDr(0)
+        try:
+            self.dr = self.camNode.getDr(0)
+        except:
+            self.dr = self.camNode.getDisplayRegion(0)
         left = self.dr.getLeft()
         right = self.dr.getRight()
         bottom = self.dr.getBottom()

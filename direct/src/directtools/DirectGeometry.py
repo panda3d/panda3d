@@ -24,7 +24,7 @@ class LineNodePath(NodePath):
 
         # Attach a geomNode to the parent and set self to be
         # the resulting node path
-        self.lineNode = GeomNode()
+        self.lineNode = GeomNode("lineNode")
         self.assign(parent.attachNewNode( self.lineNode ))
         if name:
             self.setName(name)
@@ -46,7 +46,12 @@ class LineNodePath(NodePath):
 
     def reset( self ):
         self.lineSegs.reset()
-        self.lineNode.clear()
+        try:
+            # Old-style graph
+            self.lineNode.clear()
+        except:
+            # New-style graph
+            self.lineNode.removeAllGeoms()
 
     def isEmpty( self ):
         return self.lineSegs.isEmpty()
@@ -210,5 +215,10 @@ def relHpr(nodePath, base, h, p, r):
 # Set direct drawing style for an object
 # Never light object or draw in wireframe
 def useDirectRenderStyle(nodePath):
-    nodePath.arc().setTransition(LightTransition.allOff())
+    try:
+        # Old-style scene graph
+        nodePath.arc().setTransition(LightTransition.allOff())
+    except:
+        # No new-style equivalent yet.
+        pass
     nodePath.setRenderModeFilled()

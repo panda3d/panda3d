@@ -9,11 +9,20 @@ class DirectLight(NodePath):
         # Record light and name
         self.light = light
         self.name = light.getName()
-        # Attach node to self
+
+        # Upcast the light object to its node base pointer
         if isinstance(light, Spotlight):
-            self.assign(parent.attachNewNode(light.upcastToProjectionNode()))
+            node = light.upcastToProjectionNode()
         else:
-            self.assign(parent.attachNewNode(light.upcastToNamedNode()))
+            node = light.upcastToNamedNode()
+
+        # Attach node to self
+        try:
+            self.assign(parent.attachNewNode(none))
+        except:
+            # New scene graph doesn't have lights yet.
+            pass
+
     def getName(self):
         return self.name
     def getLight(self):
@@ -99,13 +108,23 @@ class DirectLights(NodePath):
 
     def allOn(self):
         """ Turn on all DIRECT lights """
-        render.arc().setTransition(self.lt)
+        try:
+            # Old-style scene graph
+            render.arc().setTransition(self.lt)
+        except:
+            # No new-style equivalent yet.
+            pass
         # Make sure there is a default material
         render.setMaterial(Material())
 
     def allOff(self):
         """ Turn off all DIRECT lights """
-        render.arc().clearTransition(LightTransition.getClassType())
+        try:
+            # Old-style scene graph
+            render.arc().clearTransition(LightTransition.getClassType())
+        except:
+            # No new-style equivalent yet.
+            pass
 
     def toggle(self):
         """ Toggles light attribute, but doesn't toggle individual lights """

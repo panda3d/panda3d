@@ -383,7 +383,7 @@ class DirectBoundingBox:
 class SelectionRay:
     def __init__(self, parent):
         # Create a collision node path attached to the given parent
-        self.rayCollisionNodePath = parent.attachNewNode( CollisionNode() )
+        self.rayCollisionNodePath = parent.attachNewNode( CollisionNode("ray") )
         # Don't pay the penalty of drawing this collision ray
         self.rayCollisionNodePath.hide()
         self.rayCollisionNode = self.rayCollisionNodePath.node()
@@ -400,7 +400,7 @@ class SelectionRay:
         # Current entry in collision queue
         self.cqIndex = 0
         # And a traverser to do the actual collision tests
-        self.ct = CollisionTraverser( RenderRelation.getClassType() )
+        self.ct = CollisionTraverser()
         # Let the traverser know about the queue and the collision node
         self.ct.addCollider(self.rayCollisionNode, self.cq )
         # Reference node path (for picking next)

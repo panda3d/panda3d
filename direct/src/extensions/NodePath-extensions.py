@@ -5,8 +5,11 @@
     """
 
     def id(self):
-        """Returns the bottom node's this pointer as a unique id"""
-        return self.arc()
+        """Returns a unique id identifying the NodePath instance"""
+        # Nowadays, the NodePath itself serves as that unique id.
+        # This function is therefore deprecated and should be removed
+        # soon.
+        return self
 
     def getName(self):
         """Returns the name of the bottom node if it exists, or <noname>"""
