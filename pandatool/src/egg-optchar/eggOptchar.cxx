@@ -59,17 +59,17 @@ EggOptchar() {
      &EggOptchar::dispatch_none, &_list_hierarchy_p);
 
   add_option
-    ("keep", "joint", 0,
-     "Keep the named joint (or slider) in the character, even if it does "
+    ("keep", "joint[,joint...]", 0,
+     "Keep the named joints (or sliders) in the character, even if they do "
      "not appear to be needed by the animation.",
-     &EggOptchar::dispatch_vector_string, NULL, &_keep_components);
+     &EggOptchar::dispatch_vector_string_comma, NULL, &_keep_components);
 
   add_option
-    ("expose", "joint", 0,
-     "Expose the named joint by flagging it with a DCS attribute, so "
-     "it can be found in the scene graph when the character is loaded, and "
-     "objects can be parented to it.  This implies -keep.",
-     &EggOptchar::dispatch_vector_string, NULL, &_expose_components);
+    ("expose", "joint[,joint...]", 0,
+     "Expose the named joints by flagging them with a DCS attribute, so "
+     "each one can be found in the scene graph when the character is loaded, "
+     "and objects can be parented to it.  This implies -keep.",
+     &EggOptchar::dispatch_vector_string_comma, NULL, &_expose_components);
 
   add_option
     ("keepall", "", 0,

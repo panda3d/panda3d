@@ -1016,6 +1016,30 @@ dispatch_vector_string(const string &, const string &arg, void *var) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ProgramBase::dispatch_vector_string_comma
+//       Access: Protected, Static
+//  Description: Similar to dispatch_vector_string, but a comma is
+//               allowed to separate multiple tokens in one argument,
+//               without having to repeat the argument for each token.
+//
+//               The data pointer is to a vector_string variable.
+////////////////////////////////////////////////////////////////////
+bool ProgramBase::
+dispatch_vector_string_comma(const string &, const string &arg, void *var) {
+  vector_string *ip = (vector_string *)var;
+
+  vector_string words;
+  tokenize(arg, words, ",");
+
+  vector_string::const_iterator wi;
+  for (wi = words.begin(); wi != words.end(); ++wi) {
+    (*ip).push_back(*wi);
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ProgramBase::dispatch_filename
 //       Access: Protected, Static
 //  Description: Standard dispatch function for an option that takes
