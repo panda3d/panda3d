@@ -228,7 +228,6 @@ decompose_matrix_old_hpr(const FLOATNAME(LMatrix3) &mat,
 
   // Extract the rotation and scale, according to the coordinate
   // system of choice.
-  bool is_left_handed;
 
   FLOATNAME(LMatrix3) new_mat(mat);
 
@@ -236,14 +235,12 @@ decompose_matrix_old_hpr(const FLOATNAME(LMatrix3) &mat,
   case CS_zup_right:
     {
       unwind_zup_rotation_old_hpr(new_mat, hpr);
-      is_left_handed = false;
     }
     break;
 
   case CS_yup_right:
     {
       unwind_yup_rotation_old_hpr(new_mat, hpr);
-      is_left_handed = false;
     }
     break;
 
@@ -261,7 +258,6 @@ decompose_matrix_old_hpr(const FLOATNAME(LMatrix3) &mat,
       unwind_zup_rotation_old_hpr(new_mat, hpr);
       hpr[0] = -hpr[0];
       hpr[2] = -hpr[2];
-      is_left_handed = true;
     }
     break;
 
@@ -277,7 +273,6 @@ decompose_matrix_old_hpr(const FLOATNAME(LMatrix3) &mat,
         -mat(2, 0), -mat(2, 1), mat(2, 2));
       */
       unwind_yup_rotation_old_hpr(new_mat, hpr);
-      is_left_handed = true;
     }
     break;
 
@@ -519,7 +514,6 @@ decompose_matrix_new_hpr(const FLOATNAME(LMatrix3) &mat,
 
   // Extract the rotation and scale, according to the coordinate
   // system of choice.
-  bool is_left_handed;
 
   FLOATNAME(LMatrix3) new_mat(mat);
 
@@ -527,14 +521,12 @@ decompose_matrix_new_hpr(const FLOATNAME(LMatrix3) &mat,
   case CS_zup_right:
     {
       unwind_zup_rotation_new_hpr(new_mat, hpr);
-      is_left_handed = false;
     }
     break;
 
   case CS_yup_right:
     {
       unwind_yup_rotation_new_hpr(new_mat, hpr);
-      is_left_handed = false;
     }
     break;
 
@@ -552,7 +544,6 @@ decompose_matrix_new_hpr(const FLOATNAME(LMatrix3) &mat,
       unwind_zup_rotation_new_hpr(new_mat, hpr);
       hpr[0] = -hpr[0];
       hpr[2] = -hpr[2];
-      is_left_handed = true;
     }
     break;
 
@@ -568,7 +559,6 @@ decompose_matrix_new_hpr(const FLOATNAME(LMatrix3) &mat,
         -mat(2, 0), -mat(2, 1), mat(2, 2));
       */
       unwind_yup_rotation_new_hpr(new_mat, hpr);
-      is_left_handed = true;
     }
     break;
 
