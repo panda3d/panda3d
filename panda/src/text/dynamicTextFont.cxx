@@ -107,6 +107,34 @@ DynamicTextFont(const Filename &font_filename, int face_index) {
         << "Loaded font " << get_name() << "\n";
       _is_valid = true;
       reset_scale();
+
+      if (text_cat.is_debug()) {
+        text_cat.debug()
+          << *this << " has " << _face->num_charmaps << " charmaps:\n";
+        for (int i = 0; i < _face->num_charmaps; i++) {
+          text_cat.debug(false) << " " << (void *)_face->charmaps[i];
+        }
+        text_cat.debug(false) << "\n";
+        text_cat.debug()
+          << "default charmap is " << (void *)_face->charmap << "\n";
+      }
+      if (_face->charmap == NULL) {
+        // If for some reason FreeType didn't set us up a charmap,
+        // then set it up ourselves.
+        if (_face->num_charmaps == 0) {
+          text_cat.warning()
+            << *this << " has no charmaps available.\n";
+        } else {
+          text_cat.warning()
+            << *this << " has no default Unicode charmap.\n";
+          if (_face->num_charmaps > 1) {
+            text_cat.warning()
+              << "Choosing arbitrary charmap of " << _face->num_charmaps 
+              << ".\n";
+          }
+          FT_Set_Charmap(_face, _face->charmaps[0]);
+        }
+      }
     }
   }
 }
@@ -332,6 +360,10 @@ get_glyph(int character, const TextGlyph *&glyph) {
   }
 
   int glyph_index = FT_Get_Char_Index(_face, character);
+  if (text_cat.is_spam()) {
+    text_cat.spam()
+      << *this << " maps " << character << " to glyph " << glyph_index << "\n";
+  }
 
   Cache::iterator ci = _cache.find(glyph_index);
   if (ci != _cache.end()) {
