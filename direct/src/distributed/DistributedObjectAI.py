@@ -8,8 +8,6 @@ from PyDatagram import PyDatagram
 from PyDatagramIterator import PyDatagramIterator
 
 class DistributedObjectAI(DirectObject.DirectObject):
-    """Distributed Object class:"""
-    
     notify = directNotify.newCategory("DistributedObjectAI")
     QuietZone = 1
     
@@ -220,8 +218,9 @@ class DistributedObjectAI(DirectObject.DirectObject):
         self.air.generateWithRequired(self, zoneId, optionalFields)
         if wantOtpServer:
             #HACK:
-            parentId = simbase.air.districtId
-            self.parentId = parentId
+            if not hasattr(self, 'parentId'):
+                parentId = simbase.air.districtId
+                self.parentId = parentId
         self.zoneId = zoneId
         self.generate()
 
@@ -238,8 +237,9 @@ class DistributedObjectAI(DirectObject.DirectObject):
         self.air.generateWithRequiredAndId(self, doId, zoneId, optionalFields)
         if wantOtpServer:
             #HACK:
-            parentId = simbase.air.districtId
-            self.parentId = parentId
+            if not hasattr(self, 'parentId'):
+                parentId = simbase.air.districtId
+                self.parentId = parentId
         self.zoneId = zoneId
         self.generate()
 
@@ -255,6 +255,7 @@ class DistributedObjectAI(DirectObject.DirectObject):
             # The repository is the one that really does the work
             self.air.sendGenerateOtpObject(
                     self, parentId, zoneId, optionalFields, doId=doId)
+            assert not hasattr(self, 'parentId')
             self.parentId = parentId
             self.zoneId = zoneId
             self.generate()
