@@ -34,7 +34,7 @@ def irisInOut(self, track, subjectNodePath, duration):
         Func(base.transitions.irisIn, 1.5),
         Wait(duration),
         Func(base.transitions.irisOut, 1.0),
-        Func(base.transitions.irisIn, 1.0),
+        Func(base.transitions.irisIn, 0.5),
         ))
     return track
 
