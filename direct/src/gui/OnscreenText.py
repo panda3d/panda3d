@@ -16,14 +16,20 @@ class OnscreenText(PandaObject, NodePath):
 
         # make a text node
         self.textNode = textNode = TextNode()
+        # Freeze the node while we set all the properties
+        textNode.freeze()
         textNode.setBillboard(0)
         textNode.setTextColor(0.0, 0.0, 0.0, 1.0)
         textNode.setCardColor(1.0, 1.0, 1.0, 1.0)
         textNode.setCardAsMargin(0.1, 0.1, 0.1, 0.1)
-        textNode.setFrameColor(0.0, 0.0, 0.0, 1.0)
-        textNode.setFrameAsMargin(0.1, 0.1, 0.1, 0.1)
+        # textNode.setFrameColor(0.0, 0.0, 0.0, 1.0)
+        # textNode.setFrameAsMargin(0.15, 0.15, 0.15, 0.15)
         textNode.setFont(OnscreenText.Font)
         textNode.setText(string)
+        textNode.clearCardBorder()
+        textNode.clearFrame()
+        # Ok, now update the node
+        textNode.thaw()
 
         # put the text node into the 2d scene graph
         textNodePath = render2d.attachNewNode(textNode)

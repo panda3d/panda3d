@@ -213,7 +213,6 @@ class TaskManager:
             self.taskList.remove(task)
         except:
             pass
-        # TODO: upon death
         if task.uponDeath:
             task.uponDeath(task)
 
