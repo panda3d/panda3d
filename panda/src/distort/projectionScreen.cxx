@@ -116,8 +116,8 @@ has_cull_callback() const {
 //               visible, or false if it should be culled.
 ////////////////////////////////////////////////////////////////////
 bool ProjectionScreen::
-cull_callback(CullTraverser *, CullTraverserData &) {
-  recompute_if_stale();
+cull_callback(CullTraverser *, CullTraverserData &data) {
+  recompute_if_stale(data._node_path.get_node_path());
   return true;
 }
 
@@ -313,7 +313,8 @@ regenerate_screen(const NodePath &projector, const string &screen_name,
 //               does not get dereferenced and deleted.
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) ProjectionScreen::
-make_flat_mesh(const NodePath &camera) {
+make_flat_mesh(const NodePath &this_np, const NodePath &camera) {
+  nassertr(!this_np.is_empty() && this_np.node() == this, NULL);
   nassertr(!camera.is_empty() && 
            camera.node()->is_of_type(LensNode::get_class_type()),
            NULL);
@@ -321,10 +322,9 @@ make_flat_mesh(const NodePath &camera) {
   nassertr(camera_node->get_lens() != (Lens *)NULL, NULL);
 
   // First, ensure the UV's are up-to-date.
-  recompute_if_stale();
+  recompute_if_stale(this_np);
 
   PT(PandaNode) top = new PandaNode(get_name());
-  NodePath this_np(this);
 
   LMatrix4f rel_mat;
   bool computed_rel_mat = false;
@@ -348,7 +348,7 @@ make_flat_mesh(const NodePath &camera) {
 ////////////////////////////////////////////////////////////////////
 void ProjectionScreen::
 recompute() {
-  NodePath this_np(this);
+  NodePath this_np(NodePath::any_path(this));
   do_recompute(this_np);
 }
 
@@ -361,7 +361,9 @@ recompute() {
 //               changed.
 ////////////////////////////////////////////////////////////////////
 void ProjectionScreen::
-recompute_if_stale() {
+recompute_if_stale(const NodePath &this_np) {
+  nassertv(!this_np.is_empty() && this_np.node() == this);
+
   if (_projector_node != (LensNode *)NULL && 
       _projector_node->get_lens() != (Lens *)NULL) {
     UpdateSeq lens_change = _projector_node->get_lens()->get_last_change();
@@ -370,7 +372,6 @@ recompute_if_stale() {
 
     } else {
       // Get the relative transform to ensure it hasn't changed.
-      NodePath this_np(this);
       const LMatrix4f &top_mat = this_np.get_mat(_projector);
       if (!_rel_top_mat.almost_equal(top_mat)) {
         _rel_top_mat = top_mat;

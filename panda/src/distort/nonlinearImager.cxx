@@ -55,33 +55,46 @@ NonlinearImager::
 ////////////////////////////////////////////////////////////////////
 //     Function: NonlinearImager::add_screen
 //       Access: Published
+//               This version of this method is deprecated and will
+//               soon be removed.  Use the version that takes two
+//               parameters instead.
+////////////////////////////////////////////////////////////////////
+int NonlinearImager::
+add_screen(ProjectionScreen *screen) {
+  return add_screen(NodePath(screen), screen->get_name());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NonlinearImager::add_screen
+//       Access: Published
 //  Description: Adds a new ProjectionScreen to the list of screens
 //               that will be processed by the NonlinearImager.  Each
 //               ProjectionScreen represents a view into the world.
 //               It must be based on a linear camera (or whatever kind
 //               of camera is respected by the graphics engine).
 //
-//               width and height indicate the size of the texture
-//               that will be created to render the scene for the
-//               screen.  See set_texture_size().
-//
 //               Each ProjectionScreen object should already have some
 //               screen geometry created.
 //
-//               When render() is called, the graphics state guardian
-//               will be used to render a scene for each
-//               ProjectionScreen object, and then each resulting
-//               image will be applied to a mesh to be rendered to the
-//               screen.
+//               As each frame is rendered, an offscreen image will be
+//               rendered from the source camera associated with each
+//               ProjectionScreen, and the resulting image will be
+//               applied to the screen geometry.
 //
 //               The return value is the index number of the new
 //               screen.
 ////////////////////////////////////////////////////////////////////
 int NonlinearImager::
-add_screen(ProjectionScreen *screen, const string &name) {
+add_screen(const NodePath &screen, const string &name) {
+  nassertr(!screen.is_empty() && 
+           screen.node()->is_of_type(ProjectionScreen::get_class_type()), -1);
+
+  ProjectionScreen *screen_node = DCAST(ProjectionScreen, screen.node());
+
   _screens.push_back(Screen());
   Screen &new_screen = _screens.back();
   new_screen._screen = screen;
+  new_screen._screen_node = screen_node;
   new_screen._name = name;
   new_screen._buffer = (GraphicsOutput *)NULL;
   new_screen._tex_width = 256;
@@ -92,10 +105,17 @@ add_screen(ProjectionScreen *screen, const string &name) {
   size_t vi;
   for (vi = 0; vi < _viewers.size(); ++vi) {
     new_screen._meshes.push_back(Mesh());
-    new_screen._meshes[vi]._last_screen = screen->get_last_screen();
+    new_screen._meshes[vi]._last_screen = screen_node->get_last_screen();
   }
 
   _stale = true;
+
+  if (_dark_room.is_empty()) {
+    _dark_room = screen.get_top();
+  } else {
+    nassertr(_dark_room.is_same_graph(screen), _screens.size() - 1);
+  }
+
   return _screens.size() - 1;
 }
 
@@ -107,7 +127,7 @@ add_screen(ProjectionScreen *screen, const string &name) {
 //               if it does not appear.
 ////////////////////////////////////////////////////////////////////
 int NonlinearImager::
-find_screen(ProjectionScreen *screen) const {
+find_screen(const NodePath &screen) const {
   for (size_t i = 0; i < _screens.size(); i++) {
     if (_screens[i]._screen == screen) {
       return i;
@@ -162,7 +182,7 @@ get_num_screens() const {
 //  Description: Returns the nth screen that has been added to the
 //               imager.
 ////////////////////////////////////////////////////////////////////
-ProjectionScreen *NonlinearImager::
+NodePath NonlinearImager::
 get_screen(int index) const {
   nassertr(index >= 0 && index < (int)_screens.size(), (ProjectionScreen *)NULL);
   return _screens[index]._screen;
@@ -294,7 +314,15 @@ get_screen_active(int index) const {
 ////////////////////////////////////////////////////////////////////
 int NonlinearImager::
 add_viewer(DisplayRegion *dr) {
-  GraphicsEngine *engine = dr->get_window()->get_gsg()->get_engine();
+  GraphicsOutput *window = dr->get_window();
+  nassertr(window != (GraphicsOutput *)NULL, -1);
+
+  GraphicsStateGuardian *gsg = window->get_gsg();
+  nassertr(gsg != (GraphicsStateGuardian *)NULL, -1);
+
+  GraphicsEngine *engine = gsg->get_engine();
+  nassertr(engine != (GraphicsEngine *)NULL, -1);
+
   nassertr(_viewers.empty() || (engine == _engine), -1);
   if (_engine == (GraphicsEngine *)NULL) {
     _engine = engine;
@@ -323,9 +351,9 @@ add_viewer(DisplayRegion *dr) {
 
   // The internal camera is an identity-matrix camera that simply
   // views the meshes that represent the user's specified camera.
-  viewer._internal_camera = new Camera("NonlinearImager");
+  viewer._internal_camera = new Camera("internal_camera");
   viewer._internal_camera->set_lens(new MatrixLens);
-  viewer._internal_scene = NodePath("screens");
+  viewer._internal_scene = NodePath("internal_screens");
   viewer._internal_camera->set_scene(viewer._internal_scene);
 
   NodePath camera_np = viewer._internal_scene.attach_new_node(viewer._internal_camera);
@@ -345,6 +373,13 @@ add_viewer(DisplayRegion *dr) {
   }
 
   _stale = true;
+
+  if (_dark_room.is_empty()) {
+    _dark_room = viewer._viewer.get_top();
+  } else {
+    nassertr(_dark_room.is_same_graph(viewer._viewer), vi);
+  }
+
   return vi;
 }
 
@@ -429,6 +464,12 @@ set_viewer_camera(int index, const NodePath &viewer_camera) {
   viewer._viewer = viewer_camera;
   viewer._viewer_node = DCAST(LensNode, viewer_camera.node());
   _stale = true;
+
+  if (_dark_room.is_empty()) {
+    _dark_room = viewer._viewer.get_top();
+  } else {
+    nassertv(_dark_room.is_same_graph(viewer._viewer));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -444,14 +485,21 @@ get_viewer_camera(int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NonlinearImager::get_internal_scene
+//     Function: NonlinearImager::get_viewer_scene
 //       Access: Published
 //  Description: Returns a pointer to the root node of the internal
 //               scene graph for the nth viewer, which is used to
 //               render all of the screen meshes for this viewer.
+//
+//               This is the scene graph in which the screen meshes
+//               within the dark room have been flattened into the
+//               appropriate transformation according to the viewer's
+//               lens properties (and position relative to the
+//               screens).  It is this scene graph that is finally
+//               rendered to the window.
 ////////////////////////////////////////////////////////////////////
 NodePath NonlinearImager::
-get_internal_scene(int index) const {
+get_viewer_scene(int index) const {
   nassertr(index >= 0 && index < (int)_viewers.size(), NodePath());
   return _viewers[index]._internal_scene;
 }
@@ -477,6 +525,38 @@ DisplayRegion *NonlinearImager::
 get_viewer(int index) const {
   nassertr(index >= 0 && index < (int)_viewers.size(), (DisplayRegion *)NULL);
   return _viewers[index]._dr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NonlinearImager::get_dark_room
+//       Access: Published
+//  Description: Returns the NodePath to the root of the dark room
+//               scene.  This is the scene in which all of the
+//               ProjectionScreens and the viewer cameras reside.
+//               It's a standalone scene with a few projection screens
+//               arranged artfully around one or more viewers; it's so
+//               named because it's a little virtual theater.
+//
+//               Normally this scene is not rendered directly; it only
+//               exists as an abstract concept, and to define the
+//               relation between the ProjectionScreens and the
+//               viewers.  But it may be rendered to help visualize
+//               the NonlinearImager's behavior.
+////////////////////////////////////////////////////////////////////
+NodePath NonlinearImager::
+get_dark_room() const {
+  return _dark_room;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NonlinearImager::get_graphics_engine
+//       Access: Published
+//  Description: Returns the GraphicsEngine that all of the viewers
+//               added to the NonlinearImager have in common.
+////////////////////////////////////////////////////////////////////
+GraphicsEngine *NonlinearImager::
+get_graphics_engine() const {
+  return _engine;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -555,10 +635,10 @@ recompute_if_stale() {
           for (si = _screens.begin(); si != _screens.end(); ++si) {
             Screen &screen = (*si);
             if (screen._active && 
-                screen._meshes[vi]._last_screen != screen._screen->get_last_screen()) {
+                screen._meshes[vi]._last_screen != screen._screen_node->get_last_screen()) {
               recompute_screen(screen, vi);
             } else {
-              screen._screen->recompute_if_stale();
+              screen._screen_node->recompute_if_stale(screen._screen);
             }
           }
         }
@@ -581,10 +661,11 @@ recompute_screen(NonlinearImager::Screen &screen, size_t vi) {
     return;
   }
 
-  screen._screen->recompute_if_stale();
+  screen._screen_node->recompute_if_stale(screen._screen);
 
   Viewer &viewer = _viewers[vi];
-  PT(PandaNode) mesh = screen._screen->make_flat_mesh(viewer._viewer);
+  PT(PandaNode) mesh = 
+    screen._screen_node->make_flat_mesh(screen._screen, viewer._viewer);
   if (mesh != (PandaNode *)NULL) {
     screen._meshes[vi]._mesh = viewer._internal_scene.attach_new_node(mesh);
   }
@@ -606,7 +687,13 @@ recompute_screen(NonlinearImager::Screen &screen, size_t vi) {
 
   if (screen._buffer != (GraphicsOutput *)NULL) {
     screen._meshes[vi]._mesh.set_texture(screen._buffer->get_texture());
+
+    // We don't really need to set the texture on the external screen,
+    // since that's normally not rendered, but we do anyway just for
+    // debugging purposes (in case the user does try to render it, to
+    // see what's going on).
+    screen._screen.set_texture(screen._buffer->get_texture());
   }
 
-  screen._meshes[vi]._last_screen = screen._screen->get_last_screen();
+  screen._meshes[vi]._last_screen = screen._screen_node->get_last_screen();
 }

@@ -71,7 +71,7 @@ PUBLISHED:
   void regenerate_screen(const NodePath &projector, const string &screen_name,
                          int num_x_verts, int num_y_verts, float distance,
                          float fill_ratio);
-  PT(PandaNode) make_flat_mesh(const NodePath &camera);
+  PT(PandaNode) make_flat_mesh(const NodePath &this_np, const NodePath &camera);
 
   INLINE void set_invert_uvs(bool invert_uvs);
   INLINE bool get_invert_uvs() const;
@@ -88,7 +88,7 @@ PUBLISHED:
 
 public:
   INLINE const UpdateSeq &get_last_screen() const;
-  void recompute_if_stale();
+  void recompute_if_stale(const NodePath &this_np);
 
 private:
   void do_recompute(const NodePath &this_np);

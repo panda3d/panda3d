@@ -96,13 +96,14 @@ PUBLISHED:
   NonlinearImager();
   ~NonlinearImager();
 
-  int add_screen(ProjectionScreen *screen, const string &name = string());
-  int find_screen(ProjectionScreen *screen) const;
+  int add_screen(ProjectionScreen *screen);
+  int add_screen(const NodePath &screen, const string &name);
+  int find_screen(const NodePath &screen) const;
   void remove_screen(int index);
   void remove_all_screens();
 
   int get_num_screens() const;
-  ProjectionScreen *get_screen(int index) const;
+  NodePath get_screen(int index) const;
   GraphicsOutput *get_buffer(int index) const;
   void set_texture_size(int index, int width, int height);
   void set_source_camera(int index, const NodePath &source_camera);
@@ -117,11 +118,13 @@ PUBLISHED:
 
   void set_viewer_camera(int index, const NodePath &viewer_camera);
   NodePath get_viewer_camera(int index) const;
-
-  NodePath get_internal_scene(int index) const;
+  NodePath get_viewer_scene(int index) const;
 
   int get_num_viewers() const;
   DisplayRegion *get_viewer(int index) const;
+
+  NodePath get_dark_room() const;
+  GraphicsEngine *get_graphics_engine() const;
 
   void recompute();
 
@@ -150,7 +153,8 @@ private:
 
   class Screen {
   public:
-    PT(ProjectionScreen) _screen;
+    NodePath _screen;
+    PT(ProjectionScreen) _screen_node;
     string _name;
     PT(GraphicsOutput) _buffer;
     NodePath _source_camera;
@@ -169,6 +173,7 @@ private:
   Screens _screens;
 
   GraphicsEngine *_engine;
+  NodePath _dark_room;
 
   bool _stale;
 };
