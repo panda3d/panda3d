@@ -11,11 +11,16 @@
 
 int
 main(int argc, char* argv[]) {
-  if (! AudioPool::verify_sample("test.wav")) {
-    audio_cat->fatal() << "could not locate 'test.wav'" << endl;
+  //   if (! AudioPool::verify_sample("test.wav")) {
+  //     audio_cat->fatal() << "could not locate 'test.wav'" << endl;
+  //     exit(-1);
+  //   }
+  if (! AudioPool::verify_sample("test.mp3")) {
+    audio_cat->fatal() << "could not locate 'test.mp3'" << endl;
     exit(-1);
   }
-  AudioSample* sample = AudioPool::load_sample("test.wav");
+  //   AudioSample* sample = AudioPool::load_sample("test.wav");
+  AudioSample* sample = AudioPool::load_sample("test.mp3");
   audio_cat->info() << "test.wav is " << sample->length() << "sec long"
 		     << endl;
   audio_cat->info() << "Playing test.wav" << endl;
