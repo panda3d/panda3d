@@ -346,7 +346,7 @@ read_channel(istream *ifp,
              TabEntry *table,
              ScanElem *channel_data, long table_start,
              int channel, int row) {
-    ScanElem *temp;
+    ScanElem *temp = NULL;
     int sgi_index, i;
     long offset, length;
 

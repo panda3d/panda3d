@@ -31,6 +31,14 @@
 #include <windows.h>  // we need to include this before jpeglib.
 #endif
 
+#ifdef HAVE_PNG
+// If we are going to be including png.h (in the unrelated file
+// pnmFileTypePNG.h), be sure to include it before including setjmp.h.
+// Ugly hack due to png weirdness with setjmp.
+#include <png.h>
+#endif
+
+
 extern "C" {
 #include <stdio.h>  // jpeglib requires this to be included first.
 #include <jpeglib.h>

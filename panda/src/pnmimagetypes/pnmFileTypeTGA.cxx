@@ -646,43 +646,44 @@ readtga( istream *ifp, struct ImageHeader *tgaP, const string &magic_number ) {
 
 void PNMFileTypeTGA::Reader::
 get_map_entry( istream *ifp, pixel *Value, int Size, gray *Alpha ) {
-    unsigned char j, k, r, g, b, a;
+    unsigned char j, k;
+    unsigned char r = 0, g = 0, b = 0, a = 0;
 
     /* Read appropriate number of bytes, break into rgb & put in map. */
     switch ( Size )
-        {
-        case 8:                         /* Grey scale, read and triplicate. */
+      {
+      case 8:                         /* Grey scale, read and triplicate. */
         r = g = b = getbyte( ifp );
-    a = 0;
+        a = 0;
         break;
-
-        case 16:                        /* 5 bits each of red green and blue. */
-        case 15:                        /* Watch for byte order. */
+        
+      case 16:                        /* 5 bits each of red green and blue. */
+      case 15:                        /* Watch for byte order. */
         j = getbyte( ifp );
         k = getbyte( ifp );
         r = ( k & 0x7C ) >> 2;
         g = ( ( k & 0x03 ) << 3 ) + ( ( j & 0xE0 ) >> 5 );
         b = j & 0x1F;
-    a = 0;
+        a = 0;
         break;
 
-        case 32:            /* 8 bits each of blue, green, red, and alpha */
-        case 24:                        /* 8 bits each of blue green and red. */
+      case 32:            /* 8 bits each of blue, green, red, and alpha */
+      case 24:                        /* 8 bits each of blue green and red. */
         b = getbyte( ifp );
         g = getbyte( ifp );
         r = getbyte( ifp );
         if ( Size == 32 )
-            a = getbyte( ifp );
-    else
-        a = 0;
+          a = getbyte( ifp );
+        else
+          a = 0;
         break;
-
-        default:
+        
+      default:
         pm_error( "unknown colormap pixel size (#2) - %d", Size );
-        }
+      }
     PPM_ASSIGN( *Value, r, g, b );
     *Alpha = a;
-    }
+}
 
 
 

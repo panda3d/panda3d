@@ -351,7 +351,10 @@ read_data(xel *array, xelval *alpha_data) {
   for (yi = 0; yi < num_rows; yi++) {
     png_bytep source = rows[yi];
     for (int xi = 0; xi < _x_size; xi++) {
-      int red, green, blue, alpha;
+      int red = 0;
+      int green = 0;
+      int blue = 0;
+      int alpha = 0;
 
       if (_maxval > 255) {
         if (get_color) {
@@ -430,7 +433,7 @@ void PNMFileTypePNG::Reader::
 png_read_data(png_structp png_ptr, png_bytep data, png_size_t length) {
   Reader *self = (Reader *)png_get_io_ptr(png_ptr);
   self->_file->read((char *)data, length);
-  if (self->_file->gcount() != length) {
+  if (length != (png_size_t)self->_file->gcount()) {
     pnmimage_png_cat.error()
       << "Didn't read enough bytes.\n";
     // Is there no way to indicate a read failure to libpng?

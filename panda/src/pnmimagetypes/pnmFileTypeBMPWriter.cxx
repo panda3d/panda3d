@@ -143,7 +143,7 @@ BMPwriteinfoheader(
         unsigned long   x,
         unsigned long   y)
 {
-        long    cbFix;
+        long    cbFix = 0;
 
         /* cbFix */
         switch (classv)

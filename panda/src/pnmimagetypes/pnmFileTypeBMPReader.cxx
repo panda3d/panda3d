@@ -179,12 +179,12 @@ BMPreadinfoheader(
         int            *pclassv)
 {
         unsigned long   cbFix;
-        unsigned short  cPlanes;
+        unsigned short  cPlanes = 0;
 
-        unsigned long   cx;
-        unsigned long   cy;
-        unsigned short  cBitCount;
-        int             classv;
+        unsigned long   cx = 0;
+        unsigned long   cy = 0;
+        unsigned short  cBitCount = 0;
+        int             classv = 0;
 
         cbFix = GetLong(fp);
 
@@ -315,7 +315,7 @@ BMPreadrow(
         pixval         *G,
         pixval         *B)
 {
-        BITSTREAM       b;
+        BITSTREAM       b = NULL;
         unsigned        nbyte = 0;
         int             rc;
         unsigned        x;
