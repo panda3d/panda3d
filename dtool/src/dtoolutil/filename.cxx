@@ -1167,7 +1167,7 @@ make_dir() const {
 #ifndef WIN32_VC
   int result = mkdir(dirname.c_str(), 0777);
 #else
-  int result = mkdir(component.c_str());
+  int result = mkdir(dirname.c_str());
 #endif
 
   return (result == 0);
