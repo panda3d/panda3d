@@ -483,6 +483,7 @@ PUBLISHED:
   void show_bounds();
   void hide_bounds();
   PT(BoundingVolume) get_bounds() const;
+  void force_recompute_bounds();
   void write_bounds(ostream &out) const;
   bool calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point);
 
@@ -515,6 +516,7 @@ private:
 
   void r_adjust_all_priorities(PandaNode *node, int adjustment);
 
+  void r_force_recompute_bounds(PandaNode *node);
   void r_calc_tight_bounds(PandaNode *node,
                            LPoint3f &min_point, LPoint3f &max_point,
                            bool &found_any, const TransformState *transform);

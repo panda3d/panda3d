@@ -54,6 +54,7 @@
     qpsceneGraphReducer.I qpsceneGraphReducer.h \
     selectiveChildNode.I selectiveChildNode.h \
     qpsequenceNode.I qpsequenceNode.h \
+    showBoundsEffect.I showBoundsEffect.h \
     texMatrixAttrib.I texMatrixAttrib.h \
     textureApplyAttrib.I textureApplyAttrib.h \
     textureAttrib.I textureAttrib.h \
@@ -112,6 +113,7 @@
     qpsceneGraphReducer.cxx \
     selectiveChildNode.cxx \
     qpsequenceNode.cxx \
+    showBoundsEffect.cxx \
     texMatrixAttrib.cxx \
     textureApplyAttrib.cxx \
     textureAttrib.cxx \
@@ -172,6 +174,7 @@
     qpsceneGraphReducer.I qpsceneGraphReducer.h \
     selectiveChildNode.I selectiveChildNode.h \
     qpsequenceNode.I qpsequenceNode.h \
+    showBoundsEffect.I showBoundsEffect.h \
     texMatrixAttrib.I texMatrixAttrib.h \
     textureApplyAttrib.I textureApplyAttrib.h \
     textureAttrib.I textureAttrib.h \

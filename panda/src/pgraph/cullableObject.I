@@ -45,6 +45,23 @@ CullableObject(const CullTraverserData &data,
   _next(next)
 {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullableObject::Constructor
+//       Access: Public
+//  Description: Creates a CullableObject based the indicated geom,
+//               with the indicated render state and transform.
+////////////////////////////////////////////////////////////////////
+INLINE CullableObject::
+CullableObject(Geom *geom, const RenderState *state,
+               const TransformState *transform,
+               CullableObject *next) :
+  _geom(geom),
+  _state(state),
+  _transform(transform),
+  _next(next)
+{
+}
   
 
 ////////////////////////////////////////////////////////////////////

@@ -42,7 +42,10 @@ public:
   INLINE CullableObject(const CullTraverserData &data,
                         qpGeomNode *geom_node, int i,
                         CullableObject *next = NULL);
-
+  INLINE CullableObject(Geom *geom, const RenderState *state,
+                        const TransformState *transform,
+                        CullableObject *next = NULL);
+    
 private:
   INLINE CullableObject(const CullableObject &copy);
   INLINE void operator = (const CullableObject &copy);

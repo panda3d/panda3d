@@ -180,3 +180,24 @@ has_decal() const {
   }
   return ((_flags & F_has_decal) != 0);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderEffects::has_show_bounds
+//       Access: Public
+//  Description: This function is provided as an optimization, to
+//               speed up the render-time checking for the existance
+//               of a ShowBoundsEffect on this state.  It returns true
+//               if a ShowBoundsEffect exists, false otherwise.  Note
+//               that since there is no additional information stored
+//               on the ShowBoundsEffect, there's no point in
+//               returning it if it exists.
+////////////////////////////////////////////////////////////////////
+INLINE bool RenderEffects::
+has_show_bounds() const {
+  if ((_flags & F_checked_show_bounds) == 0) {
+    // We pretend this function is const, even though it transparently
+    // modifies the internal show_bounds cache.
+    ((RenderEffects *)this)->determine_show_bounds();
+  }
+  return ((_flags & F_has_show_bounds) != 0);
+}

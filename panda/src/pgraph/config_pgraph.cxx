@@ -52,6 +52,7 @@
 #include "renderState.h"
 #include "selectiveChildNode.h"
 #include "qpsequenceNode.h"
+#include "showBoundsEffect.h"
 #include "texMatrixAttrib.h"
 #include "textureApplyAttrib.h"
 #include "textureAttrib.h"
@@ -128,6 +129,7 @@ init_libpgraph() {
   RenderState::init_type();
   SelectiveChildNode::init_type();
   qpSequenceNode::init_type();
+  ShowBoundsEffect::init_type();
   TexMatrixAttrib::init_type();
   TextureApplyAttrib::init_type();
   TextureAttrib::init_type();
@@ -166,6 +168,7 @@ init_libpgraph() {
   RenderModeAttrib::register_with_read_factory();
   RenderState::register_with_read_factory();
   qpSequenceNode::register_with_read_factory();
+  ShowBoundsEffect::register_with_read_factory();
   TexMatrixAttrib::register_with_read_factory();
   TextureApplyAttrib::register_with_read_factory();
   TextureAttrib::register_with_read_factory();

@@ -84,7 +84,7 @@ PUBLISHED:
   void write_outputs(ostream &out) const;
   void write_connections(ostream &out) const;
 
-  //protected:
+protected:
   int define_input(const string &name, TypeHandle data_type);
   int define_output(const string &name, TypeHandle data_type);
 

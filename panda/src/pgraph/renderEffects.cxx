@@ -19,6 +19,7 @@
 #include "renderEffects.h"
 #include "billboardEffect.h"
 #include "decalEffect.h"
+#include "showBoundsEffect.h"
 #include "config_pgraph.h"
 #include "bamReader.h"
 #include "bamWriter.h"
@@ -457,6 +458,20 @@ determine_decal() {
     _flags |= F_has_decal;
   }
   _flags |= F_checked_decal;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderEffects::determine_show_bounds
+//       Access: Private
+//  Description: This is the private implementation of has_show_bounds().
+////////////////////////////////////////////////////////////////////
+void RenderEffects::
+determine_show_bounds() {
+  const RenderEffect *effect = get_effect(ShowBoundsEffect::get_class_type());
+  if (effect != (const RenderEffect *)NULL) {
+    _flags |= F_has_show_bounds;
+  }
+  _flags |= F_checked_show_bounds;
 }
 
 ////////////////////////////////////////////////////////////////////

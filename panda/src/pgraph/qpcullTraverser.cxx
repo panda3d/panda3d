@@ -25,6 +25,11 @@
 #include "dcast.h"
 #include "qpgeomNode.h"
 #include "config_pgraph.h"
+#include "boundingSphere.h"
+#include "geomSphere.h"
+#include "colorAttrib.h"
+#include "renderModeAttrib.h"
+#include "cullFaceAttrib.h"
 
 
 TypeHandle qpCullTraverser::_type_handle;
@@ -89,11 +94,19 @@ traverse(CullTraverserData &data) {
   // optimization, we should tag nodes with these properties as
   // being "fancy", and skip this processing for non-fancy nodes.
   if (data.is_in_view(_camera_mask)) {
-    data.apply_transform_and_state(this);
-
     PandaNode *node = data.node();
 
-    const FogAttrib *fog = node->get_state()->get_fog();
+    const RenderEffects *node_effects = node->get_effects();
+    if (node_effects->has_show_bounds()) {
+      // If we should show the bounding volume for this node, make it
+      // up now.
+      show_bounds(data);
+    }
+
+    data.apply_transform_and_state(this);
+
+    const RenderState *node_state = node->get_state();
+    const FogAttrib *fog = node_state->get_fog();
     if (fog != (const FogAttrib *)NULL && fog->get_fog() != (qpFog *)NULL) {
       // If we just introduced a FogAttrib here, call adjust_to_camera()
       // now.  This maybe isn't the perfect time to call it, but it's
@@ -159,6 +172,104 @@ traverse_below(const CullTraverserData &data) {
     }
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpCullTraverser::show_bounds
+//       Access: Private
+//  Description: Draws an appropriate visualization of the node's
+//               external bounding volume.
+////////////////////////////////////////////////////////////////////
+void qpCullTraverser::
+show_bounds(CullTraverserData &data) {
+  PandaNode *node = data.node();
+
+  PT(Geom) bounds_viz = make_bounds_viz(node->get_bound());
+  if (bounds_viz != (Geom *)NULL) {
+    CullableObject *outer_viz = 
+      new CullableObject(bounds_viz, get_bounds_outer_viz_state(), 
+                         data._render_transform);
+    _cull_handler->record_object(outer_viz);
+
+    CullableObject *inner_viz = 
+      new CullableObject(bounds_viz, get_bounds_inner_viz_state(), 
+                         data._render_transform);
+    _cull_handler->record_object(inner_viz);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpCullTraverser::make_bounds_viz
+//       Access: Private
+//  Description: Returns an appropriate visualization of the indicated
+//               bounding volume.
+////////////////////////////////////////////////////////////////////
+PT(Geom) qpCullTraverser::
+make_bounds_viz(const BoundingVolume &vol) {
+  PT(Geom) geom;
+  if (vol.is_infinite()) {
+    // No way to draw an infinite bounding volume.
+
+  } else if (vol.is_of_type(BoundingSphere::get_class_type())) {
+    const BoundingSphere *sphere = DCAST(BoundingSphere, &vol);
+    
+    geom = new GeomSphere;
+    PTA_Vertexf verts;
+    LPoint3f center = sphere->get_center();
+    verts.push_back(center);
+    center[0] += sphere->get_radius();
+    verts.push_back(center);
+    geom->set_coords(verts);
+    geom->set_num_prims(1);
+    
+  } else {
+    pgraph_cat.warning()
+      << "Don't know how to draw a representation of "
+      << vol.get_class_type() << "\n";
+  }
+
+  return geom;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpCullTraverser::get_bounds_outer_viz_state
+//       Access: Private, Static
+//  Description: Returns a RenderState for rendering the outside
+//               surfaces of the bounding volume visualizations.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) qpCullTraverser::
+get_bounds_outer_viz_state() {
+  // Once someone asks for this pointer, we hold its reference count
+  // and never free it.
+  static CPT(RenderState) state = (const RenderState *)NULL;
+  if (state == (const RenderState *)NULL) {
+    state = RenderState::make
+      (ColorAttrib::make_flat(Colorf(0.3f, 1.0f, 0.5f, 1.0f)),
+       RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
+       CullFaceAttrib::make(CullFaceAttrib::M_cull_clockwise));
+  }
+  return state;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpCullTraverser::get_bounds_inner_viz_state
+//       Access: Private, Static
+//  Description: Returns a RenderState for rendering the inside
+//               surfaces of the bounding volume visualizations.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) qpCullTraverser::
+get_bounds_inner_viz_state() {
+  // Once someone asks for this pointer, we hold its reference count
+  // and never free it.
+  static CPT(RenderState) state = (const RenderState *)NULL;
+  if (state == (const RenderState *)NULL) {
+    state = RenderState::make
+      (ColorAttrib::make_flat(Colorf(0.15f, 0.5f, 0.25f, 1.0f)),
+       RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
+       CullFaceAttrib::make(CullFaceAttrib::M_cull_counter_clockwise));
+  }
+  return state;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpCullTraverser::start_decal
@@ -233,9 +344,16 @@ start_decal(const CullTraverserData &data) {
 CullableObject *qpCullTraverser::
 r_get_decals(CullTraverserData &data, CullableObject *decals) {
   if (data.is_in_view(_camera_mask)) {
-    data.apply_transform_and_state(this);
-
     PandaNode *node = data.node();
+
+    const RenderEffects *node_effects = node->get_effects();
+    if (node_effects->has_show_bounds()) {
+      // If we should show the bounding volume for this node, make it
+      // up now.
+      show_bounds(data);
+    }
+
+    data.apply_transform_and_state(this);
 
     // First, visit all of the node's children.
     int num_children = node->get_num_children();

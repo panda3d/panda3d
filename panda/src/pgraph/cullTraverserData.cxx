@@ -115,8 +115,8 @@ is_in_view_impl() {
     // actually culling an object we simply force it to be drawn in
     // red wireframe.
     _view_frustum = (GeometricBoundingVolume *)NULL;
-    CPT(RenderState) fake_effect = get_fake_view_frustum_cull_effect();
-    _state = _state->compose(fake_effect);
+    CPT(RenderState) fake_state = get_fake_view_frustum_cull_state();
+    _state = _state->compose(fake_state);
     
   } else if ((result & BoundingVolume::IF_all) != 0) {
     // The node and its descendants are completely enclosed within
@@ -140,24 +140,24 @@ is_in_view_impl() {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullTraverserData::get_fake_view_frustum_cull_effect
+//     Function: CullTraverserData::get_fake_view_frustum_cull_state
 //       Access: Private, Static
 //  Description: Returns a RenderState for rendering stuff in red
 //               wireframe, strictly for the fake_view_frustum_cull
 //               effect.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) CullTraverserData::
-get_fake_view_frustum_cull_effect() {
+get_fake_view_frustum_cull_state() {
   // Once someone asks for this pointer, we hold its reference count
   // and never free it.
-  static CPT(RenderState) effect = (const RenderState *)NULL;
-  if (effect == (const RenderState *)NULL) {
-    effect = RenderState::make
+  static CPT(RenderState) state = (const RenderState *)NULL;
+  if (state == (const RenderState *)NULL) {
+    state = RenderState::make
       (ColorAttrib::make_flat(Colorf(1.0f, 0.0f, 0.0f, 1.0f)),
        TextureAttrib::make_off(),
        RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
        1000);
   }
-  return effect;
+  return state;
 }
 

@@ -22,6 +22,7 @@
 #include "qpsceneGraphReducer.cxx"
 #include "selectiveChildNode.cxx"
 #include "qpsequenceNode.cxx"
+#include "showBoundsEffect.cxx"
 #include "test_pgraph.cxx"
 #include "texMatrixAttrib.cxx"
 #include "textureApplyAttrib.cxx"

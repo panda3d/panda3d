@@ -88,11 +88,13 @@ PUBLISHED:
 public:
   INLINE const BillboardEffect *get_billboard() const;
   INLINE bool has_decal() const;
+  INLINE bool has_show_bounds() const;
 
 private:
   static CPT(RenderEffects) return_new(RenderEffects *state);
   void determine_billboard();
   void determine_decal();
+  void determine_show_bounds();
 
 private:
   typedef pset<const RenderEffects *, IndirectLess<RenderEffects> > States;
@@ -131,6 +133,8 @@ private:
     F_checked_billboard    = 0x0001,
     F_checked_decal        = 0x0002,
     F_has_decal            = 0x0004,
+    F_checked_show_bounds  = 0x0008,
+    F_has_show_bounds      = 0x0010,
   };
   short _flags;
 

@@ -33,6 +33,7 @@
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
 #include "billboardEffect.h"
+#include "showBoundsEffect.h"
 #include "transparencyAttrib.h"
 #include "materialPool.h"
 #include "look_at.h"
@@ -2423,7 +2424,7 @@ prepare_scene(GraphicsStateGuardianBase *gsg, bool force_retained_mode) {
 void qpNodePath::
 show_bounds() {
   nassertv_always(!is_empty());
-  nassertv(false);
+  node()->set_effect(ShowBoundsEffect::make());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2435,7 +2436,7 @@ show_bounds() {
 void qpNodePath::
 hide_bounds() {
   nassertv_always(!is_empty());
-  nassertv(false);
+  node()->clear_effect(ShowBoundsEffect::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2450,6 +2451,28 @@ PT(BoundingVolume) qpNodePath::
 get_bounds() const {
   nassertr_always(!is_empty(), new BoundingSphere);
   return node()->get_bound().make_copy();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::force_recompute_bounds
+//       Access: Published
+//  Description: Forces the recomputing of all the bounding volumes at
+//               every node in the subgraph beginning at this node and
+//               below.
+//
+//               This should not normally need to be called, since the
+//               bounding volumes are supposed to be recomputed
+//               automatically when necessary.  It may be useful when
+//               debugging, to verify that the bounding volumes have
+//               not become inadvertently stale; it may also be useful
+//               to force animated characters to update their bounding
+//               volumes (which does not presently happen
+//               automatically).
+////////////////////////////////////////////////////////////////////
+void qpNodePath::
+force_recompute_bounds() {
+  nassertv_always(!is_empty());
+  r_force_recompute_bounds(node());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2899,6 +2922,33 @@ r_adjust_all_priorities(PandaNode *node, int adjustment) {
   int num_children = cr.get_num_children();
   for (int i = 0; i < num_children; i++) {
     r_adjust_all_priorities(cr.get_child(i), adjustment);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::r_force_recompute_bounds
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void qpNodePath::
+r_force_recompute_bounds(PandaNode *node) {
+  if (node->is_geom_node()) {
+    qpGeomNode *gnode;
+    DCAST_INTO_V(gnode, node);
+
+    int num_geoms = gnode->get_num_geoms();
+    for (int i = 0; i < num_geoms; i++) {
+      gnode->get_geom(i)->mark_bound_stale();
+    }
+  }
+
+  node->mark_bound_stale();
+
+  // Now consider children.
+  PandaNode::Children cr = node->get_children();
+  int num_children = cr.get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    r_force_recompute_bounds(cr.get_child(i));
   }
 }
 

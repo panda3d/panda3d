@@ -77,7 +77,7 @@ public:
 
 private:
   bool is_in_view_impl();
-  static CPT(RenderState) get_fake_view_frustum_cull_effect();
+  static CPT(RenderState) get_fake_view_frustum_cull_state();
 };
 
 #include "cullTraverserData.I"

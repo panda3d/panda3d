@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 
+#include "geom.h"
 #include "renderState.h"
 #include "transformState.h"
 #include "geometricBoundingVolume.h"
@@ -73,6 +74,11 @@ public:
   void traverse_below(const CullTraverserData &data);
 
 private:
+  void show_bounds(CullTraverserData &data);
+  PT(Geom) make_bounds_viz(const BoundingVolume &vol);
+  CPT(RenderState) get_bounds_outer_viz_state();
+  CPT(RenderState) get_bounds_inner_viz_state();
+
   void start_decal(const CullTraverserData &data);
   CullableObject *r_get_decals(CullTraverserData &data,
                                CullableObject *decals);
