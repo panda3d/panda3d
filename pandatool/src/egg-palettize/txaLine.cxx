@@ -532,6 +532,10 @@ output(ostream &out) const {
     case KW_cont:
       out << " cont";
       break;
+
+    case KW_anisotropic:
+      out << " aniso " << _aniso_degree;
+      break;
     }
   }
 
