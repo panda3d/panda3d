@@ -1901,7 +1901,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     case WM_SETFOCUS: {
             // wgldisplay_cat.info() << "got WM_SETFOCUS\n";
 
-            make_current();
+            // make_current();  causes errors when Alt-tabbing?
 
             POINT point;
             GetCursorPos(&point);
