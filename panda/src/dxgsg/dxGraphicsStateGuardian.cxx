@@ -5648,11 +5648,8 @@ void DXGraphicsStateGuardian::show_full_screen_frame(void) {
 #endif
 
       _dx_ready = FALSE;
+      _win->update();  // sleep in here, and check for window events
 
-      Sleep( 500 ); // Dont consume CPU.
-      throw_event("PandaPaused");   // throw panda event to invoke network-only processing
-
-      _win->process_events();
       hr = _pDD->TestCooperativeLevel();
     }
 
