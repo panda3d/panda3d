@@ -41,26 +41,17 @@ class TreeNode:
         self.x = self.y = None
         self.iconimages = {} # cache of PhotoImage instances for icons
         self.menuList = menuList
-        self.menuVar = IntVar()
-        self.menuVar.set(0)
-        self._popupMenu = None
         if self.menuList:
             if self.menuList[-1] == 'Separator':
                 self.menuList = self.menuList[:-1]
-            self._popupMenu = Menu(self.canvas, tearoff = 0)
-            for i in range(len(self.menuList)):
-                item = self.menuList[i]
-                if item == 'Separator':
-                    self._popupMenu.add_separator()
-                else:
-                    self._popupMenu.add_radiobutton(
-                        label = item,
-                        variable = self.menuVar,
-                        value = i,
-                        indicatoron = 0,
-                        command = self.popupMenuCommand)
-                    
+        self.menuVar = IntVar()
+        self.menuVar.set(0)
+        self._popupMenu = None
+
     def destroy(self):
+        if self._popupMenu:
+            print 'kill it'
+            self._popupMenu.destroy()
         for key in self.kidKeys:
             c = self.children[key]
             del self.children[key]
@@ -118,7 +109,24 @@ class TreeNode:
         self.item.OnDoubleClick()
         return "break"
 
+    def createPopupMenu(self):
+        if self.menuList:
+            self._popupMenu = Menu(self.canvas, tearoff = 0)
+            for i in range(len(self.menuList)):
+                item = self.menuList[i]
+                if item == 'Separator':
+                    self._popupMenu.add_separator()
+                else:
+                    self._popupMenu.add_radiobutton(
+                        label = item,
+                        variable = self.menuVar,
+                        value = i,
+                        indicatoron = 0,
+                        command = self.popupMenuCommand)
+                    
     def popupMenu(self, event=None):
+        if not self._popupMenu:
+            self.createPopupMenu()
         if self._popupMenu:
             self._popupMenu.post(event.widget.winfo_pointerx(),
                                  event.widget.winfo_pointery())

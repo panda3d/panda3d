@@ -1003,3 +1003,5 @@ class DirectSessionPanel(AppShell):
         # Remove hooks
         for event, method in self.actionEvents:
             self.ignore(event)
+        # Destroy SGE hierarchy
+        self.SGE._node.destroy()
