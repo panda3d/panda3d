@@ -273,6 +273,8 @@ class DistributedSmoothNode(DistributedNode.DistributedNode):
         self.smoother.clearPositions(1)
         self.smoother.markPosition()
 
+        self.forceToTruePosition()
+
     def setComponentTLive(self, timestamp):
         # This is the variant of setComponentT() that will be called
         # whenever we receive a live update directly from the other
