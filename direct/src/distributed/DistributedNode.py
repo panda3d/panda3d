@@ -35,15 +35,6 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
         DistributedObject.DistributedObject.generate(self)
         self.gotStringParentToken = 0
 
-        #if wantOtpServer:
-        #    parentId, zoneId = self.getLocation()
-        #    # reparent to parent
-        #    parent = base.cr.doId2do.get(parentId)
-        #    if parent and isinstance(parent, NodePath):
-        #        if self.getParent() != parent:
-        #            print "generate: reparenting %s to %s" % (self, parent)
-        #            self.wrtReparentTo(parent)            
-
     def __cmp__(self, other):
         # DistributedNode inherits from NodePath, which inherits a
         # definition of __cmp__ from FFIExternalObject that uses the
