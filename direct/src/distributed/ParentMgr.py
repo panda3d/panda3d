@@ -65,7 +65,7 @@ class ParentMgr:
             child.wrtReparentTo(self.token2nodepath[parentToken])
         else:
             self.notify.warning(
-                "child %s requested reparent to '%s', not in list" %
+                "child %s requested reparent to parent '%s' that is not (yet) registered" %
                 (repr(child), parentToken))
             # cancel any pending reparent on behalf of this child
             self.privRemoveReparentRequest(child)
@@ -80,7 +80,7 @@ class ParentMgr:
     def registerParent(self, token, parent):
         if self.token2nodepath.has_key(token):
             self.notify.error(
-                "token '%s' already in the table, referencing %s" %
+                "registerParent: token '%s' already registered, referencing %s" %
                 (token, repr(self.token2nodepath[token])))
 
         self.notify.debug("registering %s as '%s'" % (repr(parent), token))
@@ -131,7 +131,8 @@ class ParentMgr:
 
     def unregisterParent(self, token):
         if not self.token2nodepath.has_key(token):
-            self.notify.warning("unknown parent token '%s'" % token)
+            self.notify.warning("unregisterParent: unknown parent token '%s'" %
+                                token)
             return
         self.notify.debug("unregistering parent '%s'" % (token))
         del self.token2nodepath[token]
