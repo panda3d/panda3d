@@ -19,6 +19,17 @@ class ClientDistClass:
         self.number = dcClass.getNumber()
         self.name = dcClass.getName()
 
+        # Import the class, and store the constructor
+        try:
+             exec("import " + self.name, moduleGlobals, moduleLocals)
+        except ImportError, e:
+            self.notify.warning("Unable to import %s.py: %s" % (self.name, e))
+            self.constructor = None
+            return
+        self.constructor = eval(self.name + "." + self.name)
+
+        """
+        # This does not seem to work on the client publish
         stuff = ihooks.current_importer.get_loader().find_module(self.name)
         if not stuff:
             self.notify.warning("Unable to import %s.py" % (self.name))
@@ -27,6 +38,7 @@ class ClientDistClass:
         module = __import__(self.name, moduleGlobals, moduleLocals)
         # The constructor is really the classObj, which is of course callable
         self.constructor = getattr(module, self.name, None)
+        """
 
         self.allFields = self.parseFields(dcClass)
         self.allCDU = self.createAllCDU(self.allFields, self.constructor)
