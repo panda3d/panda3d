@@ -578,16 +578,11 @@ class Actor(PandaObject, NodePath):
         """getPart(self, string, key="lodRoot")
         Find the named part in the optional named lod and return it, or
         return None if not present"""
-        if (self.__partBundleDict.has_key(lodName)):
-            partBundleDict = self.__partBundleDict[lodName]
-        else:
+        partBundleDict = self.__partBundleDict.get(lodName)
+        if not partBundleDict:
             Actor.notify.warning("no lod named: %s" % (lodName))
             return None
-                
-        if (partBundleDict.has_key(partName)):
-            return partBundleDict[partName]
-        else:
-            return None
+        return partBundleDict.get(partName)
 
     def removePart(self, partName, lodName="lodRoot"):
         """removePart(self, string, key="lodRoot")
@@ -595,18 +590,16 @@ class Actor(PandaObject, NodePath):
         optional named lod if present.
         NOTE: this will remove child geometry also!"""
         # find the corresponding part bundle dict
-        if (self.__partBundleDict.has_key(lodName)):
-            partBundleDict = self.__partBundleDict[lodName]
-        else:
+        partBundleDict = self.__partBundleDict.get(lodName)
+        if not partBundleDict:
             Actor.notify.warning("no lod named: %s" % (lodName))
-            return None
+            return
 
         # find the corresponding anim control dict
-        if (self.__animControlDict.has_key(lodName)):
-            animControlDict = self.__animControlDict[lodName]
-        else:
+        animControlDict = self.__animControlDict.get(lodName)
+        if not animControlDict:
             Actor.notify.warning("no lod named: %s" % (lodName))
-            return None
+            return
 
         # remove the part
         if (partBundleDict.has_key(partName)):
@@ -622,14 +615,13 @@ class Actor(PandaObject, NodePath):
         Make the given part of the optionally given lod not render,
         even though still in the tree.
         NOTE: this will affect child geometry"""
-        if (self.__partBundleDict.has_key(lodName)):
-            partBundleDict = self.__partBundleDict[lodName]
-        else:
+        partBundleDict = self.__partBundleDict.get(lodName)
+        if not partBundleDict:
             Actor.notify.warning("no lod named: %s" % (lodName))
-            return None
-
-        if (partBundleDict.has_key(partName)):
-            partBundleDict[partName].hide()
+            return
+        part = partBundleDict.get(partName)
+        if part:
+            part.hide()
         else:
             Actor.notify.warning("no part named %s!" % (partName))
 
@@ -637,14 +629,13 @@ class Actor(PandaObject, NodePath):
         """showPart(self, string, key="lodRoot")
         Make the given part render while in the tree.
         NOTE: this will affect child geometry"""
-        if (self.__partBundleDict.has_key(lodName)):
-            partBundleDict = self.__partBundleDict[lodName]
-        else:
+        partBundleDict = self.__partBundleDict.get(lodName)
+        if not partBundleDict:
             Actor.notify.warning("no lod named: %s" % (lodName))
-            return None
-
-        if (partBundleDict.has_key(partName)):
-            partBundleDict[partName].show()
+            return
+        part = partBundleDict.get(partName)
+        if part:
+            part.show()
         else:
             Actor.notify.warning("no part named %s!" % (partName))
 
@@ -652,18 +643,14 @@ class Actor(PandaObject, NodePath):
         """showAllParts(self, string, key="lodRoot")
         Make the given part and all its children render while in the tree.
         NOTE: this will affect child geometry"""
-        if (self.__partBundleDict.has_key(lodName)):
-            partBundleDict = self.__partBundleDict[lodName]
-        else:
+        partBundleDict = self.__partBundleDict.get(lodName)
+        if not partBundleDict:
             Actor.notify.warning("no lod named: %s" % (lodName))
-            return None
-
-        if (partBundleDict.has_key(partName)):
-            partBundleDict[partName].show()
-            children = partBundleDict[partName].getChildren()
-            numChildren = children.getNumPaths()
-            for childNum in range(0, numChildren):
-                (children.getPath(childNum)).show()
+            return
+        part = partBundleDict.get(partName)
+        if part:
+            part.show()
+            part.getChildren().show()
         else:
             Actor.notify.warning("no part named %s!" % (partName))
 
@@ -673,15 +660,14 @@ class Actor(PandaObject, NodePath):
         animates, it will transform the node by the corresponding
         amount.  This will replace whatever matrix is on the node each
         frame."""
-        
-        if (self.__partBundleDict.has_key(lodName)):
-            partBundleDict = self.__partBundleDict[lodName]
-        else:
+        partBundleDict = self.__partBundleDict.get(lodName)
+        if not partBundleDict:
             Actor.notify.warning("no lod named: %s" % (lodName))
             return None
 
-        if (partBundleDict.has_key(partName)):
-            bundle = partBundleDict[partName].node().getBundle()
+        part = partBundleDict.get(partName)
+        if part:
+            bundle = part.node().getBundle()
         else:
             Actor.notify.warning("no part named %s!" % (partName))
             return None
@@ -704,14 +690,14 @@ class Actor(PandaObject, NodePath):
         Stops the joint from animating external nodes.  If the joint
         is animating a transform on a node, this will permanently stop
         it.  However, this does not affect vertex animations."""
-        if (self.__partBundleDict.has_key(lodName)):
-            partBundleDict = self.__partBundleDict[lodName]
-        else:
+        partBundleDict = self.__partBundleDict.get(lodName)
+        if not partBundleDict:
             Actor.notify.warning("no lod named: %s" % (lodName))
             return None
 
-        if (partBundleDict.has_key(partName)):
-            bundle = partBundleDict[partName].node().getBundle()
+        part = partBundleDict.get(partName)
+        if part:
+            bundle = part.node().getBundle()
         else:
             Actor.notify.warning("no part named %s!" % (partName))
             return None
@@ -737,14 +723,14 @@ class Actor(PandaObject, NodePath):
         animation has been loaded and bound to the character, it will
         be too late to add a new control during that animation.
         """
-        if (self.__partBundleDict.has_key(lodName)):
-            partBundleDict = self.__partBundleDict[lodName]
-        else:
+        partBundleDict = self.__partBundleDict.get(lodName)
+        if partBundleDict:
             Actor.notify.warning("no lod named: %s" % (lodName))
             return None
 
-        if (partBundleDict.has_key(partName)):
-            bundle = partBundleDict[partName].node().getBundle()
+        part = partBundleDict.get(partName)
+        if part:
+            bundle = part.node().getBundle()
         else:
             Actor.notify.warning("no part named %s!" % (partName))
             return None
@@ -767,36 +753,39 @@ class Actor(PandaObject, NodePath):
 
         return node
             
-    def instance(self, path, part, jointName, lodName="lodRoot"):
+    def instance(self, path, partName, jointName, lodName="lodRoot"):
         """instance(self, NodePath, string, string, key="lodRoot")
         Instance a nodePath to an actor part at a joint called jointName"""
-        if (self.__partBundleDict.has_key(lodName)):
-            partBundleDict = self.__partBundleDict[lodName]
-            if (partBundleDict.has_key(part)):
-                joint = partBundleDict[part].find("**/" + jointName)
+        partBundleDict = self.__partBundleDict.get(lodName)
+        if partBundleDict:
+            part = partBundleDict.get(partName)
+            if part:
+                joint = part.find("**/" + jointName)
                 if (joint.isEmpty()):
                     Actor.notify.warning("%s not found!" % (jointName))
                 else:
                     return path.instanceTo(joint)
             else:
-                Actor.notify.warning("no part named %s!" % (part))
+                Actor.notify.warning("no part named %s!" % (partName))
         else:
             Actor.notify.warning("no lod named %s!" % (lodName))
 
-    def attach(self, partName, anotherPart, jointName, lodName="lodRoot"):
+    def attach(self, partName, anotherPartName, jointName, lodName="lodRoot"):
         """attach(self, string, string, string, key="lodRoot")
         Attach one actor part to another at a joint called jointName"""
-        if (self.__partBundleDict.has_key(lodName)):
-            partBundleDict = self.__partBundleDict[lodName]
-            if (partBundleDict.has_key(partName)):
-                if (partBundleDict.has_key(anotherPart)):
-                    joint = partBundleDict[anotherPart].find("**/" + jointName)
+        partBundleDict = self.__partBundleDict.get(lodName)
+        if partBundleDict:
+            part = partBundleDict.get(partName)
+            if part:
+                anotherPart = partBundleDict.get(anotherPartName)
+                if anotherPart:
+                    joint = anotherPart.find("**/" + jointName)
                     if (joint.isEmpty()):
                         Actor.notify.warning("%s not found!" % (jointName))
                     else:
-                        partBundleDict[partName].reparentTo(joint)
+                        part.reparentTo(joint)
                 else:
-                    Actor.notify.warning("no part named %s!" % (anotherPart))
+                    Actor.notify.warning("no part named %s!" % (anotherPartName))
             else:
                 Actor.notify.warning("no part named %s!" % (partName))
         else:
@@ -1206,28 +1195,15 @@ class Actor(PandaObject, NodePath):
         anims in the form animName:animPath{}"""
         
         Actor.notify.debug("in loadAnims: %s, part: %s, lod: %s" %
-                          (anims, partName, lodName))
+                           (anims, partName, lodName))
 
         for animName in anims.keys():
             # make sure this lod in in anim control dict
-            if not (self.__animControlDict.has_key(lodName)):
-                lodDict = {}
-                self.__animControlDict[lodName] = lodDict
-
-            # make sure this part dict exists
-            if not (self.__animControlDict[lodName].has_key(partName)):
-                partDict = {}
-                self.__animControlDict[lodName][partName] = partDict
-
-            # make sure this an anim dict exists
-            if not (len(self.__animControlDict[lodName][partName].keys())):
-                animDict = {}
-                self.__animControlDict[lodName][partName] = animDict
-
+            self.__animControlDict.setdefault(lodName, {})
+            self.__animControlDict[lodName].setdefault(partName, {})
             # store the file path and None in place of the animControl.
             # we will bind it only when played
-            self.__animControlDict[lodName][partName][animName] = \
-                                                                [anims[animName], None]
+            self.__animControlDict[lodName][partName][animName] = [anims[animName], None]
 
 
     def unloadAnims(self, anims, partName="modelRoot", lodName="lodRoot"):
@@ -1308,9 +1284,7 @@ class Actor(PandaObject, NodePath):
         anim = loader.loadModelOnce(animPath)
         if anim == None:
             return None
-        animBundle = \
-                   (anim.find("**/+AnimBundleNode").node()).getBundle()
-
+        animBundle = (anim.find("**/+AnimBundleNode").node()).getBundle()
         bundle = self.__partBundleDict[lodName][partName].node().getBundle()
 
         # Are there any controls requested for joints in this bundle?

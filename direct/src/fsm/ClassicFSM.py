@@ -97,14 +97,6 @@ class ClassicFSM(DirectObject):
         self.__enter(self.__initialState, argList)
         assert(not self.__internalStateInFlux)
 
-    # Jesse decided that simpler was better with the __str__ function
-    def __str_not__(self):
-        """__str__(self)"""
-        return "ClassicFSM: name = %s \n states = %s \n initial = %s \n final = %s \n current = %s" \
-            % (self.__name, self.__states, self.__initialState,
-               self.__finalState, self.__currentState)
-
-
     # setters and getters
 
     def getName(self):
@@ -115,14 +107,17 @@ class ClassicFSM(DirectObject):
         self.__name = name
 
     def getStates(self):
-        return(self.__states)
+        return self.__states.values()
 
     def setStates(self, states):
         """setStates(self, State[])"""
-        self.__states = states
+        # Make a dictionary from stateName -> state
+        self.__states = {}
+        for state in states:
+            self.__states[state.getName()] = state
 
     def addState(self, state):
-        self.__states.append(state)
+        self.__states[state.getName()] = state
 
     def getInitialState(self):
         return(self.__initialState)
@@ -150,11 +145,12 @@ class ClassicFSM(DirectObject):
     def getStateNamed(self, stateName):
         """getStateNamed(self, string)
         Return the state with given name if found, issue warning otherwise"""
-        for state in self.__states:
-            if (state.getName() == stateName):
-                return state
-        ClassicFSM.notify.warning("[%s] : getStateNamed: %s, no such state" %
-                           (self.__name, str(stateName)))
+        state = self.__states.get(stateName)
+        if state:
+            return state
+        else:
+            ClassicFSM.notify.warning("[%s] : getStateNamed: %s, no such state" %
+                                      (self.__name, stateName))
 
 
     # basic ClassicFSM functionality
@@ -163,9 +159,7 @@ class ClassicFSM(DirectObject):
         """__exitCurrent(self)
         Exit the current state"""
         assert(self.__internalStateInFlux)
-        if ClassicFSM.notify.getDebug():
-            ClassicFSM.notify.debug("[%s]: exiting %s" % (self.__name,
-                                                   self.__currentState.getName()))
+        assert(ClassicFSM.notify.debug("[%s]: exiting %s" % (self.__name, self.__currentState.getName())))
         self.__currentState.exit(argList)
         # Only send the state change event if we are inspecting it
         # If this event turns out to be generally useful, we can
@@ -179,17 +173,15 @@ class ClassicFSM(DirectObject):
         """__enter(self, State)
         Enter a given state, if it exists"""
         assert(self.__internalStateInFlux)
-        if (aState in self.__states):
-            if ClassicFSM.notify.getDebug():
-                ClassicFSM.notify.debug("[%s]: entering %s" % (self.__name,
-                                                        aState.getName()))
+        stateName = aState.getName()
+        if (stateName in self.__states):
+            assert(ClassicFSM.notify.debug("[%s]: entering %s" % (self.__name, stateName)))
             self.__currentState = aState
             # Only send the state change event if we are inspecting it
             # If this event turns out to be generally useful, we can
             # turn it on all the time, but for now nobody else is using it
             if self.inspecting:
-                messenger.send(self.getName() + '_' +
-                               aState.getName() + '_entered')
+                messenger.send(self.getName() + '_' + stateName + '_entered')
 
             # Once we begin entering the new state, we're allow to
             # recursively request a transition to another state.
@@ -269,24 +261,21 @@ class ClassicFSM(DirectObject):
         elif (aStateName == self.__finalState.getName()):
             if (self.__currentState == self.__finalState):
                 # Do not do the transition if we are already in the final state
-                if ClassicFSM.notify.getDebug():
-                    ClassicFSM.notify.debug("[%s]: already in final state: %s" %
-                                     (self.__name, aStateName))
+                assert(ClassicFSM.notify.debug("[%s]: already in final state: %s" %
+                                               (self.__name, aStateName)))
                 return 1
             else:
                 # Force a transition to allow for cleanup
-                if ClassicFSM.notify.getDebug():
-                    ClassicFSM.notify.debug("[%s]: implicit transition to final state: %s" %
-                                     (self.__name, aStateName))
+                assert(ClassicFSM.notify.debug("[%s]: implicit transition to final state: %s" %
+                                               (self.__name, aStateName)))
                 self.__transition(aState,
                                   enterArgList,
                                   exitArgList)
                 return 1
         # are we already in this state?
         elif (aStateName == self.__currentState.getName()):
-            if ClassicFSM.notify.getDebug():
-                ClassicFSM.notify.debug("[%s]: already in state %s and no self transition" %
-                                 (self.__name, aStateName))
+            assert(ClassicFSM.notify.debug("[%s]: already in state %s and no self transition" %
+                                           (self.__name, aStateName)))
             return 0
         else:
             msg = ("[%s]: no transition exists from %s to %s" %
@@ -343,8 +332,8 @@ class ClassicFSM(DirectObject):
         if transitionDefined:
             return self.request(aStateName, enterArgList, exitArgList)
         else:
-            ClassicFSM.notify.debug("[%s]: condition_request: %s, transition doesnt exist" %
-                             (self.__name, aStateName))
+            assert(ClassicFSM.notify.debug("[%s]: condition_request: %s, transition doesnt exist" %
+                                           (self.__name, aStateName)))
             return 0
 
     def view(self):

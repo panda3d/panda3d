@@ -81,16 +81,13 @@ class State(DirectObject):
         """__init__(self, string, func, func, string[], inspectorPos = [])
         State constructor: takes name, enter func, exit func, and
         a list of states it can transition to (or State.Any)."""
-        self.__enterFunc = None
-        self.__exitFunc = None
-
-        self.setName(name)
-        self.setEnterFunc(enterFunc)
-        self.setExitFunc(exitFunc)
-        self.setTransitions(transitions)
-        self.setInspectorPos(inspectorPos)
+        self.__name = name
+        self.__enterFunc = enterFunc
+        self.__exitFunc = exitFunc
+        self.__transitions = transitions
         self.__FSMList = []
-
+        if __debug__:
+            self.setInspectorPos(inspectorPos)
 
     # setters and getters
 
@@ -106,28 +103,30 @@ class State(DirectObject):
         """getEnterFunc(self)"""
         return(self.__enterFunc)
 
-    def redefineFunc(self, oldMethod, newMethod, map):
-        if not FsmRedefine:
-            return
-        # Methods are allowed to be None
-        if oldMethod is None:
-            return
-        if map.has_key(oldMethod):
-            # Get the list of states for the old function
-            stateList = map[oldMethod]
-            # Remove this state from that list of states
-            stateList.remove(self)
-            # If the stateList is now empty, remove this entry altogether
-            if not stateList:
-                del(map[oldMethod])
-        # Now add the new function, creating a starter state list
-        # if there is not one already
-        stateList = map.get(newMethod, [])
-        stateList.append(self)
-        map[newMethod] = stateList
+    if __debug__:
+        def redefineFunc(self, oldMethod, newMethod, map):
+            if not FsmRedefine:
+                return
+            # Methods are allowed to be None
+            if oldMethod is None:
+                return
+            if map.has_key(oldMethod):
+                # Get the list of states for the old function
+                stateList = map[oldMethod]
+                # Remove this state from that list of states
+                stateList.remove(self)
+                # If the stateList is now empty, remove this entry altogether
+                if not stateList:
+                    del(map[oldMethod])
+            # Now add the new function, creating a starter state list
+            # if there is not one already
+            stateList = map.get(newMethod, [])
+            stateList.append(self)
+            map[newMethod] = stateList
 
     def setEnterFunc(self, stateEnterFunc):
-        self.redefineFunc(self.__enterFunc, stateEnterFunc, EnterFuncRedefineMap)
+        if __debug__:
+            self.redefineFunc(self.__enterFunc, stateEnterFunc, EnterFuncRedefineMap)
         self.__enterFunc = stateEnterFunc
 
     def getExitFunc(self):
@@ -136,7 +135,8 @@ class State(DirectObject):
 
     def setExitFunc(self, stateExitFunc):
         """setExitFunc(self, func)"""
-        self.redefineFunc(self.__exitFunc, stateExitFunc, ExitFuncRedefineMap)
+        if __debug__:
+            self.redefineFunc(self.__exitFunc, stateExitFunc, ExitFuncRedefineMap)
         self.__exitFunc = stateExitFunc
 
     def transitionsToAny(self):
@@ -176,14 +176,14 @@ class State(DirectObject):
                 'attempted to add transition %s to state that '
                 'transitions to any state')
 
-    def getInspectorPos(self):
-        """getInspectorPos(self)"""
-        return(self.__inspectorPos)
+    if __debug__:
+        def getInspectorPos(self):
+            """getInspectorPos(self)"""
+            return(self.__inspectorPos)
 
-    def setInspectorPos(self, inspectorPos):
-        """setInspectorPos(self, [x, y])"""
-        self.__inspectorPos = inspectorPos
-
+        def setInspectorPos(self, inspectorPos):
+            """setInspectorPos(self, [x, y])"""
+            self.__inspectorPos = inspectorPos
 
     # support for HFSMs
 

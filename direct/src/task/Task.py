@@ -471,11 +471,7 @@ class TaskManager:
         if TaskManager.notify.getDebug():
             TaskManager.notify.debug('__addPendingTask: %s' % (task.name))
         pri = task.getPriority()
-        if self.pendingTaskDict.has_key(pri):
-            taskPriList = self.pendingTaskDict[pri]
-        else:
-            taskPriList = TaskPriorityList(pri)
-            self.pendingTaskDict[pri] = taskPriList
+        taskPriList = self.pendingTaskDict.setdefault(pri, TaskPriorityList(pri))
         taskPriList.add(task)
 
     def __addNewTask(self, task):

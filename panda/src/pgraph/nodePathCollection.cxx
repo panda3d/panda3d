@@ -379,6 +379,30 @@ detach() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePathCollection::set_color
+//       Access: Published
+//  Description: Colors all NodePaths in the collection
+////////////////////////////////////////////////////////////////////
+void NodePathCollection::
+set_color(float r, float g, float b, float a, int priority) {
+  for (int i = 0; i < get_num_paths(); i++) {
+    get_path(i).set_color(Colorf(r, g, b, a), priority);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePathCollection::set_color
+//       Access: Published
+//  Description: Colors all NodePaths in the collection
+////////////////////////////////////////////////////////////////////
+void NodePathCollection::
+set_color(const Colorf &color, int priority) {
+  for (int i = 0; i < get_num_paths(); i++) {
+    get_path(i).node()->set_attrib(ColorAttrib::make_flat(color), priority);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::output
 //       Access: Published
 //  Description: Writes a brief one-line description of the
