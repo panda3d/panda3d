@@ -6,21 +6,20 @@
 #include "guiRollover.h"
 #include "config_gui.h"
 
-#include <set>
+#include <map>
 
-typedef set<GuiRollover*> RolloverSet;
-static RolloverSet rollovers;
+typedef map<const MouseWatcherRegion*, GuiRollover*> RolloverMap;
+static RolloverMap rollovers;
 static bool added_hooks = false;
 
 TypeHandle GuiRollover::_type_handle;
 
-static GuiRollover *
-find_in_rollovers_set(const MouseWatcherRegion* rgn) {
-  for (RolloverSet::const_iterator bi=rollovers.begin(); bi!=rollovers.end();
-       ++bi)
-    if ((*bi)->owns_region(rgn))
-      return *bi;
-  return (GuiRollover*)0L;
+static inline GuiRollover *
+find_in_rollovers_map(const MouseWatcherRegion* rgn) {
+  RolloverMap::iterator i = rollovers.find(rgn);
+  if (i == rollovers.end())
+    return (GuiRollover*)0L;
+  return (*i).second;
 }
 
 inline void GetExtents(GuiLabel* x, GuiLabel* y, float& l, float& r, float& b,
@@ -36,7 +35,7 @@ inline void GetExtents(GuiLabel* x, GuiLabel* y, float& l, float& r, float& b,
 
 static void enter_rollover(CPT_Event e) {
   const MouseWatcherRegion* rgn = DCAST(MouseWatcherRegion, e->get_parameter(0).get_ptr());
-  GuiRollover* val = find_in_rollovers_set(rgn);
+  GuiRollover* val = find_in_rollovers_map(rgn);
   if (val == (GuiRollover *)0L)
     return;  // this wasn't for us
   val->enter();
@@ -44,7 +43,7 @@ static void enter_rollover(CPT_Event e) {
 
 static void exit_rollover(CPT_Event e) {
   const MouseWatcherRegion* rgn = DCAST(MouseWatcherRegion, e->get_parameter(0).get_ptr());
-  GuiRollover* val = find_in_rollovers_set(rgn);
+  GuiRollover* val = find_in_rollovers_map(rgn);
   if (val == (GuiRollover *)0L)
     return;  // this wasn't for us
   val->exit();
@@ -76,7 +75,7 @@ GuiRollover::GuiRollover(const string& name, GuiLabel* off, GuiLabel* on)
   _rgn = new MouseWatcherRegion("rollover-" + name, _left, _right, _bottom,
 				_top);
   _rgn->set_suppress_below(false);
-  rollovers.insert(this);
+  rollovers[this->_rgn] = this;
 }
 
 GuiRollover::~GuiRollover(void) {
@@ -85,7 +84,7 @@ GuiRollover::~GuiRollover(void) {
   // Remove the names from the rollovers map, so we don't end up with
   // an invalid pointer.
   string name = get_name();
-  rollovers.erase(this);
+  rollovers.erase(this->_rgn);
   if ((rollovers.size() == 0) && added_hooks) {
     _eh->remove_hook("gui-enter", enter_rollover);
     _eh->remove_hook("gui-exit", exit_rollover);

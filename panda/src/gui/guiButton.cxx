@@ -8,21 +8,20 @@
 
 #include <throw_event.h>
 
-#include <set>
+#include <map>
 
-typedef set<GuiButton*> ButtonSet;
-static ButtonSet buttons;
+typedef map<const MouseWatcherRegion*, GuiButton*> ButtonMap;
+static ButtonMap buttons;
 static bool added_hooks = false;
 
 TypeHandle GuiButton::_type_handle;
 
-
-static GuiButton *
-find_in_buttons_set(const MouseWatcherRegion* rgn) {
-  for (ButtonSet::const_iterator bi=buttons.begin(); bi!=buttons.end(); ++bi)
-    if ((*bi)->owns_region(rgn))
-      return *bi;
-  return (GuiButton*)0L;
+static inline GuiButton *
+find_in_buttons_map(const MouseWatcherRegion* rgn) {
+  ButtonMap::iterator i = buttons.find(rgn);
+  if (i == buttons.end())
+    return (GuiButton*)0L;
+  return (*i).second;
 }
 
 inline void GetExtents(GuiLabel* v, GuiLabel* w, GuiLabel* x, GuiLabel* y,
@@ -59,7 +58,7 @@ inline void GetExtents(GuiLabel* v, GuiLabel* w, GuiLabel* x, GuiLabel* y,
 
 static void enter_button(CPT_Event e) {
   const MouseWatcherRegion* rgn = DCAST(MouseWatcherRegion, e->get_parameter(0).get_ptr());
-  GuiButton* val = find_in_buttons_set(rgn);
+  GuiButton* val = find_in_buttons_map(rgn);
   if (val == (GuiButton *)0L)
     return;  // this one wasn't for us
   val->test_ref_count_integrity();
@@ -68,7 +67,7 @@ static void enter_button(CPT_Event e) {
 
 static void exit_button(CPT_Event e) {
   const MouseWatcherRegion* rgn = DCAST(MouseWatcherRegion, e->get_parameter(0).get_ptr());
-  GuiButton* val = find_in_buttons_set(rgn);
+  GuiButton* val = find_in_buttons_map(rgn);
   if (val == (GuiButton *)0L)
     return;  // this one wasn't for us
   val->test_ref_count_integrity();
@@ -77,7 +76,10 @@ static void exit_button(CPT_Event e) {
 
 static void click_button_down(CPT_Event e) {
   const MouseWatcherRegion* rgn = DCAST(MouseWatcherRegion, e->get_parameter(0).get_ptr());
-  GuiButton* val = find_in_buttons_set(rgn);
+  string button = e->get_parameter(1).get_string_value();
+  if ((button != "mouse1") && (button != "mouse2") && (button != "mouse3"))
+    return;
+  GuiButton* val = find_in_buttons_map(rgn);
   if (val == (GuiButton *)0L)
     return;  // this one wasn't for us
   val->test_ref_count_integrity();
@@ -86,7 +88,10 @@ static void click_button_down(CPT_Event e) {
 
 static void click_button_up(CPT_Event e) {
   const MouseWatcherRegion* rgn = DCAST(MouseWatcherRegion, e->get_parameter(0).get_ptr());
-  GuiButton* val = find_in_buttons_set(rgn);
+  string button = e->get_parameter(1).get_string_value();
+  if ((button != "mouse1") && (button != "mouse2") && (button != "mouse3"))
+    return;
+  GuiButton* val = find_in_buttons_map(rgn);
   if (val == (GuiButton *)0L)
     return;  // this one wasn't for us
   val->test_ref_count_integrity();
@@ -406,7 +411,7 @@ GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* down)
   _rgn = new MouseWatcherRegion("button-" + name, _left, _right, _bottom,
 				_top);
   _rgn->set_suppress_below(true);
-  buttons.insert(this);
+  buttons[this->_rgn] = this;
 }
 
 GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* down,
@@ -425,7 +430,7 @@ GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* down,
   _rgn = new MouseWatcherRegion("button-" + name, _left, _right, _bottom,
 				_top);
   _rgn->set_suppress_below(true);
-  buttons.insert(this);
+  buttons[this->_rgn] = this;
 }
 
 GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* up_roll,
@@ -445,7 +450,7 @@ GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* up_roll,
   _rgn = new MouseWatcherRegion("button-" + name, _left, _right, _bottom,
 				_top);
   _rgn->set_suppress_below(true);
-  buttons.insert(this);
+  buttons[this->_rgn] = this;
 }
 
 GuiButton::~GuiButton(void) {
@@ -454,7 +459,7 @@ GuiButton::~GuiButton(void) {
   // Remove the names from the buttons map, so we don't end up with
   // an invalid pointer.
   string name = get_name();
-  buttons.erase(this);
+  buttons.erase(this->_rgn);
   if ((buttons.size() == 0) && added_hooks) {
     _eh->remove_hook("gui-enter", enter_button);
     _eh->remove_hook("gui-exit" + get_name(), exit_button);
