@@ -41,6 +41,7 @@ NodePath(const string &top_node_name) :
 {
   PandaNode *top_node = new PandaNode(top_node_name);
   _head = top_node->get_generic_component(false);
+  _backup_key = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -61,6 +62,7 @@ NodePath(PandaNode *node) :
   if (node != (PandaNode *)NULL) {
     _head = node->get_generic_component(false);
   }
+  _backup_key = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -100,6 +102,7 @@ NodePath(const NodePath &parent, PandaNode *child_node) :
   if (_head != (NodePathComponent *)NULL) {
     _error_type = ET_ok;
   }
+  _backup_key = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -110,6 +113,7 @@ NodePath(const NodePath &parent, PandaNode *child_node) :
 INLINE NodePath::
 NodePath(const NodePath &copy) :
   _head(copy._head),
+  _backup_key(copy._backup_key),
   _error_type(copy._error_type)
 {
 }
@@ -122,6 +126,7 @@ NodePath(const NodePath &copy) :
 INLINE void NodePath::
 operator = (const NodePath &copy) {
   _head = copy._head;
+  _backup_key = copy._backup_key;
   _error_type = copy._error_type;
 }
 
@@ -266,7 +271,7 @@ node() const {
 INLINE int NodePath::
 get_key() const {
   if (is_empty()) {
-    return 0;
+    return _backup_key;
   }
   return _head->get_key();
 }

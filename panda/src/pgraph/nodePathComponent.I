@@ -105,6 +105,20 @@ get_node() const {
   return _node;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: NodePathComponent::has_key
+//       Access: Public
+//  Description: Returns true if the key for this component has
+//               already been generated, false otherwise.  Even if
+//               this returns false, calling get_key() will still
+//               return a valid key; that will simply cause the key to
+//               be generated on-the-fly.
+////////////////////////////////////////////////////////////////////
+INLINE bool NodePathComponent::
+has_key() const {
+  return (_key != 0);
+}
+
 INLINE ostream &operator << (ostream &out, const NodePathComponent &comp) {
   comp.output(out);
   return out;

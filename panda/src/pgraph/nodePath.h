@@ -111,8 +111,13 @@ class GlobPattern;
 //    +h    Do return hidden nodes.
 //    -s    Do not return stashed nodes unless explicitly referenced with @@.
 //    +s    Return stashed nodes even without any explicit @@ characters.
+//    -i    Node name comparisons are not case insensitive: case must match
+//          exactly.
+//    +i    Node name comparisons are case insensitive: case is not important.
+//          This affects matches against the node name only; node type
+//          and tag strings are always case sensitive.
 //
-// The default flags are +h-s.
+// The default flags are +h-s-i.
 //
 
 
@@ -630,6 +635,7 @@ private:
                        GraphicsStateGuardianBase *gsg, bool do_retained_mode);
 
   PT(NodePathComponent) _head;
+  int _backup_key;
   ErrorType _error_type;
   static int _max_search_depth;
 

@@ -473,7 +473,16 @@ remove_node() {
     PandaNode::detach(_head);
   }
 
-  (*this) = NodePath::removed();
+  if (is_empty() || _head->has_key()) {
+    // Preserve the key we had on the node before we removed it.
+    int key = get_key();
+    (*this) = NodePath::removed();
+    _backup_key = key;
+
+  } else {
+    // We didn't have a key; just clear the NodePath.
+    (*this) = NodePath::removed();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

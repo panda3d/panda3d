@@ -54,6 +54,7 @@ public:
   INLINE ~NodePathComponent();
   
   INLINE PandaNode *get_node() const;
+  INLINE bool has_key() const;
   int get_key() const;
   bool is_top_node() const;
   
