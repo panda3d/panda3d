@@ -2,10 +2,11 @@
 
 # This is just a helper script to generatePythonCode to cover
 # the three or four cases we use all the time
-# usage: genPyCode [-t] [-v] [-n] [linux|win-debug|win-release|win-publish|install|release] [other libs]
+# usage: genPyCode [opts] [linux|win-debug|win-release|win-publish|install|release] [other libs]
 
 # -t adds libtoontown
 # -v adds libvrpn
+# -e adds libpandaegg
 # -n doesn't perform a squeeze
 
 base_dir=$(pwd)
@@ -15,10 +16,11 @@ optimizeFlag=""
 ppython=ppython
 ppythonOptimizeFlag=""
 
-while getopts tvn flag; do
+while getopts tven flag; do
   case $flag in
     t) extra_genPyCode_libs="$extra_genPyCode_libs libtoontown" ;;
     v) extra_genPyCode_libs="$extra_genPyCode_libs libvrpn" ;;
+    e) extra_genPyCode_libs="$extra_genPyCode_libs libpandaegg" ;;
     n) fSqueeze="" ;;
   esac
 done
