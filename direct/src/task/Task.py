@@ -29,7 +29,11 @@ def getTimeFrame():
 
 
 class Task:
+    count = 0
     def __init__(self, callback, priority = 0):
+        # Unique ID for each task
+        self.id = Task.count
+        Task.count += 1
         self.__call__ = callback
         self._priority = priority
         self.uponDeath = None
@@ -264,9 +268,14 @@ class TaskManager:
             TaskManager.notify = directNotify.newCategory("TaskManager")
         self.taskTimerVerbose = 0
         self.pStatsTasks = 0
+        self.fVerbose = 0
 
-    def stepping(value):
+    def stepping(self, value):
         self.stepping = value
+
+    def setVerbose(self, value):
+        self.fVerbose = value
+        messenger.send('TaskManager-setVerbose', sentArgs = [value])
 
     def spawnMethodNamed(self, func, name):
         task = Task(func)
@@ -300,6 +309,11 @@ class TaskManager:
                 if hyphen >= 0:
                     name = name[0:hyphen]
                 task.setupPStats(name)
+
+        if self.fVerbose:
+            # Alert the world, a new task is born!
+            messenger.send('TaskManager-spawnTask',
+                           sentArgs = [task, name, index])
                 
         return task
 
@@ -322,6 +336,10 @@ class TaskManager:
             self.taskList.remove(task)
             if task.uponDeath:
                 task.uponDeath(task)
+            if self.fVerbose:
+                # We regret to announce...
+                messenger.send('TaskManager-removeTask',
+                               sentArgs = [task, task.name])
 
     def removeTasksNamed(self, taskName):
         if TaskManager.notify.getDebug():
@@ -500,6 +518,10 @@ class TaskManager:
                          + '----'.rjust(dtWidth)
                          + '\n')
         return str
+
+    def popupControls(self):
+        from TaskManagerPanel import *
+        return TaskManagerPanel(self)
 
 
 """

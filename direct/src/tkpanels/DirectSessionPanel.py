@@ -11,6 +11,7 @@ import Floater
 import EntryScale
 import VectorWidgets
 import SceneGraphExplorer
+from TaskManagerPanel import TaskManagerWidget
 
 """
 Possible to add:
@@ -160,6 +161,7 @@ class DirectSessionPanel(AppShell):
         lightsPage = notebook.add('Lights')
         gridPage = notebook.add('Grid')
         devicePage = notebook.add('Devices')
+        tasksPage = notebook.add('Tasks')
         scenePage = notebook.add('Scene')
         # Put this here so it isn't called right away
         notebook['raisecommand'] = self.updateInfo
@@ -563,6 +565,11 @@ class DirectSessionPanel(AppShell):
                 lambda v: direct.joybox.setHprMultiplier(v))
             self.jbHprSF.pack(fill = X, expand = 0)
             self.bind(self.jbHprSF, 'Set joybox HPR speed multiplier')
+
+        ## TASKS PAGE ##
+        Label(tasksPage, text = 'TASKS',
+              font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
+        self.taskMgrPanel = TaskManagerWidget(tasksPage, taskMgr)
 
         notebook.setnaturalsize()
 

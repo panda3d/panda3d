@@ -159,7 +159,7 @@ class Interval(DirectObject):
         import EntryScale
         if tl == None:
             tl = Toplevel()
-            tl.title(' Interval Controls')
+            tl.title('Interval Controls')
         outerFrame = Frame(tl)
         self.es = es = EntryScale.EntryScale(
             outerFrame, text = self.getName(),
