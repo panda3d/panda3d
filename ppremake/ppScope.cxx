@@ -1820,7 +1820,7 @@ expand_wordlist(const string &params) {
   tokenize_whitespace(expand_string(tokens[2]), words);
 
   start = max(start, 1);
-  end = min(end, (int)words.size());
+  end = min(end, (int)words.size() + 1);
 
   if (end < start) {
     return string();
