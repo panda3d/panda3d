@@ -155,7 +155,7 @@ ns_play(AudioSound* sound, float start_time, int loop) {
   }
   #ifndef AUDIO_USE_RAD_MSS //[
     sound->get_player()->play_sound(sound->get_sound(), 
-        sound->get_state(), start_time);
+        sound->get_state(), start_time, loop);
     ns_set_loop(sound, loop);
     sound->get_player()->adjust_volume(sound->get_state());
   #else //][

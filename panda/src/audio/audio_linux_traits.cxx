@@ -344,7 +344,7 @@ LinuxSamplePlayer::~LinuxSamplePlayer() {
 
 void LinuxSamplePlayer::play_sound(AudioTraits::SoundClass*,
                                    AudioTraits::PlayingClass* playing,
-                                   float start_time) {
+                                   float start_time, int) {
   initialize();
   LinuxSamplePlaying* lplaying = (LinuxSamplePlaying*)playing;
   if (!AudioManager::get_sfx_active())
@@ -390,7 +390,7 @@ LinuxMusicPlayer::~LinuxMusicPlayer() {
 }
 
 void LinuxMusicPlayer::play_sound(AudioTraits::SoundClass*,
-                                  AudioTraits::PlayingClass*, float) {
+                                  AudioTraits::PlayingClass*, float, int) {
   initialize();
 }
 

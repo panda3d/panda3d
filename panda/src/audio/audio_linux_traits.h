@@ -130,7 +130,7 @@ public:
   virtual ~LinuxSamplePlayer();
 
   virtual void play_sound(AudioTraits::SoundClass*,
-                          AudioTraits::PlayingClass*, float);
+                          AudioTraits::PlayingClass*, float, int);
   virtual void stop_sound(AudioTraits::SoundClass*,
                           AudioTraits::PlayingClass*);
   virtual void set_volume(AudioTraits::PlayingClass*, float);
@@ -148,7 +148,7 @@ public:
   virtual ~LinuxMusicPlayer();
 
   virtual void play_sound(AudioTraits::SoundClass*,
-                          AudioTraits::PlayingClass*, float);
+                          AudioTraits::PlayingClass*, float, int);
   virtual void stop_sound(AudioTraits::SoundClass*,
                           AudioTraits::PlayingClass*);
   virtual void set_volume(AudioTraits::PlayingClass*, float);

@@ -46,11 +46,11 @@ PUBLISHED:
   
   void set_category(Category category) {
     _state->set_category(
-      static_cast<AudioTraits::PlayingClass::Category>(category)
+      (AudioTraits::PlayingClass::Category)(category)
     );
   }
   Category get_category() const {
-    return static_cast<Category>(_state->get_category());
+    return (Category)(_state->get_category());
   }
 
 private:
