@@ -120,7 +120,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             distObj = self.doId2do[doId]
             distObj.generate()
             distObj.updateRequiredFields(cdc, di)
-            distObj.announceGenerate()
+            # updateRequiredFields calls announceGenerate
 
         # Is it in the cache? If so, pull it out, put it in the dictionaries,
         # and update it.
@@ -133,7 +133,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             # and update it.
             distObj.generate()
             distObj.updateRequiredFields(cdc, di)
-            distObj.announceGenerate()
+            # updateRequiredFields calls announceGenerate
 
         # If it is not in the dictionary or the cache, then...
         else:
@@ -148,7 +148,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             distObj.generateInit()  # Only called when constructed
             distObj.generate()
             distObj.updateRequiredFields(cdc, di)
-            distObj.announceGenerate()
+            # updateRequiredFields calls announceGenerate
             
         return distObj
 
@@ -159,7 +159,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             distObj = self.doId2do[doId]
             distObj.generate()
             distObj.updateRequiredOtherFields(cdc, di)
-            distObj.announceGenerate()
+            # updateRequiredOtherFields calls announceGenerate
 
         # Is it in the cache? If so, pull it out, put it in the dictionaries,
         # and update it.
@@ -172,7 +172,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             # and update it.
             distObj.generate()
             distObj.updateRequiredOtherFields(cdc, di)
-            distObj.announceGenerate()
+            # updateRequiredOtherFields calls announceGenerate
 
         # If it is not in the dictionary or the cache, then...
         else:
@@ -189,7 +189,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             distObj.generateInit()  # Only called when constructed
             distObj.generate()
             distObj.updateRequiredOtherFields(cdc, di)
-            distObj.announceGenerate()
+            # updateRequiredOtherFields calls announceGenerate
             
         return distObj
 
