@@ -1,6 +1,7 @@
 from Tkinter import *
 import Pmw
 import Floater
+import EntryScale
 import string
 import tkColorChooser
 
@@ -13,6 +14,7 @@ class VectorEntry(Pmw.MegaWidget):
         DEFAULT_VALUE = [0.0] * kw.get('dim', DEFAULT_DIM)
         DEFAULT_LABELS = map(lambda x: 'v[%d]' % x,
                              range(kw.get('dim', DEFAULT_DIM)))
+        VALUATOR = kw.get('valuatorType', Floater.FloaterGroup)
 
         # Process options
         INITOPT = Pmw.INITOPT
@@ -26,8 +28,9 @@ class VectorEntry(Pmw.MegaWidget):
             ('bd',                  2,              self._updateBorderWidth),
             ('text',                'Vector:',      self._updateText),
             ('min',                 None,           self._updateValidate),
-            ('max',                 None,           self._updateValidate),            
+            ('max',                 None,           self._updateValidate),
             ('significantDigits',   2,              self._setSigDigits),
+            ('valuatorType',        VALUATOR,       None)
             )
         self.defineoptions(kw, optiondefs)
 
@@ -78,15 +81,15 @@ class VectorEntry(Pmw.MegaWidget):
         # ve.configure(floaterGroup_XXX = YYY)
         # ve.configure(fGroup_XXX = YYY) or
         # To set the configuration all floaters in a group use:
-        # ve.configure(Floater_XXX = YYY)
+        # ve.configure(Valuator_XXX = YYY)
         # To configure an individual floater in a group use:
         # ve.configure(floaterGroup_floater0_XXX = YYY) or
         # ve.configure(fGroup_floater0_XXX = YYY)
         self._floaters = self.createcomponent(
             'floaterGroup',
             (('fGroup', 'floaterGroup'),
-             ('Floater', 'floaterGroup_Floater'),), None,
-            Floater.FloaterGroup, (self.interior(),),
+             ('Valuator', 'floaterGroup_Valuator'),), None,
+            self['valuatorType'], (self.interior(),),
             dim = self['dim'], title = self['text'],
             command = self.set)
         # Note: This means the 'X' on the menu bar doesn't really destroy
@@ -135,7 +138,7 @@ class VectorEntry(Pmw.MegaWidget):
     def _setSigDigits(self):
         sd = self['significantDigits']
         self.entryFormat = '%.' + '%d' % sd + 'f'
-        self.configure(Floater_significantDigits = sd)
+        self.configure(Valuator_significantDigits = sd)
         # And refresh value to reflect change
         for index in range(self['dim']):
             self._refreshEntry(index)
@@ -149,8 +152,8 @@ class VectorEntry(Pmw.MegaWidget):
             'minstrict' : 0,
             'maxstrict' : 0})
         # Reflect changes in floaters
-        self.configure(Floater_min = self['min'],
-                       Floater_max = self['max'])            
+        self.configure(Valuator_min = self['min'],
+                       Valuator_max = self['max'])            
 
     def get(self):
         return self._value
@@ -254,11 +257,14 @@ class ColorEntry(VectorEntry):
             ('min',                     0.0,                None),
             ('max',                     255.0,              None),
             ('significantDigits',       0,                  None),
-            ('Floater_resolution',      1.0,                None),
+            ('Valuator_resolution',      1.0,                None),
             )
         self.defineoptions(kw, optiondefs)
+        #kw['valuatorType'] = EntryScale.EntryScaleGroup
+        #kw['dim'] = self['dim']
         # Initialize the superclass, make sure dim makes it to superclass
-        VectorEntry.__init__(self, parent, dim = self['dim'])
+        VectorEntry.__init__(self, parent, dim = self['dim'],
+                             valuatorType = EntryScale.EntryScaleGroup)
         # Add menu item to popup color picker
         self.addMenuItem(
             'Popup color picker',

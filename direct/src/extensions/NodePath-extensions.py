@@ -6,7 +6,7 @@
 
     def id(self):
         """Returns the bottom node's this pointer as a unique id"""
-        return self.node().this
+        return self.getBottomArc()
 
     def getNodePathName(self):
         from PandaModules import *

@@ -7,7 +7,9 @@ from DirectGeometry import *
 import Pmw
 import Dial
 import Floater
+import EntryScale
 import VectorWidgets
+import string
 
 
 class LevelEditor(NodePath, PandaObject):
@@ -23,7 +25,6 @@ class LevelEditor(NodePath, PandaObject):
         self.direct.widget.disableHandles(['x-ring', 'x-disc',
                                            'y-ring', 'y-disc',
                                            'z-post'])
-
 	# Create level editor dictionaries
 	# This dictionary stores information about new objects added
         # to the level
@@ -76,29 +77,21 @@ class LevelEditor(NodePath, PandaObject):
 	map = loader.loadModel('level_editor/toontown_central_layout')
 	map.getBottomArc().setTransition(TransparencyTransition(1))
 	map.setColor(Vec4(1,1,1,.4))
-        map.reparentTo(self.levelMap)
-	map.hide()
         self.mapDictionary['toontownCentral'] = map
 
 	map = loader.loadModel('level_editor/donalds_dock_layout')
 	map.getBottomArc().setTransition(TransparencyTransition(1))
 	map.setColor(Vec4(1,1,1,.4))
-        map.reparentTo(self.levelMap)
-	map.hide()
         self.mapDictionary['donaldsDock'] = map
 
 	map = loader.loadModel('level_editor/minnies_melody_land_layout')
 	map.getBottomArc().setTransition(TransparencyTransition(1))
 	map.setColor(Vec4(1,1,1,.4))
-        map.reparentTo(self.levelMap)
-	map.hide()
         self.mapDictionary['minniesMelodyLand'] = map
 
 	map = loader.loadModel('level_editor/the_burrrgh_layout')
 	map.getBottomArc().setTransition(TransparencyTransition(1))
 	map.setColor(Vec4(1,1,1,.4))
-        map.reparentTo(self.levelMap)
-	map.hide()
         self.mapDictionary['theBurrrgh'] = map
 
 	self.hitPt = Point3(0)
@@ -122,6 +115,8 @@ class LevelEditor(NodePath, PandaObject):
 
 	# Default is to use the toontown central color palette
 	self.editToontownCentral()
+
+        self.panel = LevelEditorPanel(self)
 
 	self.enable()
 
@@ -369,14 +364,17 @@ class LevelEditor(NodePath, PandaObject):
         self.reparentTo(hidden)
 	self.hide()
 	self.grid.ignore('insert')
+        self.ignore('selectedNodePath')
 	self.ignore('preRemoveNodePath')
 	self.ignore('preSelectNodePath')
+        self.ignore('toggleMapViz')
 	self.ignore('setGroupParent')
 	self.ignore('isolateNodePath')
 	self.ignore('reparentNodePath')
 	self.ignore('createNewLevelGroup')
+        self.ignore('setNodePathName')
+        self.ignore('manipulateObjectCleanup')
 	self.ignore('showAll')
-	self.ignore('setNodePathName')
 	self.ignore('p')
 	self.disableManipulation()
 
@@ -410,15 +408,42 @@ class LevelEditor(NodePath, PandaObject):
             'street_sidewalk_dock_tex')
         self.dnaOutputFile = 'donaldsDock-working.dna'
 
+    def editMinniesMelodyLand(self):
+	self.levelMap.setPos(0.0,0.0,0.0)
+        self.showMap('minniesMelodyLand')
+	self.useMinniesMelodyLandColors()
+	self.styleDictionary = (
+            self.attributeDictionary['minniesMelodyLandStyleDictionary'])
+	self.pieMenuDictionary['styleMenu'] = (
+            self.pieMenuDictionary['minniesMelodyLandStyleMenu'])
+	self.attributeDictionary['streetTexture'] = 'street_street_dock_tex'
+	self.attributeDictionary['sidewalkTexture'] = (
+            'street_sidewalk_dock_tex')
+        self.dnaOutputFile = 'minniesMelodyLand-working.dna'
+
+    def editTheBurrrgh(self):
+	self.levelMap.setPos(0.0,0.0,0.0)
+        self.showMap('theBurrrgh')
+	self.useTheBurrrghColors()
+	self.styleDictionary = (
+            self.attributeDictionary['theBurrrghStyleDictionary'])
+	self.pieMenuDictionary['styleMenu'] = (
+            self.pieMenuDictionary['theBurrrghStyleMenu'])
+	self.attributeDictionary['streetTexture'] = 'street_street_dock_tex'
+	self.attributeDictionary['sidewalkTexture'] = (
+            'street_sidewalk_dock_tex')
+        self.dnaOutputFile = 'theBurrrgh-working.dna'
+
     def showMap(self, mapName):
         if self.activeMap:
-            self.activeMap.hide()
+            self.activeMap.reparentTo(hidden)
         self.activeMap = self.mapDictionary[mapName]
-        self.activeMap.show()
+        self.activeMap.reparentTo(self.levelMap)
 
     def enable(self):
         self.reparentTo(render)
 	self.show()
+        self.accept('selectedNodePath', self.selectDNARoot)
 	self.accept('preRemoveNodePath', self.preRemoveNodePath)
 	self.accept('preSelectNodePath', self.preSelectNodePath)
 	self.accept('toggleMapViz', self.toggleMapViz)
@@ -440,35 +465,6 @@ class LevelEditor(NodePath, PandaObject):
 	# Handle mouse events for pie menus
 	self.accept('handleMouse3',self.levelHandleMouse3)
 	self.accept('handleMouse3Up',self.levelHandleMouse3Up)
-
-    def useDonaldsDockColors(self):
-	self.attributeDictionary['wallColors'] = (
-            self.colorPaletteDictionary['donaldsDockWallColors'])
-	self.attributeDictionary['wallColor'] = (
-            self.attributeDictionary['wallColors'][1])
-	self.pieMenuDictionary['wallColorMenu'] = (
-            self.pieMenuDictionary['donaldsDockWallColors'])
-
-	self.attributeDictionary['windowColors'] = (
-            self.colorPaletteDictionary['donaldsDockWindowColors'])
-	self.attributeDictionary['windowColor'] = (
-            self.attributeDictionary['windowColors'][1])
-	self.pieMenuDictionary['windowColorMenu'] = (
-            self.pieMenuDictionary['donaldsDockWindowColors'])
-
-	self.attributeDictionary['doorColors'] = (
-            self.colorPaletteDictionary['donaldsDockDoorColors'])
-	self.attributeDictionary['doorColor'] = (
-            self.attributeDictionary['doorColors'][1])
-	self.pieMenuDictionary['doorColorMenu'] = (
-            self.pieMenuDictionary['donaldsDockDoorColors'])
-
-	self.attributeDictionary['corniceColors'] = (
-            self.colorPaletteDictionary['donaldsDockCorniceColors'])
-	self.attributeDictionary['corniceColor'] = (
-            self.attributeDictionary['corniceColors'][1])
-	self.pieMenuDictionary['corniceColorMenu'] = (
-            self.pieMenuDictionary['donaldsDockCorniceColors'])
 
     def useToontownCentralColors(self):
 	self.attributeDictionary['wallColors'] = (
@@ -499,6 +495,93 @@ class LevelEditor(NodePath, PandaObject):
 	self.pieMenuDictionary['corniceColorMenu'] = (
             self.pieMenuDictionary['toontownCentralCorniceColors'])
 
+    def useDonaldsDockColors(self):
+	self.attributeDictionary['wallColors'] = (
+            self.colorPaletteDictionary['donaldsDockWallColors'])
+	self.attributeDictionary['wallColor'] = (
+            self.attributeDictionary['wallColors'][1])
+	self.pieMenuDictionary['wallColorMenu'] = (
+            self.pieMenuDictionary['donaldsDockWallColors'])
+
+	self.attributeDictionary['windowColors'] = (
+            self.colorPaletteDictionary['donaldsDockWindowColors'])
+	self.attributeDictionary['windowColor'] = (
+            self.attributeDictionary['windowColors'][1])
+	self.pieMenuDictionary['windowColorMenu'] = (
+            self.pieMenuDictionary['donaldsDockWindowColors'])
+
+	self.attributeDictionary['doorColors'] = (
+            self.colorPaletteDictionary['donaldsDockDoorColors'])
+	self.attributeDictionary['doorColor'] = (
+            self.attributeDictionary['doorColors'][1])
+	self.pieMenuDictionary['doorColorMenu'] = (
+            self.pieMenuDictionary['donaldsDockDoorColors'])
+
+	self.attributeDictionary['corniceColors'] = (
+            self.colorPaletteDictionary['donaldsDockCorniceColors'])
+	self.attributeDictionary['corniceColor'] = (
+            self.attributeDictionary['corniceColors'][1])
+	self.pieMenuDictionary['corniceColorMenu'] = (
+            self.pieMenuDictionary['donaldsDockCorniceColors'])
+
+    def useTheBurrrghColors(self):
+	self.attributeDictionary['wallColors'] = (
+            self.colorPaletteDictionary['theBurrrghWallColors'])
+	self.attributeDictionary['wallColor'] = (
+            self.attributeDictionary['wallColors'][1])
+	self.pieMenuDictionary['wallColorMenu'] = (
+            self.pieMenuDictionary['theBurrrghWallColors'])
+
+	self.attributeDictionary['windowColors'] = (
+            self.colorPaletteDictionary['theBurrrghWindowColors'])
+	self.attributeDictionary['windowColor'] = (
+            self.attributeDictionary['windowColors'][1])
+	self.pieMenuDictionary['windowColorMenu'] = (
+            self.pieMenuDictionary['theBurrrghWindowColors'])
+
+	self.attributeDictionary['doorColors'] = (
+            self.colorPaletteDictionary['theBurrrghDoorColors'])
+	self.attributeDictionary['doorColor'] = (
+            self.attributeDictionary['doorColors'][1])
+	self.pieMenuDictionary['doorColorMenu'] = (
+            self.pieMenuDictionary['theBurrrghDoorColors'])
+
+	self.attributeDictionary['corniceColors'] = (
+            self.colorPaletteDictionary['theBurrrghCorniceColors'])
+	self.attributeDictionary['corniceColor'] = (
+            self.attributeDictionary['corniceColors'][1])
+	self.pieMenuDictionary['corniceColorMenu'] = (
+            self.pieMenuDictionary['theBurrrghCorniceColors'])
+
+    def useMinniesMelodyLandColors(self):
+	self.attributeDictionary['wallColors'] = (
+            self.colorPaletteDictionary['minniesMelodyLandWallColors'])
+	self.attributeDictionary['wallColor'] = (
+            self.attributeDictionary['wallColors'][1])
+	self.pieMenuDictionary['wallColorMenu'] = (
+            self.pieMenuDictionary['minniesMelodyLandWallColors'])
+
+	self.attributeDictionary['windowColors'] = (
+            self.colorPaletteDictionary['minniesMelodyLandWindowColors'])
+	self.attributeDictionary['windowColor'] = (
+            self.attributeDictionary['windowColors'][1])
+	self.pieMenuDictionary['windowColorMenu'] = (
+            self.pieMenuDictionary['minniesMelodyLandWindowColors'])
+
+	self.attributeDictionary['doorColors'] = (
+            self.colorPaletteDictionary['minniesMelodyLandDoorColors'])
+	self.attributeDictionary['doorColor'] = (
+            self.attributeDictionary['doorColors'][1])
+	self.pieMenuDictionary['doorColorMenu'] = (
+            self.pieMenuDictionary['minniesMelodyLandDoorColors'])
+
+	self.attributeDictionary['corniceColors'] = (
+            self.colorPaletteDictionary['minniesMelodyLandCorniceColors'])
+	self.attributeDictionary['corniceColor'] = (
+            self.attributeDictionary['corniceColors'][1])
+	self.pieMenuDictionary['corniceColorMenu'] = (
+            self.pieMenuDictionary['minniesMelodyLandCorniceColors'])
+
     def addCollisionSphere(self):
 	sphere = self.vizRegion.attachNewNode(NamedNode('vizSphere'))
 	instance = self.vizSphere.instanceTo(sphere)
@@ -527,6 +610,25 @@ class LevelEditor(NodePath, PandaObject):
 	render.hideCollisionSolids()
 	aNodePath.hideSiblings()
 
+    def selectDNARoot(self, aNodePath):
+        # If this isn't a root object see if one exists above it
+        if (aNodePath.getNodePathName()[-8:] != '_DNARoot'):
+            dnaRoot = self.getDNARoot(aNodePath)
+            # Is this a DNA object?
+            if dnaRoot:
+                # Yes! Select root
+                self.direct.select(dnaRoot)
+
+    def getDNARoot(self, aNodePath):
+        if ((aNodePath.node() == render.node()) |
+            (aNodePath.node() == hidden.node())):
+            return 0
+        name = aNodePath.getNodePathName()
+        if (name[-8:] == '_DNARoot'):
+            return aNodePath
+        else:
+            return self.getDNARoot(aNodePath.getParent())
+
     def updateSelectedPose(self):
 	# Move grid to line up with object
         for selectedNode in self.direct.selected:
@@ -541,9 +643,11 @@ class LevelEditor(NodePath, PandaObject):
                 selectedNode.setH(self.grid, self.lastAngle)
                 # Update DNA
                 self.updateDNAPosHpr(selectedNode)
-                
-        # Position grid for placing next object
-        self.autoPositionGrid()
+
+                # If this node is the last selected reposition grid
+                if selectedNode == self.direct.selected.last:
+                    # Position grid for placing next object
+                    self.autoPositionGrid()
                 
     def levelHandleMouse3(self):
 	# If nothing selected, just return
@@ -587,8 +691,11 @@ class LevelEditor(NodePath, PandaObject):
                             selectedWall = (
                                 self.getWall(selectedObjectDNA, wallNum))
                             # Default is wall type menu
-                            menuType = 'wall'
+                            menuType = 'style'
                             target = selectedWall
+                            # If shift, switch wall texture
+                            if self.direct.fShift:
+                                menuType = 'wall'
                             # If alt, switch to wall orientation menu
                             if self.direct.fAlt:
                                 menuType = 'orientation'
@@ -622,11 +729,9 @@ class LevelEditor(NodePath, PandaObject):
                     elif menuMode == 'misc':
                         menuType = 'wallWidth'
                         target =  selectedObjectDNA
-                        if ((wallNum != -1) & (self.direct.fAlt)):
-                            menuType = 'style'
-                            target = self.getWall(selectedObjectDNA,wallNum)
                     else:
                         target = None
+                        
             elif objClass.eq(DNALandmarkBuilding.getClassType()):
                 menuType = 'door'
                 target = self.getDoor(selectedObjectDNA)
@@ -639,6 +744,7 @@ class LevelEditor(NodePath, PandaObject):
                 target = selectedObjectDNA
                 if self.direct.fControl:
                     menuType = 'propColor'
+            
             # Now spawn apropriate menu task
             if ((target != None) | (menuType == 'cornice')):
                 self.spawnMenuTask(menuType, target)
@@ -684,14 +790,22 @@ class LevelEditor(NodePath, PandaObject):
 
     def showGrid(self,flag):
         if flag:
-            self.grid.show()
+            self.grid.enable()
         else:
-            self.grid.hide()
+            self.grid.disable()
             
     def spawnMenuTask(self, menu, aDNAObject):
 	# Record the starting window code and targetDNAObject
 	# This will be used by pieMenu action selector
 	self.targetDNAObject = aDNAObject
+        # Update panel's color if appropriate
+        if aDNAObject:
+            targetClass = self.targetDNAObject.__class__.getClassType()
+            if ((targetClass.eq(DNAWall.getClassType())) |
+                (targetClass.eq(DNAWindows.getClassType())) |
+                (targetClass.eq(DNACornice.getClassType()))):
+                self.panel.setCurrentColor(self.targetDNAObject.getColor())
+        
 	# What kind of menu is it?
         if menu == 'wall':
             self.activeMenu = self.pieMenuDictionary['wallMenu']
@@ -760,9 +874,9 @@ class LevelEditor(NodePath, PandaObject):
 
     def toggleMapViz(self, flag):
         if flag:
-            self.levelMap.show()
+            self.levelMap.reparentTo(self)
         else:
-            self.levelMap.hide()
+            self.levelMap.reparentTo(hidden)
 
     def setXyzSnap(self, flag):
         self.grid.setXyzSnap(flag)
@@ -956,6 +1070,123 @@ class LevelEditor(NodePath, PandaObject):
            VBase4((27.0/255.0), (203.0/255.0), (56.0/255.0), 1.0),
            VBase4((53.0/255.0), (185.0/255.0), (78.0/255.0), 1.0)
            ])
+
+        self.createColorMenu('theBurrrghWallColors', [
+           VBase4((106.0/255.0), (63.0/255.0), (63.0/255.0), 1.0),
+           VBase4((160.0/255.0), (120.0/255.0), (60.0/255.0), 1.0),
+           VBase4((162.0/255.0), (61.0/255.0), (81.0/255.0), 1.0),
+           VBase4((182.0/255.0), (126.0/255.0), (88.0/255.0), 1.0),
+           VBase4((192.0/255.0), (115.0/255.0), (114.0/255.0), 1.0),
+           VBase4((206.0/255.0), (122.0/255.0), (122.0/255.0), 1.0),
+           VBase4((222.0/255.0), (176.0/255.0), (108.0/255.0), 1.0),
+           VBase4((236.0/255.0), (39.0/255.0), (39.0/255.0), 1.0),
+           VBase4((43.0/255.0), (116.0/255.0), (58.0/255.0), 1.0),
+           VBase4((92.0/255.0), (116.0/255.0), (56.0/255.0), 1.0)
+           ])
+
+        self.createColorMenu('theBurrrghWindowColors', [
+           VBase4((0.0/255.0), (156.0/255.0), (93.0/255.0), 1.0),
+           VBase4((164.0/255.0), (238.0/255.0), (116.0/255.0), 1.0),
+           VBase4((202.0/255.0), (120.0/255.0), (120.0/255.0), 1.0),
+           VBase4((210.0/255.0), (210.0/255.0), (102.0/255.0), 1.0),
+           VBase4((224.0/255.0), (109.0/255.0), (109.0/255.0), 1.0),
+           VBase4((232.0/255.0), (87.0/255.0), (116.0/255.0), 1.0),
+           VBase4((255.0/255.0), (128.0/255.0), (96.0/255.0), 1.0)
+           ])
+
+        self.createColorMenu('theBurrrghDoorColors', [
+           VBase4((115.0/255.0), (136.0/255.0), (115.0/255.0), 1.0),
+           VBase4((132.0/255.0), (156.0/255.0), (132.0/255.0), 1.0),
+           VBase4((152.0/255.0), (172.0/255.0), (138.0/255.0), 1.0),
+           VBase4((202.0/255.0), (120.0/255.0), (120.0/255.0), 1.0),
+           VBase4((220.0/255.0), (123.0/255.0), (59.0/255.0), 1.0),
+           VBase4((224.0/255.0), (109.0/255.0), (109.0/255.0), 1.0),
+           VBase4((232.0/255.0), (87.0/255.0), (87.0/255.0), 1.0),
+           VBase4((255.0/255.0), (151.0/255.0), (151.0/255.0), 1.0)
+           ])
+
+        self.createColorMenu('theBurrrghCorniceColors', [
+           VBase4((146.0/255.0), (98.0/255.0), (86.0/255.0), 1.0),
+           VBase4((151.0/255.0), (255.0/255.0), (234.0/255.0), 1.0),
+           VBase4((192.0/255.0), (114.0/255.0), (114.0/255.0), 1.0),
+           VBase4((194.0/255.0), (145.0/255.0), (73.0/255.0), 1.0),
+           VBase4((240.0/255.0), (182.0/255.0), (168.0/255.0), 1.0),
+           VBase4((193.0/255.0), (187.0/255.0), (163.0/255.0), 1.0),
+           VBase4((208.0/255.0), (232.0/255.0), (113.0/255.0), 1.0),
+           VBase4((230.0/255.0), (144.0/255.0), (86.0/255.0), 1.0),
+           VBase4((232.0/255.0), (137.0/255.0), (112.0/255.0), 1.0),
+           VBase4((232.0/255.0), (160.0/255.0), (113.0/255.0), 1.0),
+           VBase4((240.0/255.0), (90.0/255.0), (90.0/255.0), 1.0),
+           VBase4((254.0/255.0), (176.0/255.0), (124.0/255.0), 1.0),
+           VBase4((255.0/255.0), (106.0/255.0), (69.0/255.0), 1.0),
+           VBase4((255.0/255.0), (180.0/255.0), (69.0/255.0), 1.0),
+           VBase4((255.0/255.0), (213.0/255.0), (151.0/255.0), 1.0),
+           VBase4((255.0/255.0), (225.0/255.0), (205.0/255.0), 1.0),
+           VBase4((255.0/255.0), (234.0/255.0), (151.0/255.0), 1.0),
+           VBase4((255.0/255.0), (255.0/255.0), (151.0/255.0), 1.0),
+           VBase4((55.0/255.0), (244.0/255.0), (70.0/255.0), 1.0),
+           VBase4((27.0/255.0), (203.0/255.0), (56.0/255.0), 1.0),
+           VBase4((53.0/255.0), (185.0/255.0), (78.0/255.0), 1.0)
+           ])
+
+        self.createColorMenu('minniesMelodyLandWallColors', [
+           VBase4((106.0/255.0), (63.0/255.0), (63.0/255.0), 1.0),
+           VBase4((160.0/255.0), (120.0/255.0), (60.0/255.0), 1.0),
+           VBase4((162.0/255.0), (61.0/255.0), (81.0/255.0), 1.0),
+           VBase4((182.0/255.0), (126.0/255.0), (88.0/255.0), 1.0),
+           VBase4((192.0/255.0), (115.0/255.0), (114.0/255.0), 1.0),
+           VBase4((206.0/255.0), (122.0/255.0), (122.0/255.0), 1.0),
+           VBase4((222.0/255.0), (176.0/255.0), (108.0/255.0), 1.0),
+           VBase4((236.0/255.0), (39.0/255.0), (39.0/255.0), 1.0),
+           VBase4((43.0/255.0), (116.0/255.0), (58.0/255.0), 1.0),
+           VBase4((92.0/255.0), (116.0/255.0), (56.0/255.0), 1.0)
+           ])
+
+        self.createColorMenu('minniesMelodyLandWindowColors', [
+           VBase4((0.0/255.0), (156.0/255.0), (93.0/255.0), 1.0),
+           VBase4((164.0/255.0), (238.0/255.0), (116.0/255.0), 1.0),
+           VBase4((202.0/255.0), (120.0/255.0), (120.0/255.0), 1.0),
+           VBase4((210.0/255.0), (210.0/255.0), (102.0/255.0), 1.0),
+           VBase4((224.0/255.0), (109.0/255.0), (109.0/255.0), 1.0),
+           VBase4((232.0/255.0), (87.0/255.0), (116.0/255.0), 1.0),
+           VBase4((255.0/255.0), (128.0/255.0), (96.0/255.0), 1.0)
+           ])
+
+        self.createColorMenu('minniesMelodyLandDoorColors', [
+           VBase4((115.0/255.0), (136.0/255.0), (115.0/255.0), 1.0),
+           VBase4((132.0/255.0), (156.0/255.0), (132.0/255.0), 1.0),
+           VBase4((152.0/255.0), (172.0/255.0), (138.0/255.0), 1.0),
+           VBase4((202.0/255.0), (120.0/255.0), (120.0/255.0), 1.0),
+           VBase4((220.0/255.0), (123.0/255.0), (59.0/255.0), 1.0),
+           VBase4((224.0/255.0), (109.0/255.0), (109.0/255.0), 1.0),
+           VBase4((232.0/255.0), (87.0/255.0), (87.0/255.0), 1.0),
+           VBase4((255.0/255.0), (151.0/255.0), (151.0/255.0), 1.0)
+           ])
+
+        self.createColorMenu('minniesMelodyLandCorniceColors', [
+           VBase4((146.0/255.0), (98.0/255.0), (86.0/255.0), 1.0),
+           VBase4((151.0/255.0), (255.0/255.0), (234.0/255.0), 1.0),
+           VBase4((192.0/255.0), (114.0/255.0), (114.0/255.0), 1.0),
+           VBase4((194.0/255.0), (145.0/255.0), (73.0/255.0), 1.0),
+           VBase4((240.0/255.0), (182.0/255.0), (168.0/255.0), 1.0),
+           VBase4((193.0/255.0), (187.0/255.0), (163.0/255.0), 1.0),
+           VBase4((208.0/255.0), (232.0/255.0), (113.0/255.0), 1.0),
+           VBase4((230.0/255.0), (144.0/255.0), (86.0/255.0), 1.0),
+           VBase4((232.0/255.0), (137.0/255.0), (112.0/255.0), 1.0),
+           VBase4((232.0/255.0), (160.0/255.0), (113.0/255.0), 1.0),
+           VBase4((240.0/255.0), (90.0/255.0), (90.0/255.0), 1.0),
+           VBase4((254.0/255.0), (176.0/255.0), (124.0/255.0), 1.0),
+           VBase4((255.0/255.0), (106.0/255.0), (69.0/255.0), 1.0),
+           VBase4((255.0/255.0), (180.0/255.0), (69.0/255.0), 1.0),
+           VBase4((255.0/255.0), (213.0/255.0), (151.0/255.0), 1.0),
+           VBase4((255.0/255.0), (225.0/255.0), (205.0/255.0), 1.0),
+           VBase4((255.0/255.0), (234.0/255.0), (151.0/255.0), 1.0),
+           VBase4((255.0/255.0), (255.0/255.0), (151.0/255.0), 1.0),
+           VBase4((55.0/255.0), (244.0/255.0), (70.0/255.0), 1.0),
+           VBase4((27.0/255.0), (203.0/255.0), (56.0/255.0), 1.0),
+           VBase4((53.0/255.0), (185.0/255.0), (78.0/255.0), 1.0)
+           ])
+
         # Use the toontown color set
         self.useToontownCentralColors()
 
@@ -1111,43 +1342,33 @@ class LevelEditor(NodePath, PandaObject):
 
 	return newPropTypeMenu
 
-    def createStyleMenu(self):
-	numberNodes = []
-        for i in range(13):
-            node = OnscreenText(`i`,0,0)
-            numberNodes.append(node)
-	numItems = len(numberNodes)
-
-	newStyleMenu = hidden.attachNewNode(NamedNode('styleMenu'))
-
-	radius = 0.7
-	angle = deg2Rad(360.0/numItems)
-        for i in range(numItems):
-            # Get the node
-            node = numberNodes[i]
-            node.setScale(node.getScale()* 4.0)
-                          
-            # Reposition it
-            node.setXY(radius * math.cos(i * angle),
-                       (radius *
-                        (self.direct.chan.width/
-                         float(self.direct.chan.height)) *
-                        math.sin(i * angle)))
-
-            # Add it to the styleMenu
-            node.reparentTo(newStyleMenu)
-
-	# Scale the whole shebang down by 0.5
-	newStyleMenu.setScale(0.5)
-
-	return newStyleMenu
+    def createStyleSample(self, style, num):
+        # Create a wall
+        wall = DNAWall('wall')
+	wall.setCode(self.dnaStore.findCode(style['wallTexture']))
+	wall.setColor(style['wallColor'])
+        wall.setHeight(10.0)
+        # Add its windows
+	windows = DNAWindows('windows')
+        windows.setWindowCount(2)
+        windows.setCode(self.dnaStore.findCode(style['windowTexture']))
+        windows.setColor(style['windowColor'])
+        wall.add(windows)
+        # And a cornice if necessary
+        corniceTexture = style['corniceTexture']
+        if corniceTexture:
+            cornice = DNACornice('cornice')
+            cornice.setCode(self.getDNACode(corniceTexture))
+            cornice.setColor(style['corniceColor'])
+            wall.add(cornice)
+        # The final building
+        bldg = DNAFlatBuilding('style' + `num`)
+        bldg.add(wall)
+        bldg.setWidth(12.0)
+        return bldg.traverse(hidden, self.dnaStore)
 
     def createStyleMenuWith(self, dictionary):
-	numberNodes = []
 	numItems = len(dictionary)
-        for i in range(numItems):
-            node = OnscreenText(`i`,0,0)
-            numberNodes.append(node)
 
 	newStyleMenu = hidden.attachNewNode(NamedNode('styleMenu'))
 
@@ -1155,15 +1376,16 @@ class LevelEditor(NodePath, PandaObject):
 	angle = deg2Rad(360.0/numItems)
         for i in range(numItems):
             # Get the node
-            node = numberNodes[i]
-            node.setScale(node.getScale()* 3.0)
+            node = self.createStyleSample(dictionary[i], i)
+            node.setScale(0.03)
 	
             # Reposition it
-            node.setXY(radius * math.cos(i * angle),
-                       (radius *
-                        (self.direct.chan.width/
-                         float(self.direct.chan.height)) *
-                        math.sin(i * angle)))
+            node.setPos(radius * math.cos(i * angle),
+                        0.0,
+                        (radius *
+                         (self.direct.chan.width/
+                          float(self.direct.chan.height)) *
+                         math.sin(i * angle)))
 
             # Add it to the styleMenu
             node.reparentTo(newStyleMenu)
@@ -1223,9 +1445,10 @@ class LevelEditor(NodePath, PandaObject):
 
     def createWallWidthMenu(self):
 	numberNodes = []
-        widths = [5, 10, 15, 15.6, 20, 20.7, 25]
-        for width in widths:
-            node = OnscreenText(`width`,0,0)
+        self.wallWidths = [5, 10, 15, 15.607, 20, 20.706, 25]
+        widthsAsText = ['5', '10', '15', '15.6', '20', '20.7', '25']
+        for width in widthsAsText:
+            node = OnscreenText(width,0,0)
             numberNodes.append(node)
         numItems = len(numberNodes)
 
@@ -1285,8 +1508,6 @@ class LevelEditor(NodePath, PandaObject):
     def initializeDonaldsDockStyleDictionary(self):
 	dictionary = {}
 	styleCount = 0
-
-        styleCount = styleCount + 1
         self.addStyle(dictionary, styleCount,
                       'wall_md_blank_ur',
                       Vec4(0.417323, 0.15711, 0.15711, 1.0),
@@ -1370,6 +1591,178 @@ class LevelEditor(NodePath, PandaObject):
 	# Store this dictionary in the self.attributeDictionary
 	self.attributeDictionary['donaldsDockStyleDictionary'] = dictionary
 
+    def initializeTheBurrrghStyleDictionary(self):
+	dictionary = {}
+	styleCount = 0
+        self.addStyle(dictionary, styleCount,
+                      'wall_md_blank_ur',
+                      Vec4(0.417323, 0.15711, 0.15711, 1.0),
+                      'window_sm_square_ur',
+                      Vec4(0.874016, 0.654655, 0.329041, 1.0),
+                      'cornice_marble_ur',
+                      Vec4(0.76378, 0.572086, 0.287541, 1.0))
+        
+        styleCount = styleCount + 1
+        self.addStyle(dictionary, styleCount,
+                      'wall_sm_wood_ur',
+                      Vec4(0.874016, 0.610097, 0.610097, 1.0),
+                      'window_sm_shuttered_ur',
+                      Vec4(0.874016, 0.548402, 0.329041, 1.0),
+                      None,
+                      None)
+
+        styleCount = styleCount + 1
+        self.addStyle(dictionary, styleCount,
+                      'wall_sm_wood_ur',
+                      Vec4(0.913386, 0.540868, 0.540868, 1.0),
+                      'window_porthole_ur',
+                      Vec4(0.0778138, 0.472441, 0.314961, 1.0),
+                      'cornice_horizontal_ur',
+                      Vec4(1.0, 0.501961, 0.376471, 1.0))
+        
+        styleCount = styleCount + 1
+        self.addStyle(dictionary, styleCount,
+                      'wall_sm_wood_ur',
+                      Vec4(0.913386, 0.540868, 0.540868, 1.0),
+                      'window_porthole_ur',
+                      Vec4(0.0778138, 0.472441, 0.314961, 1.0),
+                      'cornice_shingles_ur',
+                      Vec4(0.732283, 0.511163, 0.511163, 1.0))
+
+        styleCount = styleCount + 1
+        self.addStyle(dictionary, styleCount,
+                      'wall_md_blank_ur',
+                      Vec4(0.384314, 0.305635, 0.187618, 1.0),
+                      'window_sm_round_ur',
+                      Vec4(0.779528, 0.489115, 0.293469, 1.0),
+                      'cornice_dental_ur',
+                      Vec4(0.574803, 0.38771, 0.340374, 1.0))
+        
+        styleCount = styleCount + 1
+        self.addStyle(dictionary, styleCount,
+                      'wall_bricks_dr',
+                      Vec4(0.629921, 0.471823, 0.237147, 1.0),
+                      'window_sm_shuttered_ur',
+                      Vec4(1.0, 0.627451, 0.376471, 1.0),
+                      None,
+                      None)
+        
+        styleCount = styleCount + 1
+        self.addStyle(dictionary, styleCount,
+                      'wall_md_board_ur',
+                      Vec4(0.929134, 0.153034, 0.153034, 1.0),
+                      'window_porthole_ur',
+                      Vec4(0.0, 0.532747, 0.317894, 1.0),
+                      'cornice_shingles_ur',
+                      Vec4(0.944882, 0.715146, 0.659565, 1.0))
+
+        styleCount = styleCount + 1
+        self.addStyle(dictionary, styleCount,
+                      'wall_lg_brick_ur',
+                      Vec4(0.166003, 0.440945, 0.276671, 1.0),
+                      'window_md_curtains_ur',
+                      Vec4(0.17258, 0.637795, 0.450208, 1.0),
+                      None,
+                      None)
+
+        styleCount = styleCount + 1
+        self.addStyle(dictionary, styleCount,
+                      'wall_md_board_ur',
+                      Vec4(0.929134, 0.153034, 0.153034, 1.0),
+                      'window_porthole_ur',
+                      Vec4(0.0, 0.532747, 0.317894, 1.0),
+                      None,
+                      None)
+
+	# Store this dictionary in the self.attributeDictionary
+	self.attributeDictionary['theBurrrghStyleDictionary'] = dictionary
+
+    def initializeMinniesMelodyLandStyleDictionary(self):
+	dictionary = {}
+	styleCount = 0
+        self.addStyle(dictionary, styleCount,
+                      'wall_md_blank_ur',
+                      Vec4(0.417323, 0.15711, 0.15711, 1.0),
+                      'window_sm_square_ur',
+                      Vec4(0.874016, 0.654655, 0.329041, 1.0),
+                      'cornice_marble_ur',
+                      Vec4(0.76378, 0.572086, 0.287541, 1.0))
+        
+        styleCount = styleCount + 1
+        self.addStyle(dictionary, styleCount,
+                      'wall_sm_wood_ur',
+                      Vec4(0.874016, 0.610097, 0.610097, 1.0),
+                      'window_sm_shuttered_ur',
+                      Vec4(0.874016, 0.548402, 0.329041, 1.0),
+                      None,
+                      None)
+
+        styleCount = styleCount + 1
+        self.addStyle(dictionary, styleCount,
+                      'wall_sm_wood_ur',
+                      Vec4(0.913386, 0.540868, 0.540868, 1.0),
+                      'window_porthole_ur',
+                      Vec4(0.0778138, 0.472441, 0.314961, 1.0),
+                      'cornice_horizontal_ur',
+                      Vec4(1.0, 0.501961, 0.376471, 1.0))
+        
+        styleCount = styleCount + 1
+        self.addStyle(dictionary, styleCount,
+                      'wall_sm_wood_ur',
+                      Vec4(0.913386, 0.540868, 0.540868, 1.0),
+                      'window_porthole_ur',
+                      Vec4(0.0778138, 0.472441, 0.314961, 1.0),
+                      'cornice_shingles_ur',
+                      Vec4(0.732283, 0.511163, 0.511163, 1.0))
+
+        styleCount = styleCount + 1
+        self.addStyle(dictionary, styleCount,
+                      'wall_md_blank_ur',
+                      Vec4(0.384314, 0.305635, 0.187618, 1.0),
+                      'window_sm_round_ur',
+                      Vec4(0.779528, 0.489115, 0.293469, 1.0),
+                      'cornice_dental_ur',
+                      Vec4(0.574803, 0.38771, 0.340374, 1.0))
+        
+        styleCount = styleCount + 1
+        self.addStyle(dictionary, styleCount,
+                      'wall_bricks_dr',
+                      Vec4(0.629921, 0.471823, 0.237147, 1.0),
+                      'window_sm_shuttered_ur',
+                      Vec4(1.0, 0.627451, 0.376471, 1.0),
+                      None,
+                      None)
+        
+        styleCount = styleCount + 1
+        self.addStyle(dictionary, styleCount,
+                      'wall_md_board_ur',
+                      Vec4(0.929134, 0.153034, 0.153034, 1.0),
+                      'window_porthole_ur',
+                      Vec4(0.0, 0.532747, 0.317894, 1.0),
+                      'cornice_shingles_ur',
+                      Vec4(0.944882, 0.715146, 0.659565, 1.0))
+
+        styleCount = styleCount + 1
+        self.addStyle(dictionary, styleCount,
+                      'wall_lg_brick_ur',
+                      Vec4(0.166003, 0.440945, 0.276671, 1.0),
+                      'window_md_curtains_ur',
+                      Vec4(0.17258, 0.637795, 0.450208, 1.0),
+                      None,
+                      None)
+
+        styleCount = styleCount + 1
+        self.addStyle(dictionary, styleCount,
+                      'wall_md_board_ur',
+                      Vec4(0.929134, 0.153034, 0.153034, 1.0),
+                      'window_porthole_ur',
+                      Vec4(0.0, 0.532747, 0.317894, 1.0),
+                      None,
+                      None)
+
+	# Store this dictionary in the self.attributeDictionary
+	self.attributeDictionary['minniesMelodyLandStyleDictionary'] = dictionary
+
     def initializePieMenus(self):
 	# Clear out any old menus just in case
         for key in self.pieMenuDictionary.keys():
@@ -1424,6 +1817,14 @@ class LevelEditor(NodePath, PandaObject):
             PieMenu(self.direct,self.createStyleMenuWith(
             self.attributeDictionary['donaldsDockStyleDictionary']),
                     self.updateWallStyleNum))
+	self.pieMenuDictionary['theBurrrghStyleMenu'] = (
+            PieMenu(self.direct,self.createStyleMenuWith(
+            self.attributeDictionary['theBurrrghStyleDictionary']),
+                    self.updateWallStyleNum))
+	self.pieMenuDictionary['minniesMelodyLandStyleMenu'] = (
+            PieMenu(self.direct,self.createStyleMenuWith(
+            self.attributeDictionary['minniesMelodyLandStyleDictionary']),
+                    self.updateWallStyleNum))
 	self.pieMenuDictionary['styleMenu'] = (
             self.pieMenuDictionary['toontownCentralStyleMenu'])
 	# Create several differnt color palette menus
@@ -1432,6 +1833,8 @@ class LevelEditor(NodePath, PandaObject):
     def initializeStyleDictionary(self):
 	self.initializeToontownCentralStyleDictionary()
 	self.initializeDonaldsDockStyleDictionary()
+	self.initializeTheBurrrghStyleDictionary()
+	self.initializeMinniesMelodyLandStyleDictionary()
 	self.styleDictionary = (
             self.attributeDictionary['toontownCentralStyleDictionary'])
 
@@ -1439,8 +1842,6 @@ class LevelEditor(NodePath, PandaObject):
 
 	dictionary = {}
 	styleCount = 0
-
-        styleCount = styleCount + 1
 	self.addStyle(dictionary, styleCount,
                       'wall_md_pillars_ur',
                       Vec4(1.0, 0.917, 0.592, 1.0 ),
@@ -1602,7 +2003,8 @@ class LevelEditor(NodePath, PandaObject):
 
     def addFlatBuilding(self, buildingType):
 	# Create new building
-	newDNAFlatBuilding = DNAFlatBuilding(buildingType)
+	#newDNAFlatBuilding = DNAFlatBuilding(buildingType + '_DNARoot')
+        newDNAFlatBuilding = DNAFlatBuilding(buildingType)
 
 	# Select walls
         if buildingType == 'random20':
@@ -1653,7 +2055,8 @@ class LevelEditor(NodePath, PandaObject):
                                    self.addFlatBuilding)
 
     def addLandmark(self, landmarkType):
-	newDNALandmarkBuilding = DNALandmarkBuilding(landmarkType)
+	#newDNALandmarkBuilding = DNALandmarkBuilding(landmarkType + '_DNARoot')
+        newDNALandmarkBuilding = DNALandmarkBuilding(landmarkType)
 	newDNALandmarkBuilding.setCode(self.getDNACode(landmarkType))
 	newDNALandmarkBuilding.setPos(VBase3(0))
 	newDNALandmarkBuilding.setHpr(VBase3(0))
@@ -1671,7 +2074,8 @@ class LevelEditor(NodePath, PandaObject):
         return objectDictionary
 
     def addProp(self, newPropType):
-	newDNAProp = DNAProp(newPropType)
+	#newDNAProp = DNAProp(newPropType + '_DNARoot')
+        newDNAProp = DNAProp(newPropType)
 	newDNAProp.setCode(self.getDNACode(newPropType))
 	newDNAProp.setPos(VBase3(0))
 	newDNAProp.setHpr(VBase3(0))
@@ -1680,7 +2084,8 @@ class LevelEditor(NodePath, PandaObject):
 	self.setPropType(newPropType)
 
     def addStreetModule(self, streetType):
-	newDNAStreet = DNAStreet(streetType)
+	#newDNAStreet = DNAStreet(streetType + '_DNARoot')
+        newDNAStreet = DNAStreet(streetType)
 	newDNAStreet.setCode(self.getDNACode(streetType))
 	newDNAStreet.setPos(VBase3(0))
 	newDNAStreet.setHpr(VBase3(0))
@@ -1958,6 +2363,8 @@ class LevelEditor(NodePath, PandaObject):
         if (dnaGroup.__class__.getClassType().eq(DNAFlatBuilding.getClassType())):
             dnaGroup.setWidth(self.getWallWidth())
 	newNodePath = dnaGroup.traverse(parent,self.dnaStore)
+        newNodePath.node().setName(newNodePath.node().getName() + '_DNARoot')
+        
 	# Add it to the level dictionary
 	self.addObject(newNodePath, dnaGroup)
 	# Add it to the top level DNA Group
@@ -1984,7 +2391,7 @@ class LevelEditor(NodePath, PandaObject):
         if dnaGroup.__class__.getClassType().eq(DNAFlatBuilding.getClassType()):
             dnaGroup.setWidth(self.getWallWidth())
 	newNodePath = dnaGroup.traverse(parent, self.dnaStore)
-        
+        newNodePath.node().setName(newNodePath.node().getName() + '_DNARoot')        
 	# Add it to the level dictionary
 	self.addObject(newNodePath, dnaGroup)
         
@@ -2171,6 +2578,7 @@ class LevelEditor(NodePath, PandaObject):
 
 	# Traverse the dna to create the new node path
 	newNodePath = dnaGroup.traverse(parent, self.dnaStore)
+        newNodePath.node().setName(newNodePath.node().getName() + '_DNARoot')
 	self.selectNodePath(newNodePath)
 
 	# Add it to the levelObjects dictionary
@@ -2189,6 +2597,7 @@ class LevelEditor(NodePath, PandaObject):
 
 	# Traverse the dna to create the new node path
 	newNodePath = dnaGroup.traverse(parent, self.dnaStore)
+        newNodePath.node().setName(newNodePath.node().getName() + '_DNARoot')
 	self.selectNodePath(newNodePath)
 
 	# Add it to the levelObjects dictionary
@@ -2236,25 +2645,22 @@ class LevelEditor(NodePath, PandaObject):
             # Set style of each child
             child = aDNAFlatBuilding.at(i)
             if child.__class__.getClassType().eq(DNAWall.getClassType()):
-                self.setWallStyle(child, style)
                 if randint(0,100) < 40:
                     style = self.getRandomStyle()
+                self.setWallStyle(child, style)
 
-	# Randomly add cornice
-        if randint(0,100) < 40:
+        # Using the style of the last wall:
+        if not style['corniceTexture']:
             self.removeCornices(aDNAFlatBuilding)
         else:
-            if not style['corniceTexture']:
-                self.removeCornices(aDNAFlatBuilding)
-            else:
-                aDNACornice = self.getCornice(aDNAFlatBuilding)
-                if not aDNACornice:
-                    aDNACornice = DNACornice()
-                    aDNACornice.setCode(
-                        self.dnaStore.findCode(style['corniceTexture']))
-                    aDNACornice.setColor(style['corniceColor'])
-                    lastWall = self.getLastWall(aDNAFlatBuilding)
-                    lastWall.add(aDNACornice)
+            aDNACornice = self.getCornice(aDNAFlatBuilding)
+            if not aDNACornice:
+                aDNACornice = DNACornice()
+                aDNACornice.setCode(
+                    self.dnaStore.findCode(style['corniceTexture']))
+                aDNACornice.setColor(style['corniceColor'])
+                lastWall = self.getLastWall(aDNAFlatBuilding)
+                lastWall.add(aDNACornice)
 
     def setRandomNumWindows(self, aDNAWall, numWindows):
 	window = self.getWindow(aDNAWall, 0)
@@ -2272,6 +2678,7 @@ class LevelEditor(NodePath, PandaObject):
             aDNAWindows.setColor(style['windowColor'])
 
     def setWallStyleNum(self, aDNAWall, styleNum):
+        # What about cornices
 	self.setWallStyle(aDNAWall, self.styleDictionary[styleNum])
 
     def updateColorIndex(self, colorIndex):
@@ -2474,9 +2881,9 @@ class LevelEditor(NodePath, PandaObject):
 
     def updateWallStyleNum(self, styleNum):
         if styleNum < 0:
-            self.setWallStyleNum(self.targetDNAObject, 1)
+            self.setWallStyleNum(self.targetDNAObject, 0)
         else:
-            self.setWallStyleNum(self.targetDNAObject, (1 + styleNum))
+            self.setWallStyleNum(self.targetDNAObject, styleNum)
 	self.replaceLevelObjectNodePath(self.selectedLevelObject)
 
     def updateWallTextureNum(self, wallTextureNumber):
@@ -2504,7 +2911,13 @@ class LevelEditor(NodePath, PandaObject):
                                  (self.activeMenu.getInitialState()))
         else:
             self.updateWallWidth(self.targetDNAObject,
-                                 (scaleFactor + 1) * 5.0)
+                                 self.wallWidths[scaleFactor])
+
+    def updateSelectedWallWidth(self, width):
+        if self.targetDNAObject:
+            if self.targetDNAObject.__class__.getClassType().eq(
+                DNAFlatBuilding.getClassType()):
+                self.updateWallWidth(self.targetDNAObject,width)
 
     def updateWallWidth(self, aDNAWall, width):
 	aDNAWall.setWidth(width)
@@ -2785,6 +3198,15 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                             variable = self.toggleBalloonVar,
                             command = self.toggleBalloon)
 
+        self.editMenu = Pmw.ComboBox(
+            menuFrame, labelpos = W, label_text = 'Edit:', entry_width = 12,
+            selectioncommand = self.chooseNeighborhood, history = 0,
+            scrolledlist_items = ['Toontown Central', 'Donalds Dock',
+                                  'The Burrrgh', 'Minnies Melody Land'])
+        self.editMenu.selectitem('Toontown Central')
+        self.editMenu.pack(side = 'left', expand = 0)
+                                     
+
         # Create the notebook pages
         notebook = Pmw.NoteBook(hull)
         notebook.pack(fill = BOTH, expand = 1)
@@ -2836,7 +3258,13 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             )
         self.toonBuildingType = 'random20'
         self.toonBuildingSelector.selectitem(self.toonBuildingType)
-        self.toonBuildingSelector.pack(side = 'left', expand = 0)
+        self.toonBuildingSelector.pack(expand = 0)
+        
+        self.toonBuildingWidthScale = EntryScale.EntryScale(
+            toonBuildingsPage, min = 1.0, max = 30.0,
+            resolution = 0.01, text = 'Wall Width',
+            command = self.updateSelectedWallWidth)
+        self.toonBuildingWidthScale.pack(side = TOP, fill = 'x')
         
         self.addLandmarkBuildingButton = Button(
             landmarkBuildingsPage,
@@ -2922,7 +3350,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             command = self.levelEditor.outputDNADefaultFile)
         self.saveButton.pack(side = 'left', fill = 'x')
         self.fMapViz = IntVar()
-        self.fMapViz.set(1)
+        self.fMapViz.set(0)
         self.mapSnapButton = Checkbutton(buttonFrame,
                                       text = 'Map Viz',
                                       variable = self.fMapViz,
@@ -2930,16 +3358,16 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.mapSnapButton.pack(side = 'left', fill = 'x')
         buttonFrame2.pack(fill = 'both')
 
-        widget = VectorWidgets.ColorEntry(
+        self.colorEntry = VectorWidgets.ColorEntry(
             colorPage, text = 'Select Color',
             command = self.updateSelectedObjColor)
-        widget.pack(fill = X)
+        self.colorEntry.pack(fill = X)
         
     def toggleGrid(self):
         if self.fGrid.get():
-            self.direct.grid.show()
+            self.direct.grid.enable()
         else:
-            self.direct.grid.hide()
+            self.direct.grid.disable()
 
     def toggleXyzSnap(self):
         self.direct.grid.setXyzSnap(self.fXyzSnap.get())
@@ -2948,10 +3376,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.direct.grid.setHprSnap(self.fXyzSnap.get())
         
     def toggleMapViz(self):
-        if self.fMapViz.get():
-            pass
-        else:
-            pass
+        self.levelEditor.toggleMapViz(self.fMapViz.get())
         
     def setStreetModuleType(self,name):
         self.streetModuleType = 'street_' + name
@@ -2977,14 +3402,39 @@ class LevelEditorPanel(Pmw.MegaToplevel):
     def addProp(self):
         self.levelEditor.addProp(self.propType)
 
+    def chooseNeighborhood(self, neighborhood):
+        if neighborhood == "Toontown Central":
+            self.levelEditor.editToontownCentral()
+        elif neighborhood == "Donalds Dock":
+            self.levelEditor.editDonaldsDock()
+        elif neighborhood == "The Burrrgh":
+            self.levelEditor.editTheBurrrgh()
+        elif neighborhood == "Minnies Melody Land":
+            self.levelEditor.editMinniesMelodyLand()
+
+    def updateSelectedWallWidth(self, strVal):
+        self.levelEditor.updateSelectedWallWidth(string.atof(strVal))
+
+    def setCurrentColor(self, colorVec):
+        self.colorEntry.set([int(colorVec[0] * 255.0),
+                             int(colorVec[1] * 255.0),
+                             int(colorVec[2] * 255.0),
+                             255])
+
     def updateSelectedObjColor(self, color):
-        if self.levelEditor.targetDNAObject:
-            self.levelEditor.updateObjColor(
-                self.levelEditor.targetDNAObject,
-                VBase4((color[0]/255.0),
-                       (color[1]/255.0),
-                       (color[2]/255.0),
-                       1.0))
+        obj = self.levelEditor.targetDNAObject
+        if obj:
+            objClass = obj.__class__.getClassType()
+            if ((objClass.eq(DNAWall.getClassType())) |
+                (objClass.eq(DNAWindows.getClassType())) |
+                (objClass.eq(DNADoor.getClassType())) |
+                (objClass.eq(DNACornice.getClassType()))):
+                self.levelEditor.updateObjColor(
+                    self.levelEditor.targetDNAObject,
+                    VBase4((color[0]/255.0),
+                           (color[1]/255.0),
+                           (color[2]/255.0),
+                           1.0))
 
     def toggleBalloon(self):
         if self.toggleBalloonVar.get():

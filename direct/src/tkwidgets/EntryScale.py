@@ -1,27 +1,26 @@
 """
-Floater Class: Velocity style controller for floating point values with
-                a label, entry (validated), and scale
+EntryScale Class: Scale with a label, and a linked and validated entry
 """
 
 from Tkinter import *
 import Pmw
 import string
+from tkSimpleDialog import askfloat
 
-class Floater(Pmw.MegaWidget):
-    "Velocity style floating point controller"
+class EntryScale(Pmw.MegaWidget):
+    "Scale with linked and validated entry"
  
     def __init__(self, parent = None, **kw):
 
         # Define the megawidget options.
         optiondefs = (
-            ('initialValue',        0.0,        Pmw.INITOPT),
-            ('resolution',          None,       None),
-            ('command',             None,       None),
-            ('maxVelocity',         100.0,      None),
-            ('min',                 None,       self._updateValidate),
-            ('max',                 None,       self._updateValidate),
-            ('text',                'Floater',  self._updateLabelText),
-            ('significantDigits',   2,          self._setSigDigits),
+            ('initialValue',        0.0,           Pmw.INITOPT),
+            ('resolution',          0.001,         None),
+            ('command',             None,          None),
+            ('min',                 0.0,           self._updateValidate),
+            ('max',                 100.0,         self._updateValidate),
+            ('text',                'EntryScale',  self._updateLabelText),
+            ('significantDigits',   2,             self._setSigDigits),
             )
         self.defineoptions(kw, optiondefs)
  
@@ -30,7 +29,6 @@ class Floater(Pmw.MegaWidget):
 
         # Initialize some class variables
         self.value = self['initialValue']
-        self.velocity = 0.0
         self.entryFormat = '%.2f'
 
         # Create the components.
@@ -42,11 +40,11 @@ class Floater(Pmw.MegaWidget):
         # Create a label and an entry
         self.labelFrame = self.createcomponent('frame', (), None,
                                                Frame, interior)
-        # Create an entry field to display and validate the floater's value
+        # Create an entry field to display and validate the entryScale's value
         self.entryValue = StringVar()
         self.entryValue.set(self['initialValue'])
         self.entry = self.createcomponent('entryField',
-                                          # Access floaters entry using "entry"
+                                          # Access widget's entry using "entry"
                                           (('entry', 'entryField_entry'),),
                                           None,
                                           Pmw.EntryField, self.labelFrame,
@@ -61,7 +59,7 @@ class Floater(Pmw.MegaWidget):
                                           command = self._entryCommand)
         self.entry.pack(side='left',padx = 4)
                                           
-        # Create the Floater's label
+        # Create the EntryScale's label
         self.label = self.createcomponent('label', (), None,
                                           Label, self.labelFrame,
                                           text = self['text'],
@@ -73,31 +71,47 @@ class Floater(Pmw.MegaWidget):
         # Now pack the frame
         self.labelFrame.pack(expand = 1, fill = 'both')
 
+        # Create a label and an entry
+        self.minMaxFrame = self.createcomponent('frame', (), None,
+                                                Frame, interior)
+        # Create the EntryScale's min max labels
+        self.minLabel = self.createcomponent('minLabel', (), None,
+                                             Button, self.minMaxFrame,
+                                             #command = self.askForMin,
+                                             text = `self['min']`,
+                                             relief = FLAT,
+                                             width = 5,
+                                             anchor = W,
+                                             font = "Arial 8")
+        self.minLabel.pack(side='left', expand = 1, fill = 'x')
+
         # Create the scale component.
         self.scale = self.createcomponent('scale', (), None,
-                                          Scale, interior,
-                                          command = self._scaleToVelocity,
+                                          Scale, self.minMaxFrame,
+                                          command = self._scaleCommand,
                                           orient = 'horizontal',
                                           length = 150,
-                                          from_ = -1.0,
-                                          to = 1.0,
-                                          resolution = 0.001,
+                                          from_ = self['min'],
+                                          to = self['max'],
+                                          resolution = self['resolution'],
                                           showvalue = 0)
-        self.scale.pack(expand = 1, fill = 'x')
+        self.scale.pack(side = 'left', expand = 1, fill = 'x')
         # Set scale to the middle of its range
-        self.scale.set(0.0)
-        
-        # Add scale bindings: When interacting with mouse:
-        self.scale.bind('<Button-1>', self._startFloaterTask)
-        self.scale.bind('<ButtonRelease-1>', self._floaterReset)
-        # In case you wish to interact using keys
-        self.scale.bind('<KeyPress-Right>', self._floaterKeyCommand)
-        self.scale.bind('<KeyRelease-Right>', self._floaterReset)
-        self.scale.bind('<KeyPress-Left>', self._floaterKeyCommand)
-        self.scale.bind('<KeyRelease-Left>', self._floaterReset)
- 
+        self.scale.set(self['initialValue'])
+
+        self.maxLabel = self.createcomponent('maxLabel', (), None,
+                                             Button, self.minMaxFrame,
+                                             #command = self.askForMax,
+                                             text = `self['max']`,
+                                             relief = FLAT,
+                                             width = 5,
+                                             anchor = E,
+                                             font = "Arial 8")
+        self.maxLabel.pack(side='left', expand = 1, fill = 'x')
+        self.minMaxFrame.pack(expand = 1, fill = 'both')
+         
         # Check keywords and initialise options based on input values.
-        self.initialiseoptions(Floater)
+        self.initialiseoptions(EntryScale)
 
     def label(self):
         return self.label
@@ -105,6 +119,32 @@ class Floater(Pmw.MegaWidget):
         return self.scale
     def entry(self):
         return self.entry
+
+    def askForMin(self):
+        newMin = askfloat(title = self['text'],
+                          prompt = 'New min val:',
+                          parent = self.interior())
+        if newMin:
+            self.setMin(newMin)
+            
+    def setMin(self, newMin):
+        self['min'] = newMin
+        self.scale['from_'] = newMin
+        self.minLabel['text'] = newMin
+        self.entry.checkentry()
+    
+    def askForMax(self):
+        newMax = askfloat(title = self['text'],
+                          parent = self.interior(),
+                          prompt = 'New max val:')
+        if newMax:
+            self.setMax(newMax)
+
+    def setMax(self, newMax):
+        self['max'] = newMax
+        self.scale['to'] = newMax
+        self.maxLabel['text'] = newMax
+        self.entry.checkentry()
     
     def _updateLabelText(self):
         self.label['text'] = self['text']
@@ -116,31 +156,21 @@ class Floater(Pmw.MegaWidget):
             'max' : self['max'],
             'minstrict' : 0,
             'maxstrict' : 0})
+        self.minLabel['text'] = self['min']
+        self.scale['from_'] = self['min']
+        self.scale['to'] = self['max']
+        self.maxLabel['text'] = self['max']
 
-    def _scaleToVelocity(self, strVal):
+    def _scaleCommand(self, strVal):
         # convert scale val to float
-        val = string.atof(strVal)
-        # Square val, but retain sign of velocity by only calling abs once
-        self.velocity = self['maxVelocity'] * val * abs(val)
-
-    def _startFloaterTask(self,event):
-        self._fFloaterTask = 1
-        self._floaterTask()
-
-    def _floaterTask(self):
-        if self.velocity != 0.0:
-            self.set( self.value + self.velocity )
-        if self._fFloaterTask:
-            self.after(50, self._floaterTask)
-
-    def _floaterReset(self, event):
-        self._fFloaterTask = 0
-        self.velocity = 0.0
-        self.scale.set(0.0)
-
-    def _floaterKeyCommand(self, event):
-        if self.velocity != 0.0:
-            self.set( self.value + self.velocity )
+        self.set(string.atof(strVal))
+        """
+        # Update entry to reflect formatted value
+        self.entryValue.set( self.entryFormat % self.value )
+        self.entry.checkentry()
+        if self['command']:
+            self['command'](self.value)
+        """
 
     def _entryCommand(self, event = None):
         try:
@@ -170,8 +200,10 @@ class Floater(Pmw.MegaWidget):
         if self['resolution'] is not None:
             newVal = round(newVal / self['resolution']) * self['resolution']
         
-        # Update floater's value
+        # Record updated value
         self.value = newVal
+        # Update scale's position
+        self.scale.set(newVal)
         # Update entry to reflect formatted value
         self.entryValue.set( self.entryFormat % self.value )
         self.entry.checkentry()
@@ -181,7 +213,7 @@ class Floater(Pmw.MegaWidget):
             self['command']( newVal )
 
 
-class FloaterGroup(Pmw.MegaToplevel):
+class EntryScaleGroup(Pmw.MegaToplevel):
     def __init__(self, parent = None, **kw):
 
         # Default group size
@@ -196,12 +228,12 @@ class FloaterGroup(Pmw.MegaToplevel):
         optiondefs = (
             ('dim',             DEFAULT_DIM,            INITOPT),
             ('side',            TOP,                    INITOPT),
-            ('title',           'Floater Group',        None),
-            # A tuple of initial values, one for each floater
+            ('title',           'EntryScale Group',        None),
+            # A tuple of initial values, one for each entryScale
             ('initialValue',    DEFAULT_VALUE,          INITOPT),
-            # The command to be executed any time one of the floaters is updated
+            # The command to be executed any time one of the entryScales is updated
             ('command',         None,                   None),
-            # A tuple of labels, one for each floater
+            # A tuple of labels, one for each entryScale
             ('labels',          DEFAULT_LABELS,         self._updateLabels),
             )
         self.defineoptions(kw, optiondefs)
@@ -221,17 +253,17 @@ class FloaterGroup(Pmw.MegaToplevel):
                                        balloon = self.balloon)
         menubar.pack(fill=X)
         
-        # FloaterGroup Menu
-        menubar.addmenu('Floater Group', 'Floater Group Operations')
+        # EntryScaleGroup Menu
+        menubar.addmenu('EntryScale Group', 'EntryScale Group Operations')
         menubar.addmenuitem(
-            'Floater Group', 'command', 'Reset the Floater Group panel',
+            'EntryScale Group', 'command', 'Reset the EntryScale Group panel',
             label = 'Reset',
             command = lambda s = self: s.reset())
         menubar.addmenuitem(
-            'Floater Group', 'command', 'Dismiss Floater Group panel',
+            'EntryScale Group', 'command', 'Dismiss EntryScale Group panel',
             label = 'Dismiss', command = self.withdraw)
         
-        menubar.addmenu('Help', 'Floater Group Help Operations')
+        menubar.addmenu('Help', 'EntryScale Group Help Operations')
         self.toggleBalloonVar = IntVar()
         self.toggleBalloonVar.set(0)
         menubar.addmenuitem('Help', 'checkbutton',
@@ -240,29 +272,29 @@ class FloaterGroup(Pmw.MegaToplevel):
                             variable = self.toggleBalloonVar,
                             command = self.toggleBalloon)
 
-        self.floaterList = []
+        self.entryScaleList = []
         for index in range(self['dim']):
-            # Add a group alias so you can configure the floaters via:
+            # Add a group alias so you can configure the entryScales via:
             #   fg.configure(Valuator_XXX = YYY)
             f = self.createcomponent(
-                'floater%d' % index, (), 'Valuator', Floater,
+                'entryScale%d' % index, (), 'Valuator', EntryScale,
                 (interior,), initialValue = self._value[index],
                 text = self['labels'][index])
             # Do this separately so command doesn't get executed during construction
-            f['command'] = lambda val, s=self, i=index: s._floaterSetAt(i, val)
+            f['command'] = lambda val, s=self, i=index: s._entryScaleSetAt(i, val)
             f.pack(side = self['side'], expand = 1, fill = X)
-            self.floaterList.append(f)
+            self.entryScaleList.append(f)
 
-        # Make sure floaters are initialized
+        # Make sure entryScales are initialized
         self.set(self['initialValue'])
         
         # Make sure input variables processed 
-        self.initialiseoptions(FloaterGroup)
+        self.initialiseoptions(EntryScaleGroup)
 
     def _updateLabels(self):
         if self['labels']:
             for index in range(self['dim']):
-                self.floaterList[index]['text'] = self['labels'][index]
+                self.entryScaleList[index]['text'] = self['labels'][index]
 
     def toggleBalloon(self):
         if self.toggleBalloonVar.get():
@@ -280,17 +312,17 @@ class FloaterGroup(Pmw.MegaToplevel):
     def set(self, value, fCommand = 1):
         for i in range(self['dim']):
             self._value[i] = value[i]
-            # Update floater, but don't execute its command
-            self.floaterList[i].set(value[i], 0)
+            # Update entryScale, but don't execute its command
+            self.entryScaleList[i].set(value[i], 0)
         if fCommand & (self['command'] is not None):
             self['command'](self._value)
 
     def setAt(self, index, value):
-        # Update floater and execute its command
-        self.floaterList[index].set(value)
+        # Update entryScale and execute its command
+        self.entryScaleList[index].set(value)
 
-    # This is the command used by the floater
-    def _floaterSetAt(self, index, value):
+    # This is the command used by the entryScale
+    def _entryScaleSetAt(self, index, value):
         self._value[index] = value
         if self['command']:
             self['command'](self._value)
@@ -304,19 +336,19 @@ class FloaterGroup(Pmw.MegaToplevel):
 if __name__ == '__main__':
     # Initialise Tkinter and Pmw.
     root = Toplevel()
-    root.title('Pmw Floater demonstration')
+    root.title('Pmw EntryScale demonstration')
 
     # Dummy command
     def printVal(val):
         print val
     
-    # Create and pack a Floater megawidget.
-    mega1 = Floater(root, command = printVal)
+    # Create and pack a EntryScale megawidget.
+    mega1 = EntryScale(root, command = printVal)
     mega1.pack(side = 'left', expand = 1, fill = 'x')
 
     """
     # These are things you can set/configure
-    # Starting value for floater    
+    # Starting value for entryScale    
     mega1['initialValue'] = 123.456
     mega1['text'] = 'Drive delta X'
     mega1['min'] = 0.0
@@ -331,13 +363,13 @@ if __name__ == '__main__':
     # mega1['significantDigits'] = 5
     """
 
-    # To create a floater group to set an RGBA value:
-    group1 = FloaterGroup(root, dim = 4,
+    # To create a entryScale group to set an RGBA value:
+    group1 = EntryScaleGroup(root, dim = 4,
                           title = 'Simple RGBA Panel',
                           labels = ('R', 'G', 'B', 'A'),
-                          Valuator_min = 0.0,
-                          Valuator_max = 255.0,
-                          Valuator_resolution = 1.0,
+                          EntryScale_min = 0.0,
+                          EntryScale_max = 255.0,
+                          EntryScale_resolution = 1.0,
                           command = printVal)
     
     # Uncomment this if you aren't running in IDLE
