@@ -817,6 +817,24 @@ r_expand_variable(const string &str, size_t &vp,
       return expand_shell(params);
     } else if (funcname == "standardize") {
       return expand_standardize(params);
+    } else if (funcname == "length") {
+      return expand_length(params);
+    } else if (funcname == "substr") {
+      return expand_substr(params);
+    } else if (funcname == "dir") {
+      return expand_dir(params);
+    } else if (funcname == "notdir") {
+      return expand_notdir(params);
+    } else if (funcname == "suffix") {
+      return expand_suffix(params);
+    } else if (funcname == "basename") {
+      return expand_basename(params);
+    } else if (funcname == "word") {
+      return expand_word(params);
+    } else if (funcname == "wordlist") {
+      return expand_wordlist(params);
+    } else if (funcname == "words") {
+      return expand_words(params);
     } else if (funcname == "firstword") {
       return expand_firstword(params);
     } else if (funcname == "patsubst") {
@@ -1382,6 +1400,281 @@ expand_standardize(const string &params) const {
     }
   }
 
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_length
+//       Access: Private
+//  Description: Expands the "length" function variable.  This returns
+//               the length of the argument in characters.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_length(const string &params) const {
+  char buffer[32];
+  sprintf(buffer, "%d", params.length());
+  string result = buffer;
+  return result;
+}  
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_substr
+//       Access: Private
+//  Description: Expands the "substr" function variable.  $[substr
+//               S,E,string] returns the substring of "string"
+//               beginning at character S (1-based) and continuing to
+//               character E, inclusive.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_substr(const string &params) const {
+  // Split the string up into tokens based on the commas.
+  vector<string> tokens;
+  tokenize_params(params, tokens, true);
+
+  if (tokens.size() != 3) {
+    cerr << "wordlist requires three parameters.\n";
+    return string();
+  }
+
+  int start = atoi(tokens[0].c_str());
+  int end = atoi(tokens[1].c_str());
+
+  if (end < start) {
+    // Following GNU make's convention, we swap start and end if
+    // they're out of order.
+    int t = end;
+    end = start;
+    start = t;
+  }
+
+  const string &word = tokens[2];
+
+  start = max(start, 1);
+  end = min(end, (int)word.length());
+
+  if (end < start) {
+    return string();
+  }
+
+  string result = word.substr(start - 1, end - start + 1);
+  return result;
+}  
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_dir
+//       Access: Private
+//  Description: Expands the "dir" function variable.  This returns
+//               the directory part of its filename argument(s), or ./
+//               if the words contain no slash.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_dir(const string &params) const {
+  // Split the parameter into tokens based on the spaces.
+  vector<string> words;
+  tokenize_whitespace(expand_string(params), words);
+
+  vector<string>::iterator wi;
+  for (wi = words.begin(); wi != words.end(); ++wi) {
+    string &word = (*wi);
+
+    size_t slash = word.rfind('/');
+    if (slash != string::npos) {
+      word = word.substr(0, slash + 1);
+    } else {
+      word = "./";
+    }
+  }
+
+  string result = repaste(words, " ");
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_notdir
+//       Access: Private
+//  Description: Expands the "notdir" function variable.  This returns
+//               everything following the rightmost slash, or the
+//               string itself if there is no slash.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_notdir(const string &params) const {
+  // Split the parameter into tokens based on the spaces.
+  vector<string> words;
+  tokenize_whitespace(expand_string(params), words);
+
+  vector<string>::iterator wi;
+  for (wi = words.begin(); wi != words.end(); ++wi) {
+    string &word = (*wi);
+
+    size_t slash = word.rfind('/');
+    if (slash != string::npos) {
+      word = word.substr(slash + 1);
+    }
+  }
+
+  string result = repaste(words, " ");
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_suffix
+//       Access: Private
+//  Description: Expands the "suffix" function variable.  This returns
+//               the filename extension, including a dot, if any.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_suffix(const string &params) const {
+  // Split the parameter into tokens based on the spaces.
+  vector<string> words;
+  tokenize_whitespace(expand_string(params), words);
+
+  vector<string>::iterator wi;
+  for (wi = words.begin(); wi != words.end(); ++wi) {
+    string &word = (*wi);
+
+    size_t dot = word.rfind('.');
+    if (dot != string::npos) {
+      string ext = word.substr(dot);
+      if (ext.find('/') == string::npos) {
+	word = ext;
+      } else {
+	word = string();
+      }
+    } else {
+      word = string();
+    }
+  }
+
+  string result = repaste(words, " ");
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_basename
+//       Access: Private
+//  Description: Expands the "basename" function variable.  This returns
+//               everything but the filename extension (including the
+//               directory, if any).
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_basename(const string &params) const {
+  // Split the parameter into tokens based on the spaces.
+  vector<string> words;
+  tokenize_whitespace(expand_string(params), words);
+
+  vector<string>::iterator wi;
+  for (wi = words.begin(); wi != words.end(); ++wi) {
+    string &word = (*wi);
+
+    size_t dot = word.rfind('.');
+    if (dot != string::npos) {
+      string ext = word.substr(dot);
+      if (ext.find('/') == string::npos) {
+	word = word.substr(0, dot);
+      }
+    }
+  }
+
+  string result = repaste(words, " ");
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_word
+//       Access: Private
+//  Description: Expands the "word" function variable.  This returns
+//               the nth word, 1-based, of the space-separated list of
+//               words in the second parameter.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_word(const string &params) const {
+  // Split the string up into tokens based on the commas.
+  vector<string> tokens;
+  tokenize_params(params, tokens, true);
+
+  if (tokens.size() != 2) {
+    cerr << "word requires two parameters.\n";
+    return string();
+  }
+
+  int index = atoi(tokens[0].c_str());
+
+  // Split the second parameter into tokens based on the spaces.
+  vector<string> words;
+  tokenize_whitespace(expand_string(tokens[1]), words);
+
+  if (index < 1 || index > (int)words.size()) {
+    // Out of range.
+    return string();
+  }
+  return words[index - 1];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_wordlist
+//       Access: Private
+//  Description: Expands the "wordlist" function variable.  This
+//               returns a range of words, 1-based, of the
+//               space-separated list of words in the third parameter.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_wordlist(const string &params) const {
+  // Split the string up into tokens based on the commas.
+  vector<string> tokens;
+  tokenize_params(params, tokens, true);
+
+  if (tokens.size() != 3) {
+    cerr << "wordlist requires three parameters.\n";
+    return string();
+  }
+
+  int start = atoi(tokens[0].c_str());
+  int end = atoi(tokens[1].c_str());
+
+  if (end < start) {
+    // Following GNU make's convention, we swap start and end if
+    // they're out of order.
+    int t = end;
+    end = start;
+    start = t;
+  }
+
+  // Split the third parameter into tokens based on the spaces.
+  vector<string> words;
+  tokenize_whitespace(expand_string(tokens[2]), words);
+
+  start = max(start, 1);
+  end = min(end, (int)words.size());
+
+  if (end < start) {
+    return string();
+  }
+
+  vector<string> results;
+  results.insert(results.end(), 
+		 words.begin() + start - 1, 
+		 words.begin() + end - 1);
+
+  string result = repaste(results, " ");
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_words
+//       Access: Private
+//  Description: Expands the "words" function variable.  This
+//               returns the number of space-separated words in the
+//               list.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_words(const string &params) const {
+  // Split the parameter into tokens based on the spaces.
+  vector<string> words;
+  tokenize_whitespace(expand_string(params), words);
+
+  char buffer[32];
+  sprintf(buffer, "%d", words.size());
+  string result = buffer;
   return result;
 }
 

@@ -87,6 +87,15 @@ private:
   string expand_bintest(const string &params) const;
   string expand_shell(const string &params) const;
   string expand_standardize(const string &params) const;
+  string expand_length(const string &params) const;
+  string expand_substr(const string &params) const;
+  string expand_dir(const string &params) const;
+  string expand_notdir(const string &params) const;
+  string expand_suffix(const string &params) const;
+  string expand_basename(const string &params) const;
+  string expand_word(const string &params) const;
+  string expand_wordlist(const string &params) const;
+  string expand_words(const string &params) const;
   string expand_firstword(const string &params) const;
   string expand_patsubst(const string &params) const;
   string expand_filter(const string &params) const;

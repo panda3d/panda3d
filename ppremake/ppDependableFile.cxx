@@ -316,39 +316,39 @@ compute_dependencies(string &circularity) {
 	cerr << "Warning: dependent file " << get_pathname() 
 	     << " does not exist.\n";
       }
-      return (PPDependableFile *)NULL;
-    }
-    
-    PPDirectoryTree *tree = _directory->get_tree();
-    
-    bool okcircular = false;
-    string line;
-    getline(in, line);
-    while (!in.fail() && !in.eof()) {
-      if (line.substr(0, 16) == "/* okcircular */") {
-	okcircular = true;
-      } else {
-	string filename = check_include(line);
-	if (!filename.empty() && filename.find('/') == string::npos) {
-	  Dependency dep;
-	  dep._okcircular = okcircular;
-	  dep._file = tree->find_dependable_file(filename);
-	  if (dep._file != (PPDependableFile *)NULL) {
-	    // All right!  Here's a file we depend on.  Add it to the
-	    // list.
-	    _dependencies.push_back(dep);
-	    
-	  } else {
-	    // It's an include file from somewhere else, not from within
-	    // our source tree.  We don't care about it, but we do need
-	    // to record it so we can easily check later if the cache
-	    // file has gone stale.
-	    _extra_includes.push_back(filename);
-	  }
-	}
-	okcircular = false;
-      }
+
+    } else {
+      PPDirectoryTree *tree = _directory->get_tree();
+      
+      bool okcircular = false;
+      string line;
       getline(in, line);
+      while (!in.fail() && !in.eof()) {
+	if (line.substr(0, 16) == "/* okcircular */") {
+	  okcircular = true;
+	} else {
+	  string filename = check_include(line);
+	  if (!filename.empty() && filename.find('/') == string::npos) {
+	    Dependency dep;
+	    dep._okcircular = okcircular;
+	    dep._file = tree->find_dependable_file(filename);
+	    if (dep._file != (PPDependableFile *)NULL) {
+	      // All right!  Here's a file we depend on.  Add it to the
+	      // list.
+	      _dependencies.push_back(dep);
+	      
+	    } else {
+	      // It's an include file from somewhere else, not from within
+	      // our source tree.  We don't care about it, but we do need
+	      // to record it so we can easily check later if the cache
+	      // file has gone stale.
+	      _extra_includes.push_back(filename);
+	    }
+	  }
+	  okcircular = false;
+	}
+	getline(in, line);
+      }
     }
   }
 
@@ -375,7 +375,6 @@ compute_dependencies(string &circularity) {
       }
     }
   }
-
 
   _flags = (_flags & ~F_updating) | F_updated;
   return circ;

@@ -390,8 +390,14 @@ bool PPCommandFile::
 handle_command(const string &line) {
   if (_got_command) {
     // If we were still processing a command from last time, keep
-    // going; this line is just a continuation.
-    _params += line;
+    // going; this line is just a continuation.  But skip any initial
+    // whitespace.
+    size_t p = 0;
+    while (p < line.length() && isspace(line[p])) {
+      p++;
+    }
+    _params += ' ';
+    _params += line.substr(p);
 
   } else {
     // This is the first line of a new command.
@@ -414,7 +420,13 @@ handle_command(const string &line) {
     // If the line ends with a backslash, there's more to come before
     // we can process the command.
     _got_command = true;
-    _params[_params.length() - 1] = ' ';
+
+    // Truncate off the backslash, and any whitespace before it.
+    size_t p = _params.length() - 1;
+    while (p > 0 && isspace(_params[p - 1])) {
+      p--;
+    }
+    _params = _params.substr(0, p);
     return true;
   }
 
