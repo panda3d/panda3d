@@ -25,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 RingEmitter::
 RingEmitter() :
-  _radius(1.0f), _aoe(0.0f) {
+  _radius(1.0f), _aoe(0.0f), _radius_spread(0.0f) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -38,6 +38,7 @@ RingEmitter(const RingEmitter &copy) :
   BaseParticleEmitter(copy) {
   _radius = copy._radius;
   _aoe = copy._aoe;
+  _radius_spread = copy._radius_spread;
 
   _sin_theta = copy._sin_theta;
   _cos_theta = copy._cos_theta;
@@ -73,8 +74,9 @@ assign_initial_position(LPoint3f& pos) {
   _cos_theta = cosf(theta);
   _sin_theta = sinf(theta);
 
-  float new_x = _cos_theta * _radius;
-  float new_y = _sin_theta * _radius;
+  float new_radius_spread = SPREAD(_radius_spread);
+  float new_x = _cos_theta * (_radius + new_radius_spread);
+  float new_y = _sin_theta * (_radius + new_radius_spread);
 
   pos.set(new_x, new_y, 0.0f);
 }
@@ -127,6 +129,7 @@ write(ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"RingEmitter:\n";
   out.width(indent+2); out<<""; out<<"_radius "<<_radius<<"\n";
+  out.width(indent+2); out<<""; out<<"_radius_spread "<<_radius_spread<<"\n";
   out.width(indent+2); out<<""; out<<"_aoe "<<_aoe<<"\n";
   out.width(indent+2); out<<""; out<<"_sin_theta "<<_sin_theta<<"\n";
   out.width(indent+2); out<<""; out<<"_cos_theta "<<_cos_theta<<"\n";

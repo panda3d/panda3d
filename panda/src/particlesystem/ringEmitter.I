@@ -39,6 +39,17 @@ set_angle(float angle) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//    Function : set_radius_spread
+//      Access : public
+// Description : radius_spread set
+////////////////////////////////////////////////////////////////////
+
+INLINE void RingEmitter::
+set_radius_spread(float spread) {
+  _radius_spread = spread;
+}
+
+////////////////////////////////////////////////////////////////////
 //    Function : get_radius
 //      Access : public
 // Description : radius get
@@ -59,3 +70,15 @@ INLINE float RingEmitter::
 get_angle() const {
   return _aoe;
 }
+
+////////////////////////////////////////////////////////////////////
+//    Function : get_radius_spread
+//      Access : public
+// Description : radius_spread get
+////////////////////////////////////////////////////////////////////
+
+INLINE float RingEmitter::
+get_radius_spread() const {
+  return _radius_spread;
+}
+

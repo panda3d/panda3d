@@ -330,6 +330,9 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
         c[3] = (1.0f - t) * get_user_alpha();
       else if (alphamode == PR_ALPHA_IN)
         c[3] = t * get_user_alpha();
+      else if (alphamode == PR_ALPHA_IN_OUT) {
+        c[3] = 2.0f * min(t, 1.0f - t) * get_user_alpha();
+      }
       else {
         assert(alphamode == PR_ALPHA_USER);
         c[3] = get_user_alpha();

@@ -201,6 +201,9 @@ create_color(const BaseParticle *p) {
 
       if(_alpha_mode==PR_ALPHA_OUT) {
         parameterized_age = 1.0f - parameterized_age;
+      } else if(_alpha_mode==PR_ALPHA_IN_OUT) {
+        parameterized_age = 2.0f * min(parameterized_age, 
+                                      1.0f - parameterized_age);
       }
     }
     color[3] = parameterized_age * get_user_alpha();

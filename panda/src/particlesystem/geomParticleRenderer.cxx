@@ -191,6 +191,8 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
           alpha_scalar = cur_particle->get_parameterized_age();
           if (_alpha_mode == PR_ALPHA_OUT)
             alpha_scalar = 1.0f - alpha_scalar;
+          else if (_alpha_mode == PR_ALPHA_IN_OUT)
+            alpha_scalar = 2.0f * min(alpha_scalar, 1.0f - alpha_scalar);
           alpha_scalar *= get_user_alpha();
         }
         

@@ -26,6 +26,7 @@
 TangentRingEmitter::
 TangentRingEmitter() {
   _radius = 1.0f;
+  _radius_spread = 0.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -37,6 +38,7 @@ TangentRingEmitter::
 TangentRingEmitter(const TangentRingEmitter &copy) :
   BaseParticleEmitter(copy) {
   _radius = copy._radius;
+  _radius_spread = copy._radius_spread;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -70,7 +72,8 @@ assign_initial_position(LPoint3f& pos) {
   _x = cosf(theta);
   _y = sinf(theta);
 
-  pos.set(_radius * _x, _radius * _y, 0.0f);
+  float new_radius = _radius + SPREAD(_radius_spread);
+  pos.set(new_radius * _x, new_radius * _y, 0.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -107,6 +110,7 @@ write(ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"TangentRingEmitter:\n";
   out.width(indent+2); out<<""; out<<"_radius "<<_radius<<"\n";
+  out.width(indent+2); out<<""; out<<"_radius_spread "<<_radius_spread<<"\n";
   out.width(indent+2); out<<""; out<<"_x "<<_x<<"\n";
   out.width(indent+2); out<<""; out<<"_y "<<_y<<"\n";
   BaseParticleEmitter::write(out, indent+2);

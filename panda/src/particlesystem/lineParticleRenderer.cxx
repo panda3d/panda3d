@@ -212,6 +212,8 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
                   alpha = cur_particle->get_parameterized_age();
                   if (_alpha_mode == PR_ALPHA_OUT)
                           alpha = 1.0f - alpha;
+                  else if (_alpha_mode == PR_ALPHA_IN_OUT)
+                    alpha = 2.0f * min(alpha, 1.0f - alpha);
           }
 
       head_color[3] = alpha;

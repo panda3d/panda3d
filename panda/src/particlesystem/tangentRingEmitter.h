@@ -36,13 +36,17 @@ PUBLISHED:
   virtual BaseParticleEmitter *make_copy();
 
   INLINE void set_radius(float r);
+  INLINE void set_radius_spread(float spread);
+
   INLINE float get_radius() const;
+  INLINE float get_radius_spread() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent=0) const;
 
 private:
   float _radius;
+  float _radius_spread;
 
   // CUSTOM EMISSION PARAMETERS
   // none
