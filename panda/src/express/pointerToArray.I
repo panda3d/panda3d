@@ -313,6 +313,37 @@ operator [](int n) const {
 #endif
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::get_element
+//       Access: Published
+//  Description: This method exists mainly to access the elements of
+//               the array easily from a high-level language such as
+//               Python, especially on Windows, where the above index
+//               element accessor methods can't be defined because of
+//               a confusion with the pointer typecast operator.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE TYPENAME PointerToArray<Element>::const_reference PointerToArray<Element>::
+get_element(size_type n) const {
+  return (*this)[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::set_element
+//       Access: Published
+//  Description: This method exists mainly to access the elements of
+//               the array easily from a high-level language such as
+//               Python, especially on Windows, where the above index
+//               element accessor methods can't be defined because of
+//               a confusion with the pointer typecast operator.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE void PointerToArray<Element>::
+set_element(size_type n, const_reference value) {
+  nassertv(n < _ptr->size());
+  (*this)[n] = value;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::push_back
 //       Access: Published
 //  Description:

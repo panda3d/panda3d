@@ -152,6 +152,9 @@ PUBLISHED:
   INLINE reference operator [](size_type n) const;
   INLINE reference operator [](int n) const;
 #endif
+  INLINE const_reference get_element(size_type n) const;
+  INLINE void set_element(size_type n, const_reference value);
+
   INLINE void push_back(const Element &x);
   INLINE void pop_back();
   INLINE void make_empty();
