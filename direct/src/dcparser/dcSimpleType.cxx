@@ -990,8 +990,8 @@ unpack_string(const char *data, size_t length, size_t &p, string &value) const {
     if (p + 2 > length) {
       return false;
     }
-    string_length = ((unsigned int)(unsigned char)data[p] |
-                     ((unsigned int)(unsigned char)data[p + 1] << 8));
+    string_length = (size_t)((unsigned int)(unsigned char)data[p] |
+                             ((unsigned int)(unsigned char)data[p + 1] << 8));
     p += 2;
     break;
 
@@ -999,10 +999,10 @@ unpack_string(const char *data, size_t length, size_t &p, string &value) const {
     if (p + 4 > length) {
       return false;
     }
-    string_length = ((unsigned int)(unsigned char)data[p] |
-                     ((unsigned int)(unsigned char)data[p + 1] << 8) |
-                     ((unsigned int)(unsigned char)data[p + 2] << 16) |
-                     ((unsigned int)(unsigned char)data[p + 3] << 24));
+    string_length = (size_t)((unsigned int)(unsigned char)data[p] |
+                             ((unsigned int)(unsigned char)data[p + 1] << 8) |
+                             ((unsigned int)(unsigned char)data[p + 2] << 16) |
+                             ((unsigned int)(unsigned char)data[p + 3] << 24));
     p += 4;
     break;
 

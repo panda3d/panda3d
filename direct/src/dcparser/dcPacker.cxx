@@ -103,7 +103,7 @@ end_pack() {
 void DCPacker::
 begin_unpack(const string &data, const DCPackerInterface *root) {
   _unpack_str = data;
-  begin_unpack(data.data(), data.length(), root);
+  begin_unpack(_unpack_str.data(), _unpack_str.length(), root);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -207,15 +207,15 @@ push() {
         } else {
           size_t length;
           if (length_bytes == 4) {
-            length = ((size_t)(unsigned char)_unpack_data[_unpack_p + 0] |
-                      ((size_t)(unsigned char)_unpack_data[_unpack_p + 1] << 8) |
-                      ((size_t)(unsigned char)_unpack_data[_unpack_p + 2] << 16) |
-                      ((size_t)(unsigned char)_unpack_data[_unpack_p + 3] << 24));
+            length = (size_t)((size_t)(unsigned char)_unpack_data[_unpack_p + 0] |
+                              ((size_t)(unsigned char)_unpack_data[_unpack_p + 1] << 8) |
+                              ((size_t)(unsigned char)_unpack_data[_unpack_p + 2] << 16) |
+                              ((size_t)(unsigned char)_unpack_data[_unpack_p + 3] << 24));
             _unpack_p += 4;
             _push_marker = _unpack_p + length;
           } else {
-            length = ((size_t)(unsigned char)_unpack_data[_unpack_p + 0] |
-                      ((size_t)(unsigned char)_unpack_data[_unpack_p + 1] << 8));
+            length = (size_t)((size_t)(unsigned char)_unpack_data[_unpack_p + 0] |
+                              ((size_t)(unsigned char)_unpack_data[_unpack_p + 1] << 8));
             _unpack_p += 2;
           }
           _push_marker = _unpack_p + length;
