@@ -68,6 +68,9 @@ class Interval(DirectObject):
         # Record t for next time around
         self.prev_t = self.curr_t
 
+    def getT(self):
+        return self.curr_t
+
     def updateFunc(self, t, event = IVAL_NONE):
         """ updateFunc(t, event)
         """

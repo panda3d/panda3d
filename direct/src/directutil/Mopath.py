@@ -13,6 +13,8 @@ class Mopath(PandaObject):
             self.nameIndex = self.nameIndex + 1
         self.name = name
         self.tPoint = Point3(0)
+        self.posPoint = Point3(0)
+        self.hprPoint = Point3(0)
         self.reset()
 
     def getMaxT(self):
@@ -91,13 +93,11 @@ class Mopath(PandaObject):
             return
         self.playbackTime = self.calcTime(CLAMP(time, 0.0, self.maxT))
         if (self.xyzNurbsCurve != None):
-            pos = Point3(0)
-            self.xyzNurbsCurve.getPoint(self.playbackTime, pos)
-            node.setPos(pos)
+            self.xyzNurbsCurve.getPoint(self.playbackTime, self.posPoint)
+            node.setPos(self.posPoint)
         if (self.hprNurbsCurve != None):
-            hpr = Point3(0)
-            self.hprNurbsCurve.getPoint(self.playbackTime, hpr)
-            node.setHpr(hpr)
+            self.hprNurbsCurve.getPoint(self.playbackTime, self.hprPoint)
+            node.setHpr(self.hprPoint)
 
     def play(self, node, time = 0.0, loop = 0):
         if (self.xyzNurbsCurve == None) and (self.hprNurbsCurve == None):

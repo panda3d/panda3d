@@ -71,7 +71,8 @@ class DirectWaitBar(DirectFrame):
         self.updateBarStyle()
 
     def setBarColor(self):
-        self.barStyle.setColor(*self['barColor'])
+        color = self['barColor']
+        self.barStyle.setColor(color[0], color[1], color[2], color[3])
         self.updateBarStyle()
 
     def update(self, value):

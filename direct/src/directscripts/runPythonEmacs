@@ -66,6 +66,10 @@ if [ "$TTMODELS" ]; then
     export TTMODELS
 fi
 
+if [ "$BARMODELS" ]; then
+    TTMODELS=`cygpath -w $BARMODELS`
+    export BARMODELS
+fi
 
 
 # Export the proper home environment variable
