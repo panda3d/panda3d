@@ -40,7 +40,7 @@ public:
   }
   static void init_type(void) {
     GuiItem::init_type();
-    register_type(_type_handle, "GuiItem",
+    register_type(_type_handle, "GuiBehavior",
 		  GuiItem::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
