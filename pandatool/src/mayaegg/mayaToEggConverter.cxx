@@ -670,71 +670,32 @@ get_transform(const MDagPath &dag_path, EggGroup *egg_group) {
     return;
   }
 
-  // A special case: if the group is a billboard, we center the
-  // transform on the rotate pivot and ignore whatever transform might
-  // be there.
-  if (egg_group->get_billboard_type() != EggGroup::BT_none) {
-    MFnTransform transform(transformNode, &status);
-    if (!status) {
-      status.perror("MFnTransform constructor");
+  // Billboards always get the transform set.
+  if (egg_group->get_billboard_type() == EggGroup::BT_none) {
+    switch (_transform_type) {
+    case TT_all:
+      break;
+      
+    case TT_model:
+      if (!egg_group->get_model_flag() &&
+          egg_group->get_dcs_type() == EggGroup::DC_none) {
+        return;
+      }
+      break;
+      
+    case TT_dcs: 
+      if (egg_group->get_dcs_type() == EggGroup::DC_none) {
+        return;
+      }
+      break;
+      
+    case TT_none:
+    case TT_invalid:
       return;
     }
-
-    MPoint pivot = transform.rotatePivot(MSpace::kObject, &status);
-    if (!status) {
-      status.perror("Can't get rotate pivot");
-      return;
-    }
-
-    // We need to convert the pivot to world coordinates.
-    // Unfortunately, Maya can only tell it to us in local
-    // coordinates.
-    MMatrix mat = dag_path.inclusiveMatrix(&status);
-    if (!status) {
-      status.perror("Can't get coordinate space for pivot");
-      return;
-    }
-    LMatrix4d n2w(mat[0][0], mat[0][1], mat[0][2], mat[0][3],
-                  mat[1][0], mat[1][1], mat[1][2], mat[1][3],
-                  mat[2][0], mat[2][1], mat[2][2], mat[2][3],
-                  mat[3][0], mat[3][1], mat[3][2], mat[3][3]);
-    LPoint3d p3d(pivot[0], pivot[1], pivot[2]);
-    p3d = p3d * n2w;
-
-    if (egg_group->get_parent() != (EggGroupNode *)NULL) {
-      // Now convert the pivot point into the group's parent's space.
-      p3d = p3d * egg_group->get_parent()->get_vertex_frame_inv();
-    }
-
-    egg_group->clear_transform();
-    egg_group->add_translate(p3d);
-    return;
   }
 
-  switch (_transform_type) {
-  case TT_all:
-    break;
-    
-  case TT_model:
-    if (!egg_group->get_model_flag() &&
-        egg_group->get_dcs_type() == EggGroup::DC_none) {
-      return;
-    }
-    break;
-    
-  case TT_dcs: 
-    if (egg_group->get_dcs_type() == EggGroup::DC_none) {
-      return;
-    }
-    break;
-    
-  case TT_none:
-  case TT_invalid:
-    return;
-  }
-
-  // Extract the matrix from the dag path, and convert it to the local
-  // frame.
+  // Extract the matrix from the dag path.
   MMatrix mat = dag_path.inclusiveMatrix(&status);
   if (!status) {
     status.perror("Can't get transform matrix");
@@ -744,10 +705,36 @@ get_transform(const MDagPath &dag_path, EggGroup *egg_group) {
                 mat[1][0], mat[1][1], mat[1][2], mat[1][3],
                 mat[2][0], mat[2][1], mat[2][2], mat[2][3],
                 mat[3][0], mat[3][1], mat[3][2], mat[3][3]);
+
+  // Maya has a rotate pivot, separate from its transform.  Usually we
+  // care more about the rotate pivot than we do about the transform,
+  // so get the rotate pivot too.
+  MFnTransform transform(transformNode, &status);
+  if (!status) {
+    status.perror("MFnTransform constructor");
+    return;
+  }
+  MPoint pivot = transform.rotatePivot(MSpace::kObject, &status);
+  if (!status) {
+    status.perror("Can't get rotate pivot");
+    return;
+  }
+  
+  // We need to convert the pivot to world coordinates.  (Maya can
+  // only tell it to us in local coordinates.)
+  LPoint3d p3d(pivot[0], pivot[1], pivot[2]);
+  p3d = p3d * m4d;
+
+  // Now recenter the matrix about the pivot point.
+  m4d.set_row(3, p3d);
+
+  // Convert the recentered matrix into the group's space and store
+  // it.
   m4d = m4d * egg_group->get_node_frame_inv();
   if (!m4d.almost_equal(LMatrix4d::ident_mat(), 0.0001)) {
     egg_group->add_matrix(m4d);
   }
+  return;
 }
 
 ////////////////////////////////////////////////////////////////////
