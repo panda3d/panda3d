@@ -163,16 +163,16 @@ class VectorEntry(Pmw.MegaWidget):
     def getAt(self,index):
         return self._value[index]
                                                                                       
-    def set(self, value, fCommand = 0):
+    def set(self, value, fCommand = 1):
         for i in range(self['dim']):
             self._value[i] = value[i]
             self.variableList[i].set(self.entryFormat % value[i])
         self.action(fCommand)
 
-    def setAt(self, index, value):
+    def setAt(self, index, value, fCommand = 1):
         self.variableList[index].set(self.entryFormat % value)
         self._value[index] = value
-        self.action()
+        self.action(fCommand)
         
     def _entryUpdateAt(self, index):
         entryVar = self.variableList[index]
@@ -207,7 +207,7 @@ class VectorEntry(Pmw.MegaWidget):
         if self._floaters:
             self._floaters.set(self._value, 0)
         
-    def action(self, fCommand = 0):
+    def action(self, fCommand = 1):
         self._refreshFloaters()
         if fCommand & (self['command'] != None):
             self['command'](self._value)        
@@ -259,7 +259,7 @@ class ColorEntry(VectorEntry):
             ('min',                     0.0,                None),
             ('max',                     255.0,              None),
             ('significantDigits',       0,                  None),
-            ('Valuator_resolution',      1.0,                None),
+            ('Valuator_resolution',     1.0,                None),
             )
         self.defineoptions(kw, optiondefs)
         #kw['valuatorType'] = EntryScale.EntryScaleGroup

@@ -103,6 +103,8 @@ class DirectSession(PandaObject):
 	self.enableKeyEvents()
 	self.enableMouseEvents()
 	self.enableActionEvents()
+        # Set flag
+        self.fEnabled = 1
 
     def disable(self):
 	# Shut down all display region context tasks
@@ -114,6 +116,14 @@ class DirectSession(PandaObject):
 	self.disableKeyEvents()
 	self.disableMouseEvents()
 	self.disableActionEvents()
+        # Set flag
+        self.fEnabled = 0
+
+    def toggleDirect(self):
+        if self.fEnabled:
+            self.disable()
+        else:
+            self.enable()
 
     def minimumConfiguration(self):
 	# Remove context task
@@ -133,7 +143,6 @@ class DirectSession(PandaObject):
 	self.enable()
 
     # EVENT FUNCTIONS
-
     def enableActionEvents(self):
         for event in self.actionEvents:
             self.accept(event[0], event[1], extraArgs = event[2:])
@@ -378,7 +387,6 @@ class DirectSession(PandaObject):
                     self.flash(np)
 
     # UNDO REDO FUNCTIONS
-    
     def pushUndo(self, nodePathList, fResetRedo = 1):
         # Assemble group of changes
         undoGroup = []
@@ -472,6 +480,9 @@ class DirectSession(PandaObject):
     def toggleWidgetVis(self):
         self.widget.toggleWidget()
 
+    def isEnabled(self):
+        return self.fEnabled
+
 class DisplayRegionList:
     def __init__(self):
         self.displayRegionList = []
@@ -481,6 +492,9 @@ class DisplayRegionList:
 
     def __getitem__(self, index):
         return self.displayRegionList[index]
+
+    def __len__(self):
+        return len(self.displayRegionList)
 
     def updateContext(self):
         for dr in self.displayRegionList:

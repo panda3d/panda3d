@@ -8,7 +8,7 @@ DEFAULT_MENU_ITEMS = ['Select', 'Deselect', 'Flash', 'Toggle Vis',
 
 class SceneGraphExplorer(Pmw.MegaWidget):
     "Graphical display of a scene graph"
-    def __init__(self, root = render, parent = None, **kw):
+    def __init__(self, parent = None, nodePath = render, **kw):
         # Define the megawidget options.
         optiondefs = (
             ('menuItems',   [],   Pmw.INITOPT),
@@ -19,7 +19,7 @@ class SceneGraphExplorer(Pmw.MegaWidget):
         Pmw.MegaWidget.__init__(self, parent)
         
         # Initialize some class variables
-        self.root = root
+        self.nodePath = nodePath
 
         # Create the components.
         
@@ -32,12 +32,12 @@ class SceneGraphExplorer(Pmw.MegaWidget):
             'scrolledCanvas',
             (), None,
             Pmw.ScrolledCanvas, (interior,),
-            hull_width = 200, hull_height = 400,
+            hull_width = 200, hull_height = 500,
             usehullsize = 1)
         self._canvas = self._scrolledCanvas.component('canvas')
         self._canvas['scrollregion'] = ('0i', '0i', '2i', '4i')
         self._scrolledCanvas.resizescrollregion()
-        self._scrolledCanvas.pack(padx = 5, pady = 5, expand=1, fill = BOTH)
+        self._scrolledCanvas.pack(padx = 3, pady = 3, expand=1, fill = BOTH)
         
         self._canvas.bind('<ButtonPress-2>', self.mouse2Down)
         self._canvas.bind('<B2-Motion>', self.mouse2Motion)
@@ -46,7 +46,7 @@ class SceneGraphExplorer(Pmw.MegaWidget):
                           sc.resizescrollregion())
 
         # Create the contents
-        self._treeItem = SceneGraphExplorerItem(self.root)
+        self._treeItem = SceneGraphExplorerItem(self.nodePath)
 
         self._node = TreeNode(self._canvas, None, self._treeItem,
                               DEFAULT_MENU_ITEMS + self['menuItems'])
@@ -127,6 +127,6 @@ class SceneGraphExplorerItem(TreeItem):
 def explore(nodePath = render):
     tl = Toplevel()
     tl.title('Explore: ' + nodePath.getName())
-    sge = SceneGraphExplorer(parent = tl, root = nodePath)
+    sge = SceneGraphExplorer(parent = tl, nodePath = nodePath)
     sge.pack(expand = 1, fill = 'both')
     return sge

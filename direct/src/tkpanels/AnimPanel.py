@@ -144,12 +144,6 @@ class AnimPanel(AppShell):
         for actorControl in self.actorControlList:
             actorControl.reset()
 
-    def toggleBalloon(self):
-        if self.toggleBalloonVar.get():
-            self.balloon.configure(state = 'balloon')
-        else:
-            self.balloon.configure(state = 'none')
-
 class ActorControl(Pmw.MegaWidget):
     def __init__(self, parent = None, **kw):
 

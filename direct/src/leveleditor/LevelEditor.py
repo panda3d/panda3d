@@ -296,7 +296,6 @@ class LevelEditor(NodePath, PandaObject):
             # Hot key actions
             ('a', self.autoPositionGrid),
             ('.', self.jumpToInsertionPoint),
-            ('p', self.plantSelectedNodePath),
             ('left', self.keyboardXformSelected, ['left']),
             ('right', self.keyboardXformSelected, ['right']),
             ('up', self.keyboardXformSelected, ['up']),
@@ -1474,18 +1473,6 @@ class LevelEditor(NodePath, PandaObject):
    	mouseDir.assign(mCam2Grid.xformVec(mouseDir))
         # Calc intersection point
         return planeIntersect(mouseOrigin, mouseDir, ZERO_POINT, Z_AXIS)
-
-    def plantSelectedNodePath(self):
-	""" Move selected object to intersection point of cursor on grid """
-	selectedNode = direct.selected.last
-        if selectedNode:
-            # Where is the mouse relative to the grid?
-            hitPt = self.getGridIntersectionPoint()
-            selectedNode.setPos(direct.grid, hitPt)
-            dnaNode = self.findDNANode(selectedNode)
-            if dnaNode:
-                # Update props placement to reflect current mouse position
-                dnaNode.setPos(direct.selected.last.getPos())
 
     def jumpToInsertionPoint(self):
         """ Move selected object to insertion point """

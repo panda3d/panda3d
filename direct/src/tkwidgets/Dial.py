@@ -236,7 +236,7 @@ class Dial(Pmw.MegaWidget):
     def get(self):
         return self.value
     
-    def set(self, value):
+    def set(self, value, fCommand = 1):
         if not self['fRollover']:
             if value > self['max']:
                 self.baseVal = 0.0
@@ -248,7 +248,7 @@ class Dial(Pmw.MegaWidget):
             self.dialAngle = None
         else:
             self.updateIndicator(value)
-        if self['command']:
+        if fCommand & (self['command'] != None):
             apply(self['command'], [value] + self['commandData'])
 
     def updateIndicator(self, value):

@@ -51,9 +51,20 @@ class DirectGrid(NodePath,PandaObject):
     def enable(self):
         self.reparentTo(direct.group)
         self.updateGrid()
+        self.fEnabled = 1
 
     def disable(self):
         self.reparentTo(hidden)
+        self.fEnabled = 0
+
+    def toggleGrid(self):
+        if self.fEnabled:
+            self.disable()
+        else:
+            self.enable()
+
+    def isEnabled(self):
+        return self.fEnabled
 
     def updateGrid(self):
 	# Update grid lines based upon current grid spacing and grid size
@@ -136,7 +147,10 @@ class DirectGrid(NodePath,PandaObject):
     def getGridSpacing(self):
         return self.gridSpacing
 
-    def setSize(self, size):
+    def setGridSize(self, size):
 	# Set size of grid back and redraw lines
         self.gridSize = size
 	self.updateGrid()
+
+    def getGridSize(self):
+        return self.gridSize

@@ -80,13 +80,18 @@ class AppShell(Pmw.MegaToplevel, PandaObject):
         self.menuBar = self.createcomponent('menubar', (), None,
                                             Pmw.MenuBar,
                                             (self.menuFrame,),
-                                            hull_relief=RAISED,
-                                            hull_borderwidth=1,
+                                            hull_relief=FLAT,
+                                            hull_borderwidth=0,
                                             balloon=self.balloon())
 
         self.menuBar.addmenu('Help', 'About %s' % self.appname, side = 'right')
         self.menuBar.addmenu('File', 'File commands and Quit')
         self.menuBar.pack(fill=X, side = LEFT)
+
+        # Force some space between pull down menus and other widgets
+        spacer = Label(self.menuFrame, text = '   ')
+        spacer.pack(side = LEFT, expand = 0)
+
         self.menuFrame.pack(fill = X)
                             
     def __createDataArea(self):

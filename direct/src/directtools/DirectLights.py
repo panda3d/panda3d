@@ -1,5 +1,6 @@
 from PandaObject import *
 from DirectGeometry import *
+from string import lower
 
 class DirectLights(NodePath):
     def __init__(self, parent = None):
@@ -15,6 +16,7 @@ class DirectLights(NodePath):
         # Create a list of all active lights
         self.lightList = []
         self.nodePathList = []
+        self.nameList = []
         # Counts of the various types of lights
         self.ambientCount = 0
         self.directionalCount = 0
@@ -24,10 +26,17 @@ class DirectLights(NodePath):
     def __getitem__(self, index):
         return self.lightList[index]
 
+    def __len__(self):
+        return len(self.lightList)
+
     def getLightNodePath(self, index):
         return self.nodePathList[index]
 
+    def getLightName(self, index):
+        return self.nameList[index]
+
     def create(self, type):
+        type = type.lower()
         if type == 'ambient':
             self.ambientCount += 1
             light = AmbientLight('ambient_' + `self.ambientCount`)
@@ -44,6 +53,9 @@ class DirectLights(NodePath):
             self.spotCount += 1
             light = Spotlight('spot_' + `self.spotCount`)
             light.setColor(VBase4(1))
+        else:
+            print 'Invalid light type'
+            return None
         # Add the new light
         self.addLight(light)
         # Turn it on as a default
@@ -59,9 +71,13 @@ class DirectLights(NodePath):
         # Attach node to self
         # MRM: This doesn't work for spotlights!
         nodePath = self.attachNewNode(light.upcastToNamedNode())
+        name = light.getName()
         # Store it in the lists
         self.lightList.append(light)
         self.nodePathList.append(nodePath)
+        self.nameList.append(name)
+        # Send an event to all watching objects
+        messenger.send('DirectLights_addLight', [light])
 
     def allOn(self):
         """ Turn on all DIRECT lights """
