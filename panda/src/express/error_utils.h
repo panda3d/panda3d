@@ -12,11 +12,12 @@
 BEGIN_PUBLISH
 
 enum ErrorUtilCode {
-  EU_eof = 5,
-  EU_network_no_data = 4,
+  EU_eof = 6,
+  EU_network_no_data = 5,
 
-  EU_ok = 3,
-  EU_write = 2,
+  EU_write_ram = 4,
+  EU_write = 3, 
+  EU_ok = 2,
   EU_success = 1,
 
   // General errors

@@ -588,6 +588,7 @@ run_to_ram(void) {
       write_ret = write_to_ram(_current_status);
       if (write_ret < 0)
 	return write_ret;
+      ret = EU_write_ram;
     }
 
     // Allocate a new buffer
@@ -613,6 +614,7 @@ run_to_ram(void) {
     write_ret = write_to_ram(_current_status);
     if (write_ret < 0)
       return write_ret;
+    ret = EU_write_ram;
   }
 
   // Attempt to receive the bytes from the socket
