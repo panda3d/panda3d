@@ -45,44 +45,51 @@ FltGeometry(FltHeader *header) : FltBeadID(header) {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltGeometry::get_color
 //       Access: Public
-//  Description: If has_color() indicates true, returns the primary
-//               color of the face, as a four-component value
-//               (including alpha as the transparency channel).
+//  Description: Returns the primary color of the face, as a
+//               four-component value (including alpha as the
+//               transparency channel).
+//
+//               If has_color() is false, the result is white, but
+//               still reflects the transparency correctly.
 ////////////////////////////////////////////////////////////////////
 Colorf FltGeometry::
 get_color() const {
-  nassertr(has_color(), Colorf(0.0, 0.0, 0.0, 0.0));
+  Colorf color;
 
-  if (_texwhite && has_texture()) {
+  if (!has_color() || (_texwhite && has_texture())) {
     // Force this one white.
-    return Colorf(1.0, 1.0, 1.0, 1.0 - (_transparency / 65535.0));
-  }
+    color.set(1.0, 1.0, 1.0, 1.0);
 
-  if (has_material()) {
+  } else if (has_material()) {
     // If we have a material, that replaces the color.
     FltMaterial *material = get_material();
-    return Colorf(material->_diffuse[0],
-		  material->_diffuse[1],
-		  material->_diffuse[2],
-		  1.0 - (_transparency / 65535.0));
+    color.set(material->_diffuse[0],
+	      material->_diffuse[1],
+	      material->_diffuse[2],
+	      material->_alpha);
+  } else {
+    RGBColorf rgb =
+      _header->get_rgb(_color_index, (_flags & F_packed_color) != 0,
+		       _packed_color);
+    color.set(rgb[0], rgb[1], rgb[2], 1.0);
   }
 
-  return _header->get_color(_color_index, (_flags & F_packed_color) != 0,
-			    _packed_color, _transparency);
+  // Modify the whole thing by our transparency.
+  float alpha = 1.0 - (_transparency / 65535.0);
+  color[3] *= alpha;
+
+  return color;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FltGeometry::get_rgb
 //       Access: Public
-//  Description: If has_color() indicates true, returns the primary
-//               color of the face, as a three-component value
-//               ignoring transparency.
+//  Description: Returns the primary color of the face, as a
+//               three-component value ignoring transparency.
 ////////////////////////////////////////////////////////////////////
 RGBColorf FltGeometry::
 get_rgb() const {
-  nassertr(has_color(), RGBColorf(0.0, 0.0, 0.0));
-
-  if (_texwhite && has_texture()) {
+  if (!has_color() || (_texwhite && has_texture())) {
     // Force this one white.
     return RGBColorf(1.0, 1.0, 1.0);
   }

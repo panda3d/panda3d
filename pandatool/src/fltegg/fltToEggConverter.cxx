@@ -360,28 +360,26 @@ setup_geometry(const FltGeometry *flt_geom, FltToEggLevelState &state,
     break;
   }
 
+  Colorf face_color = flt_geom->get_color();
+
+  if (state._flt_object != (FltObject *)NULL) {
+    // If we have a FltObject above us, it might also specify a
+    // transparency.  This combines with our existing transparency.
+    float alpha = 1.0 - (state._flt_object->_transparency / 65535.0);
+    face_color[3] *= alpha;
+  }
+
+  egg_prim->set_color(face_color);
+
   if (flt_geom->has_texture()) {
     // If the geometry has a texture, apply it.
     egg_prim->set_texture(make_egg_texture(flt_geom->get_texture()));
 
     if (flt_geom->_texwhite) {
       // If the geometry should be colored white under the texture,
-      // then eliminate any explicit color; the egg loader will
-      // implicitly color it white.
-      egg_prim->clear_color();
+      // then eliminate vertex colors.
       use_vertex_color = false;
     }
-  }
-
-  // Get the alpha value based on the object's "transparency".
-  double a = 1.0 - (flt_geom->_transparency / 65536.0);
-  Colorf face_color;
-  
-  if (flt_geom->has_color()) {
-    // And make sure to set the transparency correctly.
-    face_color = flt_geom->get_color();
-    face_color[3] = a;
-    egg_prim->set_color(face_color);
   }
 
   if (use_vertex_color) {
@@ -395,7 +393,7 @@ setup_geometry(const FltGeometry *flt_geom, FltToEggLevelState &state,
       EggVertex *vertex = (*vi);
       if (vertex->has_color()) {
 	Colorf vertex_color = vertex->get_color();
-	vertex_color[3] = a;
+	vertex_color[3] = face_color[3];
 	vertex->set_color(vertex_color);
       } else {
 	if (flt_geom->has_color()) {
