@@ -30,6 +30,8 @@
 #include <eggTextureCollection.h>
 #include <eggBin.h>
 #include <nurbsCurve.h>
+#include <classicNurbsCurve.h>
+#include <nurbsCurveInterface.h>
 #include <builderBucket.h>
 #include <builderPrim.h>
 #include <builderVertex.h>
@@ -1078,7 +1080,16 @@ make_node(EggNurbsCurve *egg_curve, NamedNode *parent) {
   assert(parent != NULL);
   assert(!parent->is_of_type(GeomNode::get_class_type()));
 
-  PT(NurbsCurve) curve = new NurbsCurve;
+  PT(ParametricCurve) curve;
+  
+  if (egg_load_classic_nurbs_curves) {
+    curve = new ClassicNurbsCurve;
+  } else {
+    curve = new NurbsCurve;
+  }
+
+  NurbsCurveInterface *nurbs = curve->get_nurbs_interface();
+  nassertr(nurbs != (NurbsCurveInterface *)NULL, (RenderRelation *)NULL);
 
   if (egg_curve->get_order() < 1 || egg_curve->get_order() > 4) {
     egg2sg_cat.error()
@@ -1087,24 +1098,24 @@ make_node(EggNurbsCurve *egg_curve, NamedNode *parent) {
     return (RenderRelation *)NULL;
   }
 
-  curve->set_order(egg_curve->get_order());
+  nurbs->set_order(egg_curve->get_order());
 
   EggPrimitive::const_iterator pi;
   for (pi = egg_curve->begin(); pi != egg_curve->end(); ++pi) {
-    curve->append_cv(LCAST(float, (*pi)->get_pos4()));
+    nurbs->append_cv(LCAST(float, (*pi)->get_pos4()));
   }
 
   int num_knots = egg_curve->get_num_knots();
-  if (num_knots != curve->get_num_knots()) {
+  if (num_knots != nurbs->get_num_knots()) {
     egg2sg_cat.error()
       << "Invalid NURBSCurve number of knots for "
       << egg_curve->get_name() << ": got " << num_knots
-      << " knots, expected " << curve->get_num_knots() << "\n";
+      << " knots, expected " << nurbs->get_num_knots() << "\n";
     return (RenderRelation *)NULL;
   }
     
   for (int i = 0; i < num_knots; i++) {
-    curve->set_knot(i, egg_curve->get_knot(i));
+    nurbs->set_knot(i, egg_curve->get_knot(i));
   }
 
   switch (egg_curve->get_curve_type()) {
@@ -1125,7 +1136,7 @@ make_node(EggNurbsCurve *egg_curve, NamedNode *parent) {
   }
   curve->set_name(egg_curve->get_name());
 
-  if (!curve->recompute()) {
+  if (!nurbs->recompute()) {
     egg2sg_cat.error()
       << "Invalid NURBSCurve " << egg_curve->get_name() << "\n";
     return (RenderRelation *)NULL;

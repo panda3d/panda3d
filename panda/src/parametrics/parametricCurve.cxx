@@ -1,0 +1,818 @@
+// Filename: parametricCurve.cxx
+// Created by:  drose (04Mar01)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "parametricCurve.h"
+#include "config_parametrics.h"
+#include "hermiteCurve.h"
+#include "classicNurbsCurve.h"
+#include "parametricCurveDrawer.h"
+
+#include <datagram.h>
+#include <datagramIterator.h>
+#include <bamWriter.h>
+#include <bamReader.h>
+#include <renderRelation.h>
+#include <omniBoundingVolume.h>
+
+TypeHandle ParametricCurve::_type_handle;
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::Constructor
+//       Access: Public
+//  Description: This is a virtual base class.  Don't try to construct
+//               one from Scheme.
+////////////////////////////////////////////////////////////////////
+ParametricCurve::
+ParametricCurve() {
+  _curve_type = PCT_NONE;
+  _num_dimensions = 3;
+
+  // This CurveDrawer object is used to draw the curve implicitly if
+  // it happens to get parented to render, but only if the curve_type
+  // is set to PCT_XYZ or PCT_NONE.
+  _implicit_drawer = (ParametricCurveDrawer *)NULL;
+
+  // And until we attempt to draw it, we set our bounding volume to be
+  // infinitely large (since we don't know).  Once we draw it the
+  // first time, we'll recompute the bounding volume according to the
+  // geometry of what we just drew.
+  set_bound(OmniBoundingVolume());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::Destructor
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+ParametricCurve::
+~ParametricCurve() {
+  if (_implicit_drawer != (ParametricCurveDrawer *)NULL) {
+    delete _implicit_drawer;
+  }
+
+  // Our drawer list must be empty by the time we destruct, since our
+  // drawers all maintain reference-counting pointers to us!  If this
+  // is not so, we have lost a reference count somewhere, or we have
+  // gotten confused about which drawers we're registered to.
+  nassertv(_drawers.empty());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::is_valid
+//       Access: Published, Virtual
+//  Description: Returns true if the curve is defined.  This base
+//               class function always returns true; derived classes
+//               might override this to sometimes return false.
+////////////////////////////////////////////////////////////////////
+bool ParametricCurve::
+is_valid() const {
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::get_max_t
+//       Access: Published, Virtual
+//  Description: Returns the upper bound of t for the entire curve.
+//               The curve is defined in the range 0.0 <= t <=
+//               get_max_t().  This base class function always returns
+//               1.0; derived classes might override this to return
+//               something else.
+////////////////////////////////////////////////////////////////////
+float ParametricCurve::
+get_max_t() const {
+  return 1.0;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::set_curve_type
+//       Access: Published
+//  Description: Sets the flag indicating the use to which the curve
+//               is intended to be put.  This flag is optional and
+//               only serves to provide a hint to the egg reader and
+//               writer code; it has no effect on the curve's
+//               behavior.
+//
+//               Setting the curve type also sets the num_dimensions
+//               to 3 or 1 according to the type.
+//
+//               THis flag may have one of the values PCT_XYZ,
+//               PCT_HPR, or PCT_T.
+////////////////////////////////////////////////////////////////////
+void ParametricCurve::
+set_curve_type(int type) {
+  _curve_type = type;
+  switch (_curve_type) {
+  case PCT_XYZ:
+  case PCT_HPR:
+  case PCT_NONE:
+    _num_dimensions = 3;
+    break;
+
+  case PCT_T:
+    _num_dimensions = 1;
+    break;
+
+  default:
+    assert(0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::get_curve_type
+//       Access: Published
+//  Description: Returns the flag indicating the use to which the curve
+//               is intended to be put.
+////////////////////////////////////////////////////////////////////
+int ParametricCurve::
+get_curve_type() const {
+  return _curve_type;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::set_num_dimensions
+//       Access: Published
+//  Description: Specifies the number of significant dimensions in the
+//               curve's vertices.  This should be one of 1, 2, or 3.
+//               Normally, XYZ and HPR curves have three dimensions;
+//               time curves should always have one dimension.  This
+//               only serves as a hint to the mopath editor, and also
+//               controls how the curve is written out.
+////////////////////////////////////////////////////////////////////
+void ParametricCurve::
+set_num_dimensions(int num) {
+  _num_dimensions = num;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::get_num_dimensions
+//       Access: Published
+//  Description: Returns the number of significant dimensions in the
+//               curve's vertices, as set by a previous call to
+//               set_num_dimensions().  This is only a hint as to how
+//               the curve is intended to be used; the actual number
+//               of dimensions of any curve is always three.
+////////////////////////////////////////////////////////////////////
+int ParametricCurve::
+get_num_dimensions() const {
+  return _num_dimensions;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::calc_length
+//       Access: Published
+//  Description: Approximates the length of the entire curve to within
+//               a few decimal places.
+////////////////////////////////////////////////////////////////////
+float ParametricCurve::
+calc_length() const {
+  return calc_length(0.0, get_max_t());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::calc_length
+//       Access: Published
+//  Description: Approximates the length of the curve segment from
+//               parametric time from to time to.
+////////////////////////////////////////////////////////////////////
+float ParametricCurve::
+calc_length(float from, float to) const {
+  float t1, t2;
+  LPoint3f p1, p2;
+
+  // Normally we expect from < to.  If they came in backwards, reverse
+  // them.
+  if (to < from) {
+    float temp = to;
+    to = from;
+    from = temp;
+  }
+
+  // Start with a segment for each unit of t.
+  int num_segs = (int)floor(to - from + 1);
+  t2 = from;
+  get_point(t2, p2);
+  float net = 0.0;
+
+  for (int i = 1; i <= num_segs; i++) {
+    t1 = t2;
+    p1 = p2;
+
+    t2 = (to - from) * (float)i / (float)num_segs + from;
+    get_point(t2, p2);
+
+    net += r_calc_length(t1, t2, p1, p2, (p1 - p2).length());
+  }
+  return net;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::find_length
+//       Access: Published
+//  Description: Returns the parametric value corresponding to the
+//               indicated distance along the curve from the starting
+//               parametric value.
+//
+//               This is the inverse of calc_length(): rather than
+//               determining the length along the curve between two
+//               parametric points, it determines the position in
+//               parametric time of a point n units along the curve.
+//
+//               The search distance must not be negative.
+////////////////////////////////////////////////////////////////////
+float ParametricCurve::
+find_length(float start_t, float length_offset) const {
+  nassertr(length_offset >= 0.0, start_t);
+  nassertr(start_t >= 0.0 && start_t <= get_max_t(), start_t);
+
+  float t1, t2;
+  LPoint3f p1, p2;
+
+  // Start with a segment for each unit of t.
+  float max_t = get_max_t();
+  int num_segs = (int)floor(max_t - start_t + 1);
+  t2 = start_t;
+  get_point(t2, p2);
+  float net = 0.0;
+
+  for (int i = 1; i <= num_segs; i++) {
+    t1 = t2;
+    p1 = p2;
+
+    t2 = (max_t - start_t) * (float)i / (float)num_segs + start_t;
+    get_point(t2, p2);
+
+    float seglength = (p1 - p2).length();
+    float result;
+
+    if (r_find_length(length_offset - net, result,
+		      t1, t2, p1, p2, seglength)) {
+      // Found it!
+      return result;
+    }
+
+    net += seglength;
+  }
+
+  // Not on the curve?  Huh.
+  return max_t;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::stitch
+//       Access: Published, Virtual
+//  Description: Regenerates this curve as one long curve: the first
+//               curve connected end-to-end with the second one.
+//               Either a or b may be the same as 'this'.
+//
+//               Returns true if successful, false on failure or if
+//               the curve type does not support stitching.
+////////////////////////////////////////////////////////////////////
+bool ParametricCurve::
+stitch(const ParametricCurve *, const ParametricCurve *) {
+  parametrics_cat.error()
+    << get_type() << " does not support stitching.\n";
+  return false;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::write_egg
+//       Access: Published
+//  Description: Writes an egg description of the nurbs curve to the
+//               specified output file.  Returns true if the file is
+//               successfully written.
+////////////////////////////////////////////////////////////////////
+bool ParametricCurve::
+write_egg(Filename filename, CoordinateSystem cs) {
+  ofstream out;
+  filename.set_text();
+
+  if (!filename.open_write(out)) {
+    parametrics_cat.error()
+      << "Unable to write to " << filename << "\n";
+    return false;
+  }
+  return write_egg(out, filename, cs);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::write_egg
+//       Access: Published
+//  Description: Writes an egg description of the nurbs curve to the
+//               specified output stream.  Returns true if the file is
+//               successfully written.
+////////////////////////////////////////////////////////////////////
+bool ParametricCurve::
+write_egg(ostream &out, const Filename &filename, CoordinateSystem cs) {
+  string curve_type;
+  switch (get_curve_type()) {
+  case PCT_XYZ:
+    curve_type = "xyz";
+    break;
+
+  case PCT_HPR:
+    curve_type = "hpr";
+    break;
+
+  case PCT_T:
+    curve_type = "t";
+    break;
+  }
+
+  if (!has_name()) {
+    // If we don't have a name, come up with one.
+    string name = filename.get_basename_wo_extension();
+
+    if (!curve_type.empty()) {
+      name += "_";
+      name += curve_type;
+    }
+
+    set_name(name);
+  }
+
+  if (cs == CS_default) {
+    cs = default_coordinate_system;
+  }
+
+  if (cs != CS_invalid) {
+    out << "<CoordinateSystem> { ";
+    switch (cs) {
+    case CS_zup_right:
+      out << "Z-Up";
+      break;
+      
+    case CS_yup_right:
+      out << "Y-Up";
+      break;
+      
+    case CS_zup_left:
+      out << "Z-Up-Left";
+      break;
+      
+    case CS_yup_left:
+      out << "Y-Up-Left";
+      break;
+
+    default:
+      break;
+    }
+    out << " }\n\n";
+  }
+
+
+  if (!format_egg(out, get_name(), curve_type, 0)) {
+    return false;
+  }
+
+  if (out) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::get_bezier_segs
+//       Access: Public, Virtual
+//  Description: Fills up the indicated vector with a list of
+//               BezierSeg structs that describe the curve.  This
+//               assumes the curve is a PiecewiseCurve of
+//               CubicCurvesegs.  Returns true if successful, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool ParametricCurve::
+get_bezier_segs(ParametricCurve::BezierSegs &) const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::get_bezier_seg
+//       Access: Public, Virtual
+//  Description: Fills the BezierSeg structure with a description of
+//               the curve segment as a Bezier, if possible, but does
+//               not change the _t member of the structure.  Returns
+//               true if successful, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool ParametricCurve::
+get_bezier_seg(ParametricCurve::BezierSeg &) const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::get_nurbs_interface
+//       Access: Public, Virtual
+//  Description: Returns a pointer to the object as a
+//               NurbsCurveInterface object if it happens to be a
+//               NURBS-style curve; otherwise, returns NULL.
+////////////////////////////////////////////////////////////////////
+NurbsCurveInterface *ParametricCurve::
+get_nurbs_interface() {
+  return (NurbsCurveInterface *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::convert_to_hermite
+//       Access: Public, Virtual
+//  Description: Stores an equivalent curve representation in the
+//               indicated Hermite curve, if possible.  Returns true
+//               if successful, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool ParametricCurve::
+convert_to_hermite(HermiteCurve *hc) const {
+  BezierSegs bz_segs;
+  if (!get_bezier_segs(bz_segs)) {
+    return false;
+  }
+
+  hc->set_curve_type(_curve_type);
+
+  // Now convert the Bezier segments to a Hermite.  Normally, the
+  // Beziers will match up head-to-tail, but if they don't, that's a
+  // cut.
+  hc->remove_all_cvs();
+
+  int i, n;
+  if (!bz_segs.empty()) {
+    float scale_in = 0.0;
+    float scale_out = bz_segs[0]._t;
+    n = hc->append_cv(HC_SMOOTH, bz_segs[0]._v[0]);
+    hc->set_cv_out(n, 3.0 * (bz_segs[0]._v[1] - bz_segs[0]._v[0]) / scale_out);
+
+    for (i = 0; i < (int)bz_segs.size()-1; i++) {
+      scale_in = scale_out;
+      scale_out = bz_segs[i+1]._t - bz_segs[i]._t;
+
+      if (!bz_segs[i]._v[3].almost_equal(bz_segs[i+1]._v[0], 0.0001)) {
+        // Oops, we have a cut.
+        hc->set_cv_type(n, HC_CUT);
+      }
+
+      n = hc->append_cv(HC_FREE, bz_segs[i+1]._v[0]);
+      hc->set_cv_in(n, 3.0 * (bz_segs[i]._v[3] - bz_segs[i]._v[2]) / scale_in);
+      hc->set_cv_tstart(n, bz_segs[i]._t);
+
+      hc->set_cv_out(n, 3.0 * (bz_segs[i+1]._v[1] - bz_segs[i+1]._v[0]) / scale_out);
+    }
+
+    // Now the last CV.
+    scale_in = scale_out;
+    i = bz_segs.size()-1;
+    n = hc->append_cv(HC_SMOOTH, bz_segs[i]._v[3]);
+    hc->set_cv_in(n, 3.0 * (bz_segs[i]._v[3] - bz_segs[i]._v[2]) / scale_in);
+    hc->set_cv_tstart(n, bz_segs[i]._t);
+  }
+
+  // Finally, go through and figure out which CV's are smooth or G1.
+  int num_cvs = hc->get_num_cvs();
+  for (n = 1; n < num_cvs-1; n++) {
+    if (hc->get_cv_type(n)!=HC_CUT) {
+      LVector3f in = hc->get_cv_in(n);
+      LVector3f out = hc->get_cv_out(n);
+      
+      if (in.almost_equal(out, 0.0001)) {
+        hc->set_cv_type(n, HC_SMOOTH);
+      } else {
+        in.normalize();
+        out.normalize();
+        if (in.almost_equal(out, 0.0001)) {
+          hc->set_cv_type(n, HC_G1);
+        }
+      }
+    }
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::convert_to_nurbs
+//       Access: Public, Virtual
+//  Description: Stores in the indicated NurbsCurve a NURBS
+//               representation of an equivalent curve.  Returns true
+//               if successful, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool ParametricCurve::
+convert_to_nurbs(ParametricCurve *nc) const {
+  NurbsCurveInterface *nurbs = nc->get_nurbs_interface();
+  nassertr(nurbs != (NurbsCurveInterface *)NULL, false);
+
+  BezierSegs bz_segs;
+  if (!get_bezier_segs(bz_segs)) {
+    return false;
+  }
+
+  nc->set_curve_type(_curve_type);
+
+  nurbs->remove_all_cvs();
+  nurbs->set_order(4);
+  if (!bz_segs.empty()) {
+    int i;
+    for (i = 0; i < (int)bz_segs.size(); i++) {
+      nurbs->append_cv(bz_segs[i]._v[0]);
+      nurbs->append_cv(bz_segs[i]._v[1]);
+      nurbs->append_cv(bz_segs[i]._v[2]);
+      if (i == (int)bz_segs.size()-1 ||
+          !bz_segs[i]._v[3].almost_equal(bz_segs[i+1]._v[0], 0.0001)) {
+        nurbs->append_cv(bz_segs[i]._v[3]);
+      }
+    }
+
+    float t;
+    int ki = 4;
+    nurbs->set_knot(0, 0.0);
+    nurbs->set_knot(1, 0.0);
+    nurbs->set_knot(2, 0.0);
+    nurbs->set_knot(3, 0.0);
+
+    for (i = 0; i < (int)bz_segs.size(); i++) {
+      t = bz_segs[i]._t;
+
+      nurbs->set_knot(ki, t);
+      nurbs->set_knot(ki+1, t);
+      nurbs->set_knot(ki+2, t);
+      ki += 3;
+      if (i == (int)bz_segs.size()-1 ||
+          !bz_segs[i]._v[3].almost_equal(bz_segs[i+1]._v[0], 0.0001)) {
+        nurbs->set_knot(ki, t);
+        ki++;
+      }
+    }
+  }
+
+  nurbs->recompute();
+
+  return nc->is_valid();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::draw_traverse
+//       Access: Public, Virtual
+//  Description: This is called by the Draw traversal by virtue of the
+//               node's being present in the scene graph.  Its job is
+//               to make sure the visualization of the collideable
+//               geometry is up-to-date.
+////////////////////////////////////////////////////////////////////
+void ParametricCurve::
+draw_traverse() {
+  if (_implicit_drawer == (ParametricCurveDrawer *)NULL) {
+    _implicit_drawer = new ParametricCurveDrawer();
+    _implicit_drawer->set_curve(this);
+    _implicit_drawer->draw();
+    _viz_arc = new RenderRelation(this, _implicit_drawer->detach_geom_node());
+    
+    // We must then tell the drawer to forget about us, so we don't
+    // maintain a circular reference count.
+    _implicit_drawer->clear_curves();
+
+    // Set our bounding type to accurately reflect the new geometry
+    // beneath this node.
+    set_bound(BVT_dynamic_sphere);
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::register_drawer
+//       Access: Public
+//  Description: Registers a Drawer with this curve that will
+//               automatically be updated whenever the curve is
+//               modified, so that the visible representation of the
+//               curve is kept up to date.  This is called
+//               automatically by the ParametricCurveDrawer.
+//
+//               Any number of Drawers may be registered with a
+//               particular curve.
+////////////////////////////////////////////////////////////////////
+void ParametricCurve::
+register_drawer(ParametricCurveDrawer *drawer) {
+  _drawers.push_back(drawer);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::unregister_drawer
+//       Access: Public
+//  Description: Removes a previously registered drawer from the list
+//               of automatically-refreshed drawers.  This is called
+//               automatically by the ParametricCurveDrawer.
+////////////////////////////////////////////////////////////////////
+void ParametricCurve::
+unregister_drawer(ParametricCurveDrawer *drawer) {
+  _drawers.remove(drawer);
+}
+
+
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::invalidate
+//       Access: Protected
+//  Description: Called from a base class to mark a section of the
+//               curve that has been modified and must be redrawn or
+//               recomputed in some way.
+////////////////////////////////////////////////////////////////////
+void ParametricCurve::
+invalidate(float, float) {
+  invalidate_all();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::invalidate_all
+//       Access: Protected
+//  Description: Called from a base class to indicate that the curve
+//               has changed in some substantial way and must be
+//               entirely redrawn.
+////////////////////////////////////////////////////////////////////
+void ParametricCurve::
+invalidate_all() {
+  DrawerList::iterator n;
+  for (n = _drawers.begin();
+       n != _drawers.end();
+       ++n) {
+    (*n)->redraw();
+  }
+
+  // Also update the implicit representation.
+  if (_implicit_drawer != (ParametricCurveDrawer *)NULL) {
+    if (_viz_arc->get_parent() != this) {
+      // Hey, someone has moved the visualization.  In that case,
+      // forget about it.
+      _viz_arc = (NodeRelation *)NULL;
+      delete _implicit_drawer;
+      _implicit_drawer = (ParametricCurveDrawer *)NULL;
+      set_bound(OmniBoundingVolume());
+
+    } else {
+      // Ok, the visualization is still there.  Regenerate it.
+      remove_arc(_viz_arc);
+      _implicit_drawer->set_curve(this);
+      _implicit_drawer->draw();
+      _viz_arc = new RenderRelation(this, _implicit_drawer->detach_geom_node());
+      _implicit_drawer->clear_curves();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::format_egg
+//       Access: Protected, Virtual
+//  Description: Formats the curve as an egg structure to write to the
+//               indicated stream.  Returns true on success, false on
+//               failure.
+////////////////////////////////////////////////////////////////////
+bool ParametricCurve::
+format_egg(ostream &, const string &, const string &, int) const {
+  return false;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::r_calc_length
+//       Access: Private
+//  Description: The recursive implementation of calc_length.  This
+//               function calculates the length of a segment of the
+//               curve between points t1 and t2, which presumably
+//               evaluate to the endpoints p1 and p2, and the segment
+//               has the length seglength.
+////////////////////////////////////////////////////////////////////
+float ParametricCurve::
+r_calc_length(float t1, float t2, const LPoint3f &p1, const LPoint3f &p2,
+              float seglength) const {
+  static const float length_tolerance = 0.0000001;
+  static const float t_tolerance = 0.000001;
+
+  if (t2 - t1 < t_tolerance) {
+    // Stop recursing--we've just walked off the limit for
+    // representing smaller values of t.
+    return 0.0;
+  } else {
+    float tmid;
+    LPoint3f pmid;
+    float left, right;
+
+    // Calculate the point on the curve midway between the two
+    // endpoints.
+    tmid = (t1+t2)/2.0;
+    get_point(tmid, pmid);
+
+    // Did we increase the length of the segment measurably?
+    left = (p1 - pmid).length();
+    right = (pmid - p2).length();
+
+    if ((left + right) - seglength < length_tolerance) {
+      // No.  We're done.
+      return seglength;
+    } else {
+      // Yes.  Keep going.
+      return r_calc_length(t1, tmid, p1, pmid, left) +
+             r_calc_length(tmid, t2, pmid, p2, right);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::r_find_length
+//       Access: Private
+//  Description: The recursive implementation of find_length.  This is
+//               similar to r_calc_length, above.  target_length is
+//               the length along the curve past t1 that we hope to
+//               find.  If the indicated target_length falls within
+//               this segment, returns true and sets found_t to the
+//               point along the segment.  Otherwise, updates
+//               seglength with the calculated length of the segment
+//               and returns false.
+////////////////////////////////////////////////////////////////////
+bool ParametricCurve::
+r_find_length(float target_length, float &found_t,
+	      float t1, float t2, 
+	      const LPoint3f &p1, const LPoint3f &p2,
+	      float &seglength) const {
+  static const float length_tolerance = 0.0000001;
+  static const float t_tolerance = 0.000001;
+
+  if (target_length < t_tolerance) {
+    // Stop recursing--we've just walked off the limit for
+    // representing smaller values of t.
+    found_t = t1;
+    return true;
+
+  } else {
+    float tmid;
+    LPoint3f pmid;
+    float left, right;
+
+    // Calculate the point on the curve midway between the two
+    // endpoints.
+    tmid = (t1+t2)/2.0;
+    get_point(tmid, pmid);
+
+    // Did we increase the length of the segment measurably?
+    left = (p1 - pmid).length();
+    right = (pmid - p2).length();
+
+    if ((left + right) - seglength < length_tolerance) {
+      // No.  We're done.
+      if (target_length <= seglength) {
+	found_t = t1 + (target_length / seglength) * (t2 - t1);
+	return true;
+      }
+      return false;
+
+    } else {
+      // Yes.  Keep going.
+
+      // Maybe the point is in the left half of the segment?
+      if (r_find_length(target_length, found_t, t1, tmid, p1, pmid, left)) {
+	return true;
+      }
+
+      // Maybe it's on the right half?
+      if (r_find_length(target_length - left, found_t, tmid, t2, pmid, p2, right)) {
+	return true;
+      }
+
+      // Neither.  Keep going.
+      seglength = left + right;
+      return false;
+    }
+  }
+}
+
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::write_datagram
+//       Access: Protected, Virtual
+//  Description: Function to write the important information in
+//               the particular object to a Datagram
+////////////////////////////////////////////////////////////////////
+void ParametricCurve::
+write_datagram(BamWriter *manager, Datagram &me) {
+  NamedNode::write_datagram(manager, me);
+
+  me.add_int8(_curve_type);
+  me.add_int8(_num_dimensions);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::fillin
+//       Access: Protected
+//  Description: Function that reads out of the datagram (or asks
+//               manager to read) all of the data that is needed to
+//               re-create this object and stores it in the appropiate
+//               place
+////////////////////////////////////////////////////////////////////
+void ParametricCurve::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  NamedNode::fillin(scan, manager);
+
+  _curve_type = scan.get_int8();
+  _num_dimensions = scan.get_int8();
+}

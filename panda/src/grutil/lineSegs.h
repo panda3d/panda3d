@@ -36,10 +36,10 @@ PUBLISHED:
   INLINE void set_thickness(float thick);
 
   INLINE void move_to(float x, float y, float z);
-  void move_to(const Vertexf &v);
+  void move_to(const LVecBase3f &v);
 
   INLINE void draw_to(float x, float y, float z);
-  void draw_to(const Vertexf &v);
+  void draw_to(const LVecBase3f &v);
 
   const Vertexf &get_current_position();
   bool is_empty();
@@ -62,7 +62,7 @@ private:
   class Point {
   public:
     INLINE Point();
-    INLINE Point(const Vertexf &point, const Colorf &color);
+    INLINE Point(const LVecBase3f &point, const Colorf &color);
     INLINE Point(const Point &copy);
     INLINE void operator = (const Point &copy);
 

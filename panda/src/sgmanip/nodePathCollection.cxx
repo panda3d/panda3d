@@ -12,7 +12,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 NodePathCollection::
@@ -21,7 +21,7 @@ NodePathCollection() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::Copy Constructor
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 NodePathCollection::
@@ -32,7 +32,7 @@ NodePathCollection(const NodePathCollection &copy) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::Copy Assignment Operator
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePathCollection::
@@ -42,7 +42,7 @@ operator = (const NodePathCollection &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::add_path
-//       Access: Public
+//       Access: Published
 //  Description: Adds a new NodePath to the collection.
 ////////////////////////////////////////////////////////////////////
 void NodePathCollection::
@@ -62,11 +62,11 @@ add_path(const NodePath &node_path) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::removes_path
-//       Access: Public
-//  Description: Removes a new NodePath from the collection.  Returns
-//               true if the path was removed, false if it was not a
-//               member of the collection.
+//     Function: NodePathCollection::remove_path
+//       Access: Published
+//  Description: Removes the indicated NodePath from the collection.
+//               Returns true if the path was removed, false if it was
+//               not a member of the collection.
 ////////////////////////////////////////////////////////////////////
 bool NodePathCollection::
 remove_path(const NodePath &node_path) {
@@ -99,7 +99,7 @@ remove_path(const NodePath &node_path) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::add_paths_from
-//       Access: Public
+//       Access: Published
 //  Description: Adds all the NodePaths indicated in the other
 //               collection to this path.  The other paths are simply
 //               appended to the end of the paths in this list;
@@ -116,7 +116,7 @@ add_paths_from(const NodePathCollection &other) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::remove_paths_from
-//       Access: Public
+//       Access: Published
 //  Description: Removes from this collection all of the NodePaths
 //               listed in the other collection.
 ////////////////////////////////////////////////////////////////////
@@ -135,7 +135,7 @@ remove_paths_from(const NodePathCollection &other) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::remove_duplicate_paths
-//       Access: Public
+//       Access: Published
 //  Description: Removes any duplicate entries of the same NodePaths
 //               on this collection.  If a NodePath appears multiple
 //               times, the first appearance is retained; subsequent
@@ -164,7 +164,7 @@ remove_duplicate_paths() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::has_path
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the indicated NodePath appears in
 //               this collection, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -180,7 +180,7 @@ has_path(const NodePath &path) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::clear
-//       Access: Public
+//       Access: Published
 //  Description: Removes all NodePaths from the collection.
 ////////////////////////////////////////////////////////////////////
 void NodePathCollection::
@@ -190,7 +190,7 @@ clear() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::is_empty
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if there are no NodePaths in the
 //               collection, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -201,7 +201,7 @@ is_empty() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::get_num_paths
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of NodePaths in the collection.
 ////////////////////////////////////////////////////////////////////
 int NodePathCollection::
@@ -211,7 +211,7 @@ get_num_paths() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::get_path
-//       Access: Public
+//       Access: Published
 //  Description: Returns the nth NodePath in the collection.
 ////////////////////////////////////////////////////////////////////
 NodePath NodePathCollection::
@@ -223,7 +223,7 @@ get_path(int index) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::ls
-//       Access: Public
+//       Access: Published
 //  Description: Lists all the nodes at and below each node in the
 //               collection hierarchically.
 ////////////////////////////////////////////////////////////////////
@@ -239,18 +239,18 @@ ls(ostream &out, int indent_level) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::find_all_matches
-//       Access: Public
+//       Access: Published
 //  Description: Returns the complete set of all NodePaths that begin
 //               with any NodePath in this collection and can be
-//               extended by approx_path_str.  The shortest paths will
-//               be listed first.
+//               extended by path.  The shortest paths will be listed
+//               first.
 ////////////////////////////////////////////////////////////////////
 NodePathCollection NodePathCollection::
-find_all_matches(const char *approx_path_str) const {
+find_all_matches(const string &path) const {
   NodePathCollection result;
 
   FindApproxPath approx_path;
-  if (approx_path.add_string(approx_path_str)) {
+  if (approx_path.add_string(path)) {
     if (!is_empty()) {
       FindApproxLevel level;
       for (int i = 0; i < get_num_paths(); i++) {
@@ -267,7 +267,7 @@ find_all_matches(const char *approx_path_str) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::reparent_to
-//       Access: Public
+//       Access: Published
 //  Description: Reparents all the NodePaths in the collection to the
 //               indicated node.
 ////////////////////////////////////////////////////////////////////
@@ -280,7 +280,7 @@ reparent_to(const NodePath &other) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::wrt_reparent_to
-//       Access: Public
+//       Access: Published
 //  Description: Reparents all the NodePaths in the collection to the
 //               indicated node, adjusting each transform so as not to
 //               move in world coordinates.
@@ -294,7 +294,7 @@ wrt_reparent_to(const NodePath &other) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::instance_to
-//       Access: Public
+//       Access: Published
 //  Description: Creates another instance for each NodePath in the
 //               collection under the indicated node; returns the
 //               collection of new instances.
@@ -312,7 +312,7 @@ instance_to(const NodePath &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::show
-//       Access: Public
+//       Access: Published
 //  Description: Shows all NodePaths in the collection.
 ////////////////////////////////////////////////////////////////////
 void NodePathCollection::
@@ -324,7 +324,7 @@ show() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::show
-//       Access: Public
+//       Access: Published
 //  Description: Hides all NodePaths in the collection.
 ////////////////////////////////////////////////////////////////////
 void NodePathCollection::
@@ -336,7 +336,7 @@ hide() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::output
-//       Access: Public
+//       Access: Published
 //  Description: Writes a brief one-line description of the
 //               NodePathCollection to the indicated output stream.
 ////////////////////////////////////////////////////////////////////
@@ -351,7 +351,7 @@ output(ostream &out) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::write
-//       Access: Public
+//       Access: Published
 //  Description: Writes a complete multi-line description of the
 //               NodePathCollection to the indicated output stream.
 ////////////////////////////////////////////////////////////////////

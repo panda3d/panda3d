@@ -2,22 +2,14 @@
 // Created by:  drose (17Sep98)
 // 
 ////////////////////////////////////////////////////////////////////
-// Copyright (C) 1992,93,94,95,96,97  Walt Disney Imagineering, Inc.
-// 
-// These  coded  instructions,  statements,  data   structures   and
-// computer  programs contain unpublished proprietary information of
-// Walt Disney Imagineering and are protected by  Federal  copyright
-// law.  They may  not be  disclosed to third  parties  or copied or
-// duplicated in any form, in whole or in part,  without  the  prior
-// written consent of Walt Disney Imagineering Inc.
-////////////////////////////////////////////////////////////////////
+
 #include "pandabase.h"
 #include "pointerTo.h"
 
 #include "curveFitter.h"
 #include "config_parametrics.h"
-#include "curve.h"
-#include "nurbsCurve.h"
+#include "parametricCurve.h"
+#include "classicNurbsCurve.h"
 #include "hermiteCurve.h"
 #include <algorithm>
 
@@ -30,6 +22,8 @@ TypeHandle CurveFitter::_type_handle;
 ////////////////////////////////////////////////////////////////////
 CurveFitter::
 CurveFitter() {
+  _got_xyz = false;
+  _got_hpr = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -53,16 +47,47 @@ reset() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CurveFitter::add_point
+//     Function: CurveFitter::add_xyz
 //       Access: Public
-//  Description: Adds a single sample point.
+//  Description: Adds a single sample xyz.
 ////////////////////////////////////////////////////////////////////
 void CurveFitter::
-add_point(double t, const LVecBase3f &point) {
+add_xyz(float t, const LVecBase3f &xyz) {
   DataPoint dp;
   dp._t = t;
-  dp._point = point;
+  dp._xyz = xyz;
   _data.push_back(dp);
+  _got_xyz = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CurveFitter::add_hpr
+//       Access: Public
+//  Description: Adds a single sample hpr.
+////////////////////////////////////////////////////////////////////
+void CurveFitter::
+add_hpr(float t, const LVecBase3f &hpr) {
+  DataPoint dp;
+  dp._t = t;
+  dp._hpr = hpr;
+  _data.push_back(dp);
+  _got_hpr = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CurveFitter::add_xyz_hpr
+//       Access: Public
+//  Description: Adds a single sample xyz & hpr simultaneously.
+////////////////////////////////////////////////////////////////////
+void CurveFitter::
+add_xyz_hpr(float t, const LVecBase3f &xyz, const LVecBase3f &hpr) {
+  DataPoint dp;
+  dp._t = t;
+  dp._xyz = xyz;
+  dp._hpr = hpr;
+  _data.push_back(dp);
+  _got_xyz = true;
+  _got_hpr = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -81,24 +106,32 @@ get_num_samples() const {
 //       Access: Public
 //  Description: Returns the parametric value of the nth sample added.
 ////////////////////////////////////////////////////////////////////
-double CurveFitter::
+float CurveFitter::
 get_sample_t(int n) const {
   nassertr(n >= 0 && n < (int)_data.size(), 0.0);
   return _data[n]._t;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CurveFitter::get_sample_point
+//     Function: CurveFitter::get_sample_xyz
 //       Access: Public
 //  Description: Returns the point in space of the nth sample added.
 ////////////////////////////////////////////////////////////////////
-const LVecBase3f &CurveFitter::
-get_sample_point(int n) const {
-#ifndef NDEBUG
-  static const LVecBase3f zero(0.0, 0.0, 0.0);
-  nassertr(n >= 0 && n < (int)_data.size(), zero);
-#endif
-  return _data[n]._point;
+LVecBase3f CurveFitter::
+get_sample_xyz(int n) const {
+  nassertr(n >= 0 && n < (int)_data.size(), LVecBase3f::zero());
+  return _data[n]._xyz;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CurveFitter::get_sample_hpr
+//       Access: Public
+//  Description: Returns the orientation of the nth sample added.
+////////////////////////////////////////////////////////////////////
+LVecBase3f CurveFitter::
+get_sample_hpr(int n) const {
+  nassertr(n >= 0 && n < (int)_data.size(), LVecBase3f::zero());
+  return _data[n]._hpr;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -108,12 +141,9 @@ get_sample_point(int n) const {
 //               added.  This is only meaningful if compute_tangents()
 //               has already been called.
 ////////////////////////////////////////////////////////////////////
-const LVecBase3f &CurveFitter::
+LVecBase3f CurveFitter::
 get_sample_tangent(int n) const {
-#ifndef NDEBUG
-  static const LVecBase3f zero(0.0, 0.0, 0.0);
-  nassertr(n >= 0 && n < (int)_data.size(), zero);
-#endif
+  nassertr(n >= 0 && n < (int)_data.size(), LVecBase3f::zero());
   return _data[n]._tangent;
 }
 
@@ -137,66 +167,33 @@ remove_samples(int begin, int end) {
 //     Function: CurveFitter::sample
 //       Access: Public
 //  Description: Generates a series of data points by sampling the
-//               given curve the indicated number of times.  If even
-//               is true, the sampled t value is taken from the actual
-//               curve length, as opposed to the parametric length.
+//               given curve (or xyz/hpr curves) the indicated number
+//               of times.  The sampling is made evenly in parametric
+//               time, and then the timewarps, if any, are applied.
 ////////////////////////////////////////////////////////////////////
 void CurveFitter::
-sample(ParametricCurve *curve, int count, bool even) {
-  double max_t = curve->get_max_t();
-  double t, last_t, d;
+sample(ParametricCurveCollection *curves, int count) {
+  nassertv(curves != (ParametricCurveCollection *)NULL);
+  float max_t = curves->get_max_t();
+  float t, last_t, d;
   DataPoint dp;
-
-
-  size_t n = _data.size();
 
   last_t = 0.0;
   d = 0.0;
   int i;
   for (i = 0; i < count; i++) {
-    t = max_t * (double)i / (double)(count-1);
-    curve->get_point(t, dp._point);
-
-    if (even) {
-      d += curve->calc_length(last_t, t);
-      dp._t = d;
-    } else {
+    t = max_t * (float)i / (float)(count-1);
+    if (curves->evaluate(t, dp._xyz, dp._hpr)) {
       dp._t = t;
-    }
-
-    _data.push_back(dp);
-    last_t = t;
-  }
-
-  if (even) {
-    double scale = max_t / d;
-    while (n < _data.size()) {
-      _data[n]._t *= scale;
-      n++;
+      _data.push_back(dp);
     }
   }
-}
 
-////////////////////////////////////////////////////////////////////
-//     Function: CurveFitter::generate_even
-//       Access: Public
-//  Description: Generates a set of data points whose x coordinate is
-//               evenly distributed across the indicated distance and
-//               parametric time.  Useful before a call to
-//               compute_timewarp().
-////////////////////////////////////////////////////////////////////
-void CurveFitter::
-generate_even(int count, double net_distance, double net_time) {
-  double t, d;
-  DataPoint dp;
-  int i;
-  for (i = 0; i < count; i++) {
-    t = net_time * (double)i / (double)(count-1);
-    d = net_distance * (double)i / (double)(count-1);
-    
-    dp._point.set(d, 0.0, 0.0);
-    dp._t = t;
-    _data.push_back(dp);
+  if (curves->get_xyz_curve() != (ParametricCurve *)NULL) {
+    _got_xyz = true;
+  }
+  if (curves->get_hpr_curve() != (ParametricCurve *)NULL) {
+    _got_hpr = true;
   }
 }
 
@@ -205,11 +202,9 @@ generate_even(int count, double net_distance, double net_time) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CurveFitter::wrap_hpr
 //       Access: Public
-//  Description: Assumes the data points collected represent a set of
-//               HPR coordinates.  Resets each data point so that the
-//               maximum delta between any two consecutive points is
-//               180 degrees, which should prevent incorrect HPR
-//               wrapping.
+//  Description: Resets each HPR data point so that the maximum delta
+//               between any two consecutive points is 180 degrees,
+//               which should prevent incorrect HPR wrapping.
 ////////////////////////////////////////////////////////////////////
 void CurveFitter::
 wrap_hpr() {
@@ -220,87 +215,20 @@ wrap_hpr() {
   for (di = _data.begin(); di != _data.end(); ++di) {
     int i;
     for (i = 0; i < 3; i++) {
-      (*di)._point[i] += net[i];
+      (*di)._hpr[i] += net[i];
   
-      while (((*di)._point[i] - last[i]) > 180.0) {
-        (*di)._point[i] -= 360.0;
+      while (((*di)._hpr[i] - last[i]) > 180.0) {
+        (*di)._hpr[i] -= 360.0;
         net[i] -= 360.0;
       }
       
-      while (((*di)._point[i] - last[i]) < -180.0) {
-        (*di)._point[i] += 360.0;
+      while (((*di)._hpr[i] - last[i]) < -180.0) {
+        (*di)._hpr[i] += 360.0;
         net[i] += 360.0;
       }
       
-      last[i] = (*di)._point[i];
+      last[i] = (*di)._hpr[i];
     }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CurveFitter::compute_timewarp
-//       Access: Public
-//  Description: Assumes the data points already collected represent
-//               the distance along a given curve at each unit of
-//               parametric time (only the X coordinate is used).
-//               Computes a new set of data points based on the
-//               indicated curve that will serve as a timewarp to
-//               produce this effect.
-////////////////////////////////////////////////////////////////////
-void CurveFitter::
-compute_timewarp(const ParametricCurve *xyz) {
-  Data::iterator di;
-  double last_t = 0.0;
-  double last_d = 0.0;
-  double last_ratio = 1.0;
-
-  for (di = _data.begin(); di != _data.end(); ++di) {
-    double d = (*di)._point[0];
-    double t = xyz->compute_t(last_t, d - last_d, 
-                              last_t + last_ratio * (d - last_d),
-                              0.001);
-    (*di)._point.set(t, 0.0, 0.0);
-
-    /*
-    // Special HPR computation
-    {
-      LVecBase3f tangent;
-      LMatrix4f mat;
-      pfCoord c;
-      static double last_h = 0.0;
-      static double h_net = 0.0;
-
-      xyz->get_tangent(t, tangent);
-      look_at(mat, tangent, LVecBase3f(0.0, 0.0, 1.0));
-      mat.getOrthoCoord(&c);
-      cerr << "Replacing R " << c.hpr[2] << " with " << (*di)._point[1] << "\n";
-      c.hpr[2] = (*di)._point[1];
-      c.hpr[0] += h_net;
-
-      // Check the wrap on the heading
-      if ((c.hpr[0] - last_h) > 180.0) {
-        c.hpr[0] -= 360.0;
-        h_net -= 360.0;
-      }
-
-      if ((c.hpr[0] - last_h) < -180.0) {
-        c.hpr[0] += 360.0;
-        h_net += 360.0;
-      }
-
-      cerr << "H is " << c.hpr[0] << " h_net is " << h_net << "\n";
-      last_h = c.hpr[0];
-      
-      (*di)._point = c.hpr;
-      (*di)._t = t;
-    }
-    */
-
-    if (d != last_d) {
-      last_ratio = (t - last_t) / (d - last_d);
-    }
-    last_t = t;
-    last_d = d;
   }
 }
 
@@ -324,9 +252,9 @@ sort_points() {
 //               last samples.
 ////////////////////////////////////////////////////////////////////
 void CurveFitter::
-desample(double factor) {
+desample(float factor) {
   int in, out;
-  double count = factor;
+  float count = factor;
 
   out = 0;
   for (in = 0; in < (int)_data.size()-1; in++) {
@@ -354,10 +282,18 @@ desample(double factor) {
 //               as the points were added).
 ////////////////////////////////////////////////////////////////////
 void CurveFitter::
-compute_tangents(double scale) {
+compute_tangents(float scale) {
   // If the head and tail points match up, close the curve.
-  bool closed =
-    (_data.front()._point.almost_equal(_data.back()._point, 0.001));
+  bool closed = false;
+
+  if (_got_xyz) {
+    closed =
+      (_data.front()._xyz.almost_equal(_data.back()._xyz, 0.001));
+
+  } else if (_got_hpr) {
+    closed =
+      (_data.front()._hpr.almost_equal(_data.back()._hpr, 0.001));
+  }
 
   int i;
   int len = _data.size();
@@ -365,25 +301,51 @@ compute_tangents(double scale) {
   // First, get all the points in the middle, excluding endpoints.
   // These are handled the same whether we are closing the curve or
   // not.
-  for (i = 1; i < len-1; i++) {
-    _data[i]._tangent = 
-      (_data[i+1]._point - _data[i-1]._point) * scale /
-      (_data[i+1]._t - _data[i-1]._t);
+  if (_got_xyz) {
+    for (i = 1; i < len-1; i++) {
+      _data[i]._tangent = 
+	(_data[i+1]._xyz - _data[i-1]._xyz) * scale /
+	(_data[i+1]._t - _data[i-1]._t);
+    }
+  }
+  if (_got_hpr) {
+    for (i = 1; i < len-1; i++) {
+      _data[i]._hpr_tangent = 
+	(_data[i+1]._hpr - _data[i-1]._hpr) * scale /
+	(_data[i+1]._t - _data[i-1]._t);
+    }
   }
 
   // Now handle the endpoints.
   if (closed) {
-    _data[0]._tangent = _data[len-1]._tangent =
-      (_data[1]._point - _data[len-2]._point) * scale /
-      ((_data[1]._t - _data[0]._t) + (_data[len-1]._t - _data[len-2]._t));
-
+    if (_got_xyz) {
+      _data[0]._tangent = _data[len-1]._tangent =
+	(_data[1]._xyz - _data[len-2]._xyz) * scale /
+	((_data[1]._t - _data[0]._t) + (_data[len-1]._t - _data[len-2]._t));
+    }
+    if (_got_hpr) {
+      _data[0]._tangent = _data[len-1]._tangent =
+	(_data[1]._hpr - _data[len-2]._hpr) * scale /
+	((_data[1]._t - _data[0]._t) + (_data[len-1]._t - _data[len-2]._t));
+    }
+      
   } else {
-    _data[0]._tangent =
-      (_data[1]._point - _data[0]._point) * scale /
-      ((_data[1]._t - _data[0]._t) * 2.0);
-    _data[len-1]._tangent =
-      (_data[len-1]._point - _data[len-2]._point) * scale /
-      ((_data[len-1]._t - _data[len-2]._t) * 2.0);
+    if (_got_xyz) {
+      _data[0]._tangent =
+	(_data[1]._xyz - _data[0]._xyz) * scale /
+	((_data[1]._t - _data[0]._t) * 2.0);
+      _data[len-1]._tangent =
+	(_data[len-1]._xyz - _data[len-2]._xyz) * scale /
+	((_data[len-1]._t - _data[len-2]._t) * 2.0);
+    }
+    if (_got_hpr) {
+      _data[0]._tangent =
+	(_data[1]._hpr - _data[0]._hpr) * scale /
+	((_data[1]._t - _data[0]._t) * 2.0);
+      _data[len-1]._tangent =
+	(_data[len-1]._hpr - _data[len-2]._hpr) * scale /
+	((_data[len-1]._t - _data[len-2]._t) * 2.0);
+    }
   }
 }
 
@@ -393,20 +355,41 @@ compute_tangents(double scale) {
 //  Description: Converts the current set of data points into a
 //               Hermite curve.
 ////////////////////////////////////////////////////////////////////
-PT(HermiteCurve) CurveFitter::
+PT(ParametricCurveCollection) CurveFitter::
 make_hermite() const {
-  PT(HermiteCurve) hc = new HermiteCurve;
+  PT(ParametricCurveCollection) result = new ParametricCurveCollection;
 
-  Data::const_iterator di;
-  for (di = _data.begin(); di != _data.end(); ++di) {
-    int n = hc->insert_cv((*di)._t);
-    hc->set_cv_type(n, HC_SMOOTH);
-    hc->set_cv_point(n, (*di)._point);
-    hc->set_cv_in(n, (*di)._tangent);
-    hc->set_cv_out(n, (*di)._tangent);
+  if (_got_xyz) {
+    HermiteCurve *hc = new HermiteCurve;
+    result->add_curve(hc);
+    hc->set_curve_type(PCT_XYZ);
+    
+    Data::const_iterator di;
+    for (di = _data.begin(); di != _data.end(); ++di) {
+      int n = hc->insert_cv((*di)._t);
+      hc->set_cv_type(n, HC_SMOOTH);
+      hc->set_cv_point(n, (*di)._xyz);
+      hc->set_cv_in(n, (*di)._tangent);
+      hc->set_cv_out(n, (*di)._tangent);
+    }
   }
 
-  return hc;
+  if (_got_hpr) {
+    HermiteCurve *hc = new HermiteCurve;
+    result->add_curve(hc);
+    hc->set_curve_type(PCT_HPR);
+    
+    Data::const_iterator di;
+    for (di = _data.begin(); di != _data.end(); ++di) {
+      int n = hc->insert_cv((*di)._t);
+      hc->set_cv_type(n, HC_SMOOTH);
+      hc->set_cv_point(n, (*di)._hpr);
+      hc->set_cv_in(n, (*di)._hpr_tangent);
+      hc->set_cv_out(n, (*di)._hpr_tangent);
+    }
+  }
+
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -416,118 +399,52 @@ make_hermite() const {
 //               NURBS curve.  This gives a smoother curve than
 //               produced by MakeHermite().
 ////////////////////////////////////////////////////////////////////
-PT(NurbsCurve) CurveFitter::
+PT(ParametricCurveCollection) CurveFitter::
 make_nurbs() const {
-  if (_data.size() < 2) {
-    return NULL;
-  }
+  // We start with the HermiteCurves produced above, then convert them
+  // to NURBS form.
+  PT(ParametricCurveCollection) hermites = make_hermite();
+  PT(ParametricCurveCollection) result = new ParametricCurveCollection;
 
-#if 0
-  PT(NurbsCurve) nc = new NurbsCurve;
-  nc->set_order(4);
+  int num_curves = hermites->get_num_curves();
+  for (int c = 0; c < num_curves; c++) {
+    ClassicNurbsCurve *nc = new ClassicNurbsCurve(*hermites->get_curve(c));
+    result->add_curve(nc);
 
-  // First, we need four CV's to get started.
-  nc->append_cv(LVecBase3f(0.0, 0.0, 0.0));
-  nc->append_cv(LVecBase3f(0.0, 0.0, 0.0));
-  nc->append_cv(LVecBase3f(0.0, 0.0, 0.0));
-  nc->append_cv(LVecBase3f(0.0, 0.0, 0.0));
-  nc->set_knot(4, _data[1]._t);
+    // Now we even out the knots to smooth out the curve and make
+    // everything c2 continuous.
 
-  nc->recompute();
-  LVecBase3f junk;
-  nc->get_point(nc->get_max_t(), junk);  // Reference the last segment.
-  const LVecBase3f &p0 = _data[0]._point;
-  LVecBase3f t0 = _data[0]._tangent * 2.0;
-  LVecBase3f t1 = _data[1]._tangent * 2.0;
-  const LVecBase3f &p1 = _data[1]._point;
-
-  nc->rebuild_curveseg(RT_POINT, 0.0, pfVec4(p0[0], p0[1], p0[2], 1.0),
-                       RT_TANGENT, 0.0, pfVec4(t0[0], t0[1], t0[2], 0.0),
-                       RT_TANGENT, 1.0, pfVec4(t1[0], t1[1], t1[2], 0.0),
-                       RT_POINT, 1.0, pfVec4(p1[0], p1[1], p1[2], 1.0));
-
-  int i;
-  for (i = 2; i < _data.size(); i++) {
-    cerr << "Adding point " << i << "\n";
-    nc->append_cv(LVecBase3f(0.0, 0.0, 0.0));
-    nc->set_knot(i + 3, _data[i]._t);
-    nc->recompute();
-    nc->get_point(nc->get_max_t(), junk);
-
-    /*
-    const LVecBase3f &p0 = _data[i-1]._point;
-    const LVecBase3f &t0 = _data[i-1]._tangent;
-    const LVecBase3f &p1 = _data[i]._point;
-    const LVecBase3f &t1 = _data[i]._tangent;
+    int num_knots = nc->get_num_knots();
     
-    nc->rebuild_curveseg(RT_POINT, 0.0, pfVec4(p0[0], p0[1], p0[2], 1.0),
-                         RT_TANGENT, 0.0, pfVec4(t0[0], t0[1], t0[2], 0.0),
-                         RT_TANGENT, 1.0, pfVec4(t1[0], t1[1], t1[2], 0.0),
-                         RT_POINT, 1.0, pfVec4(p1[0], p1[1], p1[2], 1.0));
-                         */
+    // We expect this to be a 4th order curve, since we just converted
+    // it from a Hermite.
+    assert(nc->get_order() == 4);
+    assert(num_knots > 0);
 
-    const LVecBase3f &pi = _data[i]._point;
-    nc->rebuild_curveseg(RT_CV | RT_KEEP_ORIG, 0.0, pfVec4(),
-                         RT_CV | RT_KEEP_ORIG, 0.0, pfVec4(),
-                         RT_CV | RT_KEEP_ORIG, 0.0, pfVec4(),
-                         RT_POINT, 1.0, pfVec4(pi[0], pi[1], pi[2], 1.0));
+    // Now the knot sequence goes something like this:
+    //    0 0 0 0 1 1 1 2 2 2 3 3 3 4 4 4 4
+    
+    // We'll consider pairs of knot values beginning at position 3 and
+    // every third position thereafter.  We just even out these values
+    // between their two neighbors.
+    
+    int i;
+    float k1, k2 = nc->get_knot(num_knots-1);
+    for (i = 3; i < num_knots - 4; i += 3) {
+      k1 = nc->get_knot(i-1);
+      k2 = nc->get_knot(i+2);
+      nc->set_knot(i, (k1 + k1 + k2) / 3.0);
+      nc->set_knot(i+1, (k1 + k2 + k2) / 3.0);
+    }
+
+    // The last knot must have the terminal value.
+    nc->set_knot(num_knots-4, k2);
+    
+    // Finally, recompute the curve.
+    nc->recompute();
   }
 
-  /*
-  nc->append_cv(LVecBase3f(0.0, 0.0, 0.0));
-  nc->recompute();
-  nc->get_point(nc->get_max_t(), junk);
-  const LVecBase3f &pi = _data[_data.size()-1]._point;
-  nc->rebuild_curveseg(RT_CV | RT_KEEP_ORIG, 0.0, pfVec4(),
-                       RT_CV | RT_KEEP_ORIG, 0.0, pfVec4(),
-                       RT_CV | RT_KEEP_ORIG, 0.0, pfVec4(),
-                       RT_CV, 0.0, pfVec4(pi[0], pi[1], pi[2], 1.0));
-                       */
-  
-  nc->recompute();
-  return nc;
-
-#else
-
-  // We start with the HermiteCurve produced above, then convert it to
-  // NURBS form.
-  PT(HermiteCurve) hc = make_hermite();
-  PT(NurbsCurve) nc = new NurbsCurve(*hc);
-
-  // Now we even out the knots to smooth out the curve and make
-  // everything c2 continuous.
-
-  int num_knots = nc->get_num_knots();
-
-  // We expect this to be a 4th order curve, since we just converted
-  // it from a Hermite.
-  assert(nc->get_order() == 4);
-  assert(num_knots > 0);
-
-  // Now the knot sequence goes something like this:
-  //    0 0 0 0 1 1 1 2 2 2 3 3 3 4 4 4 4
-
-  // We'll consider pairs of knot values beginning at position 3 and
-  // every third position thereafter.  We just even out these values
-  // between their two neighbors.
-
-  int i;
-  double k1, k2 = nc->get_knot(num_knots-1);
-  for (i = 3; i < num_knots - 4; i += 3) {
-    k1 = nc->get_knot(i-1);
-    k2 = nc->get_knot(i+2);
-    nc->set_knot(i, (k1 + k1 + k2) / 3.0);
-    nc->set_knot(i+1, (k1 + k2 + k2) / 3.0);
-  }
-
-  // The last knot must have the terminal value.
-  nc->set_knot(num_knots-4, k2);
-
-  // Finally, recompute the curve.
-  nc->recompute();
-
-  return nc;
-#endif
+  return result;
 }
   
 ////////////////////////////////////////////////////////////////////

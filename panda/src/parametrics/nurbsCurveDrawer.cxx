@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "nurbsCurveDrawer.h"
+#include "nurbsCurveInterface.h"
+#include "parametricCurve.h"
 
 
 TypeHandle NurbsCurveDrawer::_type_handle;
@@ -28,7 +30,7 @@ TypeHandle NurbsCurveDrawer::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 NurbsCurveDrawer::
-NurbsCurveDrawer(NurbsCurve *curve) : ParametricCurveDrawer(curve) {
+NurbsCurveDrawer() {
   set_cv_color(1.0, 0.0, 0.0);
   set_hull_color(1.0, 0.5, 0.5);
   set_knot_color(0.0, 0.0, 1.0);
@@ -108,13 +110,29 @@ set_hull_color(float r, float g, float b) {
 ////////////////////////////////////////////////////////////////////
 bool NurbsCurveDrawer::
 draw() {
-  NurbsCurve *nurbs = (NurbsCurve *)_curve;
-  // Make sure the curve is fresh.
-  nurbs->recompute();
+  ParametricCurve *curve = (ParametricCurve *)NULL;
+  NurbsCurveInterface *nurbs = (NurbsCurveInterface *)NULL;
+
+  if (_curves != (ParametricCurveCollection *)NULL) {
+    curve = _curves->get_default_curve();
+  }
+
+  if (curve != (ParametricCurve *)NULL) {
+    nurbs = curve->get_nurbs_interface();
+    if (nurbs != (NurbsCurveInterface *)NULL) {
+      // Make sure the curve is fresh.
+      nurbs->recompute();
+    }
+  }
 
   // First, draw the curve itself.
   if (!ParametricCurveDrawer::draw()) {
     return false;
+  }
+
+  if (nurbs == (NurbsCurveInterface *)NULL) {
+    // The rest of this depends on having an actual NURBS curve.
+    return true;
   }
 
   int i;
@@ -122,15 +140,15 @@ draw() {
     _num_cvs = nurbs->get_num_cvs();
     _knotnums.erase(_knotnums.begin(), _knotnums.end());
 
-    double lt = -1.0;
+    float lt = -1.0;
     int ki = -1;
     for (i = 0; i < _num_cvs; i++) {
-      double t = nurbs->get_knot(i);
+      float t = nurbs->get_knot(i);
       if (t != lt) {
 	lt = t;
-	LVecBase3f knot_pos, knot_tan;
-	nurbs->get_pt(nurbs->get_knot(i), knot_pos, knot_tan);
-	_knots.move_to(_mapper(knot_pos, knot_tan, t));
+	LVecBase3f knot_pos;
+	curve->get_point(nurbs->get_knot(i), knot_pos);
+	_knots.move_to(knot_pos);
 	ki++;
       }
       _knotnums.push_back(ki);
@@ -142,8 +160,7 @@ draw() {
   if (_show_cvs) {
     _num_cvs = nurbs->get_num_cvs();
     for (i = 0; i < _num_cvs; i++) {
-      _cvs.move_to(_mapper(nurbs->get_cv_point(i), LVecBase3f(0.0, 0.0, 0.0),
-			   nurbs->get_knot(i+1)));
+      _cvs.move_to(nurbs->get_cv_point(i));
     }
 
     _cvs.create(_geom_node, _frame_accurate);
@@ -152,8 +169,7 @@ draw() {
   if (_show_hull) {
     _num_cvs = nurbs->get_num_cvs();
     for (i = 0; i < _num_cvs; i++) {
-      _hull.draw_to(_mapper(nurbs->get_cv_point(i), LVecBase3f(0.0, 0.0, 0.0),
-			    nurbs->get_knot(i+1)));
+      _hull.draw_to(nurbs->get_cv_point(i));
     }
 
     _hull.create(_geom_node, _frame_accurate);
@@ -170,7 +186,7 @@ draw() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool NurbsCurveDrawer::
-recompute(double t1, double t2, ParametricCurve *curve) {
+recompute(float t1, float t2, ParametricCurve *curve) {
   return draw();
 }
 
@@ -254,17 +270,11 @@ get_show_knots() const {
 ////////////////////////////////////////////////////////////////////
 bool NurbsCurveDrawer::
 hilight(int n, float hr, float hg, float hb) {
-  // If there's no curve, do nothing and return false.
-  if (_curve==NULL || !_curve->is_valid()) {
-    return false;
-  }
-
   if (n < 0 || n >= _cvs.get_num_vertices()) {
-    // Also return false if we're out of range.
+    // Return false if we're out of range.
     return false;
   }
 
-  //  NurbsCurve *nurbs = (NurbsCurve *)_curve;
   if (_show_cvs) {
     _cvs.set_vertex_color(n, hr, hg, hb);
   }
@@ -284,15 +294,10 @@ hilight(int n, float hr, float hg, float hb) {
 ////////////////////////////////////////////////////////////////////
 bool NurbsCurveDrawer::
 unhilight(int n) {
-  if (_curve==NULL || !_curve->is_valid()) {
-    return false;
-  }
-
   if (n < 0 || n >= _cvs.get_num_vertices()) {
     return false;
   }
 
-  //  NurbsCurve *nurbs = (NurbsCurve *)_curve;
   if (_show_cvs) {
     _cvs.set_vertex_color(n, _cv_color[0], _cv_color[1], _cv_color[2]);
   }

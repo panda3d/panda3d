@@ -1,0 +1,93 @@
+// Filename: parametricCurveDrawer.h
+// Created by:  drose (14Mar97)
+// 
+////////////////////////////////////////////////////////////////////
+
+#ifndef PARAMETRICCURVEDRAWER_H
+#define PARAMETRICCURVEDRAWER_H
+
+#include "parametricCurveCollection.h"
+
+#include <lineSegs.h>
+#include <node.h>
+
+#include <typeHandle.h>
+
+////////////////////////////////////////////////////////////////////
+// 	 Class : ParametricCurveDrawer
+// Description : Draws a 3-d parametric curve in the scene by creating
+//               a series of line segments to approximate the curve.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA ParametricCurveDrawer : public TypedObject {
+PUBLISHED:
+  ParametricCurveDrawer();
+  virtual ~ParametricCurveDrawer();
+
+  void set_curve(ParametricCurve *curve);
+  void set_curves(ParametricCurveCollection *curves);
+  void clear_curves();
+  ParametricCurveCollection *get_curves();
+
+  GeomNode *get_geom_node();
+  GeomNode *detach_geom_node();
+
+  void set_num_segs(float num_segs);
+  float get_num_segs() const;
+
+  void set_num_ticks(float num_ticks);
+  float get_num_ticks() const;
+
+  void set_color(float r, float g, float b);
+  void set_tick_color(float r, float g, float b);
+  void set_tick_geometry(Node *geom);
+  void clear_tick_geometry();
+
+  void set_frame_accurate(bool frame_accurate);
+  bool get_frame_accurate() const;
+
+  virtual bool draw();
+  void hide();
+
+  void set_tick_scale(float scale);
+  float get_tick_scale() const;
+
+public:
+  INLINE float get_max_t() const;
+  INLINE void redraw();
+
+protected:
+  static void get_tick_marks(const LVecBase3f &tangent, LVecBase3f &t1, LVecBase3f &t2);
+
+  PT(GeomNode) _geom_node;
+  PT(ParametricCurveCollection) _curves;
+  float _num_segs;
+  LineSegs _lines, _ticks;
+  PT(Node) _tick_geometry;
+  bool _drawn;
+  float _num_ticks;
+  float _tick_scale;
+  bool _frame_accurate;
+
+  typedef vector<PT(NodeRelation)> TickArcs;
+  TickArcs _tick_arcs;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    register_type(_type_handle, "ParametricCurveDrawer",
+		  TypedObject::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+ 
+private:
+  static TypeHandle _type_handle;
+};
+
+#include "parametricCurveDrawer.I"
+  
+#endif

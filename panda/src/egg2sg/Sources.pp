@@ -1,6 +1,8 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
 
+#define USE_NURBSPP yes
+
 #begin lib_target
   #define TARGET egg2sg
   #define LOCAL_LIBS \

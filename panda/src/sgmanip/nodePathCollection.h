@@ -28,6 +28,7 @@ PUBLISHED:
   NodePathCollection();
   NodePathCollection(const NodePathCollection &copy);
   void operator = (const NodePathCollection &copy);
+  INLINE ~NodePathCollection();
 
   void add_path(const NodePath &node_path);
   bool remove_path(const NodePath &node_path);
@@ -45,7 +46,7 @@ PUBLISHED:
   INLINE void ls() const;
   void ls(ostream &out, int indent_level = 0) const;
 
-  NodePathCollection find_all_matches(const char *approx_path_str) const;
+  NodePathCollection find_all_matches(const string &path) const;
   void reparent_to(const NodePath &other);
   void wrt_reparent_to(const NodePath &other);
   NodePathCollection instance_to(const NodePath &other) const;

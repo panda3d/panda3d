@@ -2,28 +2,12 @@
 // Created by:  drose (27Feb98)
 // 
 ////////////////////////////////////////////////////////////////////
-// Copyright (C) 1992,93,94,95,96,97  Walt Disney Imagineering, Inc.
-// 
-// These  coded  instructions,  statements,  data   structures   and
-// computer  programs contain unpublished proprietary information of
-// Walt Disney Imagineering and are protected by  Federal  copyright
-// law.  They may  not be  disclosed to third  parties  or copied or
-// duplicated in any form, in whole or in part,  without  the  prior
-// written consent of Walt Disney Imagineering Inc.
-////////////////////////////////////////////////////////////////////
-//
+
 #ifndef HERMITECURVE_H
 #define HERMITECURVE_H
 
-////////////////////////////////////////////////////////////////////
-// Includes 
-////////////////////////////////////////////////////////////////////
-
-#include "curve.h"
-
-////////////////////////////////////////////////////////////////////
-// Defines 
-////////////////////////////////////////////////////////////////////
+#include "piecewiseCurve.h"
+#include "cubicCurveseg.h"
 
 
 BEGIN_PUBLISH //[
@@ -51,8 +35,6 @@ BEGIN_PUBLISH //[
 // change continuously.  This is C1 parametric continuity.
 END_PUBLISH //]
 
-class NurbsCurve;
-
 ////////////////////////////////////////////////////////////////////
 // 	 Class : HermiteCurveCV
 // Description : A single CV of a Hermite curve.  Hermite curve CV's
@@ -72,7 +54,7 @@ public:
 
   void format_egg(ostream &out, int indent, int num_dimensions,
 	      bool show_in, bool show_out,
-	      double scale_in, double scale_out) const;
+	      float scale_in, float scale_out) const;
 
   void write_datagram(BamWriter *manager, Datagram &me) const;
   void fillin(DatagramIterator &scan, BamReader *manager);
@@ -102,7 +84,7 @@ PUBLISHED:
 
   int get_num_cvs() const;
 
-  int insert_cv(double t);
+  int insert_cv(float t);
   int append_cv(int type, float x, float y, float z);
   inline int append_cv(int type, const LVecBase3f &v) {
     return append_cv(type, v[0], v[1], v[2]);
@@ -124,7 +106,7 @@ PUBLISHED:
   inline bool set_cv_out(int n, const LVecBase3f &v) {
     return set_cv_out(n, v[0], v[1], v[2]);
   }
-  bool set_cv_tstart(int n, double tstart);
+  bool set_cv_tstart(int n, float tstart);
   bool set_cv_name(int n, const char *name);
 
 
@@ -135,14 +117,11 @@ PUBLISHED:
   void get_cv_in(int n, LVecBase3f &v) const;
   const LVecBase3f &get_cv_out(int n) const;
   void get_cv_out(int n, LVecBase3f &v) const;
-  double get_cv_tstart(int n) const;
+  float get_cv_tstart(int n) const;
   string get_cv_name(int n) const;
 
   virtual void output(ostream &out) const;
   void write_cv(ostream &out, int n) const;
-
-  bool write_egg(const char *filename);
-  bool write_egg(ostream &out, const char *basename);
   
 public:
 
@@ -151,17 +130,17 @@ public:
   }
 
   virtual bool
-  rebuild_curveseg(int rtype0, double t0, const LVecBase4f &v0,
-		   int rtype1, double t1, const LVecBase4f &v1,
-		   int rtype2, double t2, const LVecBase4f &v2,
-		   int rtype3, double t3, const LVecBase4f &v3);
-
-  void format_egg(ostream &out, int indent=0) const;
+  rebuild_curveseg(int rtype0, float t0, const LVecBase4f &v0,
+		   int rtype1, float t1, const LVecBase4f &v1,
+		   int rtype2, float t2, const LVecBase4f &v2,
+		   int rtype3, float t3, const LVecBase4f &v3);
 
 protected:
+  virtual bool format_egg(ostream &out, const string &name, 
+			  const string &curve_type, int indent_level) const;
 
   void invalidate_cv(int n, bool redo_all);
-  int find_cv(double t);
+  int find_cv(float t);
   void recompute_basis();
 
   vector<HermiteCurveCV> _points;

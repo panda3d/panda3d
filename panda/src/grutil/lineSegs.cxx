@@ -53,7 +53,7 @@ reset() {
 //               move_to() or create(), this creates a single point.
 ////////////////////////////////////////////////////////////////////
 void LineSegs::
-move_to(const Vertexf &v) {
+move_to(const LVecBase3f &v) {
   // We create a new SegmentList with the initial point in it.
   SegmentList segs;
   segs.push_back(Point(v, _color));
@@ -72,7 +72,7 @@ move_to(const Vertexf &v) {
 //               is called.
 ////////////////////////////////////////////////////////////////////
 void LineSegs::
-draw_to(const Vertexf &v) {
+draw_to(const LVecBase3f &v) {
   if (_list.empty()) {
     // Let our first call to draw_to() be an implicit move_to().
     move_to(v);

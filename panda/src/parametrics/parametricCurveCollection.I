@@ -1,0 +1,75 @@
+// Filename: parametricCurveCollection.I
+// Created by:  drose (04Mar01)
+// 
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurveCollection::Destructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ParametricCurveCollection::
+~ParametricCurveCollection() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurveCollection::get_num_curves
+//       Access: Published
+//  Description: Returns the number of ParametricCurves in the collection.
+////////////////////////////////////////////////////////////////////
+INLINE int ParametricCurveCollection::
+get_num_curves() const {
+  return _curves.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurveCollection::get_curve
+//       Access: Published
+//  Description: Returns the nth ParametricCurve in the collection.
+////////////////////////////////////////////////////////////////////
+INLINE ParametricCurve *ParametricCurveCollection::
+get_curve(int index) const {
+  nassertr(index >= 0 && index < (int)_curves.size(), (ParametricCurve *)NULL);
+
+  return _curves[index];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurveCollection::get_max_t
+//       Access: Published
+//  Description: Returns the maximum T value associated with the
+//               *last* curve in the collection.  Normally, this will
+//               be either the XYZ or HPR curve, or a timewarp curve.
+////////////////////////////////////////////////////////////////////
+INLINE float ParametricCurveCollection::
+get_max_t() const {
+  if (_curves.empty()) {
+    return 0.0;
+  }
+  return _curves.back()->get_max_t();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurveCollection::evaluate_xyz
+//       Access: Published
+//  Description: Computes only the XYZ part of the curves.  See
+//               evaluate().
+////////////////////////////////////////////////////////////////////
+INLINE bool ParametricCurveCollection::
+evaluate_xyz(float t, LVecBase3f &xyz) const {
+  LVecBase3f hpr;
+  return evaluate(t, xyz, hpr);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurveCollection::evaluate_hpr
+//       Access: Published
+//  Description: Computes only the HPR part of the curves.  See
+//               evaluate().
+////////////////////////////////////////////////////////////////////
+INLINE bool ParametricCurveCollection::
+evaluate_hpr(float t, LVecBase3f &hpr) const {
+  LVecBase3f xyz;
+  return evaluate(t, xyz, hpr);
+}

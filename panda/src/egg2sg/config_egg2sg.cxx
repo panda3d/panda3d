@@ -48,6 +48,13 @@ bool egg_show_collision_solids = config_egg2sg.GetBool("egg-show-collision-solid
 // the relative paths, chosen arbitrarily).
 bool egg_keep_texture_pathnames = config_egg2sg.GetBool("egg-keep-texture-pathnames", false);
 
+// When this is true, a <NurbsCurve> entry appearing in an egg file
+// will load a ClassicNurbsCurve object instead of the default, a
+// NurbsCurve object.  This only makes a difference when the NURBS++
+// library is available, in which case the default, NurbsCurve, is
+// actually a NurbsPPCurve object.
+bool egg_load_classic_nurbs_curves = config_egg2sg.GetBool("egg-load-classic-nurbs-curves", false);
+
 CoordinateSystem egg_coordinate_system;
 
 ConfigureFn(config_egg2sg) {

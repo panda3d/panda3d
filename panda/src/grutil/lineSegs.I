@@ -18,8 +18,8 @@ Point() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE LineSegs::Point::
-Point(const Vertexf &point, const Colorf &color) :
-  _point(point), 
+Point(const LVecBase3f &point, const Colorf &color) :
+  _point(point[0], point[1], point[2]), 
   _color(color) 
 {
 }

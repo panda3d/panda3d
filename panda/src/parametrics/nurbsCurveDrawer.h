@@ -2,31 +2,14 @@
 // Created by:  drose (27Feb98)
 // 
 ////////////////////////////////////////////////////////////////////
-// Copyright (C) 1992,93,94,95,96,97  Walt Disney Imagineering, Inc.
-// 
-// These  coded  instructions,  statements,  data   structures   and
-// computer  programs contain unpublished proprietary information of
-// Walt Disney Imagineering and are protected by  Federal  copyright
-// law.  They may  not be  disclosed to third  parties  or copied or
-// duplicated in any form, in whole or in part,  without  the  prior
-// written consent of Walt Disney Imagineering Inc.
-////////////////////////////////////////////////////////////////////
-//
+
 #ifndef NURBSCURVEDRAWER_H
 #define NURBSCURVEDRAWER_H
-//
-////////////////////////////////////////////////////////////////////
-// Includes 
-////////////////////////////////////////////////////////////////////
 
-#include "curveDrawer.h"
-#include "nurbsCurve.h"
+#include <pandabase.h>
+
+#include "parametricCurveDrawer.h"
 #include "lineSegs.h"
-
-
-////////////////////////////////////////////////////////////////////
-// Defines 
-////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
@@ -35,13 +18,8 @@
 //               vertices and tangent vectors.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA NurbsCurveDrawer : public ParametricCurveDrawer {
-
-////////////////////////////////////////////////////////////////////
-// Member functions visible to Scheme
-////////////////////////////////////////////////////////////////////
-
 PUBLISHED:
-  NurbsCurveDrawer(NurbsCurve *curve);
+  NurbsCurveDrawer();
   virtual ~NurbsCurveDrawer();
 
   void set_cv_color(float r, float g, float b);
@@ -49,7 +27,7 @@ PUBLISHED:
   void set_knot_color(float r, float g, float b);
 
   virtual bool draw();
-  virtual bool recompute(double t1, double t2, ParametricCurve *curve=NULL);
+  virtual bool recompute(float t1, float t2, ParametricCurve *curve=NULL);
 
   void set_show_cvs(bool flag);
   bool get_show_cvs() const;
@@ -61,9 +39,6 @@ PUBLISHED:
   bool hilight(int n, float hr=1.0, float hg=1.0, float hb=0.0);
   bool unhilight(int n);
 
-////////////////////////////////////////////////////////////////////
-// Member functions not visible to Scheme
-////////////////////////////////////////////////////////////////////
 protected:
   LVecBase3f _cv_color, _hull_color, _knot_color;
   int _num_cvs, _num_hull, _num_knots;
