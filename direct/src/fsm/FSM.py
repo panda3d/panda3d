@@ -118,7 +118,7 @@ class FSM(DirectObject):
         for state in self.__states:
             if (state.getName() == stateName):
                 return state
-        FSM.notify.warning("[%s] : getStateNamed: %s no such state" %
+        FSM.notify.warning("[%s] : getStateNamed: %s, no such state" %
                            (self.__name, str(stateName)))
 
 
@@ -153,7 +153,7 @@ class FSM(DirectObject):
                                aState.getName() + '_entered')
             aState.enter(argList)
         else:
-            FSM.notify.error("[%s]: enter: no such state" % self.__name)
+            FSM.notify.error("[%s]: enter: no such state" % (self.__name))
 
     def __transition(self, aState, enterArgList=[], exitArgList=[]):
         """__transition(self, State, enterArgList, exitArgList)
@@ -167,8 +167,14 @@ class FSM(DirectObject):
         Return true is transition exists to given state,
         false otherwise. 
         """
+
+        aState = self.getStateNamed(aStateName)
+        if aState == None:
+            FSM.notify.error("[%s]: request: %s, no such state" %
+                             (self.__name, aStateName))
+
         if (aStateName in self.__currentState.getTransitions()):
-            self.__transition(self.getStateNamed(aStateName),
+            self.__transition(aState,
                               enterArgList,
                               exitArgList)
             return 1
@@ -176,7 +182,7 @@ class FSM(DirectObject):
         elif (aStateName == self.__finalState.getName()):
             FSM.notify.debug("[%s]: implicit transition to final state: %s" %
                              (self.__name, aStateName))
-            self.__transition(self.getStateNamed(aStateName),
+            self.__transition(aState,
                               enterArgList,
                               exitArgList)
             return 1
