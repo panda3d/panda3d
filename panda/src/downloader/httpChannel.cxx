@@ -1315,7 +1315,7 @@ run_setup_ssl() {
   _sbio = BIO_new_ssl(_client->get_ssl_ctx(), true);
   BIO_push(_sbio, *_bio);
 
-  SSL *ssl;
+  SSL *ssl = NULL;
   BIO_get_ssl(_sbio, &ssl);
   nassertr(ssl != (SSL *)NULL, false);
   string cipher_list = _client->get_cipher_list();
@@ -1398,7 +1398,7 @@ run_ssl_handshake() {
     return false;
   }
 
-  SSL *ssl;
+  SSL *ssl = NULL;
   BIO_get_ssl(_sbio, &ssl);
   nassertr(ssl != (SSL *)NULL, false);
 

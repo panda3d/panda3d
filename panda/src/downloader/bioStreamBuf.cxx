@@ -174,7 +174,7 @@ underflow() {
             << _source->get_port() << " (" << read_count << ").\n";
           notify_ssl_errors();
 
-          SSL *ssl;
+          SSL *ssl = NULL;
           BIO_get_ssl(*_source, &ssl);
           if (ssl != (SSL *)NULL) {
             downloader_cat.warning()
