@@ -463,82 +463,82 @@ stats-pal : pal-stats
 
 #formap dirname subdirs
 $[dirname] : $[dirnames $[if $[build_directory],$[DIRNAME]],$[DEPEND_DIRS]]
-$[TAB]cd ./$[PATH] && $(MAKE) all
+$[TAB]cd ./$[RELDIR] && $(MAKE) all
 #end dirname
 
 #formap dirname subdirs
 egg-$[dirname] :
-$[TAB]cd ./$[PATH] && $(MAKE) egg
+$[TAB]cd ./$[RELDIR] && $(MAKE) egg
 #end dirname
 
 #formap dirname subdirs
 bam-$[dirname] :
-$[TAB]cd ./$[PATH] && $(MAKE) bam
+$[TAB]cd ./$[RELDIR] && $(MAKE) bam
 #end dirname
 
 #formap dirname subdirs
 pal-$[dirname] :
-$[TAB]cd ./$[PATH] && $(MAKE) pal
+$[TAB]cd ./$[RELDIR] && $(MAKE) pal
 #end dirname
 
 #formap dirname subdirs
 clean-bam-$[dirname] :
-$[TAB]cd ./$[PATH] && $(MAKE) clean-bam
+$[TAB]cd ./$[RELDIR] && $(MAKE) clean-bam
 #end dirname
 
 #formap dirname subdirs
 clean-pal-$[dirname] :
-$[TAB]cd ./$[PATH] && $(MAKE) clean-pal
+$[TAB]cd ./$[RELDIR] && $(MAKE) clean-pal
 #end dirname
 
 #formap dirname subdirs
 clean-$[dirname] :
-$[TAB]cd ./$[PATH] && $(MAKE) clean
+$[TAB]cd ./$[RELDIR] && $(MAKE) clean
 #end dirname
 
 #formap dirname subdirs
 cleanall-$[dirname] :
-$[TAB]cd ./$[PATH] && $(MAKE) cleanall
+$[TAB]cd ./$[RELDIR] && $(MAKE) cleanall
 #end dirname
 
 #formap dirname subdirs
 install-egg-$[dirname] :
-$[TAB]cd ./$[PATH] && $(MAKE) install-egg
+$[TAB]cd ./$[RELDIR] && $(MAKE) install-egg
 #end dirname
 
 #formap dirname subdirs
 install-bam-$[dirname] :
-$[TAB]cd ./$[PATH] && $(MAKE) install-bam
+$[TAB]cd ./$[RELDIR] && $(MAKE) install-bam
 #end dirname
 
 #formap dirname subdirs
 install-other-$[dirname] :
-$[TAB]cd ./$[PATH] && $(MAKE) install-other
+$[TAB]cd ./$[RELDIR] && $(MAKE) install-other
 #end dirname
 
 #formap dirname subdirs
 install-$[dirname] : 
-$[TAB]cd ./$[PATH] && $(MAKE) install
+$[TAB]cd ./$[RELDIR] && $(MAKE) install
 #end dirname
 
 #formap dirname subdirs
 uninstall-egg-$[dirname] :
-$[TAB]cd ./$[PATH] && $(MAKE) uninstall-egg
+$[TAB]cd ./$[RELDIR] && $(MAKE) uninstall-egg
 #end dirname
 
 #formap dirname subdirs
 uninstall-bam-$[dirname] :
-$[TAB]cd ./$[PATH] && $(MAKE) uninstall-bam
+$[TAB]cd ./$[RELDIR] && $(MAKE) uninstall-bam
 #end dirname
 
 #formap dirname subdirs
 uninstall-other-$[dirname] :
-$[TAB]cd ./$[PATH] && $(MAKE) uninstall-other
+$[TAB]cd ./$[RELDIR] && $(MAKE) uninstall-other
 #end dirname
 
 #formap dirname subdirs
 uninstall-$[dirname] :
-$[TAB]cd ./$[PATH] && $(MAKE) uninstall
+$[TAB]cd ./$[RELDIR] && $(MAKE) uninstall
 #end dirname
 
 #end Makefile
