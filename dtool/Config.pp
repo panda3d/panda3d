@@ -203,10 +203,10 @@
 #defer HAVE_GLUT $[libtest $[GLUT_LPATH],$[GLUT_LIBS]]
 
 // Should we try to build the WGL interface?
-#define HAVE_WGL
+#define HAVE_WGL $[eq $[PLATFORM],Win32]
 
 // Should we try to build the SGI-specific glxdisplay?
-#define HAVE_SGIGL
+#define HAVE_SGIGL $[eq $[PLATFORM],Irix]
 
 // Should we try to build the DirectX interface?  What additional
 // libraries do we need?
