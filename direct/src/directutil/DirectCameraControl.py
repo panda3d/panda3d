@@ -179,14 +179,14 @@ class DirectCameraControl(PandaObject):
         return Task.cont
 
     def HPanYZoomTask(self,state):
-        if direct.fShift:
+        if direct.fControl:
+            moveDir = Vec3(Y_AXIS)
+        else:
             moveDir = Vec3(self.coaMarker.getPos(direct.camera))
             # If marker is behind camera invert vector
             if moveDir[1] < 0.0:
                 moveDir.assign(moveDir * -1)
             moveDir.normalize()
-        else:
-            moveDir = Vec3(Y_AXIS)
         moveDir.assign(moveDir * (-2.0 * direct.dr.mouseDeltaY *
                                         state.zoomSF))
         direct.camera.setPosHpr(direct.camera,

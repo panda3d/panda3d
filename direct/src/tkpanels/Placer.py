@@ -28,7 +28,7 @@ class Placer(AppShell):
     def __init__(self, parent = None, **kw):
         INITOPT = Pmw.INITOPT
         optiondefs = (
-            ('title',       'Placer Panel',     None),
+            ('title',       self.appname,       None),
             ('nodePath',    direct.camera,      None),
             )
         self.defineoptions(kw, optiondefs)
