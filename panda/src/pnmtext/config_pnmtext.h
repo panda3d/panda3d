@@ -29,6 +29,7 @@ NotifyCategoryDecl(pnmtext, EXPCL_PANDA, EXPTP_PANDA);
 extern const float text_point_size;
 extern const float text_pixels_per_unit;
 extern const float text_scale_factor;
+extern const bool text_native_antialias;
 
 extern EXPCL_PANDA void init_libpnmtext();
 

@@ -57,6 +57,15 @@ public:
   INLINE void set_align(Alignment align_type);
   INLINE Alignment get_align() const;
 
+  INLINE void set_interior_flag(bool interior_flag);
+  INLINE bool get_interior_flag() const;
+
+  INLINE void set_fg(const Colorf &fg);
+  INLINE const Colorf &get_fg() const;
+
+  INLINE void set_interior(const Colorf &interior);
+  INLINE const Colorf &get_interior() const;
+
   INLINE void generate_into(const string &text,
                             PNMImage &dest_image, int x, int y);
   void generate_into(const wstring &text,
@@ -75,6 +84,9 @@ private:
   Glyphs _glyphs;
 
   Alignment _align;
+  bool _interior_flag;
+  Colorf _fg;
+  Colorf _interior;
 };
 
 #include "pnmTextMaker.I"

@@ -30,6 +30,7 @@ ConfigureFn(config_pnmtext) {
 const float text_point_size = config_pnmtext.GetFloat("text-point-size", 10.0f);
 const float text_pixels_per_unit = config_pnmtext.GetFloat("text-pixels-per-unit", 30.0f);
 const float text_scale_factor = config_pnmtext.GetFloat("text-scale-factor", 2.0f);
+const bool text_native_antialias = config_pnmtext.GetBool("text-native-antialias", true);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpnmtext

@@ -60,13 +60,15 @@ private:
   EggTexture *make_tref(PNMTextGlyph *glyph, int character);
 
 private:
-  Colorf _fg, _bg;
+  Colorf _fg, _bg, _interior;
+  bool _got_interior;
   RangeDescription _range;
   double _pixels_per_unit;
   double _point_size;
   double _poly_margin;
-  double _tex_margin;
+  int _tex_margin;
   double _scale_factor;
+  bool _no_native_aa;
 
   Filename _input_font_filename;
   int _face_index;

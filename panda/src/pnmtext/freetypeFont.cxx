@@ -49,6 +49,7 @@ FreetypeFont() {
   _point_size = text_point_size;
   _tex_pixels_per_unit = text_pixels_per_unit;
   _scale_factor = text_scale_factor;
+  _native_antialias = text_native_antialias;
 
   _line_height = 1.0f;
   _space_advance = 0.25f;
@@ -166,6 +167,29 @@ unload_font() {
     FT_Done_Face(_face);
     _font_loaded = false;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FreetypeFont::load_glyph
+//       Access: Protected
+//  Description: Invokes Freetype to load and render the indicated
+//               glyph into a bitmap.  Returns true if successful,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool FreetypeFont::
+load_glyph(int glyph_index) {
+  int flags = FT_LOAD_RENDER;
+  if (!_native_antialias) { 
+    flags |= FT_LOAD_MONOCHROME;
+  }
+
+  int error = FT_Load_Glyph(_face, glyph_index, flags);
+  if (error) {
+    pnmtext_cat.error()
+      << "Unable to render glyph " << glyph_index << "\n";
+    return false;
+  }
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

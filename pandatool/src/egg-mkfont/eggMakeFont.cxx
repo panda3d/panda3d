@@ -82,6 +82,15 @@ EggMakeFont() : EggWriter(true, false) {
      &EggMakeFont::dispatch_color, NULL, &_bg[0]);
 
   add_option
+    ("interior", "r,g,b[,a]", 0,
+     "Specifies the color to render the interior part of a hollow font.  "
+     "This is a special effect that involves analysis of the bitmap after "
+     "the font has been rendered, and so is more effective when the pixel "
+     "size is large.  It also implies -noaa (but you can use a scale "
+     "factor with -sf to achieve antialiasing).",
+     &EggMakeFont::dispatch_color, &_got_interior, &_interior[0]);
+
+  add_option
     ("chars", "range", 0,
      "Specifies the characters of the font that are used.  The range "
      "specification may include combinations of decimal or hex unicode "
@@ -110,13 +119,14 @@ EggMakeFont() : EggWriter(true, false) {
   add_option
     ("bp", "n", 0,
      "The number of extra pixels around a single character in the "
-     "generated polygon. [1.0]",
+     "generated polygon.  This may be a floating-point number.",
      &EggMakeFont::dispatch_double, NULL, &_poly_margin);
 
   add_option
     ("bt", "n", 0,
-     "The number of extra pixels around each character in the texture map.",
-     &EggMakeFont::dispatch_double, NULL, &_tex_margin);
+     "The number of extra pixels around each character in the texture map.  "
+     "This may only be an integer.",
+     &EggMakeFont::dispatch_int, NULL, &_tex_margin);
 
   add_option
     ("sf", "factor", 0,
@@ -129,6 +139,14 @@ EggMakeFont() : EggWriter(true, false) {
      &EggMakeFont::dispatch_double, NULL, &_scale_factor);
 
   add_option
+    ("noaa", "", 0,
+     "Disable low-level antialiasing by the Freetype library.  "
+     "This is unrelated to the antialiasing that is applied due to the "
+     "scale factor specified by -sf; you may have either one, neither, or "
+     "both kinds of antialiasing enabled.",
+     &EggMakeFont::dispatch_none, &_no_native_aa);
+
+  add_option
     ("face", "index", 0,
      "Specify the face index of the particular face within the font file "
      "to use.  Some font files contain multiple faces, indexed beginning "
@@ -137,10 +155,11 @@ EggMakeFont() : EggWriter(true, false) {
 
   _fg.set(1.0, 1.0, 1.0, 1.0);
   _bg.set(1.0, 1.0, 1.0, 0.0);
+  _interior.set(1.0, 1.0, 1.0, 0.0);
   _pixels_per_unit = 30.0;
   _point_size = 10.0;
   _poly_margin = 1.0;
-  _tex_margin = 2.0;
+  _tex_margin = 2;
   _scale_factor = 2.0;
   _face_index = 0;
 
@@ -183,6 +202,8 @@ run() {
   }
   _text_maker->set_point_size(_point_size);
   _text_maker->set_scale_factor(_scale_factor);
+  _text_maker->set_native_antialias(!_no_native_aa && !_got_interior);
+  _text_maker->set_interior_flag(_got_interior);
   _text_maker->set_pixels_per_unit(_pixels_per_unit);
 
   if (_range.is_empty()) {
@@ -192,20 +213,27 @@ run() {
   }
   if (_output_image_pattern.empty()) {
     // Create a default texture filename pattern.
-    _output_image_pattern = _input_font_filename.get_fullpath_wo_extension() + "%03d.rgb";
+    _output_image_pattern = get_output_filename().get_fullpath_wo_extension() + "%03d.rgb";
   }
 
   // Figure out how many channels we need based on the foreground and
   // background colors.
-  bool needs_alpha = (_fg[3] != 1.0 || _bg[3] != 1.0);
+  bool needs_alpha = (_fg[3] != 1.0 || _bg[3] != 1.0 || _interior[3] != 1.0);
   bool needs_color = (_fg[0] != _fg[1] || _fg[1] != _fg[2] ||
-                      _bg[0] != _bg[1] || _bg[1] != _bg[2]);
+                      _bg[0] != _bg[1] || _bg[1] != _bg[2] ||
+                      _interior[0] != _interior[1] || _interior[1] != _interior[2]);
+  cerr << "needs_alpha = " << needs_alpha << "\n"
+       << "needs_color = " << needs_color << "\n"
+       << "fg = " << _fg << "\n"
+       << "bg = " << _bg << "\n"
+       << "interior = " << _interior << "\n";
+
   if (needs_alpha) {
     if (needs_color) {
       _num_channels = 4;
       _format = EggTexture::F_rgba;
     } else {
-      if (_fg[0] == 1.0 && _bg[0] == 1.0) {
+      if (_fg[0] == 1.0 && _bg[0] == 1.0 && _interior[0] == 1.0) {
         // A special case: we only need an alpha channel.  Copy the
         // alpha data into the color channels so we can write out a
         // one-channel image.
@@ -404,8 +432,13 @@ make_tref(PNMTextGlyph *glyph, int character) {
   if (image.has_alpha()) {
     image.alpha_fill(_bg[3]);
   }
-  glyph->place(image, -glyph->get_left() + _tex_margin, 
-               glyph->get_top() + _tex_margin, _fg);
+  if (_got_interior) {
+    glyph->place(image, -glyph->get_left() + _tex_margin, 
+                 glyph->get_top() + _tex_margin, _fg, _interior);
+  } else {
+    glyph->place(image, -glyph->get_left() + _tex_margin, 
+                 glyph->get_top() + _tex_margin, _fg);
+  }
 
   if (!image.write(texture_filename)) {
     nout << "Unable to write " << texture_filename << "\n";

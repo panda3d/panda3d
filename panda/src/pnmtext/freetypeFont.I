@@ -144,6 +144,37 @@ get_scale_factor() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FreetypeFont::set_native_antialias
+//       Access: Public
+//  Description: Sets whether the Freetype library's built-in
+//               antialias mode is enabled.  There are two unrelated
+//               ways to achieve antialiasing: with Freetype's native
+//               antialias mode, and with the use of a scale_factor
+//               greater than one.  By default, both modes are
+//               enabled.
+//
+//               At low resolutions, some fonts may do better with one
+//               mode or the other.  In general, Freetype's native
+//               antialiasing will produce less blurry results, but
+//               may introduce more artifacts.
+////////////////////////////////////////////////////////////////////
+INLINE void FreetypeFont::
+set_native_antialias(bool native_antialias) {
+  _native_antialias = native_antialias;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FreetypeFont::get_native_antialias
+//       Access: Public
+//  Description: Returns whether Freetype's built-in antialias mode is
+//               enabled.  See set_native_antialias().
+////////////////////////////////////////////////////////////////////
+INLINE bool FreetypeFont::
+get_native_antialias() const {
+  return _native_antialias;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FreetypeFont::get_line_height
 //       Access: Public
 //  Description: Returns the number of units high each line of text

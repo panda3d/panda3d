@@ -64,6 +64,9 @@ public:
   INLINE bool set_scale_factor(float scale_factor);
   INLINE float get_scale_factor() const;
 
+  INLINE void set_native_antialias(bool native_antialias);
+  INLINE bool get_native_antialias() const;
+
   INLINE float get_line_height() const;
   INLINE float get_space_advance() const;
 
@@ -71,6 +74,7 @@ public:
   INLINE static float get_points_per_inch();
 
 protected:
+  bool load_glyph(int glyph_index);
   void copy_bitmap_to_pnmimage(const FT_Bitmap &bitmap, PNMImage &image);
 
 private:
@@ -82,6 +86,7 @@ protected:
   float _point_size;
   float _tex_pixels_per_unit;
   float _scale_factor;
+  bool _native_antialias;
   float _font_pixels_per_unit;
 
   float _line_height;

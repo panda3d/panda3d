@@ -95,7 +95,11 @@ generate_into(const wstring &text, PNMImage &dest_image, int x, int y) {
   for (ti = text.begin(); ti != text.end(); ++ti) {
     int ch = (*ti);
     PNMTextGlyph *glyph = get_glyph(ch);
-    glyph->place(dest_image, xp, yp);
+    if (_interior_flag) {
+      glyph->place(dest_image, xp, yp, _fg, _interior);
+    } else {
+      glyph->place(dest_image, xp, yp, _fg);
+    }
     xp += glyph->get_advance();
   }
 }
@@ -130,6 +134,9 @@ get_glyph(int character) {
 void PNMTextMaker::
 initialize() {
   _align = A_left;
+  _interior_flag = false;
+  _fg.set(0.0f, 0.0f, 0.0f, 1.0f);
+  _interior.set(0.5f, 0.5f, 0.5f, 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -140,9 +147,7 @@ initialize() {
 ////////////////////////////////////////////////////////////////////
 PNMTextGlyph *PNMTextMaker::
 make_glyph(int glyph_index) {
-  int error = FT_Load_Glyph(_face, glyph_index, FT_LOAD_RENDER);
-  if (error) {
-    nout << "Unable to render glyph " << glyph_index << "\n";
+  if (!load_glyph(glyph_index)) {
     return (PNMTextGlyph *)NULL;
   }
 
@@ -160,12 +165,15 @@ make_glyph(int glyph_index) {
   } else {
     PNMTextGlyph *glyph = new PNMTextGlyph(advance);
     PNMImage &glyph_image = glyph->_image;
-    glyph_image.clear(bitmap.width, bitmap.rows, 1);
+    glyph_image.clear(bitmap.width, bitmap.rows, 3);
     copy_bitmap_to_pnmimage(bitmap, glyph_image);
 
     glyph->_top = slot->bitmap_top;
     glyph->_left = slot->bitmap_left;
 
+    if (_interior_flag) {
+      glyph->determine_interior();
+    }
     glyph->rescale(_scale_factor);
     return glyph;
   }

@@ -22,6 +22,7 @@
 #include "pandabase.h"
 
 #include "pnmImage.h"
+#include "vector_int.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PNMTextGlyph
@@ -32,11 +33,12 @@ public:
   PNMTextGlyph(double advance);
   ~PNMTextGlyph();
 
-  void rescale(double scale_factor);
   INLINE int get_advance() const;
 
   void place(PNMImage &dest_image, int xp, int yp, 
-             const Colorf &fg = Colorf(0.0f, 0.0f, 0.0f, 1.0f));
+             const Colorf &fg);
+  void place(PNMImage &dest_image, int xp, int yp, 
+             const Colorf &fg, const Colorf &interior);
 
   INLINE int get_left() const;
   INLINE int get_right() const;
@@ -46,13 +48,20 @@ public:
   INLINE int get_height() const;
   INLINE int get_width() const;
   INLINE double get_value(int x, int y) const;
+  INLINE bool get_interior_flag(int x, int y) const;
 
 private:
+  void determine_interior();
+  void scan_interior(int x, int y, xelval new_code, bool neighbor_dark,
+                     int recurse_level);
+  void rescale(double scale_factor);
+
   PNMImage _image;
   int _top;
   int _left;
   double _advance;
   int _int_advance;
+  vector_int _scan_interior_points;
 
   friend class PNMTextMaker;
 };

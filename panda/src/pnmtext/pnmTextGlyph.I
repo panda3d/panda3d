@@ -105,5 +105,23 @@ INLINE double PNMTextGlyph::
 get_value(int x, int y) const {
   nassertr(x >= 0 && x < get_width() &&
            y >= 0 && y < get_height(), 0.0);
-  return _image.get_gray(x, y);
+  // By convention, the "value" attribute is stored in the blue
+  // component.
+  return _image.get_blue(x, y);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMTextGlyph::get_interior_flag
+//       Access: Public
+//  Description: Returns true if the indicated pixel represents a
+//               pixel in the interior of a hollow font, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool PNMTextGlyph::
+get_interior_flag(int x, int y) const {
+  nassertr(x >= 0 && x < get_width() &&
+           y >= 0 && y < get_height(), false);
+  // By convention, the "interior_value" attribute is stored in the red
+  // component.
+  return _image.get_red_val(x, y) != 0;
 }
