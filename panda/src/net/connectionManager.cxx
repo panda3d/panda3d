@@ -234,6 +234,10 @@ open_TCP_client_connection(const string &hostname, int port,
 ////////////////////////////////////////////////////////////////////
 bool ConnectionManager::
 close_connection(const PT(Connection) &connection) {
+  if (connection != (Connection *)NULL) {
+    connection->flush();
+  }
+
   PR_Lock(_set_mutex);
   Connections::iterator ci = _connections.find(connection);
   if (ci == _connections.end()) {
