@@ -29,6 +29,8 @@ ConfigureFn(config_wdxdisplay) {
   init_libwdxdisplay();
 }
 
+bool bResponsive_minimized_fullscreen_window = config_wdxdisplay.GetBool("responsive-minimized-fullscreen-window",false);
+
 extern void AtExitFn(void);
 
 ////////////////////////////////////////////////////////////////////

@@ -601,8 +601,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             //    windowed apps currently run regardless of if its window is in the foreground
             //    so we cannot rely on window messages to reawaken app
 
-
-            if((wparam==_PandaPausedTimer) && _window_inactive) {
+            if((wparam==_PandaPausedTimer) && (_window_inactive||_active_minimized_fullscreen)) {
                 assert(_dxgsg!=NULL);
                 _dxgsg->CheckCooperativeLevel(DO_REACTIVATE_WINDOW);
 
@@ -649,12 +648,25 @@ void wdxGraphicsWindow::deactivate_window(void) {
     // current policy is to suspend minimized or deactivated fullscreen windows, but leave
     // regular windows running normally
 
-   if(_window_inactive || _exiting_window)
+   if(_window_inactive || _exiting_window || _active_minimized_fullscreen) {
+       #ifdef _DEBUG
+          if(wdxdisplay_cat.is_spam())
+            wdxdisplay_cat.spam()  << "deactivate_window called, but ignored in current mode\n";
+       #endif
      return;
+   }
 
-   if(wdxdisplay_cat.is_spam())
-       wdxdisplay_cat.spam() << "WDX window deactivated, waiting...\n";
-   _window_inactive = true;
+   if(bResponsive_minimized_fullscreen_window) {
+       if(wdxdisplay_cat.is_spam())
+           wdxdisplay_cat.spam() << "WDX fullscreen window switching to active minimized mode...\n";
+       _active_minimized_fullscreen = true;
+   } else {
+
+       if(wdxdisplay_cat.is_spam())
+           wdxdisplay_cat.spam() << "WDX window deactivated, waiting...\n";
+
+       _window_inactive = true;
+   }
 
    if(_props._fullscreen) {
        // make sure window is minimized
@@ -671,37 +683,53 @@ void wdxGraphicsWindow::deactivate_window(void) {
        }
    }
 
-   _PandaPausedTimer = SetTimer(_mwindow,PAUSED_TIMER_ID,500,NULL);
-   if(_PandaPausedTimer!=PAUSED_TIMER_ID) {
-       wdxdisplay_cat.error() << "Error in SetTimer!\n";
-   }
+//   if(!bResponsive_minimized_fullscreen_window) {
+   // need this even in responsive-mode to trigger the dxgsg check of cooplvl, i think?
+       _PandaPausedTimer = SetTimer(_mwindow,PAUSED_TIMER_ID,500,NULL);
+       if(_PandaPausedTimer!=PAUSED_TIMER_ID) {
+           wdxdisplay_cat.error() << "Error in SetTimer!\n";
+       }
+//   }
 }
 
 void wdxGraphicsWindow::reactivate_window(void) {
-    if(!_window_inactive)
-        return;
+    if(_window_inactive) {
+    
+        // first see if dx cooperative level is OK for reactivation
+    //    if(!_dxgsg->CheckCooperativeLevel())
+    //        return;
+    
+        if(wdxdisplay_cat.is_spam())
+            wdxdisplay_cat.spam() << "WDX window re-activated...\n";
+    
+        _window_inactive = false;
+    
+        if(_PandaPausedTimer!=NULL) {
+            KillTimer(_mwindow,_PandaPausedTimer);
+            _PandaPausedTimer = NULL;
+        }
+    
+        // move window to top of zorder
+    //  if(_props._fullscreen)
+    //      SetWindowPos(_mwindow, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOOWNERZORDER);
+        GdiFlush();
 
-    // first see if dx cooperative level is OK for reactivation
-//    if(!_dxgsg->CheckCooperativeLevel())
-//        return;
+    } else if(_active_minimized_fullscreen) {
+        if(wdxdisplay_cat.is_spam())
+            wdxdisplay_cat.spam() << "WDX window unminimized from active-minimized state...\n";
+    
+        if(_PandaPausedTimer!=NULL) {
+            KillTimer(_mwindow,_PandaPausedTimer);
+            _PandaPausedTimer = NULL;
+        }
 
-    if(wdxdisplay_cat.is_spam())
-        wdxdisplay_cat.spam() << "WDX window re-activated...\n";
-
-    _window_inactive = false;
-
-    if(_PandaPausedTimer!=NULL) {
-        KillTimer(_mwindow,_PandaPausedTimer);
-        _PandaPausedTimer = NULL;
+        _active_minimized_fullscreen = false;
+    
+        // move window to top of zorder
+    //  if(_props._fullscreen)
+    //      SetWindowPos(_mwindow, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOOWNERZORDER);
+        GdiFlush();
     }
-
-    // move window to top of zorder
-//  if(_props._fullscreen)
-//      SetWindowPos(_mwindow, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOOWNERZORDER);
-
-    GdiFlush();
-
-
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -741,6 +769,7 @@ void wdxGraphicsWindow::config(void) {
     _exiting_window = false;
     _window_inactive = false;
     _return_control_to_app = false;
+    _active_minimized_fullscreen = false;
 
     _hOldForegroundWindow=GetForegroundWindow();
 

@@ -108,6 +108,7 @@ private:
   bool              _ignore_key_repeat;
   bool              _exiting_window;
   bool              _window_inactive;
+  bool              _active_minimized_fullscreen;
   bool              _return_control_to_app;
 
 public:
