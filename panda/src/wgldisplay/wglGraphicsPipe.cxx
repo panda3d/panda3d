@@ -248,9 +248,18 @@ find_pixfmtnum(FrameBufferProperties &properties, HDC hdc,
       continue;
     }
 
-    DWORD dwReqFlags = (PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW);
-    if ((frame_buffer_mode & FrameBufferProperties::FM_double_buffer) != 0) {
-      dwReqFlags|= PFD_DOUBLEBUFFER;
+    DWORD want_flags = (PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW);
+    DWORD dont_want_flags = 0;
+
+    switch (frame_buffer_mode & FrameBufferProperties::FM_buffer) {
+    case FrameBufferProperties::FM_single_buffer:
+      dont_want_flags |= PFD_DOUBLEBUFFER;
+      break;
+      
+    case FrameBufferProperties::FM_double_buffer:
+    case FrameBufferProperties::FM_triple_buffer:
+      want_flags |= PFD_DOUBLEBUFFER;
+      break;
     }
 
     if (wgldisplay_cat.is_debug()) {
@@ -278,7 +287,8 @@ find_pixfmtnum(FrameBufferProperties &properties, HDC hdc,
       }
       wgldisplay_cat.debug()
         << "flags = " << format_pfd_flags(pfd.dwFlags) << " (missing "
-        << format_pfd_flags((~pfd.dwFlags) & dwReqFlags) << ")\n";
+        << format_pfd_flags((~pfd.dwFlags) & want_flags) << ", extra "
+        << format_pfd_flags(pfd.dwFlags & dont_want_flags) << ")\n";
     }
 
     if ((frame_buffer_mode & FrameBufferProperties::FM_alpha) != 0 && 
@@ -300,7 +310,8 @@ find_pixfmtnum(FrameBufferProperties &properties, HDC hdc,
       continue;
     }
 
-    if ((pfd.dwFlags & dwReqFlags) != dwReqFlags) {
+    if ((pfd.dwFlags & want_flags) != want_flags ||
+        (pfd.dwFlags & dont_want_flags) != 0) {
       wgldisplay_cat.debug() 
         << "  rejecting.\n";
       continue;

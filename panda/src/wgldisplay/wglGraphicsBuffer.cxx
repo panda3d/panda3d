@@ -102,9 +102,8 @@ end_frame() {
 
     // If we've lost the pbuffer image (due to a mode-switch, for
     // instance), don't attempt to copy it to the texture, since the
-    // frame is invalid.  For excruciating correctness, we should
-    // force the frame to be re-rendered, but we'll just discard the
-    // frame instead.
+    // frame is invalid.  In fact, now we need to recreate the
+    // pbuffer.
     if (_pbuffer_dc) {
       int flag = 0;
       wglgsg->_wglQueryPbufferARB(_pbuffer, WGL_PBUFFER_LOST_ARB, &flag);
@@ -120,8 +119,10 @@ end_frame() {
     // extension, if it is available, to render directly into a
     // texture in the first place (but I don't have a card that
     // supports that right now).
-    PT(DisplayRegion) dr = make_scratch_display_region(_x_size, _y_size);
-    get_texture()->copy(_gsg, dr, _gsg->get_render_buffer(RenderBuffer::T_back));
+    nassertv(has_texture());
+    DisplayRegion dr(this, _x_size, _y_size);
+    RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type());
+    get_texture()->copy(_gsg, &dr, buffer);
   }
 }
 
