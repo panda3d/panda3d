@@ -352,70 +352,6 @@
     #set alt_cflags $[alt_cflags] $[$[package]_cflags]
   #end package
 
-  #if $[ne $[USE_CRYPTO] $[components $[USE_CRYPTO],$[active_component_libs]],]
-    #set alt_cflags $[alt_cflags] $[crypto_cflags]
-  #endif
-  #if $[ne $[USE_ZLIB] $[components $[USE_ZLIB],$[active_component_libs]],]
-    #set alt_cflags $[alt_cflags] $[zlib_cflags]
-  #endif
-  #if $[ne $[USE_GL] $[components $[USE_GL],$[active_component_libs]],]
-    #set alt_cflags $[alt_cflags] $[gl_cflags]
-  #endif
-  #if $[ne $[USE_CHROMIUM] $[components $[USE_CHROMIUM],$[active_component_libs]],]
-    #set alt_cflags $[alt_cflags] $[chromium_cflags]
-  #endif
-  #if $[ne $[USE_GLX] $[components $[USE_GLX],$[active_component_libs]],]
-    #set alt_cflags $[alt_cflags] $[glx_cflags]
-  #endif
-  #if $[ne $[USE_GLUT] $[components $[USE_GLUT],$[active_component_libs]],]
-    #set alt_cflags $[alt_cflags] $[glut_cflags]
-  #endif
-  #if $[ne $[USE_DX] $[components $[USE_DX],$[active_component_libs]],]
-    #set alt_cflags $[alt_cflags] $[dx_cflags]
-  #endif
-  #if $[ne $[USE_SOXST] $[components $[USE_SOXST],$[active_component_libs]],]
-    #set alt_cflags $[alt_cflags] $[soxst_cflags]
-  #endif
-  #if $[ne $[USE_IPC] $[components $[USE_IPC],$[active_component_libs]],]
-    #set alt_cflags $[alt_cflags] $[ipc_cflags]
-  #endif
-  #if $[ne $[USE_NET] $[components $[USE_NET],$[active_component_libs]],]
-    #set alt_cflags $[alt_cflags] $[net_cflags]
-  #endif
-  #if $[ne $[USE_JPEG] $[components $[USE_JPEG],$[active_component_libs]],]
-    #set alt_cflags $[alt_cflags] $[jpeg_cflags]
-  #endif 
-  #if $[ne $[USE_JPEG2000] $[components $[USE_JPEG2000],$[active_component_libs]],]
-    #set alt_cflags $[alt_cflags] $[jpeg2000_cflags]
-  #endif   
-  #if $[ne $[USE_TIFF] $[components $[USE_TIFF],$[active_component_libs]],]
-    #set alt_cflags $[alt_cflags] $[tiff_cflags]
-  #endif 
-  #if $[ne $[USE_FFTW] $[components $[USE_FFTW],$[active_component_libs]],]
-    #set alt_cflags $[alt_cflags] $[fftw_cflags]
-  #endif 
-  #if $[ne $[USE_NURBSPP] $[components $[USE_NURBSPP],$[active_component_libs]],]
-    #set alt_cflags $[alt_cflags] $[nurbspp_cflags]
-  #endif 
-  #if $[ne $[USE_VRPN] $[components $[USE_VRPN],$[active_component_libs]],]
-    #set alt_cflags $[alt_cflags] $[vrpn_cflags]
-  #endif 
-  #if $[ne $[USE_RAD_MSS] $[components $[USE_RAD_MSS],$[active_component_libs]],]
-    #set alt_cflags $[alt_cflags] $[rad_mss_cflags]
-  #endif
-  #if $[ne $[USE_MIKMOD] $[components $[USE_MIKMOD],$[active_component_libs]],]
-    #set alt_cflags $[alt_cflags] $[mikmod_cflags]
-  #endif
-  #if $[ne $[USE_GTKMM] $[components $[USE_GTKMM],$[active_component_libs]],]
-    #set alt_cflags $[alt_cflags] $[gtkmm_cflags]
-  #endif 
-  #if $[ne $[USE_FREETYPE] $[components $[USE_FREETYPE],$[active_component_libs]],]
-    #set alt_cflags $[alt_cflags] $[freetype_cflags]
-  #endif 
-  #if $[ne $[USE_MAYA] $[components $[USE_MAYA],$[active_component_libs]],]
-    #set alt_cflags $[alt_cflags] $[maya_cflags]
-  #endif
-
   $[alt_cflags]
 #end get_cflags
 
@@ -430,70 +366,6 @@
     #set alt_ipath $[alt_ipath] $[$[package]_ipath]
   #end package
 
-  #if $[ne $[USE_CRYPTO] $[components $[USE_CRYPTO],$[active_component_libs]],]
-    #set alt_ipath $[alt_ipath] $[crypto_ipath]
-  #endif
-  #if $[ne $[USE_ZLIB] $[components $[USE_ZLIB],$[active_component_libs]],]
-    #set alt_ipath $[alt_ipath] $[zlib_ipath]
-  #endif
-  #if $[ne $[USE_GL] $[components $[USE_GL],$[active_component_libs]],]
-    #set alt_ipath $[alt_ipath] $[gl_ipath]
-  #endif
-  #if $[ne $[USE_CHROMIUM] $[components $[USE_CHROMIUM],$[active_component_libs]],]
-    #set alt_ipath $[alt_ipath] $[chromium_ipath]
-  #endif
-  #if $[ne $[USE_GLX] $[components $[USE_GLX],$[active_component_libs]],]
-    #set alt_ipath $[alt_ipath] $[glx_ipath]
-  #endif
-  #if $[ne $[USE_GLUT] $[components $[USE_GLUT],$[active_component_libs]],]
-    #set alt_ipath $[alt_ipath] $[glut_ipath]
-  #endif
-  #if $[ne $[USE_DX] $[components $[USE_DX],$[active_component_libs]],]
-    #set alt_ipath $[alt_ipath] $[dx_ipath]
-  #endif
-  #if $[ne $[USE_SOXST] $[components $[USE_SOXST],$[active_component_libs]],]
-    #set alt_ipath $[alt_ipath] $[soxst_ipath]
-  #endif
-  #if $[ne $[USE_IPC] $[components $[USE_IPC],$[active_component_libs]],]
-    #set alt_ipath $[alt_ipath] $[ipc_ipath]
-  #endif
-  #if $[ne $[USE_NET] $[components $[USE_NET],$[active_component_libs]],]
-    #set alt_ipath $[alt_ipath] $[net_ipath]
-  #endif
-  #if $[ne $[USE_JPEG] $[components $[USE_JPEG],$[active_component_libs]],]
-    #set alt_ipath $[alt_ipath] $[jpeg_ipath]
-  #endif
-  #if $[ne $[USE_JPEG2000] $[components $[USE_JPEG2000],$[active_component_libs]],]
-    #set alt_ipath $[alt_ipath] $[jpeg2000_ipath]
-  #endif  
-  #if $[ne $[USE_TIFF] $[components $[USE_TIFF],$[active_component_libs]],]
-    #set alt_ipath $[alt_ipath] $[tiff_ipath]
-  #endif
-  #if $[ne $[USE_FFTW] $[components $[USE_FFTW],$[active_component_libs]],]
-    #set alt_ipath $[alt_ipath] $[fftw_ipath]
-  #endif
-  #if $[ne $[USE_NURBSPP] $[components $[USE_NURBSPP],$[active_component_libs]],]
-    #set alt_ipath $[alt_ipath] $[nurbspp_ipath]
-  #endif
-  #if $[ne $[USE_VRPN] $[components $[USE_VRPN],$[active_component_libs]],]
-    #set alt_ipath $[alt_ipath] $[vrpn_ipath]
-  #endif
-  #if $[ne $[USE_RAD_MSS] $[components $[USE_RAD_MSS],$[active_component_libs]],]
-    #set alt_ipath $[alt_ipath] $[rad_mss_ipath]
-  #endif
-  #if $[ne $[USE_MIKMOD] $[components $[USE_MIKMOD],$[active_component_libs]],]
-    #set alt_ipath $[alt_ipath] $[mikmod_ipath]
-  #endif
-  #if $[ne $[USE_GTKMM] $[components $[USE_GTKMM],$[active_component_libs]],]
-    #set alt_ipath $[alt_ipath] $[gtkmm_ipath]
-  #endif 
-  #if $[ne $[USE_FREETYPE] $[components $[USE_FREETYPE],$[active_component_libs]],]
-    #set alt_ipath $[alt_ipath] $[freetype_ipath]
-  #endif 
-  #if $[ne $[USE_MAYA] $[components $[USE_MAYA],$[active_component_libs]],]
-    #set alt_ipath $[alt_ipath] $[maya_ipath]
-  #endif
-
   $[alt_ipath]
 #end get_ipath
 
@@ -503,77 +375,14 @@
 // directory names only; the -L switch is not included here.
 #defun get_lpath
   #define alt_lpath $[stl_lpath] $[nspr_lpath] $[python_lpath]
-
-  #foreach package $[use_packages]
-    #set alt_lpath $[alt_lpath] $[$[package]_lpath]
-  #end package
   
   #if $[WINDOWS_PLATFORM]  
     #set alt_lpath $[WIN32_PLATFORMSDK_LIBPATH] $[alt_lpath] 
   #endif  
-  #if $[ne $[USE_CRYPTO] $[components $[USE_CRYPTO],$[active_component_libs] $[transitive_link]],]
-    #set alt_lpath $[alt_lpath] $[crypto_lpath]
-  #endif
-  #if $[ne $[USE_ZLIB] $[components $[USE_ZLIB],$[active_component_libs] $[transitive_link]],]
-    #set alt_lpath $[alt_lpath] $[zlib_lpath]
-  #endif
-  #if $[ne $[USE_GL] $[components $[USE_GL],$[active_component_libs] $[transitive_link]],]
-    #set alt_lpath $[alt_lpath] $[gl_lpath]
-  #endif
-  #if $[ne $[USE_CHROMIUM] $[components $[USE_CHROMIUM],$[active_component_libs] $[transitive_link]],]
-    #set alt_lpath $[alt_lpath] $[chromium_lpath]
-  #endif
-  #if $[ne $[USE_GLX] $[components $[USE_GLX],$[active_component_libs] $[transitive_link]],]
-    #set alt_lpath $[alt_lpath] $[glx_lpath]
-  #endif
-  #if $[ne $[USE_GLUT] $[components $[USE_GLUT],$[active_component_libs] $[transitive_link]],]
-    #set alt_lpath $[alt_lpath] $[glut_lpath]
-  #endif
-  #if $[ne $[USE_DX] $[components $[USE_DX],$[active_component_libs] $[transitive_link]],]
-    #set alt_lpath $[alt_lpath] $[dx_lpath]
-  #endif
-  #if $[ne $[USE_SOXST] $[components $[USE_SOXST],$[active_component_libs] $[transitive_link]],]
-    #set alt_lpath $[alt_lpath] $[soxst_lpath]
-  #endif
-  #if $[ne $[USE_IPC] $[components $[USE_IPC],$[active_component_libs] $[transitive_link]],]
-    #set alt_lpath $[alt_lpath] $[ipc_lpath]
-  #endif
-  #if $[ne $[USE_NET] $[components $[USE_NET],$[active_component_libs] $[transitive_link]],]
-    #set alt_lpath $[alt_lpath] $[net_lpath]
-  #endif
-  #if $[ne $[USE_JPEG] $[components $[USE_JPEG],$[active_component_libs] $[transitive_link]],]
-    #set alt_lpath $[alt_lpath] $[jpeg_lpath]
-  #endif
-  #if $[ne $[USE_JPEG2000] $[components $[USE_JPEG2000],$[active_component_libs] $[transitive_link]],]
-    #set alt_lpath $[alt_lpath] $[jpeg2000_lpath]
-  #endif  
-  #if $[ne $[USE_TIFF] $[components $[USE_TIFF],$[active_component_libs] $[transitive_link]],]
-    #set alt_lpath $[alt_lpath] $[tiff_lpath]
-  #endif
-  #if $[ne $[USE_FFTW] $[components $[USE_FFTW],$[active_component_libs] $[transitive_link]],]
-    #set alt_lpath $[alt_lpath] $[fftw_lpath]
-  #endif
-  #if $[ne $[USE_NURBSPP] $[components $[USE_NURBSPP],$[active_component_libs] $[transitive_link]],]
-    #set alt_lpath $[alt_lpath] $[nurbspp_lpath]
-  #endif
-  #if $[ne $[USE_VRPN] $[components $[USE_VRPN],$[active_component_libs] $[transitive_link]],]
-    #set alt_lpath $[alt_lpath] $[vrpn_lpath]
-  #endif
-  #if $[ne $[USE_RAD_MSS] $[components $[USE_RAD_MSS],$[active_component_libs] $[transitive_link]],]
-    #set alt_lpath $[alt_lpath] $[rad_mss_lpath]
-  #endif
-  #if $[ne $[USE_MIKMOD] $[components $[USE_MIKMOD],$[active_component_libs] $[transitive_link]],]
-    #set alt_lpath $[alt_lpath] $[mikmod_lpath]
-  #endif
-  #if $[ne $[USE_GTKMM] $[components $[USE_GTKMM],$[active_component_libs] $[transitive_link]],]
-    #set alt_lpath $[alt_lpath] $[gtkmm_lpath]
-  #endif 
-  #if $[ne $[USE_FREETYPE] $[components $[USE_FREETYPE],$[active_component_libs] $[transitive_link]],]
-    #set alt_lpath $[alt_lpath] $[freetype_lpath]
-  #endif 
-  #if $[ne $[USE_MAYA] $[components $[USE_MAYA],$[active_component_libs] $[transitive_link]],]
-    #set alt_lpath $[alt_lpath] $[maya_lpath]
-  #endif
+
+  #foreach package $[use_packages]
+    #set alt_lpath $[alt_lpath] $[$[package]_lpath]
+  #end package
 
   $[alt_lpath]
 #end get_lpath
@@ -589,76 +398,6 @@
   #foreach package $[use_packages]
     #set alt_libs $[alt_libs] $[$[package]_libs]
   #end package
-  
-  #if $[ne $[USE_CRYPTO] $[components $[USE_CRYPTO],$[active_component_libs] $[transitive_link]],]
-    #set alt_libs $[alt_libs] $[crypto_libs]
-  #endif
-  #if $[ne $[USE_ZLIB] $[components $[USE_ZLIB],$[active_component_libs] $[transitive_link]],]
-    #set alt_libs $[alt_libs] $[zlib_libs]
-  #endif
-  #if $[ne $[USE_GL] $[components $[USE_GL],$[active_component_libs] $[transitive_link]],]
-    #set alt_libs $[alt_libs] $[gl_libs]
-  #endif
-  #if $[ne $[USE_CHROMIUM] $[components $[USE_CHROMIUM],$[active_component_libs] $[transitive_link]],]
-    #set alt_libs $[alt_libs] $[chromium_libs]
-  #endif
-  #if $[ne $[USE_GLX] $[components $[USE_GLX],$[active_component_libs] $[transitive_link]],]
-    #set alt_libs $[alt_libs] $[glx_libs]
-  #endif
-  #if $[ne $[USE_GLUT] $[components $[USE_GLUT],$[active_component_libs] $[transitive_link]],]
-    #set alt_libs $[alt_libs] $[glut_libs]
-  #endif
-  #if $[ne $[USE_DX] $[components $[USE_DX],$[active_component_libs] $[transitive_link]],]
-    #set alt_libs $[alt_libs] $[dx_libs]
-  #endif
-  #if $[ne $[USE_SOXST] $[components $[USE_SOXST],$[active_component_libs] $[transitive_link]],]
-    #set alt_libs $[alt_libs] $[soxst_libs]
-  #endif
-  #if $[ne $[USE_IPC] $[components $[USE_IPC],$[active_component_libs] $[transitive_link]],]
-    #set alt_libs $[alt_libs] $[ipc_libs]
-  #endif
-  #if $[ne $[USE_NET] $[components $[USE_NET],$[active_component_libs] $[transitive_link]],]
-    #set alt_libs $[alt_libs] $[net_libs]
-  #endif
-  #if $[ne $[USE_JPEG] $[components $[USE_JPEG],$[active_component_libs] $[transitive_link]],]
-    #set alt_libs $[alt_libs] $[jpeg_libs]
-  #endif
-  #if $[ne $[USE_JPEG2000] $[components $[USE_JPEG2000],$[active_component_libs] $[transitive_link]],]
-    #set alt_libs $[alt_libs] $[jpeg2000_libs]
-  #endif  
-  #if $[ne $[USE_TIFF] $[components $[USE_TIFF],$[active_component_libs] $[transitive_link]],]
-    #set alt_libs $[alt_libs] $[tiff_libs]
-  #endif
-  #if $[ne $[USE_FFTW] $[components $[USE_FFTW],$[active_component_libs] $[transitive_link]],]
-    #set alt_libs $[alt_libs] $[fftw_libs]
-  #endif
-  #if $[ne $[USE_NURBSPP] $[components $[USE_NURBSPP],$[active_component_libs] $[transitive_link]],]
-    #set alt_libs $[alt_libs] $[nurbspp_libs]
-  #endif
-  #if $[ne $[USE_VRPN] $[components $[USE_VRPN],$[active_component_libs] $[transitive_link]],]
-    #set alt_libs $[alt_libs] $[vrpn_libs]
-  #endif
-  #if $[ne $[USE_RAD_MSS] $[components $[USE_RAD_MSS],$[active_component_libs] $[transitive_link]],]
-    #set alt_libs $[alt_libs] $[rad_mss_libs]
-  #endif
-  #if $[ne $[USE_MIKMOD] $[components $[USE_MIKMOD],$[active_component_libs] $[transitive_link]],]
-    #set alt_libs $[alt_libs] $[mikmod_libs]
-  #endif
-  #if $[ne $[USE_GTKMM] $[components $[USE_GTKMM],$[active_component_libs] $[transitive_link]],]
-    #set alt_libs $[alt_libs] $[gtkmm_libs]
-  #endif 
-  #if $[ne $[USE_FREETYPE] $[components $[USE_FREETYPE],$[active_component_libs] $[transitive_link]],]
-    #set alt_libs $[alt_libs] $[freetype_libs]
-  #endif 
-  #if $[ne $[USE_MAYA] $[components $[USE_MAYA],$[active_component_libs] $[transitive_link]],]
-    #set alt_libs $[alt_libs] $[maya_libs]
-  #endif
-  #if $[UNIX_PLATFORM]
-    #set alt_libs $[alt_libs] $[UNIX_SYS_LIBS] $[components $[UNIX_SYS_LIBS],$[active_component_libs] $[transitive_link]]
-  #endif
-  #if $[WINDOWS_PLATFORM]
-    #set alt_libs $[alt_libs] $[WIN_SYS_LIBS] $[components $[WIN_SYS_LIBS],$[active_component_libs] $[transitive_link]]
-  #endif
 
   $[alt_libs]
 #end get_libs
