@@ -281,6 +281,7 @@ public:
 private:
   class StatusEntry {
   public:
+    INLINE StatusEntry();
     int _status_code;
     string _status_string;
   };

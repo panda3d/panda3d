@@ -847,3 +847,13 @@ is_download_complete() const {
   return (_download_dest != DD_none &&
           (_state == S_read_body || _state == S_read_trailer));
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::StatusEntry::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE HTTPChannel::StatusEntry::
+StatusEntry() {
+  _status_code = SC_incomplete;
+}

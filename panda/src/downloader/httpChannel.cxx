@@ -745,16 +745,30 @@ reached_done_state() {
     // response; go back and find the best one.
     if (!_status_list.empty()) {
       _status_list.push_back(_status_entry);
-      if (downloader_cat.is_spam()) {
-        downloader_cat.spam()
+      if (downloader_cat.is_debug()) {
+        downloader_cat.debug()
           << "Reexamining failure responses.\n";
       }
       size_t best_i = 0;
+      if (downloader_cat.is_debug()) {
+        downloader_cat.debug()
+          << "  " << 0 << ". " << _status_list[0]._status_code << " "
+          << _status_list[0]._status_string << "\n";
+      }
       for (size_t i = 1; i < _status_list.size(); i++) {
+        if (downloader_cat.is_debug()) {
+          downloader_cat.debug()
+            << "  " << i << ". " << _status_list[i]._status_code << " "
+            << _status_list[i]._status_string << "\n";
+        }
         if (more_useful_status_code(_status_list[i]._status_code, 
                                     _status_list[best_i]._status_code)) {
           best_i = i;
         }
+      }
+      if (downloader_cat.is_debug()) {
+        downloader_cat.debug()
+          << "chose index " << best_i << ", above.\n";
       }
       _status_entry = _status_list[best_i];
       _status_list.clear();
