@@ -21,7 +21,7 @@
 // Description : This is a unit quaternion representing an orientation.
 ////////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA FLOATNAME(LOrientation) : public FLOATNAME(LQuaternion) {
-public:
+PUBLISHED:
   INLINE_LINMATH FLOATNAME(LOrientation)();
   INLINE_LINMATH FLOATNAME(LOrientation)(const FLOATNAME(LQuaternion)&);
   INLINE_LINMATH FLOATNAME(LOrientation)(FLOATTYPE, FLOATTYPE, FLOATTYPE, FLOATTYPE);
