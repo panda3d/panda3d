@@ -5,6 +5,8 @@ from whrandom import *
 from Tkinter import *
 from DirectGeometry import *
 from SceneGraphExplorer import *
+from tkSimpleDialog import askstring
+from tkFileDialog import *
 import Pmw
 import Dial
 import Floater
@@ -217,6 +219,10 @@ class LevelEditor(NodePath, PandaObject):
     def setGroupNum(self,num):
 	self.groupNum = num
 
+    def setGroupParentToSelected(self):
+        if self.direct.selected.last:
+            self.setGroupParent(self.direct.selected.last)
+        
     def setGroupParent(self,nodePath):
 	parentDNA = self.getDNAGroup(nodePath)
         if parentDNA:
@@ -950,246 +956,63 @@ class LevelEditor(NodePath, PandaObject):
             PieMenu(self.direct, newColorMenu, self.updateColorIndex))
 	self.colorPaletteDictionary[menuName] = adjustedColorArray
 
+    def createColorMenusFromFile(self, prefix):
+        dict = self.createColorDictionaryFromFile(
+            'level_editor/' + prefix + 'Colors.txt')
+        self.colorPaletteDictionary[prefix + 'Colors'] = dict
+        self.createColorMenu(prefix + 'WallColors', dict['wallColors'])
+        self.createColorMenu(prefix + 'WindowColors', dict['windowColors'])
+        self.createColorMenu(prefix + 'DoorColors', dict['doorColors'])
+        self.createColorMenu(prefix + 'CorniceColors', dict['corniceColors'])
+
+    def createColorDictionaryFromFile(self, filename):
+        print 'Loading Color Palettes from: ' + filename
+        f = Filename(filename)
+        f.resolveFilename(getModelPath())
+        f = open(f.toOsSpecific(), 'r')
+        rawData = f.readlines()
+        f.close()
+        dict = {}
+        wallColors = []
+        windowColors = []
+        doorColors = []
+        corniceColors = []
+        for line in rawData:
+            l = string.strip(line)
+            if l:
+                if l[:4] == 'wall':
+                    wallColors.append(eval(l[11:]))
+                elif l[:4] == 'wind':
+                    windowColors.append(eval(l[13:]))
+                elif l[:4] == 'door':
+                    doorColors.append(eval(l[11:]))
+                elif l[:4] == 'corn':
+                    corniceColors.append(eval(l[14:]))
+        dict['wallColors'] = wallColors
+        dict['windowColors'] = windowColors
+        dict['doorColors'] = doorColors
+        dict['corniceColors'] = corniceColors
+        return dict
+
+    def printColorDictionary(self, dict):
+        for color in dict['wallColors']:
+            print ('wallColor: Vec4(%.2f, %.2f, %.2f, 1.0)' %
+                   (color[0], color[1], color[2]))
+        for color in dict['windowColors']:
+            print ('windowColor: Vec4(%.2f, %.2f, %.2f, 1.0)' %
+                   (color[0], color[1], color[2]))
+        for color in dict['doorColors']:
+            print ('doorColor: Vec4(%.2f, %.2f, %.2f, 1.0)' %
+                   (color[0], color[1], color[2]))
+        for color in dict['corniceColors']:
+            print ('corniceColor: Vec4(%.2f, %.2f, %.2f, 1.0)' %
+                   (color[0], color[1], color[2]))
+
     def createColorMenus(self):
-        self.createColorMenu('toontownCentralWallColors', [
-            VBase4((193.0/255.0), (187.0/255.0), (163.0/255.0), 1.0),
-            VBase4((208.0/255.0), (232.0/255.0), (113.0/255.0), 1.0),
-            VBase4((230.0/255.0), (144.0/255.0), (86.0/255.0), 1.0),
-            VBase4((232.0/255.0), (137.0/255.0), (112.0/255.0), 1.0),
-            VBase4((232.0/255.0), (160.0/255.0), (113.0/255.0), 1.0),
-            VBase4((240.0/255.0), (90.0/255.0), (90.0/255.0), 1.0),
-            VBase4((254.0/255.0), (176.0/255.0), (124.0/255.0), 1.0),
-            VBase4((255.0/255.0), (106.0/255.0), (69.0/255.0), 1.0),
-            VBase4((255.0/255.0), (180.0/255.0), (69.0/255.0), 1.0),
-            VBase4((255.0/255.0), (213.0/255.0), (151.0/255.0), 1.0),
-            VBase4((255.0/255.0), (225.0/255.0), (205.0/255.0), 1.0),
-            VBase4((255.0/255.0), (234.0/255.0), (151.0/255.0), 1.0),
-            VBase4((255.0/255.0), (255.0/255.0), (151.0/255.0), 1.0),
-            VBase4((55.0/255.0), (244.0/255.0), (70.0/255.0), 1.0),
-            VBase4((27.0/255.0), (203.0/255.0), (56.0/255.0), 1.0),
-            VBase4((53.0/255.0), (185.0/255.0), (78.0/255.0), 1.0)
-            ])
-
-        self.createColorMenu('toontownCentralWindowColors', [
-            VBase4((101.0/255.0), (156.0/255.0), (170.0/255.0), 1.0),
-            VBase4((150.0/255.0), (254.0/255.0), (124.0/255.0), 1.0),
-            VBase4((232.0/255.0), (160.0/255.0), (113.0/255.0), 1.0),
-            VBase4((255.0/255.0), (128.0/255.0), (96.0/255.0), 1.0),
-            VBase4((255.0/255.0), (151.0/255.0), (151.0/255.0), 1.0),
-            VBase4((255.0/255.0), (160.0/255.0), (96.0/255.0), 1.0),
-            VBase4((255.0/255.0), (234.0/255.0), (151.0/255.0), 1.0),
-            VBase4((33.0/255.0), (200.0/255.0), (133.0/255.0), 1.0),
-            VBase4((69.0/255.0), (255.0/255.0), (106.0/255.0), 1.0),
-            VBase4((82.0/255.0), (170.0/255.0), (152.0/255.0), 1.0)
-            ])
-        
-        self.createColorMenu('toontownCentralDoorColors', [
-            VBase4((190.0/255.0), (202.0/255.0), (141.0/255.0), 1.0),
-            VBase4((206.0/255.0), (155.0/255.0), (122.0/255.0), 1.0),
-            VBase4((255.0/255.0), (151.0/255.0), (151.0/255.0), 1.0),
-            VBase4((255.0/255.0), (160.0/255.0), (96.0/255.0), 1.0),
-            VBase4((255.0/255.0), (223.0/255.0), (96.0/255.0), 1.0)
-            ])
-        
-        self.createColorMenu('toontownCentralCorniceColors', [
-            VBase4((113.0/255.0), (232.0/255.0), (160.0/255.0), 1.0),
-            VBase4((240.0/255.0), (182.0/255.0), (168.0/255.0), 1.0),
-            VBase4((255.0/255.0), (191.0/255.0), (96.0/255.0), 1.0),
-            VBase4((255.0/255.0), (255.0/255.0), (151.0/255.0), 1.0),
-            VBase4((53.0/255.0), (185.0/255.0), (78.0/255.0), 1.0),
-            VBase4((201.0/255.0), (91.0/255.0), (48.0/255.0), 1.0),
-            VBase4((193.0/255.0), (187.0/255.0), (163.0/255.0), 1.0),
-            VBase4((208.0/255.0), (232.0/255.0), (113.0/255.0), 1.0),
-            VBase4((230.0/255.0), (144.0/255.0), (86.0/255.0), 1.0),
-            VBase4((232.0/255.0), (137.0/255.0), (112.0/255.0), 1.0),
-            VBase4((232.0/255.0), (160.0/255.0), (113.0/255.0), 1.0),
-            VBase4((240.0/255.0), (90.0/255.0), (90.0/255.0), 1.0),
-            VBase4((254.0/255.0), (176.0/255.0), (124.0/255.0), 1.0),
-            VBase4((255.0/255.0), (106.0/255.0), (69.0/255.0), 1.0),
-            VBase4((255.0/255.0), (180.0/255.0), (69.0/255.0), 1.0),
-            VBase4((255.0/255.0), (213.0/255.0), (151.0/255.0), 1.0),
-            VBase4((255.0/255.0), (225.0/255.0), (205.0/255.0), 1.0),
-            VBase4((255.0/255.0), (234.0/255.0), (151.0/255.0), 1.0),
-            VBase4((255.0/255.0), (255.0/255.0), (151.0/255.0), 1.0),
-            VBase4((55.0/255.0), (244.0/255.0), (70.0/255.0), 1.0),
-            VBase4((27.0/255.0), (203.0/255.0), (56.0/255.0), 1.0),
-            VBase4((53.0/255.0), (185.0/255.0), (78.0/255.0), 1.0)
-            ])
-
-        self.createColorMenu('donaldsDockWallColors', [
-           VBase4((106.0/255.0), (63.0/255.0), (63.0/255.0), 1.0),
-           VBase4((160.0/255.0), (120.0/255.0), (60.0/255.0), 1.0),
-           VBase4((162.0/255.0), (61.0/255.0), (81.0/255.0), 1.0),
-           VBase4((182.0/255.0), (126.0/255.0), (88.0/255.0), 1.0),
-           VBase4((192.0/255.0), (115.0/255.0), (114.0/255.0), 1.0),
-           VBase4((206.0/255.0), (122.0/255.0), (122.0/255.0), 1.0),
-           VBase4((222.0/255.0), (176.0/255.0), (108.0/255.0), 1.0),
-           VBase4((236.0/255.0), (39.0/255.0), (39.0/255.0), 1.0),
-           VBase4((43.0/255.0), (116.0/255.0), (58.0/255.0), 1.0),
-           VBase4((92.0/255.0), (116.0/255.0), (56.0/255.0), 1.0)
-           ])
-
-        self.createColorMenu('donaldsDockWindowColors', [
-           VBase4((0.0/255.0), (156.0/255.0), (93.0/255.0), 1.0),
-           VBase4((164.0/255.0), (238.0/255.0), (116.0/255.0), 1.0),
-           VBase4((202.0/255.0), (120.0/255.0), (120.0/255.0), 1.0),
-           VBase4((210.0/255.0), (210.0/255.0), (102.0/255.0), 1.0),
-           VBase4((224.0/255.0), (109.0/255.0), (109.0/255.0), 1.0),
-           VBase4((232.0/255.0), (87.0/255.0), (116.0/255.0), 1.0),
-           VBase4((255.0/255.0), (128.0/255.0), (96.0/255.0), 1.0)
-           ])
-
-        self.createColorMenu('donaldsDockDoorColors', [
-           VBase4((115.0/255.0), (136.0/255.0), (115.0/255.0), 1.0),
-           VBase4((132.0/255.0), (156.0/255.0), (132.0/255.0), 1.0),
-           VBase4((152.0/255.0), (172.0/255.0), (138.0/255.0), 1.0),
-           VBase4((202.0/255.0), (120.0/255.0), (120.0/255.0), 1.0),
-           VBase4((220.0/255.0), (123.0/255.0), (59.0/255.0), 1.0),
-           VBase4((224.0/255.0), (109.0/255.0), (109.0/255.0), 1.0),
-           VBase4((232.0/255.0), (87.0/255.0), (87.0/255.0), 1.0),
-           VBase4((255.0/255.0), (151.0/255.0), (151.0/255.0), 1.0)
-           ])
-
-        self.createColorMenu('donaldsDockCorniceColors', [
-           VBase4((146.0/255.0), (98.0/255.0), (86.0/255.0), 1.0),
-           VBase4((151.0/255.0), (255.0/255.0), (234.0/255.0), 1.0),
-           VBase4((192.0/255.0), (114.0/255.0), (114.0/255.0), 1.0),
-           VBase4((194.0/255.0), (145.0/255.0), (73.0/255.0), 1.0),
-           VBase4((240.0/255.0), (182.0/255.0), (168.0/255.0), 1.0),
-           VBase4((193.0/255.0), (187.0/255.0), (163.0/255.0), 1.0),
-           VBase4((208.0/255.0), (232.0/255.0), (113.0/255.0), 1.0),
-           VBase4((230.0/255.0), (144.0/255.0), (86.0/255.0), 1.0),
-           VBase4((232.0/255.0), (137.0/255.0), (112.0/255.0), 1.0),
-           VBase4((232.0/255.0), (160.0/255.0), (113.0/255.0), 1.0),
-           VBase4((240.0/255.0), (90.0/255.0), (90.0/255.0), 1.0),
-           VBase4((254.0/255.0), (176.0/255.0), (124.0/255.0), 1.0),
-           VBase4((255.0/255.0), (106.0/255.0), (69.0/255.0), 1.0),
-           VBase4((255.0/255.0), (180.0/255.0), (69.0/255.0), 1.0),
-           VBase4((255.0/255.0), (213.0/255.0), (151.0/255.0), 1.0),
-           VBase4((255.0/255.0), (225.0/255.0), (205.0/255.0), 1.0),
-           VBase4((255.0/255.0), (234.0/255.0), (151.0/255.0), 1.0),
-           VBase4((255.0/255.0), (255.0/255.0), (151.0/255.0), 1.0),
-           VBase4((55.0/255.0), (244.0/255.0), (70.0/255.0), 1.0),
-           VBase4((27.0/255.0), (203.0/255.0), (56.0/255.0), 1.0),
-           VBase4((53.0/255.0), (185.0/255.0), (78.0/255.0), 1.0)
-           ])
-
-        self.createColorMenu('theBurrrghWallColors', [
-           VBase4((106.0/255.0), (63.0/255.0), (63.0/255.0), 1.0),
-           VBase4((160.0/255.0), (120.0/255.0), (60.0/255.0), 1.0),
-           VBase4((162.0/255.0), (61.0/255.0), (81.0/255.0), 1.0),
-           VBase4((182.0/255.0), (126.0/255.0), (88.0/255.0), 1.0),
-           VBase4((192.0/255.0), (115.0/255.0), (114.0/255.0), 1.0),
-           VBase4((206.0/255.0), (122.0/255.0), (122.0/255.0), 1.0),
-           VBase4((222.0/255.0), (176.0/255.0), (108.0/255.0), 1.0),
-           VBase4((236.0/255.0), (39.0/255.0), (39.0/255.0), 1.0),
-           VBase4((43.0/255.0), (116.0/255.0), (58.0/255.0), 1.0),
-           VBase4((92.0/255.0), (116.0/255.0), (56.0/255.0), 1.0)
-           ])
-
-        self.createColorMenu('theBurrrghWindowColors', [
-           VBase4((0.0/255.0), (156.0/255.0), (93.0/255.0), 1.0),
-           VBase4((164.0/255.0), (238.0/255.0), (116.0/255.0), 1.0),
-           VBase4((202.0/255.0), (120.0/255.0), (120.0/255.0), 1.0),
-           VBase4((210.0/255.0), (210.0/255.0), (102.0/255.0), 1.0),
-           VBase4((224.0/255.0), (109.0/255.0), (109.0/255.0), 1.0),
-           VBase4((232.0/255.0), (87.0/255.0), (116.0/255.0), 1.0),
-           VBase4((255.0/255.0), (128.0/255.0), (96.0/255.0), 1.0)
-           ])
-
-        self.createColorMenu('theBurrrghDoorColors', [
-           VBase4((115.0/255.0), (136.0/255.0), (115.0/255.0), 1.0),
-           VBase4((132.0/255.0), (156.0/255.0), (132.0/255.0), 1.0),
-           VBase4((152.0/255.0), (172.0/255.0), (138.0/255.0), 1.0),
-           VBase4((202.0/255.0), (120.0/255.0), (120.0/255.0), 1.0),
-           VBase4((220.0/255.0), (123.0/255.0), (59.0/255.0), 1.0),
-           VBase4((224.0/255.0), (109.0/255.0), (109.0/255.0), 1.0),
-           VBase4((232.0/255.0), (87.0/255.0), (87.0/255.0), 1.0),
-           VBase4((255.0/255.0), (151.0/255.0), (151.0/255.0), 1.0)
-           ])
-
-        self.createColorMenu('theBurrrghCorniceColors', [
-           VBase4((146.0/255.0), (98.0/255.0), (86.0/255.0), 1.0),
-           VBase4((151.0/255.0), (255.0/255.0), (234.0/255.0), 1.0),
-           VBase4((192.0/255.0), (114.0/255.0), (114.0/255.0), 1.0),
-           VBase4((194.0/255.0), (145.0/255.0), (73.0/255.0), 1.0),
-           VBase4((240.0/255.0), (182.0/255.0), (168.0/255.0), 1.0),
-           VBase4((193.0/255.0), (187.0/255.0), (163.0/255.0), 1.0),
-           VBase4((208.0/255.0), (232.0/255.0), (113.0/255.0), 1.0),
-           VBase4((230.0/255.0), (144.0/255.0), (86.0/255.0), 1.0),
-           VBase4((232.0/255.0), (137.0/255.0), (112.0/255.0), 1.0),
-           VBase4((232.0/255.0), (160.0/255.0), (113.0/255.0), 1.0),
-           VBase4((240.0/255.0), (90.0/255.0), (90.0/255.0), 1.0),
-           VBase4((254.0/255.0), (176.0/255.0), (124.0/255.0), 1.0),
-           VBase4((255.0/255.0), (106.0/255.0), (69.0/255.0), 1.0),
-           VBase4((255.0/255.0), (180.0/255.0), (69.0/255.0), 1.0),
-           VBase4((255.0/255.0), (213.0/255.0), (151.0/255.0), 1.0),
-           VBase4((255.0/255.0), (225.0/255.0), (205.0/255.0), 1.0),
-           VBase4((255.0/255.0), (234.0/255.0), (151.0/255.0), 1.0),
-           VBase4((255.0/255.0), (255.0/255.0), (151.0/255.0), 1.0),
-           VBase4((55.0/255.0), (244.0/255.0), (70.0/255.0), 1.0),
-           VBase4((27.0/255.0), (203.0/255.0), (56.0/255.0), 1.0),
-           VBase4((53.0/255.0), (185.0/255.0), (78.0/255.0), 1.0)
-           ])
-
-        self.createColorMenu('minniesMelodyLandWallColors', [
-           VBase4((106.0/255.0), (63.0/255.0), (63.0/255.0), 1.0),
-           VBase4((160.0/255.0), (120.0/255.0), (60.0/255.0), 1.0),
-           VBase4((162.0/255.0), (61.0/255.0), (81.0/255.0), 1.0),
-           VBase4((182.0/255.0), (126.0/255.0), (88.0/255.0), 1.0),
-           VBase4((192.0/255.0), (115.0/255.0), (114.0/255.0), 1.0),
-           VBase4((206.0/255.0), (122.0/255.0), (122.0/255.0), 1.0),
-           VBase4((222.0/255.0), (176.0/255.0), (108.0/255.0), 1.0),
-           VBase4((236.0/255.0), (39.0/255.0), (39.0/255.0), 1.0),
-           VBase4((43.0/255.0), (116.0/255.0), (58.0/255.0), 1.0),
-           VBase4((92.0/255.0), (116.0/255.0), (56.0/255.0), 1.0)
-           ])
-
-        self.createColorMenu('minniesMelodyLandWindowColors', [
-           VBase4((0.0/255.0), (156.0/255.0), (93.0/255.0), 1.0),
-           VBase4((164.0/255.0), (238.0/255.0), (116.0/255.0), 1.0),
-           VBase4((202.0/255.0), (120.0/255.0), (120.0/255.0), 1.0),
-           VBase4((210.0/255.0), (210.0/255.0), (102.0/255.0), 1.0),
-           VBase4((224.0/255.0), (109.0/255.0), (109.0/255.0), 1.0),
-           VBase4((232.0/255.0), (87.0/255.0), (116.0/255.0), 1.0),
-           VBase4((255.0/255.0), (128.0/255.0), (96.0/255.0), 1.0)
-           ])
-
-        self.createColorMenu('minniesMelodyLandDoorColors', [
-           VBase4((115.0/255.0), (136.0/255.0), (115.0/255.0), 1.0),
-           VBase4((132.0/255.0), (156.0/255.0), (132.0/255.0), 1.0),
-           VBase4((152.0/255.0), (172.0/255.0), (138.0/255.0), 1.0),
-           VBase4((202.0/255.0), (120.0/255.0), (120.0/255.0), 1.0),
-           VBase4((220.0/255.0), (123.0/255.0), (59.0/255.0), 1.0),
-           VBase4((224.0/255.0), (109.0/255.0), (109.0/255.0), 1.0),
-           VBase4((232.0/255.0), (87.0/255.0), (87.0/255.0), 1.0),
-           VBase4((255.0/255.0), (151.0/255.0), (151.0/255.0), 1.0)
-           ])
-
-        self.createColorMenu('minniesMelodyLandCorniceColors', [
-           VBase4((146.0/255.0), (98.0/255.0), (86.0/255.0), 1.0),
-           VBase4((151.0/255.0), (255.0/255.0), (234.0/255.0), 1.0),
-           VBase4((192.0/255.0), (114.0/255.0), (114.0/255.0), 1.0),
-           VBase4((194.0/255.0), (145.0/255.0), (73.0/255.0), 1.0),
-           VBase4((240.0/255.0), (182.0/255.0), (168.0/255.0), 1.0),
-           VBase4((193.0/255.0), (187.0/255.0), (163.0/255.0), 1.0),
-           VBase4((208.0/255.0), (232.0/255.0), (113.0/255.0), 1.0),
-           VBase4((230.0/255.0), (144.0/255.0), (86.0/255.0), 1.0),
-           VBase4((232.0/255.0), (137.0/255.0), (112.0/255.0), 1.0),
-           VBase4((232.0/255.0), (160.0/255.0), (113.0/255.0), 1.0),
-           VBase4((240.0/255.0), (90.0/255.0), (90.0/255.0), 1.0),
-           VBase4((254.0/255.0), (176.0/255.0), (124.0/255.0), 1.0),
-           VBase4((255.0/255.0), (106.0/255.0), (69.0/255.0), 1.0),
-           VBase4((255.0/255.0), (180.0/255.0), (69.0/255.0), 1.0),
-           VBase4((255.0/255.0), (213.0/255.0), (151.0/255.0), 1.0),
-           VBase4((255.0/255.0), (225.0/255.0), (205.0/255.0), 1.0),
-           VBase4((255.0/255.0), (234.0/255.0), (151.0/255.0), 1.0),
-           VBase4((255.0/255.0), (255.0/255.0), (151.0/255.0), 1.0),
-           VBase4((55.0/255.0), (244.0/255.0), (70.0/255.0), 1.0),
-           VBase4((27.0/255.0), (203.0/255.0), (56.0/255.0), 1.0),
-           VBase4((53.0/255.0), (185.0/255.0), (78.0/255.0), 1.0)
-           ])
-
+        self.createColorMenusFromFile('toontownCentral')
+        self.createColorMenusFromFile('donaldsDock')
+        self.createColorMenusFromFile('theBurrrgh')
+        self.createColorMenusFromFile('minniesMelodyLand')
         # Use the toontown color set
         self.useToontownCentralColors()
 
@@ -1508,91 +1331,157 @@ class LevelEditor(NodePath, PandaObject):
 
 	return newWindowMenu
 
-    def initializeDonaldsDockStyleDictionary(self):
-	dictionary = {}
-	styleCount = 0
-        self.addStyle(dictionary, styleCount,
-                      'wall_md_blank_ur',
-                      Vec4(0.417323, 0.15711, 0.15711, 1.0),
-                      'window_sm_square_ur',
-                      Vec4(0.874016, 0.654655, 0.329041, 1.0),
-                      'cornice_marble_ur',
-                      Vec4(0.76378, 0.572086, 0.287541, 1.0))
+    def createStyleDictionaryFromFile(self, filename):
+        print 'Loading style from: ' + filename
+        styleData = self.getStyleData(filename)
+        styleDictionary = {}
+        styleCount = 0
+        while styleData:
+            style, styleData = self.getStyleFromStyleData(styleData)
+            styleDictionary[styleCount] = style
+            styleCount = styleCount + 1
+        return styleDictionary
+
+    def getStyleData(self, filename):
+        f = Filename(filename)
+        f.resolveFilename(getModelPath())
+        f = open(f.toOsSpecific(), 'r')
+        rawData = f.readlines()
+        f.close()
+        styleData = []
+        for line in rawData:
+            l = string.strip(line)
+            if l:
+                styleData.append(l)
+        return styleData
+
+    def getStyleFromStyleData(self, styleData):
+        style = {}
+        # Wall
+        style['wallTexture'] = string.strip(styleData[0][12:])
+        style['wallColor'] = eval(styleData[1][10:])
+        # Window Texture
+        texture = string.strip(styleData[2][14:])
+        if texture == 'None':
+            style['windowTexture'] = None
+        else:
+            style['windowTexture'] = texture
+        # Window Color
+        color = string.strip(styleData[3][12:])
+        if color == 'None':
+            style['windowColor'] = None
+        else:
+            style['windowColor'] = eval(color,globals())
+        # Cornice Texture
+        texture = string.strip(styleData[4][15:])
+        if texture == 'None':
+            style['corniceTexture'] = None
+        else:
+            style['corniceTexture'] = texture
+        # Cornice Color
+        color = string.strip(styleData[5][13:])
+        if color == 'None':
+            style['corniceColor'] = None
+        else:
+            style['corniceColor'] = eval(color,globals())
+        # Result
+        return style, styleData[6:]
+
+    def initializePieMenus(self):
+	# Clear out any old menus just in case
+        for key in self.pieMenuDictionary.keys():
+            oldMenu = self.pieMenuDictionary[key]
+            oldMenu.reparentTo(hidden)
+            oldMenu.removeNode()
+
+	# Get list of available attributes
+	self.initializeAttributeDictionary()
+
+	# Create pop-up pie menus
+	self.pieMenuDictionary['wallMenu'] = (
+            PieMenu(self.direct, self.createWallMenu(),
+                    self.updateWallTextureNum))
+
+	self.pieMenuDictionary['windowMenu'] = (
+            PieMenu(self.direct, self.createWindowMenu(),
+                    self.updateWindowTextureNum))
+
+	menu = PieMenu(self.direct, self.createOrientationMenu(),
+                       self.updateOrientationNum)
+	# Clear angle offset on this menu
+	menu.setItemOffset(0.0)
+	self.pieMenuDictionary['orientationMenu'] = menu
+
+	menu = PieMenu(self.direct, self.createUpOrientationMenu(),
+                       self.updateOrientationNum)
+        # Clear angle offset on this menu
+	menu.setItemOffset(0.0)
+	self.pieMenuDictionary['upOrientationMenu'] = menu
+
+	self.pieMenuDictionary['numWindowsMenu'] = (
+            PieMenu(self.direct, self.createNumWindowsMenu(),
+                    self.updateNumWindows))
+	self.pieMenuDictionary['corniceMenu'] = (
+            PieMenu(self.direct,self.createCorniceMenu(),
+                    self.updateCorniceTextureNum))
+	self.pieMenuDictionary['doorMenu'] = (
+            PieMenu(self.direct,self.createDoorMenu(),
+                    self.updateDoorTextureNum))
+	self.pieMenuDictionary['wallWidthMenu'] = (
+            PieMenu(self.direct,self.createWallWidthMenu(),
+                    self.updateWallWidthSF))
+	self.pieMenuDictionary['propTypesMenu'] = (
+            PieMenu(self.direct,self.createPropTypesMenu(),
+                    self.updatePropNum))
+	self.pieMenuDictionary['toontownCentralStyleMenu'] = (
+            PieMenu(self.direct,self.createStyleMenuWith(
+            self.attributeDictionary['toontownCentralStyleDictionary']),
+                    self.updateWallStyleNum))
+	self.pieMenuDictionary['donaldsDockStyleMenu'] = (
+            PieMenu(self.direct,self.createStyleMenuWith(
+            self.attributeDictionary['donaldsDockStyleDictionary']),
+                    self.updateWallStyleNum))
+	self.pieMenuDictionary['theBurrrghStyleMenu'] = (
+            PieMenu(self.direct,self.createStyleMenuWith(
+            self.attributeDictionary['theBurrrghStyleDictionary']),
+                    self.updateWallStyleNum))
+	self.pieMenuDictionary['minniesMelodyLandStyleMenu'] = (
+            PieMenu(self.direct,self.createStyleMenuWith(
+            self.attributeDictionary['minniesMelodyLandStyleDictionary']),
+                    self.updateWallStyleNum))
+	self.pieMenuDictionary['styleMenu'] = (
+            self.pieMenuDictionary['toontownCentralStyleMenu'])
+	# Create several differnt color palette menus
+	self.createColorMenus()
+
+    def initializeStyleDictionary(self):
+        # Create a dictionary for toontownCentral
+	dictionary = self.createStyleDictionaryFromFile(
+            'level_editor/toontownCentralStyles.txt')
+	# Store this dictionary in the self.attributeDictionary
+	self.attributeDictionary['toontownCentralStyleDictionary'] = dictionary
         
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_sm_wood_ur',
-                      Vec4(0.874016, 0.610097, 0.610097, 1.0),
-                      'window_sm_shuttered_ur',
-                      Vec4(0.874016, 0.548402, 0.329041, 1.0),
-                      None,
-                      None)
-
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_sm_wood_ur',
-                      Vec4(0.913386, 0.540868, 0.540868, 1.0),
-                      'window_porthole_ur',
-                      Vec4(0.0778138, 0.472441, 0.314961, 1.0),
-                      'cornice_horizontal_ur',
-                      Vec4(1.0, 0.501961, 0.376471, 1.0))
-        
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_sm_wood_ur',
-                      Vec4(0.913386, 0.540868, 0.540868, 1.0),
-                      'window_porthole_ur',
-                      Vec4(0.0778138, 0.472441, 0.314961, 1.0),
-                      'cornice_shingles_ur',
-                      Vec4(0.732283, 0.511163, 0.511163, 1.0))
-
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_md_blank_ur',
-                      Vec4(0.384314, 0.305635, 0.187618, 1.0),
-                      'window_sm_round_ur',
-                      Vec4(0.779528, 0.489115, 0.293469, 1.0),
-                      'cornice_dental_ur',
-                      Vec4(0.574803, 0.38771, 0.340374, 1.0))
-        
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_bricks_dr',
-                      Vec4(0.629921, 0.471823, 0.237147, 1.0),
-                      'window_sm_shuttered_ur',
-                      Vec4(1.0, 0.627451, 0.376471, 1.0),
-                      None,
-                      None)
-        
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_md_board_ur',
-                      Vec4(0.929134, 0.153034, 0.153034, 1.0),
-                      'window_porthole_ur',
-                      Vec4(0.0, 0.532747, 0.317894, 1.0),
-                      'cornice_shingles_ur',
-                      Vec4(0.944882, 0.715146, 0.659565, 1.0))
-
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_lg_brick_ur',
-                      Vec4(0.166003, 0.440945, 0.276671, 1.0),
-                      'window_md_curtains_ur',
-                      Vec4(0.17258, 0.637795, 0.450208, 1.0),
-                      None,
-                      None)
-
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_md_board_ur',
-                      Vec4(0.929134, 0.153034, 0.153034, 1.0),
-                      'window_porthole_ur',
-                      Vec4(0.0, 0.532747, 0.317894, 1.0),
-                      None,
-                      None)
-
+        # Create a dictionary for donaldsDock
+	dictionary = self.createStyleDictionaryFromFile(
+            'level_editor/donaldsDockStyles.txt')
 	# Store this dictionary in the self.attributeDictionary
 	self.attributeDictionary['donaldsDockStyleDictionary'] = dictionary
+        
+        # Create a dictionary for theBurrrgh
+	dictionary = self.createStyleDictionaryFromFile(
+            'level_editor/theBurrrghStyles.txt')
+	# Store this dictionary in the self.attributeDictionary
+	self.attributeDictionary['theBurrrghStyleDictionary'] = dictionary
+        
+        # Create a dictionary for minniesMelodyLand
+	dictionary = self.createStyleDictionaryFromFile(
+            'level_editor/minniesMelodyLandStyles.txt')
+	# Store this dictionary in the self.attributeDictionary
+	self.attributeDictionary['minniesMelodyLandStyleDictionary'] = dictionary
+        
+        # Record active style dictionary
+	self.styleDictionary = (
+            self.attributeDictionary['toontownCentralStyleDictionary'])
 
     def initializeTheBurrrghStyleDictionary(self):
 	dictionary = {}
@@ -1765,196 +1654,6 @@ class LevelEditor(NodePath, PandaObject):
 
 	# Store this dictionary in the self.attributeDictionary
 	self.attributeDictionary['minniesMelodyLandStyleDictionary'] = dictionary
-
-    def initializePieMenus(self):
-	# Clear out any old menus just in case
-        for key in self.pieMenuDictionary.keys():
-            oldMenu = self.pieMenuDictionary[key]
-            oldMenu.reparentTo(hidden)
-            oldMenu.removeNode()
-
-	# Get list of available attributes
-	self.initializeAttributeDictionary()
-
-	# Create pop-up pie menus
-	self.pieMenuDictionary['wallMenu'] = (
-            PieMenu(self.direct, self.createWallMenu(),
-                    self.updateWallTextureNum))
-
-	self.pieMenuDictionary['windowMenu'] = (
-            PieMenu(self.direct, self.createWindowMenu(),
-                    self.updateWindowTextureNum))
-
-	menu = PieMenu(self.direct, self.createOrientationMenu(),
-                       self.updateOrientationNum)
-	# Clear angle offset on this menu
-	menu.setItemOffset(0.0)
-	self.pieMenuDictionary['orientationMenu'] = menu
-
-	menu = PieMenu(self.direct, self.createUpOrientationMenu(),
-                       self.updateOrientationNum)
-        # Clear angle offset on this menu
-	menu.setItemOffset(0.0)
-	self.pieMenuDictionary['upOrientationMenu'] = menu
-
-	self.pieMenuDictionary['numWindowsMenu'] = (
-            PieMenu(self.direct, self.createNumWindowsMenu(),
-                    self.updateNumWindows))
-	self.pieMenuDictionary['corniceMenu'] = (
-            PieMenu(self.direct,self.createCorniceMenu(),
-                    self.updateCorniceTextureNum))
-	self.pieMenuDictionary['doorMenu'] = (
-            PieMenu(self.direct,self.createDoorMenu(),
-                    self.updateDoorTextureNum))
-	self.pieMenuDictionary['wallWidthMenu'] = (
-            PieMenu(self.direct,self.createWallWidthMenu(),
-                    self.updateWallWidthSF))
-	self.pieMenuDictionary['propTypesMenu'] = (
-            PieMenu(self.direct,self.createPropTypesMenu(),
-                    self.updatePropNum))
-	self.pieMenuDictionary['toontownCentralStyleMenu'] = (
-            PieMenu(self.direct,self.createStyleMenuWith(
-            self.attributeDictionary['toontownCentralStyleDictionary']),
-                    self.updateWallStyleNum))
-	self.pieMenuDictionary['donaldsDockStyleMenu'] = (
-            PieMenu(self.direct,self.createStyleMenuWith(
-            self.attributeDictionary['donaldsDockStyleDictionary']),
-                    self.updateWallStyleNum))
-	self.pieMenuDictionary['theBurrrghStyleMenu'] = (
-            PieMenu(self.direct,self.createStyleMenuWith(
-            self.attributeDictionary['theBurrrghStyleDictionary']),
-                    self.updateWallStyleNum))
-	self.pieMenuDictionary['minniesMelodyLandStyleMenu'] = (
-            PieMenu(self.direct,self.createStyleMenuWith(
-            self.attributeDictionary['minniesMelodyLandStyleDictionary']),
-                    self.updateWallStyleNum))
-	self.pieMenuDictionary['styleMenu'] = (
-            self.pieMenuDictionary['toontownCentralStyleMenu'])
-	# Create several differnt color palette menus
-	self.createColorMenus()
-
-    def initializeStyleDictionary(self):
-	self.initializeToontownCentralStyleDictionary()
-	self.initializeDonaldsDockStyleDictionary()
-	self.initializeTheBurrrghStyleDictionary()
-	self.initializeMinniesMelodyLandStyleDictionary()
-	self.styleDictionary = (
-            self.attributeDictionary['toontownCentralStyleDictionary'])
-
-    def initializeToontownCentralStyleDictionary(self):
-
-	dictionary = {}
-	styleCount = 0
-	self.addStyle(dictionary, styleCount,
-                      'wall_md_pillars_ur',
-                      Vec4(1.0, 0.917, 0.592, 1.0 ),
-                      'window_sm_pointed_ur',
-                      Vec4(0.396,  0.611,  0.666,  1.0 ),
-                      'cornice_stone_ur',
-                      Vec4(1.0, 1.0, 0.592,  1.0 ))
-
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_md_pillars_ur',
-                      Vec4(1.0, 1.0, 0.592157, 1.0),
-                      'window_sm_pointed_ur',
-                      Vec4(0.142751, 0.527559, 0.295847, 1.0),
-                      'cornice_stone_ur',
-                      Vec4(1.0, 1.0, 0.592157, 1.0))
-        
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_lg_brick_ur',
-                      Vec4(1.0, 0.415686, 0.270588, 1.0),
-                      'window_porthole_ur',
-                      Vec4(0.306315, 0.627451, 0.370542, 1.0),
-                      None,
-                      None)
-        
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_sm_cement_ur',
-                      Vec4(1.0, 0.882353, 0.803922, 1.0),
-                      'window_porthole_ur',
-                      Vec4(0.0972673, 0.590551, 0.393701, 1.0),
-                      None,
-                      None)
-
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_md_dental_ur',
-                      Vec4(0.996078, 0.894118, 0.486275, 1.0),
-                      'window_md_curved_ur',
-                      Vec4(1.0, 0.87451, 0.376471, 1.0),
-                      None,
-                      None)
-        
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_md_pillars_ur',
-                      Vec4(0.996078, 0.690196, 0.486275, 1.0),
-                      'window_porthole_ur',
-                      Vec4(0.31706, 0.535433, 0.361155, 1.0),
-                      None,
-                      None)
-        
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_md_pillars_ur',
-                      Vec4(0.996078, 0.690196, 0.486275, 1.0),
-                      'window_porthole_ur',
-                      Vec4(0.31706, 0.535433, 0.361155, 1.0),
-                      'cornice_brick_ur',
-                      Vec4(0.31706, 0.535433, 0.361155, 1.0))
-
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_lg_brick_ur',
-                      Vec4(0.996078, 0.690196, 0.486275, 1.0),
-                      'window_sm_curved_ur',
-                      Vec4(0.996078, 0.996078, 0.486275, 1.0),
-                      None,
-                      None)
-
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_md_blank_ur',
-                      Vec4(1.0, 0.415686, 0.270588, 1.0),
-                      'window_sm_curved_ur',
-                      Vec4(1.0, 0.87451, 0.376471, 1.0),
-                      'cornice_marble_ur',
-                      Vec4(1.0, 0.74902, 0.376471, 1.0))
-
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_sm_brick_ur',
-                      Vec4(1.0, 0.67451, 0.592157, 1.0),
-                      'window_sm_pointed_ur',
-                      Vec4(0.88189, 0.439216, 0.145252, 1.0),
-                      None,
-                      None)
-
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_md_blank_ur',
-                      Vec4(1.0, 0.705882, 0.270588, 1.0),
-                      'window_sm_pointed_ur',
-                      Vec4(0.110236, 0.669291, 0.333333, 1.0),
-                      'cornice_stone_ur',
-                      Vec4(0.944882, 0.711441, 0.559518, 1.0))
-
-        styleCount = styleCount + 1
-        self.addStyle(dictionary, styleCount,
-                      'wall_md_dental_ur',
-                      Vec4(0.909804, 0.630415, 0.444156, 1.0),
-                      'window_sm_round_ur',
-                      Vec4(1.0, 0.270588, 0.270588, 1.0),
-                      None,
-                      None)
-
-	self.attributeDictionary['toontownCentralStyleDictionary'] = dictionary
-
-    #XXXX
 
     def addDNAGroup(self,dnaGroup):
 	# Add hook to allow placement of a new dna Group of this type
@@ -2443,7 +2142,41 @@ class LevelEditor(NodePath, PandaObject):
 
         self.initDNAGroupWithParentType(newDNAGroup, self.groupParent, type)
 
-    def loadDNAFile(self, filename):
+    def loadSpecifiedDNAFile(self):
+        f = Filename('dna')
+        f.resolveFilename(getModelPath())
+        path = f.toOsSpecific()
+        if not os.path.isdir(path):
+            print 'LevelEditor Warning: Invalid default DNA directory!'
+            print 'Using: C:\\'
+            path = 'C:\\'
+        dnaFilename = askopenfilename(
+            defaultextension = '.dna',
+            filetypes = (('DNA Files', '*.dna'),('All files', '*')),
+            initialdir = path,
+            title = 'Load DNA File',
+            parent = self.panel.component('hull'))
+        if dnaFilename:
+            self.loadDNAFromFile(dnaFilename)
+
+    def saveToSpecifiedDNAFile(self):
+        f = Filename('/alpha/DIRECT/LevelEditor/DNAFiles')
+        f.resolveFilename(getModelPath())
+        path = f.toOsSpecific()
+        if not os.path.isdir(path):
+            print 'LevelEditor Warning: Invalid DNA save directory!'
+            print 'Using: C:\\'
+            path = 'C:\\'
+        dnaFilename = askopenfilename(
+            defaultextension = '.dna',
+            filetypes = (('DNA Files', '*.dna'),('All files', '*')),
+            initialdir = path,
+            title = 'Save DNA File as',
+            parent = self.panel.component('hull'))
+        if dnaFilename:
+            self.outputDNA(dnaFilename)
+
+    def loadDNAFromFile(self, filename):
 	# Out with the old, in with the new
 	self.resetLevel()
 	# Get rid of default group and root node
@@ -2454,10 +2187,12 @@ class LevelEditor(NodePath, PandaObject):
 	self.dnaStore.resetDNAGroups()
 
 	# Now load in new file
-	self.groupParent = loadDNAFile(self.dnaStore, filename)
+	self.groupParent = loadDNAFile(self.dnaStore, filename,
+                                       getDefaultCoordinateSystem())
 
  	# Make sure the topmost level object gets put under level objects dna
- 	self.groupParentDNA = self.dnaStore.findDNAGroup(self.groupParent.getBottomArc())
+ 	self.groupParentDNA = self.dnaStore.findDNAGroup(
+            self.groupParent.getBottomArc())
  	self.levelObjectsDNA.add(self.groupParentDNA)
 
 	# No level objects node found, just add the whole thing
@@ -2470,9 +2205,11 @@ class LevelEditor(NodePath, PandaObject):
                 nodePath.reparentTo(self.levelObjects)
             else:
                 # There is a LevelObjects node, add its children
-                # Before reparenting children, try to set groupNum to something reasonable
+                # Before reparenting children, try to set groupNum to
+                # something reasonable
                 self.groupNum = newLevelObjects.getNumChildren()
-                # Go ahead and get rid of the default parent (since there is probably one in the dnafile
+                # Go ahead and get rid of the default parent
+                # (since there is probably one in the dnafile
                 self.preRemoveNodePath(self.groupParent)
                 self.removeNodePath(self.groupParent)
 
@@ -3188,6 +2925,18 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         menuBar.pack(side = LEFT, expand = 1, fill = X)
         menuBar.addmenu('Level Editor', 'Level Editor Operations')
         menuBar.addmenuitem('Level Editor', 'command',
+                            'Load DNA from specified file',
+                            label = 'Load DNA...',
+                            command = self.levelEditor.loadSpecifiedDNAFile)
+        menuBar.addmenuitem('Level Editor', 'command',
+                            'Save DNA data to specified file',
+                            label = 'Save DNA As...',
+                            command = self.levelEditor.saveToSpecifiedDNAFile)
+        menuBar.addmenuitem('Level Editor', 'command',
+                            'Save DNA File',
+                            label = 'Save DNA',
+                            command = self.levelEditor.outputDNADefaultFile)
+        menuBar.addmenuitem('Level Editor', 'command',
                             'Exit Level Editor Panel',
                             label = 'Exit',
                             command = self.destroy)
@@ -3218,7 +2967,6 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         landmarkBuildingsPage = notebook.add('Landmark Bldgs')
         # suitBuildingsPage = notebook.add('Suit Buildings')
         propsPage = notebook.add('Props')
-        colorPage = notebook.add('Set Color')
         sceneGraphPage = notebook.add('SceneGraph')
 
         self.addStreetButton = Button(
@@ -3234,7 +2982,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             label_text = 'Street type:',
             label_width = 12,
             label_anchor = W,
-            entry_width = 24,
+            entry_width = 30,
             selectioncommand = self.setStreetModuleType,
             scrolledlist_items = map(lambda s: s[7:],
                                      levelEditor.getCatalogCodes(
@@ -3257,7 +3005,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             label_width = 12,
             label_anchor = W,
             label_text = 'Toon bldg type:',
-            entry_width = 24,
+            entry_width = 30,
             selectioncommand = self.setFlatBuildingType,
             scrolledlist_items = ('random20', 'random30',
                                   'toonTenTen', 'toonTwenty',
@@ -3287,7 +3035,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             label_width = 12,
             label_anchor = W,
             label_text = 'Landmark Building type:',
-            entry_width = 24,
+            entry_width = 30,
             selectioncommand = self.setLandmarkType,
             scrolledlist_items = map(lambda s: s[14:],
                                      levelEditor.getCatalogCodes(
@@ -3312,7 +3060,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             label_width = 12,
             label_anchor = W,
             label_text = 'Prop type:',
-            entry_width = 24,
+            entry_width = 30,
             selectioncommand = self.setPropType,
             scrolledlist_items = map(lambda s: s[5:],
                                      levelEditor.getCatalogCodes('prop'))
@@ -3324,56 +3072,64 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         # Compact down notebook
         notebook.setnaturalsize()
 
+        self.colorEntry = VectorWidgets.ColorEntry(
+            hull, text = 'Select Color',
+            command = self.updateSelectedObjColor)
+        self.colorEntry.pack(fill = 'x')
+
         buttonFrame = Frame(hull)
-        self.fGrid = IntVar()
-        self.fGrid.set(0)
-        self.gridButton = Checkbutton(buttonFrame,
-                                      text = 'Show Grid',
-                                      variable = self.fGrid,
-                                      command = self.toggleGrid)
-        self.gridButton.pack(side = 'left', fill = 'x')
+        self.fMapViz = IntVar()
+        self.fMapViz.set(0)
+        self.mapSnapButton = Checkbutton(buttonFrame,
+                                      text = 'Map Viz',
+                                      width = 6,
+                                      variable = self.fMapViz,
+                                      command = self.toggleMapViz)
+        self.mapSnapButton.pack(side = 'left', expand = 1, fill = 'x')
 
         self.fXyzSnap = IntVar()
         self.fXyzSnap.set(1)
         self.xyzSnapButton = Checkbutton(buttonFrame,
                                       text = 'XyzSnap',
+                                      width = 6,
                                       variable = self.fXyzSnap,
                                       command = self.toggleXyzSnap)
-        self.xyzSnapButton.pack(side = 'left', fill = 'x')
+        self.xyzSnapButton.pack(side = 'left', expand = 1, fill = 'x')
 
         self.fHprSnap = IntVar()
         self.fHprSnap.set(1)
         self.hprSnapButton = Checkbutton(buttonFrame,
                                       text = 'HprSnap',
+                                      width = 6,
                                       variable = self.fHprSnap,
                                       command = self.toggleHprSnap)
-        self.hprSnapButton.pack(side = 'left', fill = 'x')
+        self.hprSnapButton.pack(side = 'left', expand = 1, fill = 'x')
+
+        self.fGrid = IntVar()
+        self.fGrid.set(0)
+        self.gridButton = Checkbutton(buttonFrame,
+                                      text = 'Show Grid',
+                                      width = 6,
+                                      variable = self.fGrid,
+                                      command = self.toggleGrid)
+        self.gridButton.pack(side = 'left', expand = 1, fill = 'x')
+
         buttonFrame.pack(expand = 1, fill = 'x')
 
         buttonFrame2 = Frame(hull)
         self.groupButton = Button(
             buttonFrame2,
-            text = 'Create new level group',
+            text = 'New level group',
             command = self.levelEditor.createNewLevelGroup)
-        self.groupButton.pack(side = 'left', fill = 'x')
+        self.groupButton.pack(side = 'left', expand = 1, fill = 'x')
+        
         self.saveButton = Button(
             buttonFrame2,
-            text = 'Save DNA',
-            command = self.levelEditor.outputDNADefaultFile)
-        self.saveButton.pack(side = 'left', fill = 'x')
-        self.fMapViz = IntVar()
-        self.fMapViz.set(0)
-        self.mapSnapButton = Checkbutton(buttonFrame,
-                                      text = 'Map Viz',
-                                      variable = self.fMapViz,
-                                      command = self.toggleMapViz)
-        self.mapSnapButton.pack(side = 'left', fill = 'x')
-        buttonFrame2.pack(fill = 'x')
+            text = 'Set Group Parent',
+            command = self.levelEditor.setGroupParentToSelected())
+        self.saveButton.pack(side = 'left', expand = 1, fill = 'x')
 
-        self.colorEntry = VectorWidgets.ColorEntry(
-            colorPage, text = 'Select Color',
-            command = self.updateSelectedObjColor)
-        self.colorEntry.pack(fill = 'x')
+        buttonFrame2.pack(fill = 'x')
 
         self.sceneGraphExplorer = SceneGraphExplorer(
             parent = sceneGraphPage,

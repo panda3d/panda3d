@@ -83,7 +83,7 @@ class EntryScale(Pmw.MegaWidget):
                                              width = 5,
                                              anchor = W,
                                              font = "Arial 8")
-        self.minLabel.pack(side='left', expand = 1, fill = 'x')
+        self.minLabel.pack(side='left', fill = 'x')
 
         # Create the scale component.
         self.scale = self.createcomponent('scale', (), None,
@@ -107,7 +107,7 @@ class EntryScale(Pmw.MegaWidget):
                                              width = 5,
                                              anchor = E,
                                              font = "Arial 8")
-        self.maxLabel.pack(side='left', expand = 1, fill = 'x')
+        self.maxLabel.pack(side='left', fill = 'x')
         self.minMaxFrame.pack(expand = 1, fill = 'both')
          
         # Check keywords and initialise options based on input values.
