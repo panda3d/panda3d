@@ -53,13 +53,17 @@ using namespace std;
 
 #define TYPENAME typename
 
-#if defined(WIN32_VC) && !defined(LINK_ALL_STATIC)
 
-#ifdef TEST_INLINING
+#if defined(WIN32_VC) && defined(TEST_INLINING)
+// If TEST_INLINING is defined, we use the keyword __forceinline,
+// which tells VC++ that we really mean it when we say inline.  Of
+// course, that doesn't seem to have any additional persuasive effect.
 #define INLINE __forceinline
 #else
 #define INLINE inline
 #endif
+
+#if defined(WIN32_VC) && !defined(LINK_ALL_STATIC)
 // This macro must be used to export an instantiated template class
 // from a DLL.  If the template class name itself contains commas, it
 // may be necessary to first define a macro for the class name, to
