@@ -31,6 +31,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         DistributedObject.DistributedObject.__init__(self, cr)
         Level.Level.__init__(self)
         self.lastToonZone = 0
+        self.lastCamZone = 0
         self.titleColor = (1,1,1,1)
         self.titleText = OnscreenText.OnscreenText(
             "",
@@ -423,12 +424,15 @@ class DistributedLevel(DistributedObject.DistributedObject,
             self.lastToonZone = zoneNum
             print "toon is standing in zone %s" % zoneNum
             messenger.send("factoryZoneChanged", [zoneNum])
-            self.smallTitleText.hide()
-            self.spawnTitleText()
 
     def camEnterZone(self, zoneNum):
         DistributedLevel.notify.debug('camEnterZone%s' % zoneNum)
         self.enterZone(zoneNum)
+
+        if zoneNum != self.lastCamZone:
+            self.lastCamZone = zoneNum
+            self.smallTitleText.hide()
+            self.spawnTitleText()
 
     def enterZone(self, zoneNum):
         DistributedLevel.notify.debug("entering zone %s" % zoneNum)
@@ -541,7 +545,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
                     return ent.description
             return None
 
-        description = getDescription(self.lastToonZone)
+        description = getDescription(self.lastCamZone)
         if description and description != '':
             taskMgr.remove("titleText")
             self.smallTitleText.setText(description)
@@ -553,8 +557,8 @@ class DistributedLevel(DistributedObject.DistributedObject,
             # If we've already seen it, just show the small title
 
             titleSeq = None
-            if not self.lastToonZone in self.zonesEnteredList:
-                self.zonesEnteredList.append(self.lastToonZone)
+            if not self.lastCamZone in self.zonesEnteredList:
+                self.zonesEnteredList.append(self.lastCamZone)
                 titleSeq = Task.sequence(
                     Task.Task(self.hideSmallTitleTextTask),
                     Task.Task(self.showTitleTextTask),
