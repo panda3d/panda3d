@@ -35,7 +35,12 @@ TypeHandle EggXfmSAnim::_type_handle;
 // incorrect behavior of decompose_matrix().  When we have a new
 // egg-optchar, we can safely remove the old decompose_matrix() and
 // restore the correct standard order (above).
-string EggXfmSAnim::_standard_order = "sphrt";
+const string EggXfmSAnim::_standard_order = "sphrt";
+
+// These are the table ID's of all tables we support, in the order we
+// expect to write them to the egg file.
+const string EggXfmSAnim::_table_ids = "ijkhprxyz";
+const int EggXfmSAnim::_num_table_ids = 9;
 
 
 ////////////////////////////////////////////////////////////////////
@@ -171,7 +176,42 @@ write(ostream &out, int indent_level) const {
       << "<Char*> order { " << get_order() << " }\n";
   }
 
-  EggGroupNode::write(out, indent_level + 2);
+  // Rather than calling EggGroupNode::write() to write out the
+  // children, we do it directly here so we can control the order.  We
+  // write out all the non-table children first, then write out the
+  // table children in our expected order.  (Normally there are only
+  // table children.)
+  EggSAnimData *tables[_num_table_ids];
+  memset(tables, 0, sizeof(EggSAnimData *) * _num_table_ids);
+
+  const_iterator ci;
+  for (ci = begin(); ci != end(); ++ci) {
+    EggNode *child = (*ci);
+    if (child->is_of_type(EggSAnimData::get_class_type())) {
+      EggSAnimData *sanim = DCAST(EggSAnimData, *ci);
+
+      // Each child SAnimData table should have a one-letter name.
+      nassertv(sanim->get_name().length() == 1);
+      char name = sanim->get_name()[0];
+      size_t index = _table_ids.find(name);
+      nassertv(index != string::npos);
+      if (index != string::npos) {
+        nassertv(tables[index] == (EggSAnimData *)NULL);
+        tables[index] = sanim;
+      }
+    } else {
+      // Any non-table children are written directly.
+      child->write(out, indent_level + 2);
+    }
+  }
+
+  // Now write out the table children in our normal order.
+  for (int i = 0; i < _num_table_ids; i++) {
+    if (tables[i] != (EggSAnimData *)NULL) {
+      tables[i]->write(out, indent_level + 2);
+    }
+  }
+
   indent(out, indent_level) << "}\n";
 }
 
@@ -492,8 +532,9 @@ add_data(const LMatrix4d &mat) {
 
   if (empty()) {
     // If we have no children, create all nine tables now.
-    const char *table_ids = "ijkhprxyz";
-    for (const char *p = table_ids; *p; p++) {
+    for (string::const_iterator p = _table_ids.begin();
+         p != _table_ids.end();
+         ++p) {
       EggSAnimData *sanim = new EggSAnimData(string(1, *p));
       add_child(sanim);
     }

@@ -92,8 +92,10 @@ private:
   string _order;
   CoordinateSystem _coordsys;
 
-  static string _standard_order;
-
+  static const string _standard_order;
+  static const string _table_ids;
+  static const int _num_table_ids;
+  
 public:
 
   static TypeHandle get_class_type() {
