@@ -813,8 +813,8 @@ class Actor(PandaObject, NodePath):
             # Turn off depth test/write on the frontParts.
             numFrontParts = frontParts.getNumPaths()
             for partNum in range(0, numFrontParts):
-                frontParts[partNum].setDepthWrite(0, 1)
-                frontParts[partNum].setDepthTest(0, 1)
+                frontParts[partNum].setDepthWrite(0)
+                frontParts[partNum].setDepthTest(0)
  
         # Find the back part.
         backPart = root.find("**/" + backPartName)
