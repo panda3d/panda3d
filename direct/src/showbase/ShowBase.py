@@ -79,10 +79,9 @@ class ShowBase(DirectObject.DirectObject):
         # the program by closing the main window.
         self.exitFunc = None
         
-        taskMgr.taskTimerVerbose = self.config.GetBool('task-timer-verbose', 0)
-        taskMgr.extendedExceptions = self.config.GetBool('extended-exceptions', 0)
-        
-        taskMgr.pStatsTasks = self.config.GetBool('pstats-tasks', 0)
+        Task.TaskManager.taskTimerVerbose = self.config.GetBool('task-timer-verbose', 0)
+        Task.TaskManager.extendedExceptions = self.config.GetBool('extended-exceptions', 0)
+        Task.TaskManager.pStatsTasks = self.config.GetBool('pstats-tasks', 0)
 
         # Set up the TaskManager to reset the PStats clock back
         # whenever we resume from a pause.  This callback function is
