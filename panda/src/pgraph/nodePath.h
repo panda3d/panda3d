@@ -561,7 +561,7 @@ PUBLISHED:
   INLINE bool operator == (const NodePath &other) const;
   INLINE bool operator != (const NodePath &other) const;
   INLINE bool operator < (const NodePath &other) const;
-  INLINE int compare_to(const NodePath &other) const;
+  int compare_to(const NodePath &other) const;
 
   // Miscellaneous
   bool verify_complete() const;

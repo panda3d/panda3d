@@ -1242,32 +1242,6 @@ operator < (const NodePath &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::compare_to
-//       Access: Published
-//  Description: Returns a number less than zero if this NodePath
-//               sorts before the other one, greater than zero if it
-//               sorts after, or zero if they are equivalent.
-//
-//               Two NodePaths are considered equivalent if they
-//               consist of exactly the same list of nodes in the same
-//               order.  Otherwise, they are different; different
-//               NodePaths will be ranked in a consistent but
-//               undefined ordering; the ordering is useful only for
-//               placing the NodePaths in a sorted container like an
-//               STL set.
-////////////////////////////////////////////////////////////////////
-INLINE int NodePath::
-compare_to(const NodePath &other) const {
-  uncollapse_head();
-  other.uncollapse_head();
-
-  // Nowadays, the NodePathComponents at the head are pointerwise
-  // equivalent if and only if the NodePaths are equivalent.  So we
-  // only have to compare pointers.
-  return _head - other._head;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_tag
 //       Access: Published
 //  Description: Associates a user-defined value with a user-defined
