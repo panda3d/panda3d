@@ -34,14 +34,11 @@
 #end decygwin
 
 // cant use DTOOL_INSTALL since may not be attached
-//#define dtool_ver_dir_cyg $[DTOOL_INSTALL]/src/dtoolbase
-//#define dtool_ver_dir $[decygwin %,%,$[dtool_ver_dir_cyg]]
-
-#define dtool_ver_dir_cyg ../../../dtool/src/dtoolbase
+#define dtool_ver_dir_cyg $[DTOOL_INSTALL]/src/dtoolbase
 #define dtool_ver_dir $[decygwin %,%,$[dtool_ver_dir_cyg]]
 
-
-
+//#define dtool_ver_dir_cyg ../../../dtool/src/dtoolbase
+//#define dtool_ver_dir $[decygwin %,%,$[dtool_ver_dir_cyg]]
 
 //////////////////////////////////////////////////////////////////////
 #if $[or $[eq $[DIR_TYPE], src],$[eq $[DIR_TYPE], metalib]]
