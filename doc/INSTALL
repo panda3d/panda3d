@@ -5,17 +5,12 @@ system for the first time.  Panda is a complex project and is not
 trivial to install, although it is not really very difficult.  Please
 do take the time to read this document before starting.
 
-Panda is known to build successfully on Linux, SGI Irix, Windows NT
-and Windows 2000.  It should also be easily portable to other
-Unix-based OpenGL systems with little or no changes (please let us
-know if you try this).  When compiled by Windows NT or 2000, it will
-then run on a Windows 95 or 98 system, but we have found that Windows
-98 is not itself stable enough to compile the codebase without
-crashing.
-
-Presently, Panda does not compile successfully with Microsoft Visual
-C++ version 6.0.  You must install Visual C++ 7.0 (that is, Microsoft
-Visual Studio .NET) in order to compile Panda on Windows.
+Panda is known to build successfully on Linux, SGI Irix, and Windows
+NT/2000/XP.  It should also be easily portable to other Unix-based
+OpenGL systems with little or no changes (please let us know if you
+try this).  When compiled by Windows NT/2000/XP, it will then run on a
+Windows 98 system, but we have found that Windows 98 is not itself
+stable enough to compile the codebase without crashing.
 
 Before you begin to compile Panda, there are a number of optional
 support libraries that you may wish to install.  None of these are
@@ -56,16 +51,17 @@ without some functionality.
   without it, Panda can only interface with the keyboard and mouse.
   You can find out about it at http://www.cs.unc.edu/Research/vrpn .
 
-* libjpeg and libtiff.  These free libraries provide support to Panda
-  for reading and writing JPEG and TIFF image files, for instance for
-  texture images.  Even without these libraries, Panda has built-in
-  support for pbm/pgm/ppm, SGI (rgb), TGA, BMP, and a few other
-  assorted image types like Alias and SoftImage native formats.  Most
-  Linux systems come with libjpeg and libtiff already installed, and
+* libjpeg, libtiff, libpng.  These free libraries provide support to
+  Panda for reading and writing JPEG, TIFF, and PNG image files, for
+  instance for texture images.  Even without these libraries, Panda
+  has built-in support for pbm/pgm/ppm, SGI (rgb), TGA, BMP, and a few
+  other assorted image types like Alias and SoftImage native formats.
+  Most Linux systems come with these libraries already installed, and
   the version numbers of these libraries is not likely to be
   important.  You can download libjpeg from the Independent JPEG group
-  at http://www.ijg.org , and libtiff from SGI at
-  ftp://ftp.sgi.com/graphics/tiff .
+  at http://www.ijg.org , libtiff from SGI at
+  ftp://ftp.sgi.com/graphics/tiff , and libpng from
+  http://www.libpng.org .
 
 * zlib.  This very common free library provides basic
   compression/decompression routines, and is the basis for the Unix
@@ -115,8 +111,10 @@ without some functionality.
   for one application, the PStats viewer for graphical analysis of
   real-time performance, which is part of the pandatool package.
   Gtk-- only compiles on Unix, and primarily Linux; it is possible to
-  compile it with considerable difficulty on Irix.  We have used
-  version 1.2.1.  You can find it at http://www.gtkmm.org .
+  compile it with considerable difficulty on Irix.  (On Windows, you
+  don't need this, since you will use the pstats viewer built in the
+  win-stats subdirectory instead.)  We have used version 1.2.1.  You
+  can find it at http://www.gtkmm.org .
 
 
 PANDA'S BUILD PHILOSOPHY 
