@@ -403,15 +403,18 @@ reset() {
   }
 
   // use per-vertex fog if per-pixel fog requires SW renderer
-  GLP(Hint)(GL_FOG_HINT,GL_DONT_CARE);
+  GLP(Hint)(GL_FOG_HINT, GL_DONT_CARE);
 
-  GLint iRedBits;
-  GLP(GetIntegerv)(GL_RED_BITS,&iRedBits);
-  if(iRedBits<24) {
+  GLint num_red_bits;
+  GLP(GetIntegerv)(GL_RED_BITS, &num_red_bits);
+  if (num_red_bits < 8) {
     GLP(Enable)(GL_DITHER);
     _dithering_enabled = true;
-    if(GLCAT.is_debug())
-        GLCAT.debug() << "frame buffer depth < 8bits channel, enabling dithering\n";
+    if (GLCAT.is_debug()) {
+      GLCAT.debug() 
+        << "frame buffer depth = " << num_red_bits
+        << " bits/channel, enabling dithering\n";
+    }
   }
 
   // Output the vendor and version strings.
