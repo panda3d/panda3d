@@ -40,7 +40,6 @@ class GravityWalker(DirectObject.DirectObject):
         self.jumpDelayTask = None
 
         self.controlsTask = None
-        self.fixCliffTask = None
         self.indicatorTask = None
 
         self.falling = 0
@@ -359,26 +358,6 @@ class GravityWalker(DirectObject.DirectObject):
         assert(self.debugPrint("getCollisionsActive() returning=%s"%(
             self.collisionsActive,)))
         return self.collisionsActive
-
-    def FixCliff(self, task):
-        """
-        People are still making polygons that are marked
-        as floor, but are nearly vertical.  This ray is
-        a hack to help deal with the cliff.
-        """
-        #print "FixCliff() ...self.collisionsActive=%s, self.moving=%s, self.lifter.hasContact()=%s"%(
-        #        self.collisionsActive, self.moving, self.lifter.hasContact())
-        if (self.collisionsActive
-                and self.moving
-                and not self.lifter.hasContact()):
-            temp = self.cRayNodePath.getZ()
-            self.cRayNodePath.setZ(14.0)
-            self.oneTimeCollide()
-            self.cRayNodePath.setZ(temp)
-            if not self.lifter.hasContact():
-                # ...we're still in outer space.
-                messenger.send("walkerIsOutOfWorld", [self.avatarNodePath])
-        return Task.cont
     
     def placeOnFloor(self):
         """
@@ -581,13 +560,6 @@ class GravityWalker(DirectObject.DirectObject):
         taskName = "AvatarControls-%s"%(id(self),)
         self.controlsTask = taskMgr.add(self.handleAvatarControls, taskName, 25)
 
-        # remove any old
-        if self.fixCliffTask:
-            self.fixCliffTask.remove()
-        # spawn the new task
-        #*#taskName = "AvatarControls-FixCliff-%s"%(id(self),)
-        #*#self.fixCliffTask = taskMgr.add(self.FixCliff, taskName, 31)
-
         self.isAirborne = 0
         self.mayJump = 1
 
@@ -606,9 +578,6 @@ class GravityWalker(DirectObject.DirectObject):
         if self.controlsTask:
             self.controlsTask.remove()
             self.controlsTask = None
-        if self.fixCliffTask:
-            self.fixCliffTask.remove()
-            self.fixCliffTask = None
         if self.indicatorTask:
             self.indicatorTask.remove()
             self.indicatorTask = None
