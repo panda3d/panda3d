@@ -23,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOL DSearchPath {
 public:
-  class Results {
+  class EXPCL_DTOOL Results {
   PUBLISHED:
     Results();
     Results(const Results &copy);
