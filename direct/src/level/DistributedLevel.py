@@ -383,19 +383,8 @@ class DistributedLevel(DistributedObject.DistributedObject,
     if __debug__:
         # level editing stuff
         def setAttribChange(self, entId, attribName, valueStr):
-            entity = self.getEntity(entId)
-            # the entity might be AI-only
-            if entity is None:
-                return
-            
-            try:
-                value = eval(valueStr)
-            except Exception, e:
-                print ('Exception in %s(%s, %s, %s):\n\t%s' %
-                       (lineInfo()[2], entId, attribName, valueStr, e))
-                raise e
-                
-            entity.handleAttribChange(attribName, value)
+            value = eval(valueStr)
+            self.levelSpec.setAttribChange(entId, attribName, value)
 
         """
     if __debug__:

@@ -79,12 +79,21 @@ class LevelSpec:
         def setAttribEditEventName(self, event):
             self.attribEditEventName = event
         def setAttribEdit(self, entId, attrib, value):
+            # This is a proposed change; it has not been approved yet.
             # broadcast the change to someone else that knows what to do
             # with it
             messenger.send(self.attribEditEventName, [entId, attrib, value])
-            
+
+        def setAttribChangeEventName(self, event):
+            self.attribChangeEventName = event
         def setAttribChange(self, entId, attrib, value):
-            pass
+            specDict = self.entId2specDict[entId]
+            specDict[entId][attrib] = value
+            # locally broadcast the fact that this attribute value has
+            # officially changed
+            if self.attribChangeEventName is not None:
+                messenger.send(self.attribChangeEventName,
+                               [entId, attrib, value])
 
         def getSpecImportsModuleName(self):
             # name of module that should be imported by spec py file

@@ -62,6 +62,9 @@ class Level:
         # TODO: we should leave this to a subclass or the level user
         self.createAllEntities(priorityTypes=['levelMgr','zone'])
 
+        self.levelSpec.setAttribChangeEventName(self.getAttribChangeEvent())
+        self.accept(self.getAttribChangeEvent(), self.handleAttribChange)
+
     def destroyLevel(self):
         if hasattr(self, 'createdEntities'):
             # destroy the entities in reverse order
@@ -235,3 +238,15 @@ class Level:
         """Level is about to destroy this entity"""
         # send the entity-destroy event
         messenger.send(self.getEntityDestroyEvent(entId))
+
+    if __debug__:
+        def getAttribChangeEvent(self):
+            return 'attribChange-%s' % self.levelId
+
+        # This handler is called immediately after a new attribute value
+        # has been set in the level's spec.
+        def handleAttribChange(self, entId, attrib, value):
+            entity = self.getEntity(entId)
+            # the entity might be AI- or client-only
+            if entity is not None:
+                entity.handleAttribChange(attrib, value)
