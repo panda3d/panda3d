@@ -3026,46 +3026,84 @@ apply_texture(TextureContext *tc) {
 	// so DX TSS renderstate matches dxgsg state
 
 	DXTextureContext *dtc = DCAST(DXTextureContext, tc);  
+
+	if(	_pCurTexContext == dtc) {
+		return;  // tex already set (and possible problem in state-sorting?)
+	}
 	
 	Texture *tex = tc->_texture;
 	Texture::WrapMode wrapU,wrapV;
 	wrapU=tex->get_wrapu();
 	wrapV=tex->get_wrapv();
 
-	if (wrapU!=_CurTexWrapModeU)
+	if (wrapU!=_CurTexWrapModeU) {
 		_d3dDevice->SetTextureStageState(0,D3DTSS_ADDRESSU,get_texture_wrap_mode(wrapU));
-	if (wrapV!=_CurTexWrapModeV)
+		_CurTexWrapModeU = wrapU;
+	}
+	if (wrapV!=_CurTexWrapModeV) {
 		_d3dDevice->SetTextureStageState(0,D3DTSS_ADDRESSV,get_texture_wrap_mode(wrapV));
+		_CurTexWrapModeV = wrapV;
+	}
+
+/*
+#ifdef _DEBUG
+    Texture::WrapMode wrapval;
+	_d3dDevice->GetTextureStageState(0,D3DTSS_ADDRESSU,(DWORD*)&wrapval);
+	assert(get_texture_wrap_mode(wrapU) == wrapval);
+	_d3dDevice->GetTextureStageState(0,D3DTSS_ADDRESSV,(DWORD*)&wrapval);
+	assert(get_texture_wrap_mode(wrapV) == wrapval);
+#endif
+*/
 
 	int aniso_degree=tex->get_anisotropic_degree();
 	Texture::FilterType ft=tex->get_magfilter();
 
 	if (aniso_degree>1) {
 		if (aniso_degree!=_CurTexAnisoDegree) {
+			_CurTexAnisoDegree = aniso_degree;
 			_d3dDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_ANISOTROPIC );
 			_d3dDevice->SetTextureStageState(0, D3DTSS_MAXANISOTROPY,aniso_degree);
 		}
 	} else {
-		if (_CurTexMagFilter!=ft)
-			switch (ft) {
-				case Texture::FT_nearest:
-					_d3dDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_POINT);
-					break;
-				case Texture::FT_linear:
-					_d3dDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
-					break;
-				default:
-					dxgsg_cat.error() << "MipMap filter type setting for texture magfilter makes no sense,  texture: " << tex->get_name() << "\n";       
-					break;
+		if (_CurTexMagFilter!=ft) {
+
+		    _CurTexMagFilter = ft;
+			_d3dDevice->SetTextureStageState(0, D3DTSS_MAGFILTER,(ft==Texture::FT_nearest)? D3DTFG_POINT : D3DTFG_LINEAR);
+#ifdef _DEBUG
+			if((ft!=Texture::FT_linear)&&(ft!=Texture::FT_nearest)) {
+				dxgsg_cat.error() << "MipMap filter type setting for texture magfilter makes no sense,  texture: " << tex->get_name() << "\n";
 			}
+#endif
+		}
 	}
 
+#ifdef _DEBUG
+	assert(Texture::FT_linear_mipmap_linear < 8);
+#endif
+/*
+ enum FilterType {
+    FT_nearest,FT_linear,FT_nearest_mipmap_nearest,FT_linear_mipmap_nearest,
+    FT_nearest_mipmap_linear, FT_linear_mipmap_linear, };
+*/
+ static D3DTEXTUREMINFILTER PandaToD3DMinType[8] = 
+	{D3DTFN_POINT,D3DTFN_LINEAR,D3DTFN_POINT,D3DTFN_LINEAR,D3DTFN_POINT,D3DTFN_LINEAR};
+ static D3DTEXTUREMIPFILTER PandaToD3DMipType[8] = 
+	{D3DTFP_NONE,D3DTFP_NONE,D3DTFP_POINT,D3DTFP_POINT,D3DTFP_LINEAR,D3DTFP_LINEAR};
+ 
 	ft=tex->get_minfilter();
 
 	if ((ft!=_CurTexMinFilter)||(aniso_degree!=_CurTexAnisoDegree)) {
-		D3DTEXTUREMIPFILTER mipfilter = D3DTFP_LINEAR;
-		D3DTEXTUREMINFILTER minfilter = D3DTFN_LINEAR;
 
+#ifdef _DEBUG
+		if(ft > Texture::FT_linear_mipmap_linear) {
+				dxgsg_cat.error() << "Unknown tex filter type for tex: " << tex->get_name() << "  filter: "<<(DWORD)ft<<"\n";
+				return;
+		}
+#endif
+
+		D3DTEXTUREMINFILTER minfilter = PandaToD3DMinType[(DWORD)ft];
+		D3DTEXTUREMIPFILTER mipfilter = PandaToD3DMipType[(DWORD)ft];
+/*
 		switch (ft) {
 			case Texture::FT_nearest:
 				minfilter = D3DTFN_POINT;
@@ -3094,6 +3132,7 @@ apply_texture(TextureContext *tc) {
 			default:
 				dxgsg_cat.error() << "Unknown tex filter type for tex: " << tex->get_name() << "  filter: "<<(DWORD)ft<<"\n";
 		}
+*/		
 
 		#ifdef _DEBUG
 			if((!(dtc->_bHasMipMaps))&&(mipfilter!=D3DTFP_NONE)) {
@@ -3108,12 +3147,16 @@ apply_texture(TextureContext *tc) {
 
 		_d3dDevice->SetTextureStageState(0, D3DTSS_MINFILTER, minfilter);
 		_d3dDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, mipfilter);
+
+		_CurTexMinFilter = ft;
+		_CurTexAnisoDegree = aniso_degree;
 	}
 
 	// bugbug:  does this handle the case of untextured geometry? 
 	//          we dont see this bug cause we never mix textured/untextured
 
 	_d3dDevice->SetTexture(0, dtc->_surface );
+
 #if 0
 	if (dtc!=NULL) {
 		dxgsg_cat.spam() << "Setting active DX texture: " << dtc->_tex->get_name() << "\n";
