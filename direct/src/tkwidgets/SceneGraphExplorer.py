@@ -112,7 +112,7 @@ class SceneGraphExplorerItem(TreeItem):
         return sublist
 
     def OnSelect(self):
-        messenger.send('SGESelectNodePath', [self.nodePath])
+        messenger.send('SGEFlashNodePath', [self.nodePath])
 
     def MenuCommand(self, command):
         messenger.send('SGE' + command + 'NodePath', [self.nodePath])

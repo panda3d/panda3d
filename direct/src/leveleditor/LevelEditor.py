@@ -394,6 +394,7 @@ class LevelEditor(NodePath, PandaObject):
 	self.ignore('handleMouse3Up')
 
     def editToontownCentral(self):
+        self.editMode = 'toontownCentral'
 	self.levelMap.setPos(0.0,0.0,0.0)
         self.showMap('toontownCentral')
 	self.useToontownCentralColors()
@@ -408,6 +409,7 @@ class LevelEditor(NodePath, PandaObject):
         self.panel.editMenu.selectitem('Toontown Central')
 
     def editDonaldsDock(self):
+        self.editMode = 'donaldsDock'
 	self.levelMap.setPos(0.0,0.0,0.0)
         self.showMap('donaldsDock')
 	self.useDonaldsDockColors()
@@ -423,6 +425,7 @@ class LevelEditor(NodePath, PandaObject):
         self.panel.editMenu.selectitem('Donalds Dock')
 
     def editMinniesMelodyLand(self):
+        self.editMode = 'minniesMelodyLand'
 	self.levelMap.setPos(0.0,0.0,0.0)
         self.showMap('minniesMelodyLand')
 	self.useMinniesMelodyLandColors()
@@ -438,6 +441,7 @@ class LevelEditor(NodePath, PandaObject):
         self.panel.editMenu.selectitem('Minnies Melody Land')
 
     def editTheBurrrgh(self):
+        self.editMode = 'theBurrrgh'
 	self.levelMap.setPos(0.0,0.0,0.0)
         self.showMap('theBurrrgh')
 	self.useTheBurrrghColors()
@@ -468,9 +472,8 @@ class LevelEditor(NodePath, PandaObject):
 	self.accept('createNewLevelGroup', self.createNewLevelGroup)
 	self.accept('setNodePathName', self.setNodePathName)
         self.accept('manipulateObjectCleanup', self.updateSelectedPose)
-        self.accept('SGESelectNodePath', self.selectNodePath)
-        #self.accept('SGESelectNodePath', self.flashNodePath)
 	self.accept('SGEFlashNodePath', self.flashNodePath)
+        self.accept('SGESelectNodePath', self.selectNodePath)
         self.accept('SGEIsolateNodePath', self.isolateNodePath)
         self.accept('SGEToggle VizNodePath', self.toggleNodePathViz)
         self.accept('SGESet ParentNodePath', self.setGroupParent)
@@ -1048,6 +1051,35 @@ class LevelEditor(NodePath, PandaObject):
         dict['corniceColors'] = corniceColors
         return dict
 
+    def saveColor(self):
+        self.appendColorToColorPaletteFile(self.panel.colorEntry.get())
+
+    def appendColorToColorPaletteFile(self, color):
+        obj = self.targetDNAObject
+        if obj:
+            classType = obj.__class__.getClassType()
+            if classType.eq(DNAWall.getClassType()):
+                tag = 'wallColor:'
+            elif classType.eq(DNAWindows.getClassType()):
+                tag = 'windowColor:'
+            elif classType.eq(DNADoor.getClassType()):
+                tag = 'doorColor:'
+            elif classType.eq(DNACornice.getClassType()):
+                tag = 'corniceColor:'
+            else:
+                return
+            # Valid type, add color to file
+            filename = 'level_editor/' + self.editMode + 'Colors.txtnew'
+            f = Filename(filename)
+            f.resolveFilename(getModelPath())
+            f = open(f.toOsSpecific(), 'a')
+            f.write('%s Vec4(%.2f, %.2f, %.2f, 1.0)\n' %
+                    (tag,
+                     color[0]/255.0,
+                     color[1]/255.0,
+                     color[2]/255.0))
+            f.close()
+        
     def printColorDictionary(self, dict):
         for color in dict['wallColors']:
             print ('wallColor: Vec4(%.2f, %.2f, %.2f, 1.0)' %
@@ -3128,6 +3160,8 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.colorEntry = VectorWidgets.ColorEntry(
             hull, text = 'Select Color',
             command = self.updateSelectedObjColor)
+        self.colorEntry.menu.add_command(
+            label = 'Save Color', command = self.levelEditor.saveColor)
         self.colorEntry.pack(fill = 'x')
 
         buttonFrame = Frame(hull)
