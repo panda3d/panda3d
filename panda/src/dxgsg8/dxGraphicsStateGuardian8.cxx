@@ -437,6 +437,8 @@ DXGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
     _CurFVFType = 0x0;
     _max_light_range = __D3DLIGHT_RANGE_MAX;
 
+    _color_writemask = 0xFFFFFFFF;
+
 //    scrn.pD3DDevicesPrimary = scrn.pD3DDevicesZBuf = scrn.pD3DDevicesBack = NULL;
 //    _pDD = NULL;
 //    scrn.pD3DDevice = NULL;
@@ -5250,11 +5252,15 @@ end_decal(GeomNode *base_geom) {
             // Now we need to re-render the base geometry with the depth write
             // on and the color mask off, so we update the depth buffer
             // properly.
-            bool was_textured = _texturing_enabled;
-            bool was_blend = _blend_enabled;
-            D3DBLEND old_blend_source_func = _blend_source_func;
-            D3DBLEND old_blend_dest_func = _blend_dest_func;
 
+            // need to save the state we change on the stack, since we could get called
+            // recursively by the draw() method
+            D3DBLEND saved_blend_source_func = _blend_source_func;
+            D3DBLEND saved_blend_dest_func = _blend_dest_func;
+            UINT saved_colorwritemask = _color_writemask;
+            bool saved_texture_enabled = _texturing_enabled;
+            bool saved_blend_enabled = _blend_enabled;
+    
             // Enable the writing to the depth buffer.
             enable_zwritemask(true);
 
@@ -5264,15 +5270,10 @@ end_decal(GeomNode *base_geom) {
                 // Expensive.
                 enable_blend(true);
                 call_dxBlendFunc(D3DBLEND_ZERO, D3DBLEND_ONE);
+            } else {  
+                // note: not saving current colorwriteenable val, assumes this is always all 1's.  bugbug is this OK?
+                set_color_writemask(0x0);
             }
-
-#if(DIRECT3D_VERSION < 0x700)
-            else {  // dx7 doesn't support planemask rstate
-                // note: not saving current planemask val, assumes this is always all 1's.  should be ok
-                scrn.pD3DDevice->SetRenderState(D3DRS_PLANEMASK,0x0);  // note PLANEMASK is supposedly obsolete for DX7
-            }
-#endif
-            // Note: For DX8, use D3DRS_COLORWRITEENABLE  (check D3DPMISCCAPS_COLORWRITEENABLE first)
 
             // No need to have texturing on for this.
             enable_texturing(false);
@@ -5287,21 +5288,19 @@ end_decal(GeomNode *base_geom) {
             // way they're supposed to be.
 
             if (dx_decal_type == GDT_blend) {
-                enable_blend(was_blend);
-                if (was_blend)
-                    call_dxBlendFunc(old_blend_source_func, old_blend_dest_func);
+                enable_blend(saved_blend_enabled);
+                if (saved_blend_enabled)
+                    call_dxBlendFunc(saved_blend_source_func, saved_blend_dest_func);
+            } else {
+                set_color_writemask(saved_colorwritemask);
             }
-#if(DIRECT3D_VERSION < 0x700)
-            else {
-                scrn.pD3DDevice->SetRenderState(D3DRS_PLANEMASK,0xFFFFFFFF);  // this is unlikely to work due to poor driver support
-            }
-#endif
-            enable_texturing(was_textured);
+            enable_texturing(saved_texture_enabled);
 
             // Finally, restore the depth write state to the
             // way they're supposed to be.
 
-            // could we do this faster by saving last issued depth writemask?
+            // needs to match value specified at begin_decal() start, so cant just
+            // save value across this end_decal() call like the other rstates
             DepthWriteTransition *depth_write;
             if (get_attribute_into(depth_write, this)) {
                 issue_depth_write(depth_write);

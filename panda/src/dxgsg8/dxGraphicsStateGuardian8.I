@@ -168,6 +168,19 @@ enable_blend(bool val) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void DXGraphicsStateGuardian::
+set_color_writemask(UINT color_writemask) {
+  if (_color_writemask != color_writemask) {
+    _color_writemask = color_writemask;
+    scrn.pD3DDevice->SetRenderState(D3DRS_COLORWRITEENABLE, (DWORD)color_writemask);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::enable_blend
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void DXGraphicsStateGuardian::
 enable_gouraud_shading(bool val) {
   if (_bGouraudShadingOn != val) {
     _bGouraudShadingOn = val;

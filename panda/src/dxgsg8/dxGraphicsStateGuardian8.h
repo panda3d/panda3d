@@ -220,6 +220,7 @@ protected:
   INLINE void enable_clip_plane(int clip_plane_id, bool val);
   INLINE void enable_fog(bool val);
   INLINE void enable_zwritemask(bool val);
+  INLINE void set_color_writemask(UINT color_writemask);
   INLINE void enable_gouraud_shading(bool val);
   INLINE void set_vertex_format(DWORD NewFvfType);
 
@@ -267,7 +268,7 @@ protected:
   D3DCOLOR _d3dcolor_clear_value;
 //  D3DSHADEMODE _CurShadeMode;
   bool _bGouraudShadingOn;
-
+  UINT _color_writemask;
   bool _bDrawPrimDoSetupVertexBuffer;       // if true, draw methods just copy vertex data into pCurrentGeomContext
   DXGeomNodeContext *_pCurrentGeomContext;  // used in vertex buffer setup
 

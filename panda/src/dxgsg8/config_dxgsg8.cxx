@@ -92,7 +92,7 @@ bool dx_force_anisotropic_filtering = config_dxgsg.GetBool("dx-force-anisotropic
 const bool link_tristrips = config_dxgsg.GetBool("link-tristrips", false);
 
 // note:  offset currently disabled since it wasnt working properly
-DXDecalType dx_decal_type = GDT_offset;
+DXDecalType dx_decal_type = GDT_mask;
 
 static DXDecalType
 parse_decal_type(const string &type) {
@@ -104,7 +104,7 @@ parse_decal_type(const string &type) {
     return GDT_offset;
   }
   dxgsg_cat.error() << "Invalid dx-decal-type: " << type << "\n";
-  return GDT_offset;
+  return GDT_mask;
 }
 
 ConfigureFn(config_dxgsg) {
