@@ -370,6 +370,7 @@ make_mat(const LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) TransformState::
 set_pos(const LVecBase3f &pos) const {
+  nassertr(!is_invalid(), this);
   if (is_identity() || components_given()) {
     // If we started with a componentwise transform, we keep it that
     // way.
@@ -396,7 +397,8 @@ set_pos(const LVecBase3f &pos) const {
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) TransformState::
 set_hpr(const LVecBase3f &hpr) const {
-  nassertr(has_components(), this);
+  nassertr(!is_invalid(), this);
+  //  nassertr(has_components(), this);
   return make_pos_hpr_scale(get_pos(), hpr, get_scale());
 }
 
@@ -409,7 +411,8 @@ set_hpr(const LVecBase3f &hpr) const {
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) TransformState::
 set_quat(const LQuaternionf &quat) const {
-  nassertr(has_components(), this);
+  nassertr(!is_invalid(), this);
+  //  nassertr(has_components(), this);
   return make_pos_quat_scale(get_pos(), quat, get_scale());
 }
 
@@ -422,7 +425,8 @@ set_quat(const LQuaternionf &quat) const {
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) TransformState::
 set_scale(const LVecBase3f &scale) const {
-  nassertr(has_components(), this);
+  nassertr(!is_invalid(), this);
+  //  nassertr(has_components(), this);
   if (quat_given()) {
     return make_pos_quat_scale(get_pos(), get_quat(), scale);
   } else {
@@ -1049,8 +1053,9 @@ calc_components() {
     bool possible = decompose_matrix(mat, _scale, _hpr, _pos);
     if (!possible) {
       // Some matrices can't be decomposed into scale, hpr, pos.  In
-      // this case, we now know that we cannot compute the components.
-      _flags |= F_components_known;
+      // this case, we now know that we cannot compute the components;
+      // but the closest approximations are stored, at least.
+      _flags |= F_components_known | F_hpr_known;
 
     } else {
       // Otherwise, we do have the components, or at least the hpr.

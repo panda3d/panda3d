@@ -319,7 +319,8 @@ get_pos() const {
 INLINE const LVecBase3f &TransformState::
 get_hpr() const {
   check_hpr();
-  nassertr(has_hpr(), _hpr);
+  nassertr(!is_invalid(), _hpr);
+  //  nassertr(has_hpr(), _hpr);
   return _hpr;
 }
 
@@ -333,7 +334,8 @@ get_hpr() const {
 INLINE const LQuaternionf &TransformState::
 get_quat() const {
   check_quat();
-  nassertr(has_quat(), _quat);
+  nassertr(!is_invalid(), _quat);
+  //  nassertr(has_quat(), _quat);
   return _quat;
 }
 
@@ -347,7 +349,8 @@ get_quat() const {
 INLINE const LVecBase3f &TransformState::
 get_scale() const {
   check_components();
-  nassertr(has_scale(), _scale);
+  nassertr(!is_invalid(), _scale);
+  //  nassertr(has_scale(), _scale);
   return _scale;
 }
 

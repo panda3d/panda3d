@@ -680,7 +680,6 @@ void NodePath::
 set_quat(const LQuaternionf &quat) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
-  nassertv(transform->has_quat());
   set_transform(transform->set_quat(quat));
 }
 
@@ -693,7 +692,6 @@ LQuaternionf NodePath::
 get_quat() const {
   nassertr_always(!is_empty(), LQuaternionf::ident_quat());
   CPT(TransformState) transform = get_transform();
-  nassertr(transform->has_quat(), LQuaternionf::ident_quat());
   return transform->get_quat();
 }
 
@@ -707,7 +705,6 @@ void NodePath::
 set_scale(const LVecBase3f &scale) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
-  nassertv(transform->has_scale());
   set_transform(transform->set_scale(scale));
 }
 
@@ -715,7 +712,6 @@ void NodePath::
 set_sx(float sx) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
-  nassertv(transform->has_scale());
   LVecBase3f scale = transform->get_scale();
   scale[0] = sx;
   set_transform(transform->set_scale(scale));
@@ -725,7 +721,6 @@ void NodePath::
 set_sy(float sy) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
-  nassertv(transform->has_scale());
   LVecBase3f scale = transform->get_scale();
   scale[1] = sy;
   set_transform(transform->set_scale(scale));
@@ -735,7 +730,6 @@ void NodePath::
 set_sz(float sz) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
-  nassertv(transform->has_scale());
   LVecBase3f scale = transform->get_scale();
   scale[2] = sz;
   set_transform(transform->set_scale(scale));
@@ -750,7 +744,6 @@ LVecBase3f NodePath::
 get_scale() const {
   nassertr_always(!is_empty(), LVecBase3f(0.0f, 0.0f, 0.0f));
   CPT(TransformState) transform = get_transform();
-  nassertr(transform->has_scale(), LVecBase3f(0.0f, 0.0f, 0.0f));
   return transform->get_scale();
 }
 
@@ -764,7 +757,6 @@ void NodePath::
 set_pos_hpr(const LVecBase3f &pos, const LVecBase3f &hpr) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
-  nassertv(transform->has_components());
   transform = TransformState::make_pos_hpr_scale
     (pos, hpr, transform->get_scale());
   set_transform(transform);
@@ -1085,7 +1077,6 @@ void NodePath::
 set_quat(const NodePath &other, const LQuaternionf &quat) {
   nassertv_always(!is_empty());
   CPT(TransformState) rel_transform = get_transform(other);
-  nassertv(rel_transform->has_quat());
 
   CPT(TransformState) orig_transform = get_transform();
   if (orig_transform->has_components()) {
@@ -1119,7 +1110,6 @@ LQuaternionf NodePath::
 get_quat(const NodePath &other) const {
   nassertr_always(!is_empty(), LQuaternionf::ident_quat());
   CPT(TransformState) transform = get_transform(other);
-  nassertr(transform->has_quat(), LQuaternionf::ident_quat());
   return transform->get_quat();
 }
 
@@ -1133,7 +1123,6 @@ void NodePath::
 set_scale(const NodePath &other, const LVecBase3f &scale) {
   nassertv_always(!is_empty());
   CPT(TransformState) rel_transform = get_transform(other);
-  nassertv(rel_transform->has_scale());
 
   CPT(TransformState) orig_transform = get_transform();
   if (orig_transform->has_components()) {
@@ -1191,7 +1180,6 @@ LVecBase3f NodePath::
 get_scale(const NodePath &other) const {
   nassertr_always(!is_empty(), LVecBase3f(0.0f, 0.0f, 0.0f));
   CPT(TransformState) transform = get_transform(other);
-  nassertr(transform->has_scale(), LVecBase3f(0.0f, 0.0f, 0.0f));
   return transform->get_scale();
 }
 
@@ -1206,7 +1194,6 @@ set_pos_hpr(const NodePath &other, const LVecBase3f &pos,
             const LVecBase3f &hpr) {
   nassertv_always(!is_empty());
   CPT(TransformState) rel_transform = get_transform(other);
-  nassertv(rel_transform->has_components());
 
   CPT(TransformState) orig_transform = get_transform();
   if (orig_transform->has_components()) {
