@@ -287,11 +287,11 @@ wordwrap_to(const wstring &text, float wordwrap_width,
         // we can that does not leave the next line beginning with one
         // of our forbidden characters.
         size_t i = 0;
-        while (i < text_max_never_break && q - i > p && 
+        while ((int)i < text_max_never_break && q - i > p && 
                text_never_break_before->find(text[q - i]) != wstring::npos) {
           i++;
         }
-        if (i < text_max_never_break) {
+        if ((int)i < text_max_never_break) {
           q -= i;
         }
       }
