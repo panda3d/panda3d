@@ -471,6 +471,8 @@ run(void) {
   if (t0 - _tlast < _frequency)
     return EU_ok;
 
+  _tlast = _clock.get_real_time();
+
   // Recompute the buffer size if necessary
   if (_recompute_buffer == true) {
     if (downloader_cat.is_debug())
@@ -540,7 +542,6 @@ run(void) {
         << "Downloader::run() - normal connection" << endl;
     fret = fast_receive(_socket, _current_status, _receive_size);
   }
-  _tlast = _clock.get_real_time();
 
   // Check for end of file
   if (fret == EU_eof) {
@@ -590,6 +591,8 @@ run_to_ram(void) {
   }
   if (t0 - _tlast < _frequency)
     return EU_ok;
+
+  _tlast = _clock.get_real_time();
 
   // Recompute the buffer size if necessary
   if (_recompute_buffer == true) {
@@ -660,7 +663,6 @@ run_to_ram(void) {
         << "Downloader::run_to_ram() - normal connection" << endl;
     fret = fast_receive(_socket, _current_status, _receive_size);
   }
-  _tlast = _clock.get_real_time();
 
   // Check for end of file
   if (fret == EU_eof) {
