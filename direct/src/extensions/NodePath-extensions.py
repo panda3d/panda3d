@@ -72,8 +72,7 @@
 
     def showAllDescendants(self):
         """Show the node path and all its children"""
-        if self.hasArcs():
-            self.show()
+        self.show()
         for child in self.getChildrenAsList():
             child.showAllDescendants()
 

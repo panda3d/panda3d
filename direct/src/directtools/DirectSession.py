@@ -609,7 +609,7 @@ class DirectSession(PandaObject):
     def showAllDescendants(self, nodePath = render):
         """ Show the level and its descendants """
         nodePath.showAllDescendants()
-        nodePath.hideCollisionSolids()
+        nodePath.hideCS()
 
     def upAncestry(self):
         if self.ancestry:
