@@ -52,6 +52,7 @@ PUBLISHED:
   // This method is just used to specify a scale which is only used
   // when composing the matrix for return by get_smooth_mat().  It
   // might change from time to time, but it is not smoothed.
+  INLINE bool set_scale(const LVecBase3f &scale);
   INLINE bool set_scale(float sx, float sy, float sz);
   INLINE bool set_sx(float sx);
   INLINE bool set_sy(float sy);
@@ -62,15 +63,19 @@ PUBLISHED:
   // mark_position().  The return value of each function is true if
   // the parameter value has changed, or false if it remains the same
   // as last time.
+  INLINE bool set_pos(const LVecBase3f &pos);
   INLINE bool set_pos(float x, float y, float z);
   INLINE bool set_x(float x);
   INLINE bool set_y(float y);
   INLINE bool set_z(float z);
 
+  INLINE bool set_hpr(const LVecBase3f &hpr);
   INLINE bool set_hpr(float h, float p, float r);
   INLINE bool set_h(float h);
   INLINE bool set_p(float p);
   INLINE bool set_r(float r);
+
+  bool set_mat(const LMatrix4f &mat);
 
   INLINE void set_timestamp();
   INLINE void set_timestamp(double timestamp);
@@ -80,6 +85,7 @@ PUBLISHED:
 
   INLINE void compute_smooth_position();
   void compute_smooth_position(double timestamp);
+  bool get_latest_position();
 
   INLINE const LPoint3f &get_smooth_pos() const;
   INLINE const LVecBase3f &get_smooth_hpr() const;

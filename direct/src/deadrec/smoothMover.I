@@ -27,6 +27,20 @@
 //               in get_smooth_mat().
 ////////////////////////////////////////////////////////////////////
 INLINE bool SmoothMover::
+set_scale(const LVecBase3f &scale) {
+  return set_sx(scale[0]) | set_sy(scale[1]) | set_sz(scale[2]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::set_scale
+//       Access: Published
+//  Description: Specifies the current scale that should be applied to
+//               the transform.  This is not smoothed along with pos
+//               and hpr, but rather takes effect immediately; it is
+//               only here at all so we can return a complete matrix
+//               in get_smooth_mat().
+////////////////////////////////////////////////////////////////////
+INLINE bool SmoothMover::
 set_scale(float sx, float sy, float sz) {
   return set_sx(sx) | set_sy(sy) | set_sz(sz);
 }
@@ -86,6 +100,26 @@ set_sz(float sz) {
 //               are the same.
 ////////////////////////////////////////////////////////////////////
 INLINE bool SmoothMover::
+set_pos(const LVecBase3f &pos) {
+  return set_x(pos[0]) | set_y(pos[1]) | set_z(pos[2]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::set_pos
+//       Access: Published
+//  Description: Specifies the position of the SmoothMover at a
+//               particular time in the past.  When mark_position() is
+//               called, this will be recorded (along with hpr and
+//               timestamp) in a position report, which will then be
+//               used along with all other position reports to
+//               determine the smooth position at any particular
+//               instant.
+//
+//               The return value is true if any parameter has changed
+//               since the last call to set_pos(), or false if they
+//               are the same.
+////////////////////////////////////////////////////////////////////
+INLINE bool SmoothMover::
 set_pos(float x, float y, float z) {
   return set_x(x) | set_y(y) | set_z(z);
 }
@@ -124,6 +158,26 @@ set_z(float z) {
   bool result = (z != _sample._pos[2]);
   _sample._pos[2] = z;
   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::set_hpr
+//       Access: Published
+//  Description: Specifies the orientation of the SmoothMover at a
+//               particular time in the past.  When mark_position() is
+//               called, this will be recorded (along with hpr and
+//               timestamp) in a position report, which will then be
+//               used along with all other position reports to
+//               determine the smooth position at any particular
+//               instant.
+//
+//               The return value is true if any parameter has changed
+//               since the last call to set_hpr(), or false if they
+//               are the same.
+////////////////////////////////////////////////////////////////////
+INLINE bool SmoothMover::
+set_hpr(const LVecBase3f &hpr) {
+  return set_h(hpr[0]) | set_p(hpr[1]) | set_r(hpr[2]);
 }
 
 ////////////////////////////////////////////////////////////////////

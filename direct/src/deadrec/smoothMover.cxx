@@ -63,6 +63,23 @@ SmoothMover::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::set_mat
+//       Access: Published
+//  Description: Specifies the scale, hpr, and pos for the SmoothMover
+//               at some particular point, based on the matrix.
+////////////////////////////////////////////////////////////////////
+bool SmoothMover::
+set_mat(const LMatrix4f &mat) {
+  bool result = false;
+
+  LVecBase3f scale, hpr, pos;
+  if (decompose_matrix(mat, scale, hpr, pos)) {
+    result = set_scale(scale) | set_hpr(hpr) | set_pos(pos);
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SmoothMover::mark_position
 //       Access: Published
 //  Description: Stores the position, orientation, and timestamp (if
@@ -245,6 +262,31 @@ compute_smooth_position(double timestamp) {
     _last_point_before = -1;
     _last_point_after = -1;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::get_latest_position
+//       Access: Published
+//  Description: Updates the smooth_pos (and smooth_hpr, etc.) members
+//               to reflect the absolute latest position known for
+//               this avatar.  This may result in a pop to the most
+//               recent position.
+//
+//               Returns true if the latest position is known, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool SmoothMover::
+get_latest_position() {
+  if (_points.empty()) {
+    // Nothing to do if there are no points.
+    return false;
+  }
+
+  const SamplePoint &point = _points.back();
+  set_smooth_pos(point._pos, point._hpr, point._timestamp);
+  _smooth_forward_velocity = 0.0;
+  _smooth_rotational_velocity = 0.0;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
