@@ -21,7 +21,6 @@
 #include "throw_event.h"
 #include "graphicsWindow.h"
 #include "renderBuffer.h"
-#include "get_config_path.h"
 #include "camera.h"
 #include "graphicsPipeSelection.h"
 
