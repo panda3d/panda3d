@@ -29,11 +29,11 @@ PUBLISHED:
   INLINE void set_frequency(float frequency);
   INLINE float get_frequency(void) const;
 
+  void create_thread(void);
+
 public:
   AsyncUtility(float frequency = 0.2);
   virtual ~AsyncUtility(void);
-
-  void create_thread(void);
 
 protected:
   void destroy_thread(void);
