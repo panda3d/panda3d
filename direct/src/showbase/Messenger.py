@@ -8,7 +8,7 @@ class Messenger:
     notify = None    
 
     def __init__(self):
-        """ __init__(self)
+        """
         One dictionary does it all. It has the following structure:
             {event1 : {object1: [method, extraArgs, persistent],
                        object2: [method, extraArgs, persistent]},
@@ -36,7 +36,6 @@ class Messenger:
         If the persistent flag is set, it will continue to respond
         to this event, otherwise it will respond only once.
         """
-
         if Messenger.notify.getDebug():
             Messenger.notify.debug('object: ' + `object`
                                    + '\n now accepting: ' + `event`
@@ -96,7 +95,7 @@ class Messenger:
         return 0
 
     def whoAccepts(self, event):
-        """ whoAccepts(self, event):
+        """
         Return objects accepting the given event
         """
         return self.dict.get(event, None)
@@ -147,7 +146,7 @@ class Messenger:
                 apply(method, (extraArgs + sentArgs))
 
     def clear(self):
-        """clear(self)
+        """
         Start fresh with a clear dict
         """
         self.dict.clear()
