@@ -26,6 +26,8 @@
 class EggPrimitive;
 class Datagram;
 class XFileToEggConverter;
+class XFileNode;
+class XFileDataNode;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : XFileMaterial
@@ -45,9 +47,7 @@ public:
   bool has_material() const;
   bool has_texture() const;
 
-  void make_material_data(Datagram &raw_data);
-  void make_texture_data(Datagram &raw_data);
-
+  XFileDataNode *make_x_material(XFileNode *x_meshMaterials, const string &suffix);
   bool read_material_data(const Datagram &raw_data);
   bool read_texture_data(const Datagram &raw_data);
 

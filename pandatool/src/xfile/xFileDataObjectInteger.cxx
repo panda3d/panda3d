@@ -58,34 +58,45 @@ write_data(ostream &out, int indent_level, const char *separator) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileDataObjectInteger::as_integer_value
+//     Function: XFileDataObjectInt::set_int_value
+//       Access: Protected, Virtual
+//  Description: Sets the object's value as an integer, if this is
+//               legal.
+////////////////////////////////////////////////////////////////////
+void XFileDataObjectInteger::
+set_int_value(int int_value) {
+  _value = int_value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObjectInteger::get_int_value
 //       Access: Protected, Virtual
 //  Description: Returns the object's representation as an integer, if
 //               it has one.
 ////////////////////////////////////////////////////////////////////
 int XFileDataObjectInteger::
-as_integer_value() const {
+get_int_value() const {
   return _value;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileDataObjectInteger::as_double_value
+//     Function: XFileDataObjectInteger::get_double_value
 //       Access: Protected, Virtual
 //  Description: Returns the object's representation as a double, if
 //               it has one.
 ////////////////////////////////////////////////////////////////////
 double XFileDataObjectInteger::
-as_double_value() const {
+get_double_value() const {
   return _value;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileDataObjectInteger::as_string_value
+//     Function: XFileDataObjectInteger::get_string_value
 //       Access: Protected, Virtual
 //  Description: Returns the object's representation as a string, if
 //               it has one.
 ////////////////////////////////////////////////////////////////////
 string XFileDataObjectInteger::
-as_string_value() const {
+get_string_value() const {
   return format_string(_value);
 }

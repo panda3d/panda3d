@@ -39,6 +39,7 @@ class XFileDataNodeTemplate : public XFileDataNode {
 public:
   XFileDataNodeTemplate(XFile *x_file, const string &name,
                         XFileTemplate *xtemplate);
+  void zero_fill();
 
   virtual bool is_complex_object() const;
 
@@ -55,8 +56,8 @@ public:
 
 protected:
   virtual int get_num_elements() const;
-  virtual const XFileDataObject *get_element(int n) const;
-  virtual const XFileDataObject *get_element(const string &name) const;
+  virtual XFileDataObject *get_element(int n);
+  virtual XFileDataObject *get_element(const string &name);
 
 private:
   XFileParseDataList _parse_data_list;

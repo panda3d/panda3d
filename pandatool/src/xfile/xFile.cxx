@@ -245,6 +245,30 @@ find_template(const WindowsGuid &guid) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: XFile::find_standard_template
+//       Access: Public, Static
+//  Description: Returns the standard template associated with the
+//               indicated name, if any, or NULL if none.
+////////////////////////////////////////////////////////////////////
+XFileTemplate *XFile::
+find_standard_template(const string &name) {
+  const XFile *standard_templates = get_standard_templates();
+  return standard_templates->find_template(name);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFile::find_standard_template
+//       Access: Public, Static
+//  Description: Returns the template associated with the indicated
+//               GUID, if any, or NULL if none.
+////////////////////////////////////////////////////////////////////
+XFileTemplate *XFile::
+find_standard_template(const WindowsGuid &guid) {
+  const XFile *standard_templates = get_standard_templates();
+  return standard_templates->find_template(guid);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: XFile::find_data_object
 //       Access: Public
 //  Description: Returns the data object associated with the indicated

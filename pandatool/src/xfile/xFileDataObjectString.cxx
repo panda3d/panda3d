@@ -59,13 +59,24 @@ write_data(ostream &out, int indent_level, const char *separator) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileDataObjectString::as_string_value
+//     Function: XFileDataObjectString::set_string_value
+//       Access: Protected, Virtual
+//  Description: Sets the object's value as a string, if this is
+//               legal.
+////////////////////////////////////////////////////////////////////
+void XFileDataObjectString::
+set_string_value(const string &string_value) {
+  _value = string_value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObjectString::get_string_value
 //       Access: Protected, Virtual
 //  Description: Returns the object's representation as a string, if
 //               it has one.
 ////////////////////////////////////////////////////////////////////
 string XFileDataObjectString::
-as_string_value() const {
+get_string_value() const {
   return _value;
 }
 
@@ -95,6 +106,7 @@ enquote_string(ostream &out) const {
       break;
 
     case '"':
+    case '\\':
       out << '\\' << (*si);
       break;
 

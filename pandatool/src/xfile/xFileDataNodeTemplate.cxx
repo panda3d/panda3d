@@ -20,6 +20,7 @@
 #include "indent.h"
 #include "xFileParseData.h"
 #include "xLexerDefs.h"
+#include "config_xfile.h"
 
 TypeHandle XFileDataNodeTemplate::_type_handle;
 
@@ -33,6 +34,17 @@ XFileDataNodeTemplate(XFile *x_file, const string &name,
                       XFileTemplate *xtemplate) :
   XFileDataNode(x_file, name, xtemplate)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataNodeTemplate::zero_fill
+//       Access: Public
+//  Description: Fills the data node with zero-valued elements
+//               appropriate to the template.
+////////////////////////////////////////////////////////////////////
+void XFileDataNodeTemplate::
+zero_fill() {
+  _template->fill_zero_data(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -155,9 +167,9 @@ write_text(ostream &out, int indent_level) const {
   }
   out << " {\n";
 
-  int num_elements = get_num_elements();
-  for (int i = 0; i < num_elements; i++) {
-    get_element(i)->write_data(out, indent_level + 2, ";");
+  NestedElements::const_iterator ni;
+  for (ni = _nested_elements.begin(); ni != _nested_elements.end(); ++ni) {
+    (*ni)->write_data(out, indent_level + 2, ";");
   }
 
   XFileNode::write_text(out, indent_level + 2);
@@ -233,8 +245,8 @@ get_num_elements() const {
 //  Description: Returns the nth nested data element within the
 //               object.
 ////////////////////////////////////////////////////////////////////
-const XFileDataObject *XFileDataNodeTemplate::
-get_element(int n) const {
+XFileDataObject *XFileDataNodeTemplate::
+get_element(int n) {
   nassertr(n >= 0 && n < (int)_nested_elements.size(), NULL);
   return _nested_elements[n];
 }
@@ -245,11 +257,14 @@ get_element(int n) const {
 //  Description: Returns the nested data element within the
 //               object that has the indicated name.
 ////////////////////////////////////////////////////////////////////
-const XFileDataObject *XFileDataNodeTemplate::
-get_element(const string &name) const {
+XFileDataObject *XFileDataNodeTemplate::
+get_element(const string &name) {
   int child_index = _template->find_child_index(name);
   if (child_index >= 0) {
     return get_element(child_index);
   }
+  xfile_cat.warning()
+    << "\"" << name << "\" not a member of " << _template->get_name()
+    << "\n";
   return NULL;
 }

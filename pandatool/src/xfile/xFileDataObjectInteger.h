@@ -37,9 +37,11 @@ public:
                           const char *separator) const;
 
 protected:
-  virtual int as_integer_value() const;
-  virtual double as_double_value() const;
-  virtual string as_string_value() const;
+  virtual void set_int_value(int int_value);
+
+  virtual int get_int_value() const;
+  virtual double get_double_value() const;
+  virtual string get_string_value() const;
 
 private:
   int _value;

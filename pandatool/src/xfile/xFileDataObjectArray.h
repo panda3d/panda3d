@@ -39,7 +39,7 @@ public:
 
 protected:
   virtual int get_num_elements() const;
-  virtual const XFileDataObject *get_element(int n) const;
+  virtual XFileDataObject *get_element(int n);
 
 private:
   typedef pvector< PT(XFileDataObject) > NestedElements;

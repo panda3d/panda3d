@@ -24,13 +24,7 @@
 #include "filename.h"
 #include "pmap.h"
 #include "luse.h"
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <d3dx.h>
-#include <dxfile.h>
-#include <rmxfguid.h>
-#undef WIN32_LEAN_AND_MEAN
+#include "xFile.h"
 
 class EggNode;
 class EggGroupNode;
@@ -51,37 +45,26 @@ public:
   XFileMaker();
   ~XFileMaker();
 
-  bool open(const Filename &filename);
-  void close();
+  bool write(const Filename &filename);
 
   bool add_tree(EggData &egg_data);
 
 private:
-  bool add_node(EggNode *egg_node, LPDIRECTXFILEDATA dx_parent);
-  bool add_group(EggGroup *egg_group, LPDIRECTXFILEDATA dx_parent);
-  bool add_bin(EggBin *egg_bin, LPDIRECTXFILEDATA dx_parent);
-  bool add_polyset(EggBin *egg_bin, LPDIRECTXFILEDATA dx_parent);
+  bool add_node(EggNode *egg_node, XFileNode *x_parent);
+  bool add_group(EggGroup *egg_group, XFileNode *x_parent);
+  bool add_bin(EggBin *egg_bin, XFileNode *x_parent);
+  bool add_polyset(EggBin *egg_bin, XFileNode *x_parent);
 
-  bool recurse_nodes(EggGroupNode *egg_node, LPDIRECTXFILEDATA dx_parent);
+  bool recurse_nodes(EggGroupNode *egg_node, XFileNode *x_parent);
 
-  bool create_object(LPDIRECTXFILEDATA &obj, REFGUID template_id,
-                     const string &name, const Datagram &dg);
-  bool create_frame(LPDIRECTXFILEDATA &obj, const string &name);
-  bool add_frame_transform(LPDIRECTXFILEDATA obj, const LMatrix4f &mat);
+  XFileMesh *get_mesh(XFileNode *x_parent);
+  bool finalize_mesh(XFileNode *x_parent, XFileMesh *mesh);
 
-  bool attach_and_release(LPDIRECTXFILEDATA obj, LPDIRECTXFILEDATA dx_parent);
-
-  static string make_nice_name(const string &str);
-
-  XFileMesh *get_mesh(LPDIRECTXFILEDATA dx_parent);
-  bool finalize_mesh(LPDIRECTXFILEDATA dx_parent);
-
-  LPDIRECTXFILE _dx_file;
-  LPDIRECTXFILESAVEOBJECT _dx_file_save;
+  PT(XFile) _x_file;
 
   int _mesh_index;
 
-  typedef pmap<LPDIRECTXFILEDATA, XFileMesh *> Meshes;
+  typedef pmap<XFileNode *, XFileMesh *> Meshes;
   Meshes _meshes;
 };
 

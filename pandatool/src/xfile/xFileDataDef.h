@@ -73,11 +73,15 @@ public:
                            PrevData &prev_data,
                            size_t &index, size_t &sub_index) const;
 
+  virtual bool fill_zero_data(XFileDataObject *object) const;
+
 private:
   typedef PT(XFileDataObject) 
     (XFileDataDef::*UnpackMethod)(const XFileParseDataList &parse_data_list, 
                                   const PrevData &prev_data,
                                   size_t &index, size_t &sub_index) const;
+  typedef PT(XFileDataObject) 
+    (XFileDataDef::*ZeroFillMethod)() const;
 
   PT(XFileDataObject) 
     unpack_integer_value(const XFileParseDataList &parse_data_list,
@@ -101,6 +105,13 @@ private:
                  const PrevData &prev_data,
                  size_t &index, size_t &sub_index,
                  UnpackMethod unpack_method) const;
+
+  PT(XFileDataObject) zero_fill_integer_value() const;
+  PT(XFileDataObject) zero_fill_double_value() const;
+  PT(XFileDataObject) zero_fill_string_value() const;
+  PT(XFileDataObject) zero_fill_template_value() const;
+  PT(XFileDataObject) 
+    zero_fill_value(int array_index, ZeroFillMethod zero_fill_method) const;
     
 private:
   Type _type;

@@ -21,8 +21,9 @@
 #include "xFileVertex.h"
 #include "xFileNormal.h"
 #include "xFileMaterial.h"
+#include "xFileDataNode.h"
 #include "config_xfile.h"
-
+#include "string_utils.h"
 #include "eggVertexPool.h"
 #include "eggVertex.h"
 #include "eggPolygon.h"
@@ -473,136 +474,184 @@ get_material(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::make_mesh_data
+//     Function: XFileMesh::make_x_mesh
 //       Access: Public
-//  Description: Fills the datagram with the raw data for the DX
-//               Mesh template.
+//  Description: Creates an X structure corresponding to the mesh.
 ////////////////////////////////////////////////////////////////////
-void XFileMesh::
-make_mesh_data(Datagram &raw_data) {
-  raw_data.clear();
-  raw_data.add_int32(_vertices.size());
-  
+XFileDataNode *XFileMesh::
+make_x_mesh(XFileNode *x_parent, const string &suffix) {
+  XFileDataNode *x_mesh = x_parent->add_Mesh("mesh" + suffix);
+
+  // First, fill in the table of vertices.
+  XFileDataObject &x_vertices = (*x_mesh)["vertices"];
+
   Vertices::const_iterator vi;
   for (vi = _vertices.begin(); vi != _vertices.end(); ++vi) {
     XFileVertex *vertex = (*vi);
-    const Vertexf &point = vertex->_point;
-    raw_data.add_float32(point[0]);
-    raw_data.add_float32(point[1]);
-    raw_data.add_float32(point[2]);
+    x_vertices.add_Vector(x_mesh->get_x_file(), LCAST(double, vertex->_point));
   }
+  (*x_mesh)["nVertices"] = x_vertices.size();
 
-  raw_data.add_int32(_faces.size());
+  // Then, create the list of faces that index into the above vertices.
+  XFileDataObject &x_faces = (*x_mesh)["faces"];
   Faces::const_iterator fi;
   for (fi = _faces.begin(); fi != _faces.end(); ++fi) {
     XFileFace *face = (*fi);
 
-    raw_data.add_int32(face->_vertices.size());
+    XFileDataObject &x_mesh_face = x_faces.add_MeshFace(x_mesh->get_x_file());
+    XFileDataObject &x_faceVertexIndices = x_mesh_face["faceVertexIndices"];
     XFileFace::Vertices::const_iterator fvi;
     for (fvi = face->_vertices.begin();
          fvi != face->_vertices.end();
          ++fvi) {
-      raw_data.add_int32((*fvi)._vertex_index);
+      x_faceVertexIndices.add_int((*fvi)._vertex_index);
     }
+    x_mesh_face["nFaceVertexIndices"] = x_faceVertexIndices.size();
   }
+  (*x_mesh)["nFaces"] = x_faces.size();
+
+  // Now, add in any supplemental data.
+
+  if (has_normals()) {
+    // Tack on normals.
+    make_x_normals(x_mesh, suffix);
+  }
+  if (has_colors()) {
+    // Tack on colors.
+    make_x_colors(x_mesh, suffix);
+  }
+  if (has_uvs()) {
+    // Tack on uvs.
+    make_x_uvs(x_mesh, suffix);
+  }
+  if (has_materials()) {
+    // Tack on materials.
+    make_x_material_list(x_mesh, suffix);
+  }
+
+  return x_mesh;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::make_normal_data
+//     Function: XFileMesh::make_x_normals
 //       Access: Public
-//  Description: Fills the datagram with the raw data for the DX
-//               MeshNormals template.
+//  Description: Creates a MeshNormals table for the mesh.
 ////////////////////////////////////////////////////////////////////
-void XFileMesh::
-make_normal_data(Datagram &raw_data) {
-  raw_data.clear();
-  raw_data.add_int32(_normals.size());
-  
+XFileDataNode *XFileMesh::
+make_x_normals(XFileNode *x_mesh, const string &suffix) {
+  XFileDataNode *x_meshNormals = x_mesh->add_MeshNormals("norms" + suffix);
+
+  XFileDataObject &x_normals = (*x_meshNormals)["normals"];
+
   Normals::const_iterator ni;
   for (ni = _normals.begin(); ni != _normals.end(); ++ni) {
     XFileNormal *normal = (*ni);
-    const Normalf &norm = normal->_normal;
-    raw_data.add_float32(norm[0]);
-    raw_data.add_float32(norm[1]);
-    raw_data.add_float32(norm[2]);
+    x_normals.add_Vector(x_mesh->get_x_file(), LCAST(double, normal->_normal));
   }
+  (*x_meshNormals)["nNormals"] = x_normals.size();
 
-  raw_data.add_int32(_faces.size());
+  // Then, create the list of faces that index into the above normals.
+  XFileDataObject &x_faces = (*x_meshNormals)["faceNormals"];
   Faces::const_iterator fi;
   for (fi = _faces.begin(); fi != _faces.end(); ++fi) {
     XFileFace *face = (*fi);
 
-    raw_data.add_int32(face->_vertices.size());
+    XFileDataObject &x_normals_face = x_faces.add_MeshFace(x_mesh->get_x_file());
+    XFileDataObject &x_faceVertexIndices = x_normals_face["faceVertexIndices"];
     XFileFace::Vertices::const_iterator fvi;
     for (fvi = face->_vertices.begin();
          fvi != face->_vertices.end();
          ++fvi) {
-      raw_data.add_int32((*fvi)._normal_index);
+      x_faceVertexIndices.add_int((*fvi)._normal_index);
     }
+    x_normals_face["nFaceVertexIndices"] = x_faceVertexIndices.size();
   }
+  (*x_meshNormals)["nFaceNormals"] = x_faces.size();
+
+  return x_meshNormals;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::make_color_data
+//     Function: XFileMesh::make_x_colors
 //       Access: Public
-//  Description: Fills the datagram with the raw data for the DX
-//               MeshVertexColors template.
+//  Description: Creates a MeshVertexColors table for the mesh.
 ////////////////////////////////////////////////////////////////////
-void XFileMesh::
-make_color_data(Datagram &raw_data) {
-  raw_data.clear();
-  raw_data.add_int32(_vertices.size());
-  
+XFileDataNode *XFileMesh::
+make_x_colors(XFileNode *x_mesh, const string &suffix) {
+  XFileDataNode *x_meshColors = x_mesh->add_MeshVertexColors("colors" + suffix);
+
+  XFileDataObject &x_colors = (*x_meshColors)["vertexColors"];
+
   Vertices::const_iterator vi;
   int i = 0;
   for (vi = _vertices.begin(); vi != _vertices.end(); ++vi) {
     XFileVertex *vertex = (*vi);
     const Colorf &color = vertex->_color;
-    raw_data.add_int32(i);
-    raw_data.add_float32(color[0]);
-    raw_data.add_float32(color[1]);
-    raw_data.add_float32(color[2]);
-    raw_data.add_float32(color[3]);
+    x_colors.add_IndexedColor(x_mesh->get_x_file(), i, color);
     i++;
   }
+
+  (*x_meshColors)["nVertexColors"] = x_colors.size();
+  
+  return x_meshColors;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::make_uv_data
+//     Function: XFileMesh::make_x_uvs
 //       Access: Public
-//  Description: Fills the datagram with the raw data for the DX
-//               MeshTextureCoords template.
+//  Description: Creates a MeshTextureCoords table for the mesh.
 ////////////////////////////////////////////////////////////////////
-void XFileMesh::
-make_uv_data(Datagram &raw_data) {
-  raw_data.clear();
-  raw_data.add_int32(_vertices.size());
+XFileDataNode *XFileMesh::
+make_x_uvs(XFileNode *x_mesh, const string &suffix) {
+  XFileDataNode *x_meshUvs = x_mesh->add_MeshTextureCoords("uvs" + suffix);
+
+  XFileDataObject &x_uvs = (*x_meshUvs)["textureCoords"];
   
   Vertices::const_iterator vi;
   for (vi = _vertices.begin(); vi != _vertices.end(); ++vi) {
     XFileVertex *vertex = (*vi);
-    const TexCoordf &uv = vertex->_uv;
-    raw_data.add_float32(uv[0]);
-    raw_data.add_float32(uv[1]);
+    x_uvs.add_Coords2d(x_mesh->get_x_file(), LCAST(double, vertex->_uv));
   }
+
+  (*x_meshUvs)["nTextureCoords"] = x_uvs.size();
+
+  return x_meshUvs;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::make_material_list_data
+//     Function: XFileMesh::make_x_material_list
 //       Access: Public
-//  Description: Fills the datagram with the raw data for the DX
-//               MeshMaterialList template.
+//  Description: Creates a MeshMaterialList table for the mesh.
 ////////////////////////////////////////////////////////////////////
-void XFileMesh::
-make_material_list_data(Datagram &raw_data) {
-  raw_data.clear();
-  raw_data.add_int32(_materials.size());
-  raw_data.add_int32(_faces.size());
+XFileDataNode *XFileMesh::
+make_x_material_list(XFileNode *x_mesh, const string &suffix) {
+  XFileDataNode *x_meshMaterials = 
+    x_mesh->add_MeshMaterialList("materials" + suffix);
+
+  // First, build up the list of faces the reference the materials.
+  XFileDataObject &x_indexes = (*x_meshMaterials)["faceIndexes"];
+
   Faces::const_iterator fi;
   for (fi = _faces.begin(); fi != _faces.end(); ++fi) {
     XFileFace *face = (*fi);
-    raw_data.add_int32(face->_material_index);
+    x_indexes.add_int(face->_material_index);
   }
+
+  (*x_meshMaterials)["nFaceIndexes"] = x_indexes.size();
+
+  // Now, build up the list of materials themselves.  Each material is
+  // a child of the MeshMaterialList node, rather than an element of
+  // an array.
+  for (size_t i = 0; i < _materials.size(); i++) {
+    XFileMaterial *material = _materials[i];
+
+    material->make_x_material(x_meshMaterials,
+                              suffix + "_" + format_string(i));
+  }
+
+  (*x_meshMaterials)["nMaterials"] = (int)_materials.size();
+
+  return x_meshMaterials;
 }
 
 ////////////////////////////////////////////////////////////////////

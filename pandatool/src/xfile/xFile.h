@@ -21,6 +21,7 @@
 
 #include "pandatoolbase.h"
 #include "xFileNode.h"
+#include "xFileDataNode.h"
 #include "windowsGuid.h"
 #include "filename.h"
 #include "pmap.h"
@@ -50,6 +51,9 @@ public:
 
   XFileTemplate *find_template(const string &name) const;
   XFileTemplate *find_template(const WindowsGuid &guid) const;
+
+  static XFileTemplate *find_standard_template(const string &name);
+  static XFileTemplate *find_standard_template(const WindowsGuid &guid);
 
   XFileDataNodeTemplate *find_data_object(const string &name) const;
   XFileDataNodeTemplate *find_data_object(const WindowsGuid &guid) const;

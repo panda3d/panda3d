@@ -17,6 +17,13 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "xFileDataObject.h"
+#include "xFileTemplate.h"
+#include "xFile.h"
+#include "xFileDataNodeTemplate.h"
+#include "xFileDataObjectInteger.h"
+#include "xFileDataObjectDouble.h"
+#include "xFileDataObjectString.h"
+#include "config_xfile.h"
 #include "indent.h"
 
 TypeHandle XFileDataObject::_type_handle;
@@ -40,6 +47,135 @@ XFileDataObject::
 bool XFileDataObject::
 is_complex_object() const {
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::add_int
+//       Access: Public
+//  Description: Appends a new integer value to the data object, if it
+//               makes sense to do so.  Normally, this is valid only
+//               for a DataObjectArray, or in certain special cases for
+//               a DataNodeTemplate.
+////////////////////////////////////////////////////////////////////
+XFileDataObject &XFileDataObject::
+add_int(int int_value) {
+  XFileDataObject *object = 
+    new XFileDataObjectInteger(get_data_def(), int_value);
+  add_element(object);
+  return *object;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::add_double
+//       Access: Public
+//  Description: Appends a new floating-point value to the data
+//               object, if it makes sense to do so.  Normally, this
+//               is valid only for a DataObjectArray, or in certain
+//               special cases for a DataNodeTemplate.
+////////////////////////////////////////////////////////////////////
+XFileDataObject &XFileDataObject::
+add_double(double double_value) {
+  XFileDataObject *object = 
+    new XFileDataObjectDouble(get_data_def(), double_value);
+  add_element(object);
+  return *object;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::add_string
+//       Access: Public
+//  Description: Appends a new string value to the data object, if it
+//               makes sense to do so.  Normally, this is valid only
+//               for a DataObjectArray, or in certain special cases for
+//               a DataNodeTemplate.
+////////////////////////////////////////////////////////////////////
+XFileDataObject &XFileDataObject::
+add_string(const string &string_value) {
+  XFileDataObject *object = 
+    new XFileDataObjectString(get_data_def(), string_value);
+  add_element(object);
+  return *object;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::add_Vector
+//       Access: Public
+//  Description: Appends a new Vector instance.
+////////////////////////////////////////////////////////////////////
+XFileDataObject &XFileDataObject::
+add_Vector(XFile *x_file, const LVecBase3d &vector) {
+  XFileTemplate *xtemplate = XFile::find_standard_template("Vector");
+  nassertr(xtemplate != (XFileTemplate *)NULL, *this);
+  XFileDataNodeTemplate *node = 
+    new XFileDataNodeTemplate(x_file, "", xtemplate);
+  add_element(node);
+  node->zero_fill();
+
+  (*node)["x"] = vector[0];
+  (*node)["y"] = vector[1];
+  (*node)["z"] = vector[2];
+
+  return *node;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::add_MeshFace
+//       Access: Public
+//  Description: Appends a new MeshFace instance.
+////////////////////////////////////////////////////////////////////
+XFileDataObject &XFileDataObject::
+add_MeshFace(XFile *x_file) {
+  XFileTemplate *xtemplate = XFile::find_standard_template("MeshFace");
+  nassertr(xtemplate != (XFileTemplate *)NULL, *this);
+  XFileDataNodeTemplate *node = 
+    new XFileDataNodeTemplate(x_file, "", xtemplate);
+  add_element(node);
+  node->zero_fill();
+
+  return *node;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::add_IndexedColor
+//       Access: Public
+//  Description: Appends a new IndexedColor instance.
+////////////////////////////////////////////////////////////////////
+XFileDataObject &XFileDataObject::
+add_IndexedColor(XFile *x_file, int index, const Colorf &color) {
+  XFileTemplate *xtemplate = XFile::find_standard_template("IndexedColor");
+  nassertr(xtemplate != (XFileTemplate *)NULL, *this);
+  XFileDataNodeTemplate *node = 
+    new XFileDataNodeTemplate(x_file, "", xtemplate);
+  add_element(node);
+  node->zero_fill();
+
+  (*node)["index"] = index;
+  (*node)["indexColor"]["red"] = color[0];
+  (*node)["indexColor"]["green"] = color[1];
+  (*node)["indexColor"]["blue"] = color[2];
+  (*node)["indexColor"]["alpha"] = color[3];
+
+  return *node;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::add_Coords2d
+//       Access: Public
+//  Description: Appends a new Coords2d instance.
+////////////////////////////////////////////////////////////////////
+XFileDataObject &XFileDataObject::
+add_Coords2d(XFile *x_file, const LVecBase2d &coords) {
+  XFileTemplate *xtemplate = XFile::find_standard_template("Coords2d");
+  nassertr(xtemplate != (XFileTemplate *)NULL, *this);
+  XFileDataNodeTemplate *node = 
+    new XFileDataNodeTemplate(x_file, "", xtemplate);
+  add_element(node);
+  node->zero_fill();
+
+  (*node)["u"] = coords[0];
+  (*node)["v"] = coords[1];
+
+  return *node;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -79,35 +215,71 @@ write_data(ostream &out, int indent_level, const char *) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileDataObject::as_integer_value
+//     Function: XFileDataObject::set_int_value
+//       Access: Protected, Virtual
+//  Description: Sets the object's value as an integer, if this is
+//               legal.
+////////////////////////////////////////////////////////////////////
+void XFileDataObject::
+set_int_value(int int_value) {
+  xfile_cat.error()
+    << get_type() << " does not support integer values.\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::set_double_value
+//       Access: Protected, Virtual
+//  Description: Sets the object's value as a floating-point number,
+//               if this is legal.
+////////////////////////////////////////////////////////////////////
+void XFileDataObject::
+set_double_value(double double_value) {
+  xfile_cat.error()
+    << get_type() << " does not support floating-point values.\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::set_string_value
+//       Access: Protected, Virtual
+//  Description: Sets the object's value as a string, if this is
+//               legal.
+////////////////////////////////////////////////////////////////////
+void XFileDataObject::
+set_string_value(const string &string_value) {
+  xfile_cat.error()
+    << get_type() << " does not support stringeger values.\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::get_int_value
 //       Access: Protected, Virtual
 //  Description: Returns the object's representation as an integer, if
 //               it has one.
 ////////////////////////////////////////////////////////////////////
 int XFileDataObject::
-as_integer_value() const {
+get_int_value() const {
   return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileDataObject::as_double_value
+//     Function: XFileDataObject::get_double_value
 //       Access: Protected, Virtual
 //  Description: Returns the object's representation as a double, if
 //               it has one.
 ////////////////////////////////////////////////////////////////////
 double XFileDataObject::
-as_double_value() const {
+get_double_value() const {
   return 0.0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileDataObject::as_string_value
+//     Function: XFileDataObject::get_string_value
 //       Access: Protected, Virtual
 //  Description: Returns the object's representation as a string, if
 //               it has one.
 ////////////////////////////////////////////////////////////////////
 string XFileDataObject::
-as_string_value() const {
+get_string_value() const {
   return string();
 }
 
@@ -129,8 +301,11 @@ get_num_elements() const {
 //  Description: Returns the nth nested data element within the
 //               object.
 ////////////////////////////////////////////////////////////////////
-const XFileDataObject *XFileDataObject::
-get_element(int n) const {
+XFileDataObject *XFileDataObject::
+get_element(int n) {
+  xfile_cat.warning()
+    << "Looking for [" << n << "] within data object of type " 
+    << get_type() << ", does not support nested objects.\n";
   return NULL;
 }
 
@@ -140,7 +315,10 @@ get_element(int n) const {
 //  Description: Returns the nested data element within the
 //               object that has the indicated name.
 ////////////////////////////////////////////////////////////////////
-const XFileDataObject *XFileDataObject::
-get_element(const string &name) const {
+XFileDataObject *XFileDataObject::
+get_element(const string &name) {
+  xfile_cat.warning()
+    << "Looking for [\"" << name << "\"] within data object of type " 
+    << get_type() << ", does not support nested objects.\n";
   return NULL;
 }

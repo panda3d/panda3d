@@ -40,17 +40,54 @@ get_data_def() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::operator = (int)
+//       Access: Public
+//  Description: Stores the indicated integer value into the object,
+//               if it makes sense to do so.  It is an error to call
+//               this on an object that cannot accept an integer value.
+////////////////////////////////////////////////////////////////////
+INLINE void XFileDataObject::
+operator = (int int_value) {
+  set_int_value(int_value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::operator = (double)
+//       Access: Public
+//  Description: Stores the indicated floating-point value into the
+//               object, if it makes sense to do so.  It is an error
+//               to call this on an object that cannot accept a
+//               floating-point value.
+////////////////////////////////////////////////////////////////////
+INLINE void XFileDataObject::
+operator = (double double_value) {
+  set_double_value(double_value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::operator = (string)
+//       Access: Public
+//  Description: Stores the indicated string value into the
+//               object, if it makes sense to do so.  It is an error
+//               to call this on an object that cannot accept a
+//               string value.
+////////////////////////////////////////////////////////////////////
+INLINE void XFileDataObject::
+operator = (const string &string_value) {
+  set_string_value(string_value);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: XFileDataObject::i
 //       Access: Public
 //  Description: Unambiguously returns the object's representation as
 //               an integer, or 0 if the object has no integer
-//               representation.  See also the typecast operators, and
-//               get_data_def() to determine what kind of
-//               representation this object has.
+//               representation.  See also get_data_def() to determine
+//               what kind of representation this object has.
 ////////////////////////////////////////////////////////////////////
 INLINE int XFileDataObject::
 i() const {
-  return as_integer_value();
+  return get_int_value();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,13 +95,12 @@ i() const {
 //       Access: Public
 //  Description: Unambiguously returns the object's representation as
 //               a double, or 0.0 if the object has no double
-//               representation.  See also the typecast operators, and
-//               get_data_def() to determine what kind of
-//               representation this object has.
+//               representation.  See also get_data_def() to determine
+//               what kind of representation this object has.
 ////////////////////////////////////////////////////////////////////
 INLINE double XFileDataObject::
 d() const {
-  return as_double_value();
+  return get_double_value();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -72,47 +108,12 @@ d() const {
 //       Access: Public
 //  Description: Unambiguously returns the object's representation as
 //               a string, or empty string if the object has no string
-//               representation.  See also the typecast operators, and
-//               get_data_def() to determine what kind of
-//               representation this object has.
+//               representation.  See also get_data_def() to determine
+//               what kind of representation this object has.
 ////////////////////////////////////////////////////////////////////
 INLINE string XFileDataObject::
 s() const {
-  return as_string_value();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataObject::int typecast operator
-//       Access: Public
-//  Description: Returns the object's representation as an integer, or
-//               0 if the object has no integer representation.
-////////////////////////////////////////////////////////////////////
-INLINE XFileDataObject::
-operator int () const {
-  return as_integer_value();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataObject::double typecast operator
-//       Access: Public
-//  Description: Returns the object's representation as a double, or
-//               0.0 if the object has no integer representation.
-////////////////////////////////////////////////////////////////////
-INLINE XFileDataObject::
-operator double () const {
-  return as_double_value();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataObject::string typecast operator
-//       Access: Public
-//  Description: Returns the object's representation as a string, or
-//               empty string if the object has no string
-//               representation.
-////////////////////////////////////////////////////////////////////
-INLINE XFileDataObject::
-operator string () const {
-  return as_string_value();
+  return get_string_value();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -135,7 +136,7 @@ size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const XFileDataObject &XFileDataObject::
 operator [] (int n) const {
-  const XFileDataObject *element = get_element(n);
+  const XFileDataObject *element = ((XFileDataObject *)this)->get_element(n);
   nassertr(element != (XFileDataObject *)NULL, *this);
   return *element;
 }
@@ -149,7 +150,35 @@ operator [] (int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE const XFileDataObject &XFileDataObject::
 operator [] (const string &name) const {
-  const XFileDataObject *element = get_element(name);
+  const XFileDataObject *element = ((XFileDataObject *)this)->get_element(name);
+  nassertr(element != (XFileDataObject *)NULL, *this);
+  return *element;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::operator [] (int)
+//       Access: Public
+//  Description: Returns the nth nested object within this object.
+//               Call get_num_children() to determine the number of
+//               nested objects.
+////////////////////////////////////////////////////////////////////
+INLINE XFileDataObject &XFileDataObject::
+operator [] (int n) {
+  XFileDataObject *element = get_element(n);
+  nassertr(element != (XFileDataObject *)NULL, *this);
+  return *element;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::operator [] (string)
+//       Access: Public
+//  Description: Returns the named nested object within this object.
+//               It is an error if the named object does not exist.
+//               Call find_child() instead if there is any doubt.
+////////////////////////////////////////////////////////////////////
+INLINE XFileDataObject &XFileDataObject::
+operator [] (const string &name) {
+  XFileDataObject *element = get_element(name);
   nassertr(element != (XFileDataObject *)NULL, *this);
   return *element;
 }

@@ -42,7 +42,7 @@ XFileDataObjectDouble(const XFileDataDef *data_def, double value) :
 ////////////////////////////////////////////////////////////////////
 void XFileDataObjectDouble::
 output_data(ostream &out) const {
-  out << as_string_value();
+  out << get_string_value();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -54,39 +54,61 @@ output_data(ostream &out) const {
 void XFileDataObjectDouble::
 write_data(ostream &out, int indent_level, const char *separator) const {
   indent(out, indent_level)
-    << as_string_value() << separator << "\n";
+    << get_string_value() << separator << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileDataObjectDouble::as_integer_value
+//     Function: XFileDataObjectDouble::set_int_value
+//       Access: Protected, Virtual
+//  Description: Sets the object's value as an integer, if this is
+//               legal.
+////////////////////////////////////////////////////////////////////
+void XFileDataObjectDouble::
+set_int_value(int int_value) {
+  _value = (double)int_value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObjectDouble::set_double_value
+//       Access: Protected, Virtual
+//  Description: Sets the object's value as a floating-point number,
+//               if this is legal.
+////////////////////////////////////////////////////////////////////
+void XFileDataObjectDouble::
+set_double_value(double double_value) {
+  _value = double_value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObjectDouble::get_int_value
 //       Access: Protected, Virtual
 //  Description: Returns the object's representation as an integer, if
 //               it has one.
 ////////////////////////////////////////////////////////////////////
 int XFileDataObjectDouble::
-as_integer_value() const {
+get_int_value() const {
   return (int)_value;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileDataObjectDouble::as_double_value
+//     Function: XFileDataObjectDouble::get_double_value
 //       Access: Protected, Virtual
 //  Description: Returns the object's representation as a double, if
 //               it has one.
 ////////////////////////////////////////////////////////////////////
 double XFileDataObjectDouble::
-as_double_value() const {
+get_double_value() const {
   return _value;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileDataObjectDouble::as_string_value
+//     Function: XFileDataObjectDouble::get_string_value
 //       Access: Protected, Virtual
 //  Description: Returns the object's representation as a string, if
 //               it has one.
 ////////////////////////////////////////////////////////////////////
 string XFileDataObjectDouble::
-as_string_value() const {
+get_string_value() const {
   // It's important to format with a decimal point, even if the value
   // is integral, since the DirectX .x reader differentiates betweens
   // doubles and integers on parsing.

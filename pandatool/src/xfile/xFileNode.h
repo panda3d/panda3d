@@ -27,12 +27,15 @@
 #include "notify.h"
 #include "pvector.h"
 #include "pmap.h"
+#include "luse.h"
 
 class XFile;
 class WindowsGuid;
 class XFileParseDataList;
 class XFileDataDef;
 class XFileDataObject;
+class XFileDataNode;
+class Filename;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : XFileNode
@@ -67,6 +70,34 @@ public:
                            const XFileParseDataList &parse_data_list,
                            PrevData &prev_data,
                            size_t &index, size_t &sub_index) const;
+
+  virtual bool fill_zero_data(XFileDataObject *object) const;
+
+
+  // The following methods can be used to create instances of the
+  // standard template objects.  These definitions match those defined
+  // in standardTemplates.x in this directory (and compiled into the
+  // executable).
+  /*
+  PT(XFileNode) make_Header(int major, int minor, int flags);
+  PT(XFileNode) make_Vector(const LVecBase3d &vector);
+  PT(XFileNode) make_MeshFace(int num_vertex_indices, const int *vertex_indices);
+  */
+  XFileDataNode *add_Mesh(const string &name);
+  XFileDataNode *add_MeshNormals(const string &name);
+  XFileDataNode *add_MeshVertexColors(const string &name);
+  XFileDataNode *add_MeshTextureCoords(const string &name);
+  XFileDataNode *add_MeshMaterialList(const string &name);
+  XFileDataNode *add_Material(const string &name, const Colorf &face_color,
+                              double power, const RGBColorf &specular_color,
+                              const RGBColorf &emissive_color);
+  XFileDataNode *add_TextureFilename(const string &name, 
+                                     const Filename &filename);
+  XFileDataNode *add_Frame(const string &name);
+  XFileDataNode *add_FrameTransformMatrix(const LMatrix4d &mat);
+
+protected:
+  static string make_nice_name(const string &str);
 
 protected:
   XFile *_x_file;

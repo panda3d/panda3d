@@ -23,7 +23,9 @@
 #include "referenceCount.h"
 #include "pointerTo.h"
 #include "dcast.h"
+#include "luse.h"
 
+class XFile;
 class XFileDataDef;
 
 ////////////////////////////////////////////////////////////////////
@@ -41,17 +43,38 @@ public:
 
   virtual bool is_complex_object() const;
 
+  INLINE void operator = (int int_value);
+  INLINE void operator = (double double_value);
+  INLINE void operator = (const string &string_value);
+
   INLINE int i() const;
   INLINE double d() const;
   INLINE string s() const;
-  INLINE operator int () const;
-  INLINE operator double () const;
-  INLINE operator string () const;
 
   INLINE int size() const;
   INLINE const XFileDataObject &operator [] (int n) const;
   INLINE const XFileDataObject &operator [] (const string &name) const;
 
+  INLINE XFileDataObject &operator [] (int n);
+  INLINE XFileDataObject &operator [] (const string &name);
+
+  // The following methods can be used to add elements of a specific
+  // type to a complex object, e.g. an array or a template object.
+
+  XFileDataObject &add_int(int int_value);
+  XFileDataObject &add_double(double double_value);
+  XFileDataObject &add_string(const string &string_value);
+
+  // The following methods can be used to add elements of a specific
+  // type, based on one of the standard templates.
+
+  XFileDataObject &add_Vector(XFile *x_file, const LVecBase3d &vector);
+  XFileDataObject &add_MeshFace(XFile *x_file);
+  XFileDataObject &add_IndexedColor(XFile *x_file, int index, 
+                                    const Colorf &color);
+  XFileDataObject &add_Coords2d(XFile *x_file, const LVecBase2d &coords);
+
+public:
   virtual bool add_element(XFileDataObject *element);
 
   virtual void output_data(ostream &out) const;
@@ -59,13 +82,17 @@ public:
                           const char *separator) const;
 
 protected:
-  virtual int as_integer_value() const;
-  virtual double as_double_value() const;
-  virtual string as_string_value() const;
+  virtual void set_int_value(int int_value);
+  virtual void set_double_value(double double_value);
+  virtual void set_string_value(const string &string_value);
+
+  virtual int get_int_value() const;
+  virtual double get_double_value() const;
+  virtual string get_string_value() const;
 
   virtual int get_num_elements() const;
-  virtual const XFileDataObject *get_element(int n) const;
-  virtual const XFileDataObject *get_element(const string &name) const;
+  virtual XFileDataObject *get_element(int n);
+  virtual XFileDataObject *get_element(const string &name);
 
   const XFileDataDef *_data_def;
 

@@ -116,8 +116,8 @@ get_num_elements() const {
 //  Description: Returns the nth nested data element within the
 //               object.
 ////////////////////////////////////////////////////////////////////
-const XFileDataObject *XFileDataObjectArray::
-get_element(int n) const {
+XFileDataObject *XFileDataObjectArray::
+get_element(int n) {
   nassertr(n >= 0 && n < (int)_nested_elements.size(), NULL);
   return _nested_elements[n];
 }

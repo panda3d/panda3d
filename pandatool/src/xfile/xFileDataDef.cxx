@@ -208,6 +208,51 @@ repack_data(XFileDataObject *object,
                                 prev_data, index, sub_index);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataDef::fill_zero_data
+//       Access: Public, Virtual
+//  Description: This is similar to repack_data(), except it is used
+//               to fill the initial values for a newly-created
+//               template object to zero.
+////////////////////////////////////////////////////////////////////
+bool XFileDataDef::
+fill_zero_data(XFileDataObject *object) const {
+  PT(XFileDataObject) data_value;
+
+  // What kind of data element are we expecting?
+  switch (_type) {
+  case T_word:
+  case T_dword:
+  case T_char:
+  case T_uchar:
+  case T_sword:
+  case T_sdword:
+    data_value = zero_fill_value(0, &XFileDataDef::zero_fill_integer_value);
+    break;
+
+  case T_float:
+  case T_double:
+    data_value = zero_fill_value(0, &XFileDataDef::zero_fill_double_value);
+    break;
+
+  case T_string:
+  case T_cstring:
+  case T_unicode:
+    data_value = zero_fill_value(0, &XFileDataDef::zero_fill_string_value);
+    break;
+
+  case T_template:
+    data_value = zero_fill_value(0, &XFileDataDef::zero_fill_template_value);
+    break;
+  }
+
+  if (data_value != (XFileDataObject *)NULL) {
+    object->add_element(data_value);
+  }
+
+  return XFileNode::fill_zero_data(object);
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: XFileDataDef::unpack_integer_value
@@ -368,6 +413,92 @@ unpack_value(const XFileParseDataList &parse_data_list, int array_index,
         unpack_value(parse_data_list, array_index + 1,
                      prev_data, index, sub_index,
                      unpack_method);
+      if (array_element == (XFileDataObject *)NULL) {
+        return NULL;
+      }
+      data_value->add_element(array_element);
+    }
+  }
+
+  return data_value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataDef::zero_fill_integer_value
+//       Access: Private
+//  Description: Returns a newly-allocated zero integer value.
+////////////////////////////////////////////////////////////////////
+PT(XFileDataObject) XFileDataDef::
+zero_fill_integer_value() const {
+  return new XFileDataObjectInteger(this, 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataDef::zero_fill_double_value
+//       Access: Private
+//  Description: Returns a newly-allocated zero floating-point value.
+////////////////////////////////////////////////////////////////////
+PT(XFileDataObject) XFileDataDef::
+zero_fill_double_value() const {
+  return new XFileDataObjectDouble(this, 0.0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataDef::zero_fill_string_value
+//       Access: Private
+//  Description: Returns a newly-allocated empty string value.
+////////////////////////////////////////////////////////////////////
+PT(XFileDataObject) XFileDataDef::
+zero_fill_string_value() const {
+  return new XFileDataObjectString(this, "");
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataDef::zero_fill_template_value
+//       Access: Private
+//  Description: Returns a newly-allocated zero-filled nested template
+//               value.
+////////////////////////////////////////////////////////////////////
+PT(XFileDataObject) XFileDataDef::
+zero_fill_template_value() const {
+  PT(XFileDataObject) data_value = 
+    new XFileDataNodeTemplate(get_x_file(), get_name(), _template);
+  if (!_template->fill_zero_data(data_value)) {
+    return NULL;
+  }
+
+  return data_value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataDef::zero_fill_value
+//       Access: Private
+//  Description: Creates a zero-valued element for the next sequential
+//               value, of the type returned by the zero_fill_method.
+//               If the value is a fixed-size array type, zero-fills
+//               all the elements of the array.
+////////////////////////////////////////////////////////////////////
+PT(XFileDataObject) XFileDataDef::
+zero_fill_value(int array_index, 
+                XFileDataDef::ZeroFillMethod zero_fill_method) const {
+  PT(XFileDataObject) data_value;
+  
+  if (array_index == (int)_array_def.size()) {
+    data_value = (this->*zero_fill_method)();
+
+  } else {
+    data_value = new XFileDataObjectArray(this);
+    int array_size = 0;
+    if (_array_def[array_index].is_fixed_size()) {
+      array_size = _array_def[array_index].get_fixed_size();
+    }
+
+    for (int i = 0; i < array_size; i++) {
+      PT(XFileDataObject) array_element = 
+        zero_fill_value(array_index + 1, zero_fill_method);
+      if (array_element == (XFileDataObject *)NULL) {
+        return NULL;
+      }
       data_value->add_element(array_element);
     }
   }

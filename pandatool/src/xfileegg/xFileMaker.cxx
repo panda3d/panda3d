@@ -43,9 +43,8 @@
 ////////////////////////////////////////////////////////////////////
 XFileMaker::
 XFileMaker() {
-  _dx_file = NULL;
-  _dx_file_save = NULL;
   _mesh_index = 0;
+  _x_file = new XFile;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -55,152 +54,24 @@ XFileMaker() {
 ////////////////////////////////////////////////////////////////////
 XFileMaker::
 ~XFileMaker() {
-  close();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileMaker::open
+//     Function: XFileMaker::write
 //       Access: Public
-//  Description: Opens the indicated filename for writing, and writes
-//               the .x header information; returns true on success,
-//               false otherwise.
+//  Description: Writes the .x file data to the indicated filename;
+//               returns true on success, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool XFileMaker::
-open(const Filename &filename) {
-  HRESULT hr;
-
-  close();
-  hr = DirectXFileCreate(&_dx_file);
-  if (hr != DXFILE_OK) {
-    nout << "Unable to create X interface.\n";
-    return false;
-  }
-
-  // Register our templates.
-  hr = _dx_file->RegisterTemplates(D3DRM_XTEMPLATES, d3drm_xtemplates_length);
-  if (hr != DXFILE_OK) {
-    nout << "Unable to register templates.\n";
-    return false;
-  }
-
-  string os_file = filename.to_os_specific();
-  hr = _dx_file->CreateSaveObject(os_file.c_str(), DXFILEFORMAT_TEXT,
-                                  &_dx_file_save);
-  if (hr != DXFILE_OK) {
-    nout << "Unable to open X file: " << os_file << "\n";
-    return false;
-  }
-
-  // Save the templates we will use.
-  static const GUID *temps[] = {
-    &mydef_TID_D3DRMHeader,
-    &TID_D3DRMCoords2d,
-    &TID_D3DRMVector,
-    &TID_D3DRMColorRGBA,
-    &TID_D3DRMColorRGB,
-    &TID_D3DRMIndexedColor,
-    &TID_D3DRMTextureFilename,
-    &TID_D3DRMMatrix4x4,
-    &TID_D3DRMMaterial,
-    &TID_D3DRMMeshFace,
-    &TID_D3DRMMesh,
-    &TID_D3DRMMeshNormals,
-    &TID_D3DRMMeshTextureCoords,
-    &TID_D3DRMMeshMaterialList,
-    &TID_D3DRMFrameTransformMatrix,
-    &TID_D3DRMFrame,
-
-    /*
-      This is the complete list I extracted out of the Windows header
-      files.
-
-    &TID_D3DRMInfo,
-    &TID_D3DRMMesh,
-    &TID_D3DRMVector,
-    &TID_D3DRMMeshFace,
-    &TID_D3DRMMaterial,
-    &TID_D3DRMMaterialArray,
-    &TID_D3DRMFrame,
-    &TID_D3DRMFrameTransformMatrix,
-    &TID_D3DRMMeshMaterialList,
-    &TID_D3DRMMeshTextureCoords,
-    &TID_D3DRMMeshNormals,
-    &TID_D3DRMCoords2d,
-    &TID_D3DRMMatrix4x4,
-    &TID_D3DRMAnimation,
-    &TID_D3DRMAnimationSet,
-    &TID_D3DRMAnimationKey,
-    &TID_D3DRMFloatKeys,
-    &TID_D3DRMMaterialAmbientColor,
-    &TID_D3DRMMaterialDiffuseColor,
-    &TID_D3DRMMaterialSpecularColor,
-    &TID_D3DRMMaterialEmissiveColor,
-    &TID_D3DRMMaterialPower,
-    &TID_D3DRMColorRGBA,
-    &TID_D3DRMColorRGB,
-    &TID_D3DRMGuid,
-    &TID_D3DRMTextureFilename,
-    &TID_D3DRMTextureReference,
-    &TID_D3DRMIndexedColor,
-    &TID_D3DRMMeshVertexColors,
-    &TID_D3DRMMaterialWrap,
-    &TID_D3DRMBoolean,
-    &TID_D3DRMMeshFaceWraps,
-    &TID_D3DRMBoolean2d,
-    &TID_D3DRMTimedFloatKeys,
-    &TID_D3DRMAnimationOptions,
-    &TID_D3DRMFramePosition,
-    &TID_D3DRMFrameVelocity,
-    &TID_D3DRMFrameRotation,
-    &TID_D3DRMLight,
-    &TID_D3DRMCamera,
-    &TID_D3DRMAppData,
-    &TID_D3DRMLightUmbra,
-    &TID_D3DRMLightRange,
-    &TID_D3DRMLightPenumbra,
-    &TID_D3DRMLightAttenuation,
-    &TID_D3DRMInlineData,
-    &TID_D3DRMUrl,
-    &TID_D3DRMProgressiveMesh,
-    &TID_D3DRMExternalVisual,
-    &TID_D3DRMStringProperty, 
-    &TID_D3DRMPropertyBag, 
-    &TID_D3DRMRightHanded, 
-    */
-  };
-  static const int num_temps = sizeof(temps) / sizeof(temps[0]);
-  hr = _dx_file_save->SaveTemplates(num_temps, temps);
-  if (hr != DXFILE_OK) {
-    nout << "Unable to save templates.\n";
-    return false;
-  }
-
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaker::close
-//       Access: Public
-//  Description: Finalizes and closes the file previously opened via
-//               open().
-////////////////////////////////////////////////////////////////////
-void XFileMaker::
-close() {
-  if (_dx_file != NULL) {
-    if (_dx_file_save != NULL) {
-      _dx_file_save->Release();
-      _dx_file_save = NULL;
-    }
-    _dx_file->Release();
-    _dx_file = NULL;
-  }
+write(const Filename &filename) {
+  return _x_file->write(filename);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: XFileMaker::add_tree
 //       Access: Public
 //  Description: Adds the egg tree rooted at the indicated node to the
-//               DX structure.  This may be somewhat destructive of
+//               X structure.  This may be somewhat destructive of
 //               the egg tree.  Returns true on success, false on
 //               failure.
 ////////////////////////////////////////////////////////////////////
@@ -213,16 +84,19 @@ add_tree(EggData &egg_data) {
   int num_bins = pmaker.make_bins(&egg_data);
 
   // And now we're ready to traverse the egg hierarchy.
-  if (!recurse_nodes(&egg_data, NULL)) {
+  if (!recurse_nodes(&egg_data, _x_file)) {
     return false;
   }
 
-  // Make sure we finalize any meshes in the root.
-  if (!finalize_mesh(NULL)) {
-    return false;
+  // Create X structures for all of the meshes we built up.
+  Meshes::iterator mi;
+  for (mi = _meshes.begin(); mi != _meshes.end(); ++mi) {
+    if (!finalize_mesh((*mi).first, (*mi).second)) {
+      return false;
+    }
   }
+  _meshes.clear();
 
-  nassertr(_meshes.empty(), false);
   return true;
 }
 
@@ -233,37 +107,29 @@ add_tree(EggData &egg_data) {
 //               it is supported.
 ////////////////////////////////////////////////////////////////////
 bool XFileMaker::
-add_node(EggNode *egg_node, LPDIRECTXFILEDATA dx_parent) {
+add_node(EggNode *egg_node, XFileNode *x_parent) {
   if (egg_node->is_of_type(EggBin::get_class_type())) {
-    return add_bin(DCAST(EggBin, egg_node), dx_parent);
+    return add_bin(DCAST(EggBin, egg_node), x_parent);
 
   } else if (egg_node->is_of_type(EggGroup::get_class_type())) {
-    return add_group(DCAST(EggGroup, egg_node), dx_parent);
+    return add_group(DCAST(EggGroup, egg_node), x_parent);
 
   } else if (egg_node->is_of_type(EggGroupNode::get_class_type())) {
     // A grouping node of some kind.
     EggGroupNode *egg_group = DCAST(EggGroupNode, egg_node);
-    LPDIRECTXFILEDATA obj;
 
     if (xfile_one_mesh) {
       // Don't create any additional frames representing the egg
       // hierarchy.
-      if (!recurse_nodes(egg_group, dx_parent)) {
+      if (!recurse_nodes(egg_group, x_parent)) {
         return false;
       }
 
     } else {
-      // Create a frame for each EggGroup.
-      if (!create_frame(obj, egg_group->get_name())) {
-        return false;
-      }
-    
-      if (!recurse_nodes(egg_group, obj)) {
-        obj->Release();
-        return false;
-      }
-      
-      if (!attach_and_release(obj, dx_parent)) {
+      // Create a Frame for each EggGroup.
+      XFileDataNode *x_frame = x_parent->add_Frame(egg_group->get_name());
+
+      if (!recurse_nodes(egg_group, x_frame)) {
         return false;
       }
     }
@@ -281,32 +147,24 @@ add_node(EggNode *egg_node, LPDIRECTXFILEDATA dx_parent) {
 //  Description: Adds a frame for the indicated group node.
 ////////////////////////////////////////////////////////////////////
 bool XFileMaker::
-add_group(EggGroup *egg_group, LPDIRECTXFILEDATA dx_parent) {
+add_group(EggGroup *egg_group, XFileNode *x_parent) {
   if (xfile_one_mesh) {
     // Don't create any additional frames representing the egg
     // hierarchy.
-    if (!recurse_nodes(egg_group, dx_parent)) {
+    if (!recurse_nodes(egg_group, x_parent)) {
       return false;
     }
 
   } else {
     // Create a frame for each EggGroup.
-    LPDIRECTXFILEDATA obj;
-    if (!create_frame(obj, egg_group->get_name())) {
-      return false;
-    }
+    XFileDataNode *x_frame = x_parent->add_Frame(egg_group->get_name());
 
     // Set the transform on the frame, if we have one.
     if (egg_group->has_transform()) {
-      add_frame_transform(obj, LCAST(float, egg_group->get_transform()));
+      x_frame->add_FrameTransformMatrix(egg_group->get_transform());
     }
-    
-    if (!recurse_nodes(egg_group, obj)) {
-      obj->Release();
-      return false;
-    }
-    
-    if (!attach_and_release(obj, dx_parent)) {
+
+    if (!recurse_nodes(egg_group, x_frame)) {
       return false;
     }
   }
@@ -321,10 +179,10 @@ add_group(EggGroup *egg_group, LPDIRECTXFILEDATA dx_parent) {
 //               the indicated bin node.
 ////////////////////////////////////////////////////////////////////
 bool XFileMaker::
-add_bin(EggBin *egg_bin, LPDIRECTXFILEDATA dx_parent) {
+add_bin(EggBin *egg_bin, XFileNode *x_parent) {
   switch (egg_bin->get_bin_number()) {
   case EggPolysetMaker::BN_polyset:
-    return add_polyset(egg_bin, dx_parent);
+    return add_polyset(egg_bin, x_parent);
   }
 
   xfile_cat.error()
@@ -339,11 +197,11 @@ add_bin(EggBin *egg_bin, LPDIRECTXFILEDATA dx_parent) {
 //               polygons within the indicated bin.
 ////////////////////////////////////////////////////////////////////
 bool XFileMaker::
-add_polyset(EggBin *egg_bin, LPDIRECTXFILEDATA dx_parent) {
+add_polyset(EggBin *egg_bin, XFileNode *x_parent) {
   // Make sure that all our polygons are reasonable.
   egg_bin->remove_invalid_primitives();
 
-  XFileMesh *mesh = get_mesh(dx_parent);
+  XFileMesh *mesh = get_mesh(x_parent);
 
   EggGroupNode::iterator ci;
   for (ci = egg_bin->begin(); ci != egg_bin->end(); ++ci) {
@@ -364,164 +222,36 @@ add_polyset(EggBin *egg_bin, LPDIRECTXFILEDATA dx_parent) {
 //               the indicated DX object.
 ////////////////////////////////////////////////////////////////////
 bool XFileMaker::
-recurse_nodes(EggGroupNode *egg_node, LPDIRECTXFILEDATA dx_parent) {
+recurse_nodes(EggGroupNode *egg_node, XFileNode *x_parent) {
   EggGroupNode::iterator ci;
   for (ci = egg_node->begin(); ci != egg_node->end(); ++ci) {
-    EggNode *node = (*ci);
-    if (!add_node(node, dx_parent)) {
+    EggNode *child = (*ci);
+    if (!add_node(child, x_parent)) {
       return false;
     }
   }
 
   return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaker::create_object
-//       Access: Private
-//  Description: Creates a DX data object.
-////////////////////////////////////////////////////////////////////
-bool XFileMaker::
-create_object(LPDIRECTXFILEDATA &obj, REFGUID template_id,
-              const string &name, const Datagram &dg) {
-  HRESULT hr;
-
-  string nice_name = make_nice_name(name);
-
-  int data_size = dg.get_length();
-  void *data_pointer = (void *)dg.get_data();
-
-  if (data_size == 0) {
-    data_pointer = (void *)NULL;
-  }
-
-  hr = _dx_file_save->CreateDataObject
-    (template_id, nice_name.c_str(), NULL, 
-     data_size, data_pointer, &obj);
-
-  if (hr != DXFILE_OK) {
-    nout << "Unable to create data object for " << name << "\n";
-    return false;
-  }
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaker::create_frame
-//       Access: Private
-//  Description: Creates a "frame" object with the indicated name.
-////////////////////////////////////////////////////////////////////
-bool XFileMaker::
-create_frame(LPDIRECTXFILEDATA &obj, const string &name) {
-  return create_object(obj, TID_D3DRMFrame, name, Datagram());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaker::add_frame_transform
-//       Access: Private
-//  Description: Adds a transformation matrix to the indicated frame.
-////////////////////////////////////////////////////////////////////
-bool XFileMaker::
-add_frame_transform(LPDIRECTXFILEDATA obj, const LMatrix4f &mat) {
-  Datagram raw_data;
-  mat.write_datagram(raw_data);
-
-  LPDIRECTXFILEDATA xtransform;
-  if (!create_object(xtransform, TID_D3DRMFrameTransformMatrix, 
-                     "transform", raw_data)) {
-    return false;
-  }
-  if (!attach_and_release(xtransform, obj)) {
-    return false;
-  }
-
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaker::attach_and_release
-//       Access: Private
-//  Description: Assigns the indicated X data object to the indicated
-//               parent, and releases the pointer.
-////////////////////////////////////////////////////////////////////
-bool XFileMaker::
-attach_and_release(LPDIRECTXFILEDATA obj, LPDIRECTXFILEDATA dx_parent) {
-  HRESULT hr;
-
-  // First, make sure we don't have an outstanding mesh for this
-  // object.
-  if (!finalize_mesh(obj)) {
-    return false;
-  }
-
-  if (dx_parent == NULL) {
-    // No parent; it's a toplevel object.
-    hr = _dx_file_save->SaveData(obj);
-    if (hr != DXFILE_OK) {
-      nout << "Unable to save data object\n";
-      obj->Release();
-      return false;
-    }
-  } else {
-    // Got a parent; it's a child of the indicated object.
-    hr = dx_parent->AddDataObject(obj);
-    if (hr != DXFILE_OK) {
-      nout << "Unable to save data object\n";
-      obj->Release();
-      return false;
-    }
-  }
-
-  obj->Release();
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaker::make_nice_name
-//       Access: Private, Static
-//  Description: Transforms the indicated egg name to a name that is
-//               acceptable to the DirectX format.
-////////////////////////////////////////////////////////////////////
-string XFileMaker::
-make_nice_name(const string &str) {
-  string result;
-
-  string::const_iterator si;
-  for (si = str.begin(); si != str.end(); ++si) {
-    if (isalnum(*si)) {
-      result += *si;
-    } else {
-      result += "_";
-    }
-  }
-
-  if (!str.empty() && isdigit(str[0])) {
-    // If the name begins with a digit, we must make it begin with
-    // something else, like for instance an underscore.
-    result = '_' + result;
-  }
-
-  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: XFileMaker::get_mesh
 //       Access: Private
 //  Description: Returns a suitable XFileMesh object for creating
-//               meshes within the indicated dx_parent object.
+//               meshes within the indicated x_parent object.
 ////////////////////////////////////////////////////////////////////
 XFileMesh *XFileMaker::
-get_mesh(LPDIRECTXFILEDATA dx_parent) {
-  Meshes::iterator mi = _meshes.find(dx_parent);
+get_mesh(XFileNode *x_parent) {
+  Meshes::iterator mi = _meshes.find(x_parent);
   if (mi != _meshes.end()) {
-    // We've already started working on this dx_parent before; use the
+    // We've already started working on this x_parent before; use the
     // same mesh object.
     return (*mi).second;
   }
 
-  // We haven't seen this dx_parent before; create a new mesh object.
+  // We haven't seen this x_parent before; create a new mesh object.
   XFileMesh *mesh = new XFileMesh;
-  _meshes.insert(Meshes::value_type(dx_parent, mesh));
+  _meshes.insert(Meshes::value_type(x_parent, mesh));
   return mesh;
 }
 
@@ -529,72 +259,19 @@ get_mesh(LPDIRECTXFILEDATA dx_parent) {
 ////////////////////////////////////////////////////////////////////
 //     Function: XFileMaker::finalize_mesh
 //       Access: Private
-//  Description: Creates the actual DX mesh object corresponding to
-//               the indicated dx_parent object.
+//  Description: Creates the actual X structures corresponding to
+//               the indicated XFileMesh object.
 ////////////////////////////////////////////////////////////////////
 bool XFileMaker::
-finalize_mesh(LPDIRECTXFILEDATA dx_parent) {
-  Meshes::iterator mi = _meshes.find(dx_parent);
-  if (mi == _meshes.end()) {
-    // We haven't got a mesh for this object; do nothing.
-    return true;
-  }
-
-  XFileMesh *mesh = (*mi).second;
-  _meshes.erase(mi);
-
+finalize_mesh(XFileNode *x_parent, XFileMesh *mesh) {
   // Get a unique number for each mesh.
   _mesh_index++;
   string mesh_index = format_string(_mesh_index);
 
   // Finally, create the Mesh object.
-  Datagram raw_data;
-  mesh->make_mesh_data(raw_data);
+  mesh->make_x_mesh(x_parent, mesh_index);
 
-  LPDIRECTXFILEDATA xobj;
-  if (!create_object(xobj, TID_D3DRMMesh, "mesh" + mesh_index, raw_data)) {
-    return false;
-  }
-
-  if (mesh->has_normals()) {
-    // Tack on normals.
-    LPDIRECTXFILEDATA xnormals;
-    mesh->make_normal_data(raw_data);
-    if (!create_object(xnormals, TID_D3DRMMeshNormals, "norms" + mesh_index,
-                       raw_data)) {
-      return false;
-    }
-    if (!attach_and_release(xnormals, xobj)) {
-      return false;
-    }
-  }
-
-  if (mesh->has_colors()) {
-    // Tack on colors.
-    LPDIRECTXFILEDATA xcolors;
-    mesh->make_color_data(raw_data);
-    if (!create_object(xcolors, TID_D3DRMMeshVertexColors, 
-                       "colors" + mesh_index, raw_data)) {
-      return false;
-    }
-    if (!attach_and_release(xcolors, xobj)) {
-      return false;
-    }
-  }
-
-  if (mesh->has_uvs()) {
-    // Tack on texture coordinates.
-    LPDIRECTXFILEDATA xuvs;
-    mesh->make_uv_data(raw_data);
-    if (!create_object(xuvs, TID_D3DRMMeshTextureCoords, 
-                       "uvs" + mesh_index, raw_data)) {
-      return false;
-    }
-    if (!attach_and_release(xuvs, xobj)) {
-      return false;
-    }
-  }
-
+  /*
   if (mesh->has_materials()) {
     // Tack on material definitions.
     LPDIRECTXFILEDATA xmaterial_list;
@@ -643,8 +320,9 @@ finalize_mesh(LPDIRECTXFILEDATA dx_parent) {
     }
   }
 
-  if (!attach_and_release(xobj, dx_parent)) {
+  if (!attach_and_release(xobj, x_parent)) {
     return false;
   }
+  */
   return true;
 }

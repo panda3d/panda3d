@@ -37,7 +37,8 @@ public:
                           const char *separator) const;
 
 protected:
-  virtual string as_string_value() const;
+  virtual void set_string_value(const string &string_value);
+  virtual string get_string_value() const;
 
 private:
   void enquote_string(ostream &out) const;

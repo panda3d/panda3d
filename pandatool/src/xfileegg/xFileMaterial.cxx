@@ -180,63 +180,23 @@ has_texture() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileMaterial::make_material_data
+//     Function: XFileMaterial::make_x_material
 //       Access: Public
-//  Description: Fills the datagram with the raw data for the DX
-//               Material template.
+//  Description: Creates a Material object for the material list.
 ////////////////////////////////////////////////////////////////////
-void XFileMaterial::
-make_material_data(Datagram &raw_data) {
-  raw_data.clear();
-  raw_data.add_float32(_face_color[0]);
-  raw_data.add_float32(_face_color[1]);
-  raw_data.add_float32(_face_color[2]);
-  raw_data.add_float32(_face_color[3]);
-  raw_data.add_float32(_power);
-  raw_data.add_float32(_specular_color[0]);
-  raw_data.add_float32(_specular_color[1]);
-  raw_data.add_float32(_specular_color[2]);
-  raw_data.add_float32(_emissive_color[0]);
-  raw_data.add_float32(_emissive_color[1]);
-  raw_data.add_float32(_emissive_color[2]);
-}
+XFileDataNode *XFileMaterial::
+make_x_material(XFileNode *x_meshMaterials, const string &suffix) {
+  XFileDataNode *x_material = 
+    x_meshMaterials->add_Material("material" + suffix,
+                                  _face_color, _power,
+                                  _specular_color, _emissive_color);
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaterial::make_texture_data
-//       Access: Public
-//  Description: Fills the datagram with the raw data for the DX
-//               TextureFilename template.
-////////////////////////////////////////////////////////////////////
-void XFileMaterial::
-make_texture_data(Datagram &raw_data) {
-  raw_data.clear();
-
-  // Convert the filename to an appropriate form for the X file.
-  string os_filename = _texture.to_os_specific();
-  // Now we have to double up the backslashes.
-  string filename;
-  for (string::const_iterator pi = os_filename.begin();
-       pi != os_filename.end();
-       ++pi) {
-    if ((*pi) == '\\') {
-      filename += '\\';
-      filename += '\\';
-    } else {
-      filename += (*pi);
-    }
+  if (has_texture()) {
+    XFileDataNode *x_texture = 
+      x_material->add_TextureFilename("texture" + suffix, _texture);
   }
 
-  // Get a char * pointer to the texture filename, to pass into the
-  // Microsoft DX file interface.  Unfortunately, we can't delete this
-  // again, since it needs to live longer than the life of the
-  // XFileMaterial object itself, so this becomes a memory leak
-  // (unless the DX file interface frees it, but the documentation is
-  // far from clear).  Too bad.
-  char *filename_str = strdup(filename.c_str());
-
-  // The Microsoft convention is to stuff a pointer into a four-byte
-  // field.  Not terribly portable, but that's the interface.
-  raw_data.add_int32((int)filename_str);
+  return x_material;
 }
 
 ////////////////////////////////////////////////////////////////////

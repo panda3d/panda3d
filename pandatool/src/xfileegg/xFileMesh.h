@@ -26,12 +26,14 @@
 #include "namable.h"
 #include "coordinateSystem.h"
 
+class XFileNode;
 class XFileMesh;
 class XFileVertex;
 class XFileNormal;
 class XFileMaterial;
 class XFileFace;
 class XFileToEggConverter;
+class XFileDataNode;
 class EggGroupNode;
 class EggVertex;
 class EggPolygon;
@@ -70,11 +72,11 @@ public:
   int get_num_materials() const;
   XFileMaterial *get_material(int n) const;
 
-  void make_mesh_data(Datagram &raw_data);
-  void make_normal_data(Datagram &raw_data);
-  void make_color_data(Datagram &raw_data);
-  void make_uv_data(Datagram &raw_data);
-  void make_material_list_data(Datagram &raw_data);
+  XFileDataNode *make_x_mesh(XFileNode *x_parent, const string &suffix);
+  XFileDataNode *make_x_normals(XFileNode *x_mesh, const string &suffix);
+  XFileDataNode *make_x_colors(XFileNode *x_mesh, const string &suffix);
+  XFileDataNode *make_x_uvs(XFileNode *x_mesh, const string &suffix);
+  XFileDataNode *make_x_material_list(XFileNode *x_mesh, const string &suffix);
 
   bool read_mesh_data(const Datagram &raw_data);
   bool read_normal_data(const Datagram &raw_data);

@@ -60,11 +60,6 @@ EggToX() : EggToSomething("DirectX", ".x", true, false) {
 ////////////////////////////////////////////////////////////////////
 void EggToX::
 run() {
-  if (!_x.open(get_output_filename())) {
-    nout << "Unable to open " << get_output_filename() << " for output.\n";
-    exit(1);
-  }
-
   if (!do_reader_options()) {
     exit(1);
   }
@@ -74,7 +69,10 @@ run() {
     exit(1);
   }
 
-  _x.close();
+  if (!_x.write(get_output_filename())) {
+    nout << "Unable to write " << get_output_filename() << ".\n";
+    exit(1);
+  }
 }
 
 
