@@ -56,7 +56,8 @@ protected:
   PhysicalNode(const PhysicalNode &copy);
 
 private:
-  pvector< PT(Physical) > _physicals;
+  typedef pvector<PT(Physical)> PhysicalsVector;
+  PhysicalsVector _physicals;
 
 public:
   static TypeHandle get_class_type() {
