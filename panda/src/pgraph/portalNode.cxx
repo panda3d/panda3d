@@ -63,9 +63,9 @@ PortalNode(const PortalNode &copy) :
   _into_portal_mask(copy._into_portal_mask),
   _flags(copy._flags)
 {
-  _zone_in = NULL;
-  _zone_out = NULL;
-  _visible = true;
+  _zone_in = copy._zone_in;
+  _zone_out = copy._zone_in;
+  _visible = copy._visible;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -192,7 +192,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       pgraph_cat.debug() << "got reduced frustum " << reduced_frustum << endl;
       vf = DCAST(GeometricBoundingVolume, reduced_frustum);
       
-      portal_viewer->set_view_frustum(DCAST(BoundingHexahedron,vf->make_copy()));
+      // keep a copy of this reduced frustum
+      BoundingHexahedron *new_bh = DCAST(BoundingHexahedron, vf->make_copy());
       
       // trasform it to cull_center space
       CPT(TransformState) cull_center_transform = 
@@ -208,12 +209,22 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
                                   zone_transform,
                                   trav->get_initial_state(), vf, 
                                   trav->get_guard_band());
+
       pgraph_cat.spam() << "cull_callback: traversing " << _zone_out.get_name() << endl;
+
       // Make this zone show with the reduced frustum
       _zone_out.show();
+
+      // all nodes visible through this portal, should have this node's frustum
+      BoundingHexahedron *old_bh = portal_viewer->get_reduced_frustum();
+      portal_viewer->set_reduced_frustum(new_bh);
       trav->traverse(next_data);
+
       // make sure traverser is not drawing this node again
       _zone_out.hide();
+
+      // reset portal viewer frustum for the siblings;
+      portal_viewer->set_reduced_frustum(old_bh);
     }
   }
   // Now carry on to render our child nodes.

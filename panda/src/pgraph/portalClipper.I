@@ -101,16 +101,26 @@ draw_camera_frustum() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PortalClipper::set_view_frustum
+//     Function: PortalClipper::set_reduced_frustum
 //       Access: Public
-//  Description: set the current view frustum before traversing
+//  Description: Set the current view frustum that is being calculated
+//               by the portal clipper
 //           
 ////////////////////////////////////////////////////////////////////
 INLINE void PortalClipper::
-set_view_frustum(BoundingHexahedron *frustum) {
-  _view_frustum = frustum;
+set_reduced_frustum(BoundingHexahedron *frustum) {
+  _reduced_frustum = frustum;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PortalClipper::get_reduced_frustum
+//       Access: Published
+//  Description: Return the reduced frustum
+////////////////////////////////////////////////////////////////////
+INLINE BoundingHexahedron *PortalClipper::
+get_reduced_frustum() const {
+  return _reduced_frustum;
+}
 ////////////////////////////////////////////////////////////////////
 //     Function: PortalClipper::is_facing_view
 //       Access: Public
@@ -118,9 +128,8 @@ set_view_frustum(BoundingHexahedron *frustum) {
 //               is facing the camera's near plane
 ////////////////////////////////////////////////////////////////////
 INLINE bool PortalClipper::
-is_facing_view(Planef portal_plane)
-{
-  Planef view_plane(_view_frustum->get_point(4), _view_frustum->get_point(5), _view_frustum->get_point(6));
+is_facing_view(Planef portal_plane) {
+  Planef view_plane(_reduced_frustum->get_point(4), _reduced_frustum->get_point(5), _reduced_frustum->get_point(6));
 
   // use the view_frustum's near plane to calculate direction
   pgraph_cat.spam() << portal_plane.get_normal() << "; " << -view_plane.get_normal() << endl;
@@ -134,24 +143,21 @@ is_facing_view(Planef portal_plane)
 //       Access: Public
 //  Description: checks if portal_node is within the view frustum.
 //               If so, then the portal is worth considering. This
-//               is a 1st level test to weed out most of the portals
+//               is a 2nd level test to weed out most of the portals
 ////////////////////////////////////////////////////////////////////
 INLINE bool PortalClipper::
-is_whole_portal_in_view(const NodePath &node_path) {
-
-  const BoundingVolume *bv = &_portal_node->get_bound();
-
+is_whole_portal_in_view(LMatrix4f cmat) {
   // I am about to xform this gbv, so lets make a copy
+  const BoundingVolume *bv = &_portal_node->get_bound();
   BoundingVolume *cbv = bv->make_copy();
   GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, cbv);
 
   // trasform it to camera space
-  CPT(TransformState) ctransform = node_path.get_transform(_scene_setup->get_cull_center());
-  gbv->xform(ctransform->get_mat());
+  gbv->xform(cmat);
 
-  int result = _view_frustum->contains(gbv);
+  int result = _reduced_frustum->contains(gbv);
 
-  pgraph_cat.spam() << "1st level test if portal: " << *_view_frustum << " is in view " << result << endl;
+  pgraph_cat.spam() << "1st level test if portal: " << *_reduced_frustum << " is in view " << result << endl;
   return (result != 0);
 }
 
@@ -163,14 +169,14 @@ is_whole_portal_in_view(const NodePath &node_path) {
 //               test to make sure this portal is worth visiting
 ////////////////////////////////////////////////////////////////////
 INLINE bool PortalClipper::
-is_partial_portal_in_view(const NodePath &node_path) {
+is_partial_portal_in_view() {
   int result = 0;
-
+ 
   // check if any of the _coords in tested frustum
   for (int j=0; j<_num_vert; ++j) {
-    result |= _view_frustum->contains(_coords[j]);
+    result |= _reduced_frustum->contains(_coords[j]);
   }
-  pgraph_cat.spam() << "frustum: " << *_view_frustum << " contains(coord) result = " << result << endl;
+  pgraph_cat.spam() << "frustum: " << *_reduced_frustum << " contains(coord) result = " << result << endl;
 
   return (result != 0);
 }

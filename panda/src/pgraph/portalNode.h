@@ -77,6 +77,7 @@ PUBLISHED:
   INLINE void set_visible(bool value);
   INLINE bool is_visible();
 
+
 protected:
   virtual BoundingVolume *recompute_bound();
   virtual BoundingVolume *recompute_internal_bound();
