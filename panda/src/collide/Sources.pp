@@ -7,7 +7,7 @@
     sgmanip light tform sgraphutil gobj graph putil \
     pstatclient
     
-  #define COMBINED_SOURCES composite1.cxx composite2.cxx    
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
 
   #define SOURCES \
      collisionEntry.I collisionEntry.h collisionHandler.h  \
@@ -22,7 +22,7 @@
      collisionRay.h collisionSegment.I collisionSegment.h  \
      collisionSolid.I collisionSolid.h collisionSphere.I  \
      collisionSphere.h collisionTraverser.I collisionTraverser.h  \
-     config_collide.h  $[COMBINED_SOURCES]
+     config_collide.h
     
  #define INCLUDED_SOURCES \
      collisionEntry.cxx collisionHandler.cxx collisionHandlerEvent.cxx  \
