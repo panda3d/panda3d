@@ -70,10 +70,15 @@ is_compression_available() {
 //               user's Configrc file, rather than the single quality
 //               dial.  Quality 101 or higher means to generate
 //               lossless output (this is the default if libfftw is
-//               not available).  Quality 102 writes all four
-//               components of quaternions to the output file, rather
-//               than just three, and quality 103 doesn't even convert
-//               hpr to quat.
+//               not available).  
+//
+//               Quality 102 writes all four components of quaternions
+//               to the output file, rather than just three, quality
+//               103 converts hpr to matrix (instead of quat) and
+//               writes a 9-component matrix, and quality 104 just
+//               writes out hpr directly.  Quality levels 102 and
+//               greater are strictly for debugging purposes, and are
+//               only available if NDEBUG is not defined.
 ////////////////////////////////////////////////////////////////////
 void FFTCompressor::
 set_quality(int quality) {
@@ -275,9 +280,10 @@ write_reals(Datagram &datagram, const float *array, int length) {
 ////////////////////////////////////////////////////////////////////
 void FFTCompressor::
 write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
-  if (_quality >= 103) {
-    // If quality level is at least 103, we don't even convert hpr to
-    // quat.
+#ifndef NDEBUG
+  if (_quality >= 104) {
+    // If quality level is at least 104, we don't even convert hpr at
+    // all.
     vector_float h, p, r;
     for (int i = 0; i < length; i++) {
       h.push_back(array[i][0]);
@@ -290,6 +296,38 @@ write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
     write_reals(datagram, &r[0], length);
     return;
   }
+  if (_quality >= 103) {
+    // If quality level is 103, we convert hpr to a table of matrices.
+    vector_float 
+      m00, m01, m02,
+      m10, m11, m12,
+      m20, m21, m22;
+    for (int i = 0; i < length; i++) {
+      LMatrix3f mat;
+      compose_matrix(mat, LVecBase3f(1.0, 1.0, 1.0), array[i]);
+      m00.push_back(mat(0, 0));
+      m01.push_back(mat(0, 1));
+      m02.push_back(mat(0, 2));
+      m10.push_back(mat(1, 0));
+      m11.push_back(mat(1, 1));
+      m12.push_back(mat(1, 2));
+      m20.push_back(mat(2, 0));
+      m21.push_back(mat(2, 1));
+      m22.push_back(mat(2, 2));
+    }
+
+    write_reals(datagram, &m00[0], length);
+    write_reals(datagram, &m01[0], length);
+    write_reals(datagram, &m02[0], length);
+    write_reals(datagram, &m10[0], length);
+    write_reals(datagram, &m11[0], length);
+    write_reals(datagram, &m12[0], length);
+    write_reals(datagram, &m20[0], length);
+    write_reals(datagram, &m21[0], length);
+    write_reals(datagram, &m22[0], length);
+    return;
+  }
+#endif
 
   // First, convert the HPR's to quats.  We expect quats to have
   // better FFT consistency, and therefore compress better, even
@@ -351,9 +389,11 @@ write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
 
   // If quality is at least 102, we write all four quat components,
   // instead of just the three.
+#ifndef NDEBUG
   if (_quality >= 102) {
     write_reals(datagram, &qr[0], length);
   }
+#endif
   write_reals(datagram, &qi[0], length);
   write_reals(datagram, &qj[0], length);
   write_reals(datagram, &qk[0], length);
@@ -476,8 +516,9 @@ read_reals(DatagramIterator &di, vector_float &array) {
 ////////////////////////////////////////////////////////////////////
 bool FFTCompressor::
 read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
-  if (_quality >= 103) {
-    // If quality level is at least 103, we don't even convert hpr to
+#ifndef NDEBUG
+  if (_quality >= 104) {
+    // If quality level is at least 104, we don't even convert hpr to
     // quat.
     vector_float h, p, r;
     bool okflag = true;
@@ -495,14 +536,56 @@ read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
 
     return okflag;
   }
+  if (_quality >= 103) {
+    // If quality level is 103, we read in a table of 3x3 rotation
+    // matrices.
+    vector_float 
+      m00, m01, m02,
+      m10, m11, m12,
+      m20, m21, m22;
+    bool okflag = true;
+    okflag = 
+      read_reals(di, m00) &&
+      read_reals(di, m01) &&
+      read_reals(di, m02) &&
+      read_reals(di, m10) &&
+      read_reals(di, m11) &&
+      read_reals(di, m12) &&
+      read_reals(di, m20) &&
+      read_reals(di, m21) &&
+      read_reals(di, m22);
+
+    if (okflag) {
+      for (int i = 0; i < (int)m00.size(); i++) {
+        LMatrix3f mat(m00[i], m01[i], m02[i],
+                      m10[i], m11[i], m12[i],
+                      m20[i], m21[i], m22[i]);
+        LVecBase3f scale, hpr;
+        bool success = decompose_matrix(mat, scale, hpr);
+        if (success) {
+          array.push_back(hpr);
+        } else {
+          mathutil_cat.error()
+            << "Unable to decompose matrix:\n";
+          mat.write(mathutil_cat.error(false), 2);
+          array.push_back(LVecBase3f(0.0, 0.0, 0.0));
+        }
+      }
+    }
+
+    return okflag;
+  }
+#endif
 
   vector_float qr, qi, qj, qk;
 
   bool okflag = true;
 
+#ifndef NDEBUG
   if (_quality >= 102) {
     okflag = read_reals(di, qr);
   }
+#endif
 
   okflag = 
     okflag &&
@@ -517,17 +600,24 @@ read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
     for (int i = 0; i < (int)qi.size(); i++) {
       LOrientationf rot;
 
+      // Infer the r component from the remaining three.
+      float qr2 = 1.0 - (qi[i] * qi[i] + qj[i] * qj[i] + qk[i] * qk[i]);
+      float qr1 = qr2 < 0.0 ? 0.0 : sqrtf(qr2);
+
+      rot.set(qr1, qi[i], qj[i], qk[i]); 
+
+#ifndef NDEBUG
       if (_quality >= 102) {
 	// If we have written out all four components, use them.
-	rot.set(qr[i], qi[i], qj[i], qj[i]);
+	rot[0] = qr[i];
 
-      } else {
-	// Otherwise, infer the real component from the remaining
-	// three.
-	float qr2 = 1.0 - (qi[i] * qi[i] + qj[i] * qj[i] + qk[i] * qk[i]);
-	float qr1 = qr2 < 0.0 ? 0.0 : sqrtf(qr2);
-	rot.set(qr1, qi[i], qj[i], qk[i]); 
-      }
+        if (!IS_THRESHOLD_EQUAL(qr[i], qr1, 0.001)) {
+          mathutil_cat.warning()
+            << "qr[" << i << "] = " << qr[i] << ", qr1 = " << qr1 
+            << ", diff is " << qr1 - qr[i] << "\n";
+        }
+      } else
+#endif
 
       rot.normalize();      // Just for good measure.
 
