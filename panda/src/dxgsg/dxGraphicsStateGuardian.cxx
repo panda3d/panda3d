@@ -2712,7 +2712,7 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE trilisttype) {
   _pCurFvfBufPtr = NULL;
  }
 }
-
+#if 0
 static INLINE void
 sincosf(float angle, float *psin, float *pcos) {
 
@@ -2733,7 +2733,6 @@ sincosf(float angle, float *psin, float *pcos) {
 #endif //!_X86_
 }
 
-#if 0
 //-----------------------------------------------------------------------------
 // Name: GenerateSphere()
 // Desc: Makes vertex and index data for ellipsoid w/scaling factors sx,sy,sz
