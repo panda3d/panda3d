@@ -2,10 +2,10 @@
 // Template.msvc.pp
 //
 // This file defines the set of output files that will be generated to
-// support a generic Unix-style build system.  It generates a number
-// of shared libraries named libtarget.so for each lib_target, assumes
-// object files are named file.o, and makes other Unix-like
-// assumptions.
+// support a makefile build system invoking Microsoft's Visual C++
+// command-line compiler.  It rolls libraries into their metalibs,
+// generates .dll files, compiles source files to .obj files, and does
+// other Windows-specific things.
 //
 
 // Before this file is processed, the following files are read and
@@ -32,24 +32,36 @@
 // For a source directory, build a single Makefile with rules to build
 // each target.
 
-// We need to know the various targets we'll be building.  On Windows,
-// we don't build any shared libraries except for the metalibs, but we
-// do compile all of the source files into .o files.  And we do still
-// generate static libraries and executables.
+// This is the real set of lib_targets we'll be building.  On Windows,
+// we don't build the shared libraries which are included on metalibs.
+#define real_lib_targets
+#define deferred_objs
+#forscopes lib_target
+  #if $[eq $[module $[TARGET],$[TARGET]],]
+    // This library is not on a metalib, so we can build it.
+    #set real_lib_targets $[real_lib_targets] $[TARGET]
+  #else
+    // This library is on a metalib, so we can't build it, but we
+    // should build all the obj's that go into it.
+    #set deferred_objs $[deferred_objs] $[patsubst %.c %.cxx %.yxx %.lxx,$[so_dir]/%.obj,%,,$[SOURCES]]
+  #endif
+#end lib_target
 
-// $[lib_targets] will be the list of dynamic libraries (in this case,
-// just the metalibs), $[static_lib_targets] the list of static
-// libraries, and $[bin_targets] the list of binaries.
-// $[test_bin_targets] is the list of binaries that are to be built
-// only when specifically asked for.
-#define lib_targets $[TARGET(metalib_target):%=$[so_dir]/lib%.so]
-#define static_lib_targets $[TARGET(static_lib_target):%=$[st_dir]/lib%.a]
+
+// We need to know the various targets we'll be building.
+// $[lib_targets] will be the list of dynamic libraries,
+// $[static_lib_targets] the list of static libraries, and
+// $[bin_targets] the list of binaries.  $[test_bin_targets] is the
+// list of binaries that are to be built only when specifically asked
+// for.
+#define lib_targets $[patsubst %,$[so_dir]/lib%.dll,$[TARGET(metalib_target noinst_lib_target) $[real_lib_targets]]]
+#define static_lib_targets $[TARGET(static_lib_target):%=$[st_dir]/lib%.lib]
 #define bin_targets $[TARGET(bin_target noinst_bin_target sed_bin_target):%=$[st_dir]/%]
 #define test_bin_targets $[TARGET(test_bin_target):%=$[st_dir]/%]
 
 // And these variables will define the various things we need to
 // install.
-#define install_lib $[TARGET(metalib_target)]
+#define install_lib $[TARGET(metalib_target static_lib_target)] $[real_lib_targets]
 #define install_bin $[TARGET(bin_target)]
 #define install_scripts $[TARGET(sed_bin_target)] $[sort $[INSTALL_SCRIPTS(metalib_target lib_target static_lib_target bin_target)] $[INSTALL_SCRIPTS]]
 #define install_headers $[sort $[INSTALL_HEADERS(metalib_target lib_target static_lib_target bin_target)] $[INSTALL_HEADERS]]
@@ -60,10 +72,9 @@
 
 // $[so_sources] is the set of sources that belong on a shared object,
 // and $[st_sources] is the set of sources that belong on a static
-// object, like a static library or an executable.  We make the
-// distinction because some architectures require a special parameter
-// to the compiler when we're compiling something to be put in a
-// shared object (to make the code relocatable).
+// object, like a static library or an executable.  In Windows, we
+// don't need to make this distinction, but we do anyway in case we
+// might in the future for some nutty reason.
 #define so_sources $[get_sources(metalib_target lib_target noinst_lib_target)]
 #define st_sources $[get_sources(static_lib_target bin_target noinst_bin_target test_bin_target)]
 
@@ -102,6 +113,7 @@
 // depend on, plus the libraries *those* libraries depend on, and so
 // on.
 #defer complete_local_libs $[unique $[closure all_libs,$[active_libs]]]
+#defer actual_local_libs $[get_metalibs $[TARGET],$[complete_local_libs]]
 
 // And $[complete_ipath] is the list of directories (from within this
 // tree) we should add to our -I list.  It's basically just one for
@@ -126,14 +138,14 @@
 
 // $[complete_lpath] is rather like $[complete_ipath]: the list of
 // directories (from within this tree) we should add to our -L list.
-#defer complete_lpath $[static_libs $[RELDIR:%=%/$[st_dir]],$[complete_local_libs]] $[dynamic_libs $[RELDIR:%=%/$[so_dir]],$[complete_local_libs]]
+#defer complete_lpath $[static_libs $[RELDIR:%=%/$[st_dir]],$[actual_local_libs]] $[dynamic_libs $[RELDIR:%=%/$[so_dir]],$[actual_local_libs]]
 
 // $[lpath] is like $[target_ipath]: it's the list of directories we
 // should add to our -L list, from the context of a particular target.
 #defer lpath $[other_trees:%=%/lib] $[sort $[complete_lpath]] $[get_lpath]
 
 // And $[libs] is the set of libraries we will link with.
-#defer libs $[unique $[complete_local_libs] $[patsubst %:m,,%:c %,%,$[OTHER_LIBS]] $[get_libs]]
+#defer libs $[unique $[actual_local_libs] $[patsubst %:m,,%:c %,%,$[OTHER_LIBS]] $[get_libs]]
 
 
 // Okay, we're ready.  Start outputting the Makefile now.
@@ -150,7 +162,8 @@
     $[if $[dep_sources],$[DEPENDENCY_CACHE_FILENAME]] \
     $[if $[so_sources],$[so_dir]] \
     $[if $[st_sources],$[st_dir]] \
-    $[sort $[lib_targets] $[static_lib_targets] $[bin_targets]]
+    $[sort $[lib_targets] $[static_lib_targets] $[bin_targets]] \
+    $[deferred_objs]
 all : $[all_targets]
 
 // The 'test' rule makes all the test_bin_targets.
@@ -239,6 +252,12 @@ $[directory] :
 
 #forscopes metalib_target lib_target
 
+// We might need to define a BUILDING_ symbol for win32.  We use the
+// BUILDING_DLL variable name, defined typically in the metalib, for
+// this; but in some cases, where the library isn't part of a metalib,
+// we define BUILDING_DLL directly for the target.
+#define building_var $[or $[BUILDING_DLL],$[module $[BUILDING_DLL],$[TARGET]]]
+
 // $[igatescan] is the set of C++ headers and source files that we
 // need to scan for interrogate.  $[igateoutput] is the name of the
 // generated .cxx file that interrogate will produce (and which we
@@ -264,11 +283,11 @@ $[directory] :
 #define igatemout $[if $[igatemscan],lib$[TARGET]_module.cxx]
 
 // Now output the rule to actually link the library from all of its
-// various .o files.
-lib_$[TARGET]_so = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]/%.o,%,,$[get_sources] $[igateoutput] $[igatemout]]]
-$[so_dir]/lib$[TARGET].so : $(lib_$[TARGET]_so)
-#define target $@
+// various .obj files.
+lib_$[TARGET]_so = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]/%.obj,%,,$[get_sources] $[igateoutput] $[igatemout]]]
+#define target $[so_dir]/lib$[TARGET].dll
 #define sources $(lib_$[TARGET]_so)
+$[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 	$[SHARED_LIB_C++]
 #else
@@ -278,7 +297,8 @@ $[so_dir]/lib$[TARGET].so : $(lib_$[TARGET]_so)
 // Here are the rules to install and uninstall the library and
 // everything that goes along with it.
 #define installed_files \
-    $[install_lib_dir]/lib$[TARGET].so \
+    $[install_lib_dir]/lib$[TARGET].dll \
+    $[install_lib_dir]/lib$[TARGET].lib \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
     $[INSTALL_DATA:%=$[install_data_dir]/%] \
@@ -292,8 +312,13 @@ uninstall-lib$[TARGET] :
 	rm -f $[sort $[installed_files]]
 #endif
 
-$[install_lib_dir]/lib$[TARGET].so : $[so_dir]/lib$[TARGET].so
-#define local lib$[TARGET].so
+$[install_lib_dir]/lib$[TARGET].dll : $[so_dir]/lib$[TARGET].dll
+#define local lib$[TARGET].lib
+#define dest $[install_lib_dir]
+	cd ./$[so_dir]; $[INSTALL]
+
+$[install_lib_dir]/lib$[TARGET].lib : $[so_dir]/lib$[TARGET].lib
+#define local lib$[TARGET].lib
 #define dest $[install_lib_dir]
 	cd ./$[so_dir]; $[INSTALL]
 
@@ -319,11 +344,11 @@ lib$[TARGET]_igatescan = $[igatescan]
 $[so_dir]/$[igatedb] $[so_dir]/$[igateoutput] : $[filter-out .c .cxx,$[igatescan]]
 	interrogate -od $[so_dir]/$[igatedb] -oc $[so_dir]/$[igateoutput] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $(lib$[TARGET]_igatescan)
 
-$[igateoutput:%.cxx=$[so_dir]/%.o] : $[so_dir]/$[igateoutput]
-#define target $@
+#define target $[igateoutput:%.cxx=$[so_dir]/%.obj]
 #define source $[so_dir]/$[igateoutput]
 #define ipath . $[target_ipath]
-#define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED]
+#define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[all_sources $[building_var:%=-D%],$[file]]
+$[target] : $[source]
 	$[COMPILE_C++]
 #endif  // $[igatescan]
 
@@ -336,14 +361,16 @@ $[igateoutput:%.cxx=$[so_dir]/%.o] : $[so_dir]/$[igateoutput]
 #define igatemod $[TARGET]
 
 lib$[TARGET]_igatemscan = $[igatemscan]
-$[so_dir]/$[igatemout] : $(lib$[TARGET]_igatemscan)
-	interrogate_module -oc $@ -module "$[igatemod]" -library "$[igatelib]" -python $(lib$[TARGET]_igatemscan)
+#define target $[so_dir]/$[igatemout]
+#define sources $(lib$[TARGET]_igatemscan)
+$[target] : $[sources]
+	interrogate_module -oc $[target] -module "$[igatemod]" -library "$[igatelib]" -python $[sources]
 
-$[igatemout:%.cxx=$[so_dir]/%.o] : $[so_dir]/$[igatemout]
-#define target $@
+#define target $[igatemout:%.cxx=$[so_dir]/%.obj]
 #define source $[so_dir]/$[igatemout]
 #define ipath . $[target_ipath]
-#define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED]
+#define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[all_sources $[building_var:%=-D%],$[file]]
+$[target] : $[source]
 	$[COMPILE_C++]
 #endif  // $[igatescan]
 
@@ -361,10 +388,10 @@ $[igatemout:%.cxx=$[so_dir]/%.o] : $[so_dir]/$[igatemout]
 /////////////////////////////////////////////////////////////////////
 
 #forscopes noinst_lib_target
-lib_$[TARGET]_so = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]/%.o,%,,$[get_sources]]]
-$[so_dir]/lib$[TARGET].so : $(lib_$[TARGET]_so)
-#define target $@
+lib_$[TARGET]_so = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]/%.obj,%,,$[get_sources]]]
+#define target $[so_dir]/lib$[TARGET].dll
 #define sources $(lib_$[TARGET]_so)
+$[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 	$[SHARED_LIB_C++]
 #else
@@ -382,10 +409,10 @@ $[so_dir]/lib$[TARGET].so : $(lib_$[TARGET]_so)
 /////////////////////////////////////////////////////////////////////
 
 #forscopes static_lib_target
-lib_$[TARGET]_a = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.o,%,,$[get_sources]]]
-$[st_dir]/lib$[TARGET].a : $(lib_$[TARGET]_a)
-#define target $@
+lib_$[TARGET]_a = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.obj,%,,$[get_sources]]]
+#define target $[st_dir]/lib$[TARGET].lib
 #define sources $(lib_$[TARGET]_a)
+$[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 	$[STATIC_LIB_C++]
 #else
@@ -396,7 +423,7 @@ $[st_dir]/lib$[TARGET].a : $(lib_$[TARGET]_a)
 #endif
 
 #define installed_files \
-    $[install_lib_dir]/lib$[TARGET].a \
+    $[install_lib_dir]/lib$[TARGET].lib \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
     $[INSTALL_DATA:%=$[install_data_dir]/%] \
@@ -409,8 +436,8 @@ uninstall-lib$[TARGET] :
 	rm -f $[sort $[installed_files]]
 #endif
 
-$[install_lib_dir]/lib$[TARGET].a : $[st_dir]/lib$[TARGET].a
-#define local lib$[TARGET].a
+$[install_lib_dir]/lib$[TARGET].lib : $[st_dir]/lib$[TARGET].lib
+#define local lib$[TARGET].lib
 #define dest $[install_lib_dir]
 	cd ./$[st_dir]; $[INSTALL]
 
@@ -425,9 +452,11 @@ $[install_lib_dir]/lib$[TARGET].a : $[st_dir]/lib$[TARGET].a
 /////////////////////////////////////////////////////////////////////
 
 #forscopes sed_bin_target
-$[st_dir]/$[TARGET] : $[SOURCE]
-	$[SED] $[COMMAND] $[SOURCE] >$@
-	chmod +x $@
+#define target $[st_dir]/$[TARGET]
+#define source $[SOURCE]
+$[target] : $[source]
+	$[SED] $[COMMAND] $[source] >$[target]
+	chmod +x $[target]
 
 #define installed_files \
     $[install_bin_dir]/$[TARGET]
@@ -439,9 +468,9 @@ uninstall-$[TARGET] :
 	rm -f $[sort $[installed_files]]
 #endif
 
-$[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET]
 #define local $[TARGET]
 #define dest $[install_bin_dir]
+$[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET]
 	cd ./$[st_dir]; $[INSTALL_PROG]
 
 #end sed_bin_target
@@ -453,11 +482,11 @@ $[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET]
 /////////////////////////////////////////////////////////////////////
 
 #forscopes bin_target
-bin_$[TARGET] = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.o,%,,$[get_sources]]]
-$[st_dir]/$[TARGET] : $(bin_$[TARGET])
-#define target $@
+bin_$[TARGET] = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.obj,%,,$[get_sources]]]
+#define target $[st_dir]/$[TARGET]
 #define sources $(bin_$[TARGET])
 #define ld $[get_ld]
+$[target] : $[sources]
 #if $[ld]
   // If there's a custom linker defined for the target, we have to use it.
 	$[ld] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]	
@@ -499,10 +528,10 @@ $[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET]
 /////////////////////////////////////////////////////////////////////
 
 #forscopes noinst_bin_target test_bin_target
-bin_$[TARGET] = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.o,%,,$[get_sources]]]
-$[st_dir]/$[TARGET] : $(bin_$[TARGET])
-#define target $@
+bin_$[TARGET] = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.obj,%,,$[get_sources]]]
+#define target $[st_dir]/$[TARGET]
 #define sources $(bin_$[TARGET])
+$[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 	$[LINK_BIN_C++]
 #else
@@ -515,35 +544,39 @@ $[st_dir]/$[TARGET] : $(bin_$[TARGET])
 
 
 /////////////////////////////////////////////////////////////////////
-// Finally, we put in the rules to compile each source file into a .o
+// Finally, we put in the rules to compile each source file into a .obj
 // file.
 /////////////////////////////////////////////////////////////////////
 
 // Rules to generate a C++ file from a Bison input file.
 #foreach file $[sort $[yxx_so_sources] $[yxx_st_sources]]
-$[patsubst %.yxx,%.cxx,$[file]] : $[file]
-	$[BISON] -y $[if $[YACC_PREFIX],-d --name-prefix=$[YACC_PREFIX]] $[file]
-	mv y.tab.c $@
-	mv y.tab.h $[patsubst %.yxx,%.h,$[file]]
+#define target $[patsubst %.yxx,%.cxx,$[file]]
+#define source $[file]
+$[target] : $[source]
+	$[BISON] -y $[if $[YACC_PREFIX],-d --name-prefix=$[YACC_PREFIX]] $[source]
+	mv y.tab.c $[target]
+	mv y.tab.h $[patsubst %.yxx,%.h,$[source]]
 
 #end file
 
 // Rules to generate a C++ file from a Flex input file.
 #foreach file $[sort $[lxx_so_sources] $[lxx_st_sources]]
-$[patsubst %.lxx,%.cxx,$[file]] : $[file]
-	$[FLEX] $[if $[YACC_PREFIX],-P$[YACC_PREFIX]] -olex.yy.c $[file]
-	$[SED] '/#include <unistd.h>/d' lex.yy.c > $@
+#define target $[patsubst %.lxx,%.cxx,$[file]]
+#define source $[file]
+$[target] : $[source]
+	$[FLEX] $[if $[YACC_PREFIX],-P$[YACC_PREFIX]] -olex.yy.c $[source]
+	$[SED] '/#include <unistd.h>/d' lex.yy.c > $[target]
 	rm lex.yy.c
 
 #end file
 
 // Rules to compile ordinary C files that appear on a shared library.
 #foreach file $[sort $[c_so_sources]]
-$[patsubst %.c,$[so_dir]/%.o,$[file]] : $[file] $[dependencies $[file]]
-#define target $@
+#define target $[patsubst %.c,$[so_dir]/%.obj,$[file]]
 #define source $[file]
 #define ipath $[file_ipath]
-#define flags $[cflags] $[CFLAGS_SHARED]
+#define flags $[cflags] $[CFLAGS_SHARED] $[all_sources $[building_var:%=-D%],$[file]]
+$[target] : $[source] $[dependencies $[source]]
 	$[COMPILE_C]
 
 #end file
@@ -551,11 +584,11 @@ $[patsubst %.c,$[so_dir]/%.o,$[file]] : $[file] $[dependencies $[file]]
 // Rules to compile ordinary C files that appear on a static library
 // or in an executable.
 #foreach file $[sort $[c_st_sources]]
-$[patsubst %.c,$[st_dir]/%.o,$[file]] : $[file] $[dependencies $[file]]
-#define target $@
+#define target $[patsubst %.c,$[st_dir]/%.obj,$[file]]
 #define source $[file]
 #define ipath $[file_ipath]
-#define flags $[cflags]
+#define flags $[cflags] $[all_sources $[building_var:%=-D%],$[file]]
+$[target] : $[source] $[dependencies $[source]]
 	$[COMPILE_C]
 
 #end file
@@ -563,10 +596,10 @@ $[patsubst %.c,$[st_dir]/%.o,$[file]] : $[file] $[dependencies $[file]]
 // Rules to compile C++ files that appear on a shared library.
 #foreach file $[sort $[cxx_so_sources] $[yxx_so_sources] $[lxx_so_sources]]
 #define source $[patsubst %.cxx %.lxx %.yxx,%.cxx,$[file]]
-$[patsubst %.cxx %.lxx %.yxx,$[so_dir]/%.o,$[file]] : $[source] $[dependencies $[file]]
-#define target $@
+#define target $[patsubst %.cxx %.lxx %.yxx,$[so_dir]/%.obj,$[file]]
 #define ipath $[file_ipath]
-#define flags $[c++flags] $[CFLAGS_SHARED]
+#define flags $[c++flags] $[CFLAGS_SHARED] $[all_sources $[building_var:%=-D%],$[file]]
+$[target] : $[source] $[dependencies $[file]]
 	$[COMPILE_C++]
 
 #end file
@@ -575,10 +608,10 @@ $[patsubst %.cxx %.lxx %.yxx,$[so_dir]/%.o,$[file]] : $[source] $[dependencies $
 // executable.
 #foreach file $[sort $[cxx_st_sources] $[yxx_st_sources] $[lxx_st_sources]]
 #define source $[patsubst %.cxx %.lxx %.yxx,%.cxx,$[file]]
-$[patsubst %.cxx %.lxx %.yxx,$[st_dir]/%.o,$[file]] : $[source] $[dependencies $[file]]
-#define target $@
+#define target $[patsubst %.cxx %.lxx %.yxx,$[st_dir]/%.obj,$[file]]
 #define ipath $[file_ipath]
-#define flags $[c++flags]
+#define flags $[c++flags] $[all_sources $[building_var:%=-D%],$[file]]
+$[target] : $[source] $[dependencies $[file]]
 	$[COMPILE_C++]
 
 #end file
