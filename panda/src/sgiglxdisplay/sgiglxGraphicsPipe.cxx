@@ -9,10 +9,12 @@
 #include "sgiglxGraphicsPipe.h"
 #include "config_sgiglxdisplay.h"
 
+#include <glxGraphicsWindow.h>
+
 TypeHandle SgiGlxGraphicsPipe::_type_handle;
 
 SgiGlxGraphicsPipe::SgiGlxGraphicsPipe(const PipeSpecifier& spec)
-  : sgiGraphicsPipe(spec)
+  : sgiGraphicsPipe(spec),
     glxDisplay(this, spec.get_X_specifier()) 
 {
 }
@@ -35,7 +37,7 @@ get_window_type() const {
 //  Description: Returns the glxDisplay information associated with
 //               this pipe.
 ////////////////////////////////////////////////////////////////////
-SgiGlxDisplay *glxGraphicsPipe::
+glxDisplay *SgiGlxGraphicsPipe::
 get_glx_display() {
   return this;
 }
