@@ -237,7 +237,7 @@ get_progress() const {
 
   float progress_through_list =
     (((float)_request_index + progress_through_file) / 
-     (float)(_requests.size() + 1));
+     (float)(_requests.size()));
 
   return progress_through_list;
 }
