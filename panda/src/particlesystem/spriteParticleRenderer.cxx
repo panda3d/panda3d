@@ -226,13 +226,18 @@ render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
     // put the current color into the array
     Colorf c = _color;
 
-    if (!(get_alpha_mode() == PR_ALPHA_NONE)) {
+	int alphamode=get_alpha_mode();
+    if (alphamode != PR_ALPHA_NONE) {
       float t = cur_particle->get_parameterized_age();
 
-      if (get_alpha_mode() == PR_ALPHA_OUT)
+      if (alphamode == PR_ALPHA_OUT)
         c[3] = 1.0f - t;
-      else if (get_alpha_mode() == PR_ALPHA_IN)
+      else if (alphamode == PR_ALPHA_IN)
         c[3] = t;
+	  else {
+		  assert(alphamode == PR_ALPHA_USER);
+   		  c[3] = get_user_alpha();
+	  }
     }
 
     *cur_color++ = c;
