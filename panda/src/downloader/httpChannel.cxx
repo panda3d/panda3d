@@ -791,6 +791,8 @@ run_proxy_reading_header() {
     return true;
   }
 
+  _redirect = get_header_value("Location");
+
   _server_response_has_no_body = 
     (get_status_code() / 100 == 1 ||
      get_status_code() == 204 ||
