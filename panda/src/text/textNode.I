@@ -1055,9 +1055,10 @@ calc_width(const string &line) const {
 //               possible).  Returns the new string.
 ////////////////////////////////////////////////////////////////////
 INLINE string TextNode::
-wordwrap_to(const string &text, float wordwrap_width) const {
+wordwrap_to(const string &text, float wordwrap_width,
+            bool preserve_end_whitespace) const {
   nassertr(_font != (TextFont *)NULL, text);
-  return _font->wordwrap_to(text, wordwrap_width);
+  return _font->wordwrap_to(text, wordwrap_width, preserve_end_whitespace);
 }
 
 ////////////////////////////////////////////////////////////////////

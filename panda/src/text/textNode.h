@@ -156,7 +156,8 @@ PUBLISHED:
 
   INLINE float calc_width(char ch) const;
   INLINE float calc_width(const string &line) const;
-  INLINE string wordwrap_to(const string &text, float wordwrap_width) const;
+  INLINE string wordwrap_to(const string &text, float wordwrap_width,
+                            bool preserve_end_whitespace) const;
 
   virtual void write(ostream &out, int indent_level = 0) const;
 

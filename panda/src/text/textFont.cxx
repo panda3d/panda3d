@@ -128,7 +128,8 @@ calc_width(const string &line) const {
 //               possible).  Returns the new string.
 ////////////////////////////////////////////////////////////////////
 string TextFont::
-wordwrap_to(const string &text, float wordwrap_width) const {
+wordwrap_to(const string &text, float wordwrap_width, 
+            bool preserve_end_whitespace) const {
   string output_text;
 
   size_t p = 0;
@@ -150,19 +151,24 @@ wordwrap_to(const string &text, float wordwrap_width) const {
     bool any_spaces = false;
 
     float width = 0.0;
-    while (q < text.length() && text[q] != '\n' && width <= wordwrap_width) {
+    while (q < text.length() && text[q] != '\n') {
       if (isspace(text[q])) {
         any_spaces = true;
       }
 
       width += calc_width(text[q]);
       q++;
+
+      if (width > wordwrap_width) {
+        // Oops, too many.
+        q--;
+        break;
+      }
     }
 
     if (q < text.length() && any_spaces) {
       // If we stopped because we exceeded the wordwrap width, then
       // back up to the end of the last complete word.
-
       while (q > p && !isspace(text[q])) {
         q--;
       }
@@ -193,6 +199,10 @@ wordwrap_to(const string &text, float wordwrap_width) const {
       output_text += '\n';
     }
     first_line = false;
+
+    if (preserve_end_whitespace) {
+      q = next_start;
+    }
     output_text += text.substr(p, q - p);
 
     // Now prepare to wrap the next line.

@@ -241,7 +241,7 @@ generate() {
 
   string text = _text;
   if (has_wordwrap()) {
-    text = wordwrap_to(text, _wordwrap_width);
+    text = wordwrap_to(text, _wordwrap_width, false);
   }
 
   // Assemble the text.
@@ -406,7 +406,7 @@ do_measure() {
 
   string text = _text;
   if (has_wordwrap()) {
-    text = wordwrap_to(text, _wordwrap_width);
+    text = wordwrap_to(text, _wordwrap_width, false);
   }
 
   LVector2f ul, lr;
