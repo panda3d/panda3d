@@ -113,13 +113,16 @@ public:
 
   INLINE const Properties& get_properties() const;
 
+  virtual void get_framebuffer_format(PixelBuffer::Type &fb_type, PixelBuffer::Format &fb_format);
+
 PUBLISHED:
   INLINE int get_width() const;
   INLINE int get_height() const;
   INLINE int get_xorg() const;
   INLINE int get_yorg() const;
 
-  virtual int get_depth_bitwidth(void);  // # of z bits/pixel
+  // # of z bits/pixel.  purpose is to adjust camera near plane if have fewer z bits
+  virtual int get_depth_bitwidth(void);  
 
   INLINE GraphicsStateGuardian *get_gsg() const;
   INLINE GraphicsPipe *get_pipe() const;
