@@ -40,13 +40,19 @@ def getDefaultRolloverSound():
     global sndRollover
     if sndRollover == None:
         sndRollover = base.loadSfx("phase_3/audio/sfx/GUI_rollover.mp3")
-    return sndRollover
+    if base.wantSfx:
+        return sndRollover
+    else:
+        return None
 
 def getDefaultClickSound():
     global sndClick
     if sndClick == None:
         sndClick = base.loadSfx("phase_3/audio/sfx/GUI_create_toon_fwd.mp3")
-    return sndClick
+    if base.wantSfx:
+        return sndClick
+    else:
+        return None
 
 def getNewRolloverFunctor(sound = None):
     val = None
