@@ -36,7 +36,7 @@
 // should overwrite read-only files
 #define COPYCMD xcopy /Y /Q /R
 
-#if $[ne $[DTOOL],]
+#if $[ne $[CTPROJS],]
 #define dtool_ver_dir_cyg $[DTOOL]/src/dtoolbase
 #define dtool_ver_dir $[decygwin %,%,$[dtool_ver_dir_cyg]]
 #endif

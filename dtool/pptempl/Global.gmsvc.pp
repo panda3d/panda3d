@@ -134,7 +134,7 @@
 #defer COMPILE_RC rc /R /D "NDEBUG" /L 0x409 $[DECYGWINED_INC_PATHLIST_ARGS]
 
 // if we're attached, use dllbase.txt.  otherwise let OS loader resolve dll addrspace collisions
-#if $[ne $[DTOOL],]
+#if $[ne $[CTPROJS],]
 // use predefined bases to speed dll loading and simplify debugging
 #defer DLLNAMEBASE $[get_dllname $[TARGET]]
 #defer DLLBASEADDRFILENAME dllbase.txt

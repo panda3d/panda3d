@@ -23,7 +23,7 @@
 // $DTOOL/pptempl/Depends.pp, once for each Sources.pp file
 // Template.gmsvc.pp (this file), once for each Sources.pp file
 
-#if $[ne $[DTOOL],]
+#if $[ne $[CTPROJS],]
 #define dtool_ver_dir_cyg $[DTOOL]/src/dtoolbase
 #define dtool_ver_dir $[osfilename $[dtool_ver_dir_cyg]]
 #endif
