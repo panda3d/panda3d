@@ -83,6 +83,16 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         Inheritors, override if desired."""
         return EntityCreatorAI.EntityCreatorAI(level=self)
 
+    def setOuch(self, penalty):
+        avId = self.air.msgSender
+        av = self.air.doId2do.get(avId)
+        self.notify.debug("setOuch %s" % penalty)
+        # make sure penalty is > 0
+        if av and (penalty > 0):
+            curHp = av.getHp()
+            newHp = max(0, curHp-penalty)
+            av.b_setHp(newHp)
+        
     if __debug__:
         # level editors should call this func to tweak attributes of level
         # entities

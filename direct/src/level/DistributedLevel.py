@@ -2,6 +2,7 @@
 
 from ClockDelta import *
 from PythonUtil import Functor, sameElements, list2dict, uniqueElements
+from IntervalGlobal import *
 import ToontownGlobals
 import DistributedObject
 import Level
@@ -22,6 +23,8 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
     # TODO: move level-model stuff to LevelMgr or FactoryLevelMgr?
     FloorCollPrefix = 'zoneFloor'
+
+    OuchTaskName = 'ouchTask'
 
     def __init__(self, cr):
         DistributedObject.DistributedObject.__init__(self, cr)
@@ -250,9 +253,21 @@ class DistributedLevel(DistributedObject.DistributedObject,
                 # listen for zone enter events from floor collisions
                 def handleZoneEnter(collisionEntry,
                                     self=self, zoneNum=zoneNum):
-                    # eat the collisionEntry
                     self.toonEnterZone(zoneNum)
+                    floorNode = collisionEntry.getIntoNode()
+                    if floorNode.hasTag('ouch'):
+                        ouchLevel = int(floorNode.getTag('ouch'))
+                        self.startOuch(ouchLevel*2)
                 self.accept('enter%s' % floorCollName, handleZoneEnter)
+
+                # also listen for zone exit events for the sake of the
+                # ouch system
+                def handleZoneExit(collisionEntry,
+                                   self=self, zoneNum=zoneNum):
+                    floorNode = collisionEntry.getIntoNode()
+                    if floorNode.hasTag('ouch'):
+                        self.stopOuch()
+                self.accept('exit%s' % floorCollName, handleZoneExit)
 
     def announceGenerate(self):
         DistributedLevel.notify.debug('announceGenerate')
@@ -383,15 +398,16 @@ class DistributedLevel(DistributedObject.DistributedObject,
             zoneNums.remove(LevelConstants.UberZoneNum)
             self.setVisibility(zoneNums)
 
-    def toonEnterZone(self, zoneNum):
+    def toonEnterZone(self, zoneNum, ouchLevel=None):
         DistributedLevel.notify.debug('toonEnterZone%s' % zoneNum)
+
         if zoneNum != self.lastToonZone:
             self.lastToonZone = zoneNum
             print "made zone transition to %s" % zoneNum
             messenger.send("factoryZoneChanged", [zoneNum])
             self.smallTitleText.hide()
             self.spawnTitleText()
-            
+
     def camEnterZone(self, zoneNum):
         DistributedLevel.notify.debug('camEnterZone%s' % zoneNum)
         self.enterZone(zoneNum)
@@ -551,3 +567,52 @@ class DistributedLevel(DistributedObject.DistributedObject,
         assert(DistributedLevel.notify.debug("hideTitleTextTask()"))
         self.smallTitleText.hide()
         return Task.done
+
+    # Ouch!
+    def startOuch(self, ouchLevel, period=2):
+        print 'startOuch %s' % ouchLevel
+        if not hasattr(self, 'doingOuch'):
+            def doOuch(task, self=self, ouchLevel=ouchLevel, period=period):
+                self.b_setOuch(ouchLevel)
+                self.lastOuchTime = globalClock.getFrameTime()
+                taskMgr.doMethodLater(period, doOuch,
+                                      DistributedLevel.OuchTaskName)
+
+            # check to make sure we haven't done an ouch too recently
+            delay = 0
+            if hasattr(self, 'lastOuchTime'):
+                curFrameTime = globalClock.getFrameTime()
+                timeSinceLastOuch = (curFrameTime - self.lastOuchTime)
+                if timeSinceLastOuch < period:
+                    delay = period - timeSinceLastOuch
+
+            if delay > 0:
+                taskMgr.doMethodLater(period, doOuch,
+                                      DistributedLevel.OuchTaskName)
+            else:
+                doOuch(None)
+            self.doingOuch = 1
+
+    def stopOuch(self):
+        if hasattr(self, 'doingOuch'):
+            taskMgr.remove(DistributedLevel.OuchTaskName)
+            del self.doingOuch
+
+    def b_setOuch(self, penalty, anim=None):
+        self.notify.debug('b_setOuch %s' % penalty)
+        av = toonbase.localToon
+
+        # play the stun track (flashing toon) 
+        if not av.isStunned:
+            self.d_setOuch(penalty)
+            self.setOuch(penalty, anim)
+
+    def d_setOuch(self, penalty):
+        self.sendUpdate("setOuch", [penalty])
+
+    def setOuch(self, penalty, anim = None):
+        if anim == "Squish":
+            toonbase.tcr.playGame.getPlace().fsm.request('squished')
+        av = toonbase.localToon
+        av.stunToon()
+        av.playDialogueForString("!")
