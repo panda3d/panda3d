@@ -1859,13 +1859,7 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader) {
             << "Shader " << shader.get_name()
             << " has contradictory wrap modes on color and texture.\n";
         }
-            
-        filename = Filename::from_os_specific(trans_def._texture);
-        fullpath = _path_replace->match_path(filename, get_texture_path());
-        tex.set_alpha_filename(_path_replace->store_path(fullpath));
-        tex.set_alpha_fullpath(fullpath);
-        tex.set_format(EggTexture::F_rgba);
-
+          
         if (!compare_texture_properties(tex, trans_def)) {
           // Only report each broken shader once.
           static pset<string> bad_shaders;
@@ -1875,11 +1869,35 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader) {
               << shader.get_name() << "\n";
           }
         }
+        tex.set_format(EggTexture::F_rgba);
+          
+        // We should try to be smarter about whether the transparency
+        // value is connected to the texture's alpha channel or to its
+        // grayscale channel.  However, I'm not sure how to detect
+        // this at the moment; rather than spending days trying to
+        // figure out, for now I'll just assume that if the same
+        // texture image is used for both color and transparency, then
+        // the artist meant to use the alpha channel for transparency.
+        if (trans_def._texture == color_def._texture) {
+          // That means that we don't need to do anything special: use
+          // all the channels of the texture.
+
+        } else {
+          // Otherwise, pull the alpha channel from the other image
+          // file.  Ideally, we should figure out which channel from
+          // the other image supplies alpha (and specify this via
+          // set_alpha_file_channel()), but for now we assume it comes
+          // from the grayscale data.
+          filename = Filename::from_os_specific(trans_def._texture);
+          fullpath = _path_replace->match_path(filename, get_texture_path());
+          tex.set_alpha_filename(_path_replace->store_path(fullpath));
+          tex.set_alpha_fullpath(fullpath);
+        }
 
       } else {
-        // Otherwise, we don't have any transparency, so tell the egg
-        // format to ignore any alpha channel that might be on the
-        // color texture.
+        // If there is no transparency texture specified, we don't
+        // have any transparency, so tell the egg format to ignore any
+        // alpha channel that might be on the color texture.
         tex.set_format(EggTexture::F_rgb);
       }
 
