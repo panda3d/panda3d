@@ -34,7 +34,7 @@ EXPCL_DIRECT PT(GraphicsWindow)
 		       NodeAttributes &initial_state
 		       );	
 
-EXPCL_DIRECT NodePath setup_panda_2d(GraphicsWindow *win);
+EXPCL_DIRECT NodePath setup_panda_2d(GraphicsWindow *win, const string &name);
 EXPCL_DIRECT void add_render_layer(GraphicsWindow *win, Node *render_top,
 				   Camera *camera);
 

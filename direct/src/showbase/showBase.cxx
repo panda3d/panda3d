@@ -157,11 +157,11 @@ PT(GraphicsWindow) make_graphics_window(GraphicsPipe *pipe,
 // can contain 2-d geometry and will be rendered on top of the
 // existing 3-d window.  Returns the top node of the scene graph.
 NodePath
-setup_panda_2d(GraphicsWindow *win) {
+setup_panda_2d(GraphicsWindow *win, const string &graph_name) {
   PT(Node) render2d_top;
   
-  render2d_top = new NamedNode("render2d_top");
-  Node *render2d = new NamedNode("render2d");
+  render2d_top = new NamedNode(graph_name + "_top");
+  Node *render2d = new NamedNode(graph_name);
   RenderRelation *render2d_arc = new RenderRelation(render2d_top, render2d);
 
   // Set up some overrides to turn off certain properties which we
