@@ -722,6 +722,10 @@ process_model_node(const MDagPath &dag_path, EggGroupNode *egg_root) {
       return false;
 
     } else {
+      // Presumably, the locator's position has some meaning to the
+      // end-user, so we will implicitly tag it with the DCS flag so it
+      // won't get flattened out.
+      egg_group->set_dcs_type(EggGroup::DC_net);
       if (_animation_convert != AC_model) {
         get_transform(dag_path, egg_group);
       }
@@ -1562,11 +1566,6 @@ make_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
   p3d = p3d * egg_group->get_node_frame_inv();
 
   egg_group->add_translate(p3d);
-
-  // Presumably, the locator's position has some meaning to the
-  // end-user, so we will implicitly tag it with the DCS flag so it
-  // won't get flattened out.
-  egg_group->set_dcs_type(EggGroup::DC_net);
 }
 
 ////////////////////////////////////////////////////////////////////
