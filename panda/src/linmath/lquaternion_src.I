@@ -188,6 +188,32 @@ set_from_matrix(const FLOATNAME(LMatrix4) &m) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LQuaternion::get_axis
+//       Access: Public
+//  Description: This, along with get_angle(), returns the rotation
+//               represented by the quaternion as an angle about an
+//               arbitrary axis.  This returns the axis.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LQuaternion)::
+get_axis() const {
+  return ::normalize(FLOATNAME(LVector3)(_v.data[1], _v.data[2], _v.data[3]));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LQuaternion::get_angle
+//       Access: Public
+//  Description: This, along with get_axis(), returns the rotation
+//               represented by the quaternion as an angle about an
+//               arbitrary axis.  This returns the angle, in degrees
+//               counterclockwise about the axis.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATTYPE FLOATNAME(LQuaternion)::
+get_angle() const {
+  return rad_2_deg(acos(_v.data[0]) * 2.0);
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: LQuaternion::get_r
 //       Access: public
 //  Description:
@@ -304,7 +330,7 @@ normalize() {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LQuaternion)::
 invert_from(const FLOATNAME(LQuaternion) &other) {
-  set(other._v.v._0, -other._v.v._1, -other._v.v._2, -other._v.v._3);
+  set(-other._v.v._0, other._v.v._1, other._v.v._2, other._v.v._3);
   return true;
 }
 
@@ -317,12 +343,20 @@ invert_from(const FLOATNAME(LQuaternion) &other) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LQuaternion)::
 invert_in_place() {
-  _v.v._1 = -_v.v._1;
-  _v.v._2 = -_v.v._2;
-  _v.v._3 = -_v.v._3;
+  _v.v._0 = -_v.v._0;
   return true;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: LQuaternion::is_identity
+//       Access: Public
+//  Description: Returns true if this quaternion represents the
+//               identity transformation: no rotation.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH bool FLOATNAME(LQuaternion)::
+is_identity() const {
+  return (IS_NEARLY_EQUAL(_v.v._0, -1.0f) || IS_NEARLY_EQUAL(_v.v._0, 1.0f));
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LQuaternion::ident_quat
