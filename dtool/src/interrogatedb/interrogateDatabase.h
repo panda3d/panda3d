@@ -89,7 +89,7 @@ public:
   // Functions to build the database.
   int get_next_index();
   void add_type(TypeIndex index, const InterrogateType &type);
-  void add_function(FunctionIndex index, const InterrogateFunction &function);
+  void add_function(FunctionIndex index, InterrogateFunction *function);
   void add_wrapper(FunctionWrapperIndex index,
                    const InterrogateFunctionWrapper &wrapper);
   void add_manifest(ManifestIndex index, const InterrogateManifest &manifest);
@@ -124,7 +124,7 @@ private:
   // This data is loaded from the various database files.
   typedef map<TypeIndex, InterrogateType> TypeMap;
   TypeMap _type_map;
-  typedef map<FunctionIndex, InterrogateFunction> FunctionMap;
+  typedef map<FunctionIndex, InterrogateFunction *> FunctionMap;
   FunctionMap _function_map;
   typedef map<FunctionWrapperIndex, InterrogateFunctionWrapper> FunctionWrapperMap;
   FunctionWrapperMap _wrapper_map;

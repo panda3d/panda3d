@@ -309,7 +309,7 @@ get_function(FunctionIndex function) {
   if (fi == _function_map.end()) {
     return bogus_function;
   }
-  return (*fi).second;
+  return *(*fi).second;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -529,12 +529,12 @@ add_type(TypeIndex index, const InterrogateType &type) {
 //               the given index number.
 ////////////////////////////////////////////////////////////////////
 void InterrogateDatabase::
-add_function(FunctionIndex index, const InterrogateFunction &function) {
+add_function(FunctionIndex index, InterrogateFunction *function) {
   bool inserted =
     _function_map.insert(FunctionMap::value_type(index, function)).second;
   assert(inserted);
 
-  if (function.is_global()) {
+  if (function->is_global()) {
     _global_functions.push_back(index);
   }
   _all_functions.push_back(index);
@@ -608,7 +608,7 @@ update_type(TypeIndex type) {
 InterrogateFunction &InterrogateDatabase::
 update_function(FunctionIndex function) {
   check_latest();
-  return _function_map[function];
+  return *_function_map[function];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -734,7 +734,7 @@ remap_indices(int first_index, IndexRemapper &remap) {
     (*wi).second.remap_indices(remap);
   }
   for (fi = _function_map.begin(); fi != _function_map.end(); ++fi) {
-    (*fi).second.remap_indices(remap);
+    (*fi).second->remap_indices(remap);
   }
   for (ti = _type_map.begin(); ti != _type_map.end(); ++ti) {
     (*ti).second.remap_indices(remap);
@@ -794,7 +794,7 @@ write(ostream &out, InterrogateModuleDef *def) const {
   out << _function_map.size() << "\n";
   FunctionMap::const_iterator fi;
   for (fi = _function_map.begin(); fi != _function_map.end(); ++fi) {
-    out << (*fi).first << " " << (*fi).second << "\n";
+    out << (*fi).first << " " << *(*fi).second << "\n";
   }
 
   out << _wrapper_map.size() << "\n";
@@ -955,9 +955,10 @@ read_new(istream &in, InterrogateModuleDef *def) {
 
     while (num_functions > 0) {
       FunctionIndex index;
-      InterrogateFunction function(def);
-      in >> index >> function;
+      InterrogateFunction *function = new InterrogateFunction(def);
+      in >> index >> *function;
       if (in.fail()) {
+        delete function;
         return false;
       }
 
@@ -1125,7 +1126,7 @@ merge_from(const InterrogateDatabase &other) {
        fi != other._function_map.end();
        ++fi) {
     FunctionIndex other_function_index = (*fi).first;
-    const InterrogateFunction &other_function = (*fi).second;
+    InterrogateFunction *other_function = (*fi).second;
     add_function(other_function_index, other_function);
     update_function(other_function_index).remap_indices(remap);
   }
