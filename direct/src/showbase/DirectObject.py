@@ -9,8 +9,7 @@ class DirectObject:
     # Event Handling
 
     # object.accept('mouse', object.handleMouse)
-    # object.accept('mouse', 'handleMouse')
-    # object.accept('mouse', 'handleMouse', [1,2])
+    # object.accept('mouse', object.handleMouse, [1,2])
     
     def accept(self, event, method, extraArgs=[]):
         messenger.accept(event, self, method, extraArgs, 1)

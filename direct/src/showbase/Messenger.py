@@ -16,7 +16,7 @@ class Messenger:
                        object2: [method, extraArgs, persistent]}}
 
         Or, for an example with more real data:
-            {'mouseDown' : {avatar : [avatar.jump, (2.0), 1]}}
+            {'mouseDown' : {avatar : [avatar.jump, [2.0], 1]}}
         """
         self.dict = {}
 

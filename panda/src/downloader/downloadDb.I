@@ -145,6 +145,18 @@ get_server_multifile_size(string mfname) const {
   return (_server_db.get_multifile_record_named(mfname))->_size;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: DownloadDb::
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void DownloadDb::
+set_server_multifile_size(string mfname, int size) {
+  (_server_db.get_multifile_record_named(mfname))->_size = size;
+}
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::
 //       Access: Public
@@ -249,3 +261,25 @@ set_client_file_version(string mfname, string fname, Version version) {
   write_db(_client_db._filename, _client_db);
 }
 
+
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: DownloadDb::
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Hash DownloadDb::
+get_client_file_hash(string mfname, string fname) const {
+  return ((_client_db.get_multifile_record_named(mfname))->get_file_record_named(fname))->_hash;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DownloadDb::
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Hash DownloadDb::
+get_server_file_hash(string mfname, string fname) const {
+  return ((_server_db.get_multifile_record_named(mfname))->get_file_record_named(fname))->_hash;
+}
