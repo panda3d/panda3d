@@ -883,11 +883,15 @@ do_event_forward(CMetaInterval::PlaybackEvent *event,
       ai = find(new_active.begin(), new_active.end(), event->_begin_event);
       if (ai != new_active.end()) {
         new_active.erase(ai);
+        // This interval was new this frame; we must invoke it as
+        // an instant event.
+        enqueue_event(event->_n, ET_instant, is_initial);
 
       } else {
         ai = find(_active.begin(), _active.end(), event->_begin_event);
         if (ai != _active.end()) {
           _active.erase(ai);
+          enqueue_event(event->_n, ET_finalize, is_initial);
 
         } else {
           // Hmm, this event wasn't on either list.  Maybe there was a
@@ -960,11 +964,15 @@ do_event_reverse(CMetaInterval::PlaybackEvent *event,
       ai = find(new_active.begin(), new_active.end(), event);
       if (ai != new_active.end()) {
         new_active.erase(ai);
+        // This interval was new this frame; we invoke it as an
+        // instant event.
+        enqueue_event(event->_n, ET_reverse_instant, is_initial);
 
       } else {
         ai = find(_active.begin(), _active.end(), event);
         if (ai != _active.end()) {
           _active.erase(ai);
+          enqueue_event(event->_n, ET_reverse_finalize, is_initial);
 
         } else {
           // Hmm, this event wasn't on either list.  Maybe there was a
