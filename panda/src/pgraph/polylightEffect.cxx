@@ -42,80 +42,80 @@ make() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PolylightEffect::do_poly_light
 //       Access: Public
-//  Description: Gets the node's position and based on distance from 
+//  Description: Gets the node's position and based on distance from
 //  lights in the lightgroup calculates the color to be modulated in
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) PolylightEffect::
 do_poly_light(const CullTraverserData *data, const TransformState *node_transform) const {
   float r,g,b; // To hold the color calculation
   float dist; // To calculate the distance of each light from the node
-  float light_scale = 1.0; // Variable to calculate attenuation 
+  float light_scale = 1.0; // Variable to calculate attenuation
   float fd; // Variable for quadratic attenuation
   float Rcollect = 0.0,Gcollect = 0.0,Bcollect = 0.0; // Color variables
   int num_lights = 0; // Keep track of number of lights for division
   r = 0.0;
   g = 0.0;
   b = 0.0;
-  LIGHTGROUP::const_iterator light_iter; 
+  LIGHTGROUP::const_iterator light_iter;
   // Cycle through all the lights in this effect's lightgroup
   for (light_iter = _lightgroup.begin(); light_iter != _lightgroup.end(); light_iter++){
-    const PolylightNode *light = DCAST(PolylightNode,light_iter->second.node()); 
-	// light holds the current PolylightNode
-	if(light->is_enabled()) { // if enabled get all the properties
-	  float light_radius = light->get_radius();
-	  PolylightNode::Attenuation_Type light_attenuation = light->get_attenuation();
-	  float light_a0 = light->get_a0();
-	  float light_a1 = light->get_a1();
-	  float light_a2 = light->get_a2();
-	  if(light_a0 == 0 && light_a1 == 0 && light_a2 == 0) { // To prevent division by zero
+    const PolylightNode *light = DCAST(PolylightNode,light_iter->second.node());
+    // light holds the current PolylightNode
+    if(light->is_enabled()) { // if enabled get all the properties
+      float light_radius = light->get_radius();
+      PolylightNode::Attenuation_Type light_attenuation = light->get_attenuation();
+      float light_a0 = light->get_a0();
+      float light_a1 = light->get_a1();
+      float light_a2 = light->get_a2();
+      if(light_a0 == 0 && light_a1 == 0 && light_a2 == 0) { // To prevent division by zero
         light_a0 = 1.0;
-	  }
-	  Colorf light_color;
-	  if(light->is_flickering()) { // If flickering, modify color
-	    light_color = light->flicker();
-	  }
-	  else {
-	    light_color = light->get_color();
-	  }
-	
-	  // Calculate the distance of the node from the light
-	  //dist = light_iter->second->get_distance(data->_node_path.get_node_path());
+      }
+      Colorf light_color;
+      if(light->is_flickering()) { // If flickering, modify color
+        light_color = light->flicker();
+      }
+      else {
+        light_color = light->get_color();
+      }
+
+      // Calculate the distance of the node from the light
+      //dist = light_iter->second->get_distance(data->_node_path.get_node_path());
       const NodePath lightnp = light_iter->second;
       LPoint3f point = data->_node_path.get_node_path().get_relative_point(lightnp,
         light->get_pos());
       dist = (point - _effect_center).length();
 
-	  if(dist < light_radius) { // If node is in range of this light
+      if(dist < light_radius) { // If node is in range of this light
         if(light_attenuation == PolylightNode::ALINEAR) {
-		  light_scale = (light_radius - dist)/light_radius;
-	    }
-	    else if(light_attenuation == PolylightNode::AQUADRATIC) {
-	      fd = 1.0 / (light_a0 + light_a1 * dist + light_a2 * dist * dist);
-		  if(fd < 1.0) {
-		    light_scale = fd;
-		  }
-		  else {
-		    light_scale = 1.0;
-		  }
-		}
+          light_scale = (light_radius - dist)/light_radius;
+        }
+        else if(light_attenuation == PolylightNode::AQUADRATIC) {
+          fd = 1.0 / (light_a0 + light_a1 * dist + light_a2 * dist * dist);
+          if(fd < 1.0) {
+            light_scale = fd;
+          }
+          else {
+            light_scale = 1.0;
+          }
+        }
         else {
           light_scale = 1.0;
         }
-        // Keep accumulating each lights contribution... we divide by 
-		// number of lights later.
-	    Rcollect += light_color[0] * light_scale;
-	    Gcollect += light_color[1] * light_scale;
-	    Bcollect += light_color[2] * light_scale;
-	    num_lights++;
-	  } // if dist< radius
-	} // if light is enabled
+        // Keep accumulating each lights contribution... we divide by
+        // number of lights later.
+        Rcollect += light_color[0] * light_scale;
+        Gcollect += light_color[1] * light_scale;
+        Bcollect += light_color[2] * light_scale;
+        num_lights++;
+      } // if dist< radius
+    } // if light is enabled
   } // for all lights
-  
+
 
   if( _contribution_type == CALL) {
     // Sometimes to prevent snapping of color at light volume boundaries
-	// just divide total contribution by all the lights in the effect
-	// whether or not they contribute color
+    // just divide total contribution by all the lights in the effect
+    // whether or not they contribute color
     num_lights = _lightgroup.size();
   }
 
@@ -129,7 +129,7 @@ do_poly_light(const CullTraverserData *data, const TransformState *node_transfor
   r = (1.0 - _weight) + Rcollect * _weight;
   g = (1.0 - _weight) + Gcollect * _weight;
   b = (1.0 - _weight) + Bcollect * _weight;
-  
+
   return ColorScaleAttrib::make(LVecBase4f(r,g,b,1.0));
 }
 
@@ -155,21 +155,21 @@ compare_to_impl(const RenderEffect *other) const {
   DCAST_INTO_R(ta, other, 0);
 
   if (_enabled != ta->_enabled) {
-	  return _enabled ? 1 : -1;
+      return _enabled ? 1 : -1;
   }
 
   if (_contribution_type != ta->_contribution_type) {
     return _contribution_type < ta->_contribution_type ? -1 : 1;
   }
- 
+
   if (_weight != ta->_weight) {
-	return _weight < ta->_weight ? -1 :1;
+    return _weight < ta->_weight ? -1 :1;
   }
 
   if (_lightgroup != ta->_lightgroup) {
     return _lightgroup < ta->_lightgroup ? -1 : 1;
   }
- 
+
   return 0;
 }
 
