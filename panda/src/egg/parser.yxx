@@ -1055,7 +1055,15 @@ cs_type:
   if (f == EggGroup::CST_none) {
     eggyywarning("Unknown collision solid type " + strval);
   } else {
-    group->set_cs_type(f);
+    if (f == EggGroup::CST_polyset && group->get_cs_type() != EggGroup::CST_none) {
+      // By convention, a CST_polyset doesn't replace any existing
+      // contradictory type, so ignore it if this happens.  This
+      // allows the artist to place, for instance, <ObjectType> {
+      // sphere } and <ObjectType> { trigger } together.
+
+    } else {
+      group->set_cs_type(f);
+    }
   }
 }
         ;
