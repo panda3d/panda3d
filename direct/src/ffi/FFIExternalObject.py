@@ -26,6 +26,9 @@ class FFIExternalObject:
         # Start with a null this pointer
         self.this = 0
 
+    def destructor(self):
+        # Base destructor in case you do not define one
+        pass
 
     def getDowncastFunctions(self, thisClass, baseClass, chain):
         if (thisClass == baseClass):

@@ -510,9 +510,8 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         self.outputBaseDestructor(file, nesting)
         if self.destructor:
             self.destructor.generateDestructorCode(self, file, nesting)
-        else:
-            self.outputEmptyDestructor(file, nesting)
-
+        # If you have no destructor, inherit one
+            
         if len(self.staticMethods):
             indent(file, nesting+1, '\n')
             indent(file, nesting+1, '##################################################\n')
@@ -765,7 +764,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         empty one instead
         """
         indent(file, nesting+1, 'def destructor(self):\n')
-        indent(file, nesting+2, 'pass\n')
+        indent(file, nesting+2, "raise RuntimeError, 'No C++ destructor defined for class: ' + self.__class__.__name__\n")
 
 
     def generateReturnValueWrapper(self, file, userManagesMemory, needsDowncast, nesting):
