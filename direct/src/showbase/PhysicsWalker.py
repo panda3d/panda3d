@@ -230,7 +230,9 @@ class PhysicsWalker(DirectObject.DirectObject):
         # hack fix for falling through the floor:
         if contact==Vec3.zero() and self.avatarNodePath.getZ()<-50.0:
             # reset:
-            self.avatarNodePath.setPos(Vec3(0.0, 0.0, 20.0))
+            # DCR: don't reset X and Y; allow player to move
+            self.avatarNodePath.setZ(50.0)
+            self.resetPhys()
 
         # Determine what the speeds are based on the buttons:
         self.__speed=(self.__forwardButton and self.avatarControlForwardSpeed or 
