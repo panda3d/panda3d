@@ -132,12 +132,19 @@ filter_filename(const string &source) {
   size_t dot = source.rfind('.');
   size_t underscore = source.rfind("_v", dot);
 
-  if (underscore == string::npos) {
-    // No version number appears to be present.
-    return source;
+  string extension = source.substr(dot);
+  if (extension == ".ma") {
+    // By convention, we always write out Maya binary files (even if
+    // we receive a Maya ascii file for input).
+    extension = ".mb";
   }
 
-  return source.substr(0, underscore) + source.substr(dot);
+  if (underscore == string::npos) {
+    // No version number appears to be present.
+    return source.substr(0, dot) + extension;
+  } else {
+    return source.substr(0, underscore) + extension;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -163,8 +170,6 @@ copy_maya_file(const Filename &source, const Filename &dest,
     if (shader->_has_texture) {
       Filename texture_filename = 
         _path_replace->convert_path(shader->_texture);
-      cerr << "texture " << shader->_name << " is " << shader->_texture << "\n"
-           << "filename is " << texture_filename << "\n";
       if (!texture_filename.exists()) {
         nout << "*** Warning: texture " << texture_filename
              << " does not exist.\n";
