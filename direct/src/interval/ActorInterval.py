@@ -89,8 +89,10 @@ class ActorInterval(Interval.Interval):
                     maxFrames = max(maxFrames, numFrames)
                 self.endFrame = maxFrames - 1
 
-        # Must we play the animation backwards?
-        self.reverse = 0
+        # Must we play the animation backwards?  We play backwards if
+        # either (or both) of the following is true: the playRate is
+        # negative, or endFrame is before startFrame.
+        self.reverse = (playRate < 0)
         if self.endFrame < self.startFrame:
             self.reverse = 1
             t = self.endFrame
