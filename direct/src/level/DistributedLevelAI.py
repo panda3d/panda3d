@@ -89,9 +89,7 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         self.notify.debug("setOuch %s" % penalty)
         # make sure penalty is > 0
         if av and (penalty > 0):
-            curHp = av.getHp()
-            newHp = max(0, curHp-penalty)
-            av.b_setHp(newHp)
+            av.takeDamage(penalty)
         
     if __debug__:
         # level editors should call this func to tweak attributes of level
