@@ -564,6 +564,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         else:
             self.buoyancy.setVector(Vec3.zero())
             physObject.setPosition(Point3(physObject.getPosition().getX(), physObject.getPosition().getY(), 0.0))
+            self.actorNode.updateTransform()
             #self.buoyancy.setVector(Vec3(0, 0, -depth))
 
         # get the button states:
