@@ -46,6 +46,7 @@ void AudioManager::set_update_func(AudioManager::UpdateFunc* func) {
 ////////////////////////////////////////////////////////////////////
 void AudioManager::ns_update(void) {
   // handle looping
+  mutex_lock l(_manager_mutex);
   if (_loopset != (LoopSet*)0L)
     for (LoopSet::iterator i=_loopset->begin(); i!=_loopset->end(); ++i)
       if ((*i)->status() == AudioSound::READY)
@@ -107,6 +108,7 @@ void AudioManager::ns_stop(AudioSound* sound) {
 //  Description: set the looping state of the given sound
 ////////////////////////////////////////////////////////////////////
 void AudioManager::ns_set_loop(AudioSound* sound, bool state) {
+  mutex_lock l(_manager_mutex);
   if (_loopset == (LoopSet*)0L)
     _loopset = new LoopSet;
   if (state)
@@ -121,6 +123,7 @@ void AudioManager::ns_set_loop(AudioSound* sound, bool state) {
 //  Description: get the looping state of the given sound
 ////////////////////////////////////////////////////////////////////
 bool AudioManager::ns_get_loop(AudioSound* sound) {
+  mutex_lock l(_manager_mutex);
   if (_loopset == (LoopSet*)0L)
     return false;
   LoopSet::iterator i = _loopset->find(sound);
