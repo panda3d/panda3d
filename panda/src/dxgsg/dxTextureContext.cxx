@@ -25,7 +25,8 @@ typedef enum {
     None,Conv32to32,Conv32to32_NoAlpha,Conv32to24,Conv32to16_0555,
     Conv32to16_1555,Conv32to16_0565,Conv32to16_4444,Conv24to32,Conv24to24,
     Conv24to16_0555,Conv24to16_0565,ConvLum16to16_1555,ConvLum16to16_4444,
-    ConvLum16to32,ConvLum16to16,ConvLum8to8,ConvLum8to24,ConvLum8to32,ConvLum8to16_0555,ConvLum8to16_0565
+    ConvLum16to32,ConvLum16to16,ConvLum8to8,ConvLum8to24,ConvLum8to32,ConvLum8to16_0555,ConvLum8to16_0565,
+    ConvAlpha8to16_4444,ConvAlpha8to32,ConvAlpha8to8
 } ConversionType;
 
 #ifdef _DEBUG
@@ -33,7 +34,7 @@ char *ConvNameStrs[] = {"None","Conv32to32","Conv32to32_NoAlpha","Conv32to24","C
     "Conv32to16_1555","Conv32to16_0565","Conv32to16_4444","Conv24to32","Conv24to24",
     "Conv24to16_0555","Conv24to16_0565","ConvLum16to16_1555","ConvLum16to16_4444",
     "ConvLum16to32","ConvLum16to16","ConvLum8to8","ConvLum8to24","ConvLum8to32",
-    "ConvLum8to16_0555","ConvLum8to16_0565"
+    "ConvLum8to16_0555","ConvLum8to16_0565","ConvAlpha8to16_4444","ConvAlpha8to32","ConvAlpha8to8"
 };
 #endif
 
@@ -611,6 +612,40 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                 break;
             }
 
+        case ConvAlpha8to32: {
+
+              //  waste of space, but this is only place we can get 8bits alpha resolution
+                BYTE *pSrcWord = (BYTE *) pbuf;
+                DWORD *pDstWord;
+
+                for(DWORD y=0; y<dwOrigHeight; y++,pDDSurfBytes += ddsd.lPitch) {
+                    pDstWord = (DWORD *)pDDSurfBytes;
+
+                    for(DWORD x=0; x<dwOrigWidth; x++,pSrcWord++,pDstWord++) {
+                        // OR alpha with full white
+                        *pDstWord = (*pSrcWord << 24) | 0xFFFFFF;
+                    }
+                }
+                break;
+            }
+
+        case ConvAlpha8to16_4444: {
+                BYTE *pSrcWord = (BYTE *) pbuf;
+                WORD *pDstWord;
+
+                assert(ddsd.ddpfPixelFormat.dwRGBAlphaBitMask==0xf000);  // assumes ARGB order
+
+                for(DWORD y=0; y<dwOrigHeight; y++,pDDSurfBytes += ddsd.lPitch) {
+                    pDstWord = (WORD*)pDDSurfBytes;
+
+                    for(DWORD x=0; x<dwOrigWidth; x++,pSrcWord++,pDstWord++) {
+                        WORD a = (BYTE)(*pSrcWord>>4);
+                        *pDstWord = (a << 12) | 0x0FFF; // OR alpha with full white
+                    }
+                }
+                break;
+            }
+
         default:
             dxgsg_cat.error() << "CreateTexture failed! unhandled texture conversion type: "<< ConvNeeded <<" \n";
             pDDSurf->Unlock(NULL);
@@ -1063,7 +1098,7 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
 
 #if 0
 //#ifdef _DEBUG
-// use dxcapsviewer
+// easier to use dxcapsviewer instead of this
     { static BOOL bPrinted=FALSE;
         if(!bPrinted) {
             dxgsg_cat.debug() << "Gfx card supported TexFmts:\n";
@@ -1102,7 +1137,7 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
         }
     }
 
-    assert(((cNumColorChannels==4)||(cNumColorChannels==2))==(cNumAlphaBits>0));
+    assert((cNumColorChannels!=3)==(cNumAlphaBits>0));  // 3 channel w/alpha makes no sense
 
     // handle each bitdepth separately
 
@@ -1359,7 +1394,7 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
                     }
                 }
 
-              // find compatible 16bpp fmt, just look for any 565, then 0555
+             // find compatible 16bpp fmt, just look for any 565, then 0555
                 DWORD dwMasks[2] = {0xF800, 0x7C00};
 
                 for(DWORD modenum=0;modenum<2;modenum++)
@@ -1371,6 +1406,28 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
                             goto found_matching_format;
                         }
                     }
+            } else if(ddsd.ddpfPixelFormat.dwFlags & DDPF_ALPHA) {
+                // look for 32-bit ARGB, else 16-4444.
+                // skip 8bit alpha only, because I think only voodoo supports it
+                // and the voodoo support isn't the kind of blending model we need 
+                // w/color assumed to be white (but need to verify this)
+                for(i=0,pCurPixFmt=&pTexPixFmts[cNumTexPixFmts-1];i<cNumTexPixFmts;i++,pCurPixFmt--) {
+                        if((pCurPixFmt->dwRGBBitCount==32) && (pCurPixFmt->dwFlags & DDPF_RGB) &&
+                           (pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS)) {
+                            ConvNeeded=ConvAlpha8to32;
+                            goto found_matching_format;
+                        }
+                }
+
+                for(i=0,pCurPixFmt=&pTexPixFmts[cNumTexPixFmts-1];i<cNumTexPixFmts;i++,pCurPixFmt--) {
+                        if((pCurPixFmt->dwRGBBitCount==16) 
+                           && (pCurPixFmt->dwFlags & DDPF_RGB)
+                           && (pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS)
+                           && (pCurPixFmt->dwRGBAlphaBitMask==0xF000)) {
+                            ConvNeeded=ConvAlpha8to16_4444;
+                            goto found_matching_format;
+                        }
+                }
             }
             break;
 
