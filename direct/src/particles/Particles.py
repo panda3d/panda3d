@@ -1,4 +1,4 @@
-from PandaObject import *
+from PandaModules import *
 from ParticleManagerGlobal import *
 from PhysicsManagerGlobal import *
 
@@ -26,6 +26,7 @@ import TangentRingEmitter
 import string
 import os
 import DirectNotifyGlobal
+import sys
 
 class Particles(ParticleSystem.ParticleSystem):
 

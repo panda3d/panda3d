@@ -1,9 +1,10 @@
-from PandaObject import *
+from PandaModules import *
 from DirectObject import *
 from PhysicsManagerGlobal import *
 
 import ForceNode
 import DirectNotifyGlobal
+import sys
 
 class ForceGroup(DirectObject):
 

@@ -2,7 +2,7 @@
 
 from Interval import *
 
-import Mopath
+# import Mopath
 
 class MopathInterval(Interval):
     # Name counter

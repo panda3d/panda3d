@@ -1,6 +1,4 @@
-from PandaObject import *
-from DirectObject import *
-
+from PandaModules import *
 import Particles
 import ForceGroup
 import DirectNotifyGlobal

@@ -414,9 +414,9 @@ class ClientRepository(DirectObject.DirectObject):
         cdc.sendUpdate(self, do, fieldName, args, sendToId)
 
     def send(self, datagram):
-        #if self.notify.getDebug():
-        #    print "ClientRepository sending datagram:"
-        #    datagram.dumpHex(ostream)
+        if self.notify.getDebug():
+            print "ClientRepository sending datagram:"
+            datagram.dumpHex(ostream)
 
         self.cw.send(datagram, self.tcpConn)
         return None
