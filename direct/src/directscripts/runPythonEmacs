@@ -34,6 +34,10 @@ if [ "$TOONTOWN" ]; then
     TOONTOWN=`cygpath -w $TOONTOWN`
     export TOONTOWN
 fi
+if [ "$TOONTAG" ]; then
+    TOONTAG=`cygpath -w $TOONTAG`
+    export TOONTAG
+fi
 if [ "$WINTOOLS" ]; then
     WINTOOLS=`cygpath -w $WINTOOLS`
     export WINTOOLS
