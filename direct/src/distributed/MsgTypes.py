@@ -12,6 +12,8 @@ CLIENT_SET_SHARD =                           31
 CLIENT_CREATE_OBJECT_REQUIRED =              34
 CLIENT_CREATE_OBJECT_REQUIRED_OTHER =        35
 
+CLIENT_HEARTBEAT =                           52
+
 # These messages are ignored when the client is headed to the quiet zone
 QUIET_ZONE_IGNORED_LIST = [
 

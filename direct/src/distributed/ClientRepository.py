@@ -537,11 +537,18 @@ class ClientRepository(DirectObject.DirectObject):
             self.bootedText = None
             ClientRepository.notify.warning(
                 "Server is booting us out with no explanation.")
+
+
+    def handleServerHeartbeat(self, di):
+        # Got a heartbeat message from the server.
+        ClientRepository.notify.info("Server heartbeat.")
         
 
     def handleUnexpectedMsgType(self, msgType, di):
         if msgType == CLIENT_GO_GET_LOST:
             self.handleGoGetLost(di)
+        elif msgType == CLIENT_HEARTBEAT:
+            self.handleServerHeartbeat(di)
         else:
             currentLoginState = self.loginFSM.getCurrentState()
             if currentLoginState:
