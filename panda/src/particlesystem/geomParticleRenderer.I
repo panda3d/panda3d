@@ -28,6 +28,7 @@
 
 INLINE void GeomParticleRenderer::
 set_geom_node(PandaNode *node) {
+  nassertv(node != (PandaNode *)NULL);
   _geom_node = node;
   resize_pool(_pool_size);
 }

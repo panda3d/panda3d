@@ -129,11 +129,12 @@ kill_nodes(void) {
 
 void GeomParticleRenderer::
 birth_particle(int index) {
-  nassertv(_node_vector[index] == (PandaNode *)NULL);
-  PandaNode *node = new PandaNode("");
-  get_render_node()->add_child(node);
-  node->add_child(_geom_node);
-  _node_vector[index] = node;
+  if (_node_vector[index] == (PandaNode *)NULL) {
+    PandaNode *node = new PandaNode("");
+    get_render_node()->add_child(node);
+    node->add_child(_geom_node);
+    _node_vector[index] = node;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -144,8 +145,10 @@ birth_particle(int index) {
 
 void GeomParticleRenderer::
 kill_particle(int index) {
-  get_render_node()->remove_child(_node_vector[index]);
-  _node_vector[index] = (PandaNode *)NULL;
+  if (_node_vector[index] != (PandaNode *)NULL) {
+    get_render_node()->remove_child(_node_vector[index]);
+    _node_vector[index] = (PandaNode *)NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -170,8 +173,13 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
     cur_particle = (BaseParticle *) po_vector[i].p();
     cur_node = *cur_node_iter;
 
-    if (cur_particle->get_alive() == true) {
+    if (cur_particle->get_alive()) {
       // living particle
+      if (cur_node == (PandaNode *)NULL) {
+        birth_particle(i);
+        cur_node = *cur_node_iter;
+      }
+      nassertv(cur_node != (PandaNode *)NULL);
 
       pos = cur_particle->get_position();
 
