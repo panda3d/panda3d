@@ -40,10 +40,10 @@ PreparedGraphicsObjects() {
 ////////////////////////////////////////////////////////////////////
 PreparedGraphicsObjects::
 ~PreparedGraphicsObjects() {
-  // There may be texture objects that are still prepared when we
-  // destruct.  If this is so, then all of the GSG's that own them
-  // have already destructed, so we can assume their resources were
-  // internally cleaned up.  Quietly erase these remaining textures.
+  // There may be objects that are still prepared when we destruct.
+  // If this is so, then all of the GSG's that own them have already
+  // destructed, so we can assume their resources were internally
+  // cleaned up.  Quietly erase these remaining objects.
 
   MutexHolder holder(_lock);
 
@@ -59,6 +59,18 @@ PreparedGraphicsObjects::
   _prepared_textures.clear();
   _released_textures.clear();
   _enqueued_textures.clear();
+
+  Geoms::iterator gci;
+  for (gci = _prepared_geoms.begin();
+       gci != _prepared_geoms.end();
+       ++gci) {
+    GeomContext *gc = (*gci);
+    gc->_geom->clear_prepared(this);
+  }
+
+  _prepared_geoms.clear();
+  _released_geoms.clear();
+  _enqueued_geoms.clear();
 }
 
 
@@ -206,6 +218,147 @@ prepare_texture_now(Texture *tex, GraphicsStateGuardianBase *gsg) {
   return tc;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::enqueue_geom
+//       Access: Public
+//  Description: Indicates that a geom would like to be put on the
+//               list to be prepared when the GSG is next ready to
+//               do this (presumably at the next frame).
+////////////////////////////////////////////////////////////////////
+void PreparedGraphicsObjects::
+enqueue_geom(Geom *geom) {
+  MutexHolder holder(_lock);
+
+  _enqueued_geoms.insert(geom);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::dequeue_geom
+//       Access: Public
+//  Description: Removes a geom from the queued list of geoms to
+//               be prepared.  Normally it is not necessary to call
+//               this, unless you change your mind about preparing it
+//               at the last minute, since the geom will
+//               automatically be dequeued and prepared at the next
+//               frame.
+//
+//               The return value is true if the geom is
+//               successfully dequeued, false if it had not been
+//               queued.
+////////////////////////////////////////////////////////////////////
+bool PreparedGraphicsObjects::
+dequeue_geom(Geom *geom) {
+  MutexHolder holder(_lock);
+
+  EnqueuedGeoms::iterator qi = _enqueued_geoms.find(geom);
+  if (qi != _enqueued_geoms.end()) {
+    _enqueued_geoms.erase(qi);
+    return true;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::release_geom
+//       Access: Public
+//  Description: Indicates that a geom context, created by a
+//               previous call to prepare_geom(), is no longer
+//               needed.  The driver resources will not be freed until
+//               some GSG calls update(), indicating it is at a
+//               stage where it is ready to release geoms--this
+//               prevents conflicts from threading or multiple GSG's
+//               sharing geoms (we have no way of knowing which
+//               graphics context is currently active, or what state
+//               it's in, at the time release_geom is called).
+////////////////////////////////////////////////////////////////////
+void PreparedGraphicsObjects::
+release_geom(GeomContext *gc) {
+  MutexHolder holder(_lock);
+
+  gc->_geom->clear_prepared(this);
+
+  // We have to set the Geom pointer to NULL at this point, since
+  // the Geom itself might destruct at any time after it has been
+  // released.
+  gc->_geom = (Geom *)NULL;
+
+  bool removed = (_prepared_geoms.erase(gc) != 0);
+  nassertv(removed);
+
+  _released_geoms.insert(gc);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::release_all_geoms
+//       Access: Public
+//  Description: Releases all geoms at once.  This will force them
+//               to be reloaded into geom memory for all GSG's that
+//               share this object.  Returns the number of geoms
+//               released.
+////////////////////////////////////////////////////////////////////
+int PreparedGraphicsObjects::
+release_all_geoms() {
+  MutexHolder holder(_lock);
+
+  int num_geoms = (int)_prepared_geoms.size();
+
+  Geoms::iterator gci;
+  for (gci = _prepared_geoms.begin();
+       gci != _prepared_geoms.end();
+       ++gci) {
+    GeomContext *gc = (*gci);
+    gc->_geom->clear_prepared(this);
+    gc->_geom = (Geom *)NULL;
+
+    _released_geoms.insert(gc);
+  }
+
+  _prepared_geoms.clear();
+
+  return num_geoms;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::prepare_geom_now
+//       Access: Public
+//  Description: Immediately creates a new GeomContext for the
+//               indicated geom and returns it.  This assumes that
+//               the GraphicsStateGuardian is the currently active
+//               rendering context and that it is ready to accept new
+//               geoms.  If this is not necessarily the case, you
+//               should use enqueue_geom() instead.
+//
+//               Normally, this function is not called directly.  Call
+//               Geom::prepare_now() instead.
+//
+//               The GeomContext contains all of the pertinent
+//               information needed by the GSG to keep track of this
+//               one particular geom, and will exist as long as the
+//               geom is ready to be rendered.
+//
+//               When either the Geom or the
+//               PreparedGraphicsObjects object destructs, the
+//               GeomContext will be deleted.
+////////////////////////////////////////////////////////////////////
+GeomContext *PreparedGraphicsObjects::
+prepare_geom_now(Geom *geom, GraphicsStateGuardianBase *gsg) {
+  MutexHolder holder(_lock);
+
+  // Ask the GSG to create a brand new GeomContext.  There might
+  // be several GSG's sharing the same set of geoms; if so, it
+  // doesn't matter which of them creates the context (since they're
+  // all shared anyway).
+  GeomContext *gc = gsg->prepare_geom(geom);
+
+  if (gc != (GeomContext *)NULL) {
+    bool prepared = _prepared_geoms.insert(gc).second;
+    nassertr(prepared, gc);
+  }
+
+  return gc;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PreparedGraphicsObjects::update
 //       Access: Public
@@ -233,14 +386,36 @@ update(GraphicsStateGuardianBase *gsg) {
 
   _released_textures.clear();
 
+  // Next, release all the geoms awaiting release.
+  Geoms::iterator gci;
+  for (gci = _released_geoms.begin();
+       gci != _released_geoms.end();
+       ++gci) {
+    GeomContext *gc = (*gci);
+    gsg->release_geom(gc);
+  }
+
+  _released_geoms.clear();
+
   // Now prepare all the textures awaiting preparation.
-  EnqueuedTextures::iterator qi;
-  for (qi = _enqueued_textures.begin();
-       qi != _enqueued_textures.end();
-       ++qi) {
-    Texture *tex = (*qi);
+  EnqueuedTextures::iterator qti;
+  for (qti = _enqueued_textures.begin();
+       qti != _enqueued_textures.end();
+       ++qti) {
+    Texture *tex = (*qti);
     tex->prepare_now(this, gsg);
   }
 
   _enqueued_textures.clear();
+
+  // And finally prepare all the geoms awaiting preparation.
+  EnqueuedGeoms::iterator qgi;
+  for (qgi = _enqueued_geoms.begin();
+       qgi != _enqueued_geoms.end();
+       ++qgi) {
+    Geom *geom = (*qgi);
+    geom->prepare_now(this, gsg);
+  }
+
+  _enqueued_geoms.clear();
 }

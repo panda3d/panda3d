@@ -71,6 +71,6 @@ void CLP(init_classes)() {
   CLP(GraphicsStateGuardian)::init_type();
   CLP(SavedFrameBuffer)::init_type();
   CLP(TextureContext)::init_type();
-  CLP(GeomNodeContext)::init_type();
+  CLP(GeomContext)::init_type();
 }
 

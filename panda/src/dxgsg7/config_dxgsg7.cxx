@@ -150,7 +150,6 @@ init_libdxgsg7() {
   DXGraphicsStateGuardian7::init_type();
   DXSavedFrameBuffer7::init_type();
   DXTextureContext7::init_type();
-  DXGeomNodeContext7::init_type();
 
   wdxGraphicsPipe7::init_type();
   wdxGraphicsWindow7::init_type();

@@ -28,7 +28,6 @@
 
 class TextureContext;
 class GeomContext;
-class GeomNodeContext;
 class GraphicsStateGuardianBase;
 
 ////////////////////////////////////////////////////////////////////
@@ -61,15 +60,27 @@ public:
   int release_all_textures();
 
   TextureContext *prepare_texture_now(Texture *tex, GraphicsStateGuardianBase *gsg);
+
+  void enqueue_geom(Geom *geom);
+  bool dequeue_geom(Geom *geom);
+  void release_geom(GeomContext *gc);
+  int release_all_geoms();
+
+  GeomContext *prepare_geom_now(Geom *geom, GraphicsStateGuardianBase *gsg);
+
   void update(GraphicsStateGuardianBase *gsg);
 
 private:
   typedef pset<TextureContext *> Textures;
   typedef pset< PT(Texture) > EnqueuedTextures;
+  typedef pset<GeomContext *> Geoms;
+  typedef pset< PT(Geom) > EnqueuedGeoms;
 
   Mutex _lock;
   Textures _prepared_textures, _released_textures;  
   EnqueuedTextures _enqueued_textures;
+  Geoms _prepared_geoms, _released_geoms;  
+  EnqueuedGeoms _enqueued_geoms;
 
   static PStatCollector _total_texusage_pcollector;
 

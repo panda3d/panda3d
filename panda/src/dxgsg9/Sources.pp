@@ -18,7 +18,7 @@
   // need to install these due to external projects that link directly with libpandadx (bartop)  
   #define INSTALL_HEADERS \
     dxgsg9base.h config_dxgsg9.h dxGraphicsStateGuardian9.I dxGraphicsStateGuardian9.h \
-    dxTextureContext9.h dxGeomNodeContext9.h dxGeomNodeContext9.I d3dfont9.h \
+    dxTextureContext9.h d3dfont9.h \
     dxGraphicsDevice9.h
 
   // build dxGraphicsStateGuardian separately since its so big
@@ -33,7 +33,6 @@
   #define INCLUDED_SOURCES \
     config_dxgsg9.cxx \
     dxSavedFrameBuffer9.cxx dxTextureContext9.cxx \
-    dxGeomNodeContext9.cxx \
     d3dfont9.cxx \
     dxGraphicsDevice9.cxx \
     wdxGraphicsPipe9.cxx wdxGraphicsWindow9.cxx

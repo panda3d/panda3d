@@ -5076,44 +5076,6 @@ HRESULT SetViewMatrix( D3DMATRIX& mat, D3DXVECTOR3& vFrom, D3DXVECTOR3& vAt,
 #endif
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::prepare_geom_node
-//       Access: Public, Virtual
-//  Description: Prepares the indicated GeomNode for retained-mode
-//               rendering.  If this function returns non-NULL, the
-//               value returned will be passed back to a future call
-//               to draw_geom_node(), which is expected to draw the
-//               contents of the node.
-////////////////////////////////////////////////////////////////////
-GeomNodeContext *DXGraphicsStateGuardian9::
-prepare_geom_node(GeomNode *node) {
-  dxgsg9_cat.error() << "prepare_geom_node unimplemented for DX9!\n";
-  return NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::draw_geom_node
-//       Access: Public, Virtual
-//  Description: Draws a GeomNode previously indicated by a call to
-//               prepare_geom_node().
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian9::
-draw_geom_node(GeomNode *node, const RenderState *state,
-               GeomNodeContext *gnc) {
-  return;  // unimplemented
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::release_geom_node
-//       Access: Public, Virtual
-//  Description: Frees the resources previously allocated via a call
-//               to prepare_geom_node(), including deleting the
-//               GeomNodeContext itself, if necessary.
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian9::
-release_geom_node(GeomNodeContext *gnc) {
-}
-
 HRESULT CreateDX9Cursor(LPDIRECT3DDEVICE9 pd3dDevice, HCURSOR hCursor,BOOL bAddWatermark) {
 // copied directly from dxsdk SetDeviceCursor
     HRESULT hr = E_FAIL;

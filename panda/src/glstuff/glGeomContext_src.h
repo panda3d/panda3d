@@ -1,5 +1,5 @@
-// Filename: chromium.SavedFrameBuffer.h
-// Created by:  drose (06Oct99)
+// Filename: glGeomContext_src.h
+// Created by:  drose (19Mar04)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,38 +16,34 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CRSAVEDFRAMEBUFFER_H
-#define CRSAVEDFRAMEBUFFER_H
-
 #include "pandabase.h"
-
-#include "savedFrameBuffer.h"
-#include "texture.h"
-#include "textureContext.h"
-#include "pixelBuffer.h"
-
+#include "geomContext.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : CRSavedFrameBuffer
+//       Class : GLGeomContext
 // Description :
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDACR CRSavedFrameBuffer : public SavedFrameBuffer {
+class EXPCL_GL CLP(GeomContext) : public GeomContext {
 public:
-  INLINE CRSavedFrameBuffer(const RenderBuffer &buffer,
-                            CPT(DisplayRegion) dr);
-  INLINE ~CRSavedFrameBuffer();
+  INLINE CLP(GeomContext)(Geom *geom);
 
-  PT(Texture) _back_rgba;
-  PT(PixelBuffer) _depth;
+  // This is the GL display list index.
+  GLuint _index;
+
+  // The number of vertices encoded in the display list, for stats
+  // reporting.
+#ifdef DO_PSTATS
+  int _num_verts;
+#endif
 
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    SavedFrameBuffer::init_type();
-    register_type(_type_handle, "CRSavedFrameBuffer",
-                  SavedFrameBuffer::get_class_type());
+    GeomContext::init_type();
+    register_type(_type_handle, CLASSPREFIX_QUOTED "GeomContext",
+                  GeomContext::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -58,7 +54,5 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "crSavedFrameBuffer.I"
-
-#endif
+#include "glGeomContext_src.I"
 

@@ -21,7 +21,7 @@
   // need to install these due to external projects that link directly with libpandadx (bartop)  
   #define INSTALL_HEADERS \
     config_dxgsg7.h dxGraphicsStateGuardian7.I dxGraphicsStateGuardian7.h \
-    dxTextureContext7.h dxGeomNodeContext7.h dxGeomNodeContext7.I dxgsg7base.h
+    dxTextureContext7.h dxgsg7base.h
 
   // build dxGraphicsStateGuardian separately since its so big
   
@@ -35,7 +35,6 @@
     config_dxgsg7.cxx \
     dxgsg7base.cxx \
     dxSavedFrameBuffer7.cxx dxTextureContext7.cxx \
-    dxGeomNodeContext7.cxx \
     wdxGraphicsPipe7.cxx wdxGraphicsWindow7.cxx
 
 #end lib_target

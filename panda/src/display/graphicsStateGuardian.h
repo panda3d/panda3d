@@ -91,11 +91,6 @@ public:
   virtual void apply_texture(TextureContext *tc);
   virtual void release_texture(TextureContext *tc);
 
-  virtual GeomNodeContext *prepare_geom_node(GeomNode *node);
-  virtual void draw_geom_node(GeomNode *node, const RenderState *state,
-                              GeomNodeContext *gnc);
-  virtual void release_geom_node(GeomNodeContext *gnc);
-
   virtual GeomContext *prepare_geom(Geom *geom);
   virtual void release_geom(GeomContext *gc);
 
@@ -208,16 +203,13 @@ protected:
   void init_frame_pstats();
   void add_to_texture_record(TextureContext *tc);
   void add_to_geom_record(GeomContext *gc);
-  void add_to_geom_node_record(GeomNodeContext *gnc);
 
   pset<TextureContext *> _current_textures;
   pset<GeomContext *> _current_geoms;
-  pset<GeomNodeContext *> _current_geom_nodes;
 #else
   INLINE void init_frame_pstats() { }
   INLINE void add_to_texture_record(TextureContext *) { }
   INLINE void add_to_geom_record(GeomContext *) { }
-  INLINE void add_to_geom_node_record(GeomNodeContext *) { }
   INLINE void record_state_change(TypeHandle) { }
 #endif
 

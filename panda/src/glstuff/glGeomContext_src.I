@@ -1,5 +1,5 @@
-// Filename: geomNodeContext.I
-// Created by:  drose (11Jun01)
+// Filename: glGeomContext_src.I
+// Created by:  drose (19Mar04)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,12 +18,16 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomNodeContext::Constructor
+//     Function: CLP(GeomContext)::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE GeomNodeContext::
-GeomNodeContext(GeomNode *node) :
-  _node(node)
+INLINE CLP(GeomContext)::
+CLP(GeomContext)(Geom *geom) :
+  GeomContext(geom)
 {
+  _index = 0;
+#ifdef DO_PSTATS
+  _num_verts = 0;
+#endif
 }

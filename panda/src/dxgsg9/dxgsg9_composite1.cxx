@@ -2,7 +2,6 @@
 #include "config_dxgsg9.cxx"
 #include "dxSavedFrameBuffer9.cxx"
 #include "dxTextureContext9.cxx"
-#include "dxGeomNodeContext9.cxx"
 #include "d3dfont9.cxx"
 #include "wdxGraphicsPipe9.cxx"
 #include "wdxGraphicsWindow9.cxx"

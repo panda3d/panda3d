@@ -28,6 +28,7 @@
 #include "ioPtaDatagramShort.h"
 #include "ioPtaDatagramInt.h"
 #include "ioPtaDatagramLinMath.h"
+#include "preparedGraphicsObjects.h"
 #include "indent.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -137,11 +138,8 @@ ostream &operator << (ostream &out, GeomAttrType t) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Geom::
-Geom(void) : dDrawable() {
-  /*
-  _prepared_gsg = (GraphicsStateGuardianBase *)NULL;
-  _prepared_context = (GeomContext *)NULL;
-  */
+Geom() {
+  _all_dirty_flags = 0;
   init();
 }
 
@@ -152,10 +150,7 @@ Geom(void) : dDrawable() {
 ////////////////////////////////////////////////////////////////////
 Geom::
 Geom(const Geom& copy) : dDrawable() {
-  /*
-  _prepared_gsg = (GraphicsStateGuardianBase *)NULL;
-  _prepared_context = (GeomContext *)NULL;
-  */
+  _all_dirty_flags = 0;
   *this = copy;
 }
 
@@ -166,7 +161,7 @@ Geom(const Geom& copy) : dDrawable() {
 ////////////////////////////////////////////////////////////////////
 Geom::
 ~Geom() {
-  //  unprepare();
+  release_all();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -421,6 +416,23 @@ is_dynamic() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Geom::prepare
+//       Access: Published
+//  Description: Indicates that the geom should be enqueued to be
+//               prepared in the indicated prepared_objects at the
+//               beginning of the next frame.  This will ensure the
+//               geom is already loaded into the GSG if it is expected
+//               to be rendered soon.
+//
+//               Use this function instead of prepare_now() to preload
+//               geoms from a user interface standpoint.
+////////////////////////////////////////////////////////////////////
+void Geom::
+prepare(PreparedGraphicsObjects *prepared_objects) {
+  prepared_objects->enqueue_geom(this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Geom::explode
 //       Access: Public, Virtual
 //  Description: If the Geom is a composite type such as a tristrip,
@@ -464,14 +476,17 @@ get_tris() const {
 ////////////////////////////////////////////////////////////////////
 void Geom::
 draw(GraphicsStateGuardianBase *gsg) {
+  PreparedGraphicsObjects *prepared_objects = gsg->get_prepared_objects();
   if (is_dirty()) {
     config(); 
+    release(prepared_objects);
   }
-  /*
-  if (_prepared_gsg == gsg) {
-    draw_immediate(gsg, _prepared_context);
-    } else */ {
-    draw_immediate(gsg, (GeomContext *)NULL);
+
+  if (retained_mode) {
+    GeomContext *gc = prepare_now(gsg->get_prepared_objects(), gsg);
+    draw_immediate(gsg, gc);
+  } else {
+    draw_immediate(gsg, NULL);
   }
 }
 
@@ -516,9 +531,6 @@ config() {
   } else {
     _get_color = get_color_noop;
   }
-
-  // Mark the Geom as needing to be prepared again.
-  //  unprepare();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -552,81 +564,94 @@ output(ostream &out) const {
   */
 }
 
-/*
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::prepare
+//     Function: Geom::prepare_now
 //       Access: Public
-//  Description: Creates a context for the Geom on the particular
+//  Description: Creates a context for the geom on the particular
 //               GSG, if it does not already exist.  Returns the new
-//               (or old) GeomContext.
+//               (or old) GeomContext.  This assumes that the
+//               GraphicsStateGuardian is the currently active
+//               rendering context and that it is ready to accept new
+//               geoms.  If this is not necessarily the case, you
+//               should use prepare() instead.
 //
-//               If the given GeomContext pointer is non-NULL, it will
-//               be passed to the GSG, which may or may not choose to
-//               extend the existing GeomContext, or create a totally
-//               new one.
+//               Normally, this is not called directly except by the
+//               GraphicsStateGuardian; a geom does not need to be
+//               explicitly prepared by the user before it may be
+//               rendered.
 ////////////////////////////////////////////////////////////////////
 GeomContext *Geom::
-prepare(GraphicsStateGuardianBase *gsg) {
-  if (gsg != _prepared_gsg) {
-    GeomContext *gc = gsg->prepare_geom(this);
-    if (gc != (GeomContext *)NULL) {
-      unprepare();
-      _prepared_context = gc;
-      _prepared_gsg = gsg;
-    }
-    return gc;
+prepare_now(PreparedGraphicsObjects *prepared_objects, 
+            GraphicsStateGuardianBase *gsg) {
+  Contexts::const_iterator ci;
+  ci = _contexts.find(prepared_objects);
+  if (ci != _contexts.end()) {
+    return (*ci).second;
   }
 
-  return _prepared_context;
+  GeomContext *gc = prepared_objects->prepare_geom_now(this, gsg);
+  if (gc != (GeomContext *)NULL) {
+    _contexts[prepared_objects] = gc;
+
+    // Now that we have a new GeomContext with zero dirty flags, our
+    // intersection of all dirty flags must be zero.  This doesn't mean
+    // that some other contexts aren't still dirty, but at least one
+    // context isn't.
+    _all_dirty_flags = 0;
+  }
+  return gc;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::unprepare
+//     Function: Geom::release
 //       Access: Public
-//  Description: Frees the context allocated on all GSG's for which
-//               the geom has been declared.
+//  Description: Frees the geom context only on the indicated object,
+//               if it exists there.  Returns true if it was released,
+//               false if it had not been prepared.
 ////////////////////////////////////////////////////////////////////
-void Geom::
-unprepare() {
-  if (_prepared_gsg != (GraphicsStateGuardianBase *)NULL) {
-    _prepared_gsg->release_geom(_prepared_context);
-    _prepared_gsg = (GraphicsStateGuardianBase *)NULL;
-    _prepared_context = (GeomContext *)NULL;
+bool Geom::
+release(PreparedGraphicsObjects *prepared_objects) {
+  Contexts::iterator ci;
+  ci = _contexts.find(prepared_objects);
+  if (ci != _contexts.end()) {
+    GeomContext *gc = (*ci).second;
+    prepared_objects->release_geom(gc);
+    return true;
   }
+
+  // Maybe it wasn't prepared yet, but it's about to be.
+  return prepared_objects->dequeue_geom(this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::unprepare
+//     Function: Geom::release_all
 //       Access: Public
-//  Description: Frees the geom context only on the indicated GSG,
-//               if it exists there.
+//  Description: Frees the context allocated on all objects for which
+//               the geom has been declared.  Returns the number of
+//               contexts which have been freed.
 ////////////////////////////////////////////////////////////////////
-void Geom::
-unprepare(GraphicsStateGuardianBase *gsg) {
-  if (_prepared_gsg == gsg) {
-    _prepared_gsg->release_geom(_prepared_context);
-    _prepared_gsg = (GraphicsStateGuardianBase *)NULL;
-    _prepared_context = (GeomContext *)NULL;
-  }
-}
+int Geom::
+release_all() {
+  // We have to traverse a copy of the _contexts list, because the
+  // PreparedGraphicsObjects object will call clear_prepared() in response
+  // to each release_geom(), and we don't want to be modifying the
+  // _contexts list while we're traversing it.
+  Contexts temp = _contexts;
+  int num_freed = (int)_contexts.size();
 
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::clear_gsg
-//       Access: Public
-//  Description: Removes the indicated GSG from the Geom's known
-//               GSG's, without actually releasing the geom on that
-//               GSG.  This is intended to be called only from
-//               GSG::release_geom(); it should never be called by
-//               user code.
-////////////////////////////////////////////////////////////////////
-void Geom::
-clear_gsg(GraphicsStateGuardianBase *gsg) {
-  if (_prepared_gsg == gsg) {
-    _prepared_gsg = (GraphicsStateGuardianBase *)NULL;
-    _prepared_context = (GeomContext *)NULL;
+  Contexts::const_iterator ci;
+  for (ci = temp.begin(); ci != temp.end(); ++ci) {
+    PreparedGraphicsObjects *prepared_objects = (*ci).first;
+    GeomContext *gc = (*ci).second;
+    prepared_objects->release_geom(gc);
   }
+
+  // Now that we've called release_geom() on every known context,
+  // the _contexts list should have completely emptied itself.
+  nassertr(_contexts.empty(), num_freed);
+
+  return num_freed;
 }
-*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::init
@@ -689,6 +714,28 @@ recompute_bound() {
   gbv->around(vertices_begin, vertices_end);
 
   return bound;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::clear_prepared
+//       Access: Private
+//  Description: Removes the indicated PreparedGraphicsObjects table
+//               from the Geom's table, without actually releasing
+//               the geom.  This is intended to be called only from
+//               PreparedGraphicsObjects::release_geom(); it should
+//               never be called by user code.
+////////////////////////////////////////////////////////////////////
+void Geom::
+clear_prepared(PreparedGraphicsObjects *prepared_objects) {
+  Contexts::iterator ci;
+  ci = _contexts.find(prepared_objects);
+  if (ci != _contexts.end()) {
+    _contexts.erase(ci);
+  } else {
+    // If this assertion fails, clear_prepared() was given a
+    // prepared_objects which the geom didn't know about.
+    nassertv(false);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -40,8 +40,8 @@
 #include "glext.h"
 
 #include "glmisc_src.h"
-#include "glGeomNodeContext_src.h"
 #include "glTextureContext_src.h"
+#include "glGeomContext_src.h"
 #include "glSavedFrameBuffer_src.h"
 #include "glGraphicsStateGuardian_src.h"
 

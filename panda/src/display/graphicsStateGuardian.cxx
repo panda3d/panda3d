@@ -196,48 +196,6 @@ release_texture(TextureContext *) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::prepare_geom_node
-//       Access: Public, Virtual
-//  Description: Prepares the indicated GeomNode for retained-mode
-//               rendering.  If this function returns non-NULL, the
-//               value returned will be passed back to a future call
-//               to draw_geom_node(), which is expected to draw the
-//               contents of the node.
-////////////////////////////////////////////////////////////////////
-GeomNodeContext *GraphicsStateGuardian::
-prepare_geom_node(GeomNode *) {
-  return (GeomNodeContext *)NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::draw_geom_node
-//       Access: Public, Virtual
-//  Description: Draws a GeomNode previously indicated by a call to
-//               prepare_geom_node().
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-draw_geom_node(GeomNode *node, const RenderState *state,
-               GeomNodeContext *) {
-#if 0   // temporarily disabled until ported to new scene graph
-  int num_geoms = node->get_num_geoms();
-  for (int i = 0; i < num_geoms; i++) {
-    node->get_geom(i)->draw(this);
-  }
-#endif   // temporarily disabled until ported to new scene graph
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::release_geom_node
-//       Access: Public, Virtual
-//  Description: Frees the resources previously allocated via a call
-//               to prepare_geom_node(), including deleting the
-//               GeomNodeContext itself, if necessary.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-release_geom_node(GeomNodeContext *) {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::prepare_geom
 //       Access: Public, Virtual
 //  Description: Prepares the indicated Geom for retained-mode
@@ -1262,7 +1220,6 @@ init_frame_pstats() {
   if (PStatClient::is_connected()) {
     _current_textures.clear();
     _current_geoms.clear();
-    _current_geom_nodes.clear();
     _active_texusage_pcollector.clear_level();
     _active_geom_pcollector.clear_level();
     _active_geom_node_pcollector.clear_level();
@@ -1310,24 +1267,6 @@ add_to_geom_record(GeomContext *gc) {
   if (PStatClient::is_connected()) {
     if (gc != (GeomContext *)NULL && _current_geoms.insert(gc).second) {
       _active_geom_pcollector.add_level(1);
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::add_to_geom_node_record
-//       Access: Protected
-//  Description: Records that the indicated GeomNode has been drawn
-//               this frame.  This function is only used to update the
-//               PStats current_texmem collector; it gets compiled out
-//               if we aren't using PStats.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-add_to_geom_node_record(GeomNodeContext *gnc) {
-  if (PStatClient::is_connected()) {
-    if (gnc != (GeomNodeContext *)NULL && 
-        _current_geom_nodes.insert(gnc).second) {
-      _active_geom_node_pcollector.add_level(1);
     }
   }
 }

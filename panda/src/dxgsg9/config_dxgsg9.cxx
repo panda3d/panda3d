@@ -195,7 +195,6 @@ init_libdxgsg9() {
   DXGraphicsStateGuardian9::init_type();
   DXSavedFrameBuffer9::init_type();
   DXTextureContext9::init_type();
-  DXGeomNodeContext9::init_type();
 
   wdxGraphicsPipe9::init_type();
   wdxGraphicsWindow9::init_type();

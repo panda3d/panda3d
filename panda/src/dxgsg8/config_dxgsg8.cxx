@@ -195,7 +195,6 @@ init_libdxgsg8() {
   DXGraphicsStateGuardian8::init_type();
   DXSavedFrameBuffer8::init_type();
   DXTextureContext8::init_type();
-  DXGeomNodeContext8::init_type();
 
   wdxGraphicsPipe8::init_type();
   wdxGraphicsWindow8::init_type();

@@ -29,7 +29,6 @@
 #include "parasiteBuffer.h"
 #include "hardwareChannel.h"
 #include "textureContext.h"
-#include "geomNodeContext.h"
 #include "geomContext.h"
 
 ConfigureDef(config_display);
@@ -137,6 +136,5 @@ init_libdisplay() {
   HardwareChannel::init_type();
   ParasiteBuffer::init_type();
   TextureContext::init_type();
-  GeomNodeContext::init_type();
   GeomContext::init_type();
 }

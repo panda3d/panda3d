@@ -612,6 +612,8 @@ begin_frame() {
     return false;
   }
 
+  _vertices_display_list_pcollector.clear_level();
+
   report_my_gl_errors();
   return true;
 }
@@ -645,10 +647,23 @@ end_frame() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-draw_point(GeomPoint *geom, GeomContext *) {
+draw_point(GeomPoint *geom, GeomContext *gc) {
 #ifdef GSG_VERBOSE
   GLCAT.spam() << "draw_point()" << endl;
 #endif
+
+  if (gc != (GeomContext *)NULL) {
+    _draw_primitive_pcollector.start();
+    CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
+    GLP(CallList)(ggc->_index);
+#ifdef DO_PSTATS
+    _vertices_display_list_pcollector.add_level(ggc->_num_verts);
+#endif
+    _draw_primitive_pcollector.stop();
+    return;
+  }
+
+
 #ifdef DO_PSTATS
   PStatTimer timer(_draw_primitive_pcollector);
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
@@ -705,10 +720,22 @@ draw_point(GeomPoint *geom, GeomContext *) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-draw_line(GeomLine *geom, GeomContext *) {
+draw_line(GeomLine *geom, GeomContext *gc) {
 #ifdef GSG_VERBOSE
   GLCAT.spam() << "draw_line()" << endl;
 #endif
+
+  if (gc != (GeomContext *)NULL) {
+    _draw_primitive_pcollector.start();
+    CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
+    GLP(CallList)(ggc->_index);
+#ifdef DO_PSTATS
+    _vertices_display_list_pcollector.add_level(ggc->_num_verts);
+#endif
+    _draw_primitive_pcollector.stop();
+    return;
+  }
+
 #ifdef DO_PSTATS
   PStatTimer timer(_draw_primitive_pcollector);
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
@@ -776,10 +803,21 @@ draw_line(GeomLine *geom, GeomContext *) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-draw_linestrip(GeomLinestrip *geom, GeomContext *) {
+draw_linestrip(GeomLinestrip *geom, GeomContext *gc) {
 #ifdef GSG_VERBOSE
   GLCAT.spam() << "draw_linestrip()" << endl;
 #endif
+
+  if (gc != (GeomContext *)NULL) {
+    _draw_primitive_pcollector.start();
+    CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
+    GLP(CallList)(ggc->_index);
+#ifdef DO_PSTATS
+    _vertices_display_list_pcollector.add_level(ggc->_num_verts);
+#endif
+    _draw_primitive_pcollector.stop();
+    return;
+  }
 
 #ifdef DO_PSTATS
   //  PStatTimer timer(_draw_primitive_pcollector);
@@ -1147,10 +1185,21 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-draw_polygon(GeomPolygon *geom, GeomContext *) {
+draw_polygon(GeomPolygon *geom, GeomContext *gc) {
 #ifdef GSG_VERBOSE
   GLCAT.spam() << "draw_polygon()" << endl;
 #endif
+
+  if (gc != (GeomContext *)NULL) {
+    _draw_primitive_pcollector.start();
+    CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
+    GLP(CallList)(ggc->_index);
+#ifdef DO_PSTATS
+    _vertices_display_list_pcollector.add_level(ggc->_num_verts);
+#endif
+    _draw_primitive_pcollector.stop();
+    return;
+  }
 
 #ifdef DO_PSTATS
   //  PStatTimer timer(_draw_primitive_pcollector);
@@ -1226,10 +1275,21 @@ draw_polygon(GeomPolygon *geom, GeomContext *) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-draw_tri(GeomTri *geom, GeomContext *) {
+draw_tri(GeomTri *geom, GeomContext *gc) {
 #ifdef GSG_VERBOSE
   GLCAT.spam() << "draw_tri()" << endl;
 #endif
+
+  if (gc != (GeomContext *)NULL) {
+    _draw_primitive_pcollector.start();
+    CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
+    GLP(CallList)(ggc->_index);
+#ifdef DO_PSTATS
+    _vertices_display_list_pcollector.add_level(ggc->_num_verts);
+#endif
+    _draw_primitive_pcollector.stop();
+    return;
+  }
 
 #ifdef DO_PSTATS
   //  PStatTimer timer(_draw_primitive_pcollector);
@@ -1302,10 +1362,21 @@ draw_tri(GeomTri *geom, GeomContext *) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-draw_quad(GeomQuad *geom, GeomContext *) {
+draw_quad(GeomQuad *geom, GeomContext *gc) {
 #ifdef GSG_VERBOSE
   GLCAT.spam() << "draw_quad()" << endl;
 #endif
+
+  if (gc != (GeomContext *)NULL) {
+    _draw_primitive_pcollector.start();
+    CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
+    GLP(CallList)(ggc->_index);
+#ifdef DO_PSTATS
+    _vertices_display_list_pcollector.add_level(ggc->_num_verts);
+#endif
+    _draw_primitive_pcollector.stop();
+    return;
+  }
 
 #ifdef DO_PSTATS
   //  PStatTimer timer(_draw_primitive_pcollector);
@@ -1376,10 +1447,22 @@ draw_quad(GeomQuad *geom, GeomContext *) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-draw_tristrip(GeomTristrip *geom, GeomContext *) {
+draw_tristrip(GeomTristrip *geom, GeomContext *gc) {
 #ifdef GSG_VERBOSE
   GLCAT.spam() << "draw_tristrip()" << endl;
 #endif
+
+  if (gc != (GeomContext *)NULL) {
+    _draw_primitive_pcollector.start();
+    CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
+    GLP(CallList)(ggc->_index);
+#ifdef DO_PSTATS
+    _vertices_display_list_pcollector.add_level(ggc->_num_verts);
+#endif
+    _draw_primitive_pcollector.stop();
+    return;
+  }
+
 
 #ifdef DO_PSTATS
   //  PStatTimer timer(_draw_primitive_pcollector);
@@ -1472,10 +1555,21 @@ draw_tristrip(GeomTristrip *geom, GeomContext *) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-draw_trifan(GeomTrifan *geom, GeomContext *) {
+draw_trifan(GeomTrifan *geom, GeomContext *gc) {
 #ifdef GSG_VERBOSE
   GLCAT.spam() << "draw_trifan()" << endl;
 #endif
+
+  if (gc != (GeomContext *)NULL) {
+    _draw_primitive_pcollector.start();
+    CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
+    GLP(CallList)(ggc->_index);
+#ifdef DO_PSTATS
+    _vertices_display_list_pcollector.add_level(ggc->_num_verts);
+#endif
+    _draw_primitive_pcollector.stop();
+    return;
+  }
 
 #ifdef DO_PSTATS
   //  PStatTimer timer(_draw_primitive_pcollector);
@@ -1569,10 +1663,21 @@ draw_trifan(GeomTrifan *geom, GeomContext *) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-draw_sphere(GeomSphere *geom, GeomContext *) {
+draw_sphere(GeomSphere *geom, GeomContext *gc) {
 #ifdef GSG_VERBOSE
   GLCAT.spam() << "draw_sphere()" << endl;
 #endif
+
+  if (gc != (GeomContext *)NULL) {
+    _draw_primitive_pcollector.start();
+    CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
+    GLP(CallList)(ggc->_index);
+#ifdef DO_PSTATS
+    _vertices_display_list_pcollector.add_level(ggc->_num_verts);
+#endif
+    _draw_primitive_pcollector.stop();
+    return;
+  }
 
 #ifdef DO_PSTATS
   //  PStatTimer timer(_draw_primitive_pcollector);
@@ -1722,43 +1827,34 @@ release_texture(TextureContext *tc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::prepare_geom_node
+//     Function: CLP(GraphicsStateGuardian)::prepare_geom
 //       Access: Public, Virtual
-//  Description: Prepares the indicated GeomNode for retained-mode
-//               rendering.  If this function returns non-NULL, the
-//               value returned will be passed back to a future call
-//               to draw_geom_node(), which is expected to draw the
-//               contents of the node.
+//  Description: Creates a new retained-mode representation of the
+//               given geom, and returns a newly-allocated
+//               GeomContext pointer to reference it.  It is the
+//               responsibility of the calling function to later
+//               call release_geom() with this same pointer (which
+//               will also delete the pointer).
+//
+//               This function should not be called directly to
+//               prepare a geom.  Instead, call Geom::prepare().
 ////////////////////////////////////////////////////////////////////
-GeomNodeContext *CLP(GraphicsStateGuardian)::
-prepare_geom_node(GeomNode *node) {
-#if 0  // temporarily disabled until we bring to new scene graph
-
-  // Make sure we have at least some static Geoms in the GeomNode;
-  // otherwise there's no point in building a display list.
-  int num_geoms = node->get_num_geoms();
-  bool all_dynamic = true;
-  int i;
-
-  for (i = 0; (i < num_geoms) && all_dynamic; i++) {
-    dDrawable *geom = node->get_geom(i);
-    all_dynamic = geom->is_dynamic();
+GeomContext *CLP(GraphicsStateGuardian)::
+prepare_geom(Geom *geom) {
+  CLP(GeomContext) *ggc = new CLP(GeomContext)(geom);
+  ggc->_index = GLP(GenLists)(1);
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "preparing " << *geom << ", index " << ggc->_index << "\n";
   }
-  if (all_dynamic) {
-    // Never mind.
-    return (GeomNodeContext *)NULL;
-  }
-
-  // Ok, we've got something; use it.
-  CLP(GeomNodeContext) *ggnc = new CLP(GeomNodeContext)(node);
-  ggnc->_index = GLP(GenLists)(1);
-  if (ggnc->_index == 0) {
+  if (ggc->_index == 0) {
     GLCAT.error()
       << "Ran out of display list indices.\n";
-    delete ggnc;
-    return (GeomNodeContext *)NULL;
+    delete ggc;
+    return NULL;
   }
 
+  /*
   // We need to temporarily force normals and UV's on, so the display
   // list will have them built in.
   bool old_normals_enabled = _normals_enabled;
@@ -1767,12 +1863,13 @@ prepare_geom_node(GeomNode *node) {
   _normals_enabled = true;
   _texturing_enabled = true;
   _vertex_colors_enabled = true;
+  */
 
 #ifdef DO_PSTATS
   // Count up the number of vertices we're about to render, by
   // checking the PStats vertex counters now, and at the end.  This is
   // kind of hacky, but this is debug code.
-  float num_verts_before = 
+  float num_verts_before =
     _vertices_tristrip_pcollector.get_level() +
     _vertices_trifan_pcollector.get_level() +
     _vertices_tri_pcollector.get_level() +
@@ -1780,109 +1877,51 @@ prepare_geom_node(GeomNode *node) {
 #endif
 
   // Now define the display list.
-  GLP(NewList)(ggnc->_index, GL_COMPILE);
-  for (i = 0; i < num_geoms; i++) {
-    dDrawable *geom = node->get_geom(i);
-    if (geom->is_dynamic()) {
-      // Wait, this is a dynamic Geom.  We can't safely put it in the
-      // display list, because it may change from one frame to the
-      // next; instead, we'll keep it out.
-      ggnc->_dynamic_geoms.push_back(geom);
-    } else {
-      // A static Geom becomes part of the display list.
-      geom->draw(this);
-    }
-  }
+  GLP(NewList)(ggc->_index, GL_COMPILE);
+  geom->draw_immediate(this, NULL);
   GLP(EndList)();
 
 #ifdef DO_PSTATS
-  float num_verts_after = 
+  float num_verts_after =
     _vertices_tristrip_pcollector.get_level() +
     _vertices_trifan_pcollector.get_level() +
     _vertices_tri_pcollector.get_level() +
     _vertices_other_pcollector.get_level();
   float num_verts = num_verts_after - num_verts_before;
-  ggnc->_num_verts = (int)(num_verts + 0.5);
+  ggc->_num_verts = (int)(num_verts + 0.5);
 #endif
 
+  /*
   _normals_enabled = old_normals_enabled;
   _texturing_enabled = old_texturing_enabled;
   _vertex_colors_enabled = old_vertex_colors_enabled;
+  */
 
-  bool inserted = _prepared_objects->mark_prepared_geom_node(ggnc);
-
-  // If this assertion fails, the same GeomNode was prepared twice,
-  // which shouldn't be possible, since the GeomNode itself should
-  // detect this.
-  nassertr(inserted, NULL);
-
-  return ggnc;
-#endif  // temporarily disabled until we bring to new scene graph
-  return NULL;
+  report_my_gl_errors();
+  return ggc;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::draw_geom_node
+//     Function: CLP(GraphicsStateGuardian)::release_geom
 //       Access: Public, Virtual
-//  Description: Draws a GeomNode previously indicated by a call to
-//               prepare_geom_node().
+//  Description: Frees the GL resources previously allocated for the
+//               geom.  This function should never be called
+//               directly; instead, call Geom::release() (or simply
+//               let the Geom destruct).
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-draw_geom_node(GeomNode *node, const RenderState *state,
-               GeomNodeContext *gnc) {
-#if 0  // temporarily disabled until we bring to new scene graph
-  if (gnc == (GeomNodeContext *)NULL) {
-    // We don't have a saved context; just draw the GeomNode in
-    // immediate mode.
-    int num_geoms = node->get_num_geoms();
-    for (int i = 0; i < num_geoms; i++) {
-      node->get_geom(i)->draw(this);
-    }
-
-  } else {
-    // We do have a saved context; use it.
-    add_to_geom_node_record(gnc);
-    CLP(GeomNodeContext) *ggnc = DCAST(CLP(GeomNodeContext), gnc);
-    GLP(CallList)(ggnc->_index);
-
-#ifdef DO_PSTATS 
-    PStatTimer timer(_draw_primitive_pcollector);
-    _vertices_display_list_pcollector.add_level(ggnc->_num_verts);
-#endif
-
-    // Also draw all the dynamic Geoms.
-    int num_geoms = ggnc->_dynamic_geoms.size();
-    for (int i = 0; i < num_geoms; i++) {
-      ggnc->_dynamic_geoms[i]->draw(this);
-    }
+release_geom(GeomContext *gc) {
+  CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "releasing index " << ggc->_index << "\n";
   }
-#endif  // temporarily disabled until we bring to new scene graph
-}
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::release_geom_node
-//       Access: Public, Virtual
-//  Description: Frees the resources previously allocated via a call
-//               to prepare_geom_node(), including deleting the
-//               GeomNodeContext itself, if necessary.
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-release_geom_node(GeomNodeContext *gnc) {
-#if 0  // temporarily disabled until we bring to new scene graph
-  if (gnc != (GeomNodeContext *)NULL) {
-    CLP(GeomNodeContext) *ggnc = DCAST(CLP(GeomNodeContext), gnc);
-    GLP(DeleteLists)(ggnc->_index, 1);
+  GLP(DeleteLists)(ggc->_index, 1);
+  report_my_gl_errors();
 
-    bool erased = _prepared_objects->unmark_prepared_geom_node(ggnc);
-
-    // If this assertion fails, a GeomNode was released that hadn't
-    // been prepared (or a GeomNode was released twice).
-    nassertv(erased);
-    
-    ggnc->_node->clear_gsg(this);
-    delete ggnc;
-  }
-#endif  // temporarily disabled until we bring to new scene graph
+  ggc->_index = 0;
+  delete ggc;
 }
 
 #if 0

@@ -15,6 +15,9 @@
      glstuff_src.cxx \
      glstuff_src.h \
      glstuff_undef_src.h \
+     glGeomContext_src.cxx \
+     glGeomContext_src.I \
+     glGeomContext_src.h \
      glGraphicsStateGuardian_src.cxx \
      glGraphicsStateGuardian_src.I \
      glGraphicsStateGuardian_src.h \
@@ -23,10 +26,7 @@
      glSavedFrameBuffer_src.h \
      glTextureContext_src.cxx \
      glTextureContext_src.I \
-     glTextureContext_src.h \
-     glGeomNodeContext_src.cxx \
-     glGeomNodeContext_src.I \
-     glGeomNodeContext_src.h
+     glTextureContext_src.h
 
   #define SOURCES \
     $[INSTALL_HEADERS] glpure.cxx

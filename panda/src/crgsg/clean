@@ -1,7 +1,0 @@
-#!bash
-
-rm *.I
-rm *.cxx
-rm *.h
-rm pp.dep
-rm Makefile

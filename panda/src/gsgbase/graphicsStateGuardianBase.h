@@ -30,7 +30,6 @@ class RenderBuffer;
 class GraphicsWindow;
 
 class GeomContext;
-class GeomNodeContext;
 class GeomNode;
 class Geom;
 class GeomPoint;
@@ -117,11 +116,6 @@ public:
   virtual TextureContext *prepare_texture(Texture *tex)=0;
   virtual void apply_texture(TextureContext *tc)=0;
   virtual void release_texture(TextureContext *tc)=0;
-
-  virtual GeomNodeContext *prepare_geom_node(GeomNode *node)=0;
-  virtual void draw_geom_node(GeomNode *node, const RenderState *state,
-                              GeomNodeContext *gnc)=0;
-  virtual void release_geom_node(GeomNodeContext *gnc)=0;
 
   virtual GeomContext *prepare_geom(Geom *geom)=0;
   virtual void release_geom(GeomContext *gc)=0;

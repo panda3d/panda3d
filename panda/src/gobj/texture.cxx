@@ -485,7 +485,7 @@ is_mipmap(FilterType type) {
 //               GraphicsStateGuardian is the currently active
 //               rendering context and that it is ready to accept new
 //               textures.  If this is not necessarily the case, you
-//               should use prepare_later() instead.
+//               should use prepare() instead.
 //
 //               Normally, this is not called directly except by the
 //               GraphicsStateGuardian; a texture does not need to be

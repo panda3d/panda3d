@@ -1,5 +1,5 @@
-// Filename: glGeomNodeContext_src.I
-// Created by:  drose (12Jun01)
+// Filename: geomContext.cxx
+// Created by:  drose (19Mar04)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,16 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "geomContext.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomNodeContext)::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE CLP(GeomNodeContext)::
-CLP(GeomNodeContext)(GeomNode *node) :
-  GeomNodeContext(node)
-{
-  _index = 0;
-  DO_PSTATS_STUFF(_num_verts = 0;)
-}
+TypeHandle GeomContext::_type_handle;

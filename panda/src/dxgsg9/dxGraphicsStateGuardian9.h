@@ -22,7 +22,6 @@
 //#define GSG_VERBOSE 1
 
 #include "dxgsg9base.h"
-#include "dxGeomNodeContext9.h"
 #include "dxTextureContext9.h"
 #include "d3dfont9.h"
 #include "config_dxgsg9.h"
@@ -92,11 +91,6 @@ public:
   virtual void draw_tristrip(GeomTristrip *geom, GeomContext *gc);
   virtual void draw_trifan(GeomTrifan *geom, GeomContext *gc);
   virtual void draw_sphere(GeomSphere *geom, GeomContext *gc);
-
-  virtual GeomNodeContext *prepare_geom_node(GeomNode *node);
-  virtual void draw_geom_node(GeomNode *node, const RenderState *state,
-                              GeomNodeContext *gnc);
-  virtual void release_geom_node(GeomNodeContext *gnc);
 
   virtual TextureContext *prepare_texture(Texture *tex);
   virtual void apply_texture(TextureContext *tc);
@@ -248,7 +242,6 @@ protected:
   bool _bGouraudShadingOn;
   UINT _color_writemask;
   bool _bDrawPrimDoSetupVertexBuffer;       // if true, draw methods just copy vertex data into pCurrentGeomContext
-  DXGeomNodeContext9 *_pCurrentGeomContext;  // used in vertex buffer setup
 
   // iterators for primitives
   Geom::VertexIterator vi;

@@ -189,6 +189,8 @@ PUBLISHED:
   INLINE const PTA_ushort &get_colors_index() const;
   INLINE const PTA_ushort &get_texcoords_index() const;
 
+  void prepare(PreparedGraphicsObjects *prepared_objects);
+
 public:
   INLINE void set_num_prims(int num);
   INLINE int get_num_prims() const;
@@ -224,12 +226,10 @@ public:
   INLINE ColorIterator make_color_iterator() const;
   INLINE const Colorf &get_next_color(ColorIterator &citerator) const;
 
-  /*
-  GeomContext *prepare(GraphicsStateGuardianBase *gsg);
-  void unprepare();
-  void unprepare(GraphicsStateGuardianBase *gsg);
-  void clear_gsg(GraphicsStateGuardianBase *gsg);
-  */
+  GeomContext *prepare_now(PreparedGraphicsObjects *prepared_objects, 
+                           GraphicsStateGuardianBase *gsg);
+  bool release(PreparedGraphicsObjects *prepared_objects);
+  int release_all();
 
 protected:
   void init();
@@ -257,16 +257,21 @@ protected:
   GetNextTexCoord *_get_texcoord;
   GetNextColor *_get_color;
 
-  // Unlike a Texture, a Geom only stores the pointer to one GSG that
-  // it has been prepared into.  If it is prepared into another GSG,
-  // it automatically unprepares itself from the first one.  This is
-  // intended to reduce memory overhead that would otherwise be
-  // required to support a little-used feature (having two
-  // simultaneous GSG's).
-  /*
-  GraphicsStateGuardianBase *_prepared_gsg;
-  GeomContext *_prepared_context;
-  */
+private:
+  void clear_prepared(PreparedGraphicsObjects *prepared_objects);
+
+  // A Geom keeps a list (actually, a map) of all the
+  // PreparedGraphicsObjects tables that it has been prepared into.
+  // Each PGO conversely keeps a list (a set) of all the Geoms that
+  // have been prepared there.  When either destructs, it removes
+  // itself from the other's list.
+  typedef pmap<PreparedGraphicsObjects *, GeomContext *> Contexts;
+  Contexts _contexts;
+
+  // This value represents the intersection of all the dirty flags of
+  // the various GeomContexts that might be associated with this
+  // geom.
+  int _all_dirty_flags;
 
 public:
   //static void register_with_read_factory(void);
@@ -294,6 +299,8 @@ public:
 private:
   static TypeHandle _type_handle;
 
+  friend class GeomContext;
+  friend class PreparedGraphicsObjects;
 };
 
 INLINE ostream &operator <<(ostream &out, const Geom &geom) {

@@ -32,10 +32,10 @@
 //
 //               Textures typically have an immediate-mode and a
 //               retained-mode operation.  When using textures in
-//               retained-mode (in response to
-//               Texture::prepare_texture()), the GSG will create some
-//               internal handle for the texture and store it here.
-//               The texture stores all of these handles internally.
+//               retained-mode (in response to Texture::prepare()),
+//               the GSG will create some internal handle for the
+//               texture and store it here.  The texture stores all of
+//               these handles internally.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA TextureContext : public SavedContext {
 public:

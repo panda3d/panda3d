@@ -18,7 +18,6 @@
     displayRegionStack.h \
     frameBufferProperties.I frameBufferProperties.h \
     frameBufferStack.I frameBufferStack.h \
-    geomContext.I geomContext.h geomNodeContext.I geomNodeContext.h \
     graphicsChannel.I graphicsChannel.h \
     graphicsEngine.I graphicsEngine.h \
     graphicsLayer.I  \
@@ -46,7 +45,7 @@
     drawableRegion.cxx \
     displayRegion.cxx \
     frameBufferProperties.cxx \
-    geomContext.cxx geomNodeContext.cxx graphicsChannel.cxx  \
+    graphicsChannel.cxx  \
     graphicsEngine.cxx \
     graphicsLayer.cxx \
     graphicsOutput.cxx \
@@ -69,7 +68,6 @@
     displayRegionStack.h \
     frameBufferProperties.I frameBufferProperties.h \
     frameBufferStack.I frameBufferStack.h \
-    geomContext.I geomContext.h geomNodeContext.I geomNodeContext.h \
     graphicsChannel.I graphicsChannel.h \
     graphicsEngine.I graphicsEngine.h \
     graphicsLayer.I graphicsLayer.h \

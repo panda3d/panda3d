@@ -1,5 +1,5 @@
 // Filename: geomContext.h
-// Created by:  drose (11Jun01)
+// Created by:  drose (19Mar04)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -22,25 +22,23 @@
 #include "pandabase.h"
 
 #include "savedContext.h"
-
-class Geom;
+#include "geom.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GeomContext
-// Description : This is a special class object, similar to a
-//               TextureContext, that holds all the information
-//               returned by a particular GSG to cache the rendering
-//               information associated with one or more Geoms.  This
-//               is similar to, but different from, a GeomNode
-//               context, which is associated with the containing
-//               GeomNode class; a GSG might prefer to associate data
-//               with either the Geom or the GeomNode or both.
+// Description : This is a special class object that holds all the
+//               information returned by a particular GSG to indicate
+//               the geom's internal context identifier.
 //
-//               This allows the GSG to precompute some information
-//               necessary for drawing the Geoms as quickly as
-//               possible and reuse that information across multiple
-//               frames.  Typically, only static Geoms
-//               (e.g. nonindexed) will be assigned GeomContexts.
+//               Geoms typically have an immediate-mode and a
+//               retained-mode operation.  When using geoms in
+//               retained-mode (in response to Geom::prepare()),
+//               the GSG will create some internal handle for the
+//               geom and store it here.  The geom stores all of
+//               these handles internally.
+//
+//               In the case of OpenGL, for example, a GeomContext
+//               corresponds to a display list identifier.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomContext : public SavedContext {
 public:
@@ -50,6 +48,14 @@ public:
   // both own their GeomContexts!  That would create a circular
   // reference count.
   Geom *_geom;
+
+  INLINE void mark_dirty(int flags_to_set);
+  INLINE void clear_dirty_flags(int flags_to_clear = ~0);
+  INLINE int get_dirty_flags() const;
+
+private:
+  int _dirty_flags;
+
 
 public:
   static TypeHandle get_class_type() {
