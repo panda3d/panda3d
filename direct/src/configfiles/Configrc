@@ -2,3 +2,5 @@ model-path      $DMODELS
 sound-path      $DMODELS
 
 egg-object-type-direct-widget   <Scalar> collide-mask { 0x80000000 } <Collide> { Polyset descend }
+
+cull-bin gui-popup 60 unsorted
