@@ -663,19 +663,43 @@ void event_R(CPT_Event) {
 }
 
 void event_grave(CPT_Event) {
-  PixelBuffer p;
-  GraphicsStateGuardian* g = main_win->get_gsg();
-  const RenderBuffer& r = g->get_render_buffer(RenderBuffer::T_front);
+  GraphicsStateGuardian *gsg = main_win->get_gsg();
+  const RenderBuffer &rb = gsg->get_render_buffer(RenderBuffer::T_front);
 
-  p.set_xsize(main_win->get_width());
-  p.set_ysize(main_win->get_height());
-  p._image = PTA_uchar(main_win->get_width() * main_win->get_height() * 3);
+  // We simply grab the first DisplayRegion on the first Layer on the
+  // window's main channel.
+  GraphicsChannel *channel = main_win->get_channel(0);
+  nassertv(channel != (GraphicsChannel *)NULL);
 
-  p.copy(main_win->get_gsg(), 
-	main_win->get_gsg()->get_current_display_region(),r);
+  if (channel->get_num_layers() == 0) {
+    nout << "Channel has no layers!\n";
+    return;
+  }
+  GraphicsLayer *layer = channel->get_layer(0);
+  nassertv(layer != (GraphicsLayer *)NULL);
+
+  if (layer->get_num_drs() == 0) {
+    nout << "Layer has no display regions!\n";
+    return;
+  }
+  DisplayRegion *dr = layer->get_dr(0);
+  nassertv(dr != (DisplayRegion *)NULL);
+
+  int width = dr->get_pixel_width();
+  int height = dr->get_pixel_height();
+
+  PixelBuffer p(width, height, 3, 1, PixelBuffer::T_unsigned_byte, 
+		PixelBuffer::F_rgb);
+
+  nout << "Capturing frame.\n";
+
+  p.copy(gsg, dr, rb);
   ostringstream s;
-  s << "frame" << main_win->get_frame_number() << ".pnm";
-  p.write(s.str());
+  s << "frame" << ClockObject::get_global_clock()->get_frame_count() << ".pnm";
+  Filename filename = s.str();
+  p.write(filename);
+
+  cerr << "Wrote " << filename << "\n";
 }
 
 void event_n(CPT_Event) {
@@ -1176,7 +1200,7 @@ int framework_main(int argc, char *argv[]) {
   event_handler.add_hook("w", event_w);
   event_handler.add_hook("b", event_b);
   event_handler.add_hook("R", event_R);
-  event_handler.add_hook("grave", event_grave);
+  event_handler.add_hook("`", event_grave);
   event_handler.add_hook("n", event_n);
   event_handler.add_hook("c", event_c);
   event_handler.add_hook("D", event_D);
