@@ -206,10 +206,24 @@ reset() {
   _shade_model_mode = GL_SMOOTH;
   glFrontFace(GL_CCW);
 
+  _scissor_x = 0;
+  _scissor_y = 0;
+  _scissor_width = -1;
+  _scissor_height = -1;
+  _viewport_x = 0;
+  _viewport_y = 0;
+  _viewport_width = -1;
+  _viewport_height = -1;
+  _lmodel_local = 0;
+  _lmodel_twoside = 0;
   _line_width = 1.0f;
   _point_size = 1.0f;
+  _blend_source_func = GL_ONE;
+  _blend_dest_func = GL_ZERO;
   _depth_mask = false;
   _fog_mode = GL_EXP;
+  _fog_density = 1.0f;
+  _fog_color.set(0.0f, 0.0f, 0.0f, 0.0f);
   _alpha_func = GL_ALWAYS;
   _alpha_func_ref = 0;
   _polygon_mode = GL_FILL;
@@ -223,8 +237,8 @@ reset() {
   _line_smooth_enabled = false;
   _point_smooth_enabled = false;
   _scissor_enabled = false;
-  _normals_enabled = false;
   _texturing_enabled = false;
+  _stencil_test_enabled = false;
   _multisample_alpha_one_enabled = false;
   _multisample_alpha_mask_enabled = false;
   _blend_enabled = false;
@@ -234,14 +248,9 @@ reset() {
   _polygon_offset_enabled = false;
   _decal_level = 0;
 
-  // Dither is on by default in GL, let's turn it off
-  _dither_enabled = true;
-  enable_dither(false);
-
-  // Stencil test is off by default
-  _stencil_test_enabled = false;
-  _stencil_func = GL_NOTEQUAL;
-  _stencil_op = GL_REPLACE;
+  // Dither is on by default in GL; let's turn it off
+  glDisable(GL_DITHER);
+  _dithering_enabled = false;
 
   // Antialiasing.
   enable_line_smooth(false);
@@ -288,8 +297,6 @@ reset() {
 
   // use per-vertex fog if per-pixel fog requires SW renderer
   glHint(GL_FOG_HINT,GL_DONT_CARE);
-
-  _dithering_enabled = false;
 
   GLint iRedBits;
   glGetIntegerv(GL_RED_BITS,&iRedBits);

@@ -707,31 +707,6 @@ enable_point_smooth(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::enable_dither
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void GLGraphicsStateGuardian::
-enable_dither(bool val) {
-  if (_dither_enabled != val) {
-    _dither_enabled = val;
-    if (val) {
-#ifdef GSG_VERBOSE
-      glgsg_cat.debug()
-        << "glEnable(GL_DITHER)" << endl;
-#endif
-      glEnable(GL_DITHER);
-    } else {
-#ifdef GSG_VERBOSE
-      glgsg_cat.debug()
-        << "glDisable(GL_DITHER)" << endl;
-#endif
-      glDisable(GL_DITHER);
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::enable_stencil_test
 //       Access:
 //  Description:

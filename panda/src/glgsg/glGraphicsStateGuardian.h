@@ -210,7 +210,6 @@ protected:
   INLINE void enable_point_smooth(bool val);
   INLINE void enable_texturing(bool val);
   INLINE void enable_scissor(bool val);
-  INLINE void enable_dither(bool val);
   INLINE void enable_stencil_test(bool val);
   INLINE void enable_multisample_alpha_one(bool val);
   INLINE void enable_multisample_alpha_mask(bool val);
@@ -274,13 +273,6 @@ protected:
   GLsizei _viewport_height;
   GLboolean _lmodel_local;
   GLboolean _lmodel_twoside;
-  Colorf _material_ambient;
-  Colorf _material_diffuse;
-  Colorf _material_specular;
-  float _material_shininess;
-  Colorf _material_emission;
-  GLenum _stencil_func;
-  GLenum _stencil_op;
   GLfloat _line_width;
   GLfloat _point_size;
   GLenum _blend_source_func;
@@ -303,17 +295,17 @@ protected:
   bool _point_smooth_enabled;
   bool _scissor_enabled;
   bool _texturing_enabled;
-  bool _dither_enabled;
   bool _stencil_test_enabled;
   bool _multisample_alpha_one_enabled;
   bool _multisample_alpha_mask_enabled;
   bool _blend_enabled;
   bool _depth_test_enabled;
   bool _fog_enabled;
-  bool _dithering_enabled;
   bool _alpha_test_enabled;
   bool _polygon_offset_enabled;
   int _decal_level;
+
+  bool _dithering_enabled;
 
   int _max_lights;
   int _max_clip_planes;
