@@ -9,11 +9,15 @@ my $WIN_INSTALLDIR="\\\\dimbo\\panda\\win";
 
 ### DEBUG SETTINGS
 # my $DEBUG_TREECOPY = 1;
-# my $DEBUG_GENERATE_PYTHON_CODE_ONLY = 1;  $ENV{'PANDA_OPTIMIZE'} ='2';
+my $DEBUG_GENERATE_PYTHON_CODE_ONLY = 0; 
+# set DEBUG_GENERATE_PYTHON_CODE_ONLY=1
+if ($ENV{'DEBUG_GENERATE_PYTHON_CODE_ONLY'} ne '') {
+  $ENV{'PANDA_OPTIMIZE'} ='2';
+  $DEBUG_GENERATE_PYTHON_CODE_ONLY = 1;
+}
 # my $DO_ARCHIVE_AND_COPY_ONLY = 1;
 my $DONT_ARCHIVE_OLD_BUILDS = 0;
 my $BLD_DTOOL_ONLY=0;
-
 
 my $DIRPATH_SEPARATOR=':';   # set to ';' for non-cygwin NT perl
 
@@ -30,9 +34,16 @@ for(my $i=0;$i<=$#inst_dirnames;$i++) {
 if(! $DEBUG_GENERATE_PYTHON_CODE_ONLY) {
     $ENV{'PANDA_OPTIMIZE'}='1';  # var has meaning to my special Config.pp
 }
-$ENV{'PPREMAKE_CONFIG'} = '/usr/local/etc/Config.pp';
+
+$ENV{'WINTOOLS'} = '/home/builder/player/wintools';
+#$ENV{'PPREMAKE_CONFIG'} = '/usr/local/etc/Config.pp';  old location
+$ENV{'PPREMAKE_CONFIG'} = $ENV{'WINTOOLS'}.'/panda/etc/Config.pp';
 $ENV{'TCSH_NO_CSHRC_CHDIR'}='1';
 $ENV{'ENABLE_PROFILING'}='1';    # generate .map files
+$ENV{'PANDA_BUILD_TYPE'} = 'gmsvc';
+
+# needed to add this to fix version.rc path in ppremake?
+$ENV{'DTOOL'} = '/home/builder/player/dtool';
 
 $ENV{'HOME'}="/home/builder";
 $ENV{'USER'}="builder";
@@ -236,17 +247,22 @@ sub gen_python_code() {
     # ETC_PATH required by generatePythonCode
     $ENV{'ETC_PATH'}='/home/builder/player/panda/etc /home/builder/player/direct/etc /home/builder/player/dtool/etc /home/builder/player/toontown/etc';
     my $origpath=$ENV{'PATH'};
-    $ENV{'PATH'}="/usr/lib:/c/python16:/bin:/contrib/bin:/mscommon/Tools/WinNT:/mscommon/MSDev98/Bin:/mscommon/Tools:/msvc98/bin:/home/builder/player/dtool/bin:/home/builder/player/dtool/lib:/home/builder/player/direct/bin:/home/builder/player/direct/lib::/home/builder/player/toontown/bin:/home/builder/player/toontown/lib:/home/builder/player/panda/lib:/home/builder/player/panda/bin:/usr/local/bin:.:/c/WINNT/system32:/c/WINNT:/c/WINNT/System32/Wbem:/c/bin:/c/PROGRA~1/TCL/bin:/mspsdk/Bin/:/mspsdk/Bin/WinNT:/mscommon/Tools/WinNT:/mscommon/MSDev98/Bin:/mscommon/Tools:/msvc98/bin::/usr/local/panda/bin:/home/builder/scripts";
-    my $directsrcroot=$WINBLDROOT."\\direct\\src";
 
-    $ENV{'PYTHONPATH'}= $WINBLDROOT."\\panda\\lib;".$WINBLDROOT."\\dtool\\lib";
+    $ENV{'PATH'}=$ENV{'WINTOOLS'}."/bin:".$ENV{'WINTOOLS'}."/lib:/bin:/contrib/bin:/mscommon/Tools/WinNT:/mscommon/MSDev98/Bin:/mscommon/Tools:/msvc98/bin:/home/builder/player/dtool/bin:/home/builder/player/dtool/lib:/home/builder/player/direct/bin:/home/builder/player/direct/lib::/home/builder/player/toontown/bin:/home/builder/player/toontown/lib:/home/builder/player/panda/lib:/home/builder/player/panda/bin:/usr/local/bin:.:/c/WINNT/system32:/c/WINNT:/c/WINNT/System32/Wbem:/c/bin:/mspsdk/Bin/:/mspsdk/Bin/WinNT:/mscommon/Tools/WinNT:/mscommon/MSDev98/Bin:/mscommon/Tools:/msvc98/bin:/home/builder/scripts:";
+    $ENV{'PATH'}.=$ENV{'WINTOOLS'}."/sdk/python/Tcl/bin:".$ENV{'WINTOOLS'}."/sdk/python/Tcl/lib";
+    
+	$ENV{'PYTHONPATH'}= $WINBLDROOT."\\panda\\lib;".$WINBLDROOT."\\dtool\\lib;".$WINBLDROOT."\\wintools\\bin;".$WINBLDROOT."\\wintools\\lib;";
+    $ENV{'PYTHONPATH'}.= $WINBLDROOT."\\wintools\\sdk\\python\\Python-2.0\\Lib;".$WINBLDROOT."\\wintools\\sdk\\python\\Python-2.0\\DLLs;";
+    
+	my $directsrcroot=$WINBLDROOT."\\direct\\src";
     
     &addpathsfromfile("direct","PYTHONPATH");
     &addpathsfromfile("toontown","PYTHONPATH");
 
     $ENV{'TCSH_NO_CHANGEPATH'}='1';
 
-    &logmsg($ENV{'PYTHONPATH'}."\n");
+    &logmsg("PATH=".$ENV{'PATH'}."\n");
+    &logmsg("PYTHONPATH=".$ENV{'PYTHONPATH'}."\n");
 
     &mychdir($CYGBLDROOT."/direct/bin");
 
@@ -337,6 +353,10 @@ sub archivetree() {
     # delete old browse files
     &myexecstr("del /q ".$archdirname."\\*.bsc","nomsg","DO_LOG","NT cmd");
 
+	# delete wintools, right now its too big to archive
+    &myexecstr("rd /s /q ".$archdirname."\\wintools","nomsg","DO_LOG","NT cmd");
+    &myexecstr("rd /s /q ".$archdirname."\\wintools","nomsg","DO_LOG","NT cmd");
+
     # could also move .pdb from metalibs to lib, then del metalibs, include, src dirs
 }
 
@@ -355,7 +375,7 @@ sub checkoutfiles {
     }
     
     if($existing_module_str ne "") {
-        # flaw: will bomb is any CVS subdirs are missing
+        # flaw: will bomb if any CVS subdirs are missing
 
         &myexecstr("( for /D /R . %i in (Opt*Win32) do rd /s /q %i )","nomsg","DO_LOG","NT cmd");
     
@@ -457,12 +477,15 @@ sub buildall() {
     }
 
     # hopefully there are no extra dirs underneath
+	
+	unshift(dirstodolist,"wintools");   # dont want to add wintools to global dirstodo, treat it separately
     
     foreach my $dir1 (@dirstodolist) {        
         &mymkdir($inst_dirs[$treenum]."\\".$dir1);
         &myexecstr("xcopy ".$xcopy_opt_str." ".$WINBLDROOT."\\".$dir1."\\* ".$inst_dirs[$treenum]."\\".$dir1, 
                    "xcopy of ".$inst_dirnames[$treenum]." tree failed!!", "DO_LOG","NT cmd");
     }
+	shift(dirstodolist);
 }
 
 # assumes environment already attached to TOOL/PANDA/DIRECT/TOONTOWN
@@ -524,8 +547,6 @@ if(!(-e $WIN_INSTALLDIR)) {
 }
 
 &mychdir($CYGBLDROOT);
-# remove all old files (remove every file except for dirs and CVS files and bldlog*)
-# and grab every file clean from CVS
 
 if($BLD_DTOOL_ONLY) {
   @dirstodolist=("dtool");
@@ -548,10 +569,16 @@ foreach my $dir1 (@dirstodolist) {
 }
 
 # pick up cygwin utils
-$ENV{'PATH'}="/bin".$DIRPATH_SEPARATOR."/contrib/bin".$DIRPATH_SEPARATOR.$ENV{'PATH'};
+$ENV{'PATH'}=$ENV{'WINTOOLS'}."/bin".$DIRPATH_SEPARATOR.$ENV{'WINTOOLS'}."/lib".$DIRPATH_SEPARATOR."/bin".$DIRPATH_SEPARATOR."/contrib/bin".$DIRPATH_SEPARATOR.$ENV{'PATH'};
 
 # want build to pick up python dll's from /usr/lib before /c/python16
-$ENV{'PATH'}="/usr/lib".$DIRPATH_SEPARATOR.$ENV{'PATH'};
+# $ENV{'PATH'}="/usr/lib".$DIRPATH_SEPARATOR.$ENV{'PATH'};  not needed
+
+if(! $DEBUG_GENERATE_PYTHON_CODE_ONLY) {
+  # update wintools
+  unlink("wintools\\bin\\dos2unix.exe");  # rm a file so egrep doesnt find 0 non-Updating/?? lines and return failure
+  &myexecstr("cvs update -d -R wintools |& egrep -v 'Updating|^\\?'", "cvs update failed!","DO_LOG","NO_PANDA_ATTACH");
+}
 
 if($DEBUG_TREECOPY) {
     goto 'DBGTREECOPY';
@@ -561,7 +588,7 @@ if($DEBUG_GENERATE_PYTHON_CODE_ONLY) {
     &gen_python_code();
     exit(0);
 }
-
+   
 # goto 'SKIP_REMOVE';
 
 SKIP_REMOVE:
