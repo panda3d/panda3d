@@ -17,6 +17,8 @@
 
 #include <dtoolbase.h>
 
+#include "vector_string.h"
+
 #include <assert.h>
 
 class DSearchPath;
@@ -134,6 +136,8 @@ PUBLISHED:
 			const string &default_extension = string());
   bool make_relative_to(Filename directory, bool allow_backups = true);
   int find_on_searchpath(const DSearchPath &searchpath);
+
+  bool scan_directory(vector_string &contents) const;
 
   bool open_read(ifstream &stream) const;
   bool open_write(ofstream &stream) const;

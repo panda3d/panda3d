@@ -84,6 +84,9 @@
 // Do we have <utime.h>?
 #define HAVE_UTIME_H 1
 
+// Do we have <dirent.h>?
+#define HAVE_DIRENT_H 1
+
 // Do we have <sys/soundcard.h> (and presumably a Linux-style audio
 // interface)?
 #define HAVE_SYS_SOUNDCARD_H 1

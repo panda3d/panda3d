@@ -18,6 +18,7 @@
 
 #include <stdio.h>  // For rename()
 #include <sys/stat.h>
+#include <algorithm>
 
 #ifdef HAVE_UTIME_H
 #include <utime.h>
@@ -25,6 +26,10 @@
 // We assume we have these too.
 #include <errno.h>
 #include <fcntl.h>
+#endif
+
+#ifdef HAVE_DIRENT_H
+#include <dirent.h>
 #endif
 
 
@@ -930,6 +935,54 @@ find_on_searchpath(const DSearchPath &searchpath) {
   }
 
   return -1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::scan_directory
+//       Access: Public
+//  Description: Attempts to open the named filename as if it were a
+//               directory and looks for the non-hidden files within
+//               the directory.  Fills the given vector up with the
+//               sorted list of filenames that are local to this
+//               directory.
+//
+//               It is the user's responsibility to ensure that the
+//               contents vector is empty before making this call;
+//               otherwise, the new files will be appended to it.
+//
+//               Returns true on success, false if the directory could
+//               not be read for some reason.
+////////////////////////////////////////////////////////////////////
+bool Filename::
+scan_directory(vector_string &contents) const {
+#if defined(HAVE_DIRENT_H)
+  size_t orig_size = contents.size();
+
+  DIR *root = opendir(_filename.c_str());
+  if (root == (DIR *)NULL) {
+    return false;
+  }
+
+  struct dirent *d;
+  d = readdir(root);
+  while (d != (struct dirent *)NULL) {
+    if (d->d_name[0] != '.') {
+      contents.push_back(d->d_name);
+    }
+    d = readdir(root);
+  }
+  closedir(root);
+
+  sort(contents.begin() + orig_size, contents.end());
+  return true;
+
+#elif defined(WIN32_VC)
+  return false;
+
+#else
+  // Don't know how to scan directories!
+  return false;
+#endif  
 }
 
 ////////////////////////////////////////////////////////////////////
