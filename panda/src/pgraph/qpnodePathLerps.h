@@ -62,7 +62,7 @@ public:
   }
   static void init_type(void) {
     LPoint3fLerpFunctor::init_type();
-    register_type(_type_handle, "PosLerpFunctor",
+    register_type(_type_handle, "qpPosLerpFunctor",
                   LPoint3fLerpFunctor::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
