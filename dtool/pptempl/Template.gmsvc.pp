@@ -495,9 +495,9 @@ $[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[iga
 $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
 #define target $[ODIR]/$[get_dllname $[TARGET]].$[dlllib]
 #define sources $($[varname])
-$[target] : $[sources] $[static_lib_dependencies]
+$[target] : $[sources] $[static_lib_dependencies] $[GENERATED_SOURCES]
 #if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
-$[TAB] $[SHARED_LIB_C++]
+$[TAB] $[SHARED_LIB_C++] $[COMPILED_RESOURCES]
 #else
 $[TAB] $[SHARED_LIB_C] $[COMPILED_RESOURCES]
 #endif
