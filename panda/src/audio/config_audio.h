@@ -32,6 +32,12 @@ extern EXPCL_PANDA bool audio_active;
 extern EXPCL_PANDA int audio_cache_limit;
 extern EXPCL_PANDA float audio_volume;
 
+extern EXPCL_PANDA float audio_doppler_factor;
+extern EXPCL_PANDA float audio_distance_factor;
+extern EXPCL_PANDA float audio_drop_off_factor;
+
+extern EXPCL_PANDA int audio_min_hw_channels;
+
 extern EXPCL_PANDA bool audio_software_midi;
 extern EXPCL_PANDA string* audio_dls_file;
 

@@ -49,7 +49,7 @@ PUBLISHED:
   virtual bool is_valid() = 0;
   
   // Get a sound:
-  virtual PT(AudioSound) get_sound(const string& file_name) = 0;
+  virtual PT(AudioSound) get_sound(const string& file_name, bool positional = false) = 0;
   PT(AudioSound) get_null_sound();
 
   // Tell the AudioManager there is no need to keep this one cached.
@@ -104,6 +104,45 @@ PUBLISHED:
   // This is effectively the same as reduce_sounds_playing_to(0), but
   // this call may be for efficient on some implementations.
   virtual void stop_all_sounds() = 0;
+
+  // Changes to the positions of 3D spacialized sounds and the listener
+  // are all made at once when this method is called. It should be put
+  // in the main program loop.
+  virtual void audio_3d_update() = 0;
+
+  // This controls the "set of ears" that listens to 3D spacialized sound
+  // px, py, pz are position coordinates. Can be NULL to ignore.
+  // vx, vy, vz are a velocity vector in UNITS PER SECOND (default: meters). Can be NULL to ignore.
+  // fx, fy and fz are the respective components of a unit forward-vector
+  // ux, uy and uz are the respective components of a unit up-vector
+  // These changes will NOT be invoked until audio_3d_update() is called.
+  virtual void audio_3d_set_listener_attributes(float px, float py, float pz,
+                                                float vx, float vy, float vz, 
+                                                float fx, float fy, float fz,
+                                                float ux, float uy, float uz) = 0;
+  // Values should all default to NULL, so you can just pass the one you want to get.
+  virtual void audio_3d_get_listener_attributes(float px = NULL, float py = NULL, float pz = NULL,
+                                                float vx = NULL, float vy = NULL, float vz = NULL,
+                                                float fx = NULL, float fy = NULL, float fz = NULL,
+                                                float ux = NULL, float uy = NULL, float uz = NULL) = 0;
+  
+  // Control the "relative distance factor" for 3D spacialized audio. Default is 1.0
+  // Fmod uses meters internally, so give a float in Units-per meter
+  // Don't know what Miles uses.
+  virtual void audio_3d_set_distance_factor(float factor) = 0;
+  virtual float audio_3d_get_distance_factor() const = 0;
+
+  // Control the presence of the Doppler effect. Default is 1.0
+  // Exaggerated Doppler, use >1.0
+  // Diminshed Doppler, use <1.0
+  virtual void audio_3d_set_doppler_factor(float factor) = 0;
+  virtual float audio_3d_get_doppler_factor() const = 0;
+
+  // Exaggerate or diminish the effect of distance on sound. Default is 1.0
+  // Faster drop off, use >1.0
+  // Slower drop off, use <1.0
+  virtual void audio_3d_set_drop_off_factor(float factor) = 0;
+  virtual float audio_3d_get_drop_off_factor() const = 0;
 
 public:
   static void register_AudioManager_creator(Create_AudioManager_proc* proc);

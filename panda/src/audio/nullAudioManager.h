@@ -34,7 +34,7 @@ public:
   
   virtual bool is_valid();
   
-  virtual PT(AudioSound) get_sound(const string&);
+  virtual PT(AudioSound) get_sound(const string&, bool positional = false);
   virtual void uncache_sound(const string&);
   virtual void clear_cache();
   virtual void set_cache_limit(unsigned int);
@@ -52,6 +52,26 @@ public:
   virtual void reduce_sounds_playing_to(unsigned int count);
 
   virtual void stop_all_sounds();
+
+  virtual void audio_3d_update();
+
+  virtual void audio_3d_set_listener_attributes(float px, float py, float pz,
+                                                float vx, float vy, float vz,
+                                                float fx, float fy, float fz,
+                                                float ux, float uy, float uz);
+  virtual void audio_3d_get_listener_attributes(float px = NULL, float py = NULL, float pz = NULL,
+                                                float vx = NULL, float vy = NULL, float vz = NULL,
+                                                float fx = NULL, float fy = NULL, float fz = NULL,
+                                                float ux = NULL, float uy = NULL, float uz = NULL);
+  
+  virtual void audio_3d_set_distance_factor(float factor);
+  virtual float audio_3d_get_distance_factor() const;
+
+  virtual void audio_3d_set_doppler_factor(float factor);
+  virtual float audio_3d_get_doppler_factor() const;
+
+  virtual void audio_3d_set_drop_off_factor(float factor);
+  virtual float audio_3d_get_drop_off_factor() const;
 };
 
 #endif /* __NULL_AUDIO_MANAGER_H__ */

@@ -22,6 +22,7 @@
 
 namespace {
   static const string blank="";
+  static float no_attributes [] = {0.0f,0.0f,0.0f, 0.0f,0.0f,0.0f};
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -107,6 +108,14 @@ const string& NullAudioSound::get_name() const {
 
 float NullAudioSound::length() const {
   return 0;
+}
+
+void NullAudioSound::set_3d_attributes(float px, float py, float pz, float vx, float vy, float vz) {
+  // Intentionally blank.
+}
+
+void NullAudioSound::get_3d_attributes(float px, float py, float pz, float vx, float vy, float vz) {
+  // Intentionally blank.
 }
 
 AudioSound::SoundStatus NullAudioSound::status() const {

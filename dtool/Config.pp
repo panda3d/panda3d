@@ -312,6 +312,12 @@
 #define VRPN_LIBS
 #defer HAVE_VRPN $[libtest $[VRPN_LPATH],$[VRPN_LIBS]]
 
+// Is HELIX installed, and where?
+#define HELIX_IPATH
+#define HELIX_LPATH
+#define HELIX_LIBS
+#defer HAVE_HELIX $[libtest $[HELIX_LPATH],$[HELIX_LIBS]]
+
 // Is ZLIB installed, and where?
 #define ZLIB_IPATH
 #define ZLIB_LPATH
@@ -664,7 +670,7 @@
 // How to generate a static C or C++ library.  $[target] is the
 // name of the library to generate, and $[sources] is the list of .o
 // files that will go into the library.
-#if $[eq $[PLATFORM], osx]	
+#if $[eq $[PLATFORM], osx]
   #defer STATIC_LIB_C libtool -static -o $[target] $[sources]
   #defer STATIC_LIB_C++ libtool -static -o $[target] $[sources]
 #else

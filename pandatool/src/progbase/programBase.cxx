@@ -215,6 +215,15 @@ show_text(const string &prefix, int indent_width, string text) {
 ////////////////////////////////////////////////////////////////////
 void ProgramBase::
 parse_command_line(int argc, char *argv[]) {
+
+
+  // Setting this variable to zero reinitializes the options parser
+  // This is only necessary for processing multiple command lines in
+  // the same program (mainly the MaxToEgg converter plugin)
+  extern int optind;
+  optind = 0;
+
+
   _program_name = Filename::from_os_specific(argv[0]);
   int i;
   for (i = 1; i < argc; i++) {

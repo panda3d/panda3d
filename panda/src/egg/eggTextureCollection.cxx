@@ -121,11 +121,11 @@ get_num_textures() const {
 //       Access: Published
 //  Description: Returns the nth EggTexture in the collection.
 ////////////////////////////////////////////////////////////////////
-EggTexture EggTextureCollection::
+EggTexture *EggTextureCollection::
 get_texture(int index) const {
-  nassertr(index >= 0 && index < (int)_ordered_textures.size(), EggTexture(0,0));
+  nassertr(index >= 0 && index < (int)_ordered_textures.size(), NULL);
 
-  return *_ordered_textures[index];
+  return _ordered_textures[index];
 }
 
 ////////////////////////////////////////////////////////////////////

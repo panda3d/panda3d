@@ -51,8 +51,18 @@ FmodAudioManager() {
   audio_debug("FmodAudioManager::FmodAudioManager()");
   audio_debug("  audio_active="<<audio_active);
   audio_debug("  audio_volume="<<audio_volume);
-
   _active = audio_active;
+  _volume = audio_volume;
+
+  //positional audio data
+  _listener_pos[0]     = 0.0f; _listener_pos[1]     = 0.0f;     _listener_pos[2] = 0.0f;
+  _listener_vel[0]     = 0.0f; _listener_vel[1]     = 0.0f;     _listener_vel[2] = 0.0f;
+  _listener_forward[0] = 0.0f; _listener_forward[1] = 1.0f; _listener_forward[2] = 0.0f;
+  _listener_up[0]      = 0.0f; _listener_up[1]      = 0.0f;      _listener_up[2] = 1.0f;
+  _distance_factor     = audio_distance_factor;
+  _doppler_factor      = audio_doppler_factor;
+  _drop_off_factor     = audio_drop_off_factor;
+
   _cache_limit = audio_cache_limit;
   _concurrent_sound_limit = 0;
 
@@ -68,8 +78,13 @@ FmodAudioManager() {
         _is_valid = false;
         break;
       }
+
+      // If the local system doesn't have enough hardware channels,
+      // Don't even bother trying to use hardware effects. Play EVERYTHING in software.
+      audio_debug("Setting minimum hardware channels(min="<<audio_min_hw_channels<<")");
+      FSOUND_SetMinHardwareChannels(audio_min_hw_channels);
       
-      if (FSOUND_Init(44100, 32, 0) == 0) {
+      if (FSOUND_Init(audio_output_rate, audio_cache_limit, 0) == 0) {
         audio_error("Fmod initialization failure.");
         _is_valid = false;
         break;
@@ -78,6 +93,10 @@ FmodAudioManager() {
     while(0); // curious -- why is there a non-loop here?
   }
 
+  // set 3D sound characteristics as they are given in the configrc
+  audio_3d_set_doppler_factor(audio_doppler_factor);
+  audio_3d_set_distance_factor(audio_distance_factor);
+  audio_3d_set_drop_off_factor(audio_drop_off_factor);
   // increment regardless of whether an error has occured -- the
   // destructor will do the right thing.
   ++_active_managers;
@@ -137,7 +156,7 @@ is_valid() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 PT(AudioSound) FmodAudioManager::
-get_sound(const string &file_name) {
+get_sound(const string &file_name, bool positional) {
   audio_debug("FmodAudioManager::get_sound(file_name=\""<<file_name<<"\")");
 
   if(!is_valid()) {
@@ -200,6 +219,21 @@ get_sound(const string &file_name) {
   // FMOD v4.0!
   FSOUND_STREAM *stream = NULL;
   int flags = FSOUND_LOADMEMORY | FSOUND_MPEGACCURATE;
+  // 3D sounds have to be mono. Forcing stereo streams
+  // to be mono will create a speed hit.
+  if (positional) {
+      flags |= FSOUND_HW3D | FSOUND_FORCEMONO;
+  } else {
+      flags |= FSOUND_2D;
+  }
+  if (audio_output_bits == 8) {
+      flags |= FSOUND_8BITS;
+  } else if (audio_output_bits == 16) {
+      flags |= FSOUND_16BITS;
+  }
+  if (audio_output_channels == 1) {
+      flags |= FSOUND_FORCEMONO;
+  }
   string os_path = path.to_os_specific();
   string suffix = downcase(path.get_extension());
   
@@ -223,12 +257,16 @@ get_sound(const string &file_name) {
   PT(AudioSound) audioSound = 0;
   PT(FmodAudioSound) fmodAudioSound = new FmodAudioSound(this, stream, path,
                length);
+  audio_debug("BOO!");
   fmodAudioSound->set_active(_active);
+  audio_debug("GAH!");
   _soundsOnLoan.insert(fmodAudioSound);
+  audio_debug("GIR!");
   audioSound = fmodAudioSound;
   
   audio_debug("  returning 0x" << (void*)audioSound);
   assert(is_valid());
+  audio_debug("GOO!");
   return audioSound;
 }
 
@@ -379,8 +417,8 @@ set_cache_limit(unsigned int count) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-int FmodAudioManager::
-get_cache_limit() {
+unsigned int FmodAudioManager::
+get_cache_limit() const {
   audio_debug("FmodAudioManager::get_cache_limit() returning "
         <<_cache_limit);
   return _cache_limit;
@@ -405,8 +443,16 @@ release_sound(FmodAudioSound* audioSound) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
-set_volume(float) {
-  // intentionally blank.
+set_volume(float volume) {
+  audio_debug("FmodAudioManager::set_volume(volume="<<volume<<")");
+  if (_volume!=volume) {
+    _volume = volume;
+    // Tell our AudioSounds to adjust:
+    AudioSet::iterator i=_soundsOnLoan.begin();
+    for (; i!=_soundsOnLoan.end(); ++i) {
+      (**i).set_volume((**i).get_volume());
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -415,14 +461,15 @@ set_volume(float) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 float FmodAudioManager::
-get_volume() {
-  return 0;
+get_volume() const {
+  audio_debug("FmodAudioManager::get_volume() returning "<<_volume);
+  return _volume;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioManager::set_active
 //       Access: Public
-//  Description: 
+//  Description: turn on/off
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
 set_active(bool active) {
@@ -444,7 +491,8 @@ set_active(bool active) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 bool FmodAudioManager::
-get_active() {
+get_active() const {
+  audio_debug("FmodAudioManager::get_active() returning "<<_active);
   return _active;
 }
 
@@ -476,14 +524,27 @@ get_concurrent_sound_limit() const {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
 reduce_sounds_playing_to(unsigned int count) {
-  // This is an example from Miles audio, this should be done for fmod:
-  //int limit = _sounds_playing.size() - count;
-  //while (limit-- > 0) {
-  //  SoundsPlaying::iterator sound = _sounds_playing.begin();
-  //  assert(sound != _sounds_playing.end());
-  //  (**sound).stop();
-  //}
+  int limit = _sounds_playing.size() - count;
+  while (limit-- > 0) {
+    SoundsPlaying::iterator sound = _sounds_playing.begin();
+    assert(sound != _sounds_playing.end());
+    (**sound).stop();
+  }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioManager::stop_a_sound
+//       Access: Public
+//  Description: Stop playback on one sound managed by this manager.
+////////////////////////////////////////////////////////////////////
+//void FmodAudioManager::
+//stop_a_sound() {
+//  audio_debug("FmodAudioManager::stop_a_sound()");
+//  AudioSet::size_type s=_soundsOnLoan.size() - 1;
+//  reduce_sounds_playing_to(s);
+  //if (s == _soundsOnLoan.size()) return true;
+  //return false;
+//}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioManager::stop_all_sounds
@@ -493,12 +554,172 @@ reduce_sounds_playing_to(unsigned int count) {
 void FmodAudioManager::
 stop_all_sounds() {
   audio_debug("FmodAudioManager::stop_all_sounds()");
-  AudioSet::iterator i=_soundsOnLoan.begin();
-  for (; i!=_soundsOnLoan.end(); ++i) {
-    if ((**i).status()==AudioSound::PLAYING) {
-      (**i).stop();
+  reduce_sounds_playing_to(0);
+  //AudioSet::iterator i=_soundsOnLoan.begin();
+  //for (; i!=_soundsOnLoan.end(); ++i) {
+  //  if ((**i).status()==AudioSound::PLAYING) {
+  //    (**i).stop();
+  //  }
+  //}
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioManager::audio_3d_update
+//       Access: Public
+//  Description: Commit position changes to listener and all
+//               positioned sounds. Normally, you'd want to call this
+//               once per iteration of your main loop.
+////////////////////////////////////////////////////////////////////
+void FmodAudioManager::
+audio_3d_update() {
+    audio_debug("FmodAudioManager::audio_3d_update()");
+    //convert panda coordinates to fmod coordinates
+    float fmod_pos [] = {_listener_pos[0], _listener_pos[2], _listener_pos[1]};
+    float fmod_vel [] = {_listener_vel[0], _listener_vel[2], _listener_vel[1]};
+    float fmod_forward [] = {_listener_forward[0], _listener_forward[2], _listener_forward[1]};
+    float fmod_up [] = {_listener_up[0], _listener_up[2], _listener_up[1]};
+
+    FSOUND_3D_Listener_SetAttributes(fmod_pos, fmod_vel,
+                                         fmod_forward[0], fmod_forward[1], fmod_forward[2],
+                                         fmod_up[0], fmod_up[1], fmod_up[2]);
+    FSOUND_Update();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioManager::audio_3d_set_listener_attributes
+//       Access: Public
+//  Description: Set position of the "ear" that picks up 3d sounds
+////////////////////////////////////////////////////////////////////
+void FmodAudioManager::
+audio_3d_set_listener_attributes(float px, float py, float pz, float vx, float vy, float vz, float fx, float fy, float fz, float ux, float uy, float uz) {
+    audio_debug("FmodAudioManager::audio_3d_set_listener_attributes()");
+
+    _listener_pos[0]     = px; _listener_pos[1]     = py; _listener_pos[2]     = pz;
+    _listener_vel[0]     = vx; _listener_vel[1]     = vy; _listener_vel[2]     = vz;
+    _listener_forward[0] = fx; _listener_forward[1] = fy; _listener_forward[2] = fz;
+    _listener_up[0]      = ux; _listener_up[1]      = uy; _listener_up[2]      = uz;
+
+    //FSOUND_3D_Listener_SetAttributes(_listener_pos, _listener_vel, fx, fz, fy, ux, uz, uy);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioManager::audio_3d_get_listener_attributes
+//       Access: Public
+//  Description: Get position of the "ear" that picks up 3d sounds
+////////////////////////////////////////////////////////////////////
+void FmodAudioManager::
+audio_3d_get_listener_attributes(float px, float py, float pz, float vx, float vy, float vz, float fx, float fy, float fz, float ux, float uy, float uz) {
+    audio_error("audio3dGetListenerAttributes: currently unimplemented. Get the attributes of the attached object");
+    //audio_debug("FmodAudioManager::audio_3d_get_listener_attributes()");
+    // NOTE: swap the +y with the +z axis to convert between FMOD
+    //       coordinates and Panda3D coordinates
+    //float temp;
+    //temp = py;
+    //py = pz;
+    //pz = temp;
+
+    //temp = vy;
+    //vy = vz;
+    //vz = temp;
+
+    //float pos [] =   {px, py, pz};
+    //float vel [] =   {vx, vy, vz};
+    //float front [] = {fx, fz, fy};
+    //float up [] =    {ux, uz, uy};
+
+    //FSOUND_3D_Listener_GetAttributes(pos, vel, &front[0], &front[1], &front[2], &up[0], &up[1], &up[2]);
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioManager::audio_3d_set_distance_factor
+//       Access: Public
+//  Description: Set units per meter (Fmod uses meters internally for
+//               its sound-spacialization calculations)
+////////////////////////////////////////////////////////////////////
+void FmodAudioManager::
+audio_3d_set_distance_factor(float factor) {
+    audio_debug("FmodAudioManager::audio_3d_set_distance_factor(factor="<<factor<<")");
+    if (factor<0.0) {
+        audio_debug("Recieved value below 0.0. Clamping to 0.0.");
+        factor = 0.0;
     }
-  }
+    if (_distance_factor != factor){
+        _distance_factor = factor;
+        FSOUND_3D_SetDistanceFactor(_distance_factor);
+    }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioManager::audio_3d_get_distance_factor
+//       Access: Public
+//  Description: Gets units per meter (Fmod uses meters internally for
+//               its sound-spacialization calculations)
+////////////////////////////////////////////////////////////////////
+float FmodAudioManager::
+audio_3d_get_distance_factor() const {
+    audio_debug("FmodAudioManager::audio_3d_get_distance_factor()");
+    return _distance_factor;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioManager::audio_3d_set_doppler_factor
+//       Access: Public
+//  Description: Exaggerates or diminishes the Doppler effect. 
+//               Defaults to 1.0
+////////////////////////////////////////////////////////////////////
+void FmodAudioManager::
+audio_3d_set_doppler_factor(float factor) {
+    audio_debug("FmodAudioManager::audio_3d_set_doppler_factor(factor="<<factor<<")");
+    if (factor<0.0) {
+        audio_debug("Recieved value below 0.0. Clamping to 0.0.");
+        factor = 0.0;
+    }
+    if (_doppler_factor != factor) {
+        _doppler_factor = factor;
+        FSOUND_3D_SetDopplerFactor(_doppler_factor);
+    }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioManager::audio_3d_get_doppler_factor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+float FmodAudioManager::
+audio_3d_get_doppler_factor() const {
+    audio_debug("FmodAudioManager::audio_3d_get_doppler_factor()");
+    return _doppler_factor;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioManager::audio_3d_set_drop_off_factor
+//       Access: Public
+//  Description: Control the effect distance has on audability.
+//               Defaults to 1.0
+////////////////////////////////////////////////////////////////////
+void FmodAudioManager::
+audio_3d_set_drop_off_factor(float factor) {
+    audio_debug("FmodAudioManager::audio_3d_set_drop_off_factor("<<factor<<")");
+    if (factor<0.0) {
+        audio_debug("Recieved value below 0.0. Clamping to 0.0");
+        factor = 0.0;
+    }
+    if (_drop_off_factor != factor) {
+        _drop_off_factor = factor;
+        FSOUND_3D_SetRolloffFactor(_drop_off_factor);
+    }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioManager::audio_3d_get_drop_off_factor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+float FmodAudioManager::
+audio_3d_get_drop_off_factor() const {
+    audio_debug("FmodAudioManager::audio_3d_get_drop_off_factor()");
+    return _drop_off_factor;
 }
 
 ////////////////////////////////////////////////////////////////////

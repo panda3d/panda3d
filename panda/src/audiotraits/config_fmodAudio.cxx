@@ -20,12 +20,6 @@
 #ifdef HAVE_FMOD //[
 
 
-// Please remove this as part of updating fmod:
-#error The fmod audio needs repair by the fmod implementers
-
-
-
-
 #include "config_fmodAudio.h"
 #include "fmodAudioManager.h"
 #include "fmodAudioSound.h"

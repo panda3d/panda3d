@@ -216,6 +216,13 @@
   #define vrpn_libs $[VRPN_LIBS]
 #endif
 
+#if $[HAVE_HELIX]
+  #define helix_ipath $[wildcard $[HELIX_IPATH]]
+  #define helix_lpath $[wildcard $[HELIX_LPATH]]
+  #define helix_cflags $[HELIX_CFLAGS]
+  #define helix_libs $[HELIX_LIBS]
+#endif
+
 #if $[HAVE_MIKMOD]
   #define mikmod_ipath $[wildcard $[MIKMOD_IPATH]]
   #define mikmod_lpath $[wildcard $[MIKMOD_LPATH]]

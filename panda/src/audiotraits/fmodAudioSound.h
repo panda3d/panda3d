@@ -20,7 +20,7 @@
 #ifndef __FMOD_AUDIO_SOUND_H__
 #define __FMOD_AUDIO_SOUND_H__
 
-#include "pandabase.h"
+#include <pandabase.h>
 #ifdef HAVE_FMOD //[
 
 #include "audioSound.h"
@@ -78,7 +78,19 @@ public:
   // return: playing time in seconds.
   float length() const;
 
+  // Controls the position of this sound's emitter.
+  // pos is a pointer to an xyz triplet of the emitter's position.
+  // vel is a pointer to an xyz triplet of the emitter's velocity.
+  // You can pass NULL to either value for either function to ignore that value
+  // if you only want to set/get one of them for some reason.
+  void set_3d_attributes(float px = NULL, float py = NULL, float pz = NULL,
+                         float vx = NULL, float vy = NULL, float vz = NULL);
+  void get_3d_attributes(float px = NULL, float py = NULL, float pz = NULL, 
+                         float vx = NULL, float vy = NULL, float vz = NULL);
+  
   AudioSound::SoundStatus status() const;
+
+  void finished();
 
 protected:
 
@@ -86,12 +98,16 @@ private:
   PT(FmodAudioManager) _manager;
   FSOUND_STREAM *_audio;
   string _file_name;
+  string _finished_event;
   float _volume; // 0..1.0
   float _balance; // -1..1
+  float _pos [3];
+  float _vel [3];
   unsigned long _loop_count;
   mutable float _length; // in seconds.
   bool _active;
   bool _paused;
+  bool _bExclusive; //stops all other sounds before playing when true
   int _channel;
 
   FmodAudioSound(FmodAudioManager* manager, FSOUND_STREAM *audio_data,

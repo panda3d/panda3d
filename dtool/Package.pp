@@ -146,6 +146,11 @@
 #set VRPN_LIBS $[VRPN_LIBS]
 #set HAVE_VRPN $[HAVE_VRPN]
 
+#set HELIX_IPATH $[unixfilename $[HELIX_IPATH]]
+#set HELIX_LPATH $[unixfilename $[HELIX_LPATH]]
+#set HELIX_LIBS $[HELIX_LIBS]
+#set HAVE_HELIX $[HAVE_HELIX]
+
 #set ZLIB_IPATH $[unixfilename $[ZLIB_IPATH]]
 #set ZLIB_LPATH $[unixfilename $[ZLIB_LPATH]]
 #set ZLIB_LIBS $[ZLIB_LIBS]

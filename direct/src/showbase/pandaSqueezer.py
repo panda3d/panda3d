@@ -41,7 +41,10 @@ def squeezePandaFiles():
     l = getSqueezeableFiles()
     pandaSqueezeTool.squeeze("PandaModules", "PandaModulesUnsqueezed", l)
 
-    # Clean up the source files now that they've been squeezed.
+    # Clean up the source files now that they've been squeezed.  If
+    # you don't like this behavior (e.g. if you want to inspect the
+    # generated files), use genPyCode -n to avoid squeezing
+    # altogether.
     for i in l:
         os.unlink(i)
 

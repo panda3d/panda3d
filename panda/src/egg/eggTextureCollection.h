@@ -66,7 +66,7 @@ PUBLISHED:
 
   bool is_empty() const;
   int get_num_textures() const;
-  EggTexture get_texture(int index) const;
+  EggTexture *get_texture(int index) const;
 
 public:
   EggGroupNode::iterator insert_textures(EggGroupNode *node);
@@ -84,9 +84,9 @@ PUBLISHED:
   void uniquify_trefs();
   void sort_by_tref();
 
+public:
   // Can be used to traverse all the textures in the collection, in
   // order as last sorted.
-public:
   INLINE iterator begin() const;
   INLINE iterator end() const;
   INLINE bool empty() const;

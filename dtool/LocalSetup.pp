@@ -123,6 +123,9 @@ $[cdefine HAVE_NURBSPP]
 /* Define if we have VRPN installed.  */
 $[cdefine HAVE_VRPN]
 
+/* Define if we have HELIX installed.  */
+$[cdefine HAVE_HELIX]
+
 /* Define if we have CG installed.  */
 $[cdefine HAVE_CG]
 

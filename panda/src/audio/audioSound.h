@@ -95,6 +95,16 @@ PUBLISHED:
   // return: playing time in seconds.
   virtual float length() const = 0;
 
+  // Controls the position of this sound's emitter.
+  // px, py and pz are the emitter's position.
+  // vx, vy and vz are the emitter's velocity in UNITS PER SECOND (default: meters).
+  // You can pass NULL to either value for either function to ignore that value
+  // if you only want to set/get one of them for some reason.
+  virtual void set_3d_attributes(float px = NULL, float py = NULL, float pz = NULL,
+                                 float vx = NULL, float vy = NULL, float vz = NULL) = 0;
+  virtual void get_3d_attributes(float px = NULL, float py = NULL, float pz = NULL,
+                                 float vx = NULL, float vy = NULL, float vz = NULL) = 0;
+
   enum SoundStatus { BAD, READY, PLAYING };
   virtual SoundStatus status() const = 0;
 

@@ -108,6 +108,9 @@ public:
   // return: playing time in seconds.
   float length() const;
 
+  void set_3d_attributes(float* pos, float* vel);
+  void get_3d_attributes(float* pos, float* vel);
+
   AudioSound::SoundStatus status() const;
 
   void finished();

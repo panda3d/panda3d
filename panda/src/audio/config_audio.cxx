@@ -35,6 +35,20 @@ int audio_cache_limit
 float audio_volume 
     =config_audio.GetFloat("audio-volume", 1.0f);
 
+float audio_doppler_factor
+    =config_audio.GetFloat("audio-doppler-factor", 1.0f);
+
+float audio_distance_factor
+    =config_audio.GetFloat("audio-distance-factor", 1.0f);
+
+float audio_drop_off_factor
+    =config_audio.GetFloat("audio-drop-off-factor", 1.0f);
+
+// Guarantee this many channels on local sound card, or just
+// play EVERYTHING in software.
+int audio_min_hw_channels
+    =config_audio.GetInt("audio-min-hw-channels", 15);
+
 bool audio_software_midi 
     =config_audio.GetBool("audio-software-midi", false);
 

@@ -26,7 +26,7 @@
   #define BUILD_TARGET $[HAVE_FMOD]
   #define USE_PACKAGES fmod
   #define BUILDING_DLL BUILDING_FMOD_AUDIO
-  #define LOCAL_LIBS audio
+  #define LOCAL_LIBS audio event
   #define WIN_SYS_LIBS $[WIN_SYS_LIBS] user32.lib advapi32.lib winmm.lib
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx

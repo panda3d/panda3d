@@ -19,6 +19,10 @@
 
 #include "nullAudioManager.h"
 
+//namespace {
+    //static const string blank="";
+    //static float no_listener_attributes [] = {0.0f,0.0f,0.0f, 0.0f,0.0f,0.0f, 0.0f,0.0f,0.0f, 0.0f,0.0f,0.0f};
+//}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NullAudioManager::NullAudioManager
@@ -56,7 +60,7 @@ is_valid() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 PT(AudioSound) NullAudioManager::
-get_sound(const string&) {
+get_sound(const string&, bool positional) {
   return get_null_sound();
 }
 
@@ -179,4 +183,97 @@ reduce_sounds_playing_to(unsigned int) {
 void NullAudioManager::
 stop_all_sounds() {
   // intentionally blank.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NullAudioManager::audio_3d_update
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NullAudioManager::
+audio_3d_update() {
+    // intentionally blank.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NullAudioManager::audio_3d_set_listener_attributes
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NullAudioManager::
+audio_3d_set_listener_attributes(float px, float py, float pz, float vx, float vy, float vz, float fx, float fy, float fz, float ux, float uy, float uz) {
+    // intentionally blank.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NullAudioManager::audio_3d_get_listener_attributes
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NullAudioManager::
+audio_3d_get_listener_attributes(float px, float py, float pz, float vx, float vy, float vz, float fx, float fy, float fz, float ux, float uy, float uz) {
+    // intentionally blank.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NullAudioManager::audio_3d_set_distance_factor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NullAudioManager::
+audio_3d_set_distance_factor(float factor) {
+    // intentionally blank.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NullAudioManager::audio_3d_get_distance_factor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+float NullAudioManager::
+audio_3d_get_distance_factor() const {
+    // intentionally blank.
+    return 0.0f;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NullAudioManager::audio_3d_set_doppler_factor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NullAudioManager::
+audio_3d_set_doppler_factor(float factor) {
+    // intentionally blank.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NullAudioManager::audio_3d_get_doppler_factor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+float NullAudioManager::
+audio_3d_get_doppler_factor() const {
+    // intentionally blank.
+    return 0.0f;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NullAudioManager::audio_3d_set_drop_off_factor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NullAudioManager::
+audio_3d_set_drop_off_factor(float factor) {
+    // intentionally blank.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NullAudioManager::audio_3d_get_drop_off_factor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+float NullAudioManager::
+audio_3d_get_drop_off_factor() const {
+    // intentionally blank.
+    return 0.0f;
 }
