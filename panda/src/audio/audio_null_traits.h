@@ -3,10 +3,13 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
+// yes, this needs to be outside the ifdef protection
+#include "audio_trait.h"
+
+#ifdef AUDIO_USE_NULL
+
 #ifndef __AUDIO_NULL_TRAITS_H__
 #define __AUDIO_NULL_TRAITS_H__
-
-#include "audio_trait.h"
 
 class EXPCL_PANDA NullSample : public AudioTraits::SampleClass {
 public:
@@ -39,3 +42,4 @@ public:
 #include "audio_null_traits.I"
 
 #endif /* __AUDIO_NULL_TRAITS_H__ */
+#endif /* AUDIO_USE_NULL */

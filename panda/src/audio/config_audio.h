@@ -16,5 +16,7 @@ extern int audio_mix_freq;
 extern string* audio_mode_flags;
 extern int audio_driver_select;
 extern string* audio_driver_params;
+extern int audio_buffer_size;
+extern string* audio_device;
 
 #endif /* __CONFIG_AUDIO_H__ */

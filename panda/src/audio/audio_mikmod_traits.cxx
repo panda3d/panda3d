@@ -4,6 +4,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "audio_mikmod_traits.h"
+
+#ifdef AUDIO_USE_MIKMOD
+
 #include "audio_manager.h"
 #include "config_audio.h"
 #include <list>
@@ -303,3 +306,5 @@ MikModMidiPlayer* MikModMidiPlayer::get_instance(void) {
     _global_instance = new MikModMidiPlayer();
   return _global_instance;
 }
+
+#endif /* AUDIO_USE_MIKMOD */

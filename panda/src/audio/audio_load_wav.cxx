@@ -8,7 +8,9 @@
 
 Configure(audio_load_wav);
 
-#ifdef USE_MIKMOD
+#include "audio_trait.h"
+
+#ifdef AUDIO_USE_MIKMOD
 
 #include "audio_mikmod_traits.h"
 
@@ -26,9 +28,9 @@ void AudioLoadWav(AudioTraits::SampleClass** sample,
   *destroy = AudioDestroyWav;
 }
 
-#else /* no MikMod */
+#else /* AUDIO_USE_MIKMOD */
 
-#ifdef PENV_WIN32
+#ifdef AUDIO_USE_WIN32
 
 #include "audio_win_traits.h"
 
@@ -46,7 +48,25 @@ void AudioLoadWav(AudioTraits::SampleClass** sample,
   *destroy = AudioDestroyWav;
 }
 
-#else /* no win32 */
+#else /* AUDIO_USE_WIN32 */
+
+#ifdef AUDIO_USE_LINUX
+
+void AudioDestroyWav(AudioTraits::SampleClass* sample) {
+  delete sample;
+}
+
+void AudioLoadWav(AudioTraits::SampleClass** sample,
+		  AudioTraits::PlayerClass** player,
+		  AudioTraits::DeleteSampleFunc** destroy, Filename) {
+  *sample = (AudioTraits::SampleClass*)0L;
+  *player = (audioTraits::PlayerClass*)0L;
+  *destroy = AudioDestroyWav;
+}
+
+#else /* AUDIO_USE_LINUX */
+
+#ifdef AUDIO_USE_NULL
 
 // Null driver
 #include "audio_null_traits.h"
@@ -63,8 +83,14 @@ void AudioLoadWav(AudioTraits::SampleClass** sample,
   *destroy = AudioDestroyWav;
 }
 
-#endif /* win32 */
-#endif /* MikMod */
+#else /* AUDIO_USE_NULL */
+
+#error "unknown implementation driver"
+
+#endif /* AUDIO_USE_NULL */
+#endif /* AUDIO_USE_LINUX */
+#endif /* AUDIO_USE_WIN32 */
+#endif /* AUDIO_USE_MIKMOD */
 
 ConfigureFn(audio_load_wav) {
   AudioPool::register_sample_loader("wav", AudioLoadWav);

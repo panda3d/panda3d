@@ -4,6 +4,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "audio_linux_traits.h"
+
+#ifdef AUDIO_USE_LINUX
+
 #include "audio_manager.h"
 #include "config_audio.h"
 #include <ipc_thread.h>
@@ -278,3 +281,5 @@ LinuxPlayer* LinuxPlayer::get_instance(void) {
     _global_instance = new LinuxPlayer();
   return _global_instance;
 }
+
+#endif /* AUDIO_USE_LINUX */

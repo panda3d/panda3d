@@ -46,4 +46,25 @@ public:
   };
 };
 
+// this is really ugly.  But since we have to be able to include/compile
+// all of the driver files on any system, I need to centralize a switch
+// for which one is real.
+#ifdef HAVE_MIKMOD
+#define AUDIO_USE_MIKMOD
+#else /* HAVE_MIKMOD */
+#ifdef PENV_WIN32
+#define AUDIO_USE_WIN32
+#else /* PENV_WIN32 */
+/*
+#ifdef PENV_LINUX
+#define AUDIO_USE_LINUX
+#else /* PENV_LINUX *
+*/
+#define AUDIO_USE_NULL
+/*
+#endif /* PENV_LINUX *
+*/
+#endif /* PENV_WIN32 */
+#endif /* HAVE_MIKMOD */
+
 #endif /* __AUDIO_TRAIT_H__ */

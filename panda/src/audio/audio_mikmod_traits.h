@@ -3,10 +3,13 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
+// yes, this should be outside
+#include "audio_trait.h"
+
+#ifdef AUDIO_USE_MIKMOD
 #ifndef __AUDIO_MIKMOD_TRAITS_H__
 #define __AUDIO_MIKMOD_TRAITS_H__
 
-#include "audio_trait.h"
 #include <pandabase.h>
 #include <filename.h>
 #include <mikmod.h>
@@ -100,3 +103,4 @@ private:
 };
 
 #endif /* __AUDIO_MIKMOD_TRAITS_H__ */
+#endif /* AUDIO_USE_MIKMOD */

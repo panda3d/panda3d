@@ -4,6 +4,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "audio_null_traits.h"
+
+#ifdef AUDIO_USE_NULL
+
 #include "audio_manager.h"
 #include "config_audio.h"
 
@@ -68,3 +71,5 @@ void NullPlayer::set_volume(AudioTraits::MusicClass*, int) {
   if (audio_cat->is_debug())
     audio_cat->debug() << "in set volume (music) in Null audio driver" << endl;
 }
+
+#endif /* AUDIO_USE_NULL */

@@ -4,6 +4,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "audio_win_traits.h"
+
+#ifdef AUDIO_USE_WIN32
+
 #include "audio_manager.h"
 #include "config_audio.h"
 
@@ -658,3 +661,5 @@ WinPlayer* WinPlayer::get_instance(void) {
     _global_instance = new WinPlayer();
   return _global_instance;
 }
+
+#endif /* AUDIO_USE_WIN32 */

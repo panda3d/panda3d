@@ -3,10 +3,13 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
+// yes, this needs to be outside the ifdef protection
+#include "audio_trait.h"
+
+#ifdef AUDIO_USE_WIN32
 #ifndef __AUDIO_WIN_TRAITS_H__
 #define __AUDIO_WIN_TRAITS_H__
 
-#include "audio_trait.h"
 #include <filename.h>
 
 #include <windows.h>
@@ -76,3 +79,4 @@ private:
 #include "audio_win_traits.I"
 
 #endif /* __AUDIO_WIN_TRAITS_H__ */
+#endif /* AUDIO_USE_WIN32 */
