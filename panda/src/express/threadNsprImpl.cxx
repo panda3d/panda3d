@@ -156,6 +156,18 @@ start(ThreadPriority priority, bool global, bool joinable) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ThreadNsprImpl::interrupt
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void ThreadNsprImpl::
+interrupt() {
+  if (_thread != (PRThread *)NULL) {
+    PR_Interrupt(_thread);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ThreadNsprImpl::join
 //       Access: Public
 //  Description: 

@@ -53,6 +53,7 @@ public:
   INLINE const string &get_name() const;
 
   INLINE bool start(ThreadPriority priority, bool global, bool joinable);
+  INLINE void interrupt();
   INLINE void join();
 
   INLINE static void prepare_for_exit();

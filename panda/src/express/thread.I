@@ -96,6 +96,20 @@ start(ThreadPriority priority, bool global, bool joinable) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Thread::interrupt
+//       Access: Public
+//  Description: Sends an interrupt message to the thread.  This will
+//               interrupt any blocking-type system calls the thread
+//               may be waiting on, such as I/O, so that the thread
+//               may continue some other processing.  The specific
+//               behavior is implementation dependent.
+////////////////////////////////////////////////////////////////////
+INLINE void Thread::
+interrupt() {
+  _impl.interrupt();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Thread::join
 //       Access: Public
 //  Description: Blocks the calling process until the thread

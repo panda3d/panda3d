@@ -43,6 +43,7 @@ public:
   INLINE ~ThreadNsprImpl();
 
   bool start(ThreadPriority priority, bool global, bool joinable);
+  void interrupt();
   void join();
 
   INLINE static void prepare_for_exit();
