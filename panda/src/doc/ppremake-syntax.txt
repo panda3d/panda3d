@@ -151,7 +151,7 @@ Simple commands:
   
     Calls the named subroutine immediately.  Here <subroutine> is the
     name of the subroutine to call, and <params> is the
-    comma-separated list of expressions to subsitute in for the
+    comma-separated list of expressions to substitute in for the
     subroutine's formal parameters.  The subroutine must have
     previously been defined with the #defsub command (see below).
 
