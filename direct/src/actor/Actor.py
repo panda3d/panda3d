@@ -442,70 +442,42 @@ class Actor(PandaObject, NodePath):
     
     def getFrameRate(self, animName=None, partName=None):
         """getFrameRate(self, string, string=None)
-        Return duration of given anim name and given part.
+        Return actual frame rate of given anim name and given part.
         If no anim specified, use the currently playing anim.
         If no part specified, return anim durations of first part.
-        NOTE: returns info only for the first LOD"""
-        # use the first LOD
+        NOTE: returns info only for an arbitrary LOD"""
         lodName = self.__animControlDict.keys()[0]
-
-        if (partName == None):
-            partName = self.__animControlDict[lodName].keys()[0]
-    
-        if (animName==None):
-            animName = self.getCurrentAnim(partName)
-
-        # get duration for named part only
-        if (self.__animControlDict[lodName].has_key(partName)):        
-            animControl = self.getAnimControl(animName, partName, lodName)
-            if (animControl != None):
-                return animControl.getFrameRate()
-        else:
-            Actor.notify.warning("no part named %s" % (partName))
-        return None
+        controls = self.getAnimControls(animName, partName)
+        if len(controls) == 0:
+            return None
+        
+        return controls[0].getFrameRate()
     
     def getBaseFrameRate(self, animName=None, partName=None):
         """getBaseFrameRate(self, string, string=None)
-        Return duration of given anim name and given part, unmodified
+        Return frame rate of given anim name and given part, unmodified
         by any play rate in effect.
         """
         lodName = self.__animControlDict.keys()[0]
+        controls = self.getAnimControls(animName, partName)
+        if len(controls) == 0:
+            return None
 
-        if (partName == None):
-            partName = self.__animControlDict[lodName].keys()[0]
-    
-        if (animName==None):
-            animName = self.getCurrentAnim(partName)
-
-        # get duration for named part only
-        if (self.__animControlDict[lodName].has_key(partName)):        
-            animControl = self.getAnimControl(animName, partName, lodName)
-            if (animControl != None):
-                return animControl.getAnim().getBaseFrameRate()
-        else:
-            Actor.notify.warning("no part named %s" % (partName))
-        return None
+        return controls[0].getAnim().getBaseFrameRate()
 
     def getPlayRate(self, animName=None, partName=None):
         """getPlayRate(self, string=None, string=None)
         Return the play rate of given anim for a given part.
         If no part is given, assume first part in dictionary.
         If no anim is given, find the current anim for the part.
-        NOTE: Returns info only for the first LOD"""
+        NOTE: Returns info only for an arbitrary LOD"""
         # use the first lod
         lodName = self.__animControlDict.keys()[0]
-            
-        if (partName==None):
-            partName = self.__animControlDict[lodName].keys()[0]
-
-        if (animName==None):
-            animName = self.getCurrentAnim(partName)
-
-        animControl = self.getAnimControl(animName, partName, lodName)
-        if (animControl != None):
-            return animControl.getPlayRate()
-        else:
+        controls = self.getAnimControls(animName, partName)
+        if len(controls) == 0:
             return None
+
+        return controls[0].getPlayRate()
     
     def setPlayRate(self, rate, animName=None, partName=None):
         """getPlayRate(self, float, string=None, string=None)
@@ -513,104 +485,76 @@ class Actor(PandaObject, NodePath):
         If no part is given, set for all parts in dictionary.
         If no anim is given, find the current anim for the part.
         NOTE: sets play rate on all LODs"""
-        # make a list of partNames for loop below
-        for lodName in self.__animControlDict.keys():
-            animControlDict = self.__animControlDict[lodName]
-            if (partName==None):
-                partNames = animControlDict.keys()
-            else:
-                partNames = []
-                partNames.append(partName)
-
-            # for each part in list, set play rate on given or current anim
-            for thisPart in partNames:
-                if (animName==None):
-                    thisAnim = self.getCurrentAnim(thisPart)
-                else:
-                    thisAnim = animName
-                animControl = self.getAnimControl(thisAnim, thisPart, lodName)
-                if (animControl != None):
-                    animControl.setPlayRate(rate)
+        for control in self.getAnimControls(animName, partName):
+            control.setPlayRate(rate)
 
     def getDuration(self, animName=None, partName=None):
         """getDuration(self, string, string=None)
         Return duration of given anim name and given part.
         If no anim specified, use the currently playing anim.
         If no part specified, return anim duration of first part.
-        NOTE: returns info for first LOD only"""
+        NOTE: returns info for arbitrary LOD"""
         lodName = self.__animControlDict.keys()[0]
-        if (partName == None):
-            partName = self.__animControlDict[lodName].keys()[0]
+        controls = self.getAnimControls(animName, partName)
+        if len(controls) == 0:
+            return None
 
-        if (animName==None):
-            animName = self.getCurrentAnim(partName)          
-
-        # get duration for named part only
-        if (self.__animControlDict[lodName].has_key(partName)):        
-            animControl = self.getAnimControl(animName, partName, lodName)
-            if (animControl != None):
-                return (animControl.getNumFrames() / \
-                        animControl.getFrameRate())
-        else:
-            Actor.notify.warning("no part named %s" % (partName))
-
-        return None
+        animControl = controls[0]
+        return (animControl.getNumFrames() / animControl.getFrameRate())
 
     def getNumFrames(self, animName=None, partName=None):
         """ getNumFrames(animName, partName)
         """
         lodName = self.__animControlDict.keys()[0]
-        if (partName == None):
-            partName = self.__animControlDict[lodName].keys()[0]
-        if (animName == None):
-            animName = self.getCurrentAnim(partName)
-        if (self.__animControlDict[lodName].has_key(partName)):
-            animControl = self.getAnimControl(animName, partName, lodName)
-            if (animControl != None):
-                return animControl.getNumFrames()
-            else:
-                Actor.notify.error('no anim control!')
-        else:
-            Actor.notify.warning('no part named: %s' % (partName))
+        controls = self.getAnimControls(animName, partName)
+        if len(controls) == 0:
+            return None
+
+        return controls[0].getNumFrames()
         
     def getCurrentAnim(self, partName=None):
         """getCurrentAnim(self, string=None)
-        Return the anim current playing on the actor. If part not
-        specified return current anim of first part in dictionary.
-        NOTE: only returns info for the first LOD"""
-        lodName = self.__animControlDict.keys()[0]
-        if (partName==None):
-            partName = self.__animControlDict[lodName].keys()[0]
+        Return the anim currently playing on the actor. If part not
+        specified return current anim of an arbitrary part in dictionary.
+        NOTE: only returns info for an arbitrary LOD"""
+        lodName, animControlDict = self.__animControlDict.items()[0]
+        if partName == None:
+            partName, animDict = animControlDict.items()[0]
+        else:
+            animDict = animControlDict.get(partName)
+            if animDict == None:
+                # part was not present
+                Actor.notify.warning("couldn't find part: %s" % (partName))
+                return None
 
         # loop through all anims for named part and find if any are playing
-        if (self.__animControlDict[lodName].has_key(partName)):
-            for animName in self.__animControlDict[lodName][partName].keys():
-                if (self.getAnimControl(animName, partName, lodName).isPlaying()):
-                    return animName
-        else:
-            Actor.notify.warning("no part named %s" % (partName))
+        for animName, anim in animDict.items():
+            if isinstance(anim[1], AnimControl) and anim[1].isPlaying():
+                return animName
 
         # we must have found none, or gotten an error
         return None
 
     def getCurrentFrame(self, animName=None, partName=None):
         """getCurrentAnim(self, string=None)
-        Return the anim current playing on the actor. If part not
-        specified return current anim of first part in dictionary.
-        NOTE: only returns info for the first LOD"""
-        if animName == None:
-            animName = self.getCurrentAnim(partName)
-
-        lodName = self.__animControlDict.keys()[0]
-        if (partName==None):
-            partName = self.__animControlDict[lodName].keys()[0]
-
-        # check the part name
-        if (self.__animControlDict[lodName].has_key(partName)):
-            animControl = self.getAnimControl(animName, partName, lodName)
-            return animControl.getFrame()
+        Return the current frame number of the anim current playing on
+        the actor. If part not specified return current anim of first
+        part in dictionary.
+        NOTE: only returns info for an arbitrary LOD"""
+        lodName, animControlDict = self.__animControlDict.items()[0]
+        if partName == None:
+            partName, animDict = animControlDict.items()[0]
         else:
-            Actor.notify.warning("no part named %s" % (partName))
+            animDict = animControlDict.get(partName)
+            if animDict == None:
+                # part was not present
+                Actor.notify.warning("couldn't find part: %s" % (partName))
+                return None
+
+        # loop through all anims for named part and find if any are playing
+        for animName, anim in animDict.items():
+            if isinstance(anim[1], AnimControl) and anim[1].isPlaying():
+                return anim[1].getFrame()
 
         # we must have found none, or gotten an error
         return None
@@ -941,53 +885,20 @@ class Actor(PandaObject, NodePath):
         Stop named animation on the given part of the actor.
         If no name specified then stop all animations on the actor.
         NOTE: stops all LODs"""
-        for thisLod in self.__animControlDict.keys():
-            animControlDict = self.__animControlDict[thisLod]
-            # assemble lists of parts and anims
-            if (partName == None):
-                partNames = animControlDict.keys()
-            else:
-                partNames = [partName]
-            if (animName == None):
-                animNames = animControlDict[partNames[0]].keys()
-            else:
-                animNames = [animName]
-
-            # loop over all parts
-            for thisPart in partNames:
-                for thisAnim in animNames:
-                    # only stop if it's bound
-                    if isinstance(animControlDict[thisPart][thisAnim][1],
-                                  AnimControl):
-                        animControlDict[thisPart][thisAnim][1].stop()
+        for control in self.getAnimControls(animName, partName):
+            control.stop()
         
     def play(self, animName, partName=None, fromFrame=None, toFrame=None):
         """play(self, string, string=None)
         Play the given animation on the given part of the actor.
         If no part is specified, try to play on all parts. NOTE:
         plays over ALL LODs"""
-        for thisLod in self.__animControlDict.keys():
-            animControlDict = self.__animControlDict[thisLod]
-            if (partName == None):
-                # play all parts
-                for thisPart in animControlDict.keys():            
-                    animControl = self.getAnimControl(animName, thisPart,
-                                                        thisLod)
-                    if (animControl != None):
-                        if (fromFrame == None):
-                            animControl.play()
-                        else:
-                            animControl.play(fromFrame, toFrame)
-
-            else:
-                animControl = self.getAnimControl(animName, partName,
-                                                    thisLod)
-                if (animControl != None):
-                    if (fromFrame == None):
-                        animControl.play()
-                    else:
-                        animControl.play(fromFrame, toFrame)
-
+        if fromFrame == None:
+            for control in self.getAnimControls(animName, partName):
+                control.play(restart)
+        else:
+            for control in self.getAnimControls(animName, partName):
+                control.play(restart, fromFrame, toFrame)
 
     def loop(self, animName, restart=1, partName=None,
              fromFrame=None, toFrame=None):
@@ -996,27 +907,12 @@ class Actor(PandaObject, NodePath):
         restarting at zero frame if requested. If no part name
         is given then try to loop on all parts. NOTE: loops on
         all LOD's"""
-        for thisLod in self.__animControlDict.keys():
-            animControlDict = self.__animControlDict[thisLod]
-            if (partName == None):
-                # loop all parts
-                for thisPart in animControlDict.keys():
-                    animControl = self.getAnimControl(animName, thisPart,
-                                                      thisLod)
-                    if (animControl != None):
-                        if (fromFrame == None):
-                            animControl.loop(restart)
-                        else:
-                            animControl.loop(restart, fromFrame, toFrame)
-            else:
-                # loop a specific part
-                animControl = self.getAnimControl(animName, partName,
-                                                  thisLod)
-                if (animControl != None):
-                    if (fromFrame == None):
-                        animControl.loop(restart)
-                    else:
-                        animControl.loop(restart, fromFrame, toFrame)
+        if fromFrame == None:
+            for control in self.getAnimControls(animName, partName):
+                control.loop(restart)
+        else:
+            for control in self.getAnimControls(animName, partName):
+                control.loop(restart, fromFrame, toFrame)
 
     def pingpong(self, animName, fromFrame, toFrame, restart=1, partName=None):
         """pingpong(self, string, fromFrame, toFrame, int=1, string=None)
@@ -1024,42 +920,16 @@ class Actor(PandaObject, NodePath):
         restarting at zero frame if requested. If no part name
         is given then try to loop on all parts. NOTE: loops on
         all LOD's"""
-        for thisLod in self.__animControlDict.keys():
-            animControlDict = self.__animControlDict[thisLod]
-            if (partName == None):
-                # loop all parts
-                for thisPart in animControlDict.keys():
-                    animControl = self.getAnimControl(animName, thisPart,
-                                                        thisLod)
-                    if (animControl != None):
-                        animControl.pingpong(restart, fromFrame, toFrame)
-            else:
-                # loop a specific part
-                animControl = self.getAnimControl(animName, partName,
-                                                    thisLod)
-                if (animControl != None):
-                    animControl.pingpong(restart, fromFrame, toFrame)
+        for control in self.getAnimControls(animName, partName):
+            control.pingpong(restart, fromFrame, toFrame)
         
-    def pose(self, animName, frame, partName=None):
+    def pose(self, animName, frame, partName=None, lodName=None):
         """pose(self, string, int, string=None)
         Pose the actor in position found at given frame in the specified
         animation for the specified part. If no part is specified attempt
-        to apply pose to all parts. NOTE: poses all LODs"""
-        for thisLod in self.__animControlDict.keys():
-            animControlDict = self.__animControlDict[thisLod]
-            if (partName==None):
-                # pose all parts
-                for thisPart in animControlDict.keys():
-                    animControl = self.getAnimControl(animName, thisPart,
-                                                        thisLod)
-                    if (animControl != None):
-                        animControl.pose(frame)
-            else:
-                # pose a specific part
-                animControl = self.getAnimControl(animName, partName,
-                                                    thisLod)
-                if (animControl != None):
-                    animControl.pose(frame)
+        to apply pose to all parts."""
+        for control in self.getAnimControls(animName, partName, lodName):
+            control.pose(frame)
 
     def enableBlend(self, partName = None):
         """Enables blending of multiple animations simultaneously.
@@ -1106,32 +976,8 @@ class Actor(PandaObject, NodePath):
         animations; it only makes sense to call this after a previous
         call to enableBlend().
         """
-        if lodName == None:
-            for lodName, controlDict in self.__animControlDict.items():
-                if partName == None:
-                    for part in controlDict.keys():
-                        ac = self.getAnimControl(animName, part, lodName)
-                        if ac != None:
-                            ac.getPart().setControlEffect(ac, effect)
-                else:
-                    ac = self.getAnimControl(animName, partName, lodName)
-                    if ac != None:
-                        ac.getPart().setControlEffect(ac, effect)
-        else:
-            if partName == None:
-                controlDict = self.__animControlDict.get(lodName)
-                if controlDict != None:
-                    for part in controlDict.keys():
-                        ac = self.getAnimControl(animName, part, lodName)
-                        if ac != None:
-                            ac.getPart().setControlEffect(ac, effect)
-                else:
-                    Actor.notify.warning("couldn't find lod: %s" % (lodName))
-            else:
-                ac = self.getAnimControl(animName, partName, lodName)
-                if ac != None:
-                    ac.getPart().setControlEffect(ac, effect)
-            
+        for control in self.getAnimControls(animName, partName, lodName):
+            control.getPart().setControlEffect(control, effect)
 
     def getAnimControl(self, animName, partName, lodName="lodRoot"):
         """getAnimControl(self, string, string, string="lodRoot")
@@ -1139,26 +985,90 @@ class Actor(PandaObject, NodePath):
         a given anim and part. Return the animControl if present,
         or None otherwise
         """
-        if (self.__animControlDict.has_key(lodName)):
-            animControlDict = self.__animControlDict[lodName]
-            if (animControlDict.has_key(partName)):
-                if (animControlDict[partName].has_key(animName)):
-                    # make sure the anim is bound first
-                    self.bindAnim(animName, partName, lodName)
-                    return animControlDict[partName][animName][1]
-                else:
-                    # anim was not present
-                    Actor.notify.warning("couldn't find anim: %s" % (animName))
-            else:
-                # part was not present
-                Actor.notify.warning("couldn't find part: %s" % (partName))
+        animControlDict = self.__animControlDict.get(lodName)
+        # if this assertion fails, named lod was not present
+        assert(animControlDict != None)
+
+        animDict = animControlDict.get(partName)
+        if animDict == None:
+            # part was not present
+            Actor.notify.warning("couldn't find part: %s" % (partName))
         else:
-            # lod was not present
-            Actor.notify.warning("couldn't find lod: %s" % (lodName))
-            assert(0)
+            anim = animDict.get(animName)
+            if anim == None:
+                # anim was not present
+                Actor.notify.warning("couldn't find anim: %s" % (animName))
+            else:
+                # bind the animation first if we need to
+                if not isinstance(anim[1], AnimControl):
+                    self.__bindAnimToPart(animName, partName, lodName)
+                return anim[1]
             
         return None
+        
+    def getAnimControls(self, animName=None, partName=None, lodName=None):
+        """getAnimControls(self, string, string=None, string=None)
 
+        Returns a list of the AnimControls that represent the given
+        animation for the given part and the given lod.  If animName
+        is omitted, the currently-playing animation (or all
+        currently-playing animations) is returned.  If partName is
+        omitted, all parts are returned.  If lodName is omitted, all
+        LOD's are returned.
+        """
+        controls = []
+
+        # build list of lodNames and corresponding animControlDicts
+        # requested.
+        if lodName == None:
+            # Get all LOD's
+            animControlDictItems = self.__animControlDict.items()
+        else:
+            animControlDict = self.__animControlDict.get(lodName)
+            if animControlDict == None:
+                Actor.notify.warning("couldn't find lod: %s" % (lodName))
+                animControlDictItems = []
+            else:
+                animControlDictItems = [(lodName, animControlDict)]
+
+        for lodName, animControlDict in animControlDictItems:
+            # Now, build the list of partNames and the corresponding
+            # animDicts.
+            if partName == None:
+                # Get all parts
+                animDictItems = animControlDict.items()
+            else:
+                # Get a specific part
+                animDict = animControlDict.get(partName)
+                if animDict == None:
+                    # part was not present
+                    Actor.notify.warning("couldn't find part: %s" % (partName))
+                    animDictItems = []
+                else:
+                    animDictItems = [(partName, animDict)]
+                
+            if animName == None:
+                # get all playing animations
+                for thisPart, animDict in animDictItems:
+                    for anim in animDict.values():
+                        if isinstance(anim[1], AnimControl) and anim[1].isPlaying():
+                            controls.append(anim[1])
+            else:
+                # get the named animation only. 
+                for thisPart, animDict in animDictItems:
+                    anim = animDict.get(animName)
+                    if anim == None:
+                        # anim was not present
+                        Actor.notify.warning("couldn't find anim: %s" % (animName))
+                    else:
+                        # bind the animation first if we need to
+                        if not isinstance(anim[1], AnimControl):
+                            if self.__bindAnimToPart(animName, thisPart, lodName):
+                                controls.append(anim[1])
+                        else:
+                            controls.append(anim[1])
+
+        return controls
             
     def loadModel(self, modelPath, partName="modelRoot", lodName="lodRoot", copy = 1):
         """loadModel(self, string, string="modelRoot", string="lodRoot",
@@ -1327,6 +1237,8 @@ class Actor(PandaObject, NodePath):
         # enough to preload, fetch from disk :(
         animPath = self.__animControlDict[lodName][partName][animName][0]
         anim = loader.loadModelOnce(animPath)
+        if anim == None:
+            return None
         animBundle = \
                    (anim.find("**/+AnimBundleNode").node()).getBundle()
 

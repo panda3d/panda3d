@@ -32,9 +32,11 @@ class ActorInterval(Interval.Interval):
         # Record class specific variables
         self.actor = actor
         self.animName = animName
+        self.controls = self.actor.getAnimControls(self.animName)
+        assert(len(self.controls) > 0)
         self.loopAnim = loop
-        self.frameRate = self.actor.getBaseFrameRate(self.animName) * playRate
-        self.numFrames = self.actor.getNumFrames(self.animName)
+        self.frameRate = self.controls[0].getAnim().getBaseFrameRate() * playRate
+        self.numFrames = self.controls[0].getNumFrames()
         # Compute start time
         self.startTime = startTime
         # If no name specified, use id as name
@@ -85,10 +87,13 @@ class ActorInterval(Interval.Interval):
         # Calc integer frame number
         frame = self.calcFrame(t)
         # Pose anim
-        self.actor.pose(self.animName, frame)
-        # Print debug information
-        self.notify.debug('goToT() - %s pose to frame: %d' %
-                          (self.name,frame))
+
+        # We use our pre-computed list of animControls for
+        # efficiency's sake, rather than going through the relatively
+        # expensive Actor interface every frame.
+        for control in self.controls:
+            control.pose(frame)
+            
         return frame
 
     def updateFunc(self, t, event=Interval.IVAL_NONE):
@@ -100,15 +105,11 @@ class ActorInterval(Interval.Interval):
             return
         # Update animation based upon current time
         # Pose or stop anim
-        if (t >= self.getDuration()):
+        if (t >= self.duration):
             self.actor.stop(self.animName)
-            frame = self.goToT(self.getDuration())
+            frame = self.goToT(self.duration)
             if self.loopAnim:
                 self.ignore(self.stopEvent)
-            # Print debug information
-            self.notify.debug(
-                'updateFunc() - %s stoping at frame: ' % self.name +
-                '%d Num frames: %d' % (frame, self.numFrames))
         elif self.loopAnim == 1:
             if event == Interval.IVAL_INIT:
                 # Pose anim
@@ -116,10 +117,6 @@ class ActorInterval(Interval.Interval):
                 # And start loop, restart flag says continue from current frame
                 self.actor.loop(self.animName, restart=0)
                 self.acceptOnce(self.stopEvent, self.actor.stop)
-                # Print debug information
-                self.notify.debug(
-                    'updateFunc() - IVAL_INIT %s looping anim' %
-                    self.name)
         else:
             # Pose anim
             self.goToT(t)
@@ -162,7 +159,7 @@ class LerpAnimInterval(Interval.Interval):
             return
 
         # First, normalize t into the range 0 .. 1, and apply the blendType.
-        t = self.blendType(float(t) / self.getDuration())
+        t = self.blendType(float(t) / self.duration)
 
         # Then compute the current weight based on the time elapsed so far.
         w = self.startWeight + t * self.deltaWeight
