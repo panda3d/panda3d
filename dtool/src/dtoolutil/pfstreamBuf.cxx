@@ -114,7 +114,7 @@ int PipeStreamBuf::underflow(void) {
 #else /* WIN32_VC */
     memcpy(base()+(len-n), buf, n);
 #endif /* WIN32_VC */
-    gbump(-n);
+    gbump(-((int)n));
   }
   delete buf;
   return ret;
