@@ -69,7 +69,7 @@ PUBLISHED:
   void direct_update(PyObject *distobj, const string &field_name, 
                      const Datagram &datagram);
   bool pack_required_field(DCPacker &packer, PyObject *distobj, 
-                           DCField *field) const;
+                           const DCField *field) const;
 
 
   Datagram client_format_update(const string &field_name,

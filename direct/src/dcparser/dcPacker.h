@@ -178,6 +178,7 @@ private:
   void clear();
 
 #ifdef HAVE_PYTHON
+  void pack_class_object(DCClass *dclass, PyObject *object);
   PyObject *unpack_class_object(DCClass *dclass);
   void set_class_element(PyObject *object, const DCField *field);
 #endif

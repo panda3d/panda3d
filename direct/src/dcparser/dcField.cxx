@@ -195,8 +195,6 @@ pack_args(DCPacker &packer, PyObject *sequence) const {
   nassertr(!packer.had_error(), false);
   nassertr(packer.get_current_field() == this, false);
 
-  nassertr(PySequence_Check(sequence), false);
-
   packer.pack_object(sequence);
   if (!packer.had_error()) {
     /*
@@ -208,22 +206,24 @@ pack_args(DCPacker &packer, PyObject *sequence) const {
     return true;
   }
 
-  PyObject *tuple = PySequence_Tuple(sequence);
-  PyObject *str = PyObject_Str(tuple);
-  
-  ostringstream strm;
-  if (packer.had_pack_error()) {
-    strm << "Incorrect arguments to field: " << get_name()
-         << PyString_AsString(str);
-  } else {
-    strm << "Value out of range on field: " << get_name()
-         << PyString_AsString(str);
-  }
-
-  Py_DECREF(str);
-  Py_DECREF(tuple);
+  if (!Notify::ptr()->has_assert_failed()) {
+    PyObject *tuple = PySequence_Tuple(sequence);
+    PyObject *str = PyObject_Str(tuple);
     
-  nassert_raise(strm.str());
+    ostringstream strm;
+    if (packer.had_pack_error()) {
+      strm << "Incorrect arguments to field: " << get_name()
+           << PyString_AsString(str);
+    } else {
+      strm << "Value out of range on field: " << get_name()
+           << PyString_AsString(str);
+    }
+    
+    Py_DECREF(str);
+    Py_DECREF(tuple);
+
+    nassert_raise(strm.str());
+  }
   return false;
 }
 #endif  // HAVE_PYTHON

@@ -423,8 +423,34 @@ direct_update(PyObject *distobj, const string &field_name,
 //               Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool DCClass::
-pack_required_field(DCPacker &packer, PyObject *distobj, DCField *field) const {
-  DCAtomicField *atom = field->as_atomic_field();
+pack_required_field(DCPacker &packer, PyObject *distobj, 
+                    const DCField *field) const {
+  const DCParameter *parameter = ((DCField *)field)->as_parameter();
+  if (parameter != (DCParameter *)NULL) {
+    // This is the easy case: to pack a parameter, we just look on the
+    // class object for the data element.
+    string field_name = field->get_name();
+
+    if (!PyObject_HasAttrString(distobj, (char *)field_name.c_str())) {
+      ostringstream strm;
+      strm << "Data element " << field_name
+           << ", required by dc file for dclass " << get_name()
+           << ", not defined on object.";
+      nassert_raise(strm.str());
+      return false;
+    }
+    PyObject *result = 
+      PyObject_GetAttrString(distobj, (char *)field_name.c_str());
+    nassertr(result != (PyObject *)NULL, false);
+
+    // Now pack the value into the datagram.
+    bool pack_ok = parameter->pack_args(packer, result);
+    Py_DECREF(result);
+    
+    return pack_ok;
+  }
+
+  const DCAtomicField *atom = ((DCField *)field)->as_atomic_field();
   if (atom == (DCAtomicField *)NULL) {
     ostringstream strm;
     strm << "Cannot pack non-atomic field " << field->get_name()
@@ -476,6 +502,8 @@ pack_required_field(DCPacker &packer, PyObject *distobj, DCField *field) const {
   Py_DECREF(empty_args);
   Py_DECREF(func);
   if (result == (PyObject *)NULL) {
+    // We don't set this as an exception, since presumably the Python
+    // method itself has already triggered a Python exception.
     cerr << "Error when calling " << get_name << "\n";
     return false;
   }

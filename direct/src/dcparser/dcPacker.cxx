@@ -634,8 +634,6 @@ unpack_skip() {
 void DCPacker::
 pack_object(PyObject *object) {
   nassertv(_mode == M_pack || _mode == M_repack);
-  PyObject *str = PyObject_Str(object);
-  Py_DECREF(str);
 
   if (PyInt_Check(object)) {
     pack_int(PyInt_AS_LONG(object));
@@ -654,15 +652,65 @@ pack_object(PyObject *object) {
       pack_string(string(buffer, length));
     }
 
-  } else if (PySequence_Check(object)) {
-    push();
-    int size = PySequence_Size(object);
-    for (int i = 0; i < size; i++) {
-      PyObject *element = PySequence_GetItem(object, i);
-      pack_object(element);
-      Py_DECREF(element);
+  } else {
+    DCClass *dclass = NULL;
+    const DCClassParameter *class_param = ((DCPackerInterface *)get_current_field())->as_class_parameter();
+    if (class_param != (DCClassParameter *)NULL) {
+      dclass = class_param->get_class();
     }
-    pop();
+
+    int size = PySequence_Size(object);
+
+    // If dclass is not NULL, the packer is expecting a class object.
+    // There are then two cases: (1) the user has supplied a matching
+    // class object, or (2) the user has supplied a sequence object.
+    // Unfortunately, it may be difficult to differentiate these two
+    // cases, since a class object may also be a sequence object.
+
+    // The rule to differentiate them is:
+
+    // (1) If the supplied class object is an instance of the expected
+    // class object, it is considered to be a class object.
+
+    // (2) Otherwise, if the supplied class object has a __len__()
+    // method (i.e. PySequence_Size() returns a number >= 0), then it
+    // is considered to be a sequence.
+
+    // (3) Otherwise, it is considered to be a class object.
+
+    if (dclass != (DCClass *)NULL && 
+        ((dclass->get_class_def() != (PyObject *)NULL && 
+          PyObject_IsInstance(object, dclass->get_class_def())) ||
+         size < 0)) {
+      // The supplied object is either an instance of the expected
+      // class object, or the size is less than 0--this is case (1) or
+      // (3).
+      pack_class_object(dclass, object);
+
+    } else if (size >= 0) {
+      // The supplied object is not an instance of the expected class
+      // object, and it does return a valid size.  This is case (2).
+      push();
+      int size = PySequence_Size(object);
+      for (int i = 0; i < size; i++) {
+        PyObject *element = PySequence_GetItem(object, i);
+        pack_object(element);
+        Py_DECREF(element);
+      }
+      pop();
+
+    } else {
+      // The supplied object does not return a valid size, and we
+      // weren't expecting a class parameter.  This is none of the
+      // above, an error.
+      ostringstream strm;
+      PyObject *str = PyObject_Str(object);
+      strm << "Don't know how to pack object: "
+           << PyString_AsString(str) << "\n";
+      Py_DECREF(str);
+      nassert_raise(strm.str());
+      _pack_error = true;
+    }
   }
 }
 #endif  // HAVE_PYTHON
@@ -1033,6 +1081,33 @@ clear() {
   _catalog = NULL;
   _root = NULL;
 }
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::pack_class_object
+//       Access: Private
+//  Description: Given that the current element is a ClassParameter
+//               for a Python class object, try to extract the
+//               appropriate values from the class object and pack in.
+////////////////////////////////////////////////////////////////////
+void DCPacker::
+pack_class_object(DCClass *dclass, PyObject *object) {
+  PyObject *str = PyObject_Str(object);
+  cerr << "pack_class_object(" << dclass->get_name() << ", " 
+       << PyString_AsString(str) << ")\n";
+  Py_DECREF(str);
+  push();
+  while (more_nested_fields()) {
+    const DCField *field = ((DCPackerInterface *)get_current_field())->as_field();
+    nassertv(field != (DCField *)NULL);
+
+    if (!dclass->pack_required_field(*this, object, field)) {
+      break;
+    }
+  }
+  pop();
+}
+#endif  // HAVE_PYTHON
 
 #ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
