@@ -16,7 +16,8 @@
 //               Intended to be called from Builder::add_prim().
 ////////////////////////////////////////////////////////////////////
 bool BuilderBucketNode::
-add_prim(const BuilderPrim &prim) {
+add_prim(BuilderPrim prim) {
+  prim.flatten_vertex_properties();
   bool result = expand(prim, *_bucket, inserter(_prims, _prims.begin()));
   return result;
 }

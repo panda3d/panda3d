@@ -38,7 +38,7 @@ public:
 
 PUBLISHED:
   void write(ostream &out, int indent_level = 0) const;
-  void write_verbose(ostream &out) const;
+  void write_verbose(ostream &out, int indent_level) const;
 
 public:
   void draw(GraphicsStateGuardianBase *gsg);

@@ -31,7 +31,7 @@ set_on(Fog *fog) {
 //               is only valid to call this if is_on() has returned
 //               true.
 ////////////////////////////////////////////////////////////////////
-INLINE PT(Fog) FogAttribute::
+INLINE Fog *FogAttribute::
 get_fog() const {
   nassertr(is_on(), NULL);
   return _value;

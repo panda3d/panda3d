@@ -117,12 +117,12 @@ write(ostream &out, int indent_level) const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void GeomNode::
-write_verbose(ostream &out) const {
+write_verbose(ostream &out, int indent_level) const {
   Geoms::const_iterator gi;
   for (gi = _geoms.begin(); gi != _geoms.end(); ++gi) {
     dDrawable *drawable = (*gi);
     if (drawable->is_of_type(Geom::get_class_type())) {
-      DCAST(Geom, drawable)->write_verbose(out);
+      DCAST(Geom, drawable)->write_verbose(out, indent_level);
     } else {
       out << drawable->get_type() << "\n";
     }

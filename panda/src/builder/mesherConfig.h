@@ -16,4 +16,9 @@
 // actually hurt, by bitching the heuristic).
 #define SUPPORT_FANS
 
+// Define this to enable code to visualize the normals when generating
+// primitives.  This creates line segment geometry to show each normal
+// as the primitives are created.
+#define SUPPORT_SHOW_NORMALS
+
 #endif

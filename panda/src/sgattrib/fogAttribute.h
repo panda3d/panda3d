@@ -20,8 +20,9 @@ public:
   INLINE FogAttribute();
 
   INLINE void set_on(Fog *fog);
-  INLINE PT(Fog) get_fog() const;
+  INLINE Fog *get_fog() const;
 
+public:
   virtual TypeHandle get_handle() const;
   virtual NodeAttribute *make_copy() const;
   virtual NodeAttribute *make_initial() const;

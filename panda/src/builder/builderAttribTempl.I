@@ -99,6 +99,18 @@ set_normal(const NType &n) {
   return *this;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BuilderAttribTempl::clear_normal
+//       Access: Public
+//  Description: Removes the attribute's normal.
+////////////////////////////////////////////////////////////////////
+template <class VT, class NT, class TT, class CT>
+INLINE BuilderAttribTempl<VT, NT, TT, CT> &BuilderAttribTempl<VT, NT, TT, CT>::
+clear_normal() {
+  _flags &= ~BAF_normal;
+  return *this;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderAttribTempl::has_color
@@ -140,6 +152,18 @@ set_color(const CType &c) {
   return *this;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BuilderAttribTempl::clear_color
+//       Access: Public
+//  Description: Removes the attribute's color.
+////////////////////////////////////////////////////////////////////
+template <class VT, class NT, class TT, class CT>
+INLINE BuilderAttribTempl<VT, NT, TT, CT> &BuilderAttribTempl<VT, NT, TT, CT>::
+clear_color() {
+  _flags &= ~BAF_color;
+  return *this;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderAttribTempl::has_pixel_size
@@ -178,6 +202,18 @@ INLINE BuilderAttribTempl<VT, NT, TT, CT> &BuilderAttribTempl<VT, NT, TT, CT>::
 set_pixel_size(float s) {
   _flags |= BAF_pixel_size;
   _pixel_size = s;
+  return *this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BuilderAttribTempl::clear_pixel_size
+//       Access: Public
+//  Description: Removes the attribute's pixel_size.
+////////////////////////////////////////////////////////////////////
+template <class VT, class NT, class TT, class CT>
+INLINE BuilderAttribTempl<VT, NT, TT, CT> &BuilderAttribTempl<VT, NT, TT, CT>::
+clear_pixel_size() {
+  _flags &= ~BAF_pixel_size;
   return *this;
 }
 

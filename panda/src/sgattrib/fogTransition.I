@@ -57,7 +57,7 @@ set_on(Fog *fog) {
 //               It is only valid to call this if is_on() has returned
 //               true.
 ////////////////////////////////////////////////////////////////////
-INLINE PT(Fog) FogTransition::
+INLINE Fog *FogTransition::
 get_fog() const {
   nassertr(is_on(), NULL);
   return _value;

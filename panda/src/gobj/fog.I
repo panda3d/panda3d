@@ -109,3 +109,14 @@ INLINE float Fog::get_end(void) const {
 INLINE float Fog::get_density(void) const {
   return _density;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Fog::apply
+//       Access: Public
+//  Description: Called during rendering to enable fogging with the
+//               GSG.
+////////////////////////////////////////////////////////////////////
+INLINE void Fog::
+apply(GraphicsStateGuardianBase *gsg) {
+  gsg->apply_fog(this);
+}

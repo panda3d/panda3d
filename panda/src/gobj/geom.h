@@ -106,9 +106,9 @@ public:
   virtual Geom *make_copy() const=0;
 
 PUBLISHED: 
-  void write(ostream &out) const;
+  void write(ostream &out, int indent_level = 0) const;
   virtual void output(ostream &out) const;
-  void write_verbose(ostream &out) const;
+  void write_verbose(ostream &out, int indent_level) const;
 
 public: 
   // From parent dDrawable

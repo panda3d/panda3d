@@ -33,7 +33,7 @@ public:
   INLINE BuilderBucketNode(const BuilderBucketNode &copy);
   INLINE void operator = (const BuilderBucketNode &copy);
 
-  bool add_prim(const BuilderPrim &prim);
+  bool add_prim(BuilderPrim prim);
   bool add_prim(const BuilderPrimI &prim);
   INLINE bool add_prim_nonindexed(const BuilderPrimI &prim);
 

@@ -14,7 +14,7 @@
     builderBucketNode.I builderBucketNode.cxx builderBucketNode.h \
     builderFuncs.I builderFuncs.h builderMisc.cxx builderMisc.h \
     builderNormalVisualizer.I builderNormalVisualizer.cxx \
-    builderNormalVisualizer.h builderPrim.cxx builderPrim.h \
+    builderNormalVisualizer.h builderPrim.I builderPrim.cxx builderPrim.h \
     builderPrimTempl.I builderPrimTempl.h builderProperties.cxx \
     builderProperties.h builderTypes.cxx builderTypes.h \
     builderVertex.I builderVertex.cxx builderVertex.h \
@@ -27,7 +27,8 @@
     builder.I builder.h builderAttrib.I builderAttrib.h \
     builderAttribTempl.I builderAttribTempl.h builderBucket.I \
     builderBucket.h builderBucketNode.I builderBucketNode.h \
-    builderNormalVisualizer.I builderNormalVisualizer.h builderPrim.h \
+    builderNormalVisualizer.I builderNormalVisualizer.h \
+    builderPrim.I builderPrim.h \
     builderPrimTempl.I builderPrimTempl.h builderProperties.h \
     builderTypes.h builderVertex.I builderVertex.h builderVertexTempl.I \
     builderVertexTempl.h config_builder.h

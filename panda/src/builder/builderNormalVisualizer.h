@@ -6,9 +6,11 @@
 #ifndef BUILDERNORMALVISUALIZER_H
 #define BUILDERNORMALVISUALIZER_H
 
-#ifdef SUPPORT_SHOW_NORMALS
-
 #include <pandabase.h>
+
+#include "mesherConfig.h"
+
+#ifdef SUPPORT_SHOW_NORMALS
 
 #include "builderBucket.h"
 #include "builderAttrib.h"

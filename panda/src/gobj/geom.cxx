@@ -19,6 +19,7 @@
 #include <ioPtaDatagramShort.h>
 #include <ioPtaDatagramInt.h>
 #include <ioPtaDatagramLinMath.h>
+#include <indent.h>
 
 ////////////////////////////////////////////////////////////////////
 // Static variables
@@ -412,8 +413,8 @@ config(void) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void Geom::
-write(ostream &out) const {
-  out << *this << endl;
+write(ostream &out, int indent_level) const {
+  indent(out, indent_level) << *this << endl;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -582,7 +583,7 @@ template <class VecType>
 static void
 describe_attr(ostream &out, const Geom *geom,
 	      GeomBindType bind, const PTA(VecType) &array,
-	      const char *pad) {
+	      bool newline, int indent_level) {
   PTA_int lengths = geom->get_lengths();
   int num_prims = geom->get_num_prims();
   bool components = geom->uses_components();
@@ -590,7 +591,8 @@ describe_attr(ostream &out, const Geom *geom,
   int i, j, vi;
   switch (bind) {
   case G_PER_VERTEX:
-    out << "Per vertex:";
+    indent(out, indent_level)
+      << "Per vertex:";
     vi = 0;
     int num_verts;
     num_verts = geom->get_num_vertices_per_prim();
@@ -598,11 +600,18 @@ describe_attr(ostream &out, const Geom *geom,
       if (components) {
 	num_verts = lengths[i];
       }
-      out << "\n  [ ";
+      out << "\n";
+      indent(out, indent_level) << "[ ";
       if (num_verts > 0) {
 	out << array[vi++];
 	for (j = 1; j < num_verts; j++) {
-	  out << pad << array[vi++];
+	  if (newline) {
+	    out << "\n";
+	    indent(out, indent_level + 2);
+	  } else {
+	    out << " ";
+	  }
+	  out << array[vi++];
 	}
       }
       out << " ]";
@@ -611,17 +620,26 @@ describe_attr(ostream &out, const Geom *geom,
 
   case G_PER_COMPONENT:
     if (!components) {
-      out << "Invalid per-component attribute specified!";
+      indent(out, indent_level)
+	<< "Invalid per-component attribute specified!";
     } else {
-      out << "Per component:";
+      indent(out, indent_level)
+	<< "Per component:";
       vi = 0;
       for (i = 0; i < num_prims; i++) {
 	num_verts = lengths[i] - geom->get_num_more_vertices_than_components();
-	out << "\n  [ ";
+	out << "\n";
+	indent(out, indent_level) << "[ ";
 	if (num_verts > 0) {
 	  out << array[vi++];
 	  for (j = 1; j < num_verts; j++) {
-	    out << pad << array[vi++];
+	    if (newline) {
+	      out << "\n";
+	      indent(out, indent_level + 2);
+	    } else {
+	      out << " ";
+	    }
+	    out << array[vi++];
 	  }
 	  out << " ]";
 	}
@@ -630,14 +648,29 @@ describe_attr(ostream &out, const Geom *geom,
     break;
 
   case G_PER_PRIM:
-    out << "Per prim:";
+    indent(out, indent_level)
+      << "Per prim:";
     for (i = 0; i < num_prims; i++) {
-      out << pad << array[i];
+      if (newline) {
+	out << "\n";
+	indent(out, indent_level + 2);
+      } else {
+	out << " ";
+      }
+      out << array[i];
     }
     break;
 
   case G_OVERALL:
-    out << "Overall:" << pad << array[0];
+    indent(out, indent_level)
+      << "Overall:";
+    if (newline) {
+      out << "\n";
+      indent(out, indent_level + 2);
+    } else {
+      out << " ";
+    }
+    out << array[0];
 
   case G_OFF:
     break;
@@ -653,7 +686,7 @@ describe_attr(ostream &out, const Geom *geom,
 //               not too much detail.
 ////////////////////////////////////////////////////////////////////
 void Geom::
-write_verbose(ostream &out) const {
+write_verbose(ostream &out, int indent_level) const {
   GeomBindType bind_coords;
   GeomBindType bind_normals;
   GeomBindType bind_tcoords;
@@ -674,51 +707,65 @@ write_verbose(ostream &out) const {
   get_texcoords(g_tcoords, bind_tcoords, i_tcoords);
   get_colors(g_colors, bind_colors, i_colors);
 
-  out << "\n" << get_type() << " contains " 
-      << get_num_prims() << " primitives:\n";
+  out << "\n";
+  indent(out, indent_level)
+    << get_type() << " contains " 
+    << get_num_prims() << " primitives:\n";
 
   if (bind_coords == G_OFF) {
-    out << "No coords\n";
+    indent(out, indent_level)
+      << "No coords\n";
   } else if (i_coords!=(ushort*)0L) {
-    out << "Indexed coords = " << (void *)g_coords << ", length = " 
-	<< g_coords.size() << ":\n";
-    describe_attr(out, this, bind_coords, i_coords, " ");
+    indent(out, indent_level)
+      << "Indexed coords = " << (void *)g_coords << ", length = " 
+      << g_coords.size() << ":\n";
+    describe_attr(out, this, bind_coords, i_coords, false, indent_level + 2);
   } else {
-    out << "Nonindexed coords:\n";
-    describe_attr(out, this, bind_coords, g_coords, "\n    ");
+    indent(out, indent_level)
+      << "Nonindexed coords:\n";
+    describe_attr(out, this, bind_coords, g_coords, true, indent_level + 2);
   }
-
+  
   if (bind_colors == G_OFF) {
-    out << "No colors\n";
+    indent(out, indent_level)
+      << "No colors\n";
   } else if (i_colors!=(ushort*)0L) {
-    out << "Indexed colors = " << (void *)g_colors << ", length = " 
-	<< g_colors.size() << "\n";
-    describe_attr(out, this, bind_colors, i_colors, " ");
+    indent(out, indent_level)
+      << "Indexed colors = " << (void *)g_colors << ", length = " 
+      << g_colors.size() << "\n";
+    describe_attr(out, this, bind_colors, i_colors, false, indent_level + 2);
   } else {
-    out << "Nonindexed colors:\n"; 
-    describe_attr(out, this, bind_colors, g_colors, "\n    ");
+    indent(out, indent_level)
+      << "Nonindexed colors:\n"; 
+    describe_attr(out, this, bind_colors, g_colors, true, indent_level + 2);
   }
-
+  
   if (bind_tcoords == G_OFF) {
-    out << "No tcoords\n";
+    indent(out, indent_level)
+      << "No tcoords\n";
   } else if (i_tcoords!=(ushort*)0L) {
-    out << "Indexed tcoords = " << (void *)g_tcoords << ", length = " 
-	<< g_tcoords.size() << "\n";
-    describe_attr(out, this, bind_tcoords, i_tcoords, " ");
+    indent(out, indent_level)
+      << "Indexed tcoords = " << (void *)g_tcoords << ", length = " 
+      << g_tcoords.size() << "\n";
+    describe_attr(out, this, bind_tcoords, i_tcoords, false, indent_level + 2);
   } else {
-    out << "Nonindexed tcoords:\n";
-    describe_attr(out, this, bind_tcoords, g_tcoords, "\n    ");
+    indent(out, indent_level)
+      << "Nonindexed tcoords:\n";
+    describe_attr(out, this, bind_tcoords, g_tcoords, true, indent_level + 2);
   }
-
+  
   if (bind_normals == G_OFF) {
-    out << "No normals\n";
+    indent(out, indent_level)
+      << "No normals\n";
   } else if (i_normals!=(ushort*)0L) {
-    out << "Indexed normals = " << (void *)g_normals << ", length = " 
-	<< g_normals.size() << "\n";
-    describe_attr(out, this, bind_normals, i_normals, " ");
+    indent(out, indent_level)
+      << "Indexed normals = " << (void *)g_normals << ", length = " 
+      << g_normals.size() << "\n";
+    describe_attr(out, this, bind_normals, i_normals, false, indent_level + 2);
   } else {
-    out << "Nonindexed normals:\n";
-    describe_attr(out, this, bind_normals, g_normals, "\n    ");
+    indent(out, indent_level)
+      << "Nonindexed normals:\n";
+    describe_attr(out, this, bind_normals, g_normals, true, indent_level + 2);
   }
 }
 

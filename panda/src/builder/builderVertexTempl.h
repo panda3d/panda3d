@@ -42,14 +42,18 @@ public:
   INLINE BuilderVertexTempl &set_coord(const VType &c);
 
   INLINE BuilderVertexTempl &set_normal(const NType &c);
+  INLINE BuilderVertexTempl &clear_normal();
 
   INLINE bool has_texcoord() const;
   INLINE TType get_texcoord() const;
   INLINE BuilderVertexTempl &set_texcoord(const TType &t);
+  INLINE BuilderVertexTempl &clear_texcoord();
 
   INLINE BuilderVertexTempl &set_color(const CType &c);
+  INLINE BuilderVertexTempl &clear_color();
 
   INLINE BuilderVertexTempl &set_pixel_size(float s);
+  INLINE BuilderVertexTempl &clear_pixel_size();
 
   bool operator == (const BuilderVertexTempl &other) const;
   INLINE bool operator != (const BuilderVertexTempl &other) const;

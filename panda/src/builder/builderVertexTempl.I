@@ -138,6 +138,18 @@ set_normal(const NType &n) {
   return *this;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BuilderVertexTempl::clear_normal
+//       Access: Public
+//  Description: Removes the vertex's normal.
+////////////////////////////////////////////////////////////////////
+template <class VT, class NT, class TT, class CT>
+INLINE BuilderVertexTempl<VT, NT, TT, CT> &BuilderVertexTempl<VT, NT, TT, CT>::
+clear_normal() {
+  BuilderAttribTempl<VT, NT, TT, CT>::clear_normal();
+  return *this;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderVertexTempl::has_texcoord
@@ -161,6 +173,18 @@ INLINE BuilderVertexTempl<VT, NT, TT, CT> &BuilderVertexTempl<VT, NT, TT, CT>::
 set_texcoord(const TType &t) {
   _flags |= BAF_texcoord;
   _texcoord = t;
+  return *this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BuilderVertexTempl::clear_texcoord
+//       Access: Public
+//  Description: Removes the vertex's texcoord.
+////////////////////////////////////////////////////////////////////
+template <class VT, class NT, class TT, class CT>
+INLINE BuilderVertexTempl<VT, NT, TT, CT> &BuilderVertexTempl<VT, NT, TT, CT>::
+clear_texcoord() {
+  _flags &= ~BAF_texcoord;
   return *this;
 }
 
@@ -196,6 +220,18 @@ set_color(const CType &c) {
   return *this;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BuilderVertexTempl::clear_color
+//       Access: Public
+//  Description: Removes the vertex's color.
+////////////////////////////////////////////////////////////////////
+template <class VT, class NT, class TT, class CT>
+INLINE BuilderVertexTempl<VT, NT, TT, CT> &BuilderVertexTempl<VT, NT, TT, CT>::
+clear_color() {
+  BuilderAttribTempl<VT, NT, TT, CT>::clear_color();
+  return *this;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderVertexTempl::set_pixel_size
@@ -210,6 +246,18 @@ template <class VT, class NT, class TT, class CT>
 INLINE BuilderVertexTempl<VT, NT, TT, CT> &BuilderVertexTempl<VT, NT, TT, CT>::
 set_pixel_size(float s) {
   BuilderAttribTempl<VT, NT, TT, CT>::set_pixel_size(s);
+  return *this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BuilderVertexTempl::clear_pixel_size
+//       Access: Public
+//  Description: Removes the vertex's pixel_size.
+////////////////////////////////////////////////////////////////////
+template <class VT, class NT, class TT, class CT>
+INLINE BuilderVertexTempl<VT, NT, TT, CT> &BuilderVertexTempl<VT, NT, TT, CT>::
+clear_pixel_size() {
+  BuilderAttribTempl<VT, NT, TT, CT>::clear_pixel_size();
   return *this;
 }
 

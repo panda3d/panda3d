@@ -71,6 +71,47 @@ nonindexed_copy(const BuilderPrimTempl<BuilderVertexI> &copy,
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BuilderPrim::flatten_vertex_properties
+//       Access: Public
+//  Description: If all the vertices of the primitive have the same
+//               normal, color, etc., removes those properties from
+//               the vertices and assigns them to the primitive
+//               instead.
+//
+//               This can provide better meshing by removing
+//               properties from otherwise shared vertices.
+////////////////////////////////////////////////////////////////////
+void BuilderPrim::
+flatten_vertex_properties() {
+  int num_verts = get_num_verts();
+  int i;
+
+  if (has_overall_normal()) {
+    set_normal(get_normal());
+
+    for (i = 0; i < num_verts; i++) {
+      get_vertex(i).clear_normal();
+    }
+  }
+
+  if (has_overall_color()) {
+    set_color(get_color());
+
+    for (i = 0; i < num_verts; i++) {
+      get_vertex(i).clear_color();
+    }
+  }
+
+  if (has_overall_pixel_size()) {
+    set_pixel_size(get_pixel_size());
+
+    for (i = 0; i < num_verts; i++) {
+      get_vertex(i).clear_pixel_size();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BuilderPrim::fill_geom
 //       Access: Public
 //  Description: Fills up the attribute values of a Geom with the
@@ -103,6 +144,21 @@ fill_geom(Geom *geom, const PTA_BuilderV &v_array,
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BuilderPrimI::flatten_vertex_properties
+//       Access: Public
+//  Description: If all the vertices of the primitive have the same
+//               normal, color, etc., removes those properties from
+//               the vertices and assigns them to the primitive
+//               instead.
+//
+//               This can do nothing in the case of an indexed
+//               primitive, because we can't monkey with the vertex
+//               properties in this case.
+////////////////////////////////////////////////////////////////////
+void BuilderPrimI::
+flatten_vertex_properties() {
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderPrimI::fill_geom

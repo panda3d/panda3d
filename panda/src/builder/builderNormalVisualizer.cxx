@@ -3,22 +3,22 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-#ifdef SUPPORT_SHOW_NORMALS
-
 #include "builderNormalVisualizer.h"
 #include "builderFuncs.h"
+
+#ifdef SUPPORT_SHOW_NORMALS
 
 void BuilderNormalVisualizer::
 add_prim(const BuilderPrim &prim) {
   if (prim.has_overall_normal()) {
     // Average up all the vertex values to get the primitive center.
     BuilderV net_vertex;
-    net_vertex._v.set(0.0, 0.0, 0.0);
+    net_vertex.set(0.0, 0.0, 0.0);
     int num_verts = prim.get_num_verts();
     for (int i = 0; i < num_verts; i++) {
-      net_vertex._v += prim.get_vertex(i).get_coord();
+      net_vertex += prim.get_vertex(i).get_coord();
     }
-    net_vertex._v /= num_verts;
+    net_vertex /= num_verts;
     add_normal(net_vertex, prim.get_normal());
 
   } else if (prim.has_vertex_normal()) {
@@ -50,7 +50,7 @@ show_normals(GeomNode *node) {
 
 void BuilderNormalVisualizer::
 add_normal(const BuilderV &center, const BuilderN &normal) {
-  BuilderV to = center._v + normal._v * _bucket._normal_scale;
+  BuilderV to = center + normal * _bucket._normal_scale;
     
   BuilderPrim line;
   line.set_type(BPT_line);

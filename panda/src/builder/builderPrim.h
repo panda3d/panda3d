@@ -73,10 +73,14 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, BuilderPrimTempl<BuilderVe
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG BuilderPrim : public BuilderPrimTempl<BuilderVertex> {
 public:
-  BuilderPrim() {}
+  INLINE BuilderPrim();
+  INLINE BuilderPrim(const BuilderPrim &copy);
+  INLINE BuilderPrim &operator = (const BuilderPrim &copy);
  
   BuilderPrim &nonindexed_copy(const BuilderPrimTempl<BuilderVertexI> &copy,
 			       const BuilderBucket &bucket);
+
+  void flatten_vertex_properties();
 
   static void fill_geom(Geom *geom, const PTA_BuilderV &v_array,
 			GeomBindType n_attr, const PTA_BuilderN &n_array,
@@ -97,7 +101,11 @@ public:
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG BuilderPrimI : public BuilderPrimTempl<BuilderVertexI> {
 public:
-  BuilderPrimI() {}
+  INLINE BuilderPrimI();
+  INLINE BuilderPrimI(const BuilderPrimI &copy);
+  INLINE BuilderPrimI &operator = (const BuilderPrimI &copy);
+
+  void flatten_vertex_properties();
 
   static void fill_geom(Geom *geom, const PTA_ushort &v_array,
 			GeomBindType n_attr, PTA_ushort n_array,
@@ -106,6 +114,8 @@ public:
 			const BuilderBucket &bucket,
 			int num_prims, int num_components, int num_verts);
 };
+
+#include "builderPrim.I"
 
 
 // Tell GCC that we'll take care of the instantiation explicitly here.

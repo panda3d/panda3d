@@ -36,10 +36,6 @@ PUBLISHED:
   Fog(Mode mode = M_exponential, int hardware_bits = 8);
   ~Fog();
 
-  void apply(GraphicsStateGuardianBase *gsg) {
-    gsg->apply_fog(this);
-  }
-
   INLINE Mode get_mode(void) const;
   INLINE void set_mode(Mode mode);
 
@@ -57,6 +53,9 @@ PUBLISHED:
   INLINE float get_density(void) const;
 
   void output(ostream &out) const;
+
+public:
+  INLINE void apply(GraphicsStateGuardianBase *gsg);
 
 protected:
   void compute_density(void);

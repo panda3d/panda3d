@@ -37,14 +37,17 @@ public:
   INLINE bool has_normal() const;
   INLINE NType get_normal() const;
   INLINE BuilderAttribTempl &set_normal(const NType &n);
+  INLINE BuilderAttribTempl &clear_normal();
 
   INLINE bool has_color() const;
   INLINE CType get_color() const;
   INLINE BuilderAttribTempl &set_color(const CType &c);
+  INLINE BuilderAttribTempl &clear_color();
 
   INLINE bool has_pixel_size() const;
   INLINE float get_pixel_size() const;
   INLINE BuilderAttribTempl &set_pixel_size(float s);
+  INLINE BuilderAttribTempl &clear_pixel_size();
 
   INLINE bool operator == (const BuilderAttribTempl &other) const;
   INLINE bool operator != (const BuilderAttribTempl &other) const;
