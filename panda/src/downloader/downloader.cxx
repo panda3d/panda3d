@@ -20,6 +20,7 @@
   #include <netinet/in.h>
   #include <arpa/inet.h>
   #include <netdb.h>
+  #define SOCKET_ERROR -1
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -141,12 +142,12 @@ connect_to_server(void) {
     return get_network_error();
   }
 
-  if (connect(_socket, (struct sockaddr *)&_sin, sizeof(_sin)) < 0) {
+  if (connect(_socket, (struct sockaddr *)&_sin, sizeof(_sin)) == 
+							SOCKET_ERROR) {
     downloader_cat.error()
       << "Downloader::connect_to_server() - connect() failed: "
       << handle_socket_error() << endl;
     disconnect_from_server();
-    _connected = false;
     return get_network_error();
   }
 
@@ -418,7 +419,7 @@ cleanup(void) {
 
   // The "Connection: close" line tells the server to close the 
   // connection when the download is complete
-  _connected = false;
+  disconnect_from_server();
   _dest_stream.close();
   _total_bytes_written = _current_status->_total_bytes_written;
   delete _current_status;
