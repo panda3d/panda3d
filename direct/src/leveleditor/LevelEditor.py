@@ -658,10 +658,8 @@ class LevelEditor(NodePath, PandaObject):
         # Destory old toplevel node path and DNA
         # First the toplevel DNA
         self.DNAData.remove(self.DNAToplevel)
-        if self.NPToplevel.hasArcs():
-            # Then the toplevel Node Path
-            self.NPToplevel.reparentTo(hidden)
-            self.NPToplevel.removeNode()
+        # Then the toplevel Node Path
+        self.NPToplevel.removeNode()
 
     def createToplevel(self, dnaNode, nodePath = None):
         # When you create a new level, data is added to this node
@@ -796,8 +794,8 @@ class LevelEditor(NodePath, PandaObject):
         self.cTrav = CollisionTraverser()
 
         # activate the collider with the traverser and pusher
-        self.pusher.addCollider(self.cSphereNode, base.drive.node())
-        self.lifter.addCollider(self.cRayNode, base.drive.node())
+        self.pusher.addColliderNode(self.cSphereNode, base.drive.node())
+        self.lifter.addColliderNode(self.cRayNode, base.drive.node())
         # A map of zone ID's to a list of nodes that are visible from
         # that zone.
         self.nodeDict = {}
@@ -982,7 +980,7 @@ class LevelEditor(NodePath, PandaObject):
     def findDNANode(self, nodePath):
         """ Find node path's DNA Object in DNAStorage (if any) """
         if nodePath:
-            return DNASTORE.findDNAGroup(nodePath.id())
+            return DNASTORE.findDNAGroup(nodePath.node())
         else:
             return None
 
@@ -2155,7 +2153,7 @@ class LevelEditor(NodePath, PandaObject):
         map = loader.loadModel('models/level_editor/' + neighborhood +
                                '_layout')
         if map:
-            map.arc().setTransition(TransparencyTransition(1))
+            map.setTransparency(1)
             map.setColor(Vec4(1,1,1,.4))
             self.mapDictionary[neighborhood] = map
             # Make sure this item isn't pickable
@@ -2394,18 +2392,16 @@ class LevelEditor(NodePath, PandaObject):
             self.outputDNA(dnaFilename)
 
     def loadDNAFromFile(self, filename):
+        print filename
         # Reset level, destroying existing scene/DNA hierarcy
         self.reset(fDeleteToplevel = 1, fCreateToplevel = 0,
                    fUpdateExplorer = 0)
         # Now load in new file
         node = loadDNAFile(DNASTORE, filename, CSDefault, 1)
-
-        if node.getNumParents(RenderRelation.getClassType()) == 1:
+        if node.getNumParents() == 1:
             # If the node already has a parent arc when it's loaded, we must
             # be using the level editor and we want to preserve that arc.
-            newNPToplevel = NodePath()
-            newNPToplevel.extendBy(node.getParent(
-                RenderRelation.getClassType(), 0))
+            newNPToplevel = NodePath(node)
             newNPToplevel.reparentTo(hidden)
         else:
             # Otherwise, we should create a new arc for the node.
@@ -3826,7 +3822,7 @@ class LevelStyleManager:
         # Attach the color chips to the new menu and adjust sizes
         for i in range (numItems):
             # Create a text node--just a card, really--of the right color.
-            tn = TextNode()
+            tn = TextNode('colorChip')
             tn.freeze()
             tn.setFont(getDefaultFont())
             tn.setTransform(Mat4.scaleMat(0.07, 0.07, 0.07 * aspectRatio))
@@ -3941,7 +3937,7 @@ class LevelStyleManager:
         for i in range (numItems):
             # Create text node for each item
             if (textList[i] != None):
-                tn = TextNode()
+                tn = TextNode('TextItem')
                 tn.freeze()
                 tn.setFont(getDefaultFont())
                 tn.setTransform(Mat4.scaleMat(0.07, 0.07, 0.07 * aspectRatio))
