@@ -362,185 +362,185 @@
 }
 <Group> camera {
   <Group> o1 {
-    <Polygon> p7 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 1 2 3 <Ref> { V } }
     }
-    <Polygon> p8 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 2 4 5 <Ref> { V } }
     }
-    <Polygon> p9 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 4 6 3 <Ref> { V } }
     }
-    <Polygon> p10 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 6 1 3 <Ref> { V } }
     }
   }
   <Group> o2 {
-    <Polygon> p53 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 7 8 9 <Ref> { V } }
     }
-    <Polygon> p52 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 7 9 10 <Ref> { V } }
     }
-    <Polygon> p51 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 10 11 12 <Ref> { V } }
     }
-    <Polygon> p50 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 12 13 14 <Ref> { V } }
     }
-    <Polygon> p49 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 12 14 15 <Ref> { V } }
     }
-    <Polygon> p48 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 12 16 17 <Ref> { V } }
     }
-    <Polygon> p47 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 17 18 19 <Ref> { V } }
     }
-    <Polygon> p46 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 17 19 20 <Ref> { V } }
     }
-    <Polygon> p45 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 17 20 21 <Ref> { V } }
     }
-    <Polygon> p44 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 17 21 22 <Ref> { V } }
     }
-    <Polygon> p43 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 17 22 7 <Ref> { V } }
     }
-    <Polygon> p42 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 17 7 10 <Ref> { V } }
     }
-    <Polygon> p41 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 17 10 12 <Ref> { V } }
     }
-    <Polygon> p12 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 23 24 25 26 <Ref> { V } }
     }
-    <Polygon> p13 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 27 28 29 30 <Ref> { V } }
     }
-    <Polygon> p14 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 31 32 33 34 <Ref> { V } }
     }
-    <Polygon> p15 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 35 36 37 38 <Ref> { V } }
     }
-    <Polygon> p16 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 39 40 41 42 <Ref> { V } }
     }
-    <Polygon> p17 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 43 44 45 46 <Ref> { V } }
     }
-    <Polygon> p18 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 47 48 49 50 <Ref> { V } }
     }
-    <Polygon> p19 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 51 52 48 47 <Ref> { V } }
     }
-    <Polygon> p20 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 53 54 52 51 <Ref> { V } }
     }
-    <Polygon> p21 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 55 56 54 53 <Ref> { V } }
     }
-    <Polygon> p22 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 57 58 59 55 <Ref> { V } }
     }
-    <Polygon> p23 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 60 61 58 57 <Ref> { V } }
     }
-    <Polygon> p24 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 62 63 61 60 <Ref> { V } }
     }
-    <Polygon> p25 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 64 65 63 66 <Ref> { V } }
     }
-    <Polygon> p26 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 67 68 65 64 <Ref> { V } }
     }
-    <Polygon> p27 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 26 25 68 67 <Ref> { V } }
     }
-    <Polygon> p40 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 67 69 70 <Ref> { V } }
     }
-    <Polygon> p39 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 67 70 71 <Ref> { V } }
     }
-    <Polygon> p38 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 67 71 72 <Ref> { V } }
     }
-    <Polygon> p37 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 67 72 73 <Ref> { V } }
     }
-    <Polygon> p36 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 67 73 74 <Ref> { V } }
     }
-    <Polygon> p35 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 67 74 75 <Ref> { V } }
     }
-    <Polygon> p34 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 67 75 76 <Ref> { V } }
     }
-    <Polygon> p33 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 67 76 77 <Ref> { V } }
     }
-    <Polygon> p32 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 67 77 78 <Ref> { V } }
     }
-    <Polygon> p31 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 78 79 80 <Ref> { V } }
     }
-    <Polygon> p30 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 78 80 81 <Ref> { V } }
     }
-    <Polygon> p29 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 78 82 26 <Ref> { V } }
     }
@@ -548,19 +548,19 @@
   <Group> o3 {
   }
   <Group> o4 {
-    <Polygon> p54 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 83 2 84 <Ref> { V } }
     }
-    <Polygon> p55 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 85 4 86 <Ref> { V } }
     }
-    <Polygon> p56 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 87 6 88 <Ref> { V } }
     }
-    <Polygon> p57 {
+    <Polygon> {
       //<RGBA> { 0.447059 0.447059 0.447059 1 }
       <VertexRef> { 89 1 90 <Ref> { V } }
     }
