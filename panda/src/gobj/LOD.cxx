@@ -85,9 +85,6 @@ xform(const LMatrix4f &mat) {
   }
 }
 
-//const int minimum_LOD_number = config_gobj.GetInt("minimum-LOD-number", 0);
-//extern EXPCL_PANDA const int minimum_LOD_number;
-
 ////////////////////////////////////////////////////////////////////
 //     Function: LOD::compute_child
 //       Access: Public
