@@ -28,6 +28,7 @@
 #include "pvector.h"
 #include "nodePath.h"
 #include "referenceCount.h"
+#include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : NurbsCurveEvaluator
@@ -56,6 +57,7 @@ PUBLISHED:
 
   int get_num_vertices() const;
   void set_vertex(int i, const LVecBase4f &vertex);
+  void set_vertex(int i, const LVecBase3f &vertex, float weight = 1.0);
   const LVecBase4f &get_vertex(int i) const;
 
   void set_vertex_space(int i, const NodePath &space);
@@ -65,7 +67,11 @@ PUBLISHED:
   void set_knot(int i, float knot);
   float get_knot(int i) const;
 
-  PT(NurbsCurveResult) evaluate(const NodePath &rel_to = NodePath());
+  PT(NurbsCurveResult) evaluate(const NodePath &rel_to = NodePath()) const;
+
+public:
+  void get_vertices(pvector<LVecBase4f> &verts, const NodePath &rel_to) const;
+  void get_vertices(pvector<LPoint3f> &verts, const NodePath &rel_to) const;
 
 private:
   void recompute_knots();

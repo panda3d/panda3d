@@ -112,6 +112,17 @@ set_vertex(int i, const LVecBase4f &vertex) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurveEvaluator::set_vertex
+//       Access: Published
+//  Description: Sets the nth control vertex of the curve.
+////////////////////////////////////////////////////////////////////
+void NurbsCurveEvaluator::
+set_vertex(int i, const LVecBase3f &vertex, float weight) {
+  nassertv(i >= 0 && i < (int)_vertices.size());
+  _vertices[i].set_vertex(LVecBase4f(vertex[0] * weight, vertex[1] * weight, vertex[2] * weight, weight));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveEvaluator::get_vertex
 //       Access: Published
 //  Description: Returns the nth control vertex of the curve, relative
@@ -203,15 +214,32 @@ get_knot(int i) const {
 //               indicated coordinate space.
 ////////////////////////////////////////////////////////////////////
 PT(NurbsCurveResult) NurbsCurveEvaluator::
-evaluate(const NodePath &rel_to) {
+evaluate(const NodePath &rel_to) const {
   if (_basis_dirty) {
     ((NurbsCurveEvaluator *)this)->recompute_basis();
   }
 
   // First, transform the vertices as appropriate.
-  int num_vertices = (int)_vertices.size();
   pvector<LVecBase4f> verts;
-  verts.reserve(num_vertices);
+  get_vertices(verts, rel_to);
+
+  // And apply those transformed vertices to the basis matrices to
+  // derive the result.
+  return new NurbsCurveResult(_basis, _order, &verts[0], (int)verts.size());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurveEvaluator::get_vertices
+//       Access: Public
+//  Description: Fills the indicated vector with the set of vertices
+//               in the curve, transformed to the given space.  This
+//               flavor returns the vertices in 4-dimensional
+//               homogenous space.
+////////////////////////////////////////////////////////////////////
+void NurbsCurveEvaluator::
+get_vertices(pvector<LVecBase4f> &verts, const NodePath &rel_to) const {
+  int num_vertices = (int)_vertices.size();
+  verts.reserve(verts.size() + num_vertices);
   int vi;
   for (vi = 0; vi < num_vertices; vi++) {
     const NodePath &space = _vertices[vi].get_space();
@@ -223,10 +251,31 @@ evaluate(const NodePath &rel_to) {
       verts.push_back(vertex * mat);
     }
   }
+}
 
-  // And apply those transformed vertices to the basis matrices to
-  // derive the result.
-  return new NurbsCurveResult(_basis, _order, &verts[0], num_vertices);
+////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurveEvaluator::get_vertices
+//       Access: Public
+//  Description: Fills the indicated vector with the set of vertices
+//               in the curve, transformed to the given space.  This
+//               flavor returns the vertices in 4-dimensional
+//               homogenous space.
+////////////////////////////////////////////////////////////////////
+void NurbsCurveEvaluator::
+get_vertices(pvector<LPoint3f> &verts, const NodePath &rel_to) const {
+  int num_vertices = (int)_vertices.size();
+  verts.reserve(verts.size() + num_vertices);
+  int vi;
+  for (vi = 0; vi < num_vertices; vi++) {
+    const NodePath &space = _vertices[vi].get_space();
+    LVecBase4f vertex = _vertices[vi].get_vertex();
+    if (!space.is_empty()) {
+      const LMatrix4f &mat = space.get_mat(rel_to);
+      vertex = vertex * mat;
+    }
+    LPoint3f v3(vertex[0] / vertex[3], vertex[1] / vertex[3], vertex[2] / vertex[3]);
+    verts.push_back(v3);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -71,6 +71,7 @@ get_curve() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void RopeNode::
 set_num_segs(int num_segs) {
+  nassertv(num_segs >= 0);
   CDWriter cdata(_cycler);
   cdata->_num_segs = num_segs;
 }

@@ -21,6 +21,7 @@
 #include "cullTraverserData.h"
 #include "cullableObject.h"
 #include "cullHandler.h"
+#include "geomLinestrip.h"
 #include "bamWriter.h"
 #include "bamReader.h"
 #include "datagram.h"
@@ -148,37 +149,37 @@ has_cull_callback() const {
 ////////////////////////////////////////////////////////////////////
 bool RopeNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
-  cerr << "cull_callback\n";
-
   // Create a new linestrip on-the-fly to render the rope.
-  PT(Geom) geom = new GeomLinestrip;
-  PTA_Vertexf verts;
-  PTA_int lengths;
+  int num_verts = get_num_segs() + 1;
+  if (num_verts >= 2) {
+    PTA_Vertexf verts;
+    PTA_int lengths;
 
-  NurbsCurveEvaluator *curve = get_curve();
-  PT(NurbsCurveResult) result = curve->evaluate(data._node_path.get_node_path());
+    NurbsCurveEvaluator *curve = get_curve();
+    PT(NurbsCurveResult) result = curve->evaluate(data._node_path.get_node_path());
 
-  int num_segments = result->get_num_segments();
-  int num_segs = get_num_segs();
-  for (int segment = 0; segment < num_segments; segment++) {
-    cerr << "\nsegment " << segment << "\n";
-    for (int i = 0; i < num_segs; i++) {
-      float t = (float)i / (float)(num_segs - 1);
-      LPoint3f point;
-      result->eval_segment_point(segment, t, point);
-      verts.push_back(point);
-      cerr << "  p " << point << "\n";
+    int num_segments = result->get_num_segments();
+    if (num_segments > 0) {
+      for (int segment = 0; segment < num_segments; segment++) {
+        for (int i = 0; i < num_verts; i++) {
+          float t = (float)i / (float)(num_verts - 1);
+          LPoint3f point;
+          result->eval_segment_point(segment, t, point);
+          verts.push_back(point);
+        }
+        lengths.push_back(num_verts);
+      }
+      
+      PT(Geom) geom = new GeomLinestrip;
+      geom->set_num_prims(num_segments);
+      geom->set_coords(verts);
+      geom->set_lengths(lengths);
+      
+      CullableObject *object = new CullableObject(geom, data._state,
+                                                  data._render_transform);
+      trav->get_cull_handler()->record_object(object);
     }
-    lengths.push_back(num_segs);
   }
-
-  geom->set_num_prims(num_segments);
-  geom->set_coords(verts);
-  geom->set_lengths(lengths);
-
-  CullableObject *object = new CullableObject(geom, data._state,
-                                              data._render_transform);
-  trav->get_cull_handler()->record_object(object);
   
   return true;
 }
@@ -203,6 +204,45 @@ void RopeNode::
 write(ostream &out, int indent_level) const {
   PandaNode::write(out, indent_level);
   indent(out, indent_level) << get_curve() << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RopeNode::reset_bound
+//       Access: Published
+//  Description: Recomputes the bounding volume.  This is normally
+//               called automatically, but it must occasionally be
+//               called explicitly when the curve has changed
+//               properties outside of this node's knowledge.
+////////////////////////////////////////////////////////////////////
+BoundingVolume *RopeNode::
+reset_bound(const NodePath &rel_to) {
+  // First, get ourselves a fresh, empty bounding volume.
+  BoundingVolume *bound = PandaNode::recompute_internal_bound();
+  nassertr(bound != (BoundingVolume *)NULL, bound);
+
+  NurbsCurveEvaluator *curve = get_curve();
+  if (curve != (NurbsCurveEvaluator *)NULL) {
+    pvector<LPoint3f> verts;
+    get_curve()->get_vertices(verts, rel_to);
+
+    GeometricBoundingVolume *gbv;
+    DCAST_INTO_R(gbv, bound, bound);
+    gbv->around(&verts[0], &verts[verts.size() - 1]);
+  }
+  return bound;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RopeNode::recompute_internal_bound
+//       Access: Protected, Virtual
+//  Description: Called when needed to recompute the node's
+//               _internal_bound object.  Nodes that contain anything
+//               of substance should redefine this to do the right
+//               thing.
+////////////////////////////////////////////////////////////////////
+BoundingVolume *RopeNode::
+recompute_internal_bound() {
+  return reset_bound(NodePath(this));
 }
 
 ////////////////////////////////////////////////////////////////////

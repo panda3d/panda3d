@@ -48,10 +48,10 @@ PUBLISHED:
   INLINE float get_start_t() const;
   INLINE float get_end_t() const;
 
-  INLINE bool eval_point(float t, LPoint3f &point);
+  INLINE bool eval_point(float t, LVecBase3f &point);
   
   INLINE int get_num_segments() const;
-  void eval_segment_point(int segment, float t, LPoint3f &point) const;
+  void eval_segment_point(int segment, float t, LVecBase3f &point) const;
   
 private:
   int find_segment(float t);

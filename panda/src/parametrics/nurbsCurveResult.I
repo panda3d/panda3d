@@ -55,7 +55,7 @@ get_end_t() const {
 //               the t value is value, false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool NurbsCurveResult::
-eval_point(float t, LPoint3f &point) {
+eval_point(float t, LVecBase3f &point) {
   int segment = find_segment(t);
   if (segment == -1) {
     return false;

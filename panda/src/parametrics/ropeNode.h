@@ -58,7 +58,11 @@ PUBLISHED:
 
   INLINE void set_num_segs(int num_segs);
   INLINE int get_num_segs() const;
-  
+
+  BoundingVolume *reset_bound(const NodePath &rel_to);
+
+protected:
+  virtual BoundingVolume *recompute_internal_bound();
 
 private:
   // This is the data that must be cycled between pipeline stages.

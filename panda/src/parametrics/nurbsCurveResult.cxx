@@ -73,7 +73,7 @@ NurbsCurveResult(const NurbsMatrixVector &basis, int order,
 //               evaluate the points along each segment.
 ////////////////////////////////////////////////////////////////////
 void NurbsCurveResult::
-eval_segment_point(int segment, float t, LPoint3f &point) const {
+eval_segment_point(int segment, float t, LVecBase3f &point) const {
   const LMatrix4f &mat = _prod.get_matrix(segment);
 
   float t2 = t*t;
