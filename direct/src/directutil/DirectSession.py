@@ -55,7 +55,8 @@ class DisplayRegionContext(PandaObject):
 class DirectSession(PandaObject):
     def __init__(self):
         self.contextList = []
-        self.contextList.append(DisplayRegionContext(base.win, base.camera))
+        for camera in base.cameraList:
+            self.contextList.append(DisplayRegionContext(base.win, camera))
 
         # Initialize the collection of selected nodePaths
         self.selectedNodePaths = {}

@@ -29,10 +29,14 @@ class ShowBase:
         self.renderTop = NodePath(NamedNode('renderTop'))
         self.render = self.renderTop.attachNewNode('render')
         self.hidden = NodePath(NamedNode('hidden'))
+        # This will be the list of cameras, one per display region
+        # For now, we only have one display region, so just create the
+        # default camera
         self.camera = self.render.attachNewNode('camera')
+        # And put it in the list
+        self.cameraList = [ self.camera ]
         self.dataRoot = NodePath(NamedNode('dataRoot'), DataRelation.getClassType())
         self.dataUnused = NodePath(NamedNode('dataUnused'), DataRelation.getClassType())
-
         self.pipe = makeGraphicsPipe()
         self.win = self.pipe.makeGraphicsWindow(self.renderTop.node(),
                                                 self.camera.node(),
@@ -40,7 +44,13 @@ class ShowBase:
                                                 self.initialState)
 
         self.render2d = NodePath(self.win.setupPanda2d())
+        # This is a list of cams associated with the display region's cameras
+        self.camList = []
+        for camera in self.cameraList:
+            self.camList.append( camera.find('**/+Camera') )
+        # Set the default camera
         self.cam = self.camera.find('**/+Camera')
+        # Just one per window
         self.mak = self.dataRoot.attachNewNode(MouseAndKeyboard(self.win, 0, 'mak'))
         self.trackball = self.dataUnused.attachNewNode(Trackball('trackball'))
         self.drive = self.dataUnused.attachNewNode(DriveInterface('drive'))

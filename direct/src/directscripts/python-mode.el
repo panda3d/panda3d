@@ -551,6 +551,9 @@ Currently-active file is at the head of the list.")
   (define-key py-shell-map [tab]   'tab-to-tab-stop)
   (define-key py-shell-map "\C-c-" 'py-up-exception)
   (define-key py-shell-map "\C-c=" 'py-down-exception)
+  ;; VR STUDIO ENHANCEMENTS
+  (define-key py-shell-map "\C-d"  'delete-char)
+  (define-key py-shell-map "\C-c\C-r" 'python-resume)
   )
 
 (defvar py-mode-syntax-table nil
@@ -1073,7 +1076,9 @@ comint believe the user typed this string so that
   (let ((curbuf (current-buffer))
 	(procbuf (process-buffer proc))
 					;(comint-scroll-to-bottom-on-output t)
-	(msg (format "## working on region in file %s...\n" filename))
+	;; VR STUDIO DE-HANCEMENT: GET RID OF ANNOYING MESSAGE
+	;(msg (format "## working on region in file %s...\n" filename))
+	(msg "")
 	(cmd (format "execfile(r'%s')\n" filename)))
     (unwind-protect
 	(save-excursion
@@ -3137,7 +3142,11 @@ These are Python temporary files awaiting execution."
 ;; arrange to kill temp files when Emacs exists
 (add-hook 'kill-emacs-hook 'py-kill-emacs-hook)
 
-
+;; VR STUDIO ENHANCEMENT
+;; Function to try to resume panda mainloop
+(defun python-resume ()
+  (interactive)
+  (py-execute-string "try:\n\trun()\nexcept:\n\tpass"))
 
 (provide 'python-mode)
 ;;; python-mode.el ends here
