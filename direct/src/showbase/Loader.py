@@ -113,15 +113,17 @@ class Loader:
             # static font.
             node = ModelPool.loadModel(modelPath)
             if node == None:
-                return StaticTextFont(Node())
+                # If we couldn't load the model, at least return an
+                # empty font.
+                return StaticTextFont(PandaNode("empty"))
             
             # Create a temp node path so you can adjust priorities
             nodePath = hidden.attachNewNode(node)
             nodePath.adjustAllPriorities(priority)
-            # Now create text font from the node
+            # Now create the text font from the node
             font = StaticTextFont(node)
 
-            # And remove node path
+            # And remove the node path.
             nodePath.removeNode()
         else:
             # Otherwise, it must be a new-style, dynamic font.  Maybe

@@ -342,7 +342,7 @@ class ShowBase:
 
         # The default is trackball mode, which is more convenient for
         # ad-hoc development in Python using ShowBase.  Applications
-        # can expclitly call base.useDrive() if they prefer a drive
+        # can explicitly call base.useDrive() if they prefer a drive
         # interface.
         self.useTrackball()
 
