@@ -99,6 +99,13 @@ public:
     F_clrecv          = 0x0040,
     F_ownsend         = 0x0080,
     F_airecv          = 0x0100,
+
+    // These are reserved for client code use; they are not set or
+    // cleared by any code in this module.
+    F_user_1          = 0x1000,
+    F_user_2          = 0x2000,
+    F_user_3          = 0x4000,
+    F_user_4          = 0x8000,
   };
   void add_flag(enum Flags flag);
   void set_flags(int flags);
