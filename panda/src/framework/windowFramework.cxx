@@ -40,6 +40,7 @@
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
 #include "cullFaceAttrib.h"
+#include "rescaleNormalAttrib.h"
 #include "pgTop.h"
 #include "geomNode.h"
 #include "geomTristrip.h"
@@ -227,6 +228,8 @@ const NodePath &WindowFramework::
 get_render() {
   if (_render.is_empty()) {
     _render = NodePath("render");
+
+    _render.node()->set_attrib(RescaleNormalAttrib::make_default());
 
     // This is maybe here temporarily, and maybe not.
     _render.set_two_sided(0);

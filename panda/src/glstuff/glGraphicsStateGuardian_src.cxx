@@ -41,6 +41,7 @@
 #include "cgShaderAttrib.h"
 #include "materialAttrib.h"
 #include "renderModeAttrib.h"
+#include "rescaleNormalAttrib.h"
 #include "fogAttrib.h"
 #include "depthOffsetAttrib.h"
 #include "fog.h"
@@ -309,8 +310,13 @@ reset() {
   get_extra_extensions();
   report_extensions();
 
-  _supports_bgr = has_extension("GL_EXT_bgra");
-  _supports_multisample = has_extension("GL_ARB_multisample");
+  _supports_bgr = 
+    has_extension("GL_EXT_bgra") || is_at_least_version(1, 2);
+  _supports_rescale_normal = 
+    has_extension("GL_EXT_rescale_normal") || is_at_least_version(1, 2);
+
+  _supports_multisample = 
+    has_extension("GL_ARB_multisample");
 
   _supports_generate_mipmap = 
     has_extension("GL_SGIS_generate_mipmap") || is_at_least_version(1, 4);
@@ -414,6 +420,8 @@ reset() {
 
   report_my_gl_errors();
 
+  _auto_rescale_normal = false;
+
   // All GL implementations have the following buffers.
   _buffer_mask = (RenderBuffer::T_color |
                   RenderBuffer::T_depth |
@@ -474,11 +482,6 @@ reset() {
 #ifdef HAVE_CGGL
   _cg_shader = (CgShader *)NULL;
 #endif
-
-  // Should we normalize lighting normals?
-  if (CLP(auto_normalize_lighting)) {
-    GLP(Enable)(GL_NORMALIZE);
-  }
 
   // Count the max number of lights
   GLint max_lights;
@@ -2288,6 +2291,11 @@ issue_transform(const TransformState *transform) {
   GLP(MatrixMode)(GL_MODELVIEW);
   GLP(LoadMatrixf)(transform->get_mat().get_data());
 
+  _transform = transform;
+  if (_auto_rescale_normal) {
+    do_auto_rescale_normal();
+  }
+
   report_my_gl_errors();
 }
 
@@ -2529,6 +2537,53 @@ issue_render_mode(const RenderModeAttrib *attrib) {
   default:
     GLCAT.error()
       << "Unknown render mode " << (int)mode << endl;
+  }
+  report_my_gl_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::issue_rescale_normal
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+issue_rescale_normal(const RescaleNormalAttrib *attrib) {
+  RescaleNormalAttrib::Mode mode = attrib->get_mode();
+
+  _auto_rescale_normal = false;
+
+  switch (mode) {
+  case RescaleNormalAttrib::M_none:
+    GLP(Disable)(GL_NORMALIZE);
+    if (_supports_rescale_normal) {
+      GLP(Disable)(GL_RESCALE_NORMAL);
+    }
+    break;
+
+  case RescaleNormalAttrib::M_rescale:
+    if (_supports_rescale_normal) {
+      GLP(Enable)(GL_RESCALE_NORMAL);
+      GLP(Disable)(GL_NORMALIZE);
+    } else {
+      GLP(Enable)(GL_NORMALIZE);
+    }
+    break;
+
+  case RescaleNormalAttrib::M_normalize:
+    GLP(Enable)(GL_NORMALIZE);
+    if (_supports_rescale_normal) {
+      GLP(Disable)(GL_RESCALE_NORMAL);
+    }
+    break;
+
+  case RescaleNormalAttrib::M_auto:
+    _auto_rescale_normal = true;
+    do_auto_rescale_normal();
+    break;
+
+  default:
+    GLCAT.error()
+      << "Unknown rescale_normal mode " << (int)mode << endl;
   }
   report_my_gl_errors();
 }
@@ -4619,6 +4674,42 @@ get_untextured_state() {
     state = RenderState::make(TextureAttrib::make_off());
   }
   return state;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::do_auto_rescale_normal
+//       Access: Protected
+//  Description: Issues the appropriate GL commands to either rescale
+//               or normalize the normals according to the current
+//               transform.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+do_auto_rescale_normal() {
+  if (_transform->has_uniform_scale()) {
+    if (IS_NEARLY_EQUAL(_transform->get_uniform_scale(), 1.0f)) {
+      // If there's no scale at all, don't do anything.
+      GLP(Disable)(GL_NORMALIZE);
+      if (_supports_rescale_normal) {
+        GLP(Disable)(GL_RESCALE_NORMAL);
+      }
+      
+    } else {
+      // There's a uniform scale; use the rescale feature if available.
+      if (_supports_rescale_normal) {
+        GLP(Enable)(GL_RESCALE_NORMAL);
+        GLP(Disable)(GL_NORMALIZE);
+      } else {
+        GLP(Enable)(GL_NORMALIZE);
+      }
+    }
+
+  } else {
+    // If there's a non-uniform scale, normalize everything.
+    GLP(Enable)(GL_NORMALIZE);
+    if (_supports_rescale_normal) {
+      GLP(Disable)(GL_RESCALE_NORMAL);
+    }
+  }
 }
 
 #ifndef NDEBUG

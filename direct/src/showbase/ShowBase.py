@@ -568,6 +568,13 @@ class ShowBase(DirectObject.DirectObject):
         rendering 3-d geometry.
         """
         self.render = NodePath('render')
+
+        # Temporary try..except for old pandas.
+        try:
+            self.render.node().setAttrib(RescaleNormalAttrib.makeDefault());
+        except:
+            pass
+        
         self.render.setTwoSided(0)
         self.backfaceCullingEnabled = 1
         self.textureEnabled = 1

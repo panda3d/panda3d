@@ -27,6 +27,7 @@
 #include "renderEffects.cxx"
 #include "renderModeAttrib.cxx"
 #include "renderState.cxx"
+#include "rescaleNormalAttrib.cxx"
 #include "sceneGraphAnalyzer.cxx"
 #include "sceneGraphReducer.cxx"
 #include "selectiveChildNode.cxx"

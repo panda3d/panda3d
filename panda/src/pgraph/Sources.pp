@@ -80,6 +80,7 @@
     renderEffects.I renderEffects.h \
     renderModeAttrib.I renderModeAttrib.h \
     renderState.I renderState.h \
+    rescaleNormalAttrib.I rescaleNormalAttrib.h \
     sceneGraphAnalyzer.h \
     sceneGraphReducer.I sceneGraphReducer.h \
     sceneSetup.I sceneSetup.h \
@@ -172,6 +173,7 @@
     renderEffects.cxx \
     renderModeAttrib.cxx \
     renderState.cxx \
+    rescaleNormalAttrib.cxx \
     sceneGraphAnalyzer.cxx \
     sceneGraphReducer.cxx \
     sceneSetup.cxx \
@@ -262,6 +264,7 @@
     renderEffects.I renderEffects.h \
     renderModeAttrib.I renderModeAttrib.h \
     renderState.I renderState.h \
+    rescaleNormalAttrib.I rescaleNormalAttrib.h \
     sceneGraphAnalyzer.h \
     sceneGraphReducer.I sceneGraphReducer.h \
     sceneSetup.I sceneSetup.h \

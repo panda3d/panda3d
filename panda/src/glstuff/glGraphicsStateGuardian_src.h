@@ -110,6 +110,7 @@ public:
   virtual void issue_texture(const TextureAttrib *attrib);
   virtual void issue_material(const MaterialAttrib *attrib);
   virtual void issue_render_mode(const RenderModeAttrib *attrib);
+  virtual void issue_rescale_normal(const RescaleNormalAttrib *attrib);
   virtual void issue_texture_apply(const TextureApplyAttrib *attrib);
   virtual void issue_color_write(const ColorWriteAttrib *attrib);
   virtual void issue_depth_test(const DepthTestAttrib *attrib);
@@ -228,6 +229,8 @@ protected:
 
   static CPT(RenderState) get_untextured_state();
 
+  void do_auto_rescale_normal();
+
 #ifndef NDEBUG
   void build_phony_mipmaps(Texture *tex);
   void build_phony_mipmap_level(int level, int xsize, int ysize);
@@ -271,6 +274,7 @@ protected:
 #endif
 
   int _pass_number;
+  bool _auto_rescale_normal;
   
   int _error_count;
 
@@ -279,6 +283,7 @@ protected:
 
 public:
   bool _supports_bgr;
+  bool _supports_rescale_normal;
 
   bool _supports_multitexture;
   PFNGLACTIVETEXTUREPROC _glActiveTexture;

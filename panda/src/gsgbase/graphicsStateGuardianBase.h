@@ -60,6 +60,7 @@ class TextureAttrib;
 class LightAttrib;
 class MaterialAttrib;
 class RenderModeAttrib;
+class RescaleNormalAttrib;
 class ColorBlendAttrib;
 class TextureApplyAttrib;
 class ColorWriteAttrib;
@@ -186,6 +187,7 @@ public:
   virtual void issue_light(const LightAttrib *) { }
   virtual void issue_material(const MaterialAttrib *) { }
   virtual void issue_render_mode(const RenderModeAttrib *) { }
+  virtual void issue_rescale_normal(const RescaleNormalAttrib *) { }
   virtual void issue_texture_apply(const TextureApplyAttrib *) { }
   virtual void issue_color_write(const ColorWriteAttrib *) { }
   virtual void issue_depth_test(const DepthTestAttrib *) { }
