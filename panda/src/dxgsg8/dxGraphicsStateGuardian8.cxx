@@ -4369,6 +4369,12 @@ enable_light(int light_id, bool enable) {
 #endif
 }
 
+void DXGraphicsStateGuardian::
+issue_color_write(const ColorWriteAttrib *attrib) {
+  _color_write_mode = attrib->get_mode();
+  set_color_writemask((_color_write_mode ==ColorWriteAttrib::M_on) ? 0xFFFFFFFF : 0x0);
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::set_blend_mode
 //       Access: Protected, Virtual
@@ -4381,12 +4387,16 @@ void DXGraphicsStateGuardian::
 set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
                ColorBlendAttrib::Mode color_blend_mode,
                TransparencyAttrib::Mode transparency_mode) {
-  // If color_write_mode is off, we disable writing to the colorbuffer.
-  if (color_write_mode == ColorWriteAttrib::M_off) {
+
+  // should never get here, since our dxgsg8 issue_color_write() should be called instead
+  nassertv(color_write_mode == _color_write_mode);
+#if 0
+  if(color_write_mode == ColorWriteAttrib::M_off) {
     enable_alpha_test(false);
     set_color_writemask(0x0);
     return;
   }
+#endif
 
   // Is there a color blend set?
   switch (color_blend_mode) {

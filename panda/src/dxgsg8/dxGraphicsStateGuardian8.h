@@ -126,6 +126,7 @@ public:
   virtual void issue_alpha_test(const AlphaTestAttrib *attrib);
   virtual void issue_depth_test(const DepthTestAttrib *attrib);
   virtual void issue_depth_write(const DepthWriteAttrib *attrib);
+  virtual void issue_color_write(const ColorWriteAttrib *attrib);
   virtual void issue_cull_face(const CullFaceAttrib *attrib);
   virtual void issue_fog(const FogAttrib *attrib);
   virtual void issue_depth_offset(const DepthOffsetAttrib *attrib);
