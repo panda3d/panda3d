@@ -70,6 +70,7 @@ PUBLISHED:
     M_non_real_time,
     M_forced,
     M_degrade,
+    M_slave,
   };
 
   ClockObject();

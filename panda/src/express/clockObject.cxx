@@ -42,7 +42,7 @@ ClockObject() {
 
   // Each clock except for the application global clock is created in
   // M_normal mode.  The application global clock is later reset to
-  // respect clock_mode, which comes from the Configrc file.
+  // respect clock_mode, which comes from the Config.prc file.
   _mode = M_normal;
 
   _start_short_time = _true_clock->get_short_time();
@@ -90,7 +90,7 @@ set_real_time(double time) {
 void ClockObject::
 set_frame_time(double time) {
 #ifdef NOTIFY_DEBUG
-  if (this == _global_clock) {
+  if (this == _global_clock && _mode != M_slave) {
     express_cat.warning()
       << "Adjusting global clock's frame time by " << time - get_frame_time()
       << " seconds.\n";
@@ -110,7 +110,7 @@ set_frame_time(double time) {
 void ClockObject::
 set_frame_count(int frame_count) {
 #ifdef NOTIFY_DEBUG
-  if (this == _global_clock) {
+  if (this == _global_clock && _mode != M_slave) {
     express_cat.warning()
       << "Adjusting global clock's frame count by " 
       << frame_count - get_frame_count() << " frames.\n";
@@ -133,52 +133,57 @@ void ClockObject::
 tick() {
   double old_reported_time = _reported_frame_time;
 
-  double old_time = _actual_frame_time;
-  _actual_frame_time = get_real_time();
-
-  switch (_mode) {
-  case M_normal:
-    // Time runs as it will; we simply report time elapsing.
-    _dt = _actual_frame_time - old_time;
-    _reported_frame_time = _actual_frame_time;
-    break;
-
-  case M_non_real_time:
-    // Ignore real time.  We always report the same interval having
-    // elapsed each frame.
-    _reported_frame_time += _dt;
-    break;
-
-  case M_forced:
-    // If we are running faster than the desired interval, slow down.
-    // If we are running slower than the desired interval, ignore that
-    // and pretend we're running at the specified rate.
-    wait_until(old_time + _dt);
-    _reported_frame_time += _dt;
-    break;
-
-  case M_degrade:
-    // Each frame, wait a certain fraction of the previous frame's
-    // time to degrade performance uniformly.
-    _dt = (_actual_frame_time - old_time) * _degrade_factor;
-
-    if (_degrade_factor < 1.0) {
-      // If the degrade_factor is less than one, we want to simulate a
-      // higher frame rate by incrementing the clock more slowly.
-      _reported_frame_time += _dt;
-
-    } else {
-      // Otherwise, we simulate a lower frame rate by waiting until
-      // the appropriate time has elapsed.
-      wait_until(old_time + _dt);
+  if (_mode != M_slave) {
+    double old_time = _actual_frame_time;
+    _actual_frame_time = get_real_time();
+    
+    switch (_mode) {
+    case M_normal:
+      // Time runs as it will; we simply report time elapsing.
+      _dt = _actual_frame_time - old_time;
       _reported_frame_time = _actual_frame_time;
+      break;
+      
+    case M_non_real_time:
+      // Ignore real time.  We always report the same interval having
+      // elapsed each frame.
+      _reported_frame_time += _dt;
+      break;
+      
+    case M_forced:
+      // If we are running faster than the desired interval, slow down.
+      // If we are running slower than the desired interval, ignore that
+      // and pretend we're running at the specified rate.
+      wait_until(old_time + _dt);
+      _reported_frame_time += _dt;
+      break;
+      
+    case M_degrade:
+      // Each frame, wait a certain fraction of the previous frame's
+      // time to degrade performance uniformly.
+      _dt = (_actual_frame_time - old_time) * _degrade_factor;
+      
+      if (_degrade_factor < 1.0) {
+        // If the degrade_factor is less than one, we want to simulate a
+        // higher frame rate by incrementing the clock more slowly.
+        _reported_frame_time += _dt;
+        
+      } else {
+        // Otherwise, we simulate a lower frame rate by waiting until
+        // the appropriate time has elapsed.
+        wait_until(old_time + _dt);
+        _reported_frame_time = _actual_frame_time;
+      }
+      
+      break;
+
+    case M_slave:
+      // Handled above.
+      break;
     }
 
-    break;
-
+    _frame_count++;
   }
-
-  _frame_count++;
 
   if (_average_frame_rate_interval > 0.0) {
     _ticks.push_back(old_reported_time);
@@ -281,6 +286,9 @@ operator << (ostream &out, ClockObject::Mode mode) {
 
   case ClockObject::M_degrade:
     return out << "degrade";
+
+  case ClockObject::M_slave:
+    return out << "slave";
   };
 
   return out << "**invalid ClockObject::Mode(" << (int)mode << ")**";
@@ -303,6 +311,8 @@ operator >> (istream &in, ClockObject::Mode &mode) {
     mode = ClockObject::M_forced;
   } else if (word == "degrade") {
     mode = ClockObject::M_degrade;
+  } else if (word == "slave") {
+    mode = ClockObject::M_slave;
   } else {
     express_cat.error()
       << "Invalid ClockObject::Mode: " << word << "\n";

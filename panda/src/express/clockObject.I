@@ -282,7 +282,7 @@ get_average_frame_rate_interval() const {
 ////////////////////////////////////////////////////////////////////
 INLINE double ClockObject::
 get_average_frame_rate() const {
-  if (_ticks.empty()) {
+  if (_ticks.size() <= 1) {
     return 0.0;
   } else {
     return _ticks.size() / (_reported_frame_time - _ticks.front());
