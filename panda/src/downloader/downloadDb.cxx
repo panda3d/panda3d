@@ -698,7 +698,7 @@ parse_mfr(uchar *start, int size) {
   DatagramIterator di(_datagram);
   PN_int32 mfr_name_length = di.get_int32();
   mfr->_name = di.extract_bytes(mfr_name_length);
-  mfr->_phase = di.get_int32();
+  mfr->_phase = di.get_float64();
   mfr->_size = di.get_int32();
   mfr->_status = di.get_int32();
   mfr->_num_files = di.get_int32();
@@ -854,7 +854,7 @@ bool DownloadDb::Db::
 write(ofstream &write_stream, bool want_server_info) {
   // Declare these outside the loop so we do not keep creating
   // and deleting them
-  PN_int32 phase;
+  PN_float64 phase;
   PN_int32 size;
   PN_int32 status;
   PN_int32 num_files;
@@ -892,7 +892,7 @@ write(ofstream &write_stream, bool want_server_info) {
     _datagram.append_data((*i)->_name.c_str(), (*i)->_name.length());
 
     // Add all the properties
-    _datagram.add_int32(phase);
+    _datagram.add_float64(phase);
     _datagram.add_int32(size);
     _datagram.add_int32(status);
     _datagram.add_int32(num_files);

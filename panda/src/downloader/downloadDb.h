@@ -55,7 +55,7 @@ MultifileRecord is a Vector<FileRecord>
 */
 
 typedef int Version;
-typedef int Phase;
+typedef float Phase;
 
 class EXPCL_PANDAEXPRESS DownloadDb {
 PUBLISHED:
@@ -93,8 +93,8 @@ PUBLISHED:
   INLINE int get_server_multifile_size(string mfname) const;
   INLINE void set_server_multifile_size(string mfname, int size);
 
-  INLINE int get_client_multifile_phase(string mfname) const;
-  INLINE int get_server_multifile_phase(string mfname) const;
+  INLINE Phase get_client_multifile_phase(string mfname) const;
+  INLINE Phase get_server_multifile_phase(string mfname) const;
 
   INLINE void set_client_multifile_incomplete(string mfname);
   INLINE void set_client_multifile_complete(string mfname);

@@ -63,7 +63,7 @@ get_server_multifile_name(int index) const {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE Version DownloadDb::
+INLINE Phase DownloadDb::
 get_client_multifile_phase(string mfname) const {
   return (_client_db.get_multifile_record_named(mfname))->_phase;
 }
@@ -73,7 +73,7 @@ get_client_multifile_phase(string mfname) const {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE Version DownloadDb::
+INLINE Phase DownloadDb::
 get_server_multifile_phase(string mfname) const {
   return (_server_db.get_multifile_record_named(mfname))->_phase;
 }
