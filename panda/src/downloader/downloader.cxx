@@ -897,7 +897,7 @@ parse_header(DownloadStatus *status) {
       }
 
     } else if (redirect == true && tline == "Location") {
-      tline = component.substr(cpos + 2, string::npos);
+      tline = component.substr(cpos + 1, string::npos);
       downloader_cat.error()
         << "Got redirect to " << tline << endl;
       return EU_error_abort;
