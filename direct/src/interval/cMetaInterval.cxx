@@ -19,6 +19,8 @@
 #include "cMetaInterval.h"
 #include "config_interval.h"
 #include "indirectLess.h"
+#include "indent.h"
+
 #include <algorithm>
 #include <math.h>   // for log10()
 #include <stdio.h>  // for sprintf()

@@ -93,8 +93,8 @@ get_c_interval(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int CMetaInterval::
 get_ext_index(int n) const {
-  nassertr(n >= 0 && n < (int)_defs.size(), NULL);
-  nassertr(_defs[n]._type == DT_ext_index, NULL);
+  nassertr(n >= 0 && n < (int)_defs.size(), -1);
+  nassertr(_defs[n]._type == DT_ext_index, -1);
   return _defs[n]._ext_index;
 }
 

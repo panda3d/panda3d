@@ -21,10 +21,12 @@
 
 #include "directbase.h"
 #include "cInterval.h"
+#include "pointerTo.h"
 
 #include <pdeque.h>
 #include <pvector.h>
 #include <pset.h>
+#include <math.h>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CMetaInterval

@@ -19,6 +19,7 @@
 #include "cInterval.h"
 #include "indent.h"
 #include "clockObject.h"
+#include <math.h>
 
 TypeHandle CInterval::_type_handle;
 

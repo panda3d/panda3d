@@ -23,6 +23,7 @@
 #include "colorAttrib.h"
 #include "colorScaleAttrib.h"
 #include "dcast.h"
+#include "config_interval.h"
 
 TypeHandle CLerpNodePathInterval::_type_handle;
 

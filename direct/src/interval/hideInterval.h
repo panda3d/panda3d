@@ -21,6 +21,7 @@
 
 #include "directbase.h"
 #include "cInterval.h"
+#include "nodePath.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : HideInterval
