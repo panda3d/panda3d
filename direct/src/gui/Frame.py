@@ -111,13 +111,11 @@ class Frame(DirectObject):
     def makeWideAsWidest(self):
         # make all the buttons as wide as the widest button in
         # the frame
-        widest = 0
         widestWidth = 0.0
         # find the widest
         for item in self.items:
             thisWidth = item.getWidth()
             if (thisWidth > widestWidth):
-                widest = self.items.index(item)
                 widestWidth = thisWidth
 
         # make them all this wide
@@ -126,3 +124,5 @@ class Frame(DirectObject):
 
             
         
+
+

@@ -15,23 +15,34 @@ class Button(DirectObject):
         if (label == None):
             self.label = name
         else:
-            self.label = label
-        # up
-        self.l1 = GuiLabel.GuiLabel.makeSimpleTextLabel(self.label, font)
-        self.l1.setForegroundColor(0., 0., 0., 1.)
-        self.l1.thaw()
-        # roll-over up
-        self.l2 = GuiLabel.GuiLabel.makeSimpleTextLabel(self.label, font)
-        self.l2.setForegroundColor(0., 0., 0., 1.)
-        self.l2.setBackgroundColor(1., 1., 0., 1.)         
-        self.l2.thaw()
-        # roll-over down
-        self.l3 = GuiLabel.GuiLabel.makeSimpleTextLabel(self.label, font)
-        self.l3.setForegroundColor(1., 1., 1., 1.)
-        self.l3.setBackgroundColor(0., 0., 0., 1.)
-        self.l3.thaw()
+            # check to see if this is an actual guiLabel or just text
+            if (type(label) == type('')):
+                # text label, make text button
+                self.label = label
+                # up
+                self.l1 = GuiLabel.GuiLabel.makeSimpleTextLabel(self.label,
+                                                                font)
+                self.l1.setForegroundColor(0., 0., 0., 1.)
+                self.l1.thaw()
+                # roll-over up
+                self.l2 = GuiLabel.GuiLabel.makeSimpleTextLabel(self.label,
+                                                                font)
+                self.l2.setForegroundColor(0., 0., 0., 1.)
+                self.l2.setBackgroundColor(1., 1., 0., 1.)         
+                self.l2.thaw()
+                # roll-over down
+                self.l3 = GuiLabel.GuiLabel.makeSimpleTextLabel(self.label,
+                                                                font)
+                self.l3.setForegroundColor(1., 1., 1., 1.)
+                self.l3.setBackgroundColor(0., 0., 0., 1.)
+                self.l3.thaw()
+            else:
+                # label provided, use it for all labels
+                self.l1 = self.l2 = self.l3 = label
+
         self.button = GuiButton.GuiButton(self.name, self.l1, self.l2,
                                           self.l3, self.l3, self.l1)
+
         self.setScale(0.1)
         self.managed = 0
 
