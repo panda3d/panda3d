@@ -50,6 +50,7 @@ typedef ios::seek_dir ios_seekdir;
 #endif
 
 #include <string>
+#include <map>
 
 #ifdef HAVE_NAMESPACE
 using namespace std;
@@ -92,6 +93,16 @@ extern bool windows_platform;
 extern bool dry_run;
 extern bool verbose_dry_run;
 extern int verbose; // 0..9 to set verbose level.  0 == off.
+extern int debug_expansions;
+
+/* This structure tracks the number of expansions that are performed
+   on a particular string, and the different values it produces, only
+   if debug_expansions (above) is set true by command-line parameter
+   -x. */
+typedef map<string, int> ExpandResultCount;
+typedef map<string, ExpandResultCount> DebugExpand;
+extern DebugExpand debug_expand;
+
 #endif
 
 /* These are defined so that we may build Filename, DSearchPath, and

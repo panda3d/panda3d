@@ -33,6 +33,36 @@ bool windows_platform = false;
 bool dry_run = false;
 bool verbose_dry_run = false;
 int verbose = 0;
+int debug_expansions = 0;
+
+DebugExpand debug_expand;
+
+class DebugExpandReport {
+public:
+  DebugExpandReport(DebugExpand::const_iterator source, 
+                    ExpandResultCount::const_iterator result) :
+    _source(source),
+    _result(result)
+  { }
+
+  const string &get_source() const {
+    return (*_source).first;
+  }
+  const string &get_result() const {
+    return (*_result).first;
+  }
+  int get_count() const {
+    return (*_result).second;
+  }
+
+  bool operator < (const DebugExpandReport &other) const {
+    return get_count() > other.get_count();
+  }
+    
+  DebugExpand::const_iterator _source;
+  ExpandResultCount::const_iterator _result;
+};
+  
 
 static void
 usage() {
@@ -74,9 +104,15 @@ usage() {
     "  -I           Report the compiled-in default for INSTALL_DIR, and exit.\n"
     "  -v           Turn on verbose output (may help in debugging .pp files).\n"
     "  -vv          Be very verbose (if you're getting desperate).\n"
+    "  -x count     Print a histogram of the count most-frequently expanded strings\n"
+    "               and their results.  Useful to optimize .pp scripts so that\n"
+    "               variables are not needlessly repeatedly expanded.\n\n"
+
     "  -P           Report the current platform name, and exit.\n\n"
+
     "  -D pp.dep    Examine the given dependency file, and re-run ppremake\n"
     "               only if the dependency file is stale.\n\n"
+
     "  -d           Instead of generating makefiles, report the set of\n"
     "               subdirectories that the named subdirectory depends on.\n"
     "               Directories are named by their local name, not by the\n"
@@ -229,7 +265,7 @@ main(int argc, char *argv[]) {
   string progname = argv[0];
   extern char *optarg;
   extern int optind;
-  const char *optstr = "hVIvPD:drnNp:c:s:";
+  const char *optstr = "hVIvx:PD:drnNp:c:s:";
 
   bool any_d = false;
   bool dependencies_stale = false;
@@ -266,6 +302,10 @@ main(int argc, char *argv[]) {
 
     case 'v':
       ++verbose;
+      break;
+
+    case 'x':
+      debug_expansions = atoi(optarg);
       break;
 
     case 'P':
@@ -406,6 +446,32 @@ main(int argc, char *argv[]) {
         }
       }
     }
+  }
+
+  if (debug_expansions > 0) {
+    // Now report the worst expansion offenders.  These are the
+    // strings that were most often expanded to the same thing.
+    cerr << "\nExpansion report:\n";
+    vector<DebugExpandReport> report;
+
+    DebugExpand::const_iterator dei;
+    for (dei = debug_expand.begin(); dei != debug_expand.end(); ++dei) {
+      const ExpandResultCount &result_count = (*dei).second;
+      ExpandResultCount::const_iterator rci;
+      for (rci = result_count.begin(); rci != result_count.end(); ++rci) {
+        report.push_back(DebugExpandReport(dei, rci));
+      }
+    }
+
+    sort(report.begin(), report.end());
+
+    int num_reports = min((int)report.size(), debug_expansions);
+    for (int i = 0; i < num_reports; i++) {
+      cerr << "\"" << report[i].get_source() << "\" -> \"" 
+           << report[i].get_result()
+           << "\" (" << report[i].get_count() << ")\n";
+    }
+    cerr << "\n";
   }
 
   cerr << "No errors.\n";

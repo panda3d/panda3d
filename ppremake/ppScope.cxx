@@ -3,6 +3,7 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
+#include "ppremake.h"
 #include "ppScope.h"
 #include "ppNamedScopes.h"
 #include "ppFilenamePattern.h"
@@ -493,7 +494,29 @@ set_directory(PPDirectory *directory) {
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_string(const string &str) {
-  return r_expand_string(str, (ExpandedVariable *)NULL);
+  string result = r_expand_string(str, (ExpandedVariable *)NULL);
+
+  if (debug_expansions > 0 && str != result) {
+    // Look for the str in our table--how many times has this
+    // particular string been expanded?
+    ExpandResultCount &result_count = debug_expand[str];
+
+    // Then, how many times has it expanded to this same result?
+    // First, assuming this is the first time it has expanded to this
+    // result, try to insert the result string with an initial count
+    // of 1.
+    pair<ExpandResultCount::iterator, bool> r = 
+      result_count.insert(ExpandResultCount::value_type(result, 1));
+
+    if (!r.second) {
+      // If the result string was not successfully inserted into the
+      // map, it was already there--so increment the count.
+      ExpandResultCount::iterator rci = r.first;
+      (*rci).second++;
+    }
+  }
+
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
