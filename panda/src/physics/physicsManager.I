@@ -104,6 +104,26 @@ clear_physicals() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//    Function : set_viscosity
+//      Access : Public
+// Description : Set the global viscosity.
+////////////////////////////////////////////////////////////////////
+INLINE void PhysicsManager::
+set_viscosity(float viscosity) {
+  _viscosity=viscosity;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : get_viscosity
+//      Access : Public
+// Description : Get the global viscosity.
+////////////////////////////////////////////////////////////////////
+INLINE float PhysicsManager::
+get_viscosity() const {
+  return _viscosity;
+}
+
+////////////////////////////////////////////////////////////////////
 //    Function : attach_linear_integrator
 //      Access : Public
 // Description : Hooks a linear integrator into the manager

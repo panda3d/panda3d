@@ -32,7 +32,7 @@ PhysicsManager::
 PhysicsManager() {
   _linear_integrator.clear();
   _angular_integrator.clear();
-  _viscosity=0;
+  _viscosity=0.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -109,7 +109,7 @@ remove_physical(Physical *p) {
 void PhysicsManager::
 do_physics(float dt) {
   // now, run through each physics object in the set.
-  pvector< Physical * >::iterator p_cur = _physicals.begin();
+  PhysicalsVector::iterator p_cur = _physicals.begin();
   for (; p_cur != _physicals.end(); ++p_cur) {
     Physical *physical = *p_cur;
     nassertv(physical);
