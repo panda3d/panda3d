@@ -266,6 +266,12 @@
         # functor creation is defered so initial state (sampled in functorFunc)
         # will be appropriate for the time the lerp is spawned
         from TaskManagerGlobal import *
+
+        # upon death remove the functorFunc
+        def lerpUponDeath(task):
+            # Try to break circular references
+            del task.functorFunc
+            del task.lerp
         
         # make the task function
         def lerpTaskFunc(task):
@@ -283,7 +289,6 @@
             if (task.lerp.isDone()):
                 # Reset the init flag, in case the task gets re-used
                 task.init = 1
-		del task.functorFunc
                 return(Task.done)
             else:
                 return(Task.cont)
@@ -294,6 +299,7 @@
         lerpTask.functorFunc = functorFunc
         lerpTask.duration = duration
         lerpTask.blendType = self.__getBlend(blendType)
+        lerpTask.uponDeath = lerpUponDeath
         
         if (taskName == None):
             # don't spawn a task, return one instead
