@@ -22,6 +22,7 @@ if ($ENV{'DEBUG_GENERATE_PYTHON_CODE_ONLY'} ne '') {
 my $DONT_ARCHIVE_OLD_BUILDS = 0;
 my $BLD_DTOOL_ONLY=0;
 
+
 my $DIRPATH_SEPARATOR=':';   # set to ';' for non-cygwin NT perl
 
 my @inst_dirnames=("archive","debug","install","release","publish");
@@ -34,6 +35,8 @@ my @inst_dirs;
 for(my $i=0;$i<=$#inst_dirnames;$i++) {
     $inst_dirs[$i]=$WIN_INSTALLDIR."\\".$inst_dirnames[$i];
 }
+
+my $VC7BINDIR="C:\\PROGRA~1\\Microsoft Visual Studio .NET\\Vc7\\BIN";
 
 #if(! $DEBUG_GENERATE_PYTHON_CODE_ONLY) {
 #    $ENV{'PANDA_OPTIMIZE'}='4';  # var has meaning to my special Config.pp
@@ -216,9 +219,9 @@ sub make_bsc_file() {
     print OUTFILE "$filestr","\n";
     close(OUTFILE);
     close(FILES);
-    
+
     # vc7 dirs are not in path env-var by default
-    $bscmake_str="C:\\PROGRA~1\\Microsoft Visual Studio .NET\\Vc7\\BIN\\bscmake.exe /o ".$outputfilepath." @".$cmdfilepath."\n";
+    $bscmake_str=$VC7BINDIR."\\bscmake /o ".$outputfilepath." @".$cmdfilepath."\n";
     &myexecstr($bscmake_str,"bscmake failed!!!","DO_LOG","NT cmd");
 
     &myexecstr("copy ".$outputfilepath." ".$inst_dirs[$DEBUGNUM], "copy of ".$outputfilepath." failed!!", "DO_LOG","NT cmd");
