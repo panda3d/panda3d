@@ -64,7 +64,7 @@
 //              (e.g. Windows NT, Windows 2000) using the Microsoft Visual C++
 //              command-line compiler and Microsoft nmake.
 //
-#define BUILD_TYPE stopgap
+#define BUILD_TYPE unix
 
 
 // What is the default install directory for all trees in the Panda
