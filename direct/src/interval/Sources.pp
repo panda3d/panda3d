@@ -17,5 +17,16 @@
     hideInterval.cxx hideInterval.I hideInterval.h \
     lerp_helpers.h
 
+  #define INSTALL_HEADERS \
+    config_interval.h \
+    cInterval.I cInterval.h \
+    cIntervalManager.I cIntervalManager.h \
+    cLerpInterval.I cLerpInterval.h \
+    cLerpNodePathInterval.I cLerpNodePathInterval.h \
+    cLerpAnimEffectInterval.I cLerpAnimEffectInterval.h \
+    cMetaInterval.I cMetaInterval.h \
+    showInterval.I showInterval.h \
+    hideInterval.I hideInterval.h
+
   #define IGATESCAN all
 #end lib_target
