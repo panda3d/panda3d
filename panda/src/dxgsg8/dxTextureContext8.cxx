@@ -1434,7 +1434,6 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
     return _pD3DTexture8;
 
   error_exit:
-    ULONG refcnt;
 
     RELEASE(_pD3DTexture8,dxgsg,"texture",RELEASE_ONCE);
     return NULL;
@@ -1496,7 +1495,6 @@ FillDDSurfTexturePixels(void) {
     }
 
  exit_FillDDSurf:
-    ULONG refcnt;
     RELEASE(pMipLevel0,dxgsg,"texture",RELEASE_ONCE);
     return hr;
 
@@ -1754,8 +1752,6 @@ DeleteTexture( ) {
     if(dxgsg_cat.is_spam()) {
         dxgsg_cat.spam() << "Deleting DX texture for " << _tex->get_name() << "\n";
     }
-
-    ULONG refcnt;
 
     RELEASE(_pD3DTexture8,dxgsg,"texture",RELEASE_ONCE);
 /*

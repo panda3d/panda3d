@@ -79,13 +79,14 @@
 #define RELEASE_DOWN_TO_ZERO true
 #define RELEASE_ONCE false
 
-// #define DEBUG_RELEASES
+//#define DEBUG_RELEASES
 
 #ifdef DEBUG_RELEASES
-#define RELEASE(OBJECT,MODULE,DBGSTR,bDoDownToZero)             \
-   if(((OBJECT)!=NULL) && IS_VALID_PTR(OBJECT)) {               \
+#define RELEASE(OBJECT,MODULE,DBGSTR,bDoDownToZero)             {  \
+   ULONG refcnt;                                                \
+   if(IS_VALID_PTR(OBJECT)) {                                   \
         refcnt = (OBJECT)->Release();                           \
-        MODULE##_cat.debug() << DBGSTR << " released, refcnt = " << refcnt << endl;  \
+        MODULE##_cat.debug() << DBGSTR << " released, refcnt = " << refcnt << " at " << __FILE__ << ":" << __LINE__ << endl; \
         if((bDoDownToZero) && (refcnt>0)) {                     \
               MODULE##_cat.warning() << DBGSTR << " released but still has a non-zero refcnt(" << refcnt << "), multi-releasing it down to zero!\n"; \
               do {                                \
@@ -95,12 +96,15 @@
         (OBJECT) = NULL;                          \
       } else {                                    \
         MODULE##_cat.debug() << DBGSTR << " not released, ptr == NULL" << endl;  \
-      } 
+      }}
 
-#define PRINTREFCNT(OBJECT,STR)  {  (OBJECT)->AddRef();  dxgsg_cat.debug() << STR << " refcnt = " << (OBJECT)->Release() << endl; }
+#define PRINT_REFCNT(MODULE,p) { ULONG refcnt;  (p)->AddRef();  refcnt=(p)->Release(); \
+                                 MODULE##_cat.debug() << #p << " has refcnt = " << refcnt << " at " << __FILE__ << ":" << __LINE__ << endl; }
+                                 
 #else
-#define RELEASE(OBJECT,MODULE,DBGSTR,bDoDownToZero)     \
-   if(((OBJECT)!=NULL)&&(!IsBadWritePtr((OBJECT),4))) { \
+#define RELEASE(OBJECT,MODULE,DBGSTR,bDoDownToZero)   { \
+   ULONG refcnt;                                        \
+   if(IS_VALID_PTR(OBJECT))                           { \
         refcnt=(OBJECT)->Release();                     \
         if((bDoDownToZero) && (refcnt>0)) {             \
               MODULE##_cat.warning() << DBGSTR << " released but still has a non-zero refcnt(" << refcnt << "), multi-releasing it down to zero!\n"; \
@@ -109,9 +113,9 @@
               } while(refcnt>0);                  \
         }                                         \
         (OBJECT) = NULL;                          \
-   }
+   }}
 
-#define PRINTREFCNT(OBJECT,STR)  
+#define PRINT_REFCNT(MODULE,p)
 #endif    
 
 #ifdef DO_PSTATS

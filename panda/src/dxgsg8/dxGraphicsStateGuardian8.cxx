@@ -387,8 +387,6 @@ reset(void) {
 // recreate dx objects without modifying gsg state, other than clearing state cache
 void DXGraphicsStateGuardian::
 free_dxgsg_objects(void) {
-    ULONG refcnt;
-
     // dont want a full reset of gsg, just a state clear      
     GraphicsStateGuardian::clear_cached_state(); // want gsg to pass all state settings through
 
@@ -737,9 +735,14 @@ dx_init(HCURSOR hMouseCursor) {
         hr=S_OK;
         SIZE TextRectSize;
 
+        PRINT_REFCNT(dxgsg,scrn.pD3DDevice);
         _pStatMeterFont = new CD3DFont(_T("Arial"),12,D3DFONT_BOLD);
+        PRINT_REFCNT(dxgsg,scrn.pD3DDevice);
         if(IS_VALID_PTR(_pStatMeterFont))
             hr=_pStatMeterFont->InitDeviceObjects(scrn.pD3DDevice);
+
+        PRINT_REFCNT(dxgsg,scrn.pD3DDevice);
+
         if(IS_VALID_PTR(_pStatMeterFont) && SUCCEEDED(hr)) {
             // instead of computing offset every frame (could change based on font chars,
             // do it once here.  if we wanted top left corner instead of top right,
@@ -754,6 +757,8 @@ dx_init(HCURSOR hMouseCursor) {
             sprintf(fps_msg,FPS_MSG_FORMAT_STR,xsize,ysize,32,800.00f); // 6 == NUM_FPSMETER_LETTERS
 
             hr = _pStatMeterFont->GetTextExtent(fps_msg,&TextRectSize);
+
+            PRINT_REFCNT(dxgsg,scrn.pD3DDevice);
             if(SUCCEEDED(hr)) {
                 UINT xsize = scrn.pProps->_xsize;
 
@@ -777,6 +782,7 @@ dx_init(HCURSOR hMouseCursor) {
         _current_fps = 0.0f;
         _start_frame_count = _cur_frame_count = 0;
     }
+    PRINT_REFCNT(dxgsg,scrn.pD3DDevice);
 
     // Make sure the DX state matches all of our initial attribute states.
     PT(DepthTestTransition) dta = new DepthTestTransition;
@@ -788,6 +794,8 @@ dx_init(HCURSOR hMouseCursor) {
     dwa->issue(this);
     cfa->issue(this);
     ta->issue(this); // no curtextcontext, this does nothing.  dx should already be properly inited above anyway
+
+    PRINT_REFCNT(dxgsg,scrn.pD3DDevice);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3527,7 +3535,6 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 
     (void) ConvertD3DSurftoPixBuf(SrcCopyRect,pD3DSurf,pb);
 
-    ULONG refcnt;
     RELEASE(pD3DSurf,dxgsg,"pD3DSurf",RELEASE_ONCE);
 
     nassertv(!pb->_image.empty());
@@ -5644,25 +5651,21 @@ dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled) {
     if(bAtExitFnEverCalled)
       return;
 
-    ULONG refcnt;
-
     // unsafe to do the D3D releases after exit() called, since DLL_PROCESS_DETACH
     // msg already delivered to d3d.dll and it's unloaded itself
     if(!bAtExitFnEverCalled) {
 
-        PRINTREFCNT(scrn.pD3DDevice,"exit start IIDirect3DDevice8");
+        PRINT_REFCNT(dxgsg,scrn.pD3DDevice);
 
         // these 2 calls release ddraw surfaces and vbuffers.  unsafe unless not on exit
         release_all_textures();
         release_all_geoms();
 
+        PRINT_REFCNT(dxgsg,scrn.pD3DDevice);
+
         SAFE_DELETE(_pStatMeterFont);
 
-        PRINTREFCNT(scrn.pD3DDevice,"after release_all_textures IDirect3DDevice8");
-
-
-//        RELEASE(_fpsmeter_font_surf,dxgsg,"fpsmeter fontsurf",false);
-//        PRINTREFCNT(scrn.pD3DDevice,"after fpsfont release IDirect3DDevice8");
+        PRINT_REFCNT(dxgsg,scrn.pD3DDevice);
 
         // Do a safe check for releasing the D3DDEVICE. RefCount should be zero.
         // if we're called from exit(), scrn.pD3DDevice may already have been released
@@ -6901,7 +6904,6 @@ End:
 
     SAFE_DELETE_ARRAY( pcrArrayColor );
     SAFE_DELETE_ARRAY( pcrArrayMask );
-    ULONG refcnt; 
     RELEASE(pCursorBitmap,dxgsg,"pCursorBitmap",RELEASE_ONCE);
     return hr;
 }
