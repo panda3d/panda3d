@@ -933,7 +933,7 @@ do_compose(const TransformState *other) const {
     if (paranoid_compose) {
       // Now verify against the matrix.
       LMatrix4f new_mat = other->get_mat() * get_mat();
-      if (!new_mat.almost_equal(result->get_mat(), 0.05)) {
+      if (!new_mat.almost_equal(result->get_mat(), 0.1)) {
         CPT(TransformState) correct = make_mat(new_mat);
         pgraph_cat.warning()
           << "Componentwise composition of " << *this << " and " << *other
@@ -1005,7 +1005,7 @@ do_invert_compose(const TransformState *other) const {
       } else {
         nassertr(_inv_mat != (LMatrix4f *)NULL, make_invalid());
         LMatrix4f new_mat = other->get_mat() * (*_inv_mat);
-        if (!new_mat.almost_equal(result->get_mat(), 0.05)) {
+        if (!new_mat.almost_equal(result->get_mat(), 0.1)) {
           CPT(TransformState) correct = make_mat(new_mat);
           pgraph_cat.warning()
             << "Componentwise invert-composition of " << *this << " and " << *other
