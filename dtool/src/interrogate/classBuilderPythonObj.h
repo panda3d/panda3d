@@ -1,5 +1,5 @@
-// Filename: wrapperBuilderC.h
-// Created by:  drose (06Aug00)
+// Filename: classBuilderPythonObj.h
+// Created by:  drose (17Sep01)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,33 +16,30 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef WRAPPERBUILDERC_H
-#define WRAPPERBUILDERC_H
+#ifndef CLASSBUILDERPYTHONOBJ_H
+#define CLASSBUILDERPYTHONOBJ_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
+#include "classBuilder.h"
 
-#include "wrapperBuilder.h"
+class CPPType;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : WrapperBuilderC
-// Description : A specialization on WrapperBuilder that builds
-//               C-style wrapper functions.
+//       Class : ClassBuilderPythonObj
+// Description : A specialization on ClassBuilder that builds
+//               actual Python class objects.
 ////////////////////////////////////////////////////////////////////
-class WrapperBuilderC : public WrapperBuilder {
+class ClassBuilderPythonObj : public ClassBuilder {
 public:
-  WrapperBuilderC();
+  virtual bool set_class(TypeIndex type_index, CPPStructType *struct_type);
 
-  virtual void
-  write_prototype(ostream &out, const string &wrapper_name) const;
+  virtual void write_prototype(ostream &out) const;
+  virtual void write_code(ostream &out) const;
 
-  virtual void
-  write_wrapper(ostream &out, const string &wrapper_name) const;
+  static string get_builder_name(CPPType *struct_type);
 
-  virtual string
-  get_wrapper_name(const string &library_hash_name) const;
-
-  virtual bool supports_atomic_strings() const;
-  virtual CallingConvention get_calling_convention() const;
+private:
+  string _name;
 };
 
 #endif

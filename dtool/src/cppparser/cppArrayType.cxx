@@ -140,12 +140,15 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
 ////////////////////////////////////////////////////////////////////
 void CPPArrayType::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
+  /*
   _element_type->output(out, indent_level, scope, complete);
   out << "[";
   if (_bounds != NULL) {
     out << *_bounds;
   }
   out << "]";
+  */
+  output_instance(out, indent_level, scope, complete, "", "");
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -1,5 +1,5 @@
-// Filename: wrapperBuilderC.h
-// Created by:  drose (06Aug00)
+// Filename: functionWriter.h
+// Created by:  drose (14Sep01)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,33 +16,32 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef WRAPPERBUILDERC_H
-#define WRAPPERBUILDERC_H
+#ifndef FUNCTIONWRITER_H
+#define FUNCTIONWRITER_H
 
-#include <dtoolbase.h>
-
-#include "wrapperBuilder.h"
+#include "dtoolbase.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : WrapperBuilderC
-// Description : A specialization on WrapperBuilder that builds
-//               C-style wrapper functions.
+//       Class : FunctionWriter
+// Description : This is an abstract class that can be used by the
+//               various WrapperBuilders to indicate a static helper
+//               function or variable that needs to be written to the
+//               generated source file before the code for the
+//               WrapperBuilders.
 ////////////////////////////////////////////////////////////////////
-class WrapperBuilderC : public WrapperBuilder {
+class FunctionWriter {
 public:
-  WrapperBuilderC();
+  FunctionWriter();
+  virtual ~FunctionWriter();
 
-  virtual void
-  write_prototype(ostream &out, const string &wrapper_name) const;
+  const string &get_name() const;
+  virtual int compare_to(const FunctionWriter &other) const;
 
-  virtual void
-  write_wrapper(ostream &out, const string &wrapper_name) const;
+  virtual void write_prototype(ostream &out);
+  virtual void write_code(ostream &out);
 
-  virtual string
-  get_wrapper_name(const string &library_hash_name) const;
-
-  virtual bool supports_atomic_strings() const;
-  virtual CallingConvention get_calling_convention() const;
+protected:
+  string _name;
 };
 
 #endif

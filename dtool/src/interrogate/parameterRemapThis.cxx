@@ -19,10 +19,10 @@
 #include "parameterRemapThis.h"
 #include "typeManager.h"
 
-#include <cppStructType.h>
-#include <cppSimpleType.h>
-#include <cppPointerType.h>
-#include <cppConstType.h>
+#include "cppType.h"
+#include "cppSimpleType.h"
+#include "cppPointerType.h"
+#include "cppConstType.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ParameterRemapThis::Constructor
@@ -30,7 +30,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 ParameterRemapThis::
-ParameterRemapThis(CPPStructType *type, bool is_const) :
+ParameterRemapThis(CPPType *type, bool is_const) :
   ParameterRemap(TypeManager::get_void_type())
 {
   if (is_const) {

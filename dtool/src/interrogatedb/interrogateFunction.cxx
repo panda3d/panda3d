@@ -22,6 +22,26 @@
 #include "interrogateDatabase.h"
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InterrogateFunction::Copy Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void InterrogateFunction::
+operator = (const InterrogateFunction &copy) {
+  InterrogateComponent::operator = (copy);
+  _flags = copy._flags;
+  _scoped_name = copy._scoped_name;
+  _comment = copy._comment;
+  _prototype = copy._prototype;
+  _class = copy._class;
+  _c_wrappers = copy._c_wrappers;
+  _python_wrappers = copy._python_wrappers;
+
+  _instances = copy._instances;
+  _expression = copy._expression;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunction::output
 //       Access: Public
 //  Description: Formats the InterrogateFunction data for output to a data

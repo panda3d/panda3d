@@ -1,5 +1,5 @@
-// Filename: wrapperBuilderC.h
-// Created by:  drose (06Aug00)
+// Filename: interfaceMakerPython.h
+// Created by:  drose (21Sep01)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,33 +16,31 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef WRAPPERBUILDERC_H
-#define WRAPPERBUILDERC_H
+#ifndef INTERFACEMAKERPYTHON_H
+#define INTERFACEMAKERPYTHON_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
-#include "wrapperBuilder.h"
+#include "interfaceMaker.h"
+
+class FunctionRemap;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : WrapperBuilderC
-// Description : A specialization on WrapperBuilder that builds
-//               C-style wrapper functions.
+//       Class : InterfaceMakerPython
+// Description : The base class for InteraceMakerPythonSimple and
+//               InterfaceMakerPythonObj, this includes a few
+//               functions that both have in common for formatting
+//               Python objects.
 ////////////////////////////////////////////////////////////////////
-class WrapperBuilderC : public WrapperBuilder {
+class InterfaceMakerPython : public InterfaceMaker {
+protected:
+  InterfaceMakerPython(InterrogateModuleDef *def);
+
 public:
-  WrapperBuilderC();
+  virtual void write_includes(ostream &out);
 
-  virtual void
-  write_prototype(ostream &out, const string &wrapper_name) const;
-
-  virtual void
-  write_wrapper(ostream &out, const string &wrapper_name) const;
-
-  virtual string
-  get_wrapper_name(const string &library_hash_name) const;
-
-  virtual bool supports_atomic_strings() const;
-  virtual CallingConvention get_calling_convention() const;
+protected:
+  void test_assert(ostream &out, int indent_level) const;
 };
 
 #endif

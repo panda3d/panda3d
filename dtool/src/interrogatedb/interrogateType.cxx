@@ -93,6 +93,9 @@ operator = (const InterrogateType &copy) {
   _derivations = copy._derivations;
   _enum_values = copy._enum_values;
   _nested_types = copy._nested_types;
+
+  _cpptype = copy._cpptype;
+  _cppscope = copy._cppscope;
 }
 
 ////////////////////////////////////////////////////////////////////

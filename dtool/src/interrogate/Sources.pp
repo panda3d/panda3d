@@ -4,10 +4,20 @@
 
 #begin bin_target
   #define TARGET interrogate
-  
-  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx   
 
+// While I'm working on this, I'll temporarily take out the composite
+// build.
+//  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx   
   #define SOURCES \
+     classBuilder.h classBuilderPythonObj.h \
+     functionRemap.h \
+     functionWriter.h \
+     functionWriterPtrFromPython.h functionWriterPtrToPython.h \
+     functionWriters.h \
+     interfaceMaker.h \
+     interfaceMakerC.h \
+     interfaceMakerPython.h interfaceMakerPythonObj.h \
+     interfaceMakerPythonSimple.h \
      interrogate.h interrogateBuilder.h parameterRemap.I  \
      parameterRemap.h parameterRemapBasicStringRefToString.h  \
      parameterRemapBasicStringToString.h  \
@@ -19,9 +29,19 @@
      parameterRemapReferenceToPointer.h parameterRemapThis.h  \
      parameterRemapToString.h parameterRemapUnchanged.h  \
      typeManager.h wrapperBuilder.h wrapperBuilderC.h  \
-     wrapperBuilderPython.h      
+     wrapperBuilderPython.h wrapperBuilderPythonObj.h
 
- #define INCLUDED_SOURCES  \
+// #define INCLUDED_SOURCES  \
+ #define SOURCES $[SOURCES] \
+     classBuilder.cxx classBuilderPythonObj.cxx \
+     functionRemap.cxx \
+     functionWriter.cxx \
+     functionWriterPtrFromPython.cxx functionWriterPtrToPython.cxx \
+     functionWriters.cxx \
+     interfaceMaker.cxx \
+     interfaceMakerC.cxx \
+     interfaceMakerPython.cxx interfaceMakerPythonObj.cxx \
+     interfaceMakerPythonSimple.cxx \
      interrogate.cxx interrogateBuilder.cxx parameterRemap.cxx  \
      parameterRemapBasicStringRefToString.cxx  \
      parameterRemapBasicStringToString.cxx  \
@@ -33,7 +53,7 @@
      parameterRemapReferenceToPointer.cxx parameterRemapThis.cxx  \
      parameterRemapToString.cxx parameterRemapUnchanged.cxx  \
      typeManager.cxx wrapperBuilder.cxx wrapperBuilderC.cxx  \
-     wrapperBuilderPython.cxx  
+     wrapperBuilderPython.cxx wrapperBuilderPythonObj.cxx
 
 #end bin_target
 

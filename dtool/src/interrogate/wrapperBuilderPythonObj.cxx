@@ -1,5 +1,5 @@
-// Filename: wrapperBuilderPython.cxx
-// Created by:  drose (07Aug00)
+// Filename: wrapperBuilderPythonObj.cxx
+// Created by:  drose (11Sep01)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,10 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "wrapperBuilderPython.h"
+#include "wrapperBuilderPythonObj.h"
 #include "interrogate.h"
 #include "parameterRemap.h"
 #include "typeManager.h"
+#include "functionWriterPtrFromPython.h"
+#include "functionWriterPtrToPython.h"
+#include "functionWriters.h"
 
 #include <interrogateDatabase.h>
 #include <cppInstance.h>
@@ -34,20 +37,70 @@
 #include <notify.h>
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WrapperBuilderPython::Constructor
+//     Function: WrapperBuilderPythonObj::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-WrapperBuilderPython::
-WrapperBuilderPython() {
+WrapperBuilderPythonObj::
+WrapperBuilderPythonObj() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WrapperBuilderPython::write_prototype
+//     Function: WrapperBuilderPythonObj::get_function_writers
+//       Access: Public, Virtual
+//  Description: Adds whatever list of FunctionWriters might be needed
+//               for this particular WrapperBuilder.  These will be
+//               generated to the output source file before
+//               write_wrapper() is called.
+////////////////////////////////////////////////////////////////////
+void WrapperBuilderPythonObj::
+get_function_writers(FunctionWriters &writers) {
+  for (int def_index = 0; def_index < (int)_def.size(); ++def_index) {
+    const FunctionDef *def = _def[def_index];
+
+    if (def->_is_method) {
+      FunctionWriterPtrFromPython *writer = 
+        new FunctionWriterPtrFromPython(def->_struct_type);
+      writers.add_writer(writer);
+    }
+
+    int pn;
+    for (pn = 0; pn < (int)def->_parameters.size(); pn++) {
+      CPPType *type = def->_parameters[pn]._remap->get_new_type();
+
+      if (def->_parameters[pn]._remap->new_type_is_atomic_string()) {
+      } else if (TypeManager::is_bool(type)) {
+      } else if (TypeManager::is_integer(type)) {
+      } else if (TypeManager::is_float(type)) {
+      } else if (TypeManager::is_char_pointer(type)) {
+
+      } else if (TypeManager::is_pointer(type)) {
+        FunctionWriterPtrFromPython *writer = 
+          new FunctionWriterPtrFromPython(type);
+        writers.add_writer(writer);
+      }
+    }
+
+    CPPType *type = def->_return_type->get_new_type();
+    if (def->_return_type->new_type_is_atomic_string()) {
+    } else if (TypeManager::is_integer(type)) {
+    } else if (TypeManager::is_float(type)) {
+    } else if (TypeManager::is_char_pointer(type)) {
+      
+    } else if (TypeManager::is_pointer(type)) {
+      FunctionWriterPtrToPython *writer = 
+        new FunctionWriterPtrToPython(type);
+      writers.add_writer(writer);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WrapperBuilderPythonObj::write_prototype
 //       Access: Public, Virtual
 //  Description: Generates the prototype for the wrapper function(s).
 ////////////////////////////////////////////////////////////////////
-void WrapperBuilderPython::
+void WrapperBuilderPythonObj::
 write_prototype(ostream &out, const string &wrapper_name) const {
   if (!output_function_names) {
     // If we're not saving the function names, don't export it from
@@ -58,49 +111,89 @@ write_prototype(ostream &out, const string &wrapper_name) const {
   }
 
   out << "PyObject *"
-      << wrapper_name << "(PyObject *, PyObject *args);\n";
+      << wrapper_name << "(PyObject *self, PyObject *args);\n";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WrapperBuilderPython::write_wrapper
+//     Function: WrapperBuilderPythonObj::write_wrapper
 //       Access: Public, Virtual
 //  Description: Generates a wrapper function to the indicated output
 //               stream.
 ////////////////////////////////////////////////////////////////////
-void WrapperBuilderPython::
+void WrapperBuilderPythonObj::
 write_wrapper(ostream &out, const string &wrapper_name) const {
+  bool any_is_method = false;
+
+  out << "/*\n"
+      << " * Python object wrapper for\n";
+
   for (int def_index = 0; def_index < (int)_def.size(); ++def_index) {
     const FunctionDef *def = _def[def_index];
-
-    out << "/*\n"
-        << " * Python simple wrapper for\n"
-        << " * " << def->_description << "\n"
-        << " */\n";
-
-    if (!output_function_names) {
-      // If we're not saving the function names, don't export it from
-      // the library.
-      out << "static ";
+    out << " * " << def->_description << "\n";
+    if (def->_is_method) {
+      any_is_method = true;
     }
+  }
+  out << " */\n";
 
+  if (!output_function_names) {
+    // If we're not saving the function names, don't export it from
+    // the library.
+    out << "static ";
+  }
+
+  if (any_is_method) {
+    out << "PyObject *\n"
+        << wrapper_name << "(PyObject *self, PyObject *args) {\n";
+  } else {
     out << "PyObject *\n"
         << wrapper_name << "(PyObject *, PyObject *args) {\n";
+  }
+  
+  write_spam_message(0, out);
+  string expected_params = "Arguments must match one of:";
 
-    write_spam_message(def_index, out);
+  for (int def_index = 0; def_index < (int)_def.size(); ++def_index) {
+    const FunctionDef *def = _def[def_index];
+    out << "  {\n"
+        << "    /* " << def->_description << " */\n"
+        << "\n";
 
-    int pn;
+    string thisptr;
+    if (def->_is_method) {
+      // Declare a "thisptr" variable.
+      thisptr = "thisptr";
+      FunctionWriterPtrFromPython *writer = 
+        new FunctionWriterPtrFromPython(def->_struct_type);
+      out << "    ";
+      writer->get_pointer_type()->output_instance(out, thisptr, &parser);
+      out << ";\n"
+          << "    if (!" << writer->get_name() << "(self, &thisptr)) {\n"
+          << "      return (PyObject *)NULL;\n"
+          << "    }\n";
+      delete writer;
+    }
 
     string format_specifiers;
     string parameter_list;
-    string container;
     vector_string pexprs;
 
     // Make one pass through the parameter list.  We will output a
     // one-line temporary variable definition for each parameter, while
     // simultaneously building the ParseTuple() function call and also
     // the parameter expression list for call_function().
+
+    expected_params += "\\n  ";
+    expected_params += _def[0]->_function->get_simple_name();
+    expected_params += "(";
+    
+    int pn;
     for (pn = 0; pn < (int)def->_parameters.size(); pn++) {
-      out << "  ";
+      if (pn != 0) {
+        expected_params += ", ";
+      }
+
+      out << "    ";
       CPPType *orig_type = def->_parameters[pn]._remap->get_orig_type();
       CPPType *type = def->_parameters[pn]._remap->get_new_type();
 
@@ -125,147 +218,178 @@ write_wrapper(ostream &out, const string &wrapper_name) const {
             get_parameter_name(pn) + "_str, " +
             get_parameter_name(pn) + "_len)";
         }
+        expected_params += "string";
 
       } else if (TypeManager::is_bool(type)) {
         out << "PyObject *" << get_parameter_name(pn);
         format_specifiers += "O";
         parameter_list += ", &" + get_parameter_name(pn);
         pexpr_string = "(PyObject_IsTrue(" + get_parameter_name(pn) + ")!=0)";
+        expected_params += "bool";
 
       } else if (TypeManager::is_integer(type)) {
         out << "int " << get_parameter_name(pn);
         format_specifiers += "i";
         parameter_list += ", &" + get_parameter_name(pn);
+        expected_params += "integer";
 
       } else if (TypeManager::is_float(type)) {
         out << "double " << get_parameter_name(pn);
         format_specifiers += "d";
         parameter_list += ", &" + get_parameter_name(pn);
+        expected_params += "float";
 
       } else if (TypeManager::is_char_pointer(type)) {
         out << "char *" << get_parameter_name(pn);
         format_specifiers += "s";
         parameter_list += ", &" + get_parameter_name(pn);
+        expected_params += "string";
 
       } else if (TypeManager::is_pointer(type)) {
         out << "int " << get_parameter_name(pn);
         format_specifiers += "i";
         parameter_list += ", &" + get_parameter_name(pn);
+        expected_params += "pointer";
 
       } else {
         // Ignore a parameter.
         out << "PyObject *" << get_parameter_name(pn);
         format_specifiers += "O";
         parameter_list += ", &" + get_parameter_name(pn);
+        expected_params += "ignored";
+      }
+
+      if (def->_parameters[pn]._has_name) {
+        expected_params += " " + def->_parameters[pn]._name;
       }
 
       out << ";\n";
-      if (def->_has_this && pn == 0) {
-        // The "this" parameter gets passed in separately.
-        container = pexpr_string;
-      }
       pexprs.push_back(pexpr_string);
     }
+    expected_params += ")";
 
-    out << "  if (PyArg_ParseTuple(args, \"" << format_specifiers
+    out << "    if (PyArg_ParseTuple(args, \"" << format_specifiers
         << "\"" << parameter_list << ")) {\n";
 
     if (track_interpreter) {
-      out << "    in_interpreter = 0;\n";
+      out << "      in_interpreter = 0;\n";
     }
 
     if (def->_return_type->new_type_is_atomic_string()) {
       // Treat strings as a special case.  We don't want to format the
       // return expression.
-      string return_expr = call_function(def_index,
-                                         out, 4, false, container, pexprs);
+      string return_expr = call_function(def_index, 
+                                         out, 6, false, thisptr, pexprs);
 
       CPPType *type = def->_return_type->get_orig_type();
-      out << "    ";
+      out << "      ";
       type->output_instance(out, "return_value", &parser);
       out << " = " << return_expr << ";\n";
 
       if (track_interpreter) {
-        out << "    in_interpreter = 1;\n";
+        out << "      in_interpreter = 1;\n";
       }
 
-      return_expr = manage_return_value(def_index, out, 4, "return_value");
-      test_assert(out, 4);
+      return_expr = manage_return_value(def_index, out, 6, "return_value");
+      test_assert(out, 6);
       pack_return_value(def_index, out, return_expr);
 
     } else {
-      string return_expr = call_function(def_index, 
-                                         out, 4, true, container, pexprs);
+      string return_expr = call_function(def_index,
+                                         out, 6, true, thisptr, pexprs);
       if (return_expr.empty()) {
         if (track_interpreter) {
-          out << "    in_interpreter = 1;\n";
+          out << "      in_interpreter = 1;\n";
         }
-        test_assert(out, 4);
-        out << "    return Py_BuildValue(\"\");\n";
+        test_assert(out, 6);
+        out << "      return Py_BuildValue(\"\");\n";
 
       } else {
         CPPType *type = def->_return_type->get_temporary_type();
-        out << "    ";
+        out << "      ";
         type->output_instance(out, "return_value", &parser);
         out << " = " << return_expr << ";\n";
         if (track_interpreter) {
-          out << "    in_interpreter = 1;\n";
+          out << "      in_interpreter = 1;\n";
         }
 
-        return_expr = manage_return_value(def_index, out, 4, "return_value");
-        test_assert(out, 4);
+        return_expr = manage_return_value(def_index, out, 6, "return_value");
+        test_assert(out, 6);
         pack_return_value(def_index, out, def->_return_type->temporary_to_return(return_expr));
       }
     }
 
-    out << "  }\n";
-
-    out << "  return (PyObject *)NULL;\n";
-    out << "}\n\n";
+    out << "    }\n"
+        << "    PyErr_Clear();\n"  // Clear the error generated by ParseTuple()
+        << "  }\n";
   }
+
+  // Invalid parameters.  Generate an error exception.  (We don't rely
+  // on the error already generated by ParseTuple(), because it only
+  // reports the error for one flavor of the function, whereas we
+  // might accept multiple flavors for the different overloaded
+  // C++ function signatures.
+
+  out << "  PyErr_SetString(PyExc_TypeError, \"" << expected_params << "\");\n"
+      << "  return (PyObject *)NULL;\n";
+  out << "}\n\n";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WrapperBuilderPython::get_wrapper_name
+//     Function: WrapperBuilderPythonObj::get_wrapper_name
 //       Access: Public, Virtual
 //  Description: Returns the callable name for this wrapper function.
 ////////////////////////////////////////////////////////////////////
-string WrapperBuilderPython::
+string WrapperBuilderPythonObj::
 get_wrapper_name(const string &library_hash_name) const {
-  return "_inP" + library_hash_name + _hash;
+  return "_inM" + library_hash_name + _hash;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WrapperBuilderPython::supports_atomic_strings
+//     Function: WrapperBuilderPythonObj::supports_atomic_strings
 //       Access: Public, Virtual
 //  Description: Returns true if this kind of wrapper can support true
 //               atomic string objects (and not have to fiddle with
 //               char *).
 ////////////////////////////////////////////////////////////////////
-bool WrapperBuilderPython::
+bool WrapperBuilderPythonObj::
 supports_atomic_strings() const {
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WrapperBuilderPython::get_calling_convention
+//     Function: WrapperBuilderPythonObj::synthesize_this_parameter
+//       Access: Public, Virtual
+//  Description: Returns true if this particular wrapper type requires
+//               an explicit "this" parameter to be added to the
+//               function parameter list when appropriate, or false if
+//               the "this" pointer will come through a different
+//               channel.
+////////////////////////////////////////////////////////////////////
+bool WrapperBuilderPythonObj::
+synthesize_this_parameter() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WrapperBuilderPythonObj::get_calling_convention
 //       Access: Public, Virtual
 //  Description: Returns an indication of what kind of function we are
 //               building.
 ////////////////////////////////////////////////////////////////////
-WrapperBuilder::CallingConvention WrapperBuilderPython::
+WrapperBuilder::CallingConvention WrapperBuilderPythonObj::
 get_calling_convention() const {
-  return CC_python;
+  return CC_python_obj;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WrapperBuilderPython::test_assert
+//     Function: WrapperBuilderPythonObj::test_assert
 //       Access: Protected
 //  Description: Outputs code to check to see if an assertion has
 //               failed while the C++ code was executing, and report
 //               this failure back to Python.
 ////////////////////////////////////////////////////////////////////
-void WrapperBuilderPython::
+void WrapperBuilderPythonObj::
 test_assert(ostream &out, int indent_level) const {
   if (watch_asserts) {
     out << "#ifndef NDEBUG\n";
@@ -286,12 +410,12 @@ test_assert(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WrapperBuilderPython::pack_return_value
+//     Function: WrapperBuilderPythonObj::pack_return_value
 //       Access: Protected
 //  Description: Outputs a command to pack the indicated expression,
 //               of the return_type type, as a Python return value.
 ////////////////////////////////////////////////////////////////////
-void WrapperBuilderPython::
+void WrapperBuilderPythonObj::
 pack_return_value(int def_index, ostream &out, string return_expr) const {
   assert(def_index >= 0 && def_index < (int)_def.size());
   const FunctionDef *def = _def[def_index];
@@ -299,32 +423,35 @@ pack_return_value(int def_index, ostream &out, string return_expr) const {
   CPPType *orig_type = def->_return_type->get_orig_type();
   CPPType *type = def->_return_type->get_new_type();
 
-  out << "    return Py_BuildValue(";
-
   if (def->_return_type->new_type_is_atomic_string()) {
     if (TypeManager::is_char_pointer(orig_type)) {
-      out << "\"s\", " << return_expr;
+      out << "      return PyString_FromString(" << return_expr << ");\n";
 
     } else {
-      out << "\"s#\", " << return_expr << ".data(), "
-          << return_expr << ".length()";
+      out << "      return PyString_FromStringAndSize("
+          << return_expr << ".data(), " << return_expr << ".length());\n";
     }
 
   } else if (TypeManager::is_integer(type)) {
-    out << "\"i\", (int)(" << return_expr << ")";
+    out << "      return PyInt_FromLong(" 
+        << return_expr << ");\n";
 
   } else if (TypeManager::is_float(type)) {
-    out << "\"d\", (double)(" << return_expr << ")";
+    out << "      return PyFloat_FromDouble("
+        << return_expr << ");\n";
 
   } else if (TypeManager::is_char_pointer(type)) {
-    out << "\"s\", " << return_expr;
+    out << "      return PyString_FromString(" << return_expr << ");\n";
 
   } else if (TypeManager::is_pointer(type)) {
-    out << "\"i\", (int)" << return_expr;
+    bool caller_manages = def->_return_value_needs_management;
+    FunctionWriterPtrToPython *writer = 
+      new FunctionWriterPtrToPython(type);
+    out << "      return " << writer->get_name() << "(" << return_expr
+        << ", " << caller_manages << ");\n";
 
   } else {
     // Return None.
-    out << "\"\"";
+    out << "      return Py_BuildValue(\"\");\n";
   }
-  out << ");\n";
 }

@@ -21,6 +21,10 @@
 extern "C" {
   EXPCL_DTOOLCONFIG int PyArg_ParseTuple(...);
   EXPCL_DTOOLCONFIG int Py_BuildValue(...);
+  EXPCL_DTOOLCONFIG int PyInt_FromLong(...);
+  EXPCL_DTOOLCONFIG int PyFloat_FromDouble(...);
+  EXPCL_DTOOLCONFIG int PyString_FromString(...);
+  EXPCL_DTOOLCONFIG int PyString_FromStringAndSize(...);
   EXPCL_DTOOLCONFIG int Py_InitModule4(...);
   EXPCL_DTOOLCONFIG int PyObject_IsTrue(...);
   EXPCL_DTOOLCONFIG int PyErr_SetString(...);
@@ -34,6 +38,26 @@ PyArg_ParseTuple(...) {
 
 int
 Py_BuildValue(...) {
+  return 0;
+}
+
+int
+PyInt_FromLong(...) {
+  return 0;
+}
+
+int
+PyFloat_FromDouble(...) {
+  return 0;
+}
+
+int
+PyString_FromStringAndSize(...) {
+  return 0;
+}
+
+int
+PyString_FromString(...) {
   return 0;
 }
 

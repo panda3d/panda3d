@@ -26,6 +26,8 @@
 #include <vector>
 
 class IndexRemapper;
+class CPPType;
+class CPPScope;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : InterrogateType
@@ -195,6 +197,15 @@ private:
   Types _nested_types;
 
   static string _empty_string;
+
+public:
+  // The rest of the members in this class aren't part of the public
+  // interface to interrogate, but are used internally as the
+  // interrogate database is built.  They are valid only during the
+  // session of interrogate that generates the database, and will not
+  // be filled in when the database is reloaded from disk.
+  CPPType *_cpptype;
+  CPPScope *_cppscope;
 
   friend class InterrogateBuilder;
 };

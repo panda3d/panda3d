@@ -41,6 +41,47 @@ WrapperBuilderC() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WrapperBuilderC::write_prototype
+//       Access: Public, Virtual
+//  Description: Generates the prototype for the wrapper function(s).
+////////////////////////////////////////////////////////////////////
+void WrapperBuilderC::
+write_prototype(ostream &out, const string &wrapper_name) const {
+  for (int def_index = 0; def_index < (int)_def.size(); ++def_index) {
+    const FunctionDef *def = _def[def_index];
+
+    if (!output_function_names) {
+      // If we're not saving the function names, don't export it from
+      // the library.
+      out << "static ";
+    } else {
+      out << "extern \"C\" ";
+    }
+    
+    if (def->_void_return) {
+      out << "void " << wrapper_name;
+    } else {
+      def->_return_type->get_new_type()->output_instance(out, wrapper_name, &parser);
+    }
+    
+    out << "(";
+    int pn = 0;
+    if (pn < (int)def->_parameters.size()) {
+      def->_parameters[pn]._remap->get_new_type()->
+        output_instance(out, get_parameter_name(pn), &parser);
+      pn++;
+      while (pn < (int)def->_parameters.size()) {
+        out << ", ";
+        def->_parameters[pn]._remap->get_new_type()->
+          output_instance(out, get_parameter_name(pn), &parser);
+        pn++;
+      }
+    }
+    out << ");\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WrapperBuilderC::write_wrapper
 //       Access: Public, Virtual
 //  Description: Generates a wrapper function to the indicated output
@@ -48,47 +89,51 @@ WrapperBuilderC() {
 ////////////////////////////////////////////////////////////////////
 void WrapperBuilderC::
 write_wrapper(ostream &out, const string &wrapper_name) const {
-  out << "/*\n"
-      << " * C wrapper for\n"
-      << " * " << _description << "\n"
-      << " */\n";
+  for (int def_index = 0; def_index < (int)_def.size(); ++def_index) {
+    const FunctionDef *def = _def[def_index];
 
-  if (!output_function_names) {
-    // If we're not saving the function names, don't export it from
-    // the library.
-    out << "static ";
-  }
-
-  if (_void_return) {
-    out << "void\n";
-  } else {
-    out << _return_type->get_new_type()->get_local_name(&parser) << "\n";
-  }
-
-  out << wrapper_name << "(";
-  int pn = 0;
-  if (pn < (int)_parameters.size()) {
-    _parameters[pn]._remap->get_new_type()->
-      output_instance(out, get_parameter_name(pn), &parser);
-    pn++;
-    while (pn < (int)_parameters.size()) {
-      out << ", ";
-      _parameters[pn]._remap->get_new_type()->
+    out << "/*\n"
+        << " * C wrapper for\n"
+        << " * " << def->_description << "\n"
+        << " */\n";
+    
+    if (!output_function_names) {
+      // If we're not saving the function names, don't export it from
+      // the library.
+      out << "static ";
+    }
+    
+    if (def->_void_return) {
+      out << "void\n";
+    } else {
+      out << def->_return_type->get_new_type()->get_local_name(&parser) << "\n";
+    }
+    
+    out << wrapper_name << "(";
+    int pn = 0;
+    if (pn < (int)def->_parameters.size()) {
+      def->_parameters[pn]._remap->get_new_type()->
         output_instance(out, get_parameter_name(pn), &parser);
       pn++;
+      while (pn < (int)def->_parameters.size()) {
+        out << ", ";
+        def->_parameters[pn]._remap->get_new_type()->
+          output_instance(out, get_parameter_name(pn), &parser);
+        pn++;
+      }
     }
+    out << ") {\n";
+    
+    write_spam_message(def_index, out);
+    
+    string return_expr = call_function(def_index, out, 2, true, "param0");
+    return_expr = manage_return_value(def_index, out, 2, return_expr);
+    if (!return_expr.empty()) {
+      out << "  return " << return_expr << ";\n";
+    }
+    
+    out << "}\n\n";
   }
-  out << ") {\n";
-
-  write_spam_message(out);
-
-  string return_expr = call_function(out, 2);
-  return_expr = manage_return_value(out, 2, return_expr);
-  if (!return_expr.empty()) {
-    out << "  return " << return_expr << ";\n";
-  }
-
-  out << "}\n\n";
 }
 
 ////////////////////////////////////////////////////////////////////

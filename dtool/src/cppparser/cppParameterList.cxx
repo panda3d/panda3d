@@ -244,5 +244,9 @@ output(ostream &out, CPPScope *scope, bool parameter_names,
 
   } else if (_includes_ellipsis) {
     out << "...";
+
+  } else {
+    // No parameters.
+    out << "void";
   }
 }

@@ -206,12 +206,12 @@ EXPCL_DTOOLCONFIG const char *interrogate_function_scoped_name(FunctionIndex fun
 
 // This returns the C++ comment written for the function, either in
 // the header file or in the .C file, or both.
-EXPCL_DTOOLCONFIG bool interrogate_function_has_comment(TypeIndex type);
-EXPCL_DTOOLCONFIG const char *interrogate_function_comment(TypeIndex type);
+EXPCL_DTOOLCONFIG bool interrogate_function_has_comment(FunctionIndex function);
+EXPCL_DTOOLCONFIG const char *interrogate_function_comment(FunctionIndex function);
 
 // This defines the function prototype as it appears in the C++
 // source, useful primarily for documentation purposes.
-EXPCL_DTOOLCONFIG const char *interrogate_function_prototype(TypeIndex type);
+EXPCL_DTOOLCONFIG const char *interrogate_function_prototype(FunctionIndex function);
 
 // This can be used to determine the class that the function is a
 // method for, if the function is a class method.
@@ -331,7 +331,7 @@ EXPCL_DTOOLCONFIG const char *interrogate_wrapper_unique_name(FunctionWrapperInd
 // thus is only available if the option -unique-names was given to
 // interrogate.
 
-// Thus function may be called without forcing a load of the complete
+// This function may be called without forcing a load of the complete
 // interrogate database.
 EXPCL_DTOOLCONFIG FunctionWrapperIndex interrogate_get_wrapper_by_unique_name(const char *unique_name);
 

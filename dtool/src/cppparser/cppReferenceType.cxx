@@ -131,8 +131,11 @@ is_equivalent(const CPPType &other) const {
 ////////////////////////////////////////////////////////////////////
 void CPPReferenceType::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
+  /*
   _pointing_at->output(out, indent_level, scope, complete);
   out << " &";
+  */
+  output_instance(out, indent_level, scope, complete, "", "");
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -44,6 +44,10 @@ class CPPIdentifier;
 class CPPNameComponent;
 class CPPManifest;
 class InterrogateType;
+class InterrogateFunction;
+class ClassBuilder;
+class FunctionRemap;
+class InterfaceMaker;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : InterrogateBuilder
@@ -65,6 +69,7 @@ public:
   FunctionIndex get_destructor_for(CPPType *type);
 
   string get_preferred_name(CPPType *type);
+  static string hash_string(const string &name, int shift_offset);
 
 private:
   typedef set<string> Commands;
@@ -82,7 +87,7 @@ private:
   bool in_noinclude(const string &name) const;
   bool should_include(const string &filename) const;
 
-  void remap_indices();
+  void remap_indices(vector<FunctionRemap *> &remaps);
   void scan_function(CPPFunctionGroup *fgroup);
   void scan_function(CPPInstance *function);
   void scan_struct_type(CPPStructType *type);
@@ -102,8 +107,12 @@ private:
   FunctionIndex
   get_function(CPPInstance *function, string description,
                CPPStructType *struct_type, CPPScope *scope,
-               bool global, WrapperBuilder::Type wtype,
-               const string &expression = string());
+               int flags, const string &expression = string());
+
+  /*
+  WrapperBuilder *get_wrapper_builder_c(const InterrogateFunction &ifunction);
+  WrapperBuilder *get_wrapper_builder_python(const InterrogateFunction &ifunction);
+  WrapperBuilder *get_wrapper_builder_python_obj(const InterrogateFunction &ifunction);
 
   void make_wrappers();
   FunctionWrapperIndex
@@ -112,6 +121,7 @@ private:
               string description, CPPStructType *struct_type, CPPScope *scope,
               WrapperBuilder::Type wtype, const string &expression,
               int num_default_parameters);
+  */
 
   TypeIndex get_atomic_string_type();
   TypeIndex get_type(CPPType *type, bool global);
@@ -120,7 +130,8 @@ private:
   void define_wrapped_type(InterrogateType &itype, CPPPointerType *cpptype);
   void define_wrapped_type(InterrogateType &itype, CPPConstType *cpptype);
   void define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
-                          bool forced);
+                          TypeIndex type_index, bool forced);
+  void make_class_builders(TypeIndex type_index, CPPStructType *cpptype);
   void update_method_comment(CPPInstance *function, CPPStructType *struct_type,
                              CPPScope *scope);
   void define_method(CPPFunctionGroup *fgroup, InterrogateType &itype,
@@ -131,13 +142,9 @@ private:
   void define_extension_type(InterrogateType &itype,
                              CPPExtensionType *cpptype);
 
-  void hash_function_signature(WrapperBuilder *wbuilder);
-  string hash_string(const string &name,
-                     int additional_number = 0,
-                     int shift_offset = 5);
-
   static string trim_blanks(const string &str);
 
+  /*
   class NewFunction {
   public:
     CPPInstance *_function;
@@ -151,14 +158,16 @@ private:
   };
   typedef vector<NewFunction> NewFunctions;
   NewFunctions _new_functions;
+  */
 
   typedef map<string, TypeIndex> TypesByName;
-  typedef map<string, FunctionIndex> FunctionsBySignature;
-  typedef map<string, WrapperBuilder *> WrappersByHash;
+  typedef map<string, FunctionIndex> FunctionsByName;
 
   TypesByName _types_by_name;
-  FunctionsBySignature _functions_by_signature;
-  WrappersByHash _wrappers_by_hash;
+  FunctionsByName _functions_by_name;
+
+  typedef vector<ClassBuilder *> ClassBuilders;
+  ClassBuilders _class_builders;
 
   typedef map<string, char> IncludeFiles;
   IncludeFiles _include_files;
@@ -172,6 +181,11 @@ private:
   Commands _noinclude;
 
   string _library_hash_name;
+
+  typedef map<string, WrapperBuilder *> OverloadedWrappers;
+  OverloadedWrappers _python_obj_wrappers;
+
+  friend class FunctionRemap;
 };
 
 extern InterrogateBuilder builder;

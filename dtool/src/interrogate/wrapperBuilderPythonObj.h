@@ -1,5 +1,5 @@
-// Filename: wrapperBuilderC.h
-// Created by:  drose (06Aug00)
+// Filename: wrapperBuilderPythonObj.h
+// Created by:  drose (11Sep01)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,21 +16,24 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef WRAPPERBUILDERC_H
-#define WRAPPERBUILDERC_H
+#ifndef WRAPPERBUILDERPYTHONOBJ_H
+#define WRAPPERBUILDERPYTHONOBJ_H
 
-#include <dtoolbase.h>
-
+#include "dtoolbase.h"
 #include "wrapperBuilder.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : WrapperBuilderC
+//       Class : WrapperBuilderPythonObj
 // Description : A specialization on WrapperBuilder that builds
-//               C-style wrapper functions.
+//               sophisticated Python wrapper functions that get
+//               assembled into Python methods, and make the C++
+//               objects appeart directly as Python objects.
 ////////////////////////////////////////////////////////////////////
-class WrapperBuilderC : public WrapperBuilder {
+class WrapperBuilderPythonObj : public WrapperBuilder {
 public:
-  WrapperBuilderC();
+  WrapperBuilderPythonObj();
+
+  virtual void get_function_writers(FunctionWriters &writers);
 
   virtual void
   write_prototype(ostream &out, const string &wrapper_name) const;
@@ -42,7 +45,12 @@ public:
   get_wrapper_name(const string &library_hash_name) const;
 
   virtual bool supports_atomic_strings() const;
+  virtual bool synthesize_this_parameter() const;
   virtual CallingConvention get_calling_convention() const;
+
+protected:
+  void test_assert(ostream &out, int indent_level) const;
+  void pack_return_value(int def_index, ostream &out, string return_expr) const;
 };
 
 #endif

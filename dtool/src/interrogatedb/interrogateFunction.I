@@ -41,23 +41,6 @@ InterrogateFunction(const InterrogateFunction &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: InterrogateFunction::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void InterrogateFunction::
-operator = (const InterrogateFunction &copy) {
-  InterrogateComponent::operator = (copy);
-  _flags = copy._flags;
-  _scoped_name = copy._scoped_name;
-  _comment = copy._comment;
-  _prototype = copy._prototype;
-  _class = copy._class;
-  _c_wrappers = copy._c_wrappers;
-  _python_wrappers = copy._python_wrappers;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunction::is_global
 //       Access: Public
 //  Description: Returns true if the function is marked as 'global'.

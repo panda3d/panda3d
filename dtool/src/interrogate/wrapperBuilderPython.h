@@ -26,11 +26,16 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : WrapperBuilderPython
 // Description : A specialization on WrapperBuilder that builds
-//               Python-style wrapper functions.
+//               simple Python wrapper functions, simple functions
+//               that call C++ methods directly given a handle and a
+//               set of parameters.
 ////////////////////////////////////////////////////////////////////
 class WrapperBuilderPython : public WrapperBuilder {
 public:
   WrapperBuilderPython();
+
+  virtual void
+  write_prototype(ostream &out, const string &wrapper_name) const;
 
   virtual void
   write_wrapper(ostream &out, const string &wrapper_name) const;
@@ -43,7 +48,7 @@ public:
 
 protected:
   void test_assert(ostream &out, int indent_level) const;
-  void pack_return_value(ostream &out, string return_expr) const;
+  void pack_return_value(int def_index, ostream &out, string return_expr) const;
 };
 
 #endif

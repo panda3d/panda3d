@@ -21,8 +21,16 @@
 #include "wrapperBuilder.h"
 #include "wrapperBuilderC.h"
 #include "wrapperBuilderPython.h"
+#include "wrapperBuilderPythonObj.h"
+#include "classBuilder.h"
+#include "classBuilderPythonObj.h"
 #include "parameterRemap.h"
 #include "typeManager.h"
+#include "functionWriters.h"
+#include "interfaceMakerC.h"
+#include "interfaceMakerPythonObj.h"
+#include "interfaceMakerPythonSimple.h"
+#include "functionRemap.h"
 
 #include <interrogateType.h>
 #include <interrogateDatabase.h>
@@ -203,7 +211,7 @@ do_command(const string &command, const string &params) {
 ////////////////////////////////////////////////////////////////////
 void InterrogateBuilder::
 build() {
-  _library_hash_name = hash_string(library_name);
+  _library_hash_name = hash_string(library_name, 5);
 
   // Make sure we have the complete set of #includes we need.
   CPPParser::Includes::const_iterator ii;
@@ -282,7 +290,7 @@ build() {
 
   // Now that we've gone through all the code and generated all the
   // functions and types, build the function wrappers.
-  make_wrappers();
+  //  make_wrappers();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -293,38 +301,51 @@ build() {
 ////////////////////////////////////////////////////////////////////
 void InterrogateBuilder::
 write_code(ostream &out, InterrogateModuleDef *def) {
-  // Make sure all of the function wrappers appear first in the set of
-  // indices, and that they occupy consecutive index numbers, so we
-  // can build a simple array of function pointers by index.
-  remap_indices();
+  typedef vector<InterfaceMaker *> InterfaceMakers;
+  InterfaceMakers makers;
 
-  // Get the function wrappers in index-number order.
-  int num_wrappers = 0;
-  map<int, WrapperBuilder *> wrappers_by_index;
-
-  WrappersByHash::iterator hi;
-  for (hi = _wrappers_by_hash.begin();
-       hi != _wrappers_by_hash.end();
-       ++hi) {
-    WrapperBuilder *wbuilder = (*hi).second;
-    if (wbuilder != (WrapperBuilder *)NULL) {
-      wrappers_by_index[wbuilder->_wrapper_index] = wbuilder;
-      num_wrappers++;
-    }
+  if (build_c_wrappers) {
+    InterfaceMaker *maker = new InterfaceMakerC(def);
+    makers.push_back(maker);
   }
 
-  // Begin writing.  First, we need to write all the necessary
-  // #include lines.
+  if (build_python_wrappers) {
+    InterfaceMaker *maker = new InterfaceMakerPythonSimple(def);
+    makers.push_back(maker);
+  }
+
+  if (build_python_obj_wrappers) {
+    InterfaceMaker *maker = new InterfaceMakerPythonObj(def);
+    makers.push_back(maker);
+  }
+
+  InterfaceMakers::iterator mi;
+
+  // First, make all the wrappers.
+  for (mi = makers.begin(); mi != makers.end(); ++mi) {
+    (*mi)->generate_wrappers();
+  }
+
+  // Now generate all the function bodies to a temporary buffer.  By
+  // generating these first, we ensure that we know all of the
+  // pointers we'll be using ahead of time (and can therefore generate
+  // correct prototypes).
+  ostringstream function_bodies;
+  for (mi = makers.begin(); mi != makers.end(); ++mi) {
+    (*mi)->write_functions(function_bodies);
+  }
+
+  // Now, begin the actual output.  Start with the #include lines.
   if (!no_database) {
-    out << "#include <dtoolbase.h>\n"
-        << "#include <interrogate_request.h>\n"
-        << "#include <dconfig.h>\n";
+    out << "#include \"dtoolbase.h\"\n"
+        << "#include \"interrogate_request.h\"\n"
+        << "#include \"dconfig.h\"\n";
   }
   if (watch_asserts) {
-    out << "#include <notify.h>\n";
+    out << "#include \"notify.h\"\n";
   }
   out << "\n";
-
+  
   IncludeFiles::const_iterator ifi;
   for (ifi = _include_files.begin();
        ifi != _include_files.end();
@@ -341,66 +362,63 @@ write_code(ostream &out, InterrogateModuleDef *def) {
   }
   out << "\n";
 
-  if (build_python_wrappers) {
-    out << "#undef HAVE_LONG_LONG\n";
-    out << "#include <Python.h>\n\n";
+  for (mi = makers.begin(); mi != makers.end(); ++mi) {
+    (*mi)->write_includes(out);
   }
 
   if (generate_spam) {
-    out << "#include <config_interrogatedb.h>\n"
-        << "#include <notifyCategoryProxy.h>\n\n"
+    out << "#include \"config_interrogatedb.h\"\n"
+        << "#include \"notifyCategoryProxy.h\"\n\n"
         << "NotifyCategoryDeclNoExport(in_" << library_name << ");\n"
         << "NotifyCategoryDef(in_" << library_name << ", interrogatedb_cat);\n\n";
   }
 
-  // Now, define all of our wrappers.
+  out << "\n";
 
-  out << "extern \"C\" {\n\n";
+  // And now the prototypes.
+  for (mi = makers.begin(); mi != makers.end(); ++mi) {
+    (*mi)->write_prototypes(out);
+  }
 
-  // Write the functions out in index-number order instead of hash
-  // order, because that's more natural to a human, and the file will
-  // be easier to read.
-  {
-    map<int, WrapperBuilder *>::iterator ii;
-    for (ii = wrappers_by_index.begin();
-         ii != wrappers_by_index.end();
-         ++ii) {
-      WrapperBuilder *wbuilder = (*ii).second;
+  out << "\n";
+  
+  // Followed by the function bodies.
+  out << function_bodies.str() << "\n";
 
-      string wrapper_name = wbuilder->get_wrapper_name(_library_hash_name);
-      wbuilder->write_wrapper(out, wrapper_name);
-
-      // Record the wrapper's name in the database.
-      InterrogateFunctionWrapper &iwrapper = InterrogateDatabase::get_ptr()->
-        update_wrapper(wbuilder->_wrapper_index);
-
-      if (true_wrapper_names) {
-        // If we're reporting "true" names, it means we set the
-        // wrapper's name to the name of the function it wraps.  That
-        // means we need to look up the function.
-        const InterrogateFunction &ifunction = InterrogateDatabase::get_ptr()->
-          get_function(iwrapper.get_function());
-
-        iwrapper._name = clean_identifier(ifunction.get_scoped_name());
-      } else {
-        iwrapper._name = wrapper_name;
-      }
-
-      if (output_function_names) {
-        // If we're keeping the function names, record that the
-        // wrapper is callable.
-        iwrapper._flags |= InterrogateFunctionWrapper::F_callable_by_name;
-      }
+  if (output_module_specific) {
+    // Output whatever stuff we should output if this were a module.
+    for (mi = makers.begin(); mi != makers.end(); ++mi) {
+      (*mi)->write_module(out, def);
     }
   }
 
-  out << "}  /* close extern \"C\" */\n\n";
+  // Now collect all the function wrappers.
+  vector<FunctionRemap *> remaps;
+  for (mi = makers.begin(); mi != makers.end(); ++mi) {
+    (*mi)->get_function_remaps(remaps);
+  }
+  
+  // Make sure all of the function wrappers appear first in the set of
+  // indices, and that they occupy consecutive index numbers, so we
+  // can build a simple array of function pointers by index.
+  remap_indices(remaps);
+
+  // Get the function wrappers in index-number order.
+  int num_wrappers = 0;
+  map<int, FunctionRemap *> wrappers_by_index;
+
+  vector<FunctionRemap *>::iterator ri;
+  for (ri = remaps.begin(); ri != remaps.end(); ++ri) {
+    FunctionRemap *remap = (*ri);
+    wrappers_by_index[remap->_wrapper_index] = remap;
+    num_wrappers++;
+  }
 
   if (output_function_pointers) {
     // Write out the table of function pointers.
     out << "static void *_in_fptrs[" << num_wrappers << "] = {\n";
-    map<int, WrapperBuilder *>::iterator ii;
     int next_index = 1;
+    map<int, FunctionRemap *>::iterator ii;
     for (ii = wrappers_by_index.begin();
          ii != wrappers_by_index.end();
          ++ii) {
@@ -410,10 +428,9 @@ write_code(ostream &out, InterrogateModuleDef *def) {
         next_index++;
       }
       assert(next_index == this_index);
-      WrapperBuilder *wbuilder = (*ii).second;
+      FunctionRemap *remap = (*ii).second;
 
-      out << "  (void *)&" << wbuilder->get_wrapper_name(_library_hash_name)
-          << ",\n";
+      out << "  (void *)&" << remap->_wrapper_name << ",\n";
       next_index++;
     }
     while (next_index < num_wrappers + 1) {
@@ -424,56 +441,16 @@ write_code(ostream &out, InterrogateModuleDef *def) {
   }
 
   if (save_unique_names) {
-    // Write out the table of unique names, in alphabetical order by name.
+    // Write out the table of unique names, in no particular order.
     out << "static InterrogateUniqueNameDef _in_unique_names["
         << num_wrappers << "] = {\n";
-    for (hi = _wrappers_by_hash.begin();
-         hi != _wrappers_by_hash.end();
-         ++hi) {
-      WrapperBuilder *wbuilder = (*hi).second;
-      if (wbuilder != (WrapperBuilder *)NULL) {
-        out << "  { \""
-            << (*hi).first << "\", "
-            << wbuilder->_wrapper_index - 1 << " },\n";
-      }
+    for (ri = remaps.begin(); ri != remaps.end(); ++ri) {
+      FunctionRemap *remap = (*ri);
+      out << "  { \""
+          << remap->_unique_name << "\", "
+          << remap->_wrapper_index - 1 << " },\n";
     }
     out << "};\n\n";
-  }
-
-  if (output_module_specific) {
-    // Output whatever stuff we should output if this were a module.
-    // Presently, this is only the Python table.
-    if (build_python_wrappers) {
-      out << "static PyMethodDef python_methods[] = {\n";
-
-      for (hi = _wrappers_by_hash.begin();
-           hi != _wrappers_by_hash.end();
-           ++hi) {
-        WrapperBuilder *wbuilder = (*hi).second;
-        string wrapper_name = wbuilder->get_wrapper_name(_library_hash_name);
-        string true_name = wrapper_name;
-        if (true_wrapper_names) {
-          true_name = wbuilder->_function->get_simple_name();
-        }
-        out << "  { \""
-            << true_name << "\", &"
-            << wrapper_name << ", METH_VARARGS },\n";
-      }
-
-      out << "  { NULL, NULL }\n"
-          << "};\n\n"
-
-          << "#ifdef _WIN32\n"
-          << "extern \"C\" __declspec(dllexport) void init" << def->library_name << "();\n"
-          << "#else\n"
-          << "extern \"C\" void init" << def->library_name << "();\n"
-          << "#endif\n\n"
-
-          << "void init" << def->library_name << "() {\n"
-          << "  Py_InitModule(\"" << def->library_name
-          << "\", python_methods);\n"
-          << "}\n\n";
-    }
   }
 
   if (!no_database) {
@@ -632,6 +609,71 @@ get_preferred_name(CPPType *type) {
     return name;
   }
   return type->get_preferred_name();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateBuilder::hash_string
+//       Access: Public, Static
+//  Description: Hashes an arbitrary string into a four-character
+//               string using only the characters legal in a C
+//               identifier.
+////////////////////////////////////////////////////////////////////
+string InterrogateBuilder::
+hash_string(const string &name, int shift_offset) {
+  int hash = 0;
+
+  int shift = 0;
+  string::const_iterator ni;
+  for (ni = name.begin(); ni != name.end(); ++ni) {
+    int c = (int)(unsigned char)(*ni);
+    int shifted_c = (c << shift) & 0xffffff;
+    if (shift > 16) {
+      // We actually want a circular shift, not an arithmetic shift.
+      shifted_c |= ((c >> (24 - shift)) & 0xff) ;
+    }
+    hash = (hash + shifted_c) & 0xffffff;
+    shift = (shift + shift_offset) % 24;
+  }
+
+  // Now multiply the hash by a biggish prime number and apply the
+  // high-order bits back at the bottom, to scramble up the bits a
+  // bit.  This helps reduce hash conflicts from names that are
+  // similar to each other, by separating adjacent hash codes.
+  int prime = 4999;
+  int low_order = (hash * prime) & 0xffffff;
+  int high_order = (int)((double)hash * (double)prime / (double)(1 << 24));
+  hash = low_order ^ high_order;
+
+  // Also add in the additional_number, times some prime factor.
+  //  hash = (hash + additional_number * 1657) & 0xffffff;
+
+  // Now turn the hash code into a four-character string.  For each
+  // six bits, we choose a character in the set [A-Za-z0-9_].  Note
+  // that there are only 63 characters to choose from; we have to
+  // duplicate '_' for values 62 and 63.  This introduces a small
+  // additional chance of hash conflicts.  No big deal, since we have
+  // to resolve hash conflicts anyway.
+
+  string result;
+  int extract_h = hash;
+  for (int i = 0; i < 4; i++) {
+    int value = (extract_h & 0x3f);
+    extract_h >>= 6;
+    if (value < 26) {
+      result += (char)('A' + value);
+
+    } else if (value < 52) {
+      result += (char)('a' + value - 26);
+
+    } else if (value < 62) {
+      result += (char)('0' + value - 52);
+
+    } else {
+      result += '_';
+    }
+  }
+
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -845,31 +887,36 @@ should_include(const string &filename) const {
 //               positions, and everything else follows.  This allows
 //               us to build a table of function wrappers by index
 //               number.
+//
+//               The "remaps" member is a list of FunctionRemap
+//               pointers.  The collision in naming is unfortunate;
+//               the FunctionRemap objects are so named because they
+//               remap synthesized function wrappers to actual C++
+//               methods and functions.  It has nothing to do with the
+//               remapping of index numbers, which is the purpose of
+//               this function.
 ////////////////////////////////////////////////////////////////////
 void InterrogateBuilder::
-remap_indices() {
-  IndexRemapper remap;
-  InterrogateDatabase::get_ptr()->remap_indices(1, remap);
+remap_indices(vector<FunctionRemap *> &remaps) {
+  IndexRemapper index_remap;
+  InterrogateDatabase::get_ptr()->remap_indices(1, index_remap);
 
   TypesByName::iterator ti;
   for (ti = _types_by_name.begin(); ti != _types_by_name.end(); ++ti) {
-    (*ti).second = remap.map_from((*ti).second);
+    (*ti).second = index_remap.map_from((*ti).second);
   }
 
-  FunctionsBySignature::iterator fi;
-  for (fi = _functions_by_signature.begin();
-       fi != _functions_by_signature.end();
+  FunctionsByName::iterator fi;
+  for (fi = _functions_by_name.begin();
+       fi != _functions_by_name.end();
        ++fi) {
-    (*fi).second = remap.map_from((*fi).second);
+    (*fi).second = index_remap.map_from((*fi).second);
   }
 
-  WrappersByHash::iterator hi;
-  for (hi = _wrappers_by_hash.begin();
-       hi != _wrappers_by_hash.end();
-       ++hi) {
-    if ((*hi).second != (WrapperBuilder *)NULL) {
-      (*hi).second->_wrapper_index = remap.map_from((*hi).second->_wrapper_index);
-    }
+  vector<FunctionRemap *>::iterator ri;
+  for (ri = remaps.begin(); ri != remaps.end(); ++ri) {
+    FunctionRemap *remap = (*ri);
+    remap->_wrapper_index = index_remap.map_from(remap->_wrapper_index);
   }
 }
 
@@ -963,8 +1010,8 @@ scan_function(CPPInstance *function) {
   }
 
   get_function(function, "",
-               (CPPStructType *)NULL, scope, true,
-               WrapperBuilder::T_normal);
+               (CPPStructType *)NULL, scope, 
+               InterrogateFunction::F_global);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1249,7 +1296,7 @@ get_getter(CPPType *expr_type, string expression,
            CPPStructType *struct_type, CPPScope *scope,
            CPPInstance *element) {
   // Make up a name for the function.
-  string function_name = clean_identifier("get_" + expression);
+  string fname = clean_identifier("get_" + expression);
 
   // Unroll the "const" from the expr_type, since that doesn't matter
   // for a return type.
@@ -1263,8 +1310,10 @@ get_getter(CPPType *expr_type, string expression,
   CPPFunctionType *ftype = new CPPFunctionType(expr_type, params, 0);
 
   // Now make up an instance for the function.
-  CPPInstance *function = new CPPInstance(ftype, function_name);
+  CPPInstance *function = new CPPInstance(ftype, fname);
   function->_ident->_native_scope = scope;
+
+  int getter_flags = InterrogateFunction::F_getter;
 
   if (struct_type != (CPPStructType *)NULL) {
     // This is a data member for some class.
@@ -1286,14 +1335,15 @@ get_getter(CPPType *expr_type, string expression,
 
       // And the expression is locally scoped.
       expression = element->get_local_name(scope);
+      getter_flags |= InterrogateFunction::F_method;
     }
   }
 
   // Now check to see if there's already a function matching this
-  // signature.  If there is, we can't define a getter, and we
+  // name.  If there is, we can't define a getter, and we
   // shouldn't mistake this other function for a synthesized getter.
-  string function_signature = TypeManager::get_function_signature(function);
-  if (_functions_by_signature.count(function_signature) != 0) {
+  string function_name = TypeManager::get_function_name(function);
+  if (_functions_by_name.count(function_name) != 0) {
     return 0;
   }
 
@@ -1311,8 +1361,8 @@ get_getter(CPPType *expr_type, string expression,
   // It's clear; make a getter.
   FunctionIndex index =
     get_function(function, description,
-                 struct_type, scope, false,
-                 WrapperBuilder::T_getter, expression);
+                 struct_type, scope,
+                 getter_flags, expression);
 
   InterrogateDatabase::get_ptr()->update_function(index)._comment = description;
   return index;
@@ -1329,7 +1379,7 @@ get_setter(CPPType *expr_type, string expression,
            CPPStructType *struct_type, CPPScope *scope,
            CPPInstance *element) {
   // Make up a name for the function.
-  string function_name = clean_identifier("set_" + expression);
+  string fname = clean_identifier("set_" + expression);
 
   // Make up a CPPFunctionType.
   CPPParameterList *params = new CPPParameterList;
@@ -1339,8 +1389,10 @@ get_setter(CPPType *expr_type, string expression,
   CPPFunctionType *ftype = new CPPFunctionType(void_type, params, 0);
 
   // Now make up an instance for the function.
-  CPPInstance *function = new CPPInstance(ftype, function_name);
+  CPPInstance *function = new CPPInstance(ftype, fname);
   function->_ident->_native_scope = scope;
+
+  int setter_flags = InterrogateFunction::F_setter;
 
   if (struct_type != (CPPStructType *)NULL) {
     // This is a data member for some class.
@@ -1359,14 +1411,15 @@ get_setter(CPPType *expr_type, string expression,
       // This is a non-static data member.  The expression is locally
       // scoped.
       expression = element->get_local_name(scope);
+      setter_flags |= InterrogateFunction::F_method;
     }
   }
 
   // Now check to see if there's already a function matching this
-  // signature.  If there is, we can't define a setter, and we
+  // name.  If there is, we can't define a setter, and we
   // shouldn't mistake this other function for a synthesized setter.
-  string function_signature = TypeManager::get_function_signature(function);
-  if (_functions_by_signature.count(function_signature) != 0) {
+  string function_name = TypeManager::get_function_name(function);
+  if (_functions_by_name.count(function_name) != 0) {
     return 0;
   }
 
@@ -1384,8 +1437,8 @@ get_setter(CPPType *expr_type, string expression,
   // It's clear; make a setter.
   FunctionIndex index =
     get_function(function, description,
-                 struct_type, scope, false,
-                 WrapperBuilder::T_setter, expression);
+                 struct_type, scope,
+                 setter_flags, expression);
 
   InterrogateDatabase::get_ptr()->update_function(index)._comment = description;
   return index;
@@ -1410,7 +1463,7 @@ get_cast_function(CPPType *to_type, CPPType *from_type,
     scope = struct_type->get_scope();
 
     // Make up a name for the method.
-    string function_name =
+    string fname =
       clean_identifier(prefix + "_to_" + get_preferred_name(to_type));
 
     // Make up a CPPFunctionType.
@@ -1420,14 +1473,14 @@ get_cast_function(CPPType *to_type, CPPType *from_type,
     CPPFunctionType *ftype = new CPPFunctionType(to_ptr_type, params, 0);
 
     // Now make up an instance for the function.
-    function = new CPPInstance(ftype, function_name);
+    function = new CPPInstance(ftype, fname);
 
   } else {
     // The from type isn't a struct or a class, so this has to be an
     // external function.
 
     // Make up a name for the function.
-    string function_name =
+    string fname =
       clean_identifier(prefix + "_" + get_preferred_name(from_type) +
                        "_to_" + get_preferred_name(to_type));
 
@@ -1441,7 +1494,7 @@ get_cast_function(CPPType *to_type, CPPType *from_type,
     CPPFunctionType *ftype = new CPPFunctionType(to_ptr_type, params, 0);
 
     // Now make up an instance for the function.
-    function = new CPPInstance(ftype, function_name);
+    function = new CPPInstance(ftype, fname);
   }
 
   ostringstream desc;
@@ -1450,8 +1503,8 @@ get_cast_function(CPPType *to_type, CPPType *from_type,
 
   FunctionIndex index =
     get_function(function, description,
-                 struct_type, scope, false,
-                 WrapperBuilder::T_typecast);
+                 struct_type, scope,
+                 InterrogateFunction::F_typecast);
 
   InterrogateDatabase::get_ptr()->update_function(index)._comment = description;
   return index;
@@ -1467,7 +1520,7 @@ get_cast_function(CPPType *to_type, CPPType *from_type,
 FunctionIndex InterrogateBuilder::
 get_function(CPPInstance *function, string description,
              CPPStructType *struct_type,
-             CPPScope *scope, bool global, WrapperBuilder::Type wtype,
+             CPPScope *scope, int flags,
              const string &expression) {
   // Get a unique function signature.  Make sure we tell the function
   // where its native scope is, so we get a fully-scoped signature.
@@ -1488,20 +1541,19 @@ get_function(CPPInstance *function, string description,
     return 0;
   }
 
+  string function_name = TypeManager::get_function_name(function);
   string function_signature = TypeManager::get_function_signature(function);
 
   // First, check to see if it's already there.
-  FunctionsBySignature::const_iterator tni =
-    _functions_by_signature.find(function_signature);
-  if (tni != _functions_by_signature.end()) {
+  FunctionsByName::const_iterator tni =
+    _functions_by_name.find(function_name);
+  if (tni != _functions_by_name.end()) {
     FunctionIndex index = (*tni).second;
-    // It's already here, so update the global flag.
+    // It's already here, so update the flags.
     InterrogateFunction &ifunction =
       InterrogateDatabase::get_ptr()->update_function(index);
 
-    if (global) {
-      ifunction._flags |= InterrogateFunction::F_global;
-    }
+    ifunction._flags |= flags;
 
     // And/or the comment.
     if (function->_leading_comment != (CPPCommentBlock *)NULL) {
@@ -1512,13 +1564,16 @@ get_function(CPPInstance *function, string description,
       ifunction._comment += comment;
     }
 
+    // Also, make sure this particular signature is defined.
+    ifunction._instances.insert(InterrogateFunction::Instances::value_type(function_signature, function));
+
     return index;
   }
 
   // It isn't here, so we'll have to define it.
   FunctionIndex index =
     InterrogateDatabase::get_ptr()->get_next_index();
-  _functions_by_signature[function_signature] = index;
+  _functions_by_name[function_name] = index;
 
   InterrogateFunction ifunction;
   ifunction._name = function->get_local_name(scope);
@@ -1539,199 +1594,256 @@ get_function(CPPInstance *function, string description,
     ifunction._class = get_type(struct_type, false);
   }
 
-  if (global) {
-    ifunction._flags |= InterrogateFunction::F_global;
-  }
+  ifunction._flags |= flags;
+  ifunction._instances.insert(InterrogateFunction::Instances::value_type(function_signature, function));
+  ifunction._expression = expression;
 
   InterrogateDatabase::get_ptr()->add_function(index, ifunction);
 
-  // Save a record of the fact that we just defined a new function, so
-  // we can go back later and make all of the wrappers for it.  (We
-  // don't want to start making wrappers before all of the global
-  // types are defined.)
-  NewFunction nf;
-  nf._function = function;
-  nf._description = description;
-  nf._ftype = ftype;
-  nf._struct_type = struct_type;
-  nf._scope = scope;
-  nf._wtype = wtype;
-  nf._expression = expression;
-  nf._function_index = index;
-
-  _new_functions.push_back(nf);
-
   return index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::make_wrappers
-//       Access: Private
-//  Description: Makes the wrappers for all of the newly-defined
-//               functions.  This might result in the definition of a
-//               few new incidental types necessary to support the
-//               wrappers' parameters.
-////////////////////////////////////////////////////////////////////
-void InterrogateBuilder::
-make_wrappers() {
-  while (!_new_functions.empty()) {
-    // Make a copy of the new_functions list, and iterate through the
-    // copy.  This is just in case we end up defining a few *more*
-    // functions while we do this.
-    NewFunctions new_functions;
-    new_functions.swap(_new_functions);
+//  ////////////////////////////////////////////////////////////////////
+//  //     Function: InterrogateBuilder::get_wrapper_builder_c
+//  //       Access: Private
+//  //  Description: Returns a WrapperBuilder object suitable for wrapping
+//  //               the indicated function.  This may either be a
+//  //               newly-allocated object, or a previously-allocated one
+//  //               if function overloading of multiple functions is to
+//  //               be implemented within the WrapperBuilder.
+//  ////////////////////////////////////////////////////////////////////
+//  WrapperBuilder *InterrogateBuilder::
+//  get_wrapper_builder_c(const InterrogateFunction &) {
+//    return new WrapperBuilderC;
+//  }
 
-    NewFunctions::iterator ni;
-    for (ni = new_functions.begin(); ni != new_functions.end(); ++ni) {
-      const NewFunction &nf = (*ni);
-      int num_default_parameters = nf._ftype->get_num_default_parameters();
+//  ////////////////////////////////////////////////////////////////////
+//  //     Function: InterrogateBuilder::get_wrapper_builder_python
+//  //       Access: Private
+//  //  Description: Returns a WrapperBuilder object suitable for wrapping
+//  //               the indicated function.  This may either be a
+//  //               newly-allocated object, or a previously-allocated one
+//  //               if function overloading of multiple functions is to
+//  //               be implemented within the WrapperBuilder.
+//  ////////////////////////////////////////////////////////////////////
+//  WrapperBuilder *InterrogateBuilder::
+//  get_wrapper_builder_python(const InterrogateFunction &) {
+//    return new WrapperBuilderPython;
+//  }
 
-      InterrogateFunction &ifunction =
-        InterrogateDatabase::get_ptr()->update_function(nf._function_index);
+//  ////////////////////////////////////////////////////////////////////
+//  //     Function: InterrogateBuilder::get_wrapper_builder_python_obj
+//  //       Access: Private
+//  //  Description: Returns a WrapperBuilder object suitable for wrapping
+//  //               the indicated function.  This may either be a
+//  //               newly-allocated object, or a previously-allocated one
+//  //               if function overloading of multiple functions is to
+//  //               be implemented within the WrapperBuilder.
+//  ////////////////////////////////////////////////////////////////////
+//  WrapperBuilder *InterrogateBuilder::
+//  get_wrapper_builder_python_obj(const InterrogateFunction &ifunction) {
+//    string scoped_name = ifunction.get_scoped_name();
+//    OverloadedWrappers::iterator wi;
+//    wi = _python_obj_wrappers.find(scoped_name);
+//    if (wi == _python_obj_wrappers.end()) {
+//      wi = _python_obj_wrappers.insert(OverloadedWrappers::value_type(scoped_name, new WrapperBuilderPythonObj)).first;
+//    }
+//    return (*wi).second;
+//  }
 
-      if (build_c_wrappers) {
-        // Make the C wrapper(s).
-        for (int dp = 0; dp <= num_default_parameters; dp++) {
-          FunctionWrapperIndex wrapper =
-            get_wrapper(nf._function_index, new WrapperBuilderC,
-                        nf._function, nf._description,
-                        nf._struct_type, nf._scope,
-                        nf._wtype, nf._expression, dp);
-          if (wrapper != 0) {
-            ifunction._c_wrappers.push_back(wrapper);
-          }
-        }
-      }
+//  ////////////////////////////////////////////////////////////////////
+//  //     Function: InterrogateBuilder::make_wrappers
+//  //       Access: Private
+//  //  Description: Makes the wrappers for all of the newly-defined
+//  //               functions.  This might result in the definition of a
+//  //               few new incidental types necessary to support the
+//  //               wrappers' parameters.
+//  ////////////////////////////////////////////////////////////////////
+//  void InterrogateBuilder::
+//  make_wrappers() {
+//    while (!_new_functions.empty()) {
+//      // Make a copy of the new_functions list, and iterate through the
+//      // copy.  This is just in case we end up defining a few *more*
+//      // functions while we do this.
+//      NewFunctions new_functions;
+//      new_functions.swap(_new_functions);
 
-      if (build_python_wrappers) {
-        // Make the Python wrapper.
-        for (int dp = 0; dp <= num_default_parameters; dp++) {
-          FunctionWrapperIndex wrapper =
-            get_wrapper(nf._function_index, new WrapperBuilderPython,
-                        nf._function, nf._description,
-                        nf._struct_type, nf._scope,
-                        nf._wtype, nf._expression, dp);
-          if (wrapper != 0) {
-            ifunction._python_wrappers.push_back(wrapper);
-          }
-        }
-      }
-    }
-  }
-}
+//      NewFunctions::iterator ni;
+//      for (ni = new_functions.begin(); ni != new_functions.end(); ++ni) {
+//        const NewFunction &nf = (*ni);
+//        int num_default_parameters = nf._ftype->get_num_default_parameters();
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::get_wrapper
-//       Access: Private
-//  Description: Defines a particular wrapper for the given function.
-//               wbuilder is a newly-allocated WrapperBuilder of the
-//               appropriate type.
-////////////////////////////////////////////////////////////////////
-FunctionWrapperIndex InterrogateBuilder::
-get_wrapper(FunctionIndex function_index, WrapperBuilder *wbuilder,
-            CPPInstance *function, string description,
-            CPPStructType *struct_type,
-            CPPScope *scope, WrapperBuilder::Type wtype,
-            const string &expression,
-            int num_default_parameters) {
+//        InterrogateFunction &ifunction =
+//          InterrogateDatabase::get_ptr()->update_function(nf._function_index);
 
-  string function_signature =
-    TypeManager::get_function_signature(function, num_default_parameters);
+//        if (build_c_wrappers) {
+//          // Make the C wrapper(s).
+//          for (int dp = 0; dp <= num_default_parameters; dp++) {
+//            FunctionWrapperIndex wrapper =
+//              get_wrapper(nf._function_index, get_wrapper_builder_c(ifunction),
+//                          nf._function, nf._description,
+//                          nf._struct_type, nf._scope,
+//                          nf._wtype, nf._expression, dp);
+//            if (wrapper != 0) {
+//              ifunction._c_wrappers.push_back(wrapper);
+//            }
+//          }
+//        }
 
-  if (description.empty()) {
-    // Make up a description string if we weren't given one.
-    ostringstream desc;
-    function->output(desc, 0, &parser, false, num_default_parameters);
-    desc << ";";
-    description = desc.str();
-  }
+//        if (build_python_wrappers) {
+//          // Make the Python C-style function wrapper.
+//          for (int dp = 0; dp <= num_default_parameters; dp++) {
+//            FunctionWrapperIndex wrapper =
+//              get_wrapper(nf._function_index, get_wrapper_builder_python(ifunction),
+//                          nf._function, nf._description,
+//                          nf._struct_type, nf._scope,
+//                          nf._wtype, nf._expression, dp);
+//            if (wrapper != 0) {
+//              ifunction._python_wrappers.push_back(wrapper);
+//            }
+//          }
+//        }
 
-  if (!wbuilder->set_function(function, description, struct_type, scope,
-                              function_signature, wtype,
-                              expression, num_default_parameters)) {
-    // This function can't be exported for some reason.
-    delete wbuilder;
-    return 0;
-  }
+//        if (build_python_obj_wrappers) {
+//          // Make the Python C++-style method wrapper.  This style
+//          // wrapper does not need to be recorded in the database,
+//          // because it can be executed directly by Python.
+//          WrapperBuilder *wbuilder = get_wrapper_builder_python_obj(ifunction);
+//          for (int dp = num_default_parameters; dp >= 0; dp--) {
+//            get_wrapper(nf._function_index, wbuilder,
+//                        nf._function, nf._description,
+//                        nf._struct_type, nf._scope,
+//                        nf._wtype, nf._expression, dp);
+//          }
+//        }
+//      }
+//    }
+//  }
 
-  FunctionWrapperIndex index =
-    InterrogateDatabase::get_ptr()->get_next_index();
-  wbuilder->_wrapper_index = index;
+//  ////////////////////////////////////////////////////////////////////
+//  //     Function: InterrogateBuilder::get_wrapper
+//  //       Access: Private
+//  //  Description: Defines a particular wrapper for the given function.
+//  //               wbuilder is a newly-allocated WrapperBuilder of the
+//  //               appropriate type.
+//  ////////////////////////////////////////////////////////////////////
+//  FunctionWrapperIndex InterrogateBuilder::
+//  get_wrapper(FunctionIndex function_index, WrapperBuilder *wbuilder,
+//              CPPInstance *function, string description,
+//              CPPStructType *struct_type,
+//              CPPScope *scope, WrapperBuilder::Type wtype,
+//              const string &expression,
+//              int num_default_parameters) {
 
-  hash_function_signature(wbuilder);
+//    string function_signature =
+//      TypeManager::get_function_signature(function, num_default_parameters);
 
-  InterrogateFunctionWrapper iwrapper;
+//    if (description.empty()) {
+//      // Make up a description string if we weren't given one.
+//      ostringstream desc;
+//      function->output(desc, 0, &parser, false, num_default_parameters);
+//      desc << ";";
+//      description = desc.str();
+//    }
 
-  iwrapper._function = function_index;
+//    int def_index =
+//      wbuilder->add_function(function, description, struct_type, scope,
+//                             function_signature, wtype,
+//                             expression, num_default_parameters);
+//    if (def_index < 0) {
+//      // This function can't be exported for some reason.
 
-  // We do assume that two different libraries will not hash to the
-  // same name.  This is pretty unlikely, although there could be big
-  // problems if it ever happens.  If it does, we'll probably need to
-  // add an interface so the user can specify a hash offset on a
-  // per-library basis or something like that.
-  iwrapper._unique_name = _library_hash_name + wbuilder->_hash;
+//      // We can't safely delete this, because it might be shared.
+//      //    delete wbuilder;
 
-  WrapperBuilder::Parameters::const_iterator pi;
-  for (pi = wbuilder->_parameters.begin();
-       pi != wbuilder->_parameters.end();
-       ++pi) {
-    InterrogateFunctionWrapper::Parameter param;
-    param._parameter_flags = 0;
-    if ((*pi)._remap->new_type_is_atomic_string()) {
-      param._type = get_atomic_string_type();
-    } else {
-      param._type = get_type((*pi)._remap->get_new_type(), false);
-    }
-    param._name = (*pi)._name;
-    if ((*pi)._has_name) {
-      param._parameter_flags |= InterrogateFunctionWrapper::PF_has_name;
-    }
-    iwrapper._parameters.push_back(param);
-  }
+//      return 0;
+//    }
 
-  if (wbuilder->_has_this) {
-    // If one of the parameters is "this", it must be the first one.
-    assert(!iwrapper._parameters.empty());
-    iwrapper._parameters.front()._parameter_flags |=
-      InterrogateFunctionWrapper::PF_is_this;
-  }
+//    assert(def_index >= 0 && def_index < (int)wbuilder->_def.size());
+//    WrapperBuilder::FunctionDef *def = wbuilder->_def[def_index];
 
-  if (wbuilder->_return_type->new_type_is_atomic_string()) {
-    iwrapper._return_type = get_atomic_string_type();
-  } else {
-    iwrapper._return_type =
-      get_type(wbuilder->_return_type->get_new_type(), false);
-  }
+//    if (def_index == 0) {
+//      // If this is the first definition for this particular wrapper,
+//      // assign a new wrapper index and hash number.
+//      FunctionWrapperIndex index =
+//        InterrogateDatabase::get_ptr()->get_next_index();
+//      wbuilder->_wrapper_index = index;
+    
+//      hash_function_signature(wbuilder);
+//    }
 
-  if (!wbuilder->_void_return) {
-    iwrapper._flags |= InterrogateFunctionWrapper::F_has_return;
+//    InterrogateFunctionWrapper iwrapper;
 
-    if (wbuilder->return_value_needs_management()) {
-      iwrapper._flags |= InterrogateFunctionWrapper::F_caller_manages;
-      int destructor = wbuilder->get_return_value_destructor();
+//    iwrapper._function = function_index;
 
-      if (destructor != 0) {
-        iwrapper._return_value_destructor = destructor;
+//    // We do assume that two different libraries will not hash to the
+//    // same name.  This is pretty unlikely, although there could be big
+//    // problems if it ever happens.  If it does, we'll probably need to
+//    // add an interface so the user can specify a hash offset on a
+//    // per-library basis or something like that.
+//    iwrapper._unique_name = _library_hash_name + wbuilder->_hash;
 
-      } else {
-        // We don't need to report this warning, since the FFI code
-        // understands that if the destructor function is zero, it
-        // should use the regular class destructor.
+//    WrapperBuilder::Parameters::const_iterator pi;
+//    for (pi = def->_parameters.begin();
+//         pi != def->_parameters.end();
+//         ++pi) {
+//      InterrogateFunctionWrapper::Parameter param;
+//      param._parameter_flags = 0;
+//      if ((*pi)._remap->new_type_is_atomic_string()) {
+//        param._type = get_atomic_string_type();
+//      } else {
+//        param._type = get_type((*pi)._remap->get_new_type(), false);
+//      }
+//      param._name = (*pi)._name;
+//      if ((*pi)._has_name) {
+//        param._parameter_flags |= InterrogateFunctionWrapper::PF_has_name;
+//      }
+//      iwrapper._parameters.push_back(param);
+//    }
 
-        /*
-        nout << "Warning!  Destructor for " 
-             << *wbuilder->_return_type->get_orig_type()
-             << " is unavailable.\n"
-             << "  Cannot manage return value for:\n  "
-             << description << "\n";
-        */
-      }
-    }
-  }
+//    if (def->_has_this) {
+//      // If one of the parameters is "this", it must be the first one.
+//      assert(!iwrapper._parameters.empty());
+//      iwrapper._parameters.front()._parameter_flags |=
+//        InterrogateFunctionWrapper::PF_is_this;
+//    }
 
-  InterrogateDatabase::get_ptr()->add_wrapper(index, iwrapper);
-  return index;
-}
+//    if (def->_return_type->new_type_is_atomic_string()) {
+//      iwrapper._return_type = get_atomic_string_type();
+//    } else {
+//      iwrapper._return_type =
+//        get_type(def->_return_type->get_new_type(), false);
+//    }
+
+//    if (!def->_void_return) {
+//      iwrapper._flags |= InterrogateFunctionWrapper::F_has_return;
+
+//      if (def->_return_value_needs_management) {
+//        iwrapper._flags |= InterrogateFunctionWrapper::F_caller_manages;
+//        int destructor = def->_return_value_destructor;
+
+//        if (destructor != 0) {
+//          iwrapper._return_value_destructor = destructor;
+
+//        } else {
+//          // We don't need to report this warning, since the FFI code
+//          // understands that if the destructor function is zero, it
+//          // should use the regular class destructor.
+
+//  //          nout << "Warning!  Destructor for " 
+//  //               << *def->_return_type->get_orig_type()
+//  //               << " is unavailable.\n"
+//  //               << "  Cannot manage return value for:\n  "
+//  //               << description << "\n";
+//        }
+//      }
+//    }
+
+//    if (def_index == 0) {
+//      InterrogateDatabase::get_ptr()->add_wrapper(wbuilder->_wrapper_index, iwrapper);
+//    }
+//    return wbuilder->_wrapper_index;
+//  }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateBuilder::get_atomic_string_type
@@ -1832,6 +1944,7 @@ get_type(CPPType *type, bool global) {
   itype._name = get_preferred_name(type);
   itype._scoped_name = true_name;
   itype._true_name = true_name;
+  itype._cpptype = type;
 
   if (type->_declaration != (CPPTypeDeclaration *)NULL) {
     // This type has a declaration; does the declaration have a
@@ -1852,6 +1965,7 @@ get_type(CPPType *type, bool global) {
         scope = scope->get_parent_scope();
         assert(scope != (CPPScope *)NULL);
       }
+      itype._cppscope = scope;
 
       if (scope != &parser) {
         // We're scoped!
@@ -1880,7 +1994,7 @@ get_type(CPPType *type, bool global) {
       define_wrapped_type(itype, type->as_const_type());
 
     } else if (type->as_struct_type() != (CPPStructType *)NULL) {
-      define_struct_type(itype, type->as_struct_type(), forced);
+      define_struct_type(itype, type->as_struct_type(), index, forced);
 
     } else if (type->as_enum_type() != (CPPEnumType *)NULL) {
       define_enum_type(itype, type->as_enum_type());
@@ -1987,7 +2101,7 @@ define_wrapped_type(InterrogateType &itype, CPPConstType *cpptype) {
 ////////////////////////////////////////////////////////////////////
 void InterrogateBuilder::
 define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
-                   bool forced) {
+                   TypeIndex type_index, bool forced) {
   if (cpptype->get_simple_name().empty()) {
     // If the type has no name, forget it.  We don't export anonymous
     // types.
@@ -2088,7 +2202,7 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
                    left_inheritance_requires_upcast) {
           // Or even if we are the leftmost fork of multiple
           // inheritance, if the flag is set indicating that this
-          // requires a pointer change.  (For most compilers, this does
+          // requires a pointer change.  (For many compilers, this does
           // not require a pointer change.)
           generate_casts = true;
         }
@@ -2182,10 +2296,33 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
 
     itype._destructor = get_function(function, "",
                                      cpptype, cpptype->get_scope(),
-                                     false, WrapperBuilder::T_normal);
+                                     0);
     itype._flags |= InterrogateType::F_implicit_destructor;
   }
+
+  // Finally, generate any ClassBuilder objects appropriate to this
+  // type.
+//  make_class_builders(type_index, cpptype);
 }
+
+/*
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateBuilder::make_class_builders
+//       Access: Private
+//  Description: Creates whatever ClassBuilder objects might be
+//               required for the indicated class type and stores them
+//               in the InterrogateBuilder object for later generation
+//               of code.
+////////////////////////////////////////////////////////////////////
+void InterrogateBuilder::
+make_class_builders(TypeIndex type_index, CPPStructType *cpptype) {
+  if (build_python_obj_wrappers) {
+    ClassBuilder *cbuilder = new ClassBuilderPythonObj;
+    cbuilder->set_class(type_index, cpptype);
+    _class_builders.push_back(cbuilder);
+  }
+}
+*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateBuilder::update_method_comment
@@ -2205,7 +2342,7 @@ update_method_comment(CPPInstance *function, CPPStructType *struct_type,
     return;
   }
 
-  // Get a function signature so we can look this method up.
+  // Get a function name so we can look this method up.
   if (function->_ident->_native_scope != scope) {
     function = new CPPInstance(*function);
     function->_ident = new CPPIdentifier(*function->_ident);
@@ -2215,12 +2352,12 @@ update_method_comment(CPPInstance *function, CPPStructType *struct_type,
     function->_type->resolve_type(scope, &parser)->as_function_type();
   function->_type = ftype;
 
-  string function_signature = TypeManager::get_function_signature(function);
+  string function_name = TypeManager::get_function_name(function);
 
   // Now look it up.
-  FunctionsBySignature::const_iterator tni =
-    _functions_by_signature.find(function_signature);
-  if (tni != _functions_by_signature.end()) {
+  FunctionsByName::const_iterator tni =
+    _functions_by_name.find(function_name);
+  if (tni != _functions_by_name.end()) {
     FunctionIndex index = (*tni).second;
 
     // Here it is!
@@ -2344,8 +2481,7 @@ define_method(CPPInstance *function, InterrogateType &itype,
   }
 
 
-  FunctionIndex index = get_function(function, "", struct_type, scope,
-                                     false, WrapperBuilder::T_normal);
+  FunctionIndex index = get_function(function, "", struct_type, scope, 0);
   if (index != 0) {
     if ((ftype->_flags & CPPFunctionType::F_constructor) != 0) {
       if (find(itype._constructors.begin(), itype._constructors.end(),
@@ -2457,144 +2593,6 @@ define_extension_type(InterrogateType &itype, CPPExtensionType *cpptype) {
     itype._flags |= InterrogateType::F_union;
     break;
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::hash_function_signature
-//       Access: Private
-//  Description: Generates a unique string that corresponds to the
-//               indicated function signature, and stores it in the
-//               WrapperBuilder object.
-////////////////////////////////////////////////////////////////////
-void InterrogateBuilder::
-hash_function_signature(WrapperBuilder *wbuilder) {
-  string hash = hash_string(wbuilder->_function_signature,
-                            wbuilder->get_calling_convention());
-
-  // Now make sure we don't have another function with the same hash.
-  WrappersByHash::iterator hi;
-  hi = _wrappers_by_hash.find(hash);
-  if (hi == _wrappers_by_hash.end()) {
-    // No other name; we're in the clear.
-    _wrappers_by_hash[hash] = wbuilder;
-    wbuilder->_hash = hash;
-    return;
-  }
-
-  if ((*hi).second != (WrapperBuilder *)NULL &&
-      (*hi).second->_function_signature == wbuilder->_function_signature) {
-    // The same function signature has already appeared.  This
-    // shouldn't happen.
-    nout << "Internal error!  Function signature "
-         << wbuilder->_function_signature << " repeated!\n";
-    wbuilder->_hash = hash;
-    return;
-  }
-
-  // We have a conflict.  Extend both strings to resolve the
-  // ambiguity.
-  if ((*hi).second != (WrapperBuilder *)NULL) {
-    WrapperBuilder *other_wbuilder = (*hi).second;
-    (*hi).second = (WrapperBuilder *)NULL;
-    other_wbuilder->_hash +=
-      hash_string(other_wbuilder->_function_signature,
-                  other_wbuilder->get_calling_convention(),
-                  11);
-    bool inserted = _wrappers_by_hash.insert
-      (WrappersByHash::value_type(other_wbuilder->_hash, other_wbuilder)).second;
-    if (!inserted) {
-      nout << "Internal error!  Hash " << other_wbuilder->_hash
-           << " already appears!\n";
-    }
-  }
-
-  hash += hash_string(wbuilder->_function_signature,
-                      wbuilder->get_calling_convention(),
-                      11);
-  bool inserted = _wrappers_by_hash.insert
-    (WrappersByHash::value_type(hash, wbuilder)).second;
-
-  if (!inserted) {
-    // Huh.  We still have a conflict.  This should be extremely rare.
-    // Well, just tack on a letter until it's resolved.
-    string old_hash = hash;
-    for (char ch = 'a'; ch <= 'z' && !inserted; ch++) {
-      hash = old_hash + ch;
-      inserted = _wrappers_by_hash.insert
-        (WrappersByHash::value_type(hash, wbuilder)).second;
-    }
-    if (!inserted) {
-      nout << "Internal error!  Too many conflicts with hash "
-           << hash << "\n";
-    }
-  }
-
-  wbuilder->_hash = hash;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateBuilder::hash_string
-//       Access: Private
-//  Description: Hashes an arbitrary string into a four-character
-//               string using only the characters legal in a C
-//               identifier.
-////////////////////////////////////////////////////////////////////
-string InterrogateBuilder::
-hash_string(const string &name, int additional_number, int shift_offset) {
-  int hash = 0;
-
-  int shift = 0;
-  string::const_iterator ni;
-  for (ni = name.begin(); ni != name.end(); ++ni) {
-    int c = (int)(unsigned char)(*ni);
-    int shifted_c = (c << shift) & 0xffffff;
-    if (shift > 16) {
-      // We actually want a circular shift, not an arithmetic shift.
-      shifted_c |= ((c >> (24 - shift)) & 0xff) ;
-    }
-    hash = (hash + shifted_c) & 0xffffff;
-    shift = (shift + shift_offset) % 24;
-  }
-
-  // Now multiply the hash by a biggish prime number and apply the
-  // high-order bits back at the bottom, to scramble up the bits a
-  // bit.  This helps reduce hash conflicts from names that are
-  // similar to each other, by separating adjacent hash codes.
-  int prime = 4999;
-  int low_order = (hash * prime) & 0xffffff;
-  int high_order = (int)((double)hash * (double)prime / (double)(1 << 24));
-  hash = low_order ^ high_order;
-
-  // Also add in the additional_number, times some prime factor.
-  hash = (hash + additional_number * 1657) & 0xffffff;
-
-  // Now turn the hash code into a four-character string.  For each
-  // six bits, we choose a character in the set [A-Za-z0-9_].  Note
-  // that there are only 63 characters to choose from; we have to
-  // duplicate '_' for values 62 and 63.  This introduces a small
-  // additional chance of hash conflicts.  No big deal, since we have
-  // to resolve hash conflicts anyway.
-
-  string result;
-  int extract_h = hash;
-  for (int i = 0; i < 4; i++) {
-    int value = (extract_h & 0x3f);
-    extract_h >>= 6;
-    if (value < 26) {
-      result += (char)('A' + value);
-
-    } else if (value < 52) {
-      result += (char)('a' + value - 26);
-
-    } else if (value < 62) {
-      result += (char)('0' + value - 52);
-
-    } else {
-      result += '_';
-    }
-  }
-
-  return result;
 }
 
 ////////////////////////////////////////////////////////////////////

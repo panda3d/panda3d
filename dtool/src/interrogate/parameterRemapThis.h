@@ -23,7 +23,7 @@
 
 #include "parameterRemap.h"
 
-class CPPStructType;
+class CPPType;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ParameterRemapThis
@@ -32,7 +32,7 @@ class CPPStructType;
 ////////////////////////////////////////////////////////////////////
 class ParameterRemapThis : public ParameterRemap {
 public:
-  ParameterRemapThis(CPPStructType *type, bool is_const);
+  ParameterRemapThis(CPPType *type, bool is_const);
 
   virtual void pass_parameter(ostream &out, const string &variable_name);
   virtual string get_return_expr(const string &expression);

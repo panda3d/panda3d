@@ -100,6 +100,8 @@ public:
   static string get_function_signature(CPPInstance *function,
                                        int num_default_parameters = 0);
 
+  static string get_function_name(CPPInstance *function);
+
   static bool has_protected_destructor(CPPType *type);
 };
 

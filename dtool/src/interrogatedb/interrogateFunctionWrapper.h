@@ -29,7 +29,7 @@ class IndexRemapper;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : InterrogateFunctionWrapper
-// Description : An internal representation of a function.
+// Description : An internal representation of a callable function.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOLCONFIG InterrogateFunctionWrapper : public InterrogateComponent {
 public:
@@ -96,6 +96,7 @@ private:
   Parameters _parameters;
 
   friend class InterrogateBuilder;
+  friend class FunctionRemap;
 };
 
 INLINE ostream &operator << (ostream &out, const InterrogateFunctionWrapper &wrapper);

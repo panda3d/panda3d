@@ -133,16 +133,28 @@ is_equivalent(const CPPType &other) const {
 ////////////////////////////////////////////////////////////////////
 void CPPPointerType::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
-  _pointing_at->output(out, indent_level, scope, complete);
+  /*
   CPPFunctionType *ftype = _pointing_at->as_function_type();
-  if (ftype != NULL &&
-      ((ftype->_flags & CPPFunctionType::F_method_pointer) != 0)) {
-    // We have to output pointers-to-method with a scoping before the
-    // '*'.
-    out << " " << *ftype->_class_owner << "::*";
+  if (ftype != (CPPFunctionType *)NULL) {
+    // Pointers to functions are a bit of a special case; we have to
+    // be a little more careful about where the '*' goes.
+
+    string star = "*";
+    if ((ftype->_flags & CPPFunctionType::F_method_pointer) != 0) {
+      // We have to output pointers-to-method with a scoping before the
+      // '*'.
+      star = ftype->_class_owner->get_fully_scoped_name() + "::*";
+    }
+
+    _pointing_at->output_instance(out, indent_level, scope, complete,
+                                  star, "");
+
   } else {
+    _pointing_at->output(out, indent_level, scope, complete);
     out << " *";
   }
+  */
+  output_instance(out, indent_level, scope, complete, "", "");
 }
 
 ////////////////////////////////////////////////////////////////////

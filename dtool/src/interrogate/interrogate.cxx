@@ -46,6 +46,7 @@ bool watch_asserts = false;
 bool true_wrapper_names = false;
 bool build_c_wrappers = false;
 bool build_python_wrappers = false;
+bool build_python_obj_wrappers = false;
 bool track_interpreter = false;
 bool save_unique_names = false;
 bool no_database = false;
@@ -73,6 +74,7 @@ enum CommandOptions {
   CO_true_names,
   CO_c,
   CO_python,
+  CO_python_obj,
   CO_track_interpreter,
   CO_unique_names,
   CO_nodb,
@@ -96,6 +98,7 @@ static struct option long_options[] = {
   { "true-names", no_argument, NULL, CO_true_names },
   { "c", no_argument, NULL, CO_c },
   { "python", no_argument, NULL, CO_python },
+  { "python-obj", no_argument, NULL, CO_python_obj },
   { "track-interpreter", no_argument, NULL, CO_track_interpreter },
   { "unique-names", no_argument, NULL, CO_unique_names },
   { "nodb", no_argument, NULL, CO_nodb },
@@ -229,10 +232,16 @@ void show_help() {
     << "        The shared library will be directly loadable as a Python module\n"
     << "        (especially if the module definitions are made available either by\n"
     << "        running interrogate-module later, or by specifying -do-module on\n"
-    << "        the command line now).\n\n"
+    << "        the command line now).  However, C++ objects and methods will be\n"
+    << "        converted into an object handle and a list of independent Python\n"
+    << "        functions.\n\n"
+    << "  -python-obj\n"
+    << "        Generate Python function wrappers that convert C++ objects to true\n"
+    << "        python objects, with all methods converted to Python methods.  This\n"
+    << "        is currently experimental.\n\n"
 
-    << "  Either or both of -c and/or -python may be specified.  If both are\n"
-    << "  omitted, the default is -c.\n\n"
+    << "  Any combination of -c, -python, or -python-obj may be specified.  If all\n"
+    << "  are omitted, the default is -c.\n\n"
 
     << "  -track-interpreter\n"
     << "        Generate code within each wrapper function to adjust the global\n"
@@ -369,6 +378,10 @@ main(int argc, char *argv[]) {
       build_python_wrappers = true;
       break;
 
+    case CO_python_obj:
+      build_python_obj_wrappers = true;
+      break;
+
     case CO_track_interpreter:
       track_interpreter = true;
       break;
@@ -424,7 +437,8 @@ main(int argc, char *argv[]) {
     exit(1);
   }
 
-  if (!build_c_wrappers && !build_python_wrappers) {
+  if (!build_c_wrappers && !build_python_wrappers && 
+      !build_python_obj_wrappers) {
     build_c_wrappers = true;
   }
 

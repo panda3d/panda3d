@@ -1,5 +1,5 @@
-// Filename: wrapperBuilderC.h
-// Created by:  drose (06Aug00)
+// Filename: functionWriterPtrToPython.h
+// Created by:  drose (14Sep01)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,33 +16,31 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef WRAPPERBUILDERC_H
-#define WRAPPERBUILDERC_H
+#ifndef FUNCTIONWRITERPTRTOPYTHON_H
+#define FUNCTIONWRITERPTRTOPYTHON_H
 
-#include <dtoolbase.h>
+#include "functionWriter.h"
 
-#include "wrapperBuilder.h"
+class CPPType;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : WrapperBuilderC
-// Description : A specialization on WrapperBuilder that builds
-//               C-style wrapper functions.
+//       Class : FunctionWriterPtrToPython
+// Description : This specialization of FunctionWriter generates a
+//               function that generates a PyObject class wrapper
+//               object around the corresponding C++ pointer.
 ////////////////////////////////////////////////////////////////////
-class WrapperBuilderC : public WrapperBuilder {
+class FunctionWriterPtrToPython : public FunctionWriter {
 public:
-  WrapperBuilderC();
+  FunctionWriterPtrToPython(CPPType *type);
+  virtual ~FunctionWriterPtrToPython();
 
-  virtual void
-  write_prototype(ostream &out, const string &wrapper_name) const;
+  virtual void write_prototype(ostream &out);
+  virtual void write_code(ostream &out);
+  CPPType *get_pointer_type() const;
 
-  virtual void
-  write_wrapper(ostream &out, const string &wrapper_name) const;
-
-  virtual string
-  get_wrapper_name(const string &library_hash_name) const;
-
-  virtual bool supports_atomic_strings() const;
-  virtual CallingConvention get_calling_convention() const;
+private:
+  CPPType *_type;
+  CPPType *_pointer_type;
 };
 
 #endif

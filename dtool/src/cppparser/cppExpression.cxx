@@ -963,7 +963,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
     break;
 
   case T_variable:
-    out << *_u._variable->_ident;
+    _u._variable->_ident->output(out, scope);
     break;
 
   case T_function:
@@ -971,18 +971,22 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
     break;
 
   case T_unknown_ident:
-    out << *_u._ident;
+    _u._ident->output(out, scope);
     break;
 
   case T_typecast:
     out << "(";
     _u._typecast._to->output(out, indent_level, scope, false);
-    out << ")(" << *_u._typecast._op1 << ")";
+    out << ")(";
+    _u._typecast._op1->output(out, indent_level, scope, false);
+    out << ")";
     break;
 
   case T_construct:
     out << "(" << _u._typecast._to->get_typedef_name(scope)
-        << "(" << *_u._typecast._op1 << "))";
+        << "(";
+    _u._typecast._op1->output(out, indent_level, scope, false);
+    out << "))";
     break;
 
   case T_default_construct:
@@ -990,12 +994,17 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
     break;
 
   case T_new:
-    out << "(new " << *_u._typecast._to
-        << "(" << *_u._typecast._op1 << "))";
+    out << "(new ";
+    _u._typecast._to->output(out, indent_level, scope, false);
+    out << "(";
+    _u._typecast._op1->output(out, indent_level, scope, false);
+    out << "))";
     break;
 
   case T_default_new:
-    out << "(new " << *_u._typecast._to << "())";
+    out << "(new ";
+    _u._typecast._to->output(out, indent_level, scope, false);
+    out << "())";
     break;
 
   case T_sizeof:
@@ -1007,31 +1016,45 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
   case T_unary_operation:
     switch (_u._op._operator) {
     case UNARY_NOT:
-      out << "(! " << *_u._op._op1 << ")";
+      out << "(! ";
+      _u._op._op1->output(out, indent_level, scope, false);
+      out << ")";
       break;
 
     case UNARY_NEGATE:
-      out << "(~ " << *_u._op._op1 << ")";
+      out << "(~ ";
+      _u._op._op1->output(out, indent_level, scope, false);
+      out << ")";
       break;
 
     case UNARY_MINUS:
-      out << "(- " << *_u._op._op1 << ")";
+      out << "(- ";
+      _u._op._op1->output(out, indent_level, scope, false);
+      out << ")";
       break;
 
     case UNARY_STAR:
-      out << "(* " << *_u._op._op1 << ")";
+      out << "(* ";
+      _u._op._op1->output(out, indent_level, scope, false);
+      out << ")";
       break;
 
     case UNARY_REF:
-      out << "(& " << *_u._op._op1 << ")";
+      out << "(& ";
+      _u._op._op1->output(out, indent_level, scope, false);
+      out << ")";
       break;
 
     case 'f': // Function evaluation, no parameters.
-      out << "(" << *_u._op._op1 << "())";
+      out << "(";
+      _u._op._op1->output(out, indent_level, scope, false);
+      out << "())";
       break;
 
     default:
-      out << "(" << (char)_u._op._operator << " " << *_u._op._op1 << ")";
+      out << "(" << (char)_u._op._operator << " ";
+      _u._op._op1->output(out, indent_level, scope, false);
+      out << ")";
       break;
     }
     break;
@@ -1039,66 +1062,124 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
   case T_binary_operation:
     switch (_u._op._operator) {
     case OROR:
-      out << "(" << *_u._op._op1 << " || " << *_u._op._op2 << ")";
+      out << "(";
+      _u._op._op1->output(out, indent_level, scope, false);
+      out << " || ";
+      _u._op._op2->output(out, indent_level, scope, false);
+      out << ")";
       break;
 
     case ANDAND:
-      out << "(" << *_u._op._op1 << " && " << *_u._op._op2 << ")";
+      out << "(";
+      _u._op._op1->output(out, indent_level, scope, false);
+      out << " && ";
+      _u._op._op2->output(out, indent_level, scope, false);
+      out << ")";
       break;
 
     case EQCOMPARE:
-      out << "(" << *_u._op._op1 << " == " << *_u._op._op2 << ")";
+      out << "(";
+      _u._op._op1->output(out, indent_level, scope, false);
+      out << " == ";
+      _u._op._op2->output(out, indent_level, scope, false);
+      out << ")";
       break;
 
     case NECOMPARE:
-      out << "(" << *_u._op._op1 << " != " << *_u._op._op2 << ")";
+      out << "(";
+      _u._op._op1->output(out, indent_level, scope, false);
+      out << " != ";
+      _u._op._op2->output(out, indent_level, scope, false);
+      out << ")";
       break;
 
     case LECOMPARE:
-      out << "(" << *_u._op._op1 << " <= " << *_u._op._op2 << ")";
+      out << "(";
+      _u._op._op1->output(out, indent_level, scope, false);
+      out << " <= ";
+      _u._op._op2->output(out, indent_level, scope, false);
+      out << ")";
       break;
 
     case GECOMPARE:
-      out << "(" << *_u._op._op1 << " >= " << *_u._op._op2 << ")";
+      out << "(";
+      _u._op._op1->output(out, indent_level, scope, false);
+      out << " >= ";
+      _u._op._op2->output(out, indent_level, scope, false);
+      out << ")";
       break;
 
     case LSHIFT:
-      out << "(" << *_u._op._op1 << " << " << *_u._op._op2 << ")";
+      out << "(";
+      _u._op._op1->output(out, indent_level, scope, false);
+      out << " << ";
+      _u._op._op2->output(out, indent_level, scope, false);
+      out << ")";
       break;
 
     case RSHIFT:
-      out << "(" << *_u._op._op1 << " >> " << *_u._op._op2 << ")";
+      out << "(";
+      _u._op._op1->output(out, indent_level, scope, false);
+      out << " >> ";
+      _u._op._op2->output(out, indent_level, scope, false);
+      out << ")";
       break;
 
     case '.':
-      out << "(" << *_u._op._op1 << "." << *_u._op._op2 << ")";
+      out << "(";
+      _u._op._op1->output(out, indent_level, scope, false);
+      out << ".";
+      _u._op._op2->output(out, indent_level, scope, false);
+      out << ")";
       break;
 
     case POINTSAT:
-      out << "(" << *_u._op._op1 << "->" << *_u._op._op2 << ")";
+      out << "(";
+      _u._op._op1->output(out, indent_level, scope, false);
+      out << "->";
+      _u._op._op2->output(out, indent_level, scope, false);
+      out << ")";
       break;
 
     case '[': // Array element reference
-      out << "(" << *_u._op._op1 << "[" << *_u._op._op2 << "])";
+      out << "(";
+      _u._op._op1->output(out, indent_level, scope, false);
+      out << "[";
+      _u._op._op2->output(out, indent_level, scope, false);
+      out << "])";
       break;
 
     case 'f': // Function evaluation
-      out << "(" << *_u._op._op1 << "(" << *_u._op._op2 << "))";
+      out << "(";
+      _u._op._op1->output(out, indent_level, scope, false);
+      out << "(";
+      _u._op._op2->output(out, indent_level, scope, false);
+      out << "))";
       break;
 
     case ',': // Comma, no parens are used
-      out << *_u._op._op1 << ", " << *_u._op._op2;
+      _u._op._op1->output(out, indent_level, scope, false);
+      out << ", ";
+      _u._op._op2->output(out, indent_level, scope, false);
       break;
 
     default:
-      out << "(" << *_u._op._op1 << " " << (char)_u._op._operator
-          << " " << *_u._op._op2 << ")";
+      out << "(";
+      _u._op._op1->output(out, indent_level, scope, false);
+      out << " " << (char)_u._op._operator << " ";
+      _u._op._op2->output(out, indent_level, scope, false);
+      out << ")";
     }
     break;
 
   case T_trinary_operation:
-    out << "(" << *_u._op._op1 << " ? " << *_u._op._op2
-        << " : " << *_u._op._op3 << ")";
+    out << "(";
+    _u._op._op1->output(out, indent_level, scope, false);
+    out << " ? ";
+    _u._op._op2->output(out, indent_level, scope, false);
+    out << " : ";
+    _u._op._op3->output(out, indent_level, scope, false);
+    out << ")";
     break;
 
   default:

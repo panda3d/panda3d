@@ -31,6 +31,9 @@ InterrogateType(InterrogateModuleDef *def) :
   _atomic_token = AT_not_atomic;
   _wrapped_type = 0;
   _destructor = 0;
+
+  _cpptype = (CPPType *)NULL;
+  _cppscope = (CPPScope *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -19,13 +19,15 @@
 #ifndef INTERROGATEFUNCTION_H
 #define INTERROGATEFUNCTION_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "interrogateComponent.h"
 
 #include <vector>
+#include <map>
 
 class IndexRemapper;
+class CPPInstance;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : InterrogateFunction
@@ -35,7 +37,7 @@ class EXPCL_DTOOLCONFIG InterrogateFunction : public InterrogateComponent {
 public:
   INLINE InterrogateFunction(InterrogateModuleDef *def = NULL);
   INLINE InterrogateFunction(const InterrogateFunction &copy);
-  INLINE void operator = (const InterrogateFunction &copy);
+  void operator = (const InterrogateFunction &copy);
 
   INLINE bool is_global() const;
   INLINE bool is_virtual() const;
@@ -66,7 +68,10 @@ private:
   enum Flags {
     F_global          = 0x0001,
     F_virtual         = 0x0002,
-    F_method          = 0x0004
+    F_method          = 0x0004,
+    F_typecast        = 0x0008,
+    F_getter          = 0x0010,
+    F_setter          = 0x0020,
   };
 
   int _flags;
@@ -78,7 +83,22 @@ private:
   typedef vector<FunctionWrapperIndex> Wrappers;
   Wrappers _c_wrappers;
   Wrappers _python_wrappers;
+
+public:
+  // The rest of the members in this class aren't part of the public
+  // interface to interrogate, but are used internally as the
+  // interrogate database is built.  They are valid only during the
+  // session of interrogate that generates the database, and will not
+  // be filled in when the database is reloaded from disk.
+
+  typedef map<string, CPPInstance *> Instances;
+  Instances _instances;
+  string _expression;
+
   friend class InterrogateBuilder;
+  friend class InterfaceMakerC;
+  friend class InterfaceMakerPythonSimple;
+  friend class FunctionRemap;
 };
 
 INLINE ostream &operator << (ostream &out, const InterrogateFunction &function);

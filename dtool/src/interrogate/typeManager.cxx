@@ -1157,6 +1157,20 @@ get_function_signature(CPPInstance *function,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::get_function_name
+//       Access: Public, Static
+//  Description: Returns a string corresponding to the given function
+//               name.  This is not necessarily unique to the
+//               particular overloaded function instance, but is
+//               common among all overloaded functions of the same
+//               name.
+////////////////////////////////////////////////////////////////////
+string TypeManager::
+get_function_name(CPPInstance *function) {
+  return function->get_local_name(&parser);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TypeManager::has_protected_destructor
 //       Access: Public, Static
 //  Description: Returns true if the destructor for the given class or

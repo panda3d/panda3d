@@ -42,15 +42,16 @@
 #include <notify.h>
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WrapperBuilder::Constructor
+//     Function: WrapperBuilder::FunctionDef::Constructor
 //       Access: Public
-//  Description:
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-WrapperBuilder::
-WrapperBuilder() {
+WrapperBuilder::FunctionDef::
+FunctionDef() {
   _return_type = (ParameterRemap *)NULL;
   _void_return = true;
   _has_this = false;
+  _is_method = false;
   _type = T_normal;
 
   _function = (CPPInstance *)NULL;
@@ -58,32 +59,19 @@ WrapperBuilder() {
   _scope = (CPPScope *)NULL;
   _ftype = (CPPFunctionType *)NULL;
   _num_default_parameters = 0;
-  _wrapper_index = 0;
 
-  _is_valid = false;
   _return_value_needs_management = false;
   _return_value_destructor = 0;
   _manage_reference_count = false;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WrapperBuilder::Destructor
+//     Function: WrapperBuilder::FunctionDef::Destructor
 //       Access: Public
-//  Description:
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-WrapperBuilder::
-~WrapperBuilder() {
-  clear();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: WrapperBuilder::clear
-//       Access: Public
-//  Description: Empties the builder and prepares it to receive a new
-//               function.
-////////////////////////////////////////////////////////////////////
-void WrapperBuilder::
-clear() {
+WrapperBuilder::FunctionDef::
+~FunctionDef() {
   Parameters::iterator pi;
   for (pi = _parameters.begin(); pi != _parameters.end(); ++pi) {
     delete (*pi)._remap;
@@ -97,7 +85,52 @@ clear() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WrapperBuilder::set_function
+//     Function: WrapperBuilder::FunctionDef::Copy constructor
+//       Access: Private
+//  Description: These are not designed to be copied.
+////////////////////////////////////////////////////////////////////
+WrapperBuilder::FunctionDef::
+FunctionDef(const FunctionDef &) {
+  assert(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WrapperBuilder::FunctionDef::Copy assignment operator
+//       Access: Private
+//  Description: These are not designed to be copied.
+////////////////////////////////////////////////////////////////////
+void WrapperBuilder::FunctionDef::
+operator = (const FunctionDef &) {
+  assert(false);
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: WrapperBuilder::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+WrapperBuilder::
+WrapperBuilder() {
+  _wrapper_index = 0;
+  _is_valid = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WrapperBuilder::Destructor
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+WrapperBuilder::
+~WrapperBuilder() {
+  Def::iterator di;
+  for (di = _def.begin(); di != _def.end(); ++di) {
+    delete (*di);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WrapperBuilder::add_function
 //       Access: Public
 //  Description: Sets up the builder according to the indicated
 //               function.  The value of num_default_parameters
@@ -105,63 +138,76 @@ clear() {
 //               assign to their default values for this particular
 //               wrapper.
 //
-//               Returns true if successful, false if the function
-//               cannot be wrapped for some reason.
+//               If this is called only once, then the WrapperBuilder
+//               will generate a wrapper that only calls the
+//               particular C++ function.  Otherwise, if this is
+//               called multiple times (and the WrapperBuilder type
+//               supports this), it will generate a wrapper that can
+//               handle overloading, and will call the appropriate
+//               C++ function based on the input parameters.
+//
+//               Returns the definition index if successful, or -1 if
+//               the function cannot be wrapped for some reason.
 ////////////////////////////////////////////////////////////////////
-bool WrapperBuilder::
-set_function(CPPInstance *function, const string &description,
+int WrapperBuilder::
+add_function(CPPInstance *function, const string &description,
              CPPStructType *struct_type,
              CPPScope *scope, const string &function_signature,
              WrapperBuilder::Type type,
              const string &expression,
              int num_default_parameters) {
-  clear();
-
-  _function = function;
-  _description = description;
-  _struct_type = struct_type;
-  _scope = scope;
-  _function_signature = function_signature;
-  _expression = expression;
-  _num_default_parameters = num_default_parameters;
-  _parameters.clear();
-
-  _ftype = _function->_type->resolve_type(scope, &parser)->as_function_type();
-  assert(_ftype != (CPPFunctionType *)NULL);
-
   _is_valid = true;
-  _has_this = false;
-  _type = type;
-  _wrapper_index = 0;
+  int def_index = (int)_def.size();
+  FunctionDef *def = new FunctionDef;
+  _def.push_back(def);
 
-  if ((_ftype->_flags & CPPFunctionType::F_constructor) != 0) {
-    _type = T_constructor;
+  def->_function = function;
+  def->_description = description;
+  def->_struct_type = struct_type;
+  def->_scope = scope;
+  def->_function_signature = function_signature;
+  def->_expression = expression;
+  def->_num_default_parameters = num_default_parameters;
+  def->_parameters.clear();
 
-  } else if ((_ftype->_flags & CPPFunctionType::F_destructor) != 0) {
-    _type = T_destructor;
+  def->_ftype = def->_function->_type->resolve_type(scope, &parser)->as_function_type();
+  assert(def->_ftype != (CPPFunctionType *)NULL);
 
-  } else if ((_ftype->_flags & CPPFunctionType::F_operator_typecast) != 0) {
-    _type = T_typecast_method;
+  def->_has_this = false;
+  def->_is_method = false;
+  def->_type = type;
+
+  if ((def->_ftype->_flags & CPPFunctionType::F_constructor) != 0) {
+    def->_type = T_constructor;
+
+  } else if ((def->_ftype->_flags & CPPFunctionType::F_destructor) != 0) {
+    def->_type = T_destructor;
+
+  } else if ((def->_ftype->_flags & CPPFunctionType::F_operator_typecast) != 0) {
+    def->_type = T_typecast_method;
   }
 
-  if (_struct_type != (CPPStructType *)NULL &&
+  if (def->_struct_type != (CPPStructType *)NULL &&
       ((function->_storage_class & CPPInstance::SC_static) == 0) &&
-      _type != T_constructor) {
+      def->_type != T_constructor) {
 
     // If this is a method, but not a static method, and not a
-    // constructor, then we need to synthesize a "this" parameter.
+    // constructor, then we may need to synthesize a "this" parameter.
+    def->_is_method = true;
 
-    Parameter param;
-    param._name = "this";
-    param._has_name = true;
-    bool is_const = (_ftype->_flags & CPPFunctionType::F_const_method) != 0;
-    param._remap = new ParameterRemapThis(_struct_type, is_const);
-    _parameters.push_back(param);
-    _has_this = true;
-
+    if (synthesize_this_parameter()) {
+      Parameter param;
+      param._name = "this";
+      param._has_name = true;
+      bool is_const = (def->_ftype->_flags & CPPFunctionType::F_const_method) != 0;
+      param._remap = new ParameterRemapThis(def->_struct_type, is_const);
+      def->_parameters.push_back(param);
+      def->_has_this = true;
+    }
+      
     // Also check the name of the function.  If it's one of the
     // assignment-style operators, flag it as such.
-    string fname = _function->get_simple_name();
+    string fname = def->_function->get_simple_name();
     if (fname == "operator =" ||
         fname == "operator *=" ||
         fname == "operator /=" ||
@@ -173,14 +219,14 @@ set_function(CPPInstance *function, const string &description,
         fname == "operator ^=" ||
         fname == "operator <<=" ||
         fname == "operator >>=") {
-      _type = T_assignment_method;
+      def->_type = T_assignment_method;
     }
   }
 
   const CPPParameterList::Parameters &params =
-    _ftype->_parameters->_parameters;
+    def->_ftype->_parameters->_parameters;
   for (int i = 0; i < (int)params.size() - num_default_parameters; i++) {
-    CPPType *type = params[i]->_type->resolve_type(&parser, _scope);
+    CPPType *type = params[i]->_type->resolve_type(&parser, def->_scope);
     Parameter param;
     param._has_name = true;
     param._name = params[i]->get_simple_name();
@@ -194,115 +240,111 @@ set_function(CPPInstance *function, const string &description,
       param._name = param_name.str();
     }
 
-    param._remap = make_remap(type);
+    param._remap = make_remap(def_index, type);
     param._remap->set_default_value(params[i]->_initializer);
 
     if (!param._remap->is_valid()) {
       _is_valid = false;
     }
 
-    _parameters.push_back(param);
+    def->_parameters.push_back(param);
   }
 
-  if (_type == T_constructor) {
+  if (def->_type == T_constructor) {
     // Constructors are a special case.  These appear to return void
     // as seen by the parser, but we know they actually return a new
     // concrete instance.
 
-    if (_struct_type == (CPPStructType *)NULL) {
-      nout << "Method " << *_function << " has no struct type\n";
+    if (def->_struct_type == (CPPStructType *)NULL) {
+      nout << "Method " << *def->_function << " has no struct type\n";
       _is_valid = false;
     } else {
-      _return_type = make_remap(_struct_type);
-      _void_return = false;
+      def->_return_type = make_remap(def_index, def->_struct_type);
+      def->_void_return = false;
     }
 
-  } else if (_type == T_assignment_method) {
+  } else if (def->_type == T_assignment_method) {
     // Assignment-type methods are also a special case.  We munge
     // these to return *this, which is a semi-standard C++ convention
     // anyway.  We just enforce it.
 
-    if (_struct_type == (CPPStructType *)NULL) {
-      nout << "Method " << *_function << " has no struct type\n";
+    if (def->_struct_type == (CPPStructType *)NULL) {
+      nout << "Method " << *def->_function << " has no struct type\n";
       _is_valid = false;
     } else {
-      CPPType *ref_type = CPPType::new_type(new CPPReferenceType(_struct_type));
-      _return_type = make_remap(ref_type);
-      _void_return = false;
+      CPPType *ref_type = CPPType::new_type(new CPPReferenceType(def->_struct_type));
+      def->_return_type = make_remap(def_index, ref_type);
+      def->_void_return = false;
     }
 
   } else {
     // The normal case.
-    CPPType *rtype = _ftype->_return_type->resolve_type(&parser, _scope);
-    _return_type = make_remap(rtype);
-    _void_return = TypeManager::is_void(rtype);
+    CPPType *rtype = def->_ftype->_return_type->resolve_type(&parser, def->_scope);
+    def->_return_type = make_remap(def_index, rtype);
+    def->_void_return = TypeManager::is_void(rtype);
   }
 
-  if (!_return_type->is_valid()) {
+  if (!def->_return_type->is_valid()) {
     _is_valid = false;
   }
 
   // Do we need to manage the return value?
-  _return_value_needs_management = _return_type->return_value_needs_management();
-  _return_value_destructor = _return_type->get_return_value_destructor();
+  def->_return_value_needs_management = 
+    def->_return_type->return_value_needs_management();
+  def->_return_value_destructor = 
+    def->_return_type->get_return_value_destructor();
 
   // Should we manage a reference count?
-  CPPType *return_type = _return_type->get_new_type();
+  CPPType *return_type = def->_return_type->get_new_type();
   CPPType *return_meat_type = TypeManager::unwrap_pointer(return_type);
 
   if (manage_reference_counts &&
       TypeManager::is_reference_count_pointer(return_type) &&
       !TypeManager::has_protected_destructor(return_meat_type)) {
     // Yes!
-    _manage_reference_count = true;
-    _return_value_needs_management = true;
+    def->_manage_reference_count = true;
+    def->_return_value_needs_management = true;
 
     // This is problematic, because we might not have the class in
     // question fully defined here, particularly if the class is
     // defined in some other library.
-    _return_value_destructor = builder.get_destructor_for(return_meat_type);
+    def->_return_value_destructor = builder.get_destructor_for(return_meat_type);
   }
 
-  return _is_valid;
+  if (!_is_valid) {
+    // Invalid function wrapper.  Too bad.
+    _def.pop_back();
+    delete def;
+    return -1;
+  }
+
+  return def_index;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WrapperBuilder::is_valid
-//       Access: Public
-//  Description: Returns true if the function was correctly mapped, or
-//               false if some parameter type is not supported and the
-//               remapped function is thus invalid.
+//     Function: WrapperBuilder::get_function_writers
+//       Access: Public, Virtual
+//  Description: Adds whatever list of FunctionWriters might be needed
+//               for this particular WrapperBuilder.  These will be
+//               generated to the output source file before
+//               write_wrapper() is called.
+////////////////////////////////////////////////////////////////////
+void WrapperBuilder::
+get_function_writers(FunctionWriters &) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WrapperBuilder::synthesize_this_parameter
+//       Access: Public, Virtual
+//  Description: Returns true if this particular wrapper type requires
+//               an explicit "this" parameter to be added to the
+//               function parameter list when appropriate, or false if
+//               the "this" pointer will come through a different
+//               channel.
 ////////////////////////////////////////////////////////////////////
 bool WrapperBuilder::
-is_valid() const {
-  return _is_valid;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: WrapperBuilder::return_value_needs_management
-//       Access: Public
-//  Description: Returns true if the return value represents a value
-//               that was newly allocated, and hence must be
-//               explicitly deallocated later by the caller.
-////////////////////////////////////////////////////////////////////
-bool WrapperBuilder::
-return_value_needs_management() const {
-  return _return_value_needs_management;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: WrapperBuilder::get_return_value_destructor
-//       Access: Public
-//  Description: If return_value_needs_management() returns true, this
-//               should return the index of the function that should
-//               be called when it is time to destruct the return
-//               value.  It will generally be the same as the
-//               destructor for the class we just returned a pointer
-//               to.
-////////////////////////////////////////////////////////////////////
-FunctionIndex WrapperBuilder::
-get_return_value_destructor() const {
-  return _return_value_destructor;
+synthesize_this_parameter() const {
+  return true;
 }
 
 
@@ -313,7 +355,10 @@ get_return_value_destructor() const {
 //               indicated type.
 ////////////////////////////////////////////////////////////////////
 ParameterRemap *WrapperBuilder::
-make_remap(CPPType *orig_type) {
+make_remap(int def_index, CPPType *orig_type) {
+  assert(def_index >= 0 && def_index < (int)_def.size());
+  const FunctionDef *def = _def[def_index];
+
   if (convert_strings) {
     if (TypeManager::is_char_pointer(orig_type)) {
       return new ParameterRemapCharStarToString(orig_type);
@@ -322,8 +367,8 @@ make_remap(CPPType *orig_type) {
     // If we're exporting a method of basic_string<char> itself, don't
     // convert basic_string<char>'s to atomic strings.
 
-    if (_struct_type == (CPPStructType *)NULL ||
-        !TypeManager::is_basic_string_char(_struct_type)) {
+    if (def->_struct_type == (CPPStructType *)NULL ||
+        !TypeManager::is_basic_string_char(def->_struct_type)) {
       if (TypeManager::is_basic_string_char(orig_type)) {
         return new ParameterRemapBasicStringToString(orig_type);
 
@@ -340,8 +385,8 @@ make_remap(CPPType *orig_type) {
 
       // Don't convert PointerTo<>'s to pointers for methods of the
       // PointerTo itself!
-      if (_struct_type == (CPPStructType *)NULL ||
-          !(pt_type->get_local_name(&parser) == _struct_type->get_local_name(&parser))) {
+      if (def->_struct_type == (CPPStructType *)NULL ||
+          !(pt_type->get_local_name(&parser) == def->_struct_type->get_local_name(&parser))) {
         return new ParameterRemapPTToPointer(orig_type);
       }
     }
@@ -383,34 +428,37 @@ make_remap(CPPType *orig_type) {
 //               new return value after processing.
 ////////////////////////////////////////////////////////////////////
 string WrapperBuilder::
-manage_return_value(ostream &out, int indent_level,
+manage_return_value(int def_index, 
+                    ostream &out, int indent_level,
                     const string &return_expr) const {
-  if (_manage_reference_count) {
+  assert(def_index >= 0 && def_index < (int)_def.size());
+  const FunctionDef *def = _def[def_index];
+  if (def->_manage_reference_count) {
     // If we're managing reference counts, and we're about to return a
     // reference countable object, then increment its count.
     if (return_expr == "return_value") {
       // If the expression is just a variable name, we can just ref it
       // directly.
-      output_ref(out, indent_level, return_expr);
+      output_ref(def_index, out, indent_level, return_expr);
       return return_expr;
 
     } else {
       // Otherwise, we should probably assign it to a temporary first,
       // so we don't invoke the function twice or something.
-      CPPType *type = _return_type->get_temporary_type();
+      CPPType *type = def->_return_type->get_temporary_type();
       indent(out, indent_level);
       type->output_instance(out, "refcount", &parser);
       out << " = " << return_expr << ";\n";
 
       indent(out, indent_level)
         << "if (" << return_expr << " != ("
-        << _return_type->get_new_type()->get_local_name(&parser) << ")0) {\n";
+        << def->_return_type->get_new_type()->get_local_name(&parser) << ")0) {\n";
       indent(out, indent_level + 2)
         << return_expr << "->ref();\n";
       indent(out, indent_level)
         << "}\n";
-      output_ref(out, indent_level, "refcount");
-      return _return_type->temporary_to_return("refcount");
+      output_ref(def_index, out, indent_level, "refcount");
+      return def->_return_type->temporary_to_return("refcount");
     }
   }
 
@@ -425,8 +473,10 @@ manage_return_value(ostream &out, int indent_level,
 //               the indicated variable name.
 ////////////////////////////////////////////////////////////////////
 void WrapperBuilder::
-output_ref(ostream &out, int indent_level, const string &varname) const {
-  if (_type == T_constructor || _type == T_typecast) {
+output_ref(int def_index, ostream &out, int indent_level, const string &varname) const {
+  assert(def_index >= 0 && def_index < (int)_def.size());
+  const FunctionDef *def = _def[def_index];
+  if (def->_type == T_constructor || def->_type == T_typecast) {
     // In either of these cases, we can safely assume the pointer will
     // never be NULL.
     indent(out, indent_level)
@@ -438,7 +488,7 @@ output_ref(ostream &out, int indent_level, const string &varname) const {
 
     indent(out, indent_level)
       << "if (" << varname << " != ("
-      << _return_type->get_new_type()->get_local_name(&parser) << ")0) {\n";
+      << def->_return_type->get_new_type()->get_local_name(&parser) << ")0) {\n";
     indent(out, indent_level + 2)
       << varname << "->ref();\n";
     indent(out, indent_level)
@@ -453,14 +503,14 @@ output_ref(ostream &out, int indent_level, const string &varname) const {
 ////////////////////////////////////////////////////////////////////
 string WrapperBuilder::
 get_parameter_name(int n) const {
-  // Just for the fun of it, we'll name the "this" parameter something
-  // different.
+  /*
   if (_has_this) {
     if (n == 0) {
       return "container";
     }
     n--;
   }
+  */
 
   ostringstream str;
   str << "param" << n;
@@ -492,57 +542,59 @@ get_parameter_expr(int n, const vector_string &pexprs) const {
 //               parameter value.
 ////////////////////////////////////////////////////////////////////
 string WrapperBuilder::
-get_call_str(const vector_string &pexprs) const {
+get_call_str(int def_index,
+             const string &container, const vector_string &pexprs) const {
+  assert(def_index >= 0 && def_index < (int)_def.size());
+  const FunctionDef *def = _def[def_index];
+
   // Build up the call to the actual function.
   ostringstream call;
 
-  int pn = 0;
-
   // Getters and setters are a special case.
-  if (_type == T_getter) {
-    if (_has_this) {
-      call << "(" << get_parameter_expr(pn, pexprs) << ")->"
-           << _expression;
+  if (def->_type == T_getter) {
+    if (!container.empty()) {
+      call << "(" << container << ")->" << def->_expression;
     } else {
-      call << _expression;
+      call << def->_expression;
     }
+    assert(def->_parameters.empty());
 
-  } else if (_type == T_setter) {
-    if (_has_this) {
-      call << "(" << get_parameter_expr(pn, pexprs) << ")->"
-           << _expression;
-      pn++;
+  } else if (def->_type == T_setter) {
+    if (!container.empty()) {
+      call << "(" << container << ")->" << def->_expression;
     } else {
-      call << _expression;
+      call << def->_expression;
     }
 
     call << " = ";
-    assert(pn + 1 == (int)_parameters.size());
-    _parameters[pn]._remap->pass_parameter(call, get_parameter_expr(pn, pexprs));
+    assert(def->_parameters.size() == 1);
+    def->_parameters[0]._remap->pass_parameter(call, get_parameter_expr(0, pexprs));
 
   } else {
-    if (_has_this) {
-      // If we have a synthesized "this" parameter, the calling
-      // convention is a bit different.
-      call << "(" << get_parameter_expr(pn, pexprs) << ")->"
-           << _function->get_local_name();
-      pn++;
+    int pn = 0;
+    if (def->_type == T_constructor) {
+      // Constructors are called differently.
+      call << def->_struct_type->get_local_name(&parser);
 
-    } else if (_type == T_constructor) {
-      // Constructors are called differently too.
-      call << _struct_type->get_local_name(&parser);
-
+    } else if (!container.empty()) {
+      // If we have a "this" parameter, the calling convention is also
+      // a bit different.
+      call << "(" << container << ")->" << def->_function->get_local_name();
+      if (def->_has_this) {
+        pn++;
+      }
+      
     } else {
-      call << _function->get_local_name(&parser);
+      call << def->_function->get_local_name(&parser);
     }
 
     call << "(";
-    if (pn < (int)_parameters.size()) {
-      _parameters[pn]._remap->pass_parameter(call, get_parameter_expr(pn, pexprs));
+    if (pn < (int)def->_parameters.size()) {
+      def->_parameters[pn]._remap->pass_parameter(call, get_parameter_expr(pn, pexprs));
       pn++;
-      while (pn < (int)_parameters.size()) {
+      while (pn < (int)def->_parameters.size()) {
         call << ", ";
-        _parameters[pn]._remap->pass_parameter(call, get_parameter_expr(pn, pexprs));
+        def->_parameters[pn]._remap->pass_parameter(call, get_parameter_expr(pn, pexprs));
         pn++;
       }
     }
@@ -567,77 +619,80 @@ get_call_str(const vector_string &pexprs) const {
 //               return nothing.
 ////////////////////////////////////////////////////////////////////
 string WrapperBuilder::
-call_function(ostream &out, int indent_level, bool convert_result,
-              const vector_string &pexprs) const {
+call_function(int def_index,
+              ostream &out, int indent_level, bool convert_result,
+              const string &container, const vector_string &pexprs) const {
+  assert(def_index >= 0 && def_index < (int)_def.size());
+  const FunctionDef *def = _def[def_index];
+
   string return_expr;
 
-  if (_type == T_destructor) {
+  if (def->_type == T_destructor) {
     // A destructor wrapper is just a wrapper around the delete operator.
-    assert(_parameters.size() == 1);
-    assert(_has_this);
-    assert(_struct_type != (CPPStructType *)NULL);
+    assert(!container.empty());
+    assert(def->_struct_type != (CPPStructType *)NULL);
 
-    if (TypeManager::is_reference_count(_struct_type)) {
+    if (TypeManager::is_reference_count(def->_struct_type)) {
       // Except for a reference-count type object, in which case the
       // destructor is a wrapper around unref_delete().
       indent(out, indent_level)
-        << "unref_delete(" << get_parameter_expr(0, pexprs) << ");\n";
+        << "unref_delete(" << container << ");\n";
     } else {
       indent(out, indent_level)
-        << "delete " << get_parameter_expr(0, pexprs) << ";\n";
+        << "delete " << container << ";\n";
     }
 
-  } else if (_type == T_typecast_method) {
+  } else if (def->_type == T_typecast_method) {
     // A typecast method can be invoked implicitly.
-    assert(_parameters.size() == 1);
     string cast_expr =
-      "(" + _return_type->get_orig_type()->get_local_name(&parser) +
-      ")(*" + get_parameter_expr(0, pexprs) + ")";
+      "(" + def->_return_type->get_orig_type()->get_local_name(&parser) +
+      ")(*" + container + ")";
 
     if (!convert_result) {
       return_expr = cast_expr;
     } else {
       string new_str =
-        _return_type->prepare_return_expr(out, indent_level, cast_expr);
-      return_expr = _return_type->get_return_expr(new_str);
+        def->_return_type->prepare_return_expr(out, indent_level, cast_expr);
+      return_expr = def->_return_type->get_return_expr(new_str);
     }
 
-  } else if (_type == T_typecast) {
+  } else if (def->_type == T_typecast) {
     // A regular typecast converts from a pointer type to another
     // pointer type.  (This is different from the typecast method,
     // above, which converts from the concrete type to some other
     // type.)
-    assert(_parameters.size() == 1);
+    assert(!container.empty());
     string cast_expr =
-      "(" + _return_type->get_orig_type()->get_local_name(&parser) +
-      ")" + get_parameter_expr(0, pexprs);
+      "(" + def->_return_type->get_orig_type()->get_local_name(&parser) +
+      ")" + container;
 
     if (!convert_result) {
       return_expr = cast_expr;
     } else {
       string new_str =
-        _return_type->prepare_return_expr(out, indent_level, cast_expr);
-      return_expr = _return_type->get_return_expr(new_str);
+        def->_return_type->prepare_return_expr(out, indent_level, cast_expr);
+      return_expr = def->_return_type->get_return_expr(new_str);
     }
 
-  } else if (_type == T_constructor) {
+  } else if (def->_type == T_constructor) {
     // A special case for constructors.
-    return_expr = "new " + get_call_str(pexprs);
+    return_expr = "new " + get_call_str(def_index, container, pexprs);
 
-  } else if (_type == T_assignment_method) {
+  } else if (def->_type == T_assignment_method) {
     // Another special case for assignment operators.
+    assert(!container.empty());
     indent(out, indent_level)
-      << get_call_str(pexprs) << ";\n";
+      << get_call_str(def_index, container, pexprs) << ";\n";
 
-    string this_expr = get_parameter_expr(0, pexprs);
+    string this_expr = container;
     string ref_expr = "*" + this_expr;
 
     if (!convert_result) {
       return_expr = ref_expr;
     } else {
       string new_str =
-        _return_type->prepare_return_expr(out, indent_level, ref_expr);
-      return_expr = _return_type->get_return_expr(new_str);
+        def->_return_type->prepare_return_expr(out, indent_level, ref_expr);
+      return_expr = def->_return_type->get_return_expr(new_str);
 
       // Now a simple special-case test.  Often, we will have converted
       // the reference-returning assignment operator to a pointer.  In
@@ -656,34 +711,34 @@ call_function(ostream &out, int indent_level, bool convert_result,
       }
     }
 
-  } else if (_void_return) {
+  } else if (def->_void_return) {
     indent(out, indent_level)
-      << get_call_str(pexprs) << ";\n";
+      << get_call_str(def_index, container, pexprs) << ";\n";
 
   } else {
-    string call = get_call_str(pexprs);
+    string call = get_call_str(def_index, container, pexprs);
 
     if (!convert_result) {
-      return_expr = get_call_str(pexprs);
+      return_expr = get_call_str(def_index, container, pexprs);
 
     } else {
-      if (_return_type->return_value_should_be_simple()) {
+      if (def->_return_type->return_value_should_be_simple()) {
         // We have to assign the result to a temporary first; this makes
         // it a bit easier on poor old VC++.
         indent(out, indent_level);
-        _return_type->get_orig_type()->output_instance(out, "result",
-                                                       &parser);
+        def->_return_type->get_orig_type()->output_instance(out, "result",
+                                                           &parser);
         out << " = " << call << ";\n";
 
         string new_str =
-          _return_type->prepare_return_expr(out, indent_level, "result");
-        return_expr = _return_type->get_return_expr(new_str);
+          def->_return_type->prepare_return_expr(out, indent_level, "result");
+        return_expr = def->_return_type->get_return_expr(new_str);
 
       } else {
         // This should be simple enough that we can return it directly.
         string new_str =
-          _return_type->prepare_return_expr(out, indent_level, call);
-        return_expr = _return_type->get_return_expr(new_str);
+          def->_return_type->prepare_return_expr(out, indent_level, call);
+        return_expr = def->_return_type->get_return_expr(new_str);
       }
     }
   }
@@ -700,13 +755,16 @@ call_function(ostream &out, int indent_level, bool convert_result,
 //               specified on the command line.
 ////////////////////////////////////////////////////////////////////
 void WrapperBuilder::
-write_spam_message(ostream &out) const {
+write_spam_message(int def_index, ostream &out) const {
+  assert(def_index >= 0 && def_index < (int)_def.size());
+  const FunctionDef *def = _def[def_index];
+
   if (generate_spam) {
     out << "#ifndef NDEBUG\n"
         << "  if (in_" << library_name << "_cat.is_spam()) {\n"
         << "    in_" << library_name << "_cat.spam()\n"
         << "      << \"";
-    write_quoted_string(out, _description);
+    write_quoted_string(out, def->_description);
     out << "\\n\";\n"
         << "  }\n"
         << "#endif\n";

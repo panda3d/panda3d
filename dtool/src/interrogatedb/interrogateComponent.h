@@ -57,6 +57,7 @@ private:
   string _name;
 
   friend class InterrogateBuilder;
+  friend class FunctionRemap;
 };
 
 #include "interrogateComponent.I"
