@@ -20,12 +20,22 @@ class OnScreenDebug:
         
         fontPath = config.GetString("on-screen-debug-font", "cmtt12")
         fontScale = config.GetFloat("on-screen-debug-font-scale", 0.05)
+
+        color = {
+            "black": Vec4(0, 0, 0, 1),
+            "white": Vec4(1, 1, 1, 1),
+            }
+        fgColor = color[config.GetString("on-screen-debug-fg-color", "white")]
+        bgColor = color[config.GetString("on-screen-debug-bg-color", "black")]
+        fgColor.setW(config.GetFloat("on-screen-debug-fg-alpha", 0.85))
+        bgColor.setW(config.GetFloat("on-screen-debug-bg-alpha", 0.85))
+        
         font = loader.loadFont(fontPath)
         if not font.isValid():
             print "failed to load OnScreenDebug font", fontPath
             font = TextNode.getDefaultFont()
         self.onScreenText = OnscreenText.OnscreenText(
-                pos = (-1.0, 0.9), bg=Vec4(1,1,1,0.85),
+                pos = (-1.0, 0.9), fg=fgColor, bg=bgColor,
                 scale = (fontScale, fontScale, 0.0), align = TextNode.ALeft,
                 mayChange = 1, font = font)
         # Make sure readout is never lit or drawn in wireframe
