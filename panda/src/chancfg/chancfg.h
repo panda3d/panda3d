@@ -108,7 +108,7 @@ class EXPCL_PANDA ChanConfig
 {
 private:
   std::vector<PT_NamedNode> _group_node;
-  std::vector<PT(DisplayRegion)> _display_region;
+  std::vector< PT(DisplayRegion) > _display_region;
   std::vector<int> _group_membership;
   PT(GraphicsWindow) _graphics_window;
   void chan_eval(GraphicsWindow* win, WindowItem& W, LayoutItem& L, 
