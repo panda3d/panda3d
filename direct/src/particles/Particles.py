@@ -68,15 +68,17 @@ class Particles(ParticleSystem.ParticleSystem):
 
     def enable(self):
 	"""enable()"""
-	physicsMgr.attachPhysical(self)
-	particleMgr.attachParticlesystem(self)
-        self.fEnabled = 1
+	if (self.fEnabled == 0):
+	    physicsMgr.attachPhysical(self)
+	    particleMgr.attachParticlesystem(self)
+            self.fEnabled = 1
 
     def disable(self):
 	"""disable()"""
-	physicsMgr.removePhysical(self)
-	particleMgr.removeParticlesystem(self)
-        self.fEnabled = 0
+	if (self.fEnabled == 1):
+	    physicsMgr.removePhysical(self)
+	    particleMgr.removeParticlesystem(self)
+            self.fEnabled = 0
 
     def isEnabled(self):
         return self.fEnabled

@@ -17,7 +17,6 @@ pe = ParticleEffect.ParticleEffect('particle-fx')
 pe.reparentTo(render)
 pe.setPos(0.0, 5.0, 4.0)
 pe.addForceGroup(fg)
-pe.enable()
 
 # Particle Panel
 pp = ParticlePanel.ParticlePanel(pe)

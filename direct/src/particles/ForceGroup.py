@@ -27,20 +27,18 @@ class ForceGroup(DirectObject):
     def enable(self):
 	"""enable(self)
 	   Convenience function to enable all forces in force group"""
-	if (self.fEnabled == 0):
-	    for i in range(self.node.getNumForces()):
-	    	f = self.node.getForce(i)
-	    	f.setActive(1)	
-            self.fEnabled = 1
+	for i in range(self.node.getNumForces()):
+	    f = self.node.getForce(i)
+	    f.setActive(1)	
+        self.fEnabled = 1
 
     def disable(self):
 	"""disable(self)
 	   Convenience function to disable all forces in force group"""
-	if (self.fEnabled == 1):
-	    for i in range(self.node.getNumForces()):
-	    	f = self.node.getForce(i)
-		f.setActive(0)
-            self.fEnabled = 0
+	for i in range(self.node.getNumForces()):
+	    f = self.node.getForce(i)
+	    f.setActive(0)
+        self.fEnabled = 0
 
     def isEnabled(self):
         return self.fEnabled
