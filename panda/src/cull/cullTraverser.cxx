@@ -20,6 +20,7 @@
 #include <nodeTransitionWrapper.h>
 #include <indent.h>
 #include <config_sgraphutil.h>  // for implicit_app_traversal
+#include <config_sgattrib.h>    // for support_decals
 #include <pStatTimer.h>
 
 TypeHandle CullTraverser::_type_handle;
@@ -392,9 +393,20 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
   bool is_geom = node->is_of_type(GeomNode::get_class_type());
   bool node_has_sub_render = node->has_sub_render();
   bool arc_has_sub_render = arc->has_sub_render_trans();
-  bool has_direct_render =
-    arc->has_transition(DirectRenderTransition::get_class_type()) ||
-    arc->has_transition(DecalTransition::get_class_type());
+  bool has_direct_render;
+
+#ifndef NDEBUG
+  if (support_decals != SD_on) {
+    has_direct_render =
+      arc->has_transition(DirectRenderTransition::get_class_type()) &&
+      !arc->has_transition(DecalTransition::get_class_type());
+  } else 
+#endif
+    {
+      has_direct_render =
+	arc->has_transition(DirectRenderTransition::get_class_type()) ||
+	arc->has_transition(DecalTransition::get_class_type());
+    }
 
   if (arc_has_sub_render) {
     level_state._now = UpdateSeq::fresh();
@@ -476,6 +488,14 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
     }
     add_geom_node(DCAST(GeomNode, node), trans, level_state);
   }
+
+#ifndef NDEBUG
+  if (support_decals == SD_hide &&
+      arc->has_transition(DecalTransition::get_class_type())) {
+    mark_backward_arc(arc);
+    return false;
+  }
+#endif
 
   return true;
 }

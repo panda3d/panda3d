@@ -64,11 +64,53 @@ Configure(config_sgattrib);
 NotifyCategoryDef(sgattrib, "");
 
 
-// MPG - we want to ensure that texture transitions are applied before
-// texgen transitions, so the texture transition must be initialized
-// first.
+// For performance testing reasons, it may be useful to support decals
+// (specially rendered coplanar geometry) to varying
+// less-than-complete degrees.  Modify the variable support-decals to
+// change this.  The legal values are:
+//
+//   on - This is the default, and causes decals to be rendered
+//        properly (if supported by the gsg backend).  This could have
+//        performance implications in fill, transform, and
+//        state-sorting.  This is equivalent to #t.
+//
+//  off - Decals are rendered as if they were not decalled at all.
+//        The result will generally be horrible looking, with each
+//        decal Z-fighting with its base.  This is equivalent to #f.
+//
+// hide - Decals are not drawn at all.
+//
+// If compiled in NDEBUG mode, this variable is ignored and decals are
+// always on.
+//
+SupportDecals support_decals = SD_on;
+
+static SupportDecals
+parse_support_decals(const string &type) {
+  if (type == "on") {
+    return SD_on;
+  } else if (type == "off") {
+    return SD_off;
+  } else if (type == "hide") {
+    return SD_hide;
+  }
+  return SD_invalid;
+}
 
 ConfigureFn(config_sgattrib) {
+  string support_decals_str = config_sgattrib.GetString("support-decals", "");
+  if (!support_decals_str.empty()) {
+    support_decals = parse_support_decals(support_decals_str);
+    if (support_decals == SD_invalid) {
+      support_decals = 
+	config_sgattrib.GetBool("support-decals", true) ? SD_on : SD_off;
+    }
+  }
+
+  // MPG - we want to ensure that texture transitions are applied
+  // before texgen transitions, so the texture transition must be
+  // initialized first.
+
   RenderRelation::init_type();
   TextureTransition::init_type();
   TextureAttribute::init_type();
@@ -139,5 +181,4 @@ ConfigureFn(config_sgattrib) {
   BillboardTransition::register_with_read_factory();
   ColorMatrixTransition::register_with_read_factory();
 }
-
 

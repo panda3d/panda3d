@@ -24,6 +24,7 @@
 #include <decalTransition.h>
 #include <decalAttribute.h>
 #include <pStatTimer.h>
+#include <config_sgattrib.h>   // for support_decals
 
 TypeHandle DirectRenderTraverser::_type_handle;
 PStatCollector DirectRenderTraverser::_draw_pcollector =
@@ -70,12 +71,17 @@ traverse(Node *root,
 
   DirectRenderLevelState level_state;
 
-  DecalAttribute *decal_attrib;
-  if (get_attribute_into(decal_attrib, render_state,
-			 DecalTransition::get_class_type())) {
-    level_state._decal_mode = decal_attrib->is_on();
-  }
-
+#ifndef NDEBUG
+  if (support_decals != SD_off)
+#endif
+    {
+      DecalAttribute *decal_attrib;
+      if (get_attribute_into(decal_attrib, render_state,
+			     DecalTransition::get_class_type())) {
+	level_state._decal_mode = decal_attrib->is_on();
+      }
+    }
+    
   // Determine the relative transform matrix from the camera to our
   // starting node.  This is important for proper view-frustum
   // culling.
@@ -96,6 +102,11 @@ traverse(Node *root,
 
   if (level_state._decal_mode && 
       root->is_of_type(GeomNode::get_class_type())) {
+#ifndef NDEBUG
+    if (support_decals == SD_hide) {
+      return;
+    }
+#endif
     // Close the decal.
     _gsg->end_decal(DCAST(GeomNode, root));
   }
@@ -132,13 +143,25 @@ reached_node(Node *node, AllAttributesWrapper &render_state,
     GeomNode *geom = DCAST(GeomNode, node); 
 
     // We must make decals a special case, because they're so strange.
-    DecalAttribute *decal_attrib;
-    if (get_attribute_into(decal_attrib, render_state,
-			   DecalTransition::get_class_type())) {
-      level_state._decal_mode = decal_attrib->is_on();
-    }
+#ifndef NDEBUG
+    if (support_decals != SD_off)
+#endif
+      {
+	DecalAttribute *decal_attrib;
+	if (get_attribute_into(decal_attrib, render_state,
+			       DecalTransition::get_class_type())) {
+	  level_state._decal_mode = decal_attrib->is_on();
+	}
+      }
 
     if (level_state._decal_mode) {
+#ifndef NDEBUG
+      if (support_decals == SD_hide) {
+	level_state._decal_mode = false;
+	geom->draw(_gsg);
+	return false;
+      }
+#endif
       _gsg->begin_decal(geom);
 
     } else {

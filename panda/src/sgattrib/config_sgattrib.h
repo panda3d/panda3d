@@ -11,4 +11,14 @@
 
 NotifyCategoryDecl(sgattrib, EXPCL_PANDA, EXPTP_PANDA);
 
+// Configure variables for sgattrib package.
+enum SupportDecals {
+  SD_on,
+  SD_off,
+  SD_hide,
+  SD_invalid
+};
+
+extern EXPCL_PANDA SupportDecals support_decals;
+
 #endif
