@@ -148,7 +148,7 @@ read_prc(istream &in) {
 
   in.read(buffer, buffer_size);
   size_t count = in.gcount();
-  while (count != 0) {
+  while (count != 0 && !in.fail() && !in.eof()) {
     char *buffer_end = buffer + count;
 
     // Look for the first line in the buffer..
