@@ -189,10 +189,9 @@ r_traverse(Node *node, const ArcChain &chain) {
       if (!get_transition_into(tt, ntw)) {
         // No relative transform.
         mat = LMatrix4f::ident_mat();
-        return;
+      } else {
+        mat = tt->get_matrix();
       }
-      
-      mat = tt->get_matrix();
       
       // Now apply this transform to the item's frame.
       pgi->activate_region(this, mat, _sort_index);
