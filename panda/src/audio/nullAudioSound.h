@@ -61,7 +61,8 @@ public:
 
   AudioSound::SoundStatus status() const;
 
-protected:
+// why protect the constructor?!?
+//protected:
   NullAudioSound();
 
   friend class NullAudioManager;

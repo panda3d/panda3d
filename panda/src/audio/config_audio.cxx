@@ -26,8 +26,9 @@ NotifyCategoryDef(audio, "");
 bool audio_active 
     =config_audio.GetBool("audio-active", true);
 
+//number of sounds in cache
 int audio_cache_limit 
-    =config_audio.GetInt("audio-cache-limit", 15);
+    =config_audio.GetInt("audio-cache-limit", 15);  
 
 float audio_volume 
     =config_audio.GetFloat("audio-volume", 1.0f);
