@@ -20,7 +20,6 @@ class Interval(DirectObject):
 	self.name = name
 	self.duration = duration
 	self.clock = ClockObject.ClockObject.getGlobalClock()
-	self.prevt = 0.0
 
     def getName(self):
 	""" getName()
@@ -49,6 +48,7 @@ class Interval(DirectObject):
         self.startT = self.clock.getFrameTime() - t0
 	assert(scale > 0.0)
 	self.scale = scale
+	self.firstTime = 1
         if (duration == 0.0):
             self.playDuration = self.duration
         else:
@@ -66,11 +66,13 @@ class Interval(DirectObject):
         t = self.clock.getFrameTime()
         te = (t - self.startT) * self.scale
         if (te <= self.playDuration):
-            self.setT(te, self.prevt)
-	    self.prevt = te
+	    if (self.firstTime):
+		self.setT(te, entry=1)
+		self.firstTime = 0
+	    else:
+            	self.setT(te)
             return Task.cont
         else:
-	    self.prevt = te
             return Task.done
 
     def printParams(self, indent=0):
