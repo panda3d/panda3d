@@ -42,8 +42,9 @@ Clients clients;
 QueuedConnectionReader* reader;
 static float clock_skew = 0.;
 static bool doing_sync = false;
-static float my_time;
+static float my_time, target_time, telemetry_time;
 static bool new_telemetry;
+static bool reinit_correction;
 
 enum TelemetryToken { T_End = 1, T_Pos, T_Vel, T_Num, T_Time, T_Sync };
 enum PredictToken { P_Null, P_Linear };
@@ -141,7 +142,7 @@ static void* internal_monitor(void*) {
 		doing_sync = false;
 		cerr << "setting clock skew to: " << clock_skew << endl;
 	      } else
-		my_time = x + clock_skew;
+		telemetry_time = x + clock_skew;
 	    }
 	    break;
 	  case T_Sync:
@@ -243,6 +244,7 @@ static void correct_event_up(CPT_Event e) {
     deadrec_cat->error() << "switching corrector to invalid type ("
 			 << (int)curr_corr << ")" << endl;
   }
+  reinit_correction = true;
 }
 
 static void correct_event(CPT_Event e) {
@@ -398,11 +400,42 @@ inline static void run_predict(void) {
 
 inline static void correction_pop(void) {
   my_pos = target_pos;
+  reinit_correction = false;
 }
 
 inline static void correction_lerp(void) {
   // DO THIS
-  my_pos = target_pos;
+  static LPoint3f prev_pos, save_pos;
+  static bool have_both = false;
+  static float time;
+
+  if (reinit_correction) {
+    if (new_telemetry) {
+      prev_pos = save_pos = telemetry_pos;
+      reinit_correction = false;
+      have_both = false;
+    }
+  } else {
+    if (have_both) {
+      if (new_telemetry) {
+	time = 0.;
+	prev_pos = my_pos;
+	save_pos = telemetry_pos;
+      } else {
+	// half second lerp
+	float tmp = time * 2.;
+	LVector3f vtmp = save_pos - prev_pos;
+	my_pos = (tmp * vtmp) + prev_pos;
+      }
+    } else {
+      if (new_telemetry) {
+	save_pos = telemetry_pos;
+	my_pos = prev_pos;
+	time = 0.;
+	have_both = true;
+      }
+    }
+  }
 }
 
 inline static void correction_spline(void) {
