@@ -712,7 +712,8 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
 */
 
 // still need custom conversion since d3d/d3dx has no way to convert arbitrary fmt to ARGB in-memory user buffer
-HRESULT ConvertD3DSurftoPixBuf(IDirect3DSurface8 *pD3DSurf8,PixelBuffer *pixbuf) {
+HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface8 *pD3DSurf8,PixelBuffer *pixbuf) {
+// copies SrcRect in pD3DSurf to upper left of pixbuf
     HRESULT hr;
     DWORD dwNumComponents=pixbuf->get_num_components();
 
@@ -728,65 +729,31 @@ HRESULT ConvertD3DSurftoPixBuf(IDirect3DSurface8 *pD3DSurf8,PixelBuffer *pixbuf)
         exit(1);
     }
 
+    DWORD dwXWindowOffset,dwYWindowOffset;
+    DWORD dwCopyWidth,dwCopyHeight;
+
     D3DLOCKED_RECT LockedRect;
     D3DSURFACE_DESC SurfDesc;
 
     hr = pD3DSurf8->GetDesc(&SurfDesc);
 
-    hr = pD3DSurf8->LockRect(&LockedRect,(CONST RECT*)NULL,(D3DLOCK_READONLY | D3DLOCK_NO_DIRTY_UPDATE /* | D3DLOCK_NOSYSLOCK */));
-    if(FAILED(hr)) {
-        dxgsg_cat.error() << "ConvertDDSurftoPixBuf LockRect() failed! hr = " << D3DERRORSTRING(hr);
-        return hr;
-    }
+    dwXWindowOffset=SrcRect.left,dwYWindowOffset=SrcRect.top;
+    dwCopyWidth=RECT_XSIZE(SrcRect);
+    dwCopyHeight=RECT_YSIZE(SrcRect);
 
-    DWORD dwXWindowOffset=0,dwYWindowOffset=0;
-    DWORD dwCopyWidth=SurfDesc.Width,dwCopyHeight=SurfDesc.Height;
-
-/*
-
-  bugbug: need to test scrngrab for windowed case.  do I need to do the clientrect stuff?
-  
-   // get window offset so we know where to start grabbing pixels.  note for
-   // fullscreen primary no clipper will be attached, that 'error' should be ignored
-    LPDIRECTDRAWCLIPPER pDDClipper;
-    hr = pDDSurf->GetClipper(&pDDClipper);
-
-#ifdef _DEBUG
-    if(FAILED(hr) && !((hr == DDERR_NOCLIPPERATTACHED) && dx_full_screen)) {
-        dxgsg_cat.error() << "ConvertDDSurftoPixBuf GetClipper failed! hr = " << ConvD3DErrorToString(hr) << "\n";
-        return hr;
-    }
-#endif
-
-    if(hr==S_OK) {
-        HWND hWin;
-
-        if(FAILED(hr = pDDClipper->GetHWnd(&hWin))) {
-            dxgsg_cat.error() << "ConvertDDSurftoPixBuf GetHwnd failed! hr = " << ConvD3DErrorToString(hr) << "\n";
-            return hr;
-        }
-
-        RECT view_rect;
-        GetClientRect( hWin, &view_rect );
-        ClientToScreen( hWin, (POINT*)&view_rect.left );
-        ClientToScreen( hWin, (POINT*)&view_rect.right );
-
-        dwXWindowOffset=view_rect.left;
-        dwYWindowOffset=view_rect.top;
-        dwCopyWidth=view_rect.right-view_rect.left;
-        dwCopyHeight=view_rect.bottom-view_rect.top;
-
-        pDDClipper->Release();  // dec ref cnt
-    }
-*/
     //make sure there's enough space in the pixbuf, its size must match (especially xsize)
    // or scanlines will be too long
 
     if(!((dwCopyWidth==pixbuf->get_xsize()) && (dwCopyHeight<=(DWORD)pixbuf->get_ysize()))) {
-        pD3DSurf8->UnlockRect();
-        dxgsg_cat.error() << "ConvertDDSurftoPixBuf, PixBuf size does not match display surface!\n";
+        dxgsg_cat.error() << "ConvertDDSurftoPixBuf, PixBuf size too small to hold display surface!\n";
         assert(0);
         return E_FAIL;
+    }
+
+    hr = pD3DSurf8->LockRect(&LockedRect,(CONST RECT*)NULL,(D3DLOCK_READONLY | D3DLOCK_NO_DIRTY_UPDATE /* | D3DLOCK_NOSYSLOCK */));
+    if(FAILED(hr)) {
+        dxgsg_cat.error() << "ConvertDDSurftoPixBuf LockRect() failed! hr = " << D3DERRORSTRING(hr);
+        return hr;
     }
 
     // ones not listed not handled yet

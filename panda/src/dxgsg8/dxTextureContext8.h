@@ -74,7 +74,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-extern HRESULT ConvertD3DSurftoPixBuf(IDirect3DSurface8 *pD3DSurf8,PixelBuffer *pixbuf);
+extern HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface8 *pD3DSurf8,PixelBuffer *pixbuf);
 
 #endif
 

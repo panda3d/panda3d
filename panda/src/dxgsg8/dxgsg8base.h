@@ -152,6 +152,8 @@ typedef enum {
 
 #define IS_16BPP_FORMAT(FMT) (((FMT)>=D3DFMT_R5G6B5)&&((FMT)<=D3DFMT_A1R5G5B5))
 #define IS_STENCIL_FORMAT(FMT) (((FMT)==D3DFMT_D24S8) || ((FMT)==D3DFMT_D15S1) || ((FMT)==D3DFMT_D24X4S4))
+#define RECT_XSIZE(REC) (REC.right-REC.left)
+#define RECT_YSIZE(REC) (REC.bottom-REC.top)
 
 typedef struct {
       LPDIRECT3DDEVICE8 pD3DDevice;

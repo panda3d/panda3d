@@ -276,8 +276,8 @@ void DXGraphicsStateGuardian::SetFPSMeterPosition(RECT &view_rect) {
     if(_fpsmeter_verts==NULL)
       return;
 
-    DWORD renderWid = view_rect.right - view_rect.left;
-    DWORD renderHt = view_rect.bottom - view_rect.top;
+    DWORD renderWid = RECT_XSIZE(view_rect);
+    DWORD renderHt = RECT_YSIZE(view_rect);
 
     // adjust these to match fontsize (these are hacks for default font, probably should get char width from win32)
     #define FPSMETER_NUMFONTLETTERS 11            // need 11 letters [0-9.]
@@ -3927,6 +3927,7 @@ texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
 void DXGraphicsStateGuardian::
 copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 
+    RECT SrcCopyRect;
     nassertv(pb != NULL && dr != NULL);
 
     int xo, yo, w, h;
@@ -3941,30 +3942,80 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
     IDirect3DSurface8 *pD3DSurf;
     HRESULT hr;
 
+    RECT WindRect;
+    GetWindowRect(scrn.hWnd,&WindRect);
+
     // just handling front and backbuf for now, not textures yet
     if(_cur_read_pixel_buffer & RenderBuffer::T_back) {
        hr=scrn.pD3DDevice->GetBackBuffer(0,D3DBACKBUFFER_TYPE_MONO,&pD3DSurf);
-    } else if(_cur_read_pixel_buffer & RenderBuffer::T_front) {
-       // must create a X8R8G8B8 sysmem surface for GetFrontBuffer to copy to
 
-       hr=scrn.pD3DDevice->CreateImageSurface(w,h,D3DFMT_A8R8G8B8,&pD3DSurf);
        if(FAILED(hr)) {
-           dxgsg_cat.error() << "CreateImageSurface failed in copy_pixel_buffer(), hr = " << D3DERRORSTRING(hr);
+           dxgsg_cat.error() << "GetBackBuffer failed, hr = " << D3DERRORSTRING(hr);
            exit(1);
        }
 
-       hr=scrn.pD3DDevice->GetFrontBuffer(pD3DSurf);
+       D3DSURFACE_DESC SurfDesc;
+       hr = pD3DSurf->GetDesc(&SurfDesc);
+
+       SrcCopyRect.top=SrcCopyRect.left=0;
+       SrcCopyRect.right=SurfDesc.Width;
+       SrcCopyRect.bottom=SurfDesc.Height;
+
+       // note if you try to grab the backbuffer and full-screen anti-aliasing is on,
+       // the backbuffer might be larger than the window size.  for screenshots its safer to get the front buffer.
+
+    } else if(_cur_read_pixel_buffer & RenderBuffer::T_front) {
+       // must create a A8R8G8B8 sysmem surface for GetFrontBuffer to copy to
+
+        DWORD TmpSurfXsize,TmpSurfYsize;
+
+        if(scrn.PresParams.Windowed) {
+            // GetFrontBuffer retrieves the entire desktop for a monitor, so need space for that
+
+            MONITORINFO minfo;
+            minfo.cbSize = sizeof(MONITORINFO);
+            GetMonitorInfo(scrn.hMon, &minfo);   // have to use GetMonitorInfo, since this gsg may not be for primary monitor
+
+            TmpSurfXsize=RECT_XSIZE(minfo.rcMonitor);
+            TmpSurfYsize=RECT_YSIZE(minfo.rcMonitor);
+
+            // set SrcCopyRect to client area of window in scrn coords
+            GetClientRect( scrn.hWnd, &SrcCopyRect);  
+            ClientToScreen( scrn.hWnd, (POINT*)&SrcCopyRect.left );
+            ClientToScreen( scrn.hWnd, (POINT*)&SrcCopyRect.right );
+        } else {
+           TmpSurfXsize=RECT_XSIZE(WindRect);
+           TmpSurfYsize=RECT_YSIZE(WindRect);
+
+           SrcCopyRect.top=SrcCopyRect.left=0;
+           SrcCopyRect.right=TmpSurfXsize;
+           SrcCopyRect.bottom=TmpSurfYsize;
+        }
+        
+        hr=scrn.pD3DDevice->CreateImageSurface(TmpSurfXsize,TmpSurfYsize,D3DFMT_A8R8G8B8,&pD3DSurf);
+        if(FAILED(hr)) {
+           dxgsg_cat.error() << "CreateImageSurface failed in copy_pixel_buffer(), hr = " << D3DERRORSTRING(hr);
+           exit(1);
+        }
+        
+        hr=scrn.pD3DDevice->GetFrontBuffer(pD3DSurf);
+        
+        if(hr==D3DERR_DEVICELOST) {
+           // dont necessary want to exit in this case
+           pD3DSurf->Release();
+           dxgsg_cat.error() << "copy_pixel_buffer failed: device lost\n";
+           return;
+        }
     } else {
         dxgsg_cat.error() << "copy_pixel_buffer: unhandled current_read_pixel_buffer type\n";
     }
 
-    if(FAILED(hr)) {
-        dxgsg_cat.error() << "copy_pixel_buffer: " << ((_cur_read_pixel_buffer & RenderBuffer::T_back) ? "GetBackBuffer" : "GetFrontBuffer") 
-                          << " failed, hr = " << D3DERRORSTRING(hr);
-        exit(1);
+    if((RECT_XSIZE(SrcCopyRect)>w) || (RECT_YSIZE(SrcCopyRect)>h)) {
+     dxgsg_cat.error() << "copy_pixel_buffer: pixel buffer size does not match selected screen RenderBuffer size!\n";
+     exit(1);
     }
 
-    (void) ConvertD3DSurftoPixBuf(pD3DSurf,pb);
+    (void) ConvertD3DSurftoPixBuf(SrcCopyRect,pD3DSurf,pb);
 
     ULONG refcnt;
     RELEASE(pD3DSurf,dxgsg,"pD3DSurf",RELEASE_ONCE);
@@ -5797,8 +5848,8 @@ dx_resize_window(HWND mwindow, RECT viewrect) {
     }
 */
 
-    scrn.PresParams.BackBufferWidth = viewrect.bottom-viewrect.top;
-    scrn.PresParams.BackBufferHeight = viewrect.right-viewrect.left;
+    scrn.PresParams.BackBufferWidth = RECT_XSIZE(viewrect);
+    scrn.PresParams.BackBufferHeight = RECT_YSIZE(viewrect);
     HRESULT hr=scrn.pD3DDevice->Reset(&scrn.PresParams);
 
     if(FAILED(hr)) {
@@ -6133,9 +6184,10 @@ bool DXGraphicsStateGuardian::CheckCooperativeLevel(bool bDoReactivateWindow) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::adjust_view_rect(int x, int y) {
     if (scrn.view_rect.left != x || scrn.view_rect.top != y) {
-        scrn.view_rect.right = x + scrn.view_rect.right - scrn.view_rect.left;
+
+        scrn.view_rect.right = x + RECT_XSIZE(scrn.view_rect);
         scrn.view_rect.left = x;
-        scrn.view_rect.bottom = y + scrn.view_rect.bottom - scrn.view_rect.top;
+        scrn.view_rect.bottom = y + RECT_YSIZE(scrn.view_rect);
         scrn.view_rect.top = y;
 
 //  set_clipper(clip_rect);
