@@ -267,7 +267,7 @@
 #defer HAVE_CHROMIUM $[libtest $[CHROMIUM_LPATH],$[CHROMIUM_LIBS]]
 
 // Should we try to build the WCR interface?
-#define HAVE_WCR $[eq $[PLATFORM],Win32]
+#define HAVE_WCR $[WINDOWS_PLATFORM]
 
 // How about GLX?
 #define GLX_IPATH
@@ -283,7 +283,7 @@
 #define HAVE_GLUT
 
 // Should we try to build the WGL interface?
-#define HAVE_WGL $[eq $[PLATFORM],Win32]
+#define HAVE_WGL $[WINDOWS_PLATFORM]
 
 // Should we try to build the SGI-specific glxdisplay?
 #define HAVE_SGIGL $[eq $[PLATFORM],Irix]
@@ -313,7 +313,7 @@
 // are required?  Currently, this requires NSPR.
 #define NET_IPATH
 #define NET_LPATH
-#if $[eq $[PLATFORM],Win32]
+#if $[WINDOWS_PLATFORM]
   #define NET_LIBS wsock32.lib
 #else
   #define NET_LIBS
@@ -403,7 +403,7 @@
 //    BOUNDS (BoundsChecker)
 //    INTEL  (Intel C/C++ compiler)
 
-#if $[eq $[PLATFORM], Win32]
+#if $[WINDOWS_PLATFORM]
 #if $[eq $[USE_COMPILER],]
   #define USE_COMPILER MSVC7
 #endif    

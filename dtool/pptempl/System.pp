@@ -36,13 +36,3 @@
 #if $[eq $[DEPENDENCY_CACHE_FILENAME],]
   #define DEPENDENCY_CACHE_FILENAME pp.dep
 #endif
-
-// These variables tell ppremake how to interpret the contents of the
-// PLATFORM variable, and help it to control the effects of functions
-// like $[os] and $[isfullpath].
-
-// True if we are building on some flavor of Windows.
-#define WINDOWS_PLATFORM $[or $[eq $[PLATFORM],Win32]$[eq $[PLATFORM],Cygwin]]
-
-// True if we are building on some flavor of Unix.
-#define UNIX_PLATFORM $[not $[WINDOWS_PLATFORM]]
