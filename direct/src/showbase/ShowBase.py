@@ -122,6 +122,7 @@ class ShowBase(DirectObject.DirectObject):
         self.pipe = None
         self.pipeList = []
         self.mak = None
+        self.mouse2cam = None
         self.cam = None
         self.camList = []
         self.camNode = None
@@ -620,6 +621,7 @@ class ShowBase(DirectObject.DirectObject):
         return aspectRatio
 
     def makeCamera(self, win, chan = None, layer = None, layerSort = 0,
+                   scene = None,
                    displayRegion = (0, 1, 0, 1), aspectRatio = None):
         """
 
@@ -633,6 +635,9 @@ class ShowBase(DirectObject.DirectObject):
         if layer == None:
             # Make a new layer on the window.
             layer = chan.makeLayer(layerSort)
+
+        if scene == None:
+            scene = self.render
 
         # And make a display region on this layer of the requested
         # area.
@@ -664,7 +669,7 @@ class ShowBase(DirectObject.DirectObject):
                 lens.setFilmSize(props.getXSize(), props.getYSize())
             
         camNode.setLens(lens)
-        camNode.setScene(self.render)
+        camNode.setScene(scene)
 
         # self.camera is the parent node of all cameras: a node that
         # we can move around to move all cameras as a group.
@@ -1107,15 +1112,18 @@ class ShowBase(DirectObject.DirectObject):
         self.taskMgr.remove('ivalloop')
         self.eventMgr.shutdown()
 
-    def getBackgroundColor(self):
+    def getBackgroundColor(self, win = None):
         """
         Returns the current window background color.  This assumes
         the window is set up to clear the color each frame (this is
         the normal setting).
         """
-        return VBase4(self.win.getClearColor())
+        if win == None:
+            win = self.win
 
-    def setBackgroundColor(self, *args):
+        return VBase4(win.getClearColor())
+
+    def setBackgroundColor(self, r = None, g = None, b = None, win = None):
         """
         Sets the window background color to the indicated value.
         This assumes the window is set up to clear the color each
@@ -1125,17 +1133,17 @@ class ShowBase(DirectObject.DirectObject):
         tuple, or the individual r, g, b parameters.
         """
 
-        numArgs = len(args)
-        if numArgs == 3 or numArgs == 4:
-            color = VBase4(args[0], args[1], args[2], 1.0)
-        elif numArgs == 1:
+        if g != None:
+            color = VBase4(r, g, b, 1.0)
+        else:
             arg = args[0]
             color = VBase4(arg[0], arg[1], arg[2], 1.0)
-        else:
-            raise TypeError, ('Invalid number of arguments: %d, expected 1, 3, or 4.' % numArgs)
 
-        if self.win:
-            self.win.setClearColor(color)
+        if win == None:
+            win = self.win
+
+        if win:
+           win.setClearColor(color)
                 
     def toggleBackface(self):
         if self.backfaceCullingEnabled:
@@ -1195,17 +1203,20 @@ class ShowBase(DirectObject.DirectObject):
         # the mouse is disabled.  However, we do move the mouse2cam
         # object out of there, so we won't be updating the camera any
         # more.
-        self.mouse2cam.reparentTo(self.dataUnused)
+        if self.mouse2cam:
+            self.mouse2cam.reparentTo(self.dataUnused)
 
     def enableMouse(self):
         """
         Reverse the effect of a previous call to disableMouse().
         useDrive() also implicitly enables the mouse.
         """
-        self.mouse2cam.reparentTo(self.mouseInterface)
+        if self.mouse2cam:
+            self.mouse2cam.reparentTo(self.mouseInterface)
 
     def setMouseOnNode(self, newNode):
-        self.mouse2cam.node().setNode(newNode)
+        if self.mouse2cam:
+            self.mouse2cam.node().setNode(newNode)
 
     def changeMouseInterface(self, changeTo):
         """
@@ -1218,7 +1229,8 @@ class ShowBase(DirectObject.DirectObject):
         self.mouseInterfaceNode = self.mouseInterface.node()
         # Hookup the drive to the camera.
         self.mouseInterface.reparentTo(self.mouseWatcher)
-        self.mouse2cam.reparentTo(self.mouseInterface)
+        if self.mouse2cam:
+            self.mouse2cam.reparentTo(self.mouseInterface)
 
     def useDrive(self):
         """
