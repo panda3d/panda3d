@@ -69,10 +69,20 @@ class GraphicsWindow;
 // Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GraphicsWindow : public Configurable, public ReferenceCount {
-public:
+PUBLISHED:
   class EXPCL_PANDA Properties {
-  public:
+  PUBLISHED:
     Properties();
+    INLINE ~Properties();
+
+    INLINE void set_origin(int xorg, int yorg);
+    INLINE void set_size(int xsize, int ysize);
+    INLINE void set_title(const string &title);
+    INLINE void set_border(bool border);
+    INLINE void set_fullscreen(bool fullscreen);
+    INLINE void set_mask(uint mask);
+    INLINE void set_bit_depth(int want_depth_bits, int want_color_bits);
+
   public:
     int _xorg;
     int _yorg;
@@ -86,6 +96,7 @@ public:
     int _want_color_bits;
   };
 
+public:
   class EXPCL_PANDA Callback {
   public:
     virtual void draw(bool);

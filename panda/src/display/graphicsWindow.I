@@ -19,6 +19,103 @@
 #include <notify.h>
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::Properties::Destructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsWindow::Properties::
+~Properties() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::Properties::set_origin
+//       Access: Published
+//  Description: Specifies the origin on the screen (in pixels,
+//               relative to the top-left corner) at which the window
+//               should appear.  This is the origin of the top-left
+//               corner of the useful part of the window, not
+//               including decorations.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsWindow::Properties::
+set_origin(int xorg, int yorg) {
+  _xorg = xorg;
+  _yorg = yorg;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::Properties::set_size
+//       Access: Published
+//  Description: Specifies the requested size of the window, in
+//               pixels.  This is the size of the useful part of the
+//               window, not including decorations.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsWindow::Properties::
+set_size(int xsize, int ysize) {
+  _xsize = xsize;
+  _ysize = ysize;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::Properties::set_title
+//       Access: Published
+//  Description: Specifies the title that should be assigned to the
+//               window.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsWindow::Properties::
+set_title(const string &title) {
+  _title = title;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::Properties::set_border
+//       Access: Published
+//  Description: Specifies whether the window should be created with a
+//               border (true, the default) or not (false).
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsWindow::Properties::
+set_border(bool border) {
+  _border = border;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::Properties::set_fullscreen
+//       Access: Published
+//  Description: Specifies whether the window should be opened in
+//               fullscreen mode (true) or normal windowed mode
+//               (false, the default).
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsWindow::Properties::
+set_fullscreen(bool fullscreen) {
+  _fullscreen = fullscreen;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::Properties::set_mask
+//       Access: Published
+//  Description: Specifies the set of graphics properties that are
+//               required for the context associated with the window.
+//               This should be the union of the appropriate bits
+//               defined in WindowModeType.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsWindow::Properties::
+set_mask(uint mask) {
+  _mask = mask;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::Properties::set_bit_depth
+//       Access: Published
+//  Description: Specifies the minimum number of bits that are
+//               required for the depth buffer and color buffer,
+//               respectively.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsWindow::Properties::
+set_bit_depth(int want_depth_bits, int want_color_bits) {
+  _want_depth_bits = want_depth_bits;
+  _want_color_bits = want_color_bits;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::get_properties
 //       Access: Published
 //  Description: Returns the full Properties structure that describes

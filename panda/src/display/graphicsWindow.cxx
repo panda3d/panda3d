@@ -45,7 +45,7 @@ PStatCollector GraphicsWindow::_make_current_pcollector("Draw:Make current");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::Properties::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsWindow::Properties::
@@ -54,7 +54,7 @@ Properties() {
   _yorg = 0;
   _xsize = 512;
   _ysize = 512;
-  _title = "";
+  _title = "Panda";
   _border = true;
   _fullscreen = false;
   _mask = W_RGBA | W_DOUBLE | W_DEPTH;
