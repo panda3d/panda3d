@@ -56,6 +56,7 @@ class Zone(Entity, NodepathAttribs):
     attribs = (
         ('description', ''),
         ('modelZoneNum', None),
+        ('visibility', []),
         )
 
 class BarrelBase(Nodepath):
