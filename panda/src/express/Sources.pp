@@ -39,8 +39,11 @@
      typedReferenceCount.I typedReferenceCount.h typedef.h \
      typeRegistry.I typeRegistry.h \
      typeRegistryNode.I typeRegistryNode.h \
-     vector_uchar.h
-    
+     vector_uchar.h \
+     $[if $[HAVE_CRYPTO], \
+        crypto_utils.cxx crypto_utils.h patchfile.I \
+        patchfile.cxx patchfile.h ]
+
   #define INCLUDED_SOURCES  \
      buffer.cxx checksumHashGenerator.cxx clockObject.cxx \
      config_express.cxx datagram.cxx datagramGenerator.cxx \
@@ -55,10 +58,6 @@
      reversedNumericData.cxx trueClock.cxx typeHandle.cxx \
      typedObject.cxx typedReferenceCount.cxx \
      typeRegistry.cxx typeRegistryNode.cxx vector_uchar.cxx
-
-  #define IF_CRYPTO_SOURCES                         \
-    crypto_utils.cxx crypto_utils.h \
-    patchfile.I patchfile.cxx patchfile.h
 
   #define INSTALL_HEADERS                       \
     bigEndian.h buffer.I buffer.h checksumHashGenerator.I  \

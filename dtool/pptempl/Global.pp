@@ -296,19 +296,9 @@
 #defer get_sources \
   $[SOURCES] \
   $[PRECOMPILED_HEADER] \
-  $[if $[ne $[NO_COMBINED_SOURCES],], $[INCLUDED_SOURCES], $[get_combined_sources]] \  
-  $[if $[HAVE_CRYPTO],$[IF_CRYPTO_SOURCES]] \
-  $[if $[HAVE_TIFF],$[IF_TIFF_SOURCES]] \
-  $[if $[HAVE_FFTW],$[IF_FFTW_SOURCES]] \
-  $[if $[HAVE_NURBSPP],$[IF_NURBSPP_SOURCES]] \
-  $[if $[HAVE_JPEG], $[IF_JPEG_SOURCES] $[if $[ne $[NO_COMBINED_SOURCES],], $[IF_JPEG_INCLUDED_SOURCES], $[IF_JPEG_COMBINED_SOURCES]]] \
-  $[if $[HAVE_JPEG2000], $[IF_JPEG2000_SOURCES] $[if $[ne $[NO_COMBINED_SOURCES],], $[IF_JPEG2000_INCLUDED_SOURCES], $[IF_JPEG2000_COMBINED_SOURCES]]] \
-  $[if $[HAVE_ZLIB], $[IF_ZLIB_SOURCES] $[if $[ne $[NO_COMBINED_SOURCES],], $[IF_ZLIB_INCLUDED_SOURCES], $[IF_ZLIB_COMBINED_SOURCES]]] \
-  $[if $[HAVE_NET], $[IF_NET_SOURCES] $[if $[ne $[NO_COMBINED_SOURCES],], $[IF_NET_INCLUDED_SOURCES], $[IF_NET_COMBINED_SOURCES]]] \
-  $[if $[HAVE_IPC],$[IF_IPC_SOURCES]] \
-  $[if $[HAVE_PYTHON],$[IF_PYTHON_SOURCES]]
+  $[if $[ne $[NO_COMBINED_SOURCES],], $[INCLUDED_SOURCES], $[get_combined_sources]]
 
-#defer included_sources $[INCLUDED_SOURCES] $[if $[HAVE_ZLIB],$[IF_ZLIB_INCLUDED_SOURCES]] $[if $[HAVE_NET],$[IF_NET_INCLUDED_SOURCES]] $[if $[USE_SINGLE_COMPOSITE_SOURCEFILE], $[COMBINED_SOURCES]] $[if $[HAVE_JPEG],$[IF_JPEG_INCLUDED_SOURCES]]
+#defer included_sources $[INCLUDED_SOURCES]
   
 // This variable returns the set of sources that are to be
 // interrogated for the current target.

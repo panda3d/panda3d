@@ -18,7 +18,9 @@
      nurbsCurveDrawer.h nurbsCurveInterface.I  \
      nurbsCurveInterface.h parametricCurve.h  \
      parametricCurveCollection.I parametricCurveCollection.h  \
-     piecewiseCurve.h
+     piecewiseCurve.h \
+     $[if $[HAVE_NURBSPP], nurbsPPCurve.cxx nurbsPPCurve.h]
+
 
   #define INCLUDED_SOURCES \
      classicNurbsCurve.cxx config_parametrics.cxx cubicCurveseg.cxx  \
@@ -26,9 +28,6 @@
      nurbsCurveDrawer.cxx nurbsCurveInterface.cxx  \
      parametricCurve.cxx parametricCurveCollection.cxx  \
      piecewiseCurve.cxx 
-
-  #define IF_NURBSPP_SOURCES \
-    nurbsPPCurve.cxx nurbsPPCurve.h
 
   #define INSTALL_HEADERS \
     classicNurbsCurve.I classicNurbsCurve.h \

@@ -13,6 +13,6 @@
 #begin metalib_target
   #define TARGET dtoolconfig
 
-  #define SOURCES dtoolconfig.cxx
-  #define IF_PYTHON_SOURCES pydtool.cxx
+  #define SOURCES dtoolconfig.cxx \
+     $[if $[HAVE_PYTHON], pydtool.cxx]
 #end metalib_target

@@ -10,14 +10,20 @@
   #define LOCAL_LIBS \
     pnm pnmimage
 
-  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
+  #define COMBINED_SOURCES \
+     $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx \
+     $[if $[HAVE_JPEG], $[TARGET]_composite3.cxx] \
+     $[if $[HAVE_JPEG2000], $[TARGET]_composite4.cxx]
 
   #define SOURCES  \
      config_pnmimagetypes.h pnmFileTypeAlias.h pnmFileTypeBMP.h  \
      pnmFileTypeIMG.h pnmFileTypePNM.h pnmFileTypeRadiance.h  \
      pnmFileTypeSGI.h pnmFileTypeSoftImage.h  \
      pnmFileTypeTGA.h pnmFileTypeYUV.h color.c colrops.c resolu.c  \
-     header.c  
+     header.c \
+     $[if $[HAVE_TIFF], pnmFileTypeTIFF.cxx pnmFileTypeTIFF.h] \
+     $[if $[HAVE_JPEG], pnmFileTypeJPG.h] \
+     $[if $[HAVE_JPEG2000], pnmFileTypeJPG2000.h]
 
   #define INCLUDED_SOURCES  \
      config_pnmimagetypes.cxx pnmFileTypeAlias.cxx  \
@@ -26,30 +32,9 @@
      pnmFileTypeRadiance.cxx pnmFileTypeSGI.cxx  \
      pnmFileTypeSGIReader.cxx pnmFileTypeSGIWriter.cxx  \
      pnmFileTypeSoftImage.cxx \
-     pnmFileTypeTGA.cxx pnmFileTypeYUV.cxx
-    
-  #define IF_TIFF_SOURCES \
-    pnmFileTypeTIFF.cxx pnmFileTypeTIFF.h
-     
-  #define IF_JPEG_INCLUDED_SOURCES \
-    pnmFileTypeJPG.cxx \
-    pnmFileTypeJPGReader.cxx pnmFileTypeJPGWriter.cxx
-    
-  #define IF_JPEG_SOURCES \
-    pnmFileTypeJPG.h 
-    
-  #define IF_JPEG_COMBINED_SOURCES \    
-    $[TARGET]_composite3.cxx        
-
-  #define IF_JPEG2000_INCLUDED_SOURCES \
-    pnmFileTypeJPG2000.cxx \
-    pnmFileTypeJPG2000Reader.cxx pnmFileTypeJPG2000Writer.cxx
-    
-  #define IF_JPEG2000_SOURCES \
-    pnmFileTypeJPG2000.h 
-    
-  #define IF_JPEG2000_COMBINED_SOURCES \    
-    $[TARGET]_composite4.cxx
+     pnmFileTypeTGA.cxx pnmFileTypeYUV.cxx \
+     $[if $[HAVE_JPEG], pnmFileTypeJPG.cxx pnmFileTypeJPGReader.cxx pnmFileTypeJPGWriter.cxx] \
+     $[if $[HAVE_JPEG2000], pnmFileTypeJPG2000.cxx pnmFileTypeJPG2000Reader.cxx pnmFileTypeJPG2000Writer.cxx]
 
   #define INSTALL_HEADERS \
     config_pnmimagetypes.h
