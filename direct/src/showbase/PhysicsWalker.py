@@ -67,6 +67,9 @@ class PhysicsWalker(DirectObject.DirectObject):
         Set up the avatar collisions
         """
         assert(self.debugPrint("initializeCollisions()"))
+        
+        assert not avatarNodePath.isEmpty()
+        
         self.cTrav = collisionTraverser
 
         # Set up the collision sphere
@@ -271,6 +274,105 @@ class PhysicsWalker(DirectObject.DirectObject):
             # We must copy the vector to preserve it:
             self.__old_contact=Vec3(contact)
         self.phys.doPhysics(dt)
+        # Check to see if we're moving at all:
+        if self.__speed or self.__slideSpeed or self.__rotationSpeed:
+            distance = dt * self.__speed
+            slideDistance = dt * self.__slideSpeed
+            rotation = dt * self.__rotationSpeed
+
+            #debugTempH=self.avatarNodePath.getH()
+            assert self.avatarNodePath.getHpr().almostEqual(physObject.getOrientation().getHpr(), 0.0001)
+            assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
+
+            # update pos:
+            # Take a step in the direction of our previous heading.
+            self.__vel=Vec3(Vec3.forward() * distance + 
+                          Vec3.right() * slideDistance)
+            # rotMat is the rotation matrix corresponding to
+            # our previous heading.
+            rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
+            step=rotMat.xform(self.__vel)
+            physObject.setPosition(Point3(
+                physObject.getPosition()+step))
+            # update hpr:
+            o=physObject.getOrientation()
+            r=LOrientationf()
+            r.setHpr(Vec3(rotation, 0.0, 0.0))
+            physObject.setOrientation(o*r)
+            # sync the change:
+            self.actorNode.updateTransform()
+
+            assert self.avatarNodePath.getHpr().almostEqual(physObject.getOrientation().getHpr(), 0.0001)
+            assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
+            #assert self.avatarNodePath.getH()==debugTempH-rotation
+            messenger.send("avatarMoving")
+        else:
+            self.__vel.set(0.0, 0.0, 0.0)
+        # Clear the contact vector so we can tell if we contact something next frame:
+        self.actorNode.setContactVector(Vec3.zero())
+        return Task.cont
+
+    def handleAvatarControls_wip(self, task):
+        """
+        Check on the arrow keys and update the avatar.
+        """
+        #assert(self.debugPrint("handleAvatarControls(task=%s)"%(task,)))
+        physObject=self.actorNode.getPhysicsObject()
+        rotAvatarToPhys=Mat3.rotateMatNormaxis(-self.avatarNodePath.getH(), Vec3.up())
+        #rotPhysToAvatar=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
+        contact=self.actorNode.getContactVector()
+        
+        # hack fix for falling through the floor:
+        if contact==Vec3.zero() and self.avatarNodePath.getZ()<-50.0:
+            # reset:
+            self.avatarNodePath.setPos(Vec3(0.0, 0.0, 20.0))
+
+        # Determine what the speeds are based on the buttons:
+        self.__speed=(self.__forwardButton and self.avatarControlForwardSpeed or 
+                    self.__reverseButton and -self.avatarControlReverseSpeed)
+        self.__slideSpeed=self.__slideButton and (
+                (self.__leftButton and -self.avatarControlForwardSpeed) or 
+                (self.__rightButton and self.avatarControlForwardSpeed))
+        self.__rotationSpeed=not self.__slideButton and (
+                (self.__leftButton and self.avatarControlRotateSpeed) or
+                (self.__rightButton and -self.avatarControlRotateSpeed))
+        # How far did we move based on the amount of time elapsed?
+        dt=min(ClockObject.getGlobalClock().getDt(), 0.1)
+
+        doPhysics=1
+        if not contact.almostEqual(Vec3.zero()):
+            contactLength = contact.length()
+            contact.normalize()
+            angle=contact.dot(Vec3.up())
+            if angle>self.__standableGround:
+                # ...avatar is on standable ground.
+                #print "standableGround"
+                if self.__old_contact==Vec3.zero():
+                    jumpTime = 0.0
+                    if contactLength>self.__hardLandingForce:
+                        # ...avatar was airborne.
+                        messenger.send("jumpHardLand")
+                    else:
+                        messenger.send("jumpLand")
+                if self.__jumpButton:
+                    self.__jumpButton=0
+                    messenger.send("jumpStart")
+                    jump=Vec3(contact+Vec3.up())
+                    #jump=Vec3(rotAvatarToPhys.xform(jump))
+                    jump.normalize()
+                    jump*=self.avatarControlJumpForce
+                    physObject.addImpulse(Vec3(jump))
+                else:
+                    physObject.setVelocity(Vec3(0.0))
+                    self.__vel.set(0.0, 0.0, 0.0)
+                    doPhysics=0
+        if contact!=self.__old_contact:
+            # We must copy the vector to preserve it:
+            self.__old_contact=Vec3(contact)
+        #print "doPhysics", doPhysics
+        #print "contact", contact
+        if doPhysics:
+            self.phys.doPhysics(dt)
         # Check to see if we're moving at all:
         if self.__speed or self.__slideSpeed or self.__rotationSpeed:
             distance = dt * self.__speed

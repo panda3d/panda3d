@@ -1,38 +1,39 @@
-"""LogicGateAI.py: contains the OrLoEntity class"""
+"""
+LogicGateAI.py
 
+    Logic Gates:
+
+         and: 0 0 = 0     or: 0 0 = 0    xor: 0 0 = 0
+              0 1 = 0         0 1 = 1         0 1 = 1
+              1 0 = 0         1 0 = 1         1 0 = 1
+              1 1 = 1         1 1 = 1         1 1 = 0
+
+        nand: 0 0 = 1    nor: 0 0 = 1   xnor: 0 0 = 1
+              0 1 = 1         0 1 = 0         0 1 = 0
+              1 0 = 1         1 0 = 0         1 0 = 0
+              1 1 = 0         1 1 = 0         1 1 = 1
+
+    In the following:
+        1: send a true message
+        0: send a false message
+        -: don't send a message
+
+        a b  and  or  xor  nand  nor  xnor
+       (0 0)  (0) (0)  (0)   (1)  (1)   (1)  <--- initial state
+        1 0    -   1    1     -    0     0
+        0 0    -   0    0     -    1     1
+        1 0    -   1    1     -    0     0
+        1 1    1   -    0     0    -     1
+        0 1    0   -    1     1    -     0
+        1 1    1   -    0     0    -     1
+        0 1    0   -    1     1    -     0
+        0 0    -   0    0     -    1     1
+"""
 
 import PandaObject
 import DirectNotifyGlobal
 import Entity
 
-
-# Logic Gates:
-#
-#  and: 0 0 = 0     or: 0 0 = 0    xor: 0 0 = 0
-#       0 1 = 0         0 1 = 1         0 1 = 1
-#       1 0 = 0         1 0 = 1         1 0 = 1
-#       1 1 = 1         1 1 = 1         1 1 = 0
-#
-# nand: 0 0 = 1    nor: 0 0 = 1   xnor: 0 0 = 1
-#       0 1 = 1         0 1 = 0         0 1 = 0
-#       1 0 = 1         1 0 = 0         1 0 = 0
-#       1 1 = 0         1 1 = 0         1 1 = 1
-#
-# In the following:
-#   1: send a true message
-#   0: send a false message
-#   -: don't send a message
-#
-#   a b  and  or  xor  nand  nor  xnor
-#  (0 0)  (0) (0)  (0)   (1)  (1)   (1)  <--- initial state
-#   1 0    -   1    1     -    0     0
-#   0 0    -   0    0     -    1     1
-#   1 0    -   1    1     -    0     0
-#   1 1    1   -    0     0    -     1
-#   0 1    0   -    1     1    -     0
-#   1 1    1   -    0     0    -     1
-#   0 1    0   -    1     1    -     0
-#   0 0    -   0    0     -    1     1
 
 def andTest(self, a, b):
     assert(self.debugPrint("andTest(a=%s, b=%s)"%(a, b)))
@@ -83,12 +84,15 @@ class LogicGateAI(Entity.Entity, PandaObject.PandaObject):
         assert(self.debugPrint(
                 "LogicGateAI(entId=%s)"
                 %(entId)))
-        self.input1 = None
-        self.input2 = None
+        self.input1Event = None
+        self.input2Event = None
+        PandaObject.PandaObject.__init__(self)
         Entity.Entity.__init__(self, level, entId)
         self.setLogicType(self.logicType)
-        self.setInput_input1_bool(self.input_input1_bool)
-        self.setInput_input2_bool(self.input_input2_bool)
+        self.setIsInput1(self.isInput1)
+        self.setIsInput2(self.isInput2)
+        self.setInput1Event(self.input1Event)
+        self.setInput2Event(self.input2Event)
 
     def destroy(self):
         assert(self.debugPrint("destroy()"))
@@ -119,21 +123,21 @@ class LogicGateAI(Entity.Entity, PandaObject.PandaObject):
             self.isInput2=isTrue
             self.logicTest(self, isTrue, self.isInput1)
     
-    def setInput_input1_bool(self, event):
-        assert(self.debugPrint("setInput_input1_bool(event=%s)"%(event,)))
-        if self.input1:
-            self.ignore(self.input1)
-        self.input1 = "switch-%s"%(event,)
-        if self.input1:
-            self.accept(self.input1, self.setIsInput1)
+    def setInput1Event(self, event):
+        assert(self.debugPrint("setInput1Event(event=%s)"%(event,)))
+        if self.input1Event:
+            self.ignore(self.input1Event)
+        self.input1Event = "switch-%s"%(event,)
+        if self.input1Event:
+            self.accept(self.input1Event, self.setIsInput1)
     
-    def setInput_input2_bool(self, event):
-        assert(self.debugPrint("setInput_input2_bool(event=%s)"%(event,)))
-        if self.input2:
-            self.ignore(self.input2)
-        self.input2 = "switch-%s"%(event,)
-        if self.input2:
-            self.accept(self.input2, self.setIsInput2)
+    def setInput2Event(self, event):
+        assert(self.debugPrint("setInput2Event(event=%s)"%(event,)))
+        if self.input2Event:
+            self.ignore(self.input2Event)
+        self.input2Event = "switch-%s"%(event,)
+        if self.input2Event:
+            self.accept(self.input2Event, self.setIsInput2)
     
     def getName(self):
         #return "logicGate-%s"%(self.entId,)

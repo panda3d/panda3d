@@ -43,8 +43,8 @@ class LogicGate(Entity):
     type = 'logicGate'
     output = 'bool'
     attribs = (
-        ('input_input1_bool', 0, 'entId', {'output':'bool'}),
-        ('input_input2_bool', 0, 'entId', {'output':'bool'}),
+        ('input1Event', 0, 'entId', {'output':'bool'}),
+        ('input2Event', 0, 'entId', {'output':'bool'}),
         ('isInput1', 0, 'bool'),
         ('isInput2', 0, 'bool'),
         ('logicType', 'or', 'choice',
@@ -91,7 +91,7 @@ class CutScene(Entity):
     attribs = (
         ('pos', Point3(0,0,0), 'pos'),
         ('hpr', Vec3(0,0,0), 'hpr'),
-        ('startStop', 0),
+        ('startStopEvent', 0, 'entId', {'output':'bool'}),
         ('effect', 'irisInOut'),
         ('motion', 'foo1'),
         ('duration', 5.0),
@@ -121,7 +121,7 @@ class Switch(Entity, NodepathImpl):
         ('scale', Vec3(1), 'scale'),
         ('color', Vec4(1,1,1,1), 'color'),
         ('model', '', 'bamfilename'),
-        ('input_isOn_bool', 0, 'entId', {'output':'bool'}),
+        ('isOnEvent', 0, 'entId', {'output':'bool'}),
         ('isOn', 0, 'bool'),
         ('secondsOn', 1, 'float'),
         )
@@ -159,23 +159,23 @@ class Door(Entity):
     output = 'bool'
     attribs = (
         ('parent', 0, 'entId'),
-        ('pos', Point3(0,0,0), 'pos'),
-        ('hpr', Vec3(0,0,0), 'hpr'),
-        ('scale', Vec3(1,1,1), 'scale'),
-        ('color', Vec4(1,1,1,1), 'color'),
-        ('model', "", 'bamfilename'),
+        ('pos', Point3(0,0,0), 'pos'), # Client Only
+        ('hpr', Vec3(0,0,0), 'hpr'), # Client Only
+        ('scale', Vec3(1,1,1), 'scale'), # Client Only
+        ('color', Vec4(1,1,1,1), 'color'), # Client Only
+        ('model', "", 'bamfilename'), # Client Only
         ('doorwayNum', 0), # Obsolete
-        ('input_Lock0_bool', 0, 'entId', {'output':'bool'}),
-        ('input_Lock1_bool', 0, 'entId', {'output':'bool'}),
-        ('input_Lock2_bool', 0, 'entId', {'output':'bool'}),
-        ('input_Lock3_bool', 0, 'entId', {'output':'bool'}),
-        ('input_isOpen_bool', 0, 'entId', {'output':'bool'}),
-        ('isLock0Unlocked', 0, 'bool'),
-        ('isLock1Unlocked', 0, 'bool'),
-        ('isLock2Unlocked', 0, 'bool'),
-        ('isLock3Unlocked', 0, 'bool'),
-        ('isOpen', 0, 'bool'),
-        ('secondsOpen', 1, 'float'),
+        ('unlock0Event', 0, 'entId', {'output':'bool'}), # AI Only
+        ('unlock1Event', 0, 'entId', {'output':'bool'}), # AI Only
+        ('unlock2Event', 0, 'entId', {'output':'bool'}), # AI Only
+        ('unlock3Event', 0, 'entId', {'output':'bool'}), # AI Only
+        ('isOpenEvent', 0, 'entId', {'output':'bool'}),
+        ('isLock0Unlocked', 0, 'bool'), # AI Only
+        ('isLock1Unlocked', 0, 'bool'), # AI Only
+        ('isLock2Unlocked', 0, 'bool'), # AI Only
+        ('isLock3Unlocked', 0, 'bool'), # AI Only
+        ('isOpen', 0, 'bool'), # AI Only
+        ('secondsOpen', 1, 'float'), # AI Only
         )
 
 class Grid(Nodepath):

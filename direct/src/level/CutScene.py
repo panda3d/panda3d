@@ -107,12 +107,12 @@ class CutScene(Entity.Entity, DirectObject.DirectObject):
         self.subjectNodePath.setPos(self.pos)
         self.subjectNodePath.setHpr(self.hpr)
         #self.setSubjectNodePath(self.subjectNodePath)
-        self.setStartStop(self.startStop)
+        self.setStartStop(self.startStopEvent)
 
     def destroy(self):
         assert(self.debugPrint("destroy()"))
-        self.ignore(self.startStop)
-        self.startStop = None
+        self.ignore(self.startStopEvent)
+        self.startStopEvent = None
         Entity.Entity.destroy(self)
         #DirectObject.DirectObject.destroy(self)
     
@@ -142,6 +142,7 @@ class CutScene(Entity.Entity, DirectObject.DirectObject):
             track = Parallel(name = trackName)
             track = self.getEffect(self, track, self.subjectNodePath, self.duration)
             track = self.getMotion(self, track, self.subjectNodePath, self.duration)
+            track = Sequence(Wait(0.8), track)
             track.start(0.0)
             self.track = track
         else:
@@ -151,11 +152,11 @@ class CutScene(Entity.Entity, DirectObject.DirectObject):
     
     def setStartStop(self, event):
         assert(self.debugPrint("setStartStop(event=%s)"%(event,)))
-        if self.startStop:
-            self.ignore(self.startStop)
-        self.startStop = "switch-%s"%(event,)
-        if self.startStop:
-            self.accept(self.startStop, self.startOrStop)
+        if self.startStopEvent:
+            self.ignore(self.startStopEvent)
+        self.startStopEvent = "switch-%s"%(event,)
+        if self.startStopEvent:
+            self.accept(self.startStopEvent, self.startOrStop)
     
     def getName(self):
         #return "CutScene-%s"%(self.entId,)
