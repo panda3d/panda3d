@@ -45,7 +45,7 @@ TimedCycle(float cycle_time, int element_count) :
 {
   nassertv(_cycle_time > 0);
   _global_clock = ClockObject::get_global_clock();
-  _next_switch = _global_clock->get_real_time() + _cycle_time;
+  _next_switch = _global_clock->get_frame_time() + _cycle_time;
   _inv_cycle_time = 1. / _cycle_time;
 }
 
@@ -71,7 +71,7 @@ set_cycle_time(float cycle_time)
   nassertv(cycle_time > 0);
   if (_next_switch == -1)
   {
-    _next_switch = _global_clock->get_real_time() + cycle_time;
+    _next_switch = _global_clock->get_frame_time() + cycle_time;
   }
   else
   {
@@ -90,7 +90,7 @@ set_cycle_time(float cycle_time)
 INLINE int TimedCycle::
 next_element()
 {
-  double current_time = _global_clock->get_real_time();
+  double current_time = _global_clock->get_frame_time();
   unsigned int increment = (unsigned int) ((current_time - _next_switch)
                                            * _inv_cycle_time);
 
