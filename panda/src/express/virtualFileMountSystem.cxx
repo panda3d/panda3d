@@ -30,6 +30,20 @@ TypeHandle VirtualFileMountSystem::_type_handle;
 bool VirtualFileMountSystem::
 has_file(const Filename &file) const {
   Filename pathname(_physical_filename, file);
+#ifdef WIN32
+  if (vfs_case_sensitive) {
+    Filename case_pathname = pathname;
+    if (!case_pathname.make_true_case()) {
+      return false;
+    }
+    if (case_pathname != pathname) {
+      express_cat.warning()
+        << "Filename is incorrect case: " << pathname
+        << " instead of " << case_pathname << "\n";
+      return false;
+    }
+  }
+#endif  // WIN32
   return pathname.exists();
 }
 
@@ -41,6 +55,14 @@ has_file(const Filename &file) const {
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileMountSystem::
 is_directory(const Filename &file) const {
+#ifdef WIN32
+  // First ensure that the file exists to validate its case.
+  if (vfs_case_sensitive) {
+    if (!has_file(file)) {
+      return false;
+    }
+  }
+#endif  // WIN32
   Filename pathname(_physical_filename, file);
   return pathname.is_directory();
 }
@@ -53,6 +75,14 @@ is_directory(const Filename &file) const {
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileMountSystem::
 is_regular_file(const Filename &file) const {
+#ifdef WIN32
+  // First ensure that the file exists to validate its case.
+  if (vfs_case_sensitive) {
+    if (!has_file(file)) {
+      return false;
+    }
+  }
+#endif  // WIN32
   Filename pathname(_physical_filename, file);
   return pathname.is_regular_file();
 }
@@ -67,6 +97,14 @@ is_regular_file(const Filename &file) const {
 ////////////////////////////////////////////////////////////////////
 istream *VirtualFileMountSystem::
 open_read_file(const Filename &file) const {
+#ifdef WIN32
+  // First ensure that the file exists to validate its case.
+  if (vfs_case_sensitive) {
+    if (!has_file(file)) {
+      return NULL;
+    }
+  }
+#endif  // WIN32
   Filename pathname(_physical_filename, file);
   pathname.set_binary();
   ifstream *stream = new ifstream;
@@ -113,6 +151,14 @@ get_file_size(const Filename &, istream *stream) const {
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileMountSystem::
 scan_directory(vector_string &contents, const Filename &dir) const {
+#ifdef WIN32
+  // First ensure that the file exists to validate its case.
+  if (vfs_case_sensitive) {
+    if (!has_file(dir)) {
+      return false;
+    }
+  }
+#endif  // WIN32
   Filename pathname(_physical_filename, dir);
   return pathname.scan_directory(contents);
 }

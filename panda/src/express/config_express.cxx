@@ -116,6 +116,15 @@ ConfigVariableInt multifile_encryption_iteration_count
           "be loaded quickly, without paying the cost of an expensive hash on "
           "each subfile in order to decrypt it."));
 
+ConfigVariableBool vfs_case_sensitive
+("vfs-case-sensitive", false,
+ PRC_DESC("Set this true to make the VirtualFileSystem present the native "
+          "OS-provided filesystem as if it were a case-sensitive file "
+          "system, even if it is not (e.g. on Windows).  This variable "
+          "has no effect if the native filesystem is already case-sensitive, "
+          "and it has no effect on mounted multifile systems, which are "
+          "always case-sensitive."));
+
 ConfigVariableBool use_vfs
 ("use-vfs", true,
  PRC_DESC("Set this true to use the VirtualFileSystem mechanism for loading "
