@@ -76,3 +76,30 @@ class ParticleEffect(NodePath):
         """getForceGroup()"""
         return self.forceGroupDict
 
+    def saveConfig(self, filename):
+        """saveFileData(filename)"""
+        #fname = Filename(filename)
+        #fname.resolveFilename(getParticlePath())
+        #fname.resolveFilename(getModelPath())
+        f = open(filename.toOsSpecific(), 'wb')
+        # Add a blank line
+        f.write('\n')
+
+	# Save all the forces to file
+
+        # Save all the particles to file
+	f.write('self.particlesDict = {}\n')
+	num = 1
+	for p in self.particlesDict.values():
+	    target = 'particles%d' % num
+	    num = num + 1
+	    f.write(target + ' = Particles.Particles(\'%s\')\n' % p.name)
+	    p.printParams(f, target)
+	    f.write('self.addParticles(' + target + ')\n')
+
+        # Close the file
+        f.close()
+
+    def loadConfig(self, filename):
+	"""loadConfig(filename)"""
+	execfile(filename.toOsSpecific())

@@ -174,50 +174,8 @@ class Particles(ParticleSystem.ParticleSystem):
         """getRenderer()"""
         return self.renderer
 
-    def bakeConfig(self, filename):
-	"""bakeConfig(filename)"""
-	#fname = Filename(filename)
-	#fname.resolveFilename(getParticlePath())
-	#fname.resolveFilename(getModelPath())
-        f = open(filename.toOsSpecific(), 'wb')
-        # Add a blank line
-        f.write('\n')
-        # Now output style details to file
-	self.printParams(f)
-        # Close the file
-        f.close()
-
-    def saveConfig(self, filename):
-	"""saveFileData(filename)"""
-	#fname = Filename(filename)
-	#fname.resolveFilename(getParticlePath())
-	#fname.resolveFilename(getModelPath())
-        f = open(filename.toOsSpecific(), 'wb')
-        # Add a blank line
-        f.write('\n')
-        # Now output style details to file
-	self.printParams(f, 1)
-        # Close the file
-        f.close()
-
-    def loadConfig(self, filename):
-	"""getFileData(filename)
-        Open the specified file and strip out unwanted whitespace and
-        empty lines.  Return file as list, one file line per element.
-        """
-        #fname = Filename(filename)
-	#fname.resolveFilename(getParticlePath())
-	#fname.resolveFilename(getModelPath())
-	execfile(filename.toOsSpecific())
-
-    def printParams(self, file = sys.stdout, bakeflag = 0):
-	"""printParams(file)"""
-	targ = 'self'
-	if (bakeflag == 0):
-	    targ = 'p'
-	    file.write('from Particles import *\n')
-	    file.write('p = Particles(\'' + self.name + '\')\n')
-	    file.write('self.enable()\n')
+    def printParams(self, file = sys.stdout, targ = 'self'):
+	"""printParams(file, targ)"""
 	file.write('# Particles parameters\n')
 	file.write(targ + '.setFactory(\"' + self.factoryType + '\")\n')
 	file.write(targ + '.setRenderer(\"' + self.rendererType + '\")\n')
