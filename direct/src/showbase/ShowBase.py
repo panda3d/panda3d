@@ -55,12 +55,7 @@ class ShowBase:
         # a little hacky, but we can't call it directly from within
         # the TaskManager because he doesn't know about PStats (and
         # has to run before libpanda is even loaded).
-        
-        # Temporary try..except for old Pandas.
-        try:
-            taskMgr.resumeFunc = PStatClient.resumeAfterPause
-        except:
-            pass
+        taskMgr.resumeFunc = PStatClient.resumeAfterPause
 
         fsmRedefine = self.config.GetBool('fsm-redefine', 0)
         State.FsmRedefine = fsmRedefine
@@ -240,14 +235,9 @@ class ShowBase:
         is closed cleanly, so that we free system resources, restore
         the desktop and keyboard functionality, etc.
         """
-
-        # temporary try..except for old pandas.
-        try:
-            self.win.closeWindow()
-            del self.win
-            del self.pipe
-        except:
-            pass
+        self.win.closeWindow()
+        del self.win
+        del self.pipe
 
         if self.oldexitfunc:
             self.oldexitfunc()
@@ -309,11 +299,15 @@ class ShowBase:
     def loadSfx(self, name):
         if (name and base.wantSfx):
             sound=self.sfxManager.getSound(name)
+            if sound == None:
+                self.notify.warning("Could not load sound file %s." % name)
             return sound
 
     def loadMusic(self, name):
         if (name and base.wantMusic):
             sound=self.musicManager.getSound(name)
+            if sound == None:
+                self.notify.warning("Could not load music file %s." % name)
             return sound
 
     def unloadSfx(self, sfx):
