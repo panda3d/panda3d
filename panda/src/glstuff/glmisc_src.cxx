@@ -51,15 +51,6 @@ ConfigVariableBool CLP(save_mipmaps)
    PRC_DESC("Configure this true to cause the generated mipmap images to be "
             "written out to image files on the disk as they are generated."));
 
-ConfigVariableBool CLP(auto_normalize_lighting)
-  ("auto-normalize-lighting", true,
-   PRC_DESC("Configure this true to cause all lighting normals to automatically "
-            "be normalized by the graphics hardware before rendering.  This is "
-            "necessary if you intend to render things under scale transforms and "
-            "expect lighting to work correctly.  Maybe one day there will be "
-            "another way to set this at runtime, instead of only as a configure "
-            "variable."));
-
 ConfigVariableBool CLP(color_mask)
   ("gl-color-mask", true,
    PRC_DESC("Configure this false if your GL's implementation of glColorMask() "
