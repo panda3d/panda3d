@@ -10,7 +10,7 @@
 int
 main(int argc, char *argv[]) {
   if (argc < 3) {
-    cerr << "Usage: multify -[x,c|v] <dest_file> <src_file> ..." << endl;
+    cerr << "Usage: multify -[x,c|vr] <dest_file> <src_file> ..." << endl;
     return 0;
   }
 
