@@ -107,7 +107,7 @@ ConfigVariableInt dx_preferred_device_id
 ("dx-preferred-device-id", -1);
 
 #ifdef _DEBUG
-float dx_global_miplevel_bias
+ConfigVariableDouble dx_global_miplevel_bias
 ("dx-global-miplevel-bias", 0.0);
 ConfigVariableBool dx_debug_view_mipmaps
 ("dx-debug-view-mipmaps", false);
