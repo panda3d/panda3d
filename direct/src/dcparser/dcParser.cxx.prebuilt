@@ -47,6 +47,8 @@
 # define	KW_CLRECV	291
 # define	KW_OWNSEND	292
 # define	KW_AIRECV	293
+# define	START_DC	294
+# define	START_PARAMETER_VALUE	295
 
 #line 6 "dcParser.yxx"
 
@@ -72,7 +74,9 @@ static DCClass *current_class = (DCClass *)NULL;
 static DCAtomicField *current_atomic = (DCAtomicField *)NULL;
 static DCMolecularField *current_molecular = (DCMolecularField *)NULL;
 static DCAtomicField::ElementType atomic_element(new DCSimpleParameter(ST_invalid));
-static DCPacker default_value_packer;
+static DCParameter *current_parameter = (DCParameter *)NULL;
+static DCPacker default_packer;
+static DCPacker *current_packer;
 
 ////////////////////////////////////////////////////////////////////
 // Defining the interface to the parser.
@@ -82,6 +86,15 @@ void
 dc_init_parser(istream &in, const string &filename, DCFile &file) {
   dc_file = &file;
   dc_init_lexer(in, filename);
+}
+
+void
+dc_init_parser_parameter_value(istream &in, const string &filename, 
+                               DCPacker &packer) {
+  dc_file = NULL;
+  current_packer = &packer;
+  dc_init_lexer(in, filename);
+  dc_start_parameter_value();
 }
 
 void
@@ -95,12 +108,12 @@ dc_cleanup_parser() {
 
 
 
-#define	YYFINAL		121
+#define	YYFINAL		135
 #define	YYFLAG		-32768
-#define	YYNTBASE	51
+#define	YYNTBASE	55
 
 /* YYTRANSLATE(YYLEX) -- Bison token number corresponding to YYLEX. */
-#define YYTRANSLATE(x) ((unsigned)(x) <= 293 ? yytranslate[x] : 84)
+#define YYTRANSLATE(x) ((unsigned)(x) <= 295 ? yytranslate[x] : 92)
 
 /* YYTRANSLATE[YYLEX] -- Bison token number corresponding to YYLEX. */
 static const char yytranslate[] =
@@ -109,15 +122,15 @@ static const char yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-      48,    49,    45,     2,    46,     2,    44,    43,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,    47,    40,
-       2,    50,     2,     2,     2,     2,     2,     2,     2,     2,
+      50,    51,    47,     2,    48,     2,    46,    45,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,    49,    42,
+       2,    52,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,    53,     2,    54,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,    41,     2,    42,     2,     2,     2,     2,
+       2,     2,     2,    43,     2,    44,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -134,48 +147,51 @@ static const char yytranslate[] =
        6,     7,     8,     9,    10,    11,    12,    13,    14,    15,
       16,    17,    18,    19,    20,    21,    22,    23,    24,    25,
       26,    27,    28,    29,    30,    31,    32,    33,    34,    35,
-      36,    37,    38,    39
+      36,    37,    38,    39,    40,    41
 };
 
 #if YYDEBUG
 static const short yyprhs[] =
 {
-       0,     0,     2,     5,     8,    11,    12,    20,    22,    24,
-      28,    30,    34,    37,    38,    44,    46,    48,    50,    54,
-      56,    59,    61,    65,    67,    70,    73,    76,    77,    84,
-      86,    88,    90,    92,    96,    97,   101,   103,   107,   110,
-     111,   116,   118,   120,   122,   124,   125,   130,   134,   138,
-     142,   144,   147,   149,   151,   153,   157,   159,   161,   163,
-     165,   167,   169,   171,   173,   175,   177,   179,   181,   183,
-     185,   187,   189,   191,   193,   195,   197,   200,   203,   206,
-     209,   212,   215,   218,   221,   224,   225,   230,   232,   236
+       0,     0,     3,     6,     8,    11,    14,    17,    18,    26,
+      28,    30,    34,    36,    40,    43,    44,    50,    52,    54,
+      56,    60,    62,    65,    67,    71,    73,    76,    79,    82,
+      83,    90,    92,    94,    96,    98,   102,   104,   105,   110,
+     111,   115,   117,   121,   124,   126,   128,   130,   132,   133,
+     138,   139,   144,   145,   150,   154,   158,   162,   164,   167,
+     169,   171,   173,   177,   179,   181,   183,   185,   187,   189,
+     191,   193,   195,   197,   199,   201,   203,   205,   207,   209,
+     211,   213,   215,   217,   220,   223,   226,   229,   232,   235,
+     238,   241,   244,   245,   250,   252,   256
 };
 static const short yyrhs[] =
 {
-      83,     0,    51,    40,     0,    51,    52,     0,    51,    57,
-       0,     0,     8,     7,    53,    61,    41,    63,    42,     0,
-       7,     0,     7,     0,    55,    43,     7,     0,    55,     0,
-      56,    44,    55,     0,    10,    56,     0,     0,     9,    56,
-      10,    58,    59,     0,    60,     0,    45,     0,    55,     0,
-      60,    46,    55,     0,    83,     0,    47,    62,     0,    54,
-       0,    62,    46,    54,     0,    83,     0,    63,    40,     0,
-      63,    64,     0,    63,    80,     0,     0,     7,    48,    65,
-      67,    49,    79,     0,     7,     0,    83,     0,    68,     0,
-      69,     0,    68,    46,    69,     0,     0,    78,    70,    71,
-       0,    83,     0,    71,    43,     3,     0,    71,     7,     0,
-       0,    71,    50,    72,    73,     0,     3,     0,     4,     0,
-       5,     0,     6,     0,     0,    41,    74,    75,    42,     0,
-       3,    45,     3,     0,     4,    45,     3,     0,     6,    45,
-       3,     0,    83,     0,    77,    76,     0,    83,     0,    46,
-       0,    73,     0,    77,    46,    73,     0,    11,     0,    12,
+      40,    56,     0,    41,    79,     0,    91,     0,    56,    42,
+       0,    56,    57,     0,    56,    62,     0,     0,     8,     7,
+      58,    66,    43,    68,    44,     0,     7,     0,     7,     0,
+      60,    45,     7,     0,    60,     0,    61,    46,    60,     0,
+      10,    61,     0,     0,     9,    61,    10,    63,    64,     0,
+      65,     0,    47,     0,    60,     0,    65,    48,    60,     0,
+      91,     0,    49,    67,     0,    59,     0,    67,    48,    59,
+       0,    91,     0,    68,    42,     0,    68,    69,     0,    68,
+      88,     0,     0,     7,    50,    70,    72,    51,    87,     0,
+       7,     0,    91,     0,    73,     0,    74,     0,    73,    48,
+      74,     0,    76,     0,     0,    76,    52,    75,    79,     0,
+       0,    86,    77,    78,     0,    91,     0,    78,    45,     3,
+       0,    78,     7,     0,     3,     0,     4,     0,     5,     0,
+       6,     0,     0,    43,    80,    83,    44,     0,     0,    53,
+      81,    83,    54,     0,     0,    50,    82,    83,    51,     0,
+       3,    47,     3,     0,     4,    47,     3,     0,     6,    47,
+       3,     0,    84,     0,    85,    84,     0,    91,     0,    48,
+       0,    79,     0,    85,    48,    79,     0,    11,     0,    12,
        0,    13,     0,    14,     0,    15,     0,    16,     0,    17,
        0,    18,     0,    19,     0,    20,     0,    21,     0,    22,
        0,    23,     0,    24,     0,    25,     0,    26,     0,    27,
-       0,    28,     0,    29,     0,    83,     0,    79,    31,     0,
-      79,    32,     0,    79,    33,     0,    79,    34,     0,    79,
-      35,     0,    79,    36,     0,    79,    37,     0,    79,    38,
-       0,    79,    39,     0,     0,     7,    47,    81,    82,     0,
-      66,     0,    82,    46,    66,     0,     0
+       0,    28,     0,    29,     0,    91,     0,    87,    31,     0,
+      87,    32,     0,    87,    33,     0,    87,    34,     0,    87,
+      35,     0,    87,    36,     0,    87,    37,     0,    87,    38,
+       0,    87,    39,     0,     0,     7,    49,    89,    90,     0,
+      71,     0,    90,    48,    71,     0,     0
 };
 
 #endif
@@ -184,15 +200,16 @@ static const short yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined. */
 static const short yyrline[] =
 {
-       0,    96,    98,    99,   100,   103,   103,   119,   133,   135,
-     141,   143,   149,   154,   154,   161,   163,   169,   174,   180,
-     182,   185,   192,   200,   202,   203,   204,   207,   207,   218,
-     234,   236,   239,   241,   244,   244,   255,   257,   266,   270,
-     270,   285,   290,   294,   298,   302,   302,   310,   316,   322,
-     330,   332,   335,   337,   340,   342,   345,   350,   354,   358,
-     362,   366,   370,   374,   378,   382,   386,   390,   394,   398,
-     402,   406,   410,   414,   418,   424,   426,   430,   434,   438,
-     442,   446,   450,   454,   458,   464,   464,   475,   482,   495
+       0,   114,   116,   119,   121,   122,   123,   126,   126,   142,
+     156,   158,   164,   166,   172,   177,   177,   184,   186,   192,
+     197,   203,   205,   208,   215,   223,   225,   226,   227,   230,
+     230,   241,   257,   259,   262,   264,   267,   273,   273,   291,
+     291,   302,   304,   313,   319,   324,   328,   332,   336,   336,
+     344,   344,   352,   352,   360,   366,   372,   380,   382,   385,
+     387,   390,   392,   395,   400,   404,   408,   412,   416,   420,
+     424,   428,   432,   436,   440,   444,   448,   452,   456,   460,
+     464,   468,   474,   476,   480,   484,   488,   492,   496,   500,
+     504,   508,   514,   514,   525,   532,   545
 };
 #endif
 
@@ -210,44 +227,47 @@ static const char *const yytname[] =
   "KW_UINT8ARRAY", "KW_UINT16ARRAY", "KW_UINT32ARRAY", 
   "KW_UINT32UINT8ARRAY", "KW_MOL", "KW_REQUIRED", "KW_BROADCAST", 
   "KW_P2P", "KW_RAM", "KW_DB", "KW_CLSEND", "KW_CLRECV", "KW_OWNSEND", 
-  "KW_AIRECV", "';'", "'{'", "'}'", "'/'", "'.'", "'*'", "','", "':'", 
-  "'('", "')'", "'='", "dc", "dclass", "@1", "dclass_name", 
-  "slash_identifier", "import_identifier", "import", "@2", 
-  "import_symbol_list_or_star", "import_symbol_list", "dclass_derivation", 
-  "base_list", "dclass_fields", "atomic_field", "@3", "atomic_name", 
-  "parameter_list", "nonempty_parameter_list", "atomic_element", "@4", 
-  "atomic_element_definition", "@5", "default_value", "@6", 
-  "default_array", "maybe_comma", "default_array_def", "type_token", 
-  "atomic_flags", "molecular_field", "@7", "molecular_atom_list", "empty", 0
+  "KW_AIRECV", "START_DC", "START_PARAMETER_VALUE", "';'", "'{'", "'}'", 
+  "'/'", "'.'", "'*'", "','", "':'", "'('", "')'", "'='", "'['", "']'", 
+  "grammar", "dc", "dclass", "@1", "dclass_name", "slash_identifier", 
+  "import_identifier", "import", "@2", "import_symbol_list_or_star", 
+  "import_symbol_list", "dclass_derivation", "base_list", "dclass_fields", 
+  "atomic_field", "@3", "atomic_name", "parameter_list", 
+  "nonempty_parameter_list", "atomic_element", "@4", "parameter", "@5", 
+  "parameter_definition", "parameter_value", "@6", "@7", "@8", "array", 
+  "maybe_comma", "array_def", "type_token", "atomic_flags", 
+  "molecular_field", "@9", "molecular_atom_list", "empty", 0
 };
 #endif
 
 /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives. */
 static const short yyr1[] =
 {
-       0,    51,    51,    51,    51,    53,    52,    54,    55,    55,
-      56,    56,    57,    58,    57,    59,    59,    60,    60,    61,
-      61,    62,    62,    63,    63,    63,    63,    65,    64,    66,
-      67,    67,    68,    68,    70,    69,    71,    71,    71,    72,
-      71,    73,    73,    73,    73,    74,    73,    73,    73,    73,
-      75,    75,    76,    76,    77,    77,    78,    78,    78,    78,
-      78,    78,    78,    78,    78,    78,    78,    78,    78,    78,
-      78,    78,    78,    78,    78,    79,    79,    79,    79,    79,
-      79,    79,    79,    79,    79,    81,    80,    82,    82,    83
+       0,    55,    55,    56,    56,    56,    56,    58,    57,    59,
+      60,    60,    61,    61,    62,    63,    62,    64,    64,    65,
+      65,    66,    66,    67,    67,    68,    68,    68,    68,    70,
+      69,    71,    72,    72,    73,    73,    74,    75,    74,    77,
+      76,    78,    78,    78,    79,    79,    79,    79,    80,    79,
+      81,    79,    82,    79,    79,    79,    79,    83,    83,    84,
+      84,    85,    85,    86,    86,    86,    86,    86,    86,    86,
+      86,    86,    86,    86,    86,    86,    86,    86,    86,    86,
+      86,    86,    87,    87,    87,    87,    87,    87,    87,    87,
+      87,    87,    89,    88,    90,    90,    91
 };
 
 /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN. */
 static const short yyr2[] =
 {
-       0,     1,     2,     2,     2,     0,     7,     1,     1,     3,
-       1,     3,     2,     0,     5,     1,     1,     1,     3,     1,
-       2,     1,     3,     1,     2,     2,     2,     0,     6,     1,
-       1,     1,     1,     3,     0,     3,     1,     3,     2,     0,
-       4,     1,     1,     1,     1,     0,     4,     3,     3,     3,
-       1,     2,     1,     1,     1,     3,     1,     1,     1,     1,
+       0,     2,     2,     1,     2,     2,     2,     0,     7,     1,
+       1,     3,     1,     3,     2,     0,     5,     1,     1,     1,
+       3,     1,     2,     1,     3,     1,     2,     2,     2,     0,
+       6,     1,     1,     1,     1,     3,     1,     0,     4,     0,
+       3,     1,     3,     2,     1,     1,     1,     1,     0,     4,
+       0,     4,     0,     4,     3,     3,     3,     1,     2,     1,
+       1,     1,     3,     1,     1,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     1,     1,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     0,     4,     1,     3,     0
+       1,     1,     1,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     0,     4,     1,     3,     0
 };
 
 /* YYDEFACT[S] -- default rule to reduce with in state S when YYTABLE
@@ -255,84 +275,90 @@ static const short yyr2[] =
    error. */
 static const short yydefact[] =
 {
-      89,     0,     1,     0,     0,     0,     2,     3,     4,     5,
-       8,    10,     0,    12,    89,     0,    13,     0,     0,     0,
-      19,     9,     0,    11,     7,    21,    20,    89,    16,    17,
-      14,    15,     0,     0,    23,     0,    22,     0,    24,     6,
-      25,    26,    18,    85,    27,     0,    89,    29,    87,    86,
-      56,    57,    58,    59,    60,    61,    62,    63,    64,    65,
-      66,    67,    68,    69,    70,    71,    72,    73,    74,     0,
-      31,    32,    34,    30,     0,    89,     0,    89,    88,    28,
-      75,    33,    35,    36,    76,    77,    78,    79,    80,    81,
-      82,    83,    84,    38,     0,    39,    37,     0,    41,    42,
-      43,    44,    45,    40,     0,     0,     0,    89,    47,    48,
-      49,    54,     0,    89,    50,    46,    53,    51,    52,    55,
-       0,     0
+       0,    96,     0,     1,     3,    44,    45,    46,    47,    48,
+      52,    50,     2,     0,     0,     0,     4,     5,     6,     0,
+       0,     0,    96,    96,    96,     7,    10,    12,     0,    14,
+      54,    55,    56,    60,    61,     0,    57,    96,    59,     0,
+       0,    96,     0,    15,     0,    49,    60,    58,    53,    51,
+       0,     0,    21,    11,     0,    13,    62,     9,    23,    22,
+      96,    18,    19,    16,    17,     0,     0,    25,     0,    24,
+       0,    26,     8,    27,    28,    20,    92,    29,     0,    96,
+      31,    94,    93,    63,    64,    65,    66,    67,    68,    69,
+      70,    71,    72,    73,    74,    75,    76,    77,    78,    79,
+      80,    81,     0,    33,    34,    36,    39,    32,     0,    96,
+       0,    37,    96,    95,    30,    82,    35,     0,    40,    41,
+      83,    84,    85,    86,    87,    88,    89,    90,    91,    38,
+      43,     0,    42,     0,     0,     0
 };
 
 static const short yydefgoto[] =
 {
-       1,     7,    14,    25,    11,    12,     8,    22,    30,    31,
-      19,    26,    33,    40,    46,    48,    69,    70,    71,    77,
-      82,    97,   103,   107,   112,   117,   113,    72,    79,    41,
-      45,    49,     2
+     133,     3,    17,    41,    58,    27,    28,    18,    54,    63,
+      64,    51,    59,    66,    73,    79,    81,   102,   103,   104,
+     117,   105,   112,   118,    34,    22,    24,    23,    35,    36,
+      37,   106,   114,    74,    78,    82,    38
 };
 
 static const short yypact[] =
 {
-  -32768,     2,-32768,    12,    23,    23,-32768,-32768,-32768,-32768,
-  -32768,   -12,    -1,    -9,   -13,    29,-32768,    23,    31,     4,
-  -32768,-32768,     1,   -12,-32768,-32768,    -7,-32768,-32768,   -12,
-  -32768,     5,    31,     7,-32768,    23,-32768,   -30,-32768,-32768,
-  -32768,-32768,   -12,-32768,-32768,    33,    53,-32768,-32768,     6,
+     -19,-32768,     3,     6,-32768,   -37,   -30,-32768,   -28,-32768,
+  -32768,-32768,-32768,    31,    32,    32,-32768,-32768,-32768,    37,
+      40,    42,    -1,    -1,    -1,-32768,-32768,    14,     8,    15,
+  -32768,-32768,-32768,-32768,-32768,    18,-32768,    10,-32768,    16,
+       9,    17,    57,-32768,    32,-32768,     3,-32768,-32768,-32768,
+      58,    25,-32768,-32768,     4,    14,-32768,-32768,-32768,    21,
+  -32768,-32768,    14,-32768,    22,    58,    13,-32768,    32,-32768,
+     -16,-32768,-32768,-32768,-32768,    14,-32768,-32768,    64,    69,
+  -32768,-32768,    24,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
   -32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
-  -32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,     8,
-       9,-32768,-32768,-32768,    33,-32768,    53,-32768,-32768,   -10,
-  -32768,-32768,    -6,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
-  -32768,-32768,-32768,-32768,    45,-32768,-32768,     0,    11,    13,
-  -32768,    14,-32768,-32768,    47,    50,    51,     0,-32768,-32768,
-  -32768,-32768,    18,    16,-32768,-32768,     0,-32768,-32768,-32768,
-      83,-32768
+  -32768,-32768,    23,    27,-32768,    26,-32768,-32768,    64,-32768,
+      69,-32768,-32768,-32768,    -7,-32768,-32768,     3,     5,-32768,
+  -32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
+  -32768,    70,-32768,    76,    77,-32768
 };
 
 static const short yypgoto[] =
 {
-  -32768,-32768,-32768,    52,    -2,    80,-32768,-32768,-32768,-32768,
-  -32768,-32768,-32768,-32768,-32768,    15,-32768,-32768,    10,-32768,
-  -32768,-32768,  -100,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
-  -32768,-32768,   -14
+  -32768,-32768,-32768,-32768,    34,   -31,    85,-32768,-32768,-32768,
+  -32768,-32768,-32768,-32768,-32768,-32768,    -6,-32768,-32768,    -9,
+  -32768,-32768,-32768,-32768,    -2,-32768,-32768,-32768,    12,    66,
+  -32768,-32768,-32768,-32768,-32768,-32768,     0
 };
 
 
-#define	YYLAST		99
+#define	YYLAST		115
 
 
 static const short yytable[] =
 {
-      20,    93,   120,    98,    99,   100,   101,   111,    10,    16,
-       3,     4,     5,    34,    37,    23,   119,    43,    44,     9,
-      29,    84,    85,    86,    87,    88,    89,    90,    91,    92,
-      10,    15,    73,    42,    18,    17,    21,    94,    24,    32,
-      47,   102,     6,    17,    95,    27,    28,    38,    96,    39,
-     108,    35,    74,   109,   110,    76,   104,    75,   105,   106,
-     115,    80,   116,    83,    50,    51,    52,    53,    54,    55,
-      56,    57,    58,    59,    60,    61,    62,    63,    64,    65,
-      66,    67,    68,   121,    36,    13,    81,     0,     0,    78,
-       0,     0,     0,   114,     0,     0,     0,     0,     0,   118
+      12,     4,     5,     6,     7,     8,     5,     6,     7,     8,
+      19,    26,   130,    55,    13,    14,    15,    20,    43,    21,
+      70,     1,     2,    62,   120,   121,   122,   123,   124,   125,
+     126,   127,   128,    76,    77,    39,    40,    75,    25,    26,
+      30,    52,     9,    31,    56,    32,     9,    33,    16,    10,
+     131,    61,    11,    10,    44,    71,    11,    72,    46,    42,
+      67,    44,    45,    49,    53,    57,    50,    48,    60,    65,
+      68,    80,   108,   132,   109,   110,   134,   135,   111,   107,
+      83,    84,    85,    86,    87,    88,    89,    90,    91,    92,
+      93,    94,    95,    96,    97,    98,    99,   100,   101,    69,
+      29,   116,   113,    47,     0,     0,     0,     0,     0,   115,
+       0,     0,   119,     0,     0,   129
 };
 
 static const short yycheck[] =
 {
-      14,     7,     0,     3,     4,     5,     6,   107,     7,    10,
-       8,     9,    10,    27,     7,    17,   116,    47,    48,     7,
-      22,    31,    32,    33,    34,    35,    36,    37,    38,    39,
-       7,    43,    46,    35,    47,    44,     7,    43,     7,    46,
-       7,    41,    40,    44,    50,    41,    45,    40,     3,    42,
-       3,    46,    46,     3,     3,    46,    45,    49,    45,    45,
-      42,    75,    46,    77,    11,    12,    13,    14,    15,    16,
-      17,    18,    19,    20,    21,    22,    23,    24,    25,    26,
-      27,    28,    29,     0,    32,     5,    76,    -1,    -1,    74,
-      -1,    -1,    -1,   107,    -1,    -1,    -1,    -1,    -1,   113
+       2,     1,     3,     4,     5,     6,     3,     4,     5,     6,
+      47,     7,     7,    44,     8,     9,    10,    47,    10,    47,
+       7,    40,    41,    54,    31,    32,    33,    34,    35,    36,
+      37,    38,    39,    49,    50,    23,    24,    68,     7,     7,
+       3,    41,    43,     3,    46,     3,    43,    48,    42,    50,
+      45,    47,    53,    50,    46,    42,    53,    44,    48,    45,
+      60,    46,    44,    54,     7,     7,    49,    51,    43,    48,
+      48,     7,    48,     3,    51,    48,     0,     0,    52,    79,
+      11,    12,    13,    14,    15,    16,    17,    18,    19,    20,
+      21,    22,    23,    24,    25,    26,    27,    28,    29,    65,
+      15,   110,   108,    37,    -1,    -1,    -1,    -1,    -1,   109,
+      -1,    -1,   112,    -1,    -1,   117
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 #line 3 "/usr/share/bison/bison.simple"
@@ -1041,8 +1067,8 @@ yyreduce:
 
   switch (yyn) {
 
-case 5:
-#line 105 "dcParser.yxx"
+case 7:
+#line 128 "dcParser.yxx"
 {
   current_class = new DCClass(yyvsp[0].str);
   if (!dc_file->add_class(current_class)) {
@@ -1055,8 +1081,8 @@ case 5:
   }
 }
     break;
-case 7:
-#line 121 "dcParser.yxx"
+case 9:
+#line 144 "dcParser.yxx"
 {
   DCFile::ClassesByName::const_iterator ni;
   ni = dc_file->_classes_by_name.find(yyvsp[0].str);
@@ -1068,66 +1094,66 @@ case 7:
   }
 }
     break;
-case 9:
-#line 136 "dcParser.yxx"
+case 11:
+#line 159 "dcParser.yxx"
 {
   yyval.str = yyvsp[-2].str + string("/") + yyvsp[0].str;
 }
     break;
-case 11:
-#line 144 "dcParser.yxx"
+case 13:
+#line 167 "dcParser.yxx"
 {
   yyval.str = yyvsp[-2].str + string(".") + yyvsp[0].str;
 }
     break;
-case 12:
-#line 151 "dcParser.yxx"
+case 14:
+#line 174 "dcParser.yxx"
 {
   dc_file->add_import_module(yyvsp[0].str);
 }
     break;
-case 13:
-#line 155 "dcParser.yxx"
+case 15:
+#line 178 "dcParser.yxx"
 {
   dc_file->add_import_module(yyvsp[-1].str);
 }
     break;
-case 16:
-#line 164 "dcParser.yxx"
+case 18:
+#line 187 "dcParser.yxx"
 {
   dc_file->add_import_symbol("*");
 }
     break;
-case 17:
-#line 171 "dcParser.yxx"
+case 19:
+#line 194 "dcParser.yxx"
 {
   dc_file->add_import_symbol(yyvsp[0].str);
 }
     break;
-case 18:
-#line 175 "dcParser.yxx"
+case 20:
+#line 198 "dcParser.yxx"
 {
   dc_file->add_import_symbol(yyvsp[0].str);
 }
     break;
-case 21:
-#line 187 "dcParser.yxx"
+case 23:
+#line 210 "dcParser.yxx"
 {
   if (yyvsp[0].u.dclass != (DCClass *)NULL) {
     current_class->add_parent(yyvsp[0].u.dclass);
   }
 }
     break;
-case 22:
-#line 193 "dcParser.yxx"
+case 24:
+#line 216 "dcParser.yxx"
 {
   if (yyvsp[0].u.dclass != (DCClass *)NULL) {
     current_class->add_parent(yyvsp[0].u.dclass);
   }
 }
     break;
-case 27:
-#line 209 "dcParser.yxx"
+case 29:
+#line 232 "dcParser.yxx"
 {
   current_atomic = new DCAtomicField(yyvsp[-1].str);
   if (!current_class->add_field(current_atomic)) {
@@ -1135,8 +1161,8 @@ case 27:
   }
 }
     break;
-case 29:
-#line 220 "dcParser.yxx"
+case 31:
+#line 243 "dcParser.yxx"
 {
   DCField *field = current_class->get_field_by_name(yyvsp[0].str);
   yyval.u.atomic = (DCAtomicField *)NULL;
@@ -1150,282 +1176,316 @@ case 29:
   }
 }
     break;
-case 34:
-#line 246 "dcParser.yxx"
+case 36:
+#line 269 "dcParser.yxx"
 {
-  atomic_element = DCAtomicField::ElementType(new DCSimpleParameter(yyvsp[0].u.subatomic));
-}
-    break;
-case 35:
-#line 250 "dcParser.yxx"
-{
+  atomic_element = DCAtomicField::ElementType(yyvsp[0].u.parameter);
   current_atomic->_elements.push_back(atomic_element);
 }
     break;
 case 37:
-#line 258 "dcParser.yxx"
+#line 274 "dcParser.yxx"
 {
-  if (atomic_element._type->as_simple_type() == NULL) {
-    yyerror("Invalid divisor on complex type");
-
-  } else {
-    atomic_element._type->as_simple_type()->set_divisor(yyvsp[0].u.integer);
-  }
+  current_packer = &default_packer;
+  current_packer->begin_pack(yyvsp[-1].u.parameter);
 }
     break;
 case 38:
-#line 267 "dcParser.yxx"
+#line 279 "dcParser.yxx"
 {
-  atomic_element._name = yyvsp[0].str;
-}
-    break;
-case 39:
-#line 271 "dcParser.yxx"
-{
-  default_value_packer.begin_pack(atomic_element._type);
-}
-    break;
-case 40:
-#line 275 "dcParser.yxx"
-{
-  if (!default_value_packer.end_pack()) {
+  if (!current_packer->end_pack()) {
     yyerror("Invalid default value for type");
 
   } else {
-    atomic_element.set_default_value(default_value_packer.get_string());
+    atomic_element = DCAtomicField::ElementType(yyvsp[-3].u.parameter);
+    atomic_element.set_default_value(current_packer->get_string());
+    current_atomic->_elements.push_back(atomic_element);
   }
 }
     break;
-case 41:
-#line 287 "dcParser.yxx"
+case 39:
+#line 293 "dcParser.yxx"
 {
-  default_value_packer.pack_int(yyvsp[0].u.integer);
+  current_parameter = new DCSimpleParameter(yyvsp[0].u.subatomic);
+}
+    break;
+case 40:
+#line 297 "dcParser.yxx"
+{
+  yyval.u.parameter = current_parameter;
 }
     break;
 case 42:
-#line 291 "dcParser.yxx"
+#line 305 "dcParser.yxx"
 {
-  default_value_packer.pack_double(yyvsp[0].u.real);
+  if (current_parameter->as_simple_parameter() == NULL) {
+    yyerror("Invalid divisor on complex type");
+
+  } else {
+    current_parameter->as_simple_parameter()->set_divisor(yyvsp[0].u.integer);
+  }
 }
     break;
 case 43:
-#line 295 "dcParser.yxx"
+#line 314 "dcParser.yxx"
 {
-  default_value_packer.pack_string(yyvsp[0].str);
+  current_parameter->set_name(yyvsp[0].str);
 }
     break;
 case 44:
-#line 299 "dcParser.yxx"
+#line 321 "dcParser.yxx"
 {
-  default_value_packer.pack_literal_value(yyvsp[0].str);
+  current_packer->pack_int(yyvsp[0].u.integer);
 }
     break;
 case 45:
-#line 303 "dcParser.yxx"
+#line 325 "dcParser.yxx"
 {
-  default_value_packer.push();
+  current_packer->pack_double(yyvsp[0].u.real);
 }
     break;
 case 46:
-#line 307 "dcParser.yxx"
+#line 329 "dcParser.yxx"
 {
-  default_value_packer.pop();
+  current_packer->pack_string(yyvsp[0].str);
 }
     break;
 case 47:
-#line 311 "dcParser.yxx"
+#line 333 "dcParser.yxx"
 {
-  for (int i = 0; i < yyvsp[0].u.integer; i++) {
-    default_value_packer.pack_int(yyvsp[-2].u.integer);
-  }
+  current_packer->pack_literal_value(yyvsp[0].str);
 }
     break;
 case 48:
-#line 317 "dcParser.yxx"
+#line 337 "dcParser.yxx"
 {
-  for (int i = 0; i < yyvsp[0].u.integer; i++) {
-    default_value_packer.pack_double(yyvsp[-2].u.real);
-  }
+  current_packer->push();
 }
     break;
 case 49:
-#line 323 "dcParser.yxx"
+#line 341 "dcParser.yxx"
+{
+  current_packer->pop();
+}
+    break;
+case 50:
+#line 345 "dcParser.yxx"
+{
+  current_packer->push();
+}
+    break;
+case 51:
+#line 349 "dcParser.yxx"
+{
+  current_packer->pop();
+}
+    break;
+case 52:
+#line 353 "dcParser.yxx"
+{
+  current_packer->push();
+}
+    break;
+case 53:
+#line 357 "dcParser.yxx"
+{
+  current_packer->pop();
+}
+    break;
+case 54:
+#line 361 "dcParser.yxx"
 {
   for (int i = 0; i < yyvsp[0].u.integer; i++) {
-    default_value_packer.pack_literal_value(yyvsp[-2].str);
+    current_packer->pack_int(yyvsp[-2].u.integer);
+  }
+}
+    break;
+case 55:
+#line 367 "dcParser.yxx"
+{
+  for (int i = 0; i < yyvsp[0].u.integer; i++) {
+    current_packer->pack_double(yyvsp[-2].u.real);
   }
 }
     break;
 case 56:
-#line 347 "dcParser.yxx"
+#line 373 "dcParser.yxx"
+{
+  for (int i = 0; i < yyvsp[0].u.integer; i++) {
+    current_packer->pack_literal_value(yyvsp[-2].str);
+  }
+}
+    break;
+case 63:
+#line 397 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_int8;
 }
     break;
-case 57:
-#line 351 "dcParser.yxx"
+case 64:
+#line 401 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_int16;
 }
     break;
-case 58:
-#line 355 "dcParser.yxx"
+case 65:
+#line 405 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_int32;
 }
     break;
-case 59:
-#line 359 "dcParser.yxx"
+case 66:
+#line 409 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_int64;
 }
     break;
-case 60:
-#line 363 "dcParser.yxx"
+case 67:
+#line 413 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_uint8;
 }
     break;
-case 61:
-#line 367 "dcParser.yxx"
+case 68:
+#line 417 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_uint16;
 }
     break;
-case 62:
-#line 371 "dcParser.yxx"
+case 69:
+#line 421 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_uint32;
 }
     break;
-case 63:
-#line 375 "dcParser.yxx"
+case 70:
+#line 425 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_uint64;
 }
     break;
-case 64:
-#line 379 "dcParser.yxx"
+case 71:
+#line 429 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_float64;
 }
     break;
-case 65:
-#line 383 "dcParser.yxx"
+case 72:
+#line 433 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_string;
 }
     break;
-case 66:
-#line 387 "dcParser.yxx"
+case 73:
+#line 437 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_blob;
 }
     break;
-case 67:
-#line 391 "dcParser.yxx"
+case 74:
+#line 441 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_blob32;
 }
     break;
-case 68:
-#line 395 "dcParser.yxx"
+case 75:
+#line 445 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_int8array;
 }
     break;
-case 69:
-#line 399 "dcParser.yxx"
+case 76:
+#line 449 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_int16array;
 }
     break;
-case 70:
-#line 403 "dcParser.yxx"
+case 77:
+#line 453 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_int32array;
 }
     break;
-case 71:
-#line 407 "dcParser.yxx"
+case 78:
+#line 457 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_uint8array;
 }
     break;
-case 72:
-#line 411 "dcParser.yxx"
+case 79:
+#line 461 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_uint16array;
 }
     break;
-case 73:
-#line 415 "dcParser.yxx"
+case 80:
+#line 465 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_uint32array;
 }
     break;
-case 74:
-#line 419 "dcParser.yxx"
+case 81:
+#line 469 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_uint32uint8array;
 }
     break;
-case 76:
-#line 427 "dcParser.yxx"
+case 83:
+#line 477 "dcParser.yxx"
 {
   current_atomic->_flags |= DCAtomicField::F_required;
 }
     break;
-case 77:
-#line 431 "dcParser.yxx"
+case 84:
+#line 481 "dcParser.yxx"
 {
   current_atomic->_flags |= DCAtomicField::F_broadcast;
 }
     break;
-case 78:
-#line 435 "dcParser.yxx"
+case 85:
+#line 485 "dcParser.yxx"
 {
   current_atomic->_flags |= DCAtomicField::F_p2p;
 }
     break;
-case 79:
-#line 439 "dcParser.yxx"
+case 86:
+#line 489 "dcParser.yxx"
 {
   current_atomic->_flags |= DCAtomicField::F_ram;
 }
     break;
-case 80:
-#line 443 "dcParser.yxx"
+case 87:
+#line 493 "dcParser.yxx"
 {
   current_atomic->_flags |= DCAtomicField::F_db;
 }
     break;
-case 81:
-#line 447 "dcParser.yxx"
+case 88:
+#line 497 "dcParser.yxx"
 {
   current_atomic->_flags |= DCAtomicField::F_clsend;
 }
     break;
-case 82:
-#line 451 "dcParser.yxx"
+case 89:
+#line 501 "dcParser.yxx"
 {
   current_atomic->_flags |= DCAtomicField::F_clrecv;
 }
     break;
-case 83:
-#line 455 "dcParser.yxx"
+case 90:
+#line 505 "dcParser.yxx"
 {
   current_atomic->_flags |= DCAtomicField::F_ownsend;
 }
     break;
-case 84:
-#line 459 "dcParser.yxx"
+case 91:
+#line 509 "dcParser.yxx"
 {
   current_atomic->_flags |= DCAtomicField::F_airecv;
 }
     break;
-case 85:
-#line 466 "dcParser.yxx"
+case 92:
+#line 516 "dcParser.yxx"
 {
   current_molecular = new DCMolecularField(yyvsp[-1].str);
   if (!current_class->add_field(current_molecular)) {
@@ -1433,16 +1493,16 @@ case 85:
   }
 }
     break;
-case 87:
-#line 477 "dcParser.yxx"
+case 94:
+#line 527 "dcParser.yxx"
 {
   if (yyvsp[0].u.atomic != (DCAtomicField *)NULL) {
     current_molecular->add_atomic(yyvsp[0].u.atomic);
   }
 }
     break;
-case 88:
-#line 483 "dcParser.yxx"
+case 95:
+#line 533 "dcParser.yxx"
 {
   if (yyvsp[0].u.atomic != (DCAtomicField *)NULL) {
     current_molecular->add_atomic(yyvsp[0].u.atomic);
@@ -1687,4 +1747,4 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 497 "dcParser.yxx"
+#line 548 "dcParser.yxx"
