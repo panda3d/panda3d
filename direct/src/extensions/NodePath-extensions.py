@@ -917,12 +917,10 @@
         return Slider.rgbPanel(self, cb)
 
     def select(self):
-        base.startTk()
         base.startDirect()
         direct.select(self)
 
     def deselect(self):
-        base.startTk()
         base.startDirect()
         direct.deselect(self)
 
