@@ -371,6 +371,7 @@ triangulate_poly(EggGroupNode *container, bool convex_also) {
   /* select largest signed area */
   max = 0.0;
   index = 0;
+  flag = 0;
   for (i = 0; i < 3; i++) {
     if (as[i] >= 0.0) {
       if (as[i] > max) {
@@ -400,7 +401,7 @@ triangulate_poly(EggGroupNode *container, bool convex_also) {
     y = 2;
     break;
 
-  case 2:
+  default: // case 2
     x = 1;
     y = 2;
     break;

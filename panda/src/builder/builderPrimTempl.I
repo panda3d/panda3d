@@ -730,7 +730,6 @@ sort_value() const {
 template <class VTX>
 class SameCoord {
 public:
-  SameCoord() {}
   bool operator () (const VTX &a, const VTX &b) const {
     return a.get_coord() == b.get_coord();
   }
@@ -750,7 +749,11 @@ public:
 template <class VTX>
 void BuilderPrimTempl<VTX>::
 remove_doubled_verts(int closed) {
-  SameCoord<Vertex> sc;
+  // For some reason, writing this variable declaration this way
+  // prevents VC++ from generating dozens of spurious "local variable
+  // 'sc' used without having been initialized" warning messages.
+  SameCoord<Vertex> sc = SameCoord<Vertex>();
+
   Verts::iterator new_end = unique(_verts.begin(), _verts.end(), sc);
   _verts.erase(new_end, _verts.end());
 

@@ -540,8 +540,8 @@ build_geoms(InputIterator first, InputIterator last,
   GeomBindType bind_colors = G_OVERALL;
   GeomBindType bind_texcoords = G_PER_VERTEX;
 
-  NType overall_normal;
-  CType overall_color;
+  NType overall_normal(0);
+  CType overall_color(0);
   bool first_normal = true;
   bool first_color = true;
 
