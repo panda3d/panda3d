@@ -1,9 +1,17 @@
 from PandaObject import *
 import OnscreenText
-#from PGButton import *
+from PGTop import *
+from PGButton import *
+from PGItem import *
+from PGFrameStyle import *
+import __builtin__
 
 NORMAL = 'normal'
 DISABLED = 'disabled'
+
+FLAT = PGFrameStyle.TFlat
+RAISED = PGFrameStyle.TBevelOut
+SUNKEN = PGFrameStyle.TBevelIn
 
 # Constant used to indicate that an option can only be set by a call
 # to the constructor.
@@ -14,15 +22,8 @@ _OPT_DEFAULT         = 0
 _OPT_VALUE           = 1
 _OPT_FUNCTION        = 2
 
-class PGItem (NodePath):
-    def __init__(self):
-        NodePath.__init__(self)
-        self.assign(aspect2d.attachNewNode('blah'))
-
-class PGButton (NodePath):
-    def __init__(self):
-        NodePath.__init__(self)
-        self.assign(aspect2d.attachNewNode('blah'))
+__builtin__.guiTop = aspect2d.attachNewNode(PGTop('DirectGuiTop'))
+guiTop.node().setMouseWatcher(base.mouseWatcher.node())
 
 class DirectGuiObject(PandaObject):
     def __init__(self, optiondefs, **kw):
@@ -348,6 +349,9 @@ class DirectGuiObject(PandaObject):
 	names.sort()
 	return names
 
+    def hascomponent(self, component):
+        return component in self.__componentInfo.keys()
+
     def destroycomponent(self, name):
 	# Remove a megawidget component.
 	# This command is for use by megawidget designers to destroy a
@@ -368,9 +372,8 @@ class DirectGuiObject(PandaObject):
     def unbind(self, sequence):
         self.ignore(self.idString + '_' + sequence)
 
-class DirectButton(DirectGuiObject, PGButton):
-    
-    def __init__(self, parent = None, **kw):
+class DirectButton(DirectGuiObject, NodePath):
+    def __init__(self, parent = guiTop, **kw):
         # Pass in a background texture, and/or a geometry object,
         # and/or a text string to be used as the visible
         # representation of the button, or pass in a list of geometry
@@ -383,12 +386,15 @@ class DirectButton(DirectGuiObject, PGButton):
         #  - a VBase4(L,R,B,T)
         #  - a bounding box object
         optiondefs = (
-            ('image',         None,       None),
+            ('text',          '',         self.setText),
             ('geom',          None,       None),
-            ('label',         None,       None),
+            ('image',         None,       None),
+            ('relief',        FLAT,       self.setRelief),
+            ('frameColor',    (1,1,1,1),  self.setFrameColor),
+            ('borderWidth',   (.1,.1),    self.setBorderWidth),
+            ('frameSize',     None,       self.setFrameSize),
             ('pos',           None,       None),
             ('scale',         None,       None),
-            ('bounds',        None,       self.setBounds),
             ('state',         NORMAL,     self.setState),
             ('command',       None,       None),
             ('rolloverSound', None,       None),
@@ -396,31 +402,122 @@ class DirectButton(DirectGuiObject, PGButton):
             )
         # Update options to reflect keyword parameters
         apply(DirectGuiObject.__init__, (self, optiondefs), kw)
-        # Initialize button superclass
-        PGButton.__init__(self)
-
-        if self['label']:
-            self.createcomponent('text', OnscreenText.OnscreenText,
-                                 (), parent = self, text = self['label'],
-                                 mayChange = 1)
-
+        # Initialize the superclass
+        NodePath.__init__(self)
+        # Create a button
+        self.guiItem = PGButton()
+        self.guiId = self.guiItem.getId()
+        # Attach button to parent and make that self
+        self.assign(parent.attachNewNode( self.guiItem ) )
+        # Set up names
+        self.guiItem.setName(self.guiId)
+        self.setName(self.guiId + 'NodePath')
+        self.stateNodePath = []
+        for i in range(4):
+            self.stateNodePath.append(NodePath(self.guiItem.getStateDef(i)))
+        # Adjust frame
+        self.frameStyle = [PGFrameStyle(),
+                           PGFrameStyle(),
+                           PGFrameStyle(),
+                           PGFrameStyle()]
+        # To avoid doing things redundantly
+        self.fInit = 1
         # Call initialization functions if necessary
         self.initialiseoptions(DirectButton)
+        self.fInit = 0
+        self.updateFrameStyle()
+        self.setFrameSize()
+        # Update pose
+        if self['pos']:
+            if type(self['pos']) == type(()):
+                apply(self.setPos, self['pos'])
+            else:
+                apply(self.setPos, (self['pos'],))
+        if self['scale']:
+            if type(self['scale']) == type(()):
+                apply(self.setScale, self['scale'])
+            else:
+                apply(self.setScale, (self['scale'],))
 
-    def setBounds(self):
-        pass
+    def updateFrameStyle(self):
+        for i in range(4):
+            self.guiItem.setFrameStyle(i, self.frameStyle[i])
+
+    def setRelief(self, fSetStyle = 1):
+        print 'setting Frame'
+        relief = self['relief']
+        if relief == None:
+            for i in range(4):
+                self.frameStyle[i].setType(PGFrameStyle.TNone)
+        elif (relief == FLAT) or (relief == 'flat'):
+            for i in range(4):
+                self.frameStyle[i].setType(FLAT)
+        elif (relief == RAISED) or (relief == 'raised'):
+            for i in (0,2,3):
+                self.frameStyle[i].setType(RAISED)
+            self.frameStyle[1].setType(SUNKEN)
+        elif (relief == SUNKEN) or (relief == 'sunken'):
+            for i in (0,2,3):
+                self.frameStyle[i].setType(SUNKEN)
+            self.frameStyle[1].setType(RAISED)
+        if not self.fInit:
+            self.updateFrameStyle()
+
+    def setFrameSize(self):
+        if self['frameSize']:
+            bounds = self['frameSize']
+            self.guiItem.setFrame(bounds[0], bounds[1],
+                                  bounds[2], bounds[3])
+        else:
+            bounds = self.component('text0').textNode.getCardActual()
+            self.guiItem.setFrame(bounds[0] - 0.4, bounds[1] + 0.4,
+                                  bounds[2] - 0.15, bounds[3] + 0.15)
+
+    def setFrameColor(self):
+        color = self['frameColor']
+        for i in range(4):
+            self.frameStyle[i].setColor(color[0], color[1], color[2], color[3])
+        if not self.fInit:
+            self.updateFrameStyle()
+
+    def setBorderWidth(self):
+        width = self['borderWidth']
+        for i in range(4):
+            self.frameStyle[i].setWidth(width[0], width[1])
+        if not self.fInit:
+            self.updateFrameStyle()
+
+    def setText(self):
+        if ((type(self['text']) == type(())) or
+            (type(self['text']) == type([]))):
+            text = self['text']
+        else:
+            text = (self['text'],) * 4
+        for i in range(4):
+            component = 'text' + `i`
+            if not self.hascomponent(component):
+                self.createcomponent(
+                    component, OnscreenText.OnscreenText,
+                    (), parent = self.stateNodePath[i],
+                    text = text[i], scale = 1,
+                    mayChange = 1)
+            else:
+                self[component + '_text'] = text[i]
+
     def setState(self):
-        pass
+        if type(self['state']) == type(0):
+            self.guiItem.setActive(self['state'])
+        elif (self['state'] == NORMAL) or (self['state'] == 'normal'):
+            self.guiItem.setActive(1)
+        else:
+            self.guiItem.setActive(0)
+            
     def setImage(self):
         pass
     def setGeom(self):
         pass
-    def setText(self):
-        pass
 
-
-class DirectLabel(PGItem, DirectGuiObject):
-    
+class DirectLabel(DirectGuiObject, PGItem):
     def __init__(self, parent = None, **kw):
         # Pass in a background texture, and/or a geometry object,
         # and/or a text string to be used as the visible
@@ -439,8 +536,7 @@ class DirectLabel(PGItem, DirectGuiObject):
             ('textPos',       (0,0,0),    self.setTextPos),
             ('textScale',     (1,1,1),    self.setTextPos),
             )
-        apply(DirectGuiObject.__init__, (self, optiondefs), kw)
-            
+        apply(DirectGuiObject.__init__, (self, optiondefs), kw)            
         self.initialiseoptions(DirectLabel)
 
     def setImage(self):
