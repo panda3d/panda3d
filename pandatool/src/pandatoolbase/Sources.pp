@@ -1,5 +1,3 @@
-#define OTHER_LIBS panda dtool
-
 #begin lib_target
   #define TARGET pandatoolbase
   
