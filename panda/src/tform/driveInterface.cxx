@@ -112,8 +112,10 @@ DriveInterface(const string &name) :
   _button_events_input = define_input("button_events", ButtonEventList::get_class_type());
 
   _transform_output = define_output("transform", EventStoreMat4::get_class_type());
+  _velocity_output = define_output("velocity", EventStoreVec3::get_class_type());
 
   _transform = new EventStoreMat4(LMatrix4f::ident_mat());
+  _velocity = new EventStoreVec3(LVector3f::zero());
 
   _forward_speed = drive_forward_speed;
   _reverse_speed = drive_reverse_speed;
@@ -239,10 +241,12 @@ get_mat() const {
 void DriveInterface::
 force_dgraph() {
   _transform->set_value(_mat);
+  _velocity->set_value(_vel);
 
   DataNodeTransmit output;
   output.reserve(get_num_outputs());
   output.set_data(_transform_output, EventParameter(_transform));
+  output.set_data(_velocity_output, EventParameter(_velocity));
 
   DataGraphTraverser dg_trav;
   dg_trav.traverse_below(this, output);
@@ -356,6 +360,7 @@ apply(double x, double y, bool any_button) {
   }
 
   if (_speed == 0.0f && _rot_speed == 0.0f) {
+    _vel.set(0.0f, 0.0f, 0.0f);
     return;
   }
 
@@ -371,7 +376,8 @@ apply(double x, double y, bool any_button) {
     LMatrix3f::rotate_mat_normaxis(_hpr[0], LVector3f::up(_cs), _cs);
 
   // Take a step in the direction of our previous heading.
-  LVector3f step = distance * (LVector3f::forward(_cs) * rot_mat);
+  _vel = LVector3f::forward(_cs) * distance;
+  LVector3f step = (_vel * rot_mat);
 
   // To prevent upward drift due to numerical errors, force the
   // vertical component of our step to zero (it should be pretty near
@@ -503,5 +509,7 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
 
   apply(x, y, _mods.is_any_down());
   _transform->set_value(_mat);
+  _velocity->set_value(_vel);
   output.set_data(_transform_output, EventParameter(_transform));
+  output.set_data(_velocity_output, EventParameter(_velocity));
 }

@@ -132,7 +132,7 @@ handle_entries() {
                 normal[2] = 0.0f;
               }
               // Just to be on the safe size, we normalize the normal
-              // vector, even though it really out to be unit-length
+              // vector, even though it really ought to be unit-length
               // already (unless we just forced it horizontal, above).
               normal.normalize();
 

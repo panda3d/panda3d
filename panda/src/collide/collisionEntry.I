@@ -157,6 +157,43 @@ get_inv_wrt_space() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::set_from_velocity
+//       Access: Public
+//  Description: Indicates the velocity associated with the "from"
+//               object, in the object's coordinate space.
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionEntry::
+set_from_velocity(const LVector3f &vel) {
+  _from_velocity = vel;
+  _flags |= F_has_from_velocity;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::has_from_velocity
+//       Access: Public
+//  Description: Returns true if the "from" object had an indicated
+//               velocity, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool CollisionEntry::
+has_from_velocity() const {
+  return (_flags & F_has_from_velocity) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::get_from_velocity
+//       Access: Public
+//  Description: Returns the instantaneous velocity of the "from"
+//               object, in its own coordinate space.  This represents
+//               the delta between its current position and its
+//               position last frame.
+////////////////////////////////////////////////////////////////////
+INLINE const LVector3f &CollisionEntry::
+get_from_velocity() const {
+  nassertr(has_from_velocity(), _from_velocity);
+  return _from_velocity;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::set_into_intersection_point
 //       Access: Public
 //  Description:

@@ -166,6 +166,7 @@ PUBLISHED:
 public:
   virtual bool is_geom_node() const;
   virtual Light *as_light();
+  virtual void set_velocity(const LVector3f &vel);
 
 protected:
   // Inherited from BoundedObject

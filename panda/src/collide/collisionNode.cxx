@@ -22,6 +22,10 @@
 #include "geomNode.h"
 #include "cullTraverserData.h"
 #include "cullTraverser.h"
+#include "renderState.h"
+#include "transformState.h"
+#include "colorScaleAttrib.h"
+#include "transparencyAttrib.h"
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "bamReader.h"
@@ -40,7 +44,8 @@ CollisionNode(const string &name) :
   PandaNode(name),
   _from_collide_mask(CollideMask::all_on()),
   _into_collide_mask(CollideMask::all_on()),
-  _collide_geom(false)
+  _velocity(0.0f, 0.0f, 0.0f),
+  _flags(0)
 {
   // CollisionNodes are hidden by default.
   set_draw_mask(DrawMask::all_off());
@@ -56,7 +61,8 @@ CollisionNode(const CollisionNode &copy) :
   PandaNode(copy),
   _from_collide_mask(copy._from_collide_mask),
   _into_collide_mask(copy._into_collide_mask),
-  _collide_geom(copy._collide_geom),
+  _velocity(copy._velocity),
+  _flags(copy._flags),
   _solids(copy._solids)
 {
 }
@@ -212,6 +218,22 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     trav->traverse(next_data);
   }
 
+  if (has_velocity()) {
+    // If we have a velocity, also draw the previous frame's position,
+    // ghosted.
+    CPT(TransformState) transform = TransformState::make_pos(-get_velocity());
+    for (si = _solids.begin(); si != _solids.end(); ++si) {
+      CollisionSolid *solid = (*si);
+      PandaNode *node = solid->get_viz();
+      CullTraverserData next_data(data, node);
+
+      next_data._render_transform = 
+        next_data._render_transform->compose(transform);
+      next_data._state = get_last_pos_state();
+      trav->traverse(next_data);
+    }
+  }
+
   // Now carry on to render our child nodes.
   return true;
 }
@@ -231,6 +253,31 @@ output(ostream &out) const {
   out << " (" << _solids.size() << " solids)";
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionNode::set_velocity
+//       Access: Published, Virtual
+//  Description: Indicates the instantaneous velocity of the node.
+//               This is only meaningful for nodes that represent
+//               "colliders", that is, nodes added to a
+//               CollisionTraverser to be tested for collision into
+//               other objects.
+//
+//               The velocity vector represents the delta from this
+//               node's position last frame to its current position.
+//               The collision traverser automatically clears it after
+//               it has performed the traversal.
+//
+//               This velocity information is optional and, if
+//               available, is used by the collision traverser to help
+//               determine which walls the collider is actually
+//               intersecting with, and which it is simply passing by.
+////////////////////////////////////////////////////////////////////
+void CollisionNode::
+set_velocity(const LVector3f &vel) {
+  _velocity = vel;
+  _flags |= F_has_velocity;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionNode::recompute_bound
@@ -294,6 +341,29 @@ recompute_internal_bound() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionNode::get_last_pos_state
+//       Access: Protected
+//  Description: Returns a RenderState for rendering the ghosted
+//               collision solid that represents the previous frame's
+//               position, for those collision nodes that indicate a
+//               velocity.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) CollisionNode::
+get_last_pos_state() {
+  // Once someone asks for this pointer, we hold its reference count
+  // and never free it.
+  static CPT(RenderState) state = (const RenderState *)NULL;
+  if (state == (const RenderState *)NULL) {
+    state = RenderState::make
+      (ColorScaleAttrib::make(LVecBase4f(1.0f, 1.0f, 1.0f, 0.5f)),
+       TransparencyAttrib::make(TransparencyAttrib::M_alpha));
+  }
+
+  return state;
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionNode::register_with_read_factory
 //       Access: Public, Static
 //  Description: Tells the BamReader how to create objects of type
@@ -322,7 +392,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 
   dg.add_uint32(_from_collide_mask.get_word());
   dg.add_uint32(_into_collide_mask.get_word());
-  dg.add_bool(_collide_geom);
+  dg.add_uint8(_flags);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -387,5 +457,5 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _from_collide_mask.set_word(scan.get_uint32());
   _into_collide_mask.set_word(scan.get_uint32());
-  _collide_geom = scan.get_bool();
+  _flags = scan.get_uint8();
 }

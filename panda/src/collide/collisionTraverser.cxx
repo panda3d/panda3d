@@ -251,6 +251,17 @@ traverse(const NodePath &root) {
       ++hi;
     }
   }
+
+  if (auto_clear_velocity) {
+    // Clear all the velocities for next time.
+    OrderedColliders::iterator ci;
+    for (ci = _ordered_colliders.begin(); 
+         ci != _ordered_colliders.end(); 
+         ++ci) {
+      CollisionNode *node = (*ci);
+      node->clear_velocity();
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -372,6 +383,10 @@ r_traverse(CollisionLevelState &level_state) {
              cnode->get_into_collide_mask()) != 0) {
           entry._from = level_state.get_collider(c);
           entry._from_space = level_state.get_space(c);
+
+          if (entry._from_node->has_velocity()) {
+            entry.set_from_velocity(entry._from_node->get_velocity());
+          }
 
           NodePath root;
           const LMatrix4f &into_space_inv = 

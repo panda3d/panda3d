@@ -32,14 +32,16 @@ Transform2SG(const string &name) :
   DataNode(name)
 {
   _transform_input = define_input("transform", EventStoreMat4::get_class_type());
+  _velocity_input = define_input("velocity", EventStoreVec3::get_class_type());
 
   _node = NULL;
+  _velocity_node = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Transform2SG::set_node
 //       Access: Public
-//  Description: Sets the node that this node will adjust.
+//  Description: Sets the node that this object will adjust.
 ////////////////////////////////////////////////////////////////////
 void Transform2SG::
 set_node(PandaNode *node) {
@@ -49,12 +51,39 @@ set_node(PandaNode *node) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Transform2SG::get_node
 //       Access: Public
-//  Description: Returns the node that this node will adjust, or NULL
+//  Description: Returns the node that this object will adjust, or NULL
 //               if the node has not yet been set.
 ////////////////////////////////////////////////////////////////////
 PandaNode *Transform2SG::
 get_node() const {
   return _node;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Transform2SG::set_velocity_node
+//       Access: Public
+//  Description: Sets the node that this object will assign the
+//               computed velocity to.  Normally this is a
+//               CollisionNode parented below the node indicated by
+//               set_node().  Setting this node allows the collision
+//               system to track the velocity imparted to the
+//               CollisionNode by the data graph object that set its
+//               transform, if that data is available.
+////////////////////////////////////////////////////////////////////
+void Transform2SG::
+set_velocity_node(PandaNode *node) {
+  _velocity_node = node;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Transform2SG::get_velocity_node
+//       Access: Public
+//  Description: Returns the node that this object will assign the
+//               computed velocity to.  See set_velocity_node().
+////////////////////////////////////////////////////////////////////
+PandaNode *Transform2SG::
+get_velocity_node() const {
+  return _velocity_node;
 }
 
 
@@ -79,6 +108,15 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &) {
     const LMatrix4f &mat = transform->get_value();
     if (_node != (PandaNode *)NULL) {
       _node->set_transform(TransformState::make_mat(mat));
+    }
+  }
+
+  if (input.has_data(_velocity_input)) {
+    const EventStoreVec3 *velocity;
+    DCAST_INTO_V(velocity, input.get_data(_velocity_input).get_ptr());
+    LVector3f vel = velocity->get_value();
+    if (_velocity_node != (PandaNode *)NULL) {
+      _velocity_node->set_velocity(vel);
     }
   }
 }

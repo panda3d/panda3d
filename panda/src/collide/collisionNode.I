@@ -19,7 +19,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionNode::set_collide_mask
-//       Access: Public
+//       Access: Published
 //  Description: Simultaneously sets both the "from" and "into"
 //               CollideMask values to the same thing.
 ////////////////////////////////////////////////////////////////////
@@ -31,7 +31,7 @@ set_collide_mask(CollideMask mask) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionNode::set_from_collide_mask
-//       Access: Public
+//       Access: Published
 //  Description: Sets the "from" CollideMask.  In order for a
 //               collision to be detected from this object into
 //               another object, the intersection of this object's
@@ -45,7 +45,7 @@ set_from_collide_mask(CollideMask mask) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionNode::set_into_collide_mask
-//       Access: Public
+//       Access: Published
 //  Description: Sets the "into" CollideMask.  In order for a
 //               collision to be detected from another object into
 //               this object, the intersection of the other object's
@@ -64,7 +64,7 @@ set_into_collide_mask(CollideMask mask) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionNode::get_from_collide_mask
-//       Access: Public
+//       Access: Published
 //  Description: Returns the current "from" CollideMask.  In order for
 //               a collision to be detected from this object into
 //               another object, the intersection of this object's
@@ -78,7 +78,7 @@ get_from_collide_mask() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionNode::get_into_collide_mask
-//       Access: Public
+//       Access: Published
 //  Description: Returns the current "into" CollideMask.  In order for
 //               a collision to be detected from another object into
 //               this object, the intersection of the other object's
@@ -92,7 +92,7 @@ get_into_collide_mask() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionNode::set_collide_geom
-//       Access: Public
+//       Access: Published
 //  Description: Sets the state of the "collide geom" flag for this
 //               CollisionNode.  Normally, this is false; when this is
 //               set true, the CollisionSolids in this node will test
@@ -107,23 +107,27 @@ get_into_collide_mask() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionNode::
 set_collide_geom(bool flag) {
-  _collide_geom = flag;
+  if (flag) {
+    _flags |= F_collide_geom;
+  } else {
+    _flags &= ~F_collide_geom;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionNode::get_collide_geom
-//       Access: Public
+//       Access: Published
 //  Description: Returns the current state of the collide_geom flag.
 //               See set_collide_geom().
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionNode::
 get_collide_geom() const {
-  return _collide_geom;
+  return (_flags & F_collide_geom) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionNode::get_num_solids
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int CollisionNode::
@@ -133,7 +137,7 @@ get_num_solids() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionNode::get_solid
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionSolid *CollisionNode::
@@ -144,7 +148,7 @@ get_solid(int n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionNode::remove_solid
-//       Access: Public
+//       Access: Published
 //  Description: Removes the solid with the indicated index.  This
 //               will shift all subsequent indices down by one.
 ////////////////////////////////////////////////////////////////////
@@ -157,7 +161,7 @@ remove_solid(int n) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionNode::add_solid
-//       Access: Public
+//       Access: Published
 //  Description: Adds the indicated solid to the node.  Returns the
 //               index of the new solid within the node's list of
 //               solids.
@@ -167,4 +171,40 @@ add_solid(CollisionSolid *solid) {
   _solids.push_back(solid);
   mark_bound_stale();
   return _solids.size() - 1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionNode::clear_velocity
+//       Access: Published
+//  Description: Removes the velocity information associated with the
+//               node.  See set_velocity().
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionNode::
+clear_velocity() {
+  _flags &= ~F_has_velocity;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionNode::has_velocity
+//       Access: Published
+//  Description: Returns true if the node has an associated velocity,
+//               false otherwise.  See set_velocity().
+////////////////////////////////////////////////////////////////////
+INLINE bool CollisionNode::
+has_velocity() const {
+  return (_flags & F_has_velocity) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionNode::get_velocity
+//       Access: Published
+//  Description: Returns the instantaneous velocity of the node, in
+//               its own coordinate space.  This represents the delta
+//               between its current position and its position last
+//               frame.  See set_velocity().
+////////////////////////////////////////////////////////////////////
+INLINE const LVector3f &CollisionNode::
+get_velocity() const {
+  nassertr(has_velocity(), _velocity);
+  return _velocity;
 }

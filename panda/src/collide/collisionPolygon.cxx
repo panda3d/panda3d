@@ -240,7 +240,48 @@ test_intersection_from_sphere(CollisionHandler *record,
   const CollisionSphere *sphere;
   DCAST_INTO_R(sphere, entry.get_from(), 0);
 
-  LPoint3f from_center = sphere->get_center() * entry.get_wrt_space();
+  LPoint3f orig_center = sphere->get_center() * entry.get_wrt_space();
+  LPoint3f from_center = orig_center;
+  bool moved_from_center = false;
+
+  if (entry.has_from_velocity()) {
+    // If we have a velocity indication, we use that to determine some
+    // more properties of the collision.
+    LPoint3f b = from_center;
+    LPoint3f a = (sphere->get_center() - entry.get_from_velocity()) * entry.get_wrt_space();
+
+    LVector3f delta = b - a;
+    // First, there is no collision if the "from" object is moving in
+    // the same direction as the plane's normal.
+    float dot = delta.dot(get_normal());
+    if (dot > 0.0f) {
+      return 0;
+    }
+
+    if (IS_NEARLY_ZERO(dot)) {
+      // If we're moving parallel to the plane, the sphere is tested
+      // at its final point.  Leave it as it is.
+
+    } else {
+      // Otherwise, we're moving into the plane; the sphere is tested
+      // at the point along its path that is closest to intersecting
+      // the plane.  This may be the actual intersection point, or it
+      // may be the starting point or the final point.
+      float t = -(dist_to_plane(a) / dot);
+      if (t >= 1.0f) {
+        // Leave it where it is.
+
+      } else if (t < 0.0f) {
+        from_center = a;
+        moved_from_center = true;
+
+      } else {
+        from_center = a + t * delta;
+        moved_from_center = true;
+      }
+    }
+  }
+
   LVector3f from_radius_v =
     LVector3f(sphere->get_radius(), 0.0f, 0.0f) * entry.get_wrt_space();
   float from_radius = length(from_radius_v);
@@ -325,9 +366,16 @@ test_intersection_from_sphere(CollisionHandler *record,
 
   LVector3f into_normal = get_normal() * entry.get_inv_wrt_space();
   float into_depth = from_radius - dist;
+  if (moved_from_center) {
+    // We have to base the depth of intersection on the sphere's final
+    // resting point, not the point from which we tested the
+    // intersection.
+    into_depth = from_radius - dist_to_plane(orig_center);
+  }
 
   new_entry->set_into_surface_normal(into_normal);
   new_entry->set_into_depth(into_depth);
+  new_entry->set_into_intersection_point(from_center);
 
   record->add_entry(new_entry);
   return 1;

@@ -133,6 +133,7 @@ private:
   LPoint3f _xyz;
   LVecBase3f _hpr;
   LMatrix4f _mat;
+  LVector3f _vel;
   float _force_roll;
   bool _is_force_roll;
   CoordinateSystem _cs;
@@ -173,8 +174,10 @@ private:
 
   // outputs
   int _transform_output;
+  int _velocity_output;
 
   PT(EventStoreMat4) _transform;
+  PT(EventStoreVec3) _velocity;
 
 public:
   static TypeHandle get_class_type() {

@@ -38,8 +38,12 @@ PUBLISHED:
   void set_node(PandaNode *node);
   PandaNode *get_node() const;
 
+  void set_velocity_node(PandaNode *node);
+  PandaNode *get_velocity_node() const;
+
 private:
   PandaNode *_node;
+  PandaNode *_velocity_node;
 
 protected:
   // Inherited from DataNode
@@ -49,6 +53,7 @@ protected:
 private:
   // inputs
   int _transform_input;
+  int _velocity_input;
 
 public:
   static TypeHandle get_class_type() {

@@ -63,6 +63,10 @@ PUBLISHED:
   INLINE const LMatrix4f &get_wrt_space() const;
   INLINE const LMatrix4f &get_inv_wrt_space() const;
 
+  INLINE void set_from_velocity(const LVector3f &vel);
+  INLINE bool has_from_velocity() const;
+  INLINE const LVector3f &get_from_velocity() const;
+
   INLINE void set_into_intersection_point(const LPoint3f &point);
   INLINE bool has_into_intersection_point() const;
   INLINE const LPoint3f &get_into_intersection_point() const;
@@ -94,10 +98,12 @@ private:
     F_has_into_intersection_point = 0x0001,
     F_has_into_surface_normal     = 0x0002,
     F_has_into_depth              = 0x0004,
+    F_has_from_velocity           = 0x0008,
   };
 
   int _flags;
 
+  LVector3f _from_velocity;
   LPoint3f _into_intersection_point;
   LVector3f _into_surface_normal;
   float _into_depth;
