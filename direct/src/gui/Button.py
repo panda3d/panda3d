@@ -69,7 +69,7 @@ class Button(DirectObject):
 
     def cleanup(self):
         if (self.managed):
-            self.button.unmanage()
+            self.unmanage()
         self.l1 = None
         self.l2 = None
         self.button = None
