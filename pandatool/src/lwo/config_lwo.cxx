@@ -22,6 +22,7 @@
 #include "lwoSurface.h"
 #include "lwoSurfaceColor.h"
 #include "lwoSurfaceParameter.h"
+#include "lwoSurfaceSidedness.h"
 #include "lwoTags.h"
 #include "lwoVertexMap.h"
 
@@ -49,6 +50,7 @@ ConfigureFn(config_lwo) {
   LwoSurface::init_type();
   LwoSurfaceColor::init_type();
   LwoSurfaceParameter::init_type();
+  LwoSurfaceSidedness::init_type();
   LwoVertexMap::init_type();
 }
 

@@ -27,6 +27,7 @@
     lwoSurface.h lwoSurface.cxx \
     lwoSurfaceColor.h lwoSurfaceColor.cxx \
     lwoSurfaceParameter.h lwoSurfaceParameter.cxx \
+    lwoSurfaceSidedness.h lwoSurfaceSidedness.cxx \
     lwoVertexMap.h lwoVertexMap.cxx
 
   #define INSTALL_HEADERS \
@@ -48,6 +49,7 @@
     lwoSurface.h \
     lwoSurfaceColor.h \
     lwoSurfaceParameter.h \
+    lwoSurfaceSidedness.h \
     lwoVertexMap.h
 
 #end ss_lib_target

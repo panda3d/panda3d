@@ -7,6 +7,7 @@
 #include "iffInputFile.h"
 #include "lwoSurfaceColor.h"
 #include "lwoSurfaceParameter.h"
+#include "lwoSurfaceSidedness.h"
 
 #include <indent.h>
 
@@ -70,6 +71,9 @@ make_new_chunk(IffInputFile *in, IffId id) {
 	     id == IffId("RIND")) {
     return new LwoSurfaceParameter;
 
+  } else if (id == IffId("SIDE")) {
+    return new LwoSurfaceSidedness;
+  
   } else {
     return IffChunk::make_new_chunk(in, id);
   }

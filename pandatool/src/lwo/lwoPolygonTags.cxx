@@ -61,7 +61,7 @@ read_iff(IffInputFile *in, size_t stop_at) {
 
     bool inserted = _tmap.insert(TMap::value_type(polygon_index, tag)).second;
     if (!inserted) {
-      nout << "Duplicate index " << index << " in map.\n";
+      nout << "Duplicate index " << polygon_index << " in map.\n";
     }
   }
 
