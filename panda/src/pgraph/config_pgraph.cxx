@@ -100,6 +100,12 @@ const bool fake_view_frustum_cull = config_pgraph.GetBool("fake-view-frustum-cul
 // trapped with assert-abort).
 const bool unambiguous_graph = config_pgraph.GetBool("unambiguous-graph", false);
 
+// Set this true to allow unrelated NodePaths (that is, nodes which
+// have no common ancestor) to be adjusted relative to each other.  If
+// true, these will be treated as if they had a common node above
+// their top nodes.
+const bool allow_unrelated_wrt = config_pgraph.GetBool("allow-unrelated-wrt", true);
+
 // Set this true to double-check the componentwise transform compose
 // (or invert) operation against the equivalent matrix-based
 // operation.  This has no effect if NDEBUG is defined.

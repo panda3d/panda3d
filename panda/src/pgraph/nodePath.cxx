@@ -562,7 +562,16 @@ get_state(const NodePath &other) const {
   nassertr(other.verify_complete(), RenderState::make_empty());
 
   int a_count, b_count;
-  find_common_ancestor(*this, other, a_count, b_count);
+  if (find_common_ancestor(*this, other, a_count, b_count) == (NodePathComponent *)NULL) {
+    if (allow_unrelated_wrt) {
+      pgraph_cat.debug()
+        << *this << " is not related to " << other << "\n";
+    } else {
+      pgraph_cat.error()
+        << *this << " is not related to " << other << "\n";
+      nassertr(false, RenderState::make_empty());
+    }
+  }
 
   CPT(RenderState) a_state = r_get_partial_state(_head, a_count);
   CPT(RenderState) b_state = r_get_partial_state(other._head, b_count);
@@ -610,7 +619,16 @@ get_transform(const NodePath &other) const {
   nassertr(other.verify_complete(), TransformState::make_identity());
 
   int a_count, b_count;
-  find_common_ancestor(*this, other, a_count, b_count);
+  if (find_common_ancestor(*this, other, a_count, b_count) == (NodePathComponent *)NULL) {
+    if (allow_unrelated_wrt) {
+      pgraph_cat.debug()
+        << *this << " is not related to " << other << "\n";
+    } else {
+      pgraph_cat.error()
+        << *this << " is not related to " << other << "\n";
+      nassertr(false, TransformState::make_identity());
+    }
+  }
 
   CPT(TransformState) a_transform = r_get_partial_transform(_head, a_count);
   CPT(TransformState) b_transform = r_get_partial_transform(other._head, b_count);
@@ -663,7 +681,16 @@ get_prev_transform(const NodePath &other) const {
   nassertr(other.verify_complete(), TransformState::make_identity());
 
   int a_count, b_count;
-  find_common_ancestor(*this, other, a_count, b_count);
+  if (find_common_ancestor(*this, other, a_count, b_count) == (NodePathComponent *)NULL) {
+    if (allow_unrelated_wrt) {
+      pgraph_cat.debug()
+        << *this << " is not related to " << other << "\n";
+    } else {
+      pgraph_cat.error()
+        << *this << " is not related to " << other << "\n";
+      nassertr(false, TransformState::make_identity());
+    }
+  }
 
   CPT(TransformState) a_prev_transform = r_get_partial_prev_transform(_head, a_count);
   CPT(TransformState) b_prev_transform = r_get_partial_prev_transform(other._head, b_count);
