@@ -71,7 +71,7 @@ class ShowBase(DirectObject.DirectObject):
         # screen, but we were grinding away on all the collision loops
         # and shadow stuff and actually rendering.  This is to test
         # not doing some of that:
-        self.isRendering = 0
+        self.isRendering = 1
         
         taskMgr.taskTimerVerbose = self.config.GetBool('task-timer-verbose', 0)
         taskMgr.extendedExceptions = self.config.GetBool('extended-exceptions', 0)
