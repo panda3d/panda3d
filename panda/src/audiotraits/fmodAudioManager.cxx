@@ -27,12 +27,11 @@
 #include "fmodAudioManager.h"
 #include "fmodAudioSound.h"
 #include "nullAudioSound.h"
+#include "virtualFileSystem.h"
 
 #include <algorithm>
 #include <cctype>
 #include <fmod.h>
-#include <iostream>
-using std::cerr;
 
 PT(AudioManager) Create_AudioManager() {
   audio_debug("Create_AudioManager() Fmod.");
@@ -131,6 +130,13 @@ get_sound(const string &file_name) {
   assert(is_valid());
   Filename path = file_name;
 
+  if (use_vfs) {
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    vfs->resolve_filename(path, get_sound_path());
+  } else {
+    path.resolve_filename(get_sound_path());
+  }
+
   audio_debug("  resolved file_name is '"<<path<<"'");
 
   // Get the sound, either from the cache or from disk.
@@ -143,11 +149,6 @@ get_sound(const string &file_name) {
   } else {
     // The sound was not found in the cache.  Load it from disk.
     SoundCacheEntry new_entry;
-    new_entry.size = get_file_size(path);
-    if (new_entry.size == 0) {
-      audio_error("FmodAudioManager::get_file_size failed.");
-      return 0;
-    }
     new_entry.data = load(path, new_entry.size);
     if (!new_entry.data) {
       audio_error("FmodAudioManager::load failed.");
@@ -157,8 +158,13 @@ get_sound(const string &file_name) {
     new_entry.stale = true;
 
     // Add to the cache
-    entry = &new_entry;
-    _sounds[path] = new_entry;
+    si = _sounds.insert(SoundMap::value_type(path, new_entry)).first;
+
+    // It's important that we assign entry to the address of the entry
+    // we just added to the map, and not to the address of the
+    // temporary variable new_entry, which we just defined locally and
+    // is about to go out of scope.
+    entry = &(*si).second;
   }
   assert(entry != NULL);
   
@@ -179,7 +185,7 @@ get_sound(const string &file_name) {
     stream = FSOUND_Stream_OpenFile(os_path.c_str(), 0, 0);
   } else {
     stream = FSOUND_Stream_OpenFile((const char*)(entry->data),
-				    flags, entry->size);
+                                    flags, entry->size);
   }
   if (stream == NULL) {
     audio_error("FmodAudioManager::get_sound failed.");
@@ -224,7 +230,7 @@ uncache_sound(const string& file_name) {
   // purged right now!
   SoundCacheEntry *entry = &(*itor).second;
   if (entry->refcount == 0) {
-    audio_debug("FmodAudioManager::dec_refcount: purging "<<path
+    audio_debug("FmodAudioManager::uncache_sound: purging "<<path
 		<< " from the cache.");
     delete [] entry->data;
     _sounds.erase(itor);
@@ -244,17 +250,22 @@ void FmodAudioManager::
 clear_cache() {
   // Mark all cache entries as stale.  Delete those which already have 
   // refcounts of zero.
+
   SoundMap::iterator itor = _sounds.begin();
-  for( ; itor != _sounds.end(); ++itor) {
+
+  // Have to use a while loop, not a for loop, since we don't want to
+  // increment itor in the case in which we delete an entry.
+  while (itor != _sounds.end()) {
     SoundCacheEntry *entry = &(*itor).second;
     if (entry->refcount == 0) {
-      audio_debug("FmodAudioManager: purging "<< (*itor).first
+      audio_debug("FmodAudioManager::clear_cache: purging "<< (*itor).first
 		  << " from the cache.");
       delete [] entry->data;
       _sounds.erase(itor);
       itor = _sounds.begin();
     } else {
       entry->stale = true;
+      ++itor;
     }
   }
 }
@@ -394,7 +405,7 @@ dec_refcount(const string& file_name) {
     audio_debug("FmodAudioManager: "<<path<<" has a refcount of "
 		<< entry->refcount);
     if (entry->refcount == 0 && entry->stale) {
-      audio_debug("FmodAudioManager: purging "<<path<< " from the cache.");
+      audio_debug("FmodAudioManager::dec_refcount: purging "<<path<< " from the cache.");
       delete [] entry->data;
       _sounds.erase(itor);
     }
@@ -406,11 +417,12 @@ dec_refcount(const string& file_name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioManager::load
 //       Access: Private
-//  Description: Loads the specified file into memory.
-//               Returns NULL if an error occurs.
+//  Description: Loads the specified file into memory.  Returns a
+//               newly-allocated buffer, and stores the size of the
+//               buffer in size.  Returns NULL if an error occurs.
 ////////////////////////////////////////////////////////////////////
 void* FmodAudioManager::
-load(const Filename& filename, const size_t size) const {
+load(const Filename& filename, size_t &size) const {
   // Check file type (based on filename suffix
   string suffix = filename.get_extension();
   std::transform(suffix.begin(), suffix.end(), suffix.begin(), tolower);
@@ -427,56 +439,60 @@ load(const Filename& filename, const size_t size) const {
   }
 
   // open the file.
-  string os_filename = filename.to_os_specific();
-  FILE *audioFile = fopen(os_filename.c_str(), "rb");
-  if (!audioFile) {
-    audio_error("File "<<filename<<" does not exist.");
+  istream *audioFile = NULL;
+
+  Filename binary_filename = Filename::binary_filename(filename);
+  if (use_vfs) {
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+    if (!vfs->exists(filename)) {
+      audio_error("File " << filename << " does not exist.");
+      return NULL;
+    }
+
+    audioFile = vfs->open_read_file(binary_filename);
+
+  } else {
+    if (!filename.exists()) {
+      audio_error("File " << filename << " does not exist.");
+      return NULL;
+    }
+
+    audioFile = new ifstream;
+    if (!binary_filename.open_read(*(ifstream *)audioFile)) {
+      delete audioFile;
+      audioFile = NULL;
+    }
+  }
+
+  if (audioFile == (istream *)NULL) {
+    // Unable to open.
+    audio_error("Unable to read " << filename << ".");
     return NULL;
   }
+
+  // Determine the file size.
+  audioFile->seekg(0, ios::end);
+  size = (size_t)audioFile->tellg();
+  audioFile->seekg(0, ios::beg);
   
   // Read the entire file into memory.
   char *buffer = new char[size];
   if (buffer == NULL) {
     audio_error("out-of-memory error while loading "<<filename);
-    fclose(audioFile);
+    delete audioFile;
     return NULL;
   }
-  long bytes_read = fread(buffer, size, 1, audioFile);
-  if (bytes_read != 1) {
+  audioFile->read(buffer, size);
+  if (!(*audioFile)) {
     audio_error("Read error while loading "<<filename);
-    fclose(audioFile);
+    delete audioFile;
     delete [] buffer;
     return NULL;
   }
 
-  fclose(audioFile);
+  delete audioFile;
   return buffer;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FmodAudioManager::get_file_size
-//       Access: Private
-//  Description: Calculates the size of the given file, in bytes.
-////////////////////////////////////////////////////////////////////
-size_t FmodAudioManager::
-get_file_size(const Filename& filename) const {
-  // open the file.
-  string os_filename = filename.to_os_specific();
-  FILE *audioFile = fopen(os_filename.c_str(), "rb");
-  if (!audioFile) {
-    audio_error("File "<<filename<<" does not exist.");
-    return 0;
-  }
-  
-  // Read the entire file into memory.
-  if (fseek(audioFile, 0, SEEK_END) != 0) {
-    audio_error("Seek error while loading "<<filename);
-    fclose(audioFile);
-    return 0;
-  }
-  size_t file_size = ftell(audioFile);
-  fclose(audioFile);
-  return file_size;
 }
 
 #endif //]

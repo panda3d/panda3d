@@ -80,8 +80,7 @@ private:
   bool _is_valid;
   bool _active;
   
-  void* load(const Filename& filename, const size_t size) const;
-  size_t get_file_size(const Filename& filename) const;
+  void* load(const Filename& filename, size_t &size) const;
 
   friend FmodAudioSound;
 };
