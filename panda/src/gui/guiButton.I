@@ -234,6 +234,15 @@ GuiButton::get_behavior_functor(void) const {
   return _behavior_functor;
 }
 
+INLINE void GuiButton::set_rollover_functor(GuiBehavior::BehaviorFunctor* f) {
+  _rollover_functor = f;
+}
+
+INLINE GuiBehavior::BehaviorFunctor*
+GuiButton::get_rollover_functor(void) const {
+  return _rollover_functor;
+}
+
 INLINE void GuiButton::set_behavior_event_parameter(int p) {
   this->_have_event_param = true;
   this->_event_param = p;

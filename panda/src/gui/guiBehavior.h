@@ -17,9 +17,10 @@ protected:
 PUBLISHED:
   class EXPCL_PANDA BehaviorFunctor {
   public:
+    virtual void doit(GuiBehavior*) = 0;
+  PUBLISHED:
     BehaviorFunctor(void);
     virtual ~BehaviorFunctor(void);
-    virtual void doit(GuiBehavior*) = 0;
   };
 PUBLISHED:
   GuiBehavior(const string&);
