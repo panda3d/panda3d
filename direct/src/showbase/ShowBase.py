@@ -1409,25 +1409,14 @@ class ShowBase(DirectObject.DirectObject):
                 gn.addGeom(geom)
                 self.oobeCullFrustumVis = self.oobeVis.attachNewNode(gn)
 
-            # Assign each DisplayRegion shared by the camera to use
-            # this cull frustum.
+            # Tell the camera to cull from here instead of its own
+            # origin.
+            self.camNode.setCullCenter(self.oobeCullFrustum)
 
-            # Support for this is currently absent from Panda.
-##             numDisplayRegions = self.camNode.getNumDisplayRegions()
-##             for d in range(0, numDisplayRegions):
-##                 dr = self.camNode.getDisplayRegion(d)
-##                 dr.setCullFrustum(pnode)
         else:
             # Disable OOBE culling.
 
-            # Assign each DisplayRegion shared by the camera to use
-            # the default cull frustum, the camera itself.
-
-##             numDisplayRegions = self.camNode.getNumDisplayRegions()
-##             for d in range(0, numDisplayRegions):
-##                 dr = self.camNode.getDisplayRegion(d)
-##                 dr.setCullFrustum(self.camNode)
-
+            self.camNode.setCullCenter(NodePath())
             self.oobeCullFrustum.removeNode()
             self.oobeCullFrustum = None
 
