@@ -20,6 +20,7 @@ class InputState(DirectObject.DirectObject):
         self.state = {}
         assert(self.debugPrint("InputState()"))
         self.watching = {}
+        self.forcing = {}
     
     def delete(self):
         self.ignoreAll()
@@ -44,6 +45,20 @@ class InputState(DirectObject.DirectObject):
         self.state[name] = default
         self.watching[name] = (eventOn, eventOff)
     
+    def force(self, name, value):
+        """
+        Force isSet(name) to return value.
+        See Also: unforce()
+        """
+        self.forcing[name] = value
+    
+    def unforce(self, name):
+        """
+        Stop forcing a value.
+        See Also: force()
+        """
+        del self.forcing[name]
+    
     def ignore(self, name):
         """
         The opposite of watch(name, ...)
@@ -64,6 +79,9 @@ class InputState(DirectObject.DirectObject):
         returns 0, 1, or None (if we're not tracking it at all)
         """
         #assert(self.debugPrint("isSet(name=%s)"%(name)))
+        r = self.forcing.get(name)
+        if r is not None:
+            return r
         return self.state.get(name)
     
     def debugPrint(self, message):
