@@ -28,6 +28,7 @@
 
 #include <graphicsPipe.h>
 #include <graphicsWindow.h>
+#include <pt_NamedNode.h>
 
 #include "pmap.h"
 
@@ -101,9 +102,28 @@ public:
 
 extern ChanCfgOverrides ChanOverrideNone;
 
-PT(GraphicsWindow) EXPCL_PANDA
-ChanConfig(GraphicsPipe*, std::string, Node *camera_node, Node *render,
-           ChanCfgOverrides& = ChanOverrideNone);
+typedef pvector<SetupItem> SVec;
+class NamedNode;
+class EXPCL_PANDA ChanConfig
+{
+private:
+  std::vector<PT_NamedNode> _group_node;
+  std::vector<PT(DisplayRegion)> _display_region;
+  std::vector<int> _group_membership;
+  PT(GraphicsWindow) _graphics_window;
+  void chan_eval(GraphicsWindow* win, WindowItem& W, LayoutItem& L, 
+	 SVec& S, ChanViewport& V, int hw_offset, 
+	 int xsize, int ysize, Node *render, bool want_cameras);
+PUBLISHED:
+  ChanConfig(GraphicsPipe*, std::string, Node *render,
+    ChanCfgOverrides& = ChanOverrideNone);
+  INLINE PT_NamedNode get_group_node(const int node_index) const;
+  INLINE int get_group_membership(const int dr_index) const;
+  INLINE int get_num_groups(void) const;
+  INLINE int get_num_drs(void) const;
+  INLINE PT(DisplayRegion) get_dr(const int dr_index) const;
+  INLINE PT(GraphicsWindow) get_win(void) const;
+};
 
 #include "chancfg.I"
 

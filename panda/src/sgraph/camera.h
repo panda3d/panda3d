@@ -64,6 +64,17 @@ PUBLISHED:
   int get_num_drs() const;
   DisplayRegion *get_dr(int index) const;
 
+  void set_projection(const Projection &projection);
+
+  void set_fov(float hfov);
+  void set_fov(float hfov, float vfov);
+  void set_hfov(float hfov);
+  void set_vfov(float vfov);
+  void set_aspect(float aspect);
+  void set_near_far(float cnear, float cfar);
+  void set_near(float cnear);
+  void set_far(float cfar);
+
 private:
   void add_display_region(DisplayRegion *display_region);
   void remove_display_region(DisplayRegion *display_region);
@@ -73,6 +84,8 @@ private:
 
   typedef pvector<DisplayRegion *> DisplayRegions;
   DisplayRegions _display_regions;
+
+  static const std::string _CHANGE_CAM;
 
 public:
   static TypeHandle get_class_type() {

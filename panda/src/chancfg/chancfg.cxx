@@ -30,6 +30,8 @@
 #include <dconfig.h>
 #include <filename.h>
 #include <algorithm>
+#include <pt_NamedNode.h>
+
 
 Configure(chanconfig);
 
@@ -121,7 +123,8 @@ INLINE bool ConfigDefined(std::string sym) {
     (WindowDB->find(sym) != WindowDB->end());
 }
 
-typedef pvector<SetupItem> SVec;
+//KEH:  Moving this up to .h file
+//typedef pvector<SetupItem> SVec;
 
 bool ChanCheckLayouts(SetupSyms& S) {
   if (S.empty())
@@ -207,101 +210,109 @@ SetupFOV ChanResolveFOV(SetupFOV& fov, float sizeX, float sizeY) {
   return ret;
 }
 
-void ChanEval(GraphicsWindow* win, WindowItem& W, LayoutItem& L, SVec& S,
-          ChanViewport& V, int hw_offset, int xsize, int ysize,
-          Node *camera_node, Node *render, bool want_cameras) {
+void ChanConfig::chan_eval(GraphicsWindow* win, WindowItem& W, LayoutItem& L, 
+                           SVec& S,
+                           ChanViewport& V, int hw_offset, int xsize, int ysize,
+                           Node *render, bool want_cameras) {
   int i = min(L.GetNumRegions(), int(S.size()));
   int j;
   SVec::iterator k;
+  std::vector<PT_NamedNode>camera(W.getNumCameraGroups());
+  //first camera is special cased to name "camera" for older code
+  camera[0] = new NamedNode("camera");
+  for(int icam=1;icam<W.getNumCameraGroups();icam++) {
+    char dummy[10];//if more than 10^11 groups, you've got bigger problems
+    sprintf(dummy,"%d",icam);
+    std::string nodeName = "camera";
+    nodeName.append(dummy);
+    camera[icam] = new NamedNode(nodeName.c_str());
+  }
   for (j=0, k=S.begin(); j<i; ++j, ++k) {
     ChanViewport v(ChanScaleViewport(V, L[j]));
     if ((*k).getRecurse()) {
-      SetupSyms l = (*k).getLayouts();
-      SetupSyms s = (*k).getSetups();
-      LayoutItem subL = (*LayoutDB)[l[0]];
-      SVec subS;
-      for (SetupSyms::iterator m=s.begin(); m!=s.end(); ++m)
-    subS.push_back((*SetupDB)[*m]);
-      int xs = int(xsize*(v.right()-v.left()));
-      int ys = int(ysize*(v.top()-v.bottom()));
-      ChanEval(win, W, subL, subS, v, hw_offset, xs, ys, camera_node, render, want_cameras);
+      chancfg_cat->error()<<"Recursive setups no longer supported"<<endl;
+      chancfg_cat->error()<<"Skipping ..."<<endl;
+      ++k;
     } else {
       PT(GraphicsChannel) chan;
       if ((*k).getHWChan() && W.getHWChans()) {
-    if ((*k).getChan() == -1) {
-      chan = win->get_channel(hw_offset);
-    } else
-      chan = win->get_channel((*k).getChan());
-    // HW channels always start with the full area of the channel
-    v = ChanViewport(0., 1., 0., 1.);
+        if ((*k).getChan() == -1) {
+          chan = win->get_channel(hw_offset);
+        } else
+         chan = win->get_channel((*k).getChan());
+  // HW channels always start with the full area of the channel
+        v = ChanViewport(0., 1., 0., 1.);
       } else {
-    chan = win->get_channel(0);
+        chan = win->get_channel(0);
       }
       ChanViewport v2(ChanScaleViewport(v, (*k).getViewport()));
       PT(GraphicsLayer) layer = chan->make_layer();
-      PT(DisplayRegion) dr =
-    layer->make_display_region(v2.left(), v2.right(),
-                   v2.bottom(), v2.top());
-      if (want_cameras && camera_node != (Node *)NULL) {
-    // now make a camera for it
-    PT(Camera) cam = new Camera;
-    dr->set_camera(cam);
-    SetupFOV fov = (*k).getFOV();
-    fov = ChanResolveFOV(fov, xsize*(v2.right()-v2.left()),
-                 ysize*(v2.top()-v2.bottom()));
-    if (chancfg_cat.is_debug()) {
-      chancfg_cat->debug() << "ChanEval:: about to compute frustum."
-                   << endl;
-      chancfg_cat->debug() << "ChanEval:: FOVhoriz = " << fov.getHoriz()
-                   << "  FOVvert = " << fov.getVert() << endl;
-      chancfg_cat->debug() << "ChanEval:: xsize = " << xsize
-                   << "  ysize = " << ysize << endl;
-    }
-    Frustumf frust;
-    frust.make_perspective(fov.getHoriz(), fov.getVert(), 1., 10000.);
-    cam->set_projection(PerspectiveProjection(frust));
-    if (chancfg_cat.is_debug())
-      chancfg_cat->debug() << "ChanEval:: camera hfov = "
-                   << cam->get_hfov() << "  vfov = "
-                   << cam->get_vfov() << endl;
-    cam->set_scene(render);
+      PT(DisplayRegion) dr = 
+        layer->make_display_region(v2.left(), v2.right(),
+                                   v2.bottom(), v2.top());
+      if (want_cameras && camera[0] != (Node *)NULL) {
+        // now make a camera for it
+        PT(Camera) cam = new Camera;
+        dr->set_camera(cam);
+        _display_region.push_back(dr);
+        SetupFOV fov = (*k).getFOV();
+        fov = ChanResolveFOV(fov, xsize*(v2.right()-v2.left()),
+                             ysize*(v2.top()-v2.bottom()));
+        if (chancfg_cat->is_debug()) {
+          chancfg_cat->debug() << "ChanEval:: FOVhoriz = " << fov.getHoriz()
+             << "  FOVvert = " << fov.getVert() << endl;
+          chancfg_cat->debug() << "ChanEval:: xsize = " << xsize
+             << "  ysize = " << ysize << endl;
+        }
+        Frustumf frust;
+        frust.make_perspective(fov.getHoriz(), fov.getVert(), 1., 10000.);
+        cam->set_projection(PerspectiveProjection(frust));
+        if (chancfg_cat->is_debug())
+          chancfg_cat->debug() << "ChanEval:: camera hfov = "
+            << cam->get_hfov() << "  vfov = "
+            << cam->get_vfov() << endl;
+        cam->set_scene(render);
 
-    // take care of the orientation
-    PT(TransformTransition) orient;
+        // take care of the orientation
+        PT(TransformTransition) orient;
+      
+        switch ((*k).getOrientation()) {
+          case SetupItem::Up:
+            break;
+          case SetupItem::Down:
+            orient = new TransformTransition(
+              LMatrix4f::rotate_mat_normaxis(180., LVector3f::forward()));
+            break;
+          case SetupItem::Left:
+            orient = new TransformTransition(
+              LMatrix4f::rotate_mat_normaxis(90., LVector3f::forward()));
+            break;
+          case SetupItem::Right:
+            orient = new TransformTransition(
+              LMatrix4f::rotate_mat_normaxis(-90., LVector3f::forward()));
+            break;
+        }
 
-    switch ((*k).getOrientation()) {
-    case SetupItem::Up:
-      break;
-    case SetupItem::Down:
-      orient = new TransformTransition(LMatrix4f::rotate_mat_normaxis(180., LVector3f::forward()));
-      break;
-    case SetupItem::Left:
-      orient = new TransformTransition(LMatrix4f::rotate_mat_normaxis(90., LVector3f::forward()));
-      break;
-    case SetupItem::Right:
-      orient = new TransformTransition(LMatrix4f::rotate_mat_normaxis(-90., LVector3f::forward()));
-      break;
-    }
-
-    RenderRelation *tocam = new RenderRelation(camera_node, cam);
-    if (orient != (TransformTransition *)NULL) {
-      tocam->set_transition(orient);
-    }
+        RenderRelation *tocam = new RenderRelation(camera[W.getCameraGroup(j)], cam);
+        if (orient != (TransformTransition *)NULL) {
+          tocam->set_transition(orient);
+        }
       }
     }
   }
+  _group_node = camera;
   return;
 }
 
-PT(GraphicsWindow) ChanConfig(GraphicsPipe* pipe, std::string cfg,
-                  Node *camera_node, Node *render,
-                  ChanCfgOverrides& overrides) {
+ChanConfig::ChanConfig(GraphicsPipe* pipe, std::string cfg, Node *render,
+                       ChanCfgOverrides& overrides) {
   ReadChanConfigData();
   // check to make sure we know everything we need to
   if (!ConfigDefined(cfg)) {
     chancfg_cat.error()
       << "no window configuration called '" << cfg << "'" << endl;
-    return (GraphicsWindow*)0;
+    _graphics_window = (GraphicsWindow*)0;
+    return;
   }
   WindowItem W = (*WindowDB)[cfg];
 
@@ -309,13 +320,17 @@ PT(GraphicsWindow) ChanConfig(GraphicsPipe* pipe, std::string cfg,
   if (!LayoutDefined(l)) {
     chancfg_cat.error()
       << "No layout called '" << l << "'" << endl;
-    return (GraphicsWindow*)0;
+    _graphics_window = (GraphicsWindow*)0;
+    return;
   }
   LayoutItem L = (*LayoutDB)[l];
 
   SetupSyms s = W.getSetups();
-  if (!ChanCheckSetups(s))
-    return (GraphicsWindow*)0;
+  if (!ChanCheckSetups(s)) {
+    chancfg_cat.error() << "Setup failure" << endl;
+    _graphics_window = (GraphicsWindow*)0;
+    return;
+  }
   SVec S;
   for (SetupSyms::iterator i=s.begin(); i!=s.end(); ++i)
     S.push_back((*SetupDB)[(*i)]);
@@ -385,12 +400,18 @@ PT(GraphicsWindow) ChanConfig(GraphicsPipe* pipe, std::string cfg,
 
   // open that sucker
   PT(GraphicsWindow) win = pipe->make_window(props);
-  nassertr(win != (GraphicsWindow *)NULL, NULL);
+  if(win == (GraphicsWindow *)NULL) {
+    chancfg_cat.error() << "Could not create window" << endl;
+    _graphics_window = (GraphicsWindow *)NULL;
+    return;
+  }
 
   // make channels and display regions
   ChanViewport V(0., 1., 0., 1.);
-  ChanEval(win, W, L, S, V, W.getChanOffset()+1, sizeX, sizeY,
-       camera_node, render, want_cameras);
+  chan_eval(win, W, L, S, V, W.getChanOffset()+1, sizeX, sizeY, 
+            render, want_cameras);
+  for(int dr_index=0; dr_index<_display_region.size(); dr_index++)
+    _group_membership.push_back(W.getCameraGroup(dr_index));
 
   // sanity check
   if (config_sanity_check) {
@@ -443,8 +464,9 @@ PT(GraphicsWindow) ChanConfig(GraphicsPipe* pipe, std::string cfg,
       }
     }
   }
-
-  return win;
+    
+  _graphics_window = win;
+  return;
 }
 
 

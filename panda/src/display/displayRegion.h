@@ -51,6 +51,10 @@ public:
 
 PUBLISHED:
   INLINE void get_dimensions(float &l, float &r, float &b, float &t) const;
+  INLINE float get_left() const;
+  INLINE float get_right() const;
+  INLINE float get_bottom() const;
+  INLINE float get_top() const;
   void set_dimensions(float l, float r, float b, float t);
 
   INLINE GraphicsLayer *get_layer() const;

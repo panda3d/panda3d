@@ -21,21 +21,25 @@ INLINE WindowItem::WindowItem(void) {}
 INLINE WindowItem::WindowItem(const bool h, const bool d, const int o,
                               const std::string& l, const SetupSyms& s,
                               const int x, const int y, const bool b,
-                              const bool c) : _hw_chans(h), _dvr(d),
-                                              _border(b), _cursor(c),
-                                              _chan_offset(o), _sizeX(x),
-                                              _sizeY(y), _layout(l),
-                                              _setups(s) {}
+                              const bool c, PTA(int) n) : 
+  _hw_chans(h), _dvr(d),
+  _border(b), _cursor(c),
+  _chan_offset(o), _sizeX(x),
+  _sizeY(y), _layout(l),
+  _setups(s), 
+  _camera_group(n) {}
 
-INLINE WindowItem::WindowItem(const WindowItem& c) : _hw_chans(c._hw_chans),
-                                                     _dvr(c._dvr),
-                                                     _border(c._border),
-                                                     _cursor(c._cursor),
-                                                     _chan_offset(c._chan_offset),
-                                                     _sizeX(c._sizeX),
-                                                     _sizeY(c._sizeY),
-                                                     _layout(c._layout),
-                                                     _setups(c._setups) {}
+INLINE WindowItem::WindowItem(const WindowItem& c) : 
+  _hw_chans(c._hw_chans),
+  _dvr(c._dvr),
+  _border(c._border),
+  _cursor(c._cursor),
+  _chan_offset(c._chan_offset),
+  _sizeX(c._sizeX),
+  _sizeY(c._sizeY),
+  _layout(c._layout),
+  _setups(c._setups),
+  _camera_group(c._camera_group) {}
 
 INLINE WindowItem::~WindowItem(void) {}
 
@@ -49,6 +53,7 @@ INLINE WindowItem& WindowItem::operator=(const WindowItem& c) {
   _sizeY = c._sizeY;
   _layout = c._layout;
   _setups = c._setups;
+  _camera_group = c._camera_group;
   return *this;
 }
 
@@ -86,4 +91,14 @@ INLINE std::string WindowItem::getLayout(void) const {
 
 INLINE SetupSyms WindowItem::getSetups(void) const {
   return _setups;
+}
+
+INLINE int WindowItem::getCameraGroup(int display_region) const {
+  return _camera_group[display_region];
+}
+INLINE int WindowItem::getNumCameraGroups(void) const {
+ int largestIndex=0;
+ for(int j=0;j<_camera_group.size();j++)
+  if(_camera_group[j]>largestIndex)largestIndex=_camera_group[j];
+ return largestIndex+1;
 }

@@ -4,7 +4,7 @@
 #begin lib_target
   #define TARGET sgraph
   #define LOCAL_LIBS \
-    gobj putil graph mathutil linmath
+    gobj putil graph mathutil linmath event
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
 

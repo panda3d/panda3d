@@ -21,6 +21,7 @@
 #include "chanshare.h"
 
 #include <notify.h>
+
 WindowType* WindowDB = (WindowType*)0;
 
 class WindowParseFunctor : public ChanParseFunctor {
@@ -48,27 +49,60 @@ void WindowParseFunctor::operator()(std::string S) {
   int hw_chan_offset = ChanReadNextInt(S);
   std::string layout = ChanReadNextWord(S);
   SetupSyms sv;
+  PTA(int) cameraGroup;
+  int group_index=0;
   {
     ChanCheckScoping(S);
-    int i = S.find_first_of(")");
-    std::string stmp = S.substr(1, i-1);
-    S.erase(0, i+1);
-    ChanEatFrontWhite(S);
+    int i=ChanMatchingParen(S);
+    std::string setupSubstring = S.substr(1,i-2);
+    S.erase(0,i);
+    ChanEatFrontWhite(setupSubstring);
 
-    while (!stmp.empty()) {
-      std::string stmp2 = ChanReadNextWord(stmp);
-      sv.push_back(stmp2);
+    while (!setupSubstring.empty()) {
+
+      ChanCheckScoping(setupSubstring);
+      std::string groupSubstring = setupSubstring;
+      //get the group substring
+      int iend = setupSubstring.find_first_of(")");
+      groupSubstring = setupSubstring.substr(1,iend-1);
+      //then erase that portion from the setup string
+      setupSubstring.erase(0,iend+1);
+      ChanEatFrontWhite(setupSubstring);
+
+      while (!groupSubstring.empty()) {
+
+        int region_number = ChanReadNextInt(groupSubstring);
+        if(region_number<0) {
+          nout <<"Trying to read region index, which should be >= 0, ";
+          nout << "but got "<<region_number<<"."<<endl;
+          nout << "Ignoring this entry."<<endl;
+          ChanReadNextWord(groupSubstring); //slurp it up, but ignore it.
+        } else {
+           //0 based.  We don't know yet how much room we actually need
+           //as the information is in the un-analyzed layout.  cameraGroup
+           //and sv are handled the same in this manner.
+           while(sv.size()<region_number+1) {
+             sv.push_back("");
+             cameraGroup.push_back(0);
+           }
+           std::string stmp2 = ChanReadNextWord(groupSubstring);
+           sv[region_number]=stmp2;
+           cameraGroup[region_number]=group_index;
+        }
+      }
+      group_index++;
     }
   }
   int X, Y;
   {
+    ChanEatFrontWhite(S);
     ChanCheckScoping(S);
     int i = S.find_first_of(")");
-    std::string stmp = S.substr(1, i-1);
+    std::string screenSubstring = S.substr(1, i-1);
     S.erase(0, i+1);
     ChanEatFrontWhite(S);
-    X = ChanReadNextInt(stmp);
-    Y = ChanReadNextInt(stmp);
+    X = ChanReadNextInt(screenSubstring);
+    Y = ChanReadNextInt(screenSubstring);
   }
   bool border = ChanReadNextBool(S);
   bool cursor = ChanReadNextBool(S);
@@ -79,7 +113,7 @@ void WindowParseFunctor::operator()(std::string S) {
   }
 
   WindowItem W(hw_chans, dvr, hw_chan_offset, layout, sv, X, Y, border,
-           cursor);
+         cursor, cameraGroup);
 
   if (chancfg_cat.is_debug()) {
     chancfg_cat->debug() << "parsed a window called '" << sym << "':" << endl;

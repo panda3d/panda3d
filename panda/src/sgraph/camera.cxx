@@ -18,12 +18,14 @@
 #include <pandabase.h>
 #include "camera.h"
 #include <projection.h>
+#include <throw_event.h>
 
 
 ////////////////////////////////////////////////////////////////////
 // Static variables
 ////////////////////////////////////////////////////////////////////
 TypeHandle Camera::_type_handle;
+const std::string Camera::_CHANGE_CAM = "CamChange";
 
 
 ////////////////////////////////////////////////////////////////////
@@ -168,4 +170,97 @@ remove_display_region(DisplayRegion *display_region) {
   if (dri != _display_regions.end()) {
     _display_regions.erase(dri);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Camera::set_*
+//       Access: Public
+//  Description: Overrides projection matrix functions.  The intention
+//               is to throw a camera update event for recalculation
+//               of various parameters used by Direct, rather than
+//               recalculating everything every frame "just in case".
+//               When fully implemented, there will be more specific
+//               information for each event, e.g. 
+//               throw_event(_CHANGE_FOV, get_name(), hfov, vfov)
+////////////////////////////////////////////////////////////////////
+void Camera::
+set_projection(const Projection &projection) {
+	ProjectionNode::set_projection(projection);
+	if(has_name()) {
+	  throw_event(_CHANGE_CAM,get_name());
+	}
+	else
+	  throw_event(_CHANGE_CAM,std::string(""));
+}
+
+void Camera::
+set_fov(float hfov) {
+	ProjectionNode::set_fov(hfov);
+	if(has_name())
+	  throw_event(_CHANGE_CAM,get_name());
+	else
+	  throw_event(_CHANGE_CAM,std::string(""));
+}
+
+void Camera::
+set_fov(float hfov, float vfov) {
+	ProjectionNode::set_fov(hfov, vfov);
+	if(has_name())
+	  throw_event(_CHANGE_CAM,get_name());
+	else
+	  throw_event(_CHANGE_CAM,std::string(""));
+}
+
+void Camera::
+set_hfov(float hfov) {
+	ProjectionNode::set_hfov(hfov);
+	if(has_name())
+	  throw_event(_CHANGE_CAM,get_name());
+	else
+	  throw_event(_CHANGE_CAM,std::string(""));
+}
+
+void Camera::
+set_vfov(float vfov) {
+	ProjectionNode::set_vfov(vfov);
+	if(has_name())
+	  throw_event(_CHANGE_CAM,get_name());
+	else
+	  throw_event(_CHANGE_CAM,std::string(""));
+}
+
+void Camera::
+set_aspect(float aspect) {
+	ProjectionNode::set_aspect(aspect);
+	if(has_name())
+	  throw_event(_CHANGE_CAM,get_name());
+	else
+	  throw_event(_CHANGE_CAM,std::string(""));
+}
+
+void Camera::
+set_near_far(float cnear, float cfar) {
+	ProjectionNode::set_near_far(cnear,cfar);
+	if(has_name())
+	  throw_event(_CHANGE_CAM,get_name());
+	else
+	  throw_event(_CHANGE_CAM,std::string(""));
+}
+
+void Camera::
+set_near(float cnear) {
+	ProjectionNode::set_near(cnear);
+	if(has_name())
+	  throw_event(_CHANGE_CAM,get_name());
+	else
+	  throw_event(_CHANGE_CAM,std::string(""));
+}
+
+void Camera::
+set_far(float cfar) {
+	ProjectionNode::set_far(cfar);
+	if(has_name())
+	  throw_event(_CHANGE_CAM,get_name());
+	else
+	  throw_event(_CHANGE_CAM,std::string(""));
 }

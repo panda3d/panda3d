@@ -986,13 +986,12 @@ static void move_gridded_stuff(GriddedMotionType gridmotiontype,gridded_file_inf
   LMatrix4f tmat1,tmat2,xfm_mat;
 
   for(int i = 0; i < size; i++) {
-        double time_delta = (now-InfoArr[i].starttime);
-
-        #define DO_FP_MODULUS(VAL,MAXVAL)  \
-          {if(VAL > MAXVAL) {int idivresult = VAL / (float)MAXVAL;  VAL=VAL-idivresult*MAXVAL;} else  \
-          if(VAL < -MAXVAL) {int idivresult = VAL / (float)MAXVAL;  VAL=VAL+idivresult*MAXVAL;}}
-
-        // probably should use panda lerps for this stuff, but I dont understand how
+  double time_delta = (now-InfoArr[i].starttime);
+  #define DO_FP_MODULUS(VAL,MAXVAL)  \
+    {if(VAL > MAXVAL) {int idivresult = VAL / (float)MAXVAL;  VAL=VAL-idivresult*MAXVAL;} else  \
+    if(VAL < -MAXVAL) {int idivresult = VAL / (float)MAXVAL;  VAL=VAL+idivresult*MAXVAL;}}
+  
+  // probably should use panda lerps for this stuff, but I dont understand how
 
     if(gridmotiontype==Rotation) {
 
@@ -1181,18 +1180,32 @@ int framework_main(int argc, char *argv[]) {
   // Create the render node
   render = new NamedNode("render");
 
-  // make a node for the cameras to live under
-  cameras = new NamedNode("cameras");
+  ChanConfig chanConfig = ChanConfig(main_pipe, conf, render, override);
+  main_win = chanConfig.get_win();
+  assert(main_win != (GraphicsWindow*)0L);
+  cameras = chanConfig.get_group_node(0);
+  cameras->set_name("cameras");
+  for(int group_node_index=1;group_node_index<chanConfig.get_num_groups();
+      group_node_index++) {
+    RenderRelation *arc2 = 
+      new RenderRelation(render, chanConfig.get_group_node(group_node_index));
+  }
   RenderRelation* arc1 = new RenderRelation(render, cameras);
 
-  main_win = ChanConfig(main_pipe, conf, cameras, render, override);
-  assert(main_win != (GraphicsWindow*)0L);
-
   // is ok if this doesn't work or returns NULL
-  if (rib_pipe != (GraphicsPipe*)0L) {
-    Node *rib_cameras = new NamedNode("rib_cameras");
+  if (rib_pipe != (GraphicsPipe*)0L) { 
+    ChanConfig chanConfig = ChanConfig(rib_pipe, "single", render, override);
+    rib_win = chanConfig.get_win();
+    NamedNode *rib_cameras = chanConfig.get_group_node(0);
+    rib_cameras->set_name("rib_cameras");
+    for(int rib_group_node_index=1;
+        rib_group_node_index<chanConfig.get_num_groups();
+        rib_group_node_index++) {
+      RenderRelation *ribarc = 
+        new RenderRelation(render, 
+                           chanConfig.get_group_node(rib_group_node_index));
+    }
     new RenderRelation(render, rib_cameras);
-    rib_win = ChanConfig(rib_pipe, "single", rib_cameras, render, override);
   }
 
   // Make a node for the lights to live under.  We put the lights in

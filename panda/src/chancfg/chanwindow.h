@@ -25,6 +25,7 @@
 #include "pvector.h"
 #include <string>
 #include "chansetup.h"
+#include <pta_int.h>
 
 class WindowItem {
 private:
@@ -32,11 +33,12 @@ private:
   int _chan_offset, _sizeX, _sizeY;
   std::string _layout;
   SetupSyms _setups;
+  PTA(int) _camera_group;
 public:
   INLINE WindowItem(void);
   INLINE WindowItem(const bool, const bool, const int, const std::string&,
                     const SetupSyms&, const int, const int, const bool,
-                    const bool);
+                    const bool, PTA(int) );
   INLINE WindowItem(const WindowItem&);
   INLINE ~WindowItem(void);
 
@@ -51,6 +53,8 @@ public:
   INLINE int getSizeY(void) const;
   INLINE std::string getLayout(void) const;
   INLINE SetupSyms getSetups(void) const;
+  INLINE int getCameraGroup(int display_region) const;
+  INLINE int getNumCameraGroups(void) const;
 };
 
 typedef pmap<std::string, WindowItem> WindowType;

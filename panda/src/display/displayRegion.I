@@ -32,6 +32,54 @@ get_dimensions(float &l, float &r, float &b, float &t) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_left
+//       Access: Public
+//  Description: Retrieves the x coordinate of the left edge of the
+//               rectangle within its GraphicsLayer.  This number
+//               will be in the range [0..1].
+////////////////////////////////////////////////////////////////////
+INLINE float DisplayRegion::
+get_left() const {
+  return _l;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_right
+//       Access: Public
+//  Description: Retrieves the x coordinate of the right edge of the
+//               rectangle within its GraphicsLayer.  This number
+//               will be in the range [0..1].
+////////////////////////////////////////////////////////////////////
+INLINE float DisplayRegion::
+get_right() const {
+  return _r;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_bottom
+//       Access: Public
+//  Description: Retrieves the y coordinate of the bottom edge of 
+//               the rectangle within its GraphicsLayer.  This 
+//               number will be in the range [0..1].
+////////////////////////////////////////////////////////////////////
+INLINE float DisplayRegion::
+get_bottom() const {
+  return _b;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_top
+//       Access: Public
+//  Description: Retrieves the y coordinate of the top edge of the
+//               rectangle within its GraphicsLayer.  This number
+//               will be in the range [0..1].
+////////////////////////////////////////////////////////////////////
+INLINE float DisplayRegion::
+get_top() const {
+  return _t;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::get_layer
 //       Access: Public
 //  Description: Returns the layer associated with this particular
