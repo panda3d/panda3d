@@ -237,6 +237,7 @@ except NameError:
 # Precompute class types for type comparisons
 DNA_CORNICE = DNACornice.getClassType()
 DNA_DOOR = DNADoor.getClassType()
+DNA_FLAT_DOOR = DNAFlatDoor.getClassType()
 DNA_FLAT_BUILDING = DNAFlatBuilding.getClassType()
 DNA_NODE = DNANode.getClassType()
 DNA_GROUP = DNAGroup.getClassType()
@@ -1460,7 +1461,7 @@ class LevelEditor(NodePath, PandaObject):
         newDNALandmarkBuilding.setCode(landmarkType)
         newDNALandmarkBuilding.setPos(VBase3(0))
         newDNALandmarkBuilding.setHpr(VBase3(0))
-        newDNADoor = self.createDoor()
+        newDNADoor = self.createDoor('landmark_door')
         newDNALandmarkBuilding.add(newDNADoor)
         # Now place new landmark building in the world
         self.initDNANode(newDNALandmarkBuilding)
@@ -1498,12 +1499,15 @@ class LevelEditor(NodePath, PandaObject):
         newDNACornice.setColor(self.getCurrent('cornice_color'))
         return newDNACornice
 
-    def createDoor(self):
+    def createDoor(self, type):
         if not (self.getCurrent('door_texture')):
             doorStyles = self.styleManager.attributeDictionary['door_texture'].getList()[:-1]
             defaultDoorStyle = doorStyles[randint(0, len(doorStyles) - 1)]
             self.setCurrent('door_texture', defaultDoorStyle)
-        newDNADoor = DNADoor('door')
+        if (type == 'landmark_door'):
+            newDNADoor = DNADoor('door')
+        elif (type == 'door'):
+            newDNADoor = DNAFlatDoor('door')
         newDNADoor.setCode(self.getCurrent('door_texture'))
         newDNADoor.setColor(self.getCurrent('door_color'))
         return newDNADoor
@@ -1562,7 +1566,7 @@ class LevelEditor(NodePath, PandaObject):
 
     def removeDoor(self, door, parent):
         self.setCurrent('door_color', door.getColor())
-        DNARemoveChildOfClass(parent, DNA_DOOR)
+        DNARemoveChildOfClass(parent, DNA_FLAT_DOOR)
 
     def removeWindows(self, windows, parent):
         # And record number of windows
@@ -1601,7 +1605,7 @@ class LevelEditor(NodePath, PandaObject):
                 self.DNATarget = wall
                 self.DNATargetParent = dnaObject
             elif string.find(menuMode,'door') >= 0:
-                self.DNATarget = DNAGetChildOfClass(wall, DNA_DOOR)
+                self.DNATarget = DNAGetChildOfClass(wall, DNA_FLAT_DOOR)
                 self.DNATargetParent = wall
             elif string.find(menuMode, 'window') >= 0:
                 self.DNATarget = DNAGetChildOfClass(wall, DNA_WINDOWS)
@@ -1753,8 +1757,6 @@ class LevelEditor(NodePath, PandaObject):
                     menuMode = 'door_orientation'
                 else:
                     menuMode = 'door_texture'
-                # MRM: Temp for now
-                menuMode = 'window_texture'
             else:
                 # Do window operations
                 if direct.fControl:
@@ -1776,6 +1778,7 @@ class LevelEditor(NodePath, PandaObject):
             if ((objClass.eq(DNA_WALL)) or
                 (objClass.eq(DNA_WINDOWS)) or
                 (objClass.eq(DNA_DOOR)) or
+                (objClass.eq(DNA_FLAT_DOOR)) or
                 (objClass.eq(DNA_CORNICE)) or
                 (objClass.eq(DNA_PROP))
                 ):
@@ -1813,9 +1816,9 @@ class LevelEditor(NodePath, PandaObject):
             elif (type == 'sign'):
                 self.DNATarget = self.createSign()
             elif (type == 'landmark_door'):
-                self.DNATarget = self.createDoor()
+                self.DNATarget = self.createDoor('landmark_door')
             elif (type == 'door'):
-                self.DNATarget = self.createDoor()
+                self.DNATarget = self.createDoor('door')
             elif (type == 'windows'):
                 # Make sure window_count n.e. 0
                 if self.getCurrent('window_count') == 0:
@@ -1881,6 +1884,7 @@ class LevelEditor(NodePath, PandaObject):
             if ((objClass.eq(DNA_WALL)) or
                 (objClass.eq(DNA_WINDOWS)) or
                 (objClass.eq(DNA_DOOR)) or
+                (objClass.eq(DNA_FLAT_DOOR)) or
                 (objClass.eq(DNA_CORNICE)) or
                 (objClass.eq(DNA_PROP)) or
                 (objClass.eq(DNA_SIGN)) or
@@ -2458,6 +2462,8 @@ class LevelEditor(NodePath, PandaObject):
                 tag = 'window_color:'
             elif classType.eq(DNA_DOOR):
                 tag = 'door_color:'
+            elif classType.eq(DNA_FLAT_DOOR):
+                tag = 'door_color:'
             elif classType.eq(DNA_CORNICE):
                 tag = 'cornice_color:'
             elif classType.eq(DNA_PROP):
@@ -2718,7 +2724,7 @@ class LevelEditor(NodePath, PandaObject):
             marker.setColor(0,0,1)
             marker.setScale(0.5)
         elif (type == DNASuitPoint.SIDEDOORPOINT):
-            marker.setColor(0,0.2,0.4)
+            marker.setColor(0,0.6,0.2)
             marker.setScale(0.5)
         # Highlight if necessary
         if suitPoint in self.visitedPoints:
@@ -2747,6 +2753,7 @@ class LevelEditor(NodePath, PandaObject):
             # Make a new dna edge
             if DNAClassEqual(self.DNAParent, DNA_VIS_GROUP):
                 zoneId = self.DNAParent.getName()
+
                 suitEdge = DNASuitEdge(
                     self.startSuitPoint, self.endSuitPoint, zoneId)
                 DNASTORE.storeSuitEdge(suitEdge)
@@ -2763,7 +2770,28 @@ class LevelEditor(NodePath, PandaObject):
                         self.point2edgeDict[point].append(suitEdge)
                     else:
                         self.point2edgeDict[point] = [suitEdge]
-                
+
+                # If this is a building point, you need edges in both directions
+                # so just make the other edge automatically
+                if ((self.startSuitPoint.getPointType() == DNASuitPoint.FRONTDOORPOINT)
+                    or (self.startSuitPoint.getPointType() == DNASuitPoint.SIDEDOORPOINT)):
+                    
+                    suitEdge = DNASuitEdge(
+                        self.endSuitPoint, self.startSuitPoint, zoneId)
+                    DNASTORE.storeSuitEdge(suitEdge)
+                    # Add edge to the current vis group so it can be written out
+                    self.DNAParent.addSuitEdge(suitEdge)
+                    # Draw a line to represent the edge
+                    edgeLine = self.drawSuitEdge(suitEdge, self.NPParent)
+                    # Store the line in a dict so we can hide/show them
+                    self.edgeDict[suitEdge] = edgeLine
+                    
+                    for point in [self.startSuitPoint, self.endSuitPoint]:
+                        if self.point2edgeDict.has_key(point):
+                            self.point2edgeDict[point].append(suitEdge)
+                        else:
+                            self.point2edgeDict[point] = [suitEdge]
+
                 print 'Added dnaSuitEdge to zone: ' + zoneId
             else:
                 print 'Error: DNAParent is not a dnaVisGroup. Did not add edge'
@@ -2822,7 +2850,7 @@ class LevelEditor(NodePath, PandaObject):
             elif (type == DNASuitPoint.FRONTDOORPOINT):
                 marker.setColor(0,0,1)
             elif (type == DNASuitPoint.SIDEDOORPOINT):
-                marker.setColor(0,0.2,0.4)
+                marker.setColor(0,0.6,0.2)
         for edge in self.edgeDict.values():
             edge.clearColor()
         self.visitedPoints = []
@@ -3014,6 +3042,9 @@ class LevelEditor(NodePath, PandaObject):
             block=block[2:block.find(':')]
             print ("associate point with building: " + str(block))
             self.selectedSuitPoint.setLandmarkBuildingIndex(int(block))
+            marker = self.pointDict[self.selectedSuitPoint]
+            marker.setColor(1,0,0,1)
+            marker.setScale(1.0)
 
     def findHighestLandmarkBlock(self, dnaRoot, npRoot):
         npc=npRoot.findAllMatches("**/*:toon_landmark_*")
@@ -3111,7 +3142,8 @@ class LevelEditor(NodePath, PandaObject):
 
                 # Get the suit point for this lb
                 for point, marker in self.pointDict.items():
-                    if (point.getPointType() == DNASuitPoint.FRONTDOORPOINT):
+                    if ((point.getPointType() == DNASuitPoint.FRONTDOORPOINT)
+                        or (point.getPointType() == DNASuitPoint.SIDEDOORPOINT)):
                         lbIndex = point.getLandmarkBuildingIndex()
                         if (lbIndex == int(block)):
                             marker.setColor(1,0,0,1)
@@ -3128,6 +3160,9 @@ class LevelEditor(NodePath, PandaObject):
                 for point, marker in self.pointDict.items():
                     if (point.getPointType() == DNASuitPoint.FRONTDOORPOINT):
                         marker.setColor(0,0,1,1)
+                        marker.setScale(0.5)
+                    elif (point.getPointType() == DNASuitPoint.SIDEDOORPOINT):
+                        marker.setColor(0,0.6,0.2,1)
                         marker.setScale(0.5)
                 self.showLandmarkBlockToggleGroup=None
     
@@ -3670,7 +3705,7 @@ class LevelStyleManager:
                 windows.add(awning)
         # Add a door if necessary
         if style['door_texture']:
-            door = DNADoor()
+            door = DNAFlatDoor()
             # Set the door's attributes
             door.setCode(style['door_texture'])
             door.setColor(style['door_color'])
@@ -3715,7 +3750,11 @@ class LevelStyleManager:
                 color = child.getColor()
                 print ('door_color: Vec4(%.3f, %.3f, %.3f, 1.0)' %
                        (color[0], color[1], color[2]))
-                # MRM: Check for awnings here
+            elif DNAClassEqual(child, DNA_FLAT_DOOR):
+                print 'door_texture: ' + child.getCode()
+                color = child.getColor()
+                print ('door_color: Vec4(%.3f, %.3f, %.3f, 1.0)' %
+                       (color[0], color[1], color[2]))
             elif DNAClassEqual(child, DNA_CORNICE):
                 print 'cornice_texture: ' + child.getCode()
                 color = child.getColor()
@@ -4323,6 +4362,9 @@ class DNAWallStyle:
                 self.window_color = child.getColor()
                 # MRM: Check for awnings here
             elif DNAClassEqual(child, DNA_DOOR):
+                self.door_texture = child.getCode()
+                self.door_color = child.getColor()
+            elif DNAClassEqual(child, DNA_FLAT_DOOR):
                 self.door_texture = child.getCode()
                 self.door_color = child.getColor()
                 # MRM: Check for awnings here
@@ -5454,6 +5496,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                 if ((objClass.eq(DNA_WALL)) or
                     (objClass.eq(DNA_WINDOWS)) or
                     (objClass.eq(DNA_DOOR)) or
+                    (objClass.eq(DNA_FLAT_DOOR)) or
                     (objClass.eq(DNA_CORNICE)) or
                     (objClass.eq(DNA_PROP)) or
                     (objClass.eq(DNA_SIGN)) or
