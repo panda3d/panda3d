@@ -115,13 +115,16 @@ class DistributedNodePathEntity(DistributedEntity.DistributedEntity,
                                 NodePath.NodePath, NodePathAttribs):
     def __init__(self, cr):
         DistributedEntity.DistributedEntity.__init__(self, cr)
+
+    def generateInit(self):
+        DistributedEntity.DistributedEntity.generateInit(self)
         node = hidden.attachNewNode('DistributedNodePathEntity')
         NodePath.NodePath.__init__(self, node)
 
     def announceGenerate(self):
         DistributedEntity.DistributedEntity.announceGenerate(self)
         self.initNodePathAttribs(self)
-        
+
     def delete(self):
         self.removeNode()
         DistributedEntity.DistributedEntity.delete(self)
