@@ -26,7 +26,7 @@ PStatGraph(PStatMonitor *monitor, int xsize, int ysize) :
   _target_frame_rate = pstats_target_frame_rate;
   _labels_changed = false;
   _guide_bars_changed = false;
-  _guide_bar_units = GBU_hz;
+  _guide_bar_units = GBU_ms;
 }
 
 ////////////////////////////////////////////////////////////////////

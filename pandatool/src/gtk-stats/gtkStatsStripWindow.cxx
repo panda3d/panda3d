@@ -89,28 +89,28 @@ setup_menu() {
   Gtk::Menu *scale_menu = new Gtk::Menu;
 
   scale_menu->items().push_back
-    (MenuElem("0.1 Hz",
+    (MenuElem("10000 ms (0.1 Hz)",
 	      bind(slot(this, &GtkStatsStripWindow::menu_vscale), 0.1)));
   scale_menu->items().push_back
-    (MenuElem("1 Hz",
+    (MenuElem("1000 ms (1 Hz)",
 	      bind(slot(this, &GtkStatsStripWindow::menu_vscale), 1.0)));
   scale_menu->items().push_back
-    (MenuElem("5 Hz",
+    (MenuElem("200 ms (5 Hz)",
 	      bind(slot(this, &GtkStatsStripWindow::menu_vscale), 5.0)));
   scale_menu->items().push_back
-    (MenuElem("10 Hz",
+    (MenuElem("100 ms (10 Hz)",
 	      bind(slot(this, &GtkStatsStripWindow::menu_vscale), 10.0)));
   scale_menu->items().push_back
-    (MenuElem("20 Hz",
+    (MenuElem("50.0 ms (20 Hz)",
 	      bind(slot(this, &GtkStatsStripWindow::menu_vscale), 20.0)));
   scale_menu->items().push_back
-    (MenuElem("30 Hz",
+    (MenuElem("33.3 ms (30 Hz)",
 	      bind(slot(this, &GtkStatsStripWindow::menu_vscale), 30.0)));
   scale_menu->items().push_back
-    (MenuElem("60 Hz",
+    (MenuElem("16.7 ms (60 Hz)",
 	      bind(slot(this, &GtkStatsStripWindow::menu_vscale), 60.0)));
   scale_menu->items().push_back
-    (MenuElem("120 Hz",
+    (MenuElem("8.3 ms (120 Hz)",
 	      bind(slot(this, &GtkStatsStripWindow::menu_vscale), 120.0)));
 
   _menu->items().push_back(MenuElem("Scale", *manage(scale_menu)));
