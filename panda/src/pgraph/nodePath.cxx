@@ -2027,7 +2027,7 @@ get_color_scale() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_light
 //       Access: Published
-//  Description: Adds the indicated light to the list of lights that
+//  Description: Adds the indicated Light to the list of lights that
 //               illuminate geometry at this node and below.  The
 //               light itself should be parented into the scene graph
 //               elsewhere, to represent the light's position in
@@ -2057,6 +2057,45 @@ set_light(Light *light, int priority) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_light
+//       Access: Published
+//  Description: Adds a PolylightEffect to the geometry at this node
+//               and below.  This makes the geometry at this point in
+//               the scene graph grow brighter or dimmer according to
+//               its proximity to the indicated PolylightNode; this is
+//               an effect similar to lighting, but is not related to
+//               traditional hardware T&L.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_light(PolylightNode *) {
+  // Not yet implemented.
+  nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_light
+//       Access: Published
+//  Description: Adds the indicated Light or PolylightNode to the list
+//               of lights that illuminate geometry at this node and
+//               below.  The light itself should be parented into the
+//               scene graph elsewhere, to represent the light's
+//               position in space; but until set_light() is called it
+//               will illuminate no geometry.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_light(const NodePath &light, int priority) {
+  if (!light.is_empty()) {
+    PandaNode *node = light.node();
+    Light *light_obj = node->as_light();
+    if (light_obj != (Light *)NULL) {
+      set_light(light_obj, priority);
+      return;
+    }
+  }
+  nassert_raise("Not a Light object.");
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_light_off
 //       Access: Published
 //  Description: Sets the geometry at this level and below to render
@@ -2080,8 +2119,8 @@ set_light_off(int priority) {
 //     Function: NodePath::set_light_off
 //       Access: Published
 //  Description: Sets the geometry at this level and below to render
-//               using without the indicated light.  This is different
-//               from not specifying the light; rather, this
+//               using without the indicated Light.  This is different
+//               from not specifying the Light; rather, this
 //               specifically contradicts set_light() at a higher node
 //               level (or, with a priority, overrides a set_light()
 //               at a lower level).
@@ -2111,6 +2150,32 @@ set_light_off(Light *light, int priority) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_light_off
+//       Access: Published
+//  Description: Sets the geometry at this level and below to render
+//               using without the indicated Light.  This is different
+//               from not specifying the Light; rather, this
+//               specifically contradicts set_light() at a higher node
+//               level (or, with a priority, overrides a set_light()
+//               at a lower level).
+//
+//               This interface does not support PolylightNodes, which
+//               cannot be turned off at a lower level.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_light_off(const NodePath &light, int priority) {
+  if (!light.is_empty()) {
+    PandaNode *node = light.node();
+    Light *light_obj = node->as_light();
+    if (light_obj != (Light *)NULL) {
+      set_light_off(light_obj, priority);
+      return;
+    }
+  }
+  nassert_raise("Not a Light object.");
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::clear_light
 //       Access: Published
 //  Description: Completely removes any lighting operations that may
@@ -2121,12 +2186,13 @@ void NodePath::
 clear_light() {
   nassertv_always(!is_empty());
   node()->clear_attrib(LightAttrib::get_class_type());
+  node()->clear_effect(PolylightEffect::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::clear_light
 //       Access: Published
-//  Description: Removes any reference to the indicated light 
+//  Description: Removes any reference to the indicated Light 
 //               from the NodePath.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
@@ -2151,9 +2217,40 @@ clear_light(Light *light) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_light
+//       Access: Published
+//  Description: Removes the indicated PolylightEffect from the
+//               geometry.  This undoes a previous set_light() call.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+clear_light(PolylightNode *) {
+  // Not yet implemented.
+  nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_light
+//       Access: Published
+//  Description: Removes any reference to the indicated Light or
+//               PolylightNode from the NodePath.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+clear_light(const NodePath &light) {
+  if (!light.is_empty()) {
+    PandaNode *node = light.node();
+    Light *light_obj = node->as_light();
+    if (light_obj != (Light *)NULL) {
+      clear_light(light_obj);
+      return;
+    }
+  }
+  nassert_raise("Not a Light object.");
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::has_light
 //       Access: Published
-//  Description: Returns true if the indicated light has been
+//  Description: Returns true if the indicated Light has been
 //               specifically enabled on this particular node.  This
 //               means that someone called set_light() on this node
 //               with the indicated light.
@@ -2173,9 +2270,45 @@ has_light(Light *light) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_light
+//       Access: Published
+//  Description: Returns true if the indicated PolylightNode has been
+//               specifically enabled on this particular node.  This
+//               means that someone called set_light() on this node
+//               with the indicated light.
+////////////////////////////////////////////////////////////////////
+bool NodePath::
+has_light(PolylightNode *) const {
+  // Not yet implemented.
+  nassertr(false, false);
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_light
+//       Access: Published
+//  Description: Returns true if the indicated Light or PolylightNode
+//               has been specifically enabled on this particular
+//               node.  This means that someone called set_light() on
+//               this node with the indicated light.
+////////////////////////////////////////////////////////////////////
+bool NodePath::
+has_light(const NodePath &light) const {
+  if (!light.is_empty()) {
+    PandaNode *node = light.node();
+    Light *light_obj = node->as_light();
+    if (light_obj != (Light *)NULL) {
+      return has_light(light_obj);
+    }
+  }
+  nassert_raise("Not a Light object.");
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::has_light_off
 //       Access: Published
-//  Description: Returns true if all lights have been specifically
+//  Description: Returns true if all Lights have been specifically
 //               disabled on this particular node.  This means that
 //               someone called set_light_off() on this node with no
 //               parameters.
@@ -2196,7 +2329,7 @@ has_light_off() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::has_light_off
 //       Access: Published
-//  Description: Returns true if the indicated light has been
+//  Description: Returns true if the indicated Light has been
 //               specifically disabled on this particular node.  This
 //               means that someone called set_light_off() on this
 //               node with the indicated light.
@@ -2216,92 +2349,18 @@ has_light_off(Light *light) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_light
+//     Function: NodePath::has_light_off
 //       Access: Published
-//  Description: Adds a PolylightEffect to the geometry at this node
-//               and below.  This makes the geometry at this point in
-//               the scene graph grow brighter or dimmer according to
-//               its proximity to the indicated PolylightNode; this is
-//               an effect similar to lighting, but is not related to
-//               traditional hardware T&L.
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_light(PolylightNode *) {
-  // Not yet implemented.
-  nassertv(false);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::clear_light
-//       Access: Published
-//  Description: Removes the indicated PolylightEffect from the
-//               geometry.  This undoes a previous set_light() call.
-////////////////////////////////////////////////////////////////////
-void NodePath::
-clear_light(PolylightNode *) {
-  // Not yet implemented.
-  nassertv(false);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::has_light
-//       Access: Published
-//  Description: Returns true if the indicated PolylightNode was added
-//               to this node, false otherwise.
+//  Description: Returns true if the indicated Light has been
+//               specifically disabled on this particular node.  This
+//               means that someone called set_light_off() on this
+//               node with the indicated light.
+//
+//               This interface does not support PolylightNodes, which
+//               cannot be turned off at a lower level.
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
-has_light(PolylightNode *) {
-  // Not yet implemented.
-  nassertr(false, false);
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_light
-//       Access: Published
-//  Description: Adds a Light or Polylight to the geometry at this
-//               node and below.
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_light(const NodePath &light) {
-  if (!light.is_empty()) {
-    PandaNode *node = light.node();
-    Light *light_obj = node->as_light();
-    if (light_obj != (Light *)NULL) {
-      set_light(light_obj);
-      return;
-    }
-  }
-  nassert_raise("Not a light object.");
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::clear_light
-//       Access: Published
-//  Description: Removes the indicated PolylightEffect from the
-//               geometry.  This undoes a previous set_light() call.
-////////////////////////////////////////////////////////////////////
-void NodePath::
-clear_light(const NodePath &light) {
-  if (!light.is_empty()) {
-    PandaNode *node = light.node();
-    Light *light_obj = node->as_light();
-    if (light_obj != (Light *)NULL) {
-      clear_light(light_obj);
-      return;
-    }
-  }
-  nassert_raise("Not a light object.");
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::has_light
-//       Access: Published
-//  Description: Returns true if the indicated PolylightNode was added
-//               to this node, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool NodePath::
-has_light(const NodePath &light) {
+has_light_off(const NodePath &light) const {
   if (!light.is_empty()) {
     PandaNode *node = light.node();
     Light *light_obj = node->as_light();
@@ -2309,7 +2368,7 @@ has_light(const NodePath &light) {
       return has_light(light_obj);
     }
   }
-  nassert_raise("Not a light object.");
+  nassert_raise("Not a Light object.");
   return false;
 }
 
