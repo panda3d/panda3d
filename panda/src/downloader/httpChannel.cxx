@@ -1546,13 +1546,15 @@ run_reading_header() {
   }
 
   if (_state == S_read_header && 
-      ((get_status_code() / 100) == 5 || get_status_code() == 407) &&
+      ((get_status_code() / 100) == 4 || (get_status_code() / 100) == 5) &&
       _proxy_serves_document && _proxy_next_index < _proxies.size()) {
     // If we were using a proxy (but not tunneling through the proxy)
     // and we got some kind of a server error, try the next proxy in
     // sequence (if we have one).  This handles the case of a working
     // proxy that cannot see the host (and so returns 504 or something
-    // along those lines).
+    // along those lines).  Some proxies are so broken they return a
+    // 404 in this case, so we have to consider that along the same
+    // lines.
     _state = S_try_next_proxy;
     return false;
   }
