@@ -42,7 +42,7 @@
 
                         /* structure for image dimensions */
 typedef struct {
-        int     or;             /* orientation (from flags above) */
+        int     orient;         /* orientation (from flags above) */
         int     xr, yr;         /* x and y resolution */
 } RESOLU;
 

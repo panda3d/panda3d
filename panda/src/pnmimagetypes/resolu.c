@@ -36,7 +36,7 @@ fputresolu(int ord, int sl, int ns, FILE *fp)           /* put out picture dimen
 {
         RESOLU  rs;
 
-        if ((rs.or = ord) & YMAJOR) {
+        if ((rs.orient = ord) & YMAJOR) {
                 rs.xr = sl;
                 rs.yr = ns;
         } else {
@@ -54,28 +54,28 @@ fgetresolu(int *sl, int *ns, FILE *fp)                  /* get picture dimension
 
         if (!fgetsresolu(&rs, fp))
                 return(-1);
-        if (rs.or & YMAJOR) {
+        if (rs.orient & YMAJOR) {
                 *sl = rs.xr;
                 *ns = rs.yr;
         } else {
                 *sl = rs.yr;
                 *ns = rs.xr;
         }
-        return(rs.or);
+        return(rs.orient);
 }
 
 
 char *
 resolu2str(char *buf, register RESOLU *rp)              /* convert resolution struct to line */
 {
-        if (rp->or&YMAJOR)
+        if (rp->orient&YMAJOR)
                 sprintf(buf, "%cY %d %cX %d\n",
-                                rp->or&YDECR ? '-' : '+', rp->yr,
-                                rp->or&XDECR ? '-' : '+', rp->xr);
+                                rp->orient&YDECR ? '-' : '+', rp->yr,
+                                rp->orient&XDECR ? '-' : '+', rp->xr);
         else
                 sprintf(buf, "%cX %d %cY %d\n",
-                                rp->or&XDECR ? '-' : '+', rp->xr,
-                                rp->or&YDECR ? '-' : '+', rp->yr);
+                                rp->orient&XDECR ? '-' : '+', rp->xr,
+                                rp->orient&YDECR ? '-' : '+', rp->yr);
         return(buf);
 }
 
@@ -95,10 +95,10 @@ int str2resolu(register RESOLU *rp, char *buf)          /* convert resolution li
                         yndx = cp;
         if (xndx == NULL || yndx == NULL)
                 return(0);
-        rp->or = 0;
-        if (xndx > yndx) rp->or |= YMAJOR;
-        if (xndx[-1] == '-') rp->or |= XDECR;
-        if (yndx[-1] == '-') rp->or |= YDECR;
+        rp->orient = 0;
+        if (xndx > yndx) rp->orient |= YMAJOR;
+        if (xndx[-1] == '-') rp->orient |= XDECR;
+        if (yndx[-1] == '-') rp->orient |= YDECR;
         if ((rp->xr = atoi(xndx+1)) <= 0)
                 return(0);
         if ((rp->yr = atoi(yndx+1)) <= 0)
