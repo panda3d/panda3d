@@ -1403,12 +1403,27 @@ rename_to(const Filename &other) const {
 //               itself.  This assumes that the Filename contains the
 //               name of a file, not a directory name; it ensures that
 //               the directory containing the file exists.
+//
+//               However, if the filename ends in a slash, it assumes
+//               the Filename represents the name of a directory, and
+//               creates all the paths.
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 make_dir() const {
+  if (empty()) {
+    return false;
+  }
   Filename path = *this;
   path.standardize();
-  string dirname = path.get_dirname();
+  string dirname;
+  if (_filename[_filename.length() - 1] == '/') {
+    // The Filename ends in a slash; it represents a directory.
+    dirname = path.get_fullpath();
+
+  } else {
+    // The Filename does not end in a slash; it represents a file.
+    dirname = path.get_dirname();
+  }
 
   // First, make sure everything up to the last path is known.  We
   // don't care too much if any of these fail; maybe they failed
