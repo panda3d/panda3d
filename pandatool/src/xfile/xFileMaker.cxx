@@ -437,6 +437,12 @@ make_nice_name(const string &str) {
     }
   }
 
+  if (!str.empty() && isdigit(str[0])) {
+    // If the name begins with a digit, we must make it begin with
+    // something else, like for instance an underscore.
+    result = '_' + result;
+  }
+
   return result;
 }
 
