@@ -354,6 +354,8 @@ choose_pfnum_advanced(const FrameBufferProperties &properties,
   }
 
   if (frame_buffer_mode & FrameBufferProperties::FM_multisample) {
+    iattrib_list[ni++] = WGL_SAMPLE_BUFFERS_ARB;
+    iattrib_list[ni++] = 1;
     iattrib_list[ni++] = WGL_SAMPLES_ARB;
     iattrib_list[ni++] = want_multisample_bits;
   }
