@@ -30,7 +30,22 @@
 //               the data structures that are important to protect
 //               between stages of a pipeline.  See PipelineCycler.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CycleData : public ReferenceCount {
+#ifdef DO_PIPELINING
+
+// If we are compiling in pipelining support, we maintain a pointer to
+// a CycleData object in each containing class, instead of the object
+// itself.  Thus, it should be a ReferenceCount object.
+class EXPCL_PANDA CycleData : public ReferenceCount 
+
+#else  // !DO_PIPELINING
+
+// If we are *not* compiling in pipelining support, the CycleData
+// object is stored directly within its containing classes, and hence
+// should not be a ReferenceCount object.
+class EXPCL_PANDA CycleData
+
+#endif  // DO_PIPELINING
+{
 public:
   INLINE CycleData();
   virtual ~CycleData();
