@@ -15,3 +15,4 @@ from DirectButton import *
 from DirectEntry import *
 from DirectLabel import *
 from DirectScrolledList import *
+from DirectDialog import *

@@ -95,6 +95,8 @@ class DirectGuiBase(PandaObject.PandaObject):
         self.guiId = 'guiObject'
         # List of all active hooks
         self._hookDict = {}
+        # List of all post initialization functions
+        self.postInitialiseFuncList = []
         # To avoid doing things redundantly during initialisation
         self.fInit = 1
         # Mapping from each megawidget option to a list of information
@@ -261,7 +263,8 @@ class DirectGuiBase(PandaObject.PandaObject):
             self.postInitialiseFunc()
 
     def postInitialiseFunc(self):
-        pass
+        for func in self.postInitialiseFuncList:
+            func()
                     
     def isinitoption(self, option):
         """
@@ -758,11 +761,14 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
 
         # Bind destroy hook
         self.bind(DESTROY, self.destroy)
+
+        # Update frame when everything has been initialized
+        self.postInitialiseFuncList.append(self.frameInitialiseFunc)
             
         # Call option initialization functions
         self.initialiseoptions(DirectGuiWidget)
 
-    def postInitialiseFunc(self):
+    def frameInitialiseFunc(self):
         # Now allow changes to take effect
         self.updateFrameStyle()
         if not self['frameSize']:

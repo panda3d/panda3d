@@ -96,7 +96,8 @@ def setDefaultFont(newFont):
 def getDefaultDialogGeom():
     global defaultDialogGeom
     if defaultDialogGeom == None:
-        defaultDialogGeom = loader.loadModelOnce('phase_3/models/props/panel')
+        defaultDialogGeom = loader.loadModelOnce(
+            'phase_3/models/gui/dialog_box_gui')
     return defaultDialogGeom
 
 def setDefaultDialogGeom(newDialogGeom):

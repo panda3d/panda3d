@@ -179,7 +179,8 @@ class OnscreenText(PandaObject, NodePath):
         # We'd rather do it here, on the text itself, rather than on
         # our NodePath, so we have one fewer transforms in the scene
         # graph.
-        mat = Mat4.scaleMat(scale[0], 1, scale[1]) * Mat4.translateMat(pos[0], 0, pos[1])
+        mat = Mat4.scaleMat(
+            scale[0], 1, scale[1]) * Mat4.translateMat(pos[0], 0, pos[1])
         textNode.setTransform(mat)
 
         textNode.setBin('fixed')
@@ -259,7 +260,10 @@ class OnscreenText(PandaObject, NodePath):
         Position the onscreen text in 2d screen space
         """
         self.pos = (x, y)
-        mat = Mat4.scaleMat(self.scale[0], 1, self.scale[1]) * Mat4.translateMat(self.pos[0], 0, self.pos[1])
+        mat = Mat4.scaleMat(
+            self.scale[0],
+            1,
+            self.scale[1]) * Mat4.translateMat(self.pos[0], 0, self.pos[1])
         self.textNode.setTransform(mat)
 
     def getPos(self):
@@ -278,7 +282,10 @@ class OnscreenText(PandaObject, NodePath):
                 self.scale = (sx, sx)
         else:
             self.scale = (sx, sy)
-        mat = Mat4.scaleMat(self.scale[0], 1, self.scale[1]) * Mat4.translateMat(self.pos[0], 0, self.pos[1])
+        mat = Mat4.scaleMat(
+            self.scale[0],
+            1,
+            self.scale[1]) * Mat4.translateMat(self.pos[0], 0, self.pos[1])
         self.textNode.setTransform(mat)
 
     def getScale(self):

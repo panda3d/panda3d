@@ -96,6 +96,34 @@ de1 = DirectEntry(initialText = 'Hello, how are you?',
                   scale = 0.0707855,
                   )
 
+# DIRECT DIALOG EXAMPLE
+def printDialogValue(value):
+    print 'Value:', value
+
+simpleDialog = YesNoDialog(text = 'Simple',
+                           command = printDialogValue)
+
+customValues = YesNoDialog(text = 'Simple',
+                           buttonValueList = ['Yes', 'No'],
+                           command = printDialogValue)
+
+
+fancyDialog = YesNoDialog(text = 'Testing Direct Dialog',
+                          geom = smiley,
+                          geom_scale = .1,
+                          geom_pos = (-0.3,0,0),
+                          command = printDialogValue)
+
+toontownDialog = TTOkCancelDialog(text = 'Exit Toontown?',
+                                  command = printDialogValue)
+
+customDialog = DirectDialog(text = 'Pick a number',
+                            buttonTextList = map(str, range(10)),
+                            buttonValueList = range(10),
+                            command = printDialogValue)
+
+
+
 # NOTE: There are some utility functions which help you get size
 # of a direct gui widget.  These can be used to position and scale an
 # image after you've created the entry.  scale = (width/2, 1, height/2)
