@@ -200,9 +200,7 @@ release_gsg() {
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::
 begin_flip() {
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
-    make_current();
-    glFinish();
+  if (_hdc) {
     SwapBuffers(_hdc);
   }
 }

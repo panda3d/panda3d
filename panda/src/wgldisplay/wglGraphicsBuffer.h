@@ -52,8 +52,6 @@ public:
   virtual void make_current();
   virtual void release_gsg();
 
-  virtual void begin_flip();
-
   virtual void process_events();
 
 protected:

@@ -42,6 +42,14 @@ wglGraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   _window_dc = (HDC)0;
   _pbuffer = (HPBUFFERARB)0;
   _pbuffer_dc = (HDC)0;
+
+  // Since the pbuffer (or window, if we use a hidden window) never
+  // gets flipped, we get screenshots from the same buffer we draw
+  // into.
+
+  // Actually, because of an apparent driver bug in nVidia drivers, we
+  // must flip the pbuffer after all.
+  //  _screenshot_buffer_type = _draw_buffer_type;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -123,9 +131,23 @@ end_frame() {
     // texture in the first place (but I don't have a card that
     // supports that right now).
     nassertv(has_texture());
+
     DisplayRegion dr(this, _x_size, _y_size);
     RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type());
     get_texture()->copy(_gsg, &dr, buffer);
+
+    // It appears that the nVidia graphics driver 5.3.0.3, dated
+    // 11/17/2003 will get confused with the above copy operation and
+    // copy the texture from the wrong window, unless we immediately
+    // swap buffers in the pbuffer, even though there's no reason to
+    // swap buffers otherwise.  This is unfortunate, because it means
+    // we can't use single-buffered pbuffers (for which SwapBuffers is
+    // a no-op).
+    if (_pbuffer_dc) {
+      SwapBuffers(_pbuffer_dc);
+    } else if (_window_dc) {
+      SwapBuffers(_window_dc);
+    }
   }
 }
 
@@ -164,38 +186,6 @@ make_current() {
 void wglGraphicsBuffer::
 release_gsg() {
   GraphicsBuffer::release_gsg();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsBuffer::begin_flip
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after end_frame() has been called on all windows, to
-//               initiate the exchange of the front and back buffers.
-//
-//               This should instruct the window to prepare for the
-//               flip at the next video sync, but it should not wait.
-//
-//               We have the two separate functions, begin_flip() and
-//               end_flip(), to make it easier to flip all of the
-//               windows at the same time.
-////////////////////////////////////////////////////////////////////
-void wglGraphicsBuffer::
-begin_flip() {
-  // In principle, we shouldn't need to flip the pbuffer.  But it
-  // seems that if we don't, at least on my nVidia driver, it won't
-  // copy to texture properly somehow.
-
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
-    make_current();
-    glFinish();
-
-    if (_pbuffer_dc) {
-      SwapBuffers(_pbuffer_dc);
-    } else {
-      SwapBuffers(_window_dc);
-    }
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -300,6 +290,8 @@ open_buffer() {
       DestroyWindow(_window);
       _window = 0;
     }
+
+    SwapBuffers(_pbuffer_dc);
   }
 
   _is_valid = true;
