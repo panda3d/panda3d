@@ -138,9 +138,9 @@
 #defer HAVE_PYTHON $[isdir $[PYTHON_IPATH]]
 
 // Is NSPR installed, and where?
-#define NSPR_IPATH /usr/local/mozilla/dist/*/include
-#define NSPR_LPATH
-#define NSPR_LIBS nspr3
+#define NSPR_IPATH /usr/local/include/nspr
+#define NSPR_LPATH /usr/local/lib
+#define NSPR_LIBS nspr4
 #defer HAVE_NSPR $[libtest $[NSPR_LPATH],$[NSPR_LIBS]]
 
 // Is VRPN installed, and where?
