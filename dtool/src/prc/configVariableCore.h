@@ -42,6 +42,7 @@ class ConfigDeclaration;
 class EXPCL_DTOOLCONFIG ConfigVariableCore : public ConfigFlags {
 private:
   ConfigVariableCore(const string &name);
+  ConfigVariableCore(const ConfigVariableCore &templ, const string &name);
   ~ConfigVariableCore();
 
 public:

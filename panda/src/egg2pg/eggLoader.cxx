@@ -80,6 +80,7 @@
 #include "ropeNode.h"
 #include "sheetNode.h"
 #include "look_at.h"
+#include "configVariableString.h"
 
 #include <ctype.h>
 #include <algorithm>
@@ -2773,10 +2774,11 @@ do_expand_object_type(EggGroup *egg_group, const pset<string> &expanded,
   // Try to find the egg syntax that the given objecttype is
   // shorthand for.  First, look in the config file.
 
-  string egg_syntax =
-    config_egg2pg.GetString("egg-object-type-" + downcase(object_type), "none");
+  ConfigVariableString egg_object_type
+    ("egg-object-type-" + downcase(object_type), "");
+  string egg_syntax = egg_object_type;
 
-  if (egg_syntax == "none") {
+  if (!egg_object_type.has_value()) {
     // It wasn't defined in a config file.  Maybe it's built in?
     
     if (cmp_nocase_uh(object_type, "barrier") == 0) {

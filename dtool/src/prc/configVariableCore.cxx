@@ -47,6 +47,31 @@ ConfigVariableCore(const string &name) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableCore::Copy Constructor
+//       Access: Private
+//  Description: This is used by ConfigVariableManager to create the
+//               variable from a template--basically, another variable
+//               with all of the initial properties pre-defined.
+////////////////////////////////////////////////////////////////////
+ConfigVariableCore::
+ConfigVariableCore(const ConfigVariableCore &templ, const string &name) :
+  _name(name),
+  _is_used(templ._is_used),
+  _value_type(templ._value_type),
+  _description(templ._description),
+  _flags(templ._flags),
+  _default_value(NULL),
+  _local_value(NULL),
+  _declarations_sorted(false),
+  _value_queried(false),
+  _value_seq(0)
+{
+  if (templ._default_value != (ConfigDeclaration *)NULL) {
+    set_default_value(templ._default_value->get_string_value());
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableCore::Destructor
 //       Access: Private
 //  Description: The destructor should never be called;

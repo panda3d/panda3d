@@ -51,6 +51,39 @@ operator = (const GlobPattern &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GlobPattern::operator ==
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool GlobPattern::
+operator == (const GlobPattern &other) const {
+  return (_pattern == other._pattern && _case_sensitive == other._case_sensitive);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GlobPattern::operator !=
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool GlobPattern::
+operator != (const GlobPattern &other) const {
+  return !operator == (other);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GlobPattern::operator <
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool GlobPattern::
+operator < (const GlobPattern &other) const {
+  if (_case_sensitive != other._case_sensitive) {
+    return (int)_case_sensitive < (int)other._case_sensitive;
+  }
+  return _pattern < other._pattern;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GlobPattern::set_pattern
 //       Access: Public
 //  Description: Changes the pattern string that the GlobPattern

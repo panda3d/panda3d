@@ -66,10 +66,111 @@ make_variable(const string &name) {
     return (*ni).second;
   }
 
-  ConfigVariableCore *variable = new ConfigVariableCore(name);
+  ConfigVariableCore *variable = NULL;
+
+  // See if there's a template that matches this name.
+  VariableTemplates::const_iterator ti;
+  for (ti = _variable_templates.begin();
+       ti != _variable_templates.end() && variable == (ConfigVariableCore *)NULL;
+       ++ti) {
+    const GlobPattern &pattern = (*ti).first;
+    ConfigVariableCore *templ = (*ti).second;
+    if (pattern.matches(name)) {
+      variable = new ConfigVariableCore(*templ, name);
+    }
+  }
+
+  if (variable == (ConfigVariableCore *)NULL) {
+    variable = new ConfigVariableCore(name);
+  }
+
   _variables_by_name[name] = variable;
   _variables.push_back(variable);
   return variable;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableManager::make_variable_template
+//       Access: Published
+//  Description: Defines a variable "template" to match against
+//               dynamically-defined variables that may or may not be
+//               created in the future.
+//
+//               The template consists of a glob pattern,
+//               e.g. "notify-level-*", which will be tested against
+//               any config variable passed to a future call to
+//               make_variable().  If the pattern matches, the
+//               returned ConfigVariableCore is copied to define the
+//               new variable, instead of creating a default, empty
+//               one.
+//
+//               This is useful to pre-specify default values for a
+//               family of variables that all have similar properties,
+//               and all may not be created at the same time.  It is
+//               especially useful to avoid cluttering up the list of
+//               available variables with user-declared variables that
+//               have not been defined yet by the application
+//               (e.g. "egg-object-type-*").
+//
+//               This method basically pre-defines all variables that
+//               match the specified glob pattern.
+////////////////////////////////////////////////////////////////////
+ConfigVariableCore *ConfigVariableManager::
+make_variable_template(const string &pattern, 
+                       ConfigFlags::ValueType value_type,
+                       const string &default_value,
+                       const string &description, int flags) {
+  ConfigVariableCore *core;
+
+  GlobPattern gp(pattern);
+  VariableTemplates::const_iterator ti = _variable_templates.find(gp);
+  if (ti != _variable_templates.end()) {
+    core = (*ti).second;
+
+  } else {
+    core = new ConfigVariableCore(pattern);
+    _variable_templates[gp] = core;
+  }
+
+  if (value_type != ConfigFlags::VT_undefined) {
+    core->set_value_type(value_type);
+  }
+  if (!default_value.empty() || 
+      core->get_default_value() == (ConfigDeclaration *)NULL) {
+    core->set_default_value(default_value);
+  }
+  if (!description.empty()) {
+    core->set_description(description);
+  }
+  if (flags != 0) {
+    core->set_flags(flags);
+  }
+  core->set_used();
+
+  // Also apply the same changes to any previously-defined variables
+  // that match the pattern.
+  Variables::iterator vi;
+  for (vi = _variables.begin(); vi != _variables.end(); ++vi) {
+    ConfigVariableCore *variable = (*vi);
+    if (gp.matches(variable->get_name())) {
+      if (value_type != ConfigFlags::VT_undefined) {
+        variable->set_value_type(value_type);
+      }
+      if (!default_value.empty() || 
+          variable->get_default_value() == (ConfigDeclaration *)NULL) {
+        variable->set_default_value(default_value);
+      }
+      if (!description.empty()) {
+        variable->set_description(description);
+      }
+      if (flags != 0) {
+        variable->set_flags(flags);
+      }
+      variable->set_used();
+    }
+  }
+
+  return core;
 }
 
 ////////////////////////////////////////////////////////////////////

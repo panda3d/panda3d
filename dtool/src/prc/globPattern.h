@@ -44,6 +44,10 @@ PUBLISHED:
   INLINE GlobPattern(const GlobPattern &copy);
   INLINE void operator = (const GlobPattern &copy);
 
+  INLINE bool operator == (const GlobPattern &other) const;
+  INLINE bool operator != (const GlobPattern &other) const;
+  INLINE bool operator < (const GlobPattern &other) const;
+
   INLINE void set_pattern(const string &pattern);
   INLINE const string &get_pattern() const;
 

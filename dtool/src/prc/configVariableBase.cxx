@@ -33,10 +33,10 @@ ConfigVariableBase(const string &name,
   if (value_type != VT_undefined) {
     _core->set_value_type(value_type);
   }
-  if (flags != 0) {
-    _core->set_flags(flags);
-  }
   if (!description.empty()) {
     _core->set_description(description);
+  }
+  if (flags != 0) {
+    _core->set_flags(flags);
   }
 }

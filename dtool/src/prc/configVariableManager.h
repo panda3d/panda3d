@@ -20,7 +20,9 @@
 #define CONFIGVARIABLEMANAGER_H
 
 #include "dtoolbase.h"
+#include "configFlags.h"
 #include "notify.h"
+#include "globPattern.h"
 #include "pvector.h"
 #include "pmap.h"
 
@@ -39,6 +41,12 @@ protected:
 
 PUBLISHED:
   ConfigVariableCore *make_variable(const string &name);
+  ConfigVariableCore *make_variable_template(const string &pattern, 
+                                             ConfigFlags::ValueType type,
+                                             const string &default_value,
+                                             const string &description = string(), 
+                                             int flags = 0);
+
 
   INLINE int get_num_variables() const;
   INLINE ConfigVariableCore *get_variable(int n) const;
@@ -63,6 +71,9 @@ private:
 
   typedef pmap<string, ConfigVariableCore *> VariablesByName;
   VariablesByName _variables_by_name;
+
+  typedef pmap<GlobPattern, ConfigVariableCore *> VariableTemplates;
+  VariableTemplates _variable_templates;
 
   static ConfigVariableManager *_global_ptr;
 };

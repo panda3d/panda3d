@@ -22,6 +22,8 @@
 #include "get_config_path.h"
 #include "loaderFileTypeEgg.h"
 #include "loaderFileTypeRegistry.h"
+#include "configVariableManager.h"
+#include "configVariableCore.h"
 
 ConfigureDef(config_egg2pg);
 NotifyCategoryDef(egg2pg, "");
@@ -107,6 +109,17 @@ init_libegg2pg() {
     return;
   }
   initialized = true;
+
+  // Define a template for all egg-object-type-* variables, so the
+  // system knows that these variables are defined when it finds them
+  // in a user's prc file, even if we haven't actually read an egg
+  // file that uses the particular <ObjectType> field.
+  ConfigVariableManager *cv_mgr = ConfigVariableManager::get_global_ptr();
+  cv_mgr->make_variable_template
+    ("egg-object-type-*",
+     ConfigVariableCore::VT_string, "",
+     "Defines egg syntax for the named object type.",
+     ConfigVariableCore::F_dynamic);
 
   // Get egg-coordinate-system
   string csstr = config_egg2pg.GetString("egg-coordinate-system", "default");
