@@ -572,12 +572,15 @@ download(const string &file_name, Filename file_dest,
 
       // Handle receive timeouts by trying again
       if (ans == RS_timeout) {
+	int extra_bytes = 0;
 	for (int r = 0; r < downloader_timeout_retries; r++) {
 	    ans = safe_receive(_socket, status._next_in, read_size,
-					(long)downloader_timeout, bytes);
+					(long)downloader_timeout, extra_bytes);
 	    if (ans != RS_timeout)
 	      break;
 	}
+	bytes += extra_bytes;
+
 	if (ans == RS_timeout) {
 	  // We've really timed out - throw an event
 	  downloader_cat.error()
