@@ -327,11 +327,11 @@ main(int argc, char *argv[]) {
       break;
 
     case CO_oc:
-      output_code_filename = optarg;
+      output_code_filename = Filename::from_os_specific(optarg);
       break;
 
     case CO_od:
-      output_data_filename = optarg;
+      output_data_filename = Filename::from_os_specific(optarg);
       break;
 
     case CO_module:
@@ -444,11 +444,12 @@ main(int argc, char *argv[]) {
 
   // Get all of the .h files.
   for (i = 1; i < argc; ++i) {
-    if (!parser.parse_file(argv[i])) {
+    Filename filename = Filename::from_os_specific(argv[i]);
+    if (!parser.parse_file(Filename::from_os_specific(filename))) {
       cerr << "Error parsing file: '" << argv[i] << "'\n";
       exit(1);
     }
-    builder.add_source_file(argv[i]);
+    builder.add_source_file(filename);
   }
 
   // Now that we've parsed all the source code, change the way things
@@ -459,7 +460,7 @@ main(int argc, char *argv[]) {
 
   // Now look for the .N files.
   for (i = 1; i < argc; ++i) {
-    Filename nfilename = argv[i];
+    Filename nfilename = Filename::from_os_specific(argv[i]);
     nfilename.set_extension("N");
     nfilename.set_text();
     ifstream nfile;

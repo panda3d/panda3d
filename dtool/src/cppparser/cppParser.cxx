@@ -57,7 +57,7 @@ is_fully_specified() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPParser::
-parse_file(const string &filename) {
+parse_file(const Filename &filename) {
   if (!init_cpp(CPPFile(filename, filename, CPPFile::S_local))) {
     cerr << "Unable to read " << filename << "\n";
     return false;

@@ -23,6 +23,7 @@
 
 #include "cppScope.h"
 #include "cppPreprocessor.h"
+#include "filename.h"
 
 #include <set>
 
@@ -36,7 +37,7 @@ public:
 
   virtual bool is_fully_specified() const;
 
-  bool parse_file(const string &filename);
+  bool parse_file(const Filename &filename);
 
   CPPExpression *parse_expr(const string &expr);
   CPPType *parse_type(const string &type);
