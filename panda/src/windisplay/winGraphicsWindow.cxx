@@ -395,7 +395,43 @@ handle_reshape() {
 ////////////////////////////////////////////////////////////////////
 bool WinGraphicsWindow::
 do_fullscreen_resize(int x_size, int y_size) {
-  return false;
+  HWND hDesktopWindow = GetDesktopWindow();
+  HDC scrnDC = GetDC(hDesktopWindow);
+  DWORD dwFullScreenBitDepth = GetDeviceCaps(scrnDC, BITSPIXEL);
+  ReleaseDC(hDesktopWindow, scrnDC);
+
+  // resize will always leave screen bitdepth unchanged
+
+  // allowing resizing of lowvidmem cards to > 640x480.  why?  I'll
+  // assume check was already done by caller, so he knows what he
+  // wants
+
+  DEVMODE dm;
+  if (!find_acceptable_display_mode(x_size, y_size,
+                                    dwFullScreenBitDepth, dm)) {
+    windisplay_cat.error()
+      << "window resize(" << x_size << ", " << y_size 
+      << ") failed, no compatible fullscreen display mode found!\n";
+    return false;
+  }
+
+  // this causes WM_SIZE msg to be produced
+  SetWindowPos(_mwindow, NULL, 0,0, x_size, y_size, 
+               SWP_NOZORDER | SWP_NOMOVE | SWP_NOSENDCHANGING);
+  int chg_result = ChangeDisplaySettings(&dm, CDS_FULLSCREEN);
+
+  if (chg_result != DISP_CHANGE_SUCCESSFUL) {
+    windisplay_cat.error()
+      << "resize ChangeDisplaySettings failed (error code: " 
+      << chg_result << ") for specified res (" << x_size << " x "
+      << y_size << " x " << dwFullScreenBitDepth << "), " 
+      << dm.dmDisplayFrequency << "Hz\n";
+    return false;
+  }
+
+  _fullscreen_display_mode = dm;
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -487,7 +523,8 @@ open_fullscreen_window() {
     return false;
   }
    
-  int chg_result = ChangeDisplaySettings(&_fullscreen_display_mode, CDS_FULLSCREEN);
+  int chg_result = ChangeDisplaySettings(&_fullscreen_display_mode, 
+                                         CDS_FULLSCREEN);
   if (chg_result != DISP_CHANGE_SUCCESSFUL) {
     windisplay_cat.error()
       << "ChangeDisplaySettings failed (error code: "

@@ -40,7 +40,6 @@ public:
 
 protected:
   virtual bool open_window();
-  virtual bool do_fullscreen_resize(int x_size, int y_size);
 
 private:
   int choose_pfnum() const;

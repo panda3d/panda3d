@@ -181,18 +181,6 @@ open_window() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsWindow::do_fullscreen_resize
-//       Access: Protected, Virtual
-//  Description: Called in the window thread to resize a fullscreen
-//               window.
-////////////////////////////////////////////////////////////////////
-bool wglGraphicsWindow::
-do_fullscreen_resize(int x_size, int y_size) {
-  // TODO.
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsWindow::choose_pfnum
 //       Access: Private
 //  Description: Selects a suitable pixel format number for the
