@@ -2434,7 +2434,14 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
             assert(pPresParams->SwapEffect == D3DSWAPEFFECT_DISCARD);  // only valid effect for multisample
         #endif
         
-        ClearToBlack(GetDesktopWindow(),_props);
+
+        // if window is not foreground in exclusive mode, ddraw thinks you are 'not active', so
+        // it changes your WM_ACTIVATEAPP from true to false, causing us
+        // to go into a 'wait-for WM_ACTIVATEAPP true' loop, and the event never comes so we hang
+        // in fullscreen wait.
+
+        SetForegroundWindow(Display.hWnd);
+        ClearToBlack(Display.hWnd,_props);
 
         hr = pD3D8->CreateDevice(Display.CardIDNum, D3DDEVTYPE_HAL, _pParentWindowGroup->_hParentWindow,
                                  dwBehaviorFlags, pPresParams, &Display.pD3DDevice);

@@ -2022,10 +2022,15 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
     }
 */  
 
-
-
    DX_DECLARE_CLEAN(DDCAPS,DDCaps);
    pDD->GetCaps(&DDCaps,NULL);
+
+   // if window is not foreground in exclusive mode, ddraw thinks you are 'not active', so
+   // it changes your WM_ACTIVATEAPP from true to false, causing us
+   // to go into a 'wait-for WM_ACTIVATEAPP true' loop, and the event never comes so we hang
+   // in fullscreen wait.
+
+   SetForegroundWindow(Display.hWnd);
 
    if(dx_full_screen) {
         // Setup to create the primary surface w/backbuffer
