@@ -24,12 +24,12 @@
 class Baseball : public Physical {
 public:
   int ttl_balls;
-  int color;
+  //int color;
 
   Baseball(int tb = 1) : ttl_balls(tb), Physical(tb, true) {}
 };
 
-int main(int, char **) {
+int main(int argc, char **argv) {
   PhysicsManager physics_manager;
   Baseball b(8);
 
@@ -87,5 +87,7 @@ int main(int, char **) {
     cout << "vel: " << (*co)->get_velocity() << "  ";
     cout << "pos: " << (*co)->get_position() << endl;
   }
+
+  return 0;
 }
 
