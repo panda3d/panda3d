@@ -245,6 +245,7 @@ read_chars(char *start, size_t length) {
   _z_source.avail_out = length;
 
   bool eof = (_source->eof() || _source->fail());
+  int flush = 0;
 
   while (_z_source.avail_out > 0) {
     if (_z_source.avail_in == 0 && !eof) {
@@ -255,16 +256,20 @@ read_chars(char *start, size_t length) {
       _z_source.next_in = (Bytef *)decompress_buffer;
       _z_source.avail_in = read_count;
     }
-    int result = inflate(&_z_source, 0);
+    int result = inflate(&_z_source, flush);
     size_t bytes_read = length - _z_source.avail_out;
 
     if (result == Z_STREAM_END) {
       // Here's the end of the file.
       return bytes_read;
-    }
-    // It might return Z_BUF_ERROR if we passed in Z_FINISH but not a
-    // big enough output buffer for everything.
-    if (result < 0 && result != Z_BUF_ERROR) {
+
+    } else if (result == Z_BUF_ERROR && flush == 0) {
+      // We might get this if no progress is possible, for instance if
+      // the input stream is truncated.  In this case, tell zlib to
+      // dump everything it's got.
+      flush = Z_FINISH;
+
+    } else if (result < 0) {
       show_zlib_error("inflate", result, _z_source);
       return bytes_read;
     }
