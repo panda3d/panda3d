@@ -40,6 +40,7 @@ EXPCL_PANDA int string_to_int(const string &str, string &tail);
 EXPCL_PANDA bool string_to_int(const string &str, int &result);
 EXPCL_PANDA double string_to_double(const string &str, string &tail);
 EXPCL_PANDA bool string_to_double(const string &str, double &result);
+EXPCL_PANDA bool string_to_float(const string &str, float &result);
 
 // Convenience function to make a string from anything that has an
 // ostream operator.

@@ -707,12 +707,12 @@ dispatch_double_quad(const string &opt, const string &arg, void *var) {
 //       Access: Protected, Static
 //  Description: Standard dispatch function for an option that takes a
 //               color, either as r,g,b or as r,g,b,a.  The data
-//               pointer is to an array of four doubles, e.g. a
-//               Colord.
+//               pointer is to an array of four floats, e.g. a
+//               Colorf.
 ////////////////////////////////////////////////////////////////////
 bool ProgramBase::
 dispatch_color(const string &opt, const string &arg, void *var) {
-  double *ip = (double *)var;
+  float *ip = (float *)var;
 
   vector_string words;
   tokenize(arg, words, ",");
@@ -720,16 +720,16 @@ dispatch_color(const string &opt, const string &arg, void *var) {
   bool okflag = false;
   if (words.size() == 4) {
     okflag =
-      string_to_double(words[0], ip[0]) &&
-      string_to_double(words[1], ip[1]) &&
-      string_to_double(words[2], ip[2]) &&
-      string_to_double(words[3], ip[3]);
+      string_to_float(words[0], ip[0]) &&
+      string_to_float(words[1], ip[1]) &&
+      string_to_float(words[2], ip[2]) &&
+      string_to_float(words[3], ip[3]);
 
   } else if (words.size() == 3) {
     okflag =
-      string_to_double(words[0], ip[0]) &&
-      string_to_double(words[1], ip[1]) &&
-      string_to_double(words[2], ip[2]);
+      string_to_float(words[0], ip[0]) &&
+      string_to_float(words[1], ip[1]) &&
+      string_to_float(words[2], ip[2]);
     ip[3] = 1.0;
   }
 

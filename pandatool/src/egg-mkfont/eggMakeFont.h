@@ -60,7 +60,7 @@ private:
   Filename _output_image_filename;
   Filename _input_font_filename;
   bool _got_output_size;
-  Colord _fg, _bg;
+  Colorf _fg, _bg;
   bool _use_alpha;
   int _output_xsize, _output_ysize, _output_zsize;
   double _buffer_pixels;
