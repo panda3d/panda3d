@@ -125,7 +125,7 @@ private:
   static MemoryUsage *_global_ptr;
 
   // Cannot use a pmap, since that would be recursive!
-  typedef pmap<void *, MemoryInfo> Table;
+  typedef map<void *, MemoryInfo> Table;
   Table _table;
   int _freeze_index;
   int _count;
@@ -140,7 +140,7 @@ private:
 
   private:
     // Cannot use a pmap, since that would be recursive!
-    typedef pmap<TypeHandle, MemoryUsagePointerCounts> Counts;
+    typedef map<TypeHandle, MemoryUsagePointerCounts> Counts;
     Counts _counts;
   };
   TypeHistogram _trend_types;
