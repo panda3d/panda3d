@@ -98,6 +98,7 @@ class GravityWalker(DirectObject.DirectObject):
         self.platform.reparentTo(self.platformRoot)
 
         startPos = Vec3(0.0, -15.0, 0.0)
+        upPos = Vec3(0.0, 0.0, 15.0)
         endPos = Vec3(0.0, 15.0, 0.0)
         distance = Vec3(startPos-endPos).length()
         duration = distance/4
@@ -112,6 +113,17 @@ class GravityWalker(DirectObject.DirectObject):
                             startPos, startPos=endPos,
                             name='platformBack%s' % fakeId,
                             fluid = 1),
+            WaitInterval(0.3),
+            LerpPosInterval(self.platform, duration,
+                            upPos,
+                            name='platformOut%s' % fakeId,
+                            fluid = 1),
+            WaitInterval(0.3),
+            LerpPosInterval(self.platform, duration,
+                            startPos,
+                            name='platformOut%s' % fakeId,
+                            fluid = 1),
+
             name='platformIval%s' % fakeId,
             )
         self.moveIval.loop()
@@ -416,7 +428,6 @@ class GravityWalker(DirectObject.DirectObject):
                               self.__oldPosDelta.pPrintValues())
         velocity = self.__oldPosDelta*(1.0/self.__oldDt)
         self.priorParent = Vec3(velocity)
-        self.priorParent.setZ(0.0) # The lifter handles the z value.
         if __debug__:
             if self.wantDebugIndicator:
                 onScreenDebug.add("priorParent", self.priorParent.pPrintValues())

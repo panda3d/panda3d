@@ -301,15 +301,11 @@ class DirectDialog(DirectFrame):
         self.resetFrameSize()
 
     def show(self):
-        """show(self)
-        """
         if self['fadeScreen']:
             base.transitions.fadeScreen(self['fadeScreen'])
         NodePath.show(self)
 
     def hide(self):
-        """hide(self)
-        """
         if self['fadeScreen']:
             base.transitions.noTransitions()
         NodePath.hide(self)
@@ -323,8 +319,6 @@ class DirectDialog(DirectFrame):
         self.configureDialog()
         
     def cleanup(self):
-        """unload(self)
-        """
         # Remove this panel out of the AllDialogs list
         uniqueName = self['dialogName']
         if DirectDialog.AllDialogs.has_key(uniqueName):
