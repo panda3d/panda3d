@@ -47,11 +47,22 @@ class ParticleEffect(NodePath):
 	forceGroup.nodePath.reparentTo(self)
 	self.forceGroupDict[forceGroup.getName()] = forceGroup
 
+	# Associate the force group with all particles
+	flist = forceGroup.asList()
+	for p in self.particlesDict.values():
+	    for f in flist:
+	    	p.addForce(f)	
+
     def addParticles(self, particles):
 	"""addParticles(particles)"""
 	particles.nodePath.reparentTo(self)
-	particles.forceNodePath.reparentTo(self)
 	self.particlesDict[particles.getName()] = particles
+
+	# Associate all forces in all force groups with the particles
+	for fg in self.forceGroupDict.values():
+	    flist = fg.asList()
+	    for f in flist:
+		particles.addForce(f)
 
     def getParticlesList(self):
         """getParticles()"""
@@ -86,15 +97,6 @@ class ParticleEffect(NodePath):
         # Add a blank line
         f.write('\n')
 
-	# Save all the forces to file
-	num = 0
-	for fg in self.forceGroupDict.values():
-	    target = 'f%d' % num
-	    num = num + 1
-	    f.write(target + ' = ForceGroup.ForceGroup(\'%s\')\n' % fg.getName())
-	    fg.printParams(f, target)	
-	    f.write('self.addForceGroup(%s)\n' % target)
-
         # Save all the particles to file
 	f.write('self.particlesDict = {}\n')
 	num = 0
@@ -104,6 +106,15 @@ class ParticleEffect(NodePath):
 	    f.write(target + ' = Particles.Particles(\'%s\')\n' % p.getName())
 	    p.printParams(f, target)
 	    f.write('self.addParticles(%s)\n' % target)
+
+	# Save all the forces to file
+	num = 0
+	for fg in self.forceGroupDict.values():
+	    target = 'f%d' % num
+	    num = num + 1
+	    f.write(target + ' = ForceGroup.ForceGroup(\'%s\')\n' % fg.getName())
+	    fg.printParams(f, target)	
+	    f.write('self.addForceGroup(%s)\n' % target)
 
         # Close the file
         f.close()

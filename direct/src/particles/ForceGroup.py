@@ -20,41 +20,34 @@ class ForceGroup(DirectObject):
  	self.node = ForceNode.ForceNode(self.name)
 	self.nodePath = hidden.attachNewNode(self.node)
         self.fEnabled = 0
+	
+	# Default to enabled
+	self.enable()
 
     def enable(self):
-	"""enable(self)"""
-	for i in range(self.node.getNumForces()):
-	    f = self.node.getForce(i)
-	    if (f.isLinear() == 1):
-		physicsMgr.addLinearForce(f)
-	    else:
-		physicsMgr.addAngularForce(f)
-        self.fEnabled = 1
+	"""enable(self)
+	   Convenience function to enable all forces in force group"""
+	if (self.fEnabled == 0):
+	    for i in range(self.node.getNumForces()):
+	    	f = self.node.getForce(i)
+	    	f.setActive(1)	
+            self.fEnabled = 1
 
     def disable(self):
-	"""disable(self)"""
-	for i in range(self.node.getNumForces()):
-	    f = self.node.getForce(i)
-	    if (f.isLinear() == 1):
-		physicsMgr.removeLinearForce(f)
-	    else:
-		physicsMgr.removeAngularForce(f)
-        self.fEnabled = 0
+	"""disable(self)
+	   Convenience function to disable all forces in force group"""
+	if (self.fEnabled == 1):
+	    for i in range(self.node.getNumForces()):
+	    	f = self.node.getForce(i)
+		f.setActive(0)
+            self.fEnabled = 0
 
     def isEnabled(self):
         return self.fEnabled
 
     def addForce(self, force):
 	"""addForce(self, force)"""
-	if (force.isLinear() == 0):
-	    # Physics manager will need an angular integrator
-	    base.addAngularIntegrator()
 	self.node.addForce(force)
-        if self.fEnabled:
-	    if (force.isLinear() == 1):
-		physicsMgr.addLinearForce(force)
-	    else:
-		physicsMgr.addAngularForce(force)
 
     def removeForce(self, force):
 	"""removeForce(self, force)"""
@@ -122,5 +115,9 @@ class ForceGroup(DirectObject):
 		elif isinstance(f, LinearVectorForce):
 		    vec = f.getVector()
 		    file.write(fname + ' = LinearVectorForce(Vec3(%.4f, %.4f, %.4f), %.4f, %d)\n' % (vec[0], vec[1], vec[2], amplitude, massDependent))
+	    elif isinstance(f, AngularForce):
+		if isinstance(f, AngularVectorForce):
+		    vec = f.getVector()
+		    file.write(fname + ' = AngularVectorForce(Vec3(%.4f, %.4f, %.4f))\n' % (vec[0], vec[1], vec[2]))
 	    file.write(fname + '.setActive(%d)\n' % f.getActive())
 	    file.write(targ + '.addForce(%s)\n' % fname)

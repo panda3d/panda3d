@@ -53,10 +53,6 @@ class Particles(ParticleSystem.ParticleSystem):
 	self.setRenderParent(self.node)
 	self.node.addPhysical(self)
 
-	# Set up a force node
-	self.forceNode = ForceNode(self.name + '-force')
-	self.forceNodePath = hidden.attachNewNode(self.forceNode)
-
 	self.factory = None 
 	self.factoryType = "undefined"
 	self.setFactory("PointParticleFactory")
@@ -66,7 +62,9 @@ class Particles(ParticleSystem.ParticleSystem):
 	self.emitter = None 
 	self.emitterType = "undefined"
 	self.setEmitter("SphereVolumeEmitter")
-        self.fEnabled = 0
+
+	# Enable particles by default
+	self.enable()
 
     def enable(self):
 	"""enable()"""
@@ -170,7 +168,6 @@ class Particles(ParticleSystem.ParticleSystem):
 	    self.addLinearForce(force)
 	else:
 	    self.addAngularForce(force)
-	self.forceNode.addForce(force)
 
     def removeForce(self, force):
 	"""removeForce(force)"""
@@ -178,7 +175,6 @@ class Particles(ParticleSystem.ParticleSystem):
 	    self.removeLinearForce(force)
 	else:
 	    self.removeAngularForce(force)
-	self.forceNode.removeForce(force)
 
     ## Getters ##
     def getName(self):
@@ -374,41 +370,3 @@ class Particles(ParticleSystem.ParticleSystem):
 	elif (self.emitterType == "TangentRingEmitter"):
 	    file.write('# Tangent Ring parameters\n')
 	    file.write(targ + '.emitter.setRadius(%.4f)\n' % self.emitter.getRadius())
-
-	file.write('# Local Forces\n')
-	for i in range(self.getNumLinearForces()):
-	    f = self.getLinearForce(i)
-            fname = 'force%d' % i
-            if isinstance(f, LinearForce):
-                amplitude = f.getAmplitude()
-                massDependent = f.getMassDependent()
-                if isinstance(f, LinearCylinderVortexForce):
-                    file.write(fname + ' = LinearCylinderVortexForce(%.4f, %.4f, %.4f, %.4f, %d)\n' % (f.getRadius(), f.getLength(), f.getCoef(), amplitude, massDependent))
-                elif isinstance(f, LinearDistanceForce):
-                    radius = f.getRadius()
-                    falloffType = f.getFalloffType()
-                    ftype = 'FTONEOVERR'
-                    if (falloffType == LinearDistanceForce.LinearDistanceForce.FTONEOVERR):
-                        ftype = 'FTONEOVERR'
-                    elif (falloffType == LinearDistanceForce.LinearDistanceForce.FTONEOVERRSQUARED):
-                        ftype = 'FTONEOVERRSQUARED'
-                    elif (falloffType == LinearDistanceForce.LinearDistanceForce.FTONEOVERRCUBED):
-                        ftype = 'FTONEOVERRCUBED'
-                    forceCenter = f.getForceCenter()
-                    if isinstance(f, LinearSinkForce):
-                        file.write(fname + ' = LinearSinkForce(Vec3(%.4f, %.4f, %.4f), LinearDistanceForce.%s, %.4f, %.4f, %d)\n' % (forceCenter[0], forceCenter[1], forceCenter[2], ftype, radius, amplitude, massDependent))
-                    elif isinstance(f, LinearSourceForce):
-                        file.write(fname + ' = LinearSourceForce(Vec3(%.4f, %.4f, %.4f), LinearDistanceForce.%s, %.4f, %.4f, %d)\n' % (forceCenter[0], forceCenter[1], forceCenter[2], ftype, radius, amplitude, massDependent))
-                elif isinstance(f, LinearFrictionForce):
-                    file.write(fname + ' = LinearFrictionForce(%.4f, %.4f, %d)\n' % (f.getCoef(), amplitude, massDependent))
-                elif isinstance(f, LinearJitterForce):
-                    file.write(fname + ' = LinearJitterForce(%.4f, %d)\n' % (amplitude, massDependent))
-                elif isinstance(f, LinearNoiseForce):
-                    file.write(fname + ' = LinearNoiseForce(%.4f, %d)\n' % (amplitude, massDependent))
-                elif isinstance(f, LinearVectorForce):
-                    vec = f.getVector()
-                    file.write(fname + ' = LinearVectorForce(Vec3(%.4f, %.4f, %.4f), %.4f, %d)\n' % (vec[0], vec[1], vec[2], amplitude, massDependent))
-            file.write(fname + '.setActive(%d)\n' % f.getActive())
-            file.write(targ + '.addForce(%s)\n' % fname)
-	for i in range(self.getNumAngularForces()):
-	    f = self.getAngularForce(i)
