@@ -35,6 +35,7 @@ class DirectManipulationControl(PandaObject):
             ['shift-f', self.objectHandles.growToFit],
             ['i', self.plantSelectedNodePath],
             ]
+        self.optionalSkipFlags = 0
 
     def manipulationStart(self, modifiers):
         # Start out in select mode
@@ -86,8 +87,9 @@ class DirectManipulationControl(PandaObject):
         # depending on flag.....
         if self.mode == 'select':
             # Check for object under mouse
-            # Don't intersect with hidden or backfacing objects
-            skipFlags = SKIP_HIDDEN | SKIP_BACKFACE
+            # Don't intersect with hidden or backfacing objects, as well as any
+            # optionally specified things
+            skipFlags = SKIP_HIDDEN | SKIP_BACKFACE | self.optionalSkipFlags
             # Skip camera (and its children), unless control key is pressed
             skipFlags |= SKIP_CAMERA * (1 - base.getControl())
             entry = direct.iRay.pickGeom(skipFlags = skipFlags)
