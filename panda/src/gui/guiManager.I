@@ -3,10 +3,9 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-INLINE GuiManager::GuiManager(MouseWatcher* w, Node* n) : _start_draw_order(0),
-							  _next_draw_order(0),
-							  _root(n),
-							  _watcher(w) {
+INLINE GuiManager::GuiManager(MouseWatcher* w, Node* n, EventHandler* h)
+  : _start_draw_order(0), _next_draw_order(0), _root(n), _watcher(w),
+    _eh(h) {
 }
 
 INLINE int GuiManager::get_next_draw_order(void) const {
@@ -29,4 +28,8 @@ INLINE int GuiManager::get_start_draw_order(void) const {
 
 INLINE void GuiManager::set_start_draw_order(int v) {
   this->_start_draw_order = v;
+}
+
+INLINE EventHandler* GuiManager::get_private_handler(void) const {
+  return _eh;
 }

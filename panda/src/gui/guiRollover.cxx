@@ -86,16 +86,18 @@ GuiRollover::~GuiRollover(void) {
   string name = get_name();
   rollovers.erase(this->_rgn.p());
   if ((rollovers.size() == 0) && added_hooks) {
+    /*
     _eh->remove_hook("gui-enter", enter_rollover);
     _eh->remove_hook("gui-exit", exit_rollover);
     added_hooks = false;
+    */
   }
 }
 
 void GuiRollover::manage(GuiManager* mgr, EventHandler& eh) {
   if (!added_hooks) {
-    eh.add_hook("gui-enter", enter_rollover);
-    eh.add_hook("gui-exit", exit_rollover);
+    mgr->get_private_handler()->add_hook("gui-enter", enter_rollover);
+    mgr->get_private_handler()->add_hook("gui-exit", exit_rollover);
     added_hooks = true;
   }
   if (_mgr == (GuiManager*)0L) {
@@ -110,8 +112,8 @@ void GuiRollover::manage(GuiManager* mgr, EventHandler& eh) {
 
 void GuiRollover::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
   if (!added_hooks) {
-    eh.add_hook("gui-enter", enter_rollover);
-    eh.add_hook("gui-exit", exit_rollover);
+    mgr->get_private_handler()->add_hook("gui-enter", enter_rollover);
+    mgr->get_private_handler()->add_hook("gui-exit", exit_rollover);
     added_hooks = true;
   }
   if (_mgr == (GuiManager*)0L) {

@@ -24,6 +24,25 @@ INLINE void throw_event(const string &event_name,
 			const EventParameter &p2,
 			const EventParameter &p3);
 
+#include "eventHandler.h"
+
+INLINE void throw_event_directly(EventHandler& handler,
+				 const CPT_Event &event);
+INLINE void throw_event_directly(EventHandler& handler,
+				 const string &event_name);
+INLINE void throw_event_directly(EventHandler& handler,
+				 const string &event_name,
+				 const EventParameter &p1);
+INLINE void throw_event_directly(EventHandler& handler,
+				 const string &event_name,
+				 const EventParameter &p1,
+				 const EventParameter &p2);
+INLINE void throw_event_directly(EventHandler& handler,
+				 const string &event_name,
+				 const EventParameter &p1,
+				 const EventParameter &p2,
+				 const EventParameter &p3);
+
 #include "throw_event.I"
 
 #endif

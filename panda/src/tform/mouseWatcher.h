@@ -16,6 +16,7 @@
 #include <luse.h>
 #include <nodeRelation.h>
 #include <pointerTo.h>
+#include <eventHandler.h>
 
 #include <set>
 
@@ -77,6 +78,9 @@ PUBLISHED:
   INLINE NodeRelation *get_geometry() const;
   INLINE void clear_geometry();
 
+  INLINE void set_extra_handler(EventHandler *eh);
+  INLINE EventHandler* get_extra_handler(void) const;
+
 public:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
@@ -103,6 +107,8 @@ private:
   string _leave_pattern;
 
   PT(NodeRelation) _geometry;
+
+  EventHandler* _eh;
 
 ////////////////////////////////////////////////////////////////////
 // From parent class DataNode

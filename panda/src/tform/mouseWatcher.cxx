@@ -34,6 +34,7 @@ MouseWatcher(const string &name) : DataNode(name) {
   _current_region = (MouseWatcherRegion *)NULL;
   _button_down_region = (MouseWatcherRegion *)NULL;
   _button_down = false;
+  _eh = (EventHandler*)0L;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -233,6 +234,9 @@ throw_event_pattern(const string &pattern, const MouseWatcherRegion *region,
 
   if (!event.empty()) {
     throw_event(event, EventParameter(region), EventParameter(button_name));
+    if (_eh != (EventHandler*)0L)
+      throw_event_directly(*_eh, event, EventParameter(region),
+			   EventParameter(button_name));
   }
 }
 

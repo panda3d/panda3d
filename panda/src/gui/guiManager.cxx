@@ -15,6 +15,7 @@
 #include <lightTransition.h>
 #include <frustum.h>
 #include <orthoProjection.h>
+#include <eventQueue.h>
 
 GuiManager::GuiMap* GuiManager::_map = (GuiManager::GuiMap*)0L;
 
@@ -66,25 +67,27 @@ GuiManager* GuiManager::get_ptr(GraphicsWindow* w, MouseAndKeyboard* mak,
 		       << endl;
     }
     // now setup event triggers for the watcher
+#ifdef _DEBUG
     if (has_watcher && !watcher->get_button_down_pattern().empty())
       gui_cat->warning() << "overwriting existing button down pattern '"
 			 << watcher->get_button_down_pattern()
 			 << "' with 'gui-button-press'" << endl;
-    watcher->set_button_down_pattern("gui-button-press");
     if (has_watcher && !watcher->get_button_up_pattern().empty())
       gui_cat->warning() << "overwriting existing button up pattern '"
 			 << watcher->get_button_up_pattern()
 			 << "' with 'gui-button-release'" << endl;
-    watcher->set_button_up_pattern("gui-button-release");
     if (has_watcher && !watcher->get_enter_pattern().empty())
       gui_cat->warning() << "overwriting existing enter pattern '"
 			 << watcher->get_enter_pattern()
 			 << "' with 'gui-enter'" << endl;
-    watcher->set_enter_pattern("gui-enter");
     if (has_watcher && !watcher->get_leave_pattern().empty())
       gui_cat->warning() << "overwriting existing exit pattern '"
 			 << watcher->get_leave_pattern()
 			 << "' with 'gui-exit'" << endl;
+#endif /* _DEBUG */
+    watcher->set_button_down_pattern("gui-button-press");
+    watcher->set_button_up_pattern("gui-button-release");
+    watcher->set_enter_pattern("gui-enter");
     watcher->set_leave_pattern("gui-exit");
 
     if (root2d == (Node *)NULL) {
@@ -116,8 +119,12 @@ GuiManager* GuiManager::get_ptr(GraphicsWindow* w, MouseAndKeyboard* mak,
 	gui_cat->debug() << "2D layer created" << endl;
     }
 
+    // make an event handler for our internal events
+    EventHandler* eh = new EventHandler(new EventQueue());
+    watcher->set_extra_handler(eh);
+
     // now make the manager for this window
-    ret = new GuiManager(watcher, root2d);
+    ret = new GuiManager(watcher, root2d, eh);
     if (gui_cat->is_debug())
       gui_cat->debug() << "new manager allocated (0x" << (void*)ret << ")"
 		       << endl;

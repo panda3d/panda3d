@@ -39,8 +39,9 @@ private:
 
   Node* _root;
   MouseWatcher* _watcher;
+  EventHandler* _eh;
 
-  INLINE GuiManager(MouseWatcher*, Node*);
+  INLINE GuiManager(MouseWatcher*, Node*, EventHandler*);
 PUBLISHED:
   static GuiManager* get_ptr(GraphicsWindow*, MouseAndKeyboard*, Node *root2d);
 
@@ -63,6 +64,8 @@ PUBLISHED:
 
   bool is_sane(void) const;
   void sanity_check(void) const;
+
+  INLINE EventHandler* get_private_handler(void) const;
 };
 
 #include "guiManager.I"

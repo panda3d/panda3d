@@ -263,3 +263,27 @@ INLINE void MouseWatcher::
 clear_geometry() {
   _geometry.clear();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::set_extra_handler
+//       Access: Published
+//  Description: As an optimization for the C++ Gui, an extra handler
+//               can be registered with a mouseWatcher so that events
+//               can be dealt with much sooner.
+////////////////////////////////////////////////////////////////////
+INLINE void MouseWatcher::
+set_extra_handler(EventHandler *eh) {
+  _eh = eh;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::get_extra_handler
+//       Access: Published
+//  Description: As an optimization for the C++ Gui, an extra handler
+//               can be registered with a mouseWatcher so that events
+//               can be dealt with much sooner.
+////////////////////////////////////////////////////////////////////
+INLINE EventHandler* MouseWatcher::
+get_extra_handler(void) const {
+  return _eh;
+}
