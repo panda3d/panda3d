@@ -167,6 +167,15 @@ make_gsg() {
 void wdxGraphicsWindow7::
 release_gsg() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
+    
+    if (is_fullscreen()) {
+      // Release the cooperative level we grabbed when we created the
+      // GSG.
+      DXScreenData *pScrn = &_dxgsg->scrn;
+      nassertv(pScrn != (DXScreenData *)NULL);
+      pScrn->pDD->SetCooperativeLevel(_mwindow, DDSCL_NORMAL);
+    }
+
     GraphicsWindow::release_gsg();
   }
 }
@@ -498,7 +507,7 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
 
     PRINTVIDMEM(pDD, &ddsd.ddsCaps, "initial primary & backbuf");
 
-    // Create the primary surface
+    // Create the primary surface for the fullscreen window
     hr = pDD->CreateSurface(&ddsd, &pPrimaryDDSurf, NULL);
     if (FAILED(hr)) {
       wdxdisplay7_cat.fatal()
@@ -619,8 +628,8 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
 
     PRINTVIDMEM(pDD, &SurfaceDesc.ddsCaps, "initial primary surface");
 
-    // Create the primary surface.  This includes all of the visible
-    // window, so no need to specify height/width
+    // Create the primary surface for windowed mode.  This includes
+    // all of the visible window, so no need to specify height/width.
     hr = pDD->CreateSurface(&SurfaceDesc, &pPrimaryDDSurf, NULL);
     if (FAILED(hr)) {
       wdxdisplay7_cat.fatal()
@@ -1216,7 +1225,7 @@ set_coop_levels_and_display_modes() {
   }
 
   DXScreenData *pScrn = &_dxgsg->scrn;
-  
+
   if (!is_fullscreen()) {
     hr = pScrn->pDD->SetCooperativeLevel(_mwindow, 
                                          SCL_FPUFlag | DDSCL_NORMAL);
