@@ -23,6 +23,7 @@
 #include "typedReferenceCount.h"
 #include "qpgeomVertexFormat.h"
 #include "qpgeomVertexData.h"
+#include "qpgeomCacheEntry.h"
 #include "indirectCompareTo.h"
 #include "pStatCollector.h"
 #include "pointerTo.h"
@@ -59,6 +60,8 @@ class qpGeom;
 class EXPCL_PANDA qpGeomMunger : public TypedReferenceCount {
 public:
   qpGeomMunger(const GraphicsStateGuardianBase *gsg, const RenderState *state);
+  qpGeomMunger(const qpGeomMunger &copy);
+  void operator = (const qpGeomMunger &copy);
   virtual ~qpGeomMunger();
 
   INLINE bool is_registered() const;
@@ -94,6 +97,14 @@ private:
   void do_unregister();
 
 private:
+  class CacheEntry : public qpGeomCacheEntry {
+  public:
+    virtual int get_result_size() const;
+    virtual void output(ostream &out) const;
+
+    PT(qpGeomMunger) _munger;
+  };
+
   typedef pmap<const qpGeomVertexFormat *, const qpGeomVertexFormat *> Formats;
   Formats _formats;
 
@@ -107,6 +118,15 @@ private:
 
     Mungers _mungers;
   };
+
+  // We store the iterator into the above registry, while we are
+  // registered.  This makes it easier to remove our own entry,
+  // especially when the destructor is called.  Since it's a virtual
+  // destructor, we can't reliably look up our pointer in the map once
+  // we have reached the base class destructor (since the object has
+  // changed types by then, and the sorting in the map depends partly
+  // on type).
+  Mungers::iterator _registered_key;
 
   static Registry *_registry;
 

@@ -21,7 +21,6 @@
 #include "qpgeomVertexData.h"
 #include "qpgeomVertexArrayFormat.h"
 #include "qpgeomVertexDataType.h"
-#include "qpgeomVertexCacheManager.h"
 #include "preparedGraphicsObjects.h"
 #include "internalName.h"
 #include "bamReader.h"
@@ -66,16 +65,13 @@ qpGeomPrimitive::
   // When we destruct, we should ensure that all of our cached
   // entries, across all pipeline stages, are properly removed from
   // the cache manager.
-  qpGeomVertexCacheManager *cache_mgr = 
-    qpGeomVertexCacheManager::get_global_ptr();
-
   int num_stages = _cycler.get_num_stages();
   for (int i = 0; i < num_stages; i++) {
     if (_cycler.is_stage_unique(i)) {
       CData *cdata = _cycler.write_stage(i);
-      if (cdata->_decomposed != (qpGeomPrimitive *)NULL) {
-        cache_mgr->remove_primitive(this);
-        cdata->_decomposed = NULL;
+      if (cdata->_cache != (CacheEntry *)NULL) {
+        cdata->_cache->erase();
+        cdata->_cache = NULL;
       }
       _cycler.release_write_stage(i, cdata);
     }
@@ -446,14 +442,12 @@ decompose() const {
     // call to record_primitive() might recursively call back into
     // this object, and require a write.
     const CData *cdata = _cycler.read();
-    if (cdata->_decomposed != (qpGeomPrimitive *)NULL) {
-      result = cdata->_decomposed;
+    if (cdata->_cache != (CacheEntry *)NULL) {
+      result = cdata->_cache->_decomposed;
       _cycler.release_read(cdata);
       // Record a cache hit, so this element will stay in the cache a
       // while longer.
-      qpGeomVertexCacheManager *cache_mgr = 
-        qpGeomVertexCacheManager::get_global_ptr();
-      cache_mgr->record_primitive(this, result->get_num_bytes());
+      cdata->_cache->refresh();
 
       return result;
     }
@@ -472,13 +466,17 @@ decompose() const {
   }
 
   // Record the result for the future.
-  CDWriter cdata(((qpGeomPrimitive *)this)->_cycler);
-  cdata->_decomposed = result;
+  CacheEntry *entry;
+  {
+    CDWriter cdata(((qpGeomPrimitive *)this)->_cycler);
+    entry = new CacheEntry;
+    entry->_source = (qpGeomPrimitive *)this;
+    entry->_decomposed = result;
+    cdata->_cache = entry;
+  }
 
   // And add *this* object to the cache manager.
-  qpGeomVertexCacheManager *cache_mgr = 
-    qpGeomVertexCacheManager::get_global_ptr();
-  cache_mgr->record_primitive(this, result->get_num_bytes());
+  entry->record();
 
   return result;
 }
@@ -526,13 +524,10 @@ void qpGeomPrimitive::
 clear_cache() {
   // Probably we shouldn't do anything at all here unless we are
   // running in pipeline stage 0.
-  qpGeomVertexCacheManager *cache_mgr = 
-    qpGeomVertexCacheManager::get_global_ptr();
-
   CData *cdata = CDWriter(_cycler);
-  if (cdata->_decomposed != (qpGeomPrimitive *)NULL) {
-    cache_mgr->remove_primitive(this);
-    cdata->_decomposed = NULL;
+  if (cdata->_cache != (CacheEntry *)NULL) {
+    cdata->_cache->erase();
+    cdata->_cache = NULL;
   }
 
   // This, on the other hand, should be applied to the current
@@ -780,24 +775,6 @@ do_rotate() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::remove_cache_entry
-//       Access: Private
-//  Description: Removes a particular entry from the local cache; it
-//               has already been removed from the cache manager.
-//               This is only called from GeomVertexCacheManager.
-////////////////////////////////////////////////////////////////////
-void qpGeomPrimitive::
-remove_cache_entry() const {
-  // We have to operate on stage 0 of the pipeline, since that's where
-  // the cache really counts.  Because of the multistage pipeline, we
-  // might not actually have a cache entry there (it might have been
-  // added to stage 1 instead).  No big deal if we don't.
-  CData *cdata = ((qpGeomPrimitive *)this)->_cycler.write_stage(0);
-  cdata->_decomposed = NULL;
-  ((qpGeomPrimitive *)this)->_cycler.release_write_stage(0, cdata);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPrimitive::recompute_minmax
 //       Access: Private
 //  Description: Recomputes the _min_vertex and _max_vertex values if
@@ -894,6 +871,46 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
 
   manager->read_cdata(scan, _cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::CacheEntry::evict_callback
+//       Access: Public, Virtual
+//  Description: Called when the entry is evicted from the cache, this
+//               should clean up the owning object appropriately.
+////////////////////////////////////////////////////////////////////
+void qpGeomPrimitive::CacheEntry::
+evict_callback() {
+  // We have to operate on stage 0 of the pipeline, since that's where
+  // the cache really counts.  Because of the multistage pipeline, we
+  // might not actually have a cache entry there (it might have been
+  // added to stage 1 instead).  No big deal if we don't.
+  CData *cdata = _source->_cycler.write_stage(0);
+  if (cdata->_cache == this) {
+    cdata->_cache = NULL;
+  }
+  _source->_cycler.release_write_stage(0, cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::CacheEntry::get_result_size
+//       Access: Public, Virtual
+//  Description: Returns the approximate number of bytes represented
+//               by the computed result.
+////////////////////////////////////////////////////////////////////
+int qpGeomPrimitive::CacheEntry::
+get_result_size() const {
+  return _decomposed->get_num_bytes();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::CacheEntry::output
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void qpGeomPrimitive::CacheEntry::
+output(ostream &out) const {
+  out << "primitive " << (void *)_source;
 }
 
 ////////////////////////////////////////////////////////////////////

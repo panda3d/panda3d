@@ -30,9 +30,12 @@
 #include "qpgeomPrimitive.h"
 #include "qpgeomMunger.h"
 #include "qpgeomUsageHint.h"
+#include "qpgeomCacheEntry.h"
 #include "updateSeq.h"
 #include "pointerTo.h"
 #include "geom.h"
+#include "indirectLess.h"
+#include "pset.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : qpGeom
@@ -99,9 +102,6 @@ protected:
   virtual BoundingVolume *recompute_bound();
 
 private:
-  void remove_cache_entry(const qpGeomMunger *modifier) const;
-
-private:
   typedef pvector<PT(qpGeomPrimitive) > Primitives;
 
   // We have to use reference-counting pointers here instead of having
@@ -109,12 +109,21 @@ private:
   // cache needs to be stored in the CycleData, which makes accurate
   // cleanup more difficult.  We use the GeomVertexCacheManager class
   // to avoid cache bloat.
-  class MungeResult {
+  class CacheEntry : public qpGeomCacheEntry {
   public:
-    CPT(qpGeom) _geom;
-    CPT(qpGeomVertexData) _data;
+    INLINE CacheEntry(const qpGeomMunger *modifier);
+    INLINE bool operator < (const CacheEntry &other) const;
+
+    virtual void evict_callback();
+    virtual int get_result_size() const;
+    virtual void output(ostream &out) const;
+
+    qpGeom *_source;
+    CPT(qpGeomMunger) _modifier;
+    CPT(qpGeom) _geom_result;
+    CPT(qpGeomVertexData) _data_result;
   };
-  typedef pmap<CPT(qpGeomMunger), MungeResult> MungedCache;
+  typedef pset<PT(CacheEntry), IndirectLess<CacheEntry> > Cache;
 
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA CData : public CycleData {
@@ -131,7 +140,7 @@ private:
     qpGeomUsageHint::UsageHint _usage_hint;
     bool _got_usage_hint;
     UpdateSeq _modified;
-    MungedCache _munged_cache;
+    Cache _cache;
   };
 
   PipelineCycler<CData> _cycler;
@@ -171,7 +180,7 @@ public:
 private:
   static TypeHandle _type_handle;
 
-  friend class qpGeomVertexCacheManager;
+  friend class CacheEntry;
 };
 
 INLINE ostream &operator << (ostream &out, const qpGeom &obj);

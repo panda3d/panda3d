@@ -138,6 +138,28 @@ get_modified() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::CacheEntry::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE qpGeom::CacheEntry::
+CacheEntry(const qpGeomMunger *modifier) :
+  _modifier(modifier)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::CacheEntry::operator <
+//       Access: Public
+//  Description: Provides a unique ordering within the set.
+////////////////////////////////////////////////////////////////////
+INLINE bool qpGeom::CacheEntry::
+operator < (const CacheEntry &other) const {
+  return (_modifier < other._modifier);
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeom::CData::Constructor
 //       Access: Public
 //  Description:

@@ -42,6 +42,7 @@ public:
 protected:
   virtual CPT(qpGeomVertexData) munge_data_impl(const qpGeomVertexData *data);
   virtual int compare_to_impl(const qpGeomMunger *other) const;
+  virtual int geom_compare_to_impl(const qpGeomMunger *other) const;
 
 private:
   int _num_components;

@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "qpgeomUsageHint.h"
+#include "qpgeomCacheEntry.h"
 #include "typedWritableReferenceCount.h"
 #include "luse.h"
 #include "updateSeq.h"
@@ -163,7 +164,6 @@ protected:
 
 private: 
   void do_rotate();
-  void remove_cache_entry() const;
 
 protected:
   static PStatCollector _rotate_pcollector;
@@ -178,6 +178,17 @@ private:
   // itself from the other's list.
   typedef pmap<PreparedGraphicsObjects *, IndexBufferContext *> Contexts;
   Contexts _contexts;
+
+  class CacheEntry : public qpGeomCacheEntry {
+  public:
+    virtual void evict_callback();
+    virtual int get_result_size() const;
+    virtual void output(ostream &out) const;
+
+    qpGeomPrimitive *_source;
+    CPT(qpGeomPrimitive) _decomposed;
+  };
+    
 
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA CData : public CycleData {
@@ -201,7 +212,7 @@ private:
     unsigned short _min_vertex;
     unsigned short _max_vertex;
 
-    CPT(qpGeomPrimitive) _decomposed;
+    PT(CacheEntry) _cache;
   };
 
   PipelineCycler<CData> _cycler;
@@ -234,7 +245,6 @@ private:
   static TypeHandle _type_handle;
 
   friend class qpGeom;
-  friend class qpGeomVertexCacheManager;
   friend class PreparedGraphicsObjects;
 };
 

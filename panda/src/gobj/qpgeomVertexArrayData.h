@@ -141,7 +141,7 @@ public:
 private:
   static TypeHandle _type_handle;
 
-  friend class qpGeomVertexCacheManager;
+  friend class qpGeomCacheManager;
   friend class PreparedGraphicsObjects;
 };
 

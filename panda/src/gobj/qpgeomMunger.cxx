@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "qpgeomMunger.h"
-#include "qpgeomVertexCacheManager.h"
+#include "qpgeomCacheManager.h"
 #include "mutexHolder.h"
 #include "pStatTimer.h"
 
@@ -35,6 +35,29 @@ qpGeomMunger::
 qpGeomMunger(const GraphicsStateGuardianBase *, const RenderState *) :
   _is_registered(false)
 {
+  _registered_key = get_registry()->_mungers.end();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomMunger::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+qpGeomMunger::
+qpGeomMunger(const qpGeomMunger &copy) :
+  _is_registered(false)
+{
+  _registered_key = get_registry()->_mungers.end();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomMunger::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void qpGeomMunger::
+operator = (const qpGeomMunger &copy) {
+  nassertv(!_is_registered);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -205,7 +228,7 @@ compare_to_impl(const qpGeomMunger *other) const {
 ////////////////////////////////////////////////////////////////////
 int qpGeomMunger::
 geom_compare_to_impl(const qpGeomMunger *other) const {
-  return compare_to_impl(other);
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -237,9 +260,9 @@ do_register() {
   // Tell the cache manager to hang on to this new GeomMunger, so we
   // don't waste our time re-registering the same GeomMunger over and
   // over again.
-  qpGeomVertexCacheManager *cache_mgr =
-    qpGeomVertexCacheManager::get_global_ptr();
-  cache_mgr->record_munger(this);
+  CacheEntry *entry = new CacheEntry;
+  entry->_munger = this;
+  entry->record();
 
   _is_registered = true;
 }
@@ -275,6 +298,27 @@ do_unregister() {
     }
   }
   _formats.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomMunger::CacheEntry::get_result_size
+//       Access: Public, Virtual
+//  Description: Returns the approximate number of bytes represented
+//               by the computed result.
+////////////////////////////////////////////////////////////////////
+int qpGeomMunger::CacheEntry::
+get_result_size() const {
+  return sizeof(qpGeomMunger);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomMunger::CacheEntry::output
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void qpGeomMunger::CacheEntry::
+output(ostream &out) const {
+  out << "munger " << _munger;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -315,6 +359,7 @@ register_munger(qpGeomMunger *munger) {
   Mungers::iterator mi = _mungers.insert(munger).first;
   qpGeomMunger *new_munger = (*mi);
   if (!new_munger->is_registered()) {
+    new_munger->_registered_key = mi;
     new_munger->do_register();
   }
 
@@ -331,8 +376,8 @@ register_munger(qpGeomMunger *munger) {
 void qpGeomMunger::Registry::
 unregister_munger(qpGeomMunger *munger) {
   nassertv(munger->is_registered());
-  Mungers::iterator mi = _mungers.find(munger);
-  nassertv(mi != _mungers.end());
-  _mungers.erase(mi);
+  nassertv(munger->_registered_key != _mungers.end());
+  _mungers.erase(munger->_registered_key);
+  munger->_registered_key = _mungers.end();
   munger->do_unregister();
 }

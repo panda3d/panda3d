@@ -2057,6 +2057,11 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
     UpdateSeq modified = max(geom->get_modified(), _vertex_data->get_modified());
     if (ggc->_modified == modified) {
       // If it hasn't been modified, just play the display list again.
+      if (GLCAT.is_spam()) {
+        GLCAT.spam()
+          << "calling display list " << ggc->_index << "\n";
+      }
+
       GLP(CallList)(ggc->_index);
 #ifdef DO_PSTATS
       _vertices_display_list_pcollector.add_level(ggc->_num_verts);
@@ -2064,6 +2069,15 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
       
       // And now we don't need to do anything else for this geom.
       return false;
+    }
+    
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "compiling display list " << ggc->_index << "\n";
+      cerr << "ggc = " << ggc << "," << ggc->_modified
+           << " geom = " << geom << "," << geom->get_modified()
+           << " vertex_data = " << _vertex_data << "," 
+           << _vertex_data->get_modified() << "\n";
     }
 
     // If it has been modified, or this is the first time, then we
@@ -2149,15 +2163,18 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
         GLP(TexCoordPointer)(num_components, get_numeric_type(numeric_type), 
                              stride, client_pointer + start);
         GLP(EnableClientState)(GL_TEXTURE_COORD_ARRAY);
+        cerr << "sending " << *name << "\n";
 
       } else {
         // The vertex data doesn't have texcoords for this stage (even
         // though they're needed).
         GLP(DisableClientState)(GL_TEXTURE_COORD_ARRAY);
+        cerr << "not defined " << *name << "\n";
       }
     } else {
       // No texcoords are needed for this stage.
       GLP(DisableClientState)(GL_TEXTURE_COORD_ARRAY);
+      cerr << "not sending " << *stage->get_texcoord_name() << "\n";
     }
 
     ++stage_index;

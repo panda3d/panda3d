@@ -84,6 +84,7 @@ compare_to_impl(const qpGeomMunger *other) const {
   if (_tex_gen != om->_tex_gen) {
     return _tex_gen < om->_tex_gen ? -1 : 1;
   }
+
   return ColorMunger::compare_to_impl(other);
 }
 
@@ -97,8 +98,8 @@ compare_to_impl(const qpGeomMunger *other) const {
 ////////////////////////////////////////////////////////////////////
 int CLP(GeomMunger)::
 geom_compare_to_impl(const qpGeomMunger *other) const {
-  // We don't consider _texture and _tex_gen for these purposes; they
+  // We don't consider _texture and _tex_gen for this purpose; they
   // affect only whether the GL display list should be regenerated or
-  // not.
-  return ColorMunger::compare_to_impl(other);
+  // not, and don't require reconverting the vertices.
+  return ColorMunger::geom_compare_to_impl(other);
 }

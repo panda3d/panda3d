@@ -27,7 +27,8 @@
     qpgeomUsageHint.h \
     qpgeomVertexArrayData.h qpgeomVertexArrayData.I \
     qpgeomVertexArrayFormat.h qpgeomVertexArrayFormat.I \
-    qpgeomVertexCacheManager.h qpgeomVertexCacheManager.I \
+    qpgeomCacheEntry.h qpgeomCacheEntry.I \
+    qpgeomCacheManager.h qpgeomCacheManager.I \
     qpgeomVertexData.h qpgeomVertexData.I \
     qpgeomVertexDataType.h qpgeomVertexDataType.I \
     qpgeomVertexFormat.h qpgeomVertexFormat.I \
@@ -63,7 +64,8 @@
     qpgeomTrifans.cxx \
     qpgeomVertexArrayData.cxx \
     qpgeomVertexArrayFormat.cxx \
-    qpgeomVertexCacheManager.cxx \
+    qpgeomCacheEntry.cxx \
+    qpgeomCacheManager.cxx \
     qpgeomVertexData.cxx \
     qpgeomVertexDataType.cxx \
     qpgeomVertexFormat.cxx \
@@ -97,7 +99,8 @@
     qpgeomUsageHint.h \
     qpgeomVertexArrayData.h qpgeomVertexArrayData.I \
     qpgeomVertexArrayFormat.h qpgeomVertexArrayFormat.I \
-    qpgeomVertexCacheManager.h qpgeomVertexCacheManager.I \
+    qpgeomCacheEntry.h qpgeomCacheEntry.I \
+    qpgeomCacheManager.h qpgeomCacheManager.I \
     qpgeomVertexData.h qpgeomVertexData.I \
     qpgeomVertexDataType.h qpgeomVertexDataType.I \
     qpgeomVertexFormat.h qpgeomVertexFormat.I \

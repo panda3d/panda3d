@@ -97,5 +97,27 @@ compare_to_impl(const qpGeomMunger *other) const {
   if (_color_scale != om->_color_scale) {
     return _color_scale < om->_color_scale ? -1 : 1;
   }
-  return 0;
+
+  return qpGeomMunger::compare_to_impl(other);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorMunger::geom_compare_to_impl
+//       Access: Protected, Virtual
+//  Description: Called to compare two GeomMungers who are known to be
+//               of the same type, for an apples-to-apples comparison.
+//               This will never be called on two pointers of a
+//               different type.
+////////////////////////////////////////////////////////////////////
+int ColorMunger::
+geom_compare_to_impl(const qpGeomMunger *other) const {
+  const ColorMunger *om = DCAST(ColorMunger, other);
+  if (_color != om->_color) {
+    return _color < om->_color ? -1 : 1;
+  }
+  if (_color_scale != om->_color_scale) {
+    return _color_scale < om->_color_scale ? -1 : 1;
+  }
+
+  return qpGeomMunger::geom_compare_to_impl(other);
 }
