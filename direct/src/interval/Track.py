@@ -183,6 +183,9 @@ class Track(Interval):
                 # Compare time with each ival's start/end times
                 if (t < tStart):
                     if (event == IVAL_DONE):
+                        # This should only happen in cases of floating
+                        # point instability where t is very close to
+                        # but less than tStart
                         ival.setT(ival.getDuration(), event)
                     elif (self.prev_t > tStart):
                         # We just crossed the start of this interval
