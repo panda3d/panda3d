@@ -1,10 +1,8 @@
-#ifndef lint
-static char rcsid[] = "$Header$";
-#endif
+/* $Header$ */
 
 /*
- * Copyright (c) 1988, 1989, 1990, 1991, 1992 Sam Leffler
- * Copyright (c) 1991, 1992 Silicon Graphics, Inc.
+ * Copyright (c) 1988-1997 Sam Leffler
+ * Copyright (c) 1991-1997 Silicon Graphics, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and 
  * its documentation for any purpose is hereby granted without fee, provided
@@ -35,28 +33,35 @@ int
 TIFFFlush(TIFF* tif)
 {
 
-        if (tif->tif_mode != O_RDONLY) {
-                if (!TIFFFlushData(tif))
-                        return (0);
-                if ((tif->tif_flags & TIFF_DIRTYDIRECT) &&
-                    !TIFFWriteDirectory(tif))
-                        return (0);
-        }
-        return (1);
+	if (tif->tif_mode != O_RDONLY) {
+		if (!TIFFFlushData(tif))
+			return (0);
+		if ((tif->tif_flags & TIFF_DIRTYDIRECT) &&
+		    !TIFFWriteDirectory(tif))
+			return (0);
+	}
+	return (1);
 }
 
 /*
  * Flush buffered data to the file.
+ *
+ * Frank Warmerdam'2000: I modified this to return 1 if TIFF_BEENWRITING
+ * is not set, so that TIFFFlush() will proceed to write out the directory.
+ * The documentation says returning 1 is an error indicator, but not having
+ * been writing isn't exactly a an error.  Hopefully this doesn't cause
+ * problems for other people. 
  */
 int
 TIFFFlushData(TIFF* tif)
 {
-        if ((tif->tif_flags & TIFF_BEENWRITING) == 0)
-                return (0);
-        if (tif->tif_flags & TIFF_POSTENCODE) {
-                tif->tif_flags &= ~TIFF_POSTENCODE;
-                if (tif->tif_postencode && !(*tif->tif_postencode)(tif))
-                        return (0);
-        }
-        return (TIFFFlushData1(tif));
+	if ((tif->tif_flags & TIFF_BEENWRITING) == 0)
+		return (0);
+	if (tif->tif_flags & TIFF_POSTENCODE) {
+		tif->tif_flags &= ~TIFF_POSTENCODE;
+		if (!(*tif->tif_postencode)(tif))
+			return (0);
+	}
+	return (TIFFFlushData1(tif));
 }
+

@@ -1,226 +1,63 @@
 $Header$
 
-Configuration Comments:
-----------------------
-Aside from the compression algorithm support, there are
-configuration-related defines that you can override in the Makefile
-or in the default configuration file tiffconf.h:
+NOTE:
+this is libtiff 3.5.6 beta, obtained from http://www.libtiff.org
+--------------
 
-COLORIMETRY_SUPPORT
-		if this is defined, support for the colorimetry
-		tags will be compiled in.
-JPEG_SUPPORT	if this is defined, support for the JPEG-related
-		tags will be compiled in.  Note that at the present
-		time the JPEG compression support is not included.
-YCBCR_SUPPORT	if this is defined, support for the YCbCr-related
-		tags will be compiled in.  Note that you'll want
-		YCBCR support for JPEG compression+decompression.
-CMYK_SUPPORT	if this is defined, support for the CMYK-related
-		tags will be compiled in.
-MMAP_SUPPORT	if this is set, and OS support exists for memory
-		mapping files, then the library will try to map
-		a file if it is opened for reading.  If mmap does
-		not exist on your system, or the mmap call fails
-		on the file, then the normal read system calls are
-		used.  It is not clear how useful this facility is.
 
-By default tiffconf.h defines COLORIMETRY_SUPPORT, JPEG_SUPPORT,
-YCBCR_SUPPORT, CMYK_SUPPORT.  MMAP_SUPPORT is not defined.
+TIFF Software Distribution
+--------------------------
+This file is just a placeholder; all the documentation is now in
+HTML in the html directory.  To view the documentation point your
+favorite WWW viewer at html/index.html; e.g.
 
-General Portability Comments:
-----------------------------
-I run this code on SGI machines (big-endian, MIPS CPU, 32-bit ints,
-IEEE floating point).  Makefiles exist for other platforms that the
-code runs on -- this work has mostly been done by other people.
-The code runs on Macintosh and PC-based systems, although I don't
-know all the particulars.
+    netscape html/index.html
 
-In general, I promise only that the code runs on SGI machines.
-I will, however, gladly take back fixes to make it work on other
-systems -- when the changes are reasonable unobtrusive.
+If you don't have an HTML viewer then you can read the HTML source
+or fetch a PostScript version of this documentation from the directory
 
-The software is written to assume an ANSI C compilation environment.
-If your compiler does not support ANSI function prototypes, const,
-and <stdarg.h> then you will have to make modifications to the
-software.  In the past I have tried to support compilers w/o const
-and systems w/o <stdarg.h>, but I am NO LONGER INTERESTED in these
-antiquated environments.  With the general availability of gcc, I
-see no reason to incorporate modifications to the software for these
-purposes.
+    ftp://ftp.sgi.com/graphics/tiff/doc
 
-I've tried to isolate as many of the OS-dependencies as possible in
-two files: tiffcomp.h and tif_<os>.c.  The latter file contains
-OS-specific routines to do I/O and I/O-related operations.  The
-UNIX (tif_unix.c), Macintosh (tif_apple.c), and VMS (tif_vms.c)
-code has had the most use; the MS/DOS support (tif_msdos.c) assumes
-some level of UNIX system call emulation (i.e. open, read, write,
-fstat, malloc, free).
+If you can't hack either of these options then basically what you
+want to do is:
 
-Machine dependencies such as byte order are determined on the
-fly and do not need to be specified.
+    % ./configure
+    % make
+    % su
+    # make install
 
-Two general portability-related defines are:
+More information, email contacts, and mailing list information can be 
+found online at http://www.libtiff.org/.
 
-BSDTYPES	Define this if your system does NOT define the
-		usual BSD typedefs: u_char, u_short, u_int, u_longs.
-HAVE_IEEEFP	Define this as 0 or 1 according to the floating point
-		format suported by the machine.  If your machine does
-		not support IEEE floating point then you will need to
-		add support to tif_machdep.c to convert between the
-		native format and IEEE format.
 
-Note that tiffcomp.h defines HAVE_IEEEFP to be 1 (BSDTYPES is not defined).
+Use and Copyright
+-----------------
+Silicon Graphics has seen fit to allow us to give this work away.  It
+is free.  There is no support or guarantee of any sort as to its
+operations, correctness, or whatever.  If you do anything useful with
+all or parts of it you need to honor the copyright notices.   I would
+also be interested in knowing about it and, hopefully, be acknowledged.
 
-Types and Portability:
----------------------
-The software makes extensive use of typedefs to promote portability.
-Two sets of typedefs are used, one for communication with clients
-of the library and one for internal data structures and parsing of the
-TIFF format.  There are interactions between these two to be careful
-of, but for the most part you should be able to deal with portability
-purely by fiddling with the following machine-dependent typedefs:
+The legal way of saying that is:
 
-uint16		16-bit unsigned integer		tiff.h
-int16		16-bit signed integer		tiff.h
-uint32		32-bit unsigned integer		tiff.h
-int32		32-bit signed integer		tiff.h
-dblparam_t	promoted type for floats	tiffcomp.h
+Copyright (c) 1988-1997 Sam Leffler
+Copyright (c) 1991-1997 Silicon Graphics, Inc.
 
-(to clarify dblparam_t, it is the type that float parameters are
-promoted to when passed by value in a function call.)
+Permission to use, copy, modify, distribute, and sell this software and 
+its documentation for any purpose is hereby granted without fee, provided
+that (i) the above copyright notices and this permission notice appear in
+all copies of the software and related documentation, and (ii) the names of
+Sam Leffler and Silicon Graphics may not be used in any advertising or
+publicity relating to the software without the specific, prior written
+permission of Sam Leffler and Silicon Graphics.
 
-The following typedefs are used throughout the library and interfaces
-to refer to certain objects whose size is dependent on the TIFF image
-structure:
+THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND, 
+EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
+WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  
 
-typedef	unsigned int ttag_t;	directory tag
-typedef	uint16 tdir_t;		directory index
-typedef	uint16 tsample_t;	sample number
-typedef	uint32 tstrip_t;	strip number
-typedef uint32 ttile_t;		tile number
-typedef	int32 tsize_t;		i/o size in bytes
-typedef	void* tdata_t;		image data ref
-typedef	void* thandle_t;	client data handle
-typedef	int32 toff_t;		file offset (should be off_t)
-typedef	unsigned char* tidata_t;internal image data
-
-Note that tstrip_t, ttile_t, and tsize_t are constrained to be
-no more than 32-bit quantities by 32-bit fields they are stored
-in in the TIFF image.  Likewise tsample_t is limited by the 16-bit
-field used to store the SamplesPerPixel tag.  tdir_t constrains
-the maximum number of IFDs that may appear in an image and may
-be an arbitrary size (w/o penalty).  ttag_t must be either int,
-unsigned int, pointer, or double because the library uses a varargs
-interface and ANSI restricts the type of the parameter before an
-ellipsis to be a promoted type.  toff_t is defined as int32 because
-TIFF file offsets are (unsigned) 32-bit quantities.  A signed
-value is used because some interfaces return -1 on error (sigh).
-Finally, note that tidata_t is used internally to the library to
-manipulate internal data.  User-specified data references are
-passed as opaque handles and only cast at the lowest layers where
-their type is presumed.
-
-General Comments:
-----------------
-The library is designed to hide as much of the details of TIFF as
-possible.  In particular, TIFF directories are read in their entirety
-into an internal format.  Only the tags known by the library are
-available to a user and certain tag data may be maintained that a user
-doesn't care about (e.g. transfer function tables).
-
-To add support for a new directory tag the following mods are needed:
-
-1. Define the tag in tiff.h.
-2. Add a field to the directory structure in tiffiop.h and define a
-   FIELD_* bit.
-3. Add an entry in the FieldInfo array defined at the top of tiff_dirinfo.c.
-4. Add entries in TIFFSetField1() and TIFFGetField1() for the new tag.
-5. (optional) If the value associated with the tag is not a scalar value
-   (e.g. the array for TransferFunction), then add the appropriate
-   code to TIFFReadDirectory() and TIFFWriteDirectory().  You're best
-   off finding a similar tag and cribbing code.
-6. Add support to TIFFPrintDirectory() in tiff_print.c to print the
-   tag's value.
-
-If you want to maintain portability, beware of making assumptions
-about data types.  Use the typedefs (uint16, etc. when dealing with
-data on disk and t*_t when stuff is in memory) and be careful about
-passing items through printf or similar vararg interfaces.
-
-To add support for a compression algorithm:
-
-1. Define the tag value in tiff.h.
-2. Edit the file tiff_compress.c to add an entry to the
-   CompressionSchemes[] array.
-3. Create a file with the compression scheme code, by convention files
-   are named tif_*.c (except perhaps on some systems where the tif_ prefix
-   pushes some filenames over 14 chars.
-4. Edit the Makefiles to include the new source file.
-
-A compression scheme, say foo, can have up to 10 entry points:
-
-TIFFfoo(tif)		/* initialize scheme and setup entry points in tif */
-fooPreDecode(tif)	/* called once per strip, after data is read,
-			   but before the first row in a strip is decoded */
-fooDecode*(tif, bp, cc, sample)/* decode cc bytes of data into the buffer */
-    fooDecodeRow(...)	/* called to decode a single scanline */
-    fooDecodeStrip(...)	/* called to decode an entire strip */
-    fooDecodeTile(...)	/* called to decode an entire tile */
-fooPreEncode(tif)	/* called once per strip/tile, before the first row in
-			   a strip is encoded */
-fooEncode*(tif, bp, cc, sample)/* encode cc bytes of user data (bp) */
-    fooEncodeRow(...)	/* called to decode a single scanline */
-    fooEncodeStrip(...)	/* called to decode an entire strip */
-    fooEncodeTile(...)	/* called to decode an entire tile */
-fooPostEncode(tif)	/* called once per strip/tile, just before data is written */
-fooSeek(tif, row)	/* seek forwards row scanlines from the beginning
-			   of a strip (row will always be >0 and <rows/strip */
-fooCleanup(tif)		/* called when compression scheme is replaced by user */
-
-Note that the encoding and decoding variants are only needed when
-a compression algorithm is dependent on the structure of the data.
-For example, Group 3 2D encoding and decoding maintains a reference
-scanline.  The sample parameter identifies which sample is to be
-encoded or decoded if the image is organized with PlanarConfig=2
-(separate planes).  This is important for algorithms such as JPEG.
-If PlanarConfig=1 (interleaved), then sample will always be 0.
-
-The library handles most I/O buffering.  There are two data buffers
-when decoding data: a raw data buffer that holds all the data in a
-strip, and a user-supplied scanline buffer that compression schemes
-place decoded data into.  When encoding data the data in the
-user-supplied scanline buffer is encoded into the raw data buffer (from
-where it's written).  Decoding routines should never have to explicitly
-read data -- a full strip/tile's worth of raw data is read and scanlines
-never cross strip boundaries.  Encoding routines must be cognizant of
-the raw data buffer size and call TIFFFlushData1() when necessary.
-Note that any pending data is automatically flushed when a new strip/tile is
-started, so there's no need do that in the tif_postencode routine (if
-one exists).  Bit order is automatically handled by the library when
-a raw strip or tile is filled.  If the decoded samples are interpreted
-by the decoding routine before they are passed back to the user, then
-the decoding logic must handle byte-swapping by overriding the tif_postdecode
-routine (set it to TIFFNoPostDecode) and doing the required work
-internally.  For an example of doing this look at the horizontal
-differencing code in the LZW decoding routines.
-
-The variables tif_rawcc, tif_rawdata, and tif_rawcp in a TIFF structure
-are associated with the raw data buffer.  tif_rawcc must be non-zero
-for the library to automatically flush data.  The variable
-tif_scanlinesize is the size a user's scanline buffer should be.  The
-variable tif_tilesize is the size of a tile for tiled images.  This
-should not normally be used by compression routines, except where it
-relates to the compression algorithm.  That is, the cc parameter to the
-tif_decode* and tif_encode* routines should be used in terminating
-decompression/compression.  This ensures these routines can be used,
-for example, to decode/encode entire strips of data.
-
-In general, if you have a new compression algorithm to add, work from
-the code for an existing routine.  In particular, tiff_dumpmode.c has
-the trivial code for the "nil" compression scheme, tiff_packbits.c is a
-simple byte-oriented scheme that has to watch out for buffer
-boundaries, and tiff_lzw.c has the LZW scheme that has the most
-complexity -- it tracks the buffer boundary at a bit level.
-
-Of course, using a private compression scheme (or private tags) limits
-the portability of your TIFF files.
+IN NO EVENT SHALL SAM LEFFLER OR SILICON GRAPHICS BE LIABLE FOR
+ANY SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND,
+OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF 
+LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE 
+OF THIS SOFTWARE.

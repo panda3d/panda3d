@@ -1,10 +1,8 @@
-#ifndef lint
-static char rcsid[] = "$Header$";
-#endif
+/* $Header$ */
 
 /*
- * Copyright (c) 1988, 1989, 1990, 1991, 1992 Sam Leffler
- * Copyright (c) 1991, 1992 Silicon Graphics, Inc.
+ * Copyright (c) 1988-1997 Sam Leffler
+ * Copyright (c) 1991-1997 Silicon Graphics, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and 
  * its documentation for any purpose is hereby granted without fee, provided
@@ -30,34 +28,22 @@ static char rcsid[] = "$Header$";
  * TIFF Library.
  */
 #include "tiffiop.h"
-#include <stdio.h>
-
-static void
-defaultHandler(const char* module, const char* fmt, va_list ap)
-{
-        if (module != NULL)
-                fprintf(stderr, "%s: ", module);
-        vfprintf(stderr, fmt, ap);
-        fprintf(stderr, ".\n");
-}
-
-static TIFFErrorHandler _errorHandler = defaultHandler;
 
 TIFFErrorHandler
 TIFFSetErrorHandler(TIFFErrorHandler handler)
 {
-        TIFFErrorHandler prev = _errorHandler;
-        _errorHandler = handler;
-        return (prev);
+	TIFFErrorHandler prev = _TIFFerrorHandler;
+	_TIFFerrorHandler = handler;
+	return (prev);
 }
 
 void
 TIFFError(const char* module, const char* fmt, ...)
 {
-        if (_errorHandler) {
-                va_list ap;
-                va_start(ap, fmt);
-                (*_errorHandler)(module, fmt, ap);
-                va_end(ap);
-        }
+	if (_TIFFerrorHandler) {
+		va_list ap;
+		va_start(ap, fmt);
+		(*_TIFFerrorHandler)(module, fmt, ap);
+		va_end(ap);
+	}
 }

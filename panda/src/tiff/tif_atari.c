@@ -1,4 +1,4 @@
-/* $Header$ */
+/* "$Header$" */
 
 /*
  * Copyright (c) 1988-1997 Sam Leffler
@@ -25,45 +25,105 @@
  */
 
 /*
- * TIFF Library MSDOS-specific Routines.
+ * TIFF Library ATARI-specific Routines.
  */
-#if defined(__WATCOMC__) || defined(__BORLANDC__) || defined(_MSC_VER)
-#include <io.h>		/* for open, close, etc. function prototypes */
-#include <stdio.h>
-#endif
 #include "tiffiop.h"
+#if defined(__TURBOC__)
+#include <tos.h>
+#include <stdio.h>
+#else
+#include <osbind.h>
+#include <fcntl.h>
+#endif
 
-static tsize_t 
+#ifndef O_ACCMODE
+#define O_ACCMODE 3
+#endif
+
+#include <errno.h>
+
+#define AEFILNF   -33
+
+static tsize_t
 _tiffReadProc(thandle_t fd, tdata_t buf, tsize_t size)
 {
-	return (read((int) fd, buf, size));
+	long r;
+
+	r = Fread((int) fd, size, buf);
+	if (r < 0) {
+		errno = (int)-r;
+		r = -1;
+	}
+	return r;
 }
 
 static tsize_t
 _tiffWriteProc(thandle_t fd, tdata_t buf, tsize_t size)
 {
-	return (write((int) fd, buf, size));
+	long r;
+
+	r = Fwrite((int) fd, size, buf);
+	if (r < 0) {
+		errno = (int)-r;
+		r = -1;
+	}
+	return r;
 }
 
 static toff_t
-_tiffSeekProc(thandle_t fd, toff_t off, int whence)
+_tiffSeekProc(thandle_t fd, off_t off, int whence)
 {
-	return (lseek((int) fd, (off_t) off, whence));
+	char buf[256];
+	long current_off, expected_off, new_off;
+
+	if (whence == SEEK_END || off <= 0)
+		return Fseek(off, (int) fd, whence);
+	current_off = Fseek(0, (int) fd, SEEK_CUR); /* find out where we are */
+	if (whence == SEEK_SET)
+		expected_off = off;
+	else
+		expected_off = off + current_off;
+	new_off = Fseek(off, (int) fd, whence);
+	if (new_off == expected_off)
+		return new_off;
+	/* otherwise extend file -- zero filling the hole */
+	if (new_off < 0)            /* error? */
+		new_off = Fseek(0, (int) fd, SEEK_END); /* go to eof */
+	_TIFFmemset(buf, 0, sizeof(buf));
+	while (expected_off > new_off) {
+		off = expected_off - new_off;
+		if (off > sizeof(buf))
+			off = sizeof(buf);
+		if ((current_off = Fwrite((int) fd, off, buf)) != off)
+			return (current_off > 0) ?
+			    new_off + current_off : new_off;
+		new_off += off;
+	}
+	return new_off;
 }
 
 static int
 _tiffCloseProc(thandle_t fd)
 {
-	return (close((int) fd));
-}
+	long r;
 
-#include <sys/stat.h>
+	r = Fclose((int) fd);
+	if (r < 0) {
+		errno = (int)-r;
+		r = -1;
+	}
+	return (int)r;
+}
 
 static toff_t
 _tiffSizeProc(thandle_t fd)
 {
-	struct stat sb;
-	return (fstat((int) fd, &sb) < 0 ? 0 : sb.st_size);
+	long pos, eof;
+
+	pos = Fseek(0, (int) fd, SEEK_CUR);
+	eof = Fseek(0, (int) fd, SEEK_END);
+	Fseek(pos, (int) fd, SEEK_SET);
+	return eof;
 }
 
 static int
@@ -78,35 +138,44 @@ _tiffUnmapProc(thandle_t fd, tdata_t base, toff_t size)
 }
 
 /*
- * Open a TIFF file descriptor for read/writing.
- */
+* Open a TIFF file descriptor for read/writing.
+*/
 TIFF*
 TIFFFdOpen(int fd, const char* name, const char* mode)
 {
 	TIFF* tif;
 
 	tif = TIFFClientOpen(name, mode,
-	    (void*) fd,
-	    _tiffReadProc, _tiffWriteProc, _tiffSeekProc, _tiffCloseProc,
-	    _tiffSizeProc, _tiffMapProc, _tiffUnmapProc);
+		(thandle_t) fd,
+		_tiffReadProc, _tiffWriteProc, _tiffSeekProc, _tiffCloseProc,
+		_tiffSizeProc, _tiffMapProc, _tiffUnmapProc);
 	if (tif)
 		tif->tif_fd = fd;
 	return (tif);
 }
 
 /*
- * Open a TIFF file for read/writing.
- */
+* Open a TIFF file for read/writing.
+*/
 TIFF*
 TIFFOpen(const char* name, const char* mode)
 {
 	static const char module[] = "TIFFOpen";
-	int m, fd;
+	int m;
+	long fd;
 
 	m = _TIFFgetMode(mode, module);
 	if (m == -1)
 		return ((TIFF*)0);
-	fd = open(name, m|O_BINARY, 0666);
+	if (m & O_TRUNC) {
+		fd = Fcreate(name, 0);
+	} else {
+		fd = Fopen(name, m & O_ACCMODE);
+		if (fd == AEFILNF && m & O_CREAT)
+			fd = Fcreate(name, 0);
+	}
+	if (fd < 0)
+		errno = (int)fd;
 	if (fd < 0) {
 		TIFFError(module, "%s: Cannot open", name);
 		return ((TIFF*)0);
@@ -114,12 +183,7 @@ TIFFOpen(const char* name, const char* mode)
 	return (TIFFFdOpen(fd, name, mode));
 }
 
-#ifdef __GNUC__
-extern	char* malloc();
-extern	char* realloc();
-#else
-#include <malloc.h>
-#endif
+#include <stdlib.h>
 
 tdata_t
 _TIFFmalloc(tsize_t s)
@@ -140,13 +204,13 @@ _TIFFrealloc(tdata_t p, tsize_t s)
 }
 
 void
-_TIFFmemset(tdata_t p, int v, tsize_t c)
+_TIFFmemset(tdata_t p, int v, size_t c)
 {
 	memset(p, v, (size_t) c);
 }
 
 void
-_TIFFmemcpy(tdata_t d, const tdata_t s, tsize_t c)
+_TIFFmemcpy(tdata_t d, const tdata_t s, size_t c)
 {
 	memcpy(d, s, (size_t) c);
 }
@@ -158,7 +222,7 @@ _TIFFmemcmp(const tdata_t p1, const tdata_t p2, tsize_t c)
 }
 
 static void
-msdosWarningHandler(const char* module, const char* fmt, va_list ap)
+atariWarningHandler(const char* module, const char* fmt, va_list ap)
 {
 	if (module != NULL)
 		fprintf(stderr, "%s: ", module);
@@ -166,14 +230,14 @@ msdosWarningHandler(const char* module, const char* fmt, va_list ap)
 	vfprintf(stderr, fmt, ap);
 	fprintf(stderr, ".\n");
 }
-TIFFErrorHandler _TIFFwarningHandler = msdosWarningHandler;
+TIFFErrorHandler _TIFFwarningHandler = atariWarningHandler;
 
 static void
-msdosErrorHandler(const char* module, const char* fmt, va_list ap)
+atariErrorHandler(const char* module, const char* fmt, va_list ap)
 {
 	if (module != NULL)
 		fprintf(stderr, "%s: ", module);
 	vfprintf(stderr, fmt, ap);
 	fprintf(stderr, ".\n");
 }
-TIFFErrorHandler _TIFFerrorHandler = msdosErrorHandler;
+TIFFErrorHandler _TIFFerrorHandler = atariErrorHandler;

@@ -25,36 +25,39 @@
  */
 
 /*
- * TIFF Library MSDOS-specific Routines.
+ * TIFF Library Windows 3.x-specific Routines.
  */
+#include "tiffiop.h"
 #if defined(__WATCOMC__) || defined(__BORLANDC__) || defined(_MSC_VER)
 #include <io.h>		/* for open, close, etc. function prototypes */
-#include <stdio.h>
 #endif
-#include "tiffiop.h"
+
+#include <windows.h>
+#include <windowsx.h>
+#include <memory.h>
 
 static tsize_t 
 _tiffReadProc(thandle_t fd, tdata_t buf, tsize_t size)
 {
-	return (read((int) fd, buf, size));
+	return (_hread(fd, buf, size));
 }
 
 static tsize_t
 _tiffWriteProc(thandle_t fd, tdata_t buf, tsize_t size)
 {
-	return (write((int) fd, buf, size));
+	return (_hwrite(fd, buf, size));
 }
 
 static toff_t
 _tiffSeekProc(thandle_t fd, toff_t off, int whence)
 {
-	return (lseek((int) fd, (off_t) off, whence));
+	return (_llseek(fd, (off_t) off, whence));
 }
 
 static int
 _tiffCloseProc(thandle_t fd)
 {
-	return (close((int) fd));
+	return (_lclose(fd));
 }
 
 #include <sys/stat.h>
@@ -86,7 +89,7 @@ TIFFFdOpen(int fd, const char* name, const char* mode)
 	TIFF* tif;
 
 	tif = TIFFClientOpen(name, mode,
-	    (void*) fd,
+	    (thandle_t) fd,
 	    _tiffReadProc, _tiffWriteProc, _tiffSeekProc, _tiffCloseProc,
 	    _tiffSizeProc, _tiffMapProc, _tiffUnmapProc);
 	if (tif)
@@ -102,11 +105,21 @@ TIFFOpen(const char* name, const char* mode)
 {
 	static const char module[] = "TIFFOpen";
 	int m, fd;
+	OFSTRUCT of;
+	int mm = 0;
 
 	m = _TIFFgetMode(mode, module);
 	if (m == -1)
 		return ((TIFF*)0);
-	fd = open(name, m|O_BINARY, 0666);
+	if (m & O_CREAT) {
+		if ((m & O_TRUNC) || OpenFile(name, &of, OF_EXIST) != HFILE_ERROR)
+			mm |= OF_CREATE;
+	}
+	if (m & O_WRONLY)
+		mm |= OF_WRITE;
+	if (m & O_RDWR)
+		mm |= OF_READWRITE;
+	fd = OpenFile(name, &of, mm);
 	if (fd < 0) {
 		TIFFError(module, "%s: Cannot open", name);
 		return ((TIFF*)0);
@@ -114,66 +127,99 @@ TIFFOpen(const char* name, const char* mode)
 	return (TIFFFdOpen(fd, name, mode));
 }
 
-#ifdef __GNUC__
-extern	char* malloc();
-extern	char* realloc();
-#else
-#include <malloc.h>
-#endif
-
 tdata_t
 _TIFFmalloc(tsize_t s)
 {
-	return (malloc((size_t) s));
+	return (tdata_t) GlobalAllocPtr(GHND, (DWORD) s);
 }
 
 void
 _TIFFfree(tdata_t p)
 {
-	free(p);
+	GlobalFreePtr(p);
 }
 
 tdata_t
 _TIFFrealloc(tdata_t p, tsize_t s)
 {
-	return (realloc(p, (size_t) s));
+	return (tdata_t) GlobalReAllocPtr(p, (DWORD) s, GHND);
 }
 
 void
 _TIFFmemset(tdata_t p, int v, tsize_t c)
 {
-	memset(p, v, (size_t) c);
+	char* pp = (char*) p;
+
+	while (c > 0) {
+		tsize_t chunk = 0x10000 - ((uint32) pp & 0xffff);/* What's left in segment */
+		if (chunk > 0xff00)				/* No more than 0xff00 */
+			chunk = 0xff00;
+		if (chunk > c)					/* No more than needed */
+			chunk = c;
+		memset(pp, v, chunk);
+		pp = (char*) (chunk + (char huge*) pp);
+		c -= chunk;
+	}
 }
 
 void
 _TIFFmemcpy(tdata_t d, const tdata_t s, tsize_t c)
 {
-	memcpy(d, s, (size_t) c);
+	if (c > 0xFFFF)
+		hmemcpy((void _huge*) d, (void _huge*) s, c);
+	else
+		(void) memcpy(d, s, (size_t) c);
 }
 
 int
-_TIFFmemcmp(const tdata_t p1, const tdata_t p2, tsize_t c)
+_TIFFmemcmp(const tdata_t d, const tdata_t s, tsize_t c)
 {
-	return (memcmp(p1, p2, (size_t) c));
+	char* dd = (char*) d;
+	char* ss = (char*) s;
+	tsize_t chunks, chunkd, chunk;
+	int result;
+
+	while (c > 0) {
+		chunks = 0x10000 - ((uint32) ss & 0xffff);	/* What's left in segment */
+		chunkd = 0x10000 - ((uint32) dd & 0xffff);	/* What's left in segment */
+		chunk = c;					/* Get the largest of     */
+		if (chunk > chunks)				/*   c, chunks, chunkd,   */
+			chunk = chunks;				/*   0xff00               */
+		if (chunk > chunkd)
+			chunk = chunkd;
+		if (chunk > 0xff00)
+			chunk = 0xff00;
+		result = memcmp(dd, ss, chunk);
+		if (result != 0)
+			return (result);
+		dd = (char*) (chunk + (char huge*) dd);
+		ss = (char*) (chunk + (char huge*) ss);
+		c -= chunk;
+	}
+	return (0);
 }
 
 static void
-msdosWarningHandler(const char* module, const char* fmt, va_list ap)
+win3WarningHandler(const char* module, const char* fmt, va_list ap)
 {
+	char e[512] = { '\0' };
 	if (module != NULL)
-		fprintf(stderr, "%s: ", module);
-	fprintf(stderr, "Warning, ");
-	vfprintf(stderr, fmt, ap);
-	fprintf(stderr, ".\n");
+		strcat(strcpy(e, module), ":");
+	vsprintf(e+strlen(e), fmt, ap);
+	strcat(e, ".");
+	MessageBox(GetActiveWindow(), e, "LibTIFF Warning",
+	    MB_OK|MB_ICONEXCLAMATION);
 }
-TIFFErrorHandler _TIFFwarningHandler = msdosWarningHandler;
+TIFFErrorHandler _TIFFwarningHandler = win3WarningHandler;
 
 static void
-msdosErrorHandler(const char* module, const char* fmt, va_list ap)
+win3ErrorHandler(const char* module, const char* fmt, va_list ap)
 {
+	char e[512] = { '\0' };
 	if (module != NULL)
-		fprintf(stderr, "%s: ", module);
-	vfprintf(stderr, fmt, ap);
-	fprintf(stderr, ".\n");
+		strcat(strcpy(e, module), ":");
+	vsprintf(e+strlen(e), fmt, ap);
+	strcat(e, ".");
+	MessageBox(GetActiveWindow(), e, "LibTIFF Error", MB_OK|MB_ICONSTOP);
 }
-TIFFErrorHandler _TIFFerrorHandler = msdosErrorHandler;
+TIFFErrorHandler _TIFFerrorHandler = win3ErrorHandler;
