@@ -99,6 +99,8 @@ class ShowBase(DirectObject.DirectObject):
         # This is a placeholder for a CollisionTraverser.  If someone
         # stores a CollisionTraverser pointer here, we'll traverse it
         # in the collisionloop task.
+        self.shadowTrav = 0
+        # in the collisionloop task.
         self.cTrav = 0
         # Ditto for an AppTraverser.
         self.appTrav = 0
@@ -803,6 +805,13 @@ class ShowBase(DirectObject.DirectObject):
         ivalMgr.step()
         return Task.cont
 
+    def shadowCollisionLoop(self, state):
+        # run the collision traversal if we have a
+        # CollisionTraverser set.
+        if self.shadowTrav:
+            self.shadowTrav.traverse(self.render)
+        return Task.cont
+
     def collisionloop(self, state):
         # run the collision traversal if we have a
         # CollisionTraverser set.
@@ -836,23 +845,27 @@ class ShowBase(DirectObject.DirectObject):
 
     def restart(self):
         self.shutdown()
-        # give the igloop task a reasonably "late" priority,
-        # so that it will get run after most tasks
-        self.taskMgr.add(self.igloop, 'igloop', priority = 50)
-        # make the collisionloop task run before igloop,
-        # but leave enough room for the app to insert tasks
-        # between collisionloop and igloop
-        self.taskMgr.add(self.collisionloop, 'collisionloop', priority = 30)
         # give the dataloop task a reasonably "early" priority,
         # so that it will get run before most tasks
         self.taskMgr.add(self.dataloop, 'dataloop', priority = -50)
         # spawn the ivalloop with a later priority, so that it will
         # run after most tasks, but before igloop.
         self.taskMgr.add(self.ivalloop, 'ivalloop', priority = 20)
+        # make the collisionloop task run before igloop,
+        # but leave enough room for the app to insert tasks
+        # between collisionloop and igloop
+        self.taskMgr.add(self.collisionloop, 'collisionloop', priority = 30)
+        # do the shadowCollisionLoop after the collisionloop and
+        # befor the igloop:
+        self.taskMgr.add(self.shadowCollisionLoop, 'shadowCollisionLoop', priority = 34)
+        # give the igloop task a reasonably "late" priority,
+        # so that it will get run after most tasks
+        self.taskMgr.add(self.igloop, 'igloop', priority = 50)
         self.eventMgr.restart()
 
     def shutdown(self):
         self.taskMgr.remove('igloop')
+        self.taskMgr.remove('shadowCollisionLoop')
         self.taskMgr.remove('collisionloop')
         self.taskMgr.remove('dataloop')
         self.taskMgr.remove('ivalloop')
