@@ -37,8 +37,8 @@ class DirectRadamec(PandaObject):
         # Note:  These values change quite often, i.e. everytime
         #        you unplug the radamec cords, or jostle them too
         #        much.  For best results, re-record these values often.
-        self.minRange = [-180.0, -90, 524285.0, 504790.0]
-        self.maxRange = [180.0, 90, 548897.0, 534569.0]
+        self.minRange = [-180.0, -90, 522517.0, 494762.0]
+        self.maxRange = [180.0, 90, 547074.0, 533984.0]
         # Spawn update task
         self.enable()
         
@@ -56,7 +56,7 @@ class DirectRadamec(PandaObject):
 
     def updateTask(self, state):
         # Update analogs
-        for i in range(self.numAnalogs):
+        for i in range(len(self.analogs)):
             self.aList[i] = self.analogs.getControlState(i)
         return Task.cont
     
