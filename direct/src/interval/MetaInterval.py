@@ -4,6 +4,8 @@ from IntervalManager import ivalMgr
 import Interval
 from direct.task import Task
 import types
+if __debug__:
+    import direct.showbase.PythonUtil as PythonUtil
 
 PREVIOUS_END = CMetaInterval.RSPreviousEnd
 PREVIOUS_START = CMetaInterval.RSPreviousBegin
@@ -21,6 +23,9 @@ class MetaInterval(CMetaInterval):
 
     SequenceNum = 1
     def __init__(self, *ivals, **kw):
+        if __debug__:
+            self.debugInitTraceback = PythonUtil.StackTrace("create interval", 1, 10)
+
         name = None
         #if len(ivals) == 2 and isinstance(ivals[1], types.StringType):
         #    # If the second parameter is a string, it's the name.
@@ -294,7 +299,6 @@ class MetaInterval(CMetaInterval):
                 self.pythonIvals.append(ival)
                 self.addExtIndex(index, ival.getName(), ival.getDuration(),
                                  ival.getOpenEnded(), relTime, relTo)
-
             elif isinstance(ival, MetaInterval):
                 # It's another MetaInterval, so copy in its intervals
                 # directly to this object.  We could just store the
@@ -303,7 +307,6 @@ class MetaInterval(CMetaInterval):
                 # nested hierarchy into a linear list within the root
                 # CMetaInterval object.
                 ival.applyIvals(self, relTime, relTo)
-            
             else:
                 # Nope, a perfectly ordinary C++ interval.  Hooray!
                 self.addCInterval(ival, relTime, relTo)
@@ -432,10 +435,8 @@ class MetaInterval(CMetaInterval):
 
         if len(self.ivals) == 0:
             pass
-
         elif len(self.ivals) == 1:
             meta.addInterval(self.ivals[0], relTime, relTo)
-
         else:
             self.notify.error("Cannot build list from MetaInterval directly.")
 
@@ -536,7 +537,6 @@ class Sequence(MetaInterval):
     def applyIvals(self, meta, relTime, relTo):
         meta.addSequence(self.ivals, self.getName(),
                          relTime, relTo, self.phonyDuration)
-
 class Parallel(MetaInterval):
     def applyIvals(self, meta, relTime, relTo):
         meta.addParallel(self.ivals, self.getName(),
