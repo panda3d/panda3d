@@ -102,9 +102,11 @@ class ParticlePanel(AppShell):
             )
         self.createFloaters(systemPage, systemFloaterDefs)
         # Checkboxes
+        # Note: Sense is reversed on this one
         self.systemLocalVelocity = self.createCheckbutton(
-            systemPage, 'System', 'Local Velocity',
-            'On: velocities are absolute; Off: velocities are relative',
+            systemPage, 'System', 'Render Relative Velocities',
+            ('On: velocities are in render space; ' +
+             'Off: velocities are in particle local space'),
             self.toggleSystemLocalVelocity, 0)
         self.systemGrowsOlder = self.createCheckbutton(
             systemPage, 'System', 'Grows Older',
@@ -200,7 +202,8 @@ class ParticlePanel(AppShell):
         self.createRadiobutton(
             emissionFrame, 'left',
             'Emitter', 'Explicit Emission',
-            'particles are all emitted in parallel, in the same direction',
+            ('particles are all emitted in parallel, direction is based ' +
+             'on explicit velocity vector'),
             self.emissionType, BaseParticleEmitter.ETEXPLICIT,
             self.setEmissionType)
         self.createRadiobutton(
@@ -219,30 +222,30 @@ class ParticlePanel(AppShell):
         emissionFrame.pack(fill = 'x', expand = 0)
         
         self.createFloater(
-            emitterPage, 'Emitter', 'Velocity Amplitude',
+            emitterPage, 'Emitter', 'Velocity Multiplier',
             'launch velocity multiplier (all emission modes)',
             command = self.setEmitterAmplitude,
             min = None)
         
         self.createFloater(
-            emitterPage, 'Emitter', 'Velocity Amplitude Spread',
+            emitterPage, 'Emitter', 'Velocity Multiplier Spread',
             'spread for launch velocity multiplier (all emission modes)',
             command = self.setEmitterAmplitudeSpread)
         
         self.createVector3Entry(
-            emitterPage, 'Emitter', 'Offset Force',
+            emitterPage, 'Emitter', 'Offset Velocity',
             'Velocity vector applied to all particles',
             command = self.setEmitterOffsetForce)
+        
+        self.createVector3Entry(
+            emitterPage, 'Emitter', 'Explicit Velocity',
+            'all particles launch with this velocity in Explicit mode',
+            command = self.setEmitterExplicitLaunchVector)
         
         self.createVector3Entry(
             emitterPage, 'Emitter', 'Radiate Origin',
             'particles launch away from this point in Radiate mode',
             command = self.setEmitterRadiateOrigin)
-        
-        self.createVector3Entry(
-            emitterPage, 'Emitter', 'Explicit Launch Vector',
-            'all particles launch with this velocity in Explicit mode',
-            command = self.setEmitterExplicitLaunchVector)
         
         self.emitterNotebook = Pmw.NoteBook(emitterPage, tabpos = None)
         # Box page #
@@ -523,13 +526,15 @@ class ParticlePanel(AppShell):
         return widgets
 
     def createFloater(self, parent, category, text, balloonHelp,
-                      command = None, min = 0.0, resolution = None, **kw):
+                      command = None, min = 0.0, resolution = None,
+                      maxVelocity = 10.0, **kw):
         kw['text'] = text
         kw['min'] = min
         if min != None:
             kw['initialValue'] = min
         else:
             kw['initialValue'] = 0.0
+        kw['maxVelocity'] = maxVelocity
         kw['resolution'] = resolution
         widget = apply(Floater.Floater, (parent,), kw)
         # Do this after the widget so command isn't called on creation
@@ -740,17 +745,17 @@ class ParticlePanel(AppShell):
         emitter = self.particles.emitter
         self.emissionType.set(self.particles.emitter.getEmissionType())
         amp = emitter.getAmplitude()
-        self.getWidget('Emitter', 'Velocity Amplitude').set(amp)
+        self.getWidget('Emitter', 'Velocity Multiplier').set(amp)
         spread = emitter.getAmplitudeSpread()
-        self.getWidget('Emitter', 'Velocity Amplitude Spread').set(spread)
+        self.getWidget('Emitter', 'Velocity Multiplier Spread').set(spread)
         vec = emitter.getOffsetForce()
-        self.getWidget('Emitter', 'Offset Force').set(
+        self.getWidget('Emitter', 'Offset Velocity').set(
             [vec[0], vec[1], vec[2]], 0)
         vec = emitter.getRadiateOrigin()
         self.getWidget('Emitter', 'Radiate Origin').set(
             [vec[0], vec[1], vec[2]], 0)
         vec = emitter.getExplicitLaunchVector()
-        self.getWidget('Emitter', 'Explicit Launch Vector').set(
+        self.getWidget('Emitter', 'Explicit Velocity').set(
             [vec[0], vec[1], vec[2]], 0)
         if isinstance(emitter, BoxEmitter):
             min = emitter.getMinBound()

@@ -104,7 +104,6 @@ class Particles(ParticleSystem.ParticleSystem):
 	    self.renderer.setPointSize(1.0)
 	elif (type == "LineParticleRenderer"):
 	    self.renderer = LineParticleRenderer.LineParticleRenderer()
-	    self.renderer.setPointSize(1.0)
 	elif (type == "GeomParticleRenderer"):
 	    self.renderer = GeomParticleRenderer.GeomParticleRenderer()
 	elif (type == "SparkleParticleRenderer"):
