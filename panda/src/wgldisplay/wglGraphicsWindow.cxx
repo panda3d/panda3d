@@ -572,6 +572,7 @@ void wglGraphicsWindow::config(void) {
   _entry_state = -1;
 
   ShowWindow(_mwindow, SW_SHOWNORMAL);
+  ShowWindow(_mwindow, SW_SHOWNORMAL);
 
   // Enable detection of mouse input
   enable_mouse_input(true);

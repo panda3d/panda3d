@@ -1133,6 +1133,7 @@ void wdxGraphicsWindow::config(void) {
   _input_devices.push_back(device);
 
     ShowWindow(_mwindow, SW_SHOWNORMAL);
+    ShowWindow(_mwindow, SW_SHOWNORMAL);
 //  UpdateWindow( _mwindow );
 }
 
