@@ -614,6 +614,8 @@ generate_images(bool redo_all) {
 bool Palettizer::
 read_stale_eggs(bool redo_all) {
   bool okflag = true;
+  
+  pvector<EggFiles::iterator> invalid_eggs;
 
   EggFiles::iterator ei;
   for (ei = _egg_files.begin(); ei != _egg_files.end(); ++ei) {
@@ -621,13 +623,23 @@ read_stale_eggs(bool redo_all) {
     if (!egg_file->has_data() &&
         (egg_file->is_stale() || redo_all)) {
       if (!egg_file->read_egg()) {
-        okflag = false;
+        invalid_eggs.push_back(ei);
 
       } else {
         egg_file->scan_textures();
         egg_file->choose_placements();
       }
     }
+  }
+
+  // Now eliminate all the invalid egg files.
+  pvector<EggFiles::iterator>::iterator ii;
+  for (ii = invalid_eggs.begin(); ii != invalid_eggs.end(); ++ii) {
+    EggFiles::iterator ei = (*ii);
+    EggFile *egg_file = (*ei).second;
+    cerr << "Removing " << (*ei).first << "\n";
+    egg_file->remove_egg();
+    _egg_files.erase(ei);
   }
 
   return okflag;
