@@ -96,7 +96,26 @@ make_gsg(const FrameBufferProperties &properties,
     DCAST_INTO_R(share_gsg, share_with, NULL);
   }
 
-  return new OSMesaGraphicsStateGuardian(properties, share_gsg);
+  // We ignore the requested properties; OSMesa contexts are all the
+  // same.
+
+  FrameBufferProperties mesa_props;
+
+  int frame_buffer_mode = 
+    FrameBufferProperties::FM_rgba | 
+    FrameBufferProperties::FM_single_buffer | 
+    FrameBufferProperties::FM_accum | 
+    FrameBufferProperties::FM_depth | 
+    FrameBufferProperties::FM_stencil | 
+    FrameBufferProperties::FM_software;
+
+  mesa_props.set_frame_buffer_mode(frame_buffer_mode);
+  mesa_props.set_color_bits(24);
+  mesa_props.set_alpha_bits(8);
+  mesa_props.set_stencil_bits(8);
+  mesa_props.set_depth_bits(8);
+
+  return new OSMesaGraphicsStateGuardian(mesa_props, share_gsg);
 }
 
 ////////////////////////////////////////////////////////////////////
