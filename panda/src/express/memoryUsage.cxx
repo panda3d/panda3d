@@ -749,7 +749,13 @@ ns_get_interpreter_size() {
 ////////////////////////////////////////////////////////////////////
 size_t MemoryUsage::
 ns_get_total_size() {
+#if defined(WIN32_VC) && defined(_DEBUG)
   return _total_size;
+#else
+  // If we aren't tracking _total_size, report _cpp_size as the next
+  // best thing.
+  return _cpp_size;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -33,7 +33,7 @@
 //
 //               This is the base class for PointerToBase<T>.
 ////////////////////////////////////////////////////////////////////
-class PointerToVoid {
+class EXPCL_PANDAEXPRESS PointerToVoid {
 protected:
   INLINE PointerToVoid();
   INLINE ~PointerToVoid();

@@ -752,7 +752,7 @@ v() const {
   nassertd(_void_ptr != NULL) {
     ((ConstPointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
   }
-  return *_ptr;
+  return *(To *)_void_ptr;
 }
 
 ////////////////////////////////////////////////////////////////////

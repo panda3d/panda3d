@@ -28,7 +28,7 @@
 //               pointers.  It needs an additional flag to indicate
 //               that the pointer has been deleted.
 ////////////////////////////////////////////////////////////////////
-class WeakPointerToVoid : public PointerToVoid {
+class EXPCL_PANDAEXPRESS WeakPointerToVoid : public PointerToVoid {
 protected:
   INLINE WeakPointerToVoid();
 
