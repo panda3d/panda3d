@@ -279,7 +279,7 @@ HandleGetopts(int &idx, int argc, char **argv)
       if ( strcmp( argv[idx+1], "" ) ) {
         // Get model name.
         model_name = argv[idx+1];
-        softegg_cat.info() << "loading model %s\n" <<  model_name;
+        softegg_cat.info() << "loading model " <<  model_name << endl;
       }
       ++idx;
       break;
@@ -288,7 +288,7 @@ HandleGetopts(int &idx, int argc, char **argv)
       if ( strcmp( argv[idx+1], "" ) ) {
         // Get tex path name.
         tex_path = argv[idx+1];
-        softegg_cat.info() << "texture path:  %s\n" << tex_path;
+        softegg_cat.info() << "texture path:  " << tex_path << endl;
       }
       ++idx;
       break;
@@ -297,7 +297,7 @@ HandleGetopts(int &idx, int argc, char **argv)
       if ( strcmp( argv[idx+1], "") ) {
         // Get the name.
         tex_filename = argv[idx+1];
-        softegg_cat.info() << "creating texture list file: %s\n" << tex_filename;
+        softegg_cat.info() << "creating texture list file: " << tex_filename << endl;
       }
       ++idx;
       break;
@@ -305,7 +305,7 @@ HandleGetopts(int &idx, int argc, char **argv)
     case 'S':     // Set NURBS step.
       if ( strcmp( argv[idx+1], "" ) ) {
         nurbs_step = atoi(argv[idx+1]);
-        softegg_cat.info() << "NURBS step:  %d\n" << nurbs_step;
+        softegg_cat.info() << "NURBS step:  " << nurbs_step << endl;
       }
       ++idx;
       break;
@@ -313,7 +313,7 @@ HandleGetopts(int &idx, int argc, char **argv)
     case 'M':     // Set model output file name.
       if ( strcmp( argv[idx+1], "" ) ) {
         eggFileName = argv[idx+1];
-        softegg_cat.info() << "Model output filename:  %s\n" << eggFileName;
+        softegg_cat.info() << "Model output filename:  " << eggFileName << endl;
       }
       ++idx;
       break;
@@ -321,7 +321,7 @@ HandleGetopts(int &idx, int argc, char **argv)
     case 'A':     // Set anim output file name.
       if ( strcmp( argv[idx+1], "" ) ) {
         animFileName = argv[idx+1];
-        softegg_cat.info() << "Anim output filename:  %s\n" << animFileName;
+        softegg_cat.info() << "Anim output filename:  " << animFileName << endl;
       }
       ++idx;
       break;
@@ -329,7 +329,7 @@ HandleGetopts(int &idx, int argc, char **argv)
     case 'N':     // Set egg model name.
       if ( strcmp( argv[idx+1], "" ) ) {
         eggGroupName = argv[idx+1];
-        softegg_cat.info() << "Egg group name:  %s\n" << eggGroupName;
+        softegg_cat.info() << "Egg group name:  " << eggGroupName << endl;
       }
       ++idx;
       break;
@@ -337,7 +337,7 @@ HandleGetopts(int &idx, int argc, char **argv)
     case 'o':     // Set search_prefix.
       if ( strcmp( argv[idx+1], "" ) ) {
         search_prefix = argv[idx+1]; 
-        softegg_cat.info() << "Only converting models with prefix:  %s\n" << search_prefix;
+        softegg_cat.info() << "Only converting models with prefix:  " << search_prefix << endl;
       }
       ++idx;
       break;
@@ -382,7 +382,7 @@ HandleGetopts(int &idx, int argc, char **argv)
       if ( strcmp( argv[idx+1], "" ) ) {
         make_pose = TRUE;
         pose_frame = atoi(argv[idx+1]);
-        softegg_cat.info() << "generating static pose from frame %d\n" << pose_frame;
+        softegg_cat.info() << "generating static pose from frame " << pose_frame << endl;
       }
       ++idx;
       break;
@@ -416,7 +416,7 @@ HandleGetopts(int &idx, int argc, char **argv)
     case 'v':     // print debug messages.
       if ( strcmp( argv[idx+1], "" ) ) {
         verbose = atoi(argv[idx+1]);
-        softegg_cat.info() << "using debug level %d\n" << verbose;
+        softegg_cat.info() << "using debug level " << verbose << endl;
       }
       ++idx;
       break;
@@ -424,14 +424,15 @@ HandleGetopts(int &idx, int argc, char **argv)
     case 'b':     // Set animation start frame.
       if ( strcmp( argv[idx+1], "" ) ) {
         anim_start = atoi(argv[idx+1]);
-        softegg_cat.info() << "animation starting at frame:  %d\n" << anim_start;
+        softegg_cat.info() << "animation starting at frame:  " << anim_start << endl;
       }
+      ++idx;
       break;
       
     case 'e':     /// Set animation end frame.
       if ( strcmp( argv[idx+1], "" ) ) {
         anim_end = atoi(argv[idx+1]);
-        softegg_cat.info() << "animation ending at frame:  %d\n" << anim_end;
+        softegg_cat.info() << "animation ending at frame:  " << anim_end << endl;
       }
       ++idx;
       break;
@@ -439,7 +440,7 @@ HandleGetopts(int &idx, int argc, char **argv)
     case 'f':     /// Set animation frame rate.
       if ( strcmp( argv[idx+1], "" ) ) {
         anim_rate = atoi(argv[idx+1]);
-        softegg_cat.info() << "animation frame rate:  %d\n" << anim_rate;
+        softegg_cat.info() << "animation frame rate:  " << anim_rate << endl;
       }
       ++idx;
       break;
@@ -482,6 +483,17 @@ get_name() const {
 string SoftToEggConverter::
 get_extension() const {
   return "mb";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SoftToEggConverter::get_name
+//       Access: Public, Virtual
+//  Description: Returns the English name of the file type this
+//               converter supports.
+////////////////////////////////////////////////////////////////////
+SoftNodeDesc *SoftToEggConverter::
+find_node(string name) {
+  return _tree.get_node(name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -574,15 +586,24 @@ convert_soft(bool from_selection) {
   _tree._use_prefix = use_prefix;
   _tree._search_prefix = search_prefix;
   all_ok = _tree.build_complete_hierarchy(scene, database);
-  //  exit(1);
+
+  // Lets see if we have gotten the hierarchy right
+  //_tree.print_hierarchy();
+  //exit(1);
 
   char *root_name = _tree.GetRootName( eggFileName );
+
   cout << "main group name: " << root_name << endl;
   if (root_name)
     _character_name = root_name;
   
   if (make_poly) {
     if (!convert_char_model()) {
+      all_ok = false;
+    }
+
+    // generate soft skinning assignments if desired
+    if (!make_soft_skin()) {
       all_ok = false;
     }
 
@@ -703,7 +724,7 @@ convert_char_model() {
   }
 #endif
   cout << "character name " << _character_name << "\n";
-  EggGroup *char_node = new EggGroup(_character_name);
+  EggGroup *char_node = new EggGroup(eggGroupName);
   get_egg_data().add_child(char_node);
   char_node->set_dart_type(EggGroup::DT_default);
 
@@ -728,11 +749,15 @@ convert_char_chan() {
 
   EggTable *root_table_node = new EggTable();
   get_egg_data().add_child(root_table_node);
-  EggTable *bundle_node = new EggTable(_character_name);
+  EggTable *bundle_node = new EggTable(eggGroupName);
   bundle_node->set_table_type(EggTable::TT_bundle);
   root_table_node->add_child(bundle_node);
   EggTable *skeleton_node = new EggTable("<skeleton>");
   bundle_node->add_child(skeleton_node);
+#if 0
+  EggTable *root_node = new EggTable("root");
+  skeleton_node->add_child(root_node);
+#endif
 
   // Set the frame rate before we start asking for anim tables to be
   // created.
@@ -744,6 +769,7 @@ convert_char_chan() {
   cout << "animation frame inc: " << frame_inc << endl;
   
   _tree._fps = output_frame_rate / frame_inc;
+  //  _tree.clear_egg(&get_egg_data(), NULL, root_node);
   _tree.clear_egg(&get_egg_data(), NULL, skeleton_node);
 
   // Now we can get the animation data by walking through all of the
@@ -760,9 +786,20 @@ convert_char_chan() {
   //  MTime frame(start_frame, MTime::uiUnit());
   //  MTime frame_stop(end_frame, MTime::uiUnit());
   // start at first frame and go to last
+  if (make_pose) {
+    start_frame = pose_frame;
+    end_frame = pose_frame;
+  }
+  if (anim_start > 0)
+    start_frame = anim_start;
+  if (anim_end > 0)
+    end_frame = anim_end;
   for ( frame = start_frame; frame <= end_frame; frame += frame_inc) {
     SAA_frame2Seconds( &scene, frame, &time );
-    SAA_updatelistEvalScene( &scene, time );
+    //    cout << "got time " << time << endl;
+    if (!make_pose) {
+      SAA_updatelistEvalScene( &scene, time );
+    }
     cout << "\n> animating frame " << frame << endl;
 
     //    if (softegg_cat.is_debug()) {
@@ -778,13 +815,10 @@ convert_char_chan() {
     for (i = 0; i < num_nodes; i++) {
       SoftNodeDesc *node_desc = _tree.get_node(i);
       if (node_desc->is_joint()) {
-        if (softegg_cat.is_spam()) {
-          softegg_cat.spam()
-            << "joint " << node_desc->get_name() << "\n";
-        }
+        cout << "-----joint " << node_desc->get_name() << "\n";
         EggXfmSAnim *anim = _tree.get_egg_anim(node_desc);
         // following function fills in the anim structure
-        node_desc->get_joint_transform(&scene, tgroup, anim);
+        node_desc->get_joint_transform(&scene, tgroup, anim, TRUE);
       }
     }
 
@@ -843,29 +877,23 @@ process_model_node(SoftNodeDesc *node_desc) {
   char *fullname = NULL;
   SAA_ModelType type;
 
-#if 0
-  // Get the name of the model
-  if ( use_prefix ) {
-    // Get the FULL name of the model
-    name = fullname = _tree.GetFullName( &scene, node_desc->get_model() );
-  }
-  else {
-    // Get the name of the trim curve
-    name = _tree.GetName( &scene, node_desc->get_model() );
-  }
-#endif
   name = node_desc->get_name().c_str();
   cout << "element name <" << name << ">\n";
 
-  // find out what type of node we're dealing with
-  result = SAA_modelGetType( &scene, node_desc->get_model(), &type );
+  if (node_desc->is_junk()) {
+    cout << "no processing, it is junk\n";
+    return true;
+  }
+
   egg_group = _tree.get_egg_group(node_desc);
+
+  // find out what type of node we're dealing with
+  SAA_modelGetType( &scene, node_desc->get_model(), &type );
+
   cout << "encountered ";
   switch(type){
   case SAA_MNILL:
     cout << "null\n";
-    node_desc->get_transform(&scene, egg_group);
-    handle_null(node_desc->get_model(), egg_group, type, name);
     break;
   case SAA_MPTCH:
     cout << "patch\n";
@@ -875,11 +903,12 @@ process_model_node(SoftNodeDesc *node_desc) {
     break;
   case SAA_MSMSH:
     cout << "mesh\n";
-    node_desc->get_transform(&scene, egg_group);
+    node_desc->get_transform(&scene, egg_group, TRUE);
     make_polyset(node_desc, egg_group, type);
     break;
   case SAA_MJNT:
-    cout << "joint\n";
+    cout << "joint";
+    cout << " joint type " << node_desc->is_joint() << endl;
     break;
   case SAA_MSPLN:
     cout << "spline\n";
@@ -901,7 +930,7 @@ process_model_node(SoftNodeDesc *node_desc) {
   }
 
   if (node_desc->is_joint())
-    node_desc->get_transform(&scene, egg_group, TRUE);
+    node_desc->get_transform(&scene, egg_group, FALSE);
 
   return true;
 }
@@ -950,7 +979,13 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
       string vpool_name = name + ".verts";
       EggVertexPool *vpool = new EggVertexPool(vpool_name);
       egg_group->add_child(vpool);
-      
+
+      /*
+      // create a copy of vpool in node_desc which will be used later
+      // for soft_skinning
+      node_desc->create_vpool(vpool_name);
+      */
+
       // little detour...bear with me for now...TODO: move these to a new function
       
       // We will need to transform all vertices from world coordinate
@@ -1098,6 +1133,17 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
           }
           vert.set_external_index(indices[i]);
           egg_poly->add_vertex(vpool->create_unique_vertex(vert));
+
+          /*
+          // keep a one to one copy in this node's vpool
+          EggVertex *t_vert = new EggVertex(vert);
+          if (!t_vert) {
+            cout << "out of memeory " << endl;
+            nassertv(t_vert != NULL);
+          }
+          node_desc->get_vpool()->add_vertex(t_vert, indices[i]);
+          */
+
           cout << "\n";
         }
         
@@ -1117,116 +1163,346 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
         }
       }
       }
-#if 0
-  come back to it later
-  // Now that we've added all the polygons (and created all the
-  // vertices), go back through the vertex pool and set up the
-  // appropriate joint membership for each of the vertices.
-  bool got_weights = false;
+    }
+}
 
-  pvector<EggGroup *> joints;
-  MFloatArray weights;
-  if (_animation_convert == AC_model) {
-    got_weights = 
-      get_vertex_weights(dag_path, mesh, joints, weights);
+////////////////////////////////////////////////////////////////////
+//     Function: FindClosestTriVert
+//       Access: Public
+//  Description: Given an egg vertex pool, map each vertex therein to 
+//               a vertex within an array of SAA model vertices of
+//               size numVert. Mapping is done by closest proximity.
+////////////////////////////////////////////////////////////////////
+int *SoftToEggConverter::
+FindClosestTriVert( EggVertexPool *vpool, SAA_DVector *vertices, int numVert ) {
+  int i,j;
+  int *vertMap = NULL; 
+  int vpoolSize = (int)vpool->size();
+  float closestDist;
+  float thisDist;
+  int closest;
+    
+  vertMap = new int[vpoolSize];
+  i = 0;
+  EggVertexPool::iterator vi;
+  for (vi = vpool->begin(); vi != vpool->end(); ++vi, ++i) {
+    EggVertex *vert = (*vi);
+    cout << "vert external index = " << vert->get_external_index() << endl;
+    //    cout << "found vert " << vert << endl;
+    //    cout << "vert [" << i << "] " << vpool->get_vertex(i+1);
+    LPoint3d p3d = vert->get_pos3();
+
+    // find closest model vertex 
+    for ( j = 0; j < numVert-1; j++ ) {
+      // calculate distance
+      thisDist = sqrtf( 
+                       powf( p3d[0] - vertices[j].x , 2 ) + 
+                       powf( p3d[1] - vertices[j].y , 2 ) + 
+                       powf( p3d[2] - vertices[j].z , 2 ) ); 
+
+      // remember this if its the closest so far
+      if ( !j || ( thisDist < closestDist ) ) {
+        closest = j;
+        closestDist = thisDist;
+      }
+    }
+    vertMap[i] = closest;
+    
+    cout << "mapping v " << i << " of " << vpoolSize-1 << ":( "
+         << p3d[0] << " "
+         << p3d[1] << " "
+         << p3d[2] << ")\n";
+
+    cout << "    to cv " << closest << " of " << numVert-1 << ":( "
+         << vertices[closest].x << " "
+         << vertices[closest].y << " "
+         << vertices[closest].z << " )\tdelta = " << closestDist << endl;
+
   }
+  return vertMap;
+}
 
-  if (got_weights && !joints.empty()) {
-    int num_joints = joints.size();
-    int num_weights = (int)weights.length();
-    int num_verts = num_weights / num_joints;
-    // The number of weights should be an even multiple of verts *
-    // joints.
-    nassertv(num_weights == num_verts * num_joints);
+////////////////////////////////////////////////////////////////////
+//     Function: SoftToEggConverter::make_soft_skin
+//       Access: Private
+//  Description: make soft skin assignments to the mesh
+//               finally call cleanup_soft_skin to clean it up
+////////////////////////////////////////////////////////////////////
+bool SoftToEggConverter::
+make_soft_skin() {
+  int num_nodes = _tree.get_num_nodes();
+  SoftNodeDesc *node_desc;
+  SAA_Boolean isSkeleton;
 
-    EggVertexPool::iterator vi;
-    for (vi = vpool->begin(); vi != vpool->end(); ++vi) {
-      EggVertex *vert = (*vi);
-      int maya_vi = vert->get_external_index();
-      nassertv(maya_vi >= 0 && maya_vi < num_verts);
+  cout << endl << "----------------------------------------------------------------" << endl;
 
-      for (int ji = 0; ji < num_joints; ++ji) {
-        float weight = weights[maya_vi * num_joints + ji];
-        if (weight != 0.0f) {
-          EggGroup *joint = joints[ji];
-          if (joint != (EggGroup *)NULL) {
-            joint->ref_vertex(vert, weight);
+  for (int i = 0; i < num_nodes; i++) {
+    node_desc = _tree.get_node(i);
+    SAA_modelIsSkeleton( &scene, node_desc->get_model(), &isSkeleton );
+
+    if (isSkeleton && node_desc->is_joint()) {
+      // Now that we've added all the polygons (and created all the
+      // vertices), go back through the vertex pool and set up the
+      // appropriate joint membership for each of the vertices.
+
+      // check for envelops
+      int numEnv;
+      SAA_ModelType type;
+      SAA_Elem *envelopes;
+      SAA_Elem *model = node_desc->get_model();
+      EggGroup *joint = NULL;
+      EggVertexPool *vpool;
+
+      SAA_skeletonGetNbEnvelopes( &scene, model, &numEnv );
+      if ( numEnv == 0 ) {
+        cout << "no soft skinning for joint " << node_desc->get_name() << endl;
+        continue;
+      }
+      
+      // it's got envelopes - must be soft skinned
+      cout << endl << "found skeleton part( " << node_desc->get_name() << ")!\n";
+      cout << "numEnv = " << numEnv << endl;
+      // allocate envelope array
+      envelopes = new SAA_Elem[numEnv];
+      if ( envelopes == NULL ) {
+        cout << "Out Of Memory" << endl;
+        exit(1);
+      }
+      int thisEnv;
+      SAA_EnvType envType;
+      bool hasEnvVertices = 0;
+        
+      SAA_skeletonGetEnvelopes( &scene, model, numEnv, envelopes );
+      for ( thisEnv = 0; thisEnv < numEnv; thisEnv++ ) {
+        cout << "env[" << thisEnv << "]: ";
+        SAA_envelopeGetType( &scene, &envelopes[thisEnv], &envType );
+        
+        if ( envType == SAA_ENVTYPE_NONE ) {
+          cout << "envType = none\n";
+        }
+        else if ( envType == SAA_ENVTYPE_FLXLCL ) {
+          cout << "envType = flexible, local\n";
+          hasEnvVertices = 1;
+        }
+        else if ( envType == SAA_ENVTYPE_FLXGLB ) {
+          cout << "envType = flexible, global\n";
+          hasEnvVertices = 1;
+        }
+        else if ( envType == SAA_ENVTYPE_RGDGLB ) {
+          cout << "envType = rigid, global\n";
+          hasEnvVertices = 1;
+        }
+        else {
+          cout << "envType = unknown\n";
+        }
+
+      }
+      if ( !hasEnvVertices )
+        continue;
+
+      SAA_SubElem *envVertices = NULL;
+      int *numEnvVertices;
+      int i,j,k;
+      
+      numEnvVertices = new int[numEnv];
+      
+      if ( numEnvVertices != NULL ) {
+        SAA_envelopeGetNbCtrlVertices( &scene, model, numEnv, envelopes, numEnvVertices );
+        int totalEnvVertices = 0;
+        for( i = 0; i < numEnv; i++ ) {
+          totalEnvVertices += numEnvVertices[i];
+          cout << "numEnvVertices[" << i << "] = " << numEnvVertices[i] << endl;
+        }
+        cout << "total env verts = " << totalEnvVertices << endl;
+        if ( totalEnvVertices == 0 )
+          continue;
+
+        envVertices = new SAA_SubElem[totalEnvVertices];
+        if ( envVertices != NULL ) {
+          result = SAA_envelopeGetCtrlVertices( &scene, model,
+                                                numEnv, envelopes, numEnvVertices, envVertices);
+          if (result != SI_SUCCESS) {
+            cout << "error: GetCtrlVertices\n";
+            exit(1);
+          }
+          // loop through for each envelope
+          for ( i = 0; i < numEnv; i++ ) {
+            float *weights = NULL;
+            int vertArrayOffset = 0;
+            cout << "envelope[" << i << "]: ";
+            weights = new float[numEnvVertices[i]];
+            if ( weights ) {
+              char *envName;
+              int *vpoolMap = NULL;
+              for ( j = 0; j < i; j++ )
+                vertArrayOffset += numEnvVertices[j];
+              cout << "envVertArray offset = " << vertArrayOffset;
+
+              /*              
+              if (vertArrayOffset == totalEnvVertices) {
+                cout << endl;                  vpoolMap = FindClosestTriVert( vpool, globalModelVertices, modelNumVert );
+
+                break;
+              }
+              */
+              
+              // get the weights of the envelope vertices
+              result = SAA_ctrlVertexGetEnvelopeWeights( &scene, model, &envelopes[i], 
+                                                         numEnvVertices[i], 
+                                                         &envVertices[vertArrayOffset], weights ); 
+
+              // Get the name of the envelope model
+              if ( use_prefix ) {
+                // Get the FULL name of the envelope
+                envName = _tree.GetFullName( &scene, &envelopes[i] );
+              }
+              else {
+                // Get the name of the envelope
+                envName = _tree.GetName( &scene, &envelopes[i] );
+              }
+
+              cout << " envelop name is [" << envName << "]" << endl;
+              
+              if (result != SI_SUCCESS) {
+                cout << "warning: this envelop doesn't have any weights\n";
+                continue;
+              }
+
+              result = SAA_modelGetType( &scene, &envelopes[i], &type );
+              if (result != SI_SUCCESS) {
+                cout << "choked on get type\n";
+                exit(1);
+              }
+
+              cout << "envelope model type ";
+              if ( type == SAA_MSMSH )
+                cout << "MESH\n";
+              else if ( type == SAA_MNSRF )
+                cout << "NURBS\n";
+              else
+                cout << "OTHER\n";
+              
+              int *envVtxIndices = NULL;
+              envVtxIndices = new int[numEnvVertices[i]];
+              
+              // Get the envelope vertex indices
+              result = SAA_ctrlVertexGetIndices( &scene, &envelopes[i], numEnvVertices[i], 
+                                                 &envVertices[vertArrayOffset], envVtxIndices );
+              
+              if (result != SI_SUCCESS) {
+                cout << "error: choked on get indices\n";
+                exit(1);
+              }
+
+              // find out how many vertices the model has
+              int modelNumVert;
+              
+              SAA_modelGetNbVertices( &scene, &envelopes[i], &modelNumVert );
+              
+              SAA_DVector *modelVertices = NULL;
+              modelVertices = new SAA_DVector[modelNumVert];
+              
+              // get the model vertices
+              SAA_modelGetVertices( &scene, &envelopes[i],
+                                    SAA_GEOM_ORIGINAL, 0, modelNumVert, 
+                                    modelVertices );
+              
+              // create array of global model coords 
+              SAA_DVector *globalModelVertices = NULL;
+              globalModelVertices = new SAA_DVector[modelNumVert];
+              float matrix[4][4];
+              
+              // tranform local model vert coords to global
+              
+              // first get the global matrix
+              SAA_modelGetMatrix( &scene, &envelopes[i], SAA_COORDSYS_GLOBAL,  matrix );
+              
+              // populate array of global model verts
+              for ( j = 0; j < modelNumVert; j++ ) {
+                _VCT_X_MAT( globalModelVertices[j], 
+                            modelVertices[j], matrix );
+              }
+              
+              // Get the vpool
+              string s_name = envName;
+              SoftNodeDesc *mesh_node = find_node(s_name);
+              if (!mesh_node) {
+                cout << "error: node " << s_name << " not found in tree\n";
+                exit(1);
+              }
+              string vpool_name = s_name + ".verts";
+              DCAST_INTO_R(vpool, mesh_node->get_egg_group()->find_child(vpool_name), NULL);
+
+              // find the mapping of the vertices that match this envelop
+              if (vpool) {
+                cout << "found vpool of size " << vpool->size() << endl;
+                if ( !make_nurbs || (type == SAA_MSMSH) ) {
+                  vpoolMap = FindClosestTriVert( vpool, globalModelVertices, modelNumVert );
+                }
+              }
+              else {
+                cout << "error: vpool " << vpool_name << " not found\n";
+                exit(1);
+              }
+
+              joint = node_desc->get_egg_group();
+              // for every envelope vertex 
+              for (j = 0; j < numEnvVertices[i]; j++) {
+                double scaledWeight =  weights[j]/ 100.0f;
+
+                // make sure its in legal range
+                if (( envVtxIndices[j] < modelNumVert )
+                    && ( envVtxIndices[j] >= 0 )) {
+                  if ( (type == SAA_MNSRF) && make_nurbs ) { 
+                    // assign all referenced control vertices
+                    EggVertex *vert = vpool->get_vertex(envVtxIndices[j]+1);
+                    joint->ref_vertex( vert, scaledWeight );
+                    cout << j << ": adding vref to cv " << envVtxIndices[j] 
+                         << " with weight " << scaledWeight << endl; 
+
+                    /*
+                    envPool->Vertex(envVtxIndices[j])->AddJoint( joint, scaledWeight );
+                    // set flag to show this vertex has
+                    // been assigned
+                    envPool->Vertex(envVtxIndices[j])->multipleJoints = 1;
+                    */
+                  }
+                  else {    
+                    //assign all the tri verts associated
+                    // with this control vertex to joint
+                    cout << j << "--trying to find " << envVtxIndices[j] << endl;
+                    for ( k = 0; k < (int)vpool->size(); k++ ) {
+                      if ( vpoolMap[k] == envVtxIndices[j] ) {
+                        EggVertex *vert = vpool->get_vertex(k+1);
+                        //                        EggVertex *vert = mesh_node->get_vpool()->get_vertex(vpoolMap[k]+1);
+                        if (!vert) {
+                          cout << "possible error: index " << k+1 << ": vert is " << vert << endl;
+                          break;
+                        }
+
+                        joint->ref_vertex(vert, scaledWeight);
+                        cout << j << ": adding vref from cv " << envVtxIndices[j]
+                             << " to vert " << k+1 << " with weight " << scaledWeight
+                             << "(vpool)\n";
+                        /*
+                          envPool->Vertex(k)->AddJoint( joint, scaledWeight );
+                          // set flag to show this vertex has
+                          // been assigned
+                          envPool->Vertex(k)->multipleJoints = 1;
+                        */
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
     }
   }
-#endif
-    }
+  return true;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::make_polyset
-//       Access: Private
-//  Description: Converts the indicated Soft polyset to a bunch of
-//               EggPolygons and parents them to the indicated egg
-//               group.
-////////////////////////////////////////////////////////////////////
-void SoftToEggConverter::
-handle_null(SAA_Elem *model, EggGroup *egg_group, SAA_ModelType type, const char *node_name) {
-  const char *name = node_name;
-  SAA_AlgorithmType    algo;
-  
-  SAA_modelGetAlgorithm( &scene, model, &algo );
-  cout << "null algorithm: " << algo << endl;
-  
-  if ( algo == SAA_ALG_INV_KIN ) {
-    //    MakeJoint( &scene, lastJoint, lastAnim,  model, name );
-    cout << "encountered IK root: " << name << endl;
-  }
-  else if ( algo == SAA_ALG_INV_KIN_LEAF ) {
-    //    MakeJoint( &scene, lastJoint, lastAnim, model, name );
-    cout << "encountered IK leaf: " << name << endl;
-  }
-  else if ( algo == SAA_ALG_STANDARD ) {
-    SAA_Boolean isSkeleton = FALSE;
-    cout << "encountered Standard null: " << name << endl;
-
-    SAA_modelIsSkeleton( &scene, model, &isSkeleton );
-
-    // check to see if this NULL is used as a skeleton
-    // or is animated via constraint only ( these nodes are
-    // tagged by the animator with the keyword "joint"
-    // somewhere in the nodes name)
-    if ( isSkeleton || (strstr( name, "joint" ) != NULL) ) {
-      //      MakeJoint( &scene, lastJoint, lastAnim, model, name );
-      cout << "animating Standard null!!!\n";
-    }
-  }
-  else
-    cout << "encountered some other NULL: " << algo << endl;
-
-#if 0 // no need to follow children, _tree already contains all the model nodes
-  // check for children...
-  int numChildren;
-  int thisChild;
-  SAA_Elem *children;
-  
-  SAA_modelGetNbChildren( &scene, model, &numChildren );
-  cout << "Model children: " << numChildren << endl;
-
-  if ( numChildren ) {
-    children = new SAA_Elem[numChildren];
-    SAA_modelGetChildren( &scene, model, numChildren, children );
-    if ( children != NULL ) {
-      for ( thisChild = 0; thisChild < numChildren; thisChild++ ) {
-        cout << "\negging child " << thisChild << "...\n";
-        //        MakeEgg( parent, lastJoint, lastAnim, scene, 
-        //                 &children[thisChild] );
-      }
-    }
-    else
-      cout << "Not enough Memory for children...\n";
-  }
-  else
-    cout << "Don't descend this branch!\n";
-#endif
-}
-
 #if 0
 ////////////////////////////////////////////////////////////////////
 //     Function: SoftToEggConverter::make_locator
@@ -1259,7 +1535,7 @@ make_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
   }
 
   LPoint3d p3d;
-  if (!get_vec3d_attribute(locator, "localPosition", p3d)) {
+  if (!get_vec3d_attribute(locator, "localPosition", p3d _tree.build_node(joint_dag_path))) {
     softegg_cat.error()
       << "Couldn't get position of locator " 
       << dag_path.fullPathName().asChar() << "\n";
@@ -1283,99 +1559,6 @@ make_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
   p3d = p3d * egg_group->get_node_frame_inv();
 
   egg_group->add_translate(p3d);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::get_vertex_weights
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
-bool SoftToEggConverter::
-get_vertex_weights(const MDagPath &dag_path, const MFnMesh &mesh,
-                   pvector<EggGroup *> &joints, MFloatArray &weights) {
-  MStatus status;
-  
-  // Since we are working with a mesh the input attribute that 
-  // creates the mesh is named "inMesh" 
-  // 
-  MObject attr = mesh.attribute("inMesh"); 
-  
-  // Create the plug to the "inMesh" attribute then use the 
-  // DG iterator to walk through the DG, at the node level.
-  // 
-  MPlug history(mesh.object(), attr); 
-  MItDependencyGraph it(history, MFn::kDependencyNode, 
-                        MItDependencyGraph::kUpstream, 
-                        MItDependencyGraph::kDepthFirst, 
-                        MItDependencyGraph::kNodeLevel);
-
-  while (!it.isDone()) {
-    // We will walk along the node level of the DG until we 
-    // spot a skinCluster node.
-    // 
-    MObject c_node = it.thisNode(); 
-    if (c_node.hasFn(MFn::kSkinClusterFilter)) { 
-      // We've found the cluster handle. Try to get the weight
-      // data.
-      // 
-      MFnSkinCluster cluster(c_node, &status); 
-      if (!status) {
-        status.perror("MFnSkinCluster constructor");
-        return false;
-      }
-
-      // Get the set of objects that influence the vertices of this
-      // mesh.  Hopefully these will all be joints.
-      MDagPathArray influence_objects;
-      cluster.influenceObjects(influence_objects, &status); 
-      if (!status) {
-        status.perror("MFnSkinCluster::influenceObjects");
-
-      } else {
-        // Fill up the vector with the corresponding table of egg
-        // groups for each joint.
-        joints.clear();
-        for (unsigned oi = 0; oi < influence_objects.length(); oi++) {
-          MDagPath joint_dag_path = influence_objects[oi];
-          SoftNodeDesc *joint_node_desc = _tree.build_node(joint_dag_path);
-          EggGroup *joint = _tree.get_egg_group(joint_node_desc);
-          joints.push_back(joint);
-        }
-
-        // Now use a component object to retrieve all of the weight
-        // data in one API call.
-        MFnSingleIndexedComponent sic; 
-        MObject sic_object = sic.create(MFn::kMeshVertComponent); 
-        sic.setCompleteData(mesh.numVertices()); 
-        unsigned influence_count; 
-
-        status = cluster.getWeights(dag_path, sic_object, 
-                                    weights, influence_count); 
-        if (!status) {
-          status.perror("MFnSkinCluster::getWeights");
-        } else {
-          if (influence_count != influence_objects.length()) {
-            softegg_cat.error()
-              << "MFnSkinCluster::influenceObjects() returns " 
-              << influence_objects.length()
-              << " objects, but MFnSkinCluster::getWeights() reports "
-              << influence_count << " objects.\n";
-            
-          } else {
-            // We've got the weights and the set of objects.  That's all
-            // we need.
-            return true;
-          }
-        }
-      }
-    }
-
-    it.next();
-  }
-  
-  softegg_cat.error()
-    << "Unable to find a cluster handle for the DG node.\n"; 
-  return false;
 }
 #endif
 

@@ -67,6 +67,9 @@ public:
   bool HandleGetopts(int &idx, int argc, char **argv);
   bool DoGetopts(int &argc, char **&argv);
 
+  SoftNodeDesc *find_node(string name);
+  int *FindClosestTriVert( EggVertexPool *vpool, SAA_DVector *vertices, int numVert );
+
   virtual SomethingToEggConverter *make_copy();
   virtual string get_name() const;
   virtual string get_extension() const;
@@ -80,8 +83,9 @@ private:
   bool convert_flip(double start_frame, double end_frame, 
                     double frame_inc, double output_frame_rate);
 
-  bool convert_char_model();
+  bool make_soft_skin();
   bool convert_char_chan();
+  bool convert_char_model();
   bool convert_hierarchy(EggGroupNode *egg_root);
   bool process_model_node(SoftNodeDesc *node_desc);
 
@@ -102,13 +106,12 @@ private:
                         const MFnNurbsCurve &curve,
                         EggGroup *group);
   */
-  void make_polyset(SoftNodeDesc *node_Desc, EggGroup *egg_group, SAA_ModelType type);
-  void handle_null(SAA_Elem *model, EggGroup *egg_group, SAA_ModelType type, const char *node_name);
+  void make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type);
   /*
   void make_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
                     EggGroup *egg_group);
-  bool get_vertex_weights(const MDagPath &dag_path, const MFnMesh &mesh,
-                          pvector<EggGroup *> &joints, MFloatArray &weights);
+  bool get_vertex_weights(SoftNodeDesc *node_desc, 
+                          pvector<EggGroup *> &joints, vector<float> &weights);
   */
   void set_shader_attributes(SoftNodeDesc *node_desc, EggPrimitive &primitive, char *texName);
   void apply_texture_properties(EggTexture &tex, int uRepeat, int vRepeat);
@@ -124,11 +127,12 @@ private:
   SoftNodeTree _tree;
 
   SI_Error            result;
-  SAA_Scene           scene;
   SAA_Elem            model;
   SAA_Database        database;
 
 public:
+
+  SAA_Scene           scene;
 
   char *_getopts;
   

@@ -38,8 +38,11 @@ SoftNodeDesc(SoftNodeDesc *parent, const string &name) :
 
   // Add ourselves to our parent.
   if (_parent != (SoftNodeDesc *)NULL) {
+    cout << "parent name " << _parent->get_name();
     _parent->_children.push_back(this);
   }
+
+  vpool = NULL;
 
   fullname = NULL;
 
@@ -92,16 +95,23 @@ set_model(SAA_Elem *model) {
 void SoftNodeDesc::
 set_parent(SoftNodeDesc *parent) {
   if (_parent) {
-    cout << "expected _parent to be null!?\n";
+    cout << endl;
+    /*
+    cout << " expected _parent to be null!?\n";
     if (_parent == parent)
-      cout << "parent already set\n";
+      cout << " parent already set\n";
     else {
-      cout << "current parent " << _parent->get_name() << " new parent " 
+      cout << " current parent " << _parent->get_name() << " new parent " 
            << parent << endl;
     }
+    */
     return;
   }
   _parent = parent;
+  cout << " set parent to " << _parent->get_name() << endl;
+
+  // Add ourselves to our parent.
+  _parent->_children.push_back(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -140,15 +150,25 @@ is_joint() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SoftNodeDesc::is_junk
+//       Access: Private
+//  Description: Returns true if the node should be treated as a junk
+//               by the converter.
+////////////////////////////////////////////////////////////////////
+bool SoftNodeDesc::
+is_junk() const {
+  return _joint_type == JT_junk;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SoftNodeDesc::set_joint
 //       Access: Private
 //  Description: sets the _joint_type to JT_joint
 ////////////////////////////////////////////////////////////////////
 void SoftNodeDesc::
 set_joint() {
-  _joint_type = JT_joint; // || _joint_type == JT_pseudo_joint;
+  _joint_type = JT_joint;
 }
-#if 0
 ////////////////////////////////////////////////////////////////////
 //     Function: SoftNodeDesc::is_joint_parent
 //       Access: Private
@@ -189,9 +209,77 @@ void SoftNodeDesc::
 mark_joint_parent() {
   if (_joint_type == JT_none) {
     _joint_type = JT_joint_parent;
-    if (_parent != (SoftNodeDesc *)NULL) {
-      _parent->mark_joint_parent();
+    cout << " marked parent " << get_name();
+  }
+  else
+    cout << " ?parent " << get_name() << " joint type " << _joint_type;
+  
+  if (_parent != (SoftNodeDesc *)NULL) {
+    _parent->mark_joint_parent();
+  }
+  cout << endl;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SoftNodeDesc::check_joint_parent
+//       Access: Private
+//  Description: Walks the hierarchy, if a node is joint, make
+//               sure all its parents are marked JT_joint_parent
+////////////////////////////////////////////////////////////////////
+void SoftNodeDesc::
+check_joint_parent() {
+  Children::const_iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    SoftNodeDesc *child = (*ci);
+    if (child->is_joint()) {
+      cout << "child " << child->get_name();
+      mark_joint_parent();
     }
+    child->check_joint_parent();
+  }
+}
+
+///////////////////////////////////////////////////////////////////////
+//     Function: SoftNodeTree::check_junk
+//       Access: Public
+//  Description: check to see if this is a branch we don't want to 
+//               descend - this will prevent creating geometry for 
+//               animation control structures
+///////////////////////////////////////////////////////////////////////
+void SoftNodeDesc::
+check_junk(bool parent_junk) {
+  const char *name = get_name().c_str();
+
+  if (parent_junk) {
+    _joint_type = JT_junk;
+    cout << "junk node " << get_name() << endl;
+  }
+  if ( (strstr(name, "con-") != NULL) || 
+       (strstr(name, "con_") != NULL) || 
+       (strstr(name, "fly_") != NULL) || 
+       (strstr(name, "fly-") != NULL) || 
+       (strstr(name, "camRIG") != NULL) ||
+       (strstr(name, "cam_rig") != NULL) ||
+       (strstr(name, "bars") != NULL) )
+       // split
+       /*
+       (!_search_prefix || (strstr(name, _search_prefix) != NULL)) )
+       */
+    {
+      _joint_type = JT_junk;
+      cout << "junk node " << get_name() << endl;
+      parent_junk = true;
+      Children::const_iterator ci;
+      for (ci = _children.begin(); ci != _children.end(); ++ci) {
+        SoftNodeDesc *child = (*ci);
+        cout << child->get_name() << ",";
+      }
+      cout << endl;
+    }
+  Children::const_iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    SoftNodeDesc *child = (*ci);
+    child->check_junk(parent_junk);
   }
 }
 
@@ -210,6 +298,7 @@ check_pseudo_joints(bool joint_above) {
     // (JT_joint_parent is set), and it is the child of a joint
     // (joint_above is set).
     _joint_type = JT_pseudo_joint;
+    cout << "pseudo " << get_name() << " case1\n";
   }
 
   if (_joint_type == JT_joint) {
@@ -218,9 +307,9 @@ check_pseudo_joints(bool joint_above) {
     joint_above = true;
   }
 
-  // Don't bother traversing further if _joint_type is none, since
+  // Don't bother traversing further if _joint_type is none or junk, since
   // that means this node has no joint children.
-  if (_joint_type != JT_none) {
+  if (_joint_type != JT_none && _joint_type != JT_junk) {
 
     bool any_joints = false;
     Children::const_iterator ci;
@@ -228,6 +317,7 @@ check_pseudo_joints(bool joint_above) {
       SoftNodeDesc *child = (*ci);
       child->check_pseudo_joints(joint_above);
       if (child->is_joint()) {
+        cout << get_name() << " any_joint true by " << child->get_name() << endl;
         any_joints = true;
       }
     }
@@ -240,21 +330,45 @@ check_pseudo_joints(bool joint_above) {
         SoftNodeDesc *child = (*ci);
         if (child->_joint_type == JT_joint_parent) {
           child->_joint_type = JT_pseudo_joint;
-        } else if (child->_joint_type == JT_none) {
+          cout << "pseudo " << child->get_name() << " case2 by parent " << get_name() << "\n";
+        } else if (child->_joint_type == JT_none || child->_joint_type == JT_junk) {
           all_joints = false;
         }
       }
 
-      if (all_joints) {
-        // Finally, if all children are joints, then we are too.
+      if (all_joints || any_joints) {
+        // Finally, if all children or at least one is a joint, then we are too.
         if (_joint_type == JT_joint_parent) {
           _joint_type = JT_pseudo_joint;
+          cout << "pseudo " << get_name() << " case3\n";
         }
       }
     }
   }
+  else
+    cout << "found null joint " << get_name() << endl;
 }
-#endif
+
+////////////////////////////////////////////////////////////////////
+//     Function: SoftToEggConverter::create_vpool
+//       Access: Public
+//  Description: Creates a new vpool for future soft skining,
+//               this is a one to one reference to external index.
+////////////////////////////////////////////////////////////////////
+void SoftNodeDesc::
+create_vpool(string vpool_name) {
+  vpool = new EggVertexPool(vpool_name);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SoftToEggConverter::get_vpool
+//       Access: Public
+//  Description: Get vpool 
+////////////////////////////////////////////////////////////////////
+EggVertexPool *SoftNodeDesc::
+get_vpool() {
+  return vpool;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SoftToEggConverter::get_transform
@@ -263,24 +377,43 @@ check_pseudo_joints(bool joint_above) {
 //               and applies it to the corresponding Egg node.
 ////////////////////////////////////////////////////////////////////
 void SoftNodeDesc::
-get_transform(SAA_Scene *scene, EggGroup *egg_group, bool set_transform) {
+get_transform(SAA_Scene *scene, EggGroup *egg_group, bool global) {
   // Get the model's matrix
-  SAA_modelGetMatrix( scene, get_model(), SAA_COORDSYS_GLOBAL,  matrix );
+  int scale_joint = 0;
+  
+  if ( strstr( _parent->get_name().c_str(), "scale" ) != NULL ) {
+    scale_joint = 1;    
+    cout << "scale joint flag set!\n";
+  }
+
+  if (!global && _parent->is_joint() && !stec.flatten && !scale_joint) {
+
+    SAA_modelGetMatrix( scene, get_model(), SAA_COORDSYS_LOCAL,  matrix );
+    cout << get_name() << " using local matrix :parent ";
+
+  } else {
+
+    SAA_modelGetMatrix( scene, get_model(), SAA_COORDSYS_GLOBAL,  matrix );
+    cout << get_name() << " using global matrix :parent ";
+
+  }
+
+  cout << _parent->get_name() << endl;
 
   cout << "model matrix = " << matrix[0][0] << " " << matrix[0][1] << " " << matrix[0][2] << " " << matrix[0][3] << "\n";
   cout << "model matrix = " << matrix[1][0] << " " << matrix[1][1] << " " << matrix[1][2] << " " << matrix[1][3] << "\n";
   cout << "model matrix = " << matrix[2][0] << " " << matrix[2][1] << " " << matrix[2][2] << " " << matrix[2][3] << "\n";
   cout << "model matrix = " << matrix[3][0] << " " << matrix[3][1] << " " << matrix[3][2] << " " << matrix[3][3] << "\n";
 
-  if (set_transform) {
+  if (!global && is_joint()) {
     LMatrix4d m4d(matrix[0][0], matrix[0][1], matrix[0][2], matrix[0][3],
                   matrix[1][0], matrix[1][1], matrix[1][2], matrix[1][3],
                   matrix[2][0], matrix[2][1], matrix[2][2], matrix[2][3],
                   matrix[3][0], matrix[3][1], matrix[3][2], matrix[3][3]);
-    if (!m4d.almost_equal(LMatrix4d::ident_mat(), 0.0001)) {
+    //    if (!m4d.almost_equal(LMatrix4d::ident_mat(), 0.0001)) {
       egg_group->set_transform(m4d);
       cout << "set transform in egg_group\n";
-    }
+      //    }
   }
   return;
 }
@@ -298,7 +431,7 @@ get_transform(SAA_Scene *scene, EggGroup *egg_group, bool set_transform) {
 //               anim (EffXfmSAnim) class (masad).
 ////////////////////////////////////////////////////////////////////
 void SoftNodeDesc::
-get_joint_transform(SAA_Scene *scene,  EggGroup *egg_group, EggXfmSAnim *anim) {
+get_joint_transform(SAA_Scene *scene,  EggGroup *egg_group, EggXfmSAnim *anim, bool global) {
   //  SI_Error result;
   SAA_Elem *skeletonPart = _model;
   const char *name = get_name().c_str();
@@ -310,6 +443,12 @@ get_joint_transform(SAA_Scene *scene,  EggGroup *egg_group, EggXfmSAnim *anim) {
     int size;
     SAA_Boolean globalFlag = FALSE;
     SAA_Boolean bigEndian;
+    int scale_joint = 0;
+    
+    if ( strstr( _parent->get_name().c_str(), "scale" ) != NULL ) {
+      scale_joint = 1;    
+      cout << "scale joint flag set!\n";
+    }
 
     cout << "\n\nanimating child " << name << endl;
 
@@ -318,23 +457,9 @@ get_joint_transform(SAA_Scene *scene,  EggGroup *egg_group, EggXfmSAnim *anim) {
     if ( size != 0 )
       SAA_elementGetUserData( scene, skeletonPart, "GLOBAL", 
                               sizeof( SAA_Boolean), &bigEndian, (void *)&globalFlag );
- 
-    if ( globalFlag ) {
-      cout << " using global matrix\n";
 
-      //get SAA orientation
-      SAA_modelGetRotation( scene, skeletonPart, SAA_COORDSYS_GLOBAL, 
-                            &p, &h, &r );
-
-      //get SAA translation
-      SAA_modelGetTranslation( scene, skeletonPart, SAA_COORDSYS_GLOBAL, 
-                               &x, &y, &z );
-
-      //get SAA scaling
-      SAA_modelGetScaling( scene, skeletonPart, SAA_COORDSYS_GLOBAL, 
-                           &i, &j, &k );
-    }
-    else {
+    //    if ( global ) {
+    if (_parent->is_joint() && !stec.flatten && !scale_joint ) {
       cout << "using local matrix\n";
 
       //get SAA orientation
@@ -347,6 +472,20 @@ get_joint_transform(SAA_Scene *scene,  EggGroup *egg_group, EggXfmSAnim *anim) {
       
       //get SAA scaling
       SAA_modelGetScaling( scene, skeletonPart, SAA_COORDSYS_LOCAL, 
+                           &i, &j, &k );
+    } else {
+      cout << " using global matrix\n";
+
+      //get SAA orientation
+      SAA_modelGetRotation( scene, skeletonPart, SAA_COORDSYS_GLOBAL, 
+                            &p, &h, &r );
+
+      //get SAA translation
+      SAA_modelGetTranslation( scene, skeletonPart, SAA_COORDSYS_GLOBAL, 
+                               &x, &y, &z );
+
+      //get SAA scaling
+      SAA_modelGetScaling( scene, skeletonPart, SAA_COORDSYS_GLOBAL, 
                            &i, &j, &k );
     }
     
@@ -399,6 +538,10 @@ load_model(SAA_Scene *scene, SAA_ModelType type) {
 
   fullname = name;
   
+  // if making a pose - get deformed geometry
+  if ( stec.make_pose )
+    gtype = SAA_GEOM_DEFORMED;
+        
   // If the model is a NURBS in soft, set its step before tesselating
   if ( type == SAA_MNSRF )
     SAA_nurbsSurfaceSetStep( scene, _model, stec.nurbs_step, stec.nurbs_step );
@@ -583,6 +726,7 @@ load_model(SAA_Scene *scene, SAA_ModelType type) {
   }
   cout << "got textures" << endl;
 }
+
 //
 //
 //

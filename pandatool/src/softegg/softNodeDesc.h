@@ -28,6 +28,8 @@
 
 #include "pandatoolbase.h"
 
+#include "eggVertex.h"
+#include "eggVertexPool.h"
 #include "referenceCount.h"
 #include "pointerTo.h"
 #include "namable.h"
@@ -56,17 +58,20 @@ public:
   SAA_Elem *get_model() const;
 
   bool is_joint() const;
+  bool is_junk() const;
   void set_joint();
-  //  bool is_joint_parent() const;
+  bool is_joint_parent() const;
 
   SoftNodeDesc *_parent;
   typedef pvector< PT(SoftNodeDesc) > Children;
   Children _children;
-  
+
 private:
   void clear_egg();
-  //  void mark_joint_parent();
-  //  void check_pseudo_joints(bool joint_above);
+  void mark_joint_parent();
+  void check_joint_parent();
+  void check_junk(bool parent_junk);
+  void check_pseudo_joints(bool joint_above);
 
   SAA_ModelType type;
   const char *fullname;
@@ -83,6 +88,7 @@ private:
     JT_pseudo_joint, // Not a joint in Soft, but treated just like a
                      // joint for the purposes of the converter.
     JT_joint_parent, // A parent or ancestor of a joint or pseudo joint.
+    JT_junk,         // originated from con-/fly-/car_rig/bars etc.
   };
   JointType _joint_type;
 
@@ -110,9 +116,16 @@ public:
   SAA_SubElem *triangles;
   SAA_GeomType gtype;
 
-  void get_transform(SAA_Scene *scene, EggGroup *egg_group, bool set_transform=FALSE);
-  void get_joint_transform(SAA_Scene *scene, EggGroup *egg_group, EggXfmSAnim *anim);
+  EggGroup *get_egg_group()const {return _egg_group;}
+
+  void get_transform(SAA_Scene *scene, EggGroup *egg_group, bool global);
+  void get_joint_transform(SAA_Scene *scene, EggGroup *egg_group, EggXfmSAnim *anim, bool global);
   void load_model(SAA_Scene *scene, SAA_ModelType type);
+
+  EggVertexPool *vpool;
+
+  EggVertexPool *get_vpool();
+  void create_vpool(string vpool_name);
 
   static TypeHandle get_class_type() {
     return _type_handle;
