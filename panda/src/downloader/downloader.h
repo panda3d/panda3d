@@ -17,7 +17,7 @@
 #include <clockObject.h>
 
 #if defined(WIN32_VC)
-  #include <winsock2.h>
+  #include <winsock.h>
 #else
   #include <netinet/in.h>  // Irix seems to require this one for resolv.h.
   #include <sys/types.h>

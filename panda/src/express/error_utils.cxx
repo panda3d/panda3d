@@ -9,7 +9,7 @@
 #include <errno.h>
 #include <stdio.h>
 #if defined(WIN32_VC)
-  #include <winsock2.h>
+  #include <winsock.h>
 #endif
 
 ////////////////////////////////////////////////////////////////////
