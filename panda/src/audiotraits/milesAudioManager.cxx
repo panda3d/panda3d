@@ -171,6 +171,8 @@ HAUDIO MilesAudioManager::
 load(Filename file_name) {
   HAUDIO audio;
 
+  /*
+    // This is broken for some reason.
   if (use_vfs) {
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     audio_debug("  vfs load \"" << file_name << "\"");
@@ -178,7 +180,7 @@ load(Filename file_name) {
     vfs->read_file(file_name, audio_data);
     audio = AIL_quick_load_mem(audio_data.data(), audio_data.size());
 
-  } else {
+    } else */ {
     string stmp = file_name.to_os_specific();
     audio_debug("  \"" << stmp << "\"");
     audio = AIL_quick_load(stmp.c_str());
