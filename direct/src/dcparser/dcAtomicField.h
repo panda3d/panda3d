@@ -19,6 +19,7 @@
 #ifndef DCATOMICFIELD_H
 #define DCATOMICFIELD_H
 
+#include <cmath.h>
 #include "dcbase.h"
 #include "dcField.h"
 #include "dcSubatomicType.h"

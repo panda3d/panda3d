@@ -240,7 +240,7 @@ end_array() {
 bool DCAtomicField::ElementType::
 format_default_value(double num, string &formatted) const {
   double real_value = num * _divisor;
-  int int_value = (int)floor(real_value + 0.5);
+  int int_value = (int)cfloor(real_value + 0.5);
 
   switch (_type) {
   case ST_int8:
