@@ -28,9 +28,9 @@ Panda by default installs a handful of system prc files into the
 install/etc directory.  These files have names beginning with digits,
 like 20_panda.prc and 40_direct.prc, so that they will be loaded in a
 particular order.  If you create your own prc file in this directory,
-we recommended that you begin its filename with letters, so that it
-will sort to the bottom of the list and will therefore override any of
-the default variables defined in the system prc files.
+we recommend that you begin its filename with letters, so that it will
+sort to the bottom of the list and will therefore override any of the
+default variables defined in the system prc files.
 
 
 Within a particular prc file, you may define any number of
@@ -587,8 +587,8 @@ To enable this feature, follow the following procedure.
     prc file.  You may specify a different pass phrase for each trust
     level, or you may use the -p "pass phrase" command-line option to
     provide the same pass phrase for all trust levels.  If you do not
-    want to use a pass phrase feature at all, use -p "", and keep the
-    generated programs in a safe place.
+    want to use the pass phrase feature at all, use -p "", and keep
+    the generated programs in a safe place.
 
 (6) Modify your Config.pp file (for yourself, and for anyone else who
     will be building dtool for your application) to add the following
@@ -627,8 +627,10 @@ To enable this feature, follow the following procedure.
 (8) If your private key directory is not a part of your application
     source hierarchy (or your application does not use ppremake),
     create a Package.pp in the same directory to mark the root of a
-    ppremake source tree.  You can copy the Package.pp file from the
-    root of the panda source tree.
+    ppremake source tree.  You can simply copy the Package.pp file
+    from panda/Package.pp.  You do not need to do this if your private
+    key directory is already part of a ppremake-controlled source
+    hierarchy.
 
 (9) Run ppremake and then make install in the private key directory.
     This will generate the programs sign1 and sign2 (or whatever you
@@ -659,5 +661,5 @@ rebuilding of dtool:
     file.
 
 (e) Run ppremake and make clean install in dtool to restore the normal
-    dynamic library, so that builds of panda and the rest of your
-    application will use the dynamic libdtool.dll properly.
+    dynamic library, so that future builds of panda and the rest of
+    your application will use the dynamic libdtool.dll properly.
