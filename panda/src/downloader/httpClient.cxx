@@ -337,21 +337,16 @@ post_form(const URLSpec &url, const string &body) {
 ////////////////////////////////////////////////////////////////////
 //     Function: HTTPClient::get_document
 //       Access: Published
-//  Description: Opens the named document for reading, or if body is
-//               nonempty, posts data for a particular URL and
-//               retrieves the response.  Returns a new HTTPChannel
-//               object whether the document is successfully read or
-//               not; you can test is_valid() and get_return_code() to
-//               determine whether the document was retrieved.
+//  Description: Opens the named document for reading.  Returns a new
+//               HTTPChannel object whether the document is
+//               successfully read or not; you can test is_valid() and
+//               get_return_code() to determine whether the document
+//               was retrieved.
 ////////////////////////////////////////////////////////////////////
 PT(HTTPChannel) HTTPClient::
-get_document(const URLSpec &url, const string &body) {
+get_document(const URLSpec &url) {
   PT(HTTPChannel) doc = new HTTPChannel(this);
-  if (body.empty()) {
-    doc->get_document(url);
-  } else {
-    doc->post_form(url, body);
-  }
+  doc->get_document(url);
   return doc;
 }
 

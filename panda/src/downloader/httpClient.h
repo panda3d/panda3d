@@ -91,8 +91,7 @@ PUBLISHED:
 
   PT(HTTPChannel) make_channel(bool persistent_connection);
   PT(HTTPChannel) post_form(const URLSpec &url, const string &body);
-  PT(HTTPChannel) get_document(const URLSpec &url,
-                                const string &body = string());
+  PT(HTTPChannel) get_document(const URLSpec &url);
   PT(HTTPChannel) get_header(const URLSpec &url);
 
 public:
