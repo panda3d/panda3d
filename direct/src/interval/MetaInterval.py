@@ -66,10 +66,7 @@ class MetaInterval(CMetaInterval):
 
     def extend(self, ivals):
         # Appends a list of intervals to the list so far.
-        if isinstance(self.ivals, types.TupleType):
-            self.ivals = list(self.ivals)
-        self.ivals.extend(ivals)
-        self.__ivalsDirty = 1
+        self += ivals
 
     def __len__(self):
         return len(self.ivals)
