@@ -542,6 +542,7 @@ do_enable_default_keys() {
   _event_handler.add_hook("l", event_l, this);
   _event_handler.add_hook("c", event_c, this);
   _event_handler.add_hook("shift-c", event_C, this);
+  _event_handler.add_hook("shift-b", event_B, this);
   _event_handler.add_hook("shift-l", event_L, this);
   _event_handler.add_hook("h", event_h, this);
   _event_handler.add_hook("arrow_up", event_arrow_up, this);
@@ -661,6 +662,25 @@ event_C(CPT_Event, void *data) {
   if (self->hide_collision_solids(node) == 0) {
     self->show_collision_solids(node);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::event_B
+//       Access: Protected, Static
+//  Description: Default handler for shift-B key: describe the
+//               bounding volume of the currently selected object, or
+//               the entire scene.
+////////////////////////////////////////////////////////////////////
+void PandaFramework::
+event_B(CPT_Event, void *data) {
+  PandaFramework *self = (PandaFramework *)data;
+
+  NodePath node = self->get_highlight();
+  if (node.is_empty()) {
+    node = self->get_models();
+  }
+
+  node.get_bounds()->write(nout);
 }
 
 ////////////////////////////////////////////////////////////////////
