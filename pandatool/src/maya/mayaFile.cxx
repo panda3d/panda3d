@@ -422,50 +422,53 @@ make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface surface,
   unsigned num_trims = surface.numRegions();
   int trim_curve_index = 0;
   for (unsigned ti = 0; ti < num_trims; ti++) {
-    egg_nurbs->_trims.push_back(EggNurbsSurface::Trim());
-    EggNurbsSurface::Trim &egg_trim = egg_nurbs->_trims.back();
-
     unsigned num_loops = surface.numBoundaries(ti);
-    for (unsigned li = 0; li < num_loops; li++) {
-      egg_trim.push_back(EggNurbsSurface::Loop());
-      EggNurbsSurface::Loop &egg_loop = egg_trim.back();
 
-      MFnNurbsSurface::BoundaryType type =
-        surface.boundaryType(ti, li, &status);
-      bool keep_loop = false;
+    if (num_loops > 0) {
+      egg_nurbs->_trims.push_back(EggNurbsSurface::Trim());
+      EggNurbsSurface::Trim &egg_trim = egg_nurbs->_trims.back();
 
-      if (!status) {
-        status.perror("MFnNurbsSurface::BoundaryType");
-      } else {
-        keep_loop = (type == MFnNurbsSurface::kInner ||
-                     type == MFnNurbsSurface::kOuter);
-      }
-
-      if (keep_loop) {
-        unsigned num_edges = surface.numEdges(ti, li);
-        for (unsigned ei = 0; ei < num_edges; ei++) {
-          MObjectArray edge = surface.edge(ti, li, ei, true, &status);
-          if (!status) {
-            status.perror("MFnNurbsSurface::edge");
-          } else {
-            unsigned num_segs = edge.length();
-            for (unsigned si = 0; si < num_segs; si++) {
-              MObject segment = edge[si];
-              if (segment.hasFn(MFn::kNurbsCurve)) {
-                MFnNurbsCurve curve(segment, &status);
-                if (!status) {
-                  nout << "Trim curve appears to be a nurbs curve, but isn't.\n";
-                } else {
-                  // Finally, we have a valid curve!
-                  EggNurbsCurve *egg_curve =
-                    make_trim_curve(curve, name, egg_group, trim_curve_index);
-                  trim_curve_index++;
-                  if (egg_curve != (EggNurbsCurve *)NULL) {
-                    egg_loop.push_back(egg_curve);
+      for (unsigned li = 0; li < num_loops; li++) {
+        egg_trim.push_back(EggNurbsSurface::Loop());
+        EggNurbsSurface::Loop &egg_loop = egg_trim.back();
+        
+        MFnNurbsSurface::BoundaryType type =
+          surface.boundaryType(ti, li, &status);
+        bool keep_loop = false;
+        
+        if (!status) {
+          status.perror("MFnNurbsSurface::BoundaryType");
+        } else {
+          keep_loop = (type == MFnNurbsSurface::kInner ||
+                       type == MFnNurbsSurface::kOuter);
+        }
+        
+        if (keep_loop) {
+          unsigned num_edges = surface.numEdges(ti, li);
+          for (unsigned ei = 0; ei < num_edges; ei++) {
+            MObjectArray edge = surface.edge(ti, li, ei, true, &status);
+            if (!status) {
+              status.perror("MFnNurbsSurface::edge");
+            } else {
+              unsigned num_segs = edge.length();
+              for (unsigned si = 0; si < num_segs; si++) {
+                MObject segment = edge[si];
+                if (segment.hasFn(MFn::kNurbsCurve)) {
+                  MFnNurbsCurve curve(segment, &status);
+                  if (!status) {
+                    nout << "Trim curve appears to be a nurbs curve, but isn't.\n";
+                  } else {
+                    // Finally, we have a valid curve!
+                    EggNurbsCurve *egg_curve =
+                      make_trim_curve(curve, name, egg_group, trim_curve_index);
+                    trim_curve_index++;
+                    if (egg_curve != (EggNurbsCurve *)NULL) {
+                      egg_loop.push_back(egg_curve);
+                    }
                   }
+                } else {
+                  nout << "Trim curve segment is not a nurbs curve.\n";
                 }
-              } else {
-                nout << "Trim curve segment is not a nurbs curve.\n";
               }
             }
           }
