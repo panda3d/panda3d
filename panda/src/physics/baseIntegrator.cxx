@@ -55,12 +55,12 @@ precompute_linear_matrices(Physical *physical,
   PhysicalNode *physical_node = physical->get_physical_node();
   nassertv(physical_node);
 
+  int i;
   // by global forces, we mean forces not contained in the physical
   int global_force_vec_size = forces.size();
 
   // by local forces, we mean members of the physical's force set.
   int local_force_vec_size = physical->get_linear_forces().size();
-  int i;
 
   ForceNode *force_node;
 
@@ -69,6 +69,9 @@ precompute_linear_matrices(Physical *physical,
   _precomputed_linear_matrices.reserve(global_force_vec_size + local_force_vec_size);
 
   NodePath physical_np(physical_node);
+  NodePath global_physical_np = physical_np.get_parent();
+
+  #if 0
 
   // tally the global xforms
   for (i = 0; i < global_force_vec_size; ++i) {
@@ -76,11 +79,30 @@ precompute_linear_matrices(Physical *physical,
     nassertv(force_node != (ForceNode *) NULL);
 
     NodePath force_np(force_node);
-    _precomputed_linear_matrices.push_back(physical_np.get_mat(force_node));
+    //_precomputed_linear_matrices.push_back(global_physical_np.get_mat(force_node));
+    _precomputed_linear_matrices.push_back(force_np.get_mat(global_physical_np));
   }
+  #else
+  // tally the global xforms
+  for (LinearForceVector::const_iterator fi = forces.begin(); 
+      fi != forces.end(); 
+      ++fi) {
+    //LinearForce *cur_force = *fi;
+    force_node = (*fi)->get_force_node();
+    nassertv(force_node != (ForceNode *) NULL);
+
+    NodePath force_np(force_node);
+    //_precomputed_linear_matrices.push_back(global_physical_np.get_mat(force_node));
+    _precomputed_linear_matrices.push_back(force_np.get_mat(global_physical_np));
+  }
+  #endif
+
+
+
 
   const LinearForceVector &force_vector = physical->get_linear_forces();
 
+  #if 0
   // tally the local xforms
   for (i = 0; i < local_force_vec_size; ++i) {
     force_node = force_vector[i]->get_force_node();
@@ -89,6 +111,19 @@ precompute_linear_matrices(Physical *physical,
     NodePath force_np(force_node);
     _precomputed_linear_matrices.push_back(physical_np.get_mat(force_node));
   }
+  #else
+  // tally the local xforms
+  for (LinearForceVector::const_iterator fi = force_vector.begin(); 
+      fi != force_vector.end(); 
+      ++fi) {
+    force_node = (*fi)->get_force_node();
+    nassertv(force_node != (ForceNode *) NULL);
+
+    NodePath force_np(force_node);
+    _precomputed_linear_matrices.push_back(physical_np.get_mat(force_node));
+  }
+  #endif
+
 }
 
 ////////////////////////////////////////////////////////////////////
