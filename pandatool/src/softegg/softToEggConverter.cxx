@@ -1211,13 +1211,13 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
         if (node_desc->textures != NULL) {
           if (node_desc->numTexLoc && node_desc->numTexTri[idx]) {
             if (!strstr(node_desc->texNameArray[idx], "noIcon"))
-              set_shader_attributes(node_desc, *egg_poly, node_desc->texNameArray[idx]);
+              set_shader_attributes(node_desc, *egg_poly, idx);
             else
               softegg_cat.spam() << "texname :" << node_desc->texNameArray[idx] << endl;
           }
           else {
             if (!strstr(node_desc->texNameArray[0], "noIcon"))
-              set_shader_attributes(node_desc, *egg_poly, node_desc->texNameArray[0]);
+              set_shader_attributes(node_desc, *egg_poly, 0);
             else 
               softegg_cat.spam() << "texname :" << node_desc->texNameArray[0] << endl;
         }
@@ -1493,7 +1493,7 @@ make_nurb_surface(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType ty
       // Now apply the shader.
       if (node_desc->textures != NULL) {
         if (!strstr(node_desc->texNameArray[0], "noIcon"))
-          set_shader_attributes(node_desc, *eggNurbs, node_desc->texNameArray[0]);
+          set_shader_attributes(node_desc, *eggNurbs, 0);
         else 
           softegg_cat.spam() << "texname :" << node_desc->texNameArray[0] << endl;
       }
@@ -2017,7 +2017,8 @@ cleanup_soft_skin()
 //               egg primitive.
 ////////////////////////////////////////////////////////////////////
 void SoftToEggConverter::
-set_shader_attributes(SoftNodeDesc *node_desc, EggPrimitive &primitive, char *texName) {
+set_shader_attributes(SoftNodeDesc *node_desc, EggPrimitive &primitive, int idx) {
+  char *texName = node_desc->texNameArray[idx];
   EggTexture tex(texName, "");
 
   Filename filename = Filename::from_os_specific(texName);
@@ -2025,7 +2026,7 @@ set_shader_attributes(SoftNodeDesc *node_desc, EggPrimitive &primitive, char *te
   tex.set_filename(_path_replace->store_path(fullpath));
   tex.set_fullpath(fullpath);
   //  tex.set_format(EggTexture::F_rgb);
-  apply_texture_properties(tex, node_desc->uRepeat, node_desc->vRepeat);
+  apply_texture_properties(tex, node_desc->uRepeat[idx], node_desc->vRepeat[idx]);
 
   EggTexture *new_tex = _textures.create_unique_texture(tex, ~EggTexture::E_tref_name);
   primitive.set_texture(new_tex);
@@ -2045,7 +2046,7 @@ apply_texture_properties(EggTexture &tex, int uRepeat, int vRepeat) {
   tex.set_magfilter(EggTexture::FT_linear);
 
   EggTexture::WrapMode wrap_u = uRepeat > 0 ? EggTexture::WM_repeat : EggTexture::WM_clamp;
-  EggTexture::WrapMode wrap_v = vRepeat > 1 ? EggTexture::WM_repeat : EggTexture::WM_clamp;
+  EggTexture::WrapMode wrap_v = vRepeat > 0 ? EggTexture::WM_repeat : EggTexture::WM_clamp;
 
   tex.set_wrap_u(wrap_u);
   tex.set_wrap_v(wrap_v);

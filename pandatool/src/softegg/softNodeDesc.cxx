@@ -675,6 +675,8 @@ load_poly_model(SAA_Scene *scene, SAA_ModelType type) {
       uOffset = new float[numTri];
       vOffset = new float[numTri];
       texNameArray = new char *[numTri];
+      uRepeat = new int[numTri];
+      vRepeat = new int[numTri];
       
       // ASSUME only one texture per material
       textures = new SAA_Elem[numTri];
@@ -686,6 +688,8 @@ load_poly_model(SAA_Scene *scene, SAA_ModelType type) {
 
         // initialize the array value
         texNameArray[i] = NULL;
+        // initialize the repeats
+        uRepeat[i] = vRepeat[i] = 0;
         
         // see if this triangle has texture info
         if (numTexTri[i] == 0)
@@ -718,8 +722,8 @@ load_poly_model(SAA_Scene *scene, SAA_ModelType type) {
           softegg_cat.spam() << "tritex[" << i << "] uScale: " << uScale[i] << " vScale: " << vScale[i] << endl;
           softegg_cat.spam() << " uOffset: " << uOffset[i] << " vOffset: " << vOffset[i] << endl;
           
-          SAA_texture2DGetRepeats( scene, &textures[i], &uRepeat, &vRepeat );
-          softegg_cat.spam() << "uRepeat = " << uRepeat << ", vRepeat = " << vRepeat << endl;
+          SAA_texture2DGetRepeats( scene, &textures[i], &uRepeat[i], &vRepeat[i] );
+          softegg_cat.spam() << "uRepeat = " << uRepeat[i] << ", vRepeat = " << vRepeat[i] << endl;
         }
         else {
           softegg_cat.spam() << "Invalid texture...\n";
@@ -749,6 +753,9 @@ load_poly_model(SAA_Scene *scene, SAA_ModelType type) {
           // panda can now read the .pic files.
           texNameArray = new char *[1];
           *texNameArray = stec.GetTextureName(scene, textures);
+
+          uRepeat = new int;
+          vRepeat = new int;
           
           softegg_cat.spam() << " global tex named: " << *texNameArray << endl;
           
@@ -766,8 +773,8 @@ load_poly_model(SAA_Scene *scene, SAA_ModelType type) {
           softegg_cat.spam() << " global tex uScale: " << *uScale << " vScale: " << *vScale << endl;
           softegg_cat.spam() << "            uOffset: " << *uOffset << " vOffset: " << *vOffset << endl;
           
-          SAA_texture2DGetRepeats(  scene, textures, &uRepeat, &vRepeat );
-          softegg_cat.spam() << "uRepeat = " << uRepeat << ", vRepeat = " << vRepeat << endl;
+          SAA_texture2DGetRepeats(  scene, textures, uRepeat, vRepeat );
+          softegg_cat.spam() << "uRepeat = " << *uRepeat << ", vRepeat = " << *vRepeat << endl;
         }
         else {
           softegg_cat.spam() << "Invalid Texture...\n";
@@ -863,6 +870,8 @@ load_nurbs_model(SAA_Scene *scene, SAA_ModelType type) {
       vScale = new float;
       uOffset = new float;
       vOffset = new float;
+      uRepeat = new int;
+      vRepeat = new int;
       
       // check to see if texture is present
       result = SAA_elementIsValid( scene, &textures[0], &valid );
@@ -883,16 +892,16 @@ load_nurbs_model(SAA_Scene *scene, SAA_ModelType type) {
         if ( uv_swap == TRUE )
           softegg_cat.spam() << " swapping u and v...\n" ;
         
-        SAA_texture2DGetUScale( scene, &textures[0], &uScale[0] );
-        SAA_texture2DGetVScale( scene, &textures[0], &vScale[0] );
-        SAA_texture2DGetUOffset( scene, &textures[0], &uOffset[0] );
-        SAA_texture2DGetVOffset( scene, &textures[0], &vOffset[0] );
+        SAA_texture2DGetUScale( scene, &textures[0], uScale );
+        SAA_texture2DGetVScale( scene, &textures[0], vScale );
+        SAA_texture2DGetUOffset( scene, &textures[0], uOffset );
+        SAA_texture2DGetVOffset( scene, &textures[0], vOffset );
         
-        softegg_cat.spam() << "tritex[0] uScale: " << uScale[0] << " vScale: " << vScale[0] << endl;
-        softegg_cat.spam() << " uOffset: " << uOffset[0] << " vOffset: " << vOffset[0] << endl;
+        softegg_cat.spam() << "tritex[0] uScale: " << *uScale << " vScale: " << *vScale << endl;
+        softegg_cat.spam() << " uOffset: " << *uOffset << " vOffset: " << *vOffset << endl;
         
-        SAA_texture2DGetRepeats( scene, &textures[0], &uRepeat, &vRepeat );
-        softegg_cat.spam() << "uRepeat = " << uRepeat << ", vRepeat = " << vRepeat << endl;
+        SAA_texture2DGetRepeats( scene, &textures[0], uRepeat, vRepeat );
+        softegg_cat.spam() << "uRepeat = " << *uRepeat << ", vRepeat = " << *vRepeat << endl;
       }
       else {
         softegg_cat.spam() << "Invalid texture...\n";

@@ -99,7 +99,7 @@ private:
 public:
 
   char **texNameArray;
-  int uRepeat, vRepeat;
+  int *uRepeat, *vRepeat;
   float matrix[4][4];
 
   const char *fullname;

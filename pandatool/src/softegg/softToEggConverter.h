@@ -94,7 +94,7 @@ private:
   void make_nurb_surface(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type);
   void add_knots( vector <double> &eggKnots, double *knots, int numKnots, SAA_Boolean closed, int degree );
 
-  void set_shader_attributes(SoftNodeDesc *node_desc, EggPrimitive &primitive, char *texName);
+  void set_shader_attributes(SoftNodeDesc *node_desc, EggPrimitive &primitive, int idx);
   void apply_texture_properties(EggTexture &tex, int uRepeat, int vRepeat);
 
   bool reparent_decals(EggGroupNode *egg_parent);
