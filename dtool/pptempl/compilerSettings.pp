@@ -78,8 +78,8 @@
   // use "unsafe" QIfist flt->int rounding only if FAST_FLT_TO_INT is defined
   #define OPTFLAGS /O2 /Ob2 /G6 $[if $[ne $[FAST_FLT_TO_INT],], /QIfist,]
   
-//  #define OPT1FLAGS /RTCsu /GS     removing /GS cause we really dont need it, /RTCu because it crashes in dxgsg with internal compiler bug
-  #define OPT1FLAGS /RTCs
+//  #define OPT1FLAGS /RTCsu /GS  removing /RTCu because it crashes in dxgsg with internal compiler bug
+  #define OPT1FLAGS /RTCs /GS
   
 //  #define WARNING_LEVEL_FLAG /Wall  //this is scary
   #define WARNING_LEVEL_FLAG /W3   // WL
