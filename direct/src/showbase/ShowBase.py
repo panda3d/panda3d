@@ -135,7 +135,7 @@ class ShowBase(DirectObject.DirectObject):
             # Give the window a chance to truly open.
             self.graphicsEngine.renderFrame()
             self.graphicsEngine.renderFrame()
-            if self.win.isClosed():
+            if self.win != None and self.win.isClosed():
                 self.notify.info("Window did not open, removing.")
                 self.closeWindow(self.win)
 
@@ -149,7 +149,7 @@ class ShowBase(DirectObject.DirectObject):
 
                     self.graphicsEngine.renderFrame()
                     self.graphicsEngine.renderFrame()
-                    if self.win.isClosed():
+                    if self.win != None and self.win.isClosed():
                         self.notify.info("Window did not open, removing.")
                         self.closeWindow(self.win)
 
