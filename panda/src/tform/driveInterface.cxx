@@ -13,18 +13,14 @@
 #include <modifierButtons.h>
 #include <buttonEventDataTransition.h>
 #include <buttonEventDataAttribute.h>
-#include <modifierButtonDataTransition.h>
-#include <modifierButtonDataAttribute.h>
 #include <keyboardButton.h>
 #include <mouseButton.h>
-#include <dataGraphTraversal.h>
+#include <dataGraphTraverser.h>
 #include <allAttributesWrapper.h>
-#include <dftraverser.h>
 #include <dataRelation.h>
 
 TypeHandle DriveInterface::_type_handle;
 
-TypeHandle DriveInterface::_mods_type;
 TypeHandle DriveInterface::_xyz_type;
 TypeHandle DriveInterface::_button_events_type;
 TypeHandle DriveInterface::_transform_type;
@@ -125,6 +121,10 @@ DriveInterface(const string &name) : DataNode(name) {
   _is_force_roll = true;
 
   _cs = default_coordinate_system;
+
+  _mods.add_button(MouseButton::one());
+  _mods.add_button(MouseButton::two());
+  _mods.add_button(MouseButton::three());
 
   _transform = new MatrixDataAttribute;
   _transform->set_value(_mat);
@@ -652,13 +652,9 @@ get_mat() const {
 void DriveInterface::
 force_dgraph() {
   _transform->set_value(_mat);
-  int num_children = get_num_children(DataRelation::get_class_type());
-  for (int i = 0; i < num_children; i++) {
-    DataGraphVisitor dgv;
-    df_traverse(get_child(DataRelation::get_class_type(), i),
-		dgv, AllAttributesWrapper(_attrib), 
-		NullLevelState(), DataRelation::get_class_type());
-  }
+
+  DataGraphTraverser dgt;
+  dgt.traverse_below(this, _attrib);
 }
 
 
@@ -858,6 +854,7 @@ transmit_data(NodeAttributes &data) {
     ButtonEventDataAttribute::const_iterator bi;
     for (bi = b->begin(); bi != b->end(); ++bi) {
       const ButtonEvent &be = (*bi);
+      _mods.add_event(be);
 
       if (be._button == KeyboardButton::up()) {
 	_up_arrow.set_key(be._down);
@@ -872,7 +869,6 @@ transmit_data(NodeAttributes &data) {
   }
 
   // Now look for mouse activity.
-  bool any_button = false;
   double x = 0.0;
   double y = 0.0;
 
@@ -881,18 +877,9 @@ transmit_data(NodeAttributes &data) {
     LVecBase3f p = xyz->get_value();
     x = p[0];
     y = p[1];
-
-    const ModifierButtonDataAttribute *button;
-    if (get_attribute_into(button, data, _mods_type)) {
-      ModifierButtons mods = button->get_mods();
-      any_button = 
-	mods.is_down(MouseButton::one()) ||
-	mods.is_down(MouseButton::two()) ||
-	mods.is_down(MouseButton::three());
-    }
   }
 
-  apply(x, y, any_button);
+  apply(x, y, _mods.is_any_down());
   _transform->set_value(_mat);
 
   // Now send our matrix down the pipe.
@@ -911,9 +898,6 @@ init_type() {
   register_type(_type_handle, "DriveInterface",
 		DataNode::get_class_type());
 
-  ModifierButtonDataTransition::init_type();
-  register_data_transition(_mods_type, "ModifierButtons",
-			   ModifierButtonDataTransition::get_class_type());
   Vec3DataTransition::init_type();
   register_data_transition(_xyz_type, "XYZ",
 			   Vec3DataTransition::get_class_type());

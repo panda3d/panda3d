@@ -10,6 +10,20 @@
 TypeHandle NodeAttribute::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodeAttribute::merge
+//       Access: Public, Virtual
+//  Description: Attempts to merge this attribute with the other one,
+//               if that makes sense to do.  Returns a new
+//               NodeAttribute pointer that represents the merge, or
+//               if the merge is not possible, returns the "other"
+//               pointer unchanged (which is the result of the merge).
+////////////////////////////////////////////////////////////////////
+NodeAttribute *NodeAttribute::
+merge(const NodeAttribute *other) const {
+  return (NodeAttribute *)other;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodeAttribute::output
 //       Access: Public, Virtual
 //  Description: 

@@ -86,9 +86,14 @@ get_modifier_buttons() const {
 //               be empty, and the ButtonThrower will therefore ignore
 //               all ModifierButtons attached to the key events, but
 //               if one or more buttons have been added to this set,
-//               and those modifier buttons are set on the button
-//               event, then the event name will be prepended with the
-//               names of the modifier buttons.
+//               then the event name will be prepended with the names
+//               of the modifier buttons.
+//
+//               It is recommended that you change this setting by
+//               first calling get_modifier_buttons(), making
+//               adjustments, and passing the new value to
+//               set_modifier_buttons().  This way the current state
+//               of the modifier buttons will not be lost.
 ////////////////////////////////////////////////////////////////////
 void ButtonThrower::
 set_modifier_buttons(const ModifierButtons &mods) {
@@ -110,20 +115,24 @@ transmit_data(NodeAttributes &data) {
     for (bi = b->begin(); bi != b->end(); ++bi) {
       const ButtonEvent &be = (*bi);
       string event_name = _prefix + be._button.get_name();
-      if (!be._down) {
-	event_name += "-up";
-	
-      } else {
-	// We only prepend modifier names on the button-down events.
-	string prepend;
-	
-	for (int i = 0; i < _mods.get_num_buttons(); i++) {
-	  ButtonHandle modifier = _mods.get_button(i);
-	  if (be._mods.is_down(modifier)) {
-	    prepend += modifier.get_name() + "-";
+      if (be._down) {
+	if (!_mods.button_down(be._button)) {
+	  // We only prepend modifier names on the button-down events,
+	  // and only for buttons which are not themselves modifiers.
+	  string prepend;
+	  
+	  for (int i = 0; i < _mods.get_num_buttons(); i++) {
+	    ButtonHandle modifier = _mods.get_button(i);
+	    if (_mods.is_down(modifier)) {
+	      prepend += modifier.get_name() + "-";
+	    }
 	  }
+	  event_name = prepend + event_name;
 	}
-	event_name = prepend + event_name;
+
+      } else {
+	_mods.button_up(be._button);
+	event_name += "-up";
       }
       
       throw_event(event_name);

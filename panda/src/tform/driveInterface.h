@@ -14,6 +14,7 @@
 #include <matrixDataTransition.h>
 #include <matrixDataAttribute.h>
 #include <nodeAttributes.h>
+#include <modifierButtons.h>
 #include <luse.h>
 #include <lmatrix.h>
 
@@ -122,6 +123,9 @@ private:
   bool _is_force_roll;
   CoordinateSystem _cs;
 
+  // Remember which mouse buttons are being held down.
+  ModifierButtons _mods;
+
   // Remember which arrow keys are being held down and which aren't,
   // and at what point they last changed state.
   class KeyHeld {
@@ -152,7 +156,6 @@ public:
   PT(MatrixDataAttribute) _transform;
 
   // inputs
-  static TypeHandle _mods_type;
   static TypeHandle _xyz_type;
   static TypeHandle _button_events_type;
 

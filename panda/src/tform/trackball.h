@@ -14,6 +14,7 @@
 #include <matrixDataTransition.h>
 #include <matrixDataAttribute.h>
 #include <nodeAttributes.h>
+#include <modifierButtons.h>
 #include <luse.h>
 #include <lmatrix.h>
 
@@ -103,6 +104,9 @@ private:
   const Node *_rel_to;
   CoordinateSystem _cs;
 
+  // Remember which mouse buttons are being held down.
+  ModifierButtons _mods;
+
 
 ////////////////////////////////////////////////////////////////////
 // From parent class DataNode
@@ -116,8 +120,8 @@ public:
   PT(MatrixDataAttribute) _transform;
 
   // inputs
-  static TypeHandle _mods_type;
   static TypeHandle _pixel_xyz_type;
+  static TypeHandle _button_events_type;
 
   // outputs
   static TypeHandle _transform_type;

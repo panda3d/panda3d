@@ -10,15 +10,14 @@
 #include <mouseData.h>
 #include <modifierButtons.h>
 #include <buttonEventDataTransition.h>
-#include <modifierButtonDataTransition.h>
-#include <modifierButtonDataAttribute.h>
+#include <buttonEventDataAttribute.h>
 #include <mouseButton.h>
 #include <get_rel_pos.h>
 
 TypeHandle Trackball::_type_handle;
 
-TypeHandle Trackball::_mods_type;
 TypeHandle Trackball::_pixel_xyz_type;
+TypeHandle Trackball::_button_events_type;
 TypeHandle Trackball::_transform_type;
 
 #define B1_MASK 1
@@ -45,6 +44,10 @@ Trackball(const string &name) : DataNode(name) {
   _invert = true;
   _rel_to = NULL;
   _cs = default_coordinate_system;
+
+  _mods.add_button(MouseButton::one());
+  _mods.add_button(MouseButton::two());
+  _mods.add_button(MouseButton::three());
 
   _transform = new MatrixDataAttribute;
   _transform->set_value(LMatrix4f::ident_mat());
@@ -471,7 +474,13 @@ recompute() {
 ////////////////////////////////////////////////////////////////////
 void Trackball::
 transmit_data(NodeAttributes &data) {
-  const NodeAttribute *button = data.get_attribute(_mods_type);
+  // First, update our modifier buttons.
+  const ButtonEventDataAttribute *b;
+  if (get_attribute_into(b, data, _button_events_type)) {
+    b->update_mods(_mods);
+  }
+
+  // Now, check for mouse motion.
   const NodeAttribute *pixel_xyz = data.get_attribute(_pixel_xyz_type);
   
   if (pixel_xyz != (NodeAttribute *)NULL) {
@@ -480,19 +489,14 @@ transmit_data(NodeAttributes &data) {
     float this_y = p[1];
     int this_button = 0;
 
-    if (button != (NodeAttribute *)NULL) {
-      ModifierButtons mods = 
-	DCAST(ModifierButtonDataAttribute, button)->get_mods();
-
-      if (mods.is_down(MouseButton::one())) {
-	this_button |= B1_MASK;
-      }
-      if (mods.is_down(MouseButton::two())) {
-	this_button |= B2_MASK;
-      }
-      if (mods.is_down(MouseButton::three())) {
-	this_button |= B3_MASK;
-      }
+    if (_mods.is_down(MouseButton::one())) {
+      this_button |= B1_MASK;
+    }
+    if (_mods.is_down(MouseButton::two())) {
+      this_button |= B2_MASK;
+    }
+    if (_mods.is_down(MouseButton::three())) {
+      this_button |= B3_MASK;
     }
 
     float x = this_x - _lastx;
@@ -521,12 +525,12 @@ init_type() {
   register_type(_type_handle, "Trackball",
 		DataNode::get_class_type());
 
-  ModifierButtonDataTransition::init_type();
-  register_data_transition(_mods_type, "ModifierButtons",
-			   ModifierButtonDataTransition::get_class_type());
   Vec3DataTransition::init_type();
   register_data_transition(_pixel_xyz_type, "PixelXYZ",
 			   Vec3DataTransition::get_class_type());
+  ButtonEventDataTransition::init_type();
+  register_data_transition(_button_events_type, "ButtonEvents",
+			   ButtonEventDataTransition::get_class_type());
   MatrixDataTransition::init_type();
   register_data_transition(_transform_type, "Transform",
 			   MatrixDataTransition::get_class_type());

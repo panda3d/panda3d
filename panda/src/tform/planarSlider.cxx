@@ -9,14 +9,15 @@
 #include <mouse.h>
 #include <mouseData.h>
 #include <modifierButtons.h>
-#include <modifierButtonDataTransition.h>
+#include <buttonEventDataTransition.h>
+#include <buttonEventDataAttribute.h>
 #include <mouseButton.h>
 #include <get_rel_pos.h>
 
 TypeHandle PlanarSlider::_type_handle;
 
-TypeHandle PlanarSlider::_mods_type;
 TypeHandle PlanarSlider::_xyz_type;
+TypeHandle PlanarSlider::_button_events_type;
 TypeHandle PlanarSlider::_transform_type;
 
 
@@ -34,6 +35,8 @@ PlanarSlider(const string &name) : DataNode(name) {
 
   _transform = new MatrixDataAttribute;
   _attrib.set_attribute(_transform_type, _transform);
+
+  _mods.add_button(MouseButton::one());
 }
 
 
@@ -146,19 +149,17 @@ get_mouse_pos() const {
 ////////////////////////////////////////////////////////////////////
 void PlanarSlider::
 transmit_data(NodeAttributes &data) {
-  const NodeAttribute *button = data.get_attribute(_mods_type);
+  // First, update our modifier buttons.
+  const ButtonEventDataAttribute *b;
+  if (get_attribute_into(b, data, _button_events_type)) {
+    b->update_mods(_mods);
+  }
+
+  // Now look for a mouse position.
   const NodeAttribute *xyz = data.get_attribute(_xyz_type);
   
   if (xyz != (NodeAttribute *)NULL) {
-    bool is_down = false;
-
-    if (button != (NodeAttribute *)NULL) {
-      ModifierButtons mods = 
-	DCAST(ModifierButtonDataAttribute, button)->get_mods();
-      is_down = mods.is_down(MouseButton::one());
-    }
-
-    if (is_down) {
+    if (_mods.is_any_down()) {
       LVecBase3f p = DCAST(Vec3DataAttribute, xyz)->get_value();
       set_mouse_pos(LPoint2f(p[0], p[1]));
     }
@@ -180,13 +181,13 @@ init_type() {
   register_type(_type_handle, "PlanarSlider",
 		DataNode::get_class_type());
 
-  ModifierButtonDataTransition::init_type();
-  register_data_transition(_mods_type, "ModifierButtons",
-			   ModifierButtonDataTransition::get_class_type());
   Vec3DataTransition::init_type();
   register_data_transition(_xyz_type, "XYZ",
 			   Vec3DataTransition::get_class_type());
   MatrixDataTransition::init_type();
   register_data_transition(_transform_type, "Transform",
 			   MatrixDataTransition::get_class_type());
+  ButtonEventDataTransition::init_type();
+  register_data_transition(_button_events_type, "ButtonEvents",
+			   ButtonEventDataTransition::get_class_type());
 }

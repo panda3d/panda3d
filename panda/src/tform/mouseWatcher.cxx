@@ -8,11 +8,8 @@
 
 #include <mouse.h>
 #include <mouseData.h>
-#include <modifierButtons.h>
 #include <buttonEventDataTransition.h>
 #include <buttonEventDataAttribute.h>
-#include <modifierButtonDataTransition.h>
-#include <modifierButtonDataAttribute.h>
 #include <keyboardButton.h>
 #include <mouseButton.h>
 #include <throw_event.h>
@@ -21,7 +18,6 @@
 
 TypeHandle MouseWatcher::_type_handle;
 
-TypeHandle MouseWatcher::_mods_type;
 TypeHandle MouseWatcher::_xyz_type;
 TypeHandle MouseWatcher::_button_events_type;
 
@@ -313,9 +309,6 @@ init_type() {
   register_type(_type_handle, "MouseWatcher",
 		DataNode::get_class_type());
 
-  ModifierButtonDataTransition::init_type();
-  register_data_transition(_mods_type, "ModifierButtons",
-			   ModifierButtonDataTransition::get_class_type());
   Vec3DataTransition::init_type();
   register_data_transition(_xyz_type, "XYZ",
 			   Vec3DataTransition::get_class_type());

@@ -16,9 +16,6 @@
 #include "matrixDataAttribute.h"
 #include "buttonEventDataTransition.h"
 #include "buttonEventDataAttribute.h"
-#include "modifierButtonDataTransition.h"
-#include "modifierButtonDataAttribute.h"
-#include "dataGraphTraversal.h"
 
 #include <dconfig.h>
 
@@ -38,9 +35,6 @@ ConfigureFn(config_dgraph) {
   MatrixDataAttribute::init_type();
   ButtonEventDataTransition::init_type();
   ButtonEventDataAttribute::init_type();
-  ModifierButtonDataTransition::init_type();
-  ModifierButtonDataAttribute::init_type();
-  DataGraphTraversal::init_spam_flag();
 
   DataRelation::register_with_factory();
 }

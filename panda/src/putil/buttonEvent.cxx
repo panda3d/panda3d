@@ -18,5 +18,4 @@ output(ostream &out) const {
   } else {
     out << " up";
   }
-  out << " with " << _mods;
 }

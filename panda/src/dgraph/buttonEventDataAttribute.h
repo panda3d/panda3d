@@ -14,6 +14,7 @@
 #include <vector>
 
 class ButtonEventDataTransition;
+class ModifierButtons;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : ButtonEventDataAttribute
@@ -42,11 +43,15 @@ public:
   INLINE void clear();
   INLINE void push_back(const ButtonEvent &event);
 
+  void update_mods(ModifierButtons &mods) const;
+
 public:
   virtual NodeAttribute *make_copy() const;
   virtual NodeAttribute *make_initial() const;
   
   virtual TypeHandle get_handle() const;
+
+  virtual NodeAttribute *merge(const NodeAttribute *other) const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;

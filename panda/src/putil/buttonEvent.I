@@ -29,19 +29,6 @@ ButtonEvent(ButtonHandle button, bool down) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ButtonEvent::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE ButtonEvent::
-ButtonEvent(ButtonHandle button, bool down, ModifierButtons mods) :
-  _button(button),
-  _down(down),
-  _mods(mods)
-{
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: ButtonEvent::Copy Constructor
 //       Access: Public
 //  Description: 
@@ -49,8 +36,7 @@ ButtonEvent(ButtonHandle button, bool down, ModifierButtons mods) :
 INLINE ButtonEvent::
 ButtonEvent(const ButtonEvent &copy) :
   _button(copy._button),
-  _down(copy._down),
-  _mods(copy._mods)
+  _down(copy._down)
 {
 }
 
@@ -63,7 +49,6 @@ INLINE void ButtonEvent::
 operator = (const ButtonEvent &copy) {
   _button = copy._button;
   _down = copy._down;
-  ((ModifierButtons &)_mods) = copy._mods;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -74,8 +59,7 @@ operator = (const ButtonEvent &copy) {
 INLINE bool ButtonEvent::
 operator == (const ButtonEvent &other) const {
   return (_button == other._button &&
-	  _down == other._down &&
-	  _mods == other._mods);
+	  _down == other._down);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -99,9 +83,5 @@ operator < (const ButtonEvent &other) const {
     return _button < other._button;
   }
 
-  if (_down != other._down) {
-    return _down < other._down;
-  }
-
-  return _mods < other._mods;
+  return _down < other._down;
 }

@@ -4,6 +4,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_tform.h"
+
+#include "dataValve.h"
 #include "driveInterface.h"
 #include "buttonThrower.h"
 #include "mouseWatcher.h"
@@ -30,6 +32,7 @@ const double drive_horizontal_ramp_up_time = config_tform.GetDouble("drive-horiz
 const double drive_horizontal_ramp_down_time = config_tform.GetDouble("drive-horizontal-ramp-down-time", 0.0);
 
 ConfigureFn(config_tform) {
+  DataValve::init_type();
   DriveInterface::init_type();
   ButtonThrower::init_type();
   MouseWatcher::init_type();

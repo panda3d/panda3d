@@ -18,7 +18,6 @@
 ////////////////////////////////////////////////////////////////////
 TypeHandle MouseAndKeyboard::_type_handle;
 
-TypeHandle MouseAndKeyboard::_mods_type;
 TypeHandle MouseAndKeyboard::_pixel_xyz_type;
 TypeHandle MouseAndKeyboard::_xyz_type;
 TypeHandle MouseAndKeyboard::_button_events_type;
@@ -35,17 +34,14 @@ MouseAndKeyboard(GraphicsWindow *window, int device, const string& name) :
   _window(window),
   _device(device)
 {
-  _mods = new ModifierButtonDataAttribute();
   _pixel_xyz = new Vec3DataAttribute(LPoint3f(0, 0, 0));
   _xyz = new Vec3DataAttribute(LPoint3f(0, 0, 0));
   _button_events = new ButtonEventDataAttribute();
 
-  _got_mouse_attrib.set_attribute(_mods_type, _mods);
   _got_mouse_attrib.set_attribute(_pixel_xyz_type, _pixel_xyz);
   _got_mouse_attrib.set_attribute(_xyz_type, _xyz);
   _got_mouse_attrib.set_attribute(_button_events_type, _button_events);
 
-  _no_mouse_attrib.set_attribute(_mods_type, _mods);
   _no_mouse_attrib.set_attribute(_button_events_type, _button_events);
 }
 
@@ -62,9 +58,6 @@ transmit_data(NodeAttributes &data) {
     ButtonEvent be = _window->get_button_event(_device);
     _button_events->push_back(be);
   }
-
-  // Get modifier buttons
-  _mods->set_mods(_window->get_modifier_buttons(_device));
 
   if (_window->has_pointer(_device)) {
     const MouseData &mdata = _window->get_mouse_data(_device);
@@ -105,9 +98,6 @@ init_type() {
   register_type(_type_handle, "MouseAndKeyboard",
 		DataNode::get_class_type());
 
-  ModifierButtonDataTransition::init_type();
-  register_data_transition(_mods_type, "ModifierButtons",
-			   ModifierButtonDataTransition::get_class_type());
   Vec3DataTransition::init_type();
   register_data_transition(_pixel_xyz_type, "PixelXYZ",
 			   Vec3DataTransition::get_class_type());

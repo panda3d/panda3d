@@ -76,6 +76,21 @@ get_button(int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ModifierButtons::add_event
+//       Access: Public
+//  Description: Calls button_down() or button_up(), as appropriate,
+//               according to the indicated ButtonEvent.
+////////////////////////////////////////////////////////////////////
+INLINE bool ModifierButtons::
+add_event(const ButtonEvent &event) {
+  if (event._down) {
+    return button_down(event._button);
+  } else {
+    return button_up(event._button);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::is_down
 //       Access: Public
 //  Description: Returns true if the indicated button is known to be
@@ -85,4 +100,15 @@ INLINE bool ModifierButtons::
 is_down(int index) const {
   nassertr(index >= 0 && index < (int)_button_list.size(), false);
   return ((_state & ((BitmaskType)1 << index)) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ModifierButtons::is_any_down
+//       Access: Public
+//  Description: Returns true if any of the tracked button are known
+//               to be down, or false if all of them are up.
+////////////////////////////////////////////////////////////////////
+INLINE bool ModifierButtons::
+is_any_down() const {
+  return _state != 0;
 }

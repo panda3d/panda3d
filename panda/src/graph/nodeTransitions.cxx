@@ -170,9 +170,9 @@ clear() {
 void NodeTransitions::
 copy_transitions_from(const NodeTransitions &other) {
   Transitions temp;
-  tmap_union(_transitions.begin(), _transitions.end(),
-	     other._transitions.begin(), other._transitions.end(),
-	     inserter(temp, temp.begin()));
+  tmap_override_union(_transitions.begin(), _transitions.end(),
+		      other._transitions.begin(), other._transitions.end(),
+		      inserter(temp, temp.begin()));
   _transitions.swap(temp);
 }
 

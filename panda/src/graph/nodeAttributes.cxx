@@ -221,6 +221,35 @@ apply_from(const NodeAttributes &other, const NodeTransitionCache &trans) {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: NodeAttributes::merge_from
+//       Access: Public
+//  Description: Computes the union of the two NodeAttributes sets and
+//               stores the result in this object (which may be the
+//               same object as either of the two sources).  If a
+//               given attribute is set in both sources (and cannot be
+//               union sensibly), the one from the second source
+//               overrides.
+////////////////////////////////////////////////////////////////////
+void NodeAttributes::
+merge_from(const NodeAttributes &a, const NodeAttributes &b) {
+  if (&a == this && b.is_empty()) {
+    // Trivial do-nothing case.
+
+  } else if (&b == this && a.is_empty()) {
+    // Trivial do-nothing case.
+
+  } else {
+    Attributes temp;
+
+    tmap_merge_union(a._attributes.begin(), a._attributes.end(),
+		     b._attributes.begin(), b._attributes.end(),
+		     inserter(temp, temp.begin()));
+    
+    _attributes.swap(temp);
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttributes::output

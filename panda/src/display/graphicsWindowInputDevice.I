@@ -45,31 +45,6 @@ get_mouse_data() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::get_modifier_buttons
-//       Access: Public
-//  Description: Returns the set of ModifierButtons currently being
-//               monitored for the nth input device.
-////////////////////////////////////////////////////////////////////
-INLINE const ModifierButtons &GraphicsWindowInputDevice::
-get_modifier_buttons() const {
-  return _mods;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::set_modifier_buttons
-//       Access: Public
-//  Description: Changes the set of ModifierButtons that will be
-//               monitored for the nth input device.  It is
-//               recommended that you first retrieve the existing set
-//               via get_modifier_buttons(), so that any current
-//               button state will not be lost.
-////////////////////////////////////////////////////////////////////
-INLINE void GraphicsWindowInputDevice::
-set_modifier_buttons(const ModifierButtons &mods) {
-  _mods = mods;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindowInputDevice::set_pointer_in_window
 //       Access: Public
 //  Description: To be called by a particular kind of GraphicsWindow

@@ -9,6 +9,7 @@
 
   #define SOURCES \
     buttonThrower.cxx buttonThrower.h config_tform.cxx config_tform.h \
+    dataValve.I dataValve.cxx dataValve.h \
     driveInterface.cxx driveInterface.h mouseWatcher.I mouseWatcher.cxx \
     mouseWatcher.h mouseWatcherRegion.I mouseWatcherRegion.cxx \
     mouseWatcherRegion.h planarSlider.cxx planarSlider.h trackball.cxx \
@@ -16,7 +17,8 @@
     transform2sg.cxx transform2sg.h
 
   #define INSTALL_HEADERS \
-    buttonThrower.h driveInterface.h mouseWatcher.I mouseWatcher.h \
+    buttonThrower.h dataValve.I dataValve.h \
+    driveInterface.h mouseWatcher.I mouseWatcher.h \
     mouseWatcherRegion.I mouseWatcherRegion.h planarSlider.h \
     trackball.h transform2sg.h
 

@@ -37,7 +37,7 @@ tmap_get_interest(InputIterator1 first1, InputIterator1 last1,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: tmap_union
+//     Function: tmap_override_union
 //  Description: Accepts two NodeTransition or NodeAttribute maps, and
 //               builds a new map which is the union of the first two.
 //               If an element appears in both maps, the entry from
@@ -45,9 +45,9 @@ tmap_get_interest(InputIterator1 first1, InputIterator1 last1,
 ////////////////////////////////////////////////////////////////////
 template<class InputIterator1, class InputIterator2, class OutputIterator>
 OutputIterator
-tmap_union(InputIterator1 first1, InputIterator1 last1,
-	   InputIterator2 first2, InputIterator2 last2,
-	   OutputIterator result) {
+tmap_override_union(InputIterator1 first1, InputIterator1 last1,
+		    InputIterator2 first2, InputIterator2 last2,
+		    OutputIterator result) {
   while (first1 != last1 && first2 != last2) {
     if ((*first1).first < (*first2).first) {
       *result = *first1;
@@ -59,6 +59,50 @@ tmap_union(InputIterator1 first1, InputIterator1 last1,
       ++result;
     } else {
       *result = *first2;
+      ++first1;
+      ++first2;
+      ++result;
+    }
+  }
+
+  while (first1 != last1) {
+    *result = *first1;
+    ++first1;
+    ++result;
+  }
+
+  while (first2 != last2) { 
+    *result = *first2;
+    ++first2;
+    ++result;
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: tmap_merge_union
+//  Description: Accepts two NodeAttribute maps, and builds a new map
+//               which is the union of the first two.  If an element
+//               appears in both maps, the two are merged, preferring
+//               the second.
+////////////////////////////////////////////////////////////////////
+template<class InputIterator1, class InputIterator2, class OutputIterator>
+OutputIterator
+tmap_merge_union(InputIterator1 first1, InputIterator1 last1,
+		 InputIterator2 first2, InputIterator2 last2,
+		 OutputIterator result) {
+  while (first1 != last1 && first2 != last2) {
+    if ((*first1).first < (*first2).first) {
+      *result = *first1;
+      ++first1;
+      ++result;
+    } else if ((*first2).first < (*first1).first) {
+      *result = *first2;
+      ++first2;
+      ++result;
+    } else {
+      PT(NodeAttribute) c = (*first1).second->merge((*first2).second);
+      *result = pair<TypeHandle, PT(NodeAttribute)>((*first1).first, c);
       ++first1;
       ++first2;
       ++result;

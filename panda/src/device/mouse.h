@@ -12,8 +12,6 @@
 #include <pandabase.h>
 
 #include <dataNode.h>
-#include <modifierButtonDataTransition.h>
-#include <modifierButtonDataAttribute.h>
 #include <vec3DataTransition.h>
 #include <vec3DataAttribute.h>
 #include <buttonEventDataTransition.h>
@@ -57,7 +55,6 @@ public:
 public:
   NodeAttributes _got_mouse_attrib;
   NodeAttributes _no_mouse_attrib;
-  PT(ModifierButtonDataAttribute) _mods;
   PT(Vec3DataAttribute) _pixel_xyz;
   PT(Vec3DataAttribute) _xyz;
   PT(ButtonEventDataAttribute) _button_events;

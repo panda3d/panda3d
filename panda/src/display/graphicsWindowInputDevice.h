@@ -10,7 +10,6 @@
 
 #include <buttonEvent.h>
 #include <mouseData.h>
-#include <modifierButtons.h>
 
 #include <deque>
 #include <vector>
@@ -41,8 +40,6 @@ public:
   INLINE bool has_keyboard() const;
 
   INLINE const MouseData &get_mouse_data() const;
-  INLINE const ModifierButtons &get_modifier_buttons() const;
-  INLINE void set_modifier_buttons(const ModifierButtons &mods);
 
   bool has_button_event() const;
   ButtonEvent get_button_event();
@@ -73,7 +70,6 @@ private:
   string _name;
   int _flags;
   MouseData _mouse_data;
-  ModifierButtons _mods;
   ButtonEvents _button_events;
 };
 

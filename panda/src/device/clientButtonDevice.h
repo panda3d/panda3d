@@ -13,6 +13,7 @@
 #include <buttonHandle.h>
 #include <buttonEvent.h>
 #include <buttonEventDataAttribute.h>
+#include <pointerTo.h>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ClientButtonDevice

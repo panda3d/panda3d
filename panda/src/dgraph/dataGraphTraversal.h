@@ -17,46 +17,12 @@
 // This is the main interface to the data graph.  Traversing the data
 // graph transmits data down the graph--reading data from devices and
 // sending it to the DataNodes that want it.
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <pandabase.h>
 
-#include <traverserVisitor.h>
-#include <allTransitionsWrapper.h>
-#include <allAttributesWrapper.h>
-#include <nullLevelState.h>
-
-
-////////////////////////////////////////////////////////////////////
-// 	 Class : DataGraphTraversal
-// Description : This is mainly a holder for the static
-//               _spam_flag_type TypeHandle, which is a registered
-//               NumericDataAttribute that keeps track of the state of
-//               the spam flag during data graph traversal.  The class
-//               otherwise doesn't do anything useful, but see the
-//               traverse_data_graph() function, below.
-////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DataGraphTraversal {
-public:
-  static void init_spam_flag();
-
-  static TypeHandle _spam_flag_type;
-};
-
-
-////////////////////////////////////////////////////////////////////
-// 	 Class : DataGraphVisitor
-// Description : The TraverserVisitor to handle data graph traversals.
-//               This manages the spam flag, and may eventually handle
-//               merging of data from different parents into a single
-//               node.
-////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DataGraphVisitor : 
-  public TraverserVisitor<AllTransitionsWrapper, NullLevelState> {
-public:
-  bool reached_node(Node *node, AllAttributesWrapper &state, NullLevelState &);
-};
-
+class Node;
  
 ////////////////////////////////////////////////////////////////////
 //     Function: traverse_data_graph

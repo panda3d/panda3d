@@ -252,9 +252,9 @@ store_to(const NodeTransitionCache *a, NodeRelation *arc,
 
   // And now actually add them.
   NodeTransitions temp;
-  tmap_union(nt._transitions.begin(), nt._transitions.end(),
-	     a->_cache.begin(), a->_cache.end(),
-	     inserter(temp._transitions, temp._transitions.begin()));
+  tmap_override_union(nt._transitions.begin(), nt._transitions.end(),
+		      a->_cache.begin(), a->_cache.end(),
+		      inserter(temp._transitions, temp._transitions.begin()));
   nt._transitions.swap(temp._transitions);
 }
 
@@ -281,9 +281,9 @@ c_union(const NodeTransitionCache *a, const NodeTransitionCache *b) {
     // Neither is empty.  Build and return a new list.
     NodeTransitionCache *result = new NodeTransitionCache;
 
-    tmap_union(a->_cache.begin(), a->_cache.end(),
-	       b->_cache.begin(), b->_cache.end(),
-	       inserter(result->_cache, result->_cache.begin()));
+    tmap_override_union(a->_cache.begin(), a->_cache.end(),
+			b->_cache.begin(), b->_cache.end(),
+			inserter(result->_cache, result->_cache.begin()));
 
     return result;
   }

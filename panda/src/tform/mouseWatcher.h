@@ -110,7 +110,6 @@ public:
   transmit_data(NodeAttributes &data);
 
   // inputs & outputs 
-  static TypeHandle _mods_type;
   static TypeHandle _xyz_type;
   static TypeHandle _button_events_type;
 

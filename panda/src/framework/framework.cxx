@@ -1048,7 +1048,10 @@ int framework_main(int argc, char *argv[]) {
   PT(Transform2SG) tball2cam = new Transform2SG("tball2cam");
   tball2cam->set_arc(arc1);
   new DataRelation(trackball, tball2cam);
-  new DataRelation(drive_interface, tball2cam);
+
+  PT(Transform2SG) drive2cam = new Transform2SG("drive2cam");
+  drive2cam->set_arc(arc1);
+  new DataRelation(drive_interface, drive2cam);
 
   // Create a ButtonThrower to throw events from the keyboard.
   PT(ButtonThrower) et = new ButtonThrower("kb-events");

@@ -29,16 +29,6 @@ GraphicsWindowInputDevice(const string &name, int flags) :
   _name(name),
   _flags(flags)
 {
-  // We'll define the mouse buttons and the traditional modifier keys
-  // as the default modifiers.  Individual GraphicsWindows can change
-  // this if they want.
-
-  _mods.add_button(MouseButton::one());
-  _mods.add_button(MouseButton::two());
-  _mods.add_button(MouseButton::three());
-  _mods.add_button(KeyboardButton::shift());
-  _mods.add_button(KeyboardButton::control());
-  _mods.add_button(KeyboardButton::alt());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -85,7 +75,6 @@ GraphicsWindowInputDevice(const GraphicsWindowInputDevice &copy) :
   _name(copy._name),
   _flags(copy._flags),
   _mouse_data(copy._mouse_data),
-  _mods(copy._mods),
   _button_events(copy._button_events)
 {
 }
@@ -100,7 +89,6 @@ operator = (const GraphicsWindowInputDevice &copy) {
   _name = copy._name;
   _flags = copy._flags;
   _mouse_data = copy._mouse_data;
-  _mods = copy._mods;
   _button_events = copy._button_events;
 }
 
@@ -147,8 +135,7 @@ get_button_event() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::
 button_down(ButtonHandle button) {
-  _button_events.push_back(ButtonEvent(button, true, _mods));
-  _mods.button_down(button);
+  _button_events.push_back(ButtonEvent(button, true));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -158,6 +145,5 @@ button_down(ButtonHandle button) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::
 button_up(ButtonHandle button) {
-  _mods.button_up(button);
-  _button_events.push_back(ButtonEvent(button, false, _mods));
+  _button_events.push_back(ButtonEvent(button, false));
 }

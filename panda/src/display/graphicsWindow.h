@@ -133,9 +133,6 @@ PUBLISHED:
   INLINE bool has_pointer(int device) const;
   INLINE bool has_keyboard(int device) const;
 
-  INLINE const ModifierButtons &get_modifier_buttons(int device) const;
-  INLINE void set_modifier_buttons(int device, const ModifierButtons &mods);
-
 public:
   INLINE const MouseData &get_mouse_data(int device) const;
   INLINE bool has_button_event(int device) const;

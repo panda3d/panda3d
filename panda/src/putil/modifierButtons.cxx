@@ -129,16 +129,19 @@ remove_button(ButtonHandle button) {
 //               If the given button is one of the buttons that is
 //               currently being monitored, this will update the
 //               internal state appropriately; otherwise, it will do
-//               nothing.
+//               nothing.  Returns true if the button is one that was
+//               monitored, or false otherwise.
 ////////////////////////////////////////////////////////////////////
-void ModifierButtons::
+bool ModifierButtons::
 button_down(ButtonHandle button) {
   for (int i = 0; i < (int)_button_list.size(); i++) {
     if (button == _button_list[i]) {
       _state |= ((BitmaskType)1 << i);
-      return;
+      return true;
     }
   }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -148,16 +151,19 @@ button_down(ButtonHandle button) {
 //               If the given button is one of the buttons that is
 //               currently being monitored, this will update the
 //               internal state appropriately; otherwise, it will do
-//               nothing.
+//               nothing.  Returns true if the button is one that was
+//               monitored, or false otherwise.
 ////////////////////////////////////////////////////////////////////
-void ModifierButtons::
+bool ModifierButtons::
 button_up(ButtonHandle button) {
   for (int i = 0; i < (int)_button_list.size(); i++) {
     if (button == _button_list[i]) {
       _state &= ~((BitmaskType)1 << i);
-      return;
+      return true;
     }
   }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

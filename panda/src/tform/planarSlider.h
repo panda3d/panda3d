@@ -16,6 +16,7 @@
 #include <nodeAttributes.h>
 #include <luse.h>
 #include <lmatrix.h>
+#include <modifierButtons.h>
 
 
 ////////////////////////////////////////////////////////////////////
@@ -46,6 +47,7 @@ private:
   CoordinateSystem _cs;
   LMatrix4f _transform_mat, _inverse_mat;
   LPoint2f _mouse_pos;
+  ModifierButtons _mods;
 
 ////////////////////////////////////////////////////////////////////
 // From parent class DataNode
@@ -59,8 +61,8 @@ public:
   PT(MatrixDataAttribute) _transform;
 
   // inputs
-  static TypeHandle _mods_type;
   static TypeHandle _xyz_type;
+  static TypeHandle _button_events_type;
 
   // outputs
   static TypeHandle _transform_type;

@@ -70,6 +70,9 @@ public:
   virtual void
   transmit_data(NodeAttributes &data)=0;
 
+  virtual void
+  transmit_data_per_child(NodeAttributes &data, int child_index);
+
 PUBLISHED:
   void set_spam_mode(bool flag);
   bool get_spam_mode() const;

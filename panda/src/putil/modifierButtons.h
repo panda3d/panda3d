@@ -10,6 +10,7 @@
 
 #include "buttonHandle.h"
 #include "pointerToArray.h"
+#include "buttonEvent.h"
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : ModifierButtons
@@ -18,7 +19,7 @@
 //               known to be down or up.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ModifierButtons {
-public:
+PUBLISHED:
   ModifierButtons();
   ModifierButtons(const ModifierButtons &copy);
   ~ModifierButtons();
@@ -35,11 +36,13 @@ public:
   INLINE int get_num_buttons() const;
   INLINE ButtonHandle get_button(int index) const;
 
-  void button_down(ButtonHandle button);
-  void button_up(ButtonHandle button);
+  bool button_down(ButtonHandle button);
+  bool button_up(ButtonHandle button);
+  INLINE bool add_event(const ButtonEvent &event);
 
   bool is_down(ButtonHandle button) const;
   INLINE bool is_down(int index) const;
+  INLINE bool is_any_down() const;
 
   void output(ostream &out) const;
   void write(ostream &out) const;

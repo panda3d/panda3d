@@ -7,11 +7,26 @@
 #include "buttonEventDataTransition.h"
 
 #include <indent.h>
-
+#include <modifierButtons.h>
 #include <algorithm>
 
 TypeHandle ButtonEventDataAttribute::_type_handle;
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonEventDataAttribute::update_mods
+//       Access: Public
+//  Description: Updates the indicated ModifierButtons object with all
+//               of the button up/down transitions indicated in the
+//               queue.
+////////////////////////////////////////////////////////////////////
+void ButtonEventDataAttribute::
+update_mods(ModifierButtons &mods) const {
+  Buttons::const_iterator bi;
+  for (bi = _buttons.begin(); bi != _buttons.end(); ++bi) {
+    mods.add_event(*bi);
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonEventDataAttribute::make_copy
@@ -41,6 +56,38 @@ make_initial() const {
 TypeHandle ButtonEventDataAttribute::
 get_handle() const {
   return ButtonEventDataTransition::get_class_type();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonEventDataAttribute::merge
+//       Access: Public, Virtual
+//  Description: Attempts to merge this attribute with the other one,
+//               if that makes sense to do.  Returns a new
+//               NodeAttribute pointer that represents the merge, or
+//               if the merge is not possible, returns the "other"
+//               pointer unchanged (which is the result of the merge).
+////////////////////////////////////////////////////////////////////
+NodeAttribute *ButtonEventDataAttribute::
+merge(const NodeAttribute *other) const {
+  const ButtonEventDataAttribute *oa;
+  DCAST_INTO_R(oa, other, NULL);
+
+  if (_buttons.empty()) {
+    return (ButtonEventDataAttribute *)oa;
+
+  } else if (oa->_buttons.empty()) {
+    return (ButtonEventDataAttribute *)this;
+
+  } else {
+    // We have to create a new data attribute that includes both sets
+    // of buttons.
+    ButtonEventDataAttribute *new_attrib = 
+      new ButtonEventDataAttribute(*this);
+
+    new_attrib->_buttons.insert(new_attrib->_buttons.end(),
+				oa->_buttons.begin(), oa->_buttons.end());
+    return new_attrib;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

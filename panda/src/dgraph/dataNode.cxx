@@ -16,6 +16,23 @@ DataNode::
 DataNode(const string &name) : NamedNode(name) {
   _spam_mode = false;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: DataNode::transmit_data_per_child
+//       Access: Public, Virtual
+//  Description: Should be overridden in a derived class that wants to
+//               send a different data stream to each child.
+//               Normally, a node only overrides transmit_data(),
+//               which takes a set of input data attributes and
+//               generates a set of output data attributes.  A node
+//               may also override transmit_data_per_child(), which is
+//               called after transmit_data(), once per child; this
+//               function may be used to send individual data
+//               attributes to each child.
+////////////////////////////////////////////////////////////////////
+void DataNode::
+transmit_data_per_child(NodeAttributes &, int) {
+}
   
 ////////////////////////////////////////////////////////////////////
 //     Function: DataNode::set_spam_mode

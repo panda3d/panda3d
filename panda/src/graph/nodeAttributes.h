@@ -68,7 +68,9 @@ public:
   void apply_from(const NodeAttributes &other, 
 		  const NodeTransitionCache &trans);
 
-public:
+  void merge_from(const NodeAttributes &a, const NodeAttributes &b);
+
+PUBLISHED:
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
 
