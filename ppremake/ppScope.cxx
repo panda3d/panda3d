@@ -854,9 +854,13 @@ r_expand_variable(const string &str, size_t &vp,
     } else if (funcname == "firstword") {
       return expand_firstword(params);
     } else if (funcname == "patsubst") {
-      return expand_patsubst(params);
+      return expand_patsubst(params, true);
+    } else if (funcname == "patsubstw") {
+      return expand_patsubst(params, false);
     } else if (funcname == "subst") {
       return expand_subst(params);
+    } else if (funcname == "wordsubst") {
+      return expand_wordsubst(params);
     } else if (funcname == "filter") {
       return expand_filter(params);
     } else if (funcname == "filter_out" || funcname == "filter-out") {
@@ -1849,7 +1853,7 @@ expand_firstword(const string &params) const {
 //  Description: Expands the "patsubst" function variable.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
-expand_patsubst(const string &params) const {
+expand_patsubst(const string &params, bool separate_words) const {
   // Split the string up into tokens based on the commas.
   vector<string> tokens;
   tokenize_params(params, tokens, true);
@@ -1864,9 +1868,14 @@ expand_patsubst(const string &params) const {
     return string();
   }
 
-  // Split the last parameter into tokens based on the spaces.
+  // Split the last parameter into tokens based on the spaces--but
+  // only if separate_words is true.
   vector<string> words;
-  tokenize_whitespace(tokens.back(), words);
+  if (separate_words) {
+    tokenize_whitespace(tokens.back(), words);
+  } else {
+    words.push_back(tokens.back());
+  }
 
   // Build up a vector of from/to patterns.
   typedef vector<PPFilenamePattern> Patterns;
@@ -1984,7 +1993,7 @@ expand_filter_out(const string &params) const {
   tokenize_params(params, tokens, true);
 
   if (tokens.size() != 2) {
-    cerr << "filter requires two parameters.\n";
+    cerr << "filter-out requires two parameters.\n";
     return string();
   }
 
@@ -2049,20 +2058,58 @@ expand_subst(const string &params) const {
     return string();
   }
 
+  // Now substitute each of the substitute strings out for the
+  // replacement strings.
+  string str = tokens.back();
+  for (size_t i = 0; i < tokens.size() - 1; i += 2) {
+    string new_str;
+    const string &subst = tokens[i];
+    const string &repl = tokens[i + 1];
+    size_t q = 0;
+    size_t p = str.find(subst, q);
+    while (p != string::npos) {
+      new_str += str.substr(q, p - q) + repl;
+      q = p + subst.length();
+      p = str.find(subst, q);
+    }
+    str = new_str + str.substr(q);
+  }
+  return str;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_wordsubst
+//       Access: Private
+//  Description: Expands the "wordsubst" function variable.  This is
+//               like "subst" except it only replaces whole words.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_wordsubst(const string &params) const {
+  // Split the string up into tokens based on the commas.
+  vector<string> tokens;
+  tokenize_params(params, tokens, true);
+
+  if (tokens.size() < 3) {
+    cerr << "subst requires at least three parameters.\n";
+    return string();
+  }
+
+  if ((tokens.size() % 2) != 1) {
+    cerr << "subst requires an odd number of parameters.\n";
+    return string();
+  }
+
   // Split the last parameter into tokens based on the spaces.
   vector<string> words;
   tokenize_whitespace(tokens.back(), words);
   
-  vector<string>::iterator wi;
-  for (wi = words.begin(); wi != words.end(); ++wi) {
-    string &word = (*wi);
-
-    // Check for the given word in the subst/replace strings.
-    bool found = false;
-    for (size_t i = 0; i < tokens.size() - 1 && !found; i += 2) {
-      if (tokens[i] == word) {
-	found = true;
-	word = tokens[i + 1];
+  for (size_t i = 0; i < tokens.size() - 1; i += 2) {
+    const string &subst = tokens[i];
+    const string &repl = tokens[i + 1];
+    vector<string>::iterator wi;
+    for (wi = words.begin(); wi != words.end(); ++wi) {
+      if ((*wi) == subst) {
+	(*wi) = repl;
       }
     }
   }

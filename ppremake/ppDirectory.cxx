@@ -411,6 +411,7 @@ r_scan(const string &prefix) {
 	PPDirectory *subtree = new PPDirectory(filename, this);
 
 	if (!subtree->r_scan(next_prefix)) {
+	  closedir(root);
 	  return false;
 	}
       }
@@ -419,6 +420,7 @@ r_scan(const string &prefix) {
     d = readdir(root);
   }
 
+  closedir(root);
   return true;
 }
 

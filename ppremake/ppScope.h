@@ -102,9 +102,10 @@ private:
   string expand_wordlist(const string &params) const;
   string expand_words(const string &params) const;
   string expand_firstword(const string &params) const;
-  string expand_patsubst(const string &params) const;
+  string expand_patsubst(const string &params, bool separate_words) const;
   string expand_filter(const string &params) const;
   string expand_filter_out(const string &params) const;
+  string expand_wordsubst(const string &params) const;
   string expand_subst(const string &params) const;
   string expand_sort(const string &params) const;
   string expand_unique(const string &params) const;
