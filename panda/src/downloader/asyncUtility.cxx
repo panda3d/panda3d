@@ -15,14 +15,19 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
-#include "asyncUtility.h"
+#if defined(WIN32_VC) && !defined(NO_PCH)
+#include "downloader_headers.h"
+#endif
+
+#pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "config_downloader.h"
-#if defined(WIN32)
-  #define WINDOWS_LEAN_AND_MEAN
-  #include <windows.h>
-  #include <winbase.h>
-  #undef WINDOWS_LEAN_AND_MEAN
-#else
+#endif
+
+#include "asyncUtility.h"
+  
+#if !defined(WIN32)
   #include <sys/time.h>
 #endif
 

@@ -1,5 +1,5 @@
-// Filename: multiplexStream.cxx
-// Created by:  drose (27Nov00)
+// Filename: downloader_headers.h
+// Created by:  georges (30May01)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,11 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "downloader_headers.h"
-#endif
+#define WINDOWS_LEAN_AND_MEAN
+#include <windows.h>
+#undef WINDOWS_LEAN_AND_MEAN
 
+#include <errno.h>
+#include <error_utils.h>
+#include <math.h>
+#include <stdio.h>
+#include <zlib.h>
+
+#include <filename.h>
+#include <event.h>
+#include <pt_Event.h>
+#include <eventParameter.h>
+#include <throw_event.h>
+
+#include "config_downloader.h"
 #pragma hdrstop
-
-#include "multiplexStream.h"
 

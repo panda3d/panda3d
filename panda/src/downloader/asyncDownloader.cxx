@@ -15,18 +15,27 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
-#include "asyncDownloader.h"
+#if defined(WIN32_VC) && !defined(NO_PCH)
+#include "downloader_headers.h"
+#endif
+
+#pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "config_downloader.h"
 
 #include <event.h>
 #include <pt_Event.h>
 #include <throw_event.h>
 #include <eventParameter.h>
-#include <circBuffer.h>
 #include <filename.h>
-#include <list>
 #include <errno.h>
 #include <math.h>
+#endif
+
+#include "asyncDownloader.h"
+#include <circBuffer.h>
+#include <list>
 
 #if !defined(WIN32_VC)
 // #define errno wsaGetLastError()

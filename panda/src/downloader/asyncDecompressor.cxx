@@ -21,7 +21,13 @@
 ////////////////////////////////////////////////////////////////////
 // Includes
 ////////////////////////////////////////////////////////////////////
-#include "asyncDecompressor.h"
+#if defined(WIN32_VC) && !defined(NO_PCH)
+#include "downloader_headers.h"
+#endif
+
+#pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "config_downloader.h"
 
 #include <event.h>
@@ -30,6 +36,9 @@
 #include <eventParameter.h>
 #include <filename.h>
 #include <stdio.h>
+#endif
+
+#include "asyncDecompressor.h"
 
 ////////////////////////////////////////////////////////////////////
 // Defines

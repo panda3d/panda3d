@@ -16,18 +16,24 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if defined(WIN32_VC) && !defined(NO_PCH)
+#include "downloader_headers.h"
+#endif
+
+#pragma hdrstop
+
+#if defined(WIN32_VC) && defined(NO_PCH)
+#define WINDOWS_LEAN_AND_MEAN
+#include <windows.h>
+#undef WINDOWS_LEAN_AND_MEAN
+#endif
+
 #include "multiplexStreamBuf.h"
 
 // We use real assert() instead of nassert(), because we're likely
 // to be invoked directly by notify here, and we don't want to
 // risk infinite recursion.
 #include <assert.h>
-
-#if defined(WIN32_VC)
-#define WINDOWS_LEAN_AND_MEAN
-#include <windows.h>
-#undef WINDOWS_LEAN_AND_MEAN
-#endif
 
 #ifndef HAVE_STREAMSIZE
 // Some compilers--notably SGI--don't define this for us.

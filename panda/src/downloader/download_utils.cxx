@@ -18,9 +18,17 @@
 
 // This file is compiled only if we have zlib installed.
 
+#if defined(WIN32_VC) && !defined(NO_PCH)
+#include "downloader_headers.h"
+#endif
+
+#pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "download_utils.h"
 #include "config_downloader.h"
 #include <zlib.h>
+#endif
 
 ulong
 check_crc(Filename name) {

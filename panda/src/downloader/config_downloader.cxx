@@ -16,10 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_downloader.h"
+#if defined(WIN32_VC) && !defined(NO_PCH)
+#include "downloader_headers.h"
+#endif
+
+#pragma hdrstop
 
 #include <dconfig.h>
 #include <get_config_path.h>
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
+#include "config_downloader.h"
+#endif
+
 
 Configure(config_downloader);
 NotifyCategoryDef(downloader, "");

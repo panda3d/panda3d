@@ -21,14 +21,24 @@
 ////////////////////////////////////////////////////////////////////
 // Includes
 ////////////////////////////////////////////////////////////////////
-#include "decompressor.h"
+#if defined(WIN32_VC) && !defined(NO_PCH)
+#include "downloader_headers.h"
+#endif
+
+#pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "config_downloader.h"
 
-#include <filename.h>
 #include <stdio.h>
-#include <error_utils.h>
-
 #include <errno.h>
+
+#include <error_utils.h>
+#include <filename.h>
+#endif
+
+#include "decompressor.h"
+
 
 ////////////////////////////////////////////////////////////////////
 // Defines
