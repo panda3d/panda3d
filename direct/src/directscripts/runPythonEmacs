@@ -38,6 +38,10 @@ if [ "$TOONTAG" ]; then
     TOONTAG=`cygpath -w $TOONTAG`
     export TOONTAG
 fi
+if [ "$BARTOP" ]; then
+    BARTOP=`cygpath -w $BARTOP`
+    export BARTOP
+fi
 if [ "$WINTOOLS" ]; then
     WINTOOLS=`cygpath -w $WINTOOLS`
     export WINTOOLS
