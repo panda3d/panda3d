@@ -24,7 +24,6 @@
 #include "config_downloader.h"
 #include "clockObject.h"
 #include "buffer.h"  // for Ramfile
-#include <sys/time.h>
 
 #ifdef HAVE_SSL
 
