@@ -19,6 +19,147 @@
 #include "globPattern.h"
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GlobPattern::has_glob_characters
+//       Access: Public
+//  Description: Returns true if the pattern includes any special
+//               globbing characters, or false if it is just a literal
+//               string.
+////////////////////////////////////////////////////////////////////
+bool GlobPattern::
+has_glob_characters() const {
+  string::const_iterator pi;
+  pi = _pattern.begin();
+  while (pi != _pattern.end()) {
+    switch (*pi) {
+    case '*':
+    case '?':
+    case '[':
+      return true;
+
+    case '\\':
+      ++pi;
+      if (pi == _pattern.end()) {
+        return false;
+      }
+    }
+    ++pi;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GlobPattern::match_files
+//       Access: Public
+//  Description: Treats the GlobPattern as a filename pattern, and
+//               returns a list of any actual files that match the
+//               pattern.  This is the behavior of the standard Posix
+//               glob() function.  Any part of the filename may
+//               contain glob characters, including intermediate
+//               directory names.
+//
+//               If cwd is specified, it is the directory that
+//               relative filenames are taken to be relative to;
+//               otherwise, the actual current working directory is
+//               assumed.
+//
+//               The return value is the number of files matched,
+//               which are added to the results vector.
+////////////////////////////////////////////////////////////////////
+int GlobPattern::
+match_files(vector_string &results, const Filename &cwd) {
+  string next_pattern, next_suffix;
+
+  size_t slash = _pattern.find('/');
+  if (slash == string::npos) {
+    next_pattern = _pattern;
+  } else {
+    next_pattern = _pattern.substr(0, slash);
+    next_suffix = _pattern.substr(slash + 1);
+  }
+  
+  GlobPattern next_glob(next_pattern);
+  return next_glob.r_match_files(Filename(), next_suffix, results, cwd);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GlobPattern::r_match_files
+//       Access: Private
+//  Description: The recursive implementation of match_files().
+////////////////////////////////////////////////////////////////////
+int GlobPattern::
+r_match_files(const Filename &prefix, const string &suffix,
+              vector_string &results, const Filename &cwd) {
+  string next_pattern, next_suffix;
+
+  size_t slash = suffix.find('/');
+  if (slash == string::npos) {
+    next_pattern = suffix;
+  } else {
+    next_pattern = suffix.substr(0, slash);
+    next_suffix = suffix.substr(slash + 1);
+  }
+
+  Filename parent_dir;
+  if (prefix.is_local() && !cwd.empty()) {
+    parent_dir = Filename(cwd, prefix);
+  } else {
+    parent_dir = prefix;
+  }
+
+  GlobPattern next_glob(next_pattern);
+
+  if (!has_glob_characters()) {
+    // If there are no special characters in the pattern, it's a
+    // literal match.
+    if (suffix.empty()) {
+      // Time to stop.
+      Filename single_filename(parent_dir, _pattern);
+      if (single_filename.exists()) {
+        results.push_back(Filename(prefix, _pattern));
+        return 1;
+      }
+      return 0;
+    }
+
+    return next_glob.r_match_files(Filename(prefix, _pattern),
+                                   next_suffix, results, cwd);
+
+  } 
+
+  // If there *are* special glob characters, we must attempt to
+  // match the pattern against the files in this directory.
+  
+  vector_string dir_files;
+  if (!parent_dir.scan_directory(dir_files)) {
+    // Not a directory, or unable to read directory; stop here.
+    return 0;
+  }
+  
+  // Now go through each file in the directory looking for one that
+  // matches the pattern.
+  int num_matched = 0;
+  
+  vector_string::const_iterator fi;
+  for (fi = dir_files.begin(); fi != dir_files.end(); ++fi) {
+    const string &local_file = (*fi);
+    if (_pattern[0] == '.' || (local_file.empty() || local_file[0] != '.')) {
+      if (matches(local_file)) {
+        // We have a match; continue.
+        if (suffix.empty()) {
+          results.push_back(Filename(prefix, local_file));
+          num_matched++; 
+        } else {
+          num_matched += next_glob.r_match_files(Filename(prefix, local_file),
+                                                 next_suffix, results, cwd);
+        }
+      }
+    }
+  }
+  
+  return num_matched;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GlobPattern::matches_substr
 //       Access: Private
 //  Description: The recursive implementation of matches().  This

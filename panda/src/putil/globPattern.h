@@ -19,7 +19,9 @@
 #ifndef GLOBPATTERN_H
 #define GLOBPATTERN_H
 
-#include <pandabase.h>
+#include "pandabase.h"
+#include "filename.h"
+#include "vector_string.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GlobPattern
@@ -49,6 +51,9 @@ public:
 
   INLINE void output(ostream &out) const;
 
+  bool has_glob_characters() const;
+  int match_files(vector_string &results, const Filename &cwd = Filename());
+
 private:
   bool matches_substr(string::const_iterator pi,
                       string::const_iterator pend,
@@ -58,6 +63,9 @@ private:
   bool matches_set(string::const_iterator &pi,
                    string::const_iterator pend,
                    char ch) const;
+
+  int r_match_files(const Filename &prefix, const string &suffix,
+                    vector_string &results, const Filename &cwd);
 
   string _pattern;
 };

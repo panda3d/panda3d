@@ -18,20 +18,14 @@
 
 #include "globPattern.h"
 
-#ifdef WIN32
-#include <io.h>
-#else
-#include <sys/types.h>
-#include <dirent.h>
-#endif
-
 int
 main(int argc, char *argv[]) {
-  if (argc != 2) {
+  if (argc != 2 && argc != 3) {
     cerr
-      << "test_glob \"pattern\"\n\n"
+      << "test_glob \"pattern\" [from-directory]\n\n"
       << "Attempts to match the pattern against each of the files in the\n"
-      << "current directory.  Reports all of the matching files.  This is,\n"
+      << "indicated directory if specified, or the current directory\n"
+      << "otherwise.  Reports all of the matching files.  This is,\n"
       << "of course, exactly the normal behavior of the shell; this test\n"
       << "program merely exercises the Panda GlobPattern object, which\n"
       << "duplicates the shell functionality.\n\n";
@@ -39,41 +33,19 @@ main(int argc, char *argv[]) {
   }
 
   GlobPattern pattern(argv[1]);
-
-#ifdef WIN32
-  struct _finddata_t fd;
-  long dp = _findfirst("*.*", &fd);
-
-  if (dp != 0) {
-    do {
-      if (pattern.matches(fd.name)) {
-        cout << "Matches: " << fd.name << "\n";
-      } else {
-        cout << "Fails: " << fd.name << "\n";
-      }
-    } while (_findnext(dp, &fd) == 0);
+  Filename from_directory;
+  if (argc == 3) {
+    from_directory = argv[2];
   }
 
-#else // WIN32
-  DIR *dp = opendir(".");
-  if (dp == (DIR *)NULL) {
-    cerr << "Unable to scan directory '.'\n";
-    exit(1);
-  }
+  vector_string results;
+  int num_matched = pattern.match_files(results, from_directory);
 
-  struct dirent *ent;
-  ent = readdir(dp);
-  while (ent != (struct dirent *)NULL) {
-    if (pattern.matches(ent->d_name)) {
-      cout << "Matches: " << ent->d_name << "\n";
-    } else {
-      cout << "Fails: " << ent->d_name << "\n";
-    }
-    ent = readdir(dp);
+  cerr << num_matched << " results:\n";
+  vector_string::const_iterator si;
+  for (si = results.begin(); si != results.end(); ++si) {
+    cerr << "  " << *si << "\n";
   }
-
-  closedir(dp);
-#endif  // WIN32
 
   return (0);
 }
