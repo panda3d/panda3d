@@ -544,11 +544,11 @@ box_filter_region(const PNMImage &image,
   }
 
   PPM_ASSIGN(result,
-             (xelval)(red / pixel_count),
-             (xelval)(grn / pixel_count),
-             (xelval)(blu / pixel_count));
+             (xelval)(red / pixel_count + 0.5),
+             (xelval)(grn / pixel_count + 0.5),
+             (xelval)(blu / pixel_count + 0.5));
 
-  alpha_result = (xelval)(alpha / pixel_count);
+  alpha_result = (xelval)(alpha / pixel_count + 0.5);
 }
 
 ////////////////////////////////////////////////////////////////////
