@@ -53,6 +53,8 @@ bool ime_composition_w = config_windisplay.GetBool("ime-composition-w", true);
 // IME default windows. This is a mechanism to work around DX8/9 interface
 bool ime_aware = config_windisplay.GetBool("ime-aware", false);
 
+// Set this true to hide ime windows
+bool ime_hide = config_windisplay.GetBool("ime-hide", false);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libwindisplay

@@ -976,7 +976,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
         
       case WM_IME_SETCONTEXT:
-        if (!ime_aware)
+        if (!ime_hide)
           break;
 
         windisplay_cat.debug() << "hwnd = " << hwnd << " and GetFocus = " << GetFocus() << endl;
@@ -1003,7 +1003,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           if (!_ime_open) {
             _ime_active = false;  // Sanity enforcement.
           }
-          if (ime_aware) {
+          if (ime_hide) {
             //if (0) {
             COMPOSITIONFORM comf;
             CANDIDATEFORM canf;
@@ -1085,6 +1085,12 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       case WM_IME_ENDCOMPOSITION:
         support_overlay_window(false);
         _ime_active = false;
+
+        if (ime_aware) {
+          wstring ws;
+          _input_devices[0].candidate(ws, 0, 0, 0);
+        }
+          
         break;
         
       case WM_IME_COMPOSITION:
