@@ -150,20 +150,24 @@ class Button(DirectObject):
                 self.button.up()
 
     def manage(self, nodepath = aspect2d):
-        if nodepath:
-            self.button.manage(guiMgr, base.eventMgr.eventHandler,
-                               nodepath.node())
-        else:
-            self.button.manage(guiMgr, base.eventMgr.eventHandler)
-        self.managed = 1
+        if not self.managed:
+            if nodepath:
+                self.button.manage(guiMgr, base.eventMgr.eventHandler,
+                                   nodepath.node())
+            else:
+                self.button.manage(guiMgr, base.eventMgr.eventHandler)
 
-        if self.inactive:
-            self.button.exit()
-            self.button.inactive()
+            if self.inactive:
+                self.button.exit()
+                self.button.inactive()
+
+            self.managed = 1
+                
 
     def unmanage(self):
-        self.button.unmanage()
-        self.managed = 0
+        if self.managed:
+            self.button.unmanage()
+            self.managed = 0
 
     def getPos(self):
         v = self.button.getPos()
