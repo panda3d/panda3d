@@ -382,6 +382,8 @@ get_screenshot(PNMImage &image) {
     return false;
   }
 
+  make_current();
+
   PixelBuffer p(_x_size, _y_size, 3, 1, PixelBuffer::T_unsigned_byte,
                 PixelBuffer::F_rgb);
 
