@@ -41,10 +41,10 @@ class EXPCL_PANDAEXPRESS EventQueue {
 public:
   enum { max_events = 500 };
 
+PUBLISHED:
   EventQueue();
   ~EventQueue();
 
-PUBLISHED:
   void queue_event(CPT_Event event);
 
 
