@@ -77,7 +77,25 @@
         # Remove nodePath
         self.removeNode()
 
-    def reversels(self):
+    def lsNames(self):
+        """Walk down a tree and print out the path"""
+        if self.isEmpty():
+            print "(empty)"
+        else:
+            type = self.node().getType().getName()
+            name = self.getName()
+            print type + "  " + name
+            self.lsNamesRecurse()
+
+    def lsNamesRecurse(self, indentString=' '):
+        """Walk down a tree and print out the path"""
+        for nodePath in self.getChildrenAsList():
+            type = nodePath.node().getType().getName()
+            name = nodePath.getName()
+            print indentString + type + "  " + name
+            nodePath.lsNamesRecurse(indentString + " ")
+
+    def reverseLsNames(self):
         """Walk up a tree and print out the path to the root"""
         ancestry = self.getAncestry()
         indentString = ""
