@@ -49,26 +49,6 @@ size() const {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_GRAPH NodeTransitionCache::iterator NodeTransitionCache::
-begin() {
-  return _cache.begin();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodeTransitionCache::end
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_GRAPH NodeTransitionCache::iterator NodeTransitionCache::
-end() {
-  return _cache.end();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodeTransitionCache::begin
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeTransitionCache::const_iterator NodeTransitionCache::
 begin() const {
   return _cache.begin();
@@ -82,17 +62,6 @@ begin() const {
 INLINE_GRAPH NodeTransitionCache::const_iterator NodeTransitionCache::
 end() const {
   return _cache.end();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodeTransitionCache::end
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_GRAPH NodeTransitionCache::iterator NodeTransitionCache::
-insert(NodeTransitionCache::iterator position, 
-       const NodeTransitionCache::value_type &item) {
-  return _cache.insert(position, item);
 }
 
 INLINE_GRAPH ostream &operator << (ostream &out, const NodeTransitionCache &ntc) {

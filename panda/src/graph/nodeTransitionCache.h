@@ -19,14 +19,15 @@
 #ifndef NODETRANSITIONCACHE_H
 #define NODETRANSITIONCACHE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "nodeTransitionCacheEntry.h"
 #include "graphHashGenerator.h"
+#include "nodeTransitions.h"
 
-#include <referenceCount.h>
-
-#include "pmap.h"
+#include "referenceCount.h"
+#include "firstOfPairLess.h"
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : NodeTransitionCache
@@ -64,23 +65,23 @@ public:
   store_entry(TypeHandle handle, const NodeTransitionCacheEntry &entry);
 
 private:
-  typedef pmap<TypeHandle, NodeTransitionCacheEntry> Cache;
+  typedef pair<TypeHandle, NodeTransitionCacheEntry> CacheEntry;
+  typedef FirstOfPairLess<CacheEntry> SortCache;
+  typedef pvector<CacheEntry> Cache;
+
 public:
-  // STL-like definitions to allow read-write traversal of the
+  // STL-like definitions to allow read-only traversal of the
   // individual transitions.  Note that each of these is a
   // NodeTransitionCacheEntry, not simply a PT(NodeTransition).
   // Beware!  These are not safe to use outside of PANDA.DLL.
-  typedef Cache::iterator iterator;
+  typedef Cache::const_iterator iterator;
   typedef Cache::const_iterator const_iterator;
   typedef Cache::value_type value_type;
   typedef Cache::size_type size_type;
 
   INLINE_GRAPH size_type size() const;
-  INLINE_GRAPH iterator begin();
-  INLINE_GRAPH iterator end();
   INLINE_GRAPH const_iterator begin() const;
   INLINE_GRAPH const_iterator end() const;
-  INLINE_GRAPH iterator insert(iterator position, const value_type &item);
 
 
 public:

@@ -21,7 +21,9 @@
 #include "config_graph.h"
 #include "setTransitionHelpers.h"
 
-#include <indent.h>
+#include "indent.h"
+
+#include <algorithm>
 
 TypeHandle NodeTransitionCache::_type_handle;
 
@@ -75,7 +77,7 @@ NodeTransitionCache(const NodeTransitions &nt) {
     NodeTransition *trans = (*ti).second;
 
     if (trans != (NodeTransition *)NULL) {
-      _cache[handle] = NodeTransitionCacheEntry(trans);
+      _cache.push_back(CacheEntry(handle, NodeTransitionCacheEntry(trans)));
     }
   }
 }
@@ -165,15 +167,18 @@ set_transition(TypeHandle handle, NodeTransition *trans) {
     return clear_transition(handle);
 
   } else {
-    Cache::iterator ci;
-    ci = _cache.find(handle);
-    if (ci != _cache.end()) {
+    Cache::iterator ci = 
+      lower_bound(_cache.begin(), _cache.end(), 
+                  CacheEntry(handle, NodeTransitionCacheEntry()),
+                  SortCache());
+
+    if (ci != _cache.end() && (*ci).first == handle) {
       PT(NodeTransition) result = (*ci).second.get_trans();
       (*ci).second = NodeTransitionCacheEntry(trans);
       return result;
     }
 
-    _cache.insert(Cache::value_type(handle, NodeTransitionCacheEntry(trans)));
+    _cache.insert(ci, Cache::value_type(handle, trans));
     return NULL;
   }
 }
@@ -192,11 +197,14 @@ PT(NodeTransition) NodeTransitionCache::
 clear_transition(TypeHandle handle) {
   nassertr(handle != TypeHandle::none(), NULL);
 
-  Cache::iterator ci;
-  ci = _cache.find(handle);
-  if (ci != _cache.end()) {
+  Cache::iterator ci = 
+    lower_bound(_cache.begin(), _cache.end(),
+                CacheEntry(handle, NodeTransitionCacheEntry()),
+                SortCache());
+
+  if (ci != _cache.end() && (*ci).first == handle) {
     PT(NodeTransition) result = (*ci).second.get_trans();
-    _cache.erase(ci);
+    (*ci).second.clear_trans();
     return result;
   }
 
@@ -213,9 +221,12 @@ clear_transition(TypeHandle handle) {
 bool NodeTransitionCache::
 has_transition(TypeHandle handle) const {
   nassertr(handle != TypeHandle::none(), false);
-  Cache::const_iterator ci;
-  ci = _cache.find(handle);
-  if (ci != _cache.end()) {
+
+  Cache::const_iterator ci = 
+    lower_bound(_cache.begin(), _cache.end(),
+                CacheEntry(handle, NodeTransitionCacheEntry()),
+                SortCache());
+  if (ci != _cache.end() && (*ci).first == handle) {
     return (*ci).second.has_trans();
   }
   return false;
@@ -231,9 +242,12 @@ has_transition(TypeHandle handle) const {
 NodeTransition *NodeTransitionCache::
 get_transition(TypeHandle handle) const {
   nassertr(handle != TypeHandle::none(), NULL);
-  Cache::const_iterator ci;
-  ci = _cache.find(handle);
-  if (ci != _cache.end()) {
+
+  Cache::const_iterator ci = 
+    lower_bound(_cache.begin(), _cache.end(),
+                CacheEntry(handle, NodeTransitionCacheEntry()),
+                SortCache());
+  if (ci != _cache.end() && (*ci).first == handle) {
     return (*ci).second.get_trans();
   }
   return NULL;
@@ -260,9 +274,11 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 bool NodeTransitionCache::
 lookup_entry(TypeHandle handle, NodeTransitionCacheEntry &entry) const {
-  Cache::const_iterator ci;
-  ci = _cache.find(handle);
-  if (ci != _cache.end()) {
+  Cache::const_iterator ci = 
+    lower_bound(_cache.begin(), _cache.end(),
+                CacheEntry(handle, NodeTransitionCacheEntry()),
+                SortCache());
+  if (ci != _cache.end() && (*ci).first == handle) {
     entry = (*ci).second;
     return true;
   }
@@ -279,7 +295,15 @@ lookup_entry(TypeHandle handle, NodeTransitionCacheEntry &entry) const {
 ////////////////////////////////////////////////////////////////////
 void NodeTransitionCache::
 store_entry(TypeHandle handle, const NodeTransitionCacheEntry &entry) {
-  _cache[handle] = entry;
+  CacheEntry search_entry(handle, entry);
+  Cache::iterator ci = 
+    lower_bound(_cache.begin(), _cache.end(), search_entry,
+                SortCache());
+  if (ci != _cache.end() && (*ci).first == handle) {
+    (*ci).second = entry;
+  } else {
+    _cache.insert(ci, search_entry);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -338,7 +362,7 @@ c_union(const NodeTransitionCache *a, const NodeTransitionCache *b) {
 
     tmap_override_union(a->_cache.begin(), a->_cache.end(),
                         b->_cache.begin(), b->_cache.end(),
-                        inserter(result->_cache, result->_cache.begin()));
+                        back_inserter(result->_cache));
 
     return result;
   }
@@ -374,7 +398,7 @@ compose(const NodeTransitionCache *a, const NodeTransitionCache *b) {
 
     tmap_compose(a->_cache.begin(), a->_cache.end(),
                  b->_cache.begin(), b->_cache.end(),
-                 inserter(result->_cache, result->_cache.begin()));
+                 back_inserter(result->_cache));
 
     return result;
   }
@@ -400,7 +424,7 @@ invert(const NodeTransitionCache *a) {
   NodeTransitionCache *result = new NodeTransitionCache;
 
   tmap_invert(a->_cache.begin(), a->_cache.end(),
-              inserter(result->_cache, result->_cache.begin()));
+              back_inserter(result->_cache));
 
   return result;
 }
@@ -435,7 +459,7 @@ invert_compose(const NodeTransitionCache *a, const NodeTransitionCache *b) {
 
     tmap_invert_compose(a->_cache.begin(), a->_cache.end(),
                         b->_cache.begin(), b->_cache.end(),
-                        inserter(result->_cache, result->_cache.begin()));
+                        back_inserter(result->_cache));
 
     return result;
   }
@@ -479,14 +503,14 @@ cached_compose(const NodeTransitionCache *a,
                           a->_cache.begin(), a->_cache.begin(),
                           b->_cache.begin(), b->_cache.end(),
                           now,
-                          inserter(result->_cache, result->_cache.begin()));
+                          back_inserter(result->_cache));
 
     } else {
       tmap_cached_compose(a->_cache.begin(), a->_cache.end(),
                           cache->_cache.begin(), cache->_cache.end(),
                           b->_cache.begin(), b->_cache.end(),
                           now,
-                          inserter(result->_cache, result->_cache.begin()));
+                          back_inserter(result->_cache));
     }
 
     return result;
