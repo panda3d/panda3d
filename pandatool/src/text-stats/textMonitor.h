@@ -42,6 +42,7 @@ public:
   virtual void lost_connection();
   virtual bool is_thread_safe();
 
+  void show_ms(const PStatViewLevel *level, int indent_level);
   void show_level(const PStatViewLevel *level, int indent_level);
 };
 

@@ -18,6 +18,7 @@
 
 #include "textMonitor.h"
 #include "textStats.h"
+#include "pStatCollectorDef.h"
 
 #include "indent.h"
 
@@ -95,15 +96,30 @@ new_data(int thread_index, int frame_number) {
     view.set_to_frame(frame_number);
 
     if (view.all_collectors_known()) {
+      const PStatClientData *client_data = get_client_data();
+
       nout << "\rThread "
-           << get_client_data()->get_thread_name(thread_index)
+           << client_data->get_thread_name(thread_index)
            << " frame " << frame_number << ", "
            << view.get_net_value() * 1000.0 << " ms ("
            << thread_data->get_frame_rate() << " Hz):\n";
       const PStatViewLevel *level = view.get_top_level();
       int num_children = level->get_num_children();
       for (int i = 0; i < num_children; i++) {
-        show_level(level->get_child(i), 2);
+        show_ms(level->get_child(i), 2);
+      }
+
+      int num_toplevel_collectors = client_data->get_num_toplevel_collectors();
+      for (int tc = 0; tc < num_toplevel_collectors; tc++) {
+        int collector = client_data->get_toplevel_collector(tc);
+        if (client_data->has_collector(collector) && 
+            client_data->get_collector_has_level(collector)) {
+          
+          PStatView &level_view = get_level_view(collector, thread_index);
+          level_view.set_to_frame(frame_number);
+          const PStatViewLevel *level = level_view.get_top_level();
+          show_level(level, 2);
+        }
       }
     }
   }
@@ -140,6 +156,27 @@ is_thread_safe() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextMonitor::show_ms
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void TextMonitor::
+show_ms(const PStatViewLevel *level, int indent_level) {
+  int collector_index = level->get_collector();
+
+  const PStatClientData *client_data = get_client_data();
+  const PStatCollectorDef &def = client_data->get_collector_def(collector_index);
+
+  indent(nout, indent_level)
+    << def._name << " = " << level->get_net_value() * 1000.0 << " ms\n" ;
+
+  int num_children = level->get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    show_ms(level->get_child(i), indent_level + 2);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextMonitor::show_level
 //       Access: Public
 //  Description:
@@ -148,9 +185,12 @@ void TextMonitor::
 show_level(const PStatViewLevel *level, int indent_level) {
   int collector_index = level->get_collector();
 
+  const PStatClientData *client_data = get_client_data();
+  const PStatCollectorDef &def = client_data->get_collector_def(collector_index);
+
   indent(nout, indent_level)
-    << get_client_data()->get_collector_name(collector_index)
-    << " = " << level->get_net_value() * 1000.0 << " ms\n";
+    << def._name << " = " << level->get_net_value() << " " 
+    << def._level_units << "\n";
 
   int num_children = level->get_num_children();
   for (int i = 0; i < num_children; i++) {
