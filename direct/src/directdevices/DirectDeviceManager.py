@@ -1,5 +1,11 @@
 """ Class used to create and control vrpn devices """
 from PandaObject import *
+from DirectGeometry import CLAMP
+
+ANALOG_MIN = -0.95
+ANALOG_MAX = 0.95
+ANALOG_RANGE = ANALOG_MAX - ANALOG_MIN
+ANALOG_DEADBAND = 0.075
 
 class DirectDeviceManager(VrpnClient, PandaObject):
     def __init__(self, server = None):
@@ -77,7 +83,7 @@ class DirectAnalogs(AnalogNode, PandaObject):
         self.nodePath = base.dataRoot.attachNewNode(self)
     
     def __getitem__(self, index):
-        if (index < 0) | index > self.getNumControls():
+        if (index < 0) | (index > self.getNumControls()):
             raise IndexError
         return self.getControlState(index)
     
@@ -90,6 +96,22 @@ class DirectAnalogs(AnalogNode, PandaObject):
     def disable(self):
         self.nodePath.reparentTo(base.dataUnused)
     
+    def normalize(self, val, min = -1, max = -1):
+        val = CLAMP(val, ANALOG_MIN, ANALOG_MAX)
+        if abs(val) < ANALOG_DEADBAND:
+            val = 0.0
+        return ((max - min) * ((val - ANALOG_MIN) / ANALOG_RANGE)) + min
+    
+    def normalizeChannel(self, chan, min = -1, max = 1):
+        try:
+            if (chan == 2) | (chan == 6):
+                # These channels have reduced range
+                return self.normalize(self[chan] * 3.0, min, max)
+            else:
+                return self.normalize(self[chan], min, max)
+        except IndexError:
+            return 0.0
+
     def getName(self):
         return self.name
     

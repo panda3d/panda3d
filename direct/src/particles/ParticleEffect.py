@@ -126,6 +126,10 @@ class ParticleEffect(NodePath):
         f.write('\n')
 
 	# Make sure we start with a clean slate
+        f.write('for p in self.getParticlesList():\n')
+        f.write('\tself.removeParticles(p)\n')
+        f.write('for fg in self.getForceGroupList():\n')
+        f.write('\tpe.removeForceGroup(fg)\n')
 	f.write('self.particlesDict = {}\n')
 	f.write('self.forceGroupDict = {}\n')
 

@@ -1,13 +1,13 @@
 """ Class used to create and control joybox device """
 from PandaObject import *
 from DirectDeviceManager import *
-from DirectGeometry import CLAMP
 import OnscreenText
 
-JOY_MIN = -0.95
-JOY_MAX = 0.95
-JOY_RANGE = JOY_MAX - JOY_MIN
-JOY_DEADBAND = 0.05
+"""
+TODO:
+Handle interaction between widget, followSelectedTask and updateTask
+"""
+
 # BUTTONS
 L_STICK = 0
 L_UPPER = 1
@@ -16,6 +16,7 @@ R_STICK = 3
 R_UPPER = 4
 R_LOWER = 5
 # ANALOGS
+NULL_AXIS = -1
 L_LEFT_RIGHT = 0
 L_FWD_BACK = 1
 L_TWIST = 2
@@ -27,8 +28,8 @@ R_SLIDE = 7
 
 class DirectJoybox(PandaObject):
     joyboxCount = 0
-    xyzScale = 1.0
-    hprScale = 1.0
+    xyzMultiplier = 1.0
+    hprMultiplier = 1.0
     def __init__(self, nodePath = direct.camera):
         # See if device manager has been initialized
         if direct.deviceManager == None:
@@ -41,26 +42,57 @@ class DirectJoybox(PandaObject):
         self.buttons = direct.deviceManager.createButtons(self.device)
         self.aList = [0,0,0,0,0,0,0,0]
         self.bList = [0,0,0,0,0,0,0,0]
-        self.mapping = [0,1,2,4,5,6]
+        # For joybox fly mode
+        self.mapping = [L_LEFT_RIGHT, L_FWD_BACK, L_TWIST,
+                        R_TWIST, R_FWD_BACK, R_LEFT_RIGHT]
         self.modifier = [1,1,1,1,1,1]
-        # Button registry
-        self.addButtonEvents()        
         # Initialize time
         self.lastTime = globalClock.getTime()
         # Record node path
         self.nodePath = nodePath
+        # Ref CS for orbit mode
+        self.refCS = direct.cameraControl.coaMarker
+        self.tempCS = direct.group.attachNewNode('JoyboxTempCS')
         # Text object to display current mode
         self.readout = OnscreenText.OnscreenText( '', -0.9, -0.95 )
+        # List of functions to cycle through
+        self.modeList = [self.joeMode, self.driveMode]
         # Pick initial mode
         self.updateFunc = self.joeFly
+        self.modeName = 'Joe Mode'
+        # Button registry
+        self.addButtonEvents()
         # Spawn update task
         self.enable()
     
     def enable(self):
+        # Kill existing task
+        self.disable()
+        # Accept button events
+        self.acceptSwitchModeEvent()
+        self.acceptUprightCameraEvent()
+        # If moving widget update wrt info
+        if self.nodePath.id() == direct.widget.id():
+            # Kill follow task
+            taskMgr.removeTasksNamed('followSelectedNodePath')
+            # Record relationship between selected nodes and widget
+            direct.selected.getWrtAll()                    
+        # Update task
         taskMgr.spawnMethodNamed(self.updateTask, self.name + '-updateTask')
     
     def disable(self):
         taskMgr.removeTasksNamed(self.name + '-updateTask')
+        if self.nodePath.id() == direct.widget.id():
+            # Restart followSelectedNodePath task
+            direct.manipulationControl.spawnFollowSelectedNodePathTask()
+        self.ignoreSwitchModeEvent()
+        self.ignoreUprightCameraEvent()
+
+    def destroy(self):
+        self.disable()
+        self.ignore('selectedNodePath')
+        self.ignore('deselectNodePath')
+        self.tempCS.removeNode()
 
     def addButtonEvents(self):
         self.breg = ButtonRegistry.ptr()
@@ -73,14 +105,57 @@ class DirectJoybox(PandaObject):
     
     def setNodePath(self, nodePath):
         self.nodePath = nodePath
+        if self.nodePath.id() == direct.widget.id():
+            # Kill follow task
+            taskMgr.removeTasksNamed('followSelectedNodePath')
+            # Record relationship between selected nodes and widget
+            direct.selected.getWrtAll()
+            # Watch for newly selected objects
+            self.accept('selectedNodePath', self.selectionHook)
+            # Watch for deselections
+            self.accept('deselectNodePath', self.selectionHook)
+        else:
+            self.ignore('selectedNodePath')
+            self.ignore('deselectNodePath')
+
+    def selectionHook(self, dnp):
+        if direct.selected.getSelectedAsList():
+            print 'enable'
+            self.enable()
+        else:
+            print 'disable'
+            self.disable()
+
     def getNodePath(self):
         return self.nodePath
+    def setRefCS(self, refCS):
+        self.refCS = refCS
+    def getRefCS(self):
+        return self.refCS
     def getEventName(self, index):
         return self.name + '-button-' + `index`
+    def setXyzMultiplier(self, multiplier):
+        DirectJoybox.xyzMultiplier = multiplier
+    def getXyzMultiplier(self):
+        return DirectJoybox.xyzMultiplier
+    def setHprMultiplier(self, multiplier):
+        DirectJoybox.hprMultiplier = multiplier
+    def getHprMultiplier(self):
+        return DirectJoybox.hprMultiplier
 
     def updateTask(self, state):
         self.updateVals()
         self.updateFunc()
+        if self.nodePath.id() == direct.widget.id():
+            if direct.manipulationControl.fSetCoa:
+                # Update coa based on current widget position
+                direct.selected.last.mCoa2Dnp.assign(
+                    direct.widget.getMat(direct.selected.last))
+                # Update wrt info
+                direct.selected.getWrtAll()                    
+            else:
+                # Move the objects with the widget
+                direct.selected.moveWrtWidgetAll()
         return Task.cont
     
     def updateVals(self):
@@ -90,30 +165,30 @@ class DirectJoybox(PandaObject):
         self.lastTime = cTime
         # Update analogs
         for i in range(len(self.analogs)):
-            try:
-                self.aList[i] = self.normalizeAnalogChannel(i)
-            except IndexError:
-                # That channel may not have been updated yet
-                pass
+            self.aList[i] = self.analogs.normalizeChannel(i)
         # Update buttons
         for i in range(len(self.buttons)):
             try:
                 self.bList[i] = self.buttons[i]
             except IndexError:
                 # That channel may not have been updated yet
-                pass
+                self.bList[i] = 0
     
-    def normalizeAnalog(self, val, min = -1, max = -1):
-        val = CLAMP(val, JOY_MIN, JOY_MAX)
-        if abs(val) < JOY_DEADBAND:
-            val = 0.0
-        return ((max - min) * ((val - JOY_MIN) / JOY_RANGE)) + min
-    
-    def normalizeAnalogChannel(self, chan, min = -1, max = 1):
-        if (chan == 2) | (chan == 6):
-            return self.normalizeAnalog(self.analogs[chan] * 3.0, min, max)
-        else:
-            return self.normalizeAnalog(self.analogs[chan], min, max)
+    def acceptSwitchModeEvent(self, button = R_UPPER):
+        self.accept(self.getEventName(button), self.switchMode)
+    def ignoreSwitchModeEvent(self, button = R_UPPER):
+        self.ignore(self.getEventName(button))
+        
+    def switchMode(self):
+        try:
+            # Get current mode
+            self.modeFunc = self.modeList[0]
+            # Rotate mode list
+            self.modeList = self.modeList[1:] + self.modeList[:1]
+            # Call new mode
+            self.modeFunc()
+        except IndexError:
+            pass
 
     def showMode(self, modeText):
         def hideText(state, s = self):
@@ -125,23 +200,30 @@ class DirectJoybox(PandaObject):
         t = taskMgr.doMethodLater(3.0, hideText, self.name + '-showMode')
         t.uponDeath = hideText
 
+    def acceptUprightCameraEvent(self, button = L_UPPER):
+        self.accept(self.getEventName(button),
+                    direct.cameraControl.orbitUprightCam)
+    def ignoreUprightCameraEvent(self, button = L_UPPER):
+        self.ignore(self.getEventName(button))
+
     def setMode(self, func, name):
         self.disable()
         self.updateFunc = func
-        self.showMode(name)
+        self.modeName = name
+        self.showMode(self.modeName)
         self.enable()
         
     def joeMode(self):
         self.setMode(self.joeFly, 'Joe Mode')
     
     def joeFly(self):
-        hprScale = (self.normalizeAnalogChannel(3, 0.1, 200) *
-                    DirectJoybox.hprScale)
-        posScale = (self.normalizeAnalogChannel(7, 0.1, 100) *
-                    DirectJoybox.xyzScale)
+        hprScale = (self.analogs.normalizeChannel(L_SLIDE, 0.1, 200) *
+                    DirectJoybox.hprMultiplier)
+        posScale = (self.analogs.normalizeChannel(R_SLIDE, 0.1, 100) *
+                    DirectJoybox.xyzMultiplier)
         # XYZ
-        x = self.aList[4]
-        y = self.aList[5]
+        x = self.aList[R_LEFT_RIGHT]
+        y = self.aList[R_FWD_BACK]
         if self.bList[L_STICK]:
             z = 0.0
         else:
@@ -159,51 +241,98 @@ class DirectJoybox(PandaObject):
         self.nodePath.setPosHpr(self.nodePath, pos, hpr)
 
     def joyboxFly(self):
-        hprScale = (self.normalizeAnalogChannel(3, 0.1, 200) *
-                    DirectJoybox.hprScale)
-        posScale = (self.normalizeAnalogChannel(7, 0.1, 100) *
-                    DirectJoybox.xyzScale)
-        x = self.analogs[self.mapping[0]] * self.modifier[0]
-        y = self.analogs[self.mapping[1]] * self.modifier[1]
-        z = self.analogs[self.mapping[2]] * self.modifier[2]
+        hprScale = (self.analogs.normalizeChannel(L_SLIDE, 0.1, 200) *
+                    DirectJoybox.hprMultiplier)
+        posScale = (self.analogs.normalizeChannel(R_SLIDE, 0.1, 100) *
+                    DirectJoybox.xyzMultiplier)
+        def getAxisVal(index, s = self):
+            try:
+                return s.aList[s.mapping[index]]
+            except IndexError:
+                # If it is a null axis return 0
+                return 0.0
+        x = getAxisVal(0) * self.modifier[0]
+        y = getAxisVal(1) * self.modifier[1]
+        z = getAxisVal(2) * self.modifier[2]
         pos = Vec3(x,y,z) * (posScale * self.deltaTime)
-        
-        h = self.analogs[self.mapping[3]] * self.modifier[3]
-        p = self.analogs[self.mapping[4]] * self.modifier[4]
-        r = self.analogs[self.mapping[5]] * self.modifier[5]
+
+        h = getAxisVal(3) * self.modifier[3]
+        p = getAxisVal(4) * self.modifier[4]
+        r = getAxisVal(5) * self.modifier[5]
         hpr = Vec3(h,p,r) * (hprScale * self.deltaTime)
         # Move node path
         self.nodePath.setPosHpr(self.nodePath, pos, hpr)
 
     def demoMode(self):
-        self.mapping = [4,5,1,6,0,0]
+        self.mapping = [R_LEFT_RIGHT, R_FWD_BACK, L_FWD_BACK,
+                        R_TWIST, NULL_AXIS, NULL_AXIS]
         self.modifier = [1,1,1,-1,0,0]
         self.setMode(self.joyboxFly, 'Demo Mode')
 
     def driveMode(self):
-        self.mapping = [0,5,1,4,1,0]
+        self.mapping = [L_LEFT_RIGHT, R_FWD_BACK, L_FWD_BACK,
+                        R_LEFT_RIGHT, NULL_AXIS, NULL_AXIS]
         self.modifier = [1,1,1,-1,0,0]
         self.setMode(self.joyboxFly, 'Drive Mode')
 
     def hprXyzMode(self):
-        self.mapping = [4,5,6,2,1,0]
+        self.mapping = [R_LEFT_RIGHT, R_FWD_BACK, R_TWIST,
+                        L_TWIST, L_FWD_BACK, L_LEFT_RIGHT]
         self.modifier = [1,1,-1,-1,-1,1]
         self.setMode(self.joyboxFly, 'HprXyz Mode')
 
     def lookaroundMode(self):
-        self.mapping = [0,0,0,4,5,0]
+        self.mapping = [NULL_AXIS, NULL_AXIS, NULL_AXIS,
+                        R_LEFT_RIGHT, R_FWD_BACK, NULL_AXIS]
         self.modifier = [0,0,0,-1,-1,0]
         self.setMode(self.joyboxFly, 'Lookaround Mode')
 
     def walkthruMode(self):
-        self.mapping = [4,5,2,6,1,0]
+        self.mapping = [R_LEFT_RIGHT, R_FWD_BACK, L_TWIST,
+                        R_TWIST, L_FWD_BACK, L_LEFT_RIGHT]
         self.modifier = [1,1,-1,-1,-1, 1]
         self.setMode(self.joyboxFly, 'Walkthru Mode')
 
-def jbTest():
-    jb = DirectJoybox()
-    jb.joeMode()
-    jb.accept(jb.getEventName(R_UPPER), jb.joeMode)
-    direct.cameraControl.accept(jb.getEventName(L_UPPER),
-                                direct.cameraControl.orbitUprightCam)
-    return jb
+    def orbitMode(self):
+        self.setMode(self.orbitFly, 'Orbit Mode')
+
+    def orbitFly(self):
+        hprScale = (self.analogs.normalizeChannel(L_SLIDE, 0.1, 200) *
+                    DirectJoybox.hprMultiplier)
+        posScale = (self.analogs.normalizeChannel(R_SLIDE, 0.1, 100) *
+                    DirectJoybox.xyzMultiplier)
+        rx = hprScale * self.aList[R_LEFT_RIGHT] * self.deltaTime
+        ry = -1 * hprScale * self.aList[R_FWD_BACK] * self.deltaTime
+        h = -1 * hprScale * self.aList[R_TWIST] * self.deltaTime
+        r = -0.01 * posScale * self.aList[R_FWD_BACK] * self.deltaTime
+        x = posScale * self.aList[L_LEFT_RIGHT] * self.deltaTime
+        z = posScale * self.aList[L_FWD_BACK] * self.deltaTime
+        # Move dcs
+        self.nodePath.setX(self.nodePath, x)
+        self.nodePath.setZ(self.nodePath, z)
+        self.nodePath.setH(self.nodePath, h)
+        if self.bList[R_STICK]:
+            self.orbitNode(rx, ry, 0)
+        else:
+            self.orbitNode(rx, 0, 0)
+            pos = self.nodePath.getPos(self.refCS)
+            if Vec3(pos).length() < 0.005:
+                pos.set(0,-0.01, 0)
+            # Now move on out
+            pos.assign(pos * (1 + r))
+            self.nodePath.setPos(self.refCS, pos)
+
+    def orbitNode(self, h, p, r):
+        # Position the temp node path at the ref CS
+        self.tempCS.setPos(self.refCS, 0, 0, 0)
+        # Orient the temp node path to align with the orbiting node path
+        self.tempCS.setHpr(self.nodePath, 0, 0, 0)
+        # Record the position of the orbiter wrt the helper
+        pos = self.nodePath.getPos(self.tempCS)
+        # Turn the temp node path
+        self.tempCS.setHpr(self.tempCS, h, p, r)
+        # Position the orbiter "back" to its position wrt the helper
+        self.nodePath.setPos(self.tempCS, pos)
+        # Restore the original hpr of the orbiter
+        self.nodePath.setHpr(self.tempCS, 0, 0, 0)
+

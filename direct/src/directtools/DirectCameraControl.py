@@ -276,8 +276,10 @@ class DirectCameraControl(PandaObject):
     def updateCoaMarkerSize(self, coaDist = None):
         if not coaDist:
             coaDist = Vec3(self.coaMarker.getPos( direct.camera )).length()
-        self.coaMarker.setScale(COA_MARKER_SF * coaDist *
-                                math.tan(deg2Rad(direct.dr.fovV)))
+        sf = COA_MARKER_SF * coaDist * math.tan(deg2Rad(direct.dr.fovV))
+        if sf == 0.0:
+            sf = 0.1
+        self.coaMarker.setScale(sf)
 
     def homeCam(self):
         # Record undo point

@@ -113,6 +113,9 @@ class Messenger:
         """
         self.dict.clear()
 
+    def toggleVerbose(self):
+        Messenger.notify.setDebug(1 - Messenger.notify.getDebug())
+
     def listAllEvents(self):
         str = 'Messenger\n'
         str = str + '='*50 + '\n'

@@ -980,11 +980,6 @@ class ParticlePanel(AppShell):
             parent = self.parent)
         if particleFilename:
             # Delete existing particles and forces
-            pe = self.particleEffect
-            for p in pe.getParticlesList():
-                pe.removeParticles(p)
-            for fg in pe.getForceGroupList():
-                pe.removeForceGroup(fg)
             self.particleEffect.loadConfig(Filename(particleFilename))
             self.selectEffectNamed(self.particleEffect.getName())
 
