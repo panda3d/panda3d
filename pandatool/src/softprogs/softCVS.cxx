@@ -91,7 +91,7 @@ run() {
   // Now do all the cvs adding and removing we need.
   if (!_no_cvs) {
     cvs_add_or_remove("remove", _cvs_remove);
-    cvs_add_or_remove("add", _cvs_add);
+    cvs_add_or_remove("add -kb", _cvs_add);
   }
 }
 
