@@ -146,6 +146,7 @@ class FourState:
     
     def exitState0(self):
         assert(self.debugPrint("exit0()"))
+        self.changedOnState(0)
     
     ##### state 1 #####
     
