@@ -12,6 +12,7 @@ import CRCache
 #import DistributedObject
 #import DistributedToon
 import DirectObject
+import PythonUtil
 
 class ClientRepository(DirectObject.DirectObject):
     notify = DirectNotifyGlobal.directNotify.newCategory("ClientRepository")
@@ -591,16 +592,20 @@ class ClientRepository(DirectObject.DirectObject):
         self.send(datagram)
         return None
 
-    def sendSetZoneMsg(self, zoneId):
+    def sendSetZoneMsg(self, zoneId, visibleZoneList=None):
         datagram = Datagram()
         # Add message type
         datagram.addUint16(CLIENT_SET_ZONE)
         # Add zone id
-        datagram.addUint16(zoneId)
+        datagram.addUint32(zoneId)
+
+        # if we have an explicit list of visible zones, add them
+        if visibleZoneList is not None:
+            for zone in visibleZoneList:
+                datagram.addUint32(zone)
 
         # send the message
         self.send(datagram)
-        return None
         
     def sendUpdate(self, do, fieldName, args, sendToId = None):
         # Get the DO id
@@ -615,6 +620,7 @@ class ClientRepository(DirectObject.DirectObject):
         if self.notify.getDebug():
             print "ClientRepository sending datagram:"
             datagram.dumpHex(ostream)
+            print "Caller is %s, line %s, func '%s'" % PythonUtil.callerInfo()
 
         if not self.tcpConn:
             self.notify.warning("Unable to send message after connection is closed.")
