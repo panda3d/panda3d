@@ -146,11 +146,7 @@ class DirectAnalogs(AnalogNode, DirectObject):
     
     def normalizeChannel(self, chan, minVal = -1, maxVal = 1):
         try:
-            if (chan == 2) or (chan == 6):
-                # These channels have reduced range
-                return self.normalize(self[chan] * 3.0, minVal, maxVal)
-            else:
-                return self.normalize(self[chan], minVal, maxVal)
+            return self.normalize(self[chan], minVal, maxVal)
         except IndexError:
             return 0.0
 

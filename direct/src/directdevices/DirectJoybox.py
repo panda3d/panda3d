@@ -137,7 +137,7 @@ class DirectJoybox(PandaObject):
         self.lastTime = cTime
         # Update analogs
         for i in range(len(self.analogs)):
-            self.aList[i] = self.analogs.normalizeChannel(i)
+            self.aList[i] = self.normalizeChannel(i)
         # Update buttons
         for i in range(len(self.buttons)):
             try:
@@ -217,9 +217,9 @@ class DirectJoybox(PandaObject):
         if self.nodePath == None:
             return
         """
-        hprScale = (self.analogs.normalizeChannel(L_SLIDE, 0.1, 100) *
+        hprScale = (self.normalizeChannel(L_SLIDE, 0.1, 100) *
                     DirectJoybox.hprMultiplier)
-        posScale = (self.analogs.normalizeChannel(R_SLIDE, 0.1, 100) *
+        posScale = (self.normalizeChannel(R_SLIDE, 0.1, 100) *
                     DirectJoybox.xyzMultiplier)
         """
         hprScale = (self.aList[L_SLIDE] + 1.0) * 50.0 * DirectJoybox.hprMultiplier
@@ -297,9 +297,9 @@ class DirectJoybox(PandaObject):
         # Do nothing if no nodePath selected
         if self.nodePath == None:
             return
-        hprScale = (self.analogs.normalizeChannel(L_SLIDE, 0.1, 100) *
+        hprScale = (self.normalizeChannel(L_SLIDE, 0.1, 100) *
                     DirectJoybox.hprMultiplier)
-        posScale = (self.analogs.normalizeChannel(R_SLIDE, 0.1, 100) *
+        posScale = (self.normalizeChannel(R_SLIDE, 0.1, 100) *
                     DirectJoybox.xyzMultiplier)
         dr = -1 * hprScale * self.aList[R_TWIST] * self.deltaTime
         dp = -1 * hprScale * self.aList[R_FWD_BACK] * self.deltaTime
@@ -316,9 +316,9 @@ class DirectJoybox(PandaObject):
         # Do nothing if no nodePath selected
         if self.nodePath == None:
             return
-        hprScale = (self.analogs.normalizeChannel(L_SLIDE, 0.1, 100) *
+        hprScale = (self.normalizeChannel(L_SLIDE, 0.1, 100) *
                     DirectJoybox.hprMultiplier)
-        posScale = (self.analogs.normalizeChannel(R_SLIDE, 0.1, 100) *
+        posScale = (self.normalizeChannel(R_SLIDE, 0.1, 100) *
                     DirectJoybox.xyzMultiplier)
         dr = -1 * hprScale * self.aList[R_TWIST] * self.deltaTime
         dp = -1 * hprScale * self.aList[R_FWD_BACK] * self.deltaTime
@@ -367,9 +367,9 @@ class DirectJoybox(PandaObject):
         # Do nothing if no nodePath selected
         if self.nodePath == None:
             return
-        hprScale = (self.analogs.normalizeChannel(L_SLIDE, 0.1, 100) *
+        hprScale = (self.normalizeChannel(L_SLIDE, 0.1, 100) *
                     DirectJoybox.hprMultiplier)
-        posScale = (self.analogs.normalizeChannel(R_SLIDE, 0.1, 100) *
+        posScale = (self.normalizeChannel(R_SLIDE, 0.1, 100) *
                     DirectJoybox.xyzMultiplier)
         r = -0.01 * posScale * self.aList[R_FWD_BACK] * self.deltaTime
         rx = hprScale * self.aList[R_LEFT_RIGHT] * self.deltaTime
@@ -403,3 +403,17 @@ class DirectJoybox(PandaObject):
         # Restore the original hpr of the orbiter
         self.nodePath.setHpr(self.tempCS, 0, 0, 0)
 
+
+    # We need to override the DirectAnalog normalizeChannel to
+    # correct the ranges of the two twist axes of the joybox.
+    def normalizeChannel(self, chan, minVal = -1, maxVal = 1):
+        try:
+            if (chan == L_TWIST) or (chan == R_TWIST):
+                # These channels have reduced range
+                return self.analogs.normalize(self[chan] * 3.0, minVal, maxVal)
+            else:
+                return self.analogs.normalize(self[chan], minVal, maxVal)
+        except IndexError:
+            return 0.0
+
+            
