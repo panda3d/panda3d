@@ -3190,7 +3190,10 @@ copy_texture(Texture *tex, const DisplayRegion *dr) {
 
   // now copy from fb to tex
   //hr = _pD3DDevice->UpdateSurface(pCurRenderTarget,&SrcRect,pTexSurfaceLev0,NULL);
-  hr = D3DXLoadSurfaceFromSurface(pTexSurfaceLev0, NULL, NULL, pCurRenderTarget, NULL, &SrcRect, D3DX_DEFAULT, 0);
+  // the following call does what we want. Interesting though, why Dx9 took out the 
+  // functionality of copying from VRAM to VRAM and put it in D3DX library. Perhaps
+  // to promote D3DX!?
+  hr = D3DXLoadSurfaceFromSurface(pTexSurfaceLev0, NULL, NULL, pCurRenderTarget, NULL, &SrcRect, D3DX_FILTER_NONE, 0);
   
   if(FAILED(hr)) {
     dxgsg9_cat.error() << "UpdateSurface failed in copy_texture" << D3DERRORSTRING(hr);
