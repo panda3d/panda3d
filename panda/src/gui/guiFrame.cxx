@@ -160,11 +160,13 @@ void GuiFrame::pack_item(GuiItem* item, Packing rel, GuiItem* to, float gap) {
 void GuiFrame::clear_packing(GuiItem* item) {
   Boxes::iterator box = find_box(item);
   (*box).erase_all_links();
+  this->recompute_frame();
 }
 
 void GuiFrame::clear_all_packing(void) {
   for (Boxes::iterator i=_items.begin(); i!=_items.end(); ++i)
     (*i).erase_all_links();
+  this->recompute_frame();
 }
 
 void GuiFrame::manage(GuiManager* mgr, EventHandler& eh) {

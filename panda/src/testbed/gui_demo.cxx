@@ -65,19 +65,19 @@ static void setup_gui(void) {
   //  r1->set_pos(LVector3f::rfu(0.25, 0., 0.25));
   //  r1->manage(mgr, event_handler);
   // test 3
-  GuiLabel* l1 = GuiLabel::make_simple_text_label("up", font);
-  GuiLabel* l2 = GuiLabel::make_simple_text_label("upr", font);
-  GuiLabel* l3 = GuiLabel::make_simple_text_label("down", font);
-  GuiLabel* l4 = GuiLabel::make_simple_text_label("downr", font);
-  GuiLabel* l5 = GuiLabel::make_simple_text_label("none", font);
-  GuiButton* b1 = new GuiButton("test3", l1, l2, l3, l4, l5);
-  b1->set_scale(0.1);
-  b1->set_pos(LVector3f::rfu(-0.25, 0., 0.25));
-  l2->set_foreground_color(1., 1., 0., 1.);
-  l4->set_foreground_color(1., 1., 0., 1.);
-  l3->set_background_color(1., 1., 1., 0.5);
-  l4->set_background_color(1., 1., 1., 0.5);
-  b1->manage(mgr, event_handler);
+  //  GuiLabel* l1 = GuiLabel::make_simple_text_label("up", font);
+  //  GuiLabel* l2 = GuiLabel::make_simple_text_label("upr", font);
+  //  GuiLabel* l3 = GuiLabel::make_simple_text_label("down", font);
+  //  GuiLabel* l4 = GuiLabel::make_simple_text_label("downr", font);
+  //  GuiLabel* l5 = GuiLabel::make_simple_text_label("none", font);
+  //  GuiButton* b1 = new GuiButton("test3", l1, l2, l3, l4, l5);
+  //  b1->set_scale(0.1);
+  //  b1->set_pos(LVector3f::rfu(-0.25, 0., 0.25));
+  //  l2->set_foreground_color(1., 1., 0., 1.);
+  //  l4->set_foreground_color(1., 1., 0., 1.);
+  //  l3->set_background_color(1., 1., 1., 0.5);
+  //  l4->set_background_color(1., 1., 1., 0.5);
+  //  b1->manage(mgr, event_handler);
   // test 4
   //  GuiRollover* r1 = new GuiRollover("r1",
   //				    GuiLabel::make_simple_text_label("1",
@@ -162,6 +162,35 @@ static void setup_gui(void) {
   //  f1->set_pos(LVector3f::rfu(0., 0., -0.25));
   //  f1->manage(mgr, event_handler);
   //  cerr << *f1;
+  // test 5
+  GuiLabel* l1 = GuiLabel::make_simple_text_label("on", font);
+  GuiLabel* l2 = GuiLabel::make_simple_text_label("off", font);
+  GuiLabel* l3 = GuiLabel::make_simple_text_label("over", font);
+  GuiLabel* l4 = GuiLabel::make_simple_text_label("easy", font);
+  float w1, w2, w3, w4, w;
+  w1 = l1->get_width();
+  w2 = l2->get_width();
+  w3 = l3->get_width();
+  w4 = l4->get_width();
+  w = (w1>w2)?w1:w2;
+  w = (w>w3)?w:w3;
+  w = (w>w4)?w:w4;
+  l1->set_background_color(1., 1., 1., 0.3);
+  l2->set_background_color(1., 1., 1., 0.3);
+  l3->set_background_color(1., 1., 1., 0.3);
+  l4->set_background_color(1., 1., 1., 0.3);
+  l1->set_width(w);
+  l2->set_width(w);
+  l3->set_width(w);
+  l4->set_width(w);
+  GuiRollover* r1 = new GuiRollover("r1", l1, l2);
+  GuiRollover* r2 = new GuiRollover("r2", l3, l4);
+  GuiFrame* f1 = new GuiFrame("test5");
+  f1->add_item(r1);
+  f1->add_item(r2);
+  f1->pack_item(r2, GuiFrame::UNDER, r1);
+  f1->set_scale(0.1);
+  f1->manage(mgr, event_handler);
 }
 
 static void event_2(CPT_Event) {

@@ -50,16 +50,24 @@ void GuiLabel::set_properties(void) {
 	  float w = v[1] - v[0];
 	  float h = v[3] - v[2];
 	  if (_have_width) {
+	    gui_cat->debug() << "adjusting width: before = " << w;
 	    w = _width - w;
+	    gui_cat->debug(false) << "  diff = " << w;
 	    w *= 0.5;
 	    v[1] += w;
 	    v[0] -= w;
+	    gui_cat->debug(false) << "  after = " << (v[1] - v[0])
+				  << "  want = " << _width << endl;
 	  }
 	  if (_have_height) {
+	    gui_cat->debug() << "adjusting height: before = " << h;
 	    h = _height - h;
+	    gui_cat->debug(false) << "  diff = " << h;
 	    h *= 0.5;
 	    v[3] += h;
 	    v[2] -= h;
+	    gui_cat->debug(false) << "  after = " << (v[3] - v[2])
+				  << "  want = " << _height << endl;
 	  }
 	  n->set_card_actual(v[0], v[1], v[2], v[3]);
 	} else
