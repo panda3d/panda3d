@@ -2893,6 +2893,18 @@ release_texture(TextureContext *tc) {
   delete gtc;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::get_geom_munger
+//       Access: Public, Virtual
+//  Description: Creates a new GeomMunger object to munge vertices
+//               appropriate to this GSG for the indicated state.
+////////////////////////////////////////////////////////////////////
+CPT(qpGeomMunger) DXGraphicsStateGuardian8::
+get_geom_munger(const RenderState *) {
+  PT(DXGeomMunger8) munger = new DXGeomMunger8;
+  return qpGeomMunger::register_munger(munger);
+}
+
 // copies current display region in framebuffer to the texture
 // usually its more efficient to do SetRenderTgt
 void DXGraphicsStateGuardian8::
@@ -4050,19 +4062,6 @@ set_blend_mode() {
 
   // Nothing's set, so disable blending.
   enable_blend(false);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::setup_geom_munger
-//       Access: Protected, Virtual
-//  Description: Called after finish_modify_state has completed, this
-//               method sets up the GeomMunger for rendering with the
-//               current state.
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian8::
-setup_geom_munger(PT(qpGeomMunger) munger) {
-  munger = new DXGeomMunger8;
-  GraphicsStateGuardian::setup_geom_munger(munger);
 }
 
 TypeHandle DXGraphicsStateGuardian8::get_type(void) const {

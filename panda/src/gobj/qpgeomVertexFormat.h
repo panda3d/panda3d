@@ -30,6 +30,7 @@
 #include "pvector.h"
 #include "pta_float.h"
 #include "indirectCompareTo.h"
+#include "pmutex.h"
 
 class FactoryParams;
 class qpGeomVertexData;
@@ -142,9 +143,13 @@ private:
   typedef pmap<const InternalName *, DataTypeRecord> DataTypesByName;
   DataTypesByName _data_types_by_name;
 
+  // This set keeps track of things that need to be told when we
+  // destruct, and it is protected by the mutex.
+  Mutex _cache_lock;
   typedef pset<qpGeomMunger *> Mungers;
   Mungers _mungers;
 
+  // This is the global registry of all currently-in-use formats.
   typedef pset<qpGeomVertexFormat *, IndirectCompareTo<qpGeomVertexFormat> > Formats;
   class Registry {
   public:

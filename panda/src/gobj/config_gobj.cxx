@@ -116,6 +116,15 @@ ConfigVariableString fake_texture_image
           "the same texture file, which will presumably only be loaded "
           "once."));
 
+ConfigVariableInt vertex_convert_cache
+("vertex-convert-cache", 4194304, // 4 MB
+ PRC_DESC("This is the amount of memory, in bytes, that should be set "
+          "aside for storing pre-processed data for rendering vertices.  "
+          "This is not a limit on the actual vertex data, which is "
+          "determined by the model; it is also not a limit on the "
+          "amount of memory used by the video driver or the system "
+          "graphics interface, which Panda has no control over."));
+
 ConfigVariableDouble default_near
 ("default-near", 1.0,
  PRC_DESC("The default near clipping distance for all cameras."));

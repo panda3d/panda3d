@@ -17,9 +17,14 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "qpgeomMunger.h"
+#include "qpgeomVertexCacheManager.h"
+#include "mutexHolder.h"
+#include "pStatTimer.h"
 
 qpGeomMunger::Registry *qpGeomMunger::_registry = NULL;
 TypeHandle qpGeomMunger::_type_handle;
+
+PStatCollector qpGeomMunger::_munge_pcollector("Cull:Munge");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomMunger::Constructor
@@ -92,6 +97,7 @@ remove_data(const qpGeomVertexData *data) {
 CPT(qpGeomVertexData) qpGeomMunger::
 do_munge_data(const qpGeomVertexData *data) {
   nassertr(_is_registered, NULL);
+  PStatTimer timer(_munge_pcollector);
 
   CPT(qpGeomVertexFormat) orig_format = data->get_format();
   CPT(qpGeomVertexFormat) new_format = munge_format(orig_format);
@@ -132,8 +138,12 @@ do_munge_format(const qpGeomVertexFormat *format) {
   nassertr(inserted, NULL);
 
   // Tell the source format that we have its pointer.
-  inserted = ((qpGeomVertexFormat *)format)->_mungers.insert(this).second;
-  nassertr(inserted, NULL);
+  {
+    qpGeomVertexFormat *f = (qpGeomVertexFormat *)format;
+    MutexHolder holder(f->_cache_lock);
+    inserted = f->_mungers.insert(this).second;
+    nassertr(inserted, NULL);
+  }
 
   // We also want to keep a reference count on the derived format, but
   // only if it is actually a different pointer from the original
@@ -189,8 +199,19 @@ make_registry() {
 ////////////////////////////////////////////////////////////////////
 void qpGeomMunger::
 do_register() {
+  if (gobj_cat.is_debug()) {
+    gobj_cat.debug()
+      << "GeomMunger::do_register(): " << (void *)this << "\n";
+  }
   nassertv(!_is_registered);
   nassertv(_formats.empty());
+
+  // Tell the cache manager to hang on to this new GeomMunger, so we
+  // don't waste our time re-registering the same GeomMunger over and
+  // over again.
+  qpGeomVertexCacheManager *cache_mgr =
+    qpGeomVertexCacheManager::get_global_ptr();
+  cache_mgr->record_munger(this);
 
   _is_registered = true;
 }
@@ -202,17 +223,24 @@ do_register() {
 ////////////////////////////////////////////////////////////////////
 void qpGeomMunger::
 do_unregister() {
+  if (gobj_cat.is_debug()) {
+    gobj_cat.debug()
+      << "GeomMunger::do_unregister(): " << (void *)this << "\n";
+  }
   nassertv(_is_registered);
   _is_registered = false;
 
   // Unregistering means we should blow away the cache.
   Formats::iterator fi;
   for (fi = _formats.begin(); fi != _formats.end(); ++fi) {
-    const qpGeomVertexFormat *format = (*fi).first;
+    qpGeomVertexFormat *format = (qpGeomVertexFormat *)(*fi).first;
     CPT(qpGeomVertexFormat) derived_format = (*fi).second;
 
-    size_t num_erased = ((qpGeomVertexFormat *)format)->_mungers.erase(this);
-    nassertv(num_erased == 1);
+    {
+      MutexHolder holder(format->_cache_lock);
+      size_t num_erased = format->_mungers.erase(this);
+      nassertv(num_erased == 1);
+    }
 
     if (derived_format != format) {
       derived_format->unref();

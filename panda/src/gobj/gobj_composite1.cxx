@@ -18,6 +18,7 @@
 #include "qpgeomTristrips.cxx"
 #include "qpgeomTrifans.cxx"
 #include "qpgeomVertexArrayFormat.cxx"
+#include "qpgeomVertexCacheManager.cxx"
 #include "qpgeomVertexData.cxx"
 #include "qpgeomVertexDataType.cxx"
 #include "qpgeomVertexFormat.cxx"

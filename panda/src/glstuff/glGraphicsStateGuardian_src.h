@@ -102,6 +102,8 @@ public:
   virtual GeomContext *prepare_geom(Geom *geom);
   virtual void release_geom(GeomContext *gc);
 
+  virtual CPT(qpGeomMunger) get_geom_munger(const RenderState *state);
+
   virtual void framebuffer_copy_to_texture
     (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb);
   virtual bool framebuffer_copy_to_ram
@@ -180,7 +182,6 @@ protected:
   virtual void set_blend_mode();
 
   virtual void finish_modify_state();
-  virtual void setup_geom_munger(PT(qpGeomMunger) munger);
 
   virtual void free_pointers();
 

@@ -76,7 +76,8 @@ PUBLISHED:
   void write(ostream &out, int indent_level = 0) const;
 
 public:
-  void draw(GraphicsStateGuardianBase *gsg) const;
+  void draw(GraphicsStateGuardianBase *gsg, 
+            const qpGeomVertexData *vertex_data) const;
 
 protected:
   virtual BoundingVolume *recompute_bound();

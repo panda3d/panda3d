@@ -43,6 +43,7 @@ class DatagramIterator;
 class BamReader;
 class BamWriter;
 class GeomContext;
+class qpGeomVertexData;
 class PreparedGraphicsObjects;
 
 ////////////////////////////////////////////////////////////////////
@@ -239,7 +240,8 @@ public:
   int release_all();
 
   // From parent dDrawable
-  virtual void draw(GraphicsStateGuardianBase *gsg) const;
+  virtual void draw(GraphicsStateGuardianBase *gsg, 
+                    const qpGeomVertexData *vertex_data) const;
 
   // From parent Configurable
   virtual void config();

@@ -53,7 +53,18 @@ qpGeomTrifans::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomTrifans::decompose
+//     Function: qpGeomTrifans::draw
+//       Access: Public, Virtual
+//  Description: Calls the appropriate method on the GSG to draw the
+//               primitive.
+////////////////////////////////////////////////////////////////////
+void qpGeomTrifans::
+draw(GraphicsStateGuardianBase *gsg) {
+  gsg->draw_trifans(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomTrifans::decompose_impl
 //       Access: Published, Virtual
 //  Description: Decomposes a complex primitive type into a simpler
 //               primitive type, for instance triangle strips to
@@ -67,7 +78,7 @@ qpGeomTrifans::
 //               possible kind of primitive type.
 ////////////////////////////////////////////////////////////////////
 PT(qpGeomPrimitive) qpGeomTrifans::
-decompose(const qpGeomVertexData *) {
+decompose_impl() {
   PT(qpGeomTriangles) triangles = new qpGeomTriangles;
   CPTA_ushort vertices = get_vertices();
   CPTA_int lengths = get_lengths();
@@ -93,17 +104,6 @@ decompose(const qpGeomVertexData *) {
   }
 
   return triangles.p();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomTrifans::draw
-//       Access: Public, Virtual
-//  Description: Calls the appropriate method on the GSG to draw the
-//               primitive.
-////////////////////////////////////////////////////////////////////
-void qpGeomTrifans::
-draw(GraphicsStateGuardianBase *gsg) {
-  gsg->draw_trifans(this);
 }
 
 ////////////////////////////////////////////////////////////////////

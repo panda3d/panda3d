@@ -268,6 +268,21 @@ release_geom(GeomContext *) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_geom_munger
+//       Access: Public, Virtual
+//  Description: Creates a new GeomMunger object to munge vertices
+//               appropriate to this GSG for the indicated state.
+////////////////////////////////////////////////////////////////////
+CPT(qpGeomMunger) GraphicsStateGuardian::
+get_geom_munger(const RenderState *) {
+  // The default implementation returns a munger that does nothing,
+  // but presumably, every kind of GSG needs some special munging
+  // action, so real GSG's will override this to return something more
+  // useful.
+  return qpGeomMunger::register_munger(new qpGeomMunger);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::set_state_and_transform
 //       Access: Public, Virtual
 //  Description: Simultaneously resets the render state and the
@@ -607,7 +622,7 @@ finish_decal() {
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
 begin_draw_primitives(const qpGeomVertexData *data) {
-  _vertex_data = get_geom_munger()->munge_data(data);
+  _vertex_data = data;
   return true;
 }
 
@@ -627,7 +642,10 @@ draw_triangles(qpGeomTriangles *) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 draw_tristrips(qpGeomTristrips *primitive) {
-  primitive->decompose(_vertex_data)->draw(this);
+  PT(qpGeomPrimitive) new_prim = primitive->decompose();
+  if (!new_prim->is_of_type(qpGeomTristrips::get_class_type())) {
+    new_prim->draw(this);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -637,7 +655,10 @@ draw_tristrips(qpGeomTristrips *primitive) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 draw_trifans(qpGeomTrifans *primitive) {
-  primitive->decompose(_vertex_data)->draw(this);
+  PT(qpGeomPrimitive) new_prim = primitive->decompose();
+  if (!new_prim->is_of_type(qpGeomTrifans::get_class_type())) {
+    new_prim->draw(this);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1327,21 +1348,6 @@ finish_modify_state() {
     _blend_mode_stale = false;
     set_blend_mode();
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::setup_geom_munger
-//       Access: Protected, Virtual
-//  Description: Called after finish_modify_state has completed, this
-//               method sets up the GeomMunger for rendering with the
-//               current state.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-setup_geom_munger(PT(qpGeomMunger) munger) {
-  if (munger == (qpGeomMunger *)NULL) {
-    munger = new qpGeomMunger;
-  }
-  _geom_munger = qpGeomMunger::register_munger(munger);
 }
 
 ////////////////////////////////////////////////////////////////////

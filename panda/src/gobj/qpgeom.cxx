@@ -203,13 +203,15 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeom::draw
 //       Access: Public
-//  Description: Actually draws the Geom with the indicated GSG.
+//  Description: Actually draws the Geom with the indicated GSG, using
+//               the indicated vertex data (which might have been
+//               pre-munged to support the GSG's needs).
 ////////////////////////////////////////////////////////////////////
 void qpGeom::
-draw(GraphicsStateGuardianBase *gsg) const {
+draw(GraphicsStateGuardianBase *gsg, const qpGeomVertexData *vertex_data) const {
   CDReader cdata(_cycler);
 
-  if (gsg->begin_draw_primitives(cdata->_data)) {
+  if (gsg->begin_draw_primitives(vertex_data)) {
     Primitives::const_iterator pi;
     for (pi = cdata->_primitives.begin(); 
          pi != cdata->_primitives.end();

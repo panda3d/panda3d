@@ -97,7 +97,6 @@ PUBLISHED:
 public:
   INLINE bool set_scene(SceneSetup *scene_setup);
   INLINE SceneSetup *get_scene() const;
-  INLINE const qpGeomMunger *get_geom_munger() const;
 
   virtual PreparedGraphicsObjects *get_prepared_objects();
 
@@ -107,6 +106,8 @@ public:
 
   virtual GeomContext *prepare_geom(Geom *geom);
   virtual void release_geom(GeomContext *gc);
+
+  virtual CPT(qpGeomMunger) get_geom_munger(const RenderState *state);
 
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform);
@@ -209,7 +210,6 @@ protected:
   virtual void set_blend_mode();
 
   virtual void finish_modify_state();
-  virtual void setup_geom_munger(PT(qpGeomMunger) munger);
 
   virtual void free_pointers();
   virtual void close_gsg();
@@ -242,7 +242,6 @@ protected:
 
   CPT(RenderState) _state;
   CPT(TransformState) _transform;
-  CPT(qpGeomMunger) _geom_munger;
   CPT(qpGeomVertexData) _vertex_data;
 
   int _buffer_mask;

@@ -20,6 +20,7 @@
 #include "qpgeomVertexData.h"
 #include "qpgeomVertexArrayFormat.h"
 #include "qpgeomVertexDataType.h"
+#include "qpgeomVertexCacheManager.h"
 #include "internalName.h"
 #include "bamReader.h"
 #include "bamWriter.h"
@@ -55,6 +56,23 @@ qpGeomPrimitive(const qpGeomPrimitive &copy) :
 ////////////////////////////////////////////////////////////////////
 qpGeomPrimitive::
 ~qpGeomPrimitive() {
+  // When we destruct, we should ensure that all of our cached
+  // entries, across all pipeline stages, are properly removed from
+  // the cache manager.
+  qpGeomVertexCacheManager *cache_mgr = 
+    qpGeomVertexCacheManager::get_global_ptr();
+
+  int num_stages = _cycler.get_num_stages();
+  for (int i = 0; i < num_stages; i++) {
+    if (_cycler.is_stage_unique(i)) {
+      CData *cdata = _cycler.write_stage(i);
+      if (cdata->_decomposed != (qpGeomPrimitive *)NULL) {
+        cache_mgr->remove_decompose(this);
+        cdata->_decomposed = NULL;
+      }
+      _cycler.release_write_stage(i, cdata);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -210,6 +228,19 @@ set_lengths(PTA_int lengths) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_num_bytes
+//       Access: Published
+//  Description: Records the number of bytes consumed by the primitive
+//               and its index table(s).
+////////////////////////////////////////////////////////////////////
+int qpGeomPrimitive::
+get_num_bytes() const {
+  CDReader cdata(_cycler);
+  return cdata->_vertices.size() * sizeof(short) +
+    cdata->_lengths.size() * sizeof(int);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPrimitive::get_num_vertices_per_primitive
 //       Access: Published, Virtual
 //  Description: If the primitive type is a simple type in which all
@@ -310,7 +341,7 @@ get_primitive_num_vertices(int i) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPrimitive::decompose
-//       Access: Published, Virtual
+//       Access: Published
 //  Description: Decomposes a complex primitive type into a simpler
 //               primitive type, for instance triangle strips to
 //               triangles, and returns a pointer to the new primitive
@@ -323,8 +354,48 @@ get_primitive_num_vertices(int i) const {
 //               possible kind of primitive type.
 ////////////////////////////////////////////////////////////////////
 PT(qpGeomPrimitive) qpGeomPrimitive::
-decompose(const qpGeomVertexData *vertex_data) {
-  return this;
+decompose() {
+  PT(qpGeomPrimitive) result;
+  {
+    // Use read() and release_read() instead of CDReader, because the
+    // call to record_decompose() might recursively call back into
+    // this object, and require a write.
+    const CData *cdata = _cycler.read();
+    if (cdata->_decomposed != (qpGeomPrimitive *)NULL) {
+      result = cdata->_decomposed;
+      _cycler.release_read(cdata);
+      // Record a cache hit, so this element will stay in the cache a
+      // while longer.
+      qpGeomVertexCacheManager *cache_mgr = 
+        qpGeomVertexCacheManager::get_global_ptr();
+      cache_mgr->record_decompose(this, result->get_num_bytes());
+
+      return result;
+    }
+    _cycler.release_read(cdata);
+  }
+
+  result = decompose_impl();
+  if (result == this) {
+    // decomposing this primitive has no effect.
+    return this;
+  }
+
+  if (gobj_cat.is_debug()) {
+    gobj_cat.debug()
+      << "Decomposing " << get_type() << ": " << (void *)this << "\n";
+  }
+
+  // Record the result for the future.
+  CDWriter cdata(_cycler);
+  cdata->_decomposed = result;
+
+  // And add *this* object to the cache manager.
+  qpGeomVertexCacheManager *cache_mgr = 
+    qpGeomVertexCacheManager::get_global_ptr();
+  cache_mgr->record_decompose(this, result->get_num_bytes());
+
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -358,6 +429,26 @@ write(ostream &out, const qpGeomVertexData *vertex_data,
       out << " " << get_vertex(vi);
     }
     out << " ]\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::clear_cache
+//       Access: Published
+//  Description: Removes all of the previously-cached results of
+//               convert_to().
+////////////////////////////////////////////////////////////////////
+void qpGeomPrimitive::
+clear_cache() {
+  // Probably we shouldn't do anything at all here unless we are
+  // running in pipeline stage 0.
+  qpGeomVertexCacheManager *cache_mgr = 
+    qpGeomVertexCacheManager::get_global_ptr();
+
+  CData *cdata = CDWriter(_cycler);
+  if (cdata->_decomposed != (qpGeomPrimitive *)NULL) {
+    cache_mgr->remove_decompose(this);
+    cdata->_decomposed = NULL;
   }
 }
 
@@ -415,6 +506,42 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
       found_any = true;
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::decompose_impl
+//       Access: Protected
+//  Description: Decomposes a complex primitive type into a simpler
+//               primitive type, for instance triangle strips to
+//               triangles, and returns a pointer to the new primitive
+//               definition.  If the decomposition cannot be
+//               performed, this might return the original object.
+//
+//               This method is useful for application code that wants
+//               to iterate through the set of triangles on the
+//               primitive without having to write handlers for each
+//               possible kind of primitive type.
+////////////////////////////////////////////////////////////////////
+PT(qpGeomPrimitive) qpGeomPrimitive::
+decompose_impl() {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::remove_cache_entry
+//       Access: Private
+//  Description: Removes a particular entry from the local cache; it
+//               has already been removed from the cache manager.
+//               This is only called from GeomVertexCacheManager.
+////////////////////////////////////////////////////////////////////
+void qpGeomPrimitive::
+remove_cache_entry() const {
+  // We have to operate on stage 0 of the pipeline, since that's where
+  // the cache really counts.  Because of the multistage pipeline, we
+  // might not actually have a cache entry there (it might have been
+  // added to stage 1 instead).  No big deal if we don't.
+  CData *cdata = ((qpGeomPrimitive *)this)->_cycler.write_stage(0);
+  cdata->_decomposed = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

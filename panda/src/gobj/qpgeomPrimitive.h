@@ -79,6 +79,8 @@ PUBLISHED:
   PTA_int modify_lengths();
   void set_lengths(PTA_int lengths);
 
+  int get_num_bytes() const;
+
   INLINE int get_min_vertex() const;
   INLINE int get_max_vertex() const;
 
@@ -87,11 +89,13 @@ PUBLISHED:
   int get_primitive_start(int i) const;
   int get_primitive_num_vertices(int i) const;
 
-  virtual PT(qpGeomPrimitive) decompose(const qpGeomVertexData *vertex_data);
+  PT(qpGeomPrimitive) decompose();
 
   virtual void output(ostream &out, const qpGeomVertexData *vertex_data) const;
   virtual void write(ostream &out, const qpGeomVertexData *vertex_data, 
                      int indent_level) const;
+
+  void clear_cache();
 
 public:
   virtual void draw(GraphicsStateGuardianBase *gsg)=0;
@@ -99,6 +103,12 @@ public:
   virtual void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
                                  bool &found_any, 
                                  const qpGeomVertexData *vertex_data) const;
+
+protected:
+  virtual PT(qpGeomPrimitive) decompose_impl();
+
+private:
+  void remove_cache_entry() const;
 
 private:
   // This is the data that must be cycled between pipeline stages.
@@ -117,6 +127,8 @@ private:
     bool _got_minmax;
     unsigned short _min_vertex;
     unsigned short _max_vertex;
+
+    PT(qpGeomPrimitive) _decomposed;
   };
 
   PipelineCycler<CData> _cycler;
@@ -149,6 +161,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class qpGeom;
+  friend class qpGeomVertexCacheManager;
 };
 
 #include "qpgeomPrimitive.I"

@@ -24,6 +24,7 @@
     qpgeomTristrips.h \
     qpgeomTrifans.h \
     qpgeomVertexArrayFormat.h qpgeomVertexArrayFormat.I \
+    qpgeomVertexCacheManager.h qpgeomVertexCacheManager.I \
     qpgeomVertexData.h qpgeomVertexData.I \
     qpgeomVertexDataType.h qpgeomVertexDataType.I \
     qpgeomVertexFormat.h qpgeomVertexFormat.I \
@@ -55,6 +56,7 @@
     qpgeomTristrips.cxx \
     qpgeomTrifans.cxx \
     qpgeomVertexArrayFormat.cxx \
+    qpgeomVertexCacheManager.cxx \
     qpgeomVertexData.cxx \
     qpgeomVertexDataType.cxx \
     qpgeomVertexFormat.cxx \
@@ -84,6 +86,7 @@
     qpgeomTristrips.h \
     qpgeomTrifans.h \
     qpgeomVertexArrayFormat.h qpgeomVertexArrayFormat.I \
+    qpgeomVertexCacheManager.h qpgeomVertexCacheManager.I \
     qpgeomVertexData.h qpgeomVertexData.I \
     qpgeomVertexDataType.h qpgeomVertexDataType.I \
     qpgeomVertexFormat.h qpgeomVertexFormat.I \

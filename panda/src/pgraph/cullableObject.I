@@ -104,6 +104,35 @@ has_decals() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullableObject::munge_vertices
+//       Access: Public
+//  Description: Gets a GeomMunger from the GSG to transform the
+//               vertices to meet the GSG's vertex requirements for
+//               the current state.
+////////////////////////////////////////////////////////////////////
+INLINE void CullableObject::
+munge_vertices(GraphicsStateGuardianBase *gsg) {
+  // Temporary test until the experimental Geom rewrite becomes the
+  // actual Geom implementation.
+  if (_geom->is_exact_type(qpGeom::get_class_type())) {
+    CPT(qpGeomMunger) munger = gsg->get_geom_munger(_state);
+    _munged_data = munger->munge_data(((const qpGeom *)_geom.p())->get_vertex_data());
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullableObject::draw
+//       Access: Public
+//  Description: Draws the cullable object on the GSG immediately, in
+//               the GSG's current state.  This should only be called
+//               from the draw thread.
+////////////////////////////////////////////////////////////////////
+INLINE void CullableObject::
+draw(GraphicsStateGuardianBase *gsg) {
+  _geom->draw(gsg, _munged_data);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullableObject::operator new
 //       Access: Public
 //  Description: Allocates the memory for a new CullableObject.  This

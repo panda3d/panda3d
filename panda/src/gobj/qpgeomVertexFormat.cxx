@@ -19,6 +19,7 @@
 #include "qpgeomVertexFormat.h"
 #include "qpgeomVertexData.h"
 #include "qpgeomMunger.h"
+#include "mutexHolder.h"
 #include "indent.h"
 #include "bamReader.h"
 #include "bamWriter.h"
@@ -435,6 +436,7 @@ do_unregister() {
 
   _data_types_by_name.clear();
 
+  MutexHolder holder(_cache_lock);
   Mungers::iterator mi;
   for (mi = _mungers.begin(); mi != _mungers.end(); ++mi) {
     (*mi)->remove_format(this);

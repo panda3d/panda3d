@@ -2327,6 +2327,18 @@ static int binary_log_cap(const int x) {
 #endif
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::get_geom_munger
+//       Access: Public, Virtual
+//  Description: Creates a new GeomMunger object to munge vertices
+//               appropriate to this GSG for the indicated state.
+////////////////////////////////////////////////////////////////////
+CPT(qpGeomMunger) CLP(GraphicsStateGuardian)::
+get_geom_munger(const RenderState *) {
+  PT(CLP(GeomMunger)) munger = new CLP(GeomMunger);
+  return qpGeomMunger::register_munger(munger);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::framebuffer_copy_to_texture
 //       Access: Public, Virtual
 //  Description: Copy the pixels within the indicated display
@@ -5034,19 +5046,6 @@ finish_modify_state() {
 
     report_my_gl_errors();
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::setup_geom_munger
-//       Access: Protected, Virtual
-//  Description: Called after finish_modify_state has completed, this
-//               method sets up the GeomMunger for rendering with the
-//               current state.
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-setup_geom_munger(PT(qpGeomMunger) munger) {
-  munger = new CLP(GeomMunger);
-  GraphicsStateGuardian::setup_geom_munger(munger);
 }
 
 ////////////////////////////////////////////////////////////////////

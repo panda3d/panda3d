@@ -77,17 +77,21 @@ PUBLISHED:
   PTA_uchar modify_array_data(int array);
   void set_array_data(int array, PTA_uchar array_data);
 
+  int get_num_bytes() const;
+
+  CPT(qpGeomVertexData) convert_to(const qpGeomVertexFormat *new_format) const;
+
+  void output(ostream &out) const;
+  void write(ostream &out, int indent_level = 0) const;
+
+  void clear_cache();
+
+public:
   void set_data(int array, const qpGeomVertexDataType *data_type,
                 int vertex, const float *data, int num_values);
   void get_data(int array, const qpGeomVertexDataType *data_type,
                 int vertex, float *data, int num_values) const;
 
-  PT(qpGeomVertexData) convert_to(const qpGeomVertexFormat *new_format) const;
-
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
-
-public:
   bool get_array_info(const InternalName *name, CPTA_uchar &array_data,
                       int &num_components,
                       qpGeomVertexDataType::NumericType &numeric_type, 
@@ -101,9 +105,19 @@ public:
   static void unpack_argb(float data[4], unsigned int packed_argb);
 
 private:
+  void remove_cache_entry(const qpGeomVertexFormat *format) const;
+
+private:
+  CPT(qpGeomVertexFormat) _format;
+
   typedef pvector<PTA_uchar> Arrays;
 
-  CPT(qpGeomVertexFormat) _format;
+  // We have to use reference-counting pointers here instead of having
+  // explicit cleanup in the GeomVertexFormat destructor, because the
+  // cache needs to be stored in the CycleData, which makes accurate
+  // cleanup more difficult.  We use the GeomVertexCacheManager class
+  // to avoid cache bloat.
+  typedef pmap<CPT(qpGeomVertexFormat), CPT(qpGeomVertexData) > ConvertedCache;
 
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA CData : public CycleData {
@@ -116,6 +130,7 @@ private:
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
     Arrays _arrays;
+    ConvertedCache _converted_cache;
   };
 
   PipelineCycler<CData> _cycler;
@@ -146,6 +161,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class qpGeomVertexCacheManager;
 };
 
 INLINE ostream &operator << (ostream &out, const qpGeomVertexData &obj);

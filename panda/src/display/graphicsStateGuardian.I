@@ -286,16 +286,6 @@ get_scene() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_geom_munger
-//       Access: Public
-//  Description: Returns the current GeomMunger object.
-////////////////////////////////////////////////////////////////////
-INLINE const qpGeomMunger *GraphicsStateGuardian::
-get_geom_munger() const {
-  return _geom_munger;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::clear
 //       Access: Public
 //  Description: Clears the framebuffer within the indicated
@@ -383,7 +373,6 @@ modify_state(const RenderState *state) {
     _state_pcollector.add_level(1);
     _state = _state->issue_delta_modify(state, this);
     finish_modify_state();
-    setup_geom_munger(NULL);
   }
 }
 
@@ -411,7 +400,6 @@ set_state(const RenderState *state) {
     _state_pcollector.add_level(1);
     _state = _state->issue_delta_set(state, this);
     finish_modify_state();
-    setup_geom_munger(NULL);
   }
 }
 

@@ -23,6 +23,7 @@
 #include "typedReferenceCount.h"
 #include "qpgeomVertexFormat.h"
 #include "indirectCompareTo.h"
+#include "pStatCollector.h"
 #include "pmap.h"
 #include "pset.h"
 
@@ -96,6 +97,8 @@ private:
   };
 
   static Registry *_registry;
+
+  static PStatCollector _munge_pcollector;
 
 public:
   static TypeHandle get_class_type() {

@@ -85,6 +85,10 @@ make_next() const {
 ////////////////////////////////////////////////////////////////////
 void CullResult::
 add_object(CullableObject *object) {
+  // Munge vertices as needed for the GSG's requirements, and the
+  // object's current state.
+  object->munge_vertices(_gsg);
+
   // Check to see if there's a special transparency setting.
   const RenderState *state = object->_state;
   nassertv(state != (const RenderState *)NULL);

@@ -34,10 +34,11 @@ PUBLISHED:
   qpGeomTristrips(const qpGeomTristrips &copy);
   virtual ~qpGeomTristrips();
 
-  virtual PT(qpGeomPrimitive) decompose(const qpGeomVertexData *vertex_data);
-
 public:
   virtual void draw(GraphicsStateGuardianBase *gsg);
+
+protected:
+  virtual PT(qpGeomPrimitive) decompose_impl();
 
 public:
   static void register_with_read_factory();

@@ -30,6 +30,6 @@ draw(CullableObject *object, GraphicsStateGuardianBase *gsg) {
     draw_with_decals(object, gsg);
   } else {
     gsg->set_state_and_transform(object->_state, object->_transform);
-    object->_geom->draw(gsg);
+    object->draw(gsg);
   }
 }

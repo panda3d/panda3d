@@ -47,6 +47,7 @@ class qpGeomVertexData;
 class qpGeomTriangles;
 class qpGeomTristrips;
 class qpGeomTrifans;
+class qpGeomMunger;
 
 class PreparedGraphicsObjects;
 class GraphicsOutput;
@@ -129,6 +130,8 @@ public:
 
   virtual GeomContext *prepare_geom(Geom *geom)=0;
   virtual void release_geom(GeomContext *gc)=0;
+
+  virtual CPT(qpGeomMunger) get_geom_munger(const RenderState *state)=0;
 
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform)=0;

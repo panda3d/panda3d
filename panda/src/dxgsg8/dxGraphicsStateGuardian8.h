@@ -97,6 +97,8 @@ public:
   virtual void apply_texture(TextureContext *tc);
   virtual void release_texture(TextureContext *tc);
 
+  virtual CPT(qpGeomMunger) get_geom_munger(const RenderState *state);
+
   virtual void framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
                                            const RenderBuffer &rb);
   virtual bool framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
@@ -152,7 +154,6 @@ protected:
   virtual void bind_clip_plane(PlaneNode *plane, int plane_id);
 
   virtual void set_blend_mode();
-  virtual void setup_geom_munger(PT(qpGeomMunger) munger);
 
   void free_nondx_resources();            // free local internal buffers
   void free_d3d_device(void);

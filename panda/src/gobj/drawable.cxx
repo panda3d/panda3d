@@ -48,7 +48,7 @@ dDrawable::
 //               At this level, this doesn't do very much.
 ////////////////////////////////////////////////////////////////////
 void dDrawable::
-draw(GraphicsStateGuardianBase *) const { 
+draw(GraphicsStateGuardianBase *, const qpGeomVertexData *) const { 
   if (is_dirty()) {
     ((dDrawable *)this)->config(); 
   }

@@ -22,6 +22,9 @@
 #include "pandabase.h"
 
 #include "geom.h"
+#include "qpgeom.h"
+#include "qpgeomVertexData.h"
+#include "qpgeomMunger.h"
 #include "renderState.h"
 #include "transformState.h"
 #include "pointerTo.h"
@@ -51,6 +54,9 @@ public:
 
   INLINE bool has_decals() const;
 
+  INLINE void munge_vertices(GraphicsStateGuardianBase *gsg);
+  INLINE void draw(GraphicsStateGuardianBase *gsg);
+
 public:
   ~CullableObject();
 
@@ -67,6 +73,7 @@ PUBLISHED:
 
 public:
   CPT(Geom) _geom;
+  CPT(qpGeomVertexData) _munged_data;
   CPT(RenderState) _state;
   CPT(TransformState) _transform;
   CullableObject *_next;
