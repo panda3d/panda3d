@@ -61,6 +61,7 @@ public:
   bool is_junk() const;
   void set_joint();
   bool is_joint_parent() const;
+  bool is_partial(char *search_prefix);
 
   SoftNodeDesc *_parent;
   typedef pvector< PT(SoftNodeDesc) > Children;
@@ -74,7 +75,6 @@ private:
   void check_pseudo_joints(bool joint_above);
 
   SAA_ModelType type;
-  const char *fullname;
 
   SAA_Elem *_model;
 
@@ -98,10 +98,17 @@ public:
   int uRepeat, vRepeat;
   float        matrix[4][4];
 
+  const char *fullname;
+
   int numTri;
   //  int numShapes;
   int numTexLoc;
   int numTexGlb;
+
+  // if the node is a MNSRF
+  int numNurbTexLoc;
+  int numNurbTexGlb;
+  int numNurbMats;
 
   float *uScale;
   float *vScale;
@@ -120,12 +127,8 @@ public:
 
   void get_transform(SAA_Scene *scene, EggGroup *egg_group, bool global);
   void get_joint_transform(SAA_Scene *scene, EggGroup *egg_group, EggXfmSAnim *anim, bool global);
-  void load_model(SAA_Scene *scene, SAA_ModelType type);
-
-  EggVertexPool *vpool;
-
-  EggVertexPool *get_vpool();
-  void create_vpool(string vpool_name);
+  void load_poly_model(SAA_Scene *scene, SAA_ModelType type);
+  void load_nurbs_model(SAA_Scene *scene, SAA_ModelType type);
 
   static TypeHandle get_class_type() {
     return _type_handle;

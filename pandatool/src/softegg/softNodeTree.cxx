@@ -39,6 +39,7 @@
 SoftNodeTree::
 SoftNodeTree() {
   _root = new SoftNodeDesc(NULL, "----root");
+  _root->fullname = "----root";
   _fps = 0.0;
   _use_prefix = 0;
   _search_prefix = NULL;
@@ -126,7 +127,7 @@ GetModelNoteInfo( SAA_Scene *scene, SAA_Elem *model ) {
     else
       modelNote[size] = '\0';
     
-    cout << "\nmodelNote = " << modelNote << endl;
+    softegg_cat.spam() << "\nmodelNote = " << modelNote << endl;
   }
   
   return modelNote;
@@ -175,7 +176,7 @@ build_complete_hierarchy(SAA_Scene &scene, SAA_Database &database) {
   SAA_Elem *models;
 
   SAA_sceneGetNbModels( &scene, &numModels ); 
-  cout << "Scene has " << numModels << " model(s)...\n";
+  softegg_cat.spam() << "Scene has " << numModels << " model(s)...\n";
   
   // This while loop walks through the entire Soft hierarchy, one
   // node at a time. 
@@ -190,9 +191,9 @@ build_complete_hierarchy(SAA_Scene &scene, SAA_Database &database) {
       for ( int i = 0; i < numModels; i++ ) {
         int level;
         status = SAA_elementGetHierarchyLevel( &scene, &models[i], &level );
-        cout << "model[" << i << "]" << endl;
-        cout << " level " << level << endl;
-        cout << " status is " << status << "\n";
+        softegg_cat.spam() << "model[" << i << "]" << endl;
+        softegg_cat.spam() << " level " << level << endl;
+        softegg_cat.spam() << " status is " << status << "\n";
 
         node = build_node(&scene, &models[i]);
         if (!level && node)
@@ -343,12 +344,12 @@ get_egg_group(SoftNodeDesc *node_desc) {
   nassertr(_egg_root != (EggGroupNode *)NULL, NULL);
 
   // lets print some relationship
-  cout << " group " << node_desc->get_name() << "(" << node_desc->_egg_group << ")";
+  softegg_cat.spam() << " group " << node_desc->get_name() << "(" << node_desc->_egg_group << ")";
   if (node_desc->_parent)
-    cout << " parent " << node_desc->_parent->get_name() << "(" << node_desc->_parent << ")";
+    softegg_cat.spam() << " parent " << node_desc->_parent->get_name() << "(" << node_desc->_parent << ")";
   else
-    cout << " parent " << node_desc->_parent;
-  cout << endl;
+    softegg_cat.spam() << " parent " << node_desc->_parent;
+  softegg_cat.spam() << endl;
 
   if (node_desc->_egg_group == (EggGroup *)NULL) {
     // We need to make a new group node.
@@ -361,7 +362,7 @@ get_egg_group(SoftNodeDesc *node_desc) {
 
     if (!node_desc->_parent || node_desc->_parent == _root) {
       // The parent is the root.
-      cout << "came hereeeee\n";
+      softegg_cat.spam() << "came hereeeee\n";
       _egg_root->add_child(egg_group);
     } else {
       // The parent is another node.
@@ -388,15 +389,15 @@ get_egg_table(SoftNodeDesc *node_desc) {
   nassertr(node_desc->is_joint(), NULL);
   
   // lets print some relationship
-  cout << " group " << node_desc->get_name() << "(" << node_desc->_egg_group << ")";
+  softegg_cat.spam() << " group " << node_desc->get_name() << "(" << node_desc->_egg_group << ")";
   if (node_desc->_parent)
-    cout << " parent " << node_desc->_parent->get_name() << "(" << node_desc->_parent << ")";
+    softegg_cat.spam() << " parent " << node_desc->_parent->get_name() << "(" << node_desc->_parent << ")";
   else
-    cout << " parent " << node_desc->_parent;
-  cout << endl;
+    softegg_cat.spam() << " parent " << node_desc->_parent;
+  softegg_cat.spam() << endl;
 
   if (node_desc->_egg_table == (EggTable *)NULL) {
-    cout << "creating a new table\n";
+    softegg_cat.spam() << "creating a new table\n";
     // We need to make a new table node.
     //    nassertr(node_desc->_parent != (SoftNodeDesc *)NULL, NULL);
     
@@ -446,21 +447,21 @@ handle_null(SAA_Scene *scene, SoftNodeDesc *node_desc, char *node_name) {
   SAA_Elem *model = node_desc->get_model();
   
   SAA_modelGetAlgorithm( scene, model, &algo );
-  cout << " null algorithm: " << algo << endl;
+  softegg_cat.spam() << " null algorithm: " << algo << endl;
   
   if ( algo == SAA_ALG_INV_KIN ) {
     //    MakeJoint( &scene, lastJoint, lastAnim,  model, name );
     node_desc->set_joint();
-    cout << " encountered IK root: " << name << endl;
+    softegg_cat.spam() << " encountered IK root: " << name << endl;
   }
   else if ( algo == SAA_ALG_INV_KIN_LEAF ) {
     //    MakeJoint( &scene, lastJoint, lastAnim, model, name );
     node_desc->set_joint();
-    cout << " encountered IK leaf: " << name << endl;
+    softegg_cat.spam() << " encountered IK leaf: " << name << endl;
   }
   else if ( algo == SAA_ALG_STANDARD ) {
     SAA_Boolean isSkeleton = FALSE;
-    cout << " encountered Standard null: " << name << endl;
+    softegg_cat.spam() << " encountered Standard null: " << name << endl;
 
     SAA_modelIsSkeleton( scene, model, &isSkeleton );
 
@@ -471,11 +472,11 @@ handle_null(SAA_Scene *scene, SoftNodeDesc *node_desc, char *node_name) {
     if ( isSkeleton || (strstr( name, "joint" ) != NULL) ) {
       //      MakeJoint( &scene, lastJoint, lastAnim, model, name );
       node_desc->set_joint();
-      cout << " animating Standard null!!!\n";
+      softegg_cat.spam() << " animating Standard null!!!\n";
     }
   }
   else
-    cout << " encountered some other NULL: " << algo << endl;
+    softegg_cat.spam() << " encountered some other NULL: " << algo << endl;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -487,7 +488,7 @@ handle_null(SAA_Scene *scene, SoftNodeDesc *node_desc, char *node_name) {
 ////////////////////////////////////////////////////////////////////
 SoftNodeDesc *SoftNodeTree::
 build_node(SAA_Scene *scene, SAA_Elem *model) {
-  char *name;
+  char *name, *fullname;
   string node_name;
   int numChildren;
   int thisChild;
@@ -495,14 +496,16 @@ build_node(SAA_Scene *scene, SAA_Elem *model) {
   SAA_ModelType type;
   SAA_Boolean isSkeleton = FALSE;
 
+  fullname = GetFullName(scene, model);
   if (_use_prefix)
-    name = GetFullName(scene, model);
+    name = fullname;
   else
     name = GetName(scene, model);
 
   node_name = name;
 
   SoftNodeDesc *node_desc = r_build_node(NULL, node_name);
+  node_desc->fullname = fullname;
   node_desc->set_model(model);
   SAA_modelIsSkeleton( scene, model, &isSkeleton );
   if (isSkeleton || (strstr(node_desc->get_name().c_str(), "joint") != NULL))
@@ -516,23 +519,25 @@ build_node(SAA_Scene *scene, SAA_Elem *model) {
     handle_null(scene, node_desc, name);
   
   SAA_modelGetNbChildren( scene, model, &numChildren );
-  cout << " Model " << node_name << " children: " << numChildren << endl;
+  softegg_cat.spam() << " Model " << node_name << " children: " << numChildren << endl;
   
   if ( numChildren ) {
     children = new SAA_Elem[numChildren];
     SAA_modelGetChildren( scene, model, numChildren, children );
     if (!children)
-      cout << "Not enough Memory for children...\n";
+      softegg_cat.spam() << "Not enough Memory for children...\n";
     
     for ( thisChild = 0; thisChild < numChildren; thisChild++ ) {
+      fullname = GetFullName(scene, &children[thisChild]);
       if (_use_prefix)
-        node_name = GetFullName(scene, &children[thisChild]);
+        node_name = fullname;
       else
         node_name = GetName(scene, &children[thisChild]);
       
-      cout << " building child " << thisChild << "...";
+      softegg_cat.spam() << " building child " << thisChild << "...";
       
       SoftNodeDesc *node_child = r_build_node(node_desc, node_name);
+      node_child->fullname = fullname;
       node_child->set_model(&children[thisChild]);
       
       //  if (strstr(name, "joint") != NULL)
@@ -557,7 +562,7 @@ r_build_node(SoftNodeDesc *parent_node, const string &name) {
   // corresponding SoftNodeDesc immediately.
   NodesByName::const_iterator ni = _nodes_by_name.find(name);
   if (ni != _nodes_by_name.end()) {
-    cout << "  already built node " << (*ni).first;
+    softegg_cat.spam() << "  already built node " << (*ni).first;
     node_desc = (*ni).second;
     
     if (stec.flatten)
@@ -575,7 +580,7 @@ r_build_node(SoftNodeDesc *parent_node, const string &name) {
   else
     node_desc = new SoftNodeDesc(parent_node, name);
 
-  cout << " node name : " << name << endl;
+  softegg_cat.spam() << " node name : " << name << endl;
   _nodes.push_back(node_desc);
 
   _nodes_by_name.insert(NodesByName::value_type(name, node_desc));

@@ -44,7 +44,6 @@ class EggVertexPool;
 class EggNurbsCurve;
 class EggPrimitive;
 class EggXfmSAnim;
-//class MayaShaderColorDef;
 
 
 ////////////////////////////////////////////////////////////////////
@@ -89,36 +88,13 @@ private:
   bool convert_hierarchy(EggGroupNode *egg_root);
   bool process_model_node(SoftNodeDesc *node_desc);
 
-  /*
-  void get_joint_transform(const MDagPath &dag_path, EggGroup *egg_group);
-
-  // I ran into core dumps trying to pass around a MFnMesh object by
-  // value.  From now on, all MFn* objects will be passed around by
-  // reference.
-  void make_nurbs_surface(const MDagPath &dag_path, 
-                          MFnNurbsSurface &surface,
-                          EggGroup *group);
-  EggNurbsCurve *make_trim_curve(const MFnNurbsCurve &curve,
-                                 const string &nurbs_name,
-                                 EggGroupNode *egg_group,
-                                 int trim_curve_index);
-  void make_nurbs_curve(const MDagPath &dag_path, 
-                        const MFnNurbsCurve &curve,
-                        EggGroup *group);
-  */
   void make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type);
-  /*
-  void make_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
-                    EggGroup *egg_group);
-  bool get_vertex_weights(SoftNodeDesc *node_desc, 
-                          pvector<EggGroup *> &joints, vector<float> &weights);
-  */
+  void make_nurb_surface(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type);
+  void add_knots( vector <double> &eggKnots, double *knots, int numKnots, SAA_Boolean closed, int degree );
+
   void set_shader_attributes(SoftNodeDesc *node_desc, EggPrimitive &primitive, char *texName);
   void apply_texture_properties(EggTexture &tex, int uRepeat, int vRepeat);
-  /*
-  bool compare_texture_properties(EggTexture &tex, 
-                                  const MayaShaderColorDef &color_def);
-  */
+
   bool reparent_decals(EggGroupNode *egg_parent);
 
   string _program_name;
@@ -140,7 +116,7 @@ public:
   const char *_commandName;
 
   // This is the entire command line.
-  const char *_commandLine;
+  char _commandLine[4096];
 
   char        *rsrc_path;
   char        *database_name;
@@ -179,20 +155,11 @@ public:
   
   char *GetTextureName( SAA_Scene *scene, SAA_Elem *texture );
 
-  /*
-  MayaShaders _shaders;
-  */
   EggTextureCollection _textures;
-  /*
-  PT(MayaApi) _maya;
-  */
 
   bool _polygon_output;
   double _polygon_tolerance;
-  /*
-  bool _respect_maya_double_sided;
-  bool _always_show_vertex_color;
-  */
+
   enum TransformType {
     TT_invalid,
     TT_all,

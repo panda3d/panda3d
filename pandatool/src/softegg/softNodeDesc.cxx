@@ -38,11 +38,9 @@ SoftNodeDesc(SoftNodeDesc *parent, const string &name) :
 
   // Add ourselves to our parent.
   if (_parent != (SoftNodeDesc *)NULL) {
-    cout << "parent name " << _parent->get_name();
+    softegg_cat.spam() << "parent name " << _parent->get_name();
     _parent->_children.push_back(this);
   }
-
-  vpool = NULL;
 
   fullname = NULL;
 
@@ -95,20 +93,20 @@ set_model(SAA_Elem *model) {
 void SoftNodeDesc::
 set_parent(SoftNodeDesc *parent) {
   if (_parent) {
-    cout << endl;
+    softegg_cat.spam() << endl;
     /*
-    cout << " expected _parent to be null!?\n";
+    softegg_cat.spam() << " expected _parent to be null!?\n";
     if (_parent == parent)
-      cout << " parent already set\n";
+      softegg_cat.spam() << " parent already set\n";
     else {
-      cout << " current parent " << _parent->get_name() << " new parent " 
+      softegg_cat.spam() << " current parent " << _parent->get_name() << " new parent " 
            << parent << endl;
     }
     */
     return;
   }
   _parent = parent;
-  cout << " set parent to " << _parent->get_name() << endl;
+  softegg_cat.spam() << " set parent to " << _parent->get_name() << endl;
 
   // Add ourselves to our parent.
   _parent->_children.push_back(this);
@@ -209,15 +207,15 @@ void SoftNodeDesc::
 mark_joint_parent() {
   if (_joint_type == JT_none) {
     _joint_type = JT_joint_parent;
-    cout << " marked parent " << get_name();
+    softegg_cat.spam() << " marked parent " << get_name();
   }
   else
-    cout << " ?parent " << get_name() << " joint type " << _joint_type;
+    softegg_cat.spam() << " ?parent " << get_name() << " joint type " << _joint_type;
   
   if (_parent != (SoftNodeDesc *)NULL) {
     _parent->mark_joint_parent();
   }
-  cout << endl;
+  softegg_cat.spam() << endl;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -232,7 +230,7 @@ check_joint_parent() {
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     SoftNodeDesc *child = (*ci);
     if (child->is_joint()) {
-      cout << "child " << child->get_name();
+      softegg_cat.spam() << "child " << child->get_name();
       mark_joint_parent();
     }
     child->check_joint_parent();
@@ -252,7 +250,7 @@ check_junk(bool parent_junk) {
 
   if (parent_junk) {
     _joint_type = JT_junk;
-    cout << "junk node " << get_name() << endl;
+    softegg_cat.spam() << "junk node " << get_name() << endl;
   }
   if ( (strstr(name, "con-") != NULL) || 
        (strstr(name, "con_") != NULL) || 
@@ -261,26 +259,51 @@ check_junk(bool parent_junk) {
        (strstr(name, "camRIG") != NULL) ||
        (strstr(name, "cam_rig") != NULL) ||
        (strstr(name, "bars") != NULL) )
-       // split
-       /*
-       (!_search_prefix || (strstr(name, _search_prefix) != NULL)) )
-       */
     {
       _joint_type = JT_junk;
-      cout << "junk node " << get_name() << endl;
+      softegg_cat.spam() << "junk node " << get_name() << endl;
       parent_junk = true;
       Children::const_iterator ci;
       for (ci = _children.begin(); ci != _children.end(); ++ci) {
         SoftNodeDesc *child = (*ci);
-        cout << child->get_name() << ",";
+        softegg_cat.spam() << child->get_name() << ",";
       }
-      cout << endl;
+      softegg_cat.spam() << endl;
     }
   Children::const_iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     SoftNodeDesc *child = (*ci);
     child->check_junk(parent_junk);
   }
+}
+
+///////////////////////////////////////////////////////////////////////
+//     Function: SoftNodeTree::is_partial
+//       Access: Public
+//  Description: check to see if this is a selected branch we want to 
+//               descend - this will prevent creating geometry for 
+//               other parts
+///////////////////////////////////////////////////////////////////////
+bool SoftNodeDesc::
+is_partial(char *search_prefix) {
+  const char *name = fullname;
+
+  // if no search prefix then return false
+  if (!search_prefix)
+    return false;
+  // if name is search_prefix, return false
+  if (strstr(name, search_prefix) != NULL) {
+    cout << "matched " << name << " ";
+    return false;
+  }
+  // if name is not search_prefix, look in its parent
+  if (strstr(name, search_prefix) == NULL) {
+    cout << "node " << name << " ";
+    if (_parent) 
+      return _parent->is_partial(search_prefix);
+  }
+  // neither name nor its parent is search_prefix
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -298,7 +321,7 @@ check_pseudo_joints(bool joint_above) {
     // (JT_joint_parent is set), and it is the child of a joint
     // (joint_above is set).
     _joint_type = JT_pseudo_joint;
-    cout << "pseudo " << get_name() << " case1\n";
+    softegg_cat.spam() << "pseudo " << get_name() << " case1\n";
   }
 
   if (_joint_type == JT_joint) {
@@ -317,7 +340,7 @@ check_pseudo_joints(bool joint_above) {
       SoftNodeDesc *child = (*ci);
       child->check_pseudo_joints(joint_above);
       if (child->is_joint()) {
-        cout << get_name() << " any_joint true by " << child->get_name() << endl;
+        softegg_cat.spam() << get_name() << " any_joint true by " << child->get_name() << endl;
         any_joints = true;
       }
     }
@@ -330,7 +353,7 @@ check_pseudo_joints(bool joint_above) {
         SoftNodeDesc *child = (*ci);
         if (child->_joint_type == JT_joint_parent) {
           child->_joint_type = JT_pseudo_joint;
-          cout << "pseudo " << child->get_name() << " case2 by parent " << get_name() << "\n";
+          softegg_cat.spam() << "pseudo " << child->get_name() << " case2 by parent " << get_name() << "\n";
         } else if (child->_joint_type == JT_none || child->_joint_type == JT_junk) {
           all_joints = false;
         }
@@ -340,34 +363,13 @@ check_pseudo_joints(bool joint_above) {
         // Finally, if all children or at least one is a joint, then we are too.
         if (_joint_type == JT_joint_parent) {
           _joint_type = JT_pseudo_joint;
-          cout << "pseudo " << get_name() << " case3\n";
+          softegg_cat.spam() << "pseudo " << get_name() << " case3\n";
         }
       }
     }
   }
   else
-    cout << "found null joint " << get_name() << endl;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::create_vpool
-//       Access: Public
-//  Description: Creates a new vpool for future soft skining,
-//               this is a one to one reference to external index.
-////////////////////////////////////////////////////////////////////
-void SoftNodeDesc::
-create_vpool(string vpool_name) {
-  vpool = new EggVertexPool(vpool_name);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::get_vpool
-//       Access: Public
-//  Description: Get vpool 
-////////////////////////////////////////////////////////////////////
-EggVertexPool *SoftNodeDesc::
-get_vpool() {
-  return vpool;
+    softegg_cat.spam() << "found null joint " << get_name() << endl;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -384,28 +386,28 @@ get_transform(SAA_Scene *scene, EggGroup *egg_group, bool global) {
   /*
   if ( strstr( _parent->get_name().c_str(), "scale" ) != NULL ) {
     scale_joint = 1;
-    cout << "scale joint flag set!\n";
+    softegg_cat.spam() << "scale joint flag set!\n";
   }
   */
 
   if (!global && _parent->is_joint() && !stec.flatten && !scale_joint) {
 
     SAA_modelGetMatrix( scene, get_model(), SAA_COORDSYS_LOCAL,  matrix );
-    cout << get_name() << " using local matrix :parent ";
+    softegg_cat.spam() << get_name() << " using local matrix :parent ";
 
   } else {
 
     SAA_modelGetMatrix( scene, get_model(), SAA_COORDSYS_GLOBAL,  matrix );
-    cout << get_name() << " using global matrix :parent ";
+    softegg_cat.spam() << get_name() << " using global matrix :parent ";
 
   }
 
-  cout << _parent->get_name() << endl;
+  softegg_cat.spam() << _parent->get_name() << endl;
 
-  cout << "model matrix = " << matrix[0][0] << " " << matrix[0][1] << " " << matrix[0][2] << " " << matrix[0][3] << "\n";
-  cout << "model matrix = " << matrix[1][0] << " " << matrix[1][1] << " " << matrix[1][2] << " " << matrix[1][3] << "\n";
-  cout << "model matrix = " << matrix[2][0] << " " << matrix[2][1] << " " << matrix[2][2] << " " << matrix[2][3] << "\n";
-  cout << "model matrix = " << matrix[3][0] << " " << matrix[3][1] << " " << matrix[3][2] << " " << matrix[3][3] << "\n";
+  softegg_cat.spam() << "model matrix = " << matrix[0][0] << " " << matrix[0][1] << " " << matrix[0][2] << " " << matrix[0][3] << "\n";
+  softegg_cat.spam() << "model matrix = " << matrix[1][0] << " " << matrix[1][1] << " " << matrix[1][2] << " " << matrix[1][3] << "\n";
+  softegg_cat.spam() << "model matrix = " << matrix[2][0] << " " << matrix[2][1] << " " << matrix[2][2] << " " << matrix[2][3] << "\n";
+  softegg_cat.spam() << "model matrix = " << matrix[3][0] << " " << matrix[3][1] << " " << matrix[3][2] << " " << matrix[3][3] << "\n";
 
   if (!global && is_joint()) {
     LMatrix4d m4d(matrix[0][0], matrix[0][1], matrix[0][2], matrix[0][3],
@@ -414,7 +416,7 @@ get_transform(SAA_Scene *scene, EggGroup *egg_group, bool global) {
                   matrix[3][0], matrix[3][1], matrix[3][2], matrix[3][3]);
     if (!m4d.almost_equal(LMatrix4d::ident_mat(), 0.0001)) {
       egg_group->set_transform(m4d);
-      cout << "set transform in egg_group\n";
+      softegg_cat.spam() << "set transform in egg_group\n";
     }
   }
   return;
@@ -447,14 +449,14 @@ get_joint_transform(SAA_Scene *scene,  EggGroup *egg_group, EggXfmSAnim *anim, b
     /*
     if ( strstr( _parent->get_name().c_str(), "scale" ) != NULL ) {
       scale_joint = 1;    
-      cout << "scale joint flag set!\n";
+      softegg_cat.spam() << "scale joint flag set!\n";
     }
     */
 
-    cout << "\n\nanimating child " << name << endl;
+    softegg_cat.spam() << "\n\nanimating child " << name << endl;
 
     if (_parent->is_joint() && !stec.flatten && !scale_joint ) {
-      cout << "using local matrix\n";
+      softegg_cat.spam() << "using local matrix\n";
 
       //get SAA orientation
       SAA_modelGetRotation( scene, skeletonPart, SAA_COORDSYS_LOCAL, 
@@ -468,7 +470,7 @@ get_joint_transform(SAA_Scene *scene,  EggGroup *egg_group, EggXfmSAnim *anim, b
       SAA_modelGetScaling( scene, skeletonPart, SAA_COORDSYS_LOCAL, 
                            &i, &j, &k );
     } else {
-      cout << " using global matrix\n";
+      softegg_cat.spam() << " using global matrix\n";
 
       //get SAA orientation
       SAA_modelGetRotation( scene, skeletonPart, SAA_COORDSYS_GLOBAL, 
@@ -483,9 +485,9 @@ get_joint_transform(SAA_Scene *scene,  EggGroup *egg_group, EggXfmSAnim *anim, b
                            &i, &j, &k );
     }
     
-    cout << "\nanim data: " << i << " " << j << " " << k << endl;
-    cout << "\t" << p << " " << h << " " << r << endl;
-    cout << "\t" << x << " " << y << " " << z << endl;
+    softegg_cat.spam() << "\nanim data: " << i << " " << j << " " << k << endl;
+    softegg_cat.spam() << "\t" << p << " " << h << " " << r << endl;
+    softegg_cat.spam() << "\t" << x << " " << y << " " << z << endl;
 
     // make sure the ordering is correct
     anim->set_order(anim->get_standard_order());
@@ -502,55 +504,40 @@ get_joint_transform(SAA_Scene *scene,  EggGroup *egg_group, EggXfmSAnim *anim, b
     anim->add_component_data("z", z);
   }
   else {
-    cout << "Cannot build anim table - no skeleton\n";
+    softegg_cat.spam() << "Cannot build anim table - no skeleton\n";
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SoftNodeDesc::load_model
+//     Function: SoftNodeDesc::load_poly_model
 //       Access: Private
 //  Description: Converts the indicated Soft polyset to a bunch of
 //               EggPolygons and parents them to the indicated egg
 //               group.
 ////////////////////////////////////////////////////////////////////
 void SoftNodeDesc::
-load_model(SAA_Scene *scene, SAA_ModelType type) {
+load_poly_model(SAA_Scene *scene, SAA_ModelType type) {
   SI_Error result;
   const char *name = get_name().c_str();
   
   int i;
   int id = 0;
 
-  //  int                    anim_start;
-  //  int                    anim_end;
-  //  int                    anim_rate;
-  //  int                    pose_frame;
-  //  int                    verbose;
-  //  int                    flatten;
-  //  int                    shift_textures;
-  //  int                    ignore_tex_offsets;
-
-  fullname = name;
-  
   // if making a pose - get deformed geometry
   if ( stec.make_pose )
     gtype = SAA_GEOM_DEFORMED;
         
-  // If the model is a NURBS in soft, set its step before tesselating
-  if ( type == SAA_MNSRF )
-    SAA_nurbsSurfaceSetStep( scene, _model, stec.nurbs_step, stec.nurbs_step );
-  
   // If the model is a PATCH in soft, set its step before tesselating
   else if ( type == SAA_MPTCH )
     SAA_patchSetStep( scene, _model, stec.nurbs_step, stec.nurbs_step );
   
   // Get the number of triangles    
   result = SAA_modelGetNbTriangles( scene, _model, gtype, id, &numTri);
-  cout << "triangles: " << numTri << "\n";
+  softegg_cat.spam() << "triangles: " << numTri << "\n";
   
   if ( result != SI_SUCCESS ) {
-    cout << "Error: couldn't get number of triangles!\n";
-    cout << "\tbailing on model: " << name << "\n";
+    softegg_cat.spam() << "Error: couldn't get number of triangles!\n";
+    softegg_cat.spam() << "\tbailing on model: " << name << "\n";
     return;    
   }
   
@@ -563,24 +550,24 @@ load_model(SAA_Scene *scene, SAA_ModelType type) {
   // or is animated via constraint only ( these nodes are
   // tagged by the animator with the keyword "joint"
   // somewhere in the nodes name)
-  cout << "is Skeleton? " << isSkeleton << "\n";
+  softegg_cat.spam() << "is Skeleton? " << isSkeleton << "\n";
   
   /*************************************************************************************/
   
   // model is not a null and has no triangles!
   if ( !numTri ) {
-    cout << "no triangles!\n";
+    softegg_cat.spam() << "no triangles!\n";
   }
   else {
     // allocate array of triangles
     triangles = (SAA_SubElem *) new SAA_SubElem[numTri];
     if (!triangles) {
-      cout << "Not enough Memory for triangles...\n";
+      softegg_cat.spam() << "Not enough Memory for triangles...\n";
       exit(1);
     }
     // triangulate model and read the triangles into array
     SAA_modelGetTriangles( scene, _model, gtype, id, numTri, triangles );
-    cout << "got triangles\n";
+    softegg_cat.spam() << "got triangles\n";
     
     /***********************************************************************************/
     
@@ -590,10 +577,10 @@ load_model(SAA_Scene *scene, SAA_ModelType type) {
     materials = (SAA_Elem*) new SAA_Elem[numTri];
     SAA_triangleGetMaterials( scene, _model, numTri, triangles, materials );
     if (!materials) {
-      cout << "Not enough Memory for materials...\n";
+      softegg_cat.spam() << "Not enough Memory for materials...\n";
       exit(1);
     }
-    cout << "got materials\n";
+    softegg_cat.spam() << "got materials\n";
     
     /***********************************************************************************/
     
@@ -615,7 +602,7 @@ load_model(SAA_Scene *scene, SAA_ModelType type) {
     
     // get local textures if present
     if ( numTexLoc ) {
-      cout << "numTexLoc = " << numTexLoc << endl;
+      softegg_cat.spam() << "numTexLoc = " << numTexLoc << endl;
       
       // allocate arrays of texture info
       uScale = new float[numTri];
@@ -638,7 +625,7 @@ load_model(SAA_Scene *scene, SAA_ModelType type) {
         result = SAA_elementIsValid( scene, &textures[i], &valid );
         
         if ( result != SI_SUCCESS )
-          cout << "SAA_elementIsValid failed!!!!\n";
+          softegg_cat.spam() << "SAA_elementIsValid failed!!!!\n";
         
         // texture present - get the name and uv info 
         if ( valid ) {
@@ -646,27 +633,27 @@ load_model(SAA_Scene *scene, SAA_ModelType type) {
           // panda can now read the .pic files.
           texNameArray[i] = stec.GetTextureName(scene, &textures[i]);
           
-          cout << " tritex[" << i << "] named: " << texNameArray[i] << endl;
+          softegg_cat.spam() << " tritex[" << i << "] named: " << texNameArray[i] << endl;
           
           SAA_texture2DGetUVSwap( scene, &textures[i], &uv_swap );
           
           if ( uv_swap == TRUE )
-            cout << " swapping u and v...\n" ;
+            softegg_cat.spam() << " swapping u and v...\n" ;
           
           SAA_texture2DGetUScale( scene, &textures[i], &uScale[i] );
           SAA_texture2DGetVScale( scene, &textures[i], &vScale[i] );
           SAA_texture2DGetUOffset( scene, &textures[i], &uOffset[i] );
           SAA_texture2DGetVOffset( scene, &textures[i], &vOffset[i] );
           
-          cout << "tritex[" << i << "] uScale: " << uScale[i] << " vScale: " << vScale[i] << endl;
-          cout << " uOffset: " << uOffset[i] << " vOffset: " << vOffset[i] << endl;
+          softegg_cat.spam() << "tritex[" << i << "] uScale: " << uScale[i] << " vScale: " << vScale[i] << endl;
+          softegg_cat.spam() << " uOffset: " << uOffset[i] << " vOffset: " << vOffset[i] << endl;
           
           SAA_texture2DGetRepeats( scene, &textures[i], &uRepeat, &vRepeat );
-          cout << "uRepeat = " << uRepeat << ", vRepeat = " << vRepeat << endl;
+          softegg_cat.spam() << "uRepeat = " << uRepeat << ", vRepeat = " << vRepeat << endl;
         }
         else {
-          cout << "Invalid texture...\n";
-          cout << " tritex[" << i << "] named: (null)\n";
+          softegg_cat.spam() << "Invalid texture...\n";
+          softegg_cat.spam() << " tritex[" << i << "] named: (null)\n";
         }
       }
     }
@@ -679,21 +666,21 @@ load_model(SAA_Scene *scene, SAA_ModelType type) {
         // get the referenced texture
         SAA_modelRelationGetT2DGlbElements( scene, _model, 
                                             TEX_PER_MAT, textures ); 
-        cout << "numTexGlb = " << numTexGlb << endl;
+        softegg_cat.spam() << "numTexGlb = " << numTexGlb << endl;
         // check to see if texture is present
         SAA_elementIsValid( scene, textures, &valid );
         if ( valid ) {  // texture present - get the name and uv info 
           SAA_texture2DGetUVSwap( scene, textures, &uv_swap );
           
           if ( uv_swap == TRUE )
-            cout << " swapping u and v...\n";
+            softegg_cat.spam() << " swapping u and v...\n";
           
           // according to drose, we don't need to convert .pic files to .rgb,
           // panda can now read the .pic files.
           texNameArray = new char *[1];
           *texNameArray = stec.GetTextureName(scene, textures);
           
-          cout << " global tex named: " << *texNameArray << endl;
+          softegg_cat.spam() << " global tex named: " << *texNameArray << endl;
           
           // allocate arrays of texture info
           uScale = new float;
@@ -706,19 +693,145 @@ load_model(SAA_Scene *scene, SAA_ModelType type) {
           SAA_texture2DGetUOffset( scene, textures, uOffset );
           SAA_texture2DGetVOffset( scene, textures, vOffset );
           
-          cout << " global tex uScale: " << *uScale << " vScale: " << *vScale << endl;
-          cout << "            uOffset: " << *uOffset << " vOffset: " << *vOffset << endl;
+          softegg_cat.spam() << " global tex uScale: " << *uScale << " vScale: " << *vScale << endl;
+          softegg_cat.spam() << "            uOffset: " << *uOffset << " vOffset: " << *vOffset << endl;
           
           SAA_texture2DGetRepeats(  scene, textures, &uRepeat, &vRepeat );
-          cout << "uRepeat = " << uRepeat << ", vRepeat = " << vRepeat << endl;
+          softegg_cat.spam() << "uRepeat = " << uRepeat << ", vRepeat = " << vRepeat << endl;
         }
         else {
-          cout << "Invalid Texture...\n";
+          softegg_cat.spam() << "Invalid Texture...\n";
         }
       }
     }
   }
-  cout << "got textures" << endl;
+  softegg_cat.spam() << "got textures" << endl;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SoftNodeDesc::load_nurbs_model
+//       Access: Private
+//  Description: Converts the indicated Soft polyset to a bunch of
+//               EggPolygons and parents them to the indicated egg
+//               group.
+////////////////////////////////////////////////////////////////////
+void SoftNodeDesc::
+load_nurbs_model(SAA_Scene *scene, SAA_ModelType type) {
+  SI_Error result;
+  const char *name = get_name().c_str();
+  
+  // if making a pose - get deformed geometry
+  if ( stec.make_pose )
+    gtype = SAA_GEOM_DEFORMED;
+        
+  // If the model is a NURBS in soft, set its step before tesselating
+  if ( type == SAA_MNSRF )
+    SAA_nurbsSurfaceSetStep( scene, _model, stec.nurbs_step, stec.nurbs_step );
+  
+  // get the materials
+  /***********************************************************************************/
+  const void *relinfo;
+
+  SAA_modelRelationGetMatNbElements( scene, get_model(), FALSE, &relinfo,
+                                     &numNurbMats );
+
+  softegg_cat.spam() << "nurbs surf has " << numNurbMats << " materials\n";
+
+  if ( numNurbMats ) {
+    materials = new SAA_Elem[numNurbMats];
+    if (!materials) {
+      softegg_cat.spam() << "Out Of Memory on allocating materials\n";
+      exit(1);
+    }
+    
+    SAA_modelRelationGetMatElements( scene, get_model(), relinfo, 
+                                     numNurbMats, materials ); 
+    
+    softegg_cat.spam() << "got materials\n";
+
+    // get the textures
+    /***********************************************************************************/
+    numNurbTexLoc = 0;
+    numNurbTexGlb = 0;
+    
+    // find out how many local textures per NURBS surface
+    // ASSUME it only has one material
+    SAA_materialRelationGetT2DLocNbElements( scene, &materials[0], FALSE, &relinfo, &numNurbTexLoc );
+    
+    // if present, get local textures
+    if ( numNurbTexLoc ) {
+      softegg_cat.spam() << name << " had " << numNurbTexLoc << " local tex\n";
+      nassertv(numNurbTexLoc == 1);
+      
+      textures = new SAA_Elem[numNurbTexLoc];
+      
+      // get the referenced texture
+      SAA_materialRelationGetT2DLocElements( scene, &materials[0], TEX_PER_MAT, &textures[0] );
+      
+    }
+    // if no locals, try to get globals
+    else {
+      SAA_modelRelationGetT2DGlbNbElements( scene, get_model(), FALSE, &relinfo, &numNurbTexGlb );
+      
+      if ( numNurbTexGlb ) {
+        softegg_cat.spam() << name << " had " << numNurbTexGlb << " global tex\n";
+        nassertv(numNurbTexGlb == 1);
+        
+        textures = new SAA_Elem[numNurbTexGlb];
+        
+        // get the referenced texture
+        SAA_modelRelationGetT2DGlbElements( scene, get_model(), TEX_PER_MAT, &textures[0] );
+      }
+    }
+    
+    if ( numNurbTexLoc || numNurbTexGlb) {
+      
+      // allocate the texture name array
+      texNameArray = new char *[1];
+      // allocate arrays of texture info
+      uScale = new float;
+      vScale = new float;
+      uOffset = new float;
+      vOffset = new float;
+      
+      // check to see if texture is present
+      result = SAA_elementIsValid( scene, &textures[0], &valid );
+      
+      if ( result != SI_SUCCESS )
+        softegg_cat.spam() << "SAA_elementIsValid failed!!!!\n";
+      
+      // texture present - get the name and uv info 
+      if ( valid ) {
+        // according to drose, we don't need to convert .pic files to .rgb,
+        // panda can now read the .pic files.
+        texNameArray[0] = stec.GetTextureName(scene, &textures[0]);
+        
+        softegg_cat.spam() << " tritex[0] named: " << texNameArray[0] << endl;
+        
+        SAA_texture2DGetUVSwap( scene, &textures[0], &uv_swap );
+        
+        if ( uv_swap == TRUE )
+          softegg_cat.spam() << " swapping u and v...\n" ;
+        
+        SAA_texture2DGetUScale( scene, &textures[0], &uScale[0] );
+        SAA_texture2DGetVScale( scene, &textures[0], &vScale[0] );
+        SAA_texture2DGetUOffset( scene, &textures[0], &uOffset[0] );
+        SAA_texture2DGetVOffset( scene, &textures[0], &vOffset[0] );
+        
+        softegg_cat.spam() << "tritex[0] uScale: " << uScale[0] << " vScale: " << vScale[0] << endl;
+        softegg_cat.spam() << " uOffset: " << uOffset[0] << " vOffset: " << vOffset[0] << endl;
+        
+        SAA_texture2DGetRepeats( scene, &textures[0], &uRepeat, &vRepeat );
+        softegg_cat.spam() << "uRepeat = " << uRepeat << ", vRepeat = " << vRepeat << endl;
+      }
+      else {
+        softegg_cat.spam() << "Invalid texture...\n";
+        softegg_cat.spam() << " tritex[0] named: (null)\n";
+      }
+    }
+    
+    softegg_cat.spam() << "got textures\n";
+  }
 }
 
 //

@@ -25,6 +25,7 @@
 #include "eggGroup.h"
 #include "eggTable.h"
 #include "eggVertex.h"
+#include "eggComment.h"
 #include "eggVertexPool.h"
 #include "eggNurbsSurface.h"
 #include "eggNurbsCurve.h"
@@ -218,15 +219,22 @@ ShowOpts()
 bool SoftToEggConverter::
 DoGetopts(int &argc, char **&argv) {
   bool okflag = true;
-  int i = 1;
+  int i = 0;
   softegg_cat.info() << "argc " << argc << "\n";
   if (argc <2) {
     Usage();
     okflag = false;
   }
+  while( i < argc ) {
+    strcat(_commandLine, argv[i]);
+    strcat(_commandLine, " ");
+    ++i;
+  }
+  softegg_cat.info() << endl << _commandLine << endl;
+  
+  i = 1;
   while ((i < argc-1) && (argv[i][0] == '-') && okflag) {
     softegg_cat.info() << "arg " << i << " is " << argv[i] << "\n";
-    //    softegg_cat.info() << argv[i] << ", " << argv[i+1];
     okflag = HandleGetopts(i, argc, argv);
   }
   return okflag;
@@ -509,7 +517,7 @@ GetTextureName( SAA_Scene *scene, SAA_Elem *texture ) {
   SAA_texture2DGetPicName( scene, texture, _MAX_PATH, tempName );
 
   if (tex_path) {
-    //  cout << "tempName :" << tempName << endl;
+    //  softegg_cat.spam() << "tempName :" << tempName << endl;
     strcpy(fileName, tex_path);
 
     // do some processing on the name string
@@ -520,7 +528,7 @@ GetTextureName( SAA_Scene *scene, SAA_Elem *texture ) {
     else
       tmpName = tempName;
 
-    //    cout << "tmpName : " << tmpName << endl;
+    //    softegg_cat.spam() << "tmpName : " << tmpName << endl;
     strcat(fileName, "/");
     strcat(fileName, tmpName);
   }
@@ -529,7 +537,7 @@ GetTextureName( SAA_Scene *scene, SAA_Elem *texture ) {
   }
 
   strcat(fileName, ".pic");
-  //  cout << "fileName : " << fileName << endl;
+  //  softegg_cat.spam() << "fileName : " << fileName << endl;
 
   return fileName;
 }
@@ -576,10 +584,14 @@ convert_soft(bool from_selection) {
 
   EggData egg_data;
   set_egg_data(&egg_data, false);
-  cout << "eggData " << &get_egg_data() << "\n";
+  softegg_cat.spam() << "eggData " << &get_egg_data() << "\n";
+  
+  // append the command line 
+  softegg_cat.info() << _commandLine << endl;
+  get_egg_data().insert(get_egg_data().begin(), new EggComment("", _commandLine));
 
   if (_egg_data->get_coordinate_system() != CS_default) {
-    cout << "coordinate system is not default\n";
+    softegg_cat.spam() << "coordinate system is not default\n";
     exit(1);
   }
 
@@ -593,11 +605,11 @@ convert_soft(bool from_selection) {
 
   char *root_name = _tree.GetRootName( eggFileName );
 
-  cout << "main group name: " << root_name << endl;
+  softegg_cat.spam() << "main group name: " << root_name << endl;
   if (root_name)
     _character_name = root_name;
   
-  if (make_poly) {
+  if (make_poly || make_nurbs) {
     if (!convert_char_model()) {
       all_ok = false;
     }
@@ -608,11 +620,11 @@ convert_soft(bool from_selection) {
     }
 
     //  reparent_decals(&get_egg_data());
-    cout << softegg_cat.info() << "Converted Softimage file\n";
+    softegg_cat.info() << softegg_cat.info() << "Converted Softimage file\n";
 
     // write out the egg model file
     _egg_data->write_egg(Filename(eggFileName));
-    cout << softegg_cat.info() << "Wrote Egg file " << eggFileName << endl;
+    softegg_cat.info() << softegg_cat.info() << "Wrote Egg file " << eggFileName << endl;
   }
   if (make_anim) {
     if (!convert_char_chan()) {
@@ -620,11 +632,11 @@ convert_soft(bool from_selection) {
     }
 
     //  reparent_decals(&get_egg_data());
-    cout << softegg_cat.info() << "Converted Softimage file\n";
+    softegg_cat.info() << softegg_cat.info() << "Converted Softimage file\n";
     
     // write out the egg model file
     _egg_data->write_egg(Filename(animFileName));
-    cout << softegg_cat.info() << "Wrote Anim file " << animFileName << endl;
+    softegg_cat.info() << softegg_cat.info() << "Wrote Anim file " << animFileName << endl;
   }
   return all_ok;
 }
@@ -723,7 +735,7 @@ convert_char_model() {
     MGlobal::viewFrame(frame);
   }
 #endif
-  cout << "character name " << _character_name << "\n";
+  softegg_cat.spam() << "character name " << _character_name << "\n";
   EggGroup *char_node = new EggGroup(eggGroupName);
   get_egg_data().add_child(char_node);
   char_node->set_dart_type(EggGroup::DT_default);
@@ -765,8 +777,8 @@ convert_char_chan() {
   SAA_sceneGetPlayCtrlEndFrame(&scene, &end_frame);
   SAA_sceneGetPlayCtrlFrameStep( &scene, &frame_inc );
   
-  cout << "animation start frame: " << start_frame << " end frame: " << end_frame << endl;
-  cout << "animation frame inc: " << frame_inc << endl;
+  softegg_cat.spam() << "animation start frame: " << start_frame << " end frame: " << end_frame << endl;
+  softegg_cat.spam() << "animation frame inc: " << frame_inc << endl;
   
   _tree._fps = output_frame_rate / frame_inc;
   //  _tree.clear_egg(&get_egg_data(), NULL, root_node);
@@ -796,11 +808,11 @@ convert_char_chan() {
     end_frame = anim_end;
   for ( frame = start_frame; frame <= end_frame; frame += frame_inc) {
     SAA_frame2Seconds( &scene, frame, &time );
-    //    cout << "got time " << time << endl;
+    //    softegg_cat.spam() << "got time " << time << endl;
     if (!make_pose) {
       SAA_updatelistEvalScene( &scene, time );
     }
-    cout << "\n> animating frame " << frame << endl;
+    softegg_cat.spam() << "\n> animating frame " << frame << endl;
 
     //    if (softegg_cat.is_debug()) {
     //      softegg_cat.debug(false)
@@ -815,7 +827,7 @@ convert_char_chan() {
     for (i = 0; i < num_nodes; i++) {
       SoftNodeDesc *node_desc = _tree.get_node(i);
       if (node_desc->is_joint()) {
-        cout << "-----joint " << node_desc->get_name() << "\n";
+        softegg_cat.spam() << "-----joint " << node_desc->get_name() << "\n";
         EggXfmSAnim *anim = _tree.get_egg_anim(node_desc);
         // following function fills in the anim structure
         node_desc->get_joint_transform(&scene, tgroup, anim, TRUE);
@@ -852,7 +864,7 @@ convert_hierarchy(EggGroupNode *egg_root) {
   int num_nodes = _tree.get_num_nodes();
 
   _tree.clear_egg(&get_egg_data(), egg_root, NULL);
-  cout << "num_nodes = " << num_nodes << endl;
+  softegg_cat.spam() << "num_nodes = " << num_nodes << endl;
   for (int i = 0; i < num_nodes; i++) {
     if (!process_model_node(_tree.get_node(i))) {
       return false;
@@ -878,55 +890,65 @@ process_model_node(SoftNodeDesc *node_desc) {
   SAA_ModelType type;
 
   name = node_desc->get_name().c_str();
-  cout << "element name <" << name << ">\n";
+  softegg_cat.spam() << "element name <" << name << ">\n";
 
   if (node_desc->is_junk()) {
-    cout << "no processing, it is junk\n";
+    softegg_cat.spam() << "no processing, it is junk\n";
     return true;
   }
+
+  // split
+  if (node_desc->is_partial(search_prefix)) {
+    cout << endl;
+    return true;
+  }
+  else
+    cout << endl << name << ":being processed" << endl;
 
   egg_group = _tree.get_egg_group(node_desc);
 
   // find out what type of node we're dealing with
   SAA_modelGetType( &scene, node_desc->get_model(), &type );
 
-  cout << "encountered ";
+  softegg_cat.spam() << "encountered ";
   switch(type){
   case SAA_MNILL:
-    cout << "null\n";
+    softegg_cat.spam() << "null\n";
     break;
   case SAA_MPTCH:
-    cout << "patch\n";
+    softegg_cat.spam() << "patch\n";
     break;
   case SAA_MFACE:
-    cout << "face\n";
+    softegg_cat.spam() << "face\n";
     break;
   case SAA_MSMSH:
-    cout << "mesh\n";
+    softegg_cat.spam() << "mesh\n";
     node_desc->get_transform(&scene, egg_group, TRUE);
     make_polyset(node_desc, egg_group, type);
     break;
   case SAA_MJNT:
-    cout << "joint";
-    cout << " joint type " << node_desc->is_joint() << endl;
+    softegg_cat.spam() << "joint";
+    softegg_cat.spam() << " joint type " << node_desc->is_joint() << endl;
     break;
   case SAA_MSPLN:
-    cout << "spline\n";
+    softegg_cat.spam() << "spline\n";
     break;
   case SAA_MMETA:
-    cout << "meta element\n";
+    softegg_cat.spam() << "meta element\n";
     break;
   case SAA_MBALL:
-    cout << "meta ball\n";
+    softegg_cat.spam() << "meta ball\n";
     break;
   case SAA_MNCRV:
-    cout << "nurbs curve\n";
+    softegg_cat.spam() << "nurbs curve\n";
     break;
   case SAA_MNSRF:
-    cout << "nurbs surf\n";
+    softegg_cat.spam() << "nurbs surf\n";
+    node_desc->get_transform(&scene, egg_group, TRUE);
+    make_nurb_surface(node_desc, egg_group, type);
     break;
   default:
-    cout << "unknown type: " << type << "\n";
+    softegg_cat.spam() << "unknown type: " << type << "\n";
   }
 
   if (node_desc->is_joint())
@@ -958,7 +980,7 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
 
   
   SAA_modelGetNodeVisibility( &scene, node_desc->get_model(), &visible ); 
-  cout << "model visibility: " << visible << endl; 
+  softegg_cat.spam() << "model visibility: " << visible << endl; 
   
   ///////////////////////////////////////////////////////////////////////
   // Only create egg polygon data if: the node is visible, and its not
@@ -975,7 +997,7 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
        )
     {
       // load all node data from soft for this node_desc
-      node_desc->load_model(&scene, type);
+      node_desc->load_poly_model(&scene, type);
 
       string vpool_name = name + ".verts";
       EggVertexPool *vpool = new EggVertexPool(vpool_name);
@@ -985,19 +1007,8 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
       // solves a problem of soft-skinning trying to access
       // vertex pool before it is defined.
 
-      //_tree.get_egg_root()->add_child(vpool);
       _tree.get_egg_root()->insert(_tree.get_egg_root()->begin(), vpool);
 
-      //egg_group->add_child(vpool);
-
-      /*
-      // create a copy of vpool in node_desc which will be used later
-      // for soft_skinning
-      node_desc->create_vpool(vpool_name);
-      */
-
-      // little detour...bear with me for now...TODO: move these to a new function
-      
       // We will need to transform all vertices from world coordinate
       // space into the vertex space appropriate to this node.  Usually,
       // this is the same thing as world coordinate space, and this matrix
@@ -1035,7 +1046,7 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
         SAA_DVector normals[3];
         SAA_ctrlVertexGetNormals( &scene, node_desc->get_model(), 3, cvertices, normals );
         for (i=0; i<3; ++i)
-          cout << "normals[" << i <<"] = " << normals[i].x << " " <<  normals[i].y
+          softegg_cat.spam() << "normals[" << i <<"] = " << normals[i].x << " " <<  normals[i].y
                << " " << normals[i].z << " " <<  normals[i].w << "\n";
         
         // allocate arrays for u & v coords
@@ -1056,11 +1067,11 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
                                             3, uCoords, vCoords );
             }
             else
-              cout << "Not enough Memory for texture coords...\n";
+              softegg_cat.spam() << "Not enough Memory for texture coords...\n";
             
 #if 1
             for ( i=0; i<3; i++ )
-              cout << "texcoords[" << i << "] = ( " << uCoords[i] << " , " << vCoords[i] <<" )\n";
+              softegg_cat.spam() << "texcoords[" << i << "] = ( " << uCoords[i] << " , " << vCoords[i] <<" )\n";
 #endif
           }
           else if (node_desc->numTexGlb) {
@@ -1078,7 +1089,7 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
                                                      node_desc->numTexGlb, node_desc->textures, uCoords, vCoords );
             }
             else
-              cout << "Not enough Memory for texture coords...\n";
+              softegg_cat.spam() << "Not enough Memory for texture coords...\n";
           }
         }
         
@@ -1091,10 +1102,10 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
           
           _VCT_X_MAT( global, local, node_desc->matrix );
           
-          cout << "indices[" << i << "] = " << indices[i] << "\n";
-          cout << "cvert[" << i << "] = " << cvertPos[i].x << " " << cvertPos[i].y
+          softegg_cat.spam() << "indices[" << i << "] = " << indices[i] << "\n";
+          softegg_cat.spam() << "cvert[" << i << "] = " << cvertPos[i].x << " " << cvertPos[i].y
                               << " " << cvertPos[i].z << " " << cvertPos[i].w << "\n";
-          cout << " global cvert[" << i << "] = " << global.x << " " << global.y
+          softegg_cat.spam() << " global cvert[" << i << "] = " << global.x << " " << global.y
                               << " " << global.z << " " << global.w << "\n";
           
           //      LPoint3d p3d(cvertPos[i].x, cvertPos[i].y, cvertPos[i].z);
@@ -1105,9 +1116,9 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
           local = normals[i];
           _VCT_X_MAT( global, local, node_desc->matrix );
           
-          cout << "normals[" << i <<"] = " << normals[i].x << " " <<  normals[i].y
+          softegg_cat.spam() << "normals[" << i <<"] = " << normals[i].x << " " <<  normals[i].y
                << " " << normals[i].z << " " <<  normals[i].w << "\n";
-          cout << " global normals[" << i <<"] = " << global.x << " " <<  global.y
+          softegg_cat.spam() << " global normals[" << i <<"] = " << global.x << " " <<  global.y
                << " " << global.z << " " <<  global.w << "\n";
           
           LVector3d n3d(global.x, global.y, global.z);
@@ -1121,12 +1132,12 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
           if ( valid ) {
             SAA_materialGetDiffuse( &scene, &node_desc->materials[idx/3], &r, &g, &b );
             SAA_materialGetTransparency( &scene, &node_desc->materials[idx/3], &a );
-            vert.set_color(Colorf(r, g, b, 1.0));
-            cout << "color r = " << r << " g = " << g << " b = " << b << " a = " << a << "\n";
+            vert.set_color(Colorf(r, g, b, 1.0f - a));
+            softegg_cat.spam() << "color r = " << r << " g = " << g << " b = " << b << " a = " << 1.0f - a << "\n";
           }
           else {     // no material - default to white
             vert.set_color(Colorf(1.0, 1.0, 1.0, 1.0));
-            cout << "default color\n";
+            softegg_cat.spam() << "default color\n";
           }
           
           // if texture present set the texture coordinates
@@ -1135,7 +1146,7 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
             
             u = uCoords[i];
             v = 1.0f - vCoords[i];
-            cout << "texcoords[" << i << "] = " << u << " " 
+            softegg_cat.spam() << "texcoords[" << i << "] = " << u << " " 
                                 << v << endl;
             
             vert.set_uv(TexCoordd(u, v));
@@ -1148,13 +1159,13 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
           // keep a one to one copy in this node's vpool
           EggVertex *t_vert = new EggVertex(vert);
           if (!t_vert) {
-            cout << "out of memeory " << endl;
+            softegg_cat.spam() << "out of memeory " << endl;
             nassertv(t_vert != NULL);
           }
           node_desc->get_vpool()->add_vertex(t_vert, indices[i]);
           */
 
-          cout << "\n";
+          softegg_cat.spam() << "\n";
         }
         
         // Now apply the shader.
@@ -1163,17 +1174,348 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
             if (!strstr(node_desc->texNameArray[idx], "noIcon"))
               set_shader_attributes(node_desc, *egg_poly, node_desc->texNameArray[idx]);
             else
-              cout << "texname :" << node_desc->texNameArray[idx] << endl;
+              softegg_cat.spam() << "texname :" << node_desc->texNameArray[idx] << endl;
           }
           else {
             if (!strstr(node_desc->texNameArray[0], "noIcon"))
               set_shader_attributes(node_desc, *egg_poly, node_desc->texNameArray[0]);
             else 
-              cout << "texname :" << node_desc->texNameArray[0] << endl;
+              softegg_cat.spam() << "texname :" << node_desc->texNameArray[0] << endl;
         }
       }
       }
     }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SoftToEggConverter::make_nurb_surface
+//       Access: Private
+//  Description: Converts the indicated Soft nurbs set to a bunch of
+//               EggPolygons and parents them to the indicated egg
+//               group.
+////////////////////////////////////////////////////////////////////
+void SoftToEggConverter::
+make_nurb_surface(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
+  string name = node_desc->get_name();
+  int id = 0;
+
+  float *uCoords = NULL;
+  float *vCoords = NULL;
+
+
+  SAA_Boolean valid;
+  SAA_Boolean visible;
+
+  int i, j, k;
+
+  
+  SAA_modelGetNodeVisibility( &scene, node_desc->get_model(), &visible ); 
+  softegg_cat.spam() << "model visibility: " << visible << endl; 
+  softegg_cat.spam() << "nurbs!!!surface!!!" << endl;
+  
+  ///////////////////////////////////////
+  // check to see if its a nurbs surface
+  ///////////////////////////////////////
+  if ( (type == SAA_MNSRF) && ( visible ) && (( make_nurbs ) 
+                                              || ( !make_nurbs && !make_poly &&  make_duv )) )
+    {
+      // load all node data from soft for this node_desc
+      node_desc->load_nurbs_model(&scene, type);
+
+      string vpool_name = name + ".verts";
+      EggVertexPool *vpool = new EggVertexPool(vpool_name);
+
+      // add the vertices in the _tree._egg_root node, so that 
+      // they will be written out first in egg file. This 
+      // solves a problem of soft-skinning trying to access
+      // vertex pool before it is defined.
+
+      //_tree.get_egg_root()->add_child(vpool);
+      _tree.get_egg_root()->insert(_tree.get_egg_root()->begin(), vpool);
+
+      //egg_group->add_child(vpool);
+
+      /*
+      // create a copy of vpool in node_desc which will be used later
+      // for soft_skinning
+      node_desc->create_vpool(vpool_name);
+      */
+
+      int uRows, vRows;
+      int uKnots, vKnots;
+      int uExtra, vExtra;
+      int uDegree, vDegree;
+      int uCurves, vCurves;
+
+      vector <double> Knots;
+
+      EggNurbsSurface *eggNurbs = new EggNurbsSurface( name );
+
+      // create nurbs representation of surface
+      SAA_nurbsSurfaceGetDegree( &scene, node_desc->get_model(), &uDegree, &vDegree );
+      softegg_cat.spam() << "nurbs degree: " << uDegree << " u, " << vDegree << " v\n";
+
+      SAA_nurbsSurfaceGetNbKnots( &scene, node_desc->get_model(), &uKnots, &vKnots );
+      softegg_cat.spam() << "nurbs knots: " << uKnots << " u, " << vKnots << " v\n";
+
+      SAA_Boolean uClosed = FALSE;
+      SAA_Boolean vClosed = FALSE;
+
+      SAA_nurbsSurfaceGetClosed( &scene, node_desc->get_model(), &uClosed, &vClosed);    
+
+      uExtra = vExtra = 2;
+      if ( uClosed ) {
+        softegg_cat.spam() << "nurbs is closed in u...\n";
+        uExtra += 4;
+      }
+      if ( vClosed ) {
+        softegg_cat.spam() << "nurbs is closed in v...\n";
+        vExtra += 4;
+      }
+      eggNurbs->setup(uDegree+1, vDegree+1,
+                      uKnots + uExtra, vKnots + vExtra);
+
+      softegg_cat.spam() << "from eggNurbs: num u knots " << eggNurbs->get_num_u_knots() << endl;
+      softegg_cat.spam() << "from eggNurbs: num v knots " << eggNurbs->get_num_v_knots() << endl;
+      softegg_cat.spam() << "from eggNurbs: num u cvs " << eggNurbs->get_num_u_cvs() << endl;
+      softegg_cat.spam() << "from eggNurbs: num v cvs " << eggNurbs->get_num_v_cvs() << endl;
+            
+      SAA_nurbsSurfaceGetNbVertices( &scene, node_desc->get_model(), &uRows, &vRows );
+      softegg_cat.spam() << "nurbs vertices: " << uRows << " u, " << vRows << " v\n";
+            
+      SAA_nurbsSurfaceGetNbCurves( &scene, node_desc->get_model(), &uCurves, &vCurves );
+      softegg_cat.spam() << "nurbs curves: " << uCurves << " u, " << vCurves << " v\n";
+
+      if ( shift_textures ) {
+        if ( uClosed )
+          // shift starting point on NURBS surface for correct textures
+          SAA_nurbsSurfaceShiftParameterization( &scene, node_desc->get_model(), -2, 0 );
+
+        if ( vClosed )
+          // shift starting point on NURBS surface for correct textures
+          SAA_nurbsSurfaceShiftParameterization( &scene, node_desc->get_model(), 0, -2 );
+      }
+
+      SAA_nurbsSurfaceSetStep( &scene, node_desc->get_model(), nurbs_step, nurbs_step );
+
+      // Is this a double sided polygon? meaning check for back face flag
+      char *modelNoteStr = _tree.GetModelNoteInfo( &scene, node_desc->get_model() );
+      if ( modelNoteStr != NULL ) {
+        if ( strstr( modelNoteStr, "bface" ) != NULL ) {
+          eggNurbs->set_bface_flag(TRUE);
+          softegg_cat.spam() << "Set backface flag\n";
+        }
+      }
+        
+      double *uKnotArray = new double[uKnots];
+      double *vKnotArray = new double[vKnots];
+      result = SAA_nurbsSurfaceGetKnots( &scene, node_desc->get_model(), node_desc->gtype, 0, 
+                                         uKnots, vKnots, uKnotArray, vKnotArray );
+      
+      if (result != SI_SUCCESS) {
+        softegg_cat.spam() << "Couldn't get knots\n";
+        exit(1);
+      }
+
+      // Lets prepare the softimage knots and then assign to eggKnots      
+      add_knots( Knots, uKnotArray, uKnots, uClosed, uDegree ); 
+      softegg_cat.spam() << "u knots: ";
+      for (i = 0; i < (int)Knots.size(); i++) {
+        softegg_cat.spam() << Knots[i] << " ";
+        eggNurbs->set_u_knot(i, Knots[i]);
+      }
+      softegg_cat.spam() << endl;
+
+      Knots.resize(0);
+      add_knots( Knots, vKnotArray, vKnots, vClosed, vDegree ); 
+      softegg_cat.spam() << "v knots: ";
+      for (i = 0; i < (int)Knots.size(); i++) {
+        softegg_cat.spam() << Knots[i] << " ";
+        eggNurbs->set_v_knot(i, Knots[i]);
+      }
+      softegg_cat.spam() << endl;
+
+      // lets get the number of vertices from softimage
+      int numVert;
+      SAA_modelGetNbVertices( &scene, node_desc->get_model(), &numVert );
+        
+      softegg_cat.spam() << numVert << " CV's\n";
+
+      // get the CV's
+      SAA_DVector *vertices = NULL;
+      vertices = new SAA_DVector[numVert];
+    
+      SAA_modelGetVertices( &scene, node_desc->get_model(), node_desc->gtype, 0, numVert, vertices );
+      
+      LMatrix4d vertex_frame_inv = egg_group->get_vertex_frame_inv();
+
+      // create the buffer for EggVertices
+      EggVertex *verts = new EggVertex[numVert];
+
+      softegg_cat.spam() << endl << eggNurbs->get_num_cvs() << endl << endl;
+      
+      //for ( i = 0; i<eggNurbs->get_num_cvs(); i++ ) {
+      for ( k = 0; k<numVert; k++ ) {
+        SAA_DVector global;
+
+        /*
+        int ui = eggNurbs->get_u_index(i);
+        int vi = eggNurbs->get_v_index(i);
+
+        int k = vRows * ui + vi;
+
+        softegg_cat.spam() << i << ": ui " << ui << ", vi " << vi << ", k " << k << endl;
+
+        softegg_cat.spam() << "original cv[" << k << "] = " 
+             << vertices[k].x << " " << vertices[k].y << " "
+             << vertices[k].z << " " << vertices[k].w << endl;
+        */
+        
+        // convert to global coords
+        _VCT_X_MAT( global, vertices[k], node_desc->matrix );
+        
+        //preserve original weight
+        global.w = vertices[k].w;
+        
+        // normalize coords to weight
+        global.x *= global.w;
+        global.y *= global.w;
+        global.z *= global.w;
+        
+        /*
+        softegg_cat.spam() << "global cv[" << k << "] = "
+             << global.x << " " << global.y << " "
+             << global.x << " " << global.w << endl;
+        */
+        
+        LPoint4d p4d(global.x, global.y, global.z, global.w);
+        p4d = p4d * vertex_frame_inv;
+        verts[k].set_pos(p4d);
+
+        // check to see if material is present
+        if (node_desc->numNurbMats) {
+          float r,g,b,a;
+          SAA_elementIsValid( &scene, &node_desc->materials[0], &valid );
+          // material present - get the color 
+          if ( valid ) {
+            SAA_materialGetDiffuse( &scene, &node_desc->materials[0], &r, &g, &b );
+            SAA_materialGetTransparency( &scene, &node_desc->materials[0], &a );
+            verts[k].set_color(Colorf(r, g, b, 1.0f - a));
+            //softegg_cat.spam() << "color r = " << r << " g = " << g << " b = " << b << " a = " << a << "\n";
+          }
+          else {     // no material - default to white
+            verts[k].set_color(Colorf(1.0, 1.0, 1.0, 1.0));
+            softegg_cat.spam() << "default color\n";
+          }
+        }
+        vpool->add_vertex(verts+k, k);
+        eggNurbs->add_vertex(vpool->get_vertex(k));
+        
+        if ( uClosed ) {
+          // add first uDegree verts to end of row
+          if ( (k % uRows) == ( uRows - 1) ) {
+            for ( i = 0; i < uDegree; i++ ) {
+              // add vref's to NURBS info 
+              eggNurbs->add_vertex( vpool->get_vertex(i+((k/uRows)*uRows)) );
+            }
+          }
+        }
+      }
+
+      // check to see if the NURB is closed in v    
+      if ( vClosed && !uClosed ) {
+        // add first vDegree rows of verts to end of list
+        for ( int i = 0; i < vDegree*uRows; i++ ) 
+          eggNurbs->add_vertex( vpool->get_vertex(i) ); 
+      }
+      // check to see if the NURB is closed in u and v    
+      else if ( vClosed && uClosed ) {
+        // add the first (degree) v verts and a few
+        // extra - for good measure
+        for ( i = 0; i < vDegree; i++ ) {
+          // add first vDegree rows of verts to end of list
+          for ( j = 0; j < uRows; j++ )
+            eggNurbs->add_vertex( vpool->get_vertex(j+(i*uRows)) );
+          
+          // if u is closed to we have added uDegree
+          // verts onto the ends of the rows - add them here too
+          for ( k = 0; k < uDegree; k++ )
+            eggNurbs->add_vertex( vpool->get_vertex(k+(i*uRows)+((k/uRows)*uRows)) );
+        }
+      }
+      
+      // We add the NURBS to the group down here, after all of the vpools
+      // for the trim curves have been added.
+      egg_group->add_child(eggNurbs);
+
+      // Now apply the shader.
+      if (node_desc->textures != NULL) {
+        if (!strstr(node_desc->texNameArray[0], "noIcon"))
+          set_shader_attributes(node_desc, *eggNurbs, node_desc->texNameArray[0]);
+        else 
+          softegg_cat.spam() << "texname :" << node_desc->texNameArray[0] << endl;
+      }
+    }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: add_knots
+//       Access: Public 
+//  Description: Given a parametric surface, and its knots, create
+//               the appropriate egg structure by filling in Soft's
+//               implicit knots and assigning the rest to eggKnots. 
+////////////////////////////////////////////////////////////////////
+void SoftToEggConverter::
+add_knots( vector <double> &eggKnots, double *knots, int numKnots, SAA_Boolean closed, int degree ) {
+  
+  int k = 0;
+  double lastKnot = knots[0];
+  double    *newKnots;
+  
+  // add initial implicit knot(s)
+  if ( closed ) {
+    int i = 0;
+    newKnots = new double[degree];
+    
+    // need to add (degree) number of knots 
+    for ( k = numKnots - 1; k >= numKnots - degree; k-- ) {
+      // we have to know these in order to calculate
+      // next knot value so hold them in temp array
+      newKnots[i] =  lastKnot - (knots[k] - knots[k-1]);
+      lastKnot = newKnots[i];
+      i++;
+    }
+    for ( k = degree - 1; k >= 0; k-- ) {
+      eggKnots.push_back( newKnots[k] );
+      softegg_cat.spam() << "knots[" << k << "] = " << newKnots[k] << endl;
+    }
+  }
+  else {
+    eggKnots.push_back( knots[k] );
+    softegg_cat.spam() << "knots[" << k << "] = " << knots[k] << endl;
+  }
+
+  // add the regular complement of knots
+  for (k = 0; k < numKnots; k++) {
+    eggKnots.push_back( knots[k] );
+    softegg_cat.spam() << "knots[" << k+1 << "] = " << knots[k] << endl;
+  }
+
+  lastKnot = knots[numKnots-1];
+  
+  // add trailing implicit knots
+  if ( closed ) {
+    // need to add (degree) number of knots 
+    for ( k = 1; k <= degree; k++ ) {
+      eggKnots.push_back( lastKnot + (knots[k] - knots[k-1]) );
+      softegg_cat.spam() << "knots[" << k << "] = " << lastKnot + (knots[k] - knots[k-1]) << endl;
+      lastKnot = lastKnot + (knots[k] - knots[k-1]);
+    }
+  }
+  else {
+    eggKnots.push_back( knots[k-1] );
+    softegg_cat.spam() << "knots[" << k+1 << "] = " << knots[k-1] << endl;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1197,9 +1539,9 @@ FindClosestTriVert( EggVertexPool *vpool, SAA_DVector *vertices, int numVert ) {
   EggVertexPool::iterator vi;
   for (vi = vpool->begin(); vi != vpool->end(); ++vi, ++i) {
     EggVertex *vert = (*vi);
-    cout << "vert external index = " << vert->get_external_index() << endl;
-    //    cout << "found vert " << vert << endl;
-    //    cout << "vert [" << i << "] " << vpool->get_vertex(i+1);
+    softegg_cat.spam() << "vert external index = " << vert->get_external_index() << endl;
+    //    softegg_cat.spam() << "found vert " << vert << endl;
+    //    softegg_cat.spam() << "vert [" << i << "] " << vpool->get_vertex(i+1);
     LPoint3d p3d = vert->get_pos3();
 
     // find closest model vertex 
@@ -1218,12 +1560,12 @@ FindClosestTriVert( EggVertexPool *vpool, SAA_DVector *vertices, int numVert ) {
     }
     vertMap[i] = closest;
     
-    cout << "mapping v " << i << " of " << vpoolSize-1 << ":( "
+    softegg_cat.spam() << "mapping v " << i << " of " << vpoolSize-1 << ":( "
          << p3d[0] << " "
          << p3d[1] << " "
          << p3d[2] << ")\n";
 
-    cout << "    to cv " << closest << " of " << numVert-1 << ":( "
+    softegg_cat.spam() << "    to cv " << closest << " of " << numVert-1 << ":( "
          << vertices[closest].x << " "
          << vertices[closest].y << " "
          << vertices[closest].z << " )\tdelta = " << closestDist << endl;
@@ -1244,13 +1586,17 @@ make_soft_skin() {
   SoftNodeDesc *node_desc;
   SAA_Boolean isSkeleton;
 
-  cout << endl << "----------------------------------------------------------------" << endl;
+  softegg_cat.spam() << endl << "----------------------------------------------------------------" << endl;
 
   for (int i = 0; i < num_nodes; i++) {
     node_desc = _tree.get_node(i);
     SAA_modelIsSkeleton( &scene, node_desc->get_model(), &isSkeleton );
 
     if (isSkeleton && node_desc->is_joint()) {
+
+      if (node_desc->is_partial(search_prefix))
+          continue;
+
       // Now that we've added all the polygons (and created all the
       // vertices), go back through the vertex pool and set up the
       // appropriate joint membership for each of the vertices.
@@ -1265,17 +1611,17 @@ make_soft_skin() {
 
       SAA_skeletonGetNbEnvelopes( &scene, model, &numEnv );
       if ( numEnv == 0 ) {
-        cout << "no soft skinning for joint " << node_desc->get_name() << endl;
+        softegg_cat.spam() << "no soft skinning for joint " << node_desc->get_name() << endl;
         continue;
       }
       
       // it's got envelopes - must be soft skinned
-      cout << endl << "found skeleton part( " << node_desc->get_name() << ")!\n";
-      cout << "numEnv = " << numEnv << endl;
+      softegg_cat.spam() << endl << "found skeleton part( " << node_desc->get_name() << ")!\n";
+      softegg_cat.spam() << "numEnv = " << numEnv << endl;
       // allocate envelope array
       envelopes = new SAA_Elem[numEnv];
       if ( envelopes == NULL ) {
-        cout << "Out Of Memory" << endl;
+        softegg_cat.spam() << "Out Of Memory" << endl;
         exit(1);
       }
       int thisEnv;
@@ -1284,26 +1630,26 @@ make_soft_skin() {
         
       SAA_skeletonGetEnvelopes( &scene, model, numEnv, envelopes );
       for ( thisEnv = 0; thisEnv < numEnv; thisEnv++ ) {
-        cout << "env[" << thisEnv << "]: ";
+        softegg_cat.spam() << "env[" << thisEnv << "]: ";
         SAA_envelopeGetType( &scene, &envelopes[thisEnv], &envType );
         
         if ( envType == SAA_ENVTYPE_NONE ) {
-          cout << "envType = none\n";
+          softegg_cat.spam() << "envType = none\n";
         }
         else if ( envType == SAA_ENVTYPE_FLXLCL ) {
-          cout << "envType = flexible, local\n";
+          softegg_cat.spam() << "envType = flexible, local\n";
           hasEnvVertices = 1;
         }
         else if ( envType == SAA_ENVTYPE_FLXGLB ) {
-          cout << "envType = flexible, global\n";
+          softegg_cat.spam() << "envType = flexible, global\n";
           hasEnvVertices = 1;
         }
         else if ( envType == SAA_ENVTYPE_RGDGLB ) {
-          cout << "envType = rigid, global\n";
+          softegg_cat.spam() << "envType = rigid, global\n";
           hasEnvVertices = 1;
         }
         else {
-          cout << "envType = unknown\n";
+          softegg_cat.spam() << "envType = unknown\n";
         }
 
       }
@@ -1321,9 +1667,9 @@ make_soft_skin() {
         int totalEnvVertices = 0;
         for( i = 0; i < numEnv; i++ ) {
           totalEnvVertices += numEnvVertices[i];
-          cout << "numEnvVertices[" << i << "] = " << numEnvVertices[i] << endl;
+          softegg_cat.spam() << "numEnvVertices[" << i << "] = " << numEnvVertices[i] << endl;
         }
-        cout << "total env verts = " << totalEnvVertices << endl;
+        softegg_cat.spam() << "total env verts = " << totalEnvVertices << endl;
         if ( totalEnvVertices == 0 )
           continue;
 
@@ -1332,25 +1678,25 @@ make_soft_skin() {
           result = SAA_envelopeGetCtrlVertices( &scene, model,
                                                 numEnv, envelopes, numEnvVertices, envVertices);
           if (result != SI_SUCCESS) {
-            cout << "error: GetCtrlVertices\n";
+            softegg_cat.spam() << "error: GetCtrlVertices\n";
             exit(1);
           }
           // loop through for each envelope
           for ( i = 0; i < numEnv; i++ ) {
             float *weights = NULL;
             int vertArrayOffset = 0;
-            cout << "envelope[" << i << "]: ";
+            softegg_cat.spam() << "envelope[" << i << "]: ";
             weights = new float[numEnvVertices[i]];
             if ( weights ) {
               char *envName;
               int *vpoolMap = NULL;
               for ( j = 0; j < i; j++ )
                 vertArrayOffset += numEnvVertices[j];
-              cout << "envVertArray offset = " << vertArrayOffset;
+              softegg_cat.spam() << "envVertArray offset = " << vertArrayOffset;
 
               /*              
               if (vertArrayOffset == totalEnvVertices) {
-                cout << endl;                  vpoolMap = FindClosestTriVert( vpool, globalModelVertices, modelNumVert );
+                softegg_cat.spam() << endl;                  vpoolMap = FindClosestTriVert( vpool, globalModelVertices, modelNumVert );
 
                 break;
               }
@@ -1371,26 +1717,26 @@ make_soft_skin() {
                 envName = _tree.GetName( &scene, &envelopes[i] );
               }
 
-              cout << " envelop name is [" << envName << "]" << endl;
+              softegg_cat.spam() << " envelop name is [" << envName << "]" << endl;
               
               if (result != SI_SUCCESS) {
-                cout << "warning: this envelop doesn't have any weights\n";
+                softegg_cat.spam() << "warning: this envelop doesn't have any weights\n";
                 continue;
               }
 
               result = SAA_modelGetType( &scene, &envelopes[i], &type );
               if (result != SI_SUCCESS) {
-                cout << "choked on get type\n";
+                softegg_cat.spam() << "choked on get type\n";
                 exit(1);
               }
 
-              cout << "envelope model type ";
+              softegg_cat.spam() << "envelope model type ";
               if ( type == SAA_MSMSH )
-                cout << "MESH\n";
+                softegg_cat.spam() << "MESH\n";
               else if ( type == SAA_MNSRF )
-                cout << "NURBS\n";
+                softegg_cat.spam() << "NURBS\n";
               else
-                cout << "OTHER\n";
+                softegg_cat.spam() << "OTHER\n";
               
               int *envVtxIndices = NULL;
               envVtxIndices = new int[numEnvVertices[i]];
@@ -1400,7 +1746,7 @@ make_soft_skin() {
                                                  &envVertices[vertArrayOffset], envVtxIndices );
               
               if (result != SI_SUCCESS) {
-                cout << "error: choked on get indices\n";
+                softegg_cat.spam() << "error: choked on get indices\n";
                 exit(1);
               }
 
@@ -1437,7 +1783,7 @@ make_soft_skin() {
               string s_name = envName;
               SoftNodeDesc *mesh_node = find_node(s_name);
               if (!mesh_node) {
-                cout << "error: node " << s_name << " not found in tree\n";
+                softegg_cat.spam() << "error: node " << s_name << " not found in tree\n";
                 exit(1);
               }
               string vpool_name = s_name + ".verts";
@@ -1445,13 +1791,13 @@ make_soft_skin() {
 
               // find the mapping of the vertices that match this envelop
               if (vpool) {
-                cout << "found vpool of size " << vpool->size() << endl;
+                softegg_cat.spam() << "found vpool of size " << vpool->size() << endl;
                 if ( !make_nurbs || (type == SAA_MSMSH) ) {
                   vpoolMap = FindClosestTriVert( vpool, globalModelVertices, modelNumVert );
                 }
               }
               else {
-                cout << "error: vpool " << vpool_name << " not found\n";
+                softegg_cat.spam() << "error: vpool " << vpool_name << " not found\n";
                 exit(1);
               }
 
@@ -1465,9 +1811,13 @@ make_soft_skin() {
                     && ( envVtxIndices[j] >= 0 )) {
                   if ( (type == SAA_MNSRF) && make_nurbs ) { 
                     // assign all referenced control vertices
-                    EggVertex *vert = vpool->get_vertex(envVtxIndices[j]+1);
+                    EggVertex *vert = vpool->get_vertex(envVtxIndices[j]);
+                    if (!vert) {
+                      softegg_cat.spam() << "possible error: index " << envVtxIndices[j] << ": vert is " << vert << endl;
+                      continue;
+                    }
                     joint->ref_vertex( vert, scaledWeight );
-                    cout << j << ": adding vref to cv " << envVtxIndices[j] 
+                    softegg_cat.spam() << j << ": adding vref to cv " << envVtxIndices[j]
                          << " with weight " << scaledWeight << endl; 
 
                     /*
@@ -1480,18 +1830,18 @@ make_soft_skin() {
                   else {    
                     //assign all the tri verts associated
                     // with this control vertex to joint
-                    cout << j << "--trying to find " << envVtxIndices[j] << endl;
+                    softegg_cat.spam() << j << "--trying to find " << envVtxIndices[j] << endl;
                     for ( k = 0; k < (int)vpool->size(); k++ ) {
                       if ( vpoolMap[k] == envVtxIndices[j] ) {
                         EggVertex *vert = vpool->get_vertex(k+1);
                         //                        EggVertex *vert = mesh_node->get_vpool()->get_vertex(vpoolMap[k]+1);
                         if (!vert) {
-                          cout << "possible error: index " << k+1 << ": vert is " << vert << endl;
+                          softegg_cat.spam() << "possible error: index " << k+1 << ": vert is " << vert << endl;
                           break;
                         }
 
                         joint->ref_vertex(vert, scaledWeight);
-                        cout << j << ": adding vref from cv " << envVtxIndices[j]
+                        softegg_cat.spam() << j << ": adding vref from cv " << envVtxIndices[j]
                              << " to vert " << k+1 << " with weight " << scaledWeight
                              << "(vpool)\n";
                         /*
