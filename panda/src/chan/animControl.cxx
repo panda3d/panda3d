@@ -208,8 +208,8 @@ pingpong(bool restart, int from, int to) {
 
   _actions = _user_actions;
 
-  insert_reverse_action(_actions, (to-1+get_num_frames())%get_num_frames());
-  insert_reverse_action(_actions, (to+1)%get_num_frames());
+  insert_forward_action(_actions, from);
+  insert_backward_action(_actions, to);
 
   get_part()->control_activated(this);
   if (restart) {
@@ -494,16 +494,32 @@ insert_jump_action(Actions &actions, int frame, int jump_to) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AnimControl::insert_reverse_action
+//     Function: AnimControl::insert_forward_action
 //       Access: Private, Static
-//  Description: Inserts a "reverse" action at the indicated frame
-//               number.  The animation will stop and go back the
-//               other direction when it reaches the indicated frame.
+//  Description: Inserts a "forward" action at the indicated frame
+//               number.  When the animation hits this action while
+//               playing in a backward direction, it will stop and
+//               play in a forward direction instead.
 ////////////////////////////////////////////////////////////////////
 void AnimControl::
-insert_reverse_action(Actions &actions, int frame) {
+insert_forward_action(Actions &actions, int frame) {
   Action new_action;
-  new_action._type = AT_reverse;
+  new_action._type = AT_forward;
+  actions.insert(pair<int, Action>(frame, new_action));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimControl::insert_backward_action
+//       Access: Private, Static
+//  Description: Inserts a "backward" action at the indicated frame
+//               number.  When the animation hits this action while
+//               playing in a forward direction, it will stop and
+//               play in a backward direction instead.
+////////////////////////////////////////////////////////////////////
+void AnimControl::
+insert_backward_action(Actions &actions, int frame) {
+  Action new_action;
+  new_action._type = AT_backward;
   actions.insert(pair<int, Action>(frame, new_action));
 }
 
@@ -637,9 +653,26 @@ do_action(int frame, const Action &action,
   switch (action._type) {
   case AT_stop:
   case AT_jump:
-  case AT_reverse:
     sequence_frame = frame;
     sequence_action = &action;
+    break;
+
+  case AT_forward:
+    // We only see "forward" actions if we're currently playing
+    // backwards.
+    if (_play_rate < 0.0) {
+      sequence_frame = frame;
+      sequence_action = &action;
+    }
+    break;
+
+  case AT_backward:
+    // We only see "backward" actions if we're currently playing
+    // forwards.
+    if (_play_rate > 0.0) {
+      sequence_frame = frame;
+      sequence_action = &action;
+    }
     break;
 
   case AT_event:
@@ -662,7 +695,7 @@ do_action(int frame, const Action &action,
 //               that frame first.
 ////////////////////////////////////////////////////////////////////
 void AnimControl::
-do_sequence_action(int, const Action &action) {
+do_sequence_action(int frame, const Action &action) {
   switch (action._type) {
   case AT_stop:
     stop();
@@ -672,8 +705,10 @@ do_sequence_action(int, const Action &action) {
     set_frame(action._jump_to);
     break;
 
-  case AT_reverse:
+  case AT_forward:
+  case AT_backward:
     _play_rate = -_play_rate;
+    set_frame(frame);
     break;
 
   case AT_event:
@@ -703,8 +738,12 @@ output(ostream &out) const {
     out << "jump to " << _jump_to;
     break;
 
-  case AT_reverse:
-    out << "reverse";
+  case AT_forward:
+    out << "forward";
+    break;
+
+  case AT_backward:
+    out << "backward";
     break;
 
   default:
