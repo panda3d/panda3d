@@ -139,6 +139,7 @@ public:
 
   virtual void apply_material(const Material *material);
   virtual void apply_fog(Fog *fog);
+  void apply_fog(qpFog *fog);
 
   virtual void apply_light(PointLight* light);
   virtual void apply_light(DirectionalLight* light);
@@ -170,13 +171,25 @@ public:
   virtual void issue_polygon_offset(const PolygonOffsetTransition *attrib);
 
   virtual void issue_transform(const TransformState *transform);
+  //  virtual void issue_color_scale(const ColorScaleAttrib *attrib);
+  //  virtual void issue_color(const ColorAttrib *attrib);
+  virtual void issue_tex_matrix(const TexMatrixAttrib *attrib);
   virtual void issue_texture(const TextureAttrib *attrib);
+  //  virtual void issue_light(const LightAttrib *attrib);
+  virtual void issue_material(const MaterialAttrib *attrib);
+  virtual void issue_render_mode(const RenderModeAttrib *attrib);
   virtual void issue_texture_apply(const TextureApplyAttrib *attrib);
-  virtual void issue_cull_face(const CullFaceAttrib *attrib);
-  virtual void issue_transparency(const TransparencyAttrib *attrib);
   virtual void issue_color_write(const ColorWriteAttrib *attrib);
   virtual void issue_depth_test(const DepthTestAttrib *attrib);
   virtual void issue_depth_write(const DepthWriteAttrib *attrib);
+  virtual void issue_cull_face(const CullFaceAttrib *attrib);
+  virtual void issue_transparency(const TransparencyAttrib *attrib);
+  virtual void issue_fog(const FogAttrib *attrib);
+  virtual void issue_depth_offset(const DepthOffsetAttrib *attrib);
+  //  virtual void issue_color_blend(const ColorBlendAttrib *attrib);
+  //  virtual void issue_tex_gen(const TexGenAttrib *attrib);
+  //  virtual void issue_stencil(const StencilAttrib *attrib);
+  //  virtual void issue_clip_plane(const ClipPlaneAttrib *attrib);
 
   virtual bool wants_normals(void) const;
   virtual bool wants_texcoords(void) const;
@@ -379,7 +392,7 @@ protected:
 
 public:
   static GraphicsStateGuardian *
-      make_GlGraphicsStateGuardian(const FactoryParams &params);
+  make_GlGraphicsStateGuardian(const FactoryParams &params);
 
   static TypeHandle get_class_type(void);
   static void init_type(void);
