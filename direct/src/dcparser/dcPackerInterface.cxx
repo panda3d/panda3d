@@ -18,6 +18,7 @@
 
 #include "dcPackerInterface.h"
 #include "dcPackerCatalog.h"
+#include "dcField.h"
 #include "dcParserDefs.h"
 #include "dcLexerDefs.h"
 
