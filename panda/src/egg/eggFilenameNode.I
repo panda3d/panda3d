@@ -34,7 +34,8 @@ EggFilenameNode() {
 INLINE EggFilenameNode::
 EggFilenameNode(const string &node_name, const Filename &filename) :
   EggNode(node_name),
-  _filename(filename)
+  _filename(filename),
+  _fullpath(filename)
 {
 }
 
@@ -46,7 +47,8 @@ EggFilenameNode(const string &node_name, const Filename &filename) :
 INLINE EggFilenameNode::
 EggFilenameNode(const EggFilenameNode &copy) :
   EggNode(copy),
-  _filename(copy._filename)
+  _filename(copy._filename),
+  _fullpath(copy._fullpath)
 {
 }
 
@@ -59,6 +61,7 @@ INLINE EggFilenameNode &EggFilenameNode::
 operator = (const EggFilenameNode &copy) {
   EggNode::operator = (copy);
   _filename = copy._filename;
+  _fullpath = copy._fullpath;
   return *this;
 }
 

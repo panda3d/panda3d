@@ -78,6 +78,7 @@ operator = (const EggTexture &copy) {
   _flags = copy._flags;
   _transform = copy._transform;
   _alpha_filename = copy._alpha_filename;
+  _alpha_fullpath = copy._alpha_fullpath;
 
   return *this;
 }
