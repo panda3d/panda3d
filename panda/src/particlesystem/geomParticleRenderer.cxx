@@ -160,7 +160,6 @@ kill_particle(int index) {
 void GeomParticleRenderer::
 render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   BaseParticle *cur_particle;
-  LPoint3f pos;
   int i, remaining_particles = ttl_particles;
 
   pvector< PT(PandaNode) >::iterator cur_node_iter = _node_vector.begin();
@@ -181,8 +180,6 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
       }
       nassertv(cur_node != (PandaNode *)NULL);
 
-      pos = cur_particle->get_position();
-
       cur_node->set_state(_render_state);
 
       if ((_alpha_mode != PR_ALPHA_NONE)) {
@@ -201,7 +198,10 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
                              (Colorf(1.0f, 1.0f, 1.0f, alpha_scalar)));
       }
 
-      cur_node->set_transform(TransformState::make_pos(pos));
+      cur_node->set_transform(TransformState::make_pos_quat_scale
+                              (cur_particle->get_position(),
+                               cur_particle->get_orientation(),
+                               LVecBase3f(1.0f, 1.0f, 1.0f)));
 
       // maybe get out early if possible.
 
