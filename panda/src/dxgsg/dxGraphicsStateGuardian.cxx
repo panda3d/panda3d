@@ -3978,27 +3978,28 @@ apply_texture(TextureContext *tc) {
 
     DXTextureContext *dtc = DCAST(DXTextureContext, tc);
 
-    if( _pCurTexContext == dtc) {
+    int dirty = dtc->get_dirty_flags();
+
+    if( _pCurTexContext == dtc && dirty == 0) {
         return;  // tex already set (and possible problem in state-sorting?)
     }
 
     // If the texture image has changed, or if its use of mipmaps has
     // changed, we need to re-create the image.
-    int dirty = dtc->get_dirty_flags();
     if ((dirty & (Texture::DF_image | Texture::DF_mipmap)) != 0) {
       // If this is *only* because of a mipmap change, issue a
       // warning--it is likely that this change is the result of an
       // error or oversight.
       if ((dirty & Texture::DF_image) == 0) {
         dxgsg_cat.warning()
-          << "Texture " << *dtx->_texture << " has changed mipmap state.\n";
+          << "Texture " << *dtc->_texture << " has changed mipmap state.\n";
       }
 
       dtc->DeleteTexture();
       if (dtc->CreateTexture(_d3dDevice,_cNumTexPixFmts,_pTexPixFmts) == NULL) {
         // Oops, we can't re-create the texture for some reason.
         dxgsg_cat.error()
-          << "Unable to re-create texture " << *dtx->_texture << endl;
+          << "Unable to re-create texture " << *dtc->_texture << endl;
 
         release_texture(dtc);
         enable_texturing(false);
