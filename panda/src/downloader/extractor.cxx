@@ -176,7 +176,7 @@ step() {
       downloader_cat.error()
         << "Unable to read subfile "
         << _multifile.get_subfile_name(_subfile_index) << ".\n";
-      cleanup();
+      reset();
       return EU_error_abort;
     }
 
