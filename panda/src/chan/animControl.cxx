@@ -199,6 +199,11 @@ loop(bool restart, int from, int to) {
 ////////////////////////////////////////////////////////////////////
 void AnimControl::
 pingpong(bool restart, int from, int to) {
+  if (from == to) {
+    pose(from);
+    return;
+  }
+
   nassertv(get_num_frames() > 0);
 
   nassertv(from >= 0 && from < get_num_frames());
@@ -596,10 +601,9 @@ do_actions_forward(int from, int to) {
 ////////////////////////////////////////////////////////////////////
 bool AnimControl::
 do_actions_backward(int from, int to) {
-#ifndef WIN32_VC
   if (from >= to) {
 #if defined(WIN32_VC) && !defined(NO_PCH)
-    typedef reverse_iterator<Actions::const_iterator, Actions::value_type> Action_reverse_iterator;
+    typedef Actions::const_reverse_iterator Action_reverse_iterator;
 #else
     typedef reverse_iterator<Actions::const_iterator> Action_reverse_iterator;
 #endif
@@ -631,7 +635,6 @@ do_actions_backward(int from, int to) {
       return false;
     }
   }
-#endif
 
   return true;
 }
