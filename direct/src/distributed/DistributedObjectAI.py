@@ -99,6 +99,9 @@ class DistributedObjectAI(DirectObject.DirectObject):
         dclass.receiveUpdateAllRequired(self, di)
         dclass.receiveUpdateOther(self, di)
 
+    def sendSetZone(self, zoneId):
+        self.air.sendSetZone(self, zoneId)
+
     def getZoneChangeEvent(self):
         return 'DOChangeZone-%s' % self.doId
     
