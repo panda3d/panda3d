@@ -255,6 +255,12 @@ class Actor(PandaObject, NodePath):
         self.removeNode()
         
     # accessing
+
+    def getAnimControlDict(self):
+        return self.__animControlDict
+
+    def getPartBundleDict(self):
+        return self.__partBundleDict
     
     def getLODNames(self):
         """getLODNames(self):
@@ -805,6 +811,13 @@ class Actor(PandaObject, NodePath):
                     
 
     # actions
+    def animPanel(self):
+        base.wantDIRECT = 1
+        base.wantTk = 1
+        from ShowBaseGlobal import *
+        import TkGlobal
+        import AnimPanel
+        return AnimPanel.AnimPanel(self)
     
     def stop(self, animName=None, partName=None):
         """stop(self, string=None, string=None)

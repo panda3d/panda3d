@@ -1,5 +1,7 @@
 "DIRECT Animation Control Panel"
 
+### SEE END OF FILE FOR EXAMPLE USEAGE ###
+
 # Import Tkinter, Pmw, and the floater code from this directory tree.
 from AppShell import *
 from Tkinter import *
@@ -19,6 +21,7 @@ class AnimPanel(AppShell):
     frameHeight = 250
     usecommandarea = 0
     usestatusarea  = 0
+    index = 0
 
     def __init__(self, aList =  [], parent = None, **kw):
         INITOPT = Pmw.INITOPT
@@ -35,6 +38,9 @@ class AnimPanel(AppShell):
         self.defineoptions(kw, optiondefs)
 
         self.frameHeight = 60 + (50 * len(self['actorList']))
+        self.playList =  []
+        self.id = 'AnimPanel_%d' % AnimPanel.index
+        AnimPanel.index += 1
         # Initialize the superclass
         AppShell.__init__(self)
 
@@ -69,12 +75,12 @@ class AnimPanel(AppShell):
                             command = self.displaySeconds)
         # Reset all actor controls
         menuBar.addmenuitem('AnimPanel', 'command',
-                            'Reset Actor controls to zero',
-                            label = 'Reset all to zero',
+                            'Set actor controls to t = 0.0',
+                            label = 'Jump all to zero',
                             command = self.resetAllToZero)
         menuBar.addmenuitem('AnimPanel', 'command',
-                            'Reset Actor controls to end time',
-                            label = 'Reset all to end time',
+                            'Set Actor controls to end time',
+                            label = 'Jump all to end time',
                             command = self.resetAllToEnd)
 
         # Add some buttons to update all Actor Controls
@@ -110,6 +116,7 @@ class AnimPanel(AppShell):
             ac = self.createcomponent(
                 'actorControl%d' % index, (), 'Actor',
                 ActorControl, (actorFrame,),
+                animPanel = self,
                 text = actor.getName(),
                 animList = actor.getAnimNames(),
                 actor = actor)
@@ -131,14 +138,14 @@ class AnimPanel(AppShell):
         self.toStartButton.pack(side = LEFT, expand = 1, fill = X)
         
         self.playButton = self.createcomponent(
-            'playPause', (), None,
+            'playButton', (), None,
             Button, (controlFrame,),
             text = 'Play', width = 8,
             command = self.playActorControls)
         self.playButton.pack(side = LEFT, expand = 1, fill = X)
 
         self.stopButton = self.createcomponent(
-            'playPause', (), None,
+            'stopButton', (), None,
             Button, (controlFrame,),
             text = 'Stop', width = 8,
             command = self.stopActorControls)
@@ -164,13 +171,24 @@ class AnimPanel(AppShell):
         controlFrame.pack(fill = X)
 
     def playActorControls(self):
+        self.stopActorControls()
+        self.lastT = globalClock.getFrameTime()
+        self.playList = self.actorControlList[:]
+        taskMgr.spawnMethodNamed(self.play, self.id + '_UpdateTask')
+
+    def play(self, task):
+        if not self.playList:
+            return Task.done
         fLoop = self.loopVar.get()
-        for actorControl in self.actorControlList:
-            actorControl.play(fLoop)
+        currT = globalClock.getFrameTime()
+        deltaT = currT - self.lastT
+        self.lastT = currT
+        for actorControl in self.playList:
+            actorControl.play(deltaT, fLoop)
+        return Task.cont
 
     def stopActorControls(self):
-        for actorControl in self.actorControlList:
-            actorControl.stop()
+        taskMgr.removeTasksNamed(self.id + '_UpdateTask')
 
     def getActorControlAt(self, index):
         return self.actorControlList[index]
@@ -225,6 +243,7 @@ class ActorControl(Pmw.MegaWidget):
             initActive = DEFAULT_ANIMS[0]
         optiondefs = (
             ('text',            'Actor',            self._updateLabelText),
+            ('animPanel',       None,               None),
             ('actor',           None,               None),
             ('animList',        DEFAULT_ANIMS,      None),
             ('active',          initActive,         None),
@@ -241,8 +260,12 @@ class ActorControl(Pmw.MegaWidget):
         interior.configure(relief = RAISED, bd = 2)
 
         # Instance variables
+        self.fps = 24
         self.offset = 0.0
-        self.maxFrame = 1.0
+        self.maxSeconds = 1.0
+        self.currT = 0.0
+        self.fScaleCommand = 0
+        self.fOneShot = 0
 
         # Create component widgets
         self._label = self.createcomponent(
@@ -269,8 +292,11 @@ class ActorControl(Pmw.MegaWidget):
                                     command = self.updateDisplay)
         # Items for top level menu
         labelMenu.add_cascade(label = 'Display Units', menu = displayMenu)
-        labelMenu.add_command(label = 'Set Offset', command = self.setOffset)
-        labelMenu.add_command(label = 'Reset', command = self.resetToZero)
+        # labelMenu.add_command(label = 'Set Offset', command = self.setOffset)
+        labelMenu.add_command(label = 'Jump To Zero',
+                              command = self.resetToZero)
+        labelMenu.add_command(label = 'Jump To End Time',
+                              command = self.resetToEnd)
         # Now associate menu with menubutton
         self._label['menu'] = labelMenu
         self._label.pack(side = LEFT, fill = X)
@@ -286,23 +312,21 @@ class ActorControl(Pmw.MegaWidget):
         animMenu.pack(side = 'left', padx = 5, expand = 0)
 
         # Combo box to select frame rate
-        playRateList = [1/24.0, 0.1, 0.5, 1.0, 2.0,5.0,10.0]
-        playRate = self['actor'].getPlayRate(self['active'])
+        playRateList = ['1/24.0', '0.1', '0.5', '1.0', '2.0', '5.0' , '10.0']
+        playRate = '%0.1f' % self['actor'].getPlayRate(self['active'])
         if playRate not in playRateList:
+            def strCmp(a, b):
+                return cmp(eval(a), eval(b))
             playRateList.append(playRate)
-            playRateList.sort
+            playRateList.sort(strCmp)
         playRateMenu = self.createcomponent(
             'playRateMenu', (), None,
             Pmw.ComboBox, (interior,),
-            labelpos = W, label_text = 'X',
+            labelpos = W, label_text = 'Play Rate:',
             entry_width = 4, selectioncommand = self.setPlayRate,
             scrolledlist_items = playRateList)
-        playRateMenu.selectitem(`playRate`)
+        playRateMenu.selectitem(playRate)
         playRateMenu.pack(side = LEFT, padx = 5, expand = 0)
-
-        # A label
-        playRateLabel = Label(interior, text = 'speed')
-        playRateLabel.pack(side = LEFT)
 
         # Scale to control animation
         frameFrame = Frame(interior, relief = SUNKEN, bd = 1)
@@ -315,15 +339,17 @@ class ActorControl(Pmw.MegaWidget):
         self.frameControl = self.createcomponent(
             'scale', (), None,
             Scale, (frameFrame,),
-            from_ = 0.0, to = self.maxFrame, resolution = 1.0,
+            from_ = 0, to = 24, resolution = 1.0,
             command = self.goTo,
             orient = HORIZONTAL, showvalue = 1)
         self.frameControl.pack(side = LEFT, expand = 1)
+        self.frameControl.bind('<Button-1>', self.__onPress)
+        self.frameControl.bind('<ButtonRelease-1>', self.__onRelease)
 
         self.maxLabel = self.createcomponent(
             'maxLabel', (), 'sLabel',
             Label, (frameFrame,),
-            text = self.maxFrame)
+            text = 24)
         self.maxLabel.pack(side = LEFT)
         frameFrame.pack(side = LEFT, expand = 1, fill = X)
 
@@ -347,21 +373,33 @@ class ActorControl(Pmw.MegaWidget):
         actor = self['actor']
         active = self['active']
         self.fps = actor.getFrameRate(active)
+        self.duration = actor.getDuration(active)
         self.maxFrame = actor.getNumFrames(active) - 1
-        self.maxSeconds = self.maxFrame / self.fps
-        # Switch between showing frame counts and seconds
+        self.maxSeconds = self.offset + self.duration
+        # switch between showing frame counts and seconds
         if self.unitsVar.get() == FRAMES:
-            newMin = int(math.floor(self.offset * self.fps))
-            newMax = int(math.ceil(self.offset * self.fps)) + self.maxFrame
-            self.minLabel['text'] = newMin
-            self.maxLabel['text'] = newMax
-            self.frameControl.configure(to = newMax, resolution = 1.0)
+            # these are approximate due to discrete frame size
+            fromFrame = 0
+            toFrame = self.maxFrame
+            self.minLabel['text'] = fromFrame
+            self.maxLabel['text'] = toFrame
+            self.frameControl.configure(from_ = fromFrame,
+                                        to = toFrame,
+                                        resolution = 1.0)
         else:
-            newMin = self.offset
-            newMax = self.offset + self.maxSeconds
-            self.minLabel['text'] = "%.1f" % newMin
-            self.maxLabel['text'] = "%.1f" % newMax
-            self.frameControl.configure(to = newMax, resolution = 0.01)
+            self.minLabel['text'] = '0.0'
+            self.maxLabel['text'] = "%.2f" % self.duration
+            self.frameControl.configure(from_ = 0.0, 
+                                        to = self.duration,
+                                        resolution = 0.01)
+
+    def __onPress(self, event):
+        # Enable slider command
+        self.fScaleCommand = 1
+
+    def __onRelease(self, event):
+        # Disable slider command
+        self.fScaleCommand = 0
 
     def selectAnimNamed(self, name):
         self['active'] = name
@@ -393,31 +431,131 @@ class ActorControl(Pmw.MegaWidget):
         self.unitsVar.set(SECONDS)
         self.updateDisplay()
 
-    def play(self, fLoop):
+    def play(self, deltaT, fLoop):
         if self.frameActiveVar.get():
+            # Compute new time
+            self.currT = self.currT + deltaT
             if fLoop:
-                self['actor'].loop(self['active'])
+                # If its looping compute modulo
+                loopT = self.currT % self.duration
+                self.goToT(loopT)
             else:
-                self['actor'].play(self['active'])
+                if (self.currT > self.maxSeconds):
+                    # Clear this actor control from play list
+                    self['animPanel'].playList.remove(self)
+                else:
+                    self.goToT(self.currT)
+        else:
+            # Clear this actor control from play list
+            self['animPanel'].playList.remove(self)
+
+    def goToF(self, f):
+        if self.unitsVar.get() == FRAMES:
+            self.frameControl.set(f)
+        else:
+            self.frameControl.set(f/self.fps)
+
+    def goToT(self, t):
+        if self.unitsVar.get() == FRAMES:
+            self.frameControl.set(t * self.fps)
+        else:
+            self.frameControl.set(t)
 
     def goTo(self, t):
+        # Convert scale value to float
+        t = string.atof(t)
+        # Now convert t to seconds for offset calculations
         if self.unitsVar.get() == FRAMES:
-            self['actor'].pose(self['active'], string.atoi(t))
-        else:
-            self['actor'].pose(self['active'], int(string.atof(t) * self.fps))
-
-    def stop(self):
-        if self.frameActiveVar.get():
-            self['actor'].stop()
+            t = t / self.fps
+        # Update currT
+        if self.fScaleCommand or self.fOneShot:
+            self.currT = t
+            self.fOneShot = 0
+        # Now update actor (pose specifed as frame count)
+        self['actor'].pose(self['active'],
+                           min(self.maxFrame, int(t * self.fps)))
 
     def resetToZero(self):
-        self.frameControl.set(0.0)
+        # This flag forces self.currT to be updated to new value
+        self.fOneShot = 1
+        self.goToT(0)
         
     def resetToEnd(self):
-        if self.unitsVar.get() == FRAMES:
-            t = self.maxFrame
-        else:
-            t = self.maxFrame / self.fps
-        self.frameControl.set(t)
+        # This flag forces self.currT to be updated to new value
+        self.fOneShot = 1
+        self.goToT(self.duration)
         
         
+"""
+# EXAMPLE CODE
+import Actor
+import AnimPanel
+
+a = Actor.Actor({250:{"head":"phase_3/models/char/dogMM_Shorts-head-250",
+                      "torso":"phase_3/models/char/dogMM_Shorts-torso-250",
+                      "legs":"phase_3/models/char/dogMM_Shorts-legs-250"},
+                 500:{"head":"phase_3/models/char/dogMM_Shorts-head-500",
+                      "torso":"phase_3/models/char/dogMM_Shorts-torso-500",
+                      "legs":"phase_3/models/char/dogMM_Shorts-legs-500"},
+                 1000:{"head":"phase_3/models/char/dogMM_Shorts-head-1000",
+                      "torso":"phase_3/models/char/dogMM_Shorts-torso-1000",
+                      "legs":"phase_3/models/char/dogMM_Shorts-legs-1000"}},
+                {"head":{"walk":"phase_3/models/char/dogMM_Shorts-head-walk", \
+                         "run":"phase_3/models/char/dogMM_Shorts-head-run"}, \
+                 "torso":{"walk":"phase_3/models/char/dogMM_Shorts-torso-walk", \
+                          "run":"phase_3/models/char/dogMM_Shorts-torso-run"}, \
+                 "legs":{"walk":"phase_3/models/char/dogMM_Shorts-legs-walk", \
+                         "run":"phase_3/models/char/dogMM_Shorts-legs-run"}})
+a.attach("head", "torso", "joint-head", 250)
+a.attach("torso", "legs", "joint-hips", 250)
+a.attach("head", "torso", "joint-head", 500)
+a.attach("torso", "legs", "joint-hips", 500)
+a.attach("head", "torso", "joint-head", 1000)
+a.attach("torso", "legs", "joint-hips", 1000)
+a.drawInFront("joint-pupil?", "eyes*", -1, lodName=250)
+a.drawInFront("joint-pupil?", "eyes*", -1, lodName=500)
+a.drawInFront("joint-pupil?", "eyes*", -1, lodName=1000)
+a.setLOD(250, 250, 75)
+a.setLOD(500, 75, 15)
+a.setLOD(1000, 15, 1)
+a.fixBounds()
+a.reparentTo(render)
+
+
+a2 = Actor.Actor({250:{"head":"phase_3/models/char/dogMM_Shorts-head-250",
+                      "torso":"phase_3/models/char/dogMM_Shorts-torso-250",
+                      "legs":"phase_3/models/char/dogMM_Shorts-legs-250"},
+                 500:{"head":"phase_3/models/char/dogMM_Shorts-head-500",
+                      "torso":"phase_3/models/char/dogMM_Shorts-torso-500",
+                      "legs":"phase_3/models/char/dogMM_Shorts-legs-500"},
+                 1000:{"head":"phase_3/models/char/dogMM_Shorts-head-1000",
+                      "torso":"phase_3/models/char/dogMM_Shorts-torso-1000",
+                      "legs":"phase_3/models/char/dogMM_Shorts-legs-1000"}},
+                {"head":{"walk":"phase_3/models/char/dogMM_Shorts-head-walk", \
+                         "run":"phase_3/models/char/dogMM_Shorts-head-run"}, \
+                 "torso":{"walk":"phase_3/models/char/dogMM_Shorts-torso-walk", \
+                          "run":"phase_3/models/char/dogMM_Shorts-torso-run"}, \
+                 "legs":{"walk":"phase_3/models/char/dogMM_Shorts-legs-walk", \
+                         "run":"phase_3/models/char/dogMM_Shorts-legs-run"}})
+a2.attach("head", "torso", "joint-head", 250)
+a2.attach("torso", "legs", "joint-hips", 250)
+a2.attach("head", "torso", "joint-head", 500)
+a2.attach("torso", "legs", "joint-hips", 500)
+a2.attach("head", "torso", "joint-head", 1000)
+a2.attach("torso", "legs", "joint-hips", 1000)
+a2.drawInFront("joint-pupil?", "eyes*", -1, lodName=250)
+a2.drawInFront("joint-pupil?", "eyes*", -1, lodName=500)
+a2.drawInFront("joint-pupil?", "eyes*", -1, lodName=1000)
+a2.setLOD(250, 250, 75)
+a2.setLOD(500, 75, 15)
+a2.setLOD(1000, 15, 1)
+a2.fixBounds()
+a2.reparentTo(render)
+
+ap = AnimPanel.AnimPanel([a, a2])
+
+# Alternately
+ap = a.animPanel()
+ap2 = a2.animPanel()
+
+"""
