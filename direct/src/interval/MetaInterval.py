@@ -328,15 +328,25 @@ class MetaInterval(CMetaInterval):
         # intervals it can, and then indicate the Python intervals
         # that must be invoked through this interface.
 
-        while (self.isEventReady()):
-            index = self.getEventIndex()
-            t = self.getEventT()
-            eventType = self.getEventType()
-            self.popEvent()
+        ival = None
+        try:
+            while (self.isEventReady()):
+                index = self.getEventIndex()
+                t = self.getEventT()
+                eventType = self.getEventType()
+                self.popEvent()
             
-            ival = self.pythonIvals[index]
-            ival.privDoEvent(t, eventType)
-            ival.privPostEvent()
+                ival = self.pythonIvals[index]
+                ival.privDoEvent(t, eventType)
+                ival.privPostEvent()
+                ival = None
+        except:
+            if ival != None:
+                print "Exception occurred while processing %s of %s:" % (ival.getName(), self.getName())
+            else:
+                print "Exception occurred while processing %s:" % (self.getName())
+            print self
+            raise
 
     def privDoEvent(self, t, event):
         # This function overrides the C++ function to initialize the
