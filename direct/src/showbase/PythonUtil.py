@@ -1001,6 +1001,9 @@ class Enum:
         for item in items:
             # remove leading/trailing whitespace
             item = string.strip(item)
+            # is there anything left?
+            if len(item) == 0:
+                continue
             # make sure there are no invalid characters
             assert(Enum._checkValidIdentifier(item))
             self.__dict__[item] = i
