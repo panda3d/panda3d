@@ -182,13 +182,14 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
             # client should not be connecting. Their entityTypeRegistry
             # is different from ours.
             srvHash = hash(self.levelSpec.entTypeReg)
+            """
             if srvHash != entTypeRegHash:
                 self.sendUpdateToAvatarId(
                     senderId, 'setSpecDeny',
                     ['EntityTypeRegistry hashes do not match! '
                      '(server:%s, client:%s' % (srvHash, entTypeRegHash)])
                 return
-            
+            """
             spec = None
             # don't need to hit disk if we're just sending 'None' over the wire
             useDisk = 0
