@@ -35,7 +35,7 @@
 //               within the HTTPClient family.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS HTTPEnum {
-public:
+PUBLISHED:
   enum HTTPVersion {
     HV_09,  // HTTP 0.9 or older
     HV_10,  // HTTP 1.0
