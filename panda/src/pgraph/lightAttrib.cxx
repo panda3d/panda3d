@@ -205,7 +205,7 @@ get_operation() const {
   if (has_all_off()) {
     return O_set;
 
-  } else if (get_num_on_lights() != 0) {
+  } else if (get_num_off_lights() == 0) {
     return O_add;
 
   } else {
@@ -225,7 +225,7 @@ get_operation() const {
 ////////////////////////////////////////////////////////////////////
 int LightAttrib::
 get_num_lights() const {
-  if (get_num_on_lights() != 0) {
+  if (get_num_off_lights() == 0) {
     return get_num_on_lights();
   } else {
     return get_num_off_lights();
@@ -244,7 +244,7 @@ get_num_lights() const {
 ////////////////////////////////////////////////////////////////////
 Light *LightAttrib::
 get_light(int n) const {
-  if (get_num_on_lights() != 0) {
+  if (get_num_off_lights() == 0) {
     return get_on_light(n);
   } else {
     return get_off_light(n);
@@ -264,7 +264,7 @@ get_light(int n) const {
 ////////////////////////////////////////////////////////////////////
 bool LightAttrib::
 has_light(Light *light) const {
-  if (get_num_on_lights() != 0) {
+  if (get_num_off_lights() == 0) {
     return has_on_light(light);
   } else {
     return has_off_light(light);
@@ -282,7 +282,7 @@ has_light(Light *light) const {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) LightAttrib::
 add_light(Light *light) const {
-  if (get_num_on_lights() != 0) {
+  if (get_num_off_lights() == 0) {
     return add_on_light(light);
   } else {
     return add_off_light(light);
@@ -301,7 +301,7 @@ add_light(Light *light) const {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) LightAttrib::
 remove_light(Light *light) const {
-  if (get_num_on_lights() != 0) {
+  if (get_num_off_lights() == 0) {
     return remove_on_light(light);
   } else {
     return remove_off_light(light);
