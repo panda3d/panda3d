@@ -106,6 +106,7 @@ class DirectSession(PandaObject):
             ['SGE_Deselect', self.deselect],
             ['SGE_Set Parent', self.setActiveParent],
             ['SGE_Reparent', self.reparent],
+            ['SGE_WRT Reparent', lambda np, s=self: s.reparent(np, fWrt = 1)],
             ['SGE_Flash', self.flash],
             ['SGE_Isolate', self.isolate],
             ['SGE_Toggle Vis', self.toggleVis],
@@ -255,6 +256,9 @@ class DirectSession(PandaObject):
         elif input == 'r':
             if self.selected.last:
                 self.reparent(self.selected.last)
+        elif input == 'R':
+            if self.selected.last:
+                self.reparent(self.selected.last, fWrt = 1)
         elif input == 's':
             if self.selected.last:
                 self.select(self.selected.last)
@@ -340,11 +344,14 @@ class DirectSession(PandaObject):
         # Alert everyone else
         messenger.send('DIRECT_activeParent', [self.activeParent])
         
-    def reparent(self, nodePath = None):
+    def reparent(self, nodePath = None, fWrt = 0):
         if (nodePath and self.activeParent and
             self.isNotCycle(nodePath, self.activeParent)):
             oldParent = nodePath.getParent()
-            nodePath.reparentTo(self.activeParent)
+            if fWrt:
+                nodePath.wrtReparentTo(self.activeParent)
+            else:
+                nodePath.reparentTo(self.activeParent)
             # Alert everyone else
             messenger.send('DIRECT_reparent',
                            [nodePath, oldParent, self.activeParent])

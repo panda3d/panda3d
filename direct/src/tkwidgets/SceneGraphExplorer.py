@@ -6,13 +6,15 @@ import Pmw
 DEFAULT_MENU_ITEMS = [
     'Update Explorer',
     'Separator',
-    'Select', 'Deselect', 'Set Parent', 'Reparent', 'Set Name',
+    'Select', 'Deselect', 
     'Separator',
     'Delete',
     'Separator',
     'Fit', 'Flash', 'Isolate', 'Toggle Vis', 'Show All',
     'Separator',
-    'Place', 'Set Color', 'Explore',
+    'Set Parent', 'Reparent', 'WRT Reparent',
+    'Separator',
+    'Place', 'Set Name', 'Set Color', 'Explore',
     'Separator']
 
 class SceneGraphExplorer(Pmw.MegaWidget, PandaObject):
