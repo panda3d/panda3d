@@ -334,6 +334,8 @@ post_txa_file() {
     _properties._magfilter = _request._magfilter;
   }
 
+  _properties._anisotropic_degree = max(_request._anisotropic_degree, _properties._anisotropic_degree);
+
   if (_properties._color_type == (PNMFileType *)NULL) {
     _properties._color_type = _request._properties._color_type;
     _properties._alpha_type = _request._properties._alpha_type;
@@ -591,7 +593,7 @@ get_preferred_source() {
     // one we pick, but we should at least pick one that has an egg
     // reference, if any of them do.
     if (any_referenced) {
-      for (si = _sources.begin(); 
+      for (si = _sources.begin();
            si != _sources.end() && best == (SourceTextureImage *)NULL;
            ++si) {
         SourceTextureImage *source = (*si).second;
@@ -1076,14 +1078,14 @@ consider_alpha() {
       if (_read_source_image) {
         nout << *this << " has an all-zero alpha channel; dropping alpha.\n";
       }
-      
+
     } else if (_alpha_mode == EggRenderMode::AM_unspecified) {
       // Consider fiddling with the alpha mode, if the user hasn't
       // specified a particular alpha mode in the txa file.
       if ((_alpha_bits & AB_mid) == 0) {
         // No middle range bits: a binary alpha image.
         _alpha_mode = EggRenderMode::AM_binary;
-        
+
       } else if ((_alpha_bits & AB_one) != 0) {
         // At least some opaque bits: a dual alpha image.
         _alpha_mode = EggRenderMode::AM_dual;
