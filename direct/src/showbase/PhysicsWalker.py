@@ -120,7 +120,7 @@ class PhysicsWalker(DirectObject.DirectObject):
     def setupRay(self, floorBitmask, floorOffset):
         # This is a ray cast from your head down to detect floor polygons
         # A toon is about 4.0 feet high, so start it there
-        self.cRay = CollisionRay(0.0, 0.0, 4.0, 0.0, 0.0, -1.0)
+        self.cRay = CollisionRay(0.0, 0.0, CollisionHandlerRayStart, 0.0, 0.0, -1.0)
         cRayNode = CollisionNode('PW.cRayNode')
         cRayNode.addSolid(self.cRay)
         self.cRayNodePath = self.avatarNodePath.attachNewNode(cRayNode)

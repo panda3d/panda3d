@@ -175,7 +175,7 @@ class GravityWalker(DirectObject.DirectObject):
         # a higher or lower value depending on whether you want an avatar
         # that is outside of the world to step up to the floor when they
         # get under valid floor:
-        cRay = CollisionRay(0.0, 0.0, 4000.0, 0.0, 0.0, -1.0)
+        cRay = CollisionRay(0.0, 0.0, CollisionHandlerRayStart, 0.0, 0.0, -1.0)
         cRayNode = CollisionNode('GW.cRayNode')
         cRayNode.addSolid(cRay)
         self.cRayNodePath = self.avatarNodePath.attachNewNode(cRayNode)
