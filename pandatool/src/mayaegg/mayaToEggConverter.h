@@ -28,6 +28,8 @@
 #include "eggTextureCollection.h"
 #include "distanceUnit.h"
 #include "coordinateSystem.h"
+#include "globPattern.h"
+#include "pvector.h"
 
 #include "pre_maya_include.h"
 #include <maya/MDagPath.h>
@@ -74,7 +76,12 @@ public:
 
   virtual bool convert_file(const Filename &filename);
   virtual DistanceUnit get_input_units();
-  bool convert_maya(bool from_selection);
+
+  void clear_subsets();
+  void add_subset(const GlobPattern &glob);
+  void set_from_selection(bool from_selection);
+
+  bool convert_maya();
 
   bool open_api();
   void close_api();
@@ -124,7 +131,10 @@ private:
   bool reparent_decals(EggGroupNode *egg_parent);
 
   string _program_name;
+
   bool _from_selection;
+  typedef pvector<GlobPattern> Subsets;
+  Subsets _subsets;
 
   MayaNodeTree _tree;
 

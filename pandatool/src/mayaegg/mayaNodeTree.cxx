@@ -62,13 +62,14 @@ build_node(const MDagPath &dag_path) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeTree::build_complete_hierarchy
+//     Function: MayaNodeTree::build_hierarchy
 //       Access: Public
 //  Description: Walks through the complete Maya hierarchy and builds
-//               up the corresponding tree.
+//               up the corresponding tree, but does not tag any nodes
+//               for conversion.
 ////////////////////////////////////////////////////////////////////
 bool MayaNodeTree::
-build_complete_hierarchy() {
+build_hierarchy() {
   MStatus status;
 
   MItDag dag_iterator(MItDag::kDepthFirst, MFn::kTransform, &status);
@@ -104,14 +105,25 @@ build_complete_hierarchy() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeTree::build_selected_hierarchy
+//     Function: MayaNodeTree::tag_all
 //       Access: Public
-//  Description: Walks through the selected subset of the Maya
-//               hierarchy (or the complete hierarchy, if nothing is
-//               selected) and builds up the corresponding tree.
+//  Description: Tags the entire hierarchy for conversion.  This is
+//               the normal behavior.
+////////////////////////////////////////////////////////////////////
+void MayaNodeTree::
+tag_all() {
+  _root->tag_recursively();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeTree::tag_selected
+//       Access: Public
+//  Description: Tags the just the selected hierarchy for conversion,
+//               or the entire hierarchy if nothing is selected.
+//               Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool MayaNodeTree::
-build_selected_hierarchy() {
+tag_selected() {
   MStatus status;
 
   MItDag dag_iterator(MItDag::kDepthFirst, MFn::kTransform, &status);
@@ -120,7 +132,6 @@ build_selected_hierarchy() {
     return false;
   }
 
-  // Get only the selected geometry.
   MSelectionList selection;
   status = MGlobal::getActiveSelectionList(selection);
   if (!status) {
@@ -128,12 +139,11 @@ build_selected_hierarchy() {
     return false;
   }
   
-  // Get the selected geometry only if the selection is nonempty;
-  // otherwise, get the whole scene anyway.
   if (selection.isEmpty()) {
     mayaegg_cat.info()
       << "Selection list is empty.\n";
-    return build_complete_hierarchy();
+    tag_all();
+    return true;
   }
 
   bool all_ok = true;
@@ -153,7 +163,7 @@ build_selected_hierarchy() {
         if (!status) {
           status.perror("MItDag::getPath");
         } else {
-          build_node(dag_path);
+          build_node(dag_path)->tag();
         }
         
         dag_iterator.next();
@@ -166,6 +176,32 @@ build_selected_hierarchy() {
   }
 
   return all_ok;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeTree::tag_named
+//       Access: Public
+//  Description: Tags nodes matching the indicated glob (and all of
+//               their children) for conversion.  Returns true on
+//               success, false otherwise (e.g. the named node does
+//               not exist).
+////////////////////////////////////////////////////////////////////
+bool MayaNodeTree::
+tag_named(const GlobPattern &glob) {
+  // There might be multiple nodes matching the name; search for all
+  // of them.
+  bool found_any = false;
+
+  Nodes::iterator ni;
+  for (ni = _nodes.begin(); ni != _nodes.end(); ++ni) {
+    MayaNodeDesc *node = (*ni);
+    if (glob.matches(node->get_name())) {
+      node->tag_recursively();
+      found_any = true;
+    }
+  }
+
+  return found_any;
 }
 
 ////////////////////////////////////////////////////////////////////

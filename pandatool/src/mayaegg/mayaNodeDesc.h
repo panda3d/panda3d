@@ -52,11 +52,16 @@ public:
   bool is_joint() const;
   bool is_joint_parent() const;
 
+  bool is_tagged() const;
+
   MayaNodeDesc *_parent;
   typedef pvector< PT(MayaNodeDesc) > Children;
   Children _children;
   
 private:
+  void tag();
+  void tag_recursively();
+
   void clear_egg();
   void mark_joint_parent();
   void check_pseudo_joints(bool joint_above);
@@ -75,6 +80,8 @@ private:
     JT_joint_parent, // A parent or ancestor of a joint or pseudo joint.
   };
   JointType _joint_type;
+
+  bool _tagged;
 
 
 public:

@@ -20,6 +20,7 @@
 #include "mayaToEggConverter.h"
 #include "config_mayaegg.h"
 #include "config_maya.h"  // for maya_cat
+#include "globPattern.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaToEgg::Constructor
@@ -74,6 +75,16 @@ MayaToEgg() :
      &MayaToEgg::dispatch_transform_type, NULL, &_transform_type);
 
   add_option
+    ("subset", "name", 0,
+     "Specifies that only a subset of the geometry in the Maya file should "
+     "be converted; specifically, the geometry under the node or nodes whose "
+     "name matches the parameter (which may include globbing characters "
+     "like * or ?).  This parameter may be repeated multiple times to name "
+     "multiple roots.  If it is omitted altogether, the entire file is "
+     "converted.",
+     &MayaToEgg::dispatch_vector_string, NULL, &_subsets);
+
+  add_option
     ("v", "", 0,
      "Increase verbosity.  More v's means more verbose.",
      &MayaToEgg::dispatch_count, NULL, &_verbose);
@@ -121,6 +132,11 @@ run() {
   converter._polygon_tolerance = _polygon_tolerance;
   converter._respect_maya_double_sided = _respect_maya_double_sided;
   converter._transform_type = _transform_type;
+
+  vector_string::const_iterator si;
+  for (si = _subsets.begin(); si != _subsets.end(); ++si) {
+    converter.add_subset(GlobPattern(*si));
+  }
 
   // Copy in the path and animation parameters.
   apply_parameters(converter);

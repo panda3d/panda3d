@@ -148,8 +148,9 @@ convert(const NodePath &parent) {
 
   EggData egg_data;
   converter.set_egg_data(&egg_data, false);
+  converter.set_from_selection(true);
 
-  if (!converter.convert_maya(true)) {
+  if (!converter.convert_maya()) {
     nout << "Errors in conversion.\n";
     return false;
   }

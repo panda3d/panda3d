@@ -41,6 +41,7 @@ protected:
   double _polygon_tolerance;
   bool _respect_maya_double_sided;
   MayaToEggConverter::TransformType _transform_type;
+  vector_string _subsets;
 };
 
 #endif

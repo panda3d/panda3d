@@ -22,6 +22,7 @@
 #include "pandatoolbase.h"
 
 #include "mayaNodeDesc.h"
+#include "globPattern.h"
 
 class EggData;
 class EggGroupNode;
@@ -35,8 +36,11 @@ class MayaNodeTree {
 public:
   MayaNodeTree();
   MayaNodeDesc *build_node(const MDagPath &dag_path);
-  bool build_complete_hierarchy();
-  bool build_selected_hierarchy();
+  bool build_hierarchy();
+
+  void tag_all();
+  bool tag_selected();
+  bool tag_named(const GlobPattern &glob);
 
   int get_num_nodes() const;
   MayaNodeDesc *get_node(int n) const;

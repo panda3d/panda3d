@@ -35,6 +35,7 @@ MayaNodeDesc(MayaNodeDesc *parent, const string &name) :
   _egg_table = (EggTable *)NULL;
   _anim = (EggXfmSAnim *)NULL;
   _joint_type = JT_none;
+  _tagged = false;
 
   // Add ourselves to our parent.
   if (_parent != (MayaNodeDesc *)NULL) {
@@ -101,7 +102,7 @@ get_dag_path() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaNodeDesc::is_joint
-//       Access: Private
+//       Access: Public
 //  Description: Returns true if the node should be treated as a joint
 //               by the converter.
 ////////////////////////////////////////////////////////////////////
@@ -112,7 +113,7 @@ is_joint() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaNodeDesc::is_joint_parent
-//       Access: Private
+//       Access: Public
 //  Description: Returns true if the node is the parent or ancestor of
 //               a joint.
 ////////////////////////////////////////////////////////////////////
@@ -120,6 +121,46 @@ bool MayaNodeDesc::
 is_joint_parent() const {
   return _joint_type == JT_joint_parent;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeDesc::is_tagged
+//       Access: Public
+//  Description: Returns true if the node has been tagged to be
+//               converted, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool MayaNodeDesc::
+is_tagged() const {
+  return _tagged;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeDesc::tag
+//       Access: Private
+//  Description: Tags this node for conversion, but does not tag child
+//               nodes.
+////////////////////////////////////////////////////////////////////
+void MayaNodeDesc::
+tag() {
+  _tagged = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeDesc::tag_recursively
+//       Access: Private
+//  Description: Tags this node and all descendant nodes for
+//               conversion.
+////////////////////////////////////////////////////////////////////
+void MayaNodeDesc::
+tag_recursively() {
+  _tagged = true;
+
+  Children::const_iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    MayaNodeDesc *child = (*ci);
+    child->tag_recursively();
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaNodeDesc::clear_egg

@@ -103,6 +103,7 @@ MayaToEggConverter(const string &program_name) :
 MayaToEggConverter::
 MayaToEggConverter(const MayaToEggConverter &copy) :
   _from_selection(copy._from_selection),
+  _subsets(copy._subsets),
   _maya(copy._maya),
   _polygon_output(copy._polygon_output),
   _polygon_tolerance(copy._polygon_tolerance),
@@ -201,7 +202,47 @@ convert_file(const Filename &filename) {
     _character_name = filename.get_basename_wo_extension();
   }
 
-  return convert_maya(false);
+  return convert_maya();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::clear_subsets
+//       Access: Public
+//  Description: Empties the list of subset nodes added via
+//               add_subset().  The entire file will once again be
+//               converted.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+clear_subsets() {
+  _subsets.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::add_subset
+//       Access: Public
+//  Description: Adds a name pattern to the list of subset nodes.  If
+//               the list of subset nodes is not empty, then only a
+//               subset of the nodes in the maya file will be
+//               converted: those whose names match one of the
+//               patterns given on this list.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+add_subset(const GlobPattern &glob) {
+  _subsets.push_back(glob);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::set_from_selection
+//       Access: Public
+//  Description: Sets the flag that indicates whether the currently
+//               selected Maya geometry will be converted.  If this is
+//               true, and the selection is nonempty, then only the
+//               selected geometry will be converted.  If this is
+//               false, the entire file will be converted.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+set_from_selection(bool from_selection) {
+  _from_selection = from_selection;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -223,14 +264,10 @@ get_input_units() {
 //       Access: Public
 //  Description: Fills up the egg_data structure according to the
 //               global maya model data.  Returns true if successful,
-//               false if there is an error.  If from_selection is
-//               true, the converted geometry is based on that which
-//               is selected; otherwise, it is the entire Maya scene.
+//               false if there is an error.
 ////////////////////////////////////////////////////////////////////
 bool MayaToEggConverter::
-convert_maya(bool from_selection) {
-  _from_selection = from_selection;
-
+convert_maya() {
   clear();
 
   if (!open_api()) {
@@ -277,12 +314,24 @@ convert_maya(bool from_selection) {
 
   frame_inc = frame_inc * input_frame_rate / output_frame_rate;
 
-  bool all_ok = true;
+  bool all_ok = _tree.build_hierarchy();
 
-  if (_from_selection) {
-    all_ok = _tree.build_selected_hierarchy();
-  } else {
-    all_ok = _tree.build_complete_hierarchy();
+  if (all_ok) {
+    if (_from_selection) {
+      all_ok = _tree.tag_selected();
+
+    } else if (!_subsets.empty()) {
+      Subsets::const_iterator si;
+      for (si = _subsets.begin(); si != _subsets.end(); ++si) {
+        if (!_tree.tag_named(*si)) {
+          mayaegg_cat.info()
+            << "No node matching " << *si << " found.\n";
+        }
+      }
+
+    } else {
+      _tree.tag_all();
+    }
   }
 
   if (all_ok) {
@@ -557,8 +606,11 @@ convert_hierarchy(EggGroupNode *egg_root) {
 
   _tree.clear_egg(&get_egg_data(), egg_root, NULL);
   for (int i = 0; i < num_nodes; i++) {
-    if (!process_model_node(_tree.get_node(i))) {
-      return false;
+    MayaNodeDesc *node = _tree.get_node(i);
+    if (node->is_tagged()) {
+      if (!process_model_node(node)) {
+        return false;
+      }
     }
   }
 
