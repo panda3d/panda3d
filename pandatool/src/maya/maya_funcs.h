@@ -75,6 +75,12 @@ set_string_attribute(MObject &node, const string &attribute_name,
 void
 describe_maya_attribute(MObject &node, const string &attribute_name);
 
+string
+string_mfndata_type(MFnData::Type type);
+
+void
+list_maya_attributes(MObject &node);
+
 // Also, we must define some output functions for Maya objects, since
 // we can't use those built into Maya (which forward-defines the
 // ostream type incorrectly).

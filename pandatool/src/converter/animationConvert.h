@@ -28,10 +28,12 @@
 //               represented in egg format.
 ////////////////////////////////////////////////////////////////////
 enum AnimationConvert {
-  AC_invalid,
-  AC_none,
-  AC_pose,
-  AC_flip,
+  AC_invalid,  // Never use this.
+  AC_none,     // No animation: static geometry only.
+  AC_pose,     // Pose to one frame, then get static geometry.
+  AC_flip,     // A flip (sequence) of static geometry models.
+  AC_model,    // A character model, with joints.
+  AC_chan,     // Animation tables for the above model.
 };
 
 string format_animation_convert(AnimationConvert unit);

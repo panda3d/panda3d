@@ -39,6 +39,12 @@ format_animation_convert(AnimationConvert convert) {
 
   case AC_flip:
     return "flip";
+
+  case AC_model:
+    return "model";
+
+  case AC_chan:
+    return "chan";
   }
   nout << "**unexpected AnimationConvert value: (" << (int)convert << ")**";
   return "**";
@@ -69,6 +75,12 @@ string_animation_convert(const string &str) {
 
   } else if (cmp_nocase(str, "flip") == 0) {
     return AC_flip;
+
+  } else if (cmp_nocase(str, "model") == 0) {
+    return AC_model;
+
+  } else if (cmp_nocase(str, "chan") == 0) {
+    return AC_chan;
 
   } else {
     return AC_invalid;

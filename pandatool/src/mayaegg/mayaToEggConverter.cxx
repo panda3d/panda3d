@@ -62,6 +62,12 @@
 #include <maya/MTesselationParams.h>
 #include <maya/MAnimControl.h>
 #include <maya/MGlobal.h>
+#include <maya/MAnimUtil.h>
+#include <maya/MFnSkinCluster.h>
+#include <maya/MFnSingleIndexedComponent.h>
+#include <maya/MItDependencyGraph.h>
+#include <maya/MDagPathArray.h>
+#include <maya/MSelectionList.h>
 #include "post_maya_include.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -223,6 +229,11 @@ convert_maya() {
 
   case AC_none:
     // none: just get out a static model, no animation.
+    // fall through
+
+  case AC_model:
+    // model: get out an animatable model with joints and vertex
+    // membership.
     all_ok = convert_hierarchy(&get_egg_data());
     break;
 
@@ -374,8 +385,14 @@ process_node(const MDagPath &dag_path, EggGroupNode *egg_root) {
 
   if (mayaegg_cat.is_debug()) {
     mayaegg_cat.debug()
-      << dag_node.name() << ": " << dag_node.typeName() << "\n"
-      << "  dag_path: " << dag_path.fullPathName() << "\n";
+      << dag_path.fullPathName() << ": " << dag_node.typeName();
+
+    if (MAnimUtil::isAnimated(dag_path)) {
+      mayaegg_cat.debug(false)
+        << " (animated)";
+    }
+
+    mayaegg_cat.debug(false) << "\n";
   }
 
   if (dag_path.hasFn(MFn::kCamera)) {
@@ -390,9 +407,22 @@ process_node(const MDagPath &dag_path, EggGroupNode *egg_root) {
         << "Ignoring light node " << dag_path.fullPathName() << "\n";
     }
 
+  } else if (dag_path.hasFn(MFn::kJoint)) {
+    // A joint.
+
+    // Don't bother with joints unless we're getting an animatable
+    // model.
+    if (_animation_convert == AC_model) {
+      EggGroup *egg_group = get_egg_group(dag_path, egg_root);
+
+      if (egg_group != (EggGroup *)NULL) {
+        egg_group->set_group_type(EggGroup::GT_joint);
+        get_transform(dag_path, egg_group);
+      }
+    }
+
   } else if (dag_path.hasFn(MFn::kNurbsSurface)) {
-    EggGroup *egg_group =
-      get_egg_group(dag_path.fullPathName().asChar(), egg_root);
+    EggGroup *egg_group = get_egg_group(dag_path, egg_root);
 
     if (egg_group == (EggGroup *)NULL) {
       mayaegg_cat.error()
@@ -408,13 +438,12 @@ process_node(const MDagPath &dag_path, EggGroupNode *egg_root) {
           << "Error in node " << dag_path.fullPathName() << ":\n"
           << "  it appears to have a NURBS surface, but does not.\n";
       } else {
-        make_nurbs_surface(dag_path, surface, egg_group);
+        make_nurbs_surface(dag_path, surface, egg_group, egg_root);
       }
     }
 
   } else if (dag_path.hasFn(MFn::kNurbsCurve)) {
-    EggGroup *egg_group =
-      get_egg_group(dag_path.fullPathName().asChar(), egg_root);
+    EggGroup *egg_group = get_egg_group(dag_path, egg_root);
 
     if (egg_group == (EggGroup *)NULL) {
       nout << "Cannot determine group node.\n";
@@ -428,13 +457,12 @@ process_node(const MDagPath &dag_path, EggGroupNode *egg_root) {
           << "Error in node " << dag_path.fullPathName() << ":\n"
           << "  it appears to have a NURBS curve, but does not.\n";
       } else {
-        make_nurbs_curve(dag_path, curve, egg_group);
+        make_nurbs_curve(dag_path, curve, egg_group, egg_root);
       }
     }
 
   } else if (dag_path.hasFn(MFn::kMesh)) {
-    EggGroup *egg_group =
-      get_egg_group(dag_path.fullPathName().asChar(), egg_root);
+    EggGroup *egg_group = get_egg_group(dag_path, egg_root);
 
     if (egg_group == (EggGroup *)NULL) {
       mayaegg_cat.error()
@@ -450,14 +478,13 @@ process_node(const MDagPath &dag_path, EggGroupNode *egg_root) {
           << "Error in node " << dag_path.fullPathName() << ":\n"
           << "  it appears to have a polygon mesh, but does not.\n";
       } else {
-        make_polyset(dag_path, mesh, egg_group);
+        make_polyset(dag_path, mesh, egg_group, egg_root);
       }
     }
 
   } else {
     // Get the translation/rotation/scale data
-    EggGroup *egg_group =
-      get_egg_group(dag_path.fullPathName().asChar(), egg_root);
+    EggGroup *egg_group = get_egg_group(dag_path, egg_root);
 
     if (egg_group != (EggGroup *)NULL) {
       get_transform(dag_path, egg_group);
@@ -537,7 +564,7 @@ get_transform(const MDagPath &dag_path, EggGroup *egg_group) {
 ////////////////////////////////////////////////////////////////////
 void MayaToEggConverter::
 make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface &surface,
-                   EggGroup *egg_group) {
+                   EggGroup *egg_group, EggGroupNode *egg_root) {
   MStatus status;
   string name = surface.name().asChar();
 
@@ -593,7 +620,7 @@ make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface &surface,
       status.perror("MFnMesh constructor");
       return;
     }
-    make_polyset(polyset_path, polyset_fn, egg_group, shader);
+    make_polyset(polyset_path, polyset_fn, egg_group, egg_root, shader);
 
     return;
   }
@@ -832,7 +859,7 @@ make_trim_curve(const MFnNurbsCurve &curve, const string &nurbs_name,
 ////////////////////////////////////////////////////////////////////
 void MayaToEggConverter::
 make_nurbs_curve(const MDagPath &, const MFnNurbsCurve &curve,
-                 EggGroup *egg_group) {
+                 EggGroup *egg_group, EggGroupNode *) {
   MStatus status;
   string name = curve.name().asChar();
 
@@ -917,7 +944,8 @@ make_nurbs_curve(const MDagPath &, const MFnNurbsCurve &curve,
 ////////////////////////////////////////////////////////////////////
 void MayaToEggConverter::
 make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
-             EggGroup *egg_group, MayaShader *default_shader) {
+             EggGroup *egg_group, EggGroupNode *egg_root,
+             MayaShader *default_shader) {
   MStatus status;
   string name = mesh.name().asChar();
 
@@ -944,14 +972,18 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
   EggVertexPool *vpool = new EggVertexPool(vpool_name);
   egg_group->add_child(vpool);
 
-  /*
-  MDagPath mesh_path;
-  status = mesh.getPath(mesh_path);
-  if (!status) {
-    status.perror("MFnMesh::dagPath");
-    return;
-  }
-  */
+  // One way to convert the mesh would be to first get out all the
+  // vertices in the mesh and add them into the vpool, then when we
+  // traverse the polygons we would only have to index them into the
+  // vpool according to their Maya vertex index.
+
+  // Unfortunately, since Maya may store multiple normals and/or
+  // colors for each vertex according to which polygon it is in, that
+  // approach won't necessarily work.  In egg, those split-property
+  // vertices have to become separate vertices.  So instead of adding
+  // all the vertices up front, we'll start with an empty vpool, and
+  // add vertices to it on the fly.
+
   MObject component_obj;
   MItMeshPolygon pi(dag_path, component_obj, &status);
   if (!status) {
@@ -1007,15 +1039,17 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
         }
       }
 
+      vert.set_external_index(pi.vertexIndex(i, &status));
+
       egg_poly->add_vertex(vpool->create_unique_vertex(vert));
     }
 
     // Determine the shader for this particular polygon.
     int index = pi.index();
-    assert(index >= 0 && index < (int)poly_shader_indices.length());
+    nassertv(index >= 0 && index < (int)poly_shader_indices.length());
     int shader_index = poly_shader_indices[index];
     if (shader_index != -1) {
-      assert(shader_index >= 0 && shader_index < (int)shaders.length());
+      nassertv(shader_index >= 0 && shader_index < (int)shaders.length());
       MObject engine = shaders[shader_index];
       MayaShader *shader =
         _shaders.find_shader_for_shading_engine(engine);
@@ -1029,6 +1063,137 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
 
     pi.next();
   }
+
+  // Now that we've added all the polygons (and created all the
+  // vertices), go back through the vertex pool and set up the
+  // appropriate joint membership for each of the vertices.
+  bool got_weights = false;
+
+  pvector<EggGroup *> joints;
+  MFloatArray weights;
+  if (_animation_convert == AC_model) {
+    got_weights = 
+      get_vertex_weights(dag_path, mesh, egg_root, joints, weights);
+  }
+
+  if (got_weights) {
+    int num_joints = joints.size();
+    int num_weights = (int)weights.length();
+    int num_verts = num_weights / num_joints;
+    // The number of weights should be an even multiple of verts *
+    // joints.
+    nassertv(num_weights == num_verts * num_joints);
+
+    EggVertexPool::iterator vi;
+    for (vi = vpool->begin(); vi != vpool->end(); ++vi) {
+      EggVertex *vert = (*vi);
+      int maya_vi = vert->get_external_index();
+      nassertv(maya_vi >= 0 && maya_vi < num_verts);
+
+      for (int ji = 0; ji < num_joints; ++ji) {
+        float weight = weights[maya_vi * num_joints + ji];
+        if (weight != 0.0f) {
+          EggGroup *joint = joints[ji];
+          if (joint != (EggGroup *)NULL) {
+            joint->ref_vertex(vert, weight);
+          }
+        }
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::get_vertex_weights
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool MayaToEggConverter::
+get_vertex_weights(const MDagPath &dag_path, const MFnMesh &mesh,
+                   EggGroupNode *egg_root,
+                   pvector<EggGroup *> &joints, MFloatArray &weights) {
+  MStatus status;
+  
+  // Since we are working with a mesh the input attribute that 
+  // creates the mesh is named "inMesh" 
+  // 
+  MObject attr = mesh.attribute("inMesh"); 
+  
+  // Create the plug to the "inMesh" attribute then use the 
+  // DG iterator to walk through the DG, at the node level.
+  // 
+  MPlug history(mesh.object(), attr); 
+  MItDependencyGraph it(history, MFn::kDependencyNode, 
+                        MItDependencyGraph::kUpstream, 
+                        MItDependencyGraph::kDepthFirst, 
+                        MItDependencyGraph::kNodeLevel);
+
+  while (!it.isDone()) {
+    // We will walk along the node level of the DG until we 
+    // spot a skinCluster node.
+    // 
+    MObject c_node = it.thisNode(); 
+    if (c_node.hasFn(MFn::kSkinClusterFilter)) { 
+      // We've found the cluster handle. Try to get the weight
+      // data.
+      // 
+      MFnSkinCluster cluster(c_node, &status); 
+      if (!status) {
+        status.perror("MFnSkinCluster constructor");
+        return false;
+      }
+
+      // Get the set of objects that influence the vertices of this
+      // mesh.  Hopefully these will all be joints.
+      MDagPathArray influence_objects;
+      cluster.influenceObjects(influence_objects, &status); 
+      if (!status) {
+        status.perror("MFnSkinCluster::influenceObjects");
+
+      } else {
+        // Fill up the vector with the corresponding table of egg
+        // groups for each joint.
+        joints.clear();
+        for (unsigned oi = 0; oi < influence_objects.length(); oi++) {
+          MDagPath joint_dag_path = influence_objects[oi];
+          EggGroup *joint = get_egg_group(joint_dag_path, egg_root);
+          joints.push_back(joint);
+        }
+
+        // Now use a component object to retrieve all of the weight
+        // data in one API call.
+        MFnSingleIndexedComponent sic; 
+        MObject sic_object = sic.create(MFn::kMeshVertComponent); 
+        sic.setCompleteData(mesh.numVertices()); 
+        unsigned influence_count; 
+
+        status = cluster.getWeights(dag_path, sic_object, 
+                                    weights, influence_count); 
+        if (!status) {
+          status.perror("MFnSkinCluster::getWeights");
+        } else {
+          if (influence_count != influence_objects.length()) {
+            maya_cat.error()
+              << "MFnSkinCluster::influenceObjects() returns " 
+              << influence_objects.length()
+              << " objects, but MFnSkinCluster::getWeights() reports "
+              << influence_count << " objects.\n";
+            
+          } else {
+            // We've got the weights and the set of objects.  That's all
+            // we need.
+            return true;
+          }
+        }
+      }
+    }
+
+    it.next();
+  }
+  
+  mayaegg_cat.error()
+    << "Unable to find a cluster handle for the DG node.\n"; 
+  return false;
 }
 
 
@@ -1043,6 +1208,16 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
 //               In this way we generate a unique EggGroup for each
 //               Maya node we care about about, and also preserve the
 //               Maya hierarchy sensibly.
+////////////////////////////////////////////////////////////////////
+EggGroup *MayaToEggConverter::
+get_egg_group(const MDagPath &dag_path, EggGroupNode *egg_root) {
+  return get_egg_group(dag_path.fullPathName().asChar(), egg_root);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::get_egg_group
+//       Access: Private
+//  Description: The recursive implementation of get_egg_group().
 ////////////////////////////////////////////////////////////////////
 EggGroup *MayaToEggConverter::
 get_egg_group(const string &name, EggGroupNode *egg_root) {

@@ -39,6 +39,7 @@ class MFnNurbsSurface;
 class MFnNurbsCurve;
 class MFnMesh;
 class MPointArray;
+class MFloatArray;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MayaToEggConverter
@@ -79,19 +80,23 @@ private:
   // reference.
   void make_nurbs_surface(const MDagPath &dag_path, 
                           MFnNurbsSurface &surface,
-                          EggGroup *group);
+                          EggGroup *group, EggGroupNode *egg_root);
   EggNurbsCurve *make_trim_curve(const MFnNurbsCurve &curve,
                                  const string &nurbs_name,
                                  EggGroupNode *egg_group,
                                  int trim_curve_index);
   void make_nurbs_curve(const MDagPath &dag_path, 
                         const MFnNurbsCurve &curve,
-                        EggGroup *group);
+                        EggGroup *group, EggGroupNode *egg_root);
   void make_polyset(const MDagPath &dag_path,
                     const MFnMesh &mesh,
-                    EggGroup *egg_group,
+                    EggGroup *egg_group, EggGroupNode *egg_root,
                     MayaShader *default_shader = NULL);
+  bool get_vertex_weights(const MDagPath &dag_path, const MFnMesh &mesh,
+                          EggGroupNode *egg_root,
+                          pvector<EggGroup *> &joints, MFloatArray &weights);
 
+  EggGroup *get_egg_group(const MDagPath &dag_path, EggGroupNode *egg_root);
   EggGroup *get_egg_group(const string &name, EggGroupNode *egg_root);
   void set_shader_attributes(EggPrimitive &primitive,
                              const MayaShader &shader);

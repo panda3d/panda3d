@@ -25,6 +25,10 @@
 #include <maya/MStatus.h>
 #include <maya/MFnStringData.h>
 #include <maya/MFnNumericData.h>
+#include <maya/MPlugArray.h>
+#include <maya/MPlug.h>
+#include <maya/MFnAttribute.h>
+#include <maya/MFnTypedAttribute.h>
 #include "post_maya_include.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -277,3 +281,141 @@ describe_maya_attribute(MObject &node, const string &attribute_name) {
     << "Attribute " << attribute_name << " on object "
     << node_fn.name() << " has type " << attr.apiTypeStr() << "\n";
 }
+
+string
+string_mfndata_type(MFnData::Type type) {
+  switch (type) {
+  case MFnData::kInvalid:
+    return "kInvalid";
+    break;
+  case MFnData::kNumeric:
+    return "kNumeric";
+    break;
+  case MFnData::kPlugin:
+    return "kPlugin";
+    break;
+  case MFnData::kPluginGeometry:
+    return "kPluginGeometry";
+    break;
+  case MFnData::kString:
+    return "kString";
+    break;
+  case MFnData::kMatrix:
+    return "kMatrix";
+    break;
+  case MFnData::kStringArray:
+    return "kStringArray";
+    break;
+  case MFnData::kDoubleArray:
+    return "kDoubleArray";
+    break;
+  case MFnData::kIntArray:
+    return "kIntArray";
+    break;
+  case MFnData::kPointArray:
+    return "kPointArray";
+    break;
+  case MFnData::kVectorArray:
+    return "kVectorArray";
+    break;
+  case MFnData::kComponentList:
+    return "kComponentList";
+    break;
+  case MFnData::kMesh:
+    return "kMesh";
+    break;
+  case MFnData::kLattice:
+    return "kLattice";
+    break;
+  case MFnData::kNurbsCurve:
+    return "kNurbsCurve";
+    break;
+  case MFnData::kNurbsSurface:
+    return "kNurbsSurface";
+    break;
+  case MFnData::kSphere:
+    return "kSphere";
+    break;
+  case MFnData::kDynArrayAttrs:
+    return "kDynArrayAttrs";
+    break;
+  case MFnData::kDynSweptGeometry:
+    return "kDynSweptGeometry";
+    break;
+  case MFnData::kSubdSurface:
+    return "kSubdSurface";
+    break;
+  case MFnData::kLast:
+    return "kLast";
+    break;
+  }
+
+  return "**invalid**";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: list_maya_attributes
+//  Description: Writes some info output showing all the attributes on
+//               the given dependency node.  Primarily useful during
+//               development, to figure out where the heck Maya hides
+//               some of the connected properties.
+////////////////////////////////////////////////////////////////////
+void
+list_maya_attributes(MObject &node) {
+  MStatus status;
+  MFnDependencyNode node_fn(node, &status);
+  if (!status) {
+    maya_cat.error()
+      << "Object is a " << node.apiTypeStr() << ", not a DependencyNode.\n";
+    return;
+  }
+
+  string name = node_fn.name().asChar();
+  unsigned i;
+
+  MPlugArray connections;
+  status = node_fn.getConnections(connections);
+  if (!status) {
+    status.perror("MFnDependencyNode::getConnections\n");
+    return;
+  }
+
+  maya_cat.info()
+    << name << " has " << connections.length() << " connections.\n";
+  for (i = 0; i < connections.length(); i++) {
+    MPlug plug = connections[i];
+    maya_cat.info(false)
+      << "  " << i << ". " << plug.name().asChar() << ", "
+      << plug.attribute().apiTypeStr() << ", " 
+      << plug.node().apiTypeStr() << "\n";
+  }
+  
+  maya_cat.info()
+    << name << " has " << node_fn.attributeCount() << " attributes.\n";
+  for (i = 0; i < node_fn.attributeCount(); i++) {
+    MObject attr = node_fn.attribute(i, &status);
+    if (status) {
+      MFnTypedAttribute typed_attrib(attr, &status);
+      if (status) {
+        // It's a typed attrib.
+          maya_cat.info(false) 
+            << "  " << i << ". " << typed_attrib.name().asChar()
+            << " [" << attr.apiTypeStr() << ", "
+            << string_mfndata_type(typed_attrib.attrType()) << "]\n";
+      } else {
+        MFnAttribute attrib(attr, &status);
+        if (status) {
+          // It's a generic attrib.
+          maya_cat.info(false) 
+            << "  " << i << ". " << attrib.name().asChar()
+            << " [" << attr.apiTypeStr() << "]\n";
+        } else {
+          // Don't know what it is.
+          maya_cat.info(false)
+            << "  " << i << ". [" << attr.apiTypeStr() << "]\n";
+        }
+      }
+    }
+  }
+}
+
