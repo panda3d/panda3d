@@ -2,11 +2,15 @@
 from libpandaexpressModules import *
 from DirectNotify import *
 from PythonUtil import *
-
+import time
 
 exit = -1
 done = 0
 cont = 1
+
+# Note: this is dconfig'ed in ShowBase.py, but Tasks want to be independent
+# of ShowBase and panda, so we have to set an initial value here
+maxFps = 120
 
 # Store the global clock
 globalClock = ClockObject.getGlobalClock()
@@ -258,7 +262,13 @@ class TaskManager:
         self.running = 1
         while self.running:
             try:
+                startTime = time.time()
                 self.step()
+                finishTime = time.time()
+                # Max out the frame rate so we do not starve the cpu
+                if (maxFps > 0):
+                    dt = finishTime - startTime
+                    time.sleep(max(0, (1.0/maxFps)-dt))
             except KeyboardInterrupt:
                 self.stop()
             except:

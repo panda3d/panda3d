@@ -23,6 +23,9 @@ class ShowBase:
         self.wantTk = self.config.GetBool('want-tk', 0)
         self.wantSound = self.config.GetBool('want-sound', 1)
         self.wantDIRECT = self.config.GetBool('want-directtools', 0)
+
+        # Set a maximum frame rate on the render loop (0 means do not limit)
+        Task.maxFps = self.config.GetInt('max-fps', 120)
         
         import Loader
 
