@@ -79,13 +79,6 @@ set_t(double t) {
     }
     break;
 
-  case S_final:
-    priv_reverse_initialize(t);
-    if (is_playing()) {
-      setup_resume();
-    }
-    break;
-
   case S_started:
     // Support modifying t while the interval is playing.  We assume
     // is_playing() will be true in this state.
@@ -95,8 +88,21 @@ set_t(double t) {
     setup_resume();
     break;
 
-  default:
+  case S_paused:
+    // Support modifying t while the interval is paused.  In this
+    // case, we simply step to the new value of t; but this will
+    // change the state to S_started, so we must then change it back
+    // to S_paused by hand (because we're still paused).
     priv_step(t);
+    _state = S_paused;
+    break;
+
+  case S_final:
+    priv_reverse_initialize(t);
+    if (is_playing()) {
+      setup_resume();
+    }
+    break;
   }
 }
 
