@@ -218,11 +218,11 @@ all : $[patsubst %,$[osfilename %],$[all_targets]]
 test : $[patsubst %,$[osfilename %],$[test_bin_targets] $[test_lib_targets]]
 
 clean : clean-igate
-#if $[st_sources]
-#foreach file $[patsubst %,$[osfilename $[%_obj]],$[st_sources]]
+#forscopes metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target
+#foreach file $[patsubst %,$[osfilename $[%_obj]],$[compile_sources]]
 $[TAB] if exist $[file] del /f $[file]
 #end file
-#endif
+#end metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target
 #if $[deferred_objs]
  #foreach file $[patsubst %,$[osfilename %],$[deferred_objs]]
 $[TAB] if exist $[file] del /f $[file]

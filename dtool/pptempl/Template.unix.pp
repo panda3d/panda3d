@@ -192,9 +192,11 @@ all : $[all_targets]
 test : $[test_bin_targets]
 
 clean : clean-igate
-#if $[st_sources]
-$[TAB] rm -f $[patsubst %,$[%_obj],$[st_sources]]
+#forscopes metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target
+#if $[compile_sources]
+$[TAB] rm -f $[patsubst %,$[%_obj],$[compile_sources]]
 #endif
+#end metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target
 #if $[lib_targets] $[static_lib_targets] $[bin_targets] $[test_bin_targets]
 $[TAB] rm -f $[lib_targets] $[static_lib_targets] $[bin_targets] $[test_bin_targets]
 #endif
