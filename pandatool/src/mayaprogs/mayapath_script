@@ -7,4 +7,4 @@ else
   LD_LIBRARY_PATH=$MAYA_LOCATION/lib:$LD_LIBRARY_PATH
 fi
 export LD_LIBRARY_PATH
-exec `dirname $0`/maya2egg_bin $*
+exec `dirname $0`/yyy_bin $*

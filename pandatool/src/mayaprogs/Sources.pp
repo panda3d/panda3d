@@ -1,6 +1,7 @@
 #define BUILD_DIRECTORY $[HAVE_MAYA]
 
-#define binary_name maya2egg
+#define maya2egg maya2egg
+#define mayacopy mayacopy
 
 #if $[UNIX_PLATFORM]
   // On Unix, we need maya2egg to be a script that sets the
@@ -9,13 +10,22 @@
   // there's no need.  (Don't know why they didn't decide to compile
   // it in also on Unix.)
 
-#set binary_name maya2egg_bin
+#set maya2egg maya2egg_bin
+#set mayacopy mayacopy_bin
 
 #begin sed_bin_target
   #define TARGET maya2egg
 
-  #define SOURCE maya2egg_script
-  #define COMMAND s:xxx:$[MAYA_LOCATION]:g
+  #define SOURCE mayapath_script
+  #define COMMAND s:xxx:$[MAYA_LOCATION]:g;s:yyy:$[TARGET]:g;
+
+#end sed_bin_target
+
+#begin sed_bin_target
+  #define TARGET mayacopy
+
+  #define SOURCE mayapath_script
+  #define COMMAND s:xxx:$[MAYA_LOCATION]:g;s:yyy:$[TARGET]:g;
 
 #end sed_bin_target
 
@@ -23,7 +33,7 @@
 
 #begin bin_target
   #define USE_PACKAGES maya
-  #define TARGET $[binary_name]
+  #define TARGET $[maya2egg]
   #define LOCAL_LIBS \
     mayaegg maya eggbase progbase
   #define OTHER_LIBS \
@@ -43,7 +53,7 @@
 
 #begin bin_target
   #define USE_PACKAGES maya
-  #define TARGET mayacopy
+  #define TARGET $[mayacopy]
   #define LOCAL_LIBS cvscopy maya progbase
 
   #define OTHER_LIBS \
