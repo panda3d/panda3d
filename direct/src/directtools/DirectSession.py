@@ -8,8 +8,8 @@ from DirectGeometry import *
 from DirectLights import *
 from DirectSessionPanel import *
 from DirectCamConfig import *
+from ClusterClient import *
 from ClusterServer import *
-from ClusterConfig import *
 from tkSimpleDialog import askstring
 import Placer
 import Slider
@@ -34,12 +34,6 @@ class DirectSession(PandaObject):
         self.font = Loader.Loader.loadFont(loader,
                                            "models/fonts/Comic",
                                            priority = 100)
-        self.iAmAClient = base.config.GetBool("display-client",0)
-        if self.iAmAClient:
-            self.clusterManager = createClusterManager()
-        else:
-            self.clusterManager = None
-        self.iAmAServer = base.config.GetBool("display-server",0)
         self.fEnabled = 0
         self.drList = DisplayRegionList()
         self.iRayList = map(lambda x: x.iRay, self.drList)
@@ -173,14 +167,19 @@ class DirectSession(PandaObject):
             import TkGlobal
             self.panel = DirectSessionPanel(parent = tkroot)
 
-        if self.iAmAServer:
-            if base.config.GetBool('sync-display',0):
-                self.serverManager = ClusterServerSync(base.cameraList[0],
-                                               self.drList[0].cam)
+        self.clusterMode = base.config.GetString("cluster-mode", '')
+        if self.clusterMode == 'client':
+            self.cluster = createClusterClient()
+        elif self.clusterMode == 'server':
+            if base.config.GetBool('cluster-sync',0):
+                self.cluster = ClusterServerSync(base.cameraList[0],
+                                                        base.camList[0])
                 base.win.setSync(1)
             else:
-                self.serverManager = ClusterServer(base.cameraList[0],
-                                               self.drList[0].cam)
+                self.cluster = ClusterServer(base.cameraList[0],
+                                                   base.camList[0])
+        else:
+            self.cluster = None
             
     def enable(self):
         # Make sure old tasks are shut down
@@ -776,7 +775,6 @@ class DisplayRegionList(PandaObject):
         cameraList = []
         for dr in self.displayRegionList:
             cameraList.append(dr.cam)
-        setCameraOffsets(cameraList,base.cameraList)
 
     def __getitem__(self, index):
         return self.displayRegionList[index]

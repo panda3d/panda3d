@@ -408,7 +408,7 @@ class SelectionRay:
         for i in range(0,self.numEntries):
             entry = self.cq.getEntry(i)
             node = entry.getIntoNode()
-            nodePath = NodePath(node)
+            nodePath = targetNodePath.findPathTo(node)
             # Don't pick hidden nodes
             if nodePath.isHidden():
                 pass
@@ -499,7 +499,7 @@ class SelectionRay:
         for i in range(0,numEntries):
             entry = self.cq.getEntry(i)
             node = entry.getIntoNode()
-            nodePath = NodePath(node)
+            nodePath = targetNodePath.findPathTo(node)
             # Don't pick hidden nodes
             if nodePath.isHidden():
                 pass
