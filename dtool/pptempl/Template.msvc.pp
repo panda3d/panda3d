@@ -566,7 +566,7 @@ $[target] : $[sources]
 #define target $[patsubst %.yxx,%.cxx,$[file]]
 #define source $[file]
 $[target] : $[source]
-	$[BISON] -y $[if $[YACC_PREFIX],-d --name-prefix=$[YACC_PREFIX]] $[source]
+	$[BISON] $[YFLAGS] -y $[if $[YACC_PREFIX],-d --name-prefix=$[YACC_PREFIX]] $[source]
 	mv y.tab.c $[target]
 	mv y.tab.h $[patsubst %.yxx,%.h,$[source]]
 
@@ -577,7 +577,7 @@ $[target] : $[source]
 #define target $[patsubst %.lxx,%.cxx,$[file]]
 #define source $[file]
 $[target] : $[source]
-	$[FLEX] $[if $[YACC_PREFIX],-P$[YACC_PREFIX]] -olex.yy.c $[source]
+	$[FLEX] $[LFLAGS] $[if $[YACC_PREFIX],-P$[YACC_PREFIX]] -olex.yy.c $[source]
 	$[SED] '/#include <unistd.h>/d' lex.yy.c > $[target]
 	rm lex.yy.c
 

@@ -117,8 +117,11 @@
 
 // These are the complete set of extra flags the compiler requires,
 // from the context of a particular file, given in $[file].
-#defer cflags $[all_sources $[get_cflags] $[CFLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]]
-#defer c++flags $[all_sources $[get_cflags] $[C++FLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]]
+#defer cflags $[all_sources $[get_cflags] $[CFLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]] $[if $[>= $[OPTIMIZE],2],$[OPTFLAGS]]
+#defer c++flags $[all_sources $[get_cflags] $[C++FLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]] $[if $[>= $[OPTIMIZE],2],$[OPTFLAGS]]
+
+// These are the same flags, sans the compiler optimizations.
+#defer noopt_c++flags $[all_sources $[get_cflags] $[C++FLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]]
 
 // $[complete_lpath] is rather like $[complete_ipath]: the list of
 // directories (from within this tree) we should add to our -L list.
@@ -319,7 +322,7 @@ $[so_dir]/$[igatedb] $[so_dir]/$[igateoutput] : $[filter-out .c .cxx,$[igatescan
 #define target $[igateoutput:%.cxx=$[so_dir]/%.o]
 #define source $[so_dir]/$[igateoutput]
 #define ipath . $[target_ipath]
-#define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED]
+#define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[if $[>= $[OPTIMIZE],2],$[OPTFLAGS]] $[CFLAGS_SHARED]
 $[target] : $[source]
 	$[COMPILE_C++]
 #endif  // $[igatescan]
@@ -341,7 +344,7 @@ $[target] : $[sources]
 #define target $[igatemout:%.cxx=$[so_dir]/%.o]
 #define source $[so_dir]/$[igatemout]
 #define ipath . $[target_ipath]
-#define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED]
+#define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[if $[>= $[OPTIMIZE],2],$[OPTFLAGS]] $[CFLAGS_SHARED]
 $[target] : $[source]
 	$[COMPILE_C++]
 #endif  // $[igatescan]
@@ -566,9 +569,9 @@ $[target] : $[source] $[dependencies $[source]]
 #end file
 
 // Rules to compile C++ files that appear on a shared library.
-#foreach file $[sort $[cxx_so_sources] $[yxx_so_sources] $[lxx_so_sources]]
-#define target $[patsubst %.cxx %.lxx %.yxx,$[so_dir]/%.o,$[file]]
-#define source $[patsubst %.cxx %.lxx %.yxx,%.cxx,$[file]]
+#foreach file $[sort $[cxx_so_sources]]
+#define target $[patsubst %.cxx,$[so_dir]/%.o,$[file]]
+#define source $[file]
 #define ipath $[file_ipath]
 #define flags $[c++flags] $[CFLAGS_SHARED]
 // Yacc must run before some files can be compiled, so all files
@@ -580,11 +583,36 @@ $[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.cxx]
 
 // Rules to compile C++ files that appear on a static library or in an
 // executable.
-#foreach file $[sort $[cxx_st_sources] $[yxx_st_sources] $[lxx_st_sources]]
-#define target $[patsubst %.cxx %.lxx %.yxx,$[st_dir]/%.o,$[file]]
-#define source $[patsubst %.cxx %.lxx %.yxx,%.cxx,$[file]]
+#foreach file $[sort $[cxx_st_sources]]
+#define target $[patsubst %.cxx,$[st_dir]/%.o,$[file]]
+#define source $[file]
 #define ipath $[file_ipath]
 #define flags $[c++flags]
+$[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.cxx]
+	$[COMPILE_C++]
+
+#end file
+
+// Rules to compile generated C++ files that appear on a shared library.
+#foreach file $[sort $[yxx_so_sources] $[lxx_so_sources]]
+#define target $[patsubst %.lxx %.yxx,$[so_dir]/%.o,$[file]]
+#define source $[patsubst %.lxx %.yxx,%.cxx,$[file]]
+#define ipath $[file_ipath]
+#define flags $[noopt_c++flags] $[CFLAGS_SHARED]
+// Yacc must run before some files can be compiled, so all files
+// depend on yacc having run.
+$[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.cxx]
+	$[COMPILE_C++]
+
+#end file
+
+// Rules to compile C++ files that appear on a static library or in an
+// executable.
+#foreach file $[sort $[yxx_st_sources] $[lxx_st_sources]]
+#define target $[patsubst %.lxx %.yxx,$[st_dir]/%.o,$[file]]
+#define source $[patsubst %.lxx %.yxx,%.cxx,$[file]]
+#define ipath $[file_ipath]
+#define flags $[noopt_c++flags]
 $[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.cxx]
 	$[COMPILE_C++]
 

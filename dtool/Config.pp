@@ -271,12 +271,30 @@
 #defer COMPILE_C $[CC] -c -o $[target] $[ipath:%=-I%] $[flags] $[source]
 #defer COMPILE_C++ $[CXX] -c -o $[target] $[ipath:%=-I%] $[flags] $[source]
 
-// What additional flags should be passed to both C and C++ compilers
-// when OPTIMIZE (above) is defined for each of its four values?
-#defer CFLAGS_OPT1 -Wall -g
-#defer CFLAGS_OPT2 -Wall -g -O2
-#defer CFLAGS_OPT3 -O2
-#defer CFLAGS_OPT4 -O2 -DNDEBUG
+// What flags should be passed to both C and C++ compilers to enable
+// compiler optimizations?  This will be supplied when OPTIMIZE
+// (above) is set to 2, 3, or 4.
+#defer OPTFLAGS -O2
+
+// What define variables should be passed to the compilers for each
+// value of OPTIMIZE?  We separate this so we can pass these same
+// options to interrogate, guaranteeing that the correct interfaces
+// are generated.  Do not include -D here; that will be supplied
+// automatically.
+#defer CDEFINES_OPT1
+#defer CDEFINES_OPT2
+#defer CDEFINES_OPT3
+#defer CDEFINES_OPT4 NDEBUG
+
+// What additional flags should be passed for each value of OPTIMIZE
+// (above)?  We separate out the compiler-optimization flags, above,
+// so we can compile certain files that give optimizers trouble (like
+// the output of lex and yacc) without them, but with all the other
+// relevant flags.
+#defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=-D%] -Wall -g
+#defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=-D%] -Wall -g
+#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=-D%]
+#defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=-D%]
 
 // What additional flags should be passed to both compilers when
 // building shared (relocatable) sources?  Some architectures require
@@ -348,10 +366,12 @@
   //      SOMEOTHERLIB.
   #define WOFF_LIST $[WOFF_LIST] -Wl,-LD_MSG:off=85
   
-  #defer CFLAGS_OPT1 $[WOFF_LIST] -g
-  #defer CFLAGS_OPT2 $[WOFF_LIST] -O2 -OPT:Olimit=2500
-  #defer CFLAGS_OPT3 $[WOFF_LIST] -O2 -OPT:Olimit=2500
-  #defer CFLAGS_OPT4 $[WOFF_LIST] -O2 -OPT:Olimit=2500 -DNDEBUG
+  #defer OPTFLAGS -O2 -OPT:Olimit=2500
+  
+  #defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=-D%] $[WOFF_LIST] -g
+  #defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=-D%] $[WOFF_LIST]
+  #defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=-D%] $[WOFF_LIST]
+  #defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=-D%] $[WOFF_LIST]
   
   #defer CFLAGS_SHARED
   

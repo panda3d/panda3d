@@ -505,7 +505,8 @@ Warning: Variable $[upcase $[tree]]_INSTALL is not set!
 #defer interrogate_options \
     -DCPPPARSER -D__cplusplus $[SYSTEM_IGATE_FLAGS] \
     $[interrogate_spath] $[interrogate_ipath] \
-    $[filter -D%,$[get_cflags] $[C++FLAGS]] \
+    $[CDEFINES_OPT$[OPTIMIZE]:%=-D%] \
+    $[filter -D%,$[C++FLAGS]] \
     $[INTERROGATE_OPTIONS] \
     $[if $[INTERROGATE_PYTHON_INTERFACE],-python] \
     $[if $[INTERROGATE_C_INTERFACE],-c]
