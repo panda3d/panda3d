@@ -11,15 +11,18 @@
 #begin lib_target
   #define TARGET dcparser
 
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx  $[TARGET]_composite2.cxx
+
   #define SOURCES \
-    dcAtomicField.cxx dcAtomicField.h dcClass.cxx dcClass.h \
-    dcField.cxx dcField.h dcFile.cxx dcFile.h \
-    dcLexer.lxx dcLexerDefs.h \
-    dcMolecularField.cxx dcMolecularField.h dcParser.yxx \
-    dcParserDefs.h dcSubatomicType.cxx dcSubatomicType.h dcbase.h \
-    dcindent.cxx dcindent.h \
-    hashGenerator.cxx hashGenerator.h \
-    primeNumberGenerator.h primeNumberGenerator.cxx
+     dcAtomicField.h dcClass.h dcField.h dcFile.h dcLexer.lxx  \
+     dcLexerDefs.h dcMolecularField.h dcParser.yxx dcParserDefs.h  \
+     dcSubatomicType.h dcbase.h dcindent.h hashGenerator.h  \
+     primeNumberGenerator.h  
+
+  #define INCLUDED_SOURCES \
+     dcAtomicField.cxx dcClass.cxx dcField.cxx dcFile.cxx \
+     dcMolecularField.cxx dcSubatomicType.cxx dcindent.cxx  \
+     hashGenerator.cxx primeNumberGenerator.cxx 
 
   #define IGATESCAN all
 #end lib_target
