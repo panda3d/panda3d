@@ -582,6 +582,10 @@ download(const string &file_name, Filename file_dest,
 	  if (downloader_cat.is_debug())
 	    downloader_cat.debug()
 	      << "Download for: " << file_name << " completed" << endl;
+	  if (bytes > 0) {
+	    status._bytes_in_buffer += bytes;
+   	    status._next_in += bytes;
+	  }
 	  bool ret = write_to_disk(status);
 	  _dest_stream.close();
 
