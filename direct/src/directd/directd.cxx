@@ -17,15 +17,15 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-/*#include "directd.h"
-#include "pandaFramework.h"
+#include "directd.h"
+/*#include "pandaFramework.h"
 #include "queuedConnectionManager.h"*/
 
-#include <process.h>
-#include <Windows.h>
-#include "pandabase.h"
+//#include <process.h>
+//#include <Windows.h>
+//#include "pandabase.h"
 
-#include "queuedConnectionManager.h"
+//#include "queuedConnectionManager.h"
 #include "queuedConnectionListener.h"
 #include "queuedConnectionReader.h"
 #include "connectionWriter.h"
@@ -46,7 +46,8 @@ namespace {
   #define TA_SUCCESS_KILL 2
   #define TA_SUCCESS_16 3
 
-  BOOL CALLBACK TerminateAppEnum(HWND hwnd, LPARAM lParam) {
+  BOOL CALLBACK
+  TerminateAppEnum(HWND hwnd, LPARAM lParam) {
     DWORD dwID;
     GetWindowThreadProcessId(hwnd, &dwID);
     if(dwID == (DWORD)lParam) {
@@ -59,7 +60,7 @@ namespace {
       DWORD WINAPI TerminateApp(DWORD dwPID, DWORD dwTimeout)
 
       Purpose:
-        Shut down a 32-Bit Process (or 16-bit process under Windows 95)
+        Shut down a 32-Bit Process
 
       Parameters:
         dwPID
@@ -73,7 +74,6 @@ namespace {
         TA_SUCCESS_CLEAN - If the process was shutdown using WM_CLOSE.
         TA_SUCCESS_KILL - if the process was shut down with
            TerminateProcess().
-        NOTE:  See header for these defines.
   */ 
   DWORD WINAPI
   TerminateApp(DWORD dwPID, DWORD dwTimeout) {
@@ -89,7 +89,7 @@ namespace {
 
     // TerminateAppEnum() posts WM_CLOSE to all windows whose PID
     // matches your process's.
-    EnumWindows((WNDENUMPROC)TerminateAppEnum, (LPARAM) dwPID);
+    EnumWindows((WNDENUMPROC)TerminateAppEnum, (LPARAM)dwPID);
 
     // Wait on the handle. If it signals, great. If it times out,
     // then you kill it.
@@ -103,38 +103,30 @@ namespace {
     return dwRet;
   }
 
+  /*
+      returns process id.
+  */
+  DWORD
+  StartApp(const string& cmd) {
+    DWORD pid=0;
+    STARTUPINFO si; 
+    PROCESS_INFORMATION pi; 
+    ZeroMemory(&si, sizeof(STARTUPINFO));
+    si.cb = sizeof(STARTUPINFO); 
+    ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
+    if (CreateProcess(NULL, (char*)cmd.c_str(), 
+        0, 0, 1, NORMAL_PRIORITY_CLASS, 
+        0, 0, &si, &pi)) {
+      pid=pi.dwProcessId;
+      CloseHandle(pi.hProcess);
+      CloseHandle(pi.hThread);
+    } else {
+      cerr<<"CreateProcess failed: "<<cmd<<endl;
+    }
+    return pid;
+  }
+
 }
-
-
-class DirectD {
-public:
-  DirectD();
-  ~DirectD();
-  
-  void set_host_name(const string& host_name);
-  void set_port(int port);
-  void spawn_background_server();
-  
-  void run_server();
-  void run_client();
-  void run_controller();
-  
-  void send_start_app(const string& cmd);
-  void start_app(const string& cmd);
-  
-  void send_kill_app(const string& pid);
-  void kill_app();
-
-protected:
-  QueuedConnectionManager _cm;
-  string _host_name;
-  int _port;
-  intptr_t _app_pid;
-  bool _controller;
-  bool _verbose;
-};
-
-
 
 
 DirectD::DirectD() :
@@ -164,28 +156,7 @@ DirectD::send_start_app(const string& cmd) {
 
 void
 DirectD::start_app(const string& cmd) {
-  #if 0 //[
-  const char* args[]={
-    cmd.c_str(),
-    0
-  };
-  _app_pid=_spawnvp(_P_NOWAIT, args[0], args);
-  cerr<<"started app "<<_app_pid<<" errno "<<errno<<endl;
-  #else //][
-  PROCESS_INFORMATION piProcInfo; 
-  STARTUPINFO siStartInfo; 
-  ZeroMemory(&piProcInfo, sizeof(PROCESS_INFORMATION));
-  ZeroMemory(&siStartInfo, sizeof(STARTUPINFO));
-  siStartInfo.cb = sizeof(STARTUPINFO); 
-  if (CreateProcess(NULL, "calc.exe", 
-      0, 0, 1, NORMAL_PRIORITY_CLASS, 
-      0, 0, &siStartInfo, &piProcInfo)) {
-    cerr<<"CreateProcess worked"<<endl;
-    _app_pid=piProcInfo.dwProcessId;
-  } else {
-    cerr<<"CreateProcess failed"<<endl;
-  }
-  #endif //]
+  _app_pid=StartApp(cmd);
 }
 
 void
@@ -197,30 +168,15 @@ void
 DirectD::kill_app() {
   if (_app_pid) {
     cerr<<"trying k "<<_app_pid<<endl;
-    HWND h=(HWND&)_app_pid;
-    //::CloseWindow(h);
-    //SendMessage(h, WM_CLOSE, 0, 0);
-    //TerminateProcess(h, 1);
-    
-    //int status=0;
-    //status = kill(_app_pid, SIGKILL);
-    //waitpid(_app_pid, &status, 0);
-    
     TerminateApp(_app_pid, 1000);
   }
 }
 
 void
 DirectD::spawn_background_server() {
-  const char* args[]={
-    "directd",
-    "-s",
-    _host_name.c_str(),
-    "8001",
-    0
-  };
-  intptr_t e=_spawnv(_P_NOWAIT, args[0], args);
-  cerr<<"spawn complete "<<e<<" errno "<<errno<<endl;
+  stringstream ss;
+  ss<<"directd -s "<<_host_name.c_str()<<" "<<_port;
+  DWORD serverPID = StartApp(ss.str());
 }
 
 void
@@ -263,8 +219,10 @@ DirectD::run_server() {
     while (_cm.reset_connection_available()) {
       PT(Connection) connection;
       if (_cm.get_reset_connection(connection)) {
-        nout << "Lost connection from "
-             << connection->get_address() << "\n";
+        if (_verbose) {
+          nout << "Lost connection from "
+               << connection->get_address() << "\n";
+        }
         clients.erase(connection);
         _cm.close_connection(connection);
       }
@@ -274,10 +232,20 @@ DirectD::run_server() {
     while (reader.data_available()) {
       NetDatagram datagram;
       if (reader.get_data(datagram)) {
-        nout << "Got datagram " /*<< datagram <<*/ "from "
-             << datagram.get_address() << ", sending to "
-             << clients.size() << " clients.\n";
-        if (_verbose) datagram.dump_hex(nout);
+        if (_verbose) {
+          nout << "Got datagram " /*<< datagram <<*/ "from "
+               << datagram.get_address() << ", sending to "
+               << clients.size() << " clients.\n";
+          if (_verbose) datagram.dump_hex(nout);
+        }
+        DatagramIterator di(datagram);
+        string cmd=di.get_string();
+        if (_verbose) {
+          cerr<<"server: "<<cmd<<endl;
+        }
+        if (cmd[0]=='q' && cmd.size()==1) {
+          shutdown=true;
+        }
 
         Clients::iterator ci;
         for (ci = clients.begin(); ci != clients.end(); ++ci) {
@@ -285,21 +253,7 @@ DirectD::run_server() {
         }
 
         if (datagram.get_length() <= 1) {
-          /*
-          // An empty datagram means to close the connection.
-          PT(Connection) connection = datagram.get_connection();
-          if (connection.is_null()) {
-            nout << "Empty datagram from a null connection.\n";
-          } else {
-            nout << "Closing connection from "
-                 << connection->get_address() << "\n";
-            clients.erase(connection);
-            _cm.close_connection(connection);
-            nout << "Closed " << connection << "\n";
-          }
-          */
-
-          // No, an empty datagram means to shut down the server.
+          // An empty datagram, shut down the server:
           shutdown = true;
         }
       }
@@ -348,6 +302,11 @@ DirectD::run_client() {
       datagram.add_string(d);
       // Send the datagram.
       writer.send(datagram, c);
+      if (d[0] == 'q' && d.size()==1) {
+        // ...user entered quit command.
+        _cm.close_connection(c);
+        return;
+      }
     }
 
     // Check for a lost connection.
