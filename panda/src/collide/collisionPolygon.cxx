@@ -445,23 +445,24 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     LVector3f(sphere->get_radius(), 0.0f, 0.0f) * wrt_mat;
   float from_radius = length(from_radius_v);
 
-  float dist = dist_to_plane(from_center);
-  if (dist > from_radius || dist < -from_radius) {
-    // No intersection.
-    return NULL;
-  }
-
-  // Ok, we intersected the plane, but did we intersect the polygon?
+  LVector3f normal = has_effective_normal() ? get_effective_normal() : get_normal();
+  nassertr(IS_NEARLY_EQUAL(normal.length_squared(), 1.0f), NULL);
 
   // The nearest point within the plane to our center is the
   // intersection of the line (center, center+normal) with the plane.
-  LPoint3f plane_point;
-  bool really_intersects =
-    get_plane().intersects_line(plane_point,
-                                from_center, from_center + get_normal());
-  nassertr(really_intersects, 0);
+  float dist;
+  if (!get_plane().intersects_line(dist, from_center, -normal)) {
+    // No intersection with plane?  This means the plane's effective
+    // normal was within the plane itself.  A useless polygon.
+    return NULL;
+  }
 
-  LPoint2f p = to_2d(plane_point);
+  if (dist > from_radius || dist < -from_radius) {
+    // No intersection with the plane.
+    return NULL;
+  }
+
+  LPoint2f p = to_2d(from_center + dist * normal);
 
   const ClipPlaneAttrib *cpa = entry.get_into_clip_planes();
   if (cpa != (ClipPlaneAttrib *)NULL) {
@@ -499,8 +500,8 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 
   if (collide_cat.is_debug()) {
     collide_cat.debug()
-      << "intersection detected from " << entry.get_from_node_path() << " into "
-      << entry.get_into_node_path() << "\n";
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
@@ -509,12 +510,14 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     // We have to base the depth of intersection on the sphere's final
     // resting point, not the point from which we tested the
     // intersection.
-    into_depth = from_radius - dist_to_plane(orig_center);
+    float orig_dist;
+    get_plane().intersects_line(orig_dist, orig_center, -normal);
+    into_depth = from_radius - orig_dist;
   }
 
-  new_entry->set_surface_normal(has_effective_normal() ? get_effective_normal() : get_normal());
-  new_entry->set_surface_point(from_center - get_normal() * dist);
-  new_entry->set_interior_point(from_center - get_normal() * (dist + into_depth));
+  new_entry->set_surface_normal(normal);
+  new_entry->set_surface_point(from_center - normal * dist);
+  new_entry->set_interior_point(from_center - normal * (dist + into_depth));
 
   return new_entry;
 }
