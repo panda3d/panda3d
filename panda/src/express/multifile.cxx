@@ -382,8 +382,11 @@ repack() {
   nassertr(!_multifile_name.empty(), false);
 
   // First, we open a temporary filename to copy the Multifile to.
-  Filename temp_filename =
-    Filename::temporary(_multifile_name.get_dirname(), "mftemp");
+  Filename dirname = _multifile_name.get_dirname();
+  if (dirname.empty()) {
+    dirname = ".";
+  }
+  Filename temp_filename = Filename::temporary(dirname, "mftemp");
   temp_filename.set_binary();
   ofstream temp;
   if (!temp_filename.open_write(temp)) {
@@ -422,7 +425,7 @@ repack() {
   if (!temp_filename.rename_to(orig_name)) {
     express_cat.info()
       << "Unable to rename temporary file " << temp_filename << " to "
-      << orig_name.get_basename() << ".\n";
+      << orig_name << ".\n";
     return false;
   }
 
