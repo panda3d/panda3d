@@ -160,17 +160,17 @@ namespace {
 ////////////////////////////////////////////////////////////////////
 MilesAudioSound::
 MilesAudioSound(MilesAudioManager* manager,
-    HAUDIO audio, string file_name, float length)
-    : _manager(manager), _file_name(file_name),
+    MilesAudioManager::SoundData *sd, string file_name, float length)
+    : _sd(sd), _manager(manager), _file_name(file_name),
     _volume(1.0f), _balance(0),
     _loop_count(1), _length(length),
     _active(true), _paused(false) {
-  nassertv(audio);
+  nassertv(sd != NULL);
   nassertv(!file_name.empty());
   audio_debug("MilesAudioSound(manager=0x"<<(void*)&manager
-      <<", audio=0x"<<(void*)audio<<", file_name="<<file_name<<")");
+      <<", sd=0x"<<(void*)sd<<", file_name="<<file_name<<")");
   // Make our own copy of the sound header data:
-  _audio=AIL_quick_copy(audio);
+  _audio=AIL_quick_copy(sd->_audio);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -232,10 +232,9 @@ stop() {
   // The _paused flag should not be cleared here.  _paused is not like
   // the Pause button on a cd/dvd player.  It is used as a flag to say
   // that it was looping when it was set inactive.  There is no need to
-  // make this symetrical with play().  set_active() is the 'owner' of
+  // make this symmetrical with play().  set_active() is the 'owner' of
   // _paused.  play() accesses _paused to help in the situation where
   // someone calls play on an inactive sound().
-  // removing --> _paused=false;
   AIL_quick_halt(_audio);
 }
 
@@ -329,8 +328,8 @@ set_time(float time) {
     time = max_time;
   }
 
-  S32 milisecond_time=S32(1000*time);
-  AIL_quick_set_ms_position(_audio, milisecond_time);
+  S32 millisecond_time=S32(1000*time);
+  AIL_quick_set_ms_position(_audio, millisecond_time);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -340,8 +339,8 @@ set_time(float time) {
 ////////////////////////////////////////////////////////////////////
 float MilesAudioSound::
 get_time() const {
-  S32 milisecond_time=AIL_quick_ms_position(_audio);
-  float time=float(milisecond_time*.001);
+  S32 millisecond_time=AIL_quick_ms_position(_audio);
+  float time=float(millisecond_time*.001);
   miles_audio_debug("get_time() returning "<<time);
   return time;
 }
@@ -355,7 +354,7 @@ void MilesAudioSound::
 set_volume(float volume) {
   miles_audio_debug("set_volume(volume="<<volume<<")");
   // *Set the volume even if our volume is not changing, because the
-  // *MilesAudioManager will call set_volume when *its* volume changes.
+  // MilesAudioManager will call set_volume when *its* volume changes.
   // Set the volume:
   _volume=volume;
   // Account for the category of sound:
@@ -440,44 +439,7 @@ get_balance() const {
 ////////////////////////////////////////////////////////////////////
 float MilesAudioSound::
 length() const {
-  if (_length == 0.0f) {
-   #ifndef NEED_MILES_LENGTH_WORKAROUND
-        _length=((float)AIL_quick_ms_length(_audio))*0.001f;
-        if (_length == 0.0f) {
-            audio_error("ERROR: Miles returned length 0 for "<<_file_name << "!");
-        }
-   #else
-        // hack:
-        // For now, the sound needs to be playing, in order to
-        // get the right length.  I'm in contact with RAD about the problem.  I've
-        // sent them example code.  They've told me they're looking into it.
-        // Until then, we'll play the sound to get the length.
-
-        // Miles 6.5c note:  seems to be fixed for .mid, .mp3 also seems mostly fixed,
-        // but not 100% positive (need to look for errors with CATCH_ERROR on)
-
-        // #define CATCH_MILES_LENGTH_ERROR
-        #ifdef CATCH_MILES_LENGTH_ERROR     
-        _length=((float)AIL_quick_ms_length(_audio))*0.001f;
-        if (_length == 0.0f) {
-            audio_error("ERROR: Miles returned length 0 for "<<_file_name << "!");
-            exit(1);
-        }
-        #endif
-
-        if (AIL_quick_status(_audio)==QSTAT_PLAYING) {
-          _length=((float)AIL_quick_ms_length(_audio))*0.001f;
-        } else {
-          AIL_quick_play(_audio, 1);
-          _length=((float)AIL_quick_ms_length(_audio))*0.001f;
-          AIL_quick_halt(_audio);
-        }
-   #endif
-  }
-
-  //audio_cat->info() << "MilesAudioSound::length() returning " << _length << endl;
-  audio_debug("MilesAudioSound::length() returning "<<_length);
-  return _length;
+  return _sd->get_length();
 }
 
 ////////////////////////////////////////////////////////////////////

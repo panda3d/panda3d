@@ -154,13 +154,6 @@ MilesAudioManager() {
       } else {
         audio_info("  using Miles hardware midi");
       }
-
-      if (use_vfs) {
-        AIL_set_file_callbacks(vfs_open_callback,
-                               vfs_close_callback,
-                               vfs_seek_callback,
-                               vfs_read_callback);
-      }
     } else {
       audio_debug("  AIL_quick_startup failed: "<<AIL_last_error());
       _is_valid = false;
@@ -246,24 +239,82 @@ is_valid() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::load
-//       Access:
-//  Description:
+//       Access: Private
+//  Description: Reads a sound file and allocates a SoundData pointer
+//               for it.  Returns NULL if the sound file cannot be
+//               loaded.
 ////////////////////////////////////////////////////////////////////
-HAUDIO MilesAudioManager::
+PT(MilesAudioManager::SoundData) MilesAudioManager::
 load(Filename file_name) {
-  HAUDIO audio;
-  if (use_vfs) {
-    audio = AIL_quick_load(file_name.c_str());
+  // We used to use callbacks to hook AIL_quick_load() into the vfs
+  // system directly.  The theory was that that would enable
+  // AIL_quick_load() to stream the file from disk, avoiding the need
+  // to keep the whole thing in memory at once.  But it turns out that
+  // AIL_quick_load() always reads the whole file anyway, so it's a
+  // moot point.
+
+  // Nowadays we don't mess around with that callback nonsense, and
+  // just read the whole file directly.  Not only is it simpler, but
+  // preloading the sound files allows us to optionally convert MP3 to
+  // WAV format in-memory at load time.
+
+  PT(SoundData) sd = new SoundData;
+
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  if (!vfs->read_file(file_name, sd->_raw_data)) {
+    milesAudio_cat.warning()
+      << "Unable to read " << file_name << "\n";
+    return NULL;
+  }
+
+  sd->_basename = file_name.get_basename();
+  sd->_file_type = 
+    AIL_file_type(sd->_raw_data.data(), sd->_raw_data.size());
+
+  bool expand_to_wav = false;
+  
+  if (sd->_file_type != AILFILETYPE_MPEG_L3_AUDIO) {
+    audio_debug(sd->_basename << " is not an mp3 file.");
+  } else if ((int)sd->_raw_data.size() >= miles_audio_expand_mp3_threshold) {
+    audio_debug(sd->_basename << " is too large to expand in-memory.");
   } else {
-    string stmp = file_name.to_os_specific();
-    audio_debug("  \"" << stmp << "\"");
-    audio = AIL_quick_load(stmp.c_str());
+    expand_to_wav = true;
   }
+
+  if (expand_to_wav) {
+    // Now convert the file to WAV format in-memory.  This is useful
+    // to work around seek and length problems associated with
+    // variable bit-rate MP3 encoding.
+    void *wav_data;
+    U32 wav_data_size;
+    if (AIL_decompress_ASI(sd->_raw_data.data(), sd->_raw_data.size(),
+                           sd->_basename.c_str(), &wav_data, &wav_data_size,
+                           NULL)) {
+      audio_debug("expanded " << sd->_basename << " from " << sd->_raw_data.size()
+                  << " bytes to " << wav_data_size << " bytes.");
+
+      // Now copy the memory into our own buffers, and free the
+      // Miles-allocated memory.
+      sd->_raw_data.assign((char *)wav_data, wav_data_size);
+      AIL_mem_free_lock(wav_data);
+      sd->_file_type = AILFILETYPE_PCM_WAV;
+
+    } else {
+      audio_debug("unable to expand " << sd->_basename);
+    }
+  }
+
+  sd->_audio = AIL_quick_load_mem(sd->_raw_data.data(), sd->_raw_data.size());
    
-  if (!audio) {
+  if (!sd->_audio) {
     audio_error("  MilesAudioManager::load failed "<< AIL_last_error());
+    return NULL;
   }
-  return audio;
+
+  // We still need to keep around the raw data value, since
+  // AIL_quick_load_mem() doesn't make a copy.
+
+  return sd;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -283,34 +334,29 @@ get_sound(const string& file_name, bool) {
   assert(is_valid());
   Filename path = file_name;
 
-  if (use_vfs) {
-    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    vfs->resolve_filename(path, get_sound_path());
-  } else {
-    path.resolve_filename(get_sound_path());
-  }
-
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  vfs->resolve_filename(path, get_sound_path());
   audio_debug("  resolved file_name is '"<<path<<"'");
 
-  HAUDIO audio=0;
+  PT(SoundData) sd;
   // Get the sound, either from the cache or from a loader:
   SoundMap::const_iterator si=_sounds.find(path);
   if (si != _sounds.end()) {
     // ...found the sound in the cache.
-    audio = (*si).second;
-    audio_debug("  sound found in pool 0x" << (void*)audio);
+    sd = (*si).second;
+    audio_debug("  sound found in pool 0x" << (void*)sd);
   } else {
     // ...the sound was not found in the cache/pool.
-    audio=load(path);
-    if (audio) {
+    sd = load(path);
+    if (sd != (SoundData *)NULL) {
       while (_sounds.size() >= (unsigned int)_cache_limit) {
         uncache_a_sound();
       }
       // Put it in the pool:
-      // The following is roughly like: _sounds[path] = audio;
+      // The following is roughly like: _sounds[path] = sd;
       // But, it gives us an iterator into the map.
       pair<SoundMap::const_iterator, bool> ib
-          =_sounds.insert(pair<string, HAUDIO>(path, audio));
+          =_sounds.insert(SoundMap::value_type(path, sd));
       if (!ib.second) {
         // The insert failed.
         audio_debug("  failed map insert of "<<path);
@@ -324,10 +370,10 @@ get_sound(const string& file_name, bool) {
   }
   // Create an AudioSound from the sound:
   PT(AudioSound) audioSound = 0;
-  if (audio) {
+  if (sd != (SoundData *)NULL) {
     most_recently_used((*si).first);
     PT(MilesAudioSound) milesAudioSound
-        =new MilesAudioSound(this, audio, (*si).first);
+        =new MilesAudioSound(this, sd, (*si).first);
     nassertr(milesAudioSound, 0);
     milesAudioSound->set_active(_active);
     _sounds_on_loan.insert(milesAudioSound);
@@ -352,12 +398,8 @@ uncache_sound(const string& file_name) {
   assert(is_valid());
   Filename path = file_name;
 
-  if (use_vfs) {
-    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    vfs->resolve_filename(path, get_sound_path());
-  } else {
-    path.resolve_filename(get_sound_path());
-  }
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  vfs->resolve_filename(path, get_sound_path());
 
   audio_debug("  path=\""<<path<<"\"");
   SoundMap::iterator i=_sounds.find(path);
@@ -366,7 +408,6 @@ uncache_sound(const string& file_name) {
     LRU::iterator lru_i=find(_lru.begin(), _lru.end(), &(i->first));
     assert(lru_i != _lru.end());
     _lru.erase(lru_i);
-    AIL_quick_unload(i->second);
     _sounds.erase(i);
   }
   assert(is_valid());
@@ -390,7 +431,6 @@ uncache_a_sound() {
 
   if (i != _sounds.end()) {
     audio_debug("  uncaching \""<<i->first<<"\"");
-    AIL_quick_unload(i->second);
     _sounds.erase(i);
   }
   assert(is_valid());
@@ -424,10 +464,6 @@ void MilesAudioManager::
 clear_cache() {
   audio_debug("MilesAudioManager::clear_cache()");
   if (_is_valid) { assert(is_valid()); }
-  SoundMap::iterator i=_sounds.begin();
-  for (; i!=_sounds.end(); ++i) {
-    AIL_quick_unload(i->second);
-  }
   _sounds.clear();
   _lru.clear();
   if (_is_valid) { assert(is_valid()); }
@@ -697,99 +733,75 @@ get_gm_file_path(string& result) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::vfs_open_callback
-//       Access: Private, Static
-//  Description: A Miles callback to open a file for reading from the
-//               VFS system.
+//     Function: MilesAudioManager::SoundData::Constructor
+//       Access: Public
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-U32 MilesAudioManager::
-vfs_open_callback(const char *filename, U32 *file_handle) {
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  istream *istr = vfs->open_read_file(filename);
-  if (istr == (istream *)NULL) {
-    // Unable to open.
-    milesAudio_cat.warning()
-      << "Unable to open " << filename << "\n";
-    *file_handle = 0;
-    return 0;
-  }
-
-  // Successfully opened.  Now we should return a U32 that we can
-  // map back into this istream pointer later.  Strictly speaking,
-  // we should allocate a table of istream pointers and assign each
-  // one a unique number, but for now we'll cheat because we know
-  // that the Miles code (presently) only runs on Win32, which
-  // always has 32-bit pointers.
-  *file_handle = (U32)istr;
-  return 1;
+MilesAudioManager::SoundData::
+SoundData() :
+  _audio(0),
+  _has_length(false)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::vfs_read_callback
-//       Access: Private, Static
-//  Description: A Miles callback to read data from a file opened via
-//               vfs_open_callback().
+//     Function: MilesAudioManager::SoundData::Destructor
+//       Access: Public
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-U32 MilesAudioManager::
-vfs_read_callback(U32 file_handle, void *buffer, U32 bytes) {
-  if (file_handle == 0) {
-    // File was not opened.
-    return 0;
+MilesAudioManager::SoundData::
+~SoundData() {
+  if (_audio != 0) {
+    AIL_quick_unload(_audio);
   }
-  istream *istr = (istream *)file_handle;
-  istr->read((char *)buffer, bytes);
-  size_t bytes_read = istr->gcount();
-
-  return bytes_read;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::vfs_seek_callback
-//       Access: Private, Static
-//  Description: A Miles callback to seek within a file opened via
-//               vfs_open_callback().
+//     Function: MilesAudioManager::SoundData::Destructor
+//       Access: Public
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-S32 MilesAudioManager::
-vfs_seek_callback(U32 file_handle, S32 offset, U32 type) {
-  if (file_handle == 0) {
-    // File was not opened.
-    return 0;
-  }
-  istream *istr = (istream *)file_handle;
+float MilesAudioManager::SoundData::
+get_length() {
+  if (!_has_length) {
+    // Time to determine the length of the file.
 
-  ios::seekdir dir = ios::beg;
-  switch (type) {
-  case AIL_FILE_SEEK_BEGIN:
-    dir = ios::beg;
-    break;
-  case AIL_FILE_SEEK_CURRENT:
-    dir = ios::cur;
-    break;
-  case AIL_FILE_SEEK_END:
-    dir = ios::end;
-    break;
+    if (_file_type == AILFILETYPE_MPEG_L3_AUDIO &&
+        (int)_raw_data.size() < miles_audio_calc_mp3_threshold) {
+      // If it's an mp3 file, we may not trust Miles to compute its
+      // length correctly (Miles doesn't correctly compute the length
+      // of VBR MP3 files).  So in that case, decompress the whole
+      // file to determine its precise length.
+      audio_debug("Computing length of " << _basename);
+
+      void *wav_data;
+      U32 wav_data_size;
+      if (AIL_decompress_ASI(_raw_data.data(), _raw_data.size(),
+                             _basename.c_str(), &wav_data, &wav_data_size,
+                             NULL)) {
+        AILSOUNDINFO info;
+        if (AIL_WAV_info(wav_data, &info)) {
+          _length = (float)info.samples / (float)info.rate;
+          audio_debug(info.samples << " samples at " << info.rate
+                      << "; length is " << _length << " seconds.");
+          _has_length = true;
+        }
+
+        AIL_mem_free_lock(wav_data);
+      }
+    }
+
+    if (!_has_length) {
+      // If it's not an mp3 file, or we don't care about precalcing
+      // mp3 files, just ask Miles to do it.
+      _length = ((float)AIL_quick_ms_length(_audio)) * 0.001f;
+
+      audio_debug("Miles reports length of " << _length
+                  << " for " << _basename);
+    }
   }
 
-  istr->seekg(offset, dir);
-  return istr->tellg();
+  return _length;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::vfs_close_callback
-//       Access: Private, Static
-//  Description: A Miles callback to close a file opened via
-//               vfs_open_callback().
-////////////////////////////////////////////////////////////////////
-void MilesAudioManager::
-vfs_close_callback(U32 file_handle) {
-  if (file_handle == 0) {
-    // File was not opened.
-    return;
-  }
-  istream *istr = (istream *)file_handle;
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  vfs->close_read_file(istr);
-}
-
 
 #endif //]

@@ -34,6 +34,24 @@ ConfigureFn(config_milesAudio) {
 ConfigVariableBool miles_audio_force_midi_reset
 ("audio-force-midi-reset", true);
 
+ConfigVariableInt miles_audio_expand_mp3_threshold
+("miles-audio-expand-mp3-threshold", 16384,
+ PRC_DESC("This enables a Miles workaround in which small MP3 files are "
+          "expanded in-memory at load time into WAV format, which can "
+          "work around problems with Miles being unable to correctly "
+          "report the length of, or seek within, a variable bit-rate encoded "
+          "MP3 file.  Any MP3 file whose length in bytes is less than "
+          "this value will be expanded."));
+
+ConfigVariableInt miles_audio_calc_mp3_threshold
+("miles-audio-calc-mp3-threshold", 1048576,
+ PRC_DESC("This is a second fallback for miles-audio-expand-mp3-threshold.  "
+          "Any MP3 file whose length in bytes is less than this value "
+          "will have its length calculated on demand, by running through "
+          "the entire file first.  This works around a Miles bug in "
+          "which variable bit-rate encoded MP3 files do not report an "
+          "accurate length."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libMilesAudio
 //  Description: Initializes the library.  This must be called at

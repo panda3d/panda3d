@@ -24,12 +24,15 @@
 #ifdef HAVE_RAD_MSS //[
 #include "notifyCategoryProxy.h"
 #include "configVariableBool.h"
+#include "configVariableInt.h"
 #include "dconfig.h"
 
 ConfigureDecl(config_milesAudio, EXPCL_MILES_AUDIO, EXPTP_MILES_AUDIO);
 NotifyCategoryDecl(milesAudio, EXPCL_MILES_AUDIO, EXPTP_MILES_AUDIO);
 
 extern ConfigVariableBool miles_audio_force_midi_reset;
+extern ConfigVariableInt miles_audio_expand_mp3_threshold;
+extern ConfigVariableInt miles_audio_calc_mp3_threshold;
 
 extern EXPCL_MILES_AUDIO void init_libMilesAudio();
 

@@ -65,7 +65,20 @@ public:
 
 private:
   // The sound cache:
-  typedef pmap<string, HAUDIO > SoundMap;
+  class SoundData : public ReferenceCount {
+  public:
+    SoundData();
+    ~SoundData();
+    float get_length();
+
+    string _basename;
+    HAUDIO _audio;
+    S32 _file_type;
+    string _raw_data;
+    bool _has_length;
+    float _length;  // in seconds.
+  };
+  typedef pmap<string, PT(SoundData) > SoundMap;
   SoundMap _sounds;
 
   typedef pset<MilesAudioSound* > AudioSet;
@@ -90,7 +103,7 @@ private:
   bool _is_valid;
   bool _hasMidiSounds;
   
-  HAUDIO load(Filename file_name);
+  PT(SoundData) load(Filename file_name);
   // Tell the manager that the sound dtor was called.
   void release_sound(MilesAudioSound* audioSound);
   
@@ -110,13 +123,6 @@ private:
 
   void force_midi_reset();
 
-  // These are "callback" functions that implement vfs-style I/O for
-  // Miles.
-  static U32 AILCALLBACK vfs_open_callback(const char *filename, U32 *file_handle);
-  static U32 AILCALLBACK vfs_read_callback(U32 file_handle, void *buffer, U32 bytes);
-  static S32 AILCALLBACK vfs_seek_callback(U32 file_handle, S32 offset, U32 type);
-  static void AILCALLBACK vfs_close_callback(U32 file_handle);
-  
   friend class MilesAudioSound;
 
 

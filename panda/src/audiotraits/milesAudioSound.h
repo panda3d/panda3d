@@ -116,6 +116,7 @@ public:
   void finished();
 
 private:
+  PT(MilesAudioManager::SoundData) _sd;
   HAUDIO _audio;
   PT(MilesAudioManager) _manager;
   float _volume; // 0..1.0
@@ -142,7 +143,7 @@ private:
   bool _paused;
 
   MilesAudioSound(MilesAudioManager* manager, 
-      HAUDIO audio, string file_name, float length=0.0f);
+      MilesAudioManager::SoundData *sd, string file_name, float length=0.0f);
 
   friend class MilesAudioManager;
 
