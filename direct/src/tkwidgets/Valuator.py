@@ -681,3 +681,58 @@ def rgbPanel(nodePath, callback = None, style = 'mini'):
     
     return vgp
 
+
+def lightRGBPanel(light, style = 'mini'):
+    # Color picker for lights
+    def popupColorPicker():
+        # Can pass in current color with: color = (255, 0, 0)
+        color = tkColorChooser.askcolor(
+            parent = vgp.interior(),
+            # Initialize it to current color
+            initialcolor = tuple(vgp.get()[:3]))[0]
+        if color:
+            vgp.set((color[0], color[1], color[2], vgp.getAt(3)))
+    def printToLog():
+        n = light.getName()
+        c=light.getColor()
+        print n + (".setColor(%.3f, %.3f, %.3f, %.3f)"%(c[0],c[1],c[2],c[3]))
+    # Check init color
+    initColor = light.getColor() * 255.0
+    # Create entry scale group
+    vgp = ValuatorGroupPanel(title = 'RGBA Panel: ' + light.getName(),
+                             dim = 4,
+                             labels = ['R','G','B','A'],
+                             value = [int(initColor[0]),
+                                      int(initColor[1]),
+                                      int(initColor[2]),
+                                      int(initColor[3])],
+                             type = 'slider',
+                             valuator_style = style,
+                             valuator_min = 0,
+                             valuator_max = 255,
+                             valuator_resolution = 1,
+                             # Destroy not withdraw panel on dismiss
+                             fDestroy = 1)
+    # Update menu button
+    vgp.component('menubar').component('Valuator Group-button')['text'] = (
+        'Light Control Panel')
+    # Add a print button which will also serve as a color tile
+    pButton = Button(vgp.interior(), text = 'Print to Log',
+                     bg = getTkColorString(initColor),
+                     command = printToLog)
+    pButton.pack(expand = 1, fill = BOTH)
+    # Update menu
+    menu = vgp.component('menubar').component('Valuator Group-menu')
+    # System color picker
+    menu.insert_command(index = 4, label = 'Popup Color Picker',
+                        command = popupColorPicker)
+    menu.insert_command(index = 5, label = 'Print to log',
+                        command = printToLog)
+    def setLightColor(color):
+        light.setColor(Vec4(color[0]/255.0, color[1]/255.0,
+                            color[2]/255.0, color[3]/255.0))
+        # Update color chip button
+        pButton['bg'] = getTkColorString(color)
+    vgp['command'] = setLightColor
+    return vgp
+
