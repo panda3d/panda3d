@@ -77,6 +77,48 @@ dispatch_event(const CPT_Event &event) {
 }
 
 
+////////////////////////////////////////////////////////////////////
+//     Function: EventHandler::write
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void EventHandler::
+write(ostream &out) const {
+  Hooks::const_iterator hi;
+  hi = _hooks.begin();
+
+  CallbackHooks::const_iterator cbhi;
+  cbhi = _cbhooks.begin();
+
+  while (hi != _hooks.end() && cbhi != _cbhooks.end()) {
+    if ((*hi).first < (*cbhi).first) {
+      write_hook(out, *hi);
+      ++hi;
+
+    } else if ((*cbhi).first < (*hi).first) {
+      write_cbhook(out, *cbhi);
+      ++cbhi;
+
+    } else {
+      write_hook(out, *hi);
+      write_cbhook(out, *cbhi);
+      ++hi;
+      ++cbhi;
+    }
+  }
+
+  while (hi != _hooks.end()) {
+    write_hook(out, *hi);
+    ++hi;
+  }
+
+  while (cbhi != _cbhooks.end()) {
+    write_cbhook(out, *cbhi);
+    ++cbhi;
+  }
+}
+
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventHandler::add_hook
@@ -152,3 +194,27 @@ remove_all_hooks() {
   _cbhooks.clear();
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: EventHandler::write_hook
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void EventHandler::
+write_hook(ostream &out, const EventHandler::Hooks::value_type &hook) const {
+  if (!hook.second.empty()) {
+    out << hook.first << " has " << hook.second.size() << " functions.\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EventHandler::write_cbhook
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void EventHandler::
+write_cbhook(ostream &out, const EventHandler::CallbackHooks::value_type &hook) const {
+  if (!hook.second.empty()) {
+    out << hook.first << " has " << hook.second.size() << " callback functions.\n";
+  }
+}

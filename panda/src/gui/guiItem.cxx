@@ -42,11 +42,16 @@ GuiItem::GuiItem(const string& name) : Namable(name), _added_hooks(false),
 				       _bottom(-1.), _top(1.),
 				       _pos(0., 0., 0.),
 				       _mgr((GuiManager*)0L), _pri(P_Normal) {
+
+  if (gui_cat->is_debug())
+    gui_cat->debug()
+      << "creating item '" << get_name() << "' (" << (void *)this << ")\n";
 }
 
 GuiItem::~GuiItem(void) {
   if (gui_cat->is_debug())
-    gui_cat->debug() << "deleting item '" << this->get_name() << "'" << endl;
+    gui_cat->debug()
+      << "deleting item '" << get_name() << "' (" << (void *)this << ")\n";
   //  this->unmanage();
 }
 

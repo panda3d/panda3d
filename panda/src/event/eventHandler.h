@@ -41,6 +41,8 @@ PUBLISHED:
 
   virtual void dispatch_event(const CPT_Event &event);
 
+  void write(ostream &out) const;
+
 public:
   bool add_hook(const string &event_name, EventFunction *function);
   bool add_hook(const string &event_name, EventCallbackFunction *function,
@@ -62,6 +64,11 @@ protected:
   Hooks _hooks;
   CallbackHooks _cbhooks;
   EventQueue &_queue;
+
+private:
+  void write_hook(ostream &out, const Hooks::value_type &hook) const;
+  void write_cbhook(ostream &out, const CallbackHooks::value_type &hook) const;
+
 
 public:
   static TypeHandle get_class_type() {

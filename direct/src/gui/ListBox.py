@@ -22,37 +22,23 @@ class ListBox(DirectObject):
         self.drawOrder = drawOrder
         self.font = font
 
-        #arrow = loader.loadModelOnce('phase_3/models/props/scroll-arrow')
-        arrow = None
-        
-        if arrow == None:
-            self.up = Button.Button(name + '-up', '*',
-                                    scale = self.scale,
-                                    width = 2,
-                                    drawOrder = self.drawOrder,
-                                    font = self.font)
-            self.down = Button.Button(name + '-down', '*',
-                                      scale = self.scale,
-                                      width = 2,
-                                      drawOrder = self.drawOrder,
-                                      font = self.font)
-        else:
-            arrowScale = 0.1
-            self.up = Button.Button(name + '-up', arrow,
-                                    left = -1, right = 1,
-                                    bottom = 0, top = 0.5,
-                                    scale = arrowScale,
-                                    drawOrder = drawOrder)
-            arrow.setR(180)
-            self.down = Button.Button(name + '-down', arrow,
-                                      left = -1, right = 1,
-                                      bottom = -0.5, top = 0,
-                                      scale = arrowScale,
-                                      drawOrder = drawOrder)
-            arrow.removeNode()
+        arrow = loader.loadModelOnce('phase_3/models/props/scroll-arrow')
 
+        arrowScale = 0.1
+        self.up = Button.Button(name + '-up', arrow,
+                                left = -1, right = 1,
+                                bottom = 0, top = 0.5,
+                                scale = arrowScale,
+                                drawOrder = drawOrder)
+        arrow.setR(180)
+        self.down = Button.Button(name + '-down', arrow,
+                                  left = -1, right = 1,
+                                  bottom = -0.5, top = 0,
+                                  scale = arrowScale,
+                                  drawOrder = drawOrder)
+        arrow.removeNode()
 
-        self.listBox = GuiListBox(self.name, self.numSlots,
+        self.listBox = GuiListBox(self.name + '-lb', self.numSlots,
                                   self.up.button, self.down.button)
 
         self.managed = 0
@@ -68,7 +54,7 @@ class ListBox(DirectObject):
                                drawOrder = self.drawOrder,
                                font = self.font)
         
-        self.items.append(item)
+        self.items.append((item, button))
         self.listBox.addItem(button.button)
 
     def addItems(self, items):
@@ -80,9 +66,11 @@ class ListBox(DirectObject):
 
     def cleanup(self):
         if (self.managed):
-            self.listBox.unmanage()
-        self.up = None
-        self.down = None
+            self.unmanage()
+        for i in self.items:
+            i[1].cleanup()
+        self.up.cleanup()
+        self.down.cleanup()
         self.listBox = None
 	return None
         
@@ -97,6 +85,12 @@ class ListBox(DirectObject):
     
     def getGuiItem(self):
         return self.listBox
+
+    def getUpButton(self):
+        return self.up
+
+    def getDownButton(self):
+        return self.down
 
     def freeze(self):
         self.listBox.freeze()

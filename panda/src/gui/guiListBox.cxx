@@ -238,8 +238,8 @@ void GuiListBox::manage(GuiManager* mgr, EventHandler& eh) {
     this->recompute_frame();
     for (ItemVector::iterator i=_visible.begin(); i!=_visible.end(); ++i)
       (*i)->manage(mgr, eh);
-    _up_arrow->manage(mgr, eh);
-    _down_arrow->manage(mgr, eh);
+    //    _up_arrow->manage(mgr, eh);
+    //    _down_arrow->manage(mgr, eh);
     this->deal_with_buttons();
     GuiBehavior::manage(mgr, eh);
   } else
@@ -252,8 +252,8 @@ void GuiListBox::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
     this->recompute_frame();
     for (ItemVector::iterator i=_visible.begin(); i!=_visible.end(); ++i)
       (*i)->manage(mgr, eh, n);
-    _up_arrow->manage(mgr, eh, n);
-    _down_arrow->manage(mgr, eh, n);
+    //    _up_arrow->manage(mgr, eh, n);
+    //    _down_arrow->manage(mgr, eh, n);
     this->deal_with_buttons();
     GuiBehavior::manage(mgr, eh, n);
   } else
@@ -264,8 +264,8 @@ void GuiListBox::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
 void GuiListBox::unmanage(void) {
   for (ItemVector::iterator i=_visible.begin(); i!=_visible.end(); ++i)
     (*i)->unmanage();
-  _up_arrow->unmanage();
-  _down_arrow->unmanage();
+  //  _up_arrow->unmanage();
+  //  _down_arrow->unmanage();
   GuiBehavior::unmanage();
 }
 
