@@ -163,6 +163,10 @@ class Button(DirectObject):
                 self.button.inactive()
             else:
                 self.button.up()
+                # Turning the button inactive stops the behavior, so
+                # we must restart it here
+                if (self.event != None):
+                    self.button.startBehavior()
 
     def manage(self, nodepath = aspect2d):
         if not self.managed:
