@@ -27,9 +27,11 @@ class GridParent:
         self.cellOrigin = NodePath("cellOrigin")
 
     def delete(self):
-        if self.av.getParent() == self.cellOrigin:
-            self.av.detachNode()
-        del self.av
+        if self.av:
+            if self.av.getParent() == self.cellOrigin:
+                self.av.detachNode()
+            del self.av
+            self.av = None
         # Remove the gridNodes
         self.cellOrigin.removeNode()
                 
