@@ -73,7 +73,7 @@ void PopCorrection::force_target(LPoint3f& target, LVector3f&) {
 
 LerpCorrection::LerpCorrection(LPoint3f& start, LVector3f& s_vel)
   : Correction(start, s_vel), prev_p(start), save_p(start), have_both(false),
-    time(0.), dur(0.5) {
+    time(0.0f), dur(0.5f) {
 }
 
 LerpCorrection::~LerpCorrection(void) {
@@ -94,13 +94,13 @@ void LerpCorrection::new_target(LPoint3f& target, LVector3f&) {
   if (target == save_p)
     return;
   if (have_both) {
-    time = 0.;
+    time = 0.0f;
     prev_p = _curr_p;
     save_p = target;
   } else {
     save_p = target;
     _curr_p = prev_p;
-    time = 0.;
+    time = 0.0f;
     have_both = true;
   }
 }
@@ -110,7 +110,7 @@ void LerpCorrection::force_target(LPoint3f& target, LVector3f&) {
     return;
   _curr_p = prev_p = save_p = target;
   have_both = false;
-  time = 0.;
+  time = 0.0f;
 }
 
 void LerpCorrection::set_duration(float d) {
@@ -125,7 +125,7 @@ float LerpCorrection::get_duration(void) const {
 
 SplineCorrection::SplineCorrection(LPoint3f& start, LVector3f& s_vel)
   : Correction(start, s_vel), have_both(false), prev_p(start), save_p(start),
-    prev_v(s_vel), save_v(s_vel), time(0.), dur(0.5) {
+    prev_v(s_vel), save_v(s_vel), time(0.0f), dur(0.5f) {
 }
 
 SplineCorrection::~SplineCorrection(void) {
@@ -136,7 +136,7 @@ void SplineCorrection::step(void) {
     if (time < dur) {
       float tmp = time / dur;
       _curr_p = (tmp * tmp * tmp * A) + (tmp * tmp * B) + (tmp * C) + D;
-      _curr_v = (3. * tmp * tmp * A) + (2. * tmp * B) + C;
+      _curr_v = (3.0f * tmp * tmp * A) + (2.0f * tmp * B) + C;
       time += ClockObject::get_global_clock()->get_dt();
       correction_cat->spam() << "new possition = " << _curr_p << endl;
       correction_cat->spam() << "new vel = " << _curr_v << endl;
@@ -153,13 +153,13 @@ void SplineCorrection::new_target(LPoint3f& target, LVector3f& v_target) {
     return;
   }
   if (have_both) {
-    time = 0.;
+    time = 0.0f;
     prev_p = _curr_p;
     prev_v = _curr_v;
     save_p = target;
     save_v = v_target;
-    A = (2. * (prev_p - save_p)) + prev_v + save_v;
-    B = (3. * (save_p - prev_p)) - (2. * prev_v) - save_v;
+    A = (2.0f * (prev_p - save_p)) + prev_v + save_v;
+    B = (3.0f * (save_p - prev_p)) - (2.0f * prev_v) - save_v;
     C = prev_v;
     D = prev_p;
     correction_cat->debug() << "new target: already had 'both'." << endl;
@@ -174,9 +174,9 @@ void SplineCorrection::new_target(LPoint3f& target, LVector3f& v_target) {
     save_v = v_target;
     _curr_p = prev_p;
     _curr_v = prev_v;
-    time = 0.;
-    A = (2. * (prev_p - save_p)) + prev_v + save_v;
-    B = (3. * (save_p - prev_p)) - (2. * prev_v) - save_v;
+    time = 0.0f;
+    A = (2.0f * (prev_p - save_p)) + prev_v + save_v;
+    B = (3.0f * (save_p - prev_p)) - (2.0f * prev_v) - save_v;
     C = prev_v;
     D = prev_p;
     have_both = true;
@@ -198,7 +198,7 @@ void SplineCorrection::force_target(LPoint3f& target, LVector3f& v_target) {
   _curr_p = prev_p = save_p = target;
   _curr_v = prev_v = save_v = v_target;
   have_both = false;
-  time = 0.;
+  time = 0.0f;
 }
 
 void SplineCorrection::set_duration(float d) {

@@ -18,7 +18,7 @@
 
 #include "prediction.h"
 
-Prediction::Prediction(LPoint3f& start) : _curr_p(start), _curr_v(0., 0., 0.) {
+Prediction::Prediction(LPoint3f& start) : _curr_p(start), _curr_v(0.0f, 0.0f, 0.0f) {
 }
 
 Prediction::~Prediction(void) {
