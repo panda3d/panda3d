@@ -376,7 +376,7 @@ decompose() {
   }
 
   result = decompose_impl();
-  if (result == this) {
+  if (result.p() == this) {
     // decomposing this primitive has no effect.
     return this;
   }
