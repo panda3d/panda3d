@@ -9,8 +9,8 @@ Notes:
   Opengl appears to be installed with the os for both WinNT and Win98, but I
     read somewhere that we might want to do our own version control for
     this eventually using "VerInstallFile" to install our own version of
-    OpenGl (At any rate, "HAVE_GL" defaults to true in the .cshrc file.
-  "Touch" doesn't work on WinNT or Win98 currently.
+    OpenGl.
+  "Touch" doesn't quite work properly on WinNT or Win98 currently.
   Make sure you run ftp in "binary" mode to fetch tarballs.
   "ftp" doesn't currently read "backspace" in rxvt, so you'll just have to be
     precise at the ftp prompt for now ("delete" doesn't work either).
@@ -40,9 +40,11 @@ Step 2: Install Cygwin (v1.0)
     # mkdir if they don't exist.  Also make the following directories:
       > mkdir /mscommon
       > mkdir /msvc98
+      > mkdir /c
     # Mount directories (This assumes VC++ was installed in C:\Program Files):
       > mount -s C:/Program\ Files/Microsoft\ Visual\ Studio/Common /mscommon
       > mount -s C:/Program\ Files/Microsoft\ Visual\ Studio/VC98 /msvc98
+      > mount -s C:/ /c
     # Create some links expected by the attach scripts:
       > mkdir /usr/local
       > mkdir /usr/local/bin
@@ -50,143 +52,107 @@ Step 2: Install Cygwin (v1.0)
       > ln -s /contrib/bin/perl /usr/local/bin/perl
       > ln -s /bin/bash /usr/local/bin/bash
 
+    # Connect and mount the network drives:
+      > net use g: "\\nufat\bit" /persistent:yes
+      > net use i: "\\nufat\big" /persistent:yes
+      > net use v: "\\dimbo\mass" /persistent:yes
+      > mkdir /g /i /v
+      > mount -s -b g:/ /g
+      > mount -s -b i:/ /i
+      > mount -s -b v:/ /v
+
 Step 3: Install winpandatools
   # Winpandatools currently includes rxvt, glut, and nspr, as well as
   # .cshrc, Configrc, the .vspec files, and Squeak.
-  # Get /for/program/tarballs/winpandatools.tgz using ftp.
-  # While your're here you can also grab tool.tgz, panda.tgz, and direct.tgz
   > cd /
-  > tar zxvf winpandatools.tgz
+  > tar zxvf /g/player/tarballs/winpandatools.tgz
   # Create a HOME directory:
-    > mkdir /usr/<yourname>
-    > cp /usr/local/winpandatools/.cshrc /usr/<yourname>
-    > cp /usr/local/winpandatools/Configrc /usr/<yourname>
-  # On Windows for some reason I couldn't tar these links up properly so
-  # you'll need to create them by hand:
-    > ln -s /usr/local/squeak/Squeak.exe /usr/local/bin/squeak
-    > ln -s /usr/local/squeak/Squeak.exe /usr/local/bin/headlessSqueak
-    # On WinNT:
-      > cp /usr/local/winpandatools/winNT/libnspr3.* /usr/lib/
-    # On Win98:
-      > cp /usr/local/winpandatools/win98/libnspr3.* /usr/lib/
+    > mkdir /home/<yourname>
+    > cp /usr/local/winpandatools/.cshrc /home/<yourname>
+    > cp /usr/local/winpandatools/.emacs /home/<yourname>
+    > cp /usr/local/winpandatools/Configrc /home/<yourname>
 
-Step 4: (Optional) Build NSPR
-  # Skip this step if you don't care to mess with nspr code.
-  # Winpandatools contains prebuilt nspr libraries, but if you want to build
-  # your own, do the following:
-  # Grab the tarball /for/program/tarballs/nspr.tgz and install it in 
-  # /usr/local
-  > cd /usr/local
-  > tar zxvf nspr.tgz
-  > source /usr/local/mozilla/nsprpub/env.sh
-  > cd /usr/local/buildtools/windows
-  > install.bat
-  # To build optimized:
-    > setenv BUILD_OPT 1
-    > unsetenv MOZ_DEBUG
-  # On WinNT only:
-    > cd /bin
-    > ln -s /usr/local/buildtools/windows/Cygwin/bin/nsinstall.exe .
-  > cd /usr/local/mozilla/nsprpub
-  # If you want nspr to use the debug runtime library:
-    > setenv USE_DEBUG_RTL 1
-  > make release
-  > cd /usr/lib
-  # Remove the pre-built libs that came from winpandatools:
-    > rm libnspr3.dll libnspr3.lib
-  # On WinNT:
-    > ln -s /usr/local/mozilla/dist/WINNT4.0_OPT.OBJ/libnspr3.dll .
-    > ln -s /usr/local/mozilla/dist/WINNT4.0_OPT.OBJ/libnspr3.lib .
-  # On Win98:
-    > ln -s /usr/local/mozilla/dist/WIN954.0_OPT.OBJ/libnspr3.dll .
-    > ln -s /usr/local/mozilla/dist/WIN954.0_OPT.OBJ/libnspr3.lib .
-
-Step 5: Set $HOME environment variable 
+Step 4: Set $HOME environment variable 
   # On WinNT use the Registry:
     # Select "My Computer" icon from the desktop.
     # Select "Control Panel" icon.
     # Select "System" icon.
     # Select "Environment" tab.
-    # Create the variable "HOME" with the value "/usr/<yourname>".
+    # Create the variable "HOME" with the value "/home/<yourname>".
     # Click the "Set" button.
     # Click the "Apply" button.
     # Now open a new shell to get the changes.
   # On Win98 use AUTOEXEC.BAT:
-    # Change the "HOME=/usr/<yourname>" line in 
+    # Change the "HOME=/home/<yourname>" line in 
     # /usr/local/winpandatools/AUTOEXEC.BAT
     > cp /usr/local/winpandatools/AUTOEXEC.BAT C:
     # Note: if you want to edit your existing AUTOEXEC.BAT, you need
     # to use "edit.exe" in order to generate the correct "newline"
     # character (^M).
   # Note: We've seen a problem where we can't source ~/.cshrc if the home
-  # directory /usr/<name> does not match the user name exactly.  To be safe,
-  # be sure and name your home directory to be /usr/<username>.
+  # directory /home/<yourname> does not match the user name exactly. 
+  # To be safe, be sure and name your home directory to be /home/<yourname>.
 
-Step 6: Create a shortcut to rxvt
-  # Using Windows file access, "Find" rxvt.exe (it's in 
-  # /usr/local/winpandatools/).
-  # Drag the rxvt.exe icon to the Desktop.
-  # Click the right mouse button on the rxvt.exe icon on the Desktop
-  # and select "Properties".
-  # Select the "Shortcut" tab.
-  # Set "Target" to be C:\Cygwin\usr\local\winpandatools\rxvt.exe -fn courier
-  #   -sl 10000 -bg bisque -e tcsh -l
-  # Select "OK".
-  # Note: You need to install $TOOL before the shortcut will be able to
-  # attach to $TOOL correctly (Step 7).
+Step 5: (Optional) Add new username
+  # If you are setting up a new user, edit the *.vspec files
+  # in /usr/local/etc to reflect the new username and path to the player
+  # tree.  Make and install a new winpandatools.tgz to reflect this change
+  # by typing:
+  > cd /usr/local/winpandatools
+  > source install_winpandatools
+  > mv winpandatools.tgz /g/player/tarballs
 
-Step 7: Grab the cvs trees
+  # Also edit (on the SGI, for instance on dumbo) the file 
+  # /fit/cvs/CVSROOT/passwd to add the new username as a valid user of CVS.
+
+Step 6: Grab the cvs trees
   > cd ~
   > mkdir player
   > cd player
-  > cvs co dtool
-  > cvs co panda
+  > cvs login
+  > cvs co dtool (only if local dtool will be built)
+  > cvs co panda (only if local panda will be built)
   > cvs co direct
   # Choose which optimize level you want. This is set in /usr/local/etc/Config.pp
   # Look for #defing OPTIMIZE and follow instructions above that
 
-Step 8: Build $TOOL
-  # Now you must use the rxvt shortcut to open a shell - it should attach
-  # to $TOOL automatically.
-  # You can ignore the tcsh warnings (don't recognize "xterm") - this is
-  # a Cygwin - rxvt conflict that's not trivial to resolve.
-  > cd $TOOL
+Step 7: (Optional) Build $DTOOL
+  # Now you must use the tcsh shortcut to open a new shell - it should attach
+  # to $DTOOL automatically.
+  > cd $DTOOL
   > ppremake
-  > ctmake
+  > nmake install
 
-Step 9: (Optional) Install DirectX
-  # Install DirectX 7.0 (by default into C:\mssdk).
-  > cp C:/mssdk/include/*.* /msvc98/Include/
-  > cp C:/mssdk/lib/d3dim.lib /msvc98/Lib/
-  > cp C:/mssdk/lib/ddraw.lib /msvc98/Lib/
-  # Add the following to ~/.cshrc:
-    # setenv HAVE_DX yes
+Step 8: (Optional) Install DirectX
+  # Install DirectX 7.0 (by default into C:\mssdk).  You need this to
+  # successfully build all of panda.
 
-Step 9: Build $PANDA 
-  > cta panda
-  > cd $PANDA
-  > ctmake install-configfiles
-  # Now you need to attach again, so start over with a new shell.
-  > exit
-  # Open a new shell using the rxvt shortcut.
+Step 9: (Optional) Build $PANDA 
   > cta panda
   > cd $PANDA
   > ppremake
-  > ctmake
+  > nmake install
   # You can now run "demo" to test the install and build - you should
   # see a window pop up with a triangle in it.  To see the triangle with
   # a texture on it, you'll need to be in $PANDA/src/all/testbed/ when
   # you run "demo".
 
 Step 10: Install Python
-  # get /for/program/tarballs/python16.exe
+  # get /for/program/tarballs/python16.exe and python_d.zip by ftp
   # run python16.exe to install python into C:/Python16 (the default
-  location)
+    location)
+  > cd /c/Python16
+  > unzip ~/python_d.zip
 
 Step 11: Install Emacs
-  # get /for/program/tarballs/emacs-20.7-fullbin-i386.tar.gz
-  # install emacs into C:/emacs-20.7/ (not in program files)
-  > Copy $DIRECT/src/directscripts/python-mode.el to C:/emacs-20.7/lisp/progmodes/
+  # get /for/program/tarballs/emacs-20.7-fullbin-i386.tar.gz by ftp
+  > cd /c
+  > tar xvzf ~/emacs-20.7-fullbin-i386.tar.gz
+
+  # This will install emacs into C:/emacs-20.7/ (not under program files)
+
+  > cp $DIRECT/src/directscripts/python-mode.el /c/emacs-20.7/lisp/progmodes
+  > cp $DIRECT/src/directscripts/runPythonEmacs /usr/local/bin
 
 Step 12: Update environment variables (win2000)
   # right click on your computer icon at the top left of the screen
@@ -198,12 +164,19 @@ Step 12: Update environment variables (win2000)
   # add  C:\PYTHON16  to the end of the path (semicolon separated)
   # click ok - ok - ok to exit (you must exit for the change to take effect)
 
-Step 12: Build $DIRECT
+Step 13: Build $DIRECT
   > cta direct
   > cd $DIRECT
   > ppremake
-  > ctmake
-  # Generate Python Code
+  > nmake install
+
+Step 14: Build $TOONTOWN
+  > cta toontown
+  > cd $TOONTOWN
+  > ppremake
+  > nmake install
+
+Step 15: Generate Python Code
   > cd $DIRECT/bin
   > ppython generatePythonCode
   # Follow instructions presented there
