@@ -643,11 +643,18 @@ get_frame_as_set() const {
 //               size of the current text; if the frame was set via
 //               set_frame_actual(), this returns the values
 //               actually set.
+//
+//               If the text has no frame at all, this returns the
+//               dimensions of the text itself, as if the frame were
+//               set with a margin of 0, 0, 0, 0.
 ////////////////////////////////////////////////////////////////////
 INLINE LVecBase4f TextNode::
 get_frame_actual() const {
-  nassertr(has_frame(), LVecBase4f(0.0, 0.0, 0.0, 0.0));
-  if (is_frame_as_margin()) {
+  if (!has_frame()) {
+    check_measure();
+    return LVecBase4f(_ul2d[0], _lr2d[0], _lr2d[1], _ul2d[1]);
+
+  } else if (is_frame_as_margin()) {
     check_measure();
     return LVecBase4f(_ul2d[0] - _frame_ul[0],
                       _lr2d[0] + _frame_lr[0],
@@ -980,6 +987,29 @@ set_draw_order(int draw_order) {
 INLINE int TextNode::
 get_draw_order() const {
   return _draw_order;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_tab_width
+//       Access: Published
+//  Description: Sets the width of each tab stop, in screen units.  A
+//               tab character embedded in the text will advance the
+//               horizontal position to the next tab stop.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_tab_width(float tab_width) {
+  _tab_width = tab_width;
+  invalidate_with_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::get_tab_width
+//       Access: Published
+//  Description: Returns the width set via set_tab_width().
+////////////////////////////////////////////////////////////////////
+INLINE float TextNode::
+get_tab_width() const {
+  return _tab_width;
 }
 
 ////////////////////////////////////////////////////////////////////

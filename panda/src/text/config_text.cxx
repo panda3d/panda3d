@@ -45,6 +45,8 @@ const int text_page_y_size = config_text.GetInt("text-page-y-size", 256);
 const bool text_small_caps = config_text.GetBool("text-small-caps", false);
 const float text_small_caps_scale = config_text.GetFloat("text-small-caps-scale", 0.8f);
 const string text_default_font = config_text.GetString("text-default-font", "");
+const float text_tab_width = config_text.GetFloat("text-tab-width", 5.0f);
+
 
 // This is the decimal character number that, embedded in a string, is
 // identified as the soft-hyphen character.

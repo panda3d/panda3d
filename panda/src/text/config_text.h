@@ -37,6 +37,7 @@ extern const int text_page_y_size;
 extern const bool text_small_caps;
 extern const float text_small_caps_scale;
 extern const string text_default_font;
+extern const float text_tab_width;
 extern const int text_soft_hyphen_key;
 extern wstring *text_soft_hyphen_output;
 extern const float text_hyphen_ratio;

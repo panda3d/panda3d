@@ -109,6 +109,7 @@ TextNode(const string &name) : PandaNode(name) {
   _shadow_offset.set(0.0f, 0.0f);
 
   _draw_order = 1;
+  _tab_width = text_tab_width;
 
   _transform = LMatrix4f::ident_mat();
   _coordinate_system = CS_default;
@@ -717,8 +718,12 @@ assemble_row(wstring::iterator &si, const wstring::iterator &send,
       // A space is a special case.
       xpos += font->get_space_advance();
 
+    } else if (character == '\t') {
+      // So is a tab character.
+      xpos = (floor(xpos / _tab_width) + 1.0f) * _tab_width;
+
     } else if (character == text_soft_hyphen_key) {
-      // So is the 'soft-hyphen' key character.
+      // And so is the 'soft-hyphen' key character.
 
     } else {
       // A printable character.
@@ -920,8 +925,12 @@ measure_row(wstring::iterator &si, const wstring::iterator &send,
       // A space is a special case.
       xpos += font->get_space_advance();
 
+    } else if (character == '\t') {
+      // So is a tab character.
+      xpos = (floor(xpos / _tab_width) + 1.0f) * _tab_width;
+
     } else if (character == text_soft_hyphen_key) {
-      // So is the 'soft-hyphen' key character.
+      // And so is the 'soft-hyphen' key character.
 
     } else {
       // A printable character.

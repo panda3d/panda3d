@@ -159,6 +159,9 @@ PUBLISHED:
   INLINE int set_draw_order(int draw_order);
   INLINE int get_draw_order() const;
 
+  INLINE void set_tab_width(float tab_width);
+  INLINE float get_tab_width() const;
+
   INLINE void set_transform(const LMatrix4f &transform);
   INLINE LMatrix4f get_transform() const;
 
@@ -338,6 +341,7 @@ private:
 
   string _bin;
   int _draw_order;
+  float _tab_width;
 
   LMatrix4f _transform;
   CoordinateSystem _coordinate_system;
