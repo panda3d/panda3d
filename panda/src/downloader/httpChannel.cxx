@@ -435,10 +435,12 @@ download_to_file(const Filename &filename, size_t first_byte) {
   _download_to_filename.set_binary();
   _download_to_file.close();
   _download_to_file.clear();
+  
+  bool truncate = (first_byte == 0);
 
-  if (!_download_to_filename.open_write(_download_to_file)) {
+  if (!_download_to_filename.open_write(_download_to_file, truncate)) {
     downloader_cat.info()
-      << "Could not open " << filename << " for writing.\n";
+      << "Could not open " << _download_to_filename << " for writing.\n";
     return false;
   }
 
@@ -1341,6 +1343,7 @@ run_download_to_file() {
   int count = 0;
 
   int ch = _body_stream->get();
+  nassertr(_body_stream != (ISocketStream *)NULL, false);
   while (!_body_stream->eof() && !_body_stream->fail()) {
     _download_to_file.put(ch);
     _bytes_downloaded++;
@@ -1350,6 +1353,7 @@ run_download_to_file() {
     }
 
     ch = _body_stream->get();
+    nassertr(_body_stream != (ISocketStream *)NULL, false);
   }
 
   if (_download_to_file.fail()) {
@@ -1385,6 +1389,7 @@ run_download_to_ram() {
   int count = 0;
 
   int ch = _body_stream->get();
+  nassertr(_body_stream != (ISocketStream *)NULL, false);
   while (!_body_stream->eof() && !_body_stream->fail()) {
     _download_to_ramfile->_data += (char)ch;
     _bytes_downloaded++;
@@ -1394,6 +1399,7 @@ run_download_to_ram() {
     }
 
     ch = _body_stream->get();
+    nassertr(_body_stream != (ISocketStream *)NULL, false);
   }
 
   if (_body_stream->is_closed()) {
@@ -1513,7 +1519,7 @@ reset_for_new_request() {
 ////////////////////////////////////////////////////////////////////
 void HTTPChannel::
 finished_body(bool has_trailer) {
-  if (will_close_connection()) {
+  if (will_close_connection() && _download_dest == DD_none) {
     reset_to_new();
 
   } else {
