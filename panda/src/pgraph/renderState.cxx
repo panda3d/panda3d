@@ -323,7 +323,6 @@ compose(const RenderState *other) const {
       ((Composition &)comp)._result = do_compose(other);
     }
     // Here's the cache!
-    cerr << "  returning cached result " << (void *)comp._result.p() << "\n";
     return comp._result;
   }
 
@@ -659,7 +658,6 @@ issue_delta_set(const RenderState *other,
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) RenderState::
 return_new(RenderState *state) {
-  cerr << "RenderState::return_new(" << *state << ")\n";
   nassertr(state != (RenderState *)NULL, state);
 
   // This should be a newly allocated pointer, not one that was used
@@ -675,13 +673,11 @@ return_new(RenderState *state) {
     // The state was inserted; save the iterator and return the
     // input state.
     state->_saved_entry = result.first;
-    cerr << "  produces new pointer " << (void *)pt_state.p() << "\n";
     return pt_state;
   }
 
   // The state was not inserted; there must be an equivalent one
   // already in the set.  Return that one.
-  cerr << "  returns old pointer " << (void *)(*(result.first)) << "\n";
   return *(result.first);
 }
 
