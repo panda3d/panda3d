@@ -46,14 +46,6 @@ class ClusterClient(DirectObject.DirectObject):
             base.camera.getHpr(render))
         return Task.cont
         
-    def cmd(self, commandString, fLocally = 1):
-        # Execute remotely
-        for server in self.serverList:
-            server.sendCommandString(commandString)
-        if fLocally:
-            # Execute locally
-            exec( commandString, globals() )
-
     def getNodePathFindCmd(self, nodePath):
         import string
         pathString = `nodePath`
@@ -70,6 +62,17 @@ class ClusterClient(DirectObject.DirectObject):
 
     def deselectNodePath(self, nodePath):
         self.cmd(self.getNodePathFindCmd(nodePath) + '.deselect()', 0)
+
+    def loadModel(self, nodePath):
+        pass
+
+    def cmd(self, commandString, fLocally = 1):
+        # Execute remotely
+        for server in self.serverList:
+            server.sendCommandString(commandString)
+        if fLocally:
+            # Execute locally
+            exec( commandString, globals() )
 
     def exit(self):
         # Execute remotely

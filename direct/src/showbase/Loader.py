@@ -15,6 +15,7 @@ class Loader:
 
     notify = directNotify.newCategory("Loader")
     #notify.setDebug(1)
+    modelCount = 0
     
     # special methods
     def __init__(self, base):
@@ -24,7 +25,7 @@ class Loader:
         self.loader = PandaLoader()
         
     # model loading funcs
-    def loadModel(self, modelPath):
+    def loadModel(self, modelPath, fMakeNodeNamesUnique = 0):
         """loadModel(self, string)
         Attempt to load a model from given file path, return
         a nodepath to the model if successful or None otherwise."""
@@ -37,6 +38,8 @@ class Loader:
                 nodePath = NodePath(node)
             else:
                 nodePath = self.base.hidden.attachNewNode(node)
+            if fMakeNodeNamesUnique:
+                self.makeNodeNamesUnique(nodePath, 0)
         else:
             nodePath = None
         return nodePath
@@ -203,4 +206,13 @@ class Loader:
             phaseChecker(soundPath)
         sound = base.sfxManager.getSound(soundPath)
         return sound
+
+    def makeNodeNamesUnique(self, nodePath, nodeCount):
+        if nodeCount == 0:
+            Loader.modelCount += 1
+        nodePath.setName(nodePath.getName() +
+                         ('_%d_%d' % (Loader.modelCount, nodeCount)))
+        for i in range(nodePath.getNumChildren()):
+            nodeCount += 1
+            self.makeNodeNamesUnique(nodePath.getChild(i), nodeCount)
 
