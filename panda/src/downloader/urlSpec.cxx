@@ -67,15 +67,15 @@ operator = (const URLSpec &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: URLSpec::get_scheme
 //       Access: Published
-//  Description: Returns the scheme specified by the URL, or "http"
-//               if no scheme is specified.
+//  Description: Returns the scheme specified by the URL, or empty
+//               string if no scheme is specified.
 ////////////////////////////////////////////////////////////////////
 string URLSpec::
 get_scheme() const {
   if (has_scheme()) {
     return _url.substr(0, _scheme_end);
   }
-  return "http";
+  return string();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -365,10 +365,12 @@ set_query(const string &query) {
 //     Function: URLSpec::set_url
 //       Access: Published
 //  Description: Completely replaces the URL with the indicated
-//               string.
+//               string.  If server_name_expected is true, it is a
+//               hint that an undecorated URL is probably a server
+//               name, not a local filename.
 ////////////////////////////////////////////////////////////////////
 void URLSpec::
-set_url(const string &url) {
+set_url(const string &url, bool server_name_expected) {
   _url = url;
   _flags = 0;
 
@@ -390,7 +392,7 @@ set_url(const string &url) {
 
   _scheme_end = start;
   size_t next = _url.find_first_of(":/", start);
-  if (next != string::npos && _url[next] == ':') {
+  if (next < _url.length() - 1 && _url.substr(next, 2) == ":/") {
     // We have a scheme.
     _flags |= F_has_scheme;
     _scheme_end = next;
@@ -411,8 +413,36 @@ set_url(const string &url) {
   _server_end = start;
   _port_start = start;
   _port_end = start;
-  if (start + 1 < _url.length() && _url.substr(start, 2) == "//") {
-    // We have an authority specification.
+
+  // Try to determine if an authority is present.  It is will
+  // generally be present if a scheme was present; also, we have a
+  // hint passed in from the context as to whether we expect an
+  // authority (e.g. a server name) to be present.
+  bool has_authority = (has_scheme() || server_name_expected);
+
+  // We also know we have an authority if the url contains two slashes
+  // at this point.
+  bool leading_slashes = 
+    (start < _url.length() - 1 && _url.substr(start, 2) == "//");
+  if (leading_slashes) {
+    has_authority = true;
+  }
+
+  if (has_authority) {
+    // Now that we know we have an authority, we should ensure there
+    // are two slashes here, since there should be before the
+    // authority.
+    if (!leading_slashes) {
+      if (start < _url.length() && _url[start] == '/') {
+        // Well, at least we had one slash.  Double it.
+        _url = _url.substr(0, start + 1) + _url.substr(start);
+      } else {
+        // No slashes at all.  Insert them.
+        _url = _url.substr(0, start) + "//" + _url.substr(start);
+      }
+    }
+
+    // Begin the actual authority specification.
     start += 2;
     _flags |= F_has_authority;
     _username_start = start;

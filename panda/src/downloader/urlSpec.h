@@ -33,7 +33,7 @@
 class EXPCL_PANDAEXPRESS URLSpec {
 PUBLISHED:
   URLSpec();
-  INLINE URLSpec(const string &url);
+  INLINE URLSpec(const string &url, bool server_name_expected = false);
   INLINE URLSpec(const URLSpec &copy);
   INLINE void operator = (const string &url);
   void operator = (const URLSpec &copy);
@@ -66,7 +66,7 @@ PUBLISHED:
   void set_path(const string &path);
   void set_query(const string &query);
 
-  void set_url(const string &url);
+  void set_url(const string &url, bool server_name_expected = false);
 
   INLINE operator const string & () const;
   INLINE const char *c_str() const;
