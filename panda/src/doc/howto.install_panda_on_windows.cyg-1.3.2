@@ -91,6 +91,11 @@ do 'source setup_env.csh' to do all of the below automatically
       > mkdir /c /f /g /h /i /j /v
       > mkdir /msvc98 /mscommon /mspsdk
       > mkdir /usr/local /usr/local/bin /usr/local/etc
+      
+    - Rename cygwin-installed python to avoid conflicts with required VRSTUDIO-compiled python,
+      which is custom-built to load sitecustomize.py and setup PYTHONPATH for our panda environment
+      
+      > mv /bin/python.exe /bin/python-cygwin.exe
 
     - Create some links expected by the attach scripts:
       > ln -s /bin/tcsh /bin/csh
