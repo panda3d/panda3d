@@ -272,7 +272,7 @@ compute_child(CullTraverser *trav, CullTraverserData &data) {
   LPoint3f center = cdata->_center * rel_transform->get_mat();
 
   // Determine which child to traverse
-  float dist = dot(center, LVector3f::forward());
+  float dist = fabs(dot(center, LVector3f::forward()));
 
   for (int index = 0; index < (int)cdata->_switch_vector.size(); index++) {
     if (cdata->_switch_vector[index].in_range(dist)) { 
