@@ -6,20 +6,24 @@
   #define LOCAL_LIBS \
     dgraph display gobj sgraph graph gsgbase ipc mathutil linmath putil
 
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
+
   #define SOURCES \
-    analogNode.I analogNode.cxx analogNode.h \
-    buttonNode.I buttonNode.h buttonNode.cxx \
-    clientAnalogDevice.I clientAnalogDevice.cxx clientAnalogDevice.h \
-    clientBase.I clientBase.cxx clientBase.h \
-    clientButtonDevice.I clientButtonDevice.cxx clientButtonDevice.h \
-    clientDevice.I clientDevice.cxx clientDevice.h \
-    clientDialDevice.I clientDialDevice.cxx clientDialDevice.h \
-    clientTrackerDevice.I clientTrackerDevice.cxx clientTrackerDevice.h \
-    config_device.cxx config_device.h \
-    dialNode.I dialNode.h dialNode.cxx \
-    mouse.cxx mouse.h \
-    trackerData.I trackerData.cxx trackerData.h \
-    trackerNode.I trackerNode.cxx trackerNode.h
+     analogNode.I analogNode.h buttonNode.I buttonNode.h  \
+     clientAnalogDevice.I clientAnalogDevice.h clientBase.I  \
+     clientBase.h clientButtonDevice.I clientButtonDevice.h  \
+     clientDevice.I clientDevice.h clientDialDevice.I  \
+     clientDialDevice.h clientTrackerDevice.I  \
+     clientTrackerDevice.h config_device.h dialNode.I dialNode.h  \
+     mouse.h trackerData.I trackerData.h trackerNode.I  \
+     trackerNode.h
+
+  #define INCLUDED_SOURCES \
+     analogNode.cxx buttonNode.cxx clientAnalogDevice.cxx  \
+     clientBase.cxx clientButtonDevice.cxx clientDevice.cxx  \
+     clientDialDevice.cxx clientTrackerDevice.cxx  \
+     config_device.cxx dialNode.cxx mouse.cxx trackerData.cxx  \
+     trackerNode.cxx
 
   #define INSTALL_HEADERS \
     analogNode.I analogNode.h \
@@ -35,7 +39,7 @@
     trackerData.I trackerData.h \
     trackerNode.I trackerNode.h
 
-  #define PRECOMPILED_HEADER device_headers.h
+//  #define PRECOMPILED_HEADER device_headers.h
 
   #define IGATESCAN all
 
