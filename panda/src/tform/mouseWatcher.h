@@ -136,6 +136,7 @@ protected:
                            const MouseWatcherRegion *region,
                            const ButtonHandle &button);
 
+  void move(ButtonHandle button);
   void press(ButtonHandle button);
   void release(ButtonHandle button);
   void keystroke(int keycode);

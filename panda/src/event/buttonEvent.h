@@ -78,6 +78,11 @@ public:
     // and has in the process of selecting some possible text to type
     // from a menu.
     T_candidate,
+
+    // T_move is used to indicate that the mouse has moved within the 
+    // current region. Button drag mode needs this, others may ignore
+    // this event
+    T_move,
   };
 
   INLINE ButtonEvent();

@@ -603,6 +603,23 @@ throw_event_pattern(const string &pattern, const MouseWatcherRegion *region,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::move
+//       Access: Protected
+//  Description: Records the indicated mouse or keyboard button as
+//               being moved from last position.
+////////////////////////////////////////////////////////////////////
+void MouseWatcher::
+move(ButtonHandle button) {
+  MouseWatcherParameter param;
+  param.set_button(button);
+  param.set_modifier_buttons(_mods);
+  param.set_mouse(_mouse);
+
+  if (_preferred_button_down_region != (MouseWatcherRegion *)NULL)
+    _preferred_button_down_region->move(param);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::press
 //       Access: Protected
 //  Description: Records the indicated mouse or keyboard button as
@@ -937,6 +954,7 @@ set_mouse(const LVecBase2f &xy, const LVecBase2f &pixel_xy) {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
 do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
+  bool mouse_moved = false;
   // Initially, we do not suppress any events to objects below us in
   // the data graph.
   _suppress_flags = 0;
@@ -953,6 +971,12 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
 
     const LVecBase2f &f = xy->get_value();
     const LVecBase2f &p = pixel_xy->get_value();
+
+    // Asad: determine if mouse moved from last position
+    const LVecBase2f &last_f = _xy->get_value();
+    if (f != last_f) {
+      mouse_moved = true;
+    }
 
     if (_display_region != (DisplayRegion *)NULL) {
       // If we've got a display region, constrain the mouse to it.
@@ -1028,6 +1052,10 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
 
   if (_has_mouse &&
       (_suppress_flags & MouseWatcherRegion::SF_mouse_position) == 0) {
+    if (mouse_moved) {
+      move(ButtonHandle::none());
+      //tform_cat.info() << "do_transmit_data()::mouse_moved" << endl;
+    }
     // Transmit the mouse position.
     _xy->set_value(_mouse);
     output.set_data(_xy_output, EventParameter(_xy));

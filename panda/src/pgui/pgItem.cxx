@@ -297,6 +297,10 @@ activate_region(const LMatrix4f &transform, int sort) {
                      
   _region->set_sort(sort);
   _region->set_active(true);
+
+  // calculate the inverse of this transform, which is needed to 
+  // go back to the frame space.
+  _frame_inv_xform.invert_from(transform);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -314,6 +318,7 @@ enter(const MouseWatcherParameter &param) {
   string event = get_enter_event();
   play_sound(event);
   throw_event(event, EventParameter(ep));
+  //pgui_cat.info() << get_name() << "::enter()" << endl;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -331,6 +336,7 @@ exit(const MouseWatcherParameter &param) {
   string event = get_exit_event();
   play_sound(event);
   throw_event(event, EventParameter(ep));
+  //pgui_cat.info() << get_name() << "::exit()" << endl;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -349,6 +355,7 @@ within(const MouseWatcherParameter &param) {
   string event = get_within_event();
   play_sound(event);
   throw_event(event, EventParameter(ep));
+  //pgui_cat.info() << get_name() << "::within()" << endl;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -364,6 +371,7 @@ without(const MouseWatcherParameter &param) {
   string event = get_without_event();
   play_sound(event);
   throw_event(event, EventParameter(ep));
+  //pgui_cat.info() << get_name() << "::without()" << endl;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -377,6 +385,7 @@ focus_in() {
   string event = get_focus_in_event();
   play_sound(event);
   throw_event(event);
+  //pgui_cat.info() << get_name() << "::focus_in()" << endl;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -390,6 +399,7 @@ focus_out() {
   string event = get_focus_out_event();
   play_sound(event);
   throw_event(event);
+  //pgui_cat.info() << get_name() << "::focus_out()" << endl;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -407,6 +417,7 @@ press(const MouseWatcherParameter &param, bool background) {
     play_sound(event);
     throw_event(event, EventParameter(ep));
   }
+  //pgui_cat.info() << get_name() << "::press()" << endl;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -424,6 +435,7 @@ release(const MouseWatcherParameter &param, bool background) {
     play_sound(event);
     throw_event(event, EventParameter(ep));
   }
+  //pgui_cat.info() << get_name() << "::release()" << endl;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -443,7 +455,7 @@ keystroke(const MouseWatcherParameter &param, bool background) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGItem::keystroke
+//     Function: PGItem::candidate
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever
 //               the user highlights an option in the IME window.
@@ -451,6 +463,21 @@ keystroke(const MouseWatcherParameter &param, bool background) {
 void PGItem::
 candidate(const MouseWatcherParameter &param, bool background) {
   // We don't throw sound events for candidate selections for now.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::move
+//       Access: Public, Virtual
+//  Description: This is a callback hook function, called whenever a
+//               mouse is moved while within the region.
+////////////////////////////////////////////////////////////////////
+void PGItem::
+move(const MouseWatcherParameter &param) {
+  PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
+  string event = get_press_event(param.get_button());
+  play_sound(event);
+  throw_event(event, EventParameter(ep));
+  //pgui_cat.info() << get_name() << "::move()" << endl;
 }
 
 ////////////////////////////////////////////////////////////////////

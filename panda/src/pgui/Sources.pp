@@ -12,6 +12,7 @@
   #define SOURCES  \
     config_pgui.h \
     pgButton.I pgButton.h \
+    pgSliderButton.I pgSliderButton.h \
     pgCullTraverser.I pgCullTraverser.h \
     pgEntry.I pgEntry.h \
     pgMouseWatcherGroup.I pgMouseWatcherGroup.h \
@@ -21,11 +22,13 @@
     pgMouseWatcherBackground.h \
     pgMouseWatcherRegion.I pgMouseWatcherRegion.h \
     pgTop.I pgTop.h \
-    pgWaitBar.I pgWaitBar.h
+    pgWaitBar.I pgWaitBar.h \
+    pgSliderBar.I pgSliderBar.h
     
   #define INCLUDED_SOURCES  \
     config_pgui.cxx \
     pgButton.cxx \
+    pgSliderButton.cxx \
     pgCullTraverser.cxx \
     pgEntry.cxx \
     pgMouseWatcherGroup.cxx \
@@ -35,10 +38,12 @@
     pgMouseWatcherBackground.cxx \
     pgMouseWatcherRegion.cxx \
     pgTop.cxx \
-    pgWaitBar.cxx
+    pgWaitBar.cxx \
+    pgSliderBar.cxx
 
   #define INSTALL_HEADERS \
     pgButton.I pgButton.h \
+    pgSliderButton.I pgSliderButton.h \
     pgCullTraverser.I pgCullTraverser.h \
     pgEntry.I pgEntry.h \
     pgMouseWatcherGroup.I pgMouseWatcherGroup.h \
@@ -48,7 +53,8 @@
     pgMouseWatcherBackground.h \
     pgMouseWatcherRegion.I pgMouseWatcherRegion.h \
     pgTop.I pgTop.h \
-    pgWaitBar.I pgWaitBar.h
+    pgWaitBar.I pgWaitBar.h \
+    pgSliderBar.I pgSliderBar.h
     
 
   #define IGATESCAN all

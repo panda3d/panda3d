@@ -73,3 +73,13 @@ INLINE string PGButton::
 get_click_event(const ButtonHandle &button) const {
   return "click-" + button.get_name() + "-" + get_id();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGButton::is_button_down
+//       Access: Published
+//  Description: Returns if the value of button_down
+////////////////////////////////////////////////////////////////////
+INLINE bool PGButton::
+is_button_down() {
+  return _button_down;
+}

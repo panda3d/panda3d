@@ -466,3 +466,13 @@ INLINE PGItem *PGItem::
 get_focus_item() {
   return _focus_item;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::get_frame_inv_xform
+//       Access: Published, Static
+//  Description: Returns the inverse of the frame transform matrix
+////////////////////////////////////////////////////////////////////
+INLINE LMatrix4f PGItem::
+get_frame_inv_xform() const {
+  return _frame_inv_xform;
+}

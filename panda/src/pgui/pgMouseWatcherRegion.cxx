@@ -164,3 +164,16 @@ candidate(const MouseWatcherParameter &param) {
     _item->candidate(param, false);
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGMouseWatcherRegion::move
+//       Access: Public, Virtual
+//  Description: This is a callback hook function, called whenever 
+//               the user moves the mouse within the region
+////////////////////////////////////////////////////////////////////
+void PGMouseWatcherRegion::
+move(const MouseWatcherParameter &param) {
+  if (_item != (PGItem *)NULL) {
+    _item->move(param);
+  }
+}

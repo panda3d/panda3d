@@ -37,9 +37,6 @@ PUBLISHED:
   PGButton(const string &name);
   virtual ~PGButton();
 
-protected:
-  PGButton(const PGButton &copy);
-
 public:
   virtual PandaNode *make_copy() const;
 
@@ -49,6 +46,10 @@ public:
   virtual void release(const MouseWatcherParameter &param, bool background);
 
   virtual void click(const MouseWatcherParameter &param);
+  
+  virtual void move(const MouseWatcherParameter &param);
+
+  PGButton(const PGButton &copy);
 
 PUBLISHED:
   enum State {
@@ -71,6 +72,8 @@ PUBLISHED:
   bool add_click_button(const ButtonHandle &button);
   bool remove_click_button(const ButtonHandle &button);
   bool has_click_button(const ButtonHandle &button);
+
+  INLINE bool is_button_down();
 
   INLINE static string get_click_prefix();
   INLINE string get_click_event(const ButtonHandle &button) const;
@@ -97,6 +100,7 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
 };
 
 #include "pgButton.I"

@@ -18,6 +18,7 @@
 
 #include "config_pgui.h"
 #include "pgButton.h"
+#include "pgSliderButton.h"
 #include "pgCullTraverser.h"
 #include "pgEntry.h"
 #include "pgMouseWatcherParameter.h"
@@ -27,6 +28,7 @@
 #include "pgMouseWatcherRegion.h"
 #include "pgTop.h"
 #include "pgWaitBar.h"
+#include "pgSliderBar.h"
 
 #include "dconfig.h"
 
@@ -60,6 +62,7 @@ init_libpgui() {
   initialized = true;
 
   PGButton::init_type();
+  PGSliderButton::init_type();
   PGCullTraverser::init_type();
   PGEntry::init_type();
   PGMouseWatcherParameter::init_type();
@@ -69,4 +72,5 @@ init_libpgui() {
   PGMouseWatcherRegion::init_type();
   PGTop::init_type();
   PGWaitBar::init_type();
+  PGSliderBar::init_type();
 }

@@ -159,6 +159,18 @@ click(const MouseWatcherParameter &param) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGButton::move
+//       Access: Public, Virtual
+//  Description: This is a callback hook function, called whenever a
+//               mouse is moved while the mouse
+//               is within the region.
+////////////////////////////////////////////////////////////////////
+void PGButton::
+move(const MouseWatcherParameter &param) {
+  PGItem::move(param);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGButton::setup
 //       Access: Published
 //  Description: Sets up the button as a default text button using the

@@ -137,3 +137,13 @@ keystroke(const MouseWatcherParameter &) {
 void MouseWatcherRegion::
 candidate(const MouseWatcherParameter &) {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherRegion::move
+//       Access: Public, Virtual
+//  Description: This is a callback hook function, called whenever a
+//               mouse is moved within the region.
+////////////////////////////////////////////////////////////////////
+void MouseWatcherRegion::
+move(const MouseWatcherParameter &) {
+}

@@ -79,6 +79,7 @@ public:
   virtual void release(const MouseWatcherParameter &param, bool background);
   virtual void keystroke(const MouseWatcherParameter &param, bool background);
   virtual void candidate(const MouseWatcherParameter &param, bool background);
+  virtual void move(const MouseWatcherParameter &param);
 
   static void background_press(const MouseWatcherParameter &param);
   static void background_release(const MouseWatcherParameter &param);
@@ -139,6 +140,8 @@ PUBLISHED:
   INLINE string get_release_event(const ButtonHandle &button) const;
   INLINE string get_keystroke_event() const;
 
+  INLINE LMatrix4f get_frame_inv_xform() const;
+
 #ifdef HAVE_AUDIO
   void set_sound(const string &event, AudioSound *sound);
   void clear_sound(const string &event);
@@ -170,6 +173,8 @@ private:
   int _flags;
 
   PT(PGMouseWatcherRegion) _region;
+
+  LMatrix4f _frame_inv_xform;
 
   class StateDef {
   public:

@@ -5,4 +5,5 @@
 #include "pgMouseWatcherRegion.cxx"
 #include "pgTop.cxx"
 #include "pgWaitBar.cxx"
+#include "pgSliderBar.cxx"
 
