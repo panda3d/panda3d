@@ -78,7 +78,7 @@ recompute_matrix() {
     // Degenerate case.
     _matrix = LMatrix4d::ident_mat();
   } else {
-    LVector3d axis = LCAST(double, axis);
+    LVector3d axis = LCAST(double, _axis);
 
     _matrix = 
       LMatrix4d::translate_mat(-_center) *

@@ -386,7 +386,6 @@ generate_image() {
     okflag = copy_texture_image(palette, *ti) && okflag;
   }
 
-  nout << "Writing " << _filename << "\n";
   _filename.make_dir();
   if (!palette.write(_filename)) {
     nout << "Error in writing.\n";
@@ -440,7 +439,6 @@ refresh_image() {
   }
 
   if (any_changed) {
-    nout << "Writing " << _filename << "\n";
     if (!palette.write(_filename)) {
       nout << "Error in writing.\n";
       okflag = false;
