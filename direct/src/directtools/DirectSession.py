@@ -497,7 +497,7 @@ class DirectSession(PandaObject):
         # Update the activeParentReadout
         self.activeParentReadout.reparentTo(aspect2d)
         self.activeParentReadout.setText(
-            'Active Parent:' + nodePath.getName())
+            'Active Reparent Target:' + nodePath.getName())
         # Alert everyone else
         messenger.send('DIRECT_activeParent', [self.activeParent])
         
