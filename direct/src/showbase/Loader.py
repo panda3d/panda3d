@@ -122,6 +122,12 @@ class Loader:
 
     # font loading funcs
     def loadFont(self, modelPath, priority = 0, faceIndex = 0,
+                 spaceAdvance = None, pointSize = None,
+                 pixelsPerUnit = None, scaleFactor = None,
+                 smallCaps = None, smallCapsScale = None,
+                 textureMargin = None, polyMargin = None,
+                 minFilter = None, magFilter = None,
+                 anisotropicDegree = None,
                  lineHeight = None):
         """loadFont(self, string)
 
@@ -158,11 +164,34 @@ class Loader:
             # it's just a TTF file or something.
             font = DynamicTextFont(fn, faceIndex)
 
+        # The following properties may only be set for dynamic fonts.
+        if isinstance(font, DynamicTextFont):
+            if pointSize != None:
+                font.setPointSize(pointSize)
+            if pixelsPerUnit != None:
+                font.setPixelsPerUnit(pixelsPerUnit)
+            if scaleFactor != None:
+                font.setScaleFactor(scaleFactor)
+            if smallCaps != None:
+                font.setSmallCaps(smallCaps)
+            if smallCapsScale != None:
+                font.setSmallCapsScale(smallCapsScale)
+            if textureMargin != None:
+                font.setTextureMargin(textureMargin)
+            if polyMargin != None:
+                font.setPolyMargin(polyMargin)
+            if minFilter != None:
+                font.setMinFilter(minFilter)
+            if magFilter != None:
+                font.setMagFilter(magFilter)
+            if anisotropicDegree != None:
+                font.setAnisotropicDegree(anisotropicDegree)
+
         if lineHeight != None:
             # If the line height is specified, it overrides whatever
             # the font itself thinks the line height should be.  This
-            # should be called last, since some of the other
-            # parameters can cause the line height to be reset to its
+            # and spaceAdvance should be set last, since some of the
+            # other parameters can cause these to be reset to their
             # default.
             
             # temporary try..except for old Pandas.
@@ -170,6 +199,9 @@ class Loader:
                 font.setLineHeight(lineHeight)
             except:
                 pass
+
+        if spaceAdvance != None:
+            font.setSpaceAdvance(spaceAdvance)
 
         return font
 
