@@ -6,6 +6,10 @@
 INLINE GuiButton::GuiButton(void) {
 }
 
+INLINE bool GuiButton::owns_region(const MouseWatcherRegion* rgn) const {
+  return (_rgn == rgn);
+}
+
 INLINE void GuiButton::enter(void) {
   switch (_state) {
   case UP:
@@ -140,43 +144,41 @@ INLINE bool GuiButton::is_active(void) const {
 INLINE void GuiButton::set_up_event(const string& s) {
   if (_behavior_running)
     if (_mgr != (GuiManager*)0L)
-      _eh->remove_hook(_up_event, GuiButton::behavior_up, (void*)this);
+      _eh->remove_hook(_up_event, GuiButton::behavior_up);
   _up_event = s;
   if (_behavior_running)
     if (_mgr != (GuiManager*)0L)
-      _eh->add_hook(_up_event, GuiButton::behavior_up, (void*)this);
+      _eh->add_hook(_up_event, GuiButton::behavior_up);
 }
 
 INLINE void GuiButton::set_up_rollover_event(const string& s) {
   if (_behavior_running)
     if (_mgr != (GuiManager*)0L)
-      _eh->remove_hook(_up_rollover_event, GuiButton::behavior_up,
-		       (void*)this);
+      _eh->remove_hook(_up_rollover_event, GuiButton::behavior_up);
   _up_rollover_event = s;
   if (_behavior_running)
     if (_mgr != (GuiManager*)0L)
-      _eh->add_hook(_up_rollover_event, GuiButton::behavior_up, (void*)this);
+      _eh->add_hook(_up_rollover_event, GuiButton::behavior_up);
 }
 
 INLINE void GuiButton::set_down_event(const string& s) {
   if (_behavior_running)
     if (_mgr != (GuiManager*)0L)
-      _eh->remove_hook(_down_event, GuiButton::behavior_up, (void*)this);
+      _eh->remove_hook(_down_event, GuiButton::behavior_up);
   _down_event = s;
   if (_behavior_running)
     if (_mgr != (GuiManager*)0L)
-      _eh->add_hook(_down_event, GuiButton::behavior_up, (void*)this);
+      _eh->add_hook(_down_event, GuiButton::behavior_up);
 }
 
 INLINE void GuiButton::set_down_rollover_event(const string& s) {
   if (_behavior_running)
     if (_mgr != (GuiManager*)0L)
-      _eh->remove_hook(_down_rollover_event, GuiButton::behavior_up,
-		       (void*)this);
+      _eh->remove_hook(_down_rollover_event, GuiButton::behavior_up);
   _down_rollover_event = s;
   if (_behavior_running)
     if (_mgr != (GuiManager*)0L)
-      _eh->add_hook(_down_rollover_event, GuiButton::behavior_up, (void*)this);
+      _eh->add_hook(_down_rollover_event, GuiButton::behavior_up);
 }
 
 INLINE void GuiButton::set_inactive_event(const string& s) {

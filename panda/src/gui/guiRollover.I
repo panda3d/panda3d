@@ -43,3 +43,7 @@ INLINE void GuiRollover::exit(void) {
 INLINE bool GuiRollover::is_over(void) const {
   return _state;
 }
+
+INLINE bool GuiRollover::owns_region(const MouseWatcherRegion* rgn) const {
+  return (_rgn == rgn);
+}

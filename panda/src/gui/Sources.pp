@@ -15,7 +15,6 @@
   #define SOURCES \
     config_gui.h config_gui.cxx \
     guiManager.h guiManager.I guiManager.cxx \
-    guiRegion.h guiRegion.I guiRegion.cxx \
     guiLabel.h guiLabel.I guiLabel.cxx \
     guiItem.h guiItem.I guiItem.cxx \
     guiRollover.h guiRollover.I guiRollover.cxx \
@@ -30,7 +29,6 @@
 
   #define INSTALL_HEADERS \
     guiManager.h guiManager.I \
-    guiRegion.h guiRegion.I \
     guiLabel.h guiLabel.I \
     guiItem.h guiItem.I \
     guiRollover.h guiRollover.I \
@@ -45,7 +43,6 @@
 
   #define IGATESCAN \
     guiManager.h guiManager.I \
-    guiRegion.h guiRegion.I \
     guiLabel.h guiLabel.I \
     guiItem.h guiItem.I \
     guiRollover.h guiRollover.I \

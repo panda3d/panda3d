@@ -321,9 +321,6 @@ void GuiFrame::clear_all_packing(void) {
 }
 
 void GuiFrame::manage(GuiManager* mgr, EventHandler& eh) {
-  if (!_added_hooks) {
-    _added_hooks = true;
-  }
   if (_mgr == (GuiManager*)0L) {
     for (Boxes::iterator i=_items.begin(); i!=_items.end(); ++i)
       (*i).get_item()->manage(mgr, eh);
@@ -334,9 +331,6 @@ void GuiFrame::manage(GuiManager* mgr, EventHandler& eh) {
 }
 
 void GuiFrame::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
-  if (!_added_hooks) {
-    _added_hooks = true;
-  }
   if (_mgr == (GuiManager*)0L) {
     for (Boxes::iterator i=_items.begin(); i!=_items.end(); ++i)
       (*i).get_item()->manage(mgr, eh, n);
@@ -384,7 +378,7 @@ void GuiFrame::set_priority(GuiItem* it, const GuiItem::Priority p) {
 }
 
 int GuiFrame::set_draw_order(int v) {
-  int o;
+  int o = v;
   bool first = true;
   for (Boxes::iterator i=_items.begin(); i!=_items.end(); ++i)
     if (first) {

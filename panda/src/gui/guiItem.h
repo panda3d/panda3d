@@ -15,7 +15,6 @@ PUBLISHED:
   enum Priority { P_Lowest, P_Low, P_Normal, P_High, P_Highest };
 
 protected:
-  bool _added_hooks;
   float _scale, _scale_x, _scale_y, _scale_z, _left, _right, _bottom, _top;
   LVector3f _pos;
   GuiManager* _mgr;

@@ -74,8 +74,6 @@ void GuiCollection::remove_item(GuiItem* item) {
 }
 
 void GuiCollection::manage(GuiManager* mgr, EventHandler& eh) {
-  if (!_added_hooks)
-    _added_hooks = true;
   if (_mgr == (GuiManager*)0L) {
     for (Items::iterator i=_items.begin(); i!=_items.end(); ++i)
       (*i)->manage(mgr, eh);
@@ -86,8 +84,6 @@ void GuiCollection::manage(GuiManager* mgr, EventHandler& eh) {
 }
 
 void GuiCollection::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
-  if (!_added_hooks)
-    _added_hooks = true;
   if (_mgr == (GuiManager*)0L) {
     for (Items::iterator i=_items.begin(); i!=_items.end(); ++i)
       (*i)->manage(mgr, eh, n);

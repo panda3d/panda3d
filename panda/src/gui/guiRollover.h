@@ -6,16 +6,17 @@
 #ifndef __GUIROLLOVER_H__
 #define __GUIROLLOVER_H__
 
-#include "guiItem.h"
-#include "guiRegion.h"
+#include "guiBehavior.h"
 #include "guiLabel.h"
 #include "guiManager.h"
 
-class EXPCL_PANDA GuiRollover : public GuiItem {
+#include <mouseWatcherRegion.h>
+
+class EXPCL_PANDA GuiRollover : public GuiBehavior {
 private:
   PT(GuiLabel) _off;
   PT(GuiLabel) _on;
-  PT(GuiRegion) _rgn;
+  PT(MouseWatcherRegion) _rgn;
 
   float _off_scale;
   float _on_scale;
@@ -48,9 +49,16 @@ PUBLISHED:
   virtual void set_priority(GuiLabel*, const Priority);
   virtual void set_priority(GuiItem*, const Priority);
 
+  virtual void start_behavior(void);
+  virtual void stop_behavior(void);
+  virtual void reset_behavior(void);
+
   virtual int set_draw_order(int);
 
   virtual void output(ostream&) const;
+
+public:
+  INLINE bool owns_region(const MouseWatcherRegion*) const;
 
 public:
   // type interface
@@ -60,7 +68,7 @@ public:
   static void init_type(void) {
     GuiItem::init_type();
     register_type(_type_handle, "GuiRollover",
-		  GuiItem::get_class_type());
+		  GuiBehavior::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

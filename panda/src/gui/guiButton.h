@@ -7,9 +7,10 @@
 #define __GUIBUTTON_H__
 
 #include "guiBehavior.h"
-#include "guiRegion.h"
 #include "guiLabel.h"
 #include "guiManager.h"
+
+#include <mouseWatcherRegion.h>
 
 class EXPCL_PANDA GuiButton : public GuiBehavior {
 private:
@@ -20,7 +21,7 @@ private:
   PT(GuiLabel) _inactive;
   string _up_event, _up_rollover_event, _down_event, _down_rollover_event;
   string _inactive_event;
-  PT(GuiRegion) _rgn;
+  PT(MouseWatcherRegion) _rgn;
 
   float _up_scale;
   float _upr_scale;
@@ -42,10 +43,10 @@ private:
   virtual void recompute_frame(void);
   virtual void adjust_region(void);
 
-  static void behavior_up(CPT_Event, void*);
-  static void behavior_down(CPT_Event, void*);
-  void run_button_up(void);
-  void run_button_down(void);
+  static void behavior_up(CPT_Event);
+  static void behavior_down(CPT_Event);
+  void run_button_up(void) const;
+  void run_button_down(void) const;
 PUBLISHED:
   GuiButton(const string&, GuiLabel*, GuiLabel*);
   GuiButton(const string&, GuiLabel*, GuiLabel*, GuiLabel*);
@@ -57,6 +58,8 @@ public:
   virtual void manage(GuiManager*, EventHandler&);
   virtual void manage(GuiManager*, EventHandler&, Node*);
   virtual void unmanage(void);
+
+  INLINE bool owns_region(const MouseWatcherRegion*) const;
 
 PUBLISHED:
   virtual int freeze();

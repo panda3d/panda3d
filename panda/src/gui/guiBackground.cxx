@@ -57,8 +57,6 @@ GuiBackground::~GuiBackground(void) {
 }
 
 void GuiBackground::manage(GuiManager* mgr, EventHandler& eh) {
-  if (!_added_hooks)
-    _added_hooks = true;
   if (_mgr == (GuiManager*)0L) {
     mgr->add_label(_bg);
     _item->manage(mgr, eh);
@@ -69,8 +67,6 @@ void GuiBackground::manage(GuiManager* mgr, EventHandler& eh) {
 }
 
 void GuiBackground::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
-  if (!_added_hooks)
-    _added_hooks = true;
   if (_mgr == (GuiManager*)0L) {
     mgr->add_label(_bg, n);
     _item->manage(mgr, eh, n);

@@ -6,22 +6,21 @@
 #include "guiRollover.h"
 #include "config_gui.h"
 
-#include <map>
+#include <set>
 
-typedef map<string, GuiRollover*> RolloverMap;
-static RolloverMap rollovers;
+typedef set<GuiRollover*> RolloverSet;
+static RolloverSet rollovers;
+static bool added_hooks = false;
 
 TypeHandle GuiRollover::_type_handle;
 
-
 static GuiRollover *
-find_in_rollovers_map(const string &name) {
-  RolloverMap::const_iterator bi;
-  bi = rollovers.find(name);
-  if (bi == rollovers.end()) {
-    return (GuiRollover *)NULL;
-  }
-  return (*bi).second;
+find_in_rollovers_set(const MouseWatcherRegion* rgn) {
+  for (RolloverSet::const_iterator bi=rollovers.begin(); bi!=rollovers.end();
+       ++bi)
+    if ((*bi)->owns_region(rgn))
+      return *bi;
+  return (GuiRollover*)0L;
 }
 
 inline void GetExtents(GuiLabel* x, GuiLabel* y, float& l, float& r, float& b,
@@ -36,33 +35,23 @@ inline void GetExtents(GuiLabel* x, GuiLabel* y, float& l, float& r, float& b,
 }
 
 static void enter_rollover(CPT_Event e) {
-  GuiRollover* val = find_in_rollovers_map(e->get_name());
-  if (val == (GuiRollover *)NULL) {
-#ifdef _DEBUG
-    if (gui_cat.is_debug())
-      gui_cat.debug()
-	<< "Ignoring event " << e->get_name() << " for deleted rollover\n";
-#endif
-    return;
-  }
+  const MouseWatcherRegion* rgn = DCAST(MouseWatcherRegion, e->get_parameter(0).get_ptr());
+  GuiRollover* val = find_in_rollovers_set(rgn);
+  if (val == (GuiRollover *)0L)
+    return;  // this wasn't for us
   val->enter();
 }
 
 static void exit_rollover(CPT_Event e) {
-  GuiRollover* val = find_in_rollovers_map(e->get_name());
-  if (val == (GuiRollover *)NULL) {
-#ifdef _DEBUG
-    if (gui_cat.is_debug())
-      gui_cat.debug()
-	<< "Ignoring event " << e->get_name() << " for deleted rollover\n";
-#endif
-    return;
-  }
+  const MouseWatcherRegion* rgn = DCAST(MouseWatcherRegion, e->get_parameter(0).get_ptr());
+  GuiRollover* val = find_in_rollovers_set(rgn);
+  if (val == (GuiRollover *)0L)
+    return;  // this wasn't for us
   val->exit();
 }
 
 void GuiRollover::recompute_frame(void) {
-  GuiItem::recompute_frame();
+  GuiBehavior::recompute_frame();
   _off->recompute();
   _on->recompute();
   this->adjust_region();
@@ -70,24 +59,24 @@ void GuiRollover::recompute_frame(void) {
 
 void GuiRollover::adjust_region(void) {
   GetExtents(_off, _on, _left, _right, _bottom, _top);
-  GuiItem::adjust_region();
-  _rgn->set_region(_left, _right, _bottom, _top);
+  GuiBehavior::adjust_region();
+  _rgn->set_frame(_left, _right, _bottom, _top);
 }
 
 void GuiRollover::set_priority(GuiLabel* l, const GuiItem::Priority p) {
   _off->set_priority(l, ((p==P_Low)?GuiLabel::P_LOWER:GuiLabel::P_HIGHER));
   _on->set_priority(l, ((p==P_Low)?GuiLabel::P_LOWER:GuiLabel::P_HIGHER));
-  GuiItem::set_priority(l, p);
+  GuiBehavior::set_priority(l, p);
 }
 
 GuiRollover::GuiRollover(const string& name, GuiLabel* off, GuiLabel* on)
-  : GuiItem(name), _off(off), _on(on), _off_scale(off->get_scale()),
+  : GuiBehavior(name), _off(off), _on(on), _off_scale(off->get_scale()),
     _on_scale(on->get_scale()), _state(false) {
   GetExtents(off, on, _left, _right, _bottom, _top);
-  _rgn = new GuiRegion("rollover-" + name, _left, _right, _bottom, _top,
-		       false);
-  rollovers["gui-in-rollover-" + name] = this;
-  rollovers["gui-out-rollover-" + name] = this;
+  _rgn = new MouseWatcherRegion("rollover-" + name, _left, _right, _bottom,
+				_top);
+  _rgn->set_suppress_below(false);
+  rollovers.insert(this);
 }
 
 GuiRollover::~GuiRollover(void) {
@@ -96,37 +85,41 @@ GuiRollover::~GuiRollover(void) {
   // Remove the names from the rollovers map, so we don't end up with
   // an invalid pointer.
   string name = get_name();
-  rollovers.erase("gui-in-rollover-" + name);
-  rollovers.erase("gui-out-rollover-" + name);
+  rollovers.erase(this);
+  if ((rollovers.size() == 0) && added_hooks) {
+    _eh->remove_hook("gui-enter", enter_rollover);
+    _eh->remove_hook("gui-exit", exit_rollover);
+    added_hooks = false;
+  }
 }
 
 void GuiRollover::manage(GuiManager* mgr, EventHandler& eh) {
-  if (!_added_hooks) {
-    eh.add_hook("gui-in-rollover-" + get_name(), enter_rollover);
-    eh.add_hook("gui-out-rollover-" + get_name(), exit_rollover);
-    _added_hooks = true;
+  if (!added_hooks) {
+    eh.add_hook("gui-enter", enter_rollover);
+    eh.add_hook("gui-exit", exit_rollover);
+    added_hooks = true;
   }
   if (_mgr == (GuiManager*)0L) {
     mgr->add_region(_rgn);
     _state = false;
     mgr->add_label(_off);
-    GuiItem::manage(mgr, eh);
+    GuiBehavior::manage(mgr, eh);
   } else
     gui_cat->warning() << "tried to manage rollover (0x" << (void*)this
 		       << ") that is already managed" << endl;
 }
 
 void GuiRollover::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
-  if (!_added_hooks) {
-    eh.add_hook("gui-in-rollover-" + get_name(), enter_rollover);
-    eh.add_hook("gui-out-rollover-" + get_name(), exit_rollover);
-    _added_hooks = true;
+  if (!added_hooks) {
+    eh.add_hook("gui-enter", enter_rollover);
+    eh.add_hook("gui-exit", exit_rollover);
+    added_hooks = true;
   }
   if (_mgr == (GuiManager*)0L) {
     mgr->add_region(_rgn);
     _state = false;
     mgr->add_label(_off, n);
-    GuiItem::manage(mgr, eh, n);
+    GuiBehavior::manage(mgr, eh, n);
   } else
     gui_cat->warning() << "tried to manage rollover (0x" << (void*)this
 		       << ") that is already managed" << endl;
@@ -138,7 +131,7 @@ void GuiRollover::unmanage(void) {
     _mgr->remove_label(_off);
     _mgr->remove_label(_on);
   }
-  GuiItem::unmanage();
+  GuiBehavior::unmanage();
 }
 
 int GuiRollover::freeze(void) {
@@ -156,21 +149,21 @@ int GuiRollover::thaw(void) {
 void GuiRollover::set_scale(float f) {
   _on->set_scale(f * _on_scale);
   _off->set_scale(f * _off_scale);
-  GuiItem::set_scale(f);
+  GuiBehavior::set_scale(f);
   recompute_frame();
 }
 
 void GuiRollover::set_scale(float x, float y, float z) {
   _on->set_scale(x, y, z);
   _off->set_scale(x, y, z);
-  GuiItem::set_scale(x, y, z);
+  GuiBehavior::set_scale(x, y, z);
   recompute_frame();
 }
 
 void GuiRollover::set_pos(const LVector3f& p) {
   _on->set_pos(p);
   _off->set_pos(p);
-  GuiItem::set_pos(p);
+  GuiBehavior::set_pos(p);
   recompute_frame();
 }
 
@@ -185,21 +178,34 @@ void GuiRollover::set_priority(GuiItem* i, const GuiItem::Priority p) {
     i->set_priority(_off, ((p==P_Low)?P_High:P_Low));
     i->set_priority(_on, ((p==P_Low)?P_High:P_Low));
   }
-  GuiItem::set_priority(i, p);
+  GuiBehavior::set_priority(i, p);
+}
+
+void GuiRollover::start_behavior(void) {
+  return;
+}
+
+void GuiRollover::stop_behavior(void) {
+  return;
+}
+
+void GuiRollover::reset_behavior(void) {
+  return;
 }
 
 int GuiRollover::set_draw_order(int v) {
   int o = _off->set_draw_order(v);
   o = _on->set_draw_order(o);
-  return GuiItem::set_draw_order(o);
+  _rgn->set_sort(o++);
+  return GuiBehavior::set_draw_order(o);
 }
 
 void GuiRollover::output(ostream& os) const {
-  GuiItem::output(os);
+  GuiBehavior::output(os);
   os << "  Rollover data:" << endl;
   os << "    off - 0x" << (void*)_off << endl;
   os << "    on - 0x" << (void*)_on << endl;
-  os << "    region - 0x" << (void*)_rgn << endl;
+  os << "    region - 0x" << (void*)_rgn << " (" << *_rgn << ")" << endl;
   os << "      frame - " << _rgn->get_frame() << endl;
   os << "    state - " << _state << endl;
 }

@@ -10,10 +10,10 @@
 #include <graphicsWindow.h>
 #include <mouse.h>
 #include <mouseWatcher.h>
+#include <mouseWatcherRegion.h>
 #include <node.h>
 #include <set>
 
-#include "guiRegion.h"
 #include "guiLabel.h"
 #include "config_gui.h"
 
@@ -21,7 +21,7 @@ class EXPCL_PANDA GuiManager {
 private:
   typedef map<GraphicsWindow*, GuiManager*> GuiMap;
   static GuiMap* _map;
-  typedef set<GuiRegion*> RegionSet;
+  typedef set<MouseWatcherRegion*> RegionSet;
   RegionSet _regions;
   typedef set<GuiLabel*> LabelSet;
   LabelSet _labels;
@@ -44,12 +44,15 @@ private:
 PUBLISHED:
   static GuiManager* get_ptr(GraphicsWindow*, MouseAndKeyboard*, Node *root2d);
 
-  void add_region(GuiRegion*);
+  void add_region(MouseWatcherRegion*);
   void add_label(GuiLabel*);
   void add_label(GuiLabel*, Node*);
 
-  void remove_region(GuiRegion*);
+  void remove_region(MouseWatcherRegion*);
   void remove_label(GuiLabel*);
+
+  bool has_region(MouseWatcherRegion*);
+  bool has_label(GuiLabel*);
 
   void recompute_priorities(void);
 

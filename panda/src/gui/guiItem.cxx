@@ -36,12 +36,11 @@ void GuiItem::adjust_region(void) {
 void GuiItem::set_priority(GuiLabel*, const GuiItem::Priority) {
 }
 
-GuiItem::GuiItem(const string& name) : Namable(name), _added_hooks(false),
-				       _scale(1.), _scale_x(1.), _scale_y(1.),
-				       _scale_z(1.), _left(-1.), _right(1.),
-				       _bottom(-1.), _top(1.),
-				       _pos(0., 0., 0.),
-				       _mgr((GuiManager*)0L), _pri(P_Normal) {
+GuiItem::GuiItem(const string& name) : Namable(name), _scale(1.), _scale_x(1.),
+				       _scale_y(1.), _scale_z(1.), _left(-1.),
+				       _right(1.), _bottom(-1.), _top(1.),
+				       _pos(0., 0., 0.), _mgr((GuiManager*)0L),
+				       _pri(P_Normal) {
 
   if (gui_cat->is_debug())
     gui_cat->debug()
@@ -108,7 +107,6 @@ int GuiItem::set_draw_order(int v) {
 void GuiItem::output(ostream& os) const {
   os << "GuiItem (0x" << (void*)this << ")" << endl;
   os << "  name - '" << get_name() << "'" << endl;
-  os << "  hooks have" << (_added_hooks?" ":" not ") << "been added" << endl;
   os << "  scale - " << _scale << endl;
   os << "  pos - " << _pos << endl;
   os << "  mgr - 0x" << (void*)_mgr << endl;

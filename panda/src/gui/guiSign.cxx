@@ -30,8 +30,6 @@ GuiSign::~GuiSign(void) {
 }
 
 void GuiSign::manage(GuiManager* mgr, EventHandler& eh) {
-  if (!_added_hooks)
-    _added_hooks = true;
   if (_mgr == (GuiManager*)0L) {
     mgr->add_label(_sign);
     GuiItem::manage(mgr, eh);
@@ -41,8 +39,6 @@ void GuiSign::manage(GuiManager* mgr, EventHandler& eh) {
 }
 
 void GuiSign::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
-  if (!_added_hooks)
-    _added_hooks = true;
   if (_mgr == (GuiManager*)0L) {
     mgr->add_label(_sign, n);
     GuiItem::manage(mgr, eh, n);
@@ -58,16 +54,10 @@ void GuiSign::unmanage(void) {
 }
 
 int GuiSign::freeze() {
-#ifdef _DEBUG
-  gui_cat->spam() << "GuiSign::freeze (" << this->get_name() << ")" << endl;
-#endif
   return _sign->freeze();
 }
 
 int GuiSign::thaw() {
-#ifdef _DEBUG
-  gui_cat->spam() << "GuiSign::thaw (" << this->get_name() << ")" << endl;
-#endif
   return _sign->thaw();
 }
 

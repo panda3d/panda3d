@@ -5,7 +5,6 @@
 
 #include "config_gui.h"
 #include "guiLabel.h"
-#include "guiRegion.h"
 #include "guiItem.h"
 #include "guiSign.h"
 #include "guiRollover.h"
@@ -24,7 +23,6 @@ NotifyCategoryDef(gui, "");
 
 ConfigureFn(config_gui) {
   GuiLabel::init_type();
-  GuiRegion::init_type();
   GuiItem::init_type();
   GuiBehavior::init_type();
   GuiSign::init_type();

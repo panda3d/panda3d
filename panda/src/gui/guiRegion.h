@@ -17,11 +17,8 @@
 
 class GuiManager;
 
-class EXPCL_PANDA GuiRegion : public TypedReferenceCount, public Namable {
+class EXPCL_PANDA GuiRegion : public MouseWatcherRegion {
 private:
-  float _left, _right, _bottom, _top;
-  PT(MouseWatcherRegion) _region;
-
   INLINE GuiRegion(void);
 
   INLINE MouseWatcherRegion* get_region(void) const;
