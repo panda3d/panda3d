@@ -16,9 +16,9 @@ GuiChooser::ChooseFunctor::~ChooseFunctor(void) {
 }
 
 void GuiChooser::ChooseFunctor::doit(GuiBehavior* b) {
-  if (b == this->_ch->_prev_button)
+  if ((b == this->_ch->_prev_button) && this->_ch->_prev_button->is_active())
     this->_ch->move_prev();
-  if (b == this->_ch->_next_button)
+  if ((b == this->_ch->_next_button) && this->_ch->_next_button->is_active())
     this->_ch->move_next();
 }
 
@@ -50,13 +50,23 @@ void GuiChooser::move_prev(void) {
     _items[tmp]->manage(_mgr, *_eh);
     if (tmp == 0)
       _prev_button->inactive();
-    else
+    else {
       _prev_button->up();
+      if (_behavior_running) {
+	_prev_button->start_behavior();
+	_prev_button->set_behavior_functor(_prev_functor);
+      }
+    }
     int foo = _items.size() - 1;
     if (tmp == foo)
       _next_button->inactive();
-    else
+    else {
       _next_button->up();
+      if (_behavior_running) {
+	_next_button->start_behavior();
+	_next_button->set_behavior_functor(_next_functor);
+      }
+    }
   }
   _curr = tmp;
 }
@@ -77,12 +87,23 @@ void GuiChooser::move_next(void) {
     _items[tmp]->manage(_mgr, *_eh);
     if (tmp == 0)
       _prev_button->inactive();
-    else
+    else {
       _prev_button->up();
-    if (tmp == (_items.size() - 1))
+      if (_behavior_running) {
+	_prev_button->start_behavior();
+	_prev_button->set_behavior_functor(_prev_functor);
+      }
+    }
+    int foo = _items.size() - 1;
+    if (tmp == foo)
       _next_button->inactive();
-    else
+    else {
       _next_button->up();
+      if (_behavior_running) {
+	_next_button->start_behavior();
+	_next_button->set_behavior_functor(_next_functor);
+      }
+    }
   }
   _curr = tmp;
 }

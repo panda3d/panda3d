@@ -450,6 +450,8 @@ void GuiButton::start_behavior(void) {
   GuiBehavior::start_behavior();
   if (_mgr == (GuiManager*)0L)
     return;
+  if (!this->is_active())
+    return;
   _eh->add_hook(_down_event, GuiButton::behavior_down, (void*)this);
   _eh->add_hook(_down_rollover_event, GuiButton::behavior_down, (void*)this);
 }
