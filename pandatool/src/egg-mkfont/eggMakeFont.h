@@ -68,6 +68,7 @@ private:
   double _scale_factor;
   double _gaussian_radius;
   double _ds;
+  double _scale;
   double _ppu;
   bool _get_all;
   string _only_chars;

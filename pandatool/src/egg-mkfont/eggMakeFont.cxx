@@ -109,6 +109,14 @@ EggMakeFont() : EggWriter(true, false) {
      &EggMakeFont::dispatch_double, NULL, &_ds);
 
   add_option
+    ("scale", "size", 0, 
+     "Specify an additional scale to the font, without changing its design "
+     "size.  This makes the letters larger (or smaller) without changing "
+     "the spacing between lines.  Usually you should use -ds instead of "
+     "-scale to change the size of the text.",
+     &EggMakeFont::dispatch_double, NULL, &_scale);
+
+  add_option
     ("all", "", 0, 
      "Extract all the characters in the font.  Normally, only the "
      "ASCII characters in the range 33 .. 127 are extracted.",
@@ -130,6 +138,12 @@ EggMakeFont() : EggWriter(true, false) {
      "on the texture map.",
      &EggMakeFont::dispatch_none, &_small_caps);
 
+  add_option
+    ("scs", "", 0, 
+     "Small caps scale: the ratio of the size of a lowercase letter to "
+     "its uppercase equivalent, when -sc is in effect.  [0.7]",
+     &EggMakeFont::dispatch_double, NULL, &_small_caps_scale);
+
   _fg.set(1.0, 1.0, 1.0, 1.0);
   _bg.set(0.0, 0.0, 0.0, 0.0);
   _output_xsize = 256;
@@ -140,7 +154,8 @@ EggMakeFont() : EggWriter(true, false) {
   _scale_factor = 3.0;
   _gaussian_radius = 1.2;
   _ds = 1.0;
-  _small_caps_scale = 0.8;
+  _scale = 1.0;
+  _small_caps_scale = 0.7;
 }
 
 
@@ -691,7 +706,8 @@ run() {
   _group->set_switch_flag(true);
   _group->set_switch_fps(2.0);
 
-  _ppu = _font->get_ds() / _ds;
+  // Compute the font points per polygon unit.
+  _ppu = _font->get_ds() / (_ds * _scale);
 
   // Now we can copy all the characters onto the actual image.
   CharLayout::Placements::const_iterator pi;
