@@ -3137,7 +3137,9 @@ apply_texture(TextureContext *tc) {
     if (tc==NULL) {
         return;  // use enable_texturing to disable/enable
     }
-  add_to_texture_record(tc);
+    #ifdef DO_PSTATS
+       add_to_texture_record(tc);
+    #endif
 
 //  activate();  inactive
 //  bind_texture(tc);
