@@ -79,7 +79,7 @@ INLINE ostream &operator << (ostream &out, const EventParameter &param);
 //               which serves mainly to define the placeholder for the
 //               virtual output function.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS EventStoreValueBase : public TypedWritableReferenceCount {
+class EXPCL_PANDA EventStoreValueBase : public TypedWritableReferenceCount {
 public:
   virtual void output(ostream &out) const=0;
 

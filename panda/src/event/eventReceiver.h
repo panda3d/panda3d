@@ -20,8 +20,7 @@
 #define EVENTRECEIVER_H
 
 #include "pandabase.h"
-
-#include <typedObject.h>
+#include "typedObject.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EventReceiver
@@ -30,7 +29,7 @@
 //               an event should inherit from this class; each event
 //               may be sent with an optional EventReceiver pointer.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS EventReceiver {
+class EXPCL_PANDA EventReceiver {
 
 public:
   static TypeHandle get_class_type() {

@@ -37,7 +37,7 @@
 //               be extracted out again by an EventHandler and
 //               processed.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS EventQueue {
+class EXPCL_PANDA EventQueue {
 public:
   enum { max_events = 500 };
 
