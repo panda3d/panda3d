@@ -309,6 +309,9 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         DistributedNode.DistributedNode.d_setParent(self, parentToken)
 
         self.forceToTruePosition()
+        self.sendCurrentPosition()
+
+    def sendCurrentPosition(self):
         self.cnode.initialize(self, self.dclass, self.doId)
         self.cnode.sendEverything()
 
