@@ -61,9 +61,6 @@ Section "${FULLNAME}" SecCore
         File ${PSOURCE}\doc\LICENSE
         SetOutPath $INSTDIR\bin
         File /r ${PANDA}\bin\*.dll
-        File /nonfatal /r ${PANDA}\bin\*.dle
-        File /nonfatal /r ${PANDA}\bin\*.dlo
-        File /nonfatal /r ${PANDA}\bin\*.dlm
         SetOutPath $INSTDIR\etc
         File /r ${PANDA}\etc\*
         SetOutPath $INSTDIR\direct
@@ -89,18 +86,24 @@ Section "${FULLNAME}" SecCore
 
         !else
 
+            SetOutPath $INSTDIR\bin
+            File /nonfatal /r ${PANDA}\bin\*.dle
+            File /nonfatal /r ${PANDA}\bin\*.dlo
+            File /nonfatal /r ${PANDA}\bin\*.dlm
             SetOutPath $INSTDIR\pandac\input
             File /r ${PANDA}\pandac\input\*
             SetOutPath $INSTDIR\bin
             File /r ${PANDA}\bin\*.exe
-            SetOutPath $INSTDIR
-            File ${PSOURCE}\doc\InstallerNotes
             SetOutPath $INSTDIR\lib
             File /r /x *.exp ${PANDA}\lib\*
             SetOutPath $INSTDIR\include
             File /r /x *.exp ${PANDA}\include\*
             SetOutPath $INSTDIR\SceneEditor
             File /r /x CVS ${PSOURCE}\SceneEditor
+            SetOutPath $INSTDIR\Pmw
+            File /r /x CVS ${PANDA}\Pmw
+            SetOutPath $INSTDIR
+            File /r /x CVS ${PSOURCE}\doc\ReleaseNotes
 
             SetOutPath $INSTDIR
             WriteINIStr $INSTDIR\Website.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/"
