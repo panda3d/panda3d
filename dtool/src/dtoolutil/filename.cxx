@@ -75,6 +75,28 @@ extern "C" void cygwin_conv_to_win32_path(const char *path, char *win32);
 extern "C" void cygwin_conv_to_posix_path(const char *path, char *posix);
 #endif
 
+// Windows uses the convention \\hostname\path\to\file to represent a
+// pathname to a file on another share.  This redefines a pathname to
+// be something more complicated than a sequence of directory names
+// separated by slashes.  The Unix convention to represent the same
+// thing is, like everything else, to graft the reference to the
+// remote hostname into the one global filesystem, with something like
+// /hosts/hostname/path/to/file.  We observe the Unix convention for
+// internal names used in Panda; this makes operations like
+// Filename::get_dirname() simpler and more internally consistent.
+
+// This string hard-defines the prefix that we use internally to
+// indicate that the next directory component name should be treated
+// as a hostname.  It might be nice to use a ConfigVariable for this,
+// except that we haven't defined ConfigVariable by this point (and
+// indeed we can't, since we need to have a Filename class already
+// created in order to read the first config file).  Windows purists
+// might be tempted to define this to a double slash so that internal
+// Panda filenames more closely resemble their Windows counterparts.
+// That might actually work, but it will cause problems with
+// Filename::standardize().
+static const string hosts_prefix = "/hosts/";
+
 static string
 front_to_back_slash(const string &str) {
   string result = str;
@@ -177,6 +199,15 @@ convert_pathname(const string &unix_style_pathname, bool use_backslash) {
     windows_pathname =
       string(1, (char)toupper(unix_style_pathname[1])) + ":" + remainder;
 
+  } else if (unix_style_pathname.length() > hosts_prefix.length() &&
+             unix_style_pathname.substr(0, hosts_prefix.length()) == hosts_prefix) {
+    // A filename like /hosts/fooby gets turned into \\fooby.
+    if (use_backslash) {
+      windows_pathname = "\\\\" + front_to_back_slash(unix_style_pathname.substr(hosts_prefix.length()));
+    } else {
+      windows_pathname = "//" + unix_style_pathname.substr(hosts_prefix.length());
+    }
+    
   } else {
     // It starts with a slash, but the first part is not a single
     // letter.
@@ -342,6 +373,10 @@ from_os_specific(const string &os_specific, Filename::Type type) {
     if (result.size() == 3) {
       result = result.substr(0, 2);
     }
+
+  } else if (result.substr(0, 2) == "//") {
+    // If the initial prefix is a double slash, convert it to /hosts/.
+    result = hosts_prefix + result.substr(2);
   }
 
   Filename filename(result);
