@@ -21,6 +21,7 @@
 #include "filename.h"
 #include "config_express.h"
 #include "virtualFileSystem.h"
+#include "executionEnvironment.h"
 
 #ifdef HAVE_SSL
 
@@ -107,6 +108,9 @@ make_ctx() {
   }
   _ssl_ctx = SSL_CTX_new(SSLv23_client_method());
 
+  // By default, insist on verifying servers.
+  SSL_CTX_set_verify(_ssl_ctx, SSL_VERIFY_PEER, NULL);
+
   // Load in any default certificates listed in the Configrc file.
   Config::ConfigTable::Symbol cert_files;
   config_express.GetAll("ssl-certificates", cert_files);
@@ -119,7 +123,7 @@ make_ctx() {
   for (si = cert_files.begin(); si != cert_files.end(); ++si) {
     string cert_file = (*si).Val();
     if (already_read.insert(cert_file).second) {
-      Filename filename = Filename::from_os_specific(cert_file);
+      Filename filename = Filename::from_os_specific(ExecutionEnvironment::expand_string(cert_file));
       if (load_certificates(filename)) {
         downloader_cat.info()
           << "Appending SSL certificates from " << cert_file << "\n";

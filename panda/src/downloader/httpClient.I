@@ -79,3 +79,19 @@ get_proxy() const {
   return _proxy;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::set_verify_ssl
+//       Access: Published
+//  Description: Specifies whether the client will insist on verifying
+//               the identity of the servers it connects to via SSL
+//               (that is, https).  If this is true (the default),
+//               connections will only be allowed to trusted servers.
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPClient::
+set_verify_ssl(bool verify_ssl) {
+  if (verify_ssl) {
+    SSL_CTX_set_verify(_ssl_ctx, SSL_VERIFY_PEER, NULL);
+  } else {
+    SSL_CTX_set_verify(_ssl_ctx, SSL_VERIFY_NONE, NULL);
+  }
+}

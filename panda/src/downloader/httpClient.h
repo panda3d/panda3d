@@ -53,6 +53,8 @@ PUBLISHED:
 
   bool load_certificates(const Filename &filename);
 
+  INLINE void set_verify_ssl(bool verify_ssl);
+
   PT(HTTPDocument) get_document(const URLSpec &url, const string &body = string());
 
 private:
