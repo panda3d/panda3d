@@ -89,8 +89,6 @@ ConfigVariableBool dx_debug_view_mipmaps
 ("dx-debug-view-mipmaps", false);
 ConfigVariableBool dx_force_anisotropic_filtering
 ("dx-force-anisotropic-filtering", false);
-//int dx_print_texstats
-("dx-print-texstats", 0);
 #endif
 
 // set 'retained-mode #t' and this to have prepare_geom concatenate all tristrips within a geom 
