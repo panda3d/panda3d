@@ -36,7 +36,7 @@ class NodePathEntity(Entity.Entity, privNodePathImpl):
 
     def destroy(self):
         Entity.Entity.destroy(self)
-        privNodePathImpl.initializeEntity(self)
+        privNodePathImpl.destroy(self)
 
 class DistributedNodePathEntity(DistributedEntity.DistributedEntity,
                                 privNodePathImpl):
