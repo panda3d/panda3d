@@ -363,24 +363,62 @@ void GuiLabel::get_extents(float& l, float& r, float& b, float& t) {
 
 float GuiLabel::get_width(void) {
   float w;
-  TextNode* n = DCAST(TextNode, _geom);
-  if (n->has_card()) {
-    LVecBase4f v = n->get_card_actual();
-    w = v[1] - v[0];
-  } else {
-    w = n->get_width();
+  switch (_type) {
+  case SIMPLE_TEXT:
+    {
+      TextNode* n = DCAST(TextNode, _geom);
+      if (n->has_card()) {
+	LVecBase4f v = n->get_card_actual();
+	w = v[1] - v[0];
+      } else
+	w = n->get_width();
+    }
+    break;
+  case SIMPLE_TEXTURE:
+    gui_cat->warning() << "tried to get width from a texture label" << endl;
+    w = 1.;
+    break;
+  case SIMPLE_CARD:
+    w = _have_width?_width:1.;
+    break;
+  case MODEL:
+    w = _have_width?(_width*_model_width):_model_width;
+    break;
+  default:
+    gui_cat->warning()
+      << "trying to get width from something I don't know how to" << endl;
+    w = 1.;
   }
   return w;
 }
 
 float GuiLabel::get_height(void) {
   float h;
-  TextNode* n = DCAST(TextNode, _geom);
-  if (n->has_card()) {
-    LVecBase4f v = n->get_card_actual();
-    h = v[3] - v[2];
-  } else {
-    h = n->get_width();
+  switch (_type) {
+  case SIMPLE_TEXT:
+    {
+      TextNode* n = DCAST(TextNode, _geom);
+      if (n->has_card()) {
+	LVecBase4f v = n->get_card_actual();
+	h = v[3] - v[2];
+      } else
+	h = n->get_width();
+    }
+    break;
+  case SIMPLE_TEXTURE:
+    gui_cat->warning() << "tried to get height from a texture label" << endl;
+    h = 1.;
+    break;
+  case SIMPLE_CARD:
+    h = _have_height?_height:1.;
+    break;
+  case MODEL:
+    h = _have_height?(_height*_model_height):_model_height;
+    break;
+  default:
+    gui_cat->warning()
+      << "trying to get height from something I don't know how to" << endl;
+    h = 1.;
   }
   return h;
 }
