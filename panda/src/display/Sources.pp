@@ -28,7 +28,7 @@
     graphicsThreadingModel.I graphicsThreadingModel.h \
     graphicsWindow.h graphicsWindowInputDevice.I  \
     graphicsWindowInputDevice.h \
-    graphicsDevice.h graphicsDevice.i \
+    graphicsDevice.h graphicsDevice.I \
     windowProperties.I windowProperties.h \
     hardwareChannel.I  \
     hardwareChannel.h \
