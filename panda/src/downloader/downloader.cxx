@@ -57,12 +57,13 @@ public:
   INLINE DownloaderToken(uint id, const string &file_name, 
 	const Filename &file_dest, const string &event_name,
 	int first_byte, int last_byte, int total_bytes,
-	bool partial_content) : _id(id), _first_byte(first_byte), 
+	bool partial_content, bool sync) : _id(id), _first_byte(first_byte), 
 		_last_byte(last_byte), _total_bytes(total_bytes) {
     _file_name = file_name;
     _event_name = event_name;
     _file_dest = file_dest;
     _partial_content = partial_content;
+    _sync = sync;
   }
   uint _id;
   string _file_name; 
@@ -72,6 +73,7 @@ public:
   int _last_byte; 
   int _total_bytes;
   bool _partial_content;
+  bool _sync;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -81,10 +83,10 @@ public:
 ////////////////////////////////////////////////////////////////////
 Downloader::
 Downloader(void) : AsyncUtility() {
-  PT(Buffer) buffer = new Buffer(downloader_buffer_size);
-  init(buffer);
+  init();
 }
 
+#if 0
 ////////////////////////////////////////////////////////////////////
 //     Function: Downloader::Constructor
 //       Access: Public
@@ -94,6 +96,7 @@ Downloader::
 Downloader(PT(Buffer) buffer) : AsyncUtility() {
   init(buffer);
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Downloader::init
@@ -101,18 +104,23 @@ Downloader(PT(Buffer) buffer) : AsyncUtility() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Downloader::
-init(PT(Buffer) buffer) {
-  nassertv(!buffer.is_null());
+init(void) {
+  _disk_write_frequency = downloader_disk_write_frequency;
+  _byte_rate = downloader_byte_rate;
   _frequency = downloader_frequency;
-  _bandwidth = downloader_bandwidth;
+  nassertv(_frequency > 0);
+  if (_frequency == 0)
+    _buffer_size = _disk_write_frequency * _byte_rate;
+  else
+    _buffer_size = _disk_write_frequency * (_byte_rate * _frequency);
+  _buffer = new Buffer(_buffer_size);
+  _new_buffer_size = 0;
   _connected = false;
   _token_board = new DownloaderTokenBoard;
-  _buffer = buffer; 
   _download_enabled = true;
+  _last_attempt_stalled = true;
   // We need to flush after every write in case we're interrupted
   _dest_stream.setf(ios::unitbuf, 0);
-  _buffer_size = _buffer->get_length();
-  _new_buffer_size = 0;
 
 #if defined(WIN32)
   WSAData mydata;
@@ -228,15 +236,39 @@ disconnect_from_server(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Downloader::request_sync_download
+//       Access: Public
+//  Description: Requests the synchronous download of a complete file. 
+////////////////////////////////////////////////////////////////////
+int Downloader::
+request_sync_download(const string &file_name, const Filename &file_dest,
+		const string &event_name) {
+  return request_download(file_name, file_dest, event_name, true);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Downloader::request_sync_download
+//       Access: Public
+//  Description: Requests the synchronous download of a complete file. 
+////////////////////////////////////////////////////////////////////
+int Downloader::
+request_sync_download(const string &file_name, const Filename &file_dest,
+		const string &event_name, int first_byte,
+		int last_byte, int total_bytes, bool partial_content) {
+  return request_download(file_name, file_dest, event_name, first_byte,
+			last_byte, total_bytes, partial_content, true); 
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Downloader::request_download
 //       Access: Public
 //  Description: Requests the download of a complete file. 
 ////////////////////////////////////////////////////////////////////
 int Downloader::
 request_download(const string &file_name, const Filename &file_dest,
-		const string &event_name) {
+		const string &event_name, bool sync) {
   return request_download(file_name, file_dest, event_name, 0, 0, 0,
-				false);
+				false, sync);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -258,7 +290,7 @@ int Downloader::
 request_download(const string &file_name, const Filename &file_dest,
 			const string &event_name, int first_byte,
 			int last_byte, int total_bytes,
-			bool partial_content) {
+			bool partial_content, bool sync) {
 
   nassertr(first_byte <= last_byte && last_byte <= total_bytes, 0);
 
@@ -291,7 +323,7 @@ request_download(const string &file_name, const Filename &file_dest,
 
       tok = new DownloaderToken(_next_token++, file_name, file_dest, 
 		event_name, first_byte, last_byte, total_bytes, 
-					partial_content);
+					partial_content, sync);
       _token_board->_waiting.insert(tok);
 
 #ifdef HAVE_IPC
@@ -314,7 +346,7 @@ request_download(const string &file_name, const Filename &file_dest,
 
     tok = new DownloaderToken(_next_token++, file_name, file_dest, 
 		event_name, first_byte, last_byte, total_bytes, 
-					partial_content);
+					partial_content, sync);
     _token_board->_waiting.insert(tok);
     process_request();
   }
@@ -342,7 +374,7 @@ process_request() {
     PT(DownloaderToken) tok = _token_board->_waiting.extract();
     int ret = download(tok->_file_name, tok->_file_dest, tok->_event_name,
 		 tok->_first_byte, tok->_last_byte, tok->_total_bytes,
-		 tok->_partial_content, tok->_id);
+		 tok->_partial_content, tok->_sync, tok->_id);
     if (ret == D_success) {
       _token_board->_done.insert(tok);
 
@@ -420,8 +452,9 @@ safe_send(int socket, const char *data, int length, long timeout) {
 ////////////////////////////////////////////////////////////////////
 int Downloader::
 safe_receive(int socket, DownloadStatus &status, int length, 
-					long timeout, int &bytes) {
+				long timeout, int &bytes, bool &stalled) {
   bytes = 0;
+  stalled = true;
   if (length == 0) {
     downloader_cat.error()
       << "Downloader::safe_receive() - requested 0 length receive!" << endl;
@@ -454,6 +487,8 @@ safe_receive(int socket, DownloadStatus &status, int length,
       bytes += ret;
       status._next_in += ret;
       status._bytes_in_buffer += ret;
+      if (bytes == length)
+        stalled = false;
     } else if (ret == 0) {
       if (downloader_cat.is_debug())
         downloader_cat.debug()
@@ -475,7 +510,8 @@ safe_receive(int socket, DownloadStatus &status, int length,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int Downloader::
-attempt_read(int length, DownloadStatus &status, int &bytes_read) {
+attempt_read(int length, DownloadStatus &status, int &bytes_read,
+			bool &stalled) {
 
   bytes_read = 0;
   for (int i = 0; i < downloader_timeout_retries; i++) {
@@ -494,7 +530,7 @@ attempt_read(int length, DownloadStatus &status, int &bytes_read) {
     // Make the request for length bytes
     int bytes;
     int ans = safe_receive(_socket, status, length,
-					(long)downloader_timeout, bytes); 
+				(long)downloader_timeout, bytes, stalled); 
     bytes_read += bytes;
 
     switch (ans) {
@@ -528,7 +564,7 @@ attempt_read(int length, DownloadStatus &status, int &bytes_read) {
 int Downloader::
 download(const string &file_name, Filename file_dest, 
 		const string &event_name, int first_byte, int last_byte,
-		int total_bytes, bool partial_content, uint id) {
+		int total_bytes, bool partial_content, bool sync, uint id) {
 
   if (_download_enabled == false) {
     if (downloader_cat.is_debug())
@@ -611,16 +647,21 @@ download(const string &file_name, Filename file_dest,
     _bandwidth_frequency_lock.lock();
 #endif
     // read_size is the length of the buffer requested via safe_receive()
-    int read_size = (int)_bandwidth;
-    if (_frequency > 0)
-      read_size = (int)(_bandwidth * _frequency);	
+    int read_size;
+    nassertr(_frequency > 0, D_error);
+    if (sync == true || _frequency == 0)
+      read_size = (int)_byte_rate;
+    else
+      read_size = (int)(_byte_rate * _frequency);	
 #ifdef HAVE_IPC
     _bandwidth_frequency_lock.unlock();
 #endif
 
     // Attempt to read
     int bytes_read;
-    int ret = attempt_read(read_size, status, bytes_read);
+    bool stalled;
+    int ret = attempt_read(read_size, status, bytes_read, stalled);
+    _last_attempt_stalled = stalled;
     if (bytes_read > 0)
       got_any_data = true;
 

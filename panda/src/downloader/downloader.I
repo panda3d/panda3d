@@ -6,27 +6,27 @@
 #include "config_downloader.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Downloader::set_bandwidth
+//     Function: Downloader::set_byte_rate
 //       Access: Public
 //  Description: Note: modem speeds are reported in bits, so you 
 //		 need to convert! 
 ////////////////////////////////////////////////////////////////////
 INLINE void Downloader::
-set_bandwidth(float bytes) {
+set_byte_rate(float bytes) {
 #ifdef HAVE_IPC
   mutex_lock lock(_bandwidth_frequency_lock);
 #endif
-  _bandwidth = bytes;
+  _byte_rate = bytes;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Downloader::get_bandwidth
+//     Function: Downloader::get_byte_rate
 //       Access: Public
-//  Description: Returns bandwidth in bytes.
+//  Description: Returns byte rate in bytes.
 ////////////////////////////////////////////////////////////////////
 INLINE float Downloader::
-get_bandwidth(void) const {
-  return _bandwidth;
+get_byte_rate(void) const {
+  return _byte_rate;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -50,14 +50,17 @@ is_download_enabled(void) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Downloader::change_buffer_size
+//     Function: Downloader::set_disk_write_frequency
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool Downloader::
-change_buffer_size(int size) {
+set_disk_write_frequency(int frequency) {
+  nassertr(frequency > 0, false);
+  _disk_write_frequency = frequency;
+  int size = _disk_write_frequency * (_byte_rate * _frequency);
   if (size == _buffer_size)
-    return true;
+    return false;
   nassertr(size > 0, false);
 #ifdef HAVE_IPC
     _buffer_lock.lock();
@@ -67,4 +70,24 @@ change_buffer_size(int size) {
     _buffer_lock.unlock();
 #endif
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Downloader::get_disk_write_frequency
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE int Downloader::
+get_disk_write_frequency(void) const {
+  return _disk_write_frequency;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Downloader::get_last_attempt_stalled
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool Downloader::
+get_last_attempt_stalled(void) const {
+  return _last_attempt_stalled;
 }
