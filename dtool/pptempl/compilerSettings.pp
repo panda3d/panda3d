@@ -216,6 +216,7 @@
 #endif
 
 #if $[GEN_ASSEMBLY]
+// Note:  Opt4 /GL will cause /FAs to not generate .asm!   Must remove /GL for /FAs to work!
 #define END_CFLAGS $[END_CFLAGS] /FAs
 #endif
 
