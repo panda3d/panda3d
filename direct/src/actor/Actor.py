@@ -1202,32 +1202,9 @@ class Actor(PandaObject, NodePath):
             for partName in other.__animControlDict[lodName].keys():
                 self.__animControlDict[lodName][partName] = {}
                 for animName in other.__animControlDict[lodName][partName].keys():
-                    # if the anim is bound copy the animControl
-                    if isinstance(
-                        other.__animControlDict[lodName][partName][animName][1],
-                        AnimControl):
-                        # get the anim
-                        animBundle = \
-                                   other.__animControlDict[lodName][partName][animName][1].getAnim()
-                        # get the animPath
-                        animPath = \
-                                   other.__animControlDict[lodName][partName][animName][0]
-                        
-                        # get the part
-                        partBundleNode = \
-                                       (self.__partBundleDict[lodName][partName].node())
-                        # bind the anim
-                        animControl = \
-                                    (partBundleNode.getBundle().bindAnim(animBundle, -1))
-                        if (animControl == None):
-                            Actor.notify.error("Null animControl: %s" % (animName))
-                        else:
-                            # store the anim control
-                            self.__animControlDict[lodName][partName][animName] = [animPath, animControl]
-                    else:
-                        # else just copy what's there
-                        self.__animControlDict[lodName][partName][animName] = \
-                        other.__animControlDict[lodName][partName][animName]
+                    # else just copy what's there
+                    self.__animControlDict[lodName][partName][animName] = \
+                        [other.__animControlDict[lodName][partName][animName][0], None]
 
 
 
