@@ -195,3 +195,13 @@ class ParticleEffect(NodePath):
     def loadConfig(self, filename):
 	"""loadConfig(filename)"""
 	execfile(filename.toOsSpecific())
+
+
+
+
+
+
+
+
+
+
