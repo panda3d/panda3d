@@ -6,12 +6,12 @@
   #define COMMONFLAGS /Gi-
   #define OPTFLAGS /O2 /Ob1 /G6
   #define OPT1FLAGS /GZ 
-  #define WARNING_LEVEL_FLAG /W3  
 
   // Note: Zi cannot be used on multiproc builds with precomp hdrs, Z7 must be used instead
   #defer DEBUGPDBFLAGS /Zi /Fd"$[osfilename $[target:%.obj=%.pdb]]"  
   #defer DEBUGFLAGS /MDd $[BROWSEINFO_FLAG] $[DEBUGINFOFLAGS] $[DEBUGPDBFLAGS]
   #define RELEASEFLAGS /MD
+  #define WARNING_LEVEL_FLAG /W3    
   
   #define MAPINFOFLAGS /MAPINFO:EXPORTS /MAPINFO:FIXUPS /MAPINFO:LINES
   
@@ -27,7 +27,11 @@
   
 // in case we have mixed intel/msvc build
   #define EXTRA_LIBPATH /ia32/lib
-  #define EXTRA_INCPATH /ia32/include
+  #define EXTRA_INCPATH /ia32/include    
+
+  #if $[or $[ne $[FORCE_INLINING],],$[>= $[OPTIMIZE],2]]
+      #define EXTRA_CDEFS FORCE_INLINING $[EXTRA_CDEFS]
+  #endif 
   
 #elif $[eq $[USE_COMPILER], MSVC7]
 
@@ -57,13 +61,41 @@
   #else
     #define PROFILE_FLAG 
   #endif
+  
+  #if $[or $[ne $[FORCE_INLINING],],$[>= $[OPTIMIZE],2]]
+      #define EXTRA_CDEFS FORCE_INLINING $[EXTRA_CDEFS]
+  #endif 
  
   // Note: all Opts will link w/debug info now 
   #define LINKER_FLAGS /DEBUG $[PROFILE_FLAG] /MAP $[MAPINFOFLAGS] /fixed:no /incremental:no 
   
 // in case we have mixed intel/msvc build
   #define EXTRA_LIBPATH /ia32/lib
-  #define EXTRA_INCPATH /ia32/include      
+  #define EXTRA_INCPATH /ia32/include  
+    
+#elif $[eq $[USE_COMPILER], INTEL]
+  #define COMPILER icl
+  #define LINKER xilink
+  #define LIBBER xilib
+  #define COMMONFLAGS /Gi- /Qwd985
+//  #define OPTFLAGS /O3 /G6 /Qvc6 /Qipo /QaxW /Qvec_report1 
+  #define OPTFLAGS /O3 /G6 /Qvc6 /Qip
+  // Oy- needed for MS debugger
+  #define DEBUGFLAGS /MDd /Zi /Qinline_debug_info /Oy-
+  #define OPT1FLAGS /GZ /Od
+  #define RELEASEFLAGS /MD
+  #define WARNING_LEVEL_FLAG /W3    
+  // We assume the Intel compiler installation dir is mounted as /ia32.
+  #define EXTRA_LIBPATH /ia32/lib
+  #define EXTRA_INCPATH /ia32/include  
+  
+  #if $[or $[ne $[FORCE_INLINING],],$[>= $[OPTIMIZE],2]]
+      #define EXTRA_CDEFS FORCE_INLINING $[EXTRA_CDEFS]
+  #endif   
+  
+  // Note: all Opts will link w/debug info now 
+  #define LINKER_FLAGS /DEBUG /DEBUGTYPE:CV $[PROFILE_FLAG] /MAP $[MAPINFOFLAGS] /fixed:no /incremental:no /WARN:3
+  
 #elif $[eq $[USE_COMPILER], BOUNDS] // NuMega BoundsChecker
   #define COMPILER nmcl
   #define LINKER nmlink
@@ -82,6 +114,7 @@
     #define COMPILER $[COMPILER] /NMttOn
     #define LINKER $[LINKER] /NMttOn
   #endif 
+
 #elif $[eq $[USE_COMPILER], TRUETIME] // NuMega TrueTime Profiler
   // This may look like a bad thing (to extend the compiler 
   // and linker with a switch), but I think it's the right 
@@ -96,25 +129,6 @@
   #define RELEASEFLAGS /MD
   #define EXTRA_LIBPATH
   #define EXTRA_INCPATH
-#elif $[eq $[USE_COMPILER], INTEL]
-  #define COMPILER icl
-  #define LINKER xilink
-  #define LIBBER xilib
-  #define COMMONFLAGS /Gi- /Qwd985
-//  #define OPTFLAGS /O3 /G6 /Qvc6 /Qipo /QaxW /Qvec_report1 
-  #define OPTFLAGS /O3 /G6 /Qvc6 /Qip
-  // Oy- needed for MS debugger
-  #define DEBUGFLAGS /MDd /Zi /Qinline_debug_info /Oy-
-  #define OPT1FLAGS /GZ /Od
-  #define RELEASEFLAGS /MD
-  #define WARNING_LEVEL_FLAG /W3  
-
-  // We assume the Intel compiler installation dir is mounted as /ia32.
-  #define EXTRA_LIBPATH /ia32/lib
-  #define EXTRA_INCPATH /ia32/include  
-  
-  // Note: all Opts will link w/debug info now 
-  #define LINKER_FLAGS /DEBUG /DEBUGTYPE:CV $[PROFILE_FLAG] /MAP $[MAPINFOFLAGS] /fixed:no /incremental:no /WARN:3
 #else
   #error Invalid value specified for USE_COMPILER.
 #endif
