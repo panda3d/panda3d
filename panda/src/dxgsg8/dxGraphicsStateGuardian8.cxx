@@ -197,6 +197,7 @@ DXGraphicsStateGuardian8(const FrameBufferProperties &properties) :
     
     _bDXisReady = false;
     _transform_stale = false;
+    _vertex_blending_enabled = false;
     _overlay_windows_supported = false;
 
     _pFvfBufBasePtr = NULL;
@@ -516,21 +517,6 @@ dx_init(void) {
     _pD3DDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 
     _pD3DDevice->SetRenderState(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_COLOR1);  // Use the diffuse vertex color.
-
-    /*
-      Panda no longer requires us to specify the maximum number of
-      lights up front, but instead we can define slot_new_light() to
-      decide one-at-a-time whether a particular light fits within our
-      limit or not.  Until we override this function, there is no
-      limit.
-
-    if(_pScrn->d3dcaps.MaxActiveLights==0) {
-        // 0 indicates no limit on # of lights, but we use DXGSG_MAX_LIGHTS anyway for now
-      init_lights(DXGSG_MAX_LIGHTS);
-    } else {
-      init_lights(min(DXGSG_MAX_LIGHTS,_pScrn->d3dcaps.MaxActiveLights));
-    }
-    */
 
     // must do SetTSS here because redundant states are filtered out by our code based on current values above, so
     // initial conditions must be correct
@@ -2697,10 +2683,15 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
       // we have to set a flag to reload the world matrix later.
       _transform_stale = true;
     }
+    _vertex_blending_enabled = true;
     
   } else {
     // We're not using vertex blending.
-    _pD3DDevice->SetRenderState(D3DRS_VERTEXBLEND, D3DVBF_DISABLE);
+    if (_vertex_blending_enabled) {
+      _pD3DDevice->SetRenderState(D3DRS_VERTEXBLEND, D3DVBF_DISABLE);
+      _pD3DDevice->SetRenderState(D3DRS_INDEXEDVERTEXBLENDENABLE, FALSE);
+      _vertex_blending_enabled = false;
+    }
 
     if (_transform_stale) {
       const D3DMATRIX *d3d_mat = (const D3DMATRIX *)_transform->get_mat().get_data();
@@ -2802,6 +2793,14 @@ draw_tristrips(const qpGeomTristrips *primitive) {
 void DXGraphicsStateGuardian8::
 end_draw_primitives() {
   GraphicsStateGuardian::end_draw_primitives();
+
+  // Turn off vertex blending--it seems to cause problems if we leave
+  // it on.
+  if (_vertex_blending_enabled) {
+    _pD3DDevice->SetRenderState(D3DRS_VERTEXBLEND, D3DVBF_DISABLE);
+    _pD3DDevice->SetRenderState(D3DRS_INDEXEDVERTEXBLENDENABLE, FALSE);
+    _vertex_blending_enabled = false;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

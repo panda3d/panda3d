@@ -186,6 +186,7 @@ protected:
   DXTextureContext8  *_pCurTexContext;
 
   bool _transform_stale;
+  bool _vertex_blending_enabled;
 
   RenderBuffer::Type _cur_read_pixel_buffer;  // source for copy_pixel_buffer operation
   bool _auto_rescale_normal;
