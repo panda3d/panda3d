@@ -56,12 +56,9 @@ exec_process() {
   execvp(params[0], params);
   fprintf(stderr, "Cannot exec %s: %s\n", params[0], strerror(errno));
 
-  /* Kill ourselves instead of exiting, to indicate the watching
-     process should stop. */
-  kill(getpid(), SIGTERM);
-
-  /* Shouldn't get here. */
-  exit(1); 
+  /* Exit with a status of 0, to indicate to the parent process that
+     we should stop. */
+  exit(0); 
 }
 
 int
@@ -103,9 +100,10 @@ spawn_process() {
     return (signal != SIGTERM && signal != SIGKILL);
 
   } else {
-    fprintf(stderr, "\nprocess exited with error code %d.\n\n", WEXITSTATUS(status));
-    /* Normal exit is always a reason to respawn. */
-    return 1;
+    int exit_status = WEXITSTATUS(status);
+    fprintf(stderr, "\nprocess exited with status %d.\n\n", WEXITSTATUS(status));
+    /* Normal exit is a reason to respawn if the status indicates failure. */
+    return (exit_status != 0);
   }
 }
 
@@ -205,7 +203,7 @@ double_fork() {
     if (WIFSIGNALED(status)) {
       fprintf(stderr, "child caught signal %d unexpectedly.\n", WTERMSIG(status));
     } else {
-      fprintf(stderr, "child exited with error code %d.\n", WEXITSTATUS(status));
+      fprintf(stderr, "child exited with status %d.\n", WEXITSTATUS(status));
     }
     exit(1);
   }
@@ -224,7 +222,11 @@ help() {
   fprintf(stderr,
           "This program is used to run a program as a background task and\n"
           "automatically restart it should it terminate for any reason other\n"
-          "than explicit user kill.\n\n"
+          "than normal exit or explicit user kill.\n\n"
+
+          "If the program exits with a status of 0, indicating successful\n"
+          "completion, it is not restarted.\n\n"
+
           "If the program is terminated via a TERM or KILL signal (e.g. via\n"
           "kill [pid] or kill -i [pid]), it is assumed the user meant for the\n"
           "process to stop, and it is not restarted.\n\n");
