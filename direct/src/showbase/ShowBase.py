@@ -99,7 +99,7 @@ class ShowBase(DirectObject.DirectObject):
         self.dgTrav = DataGraphTraverser()
 
         # base.win is the main, or only window; base.winList is a list of
-        # *all* windows.  Similarly with base.pipeList and base.camList.
+        # *all* windows.  Similarly with base.camList.
         self.win = None
         self.winList = []
         self.mainWinMinimized = 0
@@ -189,14 +189,7 @@ class ShowBase(DirectObject.DirectObject):
         is closed cleanly, so that we free system resources, restore
         the desktop and keyboard functionality, etc.
         """
-        # Temporary try .. except for new window code
-        try:
-            # new window code
-            self.graphicsEngine.removeAllWindows()
-        except:
-            # old window code
-            for win in self.winList:
-                win.closeWindow()
+        self.graphicsEngine.removeAllWindows()
         del self.win
         del self.winList
         del self.pipe
@@ -209,6 +202,55 @@ class ShowBase(DirectObject.DirectObject):
         if self.oldexitfunc:
             self.oldexitfunc()
 
+    def makeDefaultPipe(self):
+        """makeDefaultPipe(self)
+        Creates the default GraphicsPipe, which will be used to make
+        windows unless otherwise specified.
+        """
+        assert(self.pipe == None)
+        selection = GraphicsPipeSelection.getGlobalPtr()
+        selection.printPipeTypes()
+        self.pipe = selection.makeDefaultPipe()
+        if not self.pipe:
+            self.notify.error("No graphics pipe is available!  Check your Configrc!")
+        self.notify.info("Default graphics pipe is %s (%s)." % (self.pipe.getInterfaceName(), self.pipe.getType().getName()))
+        self.pipeList.append(self.pipe)
+
+    def makeAllPipes(self):
+        """makeAllPipes(self)
+        Creates all GraphicsPipes that the system knows about and fill up
+        self.pipeList with them.
+        """
+        shouldPrintPipes = 0
+        selection = GraphicsPipeSelection.getGlobalPtr()
+        selection.loadAuxModules()
+
+        # First, we should make sure the default pipe exists.
+        if self.pipe == None:
+            self.makeDefaultPipe()
+
+        # Now go through the list of known pipes, and make each one if
+        # we don't have one already.
+        numPipeTypes = selection.getNumPipeTypes()
+        for i in range(numPipeTypes):
+            pipeType = selection.getPipeType(i)
+
+            # Do we already have a pipe of this type on the list?
+            # This operation is n-squared, but presumably there won't
+            # be more than a handful of pipe types, so who cares.
+            already = 0
+            for pipe in self.pipeList:
+                if pipe.getType() == pipeType:
+                    already = 1
+
+            if not already:
+                pipe = selection.makePipe(pipeType)
+                if pipe:
+                    self.notify.info("Got aux graphics pipe %s (%s)." % (pipe.getInterfaceName(), pipe.getType().getName()))
+                    self.pipeList.append(pipe)
+                else:
+                    self.notify.info("Could not make graphics pipe %s." % (pipeType.getName()))
+
     def openWindow(self):
         """openWindow(self)
         Invokes ChanConfig to create a window and adds it to the list
@@ -216,18 +258,11 @@ class ShowBase(DirectObject.DirectObject):
         """
 
         if self.pipe == None:
-            self.pipe = makeGraphicsPipe()
-            self.pipeList.append(self.pipe)
+            self.makeDefaultPipe()
 
-        # Temporary try .. except for new window code.
-        try:
-            # old window code
-            chanConfig = makeGraphicsWindow(self.graphicsEngine, self.pipe, self.render)
-        except:
-            # new window code
-            chanString = self.config.GetString('chan-config', 'single')
-            chanConfig = ChanConfig(self.graphicsEngine, self.pipe, chanString,
-                                    self.render)
+        chanString = self.config.GetString('chan-config', 'single')
+        chanConfig = ChanConfig(self.graphicsEngine, self.pipe, chanString,
+                                self.render)
             
         win = chanConfig.getWin()
 
@@ -243,14 +278,6 @@ class ShowBase(DirectObject.DirectObject):
             self.win = win
 
         self.winList.append(win)
-        # temporary try..except to support new window code
-        try:
-            # new window code
-            self.graphicsEngine.addWindow(win)
-        except:
-            # old window code
-            pass
-
         self.getCameras(chanConfig)
         return win
 

@@ -42,7 +42,6 @@ BEGIN_PUBLISH
 
 EXPCL_DIRECT DSearchPath &get_particle_path();
 
-EXPCL_DIRECT PT(GraphicsPipe) make_graphics_pipe();
 EXPCL_DIRECT void throw_new_frame();
 
 EXPCL_DIRECT void take_snapshot(GraphicsWindow *win, const string &name);

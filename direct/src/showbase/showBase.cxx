@@ -24,19 +24,7 @@
 #include "renderBuffer.h"
 #include "get_config_path.h"
 #include "camera.h"
-
-// You should define this unless you don't have the new GraphicsWindow
-// code yet.  drose checked this in to Panda at around 12:30pm on
-// Thursday, Jan 9; if you haven't updated your Panda since then you
-// should either go update it (and prepare for a long build) or just
-// comment this out to run for the short term with the old code.
-#define NEW_WINDOW_CODE 1
-
-#ifdef NEW_WINDOW_CODE
 #include "graphicsPipeSelection.h"
-#else
-#include "interactiveGraphicsPipe.h"
-#endif
 
 
 ConfigureDef(config_showbase);
@@ -47,52 +35,6 @@ DSearchPath &
 get_particle_path() {
   static DSearchPath *particle_path = NULL;
   return get_config_path("particle-path", particle_path);
-}
-
-// Default channel config
-std::string chan_config = "single";
-std::string window_title = "Panda3D";
-
-
-PT(GraphicsPipe) 
-make_graphics_pipe() {
-  PT(GraphicsPipe) main_pipe;
-
-#ifdef NEW_WINDOW_CODE
-  GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
-  selection->resolve_modules();
-
-  nout << "Known pipe types:" << endl;
-  int num_pipe_types = selection->get_num_pipe_types();
-  for (int i = 0; i < num_pipe_types; i++) {
-    nout << "  " << selection->get_pipe_type(i) << "\n";
-  }
-
-  main_pipe = selection->make_default_pipe();
-
-#else  // NEW_WINDOW_CODE
-
-  // load display modules
-  GraphicsPipe::resolve_modules();
-
-  nout << "Known pipe types:" << endl;
-  GraphicsPipe::get_factory().write_types(nout, 2);
-
-  // Create a window
-  main_pipe = GraphicsPipe::get_factory().
-    make_instance(InteractiveGraphicsPipe::get_class_type());
-
-#endif  // NEW_WINDOW_CODE
-
-  if (main_pipe == (GraphicsPipe*)0L) {
-    nout << "No interactive pipe is available!  Check your Configrc!\n";
-    return NULL;
-  }
-
-  nout << "Opened a '" << main_pipe->get_type().get_name()
-       << "' interactive graphics pipe." << endl;
-
-  return main_pipe;
 }
 
 // Throw the "NewFrame" event in the C++ world.  Some of the lerp code
@@ -148,9 +90,8 @@ void add_fullscreen_testsize(unsigned int xsize,unsigned int ysize) {
 }
 
 void runtest_fullscreen_sizes(GraphicsWindow *win) {
-#ifndef NEW_WINDOW_CODE
-    (void) win->verify_window_sizes(num_fullscreen_testsizes,fullscreen_testsizes);
-#endif  // NEW_WINDOW_CODE
+  // TODO.
+  //  win->verify_window_sizes(num_fullscreen_testsizes,fullscreen_testsizes);
 }
 
 bool query_fullscreen_testresult(unsigned int xsize,unsigned int ysize) {
