@@ -1,4 +1,6 @@
+""" Finite State Machine Inspector module """
 from PandaObject import *
+from AppShell import *
 from Tkinter import *
 from tkSimpleDialog import askstring
 import Pmw
@@ -7,91 +9,79 @@ import operator
 
 DELTA = (5.0 / 360.) * 2.0 * math.pi
 
-class FSMInspector(Pmw.MegaToplevel, PandaObject):
-    def __init__(self, fsm, **kw):
-        
-        # Initialize instance variables
-        self.states = []
-        self.stateInspectorDict = {}
-        self.fsm = fsm
-        self.name = fsm.getName()
+class FSMInspector(AppShell):
+    # Override class variables
+    appname = 'Particle Panel'
+    frameWidth  = 400
+    frameHeight = 450
+    usecommandarea = 0
+    usestatusarea  = 0
 
-        #define the megawidget options
+    def __init__(self, fsm, **kw):
         INITOPT = Pmw.INITOPT
         optiondefs = (
-            ('title', 'FSM Viewer', None),
+            ('title',     self.appname,       None),
             ('gridSize', '0.25i', self._setGridSize),
             )
         self.defineoptions(kw, optiondefs)
 
-        # Initialize the toplevel widget
-        Pmw.MegaToplevel.__init__(self)
+        self.fsm = fsm
 
+        AppShell.__init__(self)
+
+        self.initialiseoptions(FSMInspector)
+
+    def appInit(self):
+        # Initialize instance variables
+        self.states = []
+        self.stateInspectorDict = {}
+        self.name = self.fsm.getName()
+
+    def createInterface(self):
         # Create the components
-        oldInterior = Pmw.MegaToplevel.interior(self)
-        # The Menu Bar
-        balloon = self.balloon = Pmw.Balloon()
-        # Start with balloon help disabled
-        balloon.configure(state = 'none')
-        menubar = self._menubar = self.createcomponent('menubar',
-                (), None,
-                Pmw.MenuBar, (oldInterior,),
-                balloon = balloon)
-        menubar.pack(fill=X)
+        interior = self.interior()
+        menuBar = self.menuBar
+
         # FSM Menu
-        menubar.addmenu('FSM', 'FSM Operations')
-        menubar.addmenuitem('FSM', 'command',
+        menuBar.addmenu('FSM', 'FSM Operations')
+        menuBar.addmenuitem('FSM', 'command',
                                   'Input grid spacing',
                                   label = 'Grid spacing...',
                                   command = self.popupGridDialog)
         # Create the checkbutton variable
         self._fGridSnap = IntVar()
         self._fGridSnap.set(1)
-        menubar.addmenuitem('FSM', 'checkbutton',
+        menuBar.addmenuitem('FSM', 'checkbutton',
                                   'Enable/disable grid',
                                   label = 'Snap to grid',
                                   variable = self._fGridSnap,
                                   command = self.toggleGridSnap)
-        menubar.addmenuitem('FSM', 'command',
+        menuBar.addmenuitem('FSM', 'command',
                                   'Print out FSM layout',
                                   label = 'Print FSM layout',
                                   command = self.printLayout)
-        menubar.addmenuitem('FSM', 'command',
-                                  'Exit the FSM Inspector',
-                                  label = 'Exit',
-                                  command = self._exit)
         
         # States Menu
-        menubar.addmenu('States', 'State Inspector Operations')
-        menubar.addcascademenu('States', 'Font Size',
+        menuBar.addmenu('States', 'State Inspector Operations')
+        menuBar.addcascademenu('States', 'Font Size',
                                      'Set state label size', tearoff = 1)
         for size in (8, 10, 12, 14, 18, 24):
-            menubar.addmenuitem('Font Size', 'command',
+            menuBar.addmenuitem('Font Size', 'command',
                 'Set font to: ' + `size` + ' Pts', label = `size` + ' Pts',
                 command = lambda s = self, sz = size: s.setFontSize(sz))
-        menubar.addcascademenu('States', 'Marker Size',
+        menuBar.addcascademenu('States', 'Marker Size',
                                      'Set state marker size', tearoff = 1)
         for size in ('Small', 'Medium', 'Large'):
             sizeDict = {'Small': '0.25i', 'Medium': '0.375i', 'Large' : '0.5i'}
-            menubar.addmenuitem('Marker Size', 'command',
+            menuBar.addmenuitem('Marker Size', 'command',
                 size + ' markers', label = size + ' Markers',
                 command = lambda s = self, sz = size, d = sizeDict:
                     s.setMarkerSize(d[sz]))
 
-        # The Help menu
-        menubar.addmenu('Help', 'FSM Panel Help Operations')
-        self.toggleBalloonVar = IntVar()
-        self.toggleBalloonVar.set(0)
-        menubar.addmenuitem('Help', 'checkbutton',
-                            'Toggle balloon help',
-                            label = 'Balloon Help',
-                            variable = self.toggleBalloonVar,
-                            command = self.toggleBalloon)
-                    
         # The Scrolled Canvas
         self._scrolledCanvas = self.createcomponent('scrolledCanvas',
                 (), None,
-                Pmw.ScrolledCanvas, (oldInterior,),
+                Pmw.ScrolledCanvas, (interior,),
                 hull_width = 400, hull_height = 400,
                 usehullsize = 1)
         self._canvas = self._scrolledCanvas.component('canvas')
@@ -269,7 +259,8 @@ class FSMInspector(Pmw.MegaToplevel, PandaObject):
             print "                %s," % si.state.getEnterFunc().__name__
             print "                %s," % si.state.getExitFunc().__name__
             print "                %s," % si.state.getTransitions()
-            print "                inspectorPos = [%.1f, %.1f])," % (center[0], center[1])
+            print "                inspectorPos = ",
+            print "[%.1f, %.1f])," % (center[0], center[1])
         for key in keys[-1:]:
             si = dict[key]
             center = si.center()
@@ -277,7 +268,8 @@ class FSMInspector(Pmw.MegaToplevel, PandaObject):
             print "                %s," % si.state.getEnterFunc().__name__
             print "                %s," % si.state.getExitFunc().__name__
             print "                %s," % si.state.getTransitions()
-            print "                inspectorPos = [%.1f, %.1f])]," % (center[0], center[1])
+            print "                inspectorPos = ",
+            print "[%.1f, %.1f])]," % (center[0], center[1])
         print "        '%s'," % self.fsm.getInitialState().getName()
         print "        '%s')" % self.fsm.getFinalState().getName()
 
@@ -287,9 +279,6 @@ class FSMInspector(Pmw.MegaToplevel, PandaObject):
         else:
             self.balloon.configure(state = 'none')
             
-    def _exit(self):
-        self.destroy()
-        
 class StateInspector(Pmw.MegaArchetype):
     def __init__(self, inspector, state, **kw):
 
@@ -452,14 +441,15 @@ want-tk #t
 2)	start up the show and create a Finite State Machine
 
 from ShowBaseGlobal import *
+
 import FSM
 import State
+
 def enterState():
     print 'enterState'
 
 def exitState():
     print 'exitState'
-<<<<<<< FSMInspector.py
 
 fsm = FSM.FSM('stopLight',
           [ State.State('red', enterState, exitState, ['green']),
@@ -467,8 +457,11 @@ fsm = FSM.FSM('stopLight',
             State.State('green', enterState, exitState, ['yellow']) ],
           'red',
           'red')
+
 import FSMInspector
-inspector = FSMInspector.FSMInspector(FSM = fsm, title = fsm.getName())
+
+inspector = FSMInspector.FSMInspector(fsm, title = fsm.getName())
+
 =======
 
 # Note, the inspectorPos argument is optional, the inspector will

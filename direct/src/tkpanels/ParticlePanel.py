@@ -1,4 +1,4 @@
-"""PANDA3D Particle Panel"""
+""" PANDA3D Particle Panel module """
 
 # Import Tkinter, Pmw, and the floater code from this directory tree.
 from AppShell import *
