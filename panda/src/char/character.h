@@ -63,6 +63,7 @@ PUBLISHED:
 
   void update_to_now();
   void update();
+  void force_update();
 
 private:
   void copy_joints(PartGroup *copy, PartGroup *orig);

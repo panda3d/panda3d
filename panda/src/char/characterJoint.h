@@ -54,6 +54,8 @@ PUBLISHED:
   bool has_local_transform(PandaNode *node) const;
   void clear_local_transforms();
 
+  void get_transform(LMatrix4f &transform) const;
+
 private:
   typedef pset< PT(PandaNode) > NodeList;
   NodeList _net_transform_nodes;

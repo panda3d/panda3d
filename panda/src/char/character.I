@@ -20,7 +20,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Character::get_bundle
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CharacterJointBundle *Character::
@@ -31,7 +31,7 @@ get_bundle() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Character::get_computed_vertices
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ComputedVertices *Character::
@@ -41,7 +41,7 @@ get_computed_vertices() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Character::get_num_parts
-//       Access: Public
+//       Access: Published
 //  Description: Returns the total number of moving parts (e.g. joints
 //               and sliders) associated with the Character.
 ////////////////////////////////////////////////////////////////////
@@ -52,7 +52,7 @@ get_num_parts() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Character::get_part
-//       Access: Public
+//       Access: Published
 //  Description: Returns the nth moving part associated with the
 //               Character.
 ////////////////////////////////////////////////////////////////////
@@ -64,7 +64,7 @@ get_part(int n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Character::write_parts
-//       Access: Public
+//       Access: Published
 //  Description: Writes a list of the Character's joints and sliders,
 //               in their hierchical structure, to the indicated
 //               output stream.
@@ -76,7 +76,7 @@ write_parts(ostream &out) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Character::write_part_values
-//       Access: Public
+//       Access: Published
 //  Description: Writes a list of the Character's joints and sliders,
 //               along with each current position, in their hierchical
 //               structure, to the indicated output stream.

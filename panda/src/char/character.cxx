@@ -154,7 +154,7 @@ cull_callback(CullTraverser *, CullTraverserData &) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Character::update_to_now
-//       Access: Public
+//       Access: Published
 //  Description: Advances the character's frame to the current time,
 //               and then calls update().  This can be used by show
 //               code to force an update of the character's position
@@ -175,7 +175,7 @@ update_to_now() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Character::update
-//       Access: Public
+//       Access: Published
 //  Description: Recalculates the Character's joints and vertices for
 //               the current frame.  Normally this is performed
 //               automatically during the render and need not be
@@ -195,6 +195,26 @@ update() {
     if (_computed_vertices != (ComputedVertices *)NULL) {
       _computed_vertices->update(this);
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Character::force_update
+//       Access: Published
+//  Description: Recalculates the character even if we think it
+//               doesn't need it.
+////////////////////////////////////////////////////////////////////
+void Character::
+force_update() {
+  // Statistics
+  PStatTimer timer(_char_pcollector);
+
+  // First, update all the joints and sliders.
+  get_bundle()->force_update();
+
+  // Now update the vertices.
+  if (_computed_vertices != (ComputedVertices *)NULL) {
+    _computed_vertices->update(this);
   }
 }
 

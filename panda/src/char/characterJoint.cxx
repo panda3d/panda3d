@@ -149,7 +149,7 @@ update_internals(PartGroup *parent, bool self_changed, bool parent_changed) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterJoint::add_net_transform
-//       Access: Public
+//       Access: Published
 //  Description: Adds the indicated node to the list of nodes that will
 //               be updated each frame with the joint's net transform
 //               from the root.  Returns true if the node is
@@ -163,7 +163,7 @@ add_net_transform(PandaNode *node) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterJoint::remove_net_transform
-//       Access: Public
+//       Access: Published
 //  Description: Removes the indicated node from the list of nodes that
 //               will be updated each frame with the joint's net
 //               transform from the root.  Returns true if the node is
@@ -177,7 +177,7 @@ remove_net_transform(PandaNode *node) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterJoint::has_net_transform
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the node is on the list of nodes that
 //               will be updated each frame with the joint's net
 //               transform from the root, false otherwise.
@@ -189,7 +189,7 @@ has_net_transform(PandaNode *node) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterJoint::clear_net_transforms
-//       Access: Public
+//       Access: Published
 //  Description: Removes all nodes from the list of nodes that will be
 //               updated each frame with the joint's net transform
 //               from the root.
@@ -201,7 +201,7 @@ clear_net_transforms() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterJoint::add_local_transform
-//       Access: Public
+//       Access: Published
 //  Description: Adds the indicated node to the list of nodes that will
 //               be updated each frame with the joint's local
 //               transform from its parent.  Returns true if the node
@@ -215,7 +215,7 @@ add_local_transform(PandaNode *node) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterJoint::remove_local_transform
-//       Access: Public
+//       Access: Published
 //  Description: Removes the indicated node from the list of nodes that
 //               will be updated each frame with the joint's local
 //               transform from its parent.  Returns true if the node
@@ -229,7 +229,7 @@ remove_local_transform(PandaNode *node) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterJoint::has_local_transform
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the node is on the list of nodes that
 //               will be updated each frame with the joint's local
 //               transform from its parent, false otherwise.
@@ -241,7 +241,7 @@ has_local_transform(PandaNode *node) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterJoint::clear_local_transforms
-//       Access: Public
+//       Access: Published
 //  Description: Removes all nodes from the list of nodes that will be
 //               updated each frame with the joint's local transform
 //               from its parent.
@@ -249,6 +249,17 @@ has_local_transform(PandaNode *node) const {
 void CharacterJoint::
 clear_local_transforms() {
   _local_transform_nodes.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CharacterJoint::get_transform
+//       Access: Published
+//  Description: Copies the joint's current transform into the
+//               indicated matrix.
+////////////////////////////////////////////////////////////////////
+void CharacterJoint::
+get_transform(LMatrix4f &transform) const {
+  transform = _value;
 }
 
 ////////////////////////////////////////////////////////////////////
