@@ -53,6 +53,36 @@ event_W(CPT_Event, void *) {
 }
 
 void
+event_Enter(CPT_Event, void *) {
+  // alt-enter: toggle between window/fullscreen in the same scene.
+
+  // If we already have a window, use the same GSG.
+  GraphicsPipe *pipe = (GraphicsPipe *)NULL;
+  GraphicsStateGuardian *gsg = (GraphicsStateGuardian *)NULL;
+
+  WindowProperties props;
+
+  if (framework.get_num_windows() > 0) {
+    WindowFramework *old_window = framework.get_window(0);
+    GraphicsWindow *win = old_window->get_graphics_window();
+    pipe = win->get_pipe();
+    gsg = win->get_gsg();
+    props = win->get_properties();
+    framework.close_window(old_window);
+  }
+
+  // set the toggle
+  props.set_fullscreen(!props.get_fullscreen());
+
+  WindowFramework *window = framework.open_window(props, pipe, gsg);
+  if (window != (WindowFramework *)NULL) {
+    window->enable_keyboard();
+    window->setup_trackball();
+    framework.get_models().instance_to(window->get_render());
+  }
+}
+
+void
 event_2(CPT_Event event, void *) {
   // 2: split the window into two display regions.
 
@@ -178,6 +208,7 @@ main(int argc, char *argv[]) {
 
     framework.enable_default_keys();
     framework.define_key("shift-w", "open a new window", event_W, NULL);
+    framework.define_key("alt-enter", "toggle between window/fullscreen", event_Enter, NULL);
     framework.define_key("2", "split the window", event_2, NULL);
     framework.main_loop();
     framework.report_frame_rate(nout);
