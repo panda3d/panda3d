@@ -1376,13 +1376,16 @@ dx_setup()
              exit(1);
         }
 
-        #define THREE_MEG 3000000
-        if(dwFree< THREE_MEG) {
+        // hack: figuring out exactly what res to use is tricky, instead I will
+        // just use 640x480 if we have < 3 meg avail
+
+        #define LOWVIDMEMTHRESHOLD 3500000
+        if(dwFree< LOWVIDMEMTHRESHOLD) {
             // we're going to need 800x600 or 640x480 at 16 bit to save enough tex vidmem
             dwFullScreenBitDepth=16;              // do 16bpp
-            wdxdisplay_cat.debug() << "wdxGraphicsWindow:: using 16bpp rendertargets to save tex vidmem.  XXX BUGBUG: auto-reduce-scrn-res not implemented yet XXX\n";
-            // BUGBUG:  need to insert code to reduce dimensions here.  need to modify
-            // _props scrn dimension values as well
+            dwRenderWidth=640; 
+            dwRenderHeight=480;
+            wdxdisplay_cat.debug() << "wdxGraphicsWindow:: "<<dwFree <<" Available VidMem is under "<< LOWVIDMEMTHRESHOLD <<", using 640x480 16bpp rendertargets to save tex vidmem.\n";
         }
         
 #if 0
@@ -1410,19 +1413,17 @@ dx_setup()
         }
 #endif
 
-        if( FAILED( hr = pDD->SetDisplayMode( dwRenderWidth, dwRenderHeight,
-                        dwFullScreenBitDepth, 0L, 0L ))) {
-            wdxdisplay_cat.fatal() << "wdxGraphicsWindow::CreateFullscreenBuffers() - Can't set display mode : result = " << ConvD3DErrorToString(hr) << endl;
-            exit(1);
-        }
-
-
         if(FAILED(hr = pDD->SetCooperativeLevel(_mwindow, DDSCL_FPUSETUP | DDSCL_FULLSCREEN | DDSCL_EXCLUSIVE | DDSCL_ALLOWREBOOT ))) {
              wdxdisplay_cat.fatal()
              << "wdxGraphicsWindow::config() - SetCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
              exit(1);
         }
 
+        if( FAILED( hr = pDD->SetDisplayMode( dwRenderWidth, dwRenderHeight,
+                        dwFullScreenBitDepth, 0L, 0L ))) {
+            wdxdisplay_cat.fatal() << "wdxGraphicsWindow::CreateFullscreenBuffers() - Can't set display mode : result = " << ConvD3DErrorToString(hr) << endl;
+            exit(1);
+        }
 
 #ifdef _DEBUG
 		wdxdisplay_cat.debug() << "wdxGraphicsWindow::setting displaymode to " << dwRenderWidth << "x" << dwRenderHeight << " at "<< dwFullScreenBitDepth  << "bpp" <<endl;
@@ -1453,6 +1454,7 @@ dx_setup()
         // Clear the primary surface to black
 
 	    DX_DECLARE_CLEAN(DDBLTFX, bltfx)
+        bltfx.dwDDFX |= DDBLTFX_NOTEARING;
         hr = pPrimaryDDSurf->Blt(NULL,NULL,NULL,DDBLT_COLORFILL | DDBLT_WAIT,&bltfx);
 
 	    if( FAILED( hr )) {
