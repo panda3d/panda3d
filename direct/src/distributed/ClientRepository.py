@@ -17,6 +17,8 @@ import DirectObject
 class ClientRepository(DirectObject.DirectObject):
     notify = DirectNotifyGlobal.directNotify.newCategory("ClientRepository")
 
+    TASK_PRIORITY = -30
+
     def __init__(self, dcFileName):
         self.number2cdc={}
         self.name2cdc={}
@@ -71,7 +73,7 @@ class ClientRepository(DirectObject.DirectObject):
         task = Task.Task(self.rawReaderPollUntilEmpty)
         # Start with empty string
         task.currentRawString = ""
-        taskMgr.add(task, "rawReaderPollTask")
+        taskMgr.add(task, "rawReaderPollTask", priority=self.TASK_PRIORITY)
         return None
 
     def stopRawReaderPollTask(self):
@@ -107,7 +109,8 @@ class ClientRepository(DirectObject.DirectObject):
         # Stop any tasks we are running now
         self.stopRawReaderPollTask()
         self.stopReaderPollTask()
-        taskMgr.add(self.readerPollUntilEmpty, "readerPollTask")
+        taskMgr.add(self.readerPollUntilEmpty, "readerPollTask",
+                    priority=self.TASK_PRIORITY)
         return None
 
     def stopReaderPollTask(self):
