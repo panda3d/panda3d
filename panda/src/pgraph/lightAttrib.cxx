@@ -18,6 +18,7 @@
 
 #include "lightAttrib.h"
 #include "pandaNode.h"
+#include "nodePath.h"
 #include "graphicsStateGuardianBase.h"
 #include "bamReader.h"
 #include "bamWriter.h"
@@ -777,7 +778,8 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   while (ci != _off_lights.end()) {
     PandaNode *node;
     DCAST_INTO_R(node, p_list[pi++], pi);
-    (*ci) = NodePath(node);
+    NodePath np(node);
+    (*ci) = np;
     ++ci;
   }
 
@@ -785,7 +787,8 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   while (ci != _on_lights.end()) {
     PandaNode *node;
     DCAST_INTO_R(node, p_list[pi++], pi);
-    (*ci) = NodePath(node);
+    NodePath np(node);
+    (*ci) = np;
     ++ci;
   }
 
