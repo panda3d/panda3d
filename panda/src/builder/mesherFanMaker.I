@@ -144,7 +144,6 @@ compute_angle() const {
     angle += acos(dot(v1, v2));
   }
 
-  //blahblah
   return angle * 180.0 / MathNumbers::pi;
 }
 
