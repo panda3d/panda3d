@@ -3,7 +3,7 @@
 ########################################################################
 ##
 ##
-## This script builds the panda source tarball and zip-file
+## This script builds the panda source tarballs and zip-files
 ##
 ##    usage: maketarball [version] [more options]
 ##
@@ -15,6 +15,7 @@
 ##
 ## The 'spec' file included in the tarball uses the 'makepanda' build
 ## system to compile panda.
+##
 ##
 ########################################################################
 
@@ -188,6 +189,7 @@ writefile(TARDIR+'/panda3d.spec',SPEC)
 oscmd("tar --exclude CVS -chzf "+TARDIR+".tar.gz "+TARDIR)
 oscmd("rm -rf "+TARDIR)
 
+
 oscmd("mkdir -p "+TARDIR)
 oscmd("mkdir -p "+TARDIR+"/thirdparty")
 oscmd("ln -sf ../dtool        "+TARDIR+"/dtool")
@@ -210,3 +212,48 @@ oscmd("zip -rq "+TARDIR+".zip "+TARDIR+" -x '*/CVS/*'")
 oscmd("rm -rf "+TARDIR)
 
 
+oscmd("mkdir -p "+TARDIR)
+oscmd("mkdir -p "+TARDIR+"/thirdparty")
+oscmd("ln -sf ../dtool        "+TARDIR+"/dtool")
+oscmd("ln -sf ../panda        "+TARDIR+"/panda")
+oscmd("ln -sf ../direct       "+TARDIR+"/direct")
+oscmd("ln -sf ../pandaapp     "+TARDIR+"/pandaapp")
+oscmd("ln -sf ../pandatool    "+TARDIR+"/pandatool")
+oscmd("ln -sf ../ppremake     "+TARDIR+"/ppremake")
+oscmd("ln -sf ../SceneEditor  "+TARDIR+"/SceneEditor")
+oscmd("ln -sf ../dmodels      "+TARDIR+"/dmodels")
+oscmd("ln -sf ../models       "+TARDIR+"/models")
+oscmd("ln -sf ../doc          "+TARDIR+"/doc")
+oscmd("ln -sf ../makepanda    "+TARDIR+"/makepanda")
+oscmd("zip -rq "+TARDIR+"-sourceforge.zip "+TARDIR+" -x '*/CVS/*'")
+oscmd("rm -rf "+TARDIR)
+
+
+oscmd("mkdir -p "+TARDIR)
+oscmd("mkdir -p "+TARDIR+"/thirdparty")
+oscmd("ln -sf ../samples      "+TARDIR+"/samples")
+oscmd("zip -rq "+TARDIR+"-samples.zip "+TARDIR+" -x '*/CVS/*'")
+oscmd("rm -rf "+TARDIR)
+
+
+oscmd("mkdir -p "+TARDIR)
+oscmd("mkdir -p "+TARDIR+"/thirdparty")
+oscmd("ln -sf ../../thirdparty/linux-libs-a "+TARDIR+"/thirdparty/linux-libs-a")
+oscmd("zip -rq "+TARDIR+"-tools-linux.zip "+TARDIR+" -x '*/CVS/*'")
+oscmd("rm -rf "+TARDIR)
+
+
+oscmd("mkdir -p "+TARDIR)
+oscmd("ln -sf ../thirdparty "+TARDIR+"/thirdparty")
+oscmd("zip -rq "+TARDIR+"-tools-all.zip "+TARDIR+" -x '*/CVS/*'")
+oscmd("rm -rf "+TARDIR)
+
+
+oscmd("mkdir -p "+TARDIR)
+oscmd("mkdir -p "+TARDIR+"/thirdparty")
+oscmd("ln -sf ../../thirdparty/win-libs-vc7 "+TARDIR+"/thirdparty/win-libs-vc7")
+oscmd("ln -sf ../../thirdparty/win-python   "+TARDIR+"/thirdparty/win-python")
+oscmd("ln -sf ../../thirdparty/win-util     "+TARDIR+"/thirdparty/win-util")
+oscmd("ln -sf ../../thirdparty/win-nsis     "+TARDIR+"/thirdparty/win-nsis")
+oscmd("zip -rq "+TARDIR+"-tools-win32.zip "+TARDIR+" -x '*/CVS/*'")
+oscmd("rm -rf "+TARDIR)
