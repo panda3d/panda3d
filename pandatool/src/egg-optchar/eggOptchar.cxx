@@ -30,6 +30,7 @@
 #include "string_utils.h"
 #include "dcast.h"
 #include "pset.h"
+#include "compose_matrix.h"
 
 #include <algorithm>
 
@@ -77,6 +78,14 @@ EggOptchar() {
      &EggOptchar::dispatch_vector_string_comma, NULL, &_expose_components);
 
   add_option
+    ("zero", "joint[,hprxyzijk]", 0,
+     "Zeroes out the animation channels for the named joint.  If "
+     "a subset of the component letters hprxyzijk is included, the "
+     "operation is restricted to just those components; otherwise the "
+     "entire transform is cleared.",
+     &EggOptchar::dispatch_name_components, NULL, &_zero_channels);
+
+  add_option
     ("keepall", "", 0,
      "Keep all joints and sliders in the character.",
      &EggOptchar::dispatch_none, &_keep_all);
@@ -117,6 +126,10 @@ run() {
     do_reparent();
   }
 
+  if (!_zero_channels.empty()) {
+    zero_channels();
+  }
+
   int num_characters = _collection->get_num_characters();
   int ci;
 
@@ -150,6 +163,7 @@ run() {
     // The meat of the program: determine which joints are to be
     // removed, and then actually remove them.
     determine_removed_components();
+    move_vertices();
     if (process_joints()) {
       do_reparent();
     }
@@ -211,6 +225,55 @@ dispatch_vector_string_pair(const string &opt, const string &arg, void *var) {
          << " requires a pair of strings separated by a comma.\n";
     return false;
   }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProgramBase::dispatch_name_components
+//       Access: Protected, Static
+//  Description: Accepts a name optionally followed by a comma and some
+//               of the nine standard component letters,
+//
+//               The data pointer is to StringPairs vector; the pair
+//               will be pushed onto the end of the vector.
+////////////////////////////////////////////////////////////////////
+bool EggOptchar::
+dispatch_name_components(const string &opt, const string &arg, void *var) {
+  StringPairs *ip = (StringPairs *)var;
+
+  vector_string words;
+  tokenize(arg, words, ",");
+
+  StringPair sp;
+  if (words.size() == 1) {
+    sp._a = words[0];
+
+  } else if (words.size() == 2) {
+    sp._a = words[0];
+    sp._b = words[1];
+
+  } else {
+    nout << "-" << opt
+         << " requires a pair of strings separated by a comma.\n";
+    return false;
+  }
+
+  if (sp._b.empty()) {
+    sp._b = matrix_components;
+  } else {
+    for (string::const_iterator si = sp._b.begin(); si != sp._b.end(); ++si) {
+      if (strchr(matrix_components, *si) == NULL) {
+        nout << "Not a standard matrix component: \"" << *si << "\"\n"
+             << "-" << opt << " requires a joint name followed by a set "
+             << "of component names.  The standard component names are \"" 
+             << matrix_components << "\".\n";
+        return false;
+      }
+    }
+  }
+
+  ip->push_back(sp);
 
   return true;
 }
@@ -285,6 +348,43 @@ determine_removed_components() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggOptchar::move_vertices
+//       Access: Private
+//  Description: Moves the vertices from joints that are about to be
+//               removed into the first suitable parent.  This might
+//               result in fewer joints being removed (because
+//               the parent might suddenly no longer be empty).
+////////////////////////////////////////////////////////////////////
+void EggOptchar::
+move_vertices() {
+  int num_characters = _collection->get_num_characters();
+  for (int ci = 0; ci < num_characters; ci++) {
+    EggCharacterData *char_data = _collection->get_character(ci);
+    int num_joints = char_data->get_num_joints();
+    
+    for (int i = 0; i < num_joints; i++) {
+      EggJointData *joint_data = char_data->get_joint(i);
+      EggOptcharUserData *user_data = 
+        DCAST(EggOptcharUserData, joint_data->get_user_data());
+
+      if ((user_data->_flags & EggOptcharUserData::F_empty) == 0 &&
+          (user_data->_flags & EggOptcharUserData::F_remove) != 0) {
+        // This joint has vertices, but is scheduled to be removed;
+        // find a suitable home for its vertices.
+        EggJointData *best_joint = find_best_vertex_joint(joint_data->get_parent());
+        joint_data->move_vertices_to(best_joint);
+
+        // Now we can't remove the joint.
+        EggOptcharUserData *best_user_data = 
+          DCAST(EggOptcharUserData, best_joint->get_user_data());
+        best_user_data->_flags &= ~(EggOptcharUserData::F_empty | EggOptcharUserData::F_remove);
+      }
+    }
+  }
+}
+      
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggOptchar::process_joints
 //       Access: Private
 //  Description: Effects the actual removal of joints flagged for
@@ -310,15 +410,9 @@ process_joints() {
       EggOptcharUserData *user_data = 
         DCAST(EggOptcharUserData, joint_data->get_user_data());
       
-      EggJointData *best_parent = find_best_parent(joint_data->get_parent());
-      
       if ((user_data->_flags & EggOptcharUserData::F_remove) != 0) {
         // This joint will be removed, so reparent it to nothing.
         joint_data->reparent_to((EggJointData *)NULL);
-        
-        // Move the vertices associated with this joint into its
-        // parent.
-        joint_data->move_vertices_to(best_parent);
         
         // Determine what kind of node it is we're removing, for the
         // user's information.
@@ -334,6 +428,7 @@ process_joints() {
       } else {
         // This joint will be preserved, but maybe its parent will
         // change.
+        EggJointData *best_parent = find_best_parent(joint_data->get_parent());
         joint_data->reparent_to(best_parent);
         if ((user_data->_flags & EggOptcharUserData::F_expose) != 0) {
           joint_data->expose();
@@ -348,7 +443,7 @@ process_joints() {
     } else {
       nout << char_data->get_name() << ": of " << num_joints 
            << " joints, removing " << num_identity << " identity, "
-           << num_static << " static, and " << num_empty
+           << num_static << " unanimated, and " << num_empty
            << " empty joints, leaving " << num_kept << ".\n";
     }
   }
@@ -359,7 +454,7 @@ process_joints() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggOptchar::find_best_parent
 //       Access: Private
-//  Description: Searches for this first joint at this level or above
+//  Description: Searches for the first joint at this level or above
 //               that is not scheduled to be removed.  This is the
 //               joint that the first child of this joint should be
 //               reparented to.
@@ -371,8 +466,32 @@ find_best_parent(EggJointData *joint_data) const {
 
   if ((user_data->_flags & EggOptcharUserData::F_remove) != 0) {
     // Keep going.
-    nassertr(joint_data->get_parent() != (EggJointData *)NULL, NULL);
-    return find_best_parent(joint_data->get_parent());
+    if (joint_data->get_parent() != (EggJointData *)NULL) {
+      return find_best_parent(joint_data->get_parent());
+    }
+  }
+
+  // This is the one!
+  return joint_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggOptchar::find_best_vertex_joint
+//       Access: Private
+//  Description: Searches for the first joint at this level or above
+//               that is not static.  This is the joint that the
+//               vertices of this joint should be moved into.
+////////////////////////////////////////////////////////////////////
+EggJointData *EggOptchar::
+find_best_vertex_joint(EggJointData *joint_data) const {
+  EggOptcharUserData *user_data = 
+    DCAST(EggOptcharUserData, joint_data->get_user_data());
+
+  if ((user_data->_flags & EggOptcharUserData::F_static) != 0) {
+    // Keep going.
+    if (joint_data->get_parent() != (EggJointData *)NULL) {
+      return find_best_vertex_joint(joint_data->get_parent());
+    }
   }
 
   // This is the one!
@@ -420,6 +539,41 @@ apply_user_reparents() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggOptchar::zero_channels
+//       Access: Private
+//  Description: Zeroes out the channels specified by the user on the
+//               command line.
+//
+//               Returns true if any operation was performed, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggOptchar::
+zero_channels() {
+  bool did_anything = false;
+  int num_characters = _collection->get_num_characters();
+
+  StringPairs::const_iterator spi;
+  for (spi = _zero_channels.begin(); spi != _zero_channels.end(); ++spi) {
+    const StringPair &p = (*spi);
+
+    for (int ci = 0; ci < num_characters; ci++) {
+      EggCharacterData *char_data = _collection->get_character(ci);
+      EggJointData *joint_data = char_data->find_joint(p._a);
+
+      if (joint_data == (EggJointData *)NULL) {
+        nout << "No joint named " << p._a << " in " << char_data->get_name()
+             << ".\n";
+      } else {
+        joint_data->zero_channels(p._b);
+        did_anything = true;
+      }
+    }
+  }
+
+  return did_anything;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggOptchar::analyze_joints
 //       Access: Private
 //  Description: Recursively walks the joint hierarchy for a
@@ -458,7 +612,7 @@ analyze_joints(EggJointData *joint_data) {
 
         } else {
           // This is a second or later matrix.
-          if (!mat.almost_equal(user_data->_static_mat)) {
+          if (!mat.almost_equal(user_data->_static_mat, 0.0001)) {
             // It's different than the first one.
             different_mat = true;
           }
@@ -472,7 +626,7 @@ analyze_joints(EggJointData *joint_data) {
     user_data->_flags |= EggOptcharUserData::F_static;
 
     if (num_mats == 0 || 
-        user_data->_static_mat.almost_equal(LMatrix4d::ident_mat())) {
+        user_data->_static_mat.almost_equal(LMatrix4d::ident_mat(), 0.0001)) {
       // It's not only static, but it's the identity matrix.
       user_data->_flags |= EggOptcharUserData::F_identity;
     }
@@ -531,7 +685,7 @@ analyze_sliders(EggCharacterData *char_data) {
             
           } else {
             // This is a second or later value.
-            if (!IS_NEARLY_EQUAL(value, user_data->_static_value)) {
+            if (!IS_THRESHOLD_EQUAL(value, user_data->_static_value, 0.0001)) {
               // It's different than the first one.
               different_value = true;
             }
@@ -544,7 +698,7 @@ analyze_sliders(EggCharacterData *char_data) {
       // All the values are the same for this slider.
       user_data->_flags |= EggOptcharUserData::F_static;
       
-      if (num_values == 0 || IS_NEARLY_EQUAL(user_data->_static_value, 0.0)) {
+      if (num_values == 0 || IS_THRESHOLD_ZERO(user_data->_static_value, 0.0001)) {
         // It's not only static, but it's the identity value.
         user_data->_flags |= EggOptcharUserData::F_identity;
       }

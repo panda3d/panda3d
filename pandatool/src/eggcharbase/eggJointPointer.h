@@ -52,6 +52,7 @@ public:
 
   virtual void optimize();
   virtual void expose(EggGroup::DCSType dcs_type);
+  virtual void zero_channels(const string &components);
 
 protected:
   typedef pvector<LMatrix4d> RebuildFrames;

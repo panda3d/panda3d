@@ -200,3 +200,27 @@ optimize() {
     _xform->optimize();
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMatrixTablePointer::zero_channels
+//       Access: Public, Virtual
+//  Description: Zeroes out the named components of the transform in
+//               the animation frames.
+////////////////////////////////////////////////////////////////////
+void EggMatrixTablePointer::
+zero_channels(const string &components) {
+  if (_xform == (EggXfmSAnim *)NULL) {
+    return;
+  }
+
+  // This is particularly easy: we only have to remove children from
+  // the _xform object whose name is listed in the components.
+  string::const_iterator si;
+  for (si = components.begin(); si != components.end(); ++si) {
+    string table_name(1, *si);
+    EggNode *child = _xform->find_child(table_name);
+    if (child != (EggNode *)NULL) {
+      _xform->remove_child(child);
+    }
+  }
+}

@@ -115,3 +115,13 @@ optimize() {
 void EggJointPointer::
 expose(EggGroup::DCSType) {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointPointer::zero_channels
+//       Access: Public, Virtual
+//  Description: Zeroes out the named components of the transform in
+//               the animation frames.
+////////////////////////////////////////////////////////////////////
+void EggJointPointer::
+zero_channels(const string &) {
+}

@@ -225,6 +225,31 @@ expose(EggGroup::DCSType dcs_type) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::zero_channels
+//       Access: Public
+//  Description: Calls zero_channels() on all models, and recursively on
+//               all joints at this node and below.
+////////////////////////////////////////////////////////////////////
+void EggJointData::
+zero_channels(const string &components) {
+  BackPointers::iterator bpi;
+  for (bpi = _back_pointers.begin(); bpi != _back_pointers.end(); ++bpi) {
+    EggBackPointer *back = (*bpi);
+    if (back != (EggBackPointer *)NULL) {
+      EggJointPointer *joint;
+      DCAST_INTO_V(joint, back);
+      joint->zero_channels(components);
+    }
+  }
+
+  Children::iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    EggJointData *child = (*ci);
+    child->zero_channels(components);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggJointData::add_back_pointer
 //       Access: Public, Virtual
 //  Description: Adds the indicated model joint or anim table to the

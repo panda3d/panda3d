@@ -48,6 +48,7 @@ public:
   virtual bool do_rebuild();
 
   virtual void optimize();
+  virtual void zero_channels(const string &components);
 
 private:
   PT(EggTable) _table;

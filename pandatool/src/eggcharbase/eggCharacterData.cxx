@@ -175,8 +175,13 @@ do_reparent() {
     // hierarchy.
     if (joint_data->get_parent() != (EggJointData *)NULL) {
       nout << "Warning: reparenting " << joint_data->get_name()
-           << " to " << joint_data->get_parent()->get_name()
-           << " results in a skew transform.\n";
+           << " to ";
+      if (joint_data->get_parent() == _root_joint) {
+        nout << "the root";
+      } else {
+        nout << joint_data->get_parent()->get_name();
+      }
+      nout << " results in a skew transform.\n";
     }
   }
 

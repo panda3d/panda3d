@@ -51,12 +51,16 @@ protected:
 
 private:
   static bool dispatch_vector_string_pair(const string &opt, const string &arg, void *var);
+  static bool dispatch_name_components(const string &opt, const string &arg, void *var);
 
   void determine_removed_components();
+  void move_vertices();
   bool process_joints();
   EggJointData *find_best_parent(EggJointData *joint_data) const;
+  EggJointData *find_best_vertex_joint(EggJointData *joint_data) const;
 
   bool apply_user_reparents();
+  bool zero_channels();
   void analyze_joints(EggJointData *joint_data);
   void analyze_sliders(EggCharacterData *char_data);
   void list_joints(EggJointData *joint_data, int indent_level);
@@ -80,6 +84,7 @@ private:
   };
   typedef pvector<StringPair> StringPairs;
   StringPairs _reparent_joints;
+  StringPairs _zero_channels;
 
   vector_string _keep_components;
   vector_string _expose_components;
