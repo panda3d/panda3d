@@ -103,6 +103,11 @@ class DistributedSmoothNode(DistributedNode.DistributedNode):
         self.smoothPosition()
         return Task.cont
 
+    def wantsSmoothing(self):
+        # Override this function to return 0 if this particular kind
+        # of smooth node doesn't really want to be smoothed.
+        return 1
+
     def startSmooth(self):
         """startSmooth(self)
 
@@ -112,6 +117,9 @@ class DistributedSmoothNode(DistributedNode.DistributedNode):
         position it.
         
         """
+        if not self.wantsSmoothing():
+            return
+        
         if self.isLocal():
             # If we've just finished banging on localToon, reload the
             # drive interface's concept of our position.
