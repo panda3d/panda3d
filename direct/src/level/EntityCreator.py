@@ -37,6 +37,6 @@ class EntityCreator:
     def createEntity(self, entType, level, entId):
         if not self.entType2Ctor.has_key(entType):
             EntityCreator.notify.warning(
-                'createEntity(entType=%s) not found' % entType)
+                'createEntity(entType=%s): entType not found' % entType)
             return None
         return self.entType2Ctor[entType](level, entId)

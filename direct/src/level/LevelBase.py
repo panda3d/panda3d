@@ -69,33 +69,12 @@ class LevelBase:
         for key,value in spec.items():
             if key in ('type', 'name', 'comment',):
                 continue
-            if hasattr(entity, key):
-                self.notify.warning('entity %s (%s) already has member %s' %
-                                    (entId, spec['type'], key))
-            entity.__dict__[key] = value
+            entity.setAttribInit(key, value)
 
         # entity is initialized, add it to the list of entities
         self.entities[entity.entId] = entity
         # send the create event
         messenger.send(self.getEntityCreateEvent(entity.entId))
-
-        """
-        # set items directly on entity, or call callback functions...
-        for key,value in spec.items():
-            # filter out some entries; we might want to restructure the
-            # spec data into different categories of properties instead
-            # of filtering them here
-            if key in ('type', 'name', 'comment', 'zone',):
-                continue
-            setFuncName = 'set%s%s' % (string.upper(key[0]), key[1:])
-            if hasattr(entity, setFuncName):
-                # call the setter
-                func = getattr(entity, setFuncName)
-                func(value)
-            else:
-                # set the param directly on the object
-                entity.__dict__[key] = value
-                """
 
     def getEntityCreateEvent(self, entId):
         """This is the event that is thrown immediately after an entity

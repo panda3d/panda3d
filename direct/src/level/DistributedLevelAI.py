@@ -107,3 +107,14 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         self.destroyLevel()
 
         DistributedObjectAI.DistributedObjectAI.delete(self)
+
+    if __debug__:
+        # level editors should call this func to tweak attributes of level
+        # entities
+        def setAttribChange(self, entId, attribName, value):
+            # send a copy to the client-side level obj
+            self.sendUpdate('setAttribChange',
+                            [entId, attribName, repr(value)])
+            
+            entity = self.getEntity(entId)
+            entity.handleAttribChange(attribName, value)

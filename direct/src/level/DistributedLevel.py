@@ -265,7 +265,6 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # if no viz, listen to all the zones
         if not DistributedLevel.WantVisibility:
             zones = list(self.zoneNums)
-            #zones.remove(0)
             self.sendSetZone(0, zones)
 
     def toonEnterZone(self, zoneNum):
