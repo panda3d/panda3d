@@ -8,18 +8,33 @@
 
 #include <dtoolbase.h>
 #include <iostream>
+#include <string>
+#include <stdio.h>
 
-class EXPCL_PANDA PipeStreamBuf : public streambuf {
+#ifdef WIN32_VC
+#define popen _popen
+#define pclose _pclose
+#endif
+
+class EXPCL_DTOOL PipeStreamBuf : public streambuf {
 public:
-  PipeStreamBuf(void);
+  enum Direction { Input, Output };
+
+  PipeStreamBuf(Direction);
   virtual ~PipeStreamBuf(void);
 
   void flush();
+  void command(const string);
 protected:
   virtual int overflow(int c);
-  virtual int sync();
-  virtual int underflow();
+  virtual int sync(void);
+  virtual int underflow(void);
 private:
+  Direction _dir;
+  string _line_buffer;
+  FILE* _pipe;
+
+  void write_chars(const char*, int, bool);
 };
 
 #endif /* __PFSTREAMBUF_H__ */
