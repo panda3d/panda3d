@@ -1,9 +1,9 @@
 #begin lib_target
   #define TARGET progbase
   #define LOCAL_LIBS \
-    config compiler
+    pandatoolbase
   #define OTHER_LIBS \
-    linmath:c putil:c express:c panda:m pystub
+    linmath:c putil:c express:c panda:m pystub dtool
 
   #define SOURCES \
     programBase.I programBase.cxx programBase.h wordWrapStream.cxx \
