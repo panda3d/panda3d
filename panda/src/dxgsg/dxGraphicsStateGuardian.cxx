@@ -400,7 +400,7 @@ init_dx(  LPDIRECTDRAW7		context,
 
   if(((D3DDevDesc.dpcTriCaps.dwSrcBlendCaps & REQUIRED_BLENDCAPS)!=REQUIRED_BLENDCAPS) ||
      ((D3DDevDesc.dpcTriCaps.dwDestBlendCaps & REQUIRED_BLENDCAPS)!=REQUIRED_BLENDCAPS)) {
-         dxgsg_cat.error() << "device is missing texture blending capabilities, blending may not work correctly\n";
+         dxgsg_cat.error() << "device is missing alpha blending capabilities, blending may not work correctly\n";
   }
 
   if(!(D3DDevDesc.dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_TRANSPARENCY)) {
@@ -416,6 +416,11 @@ init_dx(  LPDIRECTDRAW7		context,
 #define REQUIRED_MIPMAP_TEXFILTERCAPS (D3DPTFILTERCAPS_MIPFLINEAR | D3DPTFILTERCAPS_LINEARMIPLINEAR)
   if((D3DDevDesc.dpcTriCaps.dwTextureFilterCaps & REQUIRED_MIPMAP_TEXFILTERCAPS)!=REQUIRED_MIPMAP_TEXFILTERCAPS) {
          dxgsg_cat.error() << "device is missing tri-linear mipmap filtering capability, texture mipmaps may not supported!!!\n";
+  }
+
+#define REQUIRED_TEXBLENDCAPS (D3DTEXOPCAPS_MODULATE | D3DTEXOPCAPS_SELECTARG1 | D3DTEXOPCAPS_SELECTARG2)
+  if((D3DDevDesc.dwTextureOpCaps & REQUIRED_TEXBLENDCAPS)!=REQUIRED_TEXBLENDCAPS) {
+         dxgsg_cat.error() << "device is missing some required texture blending capabilities, texture blending may not work properly!!!\n";
   }
 
   SetRect(&clip_rect, 0,0,0,0);		// no clip rect set
@@ -980,6 +985,12 @@ draw_line(const GeomLine* geom) {
   dxgsg_cat.debug() << "draw_line()" << endl;
 #endif
 
+#ifdef _DEBUG
+     if(geom->get_width()!=1.0f) {
+         dxgsg_cat.error() << "DX does not support drawing lines with a non-1.0 pixel width!!\n";
+     }
+#endif
+
 #ifdef WBD_GL_MODE
   call_glLineWidth(geom->get_width());
  
@@ -1076,6 +1087,12 @@ draw_linestrip(const GeomLinestrip* geom) {
 
 #ifdef GSG_VERBOSE
   dxgsg_cat.debug() << "draw_linestrip()" << endl;
+#endif
+
+#ifdef _DEBUG
+     if(geom->get_width()!=1.0f) {
+         dxgsg_cat.error() << "DX does not support drawing lines with a non-1.0 pixel width!!\n";
+     }
 #endif
 
 #ifdef WBD_GL_MODE
@@ -1199,6 +1216,19 @@ draw_polygon(const GeomPolygon *geom) {
 #ifdef GSG_VERBOSE
   dxgsg_cat.debug() << "draw_polygon()" << endl;
 #endif
+
+/*  wireframe polygon will be drawn as multu-tri trifan until I get this casting issue straightened out
+   DWORD rstate;
+   _d3dDevice->GetRenderState(D3DRENDERSTATE_FILLMODE, &rstate);
+   if(rstate!=D3DFILL_WIREFRAME) {
+       draw_multitri(geom, D3DPT_TRIANGLEFAN);
+   } else {
+       Geom *gp=dynamic_cast<Geom *>(geom);  doesnt work
+       draw_linestrip(gp);
+   }
+*/   
+
+//   draw_multitri(geom, D3DPT_TRIANGLEFAN);
 
 #ifdef WBD_GL_MODE
   int nprims = geom->get_num_prims();
@@ -1903,6 +1933,10 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE tri_id)
 void DXGraphicsStateGuardian::
 draw_sphere(const GeomSphere *geom) {
   activate();
+
+#ifdef _DEBUG
+  dxgsg_cat.debug() << "draw_sphere() unimplemented in DX!!\n";
+#endif
  
 #ifdef GSG_VERBOSE
   dxgsg_cat.debug() << "draw_sphere()" << endl;
