@@ -24,6 +24,14 @@ class DistributedObject(PandaObject):
     def getNeverDisable(self):
         return self.neverDisable
 
+    def disableAndAnnounce(self):
+        """disableAndAnnounce(self)
+        Inheritors should *not* redefine this function.
+        """
+        self.disable()
+        messenger.send(self.uniqueName("disable"))
+        return None
+
     def disable(self):
         """disable(self)
         Inheritors should redefine this to take appropriate action on disable
@@ -72,6 +80,9 @@ class DistributedObject(PandaObject):
 
     def taskName(self, taskString):
         return (taskString + "-" + str(self.getDoId()))
+    
+    def uniqueName(self, idString):
+        return (idString + "-" + str(self.getDoId()))
     
 
 

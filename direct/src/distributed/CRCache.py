@@ -23,7 +23,7 @@ class CRCache:
                                    + str(doId))
         else:
             # Call disable on the distObj
-            distObj.disable()
+            distObj.disableAndAnnounce()
             
             # Put the distObj in the fifo and the dict
             self.fifo.append(distObj)
