@@ -172,14 +172,9 @@ class DirectOptionMenu(DirectButton):
         # Compute bounds
         b = self.getBounds()
         fb = self.popupMenu.getBounds()
-        # Where did the user click his mouse?
-        if (base.mouseWatcherNode.hasMouse()):
-            xPos = base.mouseWatcherNode.getMouseX()
-            self.popupMenu.setX(render2d, xPos)
-        else:
-            # If no mouse watcher, use midpoint of menu button
-            xPos = (b[1] - b[0])/2.0 - fb[0]
-            self.popupMenu.setX(self, xPos)
+        # Position menu at midpoint of button
+        xPos = (b[1] - b[0])/2.0 - fb[0]
+        self.popupMenu.setX(self, xPos)
         # Try to set height to line up selected item with button
         self.popupMenu.setZ(
             self, self.minZ + (self.selectedIndex + 1)*self.maxHeight)
