@@ -2,7 +2,7 @@
 from direct.showbase.ShowBaseGlobal import *
 import GravityWalker
 
-BattleStrafe = 0
+BattleStrafe = 1
 
 def ToggleStrafe():
     global BattleStrafe
@@ -93,8 +93,20 @@ class BattleWalker(GravityWalker.GravityWalker):
         dt=self.__oldDt
 
         # Before we do anything with position or orientation, make the avatar
-        # face it's target
+        # face it's target.  Only allow rMax degrees rotation per frame, so
+        # we don't get an unnatural spinning effect
+        oldH = self.avatarNodePath.getH()
         self.avatarNodePath.headsUp(targetNp)
+        newH = self.avatarNodePath.getH()
+        delH = newH-oldH
+        rMax = 10
+        if delH > rMax:
+            self.avatarNodePath.setH(oldH+rMax)
+            self.rotationSpeed=self.avatarControlRotateSpeed
+
+        elif delH < -rMax:
+            self.avatarNodePath.setH(oldH-rMax)
+            self.rotationSpeed=-self.avatarControlRotateSpeed
 
         # Check to see if we're moving at all:
         self.moving = self.speed or self.slideSpeed or self.rotationSpeed or (self.priorParent!=Vec3.zero())
@@ -105,8 +117,10 @@ class BattleWalker(GravityWalker.GravityWalker):
 
             # Prevent avatar from getting too close to target
             d = self.avatarNodePath.getPos(targetNp)
-            if (d[0]*d[0]+d[1]*d[1] < .1):
-                print "toooo close"
+            # TODO:  make min distance adjust for current weapon
+            if (d[0]*d[0]+d[1]*d[1] < 6.0):
+                # move the avatar sideways instead of forward
+                slideDistance += .2
                 distance = 0
 
             # Take a step in the direction of our previous heading.
