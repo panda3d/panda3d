@@ -2124,7 +2124,7 @@ class LevelEditor(NodePath, PandaObject):
         for selectedNode in direct.selected:
             selectedNode.setHpr(self.getLastAngle(), 0, 0)
         # Snap objects to grid and update DNA if necessary
-        self.updateSelectedPose()
+        self.updateSelectedPose(direct.selected.getSelectedAsList())
         if direct.fShift:
             direct.grid.setSnapAngle(oldSnapAngle)
 
@@ -2175,7 +2175,7 @@ class LevelEditor(NodePath, PandaObject):
             selectedNode.setPos(direct.grid,
                                 selectedNode.getPos(direct.grid) + deltaPos)
         # Snap objects to grid and update DNA if necessary
-        self.updateSelectedPose()
+        self.updateSelectedPose(direct.selected.getSelectedAsList())
         # Restore grid spacing
         if direct.fShift:
             # Use back door to set grid spacing to avoid grid update

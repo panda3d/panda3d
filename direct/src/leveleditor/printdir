@@ -2,10 +2,9 @@
 
 # Some Cygwin users don't have find set on on their path correctly, so
 # we have to be explicit.
-PATH=/bin:$PATH
-export PATH
-
-find $1 -name "*$2" -print
-
-
+if [ -x /bin/find ]; then
+  /bin/find $1 -name \*$2 -print
+else
+  find $1 -name \*$2 -print
+fi
 

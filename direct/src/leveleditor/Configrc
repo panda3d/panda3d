@@ -58,7 +58,7 @@ egg-object-type-dcs             <DCS> { 1 }
 # own bin and have them not fight with each other (or with other
 # transparent geometry).
 egg-object-type-shadow          <Scalar> bin { shadow } <Scalar> alpha { blend-no-occlude }
-cull-bin shadow 25 unsorted
+cull-bin shadow 15 unsorted
 
 # The ID of the server that we are compatible with
 server-version sv1.0.14

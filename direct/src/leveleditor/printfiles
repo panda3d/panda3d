@@ -59,6 +59,7 @@ echo $PANDA/lib/libpandadx8.dll
 echo $PANDA/lib/libpandagl.dll
 echo $PANDA/lib/libmiles_audio.dll
 echo $DIRECT/lib/libdirect.dll
+echo $OTP/lib/libotp.dll
 echo $TOONTOWN/lib/libtoontown.dll
 
 # Generated code for libpandaexpress
