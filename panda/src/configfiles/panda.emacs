@@ -8,6 +8,7 @@
        '(("\\.hh$" . c++-mode)
 	 ("\\.h$"  . c++-mode)
 	 ("\\.I$"  . c++-mode)
+	 ("\\.T$"  . c++-mode)
 	 ("\\.y$"  . c++-mode)  ; yacc source files
 	 ("\\.l$"  . c++-mode)  ; lex source files
 	 ("\\.stk$" . scheme-mode)

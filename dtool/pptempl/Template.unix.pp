@@ -66,7 +66,7 @@
 // These are the source files that our dependency cache file will
 // depend on.  If it's an empty list, we won't bother writing rules to
 // freshen the cache file.
-#define dep_sources $[sort $[filter %.c %.cxx %.yxx %.lxx %.h %.I,$[so_sources] $[st_sources]]]
+#define dep_sources $[sort $[filter %.c %.cxx %.yxx %.lxx %.h %.I %.T,$[so_sources] $[st_sources]]]
 
 #if $[eq $[so_dir],$[st_dir]]
   // If the static and shared directories are the same, we have to use the
@@ -323,7 +323,7 @@ $[install_igatedb_dir]/$[igatedb] : $[so_dir]/$[igatedb]
 $[so_dir]/$[igatedb] : $[so_dir]/$[igateoutput]
 
 lib$[TARGET]_igatescan = $[igatescan]
-$[so_dir]/$[igateoutput] : $[sort $[patsubst %.h,%.h,%.I,%.I,%,,$[dependencies $[igatescan]] $[igatescan:%=./%]]]
+$[so_dir]/$[igateoutput] : $[sort $[patsubst %.h,%.h,%.I,%.I,%.T,%.T,%,,$[dependencies $[igatescan]] $[igatescan:%=./%]]]
 	interrogate -od $[so_dir]/$[igatedb] -oc $[so_dir]/$[igateoutput] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $(lib$[TARGET]_igatescan)
 
 #define target $[igateoutput:%.cxx=$[so_dir]/%.o]

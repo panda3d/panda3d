@@ -8,8 +8,9 @@
 
 #include <pandabase.h>
 
-#include <node.h>
-#include <nodeRelation.h>
+#include "node.h"
+#include "nodeRelation.h"
+
 #include <typeHandle.h>
 
 ///////////////////////////////////////////////////////////////////

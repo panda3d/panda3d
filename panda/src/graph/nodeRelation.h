@@ -210,7 +210,9 @@ private:
   static TypeHandle _type_handle;
   static TypeHandle _stashed_type_handle;
 
-  friend extern EXPCL_PANDA INLINE_GRAPH void remove_arc(NodeRelation *arc);
+  // Should not include storage class specifiers in friend declaration.
+  friend void remove_arc(NodeRelation *arc);
+
   friend class Node;
   friend class NodeTransitionWrapper;
   friend class AllTransitionsWrapper;

@@ -119,7 +119,7 @@ endif
 
 // Check for interrogate.
 #if $[eq $[IGATESCAN], all]
-  #define IGATESCAN $[filter-out %.I %.lxx %.yxx %.N,$[SOURCES]]
+  #define IGATESCAN $[filter-out %.I %.T %.lxx %.yxx %.N,$[SOURCES]]
 #endif
 #if $[ne $[IGATESCAN],]
   #define IGATEFILE $[TARGET].in.cxx
