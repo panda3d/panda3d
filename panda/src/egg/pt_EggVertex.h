@@ -18,9 +18,9 @@
 //               strictly necessary, but it doesn't hurt.
 ////////////////////////////////////////////////////////////////////
 
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, PointerToBase<EggVertex>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, PointerTo<EggVertex>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, ConstPointerTo<EggVertex>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, PointerToBase<EggVertex>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, PointerTo<EggVertex>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, ConstPointerTo<EggVertex>)
 
 typedef PointerTo<EggVertex> PT_EggVertex;
 typedef ConstPointerTo<EggVertex> CPT_EggVertex;
