@@ -1,7 +1,5 @@
 """MsgTypes module: contains distributed object message types"""
 
-OTP_SERVER_ROOT_DO_ID =         4007
-
 # 2 new params: passwd, char bool 0/1 1 = new account
 # 2 new return values: 129 = not found, 12 = bad passwd, 
 CLIENT_LOGIN =                                1
@@ -98,6 +96,3 @@ CLIENT_LOGIN_2_GREEN = 1       # Disney's GoReg subscription token, not used.
 CLIENT_LOGIN_2_PLAY_TOKEN = 2  # VR Studio PlayToken.
 CLIENT_LOGIN_2_BLUE = 3        # The international GoReg token.
 
-
-# Global Object ID 's 
-GLOBAL_ID_FRIEND_MANAGER=  4501
