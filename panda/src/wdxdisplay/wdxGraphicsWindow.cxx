@@ -170,7 +170,7 @@ extern void dbgPrintVidMem(LPDIRECTDRAW7 pDD, LPDDSCAPS2 lpddsCaps,const char *p
 #endif
 
 #define MAX_DX_ZBUF_FMTS 20
-static int cNumZBufFmts=0;
+static int cNumZBufFmts;
 
 HRESULT CALLBACK EnumZBufFmtsCallback( LPDDPIXELFORMAT pddpf, VOID* param )  {
     DDPIXELFORMAT *ZBufFmtsArr = (DDPIXELFORMAT *) param;
@@ -1760,6 +1760,7 @@ CreateScreenBuffersAndDevice(DWORD dwRenderWidth, DWORD dwRenderHeight,LPDIRECTD
         ddsd.ddsCaps.dwCaps = DDSCAPS_ZBUFFER | DDSCAPS_VIDEOMEMORY;
 
         DDPIXELFORMAT ZBufPixFmts[MAX_DX_ZBUF_FMTS];
+        cNumZBufFmts=0;
 
         // Get an appropiate pixel format from enumeration of the formats. On the
         // first pass, we look for a zbuffer dpeth which is equal to the frame
@@ -1862,6 +1863,10 @@ CreateScreenBuffersAndDevice(DWORD dwRenderWidth, DWORD dwRenderHeight,LPDIRECTD
 
         PRINTVIDMEM(pDD,&ddsd.ddsCaps,"initial zbuf");
 
+#ifdef _DEBUG
+        wdxdisplay_cat.info() << "Creating " << ddsd.ddpfPixelFormat.dwRGBBitCount << "bpp zbuffer\n";
+#endif
+
         // Create and attach a z-buffer
         if(FAILED( hr = pDD->CreateSurface( &ddsd, &pZDDSurf, NULL ) )) {
             wdxdisplay_cat.fatal() << "CreateSurface failed for Z buffer: result = " <<  ConvD3DErrorToString(hr) << endl;
@@ -1872,10 +1877,6 @@ CreateScreenBuffersAndDevice(DWORD dwRenderWidth, DWORD dwRenderHeight,LPDIRECTD
             wdxdisplay_cat.fatal() << "AddAttachedSurface failed : result = " << ConvD3DErrorToString(hr) << endl;
             exit(1);
         }
-
-#ifdef _DEBUG
-        wdxdisplay_cat.debug() << "Creating " << ddsd.ddpfPixelFormat.dwRGBBitCount << "bpp zbuffer\n";
-#endif
     }
 
     // Create the device. The device is created off of our back buffer, which
