@@ -498,7 +498,9 @@ download(const string &file_name, Filename file_dest,
 #ifdef HAVE_IPC
       _bandwidth_frequency_lock.lock();
 #endif
- 	int read_size = (int)(_bandwidth * _frequency);	
+	int read_size = (int)_bandwidth;
+	if (_frequency > 0)
+ 	  read_size = (int)(_bandwidth * _frequency);	
 #ifdef HAVE_IPC
       _bandwidth_frequency_lock.unlock();
 #endif
