@@ -43,8 +43,10 @@ protected:
   bool ns_dispatch_normals(const string &opt, const string &arg, void *mode);
 
   static bool dispatch_scale(const string &opt, const string &arg, void *var);
-  static bool dispatch_rotate(ProgramBase *self, const string &opt, const string &arg, void *var);
-  bool ns_dispatch_rotate(const string &opt, const string &arg, void *var);
+  static bool dispatch_rotate_xyz(ProgramBase *self, const string &opt, const string &arg, void *var);
+  bool ns_dispatch_rotate_xyz(const string &opt, const string &arg, void *var);
+  static bool dispatch_rotate_axis(ProgramBase *self, const string &opt, const string &arg, void *var);
+  bool ns_dispatch_rotate_axis(const string &opt, const string &arg, void *var);
   static bool dispatch_translate(const string &opt, const string &arg, void *var);
 
   bool verify_output_file_safe() const;

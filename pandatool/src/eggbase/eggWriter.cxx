@@ -142,15 +142,21 @@ add_transform_options() {
      &EggWriter::dispatch_scale, &_got_transform, &_transform);
 
   add_option
-    ("TR", "angle,x,y,z", 49, 
+    ("TR", "x,y,z", 49, 
+     "Rotate the model x degrees about the x axis, then y degrees about the "
+     "y axis, and then z degrees about the z axis.",
+     &EggWriter::dispatch_rotate_xyz, &_got_transform, &_transform);
+
+  add_option
+    ("TA", "angle,x,y,z", 49, 
      "Rotate the model angle degrees counterclockwise about the given "
      "axis.",
-     &EggWriter::dispatch_rotate, &_got_transform, &_transform);
+     &EggWriter::dispatch_rotate_axis, &_got_transform, &_transform);
 
   add_option
     ("TT", "x,y,z", 49, 
      "Translate the model by the indicated amount.\n\n"
-     "All transformation options (-TS, -TR, -TT) are cumulative and are "
+     "All transformation options (-TS, -TR, -TA, -TT) are cumulative and are "
      "applied in the order they are encountered on the command line.",
      &EggWriter::dispatch_translate, &_got_transform, &_transform);
 }
@@ -446,26 +452,78 @@ dispatch_scale(const string &opt, const string &arg, void *var) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggWriter::dispatch_rotate
+//     Function: EggWriter::dispatch_rotate_xyz
 //       Access: Protected, Static
-//  Description: Handles -TR, which specifies a rotate transform.  Var
-//               is an LMatrix4d.
+//  Description: Handles -TR, which specifies a rotate transform about
+//               the three cardinal axes.  Var is an LMatrix4d.
 ////////////////////////////////////////////////////////////////////
 bool EggWriter::
-dispatch_rotate(ProgramBase *self, const string &opt, const string &arg, void *var) {
+dispatch_rotate_xyz(ProgramBase *self, const string &opt, const string &arg, void *var) {
   EggBase *base = (EggBase *)self;
   EggWriter *me = base->as_writer();
-  return me->ns_dispatch_rotate(opt, arg, var);
+  return me->ns_dispatch_rotate_xyz(opt, arg, var);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggWriter::ns_dispatch_rotate
+//     Function: EggWriter::ns_dispatch_rotate_xyz
 //       Access: Protected
-//  Description: Handles -TR, which specifies a rotate transform.  Var
-//               is an LMatrix4d.
+//  Description: Handles -TR, which specifies a rotate transform about
+//               the three cardinal axes.  Var is an LMatrix4d.
 ////////////////////////////////////////////////////////////////////
 bool EggWriter::
-ns_dispatch_rotate(const string &opt, const string &arg, void *var) {
+ns_dispatch_rotate_xyz(const string &opt, const string &arg, void *var) {
+  LMatrix4d *transform = (LMatrix4d *)var;
+
+  vector_string words;
+  tokenize(arg, words, ",");
+
+  LVecBase3d xyz;
+
+  bool okflag = false;
+  if (words.size() == 3) {
+    okflag =
+      string_to_double(words[0], xyz[0]) &&
+      string_to_double(words[1], xyz[1]) &&
+      string_to_double(words[2], xyz[2]);
+  }
+
+  if (!okflag) {
+    nout << "-" << opt
+	 << " requires three numbers separated by commas.\n";
+    return false;
+  }
+
+  LMatrix4d mat =
+    LMatrix4d::rotate_mat(xyz[0], LVector3d(1.0, 0.0, 0.0), _coordinate_system) *
+    LMatrix4d::rotate_mat(xyz[1], LVector3d(0.0, 1.0, 0.0), _coordinate_system) *
+    LMatrix4d::rotate_mat(xyz[2], LVector3d(0.0, 0.0, 1.0), _coordinate_system);
+
+  *transform = (*transform) * mat;
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggWriter::dispatch_rotate_axis
+//       Access: Protected, Static
+//  Description: Handles -TA, which specifies a rotate transform about
+//               an arbitrary axis.  Var is an LMatrix4d.
+////////////////////////////////////////////////////////////////////
+bool EggWriter::
+dispatch_rotate_axis(ProgramBase *self, const string &opt, const string &arg, void *var) {
+  EggBase *base = (EggBase *)self;
+  EggWriter *me = base->as_writer();
+  return me->ns_dispatch_rotate_axis(opt, arg, var);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggWriter::ns_dispatch_rotate_axis
+//       Access: Protected
+//  Description: Handles -TA, which specifies a rotate transform about
+//               an arbitrary axis.  Var is an LMatrix4d.
+////////////////////////////////////////////////////////////////////
+bool EggWriter::
+ns_dispatch_rotate_axis(const string &opt, const string &arg, void *var) {
   LMatrix4d *transform = (LMatrix4d *)var;
 
   vector_string words;
