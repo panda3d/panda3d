@@ -11,6 +11,7 @@
 
 #include <lwoPolygonTags.h>
 #include <lwoTags.h>
+#include <lwoDiscontinuousVertexMap.h>
 #include <eggData.h>
 #include <eggPolygon.h>
 #include <eggPoint.h>
@@ -42,6 +43,34 @@ add_ptags(const LwoPolygonTags *lwo_ptags, const LwoTags *tags) {
     if (type == IffId("SURF")) {
       _surf_ptags = lwo_ptags;
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLwoPolygons::add_vmad
+//       Access: Public
+//  Description: Associates the indicated DiscontinousVertexMap with
+//               the polygons.  This can be used in conjunction with
+//               (or in place of) the VertexMap associated with the
+//               points set, to define per-polygon UV's etc.
+////////////////////////////////////////////////////////////////////
+void CLwoPolygons::
+add_vmad(const LwoDiscontinuousVertexMap *lwo_vmad) {
+  IffId map_type = lwo_vmad->_map_type;
+  const string &name = lwo_vmad->_name;
+
+  bool inserted;
+  if (map_type == IffId("TXUV")) {
+    inserted = 
+      _txuv.insert(VMad::value_type(name, lwo_vmad)).second;
+
+  } else {
+    return;
+  }
+
+  if (!inserted) {
+    nout << "Multiple discontinous vertex maps on the same polygons of type " 
+	 << map_type << " named " << name << "\n";
   }
 }
 
@@ -81,6 +110,45 @@ get_surface(int polygon_index) const {
   }
 
   return surface;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLwoPolygons::get_uv
+//       Access: Public
+//  Description: Returns true if there is a UV of the indicated name
+//               associated with the given vertex of the indicated
+//               polygon, false otherwise.  If true, fills in uv with
+//               the value.
+//
+//               This performs a lookup in the optional
+//               "discontinuous" vertex mapping, which provides the
+//               ability to map different UV's per each polygon for
+//               the same vertex.  If the UV is not defined here, it
+//               may also be defined in the standard vertex map, which
+//               is associated with the points themselves.
+////////////////////////////////////////////////////////////////////
+bool CLwoPolygons::
+get_uv(const string &uv_name, int pi, int vi, LPoint2f &uv) const {
+  VMad::const_iterator ni = _txuv.find(uv_name);
+  if (ni == _txuv.end()) {
+    return false;
+  }
+
+  const LwoDiscontinuousVertexMap *vmad = (*ni).second;
+  if (vmad->_dimension != 2) {
+    nout << "Unexpected dimension of " << vmad->_dimension
+	 << " for discontinuous UV map " << uv_name << "\n";
+    return false;
+  }
+
+  if (!vmad->has_value(pi, vi)) {
+    return false;
+  }
+
+  PTA_float value = vmad->get_value(pi, vi);
+
+  uv.set(value[0], value[1]);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -162,8 +230,6 @@ make_faces() {
       egg_prim = new EggPolygon;
     }
 
-    surface->check_texture();
-
     // First, we have to create a temporary vector of vertices for the
     // polygon, so we can possibly adjust the properties of these
     // vertices (like the UV's) in the shader before we create them.
@@ -179,6 +245,22 @@ make_faces() {
 	PT(EggVertex) egg_vertex = new EggVertex;
 	LPoint3d pos = LCAST(double, points->get_point(vindex));
 	egg_vertex->set_pos(pos);
+
+	// Does the vertex used named UV's?
+	if (surface->has_named_uvs()) {
+	  string uv_name = surface->get_uv_name();
+	  LPoint2f uv;
+	  if (get_uv(uv_name, pindex, vindex, uv)) {
+	    // This UV is defined in a "discontinuous" map, that
+	    // associated a particular UV per each polygon.
+	    egg_vertex->set_uv(LCAST(double, uv));
+
+	  } else if (_points->get_uv(uv_name, vindex, uv)) {
+	    // The UV does not appear in a discontinuous map, but it
+	    // is defined in the points set.
+	    egg_vertex->set_uv(LCAST(double, uv));
+	  }
+	}
 
 	egg_vertices.push_back(egg_vertex);
       }

@@ -8,6 +8,8 @@
 
 #include <pandatoolbase.h>
 
+#include "cLwoSurfaceBlock.h"
+
 #include <lwoSurface.h>
 #include <luse.h>
 #include <eggTexture.h>
@@ -15,7 +17,6 @@
 
 #include <map>
 
-class CLwoSurfaceBlock;
 class LwoToEggConverter;
 class LwoSurfaceBlock;
 class EggPrimitive;
@@ -38,7 +39,8 @@ public:
 			float &smooth_angle);
   bool check_texture();
 
-  INLINE bool has_uvs() const;
+  INLINE bool has_named_uvs() const;
+  INLINE const string &get_uv_name() const;
 
   enum Flags {
     F_color        = 0x0001,
@@ -68,7 +70,6 @@ public:
 
   bool _checked_texture;
   PT(EggTexture) _egg_texture;
-  bool _has_uvs;
 
   CLwoSurfaceBlock *_block;
 

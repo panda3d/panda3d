@@ -16,14 +16,28 @@ get_name() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLwoSurface::has_uvs
+//     Function: CLwoSurface::has_named_uvs
 //       Access: Public
-//  Description: Returns true if check_texture() has been called and
-//               the surface is known to have UV's available, either
-//               computed or stored.  If this is true, get_uv() may be
-//               called to determine each UV coordinate.
+//  Description: Returns true if the surface is set up to reference
+//               UV's stored on the vertices, by name (as opposed to
+//               generated UV's, which is the more common Lightwave
+//               case).  In this case, get_uv_name() can be called to
+//               return the name of the UV's.
 ////////////////////////////////////////////////////////////////////
 INLINE bool CLwoSurface::
-has_uvs() const {
-  return _has_uvs;
+has_named_uvs() const {
+  return (_block != (CLwoSurfaceBlock *)NULL && 
+	  _block->_projection_mode == LwoSurfaceBlockProjection::M_uv);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLwoSurface::get_uv_name
+//       Access: Public
+//  Description: Returns the name of the set of UV's that are
+//               associated with this surface, if has_named_uvs() is
+//               true.
+////////////////////////////////////////////////////////////////////
+INLINE const string &CLwoSurface::
+get_uv_name() const {
+  return _block->_uv_name;
 }

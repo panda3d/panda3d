@@ -19,12 +19,57 @@
 ////////////////////////////////////////////////////////////////////
 void CLwoPoints::
 add_vmap(const LwoVertexMap *lwo_vmap) {
-  VMapNames &names = _vmap[lwo_vmap->_map_type];
-  bool inserted = names.insert(VMapNames::value_type(lwo_vmap->_name, lwo_vmap)).second;
+  IffId map_type = lwo_vmap->_map_type;
+  const string &name = lwo_vmap->_name;
+
+  bool inserted;
+  if (map_type == IffId("TXUV")) {
+    inserted = 
+      _txuv.insert(VMap::value_type(name, lwo_vmap)).second;
+
+  } else if (map_type == IffId("PICK")) {
+    inserted = 
+      _pick.insert(VMap::value_type(name, lwo_vmap)).second;
+
+  } else {
+    return;
+  }
+
   if (!inserted) {
     nout << "Multiple vertex maps on the same points of type " 
-	 << lwo_vmap->_map_type << " named " << lwo_vmap->_name << "\n";
+	 << map_type << " named " << name << "\n";
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLwoPoints::get_uv
+//       Access: Public
+//  Description: Returns true if there is a UV of the indicated name
+//               associated with the given vertex, false otherwise.
+//               If true, fills in uv with the value.
+////////////////////////////////////////////////////////////////////
+bool CLwoPoints::
+get_uv(const string &uv_name, int n, LPoint2f &uv) const {
+  VMap::const_iterator ni = _txuv.find(uv_name);
+  if (ni == _txuv.end()) {
+    return false;
+  }
+
+  const LwoVertexMap *vmap = (*ni).second;
+  if (vmap->_dimension != 2) {
+    nout << "Unexpected dimension of " << vmap->_dimension
+	 << " for UV map " << uv_name << "\n";
+    return false;
+  }
+
+  if (!vmap->has_value(n)) {
+    return false;
+  }
+
+  PTA_float value = vmap->get_value(n);
+
+  uv.set(value[0], value[1]);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

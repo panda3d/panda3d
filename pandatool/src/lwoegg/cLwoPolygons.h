@@ -12,11 +12,14 @@
 #include <eggGroup.h>
 #include <pointerTo.h>
 
+#include <map>
+
 class LwoToEggConverter;
 class CLwoPoints;
 class CLwoSurface;
 class LwoTags;
 class LwoPolygonTags;
+class LwoDiscontinuousVertexMap;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : CLwoPolygons
@@ -31,8 +34,10 @@ public:
 		      CLwoPoints *points);
 
   void add_ptags(const LwoPolygonTags *lwo_ptags, const LwoTags *tags);
+  void add_vmad(const LwoDiscontinuousVertexMap *lwo_vmad);
 
   CLwoSurface *get_surface(int polygon_index) const;
+  bool get_uv(const string &uv_name, int pi, int vi, LPoint2f &uv) const;
 
   void make_egg();
   void connect_egg();
@@ -47,6 +52,11 @@ public:
   PTags _ptags;
 
   const LwoPolygonTags *_surf_ptags;
+
+  // There might be named maps associated with the polygons to bring a
+  // per-polygon mapping to the UV's.
+  typedef map<string, const LwoDiscontinuousVertexMap *> VMad;
+  VMad _txuv;
 
 private:
   void make_faces();

@@ -38,6 +38,7 @@
     lwoSurfaceBlockRepeat.h lwoSurfaceBlockRepeat.cxx \
     lwoSurfaceBlockTMap.h lwoSurfaceBlockTMap.cxx \
     lwoSurfaceBlockTransform.h lwoSurfaceBlockTransform.cxx \
+    lwoSurfaceBlockVMapName.h lwoSurfaceBlockVMapName.cxx \
     lwoSurfaceBlockWrap.h lwoSurfaceBlockWrap.cxx \
     lwoSurfaceColor.h lwoSurfaceColor.cxx \
     lwoSurfaceParameter.h lwoSurfaceParameter.cxx \
@@ -75,6 +76,7 @@
     lwoSurfaceBlockRepeat.h \
     lwoSurfaceBlockTMap.h \
     lwoSurfaceBlockTransform.h \
+    lwoSurfaceBlockVMapName.h \
     lwoSurfaceBlockWrap.h \
     lwoSurfaceColor.h \
     lwoSurfaceParameter.h \

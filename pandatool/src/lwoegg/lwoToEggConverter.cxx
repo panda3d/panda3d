@@ -17,6 +17,7 @@
 #include <lwoPoints.h>
 #include <lwoPolygons.h>
 #include <lwoVertexMap.h>
+#include <lwoDiscontinuousVertexMap.h>
 #include <lwoTags.h>
 #include <lwoPolygonTags.h>
 #include <lwoInputFile.h>
@@ -293,6 +294,14 @@ collect_lwo() {
       } else {
 	const LwoVertexMap *lwo_vmap = DCAST(LwoVertexMap, chunk);
 	last_points->add_vmap(lwo_vmap);
+      }
+
+    } else if (chunk->is_of_type(LwoDiscontinuousVertexMap::get_class_type())) {
+      if (last_polygons == (CLwoPolygons *)NULL) {
+	nout << "Discontinous vertex map chunk encountered without a preceding polygons chunk.\n";
+      } else {
+	const LwoDiscontinuousVertexMap *lwo_vmad = DCAST(LwoDiscontinuousVertexMap, chunk);
+	last_polygons->add_vmad(lwo_vmad);
       }
 
     } else if (chunk->is_of_type(LwoTags::get_class_type())) {

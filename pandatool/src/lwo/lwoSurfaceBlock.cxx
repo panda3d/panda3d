@@ -12,6 +12,7 @@
 #include "lwoSurfaceBlockRepeat.h"
 #include "lwoSurfaceBlockTMap.h"
 #include "lwoSurfaceBlockWrap.h"
+#include "lwoSurfaceBlockVMapName.h"
 
 #include <indent.h>
 
@@ -93,6 +94,9 @@ make_new_chunk(IffInputFile *in, IffId id) {
   } else if (id == IffId("WRPH") ||
 	     id == IffId("WRPW")) {
     return new LwoSurfaceBlockRepeat;
+
+  } else if (id == IffId("VMAP")) {
+    return new LwoSurfaceBlockVMapName;
 
   } else  {
     return IffChunk::make_new_chunk(in, id);

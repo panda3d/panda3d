@@ -30,6 +30,7 @@ public:
 		    CLwoLayer *layer);
 
   void add_vmap(const LwoVertexMap *lwo_vmap);
+  bool get_uv(const string &uv_name, int n, LPoint2f &uv) const;
 
   void make_egg();
   void connect_egg();
@@ -39,11 +40,11 @@ public:
   CLwoLayer *_layer;
   PT(EggVertexPool) _egg_vpool;
 
-  // A number of vertex maps may be associated, by type and then by
-  // name.
-  typedef map<string, const LwoVertexMap *> VMapNames;
-  typedef map<IffId, VMapNames> VmapTypes;
-  VmapTypes _vmap;
+  // A number of vertex maps of different types may be associated, but
+  // we only care about some of the types here.
+  typedef map<string, const LwoVertexMap *> VMap;
+  VMap _txuv;
+  VMap _pick;
 };
 
 #include "cLwoPoints.I"

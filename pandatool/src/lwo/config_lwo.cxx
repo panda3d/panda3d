@@ -33,6 +33,7 @@
 #include "lwoSurfaceBlockRepeat.h"
 #include "lwoSurfaceBlockTMap.h"
 #include "lwoSurfaceBlockTransform.h"
+#include "lwoSurfaceBlockVMapName.h"
 #include "lwoSurfaceBlockWrap.h"
 #include "lwoSurfaceColor.h"
 #include "lwoSurfaceParameter.h"
@@ -95,6 +96,7 @@ init_liblwo() {
   LwoSurfaceBlockRepeat::init_type();
   LwoSurfaceBlockTMap::init_type();
   LwoSurfaceBlockTransform::init_type();
+  LwoSurfaceBlockVMapName::init_type();
   LwoSurfaceBlockWrap::init_type();
   LwoSurfaceColor::init_type();
   LwoSurfaceParameter::init_type();

@@ -11,6 +11,7 @@
 #include <lwoSurfaceBlockEnabled.h>
 #include <lwoSurfaceBlockImage.h>
 #include <lwoSurfaceBlockRepeat.h>
+#include <lwoSurfaceBlockVMapName.h>
 
 
 ////////////////////////////////////////////////////////////////////
@@ -90,6 +91,10 @@ CLwoSurfaceBlock(LwoToEggConverter *converter, const LwoSurfaceBlock *block) :
       const LwoSurfaceBlockWrap *wrap = DCAST(LwoSurfaceBlockWrap, chunk);
       _w_wrap = wrap->_width;
       _h_wrap = wrap->_height;
+
+    } else if (chunk->is_of_type(LwoSurfaceBlockVMapName::get_class_type())) {
+      const LwoSurfaceBlockVMapName *vmap = DCAST(LwoSurfaceBlockVMapName, chunk);
+      _uv_name = vmap->_name;
 
     } else if (chunk->is_of_type(LwoSurfaceBlockRepeat::get_class_type())) {
       const LwoSurfaceBlockRepeat *repeat = DCAST(LwoSurfaceBlockRepeat, chunk);

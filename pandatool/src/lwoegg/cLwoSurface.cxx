@@ -30,7 +30,6 @@ CLwoSurface(LwoToEggConverter *converter, const LwoSurface *surface) :
 {
   _flags = 0;
   _checked_texture = false;
-  _has_uvs = false;
   _map_uvs = NULL;
   _block = (CLwoSurfaceBlock *)NULL;
 
@@ -208,7 +207,6 @@ check_texture() {
   }
   _checked_texture = true;
   _egg_texture = (EggTexture *)NULL;
-  _has_uvs = false;
   _map_uvs = NULL;
 
   if (_block == (CLwoSurfaceBlock *)NULL) {
@@ -240,22 +238,18 @@ check_texture() {
   // Do we need to generate UV's?
   switch (_block->_projection_mode) {
   case LwoSurfaceBlockProjection::M_planar:
-    _has_uvs = true;
     _map_uvs = &CLwoSurface::map_planar;
     break;
 
   case LwoSurfaceBlockProjection::M_cylindrical:
-    _has_uvs = true;
     _map_uvs = &CLwoSurface::map_cylindrical;
     break;
 
   case LwoSurfaceBlockProjection::M_spherical:
-    _has_uvs = true;
     _map_uvs = &CLwoSurface::map_spherical;
     break;
 
   case LwoSurfaceBlockProjection::M_cubic:
-    _has_uvs = true;
     _map_uvs = &CLwoSurface::map_cubic;
     break;
 
@@ -284,7 +278,9 @@ check_texture() {
 ////////////////////////////////////////////////////////////////////
 void CLwoSurface::
 generate_uvs(vector_PT_EggVertex &egg_vertices) {
-  nassertv(_map_uvs != NULL);
+  if (_map_uvs == NULL) {
+    return;
+  }
 
   // To do this properly near seams and singularities (for instance,
   // the back seam and the poles of the spherical map), we will need
