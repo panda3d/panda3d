@@ -1,6 +1,7 @@
 """MopathInterval module: contains the MopathInterval class"""
 
 import Interval
+from PandaModules import *
 
 # import Mopath
 
