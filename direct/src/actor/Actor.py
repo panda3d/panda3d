@@ -747,7 +747,7 @@ class Actor(PandaObject, NodePath):
         Actor model loader. Takes a model name (ie file path), a part
         name(defaults to "modelRoot") and an lod name(defaults to "lodRoot").
         """
-        Actor.notify.warning("in loadModel: %s , part: %s, lod: %s" % \
+        Actor.notify.info("in loadModel: %s , part: %s, lod: %s" % \
             (modelPath, partName, lodName))
 
         # load the model and extract its part bundle
@@ -789,7 +789,7 @@ class Actor(PandaObject, NodePath):
         to 'lodRoot' for non-LOD actors) and dict of corresponding
         anims in the form animName:animPath{}"""
         
-        Actor.notify.warning("in loadAnims: %s, part: %s, lod: %s" %
+        Actor.notify.info("in loadAnims: %s, part: %s, lod: %s" %
                           (anims, partName, lodName))
 
         animDict = {}
