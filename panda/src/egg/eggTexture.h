@@ -15,7 +15,7 @@
 
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : EggTexture
+//   Class : EggTexture
 // Description : Defines a texture map that may be applied to
 //               geometry.
 ////////////////////////////////////////////////////////////////////
@@ -46,8 +46,8 @@ public:
     F_unspecified, 
     F_rgba, F_rgbm, F_rgba12, F_rgba8, F_rgba4, F_rgba5,
     F_rgb, F_rgb12, F_rgb8, F_rgb5, F_rgb332,
-    F_luminance_alpha,
     F_red, F_green, F_blue, F_alpha, F_luminance, 
+    F_luminance_alpha, F_luminance_alphamask
   };
   enum WrapMode {
     WM_unspecified, WM_repeat, WM_clamp
@@ -150,7 +150,7 @@ public:
     EggAlphaMode::init_type();
     register_type(_type_handle, "EggTexture",
                   EggFilenameNode::get_class_type(),
-		  EggAlphaMode::get_class_type());
+          EggAlphaMode::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -162,7 +162,7 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : UniqueEggTextures
+//   Class : UniqueEggTextures
 // Description : An STL function object for sorting textures into
 //               order by properties.  Returns true if the two
 //               referenced EggTexture pointers are in sorted order,
@@ -177,7 +177,7 @@ public:
 };
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : TRefEggTextures
+//   Class : TRefEggTextures
 // Description : An STL function object for sorting textures into
 //               order by TRef name.
 ////////////////////////////////////////////////////////////////////

@@ -114,7 +114,7 @@ issue_texcoord_gl(const Geom *geom, Geom::TexCoordIterator &tciterator) {
 
 static void
 issue_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
-	       const GraphicsStateGuardianBase *) {
+           const GraphicsStateGuardianBase *) {
   const Colorf &color = geom->get_next_color(citerator);
   //  glgsg_cat.debug() << "Issuing color " << color << "\n";
   glColor4fv(color.get_data());
@@ -122,7 +122,7 @@ issue_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
 
 static void
 issue_transformed_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
-			   const GraphicsStateGuardianBase *gsg) {
+               const GraphicsStateGuardianBase *gsg) {
   const GLGraphicsStateGuardian *glgsg = DCAST(GLGraphicsStateGuardian, gsg);
   const Colorf &color = geom->get_next_color(citerator);
 
@@ -194,9 +194,9 @@ reset() {
 
   // All GL implementations have the following buffers. (?)
   _buffer_mask = (RenderBuffer::T_color |
-		  RenderBuffer::T_depth |
-		  RenderBuffer::T_stencil |
-		  RenderBuffer::T_accum);
+          RenderBuffer::T_depth |
+          RenderBuffer::T_stencil |
+          RenderBuffer::T_accum);
 
   // Check to see if we have double-buffering.
   GLboolean has_back;
@@ -344,11 +344,11 @@ clear(const RenderBuffer &buffer) {
 
   if (buffer_type & RenderBuffer::T_color) {
     call_glClearColor(_color_clear_value[0],
-		      _color_clear_value[1],
-		      _color_clear_value[2],
-		      _color_clear_value[3]);
+              _color_clear_value[1],
+              _color_clear_value[2],
+              _color_clear_value[3]);
     state.set_attribute(ColorMaskTransition::get_class_type(),
-			new ColorMaskAttribute);
+            new ColorMaskAttribute);
     mask |= GL_COLOR_BUFFER_BIT;
 
     set_draw_buffer(buffer);
@@ -362,7 +362,7 @@ clear(const RenderBuffer &buffer) {
     // writing to the depth buffer.
     if (!_depth_mask) {
       state.set_attribute(DepthWriteTransition::get_class_type(),
-			  new DepthWriteAttribute);
+              new DepthWriteAttribute);
     }
   }
 
@@ -373,9 +373,9 @@ clear(const RenderBuffer &buffer) {
 
   if (buffer_type & RenderBuffer::T_accum) {
     call_glClearAccum(_accum_clear_value[0],
-		      _accum_clear_value[1],
-		      _accum_clear_value[2],
-		      _accum_clear_value[3]);
+              _accum_clear_value[1],
+              _accum_clear_value[2],
+              _accum_clear_value[3]);
     mask |= GL_ACCUM_BUFFER_BIT;
   }
 
@@ -418,7 +418,7 @@ clear(const RenderBuffer &buffer, const DisplayRegion *region) {
 //     Function: GLGraphicsStateGuardian::prepare_display_region
 //       Access: Public, Virtual
 //  Description: Prepare a display region for rendering (set up
-//		 scissor region and viewport)
+//       scissor region and viewport)
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 prepare_display_region() {
@@ -482,31 +482,31 @@ render_frame(const AllAttributesWrapper &initial_state) {
     if (_win->is_channel_defined(c)) {
       GraphicsChannel *chan = _win->get_channel(c);
       if (chan->is_active()) {
-	int num_layers = chan->get_num_layers();
-	for (int l = 0; l < num_layers; l++) {
-	  GraphicsLayer *layer = chan->get_layer(l);
-	  if (layer->is_active()) {
-	    int num_drs = layer->get_num_drs();
-	    for (int d = 0; d < num_drs; d++) {
-	      DisplayRegion *dr = layer->get_dr(d);
-	      if (dr == (DisplayRegion*)NULL)
-	      {
-		cerr << "null camera layer " << endl;
-		exit(0);
-	      }
-	      Camera *cam = dr->get_camera();
-	    
-	      // For each display region, render from the camera's view.
-	      if (dr->is_active() && cam != (Camera *)NULL && 
-		  cam->is_active() && cam->get_scene() != (Node *)NULL) {
-		DisplayRegionStack old_dr = push_display_region(dr);
-		prepare_display_region();
-		render_scene(cam->get_scene(), cam, initial_state);
-		pop_display_region(old_dr);
-	      }
-	    }
-	  }
-	}
+    int num_layers = chan->get_num_layers();
+    for (int l = 0; l < num_layers; l++) {
+      GraphicsLayer *layer = chan->get_layer(l);
+      if (layer->is_active()) {
+        int num_drs = layer->get_num_drs();
+        for (int d = 0; d < num_drs; d++) {
+          DisplayRegion *dr = layer->get_dr(d);
+          if (dr == (DisplayRegion*)NULL)
+          {
+        cerr << "null camera layer " << endl;
+        exit(0);
+          }
+          Camera *cam = dr->get_camera();
+        
+          // For each display region, render from the camera's view.
+          if (dr->is_active() && cam != (Camera *)NULL && 
+          cam->is_active() && cam->get_scene() != (Node *)NULL) {
+        DisplayRegionStack old_dr = push_display_region(dr);
+        prepare_display_region();
+        render_scene(cam->get_scene(), cam, initial_state);
+        pop_display_region(old_dr);
+          }
+        }
+      }
+    }
       }
     }
   }
@@ -555,7 +555,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 render_scene(Node *root, const ProjectionNode *projnode,
-	     const AllAttributesWrapper &initial_state) {
+         const AllAttributesWrapper &initial_state) {
 #ifdef GSG_VERBOSE
   _pass_number = 0;
   glgsg_cat.debug()
@@ -565,7 +565,7 @@ render_scene(Node *root, const ProjectionNode *projnode,
   _current_root_node = root;
 
   render_subgraph(_render_traverser, root, projnode, initial_state,
-		  AllTransitionsWrapper());
+          AllTransitionsWrapper());
 
 #ifdef GSG_VERBOSE
   glgsg_cat.debug()
@@ -584,9 +584,9 @@ render_scene(Node *root, const ProjectionNode *projnode,
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 render_subgraph(RenderTraverser *traverser,
-		Node *subgraph, const ProjectionNode *projnode,
-		const AllAttributesWrapper &initial_state,
-		const AllTransitionsWrapper &net_trans) {
+        Node *subgraph, const ProjectionNode *projnode,
+        const AllAttributesWrapper &initial_state,
+        const AllTransitionsWrapper &net_trans) {
   // Calling activate() frequently seems to be intolerably expensive
   // on some platforms.  We'll limit ourselves for now to calling it
   // only during the clear().
@@ -662,8 +662,8 @@ render_subgraph(RenderTraverser *traverser,
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 render_subgraph(RenderTraverser *traverser, Node *subgraph, 
-		const AllAttributesWrapper &initial_state,
-		const AllTransitionsWrapper &net_trans) {
+        const AllAttributesWrapper &initial_state,
+        const AllTransitionsWrapper &net_trans) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug()
     << "begin subgraph (pass " << ++_pass_number 
@@ -713,10 +713,10 @@ draw_point(const GeomPoint *geom) {
   }
 
   GeomIssuer issuer(geom, this,
-		    issue_vertex_gl,
-		    issue_normal_gl,
-		    issue_texcoord_gl,
-		    issue_color);
+            issue_vertex_gl,
+            issue_normal_gl,
+            issue_texcoord_gl,
+            issue_color);
 
   // Draw overall
   issuer.issue_color(G_OVERALL, ci);
@@ -897,7 +897,7 @@ public:
 // this struct exists because the STL can sort faster than i can.
 struct draw_sprite_vertex_less {
   INLINE bool operator ()(const WrappedSprite& v0, 
-			  const WrappedSprite& v1) const {
+              const WrappedSprite& v1) const {
     return v0._v[2] < v1._v[2]; }
 };
 
@@ -1071,7 +1071,7 @@ draw_sprite(const GeomSprite *geom) {
       ws._y_ratio = *y_walk++;
     if (theta_on) {
       if (theta_overall == false)
-	ws._theta = *theta_walk++;
+    ws._theta = *theta_walk++;
     }
 
     cameraspace_vector.push_back(ws);
@@ -1083,7 +1083,7 @@ draw_sprite(const GeomSprite *geom) {
   // if you want accuracy, use billboards and take the speed hit.
   if (alpha) {
     sort(cameraspace_vector.begin(), cameraspace_vector.end(), 
-	 draw_sprite_vertex_less());
+     draw_sprite_vertex_less());
   }
 
   int tex_bottom = 0, tex_top = 1, tex_right = 1, tex_left = 0;
@@ -1116,11 +1116,11 @@ draw_sprite(const GeomSprite *geom) {
     // if not G_OVERALL, do some trig for this z rotate
     if (theta_on) {
       if (theta_overall == false)
-	theta = cur_image._theta;
+    theta = cur_image._theta;
 
       // create the rotated points
       LMatrix3f xform_mat = LMatrix3f::rotate_mat(theta) * 
-	LMatrix3f::scale_mat(scaled_width, scaled_height);
+    LMatrix3f::scale_mat(scaled_width, scaled_height);
 
       ur = (xform_mat * LVector3f(1, 1, 0)) + cur_image._v;
       ul = (xform_mat * LVector3f(-1, 1, 0)) + cur_image._v;
@@ -1192,10 +1192,10 @@ draw_polygon(const GeomPolygon *geom) {
   }
 
   GeomIssuer issuer(geom, this,
-		    issue_vertex_gl,
-		    issue_normal_gl,
-		    issue_texcoord_gl,
-		    issue_color);
+            issue_vertex_gl,
+            issue_normal_gl,
+            issue_texcoord_gl,
+            issue_color);
 
   // If we have per-vertex colors or normals, we need smooth shading.
   // Otherwise we want flat shading for performance reasons.
@@ -1262,10 +1262,10 @@ draw_tri(const GeomTri *geom) {
   }
 
   GeomIssuer issuer(geom, this,
-		    issue_vertex_gl,
-		    issue_normal_gl,
-		    issue_texcoord_gl,
-		    issue_color);
+            issue_vertex_gl,
+            issue_normal_gl,
+            issue_texcoord_gl,
+            issue_color);
 
   // If we have per-vertex colors or normals, we need smooth shading.
   // Otherwise we want flat shading for performance reasons.
@@ -1328,10 +1328,10 @@ draw_quad(const GeomQuad *geom) {
   }
 
   GeomIssuer issuer(geom, this,
-		    issue_vertex_gl,
-		    issue_normal_gl,
-		    issue_texcoord_gl,
-		    issue_color);
+            issue_vertex_gl,
+            issue_normal_gl,
+            issue_texcoord_gl,
+            issue_color);
 
   // If we have per-vertex colors or normals, we need smooth shading.
   // Otherwise we want flat shading for performance reasons.
@@ -1395,10 +1395,10 @@ draw_tristrip(const GeomTristrip *geom) {
   }
 
   GeomIssuer issuer(geom, this,
-		    issue_vertex_gl,
-		    issue_normal_gl,
-		    issue_texcoord_gl,
-		    issue_color);
+            issue_vertex_gl,
+            issue_normal_gl,
+            issue_texcoord_gl,
+            issue_color);
 
   // If we have per-vertex colors or normals, we need smooth shading.
   // Otherwise we want flat shading for performance reasons.
@@ -1483,10 +1483,10 @@ draw_trifan(const GeomTrifan *geom) {
   }
 
   GeomIssuer issuer(geom, this,
-		    issue_vertex_gl,
-		    issue_normal_gl,
-		    issue_texcoord_gl,
-		    issue_color);
+            issue_vertex_gl,
+            issue_normal_gl,
+            issue_texcoord_gl,
+            issue_color);
 
   // If we have per-vertex colors or normals, we need smooth shading.
   // Otherwise we want flat shading for performance reasons.
@@ -1713,7 +1713,7 @@ static int binary_log_cap(const int x) {
 //     Function: GLGraphicsStateGuardian::copy_texture
 //       Access: Public, Virtual
 //  Description: Copy the pixel region indicated by the display
-//		 region from the framebuffer into texture memory
+//       region from the framebuffer into texture memory
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 copy_texture(TextureContext *tc, const DisplayRegion *dr) {
@@ -1745,9 +1745,9 @@ copy_texture(TextureContext *tc, const DisplayRegion *dr) {
   bind_texture(tc);
 
   glCopyTexImage2D( GL_TEXTURE_2D, tex->get_level(), 
-		    get_internal_image_format(pb->get_format()),
-		    pb->get_xorg(), pb->get_yorg(),
-		    pb->get_xsize(), pb->get_ysize(), pb->get_border() );
+            get_internal_image_format(pb->get_format()),
+            pb->get_xorg(), pb->get_yorg(),
+            pb->get_xsize(), pb->get_ysize(), pb->get_border() );
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1790,17 +1790,17 @@ draw_texture(TextureContext *tc, const DisplayRegion *dr) {
   taa->set_mode(TextureApplyProperty::M_decal);
 
   state.set_attribute(LightTransition::get_class_type(), 
-		      new LightAttribute);
+              new LightAttribute);
   state.set_attribute(ColorMaskTransition::get_class_type(),
-		      new ColorMaskAttribute);
+              new ColorMaskAttribute);
   state.set_attribute(RenderModeTransition::get_class_type(),
-		      new RenderModeAttribute);
+              new RenderModeAttribute);
   state.set_attribute(TexMatrixTransition::get_class_type(),
-		      new TexMatrixAttribute);
+              new TexMatrixAttribute);
   state.set_attribute(TransformTransition::get_class_type(),
-		      new TransformAttribute);
+              new TransformAttribute);
   state.set_attribute(ColorBlendTransition::get_class_type(),
-		      new ColorBlendAttribute);
+              new ColorBlendAttribute);
   state.set_attribute(CullFaceTransition::get_class_type(), cfa);
   state.set_attribute(DepthTestTransition::get_class_type(), dta);
   state.set_attribute(DepthWriteTransition::get_class_type(), dwa);
@@ -1886,7 +1886,7 @@ texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb, 
-			const DisplayRegion *dr) {
+            const DisplayRegion *dr) {
   nassertv(tc != NULL && pb != NULL && dr != NULL);
   //  activate();
 
@@ -1924,7 +1924,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
   // NOTE: reading the depth buffer is *much* slower than reading the
   // color buffer
   state.set_attribute(TextureTransition::get_class_type(), 
-		      new TextureAttribute);
+              new TextureAttribute);
   set_state(state, false);
 
   int xo, yo, w, h;
@@ -1965,10 +1965,10 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 #endif
 
   glReadPixels( pb->get_xorg() + xo, pb->get_yorg() + yo, 
-		pb->get_xsize(), pb->get_ysize(), 
-		get_external_image_format(pb->get_format()),
-		get_image_type(pb->get_image_type()),
-		pb->_image.p() );
+        pb->get_xsize(), pb->get_ysize(), 
+        get_external_image_format(pb->get_format()),
+        get_image_type(pb->get_image_type()),
+        pb->_image.p() );
 
   nassertv(!pb->_image.empty());
 }
@@ -1980,7 +1980,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr, 
-		  const RenderBuffer &rb) {
+          const RenderBuffer &rb) {
   //  activate();
   set_read_buffer(rb);
   copy_pixel_buffer(pb, dr);
@@ -1993,7 +1993,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-		  const NodeAttributes& na) {
+          const NodeAttributes& na) {
   nassertv(pb != NULL && dr != NULL);
   nassertv(!pb->_image.empty());
   //  activate();
@@ -2003,15 +2003,15 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 
   NodeAttributes state(na);
   state.set_attribute(LightTransition::get_class_type(), 
-		      new LightAttribute);
+              new LightAttribute);
   state.set_attribute(TextureTransition::get_class_type(), 
-		      new TextureAttribute);
+              new TextureAttribute);
   state.set_attribute(TransformTransition::get_class_type(), 
-		      new TransformAttribute);
+              new TransformAttribute);
   //state.set_attribute(ColorBlendTransition::get_class_type(), 
-  //		      new ColorBlendAttribute);
+  //              new ColorBlendAttribute);
   state.set_attribute(StencilTransition::get_class_type(), 
-		      new StencilAttribute);
+              new StencilAttribute);
 
   switch (pb->get_format()) {
   case PixelBuffer::F_depth_component: 
@@ -2101,9 +2101,9 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 
   glRasterPos2i( pb->get_xorg(), pb->get_yorg() );
   glDrawPixels( pb->get_xsize(), pb->get_ysize(), 
-		get_external_image_format(pb->get_format()),
-		get_image_type(pb->get_image_type()),
-		pb->_image.p() );
+        get_external_image_format(pb->get_format()),
+        get_image_type(pb->get_image_type()),
+        pb->_image.p() );
  
   glMatrixMode( GL_PROJECTION );
   glPopMatrix();
@@ -2134,11 +2134,11 @@ void GLGraphicsStateGuardian::apply_material( Material* material )
     call_glMaterialAmbient( material->get_twoside(), material->get_ambient() );
     call_glMaterialDiffuse( material->get_twoside(), material->get_diffuse() );
     call_glMaterialSpecular( material->get_twoside(), 
-			material->get_specular() );
+            material->get_specular() );
     call_glMaterialShininess( material->get_twoside(), 
-			material->get_shininess() );
+            material->get_shininess() );
     call_glMaterialEmission( material->get_twoside(), 
-			material->get_emission() );
+            material->get_emission() );
   
     call_glLightModelLocal( material->get_local() );
     call_glLightModelTwoSide( material->get_twoside() );
@@ -2189,7 +2189,7 @@ void GLGraphicsStateGuardian::apply_light( PointLight* light )
     glPushMatrix();
 
     glLoadMatrixf(LMatrix4f::convert_mat(_coordinate_system, CS_yup_right)
-		  .get_data());
+          .get_data());
 
     GLenum id = get_light_id( _cur_light_id );
     Colorf black(0, 0, 0, 1);
@@ -2247,7 +2247,7 @@ void GLGraphicsStateGuardian::apply_light( DirectionalLight* light )
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
     glLoadMatrixf(LMatrix4f::convert_mat(_coordinate_system, CS_yup_right)
-		  .get_data());
+          .get_data());
 
     GLenum id = get_light_id( _cur_light_id );
     Colorf black(0, 0, 0, 1);
@@ -2258,7 +2258,7 @@ void GLGraphicsStateGuardian::apply_light( DirectionalLight* light )
     // Position needs to specify x, y, z, and w 
     // w == 0 implies light is at infinity
     LPoint3f dir = get_rel_forward( light, _current_projection_node, 
-				_coordinate_system );
+                _coordinate_system );
     LPoint4f pos( -dir[0], -dir[1], -dir[2], 0 );
     glLightfv( id, GL_POSITION, pos.get_data() );
 
@@ -2304,7 +2304,7 @@ void GLGraphicsStateGuardian::apply_light( Spotlight* light )
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
     glLoadMatrixf(LMatrix4f::convert_mat(_coordinate_system, CS_yup_right)
-		  .get_data());
+          .get_data());
 
     GLenum id = get_light_id( _cur_light_id );
     Colorf black(0, 0, 0, 1);
@@ -2319,17 +2319,17 @@ void GLGraphicsStateGuardian::apply_light( Spotlight* light )
     glLightfv( id, GL_POSITION, fpos.get_data() );
 
     glLightfv( id, GL_SPOT_DIRECTION, 
-		get_rel_forward( light, _current_projection_node,
-			     _coordinate_system ).get_data() );
+        get_rel_forward( light, _current_projection_node,
+                 _coordinate_system ).get_data() );
     glLightf( id, GL_SPOT_EXPONENT, light->get_exponent() );
     glLightf( id, GL_SPOT_CUTOFF, 
-		light->get_cutoff_angle() );
+        light->get_cutoff_angle() );
     glLightf( id, GL_CONSTANT_ATTENUATION, 
-		light->get_constant_attenuation() );
+        light->get_constant_attenuation() );
     glLightf( id, GL_LINEAR_ATTENUATION, 
-		light->get_linear_attenuation() );
+        light->get_linear_attenuation() );
     glLightf( id, GL_QUADRATIC_ATTENUATION, 
-		light->get_quadratic_attenuation() );
+        light->get_quadratic_attenuation() );
 
     glPopMatrix();
 #ifdef GSG_VERBOSE
@@ -2630,23 +2630,23 @@ void GLGraphicsStateGuardian::issue_light(const LightAttribute *attrib )
     // Check to see if this light has already been bound to an id
     for (i = 0; i < _max_lights; i++) {
       if (_available_light_ids[i] == light) {
-	// Light has already been bound to an id, we only need
-	// to enable the light, not apply it
-	_cur_light_id = -2;
-	enable_light(i, true);
-	_cur_light_enabled[i] = true;
-	break;
+    // Light has already been bound to an id, we only need
+    // to enable the light, not apply it
+    _cur_light_id = -2;
+    enable_light(i, true);
+    _cur_light_enabled[i] = true;
+    break;
       }
     }
     
     // See if there are any unbound light ids 
     if (_cur_light_id == -1) {
       for (i = 0; i < _max_lights; i++) {
-	if (_available_light_ids[i] == NULL) {
-	  _available_light_ids[i] = light;
-	  _cur_light_id = i;
-	  break;
-	}
+    if (_available_light_ids[i] == NULL) {
+      _available_light_ids[i] = light;
+      _cur_light_id = i;
+      break;
+    }
       }
     } 
     
@@ -2654,11 +2654,11 @@ void GLGraphicsStateGuardian::issue_light(const LightAttribute *attrib )
     // a currently unused but previously bound id 
     if (_cur_light_id == -1) {
       for (i = 0; i < _max_lights; i++) {
-	if (attrib->is_off(_available_light_ids[i])) {
-	  _available_light_ids[i] = light;
-	  _cur_light_id = i;
-	  break;
-	} 
+    if (attrib->is_off(_available_light_ids[i])) {
+      _available_light_ids[i] = light;
+      _cur_light_id = i;
+      break;
+    } 
       }
     }
 
@@ -2670,7 +2670,7 @@ void GLGraphicsStateGuardian::issue_light(const LightAttribute *attrib )
       light->apply(this);
     } else if (_cur_light_id == -1) {
       glgsg_cat.error()
-	<< "issue_light() - failed to bind light to id" << endl;
+    << "issue_light() - failed to bind light to id" << endl;
     }
   }
 
@@ -2748,9 +2748,9 @@ void GLGraphicsStateGuardian::
 issue_color_mask(const ColorMaskAttribute *attrib) {
   //  activate();
   glColorMask(attrib->is_write_r(),
-	      attrib->is_write_g(),
-	      attrib->is_write_b(),
-	      attrib->is_write_a());
+          attrib->is_write_g(),
+          attrib->is_write_b(),
+          attrib->is_write_a());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2865,23 +2865,23 @@ issue_clip_plane(const ClipPlaneAttribute *attrib)
     // Check to see if this clip plane has already been bound to an id
     for (i = 0; i < _max_clip_planes; i++) {
       if (_available_clip_plane_ids[i] == plane_node) {
-	// Clip plane has already been bound to an id, we only need
-	// to enable the clip plane, not apply it
-	_cur_clip_plane_id = -2;
-	enable_clip_plane(i, true);
-	_cur_clip_plane_enabled[i] = true;
-	break;
+    // Clip plane has already been bound to an id, we only need
+    // to enable the clip plane, not apply it
+    _cur_clip_plane_id = -2;
+    enable_clip_plane(i, true);
+    _cur_clip_plane_enabled[i] = true;
+    break;
       }
     }
 
     // See if there are any unbound clip plane ids
     if (_cur_clip_plane_id == -1) {
       for (i = 0; i < _max_clip_planes; i++) {
-	if (_available_clip_plane_ids[i] == NULL) {
-	  _available_clip_plane_ids[i] = plane_node;
-	  _cur_clip_plane_id = i;
-	  break;
-	}
+    if (_available_clip_plane_ids[i] == NULL) {
+      _available_clip_plane_ids[i] = plane_node;
+      _cur_clip_plane_id = i;
+      break;
+    }
       }
     }
     
@@ -2889,11 +2889,11 @@ issue_clip_plane(const ClipPlaneAttribute *attrib)
     // a currently unused but previously bound id
     if (_cur_clip_plane_id == -1) {
       for (i = 0; i < _max_clip_planes; i++) {
-	if (attrib->is_off(_available_clip_plane_ids[i])) {
-	  _available_clip_plane_ids[i] = plane_node;
-	  _cur_clip_plane_id = i;
-	  break;
-	}
+    if (attrib->is_off(_available_clip_plane_ids[i])) {
+      _available_clip_plane_ids[i] = plane_node;
+      _cur_clip_plane_id = i;
+      break;
+    }
       }
     }
     
@@ -2914,7 +2914,7 @@ issue_clip_plane(const ClipPlaneAttribute *attrib)
       glPopMatrix();
     } else if (_cur_clip_plane_id == -1) {
       glgsg_cat.error()
-	<< "issue_clip_plane() - failed to bind clip plane to id" << endl;
+    << "issue_clip_plane() - failed to bind clip plane to id" << endl;
     }
   }
 
@@ -3194,27 +3194,27 @@ end_decal(GeomNode *base_geom) {
       // Disable the writing to the color buffer, however we have to
       // do this.
       if (gl_decal_type == GDT_blend) {
-    	// For the early nVidia Linux driver, at least, we don't seem
-    	// to have a working glColorMask.  So we have to disable the
-    	// color writes through the use of a blend function.
-    	// Expensive.
+        // For the early nVidia Linux driver, at least, we don't seem
+        // to have a working glColorMask.  So we have to disable the
+        // color writes through the use of a blend function.
+        // Expensive.
 
-    	enable_blend(true);
-    	call_glBlendFunc(GL_ZERO, GL_ONE);
+        enable_blend(true);
+        call_glBlendFunc(GL_ZERO, GL_ONE);
       } else {
           glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
       }
 
       // No need to have texturing on for this.
       enable_texturing(false);
-	
+    
       base_geom->draw(this);
     
       // Finally, restore the depth write and color mask states to the
       // way they're supposed to be.
       DepthWriteAttribute *depth_write;
       if (get_attribute_into(depth_write, _state,
-			     DepthWriteTransition::get_class_type())) {
+                 DepthWriteTransition::get_class_type())) {
           issue_depth_write(depth_write);
       }
 
@@ -3379,20 +3379,20 @@ bind_texture(TextureContext *tc) {
 void GLGraphicsStateGuardian::
 specify_texture(Texture *tex) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, 
-		  get_texture_wrap_mode(tex->get_wrapu()));
+          get_texture_wrap_mode(tex->get_wrapu()));
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
-		  get_texture_wrap_mode(tex->get_wrapv()));
+          get_texture_wrap_mode(tex->get_wrapv()));
 
   if (gl_force_mipmaps) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
-		    GL_LINEAR_MIPMAP_LINEAR);
+            GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   } else {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
-		    get_texture_filter_type(tex->get_minfilter()));
+            get_texture_filter_type(tex->get_minfilter()));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-		    get_texture_filter_type(tex->get_magfilter()));
+            get_texture_filter_type(tex->get_magfilter()));
   }
 }
 
@@ -3436,20 +3436,20 @@ apply_texture_immediate(Texture *tex) {
     if (use_mipmaps || gl_force_mipmaps) {
 #ifndef NDEBUG
       if (gl_show_mipmaps) {
-	build_phony_mipmaps(tex);
-	return;
+    build_phony_mipmaps(tex);
+    return;
       }
 #endif
       gluBuild2DMipmaps(GL_TEXTURE_2D, internal_format,
-			pb->get_xsize(), pb->get_ysize(),
-			external_format, type, pb->_image);
+            pb->get_xsize(), pb->get_ysize(),
+            external_format, type, pb->_image);
       return;
     }
   }
 
   glTexImage2D( GL_TEXTURE_2D, 0, internal_format,
-		pb->get_xsize(), pb->get_ysize(), pb->get_border(),
-		external_format, type, pb->_image );
+        pb->get_xsize(), pb->get_ysize(), pb->get_border(),
+        external_format, type, pb->_image );
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3573,6 +3573,7 @@ get_external_image_format(PixelBuffer::Format format) {
     return GL_RGBA;
   case PixelBuffer::F_luminance:
     return GL_LUMINANCE;
+  case PixelBuffer::F_luminance_alphamask:
   case PixelBuffer::F_luminance_alpha:
     return GL_LUMINANCE_ALPHA;
   }
@@ -3614,9 +3615,6 @@ get_internal_image_format(PixelBuffer::Format format) {
   case PixelBuffer::F_rgb332:
     return GL_R3_G3_B2;
 
-  case PixelBuffer::F_luminance_alpha:
-    return GL_LUMINANCE_ALPHA;
-
   case PixelBuffer::F_alpha:
     return GL_ALPHA;
 
@@ -3625,6 +3623,9 @@ get_internal_image_format(PixelBuffer::Format format) {
   case PixelBuffer::F_blue:
   case PixelBuffer::F_luminance:
     return GL_LUMINANCE;
+  case PixelBuffer::F_luminance_alpha:
+  case PixelBuffer::F_luminance_alphamask:
+    return GL_LUMINANCE_ALPHA;
 
   default:
     glgsg_cat.error()
@@ -3638,18 +3639,18 @@ get_internal_image_format(PixelBuffer::Format format) {
 //     Function: GLGraphicsStateGuardian::get_texture_apply_mode_type
 //       Access: Protected
 //  Description: Maps from the texture environment's mode types
-//		 to the corresponding OpenGL ids
+//       to the corresponding OpenGL ids
 ////////////////////////////////////////////////////////////////////
 GLint GLGraphicsStateGuardian::
 get_texture_apply_mode_type( TextureApplyProperty::Mode am ) const
 {
     switch( am )
     {
-	case TextureApplyProperty::M_modulate: return GL_MODULATE;
-	case TextureApplyProperty::M_decal: return GL_DECAL;
- 	case TextureApplyProperty::M_blend: return GL_BLEND;
-	case TextureApplyProperty::M_replace: return GL_REPLACE;
-	case TextureApplyProperty::M_add: return GL_ADD;
+    case TextureApplyProperty::M_modulate: return GL_MODULATE;
+    case TextureApplyProperty::M_decal: return GL_DECAL;
+    case TextureApplyProperty::M_blend: return GL_BLEND;
+    case TextureApplyProperty::M_replace: return GL_REPLACE;
+    case TextureApplyProperty::M_add: return GL_ADD;
     }
     glgsg_cat.error()
       << "Invalid TextureApplyProperty::Mode value" << endl;
@@ -3780,13 +3781,13 @@ print_gfx_visual() {
   glGetIntegerv( GL_STENCIL_BITS, &i ); cout << "Stencil: " << i << endl;
 
   glGetBooleanv( GL_DOUBLEBUFFER, &j ); cout << "DoubleBuffer? " 
-					     << (int)j << endl;
+                         << (int)j << endl;
 
   glGetBooleanv( GL_STEREO, &j ); cout << "Stereo? " << (int)j << endl;
 
 #ifdef GL_MULTISAMPLE_SGIS
   glGetBooleanv( GL_MULTISAMPLE_SGIS, &j ); cout << "Multisample? " 
-						 << (int)j << endl;
+                         << (int)j << endl;
 #endif
 #ifdef GL_SAMPLES_SGIS
   glGetIntegerv( GL_SAMPLES_SGIS, &i ); cout << "Samples: " << i << endl;
@@ -3794,9 +3795,9 @@ print_gfx_visual() {
 
   glGetBooleanv( GL_BLEND, &j ); cout << "Blend? " << (int)j << endl;
   glGetBooleanv( GL_POINT_SMOOTH, &j ); cout << "Point Smooth? " 
-					     << (int)j << endl;
+                         << (int)j << endl;
   glGetBooleanv( GL_LINE_SMOOTH, &j ); cout << "Line Smooth? " 
-					    << (int)j << endl;
+                        << (int)j << endl;
 
   glGetIntegerv( GL_AUX_BUFFERS, &i ); cout << "Aux Buffers: " << i << endl;
 }
@@ -3839,14 +3840,14 @@ free_pointers() {
 ////////////////////////////////////////////////////////////////////
 PT(SavedFrameBuffer) GLGraphicsStateGuardian::
 save_frame_buffer(const RenderBuffer &buffer,
-		  CPT(DisplayRegion) dr) {
+          CPT(DisplayRegion) dr) {
   GLSavedFrameBuffer *sfb = new GLSavedFrameBuffer(buffer, dr);
 
   if (buffer._buffer_type & RenderBuffer::T_depth) {
     // Save the depth buffer.
     sfb->_depth = 
       new PixelBuffer(PixelBuffer::depth_buffer(dr->get_pixel_width(),
-						dr->get_pixel_height()));
+                        dr->get_pixel_height()));
     copy_pixel_buffer(sfb->_depth, dr, buffer);
   }
 
@@ -3872,7 +3873,7 @@ restore_frame_buffer(SavedFrameBuffer *frame_buffer) {
       (sfb->_buffer._buffer_type & RenderBuffer::T_back) != 0) {
     // Restore the color buffer.
     draw_texture(sfb->_back_rgba->prepare(this),
-		 sfb->_display_region, sfb->_buffer);
+         sfb->_display_region, sfb->_buffer);
   }
 
   if (sfb->_depth != (PixelBuffer *)NULL &&
@@ -3978,8 +3979,8 @@ build_phony_mipmap_level(int level, int xsize, int ysize) {
     glgsg_cat.info(false)
       << "    " << filename << " cannot be read, making solid color mipmap.\n";
     image_sized.fill(level_colors[level][0],
-		     level_colors[level][1], 
-		     level_colors[level][2]);
+             level_colors[level][1], 
+             level_colors[level][2]);
   }
 
   PixelBuffer *pb = new PixelBuffer;
@@ -3990,8 +3991,8 @@ build_phony_mipmap_level(int level, int xsize, int ysize) {
   GLenum type = get_image_type(pb->get_image_type());
 
   glTexImage2D(GL_TEXTURE_2D, level, internal_format,
-	       pb->get_xsize(), pb->get_ysize(), pb->get_border(),
-	       external_format, type, pb->_image );
+           pb->get_xsize(), pb->get_ysize(), pb->get_border(),
+           external_format, type, pb->_image );
 
   delete pb;
 }
@@ -4023,7 +4024,7 @@ TypeHandle GLGraphicsStateGuardian::get_class_type(void) {
 void GLGraphicsStateGuardian::init_type(void) {
   GraphicsStateGuardian::init_type();
   register_type(_type_handle, "GLGraphicsStateGuardian",
-		GraphicsStateGuardian::get_class_type());
+        GraphicsStateGuardian::get_class_type());
 }
 
 
@@ -4136,7 +4137,7 @@ ostream &output_gl_enum(ostream &out, GLenum v) {
   case GL_EDGE_FLAG: 
     return out << "GL_EDGE_FLAG";
 
-	/* Vertex Arrays */
+    /* Vertex Arrays */
   case GL_VERTEX_ARRAY: 
     return out << "GL_VERTEX_ARRAY";
   case GL_NORMAL_ARRAY: 
@@ -5193,7 +5194,7 @@ ostream &output_gl_enum(ostream &out, GLenum v) {
   case GL_OUT_OF_MEMORY: 
     return out << "GL_OUT_OF_MEMORY";
 
-	/* OpenGL 1.2 */
+    /* OpenGL 1.2 */
   case GL_RESCALE_NORMAL: 
     return out << "GL_RESCALE_NORMAL";
   case GL_CLAMP_TO_EDGE: 

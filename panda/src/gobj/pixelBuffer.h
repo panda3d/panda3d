@@ -56,12 +56,13 @@ public:
     F_rgba8,   // 8 bits per R,G,B,A channel
     F_rgba12,  // 12 bits per R,G,B,A channel
     F_luminance,
-    F_luminance_alpha
+    F_luminance_alpha,      // 8 bits luminance, 8 bits alpha
+    F_luminance_alphamask   // 8 bits luminance, only needs 1 bit of alpha
   };
 
   INLINE PixelBuffer(void);
   INLINE PixelBuffer(int xsize, int ysize, int components, 
-		     int component_width, Type type, Format format);
+             int component_width, Type type, Format format);
   INLINE PixelBuffer(const PixelBuffer &copy);
   INLINE void operator = (const PixelBuffer &copy);
 
@@ -85,11 +86,11 @@ public:
 
   virtual void copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr);
   virtual void copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
-			const RenderBuffer &rb);
+            const RenderBuffer &rb);
   virtual void draw(GraphicsStateGuardianBase *gsg);
   virtual void draw(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr);
   virtual void draw(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
-			const RenderBuffer &rb);
+            const RenderBuffer &rb);
 
   INLINE void set_xsize(int size);
   INLINE void set_ysize(int size);
@@ -108,7 +109,7 @@ public:
   INLINE Type get_image_type() const;
 
   INLINE void set_uchar_rgb_texel(const uchar color[3], 
-				  int x, int y, int width);
+                  int x, int y, int width);
 
 private:
   INLINE void store_unsigned_byte(int &index, double value);

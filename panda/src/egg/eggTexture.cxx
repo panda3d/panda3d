@@ -195,17 +195,17 @@ is_equivalent_to(const EggTexture &other, int eq) const {
 
     if (eq & E_basename) {
       if (a.get_basename_wo_extension() != b.get_basename_wo_extension()) {
-	return false;
+    return false;
       }
     }
     if (eq & E_extension) {
       if (a.get_extension() != b.get_extension()) {
-	return false;
+    return false;
       }
     }
     if (eq & E_dirname) {
       if (a.get_dirname() != b.get_dirname()) {
-	return false;
+    return false;
       }
     }
   }
@@ -217,21 +217,21 @@ is_equivalent_to(const EggTexture &other, int eq) const {
     
     if (has_transform() && other.has_transform()) {
       if (!_transform.almost_equal(other._transform, 0.0001)) {
-	return false;
+    return false;
       }
     }
   }
 
   if (eq & E_attributes) {
     if (_format != other._format ||
-	_wrap_mode != other._wrap_mode ||
-	_wrap_u != other._wrap_u ||
-	_wrap_v != other._wrap_v ||
-	_minfilter != other._minfilter ||
-	_magfilter != other._magfilter ||
-	_magfilteralpha != other._magfilteralpha ||
-	_magfiltercolor != other._magfiltercolor ||
-	_env_type != other._env_type) {
+    _wrap_mode != other._wrap_mode ||
+    _wrap_u != other._wrap_u ||
+    _wrap_v != other._wrap_v ||
+    _minfilter != other._minfilter ||
+    _magfilter != other._magfilter ||
+    _magfilteralpha != other._magfilteralpha ||
+    _magfiltercolor != other._magfiltercolor ||
+    _env_type != other._env_type) {
       return false;
     }
     if (EggAlphaMode::operator != (other)) {
@@ -269,17 +269,17 @@ sorts_less_than(const EggTexture &other, int eq) const {
 
     if (eq & E_basename) {
       if (a.get_basename_wo_extension() != b.get_basename_wo_extension()) {
-	return a.get_basename_wo_extension() < b.get_basename_wo_extension();
+    return a.get_basename_wo_extension() < b.get_basename_wo_extension();
       }
     }
     if (eq & E_extension) {
       if (a.get_extension() != b.get_extension()) {
-	return a.get_extension() < b.get_extension();
+    return a.get_extension() < b.get_extension();
       }
     }
     if (eq & E_dirname) {
       if (a.get_dirname() != b.get_dirname()) {
-	return a.get_dirname() < b.get_dirname();
+    return a.get_dirname() < b.get_dirname();
       }
     }
   }
@@ -294,7 +294,7 @@ sorts_less_than(const EggTexture &other, int eq) const {
     if (has_transform() && other.has_transform()) {
       int compare = _transform.compare_to(other._transform);
       if (compare != 0) {
-	return compare < 0;
+    return compare < 0;
       }
     }
   }
@@ -354,7 +354,7 @@ sorts_less_than(const EggTexture &other, int eq) const {
 bool EggTexture::
 has_alpha_channel(int num_components) const {
   return (num_components == 2 || num_components == 4 ||
-	  (num_components == 1 && _format == F_alpha));
+      (num_components == 1 && _format == F_alpha));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -389,10 +389,6 @@ string_format(const string &string) {
     return F_rgba5;
   } else if (cmp_nocase_uh(string, "rgb332") == 0) {
     return F_rgb332;
-
-  } else if (cmp_nocase_uh(string, "luminance_alpha") == 0) {
-    return F_luminance_alpha;
-
   } else if (cmp_nocase_uh(string, "red") == 0) {
     return F_red;
   } else if (cmp_nocase_uh(string, "green") == 0) {
@@ -403,6 +399,10 @@ string_format(const string &string) {
     return F_alpha;
   } else if (cmp_nocase_uh(string, "luminance") == 0) {
     return F_luminance;
+  } else if (cmp_nocase_uh(string, "luminance_alpha") == 0) {
+    return F_luminance_alpha;
+  } else if (cmp_nocase_uh(string, "luminance_alphamask") == 0) {
+    return F_luminance_alphamask;
   } else {
     return F_unspecified;
   }
@@ -523,9 +523,6 @@ ostream &operator << (ostream &out, EggTexture::Format format) {
   case EggTexture::F_rgb332:
     return out << "rgb332";
 
-  case EggTexture::F_luminance_alpha:
-    return out << "luminance-alpha";
-
   case EggTexture::F_red:
     return out << "red";
   case EggTexture::F_green:
@@ -536,6 +533,10 @@ ostream &operator << (ostream &out, EggTexture::Format format) {
     return out << "alpha";
   case EggTexture::F_luminance:
     return out << "luminance";
+  case EggTexture::F_luminance_alpha:
+    return out << "luminance_alpha";
+  case EggTexture::F_luminance_alphamask:
+    return out << "luminance_alphamask";
   }
 
   nassertr(false, out);
