@@ -109,8 +109,9 @@ run() {
   }
 
   // Now process each character.
-  for (int i = 0; i < num_characters; i++) {
-    EggCharacterData *char_data = _collection->get_character(i);
+  int ci;
+  for (ci = 0; ci < num_characters; ci++) {
+    EggCharacterData *char_data = _collection->get_character(ci);
     nout << "Processing " << char_data->get_name() << "\n";
 
     EggJointData *root_joint = char_data->get_root_joint();
@@ -162,8 +163,8 @@ run() {
   }
 
   // Now, trigger the actual rebuilding of all the joint data.
-  for (int i = 0; i < num_characters; i++) {
-    EggCharacterData *char_data = _collection->get_character(i);
+  for (ci = 0; ci < num_characters; ci++) {
+    EggCharacterData *char_data = _collection->get_character(ci);
     char_data->get_root_joint()->do_rebuild();
   }
 
