@@ -11,6 +11,7 @@
 #include "guiRollover.h"
 #include "guiButton.h"
 #include "guiFrame.h"
+#include "guiListBox.h"
 
 #include <dconfig.h>
 
