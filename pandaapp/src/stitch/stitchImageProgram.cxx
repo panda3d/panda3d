@@ -47,11 +47,18 @@ StitchImageProgram() {
      &StitchImageProgram::dispatch_double, NULL, &_filter_factor);
 
   add_option
-    ("n", "name", 0,
+    ("o", "name", 0,
      "Generates only the named output image.  This may be repeated to "
      "generate multiple images in one run.  If omitted, all output images "
-     "in the file are generated.",
+     "in the file are generated.  The name may include filename globbing "
+     "symbols, e.g. 'grid*'.  You should quote such names to protect them "
+     "from shell expansion.",
      &StitchImageProgram::dispatch_output_name);
+
+  add_option
+    ("i", "name", 0,
+     "Generates only the named input image or images, as above.",
+     &StitchImageProgram::dispatch_input_name);
 
   add_option
     ("s", "xsize,ysize", 0,
@@ -86,6 +93,19 @@ dispatch_output_name(ProgramBase *self, const string &opt,
                      const string &arg, void *) {
   StitchImageProgram *prog = (StitchImageProgram *)self;
   prog->_outputter.add_output_name(arg);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StitchImageProgram::dispatch_input_name
+//       Access: Protected, Static
+//  Description: Dispatch function for an input image name.
+////////////////////////////////////////////////////////////////////
+bool StitchImageProgram::
+dispatch_input_name(ProgramBase *self, const string &opt,
+                    const string &arg, void *) {
+  StitchImageProgram *prog = (StitchImageProgram *)self;
+  prog->_outputter.add_input_name(arg);
   return true;
 }
 

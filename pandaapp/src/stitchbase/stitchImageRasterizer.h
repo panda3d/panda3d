@@ -22,8 +22,8 @@
 #include "stitchImageOutputter.h"
 
 #include "pvector.h"
-#include "pset.h"
 #include "luse.h"
+#include "globPattern.h"
 
 class Stitcher;
 class StitchImage;
@@ -38,6 +38,8 @@ public:
 
   virtual void execute();
 
+  void add_input_name(const string &name);
+  bool has_input_name(const string &name) const;
   void add_output_name(const string &name);
   bool has_output_name(const string &name) const;
 
@@ -62,7 +64,8 @@ private:
   typedef pvector<Stitcher *> Stitchers;
   Stitchers _stitchers;
 
-  typedef pset<string> Names;
+  typedef pvector<GlobPattern> Names;
+  Names _input_names;
   Names _output_names;
 
   double _filter_factor;

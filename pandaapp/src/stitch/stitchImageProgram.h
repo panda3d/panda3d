@@ -39,6 +39,8 @@ public:
 protected:
   static bool dispatch_output_name(ProgramBase *self, const string &opt,
                                    const string &arg, void *);
+  static bool dispatch_input_name(ProgramBase *self, const string &opt,
+                                  const string &arg, void *);
 
 private:
   double _filter_factor;

@@ -22,6 +22,7 @@
 
 #include "compose_matrix.h"
 #include "rotate_to.h"
+#include "executionEnvironment.h"
 
 StitchImage::
 StitchImage(const string &name, const string &filename,
@@ -34,9 +35,13 @@ StitchImage(const string &name, const string &filename,
   _film_offset_mm(film_offset_mm),
   _transform(LMatrix4d::ident_mat()),
   _inv_transform(LMatrix4d::ident_mat()),
-  _filename(filename),
   _name(name)
 {
+  _filename = ExecutionEnvironment::expand_string(filename);
+  if (_name.empty()) {
+    _name = _filename.get_basename_wo_extension();
+  }
+
   _size_mm.set((_size_pixels[0] - 1.0) / _pixels_per_mm[0],
                (_size_pixels[1] - 1.0) / _pixels_per_mm[1]);
   _orig_size_pixels = _size_pixels;

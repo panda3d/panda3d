@@ -32,20 +32,21 @@ StitchImageRasterizer() {
 
 void StitchImageRasterizer::
 add_input_image(StitchImage *image) {
-  _input_images.push_back(image);
+  if (has_input_name(image->get_name())) {
+    cerr << "Input image " << image->get_name() << "\n";
+    _input_images.push_back(image);
+  }
 }
 
 void StitchImageRasterizer::
 add_output_image(StitchImage *image) {
   if (has_output_name(image->get_name())) {
+    cerr << "Output image " << image->get_name() << "\n";
     if (_got_output_size) {
       image->set_size_pixels(LPoint2d(_output_xsize, _output_ysize));
     }
     image->set_output_scale_factor(_filter_factor);
     _output_images.push_back(image);
-
-  } else {
-    cerr << "Ignoring output image " << image->get_name() << "\n";
   }
 }
 
@@ -100,15 +101,55 @@ execute() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: StitchImageRasterizer::add_input_name
+//       Access: Public
+//  Description: Adds the indicated name to the set of input image
+//               names that will be generated.  The name may include
+//               globbing symbols.  If no names are added, all input
+//               images will be generated.
+////////////////////////////////////////////////////////////////////
+void StitchImageRasterizer::
+add_input_name(const string &name) {
+  _input_names.push_back(GlobPattern(name));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StitchImageRasterizer::has_input_name
+//       Access: Public
+//  Description: Returns true if the indicated input image name is
+//               one that should be generated.  This will be true if
+//               this name has been added via add_input_name(), or if
+//               no names at all have been added.
+////////////////////////////////////////////////////////////////////
+bool StitchImageRasterizer::
+has_input_name(const string &name) const {
+  if (_input_names.empty()) {
+    // If no names have been added, all names are good.
+    return true;
+  }
+
+  // Otherwise, the name is good only if it matches a name on the list.
+  Names::const_iterator ni;
+  for (ni = _input_names.begin(); ni != _input_names.end(); ++ni) {
+    if ((*ni).matches(name)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: StitchImageRasterizer::add_output_name
 //       Access: Public
 //  Description: Adds the indicated name to the set of output image
-//               names that will be generated.  If no names are added,
-//               all output images will be generated.
+//               names that will be generated.  The name may include
+//               globbing symbols.  If no names are added, all output
+//               images will be generated.
 ////////////////////////////////////////////////////////////////////
 void StitchImageRasterizer::
 add_output_name(const string &name) {
-  _output_names.insert(name);
+  _output_names.push_back(GlobPattern(name));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -126,8 +167,15 @@ has_output_name(const string &name) const {
     return true;
   }
 
-  // Otherwise, the name is good only if it is on the list.
-  return (_output_names.count(name) != 0);
+  // Otherwise, the name is good only if it matches a name on the list.
+  Names::const_iterator ni;
+  for (ni = _output_names.begin(); ni != _output_names.end(); ++ni) {
+    if ((*ni).matches(name)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
