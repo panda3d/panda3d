@@ -22,7 +22,7 @@
 #include "pandatoolbase.h"
 
 #include "eggBackPointer.h"
-
+#include "eggGroup.h"
 #include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -51,6 +51,7 @@ public:
   virtual bool do_rebuild();
 
   virtual void optimize();
+  virtual void expose(EggGroup::DCSType dcs_type);
 
 protected:
   typedef pvector<LMatrix4d> RebuildFrames;

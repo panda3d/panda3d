@@ -43,6 +43,7 @@ public:
 
   virtual bool add_rebuild_frame(const LMatrix4d &mat);
   virtual bool do_rebuild();
+  virtual void expose(EggGroup::DCSType dcs_type);
 
   virtual bool has_vertices() const;
 

@@ -105,3 +105,13 @@ do_rebuild() {
 void EggJointPointer::
 optimize() {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointPointer::expose
+//       Access: Public, Virtual
+//  Description: Flags the joint with the indicated DCS flag so that
+//               it will be loaded as a separate node in the player.
+////////////////////////////////////////////////////////////////////
+void EggJointPointer::
+expose(EggGroup::DCSType) {
+}

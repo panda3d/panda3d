@@ -22,7 +22,7 @@
 #include "pandatoolbase.h"
 
 #include "eggComponentData.h"
-
+#include "eggGroup.h"
 #include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -52,6 +52,7 @@ public:
 
   bool do_rebuild();
   void optimize();
+  void expose(EggGroup::DCSType dcs_type = EggGroup::DC_default);
 
   virtual void add_back_pointer(int model_index, EggObject *egg_object);
   virtual void write(ostream &out, int indent_level = 0) const;

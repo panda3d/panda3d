@@ -200,6 +200,31 @@ optimize() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::expose
+//       Access: Public
+//  Description: Calls expose() on all models, and recursively on
+//               all joints at this node and below.
+////////////////////////////////////////////////////////////////////
+void EggJointData::
+expose(EggGroup::DCSType dcs_type) {
+  BackPointers::iterator bpi;
+  for (bpi = _back_pointers.begin(); bpi != _back_pointers.end(); ++bpi) {
+    EggBackPointer *back = (*bpi);
+    if (back != (EggBackPointer *)NULL) {
+      EggJointPointer *joint;
+      DCAST_INTO_V(joint, back);
+      joint->expose(dcs_type);
+    }
+  }
+
+  Children::iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    EggJointData *child = (*ci);
+    child->expose(dcs_type);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggJointData::add_back_pointer
 //       Access: Public, Virtual
 //  Description: Adds the indicated model joint or anim table to the

@@ -180,6 +180,19 @@ do_rebuild() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggJointNodePointer::expose
+//       Access: Public, Virtual
+//  Description: Flags the joint with the indicated DCS flag so that
+//               it will be loaded as a separate node in the player.
+////////////////////////////////////////////////////////////////////
+void EggJointNodePointer::
+expose(EggGroup::DCSType dcs_type) {
+  if (_joint != (EggGroup *)NULL) {
+    _joint->set_dcs_type(dcs_type);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggJointNodePointer::has_vertices
 //       Access: Public, Virtual
 //  Description: Returns true if there are any vertices referenced by
