@@ -64,7 +64,7 @@ void StitchImageConverter::
 create_image_geometry(Image &im) {
   assert(_output_image != NULL);
 
-  double dist = 1.0 + (double)im._index / (double)_images.size();
+  //  double dist = 1.0 + (double)im._index / (double)_images.size();
 #if 0
   int x_verts = _output_image->get_x_verts();
   int y_verts = _output_image->get_y_verts();

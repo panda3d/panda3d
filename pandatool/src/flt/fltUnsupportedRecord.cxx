@@ -60,4 +60,5 @@ bool FltUnsupportedRecord::
 build_record(FltRecordWriter &writer) const {
   writer.set_opcode(_opcode);
   writer.set_datagram(_datagram);
+  return true;
 }

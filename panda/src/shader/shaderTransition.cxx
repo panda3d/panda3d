@@ -95,7 +95,6 @@ void ShaderTransition::
 insert(Shader *shader) {
   PT(Shader) sp(shader);
   Shaders::iterator si = _shaders.begin();
-  ShaderOrder::iterator soi;
   int order = -1;
 
   if ((_shader_order == NULL) && (_overrides.find(sp) == _overrides.end()))

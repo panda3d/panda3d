@@ -82,7 +82,7 @@ advance() {
   dg.add_be_int16(_opcode);
   dg.add_be_int16(_datagram.get_length() + header_size);
 
-  nassertr(dg.get_length() == header_size, FE_internal);
+  nassertr((int)dg.get_length() == header_size, FE_internal);
 
   _out.write(dg.get_message().data(), dg.get_length());
   if (_out.fail()) {
