@@ -47,6 +47,7 @@
 #include <guiButton.h>
 #include <guiFrame.h>
 #include <guiSign.h>
+#include <guiListBox.h>
 
 //From framework
 extern PT(GeomNode) geomnode;
@@ -529,6 +530,7 @@ static void test9(GuiManager* mgr, Node* font) {
 }
 */
 
+/*
 PT(GuiSign) s1;
 PT(GuiSign) s2;
 PT(GuiSign) s3;
@@ -559,9 +561,56 @@ static void test10(GuiManager* mgr, Node* font) {
   s3->set_priority(GuiItem::P_High);
   s3->manage(mgr, event_handler);
 }
+*/
+
+PT(GuiListBox) lb1;
+
+static void test11(GuiManager* mgr, Node* font) {
+  GuiLabel* ul = GuiLabel::make_simple_text_label("upup", font);
+  GuiSign* us = new GuiSign("up_arrow", ul);
+  GuiLabel* dl = GuiLabel::make_simple_text_label("dndn", font);
+  GuiSign* ds = new GuiSign("down_arrow", dl);
+  lb1 = new GuiListBox("list_box", 4, us, ds);
+  GuiLabel* l1 = GuiLabel::make_simple_text_label("hyena", font);
+  GuiSign* s1 = new GuiSign("hyena", l1);
+  s1->set_scale(0.1);
+  GuiLabel* l2 = GuiLabel::make_simple_text_label("dingo", font);
+  GuiSign* s2 = new GuiSign("dingo", l2);
+  s2->set_scale(0.1);
+  GuiLabel* l3 = GuiLabel::make_simple_text_label("jackal", font);
+  GuiSign* s3 = new GuiSign("jackal", l3);
+  s3->set_scale(0.1);
+  GuiLabel* l4 = GuiLabel::make_simple_text_label("wolf", font);
+  GuiSign* s4 = new GuiSign("wolf", l4);
+  s4->set_scale(0.1);
+  GuiLabel* l5 = GuiLabel::make_simple_text_label("fox", font);
+  GuiSign* s5 = new GuiSign("fox", l5);
+  s5->set_scale(0.1);
+  float w, w1, w2;
+  w1 = l1->get_width();
+  w2 = l2->get_width();
+  w = (w1>w2)?w1:w2;
+  w2 = l3->get_width();
+  w = (w>w2)?w:w2;
+  w2 = l4->get_width();
+  w = (w>w2)?w:w2;
+  w2 = l5->get_width();
+  w = (w>w2)?w:w2;
+  l1->set_width(w);
+  l2->set_width(w);
+  l3->set_width(w);
+  l4->set_width(w);
+  l5->set_width(w);
+  lb1->add_item(s1);
+  lb1->add_item(s2);
+  lb1->add_item(s3);
+  lb1->add_item(s4);
+  lb1->add_item(s5);
+  lb1->manage(mgr, event_handler);
+}
 
 static void setup_gui(void) {
-  GuiManager* mgr = GuiManager::get_ptr(main_win, mak);
+  GuiManager* mgr = GuiManager::get_ptr(main_win, mak, (Node*)0L);
   PT_Node font = ModelPool::load_model("ttf-comic");
   // test 1
   //  test1(mgr, font);
@@ -585,7 +634,9 @@ static void setup_gui(void) {
   //  test9(mgr, font);
   //  g_mgr = mgr;
   // test 10
-  test10(mgr, font);
+  //  test10(mgr, font);
+  // test 11
+  test11(mgr, font);
 }
 
 static void event_2(CPT_Event) {
@@ -651,6 +702,7 @@ static void event_3(CPT_Event) {
 }
 */
 
+/*
 // for test 10
 static void event_3(CPT_Event) {
   if (prior_state) {
@@ -662,13 +714,29 @@ static void event_3(CPT_Event) {
   }
   prior_state = !prior_state;
 }
+*/
+
+// for test 11
+static void event_3(CPT_Event) {
+  lb1->scroll_up();
+  cout << *lb1;
+}
+
+// for test11
+static void event_4(CPT_Event) {
+  lb1->scroll_down();
+  cout << *lb1;
+}
 
 void gui_keys(EventHandler&) {
   new RenderRelation( lights, dlight );
   have_dlight = true;
 
   event_handler.add_hook("2", event_2);
+  // for tests 7-11
   event_handler.add_hook("3", event_3);
+  // for test 11
+  event_handler.add_hook("4", event_4);
 }
 
 int main(int argc, char *argv[]) {
