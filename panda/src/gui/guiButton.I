@@ -97,6 +97,7 @@ INLINE void GuiButton::click(void) {
     up();
     break;
   case INACTIVE:
+  case INACTIVE_ROLLOVER:
     break;
   default:
     gui_cat->warning() << "got click from invalid state (" << (int)_state

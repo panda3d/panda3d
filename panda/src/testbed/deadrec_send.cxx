@@ -66,7 +66,7 @@ static void event_frame(CPT_Event) {
 enum MotionType { M_None, M_Line, M_SLine, M_Box, M_SBox, M_Circle, M_SCircle,
                   M_Random, M_SRandom };
 PT(AutonomousLerp) curr_lerp;
-MotionType curr_type;
+MotionType curr_type, switching_to;
 PT(GuiButton) lineButton;
 PT(GuiButton) slineButton;
 PT(GuiButton) boxButton;
@@ -333,64 +333,95 @@ static void make_active(void) {
   }
 }
 
+static void event_button_up(CPT_Event e) {
+  string s = e->get_name();
+  s = s.substr(0, s.find("-up"));
+  event_handler.remove_hook(s + "-up", event_button_up);
+  event_handler.remove_hook(s + "-up-rollover", event_button_up);
+  make_active();
+  switch (switching_to) {
+  case M_Line:
+    lineButton->inactive();
+    break;
+  case M_SLine:
+    slineButton->inactive();
+    break;
+  case M_Box:
+    boxButton->inactive();
+    break;
+  case M_SBox:
+    sboxButton->inactive();
+    break;
+  case M_Circle:
+    circleButton->inactive();
+    break;
+  case M_SCircle:
+    scircleButton->inactive();
+    break;
+  case M_Random:
+    randomButton->inactive();
+    break;
+  case M_SRandom:
+    srandomButton->inactive();
+    break;
+  default:
+    deadrec_cat->error() << "switching to invalid motion type ("
+			 << (int)switching_to << ")" << endl;
+  }
+  curr_type = switching_to;
+  handle_lerp();
+}
+
 static void event_button_down(CPT_Event e) {
   string s = e->get_name();
   s = s.substr(0, s.find("-down"));
   if (s == "line") {
     if (curr_type != M_Line) {
-      make_active();
-      curr_type = M_Line;
-      handle_lerp();
-      lineButton->inactive();
+      switching_to = M_Line;
+      event_handler.add_hook(s + "-up", event_button_up);
+      event_handler.add_hook(s + "-up-rollover", event_button_up);
     }
   } else if (s == "s-line") {
     if (curr_type != M_SLine) {
-      make_active();
-      curr_type = M_SLine;
-      handle_lerp();
-      slineButton->inactive();
+      switching_to = M_SLine;
+      event_handler.add_hook(s + "-up", event_button_up);
+      event_handler.add_hook(s + "-up-rollover", event_button_up);
     }
   } else if (s == "box") {
     if (curr_type != M_Box) {
-      make_active();
-      curr_type = M_Box;
-      handle_lerp();
-      boxButton->inactive();
+      switching_to = M_Box;
+      event_handler.add_hook(s + "-up", event_button_up);
+      event_handler.add_hook(s + "-up-rollover", event_button_up);
     }
   } else if (s == "s-box") {
     if (curr_type != M_SBox) {
-      make_active();
-      curr_type = M_SBox;
-      handle_lerp();
-      sboxButton->inactive();
+      switching_to = M_SBox;
+      event_handler.add_hook(s + "-up", event_button_up);
+      event_handler.add_hook(s + "-up-rollover", event_button_up);
     }
   } else if (s == "circle") {
     if (curr_type != M_Circle) {
-      make_active();
-      curr_type = M_Circle;
-      handle_lerp();
-      circleButton->inactive();
+      switching_to = M_Circle;
+      event_handler.add_hook(s + "-up", event_button_up);
+      event_handler.add_hook(s + "-up-rollover", event_button_up);
     }
   } else if (s == "s-circle") {
     if (curr_type != M_SCircle) {
-      make_active();
-      curr_type = M_SCircle;
-      handle_lerp();
-      scircleButton->inactive();
+      switching_to = M_SCircle;
+      event_handler.add_hook(s + "-up", event_button_up);
+      event_handler.add_hook(s + "-up-rollover", event_button_up);
     }
   } else if (s == "random") {
     if (curr_type != M_Random) {
-      make_active();
-      curr_type = M_Random;
-      handle_lerp();
-      randomButton->inactive();
+      switching_to = M_Random;
+      event_handler.add_hook(s + "-up", event_button_up);
+      event_handler.add_hook(s + "-up-rollover", event_button_up);
     }
   } else if (s == "s-random") {
     if (curr_type != M_SRandom) {
-      make_active();
-      curr_type = M_SRandom;
-      handle_lerp();
-      srandomButton->inactive();
+      switching_to = M_SRandom;
+      event_handler.add_hook(s + "-up", event_button_up);
+      event_handler.add_hook(s + "-up-rollover", event_button_up);
     }
   } else {
     deadrec_cat->error() << "got invalid button event '" << s << "'" << endl;
