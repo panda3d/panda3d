@@ -259,6 +259,9 @@ do_recompute_bound(const NodePath &rel_to) {
 void RopeNode::
 render_thread(CullTraverser *trav, CullTraverserData &data, 
               NurbsCurveResult *result) {
+  UVMode uv_mode = get_uv_mode();
+  LVecBase2f uv_scale = get_uv_scale();
+
   PTA_Vertexf verts;
   PTA_TexCoordf uvs;
   PTA_Colorf colors;
@@ -266,13 +269,42 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
 
   int num_verts = get_num_segs() + 1;
   int num_segments = result->get_num_segments();
+  float dist = 0.0f;
   for (int segment = 0; segment < num_segments; segment++) {
+    LPoint3f last_point;
     for (int i = 0; i < num_verts; i++) {
       float t = (float)i / (float)(num_verts - 1);
       LPoint3f point;
       result->eval_segment_point(segment, t, point);
       verts.push_back(point);
-      uvs.push_back(TexCoordf(result->get_segment_t(segment, t), 0.0f));
+
+      t = result->get_segment_t(segment, t);
+      switch (uv_mode) {
+      case UV_none:
+        break;
+        
+      case UV_parametric:
+        uvs.push_back(TexCoordf(t * uv_scale[0], 0.0f));
+        break;
+
+      case UV_distance:
+        if (i != 0) {
+          LVector3f vec = point - last_point;
+          dist += vec.length();
+        }
+        uvs.push_back(TexCoordf(dist * uv_scale[0], 0.0f));
+        break;
+
+      case UV_distance2:
+        if (i != 0) {
+          LVector3f vec = point - last_point;
+          dist += vec.length_squared();
+        }
+        uvs.push_back(TexCoordf(dist * uv_scale[0], 0.0f));
+        break;
+      }
+
+      last_point = point;
     }
     lengths.push_back(num_verts);
   }
@@ -282,6 +314,9 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
   PT(Geom) geom = new GeomLinestrip;
   geom->set_num_prims(num_segments);
   geom->set_coords(verts);
+  if (uv_mode != UV_none) {
+    geom->set_texcoords(uvs, G_PER_VERTEX);
+  }
   geom->set_colors(colors, G_OVERALL);
   geom->set_lengths(lengths);
   
