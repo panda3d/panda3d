@@ -67,7 +67,11 @@ void render_frame(GraphicsPipe *pipe) {
     GraphicsWindow *win = pipe->get_window(w);
     win->get_gsg()->render_frame();
   }
-  ClockObject::get_global_clock()->tick();
+  // clock tick moved to igloop in ShowBase.py because
+  // clock must tick while app is iconified and draw
+  // callback is not being called by panda gsg
+
+  //  ClockObject::get_global_clock()->tick();
   throw_event("NewFrame");
 }
 
@@ -82,9 +86,6 @@ public:
   virtual void draw(bool) {
     _app_traverser.traverse(_render_top);
     render_frame(_pipe);
-  }
-
-  virtual void idle(void) {
   }
 
   PT(GraphicsPipe) _pipe;
@@ -180,7 +181,7 @@ setup_panda_2d(GraphicsWindow *win, const string &graph_name) {
   new RenderRelation(render2d, cam2d);
 
   Frustumf frustum2d;
-  frustum2d.make_ortho(-1000,1000);
+  frustum2d.make_ortho(-1000.0f,1000.0f);
   cam2d->set_projection(OrthoProjection(frustum2d));
 
   add_render_layer(win, render2d_top, cam2d);

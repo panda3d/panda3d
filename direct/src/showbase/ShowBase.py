@@ -405,6 +405,7 @@ class ShowBase:
             self.cTrav.traverse(self.render)
         # Finally, render the frame.
         self.win.update()
+        globalClock.tick()
         return Task.cont
 
     def restart(self):
