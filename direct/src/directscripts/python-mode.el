@@ -3360,7 +3360,7 @@ comint believe the user typed this string so that
   (interactive)
   (let ((curbuf (current-buffer))
 	(procbuf (process-buffer proc))
-	(cmd (format "import Finder; Finder.rebindClass(__builtins__.globals(), r'%s')\n" filename))
+	(cmd (format "from direct.showbase import Finder; Finder.rebindClass(__builtins__.globals(), r'%s')\n" filename))
 	)
 
 	  ;; Goto the python buffer
