@@ -152,8 +152,8 @@ write_header() {
   }
   
   if( sgi_storage_type != STORAGE_VERBATIM ) {
-    table = new TabEntry[_num_channels * _x_size];
-    memset(table, 0, _num_channels * _x_size * sizeof(TabEntry));
+    table = new TabEntry[_num_channels * _y_size];
+    memset(table, 0, _num_channels * _y_size * sizeof(TabEntry));
   }
 
   write_rgb_header(sgi_imagename.c_str());
