@@ -18,7 +18,7 @@
 
 #include "config_pstats.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 ConfigureDef(config_pstats);
 NotifyCategoryDef(pstats, "");
@@ -43,6 +43,7 @@ const float pstats_target_frame_rate = config_pstats.GetFloat("pstats-target-fra
 // not the client.
 const bool pstats_scroll_mode = config_pstats.GetBool("pstats-scroll-mode", true);
 const float pstats_history = config_pstats.GetFloat("pstats-history", 60.0);
+const float pstats_average_time = config_pstats.GetFloat("pstats-average-time", 3.0);
 const bool pstats_threaded_write = config_pstats.GetBool("pstats-threaded-write", false);
 
 ////////////////////////////////////////////////////////////////////

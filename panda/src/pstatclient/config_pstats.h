@@ -21,8 +21,8 @@
 
 #include "pandabase.h"
 
-#include <notifyCategoryProxy.h>
-#include <dconfig.h>
+#include "notifyCategoryProxy.h"
+#include "dconfig.h"
 
 // Configure variables for pstats package.
 
@@ -37,6 +37,7 @@ extern EXPCL_PANDA const float pstats_target_frame_rate;
 
 extern EXPCL_PANDA const bool pstats_scroll_mode;
 extern EXPCL_PANDA const float pstats_history;
+extern EXPCL_PANDA const float pstats_average_time;
 
 extern EXPCL_PANDA const bool pstats_threaded_write;
 
