@@ -2504,15 +2504,16 @@ r_as_string(const ArcComponent *comp, string &result, int skip_nodes) const {
 	// This is not the first node, so format a slash between the
 	// previous node and this node.
 
-	if (comp->_arc->get_parent() == comp->_next->_arc->get_child()) {
+	if (comp->_arc->get_child() == (Node *)NULL ||
+	    comp->_arc->get_parent() == comp->_next->_arc->get_child()) {
 	  result += "/";
 	} else {
 	  // Unless the path is broken here.  In this case, insert a
 	  // visual indication of the break.
 	  result += "/.../" + format_node_name(comp->_arc->get_parent()) + "/";
 	}
+	result += format_node_name(comp->_arc->get_child());
       }
-      result += format_node_name(comp->_arc->get_child());
     }
     return nodes_before + 1;
   }

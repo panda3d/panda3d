@@ -378,18 +378,23 @@ ptr() {
 bool Notify::
 assert_failure(const char *expression, int line,
 	       const char *source_file) {
-  _assert_failed = true;
-
-  ostringstream message;
-  message 
+  ostringstream message_str;
+  message_str 
     << expression << " at line " << line << " of " << source_file;
-  _assert_error_message = message.str();
+  string message = message_str.str();
+
+  if (!_assert_failed) {
+    // We only save the first assertion failure message, as this is
+    // usually the most meaningful when several occur in a row.
+    _assert_failed = true;
+    _assert_error_message = message;
+  }
 
   if (has_assert_handler()) {
     return (*_assert_handler)(expression, line, source_file);
   }
 
-  nout << "Assertion failed: " << _assert_error_message << "\n";
+  nout << "Assertion failed: " << message << "\n";
 
   if (get_assert_abort()) {
 #ifdef WIN32
