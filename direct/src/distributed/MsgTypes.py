@@ -66,6 +66,9 @@ CLIENT_CREATE_AVATAR2 =                      76
 CLIENT_SYSTEM_MESSAGE =                      78
 CLIENT_SET_AVTYPE =                          80
 
+CLIENT_GET_PET_DETAILS =                     81
+CLIENT_GET_PET_DETAILS_RESP =                82
+
 # These messages are ignored when the client is headed to the quiet zone
 QUIET_ZONE_IGNORED_LIST = [
 
