@@ -82,7 +82,7 @@
 #defer CDEFINES_OPT3 $[dlink_all_static]
 #defer CDEFINES_OPT4 NDEBUG $[dlink_all_static]
 
-#defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] /MDd /Gi- /GZ /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
+#defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] /MDd /Gi- /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
 #defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] /MDd /Gi- /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
 #defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] /MD /Gi-
 #defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] /MD /Gi-
