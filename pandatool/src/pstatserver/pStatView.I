@@ -70,6 +70,17 @@ set_to_time(float time) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PStatView::get_show_level
+//       Access: Public
+//  Description: Returns true if we are showing level data, false if
+//               time data.
+////////////////////////////////////////////////////////////////////
+INLINE bool PStatView::
+get_show_level() const {
+  return _show_level;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PStatView::get_level_index
 //       Access: Public
 //  Description: Returns an index number that can be used to determine

@@ -127,7 +127,7 @@ set_time_units(int unit_mask) {
 void WinStatsPianoRoll::
 clicked_label(int collector_index) {
   if (collector_index >= 0) {
-    WinStatsGraph::_monitor->open_strip_chart(WinStatsGraph::_thread_index, collector_index);
+    WinStatsGraph::_monitor->open_strip_chart(WinStatsGraph::_thread_index, collector_index, false);
   }
 }
 

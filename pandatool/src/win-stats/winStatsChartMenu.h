@@ -44,7 +44,8 @@ public:
   void do_update();
 
 private:
-  void add_view(HMENU parent_menu, const PStatViewLevel *view_level);
+  void add_view(HMENU parent_menu, const PStatViewLevel *view_level,
+                bool show_level);
 
   WinStatsMonitor *_monitor;
   int _thread_index;

@@ -112,7 +112,7 @@ initialized() {
 void WinStatsMonitor::
 got_hello() {
   create_window();
-  open_strip_chart(0, 0);
+  open_strip_chart(0, 0, false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -289,9 +289,9 @@ get_window() const {
 //  Description: Opens a new strip chart showing the indicated data.
 ////////////////////////////////////////////////////////////////////
 void WinStatsMonitor::
-open_strip_chart(int thread_index, int collector_index) {
+open_strip_chart(int thread_index, int collector_index, bool show_level) {
   WinStatsStripChart *graph = 
-    new WinStatsStripChart(this, thread_index, collector_index);
+    new WinStatsStripChart(this, thread_index, collector_index, show_level);
   add_graph(graph);
 
   graph->set_time_units(_time_units);
@@ -323,7 +323,7 @@ open_piano_roll(int thread_index) {
 ////////////////////////////////////////////////////////////////////
 const WinStatsMonitor::MenuDef &WinStatsMonitor::
 lookup_menu(int menu_id) const {
-  static MenuDef invalid(0, 0);
+  static MenuDef invalid(0, 0, false);
   int menu_index = menu_id - MI_new_chart;
   nassertr(menu_index >= 0 && menu_index < (int)_menu_by_id.size(), invalid);
   return _menu_by_id[menu_index];
@@ -778,7 +778,8 @@ handle_menu_command(int menu_id) {
       if (menu_def._collector_index < 0) {
         open_piano_roll(menu_def._thread_index);
       } else {
-        open_strip_chart(menu_def._thread_index, menu_def._collector_index);
+        open_strip_chart(menu_def._thread_index, menu_def._collector_index,
+                         menu_def._show_level);
       }
     }
   }

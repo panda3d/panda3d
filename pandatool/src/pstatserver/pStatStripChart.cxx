@@ -49,7 +49,7 @@ PStatStripChart(PStatMonitor *monitor, PStatView &view,
   _value_height = 1.0/10.0;
   _start_time = 0.0;
 
-  _level_index = 0;
+  _level_index = -1;
   _title_unknown = true;
 
   const PStatClientData *client_data = _monitor->get_client_data();
@@ -258,20 +258,18 @@ get_title_text() {
   string text;
 
   _title_unknown = false;
-  bool _show_level = false;
   int _thread_index = 0;
 
   const PStatClientData *client_data = _monitor->get_client_data();
   if (client_data->has_collector(_collector_index)) {
+    text = client_data->get_collector_fullname(_collector_index);
     const PStatCollectorDef &def = client_data->get_collector_def(_collector_index);
-    if (_show_level) {
-      if (def._level_units.empty()) {
-        text = def._name;
-      } else {
-        text = def._name + " (" + def._level_units + ")";
+    if (_view.get_show_level()) {
+      if (!def._level_units.empty()) {
+        text += " (" + def._level_units + ")";
       }
     } else {
-      text = def._name + " time";
+      text += " time";
     }
   } else {
     _title_unknown = true;
@@ -573,6 +571,7 @@ update_labels() {
   _labels.clear();
 
   int num_children = level->get_num_children();
+  cerr << "num_children = " << num_children << "\n";
   for (int i = 0; i < num_children; i++) {
     const PStatViewLevel *child = level->get_child(i);
     int collector = child->get_collector();

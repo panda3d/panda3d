@@ -36,7 +36,7 @@ class WinStatsMonitor;
 class WinStatsStripChart : public PStatStripChart, public WinStatsGraph {
 public:
   WinStatsStripChart(WinStatsMonitor *monitor,
-                     int thread_index, int collector_index);
+                     int thread_index, int collector_index, bool show_level);
   virtual ~WinStatsStripChart();
 
   virtual void new_collector(int collector_index);

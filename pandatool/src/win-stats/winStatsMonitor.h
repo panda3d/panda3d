@@ -42,11 +42,12 @@ class WinStatsMonitor : public PStatMonitor {
 public:
   class MenuDef {
   public:
-    INLINE MenuDef(int thread_index, int collector_index);
+    INLINE MenuDef(int thread_index, int collector_index, bool show_level);
     INLINE bool operator < (const MenuDef &other) const;
 
     int _thread_index;
     int _collector_index;
+    bool _show_level;
   };
 
   WinStatsMonitor(WinStatsServer *server);
@@ -68,7 +69,7 @@ public:
   virtual void user_guide_bars_changed();
 
   HWND get_window() const;
-  void open_strip_chart(int thread_index, int collector_index);
+  void open_strip_chart(int thread_index, int collector_index, bool show_level);
   void open_piano_roll(int thread_index);
 
   const MenuDef &lookup_menu(int menu_id) const;

@@ -115,7 +115,7 @@ do_update() {
   // Now rebuild the menu with the new set of entries.
 
   // The menu item(s) for the thread's frame time goes first.
-  add_view(_menu, view.get_top_level());
+  add_view(_menu, view.get_top_level(), false);
 
   bool needs_separator = true;
   MENUITEMINFO mii;
@@ -141,7 +141,7 @@ do_update() {
       }
 
       PStatView &level_view = _monitor->get_level_view(collector, _thread_index);
-      add_view(_menu, level_view.get_top_level());
+      add_view(_menu, level_view.get_top_level(), true);
     }
   }
 
@@ -150,7 +150,7 @@ do_update() {
   mii.fType = MFT_SEPARATOR; 
   InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
 
-  WinStatsMonitor::MenuDef menu_def(_thread_index, -1);
+  WinStatsMonitor::MenuDef menu_def(_thread_index, -1, false);
   int menu_id = _monitor->get_menu_id(menu_def);
 
   mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID; 
@@ -167,13 +167,13 @@ do_update() {
 //               indicated view and its children.
 ////////////////////////////////////////////////////////////////////
 void WinStatsChartMenu::
-add_view(HMENU parent_menu, const PStatViewLevel *view_level) {
+add_view(HMENU parent_menu, const PStatViewLevel *view_level, bool show_level) {
   int collector = view_level->get_collector();
 
   const PStatClientData *client_data = _monitor->get_client_data();
   string collector_name = client_data->get_collector_name(collector);
 
-  WinStatsMonitor::MenuDef menu_def(_thread_index, collector);
+  WinStatsMonitor::MenuDef menu_def(_thread_index, collector, show_level);
   int menu_id = _monitor->get_menu_id(menu_def);
 
   MENUITEMINFO mii;
@@ -203,7 +203,7 @@ add_view(HMENU parent_menu, const PStatViewLevel *view_level) {
     // we want to be visually consistent with the graphs, which list
     // these labels from the bottom up.
     for (int c = num_children - 1; c >= 0; c--) {
-      add_view(submenu, view_level->get_child(c));
+      add_view(submenu, view_level->get_child(c), show_level);
     }
   }
 }

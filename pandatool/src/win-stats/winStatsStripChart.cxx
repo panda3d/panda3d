@@ -33,8 +33,10 @@ const char * const WinStatsStripChart::_window_class_name = "strip";
 ////////////////////////////////////////////////////////////////////
 WinStatsStripChart::
 WinStatsStripChart(WinStatsMonitor *monitor, int thread_index,
-                   int collector_index) :
-  PStatStripChart(monitor, monitor->get_view(thread_index), collector_index, 
+                   int collector_index, bool show_level) :
+  PStatStripChart(monitor, 
+                  show_level ? monitor->get_level_view(collector_index, thread_index) : monitor->get_view(thread_index), 
+                  collector_index, 
                   default_strip_chart_width,
                   default_strip_chart_height),
   WinStatsGraph(monitor, thread_index)
@@ -45,9 +47,11 @@ WinStatsStripChart(WinStatsMonitor *monitor, int thread_index,
   _right_margin = 32;
   _top_margin = 16;
   _bottom_margin = 8;
-
-  // Let's show the units on the guide bar labels.  There's room.
-  set_guide_bar_units(get_guide_bar_units() | GBU_show_units);
+  
+  if (!show_level || (get_guide_bar_units() & GBU_named) != 0) {
+    // Let's show the units on the guide bar labels.  There's room.
+    set_guide_bar_units(get_guide_bar_units() | GBU_show_units);
+  }
 
   create_window();
   clear_region();
@@ -188,7 +192,11 @@ clicked_label(int collector_index) {
     if (client_data->has_collector(collector_index)) {
       const PStatCollectorDef &def =
         client_data->get_collector_def(collector_index);
-      set_collector_index(def._parent_index);
+      if (def._parent_index == 0 && get_view().get_show_level()) {
+        // Unless the parent is "Frame", and we're not a time collector.
+      } else {
+        set_collector_index(def._parent_index);
+      }
     }
 
   } else {

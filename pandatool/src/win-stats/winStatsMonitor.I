@@ -23,9 +23,10 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 WinStatsMonitor::MenuDef::
-MenuDef(int thread_index, int collector_index) :
+MenuDef(int thread_index, int collector_index, bool show_level) :
   _thread_index(thread_index),
-  _collector_index(collector_index)
+  _collector_index(collector_index),
+  _show_level(show_level)
 {
 }
 
@@ -39,5 +40,8 @@ operator < (const MenuDef &other) const {
   if (_thread_index != other._thread_index) {
     return _thread_index < other._thread_index;
   }
-  return _collector_index < other._collector_index;
+  if (_collector_index != other._collector_index) {
+    return _collector_index < other._collector_index;
+  }
+  return (int)_show_level < (int)other._show_level;
 }

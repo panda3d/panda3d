@@ -58,7 +58,8 @@ public:
 
   bool has_level(int collector) const;
   PStatViewLevel *get_level(int collector);
-
+ 
+  INLINE bool get_show_level() const;
   INLINE int get_level_index() const;
 
 private:
