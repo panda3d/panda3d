@@ -267,6 +267,8 @@ class FFIMethodArgumentTreeCollection:
 
         self.outputOverloadedMethodFooter(file, nesting)
 
+    
+
 class FFIMethodArgumentTree:
     """
     Tree is made from nested dictionaries.
@@ -368,4 +370,17 @@ class FFIMethodArgumentTree:
             for name in typeNameList:
                 indent(file, 0, ('<' + name + '> '))
             indent(file, 0, "'\n")
+
+    def isSinglePath(self):
+        if (len(self.tree.keys()) > 1):
+            # More than one child, return false
+            return 0
+        else:
+            # Only have one child, see if he only has one child
+            key = self.tree.keys()[0]
+            tree = self.tree[key][0]
+            if tree:
+                return tree.isSinglePath()
+            else:
+                return self.tree[key][1]
 

@@ -332,7 +332,8 @@ class MethodSpecification(FunctionSpecification):
         # The method body will look something like
         #     panda.Class_destructor(self.this)
         self.outputCFunctionComment(file, nesting+2)
-        indent(file, nesting+2, self.typeDescriptor.moduleName + '.'
+        indent(file, nesting+2, 'if ' + self.typeDescriptor.moduleName + ':\n')
+        indent(file, nesting+3, self.typeDescriptor.moduleName + '.'
                    + self.typeDescriptor.wrapperName + '(self.this)\n')
 
     def outputDestructorFooter(self, methodClass, file, nesting):
