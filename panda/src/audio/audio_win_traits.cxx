@@ -629,6 +629,18 @@ WinMusic* WinMusic::load_midi(Filename filename) {
   if (filename.is_local()) {
     fdesc.dwValidData = DMUS_OBJ_CLASS | DMUS_OBJ_FILENAME;
     audio_cat->debug() << "is local" << endl;
+    char szDir[2] = ".";
+    WCHAR wszDir[2];
+    MULTI_TO_WIDE(wszDir, szdir);
+    result = loader->SetSearchDirectory(GUID_DirectMusicAllTypes, wszDir,
+					FALSE);
+    if (FAILED(result)) {
+      audio_cat->error() << "could not set search directory to '.'" << endl;
+      loader->Release();
+      delete ret;
+      ret = (WinMusic*)0L;
+      return ret;
+    }
   } else {
     fdesc.dwValidData = DMUS_OBJ_CLASS | DMUS_OBJ_FILENAME | DMUS_OBJ_FULLPATH;
     audio_cat->debug() << "is not local" << endl;
