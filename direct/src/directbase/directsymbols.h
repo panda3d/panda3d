@@ -10,7 +10,7 @@
 
 /* See dtoolsymbols.h for a rant on the purpose of this file.  */
 
-#if defined(PENV_WIN32) && !defined(CPPPARSER)
+#if defined(WIN32_VC) && !defined(CPPPARSER)
 
 #ifdef BUILDING_DIRECT
   #define EXPCL_DIRECT __declspec(dllexport)
@@ -20,11 +20,11 @@
   #define EXPTP_DIRECT extern
 #endif
 
-#else   /* !PENV_WIN32 */
+#else   /* !WIN32_VC */
 
 #define EXPCL_DIRECT
 #define EXPTP_DIRECT
 
-#endif  /* PENV_WIN32 */
+#endif  /* WIN32_VC */
 
 #endif
