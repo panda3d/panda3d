@@ -80,13 +80,14 @@ public:
 
   INLINE int get_client_multifile_size(string mfname) const;
   INLINE void set_client_multifile_size(string mfname, int size);
-  INLINE void set_client_multifile_delta_size(string mfname, int size);
+  INLINE int set_client_multifile_delta_size(string mfname, int size);
   INLINE int get_server_multifile_size(string mfname) const;
   INLINE void set_server_multifile_size(string mfname, int size);
 
   INLINE int get_client_multifile_phase(string mfname) const;
   INLINE int get_server_multifile_phase(string mfname) const;
 
+  INLINE void set_client_multifile_incomplete(string mfname);
   INLINE void set_client_multifile_complete(string mfname);
   INLINE void set_client_multifile_decompressed(string mfname);
   INLINE void set_client_multifile_expanded(string mfname);

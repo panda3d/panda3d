@@ -127,10 +127,12 @@ set_client_multifile_size(string mfname, int size) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void DownloadDb::
+INLINE int DownloadDb::
 set_client_multifile_delta_size(string mfname, int size) {
   (_client_db.get_multifile_record_named(mfname))->_size += size;
   write_db(_client_db._filename, _client_db);
+  // Return the new total
+  return (_client_db.get_multifile_record_named(mfname))->_size;
 }
 
 
@@ -156,6 +158,17 @@ set_server_multifile_size(string mfname, int size) {
   (_server_db.get_multifile_record_named(mfname))->_size = size;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: DownloadDb::
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void DownloadDb::
+set_client_multifile_incomplete(string mfname) {
+  (_client_db.get_multifile_record_named(mfname))->_status = Status_incomplete;
+  write_db(_client_db._filename, _client_db);
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::
