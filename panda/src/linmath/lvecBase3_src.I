@@ -442,6 +442,50 @@ operator != (const FLOATNAME(LVecBase3) &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: get_standardized_rotation
+//       Access: file
+//  Description: return value in the range -180.0 to 179.99999.
+//     See Also: get_standardized_hpr
+////////////////////////////////////////////////////////////////////
+static INLINE_LINMATH FLOATTYPE
+get_standardized_rotation(FLOATTYPE angle_in_degrees) {
+  if (angle_in_degrees<0.0) {
+    angle_in_degrees = FLOATCONST(360.0) - fmod(angle_in_degrees * FLOATCONST(-1.0), FLOATCONST(360.0));
+  } else {
+    angle_in_degrees = fmod(angle_in_degrees, FLOATCONST(360.0));
+  }
+  // This can be changed to return values in the range 0.0 to 359.99999
+  // by skipping this next part and returning now.
+  
+  return (angle_in_degrees<FLOATCONST(180.0))?
+      angle_in_degrees:
+      angle_in_degrees - FLOATCONST(360.0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase3::compare_hpr_to
+//       Access: Public
+//  Description: Try to un-spin the hpr to a standard form.  Like
+//               all standards, someone decides between many
+//               arbitrary posible standards.  This function assumes
+//               that 0 and 360 are the same, as is 720 and
+//               -360.  Also 180 and -180 are the same.  Another
+//               example is -90 and 270.
+//               Each element will be in the range -180.0 to 179.99999.
+//               The original usage of this function is for human
+//               readable output and asserting that foo_hpr is roughly
+//               equal to bar_hpr.
+//     See Also: get_standardized_rotation
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
+get_standardized_hpr() const {
+  return FLOATNAME(LVecBase3)(
+      get_standardized_rotation(_v.v._0),
+      get_standardized_rotation(_v.v._1),
+      get_standardized_rotation(_v.v._2));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::compare_to
 //       Access: Public
 //  Description: This flavor of compare_to uses a default threshold

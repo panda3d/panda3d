@@ -85,6 +85,8 @@ PUBLISHED:
   INLINE_LINMATH bool operator == (const FLOATNAME(LVecBase3) &other) const;
   INLINE_LINMATH bool operator != (const FLOATNAME(LVecBase3) &other) const;
 
+  INLINE_LINMATH FLOATNAME(LVecBase3) get_standardized_hpr() const;
+
   INLINE_LINMATH int compare_to(const FLOATNAME(LVecBase3) &other) const;
   INLINE_LINMATH int compare_to(const FLOATNAME(LVecBase3) &other,
                                 FLOATTYPE threshold) const;
