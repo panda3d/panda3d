@@ -43,6 +43,30 @@ get_string() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DatagramIterator::get_z_string
+//       Access: Public
+//  Description: Extracts a variable-length string, as a
+//               NULL-terminated string.
+////////////////////////////////////////////////////////////////////
+string DatagramIterator::
+get_z_string() {
+  nassertr(_datagram != (const Datagram *)NULL, "");
+
+  // First, determine the length of the string.
+  const string &message = _datagram->get_message();
+  size_t p = _current_index;
+  while (p < message.length() && message[p] != '\0') {
+  }
+  nassertr(p < message.length(), "");  // no NULL character?
+
+  string s =
+    _datagram->get_message().substr(_current_index, p - _current_index);
+  _current_index = p + 1;
+
+  return s;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DatagramIterator::get_fixed_string
 //       Access: Public
 //  Description: Extracts a fixed-length string.  However, if a zero

@@ -310,6 +310,23 @@ add_string(const string &str) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Datagram::add_z_string
+//       Access: Public
+//  Description: Adds a variable-length string to the datagram, as a
+//               NULL-terminated string.
+////////////////////////////////////////////////////////////////////
+INLINE void Datagram::
+add_z_string(string str) {
+  // We must not have any nested null characters in the string.
+  size_t null_pos = str.find('\0');
+  // Add the string (sans the null character).
+  _message += str.substr(0, null_pos);
+
+  // And the null character.
+  _message += '\0';
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Datagram::add_fixed_string
 //       Access: Public
 //  Description: Adds a fixed-length string to the datagram.  If the
