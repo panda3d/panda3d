@@ -37,9 +37,15 @@ EventParameter() {
 //  Description: Defines an EventParameter that stores a pointer to
 //               any kind of TypedReferenceCount object.  This is the
 //               most general constructor.
+//
+//               This accepts a const pointer, even though it stores
+//               (and eventually returns) a non-const pointer.  This
+//               is just the simplest way to allow both const and
+//               non-const pointers to be stored, but it does lose the
+//               constness.  Be careful.
 ////////////////////////////////////////////////////////////////////
 INLINE EventParameter::
-EventParameter(const TypedReferenceCount *ptr) : _ptr(ptr) { }
+EventParameter(const TypedReferenceCount *ptr) : _ptr((TypedReferenceCount *)ptr) { }
 
 
 ////////////////////////////////////////////////////////////////////
@@ -195,7 +201,7 @@ get_string_value() const {
 //               contains.  This is the only way to retrieve the value
 //               when it is not one of the above predefined types.
 ////////////////////////////////////////////////////////////////////
-INLINE const TypedReferenceCount *EventParameter::
+INLINE TypedReferenceCount *EventParameter::
 get_ptr() const {
   return _ptr;
 }

@@ -26,6 +26,7 @@
 #include "buttonEventList.h"
 #include "pvector.h"
 #include "pmap.h"
+#include "eventParameter.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ButtonThrower
@@ -48,6 +49,10 @@ PUBLISHED:
   bool has_prefix() const;
   string get_prefix() const;
 
+  void add_parameter(const EventParameter &obj);
+  int get_num_parameters() const;
+  EventParameter get_parameter(int n) const;
+
   const ModifierButtons &get_modifier_buttons() const;
   void set_modifier_buttons(const ModifierButtons &mods);
 
@@ -64,8 +69,14 @@ public:
   virtual void write(ostream &out, int indent_level = 0) const;
 
 private:
+  void do_throw_event(const string &event_name);
+
+private:
   string _prefix;
   ModifierButtons _mods;
+
+  typedef pvector<EventParameter> ParameterList;
+  ParameterList _parameters;
 
   typedef pvector<ModifierButtons> ThrowButtonDef;
   typedef pmap<ButtonHandle, ThrowButtonDef> ThrowButtons;

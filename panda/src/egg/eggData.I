@@ -95,13 +95,13 @@ get_coordinate_system() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggData::set_egg_filename
 //       Access: Public
-//  Description: Sets the directory in which the egg file is
-//               considered to reside.  This is also implicitly set by
-//               read().
+//  Description: Sets the filename--especially the directory part--in
+//               which the egg file is considered to reside.  This is
+//               also implicitly set by read().
 ////////////////////////////////////////////////////////////////////
 INLINE void EggData::
-set_egg_filename(const Filename &directory) {
-  _egg_filename = directory;
+set_egg_filename(const Filename &egg_filename) {
+  _egg_filename = egg_filename;
 }
 
 ////////////////////////////////////////////////////////////////////

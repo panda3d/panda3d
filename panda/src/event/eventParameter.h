@@ -60,12 +60,12 @@ PUBLISHED:
   INLINE bool is_string() const;
   INLINE string get_string_value() const;
 
-  INLINE const TypedReferenceCount *get_ptr() const;
+  INLINE TypedReferenceCount *get_ptr() const;
 
   void output(ostream &out) const;
 
 private:
-  CPT(TypedReferenceCount) _ptr;
+  PT(TypedReferenceCount) _ptr;
 };
 
 INLINE ostream &operator << (ostream &out, const EventParameter &param);

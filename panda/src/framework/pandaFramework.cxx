@@ -206,6 +206,26 @@ open_window(const WindowProperties &props, GraphicsPipe *pipe) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::find_window
+//       Access: Public
+//  Description: Returns the index of the WindowFramework object that
+//               references the indicated GraphicsWindow pointer, or
+//               -1 if none do.
+////////////////////////////////////////////////////////////////////
+int PandaFramework::
+find_window(const GraphicsWindow *win) const {
+  int n;
+  for (n = 0; n < (int)_windows.size(); n++) {
+    if (_windows[n]->get_graphics_window() == win) {
+      return n;
+    }
+  }
+
+  return -1;
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::close_window
 //       Access: Public
 //  Description: Closes the nth window and removes it from the list.
@@ -587,13 +607,28 @@ do_enable_default_keys() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::event_esc
 //       Access: Protected, Static
-//  Description: Default handler for ESC or q key: exit the
-//               application.
+//  Description: Default handler for ESC or q key: close the current
+//               window (and exit the application if that was the last
+//               window).
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_esc(CPT_Event, void *data) {
-  PandaFramework *self = (PandaFramework *)data;
-  self->_exit_flag = true;
+event_esc(CPT_Event event, void *data) { 
+  if (event->get_num_parameters() == 1) {
+    EventParameter param = event->get_parameter(0);
+    GraphicsWindow *win;
+    DCAST_INTO_V(win, param.get_ptr());
+
+    PandaFramework *self = (PandaFramework *)data;
+    int n = self->find_window(win);
+    if (n >= 0) {
+      self->close_window(n);
+    }
+
+    // If we closed the last window, shut down.
+    if (self->_windows.empty()) {
+      self->_exit_flag = true;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -661,18 +696,23 @@ event_l(CPT_Event, void *data) {
 //               the scene, or over the highlighted part of the scene.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_c(CPT_Event, void *data) {
-  PandaFramework *self = (PandaFramework *)data;
+event_c(CPT_Event event, void *data) {
+  if (event->get_num_parameters() == 1) {
+    EventParameter param = event->get_parameter(0);
+    const GraphicsWindow *win;
+    DCAST_INTO_V(win, param.get_ptr());
 
-  NodePath node = self->get_highlight();
-  if (node.is_empty()) {
-    node = self->get_models();
-  }
+    PandaFramework *self = (PandaFramework *)data;
 
-  Windows::iterator wi;
-  for (wi = self->_windows.begin(); wi != self->_windows.end(); ++wi) {
-    WindowFramework *wf = (*wi);
-    wf->center_trackball(node);
+    NodePath node = self->get_highlight();
+    if (node.is_empty()) {
+      node = self->get_models();
+    }
+
+    int n = self->find_window(win);
+    if (n >= 0) {
+      self->_windows[n]->center_trackball(node);
+    }
   }
 }
 

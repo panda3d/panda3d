@@ -60,6 +60,7 @@ public:
 
   INLINE int get_num_windows() const;
   INLINE WindowFramework *get_window(int n) const;
+  int find_window(const GraphicsWindow *win) const;
   void close_window(int n);
   void close_all_windows();
   bool all_windows_closed() const;

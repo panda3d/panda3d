@@ -198,6 +198,7 @@ enable_keyboard() {
     NodePath mouse = get_mouse();
 
     PT(ButtonThrower) bt = new ButtonThrower("kb-events");
+    bt->add_parameter(EventParameter(_window));
     ModifierButtons mods;
     mods.add_button(KeyboardButton::shift());
     mods.add_button(KeyboardButton::control());

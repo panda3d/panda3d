@@ -268,6 +268,17 @@ remove_all_windows() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::is_empty
+//       Access: Published
+//  Description: Returns true if there are no windows managed by the
+//               engine, false if there is at least one.
+////////////////////////////////////////////////////////////////////
+bool GraphicsEngine::
+is_empty() const {
+  return _windows.empty();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::render_frame
 //       Access: Published
 //  Description: Renders the next frame in all the registered windows,

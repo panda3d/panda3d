@@ -64,6 +64,7 @@ PUBLISHED:
                               const string &threading_model);
   bool remove_window(GraphicsWindow *window);
   void remove_all_windows();
+  bool is_empty() const;
 
   void render_frame();
   void sync_frame();
