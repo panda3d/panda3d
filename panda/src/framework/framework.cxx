@@ -1522,11 +1522,11 @@ int framework_main(int argc, char *argv[]) {
     AnimControlCollection anim_controls;
     auto_bind(root, anim_controls, ~0);
     anim_controls.loop_all(true);
-
-    // Now prepare all the textures with the GSG.
-    NodePath render_path(render);
-    render_path.prepare_scene(main_win->get_gsg());
   }
+
+  // Now prepare all the textures with the GSG.
+  NodePath render_path(render);
+  render_path.prepare_scene(main_win->get_gsg());
 
   // Set up keyboard events.
   event_handler.add_hook("escape", event_esc);
