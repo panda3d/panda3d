@@ -25,4 +25,8 @@
 #include <vrpn_Button.h>
 #include <vrpn_Dial.h>
 
+#ifdef sleep
+#undef sleep
+#endif
+
 #endif

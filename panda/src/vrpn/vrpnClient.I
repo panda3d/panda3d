@@ -25,7 +25,7 @@ get_server_name() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool VrpnClient::
 is_valid() const {
-  return _connection->doing_okay();
+  return (_connection->doing_okay() != 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -36,7 +36,7 @@ is_valid() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool VrpnClient::
 is_connected() const {
-  return _connection->connected();
+  return (_connection->connected() != 0);
 }
 
 
