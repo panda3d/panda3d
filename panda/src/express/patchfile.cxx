@@ -138,7 +138,7 @@ cleanup(void) {
 ///// NOTE: this patch-application functionality is unfortunately
 /////       duplicated in the Installer. It is contained in the file
 /////       installerApplyPatch.cxx
-/////       PLEASE MAKE SURE THAT FILE GETS UPDATED IF ANY OF THIS
+/////       PLEASE MAKE SURE THAT THAT FILE GETS UPDATED IF ANY OF THIS
 /////       LOGIC CHANGES! (i.e. if the patch file format changes)
 ////////////////////
 ////////////////////////////////////////////////////////////////////
@@ -155,7 +155,7 @@ initiate(Filename &patch_file, Filename &file) {
 
   if (true == _initiated) {
     express_cat.error()
-      << "Patchfile::initiate_apply() - Patching has already been initiated"
+      << "Patchfile::initiate() - Patching has already been initiated"
       << endl;
     return EU_error_abort;
   }
@@ -165,7 +165,7 @@ initiate(Filename &patch_file, Filename &file) {
   _patch_file.set_binary();
   if (!_patch_file.open_read(_patch_stream)) {
     express_cat.error()
-      << "Patchfile::apply() - Failed to open file: " << _patch_file << endl;
+      << "Patchfile::initiate() - Failed to open file: " << _patch_file << endl;
     return get_write_error();
   }
 
@@ -174,7 +174,7 @@ initiate(Filename &patch_file, Filename &file) {
   _orig_file.set_binary();
   if (!file.open_read(_origfile_stream)) {
     express_cat.error()
-      << "Patchfile::apply() - Failed to open file: " << file << endl;
+      << "Patchfile::initiate() - Failed to open file: " << file << endl;
     return get_write_error();
   }
 
@@ -183,7 +183,7 @@ initiate(Filename &patch_file, Filename &file) {
     char *tempfilename = _tempnam(".", "pf");
     if (NULL == tempfilename) {
       express_cat.error()
-        << "Patchfile::apply() - Failed to create temp file name, using default" << endl;
+        << "Patchfile::initiate() - Failed to create temp file name, using default" << endl;
       _temp_file = "patcher_temp_file";
     } else {
       //cout << tempfilename << endl;
@@ -194,7 +194,7 @@ initiate(Filename &patch_file, Filename &file) {
   _temp_file.set_binary();
   if (!_temp_file.open_write(_write_stream)) {
     express_cat.error()
-      << "Patchfile::apply() - Failed to open file: " << _temp_file << endl;
+      << "Patchfile::initiate() - Failed to open file: " << _temp_file << endl;
     return get_write_error();
   }
 
@@ -210,7 +210,7 @@ initiate(Filename &patch_file, Filename &file) {
   PN_uint32 magic_number = di.get_uint32();
   if (magic_number != _magic_number) {
     express_cat.error()
-      << "Patchfile::apply() - invalid patch file: " << _patch_file << endl;
+      << "Patchfile::initiate() - invalid patch file: " << _patch_file << endl;
     return EU_error_file_invalid;
   }
 
@@ -225,15 +225,15 @@ initiate(Filename &patch_file, Filename &file) {
   _datagram.append_data(_buffer->_buffer, name_length);
   DatagramIterator di2(_datagram);
   string name = di2.extract_bytes(name_length);
-  if (name != file.get_basename()) {
+  if (name != file.get_basename_wo_extension()) {
     express_cat.error()
-      << "Patchfile::apply() - patch intended for file: " << name
+      << "Patchfile::initiate() - patch intended for file: " << name
       << ", not file: " << file << endl;
     return EU_error_file_invalid;
   }
 
   express_cat.debug()
-    << "Patchfile::apply() - valid patchfile for file: " << name << endl;
+    << "Patchfile::initiate() - valid patchfile for file: " << name << endl;
 
   _total_bytes_processed = 0;
 
@@ -258,7 +258,7 @@ run(void) {
 
   if (_initiated == false) {
     express_cat.error()
-      << "Patchfile::run_apply() - Patching has not been initiated"
+      << "Patchfile::run() - Patching has not been initiated"
       << endl;
     return EU_error_abort;
   }
@@ -344,7 +344,7 @@ run(void) {
       // rename the temp file
       if (!_temp_file.rename_to(_orig_file)) {
         express_cat.error()
-          << "Patchfile::apply() failed to rename temp file to: " << _orig_file
+          << "Patchfile::run() failed to rename temp file to: " << _orig_file
           << endl;
         return EU_error_write_file_rename;
       }
