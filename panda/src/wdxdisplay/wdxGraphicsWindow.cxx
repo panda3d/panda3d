@@ -1057,8 +1057,7 @@ dx_setup() {
     pDD->GetDeviceIdentifier(&dddi,0x0);
 
 #ifdef _DEBUG
-    wdxdisplay_cat.debug()
-    << " GfxCard: " << dddi.szDescription <<  "; VendorID: " <<dddi.dwVendorId <<"; DriverVer: " << HIWORD(dddi.liDriverVersion.HighPart) << "." << LOWORD(dddi.liDriverVersion.HighPart) << "." << HIWORD(dddi.liDriverVersion.LowPart) << "." << LOWORD(dddi.liDriverVersion.LowPart) << endl;
+    wdxdisplay_cat.debug() << " GfxCard: " << dddi.szDescription <<  "; DriverFile: '" << dddi.szDriver  << "'; VendorID: " <<dddi.dwVendorId <<"; DriverVer: " << HIWORD(dddi.liDriverVersion.HighPart) << "." << LOWORD(dddi.liDriverVersion.HighPart) << "." << HIWORD(dddi.liDriverVersion.LowPart) << "." << LOWORD(dddi.liDriverVersion.LowPart) << endl;
 #endif
 
     // imperfect method to ID NVid, could also scan desc str, but that isnt fullproof either
