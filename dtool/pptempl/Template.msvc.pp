@@ -125,7 +125,7 @@
 
 // $[target_ipath] is the proper ipath to put on the command line,
 // from the context of a particular target.
-#defer target_ipath $[other_trees:%=%\include] $[TOPDIR] $[sort $[complete_ipath]] $[get_ipath]
+#defer target_ipath $[TOPDIR] $[sort $[complete_ipath]] $[other_trees:%=%\include] $[get_ipath]
 
 // $[file_ipath] is the ipath from the context of a particular source
 // file, given in $[file].  It uses the all_sources map to look up
@@ -146,7 +146,7 @@
 
 // $[lpath] is like $[target_ipath]: it's the list of directories we
 // should add to our -L list, from the context of a particular target.
-#defer lpath $[other_trees:%=%\lib] $[sort $[complete_lpath]] $[get_lpath]
+#defer lpath $[sort $[complete_lpath]] $[other_trees:%=%\lib] $[get_lpath]
 
 // And $[libs] is the set of libraries we will link with.
 #defer libs $[unique $[actual_local_libs:%=%$[dllext]] $[patsubst %:c,,%:m %,%$[dllext],$[OTHER_LIBS]] $[get_libs]]
