@@ -38,7 +38,11 @@ void GuiBackground::manage(GuiManager* mgr, EventHandler& eh) {
   if (!_added_hooks)
     _added_hooks = true;
   if (_mgr == (GuiManager*)0L) {
-    _mgr->add_label(_bg);
+    _bg->freeze();
+    _bg->set_width(_item->get_width());
+    _bg->set_height(_item->get_height());
+    _bf->thaw();
+    mgr->add_label(_bg);
     _item->manage(mgr, eh);
     GuiItem::manage(mgr, eh);
   } else
@@ -55,10 +59,12 @@ void GuiBackground::unmanage(void) {
 }
 
 int GuiBackground::freeze(void) {
+  _bg->freeze();
   return _item->freeze();
 }
 
 int GuiBackground::thaw(void) {
+  _bg->thaw();
   return _item->thaw();
 }
 

@@ -32,6 +32,10 @@ PUBLISHED:
   virtual void set_priority(GuiLabel*, const Priority);
   virtual void set_priority(GuiItem*, const Priority);
 
+  INLINE void set_color(float, float, float, float);
+  INLINE void set_color(const Colorf&);
+  INLINE Colorf get_color(void) const;
+
   virtual void output(ostream&) const;
 
 public:
