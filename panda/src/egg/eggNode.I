@@ -232,6 +232,80 @@ get_node_to_vertex() const {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggNode::get_vertex_frame_ptr
+//       Access: Public
+//  Description: Returns either a NULL pointer or a unique pointer
+//               shared by nodes with the same get_vertex_frame()
+//               matrix.
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4d *EggNode::
+get_vertex_frame_ptr() const {
+  return _vertex_frame;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggNode::get_node_frame_ptr
+//       Access: Public
+//  Description: Returns either a NULL pointer or a unique pointer
+//               shared by nodes with the same get_node_frame()
+//               matrix.
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4d *EggNode::
+get_node_frame_ptr() const {
+  return _node_frame;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggNode::get_vertex_frame_inv_ptr
+//       Access: Public
+//  Description: Returns either a NULL pointer or a unique pointer
+//               shared by nodes with the same get_vertex_frame_inv()
+//               matrix.
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4d *EggNode::
+get_vertex_frame_inv_ptr() const {
+  return _vertex_frame_inv;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggNode::get_node_frame_inv_ptr
+//       Access: Public
+//  Description: Returns either a NULL pointer or a unique pointer
+//               shared by nodes with the same get_node_frame_inv()
+//               matrix.
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4d *EggNode::
+get_node_frame_inv_ptr() const {
+  return _node_frame_inv;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggNode::get_vertex_to_node_ptr
+//       Access: Public
+//  Description: Returns either a NULL pointer or a unique pointer
+//               shared by nodes with the same get_vertex_to_node()
+//               matrix.
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4d *EggNode::
+get_vertex_to_node_ptr() const {
+  return _vertex_to_node;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggNode::get_node_to_vertex_ptr
+//       Access: Public
+//  Description: Returns either a NULL pointer or a unique pointer
+//               shared by nodes with the same get_node_to_vertex()
+//               matrix.
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4d *EggNode::
+get_node_to_vertex_ptr() const {
+  return _node_to_vertex;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggNode::transform

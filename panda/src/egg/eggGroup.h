@@ -100,6 +100,14 @@ public:
   ~EggGroup();
 
   virtual void write(ostream &out, int indent_level) const;
+  void write_billboard_flags(ostream &out, int indent_level) const;
+  void write_collide_flags(ostream &out, int indent_level) const;
+  void write_model_flags(ostream &out, int indent_level) const;
+  void write_switch_flags(ostream &out, int indent_level) const;
+  void write_object_types(ostream &out, int indent_level) const;
+  void write_decal_flags(ostream &out, int indent_level) const;
+  void write_tags(ostream &out, int indent_level) const;
+  void write_render_mode(ostream &out, int indent_level) const;
 
   virtual bool is_joint() const;
 

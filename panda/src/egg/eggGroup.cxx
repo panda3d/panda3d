@@ -195,18 +195,58 @@ write(ostream &out, int indent_level) const {
     get_lod().write(out, indent_level + 2);
   }
 
+  write_billboard_flags(out, indent_level + 2);
+  write_collide_flags(out, indent_level + 2);
+  write_model_flags(out, indent_level + 2);
+  write_switch_flags(out, indent_level + 2);
+
+  if (has_transform()) {
+    EggTransform3d::write(out, indent_level + 2);
+  }
+
+  write_object_types(out, indent_level + 2);
+  write_decal_flags(out, indent_level + 2);
+  write_tags(out, indent_level + 2);
+  write_render_mode(out, indent_level + 2);
+
+  // We have to write the children nodes before we write the vertex
+  // references, since we might be referencing a vertex that's defined
+  // in one of those children nodes!
+  EggGroupNode::write(out, indent_level + 2);
+  write_vertex_ref(out, indent_level + 2);
+
+  indent(out, indent_level) << "}\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::write_billboard_flags
+//       Access: Public
+//  Description: Writes just the <Billboard> entry and related fields to
+//               the indicated ostream.
+////////////////////////////////////////////////////////////////////
+void EggGroup::
+write_billboard_flags(ostream &out, int indent_level) const {
   if (get_billboard_type() != BT_none) {
-    indent(out, indent_level + 2)
+    indent(out, indent_level)
       << "<Billboard> { " << get_billboard_type() << " }\n";
   }
 
   if (has_billboard_center()) {
-    indent(out, indent_level + 2)
+    indent(out, indent_level)
       << "<BillboardCenter> { " << get_billboard_center() << " }\n";
   }
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::write_collide_flags
+//       Access: Public
+//  Description: Writes just the <Collide> entry and related fields to
+//               the indicated ostream.
+////////////////////////////////////////////////////////////////////
+void EggGroup::
+write_collide_flags(ostream &out, int indent_level) const {
   if (get_cs_type() != CST_none) {
-    indent(out, indent_level + 2) << "<Collide> ";
+    indent(out, indent_level) << "<Collide> ";
     if (has_collision_name()) {
       enquote_string(out, get_collision_name()) << " ";
     }
@@ -218,95 +258,136 @@ write(ostream &out, int indent_level) const {
   }
 
   if (has_collide_mask()) {
-    indent(out, indent_level + 2)
+    indent(out, indent_level)
       << "<Scalar> collide-mask { 0x";
     get_collide_mask().output_hex(out, 0);
     out << " }\n";
   }
 
   if (has_from_collide_mask()) {
-    indent(out, indent_level + 2)
+    indent(out, indent_level)
       << "<Scalar> from-collide-mask { 0x";
     get_from_collide_mask().output_hex(out, 0);
     out << " }\n";
   }
 
   if (has_into_collide_mask()) {
-    indent(out, indent_level + 2)
+    indent(out, indent_level)
       << "<Scalar> into-collide-mask { 0x";
     get_into_collide_mask().output_hex(out, 0);
     out << " }\n";
   }
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::write_model_flags
+//       Access: Public
+//  Description: Writes the <Model> flag and related flags to the
+//               indicated ostream.
+////////////////////////////////////////////////////////////////////
+void EggGroup::
+write_model_flags(ostream &out, int indent_level) const {
   if (get_dcs_type() != DC_none) {
-    indent(out, indent_level + 2) 
+    indent(out, indent_level) 
       << "<DCS> { " << get_dcs_type() << " }\n";
   }
 
   if (get_dart_type() != DT_none) {
-    indent(out, indent_level + 2)
+    indent(out, indent_level)
       << "<Dart> { " << get_dart_type() << " }\n";
   }
 
-  if (get_switch_flag()) {
-    indent(out, indent_level + 2) << "<Switch> { 1 }\n";
-    if (get_switch_fps() != 0.0) {
-      indent(out, indent_level + 2)
-        << "<Scalar> fps { " << get_switch_fps() << " }\n";
-    }
-  }
-
-  if (has_transform()) {
-    EggTransform3d::write(out, indent_level + 2);
-  }
-
-  vector_string::const_iterator oi;
-  for (oi = _object_types.begin(); oi != _object_types.end(); ++oi) {
-    indent(out, indent_level + 2)
-      << "<ObjectType> { ";
-    enquote_string(out, (*oi)) << " }\n";
-  }
-
   if (get_model_flag()) {
-    indent(out, indent_level + 2) << "<Model> { 1 }\n";
+    indent(out, indent_level) << "<Model> { 1 }\n";
   }
 
   if (get_texlist_flag()) {
-    indent(out, indent_level + 2) << "<TexList> { 1 }\n";
-  }
-
-  if (get_nofog_flag()) {
-    indent(out, indent_level + 2) << "<Scalar> no-fog { 1 }\n";
-  }
-
-  if (get_decal_flag()) {
-    indent(out, indent_level + 2) << "<Scalar> decal { 1 }\n";
+    indent(out, indent_level) << "<TexList> { 1 }\n";
   }
 
   if (get_direct_flag()) {
-    indent(out, indent_level + 2) << "<Scalar> direct { 1 }\n";
+    indent(out, indent_level) << "<Scalar> direct { 1 }\n";
   }
+}
 
-  EggRenderMode::write(out, indent_level + 2);
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::write_switch_flags
+//       Access: Public
+//  Description: Writes the <Switch> flag and related flags to the
+//               indicated ostream.
+////////////////////////////////////////////////////////////////////
+void EggGroup::
+write_switch_flags(ostream &out, int indent_level) const {
+  if (get_switch_flag()) {
+    indent(out, indent_level) << "<Switch> { 1 }\n";
+    if (get_switch_fps() != 0.0) {
+      indent(out, indent_level)
+        << "<Scalar> fps { " << get_switch_fps() << " }\n";
+    }
+  }
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::write_object_types
+//       Access: Public
+//  Description: Writes just the <ObjectTypes> entries, if any, to the
+//               indicated ostream.
+////////////////////////////////////////////////////////////////////
+void EggGroup::
+write_object_types(ostream &out, int indent_level) const {
+  vector_string::const_iterator oi;
+  for (oi = _object_types.begin(); oi != _object_types.end(); ++oi) {
+    indent(out, indent_level)
+      << "<ObjectType> { ";
+    enquote_string(out, (*oi)) << " }\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::write_decal_flags
+//       Access: Public
+//  Description: Writes the flags related to decalling, if any.
+////////////////////////////////////////////////////////////////////
+void EggGroup::
+write_decal_flags(ostream &out, int indent_level) const {
+  if (get_decal_flag()) {
+    indent(out, indent_level) << "<Scalar> decal { 1 }\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::write_tags
+//       Access: Public
+//  Description: Writes just the <Tag> entries, if any, to the
+//               indicated ostream.
+////////////////////////////////////////////////////////////////////
+void EggGroup::
+write_tags(ostream &out, int indent_level) const {
   TagData::const_iterator ti;
   for (ti = _tag_data.begin(); ti != _tag_data.end(); ++ti) {
     const string &key = (*ti).first;
     const string &value = (*ti).second;
 
-    indent(out, indent_level + 2) << "<Tag> ";
+    indent(out, indent_level) << "<Tag> ";
     enquote_string(out, key) << " {\n";
-    enquote_string(out, value, indent_level + 4) << "\n";
-    indent(out, indent_level + 2) << "}\n";
+    enquote_string(out, value, indent_level + 2) << "\n";
+    indent(out, indent_level) << "}\n";
   }
+}
 
-  // We have to write the children nodes before we write the vertex
-  // references, since we might be referencing a vertex that's defined
-  // in one of those children nodes!
-  EggGroupNode::write(out, indent_level + 2);
-  write_vertex_ref(out, indent_level + 2);
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::write_render_mode
+//       Access: Public
+//  Description: Writes the flags inherited from EggRenderMode and
+//               similar flags that control obscure render effects.
+////////////////////////////////////////////////////////////////////
+void EggGroup::
+write_render_mode(ostream &out, int indent_level) const {
+  EggRenderMode::write(out, indent_level);
 
-  indent(out, indent_level) << "}\n";
+  if (get_nofog_flag()) {
+    indent(out, indent_level) << "<Scalar> no-fog { 1 }\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
