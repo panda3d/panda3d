@@ -1932,7 +1932,7 @@ make_vertex_data(const EggRenderState *render_state,
   if (vertex_pool->has_colors()) {
     array_format->add_data_type
       (InternalName::get_color(), 1, 
-       qpGeomVertexDataType::NT_packed_8888, qpGeomVertexDataType::C_argb);
+       qpGeomVertexDataType::NT_packed_dabc, qpGeomVertexDataType::C_color);
   }
 
   vector_string uv_names;

@@ -680,8 +680,8 @@ Registry() {
                            qpGeomVertexDataType::NT_float32,
                            qpGeomVertexDataType::C_point,
                            InternalName::get_color(), 1,
-                           qpGeomVertexDataType::NT_packed_8888,
-                           qpGeomVertexDataType::C_argb));
+                           qpGeomVertexDataType::NT_packed_dabc,
+                           qpGeomVertexDataType::C_color));
 
   _v3n3cp = register_format(new qpGeomVertexArrayFormat
                             (InternalName::get_vertex(), 3,
@@ -691,16 +691,16 @@ Registry() {
                              qpGeomVertexDataType::NT_float32,
                              qpGeomVertexDataType::C_point,
                              InternalName::get_color(), 1,
-                             qpGeomVertexDataType::NT_packed_8888,
-                             qpGeomVertexDataType::C_argb));
+                             qpGeomVertexDataType::NT_packed_dabc,
+                             qpGeomVertexDataType::C_color));
 
   _v3cpt2 = register_format(new qpGeomVertexArrayFormat
                             (InternalName::get_vertex(), 3,
                              qpGeomVertexDataType::NT_float32,
                              qpGeomVertexDataType::C_point,
                              InternalName::get_color(), 1,
-                             qpGeomVertexDataType::NT_packed_8888,
-                             qpGeomVertexDataType::C_argb,
+                             qpGeomVertexDataType::NT_packed_dabc,
+                             qpGeomVertexDataType::C_color,
                              InternalName::get_texcoord(), 2,
                              qpGeomVertexDataType::NT_float32,
                              qpGeomVertexDataType::C_texcoord));
@@ -713,8 +713,8 @@ Registry() {
                                qpGeomVertexDataType::NT_float32,
                                qpGeomVertexDataType::C_point,
                                InternalName::get_color(), 1,
-                               qpGeomVertexDataType::NT_packed_8888,
-                               qpGeomVertexDataType::C_argb,
+                               qpGeomVertexDataType::NT_packed_dabc,
+                               qpGeomVertexDataType::C_color,
                                InternalName::get_texcoord(), 2,
                                qpGeomVertexDataType::NT_float32,
                                qpGeomVertexDataType::C_texcoord));
@@ -728,7 +728,7 @@ Registry() {
                            qpGeomVertexDataType::C_point,
                            InternalName::get_color(), 4,
                            qpGeomVertexDataType::NT_uint8,
-                           qpGeomVertexDataType::C_rgba));
+                           qpGeomVertexDataType::C_color));
 
   _v3n3c4 = register_format(new qpGeomVertexArrayFormat
                             (InternalName::get_vertex(), 3,
@@ -739,7 +739,7 @@ Registry() {
                              qpGeomVertexDataType::C_point,
                              InternalName::get_color(), 4,
                              qpGeomVertexDataType::NT_uint8,
-                             qpGeomVertexDataType::C_rgba));
+                             qpGeomVertexDataType::C_color));
 
   _v3c4t2 = register_format(new qpGeomVertexArrayFormat
                             (InternalName::get_vertex(), 3,
@@ -747,7 +747,7 @@ Registry() {
                              qpGeomVertexDataType::C_point,
                              InternalName::get_color(), 4,
                              qpGeomVertexDataType::NT_uint8,
-                             qpGeomVertexDataType::C_rgba,
+                             qpGeomVertexDataType::C_color,
                              InternalName::get_texcoord(), 2,
                              qpGeomVertexDataType::NT_float32,
                              qpGeomVertexDataType::C_texcoord));
@@ -761,7 +761,7 @@ Registry() {
                                qpGeomVertexDataType::C_point,
                                InternalName::get_color(), 4,
                                qpGeomVertexDataType::NT_uint8,
-                               qpGeomVertexDataType::C_rgba,
+                               qpGeomVertexDataType::C_color,
                                InternalName::get_texcoord(), 2,
                                qpGeomVertexDataType::NT_float32,
                                qpGeomVertexDataType::C_texcoord));

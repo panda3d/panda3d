@@ -515,7 +515,7 @@ copy_from(const qpGeomVertexData &source, bool keep_data_objects) {
                                          already_added);
             }
             weight.set_data4f(weights);
-            index.set_data4i(indices[3], indices[2], indices[1], indices[0]);
+            index.set_data4i(indices);
           }
         } else {
           // Build a nonindexed transform array.  This means we have to
@@ -787,9 +787,9 @@ write(ostream &out, int indent_level) const {
 //  Description: A convenience function to collect together the
 //               important parts of the array data for rendering.
 //               Given the name of a data type, fills in the start of
-//               the array, the number of floats for each vertex, the
-//               starting bytes number, and the number of bytes to
-//               increment for each consecutive vertex.
+//               the array, the number of numeric values for each
+//               vertex, the starting bytes number, and the number of
+//               bytes to increment for each consecutive vertex.
 //
 //               The return value is true if the named array data
 //               exists in this record, or false if it does not (in
@@ -798,7 +798,7 @@ write(ostream &out, int indent_level) const {
 bool qpGeomVertexData::
 get_array_info(const InternalName *name, 
                const qpGeomVertexArrayData *&array_data,
-               int &num_components, 
+               int &num_values, 
                qpGeomVertexDataType::NumericType &numeric_type, 
                int &start, int &stride) const {
   int array_index;
@@ -806,7 +806,7 @@ get_array_info(const InternalName *name,
   if (_format->get_array_info(name, array_index, data_type)) {
     CDReader cdata(_cycler);
     array_data = cdata->_arrays[array_index];
-    num_components = data_type->get_num_components();
+    num_values = data_type->get_num_values();
     numeric_type = data_type->get_numeric_type();
     start = data_type->get_start();
     stride = _format->get_array(array_index)->get_stride();
@@ -913,10 +913,10 @@ packed_argb_to_uint8_rgba(unsigned char *to, int to_stride,
 
   while (num_records > 0) {
     PN_uint32 dword = *(const PN_uint32 *)from;
-    to[0] = unpack_8888_b(dword);
-    to[1] = unpack_8888_c(dword);
-    to[2] = unpack_8888_d(dword);
-    to[3] = unpack_8888_a(dword);
+    to[0] = unpack_abcd_b(dword);
+    to[1] = unpack_abcd_c(dword);
+    to[2] = unpack_abcd_d(dword);
+    to[3] = unpack_abcd_a(dword);
 
     to += to_stride;
     from += from_stride;
@@ -942,7 +942,7 @@ uint8_rgba_to_packed_argb(unsigned char *to, int to_stride,
   }
 
   while (num_records > 0) {
-    *(PN_uint32 *)to = pack_8888(from[3], from[0], from[1], from[2]);
+    *(PN_uint32 *)to = pack_abcd(from[3], from[0], from[1], from[2]);
 
     to += to_stride;
     from += from_stride;

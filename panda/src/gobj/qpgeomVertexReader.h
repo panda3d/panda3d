@@ -210,7 +210,7 @@ private:
     virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
   };
 
-  class Reader_argb_packed_8888 : public Reader_color {
+  class Reader_argb_packed : public Reader_color {
   public:
     virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
   };

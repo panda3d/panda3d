@@ -97,7 +97,7 @@ make_writer() const {
     }
     return new Writer_point;
 
-  case qpGeomVertexDataType::C_rgba:
+  case qpGeomVertexDataType::C_color:
     switch (_data_type->get_numeric_type()) {
     case qpGeomVertexDataType::NT_uint8:
       switch (_data_type->get_num_components()) {
@@ -108,26 +108,19 @@ make_writer() const {
         break;
       }
       break;
-    case qpGeomVertexDataType::NT_float32:
+    case qpGeomVertexDataType::NT_packed_dabc:
       switch (_data_type->get_num_components()) {
-      case 4:
-        return new Writer_rgba_float32_4;
+      case 1:
+        return new Writer_argb_packed;
         
       default:
         break;
       }
       break;
-    default:
-      break;
-    }
-    return new Writer_color;
-
-  case qpGeomVertexDataType::C_argb:
-    switch (_data_type->get_numeric_type()) {
-    case qpGeomVertexDataType::NT_packed_8888:
+    case qpGeomVertexDataType::NT_float32:
       switch (_data_type->get_num_components()) {
-      case 1:
-        return new Writer_argb_packed_8888;
+      case 4:
+        return new Writer_rgba_float32_4;
         
       default:
         break;
@@ -184,7 +177,8 @@ set_data1f(unsigned char *pointer, float data) {
       *(PN_uint16 *)pointer = (unsigned int)data;
       break;
       
-    case qpGeomVertexDataType::NT_packed_8888:
+    case qpGeomVertexDataType::NT_packed_dcba:
+    case qpGeomVertexDataType::NT_packed_dabc:
       nassertv(false);
       break;
       
@@ -235,7 +229,8 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
       }
       break;
       
-    case qpGeomVertexDataType::NT_packed_8888:
+    case qpGeomVertexDataType::NT_packed_dcba:
+    case qpGeomVertexDataType::NT_packed_dabc:
       nassertv(false);
       break;
       
@@ -293,7 +288,8 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
       }
       break;
       
-    case qpGeomVertexDataType::NT_packed_8888:
+    case qpGeomVertexDataType::NT_packed_dcba:
+    case qpGeomVertexDataType::NT_packed_dabc:
       nassertv(false);
       break;
       
@@ -354,15 +350,14 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
       }
       break;
       
-    case qpGeomVertexDataType::NT_packed_8888:
-      {
-        maybe_scale_color(data);
-        if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-          *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(_d, _a, _b, _c);
-        } else {
-          *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(_a, _b, _c, _d);
-        }
-      }
+    case qpGeomVertexDataType::NT_packed_dcba:
+      maybe_scale_color(data);
+      *(PN_uint32 *)pointer = qpGeomVertexData::pack_abcd(_d, _c, _b, _a);
+      break;
+      
+    case qpGeomVertexDataType::NT_packed_dabc:
+      maybe_scale_color(data);
+      *(PN_uint32 *)pointer = qpGeomVertexData::pack_abcd(_d, _a, _b, _c);
       break;
       
     case qpGeomVertexDataType::NT_float32:
@@ -397,7 +392,8 @@ set_data1i(unsigned char *pointer, int a) {
       *(PN_uint16 *)pointer = a;
       break;
       
-    case qpGeomVertexDataType::NT_packed_8888:
+    case qpGeomVertexDataType::NT_packed_dcba:
+    case qpGeomVertexDataType::NT_packed_dabc:
       nassertv(false);
       break;
       
@@ -448,7 +444,8 @@ set_data2i(unsigned char *pointer, int a, int b) {
       }
       break;
       
-    case qpGeomVertexDataType::NT_packed_8888:
+    case qpGeomVertexDataType::NT_packed_dcba:
+    case qpGeomVertexDataType::NT_packed_dabc:
       nassertv(false);
       break;
       
@@ -505,7 +502,8 @@ set_data3i(unsigned char *pointer, int a, int b, int c) {
       }
       break;
       
-    case qpGeomVertexDataType::NT_packed_8888:
+    case qpGeomVertexDataType::NT_packed_dcba:
+    case qpGeomVertexDataType::NT_packed_dabc:
       nassertv(false);
       break;
       
@@ -565,14 +563,12 @@ set_data4i(unsigned char *pointer, int a, int b, int c, int d) {
       }
       break;
       
-    case qpGeomVertexDataType::NT_packed_8888:
-      {
-        if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-          *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(d, a, b, c);
-        } else {
-          *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(a, b, c, d);
-        }
-      }
+    case qpGeomVertexDataType::NT_packed_dcba:
+      *(PN_uint32 *)pointer = qpGeomVertexData::pack_abcd(d, c, b, a);
+      break;
+      
+    case qpGeomVertexDataType::NT_packed_dabc:
+      *(PN_uint32 *)pointer = qpGeomVertexData::pack_abcd(d, a, b, c);
       break;
       
     case qpGeomVertexDataType::NT_float32:
@@ -671,15 +667,14 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
       }
       break;
       
-    case qpGeomVertexDataType::NT_packed_8888:
-      {
-        maybe_scale_color(data);
-        if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-          *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(_d, _a, _b, _c);
-        } else {
-          *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(_a, _b, _c, _d);
-        }
-      }
+    case qpGeomVertexDataType::NT_packed_dcba:
+      maybe_scale_color(data);
+      *(PN_uint32 *)pointer = qpGeomVertexData::pack_abcd(_d, _c, _b, _a);
+      break;
+      
+    case qpGeomVertexDataType::NT_packed_dabc:
+      maybe_scale_color(data);
+      *(PN_uint32 *)pointer = qpGeomVertexData::pack_abcd(_d, _a, _b, _c);
       break;
       
     case qpGeomVertexDataType::NT_float32:
@@ -791,13 +786,13 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexWriter::Writer_argb_packed_8888::set_data4f
+//     Function: qpGeomVertexWriter::Writer_argb_packed::set_data4f
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void qpGeomVertexWriter::Writer_argb_packed_8888::
+void qpGeomVertexWriter::Writer_argb_packed::
 set_data4f(unsigned char *pointer, const LVecBase4f &data) {
-  *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888
+  *(PN_uint32 *)pointer = qpGeomVertexData::pack_abcd
     ((unsigned int)(data[3] * 255.0f),
      (unsigned int)(data[0] * 255.0f),
      (unsigned int)(data[1] * 255.0f),

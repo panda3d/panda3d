@@ -87,7 +87,7 @@ get_num_components() const {
 //               into each element.  This is usually, but not always,
 //               the same thing as get_num_components(); the
 //               difference is in the case of a composite numeric type
-//               like NT_packed_8888, which has four numeric values
+//               like NT_packed_dcba, which has four numeric values
 //               per component.
 ////////////////////////////////////////////////////////////////////
 INLINE int qpGeomVertexDataType::
@@ -197,8 +197,8 @@ overlaps_with(int start_byte, int num_bytes) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpGeomVertexDataType::
 is_bytewise_equivalent(const qpGeomVertexDataType &other) const {
-  // The _contents are relevant, because they specify such things as
-  // the difference between C_rgba and C_argb.
+  // Not sure if the contents are relevant, but let's say that they
+  // are.
   return (_num_components == other._num_components &&
           _numeric_type == other._numeric_type &&
           _contents == other._contents);
@@ -208,28 +208,28 @@ is_bytewise_equivalent(const qpGeomVertexDataType &other) const {
 //     Function: qpGeomVertexDataType::is_packed_argb
 //       Access: Public
 //  Description: Returns true if this data type is the standard
-//               DirectX representation of 4-component color: C_argb,
-//               in NT_packed_8888, with 1 component (4 values).
+//               DirectX representation of 4-component color: C_color,
+//               in NT_packed_dabc, with 1 component (4 values).
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpGeomVertexDataType::
 is_packed_argb() const {
   return (_num_components == 1 &&
-          _numeric_type == NT_packed_8888 &&
-          _contents == C_argb);
+          _numeric_type == NT_packed_dabc &&
+          _contents == C_color);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexDataType::is_uint8_rgba
 //       Access: Public
 //  Description: Returns true if this data type is the standard
-//               OpenGL representation of 4-component color: C_rgba,
+//               OpenGL representation of 4-component color: C_color,
 //               in NT_uint8, with 4 components.
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpGeomVertexDataType::
 is_uint8_rgba() const {
   return (_num_components == 4 &&
           _numeric_type == NT_uint8 &&
-          _contents == C_rgba);
+          _contents == C_color);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -78,7 +78,7 @@ munge_format_impl(const qpGeomVertexFormat *orig,
       // space for the index.
       new_array_format->add_data_type
         (InternalName::get_transform_index(), 1,
-         qpGeomVertexDataType::NT_packed_8888, qpGeomVertexDataType::C_index);
+         qpGeomVertexDataType::NT_packed_dcba, qpGeomVertexDataType::C_index);
     }                                    
   }
 
@@ -91,8 +91,8 @@ munge_format_impl(const qpGeomVertexFormat *orig,
 
   if (color_type != (const qpGeomVertexDataType *)NULL) {
     new_array_format->add_data_type
-      (InternalName::get_color(), 1, qpGeomVertexDataType::NT_packed_8888,
-       qpGeomVertexDataType::C_argb);
+      (InternalName::get_color(), 1, qpGeomVertexDataType::NT_packed_dabc,
+       qpGeomVertexDataType::C_color);
     new_format->remove_data_type(color_type->get_name());
   }
 

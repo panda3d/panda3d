@@ -2134,22 +2134,22 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
   }
 
   const qpGeomVertexArrayData *array_data;
-  int num_components;
+  int num_values;
   qpGeomVertexDataType::NumericType numeric_type;
   int start;
   int stride;
 
   if (_vertex_data->get_array_info(InternalName::get_vertex(),
-                                   array_data, num_components, numeric_type, 
+                                   array_data, num_values, numeric_type, 
                                    start, stride)) {
     const unsigned char *client_pointer = setup_array_data(array_data);
-    GLP(VertexPointer)(num_components, get_numeric_type(numeric_type), 
+    GLP(VertexPointer)(num_values, get_numeric_type(numeric_type), 
                        stride, client_pointer + start);
     GLP(EnableClientState)(GL_VERTEX_ARRAY);
   }
 
   if (_vertex_data->get_array_info(InternalName::get_normal(),
-                                   array_data, num_components, numeric_type, 
+                                   array_data, num_values, numeric_type, 
                                    start, stride)) {
     const unsigned char *client_pointer = setup_array_data(array_data);
     GLP(NormalPointer)(get_numeric_type(numeric_type), stride, 
@@ -2160,11 +2160,11 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
   }
 
   if (_vertex_data->get_array_info(InternalName::get_color(),
-                                   array_data, num_components, numeric_type, 
+                                   array_data, num_values, numeric_type, 
                                    start, stride) &&
-      numeric_type != qpGeomVertexDataType::NT_packed_8888) {
+      numeric_type != qpGeomVertexDataType::NT_packed_dabc) {
     const unsigned char *client_pointer = setup_array_data(array_data);
-    GLP(ColorPointer)(num_components, get_numeric_type(numeric_type), 
+    GLP(ColorPointer)(num_values, get_numeric_type(numeric_type), 
                       stride, client_pointer + start);
     GLP(EnableClientState)(GL_COLOR_ARRAY);
   } else {
@@ -2189,11 +2189,11 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
       // texcoords issued for it.
       const InternalName *name = stage->get_texcoord_name();
 
-      if (_vertex_data->get_array_info(name, array_data, num_components, 
+      if (_vertex_data->get_array_info(name, array_data, num_values, 
                                        numeric_type, start, stride)) {
         // The vertex data does have texcoords for this stage.
         const unsigned char *client_pointer = setup_array_data(array_data);
-        GLP(TexCoordPointer)(num_components, get_numeric_type(numeric_type), 
+        GLP(TexCoordPointer)(num_values, get_numeric_type(numeric_type), 
                              stride, client_pointer + start);
         GLP(EnableClientState)(GL_TEXTURE_COORD_ARRAY);
 
@@ -4436,13 +4436,12 @@ get_numeric_type(qpGeomVertexDataType::NumericType numeric_type) {
     return GL_UNSIGNED_SHORT;
 
   case qpGeomVertexDataType::NT_uint8:
+  case qpGeomVertexDataType::NT_packed_dcba:
+  case qpGeomVertexDataType::NT_packed_dabc:
     return GL_UNSIGNED_BYTE;
     
   case qpGeomVertexDataType::NT_float32:
     return GL_FLOAT;
-
-  case qpGeomVertexDataType::NT_packed_8888:
-    break;
   }
 
   GLCAT.error()

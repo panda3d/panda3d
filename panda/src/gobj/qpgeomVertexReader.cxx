@@ -107,12 +107,21 @@ make_reader() const {
     }
     return new Reader_point;
 
-  case qpGeomVertexDataType::C_rgba:
+  case qpGeomVertexDataType::C_color:
     switch (_data_type->get_numeric_type()) {
     case qpGeomVertexDataType::NT_uint8:
       switch (_data_type->get_num_components()) {
       case 4:
         return new Reader_rgba_uint8_4;
+        
+      default:
+        break;
+      }
+      break;
+    case qpGeomVertexDataType::NT_packed_dabc:
+      switch (_data_type->get_num_components()) {
+      case 1:
+        return new Reader_argb_packed;
         
       default:
         break;
@@ -128,22 +137,6 @@ make_reader() const {
         } else {
           return new Reader_rgba_float32_4;
         }
-        
-      default:
-        break;
-      }
-      break;
-    default:
-      break;
-    }
-    return new Reader_color;
-
-  case qpGeomVertexDataType::C_argb:
-    switch (_data_type->get_numeric_type()) {
-    case qpGeomVertexDataType::NT_packed_8888:
-      switch (_data_type->get_num_components()) {
-      case 1:
-        return new Reader_argb_packed_8888;
         
       default:
         break;
@@ -202,14 +195,16 @@ get_data1f(const unsigned char *pointer) {
   case qpGeomVertexDataType::NT_uint16:
     return *(const PN_uint16 *)pointer;
 
-  case qpGeomVertexDataType::NT_packed_8888:
+  case qpGeomVertexDataType::NT_packed_dcba:
     {
       PN_uint32 dword = *(const PN_uint32 *)pointer;
-      if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-        return maybe_scale_color(qpGeomVertexData::unpack_8888_b(dword));
-      } else {
-        return maybe_scale_color(qpGeomVertexData::unpack_8888_a(dword));
-      }
+      return maybe_scale_color(qpGeomVertexData::unpack_abcd_d(dword));
+    }
+
+  case qpGeomVertexDataType::NT_packed_dabc:
+    {
+      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      return maybe_scale_color(qpGeomVertexData::unpack_abcd_b(dword));
     }
 
   case qpGeomVertexDataType::NT_float32:
@@ -243,16 +238,19 @@ get_data2f(const unsigned char *pointer) {
       }
       return _v2;
       
-    case qpGeomVertexDataType::NT_packed_8888:
+    case qpGeomVertexDataType::NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-          maybe_scale_color(qpGeomVertexData::unpack_8888_b(dword),
-                            qpGeomVertexData::unpack_8888_c(dword));
-        } else {
-          maybe_scale_color(qpGeomVertexData::unpack_8888_a(dword),
-                            qpGeomVertexData::unpack_8888_b(dword));
-        }
+        maybe_scale_color(qpGeomVertexData::unpack_abcd_d(dword),
+                          qpGeomVertexData::unpack_abcd_c(dword));
+      }
+      return _v2;
+      
+    case qpGeomVertexDataType::NT_packed_dabc:
+      {
+        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        maybe_scale_color(qpGeomVertexData::unpack_abcd_b(dword),
+                          qpGeomVertexData::unpack_abcd_c(dword));
       }
       return _v2;
       
@@ -300,18 +298,21 @@ get_data3f(const unsigned char *pointer) {
       }
       return _v3;
       
-    case qpGeomVertexDataType::NT_packed_8888:
+    case qpGeomVertexDataType::NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-          maybe_scale_color(qpGeomVertexData::unpack_8888_b(dword),
-                            qpGeomVertexData::unpack_8888_c(dword),
-                            qpGeomVertexData::unpack_8888_d(dword));
-        } else {
-          maybe_scale_color(qpGeomVertexData::unpack_8888_a(dword),
-                            qpGeomVertexData::unpack_8888_b(dword),
-                            qpGeomVertexData::unpack_8888_c(dword));
-        }
+        maybe_scale_color(qpGeomVertexData::unpack_abcd_d(dword),
+                          qpGeomVertexData::unpack_abcd_c(dword),
+                          qpGeomVertexData::unpack_abcd_b(dword));
+      }
+      return _v3;
+      
+    case qpGeomVertexDataType::NT_packed_dabc:
+      {
+        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        maybe_scale_color(qpGeomVertexData::unpack_abcd_b(dword),
+                          qpGeomVertexData::unpack_abcd_c(dword),
+                          qpGeomVertexData::unpack_abcd_d(dword));
       }
       return _v3;
       
@@ -366,20 +367,23 @@ get_data4f(const unsigned char *pointer) {
       }
       return _v4;
       
-    case qpGeomVertexDataType::NT_packed_8888:
+    case qpGeomVertexDataType::NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-          maybe_scale_color(qpGeomVertexData::unpack_8888_b(dword),
-                            qpGeomVertexData::unpack_8888_c(dword),
-                            qpGeomVertexData::unpack_8888_d(dword),
-                            qpGeomVertexData::unpack_8888_a(dword));
-        } else {
-          maybe_scale_color(qpGeomVertexData::unpack_8888_a(dword),
-                            qpGeomVertexData::unpack_8888_b(dword),
-                            qpGeomVertexData::unpack_8888_c(dword),
-                            qpGeomVertexData::unpack_8888_d(dword));
-        }
+        maybe_scale_color(qpGeomVertexData::unpack_abcd_d(dword),
+                          qpGeomVertexData::unpack_abcd_c(dword),
+                          qpGeomVertexData::unpack_abcd_b(dword),
+                          qpGeomVertexData::unpack_abcd_a(dword));
+      }
+      return _v4;
+      
+    case qpGeomVertexDataType::NT_packed_dabc:
+      {
+        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        maybe_scale_color(qpGeomVertexData::unpack_abcd_b(dword),
+                          qpGeomVertexData::unpack_abcd_c(dword),
+                          qpGeomVertexData::unpack_abcd_d(dword),
+                          qpGeomVertexData::unpack_abcd_a(dword));
       }
       return _v4;
       
@@ -409,10 +413,17 @@ get_data1i(const unsigned char *pointer) {
   case qpGeomVertexDataType::NT_uint16:
     return *(const PN_uint16 *)pointer;
 
-  case qpGeomVertexDataType::NT_packed_8888:
+  case qpGeomVertexDataType::NT_packed_dcba:
     {
       PN_uint32 dword = *(const PN_uint32 *)pointer;
-      return qpGeomVertexData::unpack_8888_a(dword);
+      return qpGeomVertexData::unpack_abcd_d(dword);
+    }
+    break;
+
+  case qpGeomVertexDataType::NT_packed_dabc:
+    {
+      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      return qpGeomVertexData::unpack_abcd_b(dword);
     }
     break;
 
@@ -451,16 +462,19 @@ get_data2i(const unsigned char *pointer) {
       }
       return _i;
       
-    case qpGeomVertexDataType::NT_packed_8888:
+    case qpGeomVertexDataType::NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-          _i[0] = qpGeomVertexData::unpack_8888_b(dword);
-          _i[1] = qpGeomVertexData::unpack_8888_c(dword);
-        } else {
-          _i[0] = qpGeomVertexData::unpack_8888_a(dword);
-          _i[1] = qpGeomVertexData::unpack_8888_b(dword);
-        }
+        _i[0] = qpGeomVertexData::unpack_abcd_d(dword);
+        _i[1] = qpGeomVertexData::unpack_abcd_c(dword);
+      }
+      return _i;
+      
+    case qpGeomVertexDataType::NT_packed_dabc:
+      {
+        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        _i[0] = qpGeomVertexData::unpack_abcd_b(dword);
+        _i[1] = qpGeomVertexData::unpack_abcd_c(dword);
       }
       return _i;
       
@@ -517,18 +531,21 @@ get_data3i(const unsigned char *pointer) {
       }
       return _i;
       
-    case qpGeomVertexDataType::NT_packed_8888:
+    case qpGeomVertexDataType::NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-          _i[0] = qpGeomVertexData::unpack_8888_b(dword);
-          _i[1] = qpGeomVertexData::unpack_8888_c(dword);
-          _i[2] = qpGeomVertexData::unpack_8888_d(dword);
-        } else {
-          _i[0] = qpGeomVertexData::unpack_8888_a(dword);
-          _i[1] = qpGeomVertexData::unpack_8888_b(dword);
-          _i[2] = qpGeomVertexData::unpack_8888_c(dword);
-        }
+        _i[0] = qpGeomVertexData::unpack_abcd_d(dword);
+        _i[1] = qpGeomVertexData::unpack_abcd_c(dword);
+        _i[2] = qpGeomVertexData::unpack_abcd_b(dword);
+      }
+      return _i;
+      
+    case qpGeomVertexDataType::NT_packed_dabc:
+      {
+        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        _i[0] = qpGeomVertexData::unpack_abcd_b(dword);
+        _i[1] = qpGeomVertexData::unpack_abcd_c(dword);
+        _i[2] = qpGeomVertexData::unpack_abcd_d(dword);
       }
       return _i;
       
@@ -600,20 +617,23 @@ get_data4i(const unsigned char *pointer) {
       }
       return _i;
       
-    case qpGeomVertexDataType::NT_packed_8888:
+    case qpGeomVertexDataType::NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-          _i[0] = qpGeomVertexData::unpack_8888_b(dword);
-          _i[1] = qpGeomVertexData::unpack_8888_c(dword);
-          _i[2] = qpGeomVertexData::unpack_8888_d(dword);
-          _i[3] = qpGeomVertexData::unpack_8888_a(dword);
-        } else {
-          _i[0] = qpGeomVertexData::unpack_8888_a(dword);
-          _i[1] = qpGeomVertexData::unpack_8888_b(dword);
-          _i[2] = qpGeomVertexData::unpack_8888_c(dword);
-          _i[3] = qpGeomVertexData::unpack_8888_d(dword);
-        }
+        _i[0] = qpGeomVertexData::unpack_abcd_d(dword);
+        _i[1] = qpGeomVertexData::unpack_abcd_c(dword);
+        _i[2] = qpGeomVertexData::unpack_abcd_b(dword);
+        _i[3] = qpGeomVertexData::unpack_abcd_a(dword);
+      }
+      return _i;
+      
+    case qpGeomVertexDataType::NT_packed_dabc:
+      {
+        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        _i[0] = qpGeomVertexData::unpack_abcd_b(dword);
+        _i[1] = qpGeomVertexData::unpack_abcd_c(dword);
+        _i[2] = qpGeomVertexData::unpack_abcd_d(dword);
+        _i[3] = qpGeomVertexData::unpack_abcd_a(dword);
       }
       return _i;
       
@@ -718,20 +738,23 @@ get_data4f(const unsigned char *pointer) {
       }
       return _v4;
       
-    case qpGeomVertexDataType::NT_packed_8888:
+    case qpGeomVertexDataType::NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-          maybe_scale_color(qpGeomVertexData::unpack_8888_b(dword),
-                            qpGeomVertexData::unpack_8888_c(dword),
-                            qpGeomVertexData::unpack_8888_d(dword),
-                            qpGeomVertexData::unpack_8888_a(dword));
-        } else {
-          maybe_scale_color(qpGeomVertexData::unpack_8888_a(dword),
-                            qpGeomVertexData::unpack_8888_b(dword),
-                            qpGeomVertexData::unpack_8888_c(dword),
-                            qpGeomVertexData::unpack_8888_d(dword));
-        }
+        maybe_scale_color(qpGeomVertexData::unpack_abcd_d(dword),
+                          qpGeomVertexData::unpack_abcd_c(dword),
+                          qpGeomVertexData::unpack_abcd_b(dword),
+                          qpGeomVertexData::unpack_abcd_a(dword));
+      }
+      return _v4;
+      
+    case qpGeomVertexDataType::NT_packed_dabc:
+      {
+        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        maybe_scale_color(qpGeomVertexData::unpack_abcd_b(dword),
+                          qpGeomVertexData::unpack_abcd_c(dword),
+                          qpGeomVertexData::unpack_abcd_d(dword),
+                          qpGeomVertexData::unpack_abcd_a(dword));
       }
       return _v4;
       
@@ -786,20 +809,23 @@ get_data4f(const unsigned char *pointer) {
       }
       return _v4;
       
-    case qpGeomVertexDataType::NT_packed_8888:
+    case qpGeomVertexDataType::NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-          maybe_scale_color(qpGeomVertexData::unpack_8888_b(dword),
-                            qpGeomVertexData::unpack_8888_c(dword),
-                            qpGeomVertexData::unpack_8888_d(dword),
-                            qpGeomVertexData::unpack_8888_a(dword));
-        } else {
-          maybe_scale_color(qpGeomVertexData::unpack_8888_a(dword),
-                            qpGeomVertexData::unpack_8888_b(dword),
-                            qpGeomVertexData::unpack_8888_c(dword),
-                            qpGeomVertexData::unpack_8888_d(dword));
-        }
+        maybe_scale_color(qpGeomVertexData::unpack_abcd_d(dword),
+                          qpGeomVertexData::unpack_abcd_c(dword),
+                          qpGeomVertexData::unpack_abcd_b(dword),
+                          qpGeomVertexData::unpack_abcd_a(dword));
+      }
+      return _v4;
+      
+    case qpGeomVertexDataType::NT_packed_dabc:
+      {
+        PN_uint32 dword = *(const PN_uint32 *)pointer;
+        maybe_scale_color(qpGeomVertexData::unpack_abcd_b(dword),
+                          qpGeomVertexData::unpack_abcd_c(dword),
+                          qpGeomVertexData::unpack_abcd_d(dword),
+                          qpGeomVertexData::unpack_abcd_a(dword));
       }
       return _v4;
       
@@ -904,17 +930,17 @@ get_data4f(const unsigned char *pointer) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexReader::Reader_argb_packed_8888::get_data4f
+//     Function: qpGeomVertexReader::Reader_argb_packed::get_data4f
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-const LVecBase4f &qpGeomVertexReader::Reader_argb_packed_8888::
+const LVecBase4f &qpGeomVertexReader::Reader_argb_packed::
 get_data4f(const unsigned char *pointer) {
   PN_uint32 dword = *(const PN_uint32 *)pointer;
-  _v4.set((float)qpGeomVertexData::unpack_8888_b(dword) / 255.0f,
-          (float)qpGeomVertexData::unpack_8888_c(dword) / 255.0f,
-          (float)qpGeomVertexData::unpack_8888_d(dword) / 255.0f,
-          (float)qpGeomVertexData::unpack_8888_a(dword) / 255.0f);
+  _v4.set((float)qpGeomVertexData::unpack_abcd_b(dword) / 255.0f,
+          (float)qpGeomVertexData::unpack_abcd_c(dword) / 255.0f,
+          (float)qpGeomVertexData::unpack_abcd_d(dword) / 255.0f,
+          (float)qpGeomVertexData::unpack_abcd_a(dword) / 255.0f);
   return _v4;
 }
 

@@ -134,16 +134,16 @@ public:
 
   bool get_array_info(const InternalName *name, 
                       const qpGeomVertexArrayData *&array_data,
-                      int &num_components,
+                      int &num_values,
                       qpGeomVertexDataType::NumericType &numeric_type, 
                       int &start, int &stride) const;
 
-  static INLINE PN_uint32 pack_8888(unsigned int a, unsigned int b,
+  static INLINE PN_uint32 pack_abcd(unsigned int a, unsigned int b,
                                     unsigned int c, unsigned int d);
-  static INLINE unsigned int unpack_8888_a(PN_uint32 data);
-  static INLINE unsigned int unpack_8888_b(PN_uint32 data);
-  static INLINE unsigned int unpack_8888_c(PN_uint32 data);
-  static INLINE unsigned int unpack_8888_d(PN_uint32 data);
+  static INLINE unsigned int unpack_abcd_a(PN_uint32 data);
+  static INLINE unsigned int unpack_abcd_b(PN_uint32 data);
+  static INLINE unsigned int unpack_abcd_c(PN_uint32 data);
+  static INLINE unsigned int unpack_abcd_d(PN_uint32 data);
 
 private:
   CPT(qpGeomVertexData) do_animate_vertices(bool from_app) const;

@@ -723,12 +723,9 @@ inc_add_pointer() {
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned int qpGeomVertexWriter::Writer::
 maybe_scale_color(float data) {
-  switch (_data_type->get_contents()) {
-  case qpGeomVertexDataType::C_rgba:
-  case qpGeomVertexDataType::C_argb:
+  if (_data_type->get_contents() == qpGeomVertexDataType::C_color) {
     return (unsigned int)(data * 255.0f);
-    
-  default:
+  } else {
     return (unsigned int)data;
   }
 }
@@ -742,17 +739,12 @@ maybe_scale_color(float data) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexWriter::Writer::
 maybe_scale_color(const LVecBase2f &data) {
-  switch (_data_type->get_contents()) {
-  case qpGeomVertexDataType::C_rgba:
-  case qpGeomVertexDataType::C_argb:
+  if (_data_type->get_contents() == qpGeomVertexDataType::C_color) {
     _a = (unsigned int)(data[0] * 255.0f);
     _b = (unsigned int)(data[1] * 255.0f);
-    break;
-    
-  default:
+  } else {
     _a = (unsigned int)data[0];
     _b = (unsigned int)data[1];
-    break;
   }
 }
     
@@ -765,19 +757,14 @@ maybe_scale_color(const LVecBase2f &data) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexWriter::Writer::
 maybe_scale_color(const LVecBase3f &data) {
-  switch (_data_type->get_contents()) {
-  case qpGeomVertexDataType::C_rgba:
-  case qpGeomVertexDataType::C_argb:
+  if (_data_type->get_contents() == qpGeomVertexDataType::C_color) {
     _a = (unsigned int)(data[0] * 255.0f);
     _b = (unsigned int)(data[1] * 255.0f);
     _c = (unsigned int)(data[2] * 255.0f);
-    break;
-    
-  default:
+  } else {
     _a = (unsigned int)data[0];
     _b = (unsigned int)data[1];
     _c = (unsigned int)data[2];
-    break;
   }
 }
     
@@ -790,20 +777,15 @@ maybe_scale_color(const LVecBase3f &data) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexWriter::Writer::
 maybe_scale_color(const LVecBase4f &data) {
-  switch (_data_type->get_contents()) {
-  case qpGeomVertexDataType::C_rgba:
-  case qpGeomVertexDataType::C_argb:
+  if (_data_type->get_contents() == qpGeomVertexDataType::C_color) {
     _a = (unsigned int)(data[0] * 255.0f);
     _b = (unsigned int)(data[1] * 255.0f);
     _c = (unsigned int)(data[2] * 255.0f);
     _d = (unsigned int)(data[3] * 255.0f);
-    break;
-    
-  default:
+  } else {
     _a = (unsigned int)data[0];
     _b = (unsigned int)data[1];
     _c = (unsigned int)data[2];
     _d = (unsigned int)data[3];
-    break;
   }
 }

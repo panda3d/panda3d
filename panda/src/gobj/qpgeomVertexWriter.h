@@ -223,7 +223,7 @@ private:
     virtual void set_data4f(unsigned char *pointer, const LVecBase4f &value);
   };
 
-  class Writer_argb_packed_8888 : public Writer_color {
+  class Writer_argb_packed : public Writer_color {
   public:
     virtual void set_data4f(unsigned char *pointer, const LVecBase4f &value);
   };

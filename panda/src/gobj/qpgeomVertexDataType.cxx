@@ -45,7 +45,8 @@ qpGeomVertexDataType(const InternalName *name, int num_components,
     _component_bytes = 1;
     break;
 
-  case NT_packed_8888:
+  case NT_packed_dcba:
+  case NT_packed_dabc:
     _component_bytes = 4;  // sizeof(PN_uint32)
     _num_values *= 4;
     break;

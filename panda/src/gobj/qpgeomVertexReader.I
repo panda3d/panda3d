@@ -401,12 +401,9 @@ inc_pointer() {
 ////////////////////////////////////////////////////////////////////
 INLINE float qpGeomVertexReader::Reader::
 maybe_scale_color(unsigned int value) {
-  switch (_data_type->get_contents()) {
-  case qpGeomVertexDataType::C_rgba:
-  case qpGeomVertexDataType::C_argb:
+  if (_data_type->get_contents() == qpGeomVertexDataType::C_color) {
     return (float)value / 255.0f;
-    
-  default:
+  } else {
     return (float)value;
   }
 }
@@ -419,16 +416,11 @@ maybe_scale_color(unsigned int value) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexReader::Reader::
 maybe_scale_color(unsigned int a, unsigned int b) {
-  switch (_data_type->get_contents()) {
-  case qpGeomVertexDataType::C_rgba:
-  case qpGeomVertexDataType::C_argb:
+  if (_data_type->get_contents() == qpGeomVertexDataType::C_color) {
     _v2.set((float)a / 255.0f,
             (float)b / 255.0f);
-    break;
-    
-  default:
+  } else {    
     _v2.set((float)a, (float)b);
-    break;
   }
 }
     
@@ -440,17 +432,12 @@ maybe_scale_color(unsigned int a, unsigned int b) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexReader::Reader::
 maybe_scale_color(unsigned int a, unsigned int b, unsigned int c) {
-  switch (_data_type->get_contents()) {
-  case qpGeomVertexDataType::C_rgba:
-  case qpGeomVertexDataType::C_argb:
+  if (_data_type->get_contents() == qpGeomVertexDataType::C_color) {
     _v3.set((float)a / 255.0f,
             (float)b / 255.0f,
             (float)c / 255.0f);
-    break;
-    
-  default:
+  } else {    
     _v3.set((float)a, (float)b, (float)c);
-    break;
   }
 }
     
@@ -463,18 +450,13 @@ maybe_scale_color(unsigned int a, unsigned int b, unsigned int c) {
 INLINE void qpGeomVertexReader::Reader::
 maybe_scale_color(unsigned int a, unsigned int b, unsigned int c,
                   unsigned int d) {
-  switch (_data_type->get_contents()) {
-  case qpGeomVertexDataType::C_rgba:
-  case qpGeomVertexDataType::C_argb:
+  if (_data_type->get_contents() == qpGeomVertexDataType::C_color) {
     _v4.set((float)a / 255.0f,
             (float)b / 255.0f,
             (float)c / 255.0f,
             (float)d / 255.0f);
-    break;
-    
-  default:
+  } else {
     _v4.set((float)a, (float)b, (float)c, (float)d);
-    break;
   }
 }
     
