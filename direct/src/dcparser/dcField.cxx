@@ -226,7 +226,8 @@ pack_args(Datagram &datagram, PyObject *sequence) const {
 PyObject *DCField::
 unpack_args(DatagramIterator &iterator) const {
   DCPacker packer;
-  packer.begin_unpack(iterator.get_remaining_bytes(), this);
+  string data = iterator.get_remaining_bytes();
+  packer.begin_unpack(data, this);
 
   PyObject *object = packer.unpack_object();
 
@@ -252,6 +253,11 @@ unpack_args(DatagramIterator &iterator) const {
          << get_name() << ": " << PyString_AsString(str);
     Py_DECREF(str);
   }
+
+  /*
+  Datagram dg(data.data(), packer.get_num_unpacked_bytes());
+  dg.dump_hex(cerr);
+  */
     
   nassert_raise(strm.str());
   return object;
