@@ -53,7 +53,7 @@ EggCharacterFilter::
 void EggCharacterFilter::
 add_fixrest_option() {
   add_option
-    ("fixrest", "", 50,
+    ("fixrest", "", 30,
      "Specify this to force all the initial rest frames of the various "
      "model files to the same value as the first model specified.  This "
      "is a fairly drastic way to repair models whose initial rest frame "
