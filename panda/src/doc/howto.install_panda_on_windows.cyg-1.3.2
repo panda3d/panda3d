@@ -104,6 +104,12 @@ do 'source setup_env.csh' to do all of the below automatically
       > ln -s /bin/perl /usr/local/bin/perl
       > ln -s /bin/bash /usr/local/bin/bash
     - Connect the network drives:
+      Note that any of your drive letters are already in use, you
+      simply do a 'net use' to a different drive letter, then
+      change the 'mount' command to point the official '/[drivelet]' dir
+      at the real drive letter it's mounted to.  It is not necessary
+      for /v to point to the v: drive.
+
       > net use f: "\\nufat\fat" /persistent:yes
       > net use g: "\\nufat\bit" /persistent:yes
       > net use h: "\\dimbo\usr2" /persistent:yes
