@@ -16,9 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "animChannel.h"
-
-#include <compose_matrix.h>
+#include "chan_headers.h"
+#pragma hdrstop
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

@@ -16,23 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_chan.h"
-#include "animBundle.h"
-#include "animBundleNode.h"
-#include "animChannelBase.h"
-#include "animChannelMatrixXfmTable.h"
-#include "animChannelScalarTable.h"
-#include "animControl.h"
-#include "animGroup.h"
-#include "movingPartBase.h"
-#include "movingPartMatrix.h"
-#include "movingPartScalar.h"
-#include "partBundle.h"
-#include "partBundleNode.h"
-#include "partGroup.h"
-
-#include <dconfig.h>
-#include <luse.h>
+#include "chan_headers.h"
+#pragma hdrstop
 
 Configure(config_chan);
 NotifyCategoryDef(chan, "");

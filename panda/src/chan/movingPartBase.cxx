@@ -16,11 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "movingPartBase.h"
-#include "animControl.h"
-#include "animChannelBase.h"
-
-#include <indent.h>
+#include "chan_headers.h"
+#pragma hdrstop
 
 TypeHandle MovingPartBase::_type_handle;
 

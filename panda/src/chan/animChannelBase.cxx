@@ -16,11 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "animChannelBase.h"
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
+#include "chan_headers.h"
+#pragma hdrstop
 
 TypeHandle AnimChannelBase::_type_handle;
 

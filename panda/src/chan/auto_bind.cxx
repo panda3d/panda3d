@@ -16,25 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "auto_bind.h"
-#include "animBundleNode.h"
-#include "partBundleNode.h"
-#include "config_chan.h"
-
-#include <traverserVisitor.h>
-#include <dftraverser.h>
-#include <nullTransitionWrapper.h>
-#include <nullAttributeWrapper.h>
-#include <nullLevelState.h>
-#include <renderRelation.h>
-#include <string_utils.h>
+#include "chan_headers.h"
+#pragma hdrstop
 
 typedef set<AnimBundleNode *> AnimNodes;
 typedef map<string, AnimNodes> Anims;
 
 typedef set<PartBundleNode *> PartNodes;
 typedef map<string, PartNodes> Parts;
-
 
 
 ////////////////////////////////////////////////////////////////////

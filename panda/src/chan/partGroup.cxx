@@ -16,16 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "partGroup.h"
-#include "animGroup.h"
-#include "config_chan.h"
+#include "chan_headers.h"
+#pragma hdrstop
 
-#include <indent.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
-
+// not precompiled because it causes xtra warnings
 #include <algorithm>
 
 TypeHandle PartGroup::_type_handle;

@@ -16,16 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "partBundle.h"
-#include "animBundle.h"
-#include "animControl.h"
-#include "config_chan.h"
-
-#include <indent.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
+#include "chan_headers.h"
+#pragma hdrstop
 
 TypeHandle PartBundle::_type_handle;
 

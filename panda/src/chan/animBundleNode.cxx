@@ -16,11 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "animBundleNode.h"
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
+#include "chan_headers.h"
+#pragma hdrstop
 
 TypeHandle AnimBundleNode::_type_handle;
 

@@ -38,6 +38,8 @@
     movingPartScalar.I movingPartScalar.h partBundle.I partBundle.h \
     partBundleNode.I partBundleNode.h partGroup.I partGroup.h \
     vector_PartGroupStar.h
+    
+  #define PRECOMPILED_HEADER chan_headers.h 
 
   #define IGATESCAN all
 
