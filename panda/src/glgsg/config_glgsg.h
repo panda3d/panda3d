@@ -34,14 +34,7 @@ extern bool gl_save_mipmaps;
 extern bool gl_auto_normalize_lighting;
 extern bool gl_depth_offset_decals;
 extern bool gl_supports_bgr;
-
-// Ways to implement decals.
-enum GLDecalType {
-  GDT_mask,   // GL 1.0 style, involving three steps
-  GDT_blend,  // As above, but slower; a hack for broken nVidia driver
-  GDT_offset  // The fastest, using GL 1.1 style glPolygonOffset
-};
-extern GLDecalType gl_decal_type;
+extern bool gl_color_mask;
 
 
 extern EXPCL_PANDAGL void init_libglgsg();

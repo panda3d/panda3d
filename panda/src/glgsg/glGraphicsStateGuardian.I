@@ -287,7 +287,7 @@ call_glStencilFunc(GLenum func,GLint ref,GLuint mask) {
       glgsg_cat.debug(false) << "unknown, ";
       break;
     }
-    glgsg_cat.debug(false) << ref << mask << ")\n";
+    glgsg_cat.debug(false) << (int)ref << (unsigned int)mask << ")\n";
 #endif
     glStencilFunc(func, ref, mask);
 }

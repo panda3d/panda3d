@@ -81,20 +81,10 @@ bool gl_supports_bgr = config_glgsg.GetBool("gl-supports-bgr", false);
 bool gl_supports_bgr = false;
 #endif  // GL_BGR
 
-GLDecalType gl_decal_type = GDT_offset;
-
-static GLDecalType
-parse_decal_type(const string &type) {
-  if (type == "mask") {
-    return GDT_mask;
-  } else if (type == "blend") {
-    return GDT_blend;
-  } else if (type == "offset") {
-    return GDT_offset;
-  }
-  glgsg_cat.error() << "Invalid gl-decal-type: " << type << "\n";
-  return GDT_offset;
-}
+// Configure this false if your GL's implementation of glColorMask()
+// is broken (some are).  This will force the use of a (presumably)
+// more expensive blending operation instead.
+bool gl_color_mask = config_glgsg.GetBool("gl-color-mask", true);
 
 ConfigureFn(config_glgsg) {
   init_libglgsg();
@@ -115,11 +105,6 @@ init_libglgsg() {
     return;
   }
   initialized = true;
-
-  string decal_type = config_glgsg.GetString("gl-decal-type", "");
-  if (!decal_type.empty()) {
-    gl_decal_type = parse_decal_type(decal_type);
-  }
 
   GLGraphicsStateGuardian::init_type();
   GLSavedFrameBuffer::init_type();

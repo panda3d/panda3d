@@ -2134,13 +2134,20 @@ issue_color_write(const ColorWriteAttrib *attrib) {
   // in set_blend_mode().  However, since GL does support an easy way
   // to disable writes to the color buffer, we can take advantage of
   // it here.
-  ColorWriteAttrib::Mode mode = attrib->get_mode();
-  if (mode == ColorWriteAttrib::M_off) {
-    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+  if (gl_color_mask) {
+    ColorWriteAttrib::Mode mode = attrib->get_mode();
+    if (mode == ColorWriteAttrib::M_off) {
+      glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+    } else {
+      glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    }
+    report_errors();
+
   } else {
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    // Some implementations don't seem to handle glColorMask() very
+    // robustly, however, so we provide this fallback.
+    GraphicsStateGuardian::issue_color_write(attrib);
   }
-  report_errors();
 }
 
 // PandaCompareFunc - 1 + 0x200 === GL_NEVER, etc.  order is sequential
