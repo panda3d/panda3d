@@ -22,36 +22,41 @@
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
 #include "dconfig.h"
+#include "configVariableInt.h"
+#include "configVariableDouble.h"
+#include "configVariableBool.h"
+#include "configVariableString.h"
+#include "configVariableFilename.h"
 
 ConfigureDecl(config_downloader, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
 NotifyCategoryDecl(downloader, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
 
-extern const int downloader_disk_write_frequency;
-extern const int downloader_byte_rate;
-extern const float downloader_frequency;
-extern const int downloader_timeout;
-extern const int downloader_timeout_retries;
+extern ConfigVariableInt downloader_disk_write_frequency;
+extern ConfigVariableInt downloader_byte_rate;
+extern ConfigVariableDouble downloader_frequency;
+extern ConfigVariableInt downloader_timeout;
+extern ConfigVariableInt downloader_timeout_retries;
 
-extern const int decompressor_buffer_size;
-extern const float decompressor_frequency;
+extern ConfigVariableInt decompressor_buffer_size;
+extern ConfigVariableDouble decompressor_frequency;
 
-extern const int extractor_buffer_size;
-extern const float extractor_frequency;
+extern ConfigVariableInt extractor_buffer_size;
+extern ConfigVariableDouble extractor_frequency;
 
-extern const int patcher_buffer_size;
+extern ConfigVariableInt patcher_buffer_size;
 
-extern const bool early_random_seed;
-extern const bool verify_ssl;
-extern const string ssl_cipher_list;
-extern const string http_proxy;
-extern const string http_direct_hosts;
-extern const bool http_try_all_direct;
-extern const string http_proxy_username;
-extern const bool http_proxy_tunnel;
-extern const double http_connect_timeout;
-extern const double http_timeout;
-extern const int http_max_connect_count;
-extern const Filename http_client_certificate_filename;
-extern const string http_client_certificate_passphrase;
+extern ConfigVariableBool early_random_seed;
+extern ConfigVariableBool verify_ssl;
+extern ConfigVariableString ssl_cipher_list;
+extern ConfigVariableString http_proxy;
+extern ConfigVariableString http_direct_hosts;
+extern ConfigVariableBool http_try_all_direct;
+extern ConfigVariableString http_proxy_username;
+extern ConfigVariableBool http_proxy_tunnel;
+extern ConfigVariableDouble http_connect_timeout;
+extern ConfigVariableDouble http_timeout;
+extern ConfigVariableInt http_max_connect_count;
+extern ConfigVariableFilename http_client_certificate_filename;
+extern ConfigVariableString http_client_certificate_passphrase;
 
 #endif
