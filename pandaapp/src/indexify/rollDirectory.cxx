@@ -318,6 +318,7 @@ generate_html(ostream &root_html, const Filename &archive_dir,
   nout << "Generating " << Filename(archive_dir, "html/")
        << _basename << "/*\n";
 
+  root_html << "<p>\n";
   IndexImages::iterator ii;
   for (ii = _index_images.begin(); ii != _index_images.end(); ++ii) {
     IndexImage *index_image = (*ii);
@@ -325,6 +326,7 @@ generate_html(ostream &root_html, const Filename &archive_dir,
       return false;
     }
   }
+  root_html << "</p>\n";
 
   return true;
 }
