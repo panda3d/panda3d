@@ -48,7 +48,10 @@ class ParticleInterval(Interval.Interval):
             self.cleanedUp = 1
         elif (event == Interval.IVAL_INIT):
             # IVAL_INIT event, start new particle effect
-            self.particleEffect.start(self.parent, self.worldRelative)
+            renderParent = None
+            if self.worldRelative:
+                renderParent = render
+            self.particleEffect.start(self.parent, renderParent)
             # Accept event to kill particle effect 
             self.acceptOnce(self.stopEvent,
                         lambda s = self: 
