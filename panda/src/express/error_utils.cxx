@@ -59,6 +59,80 @@ handle_socket_error(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: error_to_text
+//  Description:
+////////////////////////////////////////////////////////////////////
+char*
+error_to_text(int err) {
+  switch (err) {
+    case EU_eof:
+      return "EU_eof";
+    case EU_network_no_data:
+      return "EU_network_no_data";
+    case EU_ok:
+      return "EU_ok";
+    case EU_write:
+      return "EU_write";
+    case EU_success:
+      return "EU_success";
+    case EU_error_abort:
+      return "EU_error_abort";
+    case EU_error_file_empty:
+      return "EU_error_file_empty";
+    case EU_error_network_dead:
+      return "EU_error_network_dead";
+    case EU_error_network_unreachable:
+      return "EU_error_network_unreachable";
+    case EU_error_network_disconnected:
+      return "EU_error_network_disconnected";
+    case EU_error_network_timeout:
+      return "EU_error_network_timeout";
+    case EU_error_network_no_data:
+      return "EU_error_network_no_data";
+    case EU_error_network_disconnected_locally:
+      return "EU_error_network_disconnected_locally";
+    case EU_error_network_buffer_overflow:
+      return "EU_error_network_buffer_overflow";
+    case EU_error_network_disk_quota_exceeded:
+      return "EU_error_network_disk_quota_exceeded";
+    case EU_error_network_remote_host_disconnected:
+      return "EU_error_network_remote_host_disconnected";
+    case EU_error_network_remote_host_down:
+      return "EU_error_network_remote_host_down";
+    case EU_error_network_remote_host_unreachable:
+      return "EU_error_network_remote_host_unreachable";
+    case EU_error_network_remote_host_not_found:
+      return "EU_error_network_remote_host_not_found";
+    case EU_error_network_remote_host_no_response:
+      return "EU_error_network_remote_host_no_response";
+    case EU_error_write_out_of_files:
+      return "EU_error_write_out_of_files";
+    case EU_error_write_out_of_memory:
+      return "EU_error_write_out_of_memory";
+    case EU_error_write_sharing_violation:
+      return "EU_error_write_sharing_violation";
+    case EU_error_write_disk_full:
+      return "EU_error_write_disk_full";
+    case EU_error_write_disk_not_found:
+      return "EU_error_write_disk_not_found";
+    case EU_error_write_disk_sector_not_found:
+      return "EU_error_write_disk_sector_not_found";
+    case EU_error_write_disk_fault:
+      return "EU_error_write_disk_fault";
+    case EU_error_http_server_timeout:
+      return "EU_error_http_server_timeout";
+    case EU_error_http_gateway_timeout:
+      return "EU_error_http_gateway_timeout";
+    case EU_error_http_service_unavailable:
+      return "EU_error_http_service_unavailable";
+    case EU_error_zlib:
+      return "EU_error_zlib";
+    default:
+      return "Unknown error";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: get_network_error
 //  Description:
 ////////////////////////////////////////////////////////////////////
