@@ -17,22 +17,19 @@
 ////////////////////////////////////////////////////////////////////
 #include "LOD.h"
 
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <indent.h>
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "indent.h"
+#include "config_gobj.h"
 
 #define EXPCL EXPCL_PANDA
 #define EXPTP EXPTP_PANDA
 #define TYPE LODSwitch
 #define NAME LODSwitchVector
 
-#include <vector_src.cxx>
-#include "config_gobj.h"
+#include "vector_src.cxx"
 
-////////////////////////////////////////////////////////////////////
-// Static variables
-////////////////////////////////////////////////////////////////////
-TypeHandle LOD::_type_handle;
+float LOD::_stress_factor = lod_stress_factor;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LOD::constructor
@@ -97,7 +94,7 @@ int LOD::
 compute_child(const LPoint3f &cam_pos, const LPoint3f &center) const {
 
   LVector3f v = cam_pos - center;
-  float dist = dot(v, v);
+  float dist = dot(v, v) * _stress_factor;
   LODSwitchVector::const_iterator i;
   int child = 0;
   for (i = _switch_vector.begin(), child = 0;
@@ -206,3 +203,26 @@ write(ostream &out, int indent_level) const {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: LOD::set_stress_factor
+//       Access: Published, Static
+//  Description: Sets the factor that globally scales all LOD's.  This
+//               factor is applied to the square of the LOD distance,
+//               so the larger the number, the lower the detail that
+//               is presented.  The normal value is 1.0.
+////////////////////////////////////////////////////////////////////
+void LOD::
+set_stress_factor(float stress_factor) {
+  _stress_factor = stress_factor;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LOD::get_stress_factor
+//       Access: Published, Static
+//  Description: Returns the factor that globally scales all LOD's.
+//               See get_stress_factor().
+////////////////////////////////////////////////////////////////////
+float LOD::
+get_stress_factor() {
+  return _stress_factor;
+}

@@ -15,16 +15,14 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
+
 #ifndef LOD_H
 #define LOD_H
-//
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
 
-#include <luse.h>
-#include <typedReferenceCount.h>
+#include "pandabase.h"
+
+#include "luse.h"
+#include "typedReferenceCount.h"
 
 class Datagram;
 class DatagramIterator;
@@ -82,11 +80,11 @@ protected:
 // Description : Computes whether a level-of-detail should be rendered
 //               or not based on distance from the rendering camera.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA LOD : public TypedReferenceCount {
+class EXPCL_PANDA LOD {
 public:
-  LOD(void);
+  LOD();
   LOD(const LOD &copy);
-  ~LOD(void);
+  ~LOD();
 
   void xform(const LMatrix4f &mat);
 
@@ -99,26 +97,16 @@ public:
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
 
-public:
-  LPoint3f              _center;
-  LODSwitchVector       _switch_vector;
+PUBLISHED:
+  static void set_stress_factor(float stress_factor);
+  static float get_stress_factor();
 
 public:
-  static TypeHandle get_class_type() {
-    return _type_handle;
-  }
-  static void init_type() {
-    TypedReferenceCount::init_type();
-    register_type(_type_handle, "LOD",
-                  TypedReferenceCount::get_class_type());
-  }
-  virtual TypeHandle get_type() const {
-    return get_class_type();
-  }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  LPoint3f _center;
+  LODSwitchVector _switch_vector;
 
 private:
-  static TypeHandle _type_handle;
+  static float _stress_factor;
 };
 
 INLINE ostream &operator << (ostream &out, const LOD &lod) {

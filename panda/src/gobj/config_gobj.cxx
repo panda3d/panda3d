@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include <config_util.h>
-#include "LOD.h"
 #include "boundedObject.h"
 #include "config_gobj.h"
 #include "drawable.h"
@@ -118,6 +117,8 @@ const int select_LOD_number = config_gobj.GetInt("select-LOD-number", -1);
 // will screen out successively higher levels
 const int minimum_LOD_number = config_gobj.GetInt("minimum-LOD-number", 0);
 
+const float lod_stress_factor = config_gobj.GetFloat("lod-stress-factor", 1.0f);
+
 // The default near and far plane distances.
 const float default_near = config_gobj.GetFloat("default-near", 1.0f);
 const float default_far = config_gobj.GetFloat("default-far", 1000.0f);
@@ -181,7 +182,6 @@ ConfigureFn(config_gobj) {
   GeomTrifan::init_type();
   GeomTristrip::init_type();
   ImageBuffer::init_type();
-  LOD::init_type();
   Material::init_type();
   OrthographicLens::init_type();
   MatrixLens::init_type();
