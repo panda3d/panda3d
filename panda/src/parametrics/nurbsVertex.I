@@ -34,7 +34,8 @@ NurbsVertex() {
 INLINE NurbsVertex::
 NurbsVertex(const NurbsVertex &copy) :
   _vertex(copy._vertex),
-  _space(copy._space)
+  _space(copy._space),
+  _space_path(copy._space_path)
 {
 }
 
@@ -47,6 +48,7 @@ INLINE void NurbsVertex::
 operator = (const NurbsVertex &copy) {
   _vertex = copy._vertex;
   _space = copy._space;
+  _space_path = copy._space_path;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -81,11 +83,24 @@ get_vertex() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsVertex::set_space
 //       Access: Public
-//  Description:
+//  Description: Sets the space of this vertex as a fixed NodePath.
 ////////////////////////////////////////////////////////////////////
 INLINE void NurbsVertex::
 set_space(const NodePath &space) {
   _space = space;
+  _space_path = string();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NurbsVertex::set_space
+//       Access: Public
+//  Description: Sets the space of this vertex as a relative path from
+//               the rel_to node.
+////////////////////////////////////////////////////////////////////
+INLINE void NurbsVertex::
+set_space(const string &space) {
+  _space = NodePath();
+  _space_path = space;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -93,7 +108,11 @@ set_space(const NodePath &space) {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const NodePath &NurbsVertex::
-get_space() const {
-  return _space;
+INLINE NodePath NurbsVertex::
+get_space(const NodePath &rel_to) const {
+  if (_space_path.empty()) {
+    return _space;
+  } else {
+    return rel_to.find(_space_path);
+  }
 }

@@ -66,6 +66,25 @@ eval_point(float t, LVecBase3f &point) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurveResult::eval_tangent
+//       Access: Published
+//  Description: Computes the tangent to the curve at the indicated
+//               point in parametric time.  This tangent vector will
+//               not necessarily be normalized, and could be zero.
+//               See also eval_point().
+////////////////////////////////////////////////////////////////////
+INLINE bool NurbsCurveResult::
+eval_tangent(float t, LVecBase3f &tangent) {
+  int segment = find_segment(t);
+  if (segment == -1) {
+    return false;
+  }
+
+  eval_segment_tangent(segment, _prod.scale_t(segment, t), tangent);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveResult::get_num_segments
 //       Access: Public
 //  Description: Returns the number of piecewise continuous segments
@@ -76,4 +95,17 @@ eval_point(float t, LVecBase3f &point) {
 INLINE int NurbsCurveResult::
 get_num_segments() const {
   return _prod.get_num_segments();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurveResult::get_segment_t
+//       Access: Public
+//  Description: Accepts a t value in the range [0, 1], and assumed to
+//               be relative to the indicated segment (as in
+//               eval_segment_point()), and returns the corresponding
+//               t value in the entire curve (as in eval_point()).
+////////////////////////////////////////////////////////////////////
+INLINE float NurbsCurveResult::
+get_segment_t(int segment, float t) const {
+  return t * (_prod.get_to(segment) - _prod.get_from(segment)) + _prod.get_from(segment);
 }

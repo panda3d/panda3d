@@ -49,9 +49,12 @@ PUBLISHED:
   INLINE float get_end_t() const;
 
   INLINE bool eval_point(float t, LVecBase3f &point);
+  INLINE bool eval_tangent(float t, LVecBase3f &tangent);
   
   INLINE int get_num_segments() const;
   void eval_segment_point(int segment, float t, LVecBase3f &point) const;
+  void eval_segment_tangent(int segment, float t, LVecBase3f &tangent) const;
+  INLINE float get_segment_t(int segment, float t) const;
   
 private:
   int find_segment(float t);

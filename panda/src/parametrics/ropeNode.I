@@ -25,7 +25,11 @@
 INLINE RopeNode::CData::
 CData() {
   _curve = new NurbsCurveEvaluator;
+  _render_mode = RopeNode::RM_thread;
+  _uv_mode = RopeNode::UV_none;
+  _uv_scale.set(1.0f, 1.0f);
   _num_segs = 10;
+  _thickness = 1.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -35,7 +39,12 @@ CData() {
 ////////////////////////////////////////////////////////////////////
 INLINE RopeNode::CData::
 CData(const RopeNode::CData &copy) :
-  _curve(copy._curve)
+  _curve(copy._curve),
+  _render_mode(copy._render_mode),
+  _uv_mode(copy._uv_mode),
+  _uv_scale(copy._uv_scale),
+  _num_segs(copy._num_segs),
+  _thickness(copy._thickness)
 {
 }
 
@@ -63,6 +72,79 @@ get_curve() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: set_render_mode
+//       Access: Public
+//  Description: Specifies the method used to render the rope.  The
+//               simplest is RM_thread, which just draws a one-pixel
+//               line segment.
+////////////////////////////////////////////////////////////////////
+INLINE void RopeNode::
+set_render_mode(RopeNode::RenderMode render_mode) {
+  CDWriter cdata(_cycler);
+  cdata->_render_mode = render_mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_render_mode
+//       Access: Public
+//  Description: Returns the method used to render the rope.  See
+//               set_render_mode().
+////////////////////////////////////////////////////////////////////
+INLINE RopeNode::RenderMode RopeNode::
+get_render_mode() const {
+  CDReader cdata(_cycler);
+  return cdata->_render_mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: set_uv_mode
+//       Access: Public
+//  Description: Specifies the algorithm to use to generate UV's for
+//               the rope.
+////////////////////////////////////////////////////////////////////
+INLINE void RopeNode::
+set_uv_mode(RopeNode::UVMode uv_mode) {
+  CDWriter cdata(_cycler);
+  cdata->_uv_mode = uv_mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_uv_mode
+//       Access: Public
+//  Description: Returns the algorithm to use to generate UV's for the
+//               rope.
+////////////////////////////////////////////////////////////////////
+INLINE RopeNode::UVMode RopeNode::
+get_uv_mode() const {
+  CDReader cdata(_cycler);
+  return cdata->_uv_mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: set_uv_scale
+//       Access: Public
+//  Description: Specifies an additional scaling factor to apply to
+//               generated UV's for the rope.
+////////////////////////////////////////////////////////////////////
+INLINE void RopeNode::
+set_uv_scale(const LVecBase2f &uv_scale) {
+  CDWriter cdata(_cycler);
+  cdata->_uv_scale = uv_scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_uv_scale
+//       Access: Public
+//  Description: Returns the scaling factor to apply to generated UV's
+//               for the rope.
+////////////////////////////////////////////////////////////////////
+INLINE const LVecBase2f &RopeNode::
+get_uv_scale() const {
+  CDReader cdata(_cycler);
+  return cdata->_uv_scale;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: set_num_segs
 //       Access: Public
 //  Description: Specifies the number of segments per cubic segment
@@ -86,4 +168,30 @@ INLINE int RopeNode::
 get_num_segs() const {
   CDReader cdata(_cycler);
   return cdata->_num_segs;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: set_thickness
+//       Access: Public
+//  Description: Specifies the thickness of the rope, in pixels or in
+//               spatial units, depending on the render mode.  See
+//               set_render_mode().
+////////////////////////////////////////////////////////////////////
+INLINE void RopeNode::
+set_thickness(float thickness) {
+  nassertv(thickness >= 0);
+  CDWriter cdata(_cycler);
+  cdata->_thickness = thickness;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_thickness
+//       Access: Public
+//  Description: Returns the thickness of the rope.  See
+//               set_thickness().
+////////////////////////////////////////////////////////////////////
+INLINE float RopeNode::
+get_thickness() const {
+  CDReader cdata(_cycler);
+  return cdata->_thickness;
 }

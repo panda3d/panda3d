@@ -48,11 +48,13 @@ public:
   INLINE const LVecBase4f &get_vertex() const;
 
   INLINE void set_space(const NodePath &space);
-  INLINE const NodePath &get_space() const;
+  INLINE void set_space(const string &space);
+  INLINE NodePath get_space(const NodePath &rel_to) const;
 
 private:
   LVecBase4f _vertex;
   NodePath _space;
+  string _space_path;
 };
 
 #include "nurbsVertex.I"

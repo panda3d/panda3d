@@ -16,7 +16,7 @@
     parametricCurveDrawer.h curveFitter.I curveFitter.h  \
     hermiteCurve.h nurbsCurve.h \
     nurbsCurveDrawer.I nurbsCurveDrawer.h \
-    nurbsCurveEvaluator.h \
+    nurbsCurveEvaluator.I nurbsCurveEvaluator.h \
     nurbsCurveInterface.I nurbsCurveInterface.h \
     nurbsCurveResult.I nurbsCurveResult.h \
     nurbsMatrixVector.I nurbsMatrixVector.h \
@@ -50,7 +50,7 @@
     hermiteCurve.h \
     nurbsCurve.h \
     nurbsCurveDrawer.I nurbsCurveDrawer.h \
-    nurbsCurveEvaluator.h \
+    nurbsCurveEvaluator.I nurbsCurveEvaluator.h \
     nurbsCurveInterface.I nurbsCurveInterface.h \
     nurbsCurveResult.I nurbsCurveResult.h \
     nurbsMatrixVector.I nurbsMatrixVector.h \

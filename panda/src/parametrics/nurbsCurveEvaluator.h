@@ -50,20 +50,21 @@ PUBLISHED:
   NurbsCurveEvaluator();
   ~NurbsCurveEvaluator();
 
-  void set_order(int order);
-  int get_order() const;
+  INLINE void set_order(int order);
+  INLINE int get_order() const;
 
   void reset(int num_vertices);
 
-  int get_num_vertices() const;
-  void set_vertex(int i, const LVecBase4f &vertex);
-  void set_vertex(int i, const LVecBase3f &vertex, float weight = 1.0);
-  const LVecBase4f &get_vertex(int i) const;
+  INLINE int get_num_vertices() const;
+  INLINE void set_vertex(int i, const LVecBase4f &vertex);
+  INLINE void set_vertex(int i, const LVecBase3f &vertex, float weight = 1.0);
+  INLINE const LVecBase4f &get_vertex(int i) const;
 
-  void set_vertex_space(int i, const NodePath &space);
-  const NodePath &get_vertex_space(int i) const;
+  INLINE void set_vertex_space(int i, const NodePath &space);
+  INLINE void set_vertex_space(int i, const string &space);
+  NodePath get_vertex_space(int i, const NodePath &rel_to) const;
 
-  int get_num_knots() const;
+  INLINE int get_num_knots() const;
   void set_knot(int i, float knot);
   float get_knot(int i) const;
 
@@ -89,6 +90,8 @@ private:
   bool _basis_dirty;
   NurbsMatrixVector _basis;
 };
+
+#include "nurbsCurveEvaluator.I"
 
 #endif
 

@@ -53,16 +53,45 @@ public:
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
 
 PUBLISHED:
+  enum RenderMode {
+    RM_thread,
+    RM_billboard
+  };
+  enum UVMode {
+    UV_none,
+    UV_parametric,
+    UV_distance,
+    UV_distance2,
+  };
+
   INLINE void set_curve(NurbsCurveEvaluator *curve);
   INLINE NurbsCurveEvaluator *get_curve() const;
 
+  INLINE void set_render_mode(RenderMode render_mode);
+  INLINE RenderMode get_render_mode() const;
+
+  INLINE void set_uv_mode(UVMode uv_mode);
+  INLINE UVMode get_uv_mode() const;
+
+  INLINE void set_uv_scale(const LVecBase2f &uv_scale);
+  INLINE const LVecBase2f &get_uv_scale() const;
+
   INLINE void set_num_segs(int num_segs);
   INLINE int get_num_segs() const;
+
+  INLINE void set_thickness(float thickness);
+  INLINE float get_thickness() const;
 
   BoundingVolume *reset_bound(const NodePath &rel_to);
 
 protected:
   virtual BoundingVolume *recompute_internal_bound();
+
+private:
+  void render_thread(CullTraverser *trav, CullTraverserData &data, 
+                     NurbsCurveResult *result);
+  void render_billboard(CullTraverser *trav, CullTraverserData &data, 
+                        NurbsCurveResult *result);
 
 private:
   // This is the data that must be cycled between pipeline stages.
@@ -75,7 +104,11 @@ private:
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
     PT(NurbsCurveEvaluator) _curve;
+    RenderMode _render_mode;
+    UVMode _uv_mode;
+    LVecBase2f _uv_scale;
     int _num_segs;
+    float _thickness;
   };
 
   PipelineCycler<CData> _cycler;

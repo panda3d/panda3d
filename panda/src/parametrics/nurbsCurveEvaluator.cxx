@@ -40,34 +40,6 @@ NurbsCurveEvaluator::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NurbsCurveEvaluator::set_order
-//       Access: Published
-//  Description: Sets the order of the curve.  This resets the knot
-//               vector to the default knot vector for the number of
-//               vertices.
-//
-//               The order must be 1, 2, 3, or 4, and the value is one
-//               more than the degree of the curve.
-////////////////////////////////////////////////////////////////////
-void NurbsCurveEvaluator::
-set_order(int order) {
-  _order = order;
-  _knots_dirty = true;
-  _basis_dirty = true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsCurveEvaluator::get_order
-//       Access: Published
-//  Description: Returns the order of the curve as set by a previous
-//               call to set_order().
-////////////////////////////////////////////////////////////////////
-int NurbsCurveEvaluator::
-get_order() const {
-  return _order;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveEvaluator::reset
 //       Access: Published
 //  Description: Resets all the vertices and knots to their default
@@ -89,89 +61,18 @@ reset(int num_vertices) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NurbsCurveEvaluator::get_num_vertices
-//       Access: Published
-//  Description: Returns the number of control vertices in the curve.
-//               This is the number passed to the last call to
-//               reset().
-////////////////////////////////////////////////////////////////////
-int NurbsCurveEvaluator::
-get_num_vertices() const {
-  return (int)_vertices.size();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsCurveEvaluator::set_vertex
-//       Access: Published
-//  Description: Sets the nth control vertex of the curve.
-////////////////////////////////////////////////////////////////////
-void NurbsCurveEvaluator::
-set_vertex(int i, const LVecBase4f &vertex) {
-  nassertv(i >= 0 && i < (int)_vertices.size());
-  _vertices[i].set_vertex(vertex);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsCurveEvaluator::set_vertex
-//       Access: Published
-//  Description: Sets the nth control vertex of the curve.
-////////////////////////////////////////////////////////////////////
-void NurbsCurveEvaluator::
-set_vertex(int i, const LVecBase3f &vertex, float weight) {
-  nassertv(i >= 0 && i < (int)_vertices.size());
-  _vertices[i].set_vertex(LVecBase4f(vertex[0] * weight, vertex[1] * weight, vertex[2] * weight, weight));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsCurveEvaluator::get_vertex
-//       Access: Published
-//  Description: Returns the nth control vertex of the curve, relative
-//               to its indicated coordinate space.
-////////////////////////////////////////////////////////////////////
-const LVecBase4f &NurbsCurveEvaluator::
-get_vertex(int i) const {
-  nassertr(i >= 0 && i < (int)_vertices.size(), LVecBase4f::zero());
-  return _vertices[i].get_vertex();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsCurveEvaluator::set_vertex_space
-//       Access: Published
-//  Description: Sets the coordinate space of the nth control vertex.
-//               If this is not specified, or is set to an empty
-//               NodePath, the nth control vertex is deemed to be in
-//               the coordinate space passed to evaluate().
-////////////////////////////////////////////////////////////////////
-void NurbsCurveEvaluator::
-set_vertex_space(int i, const NodePath &space) {
-  nassertv(i >= 0 && i < (int)_vertices.size());
-  _vertices[i].set_space(space);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveEvaluator::get_vertex_space
 //       Access: Published
 //  Description: Returns the coordinate space of the nth control
 //               vertex of the curve, expressed as a NodePath.
 ////////////////////////////////////////////////////////////////////
-const NodePath &NurbsCurveEvaluator::
-get_vertex_space(int i) const {
+NodePath NurbsCurveEvaluator::
+get_vertex_space(int i, const NodePath &rel_to) const {
 #ifndef NDEBUG
   static NodePath empty_node_path;
   nassertr(i >= 0 && i < (int)_vertices.size(), empty_node_path);
 #endif
-  return _vertices[i].get_space();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsCurveEvaluator::get_num_knots
-//       Access: Published
-//  Description: Returns the number of knot values in the curve.  This
-//               is based on the number of vertices and the order.
-////////////////////////////////////////////////////////////////////
-int NurbsCurveEvaluator::
-get_num_knots() const {
-  return (int)_vertices.size() + _order;
+  return _vertices[i].get_space(rel_to);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -242,7 +143,7 @@ get_vertices(pvector<LVecBase4f> &verts, const NodePath &rel_to) const {
   verts.reserve(verts.size() + num_vertices);
   int vi;
   for (vi = 0; vi < num_vertices; vi++) {
-    const NodePath &space = _vertices[vi].get_space();
+    NodePath space = _vertices[vi].get_space(rel_to);
     const LVecBase4f &vertex = _vertices[vi].get_vertex();
     if (space.is_empty()) {
       verts.push_back(vertex);
@@ -267,7 +168,7 @@ get_vertices(pvector<LPoint3f> &verts, const NodePath &rel_to) const {
   verts.reserve(verts.size() + num_vertices);
   int vi;
   for (vi = 0; vi < num_vertices; vi++) {
-    const NodePath &space = _vertices[vi].get_space();
+    const NodePath &space = _vertices[vi].get_space(rel_to);
     LVecBase4f vertex = _vertices[vi].get_vertex();
     if (!space.is_empty()) {
       const LMatrix4f &mat = space.get_mat(rel_to);

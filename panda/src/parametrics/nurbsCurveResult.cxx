@@ -83,6 +83,24 @@ eval_segment_point(int segment, float t, LVecBase3f &point) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurveResult::eval_segment_tangent
+//       Access: Published
+//  Description: As eval_segment_point, but computes the tangent to
+//               the curve at the indicated point.  The tangent vector
+//               will not necessarily be normalized, and could be
+//               zero, particularly at the endpoints.
+////////////////////////////////////////////////////////////////////
+void NurbsCurveResult::
+eval_segment_tangent(int segment, float t, LVecBase3f &tangent) const {
+  const LMatrix4f &mat = _prod.get_matrix(segment);
+
+  float t2 = t*t;
+  LVecBase4f tvec(t2, t, 1.0f, 0.0f);
+  LVecBase4f r = tvec * mat;
+  tangent.set(r[0], r[1], r[2]);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveResult::find_segment
 //       Access: Private
 //  Description: Returns the index of the segment that contains the
