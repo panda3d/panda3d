@@ -604,8 +604,9 @@ remove_invalid_primitives() {
 
     if (child->is_of_type(EggPrimitive::get_class_type())) {
       EggPrimitive *prim = DCAST(EggPrimitive, child);
-      if (prim->cleanup()) {
+      if (!prim->cleanup()) {
 	_children.erase(ci);
+	num_removed++;
       }
     
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
