@@ -23,7 +23,7 @@ class Mopath(PandaObject):
         nodePath = loader.loadModel(filename)
         if nodePath:
             self.__extractCurves(nodePath)
-            if (self.tNurbsCurve != None):
+            if (self.tNurbsCurve != []):
                 self.maxT = self.tNurbsCurve[-1].getMaxT()
             elif (self.xyzNurbsCurve != None):
                 self.maxT = self.xyzNurbsCurve.getMaxT()
