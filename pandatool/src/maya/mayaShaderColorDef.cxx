@@ -45,7 +45,7 @@ MayaShaderColorDef() {
 
   _has_texture = false;
   _texture_name = "";
-  _uvset_name = "map1";
+  _uvset_name = "default";
   _projection_type = PT_off;
   _map_uvs = NULL;
 

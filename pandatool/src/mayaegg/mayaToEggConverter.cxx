@@ -1770,6 +1770,8 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
           }
           mayaegg_cat.debug() << "color_def->uvset_name :" << color_def->_uvset_name << endl;
           uv_name = color_def->_uvset_name;  // this is the name to look up by in maya
+          if (uv_name == "default")
+            uv_name = "map1";
 
           if (color_def->has_projection()) {
             // If the shader has a projection, use it instead of the
