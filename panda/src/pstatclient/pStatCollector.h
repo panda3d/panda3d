@@ -57,7 +57,7 @@ private:
   INLINE PStatCollector();
   INLINE PStatCollector(PStatClient *client, int index);
 
-public:
+PUBLISHED:
   INLINE PStatCollector(const string &name,
                         PStatClient *client = NULL);
   INLINE PStatCollector(const PStatCollector &parent,
@@ -67,23 +67,24 @@ public:
   INLINE void operator = (const PStatCollector &copy);
 
   INLINE bool is_active();
-  INLINE bool is_active(const PStatThread &thread);
-
   INLINE void start();
+  INLINE void stop();
+
+  INLINE void clear_level();
+  INLINE void set_level(float level);
+  INLINE void add_level(float increment);
+  INLINE void sub_level(float decrement);
+
+public:
+  INLINE bool is_active(const PStatThread &thread);
   INLINE void start(const PStatThread &thread);
   INLINE void start(const PStatThread &thread, float as_of);
-
-  INLINE void stop();
   INLINE void stop(const PStatThread &thread);
   INLINE void stop(const PStatThread &thread, float as_of);
 
-  INLINE void clear_level();
   INLINE void clear_level(const PStatThread &thread);
-  INLINE void set_level(float level);
   INLINE void set_level(const PStatThread &thread, float level);
-  INLINE void add_level(float increment);
   INLINE void add_level(const PStatThread &thread, float increment);
-  INLINE void sub_level(float decrement);
   INLINE void sub_level(const PStatThread &thread, float decrement);
 
 private:
@@ -93,33 +94,32 @@ private:
 friend class PStatClient;
 
 #else  // DO_PSTATS
-public:
+PUBLISHED:
   INLINE PStatCollector(const string &,
-                        const RGBColorf & = RGBColorf::zero(),
-                        int = -1,
                         PStatClient * = NULL) { }
   INLINE PStatCollector(const PStatCollector &,
-                        const string &,
-                        const RGBColorf & = RGBColorf::zero(),
-                        int = -1) { }
+                        const string &) { }
 
   INLINE bool is_active() { return false; }
-  INLINE bool is_active(const PStatThread &) { return false; }
-
   INLINE void start() { }
+  INLINE void stop() { }
+
+  INLINE void clear_level() { }
+  INLINE void set_level(float) { }
+  INLINE void add_level(float) { }
+  INLINE void sub_level(float) { }
+
+public:
+  INLINE bool is_active(const PStatThread &) { return false; }
   INLINE void start(const PStatThread &) { }
   INLINE void start(const PStatThread &, float) { }
-
-  INLINE void stop() { }
   INLINE void stop(const PStatThread &) { }
   INLINE void stop(const PStatThread &, float) { }
 
-  INLINE void clear_level() { }
   INLINE void clear_level(const PStatThread &) { }
-  INLINE void set_level(float) { }
   INLINE void set_level(const PStatThread &, float) { }
-  INLINE void add_level(float) { }
   INLINE void add_level(const PStatThread &, float) { }
+  INLINE void sub_level(const PStatThread &, float) { }
 
 #endif  // DO_PSTATS
 };

@@ -253,7 +253,8 @@ make_collector_with_relname(int parent_index, string relname) {
       make_collector_with_name(parent_index, parent_name);
     parent_index = parent_collector._index;
     relname = relname.substr(colon + 1);
-    colon = relname.find(':', start);
+    start = 0;
+    colon = relname.find(':');
   }
 
   string name = relname.substr(start);

@@ -46,7 +46,7 @@ PStatCollector(PStatClient *client, int index) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatCollector::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: Creates a new PStatCollector, ready to start
 //               accumulating data.  The name of the collector
 //               uniquely identifies it among the other collectors; if
@@ -74,7 +74,7 @@ PStatCollector(const string &name, PStatClient *client) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatCollector::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: Creates a new PStatCollector, ready to start
 //               accumulating data.  The name of the collector
 //               uniquely identifies it among the other collectors; if
@@ -104,7 +104,7 @@ PStatCollector(const PStatCollector &parent, const string &name) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatCollector::Copy Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PStatCollector::
@@ -116,7 +116,7 @@ PStatCollector(const PStatCollector &copy) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatCollector::Copy Assignment Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
@@ -127,7 +127,7 @@ operator = (const PStatCollector &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatCollector::is_active
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if this particular collector is active
 //               on the default thread, and we are currently
 //               transmitting PStats data.
@@ -135,6 +135,81 @@ operator = (const PStatCollector &copy) {
 INLINE bool PStatCollector::
 is_active() {
   return _client->is_active(_index, 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::start
+//       Access: Published
+//  Description: Starts this particular timer ticking.  This should be
+//               called before the code you want to measure.
+////////////////////////////////////////////////////////////////////
+INLINE void PStatCollector::
+start() {
+  _client->start(_index, 0, _client->_clock.get_real_time());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::stop
+//       Access: Published
+//  Description: Stops this timer.  This should be called after the
+//               code you want to measure.
+////////////////////////////////////////////////////////////////////
+INLINE void PStatCollector::
+stop() {
+  _client->stop(_index, 0, _client->_clock.get_real_time());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::clear_level
+//       Access: Published
+//  Description: Removes the level setting associated with this
+//               collector for the main thread.  The collector
+//               will no longer show up on any level graphs in the
+//               main thread.
+////////////////////////////////////////////////////////////////////
+INLINE void PStatCollector::
+clear_level() {
+  _client->clear_level(_index, 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::set_level
+//       Access: Published
+//  Description: Sets the level setting associated with this
+//               collector for the main thread to the indicated
+//               value.
+////////////////////////////////////////////////////////////////////
+INLINE void PStatCollector::
+set_level(float level) {
+  _client->set_level(_index, 0, level);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::add_level
+//       Access: Published
+//  Description: Adds the indicated increment (which may be negative)
+//               to the level setting associated with this collector
+//               for the main thread.  If the collector did not
+//               already have a level setting for the main thread, it
+//               is initialized to 0.
+////////////////////////////////////////////////////////////////////
+INLINE void PStatCollector::
+add_level(float increment) {
+  _client->add_level(_index, 0, increment);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::sub_level
+//       Access: Published
+//  Description: Subtracts the indicated decrement (which may be
+//               negative) to the level setting associated with this
+//               collector for the main thread.  If the collector did
+//               not already have a level setting for the main thread,
+//               it is initialized to 0.
+////////////////////////////////////////////////////////////////////
+INLINE void PStatCollector::
+sub_level(float decrement) {
+  _client->add_level(_index, 0, -decrement);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -147,17 +222,6 @@ is_active() {
 INLINE bool PStatCollector::
 is_active(const PStatThread &thread) {
   return _client->is_active(_index, thread._index);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PStatCollector::start
-//       Access: Public
-//  Description: Starts this particular timer ticking.  This should be
-//               called before the code you want to measure.
-////////////////////////////////////////////////////////////////////
-INLINE void PStatCollector::
-start() {
-  _client->start(_index, 0, _client->_clock.get_real_time());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -182,17 +246,6 @@ start(const PStatThread &thread) {
 INLINE void PStatCollector::
 start(const PStatThread &thread, float as_of) {
   _client->start(_index, thread._index, as_of);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PStatCollector::stop
-//       Access: Public
-//  Description: Stops this timer.  This should be called after the
-//               code you want to measure.
-////////////////////////////////////////////////////////////////////
-INLINE void PStatCollector::
-stop() {
-  _client->stop(_index, 0, _client->_clock.get_real_time());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -223,19 +276,6 @@ stop(const PStatThread &thread, float as_of) {
 //     Function: PStatCollector::clear_level
 //       Access: Public
 //  Description: Removes the level setting associated with this
-//               collector for the main thread.  The collector
-//               will no longer show up on any level graphs in the
-//               main thread.
-////////////////////////////////////////////////////////////////////
-INLINE void PStatCollector::
-clear_level() {
-  _client->clear_level(_index, 0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PStatCollector::clear_level
-//       Access: Public
-//  Description: Removes the level setting associated with this
 //               collector for the indicated thread.  The collector
 //               will no longer show up on any level graphs in this
 //               thread.
@@ -243,18 +283,6 @@ clear_level() {
 INLINE void PStatCollector::
 clear_level(const PStatThread &thread) {
   _client->clear_level(_index, thread._index);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PStatCollector::set_level
-//       Access: Public
-//  Description: Sets the level setting associated with this
-//               collector for the main thread to the indicated
-//               value.
-////////////////////////////////////////////////////////////////////
-INLINE void PStatCollector::
-set_level(float level) {
-  _client->set_level(_index, 0, level);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -274,20 +302,6 @@ set_level(const PStatThread &thread, float level) {
 //       Access: Public
 //  Description: Adds the indicated increment (which may be negative)
 //               to the level setting associated with this collector
-//               for the main thread.  If the collector did not
-//               already have a level setting for the main thread, it
-//               is initialized to 0.
-////////////////////////////////////////////////////////////////////
-INLINE void PStatCollector::
-add_level(float increment) {
-  _client->add_level(_index, 0, increment);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PStatCollector::add_level
-//       Access: Public
-//  Description: Adds the indicated increment (which may be negative)
-//               to the level setting associated with this collector
 //               for the indicated thread.  If the collector did not
 //               already have a level setting for this thread, it is
 //               initialized to 0.
@@ -295,20 +309,6 @@ add_level(float increment) {
 INLINE void PStatCollector::
 add_level(const PStatThread &thread, float increment) {
   _client->add_level(_index, thread._index, increment);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PStatCollector::sub_level
-//       Access: Public
-//  Description: Subtracts the indicated decrement (which may be
-//               negative) to the level setting associated with this
-//               collector for the main thread.  If the collector did
-//               not already have a level setting for the main thread,
-//               it is initialized to 0.
-////////////////////////////////////////////////////////////////////
-INLINE void PStatCollector::
-sub_level(float decrement) {
-  _client->add_level(_index, 0, -decrement);
 }
 
 ////////////////////////////////////////////////////////////////////

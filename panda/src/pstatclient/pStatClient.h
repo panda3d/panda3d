@@ -198,6 +198,12 @@ public:
   PStatClient() { }
   ~PStatClient() { }
 
+PUBLISHED:
+  INLINE static bool connect(const string & = string(), int = -1) { return false; }
+  INLINE static void disconnect() { }
+  INLINE static bool is_connected() { return false; }
+
+public:
   static void main_tick() { }
 };
 
