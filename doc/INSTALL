@@ -92,11 +92,13 @@ without some functionality.
   communications (as well as a normal, unsecured TCP/IP library).  It
   is used to implement the HTTP client code in Panda for communicating
   with web servers and/or loading files directly from web servers, in
-  both normal http and secure https modes.  If you do not have any
-  need to contact web servers with your Panda client, you do not need
-  to install this library.  Find it at http://www.openssl.org .  We
-  used version 0.9.6 or 0.9.7, but if there is a more recent version
-  it should be fine.
+  both normal http and secure https modes.  It also provides some
+  basic encryption services, allowing encrypted files to be stored in
+  metafiles (for instance).  If you do not have any need to contact
+  web servers with your Panda client, and you have no interest in
+  encryption, you do not need to install this library.  Find it at
+  http://www.openssl.org .  We used version 0.9.6 or 0.9.7, but if
+  there is a more recent version it should be fine.
 
 * FFTW, the "Fastest Fourier Transform in the West".  This free
   whimsically-named library provides the mathematical support for
