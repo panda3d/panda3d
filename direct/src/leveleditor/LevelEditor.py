@@ -825,7 +825,6 @@ class LevelEditor(NodePath, PandaObject):
 
     def toggleCollisions(self):
         if self.panel.fColl.get():
-            print 'ON'
             self.collisionsOn()
             self.traversalOn()
         else:
