@@ -82,7 +82,7 @@ class EntryScale(Pmw.MegaWidget):
         self.labelFrame.pack(expand = 1, fill = 'both')
 
         # Create a label and an entry
-        self.minMaxFrame = self.createcomponent('frame', (), None,
+        self.minMaxFrame = self.createcomponent('mmFrame', (), None,
                                                 Frame, interior)
         # Create the EntryScale's min max labels
         self.minLabel = self.createcomponent('minLabel', (), None,

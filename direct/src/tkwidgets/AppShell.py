@@ -512,6 +512,16 @@ class AppShell(Pmw.MegaWidget, PandaObject):
         # Record widget
         self.addWidget(category, text, widget)
         return widget
+    def transformRGB(self, rgb, max = 1.0):
+        retval = '#'
+        for v in [rgb[0], rgb[1], rgb[2]]:
+            v = (v/max)*255
+            if v > 255:
+                v = 255
+            if v < 0:
+                v = 0
+            retval = "%s%02x" % (retval, int(v))
+        return retval
 
 class TestAppShell(AppShell):
     # Override class variables here
