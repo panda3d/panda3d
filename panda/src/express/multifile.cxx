@@ -61,9 +61,12 @@ reset(void) {
   _header_parsed = false;
   _header_length = 0;
   _buffer_length = 0;
+  if (_buffer != (char *)0L)
+    delete _buffer;
   _buffer = (char *)0L;
   _file_open = false;
   _bytes_written = 0;
+  _datagram.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
