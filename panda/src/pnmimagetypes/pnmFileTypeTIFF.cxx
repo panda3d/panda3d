@@ -43,7 +43,12 @@ static const int num_extensions_tiff = sizeof(extensions_tiff) / sizeof(const ch
 // output.  See tiff.h or type man pnmtotiff for a better explanation
 // of options.
 
-unsigned short tiff_compression = COMPRESSION_LZW;
+//unsigned short tiff_compression = COMPRESSION_LZW;  // lzw not supported anymore because of big bad Unisys
+#ifdef COMPRESSION_DEFLATE
+unsigned short tiff_compression = COMPRESSION_DEFLATE;
+#else
+unsigned short tiff_compression = COMPRESSION_NONE;
+#endif
 /* One of:
    COMPRESSION_NONE
    COMPRESSION_CCITTRLE
@@ -315,7 +320,7 @@ PNMFileTypeTIFF::Reader::
 Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
 {
-  bool grayscale;
+  bool grayscale = false;
   int numcolors;
   int i;
   unsigned short* redcolormap;
@@ -649,7 +654,7 @@ Writer(PNMFileType *type, ostream *file, bool owns_file) :
 ////////////////////////////////////////////////////////////////////
 int PNMFileTypeTIFF::Writer::
 write_data(xel *array, xelval *alpha) {
-  colorhist_vector chv;
+  colorhist_vector chv = (colorhist_vector) 0;
   colorhash_table cht;
   unsigned short
     red[TIFF_COLORMAP_MAXCOLORS],
@@ -657,12 +662,12 @@ write_data(xel *array, xelval *alpha) {
     blu[TIFF_COLORMAP_MAXCOLORS];
   int row, colors, i;
   register int col;
-  int grayscale;
+  int grayscale = false;
   struct tiff * tif;
-  short photometric;
-  short samplesperpixel;
-  short bitspersample;
-  int bytesperrow;
+  short photometric = 0;
+  short samplesperpixel = 0;
+  short bitspersample = 0;
+  int bytesperrow = 0;
   unsigned char* buf;
   unsigned char* tP;
 
@@ -735,6 +740,7 @@ write_data(xel *array, xelval *alpha) {
       samplesperpixel = 1;
       bitspersample = pm_maxvaltobits( _maxval );
       photometric = PHOTOMETRIC_MINISBLACK;
+      i = 8 / bitspersample;
       bytesperrow = ( _x_size + i - 1 ) / i;
     } else {
       samplesperpixel = 1;
