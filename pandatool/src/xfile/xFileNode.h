@@ -23,6 +23,7 @@
 #include "typedReferenceCount.h"
 #include "pointerTo.h"
 #include "namable.h"
+#include "notify.h"
 #include "pvector.h"
 #include "pmap.h"
 
