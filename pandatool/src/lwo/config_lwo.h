@@ -8,4 +8,6 @@
 
 #include <pandatoolbase.h>
 
+extern void init_liblwo();
+
 #endif

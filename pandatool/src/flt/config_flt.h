@@ -14,4 +14,6 @@ NotifyCategoryDeclNoExport(flt);
 
 extern const bool flt_error_abort;
 
+extern void init_libflt();
+
 #endif

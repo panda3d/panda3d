@@ -48,6 +48,25 @@ NotifyCategoryDef(flt, "");
 const bool flt_error_abort = config_flt.GetBool("flt-error-abort", false);
 
 ConfigureFn(config_flt) {
+  init_libflt();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: init_libflt
+//  Description: Initializes the library.  This must be called at
+//               least once before any of the functions or classes in
+//               this library can be used.  Normally it will be
+//               called by the static initializers and need not be
+//               called explicitly, but special cases exist.
+////////////////////////////////////////////////////////////////////
+void
+init_libflt() {
+  static bool initialized = false;
+  if (initialized) {
+    return;
+  }
+  initialized = true;
+
   FltRecord::init_type();
   FltBead::init_type();
   FltBeadID::init_type();

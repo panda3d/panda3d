@@ -6,7 +6,9 @@
 #include "config_ptloader.h"
 #include "loaderFileTypePandatool.h"
 
+#include <config_lwo.h>
 #include <fltToEggConverter.h>
+#include <config_flt.h>
 #include <lwoToEggConverter.h>
 
 #include <dconfig.h>
@@ -39,9 +41,11 @@ init_libptloader() {
 
   LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_ptr();
 
+  init_liblwo();
   FltToEggConverter *flt = new FltToEggConverter;
   reg->register_type(new LoaderFileTypePandatool(flt));
 
+  init_libflt();
   LwoToEggConverter *lwo = new LwoToEggConverter;
   reg->register_type(new LoaderFileTypePandatool(lwo));
 }
