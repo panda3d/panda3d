@@ -3537,9 +3537,11 @@ upload_texture_image(CLP(TextureContext) *gtc,
           break;
 
         case GL_TEXTURE_3D:
+          /* TODO: extension function.
           GLUP(Build3DMipmaps)(target, internal_format,
                                width, height, depth,
                                external_format, component_type, image);
+          */
           break;
 
         default:
@@ -3567,9 +3569,11 @@ upload_texture_image(CLP(TextureContext) *gtc,
       break;
 
     case GL_TEXTURE_3D:
+      /* TODO: extension function
       GLP(TexImage3D)(target, 0, internal_format,
                       width, height, depth, 0,
                       external_format, component_type, image);
+      */
       break;
 
     default:
@@ -3588,8 +3592,10 @@ upload_texture_image(CLP(TextureContext) *gtc,
       break;
 
     case GL_TEXTURE_3D:
+      /* TODO: extension function.
       GLP(TexSubImage3D)(target, 0, 0, 0, 0, width, height, depth,
                          external_format, component_type, image);
+      */
       break;
 
     default:
