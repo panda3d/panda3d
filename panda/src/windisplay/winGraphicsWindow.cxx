@@ -945,6 +945,19 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       // when focus is regained, compare the state of the keyboard to
       // the last known state (stored above, when focus was lost) to
       // regenerate the lost keyboard events.
+
+      if (GetForegroundWindow() != _mwindow) {
+        // Sometimes, particularly on window create, it appears we get
+        // a WM_SETFOCUS event even though the window hasn't really
+        // received focus yet.  That's bad and confuses the
+        // GetKeyboardState logic, below.  The above check filters out
+        // this case (while testing GetFocus() instead of
+        // GetForegroundWindow() doesn't).
+        windisplay_cat.debug()
+          << "Got incorrect WM_SETFOCUS\n";
+        break;
+      }
+
       BYTE new_keyboard_state[num_virtual_keys];
       GetKeyboardState(new_keyboard_state);
       for (int i = 0; i < num_virtual_keys; i++) {
