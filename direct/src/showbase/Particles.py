@@ -58,7 +58,7 @@ class Particles(ParticleSystem.ParticleSystem):
 	self.node = PhysicalNode.PhysicalNode()
 	self.node.addPhysical(self)
 	self.nodePath = hidden.attachNewNode(self.node)
-	#self.forceNode = ForceNode.ForceNode()
+	self.forceNode = ForceNode.ForceNode()
 
 	self.integrator = LinearEulerIntegrator.LinearEulerIntegrator()
 
@@ -67,6 +67,11 @@ class Particles(ParticleSystem.ParticleSystem):
 
 	particleMgr.setFrameStepping(1)
 	particleMgr.attachParticlesystem(self)
+
+    def cleanup(self):
+	"""cleanup(self)"""
+	physicsMgr.removePhysical(self)
+	particleMgr.removeParticlesystem(self)
 
     def setFactory(self, type):
 	"""setFactory(self, type)"""
@@ -99,20 +104,21 @@ class Particles(ParticleSystem.ParticleSystem):
 	    self.renderer.setPointSize(1.0)
 	elif (type == "LineParticleRenderer"):
 	    self.renderer = LineParticleRenderer.LineParticleRenderer()
-	    self.renderer.setHeadColor(Vec4(1.0, 1.0, 1.0, 1.0))
-	    self.renderer.setTailColor(Vec4(1.0, 1.0, 1.0, 1.0))
+	    self.renderer.setPointSize(1.0)
 	elif (type == "GeomParticleRenderer"):
 	    self.renderer = GeomParticleRenderer.GeomParticleRenderer()
 	elif (type == "SparkleParticleRenderer"):
 	    self.renderer = SparkleParticleRenderer.SparkleParticleRenderer()
 	elif (type == "SpriteParticleRenderer"):
 	    self.renderer = SpriteParticleRenderer.SpriteParticleRenderer()
+	    t = loader.loadTexture("I:/beta/toons/install/maps/evil_eye.rgb")
+	    if (t == None):
+		print "Couldn't find default texture: evil_eye.rgb!"
+		return None
+	    self.renderer.setTexture(t)
 	else:
 	    print "unknown renderer type: %s" % type
 	    return None
-	#self.renderer.setAlphaMode(
-        #BaseParticleRenderer.BaseParticleRenderer.PRALPHAUSER)
-	#self.renderer.setUserAlpha(1.0)
 	ParticleSystem.ParticleSystem.setRenderer(self, self.renderer)
 
     def setEmitter(self, type):
@@ -144,15 +150,11 @@ class Particles(ParticleSystem.ParticleSystem):
 	else:
 	    print "unknown emitter type: %s" % type
 	    return None
-	#self.emitter.setEmissionType(
-        #BaseParticleEmitter.BaseParticleEmitter.ETEXPLICIT)
-	#self.emitter.setExplicitLaunchVector(Vec3(-1.0, -1.0, 1.0))
-	#self.emitter.setAmplitude(1.0)
 	ParticleSystem.ParticleSystem.setEmitter(self, self.emitter)
 
     def __update(self, state):
 	"""update(self, state)"""
-        dt = globalClock.getDt()
+        dt = min(globalClock.getDt(), 0.1)
         physicsMgr.doPhysics(dt)
         particleMgr.doParticles(dt)
         return Task.cont
@@ -163,6 +165,7 @@ class Particles(ParticleSystem.ParticleSystem):
 
     def start(self):
 	"""start(self)"""
+	self.stop()
 	taskMgr.spawnTaskNamed(Task.Task(self.__update), 'update-particles')
 
     def stop(self):

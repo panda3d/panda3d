@@ -799,6 +799,8 @@ class ParticlePanel(AppShell):
         elif isinstance(renderer, SpriteParticleRenderer):
             color = renderer.getColor() * 255.0
             texture = renderer.getTexture()
+	    if (texture != None):
+		self.rendererSpriteTexture = texture.getName()
             self.rendererSpriteXScale.set(renderer.getXScaleFlag())
             self.rendererSpriteYScale.set(renderer.getYScaleFlag())
             self.rendererSpriteAnimAngle.set(renderer.getAnimAngleFlag())
@@ -894,8 +896,11 @@ class ParticlePanel(AppShell):
 	self.particles.renderer.setLifeScale(lScale)
     # Sprite #
     def setRendererSpriteTexture(self, event):
-	self.particles.renderer.setTexture(
-            self.rendererSpriteTexture.get())
+	t = loader.loadTexture(self.rendererSpriteTexture.get())
+	if (t != None):
+	    self.particles.renderer.setTexture(t)
+	else:
+	    print "Couldn't find rendererSpriteTexture"
     def toggleRendererSpriteXScale(self):
 	self.particles.renderer.setXScaleFlag(
             self.rendererSpriteXScale.get())
