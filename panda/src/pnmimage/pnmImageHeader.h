@@ -41,7 +41,7 @@ class PNMWriter;
 //               image file's header.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PNMImageHeader {
-public:
+PUBLISHED:
   INLINE PNMImageHeader();
   INLINE PNMImageHeader(const PNMImageHeader &copy);
   INLINE void operator = (const PNMImageHeader &copy);

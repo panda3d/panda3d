@@ -334,6 +334,32 @@ write(const Filename &name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::load
+//       Access: Published
+//  Description: Creates the texture from the already-read PNMImage.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+load(const PNMImage &pnmimage) {
+  if (!_pbuffer->load(pnmimage))
+    return false;
+
+  mark_dirty(DF_image);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::store
+//       Access: Published
+//  Description: Saves the texture to the indicated PNMImage, but does
+//               not write it to disk.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+store(PNMImage &pnmimage) const {
+  return _pbuffer->store( pnmimage );
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_wrapu
 //       Access: Published
 //  Description:
@@ -453,32 +479,6 @@ set_border_width(int width) {
 void Texture::
 prepare(PreparedGraphicsObjects *prepared_objects) {
   prepared_objects->enqueue_texture(this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::load
-//       Access: Public
-//  Description: Creates the texture from the already-read PNMImage.
-////////////////////////////////////////////////////////////////////
-bool Texture::
-load(const PNMImage &pnmimage) {
-  if (!_pbuffer->load(pnmimage))
-    return false;
-
-  mark_dirty(DF_image);
-
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::store
-//       Access: Public
-//  Description: Saves the texture to the indicated PNMImage, but does
-//               not write it to disk.
-////////////////////////////////////////////////////////////////////
-bool Texture::
-store(PNMImage &pnmimage) const {
-  return _pbuffer->store( pnmimage );
 }
 
 ////////////////////////////////////////////////////////////////////

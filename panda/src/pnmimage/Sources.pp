@@ -29,5 +29,7 @@
     pnmImage.h pnmImageHeader.I pnmImageHeader.h pnmReader.I \
     pnmReader.h pnmWriter.I pnmWriter.h pnmimage_base.h
 
+  #define IGATESCAN all
+
 #end lib_target
 

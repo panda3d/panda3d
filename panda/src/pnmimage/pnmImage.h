@@ -57,7 +57,7 @@ class PNMFileType;
 //               pointer.  The filename "-" refers to stdin or stdout.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PNMImage : public PNMImageHeader {
-public:
+PUBLISHED:
   INLINE PNMImage();
   INLINE PNMImage(const Filename &filename, PNMFileType *type = NULL);
   INLINE PNMImage(int x_size, int y_size, int num_channels = 3,

@@ -85,6 +85,9 @@ PUBLISHED:
             int primary_file_num_channels = 0, int alpha_file_channel = 0);
   bool write(const Filename &fullpath = "") const;
 
+  bool load(const PNMImage &pnmimage);
+  bool store(PNMImage &pnmimage) const;
+
   void set_wrapu(WrapMode wrap);
   void set_wrapv(WrapMode wrap);
   void set_minfilter(FilterType filter);
@@ -105,9 +108,6 @@ PUBLISHED:
   void prepare(PreparedGraphicsObjects *prepared_objects);
 
 public:
-  bool load(const PNMImage &pnmimage);
-  bool store(PNMImage &pnmimage) const;
-
   static bool is_mipmap(FilterType type);
 
   TextureContext *prepare_now(PreparedGraphicsObjects *prepared_objects, 
