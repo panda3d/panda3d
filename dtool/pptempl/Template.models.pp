@@ -134,7 +134,9 @@ pal : $[if $[pal_egg_targets],$[pal_egg_dir]] $[pal_egg_targets]
 
 bam : pal $[if $[bam_targets],$[bam_dir]] $[bam_targets]
 
-unpack-soft : $[soft_scene_files(soft_char_egg)]
+#map soft_scenes soft_scene_files(soft_char_egg)
+
+unpack-soft : $[soft_scenes]
 
 #define install_bam_targets \
     $[install_egg_dirs] \
@@ -271,14 +273,12 @@ $[TAB]maya2egg $[MAYA2EGG_OPTS] -a chan -cn "$[CHAR_NAME]" -o $[target] -sf $[be
 #end maya_char_egg
 
 // Unpack the Soft scene database from its multifile.
-#forscopes soft_char_egg
-  #foreach file $[MODEL] $[ANIMS]
-    #define target $[SCENE_PREFIX]$[file].1-0.dsc
-    #define source $[DATABASE]/$[SCENE_PREFIX]$[file].mf
+#formap scene_file soft_scenes
+  #define target $[scene_file]
+  #define source $[scene_file:$[DATABASE]/SCENES/%.1-0.dsc=$[DATABASE]/%.mf]
 $[target] : $[source]
 $[TAB]multify xf $[source] -C $[DATABASE]
-  #end file
-#end soft_char_egg
+#end scene_file
 
 // Egg character model generation from Soft databases.
 #forscopes soft_char_egg
