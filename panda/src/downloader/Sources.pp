@@ -81,7 +81,7 @@
     httpEnum.h \
     identityStream.I identityStream.h identityStreamBuf.h \
     multiplexStream.I multiplexStream.h \
-    multiplexStreamBuf.I multiplexStreamBuf.I \
+    multiplexStreamBuf.I multiplexStreamBuf.h \
     patcher.h patcher.I \
     socketStream.h socketStream.I \
     urlSpec.h urlSpec.I
