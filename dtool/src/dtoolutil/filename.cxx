@@ -35,7 +35,7 @@
 
 #ifdef HAVE_GLOB_H
   #include <glob.h>
-  #ifndef GLOB_NO_MATCH
+  #ifndef GLOB_NOMATCH
     #define GLOB_NOMATCH -3
   #endif
 #endif
