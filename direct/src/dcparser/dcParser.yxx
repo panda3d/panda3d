@@ -112,8 +112,9 @@ dclass_name:
   DCFile::ClassesByName::const_iterator ni;
   ni = dc_file->_classes_by_name.find($1);
   if (ni == dc_file->_classes_by_name.end()) {
-    yyerror("Unknown class: " + $1);
-    $$ = (DCClass *)NULL;
+    dcyywarning("Unknown class: " + $1);
+    $$ = new DCClass($1);
+    dc_file->add_class($$);
   } else {
     $$ = (*ni).second;
   }
