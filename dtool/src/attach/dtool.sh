@@ -9,7 +9,7 @@ if [ $OS = "Linux" ]; then
 elif [ $OS = "IRIX64" ]; then
   PATH=/var/local/bin:/usr/local/bin/ptools:~/bin:/usr/local/prman/bin:.:/usr/sbin:/usr/bsd:/sbin:/usr/bin:/bin:/usr/bin/X11:/usr/etc:/usr/demos/bin:/usr/local/bin
 elif [ $OS = "CYGWIN_98-4.10" ]; then
-  PATH=/usr/local/bin:/CYGNUS/CYGWIN~1/H-I586~1/BIN:/WINDOWS:/WINDOWS:/WINDOWS/COMMAND:/DMI/BIN:/KATANA/UTL/DEV/MAKE:/KATANA/UTL/DEV/HITACHI
+  PATH=/usr/local/bin:/bin:/CYGNUS/CYGWIN~1/H-I586~1/BIN:/WINDOWS:/WINDOWS:/WINDOWS/COMMAND:/DMI/BIN:/KATANA/UTL/DEV/MAKE:/KATANA/UTL/DEV/HITACHI
 else
   PATH=/var/local/bin:/usr/local/bin/ptools:~/bin:/usr/local/prman/bin:.:/usr/sbin:/usr/bsd:/sbin:/usr/bin:/bin:/usr/bin/X11:/usr/etc:/usr/demos/bin:/usr/local/bin
 fi

@@ -24,7 +24,9 @@
                    (if (string= h-a "yes") t '())))
 ;; (setq have-neartool (let ((h-n (getenv "HAVE_NEARTOOL")))
 ;;                          (if (string= h-n "yes") t '())))
-(setq is-cygwin (string= (getenv "OS") "CYGWIN_NT-4.0"))
+(setq is-cygwin (or (string= (getenv "OS") "CYGWIN_NT-4.0")
+                    (string= (getenv "OS") "CYGWIN_NT-5.0")
+                    (string= (getenv "OS") "CYGWIN_NT-5.1")))  
 
 ;; (setq ct-command (cond
 ;;                   (is-cygwin "bash /install/tool/bin/neartool")
