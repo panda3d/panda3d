@@ -122,6 +122,14 @@ class ShowBase(DirectObject.DirectObject):
         if self.config.GetBool('open-default-window', 1):
             self.openMainWindow()
 
+            if self.win == None:
+                # Try a little harder if the window wouldn't open.
+                self.makeAllPipes()
+                while self.win == None and len(self.pipeList) > 1:
+                    self.pipeList.remove(self.pipe)
+                    self.pipe = self.pipeList[0]
+                    self.openMainWindow()
+
         self.loader = Loader.Loader(self)
         self.eventMgr = eventMgr
         self.messenger = messenger
@@ -265,20 +273,21 @@ class ShowBase(DirectObject.DirectObject):
                                 self.render)
             
         win = chanConfig.getWin()
+        if win != None:
+            # Adjust some of the window properties.
+            props = WindowProperties()
+            windowTitle = self.config.GetString("window-title", "");
+            if windowTitle:
+                props.setTitle(windowTitle)
 
-        # Adjust some of the window properties.
-        props = WindowProperties()
-        windowTitle = self.config.GetString("window-title", "");
-        if windowTitle:
-            props.setTitle(windowTitle)
+            win.requestProperties(props)
 
-        win.requestProperties(props)
+            if self.win == None:
+                self.win = win
 
-        if self.win == None:
-            self.win = win
-
-        self.winList.append(win)
-        self.getCameras(chanConfig)
+            self.winList.append(win)
+            self.getCameras(chanConfig)
+            
         return win
 
     def closeWindow(self, win):
@@ -319,7 +328,13 @@ class ShowBase(DirectObject.DirectObject):
         this method is called a second time, it will close the
         previous main window and open a new one, preserving the lens
         properties in base.camLens.
+
+        The return value is true on success, or false on failure (in
+        which case base.win may be either None, or the previous,
+        closed window).
         """
+        success = 1
+        oldWin = self.win
         oldLens = self.camLens
         oldClearColorActive = None
         if self.win != None:
@@ -332,21 +347,29 @@ class ShowBase(DirectObject.DirectObject):
 
         # Open a new window.
         self.openWindow()
-        self.setupMouse(self.win)
-        self.makeCamera2d(self.win, -1, 1, -1, 1)
+        if self.win == None:
+            self.win = oldWin
+            self.winList.append(oldWin)
+            success = 0
+        
+        if self.win != None:
+            self.setupMouse(self.win)
+            self.makeCamera2d(self.win, -1, 1, -1, 1)
 
-        if oldLens != None:
-            # Restore the previous lens properties.
-            self.camNode.setLens(oldLens)
-            self.camLens = oldLens
+            if oldLens != None:
+                # Restore the previous lens properties.
+                self.camNode.setLens(oldLens)
+                self.camLens = oldLens
 
-        if oldClearColorActive != None:
-            # Restore the previous clear properties.
-            self.win.setClearColorActive(oldClearColorActive)
-            self.win.setClearColor(oldClearColor)
-            self.win.setClearDepthActive(oldClearDepthActive)
-            self.win.setClearDepth(oldClearDepth)
+            if oldClearColorActive != None:
+                # Restore the previous clear properties.
+                self.win.setClearColorActive(oldClearColorActive)
+                self.win.setClearColor(oldClearColor)
+                self.win.setClearDepthActive(oldClearDepthActive)
+                self.win.setClearDepth(oldClearDepth)
 
+        return success
+    
     def setupRender(self):
         """setupRender(self)
 
