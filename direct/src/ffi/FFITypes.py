@@ -785,7 +785,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         indent(file, nesting+2, 'if ((len(_args) == 1) and (_args[0] == None)):\n')
         indent(file, nesting+3, 'return\n')
         indent(file, nesting+2, '# Otherwise, call the C constructor\n')
-        indent(file, nesting+2, 'apply(self.constructor, _args)\n')
+        indent(file, nesting+2, 'self.constructor(*_args)\n')
         indent(file, nesting+2, '\n')
 
 
