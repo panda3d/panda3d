@@ -1,4 +1,4 @@
-""" PANDA3D Particle Panel module """
+"""PANDA3D Particle Panel"""
 
 # Import Tkinter, Pmw, and the floater code from this directory tree.
 from AppShell import *
@@ -8,6 +8,7 @@ import Dial
 import Floater
 import VectorWidgets
 import Placer
+import Particles
 
 class ParticlePanel(AppShell):
     # Override class variables
@@ -17,12 +18,14 @@ class ParticlePanel(AppShell):
     usecommandarea = 0
     usestatusarea  = 0
     
-    def __init__(self, **kw):
+    def __init__(self, particles, **kw):
         INITOPT = Pmw.INITOPT
         optiondefs = (
             ('title',     self.appname,       None),
             )
         self.defineoptions(kw, optiondefs)
+
+	self.particles = particles
 
         AppShell.__init__(self)
 
@@ -254,9 +257,17 @@ class ParticlePanel(AppShell):
         ## RENDERER PAGE ##
         self.createOptionMenu(rendererPage, 'Renderer type:',
                               'Select type of particle renderer',
-                              ('Geom', 'Point', 'Sparkle', 'Sprite'),
+                              ('Line', 'Geom', 'Point', 'Sparkle', 'Sprite'),
                               self.selectRendererType)
         self.rendererNotebook = Pmw.NoteBook(rendererPage, tabpos = None)
+	# Line page #
+	linePage = self.rendererNotebook.add('Line')
+	self.createColorEntry(linePage, 'Head color',
+				'Head color of line',
+				command = self.setRendererLineHeadColor)
+	self.createColorEntry(linePage, 'Tail color',
+				'Tail color of line',
+				command = self.setRendererLineTailColor)
         # Geom page #
         geomPage = self.rendererNotebook.add('Geom')
         f = Frame(geomPage)
@@ -428,48 +439,40 @@ class ParticlePanel(AppShell):
     ### PARTICLE SYSTEM COMMANDS ###
     ## System Page ##
     def setSystemPoolSize(self, value):
-        print 'Pool size:', value
+	self.particles.setPoolSize(value)
     def setSystemBirthRate(self, value):
-        print 'Birth rate:', value
+	self.particles.setBirthRate(value)
     def setSystemLitterSize(self, value):
-        print 'Litter size:', value
+	self.particles.setLitterSize(value)
     def setSystemLitterSpread(self, value):
-        print 'Litter spread:', value
+	self.particles.setLitterSpread(value)
     def setSystemLifespan(self, value):
-        print 'System lifespan:', value
+	self.particles.setSystemLifespan(value)
     def toggleSystemLocalVelocity(self):
-        print 'Local velocity is ',
-        if self.systemLocalVelocity.get():
-            print 'on'
-        else:
-            print 'off'
+	self.particles.setLocalVelocityFlag(self.systemLocalVelocity.get())
     def toggleSystemGrowsOlder(self):
-        print 'System Grows Older is ',
-        if self.systemGrowsOlder.get():
-            print 'on'
-        else:
-            print 'off'
+	self.particles.setSystemGrowsOlderFlag(self.systemGrowsOlder.get())
     def setSystemPos(self, pos):
-        print 'System pos:', pos
+	self.particles.getNodePath().setPos(Vec3(pos[0], pos[1], pos[2]))
     def setSystemHpr(self, pos):
-        print 'System hpr:', pos
+	self.particles.getNodePath().setHpr(Vec3(pos[0], pos[1], pos[2]))
 
     ## Factory Page ##
     def selectFactoryType(self, type):
         self.factoryNotebook.selectpage(type)
-        print 'Factory type:', type
+	self.particles.setFactory(type)
     def setFactoryLifeSpan(self, value):
-        print 'Factory Life span:', value
+	self.particles.factory.setLifeSpanBase(value)
     def setFactoryLifeSpanSpread(self, value):
-        print 'Factory Life span spread:', value
+	self.particles.factory.setLifeSpanSpread(value)
     def setFactoryParticleMass(self, value):
-        print 'Factory Particle mass:', value
+	self.particles.factory.setMassBase(value)
     def setFactoryParticleMassSpread(self, value):
-        print 'Factory Particle mass spread:', value
+	self.particles.factory.setMassSpread(value)
     def setFactoryTerminalVelocity(self, value):
-        print 'Factory Terminal velocity:', value
+	self.particles.factory.setTerminalVelocityBase(value)
     def setFactoryTerminalVelocitySpread(self, value):
-        print 'Factory Terminal velocity spread:', value
+	self.particles.factory.setTerminalVelocitySpread(value)
     # Point Page #
     # Z Spin Page #
     def setFactoryZSpinInitialAngle(self, angle):
@@ -482,7 +485,7 @@ class ParticlePanel(AppShell):
     ## Emitter page ##
     def selectEmitterType(self, type):
         self.emitterNotebook.selectpage(type)
-        print 'Emitter type:', type
+	self.particles.setEmitter(type)
     # Box #
     def setEmitterBoxPoint1(self, point):
         print 'Emitter box point 1:', point
@@ -546,6 +549,12 @@ class ParticlePanel(AppShell):
     ## RENDERER PAGE ##
     def selectRendererType(self, type):
         self.rendererNotebook.selectpage(type)
+	self.particles.setRenderer(type)
+    # Line #
+    def setRendererLineHeadColor(self, color):
+        print 'Renderer Line head color:', color
+    def setRendererLineTailColor(self, color):
+        print 'Renderer Line tail color:', color
     # Geom #
     def setRendererGeomNode(self, event):
         print 'Renderer Geom node:', self.rendererGeomNode.get()
