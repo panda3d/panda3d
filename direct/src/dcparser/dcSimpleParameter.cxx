@@ -318,58 +318,59 @@ get_nested_field(int) const {
 ////////////////////////////////////////////////////////////////////
 bool DCSimpleParameter::
 pack_double(DCPackData &pack_data, double value) const {
+  bool pack_error = false;
   double real_value = value * _divisor;
 
   switch (_type) {
   case ST_int8:
     do_pack_int8(pack_data.get_write_pointer(1), 
-               (int)floor(real_value + 0.5));
+                 (int)floor(real_value + 0.5), pack_error);
     break;
 
   case ST_int16:
     do_pack_int16(pack_data.get_write_pointer(2), 
-               (int)floor(real_value + 0.5));
+                  (int)floor(real_value + 0.5), pack_error);
     break;
-
+    
   case ST_int32:
     do_pack_int32(pack_data.get_write_pointer(4), 
-               (int)floor(real_value + 0.5));
+                  (int)floor(real_value + 0.5), pack_error);
     break;
-
+    
   case ST_int64:
     do_pack_int64(pack_data.get_write_pointer(8), 
-                (PN_int64)floor(real_value + 0.5));
+                  (PN_int64)floor(real_value + 0.5), pack_error);
     break;
-
+    
   case ST_uint8:
     do_pack_uint8(pack_data.get_write_pointer(1), 
-                (unsigned int)floor(real_value + 0.5));
+                  (unsigned int)floor(real_value + 0.5), pack_error);
     break;
-
+    
   case ST_uint16:
     do_pack_uint16(pack_data.get_write_pointer(2), 
-                (unsigned int)floor(real_value + 0.5));
+                   (unsigned int)floor(real_value + 0.5), pack_error);
     break;
-
+    
   case ST_uint32:
     do_pack_uint32(pack_data.get_write_pointer(4), 
-                (unsigned int)floor(real_value + 0.5));
+                   (unsigned int)floor(real_value + 0.5), pack_error);
     break;
-
+    
   case ST_uint64:
     do_pack_uint64(pack_data.get_write_pointer(8), 
-                (PN_uint64)floor(real_value + 0.5));
+                   (PN_uint64)floor(real_value + 0.5), pack_error);
     break;
 
   case ST_float64:
-    do_pack_float64(pack_data.get_write_pointer(8), real_value);
+    do_pack_float64(pack_data.get_write_pointer(8), real_value, pack_error);
     break;
 
   default:
     return false;
   }
 
-  return true;
+  return !pack_error;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -380,50 +381,51 @@ pack_double(DCPackData &pack_data, double value) const {
 ////////////////////////////////////////////////////////////////////
 bool DCSimpleParameter::
 pack_int(DCPackData &pack_data, int value) const {
+  bool pack_error = false;
   int int_value = value * _divisor;
 
   switch (_type) {
   case ST_int8:
-    do_pack_int8(pack_data.get_write_pointer(1), int_value);
+    do_pack_int8(pack_data.get_write_pointer(1), int_value, pack_error);
     break;
 
   case ST_int16:
-    do_pack_int16(pack_data.get_write_pointer(2), int_value);
+    do_pack_int16(pack_data.get_write_pointer(2), int_value, pack_error);
     break;
 
   case ST_int32:
-    do_pack_int32(pack_data.get_write_pointer(4), int_value);
+    do_pack_int32(pack_data.get_write_pointer(4), int_value, pack_error);
     break;
 
   case ST_int64:
-    do_pack_int64(pack_data.get_write_pointer(8), int_value);
+    do_pack_int64(pack_data.get_write_pointer(8), int_value, pack_error);
     break;
 
   case ST_uint8:
-    do_pack_uint8(pack_data.get_write_pointer(1), (unsigned int)int_value);
+    do_pack_uint8(pack_data.get_write_pointer(1), (unsigned int)int_value, pack_error);
     break;
 
   case ST_uint16:
-    do_pack_uint16(pack_data.get_write_pointer(2), (unsigned int)int_value);
+    do_pack_uint16(pack_data.get_write_pointer(2), (unsigned int)int_value, pack_error);
     break;
 
   case ST_uint32:
-    do_pack_uint32(pack_data.get_write_pointer(4), (unsigned int)int_value);
+    do_pack_uint32(pack_data.get_write_pointer(4), (unsigned int)int_value, pack_error);
     break;
 
   case ST_uint64:
-    do_pack_uint64(pack_data.get_write_pointer(8), (unsigned int)int_value);
+    do_pack_uint64(pack_data.get_write_pointer(8), (unsigned int)int_value, pack_error);
     break;
 
   case ST_float64:
-    do_pack_float64(pack_data.get_write_pointer(8), int_value);
+    do_pack_float64(pack_data.get_write_pointer(8), int_value, pack_error);
     break;
 
   default:
     return false;
   }
 
-  return true;
+  return !pack_error;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -434,50 +436,51 @@ pack_int(DCPackData &pack_data, int value) const {
 ////////////////////////////////////////////////////////////////////
 bool DCSimpleParameter::
 pack_uint(DCPackData &pack_data, unsigned int value) const {
+  bool pack_error = false;
   unsigned int int_value = value * _divisor;
 
   switch (_type) {
   case ST_int8:
-    do_pack_int8(pack_data.get_write_pointer(1), (int)int_value);
+    do_pack_int8(pack_data.get_write_pointer(1), (int)int_value, pack_error);
     break;
 
   case ST_int16:
-    do_pack_int16(pack_data.get_write_pointer(2), (int)int_value);
+    do_pack_int16(pack_data.get_write_pointer(2), (int)int_value, pack_error);
     break;
 
   case ST_int32:
-    do_pack_int32(pack_data.get_write_pointer(4), (int)int_value);
+    do_pack_int32(pack_data.get_write_pointer(4), (int)int_value, pack_error);
     break;
 
   case ST_int64:
-    do_pack_int64(pack_data.get_write_pointer(8), (int)int_value);
+    do_pack_int64(pack_data.get_write_pointer(8), (int)int_value, pack_error);
     break;
 
   case ST_uint8:
-    do_pack_uint8(pack_data.get_write_pointer(1), int_value);
+    do_pack_uint8(pack_data.get_write_pointer(1), int_value, pack_error);
     break;
 
   case ST_uint16:
-    do_pack_uint16(pack_data.get_write_pointer(2), int_value);
+    do_pack_uint16(pack_data.get_write_pointer(2), int_value, pack_error);
     break;
 
   case ST_uint32:
-    do_pack_uint32(pack_data.get_write_pointer(4), int_value);
+    do_pack_uint32(pack_data.get_write_pointer(4), int_value, pack_error);
     break;
 
   case ST_uint64:
-    do_pack_uint64(pack_data.get_write_pointer(8), int_value);
+    do_pack_uint64(pack_data.get_write_pointer(8), int_value, pack_error);
     break;
 
   case ST_float64:
-    do_pack_float64(pack_data.get_write_pointer(8), (double)int_value);
+    do_pack_float64(pack_data.get_write_pointer(8), (double)int_value, pack_error);
     break;
 
   default:
     return false;
   }
 
-  return true;
+  return !pack_error;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -488,50 +491,51 @@ pack_uint(DCPackData &pack_data, unsigned int value) const {
 ////////////////////////////////////////////////////////////////////
 bool DCSimpleParameter::
 pack_int64(DCPackData &pack_data, PN_int64 value) const {
+  bool pack_error = false;
   PN_int64 int_value = value * _divisor;
 
   switch (_type) {
   case ST_int8:
-    do_pack_int8(pack_data.get_write_pointer(1), (int)int_value);
+    do_pack_int8(pack_data.get_write_pointer(1), (int)int_value, pack_error);
     break;
 
   case ST_int16:
-    do_pack_int16(pack_data.get_write_pointer(2), (int)int_value);
+    do_pack_int16(pack_data.get_write_pointer(2), (int)int_value, pack_error);
     break;
 
   case ST_int32:
-    do_pack_int32(pack_data.get_write_pointer(4), (int)int_value);
+    do_pack_int32(pack_data.get_write_pointer(4), (int)int_value, pack_error);
     break;
 
   case ST_int64:
-    do_pack_int64(pack_data.get_write_pointer(8), int_value);
+    do_pack_int64(pack_data.get_write_pointer(8), int_value, pack_error);
     break;
 
   case ST_uint8:
-    do_pack_uint8(pack_data.get_write_pointer(1), (unsigned int)(PN_uint64)int_value);
+    do_pack_uint8(pack_data.get_write_pointer(1), (unsigned int)(PN_uint64)int_value, pack_error);
     break;
 
   case ST_uint16:
-    do_pack_uint16(pack_data.get_write_pointer(2), (unsigned int)(PN_uint64)int_value);
+    do_pack_uint16(pack_data.get_write_pointer(2), (unsigned int)(PN_uint64)int_value, pack_error);
     break;
 
   case ST_uint32:
-    do_pack_uint32(pack_data.get_write_pointer(4), (unsigned int)(PN_uint64)int_value);
+    do_pack_uint32(pack_data.get_write_pointer(4), (unsigned int)(PN_uint64)int_value, pack_error);
     break;
 
   case ST_uint64:
-    do_pack_uint64(pack_data.get_write_pointer(8), (PN_uint64)int_value);
+    do_pack_uint64(pack_data.get_write_pointer(8), (PN_uint64)int_value, pack_error);
     break;
 
   case ST_float64:
-    do_pack_float64(pack_data.get_write_pointer(8), (double)int_value);
+    do_pack_float64(pack_data.get_write_pointer(8), (double)int_value, pack_error);
     break;
 
   default:
     return false;
   }
 
-  return true;
+  return !pack_error;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -542,50 +546,51 @@ pack_int64(DCPackData &pack_data, PN_int64 value) const {
 ////////////////////////////////////////////////////////////////////
 bool DCSimpleParameter::
 pack_uint64(DCPackData &pack_data, PN_uint64 value) const {
+  bool pack_error = false;
   PN_uint64 int_value = value * _divisor;
 
   switch (_type) {
   case ST_int8:
-    do_pack_int8(pack_data.get_write_pointer(1), (int)(PN_int64)int_value);
+    do_pack_int8(pack_data.get_write_pointer(1), (int)(PN_int64)int_value, pack_error);
     break;
 
   case ST_int16:
-    do_pack_int16(pack_data.get_write_pointer(2), (int)(PN_int64)int_value);
+    do_pack_int16(pack_data.get_write_pointer(2), (int)(PN_int64)int_value, pack_error);
     break;
 
   case ST_int32:
-    do_pack_int32(pack_data.get_write_pointer(4), (int)(PN_int64)int_value);
+    do_pack_int32(pack_data.get_write_pointer(4), (int)(PN_int64)int_value, pack_error);
     break;
 
   case ST_int64:
-    do_pack_int64(pack_data.get_write_pointer(8), (PN_int64)int_value);
+    do_pack_int64(pack_data.get_write_pointer(8), (PN_int64)int_value, pack_error);
     break;
 
   case ST_uint8:
-    do_pack_uint8(pack_data.get_write_pointer(1), (unsigned int)int_value);
+    do_pack_uint8(pack_data.get_write_pointer(1), (unsigned int)int_value, pack_error);
     break;
 
   case ST_uint16:
-    do_pack_uint16(pack_data.get_write_pointer(2), (unsigned int)int_value);
+    do_pack_uint16(pack_data.get_write_pointer(2), (unsigned int)int_value, pack_error);
     break;
 
   case ST_uint32:
-    do_pack_uint32(pack_data.get_write_pointer(4), (unsigned int)int_value);
+    do_pack_uint32(pack_data.get_write_pointer(4), (unsigned int)int_value, pack_error);
     break;
 
   case ST_uint64:
-    do_pack_uint64(pack_data.get_write_pointer(8), int_value);
+    do_pack_uint64(pack_data.get_write_pointer(8), int_value, pack_error);
     break;
 
   case ST_float64:
-    do_pack_float64(pack_data.get_write_pointer(8), (double)int_value);
+    do_pack_float64(pack_data.get_write_pointer(8), (double)int_value, pack_error);
     break;
 
   default:
     return false;
   }
 
-  return true;
+  return !pack_error;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -596,15 +601,19 @@ pack_uint64(DCPackData &pack_data, PN_uint64 value) const {
 ////////////////////////////////////////////////////////////////////
 bool DCSimpleParameter::
 pack_string(DCPackData &pack_data, const string &value) const {
+  bool pack_error = false;
+
   switch (_type) {
   case ST_string:
   case ST_blob:
-    do_pack_uint16(pack_data.get_write_pointer(2), value.length());
+    do_pack_uint16(pack_data.get_write_pointer(2), value.length(),
+                   pack_error);
     pack_data.append_data(value.data(), value.length());
     break;
 
   case ST_blob32:
-    do_pack_uint32(pack_data.get_write_pointer(4), value.length());
+    do_pack_uint32(pack_data.get_write_pointer(4), value.length(),
+                   pack_error);
     pack_data.append_data(value.data(), value.length());
     break;
 
@@ -612,7 +621,7 @@ pack_string(DCPackData &pack_data, const string &value) const {
     return false;
   }
 
-  return true;
+  return !pack_error;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1112,6 +1121,67 @@ unpack_string(const char *data, size_t length, size_t &p, string &value) const {
   }
   value = string(data + p, string_length);
   p += string_length;
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSimpleParameter::unpack_skip
+//       Access: Public, Virtual
+//  Description: Increments p to the end of the current field without
+//               actually unpacking any data.  Returns true on
+//               success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool DCSimpleParameter::
+unpack_skip(const char *data, size_t length, size_t &p) const {
+  size_t string_length;
+
+  switch (_type) {
+  case ST_int8:
+  case ST_uint8:
+    p++;
+    break;
+
+  case ST_int16:
+  case ST_uint16:
+    p += 2;
+    break;
+
+  case ST_int32:
+  case ST_uint32:
+    p += 4;
+    break;
+
+  case ST_int64:
+  case ST_uint64:
+  case ST_float64:
+    p += 8;
+    break;
+
+  case ST_string:
+  case ST_blob:
+    if (p + 2 > length) {
+      return false;
+    }
+    string_length = do_unpack_uint16(data + p);
+    p += 2 + string_length;
+    break;
+
+  case ST_blob32:
+    if (p + 4 > length) {
+      return false;
+    }
+    string_length = do_unpack_uint32(data + p);
+    p += 4 + string_length;
+    break;
+
+  default:
+    return false;
+  }
+
+  if (p > length) {
+    return false;
+  }
 
   return true;
 }

@@ -21,7 +21,6 @@
 
 #include "dcbase.h"
 #include "dcField.h"
-#include "dcPackerInterface.h"
 #include "dcDeclaration.h"
 
 class HashGenerator;
@@ -32,8 +31,9 @@ class DCParameter;
 // Description : Defines a particular DistributedClass as read from an
 //               input .dc file.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DIRECT DCClass : public DCPackerInterface, public DCDeclaration {
+class EXPCL_DIRECT DCClass : public DCDeclaration {
 PUBLISHED:
+  const string &get_name() const;
   int get_number() const;
 
   bool has_parent() const;
@@ -94,6 +94,7 @@ public:
   void set_number(int number);
 
 private:
+  string _name;
   bool _is_struct;
   bool _bogus_class;
   int _number;

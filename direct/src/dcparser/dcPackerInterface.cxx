@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "dcPackerInterface.h"
+#include "dcPackerCatalog.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::Constructor
@@ -33,6 +34,7 @@ DCPackerInterface(const string &name) :
   _has_nested_fields = false;
   _num_nested_fields = -1;
   _pack_type = PT_invalid;
+  _catalog = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -50,6 +52,7 @@ DCPackerInterface(const DCPackerInterface &copy) :
   _num_nested_fields(copy._num_nested_fields),
   _pack_type(copy._pack_type)
 {
+  _catalog = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -59,90 +62,9 @@ DCPackerInterface(const DCPackerInterface &copy) :
 ////////////////////////////////////////////////////////////////////
 DCPackerInterface::
 ~DCPackerInterface() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCPackerInterface::get_name
-//       Access: Published
-//  Description: Returns the name of this field, or empty string
-//               if the field is unnamed.
-////////////////////////////////////////////////////////////////////
-const string &DCPackerInterface::
-get_name() const {
-  return _name;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCPackerInterface::set_name
-//       Access: Published
-//  Description: Sets the name of this field.
-////////////////////////////////////////////////////////////////////
-void DCPackerInterface::
-set_name(const string &name) {
-  _name = name;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCPackerInterface::has_fixed_byte_size
-//       Access: Public
-//  Description: Returns true if this field type always packs to the
-//               same number of bytes, false if it is variable.
-////////////////////////////////////////////////////////////////////
-bool DCPackerInterface::
-has_fixed_byte_size() const {
-  return _has_fixed_byte_size;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCPackerInterface::get_fixed_byte_size
-//       Access: Public
-//  Description: If has_fixed_byte_size() returns true, this returns
-//               the number of bytes this field type will use.
-////////////////////////////////////////////////////////////////////
-size_t DCPackerInterface::
-get_fixed_byte_size() const {
-  return _fixed_byte_size;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCPackerInterface::get_num_length_bytes
-//       Access: Public
-//  Description: Returns the number of bytes that should be written
-//               into the stream on a push() to record the number of
-//               bytes in the record up until the next pop().  This is
-//               only meaningful if _has_nested_fields is true.
-////////////////////////////////////////////////////////////////////
-size_t DCPackerInterface::
-get_num_length_bytes() const {
-  return _num_length_bytes;
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCPackerInterface::has_nested_fields
-//       Access: Public
-//  Description: Returns true if this field type has any nested fields
-//               (and thus expects a push() .. pop() interface to the
-//               DCPacker), or false otherwise.  If this returns true,
-//               get_num_nested_fields() may be called to determine
-//               how many nested fields are expected.
-////////////////////////////////////////////////////////////////////
-bool DCPackerInterface::
-has_nested_fields() const {
-  return _has_nested_fields;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCPackerInterface::get_num_nested_fields
-//       Access: Public
-//  Description: Returns the number of nested fields required by this
-//               field type.  These may be array elements or structure
-//               elements.  The return value may be -1 to indicate the
-//               number of nested fields is variable.
-////////////////////////////////////////////////////////////////////
-int DCPackerInterface::
-get_num_nested_fields() const {
-  return _num_nested_fields;
+  if (_catalog != (DCPackerCatalog *)NULL) {
+    delete _catalog;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -171,16 +93,6 @@ calc_num_nested_fields(size_t length_bytes) const {
 DCPackerInterface *DCPackerInterface::
 get_nested_field(int n) const {
   return NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCPackerInterface::get_pack_type
-//       Access: Public
-//  Description: Returns the type of value expected by this field.
-////////////////////////////////////////////////////////////////////
-DCPackType DCPackerInterface::
-get_pack_type() const {
-  return _pack_type;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -313,4 +225,88 @@ unpack_uint64(const char *, size_t, size_t &, PN_uint64 &) const {
 bool DCPackerInterface::
 unpack_string(const char *, size_t, size_t &, string &) const {
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::unpack_skip
+//       Access: Public, Virtual
+//  Description: Increments p to the end of the current field without
+//               actually unpacking any data.  Returns true on
+//               success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool DCPackerInterface::
+unpack_skip(const char *, size_t, size_t &) const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::get_catalog
+//       Access: Public
+//  Description: Returns the DCPackerCatalog associated with this
+//               field, listing all of the nested fields by name.
+////////////////////////////////////////////////////////////////////
+const DCPackerCatalog *DCPackerInterface::
+get_catalog() const {
+  if (_catalog == (DCPackerCatalog *)NULL) {
+    ((DCPackerInterface *)this)->make_catalog();
+  }
+  return _catalog;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::make_catalog
+//       Access: Private
+//  Description: Called internally to create a new DCPackerCatalog
+//               object.
+////////////////////////////////////////////////////////////////////
+void DCPackerInterface::
+make_catalog() {
+  nassertv(_catalog == (DCPackerCatalog *)NULL);
+  _catalog = new DCPackerCatalog(this);
+
+  if (has_nested_fields()) {
+    int num_nested = get_num_nested_fields();
+    // num_nested might be -1, indicating there are a dynamic number
+    // of fields (e.g. an array).  But in that case, none of the
+    // fields will be named anyway, so we don't care about them, so
+    // it's ok that the following loop will not visit any fields.
+    for (int i = 0; i < num_nested; i++) {
+      DCPackerInterface *nested = get_nested_field(i);
+      if (nested != (DCPackerInterface *)NULL) {
+        nested->r_fill_catalog(_catalog, "", this, i);
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::r_fill_catalog
+//       Access: Private
+//  Description: Called internally to recursively fill up the new
+//               DCPackerCatalog object.
+////////////////////////////////////////////////////////////////////
+void DCPackerInterface::
+r_fill_catalog(DCPackerCatalog *catalog, const string &name_prefix,
+               DCPackerInterface *parent, int field_index) {
+  string next_name_prefix = name_prefix;
+
+  if (!get_name().empty()) {
+    // Record this entry in the catalog.
+    next_name_prefix += get_name();
+    catalog->add_entry(next_name_prefix, this, parent, field_index);
+
+    next_name_prefix += ".";
+  }
+
+  // Add any children.
+  if (has_nested_fields()) {
+    int num_nested = get_num_nested_fields();
+    // As above, it's ok if num_nested is -1.
+    for (int i = 0; i < num_nested; i++) {
+      DCPackerInterface *nested = get_nested_field(i);
+      if (nested != (DCPackerInterface *)NULL) {
+        nested->r_fill_catalog(catalog, next_name_prefix, this, i);
+      }
+    }
+  }
 }

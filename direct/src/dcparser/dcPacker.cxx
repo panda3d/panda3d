@@ -31,6 +31,9 @@ DCPacker() {
   _unpack_data = NULL;
   _unpack_length = 0;
   _unpack_p = 0;
+  _root = NULL;
+  _catalog = NULL;
+  _live_catalog = NULL;
   _current_field = NULL;
   _current_parent = NULL;
   _current_field_index = 0;
@@ -45,6 +48,7 @@ DCPacker() {
 ////////////////////////////////////////////////////////////////////
 DCPacker::
 ~DCPacker() {
+  clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -62,7 +66,10 @@ begin_pack(const DCPackerInterface *root) {
   _pack_error = false;
   _pack_data.clear();
 
-  _stack.clear();
+  _root = root;
+  _catalog = NULL;
+  _live_catalog = NULL;
+
   _current_field = root;
   _current_parent = NULL;
   _current_field_index = 0;
@@ -85,12 +92,9 @@ end_pack() {
 
   if (!_stack.empty() || _current_field != NULL || _current_parent != NULL) {
     _pack_error = true;
-    _stack.clear();
-    _current_field = NULL;
-    _current_parent = NULL;
-    _current_field_index = 0;
-    _num_nested_fields = 0;
   }
+
+  clear();
 
   return !_pack_error;
 }
@@ -127,7 +131,10 @@ begin_unpack(const char *data, size_t length,
   _unpack_length = length;
   _unpack_p = 0;
 
-  _stack.clear();
+  _root = root;
+  _catalog = NULL;
+  _live_catalog = NULL;
+
   _current_field = root;
   _current_parent = NULL;
   _current_field_index = 0;
@@ -140,7 +147,8 @@ begin_unpack(const char *data, size_t length,
 //  Description: Finishes the unpacking session.
 //
 //               The return value is true on success, or false if
-//               there has been some error during unpacking.
+//               there has been some error during unpacking (or if all
+//               fields have not been unpacked).
 ////////////////////////////////////////////////////////////////////
 bool DCPacker::
 end_unpack() {
@@ -149,15 +157,67 @@ end_unpack() {
   _mode = M_idle;
 
   if (!_stack.empty() || _current_field != NULL || _current_parent != NULL) {
-    _pack_error = true;
-    _stack.clear();
-    _current_field = NULL;
-    _current_parent = NULL;
-    _current_field_index = 0;
-    _num_nested_fields = 0;
+    // This happens if we have not unpacked all of the fields.
+    // However, this is not an error if we have called seek() during
+    // the unpack session (in which case the _catalog will be
+    // non-NULL).  On the other hand, if the catalog is still NULL,
+    // then we have never called seek() and it is an error not to
+    // unpack all values.
+    if (_catalog == (DCPackerCatalog *)NULL) {
+      _pack_error = true;
+    }
   }
 
+  clear();
+
   return !_pack_error;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::seek
+//       Access: Published
+//  Description: Sets the current unpack (or repack) position to the
+//               named field.  In unpack mode, the next call to
+//               unpack_*() or push() will begin to read the named
+//               field.  In repack mode, the next call to pack_*() or
+//               push() will modify the named field.
+//
+//               Returns true if successful, false if the field is not
+//               known (or if the packer is in an invalid mode).
+////////////////////////////////////////////////////////////////////
+bool DCPacker::
+seek(const string &field_name) {
+  if (_mode == M_unpack) {
+    if (_catalog == (DCPackerCatalog *)NULL) {
+      _catalog = _root->get_catalog();
+      _live_catalog = _catalog->get_live_catalog(_unpack_data, _unpack_length);
+    }
+    nassertr(_catalog != (DCPackerCatalog *)NULL, false);
+
+    int entry_index = _catalog->find_entry_by_name(field_name);
+    if (entry_index < 0) {
+      // The field was not known.
+      _pack_error = true;
+      return false;
+    }
+
+    const DCPackerCatalog::Entry &entry = _catalog->get_entry(entry_index);
+
+    // If we are seeking, we don't need to remember our current stack
+    // position.
+    _stack.clear();
+    _current_field = entry._field;
+    _current_parent = entry._parent;
+    _current_field_index = entry._field_index;
+    _num_nested_fields = _current_parent->get_num_nested_fields();
+    _unpack_p = _live_catalog->get_unpack_p(entry_index);
+
+    return true;
+  }
+
+  // Invalid mode.
+  _pack_error = true;
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -281,10 +341,12 @@ pop() {
         size_t length = _pack_data.get_length() - _push_marker - length_bytes;
         if (length_bytes == 4) {
           DCPackerInterface::do_pack_uint32
-            (_pack_data.get_rewrite_pointer(_push_marker, 4), length);
+            (_pack_data.get_rewrite_pointer(_push_marker, 4), length, 
+             _pack_error);
         } else {
           DCPackerInterface::do_pack_uint16
-            (_pack_data.get_rewrite_pointer(_push_marker, 2), length);
+            (_pack_data.get_rewrite_pointer(_push_marker, 2), length,
+             _pack_error);
         }
       }
     }
@@ -298,6 +360,37 @@ pop() {
   }
 
   advance();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::unpack_skip
+//       Access: Published
+//  Description: Skips the current field without unpacking it and
+//               advances to the next field.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+unpack_skip() {
+  nassertv(_mode == M_unpack);
+  if (_current_field == NULL) {
+    _pack_error = true;
+
+  } else if (_current_field->has_fixed_byte_size()) {
+    _unpack_p += _current_field->get_fixed_byte_size();
+    advance();
+
+  } else {
+    if (_current_field->unpack_skip(_unpack_data, _unpack_length, _unpack_p)) {
+      advance();
+
+    } else {
+      // If the single field couldn't be skipped, try skipping nested fields.
+      push();
+      while (more_nested_fields()) {
+        unpack_skip();
+      }
+      pop();
+    }
+  }
 }
 
 #ifdef HAVE_PYTHON
@@ -363,6 +456,11 @@ unpack_object() {
   DCPackType pack_type = get_pack_type();
 
   switch (pack_type) {
+  case PT_invalid:
+    object = Py_None;
+    unpack_skip();
+    break;
+
   case PT_double:
     {
       double value = unpack_double();
@@ -565,4 +663,26 @@ unpack_and_format(ostream &out) {
     }
     break;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::clear
+//       Access: Private
+//  Description: Resets the data structures after a pack or unpack
+//               sequence.
+////////////////////////////////////////////////////////////////////
+void DCPacker::
+clear() {
+  _stack.clear();
+  _current_field = NULL;
+  _current_parent = NULL;
+  _current_field_index = 0;
+  _num_nested_fields = 0;
+
+  if (_live_catalog != (DCPackerCatalog::LiveCatalog *)NULL) {
+    _catalog->release_live_catalog(_live_catalog);
+    _live_catalog = NULL;
+  }
+  _catalog = NULL;
+  _root = NULL;
 }

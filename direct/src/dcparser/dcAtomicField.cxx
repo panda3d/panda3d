@@ -444,6 +444,12 @@ void DCAtomicField::
 add_element(const DCAtomicField::ElementType &element) {
   _elements.push_back(element);
   _num_nested_fields = (int)_elements.size();
+
+  // See if we still have a fixed byte size.
+  if (_has_fixed_byte_size) {
+    _has_fixed_byte_size = element._param->has_fixed_byte_size();
+    _fixed_byte_size += element._param->get_fixed_byte_size();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

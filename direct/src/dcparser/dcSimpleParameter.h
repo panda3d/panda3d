@@ -64,6 +64,7 @@ public:
   virtual bool unpack_int64(const char *data, size_t length, size_t &p, PN_int64 &value) const;
   virtual bool unpack_uint64(const char *data, size_t length, size_t &p, PN_uint64 &value) const;
   virtual bool unpack_string(const char *data, size_t length, size_t &p, string &value) const;
+  virtual bool unpack_skip(const char *data, size_t length, size_t &p) const;
 
   virtual void output_instance(ostream &out, const string &prename, 
                                const string &name, const string &postname) const;

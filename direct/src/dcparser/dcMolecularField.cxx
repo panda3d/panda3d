@@ -75,7 +75,10 @@ DCMolecularField(const string &name) : DCField(name) {
 //  Description: Adds the indicated atomic field to the end of the
 //               list of atomic fields that make up the molecular
 //               field.  This is normally called only during parsing
-//               of the dc file.
+//               of the dc file.  The atomic field should be fully
+//               defined by this point; you should not modify the
+//               atomic field (e.g. by adding more elements) after
+//               adding it to a molecular field.
 ////////////////////////////////////////////////////////////////////
 void DCMolecularField::
 add_atomic(DCAtomicField *atomic) {
@@ -87,6 +90,12 @@ add_atomic(DCAtomicField *atomic) {
   }
 
   _num_nested_fields = _nested_fields.size();
+
+  // See if we still have a fixed byte size.
+  if (_has_fixed_byte_size) {
+    _has_fixed_byte_size = atomic->has_fixed_byte_size();
+    _fixed_byte_size += atomic->get_fixed_byte_size();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

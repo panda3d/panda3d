@@ -23,6 +23,16 @@
 #include "dcmsgtypes.h"
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCClass::get_name
+//       Access: Published
+//  Description: Returns the name of this class.
+////////////////////////////////////////////////////////////////////
+const string &DCClass::
+get_name() const {
+  return _name;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCClass::get_number
 //       Access: Published
 //  Description: Returns a unique index number associated with this
@@ -628,7 +638,7 @@ ai_format_generate(PyObject *distobj, int do_id,
 ////////////////////////////////////////////////////////////////////
 DCClass::
 DCClass(const string &name, bool is_struct, bool bogus_class) : 
-  DCPackerInterface(name),
+  _name(name),
   _is_struct(is_struct),
   _bogus_class(bogus_class)
 {

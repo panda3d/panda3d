@@ -64,6 +64,19 @@ more_nested_fields() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::get_current_field
+//       Access: Published
+//  Description: Returns the field that will be referenced by the next
+//               call to pack_*() or unpack_*().  This will be NULL if
+//               we have unpacked (or packed) all fields, or if it is
+//               time to call pop().
+////////////////////////////////////////////////////////////////////
+INLINE const DCPackerInterface *DCPacker::
+get_current_field() const {
+  return _current_field;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPacker::get_pack_type
 //       Access: Published
 //  Description: Returns the type of value expected by the current
@@ -353,6 +366,21 @@ unpack_string() {
   }
 
   return value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::unpack_literal_value
+//       Access: Published
+//  Description: Returns the literal string that represents the packed
+//               value of the current field, and advances the field
+//               pointer.
+////////////////////////////////////////////////////////////////////
+INLINE string DCPacker::
+unpack_literal_value() {
+  size_t start = _unpack_p;
+  unpack_skip();
+  nassertr(_unpack_p >= start, string());
+  return string(_unpack_data + start, _unpack_p - start);
 }
 
 ////////////////////////////////////////////////////////////////////

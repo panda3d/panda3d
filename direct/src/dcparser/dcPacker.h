@@ -23,6 +23,7 @@
 #include "dcPackerInterface.h"
 #include "dcSubatomicType.h"
 #include "dcPackData.h"
+#include "dcPackerCatalog.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DCPacker
@@ -45,10 +46,13 @@ PUBLISHED:
   void begin_unpack(const string &data, const DCPackerInterface *root);
   bool end_unpack();
 
+  bool seek(const string &field_name);
+
   INLINE bool has_nested_fields() const;
   INLINE int get_num_nested_fields() const;
   INLINE bool more_nested_fields() const;
 
+  INLINE const DCPackerInterface *get_current_field() const;
   INLINE DCPackType get_pack_type() const;
 
   void push();
@@ -68,6 +72,8 @@ PUBLISHED:
   INLINE PN_int64 unpack_int64();
   INLINE PN_uint64 unpack_uint64();
   INLINE string unpack_string();
+  INLINE string unpack_literal_value();
+  void unpack_skip();
 
 #ifdef HAVE_PYTHON
   void pack_object(PyObject *object);
@@ -89,6 +95,7 @@ public:
 
 private:
   INLINE void advance();
+  void clear();
 
 private:
   enum Mode {
@@ -103,6 +110,10 @@ private:
   const char *_unpack_data;
   size_t _unpack_length;
   size_t _unpack_p;
+
+  const DCPackerInterface *_root;
+  const DCPackerCatalog *_catalog;
+  const DCPackerCatalog::LiveCatalog *_live_catalog;
 
   class StackElement {
   public:

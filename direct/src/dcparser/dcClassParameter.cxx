@@ -35,6 +35,17 @@ DCClassParameter(DCClass *dclass) :
   _num_fields = _dclass->get_num_inherited_fields();
   _num_nested_fields = _num_fields + _dclass->get_num_inherited_parameters();
   _pack_type = PT_class;
+
+  // If all of the nested fields have a fixed byte size, then so does
+  // the class (and its byte size is the sum of all of the nested
+  // fields).
+  _has_fixed_byte_size = true;
+  _fixed_byte_size = 0;
+  for (int i = 0; i < _num_nested_fields && _has_fixed_byte_size; i++) {
+    DCPackerInterface *field = get_nested_field(i);
+    _has_fixed_byte_size = field->has_fixed_byte_size();
+    _fixed_byte_size += field->get_fixed_byte_size();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -18,13 +18,110 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::get_name
+//       Access: Published
+//  Description: Returns the name of this field, or empty string
+//               if the field is unnamed.
+////////////////////////////////////////////////////////////////////
+INLINE const string &DCPackerInterface::
+get_name() const {
+  return _name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::set_name
+//       Access: Public
+//  Description: Sets the name of this field.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPackerInterface::
+set_name(const string &name) {
+  _name = name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::has_fixed_byte_size
+//       Access: Public
+//  Description: Returns true if this field type always packs to the
+//               same number of bytes, false if it is variable.
+////////////////////////////////////////////////////////////////////
+INLINE bool DCPackerInterface::
+has_fixed_byte_size() const {
+  return _has_fixed_byte_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::get_fixed_byte_size
+//       Access: Public
+//  Description: If has_fixed_byte_size() returns true, this returns
+//               the number of bytes this field type will use.
+////////////////////////////////////////////////////////////////////
+INLINE size_t DCPackerInterface::
+get_fixed_byte_size() const {
+  return _fixed_byte_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::get_num_length_bytes
+//       Access: Public
+//  Description: Returns the number of bytes that should be written
+//               into the stream on a push() to record the number of
+//               bytes in the record up until the next pop().  This is
+//               only meaningful if _has_nested_fields is true.
+////////////////////////////////////////////////////////////////////
+INLINE size_t DCPackerInterface::
+get_num_length_bytes() const {
+  return _num_length_bytes;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::has_nested_fields
+//       Access: Public
+//  Description: Returns true if this field type has any nested fields
+//               (and thus expects a push() .. pop() interface to the
+//               DCPacker), or false otherwise.  If this returns true,
+//               get_num_nested_fields() may be called to determine
+//               how many nested fields are expected.
+////////////////////////////////////////////////////////////////////
+INLINE bool DCPackerInterface::
+has_nested_fields() const {
+  return _has_nested_fields;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::get_num_nested_fields
+//       Access: Public
+//  Description: Returns the number of nested fields required by this
+//               field type.  These may be array elements or structure
+//               elements.  The return value may be -1 to indicate the
+//               number of nested fields is variable.
+////////////////////////////////////////////////////////////////////
+INLINE int DCPackerInterface::
+get_num_nested_fields() const {
+  return _num_nested_fields;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::get_pack_type
+//       Access: Public
+//  Description: Returns the type of value expected by this field.
+////////////////////////////////////////////////////////////////////
+INLINE DCPackType DCPackerInterface::
+get_pack_type() const {
+  return _pack_type;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::do_pack_int8
 //       Access: Public, Static
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPackerInterface::
-do_pack_int8(char *buffer, int value) {
+do_pack_int8(char *buffer, int value, bool &pack_error) {
   buffer[0] = (char)(value & 0xff);
+  if ((abs(value) & ~0xff) != 0) {
+    pack_error = true;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -33,9 +130,12 @@ do_pack_int8(char *buffer, int value) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPackerInterface::
-do_pack_int16(char *buffer, int value) {
+do_pack_int16(char *buffer, int value, bool &pack_error) {
   buffer[0] = (char)(value & 0xff);
   buffer[1] = (char)((value >> 8) & 0xff);
+  if ((abs(value) & ~0xffff) != 0) {
+    pack_error = true;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,7 +144,7 @@ do_pack_int16(char *buffer, int value) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPackerInterface::
-do_pack_int32(char *buffer, int value) {
+do_pack_int32(char *buffer, int value, bool &) {
   buffer[0] = (char)(value & 0xff);
   buffer[1] = (char)((value >> 8) & 0xff);
   buffer[2] = (char)((value >> 16) & 0xff);
@@ -57,7 +157,7 @@ do_pack_int32(char *buffer, int value) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPackerInterface::
-do_pack_int64(char *buffer, PN_int64 value) {
+do_pack_int64(char *buffer, PN_int64 value, bool &) {
   buffer[0] = (char)(value & 0xff);
   buffer[1] = (char)((value >> 8) & 0xff);
   buffer[2] = (char)((value >> 16) & 0xff);
@@ -74,8 +174,11 @@ do_pack_int64(char *buffer, PN_int64 value) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPackerInterface::
-do_pack_uint8(char *buffer, unsigned int value) {
+do_pack_uint8(char *buffer, unsigned int value, bool &pack_error) {
   buffer[0] = (char)(value & 0xff);
+  if ((value & ~0xff) != 0) {
+    pack_error = true;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -84,9 +187,12 @@ do_pack_uint8(char *buffer, unsigned int value) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPackerInterface::
-do_pack_uint16(char *buffer, unsigned int value) {
+do_pack_uint16(char *buffer, unsigned int value, bool &pack_error) {
   buffer[0] = (char)(value & 0xff);
   buffer[1] = (char)((value >> 8) & 0xff);
+  if ((value & ~0xffff) != 0) {
+    pack_error = true;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -95,7 +201,7 @@ do_pack_uint16(char *buffer, unsigned int value) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPackerInterface::
-do_pack_uint32(char *buffer, unsigned int value) {
+do_pack_uint32(char *buffer, unsigned int value, bool &) {
   buffer[0] = (char)(value & 0xff);
   buffer[1] = (char)((value >> 8) & 0xff);
   buffer[2] = (char)((value >> 16) & 0xff);
@@ -108,7 +214,7 @@ do_pack_uint32(char *buffer, unsigned int value) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPackerInterface::
-do_pack_uint64(char *buffer, PN_uint64 value) {
+do_pack_uint64(char *buffer, PN_uint64 value, bool &) {
   buffer[0] = (char)(value & 0xff);
   buffer[1] = (char)((value >> 8) & 0xff);
   buffer[2] = (char)((value >> 16) & 0xff);
@@ -125,7 +231,7 @@ do_pack_uint64(char *buffer, PN_uint64 value) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPackerInterface::
-do_pack_float64(char *buffer, double value) {
+do_pack_float64(char *buffer, double value, bool &) {
 #ifdef WORDS_BIGENDIAN
   // Reverse the byte ordering for big-endian machines.
   char *p = (char *)value;

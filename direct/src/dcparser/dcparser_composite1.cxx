@@ -6,6 +6,7 @@
 #include "dcDeclaration.cxx"
 #include "dcPackData.cxx"
 #include "dcPacker.cxx"
+#include "dcPackerCatalog.cxx"
 #include "dcPackerInterface.cxx"
 #include "dcindent.cxx"
 

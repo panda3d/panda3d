@@ -130,7 +130,7 @@ pack_args(Datagram &datagram, PyObject *sequence) const {
   PyObject *str = PyObject_Str(tuple);
   
   ostringstream strm;
-  strm << "Incorrect arguments to field: " << get_name()
+  strm << "Incorrect arguments or value too large on field: " << get_name()
        << PyString_AsString(str);
 
   Py_DECREF(str);
@@ -257,6 +257,9 @@ DCField(const string &name) : DCPackerInterface(name) {
   _has_nested_fields = true;
   _num_nested_fields = 0;
   _pack_type = PT_field;
+
+  _has_fixed_byte_size = true;
+  _fixed_byte_size = 0;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -22,6 +22,7 @@
      dcSubatomicType.h \
      dcPackData.h dcPackData.I \
      dcPacker.h dcPacker.I \
+     dcPackerCatalog.h dcPackerCatalog.I \
      dcPackerInterface.h dcPackerInterface.I \
      dcParameter.h dcClassParameter.h dcArrayParameter.h dcSimpleParameter.h \
      dcTypedef.h \
@@ -35,6 +36,7 @@
      dcMolecularField.cxx dcSubatomicType.cxx \
      dcPackData.cxx \
      dcPacker.cxx \
+     dcPackerCatalog.cxx \
      dcPackerInterface.cxx \
      dcParameter.cxx dcClassParameter.cxx \
      dcArrayParameter.cxx dcSimpleParameter.cxx \
