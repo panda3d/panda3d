@@ -237,31 +237,35 @@ void HTTPClient::
 set_proxy_spec(const string &proxy_spec) {
   clear_proxy();
 
+  string trim_proxy_spec = trim_blanks(proxy_spec);
+
   // Tokenize the string based on the semicolons.
-  vector_string proxies;
-  tokenize(proxy_spec, proxies, ";");
-  
-  for (vector_string::const_iterator pi = proxies.begin();
-       pi != proxies.end();
-       ++pi) {
-    const string &spec = (*pi);
+  if (!trim_proxy_spec.empty()) {
+    vector_string proxies;
+    tokenize(trim_proxy_spec, proxies, ";");
 
-    // Divide out the scheme and the hostname.
-    string scheme;
-    string proxy;
-    size_t equals = spec.find('=');
-    if (equals == string::npos) {
-      scheme = "";
-      proxy = trim_blanks(spec);
-    } else {
-      scheme = trim_blanks(spec.substr(0, equals));
-      proxy = trim_blanks(spec.substr(equals + 1));
-    }
-
-    if (proxy == "DIRECT" || proxy.empty()) {
-      add_proxy(scheme, URLSpec());
-    } else {
-      add_proxy(scheme, URLSpec(proxy, true));
+    for (vector_string::const_iterator pi = proxies.begin();
+         pi != proxies.end();
+         ++pi) {
+      const string &spec = (*pi);
+      
+      // Divide out the scheme and the hostname.
+      string scheme;
+      string proxy;
+      size_t equals = spec.find('=');
+      if (equals == string::npos) {
+        scheme = "";
+        proxy = trim_blanks(spec);
+      } else {
+        scheme = trim_blanks(spec.substr(0, equals));
+        proxy = trim_blanks(spec.substr(equals + 1));
+      }
+      
+      if (proxy == "DIRECT" || proxy.empty()) {
+        add_proxy(scheme, URLSpec());
+      } else {
+        add_proxy(scheme, URLSpec(proxy, true));
+      }
     }
   }
 }
