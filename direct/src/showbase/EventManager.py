@@ -8,7 +8,7 @@ class EventManager:
 
     notify = None
     
-    def __init__(self):
+    def __init__(self, eventQueue = None):
         """
         Create a C++ event queue and handler
         """
@@ -16,15 +16,24 @@ class EventManager:
         if (EventManager.notify == None):
             EventManager.notify = directNotify.newCategory("EventManager")
 
-        self.eventQueue = EventQueue.getGlobalEventQueue()
+        if eventQueue != None:
+            self.eventQueue = eventQueue
+        else:
+            self.eventQueue = EventQueue.getGlobalEventQueue()
         self.eventHandler = EventHandler(self.eventQueue)
 
-    def eventLoop(self, task):
+    def doEvents(self):
         """
         Process all the events on the C++ event queue
         """
         while (not self.eventQueue.isQueueEmpty()):
             self.processEvent(self.eventQueue.dequeueEvent())
+
+    def eventLoopTask(self, task):
+        """
+        Process all the events on the C++ event queue
+        """
+        self.doEvents()
         return Task.cont
 
     def parseEventParameter(self, eventParameter):
@@ -73,7 +82,7 @@ class EventManager:
 
 
     def restart(self):
-        taskMgr.add(self.eventLoop, 'eventManager')
+        taskMgr.add(self.eventLoopTask, 'eventManager')
 
     def shutdown(self):
         taskMgr.remove('eventManager')
