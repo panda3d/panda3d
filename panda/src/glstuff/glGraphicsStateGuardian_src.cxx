@@ -612,7 +612,9 @@ begin_frame() {
     return false;
   }
 
+#ifdef DO_PSTATS
   _vertices_display_list_pcollector.clear_level();
+#endif
 
   report_my_gl_errors();
   return true;
