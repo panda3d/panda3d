@@ -164,14 +164,110 @@ static void* internal_monitor(void*) {
   return (void*)0L;
 }
 
+static void predict_event_up(CPT_Event e) {
+  string s = e->get_name();
+  s = s.substr(0, s.find("-up"));
+  event_handler.remove_hook(s + "-up", predict_event_up);
+  event_handler.remove_hook(s + "-up-rollover", predict_event_up);
+  switch (curr_pred) {
+  case P_Null:
+    pnullButton->up();
+    break;
+  case P_Linear:
+    plinearButton->up();
+    break;
+  }
+  curr_pred = pred_switch;
+  switch (curr_pred) {
+  case P_Null:
+    pnullButton->inactive();
+    break;
+  case P_Linear:
+    plinearButton->inactive();
+    break;
+  default:
+    deadrec_cat->error() << "switching predictor to invalid type ("
+			 << (int)curr_pred << ")" << endl;
+  }
+}
+
 static void predict_event(CPT_Event e) {
   string s = e->get_name();
   s = s.substr(0, s.find("-down"));
+  if (s == "null") {
+    if (curr_pred != P_Null) {
+      pred_switch = P_Null;
+      event_handler.add_hook(s + "-up", predict_event_up);
+      event_handler.add_hook(s + "-up-rollover", predict_event_up);
+    }
+  } else if (s == "linear") {
+    if (curr_pred != P_Linear) {
+      pred_switch = P_Linear;
+      event_handler.add_hook(s + "-up", predict_event_up);
+      event_handler.add_hook(s + "-up-rollover", predict_event_up);
+    }
+  } else {
+    deadrec_cat->error() << "got invalid button event '" << s << "'" << endl;
+  }
+}
+
+static void correct_event_up(CPT_Event e) {
+  string s = e->get_name();
+  s = s.substr(0, s.find("-up"));
+  event_handler.remove_hook(s + "-up", correct_event_up);
+  event_handler.remove_hook(s + "-up-rollover", correct_event_up);
+  switch (curr_corr) {
+  case C_Pop:
+    cpopButton->up();
+    break;
+  case C_Lerp:
+    clerpButton->up();
+    break;
+  case C_Spline:
+    csplineButton->up();
+    break;
+  }
+  curr_corr = corr_switch;
+  switch (curr_corr) {
+  case C_Pop:
+    cpopButton->inactive();
+    break;
+  case C_Lerp:
+    clerpButton->inactive();
+    break;
+  case C_Spline:
+    csplineButton->inactive();
+    break;
+  default:
+    deadrec_cat->error() << "switching corrector to invalid type ("
+			 << (int)curr_corr << ")" << endl;
+  }
 }
 
 static void correct_event(CPT_Event e) {
   string s = e->get_name();
   s = s.substr(0, s.find("-down"));
+  if (s == "pop") {
+    if (curr_corr != C_Pop) {
+      corr_switch = C_Pop;
+      event_handler.add_hook(s + "-up", correct_event_up);
+      event_handler.add_hook(s + "-up-rollover", correct_event_up);
+    }
+  } else if (s == "lerp") {
+    if (curr_corr != C_Lerp) {
+      corr_switch = C_Lerp;
+      event_handler.add_hook(s + "-up", correct_event_up);
+      event_handler.add_hook(s + "-up-rollover", correct_event_up);
+    }
+  } else if (s == "spline") {
+    if (curr_corr != C_Spline) {
+      corr_switch = C_Spline;
+      event_handler.add_hook(s + "-up", correct_event_up);
+      event_handler.add_hook(s + "-up-rollover", correct_event_up);
+    }
+  } else {
+    deadrec_cat->error() << "got invalid button event '" << s << "'" << endl;
+  }
 }
 
 typedef void event_func(CPT_Event);
@@ -270,6 +366,10 @@ static void deadrec_setup(EventHandler& eh) {
   f2->align_to_bottom(0.05);
   f2->recompute();
   f2->manage(mgr, eh);
+  curr_pred = P_Null;
+  pnullButton->inactive();
+  curr_corr = C_Pop;
+  cpopButton->inactive();
 }
 
 static void update_smiley(void) {
