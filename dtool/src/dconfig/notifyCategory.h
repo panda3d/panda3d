@@ -19,11 +19,10 @@
 #ifndef NOTIFYCATEGORY_H
 #define NOTIFYCATEGORY_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "notifySeverity.h"
 
-#include <string>
 #include <vector>
 
 ////////////////////////////////////////////////////////////////////

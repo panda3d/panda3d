@@ -82,9 +82,12 @@ typedef int streamsize;
 #ifndef HAVE_IOS_TYPEDEFS
 typedef int ios_openmode;
 typedef int ios_fmtflags;
+// Old iostream libraries used ios::seek_dir instead of ios::seekdir.
+typedef ios::seek_dir ios_seekdir;
 #else
 typedef ios::openmode ios_openmode;
 typedef ios::fmtflags ios_fmtflags;
+typedef ios::seekdir ios_seekdir;
 #endif
 
 
