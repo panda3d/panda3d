@@ -28,6 +28,7 @@
 #include "fltMesh.h"
 #include "fltLocalVertexPool.h"
 #include "fltMeshPrimitive.h"
+#include "fltVectorRecord.h"
 #include "fltVertexList.h"
 #include "fltLOD.h"
 #include "fltInstanceDefinition.h"
@@ -91,6 +92,7 @@ init_libflt() {
   FltMesh::init_type();
   FltLocalVertexPool::init_type();
   FltMeshPrimitive::init_type();
+  FltVectorRecord::init_type();
   FltVertexList::init_type();
   FltLOD::init_type();
   FltInstanceDefinition::init_type();

@@ -218,7 +218,11 @@ extract_record(FltRecordReader &reader) {
   nassertr(reader.get_opcode() == FO_texture, false);
   DatagramIterator &iterator = reader.get_iterator();
 
-  _filename = iterator.get_fixed_string(200);
+  if (_header->get_flt_version() < 1420) {
+    _filename = iterator.get_fixed_string(80);
+  } else {
+    _filename = iterator.get_fixed_string(200);
+  }
   _pattern_index = iterator.get_be_int32();
   _x_location = iterator.get_be_int32();
   _y_location = iterator.get_be_int32();

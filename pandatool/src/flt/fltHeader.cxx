@@ -272,7 +272,7 @@ set_flt_version(int version) {
 ////////////////////////////////////////////////////////////////////
 int FltHeader::
 min_flt_version() {
-  return 1420;
+  return 1400;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -303,7 +303,7 @@ check_version() const {
 
   if (version < min_flt_version()) {
     nout << "Warning!  The version number of this file appears to be "
-         << version << ", which is older than " << min_flt_version() / 100.0
+         << version / 100.0 << ", which is older than " << min_flt_version() / 100.0
          << ", the oldest OpenFlight version understood by this program.  "
       "It is unlikely that this program will be able to read the file "
       "correctly.\n";
@@ -312,7 +312,7 @@ check_version() const {
 
   if (version > max_flt_version()) {
     nout << "Warning!  The version number of this file appears to be "
-         << version << ", which is newer than " << max_flt_version() / 100.0
+         << version / 100.0 << ", which is newer than " << max_flt_version() / 100.0
          << ", the newest OpenFlight version understood by this program.  "
       "Chances are good that the program will still be able to read it "
       "correctly, but any features in the file that are specific to "
@@ -1214,29 +1214,31 @@ extract_record(FltRecordReader &reader) {
   _lambert_lower_lat = iterator.get_be_float64();
   _next_light_id = iterator.get_be_int16();
   iterator.skip_bytes(2);
-  _next_road_id = iterator.get_be_int16();
-  _next_cat_id = iterator.get_be_int16();
+  if (get_flt_version() >= 1420 && iterator.get_remaining_size() > 0) {
+    _next_road_id = iterator.get_be_int16();
+    _next_cat_id = iterator.get_be_int16();
 
-  if (get_flt_version() >= 1520 && iterator.get_remaining_size() > 0) {
-    iterator.skip_bytes(2 + 2 + 2 + 2);
-    _earth_model = (EarthModel)iterator.get_be_int32();
-
-    // Undocumented padding.
-    iterator.skip_bytes(4);
-
-    if (get_flt_version() >= 1560 && iterator.get_remaining_size() > 0) {
-      _next_adaptive_id = iterator.get_be_int16();
-      _next_curve_id = iterator.get_be_int16();
+    if (get_flt_version() >= 1520 && iterator.get_remaining_size() > 0) {
+      iterator.skip_bytes(2 + 2 + 2 + 2);
+      _earth_model = (EarthModel)iterator.get_be_int32();
+      
+      // Undocumented padding.
       iterator.skip_bytes(4);
-
-      if (get_flt_version() >= 1570 && iterator.get_remaining_size() > 0) {
-        _delta_z = iterator.get_be_float64();
-        _radius = iterator.get_be_float64();
-        _next_mesh_id = iterator.get_be_int16();
-        iterator.skip_bytes(2);
-
-        // Undocumented padding.
+      
+      if (get_flt_version() >= 1560 && iterator.get_remaining_size() > 0) {
+        _next_adaptive_id = iterator.get_be_int16();
+        _next_curve_id = iterator.get_be_int16();
         iterator.skip_bytes(4);
+        
+        if (get_flt_version() >= 1570 && iterator.get_remaining_size() > 0) {
+          _delta_z = iterator.get_be_float64();
+          _radius = iterator.get_be_float64();
+          _next_mesh_id = iterator.get_be_int16();
+          iterator.skip_bytes(2);
+          
+          // Undocumented padding.
+          iterator.skip_bytes(4);
+        }
       }
     }
   }
@@ -1495,7 +1497,7 @@ extract_color_palette(FltRecordReader &reader) {
     }
   }
 
-  check_remaining_size(iterator);
+  check_remaining_size(iterator, "color palette");
   return true;
 }
 
@@ -1545,7 +1547,7 @@ extract_14_material_palette(FltRecordReader &reader) {
     add_material(material);
   }
 
-  check_remaining_size(iterator);
+  check_remaining_size(iterator, "material palette");
   return true;
 }
 
@@ -1631,7 +1633,13 @@ extract_eyepoint_palette(FltRecordReader &reader) {
   }
 
   _got_eyepoint_trackplane_palette = true;
-  check_remaining_size(iterator);
+
+  if (get_flt_version() >= 1420) {
+    // I have no idea what bytes are supposed to be here in earlier
+    // versions that 14.2, but who really cares?  Don't bother
+    // reporting it if there are too many bytes in old versions.
+    check_remaining_size(iterator, "eyepoint palette");
+  }
   return true;
 }
 

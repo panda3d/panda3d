@@ -71,7 +71,8 @@ public:
   void clear_comment();
   void set_comment(const string &comment);
 
-  void check_remaining_size(const DatagramIterator &di) const;
+  void check_remaining_size(const DatagramIterator &di, 
+                            const string &name = string()) const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;

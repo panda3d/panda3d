@@ -203,16 +203,18 @@ extract_record(FltRecordReader &reader) {
     _uv[1] = iterator.get_be_float32();
   }
 
-  if (!_packed_color.extract_record(reader)) {
-    return false;
-  }
-  if (_header->get_flt_version() >= 1520) {
-    _color_index = iterator.get_be_int32();
-
-    if (_has_normal && iterator.get_remaining_size() > 0) {
-      // If we extracted a normal, our double-word alignment is off; now
-      // we have a few extra bytes to ignore.
-      iterator.skip_bytes(4);
+  if (iterator.get_remaining_size() > 0) {
+    if (!_packed_color.extract_record(reader)) {
+      return false;
+    }
+    if (_header->get_flt_version() >= 1520) {
+      _color_index = iterator.get_be_int32();
+      
+      if (_has_normal && iterator.get_remaining_size() > 0) {
+        // If we extracted a normal, our double-word alignment is off; now
+        // we have a few extra bytes to ignore.
+        iterator.skip_bytes(4);
+      }
     }
   }
 

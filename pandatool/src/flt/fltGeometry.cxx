@@ -187,24 +187,26 @@ extract_record(FltRecordReader &reader) {
   _transparency = iterator.get_be_uint16();
   _lod_generation_control = iterator.get_uint8();
   _line_style_index = iterator.get_uint8();
-  _flags = iterator.get_be_uint32();
-  _light_mode = (LightMode)iterator.get_uint8();
-  iterator.skip_bytes(1 + 4);
-  iterator.skip_bytes(2); // Undocumented padding.
+  if (_header->get_flt_version() >= 1420) {
+    _flags = iterator.get_be_uint32();
+    _light_mode = (LightMode)iterator.get_uint8();
+    iterator.skip_bytes(1 + 4);
+    iterator.skip_bytes(2); // Undocumented padding.
 
-  if (!_packed_color.extract_record(reader)) {
-    return false;
-  }
-  if (!_alt_packed_color.extract_record(reader)) {
-    return false;
-  }
-
-  if (_header->get_flt_version() >= 1520) {
-    _texture_mapping_index = iterator.get_be_int16();
-    iterator.skip_bytes(2);
-    _color_index = iterator.get_be_int32();
-    _alt_color_index = iterator.get_be_int32();
-    iterator.skip_bytes(2 + 2);
+    if (!_packed_color.extract_record(reader)) {
+      return false;
+    }
+    if (!_alt_packed_color.extract_record(reader)) {
+      return false;
+    }
+    
+    if (_header->get_flt_version() >= 1520) {
+      _texture_mapping_index = iterator.get_be_int16();
+      iterator.skip_bytes(2);
+      _color_index = iterator.get_be_int32();
+      _alt_color_index = iterator.get_be_int32();
+      iterator.skip_bytes(2 + 2);
+    }
   }
 
   return true;

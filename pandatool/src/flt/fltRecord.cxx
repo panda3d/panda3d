@@ -313,14 +313,20 @@ set_comment(const string &comment) {
 //               exactly the sort of thing we expect.
 ////////////////////////////////////////////////////////////////////
 void FltRecord::
-check_remaining_size(const DatagramIterator &di) const {
+check_remaining_size(const DatagramIterator &di, const string &name) const {
   if (di.get_remaining_size() == 0) {
     return;
   }
 
   if (_header->get_flt_version() <= _header->max_flt_version()) {
     nout << "Warning!  Ignoring extra " << di.get_remaining_size()
-         << " bytes at the end of a " << get_type() << " record.\n";
+         << " bytes at the end of a ";
+    if (name.empty()) {
+      nout << get_type();
+    } else {
+      nout << name;
+    }
+    nout << " record.\n";
   }
 }
 
@@ -533,8 +539,11 @@ create_new_record(FltOpcode opcode) const {
   case FO_external_ref:
     return new FltExternalReference(_header);
 
+  case FO_vector:
+    return new FltVectorRecord(_header);
+
   default:
-    nout << "Unsupported record " << opcode << "\n";
+    nout << "Ignoring unsupported record " << opcode << "\n";
     return new FltUnsupportedRecord(_header);
   }
 }

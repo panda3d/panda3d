@@ -21,8 +21,9 @@
      fltTransformPut.h fltTransformRecord.h  \
      fltTransformRotateAboutEdge.h fltTransformRotateAboutPoint.h  \
      fltTransformRotateScale.h fltTransformScale.h  \
-     fltTransformTranslate.h fltUnsupportedRecord.h fltVertex.I  \
-     fltVertex.h fltVertexList.h 
+     fltTransformTranslate.h fltUnsupportedRecord.h \
+     fltVectorRecord.cxx fltVectorRecord.h \
+     fltVertex.I fltVertex.h fltVertexList.h 
     
  #define INCLUDED_SOURCES \
      config_flt.cxx fltBead.cxx fltBeadID.cxx fltCurve.cxx  \
@@ -38,7 +39,8 @@
      fltTransformRotateAboutEdge.cxx  \
      fltTransformRotateAboutPoint.cxx fltTransformRotateScale.cxx  \
      fltTransformScale.cxx fltTransformTranslate.cxx  \
-     fltUnsupportedRecord.cxx fltVertex.cxx fltVertexList.cxx 
+     fltUnsupportedRecord.cxx fltVectorRecord.cxx \
+     fltVertex.cxx fltVertexList.cxx 
 
   #define INSTALL_HEADERS \
     fltBead.h fltBeadID.h fltCurve.I fltCurve.h \
@@ -55,7 +57,7 @@
     fltTransformGeneralMatrix.h fltTransformPut.h fltTransformRecord.h \
     fltTransformRotateAboutEdge.h fltTransformRotateAboutPoint.h \
     fltTransformRotateScale.h fltTransformScale.h \
-    fltTransformTranslate.h fltUnsupportedRecord.h fltVertex.I \
-    fltVertex.h fltVertexList.h
+    fltTransformTranslate.h fltUnsupportedRecord.h fltVectorRecord.h \
+    fltVertex.I fltVertex.h fltVertexList.h
 
 #end ss_lib_target
