@@ -1,5 +1,6 @@
 from IntervalGlobal import *
 import BasicEntities
+import random
 
 class AmbientSound(BasicEntities.NodePathEntity):
     def __init__(self, level, entId):
@@ -11,13 +12,17 @@ class AmbientSound(BasicEntities.NodePathEntity):
         BasicEntities.NodePathEntity.destroy(self)
 
     def initSound(self):
+        if not self.enabled:
+            return
         if self.soundPath == '':
             return
         self.sound = base.loadSfx(self.soundPath)
         if self.sound is None:
             return
-        self.soundIval = SoundInterval(self.sound, node=self)
+        self.soundIval = SoundInterval(self.sound, node=self,
+                                       volume=self.volume)
         self.soundIval.loop()
+        self.soundIval.setT(random.random() * self.sound.length())
 
     def destroySound(self):
         if hasattr(self, 'soundIval'):
