@@ -96,8 +96,9 @@ public:
   INLINE pointer allocate(size_type n, allocator<void>::const_pointer hint = 0);
   INLINE void deallocate(void *p, size_type n);
 
-  template<class U>
-  struct rebind { typedef pallocator<U> other; };
+  template<class U> struct rebind { 
+	  typedef pallocator<U> other;
+  };
 };
 
 #else

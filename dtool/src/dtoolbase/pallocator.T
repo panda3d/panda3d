@@ -72,8 +72,6 @@ deallocate(void *p, allocator<Type>::size_type) {
 
 #elif MODERN_STYLE_ALLOCATOR
 
-
-
 template<class Type>
 INLINE pallocator<Type>::
 pallocator() throw() {
