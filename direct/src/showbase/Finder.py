@@ -137,11 +137,19 @@ def copyFuncs(fromClass, toClass):
             toClass.__dict__[key] = newFunc
 
 def replaceMessengerFunc(oldFunc, newFunc):
+    try:
+        messenger
+    except:
+        return
     res = messenger.replaceMethod(oldFunc, newFunc)
     if res:
         print 'replaced %d messenger functions: %s' % (res, newFunc.__name__)
 
 def replaceTaskMgrFunc(oldFunc, newFunc):
+    try:
+        taskMgr
+    except:
+        return
     res = taskMgr.replaceMethod(oldFunc, newFunc)
     if res:
         print ('replaced taskMgr function: ' + newFunc.__name__)
