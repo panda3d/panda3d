@@ -29,3 +29,8 @@ ConfigureFn(config_framework) {
 const int win_width = config_framework.GetInt("win-width", 640);
 const int win_height = config_framework.GetInt("win-height", 480);
 const bool fullscreen = config_framework.GetBool("fullscreen", false);
+
+// The default window background color.
+const float background_r = config_framework.GetFloat("background-r", 0.41);
+const float background_g = config_framework.GetFloat("background-g", 0.41);
+const float background_b = config_framework.GetFloat("background-b", 0.41);

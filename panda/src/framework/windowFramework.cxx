@@ -83,6 +83,8 @@ open_window(const GraphicsWindow::Properties &props, GraphicsPipe *pipe) {
 
   _window = pipe->make_window(props);
 
+  _window->set_clear_color(Colorf(background_r, background_g, background_b, 1.0f));
+
   // Set up a 3-d camera for the window by default.
   make_camera();
   return _window;
