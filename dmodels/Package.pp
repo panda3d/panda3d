@@ -57,3 +57,6 @@
 #endif
 
 #include $[DIRECT_SOURCE]/Package.pp
+
+// Define some global variables for this tree.
+#define FLT2EGG_OPTS -no -uo ft -rt
