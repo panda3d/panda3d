@@ -1,7 +1,9 @@
 
 from cPickle import dumps, loads
 
+from direct.distributed.PyDatagram import PyDatagram
 from direct.showbase.Messenger import Messenger
+
 
 # Messages do not need to be in the MESSAGE_TYPES list.
 # This is just an optimization.  If the message is found
@@ -50,7 +52,7 @@ class NetMessenger(Messenger):
         """
         datagram = PyDatagram()
         # To:
-        datagram.addChannel(self.channel)
+        datagram.addChannel(self.channels[0])
         # From:
         datagram.addChannel(self.air.ourChannel)
         if 1: # We send this just because the air expects it:
