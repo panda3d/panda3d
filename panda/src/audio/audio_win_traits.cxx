@@ -451,6 +451,7 @@ WinMusic::~WinMusic(void) {
   }
 
   if (_performance) {
+    _performance->CloseDown();
     _performance->Release();
     _performance = NULL;
   }
