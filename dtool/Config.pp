@@ -63,6 +63,13 @@
 //  msvc      - Generate makefiles suitable for building on Windows platforms
 //              (e.g. Windows NT, Windows 2000) using the Microsoft Visual C++
 //              command-line compiler and Microsoft nmake.
+//  gmsvc     - Generate makefiles similar to the above, using Microsoft
+//              Visual C++, but uses the Cygwin-supplied GNU make
+//              instead of Microsoft nmake.  This is potentially
+//              faster if you have multiple CPU's, since it supports
+//              distributed make.  It's a tiny bit slower if you're
+//              not taking advantage of distributed make, because of
+//              the overhead associated with Cygwin fork() calls.
 //
 #define BUILD_TYPE unix
 
