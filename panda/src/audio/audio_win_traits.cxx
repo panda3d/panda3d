@@ -631,7 +631,7 @@ WinMusic* WinMusic::load_midi(Filename filename) {
     audio_cat->debug() << "is local" << endl;
     char szDir[2] = ".";
     WCHAR wszDir[2];
-    MULTI_TO_WIDE(wszDir, szdir);
+    MULTI_TO_WIDE(wszDir, szDir);
     result = loader->SetSearchDirectory(GUID_DirectMusicAllTypes, wszDir,
 					FALSE);
     if (FAILED(result)) {
