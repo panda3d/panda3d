@@ -20,7 +20,7 @@
 
 #include "pandabase.h"
 
-#include "clearableRegion.h"
+#include "drawableRegion.h"
 #include "referenceCount.h"
 #include "nodePath.h"
 #include "cullResult.h"
@@ -35,18 +35,23 @@ class GraphicsOutput;
 class GraphicsPipe;
 class CullHandler;
 class Camera;
+class PNMImage;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DisplayRegion
-// Description :
+// Description : A rectangular subregion within a window for rendering
+//               into.  Typically, there is one DisplayRegion that
+//               covers the whole window, but you may also create
+//               smaller DisplayRegions for having different regions
+//               within the window that represent different scenes.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DisplayRegion : public ReferenceCount, public ClearableRegion {
+class EXPCL_PANDA DisplayRegion : public ReferenceCount, public DrawableRegion {
 public:
   DisplayRegion(GraphicsLayer *layer);
   DisplayRegion(GraphicsLayer *layer,
                 const float l, const float r,
                 const float b, const float t);
-  DisplayRegion(int xsize, int ysize);
+  DisplayRegion(GraphicsOutput *window, int xsize, int ysize);
 private:
   DisplayRegion(const DisplayRegion &copy);
   void operator = (const DisplayRegion &copy);
@@ -84,6 +89,10 @@ PUBLISHED:
 
   void output(ostream &out) const;
 
+  Filename save_screenshot_default(const string &prefix = "screenshot");
+  bool save_screenshot(const Filename &filename);
+  bool get_screenshot(PNMImage &image);
+
 private:
   void win_display_regions_changed();
   INLINE void do_compute_pixels(int x_size, int y_size);
@@ -102,6 +111,7 @@ private:
   int _pti;
 
   GraphicsLayer *_layer;
+  GraphicsOutput *_window;
   NodePath _camera;
 
   // This needs to be a PT(Camera) so we prevent the Camera node from

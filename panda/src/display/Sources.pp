@@ -12,7 +12,7 @@
  
   #define SOURCES  \
     config_display.h \
-    clearableRegion.I clearableRegion.h \
+    drawableRegion.I drawableRegion.h \
     displayRegion.I displayRegion.h  \
     displayRegionStack.I \
     displayRegionStack.h \
@@ -42,7 +42,7 @@
     
  #define INCLUDED_SOURCES  \
     config_display.cxx \
-    clearableRegion.cxx \
+    drawableRegion.cxx \
     displayRegion.cxx \
     frameBufferProperties.cxx \
     geomContext.cxx geomNodeContext.cxx graphicsChannel.cxx  \
@@ -62,7 +62,7 @@
 
   #define INSTALL_HEADERS \
     config_display.h \
-    clearableRegion.I clearableRegion.h \
+    drawableRegion.I drawableRegion.h \
     displayRegion.I displayRegion.h displayRegionStack.I \
     displayRegionStack.h \
     frameBufferProperties.I frameBufferProperties.h \

@@ -112,7 +112,6 @@ reset() {
   _depth_clear_value = 1.0f;
   _stencil_clear_value = 0.0f;
   _accum_clear_value.set(0.0f, 0.0f, 0.0f, 0.0f);
-  _clear_buffer_type = RenderBuffer::T_back | RenderBuffer::T_depth;
   _normals_enabled = false;
 
   //Color and alpha transform variables
@@ -343,15 +342,15 @@ set_depth_clear_value(const float value) {
 //       Access: Public
 //  Description: Clears the framebuffer within the current
 //               DisplayRegion, according to the flags indicated by
-//               the given ClearableRegion object.
+//               the given DrawableRegion object.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-clear(ClearableRegion *clearable) {
+clear(DrawableRegion *clearable) {
   PStatTimer timer(_clear_pcollector);
 
   int clear_buffer_type = 0;
   if (clearable->get_clear_color_active()) {
-    clear_buffer_type |= RenderBuffer::T_back;
+    clear_buffer_type |= clearable->get_draw_buffer_type();
     set_color_clear_value(clearable->get_clear_color());
   }
   if (clearable->get_clear_depth_active()) {

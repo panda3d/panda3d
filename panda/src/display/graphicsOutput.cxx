@@ -22,6 +22,7 @@
 #include "config_display.h"
 #include "mutexHolder.h"
 #include "hardwareChannel.h"
+#include "renderBuffer.h"
 
 TypeHandle GraphicsOutput::_type_handle;
 
@@ -51,6 +52,12 @@ GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   _is_valid = false;
   _copy_texture = false;
   _sort = 0;
+
+  int mode = gsg->get_properties().get_frame_buffer_mode();
+  if ((mode & FrameBufferProperties::FM_buffer) == FrameBufferProperties::FM_single_buffer) {
+    // Single buffered; we must draw into the front buffer.
+    _draw_buffer_type = RenderBuffer::T_front;
+  }
 
   _display_regions_stale = false;
 
@@ -292,139 +299,6 @@ get_display_region(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::save_screenshot_default
-//       Access: Published
-//  Description: Saves a screenshot of the window to a default
-//               filename, and returns the filename, or empty string
-//               if the screenshot failed.  The default filename is
-//               generated from the supplied prefix and from the
-//               Configrc variable screenshot-filename, which contains
-//               the following strings:
-//
-//                 %~p - the supplied prefix
-//                 %~f - the frame count
-//                 %~e - the value of screenshot-extension
-//                 All other % strings in strftime().
-////////////////////////////////////////////////////////////////////
-Filename GraphicsOutput::
-save_screenshot_default(const string &prefix) {
-  time_t now = time(NULL);
-  struct tm *ttm = localtime(&now);
-  int frame_count = ClockObject::get_global_clock()->get_frame_count();
-
-  static const int buffer_size = 1024;
-  char buffer[buffer_size];
-
-  ostringstream filename_strm;
-
-  size_t i = 0;
-  while (i < screenshot_filename.length()) {
-    char ch1 = screenshot_filename[i++];
-    if (ch1 == '%' && i < screenshot_filename.length()) {
-      char ch2 = screenshot_filename[i++];
-      if (ch2 == '~' && i < screenshot_filename.length()) {
-        char ch3 = screenshot_filename[i++];
-        switch (ch3) {
-        case 'p':
-          filename_strm << prefix;
-          break;
-
-        case 'f':
-          filename_strm << frame_count;
-          break;
-
-        case 'e':
-          filename_strm << screenshot_extension;
-          break;
-        }
-
-      } else {
-        // Use strftime() to decode the percent code.
-        char format[3] = {'%', ch2, '\0'};
-        if (strftime(buffer, buffer_size, format, ttm)) {
-          for (char *b = buffer; *b != '\0'; b++) {
-            switch (*b) {
-            case ' ':
-            case ':':
-            case '/':
-              filename_strm << '-';
-              break;
-
-            case '\n':
-              break;
-
-            default:
-              filename_strm << *b;
-            }
-          }
-        }
-      }
-    } else {
-      filename_strm << ch1;
-    }
-  }
-
-  Filename filename = filename_strm.str();
-  if (save_screenshot(filename)) {
-    return filename;
-  }
-  return Filename();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::save_screenshot
-//       Access: Published
-//  Description: Saves a screenshot of the window to the indicated
-//               filename.  Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
-bool GraphicsOutput::
-save_screenshot(const Filename &filename) {
-  PNMImage image;
-  if (!get_screenshot(image)) {
-    return false;
-  }
-
-  if (!image.write(filename)) {
-    return false;
-  }
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::get_screenshot
-//       Access: Published
-//  Description: Captures the most-recently rendered image from the
-//               framebuffer into the indicated PNMImage.  Returns
-//               true on success, false on failure.
-////////////////////////////////////////////////////////////////////
-bool GraphicsOutput::
-get_screenshot(PNMImage &image) {
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
-    return false;
-  }
-
-  if (!is_valid()) {
-    return false;
-  }
-
-  make_current();
-
-  PixelBuffer p(_x_size, _y_size, 3, 1, PixelBuffer::T_unsigned_byte,
-                PixelBuffer::F_rgb);
-
-  DisplayRegion dr(_x_size, _y_size);
-  if (!p.copy(_gsg, &dr, get_screenshot_buffer())) {
-    return false;
-  }
-
-  if (!p.store(image)) {
-    return false;
-  }
-
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::make_scratch_display_region
 //       Access: Public
 //  Description: Allocates and returns a temporary DisplayRegion that
@@ -435,7 +309,7 @@ get_screenshot(PNMImage &image) {
 //               the interface provided in GraphicsLayer.
 ////////////////////////////////////////////////////////////////////
 PT(DisplayRegion) GraphicsOutput::
-make_scratch_display_region(int x_size, int y_size) const {
+make_scratch_display_region(int x_size, int y_size) {
 #ifndef NDEBUG
   if (x_size > _x_size || y_size > _y_size) {
     display_cat.error()
@@ -447,7 +321,7 @@ make_scratch_display_region(int x_size, int y_size) const {
   }
 #endif
 
-  PT(DisplayRegion) region = new DisplayRegion(x_size, y_size);
+  PT(DisplayRegion) region = new DisplayRegion(this, x_size, y_size);
   region->copy_clear_settings(*this);
   return region;
 }
@@ -526,7 +400,7 @@ begin_frame() {
 //  Description: Clears the entire framebuffer before rendering,
 //               according to the settings of get_color_clear_active()
 //               and get_depth_clear_active() (inherited from
-//               ClearableRegion).
+//               DrawableRegion).
 //
 //               This function is called only within the draw thread.
 ////////////////////////////////////////////////////////////////////
@@ -561,8 +435,9 @@ end_frame() {
   // _copy_texture to false.
   if (_copy_texture) {
     nassertv(has_texture());
-    DisplayRegion dr(_x_size, _y_size);
-    get_texture()->copy(_gsg, &dr, _gsg->get_render_buffer(RenderBuffer::T_back));
+    DisplayRegion dr(this, _x_size, _y_size);
+    RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type());
+    get_texture()->copy(_gsg, &dr, buffer);
   }
 }
 
@@ -658,19 +533,6 @@ declare_channel(int index, GraphicsChannel *chan) {
 
   nassertv(index < (int)_channels.size());
   _channels[index] = chan;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::get_screenshot_buffer
-//       Access: Protected, Virtual
-//  Description: Returns the RenderBuffer that should be used for
-//               capturing screenshots from this particular
-//               GraphicsOutput.
-////////////////////////////////////////////////////////////////////
-RenderBuffer GraphicsOutput::
-get_screenshot_buffer() {
-  // By default, this is the front buffer.
-  return _gsg->get_render_buffer(RenderBuffer::T_front);
 }
 
 ////////////////////////////////////////////////////////////////////

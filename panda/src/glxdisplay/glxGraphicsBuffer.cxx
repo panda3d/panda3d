@@ -42,6 +42,10 @@ glxGraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   DCAST_INTO_V(glx_pipe, _pipe);
   _display = glx_pipe->get_display();
   _pbuffer = None;
+
+  // Since the pbuffer never gets flipped, we get screenshots from the
+  // same buffer we draw into.
+  _screenshot_buffer_type = _draw_buffer_type;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -154,18 +158,4 @@ open_buffer() {
 
   _is_valid = true;
   return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsBuffer::get_screenshot_buffer
-//       Access: Protected, Virtual
-//  Description: Returns the RenderBuffer that should be used for
-//               capturing screenshots from this particular
-//               GraphicsOutput.
-////////////////////////////////////////////////////////////////////
-RenderBuffer glxGraphicsBuffer::
-get_screenshot_buffer() {
-  // Since the pbuffer never gets flipped, we get screenshots from the
-  // back buffer only.
-  return _gsg->get_render_buffer(RenderBuffer::T_back);
 }

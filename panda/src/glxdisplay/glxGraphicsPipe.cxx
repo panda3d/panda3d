@@ -469,26 +469,43 @@ try_for_fbconfig(int framebuffer_mode,
     attrib_list[n++] = GLX_ALPHA_SIZE;
     attrib_list[n++] = want_color_component_bits;
   }
-  if (framebuffer_mode & FrameBufferProperties::FM_double_buffer) {
+
+  switch (framebuffer_mode & FrameBufferProperties::FM_buffer) {
+  case FrameBufferProperties::FM_single_buffer:
+    glxdisplay_cat.debug(false) << " SINGLEBUFFER";
+    attrib_list[n++] = GLX_DOUBLEBUFFER;
+    attrib_list[n++] = false;
+    break;
+
+  case FrameBufferProperties::FM_double_buffer:
+  case FrameBufferProperties::FM_triple_buffer:
     glxdisplay_cat.debug(false) << " DOUBLEBUFFER";
     attrib_list[n++] = GLX_DOUBLEBUFFER;
     attrib_list[n++] = true;
+    break;
   }
+
   if (framebuffer_mode & FrameBufferProperties::FM_stereo) {
     glxdisplay_cat.debug(false) << " STEREO";
     attrib_list[n++] = GLX_STEREO;
     attrib_list[n++] = true;
+  } else {
+    attrib_list[n++] = GLX_STEREO;
+    attrib_list[n++] = false;
   }
+
   if (framebuffer_mode & FrameBufferProperties::FM_depth) {
     glxdisplay_cat.debug(false) << " DEPTH(" << want_depth_bits << ")";
     attrib_list[n++] = GLX_DEPTH_SIZE;
     attrib_list[n++] = want_depth_bits;
   }
+
   if (framebuffer_mode & FrameBufferProperties::FM_stencil) {
     glxdisplay_cat.debug(false) << " STENCIL";
     attrib_list[n++] = GLX_STENCIL_SIZE;
     attrib_list[n++] = 1;
   }
+
   if (framebuffer_mode & FrameBufferProperties::FM_accum) {
     glxdisplay_cat.debug(false) << " ACCUM";
     attrib_list[n++] = GLX_ACCUM_RED_SIZE;

@@ -1,4 +1,4 @@
-// Filename: clearableRegion.h
+// Filename: drawableRegion.h
 // Created by:  drose (11Jul02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,26 +16,30 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CLEARABLEREGION_H
-#define CLEARABLEREGION_H
+#ifndef DRAWABLEREGION_H
+#define DRAWABLEREGION_H
 
 #include "pandabase.h"
 #include "luse.h"
+#include "renderBuffer.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : ClearableRegion
-// Description : This is just an interface definition for a
-//               rectangular region of the screen that might or might
-//               not need to be cleared every frame before rendering.
-//               This includes DisplayRegions and GraphicsWindows.
+//       Class : DrawableRegion
+// Description : This is a base class for GraphicsWindow (actually,
+//               GraphicsOutput) and DisplayRegion, both of which are
+//               conceptually rectangular regions into which drawing
+//               commands may be issued.  Sometimes you want to deal
+//               with a single display region, and sometimes you want
+//               to deal with the whole window at once, particularly
+//               for issuing clear commands and capturing screenshots.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ClearableRegion {
+class EXPCL_PANDA DrawableRegion {
 public:
-  INLINE ClearableRegion();
-  INLINE ClearableRegion(const ClearableRegion &copy);
-  INLINE void operator = (const ClearableRegion &copy);
+  INLINE DrawableRegion();
+  INLINE DrawableRegion(const DrawableRegion &copy);
+  INLINE void operator = (const DrawableRegion &copy);
 
-  INLINE void copy_clear_settings(const ClearableRegion &copy);
+  INLINE void copy_clear_settings(const DrawableRegion &copy);
 
 PUBLISHED:
   INLINE void set_clear_color_active(bool clear_color_active);
@@ -52,11 +56,20 @@ PUBLISHED:
 
   INLINE bool is_any_clear_active() const;
 
+public:
+  INLINE int get_screenshot_buffer_type() const;
+  INLINE int get_draw_buffer_type() const;
+
+protected:
+  int _screenshot_buffer_type;
+  int _draw_buffer_type;
+
 private:
   // This data needs to be cycled.
   enum Flags {
     F_clear_color_active = 0x0001,
     F_clear_depth_active = 0x0002,
+    F_clear_all          = 0x0003, // = all of the above
   };
   int _flags;
 
@@ -64,6 +77,6 @@ private:
   float _clear_depth;
 };
 
-#include "clearableRegion.I"
+#include "drawableRegion.I"
 
 #endif

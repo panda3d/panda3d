@@ -64,32 +64,6 @@ make_current() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OsMesaGraphicsBuffer::begin_flip
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after end_frame() has been called on all windows, to
-//               initiate the exchange of the front and back buffers.
-//
-//               This should instruct the window to prepare for the
-//               flip at the next video sync, but it should not wait.
-//
-//               We have the two separate functions, begin_flip() and
-//               end_flip(), to make it easier to flip all of the
-//               windows at the same time.
-////////////////////////////////////////////////////////////////////
-void OsMesaGraphicsBuffer::
-begin_flip() {
-  if (has_texture()) {
-    // Use glCopyTexImage2D to copy the framebuffer to the texture.
-    // This appears to be the only way to "render to a texture" in
-    // OpenGL; there's no interface to make the offscreen buffer
-    // itself be a texture.
-    DisplayRegion dr(_x_size, _y_size);
-    get_texture()->copy(_gsg, &dr, _gsg->get_render_buffer(RenderBuffer::T_back));
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: OsMesaGraphicsBuffer::close_buffer
 //       Access: Protected, Virtual
 //  Description: Closes the buffer right now.  Called from the window

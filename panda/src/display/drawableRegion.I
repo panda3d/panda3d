@@ -1,4 +1,4 @@
-// Filename: clearableRegion.I
+// Filename: drawableRegion.I
 // Created by:  drose (11Jul02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -18,12 +18,14 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClearableRegion::Constructor
+//     Function: DrawableRegion::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE ClearableRegion::
-ClearableRegion() : 
+INLINE DrawableRegion::
+DrawableRegion() : 
+  _screenshot_buffer_type(RenderBuffer::T_front),
+  _draw_buffer_type(RenderBuffer::T_back),
   _flags(0),
   _clear_color(0.0f, 0.0f, 0.0f, 0.0f),
   _clear_depth(1.0f)
@@ -31,12 +33,14 @@ ClearableRegion() :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClearableRegion::Copy Constructor
+//     Function: DrawableRegion::Copy Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE ClearableRegion::
-ClearableRegion(const ClearableRegion &copy) :
+INLINE DrawableRegion::
+DrawableRegion(const DrawableRegion &copy) :
+  _screenshot_buffer_type(copy._screenshot_buffer_type),
+  _draw_buffer_type(copy._draw_buffer_type),
   _flags(copy._flags),
   _clear_color(copy._clear_color),
   _clear_depth(copy._clear_depth)
@@ -44,32 +48,34 @@ ClearableRegion(const ClearableRegion &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClearableRegion::Copy Assignment Operator
+//     Function: DrawableRegion::Copy Assignment Operator
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void ClearableRegion::
-operator = (const ClearableRegion &copy) {
+INLINE void DrawableRegion::
+operator = (const DrawableRegion &copy) {
+  _screenshot_buffer_type = copy._screenshot_buffer_type;
+  _draw_buffer_type = copy._draw_buffer_type;
   _flags = copy._flags;
   _clear_color = copy._clear_color;
   _clear_depth = copy._clear_depth;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClearableRegion::copy_clear_settings
+//     Function: DrawableRegion::copy_clear_settings
 //       Access: Public
-//  Description: A convenience function that does the same thing as
-//               the assignment operator; this is just syntactically a
-//               little nicer (and a little clearer) to call from a
-//               derived class.
+//  Description: Copies only the clear settings from the other drawable
+//               region.
 ////////////////////////////////////////////////////////////////////
-INLINE void ClearableRegion::
-copy_clear_settings(const ClearableRegion &copy) {
-  operator = (copy);
+INLINE void DrawableRegion::
+copy_clear_settings(const DrawableRegion &copy) {
+  _flags = (_flags & ~F_clear_all) | (copy._flags & F_clear_all);
+  _clear_color = copy._clear_color;
+  _clear_depth = copy._clear_depth;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClearableRegion::set_clear_color_active
+//     Function: DrawableRegion::set_clear_color_active
 //       Access: Published
 //  Description: Toggles the flag that indicates whether the color
 //               buffer should be cleared every frame.  If this is
@@ -77,7 +83,7 @@ copy_clear_settings(const ClearableRegion &copy) {
 //               indicated by set_clear_color(); otherwise, it will be
 //               left alone.
 ////////////////////////////////////////////////////////////////////
-INLINE void ClearableRegion::
+INLINE void DrawableRegion::
 set_clear_color_active(bool clear_color_active) {
   if (clear_color_active) {
     _flags |= F_clear_color_active;
@@ -87,19 +93,19 @@ set_clear_color_active(bool clear_color_active) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClearableRegion::get_clear_color_active
+//     Function: DrawableRegion::get_clear_color_active
 //       Access: Published
 //  Description: Returns the current setting of the flag that
 //               indicates whether the color buffer should be cleared
 //               every frame.  See set_clear_color_active().
 ////////////////////////////////////////////////////////////////////
-INLINE bool ClearableRegion::
+INLINE bool DrawableRegion::
 get_clear_color_active() const {
   return ((_flags & F_clear_color_active) != 0);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClearableRegion::set_clear_depth_active
+//     Function: DrawableRegion::set_clear_depth_active
 //       Access: Published
 //  Description: Toggles the flag that indicates whether the depth
 //               buffer should be cleared every frame.  If this is
@@ -107,7 +113,7 @@ get_clear_color_active() const {
 //               value indicated by set_clear_depth(); otherwise, it
 //               will be left alone.
 ////////////////////////////////////////////////////////////////////
-INLINE void ClearableRegion::
+INLINE void DrawableRegion::
 set_clear_depth_active(bool clear_depth_active) {
   if (clear_depth_active) {
     _flags |= F_clear_depth_active;
@@ -117,19 +123,19 @@ set_clear_depth_active(bool clear_depth_active) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClearableRegion::get_clear_depth_active
+//     Function: DrawableRegion::get_clear_depth_active
 //       Access: Published
 //  Description: Returns the current setting of the flag that
 //               indicates whether the depth buffer should be cleared
 //               every frame.  See set_clear_depth_active().
 ////////////////////////////////////////////////////////////////////
-INLINE bool ClearableRegion::
+INLINE bool DrawableRegion::
 get_clear_depth_active() const {
   return ((_flags & F_clear_depth_active) != 0);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClearableRegion::set_clear_color
+//     Function: DrawableRegion::set_clear_color
 //       Access: Published
 //  Description: Sets the clear color to the indicated value.  This is
 //               the value that will be used to clear the color buffer
@@ -137,13 +143,13 @@ get_clear_depth_active() const {
 //               returns true.  If get_clear_color_active() returns
 //               false, this is meaningless.
 ////////////////////////////////////////////////////////////////////
-INLINE void ClearableRegion::
+INLINE void DrawableRegion::
 set_clear_color(const Colorf &color) {
   _clear_color = color;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClearableRegion::get_clear_color
+//     Function: DrawableRegion::get_clear_color
 //       Access: Published
 //  Description: Returns the current clear color value.  This is
 //               the value that will be used to clear the color buffer
@@ -151,13 +157,13 @@ set_clear_color(const Colorf &color) {
 //               returns true.  If get_clear_color_active() returns
 //               false, this is meaningless.
 ////////////////////////////////////////////////////////////////////
-INLINE const Colorf &ClearableRegion::
+INLINE const Colorf &DrawableRegion::
 get_clear_color() const {
   return _clear_color;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClearableRegion::set_clear_depth
+//     Function: DrawableRegion::set_clear_depth
 //       Access: Published
 //  Description: Sets the clear depth to the indicated value.  This is
 //               the value that will be used to clear the depth buffer
@@ -165,13 +171,13 @@ get_clear_color() const {
 //               returns true.  If get_clear_depth_active() returns
 //               false, this is meaningless.
 ////////////////////////////////////////////////////////////////////
-INLINE void ClearableRegion::
+INLINE void DrawableRegion::
 set_clear_depth(float depth) {
   _clear_depth = depth;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClearableRegion::get_clear_depth
+//     Function: DrawableRegion::get_clear_depth
 //       Access: Published
 //  Description: Returns the current clear depth value.  This is
 //               the value that will be used to clear the depth buffer
@@ -179,20 +185,45 @@ set_clear_depth(float depth) {
 //               returns true.  If get_clear_depth_active() returns
 //               false, this is meaningless.
 ////////////////////////////////////////////////////////////////////
-INLINE float ClearableRegion::
+INLINE float DrawableRegion::
 get_clear_depth() const {
   return _clear_depth;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClearableRegion::is_any_clear_active
+//     Function: DrawableRegion::is_any_clear_active
 //       Access: Published
 //  Description: Returns true if any of the clear types (so far there
 //               are just color or depth) have been set active, or
 //               false if none of them are active and there is no need
 //               to clear.
 ////////////////////////////////////////////////////////////////////
-INLINE bool ClearableRegion::
+INLINE bool DrawableRegion::
 is_any_clear_active() const {
-  return (_flags != 0);
+  return (_flags & F_clear_all) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DrawableRegion::get_draw_buffer_type
+//       Access: Public
+//  Description: Returns the RenderBuffer into which the GSG should
+//               issue draw commands.  Normally, this is the back
+//               buffer for double-buffered windows, and the front
+//               buffer for single-buffered windows.
+////////////////////////////////////////////////////////////////////
+INLINE int DrawableRegion::
+get_draw_buffer_type() const {
+  return _draw_buffer_type;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DrawableRegion::get_screenshot_buffer_type
+//       Access: Public, Virtual
+//  Description: Returns the RenderBuffer that should be used for
+//               capturing screenshots from this particular
+//               DrawableRegion.
+////////////////////////////////////////////////////////////////////
+INLINE int DrawableRegion::
+get_screenshot_buffer_type() const {
+  return _screenshot_buffer_type;
 }

@@ -443,7 +443,6 @@ reset() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_clear(const RenderBuffer &buffer) {
-  //  DO_PSTATS_STUFF(PStatTimer timer(_win->_clear_pcollector);)
   nassertv(buffer._gsg == this);
   int buffer_type = buffer._buffer_type;
   GLbitfield mask = 0;

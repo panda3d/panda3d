@@ -138,7 +138,7 @@ get_scene() const {
 //  Description: Clears the framebuffer within the indicated
 //               DisplayRegion, according to the flags indicated by
 //               the DisplayRegion object (inheriting from
-//               ClearableRegion).  Note that by default, a
+//               DrawableRegion).  Note that by default, a
 //               DisplayRegion does not have any clear flags set, in
 //               which case this function will do nothing.
 ////////////////////////////////////////////////////////////////////
@@ -146,7 +146,7 @@ INLINE void GraphicsStateGuardian::
 clear(DisplayRegion *dr) {
   DisplayRegionStack old_dr = push_display_region(dr);
   prepare_display_region();
-  clear((ClearableRegion *)dr);
+  clear((DrawableRegion *)dr);
   pop_display_region(old_dr);
 }
 
@@ -436,4 +436,18 @@ INLINE PlaneNode *GraphicsStateGuardian::
 get_clip_plane(int plane_id) const {
   nassertr(plane_id >= 0 && plane_id < (int)_clip_plane_info.size(), (PlaneNode *)NULL);
   return _clip_plane_info[plane_id]._plane;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::set_properties
+//       Access: Protected
+//  Description: Changes the frame buffer properties structure
+//               representing this GSG's capabilities.  Normally, this
+//               should only be called by a derived class wishing to
+//               indicate that the originally-requested capabilities
+//               could not be granted.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsStateGuardian::
+set_properties(const FrameBufferProperties &properties) {
+  _properties = properties;
 }

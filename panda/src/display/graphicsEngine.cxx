@@ -215,8 +215,10 @@ make_window(GraphicsStateGuardian *gsg, const string &name, int sort) {
 
   // TODO: ask the window thread to make the window.
   PT(GraphicsWindow) window = gsg->get_pipe()->make_window(gsg, name);
-  window->_sort = sort;
-  do_add_window(window, gsg, threading_model);
+  if (window != (GraphicsWindow *)NULL) {
+    window->_sort = sort;
+    do_add_window(window, gsg, threading_model);
+  }
   return window;
 }
 
@@ -264,8 +266,10 @@ make_buffer(GraphicsStateGuardian *gsg, const string &name,
   // TODO: ask the window thread to make the buffer.
   PT(GraphicsBuffer) buffer = 
     gsg->get_pipe()->make_buffer(gsg, name, x_size, y_size, want_texture);
-  buffer->_sort = sort;
-  do_add_window(buffer, gsg, threading_model);
+  if (buffer != (GraphicsBuffer *)NULL) {
+    buffer->_sort = sort;
+    do_add_window(buffer, gsg, threading_model);
+  }
   return buffer;
 }
 
@@ -668,19 +672,25 @@ process_events(const GraphicsEngine::Windows &wlist) {
 //     Function: GraphicsEngine::flip_windows
 //       Access: Private
 //  Description: This is called by the RenderThread object to flip the
-//               buffers (resize, etc.) for the given list of windows.
-//               This is run in the draw thread.
+//               buffers for all of the non-single-buffered windows in
+//               the given list.  This is run in the draw thread.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 flip_windows(const GraphicsEngine::Windows &wlist) {
   Windows::const_iterator wi;
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
-    win->begin_flip();
+    if (win->is_active() && win->get_gsg()->is_active() && 
+        !win->get_gsg()->get_properties().is_single_buffered()) {
+      win->begin_flip();
+    }
   }
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
-    win->end_flip();
+    if (win->is_active() && win->get_gsg()->is_active() && 
+        !win->get_gsg()->get_properties().is_single_buffered()) {
+      win->end_flip();
+    }
   }
 }
 
@@ -918,36 +928,34 @@ setup_gsg(GraphicsStateGuardian *gsg, SceneSetup *scene_setup) {
 void GraphicsEngine::
 do_add_window(GraphicsOutput *window, GraphicsStateGuardian *gsg,
               const GraphicsThreadingModel &threading_model) {
-  if (window != (GraphicsOutput *)NULL) {
-    MutexHolder holder(_lock);
-    _windows_sorted = false;
-    _windows.push_back(window);
-
-    WindowRenderer *cull = get_window_renderer(threading_model.get_cull_name());
-    WindowRenderer *draw = get_window_renderer(threading_model.get_draw_name());
-    draw->add_gsg(gsg);
-
-    if (threading_model.get_cull_sorting()) {
-      cull->add_window(cull->_cull, window);
-      draw->add_window(draw->_draw, window);
-    } else {
-      cull->add_window(cull->_cdraw, window);
-    }
-
-    // We should ask the pipe which thread it prefers to run its
-    // windowing commands in (the "window thread").  This is the
-    // thread that handles the commands to open, resize, etc. the
-    // window.  X requires this to be done in the app thread, but some
-    // pipes might prefer this to be done in draw, for instance.  For
-    // now, we assume this is the app thread.
-    _app.add_window(_app._window, window);
-
-    display_cat.info()
-      << "Created " << window->get_type() << "\n";
-
-    // By default, try to open each window as it is added.
-    window->request_open();
+  MutexHolder holder(_lock);
+  _windows_sorted = false;
+  _windows.push_back(window);
+  
+  WindowRenderer *cull = get_window_renderer(threading_model.get_cull_name());
+  WindowRenderer *draw = get_window_renderer(threading_model.get_draw_name());
+  draw->add_gsg(gsg);
+  
+  if (threading_model.get_cull_sorting()) {
+    cull->add_window(cull->_cull, window);
+    draw->add_window(draw->_draw, window);
+  } else {
+    cull->add_window(cull->_cdraw, window);
   }
+  
+  // We should ask the pipe which thread it prefers to run its
+  // windowing commands in (the "window thread").  This is the
+  // thread that handles the commands to open, resize, etc. the
+  // window.  X requires this to be done in the app thread, but some
+  // pipes might prefer this to be done in draw, for instance.  For
+  // now, we assume this is the app thread.
+  _app.add_window(_app._window, window);
+  
+  display_cat.info()
+    << "Created " << window->get_type() << "\n";
+  
+  // By default, try to open each window as it is added.
+  window->request_open();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -47,7 +47,7 @@
 #include "notify.h"
 #include "pvector.h"
 
-class ClearableRegion;
+class DrawableRegion;
 class GraphicsEngine;
 
 ////////////////////////////////////////////////////////////////////
@@ -103,7 +103,7 @@ public:
   virtual void set_depth_clear_value(const float value);
   virtual void do_clear(const RenderBuffer &buffer)=0;
 
-  void clear(ClearableRegion *clearable);
+  void clear(DrawableRegion *clearable);
   INLINE void clear(DisplayRegion *dr);
 
   virtual void prepare_display_region()=0;
@@ -204,6 +204,8 @@ protected:
   virtual void close_gsg();
   void panic_deactivate();
 
+  INLINE void set_properties(const FrameBufferProperties &properties);
+
 #ifdef DO_PSTATS
   // These functions are used to update the active texture memory
   // usage record (and other frame-based measurements) in Pstats.
@@ -238,7 +240,6 @@ protected:
   float _depth_clear_value;
   bool _stencil_clear_value;
   Colorf _accum_clear_value;
-  int _clear_buffer_type;
 
   int _display_region_stack_level;
   int _frame_buffer_stack_level;

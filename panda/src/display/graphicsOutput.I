@@ -174,6 +174,52 @@ get_sort() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::save_screenshot_default
+//       Access: Published
+//  Description: Saves a screenshot of the region to a default
+//               filename, and returns the filename, or empty string
+//               if the screenshot failed.  The default filename is
+//               generated from the supplied prefix and from the
+//               Configrc variable screenshot-filename, which contains
+//               the following strings:
+//
+//                 %~p - the supplied prefix
+//                 %~f - the frame count
+//                 %~e - the value of screenshot-extension
+//                 All other % strings in strftime().
+////////////////////////////////////////////////////////////////////
+INLINE Filename GraphicsOutput::
+save_screenshot_default(const string &prefix) {
+  DisplayRegion dr(this, _x_size, _y_size);
+  return dr.save_screenshot_default(prefix);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::save_screenshot
+//       Access: Published
+//  Description: Saves a screenshot of the region to the indicated
+//               filename.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsOutput::
+save_screenshot(const Filename &filename) {
+  DisplayRegion dr(this, _x_size, _y_size);
+  return dr.save_screenshot(filename);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_screenshot
+//       Access: Published
+//  Description: Captures the most-recently rendered image from the
+//               framebuffer into the indicated PNMImage.  Returns
+//               true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsOutput::
+get_screenshot(PNMImage &image) {
+  DisplayRegion dr(this, _x_size, _y_size);
+  return dr.get_screenshot(image);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::win_display_regions_changed
 //       Access: Public
 //  Description: Intended to be called when the active state on a

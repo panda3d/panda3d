@@ -40,8 +40,6 @@ public:
 
   virtual void make_current();
 
-  virtual void begin_flip();
-
 protected:
   virtual void close_buffer();
   virtual bool open_buffer();

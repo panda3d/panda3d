@@ -108,6 +108,20 @@ clear_frame_buffer_mode() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::is_single_buffered
+//       Access: Published
+//  Description: Returns true if the frame buffer indicates a
+//               single-buffered mode, false if it indicates double-
+//               or triple-buffering.  This is a convenience function
+//               to access this useful tidbit of data.
+////////////////////////////////////////////////////////////////////
+INLINE bool FrameBufferProperties::
+is_single_buffered() const {
+  nassertr(has_frame_buffer_mode(), false);
+  return (_frame_buffer_mode & FM_buffer) == FM_single_buffer;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferProperties::set_depth_bits
 //       Access: Published
 //  Description: Specifies the minimum number of bits that are

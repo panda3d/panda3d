@@ -25,7 +25,7 @@
 #include "graphicsPipe.h"
 #include "displayRegion.h"
 #include "graphicsStateGuardian.h"
-#include "clearableRegion.h"
+#include "drawableRegion.h"
 #include "renderBuffer.h"
 
 #include "typedWritableReferenceCount.h"
@@ -57,7 +57,7 @@ class PNMImage;
 //               TypedWritableReferenceCount instead of
 //               TypedReferenceCount for that convenience.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GraphicsOutput : public TypedWritableReferenceCount, public ClearableRegion {
+class EXPCL_PANDA GraphicsOutput : public TypedWritableReferenceCount, public DrawableRegion {
 protected:
   GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
                  const string &name);
@@ -95,13 +95,13 @@ PUBLISHED:
   int get_num_display_regions() const;
   DisplayRegion *get_display_region(int n) const;
 
-  Filename save_screenshot_default(const string &prefix = "screenshot");
-  bool save_screenshot(const Filename &filename);
-  bool get_screenshot(PNMImage &image);
+  INLINE Filename save_screenshot_default(const string &prefix = "screenshot");
+  INLINE bool save_screenshot(const Filename &filename);
+  INLINE bool get_screenshot(PNMImage &image);
 
 public:
   // No need to publish these.
-  PT(DisplayRegion) make_scratch_display_region(int x_size, int y_size) const;
+  PT(DisplayRegion) make_scratch_display_region(int x_size, int y_size);
 
 public:
   // These are not intended to be called directly by the user.
@@ -138,7 +138,6 @@ public:
 
 protected:
   void declare_channel(int index, GraphicsChannel *chan);
-  virtual RenderBuffer get_screenshot_buffer();
   
 protected:
   PT(GraphicsStateGuardian) _gsg;

@@ -62,6 +62,8 @@ PUBLISHED:
   INLINE bool has_frame_buffer_mode() const;
   INLINE void clear_frame_buffer_mode();
 
+  INLINE bool is_single_buffered() const;
+
   INLINE void set_depth_bits(int depth_bits);
   INLINE int get_depth_bits() const;
   INLINE bool has_depth_bits() const;

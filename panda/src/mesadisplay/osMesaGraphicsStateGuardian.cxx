@@ -30,6 +30,15 @@ OSMesaGraphicsStateGuardian(const FrameBufferProperties &properties) :
   MesaGraphicsStateGuardian(properties)
 {
   _context = OSMesaCreateContext(OSMESA_RGBA, NULL);
+
+  // I think OSMesa always creates single-buffered contexts.  I don't
+  // see any documentation to this effect, but it seems to be the
+  // case.
+  FrameBufferProperties props = get_properties();
+  int mode = props.get_frame_buffer_mode();
+  mode = (mode & ~FrameBufferProperties::FM_buffer) | FrameBufferProperties::FM_single_buffer;
+  props.set_frame_buffer_mode(mode);
+  set_properties(props);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -44,8 +44,6 @@ protected:
   virtual void close_buffer();
   virtual bool open_buffer();
 
-  virtual RenderBuffer get_screenshot_buffer();
-
 private:
   Display *_display;
   GLXPbuffer _pbuffer;

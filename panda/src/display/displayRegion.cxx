@@ -16,12 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
+#include "displayRegion.h"
 #include "graphicsLayer.h"
 #include "graphicsChannel.h"
 #include "graphicsOutput.h"
 #include "config_display.h"
-#include "displayRegion.h"
+#include "pixelBuffer.h"
 #include "camera.h"
 #include "dcast.h"
 #include "mutexHolder.h"
@@ -36,6 +36,7 @@ DisplayRegion::
 DisplayRegion(GraphicsLayer *layer) :
   _l(0.), _r(1.), _b(0.), _t(1.),
   _layer(layer),
+  _window(layer->get_window()),
   _camera_node((Camera *)NULL),
   _active(true)
 {
@@ -52,6 +53,7 @@ DisplayRegion(GraphicsLayer *layer, const float l,
               const float r, const float b, const float t) :
   _l(l), _r(r), _b(b), _t(t),
   _layer(layer),
+  _window(layer->get_window()),
   _camera_node((Camera *)NULL),
   _active(true)
 {
@@ -66,10 +68,11 @@ DisplayRegion(GraphicsLayer *layer, const float l,
 //               typically for rendering a temporary pass.
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
-DisplayRegion(int xsize, int ysize) :
+DisplayRegion(GraphicsOutput *window, int xsize, int ysize) :
   _l(0.), _r(1.), _b(0.), _t(1.),
   _pl(0), _pr(xsize), _pb(0), _pt(ysize), _pbi(ysize), _pti(0),
   _layer((GraphicsLayer *)NULL),
+  _window(window),
   _camera_node((Camera *)NULL),
   _active(true)
 {
@@ -232,7 +235,7 @@ get_channel() const {
 GraphicsOutput *DisplayRegion::
 get_window() const {
   MutexHolder holder(_lock);
-  return (_layer != (GraphicsLayer *)NULL) ? _layer->get_window() : NULL;
+  return _window;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -245,7 +248,7 @@ get_window() const {
 GraphicsPipe *DisplayRegion::
 get_pipe() const {
   MutexHolder holder(_lock);
-  return (_layer != (GraphicsLayer *)NULL) ? _layer->get_pipe() : NULL;
+  return (_window != (GraphicsOutput *)NULL) ? _window->get_pipe() : NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -423,6 +426,140 @@ output(ostream &out) const {
   out << "DisplayRegion(" << _l << " " << _r << " " << _b << " " << _t
       << ")=pixels(" << _pl << " " << _pr << " " << _pb << " " << _pt
       << ")";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::save_screenshot_default
+//       Access: Published
+//  Description: Saves a screenshot of the region to a default
+//               filename, and returns the filename, or empty string
+//               if the screenshot failed.  The default filename is
+//               generated from the supplied prefix and from the
+//               Configrc variable screenshot-filename, which contains
+//               the following strings:
+//
+//                 %~p - the supplied prefix
+//                 %~f - the frame count
+//                 %~e - the value of screenshot-extension
+//                 All other % strings in strftime().
+////////////////////////////////////////////////////////////////////
+Filename DisplayRegion::
+save_screenshot_default(const string &prefix) {
+  time_t now = time(NULL);
+  struct tm *ttm = localtime(&now);
+  int frame_count = ClockObject::get_global_clock()->get_frame_count();
+
+  static const int buffer_size = 1024;
+  char buffer[buffer_size];
+
+  ostringstream filename_strm;
+
+  size_t i = 0;
+  while (i < screenshot_filename.length()) {
+    char ch1 = screenshot_filename[i++];
+    if (ch1 == '%' && i < screenshot_filename.length()) {
+      char ch2 = screenshot_filename[i++];
+      if (ch2 == '~' && i < screenshot_filename.length()) {
+        char ch3 = screenshot_filename[i++];
+        switch (ch3) {
+        case 'p':
+          filename_strm << prefix;
+          break;
+
+        case 'f':
+          filename_strm << frame_count;
+          break;
+
+        case 'e':
+          filename_strm << screenshot_extension;
+          break;
+        }
+
+      } else {
+        // Use strftime() to decode the percent code.
+        char format[3] = {'%', ch2, '\0'};
+        if (strftime(buffer, buffer_size, format, ttm)) {
+          for (char *b = buffer; *b != '\0'; b++) {
+            switch (*b) {
+            case ' ':
+            case ':':
+            case '/':
+              filename_strm << '-';
+              break;
+
+            case '\n':
+              break;
+
+            default:
+              filename_strm << *b;
+            }
+          }
+        }
+      }
+    } else {
+      filename_strm << ch1;
+    }
+  }
+
+  Filename filename = filename_strm.str();
+  if (save_screenshot(filename)) {
+    return filename;
+  }
+  return Filename();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::save_screenshot
+//       Access: Published
+//  Description: Saves a screenshot of the region to the indicated
+//               filename.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool DisplayRegion::
+save_screenshot(const Filename &filename) {
+  PNMImage image;
+  if (!get_screenshot(image)) {
+    return false;
+  }
+
+  if (!image.write(filename)) {
+    return false;
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_screenshot
+//       Access: Published
+//  Description: Captures the most-recently rendered image from the
+//               framebuffer into the indicated PNMImage.  Returns
+//               true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool DisplayRegion::
+get_screenshot(PNMImage &image) {
+  GraphicsOutput *window = get_window();
+  nassertr(window != (GraphicsOutput *)NULL, false);
+  
+  GraphicsStateGuardian *gsg = window->get_gsg();
+  nassertr(gsg != (GraphicsStateGuardian *)NULL, false);
+
+  int x_size = get_pixel_width();
+  int y_size = get_pixel_height();
+  
+  window->make_current();
+
+  PixelBuffer p(x_size, y_size, 3, 1, PixelBuffer::T_unsigned_byte,
+                PixelBuffer::F_rgb);
+
+  RenderBuffer buffer = gsg->get_render_buffer(get_screenshot_buffer_type());
+  if (!p.copy(gsg, this, buffer)) {
+    return false;
+  }
+
+  if (!p.store(image)) {
+    return false;
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
