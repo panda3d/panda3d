@@ -33,8 +33,11 @@ QueuedConnectionListener* listener;
 QueuedConnectionManager cm;
 Clients clients;
 QueuedConnectionReader* reader;
+static float clock_skew = 0.;
+static bool doing_sync = false;
+static float my_time;
 
-enum TelemetryToken { T_End = 1, T_Pos, T_Vel, T_Num };
+enum TelemetryToken { T_End = 1, T_Pos, T_Vel, T_Num, T_Time, T_Sync };
 
 static inline unsigned char* get_uint8(unsigned char* b, unsigned char& v) {
   v = b[0];
@@ -96,9 +99,11 @@ static void* internal_monitor(void*) {
 	while (t != T_End) {
 	  switch (t) {
 	  case T_Pos:
-	    float x, y, z;
-	    buff = get_float64(get_float64(get_float64(buff, x), y), z);
-	    my_pos = LPoint3f(x, y, z);
+	    {
+	      float x, y, z;
+	      buff = get_float64(get_float64(get_float64(buff, x), y), z);
+	      my_pos = LPoint3f(x, y, z);
+	    }
 	    break;
 	  case T_Vel:
 	    if (deadrec_cat->is_debug())
@@ -107,6 +112,19 @@ static void* internal_monitor(void*) {
 	  case T_Num:
 	    if (deadrec_cat->is_debug())
 	      deadrec_cat->debug() << "got T_Num" << endl;
+	    break;
+	  case T_Time:
+	    {
+	      float x;
+	      buff = get_float64(buff, x);
+	      if (doing_sync)
+		clock_skew = ClockObject::get_global_clock()->get_time() - x;
+	      else
+		my_time = x + clock_skew;
+	    }
+	    break;
+	  case T_Sync:
+	    doing_sync = true;
 	    break;
 	  default:
 	    deadrec_cat->warning() << "got bad token in datagram (" << (int)t

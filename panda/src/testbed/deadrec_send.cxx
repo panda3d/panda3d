@@ -12,6 +12,7 @@
 #include <guiFrame.h>
 #include <guiButton.h>
 #include <guiSign.h>
+#include <clockObject.h>
 
 #include <dconfig.h>
 
@@ -34,7 +35,13 @@ static QueuedConnectionManager cm;
 PT(Connection) conn;
 ConnectionWriter* writer;
 
-enum TelemetryToken { T_End = 1, T_Pos, T_Vel, T_Num };
+enum TelemetryToken { T_End = 1, T_Pos, T_Vel, T_Num, T_Time, T_Sync };
+
+static inline NetDatagram& add_time(NetDatagram& d) {
+  d.add_uint8(T_Time);
+  d.add_float64(ClockObject::get_global_clock()->get_time());
+  return d;
+}
 
 static inline NetDatagram& add_pos(NetDatagram& d) {
   d.add_uint8(T_Pos);
@@ -61,6 +68,12 @@ static void event_frame(CPT_Event) {
   // send deadrec data
   NetDatagram d;
   send(add_pos(d));
+}
+
+static void sync_clock(void) {
+  NetDatagram d;
+  d.add_uint8(T_Sync);
+  send(add_time(d));
 }
 
 enum MotionType { M_None, M_Line, M_SLine, M_Box, M_SBox, M_Circle, M_SCircle,
@@ -529,6 +542,9 @@ static void deadrec_setup(EventHandler& eh) {
   f1->align_to_top(0.05);
   f1->recompute();
   f1->manage(mgr, eh);
+
+  // sync clock
+  sync_clock();
 }
 
 static void event_lerp(CPT_Event) {
