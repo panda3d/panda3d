@@ -152,16 +152,9 @@ open_window(const WindowProperties &props, GraphicsEngine *engine,
   _window = engine->make_window(ptgsg, name, 0);
   if (_window != (GraphicsWindow *)NULL) {
     _window->request_properties(props);
-
-    // Get the first channel on the window.  This will be the only
-    // channel on non-SGI hardware.
-    PT(GraphicsChannel) channel = _window->get_channel(0);
     
-    // Make a layer on the channel to hold our display region.
-    PT(GraphicsLayer) layer = channel->make_layer();
-    
-    // And create a display region that covers the entire window.
-    _display_region_3d = layer->make_display_region();
+    // Create a display region that covers the entire window.
+    _display_region_3d = _window->make_display_region();
 
     // Make sure the DisplayRegion does the clearing, not the window,
     // so we can have multiple DisplayRegions of different colors.
@@ -174,7 +167,7 @@ open_window(const WindowProperties &props, GraphicsEngine *engine,
     
     if (show_frame_rate_meter) {
       _frame_rate_meter = new FrameRateMeter("frame_rate_meter");
-      _frame_rate_meter->setup_layer(_window);
+      _frame_rate_meter->setup_window(_window);
     }
   }
 
@@ -267,19 +260,12 @@ get_render_2d() {
     _render_2d.set_two_sided(1, 1);
 
     // Now set up a 2-d camera to view render_2d.
-
-    // Get the first channel on the window.  This will be the only
-    // channel on non-SGI hardware.
-    PT(GraphicsChannel) channel = _window->get_channel(0);
-
-    // Make a layer on the channel to hold our display region.
-    PT(GraphicsLayer) layer = channel->make_layer(10);
     
-    // And create a display region that matches the size of the 3-d
+    // Create a display region that matches the size of the 3-d
     // display region.
     float l, r, b, t;
     _display_region_3d->get_dimensions(l, r, b, t);
-    _display_region_2d = layer->make_display_region(l, r, b, t);
+    _display_region_2d = _window->make_display_region(l, r, b, t);
     
     // Finally, we need a camera to associate with the display region.
     PT(Camera) camera = new Camera("camera2d");
@@ -704,7 +690,7 @@ split_window(SplitType split_type) {
   
   float left, right, bottom, top;
   _display_region_3d->get_dimensions(left, right, bottom, top);
-  new_region = _display_region_3d->get_layer()->make_display_region();
+  new_region = _display_region_3d->get_window()->make_display_region();
 
   if (split_type == ST_vertical) {
     _display_region_3d->set_dimensions(left, right, bottom, (top + bottom) / 2.0f);

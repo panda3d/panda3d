@@ -595,10 +595,10 @@ class ShowBase(DirectObject.DirectObject):
         if flag:
             if not self.frameRateMeter:
                 self.frameRateMeter = FrameRateMeter('frameRateMeter')
-                self.frameRateMeter.setupLayer(self.win)
+                self.frameRateMeter.setupWindow(self.win)
         else:
             if self.frameRateMeter:
-                self.frameRateMeter.clearLayer()
+                self.frameRateMeter.clearWindow()
                 self.frameRateMeter = None
 
     
@@ -645,11 +645,12 @@ class ShowBase(DirectObject.DirectObject):
         self.render2d.setMaterialOff(1)
         self.render2d.setTwoSided(1)
         
-        # The normal 2-d layer has an aspect ratio that matches the
-        # window, but its coordinate system is square.  This means
-        # anything we parent to render2d gets stretched.  For things
-        # where that makes a difference, we set up aspect2d, which
-        # scales things back to the right aspect ratio.
+        # The normal 2-d DisplayRegoin has an aspect ratio that
+        # matches the window, but its coordinate system is square.
+        # This means anything we parent to render2d gets stretched.
+        # For things where that makes a difference, we set up
+        # aspect2d, which scales things back to the right aspect
+        # ratio.
         aspectRatio = self.getAspectRatio()
         self.aspect2d = self.render2d.attachNewNode(PGTop("aspect2d"))
         self.aspect2d.setScale(1.0 / aspectRatio, 1.0, 1.0)
@@ -691,11 +692,13 @@ class ShowBase(DirectObject.DirectObject):
         self.render2dp.setMaterialOff(1)
         self.render2dp.setTwoSided(1)
         
-        # The normal 2-d layer has an aspect ratio that matches the
-        # window, but its coordinate system is square.  This means
-        # anything we parent to render2d gets stretched.  For things
-        # where that makes a difference, we set up aspect2d, which
-        # scales things back to the right aspect ratio.
+        # The normal 2-d DisplayRegion has an aspect ratio that
+        # matches the window, but its coordinate system is square.
+        # This means anything we parent to render2d gets stretched.
+        # For things where that makes a difference, we set up
+        # aspect2d, which scales things back to the right aspect
+        # ratio.
+        
         aspectRatio = self.getAspectRatio()
         self.aspect2dp = self.render2dp.attachNewNode(PGTop("aspect2d"))
         self.aspect2dp.setScale(1.0 / aspectRatio, 1.0, 1.0)
@@ -731,26 +734,20 @@ class ShowBase(DirectObject.DirectObject):
 
         return aspectRatio
 
-    def makeCamera(self, win, chan = None, layer = None, layerSort = 0,
-                   scene = None,
-                   displayRegion = (0, 1, 0, 1), aspectRatio = None, camName = 'cam'):
+    def makeCamera(self, win, sort = 0, scene = None,
+                   displayRegion = (0, 1, 0, 1), aspectRatio = None,
+                   camName = 'cam'):
         """
         Makes a new 3-d camera associated with the indicated window,
         and creates a display region in the indicated subrectangle.
         """
-        if chan == None:
-            chan = win.getChannel(0)
-
-        if layer == None:
-            # Make a new layer on the window.
-            layer = chan.makeLayer(layerSort)
-
         if scene == None:
             scene = self.render
 
-        # And make a display region on this layer of the requested
+        # Make a display region on this window of the requested
         # area.
-        dr = layer.makeDisplayRegion(*displayRegion)
+        dr = win.makeDisplayRegion(*displayRegion)
+        dr.setSort(sort)
 
         # By default, we do not clear 3-d display regions (the entire
         # window will be cleared, which is normally sufficient).
@@ -784,22 +781,16 @@ class ShowBase(DirectObject.DirectObject):
 
         return cam
 
-    def makeCamera2d(self, win, chan = None, layer = None, layerSort = 10,
+    def makeCamera2d(self, win, sort = 10,
                      displayRegion = (0, 1, 0, 1), coords = (-1, 1, -1, 1)):
         """
         Makes a new camera2d associated with the indicated window, and
         assigns it to render the indicated subrectangle of render2d.
         """
-        if chan == None:
-            chan = win.getChannel(0)
-
-        if layer == None:
-            # Make a new layer on the window.
-            layer = chan.makeLayer(layerSort)
-
-        # And make a display region on this layer of the requested
+        # Make a display region on this window of the requested
         # area.
-        dr = layer.makeDisplayRegion(*displayRegion)
+        dr = win.makeDisplayRegion(*displayRegion)
+        dr.setSort(sort)
 
         # Enable clearing of the depth buffer on this new display
         # region (see the comment in setupRender2d, above).
@@ -826,22 +817,16 @@ class ShowBase(DirectObject.DirectObject):
 
         return camera2d
 
-    def makeCamera2dp(self, win, chan = None, layer = None, layerSort = 20,
-                     displayRegion = (0, 1, 0, 1), coords = (-1, 1, -1, 1)):
+    def makeCamera2dp(self, win, sort = 20,
+                      displayRegion = (0, 1, 0, 1), coords = (-1, 1, -1, 1)):
         """
         Makes a new camera2dp associated with the indicated window, and
         assigns it to render the indicated subrectangle of render2dp.
         """
-        if chan == None:
-            chan = win.getChannel(0)
-
-        if layer == None:
-            # Make a new layer on the window.
-            layer = chan.makeLayer(layerSort)
-
-        # And make a display region on this layer of the requested
+        # Make a display region on this window of the requested
         # area.
-        dr = layer.makeDisplayRegion(*displayRegion)
+        dr = win.makeDisplayRegion(*displayRegion)
+        dr.setSort(sort)
 
         # Enable clearing of the depth buffer on this new display
         # region (see the comment in setupRender2d, above).

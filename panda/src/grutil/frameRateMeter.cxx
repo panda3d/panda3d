@@ -20,7 +20,6 @@
 #include "camera.h"
 #include "displayRegion.h"
 #include "orthographicLens.h"
-#include "graphicsChannel.h"
 #include "clockObject.h"
 #include "config_grutil.h"
 #include "depthTestAttrib.h"
@@ -59,18 +58,21 @@ FrameRateMeter(const string &name) : TextNode(name) {
 ////////////////////////////////////////////////////////////////////
 FrameRateMeter::
 ~FrameRateMeter() {
-  clear_layer();
+  clear_window();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FrameRateMeter::setup_layer
+//     Function: FrameRateMeter::setup_window
 //       Access: Published
-//  Description: Sets up the frame rate meter to create a layer to
-//               render itself into the indicated channel.
+//  Description: Sets up the frame rate meter to create a
+//               DisplayRegion to render itself into the indicated
+//               window.
 ////////////////////////////////////////////////////////////////////
 void FrameRateMeter::
-setup_layer(GraphicsChannel *channel) {
-  clear_layer();
+setup_window(GraphicsOutput *window) {
+  clear_window();
+
+  _window = window;
 
   _root = NodePath("frame_rate_root");
   _root.attach_new_node(this);
@@ -81,12 +83,9 @@ setup_layer(GraphicsChannel *channel) {
   _root.node()->set_attrib(dw, 1);
   _root.set_material_off(1);
   _root.set_two_sided(1, 1);
-
-  // Make a layer on the channel to hold our display region.
-  _layer = channel->make_layer(frame_rate_meter_layer_sort);
     
-  // And create a display region that covers the entire window.
-  PT(DisplayRegion) dr = _layer->make_display_region();
+  // Create a display region that covers the entire window.
+  _display_region = _window->make_display_region();
     
   // Finally, we need a camera to associate with the display region.
   PT(Camera) camera = new Camera("frame_rate_camera");
@@ -104,25 +103,19 @@ setup_layer(GraphicsChannel *channel) {
   
   camera->set_lens(lens);
   camera->set_scene(_root);
-  dr->set_camera(camera_np);
+  _display_region->set_camera(camera_np);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FrameRateMeter::clear_layer
+//     Function: FrameRateMeter::clear_window
 //       Access: Published
 //  Description: Undoes the effect of a previous call to
-//               setup_layer().
+//               setup_window().
 ////////////////////////////////////////////////////////////////////
 void FrameRateMeter::
-clear_layer() {
-  if (_layer != (GraphicsLayer *)NULL) {
-    GraphicsChannel *channel = _layer->get_channel();
-    if (channel != (GraphicsChannel *)NULL) {
-      channel->remove_layer(_layer);
-    }
-    _layer = (GraphicsLayer *)NULL;
-  }
-
+clear_window() {
+  _window = (GraphicsOutput *)NULL;
+  _display_region = (DisplayRegion *)NULL;
   _root = NodePath();
 }
 

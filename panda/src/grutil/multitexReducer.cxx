@@ -23,8 +23,6 @@
 #include "renderState.h"
 #include "transformState.h"
 #include "graphicsOutput.h"
-#include "graphicsChannel.h"
-#include "graphicsLayer.h"
 #include "displayRegion.h"
 #include "camera.h"
 #include "orthographicLens.h"
@@ -254,9 +252,7 @@ flatten(GraphicsOutput *window) {
 
     // Set up the offscreen buffer to render 0,0 to 1,1.  This will be
     // the whole texture, but nothing outside the texture.
-    GraphicsChannel *chan = buffer->get_channel(0);
-    GraphicsLayer *layer = chan->make_layer(0);
-    DisplayRegion *dr = layer->make_display_region();
+    DisplayRegion *dr = buffer->make_display_region();
     PT(Camera) cam_node = new Camera("multitexCam");
     PT(Lens) lens = new OrthographicLens();
     lens->set_film_size(1.0f, 1.0f);

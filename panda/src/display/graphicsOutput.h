@@ -21,7 +21,6 @@
 
 #include "pandabase.h"
 
-#include "graphicsChannel.h"
 #include "graphicsPipe.h"
 #include "displayRegion.h"
 #include "graphicsStateGuardian.h"
@@ -95,14 +94,16 @@ PUBLISHED:
   void set_sort(int sort);
   INLINE int get_sort() const;
 
-  GraphicsChannel *get_channel(int index);
-  void remove_channel(int index);
-
-  int get_max_channel_index() const;
-  bool is_channel_defined(int index) const;
+  INLINE DisplayRegion *make_display_region();
+  INLINE DisplayRegion *make_display_region(float l, float r,
+                                            float b, float t);
+  bool remove_display_region(DisplayRegion *display_region);
 
   int get_num_display_regions() const;
-  DisplayRegion *get_display_region(int n) const;
+  PT(DisplayRegion) get_display_region(int n) const;
+
+  int get_num_active_display_regions() const;
+  PT(DisplayRegion) get_active_display_region(int n) const;
 
   GraphicsOutput *make_texture_buffer(const string &name, int x_size, int y_size);
 
@@ -111,12 +112,7 @@ PUBLISHED:
   INLINE bool get_screenshot(PNMImage &image);
 
 public:
-  // No need to publish these.
-  PT(DisplayRegion) make_scratch_display_region(int x_size, int y_size);
-
-public:
   // These are not intended to be called directly by the user.
-  INLINE void win_display_regions_changed();
   INLINE bool needs_context() const;
   INLINE bool flip_ready() const;
 
@@ -151,9 +147,6 @@ public:
   // thread other than the window thread.  These methods are normally
   // called by the GraphicsEngine.
   virtual void process_events();
-
-protected:
-  void declare_channel(int index, GraphicsChannel *chan);
   
 protected:
   PT(GraphicsStateGuardian) _gsg;
@@ -165,6 +158,10 @@ protected:
   bool _needs_context;
 
 private:
+  DisplayRegion *add_display_region(DisplayRegion *display_region);
+
+  INLINE void win_display_regions_changed();
+
   INLINE void determine_display_regions() const;
   void do_determine_display_regions();
 
@@ -177,13 +174,12 @@ protected:
 
 protected:
   Mutex _lock; 
-  // protects _channels, _display_regions.
-
-  typedef pvector< PT(GraphicsChannel) > Channels;
-  Channels _channels;
-
-  typedef pvector<DisplayRegion *> DisplayRegions;
-  DisplayRegions _display_regions;
+  // protects _display_regions.
+  PT(DisplayRegion) _default_display_region;
+  typedef pvector< PT(DisplayRegion) > TotalDisplayRegions;
+  TotalDisplayRegions _total_display_regions;
+  typedef pvector<DisplayRegion *> ActiveDisplayRegions;
+  ActiveDisplayRegions _active_display_regions;
   bool _display_regions_stale;
 
 protected:
@@ -214,6 +210,7 @@ private:
 
   friend class GraphicsPipe;
   friend class GraphicsEngine;
+  friend class DisplayRegion;
 };
 
 #include "graphicsOutput.I"

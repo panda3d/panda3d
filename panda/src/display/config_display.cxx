@@ -24,10 +24,7 @@
 #include "graphicsOutput.h"
 #include "graphicsBuffer.h"
 #include "graphicsWindow.h"
-#include "graphicsChannel.h"
-#include "graphicsLayer.h"
 #include "parasiteBuffer.h"
-#include "hardwareChannel.h"
 #include "textureContext.h"
 
 ConfigureDef(config_display);
@@ -127,9 +124,6 @@ init_libdisplay() {
   GraphicsOutput::init_type();
   GraphicsWindow::init_type();
   GraphicsBuffer::init_type();
-  GraphicsChannel::init_type();
-  GraphicsLayer::init_type();
-  HardwareChannel::init_type();
   ParasiteBuffer::init_type();
   TextureContext::init_type();
 }

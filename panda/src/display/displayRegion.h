@@ -30,8 +30,6 @@
 
 #include "plist.h"
 
-class GraphicsLayer;
-class GraphicsChannel;
 class GraphicsOutput;
 class GraphicsPipe;
 class CullHandler;
@@ -45,20 +43,24 @@ class PNMImage;
 //               covers the whole window, but you may also create
 //               smaller DisplayRegions for having different regions
 //               within the window that represent different scenes.
+//               You may also stack up DisplayRegions like panes of
+//               glass, usually for layering 2-d interfaces on top of
+//               a 3-d scene.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DisplayRegion : public ReferenceCount, public DrawableRegion {
-public:
-  DisplayRegion(GraphicsLayer *layer);
-  DisplayRegion(GraphicsLayer *layer,
+protected:
+  DisplayRegion(GraphicsOutput *window);
+  DisplayRegion(GraphicsOutput *window,
                 const float l, const float r,
                 const float b, const float t);
-  DisplayRegion(GraphicsOutput *window, int xsize, int ysize);
 private:
   DisplayRegion(const DisplayRegion &copy);
   void operator = (const DisplayRegion &copy);
 
 public:
   ~DisplayRegion();
+
+  INLINE bool operator < (const DisplayRegion &other) const;
 
 PUBLISHED:
   void get_dimensions(float &l, float &r, float &b, float &t) const;
@@ -68,8 +70,6 @@ PUBLISHED:
   float get_top() const;
   void set_dimensions(float l, float r, float b, float t);
 
-  GraphicsLayer *get_layer() const;
-  GraphicsChannel *get_channel() const;
   GraphicsOutput *get_window() const;
   GraphicsPipe *get_pipe() const;
 
@@ -78,6 +78,9 @@ PUBLISHED:
 
   void set_active(bool active);
   INLINE bool is_active() const;
+
+  void set_sort(int sort);
+  INLINE int get_sort() const;
 
   void compute_pixels();
   void compute_pixels(int x_size, int y_size);
@@ -111,7 +114,6 @@ private:
   int _pbi;
   int _pti;
 
-  GraphicsLayer *_layer;
   GraphicsOutput *_window;
   NodePath _camera;
 
@@ -120,14 +122,15 @@ private:
   PT(Camera) _camera_node;
 
   bool _active;
+  int _sort;
 
   // This is used to cache the culling result from last frame's
   // drawing into this display region.  It should only be accessed or
   // modified by the GraphicsEngine, during the cull traversal.
   PT(CullResult) _cull_result;
 
-  friend class GraphicsLayer;
   friend class GraphicsEngine;
+  friend class GraphicsOutput;
 };
 
 INLINE ostream &operator << (ostream &out, const DisplayRegion &dr);

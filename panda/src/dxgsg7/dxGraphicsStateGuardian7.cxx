@@ -25,7 +25,6 @@
 #include "geomSphere.h"
 #include "geomIssuer.h"
 #include "graphicsWindow.h"
-#include "graphicsChannel.h"
 #include "lens.h"
 #include "ambientLight.h"
 #include "directionalLight.h"
@@ -458,9 +457,6 @@ dx_init( void) {
     _bDrawPrimDoSetupVertexBuffer = false;
 
     _last_testcooplevel_result = S_OK;
-
-    // only 1 channel on dx currently
-    //_panda_gfx_channel = _win->get_channel(0);
 
     HRESULT hr;
 
@@ -3532,27 +3528,8 @@ copy_texture(Texture *tex, const DisplayRegion *dr, const RenderBuffer &rb) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian7::
 texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb) {
-#if 1
     dxgsg7_cat.error()
       << "texture_to_pixel_buffer unimplemented!\n";
-#else
-    nassertv(tc != NULL && pb != NULL);
-
-    Texture *tex = tc->_texture;
-
-    int w = tex->_pbuffer->get_xsize();
-    int h = tex->_pbuffer->get_ysize();
-
-    PT(DisplayRegion) dr = _win->make_scratch_display_region(w, h);
-
-    FrameBufferStack old_fb = push_frame_buffer
-                              (get_render_buffer(RenderBuffer::T_back | RenderBuffer::T_depth),
-                               dr);
-
-    texture_to_pixel_buffer(tc, pb, dr);
-
-    pop_frame_buffer(old_fb);
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////

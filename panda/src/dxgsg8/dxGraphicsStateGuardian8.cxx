@@ -26,7 +26,6 @@
 #include "geomIssuer.h"
 #include "graphicsWindow.h"
 #include "graphicsEngine.h"
-#include "graphicsChannel.h"
 #include "lens.h"
 #include "ambientLight.h"
 #include "directionalLight.h"
@@ -558,12 +557,6 @@ dx_init(void) {
     _bDrawPrimDoSetupVertexBuffer = false;
 
     _last_testcooplevel_result = D3D_OK;
-
-#if 0
-    // unused now
-    // only 1 channel on dx currently
-    _panda_gfx_channel = _win->get_channel(0);
-#endif
 
     for(int i=0;i<MAX_POSSIBLE_TEXFMTS;i++) {
       // look for all possible DX8 texture fmts
@@ -3213,27 +3206,7 @@ void DXGraphicsStateGuardian8::
 texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb) {
  // This code is now invalidated by the new design; perhaps the
   // interface is not needed anyway.
-#if 0
-
-    nassertv(tc != NULL && pb != NULL);
-
-    Texture *tex = tc->_texture;
-
-    int w = tex->_pbuffer->get_xsize();
-    int h = tex->_pbuffer->get_ysize();
-
-    PT(DisplayRegion) dr = _win->make_scratch_display_region(w, h);
-
-    FrameBufferStack old_fb = push_frame_buffer
-                              (get_render_buffer(RenderBuffer::T_back | RenderBuffer::T_depth),
-                               dr);
-
-    texture_to_pixel_buffer(tc, pb, dr);
-
-    pop_frame_buffer(old_fb);
-#else
     dxgsg8_cat.error() << "texture_to_pixel_buffer unimplemented for DX!\n";
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -18,27 +18,16 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FrameRateMeter::setup_layer
+//     Function: FrameRateMeter::get_window
 //       Access: Published
-//  Description: Sets up the frame rate meter to create a layer to
-//               render itself into the indicated window.
-////////////////////////////////////////////////////////////////////
-INLINE void FrameRateMeter::
-setup_layer(GraphicsOutput *window) {
-  setup_layer(window->get_channel(0));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FrameRateMeter::get_layer
-//       Access: Published
-//  Description: Returns the GraphicsLayer that the meter has created
+//  Description: Returns the GraphicsOutput that the meter has created
 //               to render itself into the window or channel supplied
-//               to setup_layer(), or NULL if setup_layer() has not
+//               to setup_window(), or NULL if setup_window() has not
 //               been called.
 ////////////////////////////////////////////////////////////////////
-INLINE GraphicsLayer *FrameRateMeter::
-get_layer() const {
-  return _layer;
+INLINE GraphicsOutput *FrameRateMeter::
+get_window() const {
+  return _window;
 }
 
 ////////////////////////////////////////////////////////////////////

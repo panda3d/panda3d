@@ -22,7 +22,6 @@
 #include "mouseButton.h"
 #include "keyboardButton.h"
 #include "mutexHolder.h"
-#include "hardwareChannel.h"
 #include "throw_event.h"
 
 TypeHandle GraphicsWindow::_type_handle;
@@ -490,10 +489,11 @@ set_properties_now(WindowProperties &properties) {
         _has_size = true;
         _is_valid = true;
 
-        Channels::iterator ci;
-        for (ci = _channels.begin(); ci != _channels.end(); ++ci) {
-          GraphicsChannel *chan = (*ci);
-          chan->window_resized(_x_size, _y_size);
+        TotalDisplayRegions::iterator dri;
+        for (dri = _total_display_regions.begin(); 
+             dri != _total_display_regions.end(); 
+             ++dri) {
+          (*dri)->compute_pixels(_x_size, _y_size);
         }
 
       } else {
@@ -647,9 +647,9 @@ system_changed_properties(const WindowProperties &properties) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::system_changed_size
 //       Access: Protected
-//  Description: An internal function to update all the channels with
-//               the new size of the window.  This should always be
-//               called before changing the _size members of the
+//  Description: An internal function to update all the DisplayRegions
+//               with the new size of the window.  This should always
+//               be called before changing the _size members of the
 //               _properties structure.
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
@@ -664,11 +664,12 @@ system_changed_size(int x_size, int y_size) {
     _x_size = x_size;
     _y_size = y_size;
     _has_size = true;
-    
-    Channels::iterator ci;
-    for (ci = _channels.begin(); ci != _channels.end(); ++ci) {
-      GraphicsChannel *chan = (*ci);
-      chan->window_resized(x_size, y_size);
+
+    TotalDisplayRegions::iterator dri;
+    for (dri = _total_display_regions.begin(); 
+         dri != _total_display_regions.end(); 
+         ++dri) {
+      (*dri)->compute_pixels(_x_size, _y_size);
     }
   }
 }

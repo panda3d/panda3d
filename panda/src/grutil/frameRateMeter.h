@@ -23,7 +23,7 @@
 #include "textNode.h"
 #include "nodePath.h"
 #include "graphicsOutput.h"
-#include "graphicsLayer.h"
+#include "displayRegion.h"
 #include "pointerTo.h"
 #include "pStatCollector.h"
 
@@ -39,7 +39,7 @@ class ClockObject;
 //
 //               It also has a special mode in which it may be
 //               attached directly to a channel or window.  If this is
-//               done, it creates a layer for itself and renders
+//               done, it creates a DisplayRegion for itself and renders
 //               itself in the upper-right-hand corner.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA FrameRateMeter : public TextNode {
@@ -47,11 +47,10 @@ PUBLISHED:
   FrameRateMeter(const string &name);
   virtual ~FrameRateMeter();
 
-  INLINE void setup_layer(GraphicsOutput *window);
-  void setup_layer(GraphicsChannel *channel);
-  void clear_layer();
+  void setup_window(GraphicsOutput *window);
+  void clear_window();
 
-  INLINE GraphicsLayer *get_layer() const;
+  INLINE GraphicsOutput *get_window() const;
 
   INLINE void set_update_interval(double update_interval);
   INLINE double get_update_interval() const;
@@ -69,7 +68,8 @@ private:
   void do_update();
 
 private:
-  PT(GraphicsLayer) _layer;
+  PT(GraphicsOutput) _window;
+  PT(DisplayRegion) _display_region;
   NodePath _root;
 
   double _update_interval;

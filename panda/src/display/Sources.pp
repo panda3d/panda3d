@@ -18,10 +18,7 @@
     displayRegionStack.h \
     frameBufferProperties.I frameBufferProperties.h \
     frameBufferStack.I frameBufferStack.h \
-    graphicsChannel.I graphicsChannel.h \
     graphicsEngine.I graphicsEngine.h \
-    graphicsLayer.I  \
-    graphicsLayer.h \
     graphicsOutput.I graphicsOutput.h \
     graphicsBuffer.I graphicsBuffer.h \
     graphicsPipe.I graphicsPipe.h  \
@@ -35,8 +32,6 @@
     graphicsDevice.h graphicsDevice.I \
     parasiteBuffer.I parasiteBuffer.h \
     windowProperties.I windowProperties.h \
-    hardwareChannel.I  \
-    hardwareChannel.h \
     lensStack.I lensStack.h \
     savedFrameBuffer.I savedFrameBuffer.h
     
@@ -45,9 +40,7 @@
     drawableRegion.cxx \
     displayRegion.cxx \
     frameBufferProperties.cxx \
-    graphicsChannel.cxx  \
     graphicsEngine.cxx \
-    graphicsLayer.cxx \
     graphicsOutput.cxx \
     graphicsBuffer.cxx \
     graphicsPipe.cxx \
@@ -58,7 +51,6 @@
     graphicsDevice.cxx \
     parasiteBuffer.cxx \
     windowProperties.cxx \
-    hardwareChannel.cxx \
     savedFrameBuffer.cxx
 
   #define INSTALL_HEADERS \
@@ -68,9 +60,7 @@
     displayRegionStack.h \
     frameBufferProperties.I frameBufferProperties.h \
     frameBufferStack.I frameBufferStack.h \
-    graphicsChannel.I graphicsChannel.h \
     graphicsEngine.I graphicsEngine.h \
-    graphicsLayer.I graphicsLayer.h \
     graphicsOutput.I graphicsOutput.h \
     graphicsBuffer.I graphicsBuffer.h \
     graphicsPipe.I graphicsPipe.h \
@@ -83,7 +73,6 @@
     graphicsDevice.I graphicsDevice.h \
     parasiteBuffer.I parasiteBuffer.h \
     windowProperties.I windowProperties.h \
-    hardwareChannel.I hardwareChannel.h \
     lensStack.I lensStack.h \
     renderBuffer.h \
     savedFrameBuffer.I savedFrameBuffer.h

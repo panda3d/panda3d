@@ -227,13 +227,36 @@ get_sort() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::make_display_region
+//       Access: Published
+//  Description: Creates a new DisplayRegion that covers the entire
+//               window.
+////////////////////////////////////////////////////////////////////
+INLINE DisplayRegion *GraphicsOutput::
+make_display_region() {
+  return add_display_region(new DisplayRegion(this));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::make_display_region
+//       Access: Published
+//  Description: Creates a new DisplayRegion that covers the indicated
+//               sub-rectangle within the window.  The range on all
+//               parameters is 0..1.
+////////////////////////////////////////////////////////////////////
+INLINE DisplayRegion *GraphicsOutput::
+make_display_region(float l, float r, float b, float t) {
+  return add_display_region(new DisplayRegion(this, l, r, b, t));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::save_screenshot_default
 //       Access: Published
 //  Description: Saves a screenshot of the region to a default
 //               filename, and returns the filename, or empty string
 //               if the screenshot failed.  The default filename is
 //               generated from the supplied prefix and from the
-//               Configrc variable screenshot-filename, which contains
+//               Config variable screenshot-filename, which contains
 //               the following strings:
 //
 //                 %~p - the supplied prefix
@@ -243,8 +266,7 @@ get_sort() const {
 ////////////////////////////////////////////////////////////////////
 INLINE Filename GraphicsOutput::
 save_screenshot_default(const string &prefix) {
-  DisplayRegion dr(this, _x_size, _y_size);
-  return dr.save_screenshot_default(prefix);
+  return _default_display_region->save_screenshot_default(prefix);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -255,8 +277,7 @@ save_screenshot_default(const string &prefix) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsOutput::
 save_screenshot(const Filename &filename) {
-  DisplayRegion dr(this, _x_size, _y_size);
-  return dr.save_screenshot(filename);
+  return _default_display_region->save_screenshot(filename);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -268,21 +289,7 @@ save_screenshot(const Filename &filename) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsOutput::
 get_screenshot(PNMImage &image) {
-  DisplayRegion dr(this, _x_size, _y_size);
-  return dr.get_screenshot(image);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::win_display_regions_changed
-//       Access: Public
-//  Description: Intended to be called when the active state on a
-//               nested channel or layer or display region changes,
-//               forcing the window to recompute its list of active
-//               display regions.
-////////////////////////////////////////////////////////////////////
-INLINE void GraphicsOutput::
-win_display_regions_changed() {
-  _display_regions_stale = true;
+  return _default_display_region->get_screenshot(image);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -337,4 +344,16 @@ determine_display_regions() const {
   if (_display_regions_stale) {
     ((GraphicsOutput *)this)->do_determine_display_regions();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::win_display_regions_changed
+//       Access: Private
+//  Description: Intended to be called when the active state on a
+//               nested display region changes, forcing the window to
+//               recompute its list of active display regions.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsOutput::
+win_display_regions_changed() {
+  _display_regions_stale = true;
 }

@@ -684,8 +684,7 @@ recompute_screen(NonlinearImager::Screen &screen, size_t vi) {
 
     if (buffer != (GraphicsOutput *)NULL) {
       screen._buffer = buffer;
-      GraphicsLayer *layer = buffer->get_channel(0)->make_layer();
-      DisplayRegion *dr = layer->make_display_region();
+      DisplayRegion *dr = buffer->make_display_region();
       dr->set_camera(screen._source_camera);
 
     } else {

@@ -22,7 +22,6 @@
 #include "geom.h"
 #include "geomIssuer.h"
 #include "graphicsWindow.h"
-#include "graphicsChannel.h"
 #include "lens.h"
 #include "perspectiveLens.h"
 #include "directionalLight.h"
@@ -2068,24 +2067,6 @@ void CLP(GraphicsStateGuardian)::
 texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb) {
   // This code is now invalidated by the new design; perhaps the
   // interface is not needed anyway.
-#if 0
-  nassertv(tc != NULL && pb != NULL);
-  Texture *tex = tc->_texture;
-
-  int w = tex->_pbuffer->get_xsize();
-  int h = tex->_pbuffer->get_ysize();
-
-  PT(DisplayRegion) dr = _win->make_scratch_display_region(w, h);
-
-  FrameBufferStack old_fb = push_frame_buffer
-    (get_render_buffer(RenderBuffer::T_back | RenderBuffer::T_depth),
-     dr);
-
-  texture_to_pixel_buffer(tc, pb, dr);
-
-  pop_frame_buffer(old_fb);
-  report_my_gl_errors();
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////

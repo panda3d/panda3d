@@ -22,8 +22,8 @@
 #include "graphicsWindow.h"
 #include "config_display.h"
 #include "mutexHolder.h"
-#include "hardwareChannel.h"
 #include "renderBuffer.h"
+#include "indirectLess.h"
 #include "pStatTimer.h"
 
 TypeHandle GraphicsOutput::_type_handle;
@@ -64,6 +64,11 @@ GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
     // Single buffered; we must draw into the front buffer.
     _draw_buffer_type = RenderBuffer::T_front;
   }
+
+  // We start out with one DisplayRegion that covers the whole window,
+  // which we may use internally for full-window operations like
+  // clear() and get_screenshot().
+  _default_display_region = make_display_region(0.0f, 1.0f, 0.0f, 1.0f);
 
   _display_regions_stale = false;
 
@@ -106,14 +111,20 @@ GraphicsOutput::
   // We shouldn't have a GraphicsPipe pointer anymore.
   nassertv(_pipe == (GraphicsPipe *)NULL);
 
-  // We don't have to destruct our child channels explicitly, since
-  // they are all reference-counted and will go away when their
+  // We don't have to destruct our child display regions explicitly,
+  // since they are all reference-counted and will go away when their
   // pointers do.  However, we do need to zero out their pointers to
   // us.
-  Channels::iterator ci;
-  for (ci = _channels.begin(); ci != _channels.end(); ++ci) {
-    (*ci)->_window = NULL;
+  TotalDisplayRegions::iterator dri;
+  for (dri = _total_display_regions.begin(); 
+       dri != _total_display_regions.end(); 
+       ++dri) {
+    (*dri)->_window = NULL;
   }
+
+  _total_display_regions.clear();
+  _active_display_regions.clear();
+  _default_display_region = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -191,129 +202,41 @@ set_sort(int sort) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::get_channel
-//       Access: Public
-//  Description: Returns a GraphicsChannel pointer that can be used to
-//               access the indicated channel number.  All windows
-//               have at least one channel, channel 0, which
-//               corresponds to the entire window.  If the hardware
-//               supports it, some kinds of windows may also have a
-//               number of hardware channels available at indices
-//               1..n, which will correspond to a subregion of the
-//               window.
+//     Function: GraphicsOutput::remove_display_region
+//       Access: Published
+//  Description: Removes the indicated DisplayRegion from the window,
+//               and destructs it if there are no other references.
 //
-//               This function returns a GraphicsChannel pointer if a
-//               channel is available, or NULL if it is not.  If
-//               called twice with the same index number, it will
-//               return the same pointer.
-////////////////////////////////////////////////////////////////////
-GraphicsChannel *GraphicsOutput::
-get_channel(int index) {
-  MutexHolder holder(_lock);
-  nassertr(index >= 0, NULL);
-
-  if (index < (int)_channels.size()) {
-    if (_channels[index] != (GraphicsChannel *)NULL) {
-      return _channels[index];
-    }
-  }
-
-  // This channel has never been requested before; define it.
-
-  PT(GraphicsChannel) chan;
-  if (index == 0) {
-    // Channel 0 is the default channel: the entire screen.
-    chan = new GraphicsChannel(this);
-  } else {
-    // Any other channel is some hardware-specific channel.
-    GraphicsPipe *pipe = _pipe;
-    if (pipe != (GraphicsPipe *)NULL) {
-      chan = _pipe->get_hw_channel(this, index);
-      if (chan == (GraphicsChannel *)NULL) {
-        display_cat.error()
-          << "GraphicsOutput::get_channel() - got a NULL channel" << endl;
-      } else {
-        if (chan->get_window() != this) {
-          chan = NULL;
-        }
-      }
-    }
-  }
-
-  if (chan != (GraphicsChannel *)NULL) {
-    declare_channel(index, chan);
-  }
-
-  return chan;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::remove_channel
-//       Access: Public
-//  Description: Deletes a GraphicsChannel that was previously created
-//               via a call to get_channel().  Note that the channel
-//               is not actually deleted until all pointers to it are
-//               cleared.
-////////////////////////////////////////////////////////////////////
-void GraphicsOutput::
-remove_channel(int index) {
-  MutexHolder holder(_lock);
-  if (index >= 0 && index < (int)_channels.size()) {
-    _channels[index].clear();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::get_max_channel_index
-//       Access: Public
-//  Description: Returns the largest channel index number yet created,
-//               plus 1.  All channels associated with this window
-//               will have an index number in the range [0,
-//               get_max_channel_index()).  This function, in
-//               conjunction with is_channel_defined(), below, may be
-//               used to determine the complete set of channels
-//               associated with the window.
-////////////////////////////////////////////////////////////////////
-int GraphicsOutput::
-get_max_channel_index() const {
-  int result;
-  {
-    MutexHolder holder(_lock);
-    result = _channels.size();
-  }
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::is_channel_defined
-//       Access: Public
-//  Description: Returns true if the channel with the given index
-//               number has already been defined, false if it hasn't.
-//               If this returns true, calling get_channel() on the
-//               given index number will return the channel pointer.
-//               If it returns false, calling get_channel() will
-//               create and return a new channel pointer.
+//               Returns true if the DisplayRegion is found and
+//               removed, false if it was not a part of the window.
 ////////////////////////////////////////////////////////////////////
 bool GraphicsOutput::
-is_channel_defined(int index) const {
-  bool result;
-  {
-    MutexHolder holder(_lock);
-    if (index < 0 || index >= (int)_channels.size()) {
-      result = false;
-    } else {
-      result = (_channels[index] != (GraphicsChannel *)NULL);
+remove_display_region(DisplayRegion *display_region) {
+  MutexHolder holder(_lock);
+
+  nassertr(display_region != _default_display_region, false);
+
+  TotalDisplayRegions::iterator dri =
+    find(_total_display_regions.begin(), _total_display_regions.end(),
+         display_region);
+  if (dri != _total_display_regions.end()) {
+    display_region->_window = NULL;
+    _total_display_regions.erase(dri);
+    if (display_region->is_active()) {
+      _display_regions_stale = true;
     }
+
+    return true;
   }
-  return result;
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::get_num_display_regions
 //       Access: Published
-//  Description: Returns the number of active DisplayRegions that have
-//               been created within the various layers and channels
-//               of the window.
+//  Description: Returns the number of DisplayRegions that have
+//               been created within the window, active or otherwise.
 ////////////////////////////////////////////////////////////////////
 int GraphicsOutput::
 get_num_display_regions() const {
@@ -321,7 +244,7 @@ get_num_display_regions() const {
   int result;
   {
     MutexHolder holder(_lock);
-    result = _display_regions.size();
+    result = _total_display_regions.size();
   }
   return result;
 }
@@ -329,21 +252,61 @@ get_num_display_regions() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::get_display_region
 //       Access: Published
-//  Description: Returns the nth active DisplayRegion of those that
-//               have been created within the various layers and
-//               channels of the window.  This may return NULL if n is
-//               out of bounds; particularly likely if the number of
-//               display regions has changed since the last call to
+//  Description: Returns the nth DisplayRegion of those that have been
+//               created within the window.  This may return NULL if n
+//               is out of bounds; particularly likely if the number
+//               of display regions has changed since the last call to
 //               get_num_display_regions().
 ////////////////////////////////////////////////////////////////////
-DisplayRegion *GraphicsOutput::
+PT(DisplayRegion) GraphicsOutput::
 get_display_region(int n) const {
   determine_display_regions();
-  DisplayRegion *result;
+  PT(DisplayRegion) result;
   {
     MutexHolder holder(_lock);
-    if (n >= 0 && n < (int)_display_regions.size()) {
-      result = _display_regions[n];
+    if (n >= 0 && n < (int)_total_display_regions.size()) {
+      result = _total_display_regions[n];
+    } else {
+      result = NULL;
+    }
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_num_active_display_regions
+//       Access: Published
+//  Description: Returns the number of active DisplayRegions that have
+//               been created within the window.
+////////////////////////////////////////////////////////////////////
+int GraphicsOutput::
+get_num_active_display_regions() const {
+  determine_display_regions();
+  int result;
+  {
+    MutexHolder holder(_lock);
+    result = _active_display_regions.size();
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_active_display_region
+//       Access: Published
+//  Description: Returns the nth active DisplayRegion of those that
+//               have been created within the window.  This may return
+//               NULL if n is out of bounds; particularly likely if
+//               the number of display regions has changed since the
+//               last call to get_num_active_display_regions().
+////////////////////////////////////////////////////////////////////
+PT(DisplayRegion) GraphicsOutput::
+get_active_display_region(int n) const {
+  determine_display_regions();
+  PT(DisplayRegion) result;
+  {
+    MutexHolder holder(_lock);
+    if (n >= 0 && n < (int)_active_display_regions.size()) {
+      result = _active_display_regions[n];
     } else {
       result = NULL;
     }
@@ -456,34 +419,6 @@ make_texture_buffer(const string &name, int x_size, int y_size) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::make_scratch_display_region
-//       Access: Public
-//  Description: Allocates and returns a temporary DisplayRegion that
-//               may be used to render offscreen into.  This
-//               DisplayRegion is not associated with any layer.
-//
-//               To allocate a normal DisplayRegion for rendering, use
-//               the interface provided in GraphicsLayer.
-////////////////////////////////////////////////////////////////////
-PT(DisplayRegion) GraphicsOutput::
-make_scratch_display_region(int x_size, int y_size) {
-#ifndef NDEBUG
-  if (x_size > _x_size || y_size > _y_size) {
-    display_cat.error()
-      << "make_scratch_display_region(): requested region of size " 
-      << x_size << ", " << y_size << " is larger than window of size "
-      << _x_size << ", " << _y_size << ".\n";
-    x_size = min(x_size, _x_size);
-    y_size = min(y_size, _y_size);
-  }
-#endif
-
-  PT(DisplayRegion) region = new DisplayRegion(this, x_size, y_size);
-  region->copy_clear_settings(*this);
-  return region;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::get_host
 //       Access: Public, Virtual
 //  Description: This is normally called only from within
@@ -586,9 +521,7 @@ clear() {
   if (is_any_clear_active()) {
     nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 
-    PT(DisplayRegion) win_dr =
-      make_scratch_display_region(_x_size, _y_size);
-    DisplayRegionStack old_dr = _gsg->push_display_region(win_dr);
+    DisplayRegionStack old_dr = _gsg->push_display_region(_default_display_region);
     _gsg->clear(this);
     _gsg->pop_display_region(old_dr);
   }
@@ -613,9 +546,8 @@ end_frame() {
   if (_copy_texture) {
     PStatTimer timer(_copy_texture_pcollector);
     nassertv(has_texture());
-    DisplayRegion dr(this, _x_size, _y_size);
     RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type());
-    _gsg->copy_texture(get_texture(), &dr, buffer);
+    _gsg->copy_texture(get_texture(), _default_display_region, buffer);
   }
 
   // If we're not single-buffered, we're now ready to flip.
@@ -721,59 +653,43 @@ process_events() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::declare_channel
-//       Access: Protected
-//  Description: An internal function to add the indicated
-//               newly-created channel to the list at the indicated
-//               channel number.
-//
-//               The caller must grab and hold _lock before making
-//               this call.
+//     Function: GraphicsOutput::add_display_region
+//       Access: Private
+//  Description: Called by one of the make_display_region() methods to
+//               add the new DisplayRegion to the list.
 ////////////////////////////////////////////////////////////////////
-void GraphicsOutput::
-declare_channel(int index, GraphicsChannel *chan) {
-  nassertv(index >= 0);
-  if (index >= (int)_channels.size()) {
-    _channels.reserve(index);
-    while (index >= (int)_channels.size()) {
-      _channels.push_back(NULL);
-    }
-  }
+DisplayRegion *GraphicsOutput::
+add_display_region(DisplayRegion *display_region) {
+  MutexHolder holder(_lock);
+  _total_display_regions.push_back(display_region);
+  _display_regions_stale = true;
 
-  nassertv(index < (int)_channels.size());
-  _channels[index] = chan;
+  return display_region;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::do_determine_display_regions
 //       Access: Private
-//  Description: Recomputes the list of active DisplayRegions within
+//  Description: Re-sorts the list of active DisplayRegions within
 //               the window.
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
 do_determine_display_regions() {
   MutexHolder holder(_lock);
   _display_regions_stale = false;
-  _display_regions.clear();
-  Channels::const_iterator ci;
-  for (ci = _channels.begin(); ci != _channels.end(); ++ci) {
-    GraphicsChannel *chan = (*ci);
-    if (chan->is_active()) {
-      GraphicsChannel::GraphicsLayers::const_iterator li;
-      for (li = chan->_layers.begin(); li != chan->_layers.end(); ++li) {
-        GraphicsLayer *layer = (*li);
-        if (layer->is_active()) {
-          GraphicsLayer::DisplayRegions::const_iterator dri;
-          for (dri = layer->_display_regions.begin(); 
-               dri != layer->_display_regions.end(); 
-               ++dri) {
-            DisplayRegion *dr = (*dri);
-            if (dr->is_active()) {
-              _display_regions.push_back(dr);
-            }
-          }
-        }
-      }
+
+  _active_display_regions.clear();
+  _active_display_regions.reserve(_total_display_regions.size());
+
+  TotalDisplayRegions::const_iterator dri;
+  for (dri = _total_display_regions.begin();
+       dri != _total_display_regions.end();
+       ++dri) {
+    DisplayRegion *display_region = (*dri);
+    if (display_region->is_active()) {
+      _active_display_regions.push_back(display_region);
     }
   }
+
+  stable_sort(_active_display_regions.begin(), _active_display_regions.end(), IndirectLess<DisplayRegion>());
 }

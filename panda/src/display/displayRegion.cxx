@@ -17,8 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "displayRegion.h"
-#include "graphicsLayer.h"
-#include "graphicsChannel.h"
 #include "graphicsOutput.h"
 #include "config_display.h"
 #include "pixelBuffer.h"
@@ -33,12 +31,12 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
-DisplayRegion(GraphicsLayer *layer) :
+DisplayRegion(GraphicsOutput *window) :
   _l(0.), _r(1.), _b(0.), _t(1.),
-  _layer(layer),
-  _window(layer->get_window()),
+  _window(window),
   _camera_node((Camera *)NULL),
-  _active(true)
+  _active(true),
+  _sort(0)
 {
   compute_pixels();
 }
@@ -49,33 +47,15 @@ DisplayRegion(GraphicsLayer *layer) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
-DisplayRegion(GraphicsLayer *layer, const float l,
+DisplayRegion(GraphicsOutput *window, const float l,
               const float r, const float b, const float t) :
   _l(l), _r(r), _b(b), _t(t),
-  _layer(layer),
-  _window(layer->get_window()),
-  _camera_node((Camera *)NULL),
-  _active(true)
-{
-  compute_pixels();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::Constructor
-//       Access: Public
-//  Description: This constructor makes a DisplayRegion that is not
-//               associated with any particular layer; this is
-//               typically for rendering a temporary pass.
-////////////////////////////////////////////////////////////////////
-DisplayRegion::
-DisplayRegion(GraphicsOutput *window, int xsize, int ysize) :
-  _l(0.), _r(1.), _b(0.), _t(1.),
-  _pl(0), _pr(xsize), _pb(0), _pt(ysize), _pbi(ysize), _pti(0),
-  _layer((GraphicsLayer *)NULL),
   _window(window),
   _camera_node((Camera *)NULL),
-  _active(true)
+  _active(true),
+  _sort(0)
 {
+  compute_pixels();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -106,13 +86,18 @@ operator = (const DisplayRegion&) {
 DisplayRegion::
 ~DisplayRegion() {
   set_camera(NodePath());
+
+  // The window pointer should already have been cleared by the time
+  // the DisplayRegion destructs (since the GraphicsOutput class keeps
+  // a reference count on the DisplayRegion).
+  nassertv(_window == (GraphicsOutput *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::get_dimensions
 //       Access: Published
 //  Description: Retrieves the coordinates of the DisplayRegion's
-//               rectangle within its GraphicsLayer.  These numbers
+//               rectangle within its GraphicsOutput.  These numbers
 //               will be in the range [0..1].
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
@@ -128,7 +113,7 @@ get_dimensions(float &l, float &r, float &b, float &t) const {
 //     Function: DisplayRegion::get_left
 //       Access: Published
 //  Description: Retrieves the x coordinate of the left edge of the
-//               rectangle within its GraphicsLayer.  This number
+//               rectangle within its GraphicsOutput.  This number
 //               will be in the range [0..1].
 ////////////////////////////////////////////////////////////////////
 float DisplayRegion::
@@ -141,7 +126,7 @@ get_left() const {
 //     Function: DisplayRegion::get_right
 //       Access: Published
 //  Description: Retrieves the x coordinate of the right edge of the
-//               rectangle within its GraphicsLayer.  This number
+//               rectangle within its GraphicsOutput.  This number
 //               will be in the range [0..1].
 ////////////////////////////////////////////////////////////////////
 float DisplayRegion::
@@ -154,7 +139,7 @@ get_right() const {
 //     Function: DisplayRegion::get_bottom
 //       Access: Published
 //  Description: Retrieves the y coordinate of the bottom edge of 
-//               the rectangle within its GraphicsLayer.  This 
+//               the rectangle within its GraphicsOutput.  This 
 //               number will be in the range [0..1].
 ////////////////////////////////////////////////////////////////////
 float DisplayRegion::
@@ -167,7 +152,7 @@ get_bottom() const {
 //     Function: DisplayRegion::get_top
 //       Access: Published
 //  Description: Retrieves the y coordinate of the top edge of the
-//               rectangle within its GraphicsLayer.  This number
+//               rectangle within its GraphicsOutput.  This number
 //               will be in the range [0..1].
 ////////////////////////////////////////////////////////////////////
 float DisplayRegion::
@@ -197,32 +182,6 @@ set_dimensions(float l, float r, float b, float t) {
   if (win != (GraphicsOutput *)NULL && win->has_size()) {
     do_compute_pixels(win->get_x_size(), win->get_y_size());
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_layer
-//       Access: Published
-//  Description: Returns the layer associated with this particular
-//               DisplayRegion, or NULL if no layer is associated
-//               (or if the layer was deleted).
-////////////////////////////////////////////////////////////////////
-GraphicsLayer *DisplayRegion::
-get_layer() const {
-  MutexHolder holder(_lock);
-  return _layer;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_channel
-//       Access: Published
-//  Description: Returns the GraphicsChannel that this DisplayRegion is
-//               ultimately associated with, or NULL if no channel is
-//               associated.
-////////////////////////////////////////////////////////////////////
-GraphicsChannel *DisplayRegion::
-get_channel() const {
-  MutexHolder holder(_lock);
-  return (_layer != (GraphicsLayer *)NULL) ? _layer->get_channel() : NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -316,11 +275,28 @@ set_active(bool active) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::set_sort
+//       Access: Published
+//  Description: Sets the sort value associated with the
+//               DisplayRegion.  Within a window, DisplayRegions will
+//               be rendered in order from the lowest sort value to
+//               the highest.
+////////////////////////////////////////////////////////////////////
+void DisplayRegion::
+set_sort(int sort) {
+  MutexHolder holder(_lock);
+  if (sort != _sort) {
+    _sort = sort;
+    win_display_regions_changed();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::compute_pixels
 //       Access: Published
 //  Description: Computes the pixel locations of the DisplayRegion
-//               within its layer.  The DisplayRegion will request the
-//               size from the window.
+//               within its window.  The DisplayRegion will request
+//               the size from the window.
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
 compute_pixels() {
@@ -336,7 +312,7 @@ compute_pixels() {
 //     Function: DisplayRegion::compute_pixels
 //       Access: Published
 //  Description: Computes the pixel locations of the DisplayRegion
-//               within its layer, given the size of the layer in
+//               within its window, given the size of the window in
 //               pixels.
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
@@ -349,7 +325,7 @@ compute_pixels(int x_size, int y_size) {
 //     Function: DisplayRegion::get_pixels
 //       Access: Published
 //  Description: Retrieves the coordinates of the DisplayRegion within
-//               its layer, in pixels.
+//               its window, in pixels.
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
 get_pixels(int &pl, int &pr, int &pb, int &pt) const {
@@ -364,7 +340,7 @@ get_pixels(int &pl, int &pr, int &pb, int &pt) const {
 //     Function: DisplayRegion::get_region_pixels
 //       Access: Published
 //  Description: Retrieves the coordinates of the DisplayRegion within
-//               its layer, as the pixel location of its bottom-left
+//               its window, as the pixel location of its bottom-left
 //               corner, along with a pixel width and height.
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
@@ -435,7 +411,7 @@ output(ostream &out) const {
 //               filename, and returns the filename, or empty string
 //               if the screenshot failed.  The default filename is
 //               generated from the supplied prefix and from the
-//               Configrc variable screenshot-filename, which contains
+//               Config variable screenshot-filename, which contains
 //               the following strings:
 //
 //                 %~p - the supplied prefix
@@ -573,7 +549,7 @@ get_screenshot(PNMImage &image) {
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
 win_display_regions_changed() {
-  if (_layer != (GraphicsLayer *)NULL) {
-    _layer->win_display_regions_changed();
+  if (_window != (GraphicsOutput *)NULL) {
+    _window->win_display_regions_changed();
   }
 }

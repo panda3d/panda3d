@@ -18,6 +18,17 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::operator <
+//       Access: Public
+//  Description: Returns true if this DisplayRegion should be sorted
+//               before the other one, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool DisplayRegion::
+operator < (const DisplayRegion &other) const {
+  return _sort < other._sort;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::is_active
 //       Access: Published
 //  Description: Returns the active flag associated with the
@@ -26,6 +37,17 @@
 INLINE bool DisplayRegion::
 is_active() const {
   return _active;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_sort
+//       Access: Published
+//  Description: Returns the sort value associated with the
+//               DisplayRegion.
+////////////////////////////////////////////////////////////////////
+INLINE int DisplayRegion::
+get_sort() const {
+  return _sort;
 }
 
 ////////////////////////////////////////////////////////////////////
