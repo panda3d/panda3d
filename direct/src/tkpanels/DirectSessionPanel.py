@@ -122,6 +122,11 @@ class DirectSessionPanel(AppShell):
                                  variable = self.directWidgetOnTop,
                                  command = self.toggleWidgetOnTop)
 
+        self.menuBar.addmenuitem('DIRECT', 'command',
+                                 'Deselect All',
+                                 label = 'Deselect All',
+                                 command = direct.deselectAll)
+
         # Get a handle to the menu frame
         menuFrame = self.menuFrame
 
