@@ -1019,3 +1019,52 @@ class Enum:
                 if hasattr(self, item):
                     return 0
             return 1
+
+############################################################
+# class: Singleton  
+# Purpose: This provides a base metaclass for all classes
+#          that require one and only one instance.
+#
+# Example: class mySingleton:
+#              __metaclass__ = PythonUtil.Singleton
+#              def __init__(self,...):
+#                  ...
+#
+# Note: This class is based on Python's New-Style Class
+#       design. An error will occur if a defined class
+#       attemps to inherit from a Classic-Style Class only,
+#       ie: class myClassX:
+#               def __init__(self, ...):
+#                   ...
+#
+#           class myNewClassX(myClassX):
+#               __metaclass__ = PythonUtil.Singleton
+#               def __init__(self, ...):
+#                   myClassX.__init__(self, ...)
+#                   ...
+#
+#           This causes problems because myNewClassX is a
+#           New-Style class that inherits from only a
+#           Classic-Style base class. There are two ways 
+#           simple ways to resolve this issue.
+#
+#           First, if possible, make myClassX a
+#           New-Style class by inheriting from object
+#           object. IE:  class myClassX(object):
+#
+#           If for some reason that is not an option, make
+#           myNewClassX inherit from object and myClassX.
+#           IE: class myNewClassX(object, myClassX):
+############################################################
+class Singleton(type):
+    def __init__(cls,name,bases,dic):
+        super(Singleton,cls).__init__(name,bases,dic)
+        cls.instance=None
+    def __call__(cls,*args,**kw):
+        if cls.instance is None:
+            cls.instance=super(Singleton,cls).__call__(*args,**kw)
+        return cls.instance
+
+class SingletonError(ValueError):
+    """ Used to indicate an inappropriate value for a Singleton."""
+        
