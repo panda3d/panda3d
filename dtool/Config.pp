@@ -273,7 +273,7 @@
 #defer HAVE_CHROMIUM $[libtest $[CHROMIUM_LPATH],$[CHROMIUM_LIBS]]
 
 // Should we try to build the WCR interface?
-#define HAVE_WCR $[WINDOWS_PLATFORM]
+#define HAVE_WCR $[and $[HAVE_CHROMIUM], $[WINDOWS_PLATFORM]]
 
 // How about GLX?
 #define GLX_IPATH
