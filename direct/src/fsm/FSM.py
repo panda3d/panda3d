@@ -92,7 +92,8 @@ class FSM(DirectObject):
         for state in self.__states:
             if (state.getName() == stateName):
                 return state
-        FSM.notify.warning("getStateNamed: " + str(stateName) + " no such state")
+        FSM.notify.warning("[%s] : getStateNamed: %s no such state" %
+                           (self.__name, str(stateName)))
 
 
     # basic FSM functionality
@@ -100,7 +101,8 @@ class FSM(DirectObject):
     def __exitCurrent(self, argList):
         """__exitCurrent(self)
         Exit the current state"""
-        FSM.notify.debug("exiting %s" % self.__currentState.getName())
+        FSM.notify.debug("[%s]: exiting %s" % (self.__name,
+                                               self.__currentState.getName()))
         self.__currentState.exit(argList)
         messenger.send(self.getName() + '_' +
                        self.__currentState.getName() + '_exited')
@@ -110,13 +112,14 @@ class FSM(DirectObject):
         """__enter(self, State)
         Enter a given state, if it exists"""
         if (aState in self.__states):
-            FSM.notify.debug("entering %s" % aState.getName())
+            FSM.notify.debug("[%s]: entering %s" % (self.__name,
+                                                    aState.getName()))
             self.__currentState = aState
             messenger.send(self.getName() + '_' +
                            aState.getName() + '_entered')
             aState.enter(argList)
         else:
-            FSM.notify.error("enter: no such state")
+            FSM.notify.error("[%s]: enter: no such state" % self.__name)
 
     def __transition(self, aState, enterArgList=[], exitArgList=[]):
         """__transition(self, State, enterArgList, exitArgList)
@@ -137,13 +140,15 @@ class FSM(DirectObject):
             return 1
         # We can implicitly always transition to our final state.
         elif (aStateName == self.__finalState.getName()):
-            FSM.notify.debug("implicit transition to final state: %s" % aStateName)
+            FSM.notify.debug("[%s]: implicit transition to final state: %s" %
+                             (self.__name, aStateName))
             self.__transition(self.getStateNamed(aStateName),
                               enterArgList,
                               exitArgList)
             return 1
         else:
-            FSM.notify.debug("no transition exists to %s" % aStateName)
+            FSM.notify.debug("[%s]: no transition exists to %s" %
+                             (self.__name, aStateName))
             return 0
 
 
