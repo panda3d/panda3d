@@ -30,6 +30,9 @@
     def __cmp__(self, other):
         return self.getValue().__cmp__(other)
 
+    def __neg__(self):
+        return -self.getValue()
+
     def __coerce__(self, other):
         return (self.getValue(), other)
 
