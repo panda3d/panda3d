@@ -19,14 +19,12 @@
 #ifndef EGGWRITER_H
 #define EGGWRITER_H
 
-#include <pandatoolbase.h>
-
+#include "pandatoolbase.h"
 #include "eggBase.h"
+#include "withOutputFile.h"
 
-#include <withOutputFile.h>
-
-#include <filename.h>
-#include <luse.h>
+#include "filename.h"
+#include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggWriter

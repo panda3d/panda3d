@@ -19,10 +19,10 @@
 #ifndef WITHOUTPUTFILE_H
 #define WITHOUTPUTFILE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "programBase.h"
-#include <filename.h>
+#include "filename.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : WithOutputFile

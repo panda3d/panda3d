@@ -18,8 +18,8 @@
 
 #include "eggWriter.h"
 
-#include <string_utils.h>
-#include <compose_matrix.h>
+#include "string_utils.h"
+#include "compose_matrix.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggWriter::Constructor
