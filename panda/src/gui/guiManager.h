@@ -32,8 +32,7 @@ private:
   INLINE GuiManager(MouseWatcher*, Node*);
 
 PUBLISHED:
-  static GuiManager* get_ptr(GraphicsWindow*, MouseAndKeyboard*,
-			     Node *root2d = (Node *)NULL);
+  static GuiManager* get_ptr(GraphicsWindow*, MouseAndKeyboard*, Node *root2d);
 
   void add_region(GuiRegion*);
   void add_label(GuiLabel*);
