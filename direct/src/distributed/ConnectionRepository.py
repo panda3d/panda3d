@@ -2,6 +2,7 @@ from PandaModules import *
 import Task
 import DirectNotifyGlobal
 import DirectObject
+from PyDatagram import PyDatagram
 
 class ConnectionRepository(DirectObject.DirectObject):
     """
@@ -251,7 +252,7 @@ class ConnectionRepository(DirectObject.DirectObject):
             self.reportReaderStatistics()
         
         if self.connectHttp:
-            datagram = Datagram()
+            datagram = PyDatagram()
             if self.tcpConn.receiveDatagram(datagram):
                 if self.rsDoReport:
                     self.rsDatagramCount += 1

@@ -2,6 +2,8 @@
 
 from PandaObject import *
 from DirectNotifyGlobal import *
+from PyDatagram import PyDatagram
+from PyDatagramIterator import PyDatagramIterator
 
 # Values for DistributedObject.activeState
 
@@ -299,8 +301,8 @@ class DistributedObject(PandaObject):
         # handling whatever it should handle in its current state, it
         # should call doneBarrier(), which will send the context
         # number back to the AI.
-        dg = Datagram(data)
-        dgi = DatagramIterator(dg)
+        dg = PyDatagram(data)
+        dgi = PyDatagramIterator(dg)
         while dgi.getRemainingSize() > 0:
             context = dgi.getUint16()
             numToons = dgi.getUint16()

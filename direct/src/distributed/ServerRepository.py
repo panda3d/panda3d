@@ -5,6 +5,8 @@ from TaskManagerGlobal import *
 from MsgTypes import *
 import Task
 import DirectNotifyGlobal
+from PyDatagram import PyDatagram
+from PyDatagramIterator import PyDatagramIterator
 
 class ServerRepository:
 
@@ -63,19 +65,19 @@ class ServerRepository:
 
     def handleDatagram(self, datagram):
         print "Server got a datagram!"
-        dgi = DatagramIterator(datagram)
+        dgi = PyDatagramIterator(datagram)
         print dgi.getUint16()
         print dgi.getString()
         print dgi.getUint32()
         print dgi.getUint16()
 
-        newDatagram = Datagram()
+        newDatagram = PyDatagram()
         newDatagram.addUint16(LOGIN_RESPONSE)
         newDatagram.addUint8(ord('s'))
         self.cw.send(newDatagram, self.lastConnection)
 
     def sendAvatarGenerate(self):
-        datagram = Datagram()
+        datagram = PyDatagram()
         # Message type is 1
         datagram.addUint16(ALL_OBJECT_GENERATE_WITH_REQUIRED)
         # Avatar class type is 2

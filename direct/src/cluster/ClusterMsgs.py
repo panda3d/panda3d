@@ -4,7 +4,8 @@
 # both ClusterClient and ClusterServer.
 
 from PandaModules import *
-import Datagram
+from PyDatagram import PyDatagram
+from PyDatagramIterator import PyDatagramIterator
 import time
 
 #these are the types of messages that are currently supported.
@@ -87,14 +88,14 @@ class ClusterMsgHandler:
         return (datagram, dgi, type)
 
     def readHeader(self,datagram):
-        dgi = DatagramIterator(datagram)
+        dgi = PyDatagramIterator(datagram)
         number = dgi.getUint32()
         type = dgi.getUint8()
         self.notify.debug("Packet %d type %d received" % (number,type))
         return (dgi,type)        
 
     def makeCamOffsetDatagram(self,xyz,hpr):
-        datagram = Datagram.Datagram()
+        datagram = PyDatagram()
         datagram.addUint32(self.packetNumber)
         self.packetNumber = self.packetNumber + 1
         datagram.addUint8(CLUSTER_CAM_OFFSET)
@@ -117,7 +118,7 @@ class ClusterMsgHandler:
         return (x,y,z,h,p,r)
 
     def makeCamFrustumDatagram(self,focalLength, filmSize, filmOffset):
-        datagram = Datagram.Datagram()
+        datagram = PyDatagram()
         datagram.addUint32(self.packetNumber)
         self.packetNumber = self.packetNumber + 1
         datagram.addUint8(CLUSTER_CAM_FRUSTUM)
@@ -138,7 +139,7 @@ class ClusterMsgHandler:
         return (focalLength, filmSize, filmOffset)
 
     def makeCamMovementDatagram(self,xyz,hpr):
-        datagram = Datagram.Datagram()
+        datagram = PyDatagram()
         datagram.addUint32(self.packetNumber)
         self.packetNumber = self.packetNumber + 1
         datagram.addUint8(CLUSTER_CAM_MOVEMENT)
@@ -162,7 +163,7 @@ class ClusterMsgHandler:
         return (x,y,z,h,p,r)
 
     def makeSelectedMovementDatagram(self,xyz,hpr,scale):
-        datagram = Datagram.Datagram()
+        datagram = PyDatagram()
         datagram.addUint32(self.packetNumber)
         self.packetNumber = self.packetNumber + 1
         datagram.addUint8(CLUSTER_SELECTED_MOVEMENT)
@@ -192,7 +193,7 @@ class ClusterMsgHandler:
         return (x,y,z,h,p,r,sx,sy,sz)
 
     def makeCommandStringDatagram(self, commandString):
-        datagram = Datagram.Datagram()
+        datagram = PyDatagram()
         datagram.addUint32(self.packetNumber)
         self.packetNumber = self.packetNumber + 1
         datagram.addUint8(CLUSTER_COMMAND_STRING)
@@ -204,21 +205,21 @@ class ClusterMsgHandler:
         return command
 
     def makeSwapNowDatagram(self):
-        datagram = Datagram.Datagram()
+        datagram = PyDatagram()
         datagram.addUint32(self.packetNumber)
         self.packetNumber = self.packetNumber + 1
         datagram.addUint8(CLUSTER_SWAP_NOW)
         return datagram
          
     def makeSwapReadyDatagram(self):
-        datagram = Datagram.Datagram()
+        datagram = PyDatagram()
         datagram.addUint32(self.packetNumber)
         self.packetNumber = self.packetNumber + 1
         datagram.addUint8(CLUSTER_SWAP_READY)
         return datagram
 
     def makeExitDatagram(self):
-        datagram = Datagram.Datagram()
+        datagram = PyDatagram()
         datagram.addUint32(self.packetNumber)
         self.packetNumber = self.packetNumber + 1
         datagram.addUint8(CLUSTER_EXIT)

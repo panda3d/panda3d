@@ -11,6 +11,7 @@ import PythonUtil
 import ParentMgr
 import RelatedObjectMgr
 import time
+from PyDatagram import PyDatagram
 
 class ClientRepository(ConnectionRepository.ConnectionRepository):
     notify = DirectNotifyGlobal.directNotify.newCategory("ClientRepository")
@@ -347,7 +348,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
                 currentGameStateName)
 
     def sendSetShardMsg(self, shardId):
-        datagram = Datagram()
+        datagram = PyDatagram()
         # Add message type
         datagram.addUint16(CLIENT_SET_SHARD)
         # Add shard id
@@ -356,7 +357,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         self.send(datagram)
 
     def sendSetZoneMsg(self, zoneId, visibleZoneList=None):
-        datagram = Datagram()
+        datagram = PyDatagram()
         # Add message type
         datagram.addUint16(CLIENT_SET_ZONE)
         # Add zone id
