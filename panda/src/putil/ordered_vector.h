@@ -231,7 +231,7 @@ public:
   INLINE ov_multiset<Key, Compare> &operator = (const ov_multiset<Key, Compare> &copy);
 
   INLINE iterator insert(iterator position, const value_type &key);
-  INLINE pair<iterator, bool> insert(const value_type &key);
+  INLINE iterator insert(const value_type &key);
 
   INLINE void sort();
 };

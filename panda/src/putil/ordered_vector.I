@@ -850,7 +850,7 @@ insert(ordered_vector<Key, Compare>::iterator position,
 //  Description: Maps to insert_nonunique().
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE pair<ov_multiset<Key, Compare>::iterator, bool> ov_multiset<Key, Compare>::
+INLINE ov_multiset<Key, Compare>::iterator ov_multiset<Key, Compare>::
 insert(const ordered_vector<Key, Compare>::value_type &key) {
   return ordered_vector::insert_nonunique(key);
 }
