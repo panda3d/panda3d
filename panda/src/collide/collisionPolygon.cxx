@@ -945,7 +945,7 @@ to_3d(const LVecBase2f &point2d) const {
   nassertr(!point2d.is_nan(), LPoint3f(0.0f, 0.0f, 0.0f));
 
   LVector3f normal = get_normal();
-  float D = get_plane()._d;
+  float D = get_plane()[3];
 
   nassertr(!normal.is_nan(), LPoint3f(0.0f, 0.0f, 0.0f));
   nassertr(!cnan(D), LPoint3f(0.0f, 0.0f, 0.0f));

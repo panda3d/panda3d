@@ -207,7 +207,7 @@ fill_viz_geom() {
   LVector3f p1, p2, p3, p4;
 
   LVector3f normal = get_normal();
-  float D = _plane._d;
+  float D = _plane[3];
 
   if (fabs(normal[0]) > fabs(normal[1]) &&
       fabs(normal[0]) > fabs(normal[2])) {
