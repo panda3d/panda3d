@@ -82,6 +82,11 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # add the UberZone
         self.zoneNum2Node[0] = self.geom
 
+        self.zoneNums = self.zoneNum2Node.keys()
+        self.zoneNums.sort()
+        self.notify.debug('zones: %s' % self.zoneNums)
+        assert sameElements(self.zoneNums, self.spec['zones'].keys() + [0])
+
         # fix up the floor collisions for walkable zones
         for zoneNum, zoneNode in self.zoneNum2Node.items():
             # skip the UberZone
@@ -89,28 +94,34 @@ class DistributedLevel(DistributedObject.DistributedObject,
                 continue
 
             # if this is a walkable zone, fix up the model
-            floorColl = zoneNode.find('**/*FloorCollision*')
-            if not floorColl.isEmpty():
-                # rename the floor collision node, and make sure no other
+            floorColls = zoneNode.findAllMatches('**/+CollisionNode').asList()
+            if len(floorColls) > 0:
+                # rename the floor collision nodes, and make sure no other
                 # nodes under the ZoneNode have that name
-                floorCollName = 'Zone%sFloor' % zoneNum
+                floorCollName = '%s' % zoneNum
                 others = zoneNode.findAllMatches(
                     '**/%s' % floorCollName).asList()
                 for other in others:
                     other.setName('%s_renamed' % floorCollName)
-                floorColl.setName(floorCollName)
+                for floorColl in floorColls:
+                    floorColl.setName(floorCollName)
 
                 # listen for zone enter events from floor collisions
                 def handleZoneEnter(collisionEntry,
                                     self=self, zoneNum=zoneNum):
                     # eat the collisionEntry
-                    self.enterZone(zoneNum)
+                    self.toonEnterZone(zoneNum)
                 self.accept('enter%s' % floorCollName, handleZoneEnter)
 
-        self.zoneNums = self.zoneNum2Node.keys()
-        self.zoneNums.sort()
-        self.notify.debug('zones: %s' % self.zoneNums)
-        assert sameElements(self.zoneNums, self.spec['zones'].keys() + [0])
+        # listen for camera-ray/floor collision events
+        def handleCameraRayFloorCollision(collEntry, self=self):
+            name = collEntry.getIntoNode().getName()
+            try:
+                zoneNum = int(name)
+                self.camEnterZone(zoneNum)
+            except:
+                self.notify.warning('Invalid floor collision node: %s' % name)
+        self.accept('on-floor', handleCameraRayFloorCollision)
 
         # hack in another doorway
         dw = self.geom.attachNewNode('Doorway27')
@@ -230,24 +241,28 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # we have not entered any zone yet
         self.curZoneNum = None
 
-        # TODO: make this data-driven
-        firstZone = 1
-        self.enterZone(firstZone)
-
         # if no viz, listen to all the zones
         if not DistributedLevel.WantVisibility:
             zones = list(self.zoneNums)
             zones.remove(0)
             self.sendSetZone(0, zones)
 
+    def toonEnterZone(self, zoneNum):
+        self.notify.debug('toonEnterZone%s' % zoneNum)
+
+    def camEnterZone(self, zoneNum):
+        self.notify.debug('camEnterZone%s' % zoneNum)
+        self.enterZone(zoneNum)
+
     def enterZone(self, zoneNum):
+        self.notify.debug("switching to zone %s" % zoneNum)
+
         if not DistributedLevel.WantVisibility:
             return
         
         if zoneNum == self.curZoneNum:
             return
         
-        print "enterZone %s" % zoneNum
         zoneSpec = self.spec['zones'][zoneNum]
         # use dicts to efficiently ensure that there are no duplicates
         visibleZoneNums = list2dict([0, zoneNum])
