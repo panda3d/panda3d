@@ -343,14 +343,6 @@ class ShowBase:
                 self.notify.warning("Could not load music file %s." % name)
             return sound
 
-    def unloadSfx(self, sfx):
-        if sfx:
-            del sfx
-
-    def unloadMusic(self, music):
-        if music:
-            del music
-
     def playSfx(self, sfx, looping = 0, interupt = 1, volume = None,
             time = 0.):
         if sfx:
@@ -370,14 +362,6 @@ class ShowBase:
                 music.setTime(time)
                 music.setLoop(looping)
                 music.play()
-
-    def stopSfx(self, sfx):
-        if sfx:
-            sfx.stop()
-
-    def stopMusic(self, music):
-        if music:
-            music.stop()
 
     def dataloop(self, state):
         # traverse the data graph.  This reads all the control

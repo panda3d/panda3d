@@ -54,7 +54,8 @@ class SoundInterval(Interval):
         # Update sound based on current time
         if (t >= self.getDuration()):
             # If end of sound reached or stop event received, stop sound
-            self.sound.stop()
+            if self.sound:
+                self.sound.stop()
             self.ignore(self.stopEvent)
         elif (event == IVAL_INIT):
             # IVAL_INIT event, start new sound
@@ -62,13 +63,14 @@ class SoundInterval(Interval):
             # start at the beginning
             if (t < 0.1):
                 t = 0.0
-            # Start sound
-            self.sound.setTime(t)
-            self.sound.setLoop(self.loop)
-            self.sound.setVolume(self.volume)
-            self.sound.play()
-            # Accept event to kill sound
-            self.acceptOnce(self.stopEvent,
+            if self.sound:
+                # Start sound
+                self.sound.setTime(t)
+                self.sound.setLoop(self.loop)
+                self.sound.setVolume(self.volume)
+                self.sound.play()
+                # Accept event to kill sound
+                self.acceptOnce(self.stopEvent,
                         lambda s = self: s.sound.stop())
         # Print debug information
         self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t))
