@@ -36,7 +36,7 @@ INLINE void SpriteParticleRenderer::
 set_texture(Texture *tex) {
   _sprite_primitive->set_texture(tex);
   _sprite_primitive->set_ll_uv(TexCoordf(0.0, 0.0));
-  _sprite_primitive->set_ur_uv(TexCoordf(0.0, 0.0));
+  _sprite_primitive->set_ur_uv(TexCoordf(1.0, 1.0));
   _source_type = ST_texture;
 }
 
