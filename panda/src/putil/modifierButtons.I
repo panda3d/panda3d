@@ -91,6 +91,17 @@ add_event(const ButtonEvent &event) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ModifierButtons::all_buttons_up
+//       Access: Public
+//  Description: Marks all monitored buttons as being in the "up"
+//               state.
+////////////////////////////////////////////////////////////////////
+INLINE void ModifierButtons::
+all_buttons_up() {
+  _state = 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::is_down
 //       Access: Public
 //  Description: Returns true if the indicated button is known to be

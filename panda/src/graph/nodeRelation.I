@@ -137,6 +137,20 @@ change_parent(Node *parent) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::change_parent
+//       Access: Public
+//  Description: Changes the parent of the arc to a different node,
+//               simultaneously changing the sort index.
+////////////////////////////////////////////////////////////////////
+INLINE void NodeRelation::
+change_parent(Node *parent, int sort) {
+  PT(NodeRelation) hold_arc = detach();
+  _parent = parent;
+  _sort = sort;
+  attach();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodeRelation::change_child
 //       Access: Public
 //  Description: Changes the child of the arc to a different node.
@@ -337,11 +351,12 @@ get_last_update() const {
 //               the type is unknown.
 ////////////////////////////////////////////////////////////////////
 INLINE NodeRelation *NodeRelation::
-create_typed_arc(TypeHandle type, Node *parent, Node *child) {
+create_typed_arc(TypeHandle type, Node *parent, Node *child, int sort) {
   NodeRelation *arc = get_factory().make_instance(type);
   if (arc != (NodeRelation *)NULL) {
     arc->_parent = parent;
     arc->_child = child;
+    arc->_sort = sort;
     arc->attach();
   }
   return arc;

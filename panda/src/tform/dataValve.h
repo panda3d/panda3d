@@ -44,6 +44,8 @@ PUBLISHED:
 
     bool is_on(const DataValve &valve) const;
 
+    void output(ostream &out) const;
+
   private:
     enum State {
       S_on,
@@ -118,6 +120,11 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+INLINE ostream &operator << (ostream &out, const DataValve::Control &control) {
+  control.output(out);
+  return out;
+}
 
 #include "dataValve.I"
 

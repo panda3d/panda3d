@@ -82,6 +82,7 @@ PUBLISHED:
   INLINE int get_sort() const;
 
   INLINE void change_parent(Node *parent);
+  INLINE void change_parent(Node *parent, int sort);
   INLINE void change_child(Node *child);
   INLINE void change_parent_and_child(Node *parent, Node *child);
   INLINE void set_sort(int sort);
@@ -115,7 +116,7 @@ public:
   // Factory stuff: to create a new NodeRelation based on its
   // TypeHandle.
   INLINE static NodeRelation *
-  create_typed_arc(TypeHandle type, Node *parent, Node *child);
+  create_typed_arc(TypeHandle type, Node *parent, Node *child, int sort = 0);
 
   // This is just to be called at initialization time; don't try to
   // call this directly.

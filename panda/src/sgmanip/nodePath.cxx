@@ -697,7 +697,7 @@ repair_connectivity(const NodePath &top) {
 //               the new path to the node.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-reparent_to(const NodePath &other) {
+reparent_to(const NodePath &other, int sort) {
   nassertv(other.verify_connectivity());
   nassertv(has_arcs());
   nassertv(_head != (ArcComponent *)NULL);
@@ -705,7 +705,7 @@ reparent_to(const NodePath &other) {
 
   NodeRelation *arc = _head->_arc;
 
-  arc->change_parent(other.get_bottom_node());
+  arc->change_parent(other.get_bottom_node(), sort);
 
   // Move our head pointer to the bottom of the new chain.  This will
   // update our own path, as well as all paths that share the same
@@ -723,7 +723,7 @@ reparent_to(const NodePath &other) {
 //               different coordinate system.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-wrt_reparent_to(const NodePath &other) {
+wrt_reparent_to(const NodePath &other, int sort) {
   nassertv(other.verify_connectivity());
   nassertv(has_arcs());
   nassertv(_head != (ArcComponent *)NULL);
@@ -732,7 +732,7 @@ wrt_reparent_to(const NodePath &other) {
   LMatrix4f mat = get_mat(other);
   set_mat(mat);
 
-  reparent_to(other);
+  reparent_to(other, sort);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -756,14 +756,15 @@ wrt_reparent_to(const NodePath &other) {
 //               node.
 ////////////////////////////////////////////////////////////////////
 NodePath NodePath::
-instance_to(const NodePath &other) const {
+instance_to(const NodePath &other, int sort) const {
   nassertr(verify_connectivity(), NodePath());
   nassertr(!is_empty(), NodePath());
   nassertr(!other.is_empty(), NodePath());
 
   Node *node = get_bottom_node();
   NodeRelation *arc = 
-    NodeRelation::create_typed_arc(_graph_type, other.get_bottom_node(), node);
+    NodeRelation::create_typed_arc(_graph_type, other.get_bottom_node(), 
+				   node, sort);
   nassertr(arc != (NodeRelation *)NULL, NodePath());
   nassertr(arc->is_exact_type(_graph_type), NodePath());
 
@@ -794,7 +795,7 @@ instance_to(const NodePath &other) const {
 //               NamedNode.
 ////////////////////////////////////////////////////////////////////
 NodePath NodePath::
-copy_to(const NodePath &other) const {
+copy_to(const NodePath &other, int sort) const {
   nassertr(verify_connectivity(), NodePath());
   nassertr(!is_empty(), NodePath());
   nassertr(!other.is_empty(), NodePath());
@@ -805,7 +806,7 @@ copy_to(const NodePath &other) const {
 
   NodeRelation *arc = 
     NodeRelation::create_typed_arc(_graph_type, other.get_bottom_node(), 
-				   copy_node);
+				   copy_node, sort);
   nassertr(arc != (NodeRelation *)NULL, NodePath());
   nassertr(arc->is_exact_type(_graph_type), NodePath());
 
@@ -834,13 +835,13 @@ copy_to(const NodePath &other) const {
 //               returned.
 ////////////////////////////////////////////////////////////////////
 NodePath NodePath::
-attach_new_node(Node *node) const {
+attach_new_node(Node *node, int sort) const {
   nassertr(verify_connectivity(), NodePath());
   nassertr(!is_empty(), NodePath(_graph_type));
   nassertr(node != (Node *)NULL, NodePath(_graph_type));
 
   NodePath path(node, _graph_type);
-  return path.instance_to(*this);
+  return path.instance_to(*this, sort);
 }
 
 ////////////////////////////////////////////////////////////////////

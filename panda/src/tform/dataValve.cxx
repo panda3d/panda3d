@@ -41,6 +41,28 @@ is_on(const DataValve &valve) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DataValve::Control::output
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void DataValve::Control::
+output(ostream &out) const {
+  switch (_state) {
+  case S_on:
+    out << "on";
+    break;
+
+  case S_off:
+    out << "off";
+    break;
+
+  case S_buttons:
+    out << _mods;
+    break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DataValve::Constructor
 //       Access: Published
 //  Description: 
@@ -214,7 +236,7 @@ void DataValve::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "DataValve " << get_name() << ": (default control is "
-    << (_default_control->is_on(*this) ? "on" : "off") << ")\n";
+    << *_default_control << ")\n";
 
   size_t i;
   for (i = 0; i < _controls.size(); i++) {
@@ -226,7 +248,7 @@ write(ostream &out, int indent_level) const {
       if (child._control.is_null()) {
 	out << "(default)";
       } else {
-	out << (child._control->is_on(*this) ? "on" : "off");
+	out << *child._control;
       }
       out << "\n";
       
@@ -235,9 +257,7 @@ write(ostream &out, int indent_level) const {
 	   fci != child._fine_controls.end();
 	   ++fci) {
 	indent(out, indent_level + 4)
-	  << (*fci).first << " "
-	  << ((*fci).second->is_on(*this) ? "on" : "off")
-	  << "\n";
+	  << (*fci).first << " " << *(*fci).second;
       }
     }
   }

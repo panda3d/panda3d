@@ -87,7 +87,7 @@ PUBLISHED:
   bool set_knot(int n, double t);
   double get_knot(int n) const;
 
-  void write(ostream &out) const;
+  virtual void write(ostream &out, int indent_level = 0) const;
   void write_cv(ostream &out, int n) const;
 
   bool recompute();

@@ -39,6 +39,7 @@ PUBLISHED:
   bool button_down(ButtonHandle button);
   bool button_up(ButtonHandle button);
   INLINE bool add_event(const ButtonEvent &event);
+  INLINE void all_buttons_up();
 
   bool is_down(ButtonHandle button) const;
   INLINE bool is_down(int index) const;

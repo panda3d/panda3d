@@ -430,11 +430,11 @@ find(const string &path) const {
 //               references it.
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath NodePath::
-attach_new_node(const string &name) const {
+attach_new_node(const string &name, int sort) const {
   nassertr(verify_connectivity(), NodePath());
   nassertr(!is_empty(), NodePath(_graph_type));
 
-  return attach_new_node(new NamedNode(name));
+  return attach_new_node(new NamedNode(name), sort);
 }
 
 ////////////////////////////////////////////////////////////////////

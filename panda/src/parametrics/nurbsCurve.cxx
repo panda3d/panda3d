@@ -348,7 +348,9 @@ get_knot(int n) const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NurbsCurve::
-write(ostream &out) const {
+write(ostream &out, int indent_level) const {
+  indent(out, indent_level);
+
   switch (get_curve_type()) {
   case PCT_T:
     out << "Time-warping ";
@@ -369,14 +371,17 @@ write(ostream &out) const {
   out << "NurbsCurve, order " << _order << ", " << get_num_cvs()
       << " CV's.  t ranges from 0 to " << get_max_t() << ".\n";
 
-  out << "CV's:\n";
+  indent(out, indent_level)
+    << "CV's:\n";
   int i;
   for (i = 0; i < (int)_cvs.size(); i++) {
     LVecBase3f p = (const LVecBase3f &)_cvs[i]._p / _cvs[i]._p[3];
-    out << i << ") " << p << ", weight " << _cvs[i]._p[3] << "\n";
+    indent(out, indent_level)
+      << i << ") " << p << ", weight " << _cvs[i]._p[3] << "\n";
   }
 
-  out << "Knots: ";
+  indent(out, indent_level)
+    << "Knots: ";
   for (i = 0; i < (int)_cvs.size()+_order; i++) {
     out << " " << GetKnot(i);
   }

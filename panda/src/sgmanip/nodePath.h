@@ -176,14 +176,17 @@ PUBLISHED:
   find_all_matches(const string &path) const;
 
 
-  // Methods that actually move nodes around in the scene graph.
-
-  void reparent_to(const NodePath &other);
-  void wrt_reparent_to(const NodePath &other);
-  NodePath instance_to(const NodePath &other) const;
-  NodePath copy_to(const NodePath &other) const;
-  NodePath attach_new_node(Node *node) const;
-  INLINE NodePath attach_new_node(const string &name) const;
+  // Methods that actually move nodes around in the scene graph.  The
+  // optional "sort" parameter can be used to force a particular
+  // ordering between sibling nodes, useful when dealing with LOD's
+  // and similar switch nodes.  If the sort value is the same, bnodes
+  // will be arranged in the order they were added.
+  void reparent_to(const NodePath &other, int sort = 0);
+  void wrt_reparent_to(const NodePath &other, int sort = 0);
+  NodePath instance_to(const NodePath &other, int sort = 0) const;
+  NodePath copy_to(const NodePath &other, int sort = 0) const;
+  NodePath attach_new_node(Node *node, int sort = 0) const;
+  INLINE NodePath attach_new_node(const string &name, int sort = 0) const;
   void remove_node();
 
 
