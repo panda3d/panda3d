@@ -81,7 +81,8 @@ else:
 print 'Checking out "%s" as "%s".' % (MODULE, basename)
 cmd = 'cvs -z3 -f -d "%s" export -r "%s" -d "%s" "%s"' % (CVSROOT, tag,
                                                           basename, MODULE)
-os.system(cmd)
+if os.system(cmd) != 0:
+    sys.exit(1)
 
 # Move the contents of the doc module into the root directory where people
 # will expect to see it.
@@ -95,12 +96,14 @@ if os.path.exists(docdir):
 
 # Generate the tarball.
 cmd = 'tar cvzf "%s" "%s"' % (tarfile, basename)
-os.system(cmd)
+if os.system(cmd) != 0:
+    sys.exit(1)
 
 # Also generate a .zip file.
 if os.path.exists(zipfile):
     os.remove(zipfile)
 cmd = 'zip -9r "%s" "%s"' % (zipfile, basename)
-os.system(cmd)
+if os.system(cmd) != 0:
+    sys.exit(1)
 
 shutil.rmtree(basename)
