@@ -59,8 +59,34 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
 
         Initializes the geometry to render the panel with the
         specified parameters.  This should only be called once, and
-        generally in the __init__ function.
+        generally by the __init__ function.
 
+        The parameters are as follows:
+
+          rect: the left, right, bottom, top of the panel on the
+              screen.  This is in aspect2d coordinates.  The panel
+              will be set up in its own coordinate system so that (0,
+              0) is the center of the panel.
+
+          bg: the r, g, b, a background color of the panel.
+
+          geom: the model to use as the background panel geometry.
+              Normally you can safely let this default.
+
+          drawOrder: the drawing order of this panel with respect to
+              all other things in the 'fixed' bin within render2d.
+              Buttons and text created within the panel via
+              makeButton() and makeText() will by default be given a
+              drawOrder slightly higher than this.  Normally you can
+              safely let this default, unless you really expect this
+              panel to overlay some other panels.
+
+          font: the default font for buttons and text created within
+              the panel via makeButton() and makeText().
+
+          support3d: if this is set true, the panel will be set up so
+              that 3-d geometry (like a floating head) may be safely
+              parented to the panel.
         """
 
         assert not self.panelSetup
