@@ -9,46 +9,53 @@ font = (loader.loadModelOnce("fonts/ttf-comic")).node()
 
 class Button:
 
-    def __init__(self, name):
+    def __init__(self, name, label=None):
         self.name = name
-        self.managed = 0
+        # if no label given, use the button name
+        if (label == None):
+            self.label = name
+        else:
+            self.label = label
         # up
-        self.l1 = GuiLabel.GuiLabel.makeSimpleTextLabel(name, font)
+        self.l1 = GuiLabel.GuiLabel.makeSimpleTextLabel(self.label, font)
         self.l1.setForegroundColor(0., 0., 0., 1.)
         self.l1.setBackgroundColor(1., 1., 1., 1.)
         # roll-over up
-        self.l2 = GuiLabel.GuiLabel.makeSimpleTextLabel(name, font)
+        self.l2 = GuiLabel.GuiLabel.makeSimpleTextLabel(self.label, font)
         self.l2.setForegroundColor(0., 0., 0., 1.)
         self.l2.setBackgroundColor(1., 1., 0., 1.)
         # roll-over down
-        self.l3 = GuiLabel.GuiLabel.makeSimpleTextLabel(name, font)
+        self.l3 = GuiLabel.GuiLabel.makeSimpleTextLabel(self.label, font)
         self.l3.setForegroundColor(1., 1., 1., 1.)
         self.l3.setBackgroundColor(0., 0., 0., 1.)
-        self.button = GuiButton.GuiButton(name, self.l1, self.l2,
+        self.button = GuiButton.GuiButton(self.name, self.l1, self.l2,
                                           self.l3, self.l3, self.l1)
         self.setScale(0.1)
         self.setPos(0., 0.)
+        self.managed = 0
 
     def __del__(self):
         if (self.managed):
             self.button.unmanage()
-        del(self.button)
         del(self.l1)
         del(self.l2)
+        del(self.button)
         
     def __str__(self):
         return "Button: %s" % self.name
     
     def getName(self):
         return self.name
+
+    def getLabel(self):
+        return self.label
     
     def getGuiItem(self):
         return self.button
 
     def getWidth(self):
-        # assume all buttons have the same width
+        # assume all labels have the same width
         return self.l1.getWidth()
-
     
     def setWidth(self, width):
         self.l1.setWidth(width)

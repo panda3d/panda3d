@@ -24,19 +24,11 @@ class Frame:
     def __str__(self):
         return "Frame: %s = %s" % self.name, self.items
 
-    # frame functions
+    # accessing
     def getName(self):
         return self.name
     
-    def manage(self):
-        self.frame.manage(guiMgr, base.eventMgr.eventHandler)
-        self.managed = 1
-        
-    def unmanage(self):
-        self.frame.unmanage()
-        self.unmanage = 0
-        
-    def setPos(Self, x, y):
+    def setPos(self, x, y):
         v3 = Vec3.Vec3(x, 0., y)
         self.frame.setPos(v3)
 
@@ -48,12 +40,28 @@ class Frame:
 
     def setOffset(self, offset):
         self.offset = offset
+
+    # actions
+    def manage(self):
+        self.frame.manage(guiMgr, base.eventMgr.eventHandler)
+        self.managed = 1
+        
+    def unmanage(self):
+        self.frame.unmanage()
+        self.managed = 0
+
+    def recompute(self):
+        self.frame.recompute()
         
     # content functions
     def addItem(self, item):
         self.frame.addItem(item.getGuiItem())
         self.items.append(item)
 
+    def removeItem(self, item):
+        self.frame.removeItem(item.getGuiItem())
+        self.items.remove(item)
+        
     def getItems(self):
         return self.items
 
