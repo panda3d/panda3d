@@ -21,8 +21,11 @@ class Pool:
 
     notify = DirectNotifyGlobal.directNotify.newCategory("Pool")
     
-    def __init__(self, free=[]):
-        self.__free = free
+    def __init__(self, free=None):
+        if free:
+            self.__free = free
+        else:
+            self.__free = []
         self.__used = []
 
     def add(self, item):
