@@ -74,10 +74,11 @@
 #define EXTRA_CDEFS FORCE_INLINING $[EXTRA_CDEFS]
 #endif
 
-#defer CDEFINES_OPT1 _DEBUG $[dlink_all_static] $[EXTRA_CDEFS] $[CDEFINES_OPT1]
-#defer CDEFINES_OPT2 _DEBUG $[dlink_all_static] $[EXTRA_CDEFS] $[CDEFINES_OPT2]
-#defer CDEFINES_OPT3 $[dlink_all_static] $[EXTRA_CDEFS] $[CDEFINES_OPT3]
-#defer CDEFINES_OPT4 NDEBUG $[dlink_all_static] $[EXTRA_CDEFS] $[CDEFINES_OPT4]
+// do NOT try to do #defer #defer CDEFINES_OPT1 $[CDEFINES_OPT1] here!  it wont let Sources.pp define their own CDEFINES_OPT1!  they must use EXTRA_CDEFS!
+#defer CDEFINES_OPT1 $[if $[NO_DEBUG_CDEF],,_DEBUG] $[dlink_all_static] $[EXTRA_CDEFS]
+#defer CDEFINES_OPT2 $[if $[NO_DEBUG_CDEF],,_DEBUG] $[dlink_all_static] $[EXTRA_CDEFS]
+#defer CDEFINES_OPT3 $[dlink_all_static] $[EXTRA_CDEFS]
+#defer CDEFINES_OPT4 NDEBUG $[dlink_all_static] $[EXTRA_CDEFS]
 
 //  Opt1 /GZ disables OPT flags, so make sure its OPT1 only
 #defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPT1FLAGS]
@@ -115,6 +116,9 @@
 #defer interrogate_ipath $[decygwin %,-I"%",$[target_ipath]]
 #defer interrogate_spath $[decygwin %,-S"%",$[install_parser_inc_dir]]
 
+// '#defer extra_cflags $[extra_cflags] /STUFF' will never work because extra_cflags hasnt been
+// defined yet, so this just evaluates the reference to null and removes the reference and the
+// the defining extra_cflags in individual sources.pp's will not picked up.  use END_FLAGS instead
 #defer extra_cflags /EHsc /Zm300 /DWIN32_VC /DWIN32 $[WARNING_LEVEL_FLAG] $[END_CFLAGS]
 
 #defer DECYGWINED_INC_PATHLIST_ARGS $[decygwin %,/I"%",$[EXTRA_INCPATH] $[ipath] $[WIN32_PLATFORMSDK_INCPATH]]
