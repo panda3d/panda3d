@@ -31,6 +31,7 @@ CData() {
   _uv_scale = 1.0f;
   _normal_mode = RopeNode::NM_none;
   _tube_up = LVector3f::up();
+  _matrix = LMatrix4f::ident_mat();
   _use_vertex_color = false;
   _num_subdiv = 10;
   _num_slices = 5;
@@ -51,6 +52,7 @@ CData(const RopeNode::CData &copy) :
   _uv_scale(copy._uv_scale),
   _normal_mode(copy._normal_mode),
   _tube_up(copy._tube_up),
+  _matrix(copy._matrix),
   _use_vertex_color(copy._use_vertex_color),
   _num_subdiv(copy._num_subdiv),
   _num_slices(copy._num_slices),
@@ -350,4 +352,32 @@ INLINE float RopeNode::
 get_thickness() const {
   CDReader cdata(_cycler);
   return cdata->_thickness;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: set_matrix
+//       Access: Published
+//  Description: Specifies an optional matrix which is used to
+//               transform each control vertex after it has been
+//               transformed into the RopeNode's coordinate space, but
+//               before the polygon vertices are generated.
+////////////////////////////////////////////////////////////////////
+INLINE void RopeNode::
+set_matrix(const LMatrix4f &matrix) {
+  CDWriter cdata(_cycler);
+  cdata->_matrix = matrix;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_matrix
+//       Access: Published
+//  Description: Returns the optional matrix which is used to
+//               transform each control vertex after it has been
+//               transformed into the RopeNode's coordinate space, but
+//               before the polygon vertices are generated.
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4f &RopeNode::
+get_matrix() const {
+  CDReader cdata(_cycler);
+  return cdata->_matrix;
 }

@@ -57,7 +57,11 @@ PUBLISHED:
     // Render the rope as a one-pixel thread using a linestrip.
     RM_thread,
 
-    // Render the rope as a continuous triangle strip oriented to be
+    // Render the rope as a triangle strip oriented to be
+    // perpendicular to the tube_up vector.
+    RM_tape,
+
+    // Render the rope as a triangle strip oriented to be
     // perpendicular to the view vector.
     RM_billboard,
 
@@ -127,6 +131,9 @@ PUBLISHED:
   INLINE void set_thickness(float thickness);
   INLINE float get_thickness() const;
 
+  INLINE void set_matrix(const LMatrix4f &matrix);
+  INLINE const LMatrix4f &get_matrix() const;
+
   void reset_bound(const NodePath &rel_to);
 
 protected:
@@ -136,6 +143,8 @@ private:
   BoundingVolume *do_recompute_bound(const NodePath &rel_to);
   void render_thread(CullTraverser *trav, CullTraverserData &data, 
                      NurbsCurveResult *result) const;
+  void render_tape(CullTraverser *trav, CullTraverserData &data, 
+                   NurbsCurveResult *result) const;
   void render_billboard(CullTraverser *trav, CullTraverserData &data, 
                         NurbsCurveResult *result) const;
   void render_tube(CullTraverser *trav, CullTraverserData &data, 
@@ -191,6 +200,7 @@ private:
     float _uv_scale;
     NormalMode _normal_mode;
     LVector3f _tube_up;
+    LMatrix4f _matrix;
     bool _use_vertex_color;
     int _num_subdiv;
     int _num_slices;

@@ -162,6 +162,10 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
           render_thread(trav, data, result);
           break;
           
+        case RM_tape:
+          render_tape(trav, data, result);
+          break;
+          
         case RM_billboard:
           render_billboard(trav, data, result);
           break;
@@ -305,6 +309,68 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
     geom->set_texcoords(uvs, G_PER_VERTEX);
   }
 
+  if (get_use_vertex_color()) {
+    geom->set_colors(colors, G_PER_VERTEX);
+  } else {
+    geom->set_colors(colors, G_OVERALL);
+  }
+  geom->set_lengths(lengths);
+  
+  CullableObject *object = new CullableObject(geom, data._state,
+                                              data._render_transform);
+  trav->get_cull_handler()->record_object(object);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RopeNode::render_tape
+//       Access: Private
+//  Description: Draws the rope in RM_tape mode.  This draws a
+//               series of triangle strips oriented to be
+//               perpendicular to the tube_up vector.
+//
+//               In this mode, thickness is in spatial units, and
+//               determines the width of the triangle strips.
+////////////////////////////////////////////////////////////////////
+void RopeNode::
+render_tape(CullTraverser *trav, CullTraverserData &data, 
+            NurbsCurveResult *result) const {
+  CurveSegments curve_segments;
+  get_connected_segments(curve_segments, result);
+
+  // Now we have stored one or more sequences of vertices down the
+  // center strips.  Go back through and calculate the vertices on
+  // either side.
+
+  PTA_Vertexf verts;
+  PTA_TexCoordf uvs;
+  PTA_Colorf colors;
+
+  compute_billboard_vertices(verts, uvs, colors, -get_tube_up(), 
+                             curve_segments, result);
+
+  // Finally, build the lengths array to make them into proper
+  // triangle strips.  We don't need a vindex array here, since the
+  // vertices just happened to end up in tristrip order.
+
+  PTA_int lengths;
+  int num_prims = 0;
+
+  CurveSegments::const_iterator si;
+  for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
+    const CurveSegment &segment = (*si);
+
+    lengths.push_back(segment.size() * 2);
+    num_prims++;
+  }
+
+  // And create a Geom for the rendering.
+  
+  PT(Geom) geom = new GeomTristrip;
+  geom->set_num_prims(num_prims);
+  geom->set_coords(verts);
+  if (get_uv_mode() != UV_none) {
+    geom->set_texcoords(uvs, G_PER_VERTEX);
+  }
   if (get_use_vertex_color()) {
     geom->set_colors(colors, G_PER_VERTEX);
   } else {
@@ -489,9 +555,12 @@ get_connected_segments(RopeNode::CurveSegments &curve_segments,
   CurveSegment *curve_segment = NULL;
   LPoint3f last_point;
 
+  const LMatrix4f &matrix = get_matrix();
+
   for (int segment = 0; segment < num_segments; ++segment) {
     LPoint3f point;
     result->eval_segment_point(segment, 0.0f, point);
+    point = point * matrix;
 
     if (curve_segment == (CurveSegment *)NULL || 
         !point.almost_equal(last_point)) {
@@ -517,6 +586,7 @@ get_connected_segments(RopeNode::CurveSegments &curve_segments,
 
       CurveVertex vtx;
       result->eval_segment_point(segment, t, vtx._p);
+      vtx._p = vtx._p * matrix;
       vtx._t = result->get_segment_t(segment, t);
       if (use_vertex_color) {
         result->eval_segment_extended_points(segment, t, 0, &vtx._c[0], 4);
