@@ -466,6 +466,7 @@ void GuiButton::stop_behavior(void) {
 }
 
 void GuiButton::reset_behavior(void) {
+  gui_cat->debug() << this->get_name() << "::reset_behavior()" << endl;
   GuiBehavior::reset_behavior();
   if (_mgr == (GuiManager*)0L)
     return;

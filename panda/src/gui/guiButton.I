@@ -52,7 +52,6 @@ INLINE void GuiButton::up(void) {
     gui_cat->warning() << "got up from invalid state (" << (int)_state << "),"
 		       << " button '" << this->get_name() << "'" << endl;
   }
-  this->reset_behavior();
 }
 
 INLINE void GuiButton::down(void) {
