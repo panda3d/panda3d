@@ -21,14 +21,21 @@
 #define __AUDIOSOUND_H__
 
 #include "config_audio.h"
-#include <referenceCount.h>
-#include <namable.h>
-#include <pointerTo.h>
+
+#include "referenceCount.h"
+#include "pointerTo.h"
+#include "namable.h"
 
 
 class AudioManager;
 
-class EXPCL_PANDA AudioSound : public ReferenceCount {
+// This inherits from Namable just to work around a bug in
+// interrogate.  The bug is that interrogate does not realize that we
+// require an upcast to call methods from ReferenceCount if we are
+// singly inheriting; but we do because this is the first child of
+// ReferenceCount to use virtual functions.  I promise to fix this bug
+// soon, but I'm putting in this hack in the interest of expediency.
+class EXPCL_PANDA AudioSound : public Namable, public ReferenceCount {
 PUBLISHED:
   virtual ~AudioSound() {}
   
@@ -105,6 +112,20 @@ protected:
   }
 
   friend class AudioManager;
+
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    ReferenceCount::init_type();
+    register_type(_type_handle, "AudioSound",
+                  ReferenceCount::get_class_type());
+  }
+
+private:
+  static TypeHandle _type_handle;
 };
 
 #endif /* __AUDIOSOUND_H__ */

@@ -17,7 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_audio.h"
-#include <dconfig.h>
+#include "dconfig.h"
+#include "audioSound.h"
 
 Configure(config_audio);
 NotifyCategoryDef(audio, "");
@@ -65,6 +66,8 @@ ConfigureFn(config_audio) {
 
   audio_library_name = new string(
       config_audio.GetString("audio-library-name", "miles_audio"));
+
+  AudioSound::init_type();
 }
 
 
