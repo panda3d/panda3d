@@ -94,6 +94,7 @@ private:
   string expand_standardize(const string &params);
   string expand_length(const string &params);
   string expand_substr(const string &params);
+  string expand_findstring(const string &params);
   string expand_dir(const string &params);
   string expand_notdir(const string &params);
   string expand_suffix(const string &params);

@@ -838,6 +838,8 @@ r_expand_variable(const string &str, size_t &vp,
       return expand_length(params);
     } else if (funcname == "substr") {
       return expand_substr(params);
+    } else if (funcname == "findstring") {
+      return expand_findstring(params);
     } else if (funcname == "dir") {
       return expand_dir(params);
     } else if (funcname == "notdir") {
@@ -1515,6 +1517,8 @@ expand_shell(const string &params) {
 }
 
 
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PPScope::expand_standardize
 //       Access: Private
@@ -2096,6 +2100,31 @@ expand_subst(const string &params) {
     }
     str = new_str + str.substr(q);
   }
+  return str;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_findstrnig
+//       Access: Private
+//  Description: Expands the "findstring" function variable.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_findstring(const string &params) {
+  // Split the string up into tokens based on the commas.
+  vector<string> tokens;
+  tokenize_params(params, tokens, true);
+
+  if (tokens.size() != 2) {
+    cerr << "findstring requires two parameters.\n";
+    return string();
+  }
+  string str = tokens.back();
+  const string &srchstr = tokens[0];
+  size_t q = 0;
+  size_t p = str.find(srchstr, q);
+  if(p == string::npos)
+    str = "";
+
   return str;
 }
 
