@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "nurbsSurfaceEvaluator.h"
 #include "pandaNode.h"
+#include "pStatCollector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : SheetNode
@@ -93,6 +94,8 @@ private:
   PipelineCycler<CData> _cycler;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
+
+  static PStatCollector _sheet_node_pcollector;
 
 public:
   static void register_with_read_factory();

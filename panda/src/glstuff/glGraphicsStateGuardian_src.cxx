@@ -1559,7 +1559,11 @@ draw_tristrip(GeomTristrip *geom, GeomContext *gc) {
   //  PStatTimer timer(_draw_primitive_pcollector);
   // Using PStatTimer may cause a compiler crash.
   _draw_primitive_pcollector.start();
-  _vertices_tristrip_pcollector.add_level(geom->get_num_vertices());
+  if (geom->get_coords_index().is_null()) {
+    _vertices_tristrip_pcollector.add_level(geom->get_num_vertices());
+  } else {
+    _vertices_indexed_tristrip_pcollector.add_level(geom->get_num_vertices());
+  }
 #endif
 
   issue_scene_graph_color();

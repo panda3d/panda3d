@@ -54,6 +54,7 @@ PStatCollector GraphicsStateGuardian::_vertices_tristrip_pcollector("Vertices:Tr
 PStatCollector GraphicsStateGuardian::_vertices_trifan_pcollector("Vertices:Triangle fans");
 PStatCollector GraphicsStateGuardian::_vertices_tri_pcollector("Vertices:Triangles");
 PStatCollector GraphicsStateGuardian::_vertices_other_pcollector("Vertices:Other");
+PStatCollector GraphicsStateGuardian::_vertices_indexed_tristrip_pcollector("Vertices:Indexed triangle strips");
 PStatCollector GraphicsStateGuardian::_state_pcollector("State changes");
 PStatCollector GraphicsStateGuardian::_transform_state_pcollector("State changes:Transforms");
 PStatCollector GraphicsStateGuardian::_texture_state_pcollector("State changes:Textures");
@@ -1282,6 +1283,7 @@ init_frame_pstats() {
     _vertices_trifan_pcollector.clear_level();
     _vertices_tri_pcollector.clear_level();
     _vertices_other_pcollector.clear_level();
+    _vertices_indexed_tristrip_pcollector.clear_level();
     
     _state_pcollector.clear_level();
     _transform_state_pcollector.clear_level();

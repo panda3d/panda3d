@@ -26,8 +26,11 @@
 #include "bamReader.h"
 #include "datagram.h"
 #include "datagramIterator.h"
+#include "pStatTimer.h"
 
 TypeHandle SheetNode::_type_handle;
+
+PStatCollector SheetNode::_sheet_node_pcollector("Cull:SheetNode");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SheetNode::CData::make_copy
@@ -150,6 +153,9 @@ has_cull_callback() const {
 ////////////////////////////////////////////////////////////////////
 bool SheetNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
+  // Statistics
+  PStatTimer timer(_sheet_node_pcollector);
+
   // Create some geometry on-the-fly to render the sheet.
   if (get_num_u_subdiv() > 0 && get_num_v_subdiv() > 0) {
     NurbsSurfaceEvaluator *surface = get_surface();

@@ -32,6 +32,7 @@ CData() {
   _normal_mode = RopeNode::NM_none;
   _tube_up = LVector3f::up();
   _matrix = LMatrix4f::ident_mat();
+  _has_matrix = false;
   _use_vertex_color = false;
   _num_subdiv = 10;
   _num_slices = 5;
@@ -53,6 +54,7 @@ CData(const RopeNode::CData &copy) :
   _normal_mode(copy._normal_mode),
   _tube_up(copy._tube_up),
   _matrix(copy._matrix),
+  _has_matrix(copy._has_matrix),
   _use_vertex_color(copy._use_vertex_color),
   _num_subdiv(copy._num_subdiv),
   _num_slices(copy._num_slices),
@@ -366,6 +368,32 @@ INLINE void RopeNode::
 set_matrix(const LMatrix4f &matrix) {
   CDWriter cdata(_cycler);
   cdata->_matrix = matrix;
+  cdata->_has_matrix = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: clear_matrix
+//       Access: Published
+//  Description: Resets the node's matrix to identity.  See
+//               set_matrix().
+////////////////////////////////////////////////////////////////////
+INLINE void RopeNode::
+clear_matrix() {
+  CDWriter cdata(_cycler);
+  cdata->_matrix = LMatrix4f::ident_mat();
+  cdata->_has_matrix = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: has_matrix
+//       Access: Published
+//  Description: Returns true if the node has a matrix set, false
+//               otherwise.  See set_matrix().
+////////////////////////////////////////////////////////////////////
+INLINE bool RopeNode::
+has_matrix() const {
+  CDReader cdata(_cycler);
+  return cdata->_has_matrix;
 }
 
 ////////////////////////////////////////////////////////////////////

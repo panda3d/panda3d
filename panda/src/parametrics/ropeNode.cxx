@@ -27,8 +27,11 @@
 #include "bamReader.h"
 #include "datagram.h"
 #include "datagramIterator.h"
+#include "pStatTimer.h"
 
 TypeHandle RopeNode::_type_handle;
+
+PStatCollector RopeNode::_rope_node_pcollector("Cull:RopeNode");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RopeNode::CData::make_copy
@@ -150,12 +153,19 @@ has_cull_callback() const {
 ////////////////////////////////////////////////////////////////////
 bool RopeNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
+  // Statistics
+  PStatTimer timer(_rope_node_pcollector);
+
   // Create some geometry on-the-fly to render the rope.
   if (get_num_subdiv() > 0) {
     NurbsCurveEvaluator *curve = get_curve();
     if (curve != (NurbsCurveEvaluator *)NULL) {
-      PT(NurbsCurveResult) result = 
-        curve->evaluate(data._node_path.get_node_path(), get_matrix());
+      PT(NurbsCurveResult) result;
+      if (has_matrix()) {
+        result = curve->evaluate(data._node_path.get_node_path(), get_matrix());
+      } else {
+        result = curve->evaluate(data._node_path.get_node_path());
+      }
 
       if (result->get_num_segments() > 0) {
         switch (get_render_mode()) {
@@ -251,6 +261,15 @@ do_recompute_bound(const NodePath &rel_to) {
   if (curve != (NurbsCurveEvaluator *)NULL) {
     pvector<LPoint3f> verts;
     get_curve()->get_vertices(verts, rel_to);
+
+    if (has_matrix()) {
+      // And then apply the indicated matrix.
+      const LMatrix4f &mat = get_matrix();
+      pvector<LPoint3f>::iterator vi;
+      for (vi = verts.begin(); vi != verts.end(); ++vi) {
+        (*vi) = (*vi) * mat;
+      }
+    }
     
     GeometricBoundingVolume *gbv;
     DCAST_INTO_R(gbv, bound, bound);

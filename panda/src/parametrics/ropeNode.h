@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "nurbsCurveEvaluator.h"
 #include "pandaNode.h"
+#include "pStatCollector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : RopeNode
@@ -132,6 +133,8 @@ PUBLISHED:
   INLINE float get_thickness() const;
 
   INLINE void set_matrix(const LMatrix4f &matrix);
+  INLINE void clear_matrix();
+  INLINE bool has_matrix() const;
   INLINE const LMatrix4f &get_matrix() const;
 
   void reset_bound(const NodePath &rel_to);
@@ -201,6 +204,7 @@ private:
     NormalMode _normal_mode;
     LVector3f _tube_up;
     LMatrix4f _matrix;
+    bool _has_matrix;
     bool _use_vertex_color;
     int _num_subdiv;
     int _num_slices;
@@ -210,6 +214,8 @@ private:
   PipelineCycler<CData> _cycler;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
+
+  static PStatCollector _rope_node_pcollector;
 
 public:
   static void register_with_read_factory();
