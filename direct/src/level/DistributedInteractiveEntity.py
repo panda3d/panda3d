@@ -51,7 +51,7 @@ class DistributedInteractiveEntity(DistributedEntity.DistributedEntity):
         """
         assert(self.debugPrint("generate()"))
         DistributedEntity.DistributedEntity.generate(self)
-    
+
     def disable(self):
         assert(self.debugPrint("disable()"))
         # Go to the off state when the object is put in the cache

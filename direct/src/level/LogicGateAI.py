@@ -90,6 +90,15 @@ class LogicGateAI(Entity.Entity, PandaObject.PandaObject):
         self.setLogicType(self.logicType)
         self.setInput_input1_bool(self.input_input1_bool)
         self.setInput_input2_bool(self.input_input2_bool)
+
+    def destroy(self):
+        assert(self.debugPrint("destroy()"))
+        self.ignore(self.input1)
+        self.input1 = None
+        self.ignore(self.input2)
+        self.input2 = None
+        Entity.Entity.destroy(self)
+        PandaObject.PandaObject.destroy(self)
     
     def setLogicType(self, logicType):
         assert(self.debugPrint("setLogicType(logicType=%s)"%(logicType,)))
@@ -128,5 +137,5 @@ class LogicGateAI(Entity.Entity, PandaObject.PandaObject):
             self.accept(self.input2, self.setIsInput2)
     
     def getName(self):
-        #return "orLoEntity-%s"%(self.entId,)
+        #return "logicGate-%s"%(self.entId,)
         return "switch-%s"%(self.entId,)
