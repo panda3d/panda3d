@@ -9,7 +9,7 @@
 #include <pandabase.h>
 
 #include "numeric_types.h"
-#include "typeHandle.h"
+#include "typedObject.h"
 #include "littleEndian.h"
 #include "bigEndian.h"
 

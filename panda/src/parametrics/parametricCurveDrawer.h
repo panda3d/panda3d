@@ -12,7 +12,7 @@
 #include <node.h>
 #include <vector_PT_NodeRelation.h>
 
-#include <typeHandle.h>
+#include <typedObject.h>
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : ParametricCurveDrawer

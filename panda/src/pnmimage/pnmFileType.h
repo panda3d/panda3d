@@ -10,7 +10,7 @@
 
 #include "pnmimage_base.h"
 
-#include <typeHandle.h>
+#include <typedObject.h>
 #include <typedWritable.h>
 
 class PNMReader;

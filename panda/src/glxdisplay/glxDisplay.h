@@ -7,7 +7,7 @@
 #define GLXDISPLAY_H
 
 #include <pandabase.h>
-#include <typeHandle.h>
+#include <typedObject.h>
 
 #include <X11/Xlib.h>
 

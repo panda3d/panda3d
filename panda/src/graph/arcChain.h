@@ -14,7 +14,7 @@
 #include <pointerTo.h>
 #include <referenceCount.h>
 #include <notify.h>
-#include <typeHandle.h>
+#include <typedObject.h>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ArcChain

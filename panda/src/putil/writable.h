@@ -6,7 +6,7 @@
 #define __WRITABLE_
 
 #include "vector_writable.h"
-#include "typeHandle.h"
+#include "typedObject.h"
 
 class BamWriter;
 class Datagram;

@@ -8,7 +8,7 @@
 
 #include <pandatoolbase.h>
 
-#include <typeHandle.h>
+#include <typedObject.h>
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : EggBackPointer

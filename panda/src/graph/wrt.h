@@ -12,7 +12,7 @@
 #include "node.h"
 #include "config_graph.h"
 
-#include <typeHandle.h>
+#include <typedObject.h>
 
 class Node;
 

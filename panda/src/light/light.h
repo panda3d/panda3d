@@ -11,7 +11,7 @@
 ////////////////////////////////////////////////////////////////////
 #include <pandabase.h>
 
-#include <typeHandle.h>
+#include <typedObject.h>
 #include <graphicsStateGuardian.h>
 #include <referenceCount.h>
 

@@ -10,7 +10,7 @@
 
 #include "boundingVolume.h"
 
-#include <typeHandle.h>
+#include <typedObject.h>
 #include <pointerTo.h>
 
 ////////////////////////////////////////////////////////////////////

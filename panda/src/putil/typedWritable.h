@@ -5,7 +5,7 @@
 #ifndef __TYPED_WRITABLE_
 #define __TYPED_WRITABLE_
 
-#include "typeHandle.h"
+#include "typedObject.h"
 #include "writable.h"
 #include "vector_typedWritable.h"
 

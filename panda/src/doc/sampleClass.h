@@ -16,7 +16,7 @@
 #include "localHeaderFile.h"
 #include "anotherLocalHeaderFile.h"
 
-#include <typeHandle.h>
+#include <typedObject.h>
 #include <anotherPandaHeaderFile.h>
 
 #include <systemHeaderFile.h>

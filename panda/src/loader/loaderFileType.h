@@ -8,7 +8,7 @@
 
 #include <pandabase.h>
 
-#include <typeHandle.h>
+#include <typedObject.h>
 #include <node.h>
 #include <pt_Node.h>
 #include <filename.h>

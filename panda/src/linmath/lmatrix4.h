@@ -8,7 +8,7 @@
 
 #include <pandabase.h>
 #include <math.h>
-#include <typeHandle.h>
+#include <typedObject.h>
 #include <datagram.h>
 #include <datagramIterator.h>
 #include <indent.h>

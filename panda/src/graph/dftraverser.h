@@ -11,7 +11,7 @@
 #include "node.h"
 #include "nodeRelation.h"
 
-#include <typeHandle.h>
+#include <typedObject.h>
 
 ///////////////////////////////////////////////////////////////////
 // 	 Class : DFTraverser

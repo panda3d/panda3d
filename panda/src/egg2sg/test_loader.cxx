@@ -23,7 +23,7 @@
 #include <allTransitionsWrapper.h>
 #include <allAttributesWrapper.h>
 #include <nullLevelState.h>
-#include <typeHandle.h>
+#include <typedObject.h>
 #include <notify.h>
 
 #include <stdlib.h>

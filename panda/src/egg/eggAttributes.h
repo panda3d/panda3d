@@ -10,7 +10,7 @@
 
 #include "eggMorphList.h"
 
-#include <typeHandle.h>
+#include <typedObject.h>
 #include <luse.h>
 
 ////////////////////////////////////////////////////////////////////

@@ -9,7 +9,7 @@
 #include <pandabase.h>
 
 #include <graphReducer.h>
-#include <typeHandle.h>
+#include <typedObject.h>
 #include <pointerTo.h>
 #include <transformTransition.h>
 #include <colorTransition.h>

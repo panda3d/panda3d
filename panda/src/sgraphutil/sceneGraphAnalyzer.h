@@ -8,7 +8,7 @@
 
 #include <pandabase.h>
 
-#include <typeHandle.h>
+#include <typedObject.h>
 #include <renderRelation.h>
 
 #include <map>

@@ -11,7 +11,7 @@
 #include "fltOpcode.h"
 #include "fltError.h"
 
-#include <typeHandle.h>
+#include <typedObject.h>
 #include <typedReferenceCount.h>
 #include <pointerTo.h>
 

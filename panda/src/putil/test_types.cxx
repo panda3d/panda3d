@@ -3,7 +3,7 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-#include "typeHandle.h"
+#include "typedObject.h"
 #include "pointerTo.h"
 #include "pointerToArray.h"
 #include "referenceCount.h"

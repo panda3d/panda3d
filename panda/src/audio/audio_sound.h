@@ -8,7 +8,7 @@
 
 #include "audio_trait.h"
 #include <typedReferenceCount.h>
-#include <typeHandle.h>
+#include <typedObject.h>
 #include <namable.h>
 #include <pointerTo.h>
 

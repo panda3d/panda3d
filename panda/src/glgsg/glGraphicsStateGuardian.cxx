@@ -286,7 +286,9 @@ reset() {
   _light_info = new LightInfo[_max_lights];
 
   // Set up the clip plane id map
-  glGetIntegerv(GL_MAX_CLIP_PLANES, &_max_clip_planes);
+  GLint max_clip_planes;
+  glGetIntegerv(GL_MAX_CLIP_PLANES, &max_clip_planes);
+  _max_clip_planes = max_clip_planes;
   _available_clip_plane_ids = PTA(PlaneNode*)(_max_clip_planes);
   _clip_plane_enabled = new bool[_max_clip_planes];
   _cur_clip_plane_enabled = new bool[_max_clip_planes];

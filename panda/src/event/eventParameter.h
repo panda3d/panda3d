@@ -9,7 +9,7 @@
 #include <pandabase.h>
 
 #include <typedef.h>
-#include <typeHandle.h>
+#include <typedObject.h>
 #include <typedReferenceCount.h>
 #include <pointerTo.h>
 //#include <luse.h>

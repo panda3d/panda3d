@@ -10,7 +10,7 @@
 
 #include "eggNamedObject.h"
 
-#include <typeHandle.h>
+#include <typedObject.h>
 #include <lmatrix.h>
 #include <pointerTo.h>
 #include <referenceCount.h>

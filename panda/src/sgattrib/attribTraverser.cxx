@@ -15,7 +15,7 @@
 #include <geomNode.h>
 #include <dftraverser.h>
 #include <allAttributesWrapper.h>
-#include <typeHandle.h>
+#include <typedObject.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AttribTraverser::constructor

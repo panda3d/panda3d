@@ -10,7 +10,7 @@
 
 #include "pnmimage_base.h"
 
-#include <typeHandle.h>
+#include <typedObject.h>
 #include <filename.h>
 
 class PNMFileType;

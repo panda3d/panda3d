@@ -318,60 +318,6 @@ register_dynamic_type(const string &name,
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TypedObject::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE TypedObject::
-TypedObject() { 
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TypedObject::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE TypedObject::
-TypedObject(const TypedObject &) { 
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TypedObject::Copy Assignment Operator
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE void TypedObject::
-operator = (const TypedObject &) {
-} 
-
-////////////////////////////////////////////////////////////////////
-//     Function: TypedObject::is_of_type
-//       Access: Public
-//  Description: Returns true if the current object is or derives from
-//               the indicated type.
-////////////////////////////////////////////////////////////////////
-INLINE bool TypedObject::
-is_of_type(TypeHandle handle) const {
-  return get_type().is_derived_from(handle, (TypedObject *)this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TypedObject::is_exact_type
-//       Access: Public
-//  Description: Returns true if the current object is the indicated
-//               type exactly.
-////////////////////////////////////////////////////////////////////
-INLINE bool TypedObject::
-is_exact_type(TypeHandle handle) const {
-#ifndef NDEBUG
-  // Call get_name() to force the type to look itself up if necessary.
-  get_type().get_name((TypedObject *)this);
-#endif
-  return get_type() == handle;
-}
-
-
-////////////////////////////////////////////////////////////////////
 //     Function: _dcast_get_typehandle
 //  Description: Returns the TypeHandle associated with the type of
 //               the parameter, if it can be determined.  This is a

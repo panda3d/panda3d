@@ -9,7 +9,7 @@
 #include <pandabase.h>
 
 #include <pointerToArray.h>
-#include <typeHandle.h>
+#include <typedObject.h>
 #include <luse.h>
 #include <pta_Vertexf.h>
 #include <pta_Normalf.h>

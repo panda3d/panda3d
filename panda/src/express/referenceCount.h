@@ -17,7 +17,7 @@
 
 #include <pandabase.h>
 
-#include "typeHandle.h"
+#include "typedObject.h"
 #include "memoryUsage.h"
 #include "config_express.h"
 
@@ -83,7 +83,7 @@ INLINE void unref_delete(RefCountType *ptr);
 //               that does not have get_class_type(), you will have to
 //               define a template specialization on
 //               _get_type_handle() and _do_init_type(), as in
-//               typeHandle.h.
+//               typedObject.h.
 ////////////////////////////////////////////////////////////////////
 template<class Base>
 class EXPCL_PANDAEXPRESS RefCountProxy : public ReferenceCount {

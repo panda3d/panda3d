@@ -5,7 +5,7 @@
 
 #include "config_express.h"
 #include "clockObject.h"
-#include "typeHandle.h"
+#include "typedObject.h"
 #include "referenceCount.h"
 #include "typedReferenceCount.h"
 #include "datagram.h"

@@ -10,7 +10,7 @@
 
 #include "iffId.h"
 
-#include <typeHandle.h>
+#include <typedObject.h>
 #include <typedReferenceCount.h>
 
 class IffInputFile;

@@ -11,7 +11,7 @@
 #include "iffId.h"
 #include "iffChunk.h"
 
-#include <typeHandle.h>
+#include <typedObject.h>
 #include <pointerTo.h>
 
 class Datagram;

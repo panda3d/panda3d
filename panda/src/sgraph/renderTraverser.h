@@ -9,7 +9,7 @@
 #include <pandabase.h>
 
 #include <arcChain.h>
-#include <typeHandle.h>
+#include <typedObject.h>
 #include <typedReferenceCount.h>
 #include <notify.h>
 

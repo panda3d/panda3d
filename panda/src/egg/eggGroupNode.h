@@ -11,7 +11,7 @@
 #include "eggNode.h"
 
 #include <coordinateSystem.h>
-#include <typeHandle.h>
+#include <typedObject.h>
 #include <pointerTo.h>
 #include <luse.h>
 

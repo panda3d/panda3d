@@ -5,7 +5,7 @@
 
 #include "config_util.h"
 #include "clockObject.h"
-#include "typeHandle.h"
+#include "typedObject.h"
 #include "configurable.h"
 #include "namable.h"
 #include "referenceCount.h"

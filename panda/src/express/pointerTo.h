@@ -151,7 +151,7 @@ PUBLISHED:
   // e.g. instead of (MyType *)(BaseClass *)ptr, use (MyType *)ptr.p()
  
   // If your base class is a derivative of TypedObject, you might want
-  // to use the DCAST macro defined in typeHandle.h instead,
+  // to use the DCAST macro defined in typedObject.h instead,
   // e.g. DCAST(MyType, ptr).  This provides a clean downcast that
   // doesn't require .p() or any double-casting, and it can be
   // run-time checked for correctness.

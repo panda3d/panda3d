@@ -10,7 +10,7 @@
 
 #include <node.h>
 #include <nodeRelation.h>
-#include <typeHandle.h>
+#include <typedObject.h>
 #include <geometricBoundingVolume.h>
 #include <graphicsStateGuardian.h>
 #include <arcChain.h>

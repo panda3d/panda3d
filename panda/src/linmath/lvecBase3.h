@@ -7,7 +7,7 @@
 #define LVECBASE3_H
 
 #include <pandabase.h>
-#include <typeHandle.h>
+#include <typedObject.h>
 #include <notify.h>
 #include <datagram.h>
 #include <datagramIterator.h>
