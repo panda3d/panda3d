@@ -80,7 +80,6 @@ PUBLISHED:
 #endif  // DO_COLLISION_RECORDING
 
   void output(ostream &out) const;
-  INLINE void ls() const;
   void write(ostream &out, int indent_level) const;
 
 private:

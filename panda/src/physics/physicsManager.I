@@ -147,14 +147,3 @@ attach_angular_integrator(AngularIntegrator *i) {
   nassertv(i);
   _angular_integrator = i;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsManager::ls
-//       Access: Published
-//  Description: Shortcut for write().  This is handy for interactive
-//               debugging.
-////////////////////////////////////////////////////////////////////
-INLINE void PhysicsManager::
-ls() const {
-  write(nout, 0);
-}

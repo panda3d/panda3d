@@ -74,7 +74,6 @@ PUBLISHED:
   void do_physics(float dt);
   
   virtual void output(ostream &out) const;
-  INLINE void ls() const;
   virtual void write_physicals(ostream &out, unsigned int indent=0) const;
   virtual void write_linear_forces(ostream &out, unsigned int indent=0) const;
   virtual void write_angular_forces(ostream &out, unsigned int indent=0) const;
