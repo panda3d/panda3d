@@ -179,7 +179,9 @@ build(const string &default_name) {
     }
 
     // Only reparent the geom_node if it has no parent already.
-    if (geom_node->_parents.empty()) {
+    int num_parents = 
+      geom_node->get_num_parents(RenderRelation::get_class_type());
+    if (num_parents == 0) {
       if (geom_node->get_num_geoms() == 0) {
 	// If there was nothing added, never mind.
 	delete geom_node;

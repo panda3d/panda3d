@@ -15,18 +15,20 @@ void
 describe_ambiguous_wrt(const Node *node,
 		       InputIterator arc_list_begin, 
 		       InputIterator arc_list_end,
-		       const UpRelationPointers &urp) {
+		       TypeHandle graph_type) {
   if (wrt_cat.is_warning()) {
+    int num_parents = node->get_num_parents(graph_type);
     wrt_cat.warning()
-      << *node << " has " << urp.size() << " parents; wrt() ambiguous.\n"
+      << *node << " has " << num_parents << " parents; wrt() ambiguous.\n"
       << "  parents are: ";
-    UpRelationPointers::const_iterator urpi;
-    urpi = urp.begin();
-    wrt_cat.warning(false) << *(*urpi)->get_parent();
-    urpi++;
-    while (urpi != urp.end()) {  
-      wrt_cat.warning(false) << ", " << *(*urpi)->get_parent();
-      urpi++;
+    nassertv(num_parents > 1);
+
+    NodeRelation *parent_arc = node->get_parent(graph_type, 0);
+    wrt_cat.warning(false) << *parent_arc->get_parent();
+    for (int i = 1; i < num_parents; i++) {
+      parent_arc = node->get_parent(graph_type, 0);
+      wrt_cat.warning(false) 
+	<< ", " << *node->get_parent(graph_type, i)->get_parent();
     }
     wrt_cat.warning(false) << "\n";
     
@@ -129,16 +131,15 @@ get_cached_net_transition(NodeRelation *arc, Node *&root,
     // Get the node above the arc.
     Node *node = arc->get_parent();
 
-    UpRelations::const_iterator uri;
-    uri = node->_parents.find(graph_type);
+    int num_parents = node->get_num_parents(graph_type);
 
-    if (uri == node->_parents.end() || (*uri).second.size() != 1) {
+    if (num_parents != 1) {
       // The node has zero or multiple parents.  It's thus either the
       // top of the scene graph, or it's the first ancestor with
       // multiple parents; in either case, it's as far as we can take
       // the caching.  Stop here.
 
-      if (uri == node->_parents.end() || (*uri).second.empty()) {
+      if (num_parents == 0) {
 	// The node is the very top of the scene graph.  We'll treat
 	// this as a special case by setting the node to NULL.  This
 	// will tell our calling function that there's no need to look
@@ -154,8 +155,8 @@ get_cached_net_transition(NodeRelation *arc, Node *&root,
     } else {
       // The node has exactly one parent.  Carry on.
 
-      NodeRelation *parent = *(*uri).second.begin();
-      get_cached_net_transition(parent, root, as_of, now, net, graph_type);
+      NodeRelation *parent_arc = node->get_parent(graph_type, 0);
+      get_cached_net_transition(parent_arc, root, as_of, now, net, graph_type);
 
       // Now recompute our own cache.
       TransitionWrapper cur_value = TransitionWrapper::init_from(net);
@@ -222,42 +223,26 @@ get_cached_net_transition(const Node *node,
     return;
   }
 
-  UpRelations::const_iterator uri;
-  uri = node->_parents.find(graph_type);
-
-  if (uri == node->_parents.end()) {
-    // This node has no parents.  Stop here.
-    result.make_identity();
-
-#ifndef NDEBUG
-    if (wrt_cat.is_debug()) {
-      wrt_cat.debug()
-	<< "get_cached_net_transition(" << *node << ") has no parents.\n";
-    }
-#endif
-    return;
-  }
-
-  const UpRelationPointers &urp = (*uri).second;
-  if (urp.empty()) {
-    // Again, this node has no parents.
-    result.make_identity();
-
-#ifndef NDEBUG
-    if (wrt_cat.is_debug()) {
-      wrt_cat.debug()
-	<< "get_cached_net_transition(" << *node << ") has no parents.\n";
-    }
-#endif
-    return;
-  }
+  int num_parents = node->get_num_parents(graph_type);
 
   const NodeRelation *parent_arc = (const NodeRelation *)NULL;
 
-  if (urp.size() == 1) {
+  if (num_parents == 1) {
     // There is only one parent, so there's no doubt as to which arc
     // to choose.
-    parent_arc = *(urp.begin());
+    parent_arc = node->get_parent(graph_type, 0);
+
+  } else if (num_parents == 0) {
+    // This node has no parents.  Stop here.
+    result.make_identity();
+    
+#ifndef NDEBUG
+    if (wrt_cat.is_debug()) {
+      wrt_cat.debug()
+	<< "get_cached_net_transition(" << *node << ") has no parents.\n";
+    }
+#endif
+    return;
 
   } else {
     // The node has multiple parents, and we have a list of arcs in
@@ -275,9 +260,9 @@ get_cached_net_transition(const Node *node,
 #ifndef NDEBUG
       // No, it wasn't mentioned.  Issue a warning and use the first
       // one.
-      describe_ambiguous_wrt(node, arc_list_begin, arc_list_end, urp);
+      describe_ambiguous_wrt(node, arc_list_begin, arc_list_end, graph_type);
 #endif
-      parent_arc = *(urp.begin());
+      parent_arc = node->get_parent(graph_type, 0);
     }
   }
 
@@ -332,10 +317,16 @@ get_uncached_net_transition(const Node *node,
     return;
   }
 
-  UpRelations::const_iterator uri;
-  uri = node->_parents.find(graph_type);
+  int num_parents = node->get_num_parents(graph_type);
 
-  if (uri == node->_parents.end()) {
+  const NodeRelation *parent_arc = (const NodeRelation *)NULL;
+
+  if (num_parents == 1) {
+    // There is only one parent, so there's no doubt as to which arc
+    // to choose.
+    parent_arc = node->get_parent(graph_type, 0);
+
+  } else if (num_parents == 0) {
     // This node has no parents.  Stop here.
     if (wrt_cat.is_spam()) {
       wrt_cat.spam()
@@ -343,25 +334,6 @@ get_uncached_net_transition(const Node *node,
     }
     result.make_identity();
     return;
-  }
-
-  const UpRelationPointers &urp = (*uri).second;
-  if (urp.empty()) {
-    // Again, this node has no parents.
-    if (wrt_cat.is_spam()) {
-      wrt_cat.spam()
-	<< "get_uncached_net_transition(" << *node << ") has no parents.\n";
-    }
-    result.make_identity();
-    return;
-  }
-
-  const NodeRelation *parent_arc = (const NodeRelation *)NULL;
-
-  if (urp.size() == 1) {
-    // There is only one parent, so there's no doubt as to which arc
-    // to choose.
-    parent_arc = *(urp.begin());
 
   } else {
     // The node has multiple parents, and we have a list of arcs in
@@ -379,9 +351,9 @@ get_uncached_net_transition(const Node *node,
 #ifndef NDEBUG
       // No, it wasn't mentioned.  Issue a warning and use the first
       // one. 
-      describe_ambiguous_wrt(node, arc_list_begin, arc_list_end, urp);
+      describe_ambiguous_wrt(node, arc_list_begin, arc_list_end, graph_type);
 #endif
-      parent_arc = *(urp.begin());
+      parent_arc = node->get_parent(graph_type, 0);
     }
   }
 
@@ -404,7 +376,7 @@ get_uncached_net_transition(const Node *node,
     }
     
     wrt_cat.spam(false)
-      << "), " << urp.size() << " parents, is:\n";
+      << "), " << num_parents << " parents, is:\n";
     result.write(wrt_cat.spam(false), 2);
   }
 }
@@ -647,10 +619,10 @@ Node *
 get_uncached_wrt_subtree(Node *node, Node *to, TransitionWrapper &result, 
 			 TypeHandle graph_type) {
   nassertr(node != (Node *)NULL, to);
-  UpRelations::const_iterator uri;
-  uri = node->_parents.find(graph_type);
 
-  if (uri == node->_parents.end()) {
+  int num_parents = node->get_num_parents(graph_type);
+
+  if (num_parents == 0) {
     // This node has no parents.  Stop here.
     if (wrt_cat.is_spam()) {
       wrt_cat.spam()
@@ -660,22 +632,11 @@ get_uncached_wrt_subtree(Node *node, Node *to, TransitionWrapper &result,
     return (Node *)NULL;
   }
 
-  const UpRelationPointers &urp = (*uri).second;
-  if (urp.empty()) {
-    // Again, no parents.  Stop here.
-    if (wrt_cat.is_spam()) {
-      wrt_cat.spam()
-	<< "get_uncached_wrt_subtree(" << *node << ") has no parents.\n";
-    }
-    result.make_identity();
-    return (Node *)NULL;
-  }
-
-  if (urp.size() != 1) {
+  if (num_parents != 1) {
     // There are multiple parents, so stop here.
     if (wrt_cat.is_spam()) {
       wrt_cat.spam()
-	<< "get_uncached_wrt_subtree(" << *node << ") has " << urp.size()
+	<< "get_uncached_wrt_subtree(" << *node << ") has " << num_parents
 	<< " parents.\n";
     }
     result.make_identity();
@@ -706,7 +667,7 @@ get_uncached_wrt_subtree(Node *node, Node *to, TransitionWrapper &result,
     }
   }
 
-  const NodeRelation *parent_arc = *(urp.begin());
+  const NodeRelation *parent_arc = node->get_parent(graph_type, 0);
 
   Node *stop = 
     get_uncached_wrt_subtree(parent_arc->get_parent(), to,

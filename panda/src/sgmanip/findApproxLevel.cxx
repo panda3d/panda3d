@@ -68,19 +68,14 @@ consider_node(NodePathCollection &result, FindApproxLevel &next_level,
   if (next_is_stashed()) {
     next_graph_type = NodeRelation::get_stashed_type();
   }
-  
-  DownRelations::const_iterator dri;
-  dri = bottom_node->_children.find(next_graph_type);
-  if (dri != bottom_node->_children.end()) {
-    const DownRelationPointers &drp = (*dri).second;
-    
-    DownRelationPointers::const_iterator drpi;
-    for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
-      NodeRelation *arc = (*drpi);
-      consider_next_step(result, arc, next_level, max_matches, graph_type);
-      if (max_matches > 0 && result.get_num_paths() >= max_matches) {
-	return;
-      }
+
+  int num_children = bottom_node->get_num_children(next_graph_type);
+  for (int i = 0; i < num_children; i++) {
+    NodeRelation *child_arc = bottom_node->get_child(next_graph_type, i);
+
+    consider_next_step(result, child_arc, next_level, max_matches, graph_type);
+    if (max_matches > 0 && result.get_num_paths() >= max_matches) {
+      return;
     }
   }
 }

@@ -9,6 +9,7 @@
 
 #include "nodeRelation.h"
 #include "boundedObject.h"
+#include "nodeConnection.h"
 
 #include <typedWriteable.h>
 #include <referenceCount.h>
@@ -22,6 +23,10 @@ class BamWriter;
 class BamReader;
 class Datagram;
 class DatagramIterator;
+
+// This is the maximum number of graph types a node may simultaneously
+// exist in.
+static const int max_node_graphs = 2;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : Node
@@ -77,6 +82,7 @@ PUBLISHED:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 
+public:
   // We reference-count the child pointer, but not the parent pointer,
   // to avoid circular reference counting.
 
@@ -84,9 +90,15 @@ PUBLISHED:
   // through the scene graph when necessary, but beware!  It is not
   // safe to access these members directly outside of PANDA.DLL.
   // Instead, use the get_parent()/get_child() interface, above.
+  INLINE_GRAPH const NodeConnection &find_connection(TypeHandle graph_type) const;
+  INLINE_GRAPH NodeConnection *update_connection(TypeHandle graph_type);
 
-  UpRelations _parents;
-  DownRelations _children;
+  NodeConnection _connections[max_node_graphs];
+
+private:
+  const NodeConnection &p_find_connection(TypeHandle graph_type) const;
+  NodeConnection *p_update_connection(TypeHandle graph_type);
+  static NodeConnection _empty_connection;
 
 protected:
   virtual void propagate_stale_bound();
@@ -107,17 +119,6 @@ public:
 
 protected:
   void fillin(DatagramIterator& scan, BamReader* manager);
-
-private:
-  //This variable is set inside fillin to the number of pointers
-  //that are "read" by Node.  This needs to be set, even though
-  //node does nothing in complete_pointers, because it needs to
-  //return the number of pointer requests that it made.  This 
-  //is necessary because the vector of pointers to TypedWriteables
-  //that is given to it by BamReader, will be filled with those requests
-  //and any children of Node, need to be able to ignore those as well.
-  //So complete_pointers must return the correct number read
-  int _num_pointers;
 
 public:
   static TypeHandle get_class_type() {

@@ -283,15 +283,16 @@ read_pointer(DatagramIterator& scan, TypedWriteable* forWhom)
 {
   PN_uint16 objId = scan.get_uint16();
   _deferred_pointers[forWhom].push_back(objId);
-  //This is safe since we have already read the full datagram
-  //for the object requesting this object.  So there can be
-  //no collision on that front. 
-  //IMPORTANT NOTE:  This does make the assumption that
-  //that objects are requested by other objects in the same 
-  //order that they wrote them originally.
+  // This is safe since we have already read the full datagram for the
+  // object requesting this object.  So there can be no collision on
+  // that front.
 
-  //Don't queue a read of a null pointer 
-  //or if the object has already been read
+  // IMPORTANT NOTE: This does make the assumption that objects are
+  // requested by other objects in the same order that they wrote them
+  // originally.
+
+  // Don't queue a read of a null pointer or if the object has already
+  // been read
   if ((objId != 0) && (_created_objs.find(objId) == _created_objs.end()))
     queue(objId);
 }
@@ -308,6 +309,19 @@ read_pointers(DatagramIterator &scan, TypedWriteable *forWhom, int count) {
   for (int i = 0; i < count; i++) {
     read_pointer(scan, forWhom);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamReader::skip_pointer
+//       Access: Public
+//  Description: Reads and discards a pointer value from the Bam file.
+//               This pointer will not be counted among the pointers
+//               read for a given object, and will not be in the list
+//               of pointers passed to complete_pointers().
+////////////////////////////////////////////////////////////////////
+void BamReader::
+skip_pointer(DatagramIterator &scan) {
+  scan.get_uint16();
 }
 
 ////////////////////////////////////////////////////////////////////

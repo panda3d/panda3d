@@ -61,21 +61,18 @@ flatten(Node *root, bool combine_siblings) {
   do {
     num_pass_nodes = 0;
 
-    DownRelations::const_iterator dri;
-    dri = root->_children.find(_graph_type);
-    if (dri != root->_children.end()) {
-      const DownRelationPointers &drp = (*dri).second;
+    const DownRelationPointers &drp = 
+      root->find_connection(_graph_type).get_down();
       
-      // Get a copy of the children list, so we don't have to worry
-      // about self-modifications.
-      DownRelationPointers drp_copy = drp;
+    // Get a copy of the children list, so we don't have to worry
+    // about self-modifications.
+    DownRelationPointers drp_copy = drp;
       
-      // Now visit each of the children in turn.
-      DownRelationPointers::const_iterator drpi;
-      for (drpi = drp_copy.begin(); drpi != drp_copy.end(); ++drpi) {
-	NodeRelation *arc = (*drpi);
-	num_pass_nodes += r_flatten(arc->get_child(), combine_siblings);
-      }
+    // Now visit each of the children in turn.
+    DownRelationPointers::const_iterator drpi;
+    for (drpi = drp_copy.begin(); drpi != drp_copy.end(); ++drpi) {
+      NodeRelation *arc = (*drpi);
+      num_pass_nodes += r_flatten(arc->get_child(), combine_siblings);
     }
 
     num_total_nodes += num_pass_nodes;
@@ -100,33 +97,30 @@ int GraphReducer::
 r_flatten(Node *root, bool combine_siblings) {
   int num_nodes = 0;
 
-  DownRelations::const_iterator dri;
-  dri = root->_children.find(_graph_type);
-  if (dri != root->_children.end()) {
-    const DownRelationPointers &drp = (*dri).second;
+  const DownRelationPointers &drp = 
+    root->find_connection(_graph_type).get_down();
 
-    // Get a copy of the children list, so we don't have to worry
-    // about self-modifications.
-    DownRelationPointers drp_copy = drp;
+  // Get a copy of the children list, so we don't have to worry
+  // about self-modifications.
+  DownRelationPointers drp_copy = drp;
 
-    // Now visit each of the children in turn.
-    DownRelationPointers::const_iterator drpi;
-    for (drpi = drp_copy.begin(); drpi != drp_copy.end(); ++drpi) {
-      NodeRelation *arc = (*drpi);
-      num_nodes += r_flatten(arc->get_child(), combine_siblings);
-    }
-
-    if (combine_siblings && drp.size() >= 2) {
-      num_nodes += flatten_siblings(root);
-    }
-
-    if (drp.size() == 1) {
-      // If we have exactly one child, consider flattening it.
-      NodeRelation *arc = *drp.begin();
-      if (consider_arc(arc)) {
-	if (flatten_arc(arc)) {
-	  num_nodes++;
-	}
+  // Now visit each of the children in turn.
+  DownRelationPointers::const_iterator drpi;
+  for (drpi = drp_copy.begin(); drpi != drp_copy.end(); ++drpi) {
+    NodeRelation *arc = (*drpi);
+    num_nodes += r_flatten(arc->get_child(), combine_siblings);
+  }
+  
+  if (combine_siblings && drp.size() >= 2) {
+    num_nodes += flatten_siblings(root);
+  }
+  
+  if (drp.size() == 1) {
+    // If we have exactly one child, consider flattening it.
+    NodeRelation *arc = *drp.begin();
+    if (consider_arc(arc)) {
+      if (flatten_arc(arc)) {
+	num_nodes++;
       }
     }
   }
@@ -161,17 +155,12 @@ flatten_siblings(Node *root) {
   typedef map<NodeRelation *, list<NodeRelation *>, SortByTransitions> Children;
   Children children;
 
-  DownRelations::const_iterator dri;
-  dri = root->_children.find(_graph_type);
-  if (dri != root->_children.end()) {
-    const DownRelationPointers &drp = (*dri).second;
-
-    DownRelationPointers::const_iterator drpi;
-    for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
-      NodeRelation *arc = (*drpi);
-
-      children[arc].push_back(arc);
-    }
+  const DownRelationPointers &drp = 
+    root->find_connection(_graph_type).get_down();
+  DownRelationPointers::const_iterator drpi;
+  for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
+    NodeRelation *arc = (*drpi);
+    children[arc].push_back(arc);
   }
 
   // Now visit each of those groups and try to collapse them together.

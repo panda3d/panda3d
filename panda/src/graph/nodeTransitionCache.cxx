@@ -73,8 +73,9 @@ is_identity() const {
 ////////////////////////////////////////////////////////////////////
 int NodeTransitionCache::
 compare_to(const NodeTransitionCache &other) const {
-  return tmap_compare_cache(_cache.begin(), _cache.end(),
-			    other._cache.begin(), other._cache.end());
+   int result = tmap_compare_cache(_cache.begin(), _cache.end(),
+				   other._cache.begin(), other._cache.end());
+   return result;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -261,18 +261,14 @@ r_apply_transitions(NodeRelation *arc, int transition_types,
     }
   }
   
-  DownRelations::const_iterator dri;
-  dri = node->_children.find(_graph_type);
-  if (dri != node->_children.end()) {
-    const DownRelationPointers &drp = (*dri).second;
-    DownRelationPointers drp_copy = drp;
+  const DownRelationPointers &drp = 
+    node->find_connection(_graph_type).get_down();
+  DownRelationPointers drp_copy = drp;
 
-    DownRelationPointers::const_iterator drpi;
-    for (drpi = drp_copy.begin(); drpi != drp_copy.end(); ++drpi) {
-      NodeRelation *child_arc = (*drpi);
-
-      r_apply_transitions(child_arc, transition_types, trans, duplicate);
-    }
+  DownRelationPointers::const_iterator drpi;
+  for (drpi = drp_copy.begin(); drpi != drp_copy.end(); ++drpi) {
+    NodeRelation *child_arc = (*drpi);
+    r_apply_transitions(child_arc, transition_types, trans, duplicate);
   }
 }
 

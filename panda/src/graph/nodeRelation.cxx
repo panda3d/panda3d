@@ -49,16 +49,16 @@ init_last_graph_update() {
 
 // Following are a handful of local template functions that provide
 // support for manipulating the list of arcs on nodes.  They are
-// template functions because they work as well on UpRelationArcs as
-// as they do on DownRelationArcs, which are slightly different things
-// (DownRelationArcs are reference-counting).
+// template functions because they work as well on UpRelationPointers
+// as as they do on DownRelationPointers, which are slightly different
+// things (DownRelationPointers are reference-counting).
 
 ////////////////////////////////////////////////////////////////////
 //     Function: verify_arc_list
 //  Description: A local template function that verifies that the list
-//               of arcs (either UpRelationArcs or DownRelationArcs)
-//               is correctly sorted, if paranoid_graph is set.
-//               Otherwise, it does nothing.
+//               of arcs (either UpRelationPointers or
+//               DownRelationPointers) is correctly sorted, if
+//               paranoid_graph is set.  Otherwise, it does nothing.
 ////////////////////////////////////////////////////////////////////
 #ifdef NDEBUG
 template<class Iterator>
@@ -87,9 +87,9 @@ verify_arc_list(Iterator begin, Iterator end) {
 ////////////////////////////////////////////////////////////////////
 //     Function: find_insert_position
 //  Description: A local template function that performs a binary
-//               search on the arcs list (either UpRelationArcs or
-//               DownRelationArcs) and finds the place to insert the
-//               indicated arc.
+//               search on the arcs list (either UpRelationPointers or
+//               DownRelationPointers) and finds the place to insert
+//               the indicated arc.
 //
 //               This place will be at the end of the similarly-sorted
 //               arcs.
@@ -141,10 +141,10 @@ find_insert_position(Iterator begin, Iterator end, NodeRelation *arc) {
 ////////////////////////////////////////////////////////////////////
 //     Function: find_arc
 //  Description: A local template function that performs a binary
-//               search on the arcs list (either UpRelationArcs or
-//               DownRelationArcs) and finds the arc's position within
-//               the list.  It returns end if the arc is not within
-//               the list.
+//               search on the arcs list (either UpRelationPointers or
+//               DownRelationPointers) and finds the arc's position
+//               within the list.  It returns end if the arc is not
+//               within the list.
 ////////////////////////////////////////////////////////////////////
 template<class Iterator>
 static Iterator
@@ -609,13 +609,25 @@ attach() {
   nassertv(_child != (Node*)NULL);
   nassertv(!_attached);
 
-  _attached = true;
-  if (_parent_ref != 0) {
-    _parent->ref();
+  NodeConnection *parent_connection = _parent->update_connection(_graph_type);
+  NodeConnection *child_connection = _child->update_connection(_graph_type);
+
+  if (parent_connection == (NodeConnection *)NULL) {
+    graph_cat.error()
+      << "Attempt to attach " << _parent << " simultaneously to more than " 
+      << max_node_graphs << " different graph types.\n";
+    nassertv(false);
   }
 
-  DownRelationPointers &parent_list = _parent->_children[_graph_type];
-  UpRelationPointers &child_list = _child->_parents[_graph_type];
+  if (child_connection == (NodeConnection *)NULL) {
+    graph_cat.error()
+      << "Attempt to attach " << _child << " simultaneously to more than " 
+      << max_node_graphs << " different graph types.\n";
+    nassertv(false);
+  }
+
+  DownRelationPointers &parent_list = parent_connection->get_down();
+  UpRelationPointers &child_list = child_connection->get_up();
   
   bool inserted_one = internal_insert_arc(parent_list, this);
   bool inserted_two = internal_insert_arc(child_list, this);
@@ -632,6 +644,11 @@ attach() {
   if (child_list.size() == 2) {
     child_list[0]->_last_update = _last_update;
     child_list[1]->_last_update = _last_update;
+  }
+
+  _attached = true;
+  if (_parent_ref != 0) {
+    _parent->ref();
   }
 
   _parent->force_bound_stale();
@@ -664,8 +681,16 @@ detach() {
 
   force_bound_stale();
 
-  DownRelationPointers &parent_list = _parent->_children[_graph_type];
-  UpRelationPointers &child_list = _child->_parents[_graph_type];
+  NodeConnection *parent_connection = _parent->update_connection(_graph_type);
+  NodeConnection *child_connection = _child->update_connection(_graph_type);
+
+  // These should never be NULL, because we're already attached, after
+  // all.
+  nassertr(parent_connection != (NodeConnection *)NULL &&
+	   child_connection != (NodeConnection *)NULL, result);
+
+  DownRelationPointers &parent_list = parent_connection->get_down();
+  UpRelationPointers &child_list = child_connection->get_up();
 
   bool removed_one = internal_remove_arc(parent_list, this);
   bool removed_two = internal_remove_arc(child_list, this);
@@ -690,16 +715,6 @@ detach() {
     child_list[0]->_last_update = _last_update;
   }
 
-  // If we have completely emptied the parent or child lists, remove
-  // the entry for this graph type from the node, as a small render
-  // optimization.
-  if (parent_list.empty()) {
-    _parent->_children.erase(_graph_type);
-  }
-  if (child_list.empty()) {
-    _child->_parents.erase(_graph_type);
-  }
-
   return result;
 }
 
@@ -721,7 +736,11 @@ detach_below() {
 
   force_bound_stale();
 
-  bool removed = internal_remove_arc(_child->_parents[_graph_type], this);
+  NodeConnection *child_connection = _child->update_connection(_graph_type);
+  nassertr(child_connection != (NodeConnection *)NULL, result);
+
+  UpRelationPointers &child_list = child_connection->get_up();
+  bool removed = internal_remove_arc(child_list, this);
 
   nassertr(removed, result);
 
@@ -767,15 +786,10 @@ propagate_stale_bound() {
   Node *node = _parent;
   nassertv(node != (Node*)NULL);
 
-  UpRelations::const_iterator uri;
-  uri = node->_parents.find(_graph_type);
-  if (uri != node->_parents.end()) {
-    const UpRelationPointers &urp = (*uri).second;
-    
-    UpRelationPointers::const_iterator urpi;
-    for (urpi = urp.begin(); urpi != urp.end(); ++urpi) {
-      (*urpi)->mark_bound_stale();
-    }
+  const UpRelationPointers &urp = node->find_connection(_graph_type).get_up();
+  UpRelationPointers::const_iterator urpi;
+  for (urpi = urp.begin(); urpi != urp.end(); ++urpi) {
+    (*urpi)->mark_bound_stale();
   }
 }
 
@@ -800,15 +814,11 @@ recompute_bound() {
 
   child_volumes.push_back(&node->get_bound());
 
-  DownRelations::const_iterator dri;
-  dri = node->_children.find(_graph_type);
-  if (dri != node->_children.end()) {
-    const DownRelationPointers &drp = (*dri).second;
-    
-    DownRelationPointers::const_iterator drpi;
-    for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
-      child_volumes.push_back(&(*drpi)->get_bound());
-    }
+  const DownRelationPointers &drp = 
+    node->find_connection(_graph_type).get_down();
+  DownRelationPointers::const_iterator drpi;
+  for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
+    child_volumes.push_back(&(*drpi)->get_bound());
   }
 
   bool success = 
@@ -855,8 +865,7 @@ write_datagram(BamWriter *manager, Datagram &me)
   //Now write out all the Transitions on this arc
   me.add_uint16(_transitions.size());
   NodeTransitions::iterator ci;
-  for(ci = _transitions.begin(); ci != _transitions.end(); ci++)
-  {
+  for(ci = _transitions.begin(); ci != _transitions.end(); ci++) {
     manager->write_pointer(me, (*ci).second);
   }
 }
@@ -865,13 +874,12 @@ write_datagram(BamWriter *manager, Datagram &me)
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeRelation::complete_pointers
 //       Access: Public
-//  Description: Takes in a vector of pointes to TypedWriteable
+//  Description: Takes in a vector of pointers to TypedWriteable
 //               objects that correspond to all the requests for 
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int NodeRelation::
-complete_pointers(vector_typedWriteable &plist, BamReader *manager)
-{
+complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
   nassertr(plist[0] != TypedWriteable::Null &&
 	   plist[1] != TypedWriteable::Null, 0);
   _parent = DCAST(Node, plist[0]);
@@ -889,10 +897,13 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager)
 
     // We must explicitly add the arc to its child node, but not to
     // its parent node.
-    UpRelationPointers &child_list = _child->_parents[_graph_type];
-    bool inserted = internal_insert_arc(child_list, this);
-    nassertr(inserted, _num_transitions + 2);
-    _attached = true;
+    NodeConnection *child_connection = _child->update_connection(_graph_type);
+    if (child_connection != (NodeConnection *)NULL) {
+      UpRelationPointers &child_list = child_connection->get_up();
+      bool inserted = internal_insert_arc(child_list, this);
+      nassertr(inserted, _num_transitions + 2);
+      _attached = true;
+    }
   }
 
   //The rest of this is the list of Transitions
@@ -1072,4 +1083,3 @@ clear_transition(TypeHandle handle) {
   changed_transition(handle);
   return old_trans;
 }
-

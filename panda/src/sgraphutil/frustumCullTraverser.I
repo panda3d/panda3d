@@ -233,17 +233,13 @@ traverse(Node *node, AttributeWrapper &render_state, LevelState &level_state,
   if (_visitor.reached_node(node, render_state, level_state)) {
 
     // Look for further children of the given NodeRelation.
-    DownRelations::const_iterator dri;
-    dri = node->_children.find(_graph_type);
-    if (dri != node->_children.end()) {
-      // Here are some!
-      const DownRelationPointers &drp = (*dri).second;
+    const DownRelationPointers &drp = 
+      node->find_connection(_graph_type).get_down();
 
-      // Now visit each of the children in turn.
-      DownRelationPointers::const_iterator drpi;
-      for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
-	traverse(*drpi, render_state, level_state, local_frustum, all_in);
-      }
+    // Now visit each of the children in turn.
+    DownRelationPointers::const_iterator drpi;
+    for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
+      traverse(*drpi, render_state, level_state, local_frustum, all_in);
     }
   }
 }

@@ -66,6 +66,7 @@ public:
   //can register in itself for later "fixing"
   void read_pointer(DatagramIterator &scan, TypedWriteable* forWhom);
   void read_pointers(DatagramIterator &scan, TypedWriteable* forWhom, int count);
+  void skip_pointer(DatagramIterator &scan);
 
   //At any time you can call this function to try and resolve all
   //outstanding pointer requests.  Will resolve all requests that

@@ -212,12 +212,13 @@ generate() {
   _lr3d.set(0.0, 0.0, 0.0);
   _num_rows = 0;
 
-  if (_text.empty() || _font.is_null()) {
-    return (Node *)NULL;
-  }
-
   // Now build a new sub-tree for all the text components.
   PT_Node root = new NamedNode(_text);
+
+  if (_text.empty() || _font.is_null()) {
+    return root;
+  }
+
   PT_Node sub_root = new NamedNode();
   RenderRelation *root_arc = new RenderRelation(root, sub_root);
 

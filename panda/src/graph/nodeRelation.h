@@ -223,10 +223,7 @@ EXPCL_PANDA INLINE_GRAPH ostream &
 operator << (ostream &out, const NodeRelation &arc);
 
 typedef vector< PT(NodeRelation) > DownRelationPointers;
-typedef map<TypeHandle, DownRelationPointers> DownRelations;
-
 typedef vector<NodeRelation *> UpRelationPointers;
-typedef map<TypeHandle, UpRelationPointers> UpRelations;
 
 #include "nodeRelation.T"
 

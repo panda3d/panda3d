@@ -242,15 +242,12 @@ find_character_gsets(Node *root, Geom *&ch, GeomPoint *&dot,
     return found;
     
   } else {
-    DownRelations::const_iterator dri;
-    dri = root->_children.find(RenderRelation::get_class_type());
-    if (dri != root->_children.end()) {
-      const DownRelationPointers &drp = (*dri).second;
-      DownRelationPointers::const_iterator drpi;
-      for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
-        if (find_character_gsets((*drpi)->get_child(), ch, dot, trans)) {
-	  trans.extract_from(*drpi);
-	}
+    TypeHandle graph_type = RenderRelation::get_class_type();
+    int num_children = root->get_num_children(graph_type);
+    for (int i = 0; i < num_children; i++) {
+      NodeRelation *child_arc = root->get_child(graph_type, i);
+      if (find_character_gsets(child_arc->get_child(), ch, dot, trans)) {
+	trans.extract_from(child_arc);
       }
     }
     return false;
@@ -328,15 +325,11 @@ find_characters(Node *root) {
     }
 
   } else {
-    DownRelations::const_iterator dri;
-    dri = root->_children.find(RenderRelation::get_class_type());
-    if (dri != root->_children.end()) {
-      const DownRelationPointers &drp = (*dri).second;
-      DownRelationPointers::const_iterator drpi;
-      for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
-	Node *node = (*drpi)->get_child();
-	find_characters(node);
-      }
+    TypeHandle graph_type = RenderRelation::get_class_type();
+    int num_children = root->get_num_children(graph_type);
+    for (int i = 0; i < num_children; i++) {
+      NodeRelation *child_arc = root->get_child(graph_type, i);
+      find_characters(child_arc->get_child());
     }
   }
 }

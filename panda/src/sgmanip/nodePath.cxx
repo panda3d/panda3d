@@ -263,18 +263,13 @@ get_children() const {
   nassertr(!is_empty(), result);
 
   Node *bottom_node = node();
-  DownRelations::const_iterator dri;
-  dri = bottom_node->_children.find(_graph_type);
-  if (dri != bottom_node->_children.end()) {
-    const DownRelationPointers &drp = (*dri).second;
-    
-    DownRelationPointers::const_iterator drpi;
-    for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
-      NodeRelation *arc = (*drpi);
-      NodePath child(*this);
-      child.extend_by(arc);
-      result.add_path(child);
-    }
+
+  int num_children = bottom_node->get_num_children(_graph_type);
+  for (int i = 0; i < num_children; i++) {
+    NodeRelation *child_arc = bottom_node->get_child(_graph_type, i);
+    NodePath child(*this);
+    child.extend_by(child_arc);
+    result.add_path(child);
   }
 
   return result;
@@ -297,19 +292,15 @@ get_siblings() const {
   parent.shorten(1);
 
   Node *parent_node = parent.node();
-  DownRelations::const_iterator dri;
-  dri = parent_node->_children.find(_graph_type);
-  if (dri != parent_node->_children.end()) {
-    const DownRelationPointers &drp = (*dri).second;
-    
-    DownRelationPointers::const_iterator drpi;
-    for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
-      NodeRelation *arc = (*drpi);
-      if (arc != my_arc) {
-	NodePath sib(parent);
-	sib.extend_by(arc);
-	result.add_path(sib);
-      }
+
+  int num_children = parent_node->get_num_children(_graph_type);
+  for (int i = 0; i < num_children; i++) {
+    NodeRelation *child_arc = parent_node->get_child(_graph_type, i);
+
+    if (child_arc != my_arc) {
+      NodePath sib(parent);
+      sib.extend_by(child_arc);
+      result.add_path(sib);
     }
   }
 
@@ -2710,27 +2701,21 @@ r_list_descendants(ostream &out, int indent_level) const {
   Node *bottom_node = node();
   nassertv(bottom_node != (Node *)NULL);
   indent(out, indent_level) << *bottom_node << "\n";
-  
-  DownRelations::const_iterator dri;
-  dri = bottom_node->_children.find(_graph_type);
-  if (dri != bottom_node->_children.end()) {
-    const DownRelationPointers &drp = (*dri).second;
-    
-    DownRelationPointers::const_iterator drpi;
-    for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
-      NodeRelation *arc = (*drpi);
-      NodePath next(*this);
-      next.extend_by(arc);
-      next.r_list_descendants(out, indent_level + 2);
-    }
+
+  int num_children = bottom_node->get_num_children(_graph_type);
+  for (int i = 0; i < num_children; i++) {
+    NodeRelation *child_arc = bottom_node->get_child(_graph_type, i);
+
+    NodePath next(*this);
+    next.extend_by(child_arc);
+    next.r_list_descendants(out, indent_level + 2);
   }
 
   if (_graph_type != NodeRelation::get_stashed_type()) {
     // Also report the number of stashed nodes at this level.
-    dri = bottom_node->_children.find(NodeRelation::get_stashed_type());
-    if (dri != bottom_node->_children.end()) {
-      const DownRelationPointers &drp = (*dri).second;
-      indent(out, indent_level) << "(" << drp.size() << " stashed)\n";
+    int num_stashed = bottom_node->get_num_children(NodeRelation::get_stashed_type());
+    if (num_stashed != 0) {
+      indent(out, indent_level) << "(" << num_stashed << " stashed)\n";
     }
   }
 }
@@ -2747,22 +2732,16 @@ r_list_transitions(ostream &out, int indent_level) const {
 
   out << "\n+";
   indent(out, indent_level + 1) << *bottom_node << "\n\n";
-  
-  DownRelations::const_iterator dri;
-  dri = bottom_node->_children.find(_graph_type);
-  if (dri != bottom_node->_children.end()) {
-    const DownRelationPointers &drp = (*dri).second;
-    
-    DownRelationPointers::const_iterator drpi;
-    for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
-      NodeRelation *arc = (*drpi);
-      NodePath next(*this);
-      next.extend_by(arc);
 
-      indent(out, indent_level + 2) << *arc << ":\n";
-      arc->write_transitions(out, indent_level + 2);
-      next.r_list_transitions(out, indent_level + 2);
-    }
+  int num_children = bottom_node->get_num_children(_graph_type);
+  for (int i = 0; i < num_children; i++) {
+    NodeRelation *child_arc = bottom_node->get_child(_graph_type, i);
+    NodePath next(*this);
+    next.extend_by(child_arc);
+
+    indent(out, indent_level + 2) << *child_arc << ":\n";
+    child_arc->write_transitions(out, indent_level + 2);
+    next.r_list_transitions(out, indent_level + 2);
   }
 }
 
@@ -2778,14 +2757,10 @@ r_adjust_all_priorities(NodeRelation *arc, int adjustment) {
   arc->adjust_all_priorities(adjustment);
 
   Node *dnode = arc->get_child();
-  DownRelations::const_iterator dri;
-  dri = dnode->_children.find(_graph_type);
-  if (dri != dnode->_children.end()) {
-    const DownRelationPointers &drp = (*dri).second;
-    
-    DownRelationPointers::const_iterator drpi;
-    for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
-      r_adjust_all_priorities(*drpi, adjustment);
-    }
+
+  int num_children = dnode->get_num_children(_graph_type);
+  for (int i = 0; i < num_children; i++) {
+    NodeRelation *child_arc = dnode->get_child(_graph_type, i);
+    r_adjust_all_priorities(child_arc, adjustment);
   }
 }
