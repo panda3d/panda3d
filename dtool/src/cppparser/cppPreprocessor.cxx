@@ -1730,7 +1730,13 @@ get_number(int c, int c2) {
       c = get();
     }
 
+    while (c == 'L' || c == 'U') {
+      // We allow (and ignore) an 'L' and/or 'U' following the number.
+      c = get();
+    }
+
     _last_c = c;
+
     YYSTYPE result;
     result.u.integer = strtol(num.c_str(), (char **)NULL, 16);
     return CPPToken(INTEGER, first_line, first_col, first_file, num, result);
