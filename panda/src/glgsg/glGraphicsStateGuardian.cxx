@@ -1558,9 +1558,13 @@ prepare_texture(Texture *tex) {
   int xsize = tex->_pbuffer->get_xsize();
   int ysize = tex->_pbuffer->get_ysize();
 
-  if((xsize> max_tex_size) || (ysize > max_tex_size)) {
-      glgsg_cat.error() << "prepare_texture failed on "<< tex->get_name() <<": "<< xsize << "x" << ysize << " exceeds max tex size " << max_tex_size << "x" << max_tex_size << endl;
-      return NULL;
+  if ((xsize> max_tex_size) || (ysize > max_tex_size)) {
+    glgsg_cat.warning() 
+      << tex->get_name() <<": "<< xsize << "x" << ysize
+      << " exceeds max tex size " << max_tex_size << "x" << max_tex_size << endl;
+    // Rather than returning NULL in these error cases, which will
+    // crab out Panda, we simply let GL go ahead and do the best it
+    // can do.
   }
 
   // regular GL does not allow non-pow2 size textures
@@ -1568,9 +1572,13 @@ prepare_texture(Texture *tex) {
   // should probably add checks for that in here at some point
   // or you could use gluBuild2DMipMaps to scale the texture to the nearest pow2 size
 
-  if(!(ISPOW2(xsize) && ISPOW2(ysize))) {
-      glgsg_cat.error() << "prepare_texture failed on "<< tex->get_name() <<": "<< xsize << "x" << ysize << " is not a power of 2 size!\n";
-      return NULL;
+  if (!(ISPOW2(xsize) && ISPOW2(ysize))) {
+    glgsg_cat.warning() 
+      << tex->get_name() <<": "<< xsize << "x" << ysize 
+      << " is not a power of 2 size!\n";
+    // Rather than returning NULL in these error cases, which will
+    // crab out Panda, we simply let GL go ahead and do the best it
+    // can do.
   }
 
   GLTextureContext *gtc = new GLTextureContext(tex);
@@ -1586,7 +1594,7 @@ prepare_texture(Texture *tex) {
   // If this assertion fails, the same texture was prepared twice,
   // which shouldn't be possible, since the texture itself should
   // detect this.
-  nassertr(inserted, NULL);
+  nassertr(inserted, gtc);
 
   report_gl_errors();
   return gtc;
