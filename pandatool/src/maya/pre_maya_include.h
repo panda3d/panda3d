@@ -31,5 +31,20 @@
 // this is not necessarily a class!  Curses.  We can't use any of the
 // built-in Maya stream operators, and we have to protect ourselves
 // from them.
+
+// In windows, the antiquated headers define completely unrelated (and
+// incompatible) classes from those declared in the new headers.  On
+// the other hand, in gcc the antiquated headers seem to be references
+// to the new template classes, so under gcc we also have to declare
+// typedefs to make this work.
+#ifdef __GNUC__
+#ifndef PRE_MAYA_INCLUDE_H
+#define PRE_MAYA_INCLUDE_H
+#include <iostream.h>
+typedef ostream maya_ostream;
+typedef istream maya_istream;
+#endif
+#endif  // __GNUC__
+
 #define ostream maya_ostream
 #define istream maya_istream
