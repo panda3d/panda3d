@@ -33,6 +33,10 @@
 #include <fcntl.h>
 #endif
 
+#ifdef HAVE_GLOB_H
+#include <glob.h>
+#endif
+
 #ifdef HAVE_DIRENT_H
 #include <dirent.h>
 #endif
@@ -1152,7 +1156,32 @@ find_on_searchpath(const DSearchPath &searchpath) {
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 scan_directory(vector_string &contents) const {
-#if defined(HAVE_DIRENT_H)
+#if defined(HAVE_GLOB_H)
+  // In some cases, particularly with NFS, it seems that opendir()
+  // .. readdir() fails to properly read the entire directory ("Value
+  // too large for defined data type"), but glob() succeeds.
+  string dirname;
+  if (empty()) {
+    dirname = "*";
+  } else if (_filename[_filename.length() - 1] == '/') {
+    dirname = _filename + "*";
+  } else {
+    dirname = _filename + "/*";
+  }
+
+  glob_t globbuf;
+
+  int r = glob(dirname.c_str(), GLOB_ERR, NULL, &globbuf);
+  size_t offset = dirname.size() - 1;
+
+  for (int i = 0; globbuf.gl_pathv[i] != NULL; i++) {
+    contents.push_back(globbuf.gl_pathv[i] + offset);
+  }
+  globfree(&globbuf);
+
+  return true;
+
+#elif defined(HAVE_DIRENT_H)
   size_t orig_size = contents.size();
 
   string dirname;
@@ -1163,6 +1192,7 @@ scan_directory(vector_string &contents) const {
   }
   DIR *root = opendir(dirname.c_str());
   if (root == (DIR *)NULL) {
+    perror(dirname.c_str());
     return false;
   }
 
@@ -1173,6 +1203,12 @@ scan_directory(vector_string &contents) const {
       contents.push_back(d->d_name);
     }
     d = readdir(root);
+  }
+  if (errno != 0 && errno != ENOENT && errno != ENOTDIR) {
+    cerr << "Error occurred while scanning directory " << dirname << "\n";
+    perror(dirname.c_str());
+    closedir(root);
+    return false;
   }
   closedir(root);
 
