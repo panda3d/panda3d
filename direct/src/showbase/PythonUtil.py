@@ -61,7 +61,7 @@ def pdir(obj, str = None, fOverloaded = 0, width = None,
         print
 
 def _pdir(obj, str = None, fOverloaded = 0, width = None,
-            fTruncate = 1, lineWidth = 75):
+            fTruncate = 1, lineWidth = 75, wantPrivate = 0):
     """
     Print out a formatted list of members and methods of an instance or class
     """
@@ -100,7 +100,6 @@ def _pdir(obj, str = None, fOverloaded = 0, width = None,
     keyWidth = 0
     aproposKeys = []
     privateKeys = []
-    overloadedKeys = []
     remainingKeys = []
     for key in dict.keys():
         if not width:
@@ -111,13 +110,9 @@ def _pdir(obj, str = None, fOverloaded = 0, width = None,
                 if (not width) and (keyWidth > maxWidth):
                     maxWidth = keyWidth
         else:
-            if key[:2] == '__':
-                privateKeys.append(key)
-                if (not width) and (keyWidth > maxWidth):
-                    maxWidth = keyWidth
-            elif (key[:10] == 'overloaded'):
-                if fOverloaded:
-                    overloadedKeys.append(key)
+            if key[:1] == '_':
+                if wantPrivate:
+                    privateKeys.append(key)
                     if (not width) and (keyWidth > maxWidth):
                         maxWidth = keyWidth
             else:
@@ -130,9 +125,11 @@ def _pdir(obj, str = None, fOverloaded = 0, width = None,
     else:
         privateKeys.sort()
         remainingKeys.sort()
-        overloadedKeys.sort()
     # Print out results
-    keys = aproposKeys + privateKeys + remainingKeys + overloadedKeys
+    if wantPrivate:
+        keys = aproposKeys + privateKeys + remainingKeys
+    else:
+        keys = aproposKeys + remainingKeys
     format = '%-' + `maxWidth` + 's'
     for key in keys:
         value = dict[key]
