@@ -1,5 +1,8 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
+				   
+// need to modify global scope
+#set NOT_INTEL_BUILDABLE true				   
 
 #begin lib_target
   #define TARGET char

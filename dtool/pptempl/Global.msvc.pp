@@ -76,6 +76,10 @@
 
 #define CFLAGS_SHARED
 
+#if $[and $[eq $[USE_COMPILER], INTEL], $[eq $[NOT_INTEL_BUILDABLE], true]]
+#define USE_COMPILER MSVC
+#endif
+
 #if $[eq $[USE_COMPILER], MSVC]
   #define COMPILER cl
   #define LINKER link
@@ -112,12 +116,16 @@
   #error Invalid value specified for USE_COMPILER.
 #endif
 
-#if $[PREPROCESSOR_OUTPUT]
-#define COMMONFLAGS $[COMMONFLAGS] /E 
+#if $[CHECK_SYNTAX_ONLY]
+#define END_CFLAGS $[END_CFLAGS] /Zs 
+#endif 
+  
+#if $[GEN_ASSEMBLY]
+#define END_CFLAGS $[END_CFLAGS] /FAs
 #endif 
 
-#if $[GEN_ASSEMBLY]
-#define COMMONFLAGS $[COMMONFLAGS] /FAs 
+#if $[PREPROCESSOR_OUTPUT]
+#define END_CFLAGS $[END_CFLAGS] /E 
 #endif 
 
 #defer CDEFINES_OPT1 _DEBUG $[dlink_all_static]
@@ -168,7 +176,7 @@
 #define WARNING_LEVEL_FLAG /W3
 #endif
 
-#defer extra_cflags /EHsc /Zm250 /DWIN32_VC /DWIN32 $[WARNING_LEVEL_FLAG]
+#defer extra_cflags /EHsc /Zm250 /DWIN32_VC /DWIN32 $[WARNING_LEVEL_FLAG] $[END_CFLAGS]
 
 #defer COMPILE_C $[COMPILER] /nologo /c /Fo"$[osfilename $[target]]" $[decygwin %,/I"%",$[EXTRA_INCPATH] $[ipath]] $[flags] $[extra_cflags] $[source]
 #defer COMPILE_C++ $[COMPILE_C]

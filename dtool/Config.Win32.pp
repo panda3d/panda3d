@@ -90,3 +90,9 @@
 // Do we have <sys/soundcard.h> (and presumably a Linux-style audio
 // interface)?
 #define HAVE_SYS_SOUNDCARD_H
+
+// can Intel C++ build this directory successfully (if not, change CC to msvc)
+#define NOT_INTEL_BUILDABLE false
+
+
+

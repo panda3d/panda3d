@@ -61,6 +61,7 @@
 
 #define CFLAGS_SHARED
 
+
 // Define LINK_ALL_STATIC to generate static libs instead of DLL's.
 #if $[ne $[LINK_ALL_STATIC],]
   #define dlink_all_static LINK_ALL_STATIC
@@ -72,6 +73,10 @@
   #define build_dlls yes
   #define build_libs  
   #define dlllib dll
+#endif
+
+#if $[and $[eq $[USE_COMPILER], INTEL], $[eq $[NOT_INTEL_BUILDABLE], true]]
+#define USE_COMPILER MSVC
 #endif
 
 #if $[eq $[USE_COMPILER], MSVC]
@@ -100,10 +105,10 @@
   #define COMPILER icl
   #define LINKER xilink
   #define LIBBER xilib
-  #define COMMONFLAGS /Gi-
-//  #define OPTFLAGS /O3 /G6 /Qvc6 /Qwd985 /Qipo /QaxW /Qvec_report1 
-  #define OPTFLAGS /O3 /G6 /Qvc6 /Qwd985
-  #define DEBUGFLAGS /MDd /Zi $[BROWSEINFO_FLAG]
+  #define COMMONFLAGS /Gi- /Qwd985
+//  #define OPTFLAGS /O3 /G6 /Qvc6 /Qipo /QaxW /Qvec_report1 
+  #define OPTFLAGS /O3 /G6 /Qvc6 /Qip
+  #define DEBUGFLAGS /MDd /Zi /Qinline_debug_info
   #define RELEASEFLAGS /MD
   // We assume the Intel compiler installation dir is mounted as /ia32.
   #define EXTRA_LIBPATH /ia32/lib
@@ -112,12 +117,16 @@
   #error Invalid value specified for USE_COMPILER.
 #endif
 
-#if $[PREPROCESSOR_OUTPUT]
-#define COMMONFLAGS $[COMMONFLAGS] /E 
+#if $[CHECK_SYNTAX_ONLY]
+#define END_CFLAGS $[END_CFLAGS] /Zs 
+#endif 
+  
+#if $[GEN_ASSEMBLY]
+#define END_CFLAGS $[END_CFLAGS] /FAs
 #endif 
 
-#if $[GEN_ASSEMBLY]
-#define COMMONFLAGS $[COMMONFLAGS] /FAs 
+#if $[PREPROCESSOR_OUTPUT]
+#define END_CFLAGS $[END_CFLAGS] /E 
 #endif 
 
 #defer CDEFINES_OPT1 _DEBUG $[dlink_all_static]
@@ -125,10 +134,11 @@
 #defer CDEFINES_OPT3 $[dlink_all_static]
 #defer CDEFINES_OPT4 NDEBUG $[dlink_all_static]
 
-#defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] $[COMMONFLAGS] /GZ $[DEBUGFLAGS]
-#defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPTFLAGS]
-#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS]
-#defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS]
+//  /GZ disables OPT flags, so OPT1 only
+#defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] $[COMMONFLAGS] /GZ $[DEBUGFLAGS] 
+#defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPTFLAGS] 
+#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] 
+#defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] 
 
 #if $[ENABLE_PROFILING]
 // note according to docs, this should force /PDB:none /DEBUGTYPE:cv, so no pdb file is generated for debug??  (doesnt seem to be true)
@@ -168,7 +178,7 @@
 #define WARNING_LEVEL_FLAG /W3
 #endif
 
-#defer extra_cflags /EHsc /Zm250 /DWIN32_VC /DWIN32 $[WARNING_LEVEL_FLAG]
+#defer extra_cflags /EHsc /Zm250 /DWIN32_VC /DWIN32 $[WARNING_LEVEL_FLAG] $[END_CFLAGS]
 
 #defer COMPILE_C $[COMPILER] /nologo /c /Fo"$[osfilename $[target]]" $[decygwin %,/I"%",$[EXTRA_INCPATH] $[ipath]] $[flags] $[extra_cflags] $[source]
 #defer COMPILE_C++ $[COMPILE_C]
