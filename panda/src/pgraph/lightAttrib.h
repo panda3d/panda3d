@@ -35,15 +35,18 @@
 class EXPCL_PANDA LightAttrib : public RenderAttrib {
 private:
   INLINE LightAttrib();
+  INLINE LightAttrib(const LightAttrib &copy);
 
 PUBLISHED:
+
+  // This is the old, deprecated interface to LightAttrib.  Do not use
+  // any of these methods for new code; these methods will be removed
+  // soon.
   enum Operation {
     O_set,
     O_add,
     O_remove
   };
-
-  static CPT(RenderAttrib) make_all_off();
   static CPT(RenderAttrib) make(Operation op, 
                                 Light *light);
   static CPT(RenderAttrib) make(Operation op, 
@@ -55,17 +58,36 @@ PUBLISHED:
                                 Light *light1, Light *light2,
                                 Light *light3, Light *light4);
 
-  INLINE Operation get_operation() const;
+  Operation get_operation() const;
 
-  INLINE int get_num_lights() const;
-  INLINE Light *get_light(int n) const;
+  int get_num_lights() const;
+  Light *get_light(int n) const;
   bool has_light(Light *light) const;
 
-  INLINE CPT(RenderAttrib) add_light(Light *light) const;
-  INLINE CPT(RenderAttrib) remove_light(Light *light) const;
+  CPT(RenderAttrib) add_light(Light *light) const;
+  CPT(RenderAttrib) remove_light(Light *light) const;
+
+
+  // The following is the new, more general interface to the
+  // LightAttrib.
+  static CPT(RenderAttrib) make();
+  static CPT(RenderAttrib) make_all_off();
+
+  INLINE int get_num_on_lights() const;
+  INLINE Light *get_on_light(int n) const;
+  INLINE bool has_on_light(Light *light) const;
+
+  INLINE int get_num_off_lights() const;
+  INLINE Light *get_off_light(int n) const;
+  INLINE bool has_off_light(Light *light) const;
+  INLINE bool has_all_off() const;
 
   INLINE bool is_identity() const;
-  INLINE bool is_all_off() const;
+
+  CPT(RenderAttrib) add_on_light(Light *light) const;
+  CPT(RenderAttrib) remove_on_light(Light *light) const;
+  CPT(RenderAttrib) add_off_light(Light *light) const;
+  CPT(RenderAttrib) remove_off_light(Light *light) const;
 
 public:
   virtual void issue(GraphicsStateGuardianBase *gsg) const;
@@ -78,13 +100,12 @@ protected:
   virtual RenderAttrib *make_default_impl() const;
 
 private:
-  CPT(RenderAttrib) do_add(const LightAttrib *other, Operation op) const;
-  CPT(RenderAttrib) do_remove(const LightAttrib *other, Operation op) const;
-
-private:
-  Operation _operation;
   typedef ov_set< PT(Light) > Lights;
-  Lights _lights;
+  Lights _on_lights, _off_lights;
+  bool _off_all_lights;
+
+  static CPT(RenderAttrib) _empty_attrib;
+  static CPT(RenderAttrib) _all_off_attrib;
 
 public:
   static void register_with_read_factory();

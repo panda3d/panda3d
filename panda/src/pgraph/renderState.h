@@ -89,6 +89,7 @@ PUBLISHED:
   CPT(RenderState) adjust_all_priorities(int adjustment) const;
 
   const RenderAttrib *get_attrib(TypeHandle type) const;
+  int get_override(TypeHandle type) const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level) const;

@@ -569,6 +569,23 @@ get_attrib(TypeHandle type) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_override
+//       Access: Published, Virtual
+//  Description: Looks for a RenderAttrib of the indicated type in the
+//               state, and returns its override value if it is found,
+//               or 0 if it is not.
+////////////////////////////////////////////////////////////////////
+int RenderState::
+get_override(TypeHandle type) const {
+  Attributes::const_iterator ai;
+  ai = _attributes.find(Attribute(type));
+  if (ai != _attributes.end()) {
+    return (*ai)._override;
+  }
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::output
 //       Access: Published, Virtual
 //  Description: 
@@ -842,11 +859,7 @@ issue_delta_modify(const RenderState *other,
       if ((*ai)._attrib != (*bi)._attrib) {
         any_changed = true;
         (*bi)._attrib->issue(gsg);
-
-      } else if ((*bi)._attrib->always_reissue()) {
-        (*bi)._attrib->issue(gsg);
       }
-        
       *result = *bi;
       ++ai;
       ++bi;
@@ -914,7 +927,7 @@ issue_delta_set(const RenderState *other,
     } else {
       // Here is an attribute we have in both.  Issue the new one if
       // it's different.
-      if ((*ai)._attrib != (*bi)._attrib || (*bi)._attrib->always_reissue()) {
+      if ((*ai)._attrib != (*bi)._attrib) {
         (*bi)._attrib->issue(gsg);
       }
       ++ai;
@@ -1020,20 +1033,17 @@ do_compose(const RenderState *other) const {
       ++bi;
       ++result;
     } else {
-      // Here is an attribute we have in both.  Does one override the
-      // other?
+      // Here is an attribute we have in both.  Does A override B?
       const Attribute &a = (*ai);
       const Attribute &b = (*bi);
-      if (a._override < b._override) {
-        // B overrides.
-        *result = *bi;
-
-      } else if (b._override < a._override) {
+      if (b._override < a._override) {
         // A overrides.
         *result = *ai;
 
       } else {
-        // No, they're equivalent, so compose them.
+        // Either they have the same override value, or B is higher.
+        // In either case, the result is the composition of the two,
+        // with B's override value.
         *result = Attribute(a._attrib->compose(b._attrib), b._override);
       }
       ++ai;

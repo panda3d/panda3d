@@ -35,6 +35,8 @@ class NodePathCollection;
 class TextureCollection;
 class FindApproxPath;
 class FindApproxLevelEntry;
+class Light;
+class PolylightNode;
 class Texture;
 class Material;
 class Fog;
@@ -480,6 +482,23 @@ PUBLISHED:
   INLINE float get_sg() const;
   INLINE float get_sb() const;
   INLINE float get_sa() const;
+
+  void set_light(Light *light, int priority = 0);
+  void set_light_off(int priority = 0);
+  void set_light_off(Light *light, int priority = 0);
+  void clear_light();
+  void clear_light(Light *light);
+  bool has_light(Light *light) const;
+  bool has_light_off() const;
+  bool has_light_off(Light *light) const;
+
+  void set_light(PolylightNode *light);
+  void clear_light(PolylightNode *light);
+  bool has_light(PolylightNode *light);
+
+  void set_light(const NodePath &light);
+  void clear_light(const NodePath &light);
+  bool has_light(const NodePath &light);
 
   void set_bin(const string &bin_name, int draw_order, int priority = 0);
   void clear_bin();

@@ -676,12 +676,9 @@ issue_light(const LightAttrib *attrib) {
   bool any_bound = false;
 
   int num_enabled = 0;
-  int num_lights = attrib->get_num_lights();
-  if (attrib->get_operation() == LightAttrib::O_remove) {
-    num_lights = 0;
-  }
-  for (int li = 0; li < num_lights; li++) {
-    Light *light = attrib->get_light(li);
+  int num_on_lights = attrib->get_num_on_lights();
+  for (int li = 0; li < num_on_lights; li++) {
+    Light *light = attrib->get_on_light(li);
     nassertv(light != (Light *)NULL);
 
     num_enabled++;
