@@ -93,6 +93,17 @@ make_bins(EggGroupNode *root_group) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggBinMaker::prepare_node
+//       Access: Public, Virtual
+//  Description: May be overridden in derived classes to perform some
+//               setup work as each node is encountered.  This will be
+//               called once for each node in the egg hierarchy.
+////////////////////////////////////////////////////////////////////
+void EggBinMaker::
+prepare_node(EggNode *) {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggBinMaker::sorts_less
 //       Access: Public, Virtual
 //  Description: May be overridden in derived classes to create
@@ -152,6 +163,8 @@ collect_nodes(EggGroupNode *group) {
   while (i != group->end()) {
     EggNode *node = (*i);
     ++next;
+
+    prepare_node(node);
 
     if (get_bin_number(node) != 0) {
       // Ok, here's a node to be binned.  Add it to the appropriate

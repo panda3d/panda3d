@@ -96,6 +96,14 @@
 //
 // You may also redefine any or all of the following functions:
 //
+// virtual void prepare_node(EggNode *node);
+//
+//    This method is called, once, on each node in the egg hierarchy
+//    as it is visited the first time.  It allows the subclass a
+//    chance to analyze the node or do any other initial processing.
+//    This is a fine opportunity to tag an EggUserData onto the node,
+//    for instance.
+//
 // virtual bool sorts_less(int bin_number, const EggNode *a, const EggNode *b);
 //
 //    Sometimes a simple bin number alone is not enough.  For
@@ -253,6 +261,9 @@ PUBLISHED:
   ~EggBinMaker();
 
   int make_bins(EggGroupNode *root_group);
+
+  virtual void
+  prepare_node(EggNode *node);
 
   virtual int
   get_bin_number(const EggNode *node)=0;

@@ -90,12 +90,13 @@ add_vertex(int vertex) {
   unsigned short short_vertex = vertex;
   nassertv((int)short_vertex == vertex);
 
+  clear_cache();
   CDWriter cdata(_cycler);
   cdata->_vertices.push_back(short_vertex);
 
   if (cdata->_got_minmax) {
     cdata->_min_vertex = min(cdata->_min_vertex, short_vertex);
-    cdata->_max_vertex = max(cdata->_min_vertex, short_vertex);
+    cdata->_max_vertex = max(cdata->_max_vertex, short_vertex);
   }
 }
 
@@ -107,6 +108,7 @@ add_vertex(int vertex) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomPrimitive::
 add_consecutive_vertices(int start, int num_vertices) {
+  clear_cache();
   int end = (start + num_vertices) - 1;
   unsigned short short_start = start;
   unsigned short short_end = end;
@@ -119,7 +121,7 @@ add_consecutive_vertices(int start, int num_vertices) {
 
   if (cdata->_got_minmax) {
     cdata->_min_vertex = min(cdata->_min_vertex, short_start);
-    cdata->_max_vertex = max(cdata->_min_vertex, short_end);
+    cdata->_max_vertex = max(cdata->_max_vertex, short_end);
   }
 }
 
@@ -132,6 +134,7 @@ add_consecutive_vertices(int start, int num_vertices) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomPrimitive::
 close_primitive() {
+  clear_cache();
   int num_vertices_per_primitive = get_num_vertices_per_primitive();
 
   CDWriter cdata(_cycler);
@@ -159,6 +162,7 @@ close_primitive() {
 ////////////////////////////////////////////////////////////////////
 void qpGeomPrimitive::
 clear_vertices() {
+  clear_cache();
   CDWriter cdata(_cycler);
   cdata->_vertices.clear();
   cdata->_lengths.clear();
@@ -174,6 +178,7 @@ clear_vertices() {
 ////////////////////////////////////////////////////////////////////
 PTA_ushort qpGeomPrimitive::
 modify_vertices() {
+  clear_cache();
   CDWriter cdata(_cycler);
   return cdata->_vertices;
 }
@@ -187,6 +192,7 @@ modify_vertices() {
 ////////////////////////////////////////////////////////////////////
 void qpGeomPrimitive::
 set_vertices(PTA_ushort vertices) {
+  clear_cache();
   CDWriter cdata(_cycler);
   cdata->_vertices = vertices;
 }
@@ -205,6 +211,7 @@ set_vertices(PTA_ushort vertices) {
 ////////////////////////////////////////////////////////////////////
 PTA_int qpGeomPrimitive::
 modify_lengths() {
+  clear_cache();
   CDWriter cdata(_cycler);
   return cdata->_lengths;
 }
@@ -223,6 +230,7 @@ modify_lengths() {
 ////////////////////////////////////////////////////////////////////
 void qpGeomPrimitive::
 set_lengths(PTA_int lengths) {
+  clear_cache();
   CDWriter cdata(_cycler);
   cdata->_lengths = lengths;
 }
@@ -565,7 +573,7 @@ recompute_minmax() {
     ++ii;
     while (ii != cdata->_vertices.end()) {
       cdata->_min_vertex = min(cdata->_min_vertex, (*ii));
-      cdata->_max_vertex = max(cdata->_min_vertex, (*ii));
+      cdata->_max_vertex = max(cdata->_max_vertex, (*ii));
       
       ++ii;
     }

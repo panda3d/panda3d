@@ -17,10 +17,39 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "eggBinner.h"
-
+#include "eggRenderState.h"
+#include "eggPrimitive.h"
 #include "eggSwitchCondition.h"
 #include "eggGroup.h"
 #include "dcast.h"
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggBinner::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+EggBinner::
+EggBinner(EggLoader &loader) :
+  _loader(loader)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggBinner::prepare_node
+//       Access: Public, Virtual
+//  Description: May be overridden in derived classes to perform some
+//               setup work as each node is encountered.  This will be
+//               called once for each node in the egg hierarchy.
+////////////////////////////////////////////////////////////////////
+void EggBinner::
+prepare_node(EggNode *node) {
+  if (node->is_of_type(EggPrimitive::get_class_type())) {
+    EggPrimitive *egg_prim = DCAST(EggPrimitive, node);
+    PT(EggRenderState) render_state = new EggRenderState(_loader);
+    render_state->fill_state(egg_prim);
+    egg_prim->set_user_data(render_state);
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggBinner::get_bin_number
@@ -29,7 +58,10 @@
 ////////////////////////////////////////////////////////////////////
 int EggBinner::
 get_bin_number(const EggNode *node) {
-  if (node->is_of_type(EggGroup::get_class_type())) {
+  if (node->is_of_type(EggPrimitive::get_class_type())) {
+    return (int)BN_polyset;
+
+  } else if (node->is_of_type(EggGroup::get_class_type())) {
     const EggGroup *group = DCAST(EggGroup, node);
     if (group->has_lod()) {
       return (int)BN_lod;
@@ -47,36 +79,47 @@ get_bin_number(const EggNode *node) {
 ////////////////////////////////////////////////////////////////////
 bool EggBinner::
 sorts_less(int bin_number, const EggNode *a, const EggNode *b) {
-  assert((BinNumber)bin_number == BN_lod);
+  switch (bin_number) {
+  case BN_polyset:
+    {
+      const EggPrimitive *pa, *pb;
+      DCAST_INTO_R(pa, a, false);
+      DCAST_INTO_R(pb, b, false);
 
-  const EggGroup *ga = DCAST(EggGroup, a);
-  const EggGroup *gb = DCAST(EggGroup, b);
+      // Different vertex pools have to be binned separately.
+      if (pa->get_pool() != pb->get_pool()) {
+        return pa->get_pool() < pb->get_pool();
+      }
+      
+      // Otherwise, different render states are binned separately.
+      const EggRenderState *rsa, *rsb;
+      DCAST_INTO_R(rsa, a->get_user_data(EggRenderState::get_class_type()), false);
+      DCAST_INTO_R(rsb, b->get_user_data(EggRenderState::get_class_type()), false);
+      return (*rsa) < (*rsb);
+    }
 
-  const EggSwitchCondition &swa = ga->get_lod();
-  const EggSwitchCondition &swb = gb->get_lod();
-
-  // For now, this is the only kind of switch condition there is.
-  const EggSwitchConditionDistance &swda =
-    *DCAST(EggSwitchConditionDistance, &swa);
-  const EggSwitchConditionDistance &swdb =
-    *DCAST(EggSwitchConditionDistance, &swb);
-
-  // Group LOD nodes in order by switching center.
-  return (swda._center.compare_to(swdb._center) < 0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggBinner::collapse_group
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-bool EggBinner::
-collapse_group(const EggGroup *group, int) {
-  if (group->get_dart_type() != EggGroup::DT_none) {
-    // A group with the <Dart> flag set means to create a character.
-    // We can't turn the top character node into an LOD.
-    return false;
+  case BN_lod:
+    {
+      const EggGroup *ga = DCAST(EggGroup, a);
+      const EggGroup *gb = DCAST(EggGroup, b);
+      
+      const EggSwitchCondition &swa = ga->get_lod();
+      const EggSwitchCondition &swb = gb->get_lod();
+      
+      // For now, this is the only kind of switch condition there is.
+      const EggSwitchConditionDistance &swda =
+        *DCAST(EggSwitchConditionDistance, &swa);
+      const EggSwitchConditionDistance &swdb =
+        *DCAST(EggSwitchConditionDistance, &swb);
+      
+      // Group LOD nodes in order by switching center.
+      return (swda._center.compare_to(swdb._center) < 0);
+    }
+      
+  case BN_none:
+    break;
   }
 
-  return true;
+  // Shouldn't get here.
+  return false;
 }

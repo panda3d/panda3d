@@ -2593,7 +2593,10 @@ bool DXGraphicsStateGuardian8::
 begin_draw_primitives(const qpGeomVertexData *vertex_data) {
   DO_PSTATS_STUFF(_draw_primitive_pcollector.start());
 
-  GraphicsStateGuardian::begin_draw_primitives(vertex_data);
+  if (!GraphicsStateGuardian::begin_draw_primitives(vertex_data)) {
+    return false;
+  }
+  nassertr(_vertex_data != (qpGeomVertexData *)NULL, false);
 
   const qpGeomVertexFormat *format = _vertex_data->get_format();
 

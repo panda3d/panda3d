@@ -455,25 +455,61 @@ set_data(int array, const qpGeomVertexDataType *data_type,
   switch (data_type->get_numeric_type()) {
   case qpGeomVertexDataType::NT_uint8:
     {
-      nassertv(num_values <= data_type->get_num_values());
-      for (int i = 0; i < num_values; i++) {
+      int i = 0;
+      int min_values = min(num_values, data_type->get_num_values());
+      while (i < min_values) {
         int value = (int)(data[i] * 255.0f);
-        *(unsigned char *)&array_data[element] = value;
+        array_data[element] = value;
         element += 1;
+        ++i;
       }
+      while (i < data_type->get_num_values()) {
+        array_data[element] = 0;
+        element += 1;
+        ++i;
+      }        
     }
     break;
 
   case qpGeomVertexDataType::NT_packed_argb:
     {
-      nassertv(num_values == 4);
-      *(PN_uint32 *)&array_data[element] = pack_argb(data);
+      if (num_values == 4) {
+        *(PN_uint32 *)&array_data[element] = pack_argb(data);
+      } else {
+        // Elevate (or truncate) to 4 components.
+        float data4[4];
+        memset(data4, 0, 4 * sizeof(float));
+        memcpy(data4, data, min(4, num_values) * sizeof(float));
+        *(PN_uint32 *)&array_data[element] = pack_argb(data4);
+      }
     }
     break;
 
   case qpGeomVertexDataType::NT_float:
-    nassertv(num_values == data_type->get_num_values());
-    memcpy(&array_data[element], data, data_type->get_total_bytes());
+    if (num_values == 4 && sizeof(float) == sizeof(PN_float32)) {
+      // The easy way: we can memcpy the data directly in.
+      memcpy(&array_data[element], data, data_type->get_total_bytes());
+
+    } else {
+      // Elevate or truncate to the right number of components.
+      int i = 0;
+      int min_values = min(num_values, data_type->get_num_values());
+      while (i < min_values) {
+        *(PN_float32 *)&array_data[element] = data[i];
+        element += sizeof(PN_float32);
+        ++i;
+      }
+      while (i < data_type->get_num_values()) {
+        if (i == 3 && data_type->get_num_values() == 4) {
+          *(PN_float32 *)&array_data[element] = 1.0f;
+        } else {
+          *(PN_float32 *)&array_data[element] = 0.0f;
+        }
+        element += sizeof(PN_float32);
+        ++i;
+      }
+    }
+      
     break;
   }
 }
@@ -500,25 +536,56 @@ get_data(int array, const qpGeomVertexDataType *data_type,
   switch (data_type->get_numeric_type()) {
   case qpGeomVertexDataType::NT_uint8:
     {
-      nassertv(num_values <= data_type->get_num_values());
-      for (int i = 0; i < num_values; i++) {
+      int i = 0;
+      int min_values = min(num_values, data_type->get_num_values());
+      while (i < min_values) {
         int value = *(unsigned char *)&array_data[element];
         element += 1;
         data[i] = (float)value / 255.0f;
+        ++i;
+      }
+      while (i < num_values) {
+        data[i] = 0.0f;
+        ++i;
       }
     }
     break;
 
   case qpGeomVertexDataType::NT_packed_argb:
     {
-      nassertv(num_values == 4);
-      unpack_argb(data, *(PN_uint32 *)&array_data[element]);
+      if (num_values == 4) {
+        unpack_argb(data, *(PN_uint32 *)&array_data[element]);
+      } else {
+        float data4[4];
+        unpack_argb(data4, *(PN_uint32 *)&array_data[element]);
+        memset(data, 0, num_values * sizeof(float));
+        memcpy(data, data4, min(num_values, 4) * sizeof(float));
+      }
     }
     break;
 
   case qpGeomVertexDataType::NT_float:
-    nassertv(num_values <= data_type->get_num_values());
-    memcpy(data, &array_data[element], num_values * sizeof(PN_float32));
+    if (num_values == data_type->get_num_values() && 
+        sizeof(float) == sizeof(PN_float32)) {
+      memcpy(data, &array_data[element], num_values * sizeof(PN_float32));
+    } else {
+      int i = 0;
+      int min_values = min(num_values, data_type->get_num_values());
+      while (i < min_values) {
+        data[i] = *(PN_float32 *)&array_data[element];
+        element += sizeof(PN_float32);
+        ++i;
+      }
+      while (i < num_values) {
+        if (i == 3 && num_values == 4) {
+          data[i] = 1.0f;
+        } else {
+          data[i] = 0.0f;
+        }
+        ++i;
+      }
+    }
+
     break;
   }
 }

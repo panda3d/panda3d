@@ -39,6 +39,8 @@
 #include "texGenAttrib.h"
 #include "eggTransform3d.h"
 #include "computedVerticesMaker.h"
+#include "qpgeomVertexData.h"
+#include "qpgeomPrimitive.h"
 
 class EggNode;
 class EggBin;
@@ -95,6 +97,9 @@ private:
 
   // This structure is returned by setup_bucket().
   typedef pmap<CPT(InternalName), const EggTexture *> BakeInUVs;
+
+  // This is used by make_primitive().
+  typedef pmap<TypeHandle, PT(qpGeomPrimitive) > Primitives;
   
   void make_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
                         const LMatrix4d &mat);
@@ -108,20 +113,24 @@ private:
   void apply_texture_attributes(Texture *tex, const EggTexture *egg_tex);
   PT(TextureStage) make_texture_stage(const EggTexture *egg_tex);
 
-  CPT(RenderAttrib) get_material_attrib(const EggMaterial *egg_mat,
-                                        bool bface);
-
   void setup_bucket(BuilderBucket &bucket, BakeInUVs &bake_in_uvs,
                     PandaNode *parent, EggPrimitive *egg_prim);
 
   PandaNode *make_node(EggNode *egg_node, PandaNode *parent);
-  PandaNode *make_node(EggPrimitive *egg_prim, PandaNode *parent);
   PandaNode *make_node(EggBin *egg_bin, PandaNode *parent);
+  PandaNode *make_polyset(EggBin *egg_bin, PandaNode *parent);
+  PandaNode *make_lod(EggBin *egg_bin, PandaNode *parent);
   PandaNode *make_node(EggGroup *egg_group, PandaNode *parent);
   PandaNode *create_group_arc(EggGroup *egg_group, PandaNode *parent,
                                    PandaNode *node);
   PandaNode *make_node(EggTable *egg_table, PandaNode *parent);
   PandaNode *make_node(EggGroupNode *egg_group, PandaNode *parent);
+
+  void check_for_polysets(EggGroup *egg_group, bool &all_polysets, 
+                          bool &any_hidden);
+  PT(qpGeomVertexData) make_vertex_data(EggVertexPool *vertex_pool, 
+                                        const LMatrix4d &transform);
+  void make_primitive(EggPrimitive *egg_prim, Primitives &primitives);
 
   void set_portal_polygon(EggGroup *egg_group, PortalNode *pnode);
   EggPolygon *find_first_polygon(EggGroup *egg_group);
@@ -173,11 +182,6 @@ private:
   static TextureStage::CombineOperand
   get_combine_operand(const EggTexture *egg_tex, 
                       EggTexture::CombineChannel channel, int n);
-  static TexGenAttrib::Mode get_tex_gen(const EggTexture *egg_tex);
-
-  static CPT(RenderAttrib)
-  apply_tex_mat(CPT(RenderAttrib) tex_mat_attrib, 
-                TextureStage *stage, const EggTexture *egg_tex);
 
   Builder _builder;
 
@@ -191,6 +195,15 @@ private:
   typedef pset<PandaNode *> Decals;
   Decals _decals;
 
+  class VertexPoolTransform {
+  public:
+    INLINE bool operator < (const VertexPoolTransform &other) const;
+    EggVertexPool *_vertex_pool;
+    LMatrix4d _transform;
+  };
+  typedef pmap<VertexPoolTransform, PT(qpGeomVertexData) > VertexPoolData;
+  VertexPoolData _vertex_pool_data;
+
   DeferredNodes _deferred_nodes;
 
   ComputedVerticesMaker _comp_verts_maker;
@@ -199,7 +212,10 @@ public:
   PT(PandaNode) _root;
   EggData _data;
   bool _error;
+
+  friend class EggRenderState;
 };
 
+#include "eggLoader.I"
 
 #endif

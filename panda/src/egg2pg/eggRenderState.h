@@ -1,0 +1,84 @@
+// Filename: eggRenderState.h
+// Created by:  drose (12Mar05)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef EGGRENDERSTATE_H
+#define EGGRENDERSTATE_H
+
+#include "pandabase.h"
+
+#include "eggUserData.h"
+#include "eggLoader.h"
+#include "renderState.h"
+#include "renderAttrib.h"
+#include "internalName.h"
+#include "luse.h"
+#include "pointerTo.h"
+#include "pvector.h"
+#include "pmap.h"
+
+class EggPrimitive;
+class EggTexture;
+class EggMaterial;
+
+///////////////////////////////////////////////////////////////////
+//       Class : EggRenderState
+// Description : This class is used within this package only to record
+//               the render state that should be assigned to each
+//               primitive.  It is assigned to EggPrimitive objects
+//               via the EggBinner.
+////////////////////////////////////////////////////////////////////
+class EggRenderState : public EggUserData {
+public:
+  INLINE EggRenderState(EggLoader &loader);
+  INLINE void add_attrib(const RenderAttrib *attrib);
+
+  void fill_state(EggPrimitive *egg_prim);
+
+  INLINE bool operator < (const EggRenderState &other) const;
+
+private:
+  CPT(RenderAttrib) get_material_attrib(const EggMaterial *egg_mat,
+                                        bool bface);
+  static TexGenAttrib::Mode get_tex_gen(const EggTexture *egg_tex);
+
+  static CPT(RenderAttrib)
+  apply_tex_mat(CPT(RenderAttrib) tex_mat_attrib, 
+                TextureStage *stage, const EggTexture *egg_tex);
+
+public:
+  CPT(RenderState) _state;
+  bool _hidden;
+
+  typedef EggLoader::BakeInUVs BakeInUVs;
+  typedef EggLoader::TextureDef TextureDef;
+  typedef EggLoader::Materials Materials;
+
+  BakeInUVs _bake_in_uvs;
+
+private:
+  EggLoader &_loader;
+
+  typedef pvector<const TextureDef *> TexMatTextures;
+  typedef pmap<LMatrix3d, TexMatTextures> TexMatTransforms;
+  typedef pmap<CPT(InternalName), TexMatTransforms> TexMats;
+};
+
+#include "eggRenderState.I"
+
+#endif
+

@@ -35,7 +35,8 @@ EggObject() {
 INLINE EggObject::
 EggObject(const EggObject &copy) : 
   TypedReferenceCount(copy),
-  _user_data(copy._user_data)
+  _user_data(copy._user_data),
+  _default_user_data(copy._default_user_data)
 {
 }
 
@@ -49,6 +50,7 @@ INLINE EggObject &EggObject::
 operator = (const EggObject &copy) {
   TypedReferenceCount::operator = (copy);
   _user_data = copy._user_data;
+  _default_user_data = copy._default_user_data;
   return *this;
 }
 
@@ -61,54 +63,102 @@ operator = (const EggObject &copy) {
 //               hold its reference count and return the pointer on
 //               request.
 //
+//               The EggObject maintains multiple different
+//               EggUserData pointers, one for each unique type (as
+//               reported by get_type()).  If you know that only one
+//               type of EggUserData object will be added in your
+//               application, you may use the query functions that
+//               accept no parameters, but it is recommended that in
+//               general you pass in the type of your particular user
+//               data, to allow multiple applications to coexist in
+//               the same egg data.
+//
 //               This pointer is also copied by the copy assignment
 //               operator and copy constructor.
 ////////////////////////////////////////////////////////////////////
 INLINE void EggObject::
 set_user_data(EggUserData *user_data) {
-  _user_data = user_data;
+  _user_data[user_data->get_type()] = user_data;
+  _default_user_data = user_data;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggObject::get_user_data
 //       Access: Public
-//  Description: Returns the user data pointer previously stored on
+//  Description: Returns the user data pointer most recently stored on
 //               this object, or NULL if nothing was previously
 //               stored.
 ////////////////////////////////////////////////////////////////////
 INLINE EggUserData *EggObject::
 get_user_data() const {
-  return _user_data;
+  return _default_user_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggObject::get_user_data
+//       Access: Public
+//  Description: Returns the user data pointer of the indicated type,
+//               if it exists, or NULL if it does not.
+////////////////////////////////////////////////////////////////////
+INLINE EggUserData *EggObject::
+get_user_data(TypeHandle type) const {
+  UserData::const_iterator ui;
+  ui = _user_data.find(type);
+  if (ui != _user_data.end()) {
+    return (*ui).second;
+  }
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggObject::has_user_data
 //       Access: Public
-//  Description: Returns true if the user data pointer has been set,
-//               false otherwise.
+//  Description: Returns true if a generic user data pointer has
+//               recently been set and not yet cleared, false
+//               otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool EggObject::
 has_user_data() const {
-  return !_user_data.is_null();
+  return !_default_user_data.is_null();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggObject::has_user_data
 //       Access: Public
-//  Description: Returns true if the user data pointer has been set
-//               and is of the indicated type, false otherwise.
+//  Description: Returns true if the user data pointer of the
+//               indicated type has been set, false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool EggObject::
 has_user_data(TypeHandle type) const {
-  return !_user_data.is_null() && _user_data->is_of_type(type);
+  UserData::const_iterator ui;
+  ui = _user_data.find(type);
+  return (ui != _user_data.end());
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggObject::clear_user_data
 //       Access: Public
-//  Description: Resets the user data pointer to NULL.
+//  Description: Removes *all* user data pointers from the node.
 ////////////////////////////////////////////////////////////////////
 INLINE void EggObject::
 clear_user_data() {
   _user_data.clear();
+  _default_user_data.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggObject::clear_user_data
+//       Access: Public
+//  Description: Removes the user data pointer of the indicated type.
+////////////////////////////////////////////////////////////////////
+INLINE void EggObject::
+clear_user_data(TypeHandle type) {
+  UserData::iterator ui;
+  ui = _user_data.find(type);
+  if (ui != _user_data.end()) {
+    if ((*ui).second == _default_user_data) {
+      _default_user_data.clear();
+    }
+    _user_data.erase(ui);
+  }
 }

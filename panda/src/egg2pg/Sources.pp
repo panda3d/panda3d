@@ -18,7 +18,8 @@
     config_egg2pg.h \
     deferredNodeProperty.h \
     eggBinner.h \
-    eggLoader.h \
+    eggLoader.h eggLoader.I \
+    eggRenderState.h eggRenderState.I \
     egg_parametrics.h \
     load_egg_file.h \
     loaderFileTypeEgg.h
@@ -31,6 +32,7 @@
     deferredNodeProperty.cxx \
     eggBinner.cxx \
     eggLoader.cxx \
+    eggRenderState.cxx \
     egg_parametrics.cxx \
     load_egg_file.cxx \
     loaderFileTypeEgg.cxx

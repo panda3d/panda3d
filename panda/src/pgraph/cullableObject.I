@@ -114,9 +114,12 @@ INLINE void CullableObject::
 munge_vertices(GraphicsStateGuardianBase *gsg) {
   // Temporary test until the experimental Geom rewrite becomes the
   // actual Geom implementation.
-  if (_geom->is_exact_type(qpGeom::get_class_type())) {
+  if (_geom == (Geom *)NULL || _geom->is_exact_type(qpGeom::get_class_type())) {
     CPT(qpGeomMunger) munger = gsg->get_geom_munger(_state);
     _munged_data = munger->munge_data(((const qpGeom *)_geom.p())->get_vertex_data());
+    if (_next != (CullableObject *)NULL) {
+      _next->munge_vertices(gsg);
+    }
   }
 }
 

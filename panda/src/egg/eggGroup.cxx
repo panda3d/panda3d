@@ -61,9 +61,14 @@ operator = (const EggGroup &copy) {
   EggTransform3d::operator = (copy);
   _flags = copy._flags;
   _flags2 = copy._flags2;
+  _collide_mask = copy._collide_mask;
+  _from_collide_mask = copy._from_collide_mask;
+  _into_collide_mask = copy._into_collide_mask;
+  _billboard_center = copy._billboard_center;
   _object_types = copy._object_types;
   _collision_name = copy._collision_name;
   _fps = copy._fps;
+  _lod = copy._lod;
 
   _tag_data = copy._tag_data;
 

@@ -23,24 +23,32 @@
 
 #include "eggBinMaker.h"
 
+class EggLoader;
+
 ///////////////////////////////////////////////////////////////////
 //       Class : EggBinner
 // Description : A special binner used only within this package to
 //               pre-process the egg tree for the loader and group
 //               things together as appropriate.
 //
-//               Presently, it only groups related LOD children
+//               It is used to collect similar polygons together for a
+//               Geom, as well as to group related LOD children
 //               together under a single LOD node.
 ////////////////////////////////////////////////////////////////////
 class EggBinner : public EggBinMaker {
 public:
-
   // The BinNumber serves to identify why a particular EggBin was
   // created.
   enum BinNumber {
     BN_none = 0,
+    BN_polyset,
     BN_lod,
   };
+
+  EggBinner(EggLoader &loader);
+
+  virtual void
+  prepare_node(EggNode *node);
 
   virtual int
   get_bin_number(const EggNode *node);
@@ -48,8 +56,7 @@ public:
   virtual bool
   sorts_less(int bin_number, const EggNode *a, const EggNode *b);
 
-  virtual bool
-  collapse_group(const EggGroup *group, int bin_number);
+  EggLoader &_loader;
 };
 
 

@@ -174,9 +174,6 @@ operator = (const qpGeomVertexArrayFormat &copy) {
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexArrayFormat::
 ~qpGeomVertexArrayFormat() {
-  // Once registered, these things should not be deallocated.
-  nassertv(!_is_registered);
-
   DataTypes::iterator dti;
   for (dti = _data_types.begin(); dti != _data_types.end(); ++dti) {
     delete (*dti);

@@ -23,6 +23,7 @@
 #include "eggUserData.h"
 #include "typedReferenceCount.h"
 #include "pointerTo.h"
+#include "pmap.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggObject
@@ -39,12 +40,16 @@ PUBLISHED:
 
   INLINE void set_user_data(EggUserData *user_data);
   INLINE EggUserData *get_user_data() const;
+  INLINE EggUserData *get_user_data(TypeHandle type) const;
   INLINE bool has_user_data() const;
   INLINE bool has_user_data(TypeHandle type) const;
   INLINE void clear_user_data();
+  INLINE void clear_user_data(TypeHandle type);
 
 private:
-  PT(EggUserData) _user_data;
+  typedef pmap<TypeHandle, PT(EggUserData) > UserData;
+  UserData _user_data;
+  PT(EggUserData) _default_user_data;
 
 public:
   static TypeHandle get_class_type() {

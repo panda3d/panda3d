@@ -23,6 +23,7 @@
 #include "loaderFileTypeRegistry.h"
 #include "configVariableManager.h"
 #include "configVariableCore.h"
+#include "eggRenderState.h"
 
 ConfigureDef(config_egg2pg);
 NotifyCategoryDef(egg2pg, "");
@@ -153,6 +154,7 @@ init_libegg2pg() {
      "Defines egg syntax for the named object type.",
      ConfigVariableCore::F_dynamic);
 
+  EggRenderState::init_type();
   LoaderFileTypeEgg::init_type();
 
   LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_global_ptr();

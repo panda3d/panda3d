@@ -92,6 +92,12 @@ PUBLISHED:
   // Returns 0 if the pool is empty.
   int get_highest_index() const;
 
+  int get_num_dimensions() const;
+  bool has_normals() const;
+  bool has_colors() const;
+  bool has_uvs() const;
+  void get_uv_names(vector_string &uv_names) const;
+
 public:
   // Can be used to traverse all the vertices in index number order.
   iterator begin() const;

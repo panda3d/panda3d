@@ -547,6 +547,12 @@ reset() {
       << "max texture dimension = " << _max_texture_dimension
       << ", max 3d texture = " << _max_3d_texture_dimension
       << ", max cube map = " << _max_cube_map_dimension << "\n";
+    GLint max_elements_vertices, max_elements_indices;
+    GLP(GetIntegerv)(GL_MAX_ELEMENTS_VERTICES, &max_elements_vertices);
+    GLP(GetIntegerv)(GL_MAX_ELEMENTS_INDICES, &max_elements_indices);
+    GLCAT.debug()
+      << "max_elements_vertices = " << max_elements_vertices
+      << ", max_elements_indices = " << max_elements_indices << "\n";
   }
 
   report_my_gl_errors();
@@ -2020,7 +2026,10 @@ bool CLP(GraphicsStateGuardian)::
 begin_draw_primitives(const qpGeomVertexData *vertex_data) {
   DO_PSTATS_STUFF(_draw_primitive_pcollector.start());
 
-  GraphicsStateGuardian::begin_draw_primitives(vertex_data);
+  if (!GraphicsStateGuardian::begin_draw_primitives(vertex_data)) {
+    return false;
+  }
+  nassertr(_vertex_data != (qpGeomVertexData *)NULL, false);
 
   CPTA_uchar array_data;
   int num_components;

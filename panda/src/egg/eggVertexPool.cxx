@@ -179,6 +179,108 @@ get_highest_index() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggVertexPool::get_num_dimensions
+//       Access: Public
+//  Description: Returns the maximum number of dimensions used by any
+//               vertex in the pool.
+////////////////////////////////////////////////////////////////////
+int EggVertexPool::
+get_num_dimensions() const {
+  int num_dimensions = 0;
+
+  IndexVertices::const_iterator ivi;
+  for (ivi = _index_vertices.begin(); ivi != _index_vertices.end(); ++ivi) {
+    EggVertex *vertex = (*ivi).second;
+    num_dimensions = max(num_dimensions, vertex->get_num_dimensions());
+  }
+
+  return num_dimensions;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertexPool::has_normals
+//       Access: Public
+//  Description: Returns true if any vertex in the pool has a normal
+//               defined, false if none of them do.
+////////////////////////////////////////////////////////////////////
+bool EggVertexPool::
+has_normals() const {
+  IndexVertices::const_iterator ivi;
+  for (ivi = _index_vertices.begin(); ivi != _index_vertices.end(); ++ivi) {
+    EggVertex *vertex = (*ivi).second;
+    if (vertex->has_normal()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertexPool::has_colors
+//       Access: Public
+//  Description: Returns true if any vertex in the pool has a color
+//               defined, false if none of them do.
+////////////////////////////////////////////////////////////////////
+bool EggVertexPool::
+has_colors() const {
+  IndexVertices::const_iterator ivi;
+  for (ivi = _index_vertices.begin(); ivi != _index_vertices.end(); ++ivi) {
+    EggVertex *vertex = (*ivi).second;
+    if (vertex->has_color()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertexPool::has_uvs
+//       Access: Public
+//  Description: Returns true if any vertex in the pool has a uv
+//               defined, false if none of them do.
+////////////////////////////////////////////////////////////////////
+bool EggVertexPool::
+has_uvs() const {
+  IndexVertices::const_iterator ivi;
+  for (ivi = _index_vertices.begin(); ivi != _index_vertices.end(); ++ivi) {
+    EggVertex *vertex = (*ivi).second;
+    if (vertex->has_uv()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertexPool::get_uv_names
+//       Access: Public
+//  Description: Returns the list of UV names that are defined by any
+//               vertices in the pool.  It is the user's
+//               responsibility to clear the vector before calling
+//               this method.
+////////////////////////////////////////////////////////////////////
+void EggVertexPool::
+get_uv_names(vector_string &uv_names) const {
+  pset<string> names;
+  IndexVertices::const_iterator ivi;
+  for (ivi = _index_vertices.begin(); ivi != _index_vertices.end(); ++ivi) {
+    EggVertex *vertex = (*ivi).second;
+    EggVertex::const_uv_iterator uvi;
+    for (uvi = vertex->uv_begin(); uvi != vertex->uv_end(); ++uvi) {
+      names.insert((*uvi)->get_name());
+    }
+  }
+
+  pset<string>::const_iterator si;
+  for (si = names.begin(); si != names.end(); ++si) {
+    uv_names.push_back(*si);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggVertexPool::begin()
 //       Access: Public
 //  Description: Returns an iterator that can be used to traverse
