@@ -35,16 +35,16 @@ enum BamTextureMode {
   BTM_basename,
   BTM_rawdata
 };
-ostream &operator << (ostream &out, BamTextureMode btm);
-istream &operator >> (istream &in, BamTextureMode &btm);
+EXPCL_PANDA ostream &operator << (ostream &out, BamTextureMode btm);
+EXPCL_PANDA istream &operator >> (istream &in, BamTextureMode &btm);
 
 enum AutoTextureScale {
   ATS_none,
   ATS_down,
   ATS_up
 };
-ostream &operator << (ostream &out, AutoTextureScale ats);
-istream &operator >> (istream &in, AutoTextureScale &ats);
+EXPCL_PANDA ostream &operator << (ostream &out, AutoTextureScale ats);
+EXPCL_PANDA istream &operator >> (istream &in, AutoTextureScale &ats);
 
 // Configure variables for gobj package.
 extern EXPCL_PANDA ConfigVariableInt max_texture_dimension;
