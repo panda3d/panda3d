@@ -31,8 +31,8 @@ extract_to_matrix(FLOATNAME(LMatrix3) &m) const {
   yy = _v.data[2] * ys;  yz = _v.data[2] * zs;  zz = _v.data[3] * zs;
 
   m = FLOATNAME(LMatrix3)((1. - (yy + zz)), (xy - wz), (xz + wy),
-			(xy + wz), (1. - (xx + zz)), (yz - wx),
-			(xz - wy), (yz + wx), (1. - (xx + yy)));
+                          (xy + wz), (1. - (xx + zz)), (yz - wx),
+                          (xz - wy), (yz + wx), (1. - (xx + yy)));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -52,9 +52,9 @@ extract_to_matrix(FLOATNAME(LMatrix4) &m) const {
   yy = _v.data[2] * ys;  yz = _v.data[2] * zs;  zz = _v.data[3] * zs;
 
   m = FLOATNAME(LMatrix4)((1. - (yy + zz)), (xy - wz), (xz + wy), 0.,
-			(xy + wz), (1. - (xx + zz)), (yz - wx), 0.,
-			(xz - wy), (yz + wx), (1. - (xx + yy)), 0.,
-			0., 0., 0., 1.);
+                          (xy + wz), (1. - (xx + zz)), (yz - wx), 0.,
+                          (xz - wy), (yz + wx), (1. - (xx + yy)), 0.,
+                          0., 0., 0., 1.);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -125,7 +125,7 @@ get_hpr() const {
   } else {
     // this should work all the time, but the above saves some trig operations
     roll = catan2(-c1, c2);
-	csincos(roll,&sr,&cr);
+    csincos(roll,&sr,&cr);
     roll = rad_2_deg(roll);
     ch = (cr * c3) + (sr * (xz + wy));
     sh = (cr * c4) + (sr * (yz - wx));
@@ -141,7 +141,10 @@ get_hpr() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: set_from_matrix
 //       Access: public
-//  Description: Do-While Jones.
+//  Description: Sets the quaternion according to the rotation
+//               represented by the matrix.  Originally we tried an
+//               algorithm presented by Do-While Jones, but that
+//               turned out to be broken.
 ////////////////////////////////////////////////////////////////////
 void FLOATNAME(LQuaternion)::
 set_from_matrix(const FLOATNAME(LMatrix3) &m) {
@@ -165,41 +168,80 @@ set_from_matrix(const FLOATNAME(LMatrix3) &m) {
     _v.data[2] = (m02 - m20) * S;
     _v.data[3] = (m10 - m01) * S;
   } else {
-    // figure out which column to take as root
+    // Figure out which column to take as root.  We'll choose the
+    // largest so that we get the greatest precision.
     int c = 0;
-    if (cabs(m00) > cabs(m11)) {
-      if (cabs(m00) > cabs(m22))
-	c = 0;
-      else
-	c = 2;
-    } else if (cabs(m11) > cabs(m22))
-      c = 1;
-    else
-      c = 2;
-
     FLOATTYPE S;
 
+    // Define a few handy macros to define the determinant for each
+    // column.  This just saves some needless repetition of the
+    // expressions.
+#define CHOOSE_COLUMN_0 { c = 0; S = 1. + m00 - m11 - m22; }
+#define CHOOSE_COLUMN_1 { c = 1; S = 1. + m11 - m22 - m00; }
+#define CHOOSE_COLUMN_2 { c = 2; S = 1. + m22 - m00 - m11; }
+
+    if (cabs(m00) > cabs(m11)) {
+      if (cabs(m00) > cabs(m22)) {
+        // Column 0 is dominant.
+        CHOOSE_COLUMN_0;
+        if (S == 0.0f) {
+          // When S goes to zero, take the second choice.
+          if (cabs(m11) > cabs(m22)) {
+            CHOOSE_COLUMN_1;
+          } else {
+            CHOOSE_COLUMN_2;
+          }
+        }
+      } else {
+        // Column 2 is dominant.
+        CHOOSE_COLUMN_2;
+        if (S == 0.0f) {
+          // When S goes to zero, take the second choice.
+          CHOOSE_COLUMN_0;
+        }
+      }
+
+    } else if (cabs(m11) > cabs(m22)) {
+      // Column 1 is dominant.
+      CHOOSE_COLUMN_1;
+      if (S == 0.0f) {
+        CHOOSE_COLUMN_2;
+      }
+
+    } else {
+      // Column 2 is dominant.
+      CHOOSE_COLUMN_2;
+      if (S == 0.0f) {
+        CHOOSE_COLUMN_1;
+      }
+    }
+
+#undef CHOOSE_COLUMN_0
+#undef CHOOSE_COLUMN_1
+#undef CHOOSE_COLUMN_2
+
+    S = csqrt(S);
     switch (c) {
     case 0:
-      S = csqrt(1. + m00 - m11 - m22) * 2.;
-      _v.data[0] = (m12 + m21) / S;
-      _v.data[1] = 0.5 / S;
-      _v.data[2] = (m01 + m10) / S;
-      _v.data[3] = (m02 + m20) / S;
+      _v.data[1] = S * 0.5f;
+      S = 0.5f / S;
+      _v.data[2] = (m01 + m10) * S;
+      _v.data[3] = (m02 + m20) * S;
+      _v.data[0] = (m12 - m21) * S;
       break;
     case 1:
-      S = csqrt(1. + m11 - m00 - m22) * 2.;
-      _v.data[0] = (m02 + m20) / S;
-      _v.data[1] = (m01 + m10) / S;
-      _v.data[2] = 0.5 / S;
-      _v.data[3] = (m12 + m21) / S;
+      _v.data[2] = S * 0.5f;
+      S = 0.5f / S;
+      _v.data[3] = (m12 + m21) * S;
+      _v.data[1] = (m10 + m01) * S;
+      _v.data[0] = (m20 - m02) * S;
       break;
     case 2:
-      S = csqrt(1. + m22 - m00 - m11) * 2.;
-      _v.data[0] = (m01 + m10) / S;
-      _v.data[1] = (m02 + m20) / S;
-      _v.data[2] = (m12 + m21) / S;
-      _v.data[3] = 0.5 / S;
+      _v.data[3] = S * 0.5f;
+      S = 0.5f / S;
+      _v.data[1] = (m20 + m02) * S;
+      _v.data[2] = (m21 + m12) * S;
+      _v.data[0] = (m01 - m10) * S;
       break;
     }
   }
