@@ -172,6 +172,12 @@ class State(DirectObject):
         else:
             self.__FSMList.append(FSM)
 
+    def removeChild(self, FSM):
+        """addChild(self, FSM)
+        Add the given FSM to list of child FSMs"""
+        if FSM in self.__FSMList:
+            self.__FSMList.remove(FSM)
+
     def hasChildren(self):
         """hasChildren(self)
         Return true if state has child FSMs"""
