@@ -60,6 +60,15 @@ init_libptloader() {
   }
   initialized = true;
 
+  string units = config_ptloader.GetString("ptloader-units", "feet");
+  if (!units.empty()) {
+    ptloader_units = string_distance_unit(units);
+    if (ptloader_units == DU_invalid) {
+      ptloader_cat->warning()
+        << "Invalid ptloader-units: " << units << "\n";
+    }
+  }
+
   LoaderFileTypePandatool::init_type();
 
   LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_ptr();
@@ -80,12 +89,13 @@ init_libptloader() {
 #endif
   */
 
-  string units = config_ptloader.GetString("ptloader-units", "feet");
-  if (!units.empty()) {
-    ptloader_units = string_distance_unit(units);
-    if (ptloader_units == DU_invalid) {
-      ptloader_cat->warning()
-        << "Invalid ptloader-units: " << units << "\n";
-    }
-  }
+#ifdef HAVE_MAYA
+  // Register the Maya converter as a deferred type.  We don't compile
+  // it in directly, because it's big and bulky; we don't need to
+  // force people to load up libmayaloader (and, along with it, all of
+  // the Maya API libraries) until they actually try to load a Maya
+  // file.
+  reg->register_deferred_type("mb", "mayaloader");
+  reg->register_deferred_type("ma", "mayaloader");
+#endif
 }
