@@ -28,6 +28,21 @@ PolylightEffect() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PolylightEffect::Constructor
+//       Access: Private
+//  Description: Copy Constructor used by the const methods
+//               to modify data on a copy and return a new one
+////////////////////////////////////////////////////////////////////
+INLINE PolylightEffect::
+PolylightEffect(const PolylightEffect &copy) :
+_lightgroup(copy._lightgroup),
+_effect_center(copy._effect_center),
+_contribution_type(copy._contribution_type),
+_weight(copy._weight)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PolylightEffect::get_weight
 //       Access: Published
 //  Description: Get the weight value

@@ -249,10 +249,10 @@ compare_to_impl(const RenderEffect *other) const {
 //               a new effect
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) PolylightEffect::
-add_light(const NodePath &newlight) {
-  _lightgroup.push_back(newlight);
-  return make(_weight,_contribution_type, _effect_center, 
-  _lightgroup);
+add_light(const NodePath &newlight) const {
+  PolylightEffect *effect = new PolylightEffect(*this);
+  effect->_lightgroup.push_back(newlight);
+  return return_new(effect);
 }
 
 
@@ -263,18 +263,17 @@ add_light(const NodePath &newlight) {
 //               effect
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) PolylightEffect::
-remove_light(const NodePath &newlight) {
-
+remove_light(const NodePath &newlight) const {
+  PolylightEffect *effect = new PolylightEffect(*this);
   LIGHTGROUP::iterator light_iter;
-  light_iter = find(_lightgroup.begin(),_lightgroup.end(), newlight); 
-  if(light_iter == _lightgroup.end()) {
+  light_iter = find(effect->_lightgroup.begin(),effect->_lightgroup.end(), newlight); 
+  if(light_iter == effect->_lightgroup.end()) {
     cerr << "Light Not Found!\n";
   } else {
     // Remove light
-    _lightgroup.erase(light_iter);
+    effect->_lightgroup.erase(light_iter);
   }
-  return make(_weight, _contribution_type, _effect_center, 
-  _lightgroup);
+  return return_new(effect);
  
 }
 
@@ -288,9 +287,10 @@ remove_light(const NodePath &newlight) {
 //               Here, we just pass that to the make
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) PolylightEffect::
-set_weight(float w) {
-  return make(w,_contribution_type, _effect_center, 
-  _lightgroup);
+set_weight(float w) const {
+  PolylightEffect *effect = new PolylightEffect(*this);
+  effect->_weight = w;
+  return return_new(effect);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -303,9 +303,10 @@ set_weight(float w) {
 //               Here, we just pass that to the make
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) PolylightEffect::
-set_contrib(Contrib_Type ct) {
-  return make(_weight, ct, _effect_center, 
-  _lightgroup);
+set_contrib(Contrib_Type ct) const {
+  PolylightEffect *effect = new PolylightEffect(*this);
+  effect->_contribution_type = ct;
+  return return_new(effect);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -318,8 +319,9 @@ set_contrib(Contrib_Type ct) {
 //               Here, we just pass that to the make
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) PolylightEffect::
-set_effect_center(LPoint3f ec) {
-  return make(_weight,_contribution_type, ec, 
-  _lightgroup);
+set_effect_center(LPoint3f ec) const{
+  PolylightEffect *effect = new PolylightEffect(*this);
+  effect->_effect_center = ec;
+  return return_new(effect);
 }
 

@@ -50,6 +50,7 @@ PUBLISHED:
 
 private:
   INLINE PolylightEffect();
+  INLINE PolylightEffect(const PolylightEffect &copy);
   Contrib_Type _contribution_type;
   float _weight;
   typedef pvector< NodePath > LIGHTGROUP;
@@ -60,11 +61,11 @@ PUBLISHED:
   static CPT(RenderEffect) make();
   static CPT(RenderEffect) make(float weight, Contrib_Type contrib, LPoint3f effect_center);
   static CPT(RenderEffect) make(float weight, Contrib_Type contrib, LPoint3f effect_center, LIGHTGROUP lights);
-  CPT(RenderEffect) add_light(const NodePath &newlight);
-  CPT(RenderEffect) remove_light(const NodePath &newlight);
-  CPT(RenderEffect) set_weight(float w);
-  CPT(RenderEffect) set_contrib(Contrib_Type c);
-  CPT(RenderEffect) set_effect_center(LPoint3f ec);
+  CPT(RenderEffect) add_light(const NodePath &newlight) const;
+  CPT(RenderEffect) remove_light(const NodePath &newlight) const;
+  CPT(RenderEffect) set_weight(float w) const;
+  CPT(RenderEffect) set_contrib(Contrib_Type c) const;
+  CPT(RenderEffect) set_effect_center(LPoint3f ec) const;
   INLINE float get_weight() const;
   INLINE Contrib_Type get_contrib() const;
   INLINE LPoint3f get_effect_center()const;
