@@ -27,7 +27,7 @@
 ;;;    * There may be an arbitrary number of region specs, though regions are
 ;;;      not allowed to overlap.  If they do, this will be detected and an
 ;;;      error will be thrown.
-;;;    * 'm' is horizontal, 'n' is verticle
+;;;    * 'm' is horizontal, 'n' is vertical
 ;;;
 ;;; The format for a region spec is:
 ;;;      m x n  lower
@@ -37,7 +37,7 @@
 ;;;    * 'Lower left' is the cell index of the lower left corner of the region.
 ;;;    * Cell indexes are 0-based, and start in the lower left corner of the
 ;;;      parent region/window.
-;;;    * 'm' is horizontal, 'n' is verticle
+;;;    * 'm' is horizontal, 'n' is vertical
 ;;;.
 
 ;;;*Public

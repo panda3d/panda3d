@@ -366,13 +366,13 @@ ChanConfig::ChanConfig(GraphicsPipe* pipe, std::string cfg, Node *render,
       sizeX = W.getSizeX();
       sizeY = W.getSizeY();
     } else {
-      // verticle size is defined, compute horizontal keeping the aspect from
+      // vertical size is defined, compute horizontal keeping the aspect from
       // the default
       sizeX = (W.getSizeX() * sizeY) / W.getSizeY();
     }
   }
   if (sizeY < 0) {
-    // horizontal size is defined, compute verticle keeping the aspect from the
+    // horizontal size is defined, compute vertical keeping the aspect from the
     // default
     sizeY = (W.getSizeY() * sizeX) / W.getSizeX();
   }
