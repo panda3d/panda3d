@@ -74,7 +74,11 @@ create_AudioManager() {
       }
     }
   }
-  return (*_create_AudioManager)();
+  PT(AudioManager) am = (*_create_AudioManager)();
+  if (!am->is_valid()) {
+    am = create_NullAudioManger();
+  }
+  return am;
 }
 
 

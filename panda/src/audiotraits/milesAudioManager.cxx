@@ -30,7 +30,7 @@ int MilesAudioManager::_active_managers;
 HDLSFILEID MilesAudioManager::_dls_field;
 
 PT(AudioManager) Create_AudioManager() {
-  audio_debug("Create_AudioManger()");
+  audio_debug("Create_AudioManger() Miles.");
   return new MilesAudioManager();
 }
 
@@ -38,7 +38,7 @@ PT(AudioManager) Create_AudioManager() {
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::MilesAudioManager
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 MilesAudioManager::
 MilesAudioManager() {
@@ -66,8 +66,8 @@ MilesAudioManager() {
       AIL_MSS_version(version, 8);
       audio_debug("  Mss32.dll Version: "<<version);
     #endif //]
-    if (AIL_quick_startup(use_digital, 
-        use_MIDI, audio_output_rate, 
+    if (AIL_quick_startup(use_digital,
+        use_MIDI, audio_output_rate,
         audio_output_bits, audio_output_channels)) {
       if (audio_software_midi) {
         // Load the downloadable sounds file:
@@ -85,7 +85,7 @@ MilesAudioManager() {
           audio_error("  AIL_DLS_load_file() failed, \""<<AIL_last_error()
               <<"\" Switching to hardware midi");
           AIL_quick_shutdown();
-          if (!AIL_quick_startup(use_digital, 1, audio_output_rate, 
+          if (!AIL_quick_startup(use_digital, 1, audio_output_rate,
               audio_output_bits, audio_output_channels)) {
             audio_error("  midi hardware startup failed, "<<AIL_last_error());
             _is_valid = false;
@@ -104,13 +104,13 @@ MilesAudioManager() {
   // either way.
   ++_active_managers;
   audio_debug("  _active_managers="<<_active_managers);
-  assert(is_valid());
+  if (_is_valid) { assert(is_valid()); }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::~MilesAudioManager
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 MilesAudioManager::
 ~MilesAudioManager() {
@@ -137,8 +137,8 @@ MilesAudioManager::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::is_valid
-//       Access: 
-//  Description: 
+//       Access:
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool MilesAudioManager::
 is_valid() {
@@ -162,8 +162,8 @@ is_valid() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::load
-//       Access: 
-//  Description: 
+//       Access:
+//  Description:
 ////////////////////////////////////////////////////////////////////
 HAUDIO MilesAudioManager::
 load(Filename file_name) {
@@ -179,7 +179,7 @@ load(Filename file_name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::get_sound
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PT(AudioSound) MilesAudioManager::
 get_sound(const string& file_name) {
@@ -206,7 +206,7 @@ get_sound(const string& file_name) {
       // Put it in the pool:
       // The following is roughly like: _sounds[path] = audio;
       // But, it gives us an iterator into the map.
-      pair<SoundMap::const_iterator, bool> ib 
+      pair<SoundMap::const_iterator, bool> ib
           =_sounds.insert(pair<string, HAUDIO>(path, audio));
       if (!ib.second) {
         // The insert failed.
@@ -214,7 +214,7 @@ get_sound(const string& file_name) {
         assert(is_valid());
         return 0;
       }
-      // Set si, so that we can get a reference to the path 
+      // Set si, so that we can get a reference to the path
       // for the MilesAudioSound.
       si=ib.first;
     }
@@ -238,7 +238,7 @@ get_sound(const string& file_name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::uncache_sound
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
 uncache_sound(const string& file_name) {
@@ -263,7 +263,7 @@ uncache_sound(const string& file_name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::uncache_a_sound
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
 uncache_a_sound() {
@@ -275,7 +275,7 @@ uncache_a_sound() {
   SoundMap::iterator i = _sounds.find(*path);
   assert(i != _sounds.end());
   _lru.pop_front();
-  
+
   if (i != _sounds.end()) {
     audio_debug("  uncaching \""<<i->first<<"\"");
     AIL_quick_unload(i->second);
@@ -287,7 +287,7 @@ uncache_a_sound() {
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::most_recently_used
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
 most_recently_used(const string& path) {
@@ -306,25 +306,25 @@ most_recently_used(const string& path) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::clear_cache
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
 clear_cache() {
   audio_debug("MilesAudioManager::clear_cache()");
-  assert(is_valid());
+  if (_is_valid) { assert(is_valid()); }
   SoundMap::iterator i=_sounds.begin();
   for (; i!=_sounds.end(); ++i) {
     AIL_quick_unload(i->second);
   }
   _sounds.clear();
   _lru.clear();
-  assert(is_valid());
+  if (_is_valid) { assert(is_valid()); }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::set_cache_limit
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
 set_cache_limit(int count) {
@@ -341,7 +341,7 @@ set_cache_limit(int count) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::get_cache_limit
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int MilesAudioManager::
 get_cache_limit() {
@@ -353,7 +353,7 @@ get_cache_limit() {
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::release_sound
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
 release_sound(MilesAudioSound* audioSound) {
@@ -412,7 +412,7 @@ set_active(bool active) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::get_active
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool MilesAudioManager::
 get_active() {
@@ -427,11 +427,11 @@ get_active() {
 //               'result' from the Windows registry.
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
-get_registry_entry(HKEY base, const char* subKeyName, 
+get_registry_entry(HKEY base, const char* subKeyName,
     const char* keyName, string& result) {
   // Create a key to access the registry:
   HKEY key;
-  long r=RegCreateKeyEx(base, subKeyName, 0, "", 
+  long r=RegCreateKeyEx(base, subKeyName, 0, "",
       REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &key, NULL);
   if (r==ERROR_SUCCESS) {
     DWORD len=0;
@@ -472,7 +472,7 @@ get_registry_entry(HKEY base, const char* subKeyName,
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
 get_gm_file_path(string& result) {
-  get_registry_entry(HKEY_LOCAL_MACHINE, 
+  get_registry_entry(HKEY_LOCAL_MACHINE,
       "SOFTWARE\\Microsoft\\DirectMusic", "GMFilePath", result);
   audio_debug("MilesAudioManager::get_gm_file_path() result out=\""<<result<<"\"");
 }
