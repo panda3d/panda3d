@@ -251,7 +251,12 @@
 // Dinkum STL library that VC7 ships with includes a preliminary
 // implementation that Panda can optionally use.)  For now, we assume
 // you have this by default only on a Windows platform.
-#define HAVE_STL_HASH $[WINDOWS_PLATFORM]
+
+// On second thought, it turns out that this API is still too
+// volatile.  The interface seems to have changed with the next
+// version of .NET, and it didn't present any measureable performance
+// gain anyway.  Never mind.
+#define HAVE_STL_HASH
 
 // Is OpenSSL installed, and where?
 #define SSL_IPATH /usr/local/ssl/include
