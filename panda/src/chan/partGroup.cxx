@@ -99,6 +99,29 @@ get_child(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PartGroup::find_child
+//       Access: Public
+//  Description: Returns the first descendant found with the indicated
+//               name, or NULL if no such descendant exists.
+////////////////////////////////////////////////////////////////////
+PartGroup *PartGroup::
+find_child(const string &name) const {
+  Children::const_iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    PartGroup *child = (*ci);
+    if (child->get_name() == name) {
+      return child;
+    }
+    PartGroup *result = child->find_child(name);
+    if (result != (PartGroup *)NULL) {
+      return result;
+    }
+  }
+
+  return (PartGroup *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PartGroup::get_value_type
 //       Access: Public, Virtual
 //  Description: Returns the TypeHandle associated with the ValueType

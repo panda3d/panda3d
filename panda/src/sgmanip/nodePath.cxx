@@ -1880,6 +1880,84 @@ get_color() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_bin
+//       Access: Public
+//  Description: Assigns the geometry at this level and below to the
+//               named rendering bin.  It is the user's responsibility
+//               to ensure that such a bin already exists, either via
+//               the cull-bin Configrc variable, or by explicitly
+//               creating a GeomBin of the appropriate type at
+//               runtime.
+//
+//               There are two default bins created when Panda is
+//               started: "default" and "fixed".  Normally, all
+//               geometry is assigned to "default" unless specified
+//               otherwise.  This bin renders opaque geometry in
+//               state-sorted order, followed by transparent geometry
+//               sorted back-to-front.  If any geometry is assigned to
+//               "fixed", this will be rendered following all the
+//               geometry in "default", in the order specified by
+//               draw_order for each piece of geometry so assigned.
+//
+//               The draw_order parameter is meaningful only for
+//               GeomBinFixed type bins, e.g. "fixed".  Other kinds of
+//               bins ignore it.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_bin(const string &bin_name, int draw_order, int priority) {
+  nassertv(has_arcs());
+  nassertv(_head != (ArcComponent *)NULL);
+
+  GeomBinTransition *bin_trans = new GeomBinTransition(bin_name, draw_order);
+  _head->_arc->set_transition(bin_trans, priority);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_bin_name
+//       Access: Public
+//  Description: Returns the name of the bin that this particular arc
+//               was assigned to via set_bin(), or the empty string if
+//               no bin was assigned.  See set_bin() and has_bin().
+////////////////////////////////////////////////////////////////////
+string NodePath::
+get_bin_name() const {
+  nassertr(has_arcs(), string());
+  nassertr(_head != (ArcComponent *)NULL, string());
+
+  const GeomBinTransition *bt;
+  if (get_transition_into(bt, _head->_arc)) {
+    if (bt->is_on()) {
+      return bt->get_bin();
+    }
+  }
+
+  return string();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_bin_draw_order
+//       Access: Public
+//  Description: Returns the drawing order associated with the bin
+//               that this particular arc was assigned to via
+//               set_bin(), or 0 if no bin was assigned.  See
+//               set_bin() and has_bin().
+////////////////////////////////////////////////////////////////////
+int NodePath::
+get_bin_draw_order() const {
+  nassertr(has_arcs(), 0);
+  nassertr(_head != (ArcComponent *)NULL, 0);
+
+  const GeomBinTransition *bt;
+  if (get_transition_into(bt, _head->_arc)) {
+    if (bt->is_on()) {
+      return bt->get_draw_order();
+    }
+  }
+
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_texture
 //       Access: Public
 //  Description: Sets the geometry at this level and below to render

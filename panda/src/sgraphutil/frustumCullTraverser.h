@@ -13,6 +13,7 @@
 #include <typeHandle.h>
 #include <geometricBoundingVolume.h>
 #include <graphicsStateGuardian.h>
+#include <arcChain.h>
 
 
 ///////////////////////////////////////////////////////////////////
@@ -28,8 +29,8 @@ public:
   typedef TYPENAME Visitor::TransitionWrapper TransitionWrapper;
   typedef TYPENAME Visitor::AttributeWrapper AttributeWrapper;
 
-  FrustumCullTraverser(Node *root, const LMatrix4f &rel_from_camera,
-		       Visitor &visitor,
+  FrustumCullTraverser(ArcChain &arc_chain, Node *root, 
+		       const LMatrix4f &rel_from_camera, Visitor &visitor,
 		       const AttributeWrapper &initial_render_state,
 		       const LevelState &initial_level_state,
 		       GraphicsStateGuardian *gsg, 
@@ -47,6 +48,7 @@ protected:
 		GeometricBoundingVolume *local_frustum, 
 		bool all_in);
 
+  ArcChain &_arc_chain;
   Visitor &_visitor;
   AttributeWrapper _initial_render_state;
   GraphicsStateGuardian *_gsg;
@@ -57,22 +59,18 @@ protected:
   // coordinate space.  If we are not performing view-frustum culling,
   // this will be a NULL pointer.
   PT(GeometricBoundingVolume) _view_frustum;
-
-  // This is a list of arcs we have passed so we can perform
-  // unambiguous wrt's.
-  typedef vector<NodeRelation *> ArcStack;
-  ArcStack _arc_stack;
 };
 
 // Convenience function.
 template<class Visitor, class AttributeWrapper, class LevelState>
 INLINE void
-fc_traverse(Node *root, const LMatrix4f &rel_from_camera, Visitor &visitor,
+fc_traverse(ArcChain &arc_chain, Node *root, 
+	    const LMatrix4f &rel_from_camera, Visitor &visitor,
 	    const AttributeWrapper &initial_render_state, 
 	    const LevelState &initial_level_state,
 	    GraphicsStateGuardian *gsg, TypeHandle graph_type) {
   FrustumCullTraverser<Visitor, LevelState> 
-    fct(root, rel_from_camera, visitor, initial_render_state, 
+    fct(arc_chain, root, rel_from_camera, visitor, initial_render_state, 
 	initial_level_state, gsg, graph_type);
 }
 

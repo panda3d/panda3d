@@ -57,7 +57,30 @@ get_child(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AnimGroupa::get_value_type
+//     Function: AnimGroup::find_child
+//       Access: Public
+//  Description: Returns the first descendant found with the indicated
+//               name, or NULL if no such descendant exists.
+////////////////////////////////////////////////////////////////////
+AnimGroup *AnimGroup::
+find_child(const string &name) const {
+  Children::const_iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    AnimGroup *child = (*ci);
+    if (child->get_name() == name) {
+      return child;
+    }
+    AnimGroup *result = child->find_child(name);
+    if (result != (AnimGroup *)NULL) {
+      return result;
+    }
+  }
+
+  return (AnimGroup *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimGroup::get_value_type
 //       Access: Public, Virtual
 //  Description: Returns the TypeHandle associated with the ValueType
 //               we are concerned with.  This is provided to allow a

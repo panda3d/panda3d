@@ -15,6 +15,20 @@
 #include <allTransitionsWrapper.h>
 #include <renderRelation.h>
 #include <dataRelation.h>
+#include <transformTransition.h>
+#include <colorMatrixTransition.h>
+#include <alphaTransformTransition.h>
+#include <colorTransition.h>
+#include <textureTransition.h>
+#include <fogTransition.h>
+#include <compose_matrix.h>
+#include <renderModeTransition.h>
+#include <cullFaceTransition.h>
+#include <transparencyTransition.h>
+#include <billboardTransition.h>
+#include <geomBinTransition.h>
+#include <pruneTransition.h>
+#include <namedNode.h>
 
 #include <map>
 
@@ -140,9 +154,8 @@ PUBLISHED:
   NodeRelation *get_arc(int index) const;
 
   Node *get_top_node() const;
-  INLINE Node *get_bottom_node() const;
   INLINE Node *node() const;
-  INLINE NodeRelation *get_bottom_arc() const;
+  INLINE NodeRelation *arc() const;
 
 
   // Methods to manage the disconnected NodePaths that can result if
@@ -380,6 +393,12 @@ PUBLISHED:
   INLINE void clear_color();
   INLINE bool has_color() const;
   Colorf get_color() const;
+
+  void set_bin(const string &bin_name, int draw_order, int priority = 0);
+  INLINE void clear_bin();
+  INLINE bool has_bin() const;
+  string get_bin_name() const;
+  int get_bin_draw_order() const;
   
   void set_texture(Texture *tex, int priority = 0);
   void set_texture_off(int priority = 0);
@@ -431,6 +450,11 @@ PUBLISHED:
   void hide_bounds();
   PT(BoundingVolume) get_bounds() const;
   void write_bounds(ostream &out) const;
+
+  // Deprecated functions.  These will go away soon.
+  INLINE Node *get_bottom_node() const;
+  INLINE NodeRelation *get_bottom_arc() const;
+
 
 public:
   // This is a supporting class for passing the list of arcs to wrt().

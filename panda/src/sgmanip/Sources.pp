@@ -4,7 +4,7 @@
 #begin lib_target
   #define TARGET sgmanip
   #define LOCAL_LIBS \
-    dgraph loader sgraphutil sgattrib sgraph linmath lerp
+    cull dgraph loader sgraphutil sgattrib sgraph linmath lerp
 
   #define SOURCES \
     config_sgmanip.cxx config_sgmanip.h findApproxLevel.I \

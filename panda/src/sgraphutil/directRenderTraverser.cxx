@@ -97,8 +97,8 @@ traverse(Node *root,
     rel_from_camera = LMatrix4f::ident_mat();
   }
 
-  fc_traverse(root, rel_from_camera, *this, render_state, level_state,
-	      _gsg, _graph_type);
+  fc_traverse(_arc_chain, root, rel_from_camera, *this,
+	      render_state, level_state, _gsg, _graph_type);
 
   if (level_state._decal_mode && 
       root->is_of_type(GeomNode::get_class_type())) {

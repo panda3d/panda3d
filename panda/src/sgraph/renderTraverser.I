@@ -108,7 +108,7 @@ get_graph_type() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void RenderTraverser::
 mark_forward_arc(NodeRelation *arc) {
-  _arc_chain.push_back(arc);
+  // This is now done by the FrustumCullTraverser.
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -120,7 +120,5 @@ mark_forward_arc(NodeRelation *arc) {
 ////////////////////////////////////////////////////////////////////
 INLINE void RenderTraverser::
 mark_backward_arc(NodeRelation *arc) {
-  nassertv(!_arc_chain.empty());
-  nassertv(_arc_chain.back() == arc);
-  _arc_chain.pop_back();
+  // This is now done by the FrustumCullTraverser.
 }

@@ -123,6 +123,11 @@ PUBLISHED:
   INLINE bool has_shadow() const;
   INLINE LVecBase2f get_shadow() const;
 
+  INLINE void set_bin(const string &bin);
+  INLINE void clear_bin();
+  INLINE bool has_bin() const;
+  INLINE const string &get_bin() const;
+
   INLINE void set_draw_order(int draw_order);
   INLINE int get_draw_order() const;
 
@@ -235,6 +240,7 @@ private:
   LVector2f _card_ul, _card_lr;
   LVector2f _shadow_offset;
 
+  string _bin;
   int _draw_order;
 
   LMatrix4f _transform;

@@ -555,7 +555,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 render_scene(Node *root, ProjectionNode *projnode,
-         const AllAttributesWrapper &initial_state) {
+	     const AllAttributesWrapper &initial_state) {
 #ifdef GSG_VERBOSE
   _pass_number = 0;
   glgsg_cat.debug()
@@ -584,9 +584,9 @@ render_scene(Node *root, ProjectionNode *projnode,
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 render_subgraph(RenderTraverser *traverser,
-        Node *subgraph, ProjectionNode *projnode,
-        const AllAttributesWrapper &initial_state,
-        const AllTransitionsWrapper &net_trans) {
+		Node *subgraph, ProjectionNode *projnode,
+		const AllAttributesWrapper &initial_state,
+		const AllTransitionsWrapper &net_trans) {
   // Calling activate() frequently seems to be intolerably expensive
   // on some platforms.  We'll limit ourselves for now to calling it
   // only during the clear().
@@ -662,8 +662,8 @@ render_subgraph(RenderTraverser *traverser,
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 render_subgraph(RenderTraverser *traverser, Node *subgraph, 
-        const AllAttributesWrapper &initial_state,
-        const AllTransitionsWrapper &net_trans) {
+		const AllAttributesWrapper &initial_state,
+		const AllTransitionsWrapper &net_trans) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug()
     << "begin subgraph (pass " << ++_pass_number 

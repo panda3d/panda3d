@@ -3,19 +3,6 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-#include <transformTransition.h>
-#include <colorMatrixTransition.h>
-#include <alphaTransformTransition.h>
-#include <colorTransition.h>
-#include <textureTransition.h>
-#include <fogTransition.h>
-#include <compose_matrix.h>
-#include <renderModeTransition.h>
-#include <cullFaceTransition.h>
-#include <transparencyTransition.h>
-#include <billboardTransition.h>
-#include <pruneTransition.h>
-#include <namedNode.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::ForwardIterator::Constructor
@@ -287,13 +274,13 @@ get_num_nodes() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_bottom_node
+//     Function: NodePath::node
 //       Access: Public
 //  Description: Returns the bottom node of the path, or NULL if the
 //               path is empty.
 ////////////////////////////////////////////////////////////////////
 INLINE Node *NodePath::
-get_bottom_node() const {
+node() const {
   if (_head == (ArcComponent *)NULL) {
     // A singleton or empty list.
     return _top_node;
@@ -302,26 +289,13 @@ get_bottom_node() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::node
-//       Access: Public
-//  Description: A synonym of get_bottom_node(), this returns the
-//               bottom node of the path, or NULL if the path is
-//               empty.  It's redefined for brevity because this
-//               function will be called fairly often.
-////////////////////////////////////////////////////////////////////
-INLINE Node *NodePath::
-node() const {
-  return get_bottom_node();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_bottom_arc
+//     Function: NodePath::arc
 //       Access: Public
 //  Description: Returns the bottom arc of the path, or NULL if the
 //               path is empty or is a singleton.
 ////////////////////////////////////////////////////////////////////
 INLINE NodeRelation *NodePath::
-get_bottom_arc() const {
+arc() const {
   if (_head == (ArcComponent *)NULL) {
     // A singleton or empty list.
     return (NodeRelation *)NULL;
@@ -1177,6 +1151,33 @@ has_color() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_bin
+//       Access: Public
+//  Description: Completely removes any bin adjustment that may have
+//               been set via set_bin() from this particular arc.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+clear_bin() {
+  nassertv(has_arcs());
+  nassertv(_head != (ArcComponent *)NULL);
+  _head->_arc->clear_transition(TextureTransition::get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_bin
+//       Access: Public
+//  Description: Returns true if the arc has been assigned to the a
+//               particular rendering bin via set_bin(), false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool NodePath::
+has_bin() const {
+  nassertr(has_arcs(), false);
+  nassertr(_head != (ArcComponent *)NULL, false);
+  return _head->_arc->has_transition(GeomBinTransition::get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::clear_texture
 //       Access: Public
 //  Description: Completely removes any texture adjustment that may
@@ -1448,4 +1449,24 @@ show_collision_solids() {
 INLINE void NodePath::
 hide_collision_solids() {
   find_all_matches("**/+CollisionNode").hide();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_bottom_node
+//       Access: Public
+//  Description: This function is deprecated.  Use node() instead.
+////////////////////////////////////////////////////////////////////
+INLINE Node *NodePath::
+get_bottom_node() const {
+  return node();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_bottom_arc
+//       Access: Public
+//  Description: This function is deprecated.  Use arc() instead.
+////////////////////////////////////////////////////////////////////
+INLINE NodeRelation *NodePath::
+get_bottom_arc() const {
+  return arc();
 }

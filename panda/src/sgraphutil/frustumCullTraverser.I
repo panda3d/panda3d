@@ -18,12 +18,13 @@
 ////////////////////////////////////////////////////////////////////
 template<class Visitor, class LevelState>
 FrustumCullTraverser<Visitor, LevelState>::
-FrustumCullTraverser(Node *root, const LMatrix4f &rel_from_camera,
-		     Visitor &visitor,
+FrustumCullTraverser(ArcChain &arc_chain, Node *root, 
+		     const LMatrix4f &rel_from_camera, Visitor &visitor,
 		     const AttributeWrapper &initial_render_state,
 		     const LevelState &initial_level_state,
 		     GraphicsStateGuardian *gsg, 
 		     TypeHandle graph_type) :
+  _arc_chain(arc_chain),
   _visitor(visitor),
   _initial_render_state(initial_render_state),
   _gsg(gsg),
@@ -64,7 +65,6 @@ FrustumCullTraverser(Node *root, const LMatrix4f &rel_from_camera,
   traverse(root, _initial_render_state, level_state, local_frustum, false);
 
   _view_frustum = NULL;
-  nassertv(_arc_stack.empty());
 }
 
 
@@ -86,7 +86,8 @@ traverse(NodeRelation *arc, AttributeWrapper render_state,
   nassertv(arc->get_child() != (Node *)NULL);
 
   bool carry_on = true;
-  bool pushed_arc_stack = false;
+
+  _arc_chain.push_back(arc);
 
   // First, if we're performing view-frustum culling, check the
   // bounding volume associated with this arc (which bounds all of its
@@ -95,10 +96,6 @@ traverse(NodeRelation *arc, AttributeWrapper render_state,
   if (_view_frustum != (GeometricBoundingVolume *)NULL) {
     // If this arc's child has multiple parents, we need to save the
     // arc on the arc stack, so we can unambiguously wrt().
-    if (arc->get_child()->get_num_parents(_graph_type) > 1) {
-      _arc_stack.push_back(arc);
-      pushed_arc_stack = true;
-    }
 
     if (!all_in) {
       // Now test for intersection with the bounding volume.
@@ -162,7 +159,7 @@ traverse(NodeRelation *arc, AttributeWrapper render_state,
 
 	NodeTransitionWrapper ntw(TransformTransition::get_class_type());
 	wrt(_gsg->get_current_projection_node(),
-	    arc->get_child(), _arc_stack.begin(), _arc_stack.end(),
+	    arc->get_child(), _arc_chain.begin(), _arc_chain.end(),
 	    ntw, _graph_type);
 	
 	const TransformTransition *tt;
@@ -201,9 +198,7 @@ traverse(NodeRelation *arc, AttributeWrapper render_state,
     }
   }
 
-  if (pushed_arc_stack) {
-    _arc_stack.pop_back();
-  }
+  _arc_chain.pop_back();
 }
 
 

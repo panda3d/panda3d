@@ -785,12 +785,70 @@ get_shadow() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_bin
+//       Access: Public
+//  Description: Names the GeomBin that the TextNode geometry should
+//               be assigned to.  If this is set, then a
+//               GeomBinTransition will be created to explicitly place
+//               each component in the named bin.
+//
+//               The draw_order value will also be passed to each
+//               GeomBinTransition as appropriate; this is
+//               particularly useful if this names a GeomBinFixed,
+//               e.g. "fixed".
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_bin(const string &bin) {
+  _bin = bin;
+  rebuild(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::clear_bin
+//       Access: Public
+//  Description: Removes the effect of a previous call to
+//               set_bin().  Text will be drawn in whatever bin
+//               it would like to be drawn in, with no explicit
+//               ordering.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+clear_bin() {
+  _bin = string();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::has_bin
+//       Access: Public
+//  Description: Returns true if an explicit drawing bin has been
+//               set via set_bin(), false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool TextNode::
+has_bin() const {
+  return !_bin.empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::get_bin
+//       Access: Public
+//  Description: Returns the drawing bin set with set_bin(), or empty
+//               string if no bin has been set.
+////////////////////////////////////////////////////////////////////
+INLINE const string &TextNode::
+get_bin() const {
+  return _bin;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_draw_order
 //       Access: Public
 //  Description: Sets the drawing order of text created by the
 //               TextMaker.  This is actually the draw order of the
 //               card and frame.  The shadow is drawn at
 //               _draw_order+1, and the text at _draw_order+2.
+//
+//               This affects the sorting order assigned to the arcs
+//               as they are created, and also is passed to whatever
+//               bin may be assigned via set_bin().
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 set_draw_order(int draw_order) {
@@ -801,7 +859,7 @@ set_draw_order(int draw_order) {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_draw_order
 //       Access: Public
-//  Description: 
+//  Description: Returns the drawing order set with set_draw_order().
 ////////////////////////////////////////////////////////////////////
 INLINE int TextNode::
 get_draw_order() const {

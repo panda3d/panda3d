@@ -36,6 +36,7 @@ public:
 
   int get_num_children() const;
   AnimGroup *get_child(int n) const;
+  AnimGroup *find_child(const string &name) const;
 
   virtual TypeHandle get_value_type() const;
 

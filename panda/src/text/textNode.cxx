@@ -18,6 +18,7 @@
 #include <billboardTransition.h>
 #include <notify.h>
 #include <sceneGraphReducer.h>
+#include <geomBinTransition.h>
 #include <indent.h>
 
 #include <stdio.h>
@@ -309,10 +310,14 @@ write(ostream &out, int indent_level) const {
       << "shadow of color " << _shadow_color << " at " 
       << _shadow_offset << "\n";
   }
+  if (has_bin()) {
+    indent(out, indent_level)
+      << "bin is " << _bin << "\n";
+  }
   indent(out, indent_level)
     << "draw order is " << _draw_order << ", "
     << _draw_order + 1 << ", " << _draw_order + 2 << "\n";
-
+    
   LVecBase3f scale, hpr, trans;
   if (decompose_matrix(_transform, scale, hpr, trans, _coordinate_system)) {
   indent(out, indent_level)
@@ -418,6 +423,11 @@ do_rebuild() {
     }
   }
 
+  if (has_bin()) {
+    text_arc->set_transition
+      (new GeomBinTransition(_bin, _draw_order + 2));
+  }
+
   // Save the bounding-box information about the text in a form
   // friendly to the user.
   _num_rows = num_rows;
@@ -445,6 +455,11 @@ do_rebuild() {
       shadow_arc->set_transition
 	(new TransparencyTransition(TransparencyProperty::M_alpha));
     }
+
+    if (has_bin()) {
+      shadow_arc->set_transition
+	(new GeomBinTransition(_bin, _draw_order + 1));
+    }
   }
 
   if (has_frame()) {
@@ -455,6 +470,11 @@ do_rebuild() {
     if (_frame_color[3] != 1.0) {
       frame_arc->set_transition
 	(new TransparencyTransition(TransparencyProperty::M_alpha));
+    }
+
+    if (has_bin()) {
+      frame_arc->set_transition
+	(new GeomBinTransition(_bin, _draw_order + 1));
     }
   }
 
@@ -472,6 +492,11 @@ do_rebuild() {
     }
     if (has_card_texture()) {
       card_arc->set_transition(new TextureTransition(_card_texture));
+    }
+
+    if (has_bin()) {
+      card_arc->set_transition
+	(new GeomBinTransition(_bin, _draw_order));
     }
   }
   

@@ -4,7 +4,7 @@
 #begin lib_target
   #define TARGET text
   #define LOCAL_LIBS \
-    putil gobj sgattrib graph sgraph linmath sgraphutil pnmimage gsgbase \
+    cull putil gobj sgattrib graph sgraph linmath sgraphutil pnmimage gsgbase \
     mathutil
 
   #define SOURCES \

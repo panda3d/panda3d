@@ -220,8 +220,8 @@ traverse(Node *root,
     rel_from_camera = LMatrix4f::ident_mat();
   }
 
-  fc_traverse(root, rel_from_camera, *this, NullAttributeWrapper(), 
-	      level_state, _gsg, _graph_type);
+  fc_traverse(_arc_chain, root, rel_from_camera, *this,
+	      NullAttributeWrapper(), level_state, _gsg, _graph_type);
 
   if (is_initial) {
     draw();

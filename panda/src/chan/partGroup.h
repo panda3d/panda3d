@@ -53,18 +53,21 @@ public:
   virtual PartGroup *make_copy() const;
   PartGroup *copy_subgraph() const;
 
+PUBLISHED:
   int get_num_children() const;
   PartGroup *get_child(int n) const;
+  PartGroup *find_child(const string &name) const;
 
+  virtual void write(ostream &out, int indent_level) const;
+  virtual void write_with_value(ostream &out, int indent_level) const;
+
+public:
   virtual TypeHandle get_value_type() const;
 
   void sort_descendants();
   bool check_hierarchy(const AnimGroup *anim,
 		       const PartGroup *parent,
 		       int hierarchy_match_flags = 0) const;
-
-  virtual void write(ostream &out, int indent_level) const;
-  virtual void write_with_value(ostream &out, int indent_level) const;
 
   virtual void do_update(PartBundle *root, PartGroup *parent,
 			 bool parent_changed, bool anim_changed);
@@ -99,8 +102,6 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-
-PUBLISHED:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
