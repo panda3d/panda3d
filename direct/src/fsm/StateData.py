@@ -22,44 +22,68 @@ class StateData(DirectObject):
     
     def enter(self):
         """enter(self)
+
+        Enters the StateData.  This makes it active in whatever sense
+        this applies.  Returns true if this is a change (i.e. it was
+        not previously entered), or false if this is the same (i.e. it
+        was already entered).
+
         """
-        # Use isEntered to avoid redundant entry work
-        if self.isEntered == 1:
-            return None
+        if self.isEntered:
+            return 0
+        
+        self.load()
         self.isEntered = 1
-        # Use isLoaded to avoid redundant loading
-        if self.isLoaded == 0:
-            self.load()
         self.notify.debug('enter()')
-        return None
+        return 1
 
     def exit(self):
         """exit(self)
+
+        Exits the StateData.  Returns true if this is a change
+        (i.e. it was previously entered), or false if this is the same
+        (i.e. it was already exited).
         """
-        if self.isEntered == 0:
-            return None
+        if not self.isEntered:
+            return 0
         self.isEntered = 0
         self.notify.debug('exit()')
-        return None
+        return 1
 
     def load(self):
         """load(self)
+
+        Loads the StateData.  This loads whatever assets are needed
+        from disk, and otherwise prepares the StateData for being
+        entered, without actually entering it.  Returns true if this
+        is a change (i.e. it was not already loaded), or false if this
+        is the same (i.e. it was previously loaded).
+        
         """
-        if self.isLoaded == 1:
-            return None
+        if self.isLoaded:
+            return 0
+
         self.isLoaded = 1
         self.notify.debug('load()')
-        return None
+        return 1
 
     def unload(self):
         """unload(self)
+
+        Unloads the StateData.  This frees whatever assets were loaded
+        by load(), and generally makes the memory usage for this thing
+        be as small as possible.  Some StateData-derived classes can
+        load and unload repeatedly; others are useless once they have
+        been unloaded.
+        
         """
-        if self.isLoaded == 0:
-            return None
-        self.isLoaded = 0
+        if not self.isLoaded:
+            return 0
+
         self.exit()
+        self.isLoaded = 0
         self.notify.debug('unload()')
-        return None
+        return 1
 
     def getDoneStatus(self):
         """getDoneStatus(self)
