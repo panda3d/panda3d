@@ -91,14 +91,6 @@
 
 #end lib_target
 
-#begin test_bin_target
-  #define TARGET test_proxy
-
-  #define SOURCES test_proxy.cxx
-  #define LOCAL_LIBS $[LOCAL_LIBS] putil net
-  #define OTHER_LIBS $[OTHER_LIBS] pystub
-#end test_bin_target
-
 // This is a handy file for identifying public certificate authorities
 // (and thus almost any public https server).  It was taken from the
 // OpenSSL distribution; if you need a fresher copy, go get a new one
