@@ -66,6 +66,7 @@ Downloader(void) {
   _tlast = 0.0;
   _got_any_data = false;
   _initiated = false;
+  _ever_initiated = false;
 
 #if defined(WIN32)
   WSAData mydata;
@@ -101,7 +102,7 @@ bool Downloader::
 connect_to_server(const string &name, uint port) {
   if (downloader_cat.is_debug())
     downloader_cat.debug()
-      << "Download connecting to server: " << name << " on port: "
+      << "Downloader connecting to server: " << name << " on port: "
       << port << endl;
 
   _server_name = name;
@@ -118,8 +119,7 @@ connect_to_server(const string &name, uint port) {
     else {
       downloader_cat.error()
         << "Downloader::connect_to_server() - gethostbyname() failed: "
-        //<< strerror(errno) << endl;
- 	<< errno << endl;
+ 	<< handle_socket_error() << endl;
       return false;
     }
   } else
@@ -143,8 +143,7 @@ connect_to_server(void) {
   if (_socket == (int)0xffffffff) {
     downloader_cat.error()
       << "Downloader::connect_to_server() - socket failed: "
-      //<< strerror(errno) << endl;
-      << errno << endl;
+      << handle_socket_error() << endl;
     return false;
   }
 
@@ -153,8 +152,7 @@ connect_to_server(void) {
   if (connect(_socket, (struct sockaddr *)&_sin, sizeof(_sin)) < 0) {
     downloader_cat.error()
       << "Downloader::connect_to_server() - connect() failed: "
-      //<< strerror(errno) << endl;
-      << errno << endl;
+      << handle_socket_error() << endl;
     disconnect_from_server();
     _connected = false;
   }
@@ -171,7 +169,7 @@ void Downloader::
 disconnect_from_server(void) {
   if (downloader_cat.is_debug())
     downloader_cat.debug()
-      << "Download disconnecting from server..." << endl;
+      << "Downloader disconnecting from server..." << endl;
 #if defined(WIN32)
   (void)closesocket(_socket);
 #else
@@ -208,8 +206,8 @@ safe_send(int socket, const char *data, int length, long timeout) {
       return SS_timeout;
     } else if (sret == -1) {
       downloader_cat.error()
-        //<< "Downloader::safe_send() - error: " << strerror(errno) << endl;
-        << "Downloader::safe_send() - error: " << errno << endl;
+        << "Downloader::safe_send() - error: " << handle_socket_error() 
+        << endl;
       return SS_error;
     }
     int ret = send(socket, data, length, 0);
@@ -217,8 +215,8 @@ safe_send(int socket, const char *data, int length, long timeout) {
       bytes += ret;
     else {
       downloader_cat.error()
-        //<< "Downloader::safe_send() - error: " << strerror(errno) << endl;
-        << "Downloader::safe_send() - error: " << errno << endl;
+        << "Downloader::safe_send() - error: " << handle_socket_error() 
+        << endl;
       return SS_error;
     }
   }
@@ -253,38 +251,22 @@ fast_receive(int socket, DownloadStatus *status, int rec_size) {
   } else if (sret == -1) {
     downloader_cat.error()
       << "Downloader::fast_receive() - select() error: " 
-      //<< strerror(errno) << endl;
-      << errno << endl;
+      << handle_socket_error() << endl;
     return FR_error;
   }
   int ret = recv(socket, status->_next_in, rec_size, 0);
   if (ret == 0) {
     return FR_eof;
   } else if (ret == -1) {
-#if defined(WIN32_VC)
-    int err = WSAGetLastError();
-    if (err == 0) {
-      if (downloader_cat.is_debug())
-	downloader_cat.debug()
-	  << "Downloader::fast_receive() - recv() error = 0" << endl;
-      return FR_no_data;
-    } else {
-      downloader_cat.error()
-        << "Downloader::fast_receive() - recv() error: " 
-        << err << endl;
-      return FR_error;
-    }
-#else
     downloader_cat.error()
       << "Downloader::fast_receive() - recv() error: " 
-      << errno << endl;
+      << handle_socket_error() << endl;
     return FR_error;
-#endif
   }
   if (downloader_cat.is_debug())
     downloader_cat.debug()
-      << "Downloader::fast_receive() - recv() got: " << ret << " bytes"
-      << endl;
+      << "Downloader::fast_receive() - recv() requested: " << rec_size
+      << " got: " << ret << " bytes" << endl;
   status->_next_in += ret;
   status->_bytes_in_buffer += ret;
   status->_total_bytes += ret;
@@ -332,7 +314,7 @@ initiate(const string &file_name, Filename file_dest,
     result = file_dest.open_write(_dest_stream);
   if (result == false) {
     downloader_cat.error()
-      << "Downloader::download() - Error opening file: " << file_dest
+      << "Downloader::initiate() - Error opening file: " << file_dest
       << " for writing" << endl;
     return DS_error_write;
   }
@@ -346,7 +328,7 @@ initiate(const string &file_name, Filename file_dest,
   if (partial_content == true) {
     if (downloader_cat.is_debug())
       downloader_cat.debug()
-        << "Downloader::download() - Requesting byte range: " << first_byte
+        << "Downloader::initiate() - Requesting byte range: " << first_byte
         << "-" << last_byte << endl;
     request += "\012Range: bytes=";
     stringstream start_stream;
@@ -357,7 +339,7 @@ initiate(const string &file_name, Filename file_dest,
   int outlen = request.size();
   if (downloader_cat.is_debug())
     downloader_cat.debug()
-      << "Downloader::download() - Sending request:\n" << request << endl;
+      << "Downloader::initiate() - Sending request:\n" << request << endl;
   int send_ret = safe_send(_socket, request.c_str(), outlen,
                         (long)downloader_timeout);
 
@@ -380,6 +362,7 @@ initiate(const string &file_name, Filename file_dest,
   _tlast = 0.0;
   _got_any_data = false;
   _initiated = true;
+  _ever_initiated = true;
   return DS_success;
 }
 
@@ -472,17 +455,33 @@ run(void) {
   }
 
   // Attempt to receive the bytes from the socket
-  int repeat = 1;
-  if (_receive_size > MAX_RECEIVE_BYTES) {
-    repeat += (int)(_receive_size / MAX_RECEIVE_BYTES);
-  }
   int fret;
-  for (int i = 0; i < repeat; i++) {
+  // Handle the case of a fast connection
+  if (_receive_size > MAX_RECEIVE_BYTES) {
+    int repeat = (int)(_receive_size / MAX_RECEIVE_BYTES);
+    int remain = (int)fmod((double)_receive_size, (double)MAX_RECEIVE_BYTES);
+    if (downloader_cat.is_debug())
+      downloader_cat.debug()
+        << "Downloader::run() - fast connection - repeat: " << repeat 
+        << " remain: " << remain << endl;
+    // Make multiple requests at once but do not exceed MAX_RECEIVE_BYTES
+    // for any single request
+    for (int i = 0; i <= repeat; i++) {
+      if (i < repeat)
+        fret = fast_receive(_socket, _current_status, MAX_RECEIVE_BYTES);
+      else if (remain > 0)
+        fret = fast_receive(_socket, _current_status, remain);
+      if (fret == FR_eof || fret < 0) {
+	break;
+      } else if (fret == FR_success) {
+        _got_any_data = true;
+      }
+    }
+  } else { // Handle the normal speed connection case
+    if (downloader_cat.is_debug())
+      downloader_cat.debug()
+        << "Downloader::run() - normal connection" << endl;
     fret = fast_receive(_socket, _current_status, _receive_size);
-    if (fret == FR_eof || fret < 0)
-      break;
-    else if (fret == FR_success)
-      _got_any_data = true;
   }
   _tlast = _clock.get_real_time();
 
@@ -502,13 +501,13 @@ run(void) {
       if (downloader_cat.is_debug())
 	downloader_cat.debug()
 	  << "Downloader::run() - Got 0 bytes" << endl;
-      return DS_ok;
+      return ret;
     }
   } else if (fret == FR_no_data) {
     if (downloader_cat.is_debug())
       downloader_cat.debug()
 	<< "Downloader::run() - No data" << endl;
-      return DS_ok;
+      return ret;
   } else if (fret < 0) {
     return DS_error;
   }
@@ -740,4 +739,53 @@ reset(void) {
   _start = _buffer;
   _next_in = _start;
   _bytes_in_buffer = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Downloader::handle_socket_error
+//       Access: Private
+//  Description:
+////////////////////////////////////////////////////////////////////
+char *Downloader::
+handle_socket_error(void) const {
+#ifndef WIN32_VC
+  return strerror(errno);
+#else
+  switch (WSAGetLastError()) {
+    case 10022:
+      return "An invalid argument was supplied";
+    case 10036:
+      return "A blocking operation is currently executing";
+    case 10040:
+      return "Message was larger than internal buffer or network limit";
+    case 10050:
+      return "Network dead";
+    case 10051:
+      return "Network unreachable";
+    case 10052:
+      return "Connection broken because keep-alive detected a failure";
+    case 10053:
+      return "Connection aborted by local host software";
+    case 10054:
+      return "Connection closed by remote host";
+    case 10055:
+      return "Out of buffer space or queue overflowed";
+    case 10057:
+      return "Socket was not connected";
+    case 10058:
+      return "Socket was previously shut down";
+    case 10060:
+      return "Connection timed out";
+    case 10061:
+      return "Connection refused by remote host";
+    case 10064:
+      return "Remote host is down";
+    case 10065:
+      return "Remote host is unreachable";
+    case 10093:
+      return "WSAStartup() was not called";
+    default:
+      return "Unknown WSA error";
+  }
+#endif
 }

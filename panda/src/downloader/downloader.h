@@ -93,6 +93,7 @@ private:
   bool write_to_disk(DownloadStatus *status);
 
   void cleanup(void);
+  char *handle_socket_error(void) const;
 
 private:
   bool _connected;
@@ -101,6 +102,7 @@ private:
   struct sockaddr_in _sin;
 
   bool _initiated;
+  bool _ever_initiated;
   PT(Buffer) _buffer;
   int _disk_write_frequency;
   float _frequency;

@@ -102,7 +102,7 @@ get_bytes_written(void) const {
 ////////////////////////////////////////////////////////////////////
 INLINE float Downloader::
 get_bytes_per_second(void) const {
-  if (_initiated == false) {
+  if (_ever_initiated == false) {
     downloader_cat.warning()
       << "Downloader::get_bytes_per_second() - Download has not been "
       << "initiated" << endl;
