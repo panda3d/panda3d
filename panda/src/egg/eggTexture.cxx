@@ -30,7 +30,7 @@ EggTexture(const string &tref_name, const string &filename)
   _magfilteralpha = FT_unspecified;
   _magfiltercolor = FT_unspecified;
   _env_type = ET_unspecified;
-  _has_transform = false;
+  _flags = 0;
   _transform = LMatrix3d::ident_mat();
 }
 
@@ -63,7 +63,7 @@ operator = (const EggTexture &copy) {
   _magfilteralpha = copy._magfilteralpha;
   _magfiltercolor = copy._magfiltercolor;
   _env_type = copy._env_type;
-  _has_transform = copy._has_transform;
+  _flags = copy._flags;
   _transform = copy._transform;
 
   return *this;
@@ -78,7 +78,7 @@ operator = (const EggTexture &copy) {
 void EggTexture::
 write(ostream &out, int indent_level) const {
   write_header(out, indent_level, "<Texture>");
-  enquote_string(out, get_fullpath(), indent_level + 2) << "\n";
+  enquote_string(out, get_filename(), indent_level + 2) << "\n";
 
   if (get_format() != F_unspecified) {
     indent(out, indent_level + 2)
@@ -123,6 +123,13 @@ write(ostream &out, int indent_level) const {
   if (get_env_type() != ET_unspecified) {
     indent(out, indent_level + 2)
       << "<Scalar> envtype { " << get_env_type() << " }\n";
+  }
+
+  if (has_alpha_file()) {
+    indent(out, indent_level + 2)
+      << "<Scalar> alpha-file { ";
+    enquote_string(out, get_alpha_file());
+    out << " }\n";
   }
 
   EggAlphaMode::write(out, indent_level + 2);
@@ -172,22 +179,25 @@ write(ostream &out, int indent_level) const {
 bool EggTexture::
 is_equivalent_to(const EggTexture &other, int eq) const {
   if ((eq & E_complete_filename) == E_complete_filename) {
-    if (get_fullpath() != other.get_fullpath()) {
+    if (get_filename() != other.get_filename()) {
       return false;
     }
   } else {
+    const Filename &a = get_filename();
+    const Filename &b = other.get_filename();
+
     if (eq & E_basename) {
-      if (get_basename_wo_extension() != other.get_basename_wo_extension()) {
+      if (a.get_basename_wo_extension() != b.get_basename_wo_extension()) {
 	return false;
       }
     }
     if (eq & E_extension) {
-      if (get_extension() != other.get_extension()) {
+      if (a.get_extension() != b.get_extension()) {
 	return false;
       }
     }
     if (eq & E_dirname) {
-      if (get_dirname() != other.get_dirname()) {
+      if (a.get_dirname() != b.get_dirname()) {
 	return false;
       }
     }
@@ -198,7 +208,7 @@ is_equivalent_to(const EggTexture &other, int eq) const {
       return false;
     }
     
-    if (_has_transform && other._has_transform) {
+    if (has_transform() && other.has_transform()) {
       if (!_transform.almost_equal(other._transform, 0.0001)) {
 	return false;
       }
@@ -243,23 +253,26 @@ is_equivalent_to(const EggTexture &other, int eq) const {
 bool EggTexture::
 sorts_less_than(const EggTexture &other, int eq) const {
   if ((eq & E_complete_filename) == E_complete_filename) {
-    if (get_fullpath() != other.get_fullpath()) {
-      return get_fullpath() < other.get_fullpath();
+    if (get_filename() != other.get_filename()) {
+      return get_filename() < other.get_filename();
     }
   } else {
+    const Filename &a = get_filename();
+    const Filename &b = other.get_filename();
+
     if (eq & E_basename) {
-      if (get_basename_wo_extension() != other.get_basename_wo_extension()) {
-	return get_basename_wo_extension() < other.get_basename_wo_extension();
+      if (a.get_basename_wo_extension() != b.get_basename_wo_extension()) {
+	return a.get_basename_wo_extension() < b.get_basename_wo_extension();
       }
     }
     if (eq & E_extension) {
-      if (get_extension() != other.get_extension()) {
-	return get_extension() < other.get_extension();
+      if (a.get_extension() != b.get_extension()) {
+	return a.get_extension() < b.get_extension();
       }
     }
     if (eq & E_dirname) {
-      if (get_dirname() != other.get_dirname()) {
-	return get_dirname() < other.get_dirname();
+      if (a.get_dirname() != b.get_dirname()) {
+	return a.get_dirname() < b.get_dirname();
       }
     }
   }
@@ -271,7 +284,7 @@ sorts_less_than(const EggTexture &other, int eq) const {
       return (int)is_identity < (int)other_is_identity;
     }
 
-    if (_has_transform && other._has_transform) {
+    if (has_transform() && other.has_transform()) {
       int compare = _transform.compare_to(other._transform);
       if (compare != 0) {
 	return compare < 0;

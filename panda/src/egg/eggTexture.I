@@ -5,39 +5,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::Assignment operator
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE EggTexture &EggTexture::
-operator = (const string &filename) {
-  EggFilenameNode::operator = (filename);
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::Assignment operator
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE EggTexture &EggTexture::
-operator = (const char *filename) {
-  EggFilenameNode::operator = (filename);
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::Assignment operator
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE EggTexture &EggTexture::
-operator = (const Filename &filename) {
-  EggFilenameNode::operator = (filename);
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::set_format
 //       Access: Public
 //  Description: 
@@ -254,7 +221,7 @@ get_env_type() const {
 INLINE void EggTexture::
 set_transform(const LMatrix3d &transform) {
   _transform = transform;
-  _has_transform = true;
+  _flags |= F_has_transform;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -265,7 +232,7 @@ set_transform(const LMatrix3d &transform) {
 INLINE void EggTexture::
 clear_transform() {
   _transform = LMatrix3d::ident_mat();
-  _has_transform = false;
+  _flags &= ~F_has_transform;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -277,7 +244,7 @@ clear_transform() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool EggTexture::
 has_transform() const {
-  return _has_transform;
+  return (_flags & F_has_transform) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -287,7 +254,7 @@ has_transform() const {
 ////////////////////////////////////////////////////////////////////
 INLINE LMatrix3d EggTexture::
 get_transform() const {
-  nassertr(_has_transform, LMatrix3d::ident_mat());
+  nassertr(has_transform(), LMatrix3d::ident_mat());
   return _transform;
 }
 
@@ -301,8 +268,74 @@ get_transform() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool EggTexture::
 transform_is_identity() const {
-  return (!_has_transform || 
+  return (!has_transform() || 
 	  _transform.almost_equal(LMatrix3d::ident_mat(), 0.0001));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::set_alpha_file
+//       Access: Public
+//  Description: Specifies a separate file that will be loaded in with
+//               the 1- or 3-component texture and applied as the
+//               alpha channel.  This is useful when loading textures
+//               from file formats that do not support alpha, for
+//               instance jpg.
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+set_alpha_file(const Filename &alpha_file) {
+  _alpha_file = alpha_file;
+  _flags |= F_has_alpha_file;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::clear_alpha_file
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+clear_alpha_file() {
+  _alpha_file = Filename();
+  _flags &= ~F_has_alpha_file;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::has_alpha_file
+//       Access: Public
+//  Description: Returns true if a separate file for the alpha
+//               component has been applied, false otherwise.  See
+//               set_alpha_file().
+////////////////////////////////////////////////////////////////////
+INLINE bool EggTexture::
+has_alpha_file() const {
+  return (_flags & F_has_alpha_file) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::get_alpha_file
+//       Access: Public
+//  Description: Returns the separate file assigned for the alpha
+//               channel.  It is an error to call this unless
+//               has_alpha_file() returns true.  See set_alpha_file().
+////////////////////////////////////////////////////////////////////
+INLINE const Filename &EggTexture::
+get_alpha_file() const {
+  nassertr(has_alpha_file(), _alpha_file);
+  return _alpha_file;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::update_alpha_file
+//       Access: Public
+//  Description: Returns a modifiable reference to the separate file
+//               assigned for the alpha channel.  If an alpha file has
+//               not yet been added, this adds an empty one.
+////////////////////////////////////////////////////////////////////
+INLINE Filename &EggTexture::
+update_alpha_file() {
+  if (!has_alpha_file()) {
+    set_alpha_file(Filename());
+  }
+  return _alpha_file;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -323,5 +356,4 @@ INLINE bool UniqueEggTextures::
 operator ()(const EggTexture *t1, const EggTexture *t2) const {
   return t1->sorts_less_than(*t2, _eq);
 }
-
 

@@ -83,7 +83,7 @@ public:
   EggTexture *find_tref(const string &tref_name) const;
 
   // Find a texture with a particular filename.
-  EggTexture *find_filename(const string &filename) const;
+  EggTexture *find_filename(const Filename &filename) const;
 
 private:
   Textures _textures;

@@ -18,18 +18,21 @@
 //               the egg file was loaded in.  It is a base class for
 //               EggTexture and EggExternalReference.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEGG EggFilenameNode : public EggNode, public Filename {
+class EXPCL_PANDAEGG EggFilenameNode : public EggNode {
 public:
   INLINE EggFilenameNode();
-  INLINE EggFilenameNode(const string &node_name, const string &filename);
+  INLINE EggFilenameNode(const string &node_name, const Filename &filename);
   INLINE EggFilenameNode(const EggFilenameNode &copy);
   INLINE EggFilenameNode &operator = (const EggFilenameNode &copy);
 
-  INLINE EggFilenameNode &operator = (const string &filename);
-  INLINE EggFilenameNode &operator = (const char *filename);
-  INLINE EggFilenameNode &operator = (const Filename &copy);
-
   virtual string get_default_extension() const;
+
+  INLINE const Filename &get_filename() const;
+  INLINE void set_filename(const Filename &filename);
+  INLINE Filename &update_filename();
+
+private:
+  Filename _filename;
 
 public:
   static TypeHandle get_class_type() {

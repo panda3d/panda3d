@@ -153,11 +153,19 @@ resolve_filenames(const DSearchPath &searchpath) {
        ci != _children.end();
        ++ci) {
     EggNode *child = *ci;
-    if (child->is_of_type(EggFilenameNode::get_class_type())) {
-      EggFilenameNode *filename = DCAST(EggFilenameNode, child);
+    if (child->is_of_type(EggTexture::get_class_type())) {
+      EggTexture *tex = DCAST(EggTexture, child);
+      tex->update_filename().
+	resolve_filename(searchpath, tex->get_default_extension());
+      if (tex->has_alpha_file()) {
+	tex->update_alpha_file().
+	  resolve_filename(searchpath, tex->get_default_extension());
+      }
 
-      filename->resolve_filename(searchpath, 
-				 filename->get_default_extension());
+    } else if (child->is_of_type(EggFilenameNode::get_class_type())) {
+      EggFilenameNode *fnode = DCAST(EggFilenameNode, child);
+      fnode->update_filename().
+	resolve_filename(searchpath, fnode->get_default_extension());
 
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
       DCAST(EggGroupNode, child)->resolve_filenames(searchpath);
@@ -386,20 +394,21 @@ r_resolve_externals(const DSearchPath &searchpath,
 
       // Replace the reference with an empty group node.  When we load
       // the external file successfully, we'll put its contents here.
+      Filename filename = ref->get_filename();
       EggGroupNode *new_node = 
-	new EggGroupNode(ref->get_basename_wo_extension());
+	new EggGroupNode(filename.get_basename_wo_extension());
       replace(ci, new_node);
-
-      if (!EggData::resolve_egg_filename(*ref, searchpath)) {
+      
+      if (!EggData::resolve_egg_filename(filename, searchpath)) {
 	egg_cat.error()
-	  << "Could not locate " << ref->get_fullpath() << " in "
+	  << "Could not locate " << filename << " in "
 	  << searchpath << "\n";
       } else {
 	// Now define a new EggData structure to hold the external
 	// reference, and load it.
 	EggData ext_data;
 	ext_data.set_coordinate_system(coordsys);
-	if (ext_data.read(*ref)) {
+	if (ext_data.read(filename)) {
 	  // The external file was read correctly.  Add its contents
 	  // into the tree at this point.
 	  success =
@@ -408,7 +417,7 @@ r_resolve_externals(const DSearchPath &searchpath,
 	  new_node->steal_children(ext_data);
 	}
       }
-
+	
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
       EggGroupNode *group_child = DCAST(EggGroupNode, child);
       success =

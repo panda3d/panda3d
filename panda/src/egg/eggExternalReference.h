@@ -21,10 +21,6 @@ public:
   EggExternalReference(const EggExternalReference &copy);
   EggExternalReference &operator = (const EggExternalReference &copy);
 
-  INLINE EggExternalReference &operator = (const string &filename);
-  INLINE EggExternalReference &operator = (const char *filename);
-  INLINE EggExternalReference &operator = (const Filename &copy);
-
   virtual void write(ostream &out, int indent_level) const;
 
   virtual string get_default_extension() const;

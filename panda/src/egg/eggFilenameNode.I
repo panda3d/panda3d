@@ -19,8 +19,10 @@ EggFilenameNode() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE EggFilenameNode::
-EggFilenameNode(const string &node_name, const string &filename) : 
-  EggNode(node_name), Filename(filename) {
+EggFilenameNode(const string &node_name, const Filename &filename) : 
+  EggNode(node_name),
+  _filename(filename)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -30,7 +32,9 @@ EggFilenameNode(const string &node_name, const string &filename) :
 ////////////////////////////////////////////////////////////////////
 INLINE EggFilenameNode::
 EggFilenameNode(const EggFilenameNode &copy) :
-  EggNode(copy), Filename(copy) {
+  EggNode(copy),
+  _filename(copy._filename)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -41,40 +45,36 @@ EggFilenameNode(const EggFilenameNode &copy) :
 INLINE EggFilenameNode &EggFilenameNode::
 operator = (const EggFilenameNode &copy) {
   EggNode::operator = (copy);
-  Filename::operator = (copy);
+  _filename = copy._filename;
   return *this;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggFilenameNode::Assignment operator
+//     Function: EggFilenameNode::get_filename
+//       Access: Public
+//  Description: Returns a nonmodifiable reference to the filename.
+////////////////////////////////////////////////////////////////////
+INLINE const Filename &EggFilenameNode::
+get_filename() const {
+  return _filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggFilenameNode::set_filename
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE EggFilenameNode &EggFilenameNode::
-operator = (const string &filename) {
-  Filename::operator = (filename);
-  return *this;
+INLINE void EggFilenameNode::
+set_filename(const Filename &filename) {
+  _filename = filename;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggFilenameNode::Assignment operator
+//     Function: EggFilenameNode::update_filename
 //       Access: Public
-//  Description: 
+//  Description: Returns a modifiable reference to the filename.
 ////////////////////////////////////////////////////////////////////
-INLINE EggFilenameNode &EggFilenameNode::
-operator = (const char *filename) {
-  Filename::operator = (filename);
-  return *this;
+INLINE Filename &EggFilenameNode::
+update_filename() {
+  return _filename;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggFilenameNode::Assignment operator
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE EggFilenameNode &EggFilenameNode::
-operator = (const Filename &filename) {
-  Filename::operator = (filename);
-  return *this;
-}
-

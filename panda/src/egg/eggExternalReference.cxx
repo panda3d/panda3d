@@ -52,7 +52,7 @@ operator = (const EggExternalReference &copy) {
 void EggExternalReference::
 write(ostream &out, int indent_level) const {
   write_header(out, indent_level, "<File>");
-  enquote_string(out, get_fullpath(), indent_level + 2) << "\n";
+  enquote_string(out, get_filename(), indent_level + 2) << "\n";
   indent(out, indent_level) << "}\n";
 }
 

@@ -24,10 +24,6 @@ public:
   EggTexture(const string &tref_name, const string &filename);
   EggTexture(const EggTexture &copy);
   EggTexture &operator = (const EggTexture &copy);
-
-  INLINE EggTexture &operator = (const string &filename);
-  INLINE EggTexture &operator = (const char *filename);
-  INLINE EggTexture &operator = (const Filename &copy);
  
   virtual void write(ostream &out, int indent_level) const;
 
@@ -100,18 +96,30 @@ public:
   INLINE LMatrix3d get_transform() const;
   INLINE bool transform_is_identity() const;
 
+  INLINE void set_alpha_file(const Filename &filename);
+  INLINE void clear_alpha_file();
+  INLINE bool has_alpha_file() const;
+  INLINE const Filename &get_alpha_file() const;
+  INLINE Filename &update_alpha_file();
+
   static Format string_format(const string &string);
   static WrapMode string_wrap_mode(const string &string);
   static FilterType string_filter_type(const string &string);
   static EnvType string_env_type(const string &string);
 
 private:
+  enum Flags {
+    F_has_transform   = 0x0001,
+    F_has_alpha_file  = 0x0002
+  };
+
   Format _format;
   WrapMode _wrap_mode, _wrap_u, _wrap_v;
   FilterType _minfilter, _magfilter, _magfilteralpha, _magfiltercolor;
   EnvType _env_type;
-  bool _has_transform;
+  int _flags;
   LMatrix3d _transform;
+  Filename _alpha_file;
 
 
 public:

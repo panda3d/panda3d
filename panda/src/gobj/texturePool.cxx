@@ -71,6 +71,9 @@ ns_load_texture(Filename filename, Filename grayfilename) {
   filename.resolve_filename(get_texture_path());
   filename.resolve_filename(get_model_path());
 
+  grayfilename.resolve_filename(get_texture_path());
+  grayfilename.resolve_filename(get_model_path());
+
   Textures::const_iterator ti;
   ti = _textures.find(filename);
   if (ti != _textures.end()) {

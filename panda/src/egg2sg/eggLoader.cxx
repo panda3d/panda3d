@@ -505,7 +505,13 @@ load_textures() {
 ////////////////////////////////////////////////////////////////////
 bool EggLoader::
 load_texture(TextureDef &def, const EggTexture *egg_tex) {
-  Texture *tex = TexturePool::load_texture(egg_tex->get_fullpath());
+  Texture *tex;
+  if (egg_tex->has_alpha_file()) {
+    tex = TexturePool::load_texture(egg_tex->get_filename(),
+				    egg_tex->get_alpha_file());
+  } else {
+    tex = TexturePool::load_texture(egg_tex->get_filename());
+  }
   if (tex == (Texture *)NULL) {
     return false;
   }
@@ -529,7 +535,7 @@ load_texture(TextureDef &def, const EggTexture *egg_tex) {
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
 apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
-  tex->set_name(egg_tex->get_fullpath().c_str());
+  tex->set_name(egg_tex->get_filename().get_fullpath());
 
   switch (egg_tex->determine_wrap_u()) {
   case EggTexture::WM_repeat:

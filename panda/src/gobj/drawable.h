@@ -65,8 +65,6 @@ public:
 		  WriteableConfigurable::get_class_type(),
 		  BoundedObject::get_class_type());
   }
-
-PUBLISHED: // Temporary kludge around ffi bug
   virtual TypeHandle get_type() const {
     return get_class_type();
   }

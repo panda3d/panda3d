@@ -28,6 +28,7 @@
 #include "eggData.h"
 
 #include <string_utils.h>
+#include <filename.h>
 #include <luse.h>
 #include <lmatrix.h>
 #include <coordinateSystem.h>
@@ -266,7 +267,7 @@ texture:
 	TEXTURE required_name '{' required_string
 {
   string tref_name = $2;
-  string filename = $4;
+  Filename filename = $4;
   EggTexture *texture = new EggTexture(tref_name, filename);
 
   if (textures.find(tref_name) != textures.end()) {
@@ -306,6 +307,7 @@ texture_body:
     } else {
       texture->set_format(f);
     }
+
   } else if (cmp_nocase_uh(name, "wrap") == 0) {
     EggTexture::WrapMode w = EggTexture::string_wrap_mode(strval);
     if (w == EggTexture::WM_unspecified) {
@@ -313,6 +315,7 @@ texture_body:
     } else {
       texture->set_wrap_mode(w);
     }
+
   } else if (cmp_nocase_uh(name, "wrapu") == 0) {
     EggTexture::WrapMode w = EggTexture::string_wrap_mode(strval);
     if (w == EggTexture::WM_unspecified) {
@@ -320,6 +323,7 @@ texture_body:
     } else {
       texture->set_wrap_u(w);
     }
+
   } else if (cmp_nocase_uh(name, "wrapv") == 0) {
     EggTexture::WrapMode w = EggTexture::string_wrap_mode(strval);
     if (w == EggTexture::WM_unspecified) {
@@ -327,6 +331,7 @@ texture_body:
     } else {
       texture->set_wrap_v(w);
     }
+
   } else if (cmp_nocase_uh(name, "minfilter") == 0) {
     EggTexture::FilterType f = EggTexture::string_filter_type(strval);
     if (f == EggTexture::FT_unspecified) {
@@ -334,6 +339,7 @@ texture_body:
     } else {
       texture->set_minfilter(f);
     }
+
   } else if (cmp_nocase_uh(name, "magfilter") == 0) {
     EggTexture::FilterType f = EggTexture::string_filter_type(strval);
     if (f == EggTexture::FT_unspecified) {
@@ -341,6 +347,7 @@ texture_body:
     } else {
       texture->set_magfilter(f);
     }
+
   } else if (cmp_nocase_uh(name, "magfilteralpha") == 0) {
     EggTexture::FilterType f = EggTexture::string_filter_type(strval);
     if (f == EggTexture::FT_unspecified) {
@@ -348,6 +355,7 @@ texture_body:
     } else {
       texture->set_magfilteralpha(f);
     }
+
   } else if (cmp_nocase_uh(name, "magfiltercolor") == 0) {
     EggTexture::FilterType f = EggTexture::string_filter_type(strval);
     if (f == EggTexture::FT_unspecified) {
@@ -355,6 +363,7 @@ texture_body:
     } else {
       texture->set_magfiltercolor(f);
     }
+
   } else if (cmp_nocase_uh(name, "envtype") == 0) {
     EggTexture::EnvType e = EggTexture::string_env_type(strval);
     if (e == EggTexture::ET_unspecified) {
@@ -362,6 +371,7 @@ texture_body:
     } else {
       texture->set_env_type(e);
     }
+
   } else if (cmp_nocase_uh(name, "alpha") == 0) {
     EggAlphaMode::AlphaMode a = EggAlphaMode::string_alpha_mode(strval);
     if (a == EggAlphaMode::AM_unspecified) {
@@ -369,8 +379,13 @@ texture_body:
     } else {
       texture->set_alpha_mode(a);
     }
+
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
     texture->set_draw_order(value);
+
+  } else if (cmp_nocase_uh(name, "alpha_file") == 0) {
+    texture->set_alpha_file(strval);
+
   } else {
     eggyywarning("Unsupported texture scalar: " + name);
   }
@@ -450,7 +465,7 @@ external_reference:
 	EXTERNAL_FILE optional_name '{' required_string '}'
 {
   string node_name = $2;
-  string filename = $4;
+  Filename filename = $4;
   EggExternalReference *ref = new EggExternalReference(node_name, filename);
   $$ = ref;
 }
@@ -460,7 +475,7 @@ external_reference:
     eggyyerror("keyword 'group' expected");
   }
   string node_name = $3;
-  string filename = $5;
+  Filename filename = $5;
   EggExternalReference *ref = new EggExternalReference(node_name, filename);
   $$ = ref;
 }
@@ -1463,8 +1478,9 @@ primitive_texture_body:
   } else {
     // The texture already existed.  Use it.
     texture = (*vpi).second;
-    if (!(filename == texture->get_fullpath())) {
-      eggyywarning("Using previous path: " + texture->get_fullpath());
+    if (filename != texture->get_filename()) {
+      eggyywarning(string("Using previous path: ") + 
+		   texture->get_filename().get_fullpath());
     }
   }
 

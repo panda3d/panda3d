@@ -24,7 +24,7 @@ get_textures_by_filename(const EggNode *node, EggTextureFilenames &result) {
 
     if (prim->has_texture()) {
       PT(EggTexture) tex = prim->get_texture();
-      result[tex->get_fullpath()].insert(tex);
+      result[tex->get_filename()].insert(tex);
     }
 
   } else if (node->is_of_type(EggGroupNode::get_class_type())) {

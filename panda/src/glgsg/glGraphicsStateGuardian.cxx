@@ -702,11 +702,20 @@ draw_point(const GeomPoint *geom) {
   Geom::TexCoordIterator ti = geom->make_texcoord_iterator();
   Geom::ColorIterator ci = geom->make_color_iterator();
 
+  GeomIssuer::IssueColor *issue_color;
+
+  if (!_color_transform_enabled && !_alpha_transform_enabled) {
+    issue_color = issue_color_gl;
+  }
+  else {
+    issue_color = issue_transformed_color_gl;
+  }
+
   GeomIssuer issuer(geom, this,
 		    issue_vertex_gl,
 		    issue_normal_gl,
 		    issue_texcoord_gl,
-		    issue_color_gl);
+		    issue_color);
 
   // Draw overall
   issuer.issue_color(G_OVERALL, ci);
@@ -748,11 +757,20 @@ draw_line(const GeomLine* geom) {
   Geom::VertexIterator vi = geom->make_vertex_iterator();
   Geom::ColorIterator ci = geom->make_color_iterator();
 
+  GeomIssuer::IssueColor *issue_color;
+
+  if (!_color_transform_enabled && !_alpha_transform_enabled) {
+    issue_color = issue_color_gl;
+  }
+  else {
+    issue_color = issue_transformed_color_gl;
+  }
+
   GeomIssuer issuer(geom, this,
                     issue_vertex_gl,
                     issue_normal_gl,
                     issue_texcoord_gl,
-                    issue_color_gl);
+                    issue_color);
 
   if (geom->get_binding(G_COLOR) == G_PER_VERTEX) {
     call_glShadeModel(GL_SMOOTH);
@@ -799,11 +817,20 @@ draw_linestrip(const GeomLinestrip* geom) {
   Geom::VertexIterator vi = geom->make_vertex_iterator();
   Geom::ColorIterator ci = geom->make_color_iterator();
 
+  GeomIssuer::IssueColor *issue_color;
+
+  if (!_color_transform_enabled && !_alpha_transform_enabled) {
+    issue_color = issue_color_gl;
+  }
+  else {
+    issue_color = issue_transformed_color_gl;
+  }
+
   GeomIssuer issuer(geom, this,
                     issue_vertex_gl,
                     issue_normal_gl,
                     issue_texcoord_gl,
-                    issue_color_gl);
+                    issue_color);
 
   if (geom->get_binding(G_COLOR) == G_PER_VERTEX) {
     call_glShadeModel(GL_SMOOTH);
@@ -1154,12 +1181,20 @@ draw_polygon(const GeomPolygon *geom) {
   Geom::TexCoordIterator ti = geom->make_texcoord_iterator();
   Geom::ColorIterator ci = geom->make_color_iterator();
 
+  GeomIssuer::IssueColor *issue_color;
+
+  if (!_color_transform_enabled && !_alpha_transform_enabled) {
+    issue_color = issue_color_gl;
+  }
+  else {
+    issue_color = issue_transformed_color_gl;
+  }
 
   GeomIssuer issuer(geom, this,
 		    issue_vertex_gl,
 		    issue_normal_gl,
 		    issue_texcoord_gl,
-		    issue_color_gl);
+		    issue_color);
 
   // If we have per-vertex colors or normals, we need smooth shading.
   // Otherwise we want flat shading for performance reasons.

@@ -443,7 +443,7 @@ find_tref(const string &tref_name) const {
 //               NULL if no texture matches.
 ////////////////////////////////////////////////////////////////////
 EggTexture *EggTextureCollection::
-find_filename(const string &filename) const {
+find_filename(const Filename &filename) const {
   // This requires a complete linear traversal, not terribly
   // efficient.
   OrderedTextures::const_iterator oti;
@@ -451,7 +451,7 @@ find_filename(const string &filename) const {
        oti != _ordered_textures.end(); 
        ++oti) {
     EggTexture *tex = (*oti);
-    if (tex->get_fullpath() == filename) {
+    if (tex->get_filename() == filename) {
       return tex;
     }
   }
