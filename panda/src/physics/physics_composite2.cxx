@@ -1,0 +1,13 @@
+
+#include "actorNode.cxx"
+#include "angularEulerIntegrator.cxx"
+#include "angularForce.cxx"
+#include "angularIntegrator.cxx"
+#include "angularVectorForce.cxx"
+#include "baseForce.cxx"
+#include "baseIntegrator.cxx"
+#include "forceNode.cxx"
+#include "physical.cxx"
+#include "physicalNode.cxx"
+#include "physicsManager.cxx"
+#include "physicsObject.cxx"
