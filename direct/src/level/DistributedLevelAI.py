@@ -61,6 +61,7 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
             self.removeAutosaveTask()
         self.destroyLevel()
         self.ignoreAll()
+        self.air.deallocateZone(self.zoneId)
         DistributedObjectAI.DistributedObjectAI.delete(self)
 
     def initializeLevel(self, levelSpec):
@@ -107,8 +108,9 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         if hasattr(self, 'allToonsGoneBarrier'):
             self.ignoreBarrier(self.allToonsGoneBarrier)
             del self.allToonsGoneBarrier
+        for avId in self.avIdList:
+            self.ignore(self.air.getAvatarExitEvent(avId))
         self.requestDelete()
-        self.air.deallocateZone(self.zoneId)
 
     def createEntityCreator(self):
         """Create the object that will be used to create Entities.
