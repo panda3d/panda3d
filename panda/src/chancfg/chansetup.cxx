@@ -16,19 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "chancfg_headers.h"
-#endif
-
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "chansetup.h"
 #include "chanparse.h"
 #include "chanshare.h"
-
 #include <notify.h>
-#endif
 
 SetupType* SetupDB = (SetupType*)0;
 

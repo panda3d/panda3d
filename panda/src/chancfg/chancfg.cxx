@@ -16,18 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "chancfg_headers.h"
-#endif
-
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "chancfg.h"
 #include <notify.h>
-#endif
-
-#include <algorithm>
 #include <displayRegion.h>
 #include <graphicsChannel.h>
 #include <hardwareChannel.h>
@@ -39,6 +29,7 @@
 #include <dSearchPath.h>
 #include <dconfig.h>
 #include <filename.h>
+#include <algorithm>
 
 Configure(chanconfig);
 
