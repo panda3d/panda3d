@@ -42,6 +42,10 @@ ConfigureFn(config_showbase) {
 
 static CollisionTraverser *collision_traverser = NULL;
 
+// Default channel config
+std::string chan_config = "single";
+std::string window_title = "Panda3D";
+
 void render_frame(GraphicsPipe *pipe,
 		  NodeAttributes &initial_state) {
   int num_windows = pipe->get_num_windows();
@@ -140,7 +144,11 @@ PT(GraphicsWindow) make_graphics_window(GraphicsPipe *pipe,
   override.setField(ChanCfgOverrides::Mask,
 		    ((unsigned int)(W_DOUBLE|W_DEPTH|W_MULTISAMPLE)));
 
-  main_win = ChanConfig(pipe, "single", camera, render, override);
+  std::string title = config_showbase.GetString("window-title", window_title);
+  override.setField(ChanCfgOverrides::Title, title);
+
+  std::string conf = config_showbase.GetString("chan-config", chan_config);
+  main_win = ChanConfig(pipe, conf, camera, render, override);
   assert(main_win != (GraphicsWindow*)0L);
 
   DisplayCallback *dcb = new DisplayCallback(pipe, render, &initial_state);
