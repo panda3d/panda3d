@@ -3,7 +3,7 @@
 
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
-#define USE_PACKAGES mesa
+#define USE_PACKAGES mesa cg cggl
 
 #begin lib_target
   #define TARGET mesadisplay
