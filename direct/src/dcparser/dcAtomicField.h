@@ -63,9 +63,11 @@ public:
     ElementType();
     bool set_default_value(double num);
     bool set_default_value(const string &str);
-    void set_default_value_literal(const string &str);
+    bool set_default_value_literal(const string &str);
 
     bool add_default_value(double num);
+    bool add_default_value(const string &str);
+    bool add_default_value_literal(const string &str);
     bool end_array();
 
     DCSubatomicType _type;

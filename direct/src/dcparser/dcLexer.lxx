@@ -388,6 +388,11 @@ REALNUM          ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   return KW_BLOB;
 }
 
+"int8array" {
+  accept();
+  return KW_INT8ARRAY;
+}
+
 "int16array" {
   accept();
   return KW_INT16ARRAY;
@@ -396,6 +401,11 @@ REALNUM          ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
 "int32array" {
   accept();
   return KW_INT32ARRAY;
+}
+
+"uint8array" {
+  accept();
+  return KW_UINT8ARRAY;
 }
 
 "uint16array" {

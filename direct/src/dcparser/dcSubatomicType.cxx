@@ -54,11 +54,17 @@ operator << (ostream &out, DCSubatomicType type) {
   case ST_blob:
     return out << "blob";
 
+  case ST_int8array:
+    return out << "int8array";
+
   case ST_int16array:
     return out << "int16array";
 
   case ST_int32array:
     return out << "int32array";
+
+  case ST_uint8array:
+    return out << "uint8array";
 
   case ST_uint16array:
     return out << "uint16array";

@@ -59,8 +59,10 @@ dc_cleanup_parser() {
 %token KW_FLOAT64
 %token KW_STRING
 %token KW_BLOB
+%token KW_INT8ARRAY
 %token KW_INT16ARRAY
 %token KW_INT32ARRAY
+%token KW_UINT8ARRAY
 %token KW_UINT16ARRAY
 %token KW_UINT32ARRAY
 
@@ -218,7 +220,9 @@ atomic_element_definition:
 }
         | atomic_element_definition '=' HEX_STRING
 {
-  atomic_element.set_default_value($3);
+  if (!atomic_element.set_default_value_literal($3)) {
+    yyerror("Invalid default hex string value");
+  }
 }
         | atomic_element_definition '=' '{' default_array '}'
 {
@@ -258,6 +262,18 @@ default_array_element:
     yyerror("Invalid default value: " + $<str>1);
   }
 }
+        | STRING
+{
+  if (!atomic_element.add_default_value($1)) {
+    yyerror("Invalid default value: " + $<str>1);
+  }
+}
+        | HEX_STRING
+{
+  if (!atomic_element.add_default_value_literal($1)) {
+    yyerror("Invalid hex literal in default array");
+  }
+}
         | INTEGER '*' INTEGER
 {
   for (int i = 0; i < $3; i++) {
@@ -272,6 +288,15 @@ default_array_element:
   for (int i = 0; i < $3; i++) {
     if (!atomic_element.add_default_value($1)) {
       yyerror("Invalid default value: " + $<str>1);
+      break;
+    }
+  }
+}
+        | HEX_STRING '*' INTEGER
+{
+  for (int i = 0; i < $3; i++) {
+    if (!atomic_element.add_default_value_literal($1)) {
+      yyerror("Invalid hex literal in default array");
       break;
     }
   }
@@ -323,6 +348,10 @@ type_token:
 {
   $$ = ST_blob;
 }
+        | KW_INT8ARRAY
+{
+  $$ = ST_int8array;
+}
         | KW_INT16ARRAY
 {
   $$ = ST_int16array;
@@ -330,6 +359,10 @@ type_token:
         | KW_INT32ARRAY
 {
   $$ = ST_int32array;
+}
+        | KW_UINT8ARRAY
+{
+  $$ = ST_uint8array;
 }
         | KW_UINT16ARRAY
 {

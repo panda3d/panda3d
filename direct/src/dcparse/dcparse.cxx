@@ -40,7 +40,7 @@ main(int argc, char *argv[]) {
   }
 
   long hash = file.get_hash();
-  cout << "File hash is " << hash << "\n";
+  cerr << "File hash is " << hash << "\n";
 
   return (0);
 }

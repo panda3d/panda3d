@@ -49,6 +49,12 @@ enum DCSubatomicType {
   ST_uint16array,
   ST_uint32array,
 
+  ST_int8array,
+  ST_uint8array,
+
+  // New additions should be added at the end to prevent the file hash
+  // code from changing.
+
   ST_invalid
 };
 END_PUBLISH

@@ -66,15 +66,18 @@ ElementType() {
 bool DCAtomicField::ElementType::
 set_default_value(double num) {
   switch (_type) {
-  case ST_int16array:
-  case ST_uint16array:
-  case ST_int32array:
-  case ST_uint32array:
-  case ST_blob:
-    // These array types don't take numbers.
-    return false;
-  default:
+    // Only fields of these types accept numbers.
+  case ST_int8:
+  case ST_int16:
+  case ST_int32:
+  case ST_uint8:
+  case ST_uint16:
+  case ST_uint32:
+  case ST_float64:
     break;
+
+  default:
+    return false;
   }
 
   string formatted;
@@ -98,23 +101,12 @@ set_default_value(double num) {
 ////////////////////////////////////////////////////////////////////
 bool DCAtomicField::ElementType::
 set_default_value(const string &str) {
-  switch (_type) {
-  case ST_int16array:
-  case ST_uint16array:
-  case ST_int32array:
-  case ST_uint32array:
-    // These array types don't take strings.
-    return false;
-  default:
-    break;
-  }
-
-  string formatted;
-  if (!format_default_value(str, formatted)) {
+  if (_type != ST_string && _type != ST_blob) {
+    // Only fields of type string or blob accept quoted strings.
     return false;
   }
 
-  _default_value = formatted;
+  _default_value = str;
   _has_default_value = true;
   return true;
 }
@@ -125,10 +117,11 @@ set_default_value(const string &str) {
 //  Description: Explicitly sets the default value to the given
 //               pre-formatted string.
 ////////////////////////////////////////////////////////////////////
-void DCAtomicField::ElementType::
+bool DCAtomicField::ElementType::
 set_default_value_literal(const string &str) {
   _default_value = str;
   _has_default_value = true;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -152,6 +145,46 @@ add_default_value(double num) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::ElementType::add_default_value
+//       Access: Public
+//  Description: Appends the indicated value as the next array element
+//               value for the default value for this type.
+//
+//               Returns true if the element type reasonably accepts a
+//               default value of numeric type, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCAtomicField::ElementType::
+add_default_value(const string &str) {
+  string formatted;
+  if (!format_default_value(str, formatted)) {
+    return false;
+  }
+
+  _default_value += formatted;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::ElementType::add_default_value_literal
+//       Access: Public
+//  Description: Appends the indicated value as the next array element
+//               value for the default value for this type.
+//
+//               Returns true if the element type reasonably accepts a
+//               default value of numeric type, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCAtomicField::ElementType::
+add_default_value_literal(const string &str) {
+  if (_type != ST_blob) {
+    // Only blobs can have literal hex strings nested within arrays.
+    return false;
+  }
+
+  _default_value += str;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::ElementType::end_array
 //       Access: Public
 //  Description: Called by the parser after a number of calls to
@@ -161,20 +194,14 @@ add_default_value(double num) {
 bool DCAtomicField::ElementType::
 end_array() {
   switch (_type) {
+  case ST_int8array:
   case ST_int16array:
-  case ST_uint16array:
   case ST_int32array:
+  case ST_uint8array:
+  case ST_uint16array:
   case ST_uint32array:
   case ST_blob:
-    {
-      // We've accumulated all the elements of the array; now we must
-      // prepend the array length.
-      int length = _default_value.length();
-      _default_value =
-        string(1, (char)(length & 0xff)) +
-        string(1, (char)((length >> 8) & 0xff)) +
-        _default_value;
-    }
+    // These types accept arrays.
     return true;
 
   default:
@@ -198,6 +225,8 @@ format_default_value(double num, string &formatted) const {
   switch (_type) {
   case ST_int8:
   case ST_uint8:
+  case ST_int8array:
+  case ST_uint8array:
   case ST_blob:
     formatted = string(1, (char)(int_value & 0xff));
     break;
@@ -375,12 +404,42 @@ get_element_divisor(int n) const {
 //               valid if has_element_default() returns true, in which
 //               case this string represents the bytes that should be
 //               assigned to the field as a default value.
+//
+//               If the element is an array-type element, the returned
+//               value will include the two-byte length preceding the
+//               array data.
 ////////////////////////////////////////////////////////////////////
 string DCAtomicField::
 get_element_default(int n) const {
   nassertr(has_element_default(n), string());
   nassertr(n >= 0 && n < (int)_elements.size(), string());
-  return _elements[n]._default_value;
+
+  string default_value = _elements[n]._default_value;
+
+  switch (_elements[n]._type) {
+  case ST_int8array:
+  case ST_int16array:
+  case ST_int32array:
+  case ST_uint8array:
+  case ST_uint16array:
+  case ST_uint32array:
+  case ST_blob:
+  case ST_string:
+    // These array types also want an implicit length.
+    {
+      int length = default_value.length();
+      default_value =
+        string(1, (char)(length & 0xff)) +
+        string(1, (char)((length >> 8) & 0xff)) +
+        default_value;
+    }
+    break;
+
+  default:
+    break;
+  }
+
+  return default_value;
 }
 
 ////////////////////////////////////////////////////////////////////
