@@ -745,7 +745,9 @@ load_textures() {
     PT_EggTexture orig = (*ri).first;
     PT_EggTexture repl = (*ri).second;
 
-    _textures[orig] = _textures[repl];
+    TextureDef &def = _textures[orig];
+    def = _textures[repl];
+    def._egg_tex = orig;
   }
 }
 
