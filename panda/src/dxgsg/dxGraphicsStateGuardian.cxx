@@ -462,6 +462,9 @@ init_dx(  LPDIRECTDRAW7     context,
       }
     }
 #endif
+
+     if(dx_auto_normalize_lighting)
+         _d3dDevice->SetRenderState(D3DRENDERSTATE_NORMALIZENORMALS, true);
 }
 
 ////////////////////////////////////////////////////////////////////

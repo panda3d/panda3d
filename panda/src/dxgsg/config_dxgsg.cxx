@@ -48,6 +48,14 @@ bool dx_cull_traversal = config_dxgsg.GetBool("dx-cull-traversal", true);
 // if true, if card only supports per-vertex fog, it will be treated as no-HW fog capability
 bool dx_no_vertex_fog = config_dxgsg.GetBool("dx-no-vertex-fog", false);
 
+// Configure this true to cause all lighting normals to automatically
+// be normalized by the CPU before rendering.  This is
+// necessary if you intend to render things under scale transforms and
+// expect lighting to work correctly.  Maybe one day there will be
+// another way to set this at runtime, instead of only as a configure
+// variable
+bool dx_auto_normalize_lighting = config_dxgsg.GetBool("auto-normalize-lighting", false);
+
 // is this implemented yet?
 bool dx_force_16bpp_screenbuffers = config_dxgsg.GetBool("dx-force-16bpp-screenbuffers", false);
 
