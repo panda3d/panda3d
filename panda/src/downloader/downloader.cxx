@@ -127,9 +127,10 @@ Downloader::
 ////////////////////////////////////////////////////////////////////
 bool Downloader::
 connect_to_server(const string &name, uint port) {
-  downloader_cat.debug()
-    << "Downloader connecting to server: " << name 
-    << " on port: " << port << endl;
+  if (downloader_cat.is_debug())
+    downloader_cat.debug()
+      << "Downloader connecting to server: " << name 
+      << " on port: " << port << endl;
 
   _server_name = name;
 
@@ -193,8 +194,9 @@ connect_to_server(void) {
 ////////////////////////////////////////////////////////////////////
 void Downloader::
 disconnect_from_server(void) {
-  downloader_cat.debug()
-    << "Downloader disconnecting from server..." << endl;
+  if (downloader_cat.is_debug())
+    downloader_cat.debug()
+      << "Downloader disconnecting from server..." << endl;
 
 #if defined(WIN32)
   (void)closesocket(_socket);
@@ -418,14 +420,16 @@ safe_receive(int socket, char *data, int length, long timeout) {
     }
     int ret = recv(socket, data_ptr, length - bytes, 0);
     if (ret > 0) {
-      downloader_cat.debug()
-	<< "Downloader::safe_receive() - recv() got: " << ret << " bytes"
-	<< endl;
+      if (downloader_cat.is_debug())
+        downloader_cat.debug()
+	  << "Downloader::safe_receive() - recv() got: " << ret << " bytes"
+	  << endl;
       bytes += ret;
       data_ptr += ret;
     } else if (ret == 0) {
-      downloader_cat.debug()
-	<< "Downloader::safe_receive() - End of file" << endl;
+      if (downloader_cat.is_debug())
+        downloader_cat.debug()
+	  << "Downloader::safe_receive() - End of file" << endl;
       return bytes;
     } else {
       downloader_cat.error()
@@ -471,9 +475,10 @@ download(const string &file_name, Filename file_dest,
   request += _server_name;
   request += "\012Connection: close";
   if (partial_content == true) {
-    downloader_cat.debug()
-      << "Downloader::download() - Requesting byte range: " << first_byte 
-      << "-" << last_byte << endl;
+    if (downloader_cat.is_debug())
+      downloader_cat.debug()
+        << "Downloader::download() - Requesting byte range: " << first_byte 
+        << "-" << last_byte << endl;
     request += "\012Range: bytes=";
     stringstream start_stream;
     start_stream << first_byte << "-" << last_byte;
@@ -481,8 +486,9 @@ download(const string &file_name, Filename file_dest,
   }
   request += "\012\012";
   int outlen = request.size();
-  downloader_cat.debug()
-    << "Downloader::download() - Sending request:\n" << request << endl;
+  if (downloader_cat.is_debug())
+    downloader_cat.debug()
+      << "Downloader::download() - Sending request:\n" << request << endl;
   if (safe_send(_socket, request.c_str(), outlen, 
 			(long)downloader_timeout) == false)
     return false;
@@ -508,8 +514,9 @@ download(const string &file_name, Filename file_dest,
       // Ensure we have enough room in the buffer to download read_size
       // If we don't have enough room, write the buffer to disk
       if (status._bytes_in_buffer + read_size > downloader_buffer_size) {
-	downloader_cat.debug()
-	  << "Downloader::download() - Flushing buffer" << endl;
+	if (downloader_cat.is_debug())
+	  downloader_cat.debug()
+	    << "Downloader::download() - Flushing buffer" << endl;
 
 	if (write_to_disk(status) == false)
 	  return false;
@@ -528,8 +535,9 @@ download(const string &file_name, Filename file_dest,
       } else if (ans == 0) {
 
 	if (got_any_data == true) {
-	  downloader_cat.debug()
-	    << "Download for: " << file_name << " completed" << endl;
+	  if (downloader_cat.is_debug())
+	    downloader_cat.debug()
+	      << "Download for: " << file_name << " completed" << endl;
 	  bool ret = write_to_disk(status);
 	  _dest_stream.close();
 
@@ -538,14 +546,16 @@ download(const string &file_name, Filename file_dest,
 	  _connected = false;
 	  return ret;
 	} else {
-	  downloader_cat.debug()
-	    << "Downloader::download() - Received 0 bytes" << endl;
+	  if (downloader_cat.is_debug())
+	    downloader_cat.debug()
+	      << "Downloader::download() - Received 0 bytes" << endl;
 	  nap();
 	}
 
       } else {
-	downloader_cat.debug()
-	  << "Downloader::download() - Got: " << ans << " bytes" << endl;
+	if (downloader_cat.is_debug())
+	  downloader_cat.debug()
+	    << "Downloader::download() - Got: " << ans << " bytes" << endl;
 	status._bytes_in_buffer += ans;
    	status._next_in += ans;
 	got_any_data = true;
@@ -555,6 +565,50 @@ download(const string &file_name, Filename file_dest,
       }
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Downloader::parse_http_response
+//       Access: Private
+//  Description: Check the HTTP response from the server
+////////////////////////////////////////////////////////////////////
+bool Downloader::
+parse_http_response(const string &resp) {
+  size_t ws = resp.find(" ", 0);
+  string httpstr = resp.substr(0, ws);
+  if (httpstr != "HTTP/1.1") {
+    downloader_cat.error()
+      << "Downloader::parse_http_response() - not HTTP/1.1 - got: " 
+      << httpstr << endl;
+    return false;
+  }
+  size_t ws2 = resp.find(" ", ws);
+  string numstr = resp.substr(ws, ws2);
+  nassertr(numstr.length() > 0, false);
+  int num = atoi(numstr.c_str());
+  switch (num) {
+    case 200:
+    case 206:
+      return true;
+    case 202:
+      // Accepted - server may not honor request, though
+      if (downloader_cat.is_debug())
+	downloader_cat.debug()
+	  << "Downloader::parse_http_response() - got a 202 Accepted - "
+	  << "server does not guarantee to honor this request" << endl;
+      return true;
+    case 201:
+    case 203:
+    case 204:
+    case 205:
+    default:
+      break;
+  }
+
+  downloader_cat.error()
+    << "Downloader::parse_http_response() - Invalid response: "
+    << resp << endl;
+  return false; 
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -585,19 +639,13 @@ parse_header(DownloadStatus &status) {
     // got an error or not
     if (status._first_line_complete == false) {
       status._first_line_complete = true;
-      if ((status._partial_content == false &&
-          component == "HTTP/1.1 200 OK") ||
-	  (status._partial_content == true &&
-	  (component == "HTTP/1.1 206 Partial Content" ||
-	   component == "HTTP/1.1 206 Partial content"))) {
-        downloader_cat.debug()
-	  << "Downloader::parse_header() - Header is valid: " 
-	  << component << endl;
+      if (parse_http_response(component) == true) {
+  	if (downloader_cat.is_debug())
+          downloader_cat.debug()
+	    << "Downloader::parse_header() - Header is valid: " 
+	    << component << endl;
 	status._header_is_valid = true;
       } else {
-	downloader_cat.error()
-	  << "Downloader::parse_header() - Invalid header: "
-	  << component << endl;
 	return false;
       }
     }
@@ -623,8 +671,9 @@ parse_header(DownloadStatus &status) {
 
     // Two consecutive (CR LF)s indicates end of HTTP header
     if (nl == p) {
-      downloader_cat.debug()
-	<< "Downloader::parse_header() - Header is complete" << endl;
+      if (downloader_cat.is_debug())
+        downloader_cat.debug()
+	  << "Downloader::parse_header() - Header is complete" << endl;
       status._header_is_complete = true;
       
       // Strip the header out of the status buffer
@@ -632,9 +681,10 @@ parse_header(DownloadStatus &status) {
       status._start += header_length;
       status._bytes_in_buffer -= header_length;
 
-      downloader_cat.debug()
-	<< "Downloader::parse_header() - Stripping out header of size: "
-	<< header_length << endl;
+      if (downloader_cat.is_debug())
+        downloader_cat.debug()
+	  << "Downloader::parse_header() - Stripping out header of size: "
+	  << header_length << endl;
 
       return true;
     }
@@ -676,9 +726,10 @@ write_to_disk(DownloadStatus &status) {
 
   // Write what we have so far to disk
   if (status._bytes_in_buffer > 0) {
-    downloader_cat.debug()
-      << "Downloader::write_to_disk() - Writing " 
-      << status._bytes_in_buffer << " to disk" << endl;
+    if (downloader_cat.is_debug())
+      downloader_cat.debug()
+        << "Downloader::write_to_disk() - Writing " 
+        << status._bytes_in_buffer << " to disk" << endl;
       
     _dest_stream.write(status._start, status._bytes_in_buffer);
     status._total_bytes_written += status._bytes_in_buffer;
