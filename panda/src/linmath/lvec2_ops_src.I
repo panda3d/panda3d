@@ -7,7 +7,7 @@
 //     Function: scalar * LVecBase2
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVecBase2) 
+INLINE_LINMATH FLOATNAME(LVecBase2) 
 operator * (FLOATTYPE scalar, const FLOATNAME(LVecBase2) &a) {
   return a * scalar;
 }
@@ -16,7 +16,7 @@ operator * (FLOATTYPE scalar, const FLOATNAME(LVecBase2) &a) {
 //     Function: scalar * LPoint2
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LPoint2) 
+INLINE_LINMATH FLOATNAME(LPoint2) 
 operator * (FLOATTYPE scalar, const FLOATNAME(LPoint2) &a) {
   return a * scalar;
 }
@@ -25,7 +25,7 @@ operator * (FLOATTYPE scalar, const FLOATNAME(LPoint2) &a) {
 //     Function: scalar * LVector2
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector2) 
+INLINE_LINMATH FLOATNAME(LVector2) 
 operator * (FLOATTYPE scalar, const FLOATNAME(LVector2) &a) {
   return a * scalar;
 }
@@ -34,7 +34,7 @@ operator * (FLOATTYPE scalar, const FLOATNAME(LVector2) &a) {
 //     Function: dot product of LVecBase2
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATTYPE
+INLINE_LINMATH FLOATTYPE
 dot(const FLOATNAME(LVecBase2) &a, const FLOATNAME(LVecBase2) &b) {
   return a.dot(b);
 }
@@ -43,7 +43,7 @@ dot(const FLOATNAME(LVecBase2) &a, const FLOATNAME(LVecBase2) &b) {
 //     Function: length of a vector
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATTYPE
+INLINE_LINMATH FLOATTYPE
 length(const FLOATNAME(LVector2) &a) {
   return a.length();
 }
@@ -52,7 +52,7 @@ length(const FLOATNAME(LVector2) &a) {
 //     Function: normalize
 //  Description: Returns a normalized vector from the given vector.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector2)
+INLINE_LINMATH FLOATNAME(LVector2)
 normalize(const FLOATNAME(LVector2) &v) {
   FLOATNAME(LVector2) v1 = v;
   v1.normalize();

@@ -15,40 +15,40 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA FLOATNAME(LPoint3) : public FLOATNAME(LVecBase3) {
 PUBLISHED:
-  INLINE FLOATNAME(LPoint3)();
-  INLINE FLOATNAME(LPoint3)(const FLOATNAME(LVecBase3) &copy);
-  INLINE FLOATNAME(LPoint3) &operator = (const FLOATNAME(LVecBase3) &copy);
-  INLINE FLOATNAME(LPoint3) &operator = (FLOATTYPE fill_value);
-  INLINE FLOATNAME(LPoint3)(FLOATTYPE fill_value);
-  INLINE FLOATNAME(LPoint3)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z);
+  INLINE_LINMATH FLOATNAME(LPoint3)();
+  INLINE_LINMATH FLOATNAME(LPoint3)(const FLOATNAME(LVecBase3) &copy);
+  INLINE_LINMATH FLOATNAME(LPoint3) &operator = (const FLOATNAME(LVecBase3) &copy);
+  INLINE_LINMATH FLOATNAME(LPoint3) &operator = (FLOATTYPE fill_value);
+  INLINE_LINMATH FLOATNAME(LPoint3)(FLOATTYPE fill_value);
+  INLINE_LINMATH FLOATNAME(LPoint3)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z);
 
-  INLINE static const FLOATNAME(LPoint3) &zero();
-  INLINE static const FLOATNAME(LPoint3) &unit_x();
-  INLINE static const FLOATNAME(LPoint3) &unit_y();
-  INLINE static const FLOATNAME(LPoint3) &unit_z();
+  INLINE_LINMATH static const FLOATNAME(LPoint3) &zero();
+  INLINE_LINMATH static const FLOATNAME(LPoint3) &unit_x();
+  INLINE_LINMATH static const FLOATNAME(LPoint3) &unit_y();
+  INLINE_LINMATH static const FLOATNAME(LPoint3) &unit_z();
 
-  INLINE FLOATNAME(LPoint3) operator - () const;
+  INLINE_LINMATH FLOATNAME(LPoint3) operator - () const;
 
-  INLINE FLOATNAME(LVecBase3)
+  INLINE_LINMATH FLOATNAME(LVecBase3)
   operator + (const FLOATNAME(LVecBase3) &other) const;
-  INLINE FLOATNAME(LPoint3)
+  INLINE_LINMATH FLOATNAME(LPoint3)
   operator + (const FLOATNAME(LVector3) &other) const;
 
-  INLINE FLOATNAME(LVecBase3)
+  INLINE_LINMATH FLOATNAME(LVecBase3)
   operator - (const FLOATNAME(LVecBase3) &other) const;
-  INLINE FLOATNAME(LVector3)
+  INLINE_LINMATH FLOATNAME(LVector3)
   operator - (const FLOATNAME(LPoint3) &other) const;
-  INLINE FLOATNAME(LPoint3)
+  INLINE_LINMATH FLOATNAME(LPoint3)
   operator - (const FLOATNAME(LVector3) &other) const;
 
-  INLINE FLOATNAME(LPoint3) cross(const FLOATNAME(LVecBase3) &other) const;
-  INLINE FLOATNAME(LPoint3) operator * (FLOATTYPE scalar) const;
-  INLINE FLOATNAME(LPoint3) operator / (FLOATTYPE scalar) const;
+  INLINE_LINMATH FLOATNAME(LPoint3) cross(const FLOATNAME(LVecBase3) &other) const;
+  INLINE_LINMATH FLOATNAME(LPoint3) operator * (FLOATTYPE scalar) const;
+  INLINE_LINMATH FLOATNAME(LPoint3) operator / (FLOATTYPE scalar) const;
 
   // Some special named constructors for LPoint3.
 
-  INLINE static FLOATNAME(LPoint3) origin(CoordinateSystem cs = CS_default);
-  INLINE static FLOATNAME(LPoint3) rfu(FLOATTYPE right,
+  INLINE_LINMATH static FLOATNAME(LPoint3) origin(CoordinateSystem cs = CS_default);
+  INLINE_LINMATH static FLOATNAME(LPoint3) rfu(FLOATTYPE right,
 				       FLOATTYPE fwd,
 				       FLOATTYPE up,
 				       CoordinateSystem cs = CS_default);

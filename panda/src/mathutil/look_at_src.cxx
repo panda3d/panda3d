@@ -3,7 +3,7 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-INLINE FLOATNAME(LMatrix3)
+INLINE_MATHUTIL FLOATNAME(LMatrix3)
 make_xi_mat(const FLOATNAME(LVector2) &x) {
   return FLOATNAME(LMatrix3)(1,     0,     0,
 			   0,  x[0],  x[1],
@@ -11,7 +11,7 @@ make_xi_mat(const FLOATNAME(LVector2) &x) {
 }
 
 
-INLINE FLOATNAME(LMatrix3)
+INLINE_MATHUTIL FLOATNAME(LMatrix3)
 make_x_mat(const FLOATNAME(LVector2) &x) {
   return FLOATNAME(LMatrix3)(1,     0,     0,
 			   0,  x[1],  x[0],
@@ -19,7 +19,7 @@ make_x_mat(const FLOATNAME(LVector2) &x) {
 }
 
 
-INLINE FLOATNAME(LMatrix3)
+INLINE_MATHUTIL FLOATNAME(LMatrix3)
 make_y_mat(const FLOATNAME(LVector2) &y) {
   return FLOATNAME(LMatrix3)(y[1],     0, -y[0],
   			      0,     1,     0,
@@ -27,7 +27,7 @@ make_y_mat(const FLOATNAME(LVector2) &y) {
 }
 
 
-INLINE FLOATNAME(LMatrix3)
+INLINE_MATHUTIL FLOATNAME(LMatrix3)
 make_z_mat(const FLOATNAME(LVector2) &z) {
   return FLOATNAME(LMatrix3)(z[1], -z[0],     0,
 			   z[0],  z[1],     0,

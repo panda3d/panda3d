@@ -11,7 +11,7 @@
 //               This function definition must appear first, since
 //               some inline functions below take advantage of it.
 ////////////////////////////////////////////////////////////////////
-INLINE const FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
+INLINE_LINMATH const FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
 ident_mat() {
   return _ident_mat;
 }
@@ -21,7 +21,7 @@ ident_mat() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix3):: 
+INLINE_LINMATH FLOATNAME(LMatrix3):: 
 FLOATNAME(LMatrix3)() {
 }
 
@@ -30,9 +30,10 @@ FLOATNAME(LMatrix3)() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix3):: 
+INLINE_LINMATH FLOATNAME(LMatrix3):: 
 FLOATNAME(LMatrix3)(const FLOATNAME(LMatrix3) &copy) {
-  (*this) = copy;
+	memcpy(_m.data,copy._m.data,sizeof(_m.data));
+//  (*this) = copy;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -40,11 +41,12 @@ FLOATNAME(LMatrix3)(const FLOATNAME(LMatrix3) &copy) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3):: 
+INLINE_LINMATH FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3):: 
 operator = (const FLOATNAME(LMatrix3) &copy) {
-  set(copy(0, 0), copy(0, 1), copy(0, 2), 
-      copy(1, 0), copy(1, 1), copy(1, 2), 
-      copy(2, 0), copy(2, 1), copy(2, 2));
+  memcpy(_m.data,copy._m.data,sizeof(_m.data));
+//  set(copy(0, 0), copy(0, 1), copy(0, 2), 
+//      copy(1, 0), copy(1, 1), copy(1, 2), 
+//      copy(2, 0), copy(2, 1), copy(2, 2));
   return *this;
 }
 
@@ -53,7 +55,7 @@ operator = (const FLOATNAME(LMatrix3) &copy) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
 operator = (FLOATTYPE fill_value) {
   fill(fill_value);
   return *this;
@@ -64,13 +66,23 @@ operator = (FLOATTYPE fill_value) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix3):: 
+INLINE_LINMATH FLOATNAME(LMatrix3):: 
 FLOATNAME(LMatrix3)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02,
 	 FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12,
 	 FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22) {
-  set(e00, e01, e02,
-      e10, e11, e12,
-      e20, e21, e22);
+  _m.m._00 = e00;
+  _m.m._01 = e01;
+  _m.m._02 = e02;
+  _m.m._10 = e10;
+  _m.m._11 = e11;
+  _m.m._12 = e12;
+  _m.m._20 = e20;
+  _m.m._21 = e21;
+  _m.m._22 = e22;
+
+//  set(e00, e01, e02,
+//      e10, e11, e12,
+//      e20, e21, e22);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -78,19 +90,30 @@ FLOATNAME(LMatrix3)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02,
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void FLOATNAME(LMatrix3)::
+INLINE_LINMATH void FLOATNAME(LMatrix3)::
 set(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02,
     FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12,
     FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22) {
-  (*this)(0, 0) = e00;
-  (*this)(0, 1) = e01;
-  (*this)(0, 2) = e02;
-  (*this)(1, 0) = e10;
-  (*this)(1, 1) = e11;
-  (*this)(1, 2) = e12;
-  (*this)(2, 0) = e20;
-  (*this)(2, 1) = e21;
-  (*this)(2, 2) = e22;
+  _m.m._00 = e00;
+  _m.m._01 = e01;
+  _m.m._02 = e02;
+  _m.m._10 = e10;
+  _m.m._11 = e11;
+  _m.m._12 = e12;
+  _m.m._20 = e20;
+  _m.m._21 = e21;
+  _m.m._22 = e22;
+  /*
+  _m.m._00 = e00;
+  _m.m._01 = e01;
+  _m.m._02 = e02;
+  _m.m._10 = e10;
+  _m.m._11 = e11;
+  _m.m._12 = e12;
+  _m.m._20 = e20;
+  _m.m._21 = e21;
+  _m.m._22 = e22;
+  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -99,11 +122,11 @@ set(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02,
 //  Description: Replaces the indicated row of the matrix from a
 //               three-component vector.
 ////////////////////////////////////////////////////////////////////
-INLINE void FLOATNAME(LMatrix3)::
+INLINE_LINMATH void FLOATNAME(LMatrix3)::
 set_row(int row, const FLOATNAME(LVecBase3) &v) {
-  (*this)(row, 0) = v[0];
-  (*this)(row, 1) = v[1];
-  (*this)(row, 2) = v[2];
+  (*this)(row, 0) = v._v.v._0;
+  (*this)(row, 1) = v._v.v._1;
+  (*this)(row, 2) = v._v.v._2;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -112,11 +135,11 @@ set_row(int row, const FLOATNAME(LVecBase3) &v) {
 //  Description: Replaces the indicated column of the matrix from a
 //               three-component vector.
 ////////////////////////////////////////////////////////////////////
-INLINE void FLOATNAME(LMatrix3)::
+INLINE_LINMATH void FLOATNAME(LMatrix3)::
 set_col(int col, const FLOATNAME(LVecBase3) &v) {
-  (*this)(0, col) = v[0];
-  (*this)(1, col) = v[1];
-  (*this)(2, col) = v[2];
+  (*this)(0, col) = v._v.v._0;
+  (*this)(1, col) = v._v.v._1;
+  (*this)(2, col) = v._v.v._2;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -125,10 +148,10 @@ set_col(int col, const FLOATNAME(LVecBase3) &v) {
 //  Description: Replaces the indicated row of the matrix from a
 //               two-component vector, ignoring the last column.
 ////////////////////////////////////////////////////////////////////
-INLINE void FLOATNAME(LMatrix3)::
+INLINE_LINMATH void FLOATNAME(LMatrix3)::
 set_row(int row, const FLOATNAME(LVecBase2) &v) {
-  (*this)(row, 0) = v[0];
-  (*this)(row, 1) = v[1];
+  (*this)(row, 0) = v._v.v._0;
+  (*this)(row, 1) = v._v.v._1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,10 +160,10 @@ set_row(int row, const FLOATNAME(LVecBase2) &v) {
 //  Description: Replaces the indicated column of the matrix from a
 //               two-component vector, ignoring the last row.
 ////////////////////////////////////////////////////////////////////
-INLINE void FLOATNAME(LMatrix3)::
+INLINE_LINMATH void FLOATNAME(LMatrix3)::
 set_col(int col, const FLOATNAME(LVecBase2) &v) {
-  (*this)(0, col) = v[0];
-  (*this)(1, col) = v[1];
+  (*this)(0, col) = v._v.v._0;
+  (*this)(1, col) = v._v.v._1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -149,7 +172,7 @@ set_col(int col, const FLOATNAME(LVecBase2) &v) {
 //  Description: Returns the indicated row of the matrix as a
 //               three-component vector.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVecBase3) FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LMatrix3)::
 get_row(int row) const {
   return FLOATNAME(LVecBase3)((*this)(row, 0), (*this)(row, 1), (*this)(row, 2));
 }
@@ -160,7 +183,7 @@ get_row(int row) const {
 //  Description: Returns the indicated column of the matrix as a
 //               three-component vector.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVecBase3) FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LMatrix3)::
 get_col(int col) const {
   return FLOATNAME(LVecBase3)((*this)(0, col), (*this)(1, col), (*this)(2, col));
 }
@@ -171,7 +194,7 @@ get_col(int col) const {
 //  Description: Returns the indicated row of the matrix as a
 //               two-component vector, ignoring the last column.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVecBase2) FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LMatrix3)::
 get_row2(int row) const {
   return FLOATNAME(LVecBase2)((*this)(row, 0), (*this)(row, 1));
 }
@@ -182,7 +205,7 @@ get_row2(int row) const {
 //  Description: Returns the indicated column of the matrix as a
 //               two-component vector, ignoring the last row.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVecBase2) FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LMatrix3)::
 get_col2(int col) const {
   return FLOATNAME(LVecBase2)((*this)(0, col), (*this)(1, col));
 }
@@ -192,11 +215,11 @@ get_col2(int col) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATTYPE &FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATTYPE &FLOATNAME(LMatrix3)::
 operator () (int row, int col) {
-//  nassertr(row >= 0 && row < 3, _data[0]);
-//  nassertr(col >= 0 && col < 3, _data[0]);
-  return _data[row * 3 + col];
+//  nassertr(row >= 0 && row < 3, _m.data[0]);
+//  nassertr(col >= 0 && col < 3, _m.data[0]);
+  return _m.data[row * 3 + col];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -204,11 +227,11 @@ operator () (int row, int col) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATTYPE FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix3)::
 operator () (int row, int col) const {
 //  nassertr(row >= 0 && row < 3, 0.0);
 //  nassertr(col >= 0 && col < 3, 0.0);
-  return _data[row * 3 + col];
+  return _m.data[row * 3 + col];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -217,12 +240,12 @@ operator () (int row, int col) const {
 //  Description: Returns true if any component of the matrix is
 //               not-a-number, false otherwise.
 ////////////////////////////////////////////////////////////////////
-INLINE bool FLOATNAME(LMatrix3)::
+INLINE_LINMATH bool FLOATNAME(LMatrix3)::
 is_nan() const {
   return 
-    cnan(_data[0]) || cnan(_data[1]) || cnan(_data[2]) ||
-    cnan(_data[3]) || cnan(_data[4]) || cnan(_data[5]) ||
-    cnan(_data[6]) || cnan(_data[7]) || cnan(_data[8]);
+    cnan(_m.data[0]) || cnan(_m.data[1]) || cnan(_m.data[2]) ||
+    cnan(_m.data[3]) || cnan(_m.data[4]) || cnan(_m.data[5]) ||
+    cnan(_m.data[6]) || cnan(_m.data[7]) || cnan(_m.data[8]);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -230,11 +253,11 @@ is_nan() const {
 //       Access: Public
 //  Description: Returns a particular element of the matrix.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATTYPE FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix3)::
 get_cell(int row, int col) const {
 //  nassertr(row >= 0 && row < 3, 0.0);
 //  nassertr(col >= 0 && col < 3, 0.0);
-  return _data[row * 3 + col];
+  return _m.data[row * 3 + col];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -242,11 +265,11 @@ get_cell(int row, int col) const {
 //       Access: Public
 //  Description: Changes a particular element of the matrix.
 ////////////////////////////////////////////////////////////////////
-INLINE void FLOATNAME(LMatrix3)::
+INLINE_LINMATH void FLOATNAME(LMatrix3)::
 set_cell(int row, int col, FLOATTYPE value) {
 //  nassertv(row >= 0 && row < 3);
 //  nassertv(col >= 0 && col < 3);
-  _data[row * 3 + col] = value;
+  _m.data[row * 3 + col] = value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -256,9 +279,9 @@ set_cell(int row, int col, FLOATTYPE value) {
 //               elements in the matrix.  The remaining elements
 //               occupy the next eight positions in row-major order.
 ////////////////////////////////////////////////////////////////////
-INLINE const FLOATTYPE *FLOATNAME(LMatrix3)::
+INLINE_LINMATH const FLOATTYPE *FLOATNAME(LMatrix3)::
 get_data() const {
-  return _data;
+  return _m.data;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -266,7 +289,7 @@ get_data() const {
 //       Access: Public
 //  Description: Returns the number of elements in the matrix, nine.
 ////////////////////////////////////////////////////////////////////
-INLINE int FLOATNAME(LMatrix3)::
+INLINE_LINMATH int FLOATNAME(LMatrix3)::
 get_num_components() const {
   return 9;
 }
@@ -277,9 +300,9 @@ get_num_components() const {
 //  Description: Returns an iterator that may be used to traverse the
 //               elements of the matrix, STL-style.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix3)::iterator FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATNAME(LMatrix3)::iterator FLOATNAME(LMatrix3)::
 begin() {
-  return _data;
+  return _m.data;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -288,7 +311,7 @@ begin() {
 //  Description: Returns an iterator that may be used to traverse the
 //               elements of the matrix, STL-style.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix3)::iterator FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATNAME(LMatrix3)::iterator FLOATNAME(LMatrix3)::
 end() {
   return begin() + get_num_components();
 }
@@ -299,9 +322,9 @@ end() {
 //  Description: Returns an iterator that may be used to traverse the
 //               elements of the matrix, STL-style.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix3)::const_iterator FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATNAME(LMatrix3)::const_iterator FLOATNAME(LMatrix3)::
 begin() const {
-  return _data;
+  return _m.data;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -310,7 +333,7 @@ begin() const {
 //  Description: Returns an iterator that may be used to traverse the
 //               elements of the matrix, STL-style.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix3)::const_iterator FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATNAME(LMatrix3)::const_iterator FLOATNAME(LMatrix3)::
 end() const {
   return begin() + get_num_components();
 }
@@ -324,7 +347,7 @@ end() const {
 //               especially in an STL container.  Also see
 //               compare_to().
 ////////////////////////////////////////////////////////////////////
-INLINE bool FLOATNAME(LMatrix3)::
+INLINE_LINMATH bool FLOATNAME(LMatrix3)::
 operator < (const FLOATNAME(LMatrix3) &other) const {
   return compare_to(other) < 0;
 }
@@ -334,7 +357,7 @@ operator < (const FLOATNAME(LMatrix3) &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE bool FLOATNAME(LMatrix3)::
+INLINE_LINMATH bool FLOATNAME(LMatrix3)::
 operator == (const FLOATNAME(LMatrix3) &other) const {
   return compare_to(other) == 0;
 }
@@ -344,7 +367,7 @@ operator == (const FLOATNAME(LMatrix3) &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE bool FLOATNAME(LMatrix3)::
+INLINE_LINMATH bool FLOATNAME(LMatrix3)::
 operator != (const FLOATNAME(LMatrix3) &other) const {
   return !operator == (other);
 }
@@ -355,10 +378,18 @@ operator != (const FLOATNAME(LMatrix3) &other) const {
 //  Description: This flavor of compare_to uses a default threshold
 //               value based on the numeric type.
 ////////////////////////////////////////////////////////////////////
-INLINE int FLOATNAME(LMatrix3)::
+INLINE_LINMATH int FLOATNAME(LMatrix3)::
 compare_to(const FLOATNAME(LMatrix3) &other) const {
   return compare_to(other, NEARLY_ZERO(FLOATTYPE));
 }
+
+#define VECTOR3_MATRIX3_PRODUCT(v_res, v, mat)                                              \
+v_res._v.v._0 = v._v.v._0*mat._m.m._00 + v._v.v._1*mat._m.m._10 + v._v.v._2*mat._m.m._20;   \
+v_res._v.v._1 = v._v.v._0*mat._m.m._01 + v._v.v._1*mat._m.m._11 + v._v.v._2*mat._m.m._21;   \
+v_res._v.v._2 = v._v.v._0*mat._m.m._02 + v._v.v._1*mat._m.m._12 + v._v.v._2*mat._m.m._22;
+
+// bugbug:  need 2 check if this is correct, or reversed from previous implementation
+//          before checkin
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::xform
@@ -366,11 +397,21 @@ compare_to(const FLOATNAME(LMatrix3) &other) const {
 //  Description: 3-component vector or point times matrix.  This is a
 //               fully general operation.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVecBase3) FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LMatrix3)::
 xform(const FLOATNAME(LVecBase3) &v) const {
-  return FLOATNAME(LVecBase3)(v.dot(get_col(0)),
-			    v.dot(get_col(1)),
-			    v.dot(get_col(2)));
+    FLOATNAME(LVecBase3) v_res;
+
+	
+	
+	VECTOR3_MATRIX3_PRODUCT(v_res, v,(*this));
+
+
+
+	return v_res; 
+
+//  return FLOATNAME(LVecBase3)(v.dot(get_col(0)),
+//			    v.dot(get_col(1)),
+//			    v.dot(get_col(2)));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -380,10 +421,20 @@ xform(const FLOATNAME(LVecBase3) &v) const {
 //               translation component) and returns the result.  This
 //               assumes the matrix is an affine transform.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVecBase2) FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LMatrix3)::
 xform_point(const FLOATNAME(LVecBase2) &v) const {
-  return FLOATNAME(LVecBase2)(v.dot(get_col2(0)) + (*this)(2, 0),
-			    v.dot(get_col2(1)) + (*this)(2, 1));
+
+	FLOATNAME(LVecBase2) v_res;
+
+	// v._v.v._2 == 1.0 for this case
+
+	v_res._v.v._0 = v._v.v._0*_m.m._00 + v._v.v._1*_m.m._10 + _m.m._20;
+   	v_res._v.v._1 = v._v.v._0*_m.m._01 + v._v.v._1*_m.m._11 + _m.m._21;
+
+	return v_res;
+
+//  return FLOATNAME(LVecBase2)(v.dot(get_col2(0)) + _m.m._20,
+//			    v.dot(get_col2(1)) + _m.m._21);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -393,10 +444,20 @@ xform_point(const FLOATNAME(LVecBase2) &v) const {
 //               translation component) and returns the result.  This
 //               assumes the matrix is an affine transform.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVecBase2) FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LMatrix3)::
 xform_vec(const FLOATNAME(LVecBase2) &v) const {
-  return FLOATNAME(LVecBase2)(v.dot(get_col2(0)),
-			    v.dot(get_col2(1)));
+
+	FLOATNAME(LVecBase2) v_res;
+
+	// v._v.v._2 == 0.0 for this case
+
+	v_res._v.v._0 = v._v.v._0*_m.m._00 + v._v.v._1*_m.m._10;
+   	v_res._v.v._1 = v._v.v._0*_m.m._01 + v._v.v._1*_m.m._11;
+
+	return v_res;
+
+//  return FLOATNAME(LVecBase2)(v.dot(get_col2(0)),
+//			    v.dot(get_col2(1)));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -405,9 +466,9 @@ xform_vec(const FLOATNAME(LVecBase2) &v) const {
 //  Description: Returns one cell of the result of a matrix-matrix
 //               multiplication operation.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATTYPE FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix3)::
 mult_cel(const FLOATNAME(LMatrix3) &other, int row, int col) const {
-  return get_row(row).dot(other.get_col(col));
+    return get_row(row).dot(other.get_col(col));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -415,9 +476,11 @@ mult_cel(const FLOATNAME(LMatrix3) &other, int row, int col) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
 operator *= (const FLOATNAME(LMatrix3) &other) {
   (*this) = (*this) * other;
+
+  // bugbug can we do any optimization here?
   return *this;
 }
 
@@ -426,19 +489,19 @@ operator *= (const FLOATNAME(LMatrix3) &other) {
 //       Access: Public
 //  Description: Performs a memberwise scale.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
 operator *= (FLOATTYPE scalar) {
-  (*this)(0, 0) *= scalar;
-  (*this)(0, 1) *= scalar;
-  (*this)(0, 2) *= scalar;
+  _m.m._00 *= scalar;
+  _m.m._01 *= scalar;
+  _m.m._02 *= scalar;
 
-  (*this)(1, 0) *= scalar;
-  (*this)(1, 1) *= scalar;
-  (*this)(1, 2) *= scalar;
+  _m.m._10 *= scalar;
+  _m.m._11 *= scalar;
+  _m.m._12 *= scalar;
 
-  (*this)(2, 0) *= scalar;
-  (*this)(2, 1) *= scalar;
-  (*this)(2, 2) *= scalar;
+  _m.m._20 *= scalar;
+  _m.m._21 *= scalar;
+  _m.m._22 *= scalar;
 
   return *this;
 }
@@ -448,19 +511,20 @@ operator *= (FLOATTYPE scalar) {
 //       Access: Public
 //  Description: Performs a memberwise scale.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
 operator /= (FLOATTYPE scalar) {
-  (*this)(0, 0) /= scalar;
-  (*this)(0, 1) /= scalar;
-  (*this)(0, 2) /= scalar;
+  FLOATTYPE recip_scalar = 1.0/scalar;
+  _m.m._00 *= recip_scalar;
+  _m.m._01 *= recip_scalar;
+  _m.m._02 *= recip_scalar;
 
-  (*this)(1, 0) /= scalar;
-  (*this)(1, 1) /= scalar;
-  (*this)(1, 2) /= scalar;
+  _m.m._10 *= recip_scalar;
+  _m.m._11 *= recip_scalar;
+  _m.m._12 *= recip_scalar;
 
-  (*this)(2, 0) /= scalar;
-  (*this)(2, 1) /= scalar;
-  (*this)(2, 2) /= scalar;
+  _m.m._20 *= recip_scalar;
+  _m.m._21 *= recip_scalar;
+  _m.m._22 *= recip_scalar;
 
   return *this;
 }
@@ -470,19 +534,19 @@ operator /= (FLOATTYPE scalar) {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE void FLOATNAME(LMatrix3)::
+INLINE_LINMATH void FLOATNAME(LMatrix3)::
 transpose_from(const FLOATNAME(LMatrix3) &other) {
-  (*this)(0, 0) = other(0, 0);
-  (*this)(0, 1) = other(1, 0);
-  (*this)(0, 2) = other(2, 0);
+  _m.m._00 = other._m.m._00;
+  _m.m._01 = other._m.m._10;
+  _m.m._02 = other._m.m._20;
 
-  (*this)(1, 0) = other(0, 1);
-  (*this)(1, 1) = other(1, 1);
-  (*this)(1, 2) = other(2, 1);
+  _m.m._10 = other._m.m._01;
+  _m.m._11 = other._m.m._11;
+  _m.m._12 = other._m.m._21;
 
-  (*this)(2, 0) = other(0, 2);
-  (*this)(2, 1) = other(1, 2);
-  (*this)(2, 2) = other(2, 2);
+  _m.m._20 = other._m.m._02;
+  _m.m._21 = other._m.m._12;
+  _m.m._22 = other._m.m._22;
 }
 
 
@@ -491,22 +555,50 @@ transpose_from(const FLOATNAME(LMatrix3) &other) {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE void FLOATNAME(LMatrix3)::
+INLINE_LINMATH void FLOATNAME(LMatrix3)::
 transpose_in_place() {
-  FLOATNAME(LMatrix3) temp = (*this);
-  transpose_from(temp);
+//  FLOATNAME(LMatrix3) temp = (*this);
+//  transpose_from(temp);
+
+  #define SWAP__(x,y) { FLOATTYPE temp = (x);  (x) = (y);  (y) = temp;}
+  SWAP__(_m.m._01,_m.m._10);
+  SWAP__(_m.m._02,_m.m._20);
+  SWAP__(_m.m._12,_m.m._21);
+  #undef SWAP__
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::transpose
+//  Description: Transposes the given matrix and returns it.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LMatrix3)
+transpose(const FLOATNAME(LMatrix3) &a) {
+
+  FLOATNAME(LMatrix3) result;
+  result.transpose_from(a);
+  return result;
 }
 
 // Matrix inversion code from Numerical Recipes in C.
+
+// dont trust compilers to inline these
+#define DET2(E00,E01,E10,E11) ((E00)*(E11) - (E10)*(E01))
+#define MATRIX3_DETERMINANT(mat)                                  \
+   ( (mat)._00 * DET2((mat)._11,(mat)._12,(mat)._21,(mat)._22)    \
+    -(mat)._01 * DET2((mat)._10,(mat)._12,(mat)._20,(mat)._22)    \
+    +(mat)._01 * DET2((mat)._10,(mat)._11,(mat)._20,(mat)._21))
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::det2
 //       Access: Private, Static
 //  Description: Returns the determinant of a 2x2 matrix.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATTYPE FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix3)::
 det2(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e10, FLOATTYPE e11) const {
-  return (e00 * e11 - e10 * e01);
+//  return (e00 * e11 - e10 * e01);
+	return DET2(e00,e01,e10,e11);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -514,12 +606,16 @@ det2(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e10, FLOATTYPE e11) const {
 //       Access: Public
 //  Description: Returns the determinant of the matrix.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATTYPE FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix3)::
 determinant() const {
+/*
   return 
     (*this)(0,0) * det2((*this)(1,1),(*this)(1,2),(*this)(2,1),(*this)(2,2))
     -(*this)(0,1) * det2((*this)(1,0),(*this)(1,2),(*this)(2,0),(*this)(2,2))
     +(*this)(0,2) * det2((*this)(1,0),(*this)(1,1),(*this)(2,0),(*this)(2,1));
+*/
+ 
+ return MATRIX3_DETERMINANT(_m.m);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -538,29 +634,31 @@ determinant() const {
 //               successfully inverted, false if the was a
 //               singularity.
 ////////////////////////////////////////////////////////////////////
-INLINE bool FLOATNAME(LMatrix3)::
+INLINE_LINMATH bool FLOATNAME(LMatrix3)::
 invert_from(const FLOATNAME(LMatrix3) &other) {
-  FLOATTYPE d = other.determinant();
+ 
+  FLOATTYPE other_det = MATRIX3_DETERMINANT(other._m.m);
 
-  if (IS_NEARLY_ZERO(d)) {
-    linmath_cat.warning()
-      << "Tried to invert singular LMatrix3.\n";
+  if (IS_NEARLY_ZERO(other_det)) {
+	#ifndef NDEBUG
+       linmath_cat.warning() << "Tried to invert singular LMatrix3.\n";
+	#endif
     (*this) = ident_mat();
     return false;
   }
 
-  d = 1.0 / d;
-  (*this)(0,0) =  d * det2(other(1,1), other(1,2), other(2,1), other(2,2));
-  (*this)(1,0) = -d * det2(other(1,0), other(1,2), other(2,0), other(2,2));
-  (*this)(2,0) =  d * det2(other(1,0), other(1,1), other(2,0), other(2,1));
+  other_det = 1.0 / other_det;
+  _m.m._00 =  other_det * DET2(other._m.m._11, other._m.m._12, other._m.m._21, other._m.m._22);
+  _m.m._10 = -other_det * DET2(other._m.m._10, other._m.m._12, other._m.m._20, other._m.m._22);
+  _m.m._20 =  other_det * DET2(other._m.m._10, other._m.m._11, other._m.m._20, other._m.m._21);
 
-  (*this)(0,1) = -d * det2(other(0,1), other(0,2), other(2,1), other(2,2));
-  (*this)(1,1) =  d * det2(other(0,0), other(0,2), other(2,0), other(2,2));
-  (*this)(2,1) = -d * det2(other(0,0), other(0,1), other(2,0), other(2,1));
+  _m.m._01 = -other_det * DET2(other._m.m._01, other._m.m._02, other._m.m._21, other._m.m._22);
+  _m.m._11 =  other_det * DET2(other._m.m._00, other._m.m._02, other._m.m._20, other._m.m._22);
+  _m.m._21 = -other_det * DET2(other._m.m._00, other._m.m._01, other._m.m._20, other._m.m._21);
 
-  (*this)(0,2) =  d * det2(other(0,1), other(0,2), other(1,1), other(1,2));
-  (*this)(1,2) = -d * det2(other(0,0), other(0,2), other(1,0), other(1,2));
-  (*this)(2,2) =  d * det2(other(0,0), other(0,1), other(1,0), other(1,1));
+  _m.m._02 =  other_det * DET2(other._m.m._01, other._m.m._02, other._m.m._11, other._m.m._12);
+  _m.m._12 = -other_det * DET2(other._m.m._00, other._m.m._02, other._m.m._10, other._m.m._12);
+  _m.m._22 =  other_det * DET2(other._m.m._00, other._m.m._01, other._m.m._10, other._m.m._11);
 
   return true;
 }
@@ -572,23 +670,22 @@ invert_from(const FLOATNAME(LMatrix3) &other) {
 //               inverse is successful, false if the matrix was
 //               singular.
 ////////////////////////////////////////////////////////////////////
-INLINE bool FLOATNAME(LMatrix3)::
+INLINE_LINMATH bool FLOATNAME(LMatrix3)::
 invert_in_place() {
   FLOATNAME(LMatrix3) temp = (*this);
   return invert_from(temp);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LMatrix::translate_mat
-//       Access: Public, Static
-//  Description: Returns a matrix that applies the indicated
-//               translation.
+//     Function: LMatrix3::invert
+//  Description: Inverts the given matrix and returns it.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
-translate_mat(const FLOATNAME(LVecBase2) &trans) {
-  return FLOATNAME(LMatrix3)(1.0, 0.0, 0.0,
-			   0.0, 1.0, 0.0,
-			   trans[0], trans[1], 1.0);
+INLINE_LINMATH FLOATNAME(LMatrix3)
+invert(const FLOATNAME(LMatrix3) &a) {
+  FLOATNAME(LMatrix3) result;
+  bool nonsingular = result.invert_from(a);
+  nassertr(nonsingular, FLOATNAME(LMatrix3)::ident_mat());
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -597,7 +694,20 @@ translate_mat(const FLOATNAME(LVecBase2) &trans) {
 //  Description: Returns a matrix that applies the indicated
 //               translation.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
+translate_mat(const FLOATNAME(LVecBase2) &trans) {
+  return FLOATNAME(LMatrix3)(1.0, 0.0, 0.0,
+			   0.0, 1.0, 0.0,
+			   trans._v.v._0, trans._v.v._1, 1.0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix::translate_mat
+//       Access: Public, Static
+//  Description: Returns a matrix that applies the indicated
+//               translation.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 translate_mat(FLOATTYPE tx, FLOATTYPE ty) {
   return FLOATNAME(LMatrix3)(1.0, 0.0, 0.0,
 			   0.0, 1.0, 0.0,
@@ -610,10 +720,10 @@ translate_mat(FLOATTYPE tx, FLOATTYPE ty) {
 //  Description: Returns a matrix that rotates by the given angle in
 //               degrees counterclockwise.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 rotate_mat(FLOATTYPE angle) {
-  double angle_rad=deg_2_rad(angle);
-  double s,c;
+  FLOATTYPE angle_rad=deg_2_rad(angle);
+  FLOATTYPE s,c;
   csincos(angle_rad,&s,&c);
   return FLOATNAME(LMatrix3)(  c,    s,  0.0,
 			      -s,    c,  0.0,
@@ -626,10 +736,10 @@ rotate_mat(FLOATTYPE angle) {
 //  Description: Returns a matrix that applies the indicated
 //               scale in each of the two axes.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 scale_mat(const FLOATNAME(LVecBase2) &scale) {
-  return FLOATNAME(LMatrix3)(scale[0], 0.0, 0.0,
-			     0.0, scale[1], 0.0,
+  return FLOATNAME(LMatrix3)(scale._v.v._0, 0.0, 0.0,
+			     0.0, scale._v.v._1, 0.0,
 			     0.0, 0.0, 1.0);
 }
 
@@ -639,7 +749,7 @@ scale_mat(const FLOATNAME(LVecBase2) &scale) {
 //  Description: Returns a matrix that applies the indicated
 //               scale in each of the two axes.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 scale_mat(FLOATTYPE sx, FLOATTYPE sy) {
   return FLOATNAME(LMatrix3)(sx, 0.0, 0.0,
 			     0.0, sy, 0.0,
@@ -652,42 +762,71 @@ scale_mat(FLOATTYPE sx, FLOATTYPE sy) {
 //  Description: Returns a matrix that rotates by the given angle in
 //               degrees counterclockwise about the indicated vector.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
-rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
+INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
+rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) &axis,
 	   CoordinateSystem cs) {
   if (cs == CS_default) {
     cs = default_coordinate_system;
   }
   FLOATNAME(LMatrix3) mat;
 
-  if (!is_right_handed(cs)) {
+  if(IS_LEFT_HANDED_COORDSYSTEM(cs)) {
     // In a left-handed coordinate system, counterclockwise is the
     // other direction.
     angle = -angle;
   }
 
+  FLOATTYPE axis_0 = axis._v.v._0;
+  FLOATTYPE axis_1 = axis._v.v._1;
+  FLOATTYPE axis_2 = axis._v.v._2;
+
   // Normalize the axis.
-  FLOATTYPE length = axis.dot(axis);
-  nassertr(length != 0.0, ident_mat());
-  FLOATTYPE recip_length=1.0f/length;
+  FLOATTYPE length_sq = axis_0 * axis_0 + axis_1 * axis_1 + axis_2 * axis_2;
+  #ifdef _DEBUG
+    nassertr(length_sq != 0.0, ident_mat());
+  #endif
+  FLOATTYPE recip_length=1.0f/csqrt(length_sq);
   axis *= recip_length;
 
-  double angle_rad=deg_2_rad(angle);
-  double s,c;
+  FLOATTYPE angle_rad=deg_2_rad(angle);
+  FLOATTYPE s,c;
   csincos(angle_rad,&s,&c);
-  double t = 1.0 - c;
+  FLOATTYPE t = 1.0 - c;
 
-  mat(0, 0) = t * axis[0] * axis[0] + c;
-  mat(0, 1) = t * axis[0] * axis[1] + s * axis[2];
-  mat(0, 2) = t * axis[0] * axis[2] - s * axis[1];
+  FLOATTYPE t0,t1,t2,s0,s1,s2;
 
-  mat(1, 0) = t * axis[1] * axis[0] - s * axis[2];
-  mat(1, 1) = t * axis[1] * axis[1] + c;
-  mat(1, 2) = t * axis[1] * axis[2] + s * axis[0];
+  t0 = t * axis_0;
+  t1 = t * axis_1;
+  t2 = t * axis_2;
+  s0 = s * axis_0;
+  s1 = s * axis_1;
+  s2 = s * axis_2;
 
-  mat(2, 0) = t * axis[2] * axis[0] + s * axis[1];
-  mat(2, 1) = t * axis[2] * axis[1] - s * axis[0];
-  mat(2, 2) = t * axis[2] * axis[2] + c;
+  mat._m.m._00 = t0 * axis_0 + c;
+  mat._m.m._01 = t0 * axis_1 + s2;
+  mat._m.m._02 = t0 * axis_2 - s1;
+
+  mat._m.m._10 = t1 * axis_0 - s2;
+  mat._m.m._11 = t1 * axis_1 + c;
+  mat._m.m._12 = t1 * axis_2 + s0;
+
+  mat._m.m._20 = t2 * axis_0 + s1;
+  mat._m.m._21 = t2 * axis_1 - s0;
+  mat._m.m._22 = t2 * axis_2 + c;
+
+/*
+  mat._m.m._00 = t * axis._v.v._0 * axis._v.v._0 + c;
+  mat._m.m._01 = t * axis._v.v._0 * axis._v.v._1 + s * axis._v.v._2;
+  mat._m.m._02 = t * axis._v.v._0 * axis._v.v._2 - s * axis._v.v._1;
+
+  mat._m.m._10 = t * axis._v.v._1 * axis._v.v._0 - s * axis._v.v._2;
+  mat._m.m._11 = t * axis._v.v._1 * axis._v.v._1 + c;
+  mat._m.m._12 = t * axis._v.v._1 * axis._v.v._2 + s * axis._v.v._0;
+
+  mat._m.m._20 = t * axis._v.v._2 * axis._v.v._0 + s * axis._v.v._1;
+  mat._m.m._21 = t * axis._v.v._2 * axis._v.v._1 - s * axis._v.v._0;
+  mat._m.m._22 = t * axis._v.v._2 * axis._v.v._2 + c;
+*/  
 
   return mat;
 }
@@ -698,11 +837,11 @@ rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
 //  Description: Returns a matrix that applies the indicated
 //               scale in each of the three axes.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 scale_mat(const FLOATNAME(LVecBase3) &scale) {
   return FLOATNAME(LMatrix3)(scale[0], 0.0, 0.0,
-			     0.0, scale[1], 0.0,
-			     0.0, 0.0, scale[2]);
+			     0.0, scale._v.v._1, 0.0,
+			     0.0, 0.0, scale._v.v._2);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -711,7 +850,7 @@ scale_mat(const FLOATNAME(LVecBase3) &scale) {
 //  Description: Returns a matrix that applies the indicated
 //               scale in each of the three axes.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 scale_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz) {
   return FLOATNAME(LMatrix3)(sx, 0.0, 0.0,
 			     0.0, sy, 0.0,
@@ -724,7 +863,7 @@ scale_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz) {
 //  Description: Returns true if two matrices are memberwise equal
 //               within a default tolerance based on the numeric type.
 ////////////////////////////////////////////////////////////////////
-INLINE bool FLOATNAME(LMatrix3)::
+INLINE_LINMATH bool FLOATNAME(LMatrix3)::
 almost_equal(const FLOATNAME(LMatrix3) &other) const {
   return almost_equal(other, NEARLY_ZERO(FLOATTYPE));
 }
@@ -734,44 +873,21 @@ almost_equal(const FLOATNAME(LMatrix3) &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void FLOATNAME(LMatrix3)::
+INLINE_LINMATH void FLOATNAME(LMatrix3)::
 output(ostream &out) const {
   out << "[ " 
-      << MAYBE_ZERO((*this)(0, 0)) << " "
-      << MAYBE_ZERO((*this)(0, 1)) << " " 
-      << MAYBE_ZERO((*this)(0, 2))
+      << MAYBE_ZERO(_m.m._00) << " "
+      << MAYBE_ZERO(_m.m._01) << " " 
+      << MAYBE_ZERO(_m.m._02)
       << " ] [ "
-      << MAYBE_ZERO((*this)(1, 0)) << " "
-      << MAYBE_ZERO((*this)(1, 1)) << " " 
-      << MAYBE_ZERO((*this)(1, 2))
+      << MAYBE_ZERO(_m.m._10) << " "
+      << MAYBE_ZERO(_m.m._11) << " " 
+      << MAYBE_ZERO(_m.m._12)
       << " ] [ "
-      << MAYBE_ZERO((*this)(2, 0)) << " "
-      << MAYBE_ZERO((*this)(2, 1)) << " " 
-      << MAYBE_ZERO((*this)(2, 2))
+      << MAYBE_ZERO(_m.m._20) << " "
+      << MAYBE_ZERO(_m.m._21) << " " 
+      << MAYBE_ZERO(_m.m._22)
       << " ]";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::transpose
-//  Description: Transposes the given matrix and returns it.
-////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix3)
-transpose(const FLOATNAME(LMatrix3) &a) {
-  FLOATNAME(LMatrix3) result;
-  result.transpose_from(a);
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::invert
-//  Description: Inverts the given matrix and returns it.
-////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix3)
-invert(const FLOATNAME(LMatrix3) &a) {
-  FLOATNAME(LMatrix3) result;
-  bool nonsingular = result.invert_from(a);
-  nassertr(nonsingular, FLOATNAME(LMatrix3)::ident_mat());
-  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -779,24 +895,36 @@ invert(const FLOATNAME(LMatrix3) &a) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void FLOATNAME(LMatrix3)::
+INLINE_LINMATH void FLOATNAME(LMatrix3)::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) 
-    << MAYBE_ZERO((*this)(0, 0)) << " "
-    << MAYBE_ZERO((*this)(0, 1)) << " " 
-    << MAYBE_ZERO((*this)(0, 2))
+    << MAYBE_ZERO(_m.m._00) << " "
+    << MAYBE_ZERO(_m.m._01) << " " 
+    << MAYBE_ZERO(_m.m._02)
     << "\n";
   indent(out, indent_level)
-    << MAYBE_ZERO((*this)(1, 0)) << " "
-    << MAYBE_ZERO((*this)(1, 1)) << " " 
-    << MAYBE_ZERO((*this)(1, 2))
+    << MAYBE_ZERO(_m.m._10) << " "
+    << MAYBE_ZERO(_m.m._11) << " " 
+    << MAYBE_ZERO(_m.m._12)
     << "\n";
   indent(out, indent_level)
-    << MAYBE_ZERO((*this)(2, 0)) << " "
-    << MAYBE_ZERO((*this)(2, 1)) << " " 
-    << MAYBE_ZERO((*this)(2, 2))
+    << MAYBE_ZERO(_m.m._20) << " "
+    << MAYBE_ZERO(_m.m._21) << " " 
+    << MAYBE_ZERO(_m.m._22)
     << "\n";
 }
+
+
+#define MATRIX3_PRODUCT(res, a, b)                   \
+res._m.m._00 = a._m.m._00*b._m.m._00 + a._m.m._01*b._m.m._10 + a._m.m._02*b._m.m._20;   \
+res._m.m._01 = a._m.m._00*b._m.m._01 + a._m.m._01*b._m.m._11 + a._m.m._02*b._m.m._21;   \
+res._m.m._02 = a._m.m._00*b._m.m._02 + a._m.m._01*b._m.m._12 + a._m.m._02*b._m.m._22;   \
+res._m.m._10 = a._m.m._10*b._m.m._00 + a._m.m._11*b._m.m._10 + a._m.m._12*b._m.m._20;   \
+res._m.m._11 = a._m.m._10*b._m.m._01 + a._m.m._11*b._m.m._11 + a._m.m._12*b._m.m._21;   \
+res._m.m._12 = a._m.m._10*b._m.m._02 + a._m.m._11*b._m.m._12 + a._m.m._12*b._m.m._22;   \
+res._m.m._20 = a._m.m._20*b._m.m._00 + a._m.m._21*b._m.m._10 + a._m.m._22*b._m.m._20;   \
+res._m.m._21 = a._m.m._20*b._m.m._01 + a._m.m._21*b._m.m._11 + a._m.m._22*b._m.m._21;   \
+res._m.m._22 = a._m.m._20*b._m.m._02 + a._m.m._21*b._m.m._12 + a._m.m._22*b._m.m._22;
 
 
 ////////////////////////////////////////////////////////////////////
@@ -804,10 +932,31 @@ write(ostream &out, int indent_level) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 operator * (const FLOATNAME(LMatrix3) &other) const {
-  FLOATNAME(LMatrix3) t;
+	FLOATNAME(LMatrix3) t;
 
+	MATRIX3_PRODUCT(t,(*this),other);
+/*
+typedef union {
+        struct {
+            FLOATTYPE     _m.m._11, _m.m._12, _m.m._13;
+            FLOATTYPE     _m.m._21, _m.m._22, _m.m._23;
+            FLOATTYPE     _m.m._31, _m.m._32, _m.m._33;
+        };
+
+		FLOATTYPE m[3][3];
+    } MYMATRIX3;
+
+	FLOATNAME(LMatrix3) t;
+
+	MYMATRIX3 *result_ptr=(MYMATRIX3 *)t.get_m.data();
+	MYMATRIX3 *mat1_ptr=(MYMATRIX3 *)this->get_m.data();
+	MYMATRIX3 *mat2_ptr=(MYMATRIX3 *)other.get_m.data();
+
+	MATRIX3_PRODUCT(result_ptr,mat1_ptr,mat2_ptr);
+*/
+/*
   t(0, 0) = mult_cel(other, 0, 0);
   t(0, 1) = mult_cel(other, 0, 1);
   t(0, 2) = mult_cel(other, 0, 2);
@@ -819,7 +968,7 @@ operator * (const FLOATNAME(LMatrix3) &other) const {
   t(2, 0) = mult_cel(other, 2, 0);
   t(2, 1) = mult_cel(other, 2, 1);
   t(2, 2) = mult_cel(other, 2, 2);
-
+*/
   return t;
 }
 
@@ -828,21 +977,21 @@ operator * (const FLOATNAME(LMatrix3) &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 operator * (FLOATTYPE scalar) const {
   FLOATNAME(LMatrix3) t;
 
-  t(0, 0) = (*this)(0, 0) * scalar;
-  t(0, 1) = (*this)(0, 1) * scalar;
-  t(0, 2) = (*this)(0, 2) * scalar;
+  t._m.m._00 = _m.m._00 * scalar;
+  t._m.m._01 = _m.m._01 * scalar;
+  t._m.m._02 = _m.m._02 * scalar;
 
-  t(1, 0) = (*this)(1, 0) * scalar;
-  t(1, 1) = (*this)(1, 1) * scalar;
-  t(1, 2) = (*this)(1, 2) * scalar;
+  t._m.m._10 = _m.m._10 * scalar;
+  t._m.m._11 = _m.m._11 * scalar;
+  t._m.m._12 = _m.m._12 * scalar;
 
-  t(2, 0) = (*this)(2, 0) * scalar;
-  t(2, 1) = (*this)(2, 1) * scalar;
-  t(2, 2) = (*this)(2, 2) * scalar;
+  t._m.m._20 = _m.m._20 * scalar;
+  t._m.m._21 = _m.m._21 * scalar;
+  t._m.m._22 = _m.m._22 * scalar;
 
   return t;
 }
@@ -852,23 +1001,12 @@ operator * (FLOATTYPE scalar) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 operator / (FLOATTYPE scalar) const {
   FLOATNAME(LMatrix3) t;
 
-  t(0, 0) = (*this)(0, 0) / scalar;
-  t(0, 1) = (*this)(0, 1) / scalar;
-  t(0, 2) = (*this)(0, 2) / scalar;
-
-  t(1, 0) = (*this)(1, 0) / scalar;
-  t(1, 1) = (*this)(1, 1) / scalar;
-  t(1, 2) = (*this)(1, 2) / scalar;
-
-  t(2, 0) = (*this)(2, 0) / scalar;
-  t(2, 1) = (*this)(2, 1) / scalar;
-  t(2, 2) = (*this)(2, 2) / scalar;
-
-  return t;
+  FLOATTYPE recip_scalar = 1.0/scalar;
+  return (*this) * recip_scalar;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -876,19 +1014,19 @@ operator / (FLOATTYPE scalar) const {
 //       Access: Public
 //  Description: Performs a memberwise addition between two matrices.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
 operator += (const FLOATNAME(LMatrix3) &other) {
-  (*this)(0, 0) += other(0, 0);
-  (*this)(0, 1) += other(0, 1);
-  (*this)(0, 2) += other(0, 2);
+  _m.m._00 += other._m.m._00;
+  _m.m._01 += other._m.m._01;
+  _m.m._02 += other._m.m._02;
 
-  (*this)(1, 0) += other(1, 0);
-  (*this)(1, 1) += other(1, 1);
-  (*this)(1, 2) += other(1, 2);
+  _m.m._10 += other._m.m._10;
+  _m.m._11 += other._m.m._11;
+  _m.m._12 += other._m.m._12;
 
-  (*this)(2, 0) += other(2, 0);
-  (*this)(2, 1) += other(2, 1);
-  (*this)(2, 2) += other(2, 2);
+  _m.m._20 += other._m.m._20;
+  _m.m._21 += other._m.m._21;
+  _m.m._22 += other._m.m._22;
 
   return *this;
 }
@@ -898,19 +1036,19 @@ operator += (const FLOATNAME(LMatrix3) &other) {
 //       Access: Public
 //  Description: Performs a memberwise subtraction between two matrices.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
+INLINE_LINMATH FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
 operator -= (const FLOATNAME(LMatrix3) &other) {
-  (*this)(0, 0) -= other(0, 0);
-  (*this)(0, 1) -= other(0, 1);
-  (*this)(0, 2) -= other(0, 2);
+  _m.m._00 -= other._m.m._00;
+  _m.m._01 -= other._m.m._01;
+  _m.m._02 -= other._m.m._02;
 
-  (*this)(1, 0) -= other(1, 0);
-  (*this)(1, 1) -= other(1, 1);
-  (*this)(1, 2) -= other(1, 2);
+  _m.m._10 -= other._m.m._10;
+  _m.m._11 -= other._m.m._11;
+  _m.m._12 -= other._m.m._12;
 
-  (*this)(2, 0) -= other(2, 0);
-  (*this)(2, 1) -= other(2, 1);
-  (*this)(2, 2) -= other(2, 2);
+  _m.m._20 -= other._m.m._20;
+  _m.m._21 -= other._m.m._21;
+  _m.m._22 -= other._m.m._22;
 
   return *this;
 }

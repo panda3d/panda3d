@@ -3,27 +3,27 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-INLINE BoundingHexahedron::
+INLINE_MATHUTIL BoundingHexahedron::
 BoundingHexahedron() {
 }
 
-INLINE int BoundingHexahedron::
+INLINE_MATHUTIL int BoundingHexahedron::
 get_num_points() const {
   return num_points;
 }
 
-INLINE LPoint3f BoundingHexahedron::
+INLINE_MATHUTIL LPoint3f BoundingHexahedron::
 get_point(int n) const {
   nassertr(n >= 0 && n < num_points, LPoint3f(0.0, 0.0, 0.0));
   return _points[n];
 }
 
-INLINE int BoundingHexahedron::
+INLINE_MATHUTIL int BoundingHexahedron::
 get_num_planes() const {
   return num_planes;
 }
 
-INLINE Planef BoundingHexahedron::
+INLINE_MATHUTIL Planef BoundingHexahedron::
 get_plane(int n) const {
   nassertr(n >= 0 && n < num_planes, Planef());
   return _planes[n];

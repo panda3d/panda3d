@@ -39,6 +39,8 @@ extern CoordinateSystem EXPCL_PANDA default_coordinate_system;
 CoordinateSystem EXPCL_PANDA parse_coordinate_system_string(const string &str);
 bool EXPCL_PANDA is_right_handed(CoordinateSystem cs = CS_default);
 
+#define IS_LEFT_HANDED_COORDSYSTEM(cs) ((cs==CS_zup_left) || (cs==CS_yup_left))
+
 ostream EXPCL_PANDA &operator << (ostream &out, CoordinateSystem cs);
 
 

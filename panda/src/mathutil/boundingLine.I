@@ -3,11 +3,11 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-INLINE BoundingLine::
+INLINE_MATHUTIL BoundingLine::
 BoundingLine() {
 }
 
-INLINE BoundingLine::
+INLINE_MATHUTIL BoundingLine::
 BoundingLine(const LPoint3f &a, const LPoint3f &b) :
   _origin(a), _vector(b - a) 
 {
@@ -18,14 +18,14 @@ BoundingLine(const LPoint3f &a, const LPoint3f &b) :
   }
 }
 
-INLINE const LPoint3f &BoundingLine::
+INLINE_MATHUTIL const LPoint3f &BoundingLine::
 get_point_a() const {
   nassertr(!is_empty(), _origin);
   nassertr(!is_infinite(), _origin);
   return _origin;
 }
 
-INLINE LPoint3f BoundingLine::
+INLINE_MATHUTIL LPoint3f BoundingLine::
 get_point_b() const {
   nassertr(!is_empty(), _origin);
   nassertr(!is_infinite(), _origin);

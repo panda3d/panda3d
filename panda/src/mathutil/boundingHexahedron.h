@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA BoundingHexahedron : public FiniteBoundingVolume {
 public:
-  INLINE BoundingHexahedron();
+  INLINE_MATHUTIL BoundingHexahedron();
   BoundingHexahedron(const Frustumf &frustum, bool is_ortho,
 		     CoordinateSystem cs = CS_default);
   virtual BoundingVolume *make_copy() const;
@@ -41,10 +41,10 @@ public:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 
-  INLINE int get_num_points() const;
-  INLINE LPoint3f get_point(int n) const;
-  INLINE int get_num_planes() const;
-  INLINE Planef get_plane(int n) const;
+  INLINE_MATHUTIL int get_num_points() const;
+  INLINE_MATHUTIL LPoint3f get_point(int n) const;
+  INLINE_MATHUTIL int get_num_planes() const;
+  INLINE_MATHUTIL Planef get_plane(int n) const;
 
 protected:
   virtual bool extend_other(BoundingVolume *other) const;

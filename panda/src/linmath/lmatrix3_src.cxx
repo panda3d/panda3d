@@ -36,8 +36,8 @@ fill(FLOATTYPE fill_value) {
 int FLOATNAME(LMatrix3)::
 compare_to(const FLOATNAME(LMatrix3) &other, FLOATTYPE threshold) const {
   for (int i = 0; i < 9; i++) {
-    if (!IS_THRESHOLD_EQUAL(_data[i], other._data[i], threshold)) {
-      return (_data[i] < other._data[i]) ? -1 : 1;
+    if (!IS_THRESHOLD_EQUAL(_m.data[i], other._m.data[i], threshold)) {
+      return (_m.data[i] < other._m.data[i]) ? -1 : 1;
     }
   }
   return 0;

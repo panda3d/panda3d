@@ -9,7 +9,7 @@
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LPoint4)::
+INLINE_LINMATH FLOATNAME(LPoint4)::
 FLOATNAME(LPoint4)() {
 }
 
@@ -18,7 +18,7 @@ FLOATNAME(LPoint4)() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LPoint4)::
+INLINE_LINMATH FLOATNAME(LPoint4)::
 FLOATNAME(LPoint4)(const FLOATNAME(LVecBase4) &copy) : FLOATNAME(LVecBase4)(copy) {
 }
 
@@ -27,7 +27,7 @@ FLOATNAME(LPoint4)(const FLOATNAME(LVecBase4) &copy) : FLOATNAME(LVecBase4)(copy
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LPoint4) &FLOATNAME(LPoint4)::
+INLINE_LINMATH FLOATNAME(LPoint4) &FLOATNAME(LPoint4)::
 operator = (const FLOATNAME(LVecBase4) &copy) {
   FLOATNAME(LVecBase4)::operator = (copy);
   return *this;
@@ -38,7 +38,7 @@ operator = (const FLOATNAME(LVecBase4) &copy) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LPoint4) &FLOATNAME(LPoint4)::
+INLINE_LINMATH FLOATNAME(LPoint4) &FLOATNAME(LPoint4)::
 operator = (FLOATTYPE fill_value) {
   FLOATNAME(LVecBase4)::operator = (fill_value);
   return *this;
@@ -49,7 +49,7 @@ operator = (FLOATTYPE fill_value) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LPoint4)::
+INLINE_LINMATH FLOATNAME(LPoint4)::
 FLOATNAME(LPoint4)(FLOATTYPE fill_value) :
   FLOATNAME(LVecBase4)(fill_value) 
 {
@@ -60,7 +60,7 @@ FLOATNAME(LPoint4)(FLOATTYPE fill_value) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LPoint4)::
+INLINE_LINMATH FLOATNAME(LPoint4)::
 FLOATNAME(LPoint4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w) : 
   FLOATNAME(LVecBase4)(x, y, z, w) 
 {
@@ -71,7 +71,7 @@ FLOATNAME(LPoint4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w) :
 //       Access: Public
 //  Description: Returns a zero-length point.
 ////////////////////////////////////////////////////////////////////
-INLINE const FLOATNAME(LPoint4) &FLOATNAME(LPoint4)::
+INLINE_LINMATH const FLOATNAME(LPoint4) &FLOATNAME(LPoint4)::
 zero() {
   return (const FLOATNAME(LPoint4) &)FLOATNAME(LVecBase4)::zero();
 }
@@ -81,7 +81,7 @@ zero() {
 //       Access: Public
 //  Description: Returns a unit X point.
 ////////////////////////////////////////////////////////////////////
-INLINE const FLOATNAME(LPoint4) &FLOATNAME(LPoint4)::
+INLINE_LINMATH const FLOATNAME(LPoint4) &FLOATNAME(LPoint4)::
 unit_x() {
   return (const FLOATNAME(LPoint4) &)FLOATNAME(LVecBase4)::unit_x();
 }
@@ -91,7 +91,7 @@ unit_x() {
 //       Access: Public
 //  Description: Returns a unit Y point.
 ////////////////////////////////////////////////////////////////////
-INLINE const FLOATNAME(LPoint4) &FLOATNAME(LPoint4)::
+INLINE_LINMATH const FLOATNAME(LPoint4) &FLOATNAME(LPoint4)::
 unit_y() {
   return (const FLOATNAME(LPoint4) &)FLOATNAME(LVecBase4)::unit_y();
 }
@@ -101,7 +101,7 @@ unit_y() {
 //       Access: Public
 //  Description: Returns a unit Z point.
 ////////////////////////////////////////////////////////////////////
-INLINE const FLOATNAME(LPoint4) &FLOATNAME(LPoint4)::
+INLINE_LINMATH const FLOATNAME(LPoint4) &FLOATNAME(LPoint4)::
 unit_z() {
   return (const FLOATNAME(LPoint4) &)FLOATNAME(LVecBase4)::unit_z();
 }
@@ -111,7 +111,7 @@ unit_z() {
 //       Access: Public
 //  Description: Returns a unit W point.
 ////////////////////////////////////////////////////////////////////
-INLINE const FLOATNAME(LPoint4) &FLOATNAME(LPoint4)::
+INLINE_LINMATH const FLOATNAME(LPoint4) &FLOATNAME(LPoint4)::
 unit_w() {
   return (const FLOATNAME(LPoint4) &)FLOATNAME(LVecBase4)::unit_w();
 }
@@ -121,7 +121,7 @@ unit_w() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LPoint4) FLOATNAME(LPoint4)::
+INLINE_LINMATH FLOATNAME(LPoint4) FLOATNAME(LPoint4)::
 operator - () const {
   return FLOATNAME(LVecBase4)::operator - ();
 }
@@ -131,7 +131,7 @@ operator - () const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVecBase4) FLOATNAME(LPoint4)::
+INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LPoint4)::
 operator + (const FLOATNAME(LVecBase4) &other) const {
   return FLOATNAME(LVecBase4)::operator + (other);
 }
@@ -141,7 +141,7 @@ operator + (const FLOATNAME(LVecBase4) &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LPoint4) FLOATNAME(LPoint4)::
+INLINE_LINMATH FLOATNAME(LPoint4) FLOATNAME(LPoint4)::
 operator + (const FLOATNAME(LVector4) &other) const {
   return FLOATNAME(LVecBase4)::operator + (other);
 }
@@ -151,7 +151,7 @@ operator + (const FLOATNAME(LVector4) &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVecBase4) FLOATNAME(LPoint4)::
+INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LPoint4)::
 operator - (const FLOATNAME(LVecBase4) &other) const {
   return FLOATNAME(LVecBase4)::operator - (other);
 }
@@ -161,7 +161,7 @@ operator - (const FLOATNAME(LVecBase4) &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector4) FLOATNAME(LPoint4)::
+INLINE_LINMATH FLOATNAME(LVector4) FLOATNAME(LPoint4)::
 operator - (const FLOATNAME(LPoint4) &other) const {
   return FLOATNAME(LVecBase4)::operator - (other);
 }
@@ -171,7 +171,7 @@ operator - (const FLOATNAME(LPoint4) &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LPoint4) FLOATNAME(LPoint4)::
+INLINE_LINMATH FLOATNAME(LPoint4) FLOATNAME(LPoint4)::
 operator - (const FLOATNAME(LVector4) &other) const {
   return FLOATNAME(LVecBase4)::operator - (other);
 }
@@ -181,7 +181,7 @@ operator - (const FLOATNAME(LVector4) &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LPoint4) FLOATNAME(LPoint4)::
+INLINE_LINMATH FLOATNAME(LPoint4) FLOATNAME(LPoint4)::
 operator * (FLOATTYPE scalar) const {
   return FLOATNAME(LPoint4)(FLOATNAME(LVecBase4)::operator * (scalar));
 }
@@ -191,7 +191,7 @@ operator * (FLOATTYPE scalar) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LPoint4) FLOATNAME(LPoint4)::
+INLINE_LINMATH FLOATNAME(LPoint4) FLOATNAME(LPoint4)::
 operator / (FLOATTYPE scalar) const {
   return FLOATNAME(LPoint4)(FLOATNAME(LVecBase4)::operator / (scalar));
 }

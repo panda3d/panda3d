@@ -16,87 +16,87 @@ PUBLISHED:
   typedef const FLOATTYPE *iterator;
   typedef const FLOATTYPE *const_iterator;
 
-  INLINE FLOATNAME(LMatrix3)();
-  INLINE FLOATNAME(LMatrix3)(const FLOATNAME(LMatrix3) &other);
-  INLINE FLOATNAME(LMatrix3) &operator = (const FLOATNAME(LMatrix3) &other);
-  INLINE FLOATNAME(LMatrix3) &operator = (FLOATTYPE fill_value);
-  INLINE FLOATNAME(LMatrix3)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02,
+  INLINE_LINMATH FLOATNAME(LMatrix3)();
+  INLINE_LINMATH FLOATNAME(LMatrix3)(const FLOATNAME(LMatrix3) &other);
+  INLINE_LINMATH FLOATNAME(LMatrix3) &operator = (const FLOATNAME(LMatrix3) &other);
+  INLINE_LINMATH FLOATNAME(LMatrix3) &operator = (FLOATTYPE fill_value);
+  INLINE_LINMATH FLOATNAME(LMatrix3)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02,
 			     FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12,
 			     FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22);
 
   void fill(FLOATTYPE fill_value);
-  INLINE void set(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02,
+  INLINE_LINMATH void set(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02,
 		  FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12,
 		  FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22);
 
-  INLINE void set_row(int row, const FLOATNAME(LVecBase3) &v);
-  INLINE void set_col(int col, const FLOATNAME(LVecBase3) &v);
+  INLINE_LINMATH void set_row(int row, const FLOATNAME(LVecBase3) &v);
+  INLINE_LINMATH void set_col(int col, const FLOATNAME(LVecBase3) &v);
 
-  INLINE void set_row(int row, const FLOATNAME(LVecBase2) &v);
-  INLINE void set_col(int col, const FLOATNAME(LVecBase2) &v);
+  INLINE_LINMATH void set_row(int row, const FLOATNAME(LVecBase2) &v);
+  INLINE_LINMATH void set_col(int col, const FLOATNAME(LVecBase2) &v);
 
-  INLINE FLOATNAME(LVecBase3) get_row(int row) const;
-  INLINE FLOATNAME(LVecBase3) get_col(int col) const;
+  INLINE_LINMATH FLOATNAME(LVecBase3) get_row(int row) const;
+  INLINE_LINMATH FLOATNAME(LVecBase3) get_col(int col) const;
 
-  INLINE FLOATNAME(LVecBase2) get_row2(int row) const;
-  INLINE FLOATNAME(LVecBase2) get_col2(int col) const;
+  INLINE_LINMATH FLOATNAME(LVecBase2) get_row2(int row) const;
+  INLINE_LINMATH FLOATNAME(LVecBase2) get_col2(int col) const;
 
-  INLINE FLOATTYPE &operator () (int row, int col);
-  INLINE FLOATTYPE operator () (int row, int col) const;
+  INLINE_LINMATH FLOATTYPE &operator () (int row, int col);
+  INLINE_LINMATH FLOATTYPE operator () (int row, int col) const;
 
-  INLINE bool is_nan() const;
+  INLINE_LINMATH bool is_nan() const;
 
-  INLINE FLOATTYPE get_cell(int row, int col) const;
-  INLINE void set_cell(int row, int col, FLOATTYPE value);
+  INLINE_LINMATH FLOATTYPE get_cell(int row, int col) const;
+  INLINE_LINMATH void set_cell(int row, int col, FLOATTYPE value);
 
-  INLINE const FLOATTYPE *get_data() const;
-  INLINE int get_num_components() const;
+  INLINE_LINMATH const FLOATTYPE *get_data() const;
+  INLINE_LINMATH int get_num_components() const;
 
 public:
-  INLINE iterator begin();
-  INLINE iterator end();
+  INLINE_LINMATH iterator begin();
+  INLINE_LINMATH iterator end();
 
-  INLINE const_iterator begin() const;
-  INLINE const_iterator end() const;
+  INLINE_LINMATH const_iterator begin() const;
+  INLINE_LINMATH const_iterator end() const;
 
 PUBLISHED:
-  INLINE bool operator < (const FLOATNAME(LMatrix3) &other) const;
-  INLINE bool operator == (const FLOATNAME(LMatrix3) &other) const;
-  INLINE bool operator != (const FLOATNAME(LMatrix3) &other) const;
+  INLINE_LINMATH bool operator < (const FLOATNAME(LMatrix3) &other) const;
+  INLINE_LINMATH bool operator == (const FLOATNAME(LMatrix3) &other) const;
+  INLINE_LINMATH bool operator != (const FLOATNAME(LMatrix3) &other) const;
 
-  INLINE int compare_to(const FLOATNAME(LMatrix3) &other) const;
+  INLINE_LINMATH int compare_to(const FLOATNAME(LMatrix3) &other) const;
   int compare_to(const FLOATNAME(LMatrix3) &other, FLOATTYPE threshold) const;
 
-  INLINE FLOATNAME(LVecBase3)
+  INLINE_LINMATH FLOATNAME(LVecBase3)
   xform(const FLOATNAME(LVecBase3) &v) const;
 
-  INLINE FLOATNAME(LVecBase2)
+  INLINE_LINMATH FLOATNAME(LVecBase2)
   xform_point(const FLOATNAME(LVecBase2) &v) const;
  
-  INLINE FLOATNAME(LVecBase2)
+  INLINE_LINMATH FLOATNAME(LVecBase2)
   xform_vec(const FLOATNAME(LVecBase2) &v) const;
 
-  INLINE FLOATNAME(LMatrix3) operator * (const FLOATNAME(LMatrix3) &other) const;
-  INLINE FLOATNAME(LMatrix3) operator * (FLOATTYPE scalar) const;
-  INLINE FLOATNAME(LMatrix3) operator / (FLOATTYPE scalar) const;
+  INLINE_LINMATH FLOATNAME(LMatrix3) operator * (const FLOATNAME(LMatrix3) &other) const;
+  INLINE_LINMATH FLOATNAME(LMatrix3) operator * (FLOATTYPE scalar) const;
+  INLINE_LINMATH FLOATNAME(LMatrix3) operator / (FLOATTYPE scalar) const;
 
-  INLINE FLOATNAME(LMatrix3) &operator += (const FLOATNAME(LMatrix3) &other);
-  INLINE FLOATNAME(LMatrix3) &operator -= (const FLOATNAME(LMatrix3) &other);
+  INLINE_LINMATH FLOATNAME(LMatrix3) &operator += (const FLOATNAME(LMatrix3) &other);
+  INLINE_LINMATH FLOATNAME(LMatrix3) &operator -= (const FLOATNAME(LMatrix3) &other);
 
-  INLINE FLOATNAME(LMatrix3) &operator *= (const FLOATNAME(LMatrix3) &other);
+  INLINE_LINMATH FLOATNAME(LMatrix3) &operator *= (const FLOATNAME(LMatrix3) &other);
   
-  INLINE FLOATNAME(LMatrix3) &operator *= (FLOATTYPE scalar);
-  INLINE FLOATNAME(LMatrix3) &operator /= (FLOATTYPE scalar);
+  INLINE_LINMATH FLOATNAME(LMatrix3) &operator *= (FLOATTYPE scalar);
+  INLINE_LINMATH FLOATNAME(LMatrix3) &operator /= (FLOATTYPE scalar);
 
-  INLINE FLOATTYPE determinant() const;
+  INLINE_LINMATH FLOATTYPE determinant() const;
 
-  INLINE void transpose_from(const FLOATNAME(LMatrix3) &other);
-  INLINE void transpose_in_place();
+  INLINE_LINMATH void transpose_from(const FLOATNAME(LMatrix3) &other);
+  INLINE_LINMATH void transpose_in_place();
 
-  INLINE bool invert_from(const FLOATNAME(LMatrix3) &other);
-  INLINE bool invert_in_place();
+  INLINE_LINMATH bool invert_from(const FLOATNAME(LMatrix3) &other);
+  INLINE_LINMATH bool invert_in_place();
 
-  static INLINE const FLOATNAME(LMatrix3) &ident_mat();
+  static INLINE_LINMATH const FLOATNAME(LMatrix3) &ident_mat();
 
   // A 3x3 matrix is likely to be used for one of two purposes.  In
   // 2-d coordinate space (e.g. texture or surface coordinates), it
@@ -108,19 +108,19 @@ PUBLISHED:
   // The following named constructors return 3x3 matrices suitable for
   // affine transforms in 2-d coordinate space.
 
-  static INLINE FLOATNAME(LMatrix3) translate_mat(const FLOATNAME(LVecBase2) &trans);
-  static INLINE FLOATNAME(LMatrix3) translate_mat(FLOATTYPE tx, FLOATTYPE ty);
-  static INLINE FLOATNAME(LMatrix3) rotate_mat(FLOATTYPE angle);
-  static INLINE FLOATNAME(LMatrix3) scale_mat(const FLOATNAME(LVecBase2) &scale);
-  static INLINE FLOATNAME(LMatrix3) scale_mat(FLOATTYPE sx, FLOATTYPE sy);
+  static INLINE_LINMATH FLOATNAME(LMatrix3) translate_mat(const FLOATNAME(LVecBase2) &trans);
+  static INLINE_LINMATH FLOATNAME(LMatrix3) translate_mat(FLOATTYPE tx, FLOATTYPE ty);
+  static INLINE_LINMATH FLOATNAME(LMatrix3) rotate_mat(FLOATTYPE angle);
+  static INLINE_LINMATH FLOATNAME(LMatrix3) scale_mat(const FLOATNAME(LVecBase2) &scale);
+  static INLINE_LINMATH FLOATNAME(LMatrix3) scale_mat(FLOATTYPE sx, FLOATTYPE sy);
 
   // The following named constructors return 3x3 matrices suitable for
   // scale/rotate transforms in 3-d coordinate space.
-  static INLINE FLOATNAME(LMatrix3) rotate_mat(FLOATTYPE angle,
-				      FLOATNAME(LVecBase3) axis,
+  static INLINE_LINMATH FLOATNAME(LMatrix3) rotate_mat(FLOATTYPE angle,
+				      FLOATNAME(LVecBase3) &axis,
 				      CoordinateSystem cs = CS_default);
-  static INLINE FLOATNAME(LMatrix3) scale_mat(const FLOATNAME(LVecBase3) &scale);
-  static INLINE FLOATNAME(LMatrix3) scale_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz);
+  static INLINE_LINMATH FLOATNAME(LMatrix3) scale_mat(const FLOATNAME(LVecBase3) &scale);
+  static INLINE_LINMATH FLOATNAME(LMatrix3) scale_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz);
 
   // We don't have a scale_mat() that takes a single uniform scale
   // parameter, because it would be ambiguous whether we mean a 2-d or
@@ -129,16 +129,27 @@ PUBLISHED:
   bool almost_equal(const FLOATNAME(LMatrix3) &other, 
 		    FLOATTYPE threshold) const;
 
-  INLINE bool almost_equal(const FLOATNAME(LMatrix3) &other) const;
+  INLINE_LINMATH bool almost_equal(const FLOATNAME(LMatrix3) &other) const;
   
-  INLINE void output(ostream &out) const;
-  INLINE void write(ostream &out, int indent_level = 0) const;
+  INLINE_LINMATH void output(ostream &out) const;
+  INLINE_LINMATH void write(ostream &out, int indent_level = 0) const;
+
+public:
+
+  union {
+        struct {
+	   FLOATTYPE  _00, _01, _02;
+           FLOATTYPE  _10, _11, _12;
+           FLOATTYPE  _20, _21, _22;
+        } m;
+
+		FLOATTYPE data[3 * 3];
+  } _m;
 
 private:
-  INLINE FLOATTYPE mult_cel(const FLOATNAME(LMatrix3) &other, int x, int y) const;
-  INLINE FLOATTYPE det2(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e10, FLOATTYPE e11) const;
+  INLINE_LINMATH FLOATTYPE mult_cel(const FLOATNAME(LMatrix3) &other, int x, int y) const;
+  INLINE_LINMATH FLOATTYPE det2(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e10, FLOATTYPE e11) const;
 
-  FLOATTYPE _data[3 * 3];
   static FLOATNAME(LMatrix3) _ident_mat;
 
   //Functionality for reading and writing from/to a binary source
@@ -157,12 +168,12 @@ private:
 };
 
 
-INLINE ostream &operator << (ostream &out, const FLOATNAME(LMatrix3) &mat) {
+INLINE_LINMATH ostream &operator << (ostream &out, const FLOATNAME(LMatrix3) &mat) {
   mat.output(out);
   return out;
 }
 
-INLINE FLOATNAME(LMatrix3) transpose(const FLOATNAME(LMatrix3) &a);
-INLINE FLOATNAME(LMatrix3) invert(const FLOATNAME(LMatrix3) &a);
+INLINE_LINMATH FLOATNAME(LMatrix3) transpose(const FLOATNAME(LMatrix3) &a);
+INLINE_LINMATH FLOATNAME(LMatrix3) invert(const FLOATNAME(LMatrix3) &a);
 
 #include "lmatrix3_src.I"

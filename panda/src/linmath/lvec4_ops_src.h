@@ -10,28 +10,28 @@
 
 
 // scalar * vec (vec * scalar is defined in class)
-INLINE FLOATNAME(LVecBase4) 
+INLINE_LINMATH FLOATNAME(LVecBase4) 
 operator * (FLOATTYPE scalar, const FLOATNAME(LVecBase4) &a);
 
-INLINE FLOATNAME(LPoint4) 
+INLINE_LINMATH FLOATNAME(LPoint4) 
 operator * (FLOATTYPE scalar, const FLOATNAME(LPoint4) &a);
 
-INLINE FLOATNAME(LVector4) 
+INLINE_LINMATH FLOATNAME(LVector4) 
 operator * (FLOATTYPE scalar, const FLOATNAME(LVector4) &a);
 
 
 // dot product
-INLINE FLOATTYPE
+INLINE_LINMATH FLOATTYPE
 dot(const FLOATNAME(LVecBase4) &a, const FLOATNAME(LVecBase4) &b);
 
 
 // Length of a vector.
-INLINE FLOATTYPE
+INLINE_LINMATH FLOATTYPE
 length(const FLOATNAME(LVector4) &a);
 
 
 // A normalized vector.
-INLINE FLOATNAME(LVector4)
+INLINE_LINMATH FLOATNAME(LVector4)
 normalize(const FLOATNAME(LVector4) &v);
 
 

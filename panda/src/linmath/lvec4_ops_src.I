@@ -7,7 +7,7 @@
 //     Function: scalar * LVecBase4
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVecBase4) 
+INLINE_LINMATH FLOATNAME(LVecBase4) 
 operator * (FLOATTYPE scalar, const FLOATNAME(LVecBase4) &a) {
   return a * scalar;
 }
@@ -16,7 +16,7 @@ operator * (FLOATTYPE scalar, const FLOATNAME(LVecBase4) &a) {
 //     Function: scalar * LPoint4
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LPoint4) 
+INLINE_LINMATH FLOATNAME(LPoint4) 
 operator * (FLOATTYPE scalar, const FLOATNAME(LPoint4) &a) {
   return a * scalar;
 }
@@ -25,7 +25,7 @@ operator * (FLOATTYPE scalar, const FLOATNAME(LPoint4) &a) {
 //     Function: scalar * LVector4
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector4) 
+INLINE_LINMATH FLOATNAME(LVector4) 
 operator * (FLOATTYPE scalar, const FLOATNAME(LVector4) &a) {
   return a * scalar;
 }
@@ -35,7 +35,7 @@ operator * (FLOATTYPE scalar, const FLOATNAME(LVector4) &a) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 
-INLINE FLOATTYPE
+INLINE_LINMATH FLOATTYPE
 dot(const FLOATNAME(LVecBase4) &a, const FLOATNAME(LVecBase4) &b) {
   return a.dot(b);
 }
@@ -45,7 +45,7 @@ dot(const FLOATNAME(LVecBase4) &a, const FLOATNAME(LVecBase4) &b) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 
-INLINE FLOATTYPE
+INLINE_LINMATH FLOATTYPE
 length(const FLOATNAME(LVector4) &a) {
   return a.length();
 }
@@ -56,7 +56,7 @@ length(const FLOATNAME(LVector4) &a) {
 //  Description: Returns a normalized vector from the given vector.
 ////////////////////////////////////////////////////////////////////
 
-INLINE FLOATNAME(LVector4)
+INLINE_LINMATH FLOATNAME(LVector4)
 normalize(const FLOATNAME(LVector4) &v) {
   FLOATNAME(LVector4) v1 = v;
   v1.normalize();

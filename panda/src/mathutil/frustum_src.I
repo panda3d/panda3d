@@ -8,7 +8,7 @@
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(Frustum)::
+INLINE_MATHUTIL FLOATNAME(Frustum)::
 FLOATNAME(Frustum)() {
   _fnear = 1.4142;
   _ffar = 10.0;
@@ -23,7 +23,7 @@ FLOATNAME(Frustum)() {
 //       Access:
 //  Description: Sets up a two-dimensional orthographic frustum 
 ////////////////////////////////////////////////////////////////////
-INLINE void FLOATNAME(Frustum)::make_ortho_2D(void) {
+INLINE_MATHUTIL void FLOATNAME(Frustum)::make_ortho_2D(void) {
   make_ortho(-1, 1);
 }
 
@@ -32,7 +32,7 @@ INLINE void FLOATNAME(Frustum)::make_ortho_2D(void) {
 //       Access:
 //  Description: Sets up a two-dimensional orthographic frustum 
 ////////////////////////////////////////////////////////////////////
-INLINE void FLOATNAME(Frustum)::
+INLINE_MATHUTIL void FLOATNAME(Frustum)::
 make_ortho_2D(FLOATTYPE l, FLOATTYPE r, FLOATTYPE t, FLOATTYPE b) {
   make_ortho(-1, 1, l, r, t, b);
 }
@@ -42,7 +42,7 @@ make_ortho_2D(FLOATTYPE l, FLOATTYPE r, FLOATTYPE t, FLOATTYPE b) {
 //       Access:
 //  Description: Behaves like gluOrtho
 ////////////////////////////////////////////////////////////////////
-INLINE void FLOATNAME(Frustum)::make_ortho(FLOATTYPE fnear, FLOATTYPE ffar) {
+INLINE_MATHUTIL void FLOATNAME(Frustum)::make_ortho(FLOATTYPE fnear, FLOATTYPE ffar) {
   _fnear = fnear;
   _ffar = ffar; 
   _l = -1;
@@ -56,7 +56,7 @@ INLINE void FLOATNAME(Frustum)::make_ortho(FLOATTYPE fnear, FLOATTYPE ffar) {
 //       Access:
 //  Description: Behaves like gluOrtho
 ////////////////////////////////////////////////////////////////////
-INLINE void FLOATNAME(Frustum)::
+INLINE_MATHUTIL void FLOATNAME(Frustum)::
 make_ortho(FLOATTYPE fnear, FLOATTYPE ffar, FLOATTYPE l, FLOATTYPE r,
 	   FLOATTYPE t, FLOATTYPE b) {
   _fnear = fnear;
@@ -89,7 +89,7 @@ make_ortho(FLOATTYPE fnear, FLOATTYPE ffar, FLOATTYPE l, FLOATTYPE r,
 //	      W yfov
 //
 ////////////////////////////////////////////////////////////////////
-INLINE void FLOATNAME(Frustum)::
+INLINE_MATHUTIL void FLOATNAME(Frustum)::
 make_perspective_hfov(FLOATTYPE hfov, FLOATTYPE aspect, FLOATTYPE fnear,
 		      FLOATTYPE ffar) {
   _fnear = fnear;
@@ -101,7 +101,7 @@ make_perspective_hfov(FLOATTYPE hfov, FLOATTYPE aspect, FLOATTYPE fnear,
 }
 
 
-INLINE void FLOATNAME(Frustum)::
+INLINE_MATHUTIL void FLOATNAME(Frustum)::
 make_perspective_vfov(FLOATTYPE yfov, FLOATTYPE aspect, FLOATTYPE fnear,
 		      FLOATTYPE ffar) {
   _fnear = fnear;
@@ -113,7 +113,7 @@ make_perspective_vfov(FLOATTYPE yfov, FLOATTYPE aspect, FLOATTYPE fnear,
 }
 
 
-INLINE void FLOATNAME(Frustum)::
+INLINE_MATHUTIL void FLOATNAME(Frustum)::
 make_perspective(FLOATTYPE xfov, FLOATTYPE yfov, FLOATTYPE fnear,
 		 FLOATTYPE ffar) {
   _fnear = fnear;
@@ -129,7 +129,7 @@ make_perspective(FLOATTYPE xfov, FLOATTYPE yfov, FLOATTYPE fnear,
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE void FLOATNAME(Frustum)::
+INLINE_MATHUTIL void FLOATNAME(Frustum)::
 get_perspective_params(FLOATTYPE& yfov, FLOATTYPE& aspect,
 		       FLOATTYPE& fnear, FLOATTYPE& ffar) const {
   yfov = rad_2_deg(atan(_t / _fnear)) * 2.0;
@@ -143,7 +143,7 @@ get_perspective_params(FLOATTYPE& yfov, FLOATTYPE& aspect,
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE void FLOATNAME(Frustum)::
+INLINE_MATHUTIL void FLOATNAME(Frustum)::
 get_perspective_params(FLOATTYPE& xfov, FLOATTYPE& yfov, FLOATTYPE& aspect,
 		       FLOATTYPE& fnear, FLOATTYPE& ffar) const {
   xfov = rad_2_deg(atan(_r / _fnear)) * 2.0;
@@ -157,7 +157,7 @@ get_perspective_params(FLOATTYPE& xfov, FLOATTYPE& yfov, FLOATTYPE& aspect,
 //               perspective transform defined by the frustum,
 //               accordinate to the indicated coordinate system.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix4) FLOATNAME(Frustum)::
+INLINE_MATHUTIL FLOATNAME(LMatrix4) FLOATNAME(Frustum)::
 get_perspective_projection_mat(CoordinateSystem cs) const {
   if (cs == CS_default) {
     cs = default_coordinate_system;
@@ -205,7 +205,7 @@ get_perspective_projection_mat(CoordinateSystem cs) const {
 //               orthographic transform defined by the frustum,
 //               accordinate to the indicated coordinate system.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LMatrix4) FLOATNAME(Frustum)::
+INLINE_MATHUTIL FLOATNAME(LMatrix4) FLOATNAME(Frustum)::
 get_ortho_projection_mat(CoordinateSystem cs) const {
   if (cs == CS_default) {
     cs = default_coordinate_system;

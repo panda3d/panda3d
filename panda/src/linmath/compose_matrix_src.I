@@ -10,7 +10,7 @@
 //  Description: Computes the 4x4 matrix according to scale, rotation,
 //               and translation.
 ////////////////////////////////////////////////////////////////////
-INLINE void
+INLINE_LINMATH void
 compose_matrix(FLOATNAME(LMatrix4) &mat,
 	       const FLOATNAME(LVecBase3) &scale,
 	       const FLOATNAME(LVecBase3) &hpr,
@@ -21,7 +21,7 @@ compose_matrix(FLOATNAME(LMatrix4) &mat,
   mat = FLOATNAME(LMatrix4)(upper3, translate);
 }
 
-INLINE void
+INLINE_LINMATH void
 compose_matrix(FLOATNAME(LMatrix4) &mat,
 	       const FLOATTYPE components[9],
 	       CoordinateSystem cs) {
@@ -46,7 +46,7 @@ compose_matrix(FLOATNAME(LMatrix4) &mat,
 //               also a shear component or if the matrix is not
 //               affine.
 ////////////////////////////////////////////////////////////////////
-INLINE bool
+INLINE_LINMATH bool
 decompose_matrix(const FLOATNAME(LMatrix4) &mat,
 		 FLOATNAME(LVecBase3) &scale,
 		 FLOATNAME(LVecBase3) &hpr,
@@ -71,7 +71,7 @@ decompose_matrix(const FLOATNAME(LMatrix4) &mat,
 //               by examining the matrix; this helps alleviate roll
 //               instability due to roundoff errors or gimbal lock.
 ////////////////////////////////////////////////////////////////////
-INLINE bool
+INLINE_LINMATH bool
 decompose_matrix(const FLOATNAME(LMatrix4) &mat,
 		 FLOATNAME(LVecBase3) &scale,
 		 FLOATNAME(LVecBase3) &hpr,
@@ -83,7 +83,7 @@ decompose_matrix(const FLOATNAME(LMatrix4) &mat,
   return decompose_matrix(mat.get_upper_3(), scale, hpr, roll, cs);
 }
 
-INLINE bool
+INLINE_LINMATH bool
 decompose_matrix(const FLOATNAME(LMatrix4) &mat,
 		 FLOATTYPE components[9],
 		 CoordinateSystem cs) {

@@ -3,6 +3,9 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
+//typedef struct {FLOATTYPE _0, _1} FLOATNAME(data);
+
+
 ////////////////////////////////////////////////////////////////////
 // 	 Class : LVecBase2
 // Description : This is the base class for all two-component
@@ -13,79 +16,82 @@ PUBLISHED:
   typedef const FLOATTYPE *iterator;
   typedef const FLOATTYPE *const_iterator;
 
-  INLINE FLOATNAME(LVecBase2)();
-  INLINE FLOATNAME(LVecBase2)(const FLOATNAME(LVecBase2) &copy);
-  INLINE FLOATNAME(LVecBase2) &operator = (const FLOATNAME(LVecBase2) &copy);
-  INLINE FLOATNAME(LVecBase2) &operator = (FLOATTYPE fill_value);
-  INLINE FLOATNAME(LVecBase2)(FLOATTYPE fill_value);
-  INLINE FLOATNAME(LVecBase2)(FLOATTYPE x, FLOATTYPE y);
+  INLINE_LINMATH FLOATNAME(LVecBase2)();
+  INLINE_LINMATH FLOATNAME(LVecBase2)(const FLOATNAME(LVecBase2) &copy);
+  INLINE_LINMATH FLOATNAME(LVecBase2) &operator = (const FLOATNAME(LVecBase2) &copy);
+  INLINE_LINMATH FLOATNAME(LVecBase2) &operator = (FLOATTYPE fill_value);
+  INLINE_LINMATH FLOATNAME(LVecBase2)(FLOATTYPE fill_value);
+  INLINE_LINMATH FLOATNAME(LVecBase2)(FLOATTYPE x, FLOATTYPE y);
 
-  INLINE static const FLOATNAME(LVecBase2) &zero();
-  INLINE static const FLOATNAME(LVecBase2) &unit_x();
-  INLINE static const FLOATNAME(LVecBase2) &unit_y();
+  INLINE_LINMATH static const FLOATNAME(LVecBase2) &zero();
+  INLINE_LINMATH static const FLOATNAME(LVecBase2) &unit_x();
+  INLINE_LINMATH static const FLOATNAME(LVecBase2) &unit_y();
 
-  INLINE ~FLOATNAME(LVecBase2)();
+  INLINE_LINMATH ~FLOATNAME(LVecBase2)();
 
-  INLINE FLOATTYPE operator [](int i) const;
-  INLINE FLOATTYPE &operator [](int i);
+  INLINE_LINMATH FLOATTYPE operator [](int i) const;
+  INLINE_LINMATH FLOATTYPE &operator [](int i);
 
-  INLINE bool is_nan() const;
+  INLINE_LINMATH bool is_nan() const;
 
-  INLINE FLOATTYPE get_cell(int i) const;
-  INLINE FLOATTYPE get_x() const;
-  INLINE FLOATTYPE get_y() const;
-  INLINE void set_cell(int i, FLOATTYPE value);
-  INLINE void set_x(FLOATTYPE value);
-  INLINE void set_y(FLOATTYPE value);
+  INLINE_LINMATH FLOATTYPE get_cell(int i) const;
+  INLINE_LINMATH FLOATTYPE get_x() const;
+  INLINE_LINMATH FLOATTYPE get_y() const;
+  INLINE_LINMATH void set_cell(int i, FLOATTYPE value);
+  INLINE_LINMATH void set_x(FLOATTYPE value);
+  INLINE_LINMATH void set_y(FLOATTYPE value);
 
-  INLINE const FLOATTYPE *get_data() const;
-  INLINE int get_num_components() const;
+  INLINE_LINMATH const FLOATTYPE *get_data() const;
+  INLINE_LINMATH int get_num_components() const;
 
 public:
-  INLINE iterator begin();
-  INLINE iterator end();
+  INLINE_LINMATH iterator begin();
+  INLINE_LINMATH iterator end();
 
-  INLINE const_iterator begin() const;
-  INLINE const_iterator end() const;
+  INLINE_LINMATH const_iterator begin() const;
+  INLINE_LINMATH const_iterator end() const;
 
 PUBLISHED:
-  INLINE void fill(FLOATTYPE fill_value);
-  INLINE void set(FLOATTYPE x, FLOATTYPE y);
+  INLINE_LINMATH void fill(FLOATTYPE fill_value);
+  INLINE_LINMATH void set(FLOATTYPE x, FLOATTYPE y);
 
-  INLINE FLOATTYPE dot(const FLOATNAME(LVecBase2) &other) const;
+  INLINE_LINMATH FLOATTYPE dot(const FLOATNAME(LVecBase2) &other) const;
 
-  INLINE bool operator < (const FLOATNAME(LVecBase2) &other) const;
-  INLINE bool operator == (const FLOATNAME(LVecBase2) &other) const;
-  INLINE bool operator != (const FLOATNAME(LVecBase2) &other) const;
+  INLINE_LINMATH bool operator < (const FLOATNAME(LVecBase2) &other) const;
+  INLINE_LINMATH bool operator == (const FLOATNAME(LVecBase2) &other) const;
+  INLINE_LINMATH bool operator != (const FLOATNAME(LVecBase2) &other) const;
 
-  INLINE int compare_to(const FLOATNAME(LVecBase2) &other) const;
-  INLINE int compare_to(const FLOATNAME(LVecBase2) &other,
+  INLINE_LINMATH int compare_to(const FLOATNAME(LVecBase2) &other) const;
+  INLINE_LINMATH int compare_to(const FLOATNAME(LVecBase2) &other,
 		        FLOATTYPE threshold) const;
 
-  INLINE FLOATNAME(LVecBase2) operator - () const;
+  INLINE_LINMATH FLOATNAME(LVecBase2) operator - () const;
 
-  INLINE FLOATNAME(LVecBase2)
+  INLINE_LINMATH FLOATNAME(LVecBase2)
   operator + (const FLOATNAME(LVecBase2) &other) const;
-  INLINE FLOATNAME(LVecBase2)
+  INLINE_LINMATH FLOATNAME(LVecBase2)
   operator - (const FLOATNAME(LVecBase2) &other) const;
 
-  INLINE FLOATNAME(LVecBase2) operator * (FLOATTYPE scalar) const;
-  INLINE FLOATNAME(LVecBase2) operator / (FLOATTYPE scalar) const;
+  INLINE_LINMATH FLOATNAME(LVecBase2) operator * (FLOATTYPE scalar) const;
+  INLINE_LINMATH FLOATNAME(LVecBase2) operator / (FLOATTYPE scalar) const;
 
-  INLINE void operator += (const FLOATNAME(LVecBase2) &other);
-  INLINE void operator -= (const FLOATNAME(LVecBase2) &other);
+  INLINE_LINMATH void operator += (const FLOATNAME(LVecBase2) &other);
+  INLINE_LINMATH void operator -= (const FLOATNAME(LVecBase2) &other);
 
-  INLINE void operator *= (FLOATTYPE scalar);
-  INLINE void operator /= (FLOATTYPE scalar);
+  INLINE_LINMATH void operator *= (FLOATTYPE scalar);
+  INLINE_LINMATH void operator /= (FLOATTYPE scalar);
 
-  INLINE bool almost_equal(const FLOATNAME(LVecBase2) &other, 
+  INLINE_LINMATH bool almost_equal(const FLOATNAME(LVecBase2) &other, 
 			   FLOATTYPE threshold) const;
-  INLINE bool almost_equal(const FLOATNAME(LVecBase2) &other) const;
+  INLINE_LINMATH bool almost_equal(const FLOATNAME(LVecBase2) &other) const;
 
-  INLINE void output(ostream &out) const;
+  INLINE_LINMATH void output(ostream &out) const;
 
-protected:
-  FLOATTYPE _data[2];
+public:
+   union {
+	FLOATTYPE data[2];
+	struct {FLOATTYPE _0, _1;} v;
+   } _v;
 
 private:
   static const FLOATNAME(LVecBase2) _zero;
@@ -93,8 +99,8 @@ private:
   static const FLOATNAME(LVecBase2) _unit_y;
 
 public:
-  INLINE void write_datagram(Datagram &destination) const;
-  INLINE void read_datagram(DatagramIterator &source);
+  INLINE_LINMATH void write_datagram(Datagram &destination) const;
+  INLINE_LINMATH void read_datagram(DatagramIterator &source);
 
 public:
   static TypeHandle get_class_type() {
@@ -107,7 +113,7 @@ private:
 };
 
 
-INLINE ostream &operator << (ostream &out, const FLOATNAME(LVecBase2) &vec) {
+INLINE_LINMATH ostream &operator << (ostream &out, const FLOATNAME(LVecBase2) &vec) {
   vec.output(out);
   return out;
 }

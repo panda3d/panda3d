@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////////////
 #include <math.h>
 
-INLINE float distance(const LPoint3f &pos0, const LPoint3f &pos1) {
+INLINE_MATHUTIL float distance(const LPoint3f &pos0, const LPoint3f &pos1) {
   LVector3f v = pos0 - pos1;
   return length(v);
 }

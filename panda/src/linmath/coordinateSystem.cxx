@@ -14,7 +14,6 @@
 
 CoordinateSystem default_coordinate_system;
 
-
 CoordinateSystem
 parse_coordinate_system_string(const string &str) {
   // First, make sure the string is lowercase before we compare it, so
@@ -45,7 +44,7 @@ parse_coordinate_system_string(const string &str) {
   return CS_invalid;
 }
 
-bool
+INLINE_LINMATH bool
 is_right_handed(CoordinateSystem cs) {
   if (cs == CS_default) {
     cs = default_coordinate_system;

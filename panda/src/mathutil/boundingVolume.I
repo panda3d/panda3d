@@ -8,7 +8,7 @@
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE BoundingVolume::
+INLINE_MATHUTIL BoundingVolume::
 BoundingVolume() {
   _flags = F_empty;
 }
@@ -22,7 +22,7 @@ BoundingVolume() {
 //               since that contains one point (the center).  It
 //               intersects with no other volumes.
 ////////////////////////////////////////////////////////////////////
-INLINE bool BoundingVolume::
+INLINE_MATHUTIL bool BoundingVolume::
 is_empty() const {
   return (_flags & F_empty) != 0;
 }
@@ -43,7 +43,7 @@ is_empty() const {
 //               It completely intersects with all other volumes
 //               except empty volumes.
 ////////////////////////////////////////////////////////////////////
-INLINE bool BoundingVolume::
+INLINE_MATHUTIL bool BoundingVolume::
 is_infinite() const {
   return (_flags & F_infinite) != 0;
 }
@@ -55,7 +55,7 @@ is_infinite() const {
 //               finite.  You can think of this as an infinite
 //               extend_by() operation.
 ////////////////////////////////////////////////////////////////////
-INLINE void BoundingVolume::
+INLINE_MATHUTIL void BoundingVolume::
 set_infinite() {
   _flags = F_infinite;
 }
@@ -66,7 +66,7 @@ set_infinite() {
 //  Description: Increases the size of the volume to include the given
 //               volume.
 ////////////////////////////////////////////////////////////////////
-INLINE bool BoundingVolume::
+INLINE_MATHUTIL bool BoundingVolume::
 extend_by(const BoundingVolume *vol) {
   if (vol->is_infinite()) {
     set_infinite();
@@ -88,7 +88,7 @@ extend_by(const BoundingVolume *vol) {
 //               indicate the amount of intersection with the
 //               indicated volume.
 ////////////////////////////////////////////////////////////////////
-INLINE int BoundingVolume::
+INLINE_MATHUTIL int BoundingVolume::
 contains(const BoundingVolume *vol) const {
   if (is_empty() || vol->is_empty()) {
     return IF_no_intersection;
@@ -106,7 +106,7 @@ contains(const BoundingVolume *vol) const {
   return vol->contains_other(this);
 }
 
-INLINE ostream &operator << (ostream &out, const BoundingVolume &bound) {
+INLINE_MATHUTIL ostream &operator << (ostream &out, const BoundingVolume &bound) {
   bound.output(out);
   return out;
 }

@@ -9,35 +9,35 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA FLOATNAME(LPoint4) : public FLOATNAME(LVecBase4) {
 PUBLISHED:
-  INLINE FLOATNAME(LPoint4)();
-  INLINE FLOATNAME(LPoint4)(const FLOATNAME(LVecBase4) &copy);
-  INLINE FLOATNAME(LPoint4) &operator = (const FLOATNAME(LVecBase4) &copy);
-  INLINE FLOATNAME(LPoint4) &operator = (FLOATTYPE fill_value);
-  INLINE FLOATNAME(LPoint4)(FLOATTYPE fill_value);
-  INLINE FLOATNAME(LPoint4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w);
+  INLINE_LINMATH FLOATNAME(LPoint4)();
+  INLINE_LINMATH FLOATNAME(LPoint4)(const FLOATNAME(LVecBase4) &copy);
+  INLINE_LINMATH FLOATNAME(LPoint4) &operator = (const FLOATNAME(LVecBase4) &copy);
+  INLINE_LINMATH FLOATNAME(LPoint4) &operator = (FLOATTYPE fill_value);
+  INLINE_LINMATH FLOATNAME(LPoint4)(FLOATTYPE fill_value);
+  INLINE_LINMATH FLOATNAME(LPoint4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w);
 
-  INLINE static const FLOATNAME(LPoint4) &zero();
-  INLINE static const FLOATNAME(LPoint4) &unit_x();
-  INLINE static const FLOATNAME(LPoint4) &unit_y();
-  INLINE static const FLOATNAME(LPoint4) &unit_z();
-  INLINE static const FLOATNAME(LPoint4) &unit_w();
+  INLINE_LINMATH static const FLOATNAME(LPoint4) &zero();
+  INLINE_LINMATH static const FLOATNAME(LPoint4) &unit_x();
+  INLINE_LINMATH static const FLOATNAME(LPoint4) &unit_y();
+  INLINE_LINMATH static const FLOATNAME(LPoint4) &unit_z();
+  INLINE_LINMATH static const FLOATNAME(LPoint4) &unit_w();
 
-  INLINE FLOATNAME(LPoint4) operator - () const;
+  INLINE_LINMATH FLOATNAME(LPoint4) operator - () const;
 
-  INLINE FLOATNAME(LVecBase4)
+  INLINE_LINMATH FLOATNAME(LVecBase4)
   operator + (const FLOATNAME(LVecBase4) &other) const;
-  INLINE FLOATNAME(LPoint4)
+  INLINE_LINMATH FLOATNAME(LPoint4)
   operator + (const FLOATNAME(LVector4) &other) const;
 
-  INLINE FLOATNAME(LVecBase4)
+  INLINE_LINMATH FLOATNAME(LVecBase4)
   operator - (const FLOATNAME(LVecBase4) &other) const;
-  INLINE FLOATNAME(LVector4)
+  INLINE_LINMATH FLOATNAME(LVector4)
   operator - (const FLOATNAME(LPoint4) &other) const;
-  INLINE FLOATNAME(LPoint4)
+  INLINE_LINMATH FLOATNAME(LPoint4)
   operator - (const FLOATNAME(LVector4) &other) const;
 
-  INLINE FLOATNAME(LPoint4) operator * (FLOATTYPE scalar) const;
-  INLINE FLOATNAME(LPoint4) operator / (FLOATTYPE scalar) const;
+  INLINE_LINMATH FLOATNAME(LPoint4) operator * (FLOATTYPE scalar) const;
+  INLINE_LINMATH FLOATNAME(LPoint4) operator / (FLOATTYPE scalar) const;
 
 public:
   static TypeHandle get_class_type() {

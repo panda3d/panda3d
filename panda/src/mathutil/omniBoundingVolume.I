@@ -8,7 +8,7 @@
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE OmniBoundingVolume::
+INLINE_MATHUTIL OmniBoundingVolume::
 OmniBoundingVolume() {
   _flags = F_infinite;
 }

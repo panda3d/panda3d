@@ -8,7 +8,7 @@
 //     Function: scalar * LVecBase3
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVecBase3) 
+INLINE_LINMATH FLOATNAME(LVecBase3) 
 operator * (FLOATTYPE scalar, const FLOATNAME(LVecBase3) &a) {
   return a * scalar;
 }
@@ -17,7 +17,7 @@ operator * (FLOATTYPE scalar, const FLOATNAME(LVecBase3) &a) {
 //     Function: scalar * LPoint3
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LPoint3) 
+INLINE_LINMATH FLOATNAME(LPoint3) 
 operator * (FLOATTYPE scalar, const FLOATNAME(LPoint3) &a) {
   return a * scalar;
 }
@@ -26,7 +26,7 @@ operator * (FLOATTYPE scalar, const FLOATNAME(LPoint3) &a) {
 //     Function: scalar * LVector3
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector3) 
+INLINE_LINMATH FLOATNAME(LVector3) 
 operator * (FLOATTYPE scalar, const FLOATNAME(LVector3) &a) {
   return a * scalar;
 }
@@ -36,7 +36,7 @@ operator * (FLOATTYPE scalar, const FLOATNAME(LVector3) &a) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 
-INLINE FLOATTYPE
+INLINE_LINMATH FLOATTYPE
 dot(const FLOATNAME(LVecBase3) &a, const FLOATNAME(LVecBase3) &b) {
   return a.dot(b);
 }
@@ -46,7 +46,7 @@ dot(const FLOATNAME(LVecBase3) &a, const FLOATNAME(LVecBase3) &b) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 
-INLINE FLOATNAME(LVecBase3)
+INLINE_LINMATH FLOATNAME(LVecBase3)
 cross(const FLOATNAME(LVecBase3) &a, const FLOATNAME(LVecBase3) &b) {
   return a.cross(b);
 }
@@ -56,7 +56,7 @@ cross(const FLOATNAME(LVecBase3) &a, const FLOATNAME(LVecBase3) &b) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 
-INLINE FLOATNAME(LVector3)
+INLINE_LINMATH FLOATNAME(LVector3)
 cross(const FLOATNAME(LVector3) &a, const FLOATNAME(LVector3) &b) {
   return FLOATNAME(LVector3)(a.cross(b));
 }
@@ -67,7 +67,7 @@ cross(const FLOATNAME(LVector3) &a, const FLOATNAME(LVector3) &b) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 
-INLINE FLOATTYPE
+INLINE_LINMATH FLOATTYPE
 length(const FLOATNAME(LVector3) &a) {
   return a.length();
 }
@@ -78,7 +78,7 @@ length(const FLOATNAME(LVector3) &a) {
 //  Description: Returns a normalized vector from the given vector.
 ////////////////////////////////////////////////////////////////////
 
-INLINE FLOATNAME(LVector3)
+INLINE_LINMATH FLOATNAME(LVector3)
 normalize(const FLOATNAME(LVector3) &v) {
   FLOATNAME(LVector3) v1 = v;
   v1.normalize();

@@ -15,7 +15,7 @@
 
 BEGIN_PUBLISH
 
-INLINE float distance(const LPoint3f &pos0, const LPoint3f &pos1);
+INLINE_MATHUTIL float distance(const LPoint3f &pos0, const LPoint3f &pos1);
 
 END_PUBLISH
 

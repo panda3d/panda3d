@@ -9,19 +9,19 @@
 #include <float.h>
 #endif
 
-INLINE float csqrt(float v) {
+INLINE_LINMATH float csqrt(float v) {
   return sqrtf(v);
 }
 
-INLINE float csin(float v) {
+INLINE_LINMATH float csin(float v) {
   return sinf(v);
 }
 
-INLINE float ccos(float v) {
+INLINE_LINMATH float ccos(float v) {
   return cosf(v);
 }
 
-INLINE void
+INLINE_LINMATH void
 sincosf(float v, float *pSinResult, float *pCosResult) {
 
 // MS VC defines _M_IX86 for x86.  gcc should define _X86_
@@ -41,8 +41,8 @@ sincosf(float v, float *pSinResult, float *pCosResult) {
 #endif //!_X86_
 }
 
-INLINE void
-sincos(double v, double *pSinResult, double *pCosResult) {
+INLINE_LINMATH void
+sincosd(double v, double *pSinResult, double *pCosResult) {
 #if defined(_M_IX86) || defined(_X86_)
 //#define fsincos_opcode __asm _emit 0xd9 __asm _emit 0xfb
     __asm {
@@ -59,43 +59,43 @@ sincos(double v, double *pSinResult, double *pCosResult) {
 #endif //!_X86_
 }
 
-INLINE void csincos(float v,float *pSinResult, float *pCosResult) {
+INLINE_LINMATH void csincos(float v,float *pSinResult, float *pCosResult) {
   sincosf(v,pSinResult,pCosResult);
 }
 
-INLINE void csincos(double v,double *pSinResult, double *pCosResult) {
-  sincos(v,pSinResult,pCosResult);
+INLINE_LINMATH void csincos(double v,double *pSinResult, double *pCosResult) {
+  sincosd(v,pSinResult,pCosResult);
 }
 
-INLINE float cabs(float v) {
+INLINE_LINMATH float cabs(float v) {
   return fabs(v);
 }
 
-INLINE float catan2(float y, float x) {
+INLINE_LINMATH float catan2(float y, float x) {
   return atan2f(y, x);
 }
 
-INLINE double csqrt(double v) {
+INLINE_LINMATH double csqrt(double v) {
   return sqrt(v);
 }
 
-INLINE double csin(double v) {
+INLINE_LINMATH double csin(double v) {
   return sin(v);
 }
 
-INLINE double ccos(double v) {
+INLINE_LINMATH double ccos(double v) {
   return cos(v);
 }
 
-INLINE double cabs(double v) {
+INLINE_LINMATH double cabs(double v) {
   return fabs(v);
 }
 
-INLINE double catan2(double y, double x) {
+INLINE_LINMATH double catan2(double y, double x) {
   return atan2(y, x);
 }
 
-INLINE bool cnan(double v) {
+INLINE_LINMATH bool cnan(double v) {
 #ifndef _WIN32
   return (isnan(v) != 0);
 #else

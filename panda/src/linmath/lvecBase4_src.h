@@ -13,85 +13,89 @@ PUBLISHED:
   typedef const FLOATTYPE *iterator;
   typedef const FLOATTYPE *const_iterator;
 
-  INLINE FLOATNAME(LVecBase4)();
-  INLINE FLOATNAME(LVecBase4)(const FLOATNAME(LVecBase4) &copy);
-  INLINE FLOATNAME(LVecBase4) &operator = (const FLOATNAME(LVecBase4) &copy);
-  INLINE FLOATNAME(LVecBase4) &operator = (FLOATTYPE fill_value);
-  INLINE FLOATNAME(LVecBase4)(FLOATTYPE fill_value);
-  INLINE FLOATNAME(LVecBase4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w);
+  INLINE_LINMATH FLOATNAME(LVecBase4)();
+  INLINE_LINMATH FLOATNAME(LVecBase4)(const FLOATNAME(LVecBase4) &copy);
+  INLINE_LINMATH FLOATNAME(LVecBase4) &operator = (const FLOATNAME(LVecBase4) &copy);
+  INLINE_LINMATH FLOATNAME(LVecBase4) &operator = (FLOATTYPE fill_value);
+  INLINE_LINMATH FLOATNAME(LVecBase4)(FLOATTYPE fill_value);
+  INLINE_LINMATH FLOATNAME(LVecBase4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w);
 
-  INLINE static const FLOATNAME(LVecBase4) &zero();
-  INLINE static const FLOATNAME(LVecBase4) &unit_x();
-  INLINE static const FLOATNAME(LVecBase4) &unit_y();
-  INLINE static const FLOATNAME(LVecBase4) &unit_z();
-  INLINE static const FLOATNAME(LVecBase4) &unit_w();
+  INLINE_LINMATH static const FLOATNAME(LVecBase4) &zero();
+  INLINE_LINMATH static const FLOATNAME(LVecBase4) &unit_x();
+  INLINE_LINMATH static const FLOATNAME(LVecBase4) &unit_y();
+  INLINE_LINMATH static const FLOATNAME(LVecBase4) &unit_z();
+  INLINE_LINMATH static const FLOATNAME(LVecBase4) &unit_w();
 
-  INLINE ~FLOATNAME(LVecBase4)();
+  INLINE_LINMATH ~FLOATNAME(LVecBase4)();
 
-  INLINE FLOATTYPE operator [](int i) const;
-  INLINE FLOATTYPE &operator [](int i);
+  INLINE_LINMATH FLOATTYPE operator [](int i) const;
+  INLINE_LINMATH FLOATTYPE &operator [](int i);
 
-  INLINE bool is_nan() const;
+  INLINE_LINMATH bool is_nan() const;
 
-  INLINE FLOATTYPE get_cell(int i) const;
-  INLINE FLOATTYPE get_x() const;
-  INLINE FLOATTYPE get_y() const;
-  INLINE FLOATTYPE get_z() const;
-  INLINE FLOATTYPE get_w() const;
-  INLINE void set_cell(int i, FLOATTYPE value);
-  INLINE void set_x(FLOATTYPE value);
-  INLINE void set_y(FLOATTYPE value);
-  INLINE void set_z(FLOATTYPE value);
-  INLINE void set_w(FLOATTYPE value);
+  INLINE_LINMATH FLOATTYPE get_cell(int i) const;
+  INLINE_LINMATH FLOATTYPE get_x() const;
+  INLINE_LINMATH FLOATTYPE get_y() const;
+  INLINE_LINMATH FLOATTYPE get_z() const;
+  INLINE_LINMATH FLOATTYPE get_w() const;
+  INLINE_LINMATH void set_cell(int i, FLOATTYPE value);
+  INLINE_LINMATH void set_x(FLOATTYPE value);
+  INLINE_LINMATH void set_y(FLOATTYPE value);
+  INLINE_LINMATH void set_z(FLOATTYPE value);
+  INLINE_LINMATH void set_w(FLOATTYPE value);
 
-  INLINE const FLOATTYPE *get_data() const;
-  INLINE int get_num_components() const;
+  INLINE_LINMATH const FLOATTYPE *get_data() const;
+  INLINE_LINMATH int get_num_components() const;
 
 public:
-  INLINE iterator begin();
-  INLINE iterator end();
+  INLINE_LINMATH iterator begin();
+  INLINE_LINMATH iterator end();
 
-  INLINE const_iterator begin() const;
-  INLINE const_iterator end() const;
+  INLINE_LINMATH const_iterator begin() const;
+  INLINE_LINMATH const_iterator end() const;
 
 PUBLISHED:
-  INLINE void fill(FLOATTYPE fill_value);
-  INLINE void set(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w);
+  INLINE_LINMATH void fill(FLOATTYPE fill_value);
+  INLINE_LINMATH void set(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w);
 
-  INLINE FLOATTYPE dot(const FLOATNAME(LVecBase4) &other) const;
+  INLINE_LINMATH FLOATTYPE dot(const FLOATNAME(LVecBase4) &other) const;
 
-  INLINE bool operator < (const FLOATNAME(LVecBase4) &other) const;
-  INLINE bool operator == (const FLOATNAME(LVecBase4) &other) const;
-  INLINE bool operator != (const FLOATNAME(LVecBase4) &other) const;
+  INLINE_LINMATH bool operator < (const FLOATNAME(LVecBase4) &other) const;
+  INLINE_LINMATH bool operator == (const FLOATNAME(LVecBase4) &other) const;
+  INLINE_LINMATH bool operator != (const FLOATNAME(LVecBase4) &other) const;
 
-  INLINE int compare_to(const FLOATNAME(LVecBase4) &other) const;
-  INLINE int compare_to(const FLOATNAME(LVecBase4) &other,
+  INLINE_LINMATH int compare_to(const FLOATNAME(LVecBase4) &other) const;
+  INLINE_LINMATH int compare_to(const FLOATNAME(LVecBase4) &other,
 		        FLOATTYPE threshold) const;
 
-  INLINE FLOATNAME(LVecBase4) operator - () const;
+  INLINE_LINMATH FLOATNAME(LVecBase4) operator - () const;
 
-  INLINE FLOATNAME(LVecBase4)
+  INLINE_LINMATH FLOATNAME(LVecBase4)
   operator + (const FLOATNAME(LVecBase4) &other) const;
-  INLINE FLOATNAME(LVecBase4)
+  INLINE_LINMATH FLOATNAME(LVecBase4)
   operator - (const FLOATNAME(LVecBase4) &other) const;
 
-  INLINE FLOATNAME(LVecBase4) operator * (FLOATTYPE scalar) const;
-  INLINE FLOATNAME(LVecBase4) operator / (FLOATTYPE scalar) const;
+  INLINE_LINMATH FLOATNAME(LVecBase4) operator * (FLOATTYPE scalar) const;
+  INLINE_LINMATH FLOATNAME(LVecBase4) operator / (FLOATTYPE scalar) const;
 
-  INLINE void operator += (const FLOATNAME(LVecBase4) &other);
-  INLINE void operator -= (const FLOATNAME(LVecBase4) &other);
+  INLINE_LINMATH void operator += (const FLOATNAME(LVecBase4) &other);
+  INLINE_LINMATH void operator -= (const FLOATNAME(LVecBase4) &other);
 
-  INLINE void operator *= (FLOATTYPE scalar);
-  INLINE void operator /= (FLOATTYPE scalar);
+  INLINE_LINMATH void operator *= (FLOATTYPE scalar);
+  INLINE_LINMATH void operator /= (FLOATTYPE scalar);
 
-  INLINE bool almost_equal(const FLOATNAME(LVecBase4) &other, 
+  INLINE_LINMATH bool almost_equal(const FLOATNAME(LVecBase4) &other, 
 			   FLOATTYPE threshold) const;
-  INLINE bool almost_equal(const FLOATNAME(LVecBase4) &other) const;
+  INLINE_LINMATH bool almost_equal(const FLOATNAME(LVecBase4) &other) const;
 
-  INLINE void output(ostream &out) const;
+  INLINE_LINMATH void output(ostream &out) const;
 
-protected:
-  FLOATTYPE _data[4];
+public:
+  
+  union {
+	FLOATTYPE data[4];
+	struct {FLOATTYPE _0, _1, _2, _3;} v;
+  } _v;
 
 private:
   static const FLOATNAME(LVecBase4) _zero;
@@ -101,8 +105,8 @@ private:
   static const FLOATNAME(LVecBase4) _unit_w;
 
 public:
-  INLINE void write_datagram(Datagram &destination) const;
-  INLINE void read_datagram(DatagramIterator &source);
+  INLINE_LINMATH void write_datagram(Datagram &destination) const;
+  INLINE_LINMATH void read_datagram(DatagramIterator &source);
 
 public:
   static TypeHandle get_class_type() {
@@ -114,7 +118,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const FLOATNAME(LVecBase4) &vec) {
+INLINE_LINMATH ostream &operator << (ostream &out, const FLOATNAME(LVecBase4) &vec) {
   vec.output(out);
   return out;
 }

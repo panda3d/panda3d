@@ -3,11 +3,11 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-INLINE BoundingSphere::
+INLINE_MATHUTIL BoundingSphere::
 BoundingSphere() {
 }
 
-INLINE BoundingSphere::
+INLINE_MATHUTIL BoundingSphere::
 BoundingSphere(const LPoint3f &center, float radius) :
   _center(center), _radius(radius) 
 {
@@ -17,14 +17,14 @@ BoundingSphere(const LPoint3f &center, float radius) :
   }
 }
 
-INLINE const LPoint3f &BoundingSphere::
+INLINE_MATHUTIL const LPoint3f &BoundingSphere::
 get_center() const {
   nassertr(!is_empty(), _center);
   nassertr(!is_infinite(), _center);
   return _center;
 }
 
-INLINE float BoundingSphere::
+INLINE_MATHUTIL float BoundingSphere::
 get_radius() const {
   nassertr(!is_empty(), 0.0);
   nassertr(!is_infinite(), 0.0);

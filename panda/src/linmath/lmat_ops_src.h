@@ -7,25 +7,25 @@ BEGIN_PUBLISH
 
 // vector times matrix3
 
-INLINE FLOATNAME(LVecBase3)
+INLINE_LINMATH FLOATNAME(LVecBase3)
 operator * (const FLOATNAME(LVecBase3) &v, const FLOATNAME(LMatrix3) &m);
 
-INLINE FLOATNAME(LVector2)
+INLINE_LINMATH FLOATNAME(LVector2)
 operator * (const FLOATNAME(LVector2) &v, const FLOATNAME(LMatrix3) &m);
 
-INLINE FLOATNAME(LPoint2)
+INLINE_LINMATH FLOATNAME(LPoint2)
 operator * (const FLOATNAME(LPoint2) &v, const FLOATNAME(LMatrix3) &m);
 
 
 // vector times matrix4
 
-INLINE FLOATNAME(LVecBase4)
+INLINE_LINMATH FLOATNAME(LVecBase4)
 operator * (const FLOATNAME(LVecBase4) &v, const FLOATNAME(LMatrix4) &m);
 
-INLINE FLOATNAME(LVector3)
+INLINE_LINMATH FLOATNAME(LVector3)
 operator * (const FLOATNAME(LVector3) &v, const FLOATNAME(LMatrix4) &m);
 
-INLINE FLOATNAME(LPoint3)
+INLINE_LINMATH FLOATNAME(LPoint3)
 operator * (const FLOATNAME(LPoint3) &v, const FLOATNAME(LMatrix4) &m);
 
 END_PUBLISH

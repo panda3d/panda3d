@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA OmniBoundingVolume : public GeometricBoundingVolume {
 PUBLISHED:
-  INLINE OmniBoundingVolume();
+  INLINE_MATHUTIL OmniBoundingVolume();
 
 public:
   virtual BoundingVolume *make_copy() const;

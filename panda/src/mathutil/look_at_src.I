@@ -3,17 +3,17 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-INLINE void
+INLINE_MATHUTIL void
 heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd, CoordinateSystem cs) {
   heads_up(mat, fwd, FLOATNAME(LVector3)::up(cs), cs);
 }
 
-INLINE void
+INLINE_MATHUTIL void
 look_at(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd, CoordinateSystem cs) {
   look_at(mat, fwd, FLOATNAME(LVector3)::up(cs), cs);
 }
 
-INLINE void
+INLINE_MATHUTIL void
 heads_up(FLOATNAME(LMatrix4) &mat, const FLOATNAME(LVector3) &fwd,
 	 const FLOATNAME(LVector3) &up, CoordinateSystem cs) {
   FLOATNAME(LMatrix3) mat3;
@@ -21,7 +21,7 @@ heads_up(FLOATNAME(LMatrix4) &mat, const FLOATNAME(LVector3) &fwd,
   mat = FLOATNAME(LMatrix4)(mat3);
 }
 
-INLINE void
+INLINE_MATHUTIL void
 look_at(FLOATNAME(LMatrix4) &mat, const FLOATNAME(LVector3) &fwd, 
 	const FLOATNAME(LVector3) &up, CoordinateSystem cs) {
   FLOATNAME(LMatrix3) mat3;
@@ -29,12 +29,12 @@ look_at(FLOATNAME(LMatrix4) &mat, const FLOATNAME(LVector3) &fwd,
   mat = FLOATNAME(LMatrix4)(mat3);
 }
 
-INLINE void
+INLINE_MATHUTIL void
 heads_up(FLOATNAME(LMatrix4) &mat, const FLOATNAME(LVector3) &fwd, CoordinateSystem cs) {
   heads_up(mat, fwd, FLOATNAME(LVector3)::up(cs), cs);
 }
 
-INLINE void
+INLINE_MATHUTIL void
 look_at(FLOATNAME(LMatrix4) &mat, const FLOATNAME(LVector3) &fwd, CoordinateSystem cs) {
   look_at(mat, fwd, FLOATNAME(LVector3)::up(cs), cs);
 }

@@ -10,12 +10,12 @@
 // The following two functions are defined just to make the
 // NEARLY_ZERO() macro work.  They each return a suitable nearly-zero
 // value for their corresponding numeric type.
-INLINE double
+INLINE_LINMATH double
 get_nearly_zero_value(double) {
   return 1.0e-12;
 }
 
-INLINE float
+INLINE_LINMATH float
 get_nearly_zero_value(float) {
   return 1.0e-6f;
 }

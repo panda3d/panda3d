@@ -21,14 +21,14 @@ pure_imaginary(const FLOATNAME(LVector3) &v) {
 ////////////////////////////////////////////////////////////////////
 void FLOATNAME(LQuaternion)::
 extract_to_matrix(FLOATNAME(LMatrix3) &m) const {
-  FLOATTYPE N = (_data[0] * _data[0]) + (_data[1] * _data[1]) + (_data[2] * _data[2]) + (_data[3] * _data[3]);
+  FLOATTYPE N = (_v.data[0] * _v.data[0]) + (_v.data[1] * _v.data[1]) + (_v.data[2] * _v.data[2]) + (_v.data[3] * _v.data[3]);
   FLOATTYPE s = (N == 0.) ? 0. : (2. / N);
   FLOATTYPE xs, ys, zs, wx, wy, wz, xx, xy, xz, yy, yz, zz;
 
-  xs = _data[1] * s;   ys = _data[2] * s;   zs = _data[3] * s;
-  wx = _data[0] * xs;  wy = _data[0] * ys;  wz = _data[0] * zs;
-  xx = _data[1] * xs;  xy = _data[1] * ys;  xz = _data[1] * zs;
-  yy = _data[2] * ys;  yz = _data[2] * zs;  zz = _data[3] * zs;
+  xs = _v.data[1] * s;   ys = _v.data[2] * s;   zs = _v.data[3] * s;
+  wx = _v.data[0] * xs;  wy = _v.data[0] * ys;  wz = _v.data[0] * zs;
+  xx = _v.data[1] * xs;  xy = _v.data[1] * ys;  xz = _v.data[1] * zs;
+  yy = _v.data[2] * ys;  yz = _v.data[2] * zs;  zz = _v.data[3] * zs;
 
   m = FLOATNAME(LMatrix3)((1. - (yy + zz)), (xy - wz), (xz + wy),
 			(xy + wz), (1. - (xx + zz)), (yz - wx),
@@ -42,14 +42,14 @@ extract_to_matrix(FLOATNAME(LMatrix3) &m) const {
 ////////////////////////////////////////////////////////////////////
 void FLOATNAME(LQuaternion)::
 extract_to_matrix(FLOATNAME(LMatrix4) &m) const {
-  FLOATTYPE N = (_data[0] * _data[0]) + (_data[1] * _data[1]) + (_data[2] * _data[2]) + (_data[3] * _data[3]);
+  FLOATTYPE N = (_v.data[0] * _v.data[0]) + (_v.data[1] * _v.data[1]) + (_v.data[2] * _v.data[2]) + (_v.data[3] * _v.data[3]);
   FLOATTYPE s = (N == 0.) ? 0. : (2. / N);
   FLOATTYPE xs, ys, zs, wx, wy, wz, xx, xy, xz, yy, yz, zz;
 
-  xs = _data[1] * s;   ys = _data[2] * s;   zs = _data[3] * s;
-  wx = _data[0] * xs;  wy = _data[0] * ys;  wz = _data[0] * zs;
-  xx = _data[1] * xs;  xy = _data[1] * ys;  xz = _data[1] * zs;
-  yy = _data[2] * ys;  yz = _data[2] * zs;  zz = _data[3] * zs;
+  xs = _v.data[1] * s;   ys = _v.data[2] * s;   zs = _v.data[3] * s;
+  wx = _v.data[0] * xs;  wy = _v.data[0] * ys;  wz = _v.data[0] * zs;
+  xx = _v.data[1] * xs;  xy = _v.data[1] * ys;  xz = _v.data[1] * zs;
+  yy = _v.data[2] * ys;  yz = _v.data[2] * zs;  zz = _v.data[3] * zs;
 
   m = FLOATNAME(LMatrix4)((1. - (yy + zz)), (xy - wz), (xz + wy), 0.,
 			(xy + wz), (1. - (xx + zz)), (yz - wx), 0.,
@@ -96,15 +96,15 @@ set_hpr(const FLOATNAME(LVecBase3) &hpr) {
 FLOATNAME(LVecBase3) FLOATNAME(LQuaternion)::
 get_hpr() const {
   FLOATTYPE heading, pitch, roll;
-  FLOATTYPE N = (_data[0] * _data[0]) + (_data[1] * _data[1]) + (_data[2] * _data[2]) + (_data[3] * _data[3]);
+  FLOATTYPE N = (_v.data[0] * _v.data[0]) + (_v.data[1] * _v.data[1]) + (_v.data[2] * _v.data[2]) + (_v.data[3] * _v.data[3]);
   FLOATTYPE s = (N == 0.) ? 0. : (2. / N);
   FLOATTYPE xs, ys, zs, wx, wy, wz, xx, xy, xz, yy, yz, zz, c1, c2, c3, c4;
   FLOATTYPE cr, sr, cp, sp, ch, sh;
 
-  xs = _data[1] * s;   ys = _data[2] * s;   zs = _data[3] * s;
-  wx = _data[0] * xs;  wy = _data[0] * ys;  wz = _data[0] * zs;
-  xx = _data[1] * xs;  xy = _data[1] * ys;  xz = _data[1] * zs;
-  yy = _data[2] * ys;  yz = _data[2] * zs;  zz = _data[3] * zs;
+  xs = _v.data[1] * s;   ys = _v.data[2] * s;   zs = _v.data[3] * s;
+  wx = _v.data[0] * xs;  wy = _v.data[0] * ys;  wz = _v.data[0] * zs;
+  xx = _v.data[1] * xs;  xy = _v.data[1] * ys;  xz = _v.data[1] * zs;
+  yy = _v.data[2] * ys;  yz = _v.data[2] * zs;  zz = _v.data[3] * zs;
   c1 = xz - wy;
   c2 = 1. - (xx + yy);
   c3 = 1. - (yy + zz);
@@ -160,10 +160,10 @@ set_from_matrix(const FLOATNAME(LMatrix3) &m) {
   if (T > 0.) {
     // the easy case
     FLOATTYPE S = 0.5 / csqrt(T);
-    _data[0] = 0.25 / S;
-    _data[1] = (m21 - m12) * S;
-    _data[2] = (m02 - m20) * S;
-    _data[3] = (m10 - m01) * S;
+    _v.data[0] = 0.25 / S;
+    _v.data[1] = (m21 - m12) * S;
+    _v.data[2] = (m02 - m20) * S;
+    _v.data[3] = (m10 - m01) * S;
   } else {
     // figure out which column to take as root
     int c = 0;
@@ -182,24 +182,24 @@ set_from_matrix(const FLOATNAME(LMatrix3) &m) {
     switch (c) {
     case 0:
       S = csqrt(1. + m00 - m11 - m22) * 2.;
-      _data[0] = (m12 + m21) / S;
-      _data[1] = 0.5 / S;
-      _data[2] = (m01 + m10) / S;
-      _data[3] = (m02 + m20) / S;
+      _v.data[0] = (m12 + m21) / S;
+      _v.data[1] = 0.5 / S;
+      _v.data[2] = (m01 + m10) / S;
+      _v.data[3] = (m02 + m20) / S;
       break;
     case 1:
       S = csqrt(1. + m11 - m00 - m22) * 2.;
-      _data[0] = (m02 + m20) / S;
-      _data[1] = (m01 + m10) / S;
-      _data[2] = 0.5 / S;
-      _data[3] = (m12 + m21) / S;
+      _v.data[0] = (m02 + m20) / S;
+      _v.data[1] = (m01 + m10) / S;
+      _v.data[2] = 0.5 / S;
+      _v.data[3] = (m12 + m21) / S;
       break;
     case 2:
       S = csqrt(1. + m22 - m00 - m11) * 2.;
-      _data[0] = (m01 + m10) / S;
-      _data[1] = (m02 + m20) / S;
-      _data[2] = (m12 + m21) / S;
-      _data[3] = 0.5 / S;
+      _v.data[0] = (m01 + m10) / S;
+      _v.data[1] = (m02 + m20) / S;
+      _v.data[2] = (m12 + m21) / S;
+      _v.data[3] = 0.5 / S;
       break;
     }
   }

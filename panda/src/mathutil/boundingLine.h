@@ -23,8 +23,8 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA BoundingLine : public GeometricBoundingVolume {
 PUBLISHED:
-  INLINE BoundingLine();
-  INLINE BoundingLine(const LPoint3f &a, const LPoint3f &b);
+  INLINE_MATHUTIL BoundingLine();
+  INLINE_MATHUTIL BoundingLine(const LPoint3f &a, const LPoint3f &b);
 
 public:
   virtual BoundingVolume *make_copy() const;
@@ -35,8 +35,8 @@ public:
   virtual void output(ostream &out) const;
 
 PUBLISHED:
-  INLINE const LPoint3f &get_point_a() const;
-  INLINE LPoint3f get_point_b() const;
+  INLINE_MATHUTIL const LPoint3f &get_point_a() const;
+  INLINE_MATHUTIL LPoint3f get_point_b() const;
 
 protected:
   virtual bool extend_other(BoundingVolume *other) const;

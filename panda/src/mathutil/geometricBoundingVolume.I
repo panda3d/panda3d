@@ -8,7 +8,7 @@
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE GeometricBoundingVolume::
+INLINE_MATHUTIL GeometricBoundingVolume::
 GeometricBoundingVolume() {
 }
 
@@ -18,7 +18,7 @@ GeometricBoundingVolume() {
 //  Description: Increases the size of the volume to include the given
 //               volume.
 ////////////////////////////////////////////////////////////////////
-INLINE bool GeometricBoundingVolume::
+INLINE_MATHUTIL bool GeometricBoundingVolume::
 extend_by(const GeometricBoundingVolume *vol) {
   return BoundingVolume::extend_by(vol);
 }
@@ -29,7 +29,7 @@ extend_by(const GeometricBoundingVolume *vol) {
 //  Description: Increases the size of the volume to include the given
 //               point.
 ////////////////////////////////////////////////////////////////////
-INLINE bool GeometricBoundingVolume::
+INLINE_MATHUTIL bool GeometricBoundingVolume::
 extend_by(const LPoint3f &point) {
   return extend_by_point(point);
 }
@@ -40,7 +40,7 @@ extend_by(const LPoint3f &point) {
 //  Description: Resets the volume to enclose only the volumes
 //               indicated.
 ////////////////////////////////////////////////////////////////////
-INLINE bool GeometricBoundingVolume::
+INLINE_MATHUTIL bool GeometricBoundingVolume::
 around(const GeometricBoundingVolume **first, 
        const GeometricBoundingVolume **last) {
   return BoundingVolume::around((const BoundingVolume **)first, 
@@ -53,7 +53,7 @@ around(const GeometricBoundingVolume **first,
 //  Description: Resets the volume to enclose only the points
 //               indicated.
 ////////////////////////////////////////////////////////////////////
-INLINE bool GeometricBoundingVolume::
+INLINE_MATHUTIL bool GeometricBoundingVolume::
 around(const LPoint3f *first, const LPoint3f *last) {
   _flags = F_empty;
   if (first != last) {
@@ -70,7 +70,7 @@ around(const LPoint3f *first, const LPoint3f *last) {
 //               indicate the amount of intersection with the
 //               indicated volume.
 ////////////////////////////////////////////////////////////////////
-INLINE int GeometricBoundingVolume::
+INLINE_MATHUTIL int GeometricBoundingVolume::
 contains(const GeometricBoundingVolume *vol) const {
   return BoundingVolume::contains(vol);
 }
@@ -82,7 +82,7 @@ contains(const GeometricBoundingVolume *vol) const {
 //               indicate the amount of intersection with the
 //               indicated point.
 ////////////////////////////////////////////////////////////////////
-INLINE int GeometricBoundingVolume::
+INLINE_MATHUTIL int GeometricBoundingVolume::
 contains(const LPoint3f &point) const {
   if (is_empty()) {
     return IF_no_intersection;
@@ -98,7 +98,7 @@ contains(const LPoint3f &point) const {
 //               indicate the amount of intersection with the
 //               indicated line segment.
 ////////////////////////////////////////////////////////////////////
-INLINE int GeometricBoundingVolume::
+INLINE_MATHUTIL int GeometricBoundingVolume::
 contains(const LPoint3f &a, const LPoint3f &b) const {
   if (is_empty()) {
     return IF_no_intersection;

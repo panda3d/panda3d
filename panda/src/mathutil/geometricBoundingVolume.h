@@ -21,23 +21,23 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeometricBoundingVolume : public BoundingVolume {
 public:
-  INLINE GeometricBoundingVolume();
+  INLINE_MATHUTIL GeometricBoundingVolume();
 
 PUBLISHED:
-  INLINE bool extend_by(const GeometricBoundingVolume *vol);
-  INLINE bool extend_by(const LPoint3f &point);
+  INLINE_MATHUTIL bool extend_by(const GeometricBoundingVolume *vol);
+  INLINE_MATHUTIL bool extend_by(const LPoint3f &point);
 
   // It might be nice to make these template member functions so we
   // could have true STL-style first/last iterators, but that's
   // impossible for virtual functions.
-  INLINE bool around(const GeometricBoundingVolume **first,
+  INLINE_MATHUTIL bool around(const GeometricBoundingVolume **first,
 		     const GeometricBoundingVolume **last);
-  INLINE bool around(const LPoint3f *first,
+  INLINE_MATHUTIL bool around(const LPoint3f *first,
 		     const LPoint3f *last);
 
-  INLINE int contains(const GeometricBoundingVolume *vol) const;
-  INLINE int contains(const LPoint3f &point) const;
-  INLINE int contains(const LPoint3f &a, const LPoint3f &b) const;
+  INLINE_MATHUTIL int contains(const GeometricBoundingVolume *vol) const;
+  INLINE_MATHUTIL int contains(const LPoint3f &point) const;
+  INLINE_MATHUTIL int contains(const LPoint3f &a, const LPoint3f &b) const;
 
   virtual LPoint3f get_approx_center() const=0;
   virtual void xform(const LMatrix4f &mat)=0;

@@ -9,7 +9,7 @@
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector3)::
+INLINE_LINMATH FLOATNAME(LVector3)::
 FLOATNAME(LVector3)() {
 }
 
@@ -18,7 +18,7 @@ FLOATNAME(LVector3)() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector3)::
+INLINE_LINMATH FLOATNAME(LVector3)::
 FLOATNAME(LVector3)(const FLOATNAME(LVecBase3) &copy) : FLOATNAME(LVecBase3)(copy) {
 }
 
@@ -27,7 +27,7 @@ FLOATNAME(LVector3)(const FLOATNAME(LVecBase3) &copy) : FLOATNAME(LVecBase3)(cop
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector3) &FLOATNAME(LVector3)::
+INLINE_LINMATH FLOATNAME(LVector3) &FLOATNAME(LVector3)::
 operator = (const FLOATNAME(LVecBase3) &copy) {
   FLOATNAME(LVecBase3)::operator = (copy);
   return *this;
@@ -38,7 +38,7 @@ operator = (const FLOATNAME(LVecBase3) &copy) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector3) &FLOATNAME(LVector3)::
+INLINE_LINMATH FLOATNAME(LVector3) &FLOATNAME(LVector3)::
 operator = (FLOATTYPE fill_value) {
   FLOATNAME(LVecBase3)::operator = (fill_value);
   return *this;
@@ -49,7 +49,7 @@ operator = (FLOATTYPE fill_value) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector3)::
+INLINE_LINMATH FLOATNAME(LVector3)::
 FLOATNAME(LVector3)(FLOATTYPE fill_value) :
   FLOATNAME(LVecBase3)(fill_value) 
 {
@@ -60,7 +60,7 @@ FLOATNAME(LVector3)(FLOATTYPE fill_value) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector3)::
+INLINE_LINMATH FLOATNAME(LVector3)::
 FLOATNAME(LVector3)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z) : 
   FLOATNAME(LVecBase3)(x, y, z) 
 {
@@ -71,7 +71,7 @@ FLOATNAME(LVector3)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z) :
 //       Access: Public
 //  Description: Returns a zero-length vector.
 ////////////////////////////////////////////////////////////////////
-INLINE const FLOATNAME(LVector3) &FLOATNAME(LVector3)::
+INLINE_LINMATH const FLOATNAME(LVector3) &FLOATNAME(LVector3)::
 zero() {
   return (const FLOATNAME(LVector3) &)FLOATNAME(LVecBase3)::zero();
 }
@@ -81,7 +81,7 @@ zero() {
 //       Access: Public
 //  Description: Returns a unit X vector.
 ////////////////////////////////////////////////////////////////////
-INLINE const FLOATNAME(LVector3) &FLOATNAME(LVector3)::
+INLINE_LINMATH const FLOATNAME(LVector3) &FLOATNAME(LVector3)::
 unit_x() {
   return (const FLOATNAME(LVector3) &)FLOATNAME(LVecBase3)::unit_x();
 }
@@ -91,7 +91,7 @@ unit_x() {
 //       Access: Public
 //  Description: Returns a unit Y vector.
 ////////////////////////////////////////////////////////////////////
-INLINE const FLOATNAME(LVector3) &FLOATNAME(LVector3)::
+INLINE_LINMATH const FLOATNAME(LVector3) &FLOATNAME(LVector3)::
 unit_y() {
   return (const FLOATNAME(LVector3) &)FLOATNAME(LVecBase3)::unit_y();
 }
@@ -101,7 +101,7 @@ unit_y() {
 //       Access: Public
 //  Description: Returns a unit Z vector.
 ////////////////////////////////////////////////////////////////////
-INLINE const FLOATNAME(LVector3) &FLOATNAME(LVector3)::
+INLINE_LINMATH const FLOATNAME(LVector3) &FLOATNAME(LVector3)::
 unit_z() {
   return (const FLOATNAME(LVector3) &)FLOATNAME(LVecBase3)::unit_z();
 }
@@ -111,7 +111,7 @@ unit_z() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector3) FLOATNAME(LVector3)::
+INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
 operator - () const {
   return FLOATNAME(LVecBase3)::operator - ();
 }
@@ -121,7 +121,7 @@ operator - () const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVecBase3) FLOATNAME(LVector3)::
+INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVector3)::
 operator + (const FLOATNAME(LVecBase3) &other) const {
   return FLOATNAME(LVecBase3)::operator + (other);
 }
@@ -131,7 +131,7 @@ operator + (const FLOATNAME(LVecBase3) &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector3) FLOATNAME(LVector3)::
+INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
 operator + (const FLOATNAME(LVector3) &other) const {
   return FLOATNAME(LVecBase3)::operator + (other);
 }
@@ -141,7 +141,7 @@ operator + (const FLOATNAME(LVector3) &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVecBase3) FLOATNAME(LVector3)::
+INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVector3)::
 operator - (const FLOATNAME(LVecBase3) &other) const {
   return FLOATNAME(LVecBase3)::operator - (other);
 }
@@ -151,7 +151,7 @@ operator - (const FLOATNAME(LVecBase3) &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector3) FLOATNAME(LVector3)::
+INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
 operator - (const FLOATNAME(LVector3) &other) const {
   return FLOATNAME(LVecBase3)::operator - (other);
 }
@@ -162,7 +162,7 @@ operator - (const FLOATNAME(LVector3) &other) const {
 //  Description: Returns the length of the vector, by the Pythagorean
 //               theorem.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATTYPE FLOATNAME(LVector3)::
+INLINE_LINMATH FLOATTYPE FLOATNAME(LVector3)::
 length() const {
   return csqrt((*this).dot(*this));
 }
@@ -173,7 +173,7 @@ length() const {
 //  Description: Returns the square of the vector's length, cheap and
 //               easy.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATTYPE FLOATNAME(LVector3)::
+INLINE_LINMATH FLOATTYPE FLOATNAME(LVector3)::
 length_squared() const {
   return (*this).dot(*this);
 }
@@ -185,7 +185,7 @@ length_squared() const {
 //               vector was normalized, false if it was a zero-length
 //               vector.
 ////////////////////////////////////////////////////////////////////
-INLINE bool FLOATNAME(LVector3)::
+INLINE_LINMATH bool FLOATNAME(LVector3)::
 normalize() {
   FLOATTYPE l2 = length_squared();
   if (l2 == (FLOATTYPE)0.0) {
@@ -204,7 +204,7 @@ normalize() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector3) FLOATNAME(LVector3)::
+INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
 cross(const FLOATNAME(LVecBase3) &other) const {
   return FLOATNAME(LVecBase3)::cross(other);
 }
@@ -214,7 +214,7 @@ cross(const FLOATNAME(LVecBase3) &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector3) FLOATNAME(LVector3)::
+INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
 operator * (FLOATTYPE scalar) const {
   return FLOATNAME(LVector3)(FLOATNAME(LVecBase3)::operator * (scalar));
 }
@@ -224,9 +224,10 @@ operator * (FLOATTYPE scalar) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector3) FLOATNAME(LVector3)::
+INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
 operator / (FLOATTYPE scalar) const {
-  return FLOATNAME(LVector3)(FLOATNAME(LVecBase3)::operator / (scalar));
+  FLOATTYPE recip_scalar = 1.0/scalar;
+  return FLOATNAME(LVector3)(FLOATNAME(LVecBase3)::operator * (recip_scalar));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -235,7 +236,7 @@ operator / (FLOATTYPE scalar) const {
 //  Description: Returns the up vector for the given coordinate
 //               system.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector3) FLOATNAME(LVector3)::
+INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
 up(CoordinateSystem cs) {
   if (cs == CS_default) {
     cs = default_coordinate_system;
@@ -262,7 +263,7 @@ up(CoordinateSystem cs) {
 //  Description: Returns the right vector for the given coordinate
 //               system.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector3) FLOATNAME(LVector3)::
+INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
 right(CoordinateSystem) {
   return FLOATNAME(LVector3)(1.0, 0.0, 0.0);
 }
@@ -273,7 +274,7 @@ right(CoordinateSystem) {
 //  Description: Returns the forward vector for the given coordinate
 //               system.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector3) FLOATNAME(LVector3)::
+INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
 forward(CoordinateSystem cs) {
   if (cs == CS_default) {
     cs = default_coordinate_system;
@@ -304,7 +305,7 @@ forward(CoordinateSystem cs) {
 //  Description: Returns the down vector for the given coordinate
 //               system.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector3) FLOATNAME(LVector3)::
+INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
 down(CoordinateSystem cs) {
   return -up(cs);
 }
@@ -315,7 +316,7 @@ down(CoordinateSystem cs) {
 //  Description: Returns the left vector for the given coordinate
 //               system.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector3) FLOATNAME(LVector3)::
+INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
 left(CoordinateSystem cs) {
   return -right(cs);
 }
@@ -326,7 +327,7 @@ left(CoordinateSystem cs) {
 //  Description: Returns the back vector for the given coordinate
 //               system.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector3) FLOATNAME(LVector3)::
+INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
 back(CoordinateSystem cs) {
   return -forward(cs);
 }
@@ -338,8 +339,42 @@ back(CoordinateSystem cs) {
 //               forward, and up components, in whatever way the
 //               coordinate system represents that vector.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector3) FLOATNAME(LVector3)::
+
+//INLINE_LINMATH FLOATNAME(LVector3) & FLOATNAME(LVector3)::
+INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
 rfu(FLOATTYPE right_v, FLOATTYPE fwd_v, FLOATTYPE up_v,
     CoordinateSystem cs) {
-  return forward(cs) * fwd_v + up(cs) * up_v + right(cs) * right_v;
+
+  /*  return forward(cs) * fwd_v + up(cs) * up_v + right(cs) * right_v; */
+  
+  // fast implementation of above for axis-aligned coordinate systems
+
+
+  if (cs == CS_default) {
+    cs = default_coordinate_system;
+  }
+  FLOATTYPE vy,vz;
+  switch(cs) {
+	  case CS_yup_right:
+	  vz = -fwd_v;
+	  vy = up_v;
+	  break;
+
+	  case CS_yup_left:
+	  vz = fwd_v;
+	  vy = up_v;
+	  break;
+
+	  case CS_zup_right:
+	  vy = fwd_v;
+	  vz = up_v;
+	  break;
+
+	  case CS_zup_left:
+	  vy = -fwd_v;
+	  vz = up_v;
+  }
+
+ return FLOATNAME(LVector3)(right_v,vy,vz);
 }
+

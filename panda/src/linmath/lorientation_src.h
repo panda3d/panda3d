@@ -9,17 +9,17 @@
 ////////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA FLOATNAME(LOrientation) : public FLOATNAME(LQuaternion) {
 public:
-  INLINE FLOATNAME(LOrientation)();
-  INLINE FLOATNAME(LOrientation)(const FLOATNAME(LQuaternion)&);
-  INLINE FLOATNAME(LOrientation)(FLOATTYPE, FLOATTYPE, FLOATTYPE, FLOATTYPE);
-  INLINE FLOATNAME(LOrientation)(const FLOATNAME(LVector3) &, float);
-  INLINE FLOATNAME(LOrientation)(const FLOATNAME(LMatrix3) &);
-  INLINE FLOATNAME(LOrientation)(const FLOATNAME(LMatrix4) &);
+  INLINE_LINMATH FLOATNAME(LOrientation)();
+  INLINE_LINMATH FLOATNAME(LOrientation)(const FLOATNAME(LQuaternion)&);
+  INLINE_LINMATH FLOATNAME(LOrientation)(FLOATTYPE, FLOATTYPE, FLOATTYPE, FLOATTYPE);
+  INLINE_LINMATH FLOATNAME(LOrientation)(const FLOATNAME(LVector3) &, float);
+  INLINE_LINMATH FLOATNAME(LOrientation)(const FLOATNAME(LMatrix3) &);
+  INLINE_LINMATH FLOATNAME(LOrientation)(const FLOATNAME(LMatrix4) &);
 
-  INLINE FLOATNAME(LOrientation) 
+  INLINE_LINMATH FLOATNAME(LOrientation) 
   operator *(const FLOATNAME(LQuaternion)& other) const;
 
-  INLINE FLOATNAME(LOrientation)
+  INLINE_LINMATH FLOATNAME(LOrientation)
   operator *(const FLOATNAME(LOrientation)& other) const;
 
 public:

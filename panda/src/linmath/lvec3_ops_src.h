@@ -10,35 +10,35 @@
 
 
 // scalar * vec (vec * scalar is defined in class)
-INLINE FLOATNAME(LVecBase3) 
+INLINE_LINMATH FLOATNAME(LVecBase3) 
 operator * (FLOATTYPE scalar, const FLOATNAME(LVecBase3) &a);
 
-INLINE FLOATNAME(LPoint3) 
+INLINE_LINMATH FLOATNAME(LPoint3) 
 operator * (FLOATTYPE scalar, const FLOATNAME(LPoint3) &a);
 
-INLINE FLOATNAME(LVector3) 
+INLINE_LINMATH FLOATNAME(LVector3) 
 operator * (FLOATTYPE scalar, const FLOATNAME(LVector3) &a);
 
 
 // dot product
-INLINE FLOATTYPE
+INLINE_LINMATH FLOATTYPE
 dot(const FLOATNAME(LVecBase3) &a, const FLOATNAME(LVecBase3) &b);
 
 
 // cross product
-INLINE FLOATNAME(LVecBase3)
+INLINE_LINMATH FLOATNAME(LVecBase3)
 cross(const FLOATNAME(LVecBase3) &a, const FLOATNAME(LVecBase3) &b);
 
-INLINE FLOATNAME(LVector3)
+INLINE_LINMATH FLOATNAME(LVector3)
 cross(const FLOATNAME(LVector3) &a, const FLOATNAME(LVector3) &b);
 
 
 // Length of a vector.
-INLINE FLOATTYPE
+INLINE_LINMATH FLOATTYPE
 length(const FLOATNAME(LVector3) &a);
 
 // A normalized vector.
-INLINE FLOATNAME(LVector3)
+INLINE_LINMATH FLOATNAME(LVector3)
 normalize(const FLOATNAME(LVector3) &v);
 
 #include "lvec3_ops_src.I"

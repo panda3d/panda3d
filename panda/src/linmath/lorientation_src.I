@@ -8,7 +8,7 @@
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LOrientation)::
+INLINE_LINMATH FLOATNAME(LOrientation)::
 FLOATNAME(LOrientation)() {
 }
 
@@ -17,7 +17,7 @@ FLOATNAME(LOrientation)() {
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LOrientation)::
+INLINE_LINMATH FLOATNAME(LOrientation)::
 FLOATNAME(LOrientation)(const FLOATNAME(LQuaternion)& c) :
   FLOATNAME(LQuaternion)(c) {
 }
@@ -27,7 +27,7 @@ FLOATNAME(LOrientation)(const FLOATNAME(LQuaternion)& c) :
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LOrientation)::
+INLINE_LINMATH FLOATNAME(LOrientation)::
 FLOATNAME(LOrientation)(FLOATTYPE r, FLOATTYPE i, FLOATTYPE j, FLOATTYPE k) :
   FLOATNAME(LQuaternion)(r, i, j, k) {
 }
@@ -37,7 +37,7 @@ FLOATNAME(LOrientation)(FLOATTYPE r, FLOATTYPE i, FLOATTYPE j, FLOATTYPE k) :
 //       Access: public
 //  Description: vector + twist
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LOrientation)::
+INLINE_LINMATH FLOATNAME(LOrientation)::
 FLOATNAME(LOrientation)(const FLOATNAME(LVector3) &point_at, float twist) {
   float radians = twist * ((float) MathNumbers::pi / 180.0f);
   float theta_over_2 = radians / 2.0f;
@@ -54,7 +54,7 @@ FLOATNAME(LOrientation)(const FLOATNAME(LVector3) &point_at, float twist) {
 //       Access: public
 //  Description: matrix3
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LOrientation)::
+INLINE_LINMATH FLOATNAME(LOrientation)::
 FLOATNAME(LOrientation)(const FLOATNAME(LMatrix3) &m) {
   set_from_matrix(m);
 }
@@ -64,7 +64,7 @@ FLOATNAME(LOrientation)(const FLOATNAME(LMatrix3) &m) {
 //       Access: public
 //  Description: matrix4
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LOrientation)::
+INLINE_LINMATH FLOATNAME(LOrientation)::
 FLOATNAME(LOrientation)(const FLOATNAME(LMatrix4) &m) {
   set_from_matrix(m);
 }
@@ -75,7 +75,7 @@ FLOATNAME(LOrientation)(const FLOATNAME(LMatrix4) &m) {
 //  Description: Orientation * rotation = Orientation
 //               Applies an rotation to an orientation.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LOrientation) FLOATNAME(LOrientation)::
+INLINE_LINMATH FLOATNAME(LOrientation) FLOATNAME(LOrientation)::
 operator *(const FLOATNAME(LQuaternion)& other) const {
   return multiply(other);
 }
@@ -87,7 +87,7 @@ operator *(const FLOATNAME(LQuaternion)& other) const {
 //               This is a meaningless operation, and will always
 //               simply return the rhs.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LOrientation) FLOATNAME(LOrientation)::
+INLINE_LINMATH FLOATNAME(LOrientation) FLOATNAME(LOrientation)::
 operator *(const FLOATNAME(LOrientation)& other) const {
   return other;
 }

@@ -12,14 +12,14 @@ compose_matrix(FLOATNAME(LMatrix3) &mat,
 	       const FLOATNAME(LVecBase3) &hpr,
 	       CoordinateSystem cs = CS_default);
 
-INLINE void
+INLINE_LINMATH void
 compose_matrix(FLOATNAME(LMatrix4) &mat,
 	       const FLOATNAME(LVecBase3) &scale,
 	       const FLOATNAME(LVecBase3) &hpr,
 	       const FLOATNAME(LVecBase3) &translate,
 	       CoordinateSystem cs = CS_default);
 
-INLINE void 
+INLINE_LINMATH void 
 compose_matrix(FLOATNAME(LMatrix4) &mat, const FLOATTYPE components[9],
 	       CoordinateSystem cs = CS_default);
 
@@ -36,14 +36,14 @@ decompose_matrix(const FLOATNAME(LMatrix3) &mat,
 		 FLOATTYPE roll,
 		 CoordinateSystem cs = CS_default);
 
-INLINE bool
+INLINE_LINMATH bool
 decompose_matrix(const FLOATNAME(LMatrix4) &mat,
 		 FLOATNAME(LVecBase3) &scale,
 		 FLOATNAME(LVecBase3) &hpr,
 		 FLOATNAME(LVecBase3) &translate,
 		 CoordinateSystem cs = CS_default);
 
-INLINE bool
+INLINE_LINMATH bool
 decompose_matrix(const FLOATNAME(LMatrix4) &mat,
 		 FLOATNAME(LVecBase3) &scale,
 		 FLOATNAME(LVecBase3) &hpr,
@@ -51,7 +51,7 @@ decompose_matrix(const FLOATNAME(LMatrix4) &mat,
 		 FLOATTYPE roll,
 		 CoordinateSystem cs = CS_default);
 
-INLINE bool 
+INLINE_LINMATH bool 
 decompose_matrix(const FLOATNAME(LMatrix4) &mat, FLOATTYPE components[9],
 		 CoordinateSystem CS = CS_default);
 

@@ -18,8 +18,8 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA BoundingSphere : public FiniteBoundingVolume {
 PUBLISHED:
-  INLINE BoundingSphere();
-  INLINE BoundingSphere(const LPoint3f &center, float radius);
+  INLINE_MATHUTIL BoundingSphere();
+  INLINE_MATHUTIL BoundingSphere(const LPoint3f &center, float radius);
 
 public:
   virtual BoundingVolume *make_copy() const;
@@ -33,8 +33,8 @@ public:
   virtual void output(ostream &out) const;
 
 PUBLISHED:
-  INLINE const LPoint3f &get_center() const;
-  INLINE float get_radius() const;
+  INLINE_MATHUTIL const LPoint3f &get_center() const;
+  INLINE_MATHUTIL float get_radius() const;
 
 protected:
   virtual bool extend_other(BoundingVolume *other) const;

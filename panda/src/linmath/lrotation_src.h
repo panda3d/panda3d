@@ -9,18 +9,18 @@
 ////////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA FLOATNAME(LRotation) : public FLOATNAME(LQuaternion) {
 PUBLISHED:
-  INLINE FLOATNAME(LRotation)();
-  INLINE FLOATNAME(LRotation)(const FLOATNAME(LQuaternion)&);
-  INLINE FLOATNAME(LRotation)(FLOATTYPE, FLOATTYPE, FLOATTYPE, FLOATTYPE);
-  INLINE FLOATNAME(LRotation)(const FLOATNAME(LVector3) &, FLOATTYPE);
-  INLINE FLOATNAME(LRotation)(const FLOATNAME(LMatrix3) &);
-  INLINE FLOATNAME(LRotation)(const FLOATNAME(LMatrix4) &);
-  INLINE FLOATNAME(LRotation)(FLOATTYPE, FLOATTYPE, FLOATTYPE);
+  INLINE_LINMATH FLOATNAME(LRotation)();
+  INLINE_LINMATH FLOATNAME(LRotation)(const FLOATNAME(LQuaternion)&);
+  INLINE_LINMATH FLOATNAME(LRotation)(FLOATTYPE, FLOATTYPE, FLOATTYPE, FLOATTYPE);
+  INLINE_LINMATH FLOATNAME(LRotation)(const FLOATNAME(LVector3) &, FLOATTYPE);
+  INLINE_LINMATH FLOATNAME(LRotation)(const FLOATNAME(LMatrix3) &);
+  INLINE_LINMATH FLOATNAME(LRotation)(const FLOATNAME(LMatrix4) &);
+  INLINE_LINMATH FLOATNAME(LRotation)(FLOATTYPE, FLOATTYPE, FLOATTYPE);
 
-  INLINE FLOATNAME(LRotation)
+  INLINE_LINMATH FLOATNAME(LRotation)
   operator*(const FLOATNAME(LRotation)& other) const;
 
-  INLINE FLOATNAME(LQuaternion)
+  INLINE_LINMATH FLOATNAME(LQuaternion)
   operator*(const FLOATNAME(LQuaternion)& other) const;
 
 public:

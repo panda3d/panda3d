@@ -9,7 +9,7 @@
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector4)::
+INLINE_LINMATH FLOATNAME(LVector4)::
 FLOATNAME(LVector4)() {
 }
 
@@ -18,7 +18,7 @@ FLOATNAME(LVector4)() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector4)::
+INLINE_LINMATH FLOATNAME(LVector4)::
 FLOATNAME(LVector4)(const FLOATNAME(LVecBase4) &copy) : FLOATNAME(LVecBase4)(copy) {
 }
 
@@ -27,7 +27,7 @@ FLOATNAME(LVector4)(const FLOATNAME(LVecBase4) &copy) : FLOATNAME(LVecBase4)(cop
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector4) &FLOATNAME(LVector4)::
+INLINE_LINMATH FLOATNAME(LVector4) &FLOATNAME(LVector4)::
 operator = (const FLOATNAME(LVecBase4) &copy) {
   FLOATNAME(LVecBase4)::operator = (copy);
   return *this;
@@ -38,7 +38,7 @@ operator = (const FLOATNAME(LVecBase4) &copy) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector4) &FLOATNAME(LVector4)::
+INLINE_LINMATH FLOATNAME(LVector4) &FLOATNAME(LVector4)::
 operator = (FLOATTYPE fill_value) {
   FLOATNAME(LVecBase4)::operator = (fill_value);
   return *this;
@@ -49,7 +49,7 @@ operator = (FLOATTYPE fill_value) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector4)::
+INLINE_LINMATH FLOATNAME(LVector4)::
 FLOATNAME(LVector4)(FLOATTYPE fill_value) :
   FLOATNAME(LVecBase4)(fill_value) 
 {
@@ -60,7 +60,7 @@ FLOATNAME(LVector4)(FLOATTYPE fill_value) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector4)::
+INLINE_LINMATH FLOATNAME(LVector4)::
 FLOATNAME(LVector4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w) : 
   FLOATNAME(LVecBase4)(x, y, z, w) 
 {
@@ -71,7 +71,7 @@ FLOATNAME(LVector4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w) :
 //       Access: Public
 //  Description: Returns a zero-length vector.
 ////////////////////////////////////////////////////////////////////
-INLINE const FLOATNAME(LVector4) &FLOATNAME(LVector4)::
+INLINE_LINMATH const FLOATNAME(LVector4) &FLOATNAME(LVector4)::
 zero() {
   return (const FLOATNAME(LVector4) &)FLOATNAME(LVecBase4)::zero();
 }
@@ -81,7 +81,7 @@ zero() {
 //       Access: Public
 //  Description: Returns a unit X vector.
 ////////////////////////////////////////////////////////////////////
-INLINE const FLOATNAME(LVector4) &FLOATNAME(LVector4)::
+INLINE_LINMATH const FLOATNAME(LVector4) &FLOATNAME(LVector4)::
 unit_x() {
   return (const FLOATNAME(LVector4) &)FLOATNAME(LVecBase4)::unit_x();
 }
@@ -91,7 +91,7 @@ unit_x() {
 //       Access: Public
 //  Description: Returns a unit Y vector.
 ////////////////////////////////////////////////////////////////////
-INLINE const FLOATNAME(LVector4) &FLOATNAME(LVector4)::
+INLINE_LINMATH const FLOATNAME(LVector4) &FLOATNAME(LVector4)::
 unit_y() {
   return (const FLOATNAME(LVector4) &)FLOATNAME(LVecBase4)::unit_y();
 }
@@ -101,7 +101,7 @@ unit_y() {
 //       Access: Public
 //  Description: Returns a unit Z vector.
 ////////////////////////////////////////////////////////////////////
-INLINE const FLOATNAME(LVector4) &FLOATNAME(LVector4)::
+INLINE_LINMATH const FLOATNAME(LVector4) &FLOATNAME(LVector4)::
 unit_z() {
   return (const FLOATNAME(LVector4) &)FLOATNAME(LVecBase4)::unit_z();
 }
@@ -111,7 +111,7 @@ unit_z() {
 //       Access: Public
 //  Description: Returns a unit W vector.
 ////////////////////////////////////////////////////////////////////
-INLINE const FLOATNAME(LVector4) &FLOATNAME(LVector4)::
+INLINE_LINMATH const FLOATNAME(LVector4) &FLOATNAME(LVector4)::
 unit_w() {
   return (const FLOATNAME(LVector4) &)FLOATNAME(LVecBase4)::unit_w();
 }
@@ -121,7 +121,7 @@ unit_w() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector4) FLOATNAME(LVector4)::
+INLINE_LINMATH FLOATNAME(LVector4) FLOATNAME(LVector4)::
 operator - () const {
   return FLOATNAME(LVecBase4)::operator - ();
 }
@@ -131,7 +131,7 @@ operator - () const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVecBase4) FLOATNAME(LVector4)::
+INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LVector4)::
 operator + (const FLOATNAME(LVecBase4) &other) const {
   return FLOATNAME(LVecBase4)::operator + (other);
 }
@@ -141,7 +141,7 @@ operator + (const FLOATNAME(LVecBase4) &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector4) FLOATNAME(LVector4)::
+INLINE_LINMATH FLOATNAME(LVector4) FLOATNAME(LVector4)::
 operator + (const FLOATNAME(LVector4) &other) const {
   return FLOATNAME(LVecBase4)::operator + (other);
 }
@@ -151,7 +151,7 @@ operator + (const FLOATNAME(LVector4) &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVecBase4) FLOATNAME(LVector4)::
+INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LVector4)::
 operator - (const FLOATNAME(LVecBase4) &other) const {
   return FLOATNAME(LVecBase4)::operator - (other);
 }
@@ -161,7 +161,7 @@ operator - (const FLOATNAME(LVecBase4) &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector4) FLOATNAME(LVector4)::
+INLINE_LINMATH FLOATNAME(LVector4) FLOATNAME(LVector4)::
 operator - (const FLOATNAME(LVector4) &other) const {
   return FLOATNAME(LVecBase4)::operator - (other);
 }
@@ -172,7 +172,7 @@ operator - (const FLOATNAME(LVector4) &other) const {
 //  Description: Returns the length of the vector, by the Pythagorean
 //               theorem.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATTYPE FLOATNAME(LVector4)::
+INLINE_LINMATH FLOATTYPE FLOATNAME(LVector4)::
 length() const {
   return csqrt((*this).dot(*this));
 }
@@ -183,7 +183,7 @@ length() const {
 //  Description: Returns the square of the vector's length, cheap and
 //               easy.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATTYPE FLOATNAME(LVector4)::
+INLINE_LINMATH FLOATTYPE FLOATNAME(LVector4)::
 length_squared() const {
   return (*this).dot(*this);
 }
@@ -195,7 +195,7 @@ length_squared() const {
 //               vector was normalized, false if it was a zero-length
 //               vector.
 ////////////////////////////////////////////////////////////////////
-INLINE bool FLOATNAME(LVector4)::
+INLINE_LINMATH bool FLOATNAME(LVector4)::
 normalize() {
   FLOATTYPE l2 = length_squared();
   if (l2 == (FLOATTYPE)0.0) {
@@ -214,7 +214,7 @@ normalize() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector4) FLOATNAME(LVector4)::
+INLINE_LINMATH FLOATNAME(LVector4) FLOATNAME(LVector4)::
 operator * (FLOATTYPE scalar) const {
   return FLOATNAME(LVector4)(FLOATNAME(LVecBase4)::operator * (scalar));
 }
@@ -224,7 +224,8 @@ operator * (FLOATTYPE scalar) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector4) FLOATNAME(LVector4)::
+INLINE_LINMATH FLOATNAME(LVector4) FLOATNAME(LVector4)::
 operator / (FLOATTYPE scalar) const {
-  return FLOATNAME(LVector4)(FLOATNAME(LVecBase4)::operator / (scalar));
+  FLOATTYPE recip_scalar = 1.0/scalar;
+  return FLOATNAME(LVector4)(FLOATNAME(LVecBase4)::operator * (recip_scalar));
 }

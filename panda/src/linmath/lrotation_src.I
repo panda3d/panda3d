@@ -8,7 +8,7 @@
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LRotation)::
+INLINE_LINMATH FLOATNAME(LRotation)::
 FLOATNAME(LRotation)() {
 }
 
@@ -17,7 +17,7 @@ FLOATNAME(LRotation)() {
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LRotation)::
+INLINE_LINMATH FLOATNAME(LRotation)::
 FLOATNAME(LRotation)(const FLOATNAME(LQuaternion)& c) : 
   FLOATNAME(LQuaternion)(c) {
 }
@@ -27,7 +27,7 @@ FLOATNAME(LRotation)(const FLOATNAME(LQuaternion)& c) :
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LRotation)::
+INLINE_LINMATH FLOATNAME(LRotation)::
 FLOATNAME(LRotation)(FLOATTYPE r, FLOATTYPE i, FLOATTYPE j, FLOATTYPE k) : 
   FLOATNAME(LQuaternion)(r, i, j, k) {
 }
@@ -37,7 +37,7 @@ FLOATNAME(LRotation)(FLOATTYPE r, FLOATTYPE i, FLOATTYPE j, FLOATTYPE k) :
 //       Access: public
 //  Description: lmatrix3
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LRotation)::
+INLINE_LINMATH FLOATNAME(LRotation)::
 FLOATNAME(LRotation)(const FLOATNAME(LMatrix3) &m) {
   set_from_matrix(m);
 }
@@ -47,7 +47,7 @@ FLOATNAME(LRotation)(const FLOATNAME(LMatrix3) &m) {
 //       Access: public
 //  Description: lmatrix4
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LRotation)::
+INLINE_LINMATH FLOATNAME(LRotation)::
 FLOATNAME(LRotation)(const FLOATNAME(LMatrix4) &m) {
   set_from_matrix(m);
 }
@@ -57,7 +57,7 @@ FLOATNAME(LRotation)(const FLOATNAME(LMatrix4) &m) {
 //       Access: public
 //  Description: axis + angle (in degrees)
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LRotation)::
+INLINE_LINMATH FLOATNAME(LRotation)::
 FLOATNAME(LRotation)(const FLOATNAME(LVector3) &axis, FLOATTYPE angle) {
   FLOATTYPE radians = angle * ((FLOATTYPE) MathNumbers::pi / (FLOATTYPE)180.0);
   FLOATTYPE theta_over_2 = radians / (FLOATTYPE)2.0;
@@ -74,7 +74,7 @@ FLOATNAME(LRotation)(const FLOATNAME(LVector3) &axis, FLOATTYPE angle) {
 //       Access: public
 //  Description: Sets the rotation from the given Euler angles.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LRotation)::
+INLINE_LINMATH FLOATNAME(LRotation)::
 FLOATNAME(LRotation)(FLOATTYPE h, FLOATTYPE p, FLOATTYPE r) {
   set_hpr(FLOATNAME(LVecBase3)(h, p, r));
 }
@@ -84,7 +84,7 @@ FLOATNAME(LRotation)(FLOATTYPE h, FLOATTYPE p, FLOATTYPE r) {
 //       Access: public
 //  Description: Rotation * Rotation = Rotation
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LRotation) FLOATNAME(LRotation)::
+INLINE_LINMATH FLOATNAME(LRotation) FLOATNAME(LRotation)::
 operator*(const FLOATNAME(LRotation)& other) const {
   return multiply(other);
 }
@@ -97,7 +97,7 @@ operator*(const FLOATNAME(LRotation)& other) const {
 //               to apply an orientation to a rotation.  It simply
 //               returns the rhs.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LQuaternion) FLOATNAME(LRotation)::
+INLINE_LINMATH FLOATNAME(LQuaternion) FLOATNAME(LRotation)::
 operator*(const FLOATNAME(LQuaternion)& other) const {
   return other;
 }

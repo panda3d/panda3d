@@ -10,7 +10,7 @@
 //               intersect the origin, perpendicular to the Z axis.
 //               It's not clear how useful a default plane is.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(Plane)::
+INLINE_MATHUTIL FLOATNAME(Plane)::
 FLOATNAME(Plane)(void) {
   _a = 0.0; 
   _b = 0.0; 
@@ -23,7 +23,7 @@ FLOATNAME(Plane)(void) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(Plane)::
+INLINE_MATHUTIL FLOATNAME(Plane)::
 FLOATNAME(Plane)(const FLOATNAME(Plane) &copy) :
   _a(copy._a),
   _b(copy._b),
@@ -40,7 +40,7 @@ FLOATNAME(Plane)(const FLOATNAME(Plane) &copy) :
 //               viewed from the end of the normal vector, looking
 //               down).
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(Plane)::
+INLINE_MATHUTIL FLOATNAME(Plane)::
 FLOATNAME(Plane)(const FLOATNAME(LPoint3) &a, const FLOATNAME(LPoint3) &b, 
 		 const FLOATNAME(LPoint3) &c) {
   FLOATNAME(LVector3) u = b - a;
@@ -59,7 +59,7 @@ FLOATNAME(Plane)(const FLOATNAME(LPoint3) &a, const FLOATNAME(LPoint3) &b,
 //  Description: Constructs a plane given a surface normal vector and
 //               a point within the plane.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(Plane)::
+INLINE_MATHUTIL FLOATNAME(Plane)::
 FLOATNAME(Plane)(const FLOATNAME(LVector3) &normal, const FLOATNAME(LPoint3) &point) {
   FLOATNAME(LVector3) p = normalize(normal);
 
@@ -74,7 +74,7 @@ FLOATNAME(Plane)(const FLOATNAME(LVector3) &normal, const FLOATNAME(LPoint3) &po
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(Plane)& FLOATNAME(Plane)::
+INLINE_MATHUTIL FLOATNAME(Plane)& FLOATNAME(Plane)::
 operator = (const FLOATNAME(Plane)& p) {
   _a = p._a; 
   _b = p._b;
@@ -88,7 +88,7 @@ operator = (const FLOATNAME(Plane)& p) {
 //       Access: Public
 //  Description: Transforms the plane by the indicated matrix.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(Plane) FLOATNAME(Plane)::
+INLINE_MATHUTIL FLOATNAME(Plane) FLOATNAME(Plane)::
 operator * (const FLOATNAME(LMatrix3) &mat) const {
   FLOATNAME(LVector3) new_normal = get_normal() * mat;
   FLOATNAME(LPoint3) new_point = get_point() * mat;
@@ -100,7 +100,7 @@ operator * (const FLOATNAME(LMatrix3) &mat) const {
 //       Access: Public
 //  Description: Transforms the plane by the indicated matrix.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(Plane) FLOATNAME(Plane)::
+INLINE_MATHUTIL FLOATNAME(Plane) FLOATNAME(Plane)::
 operator * (const FLOATNAME(LMatrix4) &mat) const {
   FLOATNAME(LVector3) new_normal = get_normal() * mat;
   FLOATNAME(LPoint3) new_point = get_point() * mat;
@@ -112,7 +112,7 @@ operator * (const FLOATNAME(LMatrix4) &mat) const {
 //       Access: Public
 //  Description: Returns the surface normal of the plane.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATNAME(LVector3) FLOATNAME(Plane)::
+INLINE_MATHUTIL FLOATNAME(LVector3) FLOATNAME(Plane)::
 get_normal() const {
   return FLOATNAME(LVector3)(_a, _b, _c);
 }
@@ -127,7 +127,7 @@ get_normal() const {
 //               the plane (on the opposite side from the normal).
 //               It's zero if the point is exactly in the plane.
 ////////////////////////////////////////////////////////////////////
-INLINE FLOATTYPE FLOATNAME(Plane)::
+INLINE_MATHUTIL FLOATTYPE FLOATNAME(Plane)::
 dist_to_plane(const FLOATNAME(LPoint3) &point) const {
   return (_a * point[0] + _b * point[1] + _c * point[2] + _d);
 }
@@ -142,7 +142,7 @@ dist_to_plane(const FLOATNAME(LPoint3) &point) const {
 //               bearing on the intersection test.  If true, sets
 //               intersection_point to the point of intersection.
 ////////////////////////////////////////////////////////////////////
-INLINE bool FLOATNAME(Plane)::
+INLINE_MATHUTIL bool FLOATNAME(Plane)::
 intersects_line(FLOATNAME(LPoint3) &intersection_point,
 		const FLOATNAME(LPoint3) &p1,
 		const FLOATNAME(LPoint3) &p2) const {
@@ -171,7 +171,7 @@ intersects_line(FLOATNAME(LPoint3) &intersection_point,
 //               point from, and t == 1.0 implies at point from +
 //               delta, with other values of t accordingly.
 ////////////////////////////////////////////////////////////////////
-INLINE bool FLOATNAME(Plane)::
+INLINE_MATHUTIL bool FLOATNAME(Plane)::
 intersects_line(FLOATTYPE &t, 
 		const FLOATNAME(LPoint3) &from, 
 		const FLOATNAME(LVector3) &delta) const {
@@ -189,7 +189,7 @@ intersects_line(FLOATTYPE &t,
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void FLOATNAME(Plane)::
+INLINE_MATHUTIL void FLOATNAME(Plane)::
 output(ostream &out) const {
   out << "Plane(" << _a << " " << _b << " " << _c << " " << _d << ")";
 }
@@ -199,7 +199,7 @@ output(ostream &out) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void FLOATNAME(Plane)::
+INLINE_MATHUTIL void FLOATNAME(Plane)::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";
 }
@@ -209,7 +209,7 @@ write(ostream &out, int indent_level) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void FLOATNAME(Plane)::
+INLINE_MATHUTIL void FLOATNAME(Plane)::
 write_datagram(Datagram &dest) 
 {
   dest.add_float32(_a);
@@ -223,7 +223,7 @@ write_datagram(Datagram &dest)
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void FLOATNAME(Plane)::
+INLINE_MATHUTIL void FLOATNAME(Plane)::
 read_datagram(DatagramIterator &source) 
 {
   _a = source.get_float32();

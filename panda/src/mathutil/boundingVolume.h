@@ -28,15 +28,15 @@ class BoundingLine;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA BoundingVolume : public TypedReferenceCount {
 PUBLISHED:
-  INLINE BoundingVolume();
+  INLINE_MATHUTIL BoundingVolume();
   virtual BoundingVolume *make_copy() const=0;
 
-  INLINE bool is_empty() const;
-  INLINE bool is_infinite() const;
+  INLINE_MATHUTIL bool is_empty() const;
+  INLINE_MATHUTIL bool is_infinite() const;
 
-  INLINE void set_infinite();
+  INLINE_MATHUTIL void set_infinite();
 
-  INLINE bool extend_by(const BoundingVolume *vol);
+  INLINE_MATHUTIL bool extend_by(const BoundingVolume *vol);
 
   // It might be nice to make these template member functions so we
   // could have true STL-style first/last iterators, but that's
@@ -76,7 +76,7 @@ PUBLISHED:
     IF_dont_understand = 0x08
   };
 
-  INLINE int contains(const BoundingVolume *vol) const;
+  INLINE_MATHUTIL int contains(const BoundingVolume *vol) const;
 
   virtual void output(ostream &out) const=0;
   virtual void write(ostream &out, int indent_level = 0) const;
@@ -140,7 +140,7 @@ private:
   friend class BoundingLine;
 };
 
-INLINE ostream &operator << (ostream &out, const BoundingVolume &bound);
+INLINE_MATHUTIL ostream &operator << (ostream &out, const BoundingVolume &bound);
 
 #include "boundingVolume.I"
 
