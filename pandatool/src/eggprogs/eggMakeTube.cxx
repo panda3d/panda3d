@@ -31,6 +31,14 @@
 ////////////////////////////////////////////////////////////////////
 EggMakeTube::
 EggMakeTube() {
+
+  set_program_description
+    ("egg-make-tube generates an egg file representing a \"tube\" model, "
+     "a cylinder capped on both ends by hemispheres.  This is similar "
+     "in shape to the CollisionTube object within Panda.\n\n"
+     "This program can also generate spheres if you omit -b; in this "
+     "case, you are generating a degenerate tube of length 0.");
+
   add_option
     ("a", "x,y,z", 0, 
      "Specify the first endpoint of the tube.",
@@ -39,7 +47,7 @@ EggMakeTube() {
   add_option
     ("b", "x,y,z", 0, 
      "Specify the second endpoint of the tube.",
-     &EggWriter::dispatch_double_triple, NULL, _point_a);
+     &EggWriter::dispatch_double_triple, &_got_point_b, _point_b);
 
   add_option
     ("r", "radius", 0, 
@@ -85,6 +93,12 @@ EggMakeTube() {
 ////////////////////////////////////////////////////////////////////
 void EggMakeTube::
 run() {
+  if (!_got_point_b) {
+    _point_b[0] = _point_a[0];
+    _point_b[1] = _point_a[1];
+    _point_b[2] = _point_a[2];
+  }
+
   // We will generate the vertices in the canonical space (along the y
   // axis), then transform it to the desired point.
   LVector3d direction(_point_b[0] - _point_a[0],
@@ -117,15 +131,17 @@ run() {
   }
 
   // Now the cylinder sides.
-  for (ri = 0; ri < _num_trings; ri++) {
-    vtx_1 = NULL;
-    vtx_2 = NULL;
-    for (si = 0; si <= _num_slices; si++) {
-      EggVertex *vtx_3 = calc_tube_vertex(ri, si);
-      EggVertex *vtx_4 = calc_tube_vertex(ri + 1, si);
-      add_polygon(vtx_1, vtx_2, vtx_4, vtx_3);
-      vtx_1 = vtx_3;
-      vtx_2 = vtx_4;
+  if (_length != 0.0) {
+    for (ri = 0; ri < _num_trings; ri++) {
+      vtx_1 = NULL;
+      vtx_2 = NULL;
+      for (si = 0; si <= _num_slices; si++) {
+        EggVertex *vtx_3 = calc_tube_vertex(ri, si);
+        EggVertex *vtx_4 = calc_tube_vertex(ri + 1, si);
+        add_polygon(vtx_1, vtx_2, vtx_4, vtx_3);
+        vtx_1 = vtx_3;
+        vtx_2 = vtx_4;
+      }
     }
   }
 

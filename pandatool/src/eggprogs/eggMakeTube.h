@@ -47,6 +47,7 @@ private:
 private:
   double _point_a[3];
   double _point_b[3];
+  bool _got_point_b;
   double _radius;
   int _num_slices;
   int _num_crings;
