@@ -59,10 +59,13 @@ public:
 
   virtual bool supports_stream_write() const;
 
+  INLINE bool is_valid() const;
+
 protected:
   PNMFileType *_type;
   bool _owns_file;
   ostream *_file;
+  bool _is_valid;
 };
 
 #include "pnmWriter.I"

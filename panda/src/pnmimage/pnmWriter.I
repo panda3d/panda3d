@@ -26,7 +26,8 @@ INLINE PNMWriter::
 PNMWriter(PNMFileType *type, ostream *file, bool owns_file) :
   _type(type),
   _owns_file(owns_file),
-  _file(file)
+  _file(file),
+  _is_valid(true)
 {
 }
 
@@ -105,4 +106,15 @@ set_y_size(int y_size) {
 INLINE void PNMWriter::
 copy_header_from(const PNMImageHeader &header) {
   PNMImageHeader::operator = (header);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMWriter::is_valid
+//       Access: Public
+//  Description: Returns true if the PNMWriter can be used to write
+//               data, false if something is wrong.
+////////////////////////////////////////////////////////////////////
+INLINE bool PNMWriter::
+is_valid() const {
+  return _is_valid;
 }
