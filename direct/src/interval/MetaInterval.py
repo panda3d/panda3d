@@ -275,6 +275,7 @@ class MetaInterval(CMetaInterval):
         self.__manager.addInterval(self)
         
     def finish(self):
+        self.__updateIvals()
         state = self.getState()
         if state == CInterval.SInitial:
             self.privInstant()
