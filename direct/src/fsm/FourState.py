@@ -139,7 +139,7 @@ class FourState:
 
     def changedOnState(self):
         """
-        Allow derived classes to overide the this.
+        Allow derived classes to overide this.
         """
         pass
     

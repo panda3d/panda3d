@@ -146,9 +146,21 @@ class FourStateAI:
     def getInitialState(self):
         return self.stateIndex
     
+    def setIsOn(self, isOn):
+        assert(self.debugPrint("setIsOn(isOn=%s)"%(isOn,)))
+        if self.isOn != isOn:
+            self.isOn = isOn
+            self.changedOnState()
+    
     def getIsOn(self):
         assert(self.debugPrint("getIsOn() returning %s"%(self.isOn,)))
         return self.isOn
+
+    def changedOnState(self):
+        """
+        Allow derived classes to overide this.
+        """
+        pass
 
     ##### states #####
 
@@ -169,7 +181,7 @@ class FourStateAI:
             stateIndex, nextStateIndex)))
         self.stateIndex = stateIndex
         self.nextStateIndex = nextStateIndex
-        self.isOn = isOn
+        self.setIsOn(isOn)
         self.distributeStateChange()
         if self.durations[stateIndex] is not None:
             assert self.doLaterTask is None
