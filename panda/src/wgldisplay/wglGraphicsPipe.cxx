@@ -293,7 +293,7 @@ choose_pfnum_advanced(const FrameBufferProperties &properties,
   int want_color_bits = properties.get_color_bits();
   int want_alpha_bits = properties.get_alpha_bits();
   int want_stencil_bits = properties.get_stencil_bits();
-  int want_multisample_bits = properties.get_multisample_bits();
+  int want_multisamples = properties.get_multisamples();
 
   static const int max_attrib_list = 32;
   int iattrib_list[max_attrib_list];
@@ -357,7 +357,7 @@ choose_pfnum_advanced(const FrameBufferProperties &properties,
     iattrib_list[ni++] = WGL_SAMPLE_BUFFERS_ARB;
     iattrib_list[ni++] = 1;
     iattrib_list[ni++] = WGL_SAMPLES_ARB;
-    iattrib_list[ni++] = want_multisample_bits;
+    iattrib_list[ni++] = want_multisamples;
   }
 
   // Terminate the lists.
@@ -650,7 +650,7 @@ get_properties_advanced(FrameBufferProperties &properties,
 
   int acceleration_i, pixel_type_i, double_buffer_i, stereo_i,
     color_bits_i, alpha_bits_i, accum_bits_i, depth_bits_i, 
-    stencil_bits_i, multisample_bits_i;
+    stencil_bits_i, multisamples_i;
 
   iattrib_list[acceleration_i = ni++] = WGL_ACCELERATION_ARB;
   iattrib_list[pixel_type_i = ni++] = WGL_PIXEL_TYPE_ARB;
@@ -663,7 +663,7 @@ get_properties_advanced(FrameBufferProperties &properties,
   iattrib_list[stencil_bits_i = ni++] = WGL_STENCIL_BITS_ARB;
 
   if (wglgsg->_supports_wgl_multisample) {
-    iattrib_list[multisample_bits_i = ni++] = WGL_SAMPLES_ARB;
+    iattrib_list[multisamples_i = ni++] = WGL_SAMPLES_ARB;
   }
 
   // Terminate the list.
@@ -706,9 +706,9 @@ get_properties_advanced(FrameBufferProperties &properties,
     properties.set_stencil_bits(ivalue_list[stencil_bits_i]);
   }
   if (wglgsg->_supports_wgl_multisample) {
-    if (ivalue_list[multisample_bits_i] != 0) {
+    if (ivalue_list[multisamples_i] != 0) {
       frame_buffer_mode |= FrameBufferProperties::FM_multisample;
-      properties.set_multisample_bits(ivalue_list[multisample_bits_i]);
+      properties.set_multisamples(ivalue_list[multisamples_i]);
     }
   }
 

@@ -289,7 +289,7 @@ make_pbuffer(HDC twindow_dc) {
       red_bits_i, green_bits_i, blue_bits_i, alpha_bits_i, 
       accum_red_bits_i, accum_green_bits_i, accum_blue_bits_i,
       accum_alpha_bits_i, depth_bits_i, 
-      stencil_bits_i, multisample_bits_i;
+      stencil_bits_i, multisamples_i;
 
     iattrib_list[acceleration_i = ni++] = WGL_ACCELERATION_ARB;
     iattrib_list[pixel_type_i = ni++] = WGL_PIXEL_TYPE_ARB;
@@ -307,7 +307,7 @@ make_pbuffer(HDC twindow_dc) {
     iattrib_list[stencil_bits_i = ni++] = WGL_STENCIL_BITS_ARB;
 
     if (wglgsg->_supports_wgl_multisample) {
-      iattrib_list[multisample_bits_i = ni++] = WGL_SAMPLES_ARB;
+      iattrib_list[multisamples_i = ni++] = WGL_SAMPLES_ARB;
     }
 
     // Terminate the list.
@@ -356,7 +356,7 @@ make_pbuffer(HDC twindow_dc) {
 
     if (wglgsg->_supports_wgl_multisample) {
       iattrib_list[ni++] = WGL_SAMPLES_ARB;
-      iattrib_list[ni++] = ivalue_list[multisample_bits_i];
+      iattrib_list[ni++] = ivalue_list[multisamples_i];
     }
 
     // Match up properties.

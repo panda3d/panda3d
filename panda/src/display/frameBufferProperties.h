@@ -87,10 +87,10 @@ PUBLISHED:
   INLINE bool has_stencil_bits() const;
   INLINE void clear_stencil_bits();
 
-  INLINE void set_multisample_bits(int multisample_bits);
-  INLINE int get_multisample_bits() const;
-  INLINE bool has_multisample_bits() const;
-  INLINE void clear_multisample_bits();
+  INLINE void set_multisamples(int multisamples);
+  INLINE int get_multisamples() const;
+  INLINE bool has_multisamples() const;
+  INLINE void clear_multisamples();
 
   void add_properties(const FrameBufferProperties &other);
 
@@ -106,7 +106,7 @@ private:
     S_color_bits        = 0x0004,
     S_alpha_bits        = 0x0008,
     S_stencil_bits      = 0x0010,
-    S_multisample_bits  = 0x0020,
+    S_multisamples      = 0x0020,
   };
 
   int _specified;
@@ -116,7 +116,7 @@ private:
   int _color_bits;
   int _alpha_bits;
   int _stencil_bits;
-  int _multisample_bits;
+  int _multisamples;
 };
 
 INLINE ostream &operator << (ostream &out, const FrameBufferProperties &properties);

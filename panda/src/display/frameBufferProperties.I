@@ -308,49 +308,49 @@ clear_stencil_bits() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::set_multisample_bits
+//     Function: FrameBufferProperties::set_multisamples
 //       Access: Published
-//  Description: Specifies the minimum number of bits that are
+//  Description: Specifies the minimum number of samples that are
 //               required for the multisample buffer.
 ////////////////////////////////////////////////////////////////////
 INLINE void FrameBufferProperties::
-set_multisample_bits(int multisample_bits) {
-  _multisample_bits = multisample_bits;
-  _specified |= S_multisample_bits;
+set_multisamples(int multisamples) {
+  _multisamples = multisamples;
+  _specified |= S_multisamples;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::get_multisample_bits
+//     Function: FrameBufferProperties::get_multisamples
 //       Access: Published
-//  Description: Returns the number of bits specified for the multisample
-//               buffer.
+//  Description: Returns the number of samples specified for the
+//               multisample buffer.
 ////////////////////////////////////////////////////////////////////
 INLINE int FrameBufferProperties::
-get_multisample_bits() const {
-  return _multisample_bits;
+get_multisamples() const {
+  return _multisamples;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::has_multisample_bits
+//     Function: FrameBufferProperties::has_multisamples
 //       Access: Published
 //  Description: Returns true if the number of bits for the multisample
 //               buffer has been specified, false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool FrameBufferProperties::
-has_multisample_bits() const {
-  return ((_specified & S_multisample_bits) != 0);
+has_multisamples() const {
+  return ((_specified & S_multisamples) != 0);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FrameBufferProperties::clear_multisample_bits
+//     Function: FrameBufferProperties::clear_multisamples
 //       Access: Published
-//  Description: Removes the multisample_bits specification from the
+//  Description: Removes the multisamples specification from the
 //               properties.
 ////////////////////////////////////////////////////////////////////
 INLINE void FrameBufferProperties::
-clear_multisample_bits() {
-  _specified &= ~S_multisample_bits;
-  _multisample_bits = 1;
+clear_multisamples() {
+  _specified &= ~S_multisamples;
+  _multisamples = 1;
 }
 
 INLINE ostream &

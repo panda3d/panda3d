@@ -110,7 +110,7 @@ private:
                                int want_color_bits = 1,
                                int want_alpha_bits = 1, 
                                int want_stencil_bits = 1,
-                               int want_multisample_bits = 1) const;
+                               int want_multisamples = 1) const;
 #endif
 
   XVisualInfo *choose_visual(FrameBufferProperties &properties) const;
@@ -119,7 +119,7 @@ private:
                               int want_color_bits = 1,
                               int want_alpha_bits = 1, 
                               int want_stencil_bits = 1,
-                              int want_multisample_bits = 1) const;
+                              int want_multisamples = 1) const;
 
   void make_hidden_cursor();
   void release_hidden_cursor();

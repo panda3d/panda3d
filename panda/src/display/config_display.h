@@ -74,7 +74,7 @@ extern ConfigVariableInt depth_bits;
 extern ConfigVariableInt color_bits;
 extern ConfigVariableInt alpha_bits;
 extern ConfigVariableInt stencil_bits;
-extern ConfigVariableInt multisample_bits;
+extern ConfigVariableInt multisamples;
 
 extern ConfigVariableDouble background_color;
 

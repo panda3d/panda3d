@@ -190,9 +190,9 @@ ConfigVariableInt stencil_bits
 ("stencil-bits", 1,
  PRC_DESC("The minimum number of stencil bits requested if the stencil keyword "
           "is present in framebuffer-mode."));
-ConfigVariableInt multisample_bits
-("multisample-bits", 1,
- PRC_DESC("The minimum number of multisample bits requested if the multisample keyword "
+ConfigVariableInt multisamples
+("multisamples", 1,
+ PRC_DESC("The minimum number of samples requested if the multisample keyword "
           "is present in framebuffer-mode."));
 
 ConfigVariableDouble background_color

@@ -44,7 +44,7 @@ operator = (const FrameBufferProperties &copy) {
   _color_bits = copy._color_bits;
   _alpha_bits = copy._alpha_bits;
   _stencil_bits = copy._stencil_bits;
-  _multisample_bits = copy._multisample_bits;
+  _multisamples = copy._multisamples;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -118,7 +118,7 @@ get_default() {
   props.set_color_bits(color_bits);
   props.set_alpha_bits(alpha_bits);
   props.set_stencil_bits(stencil_bits);
-  props.set_multisample_bits(multisample_bits);
+  props.set_multisamples(multisamples);
 
   return props;
 }
@@ -137,7 +137,7 @@ operator == (const FrameBufferProperties &other) const {
           _color_bits == other._color_bits &&
           _alpha_bits == other._alpha_bits &&
           _stencil_bits == other._stencil_bits &&
-          _multisample_bits == other._multisample_bits);
+          _multisamples == other._multisamples);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -156,7 +156,7 @@ clear() {
   _color_bits = 1;
   _alpha_bits = 1;
   _stencil_bits = 1;
-  _multisample_bits = 1;
+  _multisamples = 1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -183,8 +183,8 @@ add_properties(const FrameBufferProperties &other) {
   if (other.has_stencil_bits()) {
     set_stencil_bits(other.get_stencil_bits());
   }
-  if (other.has_multisample_bits()) {
-    set_multisample_bits(other.get_multisample_bits());
+  if (other.has_multisamples()) {
+    set_multisamples(other.get_multisamples());
   }
 }
 
@@ -252,7 +252,7 @@ output(ostream &out) const {
   if (has_stencil_bits()) {
     out << "stencil_bits=" << get_stencil_bits() << " ";
   }
-  if (has_multisample_bits()) {
-    out << "multisample_bits=" << get_multisample_bits() << " ";
+  if (has_multisamples()) {
+    out << "multisamples=" << get_multisamples() << " ";
   }
 }
