@@ -31,6 +31,9 @@ static INLINE float scale_t(float t, float start, float end) {
     ret = start;
   if (ret > end)
     ret = end;
+  // Avoid a possible divide-by-zero
+  if (end == 0.0)
+      return 0.0;
   return ret / end;
 }
 
