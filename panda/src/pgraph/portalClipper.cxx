@@ -495,7 +495,7 @@ clip_portal(const NodePath &node_path)
 PT(BoundingVolume) PortalClipper::
 get_reduced_frustum(const NodePath &node_path)
 {
-  int num_planes = 6;
+  //  int num_planes = 6;
   LPoint3f intersect_points[4];
   
   // another approach to actually finding the points, so that 
