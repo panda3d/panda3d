@@ -170,7 +170,7 @@ clear_normal() {
 ////////////////////////////////////////////////////////////////////
 template <class VT, class NT, class TT, class CT>
 INLINE bool BuilderVertexTempl<VT, NT, TT, CT>::
-has_texcoord(const TexCoordName *name) const {
+has_texcoord(const InternalName *name) const {
   TYPENAME TexCoords::const_iterator ti = _texcoords.find(name);
   return (ti != _texcoords.end());
 }
@@ -185,7 +185,7 @@ has_texcoord(const TexCoordName *name) const {
 ////////////////////////////////////////////////////////////////////
 template <class VT, class NT, class TT, class CT>
 INLINE TYPENAME BuilderVertexTempl<VT, NT, TT, CT>::TType BuilderVertexTempl<VT, NT, TT, CT>::
-get_texcoord(const TexCoordName *name) const {
+get_texcoord(const InternalName *name) const {
   TYPENAME TexCoords::const_iterator ti = _texcoords.find(name);
   nassertr(ti != _texcoords.end(), (*ti).second);
   return (*ti).second;
@@ -199,7 +199,7 @@ get_texcoord(const TexCoordName *name) const {
 ////////////////////////////////////////////////////////////////////
 template <class VT, class NT, class TT, class CT>
 INLINE BuilderVertexTempl<VT, NT, TT, CT> &BuilderVertexTempl<VT, NT, TT, CT>::
-set_texcoord(const TexCoordName *name, const TType &t) {
+set_texcoord(const InternalName *name, const TType &t) {
   _texcoords[name] = t;
   return *this;
 }
@@ -211,7 +211,7 @@ set_texcoord(const TexCoordName *name, const TType &t) {
 ////////////////////////////////////////////////////////////////////
 template <class VT, class NT, class TT, class CT>
 INLINE BuilderVertexTempl<VT, NT, TT, CT> &BuilderVertexTempl<VT, NT, TT, CT>::
-clear_texcoord(const TexCoordName *name) {
+clear_texcoord(const InternalName *name) {
   _texcoords.erase(name);
   return *this;
 }
@@ -422,7 +422,7 @@ output(ostream &out) const {
 
     TYPENAME TexCoords::const_iterator ti;
     for (ti = _texcoords.begin(); ti != _texcoords.end(); ++ti) {
-      const TexCoordName *name = (*ti).first;
+      const InternalName *name = (*ti).first;
       out << " texcoord \"" << name->get_name() << "\" " << (*ti).second;
     }
 

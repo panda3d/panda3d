@@ -136,7 +136,7 @@ operator < (const TextureStage &other) const {
 //               sets, each of which must have a unique name.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextureStage::
-set_texcoord_name(const TexCoordName *name) {
+set_texcoord_name(const InternalName *name) {
   _texcoord_name = name;
 }
 
@@ -149,15 +149,15 @@ set_texcoord_name(const TexCoordName *name) {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextureStage::
 set_texcoord_name(const string &name) {
-  _texcoord_name = TexCoordName::make(name);
+  _texcoord_name = InternalName::get_texcoord_name(name);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureStage::get_texcoord_name
 //       Access: Published
-//  Description: Returns the TexCoordName
+//  Description: Returns the InternalName
 ////////////////////////////////////////////////////////////////////
-INLINE const TexCoordName *TextureStage::
+INLINE const InternalName *TextureStage::
 get_texcoord_name() const {
   return _texcoord_name;
 }

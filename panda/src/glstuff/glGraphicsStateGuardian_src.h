@@ -20,6 +20,7 @@
 
 #include "graphicsStateGuardian.h"
 #include "geomprimitives.h"
+#include "qpgeomVertexDataType.h"
 #include "texture.h"
 #include "displayRegion.h"
 #include "material.h"
@@ -48,6 +49,7 @@ class Light;
 // system GL version matches or exceeds the GL version in which these
 // functions are defined, and the system gl.h sometimes doesn't
 // declare these typedefs.
+typedef void (APIENTRYP PFNGLDRAWRANGEELEMENTSPROC) (GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices);
 typedef void (APIENTRYP PFNGLTEXIMAGE3DPROC) (GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
 typedef void (APIENTRYP PFNGLTEXSUBIMAGE3DPROC) (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const GLvoid *pixels);
 typedef void (APIENTRYP PFNGLACTIVETEXTUREPROC) (GLenum texture);
@@ -86,6 +88,10 @@ public:
   virtual void draw_tristrip(GeomTristrip *geom, GeomContext *gc);
   virtual void draw_trifan(GeomTrifan *geom, GeomContext *gc);
   virtual void draw_sphere(GeomSphere *geom, GeomContext *gc);
+
+  virtual void begin_draw_primitives(const qpGeomVertexData *vertex_data);
+  virtual void draw_triangles(qpGeomTriangles *primitive);
+  virtual void end_draw_primitives();
 
   INLINE bool draw_display_list(GeomContext *gc);
 
@@ -174,6 +180,7 @@ protected:
   virtual void set_blend_mode();
 
   virtual void finish_modify_state();
+  virtual void setup_geom_munger(PT(qpGeomMunger) munger);
 
   virtual void free_pointers();
 
@@ -212,6 +219,7 @@ protected:
                             GLint external_format, GLenum component_type, 
                             const unsigned char *image);
 
+  static GLenum get_numeric_type(qpGeomVertexDataType::NumericType numeric_type);
   GLenum get_texture_target(Texture::TextureType texture_type) const;
   GLenum get_texture_wrap_mode(Texture::WrapMode wm);
   static GLenum get_texture_filter_type(Texture::FilterType ft, bool ignore_mipmaps);
@@ -296,6 +304,9 @@ protected:
   pset<string> _extensions;
 
 public:
+  bool _supports_draw_range_elements;
+  PFNGLDRAWRANGEELEMENTSPROC _glDrawRangeElements;
+
   bool _supports_3d_texture;
   PFNGLTEXIMAGE3DPROC _glTexImage3D;
   PFNGLTEXSUBIMAGE3DPROC _glTexSubImage3D;

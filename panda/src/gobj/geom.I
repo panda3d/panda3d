@@ -48,7 +48,7 @@ has_any_texcoords() const {
 //               name, or false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool Geom::
-has_texcoords(const TexCoordName *name) const {
+has_texcoords(const InternalName *name) const {
   TexCoordsByName::const_iterator tci = _texcoords_by_name.find(name);
   return (tci != _texcoords_by_name.end());
 }
@@ -106,11 +106,11 @@ get_colors_array() const {
 //               returns the default texture coordinates only.  In the
 //               presence of multitexturing, use the version of
 //               get_texcoords_array() method that takes a
-//               TexCoordName parameter.
+//               InternalName parameter.
 ////////////////////////////////////////////////////////////////////
 INLINE PTA_TexCoordf Geom::
 get_texcoords_array() const {
-  return get_texcoords_array(TexCoordName::get_default());
+  return get_texcoords_array(InternalName::get_texcoord());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -123,7 +123,7 @@ get_texcoords_array() const {
 //               texture coordinates with the indicated name.
 ////////////////////////////////////////////////////////////////////
 INLINE PTA_TexCoordf Geom::
-get_texcoords_array(const TexCoordName *name) const {
+get_texcoords_array(const InternalName *name) const {
   TexCoordsByName::const_iterator tci = _texcoords_by_name.find(name);
   if (tci != _texcoords_by_name.end()) {
     return (*tci).second._texcoords;
@@ -174,11 +174,11 @@ get_colors_index() const {
 //               returns the default texture coordinates only.  In the
 //               presence of multitexturing, use the version of
 //               get_texcoords_array() method that takes a
-//               TexCoordName parameter.
+//               InternalName parameter.
 ////////////////////////////////////////////////////////////////////
 INLINE PTA_ushort Geom::
 get_texcoords_index() const {
-  return get_texcoords_index(TexCoordName::get_default());
+  return get_texcoords_index(InternalName::get_texcoord());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -192,7 +192,7 @@ get_texcoords_index() const {
 //               the geom does not use indexed texcoords.
 ////////////////////////////////////////////////////////////////////
 INLINE PTA_ushort Geom::
-get_texcoords_index(const TexCoordName *name) const {
+get_texcoords_index(const InternalName *name) const {
   TexCoordsByName::const_iterator tci = _texcoords_by_name.find(name);
   if (tci != _texcoords_by_name.end()) {
     return (*tci).second._tindex;
@@ -368,7 +368,7 @@ get_next_normal(NormalIterator &niterator) const {
 ////////////////////////////////////////////////////////////////////
 INLINE Geom::TexCoordIterator Geom::
 make_texcoord_iterator() const {
-  return make_texcoord_iterator(TexCoordName::get_default());
+  return make_texcoord_iterator(InternalName::get_texcoord());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -377,7 +377,7 @@ make_texcoord_iterator() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Geom::TexCoordIterator Geom::
-make_texcoord_iterator(const TexCoordName *texcoord_name) const {
+make_texcoord_iterator(const InternalName *texcoord_name) const {
   check_config();
   TexCoordIterator i;
 

@@ -44,6 +44,8 @@
 #include "textureAttrib.h"
 #include "transparencyAttrib.h"
 #include "config_display.h"
+#include "qpgeomMunger.h"
+#include "qpgeomVertexData.h"
 
 #include "notify.h"
 #include "pvector.h"
@@ -95,6 +97,7 @@ PUBLISHED:
 public:
   INLINE bool set_scene(SceneSetup *scene_setup);
   INLINE SceneSetup *get_scene() const;
+  INLINE const qpGeomMunger *get_geom_munger() const;
 
   virtual PreparedGraphicsObjects *get_prepared_objects();
 
@@ -138,6 +141,12 @@ public:
   virtual CPT(RenderState) begin_decal_nested();
   virtual CPT(RenderState) begin_decal_base_second();
   virtual void finish_decal();
+
+  virtual void begin_draw_primitives(const qpGeomVertexData *vertex_data);
+  virtual void draw_triangles(qpGeomTriangles *primitive);
+  virtual void draw_tristrips(qpGeomTristrips *primitive);
+  virtual void draw_trifans(qpGeomTrifans *primitive);
+  virtual void end_draw_primitives();
 
   virtual bool framebuffer_bind_to_texture(GraphicsOutput *win, Texture *tex);
   virtual void framebuffer_release_texture(GraphicsOutput *win, Texture *tex);
@@ -200,6 +209,7 @@ protected:
   virtual void set_blend_mode();
 
   virtual void finish_modify_state();
+  virtual void setup_geom_munger(PT(qpGeomMunger) munger);
 
   virtual void free_pointers();
   virtual void close_gsg();
@@ -232,6 +242,8 @@ protected:
 
   CPT(RenderState) _state;
   CPT(TransformState) _transform;
+  CPT(qpGeomMunger) _geom_munger;
+  CPT(qpGeomVertexData) _vertex_data;
 
   int _buffer_mask;
   Colorf _color_clear_value;

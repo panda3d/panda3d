@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "textureStage.h"
-#include "texCoordName.h"
+#include "internalName.h"
 
 PT(TextureStage) TextureStage::_default_stage;
 UpdateSeq TextureStage::_sort_seq;
@@ -34,7 +34,7 @@ TextureStage(const string &name) {
   _name = name;
   _sort = 0;
   _priority = 0;
-  _texcoord_name = TexCoordName::get_default();
+  _texcoord_name = InternalName::get_texcoord();
   _mode = M_modulate;
   _color.set(0.0f, 0.0f, 0.0f, 1.0f);
   _rgb_scale = 1;
@@ -319,7 +319,7 @@ int TextureStage::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritableReferenceCount::complete_pointers(p_list, manager);
 
-  _texcoord_name = DCAST(TexCoordName, p_list[pi++]);
+  _texcoord_name = DCAST(InternalName, p_list[pi++]);
 
   return pi;
 }

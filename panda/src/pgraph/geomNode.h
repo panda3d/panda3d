@@ -92,10 +92,10 @@ public:
 
 private:
   typedef pvector<GeomEntry> Geoms;
-  typedef pmap<const TexCoordName *, int> NameCount;
+  typedef pmap<const InternalName *, int> NameCount;
 
-  INLINE void count_name(NameCount &name_count, const TexCoordName *name);
-  INLINE int get_name_count(const NameCount &name_count, const TexCoordName *name);
+  INLINE void count_name(NameCount &name_count, const InternalName *name);
+  INLINE int get_name_count(const NameCount &name_count, const InternalName *name);
 
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA CData : public CycleData {

@@ -139,7 +139,7 @@ private:
                           const StageInfo &stage_info, 
                           const GeomList &geom_list,
                           bool force_use_geom);
-  void transfer_geom(GeomNode *geom_node, const TexCoordName *texcoord_name,
+  void transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
                      const GeomList &geom_list, bool preserve_color);
 
   void scan_color(const GeomList &geom_list, Colorf &geom_color, 

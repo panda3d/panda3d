@@ -37,6 +37,8 @@
 #include "throw_event.h"
 #include "clockObject.h"
 #include "pStatTimer.h"
+#include "qpgeomTristrips.h"
+#include "qpgeomTrifans.h"
 
 #include <algorithm>
 
@@ -590,6 +592,58 @@ begin_decal_base_second() {
 void GraphicsStateGuardian::
 finish_decal() {
   // No need to do anything special here.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::begin_draw_primitives()
+//       Access: Public, Virtual
+//  Description: Called before a sequence of draw_primitive()
+//               functions are called, this should prepare the vertex
+//               data for rendering.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+begin_draw_primitives(const qpGeomVertexData *data) {
+  _vertex_data = get_geom_munger()->munge_data(data);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::draw_triangles
+//       Access: Public, Virtual
+//  Description: Draws a series of disconnected triangles.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+draw_triangles(qpGeomTriangles *) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::draw_tristrips
+//       Access: Public, Virtual
+//  Description: Draws a series of triangle strips.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+draw_tristrips(qpGeomTristrips *primitive) {
+  primitive->decompose(_vertex_data)->draw(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::draw_trifans
+//       Access: Public, Virtual
+//  Description: Draws a series of triangle fans.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+draw_trifans(qpGeomTrifans *primitive) {
+  primitive->decompose(_vertex_data)->draw(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::end_draw_primitives()
+//       Access: Public, Virtual
+//  Description: Called after a sequence of draw_primitive()
+//               functions are called, this should do whatever cleanup
+//               is appropriate.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+end_draw_primitives() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1268,6 +1322,21 @@ finish_modify_state() {
     _blend_mode_stale = false;
     set_blend_mode();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::setup_geom_munger
+//       Access: Protected, Virtual
+//  Description: Called after finish_modify_state has completed, this
+//               method sets up the GeomMunger for rendering with the
+//               current state.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+setup_geom_munger(PT(qpGeomMunger) munger) {
+  if (munger == (qpGeomMunger *)NULL) {
+    munger = new qpGeomMunger;
+  }
+  _geom_munger = qpGeomMunger::register_munger(munger);
 }
 
 ////////////////////////////////////////////////////////////////////

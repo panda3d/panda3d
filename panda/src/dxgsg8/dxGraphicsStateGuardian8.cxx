@@ -48,6 +48,11 @@
 #include "depthOffsetAttrib.h"
 #include "fog.h"
 #include "throw_event.h"
+#include "qpgeomVertexFormat.h"
+#include "qpgeomVertexData.h"
+#include "qpgeomTriangles.h"
+#include "qpgeomTristrips.h"
+#include "qpgeomTrifans.h"
 
 #ifdef DO_PSTATS
 #include "pStatTimer.h"
@@ -2573,6 +2578,78 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
   }
   
   _pCurFvfBufPtr = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::begin_draw_primitives
+//       Access: Public, Virtual
+//  Description: Called before a sequence of draw_primitive()
+//               functions are called, this should prepare the vertex
+//               buffer if necessary.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+begin_draw_primitives(const qpGeomVertexData *vertex_data) {
+  DO_PSTATS_STUFF(_draw_primitive_pcollector.start());
+
+  GraphicsStateGuardian::begin_draw_primitives(vertex_data);
+
+  const qpGeomVertexFormat *format = _vertex_data->get_format();
+  
+  if (format == qpGeomVertexFormat::get_v3()) {
+    set_vertex_format(D3DFVF_XYZ);
+  } else if (format == qpGeomVertexFormat::get_v3n3()) {
+    set_vertex_format(D3DFVF_XYZ | D3DFVF_NORMAL);
+  } else if (format == qpGeomVertexFormat::get_v3t2()) {
+    set_vertex_format(D3DFVF_XYZ | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0));
+  } else if (format == qpGeomVertexFormat::get_v3n3t2()) {
+    set_vertex_format(D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0));
+  } else if (format == qpGeomVertexFormat::get_v3cp() ||
+             format == qpGeomVertexFormat::get_v3c4()) {
+    set_vertex_format(D3DFVF_XYZ | D3DFVF_DIFFUSE);
+  } else if (format == qpGeomVertexFormat::get_v3n3cp() ||
+             format == qpGeomVertexFormat::get_v3n3c4()) {
+    set_vertex_format(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_NORMAL);
+  } else if (format == qpGeomVertexFormat::get_v3cpt2() ||
+             format == qpGeomVertexFormat::get_v3c4t2()) {
+    set_vertex_format(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0));
+  } else if (format == qpGeomVertexFormat::get_v3n3cpt2() ||
+             format == qpGeomVertexFormat::get_v3n3c4t2()) {
+    set_vertex_format(D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0));
+  } else {
+    nassert_raise("Unexpected vertex format");
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::draw_triangles
+//       Access: Public, Virtual
+//  Description: Draws a series of disconnected triangles.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+draw_triangles(qpGeomTriangles *primitive) {
+  HRESULT hr = _pD3DDevice->DrawIndexedPrimitiveUP
+    (D3DPT_TRIANGLELIST, 
+     primitive->get_min_vertex(),
+     primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
+     primitive->get_num_primitives(), 
+     primitive->get_vertices(),
+     D3DFMT_INDEX16,
+     vertex_data->get_array_data(0), 
+     vertex_data->get_format()->get_array_format(0)->get_stride());
+
+  TestDrawPrimFailure(DrawPrim,hr,_pD3DDevice,nPrims,0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::end_draw_primitives()
+//       Access: Public, Virtual
+//  Description: Called after a sequence of draw_primitive()
+//               functions are called, this should do whatever cleanup
+//               is appropriate.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+end_draw_primitives() {
+  DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
 }
 
 ////////////////////////////////////////////////////////////////////

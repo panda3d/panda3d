@@ -34,7 +34,7 @@ TypeHandle ProjectionScreen::_type_handle;
 ProjectionScreen::
 ProjectionScreen(const string &name) : PandaNode(name)
 {
-  _texcoord_name = TexCoordName::get_default();
+  _texcoord_name = InternalName::get_texcoord();
 
   _invert_uvs = project_invert_uvs;
   _vignette_on = false;

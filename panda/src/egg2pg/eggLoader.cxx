@@ -320,11 +320,11 @@ make_nonindexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
         for (ui = egg_vert->uv_begin(); ui != egg_vert->uv_end(); ++ui) {
           EggVertexUV *uv_obj = (*ui);
           TexCoordd uv = uv_obj->get_uv();
-          CPT(TexCoordName) uv_name;
-          if (uv_obj->has_name()) {
-            uv_name = TexCoordName::make(uv_obj->get_name());
+          CPT(InternalName) uv_name;
+          if (uv_obj->has_name() && uv_obj->get_name() != string("default")) {
+            uv_name = InternalName::get_texcoord_name(uv_obj->get_name());
           } else {
-            uv_name = TexCoordName::get_default();
+            uv_name = InternalName::get_texcoord();
           }
 
           BakeInUVs::const_iterator buv = bake_in_uvs.find(uv_name);
@@ -453,11 +453,11 @@ make_indexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
       for (ui = egg_vert->uv_begin(); ui != egg_vert->uv_end(); ++ui) {
         EggVertexUV *uv_obj = (*ui);
         TexCoordd uv = uv_obj->get_uv();
-        CPT(TexCoordName) uv_name;
-        if (uv_obj->has_name()) {
-          uv_name = TexCoordName::make(uv_obj->get_name());
+        CPT(InternalName) uv_name;
+        if (uv_obj->has_name() && uv_obj->get_name() != string("default")) {
+          uv_name = InternalName::get_texcoord_name(uv_obj->get_name());
         } else {
-          uv_name = TexCoordName::get_default();
+          uv_name = InternalName::get_texcoord();
         }
 
         LMatrix3d mat = LMatrix3d::ident_mat();
@@ -498,7 +498,7 @@ make_indexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
   for (tci = comp_verts_maker._texcoords.begin();
        tci != comp_verts_maker._texcoords.end();
        ++tci) {
-    const TexCoordName *name = (*tci).first;
+    const InternalName *name = (*tci).first;
     bucket.set_texcoords(name, (*tci).second);
   }
 
@@ -1248,9 +1248,10 @@ make_texture_stage(const EggTexture *egg_tex) {
   }
 
 
-  if (egg_tex->has_uv_name() && !egg_tex->get_uv_name().empty()) {
-    CPT(TexCoordName) name = 
-      TexCoordName::make(egg_tex->get_uv_name());
+  if (egg_tex->has_uv_name() && !egg_tex->get_uv_name().empty() &&
+      egg_tex->get_uv_name() != string("default")) {
+    CPT(InternalName) name = 
+      InternalName::get_texcoord_name(egg_tex->get_uv_name());
     stage->set_texcoord_name(name);
   }
 
@@ -1461,11 +1462,11 @@ setup_bucket(BuilderBucket &bucket, EggLoader::BakeInUVs &bake_in_uvs,
       // if we can safely bake it into the UV's.  (We need to get the
       // complete list of textures that share this same set of UV's
       // per each unique texture matrix.  Whew!)
-      CPT(TexCoordName) uv_name;
-      if (egg_tex->has_uv_name()) {
-        uv_name = TexCoordName::make(egg_tex->get_uv_name());
+      CPT(InternalName) uv_name;
+      if (egg_tex->has_uv_name() && egg_tex->get_uv_name() != string("default")) {
+        uv_name = InternalName::get_texcoord_name(egg_tex->get_uv_name());
       } else {
-        uv_name = TexCoordName::get_default();
+        uv_name = InternalName::get_texcoord();
       }
 
       if (has_tex_gen) {
@@ -1503,7 +1504,7 @@ setup_bucket(BuilderBucket &bucket, EggLoader::BakeInUVs &bake_in_uvs,
   // texture matrix.
   TexMats::const_iterator tmi;
   for (tmi = tex_mats.begin(); tmi != tex_mats.end(); ++tmi) {
-    const TexCoordName *uv_name = (*tmi).first;
+    const InternalName *uv_name = (*tmi).first;
     const TexMatTransforms &tmt = (*tmi).second;
 
     if (tmt.size() == 1 && !needs_tex_mat) {

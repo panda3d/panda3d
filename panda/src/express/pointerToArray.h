@@ -135,8 +135,8 @@ public:
   INLINE size_type capacity() const;
   INLINE reference front() const;
   INLINE reference back() const;
-  INLINE iterator insert(iterator position, const Element &x) const;
-  INLINE void insert(iterator position, size_type n, const Element &x) const;
+  INLINE iterator insert(iterator position, const Element &x);
+  INLINE void insert(iterator position, size_type n, const Element &x);
 
   // We don't define the insert() method that accepts a pair of
   // iterators to copy from.  That's problematic because of the whole
@@ -145,8 +145,8 @@ public:
   // be exported from the DLL, you should use
   // insert_into_vector(pta.v(), ...).
 
-  INLINE void erase(iterator position) const;
-  INLINE void erase(iterator first, iterator last) const;
+  INLINE void erase(iterator position);
+  INLINE void erase(iterator first, iterator last);
 
 PUBLISHED:
 #if !defined(WIN32_VC)

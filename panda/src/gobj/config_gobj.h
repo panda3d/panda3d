@@ -52,6 +52,8 @@ extern EXPCL_PANDA ConfigVariableBool keep_texture_ram;
 extern EXPCL_PANDA ConfigVariableBool keep_geom_ram;
 extern EXPCL_PANDA ConfigVariableBool retained_mode;
 
+extern EXPCL_PANDA ConfigVariableBool use_qpgeom;
+
 extern EXPCL_PANDA ConfigVariableEnum<BamTextureMode> bam_texture_mode;
 extern EXPCL_PANDA ConfigVariableEnum<AutoTextureScale> textures_power_2;
 extern EXPCL_PANDA ConfigVariableEnum<AutoTextureScale> textures_square;

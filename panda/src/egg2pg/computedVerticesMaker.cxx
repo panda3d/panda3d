@@ -26,7 +26,7 @@
 #include "eggNode.h"
 #include "eggGroup.h"
 #include "eggVertex.h"
-#include "texCoordName.h"
+#include "internalName.h"
 
 #include <algorithm>
 
@@ -257,7 +257,7 @@ add_normal(const Normald &normal, const EggMorphNormalList &morphs,
 //               array.
 ////////////////////////////////////////////////////////////////////
 int ComputedVerticesMaker::
-add_texcoord(const TexCoordName *name,
+add_texcoord(const InternalName *name,
              const TexCoordd &texcoord, const EggMorphTexCoordList &morphs,
              const LMatrix3d &transform) {
   TexCoordDef &def = _tdefmap[name];
@@ -389,7 +389,7 @@ make_computed_vertices(Character *character, CharacterMaker &char_maker) {
 
   // Temporary: the ComputedVertices object currently doesn't support
   // multitexture.
-  character->_cv._texcoords = _texcoords[TexCoordName::get_default()];
+  character->_cv._texcoords = _texcoords[InternalName::get_texcoord()];
 
   // Finally, add in all the morph definitions.
   Morphs::const_iterator mi;
@@ -446,12 +446,12 @@ make_computed_vertices(Character *character, CharacterMaker &char_maker) {
 
     TexCoordMorphMap::const_iterator mmi;
     for (mmi = mlist._tmorphs.begin(); mmi != mlist._tmorphs.end(); ++mmi) {
-      const TexCoordName *name = (*mmi).first;
+      const InternalName *name = (*mmi).first;
       const TexCoordMorphList &tmorphs = (*mmi).second;
 
       // Temporary check: the ComputedVertices object currently
       // doesn't support multitexture.
-      if (name == TexCoordName::get_default()) {
+      if (name == InternalName::get_texcoord()) {
         comp_verts->_texcoord_morphs.push_back(ComputedVerticesMorphTexCoord());
         ComputedVerticesMorphTexCoord &mv = comp_verts->_texcoord_morphs.back();
         mv._slider_index = slider_index;

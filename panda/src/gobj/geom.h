@@ -34,7 +34,7 @@
 #include "pta_TexCoordf.h"
 #include "pta_ushort.h"
 #include "pta_int.h"
-#include "texCoordName.h"
+#include "internalName.h"
 #include "textureStage.h"
 #include "pset.h"
 
@@ -146,9 +146,9 @@ PUBLISHED:
                   const PTA_ushort &cindex = PTA_ushort());
   void set_texcoords(const PTA_TexCoordf &texcoords, GeomBindType bind,
                      const PTA_ushort &tindex = PTA_ushort());
-  void set_texcoords(const TexCoordName *name, const PTA_TexCoordf &texcoords,
+  void set_texcoords(const InternalName *name, const PTA_TexCoordf &texcoords,
                      const PTA_ushort &tindex = PTA_ushort());
-  void remove_texcoords(const TexCoordName *name);
+  void remove_texcoords(const InternalName *name);
 
 public:
   // These can't be published because of the pass-by-reference
@@ -171,19 +171,19 @@ PUBLISHED:
 
   INLINE GeomBindType get_binding(int attr) const;
   INLINE bool has_any_texcoords() const;
-  INLINE bool has_texcoords(const TexCoordName *name) const;
+  INLINE bool has_texcoords(const InternalName *name) const;
 
   INLINE PTA_Vertexf get_coords_array() const;
   INLINE PTA_Normalf get_normals_array() const;
   INLINE PTA_Colorf get_colors_array() const;
   INLINE PTA_TexCoordf get_texcoords_array() const;
-  INLINE PTA_TexCoordf get_texcoords_array(const TexCoordName *name) const;
+  INLINE PTA_TexCoordf get_texcoords_array(const InternalName *name) const;
 
   INLINE PTA_ushort get_coords_index() const;
   INLINE PTA_ushort get_normals_index() const;
   INLINE PTA_ushort get_colors_index() const;
   INLINE PTA_ushort get_texcoords_index() const;
-  INLINE PTA_ushort get_texcoords_index(const TexCoordName *name) const;
+  INLINE PTA_ushort get_texcoords_index(const InternalName *name) const;
   INLINE bool are_texcoords_indexed() const;
 
   void prepare(PreparedGraphicsObjects *prepared_objects);
@@ -194,16 +194,16 @@ PUBLISHED:
   INLINE void set_lengths(const PTA_int &lengths);
   INLINE PTA_int get_lengths() const;
 
-  virtual int get_num_vertices_per_prim() const=0;
-  virtual int get_num_more_vertices_than_components() const=0;
-  virtual bool uses_components() const=0;
+  virtual int get_num_vertices_per_prim() const;
+  virtual int get_num_more_vertices_than_components() const;
+  virtual bool uses_components() const;
 
   INLINE int get_num_vertices() const;
 
   // Returns the length of the indicated primitive.  Often this is the
   // same for all primitives in the Geom.  However, geoms which use
   // the lengths array will redefine this appropriately.
-  virtual int get_length(int prim) const=0;
+  virtual int get_length(int prim) const;
 
   virtual Geom *explode() const;
   virtual PTA_ushort get_tris() const;
@@ -223,7 +223,7 @@ public:
   INLINE const Normalf &get_next_normal(NormalIterator &niterator) const;
 
   INLINE TexCoordIterator make_texcoord_iterator() const;
-  INLINE TexCoordIterator make_texcoord_iterator(const TexCoordName *texcoord_name) const;
+  INLINE TexCoordIterator make_texcoord_iterator(const InternalName *texcoord_name) const;
   INLINE const TexCoordf &get_next_texcoord(TexCoordIterator &tciterator) const;
   void setup_multitexcoord_iterator(MultiTexCoordIterator &iterator,
                                     const ActiveTextureStages &active_stages,
@@ -245,8 +245,8 @@ public:
   virtual void config();
 
   // Immediate mode drawing functions - issue graphics commands
-  virtual void draw_immediate(GraphicsStateGuardianBase *gsg, GeomContext *gc) = 0;
-  virtual void print_draw_immediate() const = 0;
+  virtual void draw_immediate(GraphicsStateGuardianBase *gsg, GeomContext *gc);
+  virtual void print_draw_immediate() const;
 
   void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
                          bool &found_any) const;
@@ -277,7 +277,7 @@ protected:
 
   // A pmap, not a phash_map, to save space because it will probably
   // have only one element.
-  typedef pmap<CPT(TexCoordName), TexCoordDef> TexCoordsByName;
+  typedef pmap<CPT(InternalName), TexCoordDef> TexCoordsByName;
   TexCoordsByName _texcoords_by_name;
 
   // Functions to extract component values, one at a time.
@@ -286,7 +286,7 @@ protected:
   GetNextColor *_get_color;
   GetNextTexCoord *_get_texcoord;
 
-  // temporary storage until complete_pointers fills in _texcoords_by_name's TexCoordName *
+  // temporary storage until complete_pointers fills in _texcoords_by_name's InternalName *
   typedef pvector<TexCoordDef *> TexCoordDefSet;
   TexCoordDefSet _temp_texcoord_set;
 

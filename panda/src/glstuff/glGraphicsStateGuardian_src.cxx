@@ -21,6 +21,10 @@
 #include "renderBuffer.h"
 #include "geom.h"
 #include "geomIssuer.h"
+#include "qpgeomVertexData.h"
+#include "qpgeomTriangles.h"
+#include "qpgeomTristrips.h"
+#include "qpgeomTrifans.h"
 #include "graphicsWindow.h"
 #include "lens.h"
 #include "perspectiveLens.h"
@@ -127,6 +131,14 @@ issue_scaled_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
 // glext function pointers in the class, in case the functions are not
 // defined by the GL, just so it will always be safe to call the
 // extension functions.
+
+static void APIENTRY
+null_glDrawRangeElements(GLenum mode, GLuint start, GLuint end, 
+                         GLsizei count, GLenum type, const GLvoid *indices) {
+  // If we don't support glDrawRangeElements(), just use the original
+  // glDrawElements() instead.
+  GLP(DrawElements)(mode, count, type, indices);
+}
 
 static void APIENTRY
 null_glActiveTexture(GLenum gl_texture_stage) {
@@ -345,6 +357,27 @@ reset() {
   save_extensions((const char *)GLP(GetString)(GL_EXTENSIONS));
   get_extra_extensions();
   report_extensions();
+
+  if (is_at_least_version(1, 2)) {
+    _supports_draw_range_elements = true;
+    _glDrawRangeElements = (PFNGLDRAWRANGEELEMENTSPROC)
+      get_extension_func(GLPREFIX_QUOTED, "DrawRangeElements");
+
+  } else if (has_extension("EXT_draw_range_elements")) {
+    _supports_draw_range_elements = true;
+    _glDrawRangeElements = (PFNGLDRAWRANGEELEMENTSPROC)
+      get_extension_func(GLPREFIX_QUOTED, "DrawRangeElementsEXT");
+  }
+  if (_supports_draw_range_elements) {
+    if (_glDrawRangeElements == NULL) {
+      GLCAT.warning()
+        << "glDrawRangeElements advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
+      _supports_draw_range_elements = false;
+    }
+  }
+  if (!_supports_draw_range_elements) {
+    _glDrawRangeElements = null_glDrawRangeElements;
+  }
 
   _supports_3d_texture = 
     has_extension("GL_EXT_texture3D") || is_at_least_version(1, 2);
@@ -1972,6 +2005,128 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
 
   GLUP(DeleteQuadric)(sph);
   report_my_gl_errors();
+  DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::begin_draw_primitives
+//       Access: Public, Virtual
+//  Description: Called before a sequence of draw_primitive()
+//               functions are called, this should prepare the vertex
+//               buffer if necessary.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+begin_draw_primitives(const qpGeomVertexData *vertex_data) {
+  DO_PSTATS_STUFF(_draw_primitive_pcollector.start());
+
+  GraphicsStateGuardian::begin_draw_primitives(vertex_data);
+
+  CPTA_uchar array_data;
+  int num_components;
+  qpGeomVertexDataType::NumericType numeric_type;
+  int start;
+  int stride;
+
+  if (_vertex_data->get_array_info(InternalName::get_vertex(),
+                                   array_data, num_components, numeric_type, 
+                                   start, stride)) {
+    GLP(VertexPointer)(num_components, get_numeric_type(numeric_type), 
+                       stride, array_data + start);
+    GLP(EnableClientState)(GL_VERTEX_ARRAY);
+  } else {
+    GLP(DisableClientState)(GL_VERTEX_ARRAY);
+  }
+
+  bool has_normals = false;
+  if (wants_normals() && 
+      _vertex_data->get_array_info(InternalName::get_normal(),
+                                   array_data, num_components, numeric_type, 
+                                   start, stride)) {
+    GLP(NormalPointer)(get_numeric_type(numeric_type), stride, 
+                       array_data + start);
+    GLP(EnableClientState)(GL_NORMAL_ARRAY);
+    has_normals = true;
+  } else {
+    GLP(DisableClientState)(GL_NORMAL_ARRAY);
+  }
+
+  bool has_colors = false;
+  if (wants_colors()) {
+    if (_vertex_data->get_array_info(InternalName::get_color(),
+                                     array_data, num_components, numeric_type, 
+                                     start, stride)) {
+      if (numeric_type == qpGeomVertexDataType::NT_packed_argb) {
+        // Temporary hack--this will probably reverse r and b.
+        GLP(ColorPointer)(4, GL_UNSIGNED_BYTE, stride, array_data + start);
+        
+      } else {
+        GLP(ColorPointer)(num_components, get_numeric_type(numeric_type), 
+                          stride, array_data + start);
+      }
+      GLP(EnableClientState)(GL_COLOR_ARRAY);
+      has_colors = true;
+
+    } else {
+      // We wanted colors, but the geom didn't have any; just issue
+      // white.
+      GLP(Color4f)(1.0f, 1.0f, 1.0f, 1.0f);
+      GLP(DisableClientState)(GL_COLOR_ARRAY);
+    }
+  } else {
+    GLP(DisableClientState)(GL_COLOR_ARRAY);
+  }
+
+  if (wants_texcoords() && 
+      _vertex_data->get_array_info(InternalName::get_texcoord(),
+                                   array_data, num_components, numeric_type, 
+                                   start, stride)) {
+    GLP(TexCoordPointer)(num_components, get_numeric_type(numeric_type), 
+                         stride, array_data + start);
+    GLP(EnableClientState)(GL_TEXTURE_COORD_ARRAY);
+  } else {
+    GLP(DisableClientState)(GL_TEXTURE_COORD_ARRAY);
+  }
+
+  // If we have per-vertex colors or normals, we need smooth shading.
+  // Otherwise we want flat shading for performance reasons.
+  if (has_colors || has_normals) {
+    GLP(ShadeModel)(GL_SMOOTH);
+  } else {
+    GLP(ShadeModel)(GL_FLAT);
+  }
+
+  issue_scene_graph_color();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::draw_triangles
+//       Access: Public, Virtual
+//  Description: Draws a series of disconnected triangles.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+draw_triangles(qpGeomTriangles *primitive) {
+  setup_antialias_polygon();
+
+  _glDrawRangeElements(GL_TRIANGLES, 
+                       primitive->get_min_vertex(),
+                       primitive->get_max_vertex(),
+                       primitive->get_num_vertices(),
+                       GL_UNSIGNED_SHORT, primitive->get_vertices());
+
+  report_my_gl_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::end_draw_primitives()
+//       Access: Public, Virtual
+//  Description: Called after a sequence of draw_primitive()
+//               functions are called, this should do whatever cleanup
+//               is appropriate.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+end_draw_primitives() {
+  GLP(DisableClientState)(GL_VERTEX_ARRAY);
+
   DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
 }
 
@@ -3763,6 +3918,30 @@ upload_texture_image(CLP(TextureContext) *gtc,
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::get_numeric_type
+//       Access: Protected, Static
+//  Description: Maps from the Geom's internal numeric type symbols
+//               to GL's.
+////////////////////////////////////////////////////////////////////
+GLenum CLP(GraphicsStateGuardian)::
+get_numeric_type(qpGeomVertexDataType::NumericType numeric_type) {
+  switch (numeric_type) {
+  case qpGeomVertexDataType::NT_uint8:
+    return GL_UNSIGNED_BYTE;
+    
+  case qpGeomVertexDataType::NT_packed_argb:
+    return GL_UNSIGNED_INT;
+    
+  case qpGeomVertexDataType::NT_float:
+    return GL_FLOAT;
+  }
+
+  GLCAT.error()
+    << "Invalid NumericType value (" << (int)numeric_type << ")\n";
+  return GL_UNSIGNED_BYTE;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::get_texture_target
 //       Access: Protected
 //  Description: Maps from the Texture's texture type symbols to
@@ -4841,6 +5020,19 @@ finish_modify_state() {
 
     report_my_gl_errors();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::setup_geom_munger
+//       Access: Protected, Virtual
+//  Description: Called after finish_modify_state has completed, this
+//               method sets up the GeomMunger for rendering with the
+//               current state.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+setup_geom_munger(PT(qpGeomMunger) munger) {
+  munger = new CLP(GeomMunger);
+  GraphicsStateGuardian::setup_geom_munger(munger);
 }
 
 ////////////////////////////////////////////////////////////////////

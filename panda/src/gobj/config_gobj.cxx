@@ -22,6 +22,15 @@
 #include "drawable.h"
 #include "geom.h"
 #include "geomprimitives.h"
+#include "qpgeom.h"
+#include "qpgeomMunger.h"
+#include "qpgeomPrimitive.h"
+#include "qpgeomTriangles.h"
+#include "qpgeomTristrips.h"
+#include "qpgeomTrifans.h"
+#include "qpgeomVertexArrayFormat.h"
+#include "qpgeomVertexData.h"
+#include "qpgeomVertexFormat.h"
 #include "material.h"
 #include "orthographicLens.h"
 #include "matrixLens.h"
@@ -29,7 +38,7 @@
 #include "lens.h"
 #include "texture.h"
 #include "textureStage.h"
-#include "texCoordName.h"
+#include "internalName.h"
 
 #include "dconfig.h"
 #include "string_utils.h"
@@ -71,6 +80,12 @@ ConfigVariableBool retained_mode
           "buffers) with the GSG for static geometry, when supported by the "
           "GSG.  Set it false to use only immediate mode, which sends the "
           "vertices to the GSG every frame."));
+
+ConfigVariableBool use_qpgeom
+("use-qpgeom", false,
+ PRC_DESC("A temporary variable while the experimental Geom rewrite is "
+          "underway.  Set this true if you want to use the experimental "
+          "code.  You don't really want to set this true."));
 
 
 ConfigVariableEnum<BamTextureMode> bam_texture_mode
@@ -133,6 +148,15 @@ ConfigureFn(config_gobj) {
   GeomTri::init_type();
   GeomTrifan::init_type();
   GeomTristrip::init_type();
+  qpGeom::init_type();
+  qpGeomMunger::init_type();
+  qpGeomPrimitive::init_type();
+  qpGeomTriangles::init_type();
+  qpGeomTristrips::init_type();
+  qpGeomTrifans::init_type();
+  qpGeomVertexArrayFormat::init_type();
+  qpGeomVertexData::init_type();
+  qpGeomVertexFormat::init_type();
   Material::init_type();
   OrthographicLens::init_type();
   MatrixLens::init_type();
@@ -141,7 +165,7 @@ ConfigureFn(config_gobj) {
   Texture::init_type();
   dDrawable::init_type();
   TextureStage::init_type();
-  TexCoordName::init_type();
+  InternalName::init_type();
 
   //Registration of writeable object's creation
   //functions with BamReader's factory
@@ -155,13 +179,20 @@ ConfigureFn(config_gobj) {
   GeomTristrip::register_with_read_factory();
   GeomTrifan::register_with_read_factory();
   GeomSphere::register_with_read_factory();
+  qpGeom::register_with_read_factory();
+  qpGeomTriangles::register_with_read_factory();
+  qpGeomTristrips::register_with_read_factory();
+  qpGeomTrifans::register_with_read_factory();
+  qpGeomVertexArrayFormat::register_with_read_factory();
+  qpGeomVertexData::register_with_read_factory();
+  qpGeomVertexFormat::register_with_read_factory();
   Material::register_with_read_factory();
   OrthographicLens::register_with_read_factory();
   MatrixLens::register_with_read_factory();
   PerspectiveLens::register_with_read_factory();
   Texture::register_with_read_factory();
   TextureStage::register_with_read_factory();
-  TexCoordName::register_with_read_factory();
+  InternalName::register_with_read_factory();
 }
 
 ostream &

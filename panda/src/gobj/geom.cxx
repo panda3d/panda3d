@@ -392,7 +392,7 @@ set_colors(const PTA_Colorf &colors, GeomBindType bind,
 //       Access: Published
 //  Description: This single-texturing version of set_texcoords() only
 //               changes the default texcoords name.  Use the version
-//               of set_texcoords() that takes a TexCoordName
+//               of set_texcoords() that takes a InternalName
 //               parameter to set up different texture coordinates for
 //               different stages of a multitexture pipeline.
 ////////////////////////////////////////////////////////////////////
@@ -402,9 +402,9 @@ set_texcoords(const PTA_TexCoordf &texcoords, GeomBindType bind,
   nassertv(bind == G_PER_VERTEX || bind == G_OFF);
 
   if (bind == G_OFF) {
-    remove_texcoords(TexCoordName::get_default());
+    remove_texcoords(InternalName::get_texcoord());
   } else {
-    set_texcoords(TexCoordName::get_default(), texcoords, tindex);
+    set_texcoords(InternalName::get_texcoord(), texcoords, tindex);
   }
 }
 
@@ -417,9 +417,9 @@ set_texcoords(const PTA_TexCoordf &texcoords, GeomBindType bind,
 //               remove_texcoords().
 ////////////////////////////////////////////////////////////////////
 void Geom::
-set_texcoords(const TexCoordName *name, const PTA_TexCoordf &texcoords,
+set_texcoords(const InternalName *name, const PTA_TexCoordf &texcoords,
               const PTA_ushort &tindex) {
-  nassertv(name != (TexCoordName *)NULL);
+  nassertv(name != (InternalName *)NULL);
 
 #ifndef NDEBUG
   // All of the texture coordinates must be either nonindexed, or all
@@ -438,7 +438,7 @@ set_texcoords(const TexCoordName *name, const PTA_TexCoordf &texcoords,
   def._texcoords = texcoords;
   def._tindex = tindex;
 
-  if (name == TexCoordName::get_default()) {
+  if (name == InternalName::get_texcoord()) {
     _bind[G_TEXCOORD] = G_PER_VERTEX;
   }
 
@@ -454,10 +454,10 @@ set_texcoords(const TexCoordName *name, const PTA_TexCoordf &texcoords,
 //               set_texcoords().
 ////////////////////////////////////////////////////////////////////
 void Geom::
-remove_texcoords(const TexCoordName *name) {
+remove_texcoords(const InternalName *name) {
   _texcoords_by_name.erase(name);
 
-  if (name == TexCoordName::get_default()) {
+  if (name == InternalName::get_texcoord()) {
     _bind[G_TEXCOORD] = G_OFF;
   }
 
@@ -529,7 +529,7 @@ void Geom::
 get_texcoords(PTA_TexCoordf &texcoords, GeomBindType &bind,
               PTA_ushort &tindex) const { 
   TexCoordsByName::const_iterator tci = 
-    _texcoords_by_name.find(TexCoordName::get_default());
+    _texcoords_by_name.find(InternalName::get_texcoord());
   if (tci != _texcoords_by_name.end()) {
     const TexCoordDef &def = (*tci).second;
     texcoords = def._texcoords;
@@ -571,6 +571,46 @@ is_dynamic() const {
 void Geom::
 prepare(PreparedGraphicsObjects *prepared_objects) {
   prepared_objects->enqueue_geom(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::get_num_vertices_per_prim
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int Geom::
+get_num_vertices_per_prim() const {
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::get_num_more_vertices_than_components
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int Geom::
+get_num_more_vertices_than_components() const {
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::uses_components
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool Geom::
+uses_components() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::get_length
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int Geom::
+get_length(int) const {
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -721,7 +761,7 @@ write_verbose(ostream &out, int indent_level) const {
     for (tci = _texcoords_by_name.begin(); 
          tci != _texcoords_by_name.end();
          ++tci) {
-      const TexCoordName *name = (*tci).first;
+      const InternalName *name = (*tci).first;
       const TexCoordDef &def = (*tci).second;
       if (def._tindex != (ushort *)NULL) {
         indent(out, indent_level)
@@ -762,7 +802,7 @@ setup_multitexcoord_iterator(MultiTexCoordIterator &iterator,
     if (no_texcoords.find(stage) == no_texcoords.end()) {
       // This stage is not one of the stages that doesn't need
       // texcoords issued for it.
-      const TexCoordName *name = stage->get_texcoord_name();
+      const InternalName *name = stage->get_texcoord_name();
       TexCoordsByName::const_iterator tci = _texcoords_by_name.find(name);
       if (tci != _texcoords_by_name.end()) {
         // This Geom does have texcoords for this stage.
@@ -953,6 +993,24 @@ config() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Geom::draw_immediate
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void Geom::
+draw_immediate(GraphicsStateGuardianBase *, GeomContext *) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::print_draw_immediate
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void Geom::
+print_draw_immediate() const {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Geom::calc_tight_bounds
 //       Access: Public
 //  Description: Expands min_point and max_point to include all of the
@@ -1118,7 +1176,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
   // write the TexCoordsByName pointers if any
   TexCoordsByName::const_iterator tci;
   for (tci = _texcoords_by_name.begin(); tci != _texcoords_by_name.end(); ++tci) {
-    CPT(TexCoordName) tc = (*tci).first;
+    CPT(InternalName) tc = (*tci).first;
     manager->write_pointer(me, tc);
     WRITE_PTA(manager, me, IPD_TexCoordf::write_datagram, (*tci).second._texcoords);
     WRITE_PTA(manager, me, IPD_ushort::write_datagram, (*tci).second._tindex);
@@ -1160,16 +1218,16 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   for (ci = _temp_texcoord_set.begin();
        ci != _temp_texcoord_set.end();
        ++ci) {
-    CPT(TexCoordName) tc = DCAST(TexCoordName, p_list[pi++]);
+    CPT(InternalName) tc = DCAST(InternalName, p_list[pi++]);
     TexCoordDef *def = (*ci);
     _texcoords_by_name[tc] = *def;
     /*
-    cerr << "TexCoordName from Geom " << (void *)this
+    cerr << "InternalName from Geom " << (void *)this
          << " complete pointers " << tc << " " << *tc 
          << " = " << def->_texcoords << " and " << def->_tindex << "\n";
     */
     delete def;
-    if (tc == TexCoordName::get_default()) {
+    if (tc == InternalName::get_texcoord()) {
       _bind[G_TEXCOORD] = G_PER_VERTEX;
     }
   }

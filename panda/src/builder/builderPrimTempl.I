@@ -328,7 +328,7 @@ has_any_pixel_size() const {
 //     Function: BuilderPrimTempl::tcn_begin
 //       Access: Public
 //  Description: Returns an iterator that can be used to walk through
-//               the list of TexCoordNames that are common to all
+//               the list of InternalNames that are common to all
 //               vertices on this primitive.
 ////////////////////////////////////////////////////////////////////
 template <class VTX>
@@ -341,7 +341,7 @@ tcn_begin() const {
 //     Function: BuilderPrimTempl::tcn_end
 //       Access: Public
 //  Description: Returns an iterator that can be used to walk through
-//               the list of TexCoordNames that are common to all
+//               the list of InternalNames that are common to all
 //               vertices on this primitive.
 ////////////////////////////////////////////////////////////////////
 template <class VTX>
@@ -353,7 +353,7 @@ tcn_end() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderPrimTempl::tcn_size
 //       Access: Public
-//  Description: Returns the number of TexCoordNames that are common
+//  Description: Returns the number of InternalNames that are common
 //               to all vertices on this primitive.
 ////////////////////////////////////////////////////////////////////
 template <class VTX>
@@ -885,12 +885,12 @@ update_overall_attrib() {
 
   int i;
   if (num_verts > 0) {
-    // Get the intersection of TexCoordNames that are defined on all
+    // Get the intersection of InternalNames that are defined on all
     // vertices.
     const Vertex &vtx = get_vertex(0);
     TYPENAME Vertex::tc_const_iterator tci;
     for (tci = vtx.tc_begin(); tci != vtx.tc_end(); ++tci) {
-      const TexCoordName *name = (*tci).first;
+      const InternalName *name = (*tci).first;
       bool has_texcoord = true;
       for (i = 1; i < num_verts && has_texcoord; i++) {
         has_texcoord = get_vertex(i).has_texcoord(name);

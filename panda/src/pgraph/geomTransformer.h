@@ -26,7 +26,7 @@
 
 class GeomNode;
 class RenderState;
-class TexCoordName;
+class InternalName;
 
 ///////////////////////////////////////////////////////////////////
 //       Class : GeomTransformer
@@ -52,11 +52,11 @@ public:
   bool transform_vertices(Geom *geom, const LMatrix4f &mat);
   bool transform_vertices(GeomNode *node, const LMatrix4f &mat);
 
-  bool transform_texcoords(Geom *geom, const TexCoordName *from_name,
-                           const TexCoordName *to_name,
+  bool transform_texcoords(Geom *geom, const InternalName *from_name,
+                           const InternalName *to_name,
                            const LMatrix4f &mat);
-  bool transform_texcoords(GeomNode *node, const TexCoordName *from_name,
-                           const TexCoordName *to_name,
+  bool transform_texcoords(GeomNode *node, const InternalName *from_name,
+                           const InternalName *to_name,
                            const LMatrix4f &mat);
 
   bool set_color(Geom *geom, const Colorf &color);

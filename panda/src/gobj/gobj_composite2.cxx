@@ -2,6 +2,7 @@
 #include "config_gobj.cxx"
 #include "drawable.cxx"
 #include "geomContext.cxx"
+#include "internalName.cxx"
 #include "material.cxx"
 #include "materialPool.cxx"
 #include "orthographicLens.cxx"
@@ -13,5 +14,4 @@
 #include "texture.cxx"
 #include "textureContext.cxx"
 #include "texturePool.cxx"
-#include "texCoordName.cxx"
 #include "textureStage.cxx"

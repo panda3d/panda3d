@@ -91,10 +91,10 @@ private:
   // This structure is used internally in setup_bucket().
   typedef pvector<const TextureDef *> TexMatTextures;
   typedef pmap<LMatrix3d, TexMatTextures> TexMatTransforms;
-  typedef pmap<CPT(TexCoordName), TexMatTransforms> TexMats;
+  typedef pmap<CPT(InternalName), TexMatTransforms> TexMats;
 
   // This structure is returned by setup_bucket().
-  typedef pmap<CPT(TexCoordName), const EggTexture *> BakeInUVs;
+  typedef pmap<CPT(InternalName), const EggTexture *> BakeInUVs;
   
   void make_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
                         const LMatrix4d &mat);

@@ -21,7 +21,7 @@
 
 #include "pandabase.h"
 
-#include "texCoordName.h"
+#include "internalName.h"
 #include "pointerTo.h"
 #include "typedWritableReferenceCount.h"
 #include "updateSeq.h"
@@ -100,9 +100,9 @@ PUBLISHED:
 
   INLINE bool operator < (const TextureStage &other) const;
 
-  INLINE void set_texcoord_name(const TexCoordName *name);
+  INLINE void set_texcoord_name(const InternalName *name);
   INLINE void set_texcoord_name(const string &texcoord_name);
-  INLINE const TexCoordName *get_texcoord_name() const;
+  INLINE const InternalName *get_texcoord_name() const;
 
   INLINE void set_mode(Mode mode);
   INLINE Mode get_mode() const;
@@ -170,7 +170,7 @@ private:
   string _name;
   int _sort;
   int _priority;
-  CPT(TexCoordName) _texcoord_name;
+  CPT(InternalName) _texcoord_name;
   Mode _mode;
   Colorf _color;
   int _rgb_scale;

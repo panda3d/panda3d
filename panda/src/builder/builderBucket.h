@@ -30,7 +30,7 @@
 #include "pta_Normalf.h"
 #include "pta_Colorf.h"
 #include "pta_TexCoordf.h"
-#include "texCoordName.h"
+#include "internalName.h"
 #include "renderState.h"
 
 #include "stdlib.h"
@@ -77,8 +77,8 @@ public:
   INLINE void set_normals(const PTA_Normalf &normals);
   INLINE PTA_Normalf get_normals() const;
 
-  INLINE void set_texcoords(const TexCoordName *name, const PTA_TexCoordf &texcoords);
-  INLINE PTA_TexCoordf get_texcoords(const TexCoordName *name) const;
+  INLINE void set_texcoords(const InternalName *name, const PTA_TexCoordf &texcoords);
+  INLINE PTA_TexCoordf get_texcoords(const InternalName *name) const;
 
   INLINE void set_colors(const PTA_Colorf &colors);
   INLINE PTA_Colorf get_colors() const;
@@ -96,7 +96,7 @@ protected:
   PTA_Normalf _normals;
   PTA_Colorf _colors;
 
-  typedef pmap<CPT(TexCoordName), PTA_TexCoordf> TexCoords;
+  typedef pmap<CPT(InternalName), PTA_TexCoordf> TexCoords;
   TexCoords _texcoords;
 
   static BuilderBucket *_default_bucket;

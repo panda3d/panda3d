@@ -228,8 +228,11 @@ back() const {
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE TYPENAME PointerToArray<Element>::iterator PointerToArray<Element>::
-insert(iterator position, const Element &x) const {
-  nassertr((this->_void_ptr) != NULL, position);
+insert(iterator position, const Element &x) {
+  if ((this->_void_ptr) == NULL) {
+    reassign(new RefCountObj<pvector<Element> >);
+    position = end();
+  }
   nassertr(position >= ((To *)(this->_void_ptr))->begin() &&
            position <= ((To *)(this->_void_ptr))->end(), position);
   return ((To *)(this->_void_ptr))->insert(position, x);
@@ -242,8 +245,11 @@ insert(iterator position, const Element &x) const {
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE void PointerToArray<Element>::
-insert(iterator position, size_type n, const Element &x) const {
-  nassertv((this->_void_ptr) != NULL);
+insert(iterator position, size_type n, const Element &x) {
+  if ((this->_void_ptr) == NULL) {
+    reassign(new RefCountObj<pvector<Element> >);
+    position = end();
+  }
   nassertv(position >= ((To *)(this->_void_ptr))->begin() &&
            position <= ((To *)(this->_void_ptr))->end());
   ((To *)(this->_void_ptr))->insert(position, n, x);
@@ -256,10 +262,8 @@ insert(iterator position, size_type n, const Element &x) const {
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE void PointerToArray<Element>::
-erase(iterator position) const {
-  nassertd((this->_void_ptr) != NULL) {
-    ((PointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
-  }
+erase(iterator position) {
+  nassertv((this->_void_ptr) != NULL);
   nassertv(position >= ((To *)(this->_void_ptr))->begin() &&
            position <= ((To *)(this->_void_ptr))->end());
   ((To *)(this->_void_ptr))->erase(position);
@@ -272,10 +276,8 @@ erase(iterator position) const {
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE void PointerToArray<Element>::
-erase(iterator first, iterator last) const {
-  nassertd((this->_void_ptr) != NULL) {
-    ((PointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
-  }
+erase(iterator first, iterator last) {
+  nassertv((this->_void_ptr) != NULL);
   nassertv(first >= ((To *)(this->_void_ptr))->begin() && first <= ((To *)(this->_void_ptr))->end());
   nassertv(last >= ((To *)(this->_void_ptr))->begin() && last <= ((To *)(this->_void_ptr))->end());
   ((To *)(this->_void_ptr))->erase(first, last);

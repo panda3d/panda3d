@@ -555,13 +555,13 @@ build_geoms(InputIterator first, InputIterator last,
   //
   // Texcoords are an exception to the above, since they are either
   // per vertex or not at all, and since there may be a different set
-  // of texcoords for each of a number of TexCoordName objects.
+  // of texcoords for each of a number of InternalName objects.
 
   GeomBindType bind_normals = G_OVERALL;
   GeomBindType bind_colors = G_OVERALL;
 
-  typedef pset<const TexCoordName *> TexCoordNames;
-  TexCoordNames texcoord_names;
+  typedef pset<const InternalName *> InternalNames;
+  InternalNames texcoord_names;
 
   NType overall_normal(0);
   CType overall_color(0);
@@ -623,11 +623,11 @@ build_geoms(InputIterator first, InputIterator last,
       }
     }
 
-    // Texcoords.  Get the union of all TexCoordNames defined on the
+    // Texcoords.  Get the union of all InternalNames defined on the
     // prims.
     TYPENAME PrimType::tcn_const_iterator tni;
     for (tni = (*i).tcn_begin(); tni != (*i).tcn_end(); ++tni) {
-      const TexCoordName *name = (*tni);
+      const InternalName *name = (*tni);
       texcoord_names.insert(name);
     }
   }
@@ -719,7 +719,7 @@ build_geoms(InputIterator first, InputIterator last,
 
   typedef TYPENAME PrimType::TexCoordFill TexCoordFill;
   TexCoordFill texcoords;
-  TexCoordNames::const_iterator tni;
+  InternalNames::const_iterator tni;
   for (tni = texcoord_names.begin(); tni != texcoord_names.end(); ++tni) {
     texcoords[*tni] = PTA(TType)::empty_array(0);
   }
@@ -744,7 +744,7 @@ build_geoms(InputIterator first, InputIterator last,
         }
         TYPENAME TexCoordFill::iterator tci;
         for (tci = texcoords.begin(); tci != texcoords.end(); ++tci) {
-          const TexCoordName *name = (*tci).first;
+          const InternalName *name = (*tci).first;
           if ((*i).get_vertex(v).has_texcoord(name)) {
             (*tci).second.push_back((*i).get_vertex(v).get_texcoord(name));
           } else {

@@ -44,6 +44,9 @@ typedef PRUint64 PN_uint64;
 
 typedef PRFloat64 PN_float64;
 
+// NSPR doesn't define a float32.
+typedef float PN_float32;
+
 #else // HAVE_NSPR
 
 // Without NSPR, and without any other information, we need some
@@ -66,6 +69,7 @@ typedef unsigned short PN_uint16;
 typedef unsigned long PN_uint32;
 
 typedef double PN_float64;
+typedef float PN_float32;
 
 #endif  // HAVE_NSPR
 

@@ -25,7 +25,7 @@
 #include "lensNode.h"
 #include "geomNode.h"
 #include "nodePath.h"
-#include "texCoordName.h"
+#include "internalName.h"
 #include "pointerTo.h"
 
 class Geom;
@@ -82,7 +82,7 @@ PUBLISHED:
   PT(PandaNode) make_flat_mesh(const NodePath &this_np, const NodePath &camera);
 
   INLINE void set_texcoord_name(const string &texcoord_name);
-  INLINE const string &get_texcoord_name() const;
+  INLINE string get_texcoord_name() const;
 
   INLINE void set_invert_uvs(bool invert_uvs);
   INLINE bool get_invert_uvs() const;
@@ -124,7 +124,7 @@ private:
 
   NodePath _projector;
   PT(LensNode) _projector_node;
-  CPT(TexCoordName) _texcoord_name;
+  CPT(InternalName) _texcoord_name;
   bool _invert_uvs;
   bool _vignette_on;
   Colorf _vignette_color;

@@ -24,7 +24,7 @@
 #include "builderTypes.h"
 #include "builderAttribTempl.h"
 #include "builder_compare.h"
-#include "texCoordName.h"
+#include "internalName.h"
 #include "pointerTo.h"
 
 #include "notify.h"
@@ -45,7 +45,7 @@ public:
   typedef NT NType;
   typedef TT TType;
   typedef CT CType;
-  typedef pmap<CPT(TexCoordName), TType> TexCoords;
+  typedef pmap<CPT(InternalName), TType> TexCoords;
   typedef TYPENAME TexCoords::const_iterator tc_const_iterator;
   typedef TYPENAME TexCoords::size_type tc_size_type;
 
@@ -64,10 +64,10 @@ public:
   INLINE BuilderVertexTempl &set_normal(const NType &c);
   INLINE BuilderVertexTempl &clear_normal();
 
-  INLINE bool has_texcoord(const TexCoordName *name) const;
-  INLINE TType get_texcoord(const TexCoordName *name) const;
-  INLINE BuilderVertexTempl &set_texcoord(const TexCoordName *name, const TType &t);
-  INLINE BuilderVertexTempl &clear_texcoord(const TexCoordName *name);
+  INLINE bool has_texcoord(const InternalName *name) const;
+  INLINE TType get_texcoord(const InternalName *name) const;
+  INLINE BuilderVertexTempl &set_texcoord(const InternalName *name, const TType &t);
+  INLINE BuilderVertexTempl &clear_texcoord(const InternalName *name);
   INLINE tc_const_iterator tc_begin() const;
   INLINE tc_const_iterator tc_end() const;
   INLINE tc_size_type tc_size() const;

@@ -73,7 +73,7 @@ get_normals() const {
 //               associated with this bucket.
 ////////////////////////////////////////////////////////////////////
 INLINE void BuilderBucket::
-set_texcoords(const TexCoordName *name, const PTA_TexCoordf &texcoords) {
+set_texcoords(const InternalName *name, const PTA_TexCoordf &texcoords) {
   _texcoords[name] = texcoords;
 }
 
@@ -84,7 +84,7 @@ set_texcoords(const TexCoordName *name, const PTA_TexCoordf &texcoords) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PTA_TexCoordf BuilderBucket::
-get_texcoords(const TexCoordName *name) const {
+get_texcoords(const InternalName *name) const {
   TexCoords::const_iterator ti = _texcoords.find(name);
   if (ti != _texcoords.end()) {
     return (*ti).second;

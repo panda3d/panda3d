@@ -26,8 +26,15 @@
 #include "loader.h"
 #include "keyboardButton.h"
 #include "geomTri.h"
+#include "qpgeom.h"
+#include "qpgeomTriangles.h"
+#include "qpgeomTristrips.h"
+#include "qpgeomVertexData.h"
+#include "qpgeomVertexFormat.h"
+#include "qpgeomVertexIterator.h"
 #include "texturePool.h"
 #include "textureAttrib.h"
+#include "colorAttrib.h"
 #include "perspectiveLens.h"
 #include "orthographicLens.h"
 #include "auto_bind.h"
@@ -603,31 +610,6 @@ load_model(const NodePath &parent, Filename filename) {
 ////////////////////////////////////////////////////////////////////
 NodePath WindowFramework::
 load_default_model(const NodePath &parent) {
-  PTA_Vertexf coords;
-  PTA_TexCoordf uvs;
-  PTA_Normalf norms;
-  PTA_Colorf colors;
-  PTA_ushort cindex;
-  
-  coords.push_back(Vertexf::rfu(0.0, 0.0, 0.0));
-  coords.push_back(Vertexf::rfu(1.0, 0.0, 0.0));
-  coords.push_back(Vertexf::rfu(0.0, 0.0, 1.0));
-  uvs.push_back(TexCoordf(0.0, 0.0));
-  uvs.push_back(TexCoordf(1.0, 0.0));
-  uvs.push_back(TexCoordf(0.0, 1.0));
-  norms.push_back(Normalf::back());
-  colors.push_back(Colorf(0.5, 0.5, 1.0, 1.0));
-  cindex.push_back(0);
-  cindex.push_back(0);
-  cindex.push_back(0);
-  
-  PT(GeomTri) geom = new GeomTri;
-  geom->set_num_prims(1);
-  geom->set_coords(coords);
-  geom->set_texcoords(uvs, G_PER_VERTEX);
-  geom->set_normals(norms, G_PER_PRIM);
-  geom->set_colors(colors, G_PER_VERTEX, cindex);
-
   CPT(RenderState) state = RenderState::make_empty();
 
   // Get the default texture to apply to the triangle; it's compiled
@@ -645,7 +627,70 @@ load_default_model(const NodePath &parent) {
   }
   
   GeomNode *geomnode = new GeomNode("tri");
-  geomnode->add_geom(geom, state);
+
+  if (use_qpgeom) {
+    // New, experimental Geom code.
+    PT(qpGeomVertexData) vdata = new qpGeomVertexData(qpGeomVertexFormat::get_v3n3cpt2());
+    qpGeomVertexIterator vertex(vdata, InternalName::get_vertex());
+    qpGeomVertexIterator normal(vdata, InternalName::get_normal());
+    qpGeomVertexIterator color(vdata, InternalName::get_color());
+    qpGeomVertexIterator texcoord(vdata, InternalName::get_texcoord());
+
+    vertex.set_data3(Vertexf::rfu(0.0, 0.0, 0.0));
+    vertex.set_data3(Vertexf::rfu(1.0, 0.0, 0.0));
+    vertex.set_data3(Vertexf::rfu(0.0, 0.0, 1.0));
+
+    normal.set_data3(Normalf::back());
+    normal.set_data3(Normalf::back());
+    normal.set_data3(Normalf::back());
+
+    color.set_data4(0.5, 0.5, 1.0, 1.0);
+    color.set_data4(0.5, 0.5, 1.0, 1.0);
+    color.set_data4(0.5, 0.5, 1.0, 1.0);
+
+    texcoord.set_data2(0.0, 0.0);
+    texcoord.set_data2(1.0, 0.0);
+    texcoord.set_data2(0.0, 1.0);
+    
+    PT(qpGeomTriangles) tri = new qpGeomTriangles;
+    tri->add_consecutive_vertices(0, 3);
+    tri->close_primitive();
+    
+    PT(qpGeom) geom = new qpGeom;
+    geom->set_vertex_data(vdata);
+    geom->add_primitive(tri);
+    
+    geomnode->add_geom(geom, state);
+
+  } else {
+    // Original, tried-and-true Geom code.
+    PTA_Vertexf coords;
+    PTA_TexCoordf uvs;
+    PTA_Normalf norms;
+    PTA_Colorf colors;
+    PTA_ushort cindex;
+    
+    coords.push_back(Vertexf::rfu(0.0, 0.0, 0.0));
+    coords.push_back(Vertexf::rfu(1.0, 0.0, 0.0));
+    coords.push_back(Vertexf::rfu(0.0, 0.0, 1.0));
+    uvs.push_back(TexCoordf(0.0, 0.0));
+    uvs.push_back(TexCoordf(1.0, 0.0));
+    uvs.push_back(TexCoordf(0.0, 1.0));
+    norms.push_back(Normalf::back());
+    colors.push_back(Colorf(0.5, 0.5, 1.0, 1.0));
+    cindex.push_back(0);
+    cindex.push_back(0);
+    cindex.push_back(0);
+    
+    PT(GeomTri) geom = new GeomTri;
+    geom->set_num_prims(1);
+    geom->set_coords(coords);
+    geom->set_texcoords(uvs, G_PER_VERTEX);
+    geom->set_normals(norms, G_PER_PRIM);
+    geom->set_colors(colors, G_PER_VERTEX, cindex);
+
+    geomnode->add_geom(geom, state);
+  }
 
   return parent.attach_new_node(geomnode);
 }
@@ -995,7 +1040,6 @@ load_image_as_model(const Filename &filename) {
   tex->set_magfilter(Texture::FT_linear);
 
   // Ok, now make a polygon to show the texture.
-  PT(GeomNode) card_geode = new GeomNode("card");
 
   // Choose the dimensions of the polygon appropriately.
   float left = -x_size / 2.0;
@@ -1003,34 +1047,64 @@ load_image_as_model(const Filename &filename) {
   float bottom = -y_size / 2.0;
   float top = y_size / 2.0;
 
-  GeomTristrip *geoset = new GeomTristrip;
-  PTA_int lengths=PTA_int::empty_array(0);
-  lengths.push_back(4);
-
-  PTA_Vertexf verts;
-  verts.push_back(Vertexf::rfu(left, 0.02f, top));
-  verts.push_back(Vertexf::rfu(left, 0.02f, bottom));
-  verts.push_back(Vertexf::rfu(right, 0.02f, top));
-  verts.push_back(Vertexf::rfu(right, 0.02f, bottom));
-
-  geoset->set_num_prims(1);
-  geoset->set_lengths(lengths);
-
-  geoset->set_coords(verts);
-
-  PTA_TexCoordf uvs;
-  uvs.push_back(TexCoordf(0.0f, 1.0f));
-  uvs.push_back(TexCoordf(0.0f, 0.0f));
-  uvs.push_back(TexCoordf(1.0f, 1.0f));
-  uvs.push_back(TexCoordf(1.0f, 0.0f));
-  
-  geoset->set_texcoords(uvs, G_PER_VERTEX);
-
-  card_geode->add_geom(geoset);
-  card_geode->set_attrib(TextureAttrib::make(tex));
+  PT(GeomNode) card_node = new GeomNode("card");
+  card_node->set_attrib(ColorAttrib::make_flat(Colorf(1.0f, 1.0f, 1.0f, 1.0f)));
+  card_node->set_attrib(TextureAttrib::make(tex));
   if (has_alpha) {
-    card_geode->set_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
+    card_node->set_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
   }
 
-  return card_geode.p();
+  if (use_qpgeom) {
+    PT(qpGeomVertexData) vdata = new qpGeomVertexData(qpGeomVertexFormat::get_v3t2());
+    qpGeomVertexIterator vertex(vdata, InternalName::get_vertex());
+    qpGeomVertexIterator texcoord(vdata, InternalName::get_texcoord());
+
+    vertex.set_data3(Vertexf::rfu(left, 0.02f, top));
+    vertex.set_data3(Vertexf::rfu(left, 0.02f, bottom));
+    vertex.set_data3(Vertexf::rfu(right, 0.02f, top));
+    vertex.set_data3(Vertexf::rfu(right, 0.02f, bottom));
+    
+    texcoord.set_data2(0.0f, 1.0f);
+    texcoord.set_data2(0.0f, 0.0f);
+    texcoord.set_data2(1.0f, 1.0f);
+    texcoord.set_data2(1.0f, 0.0f);
+    
+    PT(qpGeomTristrips) strip = new qpGeomTristrips;
+    strip->add_consecutive_vertices(0, 4);
+    strip->close_primitive();
+    
+    PT(qpGeom) geom = new qpGeom;
+    geom->set_vertex_data(vdata);
+    geom->add_primitive(strip);
+    
+    card_node->add_geom(geom);
+
+  } else {
+    GeomTristrip *geom = new GeomTristrip;
+    PTA_int lengths=PTA_int::empty_array(0);
+    lengths.push_back(4);
+    
+    PTA_Vertexf verts;
+    verts.push_back(Vertexf::rfu(left, 0.02f, top));
+    verts.push_back(Vertexf::rfu(left, 0.02f, bottom));
+    verts.push_back(Vertexf::rfu(right, 0.02f, top));
+    verts.push_back(Vertexf::rfu(right, 0.02f, bottom));
+    
+    geom->set_num_prims(1);
+    geom->set_lengths(lengths);
+    
+    geom->set_coords(verts);
+    
+    PTA_TexCoordf uvs;
+    uvs.push_back(TexCoordf(0.0f, 1.0f));
+    uvs.push_back(TexCoordf(0.0f, 0.0f));
+    uvs.push_back(TexCoordf(1.0f, 1.0f));
+    uvs.push_back(TexCoordf(1.0f, 0.0f));
+    
+    geom->set_texcoords(uvs, G_PER_VERTEX);
+
+    card_node->add_geom(geom);
+  }
+
+  return card_node.p();
 }

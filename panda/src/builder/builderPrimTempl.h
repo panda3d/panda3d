@@ -45,12 +45,12 @@ public:
   typedef TYPENAME VTX::TType TType;
   typedef TYPENAME VTX::CType CType;
   typedef TYPENAME VTX::Attrib DAttrib;
-  typedef pset<const TexCoordName *> TexCoordNames;
-  typedef TexCoordNames::const_iterator tcn_const_iterator;
-  typedef TexCoordNames::size_type tcn_size_type;
+  typedef pset<const InternalName *> InternalNames;
+  typedef InternalNames::const_iterator tcn_const_iterator;
+  typedef InternalNames::size_type tcn_size_type;
 
   // This type is passed to fill_geom() for the texcoords.
-  typedef pmap<const TexCoordName *, PTA(TType) > TexCoordFill;
+  typedef pmap<const InternalName *, PTA(TType) > TexCoordFill;
 
   INLINE BuilderPrimTempl();
   INLINE BuilderPrimTempl(const BuilderPrimTempl &copy);
@@ -151,7 +151,7 @@ protected:
 
   Verts _verts;
   Components _components;
-  TexCoordNames _texcoord_names;
+  InternalNames _texcoord_names;
   BuilderPrimType _type;
   int _overall;
 };

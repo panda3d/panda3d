@@ -68,7 +68,7 @@ nonindexed_copy(const BuilderPrimTempl<BuilderVertexI> &copy,
     
     BuilderVertexI::tc_const_iterator tci;
     for (tci = cv.tc_begin(); tci != cv.tc_end(); ++tci) {
-      const TexCoordName *name = (*tci).first;
+      const InternalName *name = (*tci).first;
       v.set_texcoord(name, cv.get_texcoord_value(name, bucket));
     }
 
@@ -153,7 +153,7 @@ fill_geom(Geom *geom, const PTA_BuilderV &v_array,
 
   TexCoordFill::const_iterator tci;
   for (tci = texcoords.begin(); tci != texcoords.end(); ++tci) {
-    const TexCoordName *name = (*tci).first;
+    const InternalName *name = (*tci).first;
     geom->set_texcoords(name, (*tci).second);
   }
 }
@@ -238,7 +238,7 @@ fill_geom(Geom *geom, const PTA_ushort &v_array,
 
   TexCoordFill::const_iterator tci;
   for (tci = texcoords.begin(); tci != texcoords.end(); ++tci) {
-    const TexCoordName *name = (*tci).first;
+    const InternalName *name = (*tci).first;
     PTA_ushort t_array = (*tci).second;
 
     PTA_TexCoordf t_data = bucket.get_texcoords(name);

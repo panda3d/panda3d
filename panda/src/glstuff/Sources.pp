@@ -22,6 +22,9 @@
      glGeomContext_src.cxx \
      glGeomContext_src.I \
      glGeomContext_src.h \
+     glGeomMunger_src.cxx \
+     glGeomMunger_src.I \
+     glGeomMunger_src.h \
      glGraphicsStateGuardian_src.cxx \
      glGraphicsStateGuardian_src.I \
      glGraphicsStateGuardian_src.h \

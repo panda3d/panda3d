@@ -150,8 +150,8 @@ transform_vertices(GeomNode *node, const LMatrix4f &mat) {
 //               Geom was changed, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool GeomTransformer::
-transform_texcoords(Geom *geom, const TexCoordName *from_name, 
-                    const TexCoordName *to_name, const LMatrix4f &mat) {
+transform_texcoords(Geom *geom, const InternalName *from_name, 
+                    const InternalName *to_name, const LMatrix4f &mat) {
   bool transformed = false;
 
   nassertr(geom != (Geom *)NULL, false);
@@ -201,8 +201,8 @@ transform_texcoords(Geom *geom, const TexCoordName *from_name,
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool GeomTransformer::
-transform_texcoords(GeomNode *node, const TexCoordName *from_name,
-                    const TexCoordName *to_name, const LMatrix4f &mat) {
+transform_texcoords(GeomNode *node, const InternalName *from_name,
+                    const InternalName *to_name, const LMatrix4f &mat) {
   bool any_changed = false;
 
   GeomNode::CDWriter cdata(node->_cycler);

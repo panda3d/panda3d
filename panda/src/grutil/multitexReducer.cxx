@@ -116,7 +116,7 @@ scan(PandaNode *node, const RenderState *state, const TransformState *transform)
 ////////////////////////////////////////////////////////////////////
 //     Function: MultitexReducer::set_target
 //       Access: Published
-//  Description: Specifies the target TextureStage (and TexCoordName)
+//  Description: Specifies the target TextureStage (and InternalName)
 //               that will be left on each multitexture node after the
 //               flatten operation has completed.
 ////////////////////////////////////////////////////////////////////
@@ -544,7 +544,7 @@ bool MultitexReducer::
 determine_uv_range(TexCoordf &min_uv, TexCoordf &max_uv,
                    const MultitexReducer::StageInfo &model_stage,
                    const MultitexReducer::GeomList &geom_list) const {
-  const TexCoordName *model_name = model_stage._stage->get_texcoord_name();
+  const InternalName *model_name = model_stage._stage->get_texcoord_name();
   bool got_any = false;
 
   GeomList::const_iterator gi;
@@ -799,7 +799,7 @@ make_texture_layer(const NodePath &render,
 //               coordinates to the target set.
 ////////////////////////////////////////////////////////////////////
 void MultitexReducer::
-transfer_geom(GeomNode *geom_node, const TexCoordName *texcoord_name,
+transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
               const MultitexReducer::GeomList &geom_list,
               bool preserve_color) {
   GeomList::const_iterator gi;
@@ -820,8 +820,8 @@ transfer_geom(GeomNode *geom_node, const TexCoordName *texcoord_name,
       }
       
       geom->set_coords(coords, geom->get_texcoords_index(_target_stage->get_texcoord_name()));
-      if (texcoord_name != (const TexCoordName *)NULL) {
-        geom->set_texcoords(TexCoordName::get_default(),
+      if (texcoord_name != (const InternalName *)NULL) {
+        geom->set_texcoords(InternalName::get_texcoord(),
                             geom->get_texcoords_array(texcoord_name),
                             geom->get_texcoords_index(texcoord_name));
       }

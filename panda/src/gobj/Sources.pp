@@ -17,6 +17,18 @@
     geomLine.h geomLinestrip.h geomPoint.h geomPolygon.h  \
     geomQuad.h geomSphere.h geomSprite.I geomSprite.h geomTri.h  \
     geomTrifan.h geomTristrip.h  \
+    qpgeom.h qpgeom.I \
+    qpgeomMunger.h qpgeomMunger.I \
+    qpgeomPrimitive.h qpgeomPrimitive.I \
+    qpgeomTriangles.h \
+    qpgeomTristrips.h \
+    qpgeomTrifans.h \
+    qpgeomVertexArrayFormat.h qpgeomVertexArrayFormat.I \
+    qpgeomVertexData.h qpgeomVertexData.I \
+    qpgeomVertexDataType.h qpgeomVertexDataType.I \
+    qpgeomVertexFormat.h qpgeomVertexFormat.I \
+    qpgeomVertexIterator.h qpgeomVertexIterator.I \
+    internalName.I internalName.h \
     material.I material.h materialPool.I materialPool.h  \
     matrixLens.I matrixLens.h \
     orthographicLens.I orthographicLens.h perspectiveLens.I  \
@@ -27,7 +39,6 @@
     texture.I texture.h \
     textureContext.I textureContext.h \
     texturePool.I texturePool.h \
-    texCoordName.I texCoordName.h \
     textureStage.I textureStage.h
     
   #define INCLUDED_SOURCES \
@@ -36,13 +47,26 @@
     geomContext.cxx \
     geomLine.cxx geomLinestrip.cxx geomPoint.cxx geomPolygon.cxx  \
     geomQuad.cxx geomSphere.cxx geomSprite.cxx geomTri.cxx  \
-    geomTrifan.cxx geomTristrip.cxx material.cxx  \
+    geomTrifan.cxx geomTristrip.cxx \
+    qpgeom.cxx \
+    qpgeomMunger.cxx \
+    qpgeomPrimitive.cxx \
+    qpgeomTriangles.cxx \
+    qpgeomTristrips.cxx \
+    qpgeomTrifans.cxx \
+    qpgeomVertexArrayFormat.cxx \
+    qpgeomVertexData.cxx \
+    qpgeomVertexDataType.cxx \
+    qpgeomVertexFormat.cxx \
+    qpgeomVertexIterator.cxx \
+    material.cxx  \
+    internalName.cxx \
     materialPool.cxx matrixLens.cxx orthographicLens.cxx  \
     perspectiveLens.cxx \
     preparedGraphicsObjects.cxx \
     lens.cxx  \
     savedContext.cxx texture.cxx textureContext.cxx texturePool.cxx \
-    texCoordName.cxx textureStage.cxx
+    textureStage.cxx
 
   #define INSTALL_HEADERS \
     boundedObject.I boundedObject.h \
@@ -52,7 +76,9 @@
     geomLine.h \
     geomLinestrip.h geomPoint.h geomPolygon.h geomQuad.h geomSphere.h \
     geomSprite.I geomSprite.h geomTri.h geomTrifan.h geomTristrip.h \
-    geomprimitives.h material.I material.h \
+    geomprimitives.h \
+    internalName.I internalName.h \
+    material.I material.h \
     materialPool.I materialPool.h matrixLens.I matrixLens.h \
     orthographicLens.I orthographicLens.h perspectiveLens.I \
     perspectiveLens.h \
@@ -62,7 +88,6 @@
     texture.I texture.h \
     textureContext.I textureContext.h \
     texturePool.I texturePool.h \
-    texCoordName.I texCoordName.h \
     textureStage.I textureStage.h
 
   #define IGATESCAN all
