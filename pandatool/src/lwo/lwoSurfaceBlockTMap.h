@@ -16,9 +16,6 @@
 ////////////////////////////////////////////////////////////////////
 class LwoSurfaceBlockTMap : public LwoGroupChunk {
 public:
-  string _ordinal;
-
-public:
   virtual bool read_iff(IffInputFile *in, size_t stop_at);
   virtual void write(ostream &out, int indent_level = 0) const;
 

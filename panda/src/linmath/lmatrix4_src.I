@@ -1117,7 +1117,7 @@ translate_mat(FLOATTYPE tx, FLOATTYPE ty, FLOATTYPE tz) {
 //               degrees counterclockwise about the indicated vector.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
-rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) &axis,
+rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
 	   CoordinateSystem cs) {
 
   if (cs == CS_default) {

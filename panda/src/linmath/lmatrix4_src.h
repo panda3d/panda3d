@@ -106,7 +106,7 @@ PUBLISHED:
   INLINE_LINMATH static FLOATNAME(LMatrix4) translate_mat(const FLOATNAME(LVecBase3) &trans);
   INLINE_LINMATH static FLOATNAME(LMatrix4) translate_mat(FLOATTYPE tx, FLOATTYPE ty, FLOATTYPE tz);
   INLINE_LINMATH static FLOATNAME(LMatrix4) rotate_mat(FLOATTYPE angle,
-				      FLOATNAME(LVecBase3) &axis,
+				      FLOATNAME(LVecBase3) axis,
 				      CoordinateSystem cs = CS_default);
   INLINE_LINMATH static FLOATNAME(LMatrix4) scale_mat(const FLOATNAME(LVecBase3) &scale);
   INLINE_LINMATH static FLOATNAME(LMatrix4) scale_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz);

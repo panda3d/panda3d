@@ -31,6 +31,7 @@ CLwoSurface(LwoToEggConverter *converter, const LwoSurface *surface) :
   _flags = 0;
   _checked_texture = false;
   _has_uvs = false;
+  _map_uvs = NULL;
   _block = (CLwoSurfaceBlock *)NULL;
 
   // Walk through the chunk list, looking for some basic properties.
@@ -207,6 +208,8 @@ check_texture() {
   }
   _checked_texture = true;
   _egg_texture = (EggTexture *)NULL;
+  _has_uvs = false;
+  _map_uvs = NULL;
 
   if (_block == (CLwoSurfaceBlock *)NULL) {
     // No texture.  Not even a shader block.
@@ -233,7 +236,41 @@ check_texture() {
   Filename pathname = _converter->convert_texture_path(clip->_filename);
 
   _egg_texture = new EggTexture("clip" + format_string(clip_index), pathname);
-  _has_uvs = true;
+
+  // Do we need to generate UV's?
+  switch (_block->_projection_mode) {
+  case LwoSurfaceBlockProjection::M_planar:
+    _has_uvs = true;
+    _map_uvs = &CLwoSurface::map_planar;
+    break;
+
+  case LwoSurfaceBlockProjection::M_cylindrical:
+    _has_uvs = true;
+    _map_uvs = &CLwoSurface::map_cylindrical;
+    break;
+
+  case LwoSurfaceBlockProjection::M_spherical:
+    _has_uvs = true;
+    _map_uvs = &CLwoSurface::map_spherical;
+    break;
+
+  case LwoSurfaceBlockProjection::M_cubic:
+    _has_uvs = true;
+    _map_uvs = &CLwoSurface::map_cubic;
+    break;
+
+  case LwoSurfaceBlockProjection::M_front:
+    // Cannot generate "front" UV's, since this depends on a camera.
+    // Is it supposed to be updated in real time, like a projected
+    // texture?
+    break;
+
+  case LwoSurfaceBlockProjection::M_uv:
+    // "uv" projection means to use the existing UV's already defined
+    // for the vertex.  This case was already handled in the code that
+    // created the EggVertex pointers.
+    break;
+  };
 
   return true;
 }
@@ -247,6 +284,8 @@ check_texture() {
 ////////////////////////////////////////////////////////////////////
 void CLwoSurface::
 generate_uvs(vector_PT_EggVertex &egg_vertices) {
+  nassertv(_map_uvs != NULL);
+
   // To do this properly near seams and singularities (for instance,
   // the back seam and the poles of the spherical map), we will need
   // to know the polygon's centroid.
@@ -264,10 +303,10 @@ generate_uvs(vector_PT_EggVertex &egg_vertices) {
   for (vi = egg_vertices.begin(); vi != egg_vertices.end(); ++vi) {
     EggVertex *egg_vertex = (*vi);
     LPoint3d pos = egg_vertex->get_pos3();
-    egg_vertex->set_uv(map_spherical(pos, centroid));
+    LPoint2d uv = (this->*_map_uvs)(pos, centroid);
+    egg_vertex->set_uv(uv);
   }
 }
-  
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLwoSurface::map_planar
@@ -379,13 +418,14 @@ map_cylindrical(const LPoint3d &pos, const LPoint3d &centroid) const {
 //               using a cubic projection.
 ////////////////////////////////////////////////////////////////////
 LPoint2d CLwoSurface::
-map_cubic(const LPoint3d &pos, const LPoint3d &) const {
+map_cubic(const LPoint3d &pos, const LPoint3d &centroid) const {
   // A cubic projection is a planar projection, but we eliminate the
-  // dominant axis instead of arbitrarily eliminating Y.
+  // dominant axis (based on the polygon's centroid) instead of
+  // arbitrarily eliminating Y.
 
-  double x = fabs(pos[0]);
-  double y = fabs(pos[1]);
-  double z = fabs(pos[2]);
+  double x = fabs(centroid[0]);
+  double y = fabs(centroid[1]);
+  double z = fabs(centroid[2]);
 
   double u, v;
   

@@ -3,7 +3,7 @@
   #define LOCAL_LIBS \
     progbase
   #define OTHER_LIBS \
-    egg:c panda:m
+    egg:c linmath:c panda:m
 
   #define SOURCES \
     eggBase.cxx eggBase.h \

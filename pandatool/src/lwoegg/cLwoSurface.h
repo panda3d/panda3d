@@ -81,7 +81,7 @@ private:
   LPoint2d map_cubic(const LPoint3d &pos, const LPoint3d &centroid) const;
 
   // Define a pointer to one of the above member functions.
-  LPoint2d (CLwoSurface::*_map_uv)(const LPoint3d &pos, const LPoint3d &centroid) const;
+  LPoint2d (CLwoSurface::*_map_uvs)(const LPoint3d &pos, const LPoint3d &centroid) const;
 };
 
 #include "cLwoSurface.I"

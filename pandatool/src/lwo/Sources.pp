@@ -83,13 +83,3 @@
     lwoVertexMap.h
 
 #end ss_lib_target
-
-#begin test_bin_target
-  #define TARGET test_lwo
-  #define LOCAL_LIBS lwo $[LOCAL_LIBS]
-  #define OTHER_LIBS $[OTHER_LIBS] pystub:c
-
-  #define SOURCES \
-    test_lwo.cxx
-
-#end test_bin_target
