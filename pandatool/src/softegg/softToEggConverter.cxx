@@ -2024,7 +2024,7 @@ apply_texture_properties(EggTexture &tex, int uRepeat, int vRepeat) {
   tex.set_magfilter(EggTexture::FT_linear);
 
   EggTexture::WrapMode wrap_u = uRepeat > 0 ? EggTexture::WM_repeat : EggTexture::WM_clamp;
-  EggTexture::WrapMode wrap_v = vRepeat > 0 ? EggTexture::WM_repeat : EggTexture::WM_clamp;
+  EggTexture::WrapMode wrap_v = vRepeat > 1 ? EggTexture::WM_repeat : EggTexture::WM_clamp;
 
   tex.set_wrap_u(wrap_u);
   tex.set_wrap_v(wrap_v);
