@@ -1,6 +1,8 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
+
 #define USE_JPEG yes
+#define USE_JPEG2000 yes
 
 #begin lib_target
   #define TARGET pnmimagetypes
@@ -26,14 +28,24 @@
      pnmFileTypeTGA.cxx pnmFileTypeYUV.cxx
      
   #define IF_JPEG_INCLUDED_SOURCES \
-    pnmFileTypeJPG.cxx \
-    pnmFileTypeJPGReader.cxx pnmFileTypeJPGWriter.cxx
+    pnmFileTypeJPG2000.cxx \
+    pnmFileTypeJPG2000Reader.cxx pnmFileTypeJPG2000Writer.cxx
     
   #define IF_JPEG_SOURCES \
-    pnmFileTypeJPG.h 
+    pnmFileTypeJPG2000.h 
     
   #define IF_JPEG_COMBINED_SOURCES \    
     $[TARGET]_composite3.cxx        
+
+  #define IF_JPEG2000_INCLUDED_SOURCES \
+    pnmFileTypeJPG2000.cxx \
+    pnmFileTypeJPG2000Reader.cxx pnmFileTypeJPG2000Writer.cxx
+    
+  #define IF_JPEG2000_SOURCES \
+    pnmFileTypeJPG2000.h 
+    
+  #define IF_JPEG2000_COMBINED_SOURCES \    
+    $[TARGET]_composite4.cxx
 
   #define INSTALL_HEADERS \
     config_pnmimagetypes.h

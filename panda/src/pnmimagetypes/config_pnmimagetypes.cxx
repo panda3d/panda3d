@@ -49,6 +49,7 @@ NotifyCategoryDef(pnmimage_img, pnmimage_cat);
 NotifyCategoryDef(pnmimage_soft, pnmimage_cat);
 NotifyCategoryDef(pnmimage_bmp, pnmimage_cat);
 NotifyCategoryDef(pnmimage_jpg, pnmimage_cat);
+NotifyCategoryDef(pnmimage_jpg2000, pnmimage_cat);
 
 int sgi_storage_type = STORAGE_RLE;
 const string sgi_imagename = config_pnmimagetypes.GetString("sgi-imagename", "");
@@ -133,6 +134,9 @@ init_libpnmimagetypes() {
 #ifdef HAVE_JPEG
   PNMFileTypeJPG::init_type();
 #endif
+#ifdef HAVE_JPEG2000
+  PNMFileTypeJPG2000::init_type();
+#endif
 
   string sgi_storage_type_str =
     config_pnmimagetypes.GetString("sgi-storage-type", "rle");
@@ -174,6 +178,9 @@ init_libpnmimagetypes() {
 #ifdef HAVE_JPEG
   tr->register_type(new PNMFileTypeJPG);
 #endif
+#ifdef HAVE_JPEG2000
+  tr->register_type(new PNMFileTypeJPG2000);
+#endif
 
   // Also register with the Bam reader.
   PNMFileTypePNM::register_with_read_factory();
@@ -188,5 +195,8 @@ init_libpnmimagetypes() {
   PNMFileTypeBMP::register_with_read_factory();
 #ifdef HAVE_JPEG
   PNMFileTypeJPG::register_with_read_factory();
+#endif
+#ifdef HAVE_JPEG2000
+  PNMFileTypeJPG2000::register_with_read_factory();
 #endif
 }
