@@ -352,6 +352,10 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
         pass
 
     def send(self, datagram):
+        if self.notify.getDebug():
+            print "ConnectionRepository sending datagram:"
+            datagram.dumpHex(ostream)
+
         self.sendDatagram(datagram)
 
 
