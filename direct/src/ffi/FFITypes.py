@@ -74,7 +74,7 @@ class BaseTypeDescriptor:
     def recordOverloadedMethods(self):
         # By default do nothing
         pass
-    def generateReturnValueWrapper(self, file, userManagesMemory,
+    def generateReturnValueWrapper(self, classTypeDesc, file, userManagesMemory,
                                    needsDowncast, nesting):
         # By default do nothing
         pass
@@ -97,7 +97,7 @@ class PrimitiveTypeDescriptor(BaseTypeDescriptor):
     def __init__(self):
         BaseTypeDescriptor.__init__(self)
                 
-    def generateReturnValueWrapper(self, file, userManagesMemory,
+    def generateReturnValueWrapper(self, classTypeDesc, file, userManagesMemory,
                                    needsDowncast, nesting):
         """
         Write code to the file that will return a primitive to the caller.
@@ -767,7 +767,8 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         indent(file, nesting+2, "raise RuntimeError, 'No C++ destructor defined for class: ' + self.__class__.__name__\n")
 
 
-    def generateReturnValueWrapper(self, file, userManagesMemory, needsDowncast, nesting):
+    def generateReturnValueWrapper(self, classTypeDesc, file, userManagesMemory,
+                                   needsDowncast, nesting):
         """
         Generate code that creates a shadow object of this type
         then sets the this pointer and returns the object. We call the
@@ -776,10 +777,9 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         """
         indent(file, nesting, 'returnObject = ')
         # Do not put Class.Class if this file is the file that defines Class
-        if (os.path.basename(file.name)[:-3] == self.foreignTypeName):
-            file.write(self.foreignTypeName)
-        else:
-            file.write(self.foreignTypeName + '.' + self.foreignTypeName)
+        # Also check for nested classes. They do not need the module name either
+        typeName = FFIOverload.getTypeName(classTypeDesc, self)
+        file.write(typeName)
         file.write('(None)\n')
         indent(file, nesting, 'returnObject.this = returnValue\n')
         if userManagesMemory:

@@ -369,13 +369,13 @@ class FFIInterrogateDatabase:
         descriptor = FFITypes.ClassTypeDescriptor()
         self.typeIndexMap[typeIndex] = descriptor
         #descriptor.environment = self.environment
+        descriptor.foreignTypeName = FFIRename.classNameFromCppName(getTypeName(typeIndex))
         descriptor.isNested = interrogate_type_is_nested(typeIndex)
         if descriptor.isNested:
             outerTypeIndex = interrogate_type_outer_class(typeIndex)
             descriptor.outerType = self.constructDescriptor(outerTypeIndex)
         if interrogate_type_has_module_name(typeIndex):
             descriptor.moduleName = 'lib' + interrogate_type_module_name(typeIndex)
-        descriptor.foreignTypeName = FFIRename.classNameFromCppName(getTypeName(typeIndex))
         if FFIConstants.wantComments:
             if interrogate_type_has_comment(typeIndex):
                 descriptor.comment = interrogate_type_comment(typeIndex)

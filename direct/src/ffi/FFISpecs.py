@@ -179,7 +179,9 @@ class GlobalFunctionSpecification(FunctionSpecification):
                 file.write(', ')
         file.write(')\n')
         returnType = self.typeDescriptor.returnType.recursiveTypeDescriptor()
-        returnType.generateReturnValueWrapper(file, self.typeDescriptor.userManagesMemory, needsDowncast, 1)
+        returnType.generateReturnValueWrapper(None, file,
+                                              self.typeDescriptor.userManagesMemory,
+                                              needsDowncast, 1)
         
     def outputFooter(self, file):
         indent(file, 0, '\n')
@@ -220,7 +222,9 @@ class GlobalFunctionSpecification(FunctionSpecification):
                 file.write(', ')
         file.write(')\n')
         returnType = self.typeDescriptor.returnType.recursiveTypeDescriptor()
-        returnType.generateReturnValueWrapper(file, self.typeDescriptor.userManagesMemory, 1, nesting+2)
+        returnType.generateReturnValueWrapper(methodClass, file,
+                                              self.typeDescriptor.userManagesMemory,
+                                              1, nesting+2)
         
     def outputMethodFooter(self, methodClass, file, nesting):
         indent(file, nesting+1, '\n')
@@ -378,7 +382,8 @@ class MethodSpecification(FunctionSpecification):
             indent(file, nesting+2, 'return self\n')
         else:
             returnType = self.typeDescriptor.returnType.recursiveTypeDescriptor()
-            returnType.generateReturnValueWrapper(file, self.typeDescriptor.userManagesMemory,
+            returnType.generateReturnValueWrapper(methodClass, file,
+                                                  self.typeDescriptor.userManagesMemory,
                                                   needsDowncast, nesting+2)
  
     def outputMethodFooter(self, methodClass, file, nesting):
@@ -416,7 +421,8 @@ class MethodSpecification(FunctionSpecification):
                     file.write(', ')
         file.write(')\n')
         returnType = self.typeDescriptor.returnType.recursiveTypeDescriptor()
-        returnType.generateReturnValueWrapper(file, self.typeDescriptor.userManagesMemory,
+        returnType.generateReturnValueWrapper(methodClass, file,
+                                              self.typeDescriptor.userManagesMemory,
                                               1, nesting+2)
 
     def outputStaticFooter(self, methodClass, file, nesting):
@@ -473,7 +479,8 @@ class MethodSpecification(FunctionSpecification):
         file.write(')\n')
         returnType = self.typeDescriptor.returnType.recursiveTypeDescriptor()
         # Generate the return value code with no downcast instructions
-        returnType.generateReturnValueWrapper(file, self.typeDescriptor.userManagesMemory,
+        returnType.generateReturnValueWrapper(methodClass, file,
+                                              self.typeDescriptor.userManagesMemory,
                                               needsDowncast, nesting+2)
 
     def outputInheritedMethodFooter(self, methodClass, parentList, file, nesting, needsDowncast):

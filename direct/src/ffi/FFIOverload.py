@@ -89,17 +89,35 @@ def getTypeName(classTypeDesc, typeDesc):
     # bit trickier because we output different things depending on the
     # scoping of the type. 
     else:
-        # Assuming the class and the module are the same name, return
-        # typeName.typeName (ie Node.Node)
-        # Unless we are in the same module. For instance, in Node.py,
-        # Node.Node is not defined, so just return Node.
-        nestedTypes = string.split(typeName, '.')
-        if (classTypeDesc and (classTypeDesc.foreignTypeName in nestedTypes)):
-            # Return the last type (SubClass) in the nested types
-            return nestedTypes[-1]
+
+        #   classTypeDesc  typeDesc fullNestedName Resulting TypeName
+        # 1   Outer         Other     Other          Other.Other
+        # 2   Outer         Outer     Outer          Outer
+        # 3   Outer         Inner     Outer.Inner    Outer.Inner
+        # 4   Inner         Other     Other          Other.Other
+        # 5   Inner         Outer     Outer          Outer
+        # 6   Inner         Inner     Outer.Inner    Outer.Inner
+        # 7   None          Other     Other          Other.Other
+
+        # CASES 1,4, and 7 are the only ones that are different from the full
+        # nested name, returning Other.Other
+
+        returnNestedTypeNames = string.split(typeName, '.')
+        returnModuleName = returnNestedTypeNames[0] 
+
+        if classTypeDesc:
+            classTypeName = classTypeDesc.getFullNestedName()
+            classNestedTypeNames = string.split(classTypeName, '.')
+            # If there is no nesting, return typeName.typeName
+            if ((not (classTypeDesc.foreignTypeName in returnNestedTypeNames)) and
+                (not (typeDesc.foreignTypeName in classNestedTypeNames))):
+                return (returnModuleName + '.' + typeName)
+            # All other cases, we just need typeName
+            else:
+                return typeName
         else:
-            # Return the full Module.Class.SubClass
-            return (nestedTypes[0] + '.' + typeName)
+            # If you had no class, you need to specify module plus typename
+            return (returnModuleName + '.' + typeName)
 
 
 def inheritsFrom(type1, type2):
