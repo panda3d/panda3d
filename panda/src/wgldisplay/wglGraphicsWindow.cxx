@@ -13,10 +13,7 @@
 #include <errno.h>
 #include <time.h>
 #include <mmsystem.h>
-
-#ifdef DO_PSTATS
 #include <pStatTimer.h>
-#endif
 
 ////////////////////////////////////////////////////////////////////
 // Static variables
@@ -868,69 +865,69 @@ void wglGraphicsWindow::setup_colormap(void) {
 //  Description: Swaps the front and back buffers.
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::end_frame(void) {
-
-	if(gl_show_fps_meter) {
-		 DWORD now = timeGetTime();  // this is win32 fn
-
-		 float time_delta = (now - _start_time) * 0.001f;
-
-		 if(time_delta > gl_fps_meter_update_interval) {
-			 // didnt use global clock object, it wasnt working properly when I tried,
-			 // its probably slower due to cache faults, and I can easily track all the
-			 // info I need in dxgsg
-			 DWORD num_frames = _cur_frame_count - _start_frame_count;
-
-			 _current_fps = num_frames / time_delta;
-			 _start_time = now;
-			 _start_frame_count = _cur_frame_count;
-		 }
-
-		 char fps_msg[15];
-		 sprintf(fps_msg, "%.02f fps", _current_fps);
-
-		 // Note: we cant use simple GDI TextOut calls to draw FPS meter chars (like DX fps meter)
-		 // because WGL doesnt support GDI in double-buffered mode.  Instead we have to 
-		 // use glBitMap display lists created by wglUseFontBitmaps
-
-         glColor3f(0.0,1.0,1.0);
-
-		 GLboolean tex_was_on = glIsEnabled(GL_TEXTURE_2D);
-
-		 if(tex_was_on)
-			 glDisable(GL_TEXTURE_2D);
-
-		 glMatrixMode(GL_MODELVIEW);
-		 glPushMatrix();
-		 glLoadMatrixf(LMatrix4f::ident_mat().get_data());
-		 glMatrixMode(GL_PROJECTION);
-		 glPushMatrix();
-		 glLoadMatrixf(LMatrix4f::ident_mat().get_data());
-
-		 glOrtho(_props._xorg,_props._xorg+_props._xsize,
-				 _props._yorg,_props._yorg+_props._ysize,-1.0,1.0);
-					
-		 glRasterPos2f(_props._xsize-70,_props._ysize-20);  // these seem to be good for default font
-
-		 // set up for a string-drawing display list call 
-		 glListBase(FONT_BITMAP_OGLDISPLAYLISTNUM);
- 
-		 // draw a string using font display lists.  chars index their corresponding displist name
-		 glCallLists(strlen(fps_msg), GL_UNSIGNED_BYTE, fps_msg);
-
- 		 glPopMatrix();
-		 glMatrixMode(GL_MODELVIEW);
-		 glPopMatrix();
-
-		 if(tex_was_on)
-			 glEnable(GL_TEXTURE_2D);
-
-		 _cur_frame_count++;  // only used by fps meter right now
-	}
-
+  if (gl_show_fps_meter) {
+    PStatTimer timer(_show_fps_pcollector);
+    DWORD now = timeGetTime();  // this is win32 fn
+    
+    float time_delta = (now - _start_time) * 0.001f;
+    
+    if(time_delta > gl_fps_meter_update_interval) {
+      // didnt use global clock object, it wasnt working properly when
+      // I tried, its probably slower due to cache faults, and I can
+      // easily track all the info I need in dxgsg
+      DWORD num_frames = _cur_frame_count - _start_frame_count;
+      
+      _current_fps = num_frames / time_delta;
+      _start_time = now;
+      _start_frame_count = _cur_frame_count;
+    }
+    
+    char fps_msg[15];
+    sprintf(fps_msg, "%.02f fps", _current_fps);
+    
+    // Note: we cant use simple GDI TextOut calls to draw FPS meter
+    // chars (like DX fps meter) because WGL doesnt support GDI in
+    // double-buffered mode.  Instead we have to use glBitMap display
+    // lists created by wglUseFontBitmaps
+    
+    glColor3f(0.0,1.0,1.0);
+    
+    GLboolean tex_was_on = glIsEnabled(GL_TEXTURE_2D);
+    
+    if(tex_was_on)
+      glDisable(GL_TEXTURE_2D);
+    
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadMatrixf(LMatrix4f::ident_mat().get_data());
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadMatrixf(LMatrix4f::ident_mat().get_data());
+    
+    glOrtho(_props._xorg,_props._xorg+_props._xsize,
+	    _props._yorg,_props._yorg+_props._ysize,-1.0,1.0);
+    
+    glRasterPos2f(_props._xsize-70,_props._ysize-20);  // these seem to be good for default font
+    
+    // set up for a string-drawing display list call 
+    glListBase(FONT_BITMAP_OGLDISPLAYLISTNUM);
+    
+    // draw a string using font display lists.  chars index their
+    // corresponding displist name
+    glCallLists(strlen(fps_msg), GL_UNSIGNED_BYTE, fps_msg);
+    
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    
+    if(tex_was_on)
+      glEnable(GL_TEXTURE_2D);
+    
+    _cur_frame_count++;  // only used by fps meter right now
+  }
+  
   {
-#ifdef DO_PSTATS
     PStatTimer timer(_swap_pcollector);
-#endif
     SwapBuffers(_hdc);
   }
   GraphicsWindow::end_frame();
@@ -1079,10 +1076,8 @@ supports_update() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::update(void) {
-#ifdef DO_PSTATS
   _show_code_pcollector.stop();
   PStatClient::main_tick();
-#endif
 
   if (_change_mask)
     handle_changes();
@@ -1095,9 +1090,7 @@ void wglGraphicsWindow::update(void) {
     idle_wait();
   else
     process_events();
-#ifdef DO_PSTATS
   _show_code_pcollector.start();
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1133,9 +1126,8 @@ void wglGraphicsWindow::enable_mouse_passive_motion(bool val) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::make_current(void) {
-#ifdef DO_PSTATS
   PStatTimer timer(_make_current_pcollector);
-#endif
+
   HGLRC current_context = wglGetCurrentContext();
   HDC current_dc = wglGetCurrentDC();
   if (current_context != _context || current_dc != _hdc)

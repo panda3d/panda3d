@@ -16,12 +16,10 @@
 #include <geomNode.h>
 #include <geom.h>
 #include <nodePath.h>
-
-#ifdef DO_PSTATS
 #include <pStatTimer.h>
 
-PStatCollector CollisionTraverser::_collisions_pcollector =
-  PStatCollector("Collisions", RGBColorf(1,0.5,0), 40);
+#ifndef CPPPARSER
+PStatCollector CollisionTraverser::_collisions_pcollector("App:Collisions", RGBColorf(1,0.5,0), 40);
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -231,10 +229,7 @@ traverse(Node *root) {
 void CollisionTraverser::
 traverse(const NodePath &root) {
   nassertv(root.get_graph_type() == _graph_type);
-
-#ifdef DO_PSTATS
   PStatTimer timer(_collisions_pcollector);
-#endif
 
   CollisionLevelState level_state(root);
   prepare_colliders(level_state);

@@ -66,10 +66,7 @@
 #include <stencilTransition.h>
 #include <throw_event.h>
 #include <mmsystem.h>
-
-#ifdef DO_PSTATS
 #include <pStatTimer.h>
-#endif
 
 #define DISABLE_POLYGON_OFFSET_DECALING
 // currently doesnt work well enough in toontown models for us to use
@@ -483,6 +480,7 @@ init_dx(  LPDIRECTDRAW7     context,
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 clear(const RenderBuffer &buffer) {
+  //	PStatTimer timer(_win->_clear_pcollector);
 
 	activate();
 
@@ -726,6 +724,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
 	} 
 
 	if(dx_show_fps_meter) {
+		 PStatTimer timer(_win->_show_fps_pcollector);
 
 		 DWORD now = timeGetTime();  // this is win32 fn
 
@@ -5485,9 +5484,7 @@ HRESULT DXGraphicsStateGuardian::RestoreAllVideoSurfaces(void) {
 //       Description:   Repaint primary buffer from back buffer  (windowed mode only)
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::show_frame(void) {
-#ifdef DO_PSTATS
 	PStatTimer timer(_win->_swap_pcollector);  // this times just the flip, so it must go here in dxgsg, instead of wdxdisplay, which would time the whole frame
-#endif
 
 	if(_pri==NULL)
 		return;

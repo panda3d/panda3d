@@ -75,6 +75,7 @@
 #include <polygonOffsetTransition.h>
 #include <polygonOffsetAttribute.h>
 #include <clockObject.h>
+#include <pStatTimer.h>
 
 #include <pandabase.h>
 
@@ -343,6 +344,7 @@ reset() {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 clear(const RenderBuffer &buffer) {
+  // PStatTimer timer(_win->_clear_pcollector);
   activate();
 
   nassertv(buffer._gsg == this);
@@ -352,11 +354,11 @@ clear(const RenderBuffer &buffer) {
 
   if (buffer_type & RenderBuffer::T_color) {
     call_glClearColor(_color_clear_value[0],
-              _color_clear_value[1],
-              _color_clear_value[2],
-              _color_clear_value[3]);
+		      _color_clear_value[1],
+		      _color_clear_value[2],
+		      _color_clear_value[3]);
     state.set_attribute(ColorMaskTransition::get_class_type(),
-            new ColorMaskAttribute);
+			new ColorMaskAttribute);
     mask |= GL_COLOR_BUFFER_BIT;
 
     set_draw_buffer(buffer);
@@ -370,7 +372,7 @@ clear(const RenderBuffer &buffer) {
     // writing to the depth buffer.
     if (!_depth_mask) {
       state.set_attribute(DepthWriteTransition::get_class_type(),
-              new DepthWriteAttribute);
+			  new DepthWriteAttribute);
     }
   }
 
@@ -381,9 +383,9 @@ clear(const RenderBuffer &buffer) {
 
   if (buffer_type & RenderBuffer::T_accum) {
     call_glClearAccum(_accum_clear_value[0],
-              _accum_clear_value[1],
-              _accum_clear_value[2],
-              _accum_clear_value[3]);
+		      _accum_clear_value[1],
+		      _accum_clear_value[2],
+		      _accum_clear_value[3]);
     mask |= GL_ACCUM_BUFFER_BIT;
   }
 

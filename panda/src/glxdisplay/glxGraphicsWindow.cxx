@@ -616,6 +616,7 @@ void glxGraphicsWindow::setup_properties(void)
 void glxGraphicsWindow::end_frame( void )
 {
   if (gl_show_fps_meter) {
+    PStatTimer timer(_show_fps_pcollector);
     ClockObject* co = ClockObject::get_global_clock();
     double now = co->get_real_time();
     double time_delta = now - _start_time;

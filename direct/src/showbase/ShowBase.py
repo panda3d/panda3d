@@ -302,7 +302,7 @@ class ShowBase:
         # traverse the data graph.  This reads all the control
         # inputs (from the mouse and keyboard, for instance) and also
         # directly acts upon them (for instance, to move the avatar).
-        directTraverseDataGraph(self.dataRoot.node())
+        traverseDataGraph(self.dataRoot.node())
 
         return Task.cont
 

@@ -204,15 +204,6 @@ add_render_layer(GraphicsWindow *win, Node *render_top, Camera *camera) {
 }
 
 
-// This function is just a simple wrapper around traverse_data_graph()
-// in Panda.  It's just here for the very short term, until everyone
-// can build a fresh Panda with traverse_data_graph() properly
-// exposed.
-void
-direct_traverse_data_graph(Node *node) {
-  traverse_data_graph(node);
-}
-
 void
 toggle_wireframe(NodeAttributes &initial_state) {
   static bool wireframe_mode = false;

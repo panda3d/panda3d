@@ -24,15 +24,13 @@ TypeHandle GraphicsWindow::WindowPipe::_type_handle;
 
 GraphicsWindow::WindowFactory *GraphicsWindow::_factory = NULL;
 
-#ifdef DO_PSTATS
-PStatCollector GraphicsWindow::_app_pcollector =
-  PStatCollector("App", RGBColorf(0,1,1));
-PStatCollector GraphicsWindow::_show_code_pcollector =
-  PStatCollector("App:Show Code", RGBColorf(0.8,0.2,1));
-PStatCollector GraphicsWindow::_swap_pcollector =
-  PStatCollector("Draw:Swap Buffers", RGBColorf(0.5,1,0.8));
-PStatCollector GraphicsWindow::_make_current_pcollector =
-  PStatCollector("Draw:Make Current", RGBColorf(1,0.6,0.3));
+#ifndef CPPPARSER
+PStatCollector GraphicsWindow::_app_pcollector("App", RGBColorf(0,1,1));
+PStatCollector GraphicsWindow::_show_code_pcollector("App:Show Code", RGBColorf(0.8,0.2,1));
+PStatCollector GraphicsWindow::_swap_pcollector("Draw:Swap Buffers", RGBColorf(0.5,1,0.8));
+PStatCollector GraphicsWindow::_clear_pcollector("Draw:Clear", RGBColorf(0.5,0.7,0.7));
+PStatCollector GraphicsWindow::_show_fps_pcollector("Draw:Show fps", RGBColorf(0.5,0.8,1));
+PStatCollector GraphicsWindow::_make_current_pcollector("Draw:Make Current", RGBColorf(1,0.6,0.3));
 #endif
 
 ////////////////////////////////////////////////////////////////////

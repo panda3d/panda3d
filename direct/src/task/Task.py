@@ -154,7 +154,7 @@ def make_loop(taskList):
             return cont
         else:
             task = self.taskList[self.index]
-            # If this is a new task, set it's start time and frame
+            # If this is a new task, set its start time and frame
             if (self.index > self.prevIndex):
                 task.setStartTimeFrame(self.time, self.frame)
             self.prevIndex = self.index

@@ -5,7 +5,12 @@
 
 #include "dataGraphTraversal.h"
 #include "dataGraphTraverser.h"
+#include <pStatTimer.h>
+#include <pStatCollector.h>
 
+#ifndef CPPPARSER
+PStatCollector _dgraph_pcollector("App:Data Graph", RGBColorf(0.5,0.8,0.4), 30);
+#endif
   
 ////////////////////////////////////////////////////////////////////
 //     Function: traverse_data_graph
@@ -15,6 +20,9 @@
 //               downwards.
 ////////////////////////////////////////////////////////////////////
 void traverse_data_graph(Node *root) {
-  DataGraphTraverser dgt;
-  dgt.traverse(root);
+  PStatTimer timer(_dgraph_pcollector);
+  {
+    DataGraphTraverser dgt;
+    dgt.traverse(root);
+  }
 }

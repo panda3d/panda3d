@@ -4,7 +4,7 @@
 #begin lib_target
   #define TARGET dgraph
   #define LOCAL_LIBS \
-    sgraph graph putil sgattrib mathutil
+    pstatclient sgraph graph putil sgattrib mathutil
 
   #define SOURCES \
     buttonEventDataAttribute.I buttonEventDataAttribute.cxx  \
