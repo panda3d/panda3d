@@ -168,12 +168,12 @@ seekoff(streamoff off, ios::seek_dir dir, int mode) {
 //  Description: A variant on seekoff() to implement seeking within a
 //               stream.
 //
-//               The MSDN Library claims that it is necessary to
-//               redefine this only seekoff(), and not seekpos() as
-//               well, as the default implementation of seekpos() is
-//               supposed to map to seekoff() exactly as I am doing
-//               here; but in fact it must do something else, because
-//               seeking didn't work on Windows until I redefined this
+//               The MSDN Library claims that it is only necessary to
+//               redefine seekoff(), and not seekpos() as well, as the
+//               default implementation of seekpos() is supposed to
+//               map to seekoff() exactly as I am doing here; but in
+//               fact it must do something else, because seeking
+//               didn't work on Windows until I redefined this
 //               function as well.
 ////////////////////////////////////////////////////////////////////
 streampos SubStreamBuf::
