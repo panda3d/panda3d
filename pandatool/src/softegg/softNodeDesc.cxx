@@ -58,6 +58,7 @@ SoftNodeDesc(SoftNodeDesc *parent, const string &name) :
   valid;
   uv_swap;
   //  SAA_Boolean visible;
+  numTexTri = NULL;
   textures = NULL;
   materials = NULL;
   triangles = NULL;
@@ -634,7 +635,7 @@ load_poly_model(SAA_Scene *scene, SAA_ModelType type) {
     /***********************************************************************************/
     
     // allocate array of textures per triangle
-    int *numTexTri = new int[numTri];
+    numTexTri = new int[numTri];
     const void *relinfo;
     
     // find out how many local textures per triangle
@@ -667,9 +668,14 @@ load_poly_model(SAA_Scene *scene, SAA_ModelType type) {
         // and read all referenced local textures into array
         SAA_materialRelationGetT2DLocElements( scene, &materials[i],
                                                TEX_PER_MAT , &textures[i] );
+
         // initialize the array value
         texNameArray[i] = NULL;
         
+        // see if this triangle has texture info
+        if (numTexTri[i] == 0)
+          continue;
+
         // check to see if texture is present
         result = SAA_elementIsValid( scene, &textures[i], &valid );
         

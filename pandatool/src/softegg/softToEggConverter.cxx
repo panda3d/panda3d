@@ -1034,6 +1034,8 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
       for (idx=0; idx<node_desc->numTri; ++idx) {
         EggPolygon *egg_poly = new EggPolygon;
         egg_group->add_child(egg_poly);
+
+        softegg_cat.spam() << "processing polygon " << idx << endl;
         
         // Is this a double sided polygon? meaning check for back face flag
         char *modelNoteStr = _tree.GetModelNoteInfo( &scene, node_desc->get_model() );
@@ -1064,7 +1066,7 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
         
         // allocate arrays for u & v coords
         if (node_desc->textures) {
-          if (node_desc->numTexLoc) {
+          if (node_desc->numTexLoc && node_desc->numTexTri[idx]) {
             // allocate arrays for u & v coords
             // I think there are one texture per triangle hence we need only 3 corrdinates
             uCoords = new float[3];
@@ -1154,7 +1156,7 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
           }
           
           // if texture present set the texture coordinates
-          if (node_desc->textures) {
+          if (node_desc->textures && node_desc->numTexTri[idx]) {
             float u, v;
             
             u = uCoords[i];
@@ -1183,7 +1185,7 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
         
         // Now apply the shader.
         if (node_desc->textures != NULL) {
-          if (node_desc->numTexLoc) {
+          if (node_desc->numTexLoc && node_desc->numTexTri[idx]) {
             if (!strstr(node_desc->texNameArray[idx], "noIcon"))
               set_shader_attributes(node_desc, *egg_poly, node_desc->texNameArray[idx]);
             else
@@ -1888,14 +1890,11 @@ cleanup_soft_skin()
 {
   int num_nodes = _tree.get_num_nodes();
   SoftNodeDesc *node_desc;
-  SAA_Boolean isSkeleton;
 
   softegg_cat.spam() << endl << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
 
   for (int i = 0; i < num_nodes; i++) {
     node_desc = _tree.get_node(i);
-    SAA_modelIsSkeleton( &scene, node_desc->get_model(), &isSkeleton );
-
     if (node_desc->is_partial(search_prefix))
       continue;
 
@@ -1915,11 +1914,6 @@ cleanup_soft_skin()
     // /ful/rnd/pub/vrml/chip/chips_adventure/char/zone1/rooms/warehouse_final
     // need to do the "if (skel)" bit.
 
-    /*    
-    if (type != SAA_MSMSH || type != SAA_MNSRF)
-      continue;
-    */
-
     //find the vpool for this model
     string vpool_name = node_desc->get_name() + ".verts";
     EggNode *t = _tree.get_egg_root()->find_child(vpool_name);
@@ -1931,27 +1925,44 @@ cleanup_soft_skin()
       continue;
     }
     
-    int i;
-    double membership = 1.0f;
     int numVerts = (int)vpool->size();
     softegg_cat.spam() << "found vpool " << vpool_name << " w/ " << numVerts << " verts\n";
+
+    // find the closest _parentJoint
+    SoftNodeDesc *parentJ = node_desc;
+    while( parentJ && !parentJ->_parentJoint) {
+      if ( parentJ->_parent) {
+        SAA_Boolean isSkeleton;
+        //softegg_cat.spam() << " checking parent " << parentJ->_parent->get_name() << endl;
+        if (parentJ->_parent->has_model())
+          SAA_modelIsSkeleton( &scene, parentJ->_parent->get_model(), &isSkeleton );
+        
+        if (isSkeleton) {
+          joint = parentJ->_parent->get_egg_group();
+          softegg_cat.spam() << "parent to " << parentJ->_parent->get_name() << endl;
+          break;
+        }
+        
+        parentJ = parentJ->_parent;
+      }
+      else
+        break;
+    }
+    if (!joint && (!parentJ || !parentJ->_parentJoint)) {
+      softegg_cat.spam() << node_desc->get_name() << " has no _parentJoint?!" << endl;
+      continue;
+    }
+    
+    if (!joint) {
+      softegg_cat.spam() << "parent joint to " << parentJ->_parentJoint->get_name() << endl;
+      joint = parentJ->_parentJoint->get_egg_group();
+    }
+    
+    int i;
+    double membership = 1.0f;
     for ( i = 1; i <= numVerts; i++ ) {
       EggVertex *vert = vpool->get_vertex(i);
       
-      // find the closest _parentJoint
-      SoftNodeDesc *parentJ = node_desc;
-      while( parentJ && !parentJ->_parentJoint) {
-        if ( parentJ->_parent)
-          parentJ = parentJ->_parent;
-        else
-          break;
-      }
-      if (!parentJ || !parentJ->_parentJoint) {
-        softegg_cat.spam() << node_desc->get_name() << " has no _parentJoint?!" << endl;
-        continue;
-      }
-
-      joint = parentJ->_parentJoint->get_egg_group();
       // if this vertex has not been soft assigned, then hard assign it to the parentJoint
       if ( vert->gref_size() == 0 ) {
         

@@ -107,6 +107,7 @@ public:
   //  int numShapes;
   int numTexLoc;
   int numTexGlb;
+  int *numTexTri;
 
   // if the node is a MNSRF
   int numNurbTexLoc;
