@@ -6,6 +6,7 @@
   #define TARGET miles_audio
   #define BUILDING_DLL BUILDING_MILES_AUDIO
   #define LOCAL_LIBS audio
+  #define WIN_SYS_LIBS $[WIN_SYS_LIBS] advapi32.lib
 
   #define SOURCES \
       config_milesAudio.cxx config_milesAudio.h \
