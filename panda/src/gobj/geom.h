@@ -133,10 +133,9 @@ public:
   virtual void draw_immediate(GraphicsStateGuardianBase *gsg, GeomContext *gc) = 0;
   virtual void print_draw_immediate() const = 0;
 
-public:
-  
   void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
                          bool &found_any) const;
+PUBLISHED:
   void transform_vertices(const LMatrix4f &mat);
 
   void set_coords(const PTA_Vertexf &coords,
@@ -159,6 +158,9 @@ public:
                      const PTA_ushort &tindex =
                      PTA_ushort());
 
+public:
+  // These can't be published because of the pass-by-reference
+  // primitive types.
   void get_coords(PTA_Vertexf &coords,
                   GeomBindType &bind,
                   PTA_ushort &vindex) const;
@@ -176,9 +178,9 @@ public:
                      GeomBindType &bind,
                      PTA_ushort &tindex) const;
 
+PUBLISHED:
   virtual bool is_dynamic() const;
 
-PUBLISHED:
   INLINE GeomBindType get_binding(int attr) const;
   INLINE const PTA_Vertexf &get_coords_array() const;
   INLINE const PTA_Normalf &get_normals_array() const;
@@ -191,7 +193,6 @@ PUBLISHED:
 
   void prepare(PreparedGraphicsObjects *prepared_objects);
 
-public:
   INLINE void set_num_prims(int num);
   INLINE int get_num_prims() const;
 
@@ -202,18 +203,17 @@ public:
   virtual int get_num_more_vertices_than_components() const=0;
   virtual bool uses_components() const=0;
 
-  int get_num_vertices() const;
+  INLINE int get_num_vertices() const;
 
   // Returns the length of the indicated primitive.  Often this is the
   // same for all primitives in the Geom.  However, geoms which use
   // the lengths array will redefine this appropriately.
   virtual int get_length(int prim) const=0;
 
-
   virtual Geom *explode() const;
   virtual PTA_ushort get_tris() const;
 
-
+public:
   INLINE VertexIterator make_vertex_iterator() const;
   INLINE const Vertexf &get_next_vertex(VertexIterator &viterator) const;
 

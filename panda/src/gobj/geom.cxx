@@ -235,7 +235,7 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::transform_vertices
-//       Access: Public
+//       Access: Published
 //  Description: Applies the indicated transform to all of the
 //               vertices in the Geom.  If the Geom happens to share a
 //               vertex table with another Geom, this operation will
@@ -263,7 +263,7 @@ transform_vertices(const LMatrix4f &mat) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::set_coords
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Geom::
@@ -279,7 +279,7 @@ set_coords(const PTA_Vertexf &coords,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::set_coords
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Geom::
@@ -291,7 +291,7 @@ set_coords(const PTA_Vertexf &coords, GeomBindType bind,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::set_normals
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Geom::
@@ -306,7 +306,7 @@ set_normals(const PTA_Normalf &norms, GeomBindType bind,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::set_colors
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Geom::
@@ -321,7 +321,7 @@ set_colors(const PTA_Colorf &colors, GeomBindType bind,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::set_texcoords
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Geom::
@@ -403,7 +403,7 @@ get_texcoords(PTA_TexCoordf &texcoords, GeomBindType &bind,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::is_dynamic
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Returns true if the Geom has any dynamic properties
 //               that are expected to change from one frame to the
 //               next, or false if the Geom is largely static.  For
@@ -434,7 +434,7 @@ prepare(PreparedGraphicsObjects *prepared_objects) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::explode
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: If the Geom is a composite type such as a tristrip,
 //               this allocates and returns a new Geom that represents
 //               the same geometry as a simple type, for instance a
@@ -451,7 +451,7 @@ explode() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::get_tris
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: This is similar in principle to explode(), except it
 //               returns only a list of triangle vertex indices, with
 //               no information about color or whatever.  The array

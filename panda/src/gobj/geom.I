@@ -129,7 +129,7 @@ get_texcoords_index() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::set_num_prims
-//       Access: Public
+//       Access: Published
 //  Description: Sets the number of primitives in the Geom.  The
 //               meaning of this depends on the precise type of Geom;
 //               generally, each prim is one triangle in a GeomTri, or
@@ -147,7 +147,7 @@ set_num_prims(int num) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::get_num_prims
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of primitives in the Geom.
 ////////////////////////////////////////////////////////////////////
 INLINE int Geom::
@@ -157,7 +157,7 @@ get_num_prims(void) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::get_num_vertices
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of vertices required by all all
 //               the prims in the Geom.
 ////////////////////////////////////////////////////////////////////
@@ -181,7 +181,7 @@ INLINE int PTA_int_arraysum(const PTA_int &lengths) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::set_lengths
-//       Access: Public
+//       Access: Published
 //  Description: Sets the array that indicates the length (number of
 //               vertices) of each primitive.  This array should have
 //               get_num_prims() entries.  This only has meaning for
@@ -197,7 +197,7 @@ set_lengths(const PTA_int &lengths) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::get_lengths
-//       Access: Public
+//       Access: Published
 //  Description: Returns the array the indicates the length (number of
 //               vertices) of each primitive.  This array will
 //               generally only be defined for composite type Geoms,
