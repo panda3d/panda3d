@@ -56,15 +56,17 @@ public:
   PStatThread get_thread(int index) const;
   string get_thread_name(int index) const;
 
-  bool connect(string hostname = string(), int port = -1);
-  void disconnect();
-
-  bool is_connected() const;
   const ClockObject &get_clock() const;
   PStatThread get_main_thread() const;
 
-  static PStatClient *get_global_pstats();
   static void main_tick();
+
+PUBLISHED:
+  static PStatClient *get_global_pstats();
+
+  bool connect(string hostname = string(), int port = -1);
+  void disconnect();
+  bool is_connected() const;
 
 private:
   PStatCollector make_collector(int parent_index, const string &fullname);

@@ -172,101 +172,6 @@ get_thread_name(int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PStatClient::connect
-//       Access: Public
-//  Description: Attempts to establish a connection to the indicated
-//               PStatServer.  Returns true if successful, false on
-//               failure.
-////////////////////////////////////////////////////////////////////
-bool PStatClient::
-connect(string hostname, int port) {
-  disconnect();
-
-  if (hostname.empty()) {
-    hostname = pstats_host;
-  }
-  if (port < 0) {
-    port = pstats_port;
-  }
-
-  if (!_server.set_host(hostname, port)) {
-    pstats_cat.error()
-      << "Unknown host: " << hostname << "\n";
-    return false;
-  }
-
-  _tcp_connection = open_TCP_client_connection(_server, 5000);
-
-  if (_tcp_connection.is_null()) {
-    pstats_cat.error()
-      << "Couldn't connect to PStatServer at " << hostname << ":" 
-      << port << "\n";
-    return false;
-  }
-
-  _reader.add_connection(_tcp_connection);
-  _is_connected = true;
-
-  _udp_connection = open_UDP_connection();
-
-  send_hello();
-
-  return _is_connected;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PStatClient::disconnect
-//       Access: Public
-//  Description: Closes the connection previously established.
-////////////////////////////////////////////////////////////////////
-void PStatClient::
-disconnect() {
-  if (_is_connected) {
-    _reader.remove_connection(_tcp_connection);
-    close_connection(_tcp_connection);
-    close_connection(_udp_connection);
-  }
-
-  _tcp_connection.clear();
-  _udp_connection.clear();
-
-  _is_connected = false;
-  _got_udp_port = false;
-
-  _collectors_reported = 0;
-  _threads_reported = 0;
-
-  Threads::iterator ti;
-  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
-    (*ti)._frame_number = 0;
-    (*ti)._is_active = false;
-    (*ti)._last_packet = 0.0;
-    (*ti)._frame_data.clear();
-  }
-  
-  Collectors::iterator ci;
-  for (ci = _collectors.begin(); ci != _collectors.end(); ++ci) {
-    vector_int::iterator ii;
-    for (ii = (*ci)._nested_count.begin(); 
-	   ii != (*ci)._nested_count.end(); 
-	 ++ii) {
-      (*ii) = 0;
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PStatClient::is_connected
-//       Access: Public
-//  Description: Returns true if the client believes it is connected
-//               to a working PStatServer, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool PStatClient::
-is_connected() const {
-  return _is_connected;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PStatClient::get_clock
 //       Access: Public
 //  Description: Returns a reference to the PStatClient's clock
@@ -434,6 +339,17 @@ make_thread(const string &name) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::main_tick
+//       Access: Public, Static
+//  Description: A convenience function to call new_frame() on the
+//               global PStatClient's main thread.
+////////////////////////////////////////////////////////////////////
+void PStatClient::
+main_tick() {
+  get_global_pstats()->get_main_thread().new_frame();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PStatClient::get_global_pstats
 //       Access: Public, Static
 //  Description: Returns a pointer to the global PStatClient object.
@@ -450,14 +366,98 @@ get_global_pstats() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PStatClient::main_tick
-//       Access: Public, Static
-//  Description: A convenience function to call new_frame() on the
-//               global PStatClient's main thread.
+//     Function: PStatClient::connect
+//       Access: Public
+//  Description: Attempts to establish a connection to the indicated
+//               PStatServer.  Returns true if successful, false on
+//               failure.
+////////////////////////////////////////////////////////////////////
+bool PStatClient::
+connect(string hostname, int port) {
+  disconnect();
+
+  if (hostname.empty()) {
+    hostname = pstats_host;
+  }
+  if (port < 0) {
+    port = pstats_port;
+  }
+
+  if (!_server.set_host(hostname, port)) {
+    pstats_cat.error()
+      << "Unknown host: " << hostname << "\n";
+    return false;
+  }
+
+  _tcp_connection = open_TCP_client_connection(_server, 5000);
+
+  if (_tcp_connection.is_null()) {
+    pstats_cat.error()
+      << "Couldn't connect to PStatServer at " << hostname << ":" 
+      << port << "\n";
+    return false;
+  }
+
+  _reader.add_connection(_tcp_connection);
+  _is_connected = true;
+
+  _udp_connection = open_UDP_connection();
+
+  send_hello();
+
+  return _is_connected;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::disconnect
+//       Access: Public
+//  Description: Closes the connection previously established.
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
-main_tick() {
-  get_global_pstats()->get_main_thread().new_frame();
+disconnect() {
+  if (_is_connected) {
+    _reader.remove_connection(_tcp_connection);
+    close_connection(_tcp_connection);
+    close_connection(_udp_connection);
+  }
+
+  _tcp_connection.clear();
+  _udp_connection.clear();
+
+  _is_connected = false;
+  _got_udp_port = false;
+
+  _collectors_reported = 0;
+  _threads_reported = 0;
+
+  Threads::iterator ti;
+  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
+    (*ti)._frame_number = 0;
+    (*ti)._is_active = false;
+    (*ti)._last_packet = 0.0;
+    (*ti)._frame_data.clear();
+  }
+  
+  Collectors::iterator ci;
+  for (ci = _collectors.begin(); ci != _collectors.end(); ++ci) {
+    vector_int::iterator ii;
+    for (ii = (*ci)._nested_count.begin(); 
+	   ii != (*ci)._nested_count.end(); 
+	 ++ii) {
+      (*ii) = 0;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::is_connected
+//       Access: Public
+//  Description: Returns true if the client believes it is connected
+//               to a working PStatServer, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PStatClient::
+is_connected() const {
+  return _is_connected;
 }
 
 ////////////////////////////////////////////////////////////////////
