@@ -43,8 +43,8 @@ MouseAndKeyboard(GraphicsWindow *window, int device, const string& name) :
   _window(window),
   _device(device)
 {
-  _pixel_xyz = new Vec3DataTransition(LPoint3f(0, 0, 0));
-  _xyz = new Vec3DataTransition(LPoint3f(0, 0, 0));
+  _pixel_xyz = new Vec3DataTransition(LPoint3f(0.0f, 0.0f, 0.0f));
+  _xyz = new Vec3DataTransition(LPoint3f(0.0f, 0.0f, 0.0f));
   _button_events = new ButtonEventDataTransition();
 
   _got_mouse_attrib.set_transition(_pixel_xyz_type, _pixel_xyz);
@@ -73,16 +73,16 @@ transmit_data(AllTransitionsWrapper &data) {
 
     if (mdata._in_window) {
       // Get motion
-      _pixel_xyz->set_value(LPoint3f(mdata._xpos, mdata._ypos, 0));
+      _pixel_xyz->set_value(LPoint3f(mdata._xpos, mdata._ypos, 0.0f));
 
       int w = _window->get_width();
       int h = _window->get_height();
 
       // Scale to range [-1,1]
-      float xf = (float)(2 * mdata._xpos) / (float)w - 1.0;
-      float yf = 1.0 - (float)(2 * mdata._ypos) / (float)h;
+      float xf = (float)(2 * mdata._xpos) / (float)w - 1.0f;
+      float yf = 1.0f - (float)(2 * mdata._ypos) / (float)h;
 
-      _xyz->set_value(LPoint3f(xf, yf, 0));
+      _xyz->set_value(LPoint3f(xf, yf, 0.0f));
       data = _got_mouse_attrib;
 
     } else {

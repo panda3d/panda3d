@@ -30,7 +30,7 @@ TypeHandle ClientBase::_type_handle;
 ClientBase::
 ClientBase() {
   _forked = false;
-  _last_poll_time = 0.0;
+  _last_poll_time = 0.0f;
   _last_poll_frame = 0;
 
 #ifdef HAVE_IPC

@@ -55,7 +55,7 @@ AnalogNode(ClientBase *client, const string &device_name) :
 
   _analog = DCAST(ClientAnalogDevice, device);
 
-  _xyz = new Vec3DataTransition(LPoint3f(0, 0, 0));
+  _xyz = new Vec3DataTransition(LPoint3f(0.0f, 0.0f, 0.0f));
   _attrib.set_transition(_xyz_type, _xyz);
 }
 
@@ -97,7 +97,7 @@ transmit_data(AllTransitionsWrapper &data) {
   if (is_valid()) {
     _analog->poll();
 
-    LPoint3f out(0.0, 0.0, 0.0);
+    LPoint3f out(0.0f, 0.0f, 0.0f);
 
     _analog->lock();
     for (int i = 0; i < max_outputs; i++) {
