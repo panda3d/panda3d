@@ -2681,7 +2681,7 @@ class LevelStyleManager:
             center = bounds.getCenter()
             center = center * (sf * node.getScale()[0])
             # Reposition it
-            node.setXY((radius * math.cos(i * angle)) - center[0],
+            node.setPos((radius * math.cos(i * angle)) - center[0],
                         (radius * aspectRatio * math.sin(i * angle)) -
                         center[2])
             node.setScale(node.getScale() * sf)
@@ -2789,7 +2789,7 @@ class LevelStyleManager:
                 bounds = node.getBounds()
                 center = bounds.getCenter()
                 center = center * (sf * node.getScale()[0])
-                node.setXY(radius * math.cos(i * angle) - center[0],
+                node.setPos(radius * math.cos(i * angle) - center[0],
                             ((radius * aspectRatio * math.sin(i * angle)) -
                              center[2]))
                 node.setScale(node.getScale() * sf)
