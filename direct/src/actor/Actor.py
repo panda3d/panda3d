@@ -1098,6 +1098,7 @@ class Actor(PandaObject, NodePath):
         bundle = model.find("**/+PartBundleNode")
         if (bundle.isEmpty()):
             Actor.notify.warning("%s is not a character!" % (modelPath))
+            model.reparentTo(self.__geomNode)
         else:
             self.prepareBundle(bundle, partName, lodName)
             model.removeNode()        
