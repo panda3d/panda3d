@@ -238,6 +238,9 @@ make_flat_mesh(LensNode *camera) {
   nassertr(camera != (LensNode *)NULL, NULL);
   nassertr(camera->get_lens() != (Lens *)NULL, NULL);
 
+  // First, ensure the UV's are up-to-date.
+  recompute_if_stale();
+
   PT_Node top = new NamedNode(get_name());
 
   LMatrix4f rel_mat;
@@ -537,9 +540,6 @@ make_mesh_geom(Geom *geom, Lens *lens, LMatrix4f &rel_mat) {
     // dimensions so the Z coordinate remains meaningful.
     LPoint3f film(0.0f, 0.0f, 0.0f);
     lens->project(vert * rel_mat, film);
-
-    // Invert the Z coordinate.  We like -1 being closer than 1.
-    film[2] = -film[2];
 
     new_coords.push_back(film);
   }
