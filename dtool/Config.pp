@@ -260,7 +260,7 @@
 // Should we try to build the DirectX interface?  What additional
 // libraries do we need?
 #define DX_IPATH $[WIN32_PLATFORMSDK_INCPATH]
-#define DX_LPATH $[WIN32_PLATFORMSDK_LIBPATH]
+#define DX_LPATH $[WIN32_PLATFORMSDK_LIBPATH] $[WINTOOLS]/lib
 #define DX_LIBS \
   dxguid.lib winmm.lib kernel32.lib gdi32.lib comdlg32.lib winspool.lib \
   user32.lib advapi32.lib ddraw.lib d3dim.lib
