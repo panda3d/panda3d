@@ -10,10 +10,28 @@ TypeHandle GuiListBox::_type_handle;
 void GuiListBox::recompute_frame(void) {
   GuiItem::recompute_frame();
   LVector3f p = _pos;
+  float lft = 100000.;
+  float rgt = -100000.;
+  float tp = -100000.;
+  float btm = 100000.;
+  LVector4f frm;
   for (ItemVector::iterator i=_visible.begin(); i!=_visible.end();
-       p+=(*i)->get_height(), ++i)
+       p+=((*i)->get_height() * LVector3f::up()), ++i) {
     (*i)->set_pos(p);
-  // NEED TO COMPUTE FRAME AT SAME TIME!
+    frm = (*i)->get_frame();
+    if (frm[0] < lft)
+      lft = frm[0];
+    if (frm[1] > rgt)
+      rgt = frm[1];
+    if (frm[2] < btm)
+      btm = frm[2];
+    if (frm[3] > tp)
+      tp = frm[3];
+  }
+  _left = lft;
+  _right = rgt;
+  _top = tp;
+  _bottom = btm;
 }
 
 void GuiListBox::visible_patching(void) {
@@ -153,6 +171,7 @@ void GuiListBox::add_item(GuiItem* item) {
     } else
       _bottom_stack.push_back(item);
   }
+  visible_patching();
 }
 
 int GuiListBox::freeze(void) {
