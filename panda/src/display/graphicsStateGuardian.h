@@ -208,7 +208,6 @@ protected:
   INLINE void add_to_geom_record(GeomContext *) { }
   INLINE void add_to_geom_node_record(GeomNodeContext *) { }
   INLINE void record_state_change(TypeHandle) { }
-  INLINE void count_node(Node *) { }
 #endif
 
   static CPT(RenderState) get_unlit_state();
