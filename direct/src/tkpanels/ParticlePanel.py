@@ -90,13 +90,13 @@ class ParticlePanel(AppShell):
             self.toggleSystemGrowsOlder, 0)
         # Vector widgets
         pos = self.createVector3Entry(systemPage, 'Pos',
-                                      'Particle system position',
-                                      command = self.setSystemPos)
+                                      'Particle system position')
+        pos.command = self.setSystemPos
         pos.addMenuItem('Popup Placer Panel', Placer.Placer)
         hpr = self.createVector3Entry(systemPage, 'Hpr',
                                      'Particle system orientation',
-                                      fGroup_labels = ('H', 'P', 'R'),
-                                      command = self.setSystemHpr)
+                                      fGroup_labels = ('H', 'P', 'R'))
+        hpr.command = self.setSystemHpr
         hpr.addMenuItem('Popup Placer Panel', Placer.Placer)
 
         ## FACTORY PAGE ##
@@ -394,8 +394,8 @@ class ParticlePanel(AppShell):
         kw['min'] = min
         kw['initialValue'] = min
         kw['resolution'] = resolution
-        kw['command'] = command
         widget = apply(Floater.Floater, (parent,), kw)
+        widget.command = command
         widget.pack(fill = X)
         self.bind(widget, balloonHelp)
         self.widgetDict['text'] = widget
