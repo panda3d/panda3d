@@ -14,6 +14,8 @@
 #include "eggTexture.h"
 #include "eggMaterial.h"
 #include "eggRenderMode.h"
+#include "pt_EggTexture.h"
+#include "pt_EggMaterial.h"
 #include "vector_PT_EggVertex.h"
 
 #include <pointerTo.h>
@@ -152,8 +154,8 @@ protected:
 
 
 private:
-  PT(EggTexture) _texture;
-  PT(EggMaterial) _material;
+  PT_EggTexture _texture;
+  PT_EggMaterial _material;
   bool _bface;
 
 public:

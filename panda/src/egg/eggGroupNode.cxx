@@ -14,6 +14,8 @@
 #include "eggVertex.h"
 #include "eggTextureCollection.h"
 #include "eggMaterialCollection.h"
+#include "pt_EggTexture.h"
+#include "pt_EggMaterial.h"
 #include "config_egg.h"
 
 #include <dSearchPath.h>
@@ -820,7 +822,7 @@ find_textures(EggTextureCollection *collection) {
     EggNode *child = *ci;
 
     if (child->is_of_type(EggTexture::get_class_type())) {
-      PT(EggTexture) tex = DCAST(EggTexture, child);
+      PT_EggTexture tex = DCAST(EggTexture, child);
 
       // Now remove the EggTexture entry from our child list.
       prepare_remove_child(tex);
@@ -866,7 +868,7 @@ find_materials(EggMaterialCollection *collection) {
     EggNode *child = *ci;
 
     if (child->is_of_type(EggMaterial::get_class_type())) {
-      PT(EggMaterial) tex = DCAST(EggMaterial, child);
+      PT_EggMaterial tex = DCAST(EggMaterial, child);
 
       // Now remove the EggMaterial entry from our child list.
       prepare_remove_child(tex);

@@ -18,6 +18,7 @@
 #include <pandabase.h>
 
 #include "eggTexture.h"
+#include "pt_EggTexture.h"
 
 #include <filename.h>
 #include <pointerTo.h>
@@ -28,7 +29,7 @@
 class EggNode;
 class EggVertex;
 
-typedef set< PT(EggTexture) > EggTextures;
+typedef set< PT_EggTexture > EggTextures;
 typedef map<Filename, EggTextures> EggTextureFilenames;
 
 

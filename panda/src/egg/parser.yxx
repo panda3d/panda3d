@@ -26,6 +26,8 @@
 #include "eggCoordinateSystem.h"
 #include "eggExternalReference.h"
 #include "eggData.h"
+#include "pt_EggTexture.h"
+#include "pt_EggMaterial.h"
 
 #include <string_utils.h>
 #include <filename.h>
@@ -52,24 +54,21 @@ typedef vector< PT(EggObject) > EggStack;
 static EggStack egg_stack;
 
 // There's one "top-level" egg node, which is where we should parent
-// things (e.g. textures) encountered in the egg file that don't have
-// an explicit place in the tree.  If this is NULL, such things won't
-// be parented anywhere.
+// things (e.g. implicit textures) encountered in the egg file that
+// don't have an explicit place in the tree.  If this is NULL, such
+// things won't be parented anywhere.
 static EggGroupNode *egg_top_node;
 
 // We need a table mapping vertex pool names to vertex pools.
-
 typedef map<string,  PT(EggVertexPool) > VertexPools;
 static VertexPools vertex_pools;
 
 // And another one mapping texture names to textures.
-
-typedef map<string,  PT(EggTexture) > Textures;
+typedef map<string,  PT_EggTexture > Textures;
 static Textures textures;
 
 // And again for material names to materials.
-
-typedef map<string,  PT(EggMaterial) > Materials;
+typedef map<string,  PT_EggMaterial > Materials;
 static Materials materials;
 
 // We need to be able to save the index number requested for a vertex
