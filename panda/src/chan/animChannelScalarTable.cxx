@@ -77,7 +77,7 @@ has_changed(int last_frame, int this_frame) {
 void AnimChannelScalarTable::
 get_value(int frame, float &value) {
   if (_table.empty()) {
-    value = 0.0;
+    value = 0.0f;
   } else {
     value = _table[frame % _table.size()];
   }
@@ -156,14 +156,14 @@ write_datagram(BamWriter *manager, Datagram &me)
     // only to the nearest 1000th for this purpose, because floats
     // aren't very good at being precisely equal to each other.
     static const int max_values = 16;
-    static const float scale = 1000.0;
+    static const float scale = 1000.0f;
 
     pmap<int, int> index;
     int i;
     for (i = 0;
          i < (int)_table.size() && (int)index.size() <= max_values;
          i++) {
-      int value = (int)floor(_table[i] * scale + 0.5);
+      int value = (int)floor(_table[i] * scale + 0.5f);
       index.insert(pmap<int, int>::value_type(value, index.size()));
     }
     int index_length = index.size();
@@ -200,8 +200,8 @@ write_datagram(BamWriter *manager, Datagram &me)
 
         } else {
           for (i = 0; i < table_length - 1; i+= 2) {
-            int value1 = (int)floor(_table[i] * scale + 0.5);
-            int value2 = (int)floor(_table[i + 1] * scale + 0.5);
+            int value1 = (int)floor(_table[i] * scale + 0.5f);
+            int value2 = (int)floor(_table[i + 1] * scale + 0.5f);
             int i1 = index[value1];
             int i2 = index[value2];
 
@@ -210,7 +210,7 @@ write_datagram(BamWriter *manager, Datagram &me)
 
           // There might be one odd value.
           if (i < table_length) {
-            int value1 = (int)floor(_table[i] * scale + 0.5);
+            int value1 = (int)floor(_table[i] * scale + 0.5f);
             int i1 = index[value1];
 
             me.add_uint8(i1 << 4);

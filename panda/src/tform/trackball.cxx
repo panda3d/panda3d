@@ -44,13 +44,13 @@ TypeHandle Trackball::_transform_type;
 ////////////////////////////////////////////////////////////////////
 Trackball::
 Trackball(const string &name) : DataNode(name) {
-  _rotscale = 0.3;
-  _fwdscale = 0.3;
+  _rotscale = 0.3f;
+  _fwdscale = 0.3f;
 
-  _lastx = _lasty = 0.5;
+  _lastx = _lasty = 0.5f;
 
   _rotation = LMatrix4f::ident_mat();
-  _translation.set(0.0, 0.0, 0.0);
+  _translation.set(0.0f, 0.0f, 0.0f);
   _mat = LMatrix4f::ident_mat();
   _orig = LMatrix4f::ident_mat();
   _invert = true;
@@ -83,7 +83,7 @@ Trackball::
 void Trackball::
 reset() {
   _rotation = LMatrix4f::ident_mat();
-  _translation.set(0.0, 0.0, 0.0);
+  _translation.set(0.0f, 0.0f, 0.0f);
   _orig = LMatrix4f::ident_mat();
   _mat = LMatrix4f::ident_mat();
 }
@@ -246,7 +246,7 @@ void Trackball::
 reset_origin_here() {
   recompute();
   _rotation = _orig;
-  _translation.set(0.0, 0.0, 0.0);
+  _translation.set(0.0f, 0.0f, 0.0f);
 }
 
 
@@ -448,7 +448,7 @@ reextract() {
 
   m.get_row3(_translation,3);
   _rotation = m;
-  _rotation.set_row(3, LVecBase3f(0.0, 0.0, 0.0));
+  _rotation.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
 }
 
 ////////////////////////////////////////////////////////////////////

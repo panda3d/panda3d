@@ -144,16 +144,21 @@ recompute_viz(Node *parent) {
   GeomLinestrip *ray = new GeomLinestrip;
   PTA_Vertexf verts;
   PTA_Colorf colors;
-  for (int i = 0; i < 100; i++) {
+  PTA_int lengths;
+  
+  #define NUM_POINTS 100
+  verts.reserve(NUM_POINTS);
+  colors.reserve(NUM_POINTS);
+
+  for (int i = 0; i < NUM_POINTS; i++) {
     verts.push_back(_origin + (double)i * _direction);
-    colors.push_back(Colorf(1.0, 1.0, 1.0, 1.0) +
-                     ((double)i / 100.0) * Colorf(0.0, 0.0, 0.0, -1.0));
+    colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f)+
+                     ((double)i / 100.0) * Colorf(0.0f, 0.0f, 0.0f, -1.0f));
   }
   ray->set_coords(verts);
   ray->set_colors(colors, G_PER_VERTEX);
 
-  PTA_int lengths;
-  lengths.push_back(99);
+  lengths.push_back(NUM_POINTS-1);
   ray->set_lengths(lengths);
 
   ray->set_num_prims(1);

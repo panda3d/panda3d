@@ -51,7 +51,7 @@ is_mouse_open() const {
 INLINE const LPoint2f &MouseWatcher::
 get_mouse() const {
 #ifndef NDEBUG
-  static LPoint2f bogus_mouse(0.0, 0.0);
+  static LPoint2f bogus_mouse(0.0f, 0.0f);
   nassertr(_has_mouse, bogus_mouse);
 #endif
   return _mouse;
@@ -66,7 +66,7 @@ get_mouse() const {
 ////////////////////////////////////////////////////////////////////
 INLINE float MouseWatcher::
 get_mouse_x() const {
-  nassertr(_has_mouse, 0.0);
+  nassertr(_has_mouse, 0.0f);
   return _mouse[0];
 }
 
@@ -79,7 +79,7 @@ get_mouse_x() const {
 ////////////////////////////////////////////////////////////////////
 INLINE float MouseWatcher::
 get_mouse_y() const {
-  nassertr(_has_mouse, 0.0);
+  nassertr(_has_mouse, 0.0f);
   return _mouse[1];
 }
 

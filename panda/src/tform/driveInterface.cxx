@@ -42,9 +42,9 @@ TypeHandle DriveInterface::_transform_type;
 DriveInterface::KeyHeld::
 KeyHeld() {
   _down = false;
-  _changed_time = 0.0;
-  _effect = 0.0;
-  _effect_at_change = 0.0;
+  _changed_time = 0.0f;
+  _effect = 0.0f;
+  _effect_at_change = 0.0f;
 }
 
 float DriveInterface::KeyHeld::
@@ -54,8 +54,8 @@ get_effect(float ramp_up_time, float ramp_down_time) {
   if (_down) {
     // We are currently holding down the key.  That means we base our
     // effect on the ramp_up_time.
-    if (ramp_up_time == 0.0) {
-      _effect = 1.0;
+    if (ramp_up_time == 0.0f) {
+      _effect = 1.0f;
 
     } else {
       float change = elapsed / ramp_up_time;
@@ -65,8 +65,8 @@ get_effect(float ramp_up_time, float ramp_down_time) {
   } else {
     // We are *not* currently holding down the key.  That means we
     // base our effect on the ramp_down_time.
-    if (ramp_down_time == 0.0) {
-      _effect = 0.0;
+    if (ramp_down_time == 0.0f) {
+      _effect = 0.0f;
 
     } else {
       float change = elapsed / ramp_down_time;
@@ -89,9 +89,9 @@ set_key(bool down) {
 void DriveInterface::KeyHeld::
 clear() {
   _down = false;
-  _changed_time = 0.0;
-  _effect = 0.0;
-  _effect_at_change = 0.0;
+  _changed_time = 0.0f;
+  _effect = 0.0f;
+  _effect_at_change = 0.0f;
 }
 
 bool DriveInterface::KeyHeld::
@@ -126,13 +126,13 @@ DriveInterface(const string &name) : DataNode(name) {
   _horizontal_ramp_up_time = drive_horizontal_ramp_up_time;
   _horizontal_ramp_down_time = drive_horizontal_ramp_down_time;
 
-  _speed = 0.0;
-  _rot_speed = 0.0;
+  _speed = 0.0f;
+  _rot_speed = 0.0f;
 
-  _xyz.set(0.0, 0.0, 0.0);
-  _hpr.set(0.0, 0.0, 0.0);
+  _xyz.set(0.0f, 0.0f, 0.0f);
+  _hpr.set(0.0f, 0.0f, 0.0f);
   _mat = LMatrix4f::ident_mat();
-  _force_roll = 0.0;
+  _force_roll = 0.0f;
   _is_force_roll = true;
 
   _cs = default_coordinate_system;
@@ -166,9 +166,9 @@ DriveInterface::
 ////////////////////////////////////////////////////////////////////
 void DriveInterface::
 reset() {
-  _xyz.set(0.0, 0.0, 0.0);
-  _hpr.set(0.0, 0.0, 0.0);
-  _force_roll = 0.0;
+  _xyz.set(0.0f, 0.0f, 0.0f);
+  _hpr.set(0.0f, 0.0f, 0.0f);
+  _force_roll = 0.0f;
   _mat = LMatrix4f::ident_mat();
   _up_arrow.clear();
   _down_arrow.clear();
@@ -232,8 +232,8 @@ void DriveInterface::
 apply(double x, double y, bool any_button) {
 
   // First reset the speeds
-  _speed = 0.0;
-  _rot_speed = 0.0;
+  _speed = 0.0f;
+  _rot_speed = 0.0f;
 
   if (any_button) {
     // If we're holding down any of the mouse buttons, do this
@@ -253,15 +253,15 @@ apply(double x, double y, bool any_button) {
       // Motion is forward.  Compute the throttle value: the ratio of
       // the mouse pointer within the range of vertical movement.
       float throttle =
-        (min(y, 1.0) - dead_zone_top) /
-        (1.0 - dead_zone_top);
+        (min(y, 1.0f) - dead_zone_top) /
+        (1.0f - dead_zone_top);
       _speed = throttle * _forward_speed;
 
     } else if (y <= dead_zone_bottom) {
       // Motion is backward.
       float throttle =
-        (max(y, -1.0) - dead_zone_bottom) /
-        (-1.0 - dead_zone_bottom);
+        (max(y, -1.0f) - dead_zone_bottom) /
+        (-1.0f - dead_zone_bottom);
       _speed = -throttle * _reverse_speed;
     }
 
@@ -276,15 +276,15 @@ apply(double x, double y, bool any_button) {
       // ratio of the mouse pointer within the range of horizontal
       // movement.
       float throttle =
-        (min(x, 1.0) - dead_zone_right) /
-        (1.0 - dead_zone_right);
+        (min(x, 1.0f) - dead_zone_right) /
+        (1.0f - dead_zone_right);
       _rot_speed = throttle * _rotate_speed;
 
     } else if (x <= dead_zone_left) {
       // Rotation is to the left.
       float throttle =
-        (max(x, -1.0) - dead_zone_left) /
-        (-1.0 - dead_zone_left);
+        (max(x, -1.0f) - dead_zone_left) /
+        (-1.0f - dead_zone_left);
       _rot_speed = -throttle * _rotate_speed;
     }
 
@@ -299,13 +299,13 @@ apply(double x, double y, bool any_button) {
       throttle = _up_arrow.get_effect(_vertical_ramp_up_time,
                                       _vertical_ramp_down_time);
       _speed = throttle * _forward_speed;
-      _down_arrow._effect = 0.0;
+      _down_arrow._effect = 0.0f;
 
     } else {
       throttle = _down_arrow.get_effect(_vertical_ramp_up_time,
                                         _vertical_ramp_down_time);
       _speed = -throttle * _reverse_speed;
-      _up_arrow._effect = 0.0;
+      _up_arrow._effect = 0.0f;
     }
 
     // Which horizontal arrow key changed state more recently?
@@ -313,19 +313,19 @@ apply(double x, double y, bool any_button) {
       throttle = _right_arrow.get_effect(_horizontal_ramp_up_time,
                                          _horizontal_ramp_down_time);
       _rot_speed = throttle * _rotate_speed;
-      _left_arrow._effect = 0.0;
+      _left_arrow._effect = 0.0f;
 
     } else {
       throttle = _left_arrow.get_effect(_horizontal_ramp_up_time,
                                         _horizontal_ramp_down_time);
       _rot_speed = -throttle * _rotate_speed;
-      _right_arrow._effect = 0.0;
+      _right_arrow._effect = 0.0f;
     }
     _right_arrow._effect = throttle;
     _left_arrow._effect = throttle;
   }
 
-  if (_speed == 0.0 && _rot_speed == 0.0) {
+  if (_speed == 0.0f && _rot_speed == 0.0f) {
     return;
   }
 
@@ -349,12 +349,12 @@ apply(double x, double y, bool any_button) {
   switch (_cs) {
   case CS_zup_right:
   case CS_zup_left:
-    step[2] = 0.0;
+    step[2] = 0.0f;
     break;
 
   case CS_yup_right:
   case CS_yup_left:
-    step[1] = 0.0;
+    step[1] = 0.0f;
     break;
 
   default:
@@ -400,7 +400,7 @@ reextract() {
 ////////////////////////////////////////////////////////////////////
 void DriveInterface::
 recompute() {
-  compose_matrix(_mat, LVecBase3f(1.0, 1.0, 1.0), _hpr, _xyz, _cs);
+  compose_matrix(_mat, LVecBase3f(1.0f, 1.0f, 1.0f), _hpr, _xyz, _cs);
 }
 
 
@@ -413,8 +413,8 @@ void DriveInterface::
 transmit_data(AllTransitionsWrapper &data) {
 
   // Look for mouse activity.
-  double x = 0.0;
-  double y = 0.0;
+  double x = 0.0f;
+  double y = 0.0f;
 
   bool got_mouse = false;
 

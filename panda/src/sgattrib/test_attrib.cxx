@@ -84,9 +84,9 @@ main(int argc, char *argv[]) {
   PT(Texture) beta = new Texture;
   beta->set_name("beta");
 
-  r_a->set_transition(new ColorTransition(1.0, 1.0, 1.0, 1.0));
+  r_a->set_transition(new ColorTransition(1.0f, 1.0f, 1.0f, 1.0f));
   r_a->set_transition(new TextureTransition(alpha));
-  a_aa->set_transition(new ColorTransition(0.5, 1.0, 0.5, 0.2));
+  a_aa->set_transition(new ColorTransition(0.5f, 1.0f, 0.5f, 0.2f));
   a_ab->set_transition(new TextureTransition(beta));
 
   cerr << "\nr to a has:\n";

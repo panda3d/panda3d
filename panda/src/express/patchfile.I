@@ -28,9 +28,9 @@ get_progress(void) const {
   if (false == _initiated) {
     express_cat.warning()
       << "Patchfile::get_progress() - Patch has not been initiated" << endl;
-    return 0.0;
+    return 0.0f;
   }
-  nassertr(_result_file_length > 0, 0.0);
+  nassertr(_result_file_length > 0, 0.0f);
   return ((float)_total_bytes_processed / (float)_result_file_length);
 }
 

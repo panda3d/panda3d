@@ -49,7 +49,7 @@ EaseInBlendType& EaseInBlendType::operator=(const EaseInBlendType& c) {
 
 float EaseInBlendType::operator()(float t) {
   float x = t*t;
-  return ((3. * x) - (t * x)) * 0.5;
+  return ((3.0f * x) - (t * x)) * 0.5f;
 }
 
 EaseOutBlendType::EaseOutBlendType(const EaseOutBlendType& c)
@@ -63,7 +63,7 @@ EaseOutBlendType& EaseOutBlendType::operator=(const EaseOutBlendType& c) {
 }
 
 float EaseOutBlendType::operator()(float t) {
-  return ((3. * t) - (t * t * t)) * 0.5;
+  return ((3.0f * t) - (t * t * t)) * 0.5f;
 }
 
 EaseInOutBlendType::EaseInOutBlendType(const EaseInOutBlendType& c)
@@ -79,7 +79,7 @@ EaseInOutBlendType& EaseInOutBlendType::operator=(const EaseInOutBlendType& c)
 
 float EaseInOutBlendType::operator()(float t) {
   float x = t*t;
-  return (3. * x) - (2. * t * x);
+  return (3.0f * x) - (2.0f * t * x);
 }
 
 NoBlendType::NoBlendType(const NoBlendType& c) : LerpBlendType(c) {}

@@ -32,11 +32,11 @@ PhysicsObject(void) :
   _process_me(false),
   _oriented(true)
 {
-  _position.set(0, 0, 0);
+  _position.set(0.0f, 0.0f, 0.0f);
   _last_position = _position;
-  _velocity.set(0, 0, 0);
-  _orientation.set(1, 0, 0, 0);
-  _rotation.set(0, 0, 0);
+  _velocity.set(0.0f, 0.0f, 0.0f);
+  _orientation.set(1.0 ,0.0f, 0.0f, 0.0f);
+  _rotation.set(0.0f, 0.0f, 0.0f);
 }
 
 ////////////////////////////////////////////////////////////////////

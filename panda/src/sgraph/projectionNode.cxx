@@ -141,7 +141,7 @@ get_perspective_params(float &xfov, float &yfov, float &aspect, float &cnear,
 ////////////////////////////////////////////////////////////////////
 float ProjectionNode::
 get_hfov(void) const {
-  float xfov=0.0, yfov=0.0, aspect, cnear, cfar;
+  float xfov=0.0f, yfov=0.0f, aspect, cnear, cfar;
   get_perspective_params(xfov, yfov, aspect, cnear, cfar);
   return xfov;
 }
@@ -155,7 +155,7 @@ get_hfov(void) const {
 ////////////////////////////////////////////////////////////////////
 float ProjectionNode::
 get_vfov(void) const {
-  float xfov=0.0, yfov=0.0, aspect, cnear, cfar;
+  float xfov=0.0f, yfov=0.0f, aspect, cnear, cfar;
   get_perspective_params(xfov, yfov, aspect, cnear, cfar);
   return yfov;
 }
@@ -169,7 +169,7 @@ get_vfov(void) const {
 ////////////////////////////////////////////////////////////////////
 float ProjectionNode::
 get_aspect(void) const {
-  float yfov, aspect=0.0, cnear, cfar;
+  float yfov, aspect=0.0f, cnear, cfar;
   get_perspective_params(yfov, aspect, cnear, cfar);
   return aspect;
 }

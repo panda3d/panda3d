@@ -81,7 +81,7 @@ TypeHandle Producer::_xyz_type;
 Producer::
 Producer(const string &name) : DataNode(name) {
   _t = new DoubleDataTransition(0.0);
-  _xyz = new Vec3DataTransition(LPoint3f(0.0, 0.0, 0.0));
+  _xyz = new Vec3DataTransition(LPoint3f(0.0f, 0.0f, 0.0f));
 
   // Set up our _attrib member to directly reference our data members.
   // This way we can simply return a reference to our _attrib member,
@@ -183,11 +183,11 @@ main() {
   new DataRelation(root, producer);
   DataRelation *arc1 = new DataRelation(producer, consumer);
 
-  producer->_t->set_value(10.0);
-  producer->_xyz->set_value(LPoint3f(1.0, 2.0, 3.0));
+  producer->_t->set_value(10.0f);
+  producer->_xyz->set_value(LPoint3f(1.0f, 2.0f, 3.0f));
 
   arc1->set_transition(Producer::_xyz_type,
-                       new Vec3DataTransition(LMatrix4f::scale_mat(2.0)));
+                       new Vec3DataTransition(LMatrix4f::scale_mat(2.0f)));
 
   producer->set_spam_mode(true);
 

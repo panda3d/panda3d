@@ -191,7 +191,7 @@ transform_texcoords(Geom *geom, const LMatrix4f &mat) {
       PTA_TexCoordf::const_iterator tci;
       for (tci = texcoords.begin(); tci != texcoords.end(); ++tci) {
         const TexCoordf &tc = (*tci);
-        LVecBase4f v4(tc[0], tc[1], 0.0, 1.0);
+        LVecBase4f v4(tc[0], tc[1], 0.0f, 1.0f);
         v4 = v4 * mat;
         new_texcoords.push_back(TexCoordf(v4[0] / v4[3], v4[1] / v4[3]));
       }

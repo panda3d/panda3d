@@ -87,7 +87,7 @@ clear() {
 
   _num_long_normals = 0;
   _num_short_normals = 0;
-  _total_normal_length = 0.0;
+  _total_normal_length = 0.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -411,11 +411,11 @@ consider_normals(const Normalf *norms, const ushort *nindex, int num) {
     for (int i = 0; i < num; i++) {
       const Normalf &norm = norms[nindex[i]];
       float l = norm.length();
-      if (IS_THRESHOLD_EQUAL(l, 1.0, 0.01)) {
+      if (IS_THRESHOLD_EQUAL(l, 1.0f, 0.01f)) {
         // This normal is close enough to unit length to be ok.
-      } else if (l > 1.0) {
+      } else if (l > 1.0f) {
         _num_long_normals++;
-      } else { // l < 1.0
+      } else { // l < 1.0f
         _num_short_normals++;
       }
       _total_normal_length += l;
@@ -425,9 +425,9 @@ consider_normals(const Normalf *norms, const ushort *nindex, int num) {
     for (int i = 0; i < num; i++) {
       const Normalf &norm = norms[i];
       float l = norm.length();
-      if (IS_THRESHOLD_EQUAL(l, 1.0, 0.01)) {
+      if (IS_THRESHOLD_EQUAL(l, 1.0f, 0.01f)) {
         // This normal is close enough to unit length to be ok.
-      } else if (l > 1.0) {
+      } else if (l > 1.0f) {
         _num_long_normals++;
       } else { // l < 1.0
         _num_short_normals++;

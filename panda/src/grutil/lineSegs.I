@@ -169,7 +169,7 @@ get_num_vertices() const {
 INLINE Vertexf LineSegs::
 get_vertex(int vertex) const {
   nassertr(vertex >= 0 && vertex < (int)_created_verts.size(),
-           Vertexf(0.0, 0.0, 0.0));
+           Vertexf(0.0f, 0.0f, 0.0f));
   return _created_verts[vertex];
 }
 
@@ -210,7 +210,7 @@ set_vertex(int vertex, float x, float y, float z) {
 INLINE Colorf LineSegs::
 get_vertex_color(int vertex) const {
   nassertr(vertex >= 0 && vertex < (int)_created_colors.size(),
-           Colorf(0.0, 0.0, 0.0, 0.0));
+           Colorf(0.0f, 0.0f, 0.0f, 0.0f));
   return _created_colors[vertex];
 }
 

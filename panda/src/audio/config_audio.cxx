@@ -27,7 +27,7 @@ bool audio_active
     =config_audio.GetBool("audio-active", true);
 
 float audio_volume 
-    =config_audio.GetFloat("audio-volume", 1.0);
+    =config_audio.GetFloat("audio-volume", 1.0f);
 
 bool audio_software_midi 
     =config_audio.GetBool("audio-software-midi", false);

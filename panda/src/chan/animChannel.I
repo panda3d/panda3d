@@ -96,9 +96,9 @@ get_value_no_scale(int frame, ValueType &value) {
 template<class SwitchType>
 void AnimChannel<SwitchType>::
 get_scale(int, float scale[3]) {
-  scale[0] = 1.0;
-  scale[1] = 1.0;
-  scale[2] = 1.0;
+  scale[0] = 1.0f;
+  scale[1] = 1.0f;
+  scale[2] = 1.0f;
 }
 
 

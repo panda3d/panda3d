@@ -34,8 +34,8 @@ TypeHandle CollisionHandlerFloor::_type_handle;
 ////////////////////////////////////////////////////////////////////
 CollisionHandlerFloor::
 CollisionHandlerFloor() {
-  _offset = 0.0;
-  _max_velocity = 0.0;
+  _offset = 0.0f;
+  _max_velocity = 0.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -90,7 +90,7 @@ handle_entries() {
       } else {
         // Get the maximum height for all collisions with this node.
         bool got_max = false;
-        float max_height = 0.0;
+        float max_height = 0.0f;
         
         Entries::const_iterator ei;
         for (ei = entries.begin(); ei != entries.end(); ++ei) {
@@ -121,7 +121,7 @@ handle_entries() {
               << "Adjusting height by " << adjust << "\n";
           }
           
-          if (adjust < 0.0 && _max_velocity != 0.0) {
+          if (adjust < 0.0f && _max_velocity != 0.0f) {
             float max_adjust =
               _max_velocity * ClockObject::get_global_clock()->get_dt();
             adjust = max(adjust, -max_adjust);

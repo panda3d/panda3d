@@ -242,9 +242,9 @@ get_float32() {
   // For now, we assume the float format is portable across all
   // architectures we are concerned with.  If we come across one that
   // is different, we will have to convert.
-  nassertr(sizeof(float) == 4, 0.0);
+  nassertr(sizeof(float) == 4, 0.0f);
   nassertr(_datagram != (const Datagram *)NULL &&
-           _current_index < _datagram->get_length(), 0.0);
+           _current_index < _datagram->get_length(), 0.0f);
 
   float tempvar;
   LittleEndian s(_datagram->get_data(), _current_index, sizeof(tempvar));
@@ -393,9 +393,9 @@ get_be_float32() {
   // For now, we assume the float format is portable across all
   // architectures we are concerned with.  If we come across one that
   // is different, we will have to convert.
-  nassertr(sizeof(float) == 4, 0.0);
+  nassertr(sizeof(float) == 4, 0.0f);
   nassertr(_datagram != (const Datagram *)NULL &&
-           _current_index < _datagram->get_length(), 0.0);
+           _current_index < _datagram->get_length(), 0.0f);
 
   float tempvar;
   BigEndian s(_datagram->get_data(), _current_index, sizeof(tempvar));

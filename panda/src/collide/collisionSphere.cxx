@@ -329,7 +329,7 @@ intersects_line(double &t1, double &t2,
   nassertr(A != 0.0, false);
 
   LVector3f fc = from - _center;
-  double B = 2.0 * dot(delta, fc);
+  double B = 2.0f* dot(delta, fc);
   double fc_d2 = dot(fc, fc);
   double C = fc_d2 - _radius * _radius;
 

@@ -58,14 +58,14 @@ get_blend_value(const PartBundle *root) {
 
   } else {
     // A blend of two or more values.
-    _value = 0.0;
-    float net = 0.0;
+    _value = 0.0f;
+    float net = 0.0f;
 
     PartBundle::ChannelBlend::const_iterator cbi;
     for (cbi = blend.begin(); cbi != blend.end(); ++cbi) {
       AnimControl *control = (*cbi).first;
       float effect = (*cbi).second;
-      nassertv(effect != 0.0);
+      nassertv(effect != 0.0f);
 
       int channel_index = control->get_channel_index();
       nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
@@ -79,7 +79,7 @@ get_blend_value(const PartBundle *root) {
       net += effect;
     }
 
-    nassertv(net != 0.0);
+    nassertv(net != 0.0f);
     _value /= net;
   }
 }

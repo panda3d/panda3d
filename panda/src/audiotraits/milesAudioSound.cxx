@@ -53,7 +53,7 @@ MilesAudioSound::
 MilesAudioSound(MilesAudioManager* manager,
     HAUDIO audio, string file_name, float length)
     : _manager(manager), _file_name(file_name),
-    _start_time(0), _volume(1.0), _balance(0),
+    _start_time(0), _volume(1.0f), _balance(0),
     _loop_count(1), _length(length),
     _active(true), _paused(false) {
   nassertv(audio);
@@ -167,7 +167,7 @@ set_volume(float volume) {
   } else {
     // ...it's a wav or mp3.
     // Convert balance of -1.0..1.0 to 0..127:
-    S32 milesBalance=((S32)(63.5*(_balance+1.0)))%128;
+    S32 milesBalance=((S32)(63.5f*(_balance+1.0f)))%128;
     AIL_quick_set_volume(_audio, milesVolume, milesBalance);
     audio_debug("  volume for this wav or mp3 is now "<<milesVolume
         <<", balance="<<milesBalance);
@@ -230,7 +230,7 @@ get_balance() const {
 float MilesAudioSound::
 length() const {
   if (!_length) {
-    _length=((float)AIL_quick_ms_length(_audio))*0.001;
+    _length=((float)AIL_quick_ms_length(_audio))*0.001f;
   }
   miles_audio_debug("length() returning "<<_length);
   return _length;

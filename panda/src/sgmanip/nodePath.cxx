@@ -1133,7 +1133,7 @@ set_z(float z) {
 ////////////////////////////////////////////////////////////////////
 LPoint3f NodePath::
 get_pos() const {
-  nassertr(has_arcs(), LPoint3f(0.0, 0.0, 0.0));
+  nassertr(has_arcs(), LPoint3f(0.0f, 0.0f, 0.0f));
   LMatrix4f mat = get_mat();
   return mat.get_row3(3);
 }
@@ -1193,7 +1193,7 @@ set_r(float r) {
 ////////////////////////////////////////////////////////////////////
 LVecBase3f NodePath::
 get_hpr() const {
-  nassertr(has_arcs(), LVecBase3f(0.0, 0.0, 0.0));
+  nassertr(has_arcs(), LVecBase3f(0.0f, 0.0f, 0.0f));
   LMatrix4f mat = get_mat();
   LVecBase3f scale, hpr, pos;
   decompose_matrix(mat, scale, hpr, pos);
@@ -1207,7 +1207,7 @@ get_hpr() const {
 ////////////////////////////////////////////////////////////////////
 LVecBase3f NodePath::
 get_hpr(float roll) const {
-  nassertr(has_arcs(), LVecBase3f(0.0, 0.0, 0.0));
+  nassertr(has_arcs(), LVecBase3f(0.0f, 0.0f, 0.0f));
   LMatrix4f mat = get_mat();
   LVecBase3f scale, hpr, pos;
   decompose_matrix(mat, scale, hpr, pos, roll);
@@ -1270,7 +1270,7 @@ set_sz(float sz) {
 ////////////////////////////////////////////////////////////////////
 LVecBase3f NodePath::
 get_scale() const {
-  nassertr(has_arcs(), LVecBase3f(1.0, 1.0, 1.0));
+  nassertr(has_arcs(), LVecBase3f(1.0f, 1.0f, 1.0f));
   LMatrix4f mat = get_mat();
 
   // We decompose the scale directly instead of calling
@@ -2883,8 +2883,8 @@ write_bounds(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
 calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point) {
-  min_point.set(0.0, 0.0, 0.0);
-  max_point.set(0.0, 0.0, 0.0);
+  min_point.set(0.0f, 0.0f, 0.0f);
+  max_point.set(0.0f, 0.0f, 0.0f);
   nassertr_always(!is_empty(), false);
 
   bool found_any = false;

@@ -44,7 +44,7 @@ PUBLISHED:
   ~LineSegs();
 
   void reset();
-  INLINE void set_color(float r, float g, float b, float a = 1.0);
+  INLINE void set_color(float r, float g, float b, float a = 1.0f);
   INLINE void set_color(const Colorf &color);
   INLINE void set_thickness(float thick);
 
@@ -69,7 +69,7 @@ PUBLISHED:
 
   INLINE Colorf get_vertex_color(int vertex) const;
   INLINE void set_vertex_color(int vertex, const Colorf &color);
-  INLINE void set_vertex_color(int vertex, float r, float g, float b, float a = 1.0);
+  INLINE void set_vertex_color(int vertex, float r, float g, float b, float a = 1.0f);
 
 private:
   class Point {

@@ -217,9 +217,9 @@ add_solid_viz(Node *parent, GeomNode *viz) {
   arc->set_transition(new TransparencyTransition(TransparencyProperty::M_alpha));
 
   if (is_tangible()) {
-    arc->set_transition(new ColorTransition(1.0, 1.0, 1.0, 0.5));
+    arc->set_transition(new ColorTransition(1.0f, 1.0f, 1.0f, 0.5));
   } else {
-    arc->set_transition(new ColorTransition(1.0, 0.3, 0.5, 0.5));
+    arc->set_transition(new ColorTransition(1.0f, 0.3, 0.5, 0.5));
   }
 
   _solid_viz_arcs.push_back(arc);
@@ -238,12 +238,13 @@ add_wireframe_viz(Node *parent, GeomNode *viz) {
   arc->set_transition(new LightTransition(LightTransition::all_off()));
   arc->set_transition(new TextureTransition(TextureTransition::off()));
   arc->set_transition(new TransparencyTransition(TransparencyProperty::M_none));
+  float r,g,b;
   if (is_tangible()) {
-    arc->set_transition(new ColorTransition(0.0, 0.0, 1.0, 1.0));
+      r=1.0f;  g=1.0f;  b=0.0f;
   } else {
-    arc->set_transition(new ColorTransition(1.0, 1.0, 0.0, 1.0));
+      r=0.0f;  g=0.0f;  b=1.0f;
   }
-
+  arc->set_transition(new ColorTransition(r,g,b,1.0f));
   _wireframe_viz_arcs.push_back(arc);
 }
 

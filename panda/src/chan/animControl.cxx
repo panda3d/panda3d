@@ -41,9 +41,9 @@ AnimControl(PartBundle *part, AnimBundle *anim, int channel_index) {
   _anim = anim;
   _channel_index = channel_index;
 
-  _play_rate = 1.0;
-  _frame = 0.0;
-  _as_of_time = 0.0;
+  _play_rate = 1.0f;
+  _frame = 0.0f;
+  _as_of_time = 0.0f;
   _playing = false;
 
   _marked_frame = -1;
@@ -60,7 +60,7 @@ void AnimControl::
 play(const CPT_Event &stop_event) {
   nassertv(get_num_frames() > 0);
 
-  if (get_play_rate() < 0.0) {
+  if (get_play_rate() < 0.0f) {
     play(get_num_frames()-1, 0, stop_event);
   } else {
     play(0, get_num_frames()-1, stop_event);
@@ -115,7 +115,7 @@ loop(bool restart) {
   get_part()->control_activated(this);
 
   if (restart) {
-    if (get_play_rate() < 0.0) {
+    if (get_play_rate() < 0.0f) {
       set_frame(get_num_frames() - 1);
     } else {
       set_frame(0);
@@ -143,7 +143,7 @@ loop(bool restart, int from, int to) {
 
   _actions = _user_actions;
 
-  if (get_play_rate() < 0.0) {
+  if (get_play_rate() < 0.0f) {
     // If we're playing backward, we need to set up the loop a little
     // differently.
 
@@ -365,7 +365,7 @@ advance_time(double time) {
   double elapsed_frames = elapsed_time * get_frame_rate();
   _as_of_time = time;
 
-  if (_playing && elapsed_frames != 0.0) {
+  if (_playing && elapsed_frames != 0.0f) {
     int orig_frame = get_frame();
 
     _frame += elapsed_frames;
@@ -374,7 +374,7 @@ advance_time(double time) {
     int new_frame = get_frame();
 
     // Now call all the actions.
-    if (elapsed_frames < 0.0) {
+    if (elapsed_frames < 0.0f) {
       // If we're playing the animation backward, we have to check the
       // actions in reverse order.
 
@@ -663,7 +663,7 @@ do_action(int frame, const Action &action,
   case AT_forward:
     // We only see "forward" actions if we're currently playing
     // backwards.
-    if (_play_rate < 0.0) {
+    if (_play_rate < 0.0f) {
       sequence_frame = frame;
       sequence_action = &action;
     }
@@ -672,7 +672,7 @@ do_action(int frame, const Action &action,
   case AT_backward:
     // We only see "backward" actions if we're currently playing
     // forwards.
-    if (_play_rate > 0.0) {
+    if (_play_rate > 0.0f) {
       sequence_frame = frame;
       sequence_action = &action;
     }

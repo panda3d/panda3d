@@ -58,7 +58,7 @@ Fog(const string &name) : NamedNode(name) {
   _bits_per_color_channel = 8;
   _color.set(1.0f, 1.0f, 1.0f, 1.0f);
   _linear_onset_point.set(0.0f, 0.0f, 0.0f);
-  _linear_opaque_point.set(0.0, 100.0f, 0.0f);
+  _linear_opaque_point.set(0.0f, 100.0f, 0.0f);
   _exp_density = 0.5f;
   _linear_fallback_cosa = -1.0f;
   _linear_fallback_onset = 0.0f;
@@ -223,7 +223,7 @@ compute_linear_range(float &onset, float &opaque,
 // fog at the linear fog's 'fog-end' distance.  usefulness of this is
 // debatable since the exponential fog that matches will be very very
 // close to observer, and it's harder to guess a good end fog distance
-// than it is to manipulate the [0.0,1.0] density range directly, so
+// than it is to manipulate the [0.0,1.0f] density range directly, so
 // taking this out
 
 ////////////////////////////////////////////////////////////////////

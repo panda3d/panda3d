@@ -46,7 +46,7 @@ PartBundle(const PartBundle &copy) :
   // We don't invoke the AnimControlCollection's copy, or any of the
   // bound animations.
   _last_control_set = NULL;
-  _net_blend = 0.0;
+  _net_blend = 0.0f;
   _anim_changed = false;
 }
 
@@ -62,7 +62,7 @@ PartBundle(const string &name) : PartGroup(name) {
   _blend_type = BT_single;
 
   _last_control_set = NULL;
-  _net_blend = 0.0;
+  _net_blend = 0.0f;
   _anim_changed = false;
 }
 
@@ -135,7 +135,7 @@ void PartBundle::
 clear_control_effects() {
   if (!_blend.empty()) {
     _blend.clear();
-    _net_blend = 0.0;
+    _net_blend = 0.0f;
     _anim_changed = true;
   }
 }
@@ -161,7 +161,7 @@ void PartBundle::
 set_control_effect(AnimControl *control, float effect) {
   nassertv(control->get_part() == this);
 
-  if (effect == 0.0) {
+  if (effect == 0.0f) {
     // An effect of zero means to eliminate the control.
     ChannelBlend::iterator cbi = _blend.find(control);
     if (cbi != _blend.end()) {
@@ -198,12 +198,12 @@ set_control_effect(AnimControl *control, float effect) {
 ////////////////////////////////////////////////////////////////////
 float PartBundle::
 get_control_effect(AnimControl *control) {
-  nassertr(control->get_part() == this, 0.0);
+  nassertr(control->get_part() == this, 0.0f);
 
   ChannelBlend::iterator cbi = _blend.find(control);
   if (cbi == _blend.end()) {
     // The control is not in effect.
-    return 0.0;
+    return 0.0f;
   } else {
     return (*cbi).second;
   }
@@ -374,7 +374,7 @@ control_activated(AnimControl *control) {
   // If (and only if) our blend type is BT_single, which means no
   // blending, then starting an animation implicitly enables it.
   if (get_blend_type() == BT_single) {
-    set_control_effect(control, 1.0);
+    set_control_effect(control, 1.0f);
   }
 }
 
@@ -389,7 +389,7 @@ control_activated(AnimControl *control) {
 ////////////////////////////////////////////////////////////////////
 void PartBundle::
 recompute_net_blend() {
-  _net_blend = 0.0;
+  _net_blend = 0.0f;
 
   ChannelBlend::const_iterator bti;
   for (bti = _blend.begin(); bti != _blend.end(); ++bti) {
@@ -449,7 +449,7 @@ register_with_read_factory(void)
 ////////////////////////////////////////////////////////////////////
 void PartBundle::
 clear_and_stop_except(AnimControl *control) {
-  double new_net_blend = 0.0;
+  double new_net_blend = 0.0f;
   ChannelBlend new_blend;
   bool any_changed = false;
 

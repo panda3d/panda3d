@@ -43,10 +43,10 @@ DrawBoundsTransition::
 DrawBoundsTransition() {
   RenderModeTransition *rma = new RenderModeTransition(RenderModeProperty::M_wireframe);
   CullFaceTransition *cfao = new CullFaceTransition(CullFaceProperty::M_cull_clockwise);
-  ColorTransition *cao = new ColorTransition(0.3, 1.0, 0.5, 1.0);
+  ColorTransition *cao = new ColorTransition(0.3f, 1.0f, 0.5f, 1.0f);
 
   CullFaceTransition *cfai = new CullFaceTransition(CullFaceProperty::M_cull_counter_clockwise);
-  ColorTransition *cai = new ColorTransition(0.15, 0.5, 0.25, 1.0);
+  ColorTransition *cai = new ColorTransition(0.15f, 0.5f, 0.25f, 1.0f);
 
   _outside_attrib.set_transition(rma);
   _outside_attrib.set_transition(cfao);

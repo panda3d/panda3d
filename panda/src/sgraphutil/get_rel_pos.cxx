@@ -37,7 +37,7 @@ get_rel_pos(const Node *node, const Node *relative_to,
 
   if (!get_transition_into(tt, ntw)) {
     // No relative transform.
-    return LPoint3f(0.0, 0.0, 0.0);
+    return LPoint3f(0.0f, 0.0f, 0.0f);
   }
 
   LVector3f pos;

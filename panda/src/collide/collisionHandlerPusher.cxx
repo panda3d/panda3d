@@ -124,7 +124,7 @@ handle_entries() {
             
           } else {
             // Shove it just enough to clear the volume.
-            if (entry->get_into_depth() != 0.0) {
+            if (entry->get_into_depth() != 0.0f) {
               ShoveData sd;
               sd._shove =
                 entry->get_into_surface_normal() *
@@ -177,7 +177,7 @@ handle_entries() {
           }
           
           // Now we can determine the net shove.
-          LVector3f net_shove(0.0, 0.0, 0.0);
+          LVector3f net_shove(0.0f, 0.0f, 0.0f);
           for (si = shoves.begin(); si != shoves.end(); ++si) {
             const ShoveData &sd = (*si);
             if (sd._valid) {
@@ -186,7 +186,7 @@ handle_entries() {
           }
           
           if (_horizontal) {
-            net_shove[2] = 0.0;
+            net_shove[2] = 0.0f;
           }
           
           if (collide_cat.is_debug()) {

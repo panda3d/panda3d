@@ -43,7 +43,7 @@ PlanarSlider::
 PlanarSlider(const string &name) : DataNode(name) {
   _cs = default_coordinate_system;
 
-  _mouse_pos.set(0.0, 0.0);
+  _mouse_pos.set(0.0f, 0.0f);
   _transform_mat = LMatrix4f::ident_mat();
 
   _transform = new MatrixDataTransition;
@@ -103,7 +103,7 @@ void PlanarSlider::
 set_transform(const LMatrix4f &trans) {
   _transform_mat = trans;
   _inverse_mat = invert(trans);
-  _inverse_mat.set_row(3, LVector3f(0.0, 0.0, 0.0));
+  _inverse_mat.set_row(3, LVector3f(0.0f, 0.0f, 0.0f));
   set_mouse_pos(_mouse_pos);
 }
 
@@ -137,7 +137,7 @@ set_mouse_pos(const LPoint2f &mouse_pos) {
     _inverse_mat *
     LMatrix4f::translate_mat(LVector3f::rfu(_mouse_pos[0],
                                             _mouse_pos[1],
-                                            0.0,
+                                            0.0f,
                                             _cs)) *
     _transform_mat;
 
