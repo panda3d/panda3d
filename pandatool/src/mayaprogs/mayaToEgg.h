@@ -43,6 +43,7 @@ protected:
   bool _suppress_vertex_color;
   MayaToEggConverter::TransformType _transform_type;
   vector_string _subsets;
+  vector_string _ignore_sliders;
 };
 
 #endif

@@ -95,6 +95,19 @@ MayaToEgg() :
      &MayaToEgg::dispatch_vector_string, NULL, &_subsets);
 
   add_option
+    ("ignore-slider", "name", 0,
+     "Specifies the name of a slider (blend shape deformer) that maya2egg "
+     "should not process.  The slider will not be adjusted and it will not "
+     "become a part of the animation.  Since maya2egg will normally reset "
+     "all slider values to 0 before converting an animated character, this "
+     "option may be necessary in order to tell maya2egg to ignore sliders "
+     "for which doing this may cause an undesired side effect.  This "
+     "parameter may including globbing characters, and it may be repeated "
+     "as needed.  If the parameter does not appear at all, the default is "
+     "to ignore sliders named 'parallelBlender*'.",
+     &MayaToEgg::dispatch_vector_string, NULL, &_ignore_sliders);
+
+  add_option
     ("v", "", 0,
      "Increase verbosity.  More v's means more verbose.",
      &MayaToEgg::dispatch_count, NULL, &_verbose);
@@ -151,8 +164,18 @@ run() {
   converter._transform_type = _transform_type;
 
   vector_string::const_iterator si;
-  for (si = _subsets.begin(); si != _subsets.end(); ++si) {
-    converter.add_subset(GlobPattern(*si));
+  if (!_subsets.empty()) {
+    converter.clear_subsets();
+    for (si = _subsets.begin(); si != _subsets.end(); ++si) {
+      converter.add_subset(GlobPattern(*si));
+    }
+  }
+
+  if (!_ignore_sliders.empty()) {
+    converter.clear_ignore_sliders();
+    for (si = _ignore_sliders.begin(); si != _ignore_sliders.end(); ++si) {
+      converter.add_ignore_slider(GlobPattern(*si));
+    }
   }
 
   // Copy in the path and animation parameters.

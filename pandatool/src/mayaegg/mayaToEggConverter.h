@@ -79,6 +79,11 @@ public:
 
   void clear_subsets();
   void add_subset(const GlobPattern &glob);
+
+  void clear_ignore_sliders();
+  void add_ignore_slider(const GlobPattern &glob);
+  bool ignore_slider(const string &name) const;
+
   void set_from_selection(bool from_selection);
 
   bool convert_maya();
@@ -136,8 +141,9 @@ private:
   string _program_name;
 
   bool _from_selection;
-  typedef pvector<GlobPattern> Subsets;
-  Subsets _subsets;
+  typedef pvector<GlobPattern> Globs;
+  Globs _subsets;
+  Globs _ignore_sliders;
 
   MayaNodeTree _tree;
 

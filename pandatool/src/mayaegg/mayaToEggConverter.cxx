@@ -85,12 +85,25 @@
 ////////////////////////////////////////////////////////////////////
 MayaToEggConverter::
 MayaToEggConverter(const string &program_name) :
-  _program_name(program_name)
+  _program_name(program_name),
+  _tree(this)
 {
   // Make sure the library is properly initialized.
   init_libmayaegg();
 
   _from_selection = false;
+
+  // By default, we ignore any sliders whose name begins with
+  // "parallelBlender".  This is because sliders of this name are
+  // created automatically by the parallel blend system, and while
+  // they do not directly control the geometry, they are often
+  // inadvertently linked to the sliders that do (so that, for
+  // instance, dialing them down to zero will also dial down the
+  // effect of the true sliders to zero).  We don't want to monkey
+  // with them.  The user can change this list with the -ignore-slider
+  // command-line option to maya2egg.
+  _ignore_sliders.push_back(GlobPattern("parallelBlender*"));
+
   _polygon_output = false;
   _polygon_tolerance = 0.01;
   _respect_maya_double_sided = maya_default_double_sided;
@@ -105,8 +118,11 @@ MayaToEggConverter(const string &program_name) :
 ////////////////////////////////////////////////////////////////////
 MayaToEggConverter::
 MayaToEggConverter(const MayaToEggConverter &copy) :
+  _program_name(copy._program_name),
   _from_selection(copy._from_selection),
   _subsets(copy._subsets),
+  _ignore_sliders(copy._ignore_sliders),
+  _tree(this),
   _maya(copy._maya),
   _polygon_output(copy._polygon_output),
   _polygon_tolerance(copy._polygon_tolerance),
@@ -235,6 +251,51 @@ add_subset(const GlobPattern &glob) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::clear_ignore_sliders
+//       Access: Public
+//  Description: Empties the list of ignore_sliders added via
+//               add_ignore_slider().  No sliders will be ignored.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+clear_ignore_sliders() {
+  _ignore_sliders.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::add_ignore_slider
+//       Access: Public
+//  Description: Adds a name pattern to the list of ignore_sliders.
+//               Any slider (blend shape deformer) that matches a name
+//               on the list will not be converted or otherwise
+//               molested by the converter.  This is occasionally
+//               necessary to filter out automatically-created sliders
+//               that are not intended to be used directly, but
+//               instead have an indirect effect on other sliders.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+add_ignore_slider(const GlobPattern &glob) {
+  _ignore_sliders.push_back(glob);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::ignore_slider
+//       Access: Public
+//  Description: Returns true if the indicated name is on the list of
+//               sliders to ignore, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool MayaToEggConverter::
+ignore_slider(const string &name) const {
+  Globs::const_iterator gi;
+  for (gi = _ignore_sliders.begin(); gi != _ignore_sliders.end(); ++gi) {
+    if ((*gi).matches(name)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MayaToEggConverter::set_from_selection
 //       Access: Public
 //  Description: Sets the flag that indicates whether the currently
@@ -325,11 +386,11 @@ convert_maya() {
       all_ok = _tree.tag_selected();
 
     } else if (!_subsets.empty()) {
-      Subsets::const_iterator si;
-      for (si = _subsets.begin(); si != _subsets.end(); ++si) {
-        if (!_tree.tag_named(*si)) {
+      Globs::const_iterator gi;
+      for (gi = _subsets.begin(); gi != _subsets.end(); ++gi) {
+        if (!_tree.tag_named(*gi)) {
           mayaegg_cat.info()
-            << "No node matching " << *si << " found.\n";
+            << "No node matching " << *gi << " found.\n";
         }
       }
 

@@ -26,7 +26,9 @@
 #include "globPattern.h"
 #include "indirectCompareNames.h"
 #include "ordered_vector.h"
+#include "pset.h"
 
+class MayaToEggConverter;
 class EggData;
 class EggGroupNode;
 class EggTable;
@@ -40,7 +42,7 @@ class EggSAnimData;
 ////////////////////////////////////////////////////////////////////
 class MayaNodeTree {
 public:
-  MayaNodeTree();
+  MayaNodeTree(MayaToEggConverter *converter);
   MayaNodeDesc *build_node(const MDagPath &dag_path);
   bool build_hierarchy();
 
@@ -59,6 +61,9 @@ public:
   EggXfmSAnim *get_egg_anim(MayaNodeDesc *node_desc);
   EggSAnimData *get_egg_slider(MayaBlendDesc *blend_desc);
 
+  bool ignore_slider(const string &name) const;
+  void report_ignored_slider(const string &name);
+
   MayaBlendDesc *add_blend_desc(MayaBlendDesc *blend_desc);
   int get_num_blend_descs() const;
   MayaBlendDesc *get_blend_desc(int n) const;
@@ -71,6 +76,8 @@ public:
 
 private:
   MayaNodeDesc *r_build_node(const string &path);
+
+  MayaToEggConverter *_converter;
 
   EggData *_egg_data;
   EggGroupNode *_egg_root;
@@ -85,6 +92,9 @@ private:
 
   typedef ov_set<PT(MayaBlendDesc), IndirectCompareNames<MayaBlendDesc> > BlendDescs;
   BlendDescs _blend_descs;
+
+  typedef pset<string> Strings;
+  Strings _ignored_slider_names;
 };
 
 #endif

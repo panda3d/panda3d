@@ -19,6 +19,7 @@
 #include "mayaNodeTree.h"
 #include "mayaBlendDesc.h"
 #include "mayaEggGroupUserData.h"
+#include "mayaToEggConverter.h"
 #include "config_mayaegg.h"
 #include "maya_funcs.h"
 #include "eggGroup.h"
@@ -41,7 +42,9 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 MayaNodeTree::
-MayaNodeTree() {
+MayaNodeTree(MayaToEggConverter *converter) :
+  _converter(converter)
+{
   _root = new MayaNodeDesc(this);
   _fps = 0.0;
   _egg_data = (EggData *)NULL;
@@ -459,6 +462,31 @@ get_egg_slider(MayaBlendDesc *blend_desc) {
   }
 
   return blend_desc->_anim;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeTree::ignore_slider
+//       Access: Public
+//  Description: Returns true if the indicated name is on the list of
+//               sliders to ignore, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool MayaNodeTree::
+ignore_slider(const string &name) const {
+  return _converter->ignore_slider(name);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeTree::report_ignored_slider
+//       Access: Public
+//  Description: Outputs a message to the user reporting that a slider
+//               was ignored.  Each slider is only reported once.
+////////////////////////////////////////////////////////////////////
+void MayaNodeTree::
+report_ignored_slider(const string &name) {
+  if (_ignored_slider_names.insert(name).second) {
+    mayaegg_cat.info()
+      << "Ignoring slider " << name << "\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

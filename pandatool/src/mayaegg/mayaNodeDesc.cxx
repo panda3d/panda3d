@@ -20,6 +20,7 @@
 #include "mayaNodeTree.h"
 #include "mayaBlendDesc.h"
 #include "maya_funcs.h"
+#include "config_mayaegg.h"
 
 #include "pre_maya_include.h"
 #include <maya/MFnBlendShapeDeformer.h>
@@ -375,25 +376,31 @@ check_blend_shapes(const MFnDagNode &node, const string &attrib_name) {
       MFnBlendShapeDeformer blends(c_node, &status);
       if (!status) {
         status.perror("MFnBlendShapeDeformer constructor");
-      } else {
-        MObjectArray base_objects;
-        status = blends.getBaseObjects(base_objects);
-        if (!status) {
-          status.perror("MFnBlendShapeDeformer::getBaseObjects");
-        } else {
-          for (unsigned int oi = 0; oi < base_objects.length(); oi++) {
-            MObject base_object = base_objects[oi];
 
-            MIntArray index_list;
-            status = blends.weightIndexList(index_list);
-            if (!status) {
-              status.perror("MFnBlendShapeDeformer::weightIndexList");
-            } else {
-              for (unsigned int i = 0; i < index_list.length(); i++) {
-                int wi = index_list[i];
-                PT(MayaBlendDesc) blend_desc = new MayaBlendDesc(blends, wi);
-                blend_desc = _tree->add_blend_desc(blend_desc);
-                _blend_descs.push_back(blend_desc);
+      } else {
+        if (_tree->ignore_slider(blends.name().asChar())) {
+          _tree->report_ignored_slider(blends.name().asChar());
+
+        } else {
+          MObjectArray base_objects;
+          status = blends.getBaseObjects(base_objects);
+          if (!status) {
+            status.perror("MFnBlendShapeDeformer::getBaseObjects");
+          } else {
+            for (unsigned int oi = 0; oi < base_objects.length(); oi++) {
+              MObject base_object = base_objects[oi];
+              
+              MIntArray index_list;
+              status = blends.weightIndexList(index_list);
+              if (!status) {
+                status.perror("MFnBlendShapeDeformer::weightIndexList");
+              } else {
+                for (unsigned int i = 0; i < index_list.length(); i++) {
+                  int wi = index_list[i];
+                  PT(MayaBlendDesc) blend_desc = new MayaBlendDesc(blends, wi);
+                  blend_desc = _tree->add_blend_desc(blend_desc);
+                  _blend_descs.push_back(blend_desc);
+                }
               }
             }
           }
