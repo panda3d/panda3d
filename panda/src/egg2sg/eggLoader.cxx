@@ -544,9 +544,13 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     }
     break;
 
+  case EggTexture::WM_unspecified:
+    break;
+
   default:
-    cerr << "Unexpected texture wrap flag: "
-	 << (int)egg_tex->determine_wrap_u() << "\n";
+    egg2sg_cat.warning()
+      << "Unexpected texture wrap flag: "
+      << (int)egg_tex->determine_wrap_u() << "\n";
   }
 
   switch (egg_tex->determine_wrap_v()) {
@@ -564,9 +568,13 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     }
     break;
 
+  case EggTexture::WM_unspecified:
+    break;
+
   default:
-    cerr << "Unexpected texture wrap flag: "
-	 << (int)egg_tex->determine_wrap_v() << "\n";
+    egg2sg_cat.warning()
+      << "Unexpected texture wrap flag: "
+      << (int)egg_tex->determine_wrap_v() << "\n";
   }
 
   switch (egg_tex->get_minfilter()) {
@@ -788,7 +796,6 @@ apply_texture_apply_attributes(TextureApplyTransition *apply,
   } else {
     switch (egg_tex->get_env_type()) {
     case EggTexture::ET_modulate:
-    case EggTexture::ET_unspecified:
       apply->set_mode(TextureApplyProperty::M_modulate);
       break;
       
@@ -796,8 +803,12 @@ apply_texture_apply_attributes(TextureApplyTransition *apply,
       apply->set_mode(TextureApplyProperty::M_decal);
       break;
 
+    case EggTexture::ET_unspecified:
+      break;
+
     default:
-      cerr << "Invalid texture environment "
+      egg2sg_cat.warning()
+	<< "Invalid texture environment "
 	   << (int)egg_tex->get_env_type() << "\n";
     }
   }
