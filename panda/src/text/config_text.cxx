@@ -18,10 +18,10 @@
 
 #include "config_text.h"
 #include "staticTextFont.h"
-#include "dynamicTextFont.h"
-#include "dynamicTextPage.h"
 #include "textFont.h"
 #include "textNode.h"
+#include "dynamicTextFont.h"
+#include "dynamicTextPage.h"
 
 #include <dconfig.h>
 
@@ -30,10 +30,13 @@ NotifyCategoryDef(text, "");
 
 ConfigureFn(config_text) {
   StaticTextFont::init_type();
-  DynamicTextFont::init_type();
-  DynamicTextPage::init_type();
   TextFont::init_type();
   TextNode::init_type();
+
+#ifdef HAVE_FREETYPE
+  DynamicTextFont::init_type();
+  DynamicTextPage::init_type();
+#endif
 }
 
 const bool flatten_text = config_text.GetBool("flatten-text", true);
