@@ -57,6 +57,49 @@ as_molecular_field() {
   return (DCMolecularField *)NULL;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::format_data
+//       Access: Published
+//  Description: Given a blob that represents the packed data for this
+//               field, returns a string formatting it for human
+//               consumption.  Returns empty string if there is an error.
+////////////////////////////////////////////////////////////////////
+string DCField::
+format_data(const string &packed_data) {
+  DCPacker packer;
+  packer.begin_unpack(packed_data, this);
+  string result = packer.unpack_and_format();
+  if (!packer.end_unpack()) {
+    return string();
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::parse_string
+//       Access: Published
+//  Description: Given a human-formatted string (for instance, as
+//               returned by format_data(), above) that represents the
+//               value of this field, parse the string and return the
+//               corresponding packed data.  Returns empty string if
+//               there is an error.
+////////////////////////////////////////////////////////////////////
+string DCField::
+parse_string(const string &formatted_string) {
+  DCPacker packer;
+  packer.begin_pack(this);
+  if (!packer.parse_and_pack(formatted_string)) {
+    // Parse error.
+    return string();
+  }
+  if (!packer.end_pack()) {
+    // Data type mismatch.
+    return string();
+  }
+
+  return packer.get_string();
+}
+
 #ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
 //     Function: DCField::pack_args

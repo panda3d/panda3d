@@ -49,6 +49,9 @@ PUBLISHED:
   virtual DCAtomicField *as_atomic_field();
   virtual DCMolecularField *as_molecular_field();
 
+  string format_data(const string &packed_data);
+  string parse_string(const string &formatted_string);
+
 #ifdef HAVE_PYTHON
   bool pack_args(Datagram &datagram, PyObject *sequence) const;
   PyObject *unpack_args(DatagramIterator &iterator) const;
