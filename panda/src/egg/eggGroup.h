@@ -72,7 +72,8 @@ PUBLISHED:
     BT_point_world_relative  = 0x00000080,
   };
   enum CollisionSolidType {
-    // The bits here must correspond to those in Flags, below.
+    // The bits here must correspond to those in Flags, below, and
+    // they must fit within F_cs_type.
     CST_none                 = 0x00000000,
     CST_plane                = 0x00010000,
     CST_polygon              = 0x00020000,
@@ -82,7 +83,8 @@ PUBLISHED:
     CST_inv_sphere           = 0x00060000,
   };
   enum CollideFlags {
-    // The bits here must correspond to those in Flags, below.
+    // The bits here must correspond to those in Flags, below, and
+    // they must fit within F_collide_flags.
     CF_none                  = 0x00000000,
     CF_descend               = 0x00100000,
     CF_event                 = 0x00200000,
@@ -267,8 +269,8 @@ private:
     F_nofog_flag             = 0x00001000,
     F_decal_flag             = 0x00002000,
     F_direct_flag            = 0x00004000,
-    F_cs_type                = 0x00070000,
-    F_collide_flags          = 0x07f80000,
+    F_cs_type                = 0x000f0000,
+    F_collide_flags          = 0x0ff00000,
   };
   enum Flags2 {
     F2_collide_mask          = 0x00000001,
