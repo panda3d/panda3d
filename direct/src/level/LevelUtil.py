@@ -4,11 +4,13 @@ import string
 
 def getZoneNum2Node(levelModel):
     """ given model, returns dict of ZoneNumber -> ZoneNode """
-    def findNumberedNodes(baseString, model):
+    def findNumberedNodes(baseString, model, caseInsens=1):
         # finds nodes whose name follows the pattern 'baseString#blah'
         # returns dictionary that maps # to node
-        potentialNodes = model.findAllMatches(
-            '**/%s*' % baseString).asList()
+        srch = '**/%s*' % baseString
+        if caseInsens:
+            srch += ';+i'
+        potentialNodes = model.findAllMatches(srch).asList()
         num2node = {}
         for potentialNode in potentialNodes:
             name = potentialNode.getName()
@@ -28,9 +30,7 @@ def getZoneNum2Node(levelModel):
 
         return num2node
 
-    zoneNum2node = findNumberedNodes('Zone', levelModel)
-    # temp
-    zoneNum2node.update(findNumberedNodes('ZONE', levelModel))
+    zoneNum2node = findNumberedNodes('zone', levelModel)
     # add the UberZone to the table
     zoneNum2node[0] = levelModel
     return zoneNum2node
