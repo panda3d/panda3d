@@ -1156,7 +1156,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           const int max_t = 256;
           wchar_t can_t[max_t];
           DWORD result_size = 0;
-          size_t start, end;
+          size_t cursor_pos, delta_start;
 
           /*
           result_size = ImmGetCompositionStringW(hIMC, GCS_COMPREADSTR, can_t, max_t);
@@ -1164,22 +1164,32 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           */
 
           result_size = ImmGetCompositionStringW(hIMC, GCS_CURSORPOS, can_t, max_t);
-          end = result_size&0xffff;
-          windisplay_cat.debug() << "got cursorpos at " << end << endl;
+          cursor_pos = result_size&0xffff;
+          windisplay_cat.debug() << "got cursorpos at " << cursor_pos  << endl;
 
           result_size = ImmGetCompositionStringW(hIMC, GCS_DELTASTART, can_t, max_t);
-          start = result_size&0xffff;
-          windisplay_cat.debug() << "got deltastart at " << start << endl;
+          delta_start = result_size&0xffff;
+          windisplay_cat.debug() << "got deltastart at " << delta_start << endl;
           
+          /*
+          result_size = ImmGetCompositionStringW(hIMC, GCS_COMPATTR, can_t, max_t);
+          windisplay_cat.debug() << "got compatr of size " << result_size << endl;
+
+          result_size = ImmGetCompositionStringW(hIMC, GCS_COMPREADSTR, can_t, max_t);
+          windisplay_cat.debug() << "got compreadstr of size " << result_size << endl;
+
+          result_size = ImmGetCompositionStringW(hIMC, GCS_COMPCLAUSE, can_t, max_t);
+          windisplay_cat.debug() << "got compclause of size " << result_size << endl;
+          */
+
           result_size = ImmGetCompositionStringW(hIMC, GCS_COMPSTR, can_t, max_t);
           windisplay_cat.debug() << "got compstr of size " << result_size << endl;
 
           can_t[result_size/sizeof(wchar_t)] = '\0';
           
-          _input_devices[0].candidate(can_t, start, end);
+          _input_devices[0].candidate(can_t, min(cursor_pos, delta_start), max(cursor_pos, delta_start));
 
           ImmReleaseContext(hwnd, hIMC);
-          return 0;
         }
         break;
         
