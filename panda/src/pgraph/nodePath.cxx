@@ -916,6 +916,7 @@ get_hpr() const {
   nassertr_always(!is_empty(), LVecBase3f(0.0f, 0.0f, 0.0f));
   CPT(TransformState) transform = get_transform();
   nassertr(transform->has_hpr(), LVecBase3f(0.0f, 0.0f, 0.0f));
+  // now that we are range checking fields we must clamp this
   LVecBase3f hpr = transform->get_hpr();
   hpr[0] = fmod(hpr[0], 360);
   hpr[1] = fmod(hpr[1], 360);
