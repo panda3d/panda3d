@@ -212,7 +212,7 @@ has_anisotropic_degree() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int EggTexture::
 get_anisotropic_degree() const {
-  nassertr(has_anisotropic_degree(), 1);
+  //  nassertr(has_anisotropic_degree(), 1);
 
   // note: _anisotropic_degree's of 0 and 1 are equivalent (no anisotropic filtering to be done by gsg)
   return _anisotropic_degree;
