@@ -1302,7 +1302,7 @@ handle_printvar_command() {
   while (p < _params.length()) {
     // Pull off the next varname.
     size_t q = _scope->scan_to_whitespace(_params, p);
-    string varname = trim_blanks(_scope->expand_string(_params.substr(p, q)));
+    string varname = trim_blanks(_scope->expand_string(_params.substr(p, q - p)));
 
     cerr << varname << " = \"" << _scope->get_variable(varname)
          << "\" ";
