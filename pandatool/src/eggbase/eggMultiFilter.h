@@ -25,7 +25,7 @@ protected:
   virtual bool post_command_line();
 
   Filename get_output_filename(const Filename &source_filename) const;
-  void write_eggs();
+  virtual void write_eggs();
 
 protected:
   bool _allow_empty;

@@ -29,6 +29,7 @@ EggMatrixTablePointer(EggObject *object) {
       if (child->get_name() == "xform") {
 	if (child->is_of_type(EggXfmSAnim::get_class_type())) {
 	  _xform = DCAST(EggXfmSAnim, child);
+	  _xform->normalize();
 	  found = true;
 
 	} else if (child->is_of_type(EggXfmAnimData::get_class_type())) {
@@ -67,6 +68,12 @@ get_num_frames() const {
 ////////////////////////////////////////////////////////////////////
 LMatrix4d EggMatrixTablePointer::
 get_frame(int n) const {
+  if (get_num_frames() == 1) {
+    // If we have exactly one frame, then we have as many frames as we
+    // want; just repeat the first frame.
+    n = 0;
+  }
+
   nassertr(n >= 0 && n < get_num_frames(), LMatrix4d::ident_mat());
   LMatrix4d mat;
   _xform->get_value(n, mat);
@@ -82,7 +89,7 @@ get_frame(int n) const {
 void EggMatrixTablePointer::
 set_frame(int n, const LMatrix4d &mat) {
   nassertv(n >= 0 && n < get_num_frames());
-  // Do something here.
+  _xform->set_value(n, mat);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -94,6 +101,58 @@ set_frame(int n, const LMatrix4d &mat) {
 ////////////////////////////////////////////////////////////////////
 bool EggMatrixTablePointer::
 add_frame(const LMatrix4d &mat) {
-  // Do something here.
+  if (_xform == (EggXfmSAnim *)NULL) {
+    return false;
+  }
+   
+  return _xform->add_data(mat);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMatrixTablePointer::do_rebuild
+//       Access: Public, Virtual
+//  Description: Rebuilds the entire table all at once, based on the
+//               frames added by repeated calls to add_rebuild_frame()
+//               since the last call to begin_rebuild().
+//
+//               Until do_rebuild() is called, the animation table is
+//               not changed.
+//
+//               The return value is true if all frames are
+//               acceptable, or false if there is some problem.
+////////////////////////////////////////////////////////////////////
+bool EggMatrixTablePointer::
+do_rebuild() {
+  if (_rebuild_frames.empty()) {
+    return true;
+  }
+
+  if (_xform == (EggXfmSAnim *)NULL) {
+    return false;
+  }
+   
+  _xform->clear_data();
+  RebuildFrames::const_iterator fi;
+  for (fi = _rebuild_frames.begin(); fi != _rebuild_frames.end(); ++fi) {
+    if (!_xform->add_data(*fi)) {
+      return false;
+    }
+  }
+
+  _rebuild_frames.clear();
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMatrixTablePointer::optimize
+//       Access: Public, Virtual
+//  Description: Resets the table before writing to disk so that
+//               redundant rows (e.g. i { 1 1 1 1 1 1 1 1 }) are
+//               collapsed out.
+////////////////////////////////////////////////////////////////////
+void EggMatrixTablePointer::
+optimize() {
+  if (_xform != (EggXfmSAnim *)NULL) {
+    _xform->optimize();
+  }
 }

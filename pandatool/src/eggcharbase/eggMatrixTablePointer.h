@@ -30,6 +30,10 @@ public:
   virtual void set_frame(int n, const LMatrix4d &mat);
   virtual bool add_frame(const LMatrix4d &mat);
 
+  virtual bool do_rebuild();
+
+  virtual void optimize();
+
 private:
   PT(EggTable) _table;
   PT(EggXfmSAnim) _xform;

@@ -29,11 +29,14 @@ public:
   EggTopstrip();
 
   void run();
+  void check_transform_channels();
 
   void strip_anim(EggJointData *joint_data, int from_model,
 		  EggJointData *top_joint);
   void strip_anim_vertices(EggNode *egg_node, int into_model,
 			   int from_model, EggJointData *top_joint);
+
+  void adjust_transform(LMatrix4d &mat) const;
 
 
   string _top_joint_name;

@@ -79,3 +79,48 @@ set_frame(int n, const LMatrix4d &mat) {
   nassertv(n == 0);
   _joint->set_transform(mat);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointNodePointer::add_rebuild_frame
+//       Access: Public, Virtual
+//  Description: Adds a new frame to the set of rebuild frames.  See
+//               begin_rebuild() and do_rebuild().  Returns true if
+//               this is valid, false otherwise (e.g. adding multiple
+//               frames to a static joint).
+////////////////////////////////////////////////////////////////////
+bool EggJointNodePointer::
+add_rebuild_frame(const LMatrix4d &mat) {
+  if (!_rebuild_frames.empty()) {
+    // Only one frame may be added to a <Joint>.
+    return false;
+  }
+  return EggJointPointer::add_rebuild_frame(mat);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointNodePointer::do_rebuild
+//       Access: Public, Virtual
+//  Description: Rebuilds the entire table all at once, based on the
+//               frames added by repeated calls to add_rebuild_frame()
+//               since the last call to begin_rebuild().
+//
+//               Until do_rebuild() is called, the animation table is
+//               not changed.
+//
+//               The return value is true if all frames are
+//               acceptable, or false if there is some problem.
+////////////////////////////////////////////////////////////////////
+bool EggJointNodePointer::
+do_rebuild() {
+  if (_rebuild_frames.empty()) {
+    return true;
+  }
+
+  if (_rebuild_frames.size() != 1) {
+    return false;
+  }
+
+  _joint->set_transform(_rebuild_frames[0]);
+  _rebuild_frames.clear();
+  return true;
+}

@@ -25,6 +25,9 @@ public:
   virtual LMatrix4d get_frame(int n) const;
   virtual void set_frame(int n, const LMatrix4d &mat);
 
+  virtual bool add_rebuild_frame(const LMatrix4d &mat);
+  virtual bool do_rebuild();
+
 private:
   PT(EggGroup) _joint;
 

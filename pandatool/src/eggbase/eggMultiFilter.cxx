@@ -152,7 +152,7 @@ get_output_filename(const Filename &source_filename) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMultiFilter::write_eggs
-//       Access: Protected
+//       Access: Protected, Virtual
 //  Description: Writes out all of the egg files in the _eggs vector,
 //               to the output directory if one is specified, or over
 //               the input files if -inplace was specified.

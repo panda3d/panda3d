@@ -28,6 +28,8 @@ EggMultiBase() {
      "Force complete loading: load up the egg file along with all of its "
      "external references.",
      &EggMultiBase::dispatch_none, &_force_complete);
+
+  _coordinate_system = CS_yup_right;
 }
 
 
@@ -117,6 +119,13 @@ read_egg(const Filename &filename) {
     if (!data->resolve_externals()) {
       return (EggData *)NULL;
     }
+  }
+
+  if (_got_coordinate_system) {
+    data->set_coordinate_system(_coordinate_system);
+  } else {
+    _coordinate_system = data->get_coordinate_system();
+    _got_coordinate_system = true;
   }
    
   return data;

@@ -22,6 +22,7 @@ EggJointData(EggCharacterCollection *collection,
 	     EggCharacterData *char_data) :
   EggComponentData(collection, char_data)
 {
+  _parent = (EggJointData *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -30,7 +31,7 @@ EggJointData(EggCharacterCollection *collection,
 //  Description: Returns the first descendent joint found with the
 //               indicated name, or NULL if no joint has that name.
 ////////////////////////////////////////////////////////////////////
-INLINE EggJointData *EggJointData::
+EggJointData *EggJointData::
 find_joint(const string &name) {
   Children::const_iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
@@ -45,6 +46,120 @@ find_joint(const string &name) {
   }
 
   return (EggJointData *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::get_num_frames
+//       Access: Public
+//  Description: Returns the number of frames of animation for this
+//               particular joint in the indicated model.
+////////////////////////////////////////////////////////////////////
+int EggJointData::
+get_num_frames(int model_index) const {
+  EggBackPointer *back = get_model(model_index);
+  if (back == (EggBackPointer *)NULL) {
+    return 0;
+  }
+
+  EggJointPointer *joint;
+  DCAST_INTO_R(joint, back, 0);
+
+  return joint->get_num_frames();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::get_frame
+//       Access: Public
+//  Description: Returns the local transform matrix corresponding to
+//               this joint position in the nth frame in the indicated
+//               model.
+////////////////////////////////////////////////////////////////////
+LMatrix4d EggJointData::
+get_frame(int model_index, int n) const {
+  EggBackPointer *back = get_model(model_index);
+  if (back == (EggBackPointer *)NULL) {
+    return LMatrix4d::ident_mat();
+  }
+
+  EggJointPointer *joint;
+  DCAST_INTO_R(joint, back, LMatrix4d::ident_mat());
+
+  return joint->get_frame(n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::get_net_frame
+//       Access: Public
+//  Description: Returns the complete transform from the root
+//               corresponding to this joint position in the nth frame
+//               in the indicated model.
+////////////////////////////////////////////////////////////////////
+LMatrix4d EggJointData::
+get_net_frame(int model_index, int n) const {
+  LMatrix4d mat = get_frame(model_index, n);
+  if (_parent != (EggJointData *)NULL) {
+    mat = mat * _parent->get_net_frame(model_index, n);
+  }
+  return mat;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::do_rebuild
+//       Access: Public
+//  Description: Calls do_rebuild() on all models, and recursively on
+//               all joints at this node and below.  Returns true if
+//               all models returned true, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggJointData::
+do_rebuild() {
+  bool all_ok = true;
+
+  BackPointers::iterator bpi;
+  for (bpi = _back_pointers.begin(); bpi != _back_pointers.end(); ++bpi) {
+    EggBackPointer *back = (*bpi);
+    if (back != (EggBackPointer *)NULL) {
+      EggJointPointer *joint;
+      DCAST_INTO_R(joint, back, false);
+      if (!joint->do_rebuild()) {
+	all_ok = false;
+      }
+    }
+  }
+
+  Children::iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    EggJointData *child = (*ci);
+    if (!child->do_rebuild()) {
+      all_ok = false;
+    }
+  }
+
+  return all_ok;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::optimize
+//       Access: Public
+//  Description: Calls optimize() on all models, and recursively on
+//               all joints at this node and below.
+////////////////////////////////////////////////////////////////////
+void EggJointData::
+optimize() {
+  BackPointers::iterator bpi;
+  for (bpi = _back_pointers.begin(); bpi != _back_pointers.end(); ++bpi) {
+    EggBackPointer *back = (*bpi);
+    if (back != (EggBackPointer *)NULL) {
+      EggJointPointer *joint;
+      DCAST_INTO_V(joint, back);
+      joint->optimize();
+    }
+  }
+
+  Children::iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    EggJointData *child = (*ci);
+    child->optimize();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

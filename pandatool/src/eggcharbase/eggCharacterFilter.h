@@ -31,6 +31,7 @@ public:
 
 protected:
   virtual bool post_command_line();
+  virtual void write_eggs();
 
   virtual EggCharacterCollection *make_collection();
 

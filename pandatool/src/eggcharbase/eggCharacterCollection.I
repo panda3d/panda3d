@@ -86,3 +86,16 @@ get_character(int i) const {
   nassertr(i >= 0 && i < (int)_characters.size(), (EggCharacterData *)NULL);
   return _characters[i];
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterCollection::get_character_by_model_index
+//       Access: Public
+//  Description: Returns the character associated with the indicated
+//               model index.
+////////////////////////////////////////////////////////////////////
+INLINE EggCharacterData *EggCharacterCollection::
+get_character_by_model_index(int model_index) const {
+  nassertr(model_index >= 0 && model_index < (int)_characters_by_model_index.size(),
+	   (EggCharacterData *)NULL);
+  return _characters_by_model_index[model_index];
+}

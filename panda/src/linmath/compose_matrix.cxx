@@ -448,7 +448,7 @@ _decompose_matrix(const LMatrix3<NumType> &mat,
 
   default:
     linmath_cat.error()
-      << "Unexpected coordinate system!\n";
+      << "Unexpected coordinate system: " << (int)cs << "\n";
     return false;
   }
 
@@ -546,7 +546,7 @@ _decompose_matrix(const LMatrix3<NumType> &mat,
 
   default:
     linmath_cat.error()
-      << "Unexpected coordinate system!\n";
+      << "Unexpected coordinate system: " << (int)cs << "\n";
     return false;
   }
 

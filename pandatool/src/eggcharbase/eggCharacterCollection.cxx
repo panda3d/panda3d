@@ -93,6 +93,8 @@ add_egg(EggData *egg) {
       egg_info._models.push_back(model_root);
 
       char_data->add_model(model_index, model_root);
+      nassertr(model_index == (int)_characters_by_model_index.size(), -1);
+      _characters_by_model_index.push_back(char_data);
 
       match_egg_nodes(char_data, root_joint, egg_nodes,
 		      egg_index, model_index);
@@ -443,6 +445,7 @@ match_egg_nodes(EggCharacterData *char_data, EggJointData *joint_data,
       EggNode *egg_node = (*ei);
       EggJointData *data = make_joint_data(char_data);
       joint_data->_children.push_back(data);
+      data->_parent = joint_data;
       found_egg_match(char_data, data, egg_node, egg_index, model_index);
     }
 
@@ -547,6 +550,7 @@ match_egg_nodes(EggCharacterData *char_data, EggJointData *joint_data,
 	  EggNode *egg_node = (*ei);
 	  EggJointData *data = make_joint_data(char_data);
 	  joint_data->_children.push_back(data);
+	  data->_parent = joint_data;
 	  found_egg_match(char_data, data, egg_node, egg_index, model_index);
 	}
       }

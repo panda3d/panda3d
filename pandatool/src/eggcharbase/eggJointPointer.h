@@ -28,6 +28,16 @@ public:
   virtual void set_frame(int n, const LMatrix4d &mat)=0;
   virtual bool add_frame(const LMatrix4d &mat);
 
+  void begin_rebuild();
+  virtual bool add_rebuild_frame(const LMatrix4d &mat);
+  virtual bool do_rebuild();
+
+  virtual void optimize();
+
+protected:
+  typedef vector<LMatrix4d> RebuildFrames;
+  RebuildFrames _rebuild_frames;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

@@ -39,6 +39,8 @@ public:
   INLINE EggCharacterData *get_character(int i) const;
   EggCharacterData *get_character_by_name(const string &character_name) const;
 
+  INLINE EggCharacterData *get_character_by_model_index(int model_index) const;
+
   virtual void write(ostream &out, int indent_level = 0) const;
 
   virtual EggCharacterData *make_character_data();
@@ -61,6 +63,7 @@ public:
 
   typedef vector<EggCharacterData *> Characters;
   Characters _characters;
+  Characters _characters_by_model_index;
 
 private:
   bool scan_hierarchy(EggNode *egg_node);

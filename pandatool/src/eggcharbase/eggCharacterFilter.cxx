@@ -5,6 +5,7 @@
 
 #include "eggCharacterFilter.h"
 #include "eggCharacterCollection.h"
+#include "eggCharacterData.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -57,6 +58,26 @@ post_command_line() {
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterFilter::write_eggs
+//       Access: Protected, Virtual
+//  Description: Writes out all of the egg files in the _eggs vector,
+//               to the output directory if one is specified, or over
+//               the input files if -inplace was specified.
+////////////////////////////////////////////////////////////////////
+void EggCharacterFilter::
+write_eggs() {
+  // Optimize (that is, collapse redudant nodes) in all of the
+  // characters' joint tables before writing them out.
+  int num_characters = _collection->get_num_characters();
+  for (int i = 0; i < num_characters; i++) {
+    EggCharacterData *char_data = _collection->get_character(i);
+    char_data->get_root_joint()->optimize();
+  }
+
+  EggMultiFilter::write_eggs();
 }
 
 ////////////////////////////////////////////////////////////////////

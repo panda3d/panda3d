@@ -10,6 +10,8 @@
 
 #include "eggComponentData.h"
 
+#include <luse.h>
+
 ////////////////////////////////////////////////////////////////////
 // 	 Class : EggJointData
 // Description : This is one node of a hierarchy of EggJointData
@@ -27,12 +29,20 @@ public:
   INLINE EggJointData *get_child(int n) const;
   EggJointData *find_joint(const string &name);
 
+  int get_num_frames(int model_index) const;
+  LMatrix4d get_frame(int model_index, int n) const;
+  LMatrix4d get_net_frame(int model_index, int n) const;
+
+  bool do_rebuild();
+  void optimize();
+
   virtual void add_back_pointer(int model_index, EggObject *egg_object);
   virtual void write(ostream &out, int indent_level = 0) const;
 
 protected:
   typedef vector<EggJointData *> Children;
   Children _children;
+  EggJointData *_parent;
 
   friend class EggCharacterCollection;
 };

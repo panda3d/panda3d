@@ -10,6 +10,7 @@
 #include <eggCharacterData.h>
 #include <eggJointPointer.h>
 #include <eggTable.h>
+#include <compose_matrix.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTopstrip::Constructor
@@ -43,7 +44,7 @@ EggTopstrip() {
     ("n", "", 0, 
      "Do not invert the matrix before applying.  This causes an "
      "additive effect.",
-     &EggTopstrip::dispatch_true, &_got_invert_transform, &_invert_transform);
+     &EggTopstrip::dispatch_false, &_got_invert_transform, &_invert_transform);
 
   add_option
     ("s", "[ijkphrxyz]", 0, 
@@ -73,13 +74,15 @@ void EggTopstrip::
 run() {
   nassertv(_collection != (EggCharacterCollection *)NULL);
   nassertv(_collection->get_num_eggs() > 0);
+  
+  check_transform_channels();
 
   // Get the number of characters first, in case adding the
   // _channel_egg changes this.
   int num_characters = _collection->get_num_characters();
 
-  // Determine which model we'll be pulling the animation channels
-  // from.
+  // Determine which model and character we'll be pulling the
+  // animation channels from.
   int from_model = -1;
 
   if (!_channel_filename.empty()) {
@@ -108,27 +111,38 @@ run() {
   // Now process each character.
   for (int i = 0; i < num_characters; i++) {
     EggCharacterData *char_data = _collection->get_character(i);
+    nout << "Processing " << char_data->get_name() << "\n";
 
     EggJointData *root_joint = char_data->get_root_joint();
 
+    // We'll read the transform to apply from this character, which
+    // will be the same character unless -r was specified.
+    EggCharacterData *from_char = char_data;
+    if (from_model != -1) {
+      from_char = _collection->get_character_by_model_index(from_model);
+    }
+
+    // Determine which joint we'll use to extract the transform to
+    // apply.
     EggJointData *top_joint = (EggJointData *)NULL;
     if (_top_joint_name.empty()) {
       // The default top joint name is the alphabetically first joint
       // in the top level.
       if (root_joint->get_num_children() == 0) {
-	nout << "Character " << char_data->get_name() << " has no joints.\n";
+	nout << "Character " << from_char->get_name() << " has no joints.\n";
 	exit(1);
       }
       top_joint = root_joint->get_child(0);
     } else {
-      top_joint = char_data->find_joint(_top_joint_name);
+      top_joint = from_char->find_joint(_top_joint_name);
       if (top_joint == (EggJointData *)NULL) {
-	nout << "Character " << char_data->get_name()
+	nout << "Character " << from_char->get_name()
 	     << " has no joint named " << _top_joint_name << "\n";
 	exit(1);
       }
     }
 
+    // First, transform all the joints.
     int num_children = root_joint->get_num_children();
     for (int i = 0; i < num_children; i++) {
       EggJointData *joint_data = root_joint->get_child(i);
@@ -141,13 +155,58 @@ run() {
     for (int m = 0; m < num_models; m++) {
       EggNode *node = char_data->get_model_root(m);
       if (!node->is_of_type(EggTable::get_class_type())) {
-	strip_anim_vertices(node, m, from_model, top_joint);
+	strip_anim_vertices(node, char_data->get_model_index(m),
+			    from_model, top_joint);
       }
     }
   }
 
+  // Now, trigger the actual rebuilding of all the joint data.
+  for (int i = 0; i < num_characters; i++) {
+    EggCharacterData *char_data = _collection->get_character(i);
+    char_data->get_root_joint()->do_rebuild();
+  }
+
   write_eggs();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTopstrip::check_transform_channels
+//       Access: Public
+//  Description: Checks the _transform_channels string to ensure that
+//               it contains only the expected nine letters, or a
+//               subset.
+////////////////////////////////////////////////////////////////////
+void EggTopstrip::
+check_transform_channels() {
+  static string expected = "ijkphrxyz";
+  static const int num_channels = 9;
+  bool has_each[num_channels];
+  memset(has_each, 0, num_channels * sizeof(bool));
+
+  for (size_t p = 0; p < _transform_channels.size(); p++) {
+    int i = expected.find(_transform_channels[p]);
+    if (i == (int)string::npos) {
+      nout << "Invalid letter for -s: " << _transform_channels[p] << "\n";
+      exit(1);
+    }
+    nassertv(i < num_channels);
+    has_each[i] = true;
+  }
+
+  _transform_channels = "";
+  for (int i = 0; i < num_channels; i++) {
+    if (has_each[i]) {
+      _transform_channels += expected[i];
+    }
+  }
+
+  if (_transform_channels.empty()) {
+    nout << "No transform specified for -s.\n";
+    exit(1);
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTopstrip::strip_anim
@@ -160,47 +219,42 @@ void EggTopstrip::
 strip_anim(EggJointData *joint_data, int from_model, EggJointData *top_joint) {
   int num_models = joint_data->get_num_models();
   for (int i = 0; i < num_models; i++) {
-    EggBackPointer *back = joint_data->get_model(i);
-    if (back != (EggBackPointer *)NULL) {
+    int model = (from_model < 0) ? i : from_model;
+
+    if (joint_data->has_model(i)) {
+      if (!top_joint->has_model(model)) {
+	nout << "Warning: Joint " << top_joint->get_name() 
+	     << " is not defined in all models.\n";
+	return;
+      }
+
+      int num_into_frames = joint_data->get_num_frames(i);
+      int num_from_frames = top_joint->get_num_frames(model);
+      
+      int num_frames = max(num_into_frames, num_from_frames);
+      
+      EggBackPointer *back = joint_data->get_model(i);
+      nassertv(back != (EggBackPointer *)NULL);
       EggJointPointer *joint;
       DCAST_INTO_V(joint, back);
-
-      cerr << "joint is " << joint->get_type() << "\n";
-
-      int model = (from_model < 0) ? i : from_model;
-      EggBackPointer *from_back = top_joint->get_model(model);
-      if (from_back == (EggBackPointer *)NULL) {
-	nout << "Joint " << top_joint->get_name() << " has no model index "
-	     << model << "\n";
-	exit(1);
-      }
-      EggJointPointer *from_joint;
-      DCAST_INTO_V(from_joint, from_back);
-
-      int num_into_frames = joint->get_num_frames();
-      int num_from_frames = from_joint->get_num_frames();
-
-      int num_frames = max(num_into_frames, num_from_frames);
-
-      for (int f = 0; f < num_frames; f++) {
-	LMatrix4d start = joint->get_frame(f % num_into_frames);
-	LMatrix4d strip = from_joint->get_frame(f % num_from_frames);
-
-	if (_invert_transform) {
-	  strip.invert_in_place();
-	}
-
-	cerr << "Applying " << strip << " to " << f << " of " 
-	     << joint_data->get_name() << " model " << i << "\n";
-
-	if (f >= num_into_frames) {
-	  if (!joint->add_frame(start * strip)) {
-	    nout << "Cannot apply multiple frames of animation to a model file.\n"
-		 << "In general, be careful when using -r and model files.\n";
-	    exit(1);
-	  }
-	} else {
-	  joint->set_frame(f, start * strip);
+      
+      // Compute and apply the new transforms.
+      joint->begin_rebuild();
+      
+      int f;
+      for (f = 0; f < num_frames; f++) {
+	LMatrix4d into = joint_data->get_frame(i, f % num_into_frames);
+	LMatrix4d from = top_joint->get_net_frame(model, f % num_from_frames);
+	
+	adjust_transform(from);
+	
+	if (!joint->add_rebuild_frame(into * from)) {
+	  nout <<
+	    "Cannot apply multiple frames of animation to a model file.\n"
+	    "In general, -r cannot be used when a model file is being "
+	    "adjusted, unless the named source is a one-frame animation "
+	    "file, or another model file.\n";
+	  exit(1);
 	}
       }
     }
@@ -217,23 +271,81 @@ void EggTopstrip::
 strip_anim_vertices(EggNode *egg_node, int into_model, int from_model, 
 		    EggJointData *top_joint) {
   int model = (from_model < 0) ? into_model : from_model;
-  EggBackPointer *from_back = top_joint->get_model(model);
-  if (from_back == (EggBackPointer *)NULL) {
-    nout << "Joint " << top_joint->get_name() << " has no model index "
-	 << model << "\n";
-    exit(1);
+  if (!top_joint->has_model(model)) {
+    nout << "Warning: Joint " << top_joint->get_name() 
+	 << " is not defined in all models.\n";
+    return;
   }
 
-  EggJointPointer *from_joint;
-  DCAST_INTO_V(from_joint, from_back);
+  LMatrix4d from = top_joint->get_net_frame(model, 0);
+  adjust_transform(from);
 
-  LMatrix4d strip = from_joint->get_frame(0);
+  egg_node->transform_vertices_only(from);
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTopstrip::adjust_transform
+//       Access: Public
+//  Description: Adjust the transform extracted from the "top" joint
+//               according to the -s and -i/-n options, prior to
+//               applying it to the skeleton.
+////////////////////////////////////////////////////////////////////
+void EggTopstrip::
+adjust_transform(LMatrix4d &mat) const {
+  if (_transform_channels.length() != 9) {
+    // Decompose and recompose the matrix, so we can eliminate the
+    // parts the user doesn't want.
+
+    LVecBase3d scale, hpr, translate;
+    bool result = decompose_matrix(mat, scale, hpr, translate, _coordinate_system);
+    if (!result) {
+      nout << "Warning: skew transform in animation.\n";
+    } else {
+      LVecBase3d new_scale(1.0, 1.0, 1.0);
+      LVecBase3d new_hpr(0.0, 0.0, 0.0);
+      LVecBase3d new_translate(0.0, 0.0, 0.0);
+
+      for (size_t i = 0; i < _transform_channels.size(); i++) {
+	switch (_transform_channels[i]) {
+	case 'i':
+	  new_scale[0] = scale[0];
+	  break;
+	case 'j':
+	  new_scale[1] = scale[1];
+	  break;
+	case 'k':
+	  new_scale[2] = scale[2];
+	  break;
+
+	case 'h':
+	  new_hpr[0] = hpr[0];
+	  break;
+	case 'p':
+	  new_hpr[1] = hpr[1];
+	  break;
+	case 'r':
+	  new_hpr[2] = hpr[2];
+	  break;
+
+	case 'x':
+	  new_translate[0] = translate[0];
+	  break;
+	case 'y':
+	  new_translate[1] = translate[1];
+	  break;
+	case 'z':
+	  new_translate[2] = translate[2];
+	  break;
+	}
+      }
+
+      compose_matrix(mat, new_scale, new_hpr, new_translate, _coordinate_system);
+    }
+  }
   if (_invert_transform) {
-    strip.invert_in_place();
+    mat.invert_in_place();
   }
-
-  cerr << "Applying " << strip << " to vertices.\n";
-  egg_node->transform_vertices_only(strip);
 }
 
 
