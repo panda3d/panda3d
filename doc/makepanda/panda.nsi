@@ -154,7 +154,7 @@ SectionEnd
 Section Uninstall
 
 !ifndef PPGAME
-        DetailPrint "Removing $FULLNAME from PATH ..."
+        DetailPrint "Removing ${FULLNAME} from PATH ..."
         Push "$INSTDIR\bin"
         Call un.RemoveFromPath
 !endif
