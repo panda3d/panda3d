@@ -32,6 +32,7 @@ MouseWatcher::
 MouseWatcher(const string &name) : DataNode(name) {
   _has_mouse = false;
   _current_region = (MouseWatcherRegion *)NULL;
+  _button_down_region = (MouseWatcherRegion *)NULL;
   _button_down = false;
 }
 
@@ -79,6 +80,9 @@ bool MouseWatcher::
 remove_region(MouseWatcherRegion *region) {
   if (region == _current_region) {
     _current_region = (MouseWatcherRegion *)NULL;
+  }
+  if (region == _button_down_region) {
+    _button_down_region = (MouseWatcherRegion *)NULL;
   }
   return _regions.erase(region) != 0;
 }
@@ -177,9 +181,11 @@ set_current_region(MouseWatcherRegion *region) {
 void MouseWatcher::
 throw_event_pattern(const string &pattern, const MouseWatcherRegion *region, 
 		    const string &button_name) {
-  region->test_ref_count_integrity();
   if (pattern.empty()) {
     return;
+  }
+  if (region != (MouseWatcherRegion *)NULL) {
+    region->test_ref_count_integrity();
   }
 
   string event;
@@ -188,7 +194,9 @@ throw_event_pattern(const string &pattern, const MouseWatcherRegion *region,
       string cmd = pattern.substr(p + 1, 1);
       p++;
       if (cmd == "r") {
-	event += region->get_name();
+	if (region != (MouseWatcherRegion *)NULL) {
+	  event += region->get_name();
+	}
 
       } else if (cmd == "b") {
 	event += button_name;
@@ -247,9 +255,20 @@ transmit_data(NodeAttributes &data) {
   _has_mouse = true;
 
   if (!_button_down) {
-    // We don't change regions while we are holding down a
-    // button--only when all buttons are up.
+    // If the button is not currently being held down, we are free to
+    // set the mouse into whichever region we like.
     set_current_region(get_over_region(_mouse));
+
+  } else {
+    // If the button *is* currently being held down, we can only move
+    // the mouse into a region if the region is the same region we
+    // started from.
+    MouseWatcherRegion *region = get_over_region(_mouse);
+    if (region == _button_down_region) {
+      set_current_region(region);
+    } else {
+      set_current_region((MouseWatcherRegion *)NULL);
+    }
   }
 
   // Look for button events.
@@ -267,8 +286,13 @@ transmit_data(NodeAttributes &data) {
 	// more than one button goes down together, we won't detect
 	// both of the button-up events properly.
 
-	if (_current_region != (MouseWatcherRegion *)NULL) {
-	  throw_event_pattern(_button_up_pattern, _current_region,
+	// We should probably throw a different button_up event based
+	// on whether the _current_region is NULL or not, so the
+	// calling code can differentiate between button_up within the
+	// starting region, and button_up outside the region.
+	// Presently, changing this will break the GUI code.
+	if (_button_down_region != (MouseWatcherRegion *)NULL) {
+	  throw_event_pattern(_button_up_pattern, _button_down_region,
 			      be._button.get_name());
 	}
 	_button_down = false;
@@ -276,14 +300,12 @@ transmit_data(NodeAttributes &data) {
       } else {
 	// Button down.
 
-	if (_button_down) {
-	  // Clicking down a second button while still holding the
-	  // first button down does cause a change in regions.
-	  set_current_region(get_over_region(_mouse));
+	if (!_button_down) {
+	  _button_down_region = _current_region;
 	}
 	_button_down = true;
-	if (_current_region != (MouseWatcherRegion *)NULL) {
-	  throw_event_pattern(_button_down_pattern, _current_region,
+	if (_button_down_region != (MouseWatcherRegion *)NULL) {
+	  throw_event_pattern(_button_down_pattern, _button_down_region,
 			      be._button.get_name());
 	}
       }

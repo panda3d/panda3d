@@ -93,6 +93,7 @@ private:
   LPoint2f _mouse;
 
   MouseWatcherRegion *_current_region;
+  MouseWatcherRegion *_button_down_region;
   bool _button_down;
 
   string _button_down_pattern;
