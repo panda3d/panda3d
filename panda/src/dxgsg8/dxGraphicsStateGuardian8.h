@@ -180,7 +180,7 @@ protected:
   DXTextureContext  *_pCurTexContext;
 
   bool              _bTransformIssued;  // decaling needs to tell when a transform has been issued
-  D3DMATRIX         _SavedTransform;   
+  D3DMATRIX         _SavedTransform;
 
   RenderBuffer::Type _cur_read_pixel_buffer;  // source for copy_pixel_buffer operation
 
@@ -197,7 +197,7 @@ protected:
   INLINE void enable_multisample_alpha_one(bool val);
   INLINE void enable_multisample_alpha_mask(bool val);
   INLINE void enable_multisample(bool val);
-*/  
+*/
 
   INLINE void enable_color_material(bool val);
   INLINE void enable_fog(bool val);
@@ -263,7 +263,7 @@ protected:
   PTA_Normalf _norms;
   PTA_Colorf _colors;
   PTA_ushort _cindexes,_nindexes;
-*/  
+*/
 
   Colorf _lmodel_ambient;
   float _material_ambient;
@@ -278,10 +278,10 @@ protected:
                } DxgsgFogType;
   DxgsgFogType _doFogType;
   bool _fog_enabled;
-/*  
+/*
   TODO: cache fog state
   float _fog_start,_fog_end,_fog_density,float _fog_color;
-*/    
+*/
 
   float      _alpha_func_refval;  // d3d stores UINT, panda stores this as float.  we store float
   D3DCMPFUNC _alpha_func;
@@ -352,11 +352,11 @@ public:
   #define DO_REACTIVATE_WINDOW true
   bool CheckCooperativeLevel(bool bDoReactivateWindow = false);
 
-  void  show_frame();
+  void show_frame(bool bNoNewFrameDrawn = false);
   void dx_init(HCURSOR hMouseCursor);
 
   void support_overlay_window(bool flag);
-  
+
 private:
   static TypeHandle _type_handle;
 };

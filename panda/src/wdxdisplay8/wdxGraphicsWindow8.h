@@ -34,6 +34,8 @@ class wdxGraphicsWindowGroup;
 const int WDXWIN_CONFIGURE = 4;
 const int WDXWIN_EVENT = 8;
 
+//#define FIND_CARD_MEMAVAILS
+
 typedef HRESULT (WINAPI * LPDIRECTDRAWCREATEEX)(GUID FAR * lpGuid, LPVOID  *lplpDD, REFIID  iid,IUnknown FAR *pUnkOuter);
 
 typedef struct {
@@ -54,6 +56,7 @@ class EXPCL_PANDADX wdxGraphicsWindow : public GraphicsWindow {
  friend class DXGraphicsStateGuardian;
  friend class DXTextureContext;
  friend class wdxGraphicsWindowGroup;
+ friend class DInput8Info;
 
 public:
   wdxGraphicsWindow(GraphicsPipe* pipe);
@@ -63,7 +66,6 @@ public:
   wdxGraphicsWindow(GraphicsPipe* pipe,const GraphicsWindow::Properties& props,wdxGraphicsWindowGroup *pParentGroup);
 
   virtual ~wdxGraphicsWindow(void);
-  virtual void end_frame( void );
 
   virtual TypeHandle get_gsg_type() const;
   static GraphicsWindow* make_wdxGraphicsWindow(const FactoryParams &params);
@@ -76,11 +78,14 @@ public:
   void handle_window_move( int x, int y );
   void handle_mouse_motion( int x, int y );
   void handle_mouse_exit(void);
-  void handle_keypress( ButtonHandle key, int x, int y );
-  void handle_keyrelease( ButtonHandle key);
+  void handle_keypress(ButtonHandle key, int x, int y );
+  void handle_keyrelease(ButtonHandle key);
   void dx_setup();
-  virtual void begin_frame( void );
-  void show_frame();
+
+// dont need to override these now?
+//  virtual void begin_frame( void );
+//  virtual void end_frame( void );
+
   virtual bool resize(unsigned int xsize,unsigned int ysize);
   virtual unsigned int verify_window_sizes(unsigned int numsizes,unsigned int *dimen);
   virtual int get_depth_bitwidth(void);
@@ -104,7 +109,7 @@ public:
   UINT_PTR _PandaPausedTimer;
   DXGraphicsStateGuardian *_dxgsg;
   void CreateScreenBuffersAndDevice(DXScreenData &Display);
-  
+
 private:
   wdxGraphicsWindowGroup *_pParentWindowGroup;
   HDC               _hdc;
@@ -146,7 +151,7 @@ class EXPCL_PANDADX wdxGraphicsWindowGroup {
 // group of windows are all created at the same time
     friend class wdxGraphicsWindow;
 
-PUBLISHED: 
+PUBLISHED:
     wdxGraphicsWindowGroup(GraphicsPipe *,const GraphicsWindow::Properties&);
     wdxGraphicsWindowGroup(GraphicsPipe *,const GraphicsWindow::Properties&,const GraphicsWindow::Properties&);
     wdxGraphicsWindowGroup(GraphicsPipe *,const GraphicsWindow::Properties&,const GraphicsWindow::Properties&,
@@ -167,7 +172,7 @@ public:
     pvector<wdxGraphicsWindow *> _windows;
     DXDeviceInfoVec *_pDeviceInfoVec;  // only used during init to store valid devices
     HWND      _hParentWindow;
-    HWND      _hOldForegroundWindow;  
+    HWND      _hOldForegroundWindow;
     HCURSOR   _hMouseCursor;
     bool      _bLoadedCustomCursor;
     bool      _bClosingAllWindows;
@@ -175,6 +180,7 @@ public:
     DWORD      _numMonitors,_numAdapters;
     LPDIRECT3D8 _pD3D8;
     HINSTANCE   _hD3D8_DLL;
+    DInput8Info *_pDInputInfo;
     DXDeviceInfoVec _DeviceInfoVec;
 };
 

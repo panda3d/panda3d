@@ -74,7 +74,7 @@ LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam,LPARAM lparam)
 
 // imperfect method to ID NVid? could also scan desc str, but that isnt fullproof either
 #define IS_NVIDIA(DDDEVICEID) ((DDDEVICEID.VendorId==0x10DE) || (DDDEVICEID.VendorId==0x12D2))
-#define IS_ATI(DDDEVICEID) (DDDEVICEID.VendorId==0x1002) 
+#define IS_ATI(DDDEVICEID) (DDDEVICEID.VendorId==0x1002)
 #define IS_MATROX(DDDEVICEID) (DDDEVICEID.VendorId==0x102B)
 
 // because we dont have access to ModifierButtons, as a hack just synchronize state of these
@@ -101,7 +101,7 @@ static DWORD BitDepth_2_DDBDMask(DWORD iBitDepth) {
 
 typedef enum {DBGLEV_FATAL,DBGLEV_ERROR,DBGLEV_WARNING,DBGLEV_INFO,DBGLEV_DEBUG,DBGLEV_SPAM
     } DebugLevels;
- 
+
 void PrintDBGStr(DebugLevels level,HRESULT hr,const char *msgstr) {
     ostream *pstrm;
     static ostream dbg_strms[DBGLEV_SPAM+1]={wdxdisplay_cat.fatal,wdxdisplay_cat.error,
@@ -122,13 +122,13 @@ void PrintErrorMessage(DWORD msgID) {
      msgID=GetLastError();
 
    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-                 NULL,msgID,  
+                 NULL,msgID,
                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), //The user default language
                  (LPTSTR) &pMessageBuffer,  // the weird ptrptr->ptr cast is intentional, see FORMAT_MESSAGE_ALLOCATE_BUFFER
                  1024, NULL);
    MessageBox(GetDesktopWindow(),pMessageBuffer,_T(ERRORBOX_TITLE),MB_OK);
    wdxdisplay_cat.fatal() << "System error msg: " << pMessageBuffer << endl;
-   LocalFree( pMessageBuffer ); 
+   LocalFree( pMessageBuffer );
 }
 
 //#if defined(NOTIFY_DEBUG) || defined(DO_PSTATS)
@@ -197,7 +197,7 @@ void wdxGraphicsWindow::DestroyMe(bool bAtExitFnCalled) {
     ReleaseDC(scrn.hWnd,scrn._hdc);
 //    _hdc = NULL;
   }
-*/  
+*/
 
   if(scrn.hWnd!=NULL) {
     DestroyWindow(scrn.hWnd);
@@ -318,7 +318,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
             PAINTSTRUCT ps;
             BeginPaint(hwnd, &ps);
-            show_frame();
+            if(DX_IS_READY) {
+               _dxgsg->show_frame(true);  // 'true' since just want to show the last rendered backbuf, if any
+            }
             EndPaint(hwnd, &ps);
             return 0;
         }
@@ -388,7 +390,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           set_cursor_visibility(true);
           break;
         }
-    
+
         case WM_IME_NOTIFY:
           if (wparam == IMN_SETOPENSTATUS) {
             HIMC hIMC = ImmGetContext(hwnd);
@@ -400,7 +402,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             ImmReleaseContext(hwnd, hIMC);
           }
           break;
-    
+
         case WM_IME_STARTCOMPOSITION:
           // In case we're running fullscreen mode, we have to turn on
           // explicit DX support for overlay windows now, so we'll be able
@@ -408,44 +410,44 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           _dxgsg->support_overlay_window(true);
           _ime_active = true;
           break;
-    
+
         case WM_IME_ENDCOMPOSITION:
           // Turn off the support for overlay windows, since we're done
           // with the IME window for now and it just slows things down.
           _dxgsg->support_overlay_window(false);
           _ime_active = false;
           break;
-    
+
         case WM_IME_COMPOSITION:
           if (lparam & GCS_RESULTSTR) {
             if (!_input_devices.empty()) {
               HIMC hIMC = ImmGetContext(hwnd);
               nassertr(hIMC != 0, 0);
-              
+
               static const int max_ime_result = 128;
               static char ime_result[max_ime_result];
-    
+
               if (_ime_composition_w) {
                 // Since ImmGetCompositionStringA() doesn't seem to work
                 // for Win2000 (it always returns question mark
                 // characters), we have to use ImmGetCompositionStringW()
                 // on this OS.  This is actually the easier of the two
                 // functions to use.
-    
+
                 DWORD result_size =
                   ImmGetCompositionStringW(hIMC, GCS_RESULTSTR,
                                            ime_result, max_ime_result);
-    
+
                 // Add this string into the text buffer of the application.
-              
+
                 // ImmGetCompositionStringW() returns a string, but it's
                 // filled in with wstring data: every two characters defines a
                 // 16-bit unicode char.  The docs aren't clear on the
                 // endianness of this.  I guess it's safe to assume all Win32
                 // machines are little-endian.
                 for (DWORD i = 0; i < result_size; i += 2) {
-                  int result = 
-                    ((int)(unsigned char)ime_result[i + 1] << 8) | 
+                  int result =
+                    ((int)(unsigned char)ime_result[i + 1] << 8) |
                     (unsigned char)ime_result[i];
                   _input_devices[0].keystroke(result);
                 }
@@ -456,13 +458,13 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                 DWORD result_size =
                   ImmGetCompositionStringA(hIMC, GCS_RESULTSTR,
                                            ime_result, max_ime_result);
-    
+
                 // ImmGetCompositionStringA() returns an encoded ANSI
                 // string, which we now have to map to wide-character
                 // Unicode.
                 static const int max_wide_result = 128;
                 static wchar_t wide_result[max_wide_result];
-    
+
                 int wide_size =
                   MultiByteToWideChar(CP_ACP, 0,
                                       ime_result, result_size,
@@ -474,13 +476,13 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                   _input_devices[0].keystroke(wide_result[i]);
                 }
               }
-    
+
               ImmReleaseContext(hwnd, hIMC);
             }
             return 0;
           }
           break;
-    
+
         case WM_CHAR:
           // Ignore WM_CHAR messages if we have the IME open, since
           // everything will come in through WM_IME_COMPOSITION.  (It's
@@ -491,7 +493,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             _input_devices[0].keystroke(wparam);
           }
           break;
-    
+
         case WM_SYSKEYDOWN: {
           // Alt and F10 are sent as WM_SYSKEYDOWN instead of WM_KEYDOWN
           // want to use defwindproc on Alt syskey so std windows cmd Alt-F4 works, etc
@@ -508,33 +510,33 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
         case WM_SYSCOMMAND:
           if(wparam==SC_KEYMENU) {
-              // if Alt is released (alone w/o other keys), defwindproc will send 
+              // if Alt is released (alone w/o other keys), defwindproc will send
               // this command, which will 'activate' the title bar menu (we have none)
               // and give focus to it.  we dont want this to happen, so kill this msg
               return 0;
           }
         break;
-    
+
         case WM_KEYDOWN: {
           POINT point;
-    
+
           GetCursorPos(&point);
           ScreenToClient(hwnd, &point);
           handle_keypress(lookup_key(wparam), point.x, point.y);
-    
+
           // Handle Cntrl-V paste from clipboard.  Is there a better way
           // to detect this hotkey?
-          if ((wparam=='V') && (GetKeyState(VK_CONTROL) < 0) && 
+          if ((wparam=='V') && (GetKeyState(VK_CONTROL) < 0) &&
               !_input_devices.empty()) {
             HGLOBAL hglb;
             char *lptstr;
-    
+
             if (!IsClipboardFormatAvailable(CF_TEXT))
               return 0;
-    
+
             if (!OpenClipboard(NULL))
               return 0;
-            
+
             // Maybe we should support CF_UNICODETEXT if it is available
             // too?
             hglb = GetClipboardData(CF_TEXT);
@@ -552,19 +554,19 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           }
           break;
         }
-    
+
         case WM_SYSKEYUP:
         case WM_KEYUP:
           handle_keyrelease(lookup_key(wparam));
           break;
-  
+
         case WM_LBUTTONDOWN:
             button = 0;
         case WM_MBUTTONDOWN:
             if(button < 0)
                 button = 1;
         case WM_RBUTTONDOWN:
-            if(!DX_IS_READY) 
+            if(!DX_IS_READY)
               break;
 
             if(button < 0)
@@ -581,7 +583,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             if(button < 0)
                 button = 1;
         case WM_RBUTTONUP:
-            if(!DX_IS_READY) 
+            if(!DX_IS_READY)
               break;
 
             if(button < 0)
@@ -589,13 +591,13 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             ReleaseCapture();
             #if 0
                SET_MOUSE_COORD(x,LOWORD(lparam));
-               SET_MOUSE_COORD(y,HIWORD(lparam));           
+               SET_MOUSE_COORD(y,HIWORD(lparam));
             #endif
             handle_keyrelease(MouseButton::button(button));
             return 0;
 
         case WM_SETCURSOR:
-            // Turn off any GDI window cursor 
+            // Turn off any GDI window cursor
             //  dx8 cursor not working yet
 
             if(_use_dx8_cursor && _props._fullscreen) {
@@ -659,7 +661,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             #ifdef _DEBUG
               wdxdisplay_cat.spam()  << "WM_EXITSIZEMOVE received"  << endl;
             #endif
-            
+
             if(_WindowAdjustingType==Resizing) {
                 bool bSucceeded=handle_windowed_resize(hwnd,true);
 
@@ -756,7 +758,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             // user is using, since we may miss some here
 
             for(int i=0;i<NUM_MODIFIER_KEYS;i++) {
-              if(GetKeyState(hardcoded_modifier_buttons[i]) < 0) 
+              if(GetKeyState(hardcoded_modifier_buttons[i]) < 0)
                 handle_keypress(lookup_key(hardcoded_modifier_buttons[i]),point.x,point.y);
             }
             return 0;
@@ -790,7 +792,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 #endif
 
         case WM_ERASEBKGND:
-        // WM_ERASEBKGND will be ignored during resizing, because 
+        // WM_ERASEBKGND will be ignored during resizing, because
         // we dont want to redraw as user is manually resizing window
             if(_WindowAdjustingType)
                 break;
@@ -822,7 +824,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
                 // wdxdisplay_cat.spam() << "periodic return of control to app\n";
                 _return_control_to_app = true;
-                // throw_event("PandaPaused");   
+                // throw_event("PandaPaused");
                 // do we still need to do this since I return control to app periodically using timer msgs?
                 // does app need to know to avoid major computation?
             }
@@ -838,10 +840,10 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           // BUGBUG:  right now there is no way to tell the panda app the graphics window is invalid or
           //          has been closed by the user, to prevent further methods from being called on the window.
           //          this needs to be added to panda for multiple windows to work.  in the meantime, just
-          //          trigger an exit here if # windows==0, since that is the expected behavior when all 
+          //          trigger an exit here if # windows==0, since that is the expected behavior when all
           //          windows are closed (should be done by the app though, and it assumes you only make this
           //          type of panda gfx window)
-    
+
           if(hwnd_pandawin_map.size()==0) {
               exit(0);
           }
@@ -851,7 +853,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             #ifdef _DEBUG
               wdxdisplay_cat.spam()  << "WM_ACTIVATEAPP(" << (bool)(wparam!=0) <<") received\n";
             #endif
-            
+
            if((!wparam) && _props._fullscreen) {
                deactivate_window();
                return 0;
@@ -885,7 +887,7 @@ bool wdxGraphicsWindow::reset_device_resize_window(UINT new_xsize, UINT new_ysiz
                 exit(1);
             } else {
                 if(wdxdisplay_cat.is_info())
-                    wdxdisplay_cat.info() << "reset of original size (" <<pScrn->PresParams.BackBufferWidth << "," 
+                    wdxdisplay_cat.info() << "reset of original size (" <<pScrn->PresParams.BackBufferWidth << ","
                     << pScrn->PresParams.BackBufferHeight << ") succeeded\n";
             }
         } else {
@@ -903,7 +905,7 @@ bool wdxGraphicsWindow::reset_device_resize_window(UINT new_xsize, UINT new_ysiz
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsWindow::handle_windowed_resize(HWND hWnd,bool bDoDxReset) {
-  // handles windowed, non-fullscreen resizing    
+  // handles windowed, non-fullscreen resizing
     GdiFlush();
 
     assert(!_props._fullscreen);
@@ -941,7 +943,7 @@ bool wdxGraphicsWindow::handle_windowed_resize(HWND hWnd,bool bDoDxReset) {
    do {
         // change _props xsize,ysize  (need to do this here in case _dxgsg==NULL)
         resized(xsize,ysize);
-        
+
         if((_dxgsg!=NULL)&& bDoDxReset) {
           bResizeSucceeded=reset_device_resize_window(xsize,ysize);  // create the new resized rendertargets
           if(!bResizeSucceeded) {
@@ -958,19 +960,19 @@ bool wdxGraphicsWindow::handle_windowed_resize(HWND hWnd,bool bDoDxReset) {
           }
         }
     } while(!bResizeSucceeded);
-*/  
+*/
 
     // change _props xsize,ysize  (need to do this here in case _dxgsg==NULL)
     // reset_device_resize will call it again, this is OK
     resized(xsize,ysize);
-    
+
     if((_dxgsg!=NULL)&& bDoDxReset) {
       bResizeSucceeded=reset_device_resize_window(xsize,ysize);  // create the new resized rendertargets
       if(!bResizeSucceeded) {
-          if(wdxdisplay_cat.is_debug()) 
+          if(wdxdisplay_cat.is_debug())
               wdxdisplay_cat.debug() << "windowed_resize to size: (" << xsize << "," << ysize << ") failed due to out-of-memory\n";
       } else {
-          if(wdxdisplay_cat.is_debug()) 
+          if(wdxdisplay_cat.is_debug())
               wdxdisplay_cat.debug() << "windowed_resize to origin: (" << _props._xorg << "," << _props._yorg << "), size: (" << _props._xsize << "," << _props._ysize << ")\n";
       }
     }
@@ -1034,12 +1036,12 @@ void wdxGraphicsWindow::deactivate_window(void) {
 
 // currently this should only be called from CheckCoopLvl to return from Alt-tab
 void wdxGraphicsWindow::reactivate_window(void) {
-    if((!_window_active)||(_active_minimized_fullscreen)) { 
-    
+    if((!_window_active)||(_active_minimized_fullscreen)) {
+
         // first see if dx cooperative level is OK for reactivation
     //    if(!_dxgsg->CheckCooperativeLevel())
     //        return;
-    
+
         if(_PandaPausedTimer!=NULL) {
             KillTimer(_dxgsg->scrn.hWnd,_PandaPausedTimer);
             _PandaPausedTimer = NULL;
@@ -1057,12 +1059,12 @@ void wdxGraphicsWindow::reactivate_window(void) {
 
         // need to call dx_init and ResourceManagerDiscardBytes since D3D Reset() was called
         init_resized_window();
-    
+
         // move window to top of zorder
     //  if(_props._fullscreen)
     //      SetWindowPos(_DisplayDataArray[0].hWnd, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOOWNERZORDER);
         GdiFlush();
-    } 
+    }
 
     if(_props._fullscreen) {
         throw_event("PandaRestarted");  // right now this is used to signal python event handler to re-enable audio
@@ -1085,7 +1087,7 @@ wdxGraphicsWindow::wdxGraphicsWindow(GraphicsPipe* pipe) : GraphicsWindow(pipe) 
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-wdxGraphicsWindow::wdxGraphicsWindow(GraphicsPipe* pipe, const GraphicsWindow::Properties& props) 
+wdxGraphicsWindow::wdxGraphicsWindow(GraphicsPipe* pipe, const GraphicsWindow::Properties& props)
                   : GraphicsWindow(pipe, props) {
    _ime_open = false;
    _pParentWindowGroup=NULL;
@@ -1094,11 +1096,11 @@ wdxGraphicsWindow::wdxGraphicsWindow(GraphicsPipe* pipe, const GraphicsWindow::P
 
 bool supports_color_cursors(D3DADAPTER_IDENTIFIER8 &DevID) {
     // TODO: add more cards as more testing is done
-    if(IS_NVIDIA(DevID)) {    
+    if(IS_NVIDIA(DevID)) {
         // all nvidia seem to support 256 color
         return true;
     } else if(IS_ATI(DevID)) {
-        // radeons seem to be in the 5100 range and support color, assume anything in 6000 or above 
+        // radeons seem to be in the 5100 range and support color, assume anything in 6000 or above
         // is newer than radeon and supports 256 color
         if(((DevID.DeviceId>=0x5100) && (DevID.DeviceId<=0x5200)) ||
            (DevID.DeviceId>=0x6000))
@@ -1127,7 +1129,7 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
     HINSTANCE hProgramInstance = GetModuleHandle(NULL);
     WNDCLASS wc;
     static bool wc_registered = false;
-    _hParentWindow = NULL;        
+    _hParentWindow = NULL;
     _bLoadedCustomCursor=false;
 
     // Clear before filling in window structure!
@@ -1136,7 +1138,7 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
     wc.lpfnWndProc    = (WNDPROC) static_window_proc;
     wc.hInstance      = hProgramInstance;
 
-  // all this must be moved to dx_init, since we need to create DX surface 
+  // all this must be moved to dx_init, since we need to create DX surface
     string windows_icon_filename = get_icon_filename().to_os_specific();
 
 
@@ -1160,35 +1162,35 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
 
     if(!windows_color_cursor_filename.empty()) {
         // card support for full color non-black/white GDI cursors varies greatly.  if the cursor is not supported,
-        // it is rendered in software by GDI, which causes a flickering effect (because it's not synced 
+        // it is rendered in software by GDI, which causes a flickering effect (because it's not synced
         // with flip?).  GDI transparently masks the lack of HW support so there is no easy way for app to detect
         // if HW cursor support exists.  alternatives are to tie cursor motion to frame rate using DDraw blts
-        // or overlays (this is done automatically by DX8 runtime mouse cursor support), or to have separate thread draw cursor 
+        // or overlays (this is done automatically by DX8 runtime mouse cursor support), or to have separate thread draw cursor
         // (sync issues?).  instead we do mono cursor  unless card is known to support 256 color cursors
         bool bSupportsColorCursor=true;
-    
-        #if 0 
+
+        #if 0
           // remove this check for now, since dx8 should emulate color cursors
         /* if any card doesnt support color, dont load it*/
          for(int w=0;w<_windows.size();w++)
                bSupportsColorCursor &= supports_color_cursors(_windows[w]->_dxgsg->scrn.DXDeviceID);
         #endif
-    
+
         if(bSupportsColorCursor) {
             DWORD load_flags = LR_LOADFROMFILE;
-    
+
             if(dx_full_screen) {
                 // I think cursors should use LR_CREATEDIBSECTION since they should not be mapped to the device palette (in the case of 256-color cursors)
                 // since they are not going to be used on the desktop
                 load_flags |= LR_CREATEDIBSECTION;
             }
-    
+
             // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings)
             // if icon is more than 8bpp
 
-            // loads a .cur fmt file. 
+            // loads a .cur fmt file.
             _hMouseCursor = (HCURSOR) LoadImage(NULL, windows_color_cursor_filename.c_str(), IMAGE_CURSOR, 0, 0, load_flags );
-    
+
             if(_hMouseCursor==NULL) {
                 wdxdisplay_cat.warning() << "windows color cursor filename '" << windows_color_cursor_filename << "' not found!!\n";
                 goto try_mono_cursor;
@@ -1204,28 +1206,28 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
 
     if(!_bLoadedCustomCursor) {
         string windows_mono_cursor_filename = get_mono_cursor_filename().to_os_specific();
-        
+
         if(!windows_mono_cursor_filename.empty()) {
             // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings)
             // if icon is more than 8bpp
-    
+
             DWORD load_flags = LR_LOADFROMFILE;
-    
+
             if(dx_full_screen) {
                 // I think cursors should use LR_CREATEDIBSECTION since they should not be mapped to the device palette (in the case of 256-color cursors)
                 // since they are not going to be used on the desktop
                 load_flags |= LR_CREATEDIBSECTION;
             }
-            // loads a .cur fmt file. 
+            // loads a .cur fmt file.
             _hMouseCursor = (HCURSOR) LoadImage(NULL, windows_mono_cursor_filename.c_str(), IMAGE_CURSOR, 0, 0, load_flags);
-    
+
             if(_hMouseCursor==NULL) {
                 wdxdisplay_cat.warning() << "windows mono cursor filename '" << windows_mono_cursor_filename << "' not found!!\n";
             } else _bLoadedCustomCursor=true;
         }
     }
 
-    if(!_bLoadedCustomCursor) 
+    if(!_bLoadedCustomCursor)
       _hMouseCursor = LoadCursor(NULL, DEFAULT_CURSOR);
 
     // need both a mouse and no-mouse class in case we have mixed fullscrn/windowed
@@ -1233,12 +1235,12 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
     if (!wc_registered) {
       // We only need to register the window class once per session.
 
-      wc.hCursor = _hMouseCursor;  // for windowed mode use the GDI cursor.  
+      wc.hCursor = _hMouseCursor;  // for windowed mode use the GDI cursor.
       // bugbug:  for fullscreen do we need to do a SetWindowLongNULL
       wc.hbrBackground  = (HBRUSH)GetStockObject(BLACK_BRUSH);
       wc.lpszMenuName   = NULL;
       wc.lpszClassName  = WDX_WINDOWCLASSNAME;
-      
+
       if(!RegisterClass(&wc)) {
         wdxdisplay_cat.error() << "could not register window class " << WDX_WINDOWCLASSNAME << endl;
       }
@@ -1247,9 +1249,9 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
           wc.hCursor = CreateNullCursor(hProgramInstance);
           if(wc.hCursor==NULL)
             wdxdisplay_cat.error() << "failed to create NULL cursor, error=" << GetLastError() << endl;
-    
+
           wc.lpszClassName = WDX_WINDOWCLASSNAME_NOCURSOR;
-    
+
           if(!RegisterClass(&wc)) {
             wdxdisplay_cat.error() << "could not register window class " << WDX_WINDOWCLASSNAME_NOCURSOR << endl;
           }
@@ -1292,12 +1294,12 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
             RECT win_rect;
             SetRect(&win_rect, props->_xorg,  props->_yorg, props->_xorg + props->_xsize,
                     props->_yorg + props->_ysize);
-    
+
             if(props->_border)
                 final_window_style |= WS_OVERLAPPEDWINDOW;  // should we just use WS_THICKFRAME instead?
-    
+
             AdjustWindowRect(&win_rect, final_window_style, false);  //compute window size based on desired client area size
-    
+
             // make sure origin is on screen
             if(win_rect.left < 0) {
                 win_rect.right -= win_rect.left; win_rect.left = 0;
@@ -1319,7 +1321,7 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
             exit(1);
         }
 
-        // BUGBUG: this sets window posns based on desktop arrangement of monitors (that is what GetMonInfo is for). 
+        // BUGBUG: this sets window posns based on desktop arrangement of monitors (that is what GetMonInfo is for).
         // need to move to chancfg stuff instead (i.e. use the properties x/yorg's) when that is ready
         HWND hWin = CreateWindow(pWindowClassName, props->_title.c_str(),
                                   final_window_style, xleft,ytop,xsize,ysize,
@@ -1365,7 +1367,7 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
 
         _hParentWindow =
             CreateWindow(WDX_WINDOWCLASSNAME, props->_title.c_str(),
-                         window_style, 
+                         window_style,
                          win_rect.left, win_rect.top, win_rect.right-win_rect.left,win_rect.bottom-win_rect.top,
                          NULL, NULL, hProgramInstance, 0);
         _windows[0]->set_window_handle(_hParentWindow);
@@ -1386,7 +1388,7 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
         // probably only need to do this for devnum 0
         HDC hdc = GetDC(pWDXWin->_dxgsg_>scrn.hWnd);
         pWDXWin->_dxgsg->Set_HDC(hdc);
-*/      
+*/
     }
 
     // now we can stop using the global_wdxwinptr crutch since windows are created
@@ -1441,12 +1443,34 @@ void wdxGraphicsWindow::config_window(wdxGraphicsWindowGroup *pParentGroup) {
     // However, this function doesn't work for Win98; on this OS, we
     // have to use ImmGetCompositionStringA() instead, which returns an
     // encoded string in shift-jis (which we then have to decode).
-    
+
     // For now, this is user-configurable, to allow testing of this code
     // on both OS's.  After we verify that truth of the above claim, we
     // should base this decision on GetVersionEx() or maybe
     // VerifyVersionInfo().
+
     _ime_composition_w = ime_composition_w;
+
+    // need to re-evaluate above in light of this, it seems that
+    // ImmGetCompositionStringW should work on both:
+    //     The Input Method Editor and Unicode Windows 98/Me, Windows
+    //     NT/2000/XP: Windows supports a Unicode interface for the
+    //     IME, in addition to the ANSI interface originally supported.
+    //     Windows 98/Me supports all the Unicode functions except
+    //     ImmIsUIMessage.  Also, all the messages in Windows 98/Me are
+    //     ANSI based.  Since Windows 98/Me does not support Unicode
+    //     messages, applications can use ImmGetCompositionString to
+    //     receive Unicode characters from a Unicode based IME on
+    //     Windows 98/Me.  There are two issues involved with Unicode
+    //     handling and the IME.  One is that the Unicode versions of
+    //     IME routines return the size of a buffer in bytes rather
+    //     than 16-bit Unicode characters,and the other is the IME
+    //     normally returns Unicode characters (rather than DBCS) in
+    //     the WM_CHAR and WM_IME_CHAR messages.  Use RegisterClassW
+    //     to cause the WM_CHAR and WM_IME_CHAR messages to return
+    //     Unicode characters in the wParam parameter rather than DBCS
+    //     characters.  This is only available under Windows NT; it is
+    //     stubbed out in Windows 95/98/Me.
 }
 
 void wdxGraphicsWindow::finish_window_setup(void) {
@@ -1460,58 +1484,9 @@ void wdxGraphicsWindow::finish_window_setup(void) {
     SetWindowPos(hWin, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE);
     // call twice to override STARTUPINFO value, which may be set to hidden initially (by emacs for instance)
     ShowWindow(hWin, SW_SHOWNORMAL);
-    ShowWindow(hWin, SW_SHOWNORMAL);  
+    ShowWindow(hWin, SW_SHOWNORMAL);
     //  UpdateWindow( _mwindow );
 }
-
-
-#if 0
-HRESULT CALLBACK EnumDevicesCallback(LPSTR pDeviceDescription, LPSTR pDeviceName,
-                                     LPD3DDEVICEDESC7 pD3DDeviceDesc,LPVOID pContext) {
-    D3DDEVICEDESC7 *pd3ddevs = (D3DDEVICEDESC7 *)pContext;
-#ifdef _DEBUG
-    wdxdisplay_cat.spam() << "Enumerating Device " << pDeviceName << " : " << pDeviceDescription << endl;
-#endif
-
-#define REGHALIDX 0
-#define TNLHALIDX 1
-
-    // only saves hal and tnl devs, not sw rasts
-
-    if(IsEqualGUID(pD3DDeviceDesc->deviceGUID,IID_IDirect3DHALDevice)) {
-        CopyMemory(&pd3ddevs[REGHALIDX],pD3DDeviceDesc,sizeof(D3DDEVICEDESC7));
-    } else if(IsEqualGUID(pD3DDeviceDesc->deviceGUID,IID_IDirect3DTnLHalDevice)) {
-        CopyMemory(&pd3ddevs[TNLHALIDX],pD3DDeviceDesc,sizeof(D3DDEVICEDESC7));
-    }
-    return DDENUMRET_OK;
-}
-
-#define MAX_DISPLAY_MODES 100  // probably dont need this much, since i already screen for width&hgt
-typedef struct {
-  DWORD maxWidth,maxHeight;
-  DWORD supportedBitDepths;    // uses DDBD_* flags
-  LPDDSURFACEDESC2 pDDSD_Arr;
-  DWORD cNumSurfDescs;
-} DisplayModeInfo;
-
-HRESULT WINAPI EnumDisplayModesCallBack(LPDDSURFACEDESC2 lpDDSurfaceDesc,LPVOID lpContext) {
-    DisplayModeInfo *pDMI = (DisplayModeInfo *) lpContext;
-
-    // ddsd_search should assure this is true
-    assert((lpDDSurfaceDesc->dwWidth == pDMI->maxWidth) && (lpDDSurfaceDesc->dwHeight == pDMI->maxHeight));
-
-    // ignore refresh rates under 60Hz (and special values of 0 & 1)
-    if((lpDDSurfaceDesc->dwRefreshRate>1) && (lpDDSurfaceDesc->dwRefreshRate<60))
-      return DDENUMRET_OK;
-
-    assert(pDMI->cNumSurfDescs < MAX_DISPLAY_MODES);
-    memcpy(&(pDMI->pDDSD_Arr[pDMI->cNumSurfDescs]), lpDDSurfaceDesc, sizeof(DDSURFACEDESC2) );
-    pDMI->cNumSurfDescs++;
-    pDMI->supportedBitDepths |= BitDepth_2_DDBDMask(lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount);
-
-    return DDENUMRET_OK;
-}
-#endif
 
 // this handles external programmatic requests for resizing (usually fullscrn resize)
 bool wdxGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
@@ -1522,7 +1497,7 @@ bool wdxGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
           wdxdisplay_cat.debug() << "redundant resize() called, returning\n";
         return true;
     }
-    
+
     if(!_props._fullscreen) {
        if(wdxdisplay_cat.is_debug())
           wdxdisplay_cat.debug() << "resize("<<xsize<<","<<ysize<<") called\n";
@@ -1546,23 +1521,23 @@ bool wdxGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
        }
 
        SetWindowPos(_dxgsg->scrn.hWnd, NULL, win_rect.left,win_rect.top, RECT_XSIZE(win_rect), RECT_YSIZE(win_rect), SWP_NOZORDER | SWP_NOSENDCHANGING);
-       // WM_ERASEBKGND will be ignored, because _WindowAdjustingType!=NotAdjusting because 
+       // WM_ERASEBKGND will be ignored, because _WindowAdjustingType!=NotAdjusting because
        // we dont want to redraw as user is manually resizing window, so need to force explicit
        // background clear for the programmatic resize fn call
         _WindowAdjustingType=NotAdjusting;
-         
+
         //window_proc(_mwindow, WM_ERASEBKGND,(WPARAM)_hdc,0x0);  // this doesnt seem to be working in toontown resize, so I put ddraw blackblt in handle_windowed_resize instead
 
        return handle_windowed_resize(_dxgsg->scrn.hWnd,true);
     }
-    
+
     assert(IS_VALID_PTR(_dxgsg));
-    
+
     if(wdxdisplay_cat.is_info())
       wdxdisplay_cat.info() << "fullscrn resize("<<xsize<<","<<ysize<<") called\n";
-    
+
     _dxgsg->SetDXReady(false);
-    
+
     bool bCouldntFindValidZBuf;
     D3DFORMAT pixFmt;
     bool bNeedZBuffer = (_dxgsg->scrn.PresParams.EnableAutoDepthStencil!=false);
@@ -1572,12 +1547,12 @@ bool wdxGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
       wdxdisplay_cat.error() << "resize() failed: cant resize low vidmem device #" << _dxgsg->scrn.CardIDNum << " to non 640x480!\n";
       goto Error_Return;
     }
-    
+
     search_for_valid_displaymode(xsize,ysize,bNeedZBuffer,bNeedStencilBuffer,
                                  &_dxgsg->scrn.SupportedScreenDepthsMask,
                                  &bCouldntFindValidZBuf,
                                  &pixFmt);
-    
+
     if(pixFmt==D3DFMT_UNKNOWN) {
         wdxdisplay_cat.error() << "resize() failed: "
           << (bCouldntFindValidZBuf ? "Couldnt find valid zbuffer format to go with FullScreen mode" : "No supported FullScreen modes")
@@ -1590,14 +1565,14 @@ bool wdxGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
     _dxgsg->scrn.DisplayMode.Width=xsize;
     _dxgsg->scrn.DisplayMode.Height=ysize;
     _dxgsg->scrn.DisplayMode.Format = pixFmt;
-    _dxgsg->scrn.DisplayMode.RefreshRate = D3DPRESENT_RATE_DEFAULT;  
+    _dxgsg->scrn.DisplayMode.RefreshRate = D3DPRESENT_RATE_DEFAULT;
 
     _dxgsg->scrn.PresParams.BackBufferFormat = pixFmt;   // make reset_device_resize use presparams or displaymode??
-    
+
     //    resized(xsize,ysize);  not needed?
-    
+
     bResizeSucceeded=reset_device_resize_window(xsize,ysize);
-    
+
     if(!bResizeSucceeded) {
        wdxdisplay_cat.error() << "resize() failed with OUT-OF-MEMORY error!\n";
 
@@ -1627,7 +1602,7 @@ UINT wdxGraphicsWindow::
 verify_window_sizes(UINT numsizes,UINT *dimen) {
    // unfortunately this only works AFTER you make the window initially,
    // so its really mostly useful for resizes only
-   assert(IS_VALID_PTR(_dxgsg));  
+   assert(IS_VALID_PTR(_dxgsg));
 
    UINT num_valid_modes=0;
 
@@ -1663,7 +1638,7 @@ verify_window_sizes(UINT numsizes,UINT *dimen) {
 }
 
 BOOL WINAPI DX7_DriverEnumCallback( GUID* pGUID, TCHAR* strDesc,TCHAR* strName,VOID *argptr, HMONITOR hm) {
-//    #define PRNT(XX) ((XX!=NULL) ? XX : "NULL") 
+//    #define PRNT(XX) ((XX!=NULL) ? XX : "NULL")
 //    cout << "strDesc: "<< PRNT(strDesc) << "  strName: "<< PRNT(strName)<<endl;
 
     CardID CurCardID;
@@ -1675,10 +1650,10 @@ BOOL WINAPI DX7_DriverEnumCallback( GUID* pGUID, TCHAR* strDesc,TCHAR* strName,V
     } else {
         CurCardID.hMon=hm;
     }
-    
+
     if(pGUID!=NULL)
         memcpy(&CurCardID.DX7_DeviceGUID,pGUID,sizeof(GUID));
-    
+
     if(g_pCardIDVec==NULL) {
        g_pCardIDVec= new CardIDVec;
     }
@@ -1688,7 +1663,7 @@ BOOL WINAPI DX7_DriverEnumCallback( GUID* pGUID, TCHAR* strDesc,TCHAR* strName,V
     g_pCardIDVec->push_back(CurCardID);
     return DDENUMRET_OK;
 }
-    
+
 void wdxGraphicsWindowGroup::
 find_all_card_memavails(void) {
     if(g_pCardIDVec!=NULL)  // we've already got the info
@@ -1762,7 +1737,7 @@ find_all_card_memavails(void) {
 
         (*g_pCardIDVec)[i].DeviceID = pDX7DeviceID->dwDeviceId;
         (*g_pCardIDVec)[i].VendorID = pDX7DeviceID->dwVendorId;
-    
+
         // Get Current VidMem avail.  Note this is only an estimate, when we switch to fullscreen
         // mode from desktop, more vidmem will be available (typically 1.2 meg).  I dont want
         // to switch to fullscreen more than once due to the annoying monitor flicker, so try
@@ -1777,15 +1752,15 @@ find_all_card_memavails(void) {
            // goto skip_device;
            exit(1);  // probably want to exit, since it may be my fault
         }
-    
+
         pDD->Release();  // release DD obj, since this is all we needed it for
 
         if(!dx_do_vidmemsize_check) {
            // still calling the DD stuff to get deviceID, etc.  is this necessary?
            (*g_pCardIDVec)[i].MaxAvailVidMem = UNKNOWN_VIDMEM_SIZE;
-           (*g_pCardIDVec)[i].bIsLowVidMemCard = false; 
+           (*g_pCardIDVec)[i].bIsLowVidMemCard = false;
            continue;
-        } 
+        }
 
         if(dwVidMemTotal==0)   // unreliable driver
             dwVidMemTotal=UNKNOWN_VIDMEM_SIZE;
@@ -1797,7 +1772,7 @@ find_all_card_memavails(void) {
                 count++;
              dwVidMemTotal = (1 << count);
          }
-        
+
         // after SetDisplayMode, GetAvailVidMem totalmem seems to go down by 1.2 meg (contradicting above
         // comment and what I think would be correct behavior (shouldnt FS mode release the desktop vidmem?),
         // so this is the true value
@@ -1812,7 +1787,7 @@ find_all_card_memavails(void) {
 
         #define LOWVIDMEMTHRESHOLD 5000000  // 4MB cards should fall below this
         #define CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD 1000000  // if # is > 1MB, card is lying and I cant tell what it is
-        
+
         // assume buggy drivers (this means you, FireGL2) may return zero (or small amts) for dwVidMemTotal, so ignore value if its < CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD
         (*g_pCardIDVec)[i].bIsLowVidMemCard = ((dwVidMemTotal>CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD) && (dwVidMemTotal< LOWVIDMEMTHRESHOLD));
     }
@@ -1824,10 +1799,10 @@ find_all_card_memavails(void) {
 void wdxGraphicsWindow::
 check_for_color_cursor_support(void) {
     // card support for non-black/white GDI cursors varies greatly.  if the cursor is not supported,
-    // it is rendered in software by GDI, which causes a flickering effect (because it's not synced 
+    // it is rendered in software by GDI, which causes a flickering effect (because it's not synced
     // with flip?).  GDI transparently masks what's happening so there is no easy way for app to detect
     // if HW cursor support exists.  alternatives are to tie cursor motion to frame rate using DDraw blts
-    // or overlays, or to have separate thread draw cursor (sync issues?).  instead we do mono cursor 
+    // or overlays, or to have separate thread draw cursor (sync issues?).  instead we do mono cursor
     // unless card is known to support 256 color cursors
 
     string windows_color_cursor_filename = get_color_cursor_filename().to_os_specific();
@@ -1836,11 +1811,11 @@ check_for_color_cursor_support(void) {
 
     bool bSupportsColorCursor=false;
 
-    if(IS_NVIDIA(_DXDeviceID)) {    
+    if(IS_NVIDIA(_DXDeviceID)) {
         // all nvidia seem to support 256 color
         bSupportsColorCursor=true;
     } else if(IS_ATI(_DXDeviceID)) {
-        // radeons seem to be in the 5100 range and support color, assume anything in 6000 or above 
+        // radeons seem to be in the 5100 range and support color, assume anything in 6000 or above
         // is newer than radeon and supports 256 color
         if(((_DXDeviceID.dwDeviceId>=0x5100) && (_DXDeviceID.dwDeviceId<=0x5200)) ||
            (_DXDeviceID.dwDeviceId>=0x6000))
@@ -1864,7 +1839,7 @@ check_for_color_cursor_support(void) {
             load_flags |= LR_CREATEDIBSECTION;
         }
 
-        // loads a .cur fmt file. 
+        // loads a .cur fmt file.
         HCURSOR hNewMouseCursor = (HCURSOR) LoadImage(NULL, windows_color_cursor_filename.c_str(), IMAGE_CURSOR, 0, 0, load_flags );
 
         if(hNewMouseCursor==NULL) {
@@ -1885,8 +1860,8 @@ check_for_color_cursor_support(void) {
 int D3DFMT_to_DepthBits(D3DFORMAT fmt) {
     switch(fmt) {
         case D3DFMT_D16:  return 16;
-        case D3DFMT_D24X8: 
-        case D3DFMT_D24X4S4: 
+        case D3DFMT_D24X8:
+        case D3DFMT_D24X4S4:
         case D3DFMT_D24S8:  return 24;
         case D3DFMT_D32:  return 32;
         case D3DFMT_D15S1:  return 15;
@@ -1903,7 +1878,7 @@ bool wdxGraphicsWindow::FindBestDepthFormat(DXScreenData &Display,D3DDISPLAYMODE
     static D3DFORMAT StencilPrefList[NUM_TEST_ZFMTS]={D3DFMT_D24S8,D3DFMT_D24X4S4,D3DFMT_D15S1};
 
     // do not use Display.DisplayMode since that is probably not set yet, use TestDisplayMode instead
-    
+
     // int want_color_bits = _props._want_color_bits;
     // int want_depth_bits = _props._want_depth_bits;  should we pay attn to these so panda user can select bitdepth?
 
@@ -1913,7 +1888,7 @@ bool wdxGraphicsWindow::FindBestDepthFormat(DXScreenData &Display,D3DDISPLAYMODE
     // nvidia likes zbuf depth to match rendertarget depth
     bool bOnlySelect16bpp= (dx_force_16bpp_zbuffer || bForce16bpp ||
         (IS_NVIDIA(Display.DXDeviceID) && IS_16BPP_DISPLAY_FORMAT(TestDisplayMode.Format)));
-    
+
     for(int i=0;i<NUM_TEST_ZFMTS;i++) {
         D3DFORMAT TestDepthFmt = (bWantStencil ? StencilPrefList[i] : NoStencilPrefList[i]);
 
@@ -1964,10 +1939,10 @@ void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT Re
     #endif
 
     *pSuggestedPixFmt = D3DFMT_UNKNOWN;
-                                                     
+
     *pSupportedScreenDepthsMask = 0x0;
     int cNumModes=_dxgsg->scrn.pD3D8->GetAdapterModeCount(_dxgsg->scrn.CardIDNum);
-    D3DDISPLAYMODE BestDispMode;        
+    D3DDISPLAYMODE BestDispMode;
     ZeroMemory(&BestDispMode,sizeof(BestDispMode));
 
     *pCouldntFindAnyValidZBuf=false;
@@ -1977,7 +1952,7 @@ void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT Re
         hr = _dxgsg->scrn.pD3D8->EnumAdapterModes(_dxgsg->scrn.CardIDNum,i,&dispmode);
         if(FAILED(hr)) {
             wdxdisplay_cat.error() << "EnumAdapterDisplayMode failed for device #"<<_dxgsg->scrn.CardIDNum<< D3DERRORSTRING(hr);
-            exit(1); 
+            exit(1);
         }
 
         if((dispmode.Width!=RequestedXsize) || (dispmode.Height!=RequestedYsize))
@@ -1998,7 +1973,7 @@ void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT Re
                continue;
              else {
                  wdxdisplay_cat.error() << "CheckDeviceFormat failed for device #" <<_dxgsg->scrn.CardIDNum << D3DERRORSTRING(hr);
-                 exit(1); 
+                 exit(1);
              }
         }
 
@@ -2008,14 +1983,14 @@ void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT Re
         // if we have a valid memavail value, try to determine if we have enough space
         if(_dxgsg->scrn.MaxAvailVidMem!=UNKNOWN_VIDMEM_SIZE) {
             // assume user is testing fullscreen, not windowed, so use the dwTotal value
-            // see if 3 scrnbufs (front/back/z)at 16bpp at xsize*ysize will fit with a few 
+            // see if 3 scrnbufs (front/back/z)at 16bpp at xsize*ysize will fit with a few
             // extra megs for texmem
 
             // 8MB Rage Pro says it has 6.8 megs Total free and will run at 1024x768, so
             // formula makes it so that is OK
 
              #define REQD_TEXMEM 1800000
-             
+
              float bytes_per_pixel = (bIs16bppRenderTgt ? 2 : 4);
              assert(_props._mask & W_DOUBLE);
 
@@ -2029,7 +2004,7 @@ void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT Re
 
              if(RendTgtMinMemReqmt>_dxgsg->scrn.MaxAvailVidMem) {
                  if(wdxdisplay_cat.is_debug())
-                     wdxdisplay_cat.debug() << "not enough VidMem for render tgt, skipping display fmt " << D3DFormatStr(dispmode.Format) 
+                     wdxdisplay_cat.debug() << "not enough VidMem for render tgt, skipping display fmt " << D3DFormatStr(dispmode.Format)
                                             << " (" << (int)RendTgtMinMemReqmt << " > " << _dxgsg->scrn.MaxAvailVidMem << ")\n";
                  continue;
              }
@@ -2094,11 +2069,11 @@ void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT Re
     }
 
     // note: this chooses 32bpp, which may not be preferred over 16 for memory & speed reasons on some older cards in particular
-    if(*pSupportedScreenDepthsMask & X8R8G8B8_FLAG) 
+    if(*pSupportedScreenDepthsMask & X8R8G8B8_FLAG)
         *pSuggestedPixFmt = D3DFMT_X8R8G8B8;
-    else if(*pSupportedScreenDepthsMask & R8G8B8_FLAG) 
+    else if(*pSupportedScreenDepthsMask & R8G8B8_FLAG)
         *pSuggestedPixFmt = D3DFMT_R8G8B8;
-    else if(*pSupportedScreenDepthsMask & R5G6B5_FLAG) 
+    else if(*pSupportedScreenDepthsMask & R5G6B5_FLAG)
         *pSuggestedPixFmt = D3DFMT_R5G6B5;
     else if(*pSupportedScreenDepthsMask & X1R5G5B5_FLAG)
         *pSuggestedPixFmt = D3DFMT_X1R5G5B5;
@@ -2133,8 +2108,8 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
     }
 
     //search_for_valid_displaymode needs these to be set
-    memcpy(&_dxgsg->scrn.d3dcaps,&d3dcaps,sizeof(D3DCAPS8));  
-    _dxgsg->scrn.CardIDNum=pDevInfo->cardID; 
+    memcpy(&_dxgsg->scrn.d3dcaps,&d3dcaps,sizeof(D3DCAPS8));
+    _dxgsg->scrn.CardIDNum=pDevInfo->cardID;
 
     _dxgsg->scrn.MaxAvailVidMem = UNKNOWN_VIDMEM_SIZE;
     _dxgsg->scrn.bIsLowVidMemCard = false;
@@ -2164,7 +2139,7 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
            _dxgsg->scrn.MaxAvailVidMem = (*g_pCardIDVec)[IDnum].MaxAvailVidMem;
            _dxgsg->scrn.bIsLowVidMemCard = (*g_pCardIDVec)[IDnum].bIsLowVidMemCard;
        } else wdxdisplay_cat.error() << "Error: couldnt find a CardID match in DX7 info, assuming card is not a lowmem card\n";
-    } 
+    }
 
     if((bWantStencil) && (d3dcaps.StencilCaps==0x0)) {
             wdxdisplay_cat.fatal() << "Stencil ability requested, but device #" << pDevInfo->cardID << " (" << _dxgsg->scrn.DXDeviceID.Description<<"), has no stencil capability!\n";
@@ -2178,7 +2153,7 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
     _dxgsg->scrn.bCanUseHWVertexShaders = (d3dcaps.VertexShaderVersion >= D3DVS_VERSION(1,0));
     _dxgsg->scrn.bCanUsePixelShaders = (d3dcaps.PixelShaderVersion >= D3DPS_VERSION(1,0));
 
-    bool bNeedZBuffer = ((!(d3dcaps.RasterCaps & D3DPRASTERCAPS_ZBUFFERLESSHSR )) 
+    bool bNeedZBuffer = ((!(d3dcaps.RasterCaps & D3DPRASTERCAPS_ZBUFFERLESSHSR ))
                          && (_props._mask & W_DEPTH));
 
     _dxgsg->scrn.PresParams.EnableAutoDepthStencil=bNeedZBuffer;
@@ -2187,18 +2162,18 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
 
     if(_props._fullscreen) {
         _props._xorg = _props._yorg = 0;
-        
+
         bool bCouldntFindValidZBuf;
         if(!_dxgsg->scrn.bIsLowVidMemCard) {
             search_for_valid_displaymode(dwRenderWidth,dwRenderHeight,bNeedZBuffer,bWantStencil,
                                      &_dxgsg->scrn.SupportedScreenDepthsMask,
                                      &bCouldntFindValidZBuf,
                                      &pixFmt);
-    
+
             // note I'm not saving refresh rate, will just use adapter default at given res for now
-    
+
             if(pixFmt==D3DFMT_UNKNOWN) {
-                wdxdisplay_cat.fatal() 
+                wdxdisplay_cat.fatal()
                     << (bCouldntFindValidZBuf ? "Couldnt find valid zbuffer format to go with FullScreen mode" : "No supported FullScreen modes")
                     << " at " << dwRenderWidth << "x" << dwRenderHeight << " for device #" << _dxgsg->scrn.CardIDNum <<endl;
                return false;
@@ -2218,17 +2193,17 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
 
                // hack: figuring out exactly what res to use is tricky, instead I will
                // just use 640x480 if we have < 3 meg avail
-    
+
                if(_dxgsg->scrn.SupportedScreenDepthsMask & R5G6B5_FLAG)
                    pixFmt = D3DFMT_R5G6B5;
                else if(_dxgsg->scrn.SupportedScreenDepthsMask & X1R5G5B5_FLAG)
                    pixFmt = D3DFMT_X1R5G5B5;
                else {
-                   wdxdisplay_cat.fatal() << "Low Memory VidCard has no supported FullScreen 16bpp resolutions at "<< dwRenderWidth << "x" << dwRenderHeight   
+                   wdxdisplay_cat.fatal() << "Low Memory VidCard has no supported FullScreen 16bpp resolutions at "<< dwRenderWidth << "x" << dwRenderHeight
                    << " for device #" << pDevInfo->cardID << " (" <<  _dxgsg->scrn.DXDeviceID.Description <<"), skipping device...\n";
                    return false;
                }
-        
+
                if(wdxdisplay_cat.is_info())
                    wdxdisplay_cat.info() << "Available VidMem (" << _dxgsg->scrn.MaxAvailVidMem << ") is under " << LOWVIDMEMTHRESHOLD <<", using 640x480 16bpp rendertargets to save tex vidmem.\n";
         }
@@ -2243,11 +2218,11 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
         }
         pixFmt = dispmode.Format;
     }
-    
+
     _dxgsg->scrn.DisplayMode.Width=dwRenderWidth;
     _dxgsg->scrn.DisplayMode.Height=dwRenderHeight;
     _dxgsg->scrn.DisplayMode.Format = pixFmt;
-    _dxgsg->scrn.DisplayMode.RefreshRate = D3DPRESENT_RATE_DEFAULT;  
+    _dxgsg->scrn.DisplayMode.RefreshRate = D3DPRESENT_RATE_DEFAULT;
     _dxgsg->scrn.hMon=pDevInfo->hMon;
     return true;
 }
@@ -2270,11 +2245,11 @@ SetCoopLevelsAndDisplayModes(void) {
             wdxdisplay_cat.fatal() << "SetCooperativeLevel failed" << ConvD3DErrorToString(hr) << endl;
             exit(1);
         }
-        return; 
+        return;
     }
-    
+
     DWORD SCL_FLAGS = SCL_FPUFlag | DDSCL_FULLSCREEN | DDSCL_EXCLUSIVE | DDSCL_ALLOWREBOOT;
-    
+
     if(_windows.size()>1) {
        SCL_FLAGS |= DDSCL_SETDEVICEWINDOW;
     }
@@ -2285,7 +2260,7 @@ SetCoopLevelsAndDisplayModes(void) {
        // need to set focus/device windows for multimon
        // focus window is primary monitor that will receive keybd input
        // all ddraw objs need to have same focus window
-       if(_windows.size()>1) {    
+       if(_windows.size()>1) {
            if(FAILED(hr = pScrn->pDD->SetCooperativeLevel(_hParentWindow, DDSCL_SETFOCUSWINDOW))) {
                wdxdisplay_cat.fatal() << "SetCooperativeLevel SetFocusWindow failed on device 0: hr = " << ConvD3DErrorToString(hr) << endl;
                exit(1);
@@ -2300,13 +2275,13 @@ SetCoopLevelsAndDisplayModes(void) {
                exit(1);
            }
        }
-    
+
        if(FAILED(hr = pScrn->pDD->TestCooperativeLevel())) {
            wdxdisplay_cat.fatal() << "TestCooperativeLevel failed for device #"<< devnum<<": hr = " << ConvD3DErrorToString(hr) << endl;
            wdxdisplay_cat.fatal() << "Full screen app failed to get exclusive mode on init, exiting..\n";
            exit(1);
        }
-    
+
        // note: its important we call SetDisplayMode on all cards before creating surfaces on any of them
        // let driver choose default refresh rate (hopefully its >=60Hz)
        if(FAILED( hr = pScrn->pDD->SetDisplayMode( pScrn->dwRenderWidth, pScrn->dwRenderHeight,
@@ -2314,12 +2289,12 @@ SetCoopLevelsAndDisplayModes(void) {
            wdxdisplay_cat.fatal() << "SetDisplayMode failed to set ("<<pScrn->dwRenderWidth<<"x"<<pScrn->dwRenderHeight<<"x"<<pScrn->dwFullScreenBitDepth<<") on device #"<< pScrn->CardIDNum<<": hr = " << ConvD3DErrorToString(hr) << endl;
            exit(1);
        }
-    
+
        if(wdxdisplay_cat.is_debug()) {
-          DX_DECLARE_CLEAN(DDSURFACEDESC2,ddsd34); 
+          DX_DECLARE_CLEAN(DDSURFACEDESC2,ddsd34);
           pScrn->pDD->GetDisplayMode(&ddsd34);
           wdxdisplay_cat.debug() << "set displaymode to " << ddsd34.dwWidth << "x" << ddsd34.dwHeight << " at "<< ddsd34.ddpfPixelFormat.dwRGBBitCount << "bpp, " << ddsd34.dwRefreshRate<< "Hz\n";
-    
+
          /*
          #ifdef _DEBUG
           if(FAILED(hr = (*Disply).pDD->GetAvailableVidMem(&ddsGAVMCaps,&dwVidMemTotal,&dwVidMemFree))) {
@@ -2355,7 +2330,7 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
         wdxdisplay_cat.info() << "no zbuffer requested, skipping zbuffer creation\n";
       }
     #endif
-    
+
     pPresParams->BackBufferFormat = Display.DisplayMode.Format;  // dont need dest alpha, so just use adapter format
 
     if(dx_sync_video && !(pD3DCaps->Caps & D3DCAPS_READ_SCANLINE)) {
@@ -2375,7 +2350,7 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
         wdxdisplay_cat.error() << "device #"<<Display.CardIDNum<< " CheckDeviceType failed for surface fmt "<< D3DFormatStr(pPresParams->BackBufferFormat) << endl;
         goto Fallback_to_16bpp_buffers;
     }
-    
+
     if(Display.PresParams.EnableAutoDepthStencil) {
         if(!FindBestDepthFormat(Display,Display.DisplayMode,&Display.PresParams.AutoDepthStencilFormat,bWantStencil,false)) {
             wdxdisplay_cat.error() << "FindBestDepthFormat failed in CreateScreenBuffers for device #"<<Display.CardIDNum<< endl;
@@ -2387,27 +2362,27 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
     }
 
     pPresParams->Windowed = !_props._fullscreen;
-  
+
     if(dx_multisample_antialiasing_level>1) {
     // need to check both rendertarget and zbuffer fmts
         hr = pD3D8->CheckDeviceMultiSampleType(Display.CardIDNum, D3DDEVTYPE_HAL, Display.DisplayMode.Format,
                                                      _props._fullscreen, D3DMULTISAMPLE_TYPE(dx_multisample_antialiasing_level));
         if(FAILED(hr)) {
             wdxdisplay_cat.fatal() << "device #"<<Display.CardIDNum<< " doesnt support multisample level "<<dx_multisample_antialiasing_level <<"surface fmt "<< D3DFormatStr(Display.DisplayMode.Format) <<endl;
-            exit(1); 
+            exit(1);
         }
-    
+
         if(Display.PresParams.EnableAutoDepthStencil) {
             hr = pD3D8->CheckDeviceMultiSampleType(Display.CardIDNum, D3DDEVTYPE_HAL, Display.PresParams.AutoDepthStencilFormat,
                                              _props._fullscreen, D3DMULTISAMPLE_TYPE(dx_multisample_antialiasing_level));
             if(FAILED(hr)) {
                 wdxdisplay_cat.fatal() << "device #"<<Display.CardIDNum<< " doesnt support multisample level "<<dx_multisample_antialiasing_level <<"surface fmt "<< D3DFormatStr(Display.PresParams.AutoDepthStencilFormat) <<endl;
-                exit(1); 
+                exit(1);
             }
         }
 
         pPresParams->MultiSampleType = D3DMULTISAMPLE_TYPE(dx_multisample_antialiasing_level);
-    
+
         if(wdxdisplay_cat.is_info())
             wdxdisplay_cat.info() << "device #"<<Display.CardIDNum<< " using multisample antialiasing level "<<dx_multisample_antialiasing_level <<endl;
     }
@@ -2418,17 +2393,17 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
     pPresParams->BackBufferWidth = Display.DisplayMode.Width;
     pPresParams->BackBufferHeight = Display.DisplayMode.Height;
     DWORD dwBehaviorFlags=0x0;
-    
+
     if(_dxgsg->scrn.bIsTNLDevice) {
        dwBehaviorFlags|=D3DCREATE_HARDWARE_VERTEXPROCESSING;
       // note: we could create a pure device in this case if I eliminated the GetRenderState calls in dxgsg
-    
+
       // also, no software vertex processing available since I specify D3DCREATE_HARDWARE_VERTEXPROCESSING
-      // and not D3DCREATE_MIXED_VERTEXPROCESSING 
+      // and not D3DCREATE_MIXED_VERTEXPROCESSING
     } else {
        dwBehaviorFlags|=D3DCREATE_SOFTWARE_VERTEXPROCESSING;
     }
-    
+
     if(dx_preserve_fpu_state)
        dwBehaviorFlags|=D3DCREATE_FPU_PRESERVE;
 
@@ -2440,7 +2415,7 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
 #if 0
 /* this is incorrect, we dont need rendertarget to hold alpha to do normal alpha blending, since blending is usually just
    based on source alpha.  so for now its OK to pick rendertargets with same format as display
-   
+
         // assume app requires alpha-blending
         // will fullscrn alphablend work with DISCARD anyway even if this cap is not set?  I dont see it being set by latest drivers
         // for any card.  need to test both dx8.0 and dx8.1, it may be that dx8.1 works even if cap is not set, but 8.0 doesnt
@@ -2452,23 +2427,25 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
                 exit(1);
             }
         }
-*/      
+*/
 #endif
         #ifdef _DEBUG
         if(pPresParams->MultiSampleType != D3DMULTISAMPLE_NONE)
             assert(pPresParams->SwapEffect == D3DSWAPEFFECT_DISCARD);  // only valid effect for multisample
         #endif
+        
+        ClearToBlack(GetDesktopWindow(),_props);
 
-        hr = pD3D8->CreateDevice(Display.CardIDNum, D3DDEVTYPE_HAL, _pParentWindowGroup->_hParentWindow,   
+        hr = pD3D8->CreateDevice(Display.CardIDNum, D3DDEVTYPE_HAL, _pParentWindowGroup->_hParentWindow,
                                  dwBehaviorFlags, pPresParams, &Display.pD3DDevice);
 
         if(FAILED(hr)) {
             wdxdisplay_cat.fatal() << "D3D CreateDevice failed for device #" << Display.CardIDNum << ", " << D3DERRORSTRING(hr);
 
             if(hr == D3DERR_OUTOFVIDEOMEMORY)
-                goto Fallback_to_16bpp_buffers;         
+                goto Fallback_to_16bpp_buffers;
         }
-       
+
         SetRect(&view_rect, 0, 0, dwRenderWidth, dwRenderHeight);
     }   // end create full screen buffers
 
@@ -2480,7 +2457,7 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
         }
 
         D3DDISPLAYMODE dispmode;
-        hr = Display.pD3D8->GetAdapterDisplayMode(Display.CardIDNum, &dispmode); 
+        hr = Display.pD3D8->GetAdapterDisplayMode(Display.CardIDNum, &dispmode);
 
         if(FAILED(hr)) {
             wdxdisplay_cat.fatal() << "GetAdapterDisplayMode failed" << D3DERRORSTRING(hr);
@@ -2504,9 +2481,9 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
             pPresParams->SwapEffect = D3DSWAPEFFECT_DISCARD;
         }
 
-        assert((dwRenderWidth==pPresParams->BackBufferWidth)&&(dwRenderHeight==pPresParams->BackBufferHeight));     
+        assert((dwRenderWidth==pPresParams->BackBufferWidth)&&(dwRenderHeight==pPresParams->BackBufferHeight));
 
-        hr = pD3D8->CreateDevice(Display.CardIDNum, D3DDEVTYPE_HAL, _pParentWindowGroup->_hParentWindow,   
+        hr = pD3D8->CreateDevice(Display.CardIDNum, D3DDEVTYPE_HAL, _pParentWindowGroup->_hParentWindow,
                                  dwBehaviorFlags, pPresParams, &Display.pD3DDevice);
 
         if(FAILED(hr)) {
@@ -2556,7 +2533,7 @@ Fallback_to_16bpp_buffers:
     }
 }
 
-// assumes CreateDevice or Device->Reset() has just been called, 
+// assumes CreateDevice or Device->Reset() has just been called,
 // and the new size is specified in _dxgsg->scrn.PresParams
 void wdxGraphicsWindow::init_resized_window(void) {
     DXScreenData *pDisplay=&_dxgsg->scrn;
@@ -2583,7 +2560,7 @@ void wdxGraphicsWindow::init_resized_window(void) {
         _props._yorg = client_rect.top;
 
         #ifdef _DEBUG
-          // try to make sure GDI and DX agree on window client area size        
+          // try to make sure GDI and DX agree on window client area size
           // but client rect will not include any offscreen areas, so dont
           // do check if window was bigger than screen (there are other bad
           // cases too, like when window is positioned partly offscreen,
@@ -2594,7 +2571,7 @@ void wdxGraphicsWindow::init_resized_window(void) {
           if((_props._xsize<RECT_XSIZE(desktop_rect)) && (_props._ysize<RECT_YSIZE(desktop_rect)))
               assert((RECT_XSIZE(client_rect)==newWidth)&&(RECT_YSIZE(client_rect)==newHeight));
         #endif
-    } 
+    }
 
     resized(newWidth,newHeight);  // update panda channel/display rgn info, _props.xsize, _props.ysize
 
@@ -2625,7 +2602,7 @@ void wdxGraphicsWindow::init_resized_window(void) {
 // does NOT override _props._bCursorIsVisible
 INLINE void wdxGraphicsWindow::set_cursor_visibility(bool bVisible) {
   bool bValidDXPtrs;
-   
+
   if(_use_dx8_cursor)
     bValidDXPtrs = (IS_VALID_PTR(_dxgsg) && IS_VALID_PTR(_dxgsg->scrn.pD3DDevice));
 
@@ -2705,16 +2682,13 @@ void wdxGraphicsWindow::setup_colormap(void) {
     RealizePalette(_hdc);
 }
 
+/*  dont need to override the defaults (which just go to gsg->begin_frame())
 ////////////////////////////////////////////////////////////////////
 //     Function: begin_frame
 //       Access:
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsWindow::begin_frame(void) {
     GraphicsWindow::begin_frame();
-}
-
-void wdxGraphicsWindow::show_frame(void) {
-    _dxgsg->show_frame();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2725,6 +2699,7 @@ void wdxGraphicsWindow::show_frame(void) {
 void wdxGraphicsWindow::end_frame(void) {
     GraphicsWindow::end_frame();
 }
+*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: handle_window_move
@@ -2965,7 +2940,7 @@ get_depth_bitwidth(void) {
 // instead store the depth used at creation time
 
 //    DX_DECLARE_CLEAN(DDSURFACEDESC2, ddsd);
-//    _dxgsg->_zbuf->GetSurfaceDesc(&ddsd); 
+//    _dxgsg->_zbuf->GetSurfaceDesc(&ddsd);
 //  return ddsd.ddpfPixelFormat.dwRGBBitCount;
 }
 
@@ -2985,7 +2960,7 @@ static bool bCursorShadowOn,bMouseVanish;
 
 void set_global_parameters(void) {
   // turn off mousetrails and cursor shadow and mouse cursor vanish
-  // cursor shadow causes cursor blink and reduced frame rate due to lack of driver support for 
+  // cursor shadow causes cursor blink and reduced frame rate due to lack of driver support for
   // cursor alpha blending
 
   // this is a win2k/xp only param, could use GetVersionEx to do it just for win2k,
@@ -3057,6 +3032,7 @@ void wdxGraphicsWindowGroup::initWindowGroup(void) {
     UINT num_windows=_windows.size();
 
     #define D3D8_NAME "d3d8.dll"
+    #define D3DCREATE8 "Direct3DCreate8"
 
     _hD3D8_DLL = LoadLibrary(D3D8_NAME);
     if(_hD3D8_DLL == 0) {
@@ -3078,21 +3054,21 @@ void wdxGraphicsWindowGroup::initWindowGroup(void) {
               wdxdisplay_cat.fatal() << "system has only "<< numMonitors << " monitors attached, couldn't find enough devices to meet multi window reqmt of " << num_windows << endl;
               exit(1);
           }
-    }     
+    }
 
-    // Do all DX7 stuff first
-//  find_all_card_memavails();
+   // Do all DX7 stuff first
+   //  find_all_card_memavails();
 
     LPDIRECT3D8 pD3D8;
 
     typedef LPDIRECT3D8 (WINAPI *Direct3DCreate8_ProcPtr)(UINT SDKVersion);
- 
+
     // dont want to statically link to possibly non-existent d3d8 dll, so must call D3DCr8 indirectly
-    Direct3DCreate8_ProcPtr D3DCreate8_Ptr = 
-        (Direct3DCreate8_ProcPtr) GetProcAddress(_hD3D8_DLL, "Direct3DCreate8" );
+    Direct3DCreate8_ProcPtr D3DCreate8_Ptr =
+        (Direct3DCreate8_ProcPtr) GetProcAddress(_hD3D8_DLL, D3DCREATE8);
 
     if(D3DCreate8_Ptr == NULL) {
-        wdxdisplay_cat.fatal() << "GetProcAddress for D3DCreate8 failed!" << endl;
+        wdxdisplay_cat.fatal() << "GetProcAddress for "<< D3DCREATE8 << "failed!" << endl;
         exit(1);
     }
 
@@ -3117,7 +3093,7 @@ void wdxGraphicsWindowGroup::initWindowGroup(void) {
     }
 
     if(pD3D8==NULL) {
-        wdxdisplay_cat.fatal() << "Direct3DCreate8 failed!\n";
+        wdxdisplay_cat.fatal() << D3DCREATE8 << " failed!\n";
         exit(1);
     }
 
@@ -3139,9 +3115,9 @@ void wdxGraphicsWindowGroup::initWindowGroup(void) {
 
         wdxdisplay_cat.info() << "D3D8 Adapter[" << i << "]: " << adapter_info.Description <<
                                ", Driver: " << adapter_info.Driver << ", DriverVersion: ("
-            << HIWORD(DrvVer->HighPart) << "." << LOWORD(DrvVer->HighPart) << "." 
-            << HIWORD(DrvVer->LowPart) << "." << LOWORD(DrvVer->LowPart) << ")\nVendorID: 0x" 
-            << (void*) adapter_info.VendorId << " DeviceID: 0x" <<  (void*) adapter_info.DeviceId 
+            << HIWORD(DrvVer->HighPart) << "." << LOWORD(DrvVer->HighPart) << "."
+            << HIWORD(DrvVer->LowPart) << "." << LOWORD(DrvVer->LowPart) << ")\nVendorID: 0x"
+            << (void*) adapter_info.VendorId << " DeviceID: 0x" <<  (void*) adapter_info.DeviceId
             << " SubsysID: 0x" << (void*) adapter_info.SubSysId << " Revision: 0x"
             << (void*) adapter_info.Revision << endl;
 
@@ -3201,13 +3177,13 @@ void wdxGraphicsWindowGroup::initWindowGroup(void) {
       for(UINT i=0;i<_windows.size();i++) {
         D3DADAPTER_IDENTIFIER8 adapter_info;
         pD3D8->GetAdapterIdentifier(_windows[i]->_dxgsg->scrn.CardIDNum,D3DENUM_NO_WHQL_LEVEL,&adapter_info);
-        wdxdisplay_cat.info() << "D3D8 Adapter[" << i << "]: " << adapter_info.Description 
+        wdxdisplay_cat.info() << "D3D8 Adapter[" << i << "]: " << adapter_info.Description
                               << ", MaxAvailVideoMem: " << _windows[i]->_dxgsg->scrn.MaxAvailVidMem
                               << ", IsLowVidMemCard: " << (_windows[i]->_dxgsg->scrn.bIsLowVidMemCard ? "true" : "false") << endl;
       }
     }
 
-    CreateWindows();  // creates win32 windows  (need to do this before Setting coopLvls and display modes, 
+    CreateWindows();  // creates win32 windows  (need to do this before Setting coopLvls and display modes,
                       // but after we have all the monitor handles needed by CreateWindow()
 
 //    SetCoopLevelsAndDisplayModes();
