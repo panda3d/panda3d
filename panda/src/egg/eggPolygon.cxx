@@ -74,11 +74,11 @@ calculate_normal(Normald &result, CoordinateSystem cs) const {
   centroid /= (double)num_vertices;
 
   LVector3d max_normal;
-  float max_normal_length;
+  float max_normal_length = 0.0;
   bool got_max_normal = false;
 
   LVector3d max_normal_mc;
-  float max_normal_length_mc;
+  float max_normal_length_mc = 0.0;
   bool got_max_normal_mc = false;
 
   for (index = 0; index < num_vertices; index++) {
