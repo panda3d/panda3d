@@ -73,7 +73,7 @@ multiply(const FLOATNAME(LQuaternion) &rhs) const {
   FLOATTYPE j = (rhs._v.v._2 * _v.v._0) + (rhs._v.v._3 * _v.v._1) + (rhs._v.v._0 * _v.v._2) - (rhs._v.v._1 * _v.v._3);
   FLOATTYPE k = (rhs._v.v._3 * _v.v._0) - (rhs._v.v._2 * _v.v._1) + (rhs._v.v._1 * _v.v._2) + (rhs._v.v._0 * _v.v._3);
 
-  return FLOATNAME(LQuaternion)(r, i , j, k);
+  return FLOATNAME(LQuaternion)(r, i, j, k);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -142,25 +142,50 @@ operator *(const FLOATNAME(LMatrix4) &m) {
 //     Function: LQuaternion::almost_equal
 //       Access: public
 //  Description: Returns true if two quaternions are memberwise equal
-//               within a specified tolerance.
+//               within a default tolerance based on the numeric type.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LQuaternion)::
-almost_equal(const FLOATNAME(LQuaternion)& c, FLOATTYPE threshold) const {
-  return (IS_THRESHOLD_EQUAL(_v.data[0], c._v.data[0], threshold) &&
-          IS_THRESHOLD_EQUAL(_v.data[1], c._v.data[1], threshold) &&
-          IS_THRESHOLD_EQUAL(_v.data[2], c._v.data[2], threshold) &&
-          IS_THRESHOLD_EQUAL(_v.data[3], c._v.data[3], threshold));
+almost_equal(const FLOATNAME(LQuaternion) &other) const {
+  return almost_equal(other, NEARLY_ZERO(FLOATTYPE));
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LQuaternion::almost_equal
 //       Access: public
 //  Description: Returns true if two quaternions are memberwise equal
-//               within a default tolerance based on the numeric type.
+//               within a specified tolerance.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LQuaternion)::
-almost_equal(const FLOATNAME(LQuaternion)& c) const {
-  return almost_equal(c, NEARLY_ZERO(FLOATTYPE));
+almost_equal(const FLOATNAME(LQuaternion) &other,
+             FLOATTYPE threshold) const {
+  return (IS_THRESHOLD_EQUAL(_v.data[0], other._v.data[0], threshold) &&
+          IS_THRESHOLD_EQUAL(_v.data[1], other._v.data[1], threshold) &&
+          IS_THRESHOLD_EQUAL(_v.data[2], other._v.data[2], threshold) &&
+          IS_THRESHOLD_EQUAL(_v.data[3], other._v.data[3], threshold));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LQuaternion::is_same_direction
+//       Access: public
+//  Description: Returns true if two quaternions represent the same
+//               rotation within a default tolerance based on the
+//               numeric type.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH bool FLOATNAME(LQuaternion)::
+is_same_direction(const FLOATNAME(LQuaternion) &other) const {
+  return almost_same_direction(other, NEARLY_ZERO(FLOATTYPE));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LQuaternion::almost_same_direction
+//       Access: public
+//  Description: Returns true if two quaternions represent the same
+//               rotation within a specified tolerance.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH bool FLOATNAME(LQuaternion)::
+almost_same_direction(const FLOATNAME(LQuaternion) &other, 
+                      FLOATTYPE threshold) const {
+  return ((*this) * invert(other)).is_almost_identity(threshold);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -354,7 +379,19 @@ invert_in_place() {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LQuaternion)::
 is_identity() const {
-  return (IS_NEARLY_EQUAL(_v.v._0, -1.0f) || IS_NEARLY_EQUAL(_v.v._0, 1.0f));
+  return is_almost_identity(NEARLY_ZERO(FLOATTYPE));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LQuaternion::is_almost_identity
+//       Access: Public
+//  Description: Returns true if this quaternion represents the
+//               identity transformation within a given tolerance.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH bool FLOATNAME(LQuaternion)::
+is_almost_identity(FLOATTYPE tolerance) const {
+  return (IS_THRESHOLD_EQUAL(_v.v._0, -1.0f, tolerance) || 
+          IS_THRESHOLD_EQUAL(_v.v._0, 1.0f, tolerance));
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -42,8 +42,12 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LMatrix3) operator *(const FLOATNAME(LMatrix3) &);
   INLINE_LINMATH FLOATNAME(LMatrix4) operator *(const FLOATNAME(LMatrix4) &);
 
-  INLINE_LINMATH bool almost_equal(const FLOATNAME(LQuaternion) &, FLOATTYPE) const;
-  INLINE_LINMATH bool almost_equal(const FLOATNAME(LQuaternion) &) const;
+  INLINE_LINMATH bool almost_equal(const FLOATNAME(LQuaternion) &other) const;
+  INLINE_LINMATH bool almost_equal(const FLOATNAME(LQuaternion) &other,
+                                   FLOATTYPE threshold) const;
+  INLINE_LINMATH bool is_same_direction(const FLOATNAME(LQuaternion) &other) const;
+  INLINE_LINMATH bool almost_same_direction(const FLOATNAME(LQuaternion) &other,
+                                            FLOATTYPE threshold) const;
 
   INLINE_LINMATH void output(ostream&) const;
 
@@ -74,6 +78,7 @@ PUBLISHED:
   INLINE_LINMATH bool invert_in_place();
 
   INLINE_LINMATH bool is_identity() const;
+  INLINE_LINMATH bool is_almost_identity(FLOATTYPE tolerance) const;
   INLINE_LINMATH static const FLOATNAME(LQuaternion) &ident_quat();
 
 private:
