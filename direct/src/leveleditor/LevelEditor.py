@@ -1005,7 +1005,7 @@ class LevelEditor(NodePath, PandaObject):
                 else:
                     menuMode = 'door_texture'
                 # MRM: Temp for now
-                menuMode = None
+                menuMode = 'window_texture'
             else:
                 # Do window operations
                 if direct.fControl:
