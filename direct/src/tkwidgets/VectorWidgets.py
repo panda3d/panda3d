@@ -1,6 +1,6 @@
 from Tkinter import *
 import Pmw
-import floater
+import Floater
 import string
 import tkColorChooser
 
@@ -86,7 +86,7 @@ class VectorEntry(Pmw.MegaWidget):
             'floaterGroup',
             (('fGroup', 'floaterGroup'),
              ('Floater', 'floaterGroup_Floater'),), None,
-            floater.FloaterGroup, (self.interior(),),
+            Floater.FloaterGroup, (self.interior(),),
             dim = self['dim'], title = self['text'],
             command = self.set)
         # Note: This means the 'X' on the menu bar doesn't really destroy

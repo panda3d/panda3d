@@ -1,4 +1,5 @@
 from PandaObject import *
+import math
 
 class DisplayRegionContext(PandaObject):
     def __init__(self, win, camera):
@@ -9,14 +10,21 @@ class DisplayRegionContext(PandaObject):
         self.mouseData = win.getMouseData(0)
         self.mouseX = 0.0
         self.mouseY = 0.0
-        #self.spawnContextTask()
 
     def __getitem__(self,key):
         return self.__dict__[key]
 
+    def start(self):
+        # First shutdown any existing task
+        self.stop()
+        # Start a new context task
+        self.spawnContextTask()
+
+    def stop(self):
+        # Kill the existing context task
+        taskMgr.removeTasksNamed('DIRECTContextTask')
+
     def spawnContextTask(self):
-        # First kill the existing task
-        #taskMgr.removeTasksNamed('DIRECTContextTask')
         taskMgr.spawnTaskNamed(Task.Task(self.contextTask),
                                'DIRECTContextTask')
 
@@ -41,14 +49,13 @@ class DisplayRegionContext(PandaObject):
         self.mouseY = ((self.mousePixelY / float(self.height)) * -2.0) + 1.0
         self.mouseDeltaX = self.mouseX - self.mouseLastX
         self.mouseDeltaY = self.mouseY - self.mouseLastY
-        print self.mouseX, self.mouseY
         # Continue the task
         return Task.cont
         
 class DirectSession(PandaObject):
     def __init__(self):
         self.contextList = []
-        self.contextList.append(DisplayRegionContext(self.win, self.camera))
+        self.contextList.append(DisplayRegionContext(base.win, base.camera))
 
         # Initialize the collection of selected nodePaths
         self.selectedNodePaths = {}

@@ -3,9 +3,9 @@
 # Import Tkinter, Pmw, and the floater code from this directory tree.
 from Tkinter import *
 import Pmw
-import dial
-import floater
-import vectorWidgets
+import Dial
+import Floater
+import VectorWidgets
 
 class ParticlePanel(Pmw.MegaToplevel):
     def __init__(self, parent = None, **kw):

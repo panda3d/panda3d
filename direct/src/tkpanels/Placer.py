@@ -1,10 +1,9 @@
 "DIRECT Nine DoF Placer demonstration"
 
-# Import Tkinter, Pmw, and the floater code from this directory tree.
+# Import Tkinter, Pmw, and the dial code from this directory tree.
 from Tkinter import *
 import Pmw
-import floater
-import dial
+import Dial
 
 class Placer(Pmw.MegaToplevel):
     def __init__(self, parent = None, **kw):
@@ -101,7 +100,7 @@ class Placer(Pmw.MegaToplevel):
                                   menubutton_textvariable=mode,
                                   items = ('Drive', 'Orbit',
                                            'Absolute', 'Relative'),
-                                  command = self._updateFloaterLabels,
+                                  command = self._updateDialLabels,
                                   menubutton_width = 8)
         modeMenu.pack(side = 'left', expand = 0)
         
@@ -137,23 +136,23 @@ class Placer(Pmw.MegaToplevel):
 	posGroup.pack(side='left',fill = 'both', expand = 1)
         posInterior = posGroup.interior()
 
-        # Create the floaters
+        # Create the dials
 	self.posX = self.createcomponent('posX', (), None,
-                                         dial.Dial, (posInterior,),
+                                         Dial.Dial, (posInterior,),
                                          text = 'X',
                                          label_foreground = 'Red')
         self.posX['command'] = self.printCommand
         self.posX.pack(expand=1,fill='x')
         
 	self.posY = self.createcomponent('posY', (), None,
-                                         dial.Dial, (posInterior,),
+                                         Dial.Dial, (posInterior,),
                                          text = 'Y',
                                          label_foreground = '#00A000')
         self.posY['command'] = self.printCommand
         self.posY.pack(expand=1,fill='x')
         
 	self.posZ = self.createcomponent('posZ', (), None,
-                                         dial.Dial, (posInterior,),
+                                         Dial.Dial, (posInterior,),
                                          text = 'Z',
                                          label_foreground = 'Blue')
         self.posZ['command'] = self.printCommand
@@ -176,9 +175,9 @@ class Placer(Pmw.MegaToplevel):
 	hprGroup.pack(side='left',fill = 'both', expand = 1)
         hprInterior = hprGroup.interior()
         
-	# Create the floaters
+	# Create the dials
 	self.hprH = self.createcomponent('hprH', (), None,
-                                         dial.Dial, (hprInterior,),
+                                         Dial.Dial, (hprInterior,),
                                          text = 'H', fRollover = 0,
                                          max = 360.0, numTicks = 12,
                                          label_foreground = 'blue')
@@ -186,7 +185,7 @@ class Placer(Pmw.MegaToplevel):
         self.hprH.pack(expand=1,fill='x')
         
 	self.hprP = self.createcomponent('hprP', (), None,
-                                         dial.Dial, (hprInterior,),
+                                         Dial.Dial, (hprInterior,),
                                          text = 'P', fRollover = 0,
                                          max = 360.0, numTicks = 12,
                                          label_foreground = 'red')
@@ -194,7 +193,7 @@ class Placer(Pmw.MegaToplevel):
         self.hprP.pack(expand=1,fill='x')
         
 	self.hprR = self.createcomponent('hprR', (), None,
-                                         dial.Dial, (hprInterior,),
+                                         Dial.Dial, (hprInterior,),
                                          text = 'R', fRollover = 0,
                                          max = 360.0, numTicks = 12,
                                          label_foreground = '#00A000')
@@ -234,9 +233,9 @@ class Placer(Pmw.MegaToplevel):
 	scaleGroup.pack(side='left',fill = 'both', expand = 1)
         scaleInterior = scaleGroup.interior()
         
-	# Create the floaters
+	# Create the dials
 	self.scaleX = self.createcomponent('scaleX', (), None,
-                                           dial.Dial, (scaleInterior,),
+                                           Dial.Dial, (scaleInterior,),
                                            text = 'X Scale',
                                            initialValue = 1.0,
                                            label_foreground = 'Red')
@@ -244,7 +243,7 @@ class Placer(Pmw.MegaToplevel):
         self.scaleX.pack(expand=1,fill='x')
         
 	self.scaleY = self.createcomponent('scaleY', (), None,
-                                           dial.Dial, (scaleInterior,),
+                                           Dial.Dial, (scaleInterior,),
                                            text = 'Y Scale',
                                            initialValue = 1.0,
                                            label_foreground = '#00A000')
@@ -252,7 +251,7 @@ class Placer(Pmw.MegaToplevel):
         self.scaleY.pack(expand=1,fill='x')
         
 	self.scaleZ = self.createcomponent('scaleZ', (), None,
-                                           dial.Dial, (scaleInterior,),
+                                           Dial.Dial, (scaleInterior,),
                                            text = 'Z Scale',
                                            initialValue = 1.0,
                                            label_foreground = 'Blue')
@@ -260,7 +259,7 @@ class Placer(Pmw.MegaToplevel):
         self.scaleZ.pack(expand=1,fill='x')
 
         # Make sure appropriate labels are showing
-        self._updateFloaterLabels('Drive')
+        self._updateDialLabels('Drive')
 
         # Make sure input variables processed 
         self.initialiseoptions(Placer)
@@ -344,7 +343,7 @@ class Placer(Pmw.MegaToplevel):
         self._resetHpr()
         self._resetScale()
 
-    def _updateFloaterLabels(self, movementMode):
+    def _updateDialLabels(self, movementMode):
         namePrefix = ''
         self.movementMode = movementMode
         if (movementMode == 'Drive'):
