@@ -44,12 +44,12 @@ else
 fi
 
 if [ "$DIRECT" == "" ]; then
-  if [ "$PANDA_SRC" != "" -a -d "$PANDA_SRC/direct" ]; then
-    DIRECT="$PANDA_SRC/direct"
+  if [ "$PLAYER" != "" -a -d "$PLAYER/direct" ]; then
+    DIRECT="$PLAYER/direct"
   elif [ -d direct ]; then
     DIRECT=direct
   else
-    echo "Define PANDA_SRC to point to the panda & direct source root."
+    echo "Define PLAYER to point to the panda & direct source root."
     exit 1
   fi
 fi
