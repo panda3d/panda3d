@@ -170,7 +170,6 @@ handle_entries() {
             for (sj = shoves.begin(); sj != si; ++sj) {
               ShoveData &sd2 = (*sj);
               if (sd2._valid) {
-                
                 float d = sd._vector.dot(sd2._vector);
                 if (collide_cat.is_debug()) {
                   collide_cat.debug()
@@ -185,7 +184,6 @@ handle_entries() {
                   } else {
                     sd._valid = false;
                   }
-
                 } else {
                   // These two shoves are not in the same direction.
                   // If they are both from polygons that are a child
@@ -259,6 +257,8 @@ handle_entries() {
             LVecBase3f pos = trans->get_pos();
             pos += net_shove * trans->get_mat();
             def._node->set_transform(trans->set_pos(pos));
+            
+            apply_linear_force(def, force_normal);
           } else {          
             // Otherwise, go ahead and do the matrix math to do things
             // the old and clumsy way.
@@ -266,7 +266,6 @@ handle_entries() {
             def.get_mat(mat);
             def.set_mat(LMatrix4f::translate_mat(net_shove) * mat);
           }
-          apply_linear_force(def, force_normal);
         }
       }
     }
