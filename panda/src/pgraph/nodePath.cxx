@@ -1435,7 +1435,7 @@ string NodePath::
 get_bin_name() const {
   nassertr_always(!is_empty(), string());
   const RenderAttrib *attrib =
-    node()->get_attrib(ColorAttrib::get_class_type());
+    node()->get_attrib(CullBinAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
     const CullBinAttrib *ba = DCAST(CullBinAttrib, attrib);
     return ba->get_bin_name();
@@ -1456,7 +1456,7 @@ int NodePath::
 get_bin_draw_order() const {
   nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
-    node()->get_attrib(ColorAttrib::get_class_type());
+    node()->get_attrib(CullBinAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
     const CullBinAttrib *ba = DCAST(CullBinAttrib, attrib);
     return ba->get_draw_order();

@@ -45,6 +45,7 @@ PUBLISHED:
     BT_unsorted,
     BT_state_sorted,
     BT_back_to_front,
+    BT_front_to_back,
     BT_fixed,
   };
 

@@ -18,6 +18,8 @@
 
 #include "cullBinManager.h"
 #include "cullBinBackToFront.h"
+#include "cullBinFrontToBack.h"
+#include "cullBinFixed.h"
 #include "cullBinUnsorted.h"
 #include "renderState.h"
 #include "cullResult.h"
@@ -203,6 +205,12 @@ make_new_bin(int bin_index, GraphicsStateGuardianBase *gsg) {
   case BT_back_to_front:
     return new CullBinBackToFront(gsg);
 
+  case BT_front_to_back:
+    return new CullBinFrontToBack(gsg);
+
+  case BT_fixed:
+    return new CullBinFixed(gsg);
+
   default:
     return new CullBinUnsorted(gsg);
   }
@@ -312,6 +320,12 @@ parse_bin_type(const string &bin_type) {
 
   } else if (cmp_nocase_uh(bin_type, "backtofront") == 0) {
     return BT_back_to_front;
+
+  } else if (cmp_nocase_uh(bin_type, "front_to_back") == 0) {
+    return BT_front_to_back;
+
+  } else if (cmp_nocase_uh(bin_type, "fronttoback") == 0) {
+    return BT_front_to_back;
 
   } else {
     return BT_invalid;
