@@ -12,12 +12,12 @@
 // designed for specific uses.  These all inherit from LVecBase, which
 // is the base class of all linear algebra vectors.
 //
-// LPoint<P_FLOATTYPE1, N_length>
+// LPoint<P_numtype, N_length>
 //
 //   This should be used to represent a specific point in space.  It
 //   inherits most properties from LVecBase.
 //
-// LVector<P_FLOATTYPE1, N_length>
+// LVector<P_numtype, N_length>
 //
 //   This should be used to represent a vector, or a distance between
 //   two points in space.
@@ -37,11 +37,11 @@
 //
 // This file also defines the following:
 //
-// Vertex<P_FLOATTYPE1>, Vertexd, Vertexf
-// Normal<P_FLOATTYPE1>, Normald, Normalf
-// TexCoord<P_FLOATTYPE1>, TexCoordd, TexCoordf
-// Color<P_FLOATTYPE1>, Colord, Colorf
-// RGBColor<P_FLOATTYPE1>, RGBColord, RGBColorf
+// Vertex<P_numtype>, Vertexd, Vertexf
+// Normal<P_numtype>, Normald, Normalf
+// TexCoord<P_numtype>, TexCoordd, TexCoordf
+// Color<P_numtype>, Colord, Colorf
+// RGBColor<P_numtype>, RGBColord, RGBColorf
 //
 // These classes are derivations of LPoint or LVector, as appropriate,
 // and are intended to store a specific kind of rendering attribute.
@@ -74,7 +74,7 @@
 
 
 // Now we define some handy typedefs for these classes.
-/*
+
 typedef LVecBase2<float> LVecBase2f;
 typedef LVecBase3<float> LVecBase3f;
 typedef LVecBase4<float> LVecBase4f;
@@ -85,13 +85,13 @@ typedef LVector4<float> LVector4f;
 typedef LPoint2<float> LPoint2f;
 typedef LPoint3<float> LPoint3f;
 typedef LPoint4<float> LPoint4f;
-*/
+
 typedef LPoint3f Vertexf;
 typedef LVector3f Normalf;
 typedef LPoint2f TexCoordf;
 typedef LVecBase4f Colorf;
 typedef LVecBase3f RGBColorf;
-/*
+
 typedef LVecBase2<double> LVecBase2d;
 typedef LVecBase3<double> LVecBase3d;
 typedef LVecBase4<double> LVecBase4d;
@@ -102,16 +102,13 @@ typedef LVector4<double> LVector4d;
 typedef LPoint2<double> LPoint2d;
 typedef LPoint3<double> LPoint3d;
 typedef LPoint4<double> LPoint4d;
-*/
+
 typedef LPoint3d Vertexd;
 typedef LVector3d Normald;
 typedef LPoint2d TexCoordd;
 typedef LVecBase4d Colord;
 typedef LVecBase3d RGBColord;
-typedef LQuaternionBasef LQuaternionf;
-typedef LQuaternionBased LQuaterniond;
 
-/*
 typedef LQuaternionBase<float> LQuaternionf;
 typedef LRotation<float> LRotationf;
 typedef LOrientation<float> LOrientationf;
@@ -119,7 +116,7 @@ typedef LOrientation<float> LOrientationf;
 typedef LQuaternionBase<double> LQuaterniond;
 typedef LRotation<double> LRotationd;
 typedef LOrientation<double> LOrientationd;
-*/
+
 /*
 // Now define explicit instantiations of the output operator functions
 // for interrogate's benefit.  These functions don't actually exist

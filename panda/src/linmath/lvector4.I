@@ -3,58 +3,20 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////
-// 	 Class : LVector4
-// Description : This is a four-component vector distance.
-////////////////////////////////////////////////////////////////////
+#include "cmath.h"
 
-class EXPCL_PANDA FLOATNAME(LVector4) : public FLOATNAME(LVecBase4) {
-PUBLISHED:
-  INLINE FLOATNAME(LVector4)();
-  INLINE FLOATNAME(LVector4)(const FLOATNAME(LVecBase4) &copy);
-  INLINE FLOATNAME(LVector4) &operator = (const FLOATNAME(LVecBase4) &copy);
-  INLINE FLOATNAME(LVector4) &operator = (FLOATTYPE1 fill_value);
-  INLINE FLOATNAME(LVector4)(FLOATTYPE1 fill_value);
-  INLINE FLOATNAME(LVector4)(FLOATTYPE1 x, FLOATTYPE1 y, FLOATTYPE1 z, FLOATTYPE1 w);
 
-  INLINE static FLOATNAME(LVector4) zero();
-  INLINE static FLOATNAME(LVector4) unit_x();
-  INLINE static FLOATNAME(LVector4) unit_y();
-  INLINE static FLOATNAME(LVector4) unit_z();
-  INLINE static FLOATNAME(LVector4) unit_w();
-
-  INLINE FLOATNAME(LVector4) operator - () const;
-
-  INLINE FLOATNAME(LVecBase4) operator + (const FLOATNAME(LVecBase4) &other) const;
-  INLINE FLOATNAME(LVector4)  operator + (const FLOATNAME(LVector4) &other) const;
-
-  INLINE FLOATNAME(LVecBase4) operator - (const FLOATNAME(LVecBase4) &other) const;
-  INLINE FLOATNAME(LVector4)  operator - (const FLOATNAME(LVector4) &other) const;
-
-  INLINE FLOATTYPE1 length() const;
-  INLINE FLOATTYPE1 length_squared() const;
-  INLINE bool normalize();
-  INLINE FLOATNAME(LVector4) operator * (FLOATTYPE1 scalar) const;
-  INLINE FLOATNAME(LVector4) operator / (FLOATTYPE1 scalar) const;
-
-public:
-  static TypeHandle get_class_type() {
-    return _type_handle;
-  }
-  static void init_type();
- 
-private:
-  static TypeHandle _type_handle;
-};
+template<class NumType>
+TypeHandle LVector4<NumType>::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector4::Default Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVector4)::
-FLOATNAME(LVector4)() {
+template<class NumType>
+INLINE LVector4<NumType>::
+LVector4() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -62,9 +24,9 @@ FLOATNAME(LVector4)() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVector4)::
-FLOATNAME(LVector4)(const FLOATNAME(LVecBase4) &copy) : FLOATNAME(LVecBase4)(copy) {
+template<class NumType>
+INLINE LVector4<NumType>::
+LVector4(const LVecBase4<NumType> &copy) : LVecBase4<NumType>(copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -72,10 +34,10 @@ FLOATNAME(LVector4)(const FLOATNAME(LVecBase4) &copy) : FLOATNAME(LVecBase4)(cop
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVector4) &FLOATNAME(LVector4)::
-operator = (const FLOATNAME(LVecBase4) &copy) {
-  FLOATNAME(LVecBase4)::operator = (copy);
+template<class NumType>
+INLINE LVector4<NumType> &LVector4<NumType>::
+operator = (const LVecBase4<NumType> &copy) {
+  LVecBase4<NumType>::operator = (copy);
   return *this;
 }
 
@@ -84,10 +46,10 @@ operator = (const FLOATNAME(LVecBase4) &copy) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVector4) &FLOATNAME(LVector4)::
-operator = (FLOATTYPE1 fill_value) {
-  FLOATNAME(LVecBase4)::operator = (fill_value);
+template<class NumType>
+INLINE LVector4<NumType> &LVector4<NumType>::
+operator = (NumType fill_value) {
+  LVecBase4<NumType>::operator = (fill_value);
   return *this;
 }
 
@@ -96,10 +58,10 @@ operator = (FLOATTYPE1 fill_value) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVector4)::
-FLOATNAME(LVector4)(FLOATTYPE1 fill_value) :
-  FLOATNAME(LVecBase4)(fill_value) 
+template<class NumType>
+INLINE LVector4<NumType>::
+LVector4(NumType fill_value) :
+  LVecBase4<NumType>(fill_value) 
 {
 }
 
@@ -108,10 +70,10 @@ FLOATNAME(LVector4)(FLOATTYPE1 fill_value) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVector4)::
-FLOATNAME(LVector4)(FLOATTYPE1 x, FLOATTYPE1 y, FLOATTYPE1 z, FLOATTYPE1 w) : 
-  FLOATNAME(LVecBase4)(x, y, z, w) 
+template<class NumType>
+INLINE LVector4<NumType>::
+LVector4(NumType x, NumType y, NumType z, NumType w) : 
+  LVecBase4<NumType>(x, y, z, w) 
 {
 }
 
@@ -120,10 +82,10 @@ FLOATNAME(LVector4)(FLOATTYPE1 x, FLOATTYPE1 y, FLOATTYPE1 z, FLOATTYPE1 w) :
 //       Access: Public
 //  Description: Returns a zero-length vector.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVector4) FLOATNAME(LVector4)::
+template<class NumType>
+INLINE LVector4<NumType> LVector4<NumType>::
 zero() {
-  return FLOATNAME(LVector4)(0.0, 0.0, 0.0, 0.0);
+  return LVector4<NumType>(0.0, 0.0, 0.0, 0.0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -131,10 +93,10 @@ zero() {
 //       Access: Public
 //  Description: Returns a unit X vector.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVector4) FLOATNAME(LVector4)::
+template<class NumType>
+INLINE LVector4<NumType> LVector4<NumType>::
 unit_x() {
-  return FLOATNAME(LVector4)(1.0, 0.0, 0.0, 0.0);
+  return LVector4<NumType>(1.0, 0.0, 0.0, 0.0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -142,10 +104,10 @@ unit_x() {
 //       Access: Public
 //  Description: Returns a unit Y vector.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVector4) FLOATNAME(LVector4)::
+template<class NumType>
+INLINE LVector4<NumType> LVector4<NumType>::
 unit_y() {
-  return FLOATNAME(LVector4)(0.0, 1.0, 0.0, 0.0);
+  return LVector4<NumType>(0.0, 1.0, 0.0, 0.0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -153,10 +115,10 @@ unit_y() {
 //       Access: Public
 //  Description: Returns a unit Z vector.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVector4) FLOATNAME(LVector4)::
+template<class NumType>
+INLINE LVector4<NumType> LVector4<NumType>::
 unit_z() {
-  return FLOATNAME(LVector4)(0.0, 0.0, 1.0, 0.0);
+  return LVector4<NumType>(0.0, 0.0, 1.0, 0.0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -164,10 +126,10 @@ unit_z() {
 //       Access: Public
 //  Description: Returns a unit W vector.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVector4) FLOATNAME(LVector4)::
+template<class NumType>
+INLINE LVector4<NumType> LVector4<NumType>::
 unit_w() {
-  return FLOATNAME(LVector4)(0.0, 0.0, 0.0, 1.0);
+  return LVector4<NumType>(0.0, 0.0, 0.0, 1.0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -175,10 +137,10 @@ unit_w() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVector4) FLOATNAME(LVector4)::
+template<class NumType>
+INLINE LVector4<NumType> LVector4<NumType>::
 operator - () const {
-  return FLOATNAME(LVecBase4)::operator - ();
+  return LVecBase4<NumType>::operator - ();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -186,10 +148,10 @@ operator - () const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVecBase4) FLOATNAME(LVector4)::
-operator + (const FLOATNAME(LVecBase4) &other) const {
-  return FLOATNAME(LVecBase4)::operator + (other);
+template<class NumType>
+INLINE LVecBase4<NumType> LVector4<NumType>::
+operator + (const LVecBase4<NumType> &other) const {
+  return LVecBase4<NumType>::operator + (other);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -197,10 +159,10 @@ operator + (const FLOATNAME(LVecBase4) &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVector4) FLOATNAME(LVector4)::
-operator + (const FLOATNAME(LVector4) &other) const {
-  return FLOATNAME(LVecBase4)::operator + (other);
+template<class NumType>
+INLINE LVector4<NumType> LVector4<NumType>::
+operator + (const LVector4<NumType> &other) const {
+  return LVecBase4<NumType>::operator + (other);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -208,10 +170,10 @@ operator + (const FLOATNAME(LVector4) &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVecBase4) FLOATNAME(LVector4)::
-operator - (const FLOATNAME(LVecBase4) &other) const {
-  return FLOATNAME(LVecBase4)::operator - (other);
+template<class NumType>
+INLINE LVecBase4<NumType> LVector4<NumType>::
+operator - (const LVecBase4<NumType> &other) const {
+  return LVecBase4<NumType>::operator - (other);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -219,10 +181,10 @@ operator - (const FLOATNAME(LVecBase4) &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVector4) FLOATNAME(LVector4)::
-operator - (const FLOATNAME(LVector4) &other) const {
-  return FLOATNAME(LVecBase4)::operator - (other);
+template<class NumType>
+INLINE LVector4<NumType> LVector4<NumType>::
+operator - (const LVector4<NumType> &other) const {
+  return LVecBase4<NumType>::operator - (other);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -231,8 +193,8 @@ operator - (const FLOATNAME(LVector4) &other) const {
 //  Description: Returns the length of the vector, by the Pythagorean
 //               theorem.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATTYPE1 FLOATNAME(LVector4)::
+template<class NumType>
+INLINE NumType LVector4<NumType>::
 length() const {
   return csqrt((*this).dot(*this));
 }
@@ -243,8 +205,8 @@ length() const {
 //  Description: Returns the square of the vector's length, cheap and
 //               easy.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATTYPE1 FLOATNAME(LVector4)::
+template<class NumType>
+INLINE NumType LVector4<NumType>::
 length_squared() const {
   return (*this).dot(*this);
 }
@@ -256,15 +218,15 @@ length_squared() const {
 //               vector was normalized, false if it was a zero-length
 //               vector.
 ////////////////////////////////////////////////////////////////////
-
-INLINE bool FLOATNAME(LVector4)::
+template<class NumType>
+INLINE bool LVector4<NumType>::
 normalize() {
-  FLOATTYPE1 l2 = length_squared();
-  if (l2 == (FLOATTYPE1)0.0) {
+  NumType l2 = length_squared();
+  if (l2 == (NumType)0.0) {
     set(0.0, 0.0, 0.0, 0.0);
     return false;
 
-  } else if (!IS_THRESHOLD_EQUAL(l2, 1.0, NEARLY_ZERO(FLOATTYPE1) * NEARLY_ZERO(FLOATTYPE1))) {
+  } else if (!IS_THRESHOLD_EQUAL(l2, 1.0, NEARLY_ZERO(NumType) * NEARLY_ZERO(NumType))) {
     (*this) /= csqrt(l2);
   }
 
@@ -276,10 +238,10 @@ normalize() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVector4) FLOATNAME(LVector4)::
-operator * (FLOATTYPE1 scalar) const {
-  return FLOATNAME(LVector4)(FLOATNAME(LVecBase4)::operator * (scalar));
+template<class NumType>
+INLINE LVector4<NumType> LVector4<NumType>::
+operator * (NumType scalar) const {
+  return LVector4<NumType>(LVecBase4<NumType>::operator * (scalar));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -287,9 +249,37 @@ operator * (FLOATTYPE1 scalar) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVector4) FLOATNAME(LVector4)::
-operator / (FLOATTYPE1 scalar) const {
-  return FLOATNAME(LVector4)(FLOATNAME(LVecBase4)::operator / (scalar));
+template<class NumType>
+INLINE LVector4<NumType> LVector4<NumType>::
+operator / (NumType scalar) const {
+  return LVector4<NumType>(LVecBase4<NumType>::operator / (scalar));
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: LVector4::init_type
+//       Access: Public, Static
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class NumType>
+void LVector4<NumType>::
+init_type() {
+  if (_type_handle == TypeHandle::none()) {
+    LVecBase4<NumType>::init_type();
+    string name =
+      "LVector4<" + get_type_handle(NumType).get_name() + ">";
+    register_type(_type_handle, name, 
+		  LVecBase4<NumType>::get_class_type());
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: lcast_to
+//  Description: Converts a vector from one numeric representation to
+//               another one.  This is usually invoked using the macro
+//               LCAST.
+////////////////////////////////////////////////////////////////////
+template<class NumType, class NumType2>
+INLINE LVector4<NumType2> 
+lcast_to(NumType2 *, const LVector4<NumType> &source) {
+  return LVector4<NumType2>(source[0], source[1], source[2], source[3]);
+}

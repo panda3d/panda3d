@@ -35,7 +35,7 @@ get_nearly_zero_value(float) {
 // NEARLY_ZERO(float) returns a number that is considered to be so
 // close to zero as not to matter for a float.  NEARLY_ZERO(double)
 // returns a similar, smaller number for a double.
-#define NEARLY_ZERO(FLOATTYPE1) (get_nearly_zero_value((FLOATTYPE1)0))
+#define NEARLY_ZERO(NumType) (get_nearly_zero_value((NumType)0))
 
 // IS_NEARLY_ZERO(value) returns true if the value is very close to
 // zero.

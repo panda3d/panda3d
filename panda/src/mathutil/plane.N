@@ -1,4 +1,2 @@
-forcetype Planef
-renametype Planef Planef
-forcetype Planed
-renametype Planed Planed
+forcetype Plane<float>
+forcetype Plane<double>

@@ -3,74 +3,19 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////
-// 	 Class : LPoint3
-// Description : This is a three-component point in space (as opposed
-//               to a three-component vector, which represents a
-//               direction and a distance).  Some of the methods are
-//               slightly different between LPoint3 and LVector3; in
-//               particular, subtraction of two points yields a
-//               vector, while addition of a vector and a point yields
-//               a point.
-////////////////////////////////////////////////////////////////////
+#include "lvector3.h"
 
-class EXPCL_PANDA FLOATNAME(LPoint3) : public FLOATNAME(LVecBase3) {
-PUBLISHED:
-  INLINE FLOATNAME(LPoint3)();
-  INLINE FLOATNAME(LPoint3)(const FLOATNAME(LVecBase3) &copy);
-  INLINE FLOATNAME(LPoint3) &operator = (const FLOATNAME(LVecBase3) &copy);
-  INLINE FLOATNAME(LPoint3) &operator = (FLOATTYPE1 fill_value);
-  INLINE FLOATNAME(LPoint3)(FLOATTYPE1 fill_value);
-  INLINE FLOATNAME(LPoint3)(FLOATTYPE1 x, FLOATTYPE1 y, FLOATTYPE1 z);
-
-  INLINE static FLOATNAME(LPoint3) zero();
-  INLINE static FLOATNAME(LPoint3) unit_x();
-  INLINE static FLOATNAME(LPoint3) unit_y();
-  INLINE static FLOATNAME(LPoint3) unit_z();
-
-  INLINE FLOATNAME(LPoint3) operator - () const;
-
-  INLINE FLOATNAME(LVecBase3)
-  operator + (const FLOATNAME(LVecBase3) &other) const;
-  INLINE FLOATNAME(LPoint3)
-  operator + (const FLOATNAME(LVector3) &other) const;
-
-  INLINE FLOATNAME(LVecBase3)
-  operator - (const FLOATNAME(LVecBase3) &other) const;
-  INLINE FLOATNAME(LVector3)
-  operator - (const FLOATNAME(LPoint3) &other) const;
-  INLINE FLOATNAME(LPoint3)
-  operator - (const FLOATNAME(LVector3) &other) const;
-
-  INLINE FLOATNAME(LPoint3) cross(const FLOATNAME(LVecBase3) &other) const;
-  INLINE FLOATNAME(LPoint3) operator * (FLOATTYPE1 scalar) const;
-  INLINE FLOATNAME(LPoint3) operator / (FLOATTYPE1 scalar) const;
-
-  // Some special named constructors for LPoint3.
-
-  INLINE static FLOATNAME(LPoint3) origin(CoordinateSystem cs = CS_default);
-  INLINE static FLOATNAME(LPoint3) rfu(FLOATTYPE1 right,
-				     FLOATTYPE1 fwd,
-				     FLOATTYPE1 up,
-				     CoordinateSystem cs = CS_default);
-public:
-  static TypeHandle get_class_type() {
-    return _type_handle;
-  }
-  static void init_type();
- 
-private:
-  static TypeHandle _type_handle;
-};
+template<class NumType>
+TypeHandle LPoint3<NumType>::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint3::Default Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LPoint3)::
-FLOATNAME(LPoint3)() {
+template<class NumType>
+INLINE LPoint3<NumType>::
+LPoint3() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -78,9 +23,9 @@ FLOATNAME(LPoint3)() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LPoint3)::
-FLOATNAME(LPoint3)(const FLOATNAME(LVecBase3) &copy) : FLOATNAME(LVecBase3)(copy) {
+template<class NumType>
+INLINE LPoint3<NumType>::
+LPoint3(const LVecBase3<NumType> &copy) : LVecBase3<NumType>(copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -88,10 +33,10 @@ FLOATNAME(LPoint3)(const FLOATNAME(LVecBase3) &copy) : FLOATNAME(LVecBase3)(copy
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LPoint3) &FLOATNAME(LPoint3)::
-operator = (const FLOATNAME(LVecBase3) &copy) {
-  FLOATNAME(LVecBase3)::operator = (copy);
+template<class NumType>
+INLINE LPoint3<NumType> &LPoint3<NumType>::
+operator = (const LVecBase3<NumType> &copy) {
+  LVecBase3<NumType>::operator = (copy);
   return *this;
 }
 
@@ -100,10 +45,10 @@ operator = (const FLOATNAME(LVecBase3) &copy) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LPoint3) &FLOATNAME(LPoint3)::
-operator = (FLOATTYPE1 fill_value) {
-  FLOATNAME(LVecBase3)::operator = (fill_value);
+template<class NumType>
+INLINE LPoint3<NumType> &LPoint3<NumType>::
+operator = (NumType fill_value) {
+  LVecBase3<NumType>::operator = (fill_value);
   return *this;
 }
 
@@ -112,10 +57,10 @@ operator = (FLOATTYPE1 fill_value) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LPoint3)::
-FLOATNAME(LPoint3)(FLOATTYPE1 fill_value) :
-  FLOATNAME(LVecBase3)(fill_value) 
+template<class NumType>
+INLINE LPoint3<NumType>::
+LPoint3(NumType fill_value) :
+  LVecBase3<NumType>(fill_value) 
 {
 }
 
@@ -124,10 +69,10 @@ FLOATNAME(LPoint3)(FLOATTYPE1 fill_value) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LPoint3)::
-FLOATNAME(LPoint3)(FLOATTYPE1 x, FLOATTYPE1 y, FLOATTYPE1 z) : 
-  FLOATNAME(LVecBase3)(x, y, z) 
+template<class NumType>
+INLINE LPoint3<NumType>::
+LPoint3(NumType x, NumType y, NumType z) : 
+  LVecBase3<NumType>(x, y, z) 
 {
 }
 
@@ -136,10 +81,10 @@ FLOATNAME(LPoint3)(FLOATTYPE1 x, FLOATTYPE1 y, FLOATTYPE1 z) :
 //       Access: Public
 //  Description: Returns a zero point.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LPoint3) FLOATNAME(LPoint3)::
+template<class NumType>
+INLINE LPoint3<NumType> LPoint3<NumType>::
 zero() {
-  return FLOATNAME(LPoint3)(0.0, 0.0, 0.0);
+  return LPoint3<NumType>(0.0, 0.0, 0.0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -147,10 +92,10 @@ zero() {
 //       Access: Public
 //  Description: Returns a unit X point.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LPoint3) FLOATNAME(LPoint3)::
+template<class NumType>
+INLINE LPoint3<NumType> LPoint3<NumType>::
 unit_x() {
-  return FLOATNAME(LPoint3)(1.0, 0.0, 0.0);
+  return LPoint3<NumType>(1.0, 0.0, 0.0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -158,10 +103,10 @@ unit_x() {
 //       Access: Public
 //  Description: Returns a unit Y point.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LPoint3) FLOATNAME(LPoint3)::
+template<class NumType>
+INLINE LPoint3<NumType> LPoint3<NumType>::
 unit_y() {
-  return FLOATNAME(LPoint3)(0.0, 1.0, 0.0);
+  return LPoint3<NumType>(0.0, 1.0, 0.0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -169,10 +114,10 @@ unit_y() {
 //       Access: Public
 //  Description: Returns a unit Z point.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LPoint3) FLOATNAME(LPoint3)::
+template<class NumType>
+INLINE LPoint3<NumType> LPoint3<NumType>::
 unit_z() {
-  return FLOATNAME(LPoint3)(0.0, 0.0, 1.0);
+  return LPoint3<NumType>(0.0, 0.0, 1.0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -180,10 +125,10 @@ unit_z() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LPoint3) FLOATNAME(LPoint3)::
+template<class NumType>
+INLINE LPoint3<NumType> LPoint3<NumType>::
 operator - () const {
-  return FLOATNAME(LVecBase3)::operator - ();
+  return LVecBase3<NumType>::operator - ();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -191,10 +136,10 @@ operator - () const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVecBase3) FLOATNAME(LPoint3)::
-operator + (const FLOATNAME(LVecBase3) &other) const {
-  return FLOATNAME(LVecBase3)::operator + (other);
+template<class NumType>
+INLINE LVecBase3<NumType> LPoint3<NumType>::
+operator + (const LVecBase3<NumType> &other) const {
+  return LVecBase3<NumType>::operator + (other);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -202,10 +147,10 @@ operator + (const FLOATNAME(LVecBase3) &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LPoint3) FLOATNAME(LPoint3)::
-operator + (const FLOATNAME(LVector3) &other) const {
-  return FLOATNAME(LVecBase3)::operator + (other);
+template<class NumType>
+INLINE LPoint3<NumType> LPoint3<NumType>::
+operator + (const LVector3<NumType> &other) const {
+  return LVecBase3<NumType>::operator + (other);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -213,10 +158,10 @@ operator + (const FLOATNAME(LVector3) &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVecBase3) FLOATNAME(LPoint3)::
-operator - (const FLOATNAME(LVecBase3) &other) const {
-  return FLOATNAME(LVecBase3)::operator - (other);
+template<class NumType>
+INLINE LVecBase3<NumType> LPoint3<NumType>::
+operator - (const LVecBase3<NumType> &other) const {
+  return LVecBase3<NumType>::operator - (other);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -224,10 +169,10 @@ operator - (const FLOATNAME(LVecBase3) &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVector3) FLOATNAME(LPoint3)::
-operator - (const FLOATNAME(LPoint3) &other) const {
-  return FLOATNAME(LVecBase3)::operator - (other);
+template<class NumType>
+INLINE LVector3<NumType> LPoint3<NumType>::
+operator - (const LPoint3<NumType> &other) const {
+  return LVecBase3<NumType>::operator - (other);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -235,10 +180,10 @@ operator - (const FLOATNAME(LPoint3) &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LPoint3) FLOATNAME(LPoint3)::
-operator - (const FLOATNAME(LVector3) &other) const {
-  return FLOATNAME(LVecBase3)::operator - (other);
+template<class NumType>
+INLINE LPoint3<NumType> LPoint3<NumType>::
+operator - (const LVector3<NumType> &other) const {
+  return LVecBase3<NumType>::operator - (other);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -246,10 +191,10 @@ operator - (const FLOATNAME(LVector3) &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LPoint3) FLOATNAME(LPoint3)::
-cross(const FLOATNAME(LVecBase3) &other) const {
-  return FLOATNAME(LVecBase3)::cross(other);
+template<class NumType>
+INLINE LPoint3<NumType> LPoint3<NumType>::
+cross(const LVecBase3<NumType> &other) const {
+  return LVecBase3<NumType>::cross(other);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -257,10 +202,10 @@ cross(const FLOATNAME(LVecBase3) &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LPoint3) FLOATNAME(LPoint3)::
-operator * (FLOATTYPE1 scalar) const {
-  return FLOATNAME(LPoint3)(FLOATNAME(LVecBase3)::operator * (scalar));
+template<class NumType>
+INLINE LPoint3<NumType> LPoint3<NumType>::
+operator * (NumType scalar) const {
+  return LPoint3<NumType>(LVecBase3<NumType>::operator * (scalar));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -268,10 +213,10 @@ operator * (FLOATTYPE1 scalar) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LPoint3) FLOATNAME(LPoint3)::
-operator / (FLOATTYPE1 scalar) const {
-  return FLOATNAME(LPoint3)(FLOATNAME(LVecBase3)::operator / (scalar));
+template<class NumType>
+INLINE LPoint3<NumType> LPoint3<NumType>::
+operator / (NumType scalar) const {
+  return LPoint3<NumType>(LVecBase3<NumType>::operator / (scalar));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -282,10 +227,10 @@ operator / (FLOATTYPE1 scalar) const {
 //               existing coordinate systems; it's hard to imagine it
 //               ever being different.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LPoint3) FLOATNAME(LPoint3)::
+template<class NumType>
+INLINE LPoint3<NumType> LPoint3<NumType>::
 origin(CoordinateSystem) {
-  return FLOATNAME(LPoint3)(0.0, 0.0, 0.0);
+  return LPoint3<NumType>(0.0, 0.0, 0.0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -295,11 +240,39 @@ origin(CoordinateSystem) {
 //               displacements from the origin, wherever that maps to
 //               in the given coordinate system.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LPoint3) FLOATNAME(LPoint3)::
-rfu(FLOATTYPE1 right_v, FLOATTYPE1 fwd_v, FLOATTYPE1 up_v,
+template<class NumType>
+INLINE LPoint3<NumType> LPoint3<NumType>::
+rfu(NumType right_v, NumType fwd_v, NumType up_v,
     CoordinateSystem cs) {
   return origin(cs) + 
-    FLOATNAME(LVector3)::rfu(right_v, fwd_v, up_v, cs);
+    LVector3<NumType>::rfu(right_v, fwd_v, up_v, cs);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: LPoint3::init_type
+//       Access: Public, Static
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class NumType>
+void LPoint3<NumType>::
+init_type() {
+  if (_type_handle == TypeHandle::none()) {
+    LVecBase3<NumType>::init_type();
+    string name =
+      "LPoint3<" + get_type_handle(NumType).get_name() + ">";
+    register_type(_type_handle, name, 
+		  LVecBase3<NumType>::get_class_type());
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: lcast_to
+//  Description: Converts a vector from one numeric representation to
+//               another one.  This is usually invoked using the macro
+//               LCAST.
+////////////////////////////////////////////////////////////////////
+template<class NumType, class NumType2>
+INLINE LPoint3<NumType2> 
+lcast_to(NumType2 *, const LPoint3<NumType> &source) {
+  return LPoint3<NumType2>(source[0], source[1], source[2]);
+}

@@ -26,14 +26,98 @@
 ////////////////////////////////////////////////////////////////////
 
 #include <pandabase.h>
-#include <math.h>
+
 #include "lmatrix.h"
 #include "luse.h"
 
-#include "fltnames.I"
-#include "compose_matrix.I"
+BEGIN_PUBLISH
 
-#include "dblnames.I"
+EXPCL_PANDA void
+compose_matrix(LMatrix3f &mat,
+	       const LVecBase3f &scale,
+	       const LVecBase3f &hpr,
+	       CoordinateSystem cs = CS_default);
+EXPCL_PANDA bool
+decompose_matrix(const LMatrix3f &mat,
+		 LVecBase3f &scale,
+		 LVecBase3f &hpr,
+		 CoordinateSystem cs = CS_default);
+EXPCL_PANDA bool
+decompose_matrix(const LMatrix3f &mat,
+		 LVecBase3f &scale,
+		 LVecBase3f &hpr,
+		 float roll,
+		 CoordinateSystem cs = CS_default);
+
+EXPCL_PANDA void
+compose_matrix(LMatrix3d &mat,
+	       const LVecBase3d &scale,
+	       const LVecBase3d &hpr,
+	       CoordinateSystem cs = CS_default);
+EXPCL_PANDA bool
+decompose_matrix(const LMatrix3d &mat,
+		 LVecBase3d &scale,
+		 LVecBase3d &hpr,
+		 CoordinateSystem cs = CS_default);
+EXPCL_PANDA bool
+decompose_matrix(const LMatrix3d &mat,
+		 LVecBase3d &scale,
+		 LVecBase3d &hpr,
+		 double roll,
+		 CoordinateSystem cs = CS_default);
+
+EXPCL_PANDA void
+compose_matrix(LMatrix4f &mat,
+	       const LVecBase3f &scale,
+	       const LVecBase3f &hpr,
+	       const LVecBase3f &translate,
+	       CoordinateSystem cs = CS_default);
+INLINE void compose_matrix(LMatrix4f &mat, const float components[9],
+			   CoordinateSystem cs = CS_default);
+
+EXPCL_PANDA bool
+decompose_matrix(const LMatrix4f &mat,
+		 LVecBase3f &scale,
+		 LVecBase3f &hpr,
+		 LVecBase3f &translate,
+		 CoordinateSystem cs = CS_default);
+EXPCL_PANDA bool
+decompose_matrix(const LMatrix4f &mat,
+		 LVecBase3f &scale,
+		 LVecBase3f &hpr,
+		 LVecBase3f &translate,
+		 float roll,
+		 CoordinateSystem cs = CS_default);
+INLINE bool decompose_matrix(const LMatrix4f &mat, float components[9],
+			     CoordinateSystem CS = CS_default);
+
+EXPCL_PANDA void
+compose_matrix(LMatrix4d &mat,
+	       const LVecBase3d &scale,
+	       const LVecBase3d &hpr,
+	       const LVecBase3d &translate,
+	       CoordinateSystem cs = CS_default);
+INLINE void compose_matrix(LMatrix4d &mat, const double components[9],
+			   CoordinateSystem cs = CS_default);
+
+bool EXPCL_PANDA
+decompose_matrix(const LMatrix4d &mat,
+		 LVecBase3d &scale,
+		 LVecBase3d &hpr,
+		 LVecBase3d &translate,
+		 CoordinateSystem cs = CS_default);
+bool EXPCL_PANDA
+decompose_matrix(const LMatrix4d &mat,
+		 LVecBase3d &scale,
+		 LVecBase3d &hpr,
+		 LVecBase3d &translate,
+		 double roll,
+		 CoordinateSystem cs = CS_default);
+INLINE bool decompose_matrix(const LMatrix4d &mat, double components[9],
+			     CoordinateSystem cs = CS_default);
+
+END_PUBLISH
+
 #include "compose_matrix.I"
 
 #endif

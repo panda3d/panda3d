@@ -2,53 +2,14 @@
 // Created by:  mike (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
-
+//
 ////////////////////////////////////////////////////////////////////
-//       Class : FLOATNAME(Plane)
-// Description :
+// Includes
 ////////////////////////////////////////////////////////////////////
+#include "mathutil.h"
 
-class EXPCL_PANDA FLOATNAME(Plane) {
-PUBLISHED:
-  INLINE FLOATNAME(Plane)(void);
-  INLINE FLOATNAME(Plane)(const FLOATNAME(Plane) &copy);
-  INLINE FLOATNAME(Plane)(const FLOATNAME(LPoint3) &a, const FLOATNAME(LPoint3) &b,
-	       const FLOATNAME(LPoint3) &c);
-  INLINE FLOATNAME(Plane)(const FLOATNAME(LVector3) &normal, 
-	       const FLOATNAME(LPoint3) &point);
-
-  INLINE FLOATNAME(Plane)& operator = (const FLOATNAME(Plane)& copy);
-
-  INLINE FLOATNAME(Plane) operator * (const FLOATNAME(LMatrix3) &mat) const;
-  INLINE FLOATNAME(Plane) operator * (const FLOATNAME(LMatrix4) &mat) const;
- 
-  INLINE FLOATNAME(LMatrix4) get_reflection_mat(void) const;
-
-  INLINE FLOATNAME(LVector3) get_normal() const;
-  INLINE FLOATNAME(LPoint3) get_point() const;
-  INLINE FLOATTYPE1 dist_to_plane(const FLOATNAME(LPoint3) &point) const; 
-  INLINE bool intersects_line(FLOATNAME(LPoint3) &intersection_point,
-			      const FLOATNAME(LPoint3) &p1,
-			      const FLOATNAME(LPoint3) &p2) const;
-  INLINE bool intersects_line(FLOATTYPE1 &t,
-			      const FLOATNAME(LPoint3) &from, 
-			      const FLOATNAME(LVector3) &delta) const;
-  
-  INLINE void output(ostream &out) const;
-  INLINE void write(ostream &out, int indent_level = 0) const;
-
-public:
-  INLINE void write_datagram(Datagram &dest);
-  INLINE void read_datagram(DatagramIterator &source);
-
-public:
-  FLOATTYPE1 _a, _b, _c, _d;
-};
-
-INLINE ostream &operator << (ostream &out, const FLOATNAME(Plane) &p) {
-  p.output(out);
-  return out;
-}
+#include <nearly_zero.h>
+#include <cmath.h>
 
 ////////////////////////////////////////////////////////////////////
 // Static variables
@@ -61,9 +22,9 @@ INLINE ostream &operator << (ostream &out, const FLOATNAME(Plane) &p) {
 //               intersect the origin, perpendicular to the Z axis.
 //               It's not clear how useful a default plane is.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(Plane)::
-FLOATNAME(Plane)(void) {
+template<class NumType>
+INLINE Plane<NumType>::
+Plane(void) {
   _a = 0.0; 
   _b = 0.0; 
   _c = 1.0; 
@@ -75,9 +36,9 @@ FLOATNAME(Plane)(void) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(Plane)::
-FLOATNAME(Plane)(const FLOATNAME(Plane) &copy) :
+template<class NumType>
+INLINE Plane<NumType>::
+Plane(const Plane<NumType> &copy) :
   _a(copy._a),
   _b(copy._b),
   _c(copy._c),
@@ -93,13 +54,13 @@ FLOATNAME(Plane)(const FLOATNAME(Plane) &copy) :
 //               viewed from the end of the normal vector, looking
 //               down).
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(Plane)::
-FLOATNAME(Plane)(const FLOATNAME(LPoint3) &a, const FLOATNAME(LPoint3) &b, 
-      const FLOATNAME(LPoint3) &c) {
-  FLOATNAME(LVector3) u = b - a;
-  FLOATNAME(LVector3) v = c - a;
-  FLOATNAME(LVector3) p = normalize(cross(u, v));
+template<class NumType>
+INLINE Plane<NumType>::
+Plane(const LPoint3<NumType> &a, const LPoint3<NumType> &b, 
+      const LPoint3<NumType> &c) {
+  LVector3<NumType> u = b - a;
+  LVector3<NumType> v = c - a;
+  LVector3<NumType> p = normalize(cross(u, v));
 
   _a = p[0];
   _b = p[1];
@@ -113,10 +74,10 @@ FLOATNAME(Plane)(const FLOATNAME(LPoint3) &a, const FLOATNAME(LPoint3) &b,
 //  Description: Constructs a plane given a surface normal vector and
 //               a point within the plane.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(Plane)::
-FLOATNAME(Plane)(const FLOATNAME(LVector3) &normal, const FLOATNAME(LPoint3) &point) {
-  FLOATNAME(LVector3) p = normalize(normal);
+template<class NumType>
+INLINE Plane<NumType>::
+Plane(const LVector3<NumType> &normal, const LPoint3<NumType> &point) {
+  LVector3<NumType> p = normalize(normal);
 
   _a = p[0];
   _b = p[1]; 
@@ -129,9 +90,9 @@ FLOATNAME(Plane)(const FLOATNAME(LVector3) &normal, const FLOATNAME(LPoint3) &po
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(Plane)& FLOATNAME(Plane)::
-operator = (const FLOATNAME(Plane)& p) {
+template<class NumType>
+INLINE Plane<NumType>& Plane<NumType>::
+operator = (const Plane<NumType>& p) {
   _a = p._a; 
   _b = p._b;
   _c = p._c;
@@ -144,12 +105,12 @@ operator = (const FLOATNAME(Plane)& p) {
 //       Access: Public
 //  Description: Transforms the plane by the indicated matrix.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(Plane) FLOATNAME(Plane)::
-operator * (const FLOATNAME(LMatrix3) &mat) const {
-  FLOATNAME(LVector3) new_normal = get_normal() * mat;
-  FLOATNAME(LPoint3) new_point = get_point() * mat;
-  return FLOATNAME(Plane)(new_normal, new_point);
+template<class NumType>
+INLINE Plane<NumType> Plane<NumType>::
+operator * (const LMatrix3<NumType> &mat) const {
+  LVector3<NumType> new_normal = get_normal() * mat;
+  LPoint3<NumType> new_point = get_point() * mat;
+  return Plane<NumType>(new_normal, new_point);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -157,12 +118,12 @@ operator * (const FLOATNAME(LMatrix3) &mat) const {
 //       Access: Public
 //  Description: Transforms the plane by the indicated matrix.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(Plane) FLOATNAME(Plane)::
-operator * (const FLOATNAME(LMatrix4) &mat) const {
-  FLOATNAME(LVector3) new_normal = get_normal() * mat;
-  FLOATNAME(LPoint3) new_point = get_point() * mat;
-  return FLOATNAME(Plane)(new_normal, new_point);
+template<class NumType>
+INLINE Plane<NumType> Plane<NumType>::
+operator * (const LMatrix4<NumType> &mat) const {
+  LVector3<NumType> new_normal = get_normal() * mat;
+  LPoint3<NumType> new_point = get_point() * mat;
+  return Plane<NumType>(new_normal, new_point);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -172,16 +133,16 @@ operator * (const FLOATNAME(LMatrix4) &mat) const {
 //               perspective transform defined by the frustum,
 //               accordinate to the indicated coordinate system.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix4) FLOATNAME(Plane)::
+template<class NumType>
+LMatrix4<NumType> Plane<NumType>::
 get_reflection_mat(void) const {
 
-  FLOATTYPE1 aa = _a * _a; FLOATTYPE1 ab = _a * _b; FLOATTYPE1 ac = _a * _c;
-  FLOATTYPE1 ad = _a * _d;
-  FLOATTYPE1 bb = _b * _b; FLOATTYPE1 bc = _b * _c; FLOATTYPE1 bd = _b * _d;
-  FLOATTYPE1 cc = _c * _c; FLOATTYPE1 cd = _c * _d;
+  NumType aa = _a * _a; NumType ab = _a * _b; NumType ac = _a * _c;
+  NumType ad = _a * _d;
+  NumType bb = _b * _b; NumType bc = _b * _c; NumType bd = _b * _d;
+  NumType cc = _c * _c; NumType cd = _c * _d;
 
-  return FLOATNAME(LMatrix4)(  1-2*aa,  -2*ab,  -2*ac,     0,
+  return LMatrix4<NumType>(  1-2*aa,  -2*ab,  -2*ac,     0,
                               -2*ab, 1-2*bb,  -2*bc,     0, 
                               -2*ac,  -2*bc, 1-2*cc,     0,
                               -2*ad,  -2*bd,  -2*cd,     1  );
@@ -192,10 +153,10 @@ get_reflection_mat(void) const {
 //       Access: Public
 //  Description: Returns the surface normal of the plane.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVector3) FLOATNAME(Plane)::
+template<class NumType>
+INLINE LVector3<NumType> Plane<NumType>::
 get_normal() const {
-  return FLOATNAME(LVector3)(_a, _b, _c);
+  return LVector3<NumType>(_a, _b, _c);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -205,19 +166,19 @@ get_normal() const {
 //               used along with the normal returned by get_normal()
 //               to reconstruct the plane.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LPoint3) FLOATNAME(Plane)::
+template<class NumType>
+LPoint3<NumType> Plane<NumType>::
 get_point() const {
   // Choose the denominator based on the largest axis in the normal.
   if (cabs(_a) >= cabs(_b) && cabs(_a) >= cabs(_c)) {
-    nassertr(_a != 0.0, FLOATNAME(LPoint3)(0.0, 0.0, 0.0));
-    return FLOATNAME(LPoint3)(-_d / _a, 0.0, 0.0);
+    nassertr(_a != 0.0, LPoint3<NumType>(0.0, 0.0, 0.0));
+    return LPoint3<NumType>(-_d / _a, 0.0, 0.0);
   } else if (cabs(_b) >= cabs(_c)) {
-    nassertr(_b != 0.0, FLOATNAME(LPoint3)(0.0, 0.0, 0.0));
-    return FLOATNAME(LPoint3)(0.0, -_d / _b, 0.0);
+    nassertr(_b != 0.0, LPoint3<NumType>(0.0, 0.0, 0.0));
+    return LPoint3<NumType>(0.0, -_d / _b, 0.0);
   } else {
-    nassertr(_c != 0.0, FLOATNAME(LPoint3)(0.0, 0.0, 0.0));
-    return FLOATNAME(LPoint3)(0.0, 0.0, -_d / _c);
+    nassertr(_c != 0.0, LPoint3<NumType>(0.0, 0.0, 0.0));
+    return LPoint3<NumType>(0.0, 0.0, -_d / _c);
   }
 }
 
@@ -231,9 +192,9 @@ get_point() const {
 //               the plane (on the opposite side from the normal).
 //               It's zero if the point is exactly in the plane.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATTYPE1 FLOATNAME(Plane)::
-dist_to_plane(const FLOATNAME(LPoint3) &point) const {
+template<class NumType>
+INLINE NumType Plane<NumType>::
+dist_to_plane(const LPoint3<NumType> &point) const {
   return (_a * point[0] + _b * point[1] + _c * point[2] + _d);
 }
 
@@ -247,12 +208,12 @@ dist_to_plane(const FLOATNAME(LPoint3) &point) const {
 //               bearing on the intersection test.  If true, sets
 //               intersection_point to the point of intersection.
 ////////////////////////////////////////////////////////////////////
-
-INLINE bool FLOATNAME(Plane)::
-intersects_line(FLOATNAME(LPoint3) &intersection_point,
-		const FLOATNAME(LPoint3) &p1,
-		const FLOATNAME(LPoint3) &p2) const {
-  FLOATTYPE1 t;
+template<class NumType>
+INLINE bool Plane<NumType>::
+intersects_line(LPoint3<NumType> &intersection_point,
+		const LPoint3<NumType> &p1,
+		const LPoint3<NumType> &p2) const {
+  NumType t;
   if (!intersects_line(t, p1, p2 - p1)) {
     return false;
   }
@@ -277,12 +238,12 @@ intersects_line(FLOATNAME(LPoint3) &intersection_point,
 //               point from, and t == 1.0 implies at point from +
 //               delta, with other values of t accordingly.
 ////////////////////////////////////////////////////////////////////
-
-INLINE bool FLOATNAME(Plane)::
-intersects_line(FLOATTYPE1 &t, 
-		const FLOATNAME(LPoint3) &from, 
-		const FLOATNAME(LVector3) &delta) const {
-  FLOATTYPE1 denom = dot(get_normal(), delta);
+template<class NumType>
+INLINE bool Plane<NumType>::
+intersects_line(NumType &t, 
+		const LPoint3<NumType> &from, 
+		const LVector3<NumType> &delta) const {
+  NumType denom = dot(get_normal(), delta);
   if (IS_NEARLY_ZERO(denom)) {
     return false;
   }
@@ -296,8 +257,8 @@ intersects_line(FLOATTYPE1 &t,
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE void FLOATNAME(Plane)::
+template<class NumType>
+void Plane<NumType>::
 output(ostream &out) const {
   out << "Plane(" << _a << " " << _b << " " << _c << " " << _d << ")";
 }
@@ -307,8 +268,8 @@ output(ostream &out) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE void FLOATNAME(Plane)::
+template<class NumType>
+void Plane<NumType>::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";
 }
@@ -318,8 +279,8 @@ write(ostream &out, int indent_level) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE void FLOATNAME(Plane)::
+template<class NumType>
+void Plane<NumType>::
 write_datagram(Datagram &dest) 
 {
   dest.add_float32(_a);
@@ -333,9 +294,8 @@ write_datagram(Datagram &dest)
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-
-INLINE void FLOATNAME(Plane)::
+template<class NumType>
+void Plane<NumType>::
 read_datagram(DatagramIterator &source) 
 {
   _a = source.get_float32();

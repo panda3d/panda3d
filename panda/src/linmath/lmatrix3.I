@@ -3,177 +3,27 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////
-// 	 Class : LMatrix3
-// Description : This is a 3-by-3 transform matrix.  It typically will
-//               represent either a rotation-and-scale (no
-//               translation) matrix in 3-d, or a full affine matrix
-//               (rotation, scale, translation) in 2-d, e.g. for a
-//               texture matrix.
-////////////////////////////////////////////////////////////////////
+#include <pandabase.h>
 
-class EXPCL_PANDA FLOATNAME(LMatrix3) {
-PUBLISHED:
-  typedef const FLOATTYPE1 *iterator;
-  typedef const FLOATTYPE1 *const_iterator;
+#include "deg_2_rad.h"
+#include "nearly_zero.h"
 
-  INLINE FLOATNAME(LMatrix3)();
-  INLINE FLOATNAME(LMatrix3)(const FLOATNAME(LMatrix3) &other);
-  INLINE FLOATNAME(LMatrix3) &operator = (const FLOATNAME(LMatrix3) &other);
-  INLINE FLOATNAME(LMatrix3) &operator = (FLOATTYPE1 fill_value);
-  INLINE FLOATNAME(LMatrix3)(FLOATTYPE1 e00, FLOATTYPE1 e01, FLOATTYPE1 e02,
-		  FLOATTYPE1 e10, FLOATTYPE1 e11, FLOATTYPE1 e12,
-		  FLOATTYPE1 e20, FLOATTYPE1 e21, FLOATTYPE1 e22);
+#include <notify.h>
+#include <indent.h>
 
-  void fill(FLOATTYPE1 fill_value);
-  INLINE void set(FLOATTYPE1 e00, FLOATTYPE1 e01, FLOATTYPE1 e02,
-		  FLOATTYPE1 e10, FLOATTYPE1 e11, FLOATTYPE1 e12,
-		  FLOATTYPE1 e20, FLOATTYPE1 e21, FLOATTYPE1 e22);
+#include <math.h>
 
-  INLINE void set_row(int row, const FLOATNAME(LVecBase3) &v);
-  INLINE void set_col(int col, const FLOATNAME(LVecBase3) &v);
-
-  INLINE void set_row(int row, const FLOATNAME(LVecBase2) &v);
-  INLINE void set_col(int col, const FLOATNAME(LVecBase2) &v);
-
-  INLINE FLOATNAME(LVecBase3) get_row(int row) const;
-  INLINE FLOATNAME(LVecBase3) get_col(int col) const;
-
-  INLINE FLOATNAME(LVecBase2) get_row2(int row) const;
-  INLINE FLOATNAME(LVecBase2) get_col2(int col) const;
-
-  INLINE FLOATTYPE1 &operator () (int row, int col);
-  INLINE FLOATTYPE1 operator () (int row, int col) const;
-
-  INLINE bool is_nan() const;
-
-  INLINE FLOATTYPE1 get_cell(int row, int col) const;
-  INLINE void set_cell(int row, int col, FLOATTYPE1 value);
-
-  INLINE const FLOATTYPE1 *get_data() const;
-  INLINE int get_num_components() const;
-
-public:
-  INLINE iterator begin();
-  INLINE iterator end();
-
-  INLINE const_iterator begin() const;
-  INLINE const_iterator end() const;
-
-PUBLISHED:
-  bool operator == (const FLOATNAME(LMatrix3) &other) const;
-  INLINE bool operator != (const FLOATNAME(LMatrix3) &other) const;
-
-  INLINE int compare_to(const FLOATNAME(LMatrix3) &other) const;
-  int compare_to(const FLOATNAME(LMatrix3) &other, FLOATTYPE1 threshold) const;
-
-  INLINE FLOATNAME(LVecBase3)
-  xform(const FLOATNAME(LVecBase3) &v) const;
-
-  INLINE FLOATNAME(LVecBase2)
-  xform_point(const FLOATNAME(LVecBase2) &v) const;
- 
-  INLINE FLOATNAME(LVecBase2)
-  xform_vec(const FLOATNAME(LVecBase2) &v) const;
-
-  INLINE FLOATNAME(LMatrix3) operator * (const FLOATNAME(LMatrix3) &other) const;
-  INLINE FLOATNAME(LMatrix3) operator * (FLOATTYPE1 scalar) const;
-  INLINE FLOATNAME(LMatrix3) operator / (FLOATTYPE1 scalar) const;
-
-  INLINE FLOATNAME(LMatrix3) &operator += (const FLOATNAME(LMatrix3) &other);
-  INLINE FLOATNAME(LMatrix3) &operator -= (const FLOATNAME(LMatrix3) &other);
-
-  INLINE FLOATNAME(LMatrix3) &operator *= (const FLOATNAME(LMatrix3) &other);
-  
-  INLINE FLOATNAME(LMatrix3) &operator *= (FLOATTYPE1 scalar);
-  INLINE FLOATNAME(LMatrix3) &operator /= (FLOATTYPE1 scalar);
-
-  INLINE FLOATTYPE1 determinant() const;
-
-  INLINE void transpose_from(const FLOATNAME(LMatrix3) &other);
-  INLINE void transpose_in_place();
-
-  INLINE bool invert_from(const FLOATNAME(LMatrix3) &other);
-  INLINE bool invert_in_place();
-
-  static INLINE const FLOATNAME(LMatrix3) &ident_mat();
-
-  // A 3x3 matrix is likely to be used for one of two purposes.  In
-  // 2-d coordinate space (e.g. texture or surface coordinates), it
-  // can contain a full affine transform, with scale, rotate,
-  // translate.  In 3-d coordinate space, it can contain only scale
-  // and/or rotate; e.g., the upper 3x3 rectangle of a full 4x4
-  // matrix.
-
-  // The following named constructors return 3x3 matrices suitable for
-  // affine transforms in 2-d coordinate space.
-
-  static INLINE FLOATNAME(LMatrix3) translate_mat(const FLOATNAME(LVecBase2) &trans);
-  static INLINE FLOATNAME(LMatrix3) translate_mat(FLOATTYPE1 tx, FLOATTYPE1 ty);
-  static INLINE FLOATNAME(LMatrix3) rotate_mat(FLOATTYPE1 angle);
-  static INLINE FLOATNAME(LMatrix3) scale_mat(const FLOATNAME(LVecBase2) &scale);
-  static INLINE FLOATNAME(LMatrix3) scale_mat(FLOATTYPE1 sx, FLOATTYPE1 sy);
-
-  // The following named constructors return 3x3 matrices suitable for
-  // scale/rotate transforms in 3-d coordinate space.
-  static INLINE FLOATNAME(LMatrix3) rotate_mat(FLOATTYPE1 angle,
-				      FLOATNAME(LVecBase3) axis,
-				      CoordinateSystem cs = CS_default);
-  static INLINE FLOATNAME(LMatrix3) scale_mat(const FLOATNAME(LVecBase3) &scale);
-  static INLINE FLOATNAME(LMatrix3) scale_mat(FLOATTYPE1 sx, FLOATTYPE1 sy, FLOATTYPE1 sz);
-
-  // We don't have a scale_mat() that takes a single uniform scale
-  // parameter, because it would be ambiguous whether we mean a 2-d or
-  // a 3-d scale.
-
-  bool almost_equal(const FLOATNAME(LMatrix3) &other, 
-		    FLOATTYPE1 threshold) const;
-
-  INLINE bool almost_equal(const FLOATNAME(LMatrix3) &other) const;
-  
-  INLINE void output(ostream &out) const;
-  INLINE void write(ostream &out, int indent_level = 0) const;
-
-private:
-  INLINE FLOATTYPE1 mult_cel(const FLOATNAME(LMatrix3) &other, int x, int y) const;
-  INLINE FLOATTYPE1 det2(FLOATTYPE1 e00, FLOATTYPE1 e01, FLOATTYPE1 e10, FLOATTYPE1 e11) const;
-
-  FLOATTYPE1 _data[3 * 3];
-
-  //Functionality for reading and writing from/to a binary source
-public:
-  void write_datagram(Datagram& destination) const;
-  void read_datagram(DatagramIterator& scan);
-
-public:
-  static TypeHandle get_class_type() {
-    return _type_handle;
-  }
-  static void init_type();
- 
-private:
-  static TypeHandle _type_handle;
-};
-
-
-INLINE ostream &operator << (ostream &out, const FLOATNAME(LMatrix3) &mat) {
-  mat.output(out);
-  return out;
-}
-
-
-INLINE FLOATNAME(LMatrix3) transpose(const FLOATNAME(LMatrix3) &a);
-
-INLINE FLOATNAME(LMatrix3) invert(const FLOATNAME(LMatrix3) &a);
+template<class NumType>
+TypeHandle LMatrix3<NumType>::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::Default Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix3):: 
-FLOATNAME(LMatrix3)() {
+template<class NumType>
+INLINE LMatrix3<NumType>:: 
+LMatrix3() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -181,22 +31,22 @@ FLOATNAME(LMatrix3)() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix3):: 
-FLOATNAME(LMatrix3)(const FLOATNAME(LMatrix3) &copy) {
+template<class NumType>
+INLINE LMatrix3<NumType>:: 
+LMatrix3(const LMatrix3<NumType> &copy) {
   (*this) = copy;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::Copy Assignment Operator
+//     Function: LMatrix3::Copy Assignment Operator
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3):: 
-operator = (const FLOATNAME(LMatrix3) &copy) {
-  set(copy(0, 0), copy(0, 1), copy(0, 2), 
-      copy(1, 0), copy(1, 1), copy(1, 2), 
+template<class NumType>
+LMatrix3<NumType> &LMatrix3<NumType>:: 
+operator = (const LMatrix3<NumType> &copy) {
+  set(copy(0, 0), copy(0, 1), copy(0, 2),
+      copy(1, 0), copy(1, 1), copy(1, 2),
       copy(2, 0), copy(2, 1), copy(2, 2));
   return *this;
 }
@@ -206,9 +56,9 @@ operator = (const FLOATNAME(LMatrix3) &copy) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
-operator = (FLOATTYPE1 fill_value) {
+template<class NumType>
+INLINE LMatrix3<NumType> &LMatrix3<NumType>::
+operator = (NumType fill_value) {
   fill(fill_value);
   return *this;
 }
@@ -218,14 +68,29 @@ operator = (FLOATTYPE1 fill_value) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix3):: 
-FLOATNAME(LMatrix3)(FLOATTYPE1 e00, FLOATTYPE1 e01, FLOATTYPE1 e02,
-	 FLOATTYPE1 e10, FLOATTYPE1 e11, FLOATTYPE1 e12,
-	 FLOATTYPE1 e20, FLOATTYPE1 e21, FLOATTYPE1 e22) {
+template<class NumType>
+INLINE LMatrix3<NumType>:: 
+LMatrix3(NumType e00, NumType e01, NumType e02,
+	 NumType e10, NumType e11, NumType e12,
+	 NumType e20, NumType e21, NumType e22) {
   set(e00, e01, e02,
       e10, e11, e12,
       e20, e21, e22);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::fill
+//       Access: Public
+//  Description: Sets each element of the matrix to the indicated
+//               fill_value.  This is of questionable value, but is
+//               sometimes useful when initializing to zero.
+////////////////////////////////////////////////////////////////////
+template<class NumType>
+void LMatrix3<NumType>::
+fill(NumType fill_value) {
+  set(fill_value, fill_value, fill_value,
+      fill_value, fill_value, fill_value,
+      fill_value, fill_value, fill_value);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -233,11 +98,11 @@ FLOATNAME(LMatrix3)(FLOATTYPE1 e00, FLOATTYPE1 e01, FLOATTYPE1 e02,
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE void FLOATNAME(LMatrix3)::
-set(FLOATTYPE1 e00, FLOATTYPE1 e01, FLOATTYPE1 e02,
-    FLOATTYPE1 e10, FLOATTYPE1 e11, FLOATTYPE1 e12,
-    FLOATTYPE1 e20, FLOATTYPE1 e21, FLOATTYPE1 e22) {
+template<class NumType>
+INLINE void LMatrix3<NumType>::
+set(NumType e00, NumType e01, NumType e02,
+    NumType e10, NumType e11, NumType e12,
+    NumType e20, NumType e21, NumType e22) {
   (*this)(0, 0) = e00;
   (*this)(0, 1) = e01;
   (*this)(0, 2) = e02;
@@ -255,9 +120,9 @@ set(FLOATTYPE1 e00, FLOATTYPE1 e01, FLOATTYPE1 e02,
 //  Description: Replaces the indicated row of the matrix from a
 //               three-component vector.
 ////////////////////////////////////////////////////////////////////
-
-INLINE void FLOATNAME(LMatrix3)::
-set_row(int row, const FLOATNAME(LVecBase3) &v) {
+template<class NumType>
+INLINE void LMatrix3<NumType>::
+set_row(int row, const LVecBase3<NumType> &v) {
   (*this)(row, 0) = v[0];
   (*this)(row, 1) = v[1];
   (*this)(row, 2) = v[2];
@@ -269,9 +134,9 @@ set_row(int row, const FLOATNAME(LVecBase3) &v) {
 //  Description: Replaces the indicated column of the matrix from a
 //               three-component vector.
 ////////////////////////////////////////////////////////////////////
-
-INLINE void FLOATNAME(LMatrix3)::
-set_col(int col, const FLOATNAME(LVecBase3) &v) {
+template<class NumType>
+INLINE void LMatrix3<NumType>::
+set_col(int col, const LVecBase3<NumType> &v) {
   (*this)(0, col) = v[0];
   (*this)(1, col) = v[1];
   (*this)(2, col) = v[2];
@@ -283,9 +148,9 @@ set_col(int col, const FLOATNAME(LVecBase3) &v) {
 //  Description: Replaces the indicated row of the matrix from a
 //               two-component vector, ignoring the last column.
 ////////////////////////////////////////////////////////////////////
-
-INLINE void FLOATNAME(LMatrix3)::
-set_row(int row, const FLOATNAME(LVecBase2) &v) {
+template<class NumType>
+INLINE void LMatrix3<NumType>::
+set_row(int row, const LVecBase2<NumType> &v) {
   (*this)(row, 0) = v[0];
   (*this)(row, 1) = v[1];
 }
@@ -296,9 +161,9 @@ set_row(int row, const FLOATNAME(LVecBase2) &v) {
 //  Description: Replaces the indicated column of the matrix from a
 //               two-component vector, ignoring the last row.
 ////////////////////////////////////////////////////////////////////
-
-INLINE void FLOATNAME(LMatrix3)::
-set_col(int col, const FLOATNAME(LVecBase2) &v) {
+template<class NumType>
+INLINE void LMatrix3<NumType>::
+set_col(int col, const LVecBase2<NumType> &v) {
   (*this)(0, col) = v[0];
   (*this)(1, col) = v[1];
 }
@@ -309,10 +174,10 @@ set_col(int col, const FLOATNAME(LVecBase2) &v) {
 //  Description: Returns the indicated row of the matrix as a
 //               three-component vector.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVecBase3) FLOATNAME(LMatrix3)::
+template<class NumType>
+INLINE LVecBase3<NumType> LMatrix3<NumType>::
 get_row(int row) const {
-  return FLOATNAME(LVecBase3)((*this)(row, 0), (*this)(row, 1), (*this)(row, 2));
+  return LVecBase3<NumType>((*this)(row, 0), (*this)(row, 1), (*this)(row, 2));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -321,10 +186,10 @@ get_row(int row) const {
 //  Description: Returns the indicated column of the matrix as a
 //               three-component vector.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVecBase3) FLOATNAME(LMatrix3)::
+template<class NumType>
+INLINE LVecBase3<NumType> LMatrix3<NumType>::
 get_col(int col) const {
-  return FLOATNAME(LVecBase3)((*this)(0, col), (*this)(1, col), (*this)(2, col));
+  return LVecBase3<NumType>((*this)(0, col), (*this)(1, col), (*this)(2, col));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -333,10 +198,10 @@ get_col(int col) const {
 //  Description: Returns the indicated row of the matrix as a
 //               two-component vector, ignoring the last column.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVecBase2) FLOATNAME(LMatrix3)::
+template<class NumType>
+INLINE LVecBase2<NumType> LMatrix3<NumType>::
 get_row2(int row) const {
-  return FLOATNAME(LVecBase2)((*this)(row, 0), (*this)(row, 1));
+  return LVecBase2<NumType>((*this)(row, 0), (*this)(row, 1));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -345,10 +210,10 @@ get_row2(int row) const {
 //  Description: Returns the indicated column of the matrix as a
 //               two-component vector, ignoring the last row.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVecBase2) FLOATNAME(LMatrix3)::
+template<class NumType>
+INLINE LVecBase2<NumType> LMatrix3<NumType>::
 get_col2(int col) const {
-  return FLOATNAME(LVecBase2)((*this)(0, col), (*this)(1, col));
+  return LVecBase2<NumType>((*this)(0, col), (*this)(1, col));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -356,8 +221,8 @@ get_col2(int col) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATTYPE1 &FLOATNAME(LMatrix3)::
+template<class NumType>
+INLINE NumType &LMatrix3<NumType>::
 operator () (int row, int col) {
   nassertr(row >= 0 && row < 3, _data[0]);
   nassertr(col >= 0 && col < 3, _data[0]);
@@ -369,8 +234,8 @@ operator () (int row, int col) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATTYPE1 FLOATNAME(LMatrix3)::
+template<class NumType>
+INLINE NumType LMatrix3<NumType>::
 operator () (int row, int col) const {
   nassertr(row >= 0 && row < 3, 0.0);
   nassertr(col >= 0 && col < 3, 0.0);
@@ -383,8 +248,8 @@ operator () (int row, int col) const {
 //  Description: Returns true if any component of the matrix is
 //               not-a-number, false otherwise.
 ////////////////////////////////////////////////////////////////////
-
-INLINE bool FLOATNAME(LMatrix3)::
+template<class NumType>
+INLINE bool LMatrix3<NumType>::
 is_nan() const {
   return 
     cnan(_data[0]) || cnan(_data[1]) || cnan(_data[2]) ||
@@ -397,8 +262,8 @@ is_nan() const {
 //       Access: Public
 //  Description: Returns a particular element of the matrix.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATTYPE1 FLOATNAME(LMatrix3)::
+template<class NumType>
+INLINE NumType LMatrix3<NumType>::
 get_cell(int row, int col) const {
   nassertr(row >= 0 && row < 3, 0.0);
   nassertr(col >= 0 && col < 3, 0.0);
@@ -410,9 +275,9 @@ get_cell(int row, int col) const {
 //       Access: Public
 //  Description: Changes a particular element of the matrix.
 ////////////////////////////////////////////////////////////////////
-
-INLINE void FLOATNAME(LMatrix3)::
-set_cell(int row, int col, FLOATTYPE1 value) {
+template<class NumType>
+INLINE void LMatrix3<NumType>::
+set_cell(int row, int col, NumType value) {
   nassertv(row >= 0 && row < 3);
   nassertv(col >= 0 && col < 3);
   _data[row * 3 + col] = value;
@@ -425,8 +290,8 @@ set_cell(int row, int col, FLOATTYPE1 value) {
 //               elements in the matrix.  The remaining elements
 //               occupy the next eight positions in row-major order.
 ////////////////////////////////////////////////////////////////////
-
-INLINE const FLOATTYPE1 *FLOATNAME(LMatrix3)::
+template<class NumType>
+INLINE const NumType *LMatrix3<NumType>::
 get_data() const {
   return _data;
 }
@@ -436,8 +301,8 @@ get_data() const {
 //       Access: Public
 //  Description: Returns the number of elements in the matrix, nine.
 ////////////////////////////////////////////////////////////////////
-
-INLINE int FLOATNAME(LMatrix3)::
+template<class NumType>
+INLINE int LMatrix3<NumType>::
 get_num_components() const {
   return 9;
 }
@@ -448,8 +313,8 @@ get_num_components() const {
 //  Description: Returns an iterator that may be used to traverse the
 //               elements of the matrix, STL-style.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix3)::iterator FLOATNAME(LMatrix3)::
+template<class NumType>
+INLINE LMatrix3<NumType>::iterator LMatrix3<NumType>::
 begin() {
   return _data;
 }
@@ -460,8 +325,8 @@ begin() {
 //  Description: Returns an iterator that may be used to traverse the
 //               elements of the matrix, STL-style.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix3)::iterator FLOATNAME(LMatrix3)::
+template<class NumType>
+INLINE LMatrix3<NumType>::iterator LMatrix3<NumType>::
 end() {
   return begin() + get_num_components();
 }
@@ -472,8 +337,8 @@ end() {
 //  Description: Returns an iterator that may be used to traverse the
 //               elements of the matrix, STL-style.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix3)::const_iterator FLOATNAME(LMatrix3)::
+template<class NumType>
+INLINE LMatrix3<NumType>::const_iterator LMatrix3<NumType>::
 begin() const {
   return _data;
 }
@@ -484,10 +349,29 @@ begin() const {
 //  Description: Returns an iterator that may be used to traverse the
 //               elements of the matrix, STL-style.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix3)::const_iterator FLOATNAME(LMatrix3)::
+template<class NumType>
+INLINE LMatrix3<NumType>::const_iterator LMatrix3<NumType>::
 end() const {
   return begin() + get_num_components();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::Equality Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class NumType>
+bool LMatrix3<NumType>::
+operator == (const LMatrix3<NumType> &other) const {
+  return ((*this)(0, 0) == other(0, 0) &&
+	  (*this)(0, 1) == other(0, 1) &&
+	  (*this)(0, 2) == other(0, 2) &&
+	  (*this)(1, 0) == other(1, 0) &&
+	  (*this)(1, 1) == other(1, 1) &&
+	  (*this)(1, 2) == other(1, 2) &&
+	  (*this)(2, 0) == other(2, 0) &&
+	  (*this)(2, 1) == other(2, 1) &&
+	  (*this)(2, 2) == other(2, 2));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -495,9 +379,9 @@ end() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE bool FLOATNAME(LMatrix3)::
-operator != (const FLOATNAME(LMatrix3) &other) const {
+template<class NumType>
+INLINE bool LMatrix3<NumType>::
+operator != (const LMatrix3<NumType> &other) const {
   return !operator == (other);
 }
 
@@ -507,10 +391,30 @@ operator != (const FLOATNAME(LMatrix3) &other) const {
 //  Description: This flavor of compare_to uses a default threshold
 //               value based on the numeric type.
 ////////////////////////////////////////////////////////////////////
+template<class NumType>
+INLINE int LMatrix3<NumType>::
+compare_to(const LMatrix3<NumType> &other) const {
+  return compare_to(other, NEARLY_ZERO(NumType));
+}
 
-INLINE int FLOATNAME(LMatrix3)::
-compare_to(const FLOATNAME(LMatrix3) &other) const {
-  return compare_to(other, NEARLY_ZERO(FLOATTYPE1));
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::compare_to
+//       Access: Public
+//  Description: Sorts matrices lexicographically, componentwise.
+//               Returns a number less than 0 if this matrix sorts
+//               before the other one, greater than zero if it sorts
+//               after, 0 if they are equivalent (within the indicated
+//               tolerance).
+////////////////////////////////////////////////////////////////////
+template<class NumType>
+int LMatrix3<NumType>::
+compare_to(const LMatrix3<NumType> &other, NumType threshold) const {
+  for (int i = 0; i < 9; i++) {
+    if (!IS_THRESHOLD_EQUAL(_data[i], other._data[i], threshold)) {
+      return (_data[i] < other._data[i]) ? -1 : 1;
+    }
+  }
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -519,10 +423,10 @@ compare_to(const FLOATNAME(LMatrix3) &other) const {
 //  Description: 3-component vector or point times matrix.  This is a
 //               fully general operation.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVecBase3) FLOATNAME(LMatrix3)::
-xform(const FLOATNAME(LVecBase3) &v) const {
-  return FLOATNAME(LVecBase3)(v.dot(get_col(0)),
+template<class NumType>
+INLINE LVecBase3<NumType> LMatrix3<NumType>::
+xform(const LVecBase3<NumType> &v) const {
+  return LVecBase3<NumType>(v.dot(get_col(0)),
 			    v.dot(get_col(1)),
 			    v.dot(get_col(2)));
 }
@@ -534,10 +438,10 @@ xform(const FLOATNAME(LVecBase3) &v) const {
 //               translation component) and returns the result.  This
 //               assumes the matrix is an affine transform.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVecBase2) FLOATNAME(LMatrix3)::
-xform_point(const FLOATNAME(LVecBase2) &v) const {
-  return FLOATNAME(LVecBase2)(v.dot(get_col2(0)) + (*this)(2, 0),
+template<class NumType>
+INLINE LVecBase2<NumType> LMatrix3<NumType>::
+xform_point(const LVecBase2<NumType> &v) const {
+  return LVecBase2<NumType>(v.dot(get_col2(0)) + (*this)(2, 0),
 			    v.dot(get_col2(1)) + (*this)(2, 1));
 }
 
@@ -548,10 +452,10 @@ xform_point(const FLOATNAME(LVecBase2) &v) const {
 //               translation component) and returns the result.  This
 //               assumes the matrix is an affine transform.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LVecBase2) FLOATNAME(LMatrix3)::
-xform_vec(const FLOATNAME(LVecBase2) &v) const {
-  return FLOATNAME(LVecBase2)(v.dot(get_col2(0)),
+template<class NumType>
+INLINE LVecBase2<NumType> LMatrix3<NumType>::
+xform_vec(const LVecBase2<NumType> &v) const {
+  return LVecBase2<NumType>(v.dot(get_col2(0)),
 			    v.dot(get_col2(1)));
 }
 
@@ -561,10 +465,131 @@ xform_vec(const FLOATNAME(LVecBase2) &v) const {
 //  Description: Returns one cell of the result of a matrix-matrix
 //               multiplication operation.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATTYPE1 FLOATNAME(LMatrix3)::
-mult_cel(const FLOATNAME(LMatrix3) &other, int row, int col) const {
+template<class NumType>
+INLINE NumType LMatrix3<NumType>::
+mult_cel(const LMatrix3<NumType> &other, int row, int col) const {
   return get_row(row).dot(other.get_col(col));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::matrix * matrix
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class NumType>
+LMatrix3<NumType> LMatrix3<NumType>::
+operator * (const LMatrix3<NumType> &other) const {
+  LMatrix3<NumType> t;
+
+  t(0, 0) = mult_cel(other, 0, 0);
+  t(0, 1) = mult_cel(other, 0, 1);
+  t(0, 2) = mult_cel(other, 0, 2);
+
+  t(1, 0) = mult_cel(other, 1, 0);
+  t(1, 1) = mult_cel(other, 1, 1);
+  t(1, 2) = mult_cel(other, 1, 2);
+
+  t(2, 0) = mult_cel(other, 2, 0);
+  t(2, 1) = mult_cel(other, 2, 1);
+  t(2, 2) = mult_cel(other, 2, 2);
+
+  return t;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::matrix * scalar
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class NumType>
+LMatrix3<NumType> LMatrix3<NumType>::
+operator * (NumType scalar) const {
+  LMatrix3<NumType> t;
+
+  t(0, 0) = (*this)(0, 0) * scalar;
+  t(0, 1) = (*this)(0, 1) * scalar;
+  t(0, 2) = (*this)(0, 2) * scalar;
+
+  t(1, 0) = (*this)(1, 0) * scalar;
+  t(1, 1) = (*this)(1, 1) * scalar;
+  t(1, 2) = (*this)(1, 2) * scalar;
+
+  t(2, 0) = (*this)(2, 0) * scalar;
+  t(2, 1) = (*this)(2, 1) * scalar;
+  t(2, 2) = (*this)(2, 2) * scalar;
+
+  return t;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::matrix / scalar
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class NumType>
+LMatrix3<NumType> LMatrix3<NumType>::
+operator / (NumType scalar) const {
+  LMatrix3<NumType> t;
+
+  t(0, 0) = (*this)(0, 0) / scalar;
+  t(0, 1) = (*this)(0, 1) / scalar;
+  t(0, 2) = (*this)(0, 2) / scalar;
+
+  t(1, 0) = (*this)(1, 0) / scalar;
+  t(1, 1) = (*this)(1, 1) / scalar;
+  t(1, 2) = (*this)(1, 2) / scalar;
+
+  t(2, 0) = (*this)(2, 0) / scalar;
+  t(2, 1) = (*this)(2, 1) / scalar;
+  t(2, 2) = (*this)(2, 2) / scalar;
+
+  return t;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::matrix += matrix
+//       Access: Public
+//  Description: Performs a memberwise addition between two matrices.
+////////////////////////////////////////////////////////////////////
+template<class NumType>
+LMatrix3<NumType> &LMatrix3<NumType>::
+operator += (const LMatrix3<NumType> &other) {
+  (*this)(0, 0) += other(0, 0);
+  (*this)(0, 1) += other(0, 1);
+  (*this)(0, 2) += other(0, 2);
+
+  (*this)(1, 0) += other(1, 0);
+  (*this)(1, 1) += other(1, 1);
+  (*this)(1, 2) += other(1, 2);
+
+  (*this)(2, 0) += other(2, 0);
+  (*this)(2, 1) += other(2, 1);
+  (*this)(2, 2) += other(2, 2);
+
+  return *this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::matrix -= matrix
+//       Access: Public
+//  Description: Performs a memberwise subtraction between two matrices.
+////////////////////////////////////////////////////////////////////
+template<class NumType>
+LMatrix3<NumType> &LMatrix3<NumType>::
+operator -= (const LMatrix3<NumType> &other) {
+  (*this)(0, 0) -= other(0, 0);
+  (*this)(0, 1) -= other(0, 1);
+  (*this)(0, 2) -= other(0, 2);
+
+  (*this)(1, 0) -= other(1, 0);
+  (*this)(1, 1) -= other(1, 1);
+  (*this)(1, 2) -= other(1, 2);
+
+  (*this)(2, 0) -= other(2, 0);
+  (*this)(2, 1) -= other(2, 1);
+  (*this)(2, 2) -= other(2, 2);
+
+  return *this;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -572,9 +597,9 @@ mult_cel(const FLOATNAME(LMatrix3) &other, int row, int col) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
-operator *= (const FLOATNAME(LMatrix3) &other) {
+template<class NumType>
+INLINE LMatrix3<NumType> &LMatrix3<NumType>::
+operator *= (const LMatrix3<NumType> &other) {
   (*this) = (*this) * other;
   return *this;
 }
@@ -584,9 +609,9 @@ operator *= (const FLOATNAME(LMatrix3) &other) {
 //       Access: Public
 //  Description: Performs a memberwise scale.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
-operator *= (FLOATTYPE1 scalar) {
+template<class NumType>
+LMatrix3<NumType> &LMatrix3<NumType>::
+operator *= (NumType scalar) {
   (*this)(0, 0) *= scalar;
   (*this)(0, 1) *= scalar;
   (*this)(0, 2) *= scalar;
@@ -607,9 +632,9 @@ operator *= (FLOATTYPE1 scalar) {
 //       Access: Public
 //  Description: Performs a memberwise scale.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
-operator /= (FLOATTYPE1 scalar) {
+template<class NumType>
+LMatrix3<NumType> &LMatrix3<NumType>::
+operator /= (NumType scalar) {
   (*this)(0, 0) /= scalar;
   (*this)(0, 1) /= scalar;
   (*this)(0, 2) /= scalar;
@@ -630,9 +655,9 @@ operator /= (FLOATTYPE1 scalar) {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-
-INLINE void FLOATNAME(LMatrix3)::
-transpose_from(const FLOATNAME(LMatrix3) &other) {
+template<class NumType>
+void LMatrix3<NumType>::
+transpose_from(const LMatrix3<NumType> &other) {
   (*this)(0, 0) = other(0, 0);
   (*this)(0, 1) = other(1, 0);
   (*this)(0, 2) = other(2, 0);
@@ -652,10 +677,10 @@ transpose_from(const FLOATNAME(LMatrix3) &other) {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-
-INLINE void FLOATNAME(LMatrix3)::
+template<class NumType>
+INLINE void LMatrix3<NumType>::
 transpose_in_place() {
-  FLOATNAME(LMatrix3) temp = (*this);
+  LMatrix3<NumType> temp = (*this);
   transpose_from(temp);
 }
 
@@ -666,9 +691,9 @@ transpose_in_place() {
 //       Access: Private, Static
 //  Description: Returns the determinant of a 2x2 matrix.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATTYPE1 FLOATNAME(LMatrix3)::
-det2(FLOATTYPE1 e00, FLOATTYPE1 e01, FLOATTYPE1 e10, FLOATTYPE1 e11) const {
+template<class NumType>
+INLINE NumType LMatrix3<NumType>::
+det2(NumType e00, NumType e01, NumType e10, NumType e11) const {
   return (e00 * e11 - e10 * e01);
 }
 
@@ -677,8 +702,8 @@ det2(FLOATTYPE1 e00, FLOATTYPE1 e01, FLOATTYPE1 e10, FLOATTYPE1 e11) const {
 //       Access: Public
 //  Description: Returns the determinant of the matrix.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATTYPE1 FLOATNAME(LMatrix3)::
+template<class NumType>
+INLINE NumType LMatrix3<NumType>::
 determinant() const {
   return 
     (*this)(0,0) * det2((*this)(1,1),(*this)(1,2),(*this)(2,1),(*this)(2,2))
@@ -702,10 +727,10 @@ determinant() const {
 //               successfully inverted, false if the was a
 //               singularity.
 ////////////////////////////////////////////////////////////////////
-
-INLINE bool FLOATNAME(LMatrix3)::
-invert_from(const FLOATNAME(LMatrix3) &other) {
-  FLOATTYPE1 d = other.determinant();
+template<class NumType>
+bool LMatrix3<NumType>::
+invert_from(const LMatrix3<NumType> &other) {
+  NumType d = other.determinant();
 
   if (IS_NEARLY_ZERO(d)) {
     linmath_cat.warning()
@@ -737,12 +762,27 @@ invert_from(const FLOATNAME(LMatrix3) &other) {
 //               inverse is successful, false if the matrix was
 //               singular.
 ////////////////////////////////////////////////////////////////////
-
-INLINE bool FLOATNAME(LMatrix3)::
+template<class NumType>
+INLINE bool LMatrix3<NumType>::
 invert_in_place() {
-  FLOATNAME(LMatrix3) temp = (*this);
+  LMatrix3<NumType> temp = (*this);
   return invert_from(temp);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix::ident_mat
+//       Access: Public, Static
+//  Description: Returns an identity matrix.
+////////////////////////////////////////////////////////////////////
+template<class NumType>
+const LMatrix3<NumType> &LMatrix3<NumType>::
+ident_mat() {
+  static LMatrix3<NumType> mat(1.0, 0.0, 0.0,
+			       0.0, 1.0, 0.0,
+			       0.0, 0.0, 1.0);
+  return mat;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix::translate_mat
@@ -750,10 +790,10 @@ invert_in_place() {
 //  Description: Returns a matrix that applies the indicated
 //               translation.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
-translate_mat(const FLOATNAME(LVecBase2) &trans) {
-  return FLOATNAME(LMatrix3)(1.0, 0.0, 0.0,
+template<class NumType>
+LMatrix3<NumType> LMatrix3<NumType>::
+translate_mat(const LVecBase2<NumType> &trans) {
+  return LMatrix3<NumType>(1.0, 0.0, 0.0,
 			   0.0, 1.0, 0.0,
 			   trans[0], trans[1], 1.0);
 }
@@ -764,13 +804,14 @@ translate_mat(const FLOATNAME(LVecBase2) &trans) {
 //  Description: Returns a matrix that applies the indicated
 //               translation.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
-translate_mat(FLOATTYPE1 tx, FLOATTYPE1 ty) {
-  return FLOATNAME(LMatrix3)(1.0, 0.0, 0.0,
+template<class NumType>
+LMatrix3<NumType> LMatrix3<NumType>::
+translate_mat(NumType tx, NumType ty) {
+  return LMatrix3<NumType>(1.0, 0.0, 0.0,
 			   0.0, 1.0, 0.0,
 			   tx, ty, 1.0);
 }
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix::rotate_mat
@@ -778,16 +819,17 @@ translate_mat(FLOATTYPE1 tx, FLOATTYPE1 ty) {
 //  Description: Returns a matrix that rotates by the given angle in
 //               degrees counterclockwise.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
-rotate_mat(FLOATTYPE1 angle) {
+template<class NumType>
+LMatrix3<NumType> LMatrix3<NumType>::
+rotate_mat(NumType angle) {
   double angle_rad=deg_2_rad(angle);
   double s,c;
   csincos(angle_rad,&s,&c);
-  return FLOATNAME(LMatrix3)(  c,    s,  0.0,
+  return LMatrix3<NumType>(  c,    s,  0.0,
 			    -s,    c,  0.0,
 			   0.0,  0.0,  1.0);
 }
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix::scale_mat
@@ -795,10 +837,10 @@ rotate_mat(FLOATTYPE1 angle) {
 //  Description: Returns a matrix that applies the indicated
 //               scale in each of the two axes.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
-scale_mat(const FLOATNAME(LVecBase2) &scale) {
-  return FLOATNAME(LMatrix3)(scale[0], 0.0, 0.0,
+template<class NumType>
+LMatrix3<NumType> LMatrix3<NumType>::
+scale_mat(const LVecBase2<NumType> &scale) {
+  return LMatrix3<NumType>(scale[0], 0.0, 0.0,
 			   0.0, scale[1], 0.0,
 			   0.0, 0.0, 1.0);
 }
@@ -809,13 +851,14 @@ scale_mat(const FLOATNAME(LVecBase2) &scale) {
 //  Description: Returns a matrix that applies the indicated
 //               scale in each of the two axes.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
-scale_mat(FLOATTYPE1 sx, FLOATTYPE1 sy) {
-  return FLOATNAME(LMatrix3)(sx, 0.0, 0.0,
+template<class NumType>
+LMatrix3<NumType> LMatrix3<NumType>::
+scale_mat(NumType sx, NumType sy) {
+  return LMatrix3<NumType>(sx, 0.0, 0.0,
 			   0.0, sy, 0.0,
 			   0.0, 0.0, 1.0);
 }
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix::rotate_mat
@@ -823,14 +866,14 @@ scale_mat(FLOATTYPE1 sx, FLOATTYPE1 sy) {
 //  Description: Returns a matrix that rotates by the given angle in
 //               degrees counterclockwise about the indicated vector.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
-rotate_mat(FLOATTYPE1 angle, FLOATNAME(LVecBase3) axis,
+template<class NumType>
+LMatrix3<NumType> LMatrix3<NumType>::
+rotate_mat(NumType angle, LVecBase3<NumType> axis,
 	   CoordinateSystem cs) {
   if (cs == CS_default) {
     cs = default_coordinate_system;
   }
-  FLOATNAME(LMatrix3) mat;
+  LMatrix3<NumType> mat;
 
   if (!is_right_handed(cs)) {
     // In a left-handed coordinate system, counterclockwise is the
@@ -839,9 +882,9 @@ rotate_mat(FLOATTYPE1 angle, FLOATNAME(LVecBase3) axis,
   }
 
   // Normalize the axis.
-  FLOATTYPE1 length = axis.dot(axis);
+  NumType length = axis.dot(axis);
   nassertr(length != 0.0, ident_mat());
-  FLOATTYPE1 recip_length=1.0f/length;
+  NumType recip_length=1.0f/length;
   axis *= recip_length;
 
   double angle_rad=deg_2_rad(angle);
@@ -864,16 +907,17 @@ rotate_mat(FLOATTYPE1 angle, FLOATNAME(LVecBase3) axis,
   return mat;
 }
 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix::scale_mat
 //       Access: Public, Static
 //  Description: Returns a matrix that applies the indicated
 //               scale in each of the three axes.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
-scale_mat(const FLOATNAME(LVecBase3) &scale) {
-  return FLOATNAME(LMatrix3)(scale[0], 0.0, 0.0,
+template<class NumType>
+LMatrix3<NumType> LMatrix3<NumType>::
+scale_mat(const LVecBase3<NumType> &scale) {
+  return LMatrix3<NumType>(scale[0], 0.0, 0.0,
 			   0.0, scale[1], 0.0,
 			   0.0, 0.0, scale[2]);
 }
@@ -884,10 +928,10 @@ scale_mat(const FLOATNAME(LVecBase3) &scale) {
 //  Description: Returns a matrix that applies the indicated
 //               scale in each of the three axes.
 ////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
-scale_mat(FLOATTYPE1 sx, FLOATTYPE1 sy, FLOATTYPE1 sz) {
-  return FLOATNAME(LMatrix3)(sx, 0.0, 0.0,
+template<class NumType>
+LMatrix3<NumType> LMatrix3<NumType>::
+scale_mat(NumType sx, NumType sy, NumType sz) {
+  return LMatrix3<NumType>(sx, 0.0, 0.0,
 			   0.0, sy, 0.0,
 			   0.0, 0.0, sz);
 }
@@ -896,12 +940,32 @@ scale_mat(FLOATTYPE1 sx, FLOATTYPE1 sy, FLOATTYPE1 sz) {
 //     Function: LMatrix3::almost_equal
 //       Access: Public
 //  Description: Returns true if two matrices are memberwise equal
+//               within a specified tolerance.
+////////////////////////////////////////////////////////////////////
+template<class NumType>
+bool LMatrix3<NumType>::
+almost_equal(const LMatrix3<NumType> &other, NumType threshold) const {
+  return (IS_THRESHOLD_EQUAL((*this)(0, 0), other(0, 0), threshold) &&
+	  IS_THRESHOLD_EQUAL((*this)(0, 1), other(0, 1), threshold) &&
+	  IS_THRESHOLD_EQUAL((*this)(0, 2), other(0, 2), threshold) &&
+	  IS_THRESHOLD_EQUAL((*this)(1, 0), other(1, 0), threshold) &&
+	  IS_THRESHOLD_EQUAL((*this)(1, 1), other(1, 1), threshold) &&
+	  IS_THRESHOLD_EQUAL((*this)(1, 2), other(1, 2), threshold) &&
+	  IS_THRESHOLD_EQUAL((*this)(2, 0), other(2, 0), threshold) &&
+	  IS_THRESHOLD_EQUAL((*this)(2, 1), other(2, 1), threshold) &&
+	  IS_THRESHOLD_EQUAL((*this)(2, 2), other(2, 2), threshold));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::almost_equal
+//       Access: Public
+//  Description: Returns true if two matrices are memberwise equal
 //               within a default tolerance based on the numeric type.
 ////////////////////////////////////////////////////////////////////
-
-INLINE bool FLOATNAME(LMatrix3)::
-almost_equal(const FLOATNAME(LMatrix3) &other) const {
-  return almost_equal(other, NEARLY_ZERO(FLOATTYPE1));
+template<class NumType>
+INLINE bool LMatrix3<NumType>::
+almost_equal(const LMatrix3<NumType> &other) const {
+  return almost_equal(other, NEARLY_ZERO(NumType));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -909,8 +973,8 @@ almost_equal(const FLOATNAME(LMatrix3) &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE void FLOATNAME(LMatrix3)::
+template<class NumType>
+INLINE void LMatrix3<NumType>::
 output(ostream &out) const {
   out << "[ " 
       << MAYBE_ZERO((*this)(0, 0)) << " "
@@ -928,37 +992,12 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::transpose
-//  Description: Transposes the given matrix and returns it.
-////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix3)
-transpose(const FLOATNAME(LMatrix3) &a) {
-  FLOATNAME(LMatrix3) result;
-  result.transpose_from(a);
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::invert
-//  Description: Inverts the given matrix and returns it.
-////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix3)
-invert(const FLOATNAME(LMatrix3) &a) {
-  FLOATNAME(LMatrix3) result;
-  bool nonsingular = result.invert_from(a);
-  nassertr(nonsingular, FLOATNAME(LMatrix3)::ident_mat());
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::write
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE void FLOATNAME(LMatrix3)::
+template<class NumType>
+INLINE void LMatrix3<NumType>::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) 
     << MAYBE_ZERO((*this)(0, 0)) << " "
@@ -977,140 +1016,95 @@ write(ostream &out, int indent_level) const {
     << "\n";
 }
 
-
 ////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::matrix * matrix
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
-operator * (const FLOATNAME(LMatrix3) &other) const {
-  FLOATNAME(LMatrix3) t;
-
-  t(0, 0) = mult_cel(other, 0, 0);
-  t(0, 1) = mult_cel(other, 0, 1);
-  t(0, 2) = mult_cel(other, 0, 2);
-
-  t(1, 0) = mult_cel(other, 1, 0);
-  t(1, 1) = mult_cel(other, 1, 1);
-  t(1, 2) = mult_cel(other, 1, 2);
-
-  t(2, 0) = mult_cel(other, 2, 0);
-  t(2, 1) = mult_cel(other, 2, 1);
-  t(2, 2) = mult_cel(other, 2, 2);
-
-  return t;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::matrix * scalar
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
-operator * (FLOATTYPE1 scalar) const {
-  FLOATNAME(LMatrix3) t;
-
-  t(0, 0) = (*this)(0, 0) * scalar;
-  t(0, 1) = (*this)(0, 1) * scalar;
-  t(0, 2) = (*this)(0, 2) * scalar;
-
-  t(1, 0) = (*this)(1, 0) * scalar;
-  t(1, 1) = (*this)(1, 1) * scalar;
-  t(1, 2) = (*this)(1, 2) * scalar;
-
-  t(2, 0) = (*this)(2, 0) * scalar;
-  t(2, 1) = (*this)(2, 1) * scalar;
-  t(2, 2) = (*this)(2, 2) * scalar;
-
-  return t;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::matrix / scalar
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
-operator / (FLOATTYPE1 scalar) const {
-  FLOATNAME(LMatrix3) t;
-
-  t(0, 0) = (*this)(0, 0) / scalar;
-  t(0, 1) = (*this)(0, 1) / scalar;
-  t(0, 2) = (*this)(0, 2) / scalar;
-
-  t(1, 0) = (*this)(1, 0) / scalar;
-  t(1, 1) = (*this)(1, 1) / scalar;
-  t(1, 2) = (*this)(1, 2) / scalar;
-
-  t(2, 0) = (*this)(2, 0) / scalar;
-  t(2, 1) = (*this)(2, 1) / scalar;
-  t(2, 2) = (*this)(2, 2) / scalar;
-
-  return t;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::matrix += matrix
-//       Access: Public
-//  Description: Performs a memberwise addition between two matrices.
-////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
-operator += (const FLOATNAME(LMatrix3) &other) {
-  (*this)(0, 0) += other(0, 0);
-  (*this)(0, 1) += other(0, 1);
-  (*this)(0, 2) += other(0, 2);
-
-  (*this)(1, 0) += other(1, 0);
-  (*this)(1, 1) += other(1, 1);
-  (*this)(1, 2) += other(1, 2);
-
-  (*this)(2, 0) += other(2, 0);
-  (*this)(2, 1) += other(2, 1);
-  (*this)(2, 2) += other(2, 2);
-
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::matrix -= matrix
-//       Access: Public
-//  Description: Performs a memberwise subtraction between two matrices.
-////////////////////////////////////////////////////////////////////
-
-INLINE FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
-operator -= (const FLOATNAME(LMatrix3) &other) {
-  (*this)(0, 0) -= other(0, 0);
-  (*this)(0, 1) -= other(0, 1);
-  (*this)(0, 2) -= other(0, 2);
-
-  (*this)(1, 0) -= other(1, 0);
-  (*this)(1, 1) -= other(1, 1);
-  (*this)(1, 2) -= other(1, 2);
-
-  (*this)(2, 0) -= other(2, 0);
-  (*this)(2, 1) -= other(2, 1);
-  (*this)(2, 2) -= other(2, 2);
-
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix::ident_mat
+//     Function: LMatrix3::init_type
 //       Access: Public, Static
-//  Description: Returns an identity matrix.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-
-INLINE const FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
-ident_mat() {
-  static FLOATNAME(LMatrix3) mat(1.0, 0.0, 0.0,
-			       0.0, 1.0, 0.0,
-			       0.0, 0.0, 1.0);
-  return mat;
+template<class NumType>
+void LMatrix3<NumType>::
+init_type() {
+  if (_type_handle == TypeHandle::none()) {
+    // Format a string to describe the type.
+    do_init_type(NumType);
+    string name =
+      "LMatrix3<" + get_type_handle(NumType).get_name() + ">";
+    register_type(_type_handle, name);
+  }
 }
 
 
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::write_datagram
+//  Description: Writes the matrix to the datagram
+////////////////////////////////////////////////////////////////////
+template<class NumType>
+void LMatrix3<NumType>::
+write_datagram(Datagram &destination) const
+{
+  for(int i = 0; i < 3; i++)
+  {
+    for(int j = 0; j < 3; j++)
+    {
+      destination.add_float32(get_cell(i,j));
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::read_datagram
+//  Description: Reads itself out of the datagram
+////////////////////////////////////////////////////////////////////
+template<class NumType>
+void LMatrix3<NumType>::
+read_datagram(DatagramIterator &scan) 
+{
+  for(int i = 0; i < 3; i++)
+  {
+    for(int j = 0; j < 3; j++)
+    {
+      set_cell(i, j, scan.get_float32());
+    }
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::transpose
+//  Description: Transposes the given matrix and returns it.
+////////////////////////////////////////////////////////////////////
+template<class NumType>
+INLINE LMatrix3<NumType>
+transpose(const LMatrix3<NumType> &a) {
+  LMatrix3<NumType> result;
+  result.transpose_from(a);
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::invert
+//  Description: Inverts the given matrix and returns it.
+////////////////////////////////////////////////////////////////////
+template<class NumType>
+INLINE LMatrix3<NumType>
+invert(const LMatrix3<NumType> &a) {
+  LMatrix3<NumType> result;
+  bool nonsingular = result.invert_from(a);
+  nassertr(nonsingular, LMatrix3<NumType>::ident_mat());
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: lcast_to
+//  Description: Converts a matrix from one numeric representation to
+//               another one.  This is usually invoked using the macro
+//               LCAST.
+////////////////////////////////////////////////////////////////////
+template<class NumType, class NumType2>
+INLINE LMatrix3<NumType2> 
+lcast_to(NumType2 *, const LMatrix3<NumType> &source) {
+  return LMatrix3<NumType2>
+    (source(0, 0), source(0, 1), source(0, 2),
+     source(1, 0), source(1, 1), source(1, 2),
+     source(2, 0), source(2, 1), source(2, 2));
+}
