@@ -66,7 +66,7 @@ class Level:
         # get an entity creator object
         self.entityCreator = self.createEntityCreator()
         # create all the entities
-        # TODO: we should leave this to a subclass or the level user
+        # TODO: maybe we should leave this to a subclass or the level user
         self.createAllEntities(priorityTypes=['levelMgr','zone'])
 
         self.initialized = 1
@@ -123,8 +123,8 @@ class Level:
                 entity.destroy()
                 assert not entId in self.entities
             else:
-                Level.notify.warning('trying to destroy entity %s, but '
-                                     'it is already gone' % entId)
+                Level.notify.error('trying to destroy entity %s, but '
+                                   'it is already gone' % entId)
 
     def createAllEntitiesOfType(self, entType):
         """creates all entities of a given type"""
@@ -292,6 +292,9 @@ class Level:
             pass
 
         def handleEntityInsert(self, entId):
+            # update our local type->entId table
+            self.entType2ids.setdefault(self.getEntityType(entId), [])
+            self.entType2ids[self.getEntityType(entId)].append(entId)
             self.createEntity(entId)
             messenger.send(self.getInsertEntityEventName(), [entId])
 
@@ -302,3 +305,5 @@ class Level:
             if entId in self.createdEntIds:
                 entity = self.getEntity(entId)
                 entity.destroy()
+            # update our local type->entId table
+            self.entType2ids[self.getEntityType(entId)].remove(entId)
