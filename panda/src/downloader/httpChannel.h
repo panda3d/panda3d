@@ -109,6 +109,9 @@ PUBLISHED:
 
   INLINE void reset();
 
+  INLINE void clear_extra_headers();
+  INLINE void send_extra_header(const string &key, const string &value);
+
   INLINE bool get_document(const URLSpec &url);
   INLINE bool get_subdocument(const URLSpec &url, 
                               size_t first_byte, size_t last_byte);
@@ -208,6 +211,7 @@ private:
   double _seconds_per_update;
   int _bytes_per_update;
   bool _nonblocking;
+  string _send_extra_headers;
 
   URLSpec _url;
   HTTPEnum::Method _method;

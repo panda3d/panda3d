@@ -202,6 +202,7 @@ write_headers(ostream &out) const {
 bool HTTPChannel::
 run() {
   if (_state == _done_state || _state == S_failure) {
+    clear_extra_headers();
     if (!reached_done_state()) {
       return false;
     }
@@ -341,6 +342,7 @@ run() {
     }
 
     if (_state == _done_state || _state == S_failure) {
+      clear_extra_headers();
       // We've reached our terminal state.
       return reached_done_state();
     }
@@ -1021,6 +1023,10 @@ run_request_sent() {
   if (!parse_http_response(line)) {
     return false;
   }
+
+  // Ok, we've established an HTTP connection to the server.  Our
+  // extra send headers have done their job; clear them for next time.
+  clear_extra_headers();
 
   _state = S_reading_header;
   _current_field_name = string();
@@ -2307,7 +2313,8 @@ make_request_text() {
       _www_auth->generate(_method, _url.get_path(), _www_username, _body);
     _request_text += "\r\n";
   }
-    
+
+  _request_text += _send_extra_headers;
   _request_text += "\r\n";
   _request_text += _body;
 }

@@ -384,6 +384,37 @@ reset() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::clear_extra_headers
+//       Access: Published
+//  Description: Resets the extra headers that were previously added
+//               via calls to send_extra_header().
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPChannel::
+clear_extra_headers() {
+  _send_extra_headers = string();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::send_extra_header
+//       Access: Published
+//  Description: Specifies an additional key: value pair that is added
+//               into the header sent to the server with the next
+//               request.  This is passed along with no interpretation
+//               by the HTTPChannel code.  You may call this
+//               repeatedly to append multiple headers.
+//
+//               This is persistent for one request only; it must be
+//               set again for each new request.
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPChannel::
+send_extra_header(const string &key, const string &value) {
+  _send_extra_headers += key;
+  _send_extra_headers += ": ";
+  _send_extra_headers += value;
+  _send_extra_headers += "\r\n";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::get_document
 //       Access: Published
 //  Description: Opens the named document for reading, if available.
