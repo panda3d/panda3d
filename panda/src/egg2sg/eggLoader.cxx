@@ -17,6 +17,8 @@
 #include <nodeRelation.h>
 #include <renderRelation.h>
 #include <geomNode.h>
+#include <modelRoot.h>
+#include <modelNode.h>
 #include <LODNode.h>
 #include <sequenceNode.h>
 #include <eggGroup.h>
@@ -121,7 +123,7 @@ build_graph() {
   load_textures();
 
   // Now build up the scene graph.
-  _root = new NamedNode;
+  _root = new ModelRoot;
   _root->set_name(_data.get_egg_filename().get_basename());
   make_node(&_data, _root);
   _builder.build();
@@ -1151,6 +1153,16 @@ make_node(EggGroup *egg_group, NamedNode *parent) {
 	     egg_group->get_switch_fps() != 0.0) {
     // Create a sequence node.
     node = new SequenceNode(1.0 / egg_group->get_switch_fps());
+    node->set_name(egg_group->get_name());
+    
+    EggGroup::const_iterator ci;
+    for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
+      make_node(*ci, node);
+    }
+
+  } else if (egg_group->get_model_flag()) {
+    // A model flag; create a model node.
+    node = new ModelNode;
     node->set_name(egg_group->get_name());
     
     EggGroup::const_iterator ci;

@@ -8,13 +8,16 @@
   #define SOURCES \
     camera.I camera.cxx camera.h config_sgraph.cxx config_sgraph.h \
     geomNode.I geomNode.cxx geomNode.h geomTransformer.I \
-    geomTransformer.cxx geomTransformer.h planeNode.I planeNode.cxx \
+    geomTransformer.cxx geomTransformer.h modelNode.I modelNode.cxx \
+    modelNode.h modelRoot.I modelRoot.cxx modelRoot.h \
+    planeNode.I planeNode.cxx \
     planeNode.h projectionNode.I projectionNode.cxx projectionNode.h \
     renderTraverser.I renderTraverser.cxx renderTraverser.h
 
   #define INSTALL_HEADERS \
     camera.I camera.h geomNode.I geomNode.h geomTransformer.I \
-    geomTransformer.h planeNode.I planeNode.h projectionNode.I \
+    geomTransformer.h modelNode.I modelNode.h modelRoot.I \
+    modelRoot.h planeNode.I planeNode.h projectionNode.I \
     projectionNode.h renderTraverser.I renderTraverser.h
 
   #define IGATESCAN all
