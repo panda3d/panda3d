@@ -7,21 +7,28 @@
     linmath gobj sgraph sgattrib graph putil gsgbase mathutil pnmimage \
     pandabase
 
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx  $[TARGET]_composite2.cxx
+
   #define SOURCES \
-    builder.I builder.cxx builder.h builderAttrib.I builderAttrib.cxx \
-    builderAttrib.h builderAttribTempl.I builderAttribTempl.h \
-    builderBucket.I builderBucket.cxx builderBucket.h \
-    builderBucketNode.I builderBucketNode.cxx builderBucketNode.h \
-    builderFuncs.I builderFuncs.h builderMisc.cxx builderMisc.h \
-    builderNormalVisualizer.I builderNormalVisualizer.cxx \
-    builderNormalVisualizer.h builderPrim.I builderPrim.cxx builderPrim.h \
-    builderPrimTempl.I builderPrimTempl.h builderProperties.cxx \
-    builderProperties.h builderTypes.cxx builderTypes.h \
-    builderVertex.I builderVertex.cxx builderVertex.h \
-    builderVertexTempl.I builderVertexTempl.h config_builder.cxx \
-    config_builder.h mesher.cxx mesher.h mesherConfig.h mesherEdge.I \
-    mesherEdge.h mesherFanMaker.I mesherFanMaker.h mesherStrip.I \
-    mesherStrip.h mesherTempl.I mesherTempl.h
+     builder.I builder.h builderAttrib.I builderAttrib.h  \
+     builderAttribTempl.I builderAttribTempl.h builderBucket.I  \
+     builderBucket.h builderBucketNode.I builderBucketNode.h  \
+     builderFuncs.I builderFuncs.h builderMisc.h  \
+     builderNormalVisualizer.I builderNormalVisualizer.h  \
+     builderPrim.I builderPrim.h builderPrimTempl.I  \
+     builderPrimTempl.h builderProperties.h builderTypes.h  \
+     builderVertex.I builderVertex.h builderVertexTempl.I  \
+     builderVertexTempl.h config_builder.h mesher.h  \
+     mesherConfig.h mesherEdge.I mesherEdge.h mesherFanMaker.I  \
+     mesherFanMaker.h mesherStrip.I mesherStrip.h mesherTempl.I  \
+     mesherTempl.h 
+ 
+ #define INCLUDED_SOURCES \
+     builder.cxx builderAttrib.cxx builderBucket.cxx  \
+     builderBucketNode.cxx builderMisc.cxx  \
+     builderNormalVisualizer.cxx builderPrim.cxx  \
+     builderProperties.cxx builderTypes.cxx builderVertex.cxx  \
+     config_builder.cxx mesher.cxx 
 
   #define INSTALL_HEADERS \
     builder.I builder.h builderAttrib.I builderAttrib.h \
@@ -33,7 +40,7 @@
     builderTypes.h builderVertex.I builderVertex.h builderVertexTempl.I \
     builderVertexTempl.h config_builder.h
 
-  #define PRECOMPILED_HEADER builder_headers.h 
+//  #define PRECOMPILED_HEADER builder_headers.h 
 
 #end lib_target
 
