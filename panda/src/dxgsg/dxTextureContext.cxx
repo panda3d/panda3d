@@ -971,24 +971,38 @@ HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf) 
 //       gets the attributes of the texture from the bitmap, creates the
 //       texture, and then copies the bitmap into the texture.
 //-----------------------------------------------------------------------------
-LPDIRECTDRAWSURFACE7 DXTextureContext::
-CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT pTexPixFmts, LPD3DDEVICEDESC7 pD3DDevDesc) {
+LPDIRECTDRAWSURFACE7 DXTextureContext::CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, 
+#ifdef USE_TEXFMTVEC
+                                        DDPixelFormatVec &TexFmts,LPD3DDEVICEDESC7 pD3DDevDesc)
+#else
+                                        int cNumTexPixFmts, DDPIXELFORMAT *pTexFmts,LPD3DDEVICEDESC7 pD3DDevDesc)
+#endif
+   {
     HRESULT hr;
-    int i;
-    PixelBuffer *pbuf = _texture->_pbuffer;
-    int cNumAlphaBits;     //  number of alpha bits in texture pixfmt
-
+    int i,cNumAlphaBits;     //  number of alpha bits in texture pixfmt
     DDPIXELFORMAT *pDesiredPixFmt;
     LPDIRECTDRAWSURFACE7 pddsRender;
     LPDIRECTDRAW7        pDD = NULL;
-
-    DDPIXELFORMAT TexFmtsArr[MAX_DX_TEXPIXFMTS];
-
     ConversionType ConvNeeded;
 
+    assert(_texture!=NULL);
+
+    PixelBuffer *pbuf = _texture->_pbuffer;
+
+#ifdef USE_TEXFMTVEC
+    int cNumTexPixFmts=TexturePixelFormats.size();
+#endif
+    DDPIXELFORMAT *pTexPixFmts = new DDPIXELFORMAT[cNumTexPixFmts];
+
     // make local copy of array so I can muck with it during searches for this texture fmt
-    memcpy(TexFmtsArr,pTexPixFmts,cNumTexPixFmts*sizeof(DDPIXELFORMAT));
-    pTexPixFmts=TexFmtsArr;
+    // (such as marking pixfmts that no search will be interested in)
+    // probably should do this faster way
+
+#ifdef USE_TEXFMTVEC
+    memcpy(pTexPixFmts,&TexturePixelFormats[0],cNumTexPixFmts*sizeof(DDPIXELFORMAT));
+#else
+    memcpy(pTexPixFmts,pTexFmts,cNumTexPixFmts*sizeof(DDPIXELFORMAT));
+#endif
 
     // bpp indicates requested fmt, not pixbuf fmt
     DWORD bpp = get_bits_per_pixel(pbuf->get_format(), &cNumAlphaBits);
@@ -1128,7 +1142,8 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
 
     szErrorMsg = "CreateTexture failed: couldn't find compatible Tex DDPIXELFORMAT!\n";
 
-    dxgsg_cat.spam() << "CreateTexture handling bitdepth: " << bpp << " alphabits: " << cNumAlphaBits << "\n";
+    if(dxgsg_cat.is_spam())
+        dxgsg_cat.spam() << "CreateTexture handling bitdepth: " << bpp << " alphabits: " << cNumAlphaBits << "\n";
 
     // Mark formats I dont want to deal with
     for(i=0,pCurPixFmt=pTexPixFmts;i<cNumTexPixFmts;i++,pCurPixFmt++) {
@@ -1583,6 +1598,8 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
     // Done with DDraw
     pDD->Release();
 
+    delete [] pTexPixFmts;
+
     // Return the newly created texture
     return _surface;
 
@@ -1595,6 +1612,7 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
         _surface = NULL;
     }
 
+    delete [] pTexPixFmts;
     return NULL;
 }
 

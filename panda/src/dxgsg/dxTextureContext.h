@@ -38,7 +38,13 @@
 #include <texture.h>
 #include <textureContext.h>
 
+//#define USE_TEXFMTVEC  // doesnt work now, crashes in destructor
+
+#ifdef USE_TEXFMTVEC
+typedef pvector<DDPIXELFORMAT> DDPixelFormatVec;
+#else
 #define MAX_DX_TEXPIXFMTS 20    // should be enough for any card
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //   Class : DXTextureContext
@@ -55,8 +61,14 @@ public:
   LPDIRECTDRAWSURFACE7  _surface;
   Texture *_tex;            // ptr to parent, primarily for access to namestr
 
-  LPDIRECTDRAWSURFACE7 CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, 
-                                     LPDDPIXELFORMAT pTexPixFmts,LPD3DDEVICEDESC7 pD3DDevDesc);
+//  static is_unused_texpixelformat(DDPIXELFORMAT *)
+
+#ifdef USE_TEXFMTVEC
+  LPDIRECTDRAWSURFACE7 CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, DDPixelFormatVec &TexFmts,LPD3DDEVICEDESC7 pD3DDevDesc);
+#else
+  LPDIRECTDRAWSURFACE7 CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, DDPIXELFORMAT *pTexFmts,LPD3DDEVICEDESC7 pD3DDevDesc);
+#endif
+
   bool _bHasMipMaps;
   DWORD _PixBufConversionType;  // enum ConversionType
 

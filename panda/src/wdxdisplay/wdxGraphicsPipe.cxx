@@ -101,7 +101,7 @@ find_window(HWND win) {
     int num_windows = get_num_windows();
     for(int w = 0; w < num_windows; w++) {
         wdxGraphicsWindow *window = DCAST(wdxGraphicsWindow, get_window(w));
-        if(window->_mwindow == win)
+        if(window->_dxgsg->scrn.hWnd == win)
             return window;
     }
     return NULL;

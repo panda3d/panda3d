@@ -40,8 +40,31 @@
 
 #include "dxGeomNodeContext.h"
 #include "dxTextureContext.h"
+#include <vector>
 
 extern char * ConvD3DErrorToString(const HRESULT &error);   // defined in wdxGraphicsPipe.cxx
+
+typedef struct {
+      LPDIRECT3DDEVICE7 pD3DDevice;
+      LPDIRECTDRAW7     pDD;
+      LPDIRECT3D7       pD3D;
+      LPDIRECTDRAWSURFACE7 pddsPrimary,pddsBack,pddsZBuf;
+      HWND              hWnd;
+      HMONITOR          hMon;
+      DWORD             dwRenderWidth,dwRenderHeight,dwFullScreenBitDepth;
+      RECT              view_rect,clip_rect;
+      DWORD             MaxAvailVidMem;
+      bool              bIsLowVidMemCard;
+      bool              bIsTNLDevice;
+      ushort            depth_buffer_bitdepth;  //GetSurfaceDesc is not reliable so must store this explicitly
+      ushort            CardIDNum;  // its posn in DisplayArray, for dbgprint purposes
+      DDDEVICEIDENTIFIER2 DXDeviceID;
+      D3DDEVICEDESC7    D3DDevDesc;
+#ifdef USE_TEXFMTVEC
+      DDPixelFormatVec  TexPixFmts;
+#endif
+} DXScreenData;
+// typedef vector<DXScreenData> ScreenDataVector;
 
 class PlaneNode;
 class Light;
@@ -61,7 +84,7 @@ INLINE ostream &operator << (ostream &out, GLenum v) {
 
 #define DX_DECLARE_CLEAN(type, var) \
     type var;                       \
-    ZeroMemory(&var, sizeof(type));  \
+    ZeroMemory(&var, sizeof(type)); \
     var.dwSize = sizeof(type);
 
 // #define DEBUG_RELEASES
@@ -123,6 +146,8 @@ extern void dbgPrintVidMem(LPDIRECTDRAW7 pDD, LPDDSCAPS2 lpddsCaps,const char *p
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX DXGraphicsStateGuardian : public GraphicsStateGuardian {
   friend class wdxGraphicsWindow;
+  friend class wdxGraphicsPipe;
+  friend class wdxGraphicsWindowGroup;
   friend class DXTextureContext;
 
 public:
@@ -227,10 +252,15 @@ public:
 
 public:
   // recreate_tex_callback needs these to be public
-  LPDIRECT3DDEVICE7 _d3dDevice;
+  LPDIRECT3DDEVICE7 _pCurD3DDevice;  //this needs to be set every device iteration
+  LPDIRECTDRAW7 _pDD;
+  DXScreenData scrn;
+
+#ifndef USE_TEXFMTVEC
   LPDDPIXELFORMAT   _pTexPixFmts;
   int               _cNumTexPixFmts;
-  D3DDEVICEDESC7    _D3DDevDesc;
+#endif
+//  D3DDEVICEDESC7    _D3DDevDesc;
 
 protected:
   void free_pointers();            // free local internal buffers
@@ -249,15 +279,23 @@ protected:
 
   bool                  _dx_ready;
   HRESULT               _last_testcooplevel_result;
+
+/*
+  moved to per display data
   bool                  _bIsTNLDevice;
   LPDIRECTDRAWSURFACE7  _back;
   LPDIRECTDRAWSURFACE7  _zbuf;
-  LPDIRECT3D7           _d3d;
   LPDIRECTDRAWSURFACE7  _pri;
-  LPDIRECTDRAW7         _pDD;
 
-  RECT                _view_rect;
-  RECT                clip_rect;
+  LPDIRECT3D7           _d3d;
+  LPDIRECTDRAW7         _pDD;
+  RECT              _view_rect;
+  RECT              clip_rect;  
+*/
+  LPDIRECT3D7           _pCurD3D7;
+  LPDIRECTDRAW7         _pCurDD;
+  bool                  _bShowFPSMeter;
+
   HDC               _front_hdc;
   DXTextureContext  *_pCurTexContext;
 
@@ -326,7 +364,6 @@ protected:
   Colorf _issued_color;           // WBD ADDED
   D3DCOLOR _issued_color_D3DCOLOR;           // WBD ADDED
   D3DCOLOR _d3dcolor_clear_value;
-
   D3DSHADEMODE _CurShadeMode;
 
   bool _bDrawPrimDoSetupVertexBuffer;       // if true, draw methods just copy vertex data into pCurrentGeomContext
@@ -367,10 +404,7 @@ protected:
   bool _fog_enabled;
 /*  
   TODO: cache fog state
-  float _fog_start;
-  float _fog_end;
-  float _fog_density;
-  float _fog_color;
+  float _fog_start,_fog_end,_fog_density,float _fog_color;
 */    
   float      _alpha_func_ref;
   D3DCMPFUNC _alpha_func;
@@ -395,7 +429,6 @@ protected:
   int _decal_level;
 
   RenderModeProperty::Mode _current_fill_mode;  //poinr/wireframe/solid
-
   GraphicsChannel *_panda_gfx_channel;  // cache the 1 channel dx supports
 
   // Cur Texture State
@@ -449,12 +482,13 @@ public:
   static void init_type(void);
   virtual TypeHandle get_type(void) const;
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-
-  LPDIRECT3DDEVICE7 GetD3DDevice()  {  return _d3dDevice; }
-  LPDIRECTDRAW7 GetDDInterface()  {  return _pDD; }
-  LPDIRECTDRAWSURFACE7 GetBackBuffer()  {  return _back; }
+/*
+  LPDIRECT3DDEVICE7 GetD3DDevice()  {  return scrn.pD3DDevice; }
+  LPDIRECTDRAW7 GetDDInterface()  {  return scrn.pDD; }
+  LPDIRECTDRAWSURFACE7 GetBackBuffer()  {  return scrn.pddsBackBuffer; }
   LPDIRECTDRAWSURFACE7 GetZBuffer()  {  return _zbuf; }
-  INLINE void  Set_HDC(HDC hdc)  {  _front_hdc = hdc;  }
+*/  
+//  INLINE void Set_HDC(HDC hdc)  {  _front_hdc = hdc;  }
   void adjust_view_rect(int x, int y);
   INLINE void SetDXReady(bool stat)  {  _dx_ready = stat; }
   INLINE bool GetDXReady(void)  { return _dx_ready;}
@@ -469,13 +503,14 @@ public:
   void  show_frame();
   void  show_full_screen_frame();
   void  show_windowed_frame();
-  void  dx_init(  LPDIRECTDRAW7     context,
+/*  void  dx_init(  LPDIRECTDRAW7     context,
           LPDIRECTDRAWSURFACE7  pri,
           LPDIRECTDRAWSURFACE7  back,
           LPDIRECTDRAWSURFACE7  zbuf,
           LPDIRECT3D7          d3d,
           LPDIRECT3DDEVICE7    d3dDevice,
-          RECT  viewrect);
+          RECT  viewrect); */
+  void dx_init(void);
   
   friend HRESULT CALLBACK EnumTexFmtsCallback( LPDDPIXELFORMAT pddpf, VOID* param );
 

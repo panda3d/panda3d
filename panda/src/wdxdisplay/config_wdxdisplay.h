@@ -28,7 +28,6 @@ NotifyCategoryDecl(wdxdisplay, EXPCL_PANDADX, EXPTP_PANDADX);
 extern bool bResponsive_minimized_fullscreen_window;
 extern bool dx_force_16bpp_zbuffer;
 extern bool dx_preserve_fpu_state;
-extern int dx_use_multimon;
 extern Filename get_icon_filename();
 extern Filename get_mono_cursor_filename();
 extern Filename get_color_cursor_filename();
