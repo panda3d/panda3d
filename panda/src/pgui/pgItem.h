@@ -32,12 +32,15 @@
 #include "pt_NodeRelation.h"
 #include "textNode.h"
 
+#include "pmap.h"
+
 class PGTop;
 class GraphicsStateGuardian;
 class AllAttributesWrapper;
 class AllTransitionsWrapper;
 class MouseWatcherParameter;
 class ArcChain;
+class AudioSound;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PGItem
@@ -120,12 +123,20 @@ PUBLISHED:
   INLINE string get_press_event(const ButtonHandle &button) const;
   INLINE string get_release_event(const ButtonHandle &button) const;
 
+#ifdef HAVE_AUDIO
+  void set_sound(const string &event, AudioSound *sound);
+  void clear_sound(const string &event);
+  AudioSound *get_sound(const string &event) const;
+  bool has_sound(const string &event) const;
+#endif
+
   static TextNode *get_text_node();
   INLINE static void set_text_node(TextNode *node);
 
   INLINE static PGItem *get_focus_item();
 
 protected:
+  void play_sound(const string &event);
   static void remove_all_children(Node *node);
 
 private:
@@ -153,6 +164,11 @@ private:
   };
   typedef pvector<StateDef> StateDefs;
   StateDefs _state_defs;
+
+#ifdef HAVE_AUDIO
+  typedef pmap<string, PT(AudioSound) > Sounds;
+  Sounds _sounds;
+#endif
 
   static PT(TextNode) _text_node;
   static PGItem *_focus_item;

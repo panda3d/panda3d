@@ -29,6 +29,10 @@
 #include "directRenderTraverser.h"
 #include "allTransitionsWrapper.h"
 
+#ifdef HAVE_AUDIO
+#include "audioSound.h"
+#endif
+
 TypeHandle PGItem::_type_handle;
 PT(TextNode) PGItem::_text_node;
 PGItem *PGItem::_focus_item = (PGItem *)NULL;
@@ -216,8 +220,9 @@ draw_item(PGTop *top, GraphicsStateGuardian *gsg,
 void PGItem::
 enter(const MouseWatcherParameter &param) {
   PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
-  throw_event(get_enter_event(),
-              EventParameter(ep));
+  string event = get_enter_event();
+  play_sound(event);
+  throw_event(event, EventParameter(ep));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -229,8 +234,9 @@ enter(const MouseWatcherParameter &param) {
 void PGItem::
 exit(const MouseWatcherParameter &param) {
   PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
-  throw_event(get_exit_event(),
-              EventParameter(ep));
+  string event = get_exit_event();
+  play_sound(event);
+  throw_event(event, EventParameter(ep));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -241,7 +247,9 @@ exit(const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 focus_in() {
-  throw_event(get_focus_in_event());
+  string event = get_focus_in_event();
+  play_sound(event);
+  throw_event(event);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -252,7 +260,9 @@ focus_in() {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 focus_out() {
-  throw_event(get_focus_out_event());
+  string event = get_focus_out_event();
+  play_sound(event);
+  throw_event(event);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -265,8 +275,9 @@ focus_out() {
 void PGItem::
 press(const MouseWatcherParameter &param) {
   PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
-  throw_event(get_press_event(param.get_button()), 
-              EventParameter(ep));
+  string event = get_press_event(param.get_button());
+  play_sound(event);
+  throw_event(event, EventParameter(ep));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -279,8 +290,9 @@ press(const MouseWatcherParameter &param) {
 void PGItem::
 release(const MouseWatcherParameter &param) {
   PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
-  throw_event(get_release_event(param.get_button()), 
-              EventParameter(ep));
+  string event = get_release_event(param.get_button());
+  play_sound(event);
+  throw_event(event, EventParameter(ep));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -483,6 +495,56 @@ set_frame_style(int state, const PGFrameStyle &style) {
   _state_defs[state]._frame_stale = true;
 }
 
+#ifdef HAVE_AUDIO
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::set_sound
+//       Access: Published
+//  Description: Sets the sound that will be played whenever the
+//               indicated event occurs.
+////////////////////////////////////////////////////////////////////
+void PGItem::
+set_sound(const string &event, AudioSound *sound) {
+  _sounds[event] = sound;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::clear_sound
+//       Access: Published
+//  Description: Removes the sound associated with the indicated
+//               event.
+////////////////////////////////////////////////////////////////////
+void PGItem::
+clear_sound(const string &event) {
+  _sounds.erase(event);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::get_sound
+//       Access: Published
+//  Description: Returns the sound associated with the indicated
+//               event, or NULL if there is no associated sound.
+////////////////////////////////////////////////////////////////////
+AudioSound *PGItem::
+get_sound(const string &event) const {
+  Sounds::const_iterator si = _sounds.find(event);
+  if (si != _sounds.end()) {
+    return (*si).second;
+  }
+  return (AudioSound *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::has_sound
+//       Access: Published
+//  Description: Returns true if there is a sound associated with the
+//               indicated event, or false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PGItem::
+has_sound(const string &event) const {
+  return (_sounds.count(event) != 0);
+}
+#endif  // HAVE_AUDIO
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PGItem::get_text_node
 //       Access: Published, Static
@@ -502,6 +564,24 @@ get_text_node() {
     _text_node->set_align(TM_ALIGN_LEFT);
   }
   return _text_node;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::play_sound
+//       Access: Protected
+//  Description: Plays the sound associated with the indicated event,
+//               if there is one.
+////////////////////////////////////////////////////////////////////
+void PGItem::
+play_sound(const string &event) {
+#ifdef HAVE_AUDIO
+  Sounds::const_iterator si = _sounds.find(event);
+  if (si != _sounds.end()) {
+    AudioSound *sound = (*si).second;
+    sound->play();
+  }
+  return (AudioSound *)NULL;
+#endif  // HAVE_AUDIO
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -165,8 +165,9 @@ release(const MouseWatcherParameter &param) {
 void PGButton::
 click(const MouseWatcherParameter &param) {
   PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
-  throw_event(get_click_event(param.get_button()), 
-              EventParameter(ep));
+  string event = get_click_event(param.get_button());
+  play_sound(event);
+  throw_event(event, EventParameter(ep));
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -246,6 +246,6 @@ get_overflow_prefix() {
 //               set_max_chars() or via set_max_width().
 ////////////////////////////////////////////////////////////////////
 INLINE string PGEntry::
-get_overflow_event(const ButtonHandle &button) const {
-  return "overflow-" + button.get_name() + "-" + get_id();
+get_overflow_event() const {
+  return "overflow-" + get_id();
 }

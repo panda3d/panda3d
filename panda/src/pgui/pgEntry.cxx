@@ -306,8 +306,9 @@ press(const MouseWatcherParameter &param) {
 void PGEntry::
 accept(const MouseWatcherParameter &param) {
   PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
-  throw_event(get_accept_event(param.get_button()), 
-              EventParameter(ep));
+  string event = get_accept_event(param.get_button());
+  play_sound(event);
+  throw_event(event, EventParameter(ep));
   set_focus(false);
 }
 
@@ -322,8 +323,9 @@ accept(const MouseWatcherParameter &param) {
 void PGEntry::
 overflow(const MouseWatcherParameter &param) {
   PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
-  throw_event(get_overflow_event(param.get_button()), 
-              EventParameter(ep));
+  string event = get_overflow_event();
+  play_sound(event);
+  throw_event(event, EventParameter(ep));
 }
 
 ////////////////////////////////////////////////////////////////////

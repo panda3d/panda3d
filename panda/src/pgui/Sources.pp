@@ -4,7 +4,7 @@
 #begin lib_target
   #define TARGET pgui
   #define LOCAL_LIBS \
-    grutil text tform graph linmath event putil gobj \
+    audio grutil text tform graph linmath event putil gobj \
     mathutil sgraph sgraphutil
 
 //  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 

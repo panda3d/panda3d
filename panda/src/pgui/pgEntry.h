@@ -90,7 +90,7 @@ PUBLISHED:
   INLINE static string get_accept_prefix();
   INLINE string get_accept_event(const ButtonHandle &button) const;
   INLINE static string get_overflow_prefix();
-  INLINE string get_overflow_event(const ButtonHandle &button) const;
+  INLINE string get_overflow_event() const;
 
 private:
   void slot_text_def(int state);
