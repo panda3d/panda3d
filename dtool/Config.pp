@@ -278,7 +278,9 @@
 #define GLUT_IPATH
 #define GLUT_LPATH
 #define GLUT_LIBS glut
-#defer HAVE_GLUT $[libtest $[GLUT_LPATH],$[GLUT_LIBS]]
+//#defer HAVE_GLUT $[libtest $[GLUT_LPATH],$[GLUT_LIBS]]
+// For now, glut is broken.  Don't even try to build it.
+#define HAVE_GLUT
 
 // Should we try to build the WGL interface?
 #define HAVE_WGL $[eq $[PLATFORM],Win32]
