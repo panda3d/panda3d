@@ -640,6 +640,25 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
+// should be used by both fullscrn and windowed resize
+bool wdxGraphicsWindow::reset_device_resize_window(RECT &viewrect) {
+    DXScreenData *pScrn=&_dxgsg->scrn;
+
+    pScrn->PresParams.BackBufferWidth = RECT_XSIZE(viewrect);
+    pScrn->PresParams.BackBufferHeight = RECT_YSIZE(viewrect);
+    HRESULT hr=pScrn->pD3DDevice->Reset(&pScrn->PresParams);
+
+    if(FAILED(hr)) {
+        if(hr==D3DERR_OUTOFVIDEOMEMORY)
+            return false;
+        wdxdisplay_cat.error() << "reset_device_resize_window Reset() failed, hr = " << D3DERRORSTRING(hr);
+        exit(1);
+    }
+
+    init_resized_window();
+    return true;
+}
+
   
 ////////////////////////////////////////////////////////////////////
 //     Function: handle_reshape
@@ -657,88 +676,7 @@ void wdxGraphicsWindow::handle_windowed_resize(HWND hWnd,bool bDoDxReset) {
             //assume this is initial creation reshape, so ignore this call
             return;
         }
-
-/*  bugbug: dont we need this?  dx8 clear() just clears the backbuf.  try BitBlt, or an erase-backgnd GDI flag?
-        HRESULT hr;
-
-        // Clear the back/primary surface to black
-        DX_DECLARE_CLEAN(DDBLTFX, bltfx)
-        bltfx.dwDDFX |= DDBLTFX_NOTEARING;
-        hr = _dxgsg->scrn.pddsPrimary->Blt(NULL,NULL,NULL,DDBLT_COLORFILL | DDBLT_WAIT,&bltfx);
-        if(FAILED( hr )) {
-            wdxdisplay_cat.fatal() << "Blt to Black of Primary Surf failed! : result = " << ConvD3DErrorToString(hr) << endl;
-            exit(1);
-        }
-
-        if(FAILED(hr = _dxgsg->scrn.pDD->TestCooperativeLevel())) {
-             wdxdisplay_cat.error() << "TestCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
-             return;
-        }
-*/
-//        _dxgsg->SetDXReady(false);  // disable rendering whilst we mess with surfs
-
-      /*  this stuff should all be done be d3ddev Reset() now
-
-        // Want to change rendertarget size without destroying d3d device.  To save vid memory
-        // (and make resizing work on memory-starved 4MB cards), we need to construct
-        // a temporary mini-sized render target for the d3d device (it cannot point to a
-        // NULL rendertarget) before creating the fully resized buffers.  The old
-        // rendertargets will be freed when these temp targets are set, and that will give
-        // us the memory to create the resized target
-        
-        _dxgsg->RestoreAllDeviceObjects();  // right now this doesnt do anything
-
-        
-    
-        LPDIRECTDRAWSURFACE7 pddsDummy = NULL, pddsDummyZ = NULL;
-        ULONG refcnt;
-    
-        DX_DECLARE_CLEAN( DDSURFACEDESC2, ddsd );
-
-        _dxgsg->scrn.pddsBack->GetSurfaceDesc(&ddsd);
-        LPDIRECTDRAW7 pDD = _dxgsg->scrn.pDD;
-    
-        ddsd.dwFlags &= ~DDSD_PITCH;
-        ddsd.dwWidth  = 1; ddsd.dwHeight = 1;
-        ddsd.ddsCaps.dwCaps &= ~(DDSCAPS_COMPLEX | DDSCAPS_FLIP | DDSCAPS_FRONTBUFFER | DDSCAPS_BACKBUFFER);
-    
-        PRINTVIDMEM(pDD,&ddsd.ddsCaps,"dummy backbuf");
-    
-        if(FAILED( hr = pDD->CreateSurface( &ddsd, &pddsDummy, NULL ) )) {
-            wdxdisplay_cat.fatal() << "Resize CreateSurface for temp backbuf failed : result = " << ConvD3DErrorToString(hr) << endl;
-            exit(1);
-        }
-    
-        if(_dxgsg->scrn.pddsZBuf!=NULL) {
-            DX_DECLARE_CLEAN( DDSURFACEDESC2, ddsdZ );
-            _dxgsg->scrn.pddsZBuf->GetSurfaceDesc(&ddsdZ);
-            ddsdZ.dwFlags &= ~DDSD_PITCH;
-            ddsdZ.dwWidth  = 1;   ddsdZ.dwHeight = 1;
-        
-            PRINTVIDMEM(pDD,&ddsdZ.ddsCaps,"dummy zbuf");
-        
-            if(FAILED( hr = pDD->CreateSurface( &ddsdZ, &pddsDummyZ, NULL ) )) {
-                wdxdisplay_cat.fatal() << "Resize CreateSurface for temp zbuf failed : result = " << ConvD3DErrorToString(hr) << endl;
-                exit(1);
-            }
-        
-            if(FAILED( hr = pddsDummy->AddAttachedSurface( pddsDummyZ ) )) {
-                wdxdisplay_cat.fatal() << "Resize AddAttachedSurf for temp zbuf failed : result = " << ConvD3DErrorToString(hr) << endl;
-                exit(1);
-            }
-        }
-    
-        if(FAILED( hr = _dxgsg->scrn.pD3DDevice->SetRenderTarget( pddsDummy, 0x0 ))) {
-            wdxdisplay_cat.fatal()
-            << "Resize failed to set render target to temporary surface, result = " << ConvD3DErrorToString(hr) << endl;
-            exit(1);
-        }
-        RELEASE(pddsDummyZ,wdxdisplay,"dummy resize zbuffer",false);
-        RELEASE(pddsDummy,wdxdisplay,"dummy resize rendertarget buffer",false);
-    */
     }
-
-
 
     if(_dxgsg!=NULL)
        _dxgsg->SetDXReady(false);
@@ -758,11 +696,11 @@ void wdxGraphicsWindow::handle_windowed_resize(HWND hWnd,bool bDoDxReset) {
     DWORD ysize= RECT_YSIZE(view_rect);
 
     do {
-        // change _props xsize,ysize
+        // change _props xsize,ysize  (need to do this here in case _dxgsg==NULL)
         resized(xsize,ysize);
         
         if((_dxgsg!=NULL)&& bDoDxReset) {
-          bResizeSucceeded=_dxgsg->dx_resize_window(hWnd,view_rect);  // create the new resized rendertargets
+          bResizeSucceeded=reset_device_resize_window(view_rect);  // create the new resized rendertargets
           if(!bResizeSucceeded) {
               // size was too large.  try a smaller size
               if(wdxdisplay_cat.is_debug()) {
@@ -1102,6 +1040,8 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
         }
 
         _windows[devnum]->_dxgsg->scrn.hWnd = hWin;
+        _windows[devnum]->_dxgsg->scrn.pProps = &_windows[devnum]->_props;
+
         if(devnum==0)
             _hParentWindow=hWin;
     }
@@ -1395,7 +1335,7 @@ void wdxGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
 
    if(FAILED(hr = _dxgsg->scrn.pDD->TestCooperativeLevel())) {
         wdxdisplay_cat.error() << "TestCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
-        wdxdisplay_cat.error() << "Full screen app failed to get exclusive mode on resize, exiting..\n";
+        wdxdisplay_cat.error() << "Full screen app failed to get exclusive mode on resize, exiting...\n";
         return;
    }
 
@@ -1656,37 +1596,10 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
        wdxdisplay_cat.info() << "Warning: video driver is a pre-DX8-class driver\n";
     }
 
-    if(bWantStencil & (d3dcaps.StencilCaps==0x0)) {
-       wdxdisplay_cat.fatal() << "Stencil ability requested, but device #" << pDevInfo->cardID << " (" << _dxgsg->scrn.DXDeviceID.Description<<"), has no stencil capability!\n";
-       exit(1);
+    if((bWantStencil) && (d3dcaps.StencilCaps==0x0)) {
+            wdxdisplay_cat.fatal() << "Stencil ability requested, but device #" << pDevInfo->cardID << " (" << _dxgsg->scrn.DXDeviceID.Description<<"), has no stencil capability!\n";
+            exit(1);
     }
-
-/*
-    LPDIRECTDRAW7 pDD;
-    D3DDEVICEDESC7 d3ddevs[2];  // put HAL in 0, TnLHAL in 1
-
-    // just look for HAL and TnL devices right now.  I dont think
-    // we have any interest in the sw rasts at this point
-
-    ZeroMemory(d3ddevs,2*sizeof(D3DDEVICEDESC7));
-
-    hr = _dxgsg->scrn.pD3D->EnumDevices(EnumDevicesCallback,d3ddevs);
-    if(hr != DD_OK) {
-       wdxdisplay_cat.fatal() << "EnumDevices failed : result = " << ConvD3DErrorToString(hr) << endl;
-        goto error_exit;
-    }
-    
-    WORD DeviceIdx;
-    DeviceIdx=REGHALIDX;
-
-    if(!(d3ddevs[REGHALIDX].dwDevCaps & D3DDEVCAPS_HWRASTERIZATION )) {
-       // should never get here because enum devices should filter out non-HAL devices
-       wdxdisplay_cat.error() << "No 3D HW present on device #"<<devnum<<", skipping it... (" << _dxgsg->scrn.DXDeviceID.szDescription<<")\n";
-       goto error_exit;
-    }
-
-    memcpy(&_dxgsg->scrn.D3DDevDesc,&d3ddevs[DeviceIdx],sizeof(D3DDEVICEDESC7));
-*/      
 
     _dxgsg->scrn.bIsTNLDevice=((d3dcaps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT)!=0);
 
@@ -1967,7 +1880,6 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
     LPDIRECT3D8 pD3D8=Display.pD3D8;
     D3DCAPS8 *pD3DCaps = &Display.d3dcaps;
     D3DPRESENT_PARAMETERS* pPresParams = &Display.PresParams;
-    D3DVIEWPORT8 vp;
     RECT view_rect;
     HRESULT hr;
     bool bWantStencil = ((_props._mask & W_STENCIL)!=0);
@@ -2165,23 +2077,8 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
         } else {
             pPresParams->SwapEffect = D3DSWAPEFFECT_DISCARD;
         }
-     
-        // Get the dimensions of the viewport and screen bounds
-        GetClientRect( Display.hWnd, &view_rect );
-        POINT ul,lr;
-        ul.x=view_rect.left;  ul.y=view_rect.top;
-        lr.x=view_rect.right;  lr.y=view_rect.bottom;
-        ClientToScreen(Display.hWnd, &ul );
-        ClientToScreen(Display.hWnd, &lr );
-        view_rect.left=ul.x; view_rect.top=ul.y;
-        view_rect.right=lr.x; view_rect.bottom=lr.y;
 
-        dwRenderWidth  = RECT_XSIZE(view_rect);
-        dwRenderHeight = RECT_YSIZE(view_rect);
-        _props._xorg = view_rect.left;  // _props should reflect view rectangle
-        _props._yorg = view_rect.top;
-        _props._xsize = dwRenderWidth;
-        _props._ysize = dwRenderHeight;
+        assert((dwRenderWidth==pPresParams->BackBufferWidth)&&(dwRenderHeight==pPresParams->BackBufferHeight));     
 
         hr = pD3D8->CreateDevice(Display.CardIDNum, D3DDEVTYPE_HAL, _pParentWindowGroup->_hParentWindow,   
                                  dwBehaviorFlags, pPresParams, &Display.pD3DDevice);
@@ -2194,32 +2091,13 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
 
 //  ========================================================
 
-    // clear window to black
-    HDC hDC=GetDC(Display.hWnd);
-    PatBlt(hDC,_props._xorg,_props._yorg,_props._xsize,_props._ysize,BLACKNESS);
-    ReleaseDC(Display.hWnd,hDC);
-
-    hr = Display.pD3DDevice->ResourceManagerDiscardBytes(0);
-    if(FAILED(hr)) {
-        wdxdisplay_cat.error() << "ResourceManagerDiscardBytes failed for device #" << Display.CardIDNum << ", hr=" << D3DERRORSTRING(hr);
+    if(pPresParams->EnableAutoDepthStencil) {
+        _dxgsg->_buffer_mask |= RenderBuffer::T_depth;
+        if(IS_STENCIL_FORMAT(pPresParams->AutoDepthStencilFormat))
+            _dxgsg->_buffer_mask |= RenderBuffer::T_stencil;
     }
 
-    resized(dwRenderWidth,dwRenderHeight);  // update panda channel/display rgn info
-
-    // Create the viewport
-    vp.X=0; vp.Y=0; 
-    vp.Width=_props._xsize;  vp.Height=_props._ysize;
-    vp.MinZ=0.0f;  vp.MaxZ =1.0f;
-    hr = Display.pD3DDevice->SetViewport( &vp );
-    if(FAILED(hr)) {
-        wdxdisplay_cat.fatal() << "SetViewport failed for device #" << Display.CardIDNum << ", " << D3DERRORSTRING(hr);
-        exit(1);
-    }
-
-    Display.view_rect = view_rect;
-
-    _dxgsg->dx_init(_pParentWindowGroup->_hMouseCursor);
-    // do not SetDXReady() yet since caller may want to do more work before letting rendering proceed
+    init_resized_window();
 
     return;
 
@@ -2241,6 +2119,58 @@ Fallback_to_16bpp_buffers:
     } else {
         exit(1);
     }
+}
+
+// assumes CreateDevice or Device->Reset() has just been called, 
+// and the new size is specified in pDisplay->PresParams
+void wdxGraphicsWindow::init_resized_window(void) {
+    DXScreenData *pDisplay=&_dxgsg->scrn;
+    HRESULT hr;
+
+    DWORD newWidth = pDisplay->PresParams.BackBufferWidth;
+    DWORD newHeight = pDisplay->PresParams.BackBufferHeight;
+
+    if(pDisplay->PresParams.Windowed) {
+        POINT ul,lr;
+        RECT view_rect;
+
+        // need to figure out x,y origin offset of window (we already know the client area size)
+        GetClientRect( pDisplay->hWnd, &view_rect );
+        ul.x=view_rect.left;  ul.y=view_rect.top;
+        lr.x=view_rect.right;  lr.y=view_rect.bottom;
+        ClientToScreen(pDisplay->hWnd, &ul );
+        ClientToScreen(pDisplay->hWnd, &lr );
+        view_rect.left=ul.x; view_rect.top=ul.y;
+        view_rect.right=lr.x; view_rect.bottom=lr.y;
+        _props._xorg = view_rect.left;  // _props should reflect view rectangle
+        _props._yorg = view_rect.top;
+
+        // make sure GDI and DX agree on window client area size
+        assert((RECT_XSIZE(view_rect)==newWidth)&&(RECT_YSIZE(view_rect)==newHeight));
+    } 
+
+    resized(newWidth,newHeight);  // update panda channel/display rgn info, _props.xsize, _props.ysize
+
+   // clear window to black ASAP
+    HDC hDC=GetDC(pDisplay->hWnd);
+    PatBlt(hDC,_props._xorg,_props._yorg,_props._xsize,_props._ysize,BLACKNESS);
+    ReleaseDC(pDisplay->hWnd,hDC);
+
+    hr = pDisplay->pD3DDevice->ResourceManagerDiscardBytes(0);
+    if(FAILED(hr)) {
+        wdxdisplay_cat.error() << "ResourceManagerDiscardBytes failed for device #" << pDisplay->CardIDNum << ", hr=" << D3DERRORSTRING(hr);
+    }
+
+    // Create the viewport
+    D3DVIEWPORT8 vp = {0,0,_props._xsize,_props._ysize,0.0f,1.0f};
+    hr = pDisplay->pD3DDevice->SetViewport( &vp );
+    if(FAILED(hr)) {
+        wdxdisplay_cat.fatal() << "SetViewport failed for device #" << pDisplay->CardIDNum << ", " << D3DERRORSTRING(hr);
+        exit(1);
+    }
+
+    _dxgsg->dx_init(_pParentWindowGroup->_hMouseCursor);
+    // do not SetDXReady() yet since caller may want to do more work before letting rendering proceed
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2334,7 +2264,6 @@ void wdxGraphicsWindow::end_frame(void) {
 //  Description: we receive the new x and y position of the client
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsWindow::handle_window_move(int x, int y) {
-    _dxgsg->adjust_view_rect(x,y);
     _props._xorg = x;
     _props._yorg = y;
 }

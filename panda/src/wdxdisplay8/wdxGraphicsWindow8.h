@@ -92,6 +92,8 @@ protected:
   void finish_window_setup(void);
   bool search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevinfo);
   bool FindBestDepthFormat(DXScreenData &Display,D3DDISPLAYMODE &TestDisplayMode,D3DFORMAT *pBestFmt,bool bWantStencil) const;
+  void init_resized_window(void);
+  bool reset_device_resize_window(RECT &viewrect);
   void setup_colormap(void);
   INLINE void track_mouse_leaving(HWND hwnd);
 

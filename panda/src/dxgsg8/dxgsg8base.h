@@ -20,6 +20,7 @@
 #define DXGSG8BASE_H
 
 #include <pandabase.h>
+#include <graphicsWindow.h>
 
 // include win32 defns for everything up to XP, and assume I'm smart enough to
 // use GetProcAddress for backward compat on newer fns
@@ -160,7 +161,7 @@ typedef struct {
       LPDIRECT3D8       pD3D8;
       HWND              hWnd;
       HMONITOR          hMon;
-      RECT              view_rect,clip_rect;
+      GraphicsWindow::Properties *pProps;  // can get window rect here (or from GetWindowRect(hWnd), can also get window size in PresParams
       DWORD             MaxAvailVidMem;
       ushort            CardIDNum;  // adapter ID
       ushort            depth_buffer_bitdepth;  //GetSurfaceDesc is not reliable so must store this explicitly

@@ -272,12 +272,12 @@ set_color_clear_value(const Colorf& value) {
   _d3dcolor_clear_value =  Colorf_to_D3DCOLOR(value);
 }
 
-void DXGraphicsStateGuardian::SetFPSMeterPosition(RECT &view_rect) {
+void DXGraphicsStateGuardian::SetFPSMeterPosition(void) {
     if(_fpsmeter_verts==NULL)
       return;
 
-    DWORD renderWid = RECT_XSIZE(view_rect);
-    DWORD renderHt = RECT_YSIZE(view_rect);
+    DWORD renderWid = scrn.pProps->_xsize;
+    DWORD renderHt = scrn.pProps->_ysize;
 
     // adjust these to match fontsize (these are hacks for default font, probably should get char width from win32)
     #define FPSMETER_NUMFONTLETTERS 11            // need 11 letters [0-9.]
@@ -415,6 +415,34 @@ void DXGraphicsStateGuardian::FillFPSMeterTexture(void) {
 */
 }
 
+void DXGraphicsStateGuardian::
+reset_panda_gsg(void) {
+    GraphicsStateGuardian::reset();
+
+    // overwrite gsg defaults with these values
+
+    // All implementations have the following buffers.
+    _buffer_mask = (RenderBuffer::T_color |
+                    RenderBuffer::T_back
+//                    RenderBuffer::T_depth |
+//                  RenderBuffer::T_stencil |
+//                  RenderBuffer::T_accum
+                    );
+
+    //   stmt below is incorrect for general mono displays, need both right and left flags set.
+    //   stereo not supported in dx8
+    //    _buffer_mask &= ~RenderBuffer::T_right;
+
+    if(_render_traverser.is_null()) {
+        // Create a default RenderTraverser.
+        if (dx_cull_traversal) {
+            _render_traverser = new CullTraverser(this, RenderRelation::get_class_type());
+        } else {
+            _render_traverser = new DirectRenderTraverser(this, RenderRelation::get_class_type());
+        }
+    }
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::Constructor
 //       Access: Public
@@ -422,26 +450,25 @@ void DXGraphicsStateGuardian::FillFPSMeterTexture(void) {
 ////////////////////////////////////////////////////////////////////
 DXGraphicsStateGuardian::
 DXGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
-    // allocate local buffers used during rendering
+    reset_panda_gsg();
 
-    GraphicsStateGuardian::reset();
+    // allocate local buffers used during rendering
 
     ZeroMemory(&scrn,sizeof(DXScreenData));
     _bShowFPSMeter = false;
-    _pCurFvfBufPtr = NULL;
-    _pFvfBufBasePtr = new BYTE[VERT_BUFFER_SIZE];  // allocate storage for vertex info.
-    _index_buf = new WORD[PANDA_MAXNUMVERTS];  // allocate storage for vertex index info.
-    _fpsmeter_verts=NULL;
-    _fpsmeter_font_surf=NULL;
     _bDXisReady = false;
-    _CurFVFType = 0x0;
+
+    _pFvfBufBasePtr = NULL;
+    _index_buf=NULL;
+    _fpsmeter_verts=NULL;
+    _light_enabled = NULL;
+    _cur_light_enabled = NULL;
+    _clip_plane_enabled = (bool *)NULL;
+    _cur_clip_plane_enabled = (bool *)NULL;
+
+    _fpsmeter_font_surf=NULL;
+
     _max_light_range = __D3DLIGHT_RANGE_MAX;
-
-    _color_writemask = 0xFFFFFFFF;
-
-//    scrn.pD3DDevicesPrimary = scrn.pD3DDevicesZBuf = scrn.pD3DDevicesBack = NULL;
-//    _pDD = NULL;
-//    scrn.pD3DDevice = NULL;
 
     // non-dx obj values inited here should not change if resize is 
     // called and dx objects need to be recreated (otherwise they
@@ -452,27 +479,7 @@ DXGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
     ZeroMemory(&matIdentity,sizeof(D3DMATRIX));
     matIdentity._11 = matIdentity._22 = matIdentity._33 = matIdentity._44 = 1.0f;
 
-    // Create a default RenderTraverser.
-    if (dx_cull_traversal) {
-        _render_traverser = new CullTraverser(this, RenderRelation::get_class_type());
-    } else {
-        _render_traverser = new DirectRenderTraverser(this, RenderRelation::get_class_type());
-    }
-
-    // All implementations have the following buffers.
-    _buffer_mask = (RenderBuffer::T_color |
-                    RenderBuffer::T_depth |
-                    RenderBuffer::T_back
-//                  RenderBuffer::T_stencil |
-//                  RenderBuffer::T_accum
-                    );
-
-    //   this is incorrect for general mono displays, need both right and left flags set.
-    //   stereo has not been handled yet for dx
-    //    _buffer_mask &= ~RenderBuffer::T_right;
-
     _cur_read_pixel_buffer=RenderBuffer::T_front;
-
     set_color_clear_value(_color_clear_value);
 }
 
@@ -488,8 +495,6 @@ DXGraphicsStateGuardian::
     _pCurTexContext = NULL;
 
     free_pointers();
-    delete [] _pFvfBufBasePtr;
-    delete [] _index_buf;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -500,9 +505,11 @@ DXGraphicsStateGuardian::
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 reset(void) {
-    GraphicsStateGuardian::reset();
-    dxgsg_cat.error() << "DXGSG reset() not implemented properly yet!\n";
+    reset_panda_gsg();
+    dxgsg_cat.error() << "DXGSG reset() not implemented properly yet!\n";  
+    // what else do we need to do?
     // delete all the objs too, right?
+    // need to do a
     //dx_init();
 }
 
@@ -537,22 +544,31 @@ void DXGraphicsStateGuardian::
 dx_init(HCURSOR hMouseCursor) {
     HRESULT hr;
 
+    // make sure gsg passes all current state down to us
+    GraphicsStateGuardian::clear_cached_state(); 
+    // want gsg to pass all state settings down so any non-matching defaults we set here get overwritten
+
     assert(scrn.pD3D8!=NULL);
     assert(scrn.pD3DDevice!=NULL);
 
     ZeroMemory(&_lmodel_ambient,sizeof(Colorf));
     scrn.pD3DDevice->SetRenderState(D3DRS_AMBIENT, 0x0);
 
-    _light_enabled = (bool *)NULL;
-    _cur_light_enabled = (bool *)NULL;
+    if(_pFvfBufBasePtr==NULL)
+        _pFvfBufBasePtr = new BYTE[VERT_BUFFER_SIZE];  // allocate storage for vertex info.
+    if(_index_buf==NULL)
+        _index_buf = new WORD[PANDA_MAXNUMVERTS];  // allocate storage for vertex index info.
 
-    // bugbug: rewrite clipplane stuff
-    _clip_plane_enabled = (bool *)NULL;
-    _cur_clip_plane_enabled = (bool *)NULL;
+    _pCurFvfBufPtr = NULL;
+
     scrn.pD3DDevice->SetRenderState(D3DRS_CLIPPLANEENABLE , 0x0);
 
     scrn.pD3DDevice->SetRenderState(D3DRS_CLIPPING, true);
     _clipping_enabled = true;
+
+    // these both reflect d3d defaults    
+    _color_writemask = 0xFFFFFFFF;
+    _CurFVFType = 0x0;  // guards SetVertexShader fmt
 
     _bGouraudShadingOn = false;
     scrn.pD3DDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT);
@@ -730,8 +746,6 @@ dx_init(HCURSOR hMouseCursor) {
         }
     }
 
-    SetRect(&scrn.clip_rect, 0,0,0,0);  // no clip rect set
-
     // Lighting, let's turn it off by default
     _lighting_enabled = false;
     scrn.pD3DDevice->SetRenderState(D3DRS_LIGHTING, _lighting_enabled);
@@ -763,9 +777,14 @@ dx_init(HCURSOR hMouseCursor) {
         _max_lights = min(DXGSG_MAX_LIGHTS,scrn.d3dcaps.MaxActiveLights);
     }
 
-    _available_light_ids = PTA(Light*)::empty_array(_max_lights);
-    _light_enabled = new bool[_max_lights];
-    _cur_light_enabled = new bool[_max_lights];
+    if(_available_light_ids.is_null())
+        _available_light_ids = PTA(Light*)::empty_array(_max_lights);
+
+    if(_light_enabled==NULL)
+       _light_enabled = new bool[_max_lights];
+
+    if(_cur_light_enabled == NULL) 
+        _cur_light_enabled = new bool[_max_lights];
 
     for (int i = 0; i < _max_lights; i++) {
         _available_light_ids[i] = NULL;
@@ -780,22 +799,25 @@ dx_init(HCURSOR hMouseCursor) {
         _max_clip_planes = D3DMAXUSERCLIPPLANES;
       else _max_clip_planes = scrn.d3dcaps.MaxUserClipPlanes;
 
-    _available_clip_plane_ids = PTA(PlaneNode*)::empty_array(_max_clip_planes);
-    _clip_plane_enabled = new bool[_max_clip_planes];
-    _cur_clip_plane_enabled = new bool[_max_clip_planes];
+    if(_available_clip_plane_ids.is_null())
+        _available_clip_plane_ids = PTA(PlaneNode*)::empty_array(_max_clip_planes);
+
+    if(_clip_plane_enabled == NULL) 
+        _clip_plane_enabled = new bool[_max_clip_planes];
+
+    if(_cur_clip_plane_enabled == NULL)
+        _cur_clip_plane_enabled = new bool[_max_clip_planes];
+
     for (int i = 0; i < _max_clip_planes; i++) {
         _available_clip_plane_ids[i] = NULL;
         _clip_plane_enabled[i] = false;
     }
 
-    // initial clip rect
-    SetRect(&scrn.clip_rect, 0,0,0,0);     // no clip rect set
-
     // must do SetTSS here because redundant states are filtered out by our code based on current values above, so
     // initial conditions must be correct
 
     _CurTexBlendMode = TextureApplyProperty::M_modulate;
-    SetTextureBlendMode(_CurTexBlendMode,FALSE);
+    SetTextureBlendMode(_CurTexBlendMode,false);
     _texturing_enabled = false;
     scrn.pD3DDevice->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_DISABLE);  // disables texturing
 
@@ -957,7 +979,7 @@ dx_init(HCURSOR hMouseCursor) {
         _fps_u_usedwidth = letterfontareaWidth/(float)texdim_x;
         _fps_v_usedheight = fontareaHeight/(float)texdim_y;
 
-        SetFPSMeterPosition(scrn.view_rect);
+        SetFPSMeterPosition();
     }
     #else
         _bShowFPSMeter = false;
@@ -1550,7 +1572,7 @@ render_frame() {
 void DXGraphicsStateGuardian::
 report_texmgr_stats() {
 #if 0
-// not implemented for dx8
+// not implemented for dx8 yet
 
 #if defined(DO_PSTATS)||defined(PRINT_TEXSTATS)
 
@@ -2129,10 +2151,10 @@ draw_point(GeomPoint *geom, GeomContext *gc) {
     }
 
 #ifdef _DEBUG
-    static BOOL bPrintedMsg=FALSE;
+    static bool bPrintedMsg=false;
 
     if (!bPrintedMsg && (geom->get_size()!=1.0f)) {
-        bPrintedMsg=TRUE;
+        bPrintedMsg=true;
         dxgsg_cat.warning() << "D3D does not support drawing points of non-unit size, setting point size to 1.0f!\n";
     }
 #endif
@@ -2196,12 +2218,12 @@ draw_line(GeomLine* geom, GeomContext *gc) {
     DO_PSTATS_STUFF(_vertices_other_pcollector.add_level(geom->get_num_vertices()));
 
 #ifdef _DEBUG
-    static BOOL bPrintedMsg=FALSE;
+    static bool bPrintedMsg=false;
 
     // note: need to implement approximation of non-1.0 width lines with quads
 
     if (!bPrintedMsg && (geom->get_width()!=1.0f)) {
-        bPrintedMsg=TRUE;
+        bPrintedMsg=true;
         if(dxgsg_cat.is_debug())
             dxgsg_cat.debug() << "DX does not support drawing lines with a non-1.0f pixel width, setting width to 1.0f!\n";
     }
@@ -2286,10 +2308,10 @@ void DXGraphicsStateGuardian::
 draw_linestrip(GeomLinestrip* geom, GeomContext *gc) {
 
 #ifdef _DEBUG
-    static BOOL bPrintedMsg=FALSE;
+    static BOOL bPrintedMsg=false;
 
     if (!bPrintedMsg && (geom->get_width()!=1.0f)) {
-        bPrintedMsg=TRUE;
+        bPrintedMsg=true;
         dxgsg_cat.warning() << "DX does not support drawing lines with a non-1.0f pixel width, setting width to 1.0f!\n";
     }
 #endif
@@ -4882,10 +4904,10 @@ enable_texturing(bool val) {
 //  assert(_pCurTexContext!=NULL);  we're definitely called with it NULL for both true and false
 //  I'm going to allow enabling texturing even if no tex has been set yet, seems to cause no probs
 
-    if (val == FALSE) {
+    if (val == false) {
         scrn.pD3DDevice->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_DISABLE);
     } else {
-          SetTextureBlendMode(_CurTexBlendMode,TRUE);
+          SetTextureBlendMode(_CurTexBlendMode,true);
     }
 }
 
@@ -5551,27 +5573,13 @@ get_fog_mode_type(Fog::Mode m) const {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 free_pointers() {
-    if (_light_enabled != (bool *)NULL) {
-        delete[] _light_enabled;
-        _light_enabled = (bool *)NULL;
-    }
-    if (_cur_light_enabled != (bool *)NULL) {
-        delete[] _cur_light_enabled;
-        _cur_light_enabled = (bool *)NULL;
-    }
-    if (_clip_plane_enabled != (bool *)NULL) {
-        delete[] _clip_plane_enabled;
-        _clip_plane_enabled = (bool *)NULL;
-    }
-    if (_cur_clip_plane_enabled != (bool *)NULL) {
-        delete[] _cur_clip_plane_enabled;
-        _cur_clip_plane_enabled = (bool *)NULL;
-    }
-
-    if(_fpsmeter_verts!=NULL) {
-        delete [] _fpsmeter_verts;
-        _fpsmeter_verts = NULL;
-    }
+    SAFE_DELETE_ARRAY(_index_buf);
+    SAFE_DELETE_ARRAY(_pFvfBufBasePtr);
+    SAFE_DELETE_ARRAY(_fpsmeter_verts);
+    SAFE_DELETE_ARRAY(_cur_clip_plane_enabled);
+    SAFE_DELETE_ARRAY(_clip_plane_enabled);
+    SAFE_DELETE_ARRAY(_cur_light_enabled);
+    SAFE_DELETE_ARRAY(_light_enabled);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5745,135 +5753,6 @@ dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled) {
         }
     }
 #endif
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: dx_resize_window
-//  Description: Recreate the device and render buffers at the new size
-////////////////////////////////////////////////////////////////////
-bool DXGraphicsStateGuardian::
-dx_resize_window(HWND mwindow, RECT viewrect) {
-    if (scrn.pD3DDevice == NULL) // nothing created yet
-        return true;
-
-    // first need to release any non-D3DPOOL_MANAGED objects.  then call Reset.
-    // then recreate any non-D3DPOOL_MANAGED objects.  (textures/VBs/etc)
-
-    // for safety, need some better error-cleanup here
-/*
-    DX_DECLARE_CLEAN(DDSURFACEDESC2, ddsd_back);
-    DX_DECLARE_CLEAN(DDSURFACEDESC2, ddsd_zbuf);
-
-    scrn.pD3DDevicesBack->GetSurfaceDesc(&ddsd_back);
-    scrn.pD3DDevicesZBuf->GetSurfaceDesc(&ddsd_zbuf);
-
-    ULONG refcnt;
-
-    if((scrn.pD3DDevicesBack!=NULL)&&(scrn.pD3DDevicesZBuf!=NULL))
-        scrn.pD3DDevicesBack->DeleteAttachedSurface(0x0,scrn.pD3DDevicesZBuf);
-
-    RELEASE(scrn.pD3DDevicesZBuf,dxgsg,"zbuffer",false);
-    RELEASE(scrn.pD3DDevicesBack,dxgsg,"backbuffer",false);
-    RELEASE(scrn.pD3DDevicesPrimary,dxgsg,"primary surface",false);
-
-    assert((scrn.pD3DDevicesPrimary == NULL) && (scrn.pD3DDevicesBack == NULL) && (scrn.pD3DDevicesZBuf == NULL));
-    scrn.view_rect = viewrect;
-
-    DWORD renderWid = scrn.view_rect.right - scrn.view_rect.left;
-    DWORD renderHt = scrn.view_rect.bottom - scrn.view_rect.top;
-
-    ddsd_back.dwWidth  = ddsd_zbuf.dwWidth = renderWid;
-    ddsd_back.dwHeight = ddsd_zbuf.dwHeight = renderHt;
-
-    DX_DECLARE_CLEAN(DDSURFACEDESC2, ddsd);
-
-    ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
-    ddsd.dwFlags        = DDSD_CAPS;
-
-    PRINTVIDMEM(scrn.pD3DDevice,&ddsd.ddsCaps,"resize primary surf");
-    HRESULT hr;
-
-    if (FAILED(hr = scrn.pD3DDevice->CreateSurface( &ddsd, &scrn.pD3DDevicesPrimary, NULL ))) {
-        dxgsg_cat.fatal() << "resize() - CreateSurface failed for primary : result = " << D3DERRORSTRING(hr);
-        exit(1);
-    }
-
-    if(!dx_full_screen) {
-        // Create a clipper object which handles all our clipping for cases when
-        // our window is partially obscured by other windows.
-        LPDIRECTDRAWCLIPPER Clipper;
-    
-        if (FAILED(hr = scrn.pD3DDevice->CreateClipper( 0, &Clipper, NULL ))) {
-            dxgsg_cat.fatal()
-            << "CreateClipper after resize failed : result = " << D3DERRORSTRING(hr);
-            exit(1);
-        }
-        // Associate the clipper with our window. Note that, afterwards, the
-        // clipper is internally referenced by the primary surface, so it is safe
-        // to release our local reference to it.
-        Clipper->SetHWnd( 0, mwindow );
-        scrn.pD3DDevicesPrimary->SetClipper( Clipper );
-        Clipper->Release();
-    }
-
-    // Recreate the backbuffer. (might want to handle failure due to running out of video memory)
-
-    ddsd_back.dwFlags |= DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS;  // just to make sure
-    ddsd_back.ddsCaps.dwCaps |= DDSCAPS_OFFSCREENPLAIN | DDSCAPS_3DDEVICE;
-
-    PRINTVIDMEM(scrn.pD3DDevice,&ddsd_back.ddsCaps,"resize backbuffer surf");
-
-    if (FAILED(hr = scrn.pD3DDevice->CreateSurface( &ddsd_back, &scrn.pD3DDevicesBack, NULL ))) {
-        dxgsg_cat.fatal() << "resize() - CreateSurface failed for backbuffer : result = " << D3DERRORSTRING(hr);
-        exit(1);
-    }
-
-    PRINTVIDMEM(scrn.pD3DDevice,&ddsd_back.ddsCaps,"resize zbuffer surf");
-
-    // Recreate and attach a z-buffer.
-    if (FAILED(hr = scrn.pD3DDevice->CreateSurface( &ddsd_zbuf, &scrn.pD3DDevicesZBuf, NULL ))) {
-        dxgsg_cat.fatal() << "resize() - CreateSurface failed for Z buffer: result = " << D3DERRORSTRING(hr);
-        exit(1);
-    }
-
-    // Attach the z-buffer to the back buffer.
-    if ((hr = scrn.pD3DDevicesBack->AddAttachedSurface( scrn.pD3DDevicesZBuf ) ) != DD_OK) {
-        dxgsg_cat.fatal() << "resize() - AddAttachedSurface failed : result = " << D3DERRORSTRING(hr);
-        exit(1);
-    }
-
-    if ((hr = scrn.pD3DDevice->SetRenderTarget(scrn.pD3DDevicesBack,0x0) ) != DD_OK) {
-        dxgsg_cat.fatal() << "resize() - SetRenderTarget failed : result = " << D3DERRORSTRING(hr);
-        exit(1);
-    }
-*/
-
-    scrn.PresParams.BackBufferWidth = RECT_XSIZE(viewrect);
-    scrn.PresParams.BackBufferHeight = RECT_YSIZE(viewrect);
-    HRESULT hr=scrn.pD3DDevice->Reset(&scrn.PresParams);
-
-    if(FAILED(hr)) {
-        if(hr==D3DERR_OUTOFVIDEOMEMORY)
-            return false;
-        dxgsg_cat.error() << "dx_resize_window Reset() failed, hr = " << D3DERRORSTRING(hr);
-        exit(1);
-    }
-        
-    // Create the viewport
-    D3DVIEWPORT8 vp = {0, 0,    
-                       scrn.PresParams.BackBufferWidth,scrn.PresParams.BackBufferHeight,
-                       0.0f, 1.0f};
-
-    hr = scrn.pD3DDevice->SetViewport( &vp );
-    if(FAILED(hr)) {
-        dxgsg_cat.fatal() << "SetViewport failed!  hr = " << D3DERRORSTRING(hr);
-        exit(1);
-    }
-
-    if(_bShowFPSMeter) 
-        SetFPSMeterPosition(scrn.view_rect);
-
-    return true;
 }
 
 bool refill_tex_callback(TextureContext *tc,void *void_dxgsg_ptr) {
@@ -6089,7 +5968,7 @@ bool DXGraphicsStateGuardian::CheckCooperativeLevel(bool bDoReactivateWindow) {
 
     switch(hr) {
         case D3DERR_DEVICENOTRESET:
-             _bDXisReady = FALSE;
+             _bDXisReady = false;
              ReleaseAllDeviceObjects();
              hr=scrn.pD3DDevice->Reset(&scrn.PresParams);
              if(bDoReactivateWindow)
@@ -6103,7 +5982,7 @@ bool DXGraphicsStateGuardian::CheckCooperativeLevel(bool bDoReactivateWindow) {
             if(SUCCEEDED(_last_testcooplevel_result)) {
                 if(_bDXisReady) {
                    _win->deactivate_window();
-                   _bDXisReady = FALSE;
+                   _bDXisReady = false;
                    if(dxgsg_cat.is_debug())
                        dxgsg_cat.debug() << "D3D Device was Lost, waiting...\n";
                 }
@@ -6177,8 +6056,9 @@ bool DXGraphicsStateGuardian::CheckCooperativeLevel(bool bDoReactivateWindow) {
     return SUCCEEDED(hr);
 }
 
+/*
 ////////////////////////////////////////////////////////////////////
-//     Function: handle_window_move
+//     Function: adjust_view_rect
 //       Access:
 //  Description: we receive the new x and y position of the client
 ////////////////////////////////////////////////////////////////////
@@ -6193,6 +6073,7 @@ void DXGraphicsStateGuardian::adjust_view_rect(int x, int y) {
 //  set_clipper(clip_rect);
     }
 }
+*/
 
 #if 0
 
@@ -6929,7 +6810,7 @@ HRESULT CreateDX8Cursor(LPDIRECT3DDEVICE8 pd3dDevice, HCURSOR hCursor,BOOL bAddW
     COLORREF* pcrArrayMask = NULL;
     DWORD* pBitmap;
     HGDIOBJ hgdiobjOld;
-    BOOL bBWCursor;
+    bool bBWCursor;
 
     ZeroMemory( &iconinfo, sizeof(iconinfo) );
     if( !GetIconInfo( hCursor, &iconinfo ) )
@@ -6941,10 +6822,10 @@ HRESULT CreateDX8Cursor(LPDIRECT3DDEVICE8 pd3dDevice, HCURSOR hCursor,BOOL bAddW
     dwHeightSrc = bm.bmHeight;
 
     if( iconinfo.hbmColor == NULL ) {
-        bBWCursor = TRUE;
+        bBWCursor = true;
         dwHeightDest = dwHeightSrc / 2;
     } else {
-        bBWCursor = FALSE;
+        bBWCursor = false;
         dwHeightDest = dwHeightSrc;
     }
 
