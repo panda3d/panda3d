@@ -82,6 +82,10 @@ copy(TextureImage *texture) {
     // Couldn't read the texture, so fill it with red.
     PNMImage dest_image(_x_size, _y_size, texture->get_num_channels());
     dest_image.fill(1.0, 0.0, 0.0);
+    if (dest_image.has_alpha()) {
+      dest_image.alpha_fill(1.0);
+    }
+
     write(dest_image);
   }
 }
