@@ -59,6 +59,8 @@ public:
   void clear(int order);
   void append_segment(int vertex_index, const float knots[]);
 
+  void transpose();
+
 private:
   static LVecBase4f nurbs_blending_function(int order, int i, int j, 
                                             const float knots[]);

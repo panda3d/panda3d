@@ -67,6 +67,19 @@ append_segment(int vertex_index, const float knots[]) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NurbsBasisVector::transpose
+//       Access: Public
+//  Description: Transposes the basis matrices stored in the vector.
+////////////////////////////////////////////////////////////////////
+void NurbsBasisVector::
+transpose() {
+  Segments::iterator si;
+  for (si = _segments.begin(); si != _segments.end(); ++si) {
+    (*si)._basis.transpose_in_place();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NurbsBasisVector::nurbs_blending_function
 //       Access: Private, Static
 //  Description: Recursively computes the appropriate blending

@@ -64,14 +64,18 @@ PUBLISHED:
 
   INLINE void set_extended_vertex(int ui, int vi, int d, float value);
   INLINE float get_extended_vertex(int ui, int vi, int d) const;
+  void set_extended_vertices(int ui, int vi, int d, 
+                             const float values[], int num_values);
 
   INLINE int get_num_u_knots() const;
   void set_u_knot(int i, float knot);
   float get_u_knot(int i) const;
+  void normalize_u_knots();
 
   INLINE int get_num_v_knots() const;
   void set_v_knot(int i, float knot);
   float get_v_knot(int i) const;
+  void normalize_v_knots();
 
   INLINE int get_num_u_segments() const;
   INLINE int get_num_v_segments() const;

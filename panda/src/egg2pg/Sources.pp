@@ -19,6 +19,7 @@
     deferredNodeProperty.h \
     eggBinner.h \
     eggLoader.h \
+    egg_parametrics.h \
     load_egg_file.h \
     loaderFileTypeEgg.h
 
@@ -30,6 +31,7 @@
     deferredNodeProperty.cxx \
     eggBinner.cxx \
     eggLoader.cxx \
+    egg_parametrics.cxx \
     load_egg_file.cxx \
     loaderFileTypeEgg.cxx
 
@@ -40,7 +42,7 @@
   #endif
 
   #define INSTALL_HEADERS \
-    load_egg_file.h config_egg2pg.h
+    egg_parametrics.h load_egg_file.h config_egg2pg.h
 
   #define IGATESCAN load_egg_file.h 
 

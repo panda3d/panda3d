@@ -52,7 +52,7 @@ get_end_t() const {
 //       Access: Published
 //  Description: Computes the point on the curve corresponding to the
 //               indicated value in parametric time.  Returns true if
-//               the t value is value, false otherwise.
+//               the t value is valid, false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool NurbsCurveResult::
 eval_point(float t, LVecBase3f &point) {
@@ -99,6 +99,27 @@ eval_extended_point(float t, int d) {
   }
 
   return eval_segment_extended_point(segment, _basis.scale_t(segment, t), d);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurveResult::eval_extended_points
+//       Access: Published
+//  Description: Simultaneously performs eval_extended_point on a
+//               contiguous sequence of dimensions.  The dimensions
+//               evaluated are d through (d + num_values - 1); the
+//               results are filled into the num_values elements in
+//               the indicated result array.
+////////////////////////////////////////////////////////////////////
+INLINE bool NurbsCurveResult::
+eval_extended_points(float t, int d, float result[], int num_values) {
+  int segment = find_segment(t);
+  if (segment == -1) {
+    return false;
+  }
+
+  eval_segment_extended_points(segment, _basis.scale_t(segment, t), d,
+                               result, num_values);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

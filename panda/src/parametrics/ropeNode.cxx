@@ -287,10 +287,8 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
       verts.push_back(point);
 
       if (use_vertex_color) {
-        Colorf color(result->eval_segment_extended_point(segment, t, 0),
-                     result->eval_segment_extended_point(segment, t, 1),
-                     result->eval_segment_extended_point(segment, t, 2),
-                     result->eval_segment_extended_point(segment, t, 3));
+        Colorf color;
+        result->eval_segment_extended_points(segment, t, 0, &color[0], 4),
         colors.push_back(color);
       }
 

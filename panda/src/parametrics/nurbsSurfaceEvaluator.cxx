@@ -85,6 +85,27 @@ get_vertex_space(int ui, int vi, const NodePath &rel_to) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NurbsSurfaceEvaluator::set_extended_vertices
+//       Access: Public
+//  Description: Simultaneously sets several extended values in the
+//               slots d through (d + num_values - 1) from the
+//               num_values elements of the indicated array.  This is
+//               equivalent to calling set_extended_vertex()
+//               num_values times.  See set_extended_vertex().
+////////////////////////////////////////////////////////////////////
+void NurbsSurfaceEvaluator::
+set_extended_vertices(int ui, int vi, int d, 
+                      const float values[], int num_values) {
+  nassertv(ui >= 0 && ui < _num_u_vertices &&
+           vi >= 0 && vi < _num_v_vertices);
+
+  NurbsVertex &vertex = vert(ui, vi);
+  for (int n = 0; n < num_values; n++) {
+    vertex.set_extended_vertex(d + n, values[n]);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NurbsSurfaceEvaluator::set_u_knot
 //       Access: Published
 //  Description: Sets the value of the nth knot.  Each knot value
@@ -116,6 +137,30 @@ get_u_knot(int i) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NurbsSurfaceEvaluator::normalize_u_knots
+//       Access: Published
+//  Description: Normalizes the knot sequence so that the parametric
+//               range of the surface in the U direction is 0 .. 1.
+////////////////////////////////////////////////////////////////////
+void NurbsSurfaceEvaluator::
+normalize_u_knots() {
+  if (_u_knots_dirty) {
+    recompute_u_knots();
+  }
+
+  if (_num_u_vertices > _u_order - 1) {
+    double min_value = _u_knots[_u_order - 1];
+    double max_value = _u_knots[_num_u_vertices];
+    double range = (max_value - min_value);
+
+    for (Knots::iterator ki = _u_knots.begin(); ki != _u_knots.end(); ++ki) {
+      (*ki) = ((*ki) - min_value) / range;
+    }
+    _u_basis_dirty = true;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NurbsSurfaceEvaluator::set_v_knot
 //       Access: Published
 //  Description: Sets the value of the nth knot.  Each knot value
@@ -144,6 +189,30 @@ get_v_knot(int i) const {
   }
   nassertr(i >= 0 && i < (int)_v_knots.size(), 0.0f);
   return _v_knots[i];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NurbsSurfaceEvaluator::normalize_v_knots
+//       Access: Published
+//  Description: Normalizes the knot sequence so that the parametric
+//               range of the surface in the U direction is 0 .. 1.
+////////////////////////////////////////////////////////////////////
+void NurbsSurfaceEvaluator::
+normalize_v_knots() {
+  if (_v_knots_dirty) {
+    recompute_v_knots();
+  }
+
+  if (_num_v_vertices > _v_order - 1) {
+    double min_value = _v_knots[_v_order - 1];
+    double max_value = _v_knots[_num_v_vertices];
+    double range = (max_value - min_value);
+
+    for (Knots::iterator ki = _v_knots.begin(); ki != _v_knots.end(); ++ki) {
+      (*ki) = ((*ki) - min_value) / range;
+    }
+    _v_basis_dirty = true;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

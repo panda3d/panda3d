@@ -37,6 +37,9 @@ NurbsSurfaceResult(const NurbsBasisVector &u_basis,
   _num_u_vertices(num_u_vertices),
   _num_v_vertices(num_v_vertices)
 {
+  // The V basis matrices will always be transposed.
+  _v_basis.transpose();
+
   _last_u_segment = -1;
   _last_v_segment = -1;
   int u_order = _u_basis.get_order();
@@ -51,7 +54,7 @@ NurbsSurfaceResult(const NurbsBasisVector &u_basis,
   }
 
   for (int vi = 0; vi < num_v_segments; vi++) {
-    LMatrix4f v_basis_transpose = transpose(_v_basis.get_basis(vi));
+    const LMatrix4f &v_basis_transpose = _v_basis.get_basis(vi);
     
     int vn = _v_basis.get_vertex_index(vi);
     nassertv(vn >= 0 && vn + v_order - 1 < _num_v_vertices);
@@ -171,9 +174,19 @@ eval_segment_normal(int ui, int vi, float u, float v, LVecBase3f &normal) const 
 ////////////////////////////////////////////////////////////////////
 float NurbsSurfaceResult::
 eval_segment_extended_point(int ui, int vi, float u, float v, int d) const {
+  int i = segi(ui, vi);
+  nassertr(i >= 0 && i < (int)_composed.size(), 0.0f);
+
+  float u2 = u*u;
+  LVecBase4f uvec(u*u2, u2, u, 1.0f);
+  float v2 = v*v;
+  LVecBase4f vvec(v*v2, v2, v, 1.0f);
+
+  float weight = vvec.dot(uvec * _composed[i]._w);
+
   // Calculate the composition of the basis matrices and the geometry
   // matrix on-the-fly.
-  LMatrix4f v_basis_transpose = transpose(_v_basis.get_basis(vi));
+  const LMatrix4f &v_basis_transpose = _v_basis.get_basis(vi);
   const LMatrix4f &u_basis_mat = _u_basis.get_basis(ui);
   int u_order = _u_basis.get_order();
   int v_order = _v_basis.get_order();
@@ -193,9 +206,23 @@ eval_segment_extended_point(int ui, int vi, float u, float v, int d) const {
   }
 
   LMatrix4f composed = u_basis_mat * geom * v_basis_transpose;
+  return vvec.dot(uvec * composed) / weight;
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: NurbsSurfaceResult::eval_segment_extended_points
+//       Access: Published
+//  Description: Simultaneously performs eval_extended_point on a
+//               contiguous sequence of dimensions.  The dimensions
+//               evaluated are d through (d + num_values - 1); the
+//               results are filled into the num_values elements in
+//               the indicated result array.
+////////////////////////////////////////////////////////////////////
+void NurbsSurfaceResult::
+eval_segment_extended_points(int ui, int vi, float u, float v, int d,
+                             float result[], int num_values) const {
   int i = segi(ui, vi);
-  nassertr(i >= 0 && i < (int)_composed.size(), 0.0f);
+  nassertv(i >= 0 && i < (int)_composed.size());
 
   float u2 = u*u;
   LVecBase4f uvec(u*u2, u2, u, 1.0f);
@@ -203,7 +230,33 @@ eval_segment_extended_point(int ui, int vi, float u, float v, int d) const {
   LVecBase4f vvec(v*v2, v2, v, 1.0f);
 
   float weight = vvec.dot(uvec * _composed[i]._w);
-  return vvec.dot(uvec * composed) / weight;
+
+  // Calculate the composition of the basis matrices and the geometry
+  // matrix on-the-fly.
+  const LMatrix4f &v_basis_transpose = _v_basis.get_basis(vi);
+  const LMatrix4f &u_basis_mat = _u_basis.get_basis(ui);
+  int u_order = _u_basis.get_order();
+  int v_order = _v_basis.get_order();
+
+  int un = _u_basis.get_vertex_index(ui);
+  int vn = _v_basis.get_vertex_index(vi);
+
+  for (int n = 0; n < num_values; n++) {
+    LMatrix4f geom;
+    memset(&geom, 0, sizeof(geom));
+    
+    for (int uni = 0; uni < 4; uni++) {
+      for (int vni = 0; vni < 4; vni++) {
+        if (uni < u_order && vni < v_order) {
+          geom(uni, vni) = 
+            _verts[verti(un + uni, vn + vni)].get_extended_vertex(d + n);
+        }
+      }
+    }
+    
+    LMatrix4f composed = u_basis_mat * geom * v_basis_transpose;
+    result[n] = vvec.dot(uvec * composed) / weight;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -121,6 +121,13 @@ float NurbsCurveResult::
 eval_segment_extended_point(int segment, float t, int d) const {
   nassertr(segment >= 0 && segment < _basis.get_num_segments(), 0.0f);
 
+  float t2 = t*t;
+  LVecBase4f tvec(t*t2, t2, t, 1.0f);
+
+  float weight = tvec.dot(_composed[segment].get_col(3));
+
+  // Calculate the composition of the basis matrix and the geometry
+  // matrix on-the-fly.
   int order = _basis.get_order();
   int vi = _basis.get_vertex_index(segment);
 
@@ -142,14 +149,53 @@ eval_segment_extended_point(int segment, float t, int d) const {
                            basis.get_row(1).dot(geom),
                            basis.get_row(2).dot(geom),
                            basis.get_row(3).dot(geom));
+  return tvec.dot(composed_geom) / weight;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurveResult::eval_segment_extended_points
+//       Access: Published
+//  Description: Simultaneously performs eval_extended_point on a
+//               contiguous sequence of dimensions.  The dimensions
+//               evaluated are d through (d + num_values - 1); the
+//               results are filled into the num_values elements in
+//               the indicated result array.
+////////////////////////////////////////////////////////////////////
+void NurbsCurveResult::
+eval_segment_extended_points(int segment, float t, int d,
+                             float result[], int num_values) const {
+  nassertv(segment >= 0 && segment < _basis.get_num_segments());
 
   float t2 = t*t;
   LVecBase4f tvec(t*t2, t2, t, 1.0f);
 
   float weight = tvec.dot(_composed[segment].get_col(3));
 
-  float result = tvec.dot(composed_geom) / weight;
-  return result;
+  // Calculate the composition of the basis matrix and the geometry
+  // matrix on-the-fly.
+  const LMatrix4f &basis = _basis.get_basis(segment);
+  int order = _basis.get_order();
+  int vi = _basis.get_vertex_index(segment);
+
+  for (int n = 0; n < num_values; n++) {
+    LVecBase4f geom;
+    int ci = 0;
+    while (ci < order) {
+      geom[ci] = _verts[vi + ci].get_extended_vertex(d + n);
+      ci++;
+    }
+    while (ci < 4) {
+      geom[ci] = 0.0f;
+      ci++;
+    }
+
+    // Compute matrix * column vector.
+    LVecBase4f composed_geom(basis.get_row(0).dot(geom),
+                             basis.get_row(1).dot(geom),
+                             basis.get_row(2).dot(geom),
+                             basis.get_row(3).dot(geom));
+    result[n] = tvec.dot(composed_geom) / weight;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -19,6 +19,7 @@
 #include "pandabase.h"
 
 #include "eggLoader.h"
+#include "egg_parametrics.h"
 #include "config_egg2pg.h"
 #include "nodePath.h"
 #include "renderState.h"
@@ -463,44 +464,10 @@ make_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
   assert(parent != NULL);
   assert(!parent->is_geom_node());
 
-  PT(NurbsCurveEvaluator) nurbs = new NurbsCurveEvaluator;
-
-  if (egg_curve->get_order() < 1 || egg_curve->get_order() > 4) {
-    egg2pg_cat.error()
-      << "Invalid NURBSCurve order for " << egg_curve->get_name() << ": "
-      << egg_curve->get_order() << "\n";
+  PT(NurbsCurveEvaluator) nurbs = ::make_nurbs_curve(egg_curve, mat);
+  if (nurbs == (NurbsCurveEvaluator *)NULL) {
     _error = true;
     return;
-  }
-
-  nurbs->set_order(egg_curve->get_order());
-
-  nurbs->reset(egg_curve->size());
-  EggPrimitive::const_iterator pi;
-  int vi = 0;
-  for (pi = egg_curve->begin(); pi != egg_curve->end(); ++pi) {
-    EggVertex *egg_vertex = (*pi);
-    nurbs->set_vertex(vi, LCAST(float, egg_vertex->get_pos4() * mat));
-    Colorf color = egg_vertex->get_color();
-    nurbs->set_extended_vertex(vi, 0, color[0]);
-    nurbs->set_extended_vertex(vi, 1, color[1]);
-    nurbs->set_extended_vertex(vi, 2, color[2]);
-    nurbs->set_extended_vertex(vi, 3, color[3]);
-    vi++;
-  }
-
-  int num_knots = egg_curve->get_num_knots();
-  if (num_knots != nurbs->get_num_knots()) {
-    egg2pg_cat.error()
-      << "Invalid NURBSCurve number of knots for "
-      << egg_curve->get_name() << ": got " << num_knots
-      << " knots, expected " << nurbs->get_num_knots() << "\n";
-    _error = true;
-    return;
-  }
-
-  for (int i = 0; i < num_knots; i++) {
-    nurbs->set_knot(i, egg_curve->get_knot(i));
   }
 
   /*
@@ -662,70 +629,10 @@ make_nurbs_surface(EggNurbsSurface *egg_surface, PandaNode *parent,
   assert(parent != NULL);
   assert(!parent->is_geom_node());
 
-  PT(NurbsSurfaceEvaluator) nurbs = new NurbsSurfaceEvaluator;
-
-  if (egg_surface->get_u_order() < 1 || egg_surface->get_u_order() > 4) {
-    egg2pg_cat.error()
-      << "Invalid NURBSSurface U order for " << egg_surface->get_name() << ": "
-      << egg_surface->get_u_order() << "\n";
+  PT(NurbsSurfaceEvaluator) nurbs = ::make_nurbs_surface(egg_surface, mat);
+  if (nurbs == (NurbsSurfaceEvaluator *)NULL) {
     _error = true;
     return;
-  }
-
-  if (egg_surface->get_v_order() < 1 || egg_surface->get_v_order() > 4) {
-    egg2pg_cat.error()
-      << "Invalid NURBSSurface V order for " << egg_surface->get_name() << ": "
-      << egg_surface->get_v_order() << "\n";
-    _error = true;
-    return;
-  }
-
-  nurbs->set_u_order(egg_surface->get_u_order());
-  nurbs->set_v_order(egg_surface->get_v_order());
-
-  int num_u_vertices = egg_surface->get_num_u_cvs();
-  int num_v_vertices = egg_surface->get_num_v_cvs();
-  nurbs->reset(num_u_vertices, num_v_vertices);
-  for (int ui = 0; ui < num_u_vertices; ui++) {
-    for (int vi = 0; vi < num_v_vertices; vi++) {
-      int i = egg_surface->get_vertex_index(ui, vi);
-      EggVertex *egg_vertex = egg_surface->get_vertex(i);
-      nurbs->set_vertex(ui, vi, LCAST(float, egg_vertex->get_pos4() * mat));
-
-      Colorf color = egg_vertex->get_color();
-      nurbs->set_extended_vertex(ui, vi, 0, color[0]);
-      nurbs->set_extended_vertex(ui, vi, 1, color[1]);
-      nurbs->set_extended_vertex(ui, vi, 2, color[2]);
-      nurbs->set_extended_vertex(ui, vi, 3, color[3]);
-    }
-  }
-
-  int num_u_knots = egg_surface->get_num_u_knots();
-  if (num_u_knots != nurbs->get_num_u_knots()) {
-    egg2pg_cat.error()
-      << "Invalid NURBSSurface number of U knots for "
-      << egg_surface->get_name() << ": got " << num_u_knots
-      << " knots, expected " << nurbs->get_num_u_knots() << "\n";
-    _error = true;
-    return;
-  }
-
-  int num_v_knots = egg_surface->get_num_v_knots();
-  if (num_v_knots != nurbs->get_num_v_knots()) {
-    egg2pg_cat.error()
-      << "Invalid NURBSSurface number of U knots for "
-      << egg_surface->get_name() << ": got " << num_v_knots
-      << " knots, expected " << nurbs->get_num_v_knots() << "\n";
-    _error = true;
-    return;
-  }
-
-  int i;
-  for (i = 0; i < num_u_knots; i++) {
-    nurbs->set_u_knot(i, egg_surface->get_u_knot(i));
-  }
-  for (i = 0; i < num_v_knots; i++) {
-    nurbs->set_v_knot(i, egg_surface->get_v_knot(i));
   }
 
   PT(SheetNode) sheet = new SheetNode(egg_surface->get_name());

@@ -293,15 +293,11 @@ render_sheet(CullTraverser *trav, CullTraverserData &data,
           uvs.push_back(TexCoordf(u1_tc, v_tc));
 
           if (use_vertex_color) {
-            Colorf c0(result->eval_segment_extended_point(ui, vi, u0, v, 0),
-                      result->eval_segment_extended_point(ui, vi, u0, v, 1),
-                      result->eval_segment_extended_point(ui, vi, u0, v, 2),
-                      result->eval_segment_extended_point(ui, vi, u0, v, 3));
+            Colorf c0, c1;
+            result->eval_segment_extended_points(ui, vi, u0, v, 0, &c0[0], 4);
+            result->eval_segment_extended_points(ui, vi, u1, v, 0, &c1[0], 4);
+
             colors.push_back(c0);
-            Colorf c1(result->eval_segment_extended_point(ui, vi, u1, v, 0),
-                      result->eval_segment_extended_point(ui, vi, u1, v, 1),
-                      result->eval_segment_extended_point(ui, vi, u1, v, 2),
-                      result->eval_segment_extended_point(ui, vi, u1, v, 3));
             colors.push_back(c1);
           }
         }

@@ -87,6 +87,8 @@ PUBLISHED:
   INLINE void set_bface_flag(bool flag);
   INLINE bool get_bface_flag() const;
 
+  void copy_attributes(const EggPrimitive &other);
+
   bool has_vertex_normal() const;
   bool has_vertex_color() const;
 

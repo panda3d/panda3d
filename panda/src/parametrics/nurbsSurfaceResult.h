@@ -51,12 +51,16 @@ PUBLISHED:
   INLINE bool eval_point(float u, float v, LVecBase3f &point);
   INLINE bool eval_normal(float u, float v, LVecBase3f &normal);
   INLINE float eval_extended_point(float u, float v, int d);
+  INLINE bool eval_extended_points(float u, float v, int d, 
+                                   float result[], int num_values);
   
   INLINE int get_num_u_segments() const;
   INLINE int get_num_v_segments() const;
   void eval_segment_point(int ui, int vi, float u, float v, LVecBase3f &point) const;
   void eval_segment_normal(int ui, int vi, float u, float v, LVecBase3f &normal) const;
   float eval_segment_extended_point(int ui, int vi, float u, float v, int d) const;
+  void eval_segment_extended_points(int ui, int vi, float u, float v, int d,
+                                    float result[], int num_values) const;
   INLINE float get_segment_u(int ui, float u) const;
   INLINE float get_segment_v(int vi, float v) const;
   

@@ -73,7 +73,7 @@ get_end_v() const {
 //       Access: Published
 //  Description: Computes the point on the surface corresponding to the
 //               indicated value in parametric time.  Returns true if
-//               the t value is value, false otherwise.
+//               the u, v values are valid, false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool NurbsSurfaceResult::
 eval_point(float u, float v, LVecBase3f &point) {
@@ -126,6 +126,30 @@ eval_extended_point(float u, float v, int d) {
 
   return eval_segment_extended_point(ui, vi, _u_basis.scale_t(ui, u), 
                                      _v_basis.scale_t(vi, v), d);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NurbsSurfaceResult::eval_extended_points
+//       Access: Published
+//  Description: Simultaneously performs eval_extended_point on a
+//               contiguous sequence of dimensions.  The dimensions
+//               evaluated are d through (d + num_values - 1); the
+//               results are filled into the num_values elements in
+//               the indicated result array.
+////////////////////////////////////////////////////////////////////
+INLINE bool NurbsSurfaceResult::
+eval_extended_points(float u, float v, int d, float result[],
+                     int num_values) {
+  int ui = find_u_segment(u);
+  int vi = find_v_segment(v);
+  if (ui == -1 || vi == -1) {
+    return false;
+  }
+
+  eval_segment_extended_points(ui, vi, _u_basis.scale_t(ui, u), 
+                               _v_basis.scale_t(vi, v), d, result,
+                               num_values);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

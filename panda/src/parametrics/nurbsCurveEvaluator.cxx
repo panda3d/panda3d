@@ -76,6 +76,25 @@ get_vertex_space(int i, const NodePath &rel_to) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurveEvaluator::set_extended_vertices
+//       Access: Public
+//  Description: Simultaneously sets several extended values in the
+//               slots d through (d + num_values - 1) from the
+//               num_values elements of the indicated array.  This is
+//               equivalent to calling set_extended_vertex()
+//               num_values times.  See set_extended_vertex().
+////////////////////////////////////////////////////////////////////
+void NurbsCurveEvaluator::
+set_extended_vertices(int i, int d, const float values[], int num_values) {
+  nassertv(i >= 0 && i < (int)_vertices.size());
+
+  NurbsVertex &vertex = _vertices[i];
+  for (int n = 0; n < num_values; n++) {
+    vertex.set_extended_vertex(d + n, values[n]);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveEvaluator::set_knot
 //       Access: Published
 //  Description: Sets the value of the nth knot.  Each knot value
@@ -104,6 +123,30 @@ get_knot(int i) const {
   }
   nassertr(i >= 0 && i < (int)_knots.size(), 0.0f);
   return _knots[i];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurveEvaluator::normalize_knots
+//       Access: Published
+//  Description: Normalizes the knot sequence so that the parametric
+//               range of the curve is 0 .. 1.
+////////////////////////////////////////////////////////////////////
+void NurbsCurveEvaluator::
+normalize_knots() {
+  if (_knots_dirty) {
+    recompute_knots();
+  }
+
+  if (get_num_vertices() > _order - 1) {
+    double min_value = _knots[_order - 1];
+    double max_value = _knots[get_num_vertices()];
+    double range = (max_value - min_value);
+
+    for (Knots::iterator ki = _knots.begin(); ki != _knots.end(); ++ki) {
+      (*ki) = ((*ki) - min_value) / range;
+    }
+    _basis_dirty = true;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

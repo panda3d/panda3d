@@ -54,11 +54,15 @@ PUBLISHED:
   INLINE bool eval_point(float t, LVecBase3f &point);
   INLINE bool eval_tangent(float t, LVecBase3f &tangent);
   INLINE float eval_extended_point(float t, int d);
+  INLINE bool eval_extended_points(float t, int d, 
+                                   float result[], int num_values);
   
   INLINE int get_num_segments() const;
   void eval_segment_point(int segment, float t, LVecBase3f &point) const;
   void eval_segment_tangent(int segment, float t, LVecBase3f &tangent) const;
   float eval_segment_extended_point(int segment, float t, int d) const;
+  void eval_segment_extended_points(int segment, float t, int d,
+                                    float result[], int num_values) const;
   INLINE float get_segment_t(int segment, float t) const;
   
 private:

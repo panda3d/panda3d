@@ -151,6 +151,20 @@ determine_bin() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::copy_attributes
+//       Access: Public
+//  Description: Copies the rendering attributes from the indicated
+//               primitive.
+////////////////////////////////////////////////////////////////////
+void EggPrimitive::
+copy_attributes(const EggPrimitive &other) {
+  EggAttributes::operator = (other);
+  set_texture(other.get_texture());
+  set_material(other.get_material());
+  set_bface_flag(other.get_bface_flag());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::has_vertex_normal
 //       Access: Public
 //  Description: Returns true if any vertex on the primitive has a
