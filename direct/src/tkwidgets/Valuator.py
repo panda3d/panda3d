@@ -336,6 +336,7 @@ class Valuator(Pmw.MegaWidget):
 
 FLOATER = 'floater'
 DIAL = 'dial'
+ANGLEDIAL = 'angledial'
 SLIDER = 'slider'
 
 class ValuatorGroup(Pmw.MegaWidget):
@@ -388,6 +389,9 @@ class ValuatorGroup(Pmw.MegaWidget):
             if self['type'] == DIAL:
                 import Dial
                 valuatorType = Dial.Dial
+            elif self['type'] == ANGLEDIAL:
+                import Dial
+                valuatorType = Dial.AngleDial
             elif self['type'] == SLIDER:
                 import Slider
                 valuatorType = Slider.Slider

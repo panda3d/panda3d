@@ -22,6 +22,7 @@ class VectorEntry(Pmw.MegaWidget):
             ('value',        DEFAULT_VALUE,  INITOPT),
             ('resetValue',          DEFAULT_VALUE,  None),
             ('label_width',         12,             None),
+            ('labelIpadx',          2,              None),
             ('command',             None,           None),
             ('entryWidth',          8,              self._updateEntryWidth),
             ('relief',              GROOVE,         self._updateRelief),
@@ -56,7 +57,7 @@ class VectorEntry(Pmw.MegaWidget):
         self.menu = self._label['menu'] = Menu(self._label)
         self.menu.add_command(label = 'Reset', command = self.reset)
         self.menu.add_command(label = 'Popup sliders', command = self.popupSliders)
-        self._label.pack(side = LEFT, fill = X, ipadx = 2)
+        self._label.pack(side = LEFT, fill = X, ipadx = self['labelIpadx'])
 
         self.variableList = []
         self.entryList = []

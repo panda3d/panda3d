@@ -28,8 +28,8 @@ class LevelMgr(Entity):
 class LogicGate(Entity):
     type = 'logicGate'
     attribs = (
-        ('input_input1_bool', 0),
-        ('input_input2_bool', 0),
+        ('input_input1_bool', 0, 'boolean'),
+        ('input_input2_bool', 0, 'boolean'),
         ('isInput1', 0),
         ('isInput2', 0),
         ('logicType', 'or'),
@@ -39,8 +39,8 @@ class LogicGate(Entity):
 class NodepathImpl:
     attribs = (
         ('parent', 0),
-        ('pos', Point3(0,0,0)),
-        ('hpr', Vec3(0,0,0)),
+        ('pos', Point3(0,0,0), 'pos'),
+        ('hpr', Vec3(0,0,0), 'hpr'),
         )
 
 # Note: this covers Nodepath and DistributedNodepath
@@ -50,8 +50,8 @@ class Nodepath(Entity, NodepathImpl):
 class NodepathAttribs:
     attribs = (
         ('parent', 0),
-        ('pos', Point3(0,0,0)),
-        ('hpr', Vec3(0,0,0)),
+        ('pos', Point3(0,0,0), 'pos'),
+        ('hpr', Vec3(0,0,0), 'hpr'),
         )
 
 class Zone(Entity, NodepathAttribs):
@@ -72,7 +72,7 @@ class BarrelBase(Nodepath):
         'hpr',
         )
     attribs = (
-        ('h', 0),
+        ('h', 0, 'float'),
         )
 
 class BeanBarrel(BarrelBase):
@@ -88,9 +88,9 @@ class GagBarrel(BarrelBase):
 class Switch(Entity, NodepathImpl):
     attribs = (
         ('scale', 1),
-        ('color', Vec4(1,1,1,1)),
+        ('color', Vec4(1,1,1,1), 'color'),
         ('model', None),
-        ('input_isOn_bool', 0),
+        ('input_isOn_bool', 0, 'boolean'),
         ('isOn', 0),
         ('output', 'bool'),
         ('secondsOn', 1),
@@ -117,17 +117,17 @@ class Door(Entity):
     type = 'door'
     attribs = (
         ('parent', 0),
-        ('pos', Point3(0,0,0)),
-        ('hpr', Vec3(0,0,0)),
+        ('pos', Point3(0,0,0), 'pos'),
+        ('hpr', Vec3(0,0,0), 'hpr'),
         ('scale', 1),
-        ('color', Vec4(1,1,1,1)),
+        ('color', Vec4(1,1,1,1), 'color'),
         ('model', None),
         ('doorwayNum', 0),
-        ('input_Lock0_bool', 0),
-        ('input_Lock1_bool', 0),
-        ('input_Lock2_bool', 0),
-        ('input_Lock3_bool', 0),
-        ('input_isOpen_bool', 0),
+        ('input_Lock0_bool', 0, 'boolean'),
+        ('input_Lock1_bool', 0, 'boolean'),
+        ('input_Lock2_bool', 0, 'boolean'),
+        ('input_Lock3_bool', 0, 'boolean'),
+        ('input_isOpen_bool', 0, 'boolean'),
         ('isLock0Unlocked', 0),
         ('isLock1Unlocked', 0),
         ('isLock2Unlocked', 0),
@@ -152,8 +152,8 @@ class Lift(Nodepath):
     type = 'lift'
     attribs = (
         ('duration', 1),
-        ('startPos', Point3(0,0,0)),
-        ('endPos', Point3(0,0,0)),
+        ('startPos', Point3(0,0,0), 'pos'),
+        ('endPos', Point3(0,0,0), 'pos'),
         ('modelPath', ''),
         ('floorName', ''),
         ('modelScale', 1),
@@ -165,8 +165,8 @@ class Platform(Nodepath):
         'pos',
         )
     attribs = (
-        ('startPos', Point3(0,0,0)),
-        ('endPos', Point3(0,0,0)),
+        ('startPos', Point3(0,0,0), 'pos'),
+        ('endPos', Point3(0,0,0), 'pos'),
         ('speed', 1),
         ('waitDur', 1),
         ('phaseShift', 0.),
@@ -178,9 +178,9 @@ class SinkingPlatform(Nodepath):
         'pos',
         )
     attribs = (
-        ('endPos', Point3(0,0,0)),
+        ('endPos', Point3(0,0,0), 'pos'),
         ('phaseShift', 0.),
-        ('startPos', Point3(0,0,0)),
+        ('startPos', Point3(0,0,0), 'pos'),
         ('verticalRange', 1),
         ('sinkRate', 1),
         ('riseRate', 1),
@@ -191,12 +191,12 @@ class SinkingPlatform(Nodepath):
 class Stomper(Nodepath):
     type = 'stomper'
     attribs = (
-        ('headScale', Vec3(1,1,1)),
+        ('headScale', Vec3(1,1,1), 'scale'),
         ('motion', 3),
         ('period', 2.),
         ('phaseShift', 0.),
         ('range', 6),
-        ('shaftScale', Vec3(1,1,1)),
+        ('shaftScale', Vec3(1,1,1), 'scale'),
         ('soundLen', 0),
         ('soundOn', 0),
         ('style', 'horizontal'),
@@ -206,12 +206,12 @@ class Stomper(Nodepath):
 class StomperPair(Nodepath):
     type = 'stomperPair'
     attribs = (
-        ('headScale', Vec3(1,1,1)),
+        ('headScale', Vec3(1,1,1), 'scale'),
         ('motion', 3),
         ('period', 2.),
         ('phaseShift', 0.),
         ('range', 6),
-        ('shaftScale', Vec3(1,1,1)),
+        ('shaftScale', Vec3(1,1,1), 'scale'),
         ('soundLen', 0),
         ('soundOn', 0),
         ('stomperIds', []),
