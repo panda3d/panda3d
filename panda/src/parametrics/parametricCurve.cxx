@@ -863,7 +863,6 @@ r_find_t(float target_length, float &found_t,
     found_t = t2;
     return true;
   }
-
   
   // are we running out of parametric precision?
   if ((t2 - t1) < t_tolerance) {
