@@ -52,6 +52,16 @@
 #include <windows.h>
 #endif
 
+// We might have been linked with the Cygwin dll.  This is ideal if it
+// is available, because it allows Panda to access all the Cygwin
+// mount definitions if they are in use.  If the Cygwin dll is not
+// available, we fall back to our own convention for converting
+// pathnames.
+#ifdef HAVE_CYGWIN
+extern "C" void cygwin_conv_to_win32_path(const char *path, char *win32);
+//extern "C" void cygwin_conv_to_posix_path(const char *path, char *posix);
+#endif
+
 static string
 front_to_back_slash(const string &str) {
   string result = str;
@@ -85,10 +95,6 @@ get_panda_root() {
 
   if (!got_panda_root) {
     const char *envvar = getenv("PANDA_ROOT");
-    if (envvar == (const char *)NULL) {
-      envvar = getenv("CYGWIN_ROOT");
-    }
-
     if (envvar != (const char *)NULL) {
       panda_root = front_to_back_slash(envvar);
     }
@@ -145,10 +151,18 @@ convert_pathname(const string &unix_style_pathname) {
 
   } else {
     // It starts with a slash, but the first part is not a single
-    // letter, so prefix $PANDA_ROOT.
+    // letter.
 
+#ifdef HAVE_CYGWIN
+    // Use Cygwin to convert it if possible.
+    char result[4096] = "";
+    cygwin_conv_to_win32_path(unix_style_pathname.c_str(), result);
+    windows_pathname = result;
+#else  // HAVE_CYGWIN
+    // Without Cygwin, just prefix $PANDA_ROOT.
     windows_pathname =
       get_panda_root() + front_to_back_slash(unix_style_pathname.substr(1));
+#endif  // HAVE_CYGWIN
   }
 
   return windows_pathname;
@@ -250,7 +264,7 @@ Filename(const Filename &dirname, const Filename &basename) {
 ////////////////////////////////////////////////////////////////////
 Filename Filename::
 from_os_specific(const string &os_specific, Filename::Type type) {
-#if defined(WIN32)
+#ifdef WIN32
   string result = back_to_front_slash(os_specific);
   const string &panda_root = get_panda_root();
 
@@ -291,13 +305,12 @@ from_os_specific(const string &os_specific, Filename::Type type) {
   Filename filename(result);
   filename.set_type(type);
   return filename;
-
-#else
+#else  // WIN32
   // Generic Unix-style filenames--no conversion necessary.
   Filename filename(os_specific);
   filename.set_type(type);
   return filename;
-#endif
+#endif  // WIN32
 }
 
 ////////////////////////////////////////////////////////////////////
