@@ -6,6 +6,7 @@
   #define TARGET pgraph
   
   #define SOURCES \
+    ambientLight.I ambientLight.h \
     billboardEffect.I billboardEffect.h \
     binCullHandler.I binCullHandler.h \
     qpcamera.I qpcamera.h \
@@ -28,6 +29,7 @@
     depthOffsetAttrib.I depthOffsetAttrib.h \
     depthTestAttrib.I depthTestAttrib.h \
     depthWriteAttrib.I depthWriteAttrib.h \
+    directionalLight.I directionalLight.h \
     drawCullHandler.I drawCullHandler.h \
     qpfindApproxLevel.I qpfindApproxLevel.h \
     qpfindApproxLevelEntry.I qpfindApproxLevelEntry.h \
@@ -37,6 +39,10 @@
     qpgeomNode.I qpgeomNode.h \
     qpgeomTransformer.I qpgeomTransformer.h \
     qplensNode.I qplensNode.h \
+    light.I light.h \
+    lightAttrib.I lightAttrib.h \
+    lightLensNode.I lightLensNode.h \
+    lightNode.I lightNode.h \
     qplodNode.I qplodNode.h \
     materialAttrib.I materialAttrib.h \
     qpmodelNode.I qpmodelNode.h \
@@ -46,6 +52,7 @@
     qpnodePathComponent.I qpnodePathComponent.h \
     qpnodePathLerps.h \
     pandaNode.I pandaNode.h \
+    pointLight.I pointLight.h \
     renderAttrib.I renderAttrib.h \
     renderEffect.I renderEffect.h \
     renderEffects.I renderEffects.h \
@@ -56,6 +63,7 @@
     selectiveChildNode.I selectiveChildNode.h \
     qpsequenceNode.I qpsequenceNode.h \
     showBoundsEffect.I showBoundsEffect.h \
+    spotlight.I spotlight.h \
     texMatrixAttrib.I texMatrixAttrib.h \
     textureApplyAttrib.I textureApplyAttrib.h \
     textureAttrib.I textureAttrib.h \
@@ -64,8 +72,9 @@
     transparencyAttrib.I transparencyAttrib.h \
     workingNodePath.I workingNodePath.h
 
-  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
   #define INCLUDED_SOURCES \
+    ambientLight.cxx \
     billboardEffect.cxx \
     binCullHandler.cxx \
     qpcamera.cxx \
@@ -88,6 +97,7 @@
     depthOffsetAttrib.cxx \
     depthTestAttrib.cxx \
     depthWriteAttrib.cxx \
+    directionalLight.cxx \
     drawCullHandler.cxx \
     qpfindApproxLevel.cxx \
     qpfindApproxLevelEntry.cxx \
@@ -97,6 +107,10 @@
     qpgeomNode.cxx \
     qpgeomTransformer.cxx \
     qplensNode.cxx \
+    light.cxx \
+    lightAttrib.cxx \
+    lightLensNode.cxx \
+    lightNode.cxx \
     qplodNode.cxx \
     materialAttrib.cxx \
     qpmodelNode.cxx \
@@ -106,6 +120,7 @@
     qpnodePathComponent.cxx \
     qpnodePathLerps.cxx \
     pandaNode.cxx \
+    pointLight.cxx \
     renderAttrib.cxx \
     renderEffect.cxx \
     renderEffects.cxx \
@@ -116,6 +131,7 @@
     selectiveChildNode.cxx \
     qpsequenceNode.cxx \
     showBoundsEffect.cxx \
+    spotlight.cxx \
     texMatrixAttrib.cxx \
     textureApplyAttrib.cxx \
     textureAttrib.cxx \
@@ -131,6 +147,7 @@
   #endif
 
   #define INSTALL_HEADERS \
+    ambientLight.I ambientLight.h \
     billboardEffect.I billboardEffect.h \
     binCullHandler.I binCullHandler.h \
     qpcamera.I qpcamera.h \
@@ -153,12 +170,17 @@
     depthOffsetAttrib.I depthOffsetAttrib.h \
     depthTestAttrib.I depthTestAttrib.h \
     depthWriteAttrib.I depthWriteAttrib.h \
+    directionalLight.I directionalLight.h \
     drawCullHandler.I drawCullHandler.h \
     qpfog.I qpfog.h \
     fogAttrib.I fogAttrib.h \
     qpgeomNode.I qpgeomNode.h \
     qpgeomTransformer.I qpgeomTransformer.h \
     qplensNode.I qplensNode.h \
+    light.I light.h \
+    lightAttrib.I lightAttrib.h \
+    lightLensNode.I lightLensNode.h \
+    lightNode.I lightNode.h \
     qplodNode.I qplodNode.h \
     materialAttrib.I materialAttrib.h \
     qpmodelNode.I qpmodelNode.h \
@@ -168,6 +190,7 @@
     qpnodePathComponent.I qpnodePathComponent.h \
     qpnodePathLerps.h \
     pandaNode.I pandaNode.h \
+    pointLight.I pointLight.h \
     renderAttrib.I renderAttrib.h \
     renderEffect.I renderEffect.h \
     renderEffects.I renderEffects.h \
@@ -178,6 +201,7 @@
     selectiveChildNode.I selectiveChildNode.h \
     qpsequenceNode.I qpsequenceNode.h \
     showBoundsEffect.I showBoundsEffect.h \
+    spotlight.I spotlight.h \
     texMatrixAttrib.I texMatrixAttrib.h \
     textureApplyAttrib.I textureApplyAttrib.h \
     textureAttrib.I textureAttrib.h \

@@ -60,7 +60,6 @@
 #include "noninteractiveGraphicsPipe.h"
 #include "graphicsWindow.h"
 #include "plist.h"
-#include "lightTransition.h"
 #include "materialTransition.h"
 #include "animControl.h"
 #include "animControlCollection.h"
@@ -342,23 +341,7 @@ void display_func( void ) {
 }
 
 void set_lighting(bool enabled) {
-  if (enabled) {
-    cerr << "lighting is no longer supported in old scene graph.\n";
-    /*
-    // Enable the lights on the initial state.
-    PT(LightTransition) la = new LightTransition;
-    la->set_on(light.p());
-
-    if (have_dlight) {
-      la->set_on(dlight.p());
-    }
-    render_arc->set_transition(la);
-    */
-
-  } else {
-    // Remove the lights from the initial state.
-    render_arc->clear_transition(LightTransition::get_class_type());
-  }
+  cerr << "lighting is no longer supported in old scene graph.\n";
 }
 
 // to be used with new display callback system

@@ -60,6 +60,17 @@ operator < (const StateInfo &other) const {
   return _type < other._type;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::LightInfo::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsStateGuardian::LightInfo::
+LightInfo() {
+  _enabled = false;
+  _next_enabled = false;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::set_render_traverser
@@ -409,6 +420,18 @@ set_coordinate_system(CoordinateSystem cs) {
 INLINE CoordinateSystem GraphicsStateGuardian::
 get_coordinate_system() const {
   return _coordinate_system;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_light
+//       Access: Protected
+//  Description: Returns the Light object that is bound to the
+//               indicated id, or NULL if no Light is bound.
+////////////////////////////////////////////////////////////////////
+INLINE Light *GraphicsStateGuardian::
+get_light(int light_id) const {
+  nassertr(light_id >= 0 && light_id < _max_lights, (Light *)NULL);
+  return _light_info[light_id]._light;
 }
 
 ////////////////////////////////////////////////////////////////////

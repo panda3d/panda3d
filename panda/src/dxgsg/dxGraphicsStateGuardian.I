@@ -40,20 +40,6 @@ enable_line_smooth(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::enable_lighting
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian::
-enable_lighting(bool val) {
-  if (_lighting_enabled != val) {
-    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_LIGHTING, (DWORD)val);
-    if(_lighting_enabled = val)
-      _lighting_enabled_this_frame = true;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::enable_dither
 //       Access:
 //  Description:

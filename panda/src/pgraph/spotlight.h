@@ -1,4 +1,4 @@
-// Filename: directionalLight.h
+// Filename: spotlight.h
 // Created by:  mike (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,24 +16,33 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef DIRECTIONALLIGHT_H
-#define DIRECTIONALLIGHT_H
+#ifndef SPOTLIGHT_H
+#define SPOTLIGHT_H
 
 #include "pandabase.h"
 
-#include "lightNode.h"
+#include "lightLensNode.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : DirectionalLight
-// Description : A light shining from infinitely far away in a
-//               particular direction, like sunlight.
+//       Class : Spotlight
+// Description : A light originating from a single point in space, and
+//               shining in a particular direction, with a cone-shaped
+//               falloff.
+//
+//               The Spotlight frustum is defined using a Lens, so it
+//               can have any of the properties that a camera lens can
+//               have.
+//
+//               Note that the class is named Spotlight instead of
+//               SpotLight, because "spotlight" is a single English
+//               word, instead of two words.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DirectionalLight : public LightNode {
+class EXPCL_PANDA Spotlight : public LightLensNode {
 PUBLISHED:
-  DirectionalLight(const string &name);
+  Spotlight(const string &name);
 
 protected:
-  DirectionalLight(const DirectionalLight &copy);
+  Spotlight(const Spotlight &copy);
 
 public:
   virtual PandaNode *make_copy() const;
@@ -41,17 +50,25 @@ public:
   virtual void write(ostream &out, int indent_level) const;
 
 PUBLISHED:
+  INLINE float get_exponent() const;
+  INLINE void set_exponent(float exponent);
+  
   INLINE const Colorf &get_specular_color() const;
   INLINE void set_specular_color(const Colorf &color);
   
-  INLINE const LPoint3f &get_point() const;
-  INLINE void set_point(const LPoint3f &point);
-  
-  INLINE const LVector3f &get_direction() const;
-  INLINE void set_direction(const LVector3f &direction);
+  INLINE const LVecBase3f &get_attenuation() const;
+  INLINE void set_attenuation(const LVecBase3f &attenuation);
   
 public:
-  virtual void apply(GraphicsStateGuardian *gsg);
+  virtual void bind(GraphicsStateGuardianBase *gsg, int light_id);
+
+  bool make_image(Texture *texture, float radius);
+
+protected:
+  virtual void fill_viz_geom(qpGeomNode *viz_geom);
+
+private:
+  CPT(RenderState) get_viz_state();
 
 private:
   // This is the data that must be cycled between pipeline stages.
@@ -63,9 +80,9 @@ private:
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
+    float _exponent;
     Colorf _specular_color;
-    LPoint3f _point;
-    LVector3f _direction;
+    LVecBase3f _attenuation;
   };
 
   PipelineCycler<CData> _cycler;
@@ -85,9 +102,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    LightNode::init_type();
-    register_type(_type_handle, "DirectionalLight",
-                  LightNode::get_class_type());
+    LightLensNode::init_type();
+    register_type(_type_handle, "Spotlight",
+                  LightLensNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -98,11 +115,11 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const DirectionalLight &light) {
+INLINE ostream &operator << (ostream &out, const Spotlight &light) {
   light.output(out);
   return out;
 }
 
-#include "directionalLight.I"
+#include "spotlight.I"
 
 #endif

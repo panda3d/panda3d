@@ -37,7 +37,6 @@
 #include "dataGraphTraversal.h"
 #include "depthTestTransition.h"
 #include "depthWriteTransition.h"
-#include "lightTransition.h"
 #include "materialTransition.h"
 #include "camera.h"
 #include "orthographicLens.h"
@@ -167,7 +166,6 @@ setup_panda_2d(GraphicsWindow *win, const string &graph_name) {
   // buffer.
   render2d_arc->set_transition(new DepthTestTransition(DepthTestProperty::M_none), 1);
   render2d_arc->set_transition(new DepthWriteTransition(DepthWriteTransition::off()), 1);
-  render2d_arc->set_transition(new LightTransition(LightTransition::all_off()), 1);
   render2d_arc->set_transition(new MaterialTransition(MaterialTransition::off()), 1);
   render2d_arc->set_transition(new CullFaceTransition(CullFaceProperty::M_cull_none), 1);
 

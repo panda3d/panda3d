@@ -149,7 +149,6 @@ public:
   virtual void issue_color_transform(const ColorMatrixTransition *);
   virtual void issue_alpha_transform(const AlphaTransformTransition *);
   virtual void issue_texture(const TextureTransition *attrib);
-  virtual void issue_light(const LightTransition *attrib);
   virtual void issue_material(const MaterialTransition *attrib);
   virtual void issue_render_mode(const RenderModeTransition *attrib);
   virtual void issue_color_blend(const ColorBlendTransition *attrib);
@@ -318,10 +317,7 @@ protected:
   D3DBLEND _blend_dest_func;
 
   bool _line_smooth_enabled;
-  bool* _light_enabled;      // bool[_max_lights]
   bool _color_material_enabled;
-  bool _lighting_enabled;
-  bool _lighting_enabled_this_frame;
   bool _texturing_enabled;
   bool  _clipping_enabled;
   bool _dither_enabled;
@@ -342,12 +338,6 @@ protected:
   DWORD _CurTexAnisoDegree;
   Texture::WrapMode _CurTexWrapModeU,_CurTexWrapModeV;
 
-  PTA(Light*) _available_light_ids;
-  int _max_lights;
-  bool* _cur_light_enabled;
-  int _cur_light_id;
-  float _max_light_range;
-  Colorf _cur_ambient_light;
   LMatrix4f _current_projection_mat;
   int _projection_mat_stack_count;
 

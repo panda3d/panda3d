@@ -9,8 +9,7 @@
 #begin lib_target
   #define TARGET glutdisplay
   #define LOCAL_LIBS \
-    glgsg display putil gobj gsgbase pnmimage mathutil graph sgraph \
-    light
+    glgsg display putil gobj gsgbase pnmimage mathutil graph sgraph
 
   #define SOURCES \
     config_glutdisplay.cxx config_glutdisplay.h glutGraphicsPipe.cxx \

@@ -36,7 +36,6 @@
 #include "lens.h"
 #include "get_rel_pos.h"
 #include "perspectiveLens.h"
-#include "ambientLight.h"
 #include "directionalLight.h"
 #include "pointLight.h"
 #include "spotlight.h"
@@ -46,7 +45,6 @@
 #include "colorMatrixTransition.h"
 #include "alphaTransformTransition.h"
 #include "colorTransition.h"
-#include "lightTransition.h"
 #include "textureTransition.h"
 #include "renderModeTransition.h"
 #include "materialTransition.h"
@@ -157,7 +155,6 @@ issue_transformed_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
 ////////////////////////////////////////////////////////////////////
 GLGraphicsStateGuardian::
 GLGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
-  _light_info = (LightInfo *)NULL;
   _clip_plane_enabled = (bool *)NULL;
   _cur_clip_plane_enabled = (bool *)NULL;
 
@@ -261,8 +258,6 @@ reset() {
   _line_smooth_enabled = false;
   _point_smooth_enabled = false;
   _scissor_enabled = false;
-  _lighting_enabled = false;
-  _lighting_enabled_this_frame = false;
   _normals_enabled = false;
   _texturing_enabled = false;
   _multisample_alpha_one_enabled = false;
@@ -294,9 +289,8 @@ reset() {
 
   // Set up the light id map
   GLint max_lights;
-  glGetIntegerv( GL_MAX_LIGHTS, &max_lights );
-  _max_lights = max_lights;
-  _light_info = new LightInfo[_max_lights];
+  glGetIntegerv(GL_MAX_LIGHTS, &max_lights);
+  init_lights(max_lights);
 
   // Set up the clip plane id map
   GLint max_clip_planes;
@@ -319,13 +313,11 @@ reset() {
   PT(DepthTestTransition) dta = new DepthTestTransition;
   PT(DepthWriteTransition) dwa = new DepthWriteTransition;
   PT(CullFaceTransition) cfa = new CullFaceTransition;
-  PT(LightTransition) la = new LightTransition;
   PT(TextureTransition) ta = new TextureTransition;
 
   dta->issue(this);
   dwa->issue(this);
   cfa->issue(this);
-  la->issue(this);
   ta->issue(this);
 
   Material empty;
@@ -534,7 +526,6 @@ render_frame() {
   _win->begin_frame();
   report_errors();
   _decal_level = 0;
-  _lighting_enabled_this_frame = false;
 
 #ifdef DO_PSTATS
   // For Pstats to track our current texture memory usage, we have to
@@ -584,28 +575,6 @@ render_frame() {
   }
 
   // Now we're done with the frame processing.  Clean up.
-
-  if (_lighting_enabled_this_frame) {
-
-    // Let's turn off all the lights we had on, and clear the light
-    // cache--to force the lights to be reissued next frame, in case
-    // their parameters or positions have changed between frames.
-
-    for (int i = 0; i < _max_lights; i++) {
-      enable_light(i, false);
-      _light_info[i]._light = (Light *)NULL;
-    }
-
-    // Also force the lighting state to unlit, so that issue_light()
-    // will be guaranteed to be called next frame even if we have the
-    // same set of light pointers we had this frame.
-    clear_attribute(LightTransition::get_class_type());
-
-    // All this work to undo the lighting state each frame doesn't seem
-    // ideal--there may be a better way.  Maybe if the lights were just
-    // more aware of whether their parameters or positions have changed
-    // at all?
-  }
 
 #ifndef NDEBUG
   report_errors();
@@ -2083,7 +2052,6 @@ draw_texture(TextureContext *tc, const DisplayRegion *dr) {
   TextureApplyTransition *taa = new TextureApplyTransition;
   taa->set_mode(TextureApplyProperty::M_decal);
 
-  state.set_transition(new LightTransition);
   state.set_transition(new ColorMaskTransition);
   state.set_transition(new RenderModeTransition);
   state.set_transition(new TexMatrixTransition);
@@ -2299,7 +2267,6 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
   prepare_display_region();
 
   NodeTransitions state(na);
-  state.set_transition(new LightTransition);
   state.set_transition(new TextureTransition);
   state.set_transition(new TransformTransition);
   //state.set_transition(new ColorBlendTransition);
@@ -2519,155 +2486,6 @@ apply_fog(qpFog *fog) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::apply_light
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-apply_light(PointLight *light) {
-  // We need to temporarily load a new matrix so we can define the
-  // light in a known coordinate system.  We pick the transform of the
-  // root.  (Alternatively, we could leave the current transform where
-  // it is and compute the light position relative to that transform
-  // instead of relative to the root, by composing with the matrix
-  // computed by _transform->invert_compose(render_transform).  But I
-  // think loading a completely new matrix is simpler.)
-  glMatrixMode(GL_MODELVIEW);
-  glPushMatrix();
-  glLoadMatrixf(_scene_setup->get_render_transform()->get_mat().get_data());
-
-  GLenum id = get_light_id(_cur_light_id);
-  static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
-  glLightfv(id, GL_AMBIENT, black.get_data());
-  glLightfv(id, GL_DIFFUSE, light->get_color().get_data());
-  glLightfv(id, GL_SPECULAR, light->get_specular_color().get_data());
-
-  // Position needs to specify x, y, z, and w
-  // w == 1 implies non-infinite position
-  qpNodePath light_np(light);
-  const LMatrix4f &light_mat = light_np.get_mat(qpNodePath());
-  LPoint3f pos = light->get_point() * light_mat;
-
-  LPoint4f fpos(pos[0], pos[1], pos[2], 1.0f);
-  glLightfv(id, GL_POSITION, fpos.get_data());
-
-  // GL_SPOT_DIRECTION is not significant when cutoff == 180
-
-  // Exponent == 0 implies uniform light distribution
-  glLightf(id, GL_SPOT_EXPONENT, 0.0f);
-
-  // Cutoff == 180 means uniform point light source
-  glLightf(id, GL_SPOT_CUTOFF, 180.0f);
-
-  const LVecBase3f &att = light->get_attenuation();
-  glLightf(id, GL_CONSTANT_ATTENUATION, att[0]);
-  glLightf(id, GL_LINEAR_ATTENUATION, att[1]);
-  glLightf(id, GL_QUADRATIC_ATTENUATION, att[2]);
-
-  glPopMatrix();
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::apply_light
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-apply_light(DirectionalLight *light) {
-  // See the comment about this transform change in PointLight, above.
-  glMatrixMode(GL_MODELVIEW);
-  glPushMatrix();
-  glLoadMatrixf(_scene_setup->get_render_transform()->get_mat().get_data());
-
-  GLenum id = get_light_id( _cur_light_id );
-  static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
-  glLightfv(id, GL_AMBIENT, black.get_data());
-  glLightfv(id, GL_DIFFUSE, light->get_color().get_data());
-  glLightfv(id, GL_SPECULAR, light->get_specular_color().get_data());
-
-  // Position needs to specify x, y, z, and w.
-  // w == 0 implies light is at infinity
-  qpNodePath light_np(light);
-  const LMatrix4f &light_mat = light_np.get_mat(qpNodePath());
-  LVector3f dir = light->get_direction() * light_mat;
-  LPoint4f fdir(-dir[0], -dir[1], -dir[2], 0);
-  glLightfv(id, GL_POSITION, fdir.get_data());
-
-  // GL_SPOT_DIRECTION is not significant when cutoff == 180
-  // In this case, position x, y, z specifies direction
-
-  // Exponent == 0 implies uniform light distribution
-  glLightf(id, GL_SPOT_EXPONENT, 0.0f);
-
-  // Cutoff == 180 means uniform point light source
-  glLightf(id, GL_SPOT_CUTOFF, 180.0f);
-
-  // Default attenuation values (only spotlight and point light can
-  // modify these)
-  glLightf(id, GL_CONSTANT_ATTENUATION, 1.0f);
-  glLightf(id, GL_LINEAR_ATTENUATION, 0.0f);
-  glLightf(id, GL_QUADRATIC_ATTENUATION, 0.0f);
-
-  glPopMatrix();
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::apply_light
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-apply_light(Spotlight *light) {
-  Lens *lens = light->get_lens();
-  nassertv(lens != (Lens *)NULL);
-
-  // See the comment about this transform change in PointLight, above.
-  glMatrixMode(GL_MODELVIEW);
-  glPushMatrix();
-  glLoadMatrixf(_scene_setup->get_render_transform()->get_mat().get_data());
-
-  GLenum id = get_light_id(_cur_light_id);
-  static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
-  glLightfv(id, GL_AMBIENT, black.get_data());
-  glLightfv(id, GL_DIFFUSE, light->get_color().get_data());
-  glLightfv(id, GL_SPECULAR, light->get_specular_color().get_data());
-
-  // Position needs to specify x, y, z, and w
-  // w == 1 implies non-infinite position
-  qpNodePath light_np(light);
-  const LMatrix4f &light_mat = light_np.get_mat(qpNodePath());
-  LPoint3f pos = lens->get_nodal_point() * light_mat;
-  LVector3f dir = lens->get_view_vector() * light_mat;
-
-  LPoint4f fpos(pos[0], pos[1], pos[2], 1.0f);
-  glLightfv(id, GL_POSITION, fpos.get_data());
-  glLightfv(id, GL_SPOT_DIRECTION, dir.get_data());
-
-  glLightf(id, GL_SPOT_EXPONENT, light->get_exponent());
-  glLightf(id, GL_SPOT_CUTOFF, lens->get_hfov());
-
-  const LVecBase3f &att = light->get_attenuation();
-  glLightf(id, GL_CONSTANT_ATTENUATION, att[0]);
-  glLightf(id, GL_LINEAR_ATTENUATION, att[1]);
-  glLightf(id, GL_QUADRATIC_ATTENUATION, att[2]);
-
-  glPopMatrix();
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::apply_light
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-apply_light(AmbientLight *) {
-  // Ambient lights are handled as a special case in issue_light().
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::issue_transform
 //       Access: Public, Virtual
 //  Description:
@@ -2681,36 +2499,6 @@ issue_transform(const TransformTransition *attrib) {
 #endif
   glMatrixMode(GL_MODELVIEW);
   glLoadMatrixf(attrib->get_matrix().get_data());
-
-#ifndef NDEBUG
-  if (gl_show_transforms) {
-    bool lighting_was_enabled = _lighting_enabled;
-    bool texturing_was_enabled = _texturing_enabled;
-    enable_lighting(false);
-    enable_texturing(false);
-
-    glBegin(GL_LINES);
-
-    // X axis in red
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glVertex3f(0.0f, 0.0f, 0.0f);
-    glVertex3f(1.0f, 0.0f, 0.0f);
-
-    // Y axis in green
-    glColor3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(0.0f, 0.0f, 0.0f);
-    glVertex3f(0.0f, 1.0f, 0.0f);
-
-    // Z axis in blue
-    glColor3f(0.0f, 0.0f, 1.0f);
-    glVertex3f(0.0f, 0.0f, 0.0f);
-    glVertex3f(0.0f, 0.0f, 1.0f);
-
-    glEnd();
-    enable_lighting(lighting_was_enabled);
-    enable_texturing(texturing_was_enabled);
-  }
-#endif
   report_errors();
 }
 
@@ -2937,108 +2725,6 @@ issue_render_mode(const RenderModeTransition *attrib) {
       << "Unknown render mode " << (int)mode << endl;
   }
   report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_light
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::issue_light(const LightTransition *attrib )
-{
-#if 0
-  nassertv(attrib->get_default_dir() != TD_on);
-  //  activate();
-
-  // Initialize the current ambient light total and newly enabled
-  // light list
-  Colorf cur_ambient_light(0.0f, 0.0f, 0.0f, 1.0f);
-  int i;
-  for (i = 0; i < _max_lights; i++) {
-    _light_info[i]._next_enabled = false;
-  }
-
-  int num_enabled = 0;
-  LightTransition::const_iterator li;
-  for (li = attrib->begin(); li != attrib->end(); ++li) {
-    Light *light = (*li).first;
-    nassertv(light != (Light *)NULL);
-    TransitionDirection dir = (*li).second;
-
-    if (dir == TD_on) {
-      num_enabled++;
-      enable_lighting(true);
-
-      if (light->get_light_type() == AmbientLight::get_class_type()) {
-        // Ambient lights don't require specific light ids; simply add
-        // in the ambient contribution to the current total
-        cur_ambient_light += light->get_color();
-        
-      } else {
-        // Check to see if this light has already been bound to an id
-        _cur_light_id = -1;
-        for (i = 0; i < _max_lights; i++) {
-          if (_light_info[i]._light == light) {
-            // Light has already been bound to an id, we only need
-            // to enable the light, not apply it
-            _cur_light_id = -2;
-            enable_light(i, true);
-            _light_info[i]._next_enabled = true;
-            break;
-          }
-        }
-        
-        // See if there are any unbound light ids
-        if (_cur_light_id == -1) {
-          for (i = 0; i < _max_lights; i++) {
-            if (_light_info[i]._light == (Light *)NULL) {
-              _light_info[i]._light = light;
-              _cur_light_id = i;
-              break;
-            }
-          }
-        }
-        
-        // If there were no unbound light ids, see if we can replace
-        // a currently unused but previously bound id
-        if (_cur_light_id == -1) {
-          for (i = 0; i < _max_lights; i++) {
-            if (attrib->is_off(_light_info[i]._light)) {
-              _light_info[i]._light = light;
-              _cur_light_id = i;
-              break;
-            }
-          }
-        }
-        
-        if (_cur_light_id >= 0) {
-          enable_light(_cur_light_id, true);
-          _light_info[i]._next_enabled = true;
-          
-          // We need to do something different for each type of light
-          light->apply(this);
-        } else if (_cur_light_id == -1) {
-          glgsg_cat.error()
-            << "issue_light() - failed to bind light to id" << endl;
-        }
-      }
-    }
-  }
-
-  // Disable all unused lights
-  for (i = 0; i < _max_lights; i++) {
-    if (!_light_info[i]._next_enabled)
-      enable_light(i, false);
-  }
-
-  // If no lights were enabled, disable lighting
-  if (num_enabled == 0) {
-    enable_lighting(false);
-  } else {
-    call_glLightModelAmbient(cur_ambient_light);
-  }
-  report_errors();
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3456,104 +3142,6 @@ issue_texture(const TextureAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_light
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-issue_light(const LightAttrib *attrib) {
-  // Initialize the current ambient light total and newly enabled
-  // light list
-  Colorf cur_ambient_light(0.0f, 0.0f, 0.0f, 1.0f);
-  int i;
-  for (i = 0; i < _max_lights; i++) {
-    _light_info[i]._next_enabled = false;
-  }
-
-  int num_enabled = 0;
-  int num_lights = attrib->get_num_lights();
-  if (attrib->get_operation() == LightAttrib::O_remove) {
-    num_lights = 0;
-  }
-  for (int li = 0; li < num_lights; li++) {
-    Light *light = attrib->get_light(li);
-    nassertv(light != (Light *)NULL);
-
-    num_enabled++;
-    enable_lighting(true);
-
-    if (light->get_type() == AmbientLight::get_class_type()) {
-      // Ambient lights don't require specific light ids; simply add
-      // in the ambient contribution to the current total
-      cur_ambient_light += light->get_color();
-        
-    } else {
-      // Check to see if this light has already been bound to an id
-      _cur_light_id = -1;
-      for (i = 0; i < _max_lights; i++) {
-        if (_light_info[i]._light == light) {
-          // Light has already been bound to an id, we only need to
-          // enable the light, not reapply it.
-          _cur_light_id = -2;
-          enable_light(i, true);
-          _light_info[i]._next_enabled = true;
-          break;
-        }
-      }
-        
-      // See if there are any unbound light ids
-      if (_cur_light_id == -1) {
-        for (i = 0; i < _max_lights; i++) {
-          if (_light_info[i]._light == (Light *)NULL) {
-            _light_info[i]._light = light;
-            _cur_light_id = i;
-            break;
-          }
-        }
-      }
-        
-      // If there were no unbound light ids, see if we can replace
-      // a currently unused but previously bound id
-      if (_cur_light_id == -1) {
-        for (i = 0; i < _max_lights; i++) {
-          if (!attrib->has_light(_light_info[i]._light)) {
-            _light_info[i]._light = light;
-            _cur_light_id = i;
-            break;
-          }
-        }
-      }
-        
-      if (_cur_light_id >= 0) {
-        enable_light(_cur_light_id, true);
-        _light_info[i]._next_enabled = true;
-        
-        // We need to do something different for each type of light
-        light->apply(this);
-      } else if (_cur_light_id == -1) {
-        glgsg_cat.error()
-          << "issue_light() - failed to bind light to id" << endl;
-      }
-    }
-  }
-
-  // Disable all unused lights
-  for (i = 0; i < _max_lights; i++) {
-    if (!_light_info[i]._next_enabled) {
-      enable_light(i, false);
-    }
-  }
-
-  // If no lights were enabled, disable lighting
-  if (num_enabled == 0) {
-    enable_lighting(false);
-  } else {
-    call_glLightModelAmbient(cur_ambient_light);
-  }
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::issue_material
 //       Access: Public, Virtual
 //  Description:
@@ -3789,40 +3377,128 @@ issue_depth_offset(const DepthOffsetAttrib *attrib) {
   report_errors();
 }
 
-static CPT(RenderState) 
-get_unlit_state() {
-  static CPT(RenderState) state = NULL;
-  if (state == (const RenderState *)NULL) {
-    state = RenderState::make(LightAttrib::make_all_off());
-  }
-  return state;
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::bind_light
+//       Access: Public, Virtual
+//  Description: Called the first time a particular light has been
+//               bound to a given id within a frame, this should set
+//               up the associated hardware light with the light's
+//               properties.
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+bind_light(PointLight *light, int light_id) {
+  GLenum id = get_light_id(light_id);
+  static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
+  glLightfv(id, GL_AMBIENT, black.get_data());
+  glLightfv(id, GL_DIFFUSE, light->get_color().get_data());
+  glLightfv(id, GL_SPECULAR, light->get_specular_color().get_data());
+
+  // Position needs to specify x, y, z, and w
+  // w == 1 implies non-infinite position
+  qpNodePath light_np(light);
+  const LMatrix4f &light_mat = light_np.get_mat(_scene_setup->get_scene_root());
+  LPoint3f pos = light->get_point() * light_mat;
+
+  LPoint4f fpos(pos[0], pos[1], pos[2], 1.0f);
+  glLightfv(id, GL_POSITION, fpos.get_data());
+
+  // GL_SPOT_DIRECTION is not significant when cutoff == 180
+
+  // Exponent == 0 implies uniform light distribution
+  glLightf(id, GL_SPOT_EXPONENT, 0.0f);
+
+  // Cutoff == 180 means uniform point light source
+  glLightf(id, GL_SPOT_CUTOFF, 180.0f);
+
+  const LVecBase3f &att = light->get_attenuation();
+  glLightf(id, GL_CONSTANT_ATTENUATION, att[0]);
+  glLightf(id, GL_LINEAR_ATTENUATION, att[1]);
+  glLightf(id, GL_QUADRATIC_ATTENUATION, att[2]);
+
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::reset_frame
+//     Function: GLGraphicsStateGuardian::bind_light
 //       Access: Public, Virtual
-//  Description: Called before each frame is rendered, to allow the
-//               GSG a chance to do any internal cleanup before
-//               beginning the frame.
+//  Description: Called the first time a particular light has been
+//               bound to a given id within a frame, this should set
+//               up the associated hardware light with the light's
+//               properties.
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-reset_frame() {
-  // Undo any lighting we had enabled last frame, to force the lights
-  // to be reissued, in case their parameters or positions have
-  // changed between frames.
-  if (_lighting_enabled_this_frame) {
-    for (int i = 0; i < _max_lights; i++) {
-      enable_light(i, false);
-      _light_info[i]._light = (Light *)NULL;
-    }
+bind_light(DirectionalLight *light, int light_id) {
+  GLenum id = get_light_id( light_id );
+  static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
+  glLightfv(id, GL_AMBIENT, black.get_data());
+  glLightfv(id, GL_DIFFUSE, light->get_color().get_data());
+  glLightfv(id, GL_SPECULAR, light->get_specular_color().get_data());
 
-    // Also force the lighting state to unlit, so that issue_light()
-    // will be guaranteed to be called next frame even if we have the
-    // same set of light pointers we had this frame.
-    modify_state(get_unlit_state());
+  // Position needs to specify x, y, z, and w.
+  // w == 0 implies light is at infinity
+  qpNodePath light_np(light);
+  const LMatrix4f &light_mat = light_np.get_mat(_scene_setup->get_scene_root());
+  LVector3f dir = light->get_direction() * light_mat;
+  LPoint4f fdir(-dir[0], -dir[1], -dir[2], 0);
+  glLightfv(id, GL_POSITION, fdir.get_data());
 
-    _lighting_enabled_this_frame = false;
-  }
+  // GL_SPOT_DIRECTION is not significant when cutoff == 180
+  // In this case, position x, y, z specifies direction
+
+  // Exponent == 0 implies uniform light distribution
+  glLightf(id, GL_SPOT_EXPONENT, 0.0f);
+
+  // Cutoff == 180 means uniform point light source
+  glLightf(id, GL_SPOT_CUTOFF, 180.0f);
+
+  // Default attenuation values (only spotlight and point light can
+  // modify these)
+  glLightf(id, GL_CONSTANT_ATTENUATION, 1.0f);
+  glLightf(id, GL_LINEAR_ATTENUATION, 0.0f);
+  glLightf(id, GL_QUADRATIC_ATTENUATION, 0.0f);
+
+  report_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::bind_light
+//       Access: Public, Virtual
+//  Description: Called the first time a particular light has been
+//               bound to a given id within a frame, this should set
+//               up the associated hardware light with the light's
+//               properties.
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+bind_light(Spotlight *light, int light_id) {
+  Lens *lens = light->get_lens();
+  nassertv(lens != (Lens *)NULL);
+
+  GLenum id = get_light_id(light_id);
+  static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
+  glLightfv(id, GL_AMBIENT, black.get_data());
+  glLightfv(id, GL_DIFFUSE, light->get_color().get_data());
+  glLightfv(id, GL_SPECULAR, light->get_specular_color().get_data());
+
+  // Position needs to specify x, y, z, and w
+  // w == 1 implies non-infinite position
+  qpNodePath light_np(light);
+  const LMatrix4f &light_mat = light_np.get_mat(_scene_setup->get_scene_root());
+  LPoint3f pos = lens->get_nodal_point() * light_mat;
+  LVector3f dir = lens->get_view_vector() * light_mat;
+
+  LPoint4f fpos(pos[0], pos[1], pos[2], 1.0f);
+  glLightfv(id, GL_POSITION, fpos.get_data());
+  glLightfv(id, GL_SPOT_DIRECTION, dir.get_data());
+
+  glLightf(id, GL_SPOT_EXPONENT, light->get_exponent());
+  glLightf(id, GL_SPOT_CUTOFF, lens->get_hfov());
+
+  const LVecBase3f &att = light->get_attenuation();
+  glLightf(id, GL_CONSTANT_ATTENUATION, att[0]);
+  glLightf(id, GL_LINEAR_ATTENUATION, att[1]);
+  glLightf(id, GL_QUADRATIC_ATTENUATION, att[2]);
+
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4863,6 +4539,93 @@ issue_transformed_color(const Colorf &color) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::enable_lighting
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by a derived class to
+//               enable or disable the use of lighting overall.  This
+//               is called by issue_light() according to whether any
+//               lights are in use or not.
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+enable_lighting(bool enable) {
+  if (enable) {
+    glEnable(GL_LIGHTING);
+  } else {
+    glDisable(GL_LIGHTING);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::set_ambient_light
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by a derived class to
+//               indicate the color of the ambient light that should
+//               be in effect.  This is called by issue_light() after
+//               all other lights have been enabled or disabled.
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+set_ambient_light(const Colorf &color) {
+  glLightModelfv(GL_LIGHT_MODEL_AMBIENT, color.get_data());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::enable_light
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by a derived class to
+//               enable the indicated light id.  A specific Light will
+//               already have been bound to this id via bind_light().
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+enable_light(int light_id, bool enable) {
+  if (enable) {
+    glEnable(get_light_id(light_id));
+  } else {
+    glDisable(get_light_id(light_id));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::begin_bind_lights
+//       Access: Protected, Virtual
+//  Description: Called immediately before bind_light() is called,
+//               this is intended to provide the derived class a hook
+//               in which to set up some state (like transform) that
+//               might apply to several lights.
+//
+//               The sequence is: begin_bind_lights() will be called,
+//               then one or more bind_light() calls, then
+//               end_bind_lights().
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+begin_bind_lights() {
+  // We need to temporarily load a new matrix so we can define the
+  // light in a known coordinate system.  We pick the transform of the
+  // root.  (Alternatively, we could leave the current transform where
+  // it is and compute the light position relative to that transform
+  // instead of relative to the root, by composing with the matrix
+  // computed by _transform->invert_compose(render_transform).  But I
+  // think loading a completely new matrix is simpler.)
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glLoadMatrixf(_scene_setup->get_render_transform()->get_mat().get_data());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::end_bind_lights
+//       Access: Protected, Virtual
+//  Description: Called after before bind_light() has been called one
+//               or more times (but before any geometry is issued or
+//               additional state is changed), this is intended to
+//               clean up any temporary changes to the state that may
+//               have been made by begin_bind_lights().
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+end_bind_lights() {
+  glMatrixMode(GL_MODELVIEW);
+  glPopMatrix();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::free_pointers
 //       Access: Protected
 //  Description: Frees some memory that was explicitly allocated
@@ -4870,10 +4633,6 @@ issue_transformed_color(const Colorf &color) const {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 free_pointers() {
-  if (_light_info != (LightInfo *)NULL) {
-    delete[] _light_info;
-    _light_info = (LightInfo *)NULL;
-  }
   if (_clip_plane_enabled != (bool *)NULL) {
     delete[] _clip_plane_enabled;
     _clip_plane_enabled = (bool *)NULL;
@@ -5152,10 +4911,6 @@ dump_state(void)
       dump << "\t\t" << "GL_LINE_SMOOTH " << _line_smooth_enabled << " " << (bool)glIsEnabled(GL_LINE_SMOOTH) << "\n";
       dump << "\t\t" << "GL_POINT_SMOOTH " << _point_smooth_enabled << " " << (bool)glIsEnabled(GL_POINT_SMOOTH) << "\n";
       dump << "\t\t" << "GL_LIGHTING " << _lighting_enabled << " " << (bool)glIsEnabled(GL_LIGHTING) << "\n";
-      for(i = 0; i < _max_lights; i++)
-        {
-          dump << "\t\t\t\t" << "GL_LIGHT" << i << " " << _light_info[i]._enabled << " " << (bool)glIsEnabled(GL_LIGHT0+i) << "\n";
-        }
       dump << "\t\t" << "GL_SCISSOR_TEST " << _scissor_enabled << " " << (bool)glIsEnabled(GL_SCISSOR_TEST) << "\n";
       dump << "\t\t" << "GL_TEXTURE_2D " << _texturing_enabled << " " << (bool)glIsEnabled(GL_TEXTURE_2D) << "\n";
       dump << "\t\t" << "GL_DITHER " << _dither_enabled << " " << (bool)glIsEnabled(GL_DITHER) << "\n";

@@ -37,7 +37,6 @@
 #include <spotlight.h>
 #include <transformTransition.h>
 #include <colorTransition.h>
-#include <lightTransition.h>
 #include <textureTransition.h>
 #include <renderModeTransition.h>
 #include <materialTransition.h>
@@ -460,8 +459,6 @@ DXGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
 
     _pFvfBufBasePtr = NULL;
     _index_buf=NULL;
-    _light_enabled = NULL;
-    _cur_light_enabled = NULL;
     _clip_plane_enabled = (bool *)NULL;
     _cur_clip_plane_enabled = (bool *)NULL;
 
@@ -749,8 +746,7 @@ dx_init(HCURSOR hMouseCursor) {
     }
 
     // Lighting, let's turn it off by default
-    _lighting_enabled = false;
-    scrn.pD3DDevice->SetRenderState(D3DRS_LIGHTING, _lighting_enabled);
+    scrn.pD3DDevice->SetRenderState(D3DRS_LIGHTING, false);
 
     // turn on dithering if the rendertarget is < 8bits/color channel
     _dither_enabled = ((!dx_no_dithering) && IS_16BPP_DISPLAY_FORMAT(scrn.PresParams.BackBufferFormat)
@@ -774,23 +770,9 @@ dx_init(HCURSOR hMouseCursor) {
 
     if(scrn.d3dcaps.MaxActiveLights==0) {  
         // 0 indicates no limit on # of lights, but we use DXGSG_MAX_LIGHTS anyway for now
-        _max_lights = DXGSG_MAX_LIGHTS;
+      init_lights(DXGSG_MAX_LIGHTS);
     } else {
-        _max_lights = min(DXGSG_MAX_LIGHTS,scrn.d3dcaps.MaxActiveLights);
-    }
-
-    if(_available_light_ids.is_null())
-        _available_light_ids = PTA(Light*)::empty_array(_max_lights);
-
-    if(_light_enabled==NULL)
-       _light_enabled = new bool[_max_lights];
-
-    if(_cur_light_enabled == NULL) 
-        _cur_light_enabled = new bool[_max_lights];
-
-    for (int i = 0; i < _max_lights; i++) {
-        _available_light_ids[i] = NULL;
-        _light_enabled[i] = false;
+      init_lights(min(DXGSG_MAX_LIGHTS,scrn.d3dcaps.MaxActiveLights));
     }
 
     if(dx_auto_normalize_lighting)
@@ -1001,13 +983,11 @@ dx_init(HCURSOR hMouseCursor) {
     PT(DepthTestTransition) dta = new DepthTestTransition;
     PT(DepthWriteTransition) dwa = new DepthWriteTransition;
     PT(CullFaceTransition) cfa = new CullFaceTransition;
-    PT(LightTransition) la = new LightTransition;
     PT(TextureTransition) ta = new TextureTransition;
 
     dta->issue(this);
     dwa->issue(this);
     cfa->issue(this);
-    la->issue(this);
     ta->issue(this); // no curtextcontext, this does nothing.  dx should already be properly inited above anyway
 }
 
@@ -1072,20 +1052,16 @@ clear(const RenderBuffer &buffer, const DisplayRegion *region) {
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian::
 enable_light(int light_id, bool val) {
-    if (_light_enabled[light_id] != val) {
-        _light_enabled[light_id] = val;
-        HRESULT hr = scrn.pD3DDevice->LightEnable( light_id, val  );
+  HRESULT hr = scrn.pD3DDevice->LightEnable( light_id, val  );
 
 #ifdef GSG_VERBOSE
-        dxgsg_cat.debug() << "LightEnable(" << light_id << "=" << val << ")" << endl;
+  dxgsg_cat.debug() << "LightEnable(" << light_id << "=" << val << ")" << endl;
 #endif
-
-        if (FAILED(hr)) {
-            dxgsg_cat.error() << "LightEnable(" << light_id << "=" << val << ") failed, " <<D3DERRORSTRING(hr);
-            return false;
-        }
-    }
-    return true;
+  
+  if (FAILED(hr)) {
+    dxgsg_cat.error() << "LightEnable(" << light_id << "=" << val << ") failed, " <<D3DERRORSTRING(hr);
+    return false;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1208,7 +1184,6 @@ render_frame() {
     return;
 
   _win->begin_frame();
-  _lighting_enabled_this_frame = false;
 
 #ifdef DO_PSTATS
   // For Pstats to track our current texture memory usage, we have to
@@ -1450,31 +1425,6 @@ render_frame() {
   hr = scrn.pD3DDevice->EndScene();  
 
   // any GDI operations MUST occur after EndScene
-
-  // Now we're done with the frame processing.  Clean up.
-  if (_lighting_enabled_this_frame) {
-        // Let's turn off all the lights we had on, and clear the light
-        // cache--to force the lights to be reissued next frame, in case
-        // their parameters or positions have changed between frames.
-
-        for (int i = 0; i < _max_lights; i++) {
-            enable_light(i, false);
-            _available_light_ids[i] = NULL;
-        }
-
-        // Also force the lighting state to unlit, so that issue_light()
-        // will be guaranteed to be called next frame even if we have the
-        // same set of light pointers we had this frame.
-        NodeTransitions state;
-        state.set_transition(new LightTransition);
-        modify_state(state);
-
-        // All this work to undo the lighting state each frame doesn't seem
-        // ideal--there may be a better way.  Maybe if the lights were just
-        // more aware of whether their parameters or positions have changed
-        // at all?
-   }
-
 
    if(FAILED(hr)) {
     if(hr==D3DERR_DEVICELOST) {
@@ -3840,7 +3790,6 @@ draw_texture(TextureContext *tc, const DisplayRegion *dr) {
     TextureTransition *ta = new TextureTransition(tex);
     TextureApplyTransition *taa = new TextureApplyTransition(TextureApplyProperty::M_decal);
 
-    state.set_transition(new LightTransition);
     state.set_transition(new ColorMaskTransition);
     state.set_transition(new RenderModeTransition);
     state.set_transition(new TexMatrixTransition);
@@ -4089,7 +4038,6 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
     prepare_display_region();
 
     NodeTransitions state(na);
-    state.set_transition(new LightTransition);
     state.set_transition(new TextureTransition);
     state.set_transition(new TransformTransition);
     state.set_transition(new ColorBlendTransition);
@@ -4397,39 +4345,6 @@ void DXGraphicsStateGuardian::apply_light( AmbientLight* light ) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_transform(const TransformTransition *attrib) {
-#ifndef NDEBUG
-    if (dx_show_transforms) {
-
-        bool lighting_was_enabled = _lighting_enabled;
-        bool texturing_was_enabled = _texturing_enabled;
-        enable_lighting(false);
-        enable_texturing(false);
-
-        typedef struct {
-            float x,y,z;   // position
-            float nx,ny,nz; // normal
-            D3DCOLOR  diff;   // diffuse color
-        }        VERTFORMAT;
-
-        VERTFORMAT vert_buf[] = {
-            {0.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  MY_D3DRGBA(1.0f, 0.0f, 0.0f, 1.0f)},      // red
-            {3.0, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  MY_D3DRGBA(1.0f, 0.0f, 0.0f, 1.0f)},       // red
-            {0.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  MY_D3DRGBA(0.0f, 1.0f, 0.0f, 1.0f)},      // grn
-            {0.0f, 3.0, 0.0f,  0.0f, -1.0f, 0.0f,  MY_D3DRGBA(0.0f, 1.0f, 0.0f, 1.0f)},       // grn
-            {0.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  MY_D3DRGBA(0.0f, 0.0f, 1.0f, 1.0f)},      // blu
-            {0.0f, 0.0f, 3.0,  0.0f, -1.0f, 0.0f,  MY_D3DRGBA(0.0f, 0.0f, 1.0f, 1.0f)},       // blu
-        };
-
-        set_vertex_format(D3DFVF_DIFFUSE | D3DFVF_XYZ | D3DFVF_NORMAL);
-
-        HRESULT hr = scrn.pD3DDevice->DrawPrimitiveUP(D3DPT_LINELIST,6, vert_buf, 6*sizeof(float)+sizeof(DWORD));
-        TestDrawPrimFailure(DrawPrim,hr,scrn.pD3DDevice,6,0);
-
-        enable_lighting(lighting_was_enabled);
-        enable_texturing(texturing_was_enabled);
-    }
-#endif
-
     scrn.pD3DDevice->SetTransform(D3DTS_WORLD/*VIEW*/,
                              (D3DMATRIX*) attrib->get_matrix().get_data());
     _bTransformIssued = true;
@@ -4666,107 +4581,6 @@ issue_render_mode(const RenderModeTransition *attrib) {
     }
 
     _current_fill_mode = mode;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_light
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::issue_light(const LightTransition *attrib ) {
-#if 0
-  nassertv(attrib->get_default_dir() != TD_on);
-
-  // Initialize the current ambient light total and currently enabled
-  // light list
-  _cur_ambient_light.set(0.0f, 0.0f, 0.0f, 1.0f);
-  int i;
-  for (i = 0; i < _max_lights; i++)
-    _cur_light_enabled[i] = false;
-
-  int num_enabled = 0;
-  LightTransition::const_iterator li;
-  for (li = attrib->begin(); li != attrib->end(); ++li) {
-    Light *light = (*li).first;
-    nassertv(light != (Light *)NULL);
-    TransitionDirection dir = (*li).second;
- 
-    if (dir == TD_on) {
-      num_enabled++;
-      enable_lighting(true);
-
-      _cur_light_id = -1;
-            
-      // Ambient lights don't require specific light ids
-      // Simply add in the ambient contribution to the current total
-      if (light->get_light_type() == AmbientLight::get_class_type()) {
-        light->apply(this);
-        // We need to indicate that no light id is necessary because
-        // it's an ambient light
-        _cur_light_id = -2;
-      }
-
-      // Check to see if this light has already been bound to an id
-      for (i = 0; i < _max_lights; i++) {
-        if (_available_light_ids[i] == light) {
-          // Light has already been bound to an id, we only need
-          // to enable the light, not apply it
-          _cur_light_id = -2;
-          if (enable_light(i, true))  _cur_light_enabled[i] = true;
-          break;
-        }
-      }
-
-      // See if there are any unbound light ids
-      if (_cur_light_id == -1) {
-        for (i = 0; i < _max_lights; i++) {
-          if (_available_light_ids[i] == NULL) {
-            _available_light_ids[i] = light;
-            _cur_light_id = i;
-            break;
-          }
-        }
-      }
-
-      // If there were no unbound light ids, see if we can replace
-      // a currently unused but previously bound id
-      if (_cur_light_id == -1) {
-        for (i = 0; i < _max_lights; i++) {
-          if (attrib->is_off(_available_light_ids[i])) {
-            _available_light_ids[i] = light;
-            _cur_light_id = i;
-            break;
-          }
-        }
-      }
-
-      if (_cur_light_id >= 0) {
-        if (enable_light(_cur_light_id, true))  _cur_light_enabled[_cur_light_id] = true;
-
-        // We need to do something different for each type of light
-        light->apply(this);
-      } else if (_cur_light_id == -1) {
-        dxgsg_cat.error()
-          << "issue_light() - failed to bind light to id" << endl;
-      }
-    }
-  }
-
-  // Disable all unused lights
-  for (i = 0; i < _max_lights; i++) {
-    if (!_cur_light_enabled[i])
-      enable_light(i, false);
-  }
-  
-  // If no lights were enabled, disable lighting
-  if (num_enabled == 0) {
-    enable_lighting(false);
-    enable_color_material(false);
-  } else {
-    call_dxLightModelAmbient(_cur_ambient_light);
-    enable_color_material(true);
-  }
-#endif
 }
 
 /*
@@ -5598,8 +5412,6 @@ free_pointers() {
 //    SAFE_DELETE_ARRAY(_fpsmeter_verts);
     SAFE_DELETE_ARRAY(_cur_clip_plane_enabled);
     SAFE_DELETE_ARRAY(_clip_plane_enabled);
-    SAFE_DELETE_ARRAY(_cur_light_enabled);
-    SAFE_DELETE_ARRAY(_light_enabled);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -17,12 +17,13 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "spotlight.h"
-#include "graphicsStateGuardian.h"
+#include "graphicsStateGuardianBase.h"
 #include "bamWriter.h"
 #include "bamReader.h"
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "colorAttrib.h"
+#include "config_pgraph.h"
 
 TypeHandle Spotlight::_type_handle;
 
@@ -72,26 +73,6 @@ Spotlight::
 Spotlight(const string &name) : 
   LightLensNode(name) 
 {
-  cerr << "Creating " << *this << ", this = " << (int)this
-       << " node this = " << (int)(PandaNode *)this 
-       << " light this = " << (int)(Light *)this 
-       << " bounded this = " << (int)(BoundedObject *)this << "\n";
-  _internal_bound.get_bound();
-  cerr << "got bound 1\n";
-  get_internal_bound();
-  cerr << "got bound 2\n";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Spotlight::foo
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void Spotlight::
-foo() {
-  cerr << "checking bound\n";
-  get_internal_bound();
-  cerr << "done\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -159,13 +140,13 @@ write(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Spotlight::apply
+//     Function: Spotlight::bind
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Spotlight::
-apply(GraphicsStateGuardian *gsg) {
-  gsg->apply_light(this);
+bind(GraphicsStateGuardianBase *gsg, int light_id) {
+  gsg->bind_light(this, light_id);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -185,14 +166,14 @@ apply(GraphicsStateGuardian *gsg) {
 bool Spotlight::
 make_image(Texture *texture, float radius) {
   if (texture == NULL) {
-    light_cat.error()
+    pgraph_cat.error()
       << "Spotlight::make_image() - NULL texture" << endl;
     return false;
   }
   PixelBuffer *pb = texture->_pbuffer;
   int size = pb->get_xsize();
   if (size == 0) {
-    light_cat.error()
+    pgraph_cat.error()
       << "Spotlight::make_image() - pixel buffer has size == 0" << endl;
     return false;
   }

@@ -29,7 +29,6 @@
 #include "depthWriteTransition.h"
 #include "textureTransition.h"
 #include "textureApplyTransition.h"
-#include "lightTransition.h"
 #include "materialTransition.h"
 #include "transformTransition.h"
 #include "transparencyTransition.h"
@@ -298,20 +297,16 @@ enable_highlight() {
       new CullFaceTransition(CullFaceProperty::M_cull_none);
     TextureTransition *tt =
       new TextureTransition;
-    LightTransition *lt =
-      new LightTransition;
 
     rmt->set_priority(100);
     ct->set_priority(100);
     cft->set_priority(100);
     tt->set_priority(100);
-    lt->set_priority(100);
 
     highlight_arc->set_transition(rmt);
     highlight_arc->set_transition(ct);
     highlight_arc->set_transition(cft);
     highlight_arc->set_transition(tt);
-    highlight_arc->set_transition(lt);
   }
 
   // Add a temporary arc from the highlight render node to the node we

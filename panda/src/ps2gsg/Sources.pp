@@ -6,7 +6,7 @@
 #begin lib_target
   #define TARGET ps2gsg
   #define LOCAL_LIBS \
-    cull gsgmisc gsgbase gobj sgattrib sgraphutil graph display light \
+    cull gsgmisc gsgbase gobj sgattrib sgraphutil graph display \
     putil linmath sgraph mathutil pnmimage
 
   #define SOURCES \

@@ -18,6 +18,10 @@
 
 #include "qplensNode.h"
 #include "geometricBoundingVolume.h"
+#include "bamWriter.h"
+#include "bamReader.h"
+#include "datagram.h"
+#include "datagramIterator.h"
 
 TypeHandle qpLensNode::_type_handle;
 

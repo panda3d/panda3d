@@ -23,10 +23,14 @@
 #include "renderBuffer.h"
 #include "colorAttrib.h"
 #include "colorScaleAttrib.h"
+#include "lightAttrib.h"
 #include "renderState.h"
 #include "depthWriteAttrib.h"
 #include "colorWriteAttrib.h"
 #include "textureAttrib.h"
+#include "lightAttrib.h"
+#include "light.h"
+#include "ambientLight.h"
 
 #include "clockObject.h"
 #include "geomNode.h"
@@ -100,6 +104,10 @@ GraphicsStateGuardian(GraphicsWindow *win) {
   _coordinate_system = default_coordinate_system;
   _current_display_region = (DisplayRegion*)0L;
   _current_lens = (Lens *)NULL;
+
+  _light_info = (LightInfo *)NULL;
+  _max_lights = 0;
+
   reset();
 }
 
@@ -110,6 +118,7 @@ GraphicsStateGuardian(GraphicsWindow *win) {
 ////////////////////////////////////////////////////////////////////
 GraphicsStateGuardian::
 ~GraphicsStateGuardian() {
+  init_lights(0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -146,6 +155,9 @@ reset() {
   _has_scene_graph_color = false;
   _issued_color_stale = false;
   _vertex_colors_enabled = true;
+  _lighting_enabled = false;
+
+  _lighting_enabled_this_frame = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -836,6 +848,15 @@ prepare_lens() {
   return false;
 }
 
+static CPT(RenderState) 
+get_unlit_state() {
+  static CPT(RenderState) state = NULL;
+  if (state == (const RenderState *)NULL) {
+    state = RenderState::make(LightAttrib::make_all_off());
+  }
+  return state;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::reset_frame
 //       Access: Public, Virtual
@@ -845,6 +866,22 @@ prepare_lens() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 reset_frame() {
+  // Undo any lighting we had enabled last frame, to force the lights
+  // to be reissued, in case their parameters or positions have
+  // changed between frames.
+  if (_lighting_enabled_this_frame) {
+    for (int i = 0; i < _max_lights; i++) {
+      enable_light(i, false);
+      _light_info[i]._light = (Light *)NULL;
+    }
+
+    // Also force the lighting state to unlit, so that issue_light()
+    // will be guaranteed to be called next frame even if we have the
+    // same set of light pointers we had this frame.
+    modify_state(get_unlit_state());
+
+    _lighting_enabled_this_frame = false;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1108,6 +1145,268 @@ issue_color(const ColorAttrib *attrib) {
     _vertex_colors_enabled = true;
     break;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::issue_light
+//       Access: Public, Virtual
+//  Description: The default implementation of issue_light() assumes
+//               we have a limited number of equivalent hardware
+//               lights available (which were set up by the
+//               init_lights() call which should have been made in
+//               reset()).  This function assigns each light to a
+//               different hardware light id, trying to keep each
+//               light associated with the same id where possible, but
+//               reusing id's when necessary.
+//
+//               It will call apply_light() each time a light is
+//               assigned to a particular id for the first time in a
+//               given frame, and it will subsequently call
+//               enable_light() to enable or disable each light as the
+//               frame is rendered, as well as enable_lighting() to
+//               enable or disable overall lighting.
+//
+//               If this model of hardware lights with id's does not
+//               apply to a particular graphics engine, it should
+//               override this function to do something more
+//               appropriate instead.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+issue_light(const LightAttrib *attrib) {
+  if (_max_lights == 0) {
+    // If we don't have any lights configured--no one called
+    // init_lights()--then forget it.
+    return;
+  }
+
+  // Initialize the current ambient light total and newly enabled
+  // light list
+  Colorf cur_ambient_light(0.0f, 0.0f, 0.0f, 1.0f);
+  int i;
+  for (i = 0; i < _max_lights; i++) {
+    _light_info[i]._next_enabled = false;
+  }
+
+  bool any_bound = false;
+
+  int num_enabled = 0;
+  int num_lights = attrib->get_num_lights();
+  if (attrib->get_operation() == LightAttrib::O_remove) {
+    num_lights = 0;
+  }
+  for (int li = 0; li < num_lights; li++) {
+    Light *light = attrib->get_light(li);
+    nassertv(light != (Light *)NULL);
+
+    num_enabled++;
+
+    // Lighting should be enabled before we apply any lights.
+    enable_lighting(true);
+    _lighting_enabled = true;
+    _lighting_enabled_this_frame = true;
+
+    if (light->get_type() == AmbientLight::get_class_type()) {
+      // Ambient lights don't require specific light ids; simply add
+      // in the ambient contribution to the current total
+      cur_ambient_light += light->get_color();
+        
+    } else {
+      // Check to see if this light has already been bound to an id
+      int cur_light_id = -1;
+      for (i = 0; i < _max_lights; i++) {
+        if (_light_info[i]._light == light) {
+          // Light has already been bound to an id, we only need to
+          // enable the light, not reapply it.
+          cur_light_id = -2;
+          enable_light(i, true);
+          _light_info[i]._next_enabled = true;
+          break;
+        }
+      }
+        
+      // See if there are any unbound light ids
+      if (cur_light_id == -1) {
+        for (i = 0; i < _max_lights; i++) {
+          if (_light_info[i]._light == (Light *)NULL) {
+            _light_info[i]._light = light;
+            cur_light_id = i;
+            break;
+          }
+        }
+      }
+        
+      // If there were no unbound light ids, see if we can replace
+      // a currently unused but previously bound id
+      if (cur_light_id == -1) {
+        for (i = 0; i < _max_lights; i++) {
+          if (!attrib->has_light(_light_info[i]._light)) {
+            _light_info[i]._light = light;
+            cur_light_id = i;
+            break;
+          }
+        }
+      }
+        
+      if (cur_light_id >= 0) {
+        enable_light(cur_light_id, true);
+        _light_info[cur_light_id]._next_enabled = true;
+        
+        if (!any_bound) {
+          begin_bind_lights();
+          any_bound = true;
+        }
+
+        // This is the first time this frame that this light has been
+        // bound to this particular id.
+        light->bind(this, cur_light_id);
+
+      } else if (cur_light_id == -1) {
+        display_cat.warning()
+          << "Failed to bind " << *light << " to id.\n";
+      }
+    }
+  }
+
+  // Disable all unused lights
+  for (i = 0; i < _max_lights; i++) {
+    if (!_light_info[i]._next_enabled) {
+      enable_light(i, false);
+    }
+  }
+
+  // If no lights were enabled, disable lighting
+  if (num_enabled == 0) {
+    enable_lighting(false);
+    _lighting_enabled = false;
+  } else {
+    set_ambient_light(cur_ambient_light);
+  }
+
+  if (any_bound) {
+    end_bind_lights();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::bind_light
+//       Access: Public, Virtual
+//  Description: Called the first time a particular light has been
+//               bound to a given id within a frame, this should set
+//               up the associated hardware light with the light's
+//               properties.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+bind_light(PointLight *light, int light_id) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::bind_light
+//       Access: Public, Virtual
+//  Description: Called the first time a particular light has been
+//               bound to a given id within a frame, this should set
+//               up the associated hardware light with the light's
+//               properties.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+bind_light(DirectionalLight *light, int light_id) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::bind_light
+//       Access: Public, Virtual
+//  Description: Called the first time a particular light has been
+//               bound to a given id within a frame, this should set
+//               up the associated hardware light with the light's
+//               properties.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+bind_light(Spotlight *light, int light_id) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::init_lights
+//       Access: Protected
+//  Description: Should be called by a derived class, usually in the
+//               reset() function, to initialize the table of lights
+//               according to the number of hardware lights available.
+//               If the derived class overrides issue_light(), this
+//               function is not necessary.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+init_lights(int num_lights) {
+  if (_light_info != (LightInfo *)NULL) {
+    delete[] _light_info;
+    _light_info = (LightInfo *)NULL;
+  }
+
+  _max_lights = num_lights;
+  if (_max_lights > 0) {
+    _light_info = new LightInfo[_max_lights];
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::enable_lighting
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by a derived class to
+//               enable or disable the use of lighting overall.  This
+//               is called by issue_light() according to whether any
+//               lights are in use or not.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+enable_lighting(bool enable) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::set_ambient_light
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by a derived class to
+//               indicate the color of the ambient light that should
+//               be in effect.  This is called by issue_light() after
+//               all other lights have been enabled or disabled.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+set_ambient_light(const Colorf &color) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::enable_light
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by a derived class to
+//               enable the indicated light id.  A specific Light will
+//               already have been bound to this id via bind_light().
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+enable_light(int light_id, bool enable) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::begin_bind_lights
+//       Access: Protected, Virtual
+//  Description: Called immediately before bind_light() is called,
+//               this is intended to provide the derived class a hook
+//               in which to set up some state (like transform) that
+//               might apply to several lights.
+//
+//               The sequence is: begin_bind_lights() will be called,
+//               then one or more bind_light() calls, then
+//               end_bind_lights().
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+begin_bind_lights() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::end_bind_lights
+//       Access: Protected, Virtual
+//  Description: Called after before bind_light() has been called one
+//               or more times (but before any geometry is issued or
+//               additional state is changed), this is intended to
+//               clean up any temporary changes to the state that may
+//               have been made by begin_bind_lights().
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+end_bind_lights() {
 }
 
 ////////////////////////////////////////////////////////////////////

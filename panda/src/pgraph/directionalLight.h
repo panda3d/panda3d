@@ -1,4 +1,4 @@
-// Filename: pointLight.h
+// Filename: directionalLight.h
 // Created by:  mike (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,24 +16,24 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef POINTLIGHT_H
-#define POINTLIGHT_H
+#ifndef DIRECTIONALLIGHT_H
+#define DIRECTIONALLIGHT_H
 
 #include "pandabase.h"
 
 #include "lightNode.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : PointLight
-// Description : A light originating from a single point in space, and
-//               shining in all directions.
+//       Class : DirectionalLight
+// Description : A light shining from infinitely far away in a
+//               particular direction, like sunlight.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PointLight : public LightNode {
+class EXPCL_PANDA DirectionalLight : public LightNode {
 PUBLISHED:
-  PointLight(const string &name);
+  DirectionalLight(const string &name);
 
 protected:
-  PointLight(const PointLight &copy);
+  DirectionalLight(const DirectionalLight &copy);
 
 public:
   virtual PandaNode *make_copy() const;
@@ -44,14 +44,14 @@ PUBLISHED:
   INLINE const Colorf &get_specular_color() const;
   INLINE void set_specular_color(const Colorf &color);
   
-  INLINE const LVecBase3f &get_attenuation() const;
-  INLINE void set_attenuation(const LVecBase3f &attenuation);
-  
   INLINE const LPoint3f &get_point() const;
   INLINE void set_point(const LPoint3f &point);
   
+  INLINE const LVector3f &get_direction() const;
+  INLINE void set_direction(const LVector3f &direction);
+  
 public:
-  virtual void apply(GraphicsStateGuardian *gsg);
+  virtual void bind(GraphicsStateGuardianBase *gsg, int light_id);
 
 private:
   // This is the data that must be cycled between pipeline stages.
@@ -64,8 +64,8 @@ private:
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
     Colorf _specular_color;
-    LVecBase3f _attenuation;
     LPoint3f _point;
+    LVector3f _direction;
   };
 
   PipelineCycler<CData> _cycler;
@@ -86,7 +86,7 @@ public:
   }
   static void init_type() {
     LightNode::init_type();
-    register_type(_type_handle, "PointLight",
+    register_type(_type_handle, "DirectionalLight",
                   LightNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -98,11 +98,11 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const PointLight &light) {
+INLINE ostream &operator << (ostream &out, const DirectionalLight &light) {
   light.output(out);
   return out;
 }
 
-#include "pointLight.I"
+#include "directionalLight.I"
 
 #endif

@@ -38,6 +38,7 @@
 #include "allTransitionsWrapper.h"
 #include "transformState.h"
 #include "renderState.h"
+#include "light.h"
 
 #include "notify.h"
 #include "pvector.h"
@@ -186,8 +187,21 @@ public:
   virtual void issue_transform(const TransformState *transform);
   virtual void issue_color_scale(const ColorScaleAttrib *attrib);
   virtual void issue_color(const ColorAttrib *attrib);
+  virtual void issue_light(const LightAttrib *attrib);
+
+  virtual void bind_light(PointLight *light, int light_id);
+  virtual void bind_light(DirectionalLight *light, int light_id);
+  virtual void bind_light(Spotlight *light, int light_id);
 
 protected:
+  INLINE Light *get_light(int light_id) const;
+  void init_lights(int num_lights);
+  virtual void enable_lighting(bool enable);
+  virtual void set_ambient_light(const Colorf &color);
+  virtual void enable_light(int light_id, bool enable);
+  virtual void begin_bind_lights();
+  virtual void end_bind_lights();
+
   virtual PT(SavedFrameBuffer) save_frame_buffer(const RenderBuffer &buffer,
                                                  CPT(DisplayRegion) dr)=0;
   virtual void restore_frame_buffer(SavedFrameBuffer *frame_buffer)=0;
@@ -270,6 +284,7 @@ protected:
   bool _has_scene_graph_color;
   bool _issued_color_stale;
   bool _vertex_colors_enabled;
+  bool _lighting_enabled;
 
   bool _color_transform_enabled;
   bool _alpha_transform_enabled;
@@ -305,6 +320,18 @@ public:
   static PStatCollector _draw_primitive_pcollector;
 
 private:
+  class LightInfo {
+  public:
+    INLINE LightInfo();
+    PT(Light) _light;
+    bool _enabled;
+    bool _next_enabled;
+  };
+
+  int _max_lights;
+  LightInfo *_light_info;          // LightInfo[_max_lights]
+  bool _lighting_enabled_this_frame;
+
   // NOTE: on win32 another DLL (e.g. libpandadx.dll) cannot access
   // these sets directly due to exported template issue
   typedef pset<TextureContext *> Textures;

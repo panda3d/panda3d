@@ -30,7 +30,7 @@
 #include "qpgeomNode.h"
 
 class PandaNode;
-class GraphicsStateGuardian;
+class GraphicsStateGuardianBase;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Light
@@ -58,7 +58,7 @@ PUBLISHED:
 public:
   virtual void output(ostream &out) const=0;
   virtual void write(ostream &out, int indent_level) const=0;
-  virtual void apply(GraphicsStateGuardian *gsg)=0;
+  virtual void bind(GraphicsStateGuardianBase *gsg, int light_id)=0;
 
   qpGeomNode *get_viz();
 

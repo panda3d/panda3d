@@ -4,7 +4,7 @@
 #begin lib_target
   #define TARGET collide
   #define LOCAL_LIBS \
-    sgmanip light tform sgraphutil gobj graph putil \
+    sgmanip tform sgraphutil gobj graph putil \
     pstatclient
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    

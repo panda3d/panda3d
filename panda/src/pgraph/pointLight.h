@@ -1,4 +1,4 @@
-// Filename: ambientLight.h
+// Filename: pointLight.h
 // Created by:  mike (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,33 +16,61 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef AMBIENTLIGHT_H
-#define AMBIENTLIGHT_H
+#ifndef POINTLIGHT_H
+#define POINTLIGHT_H
 
 #include "pandabase.h"
 
 #include "lightNode.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : AmbientLight
-// Description : A light source that seems to illuminate all points in
-//               space at once.  This kind of light need not actually
-//               be part of the scene graph, since it has no meaningful
-//               position.
+//       Class : PointLight
+// Description : A light originating from a single point in space, and
+//               shining in all directions.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AmbientLight : public LightNode {
+class EXPCL_PANDA PointLight : public LightNode {
 PUBLISHED:
-  AmbientLight(const string &name);
+  PointLight(const string &name);
 
 protected:
-  AmbientLight(const AmbientLight &copy);
+  PointLight(const PointLight &copy);
 
 public:
   virtual PandaNode *make_copy() const;
+  virtual void xform(const LMatrix4f &mat);
   virtual void write(ostream &out, int indent_level) const;
+
+PUBLISHED:
+  INLINE const Colorf &get_specular_color() const;
+  INLINE void set_specular_color(const Colorf &color);
+  
+  INLINE const LVecBase3f &get_attenuation() const;
+  INLINE void set_attenuation(const LVecBase3f &attenuation);
+  
+  INLINE const LPoint3f &get_point() const;
+  INLINE void set_point(const LPoint3f &point);
   
 public:
-  virtual void apply(GraphicsStateGuardian *gsg);
+  virtual void bind(GraphicsStateGuardianBase *gsg, int light_id);
+
+private:
+  // This is the data that must be cycled between pipeline stages.
+  class EXPCL_PANDA CData : public CycleData {
+  public:
+    INLINE CData();
+    INLINE CData(const CData &copy);
+    virtual CycleData *make_copy() const;
+    virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
+    virtual void fillin(DatagramIterator &scan, BamReader *manager);
+
+    Colorf _specular_color;
+    LVecBase3f _attenuation;
+    LPoint3f _point;
+  };
+
+  PipelineCycler<CData> _cycler;
+  typedef CycleDataReader<CData> CDReader;
+  typedef CycleDataWriter<CData> CDWriter;
 
 public:
   static void register_with_read_factory();
@@ -58,7 +86,7 @@ public:
   }
   static void init_type() {
     LightNode::init_type();
-    register_type(_type_handle, "AmbientLight",
+    register_type(_type_handle, "PointLight",
                   LightNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -70,11 +98,11 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const AmbientLight &light) {
+INLINE ostream &operator << (ostream &out, const PointLight &light) {
   light.output(out);
   return out;
 }
 
-#include "ambientLight.I"
+#include "pointLight.I"
 
 #endif

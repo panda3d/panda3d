@@ -1,4 +1,4 @@
-// Filename: directionalLight.cxx
+// Filename: ambientLight.cxx
 // Created by:  mike (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,79 +16,40 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "directionalLight.h"
-#include "graphicsStateGuardian.h"
+#include "ambientLight.h"
 #include "bamWriter.h"
 #include "bamReader.h"
 #include "datagram.h"
 #include "datagramIterator.h"
 
-TypeHandle DirectionalLight::_type_handle;
+TypeHandle AmbientLight::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DirectionalLight::CData::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-CycleData *DirectionalLight::CData::
-make_copy() const {
-  return new CData(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DirectionalLight::CData::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
-void DirectionalLight::CData::
-write_datagram(BamWriter *, Datagram &dg) const {
-  _specular_color.write_datagram(dg);
-  _point.write_datagram(dg);
-  _direction.write_datagram(dg);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DirectionalLight::CData::fillin
-//       Access: Public, Virtual
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new Light.
-////////////////////////////////////////////////////////////////////
-void DirectionalLight::CData::
-fillin(DatagramIterator &scan, BamReader *) {
-  _specular_color.read_datagram(scan);
-  _point.read_datagram(scan);
-  _direction.read_datagram(scan);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DirectionalLight::Constructor
+//     Function: AmbientLight::Constructor
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-DirectionalLight::
-DirectionalLight(const string &name) : 
+AmbientLight::
+AmbientLight(const string &name) : 
   LightNode(name) 
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DirectionalLight::Copy Constructor
+//     Function: AmbientLight::Copy Constructor
 //       Access: Protected
 //  Description: Do not call the copy constructor directly; instead,
 //               use make_copy() or copy_subgraph() to make a copy of
 //               a node.
 ////////////////////////////////////////////////////////////////////
-DirectionalLight::
-DirectionalLight(const DirectionalLight &copy) :
-  LightNode(copy),
-  _cycler(copy._cycler)
+AmbientLight::
+AmbientLight(const AmbientLight &copy) :
+  LightNode(copy)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DirectionalLight::make_copy
+//     Function: AmbientLight::make_copy
 //       Access: Public, Virtual
 //  Description: Returns a newly-allocated PandaNode that is a shallow
 //               copy of this one.  It will be a different pointer,
@@ -96,87 +57,68 @@ DirectionalLight(const DirectionalLight &copy) :
 //               that of the original PandaNode.  No children will be
 //               copied.
 ////////////////////////////////////////////////////////////////////
-PandaNode *DirectionalLight::
+PandaNode *AmbientLight::
 make_copy() const {
-  return new DirectionalLight(*this);
+  return new AmbientLight(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DirectionalLight::xform
-//       Access: Public, Virtual
-//  Description: Transforms the contents of this PandaNode by the
-//               indicated matrix, if it means anything to do so.  For
-//               most kinds of PandaNodes, this does nothing.
-////////////////////////////////////////////////////////////////////
-void DirectionalLight::
-xform(const LMatrix4f &mat) {
-  LightNode::xform(mat);
-  CDWriter cdata(_cycler);
-  cdata->_point = cdata->_point * mat;
-  cdata->_direction = cdata->_direction * mat;
-  mark_viz_stale();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DirectionalLight::write
+//     Function: AmbientLight::write
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DirectionalLight::
+void AmbientLight::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << ":\n";
   indent(out, indent_level + 2)
     << "color " << get_color() << "\n";
-  indent(out, indent_level + 2)
-    << "specular color " << get_specular_color() << "\n";
-  indent(out, indent_level + 2)
-    << "direction " << get_direction() << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DirectionalLight::apply
+//     Function: AmbientLight::bind
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DirectionalLight::
-apply(GraphicsStateGuardian *gsg) {
-  gsg->apply_light(this);
+void AmbientLight::
+bind(GraphicsStateGuardianBase *, int) {
+  // AmbientLights aren't bound to light id's; this function should
+  // never be called.
+  nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DirectionalLight::register_with_read_factory
+//     Function: AmbientLight::register_with_read_factory
 //       Access: Public, Static
 //  Description: Tells the BamReader how to create objects of type
-//               DirectionalLight.
+//               AmbientLight.
 ////////////////////////////////////////////////////////////////////
-void DirectionalLight::
+void AmbientLight::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DirectionalLight::write_datagram
+//     Function: AmbientLight::write_datagram
 //       Access: Public, Virtual
 //  Description: Writes the contents of this object to the datagram
 //               for shipping out to a Bam file.
 ////////////////////////////////////////////////////////////////////
-void DirectionalLight::
+void AmbientLight::
 write_datagram(BamWriter *manager, Datagram &dg) {
   LightNode::write_datagram(manager, dg);
-  manager->write_cdata(dg, _cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DirectionalLight::make_from_bam
+//     Function: AmbientLight::make_from_bam
 //       Access: Protected, Static
 //  Description: This function is called by the BamReader's factory
-//               when a new object of type DirectionalLight is encountered
-//               in the Bam file.  It should create the DirectionalLight
+//               when a new object of type AmbientLight is encountered
+//               in the Bam file.  It should create the AmbientLight
 //               and extract its information from the file.
 ////////////////////////////////////////////////////////////////////
-TypedWritable *DirectionalLight::
+TypedWritable *AmbientLight::
 make_from_bam(const FactoryParams &params) {
-  DirectionalLight *node = new DirectionalLight("");
+  AmbientLight *node = new AmbientLight("");
   DatagramIterator scan;
   BamReader *manager;
 
@@ -187,14 +129,13 @@ make_from_bam(const FactoryParams &params) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DirectionalLight::fillin
+//     Function: AmbientLight::fillin
 //       Access: Protected
 //  Description: This internal function is called by make_from_bam to
 //               read in all of the relevant data from the BamFile for
-//               the new DirectionalLight.
+//               the new AmbientLight.
 ////////////////////////////////////////////////////////////////////
-void DirectionalLight::
+void AmbientLight::
 fillin(DatagramIterator &scan, BamReader *manager) {
   LightNode::fillin(scan, manager);
-  manager->read_cdata(scan, _cycler);
 }

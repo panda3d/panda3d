@@ -21,18 +21,6 @@
 #include <graphicsWindow.h>
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::LightInfo::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE GLGraphicsStateGuardian::LightInfo::
-LightInfo() {
-  _light = (Light *)NULL;
-  _enabled = false;
-  _next_enabled = false;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::activate
 //       Access: Public
 //  Description: Sets this context to be the active context for future
@@ -225,24 +213,6 @@ call_glViewport(GLint x, GLint y, GLsizei width, GLsizei height)
         _viewport_width = width; _viewport_height = height;
         glViewport( x, y, width, height );
     }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::call_glLightModelAmbient
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void GLGraphicsStateGuardian::
-call_glLightModelAmbient( const Colorf& color )
-{
-  if (_lmodel_ambient != color) {
-    _lmodel_ambient = color;
-#ifdef GSG_VERBOSE
-    glgsg_cat.debug()
-      << "glLightModel(GL_LIGHT_MODEL_AMBIENT, " << color << ")" << endl;
-#endif
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, color.get_data());
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -734,32 +704,6 @@ enable_point_smooth(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::enable_lighting
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void GLGraphicsStateGuardian::
-enable_lighting(bool val) {
-  if (_lighting_enabled != val) {
-    _lighting_enabled = val;
-    if (val) {
-#ifdef GSG_VERBOSE
-      glgsg_cat.debug()
-        << "glEnable(GL_LIGHTING)" << endl;
-#endif
-      glEnable(GL_LIGHTING);
-      _lighting_enabled_this_frame = true;
-    } else {
-#ifdef GSG_VERBOSE
-      glgsg_cat.debug()
-        << "glDisable(GL_LIGHTING)" << endl;
-#endif
-      glDisable(GL_LIGHTING);
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::enable_dither
 //       Access:
 //  Description:
@@ -807,35 +751,6 @@ enable_stencil_test(bool val) {
       glDisable(GL_STENCIL_TEST);
     }
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::enable_light
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void GLGraphicsStateGuardian::enable_light(int light, bool val)
-{
-    if ( _light_info[light]._enabled != val )
-    {
-        _light_info[light]._enabled = val;
-        if ( val )
-        {
-#ifdef GSG_VERBOSE
-          glgsg_cat.debug()
-            << "glEnable(GL_LIGHT" << light << ")" << endl;
-#endif
-            glEnable( get_light_id( light ) );
-        }
-        else
-        {
-#ifdef GSG_VERBOSE
-          glgsg_cat.debug()
-            << "glDisable(GL_LIGHT" << light << ")" << endl;
-#endif
-            glDisable( get_light_id( light ) );
-        }
-    }
 }
 
 ////////////////////////////////////////////////////////////////////

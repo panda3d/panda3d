@@ -40,7 +40,6 @@
 #include "cullFaceTransition.h"
 #include "colorTransition.h"
 #include "renderModeTransition.h"
-#include "lightTransition.h"
 #include "transparencyTransition.h"
 #include "textureTransition.h"
 
@@ -280,7 +279,6 @@ add_solid_viz(Node *parent, GeomNode *viz) {
   RenderRelation *arc = new RenderRelation(parent, viz);
   arc->set_transition(new CullFaceTransition(CullFaceProperty::M_cull_clockwise));
   arc->set_transition(new RenderModeTransition(RenderModeProperty::M_filled));
-  arc->set_transition(new LightTransition(LightTransition::all_off()));
   arc->set_transition(new TextureTransition(TextureTransition::off()));
   arc->set_transition(new TransparencyTransition(TransparencyProperty::M_alpha));
 
@@ -303,7 +301,6 @@ add_wireframe_viz(Node *parent, GeomNode *viz) {
   RenderRelation *arc = new RenderRelation(parent, viz);
   arc->set_transition(new CullFaceTransition(CullFaceProperty::M_cull_none));
   arc->set_transition(new RenderModeTransition(RenderModeProperty::M_wireframe));
-  arc->set_transition(new LightTransition(LightTransition::all_off()));
   arc->set_transition(new TextureTransition(TextureTransition::off()));
   arc->set_transition(new TransparencyTransition(TransparencyProperty::M_none));
   float r,g,b;
@@ -353,7 +350,6 @@ add_other_viz(Node *parent, GeomNode *viz) {
   RenderRelation *arc = new RenderRelation(parent, viz);
   arc->set_transition(new CullFaceTransition(CullFaceProperty::M_cull_clockwise));
   arc->set_transition(new RenderModeTransition(RenderModeProperty::M_filled));
-  arc->set_transition(new LightTransition(LightTransition::all_off()));
   arc->set_transition(new TextureTransition(TextureTransition::off()));
   arc->set_transition(new TransparencyTransition(TransparencyProperty::M_alpha));
 

@@ -208,11 +208,6 @@ public:
   virtual void apply_material(const Material *material)=0;
   virtual void apply_fog(Fog *fog)=0;
 
-  virtual void apply_light(PointLight *light)=0;
-  virtual void apply_light(DirectionalLight *light)=0;
-  virtual void apply_light(Spotlight *light)=0;
-  virtual void apply_light(AmbientLight *light)=0;
-
   virtual void issue_transform(const TransformTransition *) { }
   virtual void issue_color_transform(const ColorMatrixTransition *) { }
   virtual void issue_alpha_transform(const AlphaTransformTransition *) { }
@@ -257,6 +252,10 @@ public:
   virtual void issue_tex_gen(const TexGenAttrib *) { }
   virtual void issue_stencil(const StencilAttrib *) { }
   virtual void issue_clip_plane(const ClipPlaneAttrib *) { }
+
+  virtual void bind_light(PointLight *light, int light_id) { }
+  virtual void bind_light(DirectionalLight *light, int light_id) { }
+  virtual void bind_light(Spotlight *light, int light_id) { }
 
 PUBLISHED:
   static TypeHandle get_class_type() {

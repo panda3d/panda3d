@@ -7,7 +7,7 @@
 #begin lib_target
   #define TARGET dxgsg8
   #define LOCAL_LIBS \
-    cull gsgmisc gsgbase gobj sgattrib sgraphutil graph display light \
+    cull gsgmisc gsgbase gobj sgattrib sgraphutil graph display \
     putil linmath sgraph mathutil pnmimage event
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx     

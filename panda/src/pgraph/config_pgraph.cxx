@@ -18,6 +18,7 @@
 
 #include "config_pgraph.h"
 
+#include "ambientLight.h"
 #include "billboardEffect.h"
 #include "qpcamera.h"
 #include "colorAttrib.h"
@@ -34,10 +35,15 @@
 #include "depthOffsetAttrib.h"
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
+#include "directionalLight.h"
 #include "qpfog.h"
 #include "fogAttrib.h"
 #include "qpgeomNode.h"
 #include "qplensNode.h"
+#include "light.h"
+#include "lightAttrib.h"
+#include "lightLensNode.h"
+#include "lightNode.h"
 #include "qplodNode.h"
 #include "materialAttrib.h"
 #include "qpmodelNode.h"
@@ -45,6 +51,7 @@
 #include "qpnodePath.h"
 #include "qpnodePathComponent.h"
 #include "pandaNode.h"
+#include "pointLight.h"
 #include "renderAttrib.h"
 #include "renderEffect.h"
 #include "renderEffects.h"
@@ -53,6 +60,7 @@
 #include "selectiveChildNode.h"
 #include "qpsequenceNode.h"
 #include "showBoundsEffect.h"
+#include "spotlight.h"
 #include "texMatrixAttrib.h"
 #include "textureApplyAttrib.h"
 #include "textureAttrib.h"
@@ -95,6 +103,7 @@ init_libpgraph() {
   }
   initialized = true;
 
+  AmbientLight::init_type();
   BillboardEffect::init_type();
   qpCamera::init_type();
   ColorAttrib::init_type();
@@ -111,10 +120,15 @@ init_libpgraph() {
   DepthOffsetAttrib::init_type();
   DepthTestAttrib::init_type();
   DepthWriteAttrib::init_type();
+  DirectionalLight::init_type();
   qpFog::init_type();
   FogAttrib::init_type();
   qpGeomNode::init_type();
   qpLensNode::init_type();
+  Light::init_type();
+  LightAttrib::init_type();
+  LightLensNode::init_type();
+  LightNode::init_type();
   qpLODNode::init_type();
   MaterialAttrib::init_type();
   qpModelNode::init_type();
@@ -122,6 +136,7 @@ init_libpgraph() {
   qpNodePath::init_type();
   qpNodePathComponent::init_type();
   PandaNode::init_type();
+  PointLight::init_type();
   RenderAttrib::init_type();
   RenderEffect::init_type();
   RenderEffects::init_type();
@@ -130,6 +145,7 @@ init_libpgraph() {
   SelectiveChildNode::init_type();
   qpSequenceNode::init_type();
   ShowBoundsEffect::init_type();
+  Spotlight::init_type();
   TexMatrixAttrib::init_type();
   TextureApplyAttrib::init_type();
   TextureAttrib::init_type();
@@ -144,6 +160,7 @@ init_libpgraph() {
   qpColorLerpFunctor::init_type();
   qpColorScaleLerpFunctor::init_type();
 
+  AmbientLight::register_with_read_factory();
   BillboardEffect::register_with_read_factory();
   qpCamera::register_with_read_factory();
   ColorAttrib::register_with_read_factory();
@@ -155,20 +172,24 @@ init_libpgraph() {
   DepthOffsetAttrib::register_with_read_factory();
   DepthTestAttrib::register_with_read_factory();
   DepthWriteAttrib::register_with_read_factory();
+  DirectionalLight::register_with_read_factory();
   qpFog::register_with_read_factory();
   FogAttrib::register_with_read_factory();
   qpGeomNode::register_with_read_factory();
   qpLensNode::register_with_read_factory();
+  LightAttrib::register_with_read_factory();
   qpLODNode::register_with_read_factory();
-  MaterialAttrib::register_with_read_factory();
+  MaterialAttrib::register_with_read_factory();  
   qpModelNode::register_with_read_factory();
   qpModelRoot::register_with_read_factory();
   PandaNode::register_with_read_factory();
+  PointLight::register_with_read_factory();
   RenderEffects::register_with_read_factory();
   RenderModeAttrib::register_with_read_factory();
   RenderState::register_with_read_factory();
   qpSequenceNode::register_with_read_factory();
   ShowBoundsEffect::register_with_read_factory();
+  Spotlight::register_with_read_factory();
   TexMatrixAttrib::register_with_read_factory();
   TextureApplyAttrib::register_with_read_factory();
   TextureAttrib::register_with_read_factory();
