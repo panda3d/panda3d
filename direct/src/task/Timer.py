@@ -60,6 +60,11 @@ class Timer:
 	"""
 	self.finalT = t
 
+    def getT(self):
+	""" getT()
+	"""
+	return (self.finalT - self.currT)
+
     def __timerTask(self, task):
 	t = self.clock.getFrameTime()
  	te = t - self.startT 		
