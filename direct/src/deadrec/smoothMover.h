@@ -104,6 +104,9 @@ PUBLISHED:
   INLINE static void set_delay(double delay); 
   INLINE static double get_delay(); 
 
+  INLINE static void set_max_position_age(double age); 
+  INLINE static double get_max_position_age(); 
+
   void output(ostream &out) const;
   void write(ostream &out) const;
 
@@ -137,6 +140,7 @@ private:
   static SmoothMode _smooth_mode;
   static PredictionMode _prediction_mode;
   static double _delay;
+  static double _max_position_age;
 };
 
 #include "smoothMover.I"

@@ -23,6 +23,7 @@
 SmoothMover::SmoothMode SmoothMover::_smooth_mode = SmoothMover::SM_off;
 SmoothMover::PredictionMode SmoothMover::_prediction_mode = SmoothMover::PM_off;
 double SmoothMover::_delay = 0.0;
+double SmoothMover::_max_position_age = 0.2;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SmoothMover::Constructor
@@ -101,7 +102,11 @@ void SmoothMover::
 compute_smooth_position(double timestamp) {
   if (_smooth_mode == SM_off || _points.empty()) {
     // With smoothing disabled, or with no position reports available,
-    // this function does nothing.
+    // this function does nothing, except to ensure that any old bogus
+    // position reports are cleared.
+    while (!_points.empty()) {
+      _points.pop_front();
+    }
     return;
   }
 
@@ -155,12 +160,36 @@ compute_smooth_position(double timestamp) {
 
   } else {
     // If we have two points, we can linearly interpolate between them.
-    const SamplePoint &point_b = _points[point_before];
+    SamplePoint &point_b = _points[point_before];
     const SamplePoint &point_a = _points[point_after];
 
-    double t = (timestamp - timestamp_before) / (timestamp_after - timestamp_before);
+    double age = (timestamp_after - timestamp_before);
+    if (age > _max_position_age) {
+      // If the first point is too old, assume there were a lot of
+      // implicit standing still messages that weren't sent.  Reset
+      // the first point to be timestamp_after - max_position_age.
+      timestamp_before = min(timestamp, timestamp_after - _max_position_age);
+      point_b._timestamp = timestamp_before;
+      age = (timestamp_after - timestamp_before);
+    }
+
+    double t = (timestamp - timestamp_before) / age;
     _smooth_pos = point_b._pos + t * (point_a._pos - point_b._pos);
-    _smooth_hpr = point_b._hpr + t * (point_a._hpr - point_b._hpr);
+
+    // To interpolate the hpr's, we must first make sure that both
+    // angles are on the same side of the discontinuity.
+    LVecBase3f a_hpr = point_a._hpr;
+    LVecBase3f b_hpr = point_b._hpr;
+
+    for (int j = 0; j < 3; j++) {
+      if ((a_hpr[j] - b_hpr[j]) > 180.0) {
+        a_hpr[j] -= 360.0;
+      } else if ((a_hpr[j] - b_hpr[j]) < -180.0) {
+        a_hpr[j] += 360.0;
+      }
+    }
+
+    _smooth_hpr = b_hpr + t * (a_hpr - b_hpr);
     _computed_smooth_mat = false;
   }
 

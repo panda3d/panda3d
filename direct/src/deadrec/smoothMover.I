@@ -337,3 +337,27 @@ INLINE double SmoothMover::
 get_delay() {
   return _delay;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::set_max_position_age
+//       Access: Published, Static
+//  Description: Sets the maximum amount of time a position is allowed
+//               to remain unchanged before assuming it represents the
+//               avatar actually standing still.
+////////////////////////////////////////////////////////////////////
+INLINE void SmoothMover::
+set_max_position_age(double age) {
+  _max_position_age = age;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::get_max_position_age
+//       Access: Published, Static
+//  Description: Returns the maximum amount of time a position is
+//               allowed to remain unchanged before assuming it
+//               represents the avatar actually standing still.
+////////////////////////////////////////////////////////////////////
+INLINE double SmoothMover::
+get_max_position_age() {
+  return _max_position_age;
+}
