@@ -315,6 +315,8 @@
   $[IF_IPC_SOURCES] \
   $[IF_NET_SOURCES] \
   $[IF_PYTHON_SOURCES]
+  
+#defer included_sources $[INCLUDED_SOURCES]
 
 // This variable returns the set of sources that are to be
 // interrogated for the current target.
