@@ -7,10 +7,14 @@
   #define TARGET wgldisplay
   #define LOCAL_LIBS \
     glgsg display putil
+    
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
 
   #define SOURCES \
-    config_wgldisplay.cxx config_wgldisplay.h wglGraphicsPipe.cxx \
-    wglGraphicsPipe.h wglGraphicsWindow.cxx wglGraphicsWindow.h
+    config_wgldisplay.h wglGraphicsPipe.h wglGraphicsWindow.cxx wglGraphicsWindow.h
+    
+  #define INCLUDED_SOURCES \
+    config_wgldisplay.cxx wglGraphicsPipe.cxx
 
   #define INSTALL_HEADERS \
      config_wgldisplay.h wglGraphicsPipe.h wglGraphicsWindow.h
