@@ -1196,10 +1196,8 @@ class Actor(PandaObject, NodePath):
             else:
                 partNames = [partName]
             # loop over all parts
-            #animLengths = {}
             for thisPart in partNames:
                 ac = self.__bindAnimToPart(animName, thisPart, thisLod)
-                #animLengths[partName] = ac.getNumFrames()
             
             
     def __bindAnimToPart(self, animName, partName, lodName):
