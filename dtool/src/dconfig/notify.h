@@ -110,12 +110,33 @@ private:
 // the following block of code (like an if statement) if the assertion
 // fails.
 
+// nassertr_always() and nassertv_always() are like nassertr() and
+// nassertv(), except that they will not get completely compiled out
+// if NDEBUG is set.  Instead, they will quietly return from the
+// function.  These macros are appropriate, for instance, for sanity
+// checking user input parameters, where optimal performance is not
+// paramount.
+
 #ifdef NDEBUG
 
 #define nassertr(condition, return_value)  
 #define nassertv(condition)
 #define nassertd(condition) if (false)
 // We trust the compiler to optimize the above out.
+
+#define nassertr_always(condition, return_value) \
+  { \
+    if (!(condition)) { \
+      return return_value; \
+    } \
+  }
+
+#define nassertv_always(condition) \
+  { \
+    if (!(condition)) { \
+      return; \
+    } \
+  }
 
 #else   // NDEBUG
 
@@ -140,6 +161,10 @@ private:
 #define nassertd(condition) \
   if (!(condition) && \
       Notify::ptr()->assert_failure(#condition, __LINE__, __FILE__))
+
+#define nassertr_always(condition, return_value) nassertr(condition, return_value)
+#define nassertv_always(condition) nassertv(condition)
+
 
 #endif  // NDEBUG
 

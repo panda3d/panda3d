@@ -721,8 +721,8 @@ repair_connectivity(const NodePath &top) {
 void NodePath::
 reparent_to(const NodePath &other, int sort) {
   nassertv(other.verify_connectivity());
-  nassertv(has_arcs());
-  nassertv(!other.is_empty());
+  nassertv_always(has_arcs());
+  nassertv_always(!other.is_empty());
 
   NodeRelation *darc = arc();
   darc->change_parent(other.node(), sort);
@@ -745,8 +745,8 @@ reparent_to(const NodePath &other, int sort) {
 void NodePath::
 wrt_reparent_to(const NodePath &other, int sort) {
   nassertv(other.verify_connectivity());
-  nassertv(has_arcs());
-  nassertv(!other.is_empty());
+  nassertv_always(has_arcs());
+  nassertv_always(!other.is_empty());
 
   LMatrix4f mat = get_mat(other);
   set_mat(mat);
@@ -886,7 +886,7 @@ attach_new_node(Node *dnode, int sort) const {
 void NodePath::
 remove_node() {
   nassertv(verify_connectivity());
-  nassertv(has_arcs());
+  nassertv_always(has_arcs());
 
   PT_NodeRelation darc = arc();
 
@@ -989,7 +989,7 @@ get_net_transitions() const {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 analyze() const {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   SceneGraphAnalyzer sga(_graph_type);
   sga.add_node(node());
   sga.write(nout);
@@ -1300,7 +1300,7 @@ get_scale() const {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_color_scale(const LVecBase4f &sv4) {
-  nassertv(has_arcs());
+  nassertv_always(has_arcs());
 
 #ifndef NDEBUG
   if (_graph_type == DataRelation::get_class_type()) {
@@ -1406,7 +1406,7 @@ set_pos_hpr_scale(const LVecBase3f &pos, const LVecBase3f &hpr,
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_mat(const LMatrix4f &mat) {
-  nassertv(has_arcs());
+  nassertv_always(has_arcs());
 
 #ifndef NDEBUG
   if (_graph_type == DataRelation::get_class_type()) {
@@ -1661,7 +1661,7 @@ set_pos_hpr_scale(const NodePath &other,
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_mat(const NodePath &other, const LMatrix4f &mat) {
-  nassertv(has_arcs());
+  nassertv_always(has_arcs());
 
 #ifndef NDEBUG
   if (_graph_type == DataRelation::get_class_type()) {
@@ -1785,7 +1785,7 @@ heads_up(const NodePath &other, const LPoint3f &point, const LVector3f &up) {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_color(const Colorf &color, int priority) {
-  nassertv(has_arcs());
+  nassertv_always(has_arcs());
 
   ColorTransition *col_trans = new ColorTransition(color);
   arc()->set_transition(col_trans, priority);
@@ -1803,7 +1803,7 @@ set_color(const Colorf &color, int priority) {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_color_off(int priority) {
-  nassertv(has_arcs());
+  nassertv_always(has_arcs());
 
   ColorTransition *col_trans = 
     new ColorTransition(ColorTransition::off());
@@ -1859,7 +1859,7 @@ get_color() const {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_bin(const string &bin_name, int draw_order, int priority) {
-  nassertv(has_arcs());
+  nassertv_always(has_arcs());
 
   GeomBinTransition *bin_trans = new GeomBinTransition(bin_name, draw_order);
   arc()->set_transition(bin_trans, priority);
@@ -1916,7 +1916,7 @@ get_bin_draw_order() const {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_texture(Texture *tex, int priority) {
-  nassertv(has_arcs());
+  nassertv_always(has_arcs());
   nassertv(tex != NULL);
 
   TextureTransition *tex_trans = new TextureTransition(tex);
@@ -1935,7 +1935,7 @@ set_texture(Texture *tex, int priority) {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_texture_off(int priority) {
-  nassertv(has_arcs());
+  nassertv_always(has_arcs());
 
   TextureTransition *tex_trans = 
     new TextureTransition(TextureTransition::off());
@@ -2021,7 +2021,7 @@ get_texture() const {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_material(Material *mat, int priority) {
-  nassertv(has_arcs());
+  nassertv_always(has_arcs());
   nassertv(mat != NULL);
 
   // We create a temporary Material pointer, a copy of the one we are
@@ -2089,7 +2089,7 @@ get_material() const {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_fog(Fog *fog, int priority) {
-  nassertv(has_arcs());
+  nassertv_always(has_arcs());
   nassertv(fog != NULL);
 
   FogTransition *fog_trans = new FogTransition(fog);
@@ -2108,7 +2108,7 @@ set_fog(Fog *fog, int priority) {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_fog_off(int priority) {
-  nassertv(has_arcs());
+  nassertv_always(has_arcs());
 
   FogTransition *fog_trans = 
     new FogTransition(FogTransition::off());
@@ -2190,7 +2190,7 @@ get_fog() const {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_render_mode_wireframe(int priority) {
-  nassertv(has_arcs());
+  nassertv_always(has_arcs());
 
   arc()->set_transition(new RenderModeTransition(RenderModeProperty::M_wireframe), priority);
 }
@@ -2204,7 +2204,7 @@ set_render_mode_wireframe(int priority) {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_render_mode_filled(int priority) {
-  nassertv(has_arcs());
+  nassertv_always(has_arcs());
 
   RenderModeTransition *rmt =
     new RenderModeTransition(RenderModeProperty::M_filled);
@@ -2222,7 +2222,7 @@ set_render_mode_filled(int priority) {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_two_sided(bool two_sided, int priority) {
-  nassertv(has_arcs());
+  nassertv_always(has_arcs());
 
   CullFaceProperty::Mode mode =
     two_sided ? 
@@ -2265,7 +2265,7 @@ get_two_sided() const {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_transparency(bool transparency, int priority) {
-  nassertv(has_arcs());
+  nassertv_always(has_arcs());
 
   TransparencyProperty::Mode mode =
     transparency ? 
@@ -2366,7 +2366,7 @@ get_stashed_ancestor() const {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 prepare_scene(GraphicsStateGuardianBase *gsg) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
 
   // Use the ScenePrepareVisitor and fire off a traversal of the scene
   // beginning at the bottom node.  The ScenePrepareVisitor (defined
@@ -2391,7 +2391,7 @@ prepare_scene(GraphicsStateGuardianBase *gsg) {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 show_bounds() {
-  nassertv(has_arcs());
+  nassertv_always(has_arcs());
   arc()->set_transition(new DrawBoundsTransition);
 }
 
@@ -2403,7 +2403,7 @@ show_bounds() {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 hide_bounds() {
-  nassertv(has_arcs());
+  nassertv_always(has_arcs());
   arc()->clear_transition(DrawBoundsTransition::get_class_type());
 }
 
