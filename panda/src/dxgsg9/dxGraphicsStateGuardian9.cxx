@@ -589,7 +589,6 @@ dx_init(void) {
 #ifdef COUNT_DRAWPRIMS
      global_pD3DDevice = pDevice;
 #endif
-    _pCurrentGeomContext = NULL;
     _bDrawPrimDoSetupVertexBuffer = false;
 
     _last_testcooplevel_result = D3D_OK;
@@ -1298,16 +1297,6 @@ typedef enum {
     FlatVerts,IndexedVerts,MixedFmtVerts
 } GeomVertFormat;
 
-#define COPYVERTDATA_2_VERTEXBUFFER(PrimType,NumVertices) {                                     \
-            DWORD numVertBytes=_pCurFvfBufPtr-_pFvfBufBasePtr;                                  \
-            memcpy(_pCurrentGeomContext->_pEndofVertData,_pFvfBufBasePtr,numVertBytes);         \
-            DPInfo dpInfo;                                                                      \
-            dpInfo.nVerts=NumVertices;                                                          \
-            dpInfo.primtype=PrimType;                                                           \
-            _pCurrentGeomContext->_PrimInfo.push_back(dpInfo);                                  \
-            _pCurrentGeomContext->_num_verts+=dpInfo.nVerts;                                    \
-            _pCurrentGeomContext->_pEndofVertData+=numVertBytes; }
-
 
 INLINE void DXGraphicsStateGuardian9::
 transform_color(Colorf &InColor,D3DCOLOR &OutRGBAColor) {
@@ -1626,13 +1615,8 @@ draw_point(GeomPoint *geom, GeomContext *gc) {
         // iterate through the point
         draw_prim_inner_loop(nPrims, geom, _perVertex | _perPrim);
 
-        if(!_bDrawPrimDoSetupVertexBuffer) {
-           HRESULT hr = _pD3DDevice->DrawPrimitiveUP(D3DPT_POINTLIST, nPrims, _pFvfBufBasePtr, vertex_size);
-           TestDrawPrimFailure(DrawPrim,hr,_pD3DDevice,nPrims,0);
-        } else {
-            COPYVERTDATA_2_VERTEXBUFFER(D3DPT_POINTLIST,nPrims);
-        }
-
+        HRESULT hr = _pD3DDevice->DrawPrimitiveUP(D3DPT_POINTLIST, nPrims, _pFvfBufBasePtr, vertex_size);
+        TestDrawPrimFailure(DrawPrim,hr,_pD3DDevice,nPrims,0);
 
     _pCurFvfBufPtr = NULL;
 }
@@ -1722,19 +1706,15 @@ draw_line(GeomLine* geom, GeomContext *gc) {
 
     DWORD nVerts = nPrims<<1;
 
-    if(!_bDrawPrimDoSetupVertexBuffer) {
-        if (_tmp_fvfOverrunBuf == NULL) {
-            nassertv((nVerts*vertex_size) == (_pCurFvfBufPtr-_pFvfBufBasePtr));
-            hr = _pD3DDevice->DrawPrimitiveUP(D3DPT_LINELIST, nPrims, _pFvfBufBasePtr, vertex_size);
-        } else {
-            nassertv((nVerts*vertex_size) == (_pCurFvfBufPtr-_tmp_fvfOverrunBuf));
-            hr = _pD3DDevice->DrawPrimitiveUP(D3DPT_LINELIST, nPrims, _tmp_fvfOverrunBuf, vertex_size);
-            delete [] _tmp_fvfOverrunBuf;
-        }
-        TestDrawPrimFailure(DrawPrim,hr,_pD3DDevice,nVerts,0);
+    if (_tmp_fvfOverrunBuf == NULL) {
+      nassertv((nVerts*vertex_size) == (_pCurFvfBufPtr-_pFvfBufBasePtr));
+      hr = _pD3DDevice->DrawPrimitiveUP(D3DPT_LINELIST, nPrims, _pFvfBufBasePtr, vertex_size);
     } else {
-        COPYVERTDATA_2_VERTEXBUFFER(D3DPT_LINELIST,nVerts);
+      nassertv((nVerts*vertex_size) == (_pCurFvfBufPtr-_tmp_fvfOverrunBuf));
+      hr = _pD3DDevice->DrawPrimitiveUP(D3DPT_LINELIST, nPrims, _tmp_fvfOverrunBuf, vertex_size);
+      delete [] _tmp_fvfOverrunBuf;
     }
+    TestDrawPrimFailure(DrawPrim,hr,_pD3DDevice,nVerts,0);
 
     _pCurFvfBufPtr = NULL;
 }
@@ -1845,12 +1825,8 @@ draw_linestrip_base(Geom* geom, GeomContext *gc, bool bConnectEnds) {
 
         nassertv((nVerts*vertex_size) == (_pCurFvfBufPtr-_pFvfBufBasePtr));
 
-        if(!_bDrawPrimDoSetupVertexBuffer) {
-            HRESULT hr = _pD3DDevice->DrawPrimitiveUP(D3DPT_LINESTRIP, nVerts-1, _pFvfBufBasePtr, vertex_size);
-            TestDrawPrimFailure(DrawPrim,hr,_pD3DDevice,nVerts,0);
-        } else {
-            COPYVERTDATA_2_VERTEXBUFFER(D3DPT_LINESTRIP,nVerts);
-        }
+        HRESULT hr = _pD3DDevice->DrawPrimitiveUP(D3DPT_LINESTRIP, nVerts-1, _pFvfBufBasePtr, vertex_size);
+        TestDrawPrimFailure(DrawPrim,hr,_pD3DDevice,nVerts,0);
 
         _pCurFvfBufPtr = NULL;
     }
@@ -2418,12 +2394,8 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
 
     nassertv((nVerts*vertex_size) == (_pCurFvfBufPtr-_pFvfBufBasePtr));
     
-    if(!_bDrawPrimDoSetupVertexBuffer) {
-      hr = _pD3DDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, nPrims, _pFvfBufBasePtr, vertex_size);
-      TestDrawPrimFailure(DrawPrim,hr,_pD3DDevice,nVerts,nPrims);
-    } else {
-      COPYVERTDATA_2_VERTEXBUFFER(D3DPT_TRIANGLELIST,nVerts);
-    }
+    hr = _pD3DDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, nPrims, _pFvfBufBasePtr, vertex_size);
+    TestDrawPrimFailure(DrawPrim,hr,_pD3DDevice,nVerts,nPrims);
     
     _pCurFvfBufPtr = NULL;
     
@@ -2655,12 +2627,8 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
             assert((nVerts*vertex_size) == (_pCurFvfBufPtr-_pFvfBufBasePtr));
             DWORD numTris=nVerts-2;
 
-            if(!_bDrawPrimDoSetupVertexBuffer) {
-                hr = _pD3DDevice->DrawPrimitiveUP(trilisttype, numTris, _pFvfBufBasePtr, vertex_size);
-                TestDrawPrimFailure(DrawPrim,hr,_pD3DDevice,nVerts,numTris);
-            } else {
-                COPYVERTDATA_2_VERTEXBUFFER(trilisttype,nVerts);
-            }
+            hr = _pD3DDevice->DrawPrimitiveUP(trilisttype, numTris, _pFvfBufBasePtr, vertex_size);
+            TestDrawPrimFailure(DrawPrim,hr,_pD3DDevice,nVerts,numTris);
 
             _pCurFvfBufPtr = NULL;
         }
