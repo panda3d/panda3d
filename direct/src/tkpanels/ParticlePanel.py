@@ -724,7 +724,7 @@ class ParticlePanel(AppShell):
 
     def createEntryScale(self, parent, category, text, balloonHelp,
                          command = None, min = 0.0, max = 1.0,
-                         resolution = None, **kw):
+                         resolution = 0.001, **kw):
         kw['text'] = text
         kw['min'] = min
         kw['max'] = max

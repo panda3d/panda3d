@@ -282,6 +282,28 @@ class MopathRecorder(AppShell, PandaObject):
                                    side = LEFT, expand = 1)
         widget['font'] = (('MSSansSerif', 12, 'bold'))
         frame.pack(fill = X, expand = 1)
+
+        # Record button
+        frame = Frame(playbackFrame)
+        widget = self.createCheckbutton(
+            frame, 'Recording', 'Record',
+            'On: path is being recorded', self.toggleRecord, 0,
+            side = LEFT, fill = BOTH, expand = 1)
+        widget.configure(foreground = 'Red', relief = RAISED, borderwidth = 2,
+                         anchor = CENTER, width = 16)
+        widget = self.createButton(frame, 'Recording', 'Add Key Frame',
+                                   'Add Keyframe To Current Path',
+                                   self.addKeyframe,
+                                   side = LEFT, expand = 1)
+        widget.configure(state = 'disabled')
+        widget = self.createCheckbutton(
+            frame, 'Refine Page', 'Refining Path',
+            ('On: Next record session refines current path ' +
+             'Off: Next record session records a new path'),
+            self.toggleRefine, 0,
+            side = LEFT, expand = 0)
+        frame.pack(expand = 1, fill = X)
+        
         playbackFrame.pack(fill = X, pady = 2)
 
         # Create notebook pages
@@ -295,15 +317,15 @@ class MopathRecorder(AppShell, PandaObject):
         ## RECORD PAGE ##
         recordFrame = Frame(self.recordPage, relief = SUNKEN,
                             borderwidth = 2)
-        label = Label(recordFrame, text = 'RECORD PATH',
+        label = Label(recordFrame, text = 'RECORDING OPTIONS',
                       font=('MSSansSerif', 12, 'bold'))
         label.pack(fill = X)
         # Recording Buttons
         # Record node path
-        self.gridFrame = Frame(recordFrame)        
+        frame = Frame(recordFrame)        
         self.recNodePathMenu = Pmw.ComboBox(
-            self.gridFrame, labelpos = W, label_text = 'Record Node Path:',
-            entry_width = 20,
+            frame, labelpos = W, label_text = 'Record Node Path:',
+            label_width = 16, label_anchor = W, entry_width = 20, 
             selectioncommand = self.selectRecordNodePathNamed,
             scrolledlist_items = self.recNodePathNames)
         self.recNodePathMenu.selectitem('camera')
@@ -311,81 +333,65 @@ class MopathRecorder(AppShell, PandaObject):
             self.recNodePathMenu.component('entryfield_entry'))
         self.recNodePathMenuBG = (
             self.recNodePathMenuEntry.configure('background')[3])
-        self.recNodePathMenu.grid(row = 0, col = 0, sticky = NSEW)
         self.bind(self.recNodePathMenu,
                   'Select node path to track when recording a new curve')
+        self.recNodePathMenu.pack(side = LEFT, expand = 0)
+        frame.pack(expand = 1, fill = X)
+
+        # Hooks
+        frame = Frame(recordFrame)
+        widget = self.createLabeledEntry(
+            frame, 'Recording', 'Record Hook',
+            'Hook used to start/stop recording',
+            initialValue = self.startStopHook,
+            command = self.setStartStopHook)[0]
+        label = self.getWidget('Recording', 'Record Hook-Label')
+        label.configure(width = 16, anchor = W)
+        self.setStartStopHook()
+        widget = self.createLabeledEntry(
+            frame, 'Recording', 'Keyframe Hook',
+            'Hook used to add a new keyframe',
+            initialValue = self.keyframeHook,
+            command = self.setKeyframeHook)[0]
+        label = self.getWidget('Recording', 'Keyframe Hook-Label')
+        label.configure(width = 16, anchor = W)
+        self.setKeyframeHook()
+        frame.pack(expand = 1, fill = X)
+        # PreRecordFunc
+        frame = Frame(recordFrame)
+        widget = self.createLabeledEntry(
+            frame, 'Recording', 'Pre Record Func',
+            'Function called before recording each point',
+            command = self.setPreRecordFunc)[0]
+        label = self.getWidget('Recording', 'Pre Record Func-Label')
+        label.configure(width = 16, anchor = W)
+        self.createCheckbutton(frame, 'Recording', 'PRF Active',
+                               'On: Pre Record Func enabled',
+                               None, 0,
+                               side = LEFT, fill = BOTH, expand = 0)
+        frame.pack(expand = 1, fill = X)
+
         # Record type
+        frame = Frame(recordFrame)
         self.recordType = StringVar()
         self.recordType.set('Continuous')
         widget = self.createRadiobutton(
-            self.gridFrame, 'left',
+            frame, 'left',
             'Recording', 'Continuous Recording',
             ('New point added to curve fitter every frame'),
             self.recordType, 'Continuous', self.setRecordType,
             expand = 1)
         widget['anchor'] = 'center'
-        widget.pack_forget()
-        widget.grid(row = 1, col = 0, sticky = NSEW)
         widget = self.createRadiobutton(
-            self.gridFrame, 'left',
+            frame, 'left',
             'Recording', 'Keyframe Recording',
             ('Add new point to curve fitter by pressing keyframe button'),
             self.recordType, 'Keyframe', self.setRecordType,
             expand = 1)
         widget['anchor'] = 'center'
-        widget.pack_forget()
-        widget.grid(row = 1, col = 1, sticky = NSEW)
-        # Record button
-        widget = self.createCheckbutton(
-            self.gridFrame, 'Recording', 'Recording Path',
-            'On: path is being recorded', self.toggleRecord, 0,
-            side = LEFT, fill = BOTH, expand = 1)
-        widget.pack_forget()
-        widget.grid(row=2, column=0, sticky = NSEW)
-        widget.configure(foreground = 'Red', relief = RAISED, borderwidth = 2,
-                         anchor = CENTER, width = 10)
-        widget = self.createButton(self.gridFrame, 'Recording', 'Add Key Frame',
-                                   'Add Keyframe To Current Path',
-                                   self.addKeyframe,
-                                   side = LEFT, expand = 1)
-        widget.configure(state = 'disabled', width = 24)
-        widget.pack_forget()
-        widget.grid(row=2, column=1, sticky = NSEW)
-        # Keyframe button
-        # Hook
-        widget = self.createLabeledEntry(
-            self.gridFrame, 'Recording', 'Record Hook',
-            'Hook used to start/stop recording',
-            initialValue = self.startStopHook,
-            command = self.setStartStopHook)[0]
-        self.setStartStopHook()
-        widget.pack_forget()
-        widget.grid(row=3, column=0, sticky = NSEW)
-        widget = self.createLabeledEntry(
-            self.gridFrame, 'Recording', 'Keyframe Hook',
-            'Hook used to add a new keyframe',
-            initialValue = self.keyframeHook,
-            command = self.setKeyframeHook)[0]
-        self.setKeyframeHook()
-        widget.pack_forget()
-        widget.grid(row=3, column=1, sticky = NSEW)
-        # PreRecordFunc
-        frame = Frame(self.gridFrame)
-        widget = self.createLabeledEntry(
-            frame, 'Recording', 'Pre Record Func',
-            'Function called before recording each point',
-            command = self.setPreRecordFunc)[0]
-        self.createCheckbutton(frame, 'Recording', 'PRF Active',
-                               'On: Pre Record Func enabled',
-                               None, 0,
-                               side = LEFT, fill = BOTH, expand = 0)
-        frame.grid(row=4, column=0, columnspan = 2, sticky = NSEW)
-        
-        # Pack gridFrame
-        self.gridFrame.pack(fill = X, expand = 1)
-        
-        # This gets the widgets to spread out
-        self.gridFrame.grid_columnconfigure(1,weight = 1)
+        frame.pack(expand = 1, fill = X)
+
+        # Pack record frame
         recordFrame.pack(fill = X, pady = 2)
 
         ## RESAMPLE PAGE
@@ -429,15 +435,6 @@ class MopathRecorder(AppShell, PandaObject):
         label = Label(refineFrame, text = 'REFINE CURVE',
                       font=('MSSansSerif', 12, 'bold'))
         label.pack(fill = X)
-
-        frame = Frame(refineFrame)
-        widget = self.createCheckbutton(
-            frame, 'Refine Page', 'Refining Path',
-            ('On: Next record session refines current path ' +
-             'Off: Next record session records a new path'),
-            self.toggleRefine, 0,
-            side = LEFT, expand = 0)
-        frame.pack(expand = 1, fill = X)
 
         widget = self.createEntryScale(refineFrame,
                                        'Refine Page', 'Refine From',
@@ -625,14 +622,14 @@ class MopathRecorder(AppShell, PandaObject):
 
     def toggleRecordVar(self):
         # Get recording variable
-        v = self.getVariable('Recording', 'Recording Path')
+        v = self.getVariable('Recording', 'Record')
         # Toggle it
         v.set(1 - v.get())
         # Call the command
         self.toggleRecord()
 
     def toggleRecord(self):
-        if self.getVariable('Recording', 'Recording Path').get():
+        if self.getVariable('Recording', 'Record').get():
             # Kill old task
             taskMgr.removeTasksNamed(self['name'] + '-recordTask')
             # Reset curve fitters
@@ -670,7 +667,8 @@ class MopathRecorder(AppShell, PandaObject):
                 # Add hook
                 self.acceptKeyframeHook()
                 # Record first point
-                self.startPos = self['nodePath'].getPos(self.nodePathParent)
+                self.startPos = Point3(
+                    self['nodePath'].getPos(self.nodePathParent))
                 self.recordPoint(0.0)
 
             # Don't want to change record modes
@@ -684,7 +682,7 @@ class MopathRecorder(AppShell, PandaObject):
                 taskMgr.removeTasksNamed(self['name'] + '-recordTask')
             else:
                 # Add last point
-                self.addKeyframe()
+                self.addKeyframe(0)
                 # Ignore hook
                 self.ignoreKeyframeHook()
             if self.fRefine:
@@ -713,11 +711,17 @@ class MopathRecorder(AppShell, PandaObject):
         self.recordPoint(time)
         return Task.cont
 
-    def addKeyframe(self):
-        time = (self.refineStart +
-                (Vec3(self['nodePath'].getPos(self.nodePathParent) -
-                      self.startPos).length()))
-        self.recordPoint(time)
+    def addKeyframe(self, fToggleRecord = 1):
+        # Make sure we're in a recording mode!
+        if (fToggleRecord &
+            (not self.getVariable('Recording', 'Record').get())):
+            # This will automatically add the first point
+            self.toggleRecordVar()
+        else:
+            time = (self.refineStart +
+                    (Vec3(self['nodePath'].getPos(self.nodePathParent) -
+                          self.startPos).length()))
+            self.recordPoint(time)
 
     def easeInOut(self, t):
         x = t * t
@@ -1036,8 +1040,14 @@ class MopathRecorder(AppShell, PandaObject):
         # Get new data points based on given curve
         self.xyzCurveFitter.sample(
             self.xyzNurbsCurve, self.numSamples, self.fEven)
-        self.hprCurveFitter.sample(
-            self.hprNurbsCurve, self.numSamples, self.fEven)
+        # Now resample the hprNurbsCurve at the same times
+        self.hprCurveFitter.reset()
+        hpr = Point3(0)
+        for i in range(self.xyzCurveFitter.getNumSamples()):
+            self.hprNurbsCurve.getPoint(
+                self.xyzCurveFitter.getSampleT(i), hpr)
+            self.hprCurveFitter.addPoint(Point3(hpr))
+        # Now recompute curves
         self.computeCurves()
         # Get new point set based on newly created curve
         self.createNewPointSet()
