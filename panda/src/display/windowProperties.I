@@ -561,6 +561,54 @@ clear_cursor_hidden() {
   _flags &= ~F_cursor_hidden;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::set_z_order
+//       Access: Published
+//  Description: Specifies the relative ordering of the window with
+//               respect to other windows.  If the z_order is Z_top,
+//               the window will always be on top of other windows; if
+//               it is Z_bottom, it will always be below other
+//               windows.  Most windows will want to be Z_normal,
+//               which allows the user to control the order.
+////////////////////////////////////////////////////////////////////
+INLINE void WindowProperties::
+set_z_order(WindowProperties::ZOrder z_order) {
+  _z_order = z_order;
+  _specified |= S_z_order;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::get_z_order
+//       Access: Published
+//  Description: Returns the window's z_order.
+////////////////////////////////////////////////////////////////////
+INLINE WindowProperties::ZOrder WindowProperties::
+get_z_order() const {
+  return _z_order;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::has_z_order
+//       Access: Published
+//  Description: Returns true if the window z_order has been specified,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool WindowProperties::
+has_z_order() const {
+  return ((_specified & S_z_order) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::clear_z_order
+//       Access: Published
+//  Description: Removes the z_order specification from the properties.
+////////////////////////////////////////////////////////////////////
+INLINE void WindowProperties::
+clear_z_order() {
+  _specified &= ~S_z_order;
+  _z_order = Z_normal;
+}
+
 INLINE ostream &
 operator << (ostream &out, const WindowProperties &properties) {
   properties.output(out);

@@ -30,6 +30,12 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA WindowProperties {
 PUBLISHED:
+  enum ZOrder {
+    Z_bottom,
+    Z_normal,
+    Z_top,
+  };
+
   WindowProperties();
   INLINE WindowProperties(const WindowProperties &copy);
   void operator = (const WindowProperties &copy);
@@ -93,6 +99,11 @@ PUBLISHED:
   INLINE bool has_cursor_hidden() const;
   INLINE void clear_cursor_hidden();
 
+  INLINE void set_z_order(ZOrder z_order);
+  INLINE ZOrder get_z_order() const;
+  INLINE bool has_z_order() const;
+  INLINE void clear_z_order();
+
   void add_properties(const WindowProperties &other);
 
   void output(ostream &out) const;
@@ -112,6 +123,7 @@ private:
     S_open             = 0x0080,
     S_cursor_hidden    = 0x0100,
     S_fixed_size       = 0x0200,
+    S_z_order          = 0x0400,
   };
 
   // This bitmask represents the true/false settings for various
@@ -133,6 +145,7 @@ private:
   int _x_size;
   int _y_size;
   string _title;
+  ZOrder _z_order;
   int _flags;
 };
 

@@ -213,7 +213,16 @@ set_properties_now(WindowProperties &properties) {
 
     properties.clear_cursor_hidden();
   }
+
+  if (properties.has_z_order()) {
+    WindowProperties::ZOrder last_z_order = _properties.get_z_order();
+    _properties.set_z_order(properties.get_z_order());
+    adjust_z_order(last_z_order, properties.get_z_order());
+    
+    properties.clear_z_order();
+  }
 }
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: WinGraphicsWindow::close_window
@@ -423,6 +432,7 @@ handle_reshape() {
       << "," << properties.get_y_size() << ")\n";
   }
 
+  adjust_z_order();
   system_changed_properties(properties);
 }
 
@@ -664,6 +674,66 @@ open_regular_window() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::adjust_z_order
+//       Access: Private
+//  Description: Adjusts the Z-order of a window after it has been
+//               moved.
+////////////////////////////////////////////////////////////////////
+void WinGraphicsWindow::
+adjust_z_order() {
+  WindowProperties::ZOrder z_order = _properties.get_z_order();
+  adjust_z_order(z_order, z_order);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::adjust_z_order
+//       Access: Private
+//  Description: Adjusts the Z-order of a window after it has been
+//               moved.
+////////////////////////////////////////////////////////////////////
+void WinGraphicsWindow::
+adjust_z_order(WindowProperties::ZOrder last_z_order,
+               WindowProperties::ZOrder this_z_order) {
+  HWND order;
+  bool do_change = false;
+  
+  switch (this_z_order) {
+  case WindowProperties::Z_bottom:
+    order = HWND_BOTTOM;
+    do_change = true;
+    break;
+    
+  case WindowProperties::Z_normal:
+    if ((last_z_order != WindowProperties::Z_normal) &&
+        // If we aren't changing the window order, don't move it to
+        // the top.
+        (last_z_order != WindowProperties::Z_bottom ||
+         _properties.get_foreground())
+        // If the window was previously on the bottom, but it doesn't
+        // have focus now, don't move it to the top; it will get moved
+        // the next time we get focus.
+        ) {
+      order = HWND_TOP;
+      do_change = true;
+    }
+    break;
+    
+  case WindowProperties::Z_top:
+    order = HWND_TOPMOST;
+    do_change = true;
+    break;
+  }
+  if (do_change) {
+    BOOL result = SetWindowPos(_hWnd, order, 0,0,0,0, 
+                               SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE);
+    if (!result) {
+      windisplay_cat.warning()
+        << "SetWindowPos failed.\n";
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WinGraphicsWindow::track_mouse_leaving
 //       Access: Private
 //  Description: Intended to be called whenever mouse motion is
@@ -812,6 +882,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             fullscreen_minimized(properties);
           }
         }
+
+        adjust_z_order();
         system_changed_properties(properties);
         break;
     
@@ -835,6 +907,10 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     
       case WM_EXITSIZEMOVE:
         handle_reshape();
+        break;
+
+      case WM_WINDOWPOSCHANGED:
+        adjust_z_order();
         break;
     
       case WM_LBUTTONDOWN:

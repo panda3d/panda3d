@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
+#include "windowProperties.h"
 
 NotifyCategoryDecl(framework, EXPCL_FRAMEWORK, EXPTP_FRAMEWORK);
 
@@ -32,6 +33,7 @@ extern const int win_origin_y;
 extern const bool fullscreen;
 extern const bool undecorated;
 extern const bool cursor_hidden;
+extern WindowProperties::ZOrder z_order;
 extern const string window_title;
 
 extern const float aspect_ratio;

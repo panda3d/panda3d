@@ -267,6 +267,9 @@ get_default_window_props(WindowProperties &props) {
   props.set_fullscreen(fullscreen);
   props.set_undecorated(undecorated);
   props.set_cursor_hidden(cursor_hidden);
+  if (z_order != WindowProperties::Z_normal) {
+    props.set_z_order(z_order);
+  }
   props.set_title(_window_title);
 }
 

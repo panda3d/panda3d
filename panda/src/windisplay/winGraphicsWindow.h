@@ -77,6 +77,10 @@ protected:
 private:
   bool open_fullscreen_window();
   bool open_regular_window();
+  void adjust_z_order();
+  void adjust_z_order(WindowProperties::ZOrder last_z_order,
+                      WindowProperties::ZOrder this_z_order);
+
   void track_mouse_leaving(HWND hwnd);
 
   static void process_1_event();

@@ -94,6 +94,7 @@ class ShowBase(DirectObject.DirectObject):
         fullscreen = self.config.GetBool('fullscreen', 0)
         undecorated = self.config.GetBool('undecorated', 0)
         cursorHidden = self.config.GetBool('cursor-hidden', 0)
+        zOrder = self.config.GetString('z-order', 'normal')
         windowTitle = self.config.GetString('window-title', 'Panda')
         
         self.defaultWindowProps = WindowProperties()
@@ -104,6 +105,13 @@ class ShowBase(DirectObject.DirectObject):
         self.defaultWindowProps.setFullscreen(fullscreen)
         self.defaultWindowProps.setUndecorated(undecorated)
         self.defaultWindowProps.setCursorHidden(cursorHidden)
+        if zOrder == 'bottom':
+            self.defaultWindowProps.setZOrder(WindowProperties.ZBottom)
+        elif zOrder == 'top':
+            self.defaultWindowProps.setZOrder(WindowProperties.ZTop)
+        elif zOrder != 'normal':
+            self.notify.warning("Unknown z-order: %s" % (zOrder))
+        
         self.defaultWindowProps.setTitle(windowTitle)
 
         # If the aspect ratio is 0 or None, it means to infer the

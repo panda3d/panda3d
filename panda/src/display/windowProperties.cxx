@@ -42,6 +42,7 @@ operator = (const WindowProperties &copy) {
   _x_size = copy._x_size;
   _y_size = copy._y_size;
   _title = copy._title;
+  _z_order = copy._z_order;
   _flags = copy._flags;
 }
 
@@ -58,6 +59,7 @@ operator == (const WindowProperties &other) const {
           _y_origin == other._y_origin &&
           _x_size == other._x_size &&
           _y_size == other._y_size &&
+          _z_order == other._z_order &&
           _title == other._title);
 }
 
@@ -76,6 +78,7 @@ clear() {
   _x_size = 0;
   _y_size = 0;
   _title = string();
+  _z_order = Z_normal;
   _flags = 0;
 }
 
@@ -118,6 +121,9 @@ add_properties(const WindowProperties &other) {
   if (other.has_cursor_hidden()) {
     set_cursor_hidden(other.get_cursor_hidden());
   }
+  if (other.has_z_order()) {
+    set_z_order(other.get_z_order());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -158,5 +164,18 @@ output(ostream &out) const {
   }
   if (has_cursor_hidden()) {
     out << (get_cursor_hidden() ? "cursor_hidden " : "!cursor_hidden ");
+  }
+  if (has_z_order()) {
+    switch (get_z_order()) {
+    case Z_bottom:
+      out << "Z_bottom ";
+      break;
+    case Z_normal:
+      out << "Z_normal ";
+      break;
+    case Z_top:
+      out << "Z_top ";
+      break;
+    }
   }
 }
