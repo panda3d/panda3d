@@ -69,7 +69,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "referenceCount.h"
 #include "typedef.h"
