@@ -51,10 +51,20 @@ add_linear_force(LinearForce *f) {
 ////////////////////////////////////////////////////////////////////
 //    Function : attach_physicalnode
 //      Access : Public
-// Description : Registers an physicalnode with the manager
+// Description : Registers a physicalnode with the manager
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsManager::
 attach_physicalnode(PhysicalNode *p) {
+  attach_physical_node(p);
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : attach_physical_node
+//      Access : Public
+// Description : Registers a physicalnode with the manager
+////////////////////////////////////////////////////////////////////
+INLINE void PhysicsManager::
+attach_physical_node(PhysicalNode *p) {
   nassertv(p);
   for (int i = 0; i < p->get_num_physicals(); i++) {
     attach_physical(p->get_physical(i));

@@ -59,6 +59,7 @@ PUBLISHED:
   INLINE void attach_angular_integrator(AngularIntegrator *i);
   INLINE void attach_physical(Physical *p);
   INLINE void attach_physicalnode(PhysicalNode *p);
+  INLINE void attach_physical_node(PhysicalNode *p);
   INLINE void add_linear_force(LinearForce *f);
   INLINE void add_angular_force(AngularForce *f);
   INLINE void clear_linear_forces();
@@ -69,6 +70,7 @@ PUBLISHED:
   INLINE float get_viscosity() const;
   
   void remove_physical(Physical *p);
+  void remove_physical_node(PhysicalNode *p);
   void remove_linear_force(LinearForce *f);
   void remove_angular_force(AngularForce *f);
   void do_physics(float dt);

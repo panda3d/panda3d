@@ -101,6 +101,19 @@ remove_physical(Physical *p) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//    Function : remove_physical_node
+//      Access : Public
+// Description : Removes a physicalnode from the manager
+////////////////////////////////////////////////////////////////////
+void PhysicsManager::
+remove_physical_node(PhysicalNode *p) {
+  nassertv(p);
+  for (int i = 0; i < p->get_num_physicals(); i++) {
+    remove_physical(p->get_physical(i));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function : DoPhysics
 //       Access : Public
 //  Description : This is the main high-level API call.  Performs
