@@ -92,7 +92,7 @@ def rebindClass(builtins, filename):
         # print ('Warning: could not find class, defining new class in builtins: ' + className)
         # Now execute that class def
         # execfile(filename, builtins)
-        print ('Warning: Finder could not find class.')
+        print ('Warning: Finder could not find class, try importing the file first')
         # Remove that temp file
         file.close()
         os.remove(filename)
