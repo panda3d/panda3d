@@ -85,7 +85,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "CollisionHandlerGravity.I"
+#include "collisionHandlerGravity.I"
 
 #endif
 
