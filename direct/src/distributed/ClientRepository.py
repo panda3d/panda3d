@@ -644,3 +644,12 @@ class ClientRepository(DirectObject.DirectObject):
             self.notify.info('*** RESTORING SIMULATED PULLED-NETWORK-PLUG ***')
             self.tcpConn = self.hijackedTcpConn
             del self.hijackedTcpConn
+
+    def getAllOfType(self, type):
+        # Returns a list of all DistributedObjects in the repository
+        # of a particular type.
+        result = []
+        for obj in self.doId2do.values():
+            if isinstance(obj, type):
+                result.append(obj)
+        return result
