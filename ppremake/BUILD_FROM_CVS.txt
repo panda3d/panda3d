@@ -1,10 +1,17 @@
 To build ppremake on Unix (or Windows Cygwin) using autoconf, follow
 the following steps. 
 
-Note that if you are building on Windows, you do not need to use
-Cygwin (a VC7 project file is provided), but you must use Cygwin to
-build ppremake if you want to build a version of ppremake that can
-correctly decode Cygwin-style pathnames into Windows-style pathnames.
+If you are on Windows, note that you may build ppremake either using
+or without using Cygwin.  This document describes how to build it with
+Cygwin; if you want to build it without Cygwin just use the provided
+VC7 project file.  However, if you intend to use Cygwin to build and
+install the rest of Panda (see the top-level INSTALL document for
+Panda), you must also use Cygwin to build ppremake, since otherwise
+ppremake will not be able to correctly decode Cygwin-style pathnames
+into Windows-style pathnames.  In general, if you have Cygwin
+installed, you should follow these steps to build ppremake; you should
+use the VC7 project files only if you don't have Cygwin and you have
+no intention of getting it.
 
 (1) If the file "configure" exists, skip to step (4), below.  This is
     the normal case; you must have unpacked an archive file that

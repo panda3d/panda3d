@@ -430,8 +430,9 @@ build and install panda:
 
 After installing panda, you are almost ready to run the program
 "pview," which is a basic model viewer program that demonstrates some
-Panda functionality.  Successfully running pview proves that Panda is
-installed and configured correctly (at least as a C++ library).
+Panda functionality (see HOW TO RUN PANDA, below).  Successfully
+running pview proves that Panda is installed and configured correctly
+(at least as a C++ library).
 
 If you wish, you may also build direct.  You only need to build this
 if you intend to use the Python interfaces.
@@ -626,8 +627,9 @@ build and install panda:
 
 After installing panda, you are almost ready to run the program
 "pview," which is a basic model viewer program that demonstrates some
-Panda functionality.  Successfully running pview proves that Panda is
-now installed and configured correctly (at least as a C++ library).
+Panda functionality (see HOW TO RUN PANDA, below).  Successfully
+running pview proves that Panda is now installed and configured
+correctly (at least as a C++ library).
 
 If you wish, you may also build direct.  You only need to build this
 if you intend to use the Python interfaces.
