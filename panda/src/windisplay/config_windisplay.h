@@ -35,6 +35,7 @@ extern bool responsive_minimized_fullscreen_window;
 extern bool hold_keys_across_windows;
 extern bool do_vidmemsize_check;
 extern bool ime_composition_w;
+extern bool ime_aware;
 
 extern EXPCL_PANDAWIN bool sync_video;
 extern EXPCL_PANDAWIN bool swapbuffer_framelock;

@@ -124,3 +124,16 @@ get_message_time() {
   DWORD elapsed_ticks = now_ticks - GetMessageTime();
   return now_time - (double)elapsed_ticks / 1000.0;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::get_ime_hwnd
+//       Access: Private
+//  Description: Return the IME_window handle if open
+////////////////////////////////////////////////////////////////////
+INLINE HWND WinGraphicsWindow::
+get_ime_hwnd() {
+  if (_ime_active)
+    return _ime_hWnd;
+  else
+    return NULL;
+}

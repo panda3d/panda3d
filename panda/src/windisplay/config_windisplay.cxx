@@ -49,6 +49,11 @@ bool do_vidmemsize_check = config_windisplay.GetBool("do-vidmemsize-check", true
 // this config variable with an actual OS detection.
 bool ime_composition_w = config_windisplay.GetBool("ime-composition-w", true);
 
+// Set this true to show ime texts on the chat panel and hide the 
+// IME default windows. This is a mechanism to work around DX8/9 interface
+bool ime_aware = config_windisplay.GetBool("ime-aware", false);
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libwindisplay
 //  Description: Initializes the library.  This must be called at

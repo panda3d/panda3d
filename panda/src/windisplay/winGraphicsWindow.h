@@ -56,6 +56,8 @@ public:
   virtual bool handle_mouse_motion(int x, int y);
   virtual void handle_mouse_exit(void);
 
+  INLINE HWND get_ime_hwnd();
+
 
 protected:
   virtual void close_window();
@@ -108,6 +110,7 @@ protected:
   HWND _hWnd;
 
 private:
+  HWND _ime_hWnd;
   bool _ime_open;
   bool _ime_active;
   bool _ime_composition_w;

@@ -973,7 +973,26 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           }
           return 0;
         }
-    
+
+        
+      case WM_IME_SETCONTEXT:
+        if (!ime_aware)
+          break;
+
+        windisplay_cat.debug() << "hwnd = " << hwnd << " and GetFocus = " << GetFocus() << endl;
+        _ime_hWnd = ImmGetDefaultIMEWnd(hwnd);
+        if (SendMessage(_ime_hWnd, WM_IME_CONTROL, IMC_CLOSESTATUSWINDOW, 0))
+          windisplay_cat.debug() << "SendMessage failed for " << _ime_hWnd << endl;
+        else
+          windisplay_cat.debug() << "SendMessage Succeeded for " << _ime_hWnd << endl;
+
+        windisplay_cat.debug() << "wparam is " << wparam << ", lparam is " << lparam << endl;
+        lparam &= ~ISC_SHOWUIALL;
+        if (ImmIsUIMessage(_ime_hWnd, msg, wparam, lparam))
+          windisplay_cat.debug() << "wparam is " << wparam << ", lparam is " << lparam << endl;
+        break;
+
+        
       case WM_IME_NOTIFY:
         if (wparam == IMN_SETOPENSTATUS) {
           HIMC hIMC = ImmGetContext(hwnd);
@@ -982,6 +1001,75 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           if (!_ime_open) {
             _ime_active = false;  // Sanity enforcement.
           }
+          if (ime_aware) {
+            //if (0) {
+            COMPOSITIONFORM comf;
+            CANDIDATEFORM canf;
+            ImmGetCompositionWindow(hIMC, &comf);
+            ImmGetCandidateWindow(hIMC, 0, &canf);
+            windisplay_cat.debug() << 
+              "comf style " << comf.dwStyle << 
+              " comf point: x" << comf.ptCurrentPos.x << ",y " << comf.ptCurrentPos.y <<
+              " comf rect: l " << comf.rcArea.left << ",t " << comf.rcArea.top << ",r " <<
+              comf.rcArea.right << ",b " << comf.rcArea.bottom << endl;
+            windisplay_cat.debug() << 
+              "canf style " << canf.dwStyle << 
+              " canf point: x" << canf.ptCurrentPos.x << ",y " << canf.ptCurrentPos.y <<
+              " canf rect: l " << canf.rcArea.left << ",t " << canf.rcArea.top << ",r " <<
+              canf.rcArea.right << ",b " << canf.rcArea.bottom << endl;
+            comf.dwStyle = CFS_POINT;
+            comf.ptCurrentPos.x = 2000;
+            comf.ptCurrentPos.y = 2000;
+            
+            canf.dwStyle = CFS_EXCLUDE;
+            canf.dwIndex = 0;
+            canf.ptCurrentPos.x = 0;
+            canf.ptCurrentPos.y = 0;
+            canf.rcArea.left = 0;
+            canf.rcArea.top = 0;
+            canf.rcArea.right = 640;
+            canf.rcArea.bottom = 480;
+            
+#if 0
+            comf.rcArea.left = 200;
+            comf.rcArea.top = 200;
+            comf.rcArea.right = 0;
+            comf.rcArea.bottom = 0;
+#endif
+            
+            if (ImmSetCompositionWindow(hIMC, &comf))
+              windisplay_cat.debug() << "comf success\n";
+            for (int i=0; i<3; ++i) {
+              if (ImmSetCandidateWindow(hIMC, &canf))
+                windisplay_cat.debug() << "canf success\n";
+              canf.dwIndex++;
+            }
+          }
+
+          ImmReleaseContext(hwnd, hIMC);
+        }
+        else if (0) {
+        //else if (_ime_open && (wparam == IMN_OPENCANDIDATE)) {
+          HIMC hIMC = ImmGetContext(hwnd);
+          nassertr(hIMC != 0, 0);
+          DWORD need_byte;
+          LPCANDIDATELIST pCanList;
+          char pBuff[1024];
+          need_byte = ImmGetCandidateListW(hIMC, 0, NULL, 0);
+          windisplay_cat.debug() << "need byte " << need_byte << endl;
+          need_byte = ImmGetCandidateListW(hIMC, 0, (LPCANDIDATELIST)pBuff, need_byte);
+          pCanList = (LPCANDIDATELIST)pBuff;
+          windisplay_cat.debug() << "need byte " << need_byte << " ,size " << pCanList->dwSize 
+                                 << " ,count " << pCanList->dwCount
+                                 << " ,selected " << pCanList->dwSelection << endl;
+          wstring candidate_str;
+          for (DWORD i=0; i<pCanList->dwCount; ++i) {
+            // lets append all the candidate strings together
+            windisplay_cat.debug() << "string offset " << pCanList->dwOffset[i] << endl;
+            candidate_str.append((wchar_t*)((char*)pCanList + pCanList->dwOffset[i]));
+          }
+          windisplay_cat.debug() << "concatenated string " << (wchar_t*)candidate_str.c_str() << endl;
+          //_input_devices[0].candidate(candidate_str, 0, 0);
           ImmReleaseContext(hwnd, hIMC);
         }
         break;
@@ -1057,6 +1145,37 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           ImmReleaseContext(hwnd, hIMC);
           return 0;
         }
+        //else if (0) {
+        else if (lparam & GCS_COMPSTR && ime_aware) {
+          HIMC hIMC = ImmGetContext(hwnd);
+          nassertr(hIMC != 0, 0);
+          
+          const int max_t = 128;
+          char can_t[max_t];
+          DWORD result_size = 0;
+          size_t start, end;
+
+          /*
+          result_size = ImmGetCompositionStringW(hIMC, GCS_COMPREADSTR, can_t, max_t);
+          windisplay_cat.debug() << "got readstr of size " << result_size << endl;
+          */
+
+          result_size = ImmGetCompositionStringW(hIMC, GCS_CURSORPOS, can_t, max_t);
+          start = result_size&0xffff;
+          windisplay_cat.debug() << "got cursorpos at " << start << endl;
+
+          result_size = ImmGetCompositionStringW(hIMC, GCS_DELTASTART, can_t, max_t);
+          end = result_size&0xffff;
+          windisplay_cat.debug() << "got deltastart at " << end << endl;
+          
+          result_size = ImmGetCompositionStringW(hIMC, GCS_COMPSTR, can_t, max_t);
+          windisplay_cat.debug() << "got compstr of size " << result_size << endl;
+          
+          _input_devices[0].candidate((wchar_t*)can_t, start, end);
+
+          ImmReleaseContext(hwnd, hIMC);
+          return 0;
+        }
         break;
         
       case WM_CHAR:
@@ -1069,6 +1188,20 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           _input_devices[0].keystroke(wparam);
         }
         break;
+        /*
+     case WM_PAINT:
+       // draw ime window on top
+       PAINTSTRUCT ps; 
+       HDC hdc; 
+       //RECT rc; 
+       hdc = BeginPaint(hwnd, &ps); 
+       EndPaint(hwnd, &ps); 
+       if (_ime_active) {
+         hdc = BeginPaint(_ime_hWnd, &ps);
+         EndPaint(_ime_hWnd, &ps);
+       }
+       break;       
+        */
     
       case WM_SYSKEYDOWN: 
         if (_lost_keypresses) {
