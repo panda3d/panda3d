@@ -367,6 +367,14 @@ priv_initialize(double t) {
 
   int now = double_to_int_time(t);
 
+  // One special case: if we step to t == 0.0, it really means to the
+  // very beginning of the interval, *before* any events that occurred
+  // at time 0.  (Most of the time, stepping to a particular time
+  // means *after* any events that occurred at that time.)
+  if (t == 0.0) {
+    now = -1;
+  }
+
   // Now look for events from the beginning up to the current time.
   _processing_events = true;
   ActiveEvents new_active;
@@ -558,6 +566,14 @@ priv_reverse_initialize(double t) {
   _active.clear();
 
   int now = double_to_int_time(t);
+
+  // One special case: if we step to t == 0.0, it really means to the
+  // very beginning of the interval, *before* any events that occurred
+  // at time 0.  (Most of the time, stepping to a particular time
+  // means *after* any events that occurred at that time.)
+  if (t == 0.0) {
+    now = -1;
+  }
 
   // Now look for events from the end down to the current time.
   _processing_events = true;

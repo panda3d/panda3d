@@ -85,6 +85,7 @@
         if not hasattr(self, "setTHooks"):
             self.setTHooks = []
         self.setTHooks.append(update)
+        self.setWantsTCallback(1)
         # Clear out function on destroy
         def onDestroy(e, s=self, u=update):
             if u in s.setTHooks:

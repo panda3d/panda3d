@@ -276,13 +276,18 @@ int CIntervalManager::
 get_next_event() {
   while (_next_event_index < (int)_intervals.size()) {
     IntervalDef &def = _intervals[_next_event_index];
-    if (def._interval != (CInterval *)NULL && 
-        (def._flags & F_meta_interval) != 0) {
-      CMetaInterval *meta_interval;
-      DCAST_INTO_R(meta_interval, def._interval, -1);
-      if (meta_interval->is_event_ready()) {
-        nassertr((def._flags & F_external) != 0, -1);
+    if (def._interval != (CInterval *)NULL) {
+      if ((def._flags & F_external) != 0 && 
+          def._interval->check_t_callback()) {
         return _next_event_index;
+      }
+      if ((def._flags & F_meta_interval) != 0) {
+        CMetaInterval *meta_interval;
+        DCAST_INTO_R(meta_interval, def._interval, -1);
+        if (meta_interval->is_event_ready()) {
+          nassertr((def._flags & F_external) != 0, -1);
+          return _next_event_index;
+        }
       }
     }
     _next_event_index++;

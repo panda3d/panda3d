@@ -144,6 +144,32 @@ get_interruptible() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CInterval::set_wants_t_callback
+//       Access: Published
+//  Description: Changes the state of the 'wants_t_callback' flag.  If
+//               this is true, the interval will be returned by
+//               CIntervalManager::get_event() each time the
+//               interval's time value has been changed, regardless of
+//               whether it has any external events.
+////////////////////////////////////////////////////////////////////
+INLINE void CInterval::
+set_wants_t_callback(bool wants_t_callback) {
+  _wants_t_callback = wants_t_callback;
+  _last_t_callback = -1.0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CInterval::get_wants_t_callback
+//       Access: Published
+//  Description: Returns the state of the 'wants_t_callback' flag.
+//               See set_wants_t_callback().
+////////////////////////////////////////////////////////////////////
+INLINE bool CInterval::
+get_wants_t_callback() const {
+  return _wants_t_callback;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CInterval::set_manager
 //       Access: Published
 //  Description: Indicates the CIntervalManager object which will be
@@ -170,6 +196,22 @@ set_manager(CIntervalManager *manager) {
 INLINE CIntervalManager *CInterval::
 get_manager() const {
   return _manager;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CInterval::check_t_callback
+//       Access: Public
+//  Description: Returns true if the wants_t_callback() flag is true
+//               and the interval's t value has changed since the last
+//               call to check_t_callback(), false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool CInterval::
+check_t_callback() {
+  if (get_wants_t_callback() && get_t() != _last_t_callback) {
+    _last_t_callback = get_t();
+    return true;
+  }
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -78,6 +78,9 @@ PUBLISHED:
   INLINE void set_interruptible(bool interruptible);
   INLINE bool get_interruptible() const;
 
+  INLINE void set_wants_t_callback(bool wants_t_callback);
+  INLINE bool get_wants_t_callback() const;
+
   INLINE void set_manager(CIntervalManager *manager);
   INLINE CIntervalManager *get_manager() const;
 
@@ -117,6 +120,7 @@ PUBLISHED:
 
 public:
   void mark_dirty();
+  INLINE bool check_t_callback();
 
 protected:
   void interval_done();
@@ -133,6 +137,8 @@ protected:
   double _duration;
 
   bool _interruptible;
+  bool _wants_t_callback;
+  double _last_t_callback;
   CIntervalManager *_manager;
 
   // For setup_play() and step_play().

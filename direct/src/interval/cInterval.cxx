@@ -40,6 +40,8 @@ CInterval(const string &name, double duration, bool open_ended) :
   _dirty(false)
 {
   _interruptible = false;
+  _wants_t_callback = false;
+  _last_t_callback = -1.0;
   _manager = CIntervalManager::get_global_ptr();
   _clock_start = 0.0;
   _start_t = 0.0;
