@@ -114,7 +114,7 @@ PUBLISHED:
                                        TypedObject *object = (TypedObject *)NULL) const;
 
   INLINE int get_index() const;
-
+  INLINE void output(ostream &out) const;
   INLINE static TypeHandle none();
 
 private:
@@ -128,7 +128,8 @@ friend class TypeRegistry;
 // It's handy to be able to output a TypeHandle directly, and see the
 // type name.
 INLINE ostream &operator << (ostream &out, TypeHandle type) {
-  return out << type.get_name();
+  type.output(out);
+  return out;
 }
 
 // We must include typeRegistry at this point so we can call it from

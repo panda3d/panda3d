@@ -19,7 +19,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonHandle::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: The default constructor must do nothing, because we
 //               can't guarantee ordering of static initializers.  If
 //               the constructor tried to initialize its value, it
@@ -32,7 +32,7 @@ ButtonHandle() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonHandle::Copy Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ButtonHandle::
@@ -41,7 +41,7 @@ ButtonHandle(const ButtonHandle &copy) : _index(copy._index) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonHandle::Equality Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool ButtonHandle::
@@ -51,7 +51,7 @@ operator == (const ButtonHandle &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonHandle::Inequality Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool ButtonHandle::
@@ -61,7 +61,7 @@ operator != (const ButtonHandle &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonHandle::Ordering Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool ButtonHandle::
@@ -71,7 +71,7 @@ operator < (const ButtonHandle &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonHandle::has_ascii_equivalent
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the button was created with an ASCII
 //               equivalent code (e.g. for a standard keyboard
 //               button).
@@ -83,7 +83,7 @@ has_ascii_equivalent() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonHandle::get_ascii_equivalent
-//       Access: Public
+//       Access: Published
 //  Description: Returns the character code associated with the
 //               button, or '\0' if no ASCII code was associated.
 ////////////////////////////////////////////////////////////////////
@@ -94,7 +94,7 @@ get_ascii_equivalent() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonHandle::get_index
-//       Access: Public
+//       Access: Published
 //  Description: Returns the integer index associated with this
 //               ButtonHandle. Each different ButtonHandle will have a
 //               different index.  However, you probably shouldn't be
@@ -109,8 +109,18 @@ get_index() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ButtonHandle::output
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void ButtonHandle::
+output(ostream &out) const {
+  out << get_name();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ButtonHandle::none
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns a special zero-valued ButtonHandle that is
 //               used to indicate no button.
 ////////////////////////////////////////////////////////////////////

@@ -24,7 +24,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: The default constructor must do nothing, because we
 //               can't guarantee ordering of static initializers.  If
 //               the constructor tried to initialize its value, it
@@ -37,7 +37,7 @@ TypeHandle() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::Copy Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TypeHandle::
@@ -46,7 +46,7 @@ TypeHandle(const TypeHandle &copy) : _index(copy._index) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::Equality Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool TypeHandle::
@@ -56,7 +56,7 @@ operator == (const TypeHandle &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::Inequality Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool TypeHandle::
@@ -66,7 +66,7 @@ operator != (const TypeHandle &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::Ordering Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool TypeHandle::
@@ -76,7 +76,7 @@ operator < (const TypeHandle &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::Ordering Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool TypeHandle::
@@ -86,7 +86,7 @@ operator <= (const TypeHandle &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::Ordering Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool TypeHandle::
@@ -96,7 +96,7 @@ operator > (const TypeHandle &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::Ordering Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool TypeHandle::
@@ -106,7 +106,7 @@ operator >= (const TypeHandle &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::get_name
-//       Access: Public
+//       Access: Published
 //  Description: Returns the name of the type.
 //
 //               The "object" pointer is an optional pointer to the
@@ -125,7 +125,7 @@ get_name(TypedObject *object) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::is_derived_from
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if this type is derived from the
 //               indicated type, false otherwise.
 //
@@ -141,7 +141,7 @@ is_derived_from(TypeHandle parent, TypedObject *object) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::get_num_parent_classes
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of parent classes that this
 //               type is known to have.  This may then be used to
 //               index into get_parent_class().  The result will be 0
@@ -162,7 +162,7 @@ get_num_parent_classes(TypedObject *object) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::get_num_parent_classes
-//       Access: Public
+//       Access: Published
 //  Description: Returns the nth parent class of this type.  The index
 //               should be in the range 0 <= index <
 //               get_num_parent_classes().
@@ -174,7 +174,7 @@ get_parent_class(int index) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::get_num_child_classes
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of child classes that this
 //               type is known to have.  This may then be used to
 //               index into get_child_class().
@@ -191,7 +191,7 @@ get_num_child_classes(TypedObject *object) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::get_num_child_classes
-//       Access: Public
+//       Access: Published
 //  Description: Returns the nth child class of this type.  The index
 //               should be in the range 0 <= index <
 //               get_num_child_classes().
@@ -203,7 +203,7 @@ get_child_class(int index) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::get_parent_towards
-//       Access: Public
+//       Access: Published
 //  Description: Returns the parent class that is in a direct line of
 //               inheritance to the indicated ancestor class.  This is
 //               useful in the presence of multiple inheritance to try
@@ -226,7 +226,7 @@ get_parent_towards(TypeHandle ancestor, TypedObject *object) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::get_index
-//       Access: Public
+//       Access: Published
 //  Description: Returns the integer index associated with this
 //               TypeHandle. Each different TypeHandle will have a
 //               different index.  However, you probably shouldn't be
@@ -241,8 +241,18 @@ get_index() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TypeHandle::output
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void TypeHandle::
+output(ostream &out) const {
+  out << get_name();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::none
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns a special zero-valued TypeHandle that is used
 //               to indicate no type.
 ////////////////////////////////////////////////////////////////////

@@ -44,6 +44,7 @@ PUBLISHED:
   INLINE char get_ascii_equivalent() const;
 
   INLINE int get_index() const;
+  INLINE void output(ostream &out) const;
   INLINE static ButtonHandle none();
 
 private:
@@ -56,7 +57,8 @@ friend class ButtonRegistry;
 // It's handy to be able to output a ButtonHandle directly, and see the
 // button name.
 INLINE ostream &operator << (ostream &out, ButtonHandle button) {
-  return out << button.get_name();
+  button.output(out);
+  return out;
 }
 
 #include "buttonHandle.I"
