@@ -645,6 +645,7 @@ slerp_basic(LQuaternionf &result, float t) const {
   }
 
   result = (csin(tia) * _start_quat + csin(ta) * _end_quat) / _slerp_denom;
+  nassertv(!result.is_nan());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -669,6 +670,7 @@ slerp_angle_0(LQuaternionf &result, float t) const {
   }
 
   result = (csin_over_x(tia) * ti * _start_quat + csin_over_x(ta) * t * _end_quat) / _slerp_denom;
+  nassertv(!result.is_nan());
 }
 
 
@@ -719,4 +721,6 @@ slerp_angle_180(LQuaternionf &result, float t) const {
     
     result = (csin(tia) * _slerp_c + csin(ta) * _end_quat) / _slerp_denom;
   }
+
+  nassertv(!result.is_nan());
 }

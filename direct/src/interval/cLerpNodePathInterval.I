@@ -51,6 +51,7 @@ get_other() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
 set_start_pos(const LVecBase3f &pos) {
+  nassertv(!pos.is_nan());
   _start_pos = pos;
   _flags |= F_start_pos;
 }
@@ -66,6 +67,7 @@ set_start_pos(const LVecBase3f &pos) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
 set_end_pos(const LVecBase3f &pos) {
+  nassertv(!pos.is_nan());
   _end_pos = pos;
   _flags |= F_end_pos;
 }
@@ -82,6 +84,7 @@ set_end_pos(const LVecBase3f &pos) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
 set_start_hpr(const LVecBase3f &hpr) {
+  nassertv(!hpr.is_nan());
   _start_hpr = hpr;
   _flags = (_flags & ~(F_slerp_setup | F_start_quat)) | F_start_hpr;
 }
@@ -99,6 +102,7 @@ set_start_hpr(const LVecBase3f &hpr) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
 set_end_hpr(const LVecBase3f &hpr) {
+  nassertv(!hpr.is_nan());
   _end_hpr = hpr;
   _flags = (_flags & ~F_end_quat) | F_end_hpr;
 }
@@ -118,6 +122,7 @@ set_end_hpr(const LVecBase3f &hpr) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
 set_end_hpr(const LQuaternionf &quat) {
+  nassertv(!quat.is_nan());
   _end_hpr = quat.get_hpr();
   _flags = (_flags & ~F_end_quat) | F_end_hpr;
 }
@@ -134,6 +139,7 @@ set_end_hpr(const LQuaternionf &quat) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
 set_start_quat(const LQuaternionf &quat) {
+  nassertv(!quat.is_nan());
   _start_quat = quat;
   _flags = (_flags & ~(F_slerp_setup | F_start_hpr)) | F_start_quat;
 }
@@ -157,6 +163,7 @@ set_start_quat(const LQuaternionf &quat) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
 set_end_quat(const LVecBase3f &hpr) {
+  nassertv(!hpr.is_nan());
   _end_quat.set_hpr(hpr);
   _flags = (_flags & ~(F_slerp_setup | F_end_hpr)) | F_end_quat;
 }
@@ -174,6 +181,7 @@ set_end_quat(const LVecBase3f &hpr) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
 set_end_quat(const LQuaternionf &quat) {
+  nassertv(!quat.is_nan());
   _end_quat = quat;
   _flags = (_flags & ~(F_slerp_setup | F_end_hpr)) | F_end_quat;
 }
@@ -189,6 +197,7 @@ set_end_quat(const LQuaternionf &quat) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
 set_start_scale(const LVecBase3f &scale) {
+  nassertv(!scale.is_nan());
   _start_scale = scale;
   _flags |= F_start_scale;
 }
@@ -204,6 +213,7 @@ set_start_scale(const LVecBase3f &scale) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
 set_start_scale(float scale) {
+  nassertv(!cnan(scale));
   set_start_scale(LVecBase3f(scale, scale, scale));
 }
 
@@ -218,6 +228,7 @@ set_start_scale(float scale) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
 set_end_scale(const LVecBase3f &scale) {
+  nassertv(!scale.is_nan());
   _end_scale = scale;
   _flags |= F_end_scale;
 }
@@ -233,6 +244,7 @@ set_end_scale(const LVecBase3f &scale) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
 set_end_scale(float scale) {
+  nassertv(!cnan(scale));
   set_end_scale(LVecBase3f(scale, scale, scale));
 }
 
@@ -247,6 +259,7 @@ set_end_scale(float scale) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
 set_start_shear(const LVecBase3f &shear) {
+  nassertv(!shear.is_nan());
   _start_shear = shear;
   _flags |= F_start_shear;
 }
@@ -262,6 +275,7 @@ set_start_shear(const LVecBase3f &shear) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
 set_end_shear(const LVecBase3f &shear) {
+  nassertv(!shear.is_nan());
   _end_shear = shear;
   _flags |= F_end_shear;
 }
@@ -277,6 +291,7 @@ set_end_shear(const LVecBase3f &shear) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
 set_start_color(const LVecBase4f &color) {
+  nassertv(!color.is_nan());
   _start_color = color;
   _flags |= F_start_color;
 }
@@ -292,6 +307,7 @@ set_start_color(const LVecBase4f &color) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
 set_end_color(const LVecBase4f &color) {
+  nassertv(!color.is_nan());
   _end_color = color;
   _flags |= F_end_color;
 }
@@ -307,6 +323,7 @@ set_end_color(const LVecBase4f &color) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
 set_start_color_scale(const LVecBase4f &color_scale) {
+  nassertv(!color_scale.is_nan());
   _start_color_scale = color_scale;
   _flags |= F_start_color_scale;
 }
@@ -322,6 +339,7 @@ set_start_color_scale(const LVecBase4f &color_scale) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
 set_end_color_scale(const LVecBase4f &color_scale) {
+  nassertv(!color_scale.is_nan());
   _end_color_scale = color_scale;
   _flags |= F_end_color_scale;
 }
