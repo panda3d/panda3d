@@ -5,7 +5,7 @@
 // models (egg, bam models computed from flt, soft, alias,
 // etc. sources).  Unlike the other Template files, this is not based
 // directly on the BUILD_TYPE, but is specifically included when a
-// directory speficies a DIR_TYPE of "models".  It uses some
+// directory specifies a DIR_TYPE of "models".  It uses some
 // Unix-specific conventions (like forward slashes as a directory
 // separator), so it requires either a Unix platform or a Cygwin
 // environment.
@@ -198,7 +198,7 @@ $[target] : $[source]
 #forscopes filter_egg
   #foreach egg $[SOURCES]
     #define source $[source_prefix]$[egg]
-    #define target $[TARGET_DIR]/$[egg]
+    #define target $[TARGET_DIR]/$[notdir $[egg]]
 $[target] : $[source] $[pt] $[TARGET_DIR]/stamp
 	$[COMMAND]
   #end egg
