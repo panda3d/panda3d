@@ -4839,8 +4839,15 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *pPresParams, DXScreenData **pScrn) {
 
     get_engine()->reset_all_windows(false);// reset old swapchain by releasing
 
-    _PresReset.BackBufferWidth = max(_PresReset.BackBufferWidth, pPresParams->BackBufferWidth);
-    _PresReset.BackBufferHeight = max(_PresReset.BackBufferHeight, pPresParams->BackBufferHeight);
+    if (_pScrn->pSwapChain) {  //other windows might be using bigger buffers
+      _PresReset.BackBufferWidth = max(_PresReset.BackBufferWidth, pPresParams->BackBufferWidth);
+      _PresReset.BackBufferHeight = max(_PresReset.BackBufferHeight, pPresParams->BackBufferHeight);
+    }
+    else {  // single window, must reset to the new pPresParams dimension
+      _PresReset.BackBufferWidth = pPresParams->BackBufferWidth;
+      _PresReset.BackBufferHeight = pPresParams->BackBufferHeight;
+    }
+
     hr=_pD3DDevice->Reset(&_PresReset);
     if (FAILED(hr)) {
       return hr;
