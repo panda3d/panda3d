@@ -5,7 +5,7 @@ class DirectGrid(NodePath,PandaObject):
     def __init__(self):
         # Initialize superclass
         NodePath.__init__(self)
-        self.assign(hidden.attachNewNode( NamedNode('DirectGrid')))
+        self.assign(hidden.attachNewNode('DirectGrid'))
         # Don't wireframe or light
         useDirectRenderStyle(self)
 
@@ -16,7 +16,7 @@ class DirectGrid(NodePath,PandaObject):
 	self.gridBack.setColor(0.5,0.5,0.5,0.5)
 
 	# Grid Lines
-        self.lines = self.attachNewNode(NamedNode('gridLines'))
+        self.lines = self.attachNewNode('gridLines')
 	self.minorLines = LineNodePath(self.lines)
         self.minorLines.lineNode.setName('minorLines')
 	self.minorLines.setColor(VBase4(0.3,0.55,1,1))
@@ -49,17 +49,11 @@ class DirectGrid(NodePath,PandaObject):
         self.enable()
 
     def enable(self):
-        self.reparentTo(render)
-        self.accept('selectedNodePath', self.selectGridBackParent)
+        self.reparentTo(direct.group)
         self.updateGrid()
 
     def disable(self):
         self.reparentTo(hidden)
-        self.ignore('selectedNodePath')
-
-    def selectGridBackParent(self, nodePath):
-        if nodePath.getName() == 'GridBack':
-            direct.select(self)
 
     def updateGrid(self):
 	# Update grid lines based upon current grid spacing and grid size

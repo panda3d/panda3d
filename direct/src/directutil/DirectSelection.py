@@ -202,26 +202,27 @@ class SelectedNodePaths(PandaObject):
         self.forEachSelectedNodePathDo(DirectNodePath.dehighlight)
 
     def removeSelected(self):
-	selected = self.dnp.last
+	selected = self.last
         if selected:
             selected.remove()
+        self.last = None
         
     def removeAll(self):
 	# Remove all selected nodePaths from the Scene Graph
         self.forEachSelectedNodePathDo(NodePath.remove)
 
-    def toggleVizSelected(self):
-	selected = self.dnp.last
+    def toggleVisSelected(self):
+	selected = self.last
         # Toggle visibility of selected node paths
         if selected:
-            selected.toggleViz()
+            selected.toggleVis()
 
-    def toggleVizAll(self):
+    def toggleVisAll(self):
         # Toggle viz for all selected node paths
-        self.forEachSelectedNodePathDo(NodePath.toggleViz)
+        self.forEachSelectedNodePathDo(NodePath.toggleVis)
 
     def isolateSelected(self):
-	selected = self.dnp.last
+	selected = self.last
         if selected:
             selected.isolate()
 
@@ -375,9 +376,7 @@ class DirectBoundingBox:
 
 class SelectionRay:
     def __init__(self, camera):
-        # Record the camera associated with this selection ray
-        self.camera = camera
-        # Create a collision node
+        # Create a collision node path attached to the given camera
         self.rayCollisionNodePath = camera.attachNewNode( CollisionNode() )
         # Don't pay the penalty of drawing this collision ray
         self.rayCollisionNodePath.hide()

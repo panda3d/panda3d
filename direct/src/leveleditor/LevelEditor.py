@@ -227,7 +227,7 @@ class LevelEditor(NodePath, PandaObject):
         # Initialize superclass
         NodePath.__init__(self)
         # Become the new node path
-        self.assign(hidden.attachNewNode( NamedNode('LevelEditor')))
+        self.assign(hidden.attachNewNode('LevelEditor'))
         
         # Create ancillary objects
         # Style manager for keeping track of styles/colors
@@ -253,13 +253,9 @@ class LevelEditor(NodePath, PandaObject):
             ('manipulateObjectCleanup', self.updateSelectedPose),
             
             # Actions in response to Level Editor Panel operations
-            ('SGENodePath_Select', self.select),
             ('SGENodePath_Set Name', self.getAndSetName),
             ('SGENodePath_Set Parent', self.setActiveParent),
             ('SGENodePath_Reparent', self.reparent),
-            ('SGENodePath_Flash', self.flash),
-            ('SGENodePath_Isolate', self.isolate),
-            ('SGENodePath_Toggle Viz', self.toggleViz),
             ('SGENodePath_Add Group', self.addGroup),
             ('SGENodePath_Add Vis Group', self.addVisGroup),
             ('SGENodePath_Set Color', self.setNPColor),
@@ -331,7 +327,7 @@ class LevelEditor(NodePath, PandaObject):
     def enable(self):
         """ Enable level editing and show level """
         # Make sure level is visible
-        self.reparentTo(render)
+        self.reparentTo(direct.group)
 	self.show()
         # Add all the action events
         for event in self.actionEvents:
@@ -732,7 +728,7 @@ class LevelEditor(NodePath, PandaObject):
         if DNAClassEqual(dnaNode, DNA_STREET):
             self.snapList = OBJECT_SNAP_POINTS[dnaNode.getCode()]
 	# Select the instance
-	self.select(newNodePath)
+	direct.select(newNodePath)
         # Update grid to get ready for the next object
         self.autoPositionGrid()
 
@@ -1118,11 +1114,6 @@ class LevelEditor(NodePath, PandaObject):
         esg = EntryScale.setColor(nodePath, updateDNANodeColor)
     
     # SELECTION FUNCTIONS
-    def select(self, nodePath):
-        """ Call direct function to select node path """
-        # Select new node path
-	direct.select(nodePath)
-
     def selectedNodePathHook(self, nodePath):
         """
         Hook called upon selection of a node path used to restrict
@@ -1281,76 +1272,6 @@ class LevelEditor(NodePath, PandaObject):
             childVisGroups = (childVisGroups + self.getDNAVisGroups(child))
         return childVisGroups
     
-    def flash(self, nodePath = None):
-        if not nodePath:
-            # If nothing specified, try selected node path
-            nodePath = direct.selected.last
-        if nodePath:
-            """ Spawn a task to flash a node several times """
-            taskMgr.removeTasksNamed('flashNodePath')
-            t = Task.Task(self.flashNodePathTask)
-            t.nodePath = nodePath
-            t.initState = t.hidden = nodePath.isHidden()
-            t.flashCount = 0
-            t.frameCount = 0
-            t.uponDeath = self.flashDone
-            taskMgr.spawnTaskNamed(t, 'flashNodePath')
-
-    def flashNodePathTask(self, state):
-        nodePath = state.nodePath
-	initState = state.initState
-        hidden = state.hidden
-        flashCount = state.flashCount
-        frameCount = state.frameCount
-        if (flashCount < 4):
-            if (frameCount % 3) == 0:
-                if hidden:
-                    nodePath.show()
-                else:
-                    nodePath.hide()
-                state.hidden = not state.hidden
-                state.flashCount = flashCount + 1
-            state.frameCount = frameCount + 1
-            return Task.cont
-        else:
-            return Task.done
-
-    def flashDone(self,state):
-        if state.initState:
-            state.nodePath.hide()
-        else:
-            state.nodePath.show()
-
-    def isolate(self, nodePath = None):
-        """ Show a node path and hide its siblings """
-        if not nodePath:
-            # If nothing specified, try selected node path
-            nodePath = direct.selected.last
-        if nodePath:
-            # First show everything in level
-            self.showAll()
-            # Now hide all of this node path's siblings
-            nodePath.hideSiblings()
-
-    def toggleViz(self, nodePath = None):
-        """ Toggle visibility of node path """
-        if not nodePath:
-            # If nothing specified, try selected node path
-            nodePath = direct.selected.last
-        if nodePath:
-            # First kill the flashing task to avoid complications
-            taskMgr.removeTasksNamed('flashNodePath')
-            # Now toggle node path's visibility state
-            if nodePath.isHidden():
-                nodePath.show()
-            else:
-                nodePath.hide()
-
-    def showAll(self):
-        """ Show the level and its descendants """
-	self.showAllDescendants()
-	render.hideCollisionSolids()
-            
     def showGrid(self,flag):
         """ toggle direct grid """
         if flag:
@@ -1364,7 +1285,7 @@ class LevelEditor(NodePath, PandaObject):
         Load up the various neighborhood maps
         """
         # For neighborhood maps
-        self.levelMap = hidden.attachNewNode(NamedNode('level-map'))
+        self.levelMap = hidden.attachNewNode('level-map')
         self.activeMap = None
         self.mapDictionary = {}
         for neighborhood in NEIGHBORHOODS:
@@ -1385,9 +1306,9 @@ class LevelEditor(NodePath, PandaObject):
         self.activeMap = self.mapDictionary[neighborhood]
         self.activeMap.reparentTo(self.levelMap)
 
-    def toggleMapViz(self, flag):
+    def toggleMapVis(self, flag):
         if flag:
-            self.levelMap.reparentTo(render)
+            self.levelMap.reparentTo(direct.group)
         else:
             self.levelMap.reparentTo(hidden)
 
@@ -1484,11 +1405,11 @@ class LevelEditor(NodePath, PandaObject):
 	# Also move the camera
 	taskMgr.removeTasksNamed('autoMoveDelay')
 	handlesToCam = direct.widget.getPos(direct.camera)
-	handlesToCam = handlesToCam * ( direct.chan.near/handlesToCam[1])
-	if ((abs(handlesToCam[0]) > (direct.chan.nearWidth * 0.4)) |
-            (abs(handlesToCam[2]) > (direct.chan.nearHeight * 0.4))):
+	handlesToCam = handlesToCam * ( direct.dr.near/handlesToCam[1])
+	if ((abs(handlesToCam[0]) > (direct.dr.nearWidth * 0.4)) |
+            (abs(handlesToCam[2]) > (direct.dr.nearHeight * 0.4))):
             taskMgr.removeTasksNamed('manipulateCamera')
-            direct.cameraControl.centerCamIn(direct.chan, 0.5)
+            direct.cameraControl.centerCamIn(direct.dr, 0.5)
 
     def autoPositionCleanup(self,state):
         direct.grid.setPosHpr(state.selectedNode, state.deltaPos,
@@ -1516,17 +1437,18 @@ class LevelEditor(NodePath, PandaObject):
         if not selectedNode:
             return 0
         # Find mouse point on near plane
-        chan = direct.chan
-    	mouseX = chan.mouseX
-  	mouseY = chan.mouseY
-   	nearX = math.tan(deg2Rad(chan.fovH)/2.0) * mouseX * chan.near
-   	nearZ = math.tan(deg2Rad(chan.fovV)/2.0) * mouseY * chan.near
+    	mouseX = direct.dr.mouseX
+  	mouseY = direct.dr.mouseY
+   	nearX = (math.tan(deg2Rad(direct.dr.fovH)/2.0) *
+                 mouseX * direct.dr.near)
+   	nearZ = (math.tan(deg2Rad(direct.dr.fovV)/2.0) *
+                 mouseY * direct.dr.near)
         # Initialize points
-   	mCam2Wall = chan.camera.getMat(selectedNode)
+   	mCam2Wall = direct.camera.getMat(selectedNode)
 	mouseOrigin = Point3(0)
    	mouseOrigin.assign(mCam2Wall.getRow3(3))
 	mouseDir = Vec3(0)
-   	mouseDir.set(nearX, chan.near, nearZ)
+   	mouseDir.set(nearX, direct.dr.near, nearZ)
    	mouseDir.assign(mCam2Wall.xformVec(mouseDir))
         # Calc intersection point
         return planeIntersect(mouseOrigin, mouseDir, ZERO_POINT, NEG_Y_AXIS)
@@ -1537,17 +1459,18 @@ class LevelEditor(NodePath, PandaObject):
         through mouse. Return false, if nothing selected
         """
         # Find mouse point on near plane
-        chan = direct.chan
-    	mouseX = chan.mouseX
-  	mouseY = chan.mouseY
-   	nearX = math.tan(deg2Rad(chan.fovH)/2.0) * mouseX * chan.near
-   	nearZ = math.tan(deg2Rad(chan.fovV)/2.0) * mouseY * chan.near
+    	mouseX = direct.dr.mouseX
+  	mouseY = direct.dr.mouseY
+   	nearX = (math.tan(deg2Rad(direct.dr.fovH)/2.0) *
+                 mouseX * direct.dr.near)
+   	nearZ = (math.tan(deg2Rad(direct.dr.fovV)/2.0) *
+                 mouseY * direct.dr.near)
         # Initialize points
-   	mCam2Grid = chan.camera.getMat(direct.grid)
+   	mCam2Grid = direct.camera.getMat(direct.grid)
 	mouseOrigin = Point3(0)
    	mouseOrigin.assign(mCam2Grid.getRow3(3))
 	mouseDir = Vec3(0)
-   	mouseDir.set(nearX, chan.near, nearZ)
+   	mouseDir.set(nearX, direct.dr.near, nearZ)
    	mouseDir.assign(mCam2Grid.xformVec(mouseDir))
         # Calc intersection point
         return planeIntersect(mouseOrigin, mouseDir, ZERO_POINT, Z_AXIS)
@@ -1929,15 +1852,14 @@ class LevelStyleManager:
         Create a wall style pie menu
         """
 	numItems = len(dictionary)
-	newStyleMenu = hidden.attachNewNode(
-            NamedNode(neighborhood + '_style_menu'))
+	newStyleMenu = hidden.attachNewNode(neighborhood + '_style_menu')
 	radius = 0.7
 	angle = deg2Rad(360.0/numItems)
         keys = dictionary.keys()
         keys.sort()
         styles = map(lambda x, d = dictionary: d[x], keys)
         sf = 0.03
-        aspectRatio = (direct.chan.width/float(direct.chan.height))
+        aspectRatio = (direct.dr.width/float(direct.dr.height))
         for i in range(numItems):
             # Get the node
             node = self.createWallStyleSample(styles[i])
@@ -2078,15 +2000,14 @@ class LevelStyleManager:
         Create a wall style pie menu
         """
 	numItems = len(dictionary)
-	newStyleMenu = hidden.attachNewNode(
-            NamedNode(neighborhood + '_style_menu'))
+	newStyleMenu = hidden.attachNewNode(neighborhood + '_style_menu')
 	radius = 0.7
 	angle = deg2Rad(360.0/numItems)
         keys = dictionary.keys()
         keys.sort()
         styles = map(lambda x, d = dictionary: d[x], keys)
         sf = 0.02
-        aspectRatio = (direct.chan.width/float(direct.chan.height))
+        aspectRatio = (direct.dr.width/float(direct.dr.height))
         for i in range(numItems):
             # Get the node
             node = self.createBuildingStyleSample(styles[i])
@@ -2285,10 +2206,10 @@ class LevelStyleManager:
         # Create color chips for each color
 	numItems = len(colorList)
 	# Attach it to hidden for now
-	newColorMenu = hidden.attachNewNode(NamedNode(menuName + 'Menu'))
+	newColorMenu = hidden.attachNewNode(menuName + 'Menu')
         # Compute the angle per item
 	angle = deg2Rad(360.0/float(numItems))
-        aspectRatio = (direct.chan.width / float(direct.chan.height))
+        aspectRatio = (direct.dr.width / float(direct.dr.height))
 	# Attach the color chips to the new menu and adjust sizes
         for i in range (numItems):
             # Create the node and set its color
@@ -2353,10 +2274,10 @@ class LevelStyleManager:
 	# Get the currently available window options	
 	numItems = len(dnaList)
         # Create a top level node to hold the menu
-	newMenu = hidden.attachNewNode(NamedNode(dnaType + 'Menu'))
+	newMenu = hidden.attachNewNode(dnaType + 'Menu')
         # Compute angle increment per item
 	angle = deg2Rad(360.0/numItems)
-        aspectRatio = direct.chan.width /float(direct.chan.height)
+        aspectRatio = direct.dr.width /float(direct.dr.height)
         # Add items
         for i in range(0, numItems):
             if dnaList[i]:
@@ -2385,10 +2306,10 @@ class LevelStyleManager:
     def createTextPieMenu(self, dnaType, textList, radius = 0.7, sf = 1.0):
 	numItems = len(textList)
         # Create top level node for new menu
-	newMenu = hidden.attachNewNode(NamedNode(dnaType + 'Menu'))
+	newMenu = hidden.attachNewNode(dnaType + 'Menu')
         # Compute angle per item
 	angle = deg2Rad(360.0/numItems)
-        aspectRatio = direct.chan.width/float(direct.chan.height)
+        aspectRatio = direct.dr.width/float(direct.dr.height)
         # Add items
         for i in range (numItems):
             # Create onscreen text node for each item
@@ -2893,13 +2814,13 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.colorEntry.pack(fill = 'x')
 
         buttonFrame = Frame(hull)
-        self.fMapViz = IntVar()
-        self.fMapViz.set(0)
+        self.fMapVis = IntVar()
+        self.fMapVis.set(0)
         self.mapSnapButton = Checkbutton(buttonFrame,
-                                      text = 'Map Viz',
+                                      text = 'Map Vis',
                                       width = 6,
-                                      variable = self.fMapViz,
-                                      command = self.toggleMapViz)
+                                      variable = self.fMapVis,
+                                      command = self.toggleMapVis)
         self.mapSnapButton.pack(side = 'left', expand = 1, fill = 'x')
 
         self.fXyzSnap = IntVar()
@@ -2970,13 +2891,13 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.isolateButton = Button(
             buttonFrame3,
             text = 'Isolate Selected',
-            command = self.levelEditor.isolate)
+            command = direct.isolate)
         self.isolateButton.pack(side = 'left', expand = 1, fill = 'x')
 
         self.showAllButton = Button(
             buttonFrame3,
             text = 'Show All',
-            command = self.levelEditor.showAll)
+            command = self.showAll)
         self.showAllButton.pack(side = 'left', expand = 1, fill = 'x')
 
         buttonFrame3.pack(fill = 'x')
@@ -3003,8 +2924,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.sceneGraphExplorer = SceneGraphExplorer(
             parent = sceneGraphPage,
             root = self.levelEditor,
-            menuItems = ['Select', 'Isolate', 'Flash', 'Toggle Viz',
-                         'Set Parent', 'Reparent', 'Add Group',
+            menuItems = ['Set Parent', 'Reparent', 'Add Group',
                          'Add Vis Group', 'Set Color',
                          'Set Name'])
         self.sceneGraphExplorer.pack(expand = 1, fill = 'both')
@@ -3024,8 +2944,11 @@ class LevelEditorPanel(Pmw.MegaToplevel):
     def toggleHprSnap(self):
         direct.grid.setHprSnap(self.fXyzSnap.get())
         
-    def toggleMapViz(self):
-        self.levelEditor.toggleMapViz(self.fMapViz.get())
+    def toggleMapVis(self):
+        self.levelEditor.toggleMapVis(self.fMapVis.get())
+
+    def showAll(self):
+        direct.showAll(self.levelEditor.NPToplevel)
 
     def createNewVisGroup(self):
         self.levelEditor.createNewGroup(type = 'vis')
@@ -3247,7 +3170,7 @@ class VisGroupsEditor(Pmw.MegaToplevel):
                 if groupName not in visList:
                     visList.append(groupName)
                     target.addVisible(groupName)
-                    # Update viz and color
+                    # Update vis and color
                     groupNP.show()
                     groupNP.setColor(1,0,0,1)
             else:
@@ -3255,7 +3178,7 @@ class VisGroupsEditor(Pmw.MegaToplevel):
                 if groupName in visList:
                     visList.remove(groupName)
                     target.removeVisible(groupName)
-                    # Update viz and color
+                    # Update vis and color
                     if self.showMode.get() == 1:
                         groupNP.hide()
                     groupNP.clearColor()

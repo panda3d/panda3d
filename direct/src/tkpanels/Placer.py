@@ -16,13 +16,13 @@ Task to monitor pose
 ZERO_VEC = Vec3(0)
 UNIT_VEC = Vec3(1)
 
-class Placer(Pmw.MegaToplevel):
+class Placer(Pmw.MegaToplevel, PandaObject):
     def __init__(self, parent = None, **kw):
 
         INITOPT = Pmw.INITOPT
         optiondefs = (
             ('title',       'Placer Panel',     None),
-            ('nodePath',    camera,               None),
+            ('nodePath',    direct.camera,      None),
             )
         self.defineoptions(kw, optiondefs)
 
@@ -30,22 +30,23 @@ class Placer(Pmw.MegaToplevel):
         Pmw.MegaToplevel.__init__(self, parent)
 
         # Initialize state
-        self.tempCS = render.attachNewNode(NamedNode('placerTempCS'))
-        self.orbitFromCS = render.attachNewNode(NamedNode('placerOrbitFromCS'))
-        self.orbitToCS = render.attachNewNode(NamedNode('placerOrbitToCS'))
+        self.tempCS = direct.group.attachNewNode('placerTempCS')
+        self.orbitFromCS = direct.group.attachNewNode(
+            'placerOrbitFromCS')
+        self.orbitToCS = direct.group.attachNewNode('placerOrbitToCS')
         self.refCS = self.tempCS
         self.undoList = []
         self.redoList = []
         
         # Dictionary keeping track of all node paths manipulated so far
         self.nodePathDict = {}
-        self.nodePathDict['camera'] = camera
+        self.nodePathDict['camera'] = direct.camera
         self.nodePathNames = ['selected', 'camera']
 
         self.refNodePathDict = {}
         self.refNodePathDict['parent'] = self['nodePath'].getParent()
         self.refNodePathDict['render'] = render
-        self.refNodePathDict['camera'] = camera
+        self.refNodePathDict['camera'] = direct.camera
         self.refNodePathNames = ['self', 'parent', 'render',
                                  'camera', 'selected', 'coa']
 
@@ -56,6 +57,16 @@ class Placer(Pmw.MegaToplevel):
 
         # Offset for orbital mode
         self.posOffset = Vec3(0)
+
+        # Set up event hooks
+        self.undoEvents = [('undo', self.undoHook),
+                           ('pushUndo', self.pushUndoHook),
+                           ('undoListEmpty', self.undoListEmptyHook),
+                           ('redo', self.redoHook),
+                           ('pushRedo', self.pushRedoHook),
+                           ('redoListEmpty', self.redoListEmptyHook)]
+        for event, method in self.undoEvents:
+            self.accept(event, method)
 
         # Init movement mode
         self.movementMode = 'Relative To:'
@@ -89,7 +100,7 @@ class Placer(Pmw.MegaToplevel):
         menuBar.addmenuitem('Placer', 'command',
                             'Exit Placer Panel',
                             label = 'Exit',
-                            command = self.preDestroy)
+                            command = self.destroy)
 
         menuBar.addmenu('Help', 'Placer Panel Help Operations')
         self.toggleBalloonVar = IntVar()
@@ -131,11 +142,11 @@ class Placer(Pmw.MegaToplevel):
 
         self.undoButton = Button(menuFrame, text = 'Undo',
                                  state = 'disabled',
-                                 command = self.undo)
+                                 command = direct.undo)
         self.undoButton.pack(side = 'left', expand = 0)
         self.redoButton = Button(menuFrame, text = 'Redo',
                                  state = 'disabled',
-                                 command = self.redo)
+                                 command = direct.redo)
         self.redoButton.pack(side = 'left', expand = 0)
 
         # The master frame for the dials
@@ -340,6 +351,9 @@ class Placer(Pmw.MegaToplevel):
         self.setMovementMode('Relative To:')
         # Set up placer for inital node path
         self.selectNodePathNamed('init')
+
+        # Clean up things when you destroy the panel
+        self.bind('<Destroy>', self.onDestroy)
 
         # Make sure input variables processed 
         self.initialiseoptions(Placer)
@@ -654,82 +668,35 @@ class Placer(Pmw.MegaToplevel):
         self.updatePlacer()
 
     def pushUndo(self, fResetRedo = 1):
-        nodePath = self['nodePath']
-        if nodePath != None:
-            name = self.nodePathMenuEntry.get()
-            pos = nodePath.getPos()
-            hpr = nodePath.getHpr()
-            scale = nodePath.getScale()
-            self.undoList.append([name, pos,hpr,scale])
-            # Make sure button is reactivated
-            self.undoButton.configure(state = 'normal')
-            if fResetRedo:
-                self.redoList = []
-                self.redoButton.configure(state = 'disabled')
+        direct.pushUndo([self['nodePath']])
 
-    def popUndo(self):
-        # Get last item
-        pose = self.undoList[-1]
-        # Strip last item off of undo list
-        self.undoList = self.undoList[:-1]
-        # Update state of undo button
-        if not self.undoList:
-            self.undoButton.configure(state = 'disabled')
-        # Return last item
-        return pose
-        
+    def undoHook(self):
+        # Reflect new changes
+        self.updatePlacer()
+
+    def pushUndoHook(self):
+        # Make sure button is reactivated
+        self.undoButton.configure(state = 'normal')
+
+    def undoListEmptyHook(self):
+        # Make sure button is deactivated
+        self.undoButton.configure(state = 'disabled')
+
     def pushRedo(self):
-        nodePath = self['nodePath']
-        if nodePath != None:
-            name = self.nodePathMenuEntry.get()
-            pos = nodePath.getPos()
-            hpr = nodePath.getHpr()
-            scale = nodePath.getScale()
-            self.redoList.append([name, pos,hpr,scale])
-            # Make sure button is reactivated
-            self.redoButton.configure(state = 'normal')
-
-    def popRedo(self):
-        # Get last item
-        pose = self.redoList[-1]
-        # Strip last item off of redo list
-        self.redoList = self.redoList[:-1]
-        # Update state of redo button
-        if not self.redoList:
-            self.redoButton.configure(state = 'disabled')
-        # Return last item
-        return pose
+        direct.pushRedo([self['nodePath']])
         
-    def undo(self):
-        if self.undoList:
-            # Get last item off of redo list
-            pose = self.popUndo()
-            # Make that node path active
-            self.selectNodePathNamed(pose[0])
-            # Make sure combo box is showing the right thing
-            self.nodePathMenu.selectitem(pose[0])
-            # Record active's current state on redo stack
-            self.pushRedo()
-            # Undo xform
-            self['nodePath'].setPosHprScale(pose[1], pose[2], pose[3])
-            # Reflect new changes
-            self.updatePlacer()
+    def redoHook(self):
+        # Reflect new changes
+        self.updatePlacer()
 
-    def redo(self):
-        if self.redoList:
-            # Get last item off of redo list
-            pose = self.popRedo()
-            # Make that node path active
-            self.selectNodePathNamed(pose[0])
-            # Make sure combo box is showing the right thing
-            self.nodePathMenu.selectitem(pose[0])
-            # Record active's current state on redo stack
-            self.pushUndo(fResetRedo = 0)
-            # Redo xform
-            self['nodePath'].setPosHprScale(pose[1], pose[2], pose[3])
-            # Reflect new changes
-            self.updatePlacer()
+    def pushRedoHook(self):
+        # Make sure button is reactivated
+        self.redoButton.configure(state = 'normal')
 
+    def redoListEmptyHook(self):
+        # Make sure button is deactivated
+        self.redoButton.configure(state = 'disabled')
+        
     def printNodePathInfo(self):
         np = self['nodePath']
         if np:
@@ -747,11 +714,15 @@ class Placer(Pmw.MegaToplevel):
             print ('%s.setPosHprScale(%s, %s, %s)' %
                    (name, posString, hprString, scaleString))
 
-    def preDestroy(self):
+    def onDestroy(self, event):
+        # Remove hooks
+        for event, method in self.undoEvents:
+            self.ignore(event)
         self.tempCS.removeNode()
         self.orbitFromCS.removeNode()
         self.orbitToCS.removeNode()
-        self.destroy()
+        # Only do this once
+        self.unbind('<Destroy>')
         
     def toggleBalloon(self):
         if self.toggleBalloonVar.get():

@@ -8,14 +8,12 @@ UNPICKABLE = ['x-disc-visible', 'y-disc-visible', 'z-disc-visible',
 class DirectManipulationControl(PandaObject):
     def __init__(self):
         # Create the grid
-        self.chan = direct.chan
-        self.camera = self.chan.camera
         self.objectHandles = ObjectHandles()
         self.hitPt = Point3(0)
         self.prevHit = Vec3(0)
         self.rotationCenter = Point3(0)
         self.initScaleMag = 1
-        self.refNodePath = render.attachNewNode(NamedNode('refNodePath'))
+        self.manipRef = direct.group.attachNewNode('manipRef')
         self.hitPtDist = 0
         self.constraint = None
         self.rotateAxis = 'x'
@@ -27,13 +25,22 @@ class DirectManipulationControl(PandaObject):
         self.fScaling = 1
         self.unpickable = UNPICKABLE
         self.mode = None
+        self.actionEvents = [
+            ['handleMouse1', self.manipulationStart],
+            ['handleMouse1Up', self.manipulationStop],
+            ['.', self.objectHandles.multiplyScalingFactorBy, 2.0],
+            ['>', self.objectHandles.multiplyScalingFactorBy, 2.0],
+            [',', self.objectHandles.multiplyScalingFactorBy, 0.5],
+            ['<', self.objectHandles.multiplyScalingFactorBy, 0.5],
+            ['F', self.objectHandles.growToFit],
+            ]
 
-    def manipulationStart(self, chan):
+    def manipulationStart(self):
         # Start out in select mode
         self.mode = 'select'
         # Check for a widget hit point
         numEntries = direct.iRay.pickWidget(
-            render,chan.mouseX,chan.mouseY)
+            render,direct.dr.mouseX,direct.dr.mouseY)
         # Did we hit a widget?
         if(numEntries):
             # Yes!
@@ -63,8 +70,8 @@ class DirectManipulationControl(PandaObject):
         # Or if we move far enough
         self.moveDir = None
         watchMouseTask = Task.Task(self.watchMouseTask)
-        watchMouseTask.initX = self.chan.mouseX
-        watchMouseTask.initY = self.chan.mouseY
+        watchMouseTask.initX = direct.dr.mouseX
+        watchMouseTask.initY = direct.dr.mouseY
         taskMgr.spawnTaskNamed(watchMouseTask, 'manip-watch-mouse')
 
     def switchToMoveMode(self, state):
@@ -74,8 +81,8 @@ class DirectManipulationControl(PandaObject):
         return Task.done
 
     def watchMouseTask(self, state):
-        if (((abs (state.initX - self.chan.mouseX)) > 0.01) |
-            ((abs (state.initY - self.chan.mouseY)) > 0.01)):
+        if (((abs (state.initX - direct.dr.mouseX)) > 0.01) |
+            ((abs (state.initY - direct.dr.mouseY)) > 0.01)):
             taskMgr.removeTasksNamed('manip-move-wait')
             taskMgr.removeTasksNamed('manip-switch-to-move')
             self.mode = 'move'
@@ -93,7 +100,7 @@ class DirectManipulationControl(PandaObject):
         if self.mode == 'select':
             # Check for object under mouse
             numEntries = direct.iRay.pickGeom(
-                render,self.chan.mouseX,self.chan.mouseY)
+                render,direct.dr.mouseX,direct.dr.mouseY)
             # Pick out the closest object that isn't a widget
             index = -1
             for i in range(0,numEntries):
@@ -166,28 +173,14 @@ class DirectManipulationControl(PandaObject):
         return Task.cont
 
     def enableManipulation(self):
-	# Accept mouse events
-	self.accept('handleMouse1', self.manipulationStart, [self.chan])
-	self.accept('handleMouse1Up', self.manipulationStop)
-        self.enableHotKeys()
-
-    def enableHotKeys(self):
-        self.accept(
-            '.', self.objectHandles.multiplyScalingFactorBy, [2.0])
-        self.accept(
-            ',', self.objectHandles.multiplyScalingFactorBy, [0.5])
-        self.accept('F', self.objectHandles.growToFit)
+	# Accept events
+        for event in self.actionEvents:
+            self.accept(event[0], event[1], extraArgs = event[2:])
 
     def disableManipulation(self):
-	# Ignore middle mouse events
-	self.ignore('handleMouse1')
-	self.ignore('handleMouse1Up')
-        self.disableHotKeys()
-
-    def disableHotKeys(self):
-        self.ignore('.')
-        self.ignore(',')
-        self.ignore('F')
+	# Ignore events
+        for event in self.actionEvents:
+            self.ignore(event[0])
 
     def addUnpickable(self, item):
         if item not in self.unpickable:
@@ -209,6 +202,8 @@ class DirectManipulationControl(PandaObject):
             taskMgr.removeTasksNamed('highlightWidgetTask')
             # Set manipulation flag
             self.fManip = 1
+            # Record undo point
+            direct.pushUndo(direct.selected)
             # Update object handles visibility
             self.objectHandles.showGuides()
             self.objectHandles.hideAllHandles()
@@ -320,25 +315,25 @@ class DirectManipulationControl(PandaObject):
         # (in case we later switch to another manipulation mode)
         #self.fHitInit = 1
         # Where is the widget relative to current camera view
-        vWidget2Camera = direct.widget.getPos(self.camera)
+        vWidget2Camera = direct.widget.getPos(direct.camera)
         x = vWidget2Camera[0]
         y = vWidget2Camera[1]
         z = vWidget2Camera[2]
         # Move widget (and objects) based upon mouse motion
         # Scaled up accordingly based upon widget distance
-        chan = self.chan
+        dr = direct.dr
         direct.widget.setX(
-            self.camera,
-            x + 0.5 * chan.mouseDeltaX * chan.nearWidth * (y/chan.near))
+            direct.camera,
+            x + 0.5 * dr.mouseDeltaX * dr.nearWidth * (y/dr.near))
         direct.widget.setZ(
-            self.camera,
-            z + 0.5 * chan.mouseDeltaY * chan.nearHeight * (y/chan.near))
+            direct.camera,
+            z + 0.5 * dr.mouseDeltaY * dr.nearHeight * (y/dr.near))
 
     def xlateCamXY(self):
         """Constrained 2D motion perpendicular to camera's image plane
         This moves the object in the camera's XY plane"""
         # Now, where is the widget relative to current camera view
-        vWidget2Camera = direct.widget.getPos(self.camera)
+        vWidget2Camera = direct.widget.getPos(direct.camera)
         # If this is first time around, record initial y distance
         if self.fHitInit:
             self.fHitInit = 0
@@ -350,18 +345,18 @@ class DirectManipulationControl(PandaObject):
         z = vWidget2Camera[2]
         # Move widget (and objects) based upon mouse motion
         # Scaled up accordingly based upon widget distance
-        chan = self.chan
+        dr = direct.dr
         direct.widget.setPos(
-            self.camera,
-            x + 0.5 * chan.mouseDeltaX * chan.nearWidth * (y/chan.near),
-            y + self.initY * chan.mouseDeltaY,
+            direct.camera,
+            x + 0.5 * dr.mouseDeltaX * dr.nearWidth * (y/dr.near),
+            y + self.initY * dr.mouseDeltaY,
             z)
     
     def getCrankAngle(self):
         # Used to compute current angle of mouse (relative to the widget's
         # origin) in screen space
-        x = self.chan.mouseX - self.rotationCenter[0]
-        y = self.chan.mouseY - self.rotationCenter[2]
+        x = direct.dr.mouseX - self.rotationCenter[0]
+        y = direct.dr.mouseY - self.rotationCenter[2]
         return (180 + rad2Deg(math.atan2(y,x)))
 
     def widgetCheck(self,type):
@@ -372,7 +367,7 @@ class DirectManipulationControl(PandaObject):
         # widget's origin and one of the three principle axes
         axis = self.constraint[:1]
         # First compute vector from eye through widget origin
-        mWidget2Cam = direct.widget.getMat(self.camera)
+        mWidget2Cam = direct.widget.getMat(direct.camera)
         # And determine where the viewpoint is relative to widget
         pos = VBase3(0)
         decomposeMatrix(mWidget2Cam, VBase3(0), VBase3(0), pos,
@@ -398,19 +393,19 @@ class DirectManipulationControl(PandaObject):
     def getWidgetsNearProjectionPoint(self):
         # Find the position of the projection of the specified node path
         # on the near plane
-        widgetOrigin = direct.widget.getPos(self.camera)
+        widgetOrigin = direct.widget.getPos(direct.camera)
         # project this onto near plane
-        return widgetOrigin * (self.chan.near / widgetOrigin[1])
+        return widgetOrigin * (direct.dr.near / widgetOrigin[1])
 
     def getScreenXY(self):
         # Where does the widget's projection fall on the near plane
         nearVec = self.getWidgetsNearProjectionPoint()
         # Clamp these coordinates to visible screen
-        nearX = self.clamp(nearVec[0], self.chan.left, self.chan.right)
-        nearY = self.clamp(nearVec[2], self.chan.bottom, self.chan.top)
+        nearX = self.clamp(nearVec[0], direct.dr.left, direct.dr.right)
+        nearY = self.clamp(nearVec[2], direct.dr.bottom, direct.dr.top)
         # What percentage of the distance across the screen is this?
-        percentX = (nearX - self.chan.left)/self.chan.nearWidth
-        percentY = (nearY - self.chan.bottom)/self.chan.nearHeight
+        percentX = (nearX - direct.dr.left)/direct.dr.nearWidth
+        percentY = (nearY - direct.dr.bottom)/direct.dr.nearHeight
         # Map this percentage to the same -1 to 1 space as the mouse
         screenXY = Vec3((2 * percentX) - 1.0,nearVec[1],(2 * percentY) - 1.0)
         # Return the resulting value
@@ -469,10 +464,10 @@ class DirectManipulationControl(PandaObject):
         # Default is virtual trackball (handles 1D rotations better)
         self.fHitInit = 1
         tumbleRate = 360
-        # Mouse motion edge to edge of channel results in one full turn
-        self.relHpr(self.camera,
-                    self.chan.mouseDeltaX * tumbleRate,
-                    -self.chan.mouseDeltaY * tumbleRate,
+        # Mouse motion edge to edge of display region results in one full turn
+        self.relHpr(direct.camera,
+                    direct.dr.mouseDeltaX * tumbleRate,
+                    -direct.dr.mouseDeltaY * tumbleRate,
                     0)
 
     def scale3D(self):
@@ -481,11 +476,11 @@ class DirectManipulationControl(PandaObject):
         # From midpoint to edge doubles or halves objects scale
         if self.fHitInit:
             self.fHitInit = 0
-            self.refNodePath.setPos(direct.widget, 0, 0, 0)
-            self.refNodePath.setHpr(self.camera, 0, 0, 0)
+            self.manipRef.setPos(direct.widget, 0, 0, 0)
+            self.manipRef.setHpr(direct.camera, 0, 0, 0)
             self.initScaleMag = Vec3(
                 self.objectHandles.getWidgetIntersectPt(
-                self.refNodePath, 'y')).length()
+                self.manipRef, 'y')).length()
             # record initial scale
             self.initScale = direct.widget.getScale()
         # Begin
@@ -493,7 +488,7 @@ class DirectManipulationControl(PandaObject):
         currScale = (
             self.initScale *
             (self.objectHandles.getWidgetIntersectPt(
-            self.refNodePath, 'y').length() /
+            self.manipRef, 'y').length() /
              self.initScaleMag)
             )
         direct.widget.setScale(currScale)
@@ -732,8 +727,8 @@ class ObjectHandles(NodePath,PandaObject):
         taskMgr.removeTasksNamed('resizeObjectHandles')
         # Increase handles scale until they cover 30% of the min dimension
         pos = direct.widget.getPos(direct.camera)
-        minDim = min(direct.chan.nearWidth, direct.chan.nearHeight)
-        sf = 0.15 * minDim * (pos[1]/direct.chan.near)
+        minDim = min(direct.dr.nearWidth, direct.dr.nearHeight)
+        sf = 0.15 * minDim * (pos[1]/direct.dr.near)
         self.ohScalingFactor = sf
         self.scalingNode.lerpScale(sf,sf,sf, 0.5,
                                    blendType = 'easeInOut',
@@ -741,7 +736,7 @@ class ObjectHandles(NodePath,PandaObject):
 
     def createObjectHandleLines(self):
         # X post
-        self.xPost = self.xPostGroup.attachNewNode(NamedNode('x-post-visible'))
+        self.xPost = self.xPostGroup.attachNewNode('x-post-visible')
 	lines = LineNodePath(self.xPost)
 	lines.setColor(VBase4(1,0,0,1))
 	lines.setThickness(5)
@@ -756,7 +751,7 @@ class ObjectHandles(NodePath,PandaObject):
         lines.create()
         
 	# X ring
-        self.xRing = self.xRingGroup.attachNewNode(NamedNode('x-ring-visible'))
+        self.xRing = self.xRingGroup.attachNewNode('x-ring-visible')
 	lines = LineNodePath(self.xRing)
 	lines.setColor(VBase4(1,0,0,1))
 	lines.setThickness(3)
@@ -768,7 +763,7 @@ class ObjectHandles(NodePath,PandaObject):
         lines.create()
         
         # Y post
-        self.yPost = self.yPostGroup.attachNewNode(NamedNode('y-post-visible'))
+        self.yPost = self.yPostGroup.attachNewNode('y-post-visible')
 	lines = LineNodePath(self.yPost)
 	lines.setColor(VBase4(0,1,0,1))
 	lines.setThickness(5)
@@ -783,7 +778,7 @@ class ObjectHandles(NodePath,PandaObject):
         lines.create()
         
 	# Y ring
-        self.yRing = self.yRingGroup.attachNewNode(NamedNode('y-ring-visible'))
+        self.yRing = self.yRingGroup.attachNewNode('y-ring-visible')
 	lines = LineNodePath(self.yRing)
 	lines.setColor(VBase4(0,1,0,1))
 	lines.setThickness(3)
@@ -795,7 +790,7 @@ class ObjectHandles(NodePath,PandaObject):
         lines.create()
 
         # Z post
-        self.zPost = self.zPostGroup.attachNewNode(NamedNode('z-post-visible'))
+        self.zPost = self.zPostGroup.attachNewNode('z-post-visible')
 	lines = LineNodePath(self.zPost)
 	lines.setColor(VBase4(0,0,1,1))
 	lines.setThickness(5)
@@ -810,7 +805,7 @@ class ObjectHandles(NodePath,PandaObject):
         lines.create()
         
 	# Z ring
-        self.zRing = self.zRingGroup.attachNewNode(NamedNode('z-ring-visible'))
+        self.zRing = self.zRingGroup.attachNewNode('z-ring-visible')
 	lines = LineNodePath(self.zRing)
 	lines.setColor(VBase4(0,0,1,1))
 	lines.setThickness(3)
@@ -822,7 +817,7 @@ class ObjectHandles(NodePath,PandaObject):
         lines.create()
 
     def createGuideLines(self):
-        self.guideLines = self.attachNewNode(NamedNode('guideLines'))
+        self.guideLines = self.attachNewNode('guideLines')
         # X guide lines
 	lines = LineNodePath(self.guideLines)
 	lines.setColor(VBase4(1,0,0,1))
@@ -853,7 +848,7 @@ class ObjectHandles(NodePath,PandaObject):
     def getAxisIntersectPt(self, axis):
         # Calc the xfrom from camera to widget
         mCam2Widget = direct.camera.getMat(direct.widget)
-        lineDir = Vec3(mCam2Widget.xformVec(direct.chan.nearVec))
+        lineDir = Vec3(mCam2Widget.xformVec(direct.dr.nearVec))
         lineDir.normalize()
         # And determine where the viewpoint is relative to widget
         lineOrigin = VBase3(0)
@@ -910,7 +905,7 @@ class ObjectHandles(NodePath,PandaObject):
         # Next we find the vector from viewpoint to the widget through
         # the mouse's position on near plane.
         # This defines the intersection ray
-        lineDir = Vec3(mCam2NodePath.xformVec(direct.chan.nearVec))
+        lineDir = Vec3(mCam2NodePath.xformVec(direct.dr.nearVec))
         lineDir.normalize()
         # Find the hit point
         if plane == 'x':

@@ -3,12 +3,15 @@ from Tkinter import *
 from Tree import *
 import Pmw
 
+DEFAULT_MENU_ITEMS = ['Select', 'Deselect', 'Flash', 'Toggle Vis',
+                      'Isolate', 'Show All', 'Delete']
+
 class SceneGraphExplorer(Pmw.MegaWidget):
     "Graphical display of a scene graph"
     def __init__(self, root = render, parent = None, **kw):
         # Define the megawidget options.
         optiondefs = (
-            ('menuItems',   ['Select'],   None),
+            ('menuItems',   [],   Pmw.INITOPT),
             )
         self.defineoptions(kw, optiondefs)
  
@@ -46,7 +49,7 @@ class SceneGraphExplorer(Pmw.MegaWidget):
         self._treeItem = SceneGraphExplorerItem(self.root)
 
         self._node = TreeNode(self._canvas, None, self._treeItem,
-                              self['menuItems'])
+                              DEFAULT_MENU_ITEMS + self['menuItems'])
         self._node.expand()
 
         # Check keywords and initialise options based on input values.
@@ -121,7 +124,7 @@ class SceneGraphExplorerItem(TreeItem):
         messenger.send('SGENodePath_' + command, [self.nodePath])
 
 
-def explore(nodePath):
+def explore(nodePath = render):
     tl = Toplevel()
     tl.title('Explore: ' + nodePath.getName())
     sge = SceneGraphExplorer(parent = tl, root = nodePath)

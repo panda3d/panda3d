@@ -6,7 +6,7 @@ class PieMenu(NodePath, PandaObject):
                  action = None, fUpdateOnlyOnChange = 1):
         NodePath.__init__(self)
         # Create a toplevel node for aspect ratio scaling
-        self.assign(hidden.attachNewNode(NamedNode('PieMenu')))
+        self.assign(hidden.attachNewNode('PieMenu'))
         # Attach the menu
         self.visibleMenu = visibleMenu
         # Try to flatten the visibleMenu (note, flattenStrong is too strong
@@ -44,15 +44,15 @@ class PieMenu(NodePath, PandaObject):
 	taskMgr.removeTasksNamed('pieMenuTask')
 
 	# Where did the user press the button?
-	self.originX = direct.chan.mouseX
-	self.originY = direct.chan.mouseY
+	self.originX = direct.dr.mouseX
+	self.originY = direct.dr.mouseY
 
 	# Pop up menu
 	self.reparentTo(render2d)
 	self.setPos(self.originX,0.0,self.originY)
         # Compensate for window aspect ratio
         self.setScale(1.0, 1.0,1.0)
-        #direct.chan.width/float(direct.chan.height))
+        #direct.dr.width/float(direct.dr.height))
 	# Start drawing the selection line
 	self.lines.reset()
 	self.lines.moveTo(0,0,0)
@@ -65,8 +65,8 @@ class PieMenu(NodePath, PandaObject):
         taskMgr.spawnTaskNamed(t, 'pieMenuTask')
 
     def pieMenuTask(self,state):
-        mouseX = direct.chan.mouseX
-        mouseY = direct.chan.mouseY
+        mouseX = direct.dr.mouseX
+        mouseY = direct.dr.mouseY
         deltaX = mouseX - self.originX
         deltaY = mouseY - self.originY
 

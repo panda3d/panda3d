@@ -45,7 +45,7 @@
         for child in self.getChildrenAsList():
             print child.getName()
 
-    def toggleViz(self):
+    def toggleVis(self):
         """Toggles visibility of a nodePath"""
         if self.isHidden():
             self.show()
@@ -66,7 +66,8 @@
 
     def showAllDescendants(self):
         """Show the node path and all its children"""
-	self.show()
+        if self.hasArcs():
+            self.show()
         for child in self.getChildrenAsList():
             child.showAllDescendants()
 
@@ -82,7 +83,6 @@
         # before node is deleted
         messenger.send('preRemoveNodePath', [self])
         # Remove nodePath
-        self.reparentTo(hidden)
         self.removeNode()
 
     def reversels(self):
