@@ -589,29 +589,34 @@ PyUtilProfileDefaultSorts = ['cumulative', 'time', 'calls']
 #            self.load()
 #        import __builtin__
 #        __builtin__.func = func
-#        PythonUtil.startProfile(cmd='func()', filename='loadProfile')
+#        PythonUtil.startProfile(cmd='func()', filename='profileData')
 #        del __builtin__.func
 #
 def startProfile(filename=PyUtilProfileDefaultFilename,
                  lines=PyUtilProfileDefaultLines,
                  sorts=PyUtilProfileDefaultSorts,
                  silent=0,
+                 callInfo=1,
                  cmd='run()'):
     import profile
     profile.run(cmd, filename)
     if not silent:
-        printProfile(filename, lines, sorts)
+        printProfile(filename, lines, sorts, callInfo)
 
 # call this to see the results again
 def printProfile(filename=PyUtilProfileDefaultFilename,
                  lines=PyUtilProfileDefaultLines,
-                 sorts=PyUtilProfileDefaultSorts,):
+                 sorts=PyUtilProfileDefaultSorts,
+                 callInfo=1):
     import pstats
     s = pstats.Stats(filename)
     s.strip_dirs()
     for sort in sorts:
         s.sort_stats(sort)
         s.print_stats(lines)
+        if callInfo:
+            s.print_callees(lines)
+            s.print_callers(lines)
 
 class Functor:
     def __init__(self, function, *args, **kargs):
