@@ -245,15 +245,18 @@ traverse(Node *root,
 ////////////////////////////////////////////////////////////////////
 void CullTraverser::
 setup_initial_bins() {
-  // We always have "default" and "fixed" hardcoded in, although these
-  // may be overridden by specifing a new bin with the same name in
-  // the Configrc file.
+  // We always have "default", "background", and "fixed" hardcoded in,
+  // although these may be overridden by specifing a new bin with the
+  // same name in the Configrc file.
 
   GeomBinNormal *default_bin = new GeomBinNormal("default");
+  GeomBinFixed *background = new GeomBinFixed("background");
   GeomBinFixed *fixed = new GeomBinFixed("fixed");
-  fixed->set_sort(30);
+  background->set_sort(20);
+  fixed->set_sort(40);
 
   default_bin->set_traverser(this);
+  background->set_traverser(this);
   fixed->set_traverser(this);
 
 
@@ -354,12 +357,7 @@ draw() {
 	cull_cat.warning()
 	  << "Bin " << bin_name << " is unknown; creating a default bin.\n";
 
-	if (bin_name == "fixed") {
-	  requested_bin = new GeomBinFixed(bin_name);
-	  requested_bin->set_sort(20);
-	} else {
-	  requested_bin = new GeomBinNormal(bin_name);
-	}
+	requested_bin = new GeomBinNormal(bin_name);
 	requested_bin->set_traverser(this);
       }
 
