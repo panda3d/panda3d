@@ -20,12 +20,14 @@
 #define MEMORYINFO_H
 
 #include <pandabase.h>
+
+#ifdef DO_MEMORY_USAGE
+
 #include "typeHandle.h"
 
 class ReferenceCount;
 class TypedObject;
 
-#ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////
 //       Class : MemoryInfo
 // Description : This is a supporting class for MemoryUsage.  It

@@ -16,12 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifdef DO_MEMORY_USAGE
+// Nothing in this module gets compiled in NDEBUG mode.
 
 #include "memoryUsagePointerCounts.h"
 #include "memoryInfo.h"
-
-#ifndef NDEBUG
-// Nothing in this module gets compiled in NDEBUG mode.
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsagePointerCounts::add_info

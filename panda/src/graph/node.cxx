@@ -37,7 +37,9 @@ Node* const Node::Null = (Node*)0L;
 ////////////////////////////////////////////////////////////////////
 Node::
 Node() {
+#ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -55,7 +57,9 @@ Node(const Node &copy) :
   BoundedObject(copy),
   ReferenceCount(copy)
 {
+#ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

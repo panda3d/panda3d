@@ -34,7 +34,9 @@ TypeHandle NodeTransitionCache::_type_handle;
 ////////////////////////////////////////////////////////////////////
 NodeTransitionCache::
 NodeTransitionCache() {
+#ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, get_class_type());
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -46,7 +48,9 @@ NodeTransitionCache::
 NodeTransitionCache(const NodeTransitionCache &copy) :
   _cache(copy._cache)
 {
+#ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, get_class_type());
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -67,7 +71,9 @@ operator = (const NodeTransitionCache &copy) {
 ////////////////////////////////////////////////////////////////////
 NodeTransitionCache::
 NodeTransitionCache(const NodeTransitions &nt) {
+#ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, get_class_type());
+#endif
 
   NodeTransitions::Transitions::const_iterator ti;
   for (ti = nt._transitions.begin();

@@ -16,14 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
-#include "memoryUsagePointers.h"
-
-
-#ifndef NDEBUG
+#ifdef DO_MEMORY_USAGE
 // Nothing in this module gets compiled in NDEBUG mode.
 
-
+#include "memoryUsagePointers.h"
 #include "config_express.h"
 #include "referenceCount.h"
 #include "typedReferenceCount.h"

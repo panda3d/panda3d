@@ -377,6 +377,8 @@ main_tick() {
   // code inside the MemoryUsage class, where it fits a little better,
   // simply because MemoryUsage is a very low-level class that doesn't
   // know about PStatClient.
+
+#ifdef DO_MEMORY_USAGE
   if (MemoryUsage::has_total_size()) {
     _total_size_pcollector.set_level(MemoryUsage::get_total_size());
   }
@@ -386,6 +388,7 @@ main_tick() {
   if (MemoryUsage::has_interpreter_size()) {
     _interpreter_size_pcollector.set_level(MemoryUsage::get_interpreter_size());
   }
+#endif
 
   get_global_pstats()->client_main_tick();
 }  

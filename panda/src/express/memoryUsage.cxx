@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifdef DO_MEMORY_USAGE
+// Nothing in this module gets compiled in NDEBUG mode.
 
 #include "memoryUsagePointers.h"
 #include "trueClock.h"
@@ -27,10 +29,6 @@
 #if defined(WIN32_VC) && defined(_DEBUG)
 #include <crtdbg.h>
 #endif
-
-#ifndef NDEBUG
-// Nothing in this module gets compiled in NDEBUG mode.
-
 
 #include "config_express.h"
 #include <algorithm>

@@ -73,7 +73,7 @@ reassign(To *ptr) {
     _ptr = ptr;
     if (_ptr != (To *)NULL) {
       _ptr->ref();
-#ifndef NDEBUG
+#ifdef DO_MEMORY_USAGE
       if (MemoryUsage::get_track_memory_usage()) {
         // Make sure the MemoryUsage record knows what the TypeHandle
         // is, if we know it ourselves.

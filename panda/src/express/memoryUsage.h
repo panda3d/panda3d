@@ -21,10 +21,11 @@
 
 #include <pandabase.h>
 
+#ifdef DO_MEMORY_USAGE
+
 #include "typedObject.h"
 #include "memoryInfo.h"
 #include "memoryUsagePointerCounts.h"
-
 #include "pmap.h"
 #include "dallocator.h"
 
@@ -198,6 +199,7 @@ private:
 };
 
 #include "memoryUsage.I"
+#endif
 
 #endif
 

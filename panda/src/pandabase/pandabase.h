@@ -26,5 +26,11 @@
 #include <dtoolbase.h>
 #include "pandasymbols.h"
 
+#if defined(UNKNOWN_ALLOCATOR) || defined(NDEBUG)
+#undef DO_MEMORY_USAGE
+#else
+#define DO_MEMORY_USAGE
+#endif
+
 #endif
 

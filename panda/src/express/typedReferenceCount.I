@@ -24,7 +24,9 @@
 ////////////////////////////////////////////////////////////////////
 INLINE TypedReferenceCount::
 TypedReferenceCount() {
+#ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -37,7 +39,9 @@ TypedReferenceCount(const TypedReferenceCount &copy) :
   TypedObject(copy),
   ReferenceCount(copy)
 {
+#ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

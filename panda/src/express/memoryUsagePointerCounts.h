@@ -21,9 +21,10 @@
 
 #include <pandabase.h>
 
+#ifdef DO_MEMORY_USAGE
+
 class MemoryInfo;
 
-#ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////
 //       Class : MemoryUsagePointerCounts
 // Description : This is a supporting class for MemoryUsage.  It

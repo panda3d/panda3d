@@ -16,12 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifdef DO_MEMORY_USAGE
+// Nothing in this module gets compiled in NDEBUG mode.
+
 #include "memoryInfo.h"
 #include "typedReferenceCount.h"
 #include "typeHandle.h"
-
-#ifndef NDEBUG
-// Nothing in this module gets compiled in NDEBUG mode.
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryInfo::Constructor

@@ -38,7 +38,7 @@ TypeHandle RefCountObj<Base>::_type_handle;
 INLINE ReferenceCount::
 ReferenceCount() {
   _ref_count = 0;
-#ifndef NDEBUG
+#ifdef DO_MEMORY_USAGE
   MemoryUsage::record_pointer(this);
 #endif
 }
@@ -56,7 +56,7 @@ ReferenceCount() {
 INLINE ReferenceCount::
 ReferenceCount(const ReferenceCount &) {
   _ref_count = 0;
-#ifndef NDEBUG
+#ifdef DO_MEMORY_USAGE
   MemoryUsage::record_pointer(this);
 #endif
 }
@@ -95,7 +95,7 @@ operator = (const ReferenceCount &) {
 INLINE ReferenceCount::
 ~ReferenceCount() {
   prepare_delete();
-#ifndef NDEBUG
+#ifdef DO_MEMORY_USAGE
   MemoryUsage::remove_pointer(this);
 #endif
 }

@@ -21,13 +21,13 @@
 
 #include <pandabase.h>
 
+#ifdef DO_MEMORY_USAGE
+
 #include "typedObject.h"
 #include "pointerTo.h"
 #include "referenceCount.h"
-
 #include "pvector.h"
 
-#ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////
 //       Class : MemoryUsagePointers
 // Description : This is a list of pointers returned by a MemoryUsage
