@@ -12,23 +12,23 @@ class Entity:
 class ActiveCell(Entity):
     type = 'activeCell'
     attribs = (
-        ('row', 0),
-        ('col', 0),
-        ('gridId', None)
+        ('row', 0, 'int'),
+        ('col', 0, 'int'),
+        ('gridId', None, 'entId', {'type':'grid'})
         )
 
 class DirectionalCell(ActiveCell):
     type = 'directionalCell'
     attribs = (
-        ('dir', [0,0]),
+        ('dir', [0,0], 'choice', {'choiceSet':['l','r','up','dn']}),
         )
     
 class LevelMgr(Entity):
     type = 'levelMgr'
     attribs = (
-        ('cogLevel', 0),
-        ('cogTrack', 'c'),
-        ('modelFilename', None),
+        ('cogLevel', 0, 'int', {'min':0, 'max':11}),
+        ('cogTrack', 'c', 'choice', {'choiceSet':['c','s','l','m']}),
+        ('modelFilename', None, 'modelpath'),
         )
 
 class EditMgr(Entity):
@@ -40,18 +40,20 @@ class EditMgr(Entity):
 
 class LogicGate(Entity):
     type = 'logicGate'
+    output = 'bool'
     attribs = (
-        ('input_input1_bool', 0, 'boolean'),
-        ('input_input2_bool', 0, 'boolean'),
-        ('isInput1', 0),
-        ('isInput2', 0),
-        ('logicType', 'or'),
-        ('output', 'bool'),
+        ('input_input1_bool', 0, 'entId', {'output':'bool'}),
+        ('input_input2_bool', 0, 'entId', {'output':'bool'}),
+        ('isInput1', 0, 'bool'),
+        ('isInput2', 0, 'bool'),
+        ('logicType', 'or', 'choice',
+         {'choiceSet':['or','and','xor','nand','nor','xnor']}),
         )
 
 class NodepathImpl:
+    isNodePath = 1
     attribs = (
-        ('parent', 0),
+        ('parent', 0, 'entId', {'type':'isNodePath'}),
         ('pos', Point3(0,0,0), 'pos'),
         ('hpr', Vec3(0,0,0), 'hpr'),
         )
@@ -59,10 +61,12 @@ class NodepathImpl:
 # Note: this covers Nodepath and DistributedNodepath
 class Nodepath(Entity, NodepathImpl):
     type = 'nodepath'
+    isNodePath = 1
 
 class NodepathAttribs:
+    isNodePath = 1
     attribs = (
-        ('parent', 0),
+        ('parent', 0, 'entId', {'type':'isNodePath'}),
         ('pos', Point3(0,0,0), 'pos'),
         ('hpr', Vec3(0,0,0), 'hpr'),
         )
@@ -76,8 +80,8 @@ class Zone(Entity, NodepathAttribs):
         )
     attribs = (
         ('description', ''),
-        ('modelZoneNum', None),
-        ('visibility', []),
+        ('modelZoneNum', None, 'int'),
+        ('visibility', [], 'modelZoneList'),
         )
 
 class CutScene(Entity):
@@ -97,7 +101,7 @@ class BarrelBase(Nodepath):
         'hpr',
         )
     attribs = (
-        ('h', 0, 'float'),
+        ('h', 0, 'float', {'min':0, 'max':360}),
         )
 
 class BeanBarrel(BarrelBase):
@@ -106,19 +110,19 @@ class BeanBarrel(BarrelBase):
 class GagBarrel(BarrelBase):
     type = 'gagBarrel'
     attribs = (
-        ('gagLevel', 0),
-        ('gagTrack', 0),
+        ('gagLevel', 0, 'int', {'min':0,'max':5}),
+        ('gagTrack', 0, 'choice', {'choiceSet':range(7)}),
         )
 
 class Switch(Entity, NodepathImpl):
+    output = 'bool'
     attribs = (
-        ('scale', 1),
+        ('scale', Vec3(1), 'scale'),
         ('color', Vec4(1,1,1,1), 'color'),
-        ('model', None),
-        ('input_isOn_bool', 0, 'boolean'),
-        ('isOn', 0),
-        ('output', 'bool'),
-        ('secondsOn', 1),
+        ('model', '', 'bamfilename'),
+        ('input_isOn_bool', 0, 'entId', {'output':'bool'}),
+        ('isOn', 0, 'bool'),
+        ('secondsOn', 1, 'float'),
         )
 
 class Button(Switch):
@@ -130,11 +134,11 @@ class Trigger(Switch):
 class ConveyorBelt(Nodepath):
     type = 'conveyorBelt'
     attribs = (
-        ('speed', 1.0),
-        ('length', 1.0),
-        ('widthScale', 1.0),
-        ('treadLength', 1.0),
-        ('treadModelPath', 'phase_7/models/cogHQ/platform1'),
+        ('speed', 1.0, 'float'),
+        ('length', 1.0, 'float'),
+        ('widthScale', 1.0, 'float'),
+        ('treadLength', 1.0, 'float'),
+        ('treadModelPath', 'phase_7/models/cogHQ/platform1', 'bamfilename'),
         ('floorName', 'platformcollision'),
         )        
         
@@ -144,33 +148,33 @@ class Crate(Nodepath):
         'hpr',
         )
     attribs = (
-        ('scale', 1),
-        ('gridId', None),
-        ('pushable', 1),
+        ('scale', Vec3(1), 'scale'),
+        ('gridId', None, 'entId', {'type':'grid'}),
+        ('pushable', 1, 'bool'),
         )
 
 class Door(Entity):
     type = 'door'
+    output = 'bool'
     attribs = (
-        ('parent', 0),
+        ('parent', 0, 'entId'),
         ('pos', Point3(0,0,0), 'pos'),
         ('hpr', Vec3(0,0,0), 'hpr'),
-        ('scale', 1),
+        ('scale', Vec3(1,1,1), 'scale'),
         ('color', Vec4(1,1,1,1), 'color'),
-        ('model', None),
-        ('doorwayNum', 0),
-        ('input_Lock0_bool', 0, 'boolean'),
-        ('input_Lock1_bool', 0, 'boolean'),
-        ('input_Lock2_bool', 0, 'boolean'),
-        ('input_Lock3_bool', 0, 'boolean'),
-        ('input_isOpen_bool', 0, 'boolean'),
-        ('isLock0Unlocked', 0),
-        ('isLock1Unlocked', 0),
-        ('isLock2Unlocked', 0),
-        ('isLock3Unlocked', 0),
-        ('isOpen', 0),
-        ('output', 'bool'),
-        ('secondsOpen', 1),
+        ('model', "", 'bamfilename'),
+        ('doorwayNum', 0), # Obsolete
+        ('input_Lock0_bool', 0, 'entId', {'output':'bool'}),
+        ('input_Lock1_bool', 0, 'entId', {'output':'bool'}),
+        ('input_Lock2_bool', 0, 'entId', {'output':'bool'}),
+        ('input_Lock3_bool', 0, 'entId', {'output':'bool'}),
+        ('input_isOpen_bool', 0, 'entId', {'output':'bool'}),
+        ('isLock0Unlocked', 0, 'bool'),
+        ('isLock1Unlocked', 0, 'bool'),
+        ('isLock2Unlocked', 0, 'bool'),
+        ('isLock3Unlocked', 0, 'bool'),
+        ('isOpen', 0, 'bool'),
+        ('secondsOpen', 1, 'float'),
         )
 
 class Grid(Nodepath):
@@ -179,20 +183,20 @@ class Grid(Nodepath):
         'hpr',
         )
     attribs = (
-        ('cellSize', 3),
-        ('numCol', 3),
-        ('numRow', 3),
+        ('cellSize', 3, 'float'),
+        ('numCol', 3, 'int'),
+        ('numRow', 3, 'int'),
         )
 
 class Lift(Nodepath):
     type = 'lift'
     attribs = (
-        ('duration', 1),
+        ('duration', 1, 'float'),
         ('startPos', Point3(0,0,0), 'pos'),
         ('endPos', Point3(0,0,0), 'pos'),
-        ('modelPath', ''),
+        ('modelPath', '', 'bamfilename'),
         ('floorName', ''),
-        ('modelScale', 1),
+        ('modelScale', Vec3(1), 'scale'),
         )
 
 class Platform(Nodepath):
@@ -203,9 +207,9 @@ class Platform(Nodepath):
     attribs = (
         ('startPos', Point3(0,0,0), 'pos'),
         ('endPos', Point3(0,0,0), 'pos'),
-        ('speed', 1),
-        ('waitDur', 1),
-        ('phaseShift', 0.),
+        ('speed', 1, 'float'),
+        ('waitDur', 1, 'float'),
+        ('phaseShift', 0., 'float', {'min':0,'max':1}),
         )
 
 class SinkingPlatform(Nodepath):
@@ -215,41 +219,45 @@ class SinkingPlatform(Nodepath):
         )
     attribs = (
         ('endPos', Point3(0,0,0), 'pos'),
-        ('phaseShift', 0.),
+        ('phaseShift', 0., 'float', {'min':0,'max':1}),
         ('startPos', Point3(0,0,0), 'pos'),
-        ('verticalRange', 1),
-        ('sinkRate', 1),
-        ('riseRate', 1),
-        ('speed', 1),
-        ('waitDur', 1),
+        ('verticalRange', 1, 'float'),
+        ('sinkRate', 1, 'float'),
+        ('riseRate', 1, 'float'),
+        ('speed', 1, 'float'),
+        ('waitDur', 1, 'float'),
         )
 
 class Stomper(Nodepath):
     type = 'stomper'
     attribs = (
         ('headScale', Vec3(1,1,1), 'scale'),
-        ('motion', 3),
-        ('period', 2.),
-        ('phaseShift', 0.),
-        ('range', 6),
+        ('motion', 3, 'choice',
+         {'choiceSet':['linear','sinus','half sinus','slow fast']}),
+        ('period', 2., 'float'),
+        ('phaseShift', 0., 'float', {'min':0, 'max':1}),
+        ('range', 6, 'float'),
         ('shaftScale', Vec3(1,1,1), 'scale'),
-        ('soundLen', 0),
-        ('soundOn', 0),
-        ('style', 'horizontal'),
-        ('zOffset', 0),
+        ('soundLen', 0, 'float'),
+        ('soundOn', 0, 'bool'),
+        ('style', 'horizontal', 'choice',
+         {'choiceSet':['horizontal', 'vertical']}),
+        ('zOffset', 0, 'float'),
         )
 
 class StomperPair(Nodepath):
     type = 'stomperPair'
     attribs = (
         ('headScale', Vec3(1,1,1), 'scale'),
-        ('motion', 3),
-        ('period', 2.),
-        ('phaseShift', 0.),
-        ('range', 6),
+        ('motion', 3, 'choice',
+         {'choiceSet':['linear','sinus','half sinus','slow fast']}),
+        ('period', 2., 'float'),
+        ('phaseShift', 0., {'min':0, 'max':1}),
+        ('range', 6, 'float'),
         ('shaftScale', Vec3(1,1,1), 'scale'),
-        ('soundLen', 0),
-        ('soundOn', 0),
-        ('stomperIds', []),
-        ('style', 'horizontal'),
+        ('soundLen', 0, 'float'),
+        ('soundOn', 0, 'bool'),
+        ('stomperIds', [], 'entId', {'type':'stomper', 'num':2}),
+        ('style', 'horizontal', 'choice',
+         {'choiceSet':['horizontal', 'vertical']}),
         )
