@@ -38,6 +38,8 @@ class FunctionInterval(Interval):
 	"""
         # Evaluate the function
         apply(self.function, self.extraArgs)
+        # Print debug information
+        self.notify.debug('updateFunc() - %s: executing Function' % self.name)
 
 ### FunctionInterval subclass for throwing events ###
 class EventInterval(FunctionInterval):
