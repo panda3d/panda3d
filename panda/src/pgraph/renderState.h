@@ -110,6 +110,9 @@ private:
   void determine_fog();
   void determine_transparency();
 
+  INLINE void set_destructing();
+  INLINE bool is_destructing() const;
+
 private:
   typedef pset<const RenderState *, IndirectLess<RenderState> > States;
   static States *_states;
@@ -127,6 +130,9 @@ private:
   // one in each of the two involved RenderState objects.
   class Composition {
   public:
+    INLINE Composition();
+    INLINE Composition(const Composition &copy);
+
     CPT(RenderState) _result;
   };
     
@@ -176,8 +182,9 @@ private:
     F_checked_bin_index    = 0x0001,
     F_checked_fog          = 0x0002,
     F_checked_transparency = 0x0004,
+    F_is_destructing       = 0x8000,
   };
-  short _flags;
+  unsigned short _flags;
 
 public:
   static void register_with_read_factory();

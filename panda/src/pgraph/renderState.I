@@ -18,6 +18,26 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::Composition::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE RenderState::Composition::
+Composition() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::Composition::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE RenderState::Composition::
+Composition(const RenderState::Composition &copy) :
+  _result(copy._result)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::Attribute::Constructor
 //       Access: Public
 //  Description:
@@ -234,4 +254,38 @@ get_transparency() const {
     ((RenderState *)this)->determine_transparency();
   }
   return _transparency;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::set_destructing
+//       Access: Private
+//  Description: This function should only be called from the
+//               destructor; it indicates that this RenderState
+//               object is beginning destruction.  It is only used as
+//               a sanity check, and is only meaningful when NDEBUG is
+//               not defined.
+////////////////////////////////////////////////////////////////////
+INLINE void RenderState::
+set_destructing() {
+#ifndef NDEBUG
+  _flags |= F_is_destructing;
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::is_destructing
+//       Access: Private
+//  Description: Returns true if the RenderState object is
+//               currently within its destructor
+//               (i.e. set_destructing() has been called).  This is
+//               only used as a sanity check, and is only meaningful
+//               when NDEBUG is not defined.
+////////////////////////////////////////////////////////////////////
+INLINE bool RenderState::
+is_destructing() const {
+#ifndef NDEBUG
+  return (_flags & F_is_destructing) != 0;
+#else
+  return false;
+#endif
 }

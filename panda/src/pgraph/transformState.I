@@ -18,6 +18,26 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState::Composition::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE TransformState::Composition::
+Composition() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::Composition::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE TransformState::Composition::
+Composition(const TransformState::Composition &copy) :
+  _result(copy._result)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformState::make_pos
 //       Access: Published, Static
 //  Description: Makes a new TransformState with the specified
@@ -301,4 +321,38 @@ check_mat() const {
   if ((_flags & F_mat_known) == 0) {
     ((TransformState *)this)->calc_mat();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::set_destructing
+//       Access: Private
+//  Description: This function should only be called from the
+//               destructor; it indicates that this TransformState
+//               object is beginning destruction.  It is only used as
+//               a sanity check, and is only meaningful when NDEBUG is
+//               not defined.
+////////////////////////////////////////////////////////////////////
+INLINE void TransformState::
+set_destructing() {
+#ifndef NDEBUG
+  _flags |= F_is_destructing;
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::is_destructing
+//       Access: Private
+//  Description: Returns true if the TransformState object is
+//               currently within its destructor
+//               (i.e. set_destructing() has been called).  This is
+//               only used as a sanity check, and is only meaningful
+//               when NDEBUG is not defined.
+////////////////////////////////////////////////////////////////////
+INLINE bool TransformState::
+is_destructing() const {
+#ifndef NDEBUG
+  return (_flags & F_is_destructing) != 0;
+#else
+  return false;
+#endif
 }

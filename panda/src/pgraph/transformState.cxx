@@ -79,6 +79,10 @@ operator = (const TransformState &) {
 ////////////////////////////////////////////////////////////////////
 TransformState::
 ~TransformState() {
+  // We'd better not call the destructor twice on a particular object.
+  nassertv(!is_destructing());
+  set_destructing();
+
   // Free the inverse matrix computation, if it has been stored.
   if (_inv_mat != (LMatrix4f *)NULL) {
     delete _inv_mat;
@@ -100,51 +104,116 @@ TransformState::
   // cache: it's the same set of TransformState objects that we have in
   // our own cache.
 
-  // We do need to put some thought into this loop, because as we
-  // clear out cache entries we'll cause other TransformState objects to
-  // destruct, which could cause things to get pulled out of our own
-  // _composition_cache map.  We don't want to get bitten by this
-  // cascading effect.
-  CompositionCache::iterator ci;
-  ci = _composition_cache.begin();
-  while (ci != _composition_cache.end()) {
-    {
-      PT(TransformState) other = (TransformState *)(*ci).first;
+  // We do need to put considerable thought into this loop, because as
+  // we clear out cache entries we'll cause other TransformState
+  // objects to destruct, which could cause things to get pulled out
+  // of our own _composition_cache map.  We want to allow this (so
+  // that we don't encounter any just-destructed pointers in our
+  // cache), but we don't want to get bitten by this cascading effect.
+  // Instead of walking through the map from beginning to end,
+  // therefore, we just pull out the first one each time, and erase
+  // it.
+
+  // There are lots of ways to do this loop wrong.  Be very very
+  // careful if you need to modify it for any reason.
+  while (!_composition_cache.empty()) {
+    CompositionCache::iterator ci = _composition_cache.begin();
+    if ((*ci).first->get_ref_count() == 0) {
+      // If the reference count of the other one is zero, it must be
+      // in the middle of destructing (but not yet completely
+      // destructed, or it wouldn't even be here any more).  This can
+      // happen because of the cascading effects of these destructors.
+      nassertv((*ci).first->is_destructing());
+
+      // We can't use a PT() to hold a pointer to a destructing
+      // object; that would likely call its destructor twice.
+      TransformState *other = (TransformState *)(*ci).first;
       Composition comp = (*ci).second;
+      _composition_cache.erase(ci);
 
       // We should never have a reflexive entry in this map.  If we
       // do, something got screwed up elsewhere.
       nassertv(other != (const TransformState *)this);
-      
-      // Now we're holding a reference count to the other state, as well
-      // as to the computed result (if any), so neither object will be
-      // tempted to destruct.  Go ahead and remove ourselves from the
-      // other cache.
-      other->_composition_cache.erase(this);
+      nassertv(comp._result == (TransformState *)NULL ||
+               !comp._result->is_destructing());
 
-      // It's all right if the other state destructs now, since it
-      // won't try to remove itself from our own composition cache any
-      // more.  Someone might conceivably delete the *next* entry,
-      // though, so we should be sure to let all that deleting finish
-      // up before we attempt to increment ci, by closing the scope
-      // here.
+      CompositionCache::iterator oci = other->_composition_cache.find(this);
+
+      // Since the other one is in the middle of destructing, we may
+      // or may not still be listed in its cache.
+      if (oci != other->_composition_cache.end()) {
+        Composition ocomp = (*oci).second;
+        nassertv(ocomp._result == (TransformState *)NULL ||
+                 !ocomp._result->is_destructing());
+        
+        // Now we're holding a reference count to both computed
+        // results, so no objects will be tempted to destruct while we
+        // clear the pointer here.
+        other->_composition_cache.erase(oci);
+      }
+
+    } else {
+      // If the other one hasn't yet started to destruct, hold its
+      // reference count now, so it won't start to destruct until
+      // we're done with this operation.
+      PT(TransformState) other = (TransformState *)(*ci).first;
+      Composition comp = (*ci).second;
+      _composition_cache.erase(ci);
+
+      nassertv(other != (const TransformState *)this);
+      nassertv(!other->is_destructing());
+      nassertv(comp._result == (TransformState *)NULL ||
+               !comp._result->is_destructing());
+
+      CompositionCache::iterator oci = other->_composition_cache.find(this);
+
+      // Since the other one is not destructing yet, we should still
+      // be listed in its cache.
+      nassertv(oci != other->_composition_cache.end());
+      Composition ocomp = (*oci).second;
+      nassertv(ocomp._result == (TransformState *)NULL ||
+               !ocomp._result->is_destructing());
+      
+      // All reference counts are now held; clear the pointer.
+      other->_composition_cache.erase(oci);
     }
-    // Now it's safe to increment ci, because the current cache entry
-    // has not gone away, and if the next one has, by now it's safely
-    // gone.
-    ++ci;
   }
 
   // A similar bit of code for the invert cache.
-  ci = _invert_composition_cache.begin();
-  while (ci != _invert_composition_cache.end()) {
-    {
+  while (!_invert_composition_cache.empty()) {
+    CompositionCache::iterator ci = _invert_composition_cache.begin();
+    if ((*ci).first->get_ref_count() == 0) {
+      nassertv((*ci).first->is_destructing());
+      TransformState *other = (TransformState *)(*ci).first;
+      Composition comp = (*ci).second;
+      _invert_composition_cache.erase(ci);
+      nassertv(other != (const TransformState *)this);
+      nassertv(comp._result == (TransformState *)NULL ||
+               !comp._result->is_destructing());
+      CompositionCache::iterator oci = 
+        other->_invert_composition_cache.find(this);
+      if (oci != other->_invert_composition_cache.end()) {
+        Composition ocomp = (*oci).second;
+        nassertv(ocomp._result == (TransformState *)NULL ||
+                 !ocomp._result->is_destructing());
+        other->_invert_composition_cache.erase(oci);
+      }
+    } else {
       PT(TransformState) other = (TransformState *)(*ci).first;
       Composition comp = (*ci).second;
+      _invert_composition_cache.erase(ci);
       nassertv(other != (const TransformState *)this);
-      other->_invert_composition_cache.erase(this);
+      nassertv(!other->is_destructing());
+      nassertv(comp._result == (TransformState *)NULL ||
+               !comp._result->is_destructing());
+      CompositionCache::iterator oci = 
+        other->_invert_composition_cache.find(this);
+      nassertv(oci != other->_invert_composition_cache.end());
+      Composition ocomp = (*oci).second;
+      nassertv(ocomp._result == (TransformState *)NULL ||
+               !ocomp._result->is_destructing());
+      other->_invert_composition_cache.erase(oci);
     }
-    ++ci;
   }
 
   // Also, if we called compose(this) at some point and the return
@@ -153,6 +222,10 @@ TransformState::
   if (_self_compose != (TransformState *)NULL && _self_compose != this) {
     unref_delete((TransformState *)_self_compose);
   }
+
+  // If this was true at the beginning of the destructor, but is no
+  // longer true now, probably we've been double-deleted.
+  nassertv(get_ref_count() == 0);
 }
 
 ////////////////////////////////////////////////////////////////////

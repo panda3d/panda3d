@@ -154,7 +154,6 @@ return_new(RenderEffect *effect) {
     // The effect was inserted; save the iterator and return the
     // input effect.
     effect->_saved_entry = result.first;
-    effect->ref();  // **** TEMPORARY HACK
     return pt_effect;
   }
 

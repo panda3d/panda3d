@@ -124,6 +124,9 @@ private:
   // one in each of the two involved TransformState objects.
   class Composition {
   public:
+    INLINE Composition();
+    INLINE Composition(const Composition &copy);
+
     CPT(TransformState) _result;
   };
     
@@ -145,21 +148,25 @@ private:
   void calc_components();
   void calc_mat();
 
+  INLINE void set_destructing();
+  INLINE bool is_destructing() const;
+
   enum Flags {
-    F_is_identity      =  0x0001,
-    F_is_singular      =  0x0002,
-    F_singular_known   =  0x0004,
-    F_components_given =  0x0008,
-    F_components_known =  0x0010,
-    F_has_components   =  0x0020,
-    F_mat_known        =  0x0040,
-    F_is_invalid       =  0x0080,
+    F_is_identity      = 0x0001,
+    F_is_singular      = 0x0002,
+    F_singular_known   = 0x0004,
+    F_components_given = 0x0008,
+    F_components_known = 0x0010,
+    F_has_components   = 0x0020,
+    F_mat_known        = 0x0040,
+    F_is_invalid       = 0x0080,
+    F_is_destructing   = 0x8000,
   };
   LVecBase3f _pos, _hpr, _scale;
   LMatrix4f _mat;
   LMatrix4f *_inv_mat;
   
-  short _flags;
+  unsigned short _flags;
 
 public:
   static void register_with_read_factory();

@@ -264,7 +264,6 @@ get_bounds_outer_viz_state() {
       (ColorAttrib::make_flat(Colorf(0.3f, 1.0f, 0.5f, 1.0f)),
        RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
        CullFaceAttrib::make(CullFaceAttrib::M_cull_clockwise));
-    state->ref();  // once more to guard against static destruction
   }
   return state;
 }
@@ -285,7 +284,6 @@ get_bounds_inner_viz_state() {
       (ColorAttrib::make_flat(Colorf(0.15f, 0.5f, 0.25f, 1.0f)),
        RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
        CullFaceAttrib::make(CullFaceAttrib::M_cull_counter_clockwise));
-    state->ref();  // once more to guard against static destruction
   }
   return state;
 }
@@ -304,7 +302,6 @@ get_depth_offset_state() {
   if (state == (const RenderState *)NULL) {
     state = RenderState::make
       (DepthOffsetAttrib::make(1));
-    state->ref();  // once more to guard against static destruction
   }
   return state;
 }

@@ -3794,7 +3794,6 @@ get_unlit_state() {
   static CPT(RenderState) state = NULL;
   if (state == (const RenderState *)NULL) {
     state = RenderState::make(LightAttrib::make_all_off());
-    state->ref();
   }
   return state;
 }
