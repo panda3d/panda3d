@@ -244,9 +244,6 @@ protected:
 
   INLINE void issue_scene_graph_color();
 
-  INLINE void report_errors() const;
-  void report_errors_loop(GLenum error_code) const;
-
   void set_draw_buffer(const RenderBuffer &rb);
   void set_read_buffer(const RenderBuffer &rb);
 

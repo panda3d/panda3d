@@ -1768,7 +1768,9 @@ release_texture(TextureContext *tc) {
   GLTextureContext *gtc = DCAST(GLTextureContext, tc);
   Texture *tex = tc->_texture;
 
-  glDeleteTextures(1, &gtc->_index);
+  HGLRC curcxt=wglGetCurrentContext();
+  if(curcxt!=NULL)
+      glDeleteTextures(1, &gtc->_index);
   gtc->_index = 0;
 
   bool erased = unmark_prepared_texture(gtc);
@@ -3536,19 +3538,21 @@ compute_distance_to(const LPoint3f &point) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::report_errors_loop
+//     Function: report_errors_loop
 //       Access: Protected
 //  Description: The internal implementation of report_errors().
 //               Don't call this function; use report_errors()
 //               instead.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-report_errors_loop(GLenum error_code) const {
+
+void report_errors_loop(GLenum error_code) {
 #ifndef NDEBUG
-  while (error_code != GL_NO_ERROR) {
-    glgsg_cat.error()
-      << gluErrorString(error_code) << "\n";
+#define MAXGLERRORSREPORTED 20
+  int cnt=0;
+  while ((cnt<MAXGLERRORSREPORTED) && (error_code != GL_NO_ERROR)) {
+    glgsg_cat.error() << gluErrorString(error_code) << "\n";
     error_code = glGetError();
+    cnt++;
   }
 #endif
 }

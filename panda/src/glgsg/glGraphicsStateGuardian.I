@@ -1203,14 +1203,17 @@ issue_scene_graph_color() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::report_errors
-//       Access: Protected
+//       Access: Public
 //  Description: Checks for any outstanding error codes and outputs
 //               them, if found.  If NDEBUG is defined, this function
 //               does nothing.
 ////////////////////////////////////////////////////////////////////
-INLINE void GLGraphicsStateGuardian::
-report_errors() const {
+INLINE void 
+report_errors() {
+    // pulling this out of gsg since I'd like to call it when there's no gsg ptr around
 #ifndef NDEBUG
+  extern void report_errors_loop(GLenum error_code);
+
   GLenum error_code = glGetError();
   if (error_code != GL_NO_ERROR) {
     report_errors_loop(error_code);
