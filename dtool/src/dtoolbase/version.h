@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+/* instead of this stuff probably want to use link.exe /VERSION flag instead, which might make auto-incrementing build number a little easier */
+
 #define PANDA_VERSION_MAJOR                0
 #define PANDA_VERSION_MINOR                0
 #define PANDA_VERSION_BUILDSUBVERSION      0
