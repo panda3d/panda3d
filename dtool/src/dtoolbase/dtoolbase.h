@@ -76,6 +76,13 @@
 #endif
 #endif  /* WIN32_VC */
 
+/*
+  include win32 defns for everything up to WinServer2003, and assume
+  I'm smart enough to use GetProcAddress for backward compat on
+  w95/w98 for newer fns
+*/
+#define _WIN32_WINNT 0x0502
+
 #include "dtoolsymbols.h"
 
 #ifdef __GNUC__
