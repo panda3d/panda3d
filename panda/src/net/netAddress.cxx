@@ -123,7 +123,7 @@ set_host(const string &hostname, int port) {
       << "." << (int)ipaddr.n[2] << "." << (int)ipaddr.n[3] << "\n";
 
     memset(&_addr, 0, sizeof(PRNetAddr));
-    _addr.inet.family = AF_INET;
+    _addr.inet.family = PR_AF_INET;
     _addr.inet.port = PR_htons(port);
     _addr.inet.ip = ipaddr.l;
 
