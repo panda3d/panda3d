@@ -131,6 +131,17 @@ evaluate(const NodePath &rel_to) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurveEvaluator::output
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NurbsCurveEvaluator::
+output(ostream &out) const {
+  out << "NurbsCurve, " << get_num_knots() << " knots.";
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveEvaluator::get_vertices
 //       Access: Public
 //  Description: Fills the indicated vector with the set of vertices
@@ -144,14 +155,7 @@ get_vertices(pvector<LVecBase4f> &verts, const NodePath &rel_to) const {
   verts.reserve(verts.size() + num_vertices);
   int vi;
   for (vi = 0; vi < num_vertices; vi++) {
-    NodePath space = _vertices[vi].get_space(rel_to);
-    const LVecBase4f &vertex = _vertices[vi].get_vertex();
-    if (space.is_empty()) {
-      verts.push_back(vertex);
-    } else {
-      const LMatrix4f &mat = space.get_mat(rel_to);
-      verts.push_back(vertex * mat);
-    }
+    verts.push_back(get_vertex(vi, rel_to));
   }
 }
 
@@ -160,8 +164,8 @@ get_vertices(pvector<LVecBase4f> &verts, const NodePath &rel_to) const {
 //       Access: Public
 //  Description: Fills the indicated vector with the set of vertices
 //               in the curve, transformed to the given space.  This
-//               flavor returns the vertices in 4-dimensional
-//               homogenous space.
+//               flavor returns the vertices in 3-dimensional
+//               space.
 ////////////////////////////////////////////////////////////////////
 void NurbsCurveEvaluator::
 get_vertices(pvector<LPoint3f> &verts, const NodePath &rel_to) const {
@@ -169,12 +173,7 @@ get_vertices(pvector<LPoint3f> &verts, const NodePath &rel_to) const {
   verts.reserve(verts.size() + num_vertices);
   int vi;
   for (vi = 0; vi < num_vertices; vi++) {
-    const NodePath &space = _vertices[vi].get_space(rel_to);
-    LVecBase4f vertex = _vertices[vi].get_vertex();
-    if (!space.is_empty()) {
-      const LMatrix4f &mat = space.get_mat(rel_to);
-      vertex = vertex * mat;
-    }
+    LVecBase4f vertex = get_vertex(vi, rel_to);
     LPoint3f v3(vertex[0] / vertex[3], vertex[1] / vertex[3], vertex[2] / vertex[3]);
     verts.push_back(v3);
   }

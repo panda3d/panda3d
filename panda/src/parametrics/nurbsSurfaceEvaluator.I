@@ -142,6 +142,27 @@ get_vertex(int ui, int vi) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NurbsSurfaceEvaluator::get_vertex
+//       Access: Published
+//  Description: Returns the nth control vertex of the surface, relative
+//               to the given coordinate space.
+////////////////////////////////////////////////////////////////////
+INLINE LVecBase4f NurbsSurfaceEvaluator::
+get_vertex(int ui, int vi, const NodePath &rel_to) const {
+  nassertr(ui >= 0 && ui < _num_u_vertices &&
+           vi >= 0 && vi < _num_v_vertices, LVecBase4f::zero());
+
+  NodePath space = vert(ui, vi).get_space(rel_to);
+  const LVecBase4f &vertex = vert(ui, vi).get_vertex();
+  if (space.is_empty()) {
+    return vertex;
+  } else {
+    const LMatrix4f &mat = space.get_mat(rel_to);
+    return vertex * mat;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NurbsSurfaceEvaluator::set_vertex_space
 //       Access: Published
 //  Description: Sets the coordinate space of the nth control vertex.
@@ -298,4 +319,10 @@ vert(int ui, int vi) {
 INLINE const NurbsVertex &NurbsSurfaceEvaluator::
 vert(int ui, int vi) const {
   return _vertices[ui * _num_v_vertices + vi];
+}
+
+INLINE ostream &
+operator << (ostream &out, const NurbsSurfaceEvaluator &n) {
+  n.output(out);
+  return out;
 }

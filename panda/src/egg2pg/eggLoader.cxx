@@ -529,7 +529,7 @@ make_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
   if (egg_curve->get_subdiv() != 0) {
     int subdiv_per_segment = 
       (int)((egg_curve->get_subdiv() + 0.5) / nurbs->get_num_segments());
-    rope->set_num_subdiv(subdiv_per_segment);
+    rope->set_num_subdiv(max(subdiv_per_segment, 1));
   }
 
   // Now get the attributes to apply to the rope.  We create a
@@ -735,12 +735,12 @@ make_nurbs_surface(EggNurbsSurface *egg_surface, PandaNode *parent,
   if (egg_surface->get_u_subdiv() != 0) {
     int u_subdiv_per_segment = 
       (int)((egg_surface->get_u_subdiv() + 0.5) / nurbs->get_num_u_segments());
-    sheet->set_num_u_subdiv(u_subdiv_per_segment);
+    sheet->set_num_u_subdiv(max(u_subdiv_per_segment, 1));
   }
   if (egg_surface->get_v_subdiv() != 0) {
     int v_subdiv_per_segment = 
       (int)((egg_surface->get_v_subdiv() + 0.5) / nurbs->get_num_v_segments());
-    sheet->set_num_v_subdiv(v_subdiv_per_segment);
+    sheet->set_num_v_subdiv(max(v_subdiv_per_segment, 1));
   }
 
   // Now get the attributes to apply to the sheet.  We create a

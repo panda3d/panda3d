@@ -99,6 +99,26 @@ get_vertex(int i) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurveEvaluator::get_vertex
+//       Access: Published
+//  Description: Returns the nth control vertex of the curve, relative
+//               to the given coordinate space.
+////////////////////////////////////////////////////////////////////
+INLINE LVecBase4f NurbsCurveEvaluator::
+get_vertex(int i, const NodePath &rel_to) const {
+  nassertr(i >= 0 && i < (int)_vertices.size(), LVecBase4f::zero());
+
+  NodePath space = _vertices[i].get_space(rel_to);
+  const LVecBase4f &vertex = _vertices[i].get_vertex();
+  if (space.is_empty()) {
+    return vertex;
+  } else {
+    const LMatrix4f &mat = space.get_mat(rel_to);
+    return vertex * mat;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveEvaluator::set_vertex_space
 //       Access: Published
 //  Description: Sets the coordinate space of the nth control vertex.
@@ -200,4 +220,10 @@ get_num_segments() const {
     ((NurbsCurveEvaluator *)this)->recompute_basis();
   }
   return _basis.get_num_segments();
+}
+
+INLINE ostream &
+operator << (ostream &out, const NurbsCurveEvaluator &n) {
+  n.output(out);
+  return out;
 }

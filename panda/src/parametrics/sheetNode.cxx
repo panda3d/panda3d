@@ -172,7 +172,12 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 void SheetNode::
 output(ostream &out) const {
   PandaNode::output(out);
-  out << " " << get_surface();
+  NurbsSurfaceEvaluator *surface = get_surface();
+  if (surface != (NurbsSurfaceEvaluator *)NULL) {
+    out << " " << *surface;
+  } else {
+    out << " (no surface)";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -175,6 +175,17 @@ evaluate(const NodePath &rel_to) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NurbsSurfaceEvaluator::output
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NurbsSurfaceEvaluator::
+output(ostream &out) const {
+  out << "NurbsSurface, (" << get_num_u_knots() << ", " << get_num_v_knots()
+      << ") knots.";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NurbsSurfaceEvaluator::get_vertices
 //       Access: Public
 //  Description: Fills the indicated vector with the set of vertices
@@ -207,8 +218,8 @@ get_vertices(pvector<LVecBase4f> &verts, const NodePath &rel_to) const {
 //       Access: Public
 //  Description: Fills the indicated vector with the set of vertices
 //               in the surface, transformed to the given space.  This
-//               flavor returns the vertices in 4-dimensional
-//               homogenous space.
+//               flavor returns the vertices in 3-dimensional
+//               space.
 //
 //               Vertices are arranged in linear sequence, with the v
 //               coordinate changing more rapidly.

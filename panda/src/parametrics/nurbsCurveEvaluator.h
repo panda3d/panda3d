@@ -59,6 +59,7 @@ PUBLISHED:
   INLINE void set_vertex(int i, const LVecBase4f &vertex);
   INLINE void set_vertex(int i, const LVecBase3f &vertex, float weight = 1.0);
   INLINE const LVecBase4f &get_vertex(int i) const;
+  INLINE LVecBase4f get_vertex(int i, const NodePath &rel_to) const;
 
   INLINE void set_vertex_space(int i, const NodePath &space);
   INLINE void set_vertex_space(int i, const string &space);
@@ -74,6 +75,8 @@ PUBLISHED:
   INLINE int get_num_segments() const;
 
   PT(NurbsCurveResult) evaluate(const NodePath &rel_to = NodePath()) const;
+
+  void output(ostream &out) const;
 
 public:
   void get_vertices(pvector<LVecBase4f> &verts, const NodePath &rel_to) const;
@@ -95,6 +98,8 @@ private:
   bool _basis_dirty;
   NurbsBasisVector _basis;
 };
+
+INLINE ostream &operator << (ostream &out, const NurbsCurveEvaluator &n);
 
 #include "nurbsCurveEvaluator.I"
 

@@ -181,7 +181,12 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 void RopeNode::
 output(ostream &out) const {
   PandaNode::output(out);
-  out << " " << get_curve();
+  NurbsCurveEvaluator *curve = get_curve();
+  if (curve != (NurbsCurveEvaluator *)NULL) {
+    out << " " << *curve;
+  } else {
+    out << " (no curve)";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
