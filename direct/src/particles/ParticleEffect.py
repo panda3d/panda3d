@@ -3,11 +3,19 @@ from DirectObject import *
 
 import Particles
 import ForceGroup
+import DirectNotifyGlobal
 
 class ParticleEffect(NodePath):
-    def __init__(self, name = 'ParticleEffect'):
+
+    notify = DirectNotifyGlobal.directNotify.newCategory('ParticleEffect')
+    id = 1 
+
+    def __init__(self, name=None):
 	"""__init__()"""
 	NodePath.__init__(self)
+	if (name == None):
+	    name = 'particle-effect-%d' % ParticleEffect.id
+	    ParticleEffect.id += 1
         self.assign(hidden.attachNewNode(name))
         # Record particle effect name
 	self.name = name
@@ -118,9 +126,6 @@ class ParticleEffect(NodePath):
 
     def saveConfig(self, filename):
         """saveFileData(filename)"""
-        #fname = Filename(filename)
-        #fname.resolveFilename(getParticlePath())
-        #fname.resolveFilename(getModelPath())
         f = open(filename.toOsSpecific(), 'wb')
         # Add a blank line
         f.write('\n')
@@ -129,7 +134,7 @@ class ParticleEffect(NodePath):
         f.write('for p in self.getParticlesList():\n')
         f.write('\tself.removeParticles(p)\n')
         f.write('for fg in self.getForceGroupList():\n')
-        f.write('\tpe.removeForceGroup(fg)\n')
+        f.write('\tself.removeForceGroup(fg)\n')
 	f.write('self.particlesDict = {}\n')
 	f.write('self.forceGroupDict = {}\n')
 
@@ -157,7 +162,8 @@ class ParticleEffect(NodePath):
 	for fg in self.forceGroupDict.values():
 	    target = 'f%d' % num
 	    num = num + 1
-	    f.write(target + ' = ForceGroup.ForceGroup(\'%s\')\n' % fg.getName())
+	    f.write(target + ' = ForceGroup.ForceGroup(\'%s\')\n' % \
+						fg.getName())
 	    fg.printParams(f, target)	
 	    f.write('self.addForceGroup(%s)\n' % target)
 

@@ -26,20 +26,22 @@ import TangentRingEmitter
 import string
 import os
 import DirectSelection
+import DirectNotifyGlobal
 
 SparkleParticleRenderer.SparkleParticleRenderer.SPNOSCALE = 0
 SparkleParticleRenderer.SparkleParticleRenderer.SPSCALE = 1
 
 class Particles(ParticleSystem.ParticleSystem):
 
-    particleNum = 1
+    notify = DirectNotifyGlobal.directNotify.newCategory('Particles')
+    id = 1
 
-    def __init__(self, name = None, poolSize = 1024):
+    def __init__(self, name=None, poolSize=1024):
 	"""__init__(name, poolSize)"""
 
 	if (name == None):
-	    self.name = 'particles-%d' % self.particleNum
-	    self.particleNum = self.particleNum + 1
+	    self.name = 'particles-%d' % Particles.id
+	    Particles.id += 1
 	else:
 	    self.name = name
 	ParticleSystem.ParticleSystem.__init__(self, poolSize)
@@ -221,23 +223,34 @@ class Particles(ParticleSystem.ParticleSystem):
 	file.write('# Factory parameters\n')
 	file.write(targ + ('.factory.setLifespanBase(%.4f)\n' %
                            self.factory.getLifespanBase()))
-	file.write(targ + '.factory.setLifespanSpread(%.4f)\n' % self.factory.getLifespanSpread())
-	file.write(targ + '.factory.setMassBase(%.4f)\n' % self.factory.getMassBase())
-	file.write(targ + '.factory.setMassSpread(%.4f)\n' % self.factory.getMassSpread())
-	file.write(targ + '.factory.setTerminalVelocityBase(%.4f)\n' % self.factory.getTerminalVelocityBase())
-	file.write(targ + '.factory.setTerminalVelocitySpread(%.4f)\n' % self.factory.getTerminalVelocitySpread())
+	file.write(targ + '.factory.setLifespanSpread(%.4f)\n' % \
+				self.factory.getLifespanSpread())
+	file.write(targ + '.factory.setMassBase(%.4f)\n' % \
+				self.factory.getMassBase())
+	file.write(targ + '.factory.setMassSpread(%.4f)\n' % \
+				self.factory.getMassSpread())
+	file.write(targ + '.factory.setTerminalVelocityBase(%.4f)\n' % \
+				self.factory.getTerminalVelocityBase())
+	file.write(targ + '.factory.setTerminalVelocitySpread(%.4f)\n' % \
+				self.factory.getTerminalVelocitySpread())
 	if (self.factoryType == "PointParticleFactory"):
 	    file.write('# Point factory parameters\n')
 	elif (self.factoryType == "ZSpinParticleFactory"):
 	    file.write('# Z Spin factory parameters\n')
-	    file.write(targ + '.factory.setInitialAngle(%.4f)\n' % self.factory.getInitialAngle())
-	    file.write(targ + '.factory.setFinalAngle(%.4f)\n' % self.factory.getFinalAngle())
-	    file.write(targ + '.factory.setInitialAngleSpread(%.4f)\n' % self.factory.getInitialAngleSpread())
-	    file.write(targ + '.factory.setFinalAngleSpread(%.4f)\n' % self.factory.getFinalAngleSpread())
+	    file.write(targ + '.factory.setInitialAngle(%.4f)\n' % \
+					self.factory.getInitialAngle())
+	    file.write(targ + '.factory.setFinalAngle(%.4f)\n' % \
+					self.factory.getFinalAngle())
+	    file.write(targ + '.factory.setInitialAngleSpread(%.4f)\n' % \
+					self.factory.getInitialAngleSpread())
+	    file.write(targ + '.factory.setFinalAngleSpread(%.4f)\n' % \
+					self.factory.getFinalAngleSpread())
 	elif (self.factoryType == "OrientedParticleFactory"):
 	    file.write('# Oriented factory parameters\n')
-	    file.write(targ + '.factory.setInitialOrientation(%.4f)\n' % self.factory.getInitialOrientation()) 
-	    file.write(targ + '.factory.setFinalOrientation(%.4f)\n' % self.factory.getFinalOrientation())
+	    file.write(targ + '.factory.setInitialOrientation(%.4f)\n' % \
+					self.factory.getInitialOrientation()) 
+	    file.write(targ + '.factory.setFinalOrientation(%.4f)\n' % \
+					self.factory.getFinalOrientation())
 
 	file.write('# Renderer parameters\n')
 	alphaMode = self.renderer.getAlphaMode()
@@ -254,10 +267,12 @@ class Particles(ParticleSystem.ParticleSystem):
 	   	BaseParticleRenderer.BaseParticleRenderer.PRALPHAUSER):
 	    aMode = "PRALPHAUSER"
 	file.write(targ + '.renderer.setAlphaMode(BaseParticleRenderer.' + aMode + ')\n')
-	file.write(targ + '.renderer.setUserAlpha(%.2f)\n' % self.renderer.getUserAlpha())
+	file.write(targ + '.renderer.setUserAlpha(%.2f)\n' % \
+					self.renderer.getUserAlpha())
 	if (self.rendererType == "Point"):
 	    file.write('# Point parameters\n')
-	    file.write(targ + '.renderer.setPointSize(%.2f)\n' % self.renderer.getPointSize())
+	    file.write(targ + '.renderer.setPointSize(%.2f)\n' % \
+					self.renderer.getPointSize())
 	    sColor = self.renderer.getStartColor()
 	    file.write((targ + '.renderer.setStartColor(Vec4(%.2f, %.2f, %.2f, %.2f))\n' % (sColor[0], sColor[1], sColor[2], sColor[3]))) 
 	    sColor = self.renderer.getEndColor()
