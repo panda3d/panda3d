@@ -29,7 +29,7 @@ wcrGraphicsPipe::wcrGraphicsPipe(const PipeSpecifier& spec)
 
 ////////////////////////////////////////////////////////////////////
 //     Function: wcrGraphicsPipe::get_window_type
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Returns the TypeHandle of the kind of window
 //               preferred by this kind of pipe.
 ////////////////////////////////////////////////////////////////////

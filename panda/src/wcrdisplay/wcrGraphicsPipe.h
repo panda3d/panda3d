@@ -35,7 +35,7 @@
 // Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDACR wcrGraphicsPipe : public InteractiveGraphicsPipe {
-public:
+PUBLISHED:
   wcrGraphicsPipe(const PipeSpecifier&);
 
   virtual TypeHandle get_window_type() const;

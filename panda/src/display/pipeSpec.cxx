@@ -39,9 +39,13 @@ std::string PipeSpecifier::get_X_specifier(void) const {
   std::string ret;
 
   if (!_is_file) {
-    if (getenv("DISPLAY")) {
-       ret = getenv("DISPLAY");
-    } else {
+    if (_machine.empty()) {
+      if (getenv("DISPLAY")) {
+        ret = getenv("DISPLAY");
+      }
+    }
+
+    if (ret.empty()) {
       ostringstream ss;
       ss << _machine << ":" << ((_pipe_number<0)?0:_pipe_number) << ".0";
       ret = ss.str();

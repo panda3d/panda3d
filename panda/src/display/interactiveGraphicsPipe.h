@@ -24,10 +24,9 @@
 #include "graphicsPipe.h"
 
 class EXPCL_PANDA InteractiveGraphicsPipe : public GraphicsPipe {
-public:
-
+PUBLISHED:
   InteractiveGraphicsPipe( const PipeSpecifier& );
-  virtual ~InteractiveGraphicsPipe(void) = 0;
+  virtual ~InteractiveGraphicsPipe(void);
 
 public:
 

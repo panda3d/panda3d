@@ -24,7 +24,7 @@
 #include <string>
 
 class EXPCL_PANDA PipeSpecifier {
-public:
+PUBLISHED:
   PipeSpecifier(void);
   PipeSpecifier(const PipeSpecifier&);
   ~PipeSpecifier(void);

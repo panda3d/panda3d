@@ -19,13 +19,19 @@
 #ifndef GLXDISPLAY_H
 #define GLXDISPLAY_H
 
-#include <pandabase.h>
-#include <typedObject.h>
+#include "pandabase.h"
+#include "typedObject.h"
 
 #include <X11/Xlib.h>
 
 class GraphicsPipe;
 class glxGraphicsWindow;
+
+#ifdef CPPPARSER
+// A simple hack so interrogate can parse this file.
+typedef int Display;
+typedef int Window;
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //       Class : glxDisplay

@@ -15,7 +15,9 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
+
 #include "glxGraphicsPipe.h"
+#include "glxGraphicsWindow.h"
 #include "config_glxdisplay.h"
 
 #include <GL/glx.h>
