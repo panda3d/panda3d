@@ -22,9 +22,9 @@
 
 // Will the compiler avoid inserting extra bytes in structs between a
 // base struct and its derived structs?  It is safe to define this
-// true if you don't know, but if you know that you can get away with
-// this you may gain a tiny performance gain by defining this false.
-// If you define this false incorrectly, you will get lots of
+// false if you don't know, but if you know that you can get away with
+// this you may gain a tiny performance gain by defining this true.
+// If you define this true incorrectly, you will get lots of
 // assertion failures on execution.
 #define SIMPLE_STRUCT_POINTERS
 
