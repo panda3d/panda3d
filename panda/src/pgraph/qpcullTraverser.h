@@ -23,6 +23,7 @@
 
 #include "renderState.h"
 #include "transformState.h"
+#include "geometricBoundingVolume.h"
 #include "pointerTo.h"
 
 class PandaNode;
@@ -43,6 +44,8 @@ public:
   void set_initial_state(const RenderState *initial_state);
   void set_camera_transform(const TransformState *camera_transform);
   void set_render_transform(const TransformState *render_transform);
+  void set_view_frustum(GeometricBoundingVolume *view_frustum);
+  void set_guard_band(GeometricBoundingVolume *guard_band);
   void set_cull_handler(CullHandler *cull_handler);
 
   void traverse(PandaNode *root);
@@ -50,11 +53,15 @@ public:
 private:
   void r_traverse(PandaNode *node, const TransformState *render_transform,
                   const TransformState *net_transform,
-                  const RenderState *state, int flags);
+                  const RenderState *state,
+                  GeometricBoundingVolume *view_frustum,
+                  GeometricBoundingVolume *guard_band);
 
   CPT(RenderState) _initial_state;
   CPT(TransformState) _camera_transform;
   CPT(TransformState) _render_transform;
+  PT(GeometricBoundingVolume) _view_frustum;
+  PT(GeometricBoundingVolume) _guard_band;
   CullHandler *_cull_handler;
 };
 

@@ -47,6 +47,11 @@ ConfigureFn(config_pgraph) {
   init_libpgraph();
 }
 
+// Set this true to cause culling to be performed by rendering the
+// object in red wireframe, rather than actually culling it.  This
+// helps make culling errors obvious.
+const bool qpfake_view_frustum_cull = config_pgraph.GetBool("fake-view-frustum-cull", false);
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpgraph

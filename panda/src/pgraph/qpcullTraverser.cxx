@@ -23,6 +23,9 @@
 #include "cullHandler.h"
 #include "dcast.h"
 #include "qpgeomNode.h"
+#include "colorAttrib.h"
+#include "textureAttrib.h"
+#include "config_pgraph.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpCullTraverser::Constructor
@@ -75,6 +78,39 @@ set_render_transform(const TransformState *render_transform) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpCullTraverser::set_view_frustum
+//       Access: Public
+//  Description: Specifies the bounding volume that corresponds to the
+//               viewing frustum.  Any primitives that fall entirely
+//               outside of this volume are not drawn.
+////////////////////////////////////////////////////////////////////
+void qpCullTraverser::
+set_view_frustum(GeometricBoundingVolume *view_frustum) {
+  _view_frustum = view_frustum;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpCullTraverser::set_guard_band
+//       Access: Public
+//  Description: Specifies the bounding volume to use for detecting
+//               guard band clipping.  This is a render optimization
+//               for certain cards that support this feature; the
+//               guard band is a 2-d area than the frame buffer.
+//               If a primitive will appear entirely within the guard
+//               band after perspective transform, it may be drawn
+//               correctly with clipping disabled, for a small
+//               performance gain.
+//
+//               This is the bounding volume that corresponds to the
+//               2-d guard band.  If a primitive is entirely within
+//               this area, clipping will be disabled on the GSG.
+////////////////////////////////////////////////////////////////////
+void qpCullTraverser::
+set_guard_band(GeometricBoundingVolume *guard_band) {
+  _guard_band = guard_band;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpCullTraverser::set_cull_handler
 //       Access: Public
 //  Description: Specifies the object that will receive the culled
@@ -95,7 +131,7 @@ traverse(PandaNode *root) {
   nassertv(_cull_handler != (CullHandler *)NULL);
 
   r_traverse(root, _render_transform, TransformState::make_identity(),
-             _initial_state, 0);
+             _initial_state, _view_frustum, _guard_band);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -107,12 +143,93 @@ void qpCullTraverser::
 r_traverse(PandaNode *node, 
            const TransformState *render_transform,
            const TransformState *net_transform,
-           const RenderState *state, int flags) {
-  CPT(TransformState) next_render_transform = 
-    render_transform->compose(node->get_transform());
-  CPT(TransformState) next_net_transform = 
-    net_transform->compose(node->get_transform());
-  CPT(RenderState) next_state = state->compose(node->get_state());
+           const RenderState *state, 
+           GeometricBoundingVolume *view_frustum,
+           GeometricBoundingVolume *guard_band) {
+  CPT(RenderState) next_state = state;
+
+  if (view_frustum != (GeometricBoundingVolume *)NULL) {
+    // If we have a viewing frustum, check to see if the node's
+    // bounding volume falls within it.
+    const BoundingVolume &node_volume = node->get_bound();
+    nassertv(node_volume.is_of_type(GeometricBoundingVolume::get_class_type()));
+    const GeometricBoundingVolume *node_gbv =
+      DCAST(GeometricBoundingVolume, &node_volume);
+
+    int result = view_frustum->contains(node_gbv);
+    if (result == BoundingVolume::IF_no_intersection) {
+      // No intersection at all.  Cull.
+      if (!qpfake_view_frustum_cull) {
+        return;
+      }
+
+      // If we have fake view-frustum culling enabled, instead of
+      // actually culling an object we simply force it to be drawn in
+      // red wireframe.
+      view_frustum = (GeometricBoundingVolume *)NULL;
+      CPT(RenderState) fake_effect = RenderState::make
+        (ColorAttrib::make_flat(Colorf(1.0f, 0.0f, 0.0f, 1.0f)),
+         TextureAttrib::make_off(),
+         1000);
+      next_state = next_state->compose(fake_effect);
+
+    } else if ((result & BoundingVolume::IF_all) != 0) {
+      // The node and its descendants are completely enclosed within
+      // the frustum.  No need to cull further.
+      view_frustum = (GeometricBoundingVolume *)NULL;
+
+    } else {
+      if (node->is_final()) {
+        // The bounding volume is partially, but not completely,
+        // within the viewing frustum.  Normally we'd keep testing
+        // child bounded volumes as we continue down.  But this node
+        // has the "final" flag, so the user is claiming that there is
+        // some important reason we should consider everything visible
+        // at this point.  So be it.
+        view_frustum = (GeometricBoundingVolume *)NULL;
+      }
+    }
+  }
+
+  CPT(TransformState) next_render_transform = render_transform;
+  CPT(TransformState) next_net_transform = net_transform;
+  PT(GeometricBoundingVolume) next_view_frustum = view_frustum;
+  PT(GeometricBoundingVolume) next_guard_band = guard_band;
+
+  const TransformState *transform = node->get_transform();
+  if (!transform->is_identity()) {
+    next_render_transform = render_transform->compose(transform);
+    next_net_transform = net_transform->compose(transform);
+
+    if ((view_frustum != (GeometricBoundingVolume *)NULL) ||
+        (guard_band != (GeometricBoundingVolume *)NULL)) {
+      // We need to move the viewing frustums into the node's
+      // coordinate space by applying the node's inverse transform.
+      if (transform->is_singular()) {
+        // But we can't invert a singular transform!  Instead of
+        // trying, we'll just give up on frustum culling from this
+        // point down.
+        view_frustum = (GeometricBoundingVolume *)NULL;
+        guard_band = (GeometricBoundingVolume *)NULL;
+
+      } else {
+        CPT(TransformState) inv_transform = 
+          transform->invert_compose(TransformState::make_identity());
+        
+        if (view_frustum != (GeometricBoundingVolume *)NULL) {
+          next_view_frustum = DCAST(GeometricBoundingVolume, view_frustum->make_copy());
+          next_view_frustum->xform(inv_transform->get_mat());
+        }
+        
+        if (guard_band != (GeometricBoundingVolume *)NULL) {
+          next_guard_band = DCAST(GeometricBoundingVolume, guard_band->make_copy());
+          next_guard_band->xform(inv_transform->get_mat());
+        }
+      }
+    }
+  }
+
+  next_state = next_state->compose(node->get_state());
 
   const BillboardAttrib *billboard = state->get_billboard();
   if (billboard != (const BillboardAttrib *)NULL) {
@@ -121,6 +238,11 @@ r_traverse(PandaNode *node,
       billboard->do_billboard(net_transform, _camera_transform);
     next_render_transform = next_render_transform->compose(billboard_transform);
     next_net_transform = next_net_transform->compose(billboard_transform);
+
+    // We can't reliably cull within a billboard, because the geometry
+    // might get rotated out of its bounding volume.  So once we get
+    // within a billboard, we consider it all visible.
+    next_view_frustum = (GeometricBoundingVolume *)NULL;
   }
 
   if (node->is_geom_node()) {
@@ -140,6 +262,7 @@ r_traverse(PandaNode *node,
   PandaNode::Children cr = node->get_children();
   int num_children = cr.get_num_children();
   for (int i = 0; i < num_children; i++) {
-    r_traverse(cr.get_child(i), next_render_transform, next_net_transform, next_state, flags);
+    r_traverse(cr.get_child(i), next_render_transform, next_net_transform,
+               next_state, next_view_frustum, next_guard_band);
   }
 }

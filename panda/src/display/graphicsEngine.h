@@ -57,6 +57,13 @@ private:
   void cull_bin_draw();
   void cull_bin_draw(GraphicsWindow *win, DisplayRegion *dr);
 
+  void do_cull(CullHandler *cull_handler, const NodeChain &camera,
+               GraphicsStateGuardian *gsg);
+  void do_draw(CullResult *cull_result, GraphicsStateGuardian *gsg,
+               DisplayRegion *dr);
+
+  bool set_gsg_lens(GraphicsStateGuardian *gsg, DisplayRegion *dr);
+
   Pipeline *_pipeline;
 
   typedef pset<PT(GraphicsWindow)> Windows;
