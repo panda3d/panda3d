@@ -86,7 +86,7 @@ static void
 issue_vertex_gl(const Geom *geom, Geom::VertexIterator &viterator, 
                 GraphicsStateGuardianBase *) {
   const Vertexf &vertex = geom->get_next_vertex(viterator);
-  // glgsg_cat.debug() << "Issuing vertex " << vertex << "\n";
+  // glgsg_cat.spam() << "Issuing vertex " << vertex << "\n";
   glVertex3fv(vertex.get_data());
 }
 
@@ -94,7 +94,7 @@ static void
 issue_normal_gl(const Geom *geom, Geom::NormalIterator &niterator, 
                 GraphicsStateGuardianBase *) {
   const Normalf &normal = geom->get_next_normal(niterator);
-  // glgsg_cat.debug() << "Issuing normal " << normal << "\n";
+  // glgsg_cat.spam() << "Issuing normal " << normal << "\n";
   glNormal3fv(normal.get_data());
 }
 
@@ -102,7 +102,7 @@ static void
 issue_texcoord_gl(const Geom *geom, Geom::TexCoordIterator &tciterator, 
                 GraphicsStateGuardianBase *) {
   const TexCoordf &texcoord = geom->get_next_texcoord(tciterator);
-  //  glgsg_cat.debug() << "Issuing texcoord " << texcoord << "\n";
+  //  glgsg_cat.spam() << "Issuing texcoord " << texcoord << "\n";
   glTexCoord2fv(texcoord.get_data());
 }
 
@@ -110,7 +110,7 @@ static void
 issue_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
                GraphicsStateGuardianBase *) {
   const Colorf &color = geom->get_next_color(citerator);
-  //  glgsg_cat.debug() << "Issuing color " << color << "\n";
+  //  glgsg_cat.spam() << "Issuing color " << color << "\n";
   glColor4fv(color.get_data());
 }
 
@@ -120,6 +120,41 @@ issue_transformed_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
   const GLGraphicsStateGuardian *glgsg = DCAST(GLGraphicsStateGuardian, gsg);
   const Colorf &color = geom->get_next_color(citerator);
   glgsg->issue_transformed_color(color);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::uchar_bgr_to_rgb
+//  Description: Recopies the given array of pixels, converting from
+//               BGR to RGB arrangement.
+////////////////////////////////////////////////////////////////////
+static void
+uchar_bgr_to_rgb(unsigned char *dest, const unsigned char *source, 
+                 int num_pixels) {
+  for (int i = 0; i < num_pixels; i++) {
+    dest[0] = source[2];
+    dest[1] = source[1];
+    dest[2] = source[0];
+    dest += 3;
+    source += 3;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::uchar_bgra_to_rgba
+//  Description: Recopies the given array of pixels, converting from
+//               BGRA to RGBA arrangement.
+////////////////////////////////////////////////////////////////////
+static void
+uchar_bgra_to_rgba(unsigned char *dest, const unsigned char *source, 
+                   int num_pixels) {
+  for (int i = 0; i < num_pixels; i++) {
+    dest[0] = source[2];
+    dest[1] = source[1];
+    dest[2] = source[0];
+    dest[3] = source[3];
+    dest += 4;
+    source += 4;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -360,20 +395,20 @@ do_clear(const RenderBuffer &buffer) {
   }
 
 #ifdef GSG_VERBOSE
-  glgsg_cat.debug() << "glClear(";
+  glgsg_cat.spam() << "glClear(";
   if (mask & GL_COLOR_BUFFER_BIT) {
-    glgsg_cat.debug(false) << "GL_COLOR_BUFFER_BIT|";
+    glgsg_cat.spam(false) << "GL_COLOR_BUFFER_BIT|";
   }
   if (mask & GL_DEPTH_BUFFER_BIT) {
-    glgsg_cat.debug(false) << "GL_DEPTH_BUFFER_BIT|";
+    glgsg_cat.spam(false) << "GL_DEPTH_BUFFER_BIT|";
   }
   if (mask & GL_STENCIL_BUFFER_BIT) {
-    glgsg_cat.debug(false) << "GL_STENCIL_BUFFER_BIT|";
+    glgsg_cat.spam(false) << "GL_STENCIL_BUFFER_BIT|";
   }
   if (mask & GL_ACCUM_BUFFER_BIT) {
-    glgsg_cat.debug(false) << "GL_ACCUM_BUFFER_BIT|";
+    glgsg_cat.spam(false) << "GL_ACCUM_BUFFER_BIT|";
   }
-  glgsg_cat.debug(false) << ")" << endl;
+  glgsg_cat.spam(false) << ")" << endl;
 #endif
 
   modify_state(state);
@@ -449,7 +484,7 @@ prepare_lens() {
     projection_mat;
 
 #ifdef GSG_VERBOSE
-  glgsg_cat.debug()
+  glgsg_cat.spam()
     << "glMatrixMode(GL_PROJECTION): " << new_projection_mat << endl;
 #endif
   glMatrixMode(GL_PROJECTION);
@@ -503,7 +538,7 @@ end_frame() {
 void GLGraphicsStateGuardian::
 draw_point(GeomPoint *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
-  glgsg_cat.debug() << "draw_point()" << endl;
+  glgsg_cat.spam() << "draw_point()" << endl;
 #endif
 #ifdef DO_PSTATS
   PStatTimer timer(_draw_primitive_pcollector);
@@ -563,7 +598,7 @@ draw_point(GeomPoint *geom, GeomContext *) {
 void GLGraphicsStateGuardian::
 draw_line(GeomLine *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
-  glgsg_cat.debug() << "draw_line()" << endl;
+  glgsg_cat.spam() << "draw_line()" << endl;
 #endif
 #ifdef DO_PSTATS
   PStatTimer timer(_draw_primitive_pcollector);
@@ -634,7 +669,7 @@ draw_line(GeomLine *geom, GeomContext *) {
 void GLGraphicsStateGuardian::
 draw_linestrip(GeomLinestrip *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
-  glgsg_cat.debug() << "draw_linestrip()" << endl;
+  glgsg_cat.spam() << "draw_linestrip()" << endl;
 #endif
 
 #ifdef DO_PSTATS
@@ -764,7 +799,7 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   // by hand and apply the inverse frustum to the transformed point.
   // For some cracked out reason, this actually works.
 #ifdef GSG_VERBOSE
-  glgsg_cat.debug() << "draw_sprite()" << endl;
+  glgsg_cat.spam() << "draw_sprite()" << endl;
 #endif
 
   // get the array traversal set up.
@@ -1005,7 +1040,7 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
 void GLGraphicsStateGuardian::
 draw_polygon(GeomPolygon *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
-  glgsg_cat.debug() << "draw_polygon()" << endl;
+  glgsg_cat.spam() << "draw_polygon()" << endl;
 #endif
 
 #ifdef DO_PSTATS
@@ -1084,7 +1119,7 @@ draw_polygon(GeomPolygon *geom, GeomContext *) {
 void GLGraphicsStateGuardian::
 draw_tri(GeomTri *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
-  glgsg_cat.debug() << "draw_tri()" << endl;
+  glgsg_cat.spam() << "draw_tri()" << endl;
 #endif
 
 #ifdef DO_PSTATS
@@ -1160,7 +1195,7 @@ draw_tri(GeomTri *geom, GeomContext *) {
 void GLGraphicsStateGuardian::
 draw_quad(GeomQuad *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
-  glgsg_cat.debug() << "draw_quad()" << endl;
+  glgsg_cat.spam() << "draw_quad()" << endl;
 #endif
 
 #ifdef DO_PSTATS
@@ -1234,7 +1269,7 @@ draw_quad(GeomQuad *geom, GeomContext *) {
 void GLGraphicsStateGuardian::
 draw_tristrip(GeomTristrip *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
-  glgsg_cat.debug() << "draw_tristrip()" << endl;
+  glgsg_cat.spam() << "draw_tristrip()" << endl;
 #endif
 
 #ifdef DO_PSTATS
@@ -1330,7 +1365,7 @@ draw_tristrip(GeomTristrip *geom, GeomContext *) {
 void GLGraphicsStateGuardian::
 draw_trifan(GeomTrifan *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
-  glgsg_cat.debug() << "draw_trifan()" << endl;
+  glgsg_cat.spam() << "draw_trifan()" << endl;
 #endif
 
 #ifdef DO_PSTATS
@@ -1427,7 +1462,7 @@ draw_trifan(GeomTrifan *geom, GeomContext *) {
 void GLGraphicsStateGuardian::
 draw_sphere(GeomSphere *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
-  glgsg_cat.debug() << "draw_sphere()" << endl;
+  glgsg_cat.spam() << "draw_sphere()" << endl;
 #endif
 
 #ifdef DO_PSTATS
@@ -1918,12 +1953,14 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
   int xo, yo, w, h;
   dr->get_region_pixels(xo, yo, w, h);
 
+  GLenum external_format = get_external_image_format(pb->get_format());
+
 #ifdef GSG_VERBOSE
   glgsg_cat.debug()
     << "glReadPixels(" << pb->get_xorg() << ", " << pb->get_yorg()
     << ", " << pb->get_xsize() << ", " << pb->get_ysize()
     << ", ";
-  switch (get_external_image_format(pb->get_format())) {
+  switch (external_format) {
   case GL_DEPTH_COMPONENT:
     glgsg_cat.debug(false) << "GL_DEPTH_COMPONENT, ";
     break;
@@ -1965,9 +2002,22 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
   nassertv(!pb->_image.empty());
   glReadPixels(pb->get_xorg() + xo, pb->get_yorg() + yo,
                pb->get_xsize(), pb->get_ysize(),
-               get_external_image_format(pb->get_format()),
+               external_format,
                get_image_type(pb->get_image_type()),
                pb->_image.p());
+
+  // We may have to reverse the byte ordering of the image if GL
+  // didn't do it for us.
+  if (external_format == GL_RGB && pb->get_image_type() == PixelBuffer::T_unsigned_byte) {
+    PTA_uchar new_image = PTA_uchar::empty_array(pb->_image.size());
+    uchar_bgr_to_rgb(new_image, pb->_image, pb->_image.size() / 3);
+    pb->_image = new_image;
+
+  } else if (external_format == GL_RGBA && pb->get_image_type() == PixelBuffer::T_unsigned_byte) {
+    PTA_uchar new_image = PTA_uchar::empty_array(pb->_image.size());
+    uchar_bgra_to_rgba(new_image, pb->_image, pb->_image.size() / 4);
+    pb->_image = new_image;
+  }
 
   report_gl_errors();
 }
@@ -2063,7 +2113,7 @@ apply_fog(Fog *fog) {
 void GLGraphicsStateGuardian::
 issue_transform(const TransformState *transform) {
 #ifdef GSG_VERBOSE
-  glgsg_cat.debug()
+  glgsg_cat.spam()
     << "glLoadMatrix(GL_MODELVIEW): " << transform->get_mat() << endl;
 #endif
   glMatrixMode(GL_MODELVIEW);
@@ -2640,7 +2690,7 @@ bind_texture(TextureContext *tc) {
 
 #ifdef GSG_VERBOSE
   Texture *tex = tc->_texture;
-  glgsg_cat.debug()
+  glgsg_cat.spam()
     << "glBindTexture(): " << tex->get_name() << "(" << (int)gtc->_index
     << ")" << endl;
 #endif
@@ -2741,41 +2791,6 @@ compute_gl_image_size(int xsize, int ysize, int external_format, int type) {
   return xsize * ysize * pixel_width;
 }
 #endif  // NDEBUG
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::uchar_bgr_to_rgb
-//  Description: Recopies the given array of pixels, converting from
-//               BGR to RGB arrangement.
-////////////////////////////////////////////////////////////////////
-static void
-uchar_bgr_to_rgb(unsigned char *dest, const unsigned char *source, 
-                 int num_pixels) {
-  for (int i = 0; i < num_pixels; i++) {
-    dest[0] = source[2];
-    dest[1] = source[1];
-    dest[2] = source[0];
-    dest += 3;
-    source += 3;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::uchar_bgra_to_rgba
-//  Description: Recopies the given array of pixels, converting from
-//               BGRA to RGBA arrangement.
-////////////////////////////////////////////////////////////////////
-static void
-uchar_bgra_to_rgba(unsigned char *dest, const unsigned char *source, 
-                   int num_pixels) {
-  for (int i = 0; i < num_pixels; i++) {
-    dest[0] = source[2];
-    dest[1] = source[1];
-    dest[2] = source[0];
-    dest[3] = source[3];
-    dest += 4;
-    source += 4;
-  }
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::apply_texture_immediate
@@ -4001,7 +4016,6 @@ dump_state(void)
       dump << "\t\t" << "GL_LIGHTING " << _lighting_enabled << " " << (bool)glIsEnabled(GL_LIGHTING) << "\n";
       dump << "\t\t" << "GL_SCISSOR_TEST " << _scissor_enabled << " " << (bool)glIsEnabled(GL_SCISSOR_TEST) << "\n";
       dump << "\t\t" << "GL_TEXTURE_2D " << _texturing_enabled << " " << (bool)glIsEnabled(GL_TEXTURE_2D) << "\n";
-      dump << "\t\t" << "GL_DITHER " << _dither_enabled << " " << (bool)glIsEnabled(GL_DITHER) << "\n";
       dump << "\t\t" << "GL_STENCIL_TEST " << " " << (bool)glIsEnabled(GL_STENCIL_TEST) << "\n";
       dump << "\t\t" << "GL_BLEND " << _blend_enabled << " " << (bool)glIsEnabled(GL_BLEND) << "\n";
       dump << "\t\t" << "GL_DEPTH_TEST " << _depth_test_enabled << " " << (bool)glIsEnabled(GL_DEPTH_TEST) << "\n";

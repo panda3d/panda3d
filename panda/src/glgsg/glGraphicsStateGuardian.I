@@ -69,7 +69,7 @@ INLINE void GLGraphicsStateGuardian::
 call_glClearDepth(GLclampd depth) {
   if (depth != _clear_depth) {
 #ifdef GSG_VERBOSE
-    glgsg_cat.debug()
+    glgsg_cat.spam()
       << "glClearDepth(" << (double)depth << ")" << endl;
 #endif
     glClearDepth(depth);
@@ -120,37 +120,37 @@ INLINE void GLGraphicsStateGuardian::
 call_glDrawBuffer(GLenum mode) {
   if (mode != _draw_buffer_mode) {
 #ifdef GSG_VERBOSE
-    glgsg_cat.debug() << "glDrawBuffer(";
+    glgsg_cat.spam() << "glDrawBuffer(";
     switch (mode) {
     case GL_FRONT:
-      glgsg_cat.debug(false) << "GL_FRONT)";
+      glgsg_cat.spam(false) << "GL_FRONT)";
       break;
     case GL_BACK:
-      glgsg_cat.debug(false) << "GL_BACK)";
+      glgsg_cat.spam(false) << "GL_BACK)";
       break;
     case GL_RIGHT:
-      glgsg_cat.debug(false) << "GL_RIGHT)";
+      glgsg_cat.spam(false) << "GL_RIGHT)";
       break;
     case GL_LEFT:
-      glgsg_cat.debug(false) << "GL_LEFT)";
+      glgsg_cat.spam(false) << "GL_LEFT)";
       break;
     case GL_FRONT_RIGHT:
-      glgsg_cat.debug(false) << "GL_FRONT_RIGHT)";
+      glgsg_cat.spam(false) << "GL_FRONT_RIGHT)";
       break;
     case GL_FRONT_LEFT:
-      glgsg_cat.debug(false) << "GL_FRONT_LEFT)";
+      glgsg_cat.spam(false) << "GL_FRONT_LEFT)";
       break;
     case GL_BACK_RIGHT:
-      glgsg_cat.debug(false) << "GL_BACK_RIGHT)";
+      glgsg_cat.spam(false) << "GL_BACK_RIGHT)";
       break;
     case GL_BACK_LEFT:
-      glgsg_cat.debug(false) << "GL_BACK_LEFT)";
+      glgsg_cat.spam(false) << "GL_BACK_LEFT)";
       break;
     case GL_FRONT_AND_BACK:
-      glgsg_cat.debug(false) << "GL_FRONT_AND_BACK)";
+      glgsg_cat.spam(false) << "GL_FRONT_AND_BACK)";
       break;
     }
-    glgsg_cat.debug(false) << endl;
+    glgsg_cat.spam(false) << endl;
 #endif
     glDrawBuffer(mode);
     _draw_buffer_mode = mode;
@@ -244,7 +244,7 @@ call_glLightModelTwoSide(GLboolean twoside)
   if (_lmodel_twoside != twoside) {
     _lmodel_twoside = twoside;
 #ifdef GSG_VERBOSE
-    glgsg_cat.debug()
+    glgsg_cat.spam()
       << "glLightModel(GL_LIGHT_MODEL_TWO_SIDE, " << (int)twoside << ")" << endl;
 #endif
     glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, twoside);
@@ -260,37 +260,37 @@ INLINE void GLGraphicsStateGuardian::
 call_glStencilFunc(GLenum func,GLint ref,GLuint mask) {
 
 #ifdef GSG_VERBOSE
-    glgsg_cat.debug() << "glStencilFunc(";
+    glgsg_cat.spam() << "glStencilFunc(";
     switch (func) {
     case GL_NEVER:
-      glgsg_cat.debug(false) << "GL_NEVER, ";
+      glgsg_cat.spam(false) << "GL_NEVER, ";
       break;
     case GL_LESS:
-      glgsg_cat.debug(false) << "GL_LESS, ";
+      glgsg_cat.spam(false) << "GL_LESS, ";
       break;
     case GL_EQUAL:
-      glgsg_cat.debug(false) << "GL_EQUAL, ";
+      glgsg_cat.spam(false) << "GL_EQUAL, ";
       break;
     case GL_LEQUAL:
-      glgsg_cat.debug(false) << "GL_LEQUAL, ";
+      glgsg_cat.spam(false) << "GL_LEQUAL, ";
       break;
     case GL_GREATER:
-      glgsg_cat.debug(false) << "GL_GREATER, ";
+      glgsg_cat.spam(false) << "GL_GREATER, ";
       break;
     case GL_NOTEQUAL:
-      glgsg_cat.debug(false) << "GL_NOTEQUAL, ";
+      glgsg_cat.spam(false) << "GL_NOTEQUAL, ";
       break;
     case GL_GEQUAL:
-      glgsg_cat.debug(false) << "GL_GEQUAL, ";
+      glgsg_cat.spam(false) << "GL_GEQUAL, ";
       break;
     case GL_ALWAYS:
-      glgsg_cat.debug(false) << "GL_ALWAYS, ";
+      glgsg_cat.spam(false) << "GL_ALWAYS, ";
       break;
     default:
-      glgsg_cat.debug(false) << "unknown, ";
+      glgsg_cat.spam(false) << "unknown, ";
       break;
     }
-    glgsg_cat.debug(false) << (int)ref << (unsigned int)mask << ")\n";
+    glgsg_cat.spam(false) << (int)ref << (unsigned int)mask << ")\n";
 #endif
     glStencilFunc(func, ref, mask);
 }
@@ -303,31 +303,31 @@ call_glStencilFunc(GLenum func,GLint ref,GLuint mask) {
 INLINE void GLGraphicsStateGuardian::
 call_glStencilOp(GLenum fail,GLenum zfail,GLenum zpass) {
 #ifdef GSG_VERBOSE
-    glgsg_cat.debug() << "glStencilOp(fail, zfail, ";
+    glgsg_cat.spam() << "glStencilOp(fail, zfail, ";
     switch (zpass) {
     case GL_KEEP:
-      glgsg_cat.debug(false) << "GL_KEEP)";
+      glgsg_cat.spam(false) << "GL_KEEP)";
       break;
     case GL_ZERO:
-      glgsg_cat.debug(false) << "GL_ZERO)";
+      glgsg_cat.spam(false) << "GL_ZERO)";
       break;
     case GL_REPLACE:
-      glgsg_cat.debug(false) << "GL_REPLACE)";
+      glgsg_cat.spam(false) << "GL_REPLACE)";
       break;
     case GL_INCR:
-      glgsg_cat.debug(false) << "GL_INCR)";
+      glgsg_cat.spam(false) << "GL_INCR)";
       break;
     case GL_DECR:
-      glgsg_cat.debug(false) << "GL_DECR)";
+      glgsg_cat.spam(false) << "GL_DECR)";
       break;
     case GL_INVERT:
-      glgsg_cat.debug(false) << "GL_INVERT)";
+      glgsg_cat.spam(false) << "GL_INVERT)";
       break;
     default:
-      glgsg_cat.debug(false) << "unknown)";
+      glgsg_cat.spam(false) << "unknown)";
       break;
     }
-    glgsg_cat.debug(false) << endl;
+    glgsg_cat.spam(false) << endl;
 #endif
     glStencilOp(fail,zfail,zpass);
 }
@@ -342,7 +342,7 @@ call_glLineWidth(GLfloat width) {
   if (_line_width != width) {
     _line_width = width;
 #ifdef GSG_VERBOSE
-  glgsg_cat.debug()
+  glgsg_cat.spam()
     << "glLineWidth(" << width << ")" << endl;
 #endif
     glLineWidth(width);
@@ -359,7 +359,7 @@ call_glPointSize(GLfloat size) {
   if (_point_size != size) {
     _point_size = size;
 #ifdef GSG_VERBOSE
-  glgsg_cat.debug()
+  glgsg_cat.spam()
     << "glPointSize(" << size << ")" << endl;
 #endif
     glPointSize(size);
@@ -377,70 +377,70 @@ call_glBlendFunc(GLenum sfunc, GLenum dfunc) {
     _blend_source_func = sfunc;
     _blend_dest_func = dfunc;
 #ifdef GSG_VERBOSE
-    glgsg_cat.debug() << "glBlendFunc(";
+    glgsg_cat.spam() << "glBlendFunc(";
     switch (sfunc) {
     case GL_ZERO:
-      glgsg_cat.debug(false) << "GL_ZERO, ";
+      glgsg_cat.spam(false) << "GL_ZERO, ";
       break;
     case GL_ONE:
-      glgsg_cat.debug(false) << "GL_ONE, ";
+      glgsg_cat.spam(false) << "GL_ONE, ";
       break;
     case GL_DST_COLOR:
-      glgsg_cat.debug(false) << "GL_DST_COLOR, ";
+      glgsg_cat.spam(false) << "GL_DST_COLOR, ";
       break;
     case GL_ONE_MINUS_DST_COLOR:
-      glgsg_cat.debug(false) << "GL_ONE_MINUS_DST_COLOR, ";
+      glgsg_cat.spam(false) << "GL_ONE_MINUS_DST_COLOR, ";
       break;
     case GL_SRC_ALPHA:
-      glgsg_cat.debug(false) << "GL_SRC_ALPHA, ";
+      glgsg_cat.spam(false) << "GL_SRC_ALPHA, ";
       break;
     case GL_ONE_MINUS_SRC_ALPHA:
-      glgsg_cat.debug(false) << "GL_ONE_MINUS_SRC_ALPHA, ";
+      glgsg_cat.spam(false) << "GL_ONE_MINUS_SRC_ALPHA, ";
       break;
     case GL_DST_ALPHA:
-      glgsg_cat.debug(false) << "GL_DST_ALPHA, ";
+      glgsg_cat.spam(false) << "GL_DST_ALPHA, ";
       break;
     case GL_ONE_MINUS_DST_ALPHA:
-      glgsg_cat.debug(false) << "GL_ONE_MINUS_DST_ALPHA, ";
+      glgsg_cat.spam(false) << "GL_ONE_MINUS_DST_ALPHA, ";
       break;
     case GL_SRC_ALPHA_SATURATE:
 
-      glgsg_cat.debug(false) << "GL_SRC_ALPHA_SATURATE, ";
+      glgsg_cat.spam(false) << "GL_SRC_ALPHA_SATURATE, ";
       break;
     default:
-      glgsg_cat.debug(false) << "unknown, ";
+      glgsg_cat.spam(false) << "unknown, ";
       break;
     }
     switch (dfunc) {
     case GL_ZERO:
-      glgsg_cat.debug(false) << "GL_ZERO)";
+      glgsg_cat.spam(false) << "GL_ZERO)";
       break;
     case GL_ONE:
-      glgsg_cat.debug(false) << "GL_ONE)";
+      glgsg_cat.spam(false) << "GL_ONE)";
       break;
     case GL_SRC_COLOR:
-      glgsg_cat.debug(false) << "GL_SRC_COLOR)";
+      glgsg_cat.spam(false) << "GL_SRC_COLOR)";
       break;
     case GL_ONE_MINUS_SRC_COLOR:
-      glgsg_cat.debug(false) << "GL_ONE_MINUS_SRC_COLOR)";
+      glgsg_cat.spam(false) << "GL_ONE_MINUS_SRC_COLOR)";
       break;
     case GL_SRC_ALPHA:
-      glgsg_cat.debug(false) << "GL_SRC_ALPHA)";
+      glgsg_cat.spam(false) << "GL_SRC_ALPHA)";
       break;
     case GL_ONE_MINUS_SRC_ALPHA:
-      glgsg_cat.debug(false) << "GL_ONE_MINUS_SRC_ALPHA)";
+      glgsg_cat.spam(false) << "GL_ONE_MINUS_SRC_ALPHA)";
       break;
     case GL_DST_ALPHA:
-      glgsg_cat.debug(false) << "GL_DST_ALPHA)";
+      glgsg_cat.spam(false) << "GL_DST_ALPHA)";
       break;
     case GL_ONE_MINUS_DST_ALPHA:
-      glgsg_cat.debug(false) << "GL_ONE_MINUS_DST_ALPHA)";
+      glgsg_cat.spam(false) << "GL_ONE_MINUS_DST_ALPHA)";
       break;
     default:
-      glgsg_cat.debug(false) << "unknown)";
+      glgsg_cat.spam(false) << "unknown)";
       break;
     }
-    glgsg_cat.debug(false) << endl;
+    glgsg_cat.spam(false) << endl;
 #endif
     glBlendFunc(sfunc, dfunc);
   }
@@ -456,24 +456,24 @@ call_glFogMode(GLint mode) {
   if (_fog_mode != mode) {
     _fog_mode = mode;
 #ifdef GSG_VERBOSE
-    glgsg_cat.debug() << "glFog(GL_FOG_MODE, ";
+    glgsg_cat.spam() << "glFog(GL_FOG_MODE, ";
     switch(mode) {
     case GL_LINEAR:
-      glgsg_cat.debug(false) << "GL_LINEAR)" << endl;
+      glgsg_cat.spam(false) << "GL_LINEAR)" << endl;
       break;
     case GL_EXP:
-      glgsg_cat.debug(false) << "GL_EXP)" << endl;
+      glgsg_cat.spam(false) << "GL_EXP)" << endl;
       break;
     case GL_EXP2:
-      glgsg_cat.debug(false) << "GL_EXP2)" << endl;
+      glgsg_cat.spam(false) << "GL_EXP2)" << endl;
       break;
 #ifdef GL_FOG_FUNC_SGIS
     case GL_FOG_FUNC_SGIS:
-      glgsg_cat.debug(false) << "GL_FOG_FUNC_SGIS)" << endl;
+      glgsg_cat.spam(false) << "GL_FOG_FUNC_SGIS)" << endl;
       break;
 #endif
     default:
-      glgsg_cat.debug(false) << "unknown)" << endl;
+      glgsg_cat.spam(false) << "unknown)" << endl;
       break;
     }
 #endif
@@ -491,7 +491,7 @@ call_glFogStart(GLfloat start) {
   if (_fog_start != start) {
     _fog_start = start;
 #ifdef GSG_VERBOSE
-  glgsg_cat.debug()
+  glgsg_cat.spam()
     << "glFog(GL_FOG_START, " << start << ")" << endl;
 #endif
     glFogf(GL_FOG_START, start);
@@ -508,7 +508,7 @@ call_glFogEnd(GLfloat end) {
   if (_fog_end != end) {
     _fog_end = end;
 #ifdef GSG_VERBOSE
-  glgsg_cat.debug()
+  glgsg_cat.spam()
     << "glFog(GL_FOG_END, " << end << ")" << endl;
 #endif
     glFogf(GL_FOG_END, end);
@@ -525,7 +525,7 @@ call_glFogDensity(GLfloat density) {
   if (_fog_density != density) {
     _fog_density = density;
 #ifdef GSG_VERBOSE
-  glgsg_cat.debug()
+  glgsg_cat.spam()
     << "glFog(GL_FOG_DENSITY, " << density << ")" << endl;
 #endif
     glFogf(GL_FOG_DENSITY, density);
@@ -542,7 +542,7 @@ call_glFogColor(const Colorf &color) {
   if (_fog_color != color) {
     _fog_color = color;
 #ifdef GSG_VERBOSE
-  glgsg_cat.debug()
+  glgsg_cat.spam()
     << "glFog(GL_FOG_COLOR, " << color << ")" << endl;
 #endif
     glFogfv(GL_FOG_COLOR, color.get_data());
@@ -560,34 +560,34 @@ call_glAlphaFunc(GLenum func, GLclampf ref) {
     _alpha_func = func;
     _alpha_func_ref = ref;
 #ifdef GSG_VERBOSE
-    glgsg_cat.debug() << "glAlphaFunc(";
+    glgsg_cat.spam() << "glAlphaFunc(";
     switch (func) {
     case GL_NEVER:
-      glgsg_cat.debug(false) << "GL_NEVER, ";
+      glgsg_cat.spam(false) << "GL_NEVER, ";
       break;
     case GL_LESS:
-      glgsg_cat.debug(false) << "GL_LESS, ";
+      glgsg_cat.spam(false) << "GL_LESS, ";
       break;
     case GL_EQUAL:
-      glgsg_cat.debug(false) << "GL_EQUAL, ";
+      glgsg_cat.spam(false) << "GL_EQUAL, ";
       break;
     case GL_LEQUAL:
-      glgsg_cat.debug(false) << "GL_LEQUAL, ";
+      glgsg_cat.spam(false) << "GL_LEQUAL, ";
       break;
     case GL_GREATER:
-      glgsg_cat.debug(false) << "GL_GREATER, ";
+      glgsg_cat.spam(false) << "GL_GREATER, ";
       break;
     case GL_NOTEQUAL:
-      glgsg_cat.debug(false) << "GL_NOTEQUAL, ";
+      glgsg_cat.spam(false) << "GL_NOTEQUAL, ";
       break;
     case GL_GEQUAL:
-      glgsg_cat.debug(false) << "GL_GEQUAL, ";
+      glgsg_cat.spam(false) << "GL_GEQUAL, ";
       break;
     case GL_ALWAYS:
-      glgsg_cat.debug(false) << "GL_ALWAYS, ";
+      glgsg_cat.spam(false) << "GL_ALWAYS, ";
       break;
     }
-    glgsg_cat.debug() << ref << ")" << endl;
+    glgsg_cat.spam() << ref << ")" << endl;
 #endif
     glAlphaFunc(func, ref);
   }
@@ -603,16 +603,16 @@ call_glPolygonMode(GLenum mode) {
   if (_polygon_mode != mode) {
     _polygon_mode = mode;
 #ifdef GSG_VERBOSE
-    glgsg_cat.debug() << "glPolygonMode(GL_BACK_AND_FRONT, ";
+    glgsg_cat.spam() << "glPolygonMode(GL_BACK_AND_FRONT, ";
     switch (mode) {
     case GL_POINT:
-      glgsg_cat.debug(false) << "GL_POINT)" << endl;
+      glgsg_cat.spam(false) << "GL_POINT)" << endl;
       break;
     case GL_LINE:
-      glgsg_cat.debug(false) << "GL_LINE)" << endl;
+      glgsg_cat.spam(false) << "GL_LINE)" << endl;
       break;
     case GL_FILL:
-      glgsg_cat.debug(false) << "GL_FILL)" << endl;
+      glgsg_cat.spam(false) << "GL_FILL)" << endl;
       break;
     }
 #endif
@@ -717,13 +717,13 @@ enable_stencil_test(bool val) {
     _stencil_test_enabled = val;
     if (val) {
 #ifdef GSG_VERBOSE
-      glgsg_cat.debug()
+      glgsg_cat.spam()
         << "glEnable(GL_STENCIL_TEST)" << endl;
 #endif
       glEnable(GL_STENCIL_TEST);
     } else {
 #ifdef GSG_VERBOSE
-      glgsg_cat.debug()
+      glgsg_cat.spam()
         << "glDisable(GL_STENCIL_TEST)" << endl;
 #endif
       glDisable(GL_STENCIL_TEST);
@@ -742,13 +742,13 @@ enable_texturing(bool val) {
     _texturing_enabled = val;
     if (val) {
 #ifdef GSG_VERBOSE
-      glgsg_cat.debug()
+      glgsg_cat.spam()
         << "glEnable(GL_TEXTURE_2D)" << endl;
 #endif
       glEnable(GL_TEXTURE_2D);
     } else {
 #ifdef GSG_VERBOSE
-      glgsg_cat.debug()
+      glgsg_cat.spam()
         << "glDisable(GL_TEXTURE_2D)" << endl;
 #endif
       glDisable(GL_TEXTURE_2D);
@@ -785,13 +785,13 @@ enable_multisample_alpha_one(bool val) {
 #ifdef GL_SAMPLE_ALPHA_TO_ONE_SGIS
     if (val) {
 #ifdef GSG_VERBOSE
-      glgsg_cat.debug()
+      glgsg_cat.spam()
         << "glEnable(GL_SAMPLE_ALPHA_TO_ONE_SGIS)" << endl;
 #endif
       glEnable(GL_SAMPLE_ALPHA_TO_ONE_SGIS);
     } else {
 #ifdef GSG_VERBOSE
-      glgsg_cat.debug()
+      glgsg_cat.spam()
         << "glDisable(GL_SAMPLE_ALPHA_TO_ONE_SGIS)" << endl;
 #endif
       glDisable(GL_SAMPLE_ALPHA_TO_ONE_SGIS);
@@ -812,13 +812,13 @@ enable_multisample_alpha_mask(bool val) {
 #ifdef GL_SAMPLE_ALPHA_TO_MASK_SGIS
     if (val) {
 #ifdef GSG_VERBOSE
-      glgsg_cat.debug()
+      glgsg_cat.spam()
         << "glEnable(GL_SAMPLE_ALPHA_TO_MASK_SGIS)" << endl;
 #endif
       glEnable(GL_SAMPLE_ALPHA_TO_MASK_SGIS);
     } else {
 #ifdef GSG_VERBOSE
-      glgsg_cat.debug()
+      glgsg_cat.spam()
         << "glDisable(GL_SAMPLE_ALPHA_TO_MASK_SGIS)" << endl;
 #endif
       glDisable(GL_SAMPLE_ALPHA_TO_MASK_SGIS);
@@ -838,13 +838,13 @@ enable_blend(bool val) {
     _blend_enabled = val;
     if (val) {
 #ifdef GSG_VERBOSE
-      glgsg_cat.debug()
+      glgsg_cat.spam()
         << "glEnable(GL_BLEND)" << endl;
 #endif
       glEnable(GL_BLEND);
     } else {
 #ifdef GSG_VERBOSE
-      glgsg_cat.debug()
+      glgsg_cat.spam()
         << "glDisable(GL_BLEND)" << endl;
 #endif
       glDisable(GL_BLEND);
@@ -863,13 +863,13 @@ enable_depth_test(bool val) {
     _depth_test_enabled = val;
     if (val) {
 #ifdef GSG_VERBOSE
-      glgsg_cat.debug()
+      glgsg_cat.spam()
         << "glEnable(GL_DEPTH_TEST)" << endl;
 #endif
       glEnable(GL_DEPTH_TEST);
     } else {
 #ifdef GSG_VERBOSE
-      glgsg_cat.debug()
+      glgsg_cat.spam()
         << "glDisable(GL_DEPTH_TEST)" << endl;
 #endif
       glDisable(GL_DEPTH_TEST);
@@ -888,13 +888,13 @@ enable_fog(bool val) {
     _fog_enabled = val;
     if (val) {
 #ifdef GSG_VERBOSE
-      glgsg_cat.debug()
+      glgsg_cat.spam()
         << "glEnable(GL_FOG)" << endl;
 #endif
       glEnable(GL_FOG);
     } else {
 #ifdef GSG_VERBOSE
-      glgsg_cat.debug()
+      glgsg_cat.spam()
         << "glDisable(GL_FOG)" << endl;
 #endif
       glDisable(GL_FOG);
@@ -913,13 +913,13 @@ enable_alpha_test(bool val) {
     _alpha_test_enabled = val;
     if (val) {
 #ifdef GSG_VERBOSE
-      glgsg_cat.debug()
+      glgsg_cat.spam()
         << "glEnable(GL_ALPHA_TEST)" << endl;
 #endif
       glEnable(GL_ALPHA_TEST);
     } else {
 #ifdef GSG_VERBOSE
-      glgsg_cat.debug()
+      glgsg_cat.spam()
         << "glDisable(GL_ALPHA_TEST)" << endl;
 #endif
       glDisable(GL_ALPHA_TEST);
@@ -939,13 +939,13 @@ enable_polygon_offset(bool val) {
     _polygon_offset_enabled = val;
     if (val) {
 #ifdef GSG_VERBOSE
-      glgsg_cat.debug()
+      glgsg_cat.spam()
         << "glEnable(GL_POLYGON_OFFSET_*)" << endl;
 #endif
       glEnable(GL_POLYGON_OFFSET_FILL);
     } else {
 #ifdef GSG_VERBOSE
-      glgsg_cat.debug()
+      glgsg_cat.spam()
         << "glDisable(GL_POLYGON_OFFSET_*)" << endl;
 #endif
       glDisable(GL_POLYGON_OFFSET_FILL);
