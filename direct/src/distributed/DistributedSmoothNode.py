@@ -46,7 +46,7 @@ def activateSmoothing(smoothing, prediction):
     current position, by extrapolating from old position reports.
 
     This assumes you have a client repository that knows its
-    localToonDoId -- stored in self.cr.localToonDoId
+    localAvatarDoId -- stored in self.cr.localAvatarDoId
     """
 
     if smoothing and EnableSmoothing:
@@ -278,7 +278,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
                 self.notify.info("Suggesting resync for %s, with discrepency %s; local time is %s and server time is %s." % (
                     self.doId, howFarFuture - chug,
                     realTime, serverTime))
-                self.d_suggestResync(self.cr.localToonDoId, timestamp,
+                self.d_suggestResync(self.cr.localAvatarDoId, timestamp,
                                      timestampB, serverTime,
                                      globalClockDelta.getUncertainty())
         
@@ -346,7 +346,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
                 serverTime = realTime - globalClockDelta.getDelta()
                 self.notify.info("Returning resync for %s; local time is %s and server time is %s." % (
                     self.doId, realTime, serverTime))
-                other.d_returnResync(self.cr.localToonDoId, timestampB,
+                other.d_returnResync(self.cr.localAvatarDoId, timestampB,
                                      serverTime,
                                      globalClockDelta.getUncertainty())
         
