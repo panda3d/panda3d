@@ -78,6 +78,13 @@ public:
 template<class Type>
 class dallocator : public allocator<Type> {
 public:
+  // There seems to be a bug in VC++ 2003 that requires these typedefs
+  // to be made explicitly.
+  typedef TYPENAME allocator<Type>::pointer pointer;
+  typedef TYPENAME allocator<Type>::reference reference;
+  typedef TYPENAME allocator<Type>::const_pointer const_pointer;
+  typedef TYPENAME allocator<Type>::const_reference const_reference;
+
   INLINE dallocator() throw();
 
   // template member functions in VC++ can only be defined in-class.
@@ -88,7 +95,7 @@ public:
   INLINE void deallocate(void *p, size_type n);
 
   template<class U> struct rebind { 
-	  typedef dallocator<U> other; 
+    typedef dallocator<U> other; 
   };
 };
 
