@@ -73,7 +73,8 @@ if not ORIGTAG:
 
     print 'Tagging sources.'
     cmd = 'cvs -f -d "%s" rtag -F -r HEAD "%s" "%s"' % (CVSROOT, tag, MODULE)
-    os.system(cmd)
+    if os.system(cmd) != 0:
+        sys.exit(1)
 else:
     # Otherwise, we were given a starting tag, so use it.
     tag = ORIGTAG
