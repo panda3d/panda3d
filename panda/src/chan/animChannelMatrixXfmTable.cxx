@@ -334,6 +334,11 @@ fillin(DatagramIterator& scan, BamReader* manager)
     }
 
     FFTCompressor compressor;
+    if (manager->get_file_minor_ver() < 4) {
+      //  Prior to bam version 3.4, the quaternion code had been
+      //  inadvertently transposed.
+      compressor.set_transpose_quats(true);
+    }
     compressor.read_header(scan);
 
     int i;

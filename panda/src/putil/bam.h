@@ -32,11 +32,12 @@ static const unsigned short _bam_major_ver = 3;
 // Bumped to major version 2 on 7/6/00 due to major changes in Character.
 // Bumped to major version 3 on 12/8/00 to change float64's to float32's.
 
-static const unsigned short _bam_minor_ver = 3;
+static const unsigned short _bam_minor_ver = 4;
 // Bumped to minor version 1 on 12/15/00 to add FFT-style channel
 // compression.
 // Bumped to minor version 2 on 2/15/01 to add ModelNode::_preserve_transform.
 // Bumped to minor version 3 on 4/11/01 to support correctly ordered children.
+// Bumped to minor version 4 on 12/11/01 to transpose quaternions.
 
 
 #endif

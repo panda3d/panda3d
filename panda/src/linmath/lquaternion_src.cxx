@@ -32,14 +32,14 @@ pure_imaginary(const FLOATNAME(LVector3) &v) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: extract (LMatrix3)
-//       Access: public
-//  Description: Do-While Jones paper from cary.
+//     Function: extract_to_matrix (LMatrix3)
+//       Access: Public
+//  Description: Based on the quat lib from VRPN.
 ////////////////////////////////////////////////////////////////////
 void FLOATNAME(LQuaternion)::
 extract_to_matrix(FLOATNAME(LMatrix3) &m) const {
-  FLOATTYPE N = (_v.data[0] * _v.data[0]) + (_v.data[1] * _v.data[1]) + (_v.data[2] * _v.data[2]) + (_v.data[3] * _v.data[3]);
-  FLOATTYPE s = (N == 0.) ? 0. : (2. / N);
+  FLOATTYPE N = this->dot(*this);
+  FLOATTYPE s = (N == 0.0f) ? 0.0f : (2.0f / N);
   FLOATTYPE xs, ys, zs, wx, wy, wz, xx, xy, xz, yy, yz, zz;
 
   xs = _v.data[1] * s;   ys = _v.data[2] * s;   zs = _v.data[3] * s;
@@ -47,20 +47,20 @@ extract_to_matrix(FLOATNAME(LMatrix3) &m) const {
   xx = _v.data[1] * xs;  xy = _v.data[1] * ys;  xz = _v.data[1] * zs;
   yy = _v.data[2] * ys;  yz = _v.data[2] * zs;  zz = _v.data[3] * zs;
 
-  m.set((1. - (yy + zz)), (xy - wz), (xz + wy),
-        (xy + wz), (1. - (xx + zz)), (yz - wx),
-        (xz - wy), (yz + wx), (1. - (xx + yy)));
+  m.set((1.0f - (yy + zz)), (xy + wz), (xz - wy),
+        (xy - wz), (1.0f - (xx + zz)), (yz + wx),
+        (xz + wy), (yz - wx), (1.0f - (xx + yy)));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: extract (LMatrix4)
-//       Access: public
-//  Description:
+//     Function: extract_to_matrix (LMatrix4)
+//       Access: Public
+//  Description: Based on the quat lib from VRPN.
 ////////////////////////////////////////////////////////////////////
 void FLOATNAME(LQuaternion)::
 extract_to_matrix(FLOATNAME(LMatrix4) &m) const {
-  FLOATTYPE N = (_v.data[0] * _v.data[0]) + (_v.data[1] * _v.data[1]) + (_v.data[2] * _v.data[2]) + (_v.data[3] * _v.data[3]);
-  FLOATTYPE s = (N == 0.) ? 0. : (2. / N);
+  FLOATTYPE N = this->dot(*this);
+  FLOATTYPE s = (N == 0.0f) ? 0.0f : (2.0f / N);
   FLOATTYPE xs, ys, zs, wx, wy, wz, xx, xy, xz, yy, yz, zz;
 
   xs = _v.data[1] * s;   ys = _v.data[2] * s;   zs = _v.data[3] * s;
@@ -68,10 +68,10 @@ extract_to_matrix(FLOATNAME(LMatrix4) &m) const {
   xx = _v.data[1] * xs;  xy = _v.data[1] * ys;  xz = _v.data[1] * zs;
   yy = _v.data[2] * ys;  yz = _v.data[2] * zs;  zz = _v.data[3] * zs;
 
-  m.set((1. - (yy + zz)), (xy - wz), (xz + wy), 0.,
-        (xy + wz), (1. - (xx + zz)), (yz - wx), 0.,
-        (xz - wy), (yz + wx), (1. - (xx + yy)), 0.,
-        0., 0., 0., 1.);
+  m.set((1.0f - (yy + zz)), (xy + wz), (xz - wy), 0.0f,
+        (xy - wz), (1.0f - (xx + zz)), (yz + wx), 0.0f,
+        (xz + wy), (yz - wx), (1.0f - (xx + yy)), 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -161,37 +161,37 @@ get_hpr() const {
 //  Description: Sets the quaternion according to the rotation
 //               represented by the matrix.  Originally we tried an
 //               algorithm presented by Do-While Jones, but that
-//               turned out to be broken.
+//               turned out to be broken.  This is based on the quat
+//               lib from UNC.
 ////////////////////////////////////////////////////////////////////
 void FLOATNAME(LQuaternion)::
 set_from_matrix(const FLOATNAME(LMatrix3) &m) {
   FLOATTYPE m00, m01, m02, m10, m11, m12, m20, m21, m22;
 
   m00 = m(0, 0);
-  m01 = m(0, 1);
-  m02 = m(0, 2);
   m10 = m(1, 0);
-  m11 = m(1, 1);
-  m12 = m(1, 2);
   m20 = m(2, 0);
+  m01 = m(0, 1);
+  m11 = m(1, 1);
   m21 = m(2, 1);
+  m02 = m(0, 2);
+  m12 = m(1, 2);
   m22 = m(2, 2);
 
-  FLOATTYPE T = m00 + m11 + m22;
+  FLOATTYPE trace = m00 + m11 + m22;
 
-  if (T > 0.0f) {
+  if (trace > 0.0f) {
     // The easy case.
-    FLOATTYPE S = csqrt(T + 1.0f);
+    FLOATTYPE S = csqrt(trace + 1.0f);
     _v.data[0] = S * 0.5f;
     S = 0.5f / S;
-    _v.data[1] = (m21 - m12) * S;
-    _v.data[2] = (m02 - m20) * S;
-    _v.data[3] = (m10 - m01) * S;
+    _v.data[1] = (m12 - m21) * S;
+    _v.data[2] = (m20 - m02) * S;
+    _v.data[3] = (m01 - m10) * S;
 
   } else {
     // The harder case.  First, figure out which column to take as
-    // root.  We'll choose the largest so that we get the greatest
-    // precision.
+    // root.  This will be the column with the largest value.
 
     // It is tempting to try to compare the absolute values of the
     // diagonal values in the code below, instead of their normal,
@@ -210,9 +210,9 @@ set_from_matrix(const FLOATNAME(LMatrix3) &m) {
       S = csqrt(S);
       _v.data[1] = S * 0.5f;
       S = 0.5f / S;
-      _v.data[2] = (m10 + m01) * S;
-      _v.data[3] = (m20 + m02) * S;
-      _v.data[0] = (m21 - m12) * S;
+      _v.data[2] = (m01 + m10) * S;
+      _v.data[3] = (m02 + m20) * S;
+      _v.data[0] = (m12 - m21) * S;
 
     } else if (m11 > m22) {
       // m11 is larger than m00 and m22.
@@ -221,9 +221,9 @@ set_from_matrix(const FLOATNAME(LMatrix3) &m) {
       S = csqrt(S);
       _v.data[2] = S * 0.5f;
       S = 0.5f / S;
-      _v.data[3] = (m21 + m12) * S;
-      _v.data[1] = (m01 + m10) * S;
-      _v.data[0] = (m02 - m20) * S;
+      _v.data[3] = (m12 + m21) * S;
+      _v.data[1] = (m10 + m01) * S;
+      _v.data[0] = (m20 - m02) * S;
 
     } else {
       // m22 is larger than m00 and m11.
@@ -232,9 +232,9 @@ set_from_matrix(const FLOATNAME(LMatrix3) &m) {
       S = csqrt(S);
       _v.data[3] = S * 0.5f;
       S = 0.5f / S;
-      _v.data[1] = (m02 + m20) * S;
-      _v.data[2] = (m12 + m21) * S;
-      _v.data[0] = (m10 - m01) * S;
+      _v.data[1] = (m20 + m02) * S;
+      _v.data[2] = (m21 + m12) * S;
+      _v.data[0] = (m01 - m10) * S;
     }
   }
 }

@@ -48,6 +48,7 @@ static RealPlans _real_decompress_plans;
 FFTCompressor::
 FFTCompressor() {
   set_quality(-1);
+  _transpose_quats = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -158,6 +159,30 @@ set_quality(int quality) {
 int FFTCompressor::
 get_quality() const {
   return _quality;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FFTCompressor::set_transpose_quats
+//       Access: Public
+//  Description: Sets the transpose_quats flag.  This is provided
+//               mainly for backward compatibility with old bam files
+//               that were written out with the quaternions
+//               inadvertently transposed.
+////////////////////////////////////////////////////////////////////
+void FFTCompressor::
+set_transpose_quats(bool flag) {
+  _transpose_quats = flag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FFTCompressor::get_transpose_quats
+//       Access: Public
+//  Description: Returns the transpose_quats flag.  See
+//               set_transpose_quats().
+////////////////////////////////////////////////////////////////////
+bool FFTCompressor::
+get_transpose_quats() const {
+  return _transpose_quats;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -366,6 +391,9 @@ write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
   for (int i = 0; i < length; i++) {
     LMatrix3f mat;
     compose_matrix(mat, LVecBase3f(1.0, 1.0, 1.0), array[i]);
+    if (_transpose_quats) {
+      mat.transpose_in_place();
+    }
 
     LOrientationf rot(mat);
     rot.normalize();  // This may not be necessary, but let's not take chances.
@@ -663,6 +691,9 @@ read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
 
       LMatrix3f mat;
       rot.extract_to_matrix(mat);
+      if (_transpose_quats) {
+        mat.transpose_in_place();
+      }
       LVecBase3f scale, hpr;
       bool success = decompose_matrix(mat, scale, hpr);
       nassertr(success, false);

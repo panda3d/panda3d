@@ -54,6 +54,9 @@ public:
   void set_quality(int quality);
   int get_quality() const;
 
+  void set_transpose_quats(bool flag);
+  bool get_transpose_quats() const;
+
   void write_header(Datagram &datagram);
   void write_reals(Datagram &datagram, const float *array, int length);
   void write_hprs(Datagram &datagram, const LVecBase3f *array, int length);
@@ -90,6 +93,7 @@ private:
   double _fft_offset;
   double _fft_factor;
   double _fft_exponent;
+  bool _transpose_quats;
 };
 
 #endif
