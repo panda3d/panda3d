@@ -801,6 +801,17 @@ get_r(const NodePath &other) const {
 //               relative to the other node.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
+set_scale(const NodePath &other, float scale) {
+  set_scale(other, LPoint3f(scale, scale, scale));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_scale
+//       Access: Published
+//  Description: Sets the scale component of the transform,
+//               relative to the other node.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
 set_scale(const NodePath &other, float sx, float sy, float sz) {
   set_scale(other, LPoint3f(sx, sy, sz));
 }

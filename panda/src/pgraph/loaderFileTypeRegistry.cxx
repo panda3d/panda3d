@@ -107,11 +107,12 @@ get_type_from_extension(const string &extension) {
       _deferred_types.erase(di);
 
       loader_cat->info()
-        << "loading file type module: " << dlname.to_os_specific() << endl;
+        << "loading file type module: " << (*di).second << endl;
       void *tmp = load_dso(dlname);
       if (tmp == (void *)NULL) {
-        loader_cat->info()
-          << "Unable to load: " << load_dso_error() << endl;
+        loader_cat->warning()
+          << "Unable to load " << dlname.to_os_specific() << ": " 
+          << load_dso_error() << endl;
         return NULL;
       }
 

@@ -369,6 +369,7 @@ PUBLISHED:
   void set_quat(const NodePath &other, const LQuaternionf &quat);
   LQuaternionf get_quat(const NodePath &other) const;
 
+  INLINE void set_scale(const NodePath &other, float scale);
   INLINE void set_scale(const NodePath &other, float sx, float sy, float sz);
   void set_scale(const NodePath &other, const LVecBase3f &scale);
   void set_sx(const NodePath &other, float sx);
