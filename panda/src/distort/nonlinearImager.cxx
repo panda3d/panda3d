@@ -250,6 +250,28 @@ get_active(int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NonlinearImager::set_viewer
+//       Access: Published
+//  Description: Specifies the LensNode that is to serve as the
+//               viewer for this screen.  The relative position of
+//               the LensNode to the NonlinearImager, as well as the
+//               properties of the lens associated with the LensNode,
+//               determines the UV's that will be assigned to the
+//               geometry within the NonlinearImager.
+//
+//               The NodePath must refer to a LensNode (or a Camera).
+////////////////////////////////////////////////////////////////////
+void NonlinearImager::
+set_viewer(const NodePath &viewer) {
+  _viewer_node = (LensNode *)NULL;
+  _viewer = viewer;
+  _stale = true;
+  nassertv(!viewer.is_empty() && 
+           viewer.node()->is_of_type(LensNode::get_class_type()));
+  _viewer_node = DCAST(LensNode, viewer.node());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NonlinearImager::recompute
 //       Access: Published
 //  Description: Forces a regeneration of all the mesh objects, etc.
@@ -263,8 +285,9 @@ recompute() {
     }
   }
 
-  if (_camera != (LensNode *)NULL && _camera->get_lens() != (Lens *)NULL) {
-    _camera_lens_change = _camera->get_lens()->get_last_change();
+  if (_viewer_node != (LensNode *)NULL && 
+      _viewer_node->get_lens() != (Lens *)NULL) {
+    _viewer_lens_change = _viewer_node->get_lens()->get_last_change();
   }
   _stale = false;
 }
@@ -298,10 +321,10 @@ render(GraphicsEngine *engine) {
 ////////////////////////////////////////////////////////////////////
 void NonlinearImager::
 recompute_if_stale() {
-  if (_camera != (LensNode *)NULL && 
-      _camera->get_lens() != (Lens *)NULL) {
-    UpdateSeq lens_change = _camera->get_lens()->get_last_change();
-    if (_stale || lens_change != _camera_lens_change) {
+  if (_viewer_node != (LensNode *)NULL && 
+      _viewer_node->get_lens() != (Lens *)NULL) {
+    UpdateSeq lens_change = _viewer_node->get_lens()->get_last_change();
+    if (_stale || lens_change != _viewer_lens_change) {
       recompute();
     } else {
       // We're not overall stale, but maybe we need to recompute one
@@ -328,12 +351,12 @@ void NonlinearImager::
 recompute_screen(NonlinearImager::Screen &screen) {
   screen._mesh.remove_node();
   screen._texture.clear();
-  if (_camera == (LensNode *)NULL || !screen._active) {
-    // Not much we can do without a camera.
+  if (_viewer_node == (LensNode *)NULL || !screen._active) {
+    // Not much we can do without a viewer.
     return;
   }
 
-  PT(PandaNode) mesh = screen._screen->make_flat_mesh(_camera);
+  PT(PandaNode) mesh = screen._screen->make_flat_mesh(_viewer);
   screen._mesh = _internal_scene.attach_new_node(mesh);
 
   PT(Texture) texture = new Texture;
@@ -383,7 +406,7 @@ render_screen(GraphicsEngine *engine, NonlinearImager::Screen &screen) {
   screen._texture->copy(gsg, scratch_region, 
                         gsg->get_render_buffer(RenderBuffer::T_back));
 
-  // It might be nice if we didn't through away the scratch region
-  // every time, which prevents us from preserving cull state from one
-  // frame to the next.
+  // It might be nice if we didn't throw away the scratch region every
+  // time, which prevents us from preserving cull state from one frame
+  // to the next.
 }

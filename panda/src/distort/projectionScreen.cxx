@@ -21,6 +21,7 @@
 #include "geom.h"
 #include "geomTristrip.h"
 #include "transformState.h"
+#include "workingNodePath.h"
 
 TypeHandle ProjectionScreen::_type_handle;
 
@@ -57,6 +58,7 @@ ProjectionScreen::
 ProjectionScreen(const ProjectionScreen &copy) :
   PandaNode(copy),
   _projector(copy._projector),
+  _projector_node(copy._projector_node),
   _vignette_on(copy._vignette_on),
   _vignette_color(copy._vignette_color),
   _frame_color(copy._frame_color)
@@ -118,6 +120,28 @@ cull_callback(CullTraverser *, CullTraverserData &) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ProjectionScreen::set_projector
+//       Access: Published
+//  Description: Specifies the LensNode that is to serve as the
+//               projector for this screen.  The relative position of
+//               the LensNode to the ProjectionScreen, as well as the
+//               properties of the lens associated with the LensNode,
+//               determines the UV's that will be assigned to the
+//               geometry within the ProjectionScreen.
+//
+//               The NodePath must refer to a LensNode (or a Camera).
+////////////////////////////////////////////////////////////////////
+void ProjectionScreen::
+set_projector(const NodePath &projector) {
+  _projector_node = (LensNode *)NULL;
+  _projector = projector;
+  _stale = true;
+  nassertv(!projector.is_empty() && 
+           projector.node()->is_of_type(LensNode::get_class_type()));
+  _projector_node = DCAST(LensNode, projector.node());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ProjectionScreen::generate_screen
 //       Access: Published
 //  Description: Synthesizes a polygon mesh based on the projection
@@ -138,21 +162,23 @@ cull_callback(CullTraverser *, CullTraverserData &) {
 //               distance of the screen from the lens center.
 ////////////////////////////////////////////////////////////////////
 PT(GeomNode) ProjectionScreen::
-generate_screen(LensNode *projector, const string &screen_name,
+generate_screen(const NodePath &projector, const string &screen_name,
                 int num_x_verts, int num_y_verts, float distance) {
-  nassertr(projector != (LensNode *)NULL, NULL);
-  nassertr(projector->get_lens() != NULL, NULL);
+  nassertr(!projector.is_empty() && 
+           projector.node()->is_of_type(LensNode::get_class_type()),
+           NULL);
+  LensNode *projector_node = DCAST(LensNode, projector.node());
+  nassertr(projector_node->get_lens() != NULL, NULL);
 
   // First, get the relative coordinate space of the projector.
   LMatrix4f rel_mat;
-  NodePath projector_np(projector);
   NodePath this_np(this);
-  rel_mat = projector_np.get_mat(this_np);
+  rel_mat = projector.get_mat(this_np);
 
   // Now compute all the vertices for the screen.  These are arranged
   // in order from left to right and bottom to top.
   int num_verts = num_x_verts * num_y_verts;
-  Lens *lens = projector->get_lens();
+  Lens *lens = projector_node->get_lens();
   float t = (distance - lens->get_near()) / (lens->get_far() - lens->get_near());
 
   PTA_Vertexf coords;
@@ -234,7 +260,7 @@ generate_screen(LensNode *projector, const string &screen_name,
 //               generate_screen().
 ////////////////////////////////////////////////////////////////////
 void ProjectionScreen::
-regenerate_screen(LensNode *projector, const string &screen_name,
+regenerate_screen(const NodePath &projector, const string &screen_name,
                   int num_x_verts, int num_y_verts, float distance) {
   // First, remove all existing children.
   remove_all_children();
@@ -261,23 +287,27 @@ regenerate_screen(LensNode *projector, const string &screen_name,
 //               lens, to generate the effect of seeing the image
 //               through the specified non-linear lens.
 //
-//               The returned node has no parent; it is up to the user
-//               to caller to parent it somewhere or store it so that
-//               it does not get dereferenced and deleted.
+//               The returned node has no parent; it is up to the
+//               caller to parent it somewhere or store it so that it
+//               does not get dereferenced and deleted.
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) ProjectionScreen::
-make_flat_mesh(LensNode *camera) {
-  nassertr(camera != (LensNode *)NULL, NULL);
-  nassertr(camera->get_lens() != (Lens *)NULL, NULL);
+make_flat_mesh(const NodePath &camera) {
+  nassertr(!camera.is_empty() && 
+           camera.node()->is_of_type(LensNode::get_class_type()),
+           NULL);
+  LensNode *camera_node = DCAST(LensNode, camera.node());
+  nassertr(camera_node->get_lens() != (Lens *)NULL, NULL);
 
   // First, ensure the UV's are up-to-date.
   recompute_if_stale();
 
   PT(PandaNode) top = new PandaNode(get_name());
+  NodePath this_np(this);
 
   LMatrix4f rel_mat;
   bool computed_rel_mat = false;
-  make_mesh_children(top, this, camera, rel_mat, computed_rel_mat);
+  make_mesh_children(top, this_np, camera, rel_mat, computed_rel_mat);
 
   return top;
 }
@@ -297,19 +327,8 @@ make_flat_mesh(LensNode *camera) {
 ////////////////////////////////////////////////////////////////////
 void ProjectionScreen::
 recompute() {
-  if (_projector != (LensNode *)NULL && 
-      _projector->get_lens() != (Lens *)NULL) {
-    _colors.clear();
-    _colors.push_back(_vignette_color);
-    _colors.push_back(_frame_color);
-
-    recompute_node(this, _rel_top_mat, _computed_rel_top_mat);
-    // Make sure this flag is set to false for next time.
-    _computed_rel_top_mat = false;
-
-    _projector_lens_change = _projector->get_lens()->get_last_change();
-    _stale = false;
-  }
+  NodePath this_np(this);
+  do_recompute(this_np);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -322,23 +341,44 @@ recompute() {
 ////////////////////////////////////////////////////////////////////
 void ProjectionScreen::
 recompute_if_stale() {
-  if (_projector != (LensNode *)NULL && 
-      _projector->get_lens() != (Lens *)NULL) {
-    UpdateSeq lens_change = _projector->get_lens()->get_last_change();
+  if (_projector_node != (LensNode *)NULL && 
+      _projector_node->get_lens() != (Lens *)NULL) {
+    UpdateSeq lens_change = _projector_node->get_lens()->get_last_change();
     if (_stale || lens_change != _projector_lens_change) {
       recompute();
 
     } else {
       // Get the relative transform to ensure it hasn't changed.
       NodePath this_np(this);
-      NodePath projector_np(_projector);
-      const LMatrix4f &top_mat = this_np.get_mat(projector_np);
+      const LMatrix4f &top_mat = this_np.get_mat(_projector);
       if (!_rel_top_mat.almost_equal(top_mat)) {
         _rel_top_mat = top_mat;
         _computed_rel_top_mat = true;
-        recompute();
+        do_recompute(this_np);
       }
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProjectionScreen::do_recompute
+//       Access: Private
+//  Description: Starts the recomputation process.
+////////////////////////////////////////////////////////////////////
+void ProjectionScreen::
+do_recompute(const NodePath &this_np) {
+  if (_projector_node != (LensNode *)NULL && 
+      _projector_node->get_lens() != (Lens *)NULL) {
+    _colors.clear();
+    _colors.push_back(_vignette_color);
+    _colors.push_back(_frame_color);
+
+    recompute_node(this_np, _rel_top_mat, _computed_rel_top_mat);
+    // Make sure this flag is set to false for next time.
+    _computed_rel_top_mat = false;
+
+    _projector_lens_change = _projector_node->get_lens()->get_last_change();
+    _stale = false;
   }
 }
 
@@ -351,9 +391,11 @@ recompute_if_stale() {
 //               encountered, a new relative matrix is computed.
 ////////////////////////////////////////////////////////////////////
 void ProjectionScreen::
-recompute_node(PandaNode *node, LMatrix4f &rel_mat, bool &computed_rel_mat) {
+recompute_node(const WorkingNodePath &np, LMatrix4f &rel_mat,
+               bool &computed_rel_mat) {
+  PandaNode *node = np.node();
   if (node->is_geom_node()) {
-    recompute_geom_node(DCAST(GeomNode, node), rel_mat, computed_rel_mat);
+    recompute_geom_node(np, rel_mat, computed_rel_mat);
   }
 
   // Now recurse on children.
@@ -361,20 +403,20 @@ recompute_node(PandaNode *node, LMatrix4f &rel_mat, bool &computed_rel_mat) {
   for (int i = 0; i < num_children; i++) {
     PandaNode *child = node->get_child(i);
 
-    /*
-      This needs to be ported to new scene graph.
-    if (arc->has_transition(TransformTransition::get_class_type())) {
-      // This arc has a transform; therefore, we must recompute the
-      // relative matrix from this point.
+    const TransformState *transform = child->get_transform();
+    if (!transform->is_identity()) {
+      // This child node has a transform; therefore, we must recompute
+      // the relative matrix from this point.
       LMatrix4f new_rel_mat;
       bool computed_new_rel_mat = false;
-      recompute_node(arc->get_child(), new_rel_mat, computed_new_rel_mat);
-    } else
-    */
+      recompute_node(WorkingNodePath(np, child), new_rel_mat,
+                     computed_new_rel_mat);
 
-    // This arc has no transform, so we can use the same transform
-    // space from before.
-    recompute_node(child, rel_mat, computed_rel_mat);
+    } else {
+      // This child has no transform, so we can use the same transform
+      // space from before.
+      recompute_node(WorkingNodePath(np, child), rel_mat, computed_rel_mat);
+    }
   }
 }
 
@@ -384,13 +426,13 @@ recompute_node(PandaNode *node, LMatrix4f &rel_mat, bool &computed_rel_mat) {
 //  Description: Recomputes the UV's just for the indicated GeomNode.
 ////////////////////////////////////////////////////////////////////
 void ProjectionScreen::
-recompute_geom_node(GeomNode *node, LMatrix4f &rel_mat, 
+recompute_geom_node(const WorkingNodePath &np, LMatrix4f &rel_mat, 
                     bool &computed_rel_mat) {
+  GeomNode *node = DCAST(GeomNode, np.node());
   if (!computed_rel_mat) {
     // All right, time to compute the matrix.
-    NodePath node_np(node);
-    NodePath projector_np(_projector);
-    rel_mat = node_np.get_mat(projector_np);
+    NodePath true_np = np.get_node_path();
+    rel_mat = true_np.get_mat(_projector);
     computed_rel_mat = true;
   }
 
@@ -415,7 +457,7 @@ recompute_geom(Geom *geom, const LMatrix4f &rel_mat) {
 
   PTA_TexCoordf uvs;
   PTA_ushort color_index;
-  Lens *lens = _projector->get_lens();
+  Lens *lens = _projector_node->get_lens();
   nassertv(lens != (Lens *)NULL);
 
   // Iterate through all the vertices in the Geom.
@@ -455,11 +497,13 @@ recompute_geom(Geom *geom, const LMatrix4f &rel_mat) {
 //               below, and generates a corresponding node hierarchy
 //               with all the geometry copied, but flattened into 2-d,
 //               as seen from the indicated camera.  Returns the newly
-//               created, arc, or NULL if no arc was created.
+//               created node, or NULL if no node was created.
 ////////////////////////////////////////////////////////////////////
 PandaNode *ProjectionScreen::
-make_mesh_node(PandaNode *result_parent, PandaNode *node, LensNode *camera,
+make_mesh_node(PandaNode *result_parent, const WorkingNodePath &np,
+               const NodePath &camera,
                LMatrix4f &rel_mat, bool &computed_rel_mat) {
+  PandaNode *node = np.node();
   if (!node->safe_to_flatten()) {
     // If we can't safely flatten this node, ignore it (and all of its
     // children) completely.  It's got no business being here anyway.
@@ -468,16 +512,14 @@ make_mesh_node(PandaNode *result_parent, PandaNode *node, LensNode *camera,
 
   PT(PandaNode) new_node;
   if (node->is_geom_node()) {
-    new_node =
-      make_mesh_geom_node(DCAST(GeomNode, node), camera,
-                          rel_mat, computed_rel_mat);
+    new_node = make_mesh_geom_node(np, camera, rel_mat, computed_rel_mat);
   } else {
     new_node = node->make_copy();
   }
 
   // Now attach the new node to the result.
   result_parent->add_child(new_node);
-  make_mesh_children(new_node, node, camera, rel_mat, computed_rel_mat);
+  make_mesh_children(new_node, np, camera, rel_mat, computed_rel_mat);
   return new_node;
 }
 
@@ -488,28 +530,30 @@ make_mesh_node(PandaNode *result_parent, PandaNode *node, LensNode *camera,
 //               node, calling make_mesh_node() on each one.
 ////////////////////////////////////////////////////////////////////
 void ProjectionScreen::
-make_mesh_children(PandaNode *new_node, PandaNode *node, LensNode *camera,
+make_mesh_children(PandaNode *new_node, const WorkingNodePath &np,
+                   const NodePath &camera,
                    LMatrix4f &rel_mat, bool &computed_rel_mat) {
+  PandaNode *node = np.node();
   int num_children = node->get_num_children();
   for (int i = 0; i < num_children; i++) {
     PandaNode *child = node->get_child(i);
     PandaNode *new_child;
 
-    /*
-    if (arc->has_transition(TransformTransition::get_class_type())) {
-      // This arc has a transform; therefore, we must recompute the
-      // relative matrix from this point.
+    const TransformState *transform = child->get_transform();
+    if (!transform->is_identity()) {
+      // This child node has a transform; therefore, we must recompute
+      // the relative matrix from this point.
       LMatrix4f new_rel_mat;
       bool computed_new_rel_mat = false;
-      new_arc = make_mesh_node(new_node, arc->get_child(), camera,
-                               new_rel_mat, computed_new_rel_mat);
-    } else
-    */
+      new_child = make_mesh_node(new_node, WorkingNodePath(np, child), camera,
+                                 new_rel_mat, computed_new_rel_mat);
 
-    // This arc has no transform, so we can use the same transform
-    // space from before.
-    new_child = make_mesh_node(new_node, child, camera,
-                               rel_mat, computed_rel_mat);
+    } else {
+      // This child has no transform, so we can use the same transform
+      // space from before.
+      new_child = make_mesh_node(new_node, WorkingNodePath(np, child), camera,
+                                 rel_mat, computed_rel_mat);
+    }
 
     // Copy all of the render state (except TransformState) to the
     // new arc.
@@ -525,15 +569,16 @@ make_mesh_children(PandaNode *new_node, PandaNode *node, LensNode *camera,
 //               indicated camera.
 ////////////////////////////////////////////////////////////////////
 PT(GeomNode) ProjectionScreen::
-make_mesh_geom_node(GeomNode *node, LensNode *camera,
+make_mesh_geom_node(const WorkingNodePath &np, const NodePath &camera,
                     LMatrix4f &rel_mat, bool &computed_rel_mat) {
+  GeomNode *node = DCAST(GeomNode, np.node());
   PT(GeomNode) new_node = new GeomNode(node->get_name());
+  LensNode *lens_node = DCAST(LensNode, camera.node());
 
   if (!computed_rel_mat) {
     // All right, time to compute the matrix.
-    NodePath node_np(node);
-    NodePath camera_np(camera);
-    rel_mat = node_np.get_mat(camera_np);
+    NodePath true_np = np.get_node_path();
+    rel_mat = true_np.get_mat(camera);
     computed_rel_mat = true;
   }
 
@@ -541,7 +586,7 @@ make_mesh_geom_node(GeomNode *node, LensNode *camera,
   for (int i = 0; i < num_geoms; i++) {
     Geom *geom = node->get_geom(i);
     PT(Geom) new_geom = 
-      make_mesh_geom(geom, camera->get_lens(), rel_mat);
+      make_mesh_geom(geom, lens_node->get_lens(), rel_mat);
     if (new_geom != (Geom *)NULL) {
       new_node->add_geom(new_geom, node->get_geom_state(i));
     }

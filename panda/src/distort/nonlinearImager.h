@@ -46,10 +46,11 @@ class GraphicsEngine;
 //               
 //               A NonlinearImager may be visualized as a theater room
 //               into which a number of projection screens have been
-//               placed, at any arbitrary position and orientation to
-//               each other.  Each of these projection screens
-//               displays the view seen by a normal perspective camera
-//               that exists in the world (that is, under render).
+//               placed, of arbitrary size and shape and at any
+//               arbitrary position and orientation to each other.
+//               Onto each of these screens is projected the view as
+//               seen by a normal perspective camera that exists in
+//               the world (that is, under render).
 //
 //               There is also in the theater a single, possibly
 //               nonlinear, camera that observes these screens.  The
@@ -74,8 +75,8 @@ PUBLISHED:
   void set_active(int index, bool active);
   bool get_active(int index) const;
 
-  INLINE void set_camera(LensNode *camera);
-  INLINE LensNode *get_camera() const;
+  void set_viewer(const NodePath &viewer);
+  INLINE const NodePath &get_viewer() const;
 
   INLINE NodePath get_internal_scene() const;
 
@@ -103,13 +104,14 @@ private:
   typedef pvector<Screen> Screens;
   Screens _screens;
 
-  PT(LensNode) _camera;
+  NodePath _viewer;
+  PT(LensNode) _viewer_node;
 
   PT(Camera) _internal_camera;
   NodePath _internal_scene;
 
   bool _stale;
-  UpdateSeq _camera_lens_change;
+  UpdateSeq _viewer_lens_change;
 };
 
 #include "nonlinearImager.I"

@@ -18,28 +18,15 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NonlinearImager::set_camera
+//     Function: NonlinearImager::get_viewer
 //       Access: Published
-//  Description: Specifies the virtual camera that will be used to
-//               view the various ProjectionScreens.  It should be in
-//               the same scene graph with the ProjectionScreens, to
-//               establish a relative coordinate system with them.
+//  Description: Returns the NodePath to the LensNode that is to serve
+//               as the viewer for this screen, or empty if no
+//               viewer is associated.
 ////////////////////////////////////////////////////////////////////
-INLINE void NonlinearImager::
-set_camera(LensNode *camera) {
-  _camera = camera;
-  _stale = true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NonlinearImager::get_camera
-//       Access: Published
-//  Description: Returns the virtual camera that will be used to
-//               view the various ProjectionScreens.
-////////////////////////////////////////////////////////////////////
-INLINE LensNode *NonlinearImager::
-get_camera() const {
-  return _camera;
+INLINE const NodePath &NonlinearImager::
+get_viewer() const {
+  return _viewer;
 }
 
 ////////////////////////////////////////////////////////////////////

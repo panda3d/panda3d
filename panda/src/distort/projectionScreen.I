@@ -17,31 +17,15 @@
 ////////////////////////////////////////////////////////////////////
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ProjectionScreen::set_projector
-//       Access: Published
-//  Description: Specifies the LensNode that is to serve as the
-//               projector for this screen.  The relative position of
-//               the LensNode to the ProjectionScreen, as well as the
-//               properties of the lens associated with the LensNode,
-//               determines the UV's that will be assigned to the
-//               geometry within the ProjectionScreen.
-////////////////////////////////////////////////////////////////////
-INLINE void ProjectionScreen::
-set_projector(LensNode *projector) {
-  _projector = projector;
-  _stale = true;
-}
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ProjectionScreen::get_projector
 //       Access: Published
-//  Description: Returns the LensNode that is to serve as the
-//               projector for this screen, or NULL if no LensNode is
-//               associated.
+//  Description: Returns the NodePath to the LensNode that is to serve
+//               as the projector for this screen, or empty if no
+//               projector is associated.
 ////////////////////////////////////////////////////////////////////
-INLINE LensNode *ProjectionScreen::
+INLINE const NodePath &ProjectionScreen::
 get_projector() const {
   return _projector;
 }
