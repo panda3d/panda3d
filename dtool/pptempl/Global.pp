@@ -81,6 +81,12 @@
   #define nspr_libs $[NSPR_LIBS]
 #endif
 
+#if $[HAVE_CRYPTO]
+  #define crypto_ipath $[wildcard $[CRYPTO_IPATH]]
+  #define crypto_lpath $[wildcard $[CRYPTO_LPATH]]
+  #define crypto_libs $[CRYPTO_LIBS]
+#endif
+
 #if $[HAVE_ZLIB]
   #define zlib_ipath $[wildcard $[ZLIB_IPATH]]
   #define zlib_lpath $[wildcard $[ZLIB_LPATH]]
@@ -170,6 +176,7 @@
  $[and \
      $[or $[not $[DIRECTORY_IF_PYTHON]],$[HAVE_PYTHON]], \
      $[or $[not $[DIRECTORY_IF_NSPR]],$[HAVE_NSPR]], \
+     $[or $[not $[DIRECTORY_IF_CRYPTO]],$[HAVE_CRYPTO]], \
      $[or $[not $[DIRECTORY_IF_ZLIB]],$[HAVE_ZLIB]], \
      $[or $[not $[DIRECTORY_IF_SOXST]],$[HAVE_SOXST]], \
      $[or $[not $[DIRECTORY_IF_GL]],$[HAVE_GL]], \
@@ -195,6 +202,7 @@
  $[and \
      $[or $[not $[TARGET_IF_PYTHON]],$[HAVE_PYTHON]], \
      $[or $[not $[TARGET_IF_NSPR]],$[HAVE_NSPR]], \
+     $[or $[not $[TARGET_IF_CRYPTO]],$[HAVE_CRYPTO]], \
      $[or $[not $[TARGET_IF_ZLIB]],$[HAVE_ZLIB]], \
      $[or $[not $[TARGET_IF_SOXST]],$[HAVE_SOXST]], \
      $[or $[not $[TARGET_IF_GL]],$[HAVE_GL]], \
@@ -237,6 +245,7 @@
 // target.
 #defer get_sources \
   $[SOURCES] \
+  $[if $[HAVE_CRYPTO],$[IF_CRYPTO_SOURCES]] \
   $[if $[HAVE_ZLIB],$[IF_ZLIB_SOURCES]] \
   $[if $[HAVE_IPC],$[IF_IPC_SOURCES]] \
   $[if $[HAVE_NET],$[IF_NET_SOURCES]] \
@@ -279,6 +288,9 @@
 #defun get_cflags
   #define alt_cflags $[nspr_cflags] $[python_cflags]
   
+  #if $[ne $[USE_CRYPTO] $[components $[USE_CRYPTO],$[active_component_libs]],]
+    #set alt_cflags $[alt_cflags] $[crypto_cflags]
+  #endif
   #if $[ne $[USE_ZLIB] $[components $[USE_ZLIB],$[active_component_libs]],]
     #set alt_cflags $[alt_cflags] $[zlib_cflags]
   #endif
@@ -326,6 +338,9 @@
 #defun get_ipath
   #define alt_ipath $[nspr_ipath] $[python_ipath]
   
+  #if $[ne $[USE_CRYPTO] $[components $[USE_CRYPTO],$[active_component_libs]],]
+    #set alt_ipath $[alt_ipath] $[crypto_ipath]
+  #endif
   #if $[ne $[USE_ZLIB] $[components $[USE_ZLIB],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[zlib_ipath]
   #endif
@@ -373,6 +388,9 @@
 #defun get_lpath
   #define alt_lpath $[nspr_lpath] $[python_lpath]
   
+  #if $[ne $[USE_CRYPTO] $[components $[USE_CRYPTO],$[active_component_libs]],]
+    #set alt_lpath $[alt_lpath] $[crypto_lpath]
+  #endif
   #if $[ne $[USE_ZLIB] $[components $[USE_ZLIB],$[active_component_libs]],]
     #set alt_lpath $[alt_lpath] $[zlib_lpath]
   #endif
@@ -421,6 +439,9 @@
 #defun get_libs
   #define alt_libs $[nspr_libs] $[python_libs]
   
+  #if $[ne $[USE_CRYPTO] $[components $[USE_CRYPTO],$[active_component_libs]],]
+    #set alt_libs $[alt_libs] $[crypto_libs]
+  #endif
   #if $[ne $[USE_ZLIB] $[components $[USE_ZLIB],$[active_component_libs]],]
     #set alt_libs $[alt_libs] $[zlib_libs]
   #endif

@@ -1322,14 +1322,14 @@ handle_include_directive(const string &args, int first_line,
     }
     
     // Now look for it on the include path.
-    if (!found_file && filename.resolve_filename(_include_path)) {
-      found_file = true;
-      source = CPPFile::S_alternate;
-    }
-    
     if (!found_file && filename.resolve_filename(_system_include_path)) {
       found_file = true;
       source = CPPFile::S_system;
+    }
+
+    if (!found_file && filename.resolve_filename(_include_path)) {
+      found_file = true;
+      source = CPPFile::S_alternate;
     }
     
     if (!found_file) {

@@ -156,6 +156,12 @@
 #define NSPR_LIBS nspr4
 #defer HAVE_NSPR $[libtest $[NSPR_LPATH],$[NSPR_LIBS]]
 
+// Is Crypto++ installed, and where?
+#define CRYPTO_IPATH /usr/include/crypto++
+#define CRYPTO_LPATH /usr/lib
+#define CRYPTO_LIBS cryptlib
+#defer HAVE_CRYPTO $[libtest $[CRYPTO_LPATH],$[CRYPTO_LIBS]]
+
 // Is VRPN installed, and where?
 #define VRPN_IPATH
 #define VRPN_LPATH

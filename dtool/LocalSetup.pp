@@ -31,6 +31,9 @@ $[cdefine HAVE_PYTHON]
 /* Define if we have NSPR installed.  */
 $[cdefine HAVE_NSPR]
 
+/* Define if we have crypto++ installed.  */
+$[cdefine HAVE_CRYPTO]
+
 /* Define if we have VRPN installed.  */
 $[cdefine HAVE_VRPN]
 

@@ -1,6 +1,7 @@
 #define LOCAL_LIBS event ipc express pandabase
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolutil:c dtoolbase:c dtool:m
 #define USE_ZLIB yes
+#define USE_CRYPTO yes
 #define USE_IPC yes
 
 #begin lib_target
@@ -18,6 +19,9 @@
   #define IF_ZLIB_SOURCES						\
     decompressor.cxx decompressor.h zcompressor.I zcompressor.cxx	\
     zcompressor.h download_utils.cxx download_utils.h
+
+  #define IF_CRYPTO_SOURCES \
+    crypto_utils.cxx crypto_utils.h
 
   #define INSTALL_HEADERS					\
     downloader.h downloader.I					\
