@@ -71,7 +71,17 @@ class ActorInterval(Interval.Interval):
             elif endTime != None:
                 self.endFrame = int(math.floor(endTime * self.frameRate + 0.0001))
             else:
-                self.endFrame = self.controls[0].getNumFrames() - 1
+                # No end frame specified.  Choose the maximum of all
+                # of the controls' numbers of frames.
+                maxFrames = self.controls[0].getNumFrames()
+                warned = 0
+                for i in range(1, len(self.controls)):
+                    numFrames = self.controls[i].getNumFrames()
+                    if numFrames != maxFrames and not warned:
+                        self.notify.warning("Animations '%s' on %s have an inconsistent number of frames." % (animName, actor.getName()))
+                        warned = 1
+                    maxFrames = max(maxFrames, numFrames)
+                self.endFrame = maxFrames - 1
 
         # Must we play the animation backwards?
         self.reverse = 0
@@ -81,29 +91,20 @@ class ActorInterval(Interval.Interval):
             self.endFrame = self.startFrame
             self.startFrame = t
 
-        self.numFrames = self.endFrame - self.startFrame + 1
+        numFrames = self.endFrame - self.startFrame + 1
 
         # Compute duration if no duration specified
         self.implicitDuration = 0
         if duration == None:
             self.implicitDuration = 1
-            duration = float(self.numFrames) / self.frameRate
+            duration = float(numFrames) / self.frameRate
 
         # Initialize superclass
         Interval.Interval.__init__(self, name, duration)
 
     def privStep(self, t):
         # Calc integer frame number
-        frame = int(math.floor(t * self.frameRate + 0.0001))
-        if self.loopAnim:
-            frame = frame % self.numFrames
-        else:
-            frame = max(min(frame, self.numFrames - 1), 0)
-
-        if self.reverse:
-            frame = self.endFrame - frame
-        else:
-            frame = self.startFrame + frame
+        absFrame = int(math.floor(t * self.frameRate + 0.0001))
 
         # Pose anim
 
@@ -111,6 +112,18 @@ class ActorInterval(Interval.Interval):
         # efficiency's sake, rather than going through the relatively
         # expensive Actor interface every frame.
         for control in self.controls:
+            # Each animControl might have a different number of frames.
+            numFrames = control.getNumFrames()
+            if self.loopAnim:
+                frame = absFrame % numFrames
+            else:
+                frame = max(min(absFrame, numFrames - 1), 0)
+
+            if self.reverse:
+                frame = self.endFrame - frame
+            else:
+                frame = self.startFrame + frame
+
             control.pose(frame)
             
         self.state = CInterval.SStarted
