@@ -5,10 +5,14 @@
   #define TARGET gsgbase
   #define LOCAL_LIBS \
     putil graph
+    
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx     
 
   #define SOURCES \
-    config_gsgbase.cxx config_gsgbase.h graphicsStateGuardianBase.cxx \
-    graphicsStateGuardianBase.h
+    config_gsgbase.h graphicsStateGuardianBase.h
+
+  #define INCLUDED_SOURCES \
+    config_gsgbase.cxx graphicsStateGuardianBase.cxx
 
   #define INSTALL_HEADERS \
     graphicsStateGuardianBase.h
