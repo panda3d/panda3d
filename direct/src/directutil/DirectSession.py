@@ -226,7 +226,7 @@ class DirectSession(PandaObject):
             self.readout.reparentTo(render2d)
             self.readout.setText(dnp.name)
             # Show the manipulation widget
-            self.reparentWidgetTo('direct')
+            self.widget.showWidgetIfActive()
             # Update camera controls coa to this point
             # Coa2Camera = Coa2Dnp * Dnp2Camera
             mCoa2Camera = dnp.mCoa2Dnp * dnp.getMat(self.camera)
@@ -257,7 +257,7 @@ class DirectSession(PandaObject):
         dnp = self.selected.deselect(nodePath)
         if dnp:
             # Hide the manipulation widget
-            self.reparentWidgetTo('hidden')
+            self.widget.hideWidget()
             self.readout.reparentTo(hidden)
             self.readout.setText(' ')
             taskMgr.removeTasksNamed('followSelectedNodePath')
@@ -268,7 +268,7 @@ class DirectSession(PandaObject):
     def deselectAll(self):
         self.selected.deselectAll()
         # Hide the manipulation widget
-        self.reparentWidgetTo('hidden')
+        self.widget.hideWidget()
         self.readout.reparentTo(hidden)
         self.readout.setText(' ')
         taskMgr.removeTasksNamed('followSelectedNodePath')
@@ -469,19 +469,8 @@ class DirectSession(PandaObject):
     def hideReadout(self):
 	self.readout.reparentTo(hidden)
 
-    def reparentWidgetTo(self, parent):
-        if parent == 'direct':
-            self.widget.reparentTo(direct.group)
-            self.widgetParent = 'direct'
-        else:
-            self.widget.reparentTo(hidden)
-            self.widgetParent = 'hidden'
-
     def toggleWidgetVis(self):
-        if self.widgetParent == 'direct':
-            self.reparentWidgetTo('hidden')
-        else:
-            self.reparentWidgetTo('direct')
+        self.widget.toggleWidget()
 
 class DisplayRegionList:
     def __init__(self):

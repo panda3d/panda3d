@@ -47,13 +47,10 @@ class DirectCameraControl(PandaObject):
             ]
 
     def mouseFlyStart(self):
-	# Record starting mouse positions
-	self.initMouseX = direct.dr.mouseX
-	self.initMouseY = direct.dr.mouseY
         # Record undo point
         direct.pushUndo([direct.camera])
 	# Where are we in the display region?
-        if ((abs(self.initMouseX) < 0.9) & (abs(self.initMouseY) < 0.9)):
+        if ((abs(direct.dr.mouseX) < 0.9) & (abs(direct.dr.mouseY) < 0.9)):
             # MOUSE IS IN CENTRAL REGION
             # Hide the marker for this kind of motion
             self.coaMarker.hide()
@@ -119,7 +116,7 @@ class DirectCameraControl(PandaObject):
             self.spawnXZTranslateOrHPanYZoom()
             # END MOUSE IN CENTRAL REGION
         else:
-            if ((abs(self.initMouseX) > 0.9) & (abs(self.initMouseY) > 0.9)):
+            if ((abs(direct.dr.mouseX) > 0.9) & (abs(direct.dr.mouseY) > 0.9)):
                 # Mouse is in corners, spawn roll task
                 self.spawnMouseRollTask()
             else:
@@ -239,7 +236,7 @@ class DirectCameraControl(PandaObject):
         taskMgr.spawnTaskNamed(t, 'manipulateCamera')
 
     def mouseRotateTask(self, state):
-        # If moving within frame, ignore motion perpendicular to edge
+        # If moving outside of center, ignore motion perpendicular to edge
         if ((state.constrainedDir == 'y') & (abs(direct.dr.mouseX) > 0.9)):
             deltaX = 0
             deltaY = direct.dr.mouseDeltaY

@@ -20,9 +20,10 @@ class DirectManipulationControl(PandaObject):
         self.lastCrankAngle = 0
         self.fSetCoa = 0
         self.fHitInit = 1
+        self.fScaleInit = 1
         self.fWidgetTop = 0
         self.fFreeManip = 1
-        self.fScaling = 1
+        self.fScaling = 0
         self.unpickable = UNPICKABLE
         self.mode = None
         self.actionEvents = [
@@ -61,14 +62,12 @@ class DirectManipulationControl(PandaObject):
             self.constraint = None
         # Check to see if we are moving the object
         # We are moving the object if we either wait long enough
-        """
         taskMgr.spawnTaskNamed(
             Task.doLater(MANIPULATION_MOVE_DELAY,
                          Task.Task(self.switchToMoveMode),
                          'manip-move-wait'),
             'manip-move-wait')
-        """
-        # Begin manipulating once we move far enough
+        # Or we move far enough
         self.moveDir = None
         watchMouseTask = Task.Task(self.watchMouseTask)
         watchMouseTask.initX = direct.dr.mouseX
@@ -223,52 +222,68 @@ class DirectManipulationControl(PandaObject):
     def spawnManipulateObjectTask(self):
         # reset hit-pt flag
         self.fHitInit = 1
+        self.fScaleInit = 1
         # record initial offset between widget and camera
         t = Task.Task(self.manipulateObjectTask)
+        t.fMouseX = abs(direct.dr.mouseX) > 0.9
+        t.fMouseY = abs(direct.dr.mouseY) > 0.9
+        if t.fMouseX:
+            t.constrainedDir = 'y'
+        else:
+            t.constrainedDir = 'x'
+        # Compute widget's xy coords in screen space
+        t.coaCenter = getScreenXY(direct.widget)
+        # These are used to rotate about view vector
+        if t.fMouseX & t.fMouseY:
+            t.lastAngle = getCrankAngle(t.coaCenter)
         taskMgr.spawnTaskNamed(t, 'manipulateObject')
 
     def manipulateObjectTask(self, state):
-
+        # Widget takes precedence
         if self.constraint:
             type = self.constraint[2:]
             if type == 'post':
-                self.xlate1D()
+                self.xlate1D(state)
             elif type == 'disc':
-                self.xlate2D()
+                self.xlate2D(state)
             elif type == 'ring':
-                self.rotate1D()
+                self.rotate1D(state)
+        # No widget interaction, determine free manip mode
         elif self.fFreeManip:
-            if self.fScaling & (not direct.fAlt):
-                # We had been scaling and changed modes,
-                # reset object handles
+            # If we've been scaling and changed modes, reset object handles
+            if 0 & self.fScaling & (not direct.fAlt):
                 self.objectHandles.transferObjectHandlesScale()
                 self.fScaling = 0
-            if direct.fControl:
-                self.rotate2D()
-            elif direct.fAlt:
+            # Alt key switches to a scaling mode
+            if direct.fAlt:
                 self.fScaling = 1
-                self.scale3D()
-            elif direct.fShift:
-                self.xlateCamXY()
+                self.scale3D(state)
+            # Otherwise, manip mode depends on where you started
+            elif state.fMouseX & state.fMouseY:
+                # In the corner, spin around camera's axis
+                self.rotateAboutViewVector(state)
+            elif state.fMouseX | state.fMouseY:
+                # Mouse started elsewhere in the outer frame, rotate
+                self.rotate2D(state)
             else:
-                self.xlateCamXZ()
-        else:
-            # MRM: Needed, more elegant fallback
-            return Task.cont
-
+                # Mouse starte in central region, xlate
+                # Mode depends on shift key
+                if direct.fShift:
+                    self.xlateCamXZ(state)
+                else:
+                    self.xlateCamXY(state)
         if self.fSetCoa:
             # Update coa based on current widget position
             direct.selected.last.mCoa2Dnp.assign(
-                direct.widget.getMat(direct.selected.last)
-                )
+                direct.widget.getMat(direct.selected.last))
         else:
             # Move the objects with the widget
             direct.selected.moveWrtWidgetAll()
-            
         # Continue
         return Task.cont
 
-    def xlate1D(self):
+    ### WIDGET MANIPULATION METHODS ###
+    def xlate1D(self, state):
         # Constrained 1D Translation along widget axis
         # Compute nearest hit point along axis and try to keep
         # that point as close to the current mouse position as possible
@@ -285,7 +300,7 @@ class DirectManipulationControl(PandaObject):
             offset = self.hitPt - self.prevHit
             direct.widget.setPos(direct.widget, offset)
 
-    def xlate2D(self):
+    def xlate2D(self, state):
         # Constrained 2D (planar) translation
         # Compute point of intersection of ray from eyepoint through cursor
         # to one of the three orthogonal planes on the widget.
@@ -301,51 +316,35 @@ class DirectManipulationControl(PandaObject):
 	    offset = self.hitPt - self.prevHit
             direct.widget.setPos(direct.widget, offset)
 
+    def rotate1D(self, state):
+        # Constrained 1D rotation about the widget's main axis (X,Y, or Z)
+        # Rotation depends upon circular motion of the mouse about the
+        # projection of the widget's origin on the image plane
+        # A complete circle about the widget results in a change in
+        # orientation of 360 degrees.
 
-    def xlateCamXZ(self):
-        """Constrained 2D motion parallel to the camera's image plane
-        This moves the object in the camera's XZ plane"""
-        # reset fHitInit
-        # (in case we later switch to another manipulation mode)
-        #self.fHitInit = 1
-        # Where is the widget relative to current camera view
-        vWidget2Camera = direct.widget.getPos(direct.camera)
-        x = vWidget2Camera[0]
-        y = vWidget2Camera[1]
-        z = vWidget2Camera[2]
-        # Move widget (and objects) based upon mouse motion
-        # Scaled up accordingly based upon widget distance
-        dr = direct.dr
-        direct.widget.setX(
-            direct.camera,
-            x + 0.5 * dr.mouseDeltaX * dr.nearWidth * (y/dr.near))
-        direct.widget.setZ(
-            direct.camera,
-            z + 0.5 * dr.mouseDeltaY * dr.nearHeight * (y/dr.near))
-
-    def xlateCamXY(self):
-        """Constrained 2D motion perpendicular to camera's image plane
-        This moves the object in the camera's XY plane"""
-        # Now, where is the widget relative to current camera view
-        vWidget2Camera = direct.widget.getPos(direct.camera)
-        # If this is first time around, record initial y distance
+        # First initialize hit point/rotation angle
         if self.fHitInit:
             self.fHitInit = 0
-            # Record widget offset along y
-            self.initY = vWidget2Camera[1]
-        # Extract current values
-        x = vWidget2Camera[0]
-        y = vWidget2Camera[1]
-        z = vWidget2Camera[2]
-        # Move widget (and objects) based upon mouse motion
-        # Scaled up accordingly based upon widget distance
-        dr = direct.dr
-        direct.widget.setPos(
-            direct.camera,
-            x + 0.5 * dr.mouseDeltaX * dr.nearWidth * (y/dr.near),
-            y + self.initY * dr.mouseDeltaY,
-            z)
-    
+            self.rotateAxis = self.constraint[:1]
+            self.fWidgetTop = self.widgetCheck('top?')
+            self.rotationCenter = getScreenXY(direct.widget)
+            self.lastCrankAngle = getCrankAngle(self.rotationCenter)
+            
+        # Rotate widget based on how far cursor has swung around origin
+        newAngle = getCrankAngle(self.rotationCenter)
+        deltaAngle = self.lastCrankAngle - newAngle
+        if self.fWidgetTop:
+            deltaAngle = -1 * deltaAngle
+        if self.rotateAxis == 'x':
+            direct.widget.setP(direct.widget, deltaAngle)
+        elif self.rotateAxis == 'y':
+            direct.widget.setR(direct.widget, -deltaAngle)
+        elif self.rotateAxis == 'z':
+            direct.widget.setH(direct.widget, deltaAngle)
+        # Record crank angle for next time around
+        self.lastCrankAngle = newAngle
+
     def widgetCheck(self,type):
         # Utility to see if we are looking at the top or bottom of
         # a 2D planar widget or if we are looking at a 2D planar widget
@@ -377,34 +376,84 @@ class DirectManipulationControl(PandaObject):
             # Check angle between two vectors
             return(abs(widgetDir.dot(widgetAxis)) < .2)
 
-    def rotate1D(self):
-        # Constrained 1D rotation about the widget's main axis (X,Y, or Z)
-        # Rotation depends upon circular motion of the mouse about the
-        # projection of the widget's origin on the image plane
-        # A complete circle about the widget results in a change in
-        # orientation of 360 degrees.
+    ### FREE MANIPULATION METHODS ###
+    def xlateCamXZ(self, state):
+        """Constrained 2D motion parallel to the camera's image plane
+        This moves the object in the camera's XZ plane"""
+        # reset fHitInit in case we later switch to manip mode
+        self.fHitInit = 1
+        # Reset scaling init flag
+        self.fScaleInit = 1
+        # Where is the widget relative to current camera view
+        vWidget2Camera = direct.widget.getPos(direct.camera)
+        x = vWidget2Camera[0]
+        y = vWidget2Camera[1]
+        z = vWidget2Camera[2]
+        # Move widget (and objects) based upon mouse motion
+        # Scaled up accordingly based upon widget distance
+        dr = direct.dr
+        direct.widget.setX(
+            direct.camera,
+            x + 0.5 * dr.mouseDeltaX * dr.nearWidth * (y/dr.near))
+        direct.widget.setZ(
+            direct.camera,
+            z + 0.5 * dr.mouseDeltaY * dr.nearHeight * (y/dr.near))
 
-        # First initialize hit point/rotation angle
+    def xlateCamXY(self, state):
+        """Constrained 2D motion perpendicular to camera's image plane
+        This moves the object in the camera's XY plane"""
+        # Now, where is the widget relative to current camera view
+        vWidget2Camera = direct.widget.getPos(direct.camera)
+        # If this is first time around, record initial y distance
         if self.fHitInit:
             self.fHitInit = 0
-            self.rotateAxis = self.constraint[:1]
-            self.fWidgetTop = self.widgetCheck('top?')
-            self.rotationCenter = getScreenXY(direct.widget)
-            self.lastCrankAngle = getCrankAngle(self.rotationCenter)
-            
-        # Rotate widget based on how far cursor has swung around origin
-        newAngle = getCrankAngle(self.rotationCenter)
-        deltaAngle = self.lastCrankAngle - newAngle
-        if self.fWidgetTop:
-            deltaAngle = -1 * deltaAngle
-        if self.rotateAxis == 'x':
-            direct.widget.setP(direct.widget, deltaAngle)
-        elif self.rotateAxis == 'y':
-            direct.widget.setR(direct.widget, -deltaAngle)
-        elif self.rotateAxis == 'z':
-            direct.widget.setH(direct.widget, deltaAngle)
-        # Record crank angle for next time around
-        self.lastCrankAngle = newAngle
+            # Use distance to widget to scale motion along Y
+            self.xlateSF = Vec3(vWidget2Camera).length()
+            # Get widget's current xy coords in screen space
+            coaCenter = getNearProjectionPoint(direct.widget)
+            self.deltaNearX = coaCenter[0] - direct.dr.nearVec[0]
+        # Reset scaling init flag
+        self.fScaleInit = 1
+        # Move selected objects
+        dr = direct.dr
+        # Move object in y axis based on mouse motion
+        newY = vWidget2Camera[1] + self.xlateSF * dr.mouseDeltaY
+        # Put object at same relative point to mouse in X
+        newX = (direct.dr.nearVec[0] + self.deltaNearX) * (newY/dr.near)
+        direct.widget.setPos(direct.camera, newX, newY, vWidget2Camera[2])
+
+    def rotate2D(self, state):
+        """ Virtual trackball rotation of widget """
+        # Reset init flag in case we switch to another mode
+        self.fHitInit = 1
+        # Reset scaling init flag
+        self.fScaleInit = 1
+        tumbleRate = 360
+        # If moving outside of center, ignore motion perpendicular to edge
+        if ((state.constrainedDir == 'y') & (abs(direct.dr.mouseX) > 0.9)):
+            deltaX = 0
+            deltaY = direct.dr.mouseDeltaY
+        elif ((state.constrainedDir == 'x') & (abs(direct.dr.mouseY) > 0.9)):
+            deltaX = direct.dr.mouseDeltaX
+            deltaY = 0
+        else:
+            deltaX = direct.dr.mouseDeltaX
+            deltaY = direct.dr.mouseDeltaY
+        # Mouse motion edge to edge of display region results in one full turn
+        self.relHpr(direct.camera, deltaX * tumbleRate,
+                    -deltaY * tumbleRate, 0)
+
+    def rotateAboutViewVector(self, state):
+        # Reset init flag in case we switch to another mode
+        self.fHitInit = 1
+        # Reset scaling init flag
+        self.fScaleInit = 1
+        # Compute current angle
+        angle = getCrankAngle(state.coaCenter)
+        deltaAngle = angle - state.lastAngle
+        state.lastAngle = angle
+        # Mouse motion edge to edge of display region results in one full turn
+        self.relHpr(direct.camera, 0, 0, deltaAngle)
 
     def relHpr(self, base, h, p, r):
         # Compute widget2newWidget relative to base coordinate system
@@ -424,24 +473,12 @@ class DirectManipulationControl(PandaObject):
                         CSDefault)
         direct.widget.setHpr(hpr)
 
-    def rotate2D(self):
-        # Virtual trackball or arcball rotation of widget
-        # Rotation method depends upon variable dd-want-arcball
-        # Default is virtual trackball (handles 1D rotations better)
-        self.fHitInit = 1
-        tumbleRate = 360
-        # Mouse motion edge to edge of display region results in one full turn
-        self.relHpr(direct.camera,
-                    direct.dr.mouseDeltaX * tumbleRate,
-                    -direct.dr.mouseDeltaY * tumbleRate,
-                    0)
-
-    def scale3D(self):
+    def scale3D(self, state):
         # Scale the selected node based upon up down mouse motion
         # Mouse motion from edge to edge results in a factor of 4 scaling
         # From midpoint to edge doubles or halves objects scale
-        if self.fHitInit:
-            self.fHitInit = 0
+        if self.fScaleInit:
+            self.fScaleInit = 0
             self.manipRef.setPos(direct.widget, 0, 0, 0)
             self.manipRef.setHpr(direct.camera, 0, 0, 0)
             self.initScaleMag = Vec3(
@@ -449,6 +486,8 @@ class DirectManipulationControl(PandaObject):
                 self.manipRef, 'y')).length()
             # record initial scale
             self.initScale = direct.widget.getScale()
+        # Reset fHitInitFlag
+        self.fHitInit = 1
         # Begin
         # Scale factor is ratio current mag with init mag
         currScale = (
@@ -465,6 +504,8 @@ class ObjectHandles(NodePath,PandaObject):
         # Initialize the superclass
         NodePath.__init__(self)
 
+        # Starts off deactivated
+        self.fActive = 0
         # Load up object handles model and assign it to self
         self.assign(loader.loadModel('models/misc/objectHandles'))
         self.node().setName('objectHandles')
@@ -525,6 +566,21 @@ class ObjectHandles(NodePath,PandaObject):
 
     def manipModeColor(self):
         self.clearColor()
+
+    def toggleWidget(self):
+        if self.fActive:
+            self.reparentTo(hidden)
+            self.fActive = 0
+        else:
+            self.reparentTo(direct.group)
+            self.fActive = 1
+
+    def showWidgetIfActive(self):
+        if self.fActive:
+            self.reparentTo(direct.group)
+
+    def hideWidget(self):
+        self.reparentTo(hidden)
 
     def enableHandles(self, handles):
         if type(handles) == types.ListType:
