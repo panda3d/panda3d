@@ -121,6 +121,20 @@ $[define] HAVE_MIKMOD 1
 $[undef] HAVE_MIKMOD
 #endif
 
+/* Define if we want to compile the net code.  */
+#if $[HAVE_NET]
+$[define] HAVE_NET 1
+#else
+$[undef] HAVE_NET
+#endif
+
+/* Define if we want to compile the audio code.  */
+#if $[HAVE_AUDIO]
+$[define] HAVE_AUDIO 1
+#else
+$[undef] HAVE_AUDIO
+#endif
+
 /* Define if we have a gettimeofday() function. */
 #if $[HAVE_GETTIMEOFDAY]
 $[define] HAVE_GETTIMEOFDAY 1

@@ -1,4 +1,5 @@
 #define OTHER_LIBS dtool
+#define DIRECTORY_IF_AUDIO yes
 
 #begin lib_target
   #define TARGET audio_load_midi

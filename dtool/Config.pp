@@ -163,6 +163,29 @@
 #define MIKMOD_CONFIG libmikmod-config
 #defer HAVE_MIKMOD $[bintest $[MIKMOD_CONFIG]]
 
+// Do you want to build the network interface?  What additional libraries
+// are required?
+#define NET_IPATH
+#define NET_LPATH
+#if $[eq $[PLATFORM],Win32]
+  #define NET_LIBS ws2_32.lib
+#else
+  #define NET_LIBS
+#endif
+#define HAVE_NET 1
+
+// Do you want to build the audio interface?  What additional
+// libraries are required?
+#define AUDIO_IPATH
+#define AUDIO_LPATH
+#if $[eq $[PLATFORM],Win32]
+  #define AUDIO_LIBS winmm.lib dsound.lib user32.lib ole32.lib dxguid.lib
+#else
+  #define AUDIO_LIBS
+#endif
+#define HAVE_AUDIO 1
+
+
 // Is Gtk-- installed?  How should we run the gtkmm-config program?
 // This matters only to programs in PANDATOOL.
 #define GTKMM_CONFIG gtkmm-config
@@ -171,18 +194,6 @@
 // Is Maya installed?  This matters only to programs in PANDATOOL.
 #define MAYA_LOCATION /usr/aw/maya2.5
 #defer HAVE_MAYA $[isdir $[MAYA_LOCATION]]
-
-// What additional libraries must we link with for network-dependent
-// code?
-#if $[eq $[PLATFORM],Win32]
-  #define NET_LIBS ws2_32.lib
-#endif
-
-// What additional libraries must we link with for audio-dependent
-// code?
-#if $[eq $[PLATFORM],Win32]
-  #define AUDIO_LIBS winmm.lib dsound.lib user32.lib ole32.lib dxguid.lib
-#endif
 
 
 //////////////////////////////////////////////////////////////////////
