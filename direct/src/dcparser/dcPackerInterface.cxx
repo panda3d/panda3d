@@ -96,6 +96,21 @@ get_nested_field(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::validate_num_nested_fields
+//       Access: Public, Virtual
+//  Description: After a number of fields have been packed via push()
+//               .. pack_*() .. pop(), this is called to confirm that
+//               the number of nested fields that were added is valid
+//               for this type.  This is primarily useful for array
+//               types with dynamic ranges that can't validate the
+//               number of fields any other way.
+////////////////////////////////////////////////////////////////////
+bool DCPackerInterface::
+validate_num_nested_fields(int) const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::pack_double
 //       Access: Public, Virtual
 //  Description: Packs the indicated numeric or string value into the

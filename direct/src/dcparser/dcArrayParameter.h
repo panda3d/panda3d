@@ -21,6 +21,7 @@
 
 #include "dcbase.h"
 #include "dcParameter.h"
+#include "dcNumericRange.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DCArrayParameter
@@ -31,7 +32,8 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DIRECT DCArrayParameter : public DCParameter {
 public:
-  DCArrayParameter(DCParameter *element_type, int array_size = -1);
+  DCArrayParameter(DCParameter *element_type, 
+                   const DCUnsignedIntRange &size = DCUnsignedIntRange());
   DCArrayParameter(const DCArrayParameter &copy);
   virtual ~DCArrayParameter();
 
@@ -46,6 +48,7 @@ PUBLISHED:
 public:
   virtual int calc_num_nested_fields(size_t length_bytes) const;
   virtual DCPackerInterface *get_nested_field(int n) const;
+  virtual bool validate_num_nested_fields(int num_nested_fields) const;
 
   virtual void output_instance(ostream &out, const string &prename, 
                                const string &name, const string &postname) const;
@@ -54,6 +57,7 @@ public:
 private:
   DCParameter *_element_type;
   int _array_size;
+  DCUnsignedIntRange _array_size_range;
 };
 
 #endif

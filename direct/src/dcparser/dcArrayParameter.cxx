@@ -25,19 +25,28 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 DCArrayParameter::
-DCArrayParameter(DCParameter *element_type, int array_size) :
+DCArrayParameter(DCParameter *element_type, const DCUnsignedIntRange &size) :
   _element_type(element_type),
-  _array_size(array_size)
+  _array_size_range(size)
 {
   set_name(_element_type->get_name());
   _element_type->set_name(string());
 
+  _array_size = -1;
+  if (_array_size_range.has_one_value()) {
+    _array_size = _array_size_range.get_one_value();
+  }
+
   if (_array_size >= 0 && _element_type->has_fixed_byte_size()) {
     _has_fixed_byte_size = true;
     _fixed_byte_size = _array_size * _element_type->get_fixed_byte_size();
+    
+  } else {
+    // We only need to store the length bytes if the array has a
+    // variable size.
+    _num_length_bytes = 2;
   }
 
-  _num_length_bytes = 2;
   _has_nested_fields = true;
   _num_nested_fields = _array_size;
   _pack_type = PT_array;
@@ -52,7 +61,8 @@ DCArrayParameter::
 DCArrayParameter(const DCArrayParameter &copy) :
   DCParameter(copy),
   _element_type(copy._element_type->make_copy()),
-  _array_size(copy._array_size)
+  _array_size(copy._array_size),
+  _array_size_range(copy._array_size_range)
 {
 }
 
@@ -113,7 +123,7 @@ get_element_type() const {
 //     Function: DCArrayParameter::get_array_size
 //       Access: Published
 //  Description: Returns the fixed number of elements in this array,
-//               or -1 if the array may contain any number of
+//               or -1 if the array may contain a variable number of
 //               elements.
 ////////////////////////////////////////////////////////////////////
 int DCArrayParameter::
@@ -153,6 +163,24 @@ get_nested_field(int) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCArrayParameter::validate_num_nested_fields
+//       Access: Public, Virtual
+//  Description: After a number of fields have been packed via push()
+//               .. pack_*() .. pop(), this is called to confirm that
+//               the number of nested fields that were added is valid
+//               for this type.  This is primarily useful for array
+//               types with dynamic ranges that can't validate the
+//               number of fields any other way.
+////////////////////////////////////////////////////////////////////
+bool DCArrayParameter::
+validate_num_nested_fields(int num_nested_fields) const {
+  bool range_error = false;
+  _array_size_range.validate(num_nested_fields, range_error);
+       
+  return !range_error;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCArrayParameter::output_instance
 //       Access: Public, Virtual
 //  Description: Formats the parameter in the C++-like dc syntax as a
@@ -167,11 +195,9 @@ output_instance(ostream &out, const string &prename, const string &name,
   } else {
     ostringstream strm;
     
-    if (_array_size >= 0) {
-      strm << "[" << _array_size << "]";
-    } else {
-      strm << "[]";
-    }
+    strm << "[";
+    _array_size_range.output(strm);
+    strm << "]";
     
     _element_type->output_instance(out, prename, name, strm.str() + postname);
   }
@@ -187,5 +213,5 @@ void DCArrayParameter::
 generate_hash(HashGenerator &hashgen) const {
   DCParameter::generate_hash(hashgen);
   _element_type->generate_hash(hashgen);
-  hashgen.add_int(_array_size);
+  _array_size_range.generate_hash(hashgen);
 }

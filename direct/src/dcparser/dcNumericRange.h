@@ -39,7 +39,10 @@ public:
   INLINE void operator = (const DCNumericRange &copy);
 
   bool is_in_range(Number num) const;
-  INLINE void validate(Number num, bool &validation_error) const;
+  INLINE void validate(Number num, bool &range_error) const;
+
+  INLINE bool has_one_value() const;
+  INLINE Number get_one_value() const;
 
   void generate_hash(HashGenerator &hashgen) const;
 

@@ -463,6 +463,11 @@ pop() {
     _pack_error = true;
 
   } else {
+    if (!_current_parent->validate_num_nested_fields(_current_field_index)) {
+      // Incorrect number of nested elements.
+      _pack_error = true;
+    }
+
     if (_mode == M_pack || _mode == M_repack) {
       size_t length_bytes = _current_parent->get_num_length_bytes();
       if (length_bytes != 0) {

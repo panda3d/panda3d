@@ -358,8 +358,6 @@ set_range(const DCDoubleRange &range) {
     
   case ST_uint16:
   case ST_uint16array:
-  case ST_string:
-  case ST_blob:
     _uint_range.clear();
     for (i = 0; i < num_ranges; i++) {
       unsigned int min = (unsigned int)floor(range.get_min(i) * _divisor + 0.5);
@@ -372,7 +370,6 @@ set_range(const DCDoubleRange &range) {
     
   case ST_uint32:
   case ST_uint32array:
-  case ST_blob32:
     _uint_range.clear();
     for (i = 0; i < num_ranges; i++) {
       unsigned int min = (unsigned int)floor(range.get_min(i) * _divisor + 0.5);
@@ -396,6 +393,47 @@ set_range(const DCDoubleRange &range) {
       double min = range.get_min(i) * _divisor;
       double max = range.get_max(i) * _divisor;
       _double_range.add_range(min, max);
+    }
+    break;
+
+  case ST_string:
+  case ST_blob:
+    _uint_range.clear();
+    for (i = 0; i < num_ranges; i++) {
+      unsigned int min = (unsigned int)floor(range.get_min(i) * _divisor + 0.5);
+      unsigned int max = (unsigned int)floor(range.get_max(i) * _divisor + 0.5);
+      validate_uint_limits(min, 16, range_error);
+      validate_uint_limits(max, 16, range_error);
+      _uint_range.add_range(min, max);
+    }
+    if (_uint_range.has_one_value()) {
+      // If we now have a fixed-length string requirement, we don't
+      // need a leading number of bytes.
+      _num_length_bytes = 0;
+      _has_fixed_byte_size = true;
+      _fixed_byte_size = _uint_range.get_one_value();
+    } else {
+      _num_length_bytes = 2;
+      _has_fixed_byte_size = false;
+    }
+    break;
+
+  case ST_blob32:
+    _uint_range.clear();
+    for (i = 0; i < num_ranges; i++) {
+      unsigned int min = (unsigned int)floor(range.get_min(i) * _divisor + 0.5);
+      unsigned int max = (unsigned int)floor(range.get_max(i) * _divisor + 0.5);
+      _uint_range.add_range(min, max);
+    }
+    if (_uint_range.has_one_value()) {
+      // If we now have a fixed-length string requirement, we don't
+      // need a leading number of bytes.
+      _num_length_bytes = 0;
+      _has_fixed_byte_size = true;
+      _fixed_byte_size = _uint_range.get_one_value();
+    } else {
+      _num_length_bytes = 4;
+      _has_fixed_byte_size = false;
     }
     break;
 
@@ -811,12 +849,16 @@ pack_string(DCPackData &pack_data, const string &value,
   case ST_string:
   case ST_blob:
     validate_uint_limits(string_length, 16, range_error);
-    do_pack_uint16(pack_data.get_write_pointer(2), string_length);
+    if (_num_length_bytes != 0) {
+      do_pack_uint16(pack_data.get_write_pointer(2), string_length);
+    }
     pack_data.append_data(value.data(), string_length);
     break;
 
   case ST_blob32:
-    do_pack_uint32(pack_data.get_write_pointer(4), string_length);
+    if (_num_length_bytes != 0) {
+      do_pack_uint32(pack_data.get_write_pointer(4), string_length);
+    }
     pack_data.append_data(value.data(), string_length);
     break;
 
@@ -1488,30 +1530,36 @@ unpack_string(const char *data, size_t length, size_t &p, string &value,
               bool &pack_error, bool &range_error) const {
   size_t string_length;
 
-  switch (_type) {
-  case ST_string:
-  case ST_blob:
-    if (p + 2 > length) {
+  if (_num_length_bytes == 0) {
+    string_length = _fixed_byte_size;
+
+  } else {
+    switch (_type) {
+    case ST_string:
+    case ST_blob:
+      if (p + 2 > length) {
+        pack_error = true;
+        return;
+      }
+      string_length = do_unpack_uint16(data + p);
+      p += 2;
+      break;
+      
+    case ST_blob32:
+      if (p + 4 > length) {
+        pack_error = true;
+        return;
+      }
+      string_length = do_unpack_uint32(data + p);
+      p += 4;
+      break;
+      
+    default:
       pack_error = true;
       return;
     }
-    string_length = do_unpack_uint16(data + p);
-    p += 2;
-    break;
-
-  case ST_blob32:
-    if (p + 4 > length) {
-      pack_error = true;
-      return;
-    }
-    string_length = do_unpack_uint32(data + p);
-    p += 4;
-    break;
-
-  default:
-    pack_error = true;
-    return;
   }
+
   _uint_range.validate(string_length, range_error);
 
   if (p + string_length > length) {
@@ -1647,7 +1695,10 @@ unpack_validate(const char *data, size_t length, size_t &p,
 
   case ST_string:
   case ST_blob:
-    {
+    if (_num_length_bytes == 0) {
+      p += _fixed_byte_size;
+
+    } else {
       if (p + 2 > length) {
         pack_error = true;
         return true;
@@ -1659,7 +1710,10 @@ unpack_validate(const char *data, size_t length, size_t &p,
     break;
 
   case ST_blob32:
-    {
+    if (_num_length_bytes == 0) {
+      p += _fixed_byte_size;
+
+    } else {
       if (p + 4 > length) {
         pack_error = true;
         return true;
@@ -1713,19 +1767,29 @@ unpack_skip(const char *data, size_t length, size_t &p) const {
 
   case ST_string:
   case ST_blob:
-    if (p + 2 > length) {
-      return false;
+    if (_num_length_bytes == 0) {
+      p += _fixed_byte_size;
+
+    } else {
+      if (p + 2 > length) {
+        return false;
+      }
+      string_length = do_unpack_uint16(data + p);
+      p += 2 + string_length;
     }
-    string_length = do_unpack_uint16(data + p);
-    p += 2 + string_length;
     break;
 
   case ST_blob32:
-    if (p + 4 > length) {
-      return false;
+    if (_num_length_bytes == 0) {
+      p += _fixed_byte_size;
+
+    } else {
+      if (p + 4 > length) {
+        return false;
+      }
+      string_length = do_unpack_uint32(data + p);
+      p += 4 + string_length;
     }
-    string_length = do_unpack_uint32(data + p);
-    p += 4 + string_length;
     break;
 
   default:
@@ -1749,14 +1813,13 @@ void DCSimpleParameter::
 output_instance(ostream &out, const string &prename, const string &name, 
                 const string &postname) const {
   if (get_typedef() != (DCTypedef *)NULL) {
-    out << get_typedef()->get_name();
+    output_typedef_name(out, prename, name, postname);
 
   } else {
     out << _type;
     if (_divisor != 1) {
       out << "/" << _divisor;
     }
-
 
     switch (_type) {
     case ST_int8:
@@ -1806,10 +1869,10 @@ output_instance(ostream &out, const string &prename, const string &name,
     default:
       break;
     }
-  }
 
-  if (!prename.empty() || !name.empty() || !postname.empty()) {
-    out << " " << prename << name << postname;
+    if (!prename.empty() || !name.empty() || !postname.empty()) {
+      out << " " << prename << name << postname;
+    }
   }
 }
 

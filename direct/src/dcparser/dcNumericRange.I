@@ -90,14 +90,39 @@ is_in_range(Number num) const {
 //  Description: Convenience function to validate the indicated
 //               number.  If the number is within the specified range,
 //               does nothing; otherwise, if it is outside the range,
-//               sets validation_error to true.
+//               sets range_error to true.
 ////////////////////////////////////////////////////////////////////
 template <class NUM>
 INLINE void DCNumericRange<NUM>::
-validate(Number num, bool &validation_error) const {
+validate(Number num, bool &range_error) const {
   if (!is_in_range(num)) {
-    validation_error = true;
+    range_error = true;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCNumericRange::has_one_value
+//       Access: Public
+//  Description: Returns true if the numeric range specifies exactly
+//               one legal value, false if multiple values are legal.
+////////////////////////////////////////////////////////////////////
+template <class NUM>
+INLINE bool DCNumericRange<NUM>::
+has_one_value() const {
+  return _ranges.size() == 1 && _ranges[0]._min == _ranges[0]._max;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCNumericRange::get_one_value
+//       Access: Public
+//  Description: If has_one_value() returns true, this returns the one
+//               legal value accepted by the numeric range.
+////////////////////////////////////////////////////////////////////
+template <class NUM>
+INLINE DCNumericRange<NUM>::Number DCNumericRange<NUM>::
+get_one_value() const {
+  nassertr(has_one_value(), 0);
+  return _ranges[0]._min;
 }
 
 ////////////////////////////////////////////////////////////////////
