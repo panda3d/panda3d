@@ -22,6 +22,7 @@
 #include <keyboardButton.h>
 #include <mouseButton.h>
 #include <throw_event.h>
+#include <eventQueue.h>
 #include <glGraphicsStateGuardian.h>
 #include <errno.h>
 #include <time.h>
@@ -38,8 +39,6 @@
 // Static variables
 ////////////////////////////////////////////////////////////////////
 TypeHandle wglGraphicsWindow::_type_handle;
-
-#define WGLWIN_CONFIGURE 0x4
 
 #define MOUSE_ENTERED 0
 #define MOUSE_EXITED 1
@@ -89,6 +88,19 @@ void wglGraphicsWindow::DestroyMe(bool bAtExitFnCalled) {
   // an atexit() fn.  Possible that GL has already unloaded itself.  So we just wont call them for now
   // for that case, we're exiting the app anyway.
   if(!bAtExitFnCalled) {
+      // to do gl releases, we need to have the context be current
+      if((_hdc!=NULL)&&(_context!=NULL)) {
+          // need to bypass make_current() since it checks _window_inactive which we need to ignore
+          HGLRC current_context = wglGetCurrentContext();
+          HDC current_dc = wglGetCurrentDC();
+
+          if ((current_context != _context) || (current_dc != _hdc)) {
+              if(!wglMakeCurrent(_hdc, _context)) {
+                  PrintErrorMessage(LAST_ERROR);
+              }
+          }
+          report_errors();
+      }
 
       if(gl_show_fps_meter)
         glDeleteLists(FONT_BITMAP_OGLDISPLAYLISTNUM, 128);
@@ -97,7 +109,10 @@ void wglGraphicsWindow::DestroyMe(bool bAtExitFnCalled) {
 
       // implicitly calls gsg destructors which release GL objects (textures, display lists, etc)
       release_gsg();
-    
+
+      report_errors();
+      // cant report errors after we set cur context to NULL
+
       HGLRC curcxt=wglGetCurrentContext();
       if(curcxt!=NULL) 
         unmake_current();
@@ -250,60 +265,39 @@ static DWORD GetAvailVidMem(void) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::config(void) {
+    
+    GraphicsWindow::config();
 
-  GraphicsWindow::config();
+    HINSTANCE hinstance = GetModuleHandle(NULL);
+    HWND hDesktopWindow = GetDesktopWindow();
 
-  HINSTANCE hinstance = GetModuleHandle(NULL);
-  HWND hDesktopWindow = GetDesktopWindow();
+    global_wglwinptr = this;  // need this until we get an HWND from CreateWindow
 
-  global_wglwinptr = this;  // need this until we get an HWND from CreateWindow
-
-  _change_mask = 0;
-  _exiting_window = false;
-  _mouse_input_enabled = false;
-  _mouse_motion_enabled = false;
-  _mouse_passive_motion_enabled = false;
-  _mouse_entry_enabled = false;
-  _entry_state = -1;
-  _visual = NULL;
-  _context = NULL;
-  _hdc = NULL;
-  _window_inactive = false;
-  _pCurrent_display_settings = NULL;
-
-  _mwindow = NULL;
-  _gsg = NULL;
-
-  _hOldForegroundWindow=GetForegroundWindow();
-
-#if 0
-// bugbug need to add wdx handling routines
-    _WindowAdjustingType = NotAdjusting;
-    _hMouseCursor = NULL;
-    _bSizeIsMaximized=FALSE;
-#endif
-
-#if 0
-   // for gl, do this after window creation
-    // Create a GSG to manage the graphics
-    make_gsg();
-    if(_gsg==NULL) {
-        wdxdisplay_cat.error() << "DXGSG creation failed!\n";
-        exit(1);
-    }
-    _dxgsg = DCAST(DXGraphicsStateGuardian, _gsg);
-#endif
-
+    _exiting_window = false;
+    _mouse_input_enabled = false;
+    _mouse_motion_enabled = false;
+    _mouse_passive_motion_enabled = false;
+    _mouse_entry_enabled = false;
+    _entry_state = -1;
+    _visual = NULL;
+    _context = NULL;
+    _hdc = NULL;
+    _window_inactive = false;
+    _pCurrent_display_settings = NULL;
+    _mwindow = NULL;
+    _gsg = NULL;
+    _hOldForegroundWindow=GetForegroundWindow();
+    
     WNDCLASS wc;
-
+    
     // Clear before filling in window structure!
     ZeroMemory(&wc, sizeof(WNDCLASS));
     wc.style      = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
     wc.lpfnWndProc = (WNDPROC) static_window_proc;
     wc.hInstance   = hinstance;
-
+    
     string windows_icon_filename = get_icon_filename_().to_os_specific();
-
+    
     if(!windows_icon_filename.empty()) {
         // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings)
         // if icon is more than 8bpp
@@ -311,16 +305,18 @@ void wglGraphicsWindow::config(void) {
     } else {
         wc.hIcon = NULL; // use default app icon
     }
-
+    
     wc.hCursor        = _hMouseCursor = LoadCursor(NULL, IDC_ARROW);
     wc.hbrBackground  = (HBRUSH)GetStockObject(BLACK_BRUSH);
     wc.lpszMenuName   = NULL;
     wc.lpszClassName  = WGL_WINDOWCLASSNAME;
-
+    
     if(!RegisterClass(&wc)) {
         wgldisplay_cat.fatal() << "could not register window class!" << endl;
         exit(1);
     }
+
+    DWORD window_style = WS_POPUP | WS_MAXIMIZE | WS_SYSMENU;  // for CreateWindow
 
     // rect now contains the coords for the entire window, not the client
     if (_props._fullscreen) {
@@ -378,12 +374,10 @@ void wglGraphicsWindow::config(void) {
           exit(1);
       }
 
-      DWORD style = WS_POPUP | WS_MAXIMIZE;
-
       // I'd prefer to CreateWindow after DisplayChange in case it messes up GL somehow,
       // but I need the window's black background to cover up the desktop during the mode change
       _mwindow = CreateWindow(WGL_WINDOWCLASSNAME, _props._title.c_str(),
-                style,0,0,dwWidth,dwHeight,hDesktopWindow, NULL, hinstance, 0);
+                window_style,0,0,dwWidth,dwHeight,hDesktopWindow, NULL, hinstance, 0);
 
       // move window to top of zorder,
       SetWindowPos(_mwindow, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE);
@@ -410,18 +404,15 @@ void wglGraphicsWindow::config(void) {
            wgldisplay_cat.debug() << "set fullscreen mode at res ( " << dwWidth << " X " << dwHeight << " X " << dwFullScreenBitDepth <<" ), " << dm.dmDisplayFrequency  << "Hz\n";
   } else {
         
-        DWORD style;
         RECT win_rect;
         SetRect(&win_rect, _props._xorg,  _props._yorg, _props._xorg + _props._xsize,
                 _props._yorg + _props._ysize);
 
-        style = WS_POPUP | WS_MAXIMIZE;
-
         if(_props._border) {
-            style |= WS_OVERLAPPEDWINDOW;
+            window_style |= WS_OVERLAPPEDWINDOW;
         }
 
-        BOOL bRes = AdjustWindowRect(&win_rect, style, FALSE);  //compute window size based on desired client area size
+        BOOL bRes = AdjustWindowRect(&win_rect, window_style, FALSE);  //compute window size based on desired client area size
 
         if(!bRes) {
             wgldisplay_cat.fatal() << "AdjustWindowRect failed!" << endl;
@@ -437,7 +428,7 @@ void wglGraphicsWindow::config(void) {
         }
 
         _mwindow = CreateWindow(WGL_WINDOWCLASSNAME, _props._title.c_str(),
-                                style, win_rect.left, win_rect.top, win_rect.right-win_rect.left,
+                                window_style, win_rect.left, win_rect.top, win_rect.right-win_rect.left,
                                 win_rect.bottom-win_rect.top,
                                 NULL, NULL, hinstance, 0);
   }
@@ -452,7 +443,7 @@ void wglGraphicsWindow::config(void) {
   global_wglwinptr = NULL;  // get rid of any reference to this obj
     
   // move window to top of zorder
-  SetWindowPos(_mwindow, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE);
+  SetWindowPos(_mwindow, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOOWNERZORDER);
     
   _hdc = GetDC(_mwindow);
 
@@ -1002,8 +993,9 @@ void wglGraphicsWindow::end_frame(void) {
     glPushMatrix();
     glLoadIdentity();
 
-    glOrtho(_props._xorg,_props._xorg+_props._xsize,
-        _props._yorg,_props._yorg+_props._ysize,-1.0,1.0);
+    glOrtho(0,_props._xsize,
+            0,_props._ysize,
+            -1.0,1.0);
 
     glRasterPos2f(_props._xsize-70,_props._ysize-20);  // these seem to be good for default font
 
@@ -1036,16 +1028,21 @@ void wglGraphicsWindow::end_frame(void) {
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void wglGraphicsWindow::handle_reshape(int w, int h) {
-  // bugbug: this is not current working right??
-  if (_props._xsize != w || _props._ysize != h) {
-    _props._xsize = w;
-    _props._ysize = h;
-    make_current();
-    GdiFlush();
-    resized(w, h);
-    _change_mask |= WGLWIN_CONFIGURE;
-  }
+void wglGraphicsWindow::handle_reshape() {
+      RECT view_rect;
+      GetClientRect( _mwindow, &view_rect );
+      ClientToScreen( _mwindow, (POINT*)&view_rect.left );   // translates top,left pnt
+      ClientToScreen( _mwindow, (POINT*)&view_rect.right );  // translates right,bottom pnt
+
+      // change _props xsize,ysize
+      resized((view_rect.right - view_rect.left),(view_rect.bottom - view_rect.top));
+
+      _props._xorg = view_rect.left;  // _props origin should reflect upper left of view rectangle
+      _props._yorg = view_rect.top;
+
+      if(wgldisplay_cat.is_spam()) {
+          wgldisplay_cat.spam() << "reshape to origin: (" << _props._xorg << "," << _props._yorg << "), size: (" << _props._xsize << "," << _props._ysize << ")\n";
+      }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1093,34 +1090,6 @@ handle_keyrelease(ButtonHandle key) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: handle_changes
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void wglGraphicsWindow::handle_changes(void) {
-  // As an optimization, check to see if change is anything other than a
-  // redisplay
-  if (_change_mask & WGLWIN_CONFIGURE) {
-    RECT changes;
-    POINT point;
-    GetClientRect(_mwindow, &changes);
-    point.x = 0;
-    point.y = 0;
-    ClientToScreen(_mwindow, &point);
-    changes.left = point.x;
-    changes.top = point.y;
-    // Don't do this in full-screen mode
-    AdjustWindowRect(&changes, WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS |
-        WS_CLIPCHILDREN, FALSE);
-    SetWindowPos(_mwindow, HWND_TOP, changes.left, changes.top,
-        changes.right - changes.left, changes.bottom - changes.top,
-        SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER |
-        SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOZORDER);
-  }
-  _change_mask = 0;
-}
-
 void INLINE wglGraphicsWindow::process_events(void) {
   MSG msg;
 
@@ -1166,14 +1135,12 @@ void wglGraphicsWindow::update(void) {
     }
 #endif
 
-  if(_change_mask)
-    handle_changes();
-
   process_events();
 
   if(_window_inactive) {
       Sleep( 500 );   // Dont consume CPU.
-      throw_event("PandaPaused");   // throw panda event to invoke network-only processing
+      if(!EventQueue::get_global_event_queue()->is_queue_full())
+          throw_event("PandaPaused");   // throw panda event to invoke network-only processing
       return;
   } else {
 
@@ -1221,7 +1188,7 @@ void wglGraphicsWindow::enable_mouse_passive_motion(bool val) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::make_current(void) {
-  if((_hdc==NULL)||(_window_inactive)) {
+  if((_hdc==NULL)||(_context==NULL)||(_window_inactive)) {
       return;  // we're only allow unmake_current() to set this to NULL
   }
 
@@ -1316,6 +1283,61 @@ LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
    }
 }
 
+void wglGraphicsWindow::deactivate_window(void) {
+    // current policy is to suspend minimized or deactivated fullscreen windows, but leave
+    // regular windows running normally
+#ifdef _DEBUG
+   wgldisplay_cat.spam()  << "deactivate_window called"  << endl;
+#endif
+
+   if((!_props._fullscreen) || _exiting_window) 
+     return;
+
+   if(_window_inactive) 
+     return;
+
+   if(wgldisplay_cat.is_spam())
+       wgldisplay_cat.spam() << "WGL window deactivated, releasing gl context and waiting...\n";
+   _window_inactive = true;
+   unmake_current();
+
+   // bugbug: this isnt working right now on many drivers.  may have to
+   // destroy window and recreate a new OGL context for this to work
+
+   // make sure window is minimized
+
+   WINDOWPLACEMENT wndpl;
+   wndpl.length=sizeof(WINDOWPLACEMENT);
+   
+   if(!GetWindowPlacement(_mwindow,&wndpl)) {
+       wgldisplay_cat.error() << "GetWindowPlacement failed!\n";
+       return;
+   }
+   if((wndpl.showCmd!=SW_MINIMIZE)&&(wndpl.showCmd!=SW_SHOWMINIMIZED)) {
+       ShowWindow(_mwindow, SW_MINIMIZE);
+   }
+
+   // revert to default display mode
+   ChangeDisplaySettings(NULL,0x0);
+}
+
+void wglGraphicsWindow::reactivate_window(void) {
+    if(_window_inactive) {
+        if(wgldisplay_cat.is_spam())
+            wgldisplay_cat.spam() << "WGL window re-activated...\n";
+
+        _window_inactive = false;
+
+        // move window to top of zorder,
+        SetWindowPos(_mwindow, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOOWNERZORDER);
+
+        ChangeDisplaySettings(_pCurrent_display_settings,CDS_FULLSCREEN);
+        
+        GdiFlush();
+        make_current();
+    }
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: window_proc
 //       Access:
@@ -1324,7 +1346,7 @@ LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
 LONG WINAPI wglGraphicsWindow::
 window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   int button = -1;
-  int x, y, width, height;
+  int x, y;
 
   switch (msg) {
     case WM_CREATE:
@@ -1343,56 +1365,67 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           if(hwnd_pandawin_map.size()==0) {
               exit(0);
           }
-          return 0;
+          break;
 
-    case WM_ACTIVATE: {
-       if (_props._fullscreen && (!_exiting_window)) {
-           // handle switching out of fullscreen mode differently than windowed mode.
-           // here we want to suspend all gfx and execution, switch display modes and minimize ourself
-           // until we are switched back to
+    case WM_MOVE:
+          // handle all this stuff in EXITSIZEMOVE.  will rendering work during moving?  do we care?
+          //_props._xorg = LOWORD(lparam);
+          //_props._yorg = HIWORD(lparam);
+          break;
 
+      case WM_ACTIVATE: 
+            #ifdef _DEBUG
+              wgldisplay_cat.spam()  << "WM_ACTIVATE received"  << endl;
+            #endif
            if(LOWORD(wparam)==WA_INACTIVE) {
-               if(wgldisplay_cat.is_spam())
-                   wgldisplay_cat.spam() << "WGL window deactivated, releasing gl context and waiting...\n";
-               _window_inactive = true;
-               unmake_current();
+               deactivate_window();
+               return 0;
+           }         // dont want to reactivate until window is actually un-minimized (see WM_SIZE)
+       break;
 
-               // bugbug: this isnt working right now on many drivers.  may have to
-               // destroy window and recreate a new OGL context for this to work
-#ifdef ENABLE_ALTTAB_DISPLAYCHANGE
-               // revert to default display mode
-               ChangeDisplaySettings(NULL,0x0);
-#endif
+    case WM_EXITSIZEMOVE:
+            #ifdef _DEBUG
+              wgldisplay_cat.spam()  << "WM_EXITSIZEMOVE received"  << endl;
+            #endif
+            
+            if(_window_inactive)
+                 reactivate_window();
+            handle_reshape();
+            break;
 
-               if(HIWORD(wparam)==0x0)  // otherwise window already minimized
-                   ShowWindow(_mwindow, SW_MINIMIZE);
-           } else {
-               if(_window_inactive) {
-                   if(wgldisplay_cat.is_spam())
-                      wgldisplay_cat.spam() << "WGL window re-activated...\n";
-                   _window_inactive = false;
-                   
-                   // move window to top of zorder,
-                   SetWindowPos(_mwindow, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE);
+    case WM_ENTERSIZEMOVE: 
+            break;
 
-                   make_current();
+    case WM_SIZE: {
+                DWORD width,height;
 
-                   ShowWindow(_mwindow, SW_SHOWNORMAL);
+                width = LOWORD(lparam);  height = HIWORD(lparam);
+            #ifdef _DEBUG
+                {
+                    wgldisplay_cat.spam() << "WM_SIZE received with width:" << width << "  height: " << height << " flags: " <<
+                    ((wparam == SIZE_MAXHIDE)? "SIZE_MAXHIDE " : "") << ((wparam == SIZE_MAXSHOW)? "SIZE_MAXSHOW " : "") <<
+                    ((wparam == SIZE_MINIMIZED)? "SIZE_MINIMIZED " : "") << ((wparam == SIZE_RESTORED)? "SIZE_RESTORED " : "") <<
+                    ((wparam == SIZE_MAXIMIZED)? "SIZE_MAXIMIZED " : "") << endl;
+                }
+            #endif
+                if(_mwindow==NULL)
+                    break;
 
-#ifdef ENABLE_ALTTAB_DISPLAYCHANGE
-                   ChangeDisplaySettings(_pCurrent_display_settings,CDS_FULLSCREEN);
-#endif
-               }
-           }
-           return 0;
-       } else break;
+                if((wparam==SIZE_MAXIMIZED) || (wparam==SIZE_RESTORED)) { // old comment -- added SIZE_RESTORED to handle 3dfx case  (what does this mean?)
+                    if(_window_inactive)
+                        reactivate_window();
+
+                    if((_props._xsize != width) || (_props._ysize != height))
+                        handle_reshape();
+                }
+                break;
     }
 
     case WM_PAINT: {
           PAINTSTRUCT ps;
           BeginPaint(hwnd, &ps);
           EndPaint(hwnd, &ps);
-          return 0;
+          return 0;       
     }
 
     case WM_SYSCHAR:
@@ -1406,14 +1439,14 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         GetCursorPos(&point);
         ScreenToClient(hwnd, &point);
         handle_keypress(lookup_key(wparam), point.x, point.y);
-        return 0;
+        break;
       }
 
     case WM_SYSKEYUP:
     case WM_KEYUP: {
         // dont need x,y for this
         handle_keyrelease(lookup_key(wparam));
-        return 0;
+        break;
     }
     case WM_LBUTTONDOWN:
       button = 0;
@@ -1434,7 +1467,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         y -= (1 << 16);
       // make_current();  what does OGL have to do with mouse input??
       handle_keypress(MouseButton::button(button), x, y);
-      return 0;
+      break;
     case WM_LBUTTONUP:
       button = 0;
     case WM_MBUTTONUP:
@@ -1454,7 +1487,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           // make_current();  what does OGL have to do with mouse input??
       #endif
       handle_keyrelease(MouseButton::button(button));
-      return 0;
+      break;
 
     case WM_MOUSEMOVE:
         x = LOWORD(lparam);
@@ -1472,13 +1505,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                     // make_current();  what does OGL have to do with mouse input??
                     handle_mouse_motion(x, y);
         }
-        return 0;
-
-    case WM_SIZE:
-          width = LOWORD(lparam);
-          height = HIWORD(lparam);
-          handle_reshape(width, height);
-          return 0;
+        break;
 
     case WM_SETFOCUS:
           SetCursor(_hMouseCursor);
@@ -1486,14 +1513,14 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                make_current();
                handle_mouse_entry(MOUSE_ENTERED);
           }
-          return 0;
+          break;
 
     case WM_KILLFOCUS:
           if (mouse_entry_enabled()) {
                //make_current();  this doesnt make any sense, we're leaving our window
                handle_mouse_entry(MOUSE_EXITED);
           }
-          return 0;
+          break;
   }
 
   return DefWindowProc(hwnd, msg, wparam, lparam);

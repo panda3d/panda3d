@@ -79,7 +79,8 @@ public:
   INLINE bool mouse_passive_motion_enabled(void) {
     return _mouse_passive_motion_enabled;
   }
-  void handle_reshape( int w, int h );
+//  void handle_reshape( int w, int h );
+
   void handle_mouse_motion( int x, int y );
   void handle_mouse_entry( int state );
   void handle_keypress( ButtonHandle key, int x, int y );
@@ -98,11 +99,10 @@ protected:
   void enable_mouse_passive_motion(bool val);
   void enable_mouse_entry(bool val);
 
-  void handle_changes(void);
+  void handle_reshape(void);
   void process_events(void);
 
 public:
-  uint              _change_mask;
   HWND              _mwindow;
 
 private:
@@ -143,6 +143,8 @@ public:
   LONG WINAPI window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   ButtonHandle lookup_key(WPARAM wparam) const;
   void DestroyMe(bool bAtExitFnCalled);
+  void deactivate_window(void);
+  void reactivate_window(void);
 
 protected:
   virtual void do_close_window();
