@@ -101,8 +101,8 @@ public:
   // for fiddly reasons.
   class PixelSpec {
   public:
-    INLINE PixelSpec(xelval gray);
-    INLINE PixelSpec(xelval gray, xelval alpha);
+    INLINE PixelSpec(xelval gray_value);
+    INLINE PixelSpec(xelval gray_value, xelval alpha);
     INLINE PixelSpec(xelval red, xelval green, xelval blue);
     INLINE PixelSpec(xelval red, xelval green, xelval blue, xelval alpha);
     INLINE PixelSpec(const PixelSpec &copy);

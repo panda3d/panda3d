@@ -240,10 +240,10 @@ record_color(PNMImageHeader::Histogram &hist,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImageHeader::PixelSpec::
-PixelSpec(xelval gray) :
-  _red(gray),
-  _green(gray),
-  _blue(gray),
+PixelSpec(xelval gray_value) :
+  _red(gray_value),
+  _green(gray_value),
+  _blue(gray_value),
   _alpha(0)
 {
 }
@@ -254,10 +254,10 @@ PixelSpec(xelval gray) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImageHeader::PixelSpec::
-PixelSpec(xelval gray, xelval alpha) :
-  _red(gray),
-  _green(gray),
-  _blue(gray),
+PixelSpec(xelval gray_value, xelval alpha) :
+  _red(gray_value),
+  _green(gray_value),
+  _blue(gray_value),
   _alpha(alpha)
 {
 }
