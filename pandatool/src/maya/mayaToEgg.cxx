@@ -19,7 +19,9 @@
 #include "mayaToEgg.h"
 #include "global_parameters.h"
 
+#include "pre_maya_include.h"
 #include <maya/MGlobal.h>
+#include "post_maya_include.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaToEgg::Constructor

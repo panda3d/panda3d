@@ -19,10 +19,9 @@
 #ifndef MAYASHADERS_H
 #define MAYASHADERS_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "pmap.h"
-#include <string>
 
 class MayaShader;
 class MObject;

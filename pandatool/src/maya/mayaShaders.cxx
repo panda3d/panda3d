@@ -19,13 +19,16 @@
 #include "mayaShaders.h"
 #include "mayaShader.h"
 #include "global_parameters.h"
+#include "maya_funcs.h"
 
+#include "pre_maya_include.h"
 #include <maya/MStatus.h>
 #include <maya/MObject.h>
 #include <maya/MFnDependencyNode.h>
 #include <maya/MPlug.h>
 #include <maya/MPlugArray.h>
 #include <maya/MFn.h>
+#include "post_maya_include.h"
 
 MayaShader *MayaShaders::
 find_shader_for_node(MObject node) {

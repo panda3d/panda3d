@@ -16,12 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <maya/MFnAttribute.h>
-#include <maya/MPlug.h>
-#include <maya/MStatus.h>
-#include <maya/MFnDependencyNode.h>
-#include <maya/MObject.h>
-
 template<class ValueType>
 bool
 get_maya_attribute(MObject &node, const string &attribute_name,

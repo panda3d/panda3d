@@ -19,11 +19,18 @@
 #ifndef MAYA_FUNCS_H
 #define MAYA_FUNCS_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
+#include "luse.h"
 
-#include <luse.h>
-
-#include <string>
+#include "pre_maya_include.h"
+#include <maya/MFnAttribute.h>
+#include <maya/MPlug.h>
+#include <maya/MStatus.h>
+#include <maya/MFnDependencyNode.h>
+#include <maya/MObject.h>
+#include <maya/MString.h>
+#include <maya/MVector.h>
+#include "post_maya_include.h"
 
 class MObject;
 
@@ -54,6 +61,17 @@ get_string_attribute(MObject &node, const string &attribute_name,
 
 void
 describe_maya_attribute(MObject &node, const string &attribute_name);
+
+// Also, we must define some output functions for Maya objects, since
+// we can't use those built into Maya (which forward-defines the
+// ostream type incorrectly).
+INLINE ostream &operator << (ostream &out, const MString &str) {
+  return out << str.asChar();
+}
+INLINE ostream &operator << (ostream &out, const MVector &vec) {
+  return out << vec.x << " " << vec.y << " " << vec.z;
+}
+
 
 #include "maya_funcs.I"
 

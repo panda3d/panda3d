@@ -19,12 +19,10 @@
 #ifndef MAYASHADER_H
 #define MAYASHADER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
-#include <luse.h>
-#include <lmatrix.h>
-
-#include <string>
+#include "luse.h"
+#include "lmatrix.h"
 
 class MObject;
 class MayaFile;

@@ -19,11 +19,9 @@
 #ifndef MAYAFILE_H
 #define MAYAFILE_H
 
-#include <pandatoolbase.h>
-
+#include "pandatoolbase.h"
 #include "mayaShaders.h"
-
-#include <eggTextureCollection.h>
+#include "eggTextureCollection.h"
 
 class EggData;
 class EggGroup;

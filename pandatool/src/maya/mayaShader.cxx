@@ -21,10 +21,11 @@
 #include "mayaFile.h"
 #include "global_parameters.h"
 
-#include <eggPrimitive.h>
-#include <eggTexture.h>
-#include <eggTextureCollection.h>
+#include "eggPrimitive.h"
+#include "eggTexture.h"
+#include "eggTextureCollection.h"
 
+#include "pre_maya_include.h"
 #include <maya/MFnDependencyNode.h>
 #include <maya/MFnLambertShader.h>
 #include <maya/MPlug.h>
@@ -32,6 +33,7 @@
 #include <maya/MColor.h>
 #include <maya/MObject.h>
 #include <maya/MStatus.h>
+#include "post_maya_include.h"
 
 MayaShader::
 MayaShader(MObject engine) {

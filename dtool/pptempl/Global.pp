@@ -213,7 +213,8 @@
 #if $[and $[HAVE_MAYA],$[MAYA_LOCATION]]
   #define maya_ipath $[MAYA_LOCATION]/include
   #define maya_lpath $[MAYA_LOCATION]/lib
-  #define maya_ld $[MAYA_LOCATION]/bin/mayald
+  #define maya_ld $[wildcard $[MAYA_LOCATION]/bin/mayald]
+  #define maya_libs $[MAYA_LIBS]
 #endif
 
 #if $[HAVE_IPC]

@@ -18,12 +18,14 @@
 
 #include "maya_funcs.h"
 
+#include "pre_maya_include.h"
 #include <maya/MObject.h>
 #include <maya/MAngle.h>
 #include <maya/MFnDependencyNode.h>
 #include <maya/MStatus.h>
 #include <maya/MFnStringData.h>
 #include <maya/MFnNumericData.h>
+#include "post_maya_include.h"
 
 bool
 get_bool_attribute(MObject &node, const string &attribute_name,

@@ -19,15 +19,17 @@
 #include "mayaFile.h"
 #include "mayaShader.h"
 #include "global_parameters.h"
+#include "maya_funcs.h"
 
-#include <eggData.h>
-#include <eggGroup.h>
-#include <eggVertex.h>
-#include <eggVertexPool.h>
-#include <eggNurbsSurface.h>
-#include <eggNurbsCurve.h>
-#include <eggPolygon.h>
+#include "eggData.h"
+#include "eggGroup.h"
+#include "eggVertex.h"
+#include "eggVertexPool.h"
+#include "eggNurbsSurface.h"
+#include "eggNurbsCurve.h"
+#include "eggPolygon.h"
 
+#include "pre_maya_include.h"
 #include <maya/MArgList.h>
 #include <maya/MColor.h>
 #include <maya/MDagPath.h>
@@ -55,6 +57,7 @@
 #include <maya/MTransformationMatrix.h>
 #include <maya/MVector.h>
 #include <maya/MTesselationParams.h>
+#include "post_maya_include.h"
 
 MayaFile::
 MayaFile() {
@@ -727,10 +730,10 @@ make_polyset(const MDagPath &dag_path, MFnMesh mesh,
 
     // Determine the shader for this particular polygon.
     int index = pi.index();
-    assert(index >= 0 && index < poly_shader_indices.length());
+    assert(index >= 0 && index < (int)poly_shader_indices.length());
     int shader_index = poly_shader_indices[index];
     if (shader_index != -1) {
-      assert(shader_index >= 0 && shader_index < shaders.length());
+      assert(shader_index >= 0 && shader_index < (int)shaders.length());
       MObject engine = shaders[shader_index];
       MayaShader *shader =
         _shaders.find_shader_for_shading_engine(engine);

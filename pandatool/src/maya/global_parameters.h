@@ -19,7 +19,7 @@
 #ifndef GLOBAL_PARAMETERS_H
 #define GLOBAL_PARAMETERS_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 extern int verbose;
 extern bool polygon_output;

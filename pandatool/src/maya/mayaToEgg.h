@@ -19,11 +19,9 @@
 #ifndef MAYATOEGG_H
 #define MAYATOEGG_H
 
-#include <pandatoolbase.h>
-
+#include "pandatoolbase.h"
 #include "mayaFile.h"
-
-#include <somethingToEgg.h>
+#include "somethingToEgg.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MayaToEgg
