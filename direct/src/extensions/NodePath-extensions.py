@@ -267,24 +267,6 @@
             self.setPosHprScale(0,0,0,0,0,0,1,1,1)
 
     # private methods
-    
-    def __getBlend(self, blendType):
-        """__getBlend(self, string)
-        Return the C++ blend class corresponding to blendType string
-        """
-        import LerpBlendHelpers
-
-        if (blendType == "easeIn"):
-            return LerpBlendHelpers.easeIn
-        elif (blendType == "easeOut"):
-            return LerpBlendHelpers.easeOut
-        elif (blendType == "easeInOut"):
-            return LerpBlendHelpers.easeInOut
-        elif (blendType == "noBlend"):
-            return LerpBlendHelpers.noBlend
-        else:
-            raise Exception("Error: NodePath.__getBlend: Unknown blend type")
-
             
     def __lerp(self, functorFunc, duration, blendType, taskName=None):
         """
@@ -296,6 +278,7 @@
         # functor creation is defered so initial state (sampled in functorFunc)
         # will be appropriate for the time the lerp is spawned
         import Task
+        import LerpBlendHelpers
         from TaskManagerGlobal import taskMgr
         
         # upon death remove the functorFunc
@@ -335,7 +318,7 @@
         lerpTask.init = 1
         lerpTask.functorFunc = functorFunc
         lerpTask.duration = duration
-        lerpTask.blendType = self.__getBlend(blendType)
+        lerpTask.blendType = LerpBlendHelpers.getBlend(blendType)
         lerpTask.uponDeath = lerpUponDeath
         
         if (taskName == None):
@@ -351,10 +334,11 @@
         This lerp uses C++ to handle the stepping. Bonus is
         its more efficient, trade-off is there is less control"""
         import AutonomousLerp
+        import LerpBlendHelpers
         # make a lerp that lives in C++ land
         functor = functorFunc()
         lerp = AutonomousLerp.AutonomousLerp(functor, time,
-                              self.__getBlend(blendType),
+                              LerpBlendHelpers.getBlend(blendType),
                               base.eventHandler)
         lerp.start()
         return lerp
