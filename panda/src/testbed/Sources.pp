@@ -131,3 +131,12 @@
 
 #end test_bin_target
 
+#begin test_bin_target
+  #define TARGET gui_demo
+
+  #define SOURCES \
+    gui_demo.cxx
+
+  #define LOCAL_LIBS $[LOCAL_LIBS] gui
+
+#end test_bin_target

@@ -40,8 +40,11 @@
 #include <pta_Colorf.h>
 #include <pta_float.h>
 #include <pt_Node.h>
+#include <modelPool.h>
 
 #include <guiManager.h>
+#include <guiRollover.h>
+#include <guiButton.h>
 
 //From framework
 extern PT(GeomNode) geomnode;
@@ -49,6 +52,23 @@ extern RenderRelation* first_arc;
 
 static void setup_gui(void) {
   GuiManager* mgr = GuiManager::get_ptr(main_win, mak);
+  PT_Node font = ModelPool::load_model("ttf-comic");
+  // test 1
+  //  mgr->add_region(new GuiRegion("test1", 0., 0.25, 0., 0.25));
+  //  mgr->add_label(GuiLabel::make_simple_text_label("test2", font));
+  // test 2
+  //  GuiLabel* l1 = GuiLabel::make_simple_text_label("off", font);
+  //  GuiLabel* l2 = GuiLabel::make_simple_text_label("on", font);
+  //  GuiRollover* r1 = new GuiRollover("test2", l1, l2);
+  //  r1->manage(mgr, event_handler);
+  // test 3
+  GuiLabel* l1 = GuiLabel::make_simple_text_label("up", font);
+  GuiLabel* l2 = GuiLabel::make_simple_text_label("upr", font);
+  GuiLabel* l3 = GuiLabel::make_simple_text_label("down", font);
+  GuiLabel* l4 = GuiLabel::make_simple_text_label("downr", font);
+  GuiLabel* l5 = GuiLabel::make_simple_text_label("none", font);
+  GuiButton* b1 = new GuiButton("test3", l1, l2, l3, l4, l5);
+  b1->manage(mgr, event_handler);
 }
 
 static void event_2(CPT_Event) {

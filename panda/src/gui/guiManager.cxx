@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "guiManager.h"
+#include "config_gui.h"
 
 #include <dataRelation.h>
 #include <renderRelation.h>
@@ -19,14 +20,22 @@ GuiManager::GuiMap* GuiManager::_map = (GuiManager::GuiMap*)0L;
 
 GuiManager* GuiManager::get_ptr(GraphicsWindow* w, MouseAndKeyboard* mak) {
   GuiManager* ret;
-  if (_map == (GuiMap*)0L)
+  if (_map == (GuiMap*)0L) {
+    if (gui_cat->is_debug())
+      gui_cat->debug() << "allocating a manager map" << endl;
     _map = new GuiMap;
+  }
   GuiMap::const_iterator gi;
   gi = _map->find(w);
-  if (gi != _map->end())
+  if (gi != _map->end()) {
     ret = (*gi).second;
-  else {
+    if (gui_cat->is_debug())
+      gui_cat->debug() << "a manager for this window already exists (0x"
+		       << (void*)ret << ")" << endl;
+  } else {
     // going to allocate a new GuiManager for this window
+    if (gui_cat->is_debug())
+      gui_cat->debug() << "allocating a new manager for this window" << endl;
     // first see if there is a mouseWatcher already under the MouseAndKeyboard
     bool has_watcher = false;
     TypeHandle dgt = DataRelation::get_class_type();
@@ -40,6 +49,8 @@ GuiManager* GuiManager::get_ptr(GraphicsWindow* w, MouseAndKeyboard* mak) {
     if (!has_watcher) {
       // there isn't already a mousewatcher in the data graph, so we'll make
       // one and re-parent everything to it.
+      if (gui_cat->is_debug())
+	gui_cat->debug() << "no MouseWatcher found, making one" << endl;
       watcher = new MouseWatcher("GUI watcher");
       DataRelation* tmp = new DataRelation(mak, watcher);
       for (int j=0; j<mak->get_num_children(dgt); ++j) {
@@ -48,7 +59,30 @@ GuiManager* GuiManager::get_ptr(GraphicsWindow* w, MouseAndKeyboard* mak) {
 	  // it's not the node we just created, so reparent it to ours
 	  rel->change_parent(watcher);
       }
-    }
+    } else if (gui_cat->is_debug())
+      gui_cat->debug() << "found a MouseWatcher, don't have to make one"
+		       << endl;
+    // now setup event triggers for the watcher
+    if (has_watcher)
+      gui_cat->warning() << "overwriting existing button down pattern '"
+			 << watcher->get_button_down_pattern()
+			 << "' with 'gui-%r-%b'" << endl;
+    watcher->set_button_down_pattern("gui-%r-%b");
+    if (has_watcher)
+      gui_cat->warning() << "overwriting existing button up pattern '"
+			 << watcher->get_button_up_pattern()
+			 << "' with 'gui-%r-%b-up'" << endl;
+    watcher->set_button_up_pattern("gui-%r-%b");
+    if (has_watcher)
+      gui_cat->warning() << "overwriting existing enter pattern '"
+			 << watcher->get_enter_pattern()
+			 << "' with 'gui-in-%r'" << endl;
+    watcher->set_enter_pattern("gui-in-%r");
+    if (has_watcher)
+      gui_cat->warning() << "overwriting existing exit pattern '"
+			 << watcher->get_leave_pattern()
+			 << "' with 'gui-out-%r'" << endl;
+    watcher->set_leave_pattern("gui-out-%r");
     // next, create a 2d layer for the GUI stuff to live in.
     Node* root2d_top = new NamedNode("GUI_top");
     Node* root2d = new NamedNode("GUI");
@@ -71,9 +105,63 @@ GuiManager* GuiManager::get_ptr(GraphicsWindow* w, MouseAndKeyboard* mak) {
     DisplayRegion *dr = layer->make_display_region();
     nassertv(dr != (DisplayRegion*)0L);
     dr->set_camera(cam);
+    if (gui_cat->is_debug())
+      gui_cat->debug() << "2D layer created" << endl;
     // now make the manager for this window
     ret = new GuiManager(watcher, root2d);
+    if (gui_cat->is_debug())
+      gui_cat->debug() << "new manager allocated (0x" << (void*)ret << ")"
+		       << endl;
     (*_map)[w] = ret;
   }
   return ret;
+}
+
+void GuiManager::add_region(GuiRegion* region) {
+  RegionSet::const_iterator ri;
+  ri = _regions.find(region);
+  if (ri == _regions.end()) {
+    _watcher->add_region(region->get_region());
+    _regions.insert(region);
+  } else
+    gui_cat->warning() << "tried adding region ('" << *region
+		       << "') more then once" << endl;
+}
+
+void GuiManager::add_label(GuiLabel* label) {
+  LabelSet::const_iterator li;
+  li = _labels.find(label);
+  if (li == _labels.end()) {
+    // add it to the scenegraph
+    label->set_arc(new RenderRelation(_root, label->get_geometry()));
+    _labels.insert(label);
+  } else
+    gui_cat->warning() << "tried adding label (0x" << (void*)label
+		       << ") more then once" << endl;
+}
+
+void GuiManager::remove_region(GuiRegion* region) {
+  RegionSet::const_iterator ri;
+  ri = _regions.find(region);
+  if (ri == _regions.end())
+    gui_cat->warning() << "tried removing region ('" << *region
+		       << "') that isn't there" << endl;
+  else {
+    _watcher->remove_region(region->get_region());
+    _regions.erase(ri);
+  }
+}
+
+void GuiManager::remove_label(GuiLabel* label) {
+  LabelSet::const_iterator li;
+  li = _labels.find(label);
+  if (li == _labels.end())
+    gui_cat->warning() << "label (0x" << (void*)label
+		       << ") is not there to be removed" << endl;
+  else {
+    // remove it to the scenegraph
+    remove_arc(label->get_arc());
+    label->set_arc((RenderRelation*)0L);
+    _labels.erase(li);
+  }
 }

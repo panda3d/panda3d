@@ -6,13 +6,29 @@
 #ifndef __GUIREGION_H__
 #define __GUIREGION_H__
 
+#include <pandabase.h>
+#include <mouseWatcherRegion.h>
+#include <pointerTo.h>
+
 // container for active regions of a GUI
 
-class GuiRegion {
+class GuiManager;
+
+class GuiRegion : public Namable {
 private:
   float _left, _right, _bottom, _top;
+  PT(MouseWatcherRegion) _region;
+
+  INLINE GuiRegion(void);
+
+  INLINE MouseWatcherRegion* get_region(void) const;
+
+  friend GuiManager;
 public:
-  INLINE GuiRegion(float, float, float, float);
+  INLINE GuiRegion(const string&, float, float, float, float, bool);
+  ~GuiRegion(void);
+
+  INLINE void trap_clicks(bool);
 };
 
 #include "guiRegion.I"

@@ -3,9 +3,6 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-INLINE GuiManager* GuiManager::get_ptr(void) {
-  if (_singleton == (GuiManager*)0L) {
-    _singleton = new GuiManager;
-  }
-  return _singleton;
+INLINE GuiManager::GuiManager(MouseWatcher* w, Node* n) : _root(n),
+							  _watcher(w) {
 }
