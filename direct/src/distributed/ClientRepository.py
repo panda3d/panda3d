@@ -125,6 +125,10 @@ class ClientRepository(DirectObject.DirectObject):
                 self.tcpConn.setNoDelay(1)
                 self.qcr=QueuedConnectionReader(self.qcm, 0)
                 self.qcr.addConnection(self.tcpConn)
+                minLag = config.GetFloat('min-lag', 0.)
+                maxLag = config.GetFloat('max-lag', 0.)
+                if minLag or maxLag:
+                    self.qcr.startDelay(minLag, maxLag)
                 self.cw=ConnectionWriter(self.qcm, 0)
                 if self.hasProxy:
                     # Now we send an http CONNECT message on that
