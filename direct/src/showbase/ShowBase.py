@@ -38,7 +38,6 @@ class ShowBase(DirectObject.DirectObject):
     notify = directNotify.newCategory("ShowBase")
 
     def __init__(self):
-
         # Get the dconfig object
         self.config = ConfigConfigureGetConfigConfigShowbase
 
