@@ -41,6 +41,7 @@ private:
 
   INLINE GuiChooser(void);
   virtual void recompute_frame(void);
+  void adjust_buttons(void);
 PUBLISHED:
   GuiChooser(const string&, GuiButton*, GuiButton*);
   ~GuiChooser(void);
@@ -50,6 +51,7 @@ PUBLISHED:
   void add_item(GuiItem*);
 
   INLINE int get_curr_item(void) const;
+  void set_curr_item(int);
 
   virtual int freeze(void);
   virtual int thaw(void);
