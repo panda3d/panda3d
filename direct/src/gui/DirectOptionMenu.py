@@ -9,7 +9,7 @@ class DirectOptionMenu(DirectButton):
     To cancel the popup menu click anywhere on the screen outside of the
     popup menu.  No command is executed in this case.
     """
-    def __init__(self, parent = aspect2d, **kw):
+    def __init__(self, parent = None, **kw):
         # Inherits from DirectButton
         optiondefs = (
             # List of items to display on the popup menu

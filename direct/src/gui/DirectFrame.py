@@ -1,7 +1,7 @@
 from DirectGuiBase import *
 
 class DirectFrame(DirectGuiWidget):
-    def __init__(self, parent = aspect2d, **kw):
+    def __init__(self, parent = None, **kw):
         # Inherits from DirectGuiWidget
         # A Direct Frame can have:
         # - A background texture (pass in path to image, or Texture Card)

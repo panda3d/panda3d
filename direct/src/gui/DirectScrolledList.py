@@ -4,7 +4,7 @@ import Task
 import types
 
 class DirectScrolledList(DirectFrame):
-    def __init__(self, parent = aspect2d, **kw):
+    def __init__(self, parent = None, **kw):
 
         self.index = 0
         self.forceHeight = None

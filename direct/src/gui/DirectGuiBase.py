@@ -652,7 +652,8 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     # Determine the default initial state for inactive (or
     # unclickable) components.  If we are in edit mode, these are
     # actually clickable by default.
-    guiEdit = base.config.GetBool('direct-gui-edit', 0)
+    #guiEdit = base.config.GetBool('direct-gui-edit', 0)
+    guiEdit = config.GetBool('direct-gui-edit', 0)
     if guiEdit:
         inactiveInitState = NORMAL
     else:
@@ -660,7 +661,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
 
     guiDict = {}
 
-    def __init__(self, parent = aspect2d, **kw):
+    def __init__(self, parent = None, **kw):
         # Direct gui widgets are node paths
         # Direct gui widgets have:
         # -  stateNodePaths (to hold visible representation of widget)
@@ -712,6 +713,8 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             self.guiItem.setId(self['guiId'])
         self.guiId = self.guiItem.getId()
         # Attach button to parent and make that self
+        if (parent == None):
+            parent = aspect2d
         self.assign(parent.attachNewNode( self.guiItem, self['sortOrder'] ) )
         # Update pose to initial values
         if self['pos']:

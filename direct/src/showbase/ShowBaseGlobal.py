@@ -5,7 +5,10 @@ from ShowBase import *
 CollisionHandlerRayStart = 10.0 # This is a hack, it may be better to use a line instead of a ray.
 
 # Create the showbase instance
-ShowBase()
+# This should be created by the game specific "start" file
+#ShowBase()
+# Instead of creating a show base, assert that one has already been created
+assert(base)
 
 # Set direct notify categories now that we have config
 directNotify.setDconfigLevels()

@@ -7,7 +7,7 @@ class DirectCheckButton(DirectButton):
     to mouse clicks by setting a state of on or off and execute a callback
     function (passing that state through) if defined
     """
-    def __init__(self, parent = aspect2d, **kw):
+    def __init__(self, parent = None, **kw):
         # Inherits from DirectButton
         # A Direct Frame can have:
         # - A background texture (pass in path to image, or Texture Card)

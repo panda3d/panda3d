@@ -1,10 +1,13 @@
-
 # This module redefines the builtin import function with one
 # that prints out every import it does in a hierarchical form
 # Annoying and very noisy, but sometimes useful
 #import VerboseImport
 
 from PandaModules import *
+
+# This needs to be available early for DirectGUI imports
+__builtins__["config"] = ConfigConfigureGetConfigConfigShowbase
+
 from DirectNotifyGlobal import *
 from MessengerGlobal import *
 from TaskManagerGlobal import *
@@ -41,7 +44,8 @@ class ShowBase(DirectObject.DirectObject):
 
     def __init__(self):
         # Get the dconfig object
-        self.config = ConfigConfigureGetConfigConfigShowbase
+        #self.config = ConfigConfigureGetConfigConfigShowbase
+        self.config = config
         # Setup wantVerifyPdb as soon as reasonable:
         Verify.wantVerifyPdb = self.config.GetBool('want-verify-pdb', 0)
         
@@ -240,7 +244,8 @@ class ShowBase(DirectObject.DirectObject):
         __builtins__["taskMgr"] = self.taskMgr
         __builtins__["eventMgr"] = self.eventMgr
         __builtins__["messenger"] = self.messenger
-        __builtins__["config"] = self.config
+        # Config needs to be defined before ShowBase is constructed
+        #__builtins__["config"] = self.config
         __builtins__["run"] = self.run
         __builtins__["ostream"] = Notify.out()
         __builtins__["directNotify"] = directNotify

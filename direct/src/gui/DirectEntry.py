@@ -10,7 +10,7 @@ class DirectEntry(DirectFrame):
     DirectEntry(parent) - Create a DirectGuiWidget which responds
     to keyboard buttons
     """
-    def __init__(self, parent = aspect2d, **kw):
+    def __init__(self, parent = None, **kw):
         # Inherits from DirectFrame
         # A Direct Frame can have:
         # - A background texture (pass in path to image, or Texture Card)

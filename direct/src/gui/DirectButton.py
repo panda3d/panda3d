@@ -11,7 +11,7 @@ class DirectButton(DirectFrame):
     DirectButton(parent) - Create a DirectGuiWidget which responds
     to mouse clicks and execute a callback function if defined
     """
-    def __init__(self, parent = aspect2d, **kw):
+    def __init__(self, parent = None, **kw):
         # Inherits from DirectFrame
         # A Direct Frame can have:
         # - A background texture (pass in path to image, or Texture Card)

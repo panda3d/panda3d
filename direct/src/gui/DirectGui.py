@@ -3,10 +3,11 @@ from OnscreenText import *
 from OnscreenGeom import *
 from OnscreenImage import *
 
+# MPG DirectStart should call this?
 # Set up default font
-defaultFont = getDefaultFont()
-if defaultFont:
-    PGItem.getTextNode().setFont(defaultFont)
+#defaultFont = getDefaultFont()
+#if defaultFont:
+#    PGItem.getTextNode().setFont(defaultFont)
 
 # Direct Gui Classes
 from DirectFrame import *

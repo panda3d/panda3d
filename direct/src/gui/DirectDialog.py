@@ -35,7 +35,7 @@ class DirectDialog(DirectFrame):
     AllDialogs = {}
     PanelIndex = 0
 
-    def __init__(self, parent = aspect2d, **kw):
+    def __init__(self, parent = None, **kw):
         """
         DirectDialog(kw)
 
@@ -331,7 +331,7 @@ class DirectDialog(DirectFrame):
         DirectFrame.destroy(self)
 
 class OkDialog(DirectDialog):
-    def __init__(self, parent = aspect2d, **kw):
+    def __init__(self, parent = None, **kw):
         # Inherits from DirectFrame
         optiondefs = (
             # Define type of DirectGuiWidget
@@ -344,7 +344,7 @@ class OkDialog(DirectDialog):
         self.initialiseoptions(OkDialog)
 
 class OkCancelDialog(DirectDialog):
-    def __init__(self, parent = aspect2d, **kw):
+    def __init__(self, parent = None, **kw):
         # Inherits from DirectFrame
         optiondefs = (
             # Define type of DirectGuiWidget
@@ -357,7 +357,7 @@ class OkCancelDialog(DirectDialog):
         self.initialiseoptions(OkCancelDialog)
 
 class YesNoDialog(DirectDialog):
-    def __init__(self, parent = aspect2d, **kw):
+    def __init__(self, parent = None, **kw):
         # Inherits from DirectFrame
         optiondefs = (
             # Define type of DirectGuiWidget
@@ -370,7 +370,7 @@ class YesNoDialog(DirectDialog):
         self.initialiseoptions(YesNoDialog)
 
 class YesNoCancelDialog(DirectDialog):
-    def __init__(self, parent = aspect2d, **kw):
+    def __init__(self, parent = None, **kw):
         # Inherits from DirectFrame
         optiondefs = (
             # Define type of DirectGuiWidget
@@ -384,7 +384,7 @@ class YesNoCancelDialog(DirectDialog):
         self.initialiseoptions(YesNoCancelDialog)
 
 class RetryCancelDialog(DirectDialog):
-    def __init__(self, parent = aspect2d, **kw):
+    def __init__(self, parent = None, **kw):
         # Inherits from DirectFrame
         optiondefs = (
             # Define type of DirectGuiWidget
