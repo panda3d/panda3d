@@ -401,9 +401,16 @@ read_prc_line(const string &line) {
   }
   size_t value_begin = p;
 
-  // The value extends from here to the end of the line, so trim
-  // whitespace backwards off from the end of the line.
-  p = line.length();
+  // Is there an embedded comment on this line?
+  p = line.find(" #", value_begin);
+  if (p == string::npos) {
+    // No, the value extends all the way to the end of the line.
+    p = line.length();
+  }
+
+  // The value extends from here to the end of the line (or to the
+  // start of the embedded comment), so trim whitespace backwards off
+  // from there.
   while (p > value_begin && isspace((unsigned char)line[p - 1])) {
     p--;
   }

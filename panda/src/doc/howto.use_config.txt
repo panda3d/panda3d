@@ -44,8 +44,10 @@ This specifies that the variable "load-display" should have the value
 "pandagl".
 
 Comments may also appear in the file; they are introduced by a leading
-hash mark (#).  A comment must be on a line by itself; you may not
-place a comment on the same line with a variable definition.
+hash mark (#).  A comment may be on a line by itself, or it may be on
+the same line following a variable definition; if it is on the same
+line as a variable definition, the hash mark must be preceded by at
+least one space to separate it from the definition.
 
 
 The legal values that you may specify for any particular variable
