@@ -57,6 +57,7 @@ class ClientRepository(DirectObject.DirectObject):
         if self.tcpConn == None:
             return None
         else:
+            self.tcpConn.setNoDelay(1)
             self.qcr=QueuedConnectionReader(self.qcm, 0)
             self.qcr.addConnection(self.tcpConn)
             self.cw=ConnectionWriter(self.qcm, 0)
