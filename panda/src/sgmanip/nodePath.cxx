@@ -2566,6 +2566,7 @@ r_get_net_transitions(const ArcComponent *comp,
 ////////////////////////////////////////////////////////////////////
 string NodePath::
 format_node_name(Node *dnode) const {
+  nassertr(dnode != (Node *)NULL, string());
   if (dnode == (Node *)NULL) {
     return "(NULL)";
   }
