@@ -65,129 +65,46 @@ class ShowBase:
         fsmRedefine = self.config.GetBool('fsm-redefine', 0)
         State.FsmRedefine = fsmRedefine
 
-        self.renderTop = NodePath(NamedNode('renderTop'))
-        self.render = self.renderTop.attachNewNode('render')
-
-        # Set a default "off color" (i.e. use poly color) for color transitions
-        self.render.setColorOff()
-
         self.hidden = NodePath(NamedNode('hidden'))
-        
-        self.dataRoot = NodePath(NamedNode('dataRoot'), DataRelation.getClassType())
-        # Cache the node so we do not ask for it every frame
-        self.dataRootNode = self.dataRoot.node()
-        self.dataUnused = NodePath(NamedNode('dataUnused'), DataRelation.getClassType())
-        self.pipe = makeGraphicsPipe()
-        chanConfig = makeGraphicsWindow(self.pipe, self.render.arc())
-        self.win = chanConfig.getWin()
 
-        # Now that we've assigned a window, assign an exitfunc.
-        self.oldexitfunc = getattr(sys, 'exitfunc', None)
-        sys.exitfunc = self.exitfunc
-
-        # cameraList is a list of camera group nodes.  There may
-        # be more than one display region/camera node beneath each
-        # one.
-        self.cameraList = []
-        for i in range(chanConfig.getNumGroups()):
-            self.cameraList.append(self.render.attachNewNode(
-                chanConfig.getGroupNode(i)))
-        # this is how we know which display region cameras belong to which
-        # camera group.  display region i belongs to group self.groupList[i]
-        self.groupList = []
-        for i in range(chanConfig.getNumDrs()):
-            self.groupList.append(chanConfig.getGroupMembership(i))
-        self.camera = self.cameraList[0]
+        self.setupRender()
+        self.setupRender2d()
+        self.setupDataGraph()        
 
         # This is a placeholder for a CollisionTraverser.  If someone
         # stores a CollisionTraverser pointer here, we'll traverse it
         # in the igloop task.
         self.cTrav = 0
 
-        # This is a list of cams associated with the display region's cameras
+        # base.win is the main, or only window; base.winList is a list of
+        # *all* windows.  Similarly with base.pipeList and base.camList.
+        self.win = None
+        self.winList = []
+        self.pipe = None
+        self.pipeList = []
+        self.cam = None
         self.camList = []
-        for camera in self.cameraList:
-            self.camList.append( camera.find('**/+Camera') )
-        # Set the default camera
-        self.cam = self.camera.find('**/+Camera')
+        self.camNode = None
+        self.camLens = None
 
-        # If you need to get a handle to the camera node itself, use
-        # self.camNode.
-        self.camNode = self.cam.node()
-        # If you need to adjust camera parameters, like fov or
-        # near/far clipping planes, use self.camLens
-        self.camLens = self.camNode.getLens()
+        # base.camera is a little different; rather than referring to
+        # base.cameraList[0], it is instead the parent node of all
+        # cameras in base.cameraList.  That way, multiple cameras can
+        # easily be dragged around by moving the one node.
+        self.camera = self.render.attachNewNode('camera')
+        self.cameraList = []
+        self.groupList = []
+        self.camera2d = self.render2d.attachNewNode('camera2d')
 
-        # Set up a 2-d layer for drawing things behind Gui labels.
-        self.render2d = NodePath(setupPanda2d(self.win, "render2d"))
+        # Now that we've set up the window structures, assign an exitfunc.
+        self.oldexitfunc = getattr(sys, 'exitfunc', None)
+        sys.exitfunc = self.exitfunc
 
-        # The normal 2-d layer has an aspect ratio that matches the
-        # window, but its coordinate system is square.  This means
-        # anything we parent to render2d gets stretched.  For things
-        # where that makes a difference, we set up aspect2d, which
-        # scales things back to the right aspect ratio.
-
-        # For now, we assume that the window will have an aspect ratio
-        # matching that of a traditional PC screen (w / h) = (4 / 3)
-        self.aspectRatio = self.config.GetFloat('aspect-ratio', (4.0 / 3.0))
-        self.aspect2d = self.render2d.attachNewNode(PGTop("aspect2d"))
-        self.aspect2d.setScale(1.0 / self.aspectRatio, 1.0, 1.0)
-
-        # And let's enforce that aspect ratio on the camera.
-        self.camLens.setAspectRatio(self.aspectRatio)
-
-        # It's important to know the bounds of the aspect2d screen.
-        self.a2dTop = 1.0
-        self.a2dBottom = -1.0
-        self.a2dLeft = -self.aspectRatio
-        self.a2dRight = self.aspectRatio
-
-        # We create both a MouseAndKeyboard object and a MouseWatcher object
-        # for the window.  The MouseAndKeyboard generates mouse events and
-        # mouse button/keyboard events; the MouseWatcher passes them through
-        # unchanged when the mouse is not over a 2-d button, and passes
-        # nothing through when the mouse *is* over a 2-d button.  Therefore,
-        # objects that don't want to get events when the mouse is over a
-        # button, like the driveInterface, should be parented to
-        # mouseWatcher, while objects that want events in all cases, like the
-        # chat interface, should be parented to mak.
-        self.mak = self.dataRoot.attachNewNode(MouseAndKeyboard(self.win, 0, 'mak'))
-        self.mouseWatcherNode = MouseWatcher('mouseWatcher')
-        self.mouseWatcher = self.mak.attachNewNode(self.mouseWatcherNode)
-        mb = self.mouseWatcherNode.getModifierButtons()
-        mb.addButton(KeyboardButton.shift())
-        mb.addButton(KeyboardButton.control())
-        mb.addButton(KeyboardButton.alt())
-        self.mouseWatcherNode.setModifierButtons(mb)
-
-        # We also create a DataValve object above the trackball/drive
-        # interface, which will allow us to switch some of the mouse
-        # control, without switching all of it, to another object
-        # later (for instance, to enable OOBE mode--see oobe(),
-        # below.)
-        self.mouseValve = self.mouseWatcher.attachNewNode(DataValve('mouseValve'))
-        # This Control object can be used to turn on and off mouse &
-        # keyboard messages to the DriveInterface.
-        self.mouseControl = DataValve.Control()
-        self.mouseValve.node().setControl(0, self.mouseControl)
-
-        # This Control object is always kept on, handy to have.
-        self.onControl = DataValve.Control()
-
-        # Now we have the main trackball & drive interfaces.
-        # useTrackball() and useDrive() switch these in and out; only
-        # one is in use at a given time.
-        self.trackball = self.dataUnused.attachNewNode(Trackball('trackball'))
-        self.drive = self.dataUnused.attachNewNode(DriveInterface('drive'))
-        self.mouse2cam = self.dataUnused.attachNewNode(Transform2SG('mouse2cam'))
-        self.mouse2cam.node().setArc(self.camera.arc())
-        self.useDrive()
-
-        self.buttonThrower = self.mouseWatcher.attachNewNode(ButtonThrower())
-
-        # Set up gui mouse watcher
-        self.aspect2d.node().setMouseWatcher(self.mouseWatcherNode)
-        self.mouseWatcherNode.addRegion(PGMouseWatcherBackground())
+        # Open the default rendering window.
+        if self.config.GetBool('open-default-window', 1):
+            self.openWindow()
+            self.setupMouse(self.win)
+            self.makeCamera2d(self.win, -1, 1, -1, 1)
 
         self.loader = Loader.Loader(self)
         self.eventMgr = eventMgr
@@ -248,12 +165,233 @@ class ShowBase:
         is closed cleanly, so that we free system resources, restore
         the desktop and keyboard functionality, etc.
         """
-        self.win.closeWindow()
+        for win in self.winList:
+            win.closeWindow()
         del self.win
+        del self.winList
         del self.pipe
 
         if self.oldexitfunc:
             self.oldexitfunc()
+
+    def openWindow(self):
+        """openWindow(self)
+
+        Invokes ChanConfig to create a window and adds it to the list
+        of windows that are to be updated every frame.
+
+        """
+        pipe = makeGraphicsPipe()
+        chanConfig = makeGraphicsWindow(pipe, self.render.arc())
+        win = chanConfig.getWin()
+
+        if self.pipe == None:
+            self.pipe = pipe
+        if self.win == None:
+            self.win = win
+
+        self.pipeList.append(pipe)
+        self.winList.append(win)
+
+        self.getCameras(chanConfig)
+
+
+    def setupRender(self):
+        """setupRender(self)
+
+        Creates the render scene graph, the primary scene graph for
+        rendering 3-d geometry.
+        """
+        self.renderTop = NodePath(NamedNode('renderTop'))
+        self.render = self.renderTop.attachNewNode('render')
+
+        # Set a default "off color" (i.e. use poly color) for color transitions
+        self.render.setColorOff()
+
+    def setupRender2d(self):
+        """setupRender2d(self)
+
+        Creates the render2d scene graph, the primary scene graph for
+        2-d objects and gui elements that are superimposed over the
+        3-d geometry in the window.
+        """
+
+        self.render2dTop = NodePath(NamedNode('render2dTop'))
+        self.render2d = self.render2dTop.attachNewNode('render2d')
+
+        # Set up some overrides to turn off certain properties which
+        # we probably won't need for 2-d objects.
+
+        # It's particularly important to turn off the depth test,
+        # since we'll be keeping the same depth buffer already filled
+        # by the previously-drawn 3-d scene--we don't want to pay for
+        # a clear operation, but we also don't want to collide with
+        # that depth buffer.
+        dt = DepthTestTransition(DepthTestProperty.MNone)
+        dw = DepthWriteTransition.off()
+        lt = LightTransition.allOff()
+        self.render2d.arc().setTransition(dt, 1)
+        self.render2d.arc().setTransition(dw, 1)
+        self.render2d.arc().setTransition(lt, 1)
+
+        self.render2d.setMaterialOff(1)
+        self.render2d.setTwoSided(1, 1)
+        
+        # The normal 2-d layer has an aspect ratio that matches the
+        # window, but its coordinate system is square.  This means
+        # anything we parent to render2d gets stretched.  For things
+        # where that makes a difference, we set up aspect2d, which
+        # scales things back to the right aspect ratio.
+
+        # For now, we assume that the window will have an aspect ratio
+        # matching that of a traditional PC screen (w / h) = (4 / 3)
+        self.aspectRatio = self.config.GetFloat('aspect-ratio', (4.0 / 3.0))
+        self.aspect2d = self.render2d.attachNewNode(PGTop("aspect2d"))
+        self.aspect2d.setScale(1.0 / self.aspectRatio, 1.0, 1.0)
+
+        # It's important to know the bounds of the aspect2d screen.
+        self.a2dTop = 1.0
+        self.a2dBottom = -1.0
+        self.a2dLeft = -self.aspectRatio
+        self.a2dRight = self.aspectRatio
+
+    def makeCamera2d(self, win, left, right, bottom, top):
+        """makeCamera2d(self)
+
+        Makes a new camera2d associated with the indicated window, and
+        assigns it to render the indicated subrectangle of render2d.
+        """
+
+        # First, we need to make a new layer on the window.
+        chan = win.getChannel(0)
+        layer = chan.makeLayer()
+
+        # And make a display region to cover the whole layer.
+        dr = layer.makeDisplayRegion()
+
+        # Now make a new Camera node.
+        cam2dNode = Camera('cam2d')
+        lens = OrthographicLens()
+        lens.setFilmSize(right - left, top - bottom)
+        lens.setFilmOffset((right + left) / 2.0, (top + bottom) / 2.0)
+        lens.setNearFar(-1000, 1000)
+        cam2dNode.setLens(lens)
+        cam2dNode.setScene(self.render2d.getTopNode())
+        dr.setCamera(cam2dNode)
+
+        camera2d = self.camera2d.attachNewNode(cam2dNode)
+        return camera2d
+
+
+    def setupDataGraph(self):
+        """setupDataGraph(self)
+
+        Creates the data graph and populates it with the basic input
+        devices.
+        """
+        
+        self.dataRoot = NodePath(NamedNode('dataRoot'), DataRelation.getClassType())
+        # Cache the node so we do not ask for it every frame
+        self.dataRootNode = self.dataRoot.node()
+        self.dataUnused = NodePath(NamedNode('dataUnused'), DataRelation.getClassType())
+
+
+    def setupMouse(self, win):
+        """setupMouse(self, win)
+
+        Creates the structures necessary to monitor the mouse input,
+        using the indicated window.  This should only be called once
+        per application.
+        """
+        
+        # We create both a MouseAndKeyboard object and a MouseWatcher object
+        # for the window.  The MouseAndKeyboard generates mouse events and
+        # mouse button/keyboard events; the MouseWatcher passes them through
+        # unchanged when the mouse is not over a 2-d button, and passes
+        # nothing through when the mouse *is* over a 2-d button.  Therefore,
+        # objects that don't want to get events when the mouse is over a
+        # button, like the driveInterface, should be parented to
+        # mouseWatcher, while objects that want events in all cases, like the
+        # chat interface, should be parented to mak.
+        self.mak = self.dataRoot.attachNewNode(MouseAndKeyboard(win, 0, 'mak'))
+        self.mouseWatcherNode = MouseWatcher('mouseWatcher')
+        self.mouseWatcher = self.mak.attachNewNode(self.mouseWatcherNode)
+        mb = self.mouseWatcherNode.getModifierButtons()
+        mb.addButton(KeyboardButton.shift())
+        mb.addButton(KeyboardButton.control())
+        mb.addButton(KeyboardButton.alt())
+        self.mouseWatcherNode.setModifierButtons(mb)
+
+        # We also create a DataValve object above the trackball/drive
+        # interface, which will allow us to switch some of the mouse
+        # control, without switching all of it, to another object
+        # later (for instance, to enable OOBE mode--see oobe(),
+        # below.)
+        self.mouseValve = self.mouseWatcher.attachNewNode(DataValve('mouseValve'))
+        # This Control object can be used to turn on and off mouse &
+        # keyboard messages to the DriveInterface.
+        self.mouseControl = DataValve.Control()
+        self.mouseValve.node().setControl(0, self.mouseControl)
+
+        # This Control object is always kept on, handy to have.
+        self.onControl = DataValve.Control()
+
+        # Now we have the main trackball & drive interfaces.
+        # useTrackball() and useDrive() switch these in and out; only
+        # one is in use at a given time.
+        self.trackball = self.dataUnused.attachNewNode(Trackball('trackball'))
+        self.drive = self.dataUnused.attachNewNode(DriveInterface('drive'))
+        self.mouse2cam = self.dataUnused.attachNewNode(Transform2SG('mouse2cam'))
+        self.mouse2cam.node().setArc(self.camera.arc())
+        self.useDrive()
+
+        self.buttonThrower = self.mouseWatcher.attachNewNode(ButtonThrower())
+
+
+        # Tell the gui system about our new mouse watcher.
+        self.aspect2d.node().setMouseWatcher(self.mouseWatcherNode)
+        self.mouseWatcherNode.addRegion(PGMouseWatcherBackground())
+
+
+    def getCameras(self, chanConfig):
+        """getCameras(self, chanConfig)
+
+        Extracts the camera(s) out of the ChanConfig record, parents
+        them all to base.camera, and adds them to base.cameraList.
+        """
+
+        # cameraList is a list of camera group nodes.  There may
+        # be more than one display region/camera node beneath each
+        # one.
+        for i in range(chanConfig.getNumGroups()):
+            camera = self.camera.attachNewNode(chanConfig.getGroupNode(i))
+            cam = camera.find('**/+Camera')
+            lens = cam.node().getLens()
+
+            # Enforce our expected aspect ratio, overriding whatever
+            # nonsense ChanConfig put in there.
+            lens.setAspectRatio(self.aspectRatio)
+            
+            self.cameraList.append(camera)
+            self.camList.append(cam)
+            
+        # this is how we know which display region cameras belong to which
+        # camera group.  display region i belongs to group self.groupList[i]
+        for i in range(chanConfig.getNumDrs()):
+            self.groupList.append(chanConfig.getGroupMembership(i))
+
+        # Set the default camera
+        if self.cam == None:
+            self.cam = self.camList[0]
+
+            # If you need to get a handle to the camera node itself,
+            # use self.camNode.
+            self.camNode = self.cam.node()
+
+            # If you need to adjust camera parameters, like fov or
+            # near/far clipping planes, use self.camLens.
+            self.camLens = self.camNode.getLens()
+
 
     def getAlt(self):
         return base.mouseWatcherNode.getModifierButtons().isDown(
@@ -376,7 +514,8 @@ class ShowBase:
         if self.cTrav:
             self.cTrav.traverse(self.render)
         # Finally, render the frame.
-        self.win.update()
+        for win in self.winList:
+            win.update()
         globalClock.tick()
         return Task.cont
 
