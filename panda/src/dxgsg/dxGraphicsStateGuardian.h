@@ -130,11 +130,6 @@ public:
   virtual void apply_material(const Material *material);
   virtual void apply_fog(Fog *fog);
 
-  virtual void apply_light(PointLight* light);
-  virtual void apply_light(DirectionalLight* light);
-  virtual void apply_light(Spotlight* light);
-  virtual void apply_light(AmbientLight* light);
-
   virtual void issue_transform(const TransformTransition *attrib);
   virtual void issue_tex_matrix(const TexMatrixTransition *attrib);
   virtual void issue_color(const ColorTransition *attrib);

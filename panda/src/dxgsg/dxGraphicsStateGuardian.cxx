@@ -4689,13 +4689,13 @@ apply_fog(Fog *fog) {
     }
 }
 
+#if 0
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::apply_light
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::apply_light( PointLight* light ) {
-#if 0
     // The light position will be relative to the current matrix, so
     // we have to know what the current matrix is.  Find a better
     // solution later.
@@ -4719,7 +4719,6 @@ void DXGraphicsStateGuardian::apply_light( PointLight* light ) {
     alight.dvAttenuation2 = (D3DVALUE)light->get_quadratic_attenuation();
     
     HRESULT res = scrn.pD3DDevice->SetLight(_cur_light_id, &alight);
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4728,7 +4727,6 @@ void DXGraphicsStateGuardian::apply_light( PointLight* light ) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::apply_light( DirectionalLight* light ) {
-#if 0
     // The light position will be relative to the current matrix, so
     // we have to know what the current matrix is.  Find a better
     // solution later.
@@ -4756,7 +4754,6 @@ void DXGraphicsStateGuardian::apply_light( DirectionalLight* light ) {
     HRESULT res = scrn.pD3DDevice->SetLight(_cur_light_id, &alight);
 //    scrn.pD3DDevice->LightEnable( _cur_light_id, TRUE );
 //    scrn.pD3DDevice->SetRenderState( D3DRENDERSTATE_LIGHTING, TRUE );
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4765,7 +4762,6 @@ void DXGraphicsStateGuardian::apply_light( DirectionalLight* light ) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::apply_light( Spotlight* light ) {
-#if 0
     // The light position will be relative to the current matrix, so
     // we have to know what the current matrix is.  Find a better
     // solution later.
@@ -4843,8 +4839,8 @@ void DXGraphicsStateGuardian::apply_light( Spotlight* light ) {
     HRESULT res = scrn.pD3DDevice->SetLight(_cur_light_id, &alight);
 
 #endif              // WBD_GL_MODE
-#endif
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::issue_transform
