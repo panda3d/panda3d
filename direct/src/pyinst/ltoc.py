@@ -1,5 +1,5 @@
 import os, sys, UserList
-from MEInc.Dist import finder, tocfilter, resource
+import finder, tocfilter, resource
 
 class lTOC(UserList.UserList):
     """ A class for managing lists of resources.

@@ -98,11 +98,12 @@ class PYZTarget(Target):
     def __init__(self, cfg, sectnm, cnvrts):
         Target.__init__(self, cfg, sectnm, cnvrts)
         # to use a PYZTarget, you'll need imputil and archive 
-        archivebuilder.GetCompiled([os.path.join(pyinsthome, 'support', 'imputil.py')])
-        imputil = resource.makeresource('imputil.py', [os.path.join(pyinsthome, 'support')])
+        archivebuilder.GetCompiled([os.path.join(pyinsthome, 'imputil.py')])
+        print "pyinsthome:", pyinsthome
+        imputil = resource.makeresource('imputil.py', [pyinsthome])
         self._dependencies.append(imputil)
-        archivebuilder.GetCompiled([os.path.join(pyinsthome, 'support', 'archive_rt.py')])
-        archmodule = resource.makeresource('archive_rt.py', [os.path.join(pyinsthome, 'support')]) 
+        archivebuilder.GetCompiled([os.path.join(pyinsthome, 'archive_rt.py')])
+        archmodule = resource.makeresource('archive_rt.py', [pyinsthome]) 
         self._dependencies.merge(archmodule.dependencies())
         self._dependencies.append(archmodule)
         self.toc.addFilter(archmodule)
@@ -244,8 +245,8 @@ class ArchiveTarget(CollectTarget):
     usefullname = 1
     def __init__(self, cfg, sectnm, cnvrts):
         CollectTarget.__init__(self, cfg, sectnm, cnvrts)  
-        archivebuilder.GetCompiled([os.path.join(pyinsthome, 'support', 'carchive_rt.py')])
-        carchmodule = resource.makeresource('carchive_rt.py', [os.path.join(pyinsthome, 'support')])
+        archivebuilder.GetCompiled([os.path.join(pyinsthome, 'carchive_rt.py')])
+        carchmodule = resource.makeresource('carchive_rt.py', [pyinsthome])
         self._dependencies.merge(carchmodule.dependencies())
         self._dependencies.append(carchmodule)
 
@@ -456,7 +457,7 @@ def main(opts, args):
     global pyinsthome
     global copyFile
     pyinsthome = os.path.abspath(os.path.dirname(sys.argv[0]))
-    sys.path.insert(0, os.path.join(pyinsthome, 'support'))
+    # sys.path.insert(0, os.path.join(pyinsthome, 'support'))
     import installutils
     copyFile = installutils.copyFile
     global logfile
