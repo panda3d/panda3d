@@ -40,6 +40,21 @@ wglGraphicsPipe::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsPipe::get_interface_name
+//       Access: Published, Virtual
+//  Description: Returns the name of the rendering interface
+//               associated with this GraphicsPipe.  This is used to
+//               present to the user to allow him/her to choose
+//               between several possible GraphicsPipes available on a
+//               particular platform, so the name should be meaningful
+//               and unique for a given platform.
+////////////////////////////////////////////////////////////////////
+string wglGraphicsPipe::
+get_interface_name() const {
+  return "OpenGL";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsPipe::pipe_constructor
 //       Access: Public, Static
 //  Description: This function is passed to the GraphicsPipeSelection

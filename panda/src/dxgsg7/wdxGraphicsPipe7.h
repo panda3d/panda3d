@@ -32,6 +32,7 @@ public:
   wdxGraphicsPipe7();
   virtual ~wdxGraphicsPipe7();
 
+  virtual string get_interface_name() const;
   static PT(GraphicsPipe) pipe_constructor();
 
 protected:

@@ -45,6 +45,7 @@ public:
   wdxGraphicsPipe8();
   virtual ~wdxGraphicsPipe8();
 
+  virtual string get_interface_name() const;
   static PT(GraphicsPipe) pipe_constructor();
 
 protected:
@@ -61,7 +62,6 @@ private:
 private:
   HINSTANCE _hDDrawDLL;
   HINSTANCE _hD3D8_DLL;
-  bool _is_valid;
 
   typedef LPDIRECT3D8 (WINAPI *Direct3DCreate8_ProcPtr)(UINT SDKVersion);
   typedef HRESULT (WINAPI * LPDIRECTDRAWCREATEEX)(GUID FAR * lpGuid, LPVOID *lplpDD, REFIID iid, IUnknown FAR *pUnkOuter);

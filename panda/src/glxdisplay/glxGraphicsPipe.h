@@ -43,6 +43,7 @@ public:
   glxGraphicsPipe(const string &display = string());
   virtual ~glxGraphicsPipe();
 
+  virtual string get_interface_name() const;
   static PT(GraphicsPipe) pipe_constructor();
 
   INLINE Display *get_display() const;

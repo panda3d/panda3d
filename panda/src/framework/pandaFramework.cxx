@@ -544,26 +544,15 @@ make_window_framework() {
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
 make_default_pipe() {
-  // We use the GraphicsPipe factory to make us a renderable pipe
-  // without knowing exactly what kind of pipes we have available.  We
-  // don't care, so long as we can render to it interactively.
-
   // This depends on the shared library or libraries (DLL's to you
   // Windows folks) that have been loaded in at runtime from the
-  // load-display Configrc variable.
+  // load-display and/or aux-display Configrc variables.
   GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
-  selection->resolve_modules();
-
-  nout << "Known pipe types:" << endl;
-  int num_pipe_types = selection->get_num_pipe_types();
-  for (int i = 0; i < num_pipe_types; i++) {
-    nout << "  " << selection->get_pipe_type(i) << "\n";
-  }
-
+  selection->print_pipe_types();
   _default_pipe = selection->make_default_pipe();
 
   if (_default_pipe == (GraphicsPipe*)NULL) {
-    nout << "No interactive pipe is available!  Check your Configrc!\n";
+    nout << "No graphics pipe is available!  Check your Configrc!\n";
   }
 }
 

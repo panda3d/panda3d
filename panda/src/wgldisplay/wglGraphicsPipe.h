@@ -33,6 +33,7 @@ public:
   wglGraphicsPipe();
   virtual ~wglGraphicsPipe();
 
+  virtual string get_interface_name() const;
   static PT(GraphicsPipe) pipe_constructor();
 
 protected:
