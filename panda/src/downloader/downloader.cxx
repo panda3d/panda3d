@@ -115,6 +115,8 @@ connect_to_server_by_proxy(const string &proxy_name, uint proxy_port,
 int Downloader::
 connect_to_server(const string &name, uint port) {
 
+  _use_proxy = false;
+
 #if defined(WIN32)
   if (_TCP_stack_initialized == false) {
     WSAData mydata;
