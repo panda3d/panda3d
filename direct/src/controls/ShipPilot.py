@@ -205,69 +205,80 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             self.actorNode.getPhysicsObject().setOriented(1)
             self.actorNode.getPhysical(0).setViscosity(0.1)
 
-        if not hasattr(self, "phys"):
-            self.phys=PhysicsManager.PhysicsManager()
-            
-            fn=ForceNode("ship gravity")
+        if hasattr(self, "phys"):
+            del self.phys
+            for i in self.nodes:
+                i.removeNode()
+
+        self.nodes = []
+        self.phys=PhysicsManager.PhysicsManager()
+        
+        fn=ForceNode("ship gravity")
+        fnp=NodePath(fn)
+        #fnp.reparentTo(physicsActor)
+        fnp.reparentTo(render)
+        self.nodes.append(fnp)
+        gravity=LinearVectorForce(0.0, 0.0, self.__gravity)
+        fn.addForce(gravity)
+        self.phys.addLinearForce(gravity)
+        self.gravity = gravity
+        
+        fn=ForceNode("ship keel")
+        fnp=NodePath(fn)
+        #fnp.reparentTo(physicsActor)
+        fnp.reparentTo(render)
+        self.nodes.append(fnp)
+        self.keel=AngularVectorForce(0.0, 0.0, 80.0)
+        fn.addForce(self.keel)
+        self.phys.addAngularForce(self.keel)
+        
+        fn=ForceNode("ship priorParent")
+        fnp=NodePath(fn)
+        fnp.reparentTo(render)
+        self.nodes.append(fnp)
+        priorParent=LinearVectorForce(0.0, 0.0, 0.0)
+        fn.addForce(priorParent)
+        self.phys.addLinearForce(priorParent)
+        self.priorParentNp = fnp
+        self.priorParent = priorParent
+        
+        if 1:
+            fn=ForceNode("ship viscosity")
             fnp=NodePath(fn)
             #fnp.reparentTo(physicsActor)
             fnp.reparentTo(render)
-            gravity=LinearVectorForce(0.0, 0.0, self.__gravity)
-            fn.addForce(gravity)
-            self.phys.addLinearForce(gravity)
-            self.gravity = gravity
+            self.nodes.append(fnp)
+            self.avatarViscosity=LinearFrictionForce(0.0, 1.0, 0)
+            #self.avatarViscosity.setCoef(0.9)
+            fn.addForce(self.avatarViscosity)
+            self.phys.addLinearForce(self.avatarViscosity)
 
-            fn=ForceNode("ship keel")
-            fnp=NodePath(fn)
-            #fnp.reparentTo(physicsActor)
-            fnp.reparentTo(render)
-            self.keel=AngularVectorForce(0.0, 0.0, 80.0)
-            fn.addForce(self.keel)
-            self.phys.addAngularForce(self.keel)
+        self.phys.attachLinearIntegrator(LinearEulerIntegrator())
+        #*#self.phys.attachAngularIntegrator(AngularEulerIntegrator())
+        self.phys.attachPhysicalnode(physicsActor.node())
+        
+        self.momentumForce=LinearVectorForce(0.0, 0.0, 0.0)
+        fn=ForceNode("ship momentum")
+        fnp=NodePath(fn)
+        fnp.reparentTo(render)
+        self.nodes.append(fnp)
+        fn.addForce(self.momentumForce)
+        self.phys.addLinearForce(self.momentumForce)
             
-            fn=ForceNode("ship priorParent")
-            fnp=NodePath(fn)
-            fnp.reparentTo(render)
-            priorParent=LinearVectorForce(0.0, 0.0, 0.0)
-            fn.addForce(priorParent)
-            self.phys.addLinearForce(priorParent)
-            self.priorParentNp = fnp
-            self.priorParent = priorParent
-
-            if 1:
-                fn=ForceNode("ship viscosity")
-                fnp=NodePath(fn)
-                #fnp.reparentTo(physicsActor)
-                fnp.reparentTo(render)
-                self.avatarViscosity=LinearFrictionForce(0.0, 1.0, 0)
-                #self.avatarViscosity.setCoef(0.9)
-                fn.addForce(self.avatarViscosity)
-                self.phys.addLinearForce(self.avatarViscosity)
-
-            self.phys.attachLinearIntegrator(LinearEulerIntegrator())
-            #*#self.phys.attachAngularIntegrator(AngularEulerIntegrator())
-            self.phys.attachPhysicalnode(physicsActor.node())
-
-            self.momentumForce=LinearVectorForce(0.0, 0.0, 0.0)
-            fn=ForceNode("ship momentum")
-            fnp=NodePath(fn)
-            fnp.reparentTo(render)
-            fn.addForce(self.momentumForce)
-            self.phys.addLinearForce(self.momentumForce)
+        self.acForce=LinearVectorForce(0.0, 0.0, 0.0)
+        fn=ForceNode("ship avatarControls")
+        fnp=NodePath(fn)
+        fnp.reparentTo(render)
+        self.nodes.append(fnp)
+        fn.addForce(self.acForce)
+        self.phys.addLinearForce(self.acForce)
+        #self.phys.removeLinearForce(self.acForce)
+        #fnp.remove()
+        
+        if 0 or self.useHeightRay:
+            #self.setupRay(self.floorBitmask, self.avatarRadius)
+            self.setupRay(self.floorBitmask, 0.0)
             
-            self.acForce=LinearVectorForce(0.0, 0.0, 0.0)
-            fn=ForceNode("ship avatarControls")
-            fnp=NodePath(fn)
-            fnp.reparentTo(render)
-            fn.addForce(self.acForce)
-            self.phys.addLinearForce(self.acForce)
-            #self.phys.removeLinearForce(self.acForce)
-            #fnp.remove()
-
-            if 0 or self.useHeightRay:
-                #self.setupRay(self.floorBitmask, self.avatarRadius)
-                self.setupRay(self.floorBitmask, 0.0)
-
 
         #avatarNodePath.reparentTo(render)
         self.avatarNodePath = avatarNodePath
@@ -720,7 +731,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             self.__vel=Vec3(
                 Vec3.forward() * distance + 
                 Vec3.right() * slideDistance)
-            
+
             # rotMat is the rotation matrix corresponding to
             # our previous heading.
             rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
