@@ -107,21 +107,23 @@ operator - (const FLOATNAME(LQuaternion) &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVector::angle_rad
+//     Function: LQuaternion::angle_rad
 //       Access: Published
-//  Description: Returns the angle between this quat and the other
-//               one, expressed in radians.
+//  Description: Returns the angle between the orientation represented
+//               by this quaternion and the other one, expressed in
+//               radians.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LQuaternion)::
 angle_rad(const FLOATNAME(LQuaternion) &other) const {
-  return get_axis().angle_rad(other.get_axis());
+  return get_forward().angle_rad(other.get_forward());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVector::angle_deg
+//     Function: LQuaternion::angle_deg
 //       Access: Published
-//  Description: Returns the angle between this vector and the other
-//               one, expressed in degrees.
+//  Description: Returns the angle between the orientation represented
+//               by this quaternion and the other one, expressed in
+//               degrees.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LQuaternion)::
 angle_deg(const FLOATNAME(LQuaternion) &other) const {
@@ -297,6 +299,39 @@ get_axis() const {
 INLINE_LINMATH FLOATTYPE FLOATNAME(LQuaternion)::
 get_angle() const {
   return rad_2_deg(acos(_v.data[0]) * 2.0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LQuaternion::get_up
+//       Access: Public
+//  Description: Returns the orientation represented by this
+//               quaternion, expressed as an up vector.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LQuaternion)::
+get_up(CoordinateSystem cs) const {
+  return xform(FLOATNAME(LVector3)::up(cs));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LQuaternion::get_right
+//       Access: Public
+//  Description: Returns the orientation represented by this
+//               quaternion, expressed as a right vector.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LQuaternion)::
+get_right(CoordinateSystem cs) const {
+  return xform(FLOATNAME(LVector3)::right(cs));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LQuaternion::get_forward
+//       Access: Public
+//  Description: Returns the orientation represented by this
+//               quaternion, expressed as a forward vector.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LQuaternion)::
+get_forward(CoordinateSystem cs) const {
+  return xform(FLOATNAME(LVector3)::forward(cs));
 }
 
 

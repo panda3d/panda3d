@@ -73,6 +73,10 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVector3) get_axis() const;
   INLINE_LINMATH FLOATTYPE get_angle() const;
 
+  INLINE_LINMATH FLOATNAME(LVector3) get_up(CoordinateSystem cs = CS_default) const;
+  INLINE_LINMATH FLOATNAME(LVector3) get_right(CoordinateSystem cs = CS_default) const;
+  INLINE_LINMATH FLOATNAME(LVector3) get_forward(CoordinateSystem cs = CS_default) const;
+
   INLINE_LINMATH FLOATTYPE get_r() const;
   INLINE_LINMATH FLOATTYPE get_i() const;
   INLINE_LINMATH FLOATTYPE get_j() const;
