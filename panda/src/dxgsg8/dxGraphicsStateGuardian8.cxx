@@ -4206,10 +4206,22 @@ issue_texture_apply(const TextureApplyTransition *attrib) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_color_mask(const ColorMaskTransition *attrib) {
-    dxgsg_cat.fatal() << "DXGSG issue_color_mask unimplemented (not implementable on DX7, need DX8)!!!";
-    // because PLANEMASK renderstate has inconsistent to poor driver support on dx6 and before, and is
-    // explicitly disabled on dx7
+  if(dxgsg_cat.is_debug() && ((scrn.d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_COLORWRITEENABLE)==0)) {
+    dxgsg_cat.debug() << "DXGSG issue_color_mask unsupported by device #" << scrn.CardIDNum << endl;
     return;
+  }
+
+  UINT maskVal=0x0;
+  if(attrib->is_write_r())
+     maskVal|=D3DCOLORWRITEENABLE_RED;
+  if(attrib->is_write_g())
+     maskVal|=D3DCOLORWRITEENABLE_GREEN;
+  if(attrib->is_write_b())
+     maskVal|=D3DCOLORWRITEENABLE_BLUE;
+  if(attrib->is_write_a())
+     maskVal|=D3DCOLORWRITEENABLE_ALPHA;
+
+  scrn.pD3DDevice->SetRenderState(D3DRS_COLORWRITEENABLE, maskVal);
 }
 
 ////////////////////////////////////////////////////////////////////
