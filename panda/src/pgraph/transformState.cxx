@@ -274,7 +274,6 @@ size_t TransformState::
 get_hash() const {
   size_t hash = 0;
   int_hash ihasher;
-  float_hash fhasher;
   pointer_hash phasher;
 
   static const int significant_flags = 
