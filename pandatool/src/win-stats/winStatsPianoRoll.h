@@ -1,5 +1,5 @@
-// Filename: winStatsStripChart.h
-// Created by:  drose (03Dec03)
+// Filename: winStatsPianoRoll.h
+// Created by:  drose (12Jan04)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,13 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef WINSTATSSTRIPCHART_H
-#define WINSTATSSTRIPCHART_H
+#ifndef WINSTATSPIANOROLL_H
+#define WINSTATSPIANOROLL_H
 
 #include "pandatoolbase.h"
 
 #include "winStatsGraph.h"
-#include "pStatStripChart.h"
+#include "pStatPianoRoll.h"
 #include "pointerTo.h"
 
 #include <windows.h>
@@ -30,45 +30,40 @@
 class WinStatsMonitor;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : WinStatsStripChart
-// Description : A window that draws a strip chart, given a view.
+//       Class : WinStatsPianoRoll
+// Description : A window that draws a piano-roll style chart,
+//               which shows the collectors explicitly stopping and
+//               starting, one frame at a time.
 ////////////////////////////////////////////////////////////////////
-class WinStatsStripChart : public PStatStripChart, public WinStatsGraph {
+class WinStatsPianoRoll : public PStatPianoRoll, public WinStatsGraph {
 public:
-  WinStatsStripChart(WinStatsMonitor *monitor,
-                     int thread_index, int collector_index);
-  virtual ~WinStatsStripChart();
+  WinStatsPianoRoll(WinStatsMonitor *monitor, int thread_index);
+  virtual ~WinStatsPianoRoll();
 
-  virtual void new_collector(int collector_index);
   virtual void new_data(int thread_index, int frame_number);
   virtual void force_redraw();
   virtual void changed_graph_size(int graph_xsize, int graph_ysize);
 
   virtual void set_time_units(int unit_mask);
-  void set_vertical_scale(float value_height);
+  void set_horizontal_scale(float time_width);
 
 protected:
-  virtual void update_labels();
-
-  virtual void clear_region();
-  virtual void copy_region(int start_x, int end_x, int dest_x);
-  virtual void draw_slice(int x, int w, int frame_number);
-  virtual void draw_empty(int x, int w);
-  virtual void draw_cursor(int x);
-  virtual void end_draw(int from_x, int to_x);
+  void clear_region();
+  virtual void begin_draw();
+  virtual void draw_bar(int row, int from_x, int to_x);
+  virtual void end_draw();
+  virtual void idle();
 
   LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   virtual LONG graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   virtual void additional_window_paint(HDC hdc);
 
 private:
-  int draw_guide_label(HDC hdc, int x, float value, int last_y);
+  void update_labels();
   void create_window();
   static void register_window_class(HINSTANCE application);
 
   static LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-
-  int _brush_origin;
 
   static bool _window_class_registered;
   static const char * const _window_class_name;

@@ -18,6 +18,7 @@
     winStatsLabelStack.cxx winStatsLabelStack.h \
     winStatsMenuId.h \
     winStatsMonitor.cxx winStatsMonitor.h winStatsMonitor.I \
+    winStatsPianoRoll.cxx winStatsPianoRoll.h \
     winStatsServer.cxx winStatsServer.h \
     winStatsStripChart.cxx winStatsStripChart.h
 

@@ -57,6 +57,8 @@ public:
 
   INLINE int timestamp_to_pixel(float time) const;
   INLINE float pixel_to_timestamp(int x) const;
+  INLINE int height_to_pixel(float value) const;
+  INLINE float pixel_to_height(int y) const;
 
 protected:
   void changed_size(int xsize, int ysize);

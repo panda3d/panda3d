@@ -35,7 +35,7 @@ class WinStatsMonitor;
 class WinStatsLabel {
 public:
   WinStatsLabel(WinStatsMonitor *monitor, int thread_index, 
-                int collector_index);
+                int collector_index, bool use_fullname);
   ~WinStatsLabel();
 
   void setup(HWND parent_window);

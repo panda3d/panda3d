@@ -41,6 +41,11 @@ WinStatsStripChart(WinStatsMonitor *monitor, int thread_index,
 {
   _brush_origin = 0;
 
+  _left_margin = 96;
+  _right_margin = 32;
+  _top_margin = 8;
+  _bottom_margin = 8;
+
   // Let's show the units on the guide bar labels.  There's room.
   set_guide_bar_units(get_guide_bar_units() | GBU_show_units);
 
@@ -161,7 +166,7 @@ update_labels() {
   _label_stack.clear_labels();
   for (int i = 0; i < get_num_labels(); i++) {
     _label_stack.add_label(WinStatsGraph::_monitor, _thread_index,
-                           get_label_collector(i));
+                           get_label_collector(i), false);
   }
   _labels_changed = false;
 }
@@ -307,20 +312,12 @@ end_draw(int from_x, int to_x) {
 ////////////////////////////////////////////////////////////////////
 LONG WinStatsStripChart::
 window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+  /*
   switch (msg) {
-  case WM_RBUTTONDOWN:
-    {
-      set_guide_bar_units(GBU_hz | GBU_show_units);
-      RECT rect;
-      GetClientRect(_window, &rect);
-      rect.left = _right_margin;
-      InvalidateRect(_window, &rect, TRUE);
-    }
-    return 0;
-    
   default:
     break;
   }
+  */
 
   return WinStatsGraph::window_proc(hwnd, msg, wparam, lparam);
 }
@@ -335,26 +332,26 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
   case WM_LBUTTONDOWN:
     {
-      _drag_mode = DM_vscale;
+      _drag_mode = DM_scale;
       PN_int16 y = HIWORD(lparam);
-      _drag_vscale_start = pixel_to_height(y);
+      _drag_scale_start = pixel_to_height(y);
       SetCapture(_graph_window);
     }
     return 0;
 
   case WM_MOUSEMOVE: 
-    if (_drag_mode == DM_vscale) {
+    if (_drag_mode == DM_scale) {
       PN_int16 y = HIWORD(lparam);
       float ratio = 1.0f - ((float)y / (float)get_ysize());
       if (ratio > 0.0f) {
-        set_vertical_scale(_drag_vscale_start / ratio);
+        set_vertical_scale(_drag_scale_start / ratio);
       }
       return 0;
     }
     break;
 
   case WM_LBUTTONUP:
-    if (_drag_mode == DM_vscale) {
+    if (_drag_mode == DM_scale) {
       _drag_mode = DM_none;
       ReleaseCapture();
       return 0;

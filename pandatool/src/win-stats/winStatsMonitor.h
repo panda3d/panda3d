@@ -66,6 +66,7 @@ public:
 
   HWND get_window() const;
   void open_strip_chart(int thread_index, int collector_index);
+  void open_piano_roll(int thread_index);
 
   const MenuDef &lookup_menu(int menu_id) const;
   int get_menu_id(const MenuDef &menu_def);

@@ -46,17 +46,13 @@ WinStatsGraph(WinStatsMonitor *monitor, int thread_index) :
   _graph_top = 0;
   _bitmap_xsize = 0;
   _bitmap_ysize = 0;
-  _left_margin = 96;
-  _right_margin = 32;
-  _top_margin = 16;
-  _bottom_margin = 8;
 
   _dark_pen = CreatePen(PS_SOLID, 1, RGB(51, 51, 51));
   _light_pen = CreatePen(PS_SOLID, 1, RGB(154, 154, 154));
 
   _drag_mode = DM_none;
   _potential_drag_mode = DM_none;
-  _drag_vscale_start = 0.0f;
+  _drag_scale_start = 0.0f;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -118,6 +118,9 @@ do_update() {
   add_view(_menu, view.get_top_level());
 
   bool needs_separator = true;
+  MENUITEMINFO mii;
+  memset(&mii, 0, sizeof(mii));
+  mii.cbSize = sizeof(mii);
 
   // And then the menu item(s) for each of the level values.
   const PStatClientData *client_data = _monitor->get_client_data();
@@ -130,9 +133,6 @@ do_update() {
       // We put a separator between the above frame collector and the
       // first level collector.
       if (needs_separator) {
-        MENUITEMINFO mii;
-        memset(&mii, 0, sizeof(mii));
-        mii.cbSize = sizeof(mii);
         mii.fMask = MIIM_FTYPE; 
         mii.fType = MFT_SEPARATOR; 
         InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
@@ -144,6 +144,20 @@ do_update() {
       add_view(_menu, level_view.get_top_level());
     }
   }
+
+  // Also a menu item for a piano roll (following a separator).
+  mii.fMask = MIIM_FTYPE; 
+  mii.fType = MFT_SEPARATOR; 
+  InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
+
+  WinStatsMonitor::MenuDef menu_def(_thread_index, -1);
+  int menu_id = _monitor->get_menu_id(menu_def);
+
+  mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID; 
+  mii.fType = MFT_STRING; 
+  mii.wID = menu_id;
+  mii.dwTypeData = "Piano Roll";
+  InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
 }
 
 ////////////////////////////////////////////////////////////////////

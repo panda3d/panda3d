@@ -47,9 +47,13 @@ public:
   int get_height() const;
   int get_ideal_width() const;
 
+  int get_label_y(int label_index) const;
+  int get_label_height(int label_index) const;
+
   void clear_labels();
-  void add_label(WinStatsMonitor *monitor, int thread_index,
-                 int collector_index);
+  int add_label(WinStatsMonitor *monitor, int thread_index,
+                int collector_index, bool use_fullname);
+  int get_num_labels() const;
 
 private:
   void create_window(HWND parent_window);

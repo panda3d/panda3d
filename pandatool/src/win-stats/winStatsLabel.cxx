@@ -33,13 +33,18 @@ const char * const WinStatsLabel::_window_class_name = "label";
 //  Description:
 ////////////////////////////////////////////////////////////////////
 WinStatsLabel::
-WinStatsLabel(WinStatsMonitor *monitor, int thread_index, int collector_index) :
+WinStatsLabel(WinStatsMonitor *monitor, int thread_index, 
+              int collector_index, bool use_fullname) :
   _monitor(monitor),
   _thread_index(thread_index),
   _collector_index(collector_index)
 {
   _window = 0;
-  _text = _monitor->get_client_data()->get_collector_name(_collector_index);
+  if (use_fullname) {
+    _text = _monitor->get_client_data()->get_collector_fullname(_collector_index);
+  } else {
+    _text = _monitor->get_client_data()->get_collector_name(_collector_index);
+  }
 
   RGBColorf rgb = _monitor->get_collector_color(_collector_index);
   int r = (int)(rgb[0] * 255.0f);

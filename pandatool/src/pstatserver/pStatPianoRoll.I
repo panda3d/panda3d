@@ -61,3 +61,25 @@ INLINE float PStatPianoRoll::
 pixel_to_timestamp(int x) const {
   return _time_width * (float)x / (float)_xsize + _start_time;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatPianoRoll::height_to_pixel
+//       Access: Public
+//  Description: Converts a value (i.e. a "height" in the strip chart)
+//               to a horizontal pixel offset.
+////////////////////////////////////////////////////////////////////
+INLINE int PStatPianoRoll::
+height_to_pixel(float value) const {
+  return (int)((float)_xsize * value / _time_width);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatPianoRoll::pixel_to_height
+//       Access: Public
+//  Description: Converts a horizontal pixel offset to a value (a
+//               "height" in the strip chart).
+////////////////////////////////////////////////////////////////////
+INLINE float PStatPianoRoll::
+pixel_to_height(int x) const {
+  return _time_width * (float)x / (float)_xsize;
+}

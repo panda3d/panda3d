@@ -18,6 +18,7 @@
 
 #include "winStatsMonitor.h"
 #include "winStatsStripChart.h"
+#include "winStatsPianoRoll.h"
 #include "winStatsChartMenu.h"
 #include "winStatsMenuId.h"
 #include "pStatGraph.h"
@@ -272,6 +273,19 @@ void WinStatsMonitor::
 open_strip_chart(int thread_index, int collector_index) {
   WinStatsStripChart *graph = 
     new WinStatsStripChart(this, thread_index, collector_index);
+  add_graph(graph);
+
+  graph->set_time_units(_time_units);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsMonitor::open_piano_roll
+//       Access: Public
+//  Description: Opens a new piano roll showing the indicated data.
+////////////////////////////////////////////////////////////////////
+void WinStatsMonitor::
+open_piano_roll(int thread_index) {
+  WinStatsPianoRoll *graph = new WinStatsPianoRoll(this, thread_index);
   add_graph(graph);
 
   graph->set_time_units(_time_units);
@@ -576,7 +590,11 @@ handle_menu_command(int menu_id) {
   default:
     if (menu_id >= MI_new_chart) {
       const MenuDef &menu_def = lookup_menu(menu_id);
-      open_strip_chart(menu_def._thread_index, menu_def._collector_index);
+      if (menu_def._collector_index < 0) {
+        open_piano_roll(menu_def._thread_index);
+      } else {
+        open_strip_chart(menu_def._thread_index, menu_def._collector_index);
+      }
     }
   }
 }
