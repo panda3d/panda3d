@@ -1983,11 +1983,13 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
     << (void *)pb->_image.p() << ")" << endl;
 #endif
 
-  glReadPixels( pb->get_xorg() + xo, pb->get_yorg() + yo, 
-        pb->get_xsize(), pb->get_ysize(), 
-        get_external_image_format(pb->get_format()),
-        get_image_type(pb->get_image_type()),
-        pb->_image.p() );
+
+//glReadPixels( pb->get_xorg() + xo, pb->get_yorg() + yo,  // pb->origin is probably a meaningless vestigial field thats always zero.  shouldnt be added here
+  glReadPixels(xo, yo, 
+			   pb->get_xsize(), pb->get_ysize(), 
+			   get_external_image_format(pb->get_format()),
+			   get_image_type(pb->get_image_type()),
+			   pb->_image.p() );
 
   nassertv(!pb->_image.empty());
 }
