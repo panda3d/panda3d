@@ -27,7 +27,7 @@ FOR DIFFERENT LEVEL MODEL PATH:
 import SpecUtil
 import SellbotLegFactorySpec
 import FactoryEntityTypes
-SpecUtil.updateSpec(SellbotLegFactorySpec, FactoryEntityTypes, newModelPath)
+SpecUtil.updateSpec(SellbotLegFactorySpec, FactoryEntityTypes, '/i/beta/toons/maya/work/CogHeadquarters/CogFactoriesInteriors/AllFactories/LegFactory/SelbotLegFactory_v##s#.mb')
 """
 
 def updateSpec(specModule, entTypeModule=EntityTypes, modelPath=None):
