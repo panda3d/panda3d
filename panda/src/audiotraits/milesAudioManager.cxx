@@ -67,6 +67,10 @@ MilesAudioManager() {
         AIL_quick_handles(0, 0, &dls);
         nassertv(audio_dls_file);
         nassertv(!_dls_field);
+        if (audio_dls_file->empty()) {
+          audio_debug("  using default audio_dls_file");
+          get_gm_file_path(*audio_dls_file);
+        }
         audio_debug("  audio_dls_file=\""<<*audio_dls_file<<"\"");
         _dls_field=AIL_DLS_load_file(dls, audio_dls_file->c_str(), 0);
         if (!_dls_field) {
@@ -280,5 +284,57 @@ get_active() {
   audio_debug("MilesAudioManager::get_active() returning "<<_active);
   return _active;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::get_registry_entry
+//       Access: private
+//  Description: Combine base\\subKeyname\\keyName to get
+//               'result' from the Windows registry.
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+get_registry_entry(HKEY base, const char* subKeyName, const char* keyName, 
+  string& result) {
+  // Create a key to access the registry:
+  HKEY key;
+  long r=RegCreateKeyEx(base, subKeyName, 0, "", 
+      REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &key, NULL);
+  if (r==ERROR_SUCCESS) {
+    DWORD len=0;
+    // Read the size of the value at keyName:
+    r=RegQueryValueEx(key, keyName, 0, 0, 0, &len);
+    if (r==ERROR_SUCCESS) {
+      char* src = new char[len];
+      DWORD type;
+      // Read the value at keyName:
+      r=RegQueryValueEx(key, keyName, 0, &type, (unsigned char*)src, &len);
+      if (r==ERROR_SUCCESS && type==REG_EXPAND_SZ) {
+        // Find the size of the expanded string:
+        DWORD destSize=ExpandEnvironmentStrings(src, 0, 0);
+        // Get a destination buffer of that size:
+        char* dest = new char[destSize];
+        // Do the expansion:
+        ExpandEnvironmentStrings(src, dest, destSize);
+        // Propagate the result:
+        result=dest;
+        delete [] dest;
+      }
+      delete [] src;
+    }
+    RegCloseKey(key);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::get_gm_file_path
+//       Access: private
+//  Description: Get path of downloadable sound midi instruments file.
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+get_gm_file_path(string& result) {
+  get_registry_entry(HKEY_LOCAL_MACHINE, 
+      "SOFTWARE\\Microsoft\\DirectMusic", "GMFilePath", result);
+  audio_debug("MilesAudioManager::get_gm_file_path() result out=\""<<result<<"\"");
+}
+
 
 #endif //]

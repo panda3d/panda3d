@@ -63,6 +63,14 @@ private:
   // Tell the manager that the sound dtor was called.
   void release_sound(MilesAudioSound* audioSound);
   
+  // utility function that should be moved to another class:
+  void get_registry_entry(HKEY base, 
+                          const char* subKeyName, 
+                          const char* keyName, 
+                          string& result);
+  // get the default dls file path:
+  void get_gm_file_path(string& result);
+  
   friend MilesAudioSound;
 };
 
