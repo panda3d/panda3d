@@ -32,6 +32,8 @@
 #include "config_dconfig.h"
 #include "string_utils.h"
 #include "vector_string.h"
+#include "configVariableInt.h"
+#include "configVariableBool.h"
 
 #include <stdlib.h>
 #include <algorithm>
@@ -73,6 +75,19 @@ operator () (const Option *a, const Option *b) const {
 static void flush_nout() {
   nout << flush;
 }
+
+static ConfigVariableInt default_terminal_width
+("default-terminal-width", 72,
+ PRC_DESC("Specify the column at which to wrap output lines "
+          "from pandatool-based programs, if it cannot be determined "
+          "automatically."));
+
+static ConfigVariableBool use_terminal_width
+("use-terminal-width", true,
+ PRC_DESC("True to try to determine the terminal width automatically from "
+          "the operating system, if supported; false to use the width "
+          "specified by default-terminal-width even if the operating system "
+          "appears to report a valid width."));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ProgramBase::Constructor
@@ -1417,23 +1432,26 @@ sort_options() {
 void ProgramBase::
 get_terminal_width() {
   if (!_got_terminal_width) {
-#ifdef IOCTL_TERMINAL_WIDTH
-    struct winsize size;
-    int result = ioctl(STDIN_FILENO, TIOCGWINSZ, (char *)&size);
-    if (result < 0) {
-      // Couldn't determine the width for some reason.  Instead of
-      // complaining, just punt.
-      _terminal_width = 72;
-    } else {
-
-      // Subtract 10% for the comfort margin at the edge.
-      _terminal_width = size.ws_col - min(8, (int)(size.ws_col * 0.1));
-    }
-#else   // IOCTL_TERMINAL_WIDTH
-    _terminal_width = 72;
-#endif  // IOCTL_TERMINAL_WIDTH
     _got_terminal_width = true;
     _got_option_indent = false;
+
+#ifdef IOCTL_TERMINAL_WIDTH
+    if (use_terminal_width) {
+      struct winsize size;
+      int result = ioctl(STDIN_FILENO, TIOCGWINSZ, (char *)&size);
+      if (result < 0 || size.ws_col < 10) {
+        // Couldn't determine the width for some reason.  Instead of
+        // complaining, just punt.
+        _terminal_width = default_terminal_width;
+      } else {
+        
+        // Subtract 10% for the comfort margin at the edge.
+        _terminal_width = size.ws_col - min(8, (int)(size.ws_col * 0.1));
+      }
+      return;
+    }
+#endif  // IOCTL_TERMINAL_WIDTH
+    
+    _terminal_width = default_terminal_width;
   }
 }
-
