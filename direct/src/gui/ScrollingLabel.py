@@ -18,14 +18,26 @@ class ScrollingLabel(PandaObject.PandaObject):
                  scale = 0.1,
                  width = None,
                  drawOrder = getDefaultDrawOrder(),
-                 font = getDefaultFont()):
+                 font = getDefaultFont(),
+                 showLabels = 1):
 
         self.name = name
+        if (label == None):
+            self.label = self.name
+        else:
+            self.label = label
         self.eventName = self.name
         self.frame = Frame.Frame(name)
         self.frame.setOffset(0.015)
         self.item = 0
         self.items = itemList
+        self.showLabels = showLabels
+        if (showLabels):
+            # we'll need a card to add text to later
+            itemString = " "
+        else:
+            # no card needed
+            itemString = ""
         self.keyFocus = 1
 
         if width == None:
@@ -38,11 +50,11 @@ class ScrollingLabel(PandaObject.PandaObject):
                 width = max(width, w)
 
         # create the new title
-        self.title = Sign.Sign(self.name, self.name, Label.ScrollTitle,
+        self.title = Sign.Sign(self.name, self.label, Label.ScrollTitle,
                                scale, width, drawOrder, font)
         self.frame.addItem(self.title)
                 
-        self.itemSign = Sign.Sign('item', '', Label.ScrollItem,
+        self.itemSign = Sign.Sign('item', itemString, Label.ScrollItem,
                                   scale, width, drawOrder, font)
         self.frame.addItem(self.itemSign)
             
@@ -72,13 +84,6 @@ class ScrollingLabel(PandaObject.PandaObject):
                             self.title)
         self.frame.packItem(self.rightButton, GuiFrame.GuiFrame.RIGHT,
                             self.title)        
-
-        # listen for the scroll buttons
-        #self.accept(self.eventName + "-left", self.handleLeftButton)
-        #self.accept(self.eventName + "-right", self.handleRightButton)
-        
-        # listen for keyboard hits
-        #self.setKeyFocus(0)
 
         # set list to first element
         self.setItem(self.item)
@@ -114,8 +119,9 @@ class ScrollingLabel(PandaObject.PandaObject):
 
     def setTitle(self, name):
         self.name = name
-        self.title.setText(name)
-        self.frame.recompute()
+        if (self.showLabels):
+            self.title.setText(name)
+            self.frame.recompute()
 
     def getItemSign(self):
         return self.itemSign
@@ -125,7 +131,8 @@ class ScrollingLabel(PandaObject.PandaObject):
 
     def setItem(self, item):
         self.item = item
-        self.itemSign.setText(self.items[self.item])
+        if (self.showLabels):
+            self.itemSign.setText(self.items[self.item])
         
     def getEventName(self):
         return self.eventName
@@ -148,20 +155,26 @@ class ScrollingLabel(PandaObject.PandaObject):
         self.frame.recompute()
         self.frame.thaw()
 
+    def setWidth(self, width):
+        self.frame.freeze()
+        self.itemSign.setWidth(width)
+        self.frame.recompute()
+        self.frame.thaw()
+        
     def getKeyFocus(self):
         return self.keyFocus
 
     def setKeyFocus(self, focus):
         self.keyFocus = focus
         if (focus == 1):
-            # ignore keyboard hits
+            # remove old keyboard hooks
             self.ignore("left-up")
             self.ignore("right-up")            
-            # listen for keyboard hits
+            # listen for new keyboard hits
             self.accept("left-up", self.handleLeftArrow)
             self.accept("right-up", self.handleRightArrow)
         else:
-            # ignore keyboard hits
+            # remove keyboard hooks
             self.ignore("left-up")
             self.ignore("right-up")
         

@@ -17,9 +17,9 @@ class Sign(DirectObject):
         self.name = name
         self.labelText = None
         
-        if not label:
+        if (label == None):
             label = self.name
-                
+
         if (type(label) == type('')):
             (self.label, self.labelText) = \
                          Label.textLabelAndText(label, style,
