@@ -1,6 +1,8 @@
 #define OTHER_LIBS dtool
 
 #begin lib_target
+  #define USE_AUDIO yes
+
   #define TARGET audio
   #define LOCAL_LIBS putil ipc
 
