@@ -292,7 +292,7 @@ class DirectCameraControl(PandaObject):
             self.cqEntries = self.cqEntries[1:] + self.cqEntries[:1]
             # Filter out object's under camera
             node = entry.getIntoNode()
-            nodePath = render.findPathDownTo(node)
+            nodePath = render.findPathTo(node)
             if direct.camera not in nodePath.getAncestry():
                 # Compute hit point
                 # KEH: use current display region ray

@@ -235,7 +235,8 @@ class DirectBoundingBox:
         self.lines = self.createBBoxLines()
 
     def computeBounds(self):
-        self.bounds = self.nodePath.getBounds()
+        #self.bounds = self.nodePath.getBounds()
+        self.bounds = self.getBounds()
         if self.bounds.isEmpty() or self.bounds.isInfinite():
             self.center = Point3(0)
             self.radius = 1.0
