@@ -59,11 +59,11 @@ MilesAudioManager() {
     audio_debug("  audio_output_bits="<<audio_output_bits);
     audio_debug("  audio_output_channels="<<audio_output_channels);
     audio_debug("  audio_software_midi="<<audio_software_midi);
-    //#ifndef NDEBUG //[
-    //  char version[8];
-    //  AIL_MSS_version(version, 8);
-    //  audio_debug("  MSS .DLL Version: "<<version);
-    //#endif //]
+    #ifndef NDEBUG //[
+      char version[8];
+      AIL_MSS_version(version, 8);
+      audio_debug("  Mss32.dll Version: "<<version);
+    #endif //]
     if (AIL_quick_startup(use_digital, 
         use_MIDI, audio_output_rate, 
         audio_output_bits, audio_output_channels)) {
