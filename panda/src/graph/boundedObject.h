@@ -23,15 +23,15 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA BoundedObject {
 public:
+  INLINE BoundedObject();
+  virtual ~BoundedObject();
+
+PUBLISHED:
   enum BoundingVolumeType {
     BVT_static,
     BVT_dynamic_sphere,
   };
 
-  INLINE BoundedObject();
-  virtual ~BoundedObject();
-
-PUBLISHED:
   INLINE void set_bound(BoundingVolumeType type);
   INLINE void set_bound(const BoundingVolume &volume);
   INLINE const BoundingVolume &get_bound() const;

@@ -70,11 +70,8 @@ extern RenderRelation* first_arc;
 RenderRelation *highlight_arc = NULL;
 PT_NamedNode highlight_render_node;
 RenderRelation *current_arc = NULL;
-Node *current_node;
 
-// bounds_arc just keeps a pointer to the current arc whose bounding
-// volumes has been highlighted.
-NodeRelation *bounds_arc = NULL;
+NodePath selected_node;
 
 PT_NamedNode render2d_top;
 RenderRelation *render2d_arc = NULL;
@@ -87,8 +84,6 @@ PT_NamedNode sky = (NamedNode *)NULL;
 RenderRelation *sky_arc = (RenderRelation *)NULL;
 RenderRelation *flare_arc = (RenderRelation *)NULL;
 
-DownRelationPointers *current_siblings;
-DownRelationPointers::iterator current_sib;
 
 /*
 void 
@@ -205,104 +200,76 @@ event_out_label2d(CPT_Event) {
 }
 */
 
-
 static void
-set_highlight(Node *node) {
-  if (bounds_arc != NULL) {
-    bounds_arc->clear_transition(DrawBoundsTransition::get_class_type());
-    bounds_arc = NULL;
+clear_highlight() {
+  if (selected_node.has_arcs()) {
+    selected_node.hide_bounds();
   }
+
   if (current_arc != NULL) {
     remove_arc(current_arc);
     current_arc = NULL;
   }
+}
 
-  LMatrix4f mat;
-
+static void
+set_highlight() {
   // Transform the highlight to the coordinate space of the node.
-  get_rel_mat(node, render, mat);
+  LMatrix4f mat = selected_node.get_mat(NodePath(render));
   highlight_arc->set_transition(new TransformTransition(mat));
 
-  nout << "Highlighting " << *node << "\n";
+  nout << "Highlighting " << selected_node.as_string(1) << "\n";
 
-  const UpRelationPointers &urp = 
-    node->_parents[RenderRelation::get_class_type()];
-  nout << "Bounding volume of node is " << node->get_bound() << "\n";
-  if (!urp.empty()) {
-    NodeRelation *arc = (*urp.begin());
-    const BoundingVolume &vol = arc->get_bound();
-    nout << "Bounding volume of arc is " << vol << "\n";
+  nout << "Bounding volume of node is " << selected_node.node()->get_bound() << "\n";
 
+  if (selected_node.has_arcs()) {
+    nout << "Bounding volume of arc is " << *selected_node.get_bounds() << "\n";
+    
     nout << "Transitions on arc:\n";
-    arc->write_transitions(nout, 2);
-
-    arc->set_transition(new DrawBoundsTransition);
-    bounds_arc = arc;
+    selected_node.get_bottom_arc()->write_transitions(nout, 2);
+    selected_node.show_bounds();
   }
 
-  current_arc = new RenderRelation(highlight_render_node, node);
-  //current_arc = NULL;
-  current_node = node;
+  current_arc = new RenderRelation(highlight_render_node, selected_node.node());
 }
 
 static void
 event_up(CPT_Event) {
-  if (current_node != NULL) {
-    if (current_node != root) {
-      // First, break the connection to the current node so we won't
-      // be confused by it.
-      if (current_arc != NULL) {
-	remove_arc(current_arc);
-	current_arc = NULL;
-      }
-
-      // Now walk up from the current node to its first parent.
-      UpRelations::iterator uri = 
-	current_node->_parents.find(RenderRelation::get_class_type());
-      if (uri == current_node->_parents.end() || (*uri).second.empty()) {
-	// There is no parent.  Weird.
-	return;
-      }
-
-      UpRelationPointers &parent_siblings = (*uri).second;
-      UpRelationPointers::iterator pi = parent_siblings.begin();
-      assert(pi != parent_siblings.end());
-
-      Node *node = (*pi)->get_parent();
-      set_highlight(node);
-      current_siblings = NULL;
-    }
+  if (selected_node.has_arcs() && selected_node.get_node(1) != root) {
+    clear_highlight();
+    selected_node.shorten(1);
+    set_highlight();
   }
 }
 
 static void
 event_down(CPT_Event) {
-  if (current_node != NULL) {
-    // Walk down from the current node to its first child.
-    DownRelations::iterator dri = 
-      current_node->_children.find(RenderRelation::get_class_type());
-    if (dri == current_node->_children.end() || (*dri).second.empty()) {
-      // There are no children.
-      return;
-    }
-
-    current_siblings = &(*dri).second;
-    current_sib = current_siblings->begin();
-    assert(current_sib != current_siblings->end());
-
-    Node *node = (*current_sib)->get_child();
-    set_highlight(node);
+  if (!selected_node.is_empty() && 
+      selected_node.get_num_children() != 0) {
+    clear_highlight();
+    selected_node = selected_node.get_child(0);
+    set_highlight();
   }
 }
 
 static void
 event_left(CPT_Event) {
   // Go to the previous child in the sibling list, if there is one.
-  if (current_node != NULL && current_siblings != NULL) {
-    if (current_sib != current_siblings->begin()) {
-      --current_sib;
-      Node *node = (*current_sib)->get_child();
-      set_highlight(node);
+  if (selected_node.has_arcs()) {
+    NodePath parent = selected_node;
+    parent.shorten(1);
+    int num_children = parent.get_num_children();
+
+    for (int i = 0; i < num_children; i++) {
+      if (parent.get_child(i) == selected_node) {
+	// We've currently got child i; now select child i-1.
+	if (i - 1 >=  0) {
+	  clear_highlight();
+	  selected_node = parent.get_child(i - 1);
+	  set_highlight();
+	}
+	return;
+      }
     }
   }
 }
@@ -310,23 +277,30 @@ event_left(CPT_Event) {
 static void
 event_right(CPT_Event) {
   // Go to the next child in the sibling list, if there is one.
-  if (current_node != NULL && current_siblings != NULL) {
-    DownRelationPointers::iterator next_sib = current_sib;
-    ++next_sib;
-    if (next_sib != current_siblings->end()) {
-      current_sib = next_sib;
-      Node *node = (*current_sib)->get_child();
-      set_highlight(node);
+  if (selected_node.has_arcs()) {
+    NodePath parent = selected_node;
+    parent.shorten(1);
+    int num_children = parent.get_num_children();
+
+    for (int i = 0; i < num_children; i++) {
+      if (parent.get_child(i) == selected_node) {
+	// We've currently got child i; now select child i + 11.
+	if (i + 1 < num_children) {
+	  clear_highlight();
+	  selected_node = parent.get_child(i + 1);
+	  set_highlight();
+	}
+	return;
+      }
     }
   }
 }
 
 static void
 event_fkey(CPT_Event event) {
-  if (current_node != NULL) {
+  if (selected_node.has_arcs()) {
     // Apply a color to the selected node.
-    NodeRelation *arc = 
-      current_node->get_parent(RenderRelation::get_class_type(), 0);
+    NodeRelation *arc = selected_node.get_bottom_arc();
     nassertv(arc != (NodeRelation *)NULL);
 
     if (event->get_name() == "f9") {
@@ -362,7 +336,6 @@ event_fkey(CPT_Event event) {
 static void
 enable_highlight() {
   if (highlight_render_node == NULL) {
-    nout << "Creating highlight render node\n";
     highlight_render_node = new NamedNode("highlight");
     highlight_arc = new RenderRelation(render, highlight_render_node);
 
@@ -394,30 +367,27 @@ enable_highlight() {
 
   // Add a temporary arc from the highlight render node to the node we
   // are highlighting.
-  nout << "Enabling highlight\n";
-  assert(current_node == NULL);
-  set_highlight(root);
-  current_siblings = NULL;
+  selected_node = NodePath(root);
+  if (selected_node.get_num_children() == 0) {
+    nout << "No nodes.\n";
+    selected_node.clear();
+
+  } else {
+    selected_node = selected_node.get_child(0);
+    set_highlight();
+  }
 }
 
 static void
 disable_highlight() {
   nout << "Disabling highlight\n";
-  assert(current_node != NULL);
-  if (bounds_arc != NULL) {
-    bounds_arc->clear_transition(DrawBoundsTransition::get_class_type());
-    bounds_arc = NULL;
-  }
-  if (current_arc != NULL) {
-    remove_arc(current_arc);
-    current_arc = NULL;
-  }
-  current_node = NULL;
+  clear_highlight();
+  selected_node.clear();
 }
 
 static void
 event_h(CPT_Event) {
-  if (current_node == NULL) {
+  if (selected_node.is_empty()) {
     enable_highlight();
   } else {
     disable_highlight();
