@@ -15,7 +15,7 @@
     bioStreamPtr.I bioStreamPtr.h \
     bioStream.I bioStream.h bioStreamBuf.h \
     chunkedStream.I chunkedStream.h chunkedStreamBuf.h \
-    decompressor.h \
+    decompressor.h decompressor.I \
     documentSpec.I documentSpec.h \
     downloadDb.I downloadDb.h \
     download_utils.h \
@@ -72,7 +72,7 @@
     bioStream.I bioStream.h bioStreamBuf.h \
     chunkedStream.I chunkedStream.h chunkedStreamBuf.h \
     config_downloader.h \
-    decompressor.h \
+    decompressor.h decompressor.I \
     documentSpec.h documentSpec.I \
     download_utils.h downloadDb.h downloadDb.I \
     extractor.h \
