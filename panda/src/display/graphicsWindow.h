@@ -197,7 +197,7 @@ PUBLISHED:
   virtual void register_idle_function(GraphicsWindow::vfn);
 
 public:
-  virtual void begin_frame();
+  virtual void begin_frame(bool bStartRendering = true);
   void clear();
   virtual void end_frame();
 

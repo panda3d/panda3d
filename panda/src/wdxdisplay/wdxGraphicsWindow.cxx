@@ -325,7 +325,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         PAINTSTRUCT ps;
         BeginPaint(hwnd, &ps);
         if(DXREADY)
-            show_frame();
+            _dxgsg->show_frame();
         EndPaint(hwnd, &ps);
         return 0;
     }
@@ -2513,28 +2513,6 @@ void wdxGraphicsWindow::setup_colormap(void) {
 
     SelectPalette(_hdc, _colormap, FALSE);
     RealizePalette(_hdc);
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: begin_frame
-//       Access:
-////////////////////////////////////////////////////////////////////
-void wdxGraphicsWindow::begin_frame(void) {
-    GraphicsWindow::begin_frame();
-}
-
-void wdxGraphicsWindow::show_frame(void) {
-    _dxgsg->show_frame();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: end_frame
-//       Access:
-//  Description:  timer info, incs frame #
-////////////////////////////////////////////////////////////////////
-void wdxGraphicsWindow::end_frame(void) {
-    GraphicsWindow::end_frame();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -4357,17 +4357,9 @@ bind_light(Spotlight *light, int light_id) {
   HRESULT res = scrn.pD3DDevice->SetLight(light_id, &alight);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::begin_frame
-//       Access: Public, Virtual
-//  Description: Called before each frame is rendered, to allow the
-//               GSG a chance to do any internal cleanup before
-//               beginning the frame.
-////////////////////////////////////////////////////////////////////
+// Note: default gsg begin_frame() now calls start_rendering()
 void DXGraphicsStateGuardian::
-begin_frame() {
-  GraphicsStateGuardian::begin_frame();
-
+start_rendering(void) {
   HRESULT hr = scrn.pD3DDevice->BeginScene();
 
   if(FAILED(hr)) {
@@ -4384,6 +4376,24 @@ begin_frame() {
   }
 }
 
+void DXGraphicsStateGuardian::
+finish_rendering(void) {
+  HRESULT hr = scrn.pD3DDevice->EndScene();
+
+  if(FAILED(hr)) {
+    if((hr==DDERR_SURFACELOST)||(hr==DDERR_SURFACEBUSY)) {
+      if(dxgsg_cat.is_debug())
+        dxgsg_cat.debug() << "EndScene returns " << ConvD3DErrorToString(hr) << endl;
+
+      CheckCooperativeLevel();
+    } else {
+      dxgsg_cat.error() << "EndScene failed, unhandled error hr == " << ConvD3DErrorToString(hr) << endl;
+      exit(1);
+    }
+    return;
+  }
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::end_frame
 //       Access: Public, Virtual
@@ -4393,8 +4403,6 @@ begin_frame() {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 end_frame() {
-  GraphicsStateGuardian::end_frame();
-
   HRESULT hr;
 
   // draw new tri-based FPS meter
@@ -4549,22 +4557,9 @@ end_frame() {
     scrn.pD3DDevice->SetTexture(0, ((_pCurTexContext != NULL) ? _pCurTexContext->_surface : NULL));
   }
 
-  hr = scrn.pD3DDevice->EndScene();
+  DXGraphicsStateGuardian::finish_rendering();
 
-  // any GDI operations MUST occur after EndScene
-
-  if(FAILED(hr)) {
-    if((hr==DDERR_SURFACELOST)||(hr==DDERR_SURFACEBUSY)) {
-      if(dxgsg_cat.is_debug())
-        dxgsg_cat.debug() << "EndScene returns " << ConvD3DErrorToString(hr) << endl;
-
-      CheckCooperativeLevel();
-    } else {
-      dxgsg_cat.error() << "EndScene failed, unhandled error hr == " << ConvD3DErrorToString(hr) << endl;
-      exit(1);
-    }
-    return;
-  }
+  // any GDI operations (which are mega-slow per-frame) MUST occur after EndScene
 
   if(_bShowFPSMeter) {
     DO_PSTATS_STUFF(PStatTimer timer(_win->_show_fps_pcollector));
@@ -4646,6 +4641,11 @@ end_frame() {
     }
   }
 #endif
+
+  // Note: regular GraphicsWindow::end_frame is being called,
+  // but we override gsg::end_frame, so need to explicitly call it here
+  // (currently it's an empty fn)
+  GraphicsStateGuardian::end_frame();
 }
 
 ////////////////////////////////////////////////////////////////////

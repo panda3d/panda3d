@@ -477,8 +477,13 @@ register_idle_function(GraphicsWindow::vfn f) {
 //               whatever setup is required.
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
-begin_frame() {
+begin_frame(bool bStartRendering) {
   _gsg->begin_frame();
+
+  // app may not want to automatically call start_rendering() if
+  // it wants to switch the rendertarget buffer first
+  if(bStartRendering)
+      _gsg->start_rendering();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -510,7 +515,11 @@ clear() {
 //               do whatever finalization is required.
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
-end_frame() {
+end_frame(void) {
+  // finish_rendering not called here since gsg's own end_frame 
+  // will usually want to finish_rendering() itself, 
+  // then swap double buffers, then call GraphicsStateGuardian::end_frame
+
   _gsg->end_frame();
   _frame_number++;
 }

@@ -1556,3 +1556,10 @@ read_priorities(void) {
     }
   }
 }
+
+void GraphicsStateGuardian::start_rendering(void) {
+}
+
+void GraphicsStateGuardian::finish_rendering(void) {
+}
+

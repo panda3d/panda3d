@@ -104,6 +104,9 @@ public:
   virtual void begin_frame();
   virtual void end_frame();
 
+  virtual void start_rendering(void);
+  virtual void finish_rendering(void);
+
   // These functions will be queried by the GeomIssuer to determine if
   // it should issue normals, texcoords, and/or colors, based on the
   // GSG's current state.

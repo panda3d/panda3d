@@ -134,8 +134,11 @@ public:
   virtual void bind_light(DirectionalLight *light, int light_id);
   virtual void bind_light(Spotlight *light, int light_id);
 
-  virtual void begin_frame();
+  // default gsg begin_frame() used
   virtual void end_frame();
+
+  virtual void start_rendering();
+  virtual void finish_rendering();
 
   virtual bool wants_normals(void) const;
   virtual bool wants_texcoords(void) const;

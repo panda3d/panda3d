@@ -3990,17 +3990,10 @@ bind_light(Spotlight *light, int light_id) {
   HRESULT res = scrn.pD3DDevice->SetLight(light_id, &alight);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::begin_frame
-//       Access: Public, Virtual
-//  Description: Called before each frame is rendered, to allow the
-//               GSG a chance to do any internal cleanup before
-//               beginning the frame.
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-begin_frame() {
-  GraphicsStateGuardian::begin_frame();
+// Note: default gsg begin_frame() now calls start_rendering()
 
+void DXGraphicsStateGuardian::
+start_rendering(void) {
   HRESULT hr = scrn.pD3DDevice->BeginScene();
 
   if(FAILED(hr)) {
@@ -4016,6 +4009,23 @@ begin_frame() {
   }
 }
 
+void DXGraphicsStateGuardian::
+finish_rendering(void) {
+ HRESULT hr = scrn.pD3DDevice->EndScene();
+
+ if(FAILED(hr)) {
+    if(hr==D3DERR_DEVICELOST) {
+          if(dxgsg_cat.is_debug())
+              dxgsg_cat.debug() << "EndScene returns DeviceLost\n";
+          CheckCooperativeLevel();
+    } else {
+        dxgsg_cat.error() << "EndScene failed, unhandled error hr == " << D3DERRORSTRING(hr);
+        exit(1);
+    }
+    return;
+ }
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::end_frame
 //       Access: Public, Virtual
@@ -4027,6 +4037,7 @@ void DXGraphicsStateGuardian::
 end_frame() {
   HRESULT hr;
 
+  // draw fps meter stuff before calling EndScene
   if(_bShowFPSMeter) {
     DO_PSTATS_STUFF(PStatTimer timer(_win->_show_fps_pcollector));
 
@@ -4049,23 +4060,11 @@ end_frame() {
         _bShowFPSMeter=false;
   }
 
-  hr = scrn.pD3DDevice->EndScene();
+  DXGraphicsStateGuardian::finish_rendering();
 
   // any GDI operations MUST occur after EndScene
 
-   if(FAILED(hr)) {
-    if(hr==D3DERR_DEVICELOST) {
-          if(dxgsg_cat.is_debug())
-              dxgsg_cat.debug() << "EndScene returns DeviceLost\n";
-          CheckCooperativeLevel();
-    } else {
-        dxgsg_cat.error() << "EndScene failed, unhandled error hr == " << D3DERRORSTRING(hr);
-        exit(1);
-    }
-    return;
-   }
-
-   if(_bShowFPSMeter) {
+  if(_bShowFPSMeter) {
         // update frame stats
 
          DO_PSTATS_STUFF(PStatTimer timer(_win->_show_fps_pcollector));
@@ -4086,19 +4085,20 @@ end_frame() {
          }
 
          _cur_frame_count++;  // only used by fps meter right now
-    }
+  }
 
-    show_frame();
+  show_frame();
 
 #ifdef COUNT_DRAWPRIMS
     {
         #define FRAMES_PER_DPINFO 90
         static DWORD LastDPInfoFrame=0;
         static DWORD LastTickCount=0;
+        const float one_thousandth = 1.0f/1000.0f;
 
         if (_cur_frame_count-LastDPInfoFrame > FRAMES_PER_DPINFO) {
             DWORD CurTickCount=GetTickCount();
-            float delta_secs=(CurTickCount-LastTickCount)/1000.0f;
+            float delta_secs=(CurTickCount-LastTickCount)*one_thousandth;
 
             float numframes=_cur_frame_count-LastDPInfoFrame;
             float verts_per_frame = cVertcount/numframes;
@@ -4148,6 +4148,9 @@ end_frame() {
   }
 #endif
 
+  // Note: regular GraphicsWindow::end_frame is being called,
+  // but we override gsg::end_frame, so need to explicitly call it here
+  // (currently it's an empty fn)
   GraphicsStateGuardian::end_frame();
 }
 

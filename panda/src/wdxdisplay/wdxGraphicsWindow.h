@@ -60,7 +60,6 @@ public:
   wdxGraphicsWindow(GraphicsPipe* pipe,const GraphicsWindow::Properties& props,wdxGraphicsWindowGroup *pParentGroup);
 
   virtual ~wdxGraphicsWindow(void);
-  virtual void end_frame( void );
 
   virtual TypeHandle get_gsg_type() const;
   static GraphicsWindow* make_wdxGraphicsWindow(const FactoryParams &params);
@@ -76,8 +75,6 @@ public:
   INLINE void handle_keyrelease(ButtonHandle key);
   void handle_window_move(int x, int y);
   void dx_setup();
-  virtual void begin_frame( void );
-  void show_frame();
   virtual bool resize(unsigned int xsize,unsigned int ysize);
   virtual unsigned int verify_window_sizes(unsigned int numsizes,unsigned int *dimen);
   bool special_check_fullscreen_resolution(UINT xsize,UINT ysize);
