@@ -184,6 +184,8 @@ close_window() {
     // revert to default display mode.
     ChangeDisplaySettings(NULL, 0x0);
   }
+
+  GraphicsWindow::close_window();
 }
 
 ////////////////////////////////////////////////////////////////////

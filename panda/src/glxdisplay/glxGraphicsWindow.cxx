@@ -357,6 +357,7 @@ close_window() {
     // application, so the server hears the close request.
     XFlush(_display);
   }
+  GraphicsWindow::close_window();
 }
 
 ////////////////////////////////////////////////////////////////////
