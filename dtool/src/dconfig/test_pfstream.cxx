@@ -18,7 +18,7 @@ void ReadIt(istream& ifs) {
 
 main()
 {
-   ipfstream ipfs("ls -l");
+   IPipeStream ipfs("ls -l");
 
    ReadIt(ipfs);
 }
