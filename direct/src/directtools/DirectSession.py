@@ -218,9 +218,8 @@ class DirectSession(PandaObject):
     def disable(self):
         # Shut down all display region context tasks
         self.drList.removeContextTask()
-        if not self.fEnabledLight:
-            # Turn off camera fly
-            self.cameraControl.disableMouseFly()
+        # Turn off camera fly
+        self.cameraControl.disableMouseFly()
         # Turn off object manipulation
         self.deselectAll()
         self.manipulationControl.disableManipulation()
