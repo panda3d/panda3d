@@ -1199,19 +1199,19 @@ case 40:
 case 41:
 #line 287 "dcParser.yxx"
 {
-  default_value_packer.pack_value(yyvsp[0].u.integer);
+  default_value_packer.pack_int(yyvsp[0].u.integer);
 }
     break;
 case 42:
 #line 291 "dcParser.yxx"
 {
-  default_value_packer.pack_value(yyvsp[0].u.real);
+  default_value_packer.pack_double(yyvsp[0].u.real);
 }
     break;
 case 43:
 #line 295 "dcParser.yxx"
 {
-  default_value_packer.pack_value(yyvsp[0].str);
+  default_value_packer.pack_string(yyvsp[0].str);
 }
     break;
 case 44:
@@ -1236,7 +1236,7 @@ case 47:
 #line 311 "dcParser.yxx"
 {
   for (int i = 0; i < yyvsp[0].u.integer; i++) {
-    default_value_packer.pack_value(yyvsp[-2].u.integer);
+    default_value_packer.pack_int(yyvsp[-2].u.integer);
   }
 }
     break;
@@ -1244,7 +1244,7 @@ case 48:
 #line 317 "dcParser.yxx"
 {
   for (int i = 0; i < yyvsp[0].u.integer; i++) {
-    default_value_packer.pack_value(yyvsp[-2].u.real);
+    default_value_packer.pack_double(yyvsp[-2].u.real);
   }
 }
     break;
@@ -1437,7 +1437,7 @@ case 87:
 #line 477 "dcParser.yxx"
 {
   if (yyvsp[0].u.atomic != (DCAtomicField *)NULL) {
-    current_molecular->_fields.push_back(yyvsp[0].u.atomic);
+    current_molecular->add_atomic(yyvsp[0].u.atomic);
   }
 }
     break;
@@ -1445,10 +1445,10 @@ case 88:
 #line 483 "dcParser.yxx"
 {
   if (yyvsp[0].u.atomic != (DCAtomicField *)NULL) {
-    current_molecular->_fields.push_back(yyvsp[0].u.atomic);
-    if (current_molecular->_fields[0]->_flags != yyvsp[0].u.atomic->_flags) {
+    current_molecular->add_atomic(yyvsp[0].u.atomic);
+    if (current_molecular->get_atomic(0)->_flags != yyvsp[0].u.atomic->_flags) {
       yyerror("Mismatched flags in molecule between " + 
-              current_molecular->_fields[0]->get_name() + " and " +
+              current_molecular->get_atomic(0)->get_name() + " and " +
               yyvsp[0].u.atomic->get_name());
     }
   }
