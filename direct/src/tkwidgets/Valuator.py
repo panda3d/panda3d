@@ -695,7 +695,8 @@ def lightRGBPanel(light, style = 'mini'):
     def printToLog():
         n = light.getName()
         c=light.getColor()
-        print n + (".setColor(%.3f, %.3f, %.3f, %.3f)"%(c[0],c[1],c[2],c[3]))
+        print n + (".setColor(Vec4(%.3f, %.3f, %.3f, %.3f))" %
+                   (c[0],c[1],c[2],c[3]))
     # Check init color
     initColor = light.getColor() * 255.0
     # Create entry scale group
