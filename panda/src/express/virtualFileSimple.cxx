@@ -93,6 +93,20 @@ open_read_file() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSimple::get_file_size
+//       Access: Published, Virtual
+//  Description: Returns the current size on disk (or wherever it is)
+//               of the already-open file.  Pass in the stream that
+//               was returned by open_read_file(); some
+//               implementations may require this stream to determine
+//               the size.
+////////////////////////////////////////////////////////////////////
+streampos VirtualFileSimple::
+get_file_size(istream *stream) const {
+  return _mount->get_file_size(_local_filename, stream);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSimple::scan_local_directory
 //       Access: Protected, Virtual
 //  Description: Fills file_list up with the list of files that are

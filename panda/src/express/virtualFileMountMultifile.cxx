@@ -85,6 +85,24 @@ open_read_file(const Filename &file) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMountMultifile::get_file_size
+//       Access: Published, Virtual
+//  Description: Returns the current size on disk (or wherever it is)
+//               of the already-open file.  Pass in the stream that
+//               was returned by open_read_file(); some
+//               implementations may require this stream to determine
+//               the size.
+////////////////////////////////////////////////////////////////////
+streampos VirtualFileMountMultifile::
+get_file_size(const Filename &file, istream *) const {
+  int subfile_index = _multifile->find_subfile(file);
+  if (subfile_index < 0) {
+    return 0;
+  }
+  return _multifile->get_subfile_length(subfile_index);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileMountMultifile::scan_directory
 //       Access: Public, Virtual
 //  Description: Fills the given vector up with the list of filenames

@@ -42,6 +42,7 @@ public:
   virtual bool is_regular_file() const;
 
   virtual istream *open_read_file() const;
+  virtual streampos get_file_size(istream *stream) const;
 
 protected:
   virtual bool scan_local_directory(VirtualFileList *file_list, 

@@ -164,6 +164,20 @@ open_read_file() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::get_file_size
+//       Access: Published, Virtual
+//  Description: Returns the current size on disk (or wherever it is)
+//               of the already-open file.  Pass in the stream that
+//               was returned by open_read_file(); some
+//               implementations may require this stream to determine
+//               the size.
+////////////////////////////////////////////////////////////////////
+streampos VirtualFile::
+get_file_size(istream *stream) const {
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFile::close_read_file
 //       Access: Public
 //  Description: Closes a file opened by a previous call to
@@ -206,6 +220,27 @@ read_file(string &result) const {
     return false;
   }
 
+  bool okflag = read_file(in, result);
+
+  close_read_file(in);
+
+  if (!okflag) {
+    express_cat.info()
+      << "Error while reading " << get_filename() << "\n";
+  }
+  return okflag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::read_file
+//       Access: Public, Static
+//  Description: Fills up the indicated string with the contents of
+//               the just-opened file.  Returns true on success, false
+//               otherwise.  If the string was not empty on entry, the
+//               data read from the file will be concatenated onto it.
+////////////////////////////////////////////////////////////////////
+bool VirtualFile::
+read_file(istream *in, string &result) {
   // Repeatedly appending into a string seems to be prohibitively
   // expensive on MSVC7's implementation of string, but the vector
   // implementation works much better.  Even still, it seems to be
@@ -213,7 +248,7 @@ read_file(string &result) const {
   // time.
   pvector<char> result_vec;
 
-  static const int buffer_size = 1024;
+  static const size_t buffer_size = 1024;
   char buffer[buffer_size];
 
   in->read(buffer, buffer_size);
@@ -223,16 +258,36 @@ read_file(string &result) const {
     in->read(buffer, buffer_size);
     count = in->gcount();
   }
-  result.assign(&result_vec[0], result_vec.size());
+  result.append(&result_vec[0], result_vec.size());
 
-  bool failed = in->fail() && !in->eof();
-  close_read_file(in);
+  return (!in->fail() || in->eof());
+}
 
-  if (failed) {
-    express_cat.info()
-      << "Error while reading " << get_filename() << "\n";
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::read_file
+//       Access: Public, Static
+//  Description: As in read_file() with two parameters, above, but
+//               only reads up to max_bytes bytes from the file.
+////////////////////////////////////////////////////////////////////
+bool VirtualFile::
+read_file(istream *in, string &result, size_t max_bytes) {
+  pvector<char> result_vec;
+
+  static const size_t buffer_size = 1024;
+  char buffer[buffer_size];
+
+  in->read(buffer, min(buffer_size, max_bytes));
+  size_t count = in->gcount();
+  while (count != 0) {
+    nassertr(count <= max_bytes, false);
+    result_vec.insert(result_vec.end(), buffer, buffer + count);
+    max_bytes -= count;
+    in->read(buffer, min(buffer_size, max_bytes));
+    count = in->gcount();
   }
-  return !failed;
+  result.append(&result_vec[0], result_vec.size());
+
+  return (!in->fail() || in->eof());
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -41,9 +41,10 @@ public:
   virtual bool is_regular_file(const Filename &file) const;
 
   virtual istream *open_read_file(const Filename &file) const;
+  virtual streampos get_file_size(const Filename &file, istream *stream) const;
+
   virtual bool scan_directory(vector_string &contents, 
                               const Filename &dir) const;
-
 
 public:
   virtual TypeHandle get_type() const {
