@@ -143,6 +143,11 @@ write_object(const TypedWritable *object) {
         util_cat.info()
           << "Writing " << registered_type << " instead of " << type << "\n";
         type = registered_type;
+
+      } else if (util_cat.is_debug()) {
+        util_cat.debug()
+          << "Writing " << type << " object id " << object_id
+          << " to bam file\n";
       }
 
       write_handle(dg, type);
