@@ -133,8 +133,6 @@ private:
   WrapMode _wrapv;
   FilterType _minfilter;
   FilterType _magfilter;
-  FilterType _magfiltercolor;
-  FilterType _magfilteralpha;
   int _anisotropic_degree;
 
   // A Texture keeps a list (actually, a map) of all the GSG's that it

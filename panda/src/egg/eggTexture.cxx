@@ -41,8 +41,6 @@ EggTexture(const string &tref_name, const string &filename)
   _wrap_v = WM_unspecified;
   _minfilter = FT_unspecified;
   _magfilter = FT_unspecified;
-  _magfilteralpha = FT_unspecified;
-  _magfiltercolor = FT_unspecified;
   _anisotropic_degree = 0;
   _env_type = ET_unspecified;
   _flags = 0;
@@ -75,8 +73,6 @@ operator = (const EggTexture &copy) {
   _wrap_v = copy._wrap_v;
   _minfilter = copy._minfilter;
   _magfilter = copy._magfilter;
-  _magfilteralpha = copy._magfilteralpha;
-  _magfiltercolor = copy._magfiltercolor;
   _anisotropic_degree = copy._anisotropic_degree;
   _env_type = copy._env_type;
   _flags = copy._flags;
@@ -125,16 +121,6 @@ write(ostream &out, int indent_level) const {
   if (get_magfilter() != FT_unspecified) {
     indent(out, indent_level + 2)
       << "<Scalar> magfilter { " << get_magfilter() << " }\n";
-  }
-
-  if (get_magfilteralpha() != FT_unspecified) {
-    indent(out, indent_level + 2)
-      << "<Scalar> magfilteralpha { " << get_magfilteralpha() << " }\n";
-  }
-
-  if (get_magfiltercolor() != FT_unspecified) {
-    indent(out, indent_level + 2)
-      << "<Scalar> magfiltercolor { " << get_magfiltercolor() << " }\n";
   }
 
   if (has_anisotropic_degree()) {
@@ -244,8 +230,6 @@ is_equivalent_to(const EggTexture &other, int eq) const {
         _wrap_v != other._wrap_v ||
         _minfilter != other._minfilter ||
         _magfilter != other._magfilter ||
-        _magfilteralpha != other._magfilteralpha ||
-        _magfiltercolor != other._magfiltercolor ||
         _env_type != other._env_type) {
       return false;
     }
@@ -333,16 +317,12 @@ sorts_less_than(const EggTexture &other, int eq) const {
     if (_magfilter != other._magfilter) {
       return (int)_magfilter < (int)other._magfilter;
     }
-    if (_magfilteralpha != other._magfilteralpha) {
-      return (int)_magfilteralpha < (int)other._magfilteralpha;
-    }
-    if (_magfiltercolor != other._magfiltercolor) {
-      return (int)_magfiltercolor < (int)other._magfiltercolor;
+    if (_anisotropic_degree != other._anisotropic_degree) {
+      return _anisotropic_degree < other._anisotropic_degree);
     }
     if (_env_type != other._env_type) {
       return (int)_env_type < (int)other._env_type;
     }
-
     if (EggRenderMode::operator != (other)) {
       return EggRenderMode::operator < (other);
     }

@@ -106,12 +106,6 @@ public:
   INLINE void set_magfilter(FilterType type);
   INLINE FilterType get_magfilter() const;
 
-  INLINE void set_magfilteralpha(FilterType type);
-  INLINE FilterType get_magfilteralpha() const;
-
-  INLINE void set_magfiltercolor(FilterType type);
-  INLINE FilterType get_magfiltercolor() const;
-
   INLINE void set_anisotropic_degree(int anisotropic_degree);
   INLINE void clear_anisotropic_degree();
   INLINE bool has_anisotropic_degree() const;

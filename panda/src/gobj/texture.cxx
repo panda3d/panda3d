@@ -561,8 +561,6 @@ write_datagram(BamWriter *manager, Datagram &me) {
   me.add_uint8(_wrapv);
   me.add_uint8(_minfilter);
   me.add_uint8(_magfilter);
-  me.add_uint8(_magfiltercolor);
-  me.add_uint8(_magfilteralpha);
   me.add_int16(_anisotropic_degree);
 
   // We also need to write out the pixel buffer's format, even though
@@ -642,9 +640,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _wrapv = (enum WrapMode) scan.get_uint8();
   _minfilter = (enum FilterType) scan.get_uint8();
   _magfilter = (enum FilterType) scan.get_uint8();
-  _magfiltercolor = (enum FilterType) scan.get_uint8();
-  _magfilteralpha = (enum FilterType) scan.get_uint8();
-
   _anisotropic_degree = scan.get_int16();
 
   if (scan.get_remaining_size() > 0) {

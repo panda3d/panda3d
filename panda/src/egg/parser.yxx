@@ -351,23 +351,6 @@ texture_body:
     } else {
       texture->set_magfilter(f);
     }
-
-  } else if (cmp_nocase_uh(name, "magfilteralpha") == 0) {
-    EggTexture::FilterType f = EggTexture::string_filter_type(strval);
-    if (f == EggTexture::FT_unspecified) {
-      eggyywarning("Unknown texture filter type " + strval);
-    } else {
-      texture->set_magfilteralpha(f);
-    }
-
-  } else if (cmp_nocase_uh(name, "magfiltercolor") == 0) {
-    EggTexture::FilterType f = EggTexture::string_filter_type(strval);
-    if (f == EggTexture::FT_unspecified) {
-      eggyywarning("Unknown texture filter type " + strval);
-    } else {
-      texture->set_magfiltercolor(f);
-    }
-
   } else if (cmp_nocase_uh(name, "anisotropic_degree") == 0) {
     texture->set_anisotropic_degree(value);
 

@@ -166,46 +166,6 @@ get_magfilter() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::set_magfilteralpha
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void EggTexture::
-set_magfilteralpha(FilterType type) {
-  _magfilteralpha = type;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::get_magfilteralpha
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE EggTexture::FilterType EggTexture::
-get_magfilteralpha() const {
-  return _magfilteralpha;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::set_magfiltercolor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void EggTexture::
-set_magfiltercolor(FilterType type) {
-  _magfiltercolor = type;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggTexture::get_magfiltercolor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE EggTexture::FilterType EggTexture::
-get_magfiltercolor() const {
-  return _magfiltercolor;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::set_anisotropic_degree
 //       Access: Public
 //  Description: Sets the degree of anisotropic filtering for this
@@ -253,6 +213,8 @@ has_anisotropic_degree() const {
 INLINE int EggTexture::
 get_anisotropic_degree() const {
   nassertr(has_anisotropic_degree(), 1);
+
+  // note: _anisotropic_degree's of 0 and 1 are equivalent (no anisotropic filtering to be done by gsg)
   return _anisotropic_degree;
 }
 
