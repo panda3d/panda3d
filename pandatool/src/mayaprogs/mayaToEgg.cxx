@@ -67,6 +67,14 @@ MayaToEgg() :
      &MayaToEgg::dispatch_none, &_respect_maya_double_sided);
 
   add_option
+    ("suppress-vcolor", "", 0,
+     "Ignore vertex color for geometry that has a texture applied.  "
+     "(This is the way Maya normally renders internally.)  The egg flag "
+     "'vertex-color' may be applied to a particular model to override "
+     "this setting locally.",
+     &MayaToEgg::dispatch_none, &_suppress_vertex_color);
+
+  add_option
     ("trans", "type", 0,
      "Specifies which transforms in the Maya file should be converted to "
      "transforms in the egg file.  The option may be one of all, model, "
@@ -131,6 +139,7 @@ run() {
   converter._polygon_output = _polygon_output;
   converter._polygon_tolerance = _polygon_tolerance;
   converter._respect_maya_double_sided = _respect_maya_double_sided;
+  converter._always_show_vertex_color = !_suppress_vertex_color;
   converter._transform_type = _transform_type;
 
   vector_string::const_iterator si;
