@@ -30,7 +30,7 @@
 //               consists of an arbitrary header followed by a number
 //               of datagrams.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS DatagramInputFile : public DatagramGenerator {
+class EXPCL_PANDA DatagramInputFile : public DatagramGenerator {
 public:
   INLINE DatagramInputFile();
 
