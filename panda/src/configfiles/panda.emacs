@@ -20,6 +20,7 @@
 ; There's too much disagreement between different editors
 ; (particularly Windows editors) over how many spaces a tab
 ; represents.  Better not to put them any any source files at all.
+(load "custom")
 (custom-set-variables
  '(indent-tabs-mode nil))
 
