@@ -1910,25 +1910,21 @@ expand_basename(const string &params) {
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_makeguid(const string &params) {
-  // Split the parameter into tokens based on the spaces.
-  vector<string> names;
-  tokenize_whitespace(expand_string(params), names);
+  // Expand all of the parameters into a single string.
+  string expansion = trim_blanks(expand_string(params));
 
-  if (names.size() != 1) {
-    cerr << "makeguid only accepts one string.\n";
+  if (expansion.size() == 0) {
+    cerr << "makeguid requires an argument.\n";
     return string();
   }
 
   PP_MD5_CTX context;
   unsigned char digest[16];
   
-  unsigned int len = names[0].size();
-  unsigned char *name = new unsigned char[len];
-  memcpy(name, names[0].c_str(), len);
   MD5Init(&context);
-  MD5Update(&context, name, len);
+  MD5Update(&context, reinterpret_cast<const unsigned char *>(expansion.data()),
+            expansion.size());
   MD5Final(digest, &context);
-  delete name;
 
   string guid;
   int i = 0;
