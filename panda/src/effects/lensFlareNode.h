@@ -51,7 +51,8 @@ PUBLISHED:
   INLINE void set_light_source(PT_Node source);
 
 public:
-  virtual bool sub_render(AllTransitionsWrapper &trans,
+  virtual bool sub_render(const AllTransitionsWrapper &input_trans,
+                          AllTransitionsWrapper &modify_trans,
                           RenderTraverser *trav);
   virtual bool has_sub_render() const;
 

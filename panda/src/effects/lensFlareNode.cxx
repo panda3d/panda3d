@@ -304,7 +304,8 @@ render_children(const vector_relation &arcs,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool LensFlareNode::
-sub_render(AllTransitionsWrapper &trans, RenderTraverser *trav) {
+sub_render(const AllTransitionsWrapper &input_trans,
+           AllTransitionsWrapper &, RenderTraverser *trav) {
   GraphicsStateGuardian *gsg = trav->get_gsg();
 
   nassertr(_light_node != (Node*) NULL, false);
@@ -321,7 +322,7 @@ sub_render(AllTransitionsWrapper &trans, RenderTraverser *trav) {
   LMatrix4f modelview_mat;
 
   const TransformTransition *ta;
-  if (!get_transition_into(ta, trans))
+  if (!get_transition_into(ta, input_trans))
     modelview_mat = LMatrix4f::ident_mat();
   else
     modelview_mat = ta->get_matrix();
@@ -353,8 +354,8 @@ sub_render(AllTransitionsWrapper &trans, RenderTraverser *trav) {
   prepare_flares(delta, light_pos, dot);
   prepare_blind(dot, pp->get_frustum()._fnear);
 
-  render_children(_flare_arcs, trans, gsg);
-  render_child(_blind_arc, trans, gsg);
+  render_children(_flare_arcs, input_trans, gsg);
+  render_child(_blind_arc, input_trans, gsg);
 
   //Short circuit the rendering
   return false;
