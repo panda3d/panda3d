@@ -779,6 +779,15 @@ bool DownloadDb::Db::
 write(ofstream &write_stream) {
   write_header(write_stream);
 
+  // Declare these outside the loop so we do not keep creating
+  // and deleting them
+  PN_int32 phase;
+  PN_int32 version;
+  PN_int32 size;
+  PN_int32 status;
+  PN_int32 num_files;
+  PN_int32 name_length;
+  PN_int32 header_length;
 
   // Iterate over the multifiles writing them to the stream
   vector<PT(MultifileRecord)>::const_iterator i = _mfile_records.begin();
@@ -786,15 +795,14 @@ write(ofstream &write_stream) {
     _datagram.clear();
     
     // Cache some properties so we do not have to keep asking for them
-    PN_int32 phase = (*i)->_phase;
-    PN_int32 version = (*i)->_version;
-    PN_int32 size = (*i)->_size;
-    PN_int32 status = (*i)->_status;
-    PN_int32 num_files = (*i)->get_num_files();
-    PN_int32 name_length = (*i)->_name.length();
+    phase = (*i)->_phase;
+    version = (*i)->_version;
+    size = (*i)->_size;
+    status = (*i)->_status;
+    num_files = (*i)->get_num_files();
+    name_length = (*i)->_name.length();
 
     // Compute the length of this datagram
-    PN_int32 header_length;
     header_length = 
       sizeof(header_length) +  // Size of this header length
       sizeof(name_length) +    // Size of the size of the name string
@@ -1012,11 +1020,15 @@ get_version(const string &name, HashVal hash) {
 void DownloadDb::
 write_version_map(ofstream &write_stream) {
   _master_datagram.clear();
+
   VersionMap::iterator vmi;
   vectorHash::iterator i;
+  string name;
+  HashVal hash;
+
   _master_datagram.add_int32(_versions.size());
   for (vmi = _versions.begin(); vmi != _versions.end(); ++vmi) {
-    string name = (*vmi).first;
+    name = (*vmi).first;
     downloader_cat.spam()
       << "DownloadDb::write_version_map() - writing file: "
       << name << " of length: " << name.length() << endl;
@@ -1025,7 +1037,7 @@ write_version_map(ofstream &write_stream) {
     _master_datagram.add_int32((*vmi).second.size());
     for (i = (*vmi).second.begin(); i != (*vmi).second.end(); ++i) {
       // *i will point to a HashVal
-      HashVal hash = *i;
+      hash = *i;
       // Write out each uint separately
       _master_datagram.add_uint32(hash.get_value(0));
       _master_datagram.add_uint32(hash.get_value(1));

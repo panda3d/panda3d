@@ -88,8 +88,6 @@ private:
     int _total_bytes;
     bool _partial_content;
     uint _id;
-
-  private:
     char *_buffer;
   };
 
@@ -104,10 +102,9 @@ private:
   bool connect_to_server(void);
   int safe_send(int socket, const char *data, int length, long timeout);
   int safe_receive(int socket, DownloadStatus &status, int length, 
-				long timeout, int &bytes, bool &stalled);
+				long timeout, int &bytes);
   bool parse_http_response(const string &resp);
-  int attempt_read(int length, DownloadStatus &status, int &bytes_read,
-				bool &stalled);
+  int attempt_read(int length, DownloadStatus &status, int &bytes_read);
 
   typedef TokenBoard<DownloaderToken> DownloaderTokenBoard;
   DownloaderTokenBoard *_token_board;
@@ -129,6 +126,7 @@ private:
   ofstream _dest_stream;
   int _disk_buffer_size;
   bool _last_attempt_stalled;
+  bool _current_attempt_stalled;
 
   string _server_name;
   struct sockaddr_in _sin;
