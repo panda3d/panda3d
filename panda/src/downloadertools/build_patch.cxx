@@ -28,7 +28,7 @@
 int
 main(int argc, char *argv[]) {
   if (argc < 3) {
-    cerr << "Usage: build_patch <src_file> <dest_file>" << endl;
+    cerr << "Usage: build_patch <old_file> <new_file>" << endl;
     return 1;
   }
 

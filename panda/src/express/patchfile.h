@@ -83,11 +83,12 @@ private:
   // stuff for the build operation
   void build_hash_link_tables(const char *buffer_orig, PN_uint32 length_orig,
     PN_uint32 *hash_table, PN_uint32 *link_table);
-  PN_uint16 calc_hash(const char *buffer);
+  PN_uint32 calc_hash(const char *buffer);
   void find_longest_match(PN_uint32 new_pos, PN_uint32 &copy_pos, PN_uint16 &copy_length,
     PN_uint32 *hash_table, PN_uint32 *link_table, const char* buffer_orig,
     PN_uint32 length_orig, const char* buffer_new, PN_uint32 length_new);
-  PN_uint32 calc_match_length(const char* buf1, const char* buf2, PN_uint32 max_length);
+  PN_uint32 calc_match_length(const char* buf1, const char* buf2, PN_uint32 max_length,
+    PN_uint32 min_length);
 
   void emit_ADD(ofstream &write_stream, PN_uint16 length, const char* buffer,
                 PN_uint32 ADD_pos);
@@ -99,6 +100,7 @@ private:
   static const PN_uint32 _DEFAULT_FOOTPRINT_LENGTH;
   static const PN_uint32 _NULL_VALUE;
   static const PN_uint32 _MAX_RUN_LENGTH;
+  static const PN_uint32 _HASH_MASK;
 
   PN_uint32 _footprint_length;
 

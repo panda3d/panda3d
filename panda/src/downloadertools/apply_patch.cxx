@@ -28,7 +28,8 @@
 int
 main(int argc, char *argv[]) {
   if (argc < 3) {
-    cerr << "Usage: apply_patch <patch> <file>" << endl;
+    cerr << "Usage: apply_patch <patch_file> <old_file>" << endl;
+    cerr << "Will overwrite old_file" << endl;
     return 1;
   }
 
