@@ -33,7 +33,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 XFileMesh::
-XFileMesh() {
+XFileMesh(CoordinateSystem cs) : _cs(cs) {
   _has_normals = false;
   _has_colors = false;
   _has_uvs = false;
@@ -260,6 +260,13 @@ add_material(XFileMaterial *material) {
 ////////////////////////////////////////////////////////////////////
 bool XFileMesh::
 create_polygons(EggGroupNode *egg_parent, XFileToEggConverter *converter) {
+  if (has_name()) {
+    // Put a named mesh within its own group.
+    EggGroup *egg_group = new EggGroup(get_name());
+    egg_parent->add_child(egg_group);
+    egg_parent = egg_group;
+  }
+
   EggVertexPool *vpool = new EggVertexPool(get_name());
   egg_parent->add_child(vpool);
   Faces::const_iterator fi;
@@ -302,6 +309,10 @@ create_polygons(EggGroupNode *egg_parent, XFileToEggConverter *converter) {
         temp_vtx.set_normal(LCAST(double, normal->_normal));
       }
 
+      // Transform the vertex into the appropriate (global) coordinate
+      // space.
+      temp_vtx.transform(egg_parent->get_node_to_vertex());
+
       // Now get a real EggVertex matching our template.
       EggVertex *egg_vtx = vpool->create_unique_vertex(temp_vtx);
       egg_poly->add_vertex(egg_vtx);
@@ -313,6 +324,13 @@ create_polygons(EggGroupNode *egg_parent, XFileToEggConverter *converter) {
       XFileMaterial *material = _materials[material_index];
       material->apply_to_egg(egg_poly, converter);
     }
+  }
+
+  if (!has_normals()) {
+    // If we don't have explicit normals, make some up, per the DX
+    // spec.  Since the DX spec doesn't mention anything about a
+    // crease angle, we should be as generous as possible.
+    egg_parent->recompute_vertex_normals(180.0, _cs);
   }
 
   return true;

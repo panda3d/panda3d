@@ -24,6 +24,7 @@
 #include "pmap.h"
 #include "indirectCompareTo.h"
 #include "namable.h"
+#include "coordinateSystem.h"
 
 class XFileMesh;
 class XFileVertex;
@@ -43,7 +44,7 @@ class Datagram;
 ////////////////////////////////////////////////////////////////////
 class XFileMesh : public Namable {
 public:
-  XFileMesh();
+  XFileMesh(CoordinateSystem cs = CS_yup_left);
   ~XFileMesh();
 
   void clear();
@@ -85,6 +86,8 @@ private:
   typedef pvector<XFileNormal *> Normals;
   typedef pvector<XFileMaterial *> Materials;
   typedef pvector<XFileFace *> Faces;
+
+  CoordinateSystem _cs;
 
   Vertices _vertices;
   Normals _normals;

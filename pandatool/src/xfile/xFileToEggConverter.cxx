@@ -195,9 +195,13 @@ get_toplevel() {
   HRESULT hr;
   LPDIRECTXFILEDATA obj;
 
+  PT(EggGroup) egg_toplevel = new EggGroup;
+  bool any_frames = false;
+
   hr = _dx_file_enum->GetNextDataObject(&obj);
   while (hr == DXFILE_OK) {
-    if (!convert_data_object(obj, _egg_data)) {
+    if (!convert_toplevel_object(obj, _egg_data,
+                                 egg_toplevel, any_frames)) {
       return false;
     }
     hr = _dx_file_enum->GetNextDataObject(&obj);
@@ -209,6 +213,71 @@ get_toplevel() {
     return false;
   }
 
+  if (!any_frames) {
+    // If the file contained no frames at all, then all of the meshes
+    // that appeared at the toplevel were meant to be directly
+    // included.
+    _egg_data->steal_children(*egg_toplevel);
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileToEggConverter::convert_toplevel_object
+//       Access: Private
+//  Description: Converts the indicated object, encountered outside of
+//               any Frames, to the appropriate egg structures.
+////////////////////////////////////////////////////////////////////
+bool XFileToEggConverter::
+convert_toplevel_object(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent,
+                        EggGroupNode *egg_toplevel, bool &any_frames) {
+  HRESULT hr;
+
+  // Determine what type of data object we have.
+  const GUID *type;
+  hr = obj->GetType(&type);
+  if (hr != DXFILE_OK) {
+    xfile_cat.error()
+      << "Unable to get type of template\n";
+    return false;
+  }
+
+  if (*type == mydef_TID_D3DRMHeader) {
+    // Quietly ignore headers.
+
+  } else if (*type == TID_D3DRMMaterial) {
+    // Quietly ignore toplevel materials.  These will presumably be
+    // referenced below.
+
+  } else if (*type == TID_D3DRMFrame) {
+    any_frames = true;
+    if (!convert_frame(obj, egg_parent)) {
+      return false;
+    }
+
+  } else if (*type == TID_D3DRMFrameTransformMatrix) {
+    if (!convert_transform(obj, egg_parent)) {
+      return false;
+    }
+
+  } else if (*type == TID_D3DRMMesh) {
+    // Assume a Mesh at the toplevel is just present to define a
+    // reference that will be included below.  Convert it into the
+    // egg_toplevel group, where it will be ignored unless there are
+    // no frames at all in the file.
+    if (!convert_mesh(obj, egg_toplevel)) {
+      return false;
+    }
+
+  } else {
+    if (xfile_cat.is_debug()) {
+      xfile_cat.debug()
+        << "Ignoring toplevel object of unknown type: "
+        << get_object_name(obj) << "\n";
+    }
+  }
+  
   return true;
 }
 
@@ -222,12 +291,22 @@ bool XFileToEggConverter::
 convert_object(LPDIRECTXFILEOBJECT obj, EggGroupNode *egg_parent) {
   HRESULT hr;
   LPDIRECTXFILEDATA data_obj;
+  LPDIRECTXFILEDATAREFERENCE ref_obj;
 
   // See if the object is a data object.
   hr = obj->QueryInterface(IID_IDirectXFileData, (void **)&data_obj);
   if (hr == DD_OK) {
     // It is.
     return convert_data_object(data_obj, egg_parent);
+  }
+
+  // Or maybe it's a reference to a previous object.
+  hr = obj->QueryInterface(IID_IDirectXFileDataReference, (void **)&ref_obj);
+  if (hr == DD_OK) {
+    // It is.
+    if (ref_obj->Resolve(&data_obj) == DXFILE_OK) {
+      return convert_data_object(data_obj, egg_parent);
+    }
   }
 
   // It isn't.
@@ -345,7 +424,7 @@ convert_transform(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent) {
   if (egg_parent->is_of_type(EggGroup::get_class_type())) {
     EggGroup *egg_group = DCAST(EggGroup, egg_parent);
     egg_group->set_transform(LCAST(double, mat));
-    egg_group->set_group_type(EggGroup::GT_instance);
+
   } else {
     xfile_cat.error()
       << "Transform " << get_object_name(obj)
@@ -370,7 +449,7 @@ convert_mesh(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent) {
     return false;
   }
 
-  XFileMesh mesh;
+  XFileMesh mesh(_egg_data->get_coordinate_system());
   mesh.set_name(get_object_name(obj));
   if (!mesh.read_mesh_data(raw_data)) {
     return false;
@@ -411,12 +490,22 @@ bool XFileToEggConverter::
 convert_mesh_object(LPDIRECTXFILEOBJECT obj, XFileMesh &mesh) {
   HRESULT hr;
   LPDIRECTXFILEDATA data_obj;
+  LPDIRECTXFILEDATAREFERENCE ref_obj;
 
   // See if the object is a data object.
   hr = obj->QueryInterface(IID_IDirectXFileData, (void **)&data_obj);
   if (hr == DD_OK) {
     // It is.
     return convert_mesh_data_object(data_obj, mesh);
+  }
+
+  // Or maybe it's a reference to a previous object.
+  hr = obj->QueryInterface(IID_IDirectXFileDataReference, (void **)&ref_obj);
+  if (hr == DD_OK) {
+    // It is.
+    if (ref_obj->Resolve(&data_obj) == DXFILE_OK) {
+      return convert_mesh_data_object(data_obj, mesh);
+    }
   }
 
   // It isn't.
@@ -705,12 +794,22 @@ bool XFileToEggConverter::
 convert_material_object(LPDIRECTXFILEOBJECT obj, XFileMaterial &material) {
   HRESULT hr;
   LPDIRECTXFILEDATA data_obj;
+  LPDIRECTXFILEDATAREFERENCE ref_obj;
 
   // See if the object is a data object.
   hr = obj->QueryInterface(IID_IDirectXFileData, (void **)&data_obj);
   if (hr == DD_OK) {
     // It is.
     return convert_material_data_object(data_obj, material);
+  }
+
+  // Or maybe it's a reference to a previous object.
+  hr = obj->QueryInterface(IID_IDirectXFileDataReference, (void **)&ref_obj);
+  if (hr == DD_OK) {
+    // It is.
+    if (ref_obj->Resolve(&data_obj) == DXFILE_OK) {
+      return convert_material_data_object(data_obj, material);
+    }
   }
 
   // It isn't.

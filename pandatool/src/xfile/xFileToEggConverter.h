@@ -61,6 +61,8 @@ public:
 
 private:
   bool get_toplevel();
+  bool convert_toplevel_object(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent,
+                               EggGroupNode *egg_toplevel, bool &any_frames);
   bool convert_object(LPDIRECTXFILEOBJECT obj, EggGroupNode *egg_parent);
   bool convert_data_object(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent);
   bool convert_frame(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent);
