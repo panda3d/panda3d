@@ -77,9 +77,17 @@ PUBLISHED:
   EggVertexPool(const EggVertexPool &copy);
   ~EggVertexPool();
 
+  INLINE bool has_vertex(int index) const;
+
+  bool has_forward_vertices() const;
+  bool has_defined_vertices() const;
+
   // Returns NULL if there is no such vertex.
   EggVertex *get_vertex(int index) const;
   INLINE EggVertex *operator [](int index) const;
+
+  // Returns a forward reference if there is no such vertex.
+  EggVertex *get_forward_vertex(int index);
 
   // Returns 0 if the pool is empty.
   int get_highest_index() const;
@@ -94,7 +102,7 @@ public:
 PUBLISHED:
   // add_vertex() adds a freshly-allocated vertex.  It is up to the
   // user to allocate the vertex.
-  void add_vertex(EggVertex *vertex, int index = -1);
+  EggVertex *add_vertex(EggVertex *vertex, int index = -1);
 
   // make_new_vertex() allocates and returns a new vertex from the
   // pool.
@@ -124,6 +132,7 @@ protected:
 private:
   UniqueVertices _unique_vertices;
   IndexVertices _index_vertices;
+  int _highest_index;
 
 
 public:

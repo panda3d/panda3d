@@ -20,7 +20,7 @@
 #include "eggPrimitive.h"
 #include "eggUtilities.h"
 
-#include <indent.h>
+#include "indent.h"
 
 TypeHandle EggVertexPool::_type_handle;
 
@@ -31,6 +31,7 @@ TypeHandle EggVertexPool::_type_handle;
 ////////////////////////////////////////////////////////////////////
 EggVertexPool::
 EggVertexPool(const string &name) : EggNode(name) {
+  _highest_index = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -62,20 +63,62 @@ EggVertexPool::
   // Sanity check.
   nassertv(_index_vertices.size() == _unique_vertices.size());
 
-  iterator i;
-  for (i = begin(); i != end(); ++i) {
-    // Sanity checks on our internal data structures.
-    nassertv((*i)->_pool == this);
-    nassertv(get_vertex((*i)->_index) == (*i));
+  IndexVertices::iterator ivi;
+  for (ivi = _index_vertices.begin(); ivi != _index_vertices.end(); ++ivi) {
+    int index = (*ivi).first;
+    EggVertex *vertex = (*ivi).second;
 
-    (*i)->_pool = NULL;
-    (*i)->_index = -1;
+    // Sanity checks on our internal data structures.
+    nassertv(vertex->_pool == this);
+    nassertv(vertex->get_index() == index);
+
+    vertex->_pool = NULL;
+    vertex->_index = -1;
   }
 
-  _index_vertices.erase(_index_vertices.begin(), _index_vertices.end());
-  _unique_vertices.erase(_unique_vertices.begin(), _unique_vertices.end());
+  _index_vertices.clear();
+  _unique_vertices.clear();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertexPool::has_forward_vertices
+//       Access: Published
+//  Description: Returns true if any vertices in the pool are
+//               undefined forward-reference vertices, false if all
+//               vertices are defined.
+////////////////////////////////////////////////////////////////////
+bool EggVertexPool::
+has_forward_vertices() const {
+  IndexVertices::const_iterator ivi;
+  for (ivi = _index_vertices.begin(); ivi != _index_vertices.end(); ++ivi) {
+    EggVertex *vertex = (*ivi).second;
+    if (vertex->is_forward_reference()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertexPool::has_defined_vertices
+//       Access: Published
+//  Description: Returns true if any vertices in the pool are
+//               fully defined vertices, false if all vertices are
+//               forward references.
+////////////////////////////////////////////////////////////////////
+bool EggVertexPool::
+has_defined_vertices() const {
+  IndexVertices::const_iterator ivi;
+  for (ivi = _index_vertices.begin(); ivi != _index_vertices.end(); ++ivi) {
+    EggVertex *vertex = (*ivi).second;
+    if (!vertex->is_forward_reference()) {
+      return true;
+    }
+  }
+
+  return false;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertexPool::get_vertex
@@ -91,6 +134,35 @@ get_vertex(int index) const {
   if (ivi == _index_vertices.end()) {
     return NULL;
   } else {
+    EggVertex *vertex = (*ivi).second;
+    if (vertex->is_forward_reference()) {
+      return NULL;
+    }
+    return vertex;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertexPool::get_forward_vertex
+//       Access: Public
+//  Description: Returns the vertex in the pool with the indicated
+//               index number.  If there is not a vertex in the pool
+//               with the indicated index number, creates a special
+//               forward-reference EggVertex that has no data, on the
+//               assumption that the vertex pool has not yet been
+//               fully read and more data will be available later.
+////////////////////////////////////////////////////////////////////
+EggVertex *EggVertexPool::
+get_forward_vertex(int index) {
+  nassertr(index >= 0, NULL);
+
+  IndexVertices::const_iterator ivi = _index_vertices.find(index);
+
+  if (ivi == _index_vertices.end()) {
+    PT(EggVertex) forward = new EggVertex;
+    forward->_forward_reference = true;
+    return add_vertex(forward, index);
+  } else {
     return (*ivi).second;
   }
 }
@@ -99,16 +171,11 @@ get_vertex(int index) const {
 //     Function: EggVertexPool::get_highest_index
 //       Access: Public
 //  Description: Returns the highest index number used by any vertex
-//               in the pool.
+//               in the pool (except forward references).
 ////////////////////////////////////////////////////////////////////
 int EggVertexPool::
 get_highest_index() const {
-  if (_index_vertices.empty()) {
-    return 0;
-  }
-  IndexVertices::const_reverse_iterator ivi = _index_vertices.rbegin();
-  nassertr((*ivi).first == (*ivi).second->get_index(), 0);
-  return (*ivi).first;
+  return _highest_index;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -166,26 +233,59 @@ size() const {
 //               the vertex pool.  If the index number is supplied,
 //               tries to assign that index number; it is an error if
 //               the index number is already in use.
+//
+//               It is possible that a forward reference to this
+//               vertex was requested in the past; if so, the data
+//               from the supplied vertex is copied onto the forward
+//               reference, which becomes the actual vertex.  In this
+//               case, a different pointer is saved (and returned)
+//               than the one actually passed in.  In the usual case,
+//               however, the vertex pointer passed in is the one that
+//               is saved in the vertex pool and returned from this
+//               method.
 ////////////////////////////////////////////////////////////////////
-void EggVertexPool::
+EggVertex *EggVertexPool::
 add_vertex(EggVertex *vertex, int index) {
+  // Save a pointer to the vertex.
+  PT(EggVertex) vertex_keep = vertex;
+
   // Don't try to add a vertex while it still belongs to another pool.
-  nassertv(vertex->_pool == NULL);
+  nassertr(vertex->_pool == NULL, NULL);
 
   if (index == -1) {
     index = get_highest_index() + 1;
   }
   // Always supply an index number >= 0.
-  nassertv(index >= 0);
+  nassertr(index >= 0, NULL);
 
-  // Don't try to duplicate index numbers within a vertex pool.
-  nassertv(_index_vertices.find(index) == _index_vertices.end());
+  // Check for a forward reference.
+  IndexVertices::const_iterator ivi = _index_vertices.find(index);
 
+  if (ivi != _index_vertices.end()) {
+    EggVertex *orig_vertex = (*ivi).second;
+    if (orig_vertex->is_forward_reference() &&
+        !vertex->is_forward_reference()) {
+      (*orig_vertex) = (*vertex);
+      orig_vertex->_forward_reference = false;
+      _highest_index = max(_highest_index, index);
+      return orig_vertex;
+    }
+
+    // Oops, you duplicated a vertex index.
+    nassertr(false, NULL);
+  }
+  
   _unique_vertices.insert(vertex);
   _index_vertices[index] = vertex;
 
+  if (!vertex->is_forward_reference()) {
+    _highest_index = max(_highest_index, index);
+  }
+
   vertex->_pool = this;
   vertex->_index = index;
+
+  return vertex;
 }
 
 
@@ -208,9 +308,7 @@ create_unique_vertex(const EggVertex &copy) {
   }
 
   // Create a new vertex.
-  EggVertex *vtx = new EggVertex(copy);
-  add_vertex(vtx);
-  return vtx;
+  return add_vertex(new EggVertex(copy));
 }
 
 
@@ -230,6 +328,24 @@ remove_vertex(EggVertex *vertex) {
 
   // Removing the vertex from the indexed list is simple.
   _index_vertices.erase(vertex->_index);
+
+  if (_highest_index == vertex->_index) {
+    // Find the new highest vertex index.
+    if (_index_vertices.empty()) {
+      _highest_index = 0;
+    } else {
+      IndexVertices::reverse_iterator ivi = _index_vertices.rbegin();
+      while (ivi != _index_vertices.rend() &&
+             (*ivi).second->is_forward_reference()) {
+        ++ivi;
+      }
+      if (ivi != _index_vertices.rend()) {
+        _highest_index = (*ivi).first;
+      } else {
+        _highest_index = 0;
+      }
+    }
+  }
 
   // Removing the vertex from the unique list is a bit trickier--there
   // might be several other vertices that are considered identical to
@@ -289,6 +405,7 @@ remove_unused_vertices() {
   // All done.  Lose the old lists.
   _unique_vertices.swap(new_unique_vertices);
   _index_vertices.swap(new_index_vertices);
+  _highest_index = _index_vertices.size() - 1;
 
   nassertr(_index_vertices.size() == _unique_vertices.size(), num_removed);
 

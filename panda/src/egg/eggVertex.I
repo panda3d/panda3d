@@ -21,13 +21,32 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::get_pool
 //       Access: Public
-//  Description:
+//  Description: Returns the vertex pool this vertex belongs in.  This
+//               may be NULL if the vertex has not been added to a
+//               pool.
 ////////////////////////////////////////////////////////////////////
 INLINE EggVertexPool *EggVertex::
 get_pool() const {
   return _pool;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::is_forward_reference
+//       Access: Public
+//  Description: Returns true if the vertex is a forward reference to
+//               some vertex that hasn't been defined yet.  In this
+//               case, the vertex may not have any properties filled
+//               in yet.
+//
+//               This can only happen if you implicitly create a
+//               vertex via EggVertexPool::get_forward_vertex().
+//               Presumably, when the vertex pool is later filled in,
+//               this vertex will be replaced with real data.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggVertex::
+is_forward_reference() const {
+  return _forward_reference;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::set_pos

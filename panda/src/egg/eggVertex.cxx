@@ -42,6 +42,7 @@ TypeHandle EggVertex::_type_handle;
 EggVertex::
 EggVertex() {
   _pool = NULL;
+  _forward_reference = false;
   _index = -1;
   _external_index = -1;
   set_pos(LPoint3d(0.0, 0.0, 0.0));
@@ -64,6 +65,7 @@ EggVertex(const EggVertex &copy)
     _num_dimensions(copy._num_dimensions)
 {
   _pool = NULL;
+  _forward_reference = false;
   _index = -1;
   test_pref_integrity();
   test_gref_integrity();

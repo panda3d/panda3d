@@ -52,6 +52,8 @@ PUBLISHED:
 
   INLINE EggVertexPool *get_pool() const;
 
+  INLINE bool is_forward_reference() const;
+
   // The pos might have 1, 2, 3, or 4 dimensions.  That complicates
   // things a bit.
   INLINE void set_pos(double pos);
@@ -116,6 +118,7 @@ PUBLISHED:
 
 private:
   EggVertexPool *_pool;
+  bool _forward_reference;
   int _index;
   int _external_index;
   LPoint4d _pos;

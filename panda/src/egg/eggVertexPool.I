@@ -18,6 +18,18 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggVertexPool::has_vertex
+//       Access: Public
+//  Description: Returns true if the indicated vertex has been defined
+//               in the vertex pool, false otherwise.  This does not
+//               include forward references.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggVertexPool::
+has_vertex(int index) const {
+  return get_vertex(index) != (EggVertex *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggVertexPool::indexing operator
 //       Access: Public
 //  Description: Returns the vertex in the pool with the indicated
@@ -39,8 +51,7 @@ operator [](int index) const {
 INLINE EggVertex *EggVertexPool::
 make_new_vertex() {
   PT(EggVertex) vertex = new EggVertex;
-  add_vertex(vertex);
-  return vertex;
+  return add_vertex(vertex);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -5,7 +5,8 @@
 
 %{
 
-#include <pandabase.h>
+#include "pandabase.h"
+#include "config_egg.h"
 #include "parserDefs.h"
 #include "lexerDefs.h"
 #include "eggObject.h"
@@ -101,6 +102,32 @@ egg_init_parser(istream &in, const string &filename,
 
 void
 egg_cleanup_parser() {
+  // Check for undefined vertex pools.
+  VertexPools::const_iterator vpi;
+  for (vpi = vertex_pools.begin(); vpi != vertex_pools.end(); ++vpi) {
+    EggVertexPool *pool = (*vpi).second;
+    if (pool->has_forward_vertices()) {
+      if (!pool->has_defined_vertices()) {
+        eggyyerror("Undefined vertex pool " + pool->get_name());
+      } else {
+        eggyyerror("Undefined vertices in pool " + pool->get_name());
+        
+        egg_cat.error(false)
+          << "Undefined vertex index numbers:";
+        EggVertexPool::const_iterator vi;
+        for (vi = pool->begin(); vi != pool->end(); ++vi) {
+          EggVertex *vertex = (*vi);
+          if (vertex->is_forward_reference()) {
+            egg_cat.error(false)
+              << " " << vertex->get_index();
+          }
+        }
+        egg_cat.error(false) 
+          << "\n";
+      }
+    }
+  }
+
   // Clean these out after we're done, so we don't keep big memory
   // structures around needlessly.
   egg_stack.clear();
@@ -580,12 +607,20 @@ vertex_pool:
         VERTEXPOOL required_name
 {
   string name = $2;
-  EggVertexPool *pool = new EggVertexPool(name);
+  EggVertexPool *pool = NULL;
 
-  if (vertex_pools.find(name) != vertex_pools.end()) {
-    eggyywarning("Duplicate vertex pool name " + name);
+  VertexPools::const_iterator vpi = vertex_pools.find(name);
+  if (vpi != vertex_pools.end()) {
+    pool = (*vpi).second;
+    if (pool->has_defined_vertices()) {
+      eggyywarning("Duplicate vertex pool name " + name);
+      pool = new EggVertexPool(name);
+      vertex_pools[name] = pool;
+    }
+  } else {
+    pool = new EggVertexPool(name);
+    vertex_pools[name] = pool;
   }
-  vertex_pools[name] = pool;
 
   egg_stack.push_back(pool);
 }
@@ -640,7 +675,7 @@ vertex:
     eggyywarning(errmsg);
     vertex_index = -1;
 
-  } else if (pool->get_vertex(vertex_index) != NULL) {
+  } else if (pool->has_vertex(vertex_index)) {
     ostringstream errmsg;
     errmsg << "Ignoring duplicate vertex index " << vertex_index
            << " in vertex pool " << pool->get_name() << ends;
@@ -1271,7 +1306,7 @@ group_vertex_ref:
 
     for (int i = 0; i < (int)nums.size(); i++) {
       int index = (int)nums[i];
-      EggVertex *vertex = pool->get_vertex(index);
+      EggVertex *vertex = pool->get_forward_vertex(index);
       if (vertex == NULL) {
         ostringstream errmsg;
         errmsg << "No vertex " << index << " in pool " << pool->get_name() 
@@ -1840,7 +1875,7 @@ primitive_vertex_ref:
 
     for (int i = 0; i < (int)nums.size(); i++) {
       int index = (int)nums[i];
-      EggVertex *vertex = pool->get_vertex(index);
+      EggVertex *vertex = pool->get_forward_vertex(index);
       if (vertex == NULL) {
         ostringstream errmsg;
         errmsg << "No vertex " << index << " in pool " << pool->get_name() 
@@ -2310,8 +2345,10 @@ vertex_pool_name:
   string name = $1;
   VertexPools::iterator vpi = vertex_pools.find(name);
   if (vpi == vertex_pools.end()) {
-    eggyyerror("Unknown vertex pool " + name);
-    $$ = PT(EggObject)();
+    // This will become a forward reference.
+    EggVertexPool *pool = new EggVertexPool(name);
+    vertex_pools[name] = pool;
+    $$ = pool;
   } else {
     $$ = (*vpi).second;
   }
