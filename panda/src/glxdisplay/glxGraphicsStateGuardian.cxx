@@ -31,7 +31,6 @@ glxGraphicsStateGuardian(const FrameBufferProperties &properties) :
   GLGraphicsStateGuardian(properties)
 {
   _context = (GLXContext)NULL;
-  _visual = (XVisualInfo *)NULL;
   _display = NULL;
 }
 
@@ -42,11 +41,6 @@ glxGraphicsStateGuardian(const FrameBufferProperties &properties) :
 ////////////////////////////////////////////////////////////////////
 glxGraphicsStateGuardian::
 ~glxGraphicsStateGuardian() {
-  if (_visual != (XVisualInfo *)NULL) {
-    XFree(_visual);
-    _visual = (XVisualInfo *)NULL;
-  }
-
   if (_context != (GLXContext)NULL) {
     glXDestroyContext(_display, _context);
     _context = (GLXContext)NULL;

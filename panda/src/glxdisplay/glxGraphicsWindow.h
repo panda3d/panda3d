@@ -21,13 +21,9 @@
 
 #include "pandabase.h"
 
+#include "glxGraphicsPipe.h"
 #include "graphicsWindow.h"
 #include "buttonHandle.h"
-
-#include <X11/Xlib.h>
-#include <GL/glx.h>
-
-class glxGraphicsPipe;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : glxGraphicsWindow
@@ -55,7 +51,7 @@ protected:
 private:
   void set_wm_properties(const WindowProperties &properties);
 
-  void setup_colormap(XVisualInfo *visual);
+  void setup_colormap(GLXFBConfig fbconfig);
   void handle_keystroke(XKeyEvent &event);
   void handle_keypress(XKeyEvent &event);
   void handle_keyrelease(XKeyEvent &event);

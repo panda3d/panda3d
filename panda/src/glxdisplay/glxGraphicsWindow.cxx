@@ -406,6 +406,24 @@ open_window() {
     return false;
   }
 
+  glxGraphicsPipe *glx_pipe;
+  DCAST_INTO_R(glx_pipe, _pipe, false);
+  glxGraphicsStateGuardian *glxgsg;
+  DCAST_INTO_R(glxgsg, _gsg, false);
+
+  XVisualInfo *visual_info = 
+    glXGetVisualFromFBConfig(_display, glxgsg->_fbconfig);
+  if (visual_info == NULL) {
+    // No X visual for this fbconfig; how can we open the window?
+    glxdisplay_cat.error()
+      << "Cannot open window without an X visual.\n";
+    return false;
+  }
+  Visual *visual = visual_info->visual;
+  int depth = visual_info->depth;
+  XFree(visual_info);
+
+
   if (!_properties.has_origin()) {
     _properties.set_origin(0, 0);
   }
@@ -413,14 +431,9 @@ open_window() {
     _properties.set_size(100, 100);
   }
 
-  glxGraphicsPipe *glx_pipe;
-  DCAST_INTO_R(glx_pipe, _pipe, false);
-  glxGraphicsStateGuardian *glxgsg;
-  DCAST_INTO_R(glxgsg, _gsg, false);
-
   Window root_window = glx_pipe->get_root();
 
-  setup_colormap(glxgsg->_visual);
+  setup_colormap(glxgsg->_fbconfig);
 
   _event_mask =
     ButtonPressMask | ButtonReleaseMask |
@@ -444,9 +457,7 @@ open_window() {
     (_display, root_window,
      _properties.get_x_origin(), _properties.get_y_origin(),
      _properties.get_x_size(), _properties.get_y_size(),
-     0,
-     glxgsg->_visual->depth, InputOutput, glxgsg->_visual->visual, 
-     attrib_mask, &wa);
+     0, depth, InputOutput, visual, attrib_mask, &wa);
 
   if (_xwindow == (Window)0) {
     glxdisplay_cat.error()
@@ -565,21 +576,29 @@ set_wm_properties(const WindowProperties &properties) {
 ////////////////////////////////////////////////////////////////////
 //     Function: glxGraphicsWindow::setup_colormap
 //       Access: Private
-//  Description: Allocates a colormap appropriate to the visual and
+//  Description: Allocates a colormap appropriate to the fbconfig and
 //               stores in in the _colormap method.
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsWindow::
-setup_colormap(XVisualInfo *visual) {
+setup_colormap(GLXFBConfig fbconfig) {
+  XVisualInfo *visual_info = glXGetVisualFromFBConfig(_display, fbconfig);
+  if (visual_info == NULL) {
+    // No X visual; no need to set up a colormap.
+    return;
+  }
+  int visual_class = visual_info->c_class;
+  Visual *visual = visual_info->visual;
+  XFree(visual_info);
+
   glxGraphicsPipe *glx_pipe;
   DCAST_INTO_V(glx_pipe, _pipe);
   Window root_window = glx_pipe->get_root();
 
-  int visual_class = visual->c_class;
   int rc, is_rgb;
 
   switch (visual_class) {
     case PseudoColor:
-      rc = glXGetConfig(_display, visual, GLX_RGBA, &is_rgb);
+      rc = glXGetFBConfigAttrib(_display, fbconfig, GLX_RGBA, &is_rgb);
       if (rc == 0 && is_rgb) {
         glxdisplay_cat.warning()
           << "mesa pseudocolor not supported.\n";
@@ -588,19 +607,19 @@ setup_colormap(XVisualInfo *visual) {
 
       } else {
         _colormap = XCreateColormap(_display, root_window,
-                                    visual->visual, AllocAll);
+                                    visual, AllocAll);
       }
       break;
     case TrueColor:
     case DirectColor:
       _colormap = XCreateColormap(_display, root_window,
-                                  visual->visual, AllocNone);
+                                  visual, AllocNone);
       break;
     case StaticColor:
     case StaticGray:
     case GrayScale:
       _colormap = XCreateColormap(_display, root_window,
-                                  visual->visual, AllocNone);
+                                  visual, AllocNone);
       break;
     default:
       glxdisplay_cat.error()

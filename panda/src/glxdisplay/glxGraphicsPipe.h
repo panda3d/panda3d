@@ -23,7 +23,6 @@
 #include "graphicsWindow.h"
 #include "graphicsPipe.h"
 
-class glxGraphicsWindow;
 class FrameBufferProperties;
 
 #ifdef CPPPARSER
@@ -32,6 +31,8 @@ typedef int Display;
 typedef int Window;
 typedef int XErrorEvent;
 typedef int XVisualInfo;
+typedef int GLXFBConfig;
+typedef int GLXPbuffer;
 typedef int Atom;
 typedef int XIM;
 typedef int XIC;
@@ -39,6 +40,20 @@ typedef int XIC;
 #include <X11/Xlib.h>
 #include <GL/glx.h>
 #endif  // CPPPARSER
+
+#ifndef GLX_VERSION_1_3
+  // Pre-glx 1.3, these GLXFBConfig definitions might have been
+  // defined as SGI extensions.
+  #define GLX_RGBA_TYPE GLX_RGBA_TYPE_SGIX
+  #define GLXFBConfig GLXFBConfigSGIX
+  #define glXChooseFBConfig glXChooseFBConfigSGIX
+  #define glXCreateNewContext glXCreateContextWithConfigSGIX
+  #define glXGetVisualFromFBConfig glXGetVisualFromFBConfigSGIX
+  #define glXGetFBConfigAttrib glXGetFBConfigAttribSGIX
+  #define glXCreatePbuffer glXCreateGLXPbufferSGIX
+  #define glXDestroyPbuffer glXDestroyGLXPbufferSGIX
+#endif // GLX_VERSION_1_3
+
 
 ////////////////////////////////////////////////////////////////////
 //       Class : glxGraphicsPipe
@@ -66,9 +81,9 @@ protected:
   virtual PT(GraphicsWindow) make_window(GraphicsStateGuardian *gsg);
 
 private:
-  XVisualInfo *choose_visual(FrameBufferProperties &properties) const;
-  XVisualInfo *try_for_visual(int framebuffer_mode,
-                              int want_depth_bits, int want_color_bits) const;
+  GLXFBConfig choose_fbconfig(FrameBufferProperties &properties) const;
+  GLXFBConfig try_for_fbconfig(int framebuffer_mode,
+                               int want_depth_bits, int want_color_bits) const;
 
   static void install_error_handlers();
   static int error_handler(Display *display, XErrorEvent *error);

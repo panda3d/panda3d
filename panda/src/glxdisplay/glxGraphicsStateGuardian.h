@@ -22,9 +22,7 @@
 #include "pandabase.h"
 
 #include "glGraphicsStateGuardian.h"
-
-#include <X11/Xlib.h>
-#include <GL/glx.h>
+#include "glxGraphicsPipe.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : glxGraphicsStateGuardian
@@ -37,7 +35,7 @@ public:
   virtual ~glxGraphicsStateGuardian();
 
   GLXContext _context;
-  XVisualInfo *_visual;
+  GLXFBConfig _fbconfig;
   Display *_display;
 
 public:
