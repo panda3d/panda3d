@@ -78,6 +78,7 @@ GraphicsEngine(Pipeline *pipeline) :
   _frame_buffer_properties.set_frame_buffer_mode
     (FrameBufferProperties::FM_rgba | 
      FrameBufferProperties::FM_double_buffer | 
+     FrameBufferProperties::FM_multisample | 
      FrameBufferProperties::FM_depth);
 
   set_threading_model(GraphicsThreadingModel(threading_model));

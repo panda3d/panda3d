@@ -311,6 +311,7 @@ reset() {
 
   _supports_bgr = has_extension("GL_EXT_bgra");
   _supports_multisample = has_extension("GL_ARB_multisample");
+
   _supports_generate_mipmap = 
     has_extension("GL_SGIS_generate_mipmap") || is_at_least_version(1, 4);
 
@@ -397,6 +398,23 @@ reset() {
     _mirror_border_clamp = GL_MIRROR_CLAMP_TO_BORDER_EXT;
   }
 
+  if (_supports_multisample) {
+    GLint sample_buffers;
+    GLP(GetIntegerv)(GL_SAMPLE_BUFFERS, &sample_buffers);
+    if (sample_buffers != 1) {
+      _supports_multisample = false;
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "Selected frame buffer does not provide antialiasing support.\n";
+      }
+    } else {
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "Selected frame buffer provides antialiasing support.\n";
+      }
+    }
+  }
+
   report_my_gl_errors();
 
   _buffer_mask = 0;
@@ -458,6 +476,7 @@ reset() {
 
   // Antialiasing.
   enable_line_smooth(false);
+  enable_point_smooth(false);
   enable_multisample(true);
 
 #ifdef HAVE_CGGL

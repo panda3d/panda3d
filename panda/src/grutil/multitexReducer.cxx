@@ -730,6 +730,12 @@ make_texture_layer(const NodePath &render,
 
   geom.set_texture(stage_info._tex);
   geom.node()->set_attrib(cba);
+
+  if (grutil_cat.is_debug()) {
+    GeomNode *geom_node;
+    DCAST_INTO_V(geom_node, geom.node());
+    geom_node->write_verbose(grutil_cat.debug(), 0);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

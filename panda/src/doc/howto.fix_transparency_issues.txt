@@ -44,21 +44,48 @@ on automatically for a particular model if it detects textures that
 appear to be cutouts of the appropriate nature, which is another
 reason to use egg-palettize if you are not using it already.
 
-Second, an easy thing to do is to chop up one or both competing models
-into smaller pieces, each of which can be sorted independently by
-Panda.  For instance, you can split one big polygon into a grid of
-little polygons, and the sorting is more likely to be accurate for
-each piece (because the center of the bounding volume is closer to the
-pixels).  You can draw a picture to see how this works.  In order to
-do this properly, you can't just make it one big mesh of small
-polygons, since Panda will make a mesh into a single Geom of
-tristrips; instead, it needs to be separate meshes, so that each one
-will become its own Geom.  Obviously, this is slightly more expensive
-too, since you are introducing additional vertices and adding more
-objects to the sort list; so you don't want to go too crazy with the
-smallness of your polygons.
+If you don't use egg-palettize (you really should, you know), you can
+just hand-edit the egg files to put the line:
 
-A third option is simply to disable the depth write on your
+  <Scalar> alpha { dual }
+
+within the <Texture> reference for the textures in question.
+
+A second easy option is to use M_multisample transparency, which
+doesn't have any ordering issues at all, but it only looks good on
+very high-end cards that have special multisample bits to support
+full-screen antialiasing.  Also, at the present it only looks good on
+these high-end cards in OpenGL mode (since our pandadx drivers don't
+support M_multisample explicitly right now).  But if M_multisample is
+not supported by a particular hardware or panda driver, it
+automatically falls back to M_binary, which also doesn't have any
+ordering issues, but it always has jaggy edges along the cutout edge.
+This only works well on texture images that represent cutouts, like
+M_dual, above.
+
+If you use egg-palettize, you can engage M_multisample mode by putting
+the keyword "ms" on the line with the texture(s).  Without
+egg-palettize, hand-edit the egg files to put the line:
+
+  <Scalar> alpha { ms }
+
+within the <Texture> reference for the textures in question.
+
+A third easy option is to chop up one or both competing models into
+smaller pieces, each of which can be sorted independently by Panda.
+For instance, you can split one big polygon into a grid of little
+polygons, and the sorting is more likely to be accurate for each piece
+(because the center of the bounding volume is closer to the pixels).
+You can draw a picture to see how this works.  In order to do this
+properly, you can't just make it one big mesh of small polygons, since
+Panda will make a mesh into a single Geom of tristrips; instead, it
+needs to be separate meshes, so that each one will become its own
+Geom.  Obviously, this is slightly more expensive too, since you are
+introducing additional vertices and adding more objects to the sort
+list; so you don't want to go too crazy with the smallness of your
+polygons.
+
+A fourth option is simply to disable the depth write on your
 transparent objects.  This is most effective when you are trying to
 represent something that is barely visible, like glass or a soap
 bubble.  Doing this doesn't improve the likelihood of correct sorting,

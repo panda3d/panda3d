@@ -89,18 +89,12 @@ report_my_errors(int line, const char *source_file) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 enable_multisample(bool val) {
-  if (_multisample_enabled != val) {
+  if (_multisample_enabled != val && _supports_multisample) {
     _multisample_enabled = val;
     if (val) {
-      if (_supports_multisample) {
-        GLP(Enable)(GL_MULTISAMPLE);
-      }
-      GLP(Hint)(GL_POINT_SMOOTH_HINT, GL_NICEST);
+      GLP(Enable)(GL_MULTISAMPLE);
     } else {
-      if (_supports_multisample) {
-        GLP(Disable)(GL_MULTISAMPLE);
-      }
-      GLP(Hint)(GL_POINT_SMOOTH_HINT, GL_FASTEST);
+      GLP(Disable)(GL_MULTISAMPLE);
     }
   }
 }
@@ -116,7 +110,7 @@ enable_line_smooth(bool val) {
     _line_smooth_enabled = val;
     if (val) {
       GLP(Enable)(GL_LINE_SMOOTH);
-      GLP(Hint)(GL_LINE_SMOOTH_HINT, GL_FASTEST);
+      GLP(Hint)(GL_LINE_SMOOTH_HINT, GL_NICEST);
     } else {
       GLP(Disable)(GL_LINE_SMOOTH);
     }
@@ -137,7 +131,6 @@ enable_point_smooth(bool val) {
       GLP(Hint)(GL_POINT_SMOOTH_HINT, GL_NICEST);
     } else {
       GLP(Disable)(GL_POINT_SMOOTH);
-      GLP(Hint)(GL_POINT_SMOOTH_HINT, GL_FASTEST);
     }
   }
 }

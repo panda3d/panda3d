@@ -430,7 +430,7 @@ choose_fbconfig(FrameBufferProperties &properties) const {
   // Now update our framebuffer_mode and bit depth appropriately.
   int render_mode, double_buffer, stereo, red_size, green_size, blue_size,
     alpha_size, ared_size, agreen_size, ablue_size, aalpha_size,
-    depth_size, stencil_size;
+    depth_size, stencil_size, samples;
   
   glXGetFBConfigAttrib(_display, fbconfig, GLX_RGBA, &render_mode);
   glXGetFBConfigAttrib(_display, fbconfig, GLX_DOUBLEBUFFER, &double_buffer);
@@ -445,6 +445,7 @@ choose_fbconfig(FrameBufferProperties &properties) const {
   glXGetFBConfigAttrib(_display, fbconfig, GLX_ACCUM_ALPHA_SIZE, &aalpha_size);
   glXGetFBConfigAttrib(_display, fbconfig, GLX_DEPTH_SIZE, &depth_size);
   glXGetFBConfigAttrib(_display, fbconfig, GLX_STENCIL_SIZE, &stencil_size);
+  glXGetFBConfigAttrib(_display, fbconfig, GLX_SAMPLES, &samples);
 
   frame_buffer_mode = 0;
   if (double_buffer) {
@@ -468,6 +469,9 @@ choose_fbconfig(FrameBufferProperties &properties) const {
   if (ared_size + agreen_size + ablue_size != 0) {
     frame_buffer_mode |= FrameBufferProperties::FM_accum;
   }
+  if (samples != 0) {
+    frame_buffer_mode |= FrameBufferProperties::FM_multisample;
+  }
 
   properties.set_frame_buffer_mode(frame_buffer_mode);
   properties.set_color_bits(red_size + green_size + blue_size + alpha_size);
@@ -482,6 +486,7 @@ choose_fbconfig(FrameBufferProperties &properties) const {
       << ablue_size << " " << aalpha_size << endl
       << " Depth: " << depth_size << endl
       << " Stencil: " << stencil_size << endl
+      << " Samples: " << samples << endl
       << " DoubleBuffer? " << double_buffer << endl
       << " Stereo? " << stereo << endl;
   }
@@ -578,14 +583,13 @@ try_for_fbconfig(int framebuffer_mode,
       attrib_list[n++] = want_color_component_bits;
     }
   }
-  /*
+
   if (framebuffer_mode & FrameBufferProperties::FM_multisample) {
     glxdisplay_cat.debug(false) << " MULTISAMPLE";
-    attrib_list[n++] = GLX_SAMPLES_SGIS;
+    attrib_list[n++] = GLX_SAMPLES;
     // We decide 4 is minimum number of samples
     attrib_list[n++] = 4;
   }
-  */
 
   // Terminate the list
   nassertr(n < max_attrib_list, None);
@@ -649,16 +653,6 @@ choose_visual(FrameBufferProperties &properties) const {
   if (properties.has_color_bits()) {
     want_color_bits = properties.get_color_bits();
   }
-
-  /*
-  if (frame_buffer_mode & FrameBufferProperties::FM_multisample) {
-    if (!glx_supports("GLX_SGIS_multisample")) {
-      glxdisplay_cat.info()
-        << "multisample not supported by this glx implementation.\n";
-      frame_buffer_mode &= ~FrameBufferProperties::FM_multisample;
-    }
-  }
-  */
 
   XVisualInfo *visual = 
     try_for_visual(frame_buffer_mode, want_depth_bits, want_color_bits);
@@ -778,7 +772,7 @@ choose_visual(FrameBufferProperties &properties) const {
   // Now update our framebuffer_mode and bit depth appropriately.
   int render_mode, double_buffer, stereo, red_size, green_size, blue_size,
     alpha_size, ared_size, agreen_size, ablue_size, aalpha_size,
-    depth_size, stencil_size;
+    depth_size, stencil_size, samples;
   
   glXGetConfig(_display, visual, GLX_RGBA, &render_mode);
   glXGetConfig(_display, visual, GLX_DOUBLEBUFFER, &double_buffer);
@@ -793,6 +787,7 @@ choose_visual(FrameBufferProperties &properties) const {
   glXGetConfig(_display, visual, GLX_ACCUM_ALPHA_SIZE, &aalpha_size);
   glXGetConfig(_display, visual, GLX_DEPTH_SIZE, &depth_size);
   glXGetConfig(_display, visual, GLX_STENCIL_SIZE, &stencil_size);
+  glXGetConfig(_display, visual, GLX_STENCIL_SIZE, &samples);
 
   frame_buffer_mode = 0;
   if (double_buffer) {
@@ -816,6 +811,9 @@ choose_visual(FrameBufferProperties &properties) const {
   if (ared_size + agreen_size + ablue_size != 0) {
     frame_buffer_mode |= FrameBufferProperties::FM_accum;
   }
+  if (samples != 0) {
+    frame_buffer_mode |= FrameBufferProperties::FM_multisample;
+  }
 
   properties.set_frame_buffer_mode(frame_buffer_mode);
   properties.set_color_bits(red_size + green_size + blue_size + alpha_size);
@@ -830,6 +828,7 @@ choose_visual(FrameBufferProperties &properties) const {
       << ablue_size << " " << aalpha_size << endl
       << " Depth: " << depth_size << endl
       << " Stencil: " << stencil_size << endl
+      << " Samples: " << samples << endl
       << " DoubleBuffer? " << double_buffer << endl
       << " Stereo? " << stereo << endl;
   }
@@ -911,14 +910,12 @@ try_for_visual(int framebuffer_mode,
       attrib_list[n++] = want_color_component_bits;
     }
   }
-  /*
   if (framebuffer_mode & FrameBufferProperties::FM_multisample) {
     glxdisplay_cat.debug(false) << " MULTISAMPLE";
-    attrib_list[n++] = GLX_SAMPLES_SGIS;
+    attrib_list[n++] = GLX_SAMPLES;
     // We decide 4 is minimum number of samples
     attrib_list[n++] = 4;
   }
-  */
 
   // Terminate the list
   nassertr(n < max_attrib_list, NULL);
