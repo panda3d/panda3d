@@ -136,6 +136,50 @@ verify_points(const LPoint3f *begin, const LPoint3f *end) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::is_valid
+//       Access: Public
+//  Description: Returns true if the CollisionPolygon is valid
+//               (that is, it has at least three vertices, and is not
+//               concave), or false otherwise.
+////////////////////////////////////////////////////////////////////
+bool CollisionPolygon::
+is_valid() const {
+  if (_points.size() < 3) {
+    return false;
+  }
+
+  LPoint2f p0 = _points[0];
+  LPoint2f p1 = _points[1];
+  float dx1 = p1[0] - p0[0];
+  float dy1 = p1[1] - p0[1];
+  p0 = p1;
+  p1 = _points[2];
+
+  float dx2 = p1[0] - p0[0];
+  float dy2 = p1[1] - p0[1];
+  int asum = ((dx1 * dy2 - dx2 * dy1 >= 0.0f) ? 1 : 0);
+
+  for (size_t i = 0; i < _points.size() - 1; i++) {
+    p0 = p1;
+    p1 = _points[(i+3) % _points.size()];
+
+    dx1 = dx2;
+    dy1 = dy2;
+    dx2 = p1[0] - p0[0];
+    dy2 = p1[1] - p0[1];
+    int csum = ((dx1 * dy2 - dx2 * dy1 >= 0.0f) ? 1 : 0);
+
+    if (csum ^ asum) {
+      // Oops, the polygon is concave.
+      return false;
+    }
+  }
+
+  // The polygon is safely convex.
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::xform
 //       Access: Public, Virtual
 //  Description: Transforms the solid by the indicated matrix.
@@ -729,47 +773,6 @@ circle_is_inside(const LPoint2f &center, float radius,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::is_concave
-//       Access: Private
-//  Description: Returns true if the CollisionPolygon is concave
-//               (which is an error), or false otherwise.
-////////////////////////////////////////////////////////////////////
-bool CollisionPolygon::
-is_concave() const {
-  nassertr(_points.size() >= 3, true);
-
-  LPoint2f p0 = _points[0];
-  LPoint2f p1 = _points[1];
-  float dx1 = p1[0] - p0[0];
-  float dy1 = p1[1] - p0[1];
-  p0 = p1;
-  p1 = _points[2];
-
-  float dx2 = p1[0] - p0[0];
-  float dy2 = p1[1] - p0[1];
-  int asum = ((dx1 * dy2 - dx2 * dy1 >= 0.0f) ? 1 : 0);
-
-  for (size_t i = 0; i < _points.size() - 1; i++) {
-    p0 = p1;
-    p1 = _points[(i+3) % _points.size()];
-
-    dx1 = dx2;
-    dy1 = dy2;
-    dx2 = p1[0] - p0[0];
-    dy2 = p1[1] - p0[1];
-    int csum = ((dx1 * dy2 - dx2 * dy1 >= 0.0f) ? 1 : 0);
-
-    if (csum ^ asum) {
-      // Oops, the polygon is concave.
-      return true;
-    }
-  }
-
-  // The polygon is safely convex.
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::setup_points
 //       Access: Private
 //  Description:
@@ -781,21 +784,27 @@ setup_points(const LPoint3f *begin, const LPoint3f *end) {
 
   _points.clear();
 
-  // Tell the base CollisionPlane class what its plane will be.  We
-  // can determine this from the first three 3-d points (unless these
-  // first three points happen to be collinear).
-  int first_p = 2;
-  while (first_p < num_points) {
-    Planef plane(begin[0], begin[1], begin[first_p]);
-    if (plane.get_normal().length_squared() > 0.1) {
-      set_plane(plane);
-      break;
-    }
-    first_p++;
-  }
-  nassertv(first_p < num_points);
+  // Tell the base CollisionPlane class what its plane will be.  To do
+  // this, we must first compute the polygon normal.
+  LVector3f normal = Normalf::zero();
 
-  LVector3f normal = get_normal();
+  // Project the polygon into each of the three major planes and
+  // calculate the area of each 2-d projection.  This becomes the
+  // polygon normal.  This works because the ratio between these
+  // different areas corresponds to the angle at which the polygon is
+  // tilted toward each plane.
+  for (int i = 0; i < num_points; i++) {
+    const LPoint3f &p0 = begin[i];
+    const LPoint3f &p1 = begin[(i + 1) % num_points];
+    normal[0] += p0[1] * p1[2] - p0[2] * p1[1];
+    normal[1] += p0[2] * p1[0] - p0[0] * p1[2];
+    normal[2] += p0[0] * p1[1] - p0[1] * p1[0];
+  }
+
+  if (IS_NEARLY_ZERO(normal.length_squared())) {
+    // The polygon has no area.
+    return;
+  }
 
 #ifndef NDEBUG
   // Make sure all the source points are good.
@@ -823,7 +832,9 @@ setup_points(const LPoint3f *begin, const LPoint3f *end) {
   }
 #endif
 
-  // First determine the largest of |normal[0]|, |normal[1]|, and
+  set_plane(Planef(normal, begin[0]));
+
+  // Now determine the largest of |normal[0]|, |normal[1]|, and
   // |normal[2]|.  This will tell us which axis-aligned plane the
   // polygon is most nearly aligned with, and therefore which plane we
   // should project onto for determining interiorness of the
@@ -831,14 +842,18 @@ setup_points(const LPoint3f *begin, const LPoint3f *end) {
 
   if (fabs(normal[0]) >= fabs(normal[1])) {
     if (fabs(normal[0]) >= fabs(normal[2])) {
+      _reversed = (normal[0] < 0.0f);
       _axis = AT_x;
     } else {
+      _reversed = (normal[2] < 0.0f);
       _axis = AT_z;
     }
   } else {
     if (fabs(normal[1]) >= fabs(normal[2])) {
+      _reversed = (normal[1] < 0.0f);
       _axis = AT_y;
     } else {
+      _reversed = (normal[2] < 0.0f);
       _axis = AT_z;
     }
   }
@@ -874,7 +889,7 @@ setup_points(const LPoint3f *begin, const LPoint3f *end) {
 #ifndef NDEBUG
   /*
   // Now make sure the points define a convex polygon.
-  if (is_concave()) {
+  if (!is_valid()) {
     collide_cat.error() << "Invalid concave CollisionPolygon defined:\n";
     const LPoint3f *pi;
     for (pi = begin; pi != end; ++pi) {
@@ -899,7 +914,6 @@ setup_points(const LPoint3f *begin, const LPoint3f *end) {
   // One final complication: In projecting the polygon onto the plane,
   // we might have lost its counterclockwise-vertex orientation.  If
   // this is the case, we must reverse the order of the vertices.
-  _reversed = is_right(_points[first_p] - _points[0], _points[1] - _points[0]);
   if (_reversed) {
     reverse(_points.begin(), _points.end());
   }

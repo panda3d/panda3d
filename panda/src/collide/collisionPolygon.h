@@ -54,6 +54,7 @@ public:
                                    const LPoint3f &c, const LPoint3f &d);
   static bool verify_points(const LPoint3f *begin, const LPoint3f *end);
 
+  bool is_valid() const;
 
   virtual void xform(const LMatrix4f &mat);
   virtual LPoint3f get_collision_origin() const;
@@ -84,7 +85,6 @@ private:
   bool circle_is_inside(const LPoint2f &center, float radius,
                         const CollisionPolygon::Points &points,
                         const LPoint2f &median) const;
-  bool is_concave() const;
 
   void setup_points(const LPoint3f *begin, const LPoint3f *end);
   LPoint2f to_2d(const LVecBase3f &point3d) const;
