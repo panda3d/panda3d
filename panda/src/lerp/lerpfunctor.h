@@ -263,7 +263,7 @@ template <class value>
 SimpleQueryLerpFunctor<value>&
 SimpleQueryLerpFunctor<value>::operator=(const SimpleQueryLerpFunctor& c) {
   _save = c._save;
-  SimpleLerpFunctor::operator=(c);
+  SimpleLerpFunctor<value>::operator=(c);
   return *this;
 }
 
