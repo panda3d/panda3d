@@ -3,7 +3,6 @@ from DirectSessionGlobal import *
 from IntervalGlobal import *
 
 import Mopath
-import IntervalPlayer
 
 boat = loader.loadModel('models/directmodels/smiley')
 boat.reparentTo(render)
@@ -43,6 +42,4 @@ waterSound.setStartTime(waterStartTime, TRACK_START)
 soundTrack = Track.Track([waterSound], 'soundtrack')
 
 mtrack = MultiTrack.MultiTrack([boatTrack, dockTrack, soundTrack])
-
-player = IntervalPlayer.IntervalPlayer(globalClock)
-player.addInterval(mtrack)
+mtrack.printParams()

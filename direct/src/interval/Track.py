@@ -110,3 +110,10 @@ class Track(Interval.Interval):
 		    i.setT(t - t0)
 		    return
 		prev = i
+
+    def printParams(self, indent=0):
+	""" printParams(indent)
+	"""
+	Interval.Interval.printParams(self, indent)
+	for i in self.ilist:	
+	    i.printParams(indent+1)

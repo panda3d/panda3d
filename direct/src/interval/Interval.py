@@ -43,7 +43,7 @@ class Interval(DirectObject):
 	"""
 	return self.startTime
 
-    def setStartTime(self, t, rel=PrevEndRelative):
+    def setStartTime(self, t, rel=PREVIOUS_END):
 	""" setStartTime()
 	"""
 	assert(t >= 0.0)
@@ -60,3 +60,19 @@ class Interval(DirectObject):
 	    Go to time t
 	"""
 	pass
+
+    def printParams(self, indent=0):
+	""" printParams(indent)
+	"""
+	space = ''
+	for l in range(indent):
+	    space = space + ' '
+	t = 'UNKNOWN'
+	if (self.type == PREVIOUS_END):
+	    t = 'PREVIOUS_END'
+	elif (self.type == PREVIOUS_START):
+	    t = 'PREVIOUS_START'
+	elif (self.type == TRACK_START):
+	    t = 'TRACK_START'
+	print (space + self.name + ' t0: %.2f dur: %.2f %s' % (
+				self.startTime, self.duration, t))

@@ -71,3 +71,10 @@ class MultiTrack(Interval.Interval):
 	    return Task.cont
 	else:
 	    return Task.done
+
+    def printParams(self, indent=0):
+	""" printParams(indent)
+	"""
+	Interval.Interval.printParams(self, indent)
+	for t in self.tlist:
+	    t.printParams(indent+1)
