@@ -18,5 +18,5 @@
 
 #begin install_egg
   #define SOURCES \
-    fade.egg iris.egg
+    fade_sphere.egg fade.egg iris.egg
 #end install_egg
