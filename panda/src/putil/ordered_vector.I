@@ -326,7 +326,6 @@ insert_unique(const ordered_vector<Key, Compare>::VALUE_TYPE &key) {
   }
 
   ITERATOR result = _vector.insert(position, key);
-  verify_list();
   return pair<ITERATOR, bool>(result, true);
 }
 
@@ -348,7 +347,6 @@ insert_nonunique(const ordered_vector<Key, Compare>::VALUE_TYPE &key) {
   nassertr(position >= begin() && position <= end(), end());
 
   ITERATOR result = _vector.insert(position, key);
-  verify_list();
   return result;
 }
 
@@ -662,43 +660,7 @@ find_insert_position(ordered_vector<Key, Compare>::ITERATOR first,
                      ordered_vector<Key, Compare>::ITERATOR last,
                      const ordered_vector<Key, Compare>::KEY_TYPE &key) {
   ITERATOR result = r_find_insert_position(first, last, key);
-
-#ifndef NDEBUG
-  // Verify the result.
-  if (paranoid_ordered_vector) {
-    // If there is a node before the indicated position, this node
-    // must not precede it lexicograpically.
-    if (first < result) {
-      nassertr(!_compare(key, *(result - 1)), result);
-    }
-    // If there is a node after the indicated position, it must not
-    // precede this node lexicographically.
-    if (result < last) {
-      nassertr(!_compare(*(result), key), result);
-    }
-  }
-#endif
-
   return result;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ordered_vector::verify_list
-//       Access: Private
-//  Description: Ensures that the indicated range of elements is
-//               sorted correctly, if paranoid_ordered_vector is set.
-//               Generates an assertion failure (and returns false) if
-//               this is not the case; otherwise, returns true.
-////////////////////////////////////////////////////////////////////
-template<class Key, class Compare>
-INLINE bool ordered_vector<Key, Compare>::
-verify_list() {
-#ifndef NDEBUG
-  if (paranoid_ordered_vector) {
-    return verify_list_impl(begin(), end());
-  }
-#endif
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -772,6 +734,17 @@ sort() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ov_set::verify_list
+//       Access: Public
+//  Description: Maps to verify_list_unique().
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+INLINE bool ov_set<Key, Compare>::
+verify_list() const {
+  return ordered_vector<Key, Compare>::verify_list_unique();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ov_multiset::Constructor
 //       Access: Public
 //  Description: 
@@ -839,4 +812,15 @@ template<class Key, class Compare>
 INLINE void ov_multiset<Key, Compare>::
 sort() {
   ordered_vector<Key, Compare>::sort_nonunique();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ov_multiset::verify_list
+//       Access: Public
+//  Description: Maps to verify_list_nonunique().
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+INLINE bool ov_multiset<Key, Compare>::
+verify_list() const {
+  return ordered_vector<Key, Compare>::verify_list_nonunique();
 }

@@ -62,7 +62,6 @@ insert_unique(ordered_vector<Key, Compare>::ITERATOR position,
 
   // Otherwise, we may insert where the caller requested.
   ITERATOR result = _vector.insert(position, key);
-  verify_list();
   return result;
 }
 
@@ -100,9 +99,61 @@ insert_nonunique(ordered_vector<Key, Compare>::ITERATOR position,
 
   // Otherwise, we may insert where the caller requested.
   ITERATOR result = _vector.insert(position, key);
-  verify_list();
   return result;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: ordered_vector::verify_list_unique
+//       Access: Public
+//  Description: Ensures that the indicated range of elements is
+//               sorted correctly.  Returns true if this is the case;
+//               otherwise, returns false.
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+bool ordered_vector<Key, Compare>::
+verify_list_unique() const {
+  if (!empty()) {
+    CONST_ITERATOR prev = begin();
+    CONST_ITERATOR i = begin();
+    ++i;
+    while (i < end()) {
+      bool ordered_correctly = _compare(*prev, *i);
+      if (!ordered_correctly) {
+        return true;
+      }
+      prev = i;
+      ++i;
+    }
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ordered_vector::verify_list_nonunique
+//       Access: Public
+//  Description: Ensures that the indicated range of elements is
+//               sorted correctly.  Returns true if this is the case;
+//               otherwise, returns false.
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+bool ordered_vector<Key, Compare>::
+verify_list_nonunique() const {
+  if (!empty()) {
+    CONST_ITERATOR prev = begin();
+    CONST_ITERATOR i = begin();
+    ++i;
+    while (i < end()) {
+      bool ordered_correctly = !_compare(*i, *prev);
+      if (!ordered_correctly) {
+        return true;
+      }
+      prev = i;
+      ++i;
+    }
+  }
+  return true;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ordered_vector::r_find_insert_position
@@ -356,28 +407,3 @@ r_equal_range(ordered_vector<Key, Compare>::CONST_ITERATOR first,
     return pair_type(lower, upper);
   }
 }
-
-#ifndef NDEBUG
-////////////////////////////////////////////////////////////////////
-//     Function: ordered_vector::verify_list_impl
-//       Access: Private
-//  Description: The non-inline implementation of verify_list().
-////////////////////////////////////////////////////////////////////
-template<class Key, class Compare>
-bool ordered_vector<Key, Compare>::
-verify_list_impl(ordered_vector<Key, Compare>::ITERATOR first, 
-                 ordered_vector<Key, Compare>::ITERATOR last) {
-  if (first < last) {
-    ITERATOR prev = first;
-    ITERATOR i = first;
-    ++i;
-    while (i < last) {
-      bool ordered_correctly = !_compare(*i, *prev);
-      nassertr(ordered_correctly, false);
-      prev = i;
-      ++i;
-    }
-  }
-  return true;
-}
-#endif  // NDEBUG

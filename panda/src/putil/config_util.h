@@ -36,8 +36,6 @@ NotifyCategoryDecl(bam, EXPCL_PANDA, EXPTP_PANDA);
 
 //extern EXPCL_PANDA const bool track_memory_usage;
 
-extern EXPCL_PANDA const bool paranoid_ordered_vector;
-
 // These are functions instead of constant variables because they are
 // computed based on the concatenation of all appearances of the
 // corresponding variable in the config files.

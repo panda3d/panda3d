@@ -26,53 +26,31 @@
 #include "pset.h"
 #include <algorithm>
 
-// Two different compilers that both should have known better had
-// problems parsing the inheritance of typedefs in the template
-// classes below.  Both gcc 2.95.3 and the Intel Windows compiler (not
-// sure of the version) got confused in different ways.  It is a
-// mystery how these compilers are able to handle the actual STL
-// headers, which do this sort of thing all over the place.
+// There are some inheritance issues with template classes and typedef
+// names.  Template classes that inherit typedef names from their base
+// class, which is also a template class, may confuse the typedef
+// names with globally scoped template names.  In particular, the
+// local "iterator" type is easily confused with the std::iterator
+// template class.
 
-// One effective workaround for both compilers seems to be to rename
-// the typedef names slightly.  If the following symbol is declared,
-// the macros in this file will do the job of renaming the typedef
-// names for these broken compilers.  We should probably make this a
-// configurable parameter, but since it doesn't do any harm to leave
-// it declared even for non-broken compilers, we might as well just
-// leave it alone.
-#define BROKEN_TYPEDEF_INHERITANCE 1
+// To work around this problem, as well as a problem in gcc 2.95.3
+// with value_type etc. not inheriting properly (even though we
+// explicitly typedef them in the derived class), we rename the
+// questionable typedefs here so that they no longer conflict with the
+// global template classes.
 
-// Maybe eventually, when STL is more than only about ten years old
-// and compiler support of anything more than trivial template classes
-// is more universal, we can pull this nonsense out of here.
-
-#ifdef BROKEN_TYPEDEF_INHERITANCE
-  #define KEY_TYPE key_type_0
-  #define VALUE_TYPE value_type_0
-  #define REFERENCE reference_0
-  #define CONST_REFERENCE const_reference_0
-  #define KEY_COMPARE key_compare_0
-  #define VALUE_COMPARE value_compare_0
-  #define ITERATOR iterator_0
-  #define CONST_ITERATOR const_iterator_0
-  #define REVERSE_ITERATOR reverse_iterator_0
-  #define CONST_REVERSE_ITERATOR const_reverse_iterator_0
-  #define DIFFERENCE_TYPE difference_type_0
-  #define SIZE_TYPE size_type_0
-#else
-  #define KEY_TYPE key_type
-  #define VALUE_TYPE value_type
-  #define REFERENCE reference
-  #define CONST_REFERENCE const_reference
-  #define KEY_COMPARE key_compare
-  #define VALUE_COMPARE value_compare
-  #define ITERATOR iterator
-  #define CONST_ITERATOR const_iterator
-  #define REVERSE_ITERATOR reverse_iterator
-  #define CONST_REVERSE_ITERATOR const_reverse_iterator
-  #define DIFFERENCE_TYPE difference_type
-  #define SIZE_TYPE size_type
-#endif
+#define KEY_TYPE key_type_0
+#define VALUE_TYPE value_type_0
+#define REFERENCE reference_0
+#define CONST_REFERENCE const_reference_0
+#define KEY_COMPARE key_compare_0
+#define VALUE_COMPARE value_compare_0
+#define ITERATOR iterator_0
+#define CONST_ITERATOR const_iterator_0
+#define REVERSE_ITERATOR reverse_iterator_0
+#define CONST_REVERSE_ITERATOR const_reverse_iterator_0
+#define DIFFERENCE_TYPE difference_type_0
+#define SIZE_TYPE size_type_0
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ordered_vector
@@ -135,7 +113,6 @@ public:
   typedef Vector::difference_type DIFFERENCE_TYPE;
   typedef Vector::size_type SIZE_TYPE;
 
-#ifdef BROKEN_TYPEDEF_INHERITANCE
   // Since the #define symbols do not actually expand to the correct
   // names, we have to re-typedef them so callers can reference them
   // by their correct, lowercase names.
@@ -151,7 +128,6 @@ public:
   typedef CONST_REVERSE_ITERATOR const_reverse_iterator;
   typedef DIFFERENCE_TYPE difference_type;
   typedef SIZE_TYPE size_type;
-#endif
 
 public:
   // Constructors.  We don't implement the whole slew of STL
@@ -221,6 +197,8 @@ public:
   INLINE void reserve(SIZE_TYPE n);
   INLINE void sort_unique();
   INLINE void sort_nonunique();
+  bool verify_list_unique() const;
+  bool verify_list_nonunique() const;
 
   INLINE void push_back(const VALUE_TYPE &key);
 
@@ -245,11 +223,6 @@ private:
   pair<CONST_ITERATOR, CONST_ITERATOR>
   r_equal_range(CONST_ITERATOR first, CONST_ITERATOR last,
                 const KEY_TYPE &key) const;
-  INLINE bool verify_list();
-
-#ifndef NDEBUG
-  bool verify_list_impl(ITERATOR first, ITERATOR last);
-#endif
 
   // This function object is used in sort_unique().  It returns true
   // if two consecutive sorted elements are equivalent.
@@ -290,6 +263,7 @@ public:
   INLINE pair<ITERATOR, bool> insert(const VALUE_TYPE &key0);
 
   INLINE void sort();
+  INLINE bool verify_list() const;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -309,6 +283,7 @@ public:
   INLINE ITERATOR insert(const VALUE_TYPE &key);
 
   INLINE void sort();
+  INLINE bool verify_list() const;
 };
 
 #include "ordered_vector.I"
