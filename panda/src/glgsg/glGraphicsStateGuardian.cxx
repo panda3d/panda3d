@@ -1036,8 +1036,15 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
     modelview_mat = ctatt->get_matrix();
 
   // get the camera information
-  float aspect_ratio = 
-    get_current_camera()->get_lens()->get_aspect_ratio();
+
+  // Hmm, this doesn't work any more, since we don't store the camera
+  // pointer in new scene graph land.  Need to find a better way to
+  // get the current window's aspect ratio.  Here's a temporary hack
+  // for now.
+
+  //  float aspect_ratio = 
+  //    get_current_camera()->get_lens()->get_aspect_ratio();
+  float aspect_ratio = 1.333333;
 
   // load up our own matrices
   glMatrixMode(GL_MODELVIEW);
