@@ -80,7 +80,7 @@ MilesAudioManager() {
         audio_debug("  audio_dls_file=\""<<*audio_dls_file<<"\"");
         _dls_field=AIL_DLS_load_file(dls, audio_dls_file->c_str(), 0);
         if (!_dls_field) {
-          audio_error("  AIL_DLS_load_memory() failed, \""<<AIL_last_error()
+          audio_error("  AIL_DLS_load_file() failed, \""<<AIL_last_error()
               <<"\" Switching to hardware midi");
           AIL_quick_shutdown();
           if (!AIL_quick_startup(use_digital, 1, audio_output_rate, 
