@@ -340,7 +340,7 @@ try:
 except KeyError:
   print "Warning: environment variable DIRECT is not set."
   directroot = ""
-archivePath = directroot + "\src\showbase\\%(archive)s"
+archivePath = directroot + "\\lib\\py\\%(archive)s"
 f=open(archivePath,"rb")
 exec marshal.loads(%(zbegin)sf.read(%(loaderlen)d)%(zend)s)
 boot("%(app)s",f,%(size)d)
