@@ -495,6 +495,10 @@ get_global_ptr() {
         }
       }
     }
+
+    // Finally, our cwd is initially from the environment, if that
+    // maps into our new VFS.
+    _global_ptr->chdir(ExecutionEnvironment::get_cwd());
   }
 
   return _global_ptr;
