@@ -338,27 +338,27 @@ get_omit() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::get_repeat_threshold
+//     Function: TextureImage::get_coverage_threshold
 //       Access: Public
-//  Description: Returns the suitable repeat threshold for this
+//  Description: Returns the appropriate coverage threshold for this
 //               texture.  This is either the
-//               Palettizer::_repeat_threshold parameter, given
+//               Palettizer::_coverage_threshold parameter, given
 //               globally via -r, or a particular value for this
-//               texture as supplied by the "repeat" keyword in the
+//               texture as supplied by the "coverage" keyword in the
 //               .txa file.
 ////////////////////////////////////////////////////////////////////
 double TextureImage::
-get_repeat_threshold() const {
-  return _request._repeat_threshold;
+get_coverage_threshold() const {
+  return _request._coverage_threshold;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureImage::get_margin
 //       Access: Public
-//  Description: Returns the suitable repeat threshold for this
-//               texture.  This is either the Palettizer::_margin
-//               parameter, or a particular value for this texture as
-//               supplied by the "margin" keyword in the .txa file.
+//  Description: Returns the appropriate margin for this texture.
+//               This is either the Palettizer::_margin parameter, or
+//               a particular value for this texture as supplied by
+//               the "margin" keyword in the .txa file.
 ////////////////////////////////////////////////////////////////////
 int TextureImage::
 get_margin() const {

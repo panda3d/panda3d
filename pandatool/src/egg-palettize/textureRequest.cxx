@@ -23,7 +23,7 @@ TextureRequest() {
   _magfilter = EggTexture::FT_unspecified;
   _omit = false;
   _margin = 0;
-  _repeat_threshold = 0.0;
+  _coverage_threshold = 0.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -35,5 +35,5 @@ TextureRequest() {
 void TextureRequest::
 pre_txa_file() {
   _margin = pal->_margin;
-  _repeat_threshold = pal->_repeat_threshold;
+  _coverage_threshold = pal->_coverage_threshold;
 }

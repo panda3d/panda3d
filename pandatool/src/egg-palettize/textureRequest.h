@@ -35,7 +35,7 @@ public:
   EggTexture::FilterType _magfilter;
   bool _omit;
   int _margin;
-  double _repeat_threshold;
+  double _coverage_threshold;
 };
 
 #endif

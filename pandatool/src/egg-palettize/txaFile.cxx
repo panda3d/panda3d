@@ -65,8 +65,8 @@ read(Filename filename) {
       } else if (words[0] == ":margin") {
 	okflag = parse_margin_line(words);
 
-      } else if (words[0] == ":repeat") {
-	okflag = parse_repeat_line(words);
+      } else if (words[0] == ":coverage") {
+	okflag = parse_coverage_line(words);
 
       } else if (words[0] == ":imagetype") {
 	okflag = parse_imagetype_line(words);
@@ -279,30 +279,28 @@ parse_margin_line(const vector_string &words) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TxaFile::parse_repeat_line
+//     Function: TxaFile::parse_coverage_line
 //       Access: Private
 //  Description: Handles the line in a .txa file that begins with the
-//               keyword ":repeat" and indicates the default repeat
-//               threshold.
+//               keyword ":coverage" and indicates the default
+//               coverage threshold.
 ////////////////////////////////////////////////////////////////////
 bool TxaFile::
-parse_repeat_line(const vector_string &words) {
+parse_coverage_line(const vector_string &words) {
   if (words.size() != 2) {
-    nout << "Exactly one parameter required for :repeat, the "
-	 << "percentage for the default repeat threshold.\n";
+    nout << "Exactly one parameter required for :coverage, the "
+	 << "value for the default coverage threshold.\n";
     return false;
   }
 
-  string tail;
-  pal->_repeat_threshold = string_to_double(words[1], tail);
-  if (!(tail.empty() || tail == "%")) {
-    // This is an invalid number.
-    nout << "Invalid repeat threshold: " << words[1] << "\n";
+
+  if (!string_to_double(words[1], pal->_coverage_threshold)) {
+    nout << "Invalid coverage threshold: " << words[1] << "\n";
     return false;
   }
 
-  if (pal->_repeat_threshold <= 0.0) {
-    nout << "Invalid repeat threshold: " << pal->_repeat_threshold << "\n";
+  if (pal->_coverage_threshold <= 0.0) {
+    nout << "Invalid coverage threshold: " << pal->_coverage_threshold << "\n";
     return false;
   }
 

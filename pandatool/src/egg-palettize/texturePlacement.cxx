@@ -290,10 +290,10 @@ determine_size() {
     force_replace();
     _omit_reason = OR_omitted;
 
-  } else if (get_uv_area() > _texture->get_repeat_threshold() / 100.0) {
+  } else if (get_uv_area() > _texture->get_coverage_threshold()) {
     // If the texture repeats too many times, we can't place it.
     force_replace();
-    _omit_reason = OR_repeats;
+    _omit_reason = OR_coverage;
 
   } else if ((_position._x_size > pal->_pal_x_size || 
 	      _position._y_size > pal->_pal_y_size) ||
@@ -308,11 +308,11 @@ determine_size() {
 
   } else if (_omit_reason == OR_omitted ||
 	     _omit_reason == OR_size ||
-	     _omit_reason == OR_repeats ||
+	     _omit_reason == OR_coverage ||
 	     _omit_reason == OR_unknown) {
     // On the other hand, if the texture was previously omitted
-    // explicitly, or because of its size or repeat count, now it
-    // seems to fit.
+    // explicitly, or because of its size or coverage, now it seems to
+    // fit.
     force_replace();
     _omit_reason = OR_working;
 
@@ -679,9 +679,8 @@ write_placed(ostream &out, int indent_level) {
     out << " at "
 	<< get_placed_x() << " " << get_placed_y() << " to "
 	<< get_placed_x() + get_placed_x_size() << " "
-	<< get_placed_y() + get_placed_y_size() << " (used "
-	<< floor(get_placed_uv_area() * 10000.0 + 0.5) / 100.0
-	<< "%)\n";
+	<< get_placed_y() + get_placed_y_size() << " (coverage "
+	<< get_placed_uv_area() << ")\n";
   } else {
     out << " not yet placed.\n";
   }

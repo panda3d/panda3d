@@ -23,8 +23,8 @@ operator << (ostream &out, OmitReason omit) {
   case OR_solitary:
     return out << "solitary";
 
-  case OR_repeats:
-    return out << "repeats";
+  case OR_coverage:
+    return out << "coverage";
 
   case OR_unknown:
     return out << "unknown";

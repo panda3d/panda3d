@@ -29,8 +29,8 @@ TxaLine() {
   _format = EggTexture::F_unspecified;
   _got_margin = false;
   _margin = 0;
-  _got_repeat_threshold = false;
-  _repeat_threshold = 0.0;
+  _got_coverage_threshold = false;
+  _coverage_threshold = 0.0;
   _color_type = (PNMFileType *)NULL;
   _alpha_type = (PNMFileType *)NULL;
 }
@@ -94,11 +94,11 @@ parse(const string &line) {
       if (word[word.length() - 1] == '%') {
 	// It's a scale percentage!
 	_size_type = ST_scale;
-	const char *nptr = word.c_str();
-	char *endptr;
-	_scale = strtod(nptr, &endptr);
-	if (*endptr != '%') {
-	  nout << "Invalid scale factor: " << word << "\n";
+
+	string tail;
+	_scale = string_to_double(word, tail);
+	if (!(tail == "%")) {
+	  // This is an invalid number.
 	  return false;
 	}
 	++wi;
@@ -108,12 +108,12 @@ parse(const string &line) {
 	vector<int> numbers;
 	while (wi != words.end() && isdigit((*wi)[0])) {
 	  const string &word = *wi;
-	  const char *nptr = word.c_str();
-	  char *endptr;
-	  numbers.push_back(strtol(nptr, &endptr, 0));
-	  if (*endptr != '\0') {
+	  int num;
+	  if (!string_to_int(word, num)) {
 	    nout << "Invalid size: " << word << "\n";
+	    return false;
 	  }
+	  numbers.push_back(num);
 	  ++wi;
 	}
 	if (numbers.size() < 2) {
@@ -163,10 +163,7 @@ parse(const string &line) {
 	} 
 	  
 	const string &arg = (*wi);
-	const char *nptr = arg.c_str();
-	char *endptr;
-	_margin = strtol(nptr, &endptr, 10);
-	if (*endptr != '\0') {
+	if (!string_to_int(arg, _margin)) {
 	  nout << "Not an integer: " << arg << "\n";
 	  return false;
 	}
@@ -176,26 +173,23 @@ parse(const string &line) {
 	}
 	_got_margin = true;
 
-      } else if (word == "repeat") {
+      } else if (word == "coverage") {
 	++wi;
 	if (wi == words.end()) {
-	  nout << "Argument required for 'repeat'.\n";
+	  nout << "Argument required for 'coverage'.\n";
 	  return false;
 	}
 	 
 	const string &arg = (*wi);
-	const char *nptr = arg.c_str();
-	char *endptr;
-	_repeat_threshold = strtod(nptr, &endptr);
-	if (*endptr != '\0' && *endptr != '%') {
+	if (!string_to_double(arg, _coverage_threshold)) {
 	  nout << "Not a number: " << arg << "\n";
 	  return false;
 	}
-	if (_repeat_threshold < 0.0) {
-	  nout << "Invalid repeat threshold: " << _repeat_threshold << "\n";
+	if (_coverage_threshold <= 0.0) {
+	  nout << "Invalid coverage threshold: " << _coverage_threshold << "\n";
 	  return false;
 	}
-	_got_repeat_threshold = true;
+	_got_coverage_threshold = true;
 
       } else {
 	// Maybe it's a format name.
@@ -346,8 +340,8 @@ match_texture(TextureImage *texture) const {
     request._margin = _margin;
   }
 
-  if (_got_repeat_threshold) {
-    request._repeat_threshold = _repeat_threshold;
+  if (_got_coverage_threshold) {
+    request._coverage_threshold = _coverage_threshold;
   }
   
   if (_color_type != (PNMFileType *)NULL) {
@@ -441,8 +435,8 @@ output(ostream &out) const {
     out << " margin " << _margin;
   }
 
-  if (_got_repeat_threshold) {
-    out << " repeat " << _repeat_threshold;
+  if (_got_coverage_threshold) {
+    out << " coverage " << _coverage_threshold;
   }
 
   Keywords::const_iterator ki;

@@ -351,7 +351,7 @@ write(ostream &out, int indent_level) const {
     TexCoordd box = _max_uv - _min_uv;
     double area = box[0] * box[1];
 
-    out << " used " << floor(area * 10000.0 + 0.5) / 100.0 << "%";
+    out << " coverage " << area;
   }
 
   if (_properties._format != EggTexture::F_unspecified) {

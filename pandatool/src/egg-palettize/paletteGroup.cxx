@@ -287,10 +287,8 @@ write_image_info(ostream &out, int indent_level) const {
 	<< placement->get_texture()->get_name()
 	<< " unplaced because ";
       switch (placement->get_omit_reason()) {
-      case OR_repeats:
-	out << "repeats (" 
-	    << floor(placement->get_uv_area() * 10000.0 + 0.5) / 100.0
-	    << "%)";
+      case OR_coverage:
+	out << "coverage (" << placement->get_uv_area() << ")";
 	break;
 
       case OR_size:

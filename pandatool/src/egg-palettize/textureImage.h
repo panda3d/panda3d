@@ -54,7 +54,7 @@ public:
   void determine_placement_size();
 
   bool get_omit() const;
-  double get_repeat_threshold() const;
+  double get_coverage_threshold() const;
   int get_margin() const;
   bool is_surprise() const;
 

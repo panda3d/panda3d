@@ -39,7 +39,7 @@ Palettizer() {
 
   _map_dirname = "%g";
   _margin = 2;
-  _repeat_threshold = 250.0;
+  _coverage_threshold = 2.5;
   _aggressively_clean_mapdir = true;
   _force_power_2 = true;
   _color_type = PNMFileTypeRegistry::get_ptr()->get_type_from_extension("rgb");
@@ -68,7 +68,7 @@ report_pi() const {
     << FilenameUnifier::make_user_filename(_rel_dirname) << "\n"
     << "  palettize size: " << _pal_x_size << " by " << _pal_y_size << "\n"
     << "  margin: " << _margin << "\n"
-    << "  repeat threshold: " << _repeat_threshold << "%\n"
+    << "  coverage threshold: " << _coverage_threshold << "\n"
     << "  force textures to power of 2: " << yesno(_force_power_2) << "\n"
     << "  aggressively clean the map directory: "
     << yesno(_aggressively_clean_mapdir) << "\n"
@@ -608,7 +608,7 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   datagram.add_int32(_pal_x_size);
   datagram.add_int32(_pal_y_size);
   datagram.add_int32(_margin);
-  datagram.add_float64(_repeat_threshold);
+  datagram.add_float64(_coverage_threshold);
   datagram.add_bool(_force_power_2);
   datagram.add_bool(_aggressively_clean_mapdir);
   datagram.add_bool(_round_uvs);
@@ -726,7 +726,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _pal_x_size = scan.get_int32();
   _pal_y_size = scan.get_int32();
   _margin = scan.get_int32();
-  _repeat_threshold = scan.get_float64();
+  _coverage_threshold = scan.get_float64();
   _force_power_2 = scan.get_bool();
   _aggressively_clean_mapdir = scan.get_bool();
   _round_uvs = scan.get_bool();

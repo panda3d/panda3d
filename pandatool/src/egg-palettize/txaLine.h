@@ -58,8 +58,8 @@ private:
 
   bool _got_margin;
   int _margin;
-  bool _got_repeat_threshold;
-  double _repeat_threshold;
+  bool _got_coverage_threshold;
+  double _coverage_threshold;
 
   enum Keyword {
     KW_omit,

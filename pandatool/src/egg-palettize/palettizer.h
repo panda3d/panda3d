@@ -74,7 +74,7 @@ public:
   Filename _rel_dirname;
   int _pal_x_size, _pal_y_size;
   int _margin;
-  double _repeat_threshold;
+  double _coverage_threshold;
   bool _force_power_2;
   bool _aggressively_clean_mapdir;
   bool _round_uvs;

@@ -30,9 +30,9 @@ enum OmitReason {
   // It should be placed, but it's the only one on the palette image
   // so far, so there's no point.
 
-  OR_repeats,
+  OR_coverage,
   // The texture repeats.  Specifically, the UV's for the texture
-  // exceed the maximum rectangle allowed by repeat_threshold.
+  // exceed the maximum rectangle allowed by coverage_threshold.
 
   OR_unknown,
   // The texture file cannot be read, so its size can't be determined.
