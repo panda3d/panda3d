@@ -85,6 +85,47 @@ begin_frame() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsBuffer::end_frame
+//       Access: Public, Virtual
+//  Description: This function will be called within the draw thread
+//               after rendering is completed for a given frame.  It
+//               should do whatever finalization is required.
+////////////////////////////////////////////////////////////////////
+void wglGraphicsBuffer::
+end_frame() {
+  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+  _gsg->end_frame();
+
+  if (_copy_texture) {
+    wglGraphicsStateGuardian *wglgsg;
+    DCAST_INTO_V(wglgsg, _gsg);
+
+    // If we've lost the pbuffer image (due to a mode-switch, for
+    // instance), don't attempt to copy it to the texture, since the
+    // frame is invalid.  For excruciating correctness, we should
+    // force the frame to be re-rendered, but we'll just discard the
+    // frame instead.
+    if (_pbuffer_dc) {
+      int flag = 0;
+      wglgsg->_wglQueryPbufferARB(_pbuffer, WGL_PBUFFER_LOST_ARB, &flag);
+      if (flag != 0) {
+        wgldisplay_cat.info()
+          << "Pbuffer contents lost.\n";
+        return;
+      }
+    }
+
+    // For now, we copy the framebuffer to the texture every frame.
+    // Eventually we can take advantage of the render_texture
+    // extension, if it is available, to render directly into a
+    // texture in the first place (but I don't have a card that
+    // supports that right now).
+    PT(DisplayRegion) dr = make_scratch_display_region(_x_size, _y_size);
+    get_texture()->copy(_gsg, dr, _gsg->get_render_buffer(RenderBuffer::T_back));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsBuffer::make_current
 //       Access: Public, Virtual
 //  Description: This function will be called within the draw thread
@@ -137,36 +178,13 @@ release_gsg() {
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsBuffer::
 begin_flip() {
+  // In principle, we shouldn't need to flip the pbuffer.  But it
+  // seems that if we don't, at least on my nVidia driver, it won't
+  // copy to texture properly somehow.
+
   if (_gsg != (GraphicsStateGuardian *)NULL) {
     make_current();
     glFinish();
-
-    wglGraphicsStateGuardian *wglgsg;
-    DCAST_INTO_V(wglgsg, _gsg);
-
-    // If we've lost the pbuffer image (due to a mode-switch, for
-    // instance), don't attempt to flip the buffers, since the frame
-    // is invalid.  For excruciating correctness, we should force the
-    // frame to be re-rendered, but we'll just discard the frame
-    // instead.
-    if (_pbuffer_dc) {
-      int flag = 0;
-      wglgsg->_wglQueryPbufferARB(_pbuffer, WGL_PBUFFER_LOST_ARB, &flag);
-      if (flag != 0) {
-        wgldisplay_cat.info()
-          << "Pbuffer contents lost.\n";
-        return;
-      }
-    }
-
-    if (has_texture()) {
-      // Use glCopyTexImage2D to copy the framebuffer to the texture.
-      // This appears to be the only way to "render to a texture" in
-      // OpenGL; there's no interface to make the offscreen buffer
-      // itself be a texture.
-      PT(DisplayRegion) dr = make_scratch_display_region(_x_size, _y_size);
-      get_texture()->copy(_gsg, dr, _gsg->get_render_buffer(RenderBuffer::T_back));
-    }
 
     if (_pbuffer_dc) {
       SwapBuffers(_pbuffer_dc);
@@ -323,10 +341,7 @@ make_window() {
     return false;
   }
 
-  ShowWindow(_window, SW_SHOWNORMAL);
-  if (!show_pbuffers) {
-    ShowWindow(_window, SW_HIDE);
-  }
+  ShowWindow(_window, SW_HIDE);
 
   _window_dc = GetDC(_window);
 

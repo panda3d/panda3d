@@ -29,6 +29,5 @@ extern EXPCL_PANDAGL void init_libwgldisplay();
 extern int gl_force_pixfmt;
 extern bool gl_force_invalid;
 extern bool gl_do_vidmemsize_check;
-extern bool show_pbuffers;
 
 #endif

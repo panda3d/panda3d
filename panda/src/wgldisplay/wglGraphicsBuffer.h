@@ -47,11 +47,13 @@ public:
   virtual ~wglGraphicsBuffer();
 
   virtual bool begin_frame();
+  virtual void end_frame();
 
   virtual void make_current();
   virtual void release_gsg();
 
   virtual void begin_flip();
+
   virtual void process_events();
 
 protected:

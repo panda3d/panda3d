@@ -66,10 +66,3 @@ bool gl_force_invalid = config_wgldisplay.GetBool("gl-force-invalid", false);
 // fullscreen windows, no matter what resolution of window was
 // requested.  It only affects fullscreen windows.
 bool gl_do_vidmemsize_check = config_wgldisplay.GetBool("gl-do-vidmemsize-check", true);
-
-// For now, we fake offscreen rendering without using the
-// poorly-supported pbuffer extension; we simply render into an
-// invisible window.  Some drivers don't like that, so for these
-// drivers set show-pbuffers to true to force the window to be visible
-// so you can at least get some work done.
-bool show_pbuffers = config_wgldisplay.GetBool("show-pbuffers", false);
