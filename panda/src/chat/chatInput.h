@@ -58,18 +58,16 @@ PUBLISHED:
 
   INLINE const string &get_string() const;
 
+  void append(const string &str);
+  bool append_character(char ch);
+
 ////////////////////////////////////////////////////////////////////
 // From parent class DataNode
 ////////////////////////////////////////////////////////////////////
 public:
   virtual void
   transmit_data(NodeAttributes &data);
-
-  void append(const string &str);
-  bool append_character(char ch);
-
   NodeAttributes _attrib;
-
   // inputs
   static TypeHandle _button_events_type;
 
