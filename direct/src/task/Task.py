@@ -259,22 +259,26 @@ class TaskPriorityList(list):
 
 
 class DoLaterList(list):
+    """
+    This is a list that maintains sorted order of wakeTimes on tasks
+    """
     def __init__(self):
         list.__init__(self)
-        self.__wakeTimeList = []
 
     def add(self, task):
-        # Find the insertion point with a binary search
-        index = bisect(self.__wakeTimeList, task.wakeTime)
-        # Insert this new wake time
-        self.__wakeTimeList.insert(index, task.wakeTime)
-        # And the task itself
-        list.insert(self, index, task)
-
-    def __delitem__(self, index):
-        del self.__wakeTimeList[index]
-        list.__delitem__(self, index)
-
+        """
+        Add task, keeping the list sorted.
+        This does a binary search for the index to insert into.
+        """
+        lo = 0
+        hi = len(self)
+        while lo < hi:
+            mid = (lo+hi)//2
+            if task.wakeTime < self[mid].wakeTime:
+                hi = mid
+            else:
+                lo = mid+1
+        list.insert(self, lo, task)
 
 class TaskManager:
 
@@ -556,9 +560,9 @@ class TaskManager:
             # Run the task and check the return value
             if task.pstats:
                 task.pstats.start()
-            startTime = time.clock()
+            startTime = globalClock.getRealTime()
             ret = task(task)
-            endTime = time.clock()
+            endTime = globalClock.getRealTime()
             if task.pstats:
                 task.pstats.stop()
 
