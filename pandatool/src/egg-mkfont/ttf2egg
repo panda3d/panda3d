@@ -77,6 +77,7 @@ if [ "x$1" = "x--" ]; then
   shift
 fi
 
+status=0
 rm -f ttfonts1.map
 echo ttf2tfm $ttf -q -u -T \"$enc\" $fontname.tfm
 if ttf2tfm $ttf -q -u -T "$enc" $fontname.tfm > ttfonts1.map 2>/dev/null; then
@@ -86,9 +87,15 @@ if ttf2tfm $ttf -q -u -T "$enc" $fontname.tfm > ttfonts1.map 2>/dev/null; then
   if ttf2pk -q $fontname $dpi >/dev/null 2>/dev/null; then
     echo egg-mkfont $* -o $egg $fontname.${dpi}pk
     egg-mkfont $* -o $egg $fontname.${dpi}pk
+    status=$?
+  else
+    echo Error running ttf2pk.
+    status=1
   fi
+else
+  echo Error running ttf2tfm.
+  status=1
 fi
-status=$?
 
 rm -f ttfonts1.map ttfonts.map $fontname.tfm $fontname.${dpi}pk
 exit $status
