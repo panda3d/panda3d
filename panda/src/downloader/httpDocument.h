@@ -82,6 +82,18 @@ PUBLISHED:
   INLINE bool get_header(const URLSpec &url);
 
 private:
+  bool establish_connection();
+  bool establish_http();
+  bool establish_https();
+  bool establish_http_proxy();
+  bool establish_https_proxy();
+
+  bool make_https_connection();
+  bool verify_server(X509_NAME *subject) const;
+
+  static string get_x509_name_component(X509_NAME *name, int nid);
+  static bool x509_name_subset(X509_NAME *name_a, X509_NAME *name_b);
+
   void make_header(string &header, const string &method, 
                    const URLSpec &url, const string &body);
   void set_url(const URLSpec &url);

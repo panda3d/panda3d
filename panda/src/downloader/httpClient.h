@@ -99,18 +99,7 @@ private:
   static void initialize_ssl();
   static int load_verify_locations(SSL_CTX *ctx, const Filename &ca_file);
 
-  BIO *establish_connection(const URLSpec &url);
-  BIO *establish_http(const URLSpec &url);
-  BIO *establish_https(const URLSpec &url);
-  BIO *establish_http_proxy(const URLSpec &url);
-  BIO *establish_https_proxy(const URLSpec &url);
-
-  BIO *make_https_connection(BIO *bio, const URLSpec &url) const;
-  bool verify_server(X509_NAME *subject) const;
-
   static X509_NAME *parse_x509_name(const string &source);
-  static string get_x509_name_component(X509_NAME *name, int nid);
-  static bool x509_name_subset(X509_NAME *name_a, X509_NAME *name_b);
 
 #if defined(SSL_097) && !defined(NDEBUG)
   static void ssl_msg_callback(int write_p, int version, int content_type,

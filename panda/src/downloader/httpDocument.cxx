@@ -254,7 +254,11 @@ will_close_connection() const {
 ////////////////////////////////////////////////////////////////////
 istream *HTTPDocument::
 open_read_file() const {
-  return ((HTTPDocument *)this)->read_body(true);
+  // TODO: make this smarter about reference-counting the source
+  // stream properly so we can return an istream and not worry about
+  // future interference to or from the HTTPDocument.
+  bool persist = (get_persistent_connection() && !will_close_connection());
+  return ((HTTPDocument *)this)->read_body(!persist);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -288,6 +292,635 @@ write_headers(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPDocument::establish_connection
+//       Access: Private
+//  Description: Establishes a connection to the server, using the
+//               appropriate means.  Returns true if a connection is
+//               successfully established (and _bio represents the
+//               connection), or false otherwise (and _bio is either
+//               NULL or an invalid connection.)
+////////////////////////////////////////////////////////////////////
+bool HTTPDocument::
+establish_connection() {
+  nassertr(_bio == (BIO *)NULL, false);
+
+  bool result;
+  if (_proxy.empty()) {
+    if (_url.get_scheme() == "https") {
+      result = establish_https();
+    } else {
+      result = establish_http();
+    }
+  } else {
+    if (_url.get_scheme() == "https") {
+      result = establish_https_proxy();
+    } else {
+      result = establish_http_proxy();
+    }
+  }    
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPDocument::establish_http
+//       Access: Private
+//  Description: Establishes a connection to the server directly,
+//               without using a proxy.
+////////////////////////////////////////////////////////////////////
+bool HTTPDocument::
+establish_http() {
+  ostringstream server;
+  server << _url.get_server() << ":" << _url.get_port();
+  string server_str = server.str();
+
+  _bio = BIO_new_connect((char *)server_str.c_str());
+
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug() << "connecting to " << server_str << "\n";
+  }
+  if (BIO_do_connect(_bio) <= 0) {
+    downloader_cat.info()
+      << "Could not contact server " << server_str << "\n";
+#ifdef REPORT_SSL_ERRORS
+    ERR_print_errors_fp(stderr);
+#endif
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPDocument::establish_https
+//       Access: Private
+//  Description: Establishes a connection to the secure server
+//               directly, without using a proxy.
+////////////////////////////////////////////////////////////////////
+bool HTTPDocument::
+establish_https() {
+  ostringstream server;
+  server << _url.get_server() << ":" << _url.get_port();
+  string server_str = server.str();
+
+  _bio = BIO_new_connect((char *)server_str.c_str());
+
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug() << "connecting to " << server_str << "\n";
+  }
+  if (BIO_do_connect(_bio) <= 0) {
+    downloader_cat.info()
+      << "Could not contact server " << server_str << "\n";
+#ifdef REPORT_SSL_ERRORS
+    ERR_print_errors_fp(stderr);
+#endif
+    return false;
+  }
+
+  return make_https_connection();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPDocument::establish_http_proxy
+//       Access: Private
+//  Description: Establishes a connection to the server through a
+//               proxy.
+////////////////////////////////////////////////////////////////////
+bool HTTPDocument::
+establish_http_proxy() {
+  ostringstream proxy_server;
+  proxy_server << _proxy.get_server() << ":" << _proxy.get_port();
+  string proxy_server_str = proxy_server.str();
+
+  _bio = BIO_new_connect((char *)proxy_server_str.c_str());
+
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug()
+      << "connecting to proxy " << proxy_server_str << "\n";
+  }
+  if (BIO_do_connect(_bio) <= 0) {
+    downloader_cat.info()
+      << "Could not contact proxy " << proxy_server_str << "\n";
+#ifdef REPORT_SSL_ERRORS
+    ERR_print_errors_fp(stderr);
+#endif
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPDocument::establish_https_proxy
+//       Access: Private
+//  Description: Establishes a connection to the secure server through
+//               a proxy.
+////////////////////////////////////////////////////////////////////
+bool HTTPDocument::
+establish_https_proxy() {
+  // First, ask the proxy to open a connection for us.
+  ostringstream proxy_server;
+  proxy_server << _proxy.get_server() << ":" << _proxy.get_port();
+  string proxy_server_str = proxy_server.str();
+
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug()
+      << "connecting to proxy " << proxy_server_str << "\n";
+  }
+
+  ostringstream request;
+  request 
+    << "CONNECT " << _url.get_server() << ":" << _url.get_port()
+    << " " << get_http_version_string() << "\r\n";
+  if (_http_version >= HTTPClient::HV_11) {
+    request 
+      << "Host: " << _url.get_server() << "\r\n";
+  }
+  string connect_header = request.str();
+
+  _bio = BIO_new_connect((char *)proxy_server_str.c_str());
+  if (BIO_do_connect(_bio) <= 0) {
+    downloader_cat.info()
+      << "Could not contact proxy " << proxy_server_str << ".\n";
+#ifdef REPORT_SSL_ERRORS
+    ERR_print_errors_fp(stderr);
+#endif
+    return false;
+  }
+
+  // Now issue the request and read the response from the proxy.
+
+  // Temporarily flag our bio as being owned externally, so our call
+  // to send_request() won't end up with a recursive call back to
+  // establish_connection().
+  _owns_bio = false;
+
+  string old_proxy_authorization = _client->_proxy_authorization;
+  bool connected = send_request(connect_header, string());
+  if (!connected && get_status_code() == 407 &&
+      _client->_proxy_authorization != old_proxy_authorization) {
+    // If we ended up with a 407 (proxy authorization required), and
+    // we changed authorization strings recently, then try the new
+    // authorization string, once.  (Normally, send_request() would
+    // have tried it again automatically, but we may have prevented
+    // that by setting _owns_bio to false.)
+    if (!prepare_for_next()) {
+      free_bio();
+      _bio = BIO_new_connect((char *)proxy_server_str.c_str());
+      if (BIO_do_connect(_bio) <= 0) {
+        downloader_cat.info()
+          << "Could not contact proxy " << proxy_server_str 
+          << " a second time.\n";
+#ifdef REPORT_SSL_ERRORS
+        ERR_print_errors_fp(stderr);
+#endif
+        _owns_bio = true;
+        return false;
+      }
+    }
+    connected = send_request(connect_header, string());
+  }
+
+  // Now that we've connected, be honest with the _owns_bio flag: if
+  // we're here, we know we really do own the BIO pointer (we just
+  // created it, after all.)
+  _owns_bio = true;
+
+  if (!connected) {
+    downloader_cat.info()
+      << "proxy would not open connection to " << _url.get_authority()
+      << ": " << get_status_code() << " "
+      << get_status_string() << "\n";
+    
+    if (_client->get_verify_ssl() == HTTPClient::VS_no_verify) {
+      // If the proxy refused to open a raw connection for us, see
+      // if it will handle the https communication itself.  For
+      // other error codes, just return error.  (We can only
+      // reliably do this if verify_ssl is minimal, since we're not
+      // sure whether to trust the proxy to do the verification for
+      // us.)
+      if ((get_status_code() / 100) == 4) {
+        free_bio();
+        return establish_http_proxy();
+      }
+    }
+    return false;
+  }
+
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug()
+      << "connection established to " << _url.get_authority() << "\n";
+  }
+
+  // Reset the state to make it appear like we just opened this
+  // connection, even though we've already gone through an HTTP
+  // handshake.
+  _state = S_new;
+
+  // Also reset the HTTP version, because we don't want to limit
+  // ourselves to whatever version the proxy returned after
+  // successfully connecting.
+  _http_version = _client->get_http_version();
+  _http_version_string = _client->get_http_version_string();
+
+  // Ok, we now have a connection to our actual server, so start
+  // speaking SSL and then ask for the document we really want.
+  return make_https_connection();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPDocument::make_https_connection
+//       Access: Private
+//  Description: Starts speaking SSL over the opened connection.
+//               Returns true on success, false if the SSL connection
+//               cannot be established for some reason.
+////////////////////////////////////////////////////////////////////
+bool HTTPDocument::
+make_https_connection() {
+  BIO *sbio = BIO_new_ssl(_client->_ssl_ctx, true);
+  BIO_push(sbio, _bio);
+
+  SSL *ssl;
+  BIO_get_ssl(sbio, &ssl);
+  nassertr(ssl != (SSL *)NULL, NULL);
+  SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
+
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug()
+      << "performing SSL handshake\n";
+  }
+  if (BIO_do_handshake(sbio) <= 0) {
+    downloader_cat.info()
+      << "Could not establish SSL handshake with " 
+      << _url.get_server() << ":" << _url.get_port() << "\n";
+#ifdef REPORT_SSL_ERRORS
+    ERR_print_errors_fp(stderr);
+#endif
+    // It seems to be an error to free sbio at this point; perhaps
+    // it's already been freed?
+    return false;
+  }
+
+  // Now that we've made an SSL handshake, we can use the SSL bio to
+  // do all of our communication henceforth.
+  _bio = sbio;
+
+  long verify_result = SSL_get_verify_result(ssl);
+  if (verify_result == X509_V_ERR_CERT_HAS_EXPIRED) {
+    downloader_cat.info()
+      << "Expired certificate from " << _url.get_server() << ":"
+      << _url.get_port() << "\n";
+    if (_client->get_verify_ssl() == HTTPClient::VS_normal) {
+      return false;
+    }
+
+  } else if (verify_result == X509_V_ERR_CERT_NOT_YET_VALID) {
+    downloader_cat.info()
+      << "Premature certificate from " << _url.get_server() << ":"
+      << _url.get_port() << "\n";
+    if (_client->get_verify_ssl() == HTTPClient::VS_normal) {
+      return false;
+    }
+
+  } else if (verify_result != X509_V_OK) {
+    downloader_cat.info()
+      << "Unable to verify identity of " << _url.get_server() << ":" 
+      << _url.get_port() << ", verify error code " << verify_result << "\n";
+    if (_client->get_verify_ssl() != HTTPClient::VS_no_verify) {
+      return false;
+    }
+  }
+
+  X509 *cert = SSL_get_peer_certificate(ssl);
+  if (cert == (X509 *)NULL) {
+    downloader_cat.info()
+      << "No certificate was presented by server.\n";
+    if (_client->get_verify_ssl() != HTTPClient::VS_no_verify ||
+        !_client->_expected_servers.empty()) {
+      return false;
+    }
+
+  } else {
+    if (downloader_cat.is_debug()) {
+      downloader_cat.debug()
+        << "Received certificate from server:\n" << flush;
+      X509_print_fp(stderr, cert);
+      fflush(stderr);
+    }
+
+    X509_NAME *subject = X509_get_subject_name(cert);
+
+    if (downloader_cat.is_debug()) {
+      string org_name = get_x509_name_component(subject, NID_organizationName);
+      string org_unit_name = get_x509_name_component(subject, NID_organizationalUnitName);
+      string common_name = get_x509_name_component(subject, NID_commonName);
+      
+      downloader_cat.debug()
+        << "Server is " << common_name << " from " << org_unit_name
+        << " / " << org_name << "\n";
+    }
+
+    if (!verify_server(subject)) {
+      downloader_cat.info()
+        << "Server does not match any expected server.\n";
+      return false;
+    }
+      
+    X509_free(cert);
+  }
+
+  return true;
+}
+
+
+
+/*
+   Certificate verify error codes:
+
+0 X509_V_OK: ok
+
+    the operation was successful.
+
+2 X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT: unable to get issuer certificate
+
+    the issuer certificate could not be found: this occurs if the
+    issuer certificate of an untrusted certificate cannot be found.
+
+3 X509_V_ERR_UNABLE_TO_GET_CRL unable to get certificate CRL
+
+    the CRL of a certificate could not be found. Unused.
+
+4 X509_V_ERR_UNABLE_TO_DECRYPT_CERT_SIGNATURE: unable to decrypt
+certificate's signature
+
+    the certificate signature could not be decrypted. This means that
+    the actual signature value could not be determined rather than it
+    not matching the expected value, this is only meaningful for RSA
+    keys.
+
+5 X509_V_ERR_UNABLE_TO_DECRYPT_CRL_SIGNATURE: unable to decrypt CRL's signature
+
+    the CRL signature could not be decrypted: this means that the
+    actual signature value could not be determined rather than it not
+    matching the expected value. Unused.
+
+6 X509_V_ERR_UNABLE_TO_DECODE_ISSUER_PUBLIC_KEY: unable to decode
+issuer public key
+
+    the public key in the certificate SubjectPublicKeyInfo could not
+    be read.
+
+7 X509_V_ERR_CERT_SIGNATURE_FAILURE: certificate signature failure
+
+    the signature of the certificate is invalid.
+
+8 X509_V_ERR_CRL_SIGNATURE_FAILURE: CRL signature failure
+
+    the signature of the certificate is invalid. Unused.
+
+9 X509_V_ERR_CERT_NOT_YET_VALID: certificate is not yet valid
+
+    the certificate is not yet valid: the notBefore date is after the
+    current time.
+
+10 X509_V_ERR_CERT_HAS_EXPIRED: certificate has expired
+
+    the certificate has expired: that is the notAfter date is before
+    the current time.
+
+11 X509_V_ERR_CRL_NOT_YET_VALID: CRL is not yet valid
+
+    the CRL is not yet valid. Unused.
+
+12 X509_V_ERR_CRL_HAS_EXPIRED: CRL has expired
+
+    the CRL has expired. Unused.
+
+13 X509_V_ERR_ERROR_IN_CERT_NOT_BEFORE_FIELD: format error in
+certificate's notBefore field
+
+    the certificate notBefore field contains an invalid time.
+
+14 X509_V_ERR_ERROR_IN_CERT_NOT_AFTER_FIELD: format error in
+certificate's notAfter field
+
+    the certificate notAfter field contains an invalid time.
+
+15 X509_V_ERR_ERROR_IN_CRL_LAST_UPDATE_FIELD: format error in CRL's
+lastUpdate field
+
+    the CRL lastUpdate field contains an invalid time. Unused.
+
+16 X509_V_ERR_ERROR_IN_CRL_NEXT_UPDATE_FIELD: format error in CRL's
+nextUpdate field
+
+    the CRL nextUpdate field contains an invalid time. Unused.
+
+17 X509_V_ERR_OUT_OF_MEM: out of memory
+
+    an error occurred trying to allocate memory. This should never
+    happen.
+
+18 X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT: self signed certificate
+
+    the passed certificate is self signed and the same certificate
+    cannot be found in the list of trusted certificates.
+
+19 X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN: self signed certificate in
+certificate chain
+
+    the certificate chain could be built up using the untrusted
+    certificates but the root could not be found locally.
+
+20 X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY: unable to get local
+issuer certificate
+
+    the issuer certificate of a locally looked up certificate could
+    not be found. This normally means the list of trusted certificates
+    is not complete.
+
+21 X509_V_ERR_UNABLE_TO_VERIFY_LEAF_SIGNATURE: unable to verify the
+first certificate
+
+    no signatures could be verified because the chain contains only
+    one certificate and it is not self signed.
+
+22 X509_V_ERR_CERT_CHAIN_TOO_LONG: certificate chain too long
+
+    the certificate chain length is greater than the supplied maximum
+    depth. Unused.
+
+23 X509_V_ERR_CERT_REVOKED: certificate revoked
+
+    the certificate has been revoked. Unused.
+
+24 X509_V_ERR_INVALID_CA: invalid CA certificate
+
+    a CA certificate is invalid. Either it is not a CA or its
+    extensions are not consistent with the supplied purpose.
+
+25 X509_V_ERR_PATH_LENGTH_EXCEEDED: path length constraint exceeded
+
+    the basicConstraints pathlength parameter has been exceeded.
+
+26 X509_V_ERR_INVALID_PURPOSE: unsupported certificate purpose
+
+    the supplied certificate cannot be used for the specified purpose.
+
+27 X509_V_ERR_CERT_UNTRUSTED: certificate not trusted
+
+    the root CA is not marked as trusted for the specified purpose.
+
+28 X509_V_ERR_CERT_REJECTED: certificate rejected
+
+    the root CA is marked to reject the specified purpose.
+
+29 X509_V_ERR_SUBJECT_ISSUER_MISMATCH: subject issuer mismatch
+
+    the current candidate issuer certificate was rejected because its
+    subject name did not match the issuer name of the current
+    certificate. Only displayed when the -issuer_checks option is set.
+
+30 X509_V_ERR_AKID_SKID_MISMATCH: authority and subject key identifier
+mismatch
+
+    the current candidate issuer certificate was rejected because its
+    subject key identifier was present and did not match the authority
+    key identifier current certificate. Only displayed when the
+    -issuer_checks option is set.
+
+31 X509_V_ERR_AKID_ISSUER_SERIAL_MISMATCH: authority and issuer serial
+number mismatch
+
+    the current candidate issuer certificate was rejected because its
+    issuer name and serial number was present and did not match the
+    authority key identifier of the current certificate. Only
+    displayed when the -issuer_checks option is set.
+
+32 X509_V_ERR_KEYUSAGE_NO_CERTSIGN:key usage does not include
+certificate signing
+
+    the current candidate issuer certificate was rejected because its
+    keyUsage extension does not permit certificate signing.
+
+50 X509_V_ERR_APPLICATION_VERIFICATION: application verification failure
+
+    an application specific error. Unused.
+
+*/
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPDocument::verify_server
+//       Access: Private
+//  Description: Returns true if the indicated server matches one of
+//               our expected servers (or the list of expected servers
+//               is empty), or false if it does not match any of our
+//               expected servers.
+////////////////////////////////////////////////////////////////////
+bool HTTPDocument::
+verify_server(X509_NAME *subject) const {
+  if (_client->_expected_servers.empty()) {
+    if (downloader_cat.is_debug()) {
+      downloader_cat.debug()
+        << "No expected servers on list; allowing any https connection.\n";
+    }
+    return true;
+  }
+
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug() << "checking server: " << flush;
+    X509_NAME_print_ex_fp(stderr, subject, 0, 0);
+    fflush(stderr);
+    downloader_cat.debug(false) << "\n";
+  }
+
+  HTTPClient::ExpectedServers::const_iterator ei;
+  for (ei = _client->_expected_servers.begin();
+       ei != _client->_expected_servers.end();
+       ++ei) {
+    X509_NAME *expected_name = (*ei);
+    if (x509_name_subset(expected_name, subject)) {
+      if (downloader_cat.is_debug()) {
+        downloader_cat.debug()
+          << "Match found!\n";
+      }
+      return true;
+    }
+  }
+
+  // None of the lines matched.
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug()
+      << "No match found against any of the following expected servers:\n";
+
+    for (ei = _client->_expected_servers.begin();
+         ei != _client->_expected_servers.end();
+         ++ei) {
+      X509_NAME *expected_name = (*ei);
+      X509_NAME_print_ex_fp(stderr, expected_name, 0, 0);
+      fprintf(stderr, "\n");
+    }
+    fflush(stderr);      
+  }
+  
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPDocument::get_x509_name_component
+//       Access: Private, Static
+//  Description: Returns the indicated component of the X509 name as a
+//               string, if defined, or empty string if it is not.
+////////////////////////////////////////////////////////////////////
+string HTTPDocument::
+get_x509_name_component(X509_NAME *name, int nid) {
+  ASN1_OBJECT *obj = OBJ_nid2obj(nid);
+
+  if (obj == NULL) {
+    // Unknown nid.  See openssl/objects.h.
+    return string();
+  }
+
+  int i = X509_NAME_get_index_by_OBJ(name, obj, -1);
+  if (i < 0) {
+    return string();
+  }
+
+  ASN1_STRING *data = X509_NAME_ENTRY_get_data(X509_NAME_get_entry(name, i));
+  return string((char *)data->data, data->length);  
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPDocument::x509_name_subset
+//       Access: Private, Static
+//  Description: Returns true if name_a is a subset of name_b: each
+//               property of name_a is defined in name_b, and the
+//               defined value is equivalent to that of name_a.
+////////////////////////////////////////////////////////////////////
+bool HTTPDocument::
+x509_name_subset(X509_NAME *name_a, X509_NAME *name_b) {
+  int count_a = X509_NAME_entry_count(name_a);
+  for (int ai = 0; ai < count_a; ai++) {
+    X509_NAME_ENTRY *na = X509_NAME_get_entry(name_a, ai);
+
+    int bi = X509_NAME_get_index_by_OBJ(name_b, na->object, -1);
+    if (bi < 0) {
+      // This entry in name_a is not defined in name_b.
+      return false;
+    }
+
+    X509_NAME_ENTRY *nb = X509_NAME_get_entry(name_b, bi);
+    if (na->value->length != nb->value->length ||
+        memcmp(na->value->data, nb->value->data, na->value->length) != 0) {
+      // This entry in name_a doesn't match that of name_b.
+      return false;
+    }
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPDocument::make_header
 //       Access: Private
 //  Description: Formats the appropriate GET or POST (or whatever)
@@ -314,7 +947,7 @@ make_header(string &header, const string &method,
   stream 
     << method << " " << path << " " << get_http_version_string() << "\r\n";
 
-  if (_http_version > HTTPClient::HV_10) {
+  if (_http_version >= HTTPClient::HV_11) {
     stream 
       << "Host: " << _url.get_server() << "\r\n";
     if (!get_persistent_connection()) {
@@ -508,9 +1141,10 @@ read_http_response() {
   if (get_status_code() / 100 == 1 ||
       get_status_code() == 204 ||
       get_status_code() == 304 || 
-      _method == "HEAD") {
-    // These status codes, or method HEAD, indicate we have no body.
-    // Therefore, we have already read the (nonexistent) body.
+      (_method == "HEAD" || _method == "CONNECT")) {
+    // These status codes, or method HEAD or CONNECT, indicate we have
+    // no body.  Therefore, we have already read the (nonexistent)
+    // body.
     _state = S_read_trailer;
   }
 
@@ -919,12 +1553,13 @@ prepare_for_next() {
   _proxy = _client->get_proxy();
   _http_version = _client->get_http_version();
   _http_version_string = _client->get_http_version_string();
-  _bio = _client->establish_connection(_url);
   _owns_bio = true;
-  if (_bio != (BIO *)NULL) {
+  if (establish_connection()) {
     _source = new IBioStream(_bio, false);
     return true;
   }
+
+  free_bio();
   return false;
 }
 
