@@ -272,7 +272,8 @@ class DistributedObject(PandaObject):
         if tuple:
             callback, extraArgs = tuple
             completeArgs = args + extraArgs
-            callback(*completeArgs)
+            if callback != None:
+                callback(*completeArgs)
             del self.__callbacks[context]
         else:
             self.notify.warning("Got unexpected context from AI: %s" % (context))
