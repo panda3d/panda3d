@@ -32,6 +32,18 @@ def indent(stream, numIndents, str):
 
 
 
+def writeFsmTree(instance, indent = 0):
+    if hasattr(instance, 'parentFSM'):
+        writeFsmTree(instance.parentFSM, indent-2)
+    elif hasattr(instance, 'fsm'):
+        name = ''
+        if hasattr(instance.fsm, 'state'):
+            name = instance.fsm.state.name
+        print "%s: %s"%(instance.fsm.name, name)
+        
+
+
+
 def traceFunctionCall(frame):
     """
     return a string that shows the call frame with calling arguments.
@@ -45,12 +57,16 @@ def traceFunctionCall(frame):
     if co.co_flags & 4: n = n+1
     if co.co_flags & 8: n = n+1
     r=f.f_code.co_name+'('
+    comma=0 # formatting, whether we should type a comma.
     for i in range(n):
         name = co.co_varnames[i]
         if name=='self':
             continue
-        if i:
+        if comma:
             r+=', '
+        else:
+            # ok, we skipped the first one, the rest get commas:
+            comma=1
         r+=name
         r+='='
         if dict.has_key(name):
@@ -61,6 +77,9 @@ def traceFunctionCall(frame):
                 r+=str(dict[name])
         else: r+="*** undefined ***"
     return r+')'
+
+def traceParentCall():
+    return traceFunctionCall(sys._getframe(2))
 
 def printThisCall():
     print traceFunctionCall(sys._getframe(1))
