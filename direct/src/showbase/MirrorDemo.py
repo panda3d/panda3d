@@ -73,7 +73,6 @@ def setupMirror(name, width, height):
 
     # Spawn a task to keep that camera on the opposite side of the
     # mirror.
-    ul = 
     def moveCamera(task, cameraNP = cameraNP, plane = plane,
                    planeNP = planeNP, card = card, lens = lens,
                    width = width, height = height):
@@ -103,7 +102,7 @@ def setupMirror(name, width, height):
     return root
     
 def showFrustum(np):
-    # Reveal the frustum for a particular camera.
+    # Utility function to reveal the frustum for a particular camera.
     cameraNP = np.find('**/+Camera')
     camera = cameraNP.node()
     lens = camera.getLens()
