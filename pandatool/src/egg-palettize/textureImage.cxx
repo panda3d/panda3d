@@ -1131,12 +1131,10 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
 TypedWriteable *TextureImage::
 make_TextureImage(const FactoryParams &params) {
   TextureImage *me = new TextureImage;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   return me;
 }

@@ -116,8 +116,10 @@ get_info(const Filename &filename) {
   typedef vector<TypedWriteable *> Objects;
   Objects objects;
   TypedWriteable *object = bam_file.read_object();
-  while (object != (TypedWriteable *)NULL) {
-    objects.push_back(object);
+  while (!bam_file.is_eof()) {
+    if (object != (TypedWriteable *)NULL) {
+      objects.push_back(object);
+    }
     object = bam_file.read_object();
   }
   bam_file.resolve();

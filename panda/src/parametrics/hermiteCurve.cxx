@@ -914,12 +914,10 @@ register_with_read_factory() {
 TypedWriteable *HermiteCurve::
 make_HermiteCurve(const FactoryParams &params) {
   HermiteCurve *me = new HermiteCurve;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   return me;
 }

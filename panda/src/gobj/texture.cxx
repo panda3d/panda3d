@@ -500,11 +500,10 @@ make_Texture(const FactoryParams &params)
   //be done through calls to TexturePool, which ensures
   //that any loads of the same Texture, refer to the
   //same memory
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
+  parse_params(params, scan, manager);
 
   string name = scan.get_string();
   string alpha_name = scan.get_string();

@@ -139,12 +139,10 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 TypedWriteable* DestTextureImage::
 make_DestTextureImage(const FactoryParams &params) {
   DestTextureImage *me = new DestTextureImage;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   return me;
 }

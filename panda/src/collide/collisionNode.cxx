@@ -255,12 +255,10 @@ TypedWriteable* CollisionNode::
 make_CollisionNode(const FactoryParams &params)
 {
   CollisionNode *me = new CollisionNode;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   return me;
 }

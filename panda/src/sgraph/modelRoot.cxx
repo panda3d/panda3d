@@ -39,12 +39,10 @@ register_with_read_factory() {
 TypedWriteable* ModelRoot::
 make_ModelRoot(const FactoryParams &params) {
   ModelRoot *me = new ModelRoot;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   return me;
 }

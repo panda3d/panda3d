@@ -61,12 +61,10 @@ TypedWriteable* NamedNode::
 make_NamedNode(const FactoryParams &params)
 {
   NamedNode *me = new NamedNode;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   return me;
 }

@@ -305,12 +305,10 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
 TypedWriteable* PaletteGroups::
 make_PaletteGroups(const FactoryParams &params) {
   PaletteGroups *me = new PaletteGroups;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   return me;
 }

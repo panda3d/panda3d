@@ -56,12 +56,10 @@ draw_immediate(GraphicsStateGuardianBase *gsg) const {
 TypedWriteable* GeomPolygon::
 make_GeomPolygon(const FactoryParams &params) {
   GeomPolygon *me = new GeomPolygon;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   me->make_dirty();
   me->config();

@@ -78,6 +78,7 @@ Node::
     DownRelationPointers::iterator drpi;
     for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
       NodeRelation *arc = (*drpi);
+      nassertv(arc != (NodeRelation *)NULL);
 
       // This deletes the arc and anything below it through the magic
       // of reference-counting.
@@ -504,12 +505,10 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
 TypedWriteable* Node::
 make_Node(const FactoryParams &params) {
   Node *me = new Node;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   return me;
 }

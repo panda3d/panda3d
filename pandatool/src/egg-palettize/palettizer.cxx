@@ -927,12 +927,10 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
 TypedWriteable* Palettizer::
 make_Palettizer(const FactoryParams &params) {
   Palettizer *me = new Palettizer;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   return me;
 }

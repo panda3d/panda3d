@@ -222,14 +222,15 @@ get_auto_attr_update() const {
 //     Function: FltHeader::get_flt_version
 //       Access: Public
 //  Description: Returns the version number of the flt file as
-//               reported in the header.
+//               reported in the header, times 100.  Divide by 100 to
+//               get the floating-point version number.
 ////////////////////////////////////////////////////////////////////
-double FltHeader::
+int FltHeader::
 get_flt_version() const {
   if (_format_revision_level < 1420) {
-    return _format_revision_level;
+    return _format_revision_level * 100;
   } else {
-    return _format_revision_level / 100.0;
+    return _format_revision_level;
   }
 }
 
@@ -237,14 +238,15 @@ get_flt_version() const {
 //     Function: FltHeader::set_flt_version
 //       Access: Public
 //  Description: Changes the version number of the flt file that will
-//               be reported in the header.
+//               be reported in the header.  Pass in the
+//               floating-point version number times 100.
 ////////////////////////////////////////////////////////////////////
 void FltHeader::
-set_flt_version(double version) {
+set_flt_version(int version) {
   if (version < 14.2) {
-    _format_revision_level = (int)floor(version + 0.5);
+    _format_revision_level = version / 100;
   } else {
-    _format_revision_level = (int)floor(version * 100.0 + 0.5);
+    _format_revision_level = version;
   }
 }
 
@@ -252,24 +254,24 @@ set_flt_version(double version) {
 //     Function: FltHeader::min_flt_version
 //       Access: Public, Static
 //  Description: Returns the earliest flt version number that this
-//               codebase supports.  Earlier versions will probably
-//               not work.
+//               codebase supports (times 100).  Earlier versions will
+//               probably not work.
 ////////////////////////////////////////////////////////////////////
-double FltHeader::
+int FltHeader::
 min_flt_version() {
-  return 14.2;
+  return 1420;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FltHeader::max_flt_version
 //       Access: Public, Static
 //  Description: Returns the latest flt version number that this
-//               codebase is known to support.  Later versions might
-//               work, but then again they may not.
+//               codebase is known to support (times 100).  Later
+//               versions might work, but then again they may not.
 ////////////////////////////////////////////////////////////////////
-double FltHeader::
+int FltHeader::
 max_flt_version() {
-  return 15.7;
+  return 1570;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -284,20 +286,20 @@ max_flt_version() {
 ////////////////////////////////////////////////////////////////////
 bool FltHeader::
 check_version() const {
-  double version = get_flt_version();
+  int version = get_flt_version();
 
-  if (version < min_flt_version() && !IS_NEARLY_EQUAL(version, min_flt_version())) {
+  if (version < min_flt_version()) {
     nout << "Warning!  The version number of this file appears to be "
-	 << version << ", which is older than " << min_flt_version()
+	 << version << ", which is older than " << min_flt_version() / 100.0
 	 << ", the oldest OpenFlight version understood by this program.  "
       "It is unlikely that this program will be able to read the file "
       "correctly.\n";
     return false;
   }
   
-  if (version > max_flt_version() && !IS_NEARLY_EQUAL(version, max_flt_version())) {
+  if (version > max_flt_version()) {
     nout << "Warning!  The version number of this file appears to be "
-	 << version << ", which is newer than " << max_flt_version()
+	 << version << ", which is newer than " << max_flt_version() / 100.0
 	 << ", the newest OpenFlight version understood by this program.  "
       "Chances are good that the program will still be able to read it "
       "correctly, but any features in the file that are specific to "
@@ -1202,19 +1204,19 @@ extract_record(FltRecordReader &reader) {
   _next_road_id = iterator.get_be_int16();
   _next_cat_id = iterator.get_be_int16();
   
-  if (get_flt_version() >= 15.2 && iterator.get_remaining_size() > 0) {
+  if (get_flt_version() >= 1520 && iterator.get_remaining_size() > 0) {
     iterator.skip_bytes(2 + 2 + 2 + 2);
     _earth_model = (EarthModel)iterator.get_be_int32();
 
     // Undocumented padding.
     iterator.skip_bytes(4);
     
-    if (get_flt_version() >= 15.6 && iterator.get_remaining_size() > 0) {
+    if (get_flt_version() >= 1560 && iterator.get_remaining_size() > 0) {
       _next_adaptive_id = iterator.get_be_int16();
       _next_curve_id = iterator.get_be_int16();
       iterator.skip_bytes(4);
       
-      if (get_flt_version() >= 15.7 && iterator.get_remaining_size() > 0) {
+      if (get_flt_version() >= 1570 && iterator.get_remaining_size() > 0) {
 	_delta_z = iterator.get_be_float64();
 	_radius = iterator.get_be_float64();
 	_next_mesh_id = iterator.get_be_int16();
@@ -1340,20 +1342,20 @@ build_record(FltRecordWriter &writer) const {
   datagram.add_be_int16(_next_road_id);
   datagram.add_be_int16(_next_cat_id);
 
-  if (get_flt_version() >= 15.2) {
+  if (get_flt_version() >= 1520) {
     // New with 15.2
     datagram.pad_bytes(2 + 2 + 2 + 2);
     datagram.add_be_int32(_earth_model);
 
     datagram.pad_bytes(4);    
 
-    if (get_flt_version() >= 15.6) {
+    if (get_flt_version() >= 1560) {
       // New with 15.6
       datagram.add_be_int16(_next_adaptive_id);
       datagram.add_be_int16(_next_curve_id);
       datagram.pad_bytes(4);
       
-      if (get_flt_version() >= 15.7) {
+      if (get_flt_version() >= 1570) {
 	// New with 15.7
 	datagram.add_be_float64(_delta_z);
 	datagram.add_be_float64(_radius);
@@ -1714,7 +1716,7 @@ FltError FltHeader::
 write_material_palette(FltRecordWriter &writer) const {
   FltError result;
 
-  if (get_flt_version() >= 15.2) {
+  if (get_flt_version() >= 1520) {
     // Write a version 15 material palette.
     Materials::const_iterator mi;
     for (mi = _materials.begin(); mi != _materials.end(); ++mi) {

@@ -59,7 +59,7 @@ get_opcode() const {
 ////////////////////////////////////////////////////////////////////
 int FltVertex::
 get_record_length() const {
-  if (_header->get_flt_version() < 15.2) {
+  if (_header->get_flt_version() < 1520) {
     // Version 14.2
     switch (get_opcode()) {
     case FO_vertex_c:
@@ -193,7 +193,7 @@ extract_record(FltRecordReader &reader) {
   if (!_packed_color.extract_record(reader)) {
     return false;
   }
-  if (_header->get_flt_version() >= 15.2) {
+  if (_header->get_flt_version() >= 1520) {
     _color_index = iterator.get_be_int32();
 
     if (_has_normal && iterator.get_remaining_size() > 0) {
@@ -244,7 +244,7 @@ build_record(FltRecordWriter &writer) const {
     return false;
   }
 
-  if (_header->get_flt_version() >= 15.2) {
+  if (_header->get_flt_version() >= 1520) {
     // New with 15.2
     datagram.add_be_uint32(_color_index);
 

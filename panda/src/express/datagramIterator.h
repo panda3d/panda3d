@@ -19,7 +19,11 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS DatagramIterator {
 PUBLISHED:
-  DatagramIterator(const Datagram &datagram, size_t offset = 0);
+  INLINE DatagramIterator();
+  INLINE DatagramIterator(const Datagram &datagram, size_t offset = 0);
+  INLINE DatagramIterator(const DatagramIterator &copy);
+  INLINE void operator = (const DatagramIterator &copy);
+  INLINE ~DatagramIterator();
 
   bool get_bool();
   PN_int8 get_int8();
@@ -56,9 +60,10 @@ PUBLISHED:
   size_t get_current_index() const;
  
 private:
-  const Datagram &_datagram;
+  const Datagram *_datagram;
   size_t _current_index;
 };
  
+#include "datagramIterator.I"
 
 #endif

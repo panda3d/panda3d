@@ -648,12 +648,10 @@ finalize() {
 TypedWriteable *PaletteGroup::
 make_PaletteGroup(const FactoryParams &params) {
   PaletteGroup *me = new PaletteGroup;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   manager->register_finalize(me);
   return me;

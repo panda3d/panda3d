@@ -128,10 +128,10 @@ public:
   int _next_mesh_id;
 
 public:
-  double get_flt_version() const;
-  void set_flt_version(double version);
-  static double min_flt_version();
-  static double max_flt_version();
+  int get_flt_version() const;
+  void set_flt_version(int version);
+  static int min_flt_version();
+  static int max_flt_version();
   bool check_version() const;
 
   DistanceUnit get_units() const;

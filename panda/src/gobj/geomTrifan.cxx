@@ -385,12 +385,10 @@ get_tris() const {
 TypedWriteable* GeomTrifan::
 make_GeomTrifan(const FactoryParams &params) {
   GeomTrifan *me = new GeomTrifan;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   me->make_dirty();
   me->config();

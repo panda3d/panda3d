@@ -1,0 +1,62 @@
+// Filename: datagramIterator.I
+// Created by:  drose (08May01)
+// 
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: DatagramIterator::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE DatagramIterator::
+DatagramIterator() :
+  _datagram((Datagram *)NULL),
+  _current_index(0)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DatagramIterator::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE DatagramIterator::
+DatagramIterator(const Datagram &datagram, size_t offset) :
+  _datagram(&datagram),
+  _current_index(offset)
+{
+  nassertv(_current_index <= _datagram->get_length());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DatagramIterator::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE DatagramIterator::
+DatagramIterator(const DatagramIterator &copy) :
+  _datagram(copy._datagram),
+  _current_index(copy._current_index)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DatagramIterator::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void DatagramIterator::
+operator = (const DatagramIterator &copy) {
+  _datagram = copy._datagram;
+  _current_index = copy._current_index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DatagramIterator::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE DatagramIterator::
+~DatagramIterator() {
+}

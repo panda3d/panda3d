@@ -234,12 +234,10 @@ TypedWriteable* AnimGroup::
 make_AnimGroup(const FactoryParams &params)
 {
   AnimGroup *me = new AnimGroup;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   return me;
 }

@@ -8,19 +8,6 @@
 
 #include <notify.h>
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramIterator::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-DatagramIterator::
-DatagramIterator(const Datagram &datagram, size_t offset) :
-  _datagram(datagram),
-  _current_index(offset)
-{
-  nassertv(_current_index <= _datagram.get_length());
-}
-
 // Various ways to get data and increment the iterator...
 // Cut-and-paste-orama
 
@@ -31,11 +18,12 @@ DatagramIterator(const Datagram &datagram, size_t offset) :
 ////////////////////////////////////////////////////////////////////
 bool DatagramIterator::
 get_bool() {
-  nassertr(_current_index < _datagram.get_length(), 0);
+  nassertr(_datagram != (const Datagram *)NULL &&
+	   _current_index < _datagram->get_length(), 0);
 
   PN_uint8 tempvar;
   LittleEndian s = 
-    _datagram.get_message().substr(_current_index, sizeof(tempvar));
+    _datagram->get_message().substr(_current_index, sizeof(tempvar));
 
   nassertr(s.length() == sizeof(tempvar), 0);
   memcpy((void *)&tempvar, (void *)s.data(), sizeof(tempvar));
@@ -51,11 +39,12 @@ get_bool() {
 ////////////////////////////////////////////////////////////////////
 PN_int8 DatagramIterator::
 get_int8() {
-  nassertr(_current_index < _datagram.get_length(), 0);
+  nassertr(_datagram != (const Datagram *)NULL &&
+	   _current_index < _datagram->get_length(), 0);
 
   PN_int8 tempvar;
   LittleEndian s = 
-    _datagram.get_message().substr(_current_index, sizeof(tempvar));
+    _datagram->get_message().substr(_current_index, sizeof(tempvar));
 
   nassertr(s.length() == sizeof(tempvar), 0);
   memcpy((void *)&tempvar, (void *)s.data(), sizeof(tempvar));
@@ -71,11 +60,12 @@ get_int8() {
 ////////////////////////////////////////////////////////////////////
 PN_uint8 DatagramIterator::
 get_uint8() {
-  nassertr(_current_index < _datagram.get_length(), 0);
+  nassertr(_datagram != (const Datagram *)NULL &&
+	   _current_index < _datagram->get_length(), 0);
 
   PN_uint8 tempvar;
   LittleEndian s = 
-    _datagram.get_message().substr(_current_index, sizeof(tempvar));
+    _datagram->get_message().substr(_current_index, sizeof(tempvar));
 
   nassertr(s.length() == sizeof(tempvar), 0);
   memcpy((void *)&tempvar, (void *)s.data(), sizeof(tempvar));
@@ -91,11 +81,12 @@ get_uint8() {
 ////////////////////////////////////////////////////////////////////
 PN_int16 DatagramIterator::
 get_int16() {
-  nassertr(_current_index < _datagram.get_length(), 0);
+  nassertr(_datagram != (const Datagram *)NULL &&
+	   _current_index < _datagram->get_length(), 0);
 
   PN_int16 tempvar;
   LittleEndian s = 
-    _datagram.get_message().substr(_current_index, sizeof(tempvar));
+    _datagram->get_message().substr(_current_index, sizeof(tempvar));
 
   nassertr(s.length() == sizeof(tempvar), 0);
   memcpy((void *)&tempvar, (void *)s.data(), sizeof(tempvar));
@@ -111,11 +102,12 @@ get_int16() {
 ////////////////////////////////////////////////////////////////////
 PN_int32 DatagramIterator::
 get_int32() {
-  nassertr(_current_index < _datagram.get_length(), 0);
+  nassertr(_datagram != (const Datagram *)NULL &&
+	   _current_index < _datagram->get_length(), 0);
 
   PN_int32 tempvar;
   LittleEndian s = 
-    _datagram.get_message().substr(_current_index, sizeof(tempvar));
+    _datagram->get_message().substr(_current_index, sizeof(tempvar));
 
   nassertr(s.length() == sizeof(tempvar), 0);
   memcpy((void *)&tempvar, (void *)s.data(), sizeof(tempvar));
@@ -131,11 +123,12 @@ get_int32() {
 ////////////////////////////////////////////////////////////////////
 PN_int64 DatagramIterator::
 get_int64() {
-  nassertr(_current_index < _datagram.get_length(), 0);
+  nassertr(_datagram != (const Datagram *)NULL &&
+	   _current_index < _datagram->get_length(), 0);
 
   PN_int64 tempvar;
   LittleEndian s = 
-    _datagram.get_message().substr(_current_index, sizeof(tempvar));
+    _datagram->get_message().substr(_current_index, sizeof(tempvar));
 
   nassertr(s.length() == sizeof(tempvar), 0);
   memcpy((void *)&tempvar, (void *)s.data(), sizeof(tempvar));
@@ -151,11 +144,12 @@ get_int64() {
 ////////////////////////////////////////////////////////////////////
 PN_uint16 DatagramIterator::
 get_uint16() {
-  nassertr(_current_index < _datagram.get_length(), 0);
+  nassertr(_datagram != (const Datagram *)NULL &&
+	   _current_index < _datagram->get_length(), 0);
 
   PN_uint16 tempvar;
   LittleEndian s = 
-    _datagram.get_message().substr(_current_index, sizeof(tempvar));
+    _datagram->get_message().substr(_current_index, sizeof(tempvar));
 
   nassertr(s.length() == sizeof(tempvar), 0);
   memcpy((void *)&tempvar, (void *)s.data(), sizeof(tempvar));
@@ -171,11 +165,12 @@ get_uint16() {
 ////////////////////////////////////////////////////////////////////
 PN_uint32 DatagramIterator::
 get_uint32() {
-  nassertr(_current_index < _datagram.get_length(), 0);
+  nassertr(_datagram != (const Datagram *)NULL &&
+	   _current_index < _datagram->get_length(), 0);
 
   PN_uint32 tempvar;
   LittleEndian s = 
-    _datagram.get_message().substr(_current_index, sizeof(tempvar));
+    _datagram->get_message().substr(_current_index, sizeof(tempvar));
 
   nassertr(s.length() == sizeof(tempvar), 0);
   memcpy((void *)&tempvar, (void *)s.data(), sizeof(tempvar));
@@ -191,11 +186,12 @@ get_uint32() {
 ////////////////////////////////////////////////////////////////////
 PN_uint64 DatagramIterator::
 get_uint64() {
-  nassertr(_current_index < _datagram.get_length(), 0);
+  nassertr(_datagram != (const Datagram *)NULL &&
+	   _current_index < _datagram->get_length(), 0);
 
   PN_uint64 tempvar;
   LittleEndian s = 
-    _datagram.get_message().substr(_current_index, sizeof(tempvar));
+    _datagram->get_message().substr(_current_index, sizeof(tempvar));
 
   nassertr(s.length() == sizeof(tempvar), 0);
   memcpy((void *)&tempvar, (void *)s.data(), sizeof(tempvar));
@@ -218,11 +214,12 @@ get_float32() {
   // architectures we are concerned with.  If we come across one that
   // is different, we will have to convert.
   nassertr(sizeof(float) == 4, 0.0);
-  nassertr(_current_index < _datagram.get_length(), 0.0);
+  nassertr(_datagram != (const Datagram *)NULL &&
+	   _current_index < _datagram->get_length(), 0.0);
 
   float tempvar;
   LittleEndian s = 
-    _datagram.get_message().substr(_current_index, sizeof(tempvar));
+    _datagram->get_message().substr(_current_index, sizeof(tempvar));
 
   nassertr(s.length() == sizeof(tempvar), 0.0);
   memcpy((void *)&tempvar, (void *)s.data(), sizeof(tempvar));
@@ -238,11 +235,12 @@ get_float32() {
 ////////////////////////////////////////////////////////////////////
 PN_float64 DatagramIterator::
 get_float64() {
-  nassertr(_current_index < _datagram.get_length(), 0.0);
+  nassertr(_datagram != (const Datagram *)NULL &&
+	   _current_index < _datagram->get_length(), 0.0);
 
   PN_float64 tempvar;
   LittleEndian s = 
-    _datagram.get_message().substr(_current_index, sizeof(tempvar));
+    _datagram->get_message().substr(_current_index, sizeof(tempvar));
 
   nassertr(s.length() == sizeof(tempvar), 0.0);
   memcpy((void *)&tempvar, (void *)s.data(), sizeof(tempvar));
@@ -258,11 +256,12 @@ get_float64() {
 ////////////////////////////////////////////////////////////////////
 PN_int16 DatagramIterator::
 get_be_int16() {
-  nassertr(_current_index < _datagram.get_length(), 0);
+  nassertr(_datagram != (const Datagram *)NULL &&
+	   _current_index < _datagram->get_length(), 0);
 
   PN_int16 tempvar;
   BigEndian s = 
-    _datagram.get_message().substr(_current_index, sizeof(tempvar));
+    _datagram->get_message().substr(_current_index, sizeof(tempvar));
 
   nassertr(s.length() == sizeof(tempvar), 0);
   memcpy((void *)&tempvar, (void *)s.data(), sizeof(tempvar));
@@ -278,11 +277,12 @@ get_be_int16() {
 ////////////////////////////////////////////////////////////////////
 PN_int32 DatagramIterator::
 get_be_int32() {
-  nassertr(_current_index < _datagram.get_length(), 0);
+  nassertr(_datagram != (const Datagram *)NULL &&
+	   _current_index < _datagram->get_length(), 0);
 
   PN_int32 tempvar;
   BigEndian s = 
-    _datagram.get_message().substr(_current_index, sizeof(tempvar));
+    _datagram->get_message().substr(_current_index, sizeof(tempvar));
 
   nassertr(s.length() == sizeof(tempvar), 0);
   memcpy((void *)&tempvar, (void *)s.data(), sizeof(tempvar));
@@ -298,11 +298,12 @@ get_be_int32() {
 ////////////////////////////////////////////////////////////////////
 PN_int64 DatagramIterator::
 get_be_int64() {
-  nassertr(_current_index < _datagram.get_length(), 0);
+  nassertr(_datagram != (const Datagram *)NULL &&
+	   _current_index < _datagram->get_length(), 0);
 
   PN_int64 tempvar;
   BigEndian s = 
-    _datagram.get_message().substr(_current_index, sizeof(tempvar));
+    _datagram->get_message().substr(_current_index, sizeof(tempvar));
 
   nassertr(s.length() == sizeof(tempvar), 0);
   memcpy((void *)&tempvar, (void *)s.data(), sizeof(tempvar));
@@ -318,11 +319,12 @@ get_be_int64() {
 ////////////////////////////////////////////////////////////////////
 PN_uint16 DatagramIterator::
 get_be_uint16() {
-  nassertr(_current_index < _datagram.get_length(), 0);
+  nassertr(_datagram != (const Datagram *)NULL &&
+	   _current_index < _datagram->get_length(), 0);
 
   PN_uint16 tempvar;
   BigEndian s = 
-    _datagram.get_message().substr(_current_index, sizeof(tempvar));
+    _datagram->get_message().substr(_current_index, sizeof(tempvar));
 
   nassertr(s.length() == sizeof(tempvar), 0);
   memcpy((void *)&tempvar, (void *)s.data(), sizeof(tempvar));
@@ -338,11 +340,12 @@ get_be_uint16() {
 ////////////////////////////////////////////////////////////////////
 PN_uint32 DatagramIterator::
 get_be_uint32() {
-  nassertr(_current_index < _datagram.get_length(), 0);
+  nassertr(_datagram != (const Datagram *)NULL &&
+	   _current_index < _datagram->get_length(), 0);
 
   PN_uint32 tempvar;
   BigEndian s = 
-    _datagram.get_message().substr(_current_index, sizeof(tempvar));
+    _datagram->get_message().substr(_current_index, sizeof(tempvar));
 
   nassertr(s.length() == sizeof(tempvar), 0);
   memcpy((void *)&tempvar, (void *)s.data(), sizeof(tempvar));
@@ -358,11 +361,12 @@ get_be_uint32() {
 ////////////////////////////////////////////////////////////////////
 PN_uint64 DatagramIterator::
 get_be_uint64() {
-  nassertr(_current_index < _datagram.get_length(), 0);
+  nassertr(_datagram != (const Datagram *)NULL &&
+	   _current_index < _datagram->get_length(), 0);
 
   PN_uint64 tempvar;
   BigEndian s = 
-    _datagram.get_message().substr(_current_index, sizeof(tempvar));
+    _datagram->get_message().substr(_current_index, sizeof(tempvar));
 
   nassertr(s.length() == sizeof(tempvar), 0);
   memcpy((void *)&tempvar, (void *)s.data(), sizeof(tempvar));
@@ -385,11 +389,12 @@ get_be_float32() {
   // architectures we are concerned with.  If we come across one that
   // is different, we will have to convert.
   nassertr(sizeof(float) == 4, 0.0);
-  nassertr(_current_index < _datagram.get_length(), 0.0);
+  nassertr(_datagram != (const Datagram *)NULL &&
+	   _current_index < _datagram->get_length(), 0.0);
 
   float tempvar;
   BigEndian s = 
-    _datagram.get_message().substr(_current_index, sizeof(tempvar));
+    _datagram->get_message().substr(_current_index, sizeof(tempvar));
 
   nassertr(s.length() == sizeof(tempvar), 0.0);
   memcpy((void *)&tempvar, (void *)s.data(), sizeof(tempvar));
@@ -405,11 +410,12 @@ get_be_float32() {
 ////////////////////////////////////////////////////////////////////
 PN_float64 DatagramIterator::
 get_be_float64() {
-  nassertr(_current_index < _datagram.get_length(), 0.0);
+  nassertr(_datagram != (const Datagram *)NULL &&
+	   _current_index < _datagram->get_length(), 0.0);
 
   PN_float64 tempvar;
   BigEndian s = 
-    _datagram.get_message().substr(_current_index, sizeof(tempvar));
+    _datagram->get_message().substr(_current_index, sizeof(tempvar));
 
   nassertr(s.length() == sizeof(tempvar), 0.0);
   memcpy((void *)&tempvar, (void *)s.data(), sizeof(tempvar));
@@ -428,10 +434,11 @@ get_string() {
   // First, get the length of the string
   PN_uint16 s_len = get_uint16();
 
-  nassertr(_current_index + s_len <= _datagram.get_length(), "");
+  nassertr(_datagram != (const Datagram *)NULL &&
+	   _current_index + s_len <= _datagram->get_length(), "");
 
   string s = 
-    _datagram.get_message().substr(_current_index, s_len);
+    _datagram->get_message().substr(_current_index, s_len);
 
   nassertr(s.length() == s_len, "");
   _current_index += s_len;
@@ -448,10 +455,11 @@ get_string() {
 ////////////////////////////////////////////////////////////////////
 string DatagramIterator::
 get_fixed_string(size_t size) {
-  nassertr(_current_index + size <= _datagram.get_length(), "");
+  nassertr(_datagram != (const Datagram *)NULL &&
+	   _current_index + size <= _datagram->get_length(), "");
 
   string s = 
-    _datagram.get_message().substr(_current_index, size);
+    _datagram->get_message().substr(_current_index, size);
   _current_index += size;
 
   size_t zero_byte = s.find('\0');
@@ -467,7 +475,7 @@ get_fixed_string(size_t size) {
 void DatagramIterator::
 skip_bytes(size_t size) {
   nassertv((int)size >= 0);
-  nassertv(_current_index + size <= _datagram.get_length());
+  nassertv(_current_index + size <= _datagram->get_length());
   _current_index += size;
 }
 
@@ -480,11 +488,12 @@ skip_bytes(size_t size) {
 string DatagramIterator::
 extract_bytes(size_t size) {
   nassertr((int)size >= 0, "");
-  nassertr(_current_index + size <= _datagram.get_length(), "");
+  nassertr(_datagram != (const Datagram *)NULL &&
+	   _current_index + size <= _datagram->get_length(), "");
   int start = _current_index;
 
   _current_index += size;
-  return _datagram.get_message().substr(start, size);
+  return _datagram->get_message().substr(start, size);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -495,8 +504,9 @@ extract_bytes(size_t size) {
 ////////////////////////////////////////////////////////////////////
 string DatagramIterator::
 get_remaining_bytes() const {
-  nassertr(_current_index <= _datagram.get_length(), "");
-  return _datagram.get_message().substr(_current_index);
+  nassertr(_datagram != (const Datagram *)NULL &&
+	   _current_index <= _datagram->get_length(), "");
+  return _datagram->get_message().substr(_current_index);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -506,7 +516,7 @@ get_remaining_bytes() const {
 ////////////////////////////////////////////////////////////////////
 int DatagramIterator::
 get_remaining_size() const {
-  return _datagram.get_length() - _current_index;
+  return _datagram->get_length() - _current_index;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -516,7 +526,7 @@ get_remaining_size() const {
 ////////////////////////////////////////////////////////////////////
 const Datagram &DatagramIterator::
 get_datagram() const {
-  return _datagram;
+  return *_datagram;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -111,12 +111,10 @@ write_datagram(BamWriter *manager, Datagram &me) {
 TypedWriteable* DepthTestTransition::
 make_DepthTestTransition(const FactoryParams &params) {
   DepthTestTransition *me = new DepthTestTransition;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   return me;
 }

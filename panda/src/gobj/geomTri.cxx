@@ -221,12 +221,10 @@ get_tris() const {
 TypedWriteable* GeomTri::
 make_GeomTri(const FactoryParams &params) {
   GeomTri *me = new GeomTri;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   me->make_dirty();
   me->config();

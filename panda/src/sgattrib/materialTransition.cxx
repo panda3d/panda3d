@@ -140,12 +140,10 @@ complete_pointers(vector_typedWriteable &plist, BamReader *) {
 TypedWriteable* MaterialTransition::
 make_MaterialTransition(const FactoryParams &params) {
   MaterialTransition *me = new MaterialTransition;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   return me;
 }

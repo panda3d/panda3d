@@ -157,12 +157,10 @@ write_datagram(BamWriter *manager, Datagram &me) {
 TypedWriteable *Material::
 make_Material(const FactoryParams &params) {
   Material *me = new Material;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   return me;
 }

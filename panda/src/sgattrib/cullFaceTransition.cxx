@@ -120,12 +120,10 @@ TypedWriteable* CullFaceTransition::
 make_CullFaceTransition(const FactoryParams &params)
 {
   CullFaceTransition *me = new CullFaceTransition;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   return me;
 }

@@ -141,12 +141,10 @@ complete_pointers(vector_typedWriteable &plist, BamReader *) {
 TypedWriteable* TextureTransition::
 make_TextureTransition(const FactoryParams &params) {
   TextureTransition *me = new TextureTransition;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   return me;
 }

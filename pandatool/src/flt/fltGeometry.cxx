@@ -186,7 +186,7 @@ extract_record(FltRecordReader &reader) {
     return false;
   }
 
-  if (_header->get_flt_version() >= 15.2) {
+  if (_header->get_flt_version() >= 1520) {
     _texture_mapping_index = iterator.get_be_int16();
     iterator.skip_bytes(2);
     _color_index = iterator.get_be_int32();
@@ -238,7 +238,7 @@ build_record(FltRecordWriter &writer) const {
     return false;
   }
 
-  if (_header->get_flt_version() >= 15.2) {
+  if (_header->get_flt_version() >= 1520) {
     // New with 15.2
     datagram.add_be_int16(_texture_mapping_index);
     datagram.pad_bytes(2);

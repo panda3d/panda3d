@@ -115,12 +115,10 @@ write_datagram(BamWriter *manager, Datagram &me) {
 TypedWriteable *GeomBinTransition::
 make_GeomBinTransition(const FactoryParams &params) {
   GeomBinTransition *me = new GeomBinTransition;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   return me;
 }

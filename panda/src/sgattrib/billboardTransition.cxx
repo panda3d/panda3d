@@ -205,12 +205,10 @@ TypedWriteable* BillboardTransition::
 make_BillboardTransition(const FactoryParams &params)
 {
   BillboardTransition *me = new BillboardTransition;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   return me;
 }

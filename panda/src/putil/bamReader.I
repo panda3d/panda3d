@@ -2,30 +2,65 @@
 // Created by:  jason (12Jun00)
 //
 
-#include <algorithm>
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BamReader::Constructor
+//     Function: BamReader::is_eof
 //       Access: Public
-//  Description: 
+//  Description: Returns true if the reader has reached end-of-file,
+//               false otherwise.  This call is only valid after a
+//               call to read_object().
 ////////////////////////////////////////////////////////////////////
-INLINE BamReader::
-BamReader(DatagramGenerator *generator) 
-  : _source(generator)
-{
+INLINE bool BamReader::
+is_eof() const {
+  return _source->is_eof();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BamReader::get_file_major_ver
+//       Access: Public
+//  Description: Returns the major version number of the Bam file
+//               currently being read.
+////////////////////////////////////////////////////////////////////
+INLINE int BamReader::
+get_file_major_ver() const {
+  return _file_major;
+}
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BamReader::create_factory
-//       Access: Private, Static
-//  Description: Creates a new WriteableFactory for generating
-//               TypedWriteable objects
+//     Function: BamReader::get_file_minor_ver
+//       Access: Public
+//  Description: Returns the minor version number of the Bam file
+//               currently being read.
 ////////////////////////////////////////////////////////////////////
-INLINE void BamReader::
-create_factory(void)
-{
-  _factory = new WriteableFactory;
+INLINE int BamReader::
+get_file_minor_ver() const {
+  return _file_minor;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamReader::get_current_major_ver
+//       Access: Public
+//  Description: Returns the major version number of Bam files
+//               supported by the current code base.  This must match
+//               get_file_major_ver() in order to successfully read a
+//               file.
+////////////////////////////////////////////////////////////////////
+INLINE int BamReader::
+get_current_major_ver() const {
+  return _cur_major;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamReader::get_current_minor_ver
+//       Access: Public
+//  Description: Returns the minor version number of Bam files
+//               supported by the current code base.  This must match
+//               or exceed get_file_minor_ver() in order to
+//               successfully read a file.
+////////////////////////////////////////////////////////////////////
+INLINE int BamReader::
+get_current_minor_ver() const {
+  return _cur_minor;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -35,78 +70,21 @@ create_factory(void)
 //               TypedWriteable objects
 ////////////////////////////////////////////////////////////////////
 INLINE WriteableFactory* BamReader::
-get_factory(void)
-{
+get_factory() {
   if (_factory == NullFactory)
     create_factory();
   return _factory;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BamReader::get_file_major_ver
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE int BamReader::
-get_file_major_ver(void)
-{
-  return _file_major;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::get_file_minor_ver
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE int BamReader::
-get_file_minor_ver(void)
-{
-  return _file_minor;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::get_current_major_ver
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE int BamReader::
-get_current_major_ver(void)
-{
-  return _cur_major;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::get_current_minor_ver
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE int BamReader::
-get_current_minor_ver(void)
-{
-  return _cur_minor;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::queue
-//       Access: Private
-//  Description: queues the objId of the object needing to be created
+//     Function: BamReader::create_factory
+//       Access: Private, Static
+//  Description: Creates a new WriteableFactory for generating
+//               TypedWriteable objects
 ////////////////////////////////////////////////////////////////////
 INLINE void BamReader::
-queue(PN_uint16 objId)
-{
-  if (!binary_search(_deferred_reads.begin(), _deferred_reads.end(), objId))
-      _deferred_reads.push_back(objId);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::clear_queue
-//       Access: Private
-//  Description: Clears all pending object reads
-////////////////////////////////////////////////////////////////////
-INLINE void BamReader::
-clear_queue(void)
-{ 
-  _deferred_reads.clear();
+create_factory() {
+  _factory = new WriteableFactory;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -119,15 +97,10 @@ clear_queue(void)
 //               managing BamReader object 
 ////////////////////////////////////////////////////////////////////
 INLINE void
-parse_params(const FactoryParams &params, BamReader* &manager, Datagram &packet)
-{
-  WriteableParam *datagram_param = DCAST(WriteableParam, params.get_param(0));
-  BamReaderParam *manager_param = DCAST(BamReaderParam, params.get_param(1));
+parse_params(const FactoryParams &params,	
+	     DatagramIterator &scan, BamReader *&manager) {
+  BamReaderParam *param = DCAST(BamReaderParam, params.get_param(0));
 
-  Datagram temp_packet = datagram_param->get_datagram();
-  DatagramIterator scan(temp_packet);
-  string mesg = scan.get_remaining_bytes();
-  packet.append_data(mesg.data(), mesg.size());
-
-  manager = manager_param->get_manager();
+  scan = param->get_iterator();
+  manager = param->get_manager();
 }

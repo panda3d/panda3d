@@ -70,12 +70,10 @@ register_with_read_factory() {
 TypedWriteable* ModelNode::
 make_ModelNode(const FactoryParams &params) {
   ModelNode *me = new ModelNode;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   return me;
 }

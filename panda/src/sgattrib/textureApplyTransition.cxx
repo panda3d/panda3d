@@ -118,12 +118,10 @@ TypedWriteable* TextureApplyTransition::
 make_TextureApplyTransition(const FactoryParams &params)
 {
   TextureApplyTransition *me = new TextureApplyTransition;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   return me;
 }

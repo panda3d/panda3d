@@ -50,12 +50,10 @@ TypedWriteable* Person::
 make_person(const FactoryParams &params)
 {
   Person *me = new Person;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(me, scan, manager);
   return me;
 }
@@ -98,12 +96,10 @@ TypedWriteable* Parent::
 make_parent(const FactoryParams &params)
 {
   Parent *me = new Parent;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(me, scan, manager);
   return me;
 }
@@ -158,12 +154,11 @@ TypedWriteable* Child::
 make_child(const FactoryParams &params)
 {
   Child *me = new Child;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
+  me->fillin(me, scan, manager);
   me->fillin(me, scan, manager);
 
   return me;

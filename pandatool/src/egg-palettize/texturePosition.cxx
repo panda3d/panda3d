@@ -112,12 +112,10 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 TypedWriteable* TexturePosition::
 make_TexturePosition(const FactoryParams &params) {
   TexturePosition *me = new TexturePosition;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   return me;
 }

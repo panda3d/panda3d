@@ -19,7 +19,17 @@ class Filename;
 ////////////////////////////////////////////////////////////////////
 // 	 Class : BamFile
 // Description : The principle public interface to reading and writing
-//               Bam disk files.
+//               Bam disk files.  See also BamReader and BamWriter,
+//               the more general implementation of this class.
+//
+//               Bam files are most often used to store scene graphs
+//               or subgraphs, and by convention they are given
+//               filenames ending in the extension ".bam" when they
+//               are used for this purpose.  However, a Bam file may
+//               store any arbitrary list of TypedWriteable objects;
+//               in this more general usage, they are given filenames
+//               ending in ".boo" to differentiate them from the more
+//               common scene graph files.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA BamFile {
 public:
@@ -28,6 +38,7 @@ public:
 
   bool open_read(const Filename &filename, bool report_errors = true);
   TypedWriteable *read_object();
+  bool is_eof() const;
   bool resolve();
 
   bool open_write(const Filename &filename, bool report_errors = true);

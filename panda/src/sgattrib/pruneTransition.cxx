@@ -54,12 +54,10 @@ TypedWriteable* PruneTransition::
 make_PruneTransition(const FactoryParams &params)
 {
   PruneTransition *me = new PruneTransition;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   return me;
 }

@@ -571,12 +571,10 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
 TypedWriteable* EggFile::
 make_EggFile(const FactoryParams &params) {
   EggFile *me = new EggFile;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   return me;
 }

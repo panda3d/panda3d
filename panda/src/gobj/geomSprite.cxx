@@ -91,12 +91,10 @@ write_datagram(BamWriter *manager, Datagram &me) {
 TypedWriteable* GeomSprite::
 make_GeomSprite(const FactoryParams &params) {
   GeomSprite *me = new GeomSprite;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   me->make_dirty();
   me->config();

@@ -41,12 +41,10 @@ TypedWriteable* CharacterJointBundle::
 make_CharacterJointBundle(const FactoryParams &params)
 {
   CharacterJointBundle *me = new CharacterJointBundle;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   manager->register_finalize(me);
   return me;

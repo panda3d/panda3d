@@ -89,14 +89,21 @@ load_file(const Filename &path, bool report_errors) const
     result = DCAST(Node, object);
     
     if (report_errors) {
-      if (bam_file.read_object() != TypedWriteable::Null) {
+      bam_file.read_object();
+      if (!bam_file.is_eof()) {
 	loader_cat.warning()
 	  << "Ignoring extra objects in " << path << "\n";
       }
     }
   }
     
-  bam_file.resolve();
+  if (!bam_file.resolve()) {
+    if (report_errors) {
+      loader_cat.error() 
+	<< "Unable to resolve Bam file.\n";
+      result = (Node *)NULL;
+    }
+  }    
 
   return result;
 }

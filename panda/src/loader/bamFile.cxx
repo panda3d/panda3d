@@ -84,10 +84,8 @@ open_read(const Filename &filename, bool report_errors) {
 //       Access: Public
 //  Description: Reads and returns the next object from the Bam file,
 //               or NULL if the end of the file has been reached, or
-//               if there is an error condition.
-//
-//               Note that there is presently no way to differentiate
-//               a normal end-of-file from an error.
+//               if there is an error condition.  Use is_eof() to
+//               differentiate these two cases.
 //
 //               The pointers returned by this method will not be
 //               valid for use until resolve() is subsequently called.
@@ -102,14 +100,27 @@ read_object() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BamFile::is_eof
+//       Access: Public
+//  Description: Returns true if the reader has reached end-of-file,
+//               false otherwise.  This call is only valid after a
+//               call to read_object().
+////////////////////////////////////////////////////////////////////
+bool BamFile::
+is_eof() const {
+  return _reader != (BamReader *)NULL && _reader->is_eof();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BamFile::resolve
 //       Access: Public
 //  Description: This must be called after one or more objects have
 //               been read via calls to read_object() in order to
 //               resolve all internal pointer references in the
 //               objects read and make all the pointers valid.  It
-//               returns true if successful, false if there is some
-//               error.
+//               returns true if all objects are successfully
+//               resolved, or false if some have not been (in which
+//               case you must call resolve() again later).
 ////////////////////////////////////////////////////////////////////
 bool BamFile::
 resolve() {

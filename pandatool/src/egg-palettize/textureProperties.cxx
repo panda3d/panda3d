@@ -591,12 +591,10 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
 TypedWriteable* TextureProperties::
 make_TextureProperties(const FactoryParams &params) {
   TextureProperties *me = new TextureProperties;
+  DatagramIterator scan;
   BamReader *manager;
-  Datagram packet;
 
-  parse_params(params, manager, packet);
-  DatagramIterator scan(packet);
-
+  parse_params(params, scan, manager);
   me->fillin(scan, manager);
   return me;
 }

@@ -14,7 +14,8 @@
     clockObject.h config_express.cxx config_express.h datagram.I	\
     datagram.cxx datagram.h datagramGenerator.I datagramGenerator.cxx	\
     datagramGenerator.h datagramInputFile.I datagramInputFile.h		\
-    datagramInputFile.cxx datagramIterator.cxx datagramIterator.h	\
+    datagramInputFile.cxx datagramIterator.I \
+    datagramIterator.cxx datagramIterator.h	\
     datagramOutputFile.I datagramOutputFile.h datagramOutputFile.cxx	\
     datagramSink.I datagramSink.cxx datagramSink.h			\
     get_config_path.cxx get_config_path.h				\
@@ -38,7 +39,8 @@
     bigEndian.I bigEndian.h buffer.I buffer.h circBuffer.I		\
     circBuffer.h clockObject.I clockObject.h config_express.h		\
     datagram.I datagram.h datagramInputFile.I datagramInputFile.h	\
-    datagramIterator.h datagramOutputFile.I datagramOutputFile.h	\
+    datagramIterator.I datagramIterator.h \
+    datagramOutputFile.I datagramOutputFile.h	\
     datagramSink.I datagramSink.h datagramGenerator.I			\
     datagramGenerator.h get_config_path.h				\
     hashVal.I hashVal.h \

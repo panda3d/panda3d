@@ -9,30 +9,26 @@
 #include <pandabase.h>
 
 #include "factoryParam.h"
-#include "datagram.h"
-
-#include <vector>
 
 class BamReader;
+class DatagramIterator;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : BamReaderParam
-// Description : The specific derivation of FactoryParam that 
-//               contains the information needed by a TypedWriteable
-//               object.  Simply contains a pointer to the managing
-//               BamReader
+// Description : The parameters that are passed through the Factory to
+//               any object constructing itself from a Bam file.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA BamReaderParam : public FactoryParam {
 public:
-  INLINE BamReader *get_manager(void);
+  INLINE const DatagramIterator &get_iterator();
+  INLINE BamReader *get_manager();
 
 private:
+  const DatagramIterator &_iterator;
   BamReader *_manager;
 
 public:
-  INLINE BamReaderParam(BamReader *manager);
-  INLINE BamReaderParam(const BamReaderParam &other);
-  INLINE void operator = (const BamReaderParam &other);
+  INLINE BamReaderParam(const DatagramIterator &dgi, BamReader *manager);
   INLINE ~BamReaderParam();
 
 public:
