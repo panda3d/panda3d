@@ -636,7 +636,8 @@ analyze_joints(EggJointData *joint_data) {
   bool has_vertices = false;
 
   int num_models = joint_data->get_num_models();
-  for (int i = 0; i < num_models; i++) {
+  int i;
+  for (i = 0; i < num_models; i++) {
     if (joint_data->has_model(i)) {
       EggBackPointer *model = joint_data->get_model(i);
       if (model->has_vertices()) {
@@ -681,7 +682,7 @@ analyze_joints(EggJointData *joint_data) {
   }
 
   int num_children = joint_data->get_num_children();
-  for (int i = 0; i < num_children; i++) {
+  for (i = 0; i < num_children; i++) {
     analyze_joints(joint_data->get_child(i));
   }
 }
