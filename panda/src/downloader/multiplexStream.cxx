@@ -16,11 +16,5 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "downloader_headers.h"
-#endif
-
-#pragma hdrstop
-
 #include "multiplexStream.h"
 

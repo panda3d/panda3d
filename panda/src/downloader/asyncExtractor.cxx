@@ -15,13 +15,7 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "downloader_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "config_downloader.h"
 
 #include <event.h>
@@ -29,7 +23,6 @@
 #include <throw_event.h>
 #include <eventParameter.h>
 #include <filename.h>
-#endif
 
 #include "asyncExtractor.h"
 

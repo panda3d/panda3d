@@ -15,21 +15,13 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "downloader_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "config_downloader.h"
 
 #include <filename.h>
 #include <error_utils.h>
 
 #include <errno.h>
-#endif
-
 #include "extractor.h"
 
 ////////////////////////////////////////////////////////////////////
