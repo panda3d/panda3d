@@ -630,7 +630,9 @@ end_frame() {
   GraphicsStateGuardian::end_frame();
 
   {
+#ifdef DO_PSTATS
     PStatTimer timer(_flush_pcollector);
+#endif
     // Calling glFlush() at the end of the frame is particularly
     // necessary if this is a single-buffered visual, so that the frame
     // will be finished drawing before we return to the application.
