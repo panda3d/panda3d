@@ -362,14 +362,45 @@ def reduceAngle(deg):
     Reduces an angle (in degrees) to a value between -180. and 180.
     """
     return (math.fmod((deg + 180.0), 360.0) - 180.0)
-
-def shortestDestAngle(src, dest):
+    
+def shortestDestAngle2(src, dest):
     """
     Returns a version of dest that is numerically closest to src. It is
     assumed that src is between -180. and 180.
     Example: (shortest-dest-angle 50. -170.) --> 190.
     """
     return (src + (reduceAngle(dest - src)))
+
+def closestDestAngle2(src, dest):
+    # The function above didn't seem to do what I wanted. So I hacked
+    # this one together. I can't really say I understand it. It's more
+    # from impirical observation... GRW
+    diff = src - dest
+    # if the difference is greater that 180 it's shorter to go the other way
+    if diff > 180:
+        return dest - 360
+    # or perhaps the OTHER other way...
+    elif diff < -180:
+        return dest + 360
+    # otherwise just go to the original destination
+    else:
+        return dest
+
+def closestDestAngle(src, dest):
+    # The function above didn't seem to do what I wanted. So I hacked
+    # this one together. I can't really say I understand it. It's more
+    # from impirical observation... GRW
+    diff = src - dest
+    # if the difference is greater that 180 it's shorter to go the other way
+    if diff > 180:
+        return src - (diff - 360)
+    # or perhaps the OTHER other way...
+    elif diff < -180:
+        return src - (360 + diff)
+    # otherwise just go to the original destination
+    else:
+        return dest
+
 
 def binaryRepr(number, max_length = 32):
     # This will only work reliably for relatively small numbers.
