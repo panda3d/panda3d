@@ -1389,6 +1389,11 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
       shader = default_shader;
     }
 
+    // And apply the shader properties to the polygon.
+    if (shader != (MayaShader *)NULL) {
+      set_shader_attributes(*egg_poly, *shader);
+    }
+
     const MayaShaderColorDef &color_def = shader->_color;
 
     // Should we extract the color from the vertices?  Normally, in
@@ -1406,6 +1411,15 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
     bool ignore_vertex_color = false;
     if (shader != (MayaShader *)NULL) {
       ignore_vertex_color = color_def._has_texture && !(egg_vertex_color || _always_show_vertex_color);
+    }
+
+    Colorf poly_color(1.0f, 1.0f, 1.0f, 1.0f);
+    if (!ignore_vertex_color) {
+      // If we're respecting the vertex color, then remove the color
+      // specification from the polygon (so we can apply it to the
+      // vertices).
+      poly_color = egg_poly->get_color();
+      egg_poly->clear_color();
     }
 
     // Get the vertices for the polygon.
@@ -1459,13 +1473,20 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
         }
       }
 
-      if (pi.hasColor() && !ignore_vertex_color) {
-        MColor c;
-        status = pi.getColor(c, i);
-        if (!status) {
-          status.perror("MItMeshPolygon::getColor");
+      if (!ignore_vertex_color) {
+        if (pi.hasColor()) {
+          MColor c;
+          status = pi.getColor(c, i);
+          if (!status) {
+            status.perror("MItMeshPolygon::getColor");
+          } else {
+            // The vertex color is a color scale that modifies the
+            // polygon color, not an override that replaces it.
+            vert.set_color(Colorf(c.r * poly_color[0], c.g * poly_color[1],
+                                  c.b * poly_color[2], poly_color[3]));
+          }
         } else {
-          vert.set_color(Colorf(c.r, c.g, c.b, 1.0));
+          vert.set_color(poly_color);
         }
       }
 
@@ -1497,33 +1518,9 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
     if (got_face_normal && egg_poly->calculate_normal(order_normal)) {
       if (order_normal.dot(face_normal) < 0.0) {
         egg_poly->reverse_vertex_ordering();
-        mayaegg_cat.info()
+        mayaegg_cat.debug()
           << "reversing polygon\n";
-
-        /*
-        Normald new_normal;
-        egg_poly->calculate_normal(new_normal);
-        if (new_normal.dot(order_normal) >= 0.0) {
-          cerr << "Did not change!  orig " << order_normal
-               << " new " << new_normal << "\n";
-          shader = NULL;
-          egg_poly->write(cerr, 0);
-          egg_poly->reverse_vertex_ordering();
-          egg_poly->write(cerr, 0);
-        } else {
-          cerr << "reversing prim: orig = " 
-               << order_normal
-               << ", new = " << new_normal << ", net = " << face_normal
-               << ", dot = " << order_normal.dot(face_normal)
-               << ", new dot = " << new_normal.dot(face_normal) << "\n";
-        }
-        */
       }
-    }
-
-    // Now apply the shader.
-    if (shader != (MayaShader *)NULL) {
-      set_shader_attributes(*egg_poly, *shader);
     }
       
     pi.next();
