@@ -4,9 +4,10 @@
                    dtoolutil:c dtoolbase:c dtool:m
 
 #begin lib_target
-  #define TARGET pandavrpn
+  #define TARGET pvrpn
   #define LOCAL_LIBS \
-    dgraph
+    device dgraph
+  #define USE_VRPN yes
 
   #define SOURCES \
     config_vrpn.cxx config_vrpn.h vrpnClient.I vrpnClient.cxx \
@@ -14,5 +15,7 @@
 
   #define INSTALL_HEADERS \
     config_vrpn.h vrpnClient.I vrpnClient.h
+
+  #define IGATESCAN all
 
 #end lib_target

@@ -26,9 +26,10 @@
 //               and sends it down the DataGraph
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ADInputNode : public DataNode {
-public:
+PUBLISHED:
   ADInputNode(PT(ClientBase) client, const string &adinput);
 
+public:
   virtual void transmit_data(NodeAttributes &data);
 
 public:

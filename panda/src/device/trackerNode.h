@@ -28,10 +28,11 @@
 //               down the DataGraph
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA TrackerNode : public DataNode {
-public:
+PUBLISHED:
   TrackerNode(PT(ClientBase) client, const string &tracker, 
 	      int sensor);
 
+public:
   virtual void transmit_data(NodeAttributes &data);
 
 public:

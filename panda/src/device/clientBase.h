@@ -27,7 +27,7 @@
 #include <map>
 
 class EXPCL_PANDA ClientBase : public TypedReferenceCount {
-public:
+PUBLISHED:
   ClientBase(const string &server);
   ~ClientBase();
   void fork_asynchronous_thread(void);
@@ -39,6 +39,7 @@ public:
   virtual bool add_remote_button(const string &button) = 0;
   virtual bool add_remote_dial(const string &dial) = 0;
 
+public:
   //GET FUNCTIONS
   virtual const TrackerData &get_tracker_data(const string &tracker, int sensor);
   virtual const AnalogData &get_analog_data(const string &analog);

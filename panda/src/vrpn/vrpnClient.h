@@ -9,6 +9,12 @@
 #include <pandabase.h>
 #include <clientBase.h>
 
+#if defined(WIN32_VC) && defined(CPPPARSER)
+  // For correct interrogate parsing of UNC's vrpn library.
+  #define _WIN32
+  #define SOCKET int
+#endif
+
 #include <vrpn_Connection.h>
 #include <vrpn_Tracker.h>
 #include <vrpn_Analog.h>
@@ -16,9 +22,10 @@
 #include <vrpn_Dial.h>
 
 class EXPCL_PANDA VrpnClient : public ClientBase {
-public:
+PUBLISHED:
   INLINE VrpnClient(const string &server);
 
+public:
   //ADD FUNCTIONS
   virtual bool add_remote_tracker(const string &tracker, int sensor);
   virtual bool add_remote_analog(const string &analog);

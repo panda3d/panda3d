@@ -44,6 +44,8 @@ add_remote_tracker(const string &tracker, int sensor) {
   _vrpn_trackers[tracker] = vrpn_tracker;
   _trackers.push_back(tracker);
   _sensors[tracker].push_back(sensor);
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -71,6 +73,8 @@ add_remote_analog(const string &analog) {
 
   _vrpn_analogs[analog] = vrpn_analog;
   _analogs.push_back(analog);
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -98,6 +102,8 @@ add_remote_button(const string &button) {
 
   _vrpn_buttons[button] = vrpn_button;
   _buttons.push_back(button);
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -125,6 +131,8 @@ add_remote_dial(const string &dial) {
 
   _vrpn_dials[dial] = vrpn_dial;
   _dials.push_back(dial);
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

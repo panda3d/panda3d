@@ -185,7 +185,8 @@
 // Is VRPN installed, and where?
 #define VRPN_IPATH
 #define VRPN_LPATH
-#defer HAVE_VRPN $[isdir $[VRPN_IPATH]]
+#define VRPN_LIBS
+#defer HAVE_VRPN $[libtest $[VRPN_LPATH],$[VRPN_LIBS]]
 
 // Is ZLIB installed, and where?
 #define ZLIB_IPATH
