@@ -42,6 +42,7 @@
 /* begin Win32-specific code */
 
 #include <direct.h>
+#include <windows.h>
 
 static string
 front_to_back_slash(const string &str) {
@@ -489,6 +490,10 @@ set_extension(const string &s) {
 void Filename::
 standardize() {
   assert(!_filename.empty());
+  if (_filename == ".") {
+    // Don't change a single dot; this refers to the current directory.
+    return;
+  }
 
   vector<string> components;
 
@@ -693,14 +698,13 @@ exists() const {
   string os_specific = to_os_specific();
 
 #ifdef WIN32_VC
-  // Windows puts underscores in front of most of the function and
-  // structure names it borrowed from Unix.  Embrace and extend.
-  struct _stat this_buf;
   bool exists = false;
 
-  if (_stat(os_specific.c_str(), &this_buf) == 0) {
+  DWORD results = GetFileAttributes(os_specific.c_str());
+  if (results != -1) {
     exists = true;
   }
+
 #else  // WIN32_VC
   struct stat this_buf;
   bool exists = false;
@@ -725,12 +729,13 @@ is_regular_file() const {
   string os_specific = to_os_specific();
 
 #ifdef WIN32_VC
-  struct _stat this_buf;
   bool isreg = false;
 
-  if (_stat(os_specific.c_str(), &this_buf) == 0) {
-    isreg = (this_buf.st_mode & _S_IFREG) != 0;
+  DWORD results = GetFileAttributes(os_specific.c_str());
+  if (results != -1) {
+    isreg = (results == FILE_ATTRIBUTE_NORMAL);
   }
+
 #else  // WIN32_VC
   struct stat this_buf;
   bool isreg = false;
@@ -754,11 +759,11 @@ is_directory() const {
   string os_specific = to_os_specific();
 
 #ifdef WIN32_VC
-  struct _stat this_buf;
   bool isdir = false;
 
-  if (_stat(os_specific.c_str(), &this_buf) == 0) {
-    isdir = (this_buf.st_mode & _S_IFDIR) != 0;
+  DWORD results = GetFileAttributes(os_specific.c_str());
+  if (results != -1) {
+    isdir = (results & FILE_ATTRIBUTE_DIRECTORY) != 0;
   }
 #else  // WIN32_VC
   struct stat this_buf;
@@ -1066,8 +1071,40 @@ scan_directory(vector_string &contents) const {
   return true;
 
 #elif defined(WIN32_VC)
-  return false;
+  // Use FindFirstFile()/FindNextFile() to walk through the list of
+  // files in a directory.
+  size_t orig_size = contents.size();
 
+  string match;
+  if (empty()) {
+    match = "*.*";
+  } else {
+    match = to_os_specific() + "\\*.*";
+  }
+  WIN32_FIND_DATA find_data;
+
+  HANDLE handle = FindFirstFile(match.c_str(), &find_data);
+  if (handle == INVALID_HANDLE_VALUE) {
+    if (GetLastError() == ERROR_NO_MORE_FILES) {
+      // No matching files is not an error.
+      return true;
+    }
+    return false;
+  }
+
+  do {
+    string filename = find_data.cFileName;
+    if (filename != "." && filename != "..") {
+      contents.push_back(filename);
+    }
+  } while (FindNextFile(handle, &find_data));
+
+  bool scan_ok = (GetLastError() == ERROR_NO_MORE_FILES);
+  FindClose(handle);
+
+  sort(contents.begin() + orig_size, contents.end());
+  return scan_ok;
+  
 #else
   // Don't know how to scan directories!
   return false;
