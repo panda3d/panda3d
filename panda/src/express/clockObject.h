@@ -78,6 +78,9 @@ PUBLISHED:
   INLINE double get_dt() const;
   INLINE void set_dt(double dt);
 
+  INLINE double get_max_dt() const;
+  INLINE void set_max_dt(double max_dt);
+
   void tick();
 
   INLINE static ClockObject *get_global_clock();
@@ -90,6 +93,7 @@ private:
   double _actual_frame_time;
   double _reported_frame_time;
   double _dt;
+  double _max_dt;
 
   static ClockObject *_global_clock;
 };

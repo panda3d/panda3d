@@ -10,7 +10,7 @@ ClockObject *ClockObject::_global_clock = (ClockObject *)NULL;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 ClockObject::
@@ -26,7 +26,7 @@ ClockObject() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::tick
-//       Access: Public
+//       Access: Published
 //  Description: Instructs the clock that a new frame has just begun.
 //               In normal, real-time mode, get_frame_time() will
 //               henceforth report the time as of this instant as the
@@ -42,6 +42,9 @@ tick() {
   switch (_mode) {
   case M_normal:
     _dt = _actual_frame_time - old_time;
+    if (_max_dt > 0.0) {
+      _dt = min(_max_dt, _dt);
+    }
     _reported_frame_time = _actual_frame_time;
     break;
 

@@ -5,7 +5,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::Destructor
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE ClockObject::
@@ -14,7 +14,7 @@ INLINE ClockObject::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::set_mode
-//       Access: Public
+//       Access: Published
 //  Description: Changes the mode of the clock, e.g. from normal
 //               (real-time) to non-real-time.  In non-real-time mode,
 //               tick() will add the value of dt to the value returned
@@ -30,7 +30,7 @@ set_mode(ClockObject::Mode mode) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::get_mode
-//       Access: Public
+//       Access: Published
 //  Description: Returns the current mode of the clock.  See
 //               set_mode().
 ////////////////////////////////////////////////////////////////////
@@ -41,7 +41,7 @@ get_mode() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::get_frame_time
-//       Access: Public
+//       Access: Published
 //  Description: Returns the time in seconds as of the last time
 //               tick() was called (typically, this will be as of the
 //               start of the current frame).
@@ -58,7 +58,7 @@ get_frame_time() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::get_intra_frame_time
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of seconds that have elapsed since
 //               the start of the frame.  This might be useful for
 //               certain specialty applications, for instance to
@@ -76,7 +76,7 @@ get_intra_frame_time() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::get_real_time
-//       Access: Public
+//       Access: Published
 //  Description: Returns the actual number of seconds elapsed since
 //               the ClockObject was created, or since it was last
 //               reset.  This is useful for doing real timing
@@ -89,7 +89,7 @@ get_real_time() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::reset
-//       Access: Public
+//       Access: Published
 //  Description: Simultaneously resets both the time and the frame
 //               count to zero.
 ////////////////////////////////////////////////////////////////////
@@ -102,7 +102,7 @@ reset() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::set_real_time
-//       Access: Public
+//       Access: Published
 //  Description: Resets the clock to the indicated time.  This
 //               changes only the real time of the clock as reported
 //               by get_real_time(), but does not immediately change
@@ -117,7 +117,7 @@ set_real_time(double time) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::set_frame_time
-//       Access: Public
+//       Access: Published
 //  Description: Changes the time as reported for the current frame to
 //               the indicated time.  Normally, the way to adjust the
 //               frame time is via tick(); this function is provided
@@ -131,7 +131,7 @@ set_frame_time(double time) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::set_frame_count
-//       Access: Public
+//       Access: Published
 //  Description: Resets the number of frames counted to the indicated
 //               number.  Also see reset(), set_real_time(), and
 //               set_frame_time().
@@ -143,7 +143,7 @@ set_frame_count(int frame_count) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::get_frame_count
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of times tick() has been called
 //               since the ClockObject was created, or since it was
 //               last reset.  This is generally the number of frames
@@ -156,7 +156,7 @@ get_frame_count() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::get_frame_rate
-//       Access: Public
+//       Access: Published
 //  Description: Returns the average frame rate since the last reset.
 //               This is simply the total number of frames divided by
 //               the total elapsed time.
@@ -168,7 +168,7 @@ get_frame_rate() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::get_dt
-//       Access: Public
+//       Access: Published
 //  Description: Returns the elapsed time for the previous frame: the
 //               number of seconds elapsed between the last two calls
 //               to tick().
@@ -180,7 +180,7 @@ get_dt() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::set_dt
-//       Access: Public
+//       Access: Published
 //  Description: In non-real-time mode, sets the number of seconds
 //               that should appear to elapse between frames.
 ////////////////////////////////////////////////////////////////////
@@ -196,8 +196,41 @@ set_dt(double dt) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::get_max_dt
+//       Access: Published
+//  Description: Returns the current maximum allowable time elapsed
+//               between any two frames.  See set_max_dt().
+////////////////////////////////////////////////////////////////////
+INLINE double ClockObject::
+get_max_dt() const {
+  return _max_dt;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::set_max_dt
+//       Access: Published
+//  Description: Sets a limit on the value returned by get_dt().  If
+//               this value is less than zero, no limit is imposed;
+//               otherwise, this is the maximum value that will ever
+//               be returned by get_dt(), regardless of how much time
+//               has actually elapsed between frames.
+//
+//               This limit is only imposed in real-time mode; in
+//               non-real-time mode, the dt is fixed anyway and max_dt
+//               is ignored.
+//
+//               This is generally used to guarantee reasonable
+//               behavior even in the presence of a very slow or
+//               chuggy frame rame.
+////////////////////////////////////////////////////////////////////
+INLINE void ClockObject::
+set_max_dt(double max_dt) {
+  _max_dt = max_dt;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::get_global_clock
-//       Access: Public
+//       Access: Published
 //  Description: Returns a pointer to the global ClockObject.  This is
 //               the ClockObject that most code should use for
 //               handling scene graph rendering and animation.
@@ -212,7 +245,7 @@ get_global_clock() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TimeVal::contructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TimeVal::
@@ -221,7 +254,7 @@ TimeVal(void) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TimeVal::get_sec
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ulong TimeVal::
@@ -231,7 +264,7 @@ get_sec(void) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TimeVal::get_usec
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ulong TimeVal::
