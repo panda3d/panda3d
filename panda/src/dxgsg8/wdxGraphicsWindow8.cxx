@@ -866,8 +866,6 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
       wdxdisplay8_cat.warning() << "pPresParams->BackBufferCount : " << pPresParams->BackBufferCount << endl;
       wdxdisplay8_cat.warning() << "D3D CreateDevice failed for device #" << Display.CardIDNum << D3DERRORSTRING(hr);
       goto Fallback_to_16bpp_buffers;
-      //exit(1);
-      return false;
     }
   }  // end create windowed buffers
 

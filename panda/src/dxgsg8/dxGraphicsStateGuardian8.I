@@ -16,6 +16,79 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if defined(_DEBUG) || defined(COUNT_DRAWPRIMS)
+typedef enum {DrawPrim,DrawIndexedPrim} DP_Type;
+static const char *DP_Type_Strs[3] = {"DrawPrimitive","DrawIndexedPrimitive"};
+
+void INLINE TestDrawPrimFailure(DP_Type dptype,HRESULT hr,IDirect3DDevice8 *pD3DDevice,DWORD nVerts,DWORD nTris) {
+        if(FAILED(hr)) {
+            // loss of exclusive mode is not a real DrawPrim problem, ignore it
+            HRESULT testcooplvl_hr = pD3DDevice->TestCooperativeLevel();
+            if((testcooplvl_hr != D3DERR_DEVICELOST)||(testcooplvl_hr != D3DERR_DEVICENOTRESET)) {
+                dxgsg8_cat.fatal() << DP_Type_Strs[dptype] << "() failed: result = " << D3DERRORSTRING(hr);
+                exit(1);
+            }
+        }
+
+        CountDPs(nVerts,nTris);
+}
+#else
+#define TestDrawPrimFailure(a,b,c,nVerts,nTris) CountDPs(nVerts,nTris);
+#endif
+
+
+INLINE DWORD
+Colorf_to_D3DCOLOR(const Colorf &cColorf) {
+// MS VC defines _M_IX86 for x86.  gcc should define _X86_
+#if defined(_M_IX86) || defined(_X86_)
+    DWORD d3dcolor,tempcolorval=255;
+
+    // note the default FPU rounding mode will give 255*0.5f=0x80, not 0x7F as VC would force it to by resetting rounding mode
+    // dont think this makes much difference
+
+    __asm {
+        push ebx   ; want to save this in case this fn is inlined
+        push ecx
+        mov ecx, cColorf
+        fild tempcolorval
+        fld DWORD PTR [ecx]
+        fmul ST(0),ST(1)
+        fistp tempcolorval  ; no way to store directly to int register
+        mov eax, tempcolorval
+        shl eax, 16
+
+        fld DWORD PTR [ecx+4]  ;grn
+        fmul ST(0),ST(1)
+        fistp tempcolorval
+        mov ebx,tempcolorval
+        shl ebx, 8
+        or eax,ebx
+
+        fld DWORD PTR [ecx+8]  ;blue
+        fmul ST(0),ST(1)
+        fistp tempcolorval
+        or eax,tempcolorval
+
+        fld DWORD PTR [ecx+12] ;alpha
+        fmul ST(0),ST(1)
+        fistp tempcolorval
+        ; simulate pop 255.0 off FP stack w/o store, mark top as empty and increment stk ptr
+        ffree ST(0)
+        fincstp
+        mov ebx,tempcolorval
+        shl ebx, 24
+        or eax,ebx
+        mov d3dcolor,eax
+        pop ecx
+        pop ebx
+    }
+
+   //   dxgsg8_cat.debug() << (void*)d3dcolor << endl;
+   return d3dcolor;
+#else //!_X86_
+   return MY_D3DRGBA(cColorf[0], cColorf[1], cColorf[2], cColorf[3]);
+#endif //!_X86_
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::enable_line_smooth
@@ -98,6 +171,24 @@ enable_blend(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::enable_texturing
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void DXGraphicsStateGuardian8::
+enable_texturing(bool val) {
+  _texturing_enabled = val;
+  
+  if (!val) {
+    _pD3DDevice->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_DISABLE);
+
+  } else {
+    nassertv(_pCurTexContext!=NULL);
+    SetTextureBlendMode(_CurTexBlendMode,true);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::set_color_writemask
 //       Access:
 //  Description:
@@ -149,6 +240,17 @@ enable_fog(bool val) {
     _fog_enabled = val;
     _pD3DDevice->SetRenderState(D3DRS_FOGENABLE, (DWORD)val);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::add_to_FVFBuf
+//       Access: Private
+//  Description: This adds data to the flexible vertex format
+////////////////////////////////////////////////////////////////////
+INLINE void DXGraphicsStateGuardian8::
+add_to_FVFBuf(void *data,  size_t bytes) {
+    memcpy(_pCurFvfBufPtr, data, bytes);
+    _pCurFvfBufPtr += bytes;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -364,6 +466,112 @@ enable_zwritemask(bool val) {
         _depth_write_enabled = val;
         _pD3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, val);
     }
+}
+
+INLINE void DXGraphicsStateGuardian8::
+transform_color(Colorf &InColor,D3DCOLOR &OutRGBAColor) {
+  Colorf transformed
+    ((InColor[0] * _current_color_scale[0]) + _current_color_offset[0],
+     (InColor[1] * _current_color_scale[1]) + _current_color_offset[1],
+     (InColor[2] * _current_color_scale[2]) + _current_color_offset[2],
+     (InColor[3] * _current_color_scale[3]) + _current_color_offset[3]);
+  OutRGBAColor = Colorf_to_D3DCOLOR(transformed);
+}
+
+/*
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::wants_normals
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool DXGraphicsStateGuardian8::
+wants_normals() const {
+    return (_lighting_enabled || _normals_enabled);
+}
+*/
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::wants_texcoords
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool DXGraphicsStateGuardian8::
+wants_texcoords() const {
+    return _texturing_enabled;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::compute_distance_to
+//       Access: Public, Virtual
+//  Description: This function may only be called during a render
+//               traversal; it will compute the distance to the
+//               indicated point, assumed to be in modelview
+//               coordinates, from the camera plane.
+////////////////////////////////////////////////////////////////////
+INLINE float DXGraphicsStateGuardian8::
+compute_distance_to(const LPoint3f &point) const {
+    // In the case of a DXGraphicsStateGuardian8, we know that the
+    // modelview matrix already includes the relative transform from the
+    // camera, as well as a to-y-up conversion.  Thus, the distance to
+    // the camera plane is simply the +z distance.  (negative of gl compute_distance_to,
+    // since d3d uses left-hand coords)
+
+    return point[2];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::get_texture_wrap_mode
+//       Access: Protected
+//  Description: Maps from the Texture's internal wrap mode symbols to
+//               GL's.
+////////////////////////////////////////////////////////////////////
+INLINE D3DTEXTUREADDRESS DXGraphicsStateGuardian8::
+get_texture_wrap_mode(Texture::WrapMode wm) const {
+  static D3DTEXTUREADDRESS PandaTexWrapMode_to_D3DTexWrapMode[Texture::WM_invalid] = {
+    D3DTADDRESS_CLAMP,D3DTADDRESS_WRAP,D3DTADDRESS_MIRROR,D3DTADDRESS_MIRRORONCE,D3DTADDRESS_BORDER};
+
+    return PandaTexWrapMode_to_D3DTexWrapMode[wm];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::get_fog_mode_type
+//       Access: Protected
+//  Description: Maps from the fog types to gl version
+////////////////////////////////////////////////////////////////////
+INLINE D3DFOGMODE DXGraphicsStateGuardian8::
+get_fog_mode_type(Fog::Mode m) const {
+  switch (m) {
+  case Fog::M_linear:
+    return D3DFOG_LINEAR;
+  case Fog::M_exponential:
+    return D3DFOG_EXP;
+  case Fog::M_exponential_squared:
+    return D3DFOG_EXP2;
+  }
+  dxgsg8_cat.error() << "Invalid Fog::Mode value" << endl;
+  return D3DFOG_EXP;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::enable_clip_plane
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by a derived class to
+//               enable the indicated clip_plane id.  A specific
+//               PlaneNode will already have been bound to this id via
+//               bind_clip_plane().
+////////////////////////////////////////////////////////////////////
+INLINE void DXGraphicsStateGuardian8::
+enable_clip_plane(int plane_id, bool enable) {
+  assert(plane_id < D3DMAXUSERCLIPPLANES);
+
+  DWORD bitflag = ((DWORD)1 << plane_id);
+  if (enable) {
+    _clip_plane_bits |= bitflag;
+  } else {
+    _clip_plane_bits &= ~bitflag;
+  }
+
+  _pD3DDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, _clip_plane_bits);
 }
 
 /**  unimplemented

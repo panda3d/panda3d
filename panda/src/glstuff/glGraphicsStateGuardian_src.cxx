@@ -38,6 +38,7 @@
 #include "depthWriteAttrib.h"
 #include "colorWriteAttrib.h"
 #include "texMatrixAttrib.h"
+#include "texGenAttrib.h"
 #include "materialAttrib.h"
 #include "renderModeAttrib.h"
 #include "fogAttrib.h"
@@ -2188,6 +2189,48 @@ void CLP(GraphicsStateGuardian)::
 issue_tex_matrix(const TexMatrixAttrib *attrib) {
   GLP(MatrixMode)(GL_TEXTURE);
   GLP(LoadMatrixf)(attrib->get_mat().get_data());
+  report_my_gl_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::issue_tex_gen
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+issue_tex_gen(const TexGenAttrib *attrib) {
+  DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
+  static bool forced_normal = false;
+  if (attrib->is_off()) {
+    //enable_texturing(false);
+    glDisable(GL_TEXTURE_GEN_S);
+    glDisable(GL_TEXTURE_GEN_T);
+
+    if (forced_normal) {
+      undo_force_normals();
+      forced_normal = false;
+    }
+  }
+  else if (attrib->get_mode() == TexGenAttrib::M_spherical) {
+#if 0
+    Texture *tex = attrib->get_texture();
+    nassertv(tex != (Texture *)NULL);
+    TextureContext *tc = tex->prepare_now(_prepared_objects, this);
+    apply_texture(tc);
+#else
+    // Set The Texture Generation Mode For S To Sphere Mapping
+    glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+    // Set The Texture Generation Mode For T To Sphere Mapping
+    glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+    glEnable(GL_TEXTURE_GEN_S); //Enable Texture Coord Generation For S
+    glEnable(GL_TEXTURE_GEN_T);	// Enable Texture Coord Generation For T
+
+    if (!forced_normal) {
+      force_normals();
+      forced_normal = true;
+    }
+#endif
+  }
   report_my_gl_errors();
 }
 

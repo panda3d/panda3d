@@ -103,7 +103,7 @@ public:
   virtual void issue_cull_face(const CullFaceAttrib *attrib);
   virtual void issue_fog(const FogAttrib *attrib);
   virtual void issue_depth_offset(const DepthOffsetAttrib *attrib);
-  //  virtual void issue_tex_gen(const TexGenAttrib *attrib);
+  virtual void issue_tex_gen(const TexGenAttrib *attrib);
   //  virtual void issue_stencil(const StencilAttrib *attrib);
 
   virtual void bind_light(PointLight *light, int light_id);
