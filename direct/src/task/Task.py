@@ -80,10 +80,11 @@ class Task:
         return self.__onDoLaterList
 
     def remove(self):
-        self.__removed = 1
-        # Remove any refs to real objects
-        # In case we hang around the doLaterList for a while
-        del self.__call__
+        if not self.__removed:
+            self.__removed = 1
+            # Remove any refs to real objects
+            # In case we hang around the doLaterList for a while
+            del self.__call__
 
     def isRemoved(self):
         return self.__removed
