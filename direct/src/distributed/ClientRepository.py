@@ -47,6 +47,7 @@ class ClientRepository(DirectObject.DirectObject):
         
         self.connectMethod = base.config.GetString('connect-method', 'default')
         self.connectHttp = None
+        self.qcm = None
 
         self.bootedIndex = None
         self.bootedText = None
@@ -138,7 +139,15 @@ class ClientRepository(DirectObject.DirectObject):
                                      failureCallback, failureArgs)
 
         else:
-            self.qcm = QueuedConnectionManager()
+            if self.qcm == None:
+                self.qcm = QueuedConnectionManager()
+                self.cw = ConnectionWriter(self.qcm, 0)
+                self.qcr = QueuedConnectionReader(self.qcm, 0)
+                minLag = config.GetFloat('min-lag', 0.)
+                maxLag = config.GetFloat('max-lag', 0.)
+                if minLag or maxLag:
+                    self.qcr.startDelay(minLag, maxLag)
+
             # A big old 20 second timeout.
             gameServerTimeoutMs = base.config.GetInt("game-server-timeout-ms",
                                                      20000)
@@ -152,13 +161,7 @@ class ClientRepository(DirectObject.DirectObject):
 
                 if self.tcpConn:
                     self.tcpConn.setNoDelay(1)
-                    self.qcr=QueuedConnectionReader(self.qcm, 0)
                     self.qcr.addConnection(self.tcpConn)
-                    minLag = config.GetFloat('min-lag', 0.)
-                    maxLag = config.GetFloat('max-lag', 0.)
-                    if minLag or maxLag:
-                        self.qcr.startDelay(minLag, maxLag)
-                    self.cw=ConnectionWriter(self.qcm, 0)
                     self.startReaderPollTask()
                     if successCallback:
                         successCallback(*successArgs)
@@ -168,6 +171,18 @@ class ClientRepository(DirectObject.DirectObject):
             if failureCallback:
                 failureCallback(0, *failureArgs)
 
+    def disconnect(self):
+        """Closes the previously-established connection.
+        """
+        self.notify.info("Closing connection to server.")
+        if self.tcpConn != None:
+            if self.connectHttp:
+                self.tcpConn.close()
+            else: 
+                self.qcm.closeConnection(self.tcpConn)
+            self.tcpConn = None
+        self.stopReaderPollTask()
+                    
     def httpConnectCallback(self, ch, serverList, serverIndex,
                             successCallback, successArgs,
                             failureCallback, failureArgs):
@@ -193,7 +208,7 @@ class ClientRepository(DirectObject.DirectObject):
             # No more servers to try; we have to give up now.
             if failureCallback:
                 failureCallback(ch.getStatusCode(), *failureArgs)
-            
+
     def startReaderPollTask(self):
         # Stop any tasks we are running now
         self.stopReaderPollTask()
