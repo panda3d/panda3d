@@ -4,12 +4,6 @@ that can be used during widget construction
 """
 
 from PandaModules import *
-#from PGTop import *
-#from PGButton import *
-# Import these after PGButton to get actual class definitions
-#from PGItem import *
-#from PGFrameStyle import *
-# Helper classes used as components of Direct Gui Widgets
 import OnscreenText
 import OnscreenGeom
 import OnscreenImage
@@ -60,3 +54,34 @@ IMAGE_SORT_INDEX = 10
 GEOM_SORT_INDEX = 20
 TEXT_SORT_INDEX = 30
 
+defaultFont = None
+defaultClickSound = None
+defaultRolloverSound = None
+
+def getDefaultRolloverSound():
+    global defaultRolloverSound
+    if not base.wantSfx:
+        return None
+    if defaultRolloverSound == None:
+        defaultRolloverSound = base.loadSfx(
+            "phase_3/audio/sfx/GUI_rollover.mp3")
+    return defaultRolloverSound
+
+def getDefaultClickSound():
+    global defaultClickSound
+    if not base.wantSfx:
+        return None
+    if defaultClickSound == None:
+        defaultClickSound = base.loadSfx(
+            "phase_3/audio/sfx/GUI_create_toon_fwd.mp3")
+    return defaultClickSound
+
+def getDefaultFont():
+    global defaultFont
+    if defaultFont == None:
+        defaultFont = loader.loadFont("models/fonts/Comic")
+    return defaultFont
+
+def setDefaultFont(newFont):
+    global defaultFont
+    defaultFont = newFont

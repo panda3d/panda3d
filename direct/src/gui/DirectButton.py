@@ -1,5 +1,4 @@
 from DirectFrame import *
-import GuiGlobals
 
 class DirectButton(DirectFrame):
     """
@@ -20,17 +19,17 @@ class DirectButton(DirectFrame):
         # Responds to click event and calls command if None
         optiondefs = (
             # Define type of DirectGuiWidget
-            ('pgFunc',          PGButton,  None),
-            ('numStates',       4,         None),
-            ('invertedFrames',  (1,),      None),
+            ('pgFunc',         PGButton,   None),
+            ('numStates',      4,          None),
+            ('invertedFrames', (1,),       None),
             # Command to be called on button click
-            ('command',         None,       None),
-            ('extraArgs',       [],         None),
+            ('command',        None,       None),
+            ('extraArgs',      [],         None),
             # Which mouse buttons can be used to click the button
-            ('commandButtons',  (LMB,),     self.setCommandButtons),
+            ('commandButtons', (LMB,),     self.setCommandButtons),
             # Sounds to be used for button events
-            ('rolloverSound',   GuiGlobals.getDefaultRolloverSound(), self.setRolloverSound),
-            ('clickSound',      GuiGlobals.getDefaultClickSound(),    self.setClickSound),
+            ('rolloverSound', getDefaultRolloverSound(), self.setRolloverSound),
+            ('clickSound',    getDefaultClickSound(),    self.setClickSound),
             # Can only be specified at time of widget contruction
             # Do the text/graphics appear to move when the button is clicked
             ('pressEffect',     1,          INITOPT),

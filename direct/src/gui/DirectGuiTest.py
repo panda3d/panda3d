@@ -1,7 +1,5 @@
 from DirectGui import *
 from whrandom import *
-from GuiGlobals import getDefaultClickSound
-from GuiGlobals import getDefaultRolloverSound
 
 # EXAMPLE CODE
 # Load a model
