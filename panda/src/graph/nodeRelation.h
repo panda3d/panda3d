@@ -109,6 +109,7 @@ public:
 			AllTransitionsWrapper &trans,
 			RenderTraverser *trav);
   bool has_sub_render_trans() const;
+  int get_num_sub_render_trans() const;
 
 public:
   // Factory stuff: to create a new NodeRelation based on its

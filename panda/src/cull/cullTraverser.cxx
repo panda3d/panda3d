@@ -393,34 +393,37 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
   bool is_instanced = (node->get_num_parents(_graph_type) > 1);
   bool is_geom = node->is_of_type(GeomNode::get_class_type());
   bool node_has_sub_render = node->has_sub_render();
-  bool arc_has_sub_render = arc->has_sub_render_trans();
-  bool has_direct_render;
+  int arc_num_sub_render = arc->get_num_sub_render_trans();
+  bool has_direct_render = arc->has_transition(DirectRenderTransition::get_class_type());
+  bool has_decal = arc->has_transition(DecalTransition::get_class_type());
+
+  if (has_decal) {
+    // For the purposes of cull, we don't consider a DecalTransition
+    // to be a sub_render transition.
+    arc_num_sub_render--;
+  }
 
 #ifndef NDEBUG
   if (support_decals != SD_on) {
-    has_direct_render =
-      arc->has_transition(DirectRenderTransition::get_class_type()) &&
-      !arc->has_transition(DecalTransition::get_class_type());
+    has_direct_render = has_direct_render && !has_decal;
   } else 
 #endif
     {
-      has_direct_render =
-	arc->has_transition(DirectRenderTransition::get_class_type()) ||
-	arc->has_transition(DecalTransition::get_class_type());
+      has_direct_render = has_direct_render || has_decal;
     }
 
 #ifndef NDEBUG
   if (support_subrender == SD_off) {
     node_has_sub_render = false;
-    arc_has_sub_render = false;
+    arc_num_sub_render = 0;
 
   } else if (support_subrender == SD_hide) {
-    if ((node_has_sub_render || arc_has_sub_render) &&
+    if ((node_has_sub_render || arc_num_sub_render != 0) &&
 	!arc->has_transition(DecalTransition::get_class_type())) {
       return false;
     }
     node_has_sub_render = false;
-    arc_has_sub_render = false;
+    arc_num_sub_render = 0;
   }
 #endif
 
@@ -435,13 +438,14 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
   }
 #endif
 
-  if (arc_has_sub_render) {
+  if (arc_num_sub_render != 0) {
     level_state._as_of = UpdateSeq::fresh();
   }
   _as_of = level_state._as_of;
 
   mark_forward_arc(arc);
 
+#ifndef NDEBUG
   if (cull_cat.is_spam()) {
     cull_cat.spam() 
       << "Reached " << *node << ":\n"
@@ -450,13 +454,14 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
       << " is_instanced = " << is_instanced
       << " is_geom = " << is_geom
       << " node_has_sub_render = " << node_has_sub_render
-      << " arc_has_sub_render = " << arc_has_sub_render
+      << " arc_num_sub_render = " << arc_num_sub_render
       << " has_direct_render = " << has_direct_render
       << "\n";
   }
+#endif
 
   if (is_instanced || is_geom || node_has_sub_render || 
-      arc_has_sub_render || has_direct_render) {
+      arc_num_sub_render != 0 || has_direct_render) {
     // In any of these cases, we'll need to determine the net
     // transition to this node.
     wrt_subtree(arc, level_state._lookup->get_top_subtree(), 
@@ -464,7 +469,7 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
 		trans, _graph_type);
   }
 
-  if (arc_has_sub_render || node_has_sub_render) {
+  if (arc_num_sub_render != 0 || node_has_sub_render) {
     if (_gsg != (GraphicsStateGuardian *)NULL) {
       AllTransitionsWrapper complete_trans;
       level_state._lookup->compose_trans(trans, complete_trans);
@@ -493,7 +498,7 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
     return false;
   }
 
-  if (is_instanced || arc_has_sub_render) {
+  if (is_instanced || arc_num_sub_render != 0) {
     // This node is multiply instanced; thus, it begins a subtree.
     level_state._lookup = add_instance(arc, trans, node, level_state);
     if (cull_cat.is_spam()) {

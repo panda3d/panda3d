@@ -413,6 +413,26 @@ has_sub_render_trans() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::get_num_sub_render_trans
+//       Access: Public
+//  Description: Returns the number of transitions on the arc that
+//               have a sub_render() function.
+////////////////////////////////////////////////////////////////////
+int NodeRelation::
+get_num_sub_render_trans() const {
+  int count = 0;
+
+  NodeTransitions::const_iterator ti;
+  for (ti = _transitions.begin(); ti != _transitions.end(); ++ti) {
+    if ((*ti).second->has_sub_render()) {
+      count++;
+    }
+  }
+
+  return count;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodeRelation::make_arc
 //       Access: Public, Static
 //  Description: This function is passed to the Factory to make a new
