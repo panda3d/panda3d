@@ -1,5 +1,4 @@
-// This is the toplevel directory.  It contains configure.in and other
-// stuff.
+// This is the toplevel directory for a package.
 
 #define DIR_TYPE toplevel
 
@@ -8,3 +7,5 @@
 
 #define EXTRA_DIST \
     Sources.pp Config.pp Package.pp
+
+#define PYTHON_PACKAGE 1

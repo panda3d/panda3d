@@ -104,7 +104,7 @@ def doGetopts():
         elif (flag == '-n'):
             doSqueeze = False
         elif (flag in ['-g', '-t', '-p', '-o']):
-            FFIConstants.notify.warning("option is deprecated: %s" % (flag))
+            FFIConstants.notify.debug("option is deprecated: %s" % (flag))
             
         else:
             FFIConstants.notify.error('illegal option: ' + flag)

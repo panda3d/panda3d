@@ -33,7 +33,7 @@ python $[osfilename $[install_bin_dir]/genPyCode.py] %1 %2 %3 %4 %5 %6 %7 %8 %9
 
 #output genPyCode
 $[hash]! /bin/sh
-ppython '$[osfilename $[install_bin_dir]/genPyCode.py]' "$@"
+python '$[osfilename $[install_bin_dir]/genPyCode.py]' "$@"
 #end genPyCode
 
 #endif  // Win32
@@ -49,6 +49,26 @@ import glob
 # This script was generated while the user was using the ctattach
 # tools.  That had better still be the case.
 
+def deCygwinify(path):
+    if os.name in ['nt'] and path[0] == '/':
+        # On Windows, we may need to convert from a Cygwin-style path
+        # to a native Windows path.
+
+        # Check for a case like /i/ or /p/: this converts
+        # to i:/ or p:/.
+
+        dirs = path.split('/')
+        if len(dirs) > 2 and len(dirs[1]) == 1:
+            path = '%s:\%s' % (dirs[1], '\\'.join(dirs[2:]))
+
+        else:
+            # Otherwise, prepend $PANDA_ROOT and flip the slashes.
+            pandaRoot = os.getenv('PANDA_ROOT')
+            if pandaRoot:
+                path = os.path.normpath(pandaRoot + path)
+
+    return path
+
 ctprojs = os.getenv('CTPROJS')
 if not ctprojs:
     print "You are no longer attached to any trees!"
@@ -59,13 +79,15 @@ if not directDir:
     print "You are not attached to DIRECT!"
     sys.exit(1)
 
-# Make sure that direct/src/showbase/sitecustomize.py gets loaded.
+directDir = deCygwinify(directDir)
+
+# Make sure that direct.showbase.FindCtaPaths gets imported.
 parent, base = os.path.split(directDir)
 
 if parent not in sys.path:
     sys.path.append(parent)
 
-import direct.showbase.sitecustomize
+import direct.showbase.FindCtaPaths
 
 #endif
 
@@ -105,6 +127,7 @@ packages.reverse()
 for package in packages:
     packageDir = os.getenv(package)
     if packageDir:
+        packageDir = deCygwinify(packageDir)
         etcDir = os.path.join(packageDir, 'etc')
         try:
             inFiles = glob.glob(os.path.join(etcDir, '*.in'))
@@ -113,7 +136,7 @@ for package in packages:
         if inFiles:
             DoGenPyCode.etcPath.append(etcDir)
 
-        if package not in ['DTOOL', 'DIRECT', 'PANDA']:
+        if package not in ['WINTOOLS', 'DTOOL', 'DIRECT', 'PANDA']:
             libDir = os.path.join(packageDir, 'lib')
             try:
                 files = os.listdir(libDir)
