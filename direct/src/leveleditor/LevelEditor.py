@@ -600,7 +600,12 @@ class LevelEditor(NodePath, PandaObject):
                     # First snap selected node path to grid
                     pos = selectedNode.getPos(direct.grid)
                     snapPos = direct.grid.computeSnapPoint(pos)
-                    selectedNode.setPos(direct.grid, snapPos[0], snapPos[1], 0)
+                    if self.fPlaneSnap.get():
+                        zheight = 0
+                    else:
+                        zheight = snapPos[2]
+                    selectedNode.setPos(direct.grid,
+                                        snapPos[0], snapPos[1], zheight)
                     # Angle snap
                     h = direct.grid.computeSnapAngle(selectedNode.getH())
                     selectedNode.setH(h)
@@ -1491,15 +1496,6 @@ class LevelEditor(NodePath, PandaObject):
         if direct.grid.getHprSnap():
             # Clean up grid angle
             direct.grid.setH(ROUND_TO(direct.grid.getH(), SNAP_ANGLE))
-        # MRM: What to do about pos?
-        if 0 & direct.grid.getXyzSnap():
-            # Tighten up grid position
-            pos = direct.grid.getPos()
-            roundVal = ROUND_TO(direct.grid.getGridSpacing(), 1)
-            x = ROUND_TO(pos[0], roundVal)
-            y = ROUND_TO(pos[1], roundVal)
-            z = ROUND_TO(pos[2], roundVal)
-            direct.grid.setPos(x,y,z)
 
     def getNextSnapPoint(self):
         """ Pull next pos hpr deltas off of snap list then rotate list """
@@ -2923,6 +2919,14 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                                       variable = self.fHprSnap,
                                       command = self.toggleHprSnap)
         self.hprSnapButton.pack(side = 'left', expand = 1, fill = 'x')
+
+        self.fPlaneSnap = IntVar()
+        self.fPlaneSnap.set(1)
+        self.planeSnapButton = Checkbutton(buttonFrame,
+                                           text = 'PlaneSnap',
+                                           width = 6,
+                                           variable = self.fPlaneSnap)
+        self.planeSnapButton.pack(side = 'left', expand = 1, fill = 'x')
 
         self.fGrid = IntVar()
         self.fGrid.set(0)
