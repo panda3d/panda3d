@@ -34,6 +34,18 @@ private:
   int _length;
 };
 
+////////////////////////////////////////////////////////////////////
+//       Class : Ramfile 
+// Description :
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDAEXPRESS Ramfile {
+PUBLISHED:
+  INLINE Ramfile(void);
+
+public:
+  string _data;
+};
+
 #include "buffer.I"
 
 #endif

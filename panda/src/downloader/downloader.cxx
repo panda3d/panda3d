@@ -349,6 +349,55 @@ initiate(const string &file_name, Filename file_dest,
   _got_any_data = false;
   _initiated = true;
   _ever_initiated = true;
+  _download_to_ram = false;
+  return EU_success;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Downloader::initiate
+//       Access: Published
+//  Description: Initiate the download of a file from a server.
+////////////////////////////////////////////////////////////////////
+int Downloader::
+initiate(const string &file_name) {
+  if (_initiated == true) {
+    downloader_cat.error()
+      << "Downloader::initiate() - Download has already been initiated"
+      << endl;
+    return EU_error_abort;
+  }
+
+  // Connect to the server
+  int connect_ret = connect_to_server();
+  if (connect_ret < 0)
+    return connect_ret;
+
+  // Send an HTTP request for the file to the server
+  string request = "GET ";
+  request += file_name;
+  request += " HTTP/1.1\012Host: ";
+  request += _server_name;
+  request += "\012Connection: close";
+  request += "\012\012";
+  int outlen = request.size();
+  if (downloader_cat.is_debug())
+    downloader_cat.debug()
+      << "Downloader::initiate() - Sending request:\n" << request << endl;
+  int send_ret = safe_send(_socket, request.c_str(), outlen,
+                        (long)downloader_timeout);
+  if (send_ret < 0)
+    return send_ret;
+
+  // Create a download status to maintain download progress information
+  _current_status = new DownloadStatus(_buffer->_buffer, 0, 0, 0, false);
+
+  _tfirst = 0.0;
+  _tlast = 0.0;
+  _got_any_data = false;
+  _initiated = true;
+  _ever_initiated = true;
+  _download_to_ram = true;
+  _dest_string_stream = new ostringstream();
   return EU_success;
 }
 
@@ -394,6 +443,9 @@ run(void) {
   int connect_ret = connect_to_server();
   if (connect_ret < 0)
     return connect_ret;
+
+  if (_download_to_ram == true)
+    return run_to_ram();
 
   int ret = EU_ok;
   int write_ret;
@@ -499,6 +551,124 @@ run(void) {
     if (downloader_cat.is_debug())
       downloader_cat.debug()
 	<< "Downloader::run() - No data" << endl;
+      return ret;
+  } else if (fret < 0) {
+    return fret;
+  }
+
+  _got_any_data = true;
+  return ret;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Downloader::run_to_ram
+//       Access: Private
+//  Description:
+////////////////////////////////////////////////////////////////////
+int Downloader::
+run_to_ram(void) {
+  int ret = EU_ok;
+  int write_ret;
+
+  double t0 = _clock.get_real_time();
+  if (_tfirst == 0.0) {
+    _tfirst = t0;
+  }
+  if (t0 - _tlast < _frequency) 
+    return EU_ok;
+
+  // Recompute the buffer size if necessary
+  if (_recompute_buffer == true) {
+    if (downloader_cat.is_debug())
+      downloader_cat.debug()
+	<< "Downloader::run_to_ram() - Recomputing the buffer" << endl;
+
+    // Flush the current buffer if it holds any data
+    if (_current_status->_bytes_in_buffer > 0) {
+      write_ret = write_to_ram(_current_status);
+      if (write_ret < 0)
+	return write_ret;
+    }
+
+    // Allocate a new buffer
+    _buffer.clear();
+    _receive_size = (ulong)(_frequency * _byte_rate);
+    _disk_buffer_size = _receive_size * _disk_write_frequency;
+    _buffer = new Buffer(_disk_buffer_size);
+    _current_status->_buffer = _buffer->_buffer;
+    _current_status->reset();
+    // Reset the flag
+    _recompute_buffer = false;
+    // Reset the statistics
+    _tfirst = t0;
+    _current_status->_total_bytes = 0;
+
+  } else if (_current_status->_bytes_in_buffer + _receive_size > 
+						_disk_buffer_size) {
+
+    // Flush the current buffer if the next request would overflow it
+    if (downloader_cat.is_debug())
+      downloader_cat.debug()
+	<< "Downloader::run_to_ram() - Flushing buffer" << endl;
+    write_ret = write_to_ram(_current_status);
+    if (write_ret < 0)
+      return write_ret;
+  }
+
+  // Attempt to receive the bytes from the socket
+  int fret;
+  // Handle the case of a fast connection
+  if (_receive_size > MAX_RECEIVE_BYTES) {
+    int repeat = (int)(_receive_size / MAX_RECEIVE_BYTES);
+    int remain = (int)fmod((double)_receive_size, (double)MAX_RECEIVE_BYTES);
+    if (downloader_cat.is_debug())
+      downloader_cat.debug()
+        << "Downloader::run_to_ram() - fast connection - repeat: " << repeat 
+        << " remain: " << remain << endl;
+    // Make multiple requests at once but do not exceed MAX_RECEIVE_BYTES
+    // for any single request
+    for (int i = 0; i <= repeat; i++) {
+      if (i < repeat)
+        fret = fast_receive(_socket, _current_status, MAX_RECEIVE_BYTES);
+      else if (remain > 0)
+        fret = fast_receive(_socket, _current_status, remain);
+      if (fret == EU_eof || fret < 0) {
+	break;
+      } else if (fret == EU_success) {
+        _got_any_data = true;
+      }
+    }
+  } else { // Handle the normal speed connection case
+    if (downloader_cat.is_debug())
+      downloader_cat.debug()
+        << "Downloader::run_to_ram() - normal connection" << endl;
+    fret = fast_receive(_socket, _current_status, _receive_size);
+  }
+  _tlast = _clock.get_real_time();
+
+  // Check for end of file
+  if (fret == EU_eof) {
+    if (_got_any_data == true) {
+      if (_current_status->_bytes_in_buffer > 0) {
+	write_ret = write_to_ram(_current_status);
+ 	if (write_ret < 0)
+          return write_ret;
+      }
+      if (downloader_cat.is_debug())
+        downloader_cat.debug()
+	  << "Downloader::run_to_ram() - Got eof" << endl;
+      cleanup();
+      return EU_success;
+    } else {
+      if (downloader_cat.is_debug())
+	downloader_cat.debug()
+	  << "Downloader::run_to_ram() - Got 0 bytes" << endl;
+      return ret;
+    }
+  } else if (fret == EU_network_no_data) {
+    if (downloader_cat.is_debug())
+      downloader_cat.debug()
+	<< "Downloader::run_to_ram() - No data" << endl;
       return ret;
   } else if (fret < 0) {
     return fret;
@@ -708,6 +878,60 @@ write_to_disk(DownloadStatus *status) {
   status->reset();
 
   return EU_success;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Downloader::write_to_ram
+//       Access: Private
+//  Description: Writes a download to memory.  If there is a header,
+//               the pointer and size are adjusted so the header
+//               is excluded.  Function returns false on error
+//               condition.
+////////////////////////////////////////////////////////////////////
+int Downloader::
+write_to_ram(DownloadStatus *status) {
+  nassertr(status != NULL, EU_error_abort);
+
+  // Ensure the header has been parsed successfully first
+  int parse_ret = parse_header(status);
+  if (parse_ret < 0)
+    return parse_ret;
+
+  if (status->_header_is_complete == false) {
+    downloader_cat.error()
+      << "Downloader::write_to_ram() - Incomplete HTTP header - "
+      << "(or header was larger than download buffer) - "
+      << "try increasing download-buffer-size" << endl;
+    return EU_error_abort;
+  }
+
+  // Write what we have so far to memory
+  if (status->_bytes_in_buffer > 0) {
+    if (downloader_cat.is_debug())
+      downloader_cat.debug()
+        << "Downloader::write_to_ram() - Writing "
+        << status->_bytes_in_buffer << " to memory" << endl;
+
+    _dest_string_stream->write(status->_start, status->_bytes_in_buffer);
+    status->_total_bytes_written += status->_bytes_in_buffer;
+  }
+
+  status->reset();
+
+  return EU_success;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Downloader::get_ramfile
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool Downloader::
+get_ramfile(Ramfile &rfile) {
+  rfile._data = _dest_string_stream->str();
+  delete _dest_string_stream;
+  _dest_string_stream = NULL;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -70,7 +70,7 @@ public:
 		 		int &avail_out, bool finish = false);
   int decompress_to_stream(char *&next_in, int &avail_in, char *&next_out,
                 int &avail_out, char *out_buffer, int out_buffer_length,
-                ofstream &write_stream, bool finish = false);
+                ostream &write_stream, bool finish = false);
 };
 
 #include "zcompressor.I"

@@ -20,6 +20,7 @@
 #include <map>
 
 #include "hashVal.h"
+#include <buffer.h>
 
 /*
 //////////////////////////////////////////////////
@@ -58,7 +59,7 @@ PUBLISHED:
   };
 
   DownloadDb(void);
-  DownloadDb(Filename &server_file, Filename &client_file);
+  DownloadDb(Ramfile &server_file, Filename &client_file);
   ~DownloadDb(void);
 
   void output(ostream &out) const;
@@ -155,7 +156,7 @@ public:
     int parse_record_header(uchar *start, int size);
     PT(MultifileRecord) parse_mfr(uchar *start, int size);
     PT(FileRecord) parse_fr(uchar *start, int size);
-    bool read(ifstream &read_stream);
+    bool read(istream &read_stream);
     bool write(ofstream &write_stream);
     Filename _filename;
     MultifileRecords _mfile_records;
@@ -170,6 +171,7 @@ public:
 
 PUBLISHED:
   Db read_db(Filename &file);
+  Db read_db(Ramfile &file);
   bool write_db(Filename &file, Db db);
 
 public:
@@ -191,7 +193,7 @@ PUBLISHED:
 
 protected:
   void write_version_map(ofstream &write_stream);
-  bool read_version_map(ifstream &read_stream);
+  bool read_version_map(istream &read_stream);
   VersionMap _versions;
   Datagram _master_datagram;
 };

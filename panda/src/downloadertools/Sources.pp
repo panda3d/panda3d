@@ -84,6 +84,8 @@
 
 #begin bin_target
   #define TARGET test_downloader
+  #define TARGET_IF_ZLIB yes
+  #define USE_ZLIB yes
 
   #define SOURCES \
     test_downloader.cxx

@@ -142,7 +142,7 @@ decompress(char *&next_in, int &avail_in, char *&next_out, int &avail_out,
 int ZDecompressor::
 decompress_to_stream(char *&next_in, int &avail_in, char *&next_out,
                 int &avail_out, char *out_buffer, 
-                int out_buffer_length, ofstream &write_stream, 
+                int out_buffer_length, ostream &write_stream, 
                 bool finish) {
   int ret = decompress(next_in, avail_in, next_out, avail_out, finish);
   if (ret == S_error)

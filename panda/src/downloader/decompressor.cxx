@@ -107,7 +107,7 @@ initiate(Filename &source_file, Filename &dest_file) {
 
   if (_initiated == true) {
     downloader_cat.error()
-      << "Decompressor::run() - Decompression has already been initiated"
+      << "Decompressor::initiate() - Decompression has already been initiated"
       << endl;
     return EU_error_abort;
   }
@@ -117,7 +117,7 @@ initiate(Filename &source_file, Filename &dest_file) {
   _source_file.set_binary();
   if (!_source_file.open_read(_read_stream)) {
     downloader_cat.error()
-      << "Decompressor::decompress() - Error opening source file: " 
+      << "Decompressor::initiate() - Error opening source file: " 
       << _source_file << " : " << strerror(errno) << endl;
     return get_write_error(); 
   } 
@@ -127,7 +127,7 @@ initiate(Filename &source_file, Filename &dest_file) {
   _source_file_length = _read_stream.tellg();
   if (_source_file_length == 0) {
     downloader_cat.warning()
-      << "Decompressor::decompress() - Zero length file: "
+      << "Decompressor::initiate() - Zero length file: "
       << source_file << " : " << strerror(errno) << endl;
     return get_write_error();
   }
@@ -137,7 +137,7 @@ initiate(Filename &source_file, Filename &dest_file) {
   dest_file.set_binary();
   if (!dest_file.open_write(_write_stream)) {
     downloader_cat.error()
-      << "Decompressor::decompress() - Error opening dest file: " 
+      << "Decompressor::initiate() - Error opening dest file: " 
       << source_file << " : " << strerror(errno) << endl;
     return get_write_error();
   } 
@@ -150,6 +150,49 @@ initiate(Filename &source_file, Filename &dest_file) {
   _source_buffer_length = 0;
   _initiated = true;
   _decompressor = new ZDecompressor();
+  _decompress_to_ram = false;
+  return EU_success;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Decompressor::initiate
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+int Decompressor::
+initiate(Ramfile &source_file) {
+
+  if (_initiated == true) {
+    downloader_cat.error()
+      << "Decompressor::initiate() - Decompression has already been initiated"
+      << endl;
+    return EU_error_abort;
+  }
+
+  // Open source file
+  _read_string_stream = new istringstream(source_file._data);
+
+  // Determine source file length
+  _source_file_length = source_file._data.length();
+  if (_source_file_length == 0) {
+    downloader_cat.warning()
+      << "Decompressor::initiate() - Zero length file: "
+      << strerror(errno) << endl;
+    return get_write_error();
+  }
+
+  // Open destination file 
+  _write_string_stream = new ostringstream();
+
+  // Read from the source file into the first half of the buffer,
+  // decompress into the second half of the buffer, write the second
+  // half of the buffer to disk, and repeat.
+  _total_bytes_read = 0;
+  _read_all_input = false;
+  _source_buffer_length = 0;
+  _initiated = true;
+  _decompressor = new ZDecompressor();
+  _decompress_to_ram = true;
   return EU_success;
 }
 
@@ -172,7 +215,8 @@ cleanup(void) {
   _decompressor = NULL;
   _read_stream.close();
   _write_stream.close();
-  _source_file.unlink();
+  if (_decompress_to_ram == false)
+    _source_file.unlink();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -191,12 +235,22 @@ run(void) {
 
   // See if there is anything left in the source file
   if (_read_all_input == false) {
-    _read_stream.read(_buffer->_buffer, _half_buffer_length);
-    _source_buffer_length = _read_stream.gcount();
-    _total_bytes_read += _source_buffer_length;
-    if (_read_stream.eof()) {
-      nassertr(_total_bytes_read == _source_file_length, false);
-      _read_all_input = true;
+    if (_decompress_to_ram == false) {
+      _read_stream.read(_buffer->_buffer, _half_buffer_length);
+      _source_buffer_length = _read_stream.gcount();
+      _total_bytes_read += _source_buffer_length;
+      if (_read_stream.eof()) {
+        nassertr(_total_bytes_read == _source_file_length, false);
+        _read_all_input = true;
+      }
+    } else {
+      _read_string_stream->read(_buffer->_buffer, _half_buffer_length);
+      _source_buffer_length = _read_string_stream->gcount();
+      _total_bytes_read += _source_buffer_length;
+      if (_read_string_stream->eof()) {
+        nassertr(_total_bytes_read == _source_file_length, false);
+        _read_all_input = true;
+      }
     }
   }
 
@@ -209,9 +263,15 @@ run(void) {
   nassertr(avail_out > 0 && avail_in > 0, false);
   
   while (avail_in > 0) {
-    int ret = _decompressor->decompress_to_stream(next_in, avail_in,
+    int ret;
+    if (_decompress_to_ram == false) 
+      ret = _decompressor->decompress_to_stream(next_in, avail_in,
 			next_out, avail_out, dest_buffer, 
 			dest_buffer_length, _write_stream);
+    else
+      ret = _decompressor->decompress_to_stream(next_in, avail_in,
+			next_out, avail_out, dest_buffer, 
+			dest_buffer_length, *_write_string_stream);
     if (ret == ZCompressorBase::S_error)
       return EU_error_zlib;
     if ((int)_decompressor->get_total_in() == _source_file_length &&
@@ -239,6 +299,31 @@ decompress(Filename &source_file) {
     if (ret == EU_success)
       return true;
     else if (ret < 0)
+      return false;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Decompressor::decompress
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool Decompressor::
+decompress(Ramfile &source_file) {
+  int ret = initiate(source_file);
+  if (ret < 0) 
+    return false;
+  for (;;) {
+    ret = run();
+    if (ret == EU_success) {
+      source_file._data = _write_string_stream->str();
+      delete _read_string_stream;
+      _read_string_stream = NULL;
+      delete _write_string_stream;
+      _write_string_stream = NULL;
+      return true;
+    } else if (ret < 0)
       return false;
   }
   return false;

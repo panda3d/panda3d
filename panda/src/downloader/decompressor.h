@@ -27,9 +27,11 @@ PUBLISHED:
 
   int initiate(Filename &source_file);
   int initiate(Filename &source_file, Filename &dest_file);
+  int initiate(Ramfile &source_file);
   int run(void);
 
   bool decompress(Filename &source_file);
+  bool decompress(Ramfile &source_file);
 
   INLINE float get_progress(void) const;
 
@@ -45,12 +47,15 @@ private:
   Filename _source_file;
   ifstream _read_stream;
   ofstream _write_stream;
+  istringstream *_read_string_stream;
+  ostringstream *_write_string_stream;
   int _source_file_length;
   int _total_bytes_read;
   bool _read_all_input;
   bool _handled_all_input;
   int _source_buffer_length;
   ZDecompressor *_decompressor;
+  bool _decompress_to_ram;
 };
 
 #include "decompressor.I"

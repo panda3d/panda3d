@@ -21,12 +21,10 @@ PN_uint32 DownloadDb::_magic_number = 0xfeedfeed;
 //  Description: Create a download db with these client and server dbs
 ////////////////////////////////////////////////////////////////////
 DownloadDb::
-DownloadDb(Filename &server_file, Filename &client_file) {
+DownloadDb(Ramfile &server_file, Filename &client_file) {
   _client_db = read_db(client_file);
   _client_db._filename = client_file;
   _server_db = read_db(server_file);
-  _server_db._filename = server_file;
-
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -204,6 +202,30 @@ read_db(Filename &file) {
     downloader_cat.error()
       << "DownloadDb::read() - read_version_map() failed: " 
       << file << endl;
+  }
+
+  return db;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DownloadDb::
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+DownloadDb::Db DownloadDb::
+read_db(Ramfile &file) {
+  // Open the multifile for reading
+  istringstream read_stream(file._data);
+  Db db;
+
+  if (!db.read(read_stream)) {
+    downloader_cat.error()
+      << "DownloadDb::read() - Read failed" << endl;
+    return db;
+  }
+  if (!read_version_map(read_stream)) {
+    downloader_cat.error()
+      << "DownloadDb::read() - read_version_map() failed" << endl; 
   }
 
   return db;
@@ -630,7 +652,7 @@ parse_fr(uchar *start, int size) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 bool DownloadDb::Db::
-read(ifstream &read_stream) {
+read(istream &read_stream) {
   
   // Make a little buffer to read the header into
   uchar *header_buf = new uchar[_header_length];
@@ -986,7 +1008,7 @@ write_version_map(ofstream &write_stream) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool DownloadDb::
-read_version_map(ifstream &read_stream) {
+read_version_map(istream &read_stream) {
   _master_datagram.clear();
   char *buffer = new char[sizeof(PN_uint64)];
   read_stream.read(buffer, sizeof(PN_int32));

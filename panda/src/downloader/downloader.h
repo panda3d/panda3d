@@ -41,7 +41,10 @@ PUBLISHED:
   int initiate(const string &file_name, Filename file_dest,
 		int first_byte, int last_byte, int total_bytes,
 		bool partial_content = true);
+  int initiate(const string &file_name);
   int run(void);
+
+  bool get_ramfile(Ramfile &rfile);
 
   INLINE void set_frequency(float frequency);
   INLINE float get_frequency(void) const;
@@ -82,6 +85,8 @@ private:
   int parse_http_response(const string &resp);
   int parse_header(DownloadStatus *status);
   int write_to_disk(DownloadStatus *status);
+  int run_to_ram(void);
+  int write_to_ram(DownloadStatus *status);
 
   void cleanup(void);
 
@@ -101,11 +106,13 @@ private:
   ulong _receive_size;
   int _disk_buffer_size;
   ofstream _dest_stream;
+  ostringstream *_dest_string_stream;
   bool _recompute_buffer;
 
   DownloadStatus *_current_status;
   bool _got_any_data;
   int _total_bytes_written;
+  bool _download_to_ram;
 
   double _tlast;
   double _tfirst;
