@@ -466,6 +466,7 @@ config_initialized() {
 	nout << "Unable to open file " << notify_output << " for output.\n";
 	delete out;
       } else {
+	out->setf(ios::unitbuf, 0);
 	set_ostream_ptr(out, true);
       }
     }
