@@ -56,16 +56,18 @@ get_datagram(Datagram &data) {
   PN_uint32 num_bytes = di.get_uint32();
 
   // Now, read the datagram itself.
-  char *buffer = (char *)alloca(num_bytes);
+  char *buffer = new char[num_bytes];
   nassertr(buffer != (char *)NULL, false);
 
   _in.read(buffer, num_bytes);
   if (_in.fail() || _in.eof()) {
     _error = true;
+    delete[] buffer;
     return false;
   }
 
   data = Datagram(buffer, num_bytes);
+  delete[] buffer;
   return true;
 }
 
