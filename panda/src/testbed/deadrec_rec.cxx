@@ -31,6 +31,8 @@ typedef set<PT(Connection)> Clients;
 static PT_Node smiley;
 static RenderRelation* my_arc;
 static LPoint3f my_pos;
+static LPoint3f target_pos;
+static LPoint3f telemetry_pos;
 static int hostport = deadrec.GetInt("deadrec-rec-port", 0xdead);
 static thread* monitor;
 static bool stop_monitoring;
@@ -41,6 +43,7 @@ QueuedConnectionReader* reader;
 static float clock_skew = 0.;
 static bool doing_sync = false;
 static float my_time;
+static bool new_telemetry;
 
 enum TelemetryToken { T_End = 1, T_Pos, T_Vel, T_Num, T_Time, T_Sync };
 enum PredictToken { P_Null, P_Linear };
@@ -118,7 +121,7 @@ static void* internal_monitor(void*) {
 	    {
 	      float x, y, z;
 	      buff = get_float64(get_float64(get_float64(buff, x), y), z);
-	      my_pos = LPoint3f(x, y, z);
+	      telemetry_pos = LPoint3f(x, y, z);
 	    }
 	    break;
 	  case T_Vel:
@@ -151,9 +154,7 @@ static void* internal_monitor(void*) {
 	  buff = get_uint8(buff, byte);
 	  t = (TelemetryToken)byte;
 	}
-	// unpack and deal with the datagram now
-	// DO THIS
-	// part of this includes logic on when to shutdown, I hope
+	new_telemetry = true;
       }
     }
     // sleep for about 100 milliseconds
@@ -372,13 +373,71 @@ static void deadrec_setup(EventHandler& eh) {
   cpopButton->inactive();
 }
 
-static void update_smiley(void) {
+inline static void predict_null(void) {
+  target_pos = telemetry_pos;
+}
+
+inline static void predict_linear(void) {
+  // DO THIS
+  target_pos = telemetry_pos;
+}
+
+inline static void run_predict(void) {
+  switch (curr_pred) {
+  case P_Null:
+    predict_null();
+    break;
+  case P_Linear:
+    predict_linear();
+    break;
+  default:
+    deadrec_cat->error() << "bad prediction type (" << (int)curr_pred << ")"
+			 << endl;
+  }
+}
+
+inline static void correction_pop(void) {
+  my_pos = target_pos;
+}
+
+inline static void correction_lerp(void) {
+  // DO THIS
+  my_pos = target_pos;
+}
+
+inline static void correction_spline(void) {
+  // DO THIS
+  my_pos = target_pos;
+}
+
+inline static void run_correct(void) {
+  switch (curr_corr) {
+  case C_Pop:
+    correction_pop();
+    break;
+  case C_Lerp:
+    correction_lerp();
+    break;
+  case C_Spline:
+    correction_spline();
+    break;
+  default:
+    deadrec_cat->error() << "bad correction type (" << (int)curr_corr << ")"
+			 << endl;
+  }
+}
+
+inline static void update_smiley(void) {
   LMatrix4f mat = LMatrix4f::translate_mat(my_pos);
   my_arc->set_transition(new TransformTransition(mat));
 }
 
 static void event_frame(CPT_Event) {
+  run_predict();
+  run_correct();
   update_smiley();
+  if (new_telemetry)
+    new_telemetry = false;
 }
 
 static void deadrec_keys(EventHandler& eh) {
