@@ -345,7 +345,7 @@ def createClusterClient():
     
 class DummyClusterClient(DirectObject.DirectObject):
     """ Dummy class to handle command strings when not in cluster mode """
-    notify = DirectNotifyGlobal.directNotify.newCategory("ClusterClient")
+    notify = DirectNotifyGlobal.directNotify.newCategory("DummyClusterClient")
     def __init__(self):
         pass
 
