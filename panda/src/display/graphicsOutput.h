@@ -179,6 +179,7 @@ protected:
   bool _is_valid;
 
   static PStatCollector _make_current_pcollector;
+  static PStatCollector _copy_texture_pcollector;
   
 public:
   static TypeHandle get_class_type() {

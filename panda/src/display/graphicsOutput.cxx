@@ -23,11 +23,13 @@
 #include "mutexHolder.h"
 #include "hardwareChannel.h"
 #include "renderBuffer.h"
+#include "pStatTimer.h"
 
 TypeHandle GraphicsOutput::_type_handle;
 
 #ifndef CPPPARSER
 PStatCollector GraphicsOutput::_make_current_pcollector("Draw:Make current");
+PStatCollector GraphicsOutput::_copy_texture_pcollector("Draw:Copy texture");
 #endif  // CPPPARSER
 
 ////////////////////////////////////////////////////////////////////
@@ -560,6 +562,7 @@ end_frame() {
   // directly into texture memory don't need to do this; they will set
   // _copy_texture to false.
   if (_copy_texture) {
+    PStatTimer timer(_copy_texture_pcollector);
     nassertv(has_texture());
     DisplayRegion dr(this, _x_size, _y_size);
     RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type());

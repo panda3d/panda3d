@@ -47,6 +47,8 @@ PStatCollector GraphicsEngine::_cull_pcollector("Cull");
 PStatCollector GraphicsEngine::_draw_pcollector("Draw");
 PStatCollector GraphicsEngine::_sync_pcollector("Draw:Sync");
 PStatCollector GraphicsEngine::_flip_pcollector("Draw:Flip");
+PStatCollector GraphicsEngine::_flip_begin_pcollector("Draw:Flip:Begin");
+PStatCollector GraphicsEngine::_flip_end_pcollector("Draw:Flip:End");
 PStatCollector GraphicsEngine::_transform_states_pcollector("TransformStates");
 PStatCollector GraphicsEngine::_transform_states_unused_pcollector("TransformStates:Unused");
 PStatCollector GraphicsEngine::_render_states_pcollector("RenderStates");
@@ -492,13 +494,7 @@ render_frame() {
 
   // Some threads may still be drawing, so indicate that we have to
   // wait for those threads before we can flip.
-  _flip_state = FS_draw;
-
-  // But if we don't have any threads, go ahead and flip the frame
-  // now.  No point in waiting if we're single-threaded.
-  if (_threads.empty() && _auto_flip) {
-    do_flip_frame();
-  }
+  _flip_state = _auto_flip ? FS_flip : FS_draw;
 
   if (yield_timeslice) { 
     // Nap for a moment to yield the timeslice, to be polite to other
@@ -706,6 +702,19 @@ cull_and_draw_together(const GraphicsEngine::Windows &wlist) {
           cull_and_draw_together(win->get_gsg(), dr);
         }
         win->end_frame();
+
+        if (_auto_flip) {
+          if (win->flip_ready()) {
+            {
+              PStatTimer timer(GraphicsEngine::_flip_begin_pcollector);
+              win->begin_flip();
+            }
+            {
+              PStatTimer timer(GraphicsEngine::_flip_end_pcollector);
+              win->end_flip();
+            }
+          }
+        }
       }
     }
   }
@@ -762,8 +771,20 @@ cull_bin_draw(const GraphicsEngine::Windows &wlist) {
           DisplayRegion *dr = win->get_display_region(i);
           cull_bin_draw(win->get_gsg(), dr);
         }
-
         win->end_frame();
+
+        if (_auto_flip) {
+          if (win->flip_ready()) {
+            {
+              PStatTimer timer(GraphicsEngine::_flip_begin_pcollector);
+              win->begin_flip();
+            }
+            {
+              PStatTimer timer(GraphicsEngine::_flip_end_pcollector);
+              win->end_flip();
+            }
+          }
+        }
       }
     }
   }
@@ -850,12 +871,14 @@ flip_windows(const GraphicsEngine::Windows &wlist) {
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
     if (win->flip_ready()) {
+      PStatTimer timer(GraphicsEngine::_flip_begin_pcollector);
       win->begin_flip();
     }
   }
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
     if (win->flip_ready()) {
+      PStatTimer timer(GraphicsEngine::_flip_end_pcollector);
       win->end_flip();
     }
   }

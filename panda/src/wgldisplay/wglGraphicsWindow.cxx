@@ -224,15 +224,12 @@ release_gsg() {
 void wglGraphicsWindow::
 begin_flip() {
   if (_hdc) {
-    // It turns out that if we don't call make_current() before
-    // calling SwapBuffers() on a Matrix card, we crash a horrible
-    // death.  This is a pity since make_current() seems unnecessary
-    // on other cards, and does incur some performance overhead.
-
-    // Let's see if this is still necessary now that we guarantee
-    // begin_flip() is not called until end_frame() has successfully
-    // rendered.
-    //make_current();
+    // The documentation on SwapBuffers() is not at all clear on
+    // whether the GL context needs to be current before it can be
+    // called.  Empirically, it appears that it is not necessary in
+    // many cases, but it definitely is necessary at least in the case
+    // of Mesa on Windows.
+    make_current();
 
     SwapBuffers(_hdc);
   }

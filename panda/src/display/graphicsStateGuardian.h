@@ -295,6 +295,7 @@ public:
   static PStatCollector _other_state_pcollector;
   static PStatCollector _draw_primitive_pcollector;
   static PStatCollector _clear_pcollector;
+  static PStatCollector _flush_pcollector;
 
 private:
   class LightInfo {

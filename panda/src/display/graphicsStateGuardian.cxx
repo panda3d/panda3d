@@ -60,6 +60,7 @@ PStatCollector GraphicsStateGuardian::_texture_state_pcollector("State changes:T
 PStatCollector GraphicsStateGuardian::_other_state_pcollector("State changes:Other");
 PStatCollector GraphicsStateGuardian::_draw_primitive_pcollector("Draw:Primitive");
 PStatCollector GraphicsStateGuardian::_clear_pcollector("Draw:Clear");
+PStatCollector GraphicsStateGuardian::_flush_pcollector("Draw:Flush");
 
 #endif
 

@@ -22,11 +22,9 @@
 //       Access: Published
 //  Description: Set this flag true to indicate the GraphicsEngine
 //               should automatically cause windows to sync and flip
-//               at the end of render_frame().
-//
-//               This only applies to a single-threaded rendering
-//               model.  In the presence of threading, the windows are
-//               never auto-flipped, regardless of this flag.
+//               as soon as they have finished drawing, rather than
+//               waiting for all of the windows to finish drawing
+//               first so they can flip together.
 //
 //               This only affects the timing of when the flip occurs.
 //               If this is true (the default), the flip occurs before

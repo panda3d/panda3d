@@ -123,9 +123,13 @@ static TimeCollectorProperties time_properties[] = {
   { 1, "Cull:Bins",                        { 0.3, 0.6, 0.3 } },
   { 1, "Draw",                             { 1.0, 0.0, 0.0 },  1.0 / 30.0 },
   { 1, "Draw:Make current",                { 0.4, 0.2, 0.6 } },
+  { 1, "Draw:Copy texture",                { 0.2, 0.6, 0.4 } },
   { 1, "Draw:Clear",                       { 0.0, 0.8, 0.6 } },
+  { 1, "Draw:Flush",                       { 0.9, 0.2, 0.7 } },
   { 1, "Draw:Sync",                        { 0.5, 0.7, 0.7 } },
   { 1, "Draw:Flip",                        { 1.0, 0.6, 0.3 } },
+  { 1, "Draw:Flip:Begin",                  { 0.3, 0.3, 0.9 } },
+  { 1, "Draw:Flip:End",                    { 0.9, 0.3, 0.6 } },
   { 1, "Draw:Bins",                        { 0.3, 0.6, 0.0 } },
   { 0, "Draw:Primitive",                   { 0.0, 0.0, 0.5 } },
   { 0, NULL }
