@@ -29,68 +29,15 @@
 
 TypeHandle PandaNode::_type_handle;
 
-// 
-// We go through some considerable effort in this class to ensure that
-// NodePaths are kept consistent as we attach and detach nodes.  We
-// must enforce the following rules:
-//
-//   1) Each NodePath (i.e. chain of NodePathComponents) represents a
-//   complete unbroken chain from a PandaNode to the root of the
-//   graph.
-//
-//   2) Each NodePathComponent chain is unique.  There are no two
-//   different NodePathComponents that reference the same path to the
-//   root.
-//
-// The following rules all follow from rules (1) and (2):
-//
-//   3) If a PandaNode with no parents is attached to a new parent,
-//   all NodePaths that previously indicated this node as the root of
-//   graph must now be updated to include the complete chain to the
-//   new root.
-//
-//   4) If a PandaNode with other parents is attached to a new parent,
-//   any previously existing NodePaths are not affected.
-//
-//   5) If a PandaNode is disconnected from its parent, and it has no
-//   other parents, all NodePaths that previously passed through this
-//   node to the old parent must now be updated to indicate this node
-//   is now the root.
-//
-//   6) If a PandaNode is disconnected from its parent, and it has at
-//   least one other parent, all NodePaths that previously passed
-//   through this node to the old parent must now be updated to pass
-//   through one of the other parents instead.
-//
-// Rules (5) and (6) can especially complicate things because they
-// introduce the possibility that two formerly distinct NodePaths are
-// now equivalent, which violates rule (2).  For example, if A is the
-// top of the graph with children B and C, and D is instanced to both
-// B and C, and E is a child of D, there might be two different
-// NodePaths to D: A/B/D/E and A/C/D/E.  If you then break the
-// connection between D and E, both NodePaths must now become just the
-// singleton E.
-//
-// Unfortunately, we cannot simply remove one of the extra
-// NodePathComponents, because there may be any number of NodePath
-// objects that reference them.  Instead, we define the concept of
-// "collapsed" NodePathComponents, which means one NodePathComponent
-// can be "collapsed" into a different one so that any attempt to
-// reference the first actually retrieves the second, rather like a
-// symbolic link in the file system.  When the NodePath traverses its
-// component chain, it will pass right over the collapsed component in
-// favor of the one it has been collapsed into.
-//
-
-
 //
 // There are two different interfaces here for making and breaking
 // parent-child connections: the fundamental PandaNode interface, via
 // add_child() and remove_child() (and related functions), and the
 // NodePath support interface, via attach(), detach(), and reparent().
 // They both do essentially the same thing, but with slightly
-// different inputs.  Both are responsible for keeping all NodePaths
-// up-to-date according to the above rules.
+// different inputs.  The PandaNode interfaces try to guess which
+// NodePaths should be updated as a result of the scene graph change,
+// while the NodePath interfaces already know.
 //
 // The NodePath support interface functions are strictly called from
 // within the NodePath class, and are used to implement
@@ -1607,7 +1554,15 @@ r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map) {
 ////////////////////////////////////////////////////////////////////
 PT(NodePathComponent) PandaNode::
 attach(NodePathComponent *parent, PandaNode *child_node, int sort) {
-  nassertr(parent != (NodePathComponent *)NULL, (NodePathComponent *)NULL);
+  if (parent == (NodePathComponent *)NULL) {
+    // Attaching to NULL means to create a new "instance" with no
+    // attachments, and no questions asked.
+    PT(NodePathComponent) child = 
+      new NodePathComponent(child_node, (NodePathComponent *)NULL);
+    CDWriter cdata_child(child_node->_cycler);
+    cdata_child->_paths.insert(child);
+    return child;
+  }
 
   // See if the child was already attached to the parent.  If it was,
   // we'll use that same NodePathComponent.
@@ -1619,7 +1574,7 @@ attach(NodePathComponent *parent, PandaNode *child_node, int sort) {
     child = get_top_component(child_node, true);
   }
 
-  reparent(parent, child, sort);
+  reparent(parent, child, sort, false);
   return child;
 }
 
@@ -1688,39 +1643,58 @@ detach(NodePathComponent *child) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::reparent
 //       Access: Private, Static
-//  Description: Switches a node from one parent to another.
+//  Description: Switches a node from one parent to another.  Returns
+//               true if the new connection is allowed, or false if it
+//               conflicts with another instance (that is, another
+//               instance of the child is already attached to the
+//               indicated parent).
 ////////////////////////////////////////////////////////////////////
-void PandaNode::
-reparent(NodePathComponent *new_parent, NodePathComponent *child, int sort) {
-  nassertv(new_parent != (NodePathComponent *)NULL);
-  nassertv(child != (NodePathComponent *)NULL);
+bool PandaNode::
+reparent(NodePathComponent *new_parent, NodePathComponent *child, int sort,
+         bool as_stashed) {
+  nassertr(child != (NodePathComponent *)NULL, false);
 
   if (!child->is_top_node()) {
     detach(child);
   }
 
-  // Adjust the NodePathComponents.
-  child->set_next(new_parent);
+  if (new_parent != (NodePathComponent *)NULL) {
+    PandaNode *child_node = child->get_node();
+    PandaNode *parent_node = new_parent->get_node();
 
-  PandaNode *child_node = child->get_node();
-  PandaNode *parent_node = new_parent->get_node();
+    if (child_node->find_parent(parent_node) >= 0) {
+      // Whoops, there's already another instance of the child there.
+      return false;
+    }
 
-  // Now reattach at the indicated sort position.
-  CDWriter cdata_parent(parent_node->_cycler);
-  CDWriter cdata_child(child_node->_cycler);
-  
-  cdata_parent->_down.insert(DownConnection(child_node, sort));
-  cdata_child->_up.insert(UpConnection(parent_node));
-  
-  cdata_child->_paths.insert(child);
-  child_node->fix_path_lengths(cdata_child);
+    // Redirect the connection to the indicated new parent.
+    child->set_next(new_parent);
+    
+    // Now reattach the child node at the indicated sort position.
+    CDWriter cdata_parent(parent_node->_cycler);
+    CDWriter cdata_child(child_node->_cycler);
 
-  // Mark the bounding volumes stale.
-  parent_node->force_bound_stale();
+    if (as_stashed) {
+      cdata_parent->_stashed.insert(DownConnection(child_node, sort));
+    } else {
+      cdata_parent->_down.insert(DownConnection(child_node, sort));
+    }
+    cdata_child->_up.insert(UpConnection(parent_node));
+    
+    cdata_child->_paths.insert(child);
+    child_node->fix_path_lengths(cdata_child);
+    
+    // Mark the bounding volumes stale.
+    if (!as_stashed) {
+      parent_node->force_bound_stale();
+    }
 
-  // Call callback hooks.
-  parent_node->children_changed();
-  child_node->parents_changed();
+    // Call callback hooks.
+    parent_node->children_changed();
+    child_node->parents_changed();
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1904,8 +1878,7 @@ delete_component(NodePathComponent *component) {
     }
   }
 
-  // This may legitimately be zero if we are deleting a collapsed NodePath.
-  //  nassertv(max_num_erased == 1);
+  nassertv(max_num_erased == 1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1916,65 +1889,25 @@ delete_component(NodePathComponent *component) {
 //               that reflected this connection.
 //
 //               It severs any NodePathComponents on the child node
-//               that reference the indicated parent node.  If the
-//               child node has additional parents, chooses one of
-//               them arbitrarily instead.  Collapses together
-//               instances below this node that used to differentiate
-//               on some instance above the old parent.
+//               that reference the indicated parent node.  These
+//               components remain unattached; there may therefore be
+//               multiple "instances" of a node that all have no
+//               parent, even while there are other instances that do
+//               have parents.
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 sever_connection(PandaNode *parent_node, PandaNode *child_node) {
   CDWriter cdata_child(child_node->_cycler);
-  PT(NodePathComponent) collapsed = (NodePathComponent *)NULL;
 
   Paths::iterator pi;
-  pi = cdata_child->_paths.begin();
-  while (pi != cdata_child->_paths.end()) {
-    Paths::iterator pnext = pi;
-    ++pnext;
+  for (pi = cdata_child->_paths.begin();
+       pi != cdata_child->_paths.end();
+       ++pi) {
     if (!(*pi)->is_top_node() && 
         (*pi)->get_next()->get_node() == parent_node) {
-      if (collapsed == (NodePathComponent *)NULL) {
-
-        // This is the first component we've found that references
-        // this node.  Should we sever it or reattach it?
-        if (child_node->get_num_parents() == 0) {
-          // If the node no longer has any parents, all of its paths will be
-          // severed here.  Collapse them all with the existing top
-          // component if there is one.
-          collapsed = get_top_component(child_node, false);
-          
-        } else {
-          // If the node still has one parent, all of its paths that
-          // referenced the old parent will be combined with the
-          // remaining parent.  If there are multiple parents, choose
-          // the first parent arbitrarily to combine with, and don't
-          // complain if there's ambiguity.
-          collapsed = child_node->get_generic_component(true);
-        }
-
-        if (collapsed == (NodePathComponent *)NULL) {
-          // Sever the component here; there's nothing to attach it
-          // to.
-          (*pi)->set_top_node();
-          collapsed = (*pi);
-
-        } else {
-          // Collapse the new component with the pre-existing
-          // component.
-          (*pi)->collapse_with(collapsed);
-          cdata_child->_paths.erase(pi);
-        }
-
-      } else {
-        // This is the second (or later) component we've found that
-        // references this node.  We should collapse it with the first
-        // one.
-        (*pi)->collapse_with(collapsed);
-        cdata_child->_paths.erase(pi);
-      }
+      // Sever the component here.
+      (*pi)->set_top_node();
     }
-    pi = pnext;
   }
   child_node->fix_path_lengths(cdata_child);
 }
@@ -1983,7 +1916,7 @@ sever_connection(PandaNode *parent_node, PandaNode *child_node) {
 //     Function: PandaNode::new_connection
 //       Access: Private, Static
 //  Description: This is called internally when a parent-child
-//               connection is establshed to update the
+//               connection is established to update the
 //               NodePathComponents that might be involved.
 //
 //               It adjusts any NodePathComponents the child has that

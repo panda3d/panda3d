@@ -552,8 +552,9 @@ PUBLISHED:
   INLINE bool is_hidden(DrawMask camera_mask = DrawMask::all_on()) const;
   NodePath get_hidden_ancestor(DrawMask camera_mask = DrawMask::all_on()) const;
 
-  INLINE bool stash();
-  INLINE bool unstash();
+  void stash(int sort = 0);
+  void unstash(int sort = 0);
+  void unstash_all();
   INLINE bool is_stashed() const;
   NodePath get_stashed_ancestor() const;
 
@@ -587,10 +588,12 @@ PUBLISHED:
   INLINE bool has_net_tag(const string &key) const;
   NodePath find_net_tag(const string &key) const;
 
+  INLINE void set_name(const string &name);
+  INLINE string get_name() const;
+
   bool write_bam_file(const string &filename) const;
 
 private:
-  void uncollapse_head() const;
   static NodePathComponent *
   find_common_ancestor(const NodePath &a, const NodePath &b,
                        int &a_count, int &b_count);

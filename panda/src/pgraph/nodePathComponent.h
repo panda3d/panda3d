@@ -56,21 +56,17 @@ public:
   INLINE PandaNode *get_node() const;
   int get_key() const;
   bool is_top_node() const;
-  INLINE bool is_collapsed() const;
   
   NodePathComponent *get_next() const;
   int get_length() const;
-  INLINE NodePathComponent *get_collapsed() const;
 
   bool fix_length();
-  NodePathComponent *uncollapse();
 
   void output(ostream &out) const;
   
 private:
   void set_next(NodePathComponent *next);
   void set_top_node();
-  void collapse_with(NodePathComponent *next);
 
   // We don't have to cycle the _node and _key elements, since these
   // are permanent properties of this object.  (Well, the _key is

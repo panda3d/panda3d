@@ -101,39 +101,8 @@ INLINE NodePathComponent::
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *NodePathComponent::
 get_node() const {
-  // We don't have to bother checking if the component has been
-  // collapsed here, since the _node pointer will still be the same
-  // even if it has.
   nassertr(_node != (PandaNode *)NULL, _node);
   return _node;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathComponent::is_collapsed
-//       Access: Public
-//  Description: Returns true if this component has been collapsed
-//               with another component.  In this case, the component
-//               itself is invalid, and the collapsed component should
-//               be used instead.
-////////////////////////////////////////////////////////////////////
-INLINE bool NodePathComponent::
-is_collapsed() const {
-  CDReader cdata(_cycler);
-  return (cdata->_length == 0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathComponent::get_collapsed
-//       Access: Public
-//  Description: If is_collapsed() returns true, this is the component
-//               that this one has been collapsed with, and should be
-//               replaced with.
-////////////////////////////////////////////////////////////////////
-INLINE NodePathComponent *NodePathComponent::
-get_collapsed() const {
-  nassertr(is_collapsed(), (NodePathComponent *)NULL);
-  CDReader cdata(_cycler);
-  return cdata->_next;
 }
 
 INLINE ostream &operator << (ostream &out, const NodePathComponent &comp) {

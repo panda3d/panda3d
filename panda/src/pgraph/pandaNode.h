@@ -221,8 +221,8 @@ private:
   static PT(NodePathComponent) attach(NodePathComponent *parent, 
                                        PandaNode *child, int sort);
   static void detach(NodePathComponent *child);
-  static void reparent(NodePathComponent *new_parent,
-                       NodePathComponent *child, int sort);
+  static bool reparent(NodePathComponent *new_parent,
+                       NodePathComponent *child, int sort, bool as_stashed);
   static PT(NodePathComponent) get_component(NodePathComponent *parent,
                                               PandaNode *child);
   static PT(NodePathComponent) get_top_component(PandaNode *child,

@@ -45,9 +45,6 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 int NodePathComponent::
 get_key() const {
-  if (is_collapsed()) {
-    return get_collapsed()->get_key();
-  }
   if (_key == 0) {
     // The first time someone asks for a particular component's key,
     // we make it up on the spot.  This helps keep us from wasting
@@ -67,9 +64,6 @@ get_key() const {
 ////////////////////////////////////////////////////////////////////
 bool NodePathComponent::
 is_top_node() const {
-  if (is_collapsed()) {
-    return get_collapsed()->is_top_node();
-  }
   CDReader cdata(_cycler);
   return (cdata->_next == (NodePathComponent *)NULL);
 }
@@ -81,9 +75,6 @@ is_top_node() const {
 ////////////////////////////////////////////////////////////////////
 int NodePathComponent::
 get_length() const {
-  if (is_collapsed()) {
-    return get_collapsed()->get_length();
-  }
   CDReader cdata(_cycler);
   return cdata->_length;
 }
@@ -95,23 +86,8 @@ get_length() const {
 ////////////////////////////////////////////////////////////////////
 NodePathComponent *NodePathComponent::
 get_next() const {
-  if (is_collapsed()) {
-    return get_collapsed()->get_next();
-  }
-
   CDReader cdata(_cycler);
   NodePathComponent *next = cdata->_next;
-  
-  // If the next component has been collapsed, transparently update
-  // the pointer to get the actual node, and store the new pointer,
-  // before we return.  Collapsing can happen at any time to any
-  // component in the path and we have to deal with it.
-  if (next != (NodePathComponent *)NULL && next->is_collapsed()) {
-    next = next->uncollapse();
-
-    CDWriter cdata_w(((NodePathComponent *)this)->_cycler, cdata);
-    cdata_w->_next = next;
-  }
   
   return next;
 }
@@ -137,29 +113,6 @@ fix_length() {
   CDWriter cdata(_cycler);
   cdata->_length = length_should_be;
   return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathComponent::uncollapse
-//       Access: Public
-//  Description: Returns this component pointer if the component is
-//               not collapsed; or if it has been collapsed, returns
-//               the pointer it has been collapsed into.
-//
-//               Collapsing can happen at any time to any component in
-//               the path and we have to deal with it.  It happens
-//               when a node is removed further up the path that
-//               results in two instances becoming the same thing.
-////////////////////////////////////////////////////////////////////
-NodePathComponent *NodePathComponent::
-uncollapse() {
-  NodePathComponent *comp = this;
-
-  while (comp->is_collapsed()) {
-    comp = comp->get_collapsed();
-  }
-
-  return comp;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -206,13 +159,9 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void NodePathComponent::
 set_next(NodePathComponent *next) {
-  if (is_collapsed()) {
-    get_collapsed()->set_next(next);
-  } else {
-    nassertv(next != (NodePathComponent *)NULL);
-    CDWriter cdata(_cycler);
-    cdata->_next = next;
-  }
+  nassertv(next != (NodePathComponent *)NULL);
+  CDWriter cdata(_cycler);
+  cdata->_next = next;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -223,37 +172,6 @@ set_next(NodePathComponent *next) {
 ////////////////////////////////////////////////////////////////////
 void NodePathComponent::
 set_top_node() {
-  if (is_collapsed()) {
-    get_collapsed()->set_top_node();
-  } else {
-    CDWriter cdata(_cycler);
-    cdata->_next = (NodePathComponent *)NULL;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathComponent::collapse_with
-//       Access: Private
-//  Description: Indicates that this component pointer is no longer
-//               valid, and that the indicated component should be
-//               used instead.  This is done whenever two
-//               NodePathComponents have been collapsed together due
-//               to an instance being removed higher up in the graph.
-////////////////////////////////////////////////////////////////////
-void NodePathComponent::
-collapse_with(NodePathComponent *next) {
-  nassertv(!is_collapsed());
-  nassertv(next != (NodePathComponent *)NULL);
   CDWriter cdata(_cycler);
-
-  // We indicate a component has been collapsed by setting its length
-  // to zero.
-  cdata->_next = next;
-  cdata->_length = 0;
-
-  if (_key != 0 && next->_key == 0) {
-    // If we had a key set and the other one didn't, it inherits our
-    // key.  Otherwise, we inherit the other's key.
-    next->_key = _key;
-  }
+  cdata->_next = (NodePathComponent *)NULL;
 }

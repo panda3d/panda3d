@@ -112,7 +112,6 @@ NodePath(const NodePath &copy) :
   _head(copy._head),
   _error_type(copy._error_type)
 {
-  uncollapse_head();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -124,7 +123,6 @@ INLINE void NodePath::
 operator = (const NodePath &copy) {
   _head = copy._head;
   _error_type = copy._error_type;
-  uncollapse_head();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -212,7 +210,6 @@ get_max_search_depth() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool NodePath::
 is_empty() const {
-  uncollapse_head();
   return (_head == (NodePathComponent *)NULL);
 }
 
@@ -224,7 +221,6 @@ is_empty() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool NodePath::
 is_singleton() const {
-  uncollapse_head();
   return (_head != (NodePathComponent *)NULL && _head->is_top_node());
 }
 
@@ -429,7 +425,6 @@ set_state(const RenderState *state) {
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(RenderState) NodePath::
 get_net_state() const {
-  uncollapse_head();
   return r_get_net_state(_head);
 }
 
@@ -462,7 +457,6 @@ set_transform(const TransformState *transform) {
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(TransformState) NodePath::
 get_net_transform() const {
-  uncollapse_head();
   return r_get_net_transform(_head);
 }
 
@@ -501,7 +495,6 @@ set_prev_transform(const TransformState *transform) {
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(TransformState) NodePath::
 get_net_prev_transform() const {
-  uncollapse_head();
   return r_get_net_prev_transform(_head);
 }
 
@@ -1150,51 +1143,6 @@ is_hidden(DrawMask camera_mask) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::unstash
-//       Access: Published
-//  Description: Undoes the effect of a previous stash() on this
-//               node: makes the referenced node (and the entire
-//               subgraph below this node) once again part of the
-//               scene graph.  Returns true if the node is unstashed,
-//               or false if it wasn't stashed to begin with.
-////////////////////////////////////////////////////////////////////
-INLINE bool NodePath::
-unstash() {
-  nassertr(!is_singleton(), false);
-  PandaNode *parent_node = get_parent().node();
-  PandaNode *this_node = node();
-  nassertr(parent_node != (PandaNode *)NULL && this_node != (PandaNode *)NULL, false);
-  return parent_node->unstash_child(this_node);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::stash
-//       Access: Published
-//  Description: Removes the referenced node (and the entire subgraph
-//               below this node) from the scene graph in any normal
-//               sense.  The node will no longer be visible and is not
-//               tested for collisions; furthermore, no normal scene
-//               graph traversal will visit the node.  The node's
-//               bounding volume no longer contributes to its parent's
-//               bounding volume.
-//
-//               A stashed node cannot be located by a normal find()
-//               operation (although a special find string can still
-//               retrieve it).
-//
-//               Returns true if the node is successfully stashed, or
-//               false if it was already stashed.
-////////////////////////////////////////////////////////////////////
-INLINE bool NodePath::
-stash() {
-  nassertr(!is_singleton(), false);
-  PandaNode *parent_node = get_parent().node();
-  PandaNode *this_node = node();
-  nassertr(parent_node != (PandaNode *)NULL && this_node != (PandaNode *)NULL, false);
-  return parent_node->stash_child(this_node);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NodePath::is_stashed
 //       Access: Published
 //  Description: Returns true if the referenced node is stashed either
@@ -1333,6 +1281,28 @@ get_net_tag(const string &key) const {
 INLINE bool NodePath::
 has_net_tag(const string &key) const {
   return find_net_tag(key).has_tag(key);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_name
+//       Access: Published
+//  Description: Changes the name of the referenced node.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_name(const string &name) {
+  nassertv_always(!is_empty());
+  node()->set_name(name);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_name
+//       Access: Published
+//  Description: Returns the name of the referenced node.
+////////////////////////////////////////////////////////////////////
+INLINE string NodePath::
+get_name() const {
+  nassertr_always(!is_empty(), string());
+  return node()->get_name();
 }
 
 

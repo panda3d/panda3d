@@ -64,7 +64,6 @@ get_num_nodes() const {
   if (is_empty()) {
     return 0;
   }
-  uncollapse_head();
   return _head->get_length();
 }
 
@@ -80,7 +79,6 @@ PandaNode *NodePath::
 get_node(int index) const {
   nassertr(index >= 0 && index < get_num_nodes(), NULL);
 
-  uncollapse_head();
   NodePathComponent *comp = _head;
   while (index > 0) {
     // If this assertion fails, the index was out of range; the
@@ -108,7 +106,6 @@ get_top_node() const {
     return (PandaNode *)NULL;
   }
 
-  uncollapse_head();
   NodePathComponent *comp = _head;
   while (!comp->is_top_node()) {
     comp = comp->get_next();
@@ -186,9 +183,17 @@ get_sort() const {
   PandaNode *child = node();
   nassertr(parent != (PandaNode *)NULL && child != (PandaNode *)NULL, 0);
   int child_index = parent->find_child(child);
-  nassertr(child_index != -1, 0);
+  if (child_index != -1) {
+    return parent->get_child_sort(child_index);
+  }
 
-  return parent->get_child_sort(child_index);
+  child_index = parent->find_stashed(child);
+  if (child_index != -1) {
+    return parent->get_stashed_sort(child_index);
+  }
+
+  nassertr(false, 0);
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -286,14 +291,12 @@ reparent_to(const NodePath &other, int sort) {
   nassertv(verify_complete());
   nassertv(other.verify_complete());
   nassertv_always(!is_empty());
-  nassertv_always(!other.is_empty());
-
-  uncollapse_head();
-  other.uncollapse_head();
-  PandaNode::reparent(other._head, _head, sort);
 
   // Reparenting implicitly resents the delta vector.
   node()->reset_prev_transform();
+
+  bool reparented = PandaNode::reparent(other._head, _head, sort, false);
+  nassertv(reparented);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -310,7 +313,6 @@ wrt_reparent_to(const NodePath &other, int sort) {
   nassertv(verify_complete());
   nassertv(other.verify_complete());
   nassertv_always(!is_empty());
-  nassertv_always(!other.is_empty());
 
   if (get_transform() == get_prev_transform()) {
     set_transform(get_transform(other));
@@ -345,13 +347,17 @@ instance_to(const NodePath &other, int sort) const {
   nassertr(verify_complete(), NodePath::fail());
   nassertr(other.verify_complete(), NodePath::fail());
   nassertr_always(!is_empty(), NodePath::fail());
-  nassertr(!other.is_empty(), NodePath::fail());
-
-  uncollapse_head();
-  other.uncollapse_head();
 
   NodePath new_instance;
-  new_instance._head = PandaNode::attach(other._head, node(), sort);
+
+  // First, we'll attach to NULL, to guarantee we get a brand new
+  // instance.
+  new_instance._head = PandaNode::attach(NULL, node(), sort);
+
+  // Now, we'll reparent the new instance to the target node.
+  bool reparented = PandaNode::reparent(other._head, new_instance._head,
+                                        sort, false);
+  nassertr(reparented, new_instance);
 
   // instance_to() doesn't reset the velocity delta, unlike most of
   // the other reparenting operations.  The reasoning is that
@@ -414,6 +420,9 @@ copy_to(const NodePath &other, int sort) const {
 //               of this NodePath.  This is the preferred way to add
 //               nodes to the graph.
 //
+//               If the node was already a child of the parent, this
+//               returns a NodePath to the existing child.
+//
 //               This does *not* automatically extend the current
 //               NodePath to reflect the attachment; however, a
 //               NodePath that does reflect this extension is
@@ -425,7 +434,6 @@ attach_new_node(PandaNode *node, int sort) const {
   nassertr_always(!is_empty(), NodePath());
   nassertr(node != (PandaNode *)NULL, NodePath());
 
-  uncollapse_head();
   NodePath new_path(*this);
   new_path._head = PandaNode::attach(_head, node, sort);
   return new_path;
@@ -462,7 +470,6 @@ remove_node() {
   // NodePath is clear.
   if (!is_empty() && !is_singleton()) {
     node()->reset_prev_transform();
-    uncollapse_head();
     PandaNode::detach(_head);
   }
 
@@ -493,7 +500,6 @@ detach_node() {
   nassertv(_error_type != ET_not_found);
   if (!is_empty() && !is_singleton()) {
     node()->reset_prev_transform();
-    uncollapse_head();
     PandaNode::detach(_head);
   }
 }
@@ -506,8 +512,6 @@ detach_node() {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 output(ostream &out) const {
-  uncollapse_head();
-
   switch (_error_type) {
   case ET_not_found:
     out << "**not found**";
@@ -3026,6 +3030,59 @@ get_hidden_ancestor(DrawMask camera_mask) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::stash
+//       Access: Published
+//  Description: Removes the referenced node (and the entire subgraph
+//               below this node) from the scene graph in any normal
+//               sense.  The node will no longer be visible and is not
+//               tested for collisions; furthermore, no normal scene
+//               graph traversal will visit the node.  The node's
+//               bounding volume no longer contributes to its parent's
+//               bounding volume.
+//
+//               A stashed node cannot be located by a normal find()
+//               operation (although a special find string can still
+//               retrieve it).
+////////////////////////////////////////////////////////////////////
+void NodePath::
+stash(int sort) {
+  nassertv_always(!is_singleton() && !is_empty());
+  nassertv(verify_complete());
+
+  bool reparented = PandaNode::reparent(_head->get_next(), _head, sort, true);
+  nassertv(reparented);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::unstash
+//       Access: Published
+//  Description: Undoes the effect of a previous stash() on this
+//               node: makes the referenced node (and the entire
+//               subgraph below this node) once again part of the
+//               scene graph.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+unstash(int sort) {
+  nassertv_always(!is_singleton() && !is_empty());
+  nassertv(verify_complete());
+
+  bool reparented = PandaNode::reparent(_head->get_next(), _head, sort, false);
+  nassertv(reparented);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::unstash_all
+//       Access: Published
+//  Description: Unstashes this node and all stashed child nodes.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+unstash_all() {
+  NodePathCollection stashed_descendents = find_all_matches("**/@@*");
+  stashed_descendents.unstash();
+  unstash();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_stashed_ancestor
 //       Access: Published
 //  Description: Returns the NodePath at or above the referenced node
@@ -3074,9 +3131,6 @@ get_stashed_ancestor() const {
 ////////////////////////////////////////////////////////////////////
 int NodePath::
 compare_to(const NodePath &other) const {
-  uncollapse_head();
-  other.uncollapse_head();
-
   // Nowadays, the NodePathComponents at the head are pointerwise
   // equivalent if and only if the NodePaths are equivalent.  So we
   // only have to compare pointers.
@@ -3090,8 +3144,7 @@ compare_to(const NodePath &other) const {
 //     Function: NodePath::verify_complete
 //       Access: Published
 //  Description: Returns true if all of the nodes described in the
-//               NodePath are connected and the top node is the top
-//               of the graph, or false otherwise.
+//               NodePath are connected, or false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
 verify_complete() const {
@@ -3099,7 +3152,6 @@ verify_complete() const {
     return true;
   }
 
-  uncollapse_head();
   const NodePathComponent *comp = _head;
   nassertr(comp != (const NodePathComponent *)NULL, false);
 
@@ -3133,15 +3185,7 @@ verify_complete() const {
     length--;
   }
 
-  // Now that we've reached the top, we should have no parents.
-  if (length == 0 && node->get_num_parents() == 0) {
-    return true;
-  }
-
-  pgraph_cat.warning()
-    << *this << " is incomplete; top node " << *node << " indicates length "
-    << length << " with " << node->get_num_parents() << " parents.\n";
-  return false;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3410,22 +3454,6 @@ write_bam_file(const string &filename) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::uncollapse_head
-//       Access: Private
-//  Description: Quietly and transparently uncollapses the _head
-//               pointer if it needs it.  This can happen only when
-//               two distinct NodePaths are collapsed into the same
-//               path after the removal of an instance somewhere
-//               higher up the chain.
-////////////////////////////////////////////////////////////////////
-void NodePath::
-uncollapse_head() const {
-  if (_head != (NodePathComponent *)NULL && _head->is_collapsed()) {
-    ((NodePath *)this)->_head = _head->uncollapse();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NodePath::find_common_ancestor
 //       Access: Private, Static
 //  Description: Walks up from both NodePaths to find the first node
@@ -3441,9 +3469,6 @@ NodePathComponent *NodePath::
 find_common_ancestor(const NodePath &a, const NodePath &b,
                      int &a_count, int &b_count) {
   nassertr(!a.is_empty() && !b.is_empty(), NULL);
-  a.uncollapse_head();
-  b.uncollapse_head();
-
   NodePathComponent *ac = a._head;
   NodePathComponent *bc = b._head;
   a_count = 0;
