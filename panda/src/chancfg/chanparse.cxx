@@ -35,7 +35,7 @@ INLINE std::string ChanReadLine(istream& is) {
 #endif /* BROKEN_EXCEPTIONS */
   std::string S;
   std::getline(is, S);
-  size_t i = S.find_first_not_of(" /t/f/r/n");
+  size_t i = S.find_first_not_of(" \t\f\r\n");
   if ((i == std::string::npos) || (S[i] == ';'))
     return ChanReadLine(is);  // all white space or comment
   if (i != 0)
