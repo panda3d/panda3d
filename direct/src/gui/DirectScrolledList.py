@@ -276,7 +276,7 @@ class DirectScrolledList(DirectFrame):
     def refresh(self):
         """
         Update the list - useful when adding or deleting items
-        or changing properties that would effect the scrolling
+        or changing properties that would affect the scrolling
         """
         self.recordMaxHeight()
         #print "refresh called"
