@@ -179,7 +179,8 @@ class DirectScrolledList(DirectFrame):
         Add this string and extraArg to the list
         """
         self['items'].append(item)
-        item.reparentTo(self.itemFrame)
+        if type(item) != type(''):
+            item.reparentTo(self.itemFrame)
         if refresh:
             self.refresh()
         
@@ -190,7 +191,8 @@ class DirectScrolledList(DirectFrame):
         """
         if item in self["items"]:
             self["items"].remove(item)
-            item.reparentTo(hidden)
+            if type(item) != type(''):
+                item.reparentTo(hidden)
             self.refresh()
             return 1
         else:
