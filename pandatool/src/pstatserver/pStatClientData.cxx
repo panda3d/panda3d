@@ -324,6 +324,12 @@ add_collector(PStatCollectorDef *def) {
 
   _collectors[def->_index]._def = def;
   update_toplevel_collectors();
+
+  // If we already had the _is_level flag set, it should be
+  // immediately applied to all ancestors.
+  if (_collectors[def->_index]._is_level) {
+    set_collector_has_level(def->_parent_index, true);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

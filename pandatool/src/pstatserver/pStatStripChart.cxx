@@ -641,7 +641,11 @@ draw_pixels(int first_pixel, int last_pixel) {
       float time = pixel_to_timestamp(x);
       frame_number = thread_data->get_frame_number_at_time(time, frame_number);
       int w = 1;
-      while (x + w <= last_pixel && 
+      int stop_pixel = last_pixel;
+      if (!_scroll_mode) {
+        stop_pixel = min(stop_pixel, _cursor_pixel);
+      }
+      while (x + w < stop_pixel && 
              thread_data->get_frame_number_at_time(pixel_to_timestamp(x + w), frame_number) == frame_number) {
         w++;
       }
@@ -653,5 +657,6 @@ draw_pixels(int first_pixel, int last_pixel) {
       x += w;
     }
   }
+
   end_draw(first_pixel, last_pixel);
 }

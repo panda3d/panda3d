@@ -38,7 +38,6 @@ WinStatsStripChart(WinStatsMonitor *monitor, PStatView &view,
                   default_strip_chart_height),
   WinStatsGraph(monitor)
 {
-  cerr << "Constructing strip chart " << (void *)this << "\n";
   _brush_origin = 0;
 
   create_window();
@@ -52,7 +51,6 @@ WinStatsStripChart(WinStatsMonitor *monitor, PStatView &view,
 ////////////////////////////////////////////////////////////////////
 WinStatsStripChart::
 ~WinStatsStripChart() {
-  cerr << "Destructing strip chart " << (void *)this << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -235,7 +233,7 @@ draw_cursor(int x) {
 void WinStatsStripChart::
 end_draw(int from_x, int to_x) {
   RECT rect = { 
-    from_x, 0, to_x, get_ysize() 
+    from_x, 0, to_x + 1, get_ysize() 
   };
   InvalidateRect(_graph_window, &rect, FALSE);
 }
@@ -255,7 +253,7 @@ create_window() {
   register_window_class(application);
 
   string window_title = get_title_text();
-  DWORD window_style = WS_CHILD | WS_CLIPCHILDREN | WS_OVERLAPPEDWINDOW | WS_VISIBLE;
+  DWORD window_style = WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPEDWINDOW | WS_VISIBLE;
 
   RECT win_rect = { 
     0, 0,
@@ -279,6 +277,10 @@ create_window() {
 
   SetWindowLongPtr(_window, 0, (LONG_PTR)this);
   setup_label_stack();
+
+  // Ensure that the window is on top of the stack.
+  SetWindowPos(_window, HWND_TOP, 0, 0, 0, 0, 
+               SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -23,7 +23,7 @@
 
 #include <windows.h>
 
-class PStatMonitor;
+class WinStatsMonitor;
 class PStatView;
 class PStatViewLevel;
 
@@ -34,7 +34,7 @@ class PStatViewLevel;
 ////////////////////////////////////////////////////////////////////
 class WinStatsChartMenu {
 public:
-  WinStatsChartMenu(PStatMonitor *monitor, int thread_index);
+  WinStatsChartMenu(WinStatsMonitor *monitor, int thread_index);
   ~WinStatsChartMenu();
 
   HMENU get_menu_handle();
@@ -46,7 +46,7 @@ public:
 private:
   void add_view(HMENU parent_menu, const PStatViewLevel *view_level);
 
-  PStatMonitor *_monitor;
+  WinStatsMonitor *_monitor;
   int _thread_index;
 
   int _last_level_index;

@@ -168,6 +168,7 @@ new_thread(int thread_index) {
   WinStatsChartMenu *chart_menu = new WinStatsChartMenu(this, thread_index);
   chart_menu->add_to_menu_bar(_menu_bar);
   _chart_menus.push_back(chart_menu);
+  DrawMenuBar(_window);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -246,6 +247,45 @@ get_window() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WinStatsMonitor::lookup_menu
+//       Access: Public
+//  Description: Returns the MenuDef properties associated with the
+//               indicated menu ID.  This specifies what we expect to
+//               do when the given menu has been selected.
+////////////////////////////////////////////////////////////////////
+const WinStatsMonitor::MenuDef &WinStatsMonitor::
+lookup_menu(int menu_id) const {
+  static MenuDef invalid(0, 0);
+  nassertr(menu_id >= 0 && menu_id < (int)_menu_by_id.size(), invalid);
+  return _menu_by_id[menu_id];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsMonitor::get_menu_id
+//       Access: Public
+//  Description: Returns the menu ID that is reserved for the
+//               indicated MenuDef properties.  If this is the first
+//               time these particular properties have been requested,
+//               a new menu ID is returned; otherwise, the existing
+//               menu ID is returned.
+////////////////////////////////////////////////////////////////////
+int WinStatsMonitor::
+get_menu_id(const MenuDef &menu_def) {
+  MenuByDef::iterator mi;
+  mi = _menu_by_def.find(menu_def);
+  if (mi != _menu_by_def.end()) {
+    return (*mi).second;
+  }
+
+  // Slot a new id.
+  int menu_id = (int)_menu_by_id.size();
+  _menu_by_id.push_back(menu_def);
+  _menu_by_def[menu_def] = menu_id;
+
+  return menu_id;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WinStatsMonitor::add_graph
 //       Access: Private
 //  Description: Adds the newly-created graph to the list of managed
@@ -305,6 +345,7 @@ create_window() {
   }
 
   SetWindowLongPtr(_window, 0, (LONG_PTR)this);
+  ShowWindow(_window, SW_SHOWNORMAL);
   ShowWindow(_window, SW_SHOWNORMAL);
 }
 
@@ -367,6 +408,18 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
   case WM_DESTROY:
     close();
+    break;
+
+  case WM_COMMAND:
+    if (HIWORD(wparam) <= 1) {
+      int menu_id = LOWORD(wparam);
+      const MenuDef &menu_def = lookup_menu(menu_id);
+      WinStatsStripChart *chart = 
+        new WinStatsStripChart(this, get_view(menu_def._thread_index), 
+                               menu_def._collector_index);
+      add_graph(chart);
+      return 0;
+    }
     break;
 
   default:

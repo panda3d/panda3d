@@ -262,6 +262,10 @@ setup_bitmap(int xsize, int ysize) {
   _bitmap_dc = CreateCompatibleDC(hdc);
   _bitmap = CreateCompatibleBitmap(hdc, _bitmap_xsize, _bitmap_ysize);
   SelectObject(_bitmap_dc, _bitmap);
+
+  RECT rect = { 0, 0, _bitmap_xsize, _bitmap_ysize };
+  FillRect(_bitmap_dc, &rect, (HBRUSH)GetStockObject(WHITE_BRUSH));
+
   ReleaseDC(_window, hdc);
 }
 
@@ -320,7 +324,7 @@ create_graph_window() {
   register_graph_window_class(application);
 
   string window_title = "graph";
-  DWORD window_style = WS_CHILD;
+  DWORD window_style = WS_CHILD | WS_CLIPSIBLINGS;
 
   _graph_window = 
     CreateWindow(_graph_window_class_name, window_title.c_str(), window_style,

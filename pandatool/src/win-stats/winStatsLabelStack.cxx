@@ -18,6 +18,7 @@
 
 #include "winStatsLabelStack.h"
 #include "winStatsLabel.h"
+#include "notify.h"
 
 bool WinStatsLabelStack::_window_class_registered = false;
 const char * const WinStatsLabelStack::_window_class_name = "stack";
@@ -211,7 +212,7 @@ create_window(HWND parent_window) {
   register_window_class(application);
 
   _window = 
-    CreateWindow(_window_class_name, "label stack", WS_CHILD | WS_CLIPCHILDREN,
+    CreateWindow(_window_class_name, "label stack", WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
                  0, 0, 0, 0,
                  parent_window, NULL, application, 0);
   if (!_window) {

@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "winStatsChartMenu.h"
-#include "pStatMonitor.h"
+#include "winStatsMonitor.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: WinStatsChartMenu::Constructor
@@ -25,7 +25,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 WinStatsChartMenu::
-WinStatsChartMenu(PStatMonitor *monitor, int thread_index) :
+WinStatsChartMenu(WinStatsMonitor *monitor, int thread_index) :
   _monitor(monitor),
   _thread_index(thread_index)
 {
@@ -153,25 +153,29 @@ add_view(HMENU parent_menu, const PStatViewLevel *view_level) {
   const PStatClientData *client_data = _monitor->get_client_data();
   string collector_name = client_data->get_collector_name(collector);
 
+  WinStatsMonitor::MenuDef menu_def(_thread_index, collector);
+  int menu_id = _monitor->get_menu_id(menu_def);
+
   MENUITEMINFO mii;
   memset(&mii, 0, sizeof(mii));
   mii.cbSize = sizeof(mii);
 
-  mii.fMask = MIIM_STRING | MIIM_FTYPE; 
+  mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID; 
   mii.fType = MFT_STRING; 
+  mii.wID = menu_id;
   mii.dwTypeData = (char *)collector_name.c_str(); 
   InsertMenuItem(parent_menu, GetMenuItemCount(parent_menu), TRUE, &mii);
 
   int num_children = view_level->get_num_children();
-  if (num_children != 0) {
-    // If the collector has any children, add a menu entry to go
+  if (num_children > 1) {
+    // If the collector has more than one child, add a menu entry to go
     // directly to each of its children.
     HMENU submenu = CreatePopupMenu();
     string submenu_name = collector_name + " components";
 
-    mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_SUBMENU; 
+    mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_SUBMENU;
     mii.fType = MFT_STRING; 
-    mii.hSubMenu = submenu; 
+    mii.hSubMenu = submenu;
     mii.dwTypeData = (char *)submenu_name.c_str(); 
     InsertMenuItem(parent_menu, GetMenuItemCount(parent_menu), TRUE, &mii);
 

@@ -186,7 +186,7 @@ create_window(HWND parent_window) {
   register_window_class(application);
 
   _window = 
-    CreateWindow(_window_class_name, _text.c_str(), WS_CHILD,
+    CreateWindow(_window_class_name, _text.c_str(), WS_CHILD | WS_CLIPSIBLINGS,
                  0, 0, 0, 0,
                  parent_window, NULL, application, 0);
   if (!_window) {

@@ -25,6 +25,8 @@
 #include "pStatMonitor.h"
 #include "pointerTo.h"
 #include "pset.h"
+#include "pvector.h"
+#include "pmap.h"
 
 #include <windows.h>
 
@@ -37,6 +39,15 @@ class WinStatsChartMenu;
 ////////////////////////////////////////////////////////////////////
 class WinStatsMonitor : public PStatMonitor {
 public:
+  class MenuDef {
+  public:
+    INLINE MenuDef(int thread_index, int collector_index);
+    INLINE bool operator < (const MenuDef &other) const;
+
+    int _thread_index;
+    int _collector_index;
+  };
+
   WinStatsMonitor();
   virtual ~WinStatsMonitor();
 
@@ -54,6 +65,9 @@ public:
   virtual bool has_idle();
 
   HWND get_window() const;
+
+  const MenuDef &lookup_menu(int menu_id) const;
+  int get_menu_id(const MenuDef &menu_def);
   
 private:
   void add_graph(WinStatsGraph *graph);
@@ -71,6 +85,11 @@ private:
   typedef pvector<WinStatsChartMenu *> ChartMenus;
   ChartMenus _chart_menus;
 
+  typedef pvector<MenuDef> MenuById;
+  typedef pmap<MenuDef, int> MenuByDef;
+  MenuById _menu_by_id;
+  MenuByDef _menu_by_def;
+
   HWND _window;
   HMENU _menu_bar;
   string _window_title;
@@ -80,5 +99,7 @@ private:
 
   friend class WinStatsGraph;
 };
+
+#include "winStatsMonitor.I"
 
 #endif
