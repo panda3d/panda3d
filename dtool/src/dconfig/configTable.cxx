@@ -84,7 +84,7 @@ void ConfigTable::ParseConfigFile(istream& is, const ConfigString& Filename)
 {
    ConfigString line;
 
-   while (!is.eof()) {
+   while (!is.eof() && !is.fail()) {
       std::getline(is, line);
       if (microconfig_cat->is_spam())
          microconfig_cat->spam() << "read from " << Filename << ": '" << line
@@ -179,7 +179,14 @@ void ConfigTable::ReadConfigFile(void) {
     if (microconfig_cat->is_spam())
       microconfig_cat->spam() << "examining file '" << config_file << "'"
                                << endl;
-    if (config_file.is_executable()) {
+
+    if (!config_file.is_regular_file()) {
+      if (microconfig_cat->is_spam()) {
+        microconfig_cat->spam()
+          << "file is not a regular file, ignoring.\n";
+      }
+
+    } else if (config_file.is_executable()) {
       ConfigString line = config_file.to_os_specific() + " " + configargs;
       if (microconfig_cat->is_spam())
         microconfig_cat->spam() << "file is executable, running '"
