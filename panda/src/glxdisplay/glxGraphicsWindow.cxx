@@ -162,9 +162,39 @@ process_events() {
   }
 
   XEvent event;
+  XKeyEvent keyrelease_event;
+  bool got_keyrelease_event = false;
+
   while (XCheckIfEvent(_display, &event, check_event, (char *)this)) {
     if (XFilterEvent(&event, None)) {
       continue;
+    }
+
+    if (got_keyrelease_event) {
+      // If a keyrelease event is immediately followed by a matching
+      // keypress event, that's just key repeat and we should treat
+      // the two events accordingly.  It would be nice if X provided a
+      // way to differentiate between keyrepeat and explicit
+      // keypresses more generally.
+      got_keyrelease_event = false;
+
+      if (event.type == KeyPress &&
+          event.xkey.keycode == keyrelease_event.keycode &&
+          (event.xkey.time - keyrelease_event.time <= 1)) {
+        // In particular, we only generate down messages for the
+        // repeated keys, not down-and-up messages.
+        handle_keystroke(event.xkey);
+
+        // We thought about not generating the keypress event, but we
+        // need that repeat for backspace.  Rethink later.
+        handle_keypress(event.xkey);
+        continue;
+
+      } else {
+        // This keyrelease event is not immediately followed by a
+        // matching keypress event, so it's a genuine release.
+        handle_keyrelease(keyrelease_event);
+      }
     }
 
     WindowProperties properties;
@@ -198,39 +228,16 @@ process_events() {
       break;
 
     case KeyPress:
-      {
-        _input_devices[0].set_pointer_in_window(event.xkey.x, event.xkey.y);
-
-        // First, get the keystroke as a wide-character sequence.
-        static const int buffer_size = 256;
-        wchar_t buffer[buffer_size];
-        Status status;
-        int len = XwcLookupString(_ic, &event.xkey, buffer, buffer_size, NULL,
-                                  &status);
-        if (status == XBufferOverflow) {
-          glxdisplay_cat.error()
-            << "Overflowed input buffer.\n";
-        }
-
-        // Now each of the returned wide characters represents a
-        // keystroke.
-        for (int i = 0; i < len; i++) {
-          _input_devices[0].keystroke(buffer[i]);
-        }
-
-        // Now get the raw unshifted button.
-        ButtonHandle button = get_button(&event.xkey);
-        if (button != ButtonHandle::none()) {
-          _input_devices[0].button_down(button);
-        }
-      }
+      handle_keystroke(event.xkey);
+      handle_keypress(event.xkey);
       break;
 
     case KeyRelease:
-      button = get_button(&event.xkey);
-      if (button != ButtonHandle::none()) {
-        _input_devices[0].button_up(button);
-      }
+      // The KeyRelease can't be processed immediately, because we
+      // have to check first if it's immediately followed by a
+      // matching KeyPress event.
+      keyrelease_event = event.xkey;
+      got_keyrelease_event = true;
       break;
 
     case EnterNotify:
@@ -286,6 +293,12 @@ process_events() {
       glxdisplay_cat.error()
         << "unhandled X event type " << event.type << "\n";
     }
+  }
+
+  if (got_keyrelease_event) {
+    // This keyrelease event is not immediately followed by a
+    // matching keypress event, so it's a genuine release.
+    handle_keyrelease(keyrelease_event);
   }
 }
 
@@ -594,6 +607,68 @@ setup_colormap(XVisualInfo *visual) {
         << "Could not allocate a colormap for visual class "
         << visual_class << ".\n";
       break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsWindow::handle_keystroke
+//       Access: Private
+//  Description: Generates a keystroke corresponding to the indicated
+//               X KeyPress event.
+////////////////////////////////////////////////////////////////////
+void glxGraphicsWindow::
+handle_keystroke(XKeyEvent &event) {
+  _input_devices[0].set_pointer_in_window(event.x, event.y);
+
+  // First, get the keystroke as a wide-character sequence.
+  static const int buffer_size = 256;
+  wchar_t buffer[buffer_size];
+  Status status;
+  int len = XwcLookupString(_ic, &event, buffer, buffer_size, NULL,
+                            &status);
+  if (status == XBufferOverflow) {
+    glxdisplay_cat.error()
+      << "Overflowed input buffer.\n";
+  }
+  
+  // Now each of the returned wide characters represents a
+  // keystroke.
+  for (int i = 0; i < len; i++) {
+    _input_devices[0].keystroke(buffer[i]);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsWindow::handle_keypress
+//       Access: Private
+//  Description: Generates a keypress corresponding to the indicated
+//               X KeyPress event.
+////////////////////////////////////////////////////////////////////
+void glxGraphicsWindow::
+handle_keypress(XKeyEvent &event) {
+  _input_devices[0].set_pointer_in_window(event.x, event.y);
+
+  // Now get the raw unshifted button.
+  ButtonHandle button = get_button(&event);
+  if (button != ButtonHandle::none()) {
+    _input_devices[0].button_down(button);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsWindow::handle_keyrelease
+//       Access: Private
+//  Description: Generates a keyrelease corresponding to the indicated
+//               X KeyRelease event.
+////////////////////////////////////////////////////////////////////
+void glxGraphicsWindow::
+handle_keyrelease(XKeyEvent &event) {
+  _input_devices[0].set_pointer_in_window(event.x, event.y);
+
+  // Now get the raw unshifted button.
+  ButtonHandle button = get_button(&event);
+  if (button != ButtonHandle::none()) {
+    _input_devices[0].button_up(button);
   }
 }
 
