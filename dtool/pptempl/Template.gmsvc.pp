@@ -750,6 +750,7 @@ $[target] : $[source]
 $[TAB] $[BISON] $[YFLAGS] -y $[if $[YACC_PREFIX],-d --name-prefix=$[YACC_PREFIX]] $[source]
 $[TAB] mv y.tab.c $[target]
 $[TAB] mv y.tab.h $[patsubst %.yxx,%.h,$[source]]
+$[target_header] : $[target]
 $[target].prebuilt : $[target]
 $[TAB] cp $[target] $[target].prebuilt
 $[target_header].prebuilt : $[target_header]
@@ -817,7 +818,7 @@ $[TAB] $[COMPILE_C]
 
 // Yacc must run before some files can be compiled, so all files
 // depend on yacc having run.
-$[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.cxx] $[so_dir]/stamp
+$[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.h] $[so_dir]/stamp
 $[TAB] $[COMPILE_C++]
 
 #end file
@@ -849,7 +850,7 @@ $[TAB] $[COMPILE_C++]
 #define COMPILE_LINE $[COMPILE_C++]
 #endif
 
-$[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.cxx] $[target_pch] $[st_dir]/stamp
+$[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.h] $[target_pch] $[st_dir]/stamp
 $[TAB] $[COMPILE_LINE]
 
 #end file
@@ -886,7 +887,7 @@ $[target_pch] : $[target_obj]
 #define flags $[noopt_c++flags] $[CFLAGS_SHARED] $[all_sources $[building_var:%=/D%],$[file]]
 // Yacc must run before some files can be compiled, so all files
 // depend on yacc having run.
-$[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.cxx] $[so_dir]/stamp
+$[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.h] $[so_dir]/stamp
 $[TAB] $[COMPILE_C++]
 
 #end file
@@ -898,7 +899,7 @@ $[TAB] $[COMPILE_C++]
 #define source $[patsubst %.lxx %.yxx,%.cxx,$[file]]
 #define ipath $[file_ipath]
 #define flags $[noopt_c++flags] $[all_sources $[building_var:%=/D%],$[file]]
-$[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.cxx] $[st_dir]/stamp
+$[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.h] $[st_dir]/stamp
 $[TAB] $[COMPILE_C++]
 
 #end file
