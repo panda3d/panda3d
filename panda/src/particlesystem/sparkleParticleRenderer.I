@@ -66,7 +66,7 @@ set_death_radius(float radius) {
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE const Colorf& SparkleParticleRenderer::
-get_center_color(void) const {
+get_center_color() const {
   return _center_color;
 }
 
@@ -75,7 +75,7 @@ get_center_color(void) const {
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE const Colorf& SparkleParticleRenderer::
-get_edge_color(void) const {
+get_edge_color() const {
   return _edge_color;
 }
 
@@ -84,7 +84,7 @@ get_edge_color(void) const {
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE SparkleParticleRenderer::SparkleParticleLifeScale SparkleParticleRenderer::
-get_life_scale(void) const {
+get_life_scale() const {
   return _life_scale;
 }
 
@@ -93,7 +93,7 @@ get_life_scale(void) const {
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE float SparkleParticleRenderer::
-get_birth_radius(void) const {
+get_birth_radius() const {
   return _birth_radius;
 }
 
@@ -102,7 +102,7 @@ get_birth_radius(void) const {
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE float SparkleParticleRenderer::
-get_death_radius(void) const {
+get_death_radius() const {
   return _death_radius;
 }
 

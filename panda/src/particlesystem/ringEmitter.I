@@ -45,7 +45,7 @@ set_angle(float angle) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE float RingEmitter::
-get_radius(void) const {
+get_radius() const {
   return _radius;
 }
 
@@ -56,6 +56,6 @@ get_radius(void) const {
 ////////////////////////////////////////////////////////////////////
 
 INLINE float RingEmitter::
-get_angle(void) const {
+get_angle() const {
   return _aoe;
 }

@@ -24,7 +24,7 @@
 // Description : constructor
 ////////////////////////////////////////////////////////////////////
 ZSpinParticle::
-ZSpinParticle(void) :
+ZSpinParticle() :
   BaseParticle() {
   _initial_angle = 0.0f;
   _final_angle = 0.0f;
@@ -54,7 +54,7 @@ ZSpinParticle(const ZSpinParticle &copy) :
 // Description : destructor
 ////////////////////////////////////////////////////////////////////
 ZSpinParticle::
-~ZSpinParticle(void) {
+~ZSpinParticle() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -63,7 +63,7 @@ ZSpinParticle::
 // Description : dynamic copier
 ////////////////////////////////////////////////////////////////////
 PhysicsObject *ZSpinParticle::
-make_copy(void) const {
+make_copy() const {
   return new ZSpinParticle(*this);
 }
 
@@ -73,7 +73,7 @@ make_copy(void) const {
 // Description :
 ////////////////////////////////////////////////////////////////////
 void ZSpinParticle::
-init(void) {
+init() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -82,7 +82,7 @@ init(void) {
 // Description :
 ////////////////////////////////////////////////////////////////////
 void ZSpinParticle::
-update(void) {
+update() {
   // if using final_angle, want age to range from [0,1] over lifespan, so use parameterized_age
   // for angular velocity, should be allowed to range freely upward, use regular age
 
@@ -110,7 +110,7 @@ update(void) {
 // Description :
 ////////////////////////////////////////////////////////////////////
 void ZSpinParticle::
-die(void) {
+die() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -119,6 +119,6 @@ die(void) {
 // Description :
 ////////////////////////////////////////////////////////////////////
 float ZSpinParticle::
-get_theta(void) const {
+get_theta() const {
   return _cur_angle;
 }

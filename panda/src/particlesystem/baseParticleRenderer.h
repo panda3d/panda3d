@@ -58,7 +58,7 @@ PUBLISHED:
   INLINE ParticleRendererAlphaMode get_alpha_mode() const;
 
   INLINE void set_user_alpha(float ua);
-  INLINE float get_user_alpha(void) const;
+  INLINE float get_user_alpha() const;
   
   virtual void output(ostream &out, unsigned int indent=0) const;
 

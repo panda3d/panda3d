@@ -42,7 +42,7 @@ set_max_bound(const LPoint3f& vmax) {
 // Description : boundary accessor
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint3f BoxEmitter::
-get_min_bound(void) const {
+get_min_bound() const {
   return _vmin;
 }
 
@@ -52,6 +52,6 @@ get_min_bound(void) const {
 // Description : boundary accessor
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint3f BoxEmitter::
-get_max_bound(void) const {
+get_max_bound() const {
   return _vmax;
 }

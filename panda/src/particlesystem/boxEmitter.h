@@ -37,17 +37,17 @@ private:
   virtual void assign_initial_velocity(LVector3f& vel);
 
 PUBLISHED:
-  BoxEmitter(void);
+  BoxEmitter();
   BoxEmitter(const BoxEmitter &copy);
-  virtual ~BoxEmitter(void);
+  virtual ~BoxEmitter();
 
-  virtual BaseParticleEmitter *make_copy(void);
+  virtual BaseParticleEmitter *make_copy();
 
   INLINE void set_min_bound(const LPoint3f& vmin);
   INLINE void set_max_bound(const LPoint3f& vmax);
 
-  INLINE LPoint3f get_min_bound(void) const;
-  INLINE LPoint3f get_max_bound(void) const;
+  INLINE LPoint3f get_min_bound() const;
+  INLINE LPoint3f get_max_bound() const;
 };
 
 #include "boxEmitter.I"

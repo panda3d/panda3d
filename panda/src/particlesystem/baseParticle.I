@@ -28,24 +28,24 @@ INLINE void BaseParticle::set_alive(bool alive) {
   _alive = alive;
 }
 
-INLINE float BaseParticle::get_age(void) const {
+INLINE float BaseParticle::get_age() const {
   return _age;
 }
 
-INLINE float BaseParticle::get_lifespan(void) const {
+INLINE float BaseParticle::get_lifespan() const {
   return _lifespan;
 }
 
-INLINE bool BaseParticle::get_alive(void) const {
+INLINE bool BaseParticle::get_alive() const {
   return _alive;
 }
 
-INLINE float BaseParticle::get_parameterized_age(void) const {
+INLINE float BaseParticle::get_parameterized_age() const {
   if (_lifespan <= 0) return 1.0;
   return _age / _lifespan;
 }
 
-INLINE float BaseParticle::get_parameterized_vel(void) const {
+INLINE float BaseParticle::get_parameterized_vel() const {
   if (IS_NEARLY_ZERO(get_terminal_velocity())) return 0.0;
   return (get_velocity().length()) / get_terminal_velocity();
 }

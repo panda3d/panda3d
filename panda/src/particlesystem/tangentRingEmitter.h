@@ -43,14 +43,14 @@ private:
   virtual void assign_initial_velocity(LVector3f& vel);
 
 PUBLISHED:
-  TangentRingEmitter(void);
+  TangentRingEmitter();
   TangentRingEmitter(const TangentRingEmitter &copy);
-  virtual ~TangentRingEmitter(void);
+  virtual ~TangentRingEmitter();
 
-  virtual BaseParticleEmitter *make_copy(void);
+  virtual BaseParticleEmitter *make_copy();
 
   INLINE void set_radius(float r);
-  INLINE float get_radius(void) const;
+  INLINE float get_radius() const;
 };
 
 #include "tangentRingEmitter.I"

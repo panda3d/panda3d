@@ -42,23 +42,23 @@ private:
   virtual void birth_particle(int index);
   virtual void kill_particle(int index);
 
-  virtual void init_geoms(void);
+  virtual void init_geoms();
   virtual void render(pvector< PT(PhysicsObject) >& po_vector,
                       int ttl_particles);
 
   virtual void resize_pool(int new_size);
-  void kill_nodes(void);
+  void kill_nodes();
 
 PUBLISHED:
   GeomParticleRenderer(ParticleRendererAlphaMode am = PR_ALPHA_NONE,
                        PandaNode *geom_node = (PandaNode *) NULL);
   GeomParticleRenderer(const GeomParticleRenderer& copy);
-  virtual ~GeomParticleRenderer(void);
+  virtual ~GeomParticleRenderer();
 
   INLINE void set_geom_node(PandaNode *node);
-  INLINE PandaNode *get_geom_node(void);
+  INLINE PandaNode *get_geom_node();
 
-  virtual BaseParticleRenderer *make_copy(void);
+  virtual BaseParticleRenderer *make_copy();
 };
 
 #include "geomParticleRenderer.I"

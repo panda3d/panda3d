@@ -28,17 +28,17 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS RectangleEmitter : public BaseParticleEmitter {
 PUBLISHED:
-  RectangleEmitter(void);
+  RectangleEmitter();
   RectangleEmitter(const RectangleEmitter &copy);
-  virtual ~RectangleEmitter(void);
+  virtual ~RectangleEmitter();
 
-  virtual BaseParticleEmitter *make_copy(void);
+  virtual BaseParticleEmitter *make_copy();
 
   INLINE void set_min_bound(const LPoint2f& vmin);
   INLINE void set_max_bound(const LPoint2f& vmax);
 
-  INLINE LPoint2f get_min_bound(void) const;
-  INLINE LPoint2f get_max_bound(void) const;
+  INLINE LPoint2f get_min_bound() const;
+  INLINE LPoint2f get_max_bound() const;
   
   virtual void output(ostream &out, unsigned int indent=0) const;
 

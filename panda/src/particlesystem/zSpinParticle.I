@@ -30,7 +30,7 @@ set_initial_angle(float t) {
 // Description : accessor
 ////////////////////////////////////////////////////////////////////
 INLINE float ZSpinParticle::
-get_initial_angle(void) const {
+get_initial_angle() const {
   return _initial_angle;
 }
 
@@ -48,12 +48,12 @@ set_final_angle(float t) {
 // Description : accessor
 ////////////////////////////////////////////////////////////////////
 INLINE float ZSpinParticle::
-get_final_angle(void) const {
+get_final_angle() const {
   return _final_angle;
 }
 
 INLINE float ZSpinParticle::
-get_angular_velocity(void) const {
+get_angular_velocity() const {
   return _angular_velocity;
 }
 
@@ -68,7 +68,7 @@ enable_angular_velocity(bool bEnabled) {
 }
 
 INLINE bool ZSpinParticle::
-get_angular_velocity_enabled(void) const {
+get_angular_velocity_enabled() const {
   return _bUseAngularVelocity;
 }
 

@@ -39,7 +39,7 @@ set_tail_color(const Colorf& c) {
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE const Colorf& LineParticleRenderer::
-get_head_color(void) const {
+get_head_color() const {
   return _head_color;
 }
 
@@ -48,6 +48,6 @@ get_head_color(void) const {
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE const Colorf& LineParticleRenderer::
-get_tail_color(void) const {
+get_tail_color() const {
   return _tail_color;
 }

@@ -74,7 +74,7 @@ private:
 
   virtual void birth_particle(int index);
   virtual void kill_particle(int index);
-  virtual void init_geoms(void);
+  virtual void init_geoms();
   virtual void render(pvector< PT(PhysicsObject) > &po_vector,
                       int ttl_particles);
   virtual void resize_pool(int new_size);
@@ -82,9 +82,9 @@ private:
 PUBLISHED:
   SpriteParticleRenderer(Texture *tex = (Texture *) NULL);
   SpriteParticleRenderer(const SpriteParticleRenderer &copy);
-  virtual ~SpriteParticleRenderer(void);
+  virtual ~SpriteParticleRenderer();
 
-  virtual BaseParticleRenderer *make_copy(void);
+  virtual BaseParticleRenderer *make_copy();
 
   INLINE SourceType get_source_type() const;
 
@@ -105,20 +105,20 @@ PUBLISHED:
   INLINE void set_alpha_blend_method(ParticleRendererBlendMethod bm);
   INLINE void set_alpha_disable(bool ad);
 
-  INLINE Texture *get_texture(void) const;
+  INLINE Texture *get_texture() const;
   INLINE const TexCoordf &get_ll_uv() const;
   INLINE const TexCoordf &get_ur_uv() const;
-  INLINE Colorf get_color(void) const;
-  INLINE bool get_x_scale_flag(void) const;
-  INLINE bool get_y_scale_flag(void) const;
-  INLINE bool get_anim_angle_flag(void) const;
-  INLINE float get_initial_x_scale(void) const;
-  INLINE float get_final_x_scale(void) const;
-  INLINE float get_initial_y_scale(void) const;
-  INLINE float get_final_y_scale(void) const;
-  INLINE float get_nonanimated_theta(void) const;
-  INLINE ParticleRendererBlendMethod get_alpha_blend_method(void) const;
-  INLINE bool get_alpha_disable(void) const;
+  INLINE Colorf get_color() const;
+  INLINE bool get_x_scale_flag() const;
+  INLINE bool get_y_scale_flag() const;
+  INLINE bool get_anim_angle_flag() const;
+  INLINE float get_initial_x_scale() const;
+  INLINE float get_final_x_scale() const;
+  INLINE float get_initial_y_scale() const;
+  INLINE float get_final_y_scale() const;
+  INLINE float get_nonanimated_theta() const;
+  INLINE ParticleRendererBlendMethod get_alpha_blend_method() const;
+  INLINE bool get_alpha_disable() const;
 };
 
 #include "spriteParticleRenderer.I"

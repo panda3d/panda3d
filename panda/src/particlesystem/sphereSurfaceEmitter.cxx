@@ -24,7 +24,7 @@
 // Description : constructor
 ////////////////////////////////////////////////////////////////////
 SphereSurfaceEmitter::
-SphereSurfaceEmitter(void) {
+SphereSurfaceEmitter() {
   _radius = 1.0f;
 }
 
@@ -45,7 +45,7 @@ SphereSurfaceEmitter(const SphereSurfaceEmitter &copy) :
 // Description : destructor
 ////////////////////////////////////////////////////////////////////
 SphereSurfaceEmitter::
-~SphereSurfaceEmitter(void) {
+~SphereSurfaceEmitter() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -54,7 +54,7 @@ SphereSurfaceEmitter::
 // Description : copier
 ////////////////////////////////////////////////////////////////////
 BaseParticleEmitter *SphereSurfaceEmitter::
-make_copy(void) {
+make_copy() {
   return new SphereSurfaceEmitter(*this);
 }
 

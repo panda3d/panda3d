@@ -55,7 +55,7 @@ GeomParticleRenderer(const GeomParticleRenderer& copy) :
 ////////////////////////////////////////////////////////////////////
 
 GeomParticleRenderer::
-~GeomParticleRenderer(void) {
+~GeomParticleRenderer() {
   kill_nodes();
 }
 
@@ -66,7 +66,7 @@ GeomParticleRenderer::
 ////////////////////////////////////////////////////////////////////
 
 BaseParticleRenderer *GeomParticleRenderer::
-make_copy(void) {
+make_copy() {
   return new GeomParticleRenderer(*this);
 }
 
@@ -77,7 +77,7 @@ make_copy(void) {
 ////////////////////////////////////////////////////////////////////
 
 void GeomParticleRenderer::
-init_geoms(void) {
+init_geoms() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -107,7 +107,7 @@ resize_pool(int new_size) {
 ////////////////////////////////////////////////////////////////////
 
 void GeomParticleRenderer::
-kill_nodes(void) {
+kill_nodes() {
   pvector< PT(PandaNode) >::iterator vec_iter = _node_vector.begin();
 
   PandaNode *render_node = get_render_node();

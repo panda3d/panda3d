@@ -58,7 +58,7 @@ set_final_angle_spread(float spread) {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE float ZSpinParticleFactory::
-get_initial_angle(void) const {
+get_initial_angle() const {
   return _initial_angle;
 }
 
@@ -67,7 +67,7 @@ get_initial_angle(void) const {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE float ZSpinParticleFactory::
-get_final_angle(void) const {
+get_final_angle() const {
   return _final_angle;
 }
 
@@ -76,7 +76,7 @@ get_final_angle(void) const {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE float ZSpinParticleFactory::
-get_initial_angle_spread(void) const {
+get_initial_angle_spread() const {
   return _initial_angle_spread;
 }
 
@@ -85,7 +85,7 @@ get_initial_angle_spread(void) const {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE float ZSpinParticleFactory::
-get_final_angle_spread(void) const {
+get_final_angle_spread() const {
   return _final_angle_spread;
 }
 
@@ -94,7 +94,7 @@ get_final_angle_spread(void) const {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE float ZSpinParticleFactory::
-get_angular_velocity(void) const {
+get_angular_velocity() const {
   return _angular_velocity;
 }
 
@@ -104,7 +104,7 @@ set_angular_velocity(float v) {
 }
 
 INLINE float ZSpinParticleFactory::
-get_angular_velocity_spread(void) const {
+get_angular_velocity_spread() const {
   return _angular_velocity_spread;
 }
 
@@ -120,7 +120,7 @@ enable_angular_velocity(bool bEnabled) {
 }
 
 INLINE bool ZSpinParticleFactory::
-get_angular_velocity_enabled(void) const {
+get_angular_velocity_enabled() const {
   return _bUseAngularVelocity;
 }
 

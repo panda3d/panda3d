@@ -67,7 +67,7 @@ set_blend_method(BaseParticleRenderer::ParticleRendererBlendMethod bm) {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE float PointParticleRenderer::
-get_point_size(void) const {
+get_point_size() const {
   return _point_size;
 }
 
@@ -76,7 +76,7 @@ get_point_size(void) const {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE const Colorf& PointParticleRenderer::
-get_start_color(void) const {
+get_start_color() const {
   return _start_color;
 }
 
@@ -85,7 +85,7 @@ get_start_color(void) const {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE const Colorf& PointParticleRenderer::
-get_end_color(void) const {
+get_end_color() const {
   return _end_color;
 }
 
@@ -94,7 +94,7 @@ get_end_color(void) const {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE PointParticleRenderer::PointParticleBlendType PointParticleRenderer::
-get_blend_type(void) const {
+get_blend_type() const {
   return _blend_type;
 }
 
@@ -103,6 +103,6 @@ get_blend_type(void) const {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE BaseParticleRenderer::ParticleRendererBlendMethod PointParticleRenderer::
-get_blend_method(void) const {
+get_blend_method() const {
   return _blend_method;
 }

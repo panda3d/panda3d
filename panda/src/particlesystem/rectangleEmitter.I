@@ -42,7 +42,7 @@ set_max_bound(const LPoint2f& vmax) {
 // Description : boundary get
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint2f RectangleEmitter::
-get_min_bound(void) const {
+get_min_bound() const {
   return _vmin;
 }
 
@@ -52,6 +52,6 @@ get_min_bound(void) const {
 // Description : boundary get
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint2f RectangleEmitter::
-get_max_bound(void) const {
+get_max_bound() const {
   return _vmax;
 }

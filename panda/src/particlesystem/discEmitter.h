@@ -46,11 +46,11 @@ private:
   virtual void assign_initial_velocity(LVector3f& vel);
 
 PUBLISHED:
-  DiscEmitter(void);
+  DiscEmitter();
   DiscEmitter(const DiscEmitter &copy);
-  virtual ~DiscEmitter(void);
+  virtual ~DiscEmitter();
 
-  virtual BaseParticleEmitter *make_copy(void);
+  virtual BaseParticleEmitter *make_copy();
 
   INLINE void set_radius(float r);
   INLINE void set_outer_angle(float o_angle);
@@ -59,12 +59,12 @@ PUBLISHED:
   INLINE void set_inner_magnitude(float i_mag);
   INLINE void set_cubic_lerping(bool clerp);
 
-  INLINE float get_radius(void) const;
-  INLINE float get_outer_angle(void) const;
-  INLINE float get_inner_angle(void) const;
-  INLINE float get_outer_magnitude(void) const;
-  INLINE float get_inner_magnitude(void) const;
-  INLINE bool get_cubic_lerping(void) const;
+  INLINE float get_radius() const;
+  INLINE float get_outer_angle() const;
+  INLINE float get_inner_angle() const;
+  INLINE float get_outer_magnitude() const;
+  INLINE float get_inner_magnitude() const;
+  INLINE bool get_cubic_lerping() const;
 };
 
 #include "discEmitter.I"

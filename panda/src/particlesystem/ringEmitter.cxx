@@ -24,7 +24,7 @@
 // Description : constructor
 ////////////////////////////////////////////////////////////////////
 RingEmitter::
-RingEmitter(void) :
+RingEmitter() :
   _radius(1.0f), _aoe(0.0f) {
 }
 
@@ -49,7 +49,7 @@ RingEmitter(const RingEmitter &copy) :
 // Description : destructor
 ////////////////////////////////////////////////////////////////////
 RingEmitter::
-~RingEmitter(void) {
+~RingEmitter() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,7 +58,7 @@ RingEmitter::
 // Description : copier
 ////////////////////////////////////////////////////////////////////
 BaseParticleEmitter *RingEmitter::
-make_copy(void) {
+make_copy() {
   return new RingEmitter(*this);
 }
 

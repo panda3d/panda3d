@@ -32,7 +32,7 @@ set_emission_type(emissionType et) {
 // Description : emission type query
 ////////////////////////////////////////////////////////////////////
 INLINE BaseParticleEmitter::emissionType BaseParticleEmitter::
-get_emission_type(void) const {
+get_emission_type() const {
   return _emission_type;
 }
 
@@ -52,7 +52,7 @@ set_explicit_launch_vector(const LVector3f& elv) {
 // Description : query for explicit emission launch vector
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3f BaseParticleEmitter::
-get_explicit_launch_vector(void) const {
+get_explicit_launch_vector() const {
   return _explicit_launch_vector;
 }
 
@@ -72,7 +72,7 @@ set_radiate_origin(const LPoint3f& ro) {
 // Description : query for explicit emission launch vector
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint3f BaseParticleEmitter::
-get_radiate_origin(void) const {
+get_radiate_origin() const {
   return _radiate_origin;
 }
 
@@ -92,7 +92,7 @@ set_amplitude(float a) {
 // Description : amplitude query
 ////////////////////////////////////////////////////////////////////
 INLINE float BaseParticleEmitter::
-get_amplitude(void) const {
+get_amplitude() const {
   return _amplitude;
 }
 
@@ -112,7 +112,7 @@ set_amplitude_spread(float as) {
 // Description : amplitude spread query
 ////////////////////////////////////////////////////////////////////
 INLINE float BaseParticleEmitter::
-get_amplitude_spread(void) const {
+get_amplitude_spread() const {
   return _amplitude_spread;
 }
 
@@ -132,6 +132,6 @@ set_offset_force(const LVector3f& of) {
 // Description : user-defined force
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3f BaseParticleEmitter::
-get_offset_force(void) const {
+get_offset_force() const {
   return _offset_force;
 }

@@ -24,7 +24,7 @@
 // Description : constructor
 ////////////////////////////////////////////////////////////////////
 BaseParticleFactory::
-BaseParticleFactory(void) {
+BaseParticleFactory() {
   _mass_base = 1.0f;
   _mass_spread = 0.0f;
 
@@ -54,7 +54,7 @@ BaseParticleFactory(const BaseParticleFactory &copy) {
 // Description : destructor
 ////////////////////////////////////////////////////////////////////
 BaseParticleFactory::
-~BaseParticleFactory(void) {
+~BaseParticleFactory() {
 }
 
 ////////////////////////////////////////////////////////////////////

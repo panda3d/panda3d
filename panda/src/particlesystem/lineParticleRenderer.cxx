@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////////////
 
 LineParticleRenderer::
-LineParticleRenderer(void) :
+LineParticleRenderer() :
   _head_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f)),
   _tail_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f)) {
   _line_primitive = new GeomLine;
@@ -74,7 +74,7 @@ LineParticleRenderer(const LineParticleRenderer& copy) :
 ////////////////////////////////////////////////////////////////////
 
 LineParticleRenderer::
-~LineParticleRenderer(void) {
+~LineParticleRenderer() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -84,7 +84,7 @@ LineParticleRenderer::
 ////////////////////////////////////////////////////////////////////
 
 BaseParticleRenderer *LineParticleRenderer::
-make_copy(void) {
+make_copy() {
   return new LineParticleRenderer(*this);
 }
 
@@ -135,7 +135,7 @@ resize_pool(int new_size) {
 ////////////////////////////////////////////////////////////////////
 
 void LineParticleRenderer::
-init_geoms(void) {
+init_geoms() {
   _line_primitive->set_num_prims(0);
 
   GeomNode *render_node = get_render_node();

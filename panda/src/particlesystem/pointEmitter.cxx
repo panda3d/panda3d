@@ -24,7 +24,7 @@
 // Description : constructor
 ////////////////////////////////////////////////////////////////////
 PointEmitter::
-PointEmitter(void) :
+PointEmitter() :
   BaseParticleEmitter() {
   _location.set(0.0f, 0.0f, 0.0f);
 }
@@ -46,7 +46,7 @@ PointEmitter(const PointEmitter &copy) :
 // Description : destructor
 ////////////////////////////////////////////////////////////////////
 PointEmitter::
-~PointEmitter(void) {
+~PointEmitter() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -55,7 +55,7 @@ PointEmitter::
 // Description : copier
 ////////////////////////////////////////////////////////////////////
 BaseParticleEmitter *PointEmitter::
-make_copy(void) {
+make_copy() {
   return new PointEmitter(*this);
 }
 

@@ -25,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ParticleSystem::
-render(void) {
+render() {
   _renderer->render(_physics_objects, _living_particles);
 }
 
@@ -37,7 +37,7 @@ render(void) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ParticleSystem::
-induce_labor(void) {
+induce_labor() {
   _tics_since_birth = _birth_rate;
 }
 
@@ -236,7 +236,7 @@ add_spawn_template(ParticleSystem *ps) {
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void ParticleSystem::
-clear_spawn_templates(void) {
+clear_spawn_templates() {
   _spawn_templates.erase(_spawn_templates.begin(),
                          _spawn_templates.end());
 }
@@ -250,7 +250,7 @@ clear_spawn_templates(void) {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE int ParticleSystem::
-get_pool_size(void) const {
+get_pool_size() const {
   return _particle_pool_size;
 }
 
@@ -259,7 +259,7 @@ get_pool_size(void) const {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE float ParticleSystem::
-get_birth_rate(void) const {
+get_birth_rate() const {
   return _birth_rate;
 }
 
@@ -268,7 +268,7 @@ get_birth_rate(void) const {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE int ParticleSystem::
-get_litter_size(void) const {
+get_litter_size() const {
   return _litter_size;
 }
 
@@ -277,7 +277,7 @@ get_litter_size(void) const {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE int ParticleSystem::
-get_litter_spread(void) const {
+get_litter_spread() const {
   return _litter_spread;
 }
 
@@ -286,7 +286,7 @@ get_litter_spread(void) const {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE BaseParticleRenderer *ParticleSystem::
-get_renderer(void) const {
+get_renderer() const {
   return _renderer;
 }
 
@@ -295,7 +295,7 @@ get_renderer(void) const {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE BaseParticleEmitter *ParticleSystem::
-get_emitter(void) const {
+get_emitter() const {
   return _emitter;
 }
 
@@ -304,7 +304,7 @@ get_emitter(void) const {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE BaseParticleFactory *ParticleSystem::
-get_factory(void) const {
+get_factory() const {
   return _factory;
 }
 
@@ -313,7 +313,7 @@ get_factory(void) const {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE int ParticleSystem::
-get_living_particles(void) const {
+get_living_particles() const {
   return _living_particles;
 }
 
@@ -322,7 +322,7 @@ get_living_particles(void) const {
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE bool ParticleSystem::
-get_active_system_flag(void) const {
+get_active_system_flag() const {
   return _active_system_flag;
 }
 
@@ -331,7 +331,7 @@ get_active_system_flag(void) const {
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE bool ParticleSystem::
-get_local_velocity_flag(void) const {
+get_local_velocity_flag() const {
   return _local_velocity_flag;
 }
 
@@ -340,7 +340,7 @@ get_local_velocity_flag(void) const {
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE bool ParticleSystem::
-get_spawn_on_death_flag(void) const {
+get_spawn_on_death_flag() const {
   return _spawn_on_death_flag;
 }
 
@@ -349,7 +349,7 @@ get_spawn_on_death_flag(void) const {
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE bool ParticleSystem::
-get_system_grows_older_flag(void) const {
+get_system_grows_older_flag() const {
   return _system_grows_older_flag;
 }
 
@@ -358,7 +358,7 @@ get_system_grows_older_flag(void) const {
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE float ParticleSystem::
-get_system_lifespan(void) const {
+get_system_lifespan() const {
   return _system_lifespan;
 }
 
@@ -367,7 +367,7 @@ get_system_lifespan(void) const {
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE float ParticleSystem::
-get_system_age(void) const {
+get_system_age() const {
   return _system_age;
 }
 
@@ -376,7 +376,7 @@ get_system_age(void) const {
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE bool ParticleSystem::
-get_i_was_spawned_flag(void) const {
+get_i_was_spawned_flag() const {
   return _i_was_spawned_flag;
 }
 
@@ -385,7 +385,7 @@ get_i_was_spawned_flag(void) const {
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *ParticleSystem::
-get_spawn_render_node(void) const {
+get_spawn_render_node() const {
   return _spawn_render_node;
 }
 
@@ -394,6 +394,6 @@ get_spawn_render_node(void) const {
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *ParticleSystem::
-get_render_parent(void) const {
+get_render_parent() const {
   return _render_parent;
 }

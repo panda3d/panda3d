@@ -27,7 +27,7 @@
 // Description : default constructor
 ////////////////////////////////////////////////////////////////////
 PointParticleFactory::
-PointParticleFactory(void) :
+PointParticleFactory() :
   BaseParticleFactory() {
 }
 
@@ -47,7 +47,7 @@ PointParticleFactory(const PointParticleFactory &copy) :
 // Description : destructor
 ////////////////////////////////////////////////////////////////////
 PointParticleFactory::
-~PointParticleFactory(void) {
+~PointParticleFactory() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -66,6 +66,6 @@ populate_child_particle(BaseParticle *bp) const {
 // Description : child particle generation function
 ////////////////////////////////////////////////////////////////////
 BaseParticle *PointParticleFactory::
-alloc_particle(void) const {
+alloc_particle() const {
   return new PointParticle;
 }

@@ -42,7 +42,7 @@ set_endpoint2(const LPoint3f& point) {
 // Description : endpoint accessor
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint3f LineEmitter::
-get_endpoint1(void) const {
+get_endpoint1() const {
   return _endpoint1;
 }
 
@@ -52,6 +52,6 @@ get_endpoint1(void) const {
 // Description : endpoint accessor
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint3f LineEmitter::
-get_endpoint2(void) const {
+get_endpoint2() const {
   return _endpoint2;
 }

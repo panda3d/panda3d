@@ -28,17 +28,17 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS LineEmitter : public BaseParticleEmitter {
 PUBLISHED:
-  LineEmitter(void);
+  LineEmitter();
   LineEmitter(const LineEmitter &copy);
-  virtual ~LineEmitter(void);
+  virtual ~LineEmitter();
 
-  virtual BaseParticleEmitter *make_copy(void);
+  virtual BaseParticleEmitter *make_copy();
 
   INLINE void set_endpoint1(const LPoint3f& point);
   INLINE void set_endpoint2(const LPoint3f& point);
 
-  INLINE LPoint3f get_endpoint1(void) const;
-  INLINE LPoint3f get_endpoint2(void) const;
+  INLINE LPoint3f get_endpoint1() const;
+  INLINE LPoint3f get_endpoint2() const;
   
   virtual void output(ostream &out, unsigned int indent=0) const;
 

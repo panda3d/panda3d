@@ -24,7 +24,7 @@
 // Description : constructor
 ////////////////////////////////////////////////////////////////////
 LineEmitter::
-LineEmitter(void) :
+LineEmitter() :
   BaseParticleEmitter() {
   _endpoint1.set(1.0f, 0.0f, 0.0f);
   _endpoint2.set(0.0f, 0.0f, 0.0f);
@@ -48,7 +48,7 @@ LineEmitter(const LineEmitter &copy) :
 // Description : constructor
 ////////////////////////////////////////////////////////////////////
 LineEmitter::
-~LineEmitter(void) {
+~LineEmitter() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -57,7 +57,7 @@ LineEmitter::
 // Description : copier
 ////////////////////////////////////////////////////////////////////
 BaseParticleEmitter *LineEmitter::
-make_copy(void) {
+make_copy() {
   return new LineEmitter(*this);
 }
 

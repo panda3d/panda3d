@@ -24,7 +24,7 @@
 // Description : constructor
 ////////////////////////////////////////////////////////////////////
 DiscEmitter::
-DiscEmitter(void) {
+DiscEmitter() {
   _radius = 1.0f;
   _inner_aoe = _outer_aoe = 0.0f;
   _inner_magnitude = _outer_magnitude = 1.0f;
@@ -57,7 +57,7 @@ DiscEmitter(const DiscEmitter &copy) :
 // Description : destructor
 ////////////////////////////////////////////////////////////////////
 DiscEmitter::
-~DiscEmitter(void) {
+~DiscEmitter() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -66,7 +66,7 @@ DiscEmitter::
 // Description : copier
 ////////////////////////////////////////////////////////////////////
 BaseParticleEmitter *DiscEmitter::
-make_copy(void) {
+make_copy() {
   return new DiscEmitter(*this);
 }
 

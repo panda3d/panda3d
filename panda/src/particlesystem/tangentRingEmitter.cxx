@@ -24,7 +24,7 @@
 //  Description : constructor
 ////////////////////////////////////////////////////////////////////
 TangentRingEmitter::
-TangentRingEmitter(void) {
+TangentRingEmitter() {
   _radius = 1.0f;
 }
 
@@ -45,7 +45,7 @@ TangentRingEmitter(const TangentRingEmitter &copy) :
 //  Description : destructor
 ////////////////////////////////////////////////////////////////////
 TangentRingEmitter::
-~TangentRingEmitter(void) {
+~TangentRingEmitter() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -54,7 +54,7 @@ TangentRingEmitter::
 //  Description : child copier
 ////////////////////////////////////////////////////////////////////
 BaseParticleEmitter *TangentRingEmitter::
-make_copy(void) {
+make_copy() {
   return new TangentRingEmitter(*this);
 }
 

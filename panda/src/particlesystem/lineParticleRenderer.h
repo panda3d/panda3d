@@ -35,21 +35,21 @@
 
 class EXPCL_PANDAPHYSICS LineParticleRenderer : public BaseParticleRenderer {
 PUBLISHED:
-  LineParticleRenderer(void);
+  LineParticleRenderer();
   LineParticleRenderer(const LineParticleRenderer& copy);
   LineParticleRenderer(const Colorf& head,
                        const Colorf& tail,
                        ParticleRendererAlphaMode alpha_mode);
 
-  virtual ~LineParticleRenderer(void);
+  virtual ~LineParticleRenderer();
 
-  virtual BaseParticleRenderer *make_copy(void);
+  virtual BaseParticleRenderer *make_copy();
 
   INLINE void set_head_color(const Colorf& c);
   INLINE void set_tail_color(const Colorf& c);
 
-  INLINE const Colorf& get_head_color(void) const;
-  INLINE const Colorf& get_tail_color(void) const;
+  INLINE const Colorf& get_head_color() const;
+  INLINE const Colorf& get_tail_color() const;
   
   virtual void output(ostream &out, unsigned int indent=0) const;
 
@@ -68,7 +68,7 @@ private:
 
   virtual void birth_particle(int index);
   virtual void kill_particle(int index);
-  virtual void init_geoms(void);
+  virtual void init_geoms();
   virtual void render(pvector< PT(PhysicsObject) >& po_vector,
                       int ttl_particles);
   virtual void resize_pool(int new_size);

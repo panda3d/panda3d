@@ -39,7 +39,7 @@ set_final_orientation(const LOrientationf &o) {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 LOrientationf OrientedParticleFactory::
-get_initial_orientation(void) const {
+get_initial_orientation() const {
   return _initial_orientation;
 }
 
@@ -48,6 +48,6 @@ get_initial_orientation(void) const {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 LOrientationf OrientedParticleFactory::
-get_final_orientation(void) const {
+get_final_orientation() const {
   return _final_orientation;
 }

@@ -26,7 +26,7 @@
 // Description : constructor
 ////////////////////////////////////////////////////////////////////
 BaseParticleEmitter::
-BaseParticleEmitter(void) {
+BaseParticleEmitter() {
   _emission_type = ET_RADIATE;
   _explicit_launch_vector.set(1,0,0);
   _radiate_origin.set(0,0,0);
@@ -56,7 +56,7 @@ BaseParticleEmitter(const BaseParticleEmitter &copy) {
 // Description : destructor
 ////////////////////////////////////////////////////////////////////
 BaseParticleEmitter::
-~BaseParticleEmitter(void) {
+~BaseParticleEmitter() {
 }
 
 ////////////////////////////////////////////////////////////////////

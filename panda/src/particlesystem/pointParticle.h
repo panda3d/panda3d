@@ -30,13 +30,13 @@ class EXPCL_PANDAPHYSICS PointParticle : public BaseParticle {
 public:
   PointParticle(int lifespan = 0, bool alive = false);
   PointParticle(const PointParticle &copy);
-  virtual ~PointParticle(void);
+  virtual ~PointParticle();
 
-  virtual void init(void);
-  virtual void die(void);
-  virtual void update(void);
+  virtual void init();
+  virtual void die();
+  virtual void update();
 
-  virtual PhysicsObject *make_copy(void) const;
+  virtual PhysicsObject *make_copy() const;
 };
 
 #endif // POINTPARTICLE_H

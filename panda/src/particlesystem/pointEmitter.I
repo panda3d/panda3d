@@ -27,6 +27,6 @@ set_location(const LPoint3f& p) {
 }
 
 INLINE LPoint3f PointEmitter::
-get_location(void) const {
+get_location() const {
   return _location;
 }

@@ -22,7 +22,7 @@
 // Description : Query the geomnode pointer
 ////////////////////////////////////////////////////////////////////
 INLINE GeomNode *BaseParticleRenderer::
-get_render_node(void) const {
+get_render_node() const {
   return _render_node;
 }
 
@@ -41,7 +41,7 @@ set_alpha_mode(BaseParticleRenderer::ParticleRendererAlphaMode am) {
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE BaseParticleRenderer::ParticleRendererAlphaMode BaseParticleRenderer::
-get_alpha_mode(void) const {
+get_alpha_mode() const {
   return _alpha_mode;
 }
 
@@ -61,7 +61,7 @@ set_user_alpha(float ua) {
 // Description : gets alpha for "user" alpha mode
 ////////////////////////////////////////////////////////////////////
 INLINE float BaseParticleRenderer::
-get_user_alpha(void) const {
+get_user_alpha() const {
   return _user_alpha;
 }
 

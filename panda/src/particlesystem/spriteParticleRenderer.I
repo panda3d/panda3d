@@ -197,7 +197,7 @@ set_alpha_disable(bool ad) {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE Texture *SpriteParticleRenderer::
-get_texture(void) const {
+get_texture() const {
   return _sprite_primitive->get_texture();
 }
 
@@ -228,7 +228,7 @@ get_ur_uv() const {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE Colorf SpriteParticleRenderer::
-get_color(void) const {
+get_color() const {
   return _color;
 }
 
@@ -237,7 +237,7 @@ get_color(void) const {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE bool SpriteParticleRenderer::
-get_x_scale_flag(void) const {
+get_x_scale_flag() const {
   return _animate_x_ratio;
 }
 
@@ -246,7 +246,7 @@ get_x_scale_flag(void) const {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE bool SpriteParticleRenderer::
-get_y_scale_flag(void) const {
+get_y_scale_flag() const {
   return _animate_y_ratio;
 }
 
@@ -255,7 +255,7 @@ get_y_scale_flag(void) const {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE bool SpriteParticleRenderer::
-get_anim_angle_flag(void) const {
+get_anim_angle_flag() const {
   return _animate_theta;
 }
 
@@ -264,7 +264,7 @@ get_anim_angle_flag(void) const {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE float SpriteParticleRenderer::
-get_initial_x_scale(void) const {
+get_initial_x_scale() const {
   return _initial_x_texel_ratio;
 }
 
@@ -273,7 +273,7 @@ get_initial_x_scale(void) const {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE float SpriteParticleRenderer::
-get_final_x_scale(void) const {
+get_final_x_scale() const {
   return _final_x_texel_ratio;
 }
 
@@ -282,7 +282,7 @@ get_final_x_scale(void) const {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE float SpriteParticleRenderer::
-get_initial_y_scale(void) const {
+get_initial_y_scale() const {
   return _initial_y_texel_ratio;
 }
 
@@ -291,7 +291,7 @@ get_initial_y_scale(void) const {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE float SpriteParticleRenderer::
-get_final_y_scale(void) const {
+get_final_y_scale() const {
   return _final_y_texel_ratio;
 }
 
@@ -300,7 +300,7 @@ get_final_y_scale(void) const {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE float SpriteParticleRenderer::
-get_nonanimated_theta(void) const {
+get_nonanimated_theta() const {
   return _theta;
 }
 
@@ -309,7 +309,7 @@ get_nonanimated_theta(void) const {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE BaseParticleRenderer::ParticleRendererBlendMethod SpriteParticleRenderer::
-get_alpha_blend_method(void) const {
+get_alpha_blend_method() const {
   return _blend_method;
 }
 
@@ -318,6 +318,6 @@ get_alpha_blend_method(void) const {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE bool SpriteParticleRenderer::
-get_alpha_disable(void) const {
+get_alpha_disable() const {
   return _sprite_primitive->get_alpha_disable();
 }

@@ -75,7 +75,7 @@ set_terminal_velocity_spread(float tvd) {
 // Description : public
 ////////////////////////////////////////////////////////////////////
 INLINE float BaseParticleFactory::
-get_lifespan_base(void) const {
+get_lifespan_base() const {
   return _lifespan_base;
 }
 
@@ -84,7 +84,7 @@ get_lifespan_base(void) const {
 // Description : public
 ////////////////////////////////////////////////////////////////////
 INLINE float BaseParticleFactory::
-get_lifespan_spread(void) const {
+get_lifespan_spread() const {
   return _lifespan_spread;
 }
 
@@ -93,7 +93,7 @@ get_lifespan_spread(void) const {
 // Description : public
 ////////////////////////////////////////////////////////////////////
 INLINE float BaseParticleFactory::
-get_mass_base(void) const {
+get_mass_base() const {
   return _mass_base;
 }
 
@@ -102,7 +102,7 @@ get_mass_base(void) const {
 // Description : public
 ////////////////////////////////////////////////////////////////////
 INLINE float BaseParticleFactory::
-get_mass_spread(void) const {
+get_mass_spread() const {
   return _mass_spread;
 }
 
@@ -111,7 +111,7 @@ get_mass_spread(void) const {
 // Description : public
 ////////////////////////////////////////////////////////////////////
 INLINE float BaseParticleFactory::
-get_terminal_velocity_base(void) const {
+get_terminal_velocity_base() const {
   return _terminal_velocity_base;
 }
 
@@ -120,7 +120,7 @@ get_terminal_velocity_base(void) const {
 // Description : public
 ////////////////////////////////////////////////////////////////////
 INLINE float BaseParticleFactory::
-get_terminal_velocity_spread(void) const {
+get_terminal_velocity_spread() const {
   return _terminal_velocity_spread;
 }
 

@@ -45,11 +45,11 @@ private:
   virtual void populate_child_particle(BaseParticle *bp) const = 0;
 
 protected:
-  BaseParticleFactory(void);
+  BaseParticleFactory();
   BaseParticleFactory(const BaseParticleFactory &copy);
 
 PUBLISHED:
-  virtual ~BaseParticleFactory(void);
+  virtual ~BaseParticleFactory();
 
   INLINE void set_lifespan_base(float lb);
   INLINE void set_lifespan_spread(float ls);
@@ -58,14 +58,14 @@ PUBLISHED:
   INLINE void set_terminal_velocity_base(float tvb);
   INLINE void set_terminal_velocity_spread(float tvs);
 
-  INLINE float get_lifespan_base(void) const;
-  INLINE float get_lifespan_spread(void) const;
-  INLINE float get_mass_base(void) const;
-  INLINE float get_mass_spread(void) const;
-  INLINE float get_terminal_velocity_base(void) const;
-  INLINE float get_terminal_velocity_spread(void) const;
+  INLINE float get_lifespan_base() const;
+  INLINE float get_lifespan_spread() const;
+  INLINE float get_mass_base() const;
+  INLINE float get_mass_spread() const;
+  INLINE float get_terminal_velocity_base() const;
+  INLINE float get_terminal_velocity_spread() const;
 
-  virtual BaseParticle *alloc_particle(void) const = 0;
+  virtual BaseParticle *alloc_particle() const = 0;
 
   void populate_particle(BaseParticle* bp);
 };

@@ -27,7 +27,7 @@
 // Description : Default Constructor
 ////////////////////////////////////////////////////////////////////
 SparkleParticleRenderer::
-SparkleParticleRenderer(void) :
+SparkleParticleRenderer() :
   BaseParticleRenderer(PR_ALPHA_NONE),
   _center_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f)),
   _edge_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f)),
@@ -79,7 +79,7 @@ SparkleParticleRenderer(const SparkleParticleRenderer& copy) :
 // Description : Destructor
 ////////////////////////////////////////////////////////////////////
 SparkleParticleRenderer::
-~SparkleParticleRenderer(void) {
+~SparkleParticleRenderer() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -88,7 +88,7 @@ SparkleParticleRenderer::
 // Description : child virtual for spawning systems
 ////////////////////////////////////////////////////////////////////
 BaseParticleRenderer *SparkleParticleRenderer::
-make_copy(void) {
+make_copy() {
   return new SparkleParticleRenderer(*this);
 }
 
@@ -135,7 +135,7 @@ resize_pool(int new_size) {
 // Description : initializes the geomnodes
 ////////////////////////////////////////////////////////////////////
 void SparkleParticleRenderer::
-init_geoms(void) {
+init_geoms() {
   _line_primitive->set_num_prims(0);
 
   GeomNode *render_node = get_render_node();

@@ -38,31 +38,31 @@ private:
   bool  _bUseAngularVelocity;
 
 public:
-  ZSpinParticle(void);
+  ZSpinParticle();
   ZSpinParticle(const ZSpinParticle &copy);
-  virtual ~ZSpinParticle(void);
+  virtual ~ZSpinParticle();
 
-  virtual PhysicsObject *make_copy(void) const;
+  virtual PhysicsObject *make_copy() const;
 
-  virtual void init(void);
-  virtual void update(void);
-  virtual void die(void);
+  virtual void init();
+  virtual void update();
+  virtual void die();
 
-  virtual float get_theta(void) const;
+  virtual float get_theta() const;
 
   INLINE void set_initial_angle(float t);
-  INLINE float get_initial_angle(void) const;
+  INLINE float get_initial_angle() const;
 
   INLINE void set_final_angle(float t);
-  INLINE float get_final_angle(void) const;
+  INLINE float get_final_angle() const;
 
   // 'set_final_angle' and 'angular_velocity' are mutually exclusive apis
   // if angular-velocity is specified, final_angle is ignored
   INLINE void  set_angular_velocity(float v);
-  INLINE float get_angular_velocity(void) const;
+  INLINE float get_angular_velocity() const;
 
   INLINE void enable_angular_velocity(bool bEnabled);
-  INLINE bool get_angular_velocity_enabled(void) const;
+  INLINE bool get_angular_velocity_enabled() const;
 };
 
 #include "zSpinParticle.I"

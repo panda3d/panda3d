@@ -51,9 +51,9 @@ PUBLISHED:
                         const Colorf& sc = Colorf(1.0f, 1.0f, 1.0f, 1.0f),
                         const Colorf& ec = Colorf(1.0f, 1.0f, 1.0f, 1.0f));
 
-  virtual ~PointParticleRenderer(void);
+  virtual ~PointParticleRenderer();
 
-  virtual BaseParticleRenderer *make_copy(void);
+  virtual BaseParticleRenderer *make_copy();
 
   INLINE void set_point_size(float point_size);
   INLINE void set_start_color(const Colorf& sc);
@@ -61,11 +61,11 @@ PUBLISHED:
   INLINE void set_blend_type(PointParticleBlendType bt);
   INLINE void set_blend_method(ParticleRendererBlendMethod bm);
 
-  INLINE float get_point_size(void) const;
-  INLINE const Colorf& get_start_color(void) const;
-  INLINE const Colorf& get_end_color(void) const;
-  INLINE PointParticleBlendType get_blend_type(void) const;
-  INLINE ParticleRendererBlendMethod get_blend_method(void) const;
+  INLINE float get_point_size() const;
+  INLINE const Colorf& get_start_color() const;
+  INLINE const Colorf& get_end_color() const;
+  INLINE PointParticleBlendType get_blend_type() const;
+  INLINE ParticleRendererBlendMethod get_blend_method() const;
 
 private:
   Colorf _start_color, _end_color;
@@ -87,7 +87,7 @@ private:
 
   virtual void birth_particle(int index);
   virtual void kill_particle(int index);
-  virtual void init_geoms(void);
+  virtual void init_geoms();
   virtual void render(pvector< PT(PhysicsObject) >& po_vector,
                       int ttl_particles);
   virtual void resize_pool(int new_size);

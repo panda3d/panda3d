@@ -43,17 +43,17 @@ private:
   virtual void assign_initial_velocity(LVector3f& vel);
 
 PUBLISHED:
-  RingEmitter(void);
+  RingEmitter();
   RingEmitter(const RingEmitter &copy);
-  virtual ~RingEmitter(void);
+  virtual ~RingEmitter();
 
-  virtual BaseParticleEmitter *make_copy(void);
+  virtual BaseParticleEmitter *make_copy();
 
   INLINE void set_radius(float r);
   INLINE void set_angle(float angle);
 
-  INLINE float get_radius(void) const;
-  INLINE float get_angle(void) const;
+  INLINE float get_radius() const;
+  INLINE float get_angle() const;
 };
 
 #include "ringEmitter.I"

@@ -43,11 +43,11 @@ PUBLISHED:
   ParticleSystemManager(int every_nth_frame = 1);
 
   INLINE void set_frame_stepping(int every_nth_frame);
-  INLINE int get_frame_stepping(void) const;
+  INLINE int get_frame_stepping() const;
 
   INLINE void attach_particlesystem(ParticleSystem *ps);
   void remove_particlesystem(ParticleSystem *ps);
-  INLINE void clear(void);
+  INLINE void clear();
 
   void do_particles(float dt);
 };

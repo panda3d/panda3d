@@ -24,7 +24,7 @@
 // Description : constructor
 ////////////////////////////////////////////////////////////////////
 SphereVolumeEmitter::
-SphereVolumeEmitter(void) {
+SphereVolumeEmitter() {
   _radius = 1.0f;
 }
 
@@ -46,7 +46,7 @@ SphereVolumeEmitter(const SphereVolumeEmitter &copy) :
 // Description : destructor
 ////////////////////////////////////////////////////////////////////
 SphereVolumeEmitter::
-~SphereVolumeEmitter(void) {
+~SphereVolumeEmitter() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -55,7 +55,7 @@ SphereVolumeEmitter::
 // Description : copier
 ////////////////////////////////////////////////////////////////////
 BaseParticleEmitter *SphereVolumeEmitter::
-make_copy(void) {
+make_copy() {
   return new SphereVolumeEmitter(*this);
 }
 

@@ -51,9 +51,9 @@ private:
   int sanity_check();
 #endif
 
-  bool birth_particle(void);
+  bool birth_particle();
   void kill_particle(int pool_index);
-  void birth_litter(void);
+  void birth_litter();
   void resize_pool(int size);
 
   pdeque< int > _free_particle_fifo;
@@ -100,7 +100,7 @@ PUBLISHED:
 
   ParticleSystem(int pool_size = 0);
   ParticleSystem(const ParticleSystem& copy);
-  ~ParticleSystem(void);
+  ~ParticleSystem();
 
   // access/queries
   INLINE void set_pool_size(int size);
@@ -120,33 +120,33 @@ PUBLISHED:
   INLINE void set_emitter(BaseParticleEmitter *e);
   INLINE void set_factory(BaseParticleFactory *f);
 
-  INLINE int get_pool_size(void) const;
-  INLINE float get_birth_rate(void) const;
-  INLINE int get_litter_size(void) const;
-  INLINE int get_litter_spread(void) const;
-  INLINE bool get_local_velocity_flag(void) const;
-  INLINE bool get_system_grows_older_flag(void) const;
-  INLINE float get_system_lifespan(void) const;
-  INLINE float get_system_age(void) const;
-  INLINE bool get_active_system_flag(void) const;
-  INLINE bool get_spawn_on_death_flag(void) const;
-  INLINE PandaNode *get_spawn_render_node(void) const;
-  INLINE bool get_i_was_spawned_flag(void) const;
-  INLINE int get_living_particles(void) const;
-  INLINE PandaNode *get_render_parent(void) const;
-  INLINE BaseParticleRenderer *get_renderer(void) const;
-  INLINE BaseParticleEmitter *get_emitter(void) const;
-  INLINE BaseParticleFactory *get_factory(void) const;
+  INLINE int get_pool_size() const;
+  INLINE float get_birth_rate() const;
+  INLINE int get_litter_size() const;
+  INLINE int get_litter_spread() const;
+  INLINE bool get_local_velocity_flag() const;
+  INLINE bool get_system_grows_older_flag() const;
+  INLINE float get_system_lifespan() const;
+  INLINE float get_system_age() const;
+  INLINE bool get_active_system_flag() const;
+  INLINE bool get_spawn_on_death_flag() const;
+  INLINE PandaNode *get_spawn_render_node() const;
+  INLINE bool get_i_was_spawned_flag() const;
+  INLINE int get_living_particles() const;
+  INLINE PandaNode *get_render_parent() const;
+  INLINE BaseParticleRenderer *get_renderer() const;
+  INLINE BaseParticleEmitter *get_emitter() const;
+  INLINE BaseParticleFactory *get_factory() const;
 
   // particle template vector
 
   INLINE void add_spawn_template(ParticleSystem *ps);
-  INLINE void clear_spawn_templates(void);
+  INLINE void clear_spawn_templates();
 
   // methods
 
-  INLINE void render(void);
-  INLINE void induce_labor(void);
+  INLINE void render();
+  INLINE void induce_labor();
   void update(float dt);
 
 public:

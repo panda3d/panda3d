@@ -43,7 +43,7 @@ PUBLISHED:
     SP_SCALE
   };
 
-  SparkleParticleRenderer(void);
+  SparkleParticleRenderer();
   SparkleParticleRenderer(const SparkleParticleRenderer& copy);
   SparkleParticleRenderer(const Colorf& center,
                           const Colorf& edge,
@@ -52,9 +52,9 @@ PUBLISHED:
                           SparkleParticleLifeScale life_scale,
                           ParticleRendererAlphaMode alpha_mode);
 
-  virtual ~SparkleParticleRenderer(void);
+  virtual ~SparkleParticleRenderer();
 
-  virtual BaseParticleRenderer *make_copy(void);
+  virtual BaseParticleRenderer *make_copy();
 
   INLINE void set_center_color(const Colorf& c);
   INLINE void set_edge_color(const Colorf& c);
@@ -62,11 +62,11 @@ PUBLISHED:
   INLINE void set_death_radius(float radius);
   INLINE void set_life_scale(SparkleParticleLifeScale);
 
-  INLINE const Colorf& get_center_color(void) const;
-  INLINE const Colorf& get_edge_color(void) const;
-  INLINE float get_birth_radius(void) const;
-  INLINE float get_death_radius(void) const;
-  INLINE SparkleParticleLifeScale get_life_scale(void) const;
+  INLINE const Colorf& get_center_color() const;
+  INLINE const Colorf& get_edge_color() const;
+  INLINE float get_birth_radius() const;
+  INLINE float get_death_radius() const;
+  INLINE SparkleParticleLifeScale get_life_scale() const;
 
 private:
 
@@ -90,7 +90,7 @@ private:
 
   virtual void birth_particle(int index);
   virtual void kill_particle(int index);
-  virtual void init_geoms(void);
+  virtual void init_geoms();
   virtual void render(pvector< PT(PhysicsObject) >& po_vector,
                       int ttl_particles);
   virtual void resize_pool(int new_size);

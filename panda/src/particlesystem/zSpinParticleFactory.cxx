@@ -25,7 +25,7 @@
 // Description : constructor
 ////////////////////////////////////////////////////////////////////
 ZSpinParticleFactory::
-ZSpinParticleFactory(void) :
+ZSpinParticleFactory() :
   BaseParticleFactory() {
   _initial_angle = 0.0f;
   _final_angle = 0.0f;
@@ -59,7 +59,7 @@ ZSpinParticleFactory(const ZSpinParticleFactory &copy) :
 // Description : destructor
 ////////////////////////////////////////////////////////////////////
 ZSpinParticleFactory::
-~ZSpinParticleFactory(void) {
+~ZSpinParticleFactory() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -68,7 +68,7 @@ ZSpinParticleFactory::
 // Description : factory method
 ////////////////////////////////////////////////////////////////////
 BaseParticle *ZSpinParticleFactory::
-alloc_particle(void) const {
+alloc_particle() const {
   return new ZSpinParticle;
 }
 

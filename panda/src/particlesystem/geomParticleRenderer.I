@@ -39,6 +39,6 @@ set_geom_node(PandaNode *node) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE PandaNode *GeomParticleRenderer::
-get_geom_node(void) {
+get_geom_node() {
   return _geom_node;
 }

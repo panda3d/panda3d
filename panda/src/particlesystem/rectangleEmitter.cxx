@@ -24,7 +24,7 @@
 // Description : constructor
 ////////////////////////////////////////////////////////////////////
 RectangleEmitter::
-RectangleEmitter(void) :
+RectangleEmitter() :
   BaseParticleEmitter() {
   _vmin.set(-0.5f, -0.5f);
   _vmax.set( 0.5f,  0.5f);
@@ -48,7 +48,7 @@ RectangleEmitter(const RectangleEmitter &copy) :
 // Description : destructor
 ////////////////////////////////////////////////////////////////////
 RectangleEmitter::
-~RectangleEmitter(void) {
+~RectangleEmitter() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -57,7 +57,7 @@ RectangleEmitter::
 // Description : copier
 ////////////////////////////////////////////////////////////////////
 BaseParticleEmitter *RectangleEmitter::
-make_copy(void) {
+make_copy() {
   return new RectangleEmitter(*this);
 }
 

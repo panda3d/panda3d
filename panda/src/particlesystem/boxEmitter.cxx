@@ -24,7 +24,7 @@
 // Description : constructor
 ////////////////////////////////////////////////////////////////////
 BoxEmitter::
-BoxEmitter(void) :
+BoxEmitter() :
   BaseParticleEmitter() {
   _vmin.set(-0.5f, -0.5f, -0.5f);
   _vmax.set( 0.5f,  0.5f,  0.5f);
@@ -48,7 +48,7 @@ BoxEmitter(const BoxEmitter &copy) :
 // Description : destructor
 ////////////////////////////////////////////////////////////////////
 BoxEmitter::
-~BoxEmitter(void) {
+~BoxEmitter() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -57,7 +57,7 @@ BoxEmitter::
 // Description : copier
 ////////////////////////////////////////////////////////////////////
 BaseParticleEmitter *BoxEmitter::
-make_copy(void) {
+make_copy() {
   return new BoxEmitter(*this);
 }
 

@@ -28,13 +28,13 @@
 
 class EXPCL_PANDAPHYSICS PointParticleFactory : public BaseParticleFactory {
 private:
-  virtual BaseParticle *alloc_particle(void) const;
+  virtual BaseParticle *alloc_particle() const;
   virtual void populate_child_particle(BaseParticle *bp) const;
 
 PUBLISHED:
-  PointParticleFactory(void);
+  PointParticleFactory();
   PointParticleFactory(const PointParticleFactory &copy);
-  virtual ~PointParticleFactory(void);
+  virtual ~PointParticleFactory();
 };
 
 #endif // POINTPARTICLEFACTORY_H
