@@ -16,13 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-// This file is compiled only if we have zlib installed.
+#include "pandabase.h"
+
+#ifdef HAVE_ZLIB
 
 #include "config_downloader.h"
 
 #include "error_utils.h"
 #include "filename.h"
-#include "buffer.h"
+#include "ramfile.h"
 #include "zStream.h"
 #include "config_express.h"
 
@@ -273,3 +275,5 @@ cleanup() {
     _decompress = NULL;
   }
 }
+
+#endif  // HAVE_ZLIB

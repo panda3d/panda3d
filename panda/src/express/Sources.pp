@@ -4,7 +4,7 @@
 
 #begin lib_target
   #define TARGET express
-  #define USE_PACKAGES nspr crypto net zlib
+  #define USE_PACKAGES nspr crypto net zlib ssl
   
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 
@@ -41,10 +41,13 @@
     namable.h nativeNumericData.I nativeNumericData.h \
     numeric_types.h \
     ordered_vector.h ordered_vector.I ordered_vector.T \
+    patchfile.I patchfile.h \
     pointerTo.I pointerTo.h \
     pointerToArray.I pointerToArray.h \
     profileTimer.I profileTimer.h \
-    pta_uchar.h referenceCount.I referenceCount.h \
+    pta_uchar.h \
+    ramfile.I ramfile.h \
+    referenceCount.I referenceCount.h \
     register_type.I register_type.h \
     reversedNumericData.I reversedNumericData.h \
     selectThreadImpl.h \
@@ -69,10 +72,7 @@
     virtualFileMountSystem.I virtualFileSimple.h virtualFileSimple.I \
     virtualFileSystem.h virtualFileSystem.I \
     windowsRegistry.h \
-    zStream.I zStream.h zStreamBuf.h \
-    $[if $[HAVE_CRYPTO], \
-       crypto_utils.cxx crypto_utils.h patchfile.I \
-       patchfile.cxx patchfile.h ]
+    zStream.I zStream.h zStreamBuf.h
 
   #define INCLUDED_SOURCES  \
     atomicAdjust.cxx atomicAdjustDummyImpl.cxx atomicAdjustNsprImpl.cxx \
@@ -90,8 +90,11 @@
     namable.cxx \
     nativeNumericData.cxx \
     ordered_vector.cxx \
+    patchfile.cxx \
     profileTimer.cxx \
-    pta_uchar.cxx referenceCount.cxx register_type.cxx \
+    pta_uchar.cxx \
+    ramfile.cxx \
+    referenceCount.cxx register_type.cxx \
     reversedNumericData.cxx \
     streamReader.cxx streamWriter.cxx \
     stringDecoder.cxx \
@@ -141,7 +144,9 @@
     ordered_vector.h ordered_vector.I ordered_vector.T \
     patchfile.I patchfile.h pointerTo.I pointerTo.h \
     pointerToArray.I pointerToArray.h profileTimer.I \
-    profileTimer.h pta_uchar.h referenceCount.I referenceCount.h \
+    profileTimer.h pta_uchar.h \
+    ramfile.I ramfile.h \
+    referenceCount.I referenceCount.h \
     register_type.I register_type.h \
     reversedNumericData.I reversedNumericData.h \
     selectThreadImpl.h \

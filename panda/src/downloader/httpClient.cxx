@@ -128,6 +128,13 @@ HTTPClient() {
     }
   }
 
+  _client_certificate_filename = http_client_certificate_filename;
+  _client_certificate_passphrase = http_client_certificate_passphrase;
+
+  _client_certificate_loaded = false;
+  _client_certificate_pub = NULL;
+  _client_certificate_priv = NULL;
+
   // The first time we create an HTTPClient, we must initialize the
   // OpenSSL library.
   if (!_ssl_initialized) {
@@ -190,6 +197,8 @@ HTTPClient::
 
   // Free all of the expected server definitions.
   clear_expected_servers();
+
+  unload_client_certificate();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -597,6 +606,93 @@ get_username(const string &server, const string &realm) const {
     return (*ui).second;
   }
   return string();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::load_client_certificate
+//       Access: Published
+//  Description: Attempts to load the certificate named by
+//               set_client_certificate_filename() immediately, and
+//               returns true if successful, false otherwise.
+//
+//               Normally this need not be explicitly called, since it
+//               will be called automatically if the server requests a
+//               certificate, but it may be useful to determine ahead
+//               of time if the certificate can be loaded correctly.
+////////////////////////////////////////////////////////////////////
+bool HTTPClient::
+load_client_certificate() {
+  if (!_client_certificate_loaded) {
+    _client_certificate_loaded = true;
+
+    if (!_client_certificate_filename.empty()) {
+      _client_certificate_filename.set_text();
+
+      // First, read the complete file into memory.
+      VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+      if (!vfs->read_file(_client_certificate_filename, 
+                          _client_certificate_pem)) {
+        // Could not find or read file.
+        downloader_cat.warning()
+          << "Could not read " << _client_certificate_filename << ".\n";
+        return false;
+      }
+    }
+
+    // Create an in-memory BIO to read the "file" from the memory
+    // buffer, and call the low-level routines to read the
+    // keys from the BIO.
+    BIO *mbio = BIO_new_mem_buf((void *)_client_certificate_pem.data(), 
+                                _client_certificate_pem.length());
+
+    ERR_clear_error();
+    _client_certificate_priv = 
+      PEM_read_bio_PrivateKey(mbio, NULL, NULL, 
+                              (char *)_client_certificate_passphrase.c_str());
+
+    // Rewind the "file" to the beginning in order to read the public
+    // key (which might appear first in the file).
+    BIO_reset(mbio);
+
+    ERR_clear_error();
+    _client_certificate_pub = 
+      PEM_read_bio_X509(mbio, NULL, NULL, NULL);
+
+    BIO_free(mbio);
+
+    
+    NotifySeverity sev = NS_debug;
+    string source = "memory";
+    if (!_client_certificate_filename.empty()) {
+      // Only report status to "info" severity if we have read the
+      // certificate from a file.  If it came from an in-memory image,
+      // a failure will presumably be handled by whoever set the
+      // image.
+      sev = NS_info;
+      source = _client_certificate_filename;
+    }
+
+    if (_client_certificate_priv != (EVP_PKEY *)NULL &&
+        _client_certificate_pub != (X509 *)NULL) {
+      downloader_cat.out(sev) 
+        << "Read client certificate from " << source << "\n";
+
+    } else {
+      if (_client_certificate_priv == (EVP_PKEY *)NULL) {
+        downloader_cat.out(sev)
+          << "Could not read private key from " << source << "\n";
+      }
+      
+      if (_client_certificate_pub == (X509 *)NULL) {
+        downloader_cat.out(sev)
+          << "Could not read public key from " << source << "\n";
+      }
+    }
+  }
+
+  return (_client_certificate_priv != (EVP_PKEY *)NULL &&
+          _client_certificate_pub != (X509 *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1109,6 +1205,28 @@ generate_auth(const URLSpec &url, bool is_proxy, const string &challenge) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::unload_client_certificate
+//       Access: Private
+//  Description: Frees the resources allocated by a previous call to
+//               load_client_certificate(), and marks the certificate
+//               unloaded.
+////////////////////////////////////////////////////////////////////
+void HTTPClient::
+unload_client_certificate() {
+  if (_client_certificate_priv != (EVP_PKEY *)NULL) {
+    EVP_PKEY_free(_client_certificate_priv);
+    _client_certificate_priv = NULL;
+  }
+
+  if (_client_certificate_pub != (X509 *)NULL) {
+    X509_free(_client_certificate_pub);
+    _client_certificate_pub = NULL;
+  }
+
+  _client_certificate_loaded = false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPClient::initialize_ssl
 //       Access: Private, Static
 //  Description: Called once the first time this class is used to
@@ -1207,6 +1325,14 @@ load_verify_locations(SSL_CTX *ctx, const Filename &ca_file) {
       if (downloader_cat.is_spam()) {
         downloader_cat.spam()
           << "Entry " << i << " is crl\n";
+      }
+
+    } else if (itmp->x_pkey) {
+      //      X509_STORE_add_crl(store, itmp->x_pkey);
+      //      count++;
+      if (downloader_cat.is_spam()) {
+        downloader_cat.spam()
+          << "Entry " << i << " is pkey\n";
       }
 
     } else {

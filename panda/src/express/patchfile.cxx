@@ -16,14 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "pandabase.h"
+
+#ifdef HAVE_SSL
+
 #include "config_express.h"
 #include "error_utils.h"
 #include "patchfile.h"
-#include "crypto_utils.h" // MD5 stuff
 #include "streamReader.h"
 #include "streamWriter.h"
 
 #include <stdio.h> // for tempnam
+
+#ifdef WIN32_VC
+#define tempnam _tempnam
+#endif
 
 // PROFILING ///////////////////////////////////////////////////////
 //#define PROFILE_PATCH_BUILD
@@ -200,7 +207,7 @@ initiate(const Filename &patch_file, const Filename &file) {
 
   // Open the temp file for write
   {
-    char *tempfilename = _tempnam(".", "pf");
+    char *tempfilename = tempnam(".", "pf");
     if (NULL == tempfilename) {
       express_cat.error()
         << "Patchfile::initiate() - Failed to create temp file name, using default" << endl;
@@ -356,7 +363,7 @@ run(void) {
       // check the MD5 from the patch file against the newly patched file
       {
         HashVal MD5_actual;
-        md5_a_file(_temp_file, MD5_actual);
+        MD5_actual.hash_file(_temp_file);
         if (_MD5_ofResult != MD5_actual) {
           // Whoops, patching screwed up somehow.
           _origfile_stream.close();
@@ -376,7 +383,7 @@ run(void) {
               << "No source hash in patch file to verify.\n";
           } else {
             HashVal MD5_orig;
-            md5_a_file(_orig_file, MD5_orig);
+            MD5_orig.hash_file(_orig_file);
             if (MD5_orig != get_source_hash()) {
               express_cat.info()
                 << "Started from incorrect source file.  Got:\n"
@@ -496,20 +503,14 @@ internal_read_header(const Filename &patch_file) {
     _source_file_length = patch_reader.get_uint32();
     
     // get the MD5 of the source file.
-    _MD5_ofSource.set_value(0, patch_reader.get_uint32());
-    _MD5_ofSource.set_value(1, patch_reader.get_uint32());
-    _MD5_ofSource.set_value(2, patch_reader.get_uint32());
-    _MD5_ofSource.set_value(3, patch_reader.get_uint32());
+    _MD5_ofSource.read_stream(patch_reader);
   }
 
   // get the length of the patched result file
   _result_file_length = patch_reader.get_uint32();
 
   // get the MD5 of the resultant patched file
-  _MD5_ofResult.set_value(0, patch_reader.get_uint32());
-  _MD5_ofResult.set_value(1, patch_reader.get_uint32());
-  _MD5_ofResult.set_value(2, patch_reader.get_uint32());
-  _MD5_ofResult.set_value(3, patch_reader.get_uint32());
+  _MD5_ofResult.read_stream(patch_reader);
 
   express_cat.debug()
     << "Patchfile::initiate() - valid patchfile" << endl;
@@ -530,8 +531,7 @@ PN_uint16 Patchfile::
 calc_hash(const char *buffer) {
 #ifdef USE_MD5_FOR_HASHTABLE_INDEX_VALUES
   HashVal hash;
-
-  md5_a_buffer((const unsigned char*)buffer, (int)_footprint_length, hash);
+  hash.hash_buffer(buffer, _footprint_length);
 
   //cout << PN_uint16(hash.get_value(0)) << " ";
 
@@ -869,22 +869,16 @@ build(Filename file_orig, Filename file_new, Filename patch_name) {
   patch_writer.add_uint32(_source_file_length);
   {
     // calc MD5 of original file
-    md5_a_buffer((const unsigned char*)buffer_orig, (int)_source_file_length, _MD5_ofSource);
+    _MD5_ofSource.hash_buffer(buffer_orig, _source_file_length);
     // add it to the header
-    patch_writer.add_uint32(_MD5_ofSource.get_value(0));
-    patch_writer.add_uint32(_MD5_ofSource.get_value(1));
-    patch_writer.add_uint32(_MD5_ofSource.get_value(2));
-    patch_writer.add_uint32(_MD5_ofSource.get_value(3));
+    _MD5_ofSource.write_stream(patch_writer);
   }
   patch_writer.add_uint32(_result_file_length);
   {
     // calc MD5 of resultant patched file
-    md5_a_buffer((const unsigned char*)buffer_new, (int)_result_file_length, _MD5_ofResult);
+    _MD5_ofResult.hash_buffer(buffer_new, _result_file_length);
     // add it to the header
-    patch_writer.add_uint32(_MD5_ofResult.get_value(0));
-    patch_writer.add_uint32(_MD5_ofResult.get_value(1));
-    patch_writer.add_uint32(_MD5_ofResult.get_value(2));
-    patch_writer.add_uint32(_MD5_ofResult.get_value(3));
+    _MD5_ofResult.write_stream(patch_writer);
   }
 
   END_PROFILE(writeHeader, "writing patch file header");
@@ -941,7 +935,7 @@ build(Filename file_orig, Filename file_new, Filename patch_name) {
   }
 
   // are there still more bytes left in the new file?
-  if ((int)ADD_pos != _result_file_length) {
+  if (ADD_pos != _result_file_length) {
     // emit ADD for all remaining bytes
     emit_ADD(write_stream, _result_file_length - ADD_pos, &buffer_new[ADD_pos],
              ADD_pos);
@@ -961,3 +955,4 @@ build(Filename file_orig, Filename file_new, Filename patch_name) {
   return true;
 }
 
+#endif // HAVE_SSL

@@ -23,7 +23,7 @@
 #include "identityStream.h"
 #include "config_downloader.h"
 #include "clockObject.h"
-#include "buffer.h"  // for Ramfile
+#include "ramfile.h"
 
 #ifdef HAVE_SSL
 #ifdef REPORT_OPENSSL_ERRORS
@@ -54,6 +54,7 @@ HTTPChannel(HTTPClient *client) :
   _max_updates_per_second = 1.0f / _seconds_per_update;
   _bytes_per_update = int(_max_bytes_per_second * _seconds_per_update);
   _nonblocking = false;
+
   _want_ssl = false;
   _proxy_serves_document = false;
   _proxy_tunnel_now = false;
@@ -646,6 +647,7 @@ downcase(const string &s) {
   return result;
 }
 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::reached_done_state
 //       Access: Private
@@ -1189,6 +1191,24 @@ run_setup_ssl() {
 #endif
     _state = S_failure;
     return false;
+  }
+
+  // It would be nice to use something like SSL_set_client_cert_cb()
+  // here to set a callback to provide the certificate should it be
+  // requested, or even to potentially provide any of a number of
+  // certificates according to the server's CA presented, but that
+  // interface as provided by OpenSSL is broken since there's no way
+  // to pass additional data to the callback function (and hence no
+  // way to tie it back to the HTTPChannel object, other than by
+  // building a messy mapping of SSL pointers back to HTTPChannel
+  // pointers).
+  if (_client->load_client_certificate()) {
+    SSL_use_certificate(ssl, _client->_client_certificate_pub);
+    SSL_use_PrivateKey(ssl, _client->_client_certificate_priv);
+    if (!SSL_check_private_key(ssl)) {
+      downloader_cat.warning()
+        << "Client private key does not match public key!\n";
+    }
   }
 
   if (downloader_cat.is_spam()) {

@@ -82,6 +82,11 @@ PUBLISHED:
   void set_username(const string &server, const string &realm, const string &username);
   string get_username(const string &server, const string &realm) const;
 
+  INLINE void set_client_certificate_filename(const Filename &filename);
+  INLINE void set_client_certificate_pem(const string &pem);
+  INLINE void set_client_certificate_passphrase(const string &passphrase);
+  bool load_client_certificate();
+
   INLINE void set_http_version(HTTPEnum::HTTPVersion version);
   INLINE HTTPEnum::HTTPVersion get_http_version() const;
   string get_http_version_string() const;
@@ -125,6 +130,8 @@ private:
   PT(HTTPAuthorization) generate_auth(const URLSpec &url, bool is_proxy,
                                       const string &challenge);
 
+  void unload_client_certificate();
+
   static void initialize_ssl();
   static int load_verify_locations(SSL_CTX *ctx, const Filename &ca_file);
 
@@ -158,12 +165,19 @@ private:
   typedef pmap<string, Domain> Domains;
   Domains _proxy_domains, _www_domains;
 
+  Filename _client_certificate_filename;
+  string _client_certificate_pem;
+  string _client_certificate_passphrase;
+
   // List of allowable SSL servers to connect to.  If the list is
   // empty, any server is acceptable.
   typedef pvector<X509_NAME *> ExpectedServers;
   ExpectedServers _expected_servers;
 
   SSL_CTX *_ssl_ctx;
+  bool _client_certificate_loaded;
+  X509 *_client_certificate_pub;
+  EVP_PKEY *_client_certificate_priv;
 
   static bool _ssl_initialized;
   static X509_STORE *_x509_store;

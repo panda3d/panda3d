@@ -17,15 +17,14 @@
 ////////////////////////////////////////////////////////////////////
 #ifndef PATCHFILE_H
 #define PATCHFILE_H
-//
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
+
+#include "pandabase.h"
+
+#ifdef HAVE_SSL
 
 #include "typedef.h"
-#include <notify.h>
-#include <filename.h>
+#include "notify.h"
+#include "filename.h"
 #include "plist.h"
 #include "datagram.h"
 #include "datagramIterator.h"
@@ -132,5 +131,7 @@ protected:
 };
 
 #include "patchfile.I"
+
+#endif // HAVE_SSL
 
 #endif

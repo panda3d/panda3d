@@ -4,7 +4,7 @@
 
 #begin bin_target
   #define TARGET apply_patch
-  #define BUILD_TARGET $[HAVE_CRYPTO]
+  #define BUILD_TARGET $[HAVE_SSL]
 
   #define SOURCES \
     apply_patch.cxx
@@ -15,7 +15,7 @@
 
 #begin bin_target
   #define TARGET build_patch
-  #define BUILD_TARGET $[HAVE_CRYPTO]
+  #define BUILD_TARGET $[HAVE_SSL]
 
   #define SOURCES \
     build_patch.cxx
@@ -24,7 +24,7 @@
 
 #begin bin_target
   #define TARGET show_ddb
-  #define BUILD_TARGET $[HAVE_CRYPTO]
+  #define BUILD_TARGET $[HAVE_SSL]
 
   #define SOURCES \
     show_ddb.cxx
@@ -53,7 +53,7 @@
 
 #begin bin_target
   #define TARGET check_md5
-  #define BUILD_TARGET $[HAVE_CRYPTO]
+  #define BUILD_TARGET $[HAVE_SSL]
   #define USE_PACKAGES $[USE_PACKAGES] crypto
 
   #define SOURCES \

@@ -30,11 +30,11 @@
 #include "pmap.h"
 
 #include "hashVal.h"
-#include "buffer.h"
 
 class StreamReader;
 class StreamWriter;
 typedef float Phase;
+class Ramfile;
 
 /*
 //////////////////////////////////////////////////

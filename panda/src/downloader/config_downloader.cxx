@@ -115,6 +115,17 @@ config_downloader.GetDouble("http-timeout", 20.0);
 const int http_max_connect_count =
 config_downloader.GetInt("http-max-connect-count", 10);
 
+// These provide a default client certificate to offer up should an
+// SSL server demand one.  The files references a PEM-formatted file
+// that includes a public and private key specification.  A
+// connection-specific certificate may also be specified at runtime on
+// the HTTPClient object, but this will require having a different
+// HTTPClient object for each differently-certificated connection.
+const string http_client_certificate_filename =
+config_downloader.GetString("http-client-certificate-filename", "");
+const string http_client_certificate_passphrase =
+config_downloader.GetString("http-client-certificate-passphrase", "");
+
 ConfigureFn(config_downloader) {
 #ifdef HAVE_SSL
   HTTPChannel::init_type();

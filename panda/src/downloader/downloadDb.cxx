@@ -20,6 +20,7 @@
 #include "downloadDb.h"
 #include "streamReader.h"
 #include "streamWriter.h"
+#include "ramfile.h"
 
 #include <algorithm>
 
@@ -481,11 +482,7 @@ write(ostream &out) const {
       << "    phase: " << _phase   << endl
       << "     size: " << _size    << endl
       << "   status: " << _status  << endl
-      << "     hash: [" << _hash.get_value(0)
-      << " " << _hash.get_value(1)
-      << " " << _hash.get_value(2)
-      << " " << _hash.get_value(3)
-      << "]" << endl;
+      << "     hash: " << _hash << endl;
   out << "--------------------------------------------------" << endl;
   pvector< PT(FileRecord) >::const_iterator i = _file_records.begin();
   for(; i != _file_records.end(); ++i) {
@@ -753,12 +750,7 @@ parse_mfr(const string &data) {
   mfr->_name = back_to_front_slash(mfr->_name);
   
   // Read the hash value
-  HashVal hash;
-  hash.set_value(0, di.get_uint32());
-  hash.set_value(1, di.get_uint32());
-  hash.set_value(2, di.get_uint32());
-  hash.set_value(3, di.get_uint32());
-  mfr->_hash = hash;
+  mfr->_hash.read_datagram(di);
 
   downloader_cat.debug()
     << "Parsed multifile record: " << mfr->_name << " phase: " << mfr->_phase
@@ -812,7 +804,7 @@ read(StreamReader &sr, bool want_server_info) {
   // Read the header
   string header;
   header = sr.extract_bytes(_header_length);
-  if (header.size() != _header_length) {
+  if (header.size() != (size_t)_header_length) {
     downloader_cat.error() << "truncated db file" << endl;
     return false;
   }
@@ -832,7 +824,7 @@ read(StreamReader &sr, bool want_server_info) {
     int mfr_header_length = sizeof(PN_int32);
 
     string mfr_header = sr.extract_bytes(mfr_header_length);
-    if (mfr_header.size() != mfr_header_length) {
+    if (mfr_header.size() != (size_t)mfr_header_length) {
       downloader_cat.error() << "invalid mfr header" << endl;
       return false;
     }
@@ -845,7 +837,7 @@ read(StreamReader &sr, bool want_server_info) {
     // do not count the header length twice
     int read_length = (mfr_length - mfr_header_length);
     string mfr_record = sr.extract_bytes(read_length);
-    if (mfr_record.size() != read_length) {
+    if (mfr_record.size() != (size_t)read_length) {
       downloader_cat.error() << "invalid mfr record" << endl;
       return false;
     }
@@ -864,7 +856,7 @@ read(StreamReader &sr, bool want_server_info) {
 
         // Read the header
         string fr_header = sr.extract_bytes(fr_header_length);
-        if (fr_header.size() != fr_header_length) {
+        if (fr_header.size() != (size_t)fr_header_length) {
           downloader_cat.error() << "invalid fr header" << endl;
           return false;
         }
@@ -877,7 +869,7 @@ read(StreamReader &sr, bool want_server_info) {
         int read_length = (fr_length - fr_header_length);
 
         string fr_record = sr.extract_bytes(read_length);
-        if (fr_record.size() != read_length) {
+        if (fr_record.size() != (size_t)read_length) {
           downloader_cat.error() << "invalid fr record" << endl;
           return false;
         }
@@ -914,7 +906,6 @@ write(StreamWriter &sw, bool want_server_info) {
   PN_int32 num_files;
   PN_int32 name_length;
   PN_int32 header_length;
-  HashVal hash;
 
   // Iterate over the multifiles writing them to the stream
   pvector< PT(MultifileRecord) >::const_iterator i = _mfile_records.begin();
@@ -949,11 +940,7 @@ write(StreamWriter &sw, bool want_server_info) {
     sw.add_int32(status);
     sw.add_int32(num_files);
     
-    hash = (*i)->_hash;
-    sw.add_uint32(hash.get_value(0));
-    sw.add_uint32(hash.get_value(1));
-    sw.add_uint32(hash.get_value(2));
-    sw.add_uint32(hash.get_value(3));
+    (*i)->_hash.write_stream(sw);
 
     // Only write out the file information if you are the server
     if (want_server_info) {
@@ -1217,7 +1204,6 @@ write_version_map(StreamWriter &sw) {
   VersionMap::iterator vmi;
   VectorHash::iterator i;
   string name;
-  HashVal hash;
 
   sw.add_int32(_versions.size());
   for (vmi = _versions.begin(); vmi != _versions.end(); ++vmi) {
@@ -1230,12 +1216,7 @@ write_version_map(StreamWriter &sw) {
     sw.add_int32((*vmi).second.size());
     for (i = (*vmi).second.begin(); i != (*vmi).second.end(); ++i) {
       // *i will point to a HashVal
-      hash = *i;
-      // Write out each uint separately
-      sw.add_uint32(hash.get_value(0));
-      sw.add_uint32(hash.get_value(1));
-      sw.add_uint32(hash.get_value(2));
-      sw.add_uint32(hash.get_value(3));
+      (*i).write_stream(sw);
     }
   }
 }
@@ -1279,10 +1260,7 @@ read_version_map(StreamReader &sr) {
 
     for (int j = 0; j < length; j++) {
       HashVal hash;
-      hash.set_value(0, sr.get_uint32());
-      hash.set_value(1, sr.get_uint32());
-      hash.set_value(2, sr.get_uint32());
-      hash.set_value(3, sr.get_uint32());
+      hash.read_stream(sr);
       if (sr.get_istream()->fail()) {
         return false;
       }
@@ -1306,7 +1284,7 @@ write_version_map(ostream &out) const {
     out << "  " << (*vmi).first << endl;
     for (i = (*vmi).second.begin(); i != (*vmi).second.end(); ++i) {
       HashVal hash = *i;
-      out << "    " << hash << endl;
+      out << "    " << hash.as_dec() << endl;
     }
   }
   out << endl;

@@ -15,16 +15,17 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
+
 #ifndef PATCHER_H
 #define PATCHER_H
-//
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
-#include <filename.h>
-#include <buffer.h>
-#include <patchfile.h>
+
+#include "pandabase.h"
+
+#ifdef HAVE_SSL
+
+#include "filename.h"
+#include "buffer.h"
+#include "patchfile.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Patcher
@@ -48,5 +49,7 @@ private:
 };
 
 #include "patcher.I"
+
+#endif  // HAVE_SSL
 
 #endif

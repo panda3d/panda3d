@@ -45,6 +45,52 @@ get_try_all_direct() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::set_client_certificate_filename
+//       Access: Published
+//  Description: Sets the filename of the pem-formatted file that will
+//               be read for the client public and private keys if an
+//               SSL server requests a certificate.  Either this or
+//               set_client_certificate_pem() may be used to specify a
+//               client certificate.
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPClient::
+set_client_certificate_filename(const Filename &filename) {
+  _client_certificate_filename = filename;
+  _client_certificate_pem = string();
+  unload_client_certificate();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::set_client_certificate_pem
+//       Access: Published
+//  Description: Sets the pem-formatted contents of the certificate
+//               that will be parsed for the client public and private
+//               keys if an SSL server requests a certificate.  Either
+//               this or set_client_certificate_filename() may be used
+//               to specify a client certificate.
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPClient::
+set_client_certificate_pem(const string &pem) {
+  _client_certificate_pem = pem;
+  _client_certificate_filename = Filename();
+  unload_client_certificate();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::set_client_certificate_passphrase
+//       Access: Published
+//  Description: Sets the passphrase used to decrypt the private key
+//               in the certificate named by
+//               set_client_certificate_filename() or
+//               set_client_certificate_pem().
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPClient::
+set_client_certificate_passphrase(const string &passphrase) {
+  _client_certificate_passphrase = passphrase;
+  unload_client_certificate();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPClient::set_http_version
 //       Access: Published
 //  Description: Specifies the version of HTTP that the client uses to

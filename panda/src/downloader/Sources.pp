@@ -6,8 +6,7 @@
 #begin lib_target
   #define TARGET downloader
 
-  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx \
-    $[if $[HAVE_ZLIB], $[TARGET]_composite4.cxx] \
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 
   #define SOURCES \
     config_downloader.h \
@@ -16,8 +15,10 @@
     bioStreamPtr.I bioStreamPtr.h \
     bioStream.I bioStream.h bioStreamBuf.h \
     chunkedStream.I chunkedStream.h chunkedStreamBuf.h \
+    decompressor.h \
     documentSpec.I documentSpec.h \
     downloadDb.I downloadDb.h \
+    download_utils.h \
     extractor.h \
     httpAuthorization.I httpAuthorization.h \
     httpBasicAuthorization.I httpBasicAuthorization.h \
@@ -30,10 +31,9 @@
     identityStream.I identityStream.h identityStreamBuf.h \
     multiplexStream.I multiplexStream.h \
     multiplexStreamBuf.I multiplexStreamBuf.h \
+    patcher.h patcher.I \
     socketStream.h socketStream.I \
-    urlSpec.I urlSpec.h \
-    $[if $[HAVE_ZLIB], decompressor.h download_utils.h] \
-    $[if $[HAVE_CRYPTO], patcher.cxx patcher.h patcher.I]
+    urlSpec.I urlSpec.h
     
   #define INCLUDED_SOURCES                 \
     config_downloader.cxx \
@@ -42,8 +42,10 @@
     bioStreamPtr.cxx \
     bioStream.cxx bioStreamBuf.cxx \
     chunkedStream.cxx chunkedStreamBuf.cxx \
+    decompressor.cxx \
     documentSpec.cxx \
     downloadDb.cxx \
+    download_utils.cxx \
     extractor.cxx \
     httpAuthorization.cxx \
     httpBasicAuthorization.cxx \
@@ -55,9 +57,9 @@
     httpEnum.cxx \
     identityStream.cxx identityStreamBuf.cxx \
     multiplexStream.cxx multiplexStreamBuf.cxx \
+    patcher.cxx \
     socketStream.cxx \
-    urlSpec.cxx \
-    $[if $[HAVE_ZLIB], decompressor.cxx download_utils.cxx]
+    urlSpec.cxx
 
   #define INSTALL_HEADERS \
     asyncUtility.h asyncUtility.I \

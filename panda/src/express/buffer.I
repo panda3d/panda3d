@@ -25,13 +25,3 @@ INLINE int Buffer::
 get_length(void) const {
   return _length;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: Ramfile::constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE Ramfile::
-Ramfile(void) {
-  _pos = 0;
-}

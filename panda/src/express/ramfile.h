@@ -1,4 +1,4 @@
-// Filename: buffer.cxx
+// Filename: ramfile.h
 // Created by:  mike (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,26 +16,29 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "buffer.h"
+#ifndef RAMFILE_H
+#define RAMFILE_H
+
+#include "pandabase.h"
+#include "typedef.h"
+#include "referenceCount.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Buffer::Constructor
-//       Access: Public
-//  Description:
+//       Class : Ramfile
+// Description : An in-memory buffer specifically designed for
+//               downloading files to memory.
 ////////////////////////////////////////////////////////////////////
-Buffer::
-Buffer(int size) {
-  _length = size;
-  _buffer = new char[_length];
-}
+class EXPCL_PANDAEXPRESS Ramfile {
+PUBLISHED:
+  INLINE Ramfile();
 
-////////////////////////////////////////////////////////////////////
-//     Function: Buffer::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-Buffer::
-~Buffer() {
-  delete _buffer;
-}
+  string readline();
 
+public:
+  size_t _pos;
+  string _data;
+};
+
+#include "ramfile.I"
+
+#endif

@@ -19,16 +19,20 @@
 #ifndef DOWNLOAD_UTILS_H
 #define DOWNLOAD_UTILS_H
 
-#include <pandabase.h>
-#include <filename.h>
-#include <typedef.h>
+#include "pandabase.h"
+
+#ifdef HAVE_ZLIB
+
+#include "filename.h"
 
 BEGIN_PUBLISH
 
-EXPCL_PANDAEXPRESS ulong check_crc(Filename name);
-EXPCL_PANDAEXPRESS ulong check_adler(Filename name);
+EXPCL_PANDAEXPRESS unsigned long check_crc(Filename name);
+EXPCL_PANDAEXPRESS unsigned long check_adler(Filename name);
 
 END_PUBLISH
+
+#endif  // HAVE_ZLIB
 
 #endif
 

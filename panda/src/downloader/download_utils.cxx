@@ -16,13 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-// This file is compiled only if we have zlib installed.
+#include "pandabase.h"
+
+#ifdef HAVE_ZLIB
 
 #include "download_utils.h"
 #include "config_downloader.h"
 #include <zlib.h>
 
-ulong
+unsigned long
 check_crc(Filename name) {
   ifstream read_stream;
   name.set_binary();
@@ -40,7 +42,7 @@ check_crc(Filename name) {
   read_stream.read(buffer, buffer_length);
 
   // Compute the crc
-  ulong crc = crc32(0L, Z_NULL, 0);
+  unsigned long crc = crc32(0L, Z_NULL, 0);
   crc = crc32(crc, (uchar *)buffer, buffer_length);
 
   delete buffer;
@@ -48,7 +50,7 @@ check_crc(Filename name) {
   return crc;
 }
 
-ulong
+unsigned long
 check_adler(Filename name) {
   ifstream read_stream;
   name.set_binary();
@@ -66,10 +68,12 @@ check_adler(Filename name) {
   read_stream.read(buffer, buffer_length);
 
   // Compute the adler checksum
-  ulong adler = adler32(0L, Z_NULL, 0);
+  unsigned long adler = adler32(0L, Z_NULL, 0);
   adler = adler32(adler, (uchar *)buffer, buffer_length);
 
   delete buffer;
 
   return adler;
 }
+
+#endif  // HAVE_ZLIB

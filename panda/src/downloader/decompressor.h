@@ -20,6 +20,9 @@
 #define DECOMPRESSOR_H
 
 #include "pandabase.h"
+
+#ifdef HAVE_ZLIB
+
 #include "filename.h"
 
 class Ramfile;
@@ -57,5 +60,7 @@ private:
 };
 
 #include "decompressor.I"
+
+#endif  // HAVE_ZLIB
 
 #endif

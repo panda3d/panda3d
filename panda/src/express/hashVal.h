@@ -19,36 +19,68 @@
 #ifndef HASHVAL_H
 #define HASHVAL_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include "typedef.h"
-#include <notify.h>
+#include "notify.h"
+#include "ramfile.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "streamWriter.h"
+#include "streamReader.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : HashVal
-// Description : A sixteen-byte hash value sent to the crypt library.
+// Description : Stores a 128-bit value that represents the hashed
+//               contents (typically MD5) of a file or buffer.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS HashVal {
 PUBLISHED:
   INLINE HashVal();
   INLINE HashVal(const HashVal &copy);
+  INLINE void operator = (const HashVal &copy);
 
   INLINE bool operator == (const HashVal &other) const;
   INLINE bool operator != (const HashVal &other) const;
-  INLINE uint get_value(int val) const;
-  INLINE void set_value(int val, uint hash);
-  INLINE void output(ostream &out) const;
-  string as_string() const;
+  INLINE bool operator < (const HashVal &other) const;
+  INLINE int compare_to(const HashVal &other) const;
 
-public:
-  uint hv[4];
+  INLINE void merge_with(const HashVal &other);
+
+  INLINE void output_dec(ostream &out) const;
+  INLINE void input_dec(istream &in);
+  void output_hex(ostream &out) const;
+  void input_hex(istream &in);
+
+  INLINE void output(ostream &out) const;
+
+  string as_dec() const;
+  bool set_from_dec(const string &text);
+
+  string as_hex() const;
+  bool set_from_hex(const string &text);
+
+  INLINE void write_datagram(Datagram &destination) const;
+  INLINE void read_datagram(DatagramIterator &source);
+  INLINE void write_stream(StreamWriter &destination) const;
+  INLINE void read_stream(StreamReader &source);
+
+#ifdef HAVE_SSL
+  bool hash_file(const Filename &filename);
+  INLINE void hash_ramfile(const Ramfile &ramfile);
+  INLINE void hash_string(const string &data);
+  void hash_buffer(const char *buffer, int length);
+#endif  // HAVE_SSL
+
+private:
+  static void encode_hex(unsigned int val, char *buffer);
+  static void decode_hex(const char *buffer, unsigned int &val);
+  INLINE static char tohex(unsigned int nibble);
+  INLINE static unsigned int fromhex(char digit);
+
+  PN_uint32 _hv[4];
 };
 
-INLINE ostream &operator << (ostream &out, const HashVal &hv) {
-  out << "[";
-  hv.output(out);
-  out << "]";
-  return out;
-}
+INLINE ostream &operator << (ostream &out, const HashVal &hv);
 
 #include "hashVal.I"
 

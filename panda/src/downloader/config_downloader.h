@@ -51,5 +51,7 @@ extern const bool http_proxy_tunnel;
 extern const double connect_timeout;
 extern const double http_timeout;
 extern const int http_max_connect_count;
+extern const string http_client_certificate_filename;
+extern const string http_client_certificate_passphrase;
 
 #endif
