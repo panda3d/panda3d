@@ -129,9 +129,23 @@ got_hello() {
 void WinStatsMonitor::
 got_bad_version(int client_major, int client_minor,
                 int server_major, int server_minor) {
-  cerr << "Got bad version " << client_major << "." << client_minor 
-       << " from " << get_client_progname() << " on " 
-       << get_client_hostname() << "\n";
+  ostringstream str;
+  str << "Unable to honor connection attempt from " 
+      << get_client_progname() << " on " << get_client_hostname() 
+      << ": unsupported PStats version " 
+      << client_major << "." << client_minor;
+
+  if (server_minor == 0) {
+    str << " (server understands version " << server_major
+        << "." << server_minor << " only).";
+  } else {
+    str << " (server understands versions " << server_major
+        << ".0 through " << server_major << "." << server_minor << ").";
+  }
+    
+  string message = str.str();
+  MessageBox(NULL, message.c_str(), "Bad version", 
+             MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND);
 }
 
 ////////////////////////////////////////////////////////////////////
