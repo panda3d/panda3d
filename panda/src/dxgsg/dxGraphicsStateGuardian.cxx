@@ -85,15 +85,17 @@ const int VERT_BUFFER_SIZE = (32*6*1024L);
 TypeHandle DXGraphicsStateGuardian::_type_handle;
 
 // bit masks used for drawing primitives
-#define PerTexcoord 0x8
-#define PerColor    0x4
-#define PerNormal   0x2
-#define PerCoord    0x1
+#define PER_TEXCOORD 0x8
+#define PER_COLOR    0x4
+#define PER_NORMAL   0x2
+#define PER_COORD    0x1
 
-// debugging-only flag
+// debugging-only flag to test non-optimized general geom pipe for all models
 //#define DONT_USE_DRAWPRIMSTRIDED
 
 static D3DMATRIX matIdentity;
+
+#define Colorf_to_D3DCOLOR(out_color) (D3DRGBA((out_color)[0], (out_color)[1], (out_color)[2], (out_color)[3]))
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::Constructor
@@ -475,8 +477,7 @@ clear(const RenderBuffer &buffer) {
 	if (buffer_type & RenderBuffer::T_stencil)
 		flags |=  D3DCLEAR_STENCIL;
 
-	D3DCOLOR  clear_colr = D3DRGBA(_color_clear_value[0],_color_clear_value[1],
-								   _color_clear_value[2], /*1.0*/_color_clear_value[3]);
+	D3DCOLOR  clear_colr = Colorf_to_D3DCOLOR(_color_clear_value);
 
 	HRESULT  hr = _d3dDevice->Clear(0, NULL, flags, clear_colr,
 									(D3DVALUE) _depth_clear_value, (DWORD)_stencil_clear_value);
@@ -934,6 +935,154 @@ void INLINE TestDrawPrimFailure(DP_Type dptype,HRESULT hr,LPDIRECTDRAW7 pDD) {
 #define TestDrawPrimFailure(a,b,c)
 #endif
 
+INLINE void DXGraphicsStateGuardian::
+transform_color(Colorf &InColor,D3DCOLOR &OutRGBAColor) {
+  // To be truly general, we really need a 5x5 matrix to transform a
+  // 4-component color.  Rather than messing with that, we instead
+  // treat the color as a 3-component RGB, which can be transformed by
+  // the ordinary 4x4 matrix, and a separate alpha value, which can be
+  // scaled and offsetted.
+
+	LPoint4f temp_pnt(InColor[0], InColor[1], InColor[2], 1.0f);
+	Colorf out_color = temp_pnt * _current_color_mat;  // maybe expand this out for efficiency
+	out_color[3] = (out_color[3] * _current_alpha_scale) + _current_alpha_offset;
+	OutRGBAColor = Colorf_to_D3DCOLOR(out_color);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::draw_prim_setup
+//       Access: Private
+//  Description: This adds data to the flexible vertex format
+////////////////////////////////////////////////////////////////////
+size_t DXGraphicsStateGuardian::
+draw_prim_setup(const Geom *geom) {
+	//  Set the flags for the flexible vertex format and compute the bytes
+	//  required to store a single vertex.
+
+	#ifdef _DEBUG
+	  assert(geom->get_binding(G_COORD) != G_OFF);
+	#endif
+	
+#define GET_NEXT_VERTEX() { p_vertex = geom->get_next_vertex(vi); }
+#define GET_NEXT_NORMAL() { p_normal = geom->get_next_normal(ni); }
+#define GET_NEXT_TEXCOORD() { p_texcoord = geom->get_next_texcoord(ti); }
+#define GET_NEXT_COLOR() {                                                           \
+	if(_color_transform_enabled || _alpha_transform_enabled) {                       \
+	    Colorf tempcolor = geom->get_next_color(ci);		                         \
+	    transform_color(tempcolor,p_colr);		                                     \
+	} else {                                                                         \
+		p_color = geom->get_next_color(ci);                                          \
+		p_colr = Colorf_to_D3DCOLOR(p_color);                                        \
+	}}
+
+////////
+
+	vi = geom->make_vertex_iterator();  
+	p_flags = D3DFVF_XYZ;   
+	size_t vertex_size = sizeof(D3DVALUE) * 3;  
+
+	if ((geom->get_binding(G_COLOR) != G_OFF) || _issued_color_enabled) {
+		ci = geom->make_color_iterator();
+		p_flags |= D3DFVF_DIFFUSE;   
+		vertex_size += sizeof(D3DCOLOR);  
+
+		if (geom->get_binding(G_COLOR) == G_OVERALL) {
+			GET_NEXT_COLOR();
+		}
+
+		if (_issued_color_enabled) {
+			p_colr = _issued_color;		  // set primitive color if there is one.
+			perVertex &= ~PER_COLOR;
+			perPrim &= ~PER_COLOR;
+			perComp &= ~PER_COLOR;
+		}
+	}
+
+	if (geom->get_binding(G_NORMAL) != G_OFF) {
+		ni = geom->make_normal_iterator();
+		p_flags |= D3DFVF_NORMAL;  
+		vertex_size += sizeof(D3DVALUE) * 3;  
+
+		if (geom->get_binding(G_NORMAL) == G_OVERALL)
+			p_normal = geom->get_next_normal(ni);	 // set overall normal if there is one
+	}
+
+	if (geom->get_binding(G_TEXCOORD) != G_OFF) {
+		ti = geom->make_texcoord_iterator();
+		p_flags |= (D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0));
+		vertex_size += sizeof(float) * 2;
+	}
+
+	// If we have per-vertex colors or normals, we need smooth shading.
+	// Otherwise we want flat shading for performance reasons.
+	if (perVertex & ((wants_colors() ? PER_COLOR : 0) | (wants_normals() ? PER_NORMAL : 0)))
+		set_shademode(D3DSHADE_GOURAUD);
+	else set_shademode(D3DSHADE_FLAT);
+
+	return vertex_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::draw_prim_inner_loop
+//       Access: Private
+//  Description: This adds data to the flexible vertex format with a check
+//               for component normals and color
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+draw_prim_inner_loop(int nVerts, const Geom *geom, DWORD perFlags) {
+
+	for(;nVerts > 0;nVerts--) {
+
+		GET_NEXT_VERTEX();	 // coord info will always be perVertex
+
+		switch (perFlags) {
+			case 0x3:
+				GET_NEXT_NORMAL();
+			case 0x1:
+				break;
+			case 0x5:
+			case 0x4:
+				GET_NEXT_COLOR();
+				break;
+			case 0x7:
+			case 0x6:
+				GET_NEXT_COLOR();
+			case 0x2:
+				GET_NEXT_NORMAL();
+				break;
+			case 0x9:
+			case 0x8:
+				GET_NEXT_TEXCOORD();
+				break;
+			case 0xB:
+			case 0xA:
+				GET_NEXT_NORMAL();
+				GET_NEXT_TEXCOORD();
+				break;
+			case 0xD:
+			case 0xC:
+				GET_NEXT_COLOR();
+				GET_NEXT_TEXCOORD();
+				break;
+			case 0xF:
+			case 0xE:
+				GET_NEXT_NORMAL();
+				GET_NEXT_COLOR();
+				GET_NEXT_TEXCOORD();
+				break;
+		}
+
+		add_to_FVFBuf((void *)&p_vertex, sizeof(D3DVECTOR));
+
+		if (p_flags & D3DFVF_NORMAL)
+			add_to_FVFBuf((void *)&p_normal, sizeof(D3DVECTOR));
+		if (p_flags & D3DFVF_DIFFUSE)
+			add_DWORD_to_FVFBuf(p_colr);
+		if (p_flags & D3DFVF_TEXCOUNT_MASK)
+			add_to_FVFBuf((void *)&p_texcoord, sizeof(TexCoordf));
+	}
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_point
 //       Access: Public, Virtual
@@ -997,11 +1146,11 @@ draw_point(const GeomPoint *geom) {
 	// values (may only be possible to handle certain cases without reverting to old pipeline)
 	if (GeomVrtFmt!=FlatVerts) {
 
-		perVertex = PerCoord;
+		perVertex = PER_COORD;
 		perPrim = 0;
-		if (geom->get_binding(G_COORD) == G_PER_VERTEX)	 perVertex |= PerCoord;
-		if (geom->get_binding(G_NORMAL) == G_PER_VERTEX) perVertex |= PerNormal;
-		if (geom->get_binding(G_COLOR) == G_PER_VERTEX)	perVertex |= PerColor;
+		if (geom->get_binding(G_COORD) == G_PER_VERTEX)	 perVertex |= PER_COORD;
+		if (geom->get_binding(G_NORMAL) == G_PER_VERTEX) perVertex |= PER_NORMAL;
+		if (geom->get_binding(G_COLOR) == G_PER_VERTEX)	perVertex |= PER_COLOR;
 
 		size_t vertex_size = draw_prim_setup(geom);
 
@@ -1010,7 +1159,7 @@ draw_point(const GeomPoint *geom) {
 		_pCurFvfBufPtr = _pFvfBufBasePtr;		   // _pCurFvfBufPtr changes,  _pFvfBufBasePtr doesn't
 
 		// iterate through the point
-		draw_prim_inner_loop2(nPrims, geom, perPrim);
+		draw_prim_inner_loop(nPrims, geom, perVertex | perPrim);
 
 		HRESULT hr = _d3dDevice->DrawPrimitive(D3DPT_POINTLIST, p_flags, _pFvfBufBasePtr, nPrims, NULL);
 
@@ -1024,7 +1173,7 @@ draw_point(const GeomPoint *geom) {
 			exit(1);
 		}
 	  #endif
-	} else {
+	} else {  // setup for strided
 
 		size_t vertex_size = draw_prim_setup(geom);
 
@@ -1043,17 +1192,26 @@ draw_point(const GeomPoint *geom) {
 		}
 
 		if (p_flags & D3DFVF_DIFFUSE) {
-			// Geom nodes store floats for colors, drawprim requires ARGB dwords
-			// BUGBUG: eventually this hack conversion needs to be done only once as part of a vertex buffer
 			_pCurFvfBufPtr=_pFvfBufBasePtr;
-
-			for (int i=0;i<nPrims;i++) {
-				Colorf colf=colors[i];
-				add_DWORD_to_FVFBuf(D3DRGBA(colf[0], colf[1], colf[2], colf[3]));
-			}
 
 			dps_data.diffuse.lpvData = (VOID*)_pFvfBufBasePtr;
 			dps_data.diffuse.dwStride = sizeof(D3DCOLOR);
+
+			// Geom nodes store floats for colors, drawprim requires ARGB dwords
+			// BUGBUG: eventually this hack every-frame all-colors conversion needs 
+			// to be done only once as part of a vertex buffer
+
+			if(_color_transform_enabled || _alpha_transform_enabled) {
+				for (int i=0;i<nPrims;i++) {
+					D3DCOLOR RGBA_color;
+					transform_color(colors[i],RGBA_color);
+					add_DWORD_to_FVFBuf(RGBA_color);
+				}
+			} else 
+ 			 for (int i=0;i<nPrims;i++) {
+				Colorf out_color=colors[i];
+				add_DWORD_to_FVFBuf(Colorf_to_D3DCOLOR(out_color));
+			 }
 		}
 
 		if (p_flags & D3DFVF_TEXCOUNT_MASK) {
@@ -1136,13 +1294,13 @@ draw_line(const GeomLine* geom) {
 	}
 
 	perVertex = 0;
-	if (geom->get_binding(G_COORD) == G_PER_VERTEX)	 perVertex |= PerCoord;
-	if (geom->get_binding(G_NORMAL) == G_PER_VERTEX) perVertex |= PerNormal;
-	if (geom->get_binding(G_COLOR) == G_PER_VERTEX)	perVertex |= PerColor;
+	if (geom->get_binding(G_COORD) == G_PER_VERTEX)	 perVertex |= PER_COORD;
+	if (geom->get_binding(G_NORMAL) == G_PER_VERTEX) perVertex |= PER_NORMAL;
+	if (geom->get_binding(G_COLOR) == G_PER_VERTEX)	perVertex |= PER_COLOR;
 
 	perPrim = 0;
-	if (geom->get_binding(G_NORMAL) == G_PER_PRIM) perPrim |= PerNormal;
-	if (geom->get_binding(G_COLOR) == G_PER_PRIM) perPrim |= PerColor;
+	if (geom->get_binding(G_NORMAL) == G_PER_PRIM) perPrim |= PER_NORMAL;
+	if (geom->get_binding(G_COLOR) == G_PER_PRIM) perPrim |= PER_COLOR;
 
 	size_t vertex_size = draw_prim_setup(geom);
 
@@ -1155,13 +1313,12 @@ draw_line(const GeomLine* geom) {
 	} else	_pCurFvfBufPtr = _pFvfBufBasePtr;			 // _pCurFvfBufPtr changes,  _pFvfBufBasePtr doesn't
 
 	for (int i = 0; i < nPrims; i++) {
-		if (perPrim & PerColor) {
-			p_color = geom->get_next_color(ci);		// set primitive color if there is one.
-			p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
+		if (perPrim & PER_COLOR) {
+			GET_NEXT_COLOR();
 		}
-		if (perPrim & PerNormal)
+		if (perPrim & PER_NORMAL)
 			p_normal = geom->get_next_normal(ni);	// set primitive normal if there is one.
-		draw_prim_inner_loop(2, geom);
+		draw_prim_inner_loop(2, geom, perVertex);
 	}
 
 	HRESULT hr;
@@ -1265,24 +1422,23 @@ draw_linestrip(const GeomLinestrip* geom) {
 	}
 
 	perVertex = 0;
-	if (geom->get_binding(G_COORD) == G_PER_VERTEX)	 perVertex |= PerCoord;
-	if (geom->get_binding(G_NORMAL) == G_PER_VERTEX) perVertex |= PerNormal;
-	if (geom->get_binding(G_COLOR) == G_PER_VERTEX)	perVertex |= PerColor;
+	if (geom->get_binding(G_COORD) == G_PER_VERTEX)	 perVertex |= PER_COORD;
+	if (geom->get_binding(G_NORMAL) == G_PER_VERTEX) perVertex |= PER_NORMAL;
+	if (geom->get_binding(G_COLOR) == G_PER_VERTEX)	perVertex |= PER_COLOR;
 
 	perComp = 0;
-	if (geom->get_binding(G_NORMAL) == G_PER_COMPONENT)	perComp |= PerNormal;
-	if (geom->get_binding(G_COLOR) == G_PER_COMPONENT) perComp |= PerColor;
+	if (geom->get_binding(G_NORMAL) == G_PER_COMPONENT)	perComp |= PER_NORMAL;
+	if (geom->get_binding(G_COLOR) == G_PER_COMPONENT) perComp |= PER_COLOR;
 
 	perPrim = 0;
-	if (geom->get_binding(G_NORMAL) == G_PER_PRIM) perPrim |= PerNormal;
-	if (geom->get_binding(G_COLOR) == G_PER_PRIM) perPrim |= PerColor;
+	if (geom->get_binding(G_NORMAL) == G_PER_PRIM) perPrim |= PER_NORMAL;
+	if (geom->get_binding(G_COLOR) == G_PER_PRIM) perPrim |= PER_COLOR;
 
 	size_t vertex_size = draw_prim_setup(geom);
 
 	for (int i = 0; i < nPrims; i++) {
-		if (perPrim & PerColor) {
-			p_color = geom->get_next_color(ci);		// set primitive color if there is one.
-			p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
+		if (perPrim & PER_COLOR) {
+			GET_NEXT_COLOR();
 		}
 
 		int nVerts = *(plen++);
@@ -1292,7 +1448,7 @@ draw_linestrip(const GeomLinestrip* geom) {
 		nassertv(nVerts * vertex_size < VERT_BUFFER_SIZE);
 		_pCurFvfBufPtr = _pFvfBufBasePtr;			 // _pCurFvfBufPtr changes,  _pFvfBufBasePtr doesn't
 
-		draw_prim_inner_loop2(nVerts, geom, perComp);
+		draw_prim_inner_loop(nVerts, geom, perVertex | perComp);
 
 		HRESULT hr = _d3dDevice->DrawPrimitive(D3DPT_LINESTRIP,  p_flags, _pFvfBufBasePtr, nVerts, NULL);
 	    TestDrawPrimFailure(DrawPrim,hr,_pDD);
@@ -1506,8 +1662,8 @@ draw_sprite(const GeomSprite *geom) {
 		pSpr->_v.set(cameraspace_vert[0],cameraspace_vert[1],cameraspace_vert[2]);
 
 		if (color_overall == false) {
-			v_color = geom->get_next_color(ci);
-			pSpr->_c = D3DRGBA(v_color[0], v_color[1], v_color[2], v_color[3]);
+			GET_NEXT_COLOR();
+			pSpr->_c = p_colr;
 		}
 		if (x_overall == false)
 			pSpr->_x_ratio = *x_walk++;
@@ -1552,9 +1708,9 @@ draw_sprite(const GeomSprite *geom) {
 	D3DCOLOR CurColor;
 	bool bDoColor=TRUE;
 	if (color_overall == true) {
-		v_color = geom->get_next_color(ci);
-		CurColor = D3DRGBA(v_color[0], v_color[1], v_color[2], v_color[3]);
-		bDoColor = (CurColor != ~0); 
+		GET_NEXT_COLOR();
+		CurColor = p_colr;
+		bDoColor = (p_colr != ~0); 
 	}
 
 	if (bDoColor) {
@@ -1738,205 +1894,6 @@ draw_polygon(const GeomPolygon *geom) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::draw_prim_setup
-//       Access: Private
-//  Description: This adds data to the flexible vertex format
-////////////////////////////////////////////////////////////////////
-size_t DXGraphicsStateGuardian::
-draw_prim_setup(const Geom *geom) {
-
-	//  Set the flags for the flexible vertex format and compute the bytes
-	//  required to store a single vertex.
-	p_flags = 0;
-	size_t vertex_size = 0;
-
-	if (geom->get_binding(G_COLOR) != G_OFF || _issued_color_enabled) {
-		ci = geom->make_color_iterator();
-		p_flags |= D3DFVF_DIFFUSE;   
-		vertex_size += sizeof(D3DCOLOR);  
-	}
-	if (geom->get_binding(G_COORD) != G_OFF) {
-		vi = geom->make_vertex_iterator();  
-		p_flags |= D3DFVF_XYZ;   
-		vertex_size += sizeof(D3DVALUE) * 3;  
-	}
-	if (geom->get_binding(G_NORMAL) != G_OFF) {
-		ni = geom->make_normal_iterator();
-		p_flags |= D3DFVF_NORMAL;  
-		vertex_size += sizeof(D3DVALUE) * 3;  
-	}
-	if (geom->get_binding(G_TEXCOORD) != G_OFF) {
-		ti = geom->make_texcoord_iterator();
-		p_flags |= D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0);
-		vertex_size += sizeof(float) * 2;
-	}
-
-	if (geom->get_binding(G_COLOR) == G_OVERALL) {
-		p_color = geom->get_next_color(ci);		  // set overall color if there is one
-		p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
-	}
-
-	if (geom->get_binding(G_NORMAL) == G_OVERALL)
-		p_normal = geom->get_next_normal(ni);	 // set overall normal if there is one
-
-	if (_issued_color_enabled) {
-		p_colr = _issued_color;		  // set primitive color if there is one.
-		perVertex &= ~PerColor;
-		perPrim &= ~PerColor;
-		perComp &= ~PerColor;
-	}
-
-	// If we have per-vertex colors or normals, we need smooth shading.
-	// Otherwise we want flat shading for performance reasons.
-	if (perVertex & ((wants_colors() ? PerColor : 0) | (wants_normals() ? PerNormal : 0)))
-		set_shademode(D3DSHADE_GOURAUD);
-	else set_shademode(D3DSHADE_FLAT);
-
-	return vertex_size;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::draw_prim_inner_loop
-//       Access: Private
-//  Description: This adds data to the flexible vertex format
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-draw_prim_inner_loop(int loops, const Geom *geom) {
-
-	while (--loops >= 0) {
-		switch (perVertex) {
-			case 0x3:
-				p_normal = geom->get_next_normal(ni);
-			case 0x1:
-				p_vertex = geom->get_next_vertex(vi);
-				break;
-			case 0x5:
-				p_vertex = geom->get_next_vertex(vi);
-			case 0x4:
-				p_color = geom->get_next_color(ci);
-				p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
-				break;
-			case 0x7:
-				p_vertex = geom->get_next_vertex(vi);
-			case 0x6:
-				p_color = geom->get_next_color(ci);
-				p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
-			case 0x2:
-				p_normal = geom->get_next_normal(ni);
-				break;
-			case 0x9:
-				p_vertex = geom->get_next_vertex(vi);
-			case 0x8:
-				p_texcoord = geom->get_next_texcoord(ti);
-				break;
-			case 0xB:
-				p_vertex = geom->get_next_vertex(vi);
-			case 0xA:
-				p_normal = geom->get_next_normal(ni);
-				p_texcoord = geom->get_next_texcoord(ti);
-				break;
-			case 0xD:
-				p_vertex = geom->get_next_vertex(vi);
-			case 0xC:
-				p_color = geom->get_next_color(ci);
-				p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
-				p_texcoord = geom->get_next_texcoord(ti);
-				break;
-			case 0xF:
-				p_vertex = geom->get_next_vertex(vi);
-			case 0xE:
-				p_normal = geom->get_next_normal(ni);
-				p_color = geom->get_next_color(ci);
-				p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
-				p_texcoord = geom->get_next_texcoord(ti);
-				break;
-		}
-
-		add_to_FVFBuf((void *)&p_vertex, sizeof(D3DVECTOR));
-
-		if (p_flags & D3DFVF_NORMAL)
-			add_to_FVFBuf((void *)&p_normal, sizeof(D3DVECTOR));
-		if (p_flags & D3DFVF_DIFFUSE)
-			add_DWORD_to_FVFBuf(p_colr);
-		if (p_flags & D3DFVF_TEXCOUNT_MASK)
-			add_to_FVFBuf((void *)&p_texcoord, sizeof(TexCoordf));
-	}
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::draw_prim_inner_loop2
-//       Access: Private
-//  Description: This adds data to the flexible vertex format with a check
-//               for component normals and color
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-draw_prim_inner_loop2(int loops, const Geom *geom, short& per ) {
-
-#define GET_NEXT_VERTEX() { \
-	p_vertex = geom->get_next_vertex(vi); }
-
-#define GET_NEXT_NORMAL() { \
-    p_normal = geom->get_next_normal(ni); }
-
-#define GET_NEXT_COLOR() { \
-    p_color = geom->get_next_color(ci); \
-    p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]); }
-
-#define GET_NEXT_TEXCOORD() { \
-    p_texcoord = geom->get_next_texcoord(ti); }
-
-	while (--loops >= 0) {
-
-		GET_NEXT_VERTEX();	 // coord info will always be perVertex
-
-		switch (perVertex | (DWORD)per) {
-			case 0x3:
-				GET_NEXT_NORMAL();
-			case 0x1:
-				break;
-			case 0x5:
-			case 0x4:
-				GET_NEXT_COLOR();
-				break;
-			case 0x7:
-			case 0x6:
-				GET_NEXT_COLOR();
-			case 0x2:
-				GET_NEXT_NORMAL();
-				break;
-			case 0x9:
-			case 0x8:
-				GET_NEXT_TEXCOORD();
-				break;
-			case 0xB:
-			case 0xA:
-				GET_NEXT_NORMAL();
-				GET_NEXT_TEXCOORD();
-				break;
-			case 0xD:
-			case 0xC:
-				GET_NEXT_COLOR();
-				GET_NEXT_TEXCOORD();
-				break;
-			case 0xF:
-			case 0xE:
-				GET_NEXT_NORMAL();
-				GET_NEXT_COLOR();
-				GET_NEXT_TEXCOORD();
-				break;
-		}
-
-		add_to_FVFBuf((void *)&p_vertex, sizeof(D3DVECTOR));
-
-		if (p_flags & D3DFVF_NORMAL)
-			add_to_FVFBuf((void *)&p_normal, sizeof(D3DVECTOR));
-		if (p_flags & D3DFVF_DIFFUSE)
-			add_DWORD_to_FVFBuf(p_colr);
-		if (p_flags & D3DFVF_TEXCOUNT_MASK)
-			add_to_FVFBuf((void *)&p_texcoord, sizeof(TexCoordf));
-	}
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_tri
@@ -1995,15 +1952,15 @@ draw_tri(const GeomTri *geom) {
 	if (GeomVrtFmt!=FlatVerts) {
 		// this is the old geom setup, it reformats every vtx into an output array passed to d3d
 
-		perVertex = PerCoord;
+		perVertex = PER_COORD;
 
-		if (NormalBinding == G_PER_VERTEX)	 perVertex |= PerNormal;
-		if (ColorBinding == G_PER_VERTEX)	 perVertex |= PerColor;
-		if (TexCoordBinding == G_PER_VERTEX) perVertex |= PerTexcoord;
+		if (NormalBinding == G_PER_VERTEX)	 perVertex |= PER_NORMAL;
+		if (ColorBinding == G_PER_VERTEX)	 perVertex |= PER_COLOR;
+		if (TexCoordBinding == G_PER_VERTEX) perVertex |= PER_TEXCOORD;
 
 		perPrim = 0;
-		if (NormalBinding == G_PER_PRIM) perPrim |= PerNormal;
-		if (ColorBinding == G_PER_PRIM)	 perPrim |= PerColor;
+		if (NormalBinding == G_PER_PRIM) perPrim |= PER_NORMAL;
+		if (ColorBinding == G_PER_PRIM)	 perPrim |= PER_COLOR;
 
 		size_t vertex_size = draw_prim_setup(geom);
 
@@ -2014,15 +1971,14 @@ draw_tri(const GeomTri *geom) {
 		// iterate through the triangle primitive
 
 		for (int i = 0; i < nPrims; i++) {
-			if (perPrim & PerColor) {
-				p_color = geom->get_next_color(ci);		// set primitive color if there is one.
-				p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
+			if (perPrim & PER_COLOR) {
+				GET_NEXT_COLOR();
 			}
 
-			if (perPrim & PerNormal)
+			if (perPrim & PER_NORMAL)
 				p_normal = geom->get_next_normal(ni);	// set primitive normal if there is one.
 
-			draw_prim_inner_loop(3, geom);
+			draw_prim_inner_loop(3, geom, perVertex);
 		}
 
 		hr = _d3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, p_flags, _pFvfBufBasePtr, nPrims*3, NULL);
@@ -2117,51 +2073,102 @@ draw_tri(const GeomTri *geom) {
 			dps_data.diffuse.lpvData = (VOID*)pConvertedColorArray;
 			dps_data.diffuse.dwStride = sizeof(D3DCOLOR);
 
+			// Geom nodes store floats for colors, drawprim requires ARGB dwords
+			// BUGBUG: eventually this hack every-frame all-colors conversion needs 
+			// to be done only once as part of a vertex buffer
+
+			if(_color_transform_enabled || _alpha_transform_enabled) {
+				for (int i=0;i<nPrims;i++) {
+					D3DCOLOR RGBA_color;
+					transform_color(colors[i],RGBA_color);
+					add_DWORD_to_FVFBuf(RGBA_color);
+				}
+			} else 
+ 			 for (int i=0;i<nPrims;i++) {
+				Colorf out_color=colors[i];
+				add_DWORD_to_FVFBuf(Colorf_to_D3DCOLOR(out_color));
+			 }
+
 			if (ColorBinding==G_PER_PRIM) {
 				// must use tmp array to expand per-prim info to per-vert info
 
+
+	// Geom nodes store floats for colors, drawprim requires ARGB dwords
+			// BUGBUG: eventually this hack every-frame all-colors conversion needs 
+			// to be done only once as part of a vertex buffer
+
 				// eventually want to do this conversion once in retained mode
 				if (NeededShadeMode!=D3DSHADE_FLAT) {
-					D3DCOLOR newcolr;
 					// but if lighting enabled, we need to color every vert since shading will be GOURAUD
-					for (int i=0;i<nPrims;i++,pInColor++,pOutColor+=dwVertsPerPrim) {
-						newcolr = D3DRGBA((*pInColor)[0],(*pInColor)[1],(*pInColor)[2],(*pInColor)[3]);
-						*pOutColor     = newcolr;
-						*(pOutColor+1) = newcolr;
-						*(pOutColor+2) = newcolr;
-					}
+
+					if(!(_color_transform_enabled || _alpha_transform_enabled)) {
+						for (int i=0;i<nPrims;i++,pInColor++,pOutColor+=dwVertsPerPrim) {
+							D3DCOLOR newcolr = Colorf_to_D3DCOLOR(*pInColor);
+							*pOutColor     = newcolr;
+							*(pOutColor+1) = newcolr;
+							*(pOutColor+2) = newcolr;
+						}
+					 } else {
+						for (int i=0;i<nPrims;i++,pInColor++,pOutColor+=dwVertsPerPrim) {
+							D3DCOLOR newcolr;
+							transform_color((*pInColor),newcolr);
+
+							*pOutColor     = newcolr;
+							*(pOutColor+1) = newcolr;
+							*(pOutColor+2) = newcolr;
+						}
+					} 
 				} else {
 					// dont write 2nd,3rd colors in output buffer, these are not used in flat shading
 					// MAKE SURE ShadeMode never set to GOURAUD after this!
-					for (int i=0;i<nPrims;i++,pInColor++,pOutColor+=dwVertsPerPrim) {
-						*pOutColor = D3DRGBA((*pInColor)[0],(*pInColor)[1],(*pInColor)[2],(*pInColor)[3]);
-					}
+
+					if(!(_color_transform_enabled || _alpha_transform_enabled)) {
+						for (int i=0;i<nPrims;i++,pInColor++,pOutColor+=dwVertsPerPrim) {
+							*pOutColor = Colorf_to_D3DCOLOR(*pInColor);
+						}
+					 } else {
+						for (int i=0;i<nPrims;i++,pInColor++,pOutColor+=dwVertsPerPrim) {
+							transform_color(*pInColor,*pOutColor);
+						}
+					} 
 				}
-
-
 			} else if (ColorBinding==G_PER_VERTEX) {
 				NeededShadeMode = D3DSHADE_GOURAUD;
 
 				// want to do this conversion once in retained mode
 				DWORD cNumColors=nPrims*dwVertsPerPrim;
 
-				for (int i=0;i<cNumColors;i++,pInColor++,pOutColor++) {
-					*pOutColor = D3DRGBA((*pInColor)[0],(*pInColor)[1],(*pInColor)[2],(*pInColor)[3]);
-				}
+					if(!(_color_transform_enabled || _alpha_transform_enabled)) {
+						for (int i=0;i<cNumColors;i++,pInColor++,pOutColor++) {
+							*pOutColor = Colorf_to_D3DCOLOR(*pInColor);
+						}
+					 } else {
+						for (int i=0;i<cNumColors;i++,pInColor++,pOutColor++) {
+							transform_color(*pInColor,*pOutColor);
+						}
+					} 
 			} else {
 #ifdef _DEBUG
 				nassertv(ColorBinding==G_OVERALL);
 #endif
-
 				// copy the one global color in, set stride to 0
 
-				if (bDoGlobalSceneGraphColor) {
-					Colorf colr = catt->get_color();
-					*pConvertedColorArray=D3DRGBA(colr[0],colr[1],colr[2],colr[3]);       
+				if(!(_color_transform_enabled || _alpha_transform_enabled)) {
+					if (bDoGlobalSceneGraphColor) {
+						Colorf colr = catt->get_color();
+						*pConvertedColorArray = Colorf_to_D3DCOLOR(colr);
+					} else {
+						*pConvertedColorArray = Colorf_to_D3DCOLOR(*pInColor);
+					}
 				} else {
-					*pConvertedColorArray=D3DRGBA((*pInColor)[0],(*pInColor)[1],(*pInColor)[2],(*pInColor)[3]);       
+					if (bDoGlobalSceneGraphColor) {
+						Colorf colr = catt->get_color();
+						transform_color(colr,*pConvertedColorArray);
+					} else {
+						transform_color(*pInColor,*pConvertedColorArray);
+					}
 				}
-
+						
 				dps_data.diffuse.dwStride = 0;
 			}
 		}
@@ -2279,7 +2286,6 @@ draw_quad(const GeomQuad *geom) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_tristrip(const GeomTristrip *geom) {
-//    activate();
 
 #ifdef GSG_VERBOSE
 	dxgsg_cat.debug() << "draw_tristrip()" << endl;
@@ -2295,7 +2301,6 @@ draw_tristrip(const GeomTristrip *geom) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_trifan(const GeomTrifan *geom) {
-//  activate();
 
 #ifdef GSG_VERBOSE
 	dxgsg_cat.debug() << "draw_trifan()" << endl;
@@ -2317,7 +2322,9 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 	HRESULT hr;
 
 	if (nPrims==0) {
-		dxgsg_cat.warning() << "draw_multitri() called with ZERO vertices!!" << endl;
+		#ifdef _DEBUG
+ 		  dxgsg_cat.warning() << "draw_multitri() called with ZERO vertices!!" << endl;
+		#endif
 		return;
 	}
 
@@ -2356,35 +2363,35 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 	if (GeomVrtFmt!=FlatVerts) {
 
 		// this is the old geom setup, it reformats every vtx into an output array passed to d3d
-		perVertex = PerCoord;
+		perVertex = PER_COORD;
 		perPrim = perComp = 0;
 
 		switch (geom->get_binding(G_NORMAL)) {
 			case G_PER_VERTEX:
-				perVertex |= PerNormal;
+				perVertex |= PER_NORMAL;
 				break;
 			case G_PER_PRIM:
-				perPrim |= PerNormal;
+				perPrim |= PER_NORMAL;
 				break;
 			case G_PER_COMPONENT:
-				perComp |= PerNormal;
+				perComp |= PER_NORMAL;
 				break;
 		}
 
 		switch (geom->get_binding(G_COLOR)) {
 			case G_PER_VERTEX:
-				perVertex |= PerColor;
+				perVertex |= PER_COLOR;
 				break;
 			case G_PER_PRIM:
-				perPrim |= PerColor;
+				perPrim |= PER_COLOR;
 				break;
 			case G_PER_COMPONENT:
-				perComp |= PerColor;
+				perComp |= PER_COLOR;
 				break;
 		}
 
 		if (geom->get_binding(G_TEXCOORD) == G_PER_VERTEX)
-			perVertex |= PerTexcoord;
+			perVertex |= PER_TEXCOORD;
 
 		size_t vertex_size = draw_prim_setup(geom);
 
@@ -2392,33 +2399,32 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 
 		for (int i = 0; i < nPrims; i++) {
 
-			if (perPrim & PerColor) {
-				p_color = geom->get_next_color(ci);		// set primitive color if there is one.
-				p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
+			if (perPrim & PER_COLOR) {
+				GET_NEXT_COLOR();
 			}
-
-			if (perPrim & PerNormal)
+			if (perPrim & PER_NORMAL)
 				p_normal = geom->get_next_normal(ni);	// set primitive normal if there is one.
 
 			int nVerts = *(pLengthArr++);
+#ifdef _DEBUG
 			nassertv(nVerts >= 3);
-
 			nassertv(_pCurFvfBufPtr == NULL);	 // make sure the storage pointer is clean.
 			nassertv(nVerts * vertex_size < VERT_BUFFER_SIZE);
+#endif
 			_pCurFvfBufPtr = _pFvfBufBasePtr;			 // _pCurFvfBufPtr changes,  _pFvfBufBasePtr doesn't
 
-			if (perComp & PerColor) {
-				p_color = geom->get_next_color(ci);		  // set overall color if there is one
-				p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
-			}
-			if (perComp & PerNormal)
+			// handles first triangle strip/fan
+			if (perComp & PER_COLOR) {
+				GET_NEXT_COLOR();
+			} 
+			if (perComp & PER_NORMAL)
 				p_normal = geom->get_next_normal(ni);	// set primitive normal if there is one.
 
 			// Store first triangle
-			draw_prim_inner_loop(3, geom);
+			draw_prim_inner_loop(3, geom, perVertex);
 
 			// Store remaining vertices
-			draw_prim_inner_loop2(nVerts-3, geom, perComp);
+			draw_prim_inner_loop(nVerts-3, geom, perVertex | perComp);
 
 			HRESULT hr = _d3dDevice->DrawPrimitive(trilisttype,  p_flags, _pFvfBufBasePtr, nVerts, NULL);
 			TestDrawPrimFailure(DrawPrim,hr,_pDD);
@@ -2437,7 +2443,6 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 		nassertv(geom->get_binding(G_COORD) == G_PER_VERTEX);
 #endif
 
-
 		DWORD fvf_flags = D3DFVF_XYZ;
 		dps_data.position.lpvData = (VOID*)coords;
 		dps_data.position.dwStride = sizeof(D3DVECTOR);
@@ -2452,7 +2457,7 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 
 		DWORD cNumMoreVertsthanTris=geom->get_num_more_vertices_than_components();
 
-		if ((NormalBinding != G_OFF) && wants_normals()) {
+		if((NormalBinding != G_OFF) && wants_normals()) {
 
 			dps_data.normal.lpvData = (VOID*)norms;
 			dps_data.normal.dwStride = sizeof(D3DVECTOR);
@@ -2460,17 +2465,15 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 #ifdef _DEBUG
 			nassertv(NormalBinding!=G_PER_COMPONENT); // makes no sense, unimplementable for strips since normals always shared across tris
 			nassertv( cTotalVerts*sizeof(D3DVECTOR) <= D3DMAXNUMVERTICES*sizeof(WORD)); 
-			if (NormalBinding==G_PER_VERTEX)
+			if(NormalBinding==G_PER_VERTEX)
 				nassertv(norms.size()>=cTotalVerts);
 #endif
-
 			fvf_flags |= D3DFVF_NORMAL;
-
 			NeededShadeMode = D3DSHADE_GOURAUD;
 
-			Normalf *pExpandedNormalArray = (Normalf *)_index_buf;	// BUGBUG:  need to use real permanent buffers for this conversion
+			Normalf *pExpandedNormalArray = (Normalf *)_index_buf;	// BUGBUG:  need to use real permanent buffers instead of _indexbuf hack
 
-			if (NormalBinding==G_PER_PRIM) {
+			if(NormalBinding==G_PER_PRIM) {
 				// we have 1 normal per strip
 				// must use tmp array to duplicate-expand per-prim norms to per-vert norms
 				Normalf *pOutVec = pExpandedNormalArray;
@@ -2479,14 +2482,15 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 
 				nassertv(norms.size()>=nPrims);
 
-				for (int i=0;i<nPrims;i++,pInVec++,pLengths++)
+				for (int i=0;i<nPrims;i++,pInVec++,pLengths++) {
 					for (int j=0;j<(*pLengths);j++,pOutVec++) {
 						*pOutVec = *pInVec;
 					}
+				}
 
 				dps_data.normal.lpvData = (VOID*)pExpandedNormalArray;
 
-			} else if (NormalBinding==G_OVERALL) {
+			} else if(NormalBinding==G_OVERALL) {
 				// copy the one global color in, set stride to 0
 				*pExpandedNormalArray=norms[0];
 				dps_data.normal.lpvData = (VOID*)pExpandedNormalArray;
@@ -2524,8 +2528,14 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 			if (ColorBinding==G_PER_VERTEX) {
 				NeededShadeMode = D3DSHADE_GOURAUD;
 
-				for (int i=0;i<cTotalVerts;i++,pInColor++,pOutColor++) {
-					*pOutColor = D3DRGBA((*pInColor)[0],(*pInColor)[1],(*pInColor)[2],(*pInColor)[3]);
+				if(!(_color_transform_enabled || _alpha_transform_enabled)) {
+					for (int i=0;i<cTotalVerts;i++,pInColor++,pOutColor++) {
+						*pOutColor = Colorf_to_D3DCOLOR(*pInColor);
+					}
+				} else {
+					for (int i=0;i<cTotalVerts;i++,pInColor++,pOutColor++) {
+						transform_color(*pInColor,*pOutColor);
+					}
 				}
 			} else if (ColorBinding==G_PER_PRIM) {
 				// must use tmp array to expand per-prim info to per-vert info
@@ -2533,11 +2543,23 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 				// have one color per strip, need 1 color per vert
 
 				// could save 2 clr writes per strip/fan in flat shade mode but not going to bother here
-				for (int j=0;j<nPrims;j++,pInColor++) {
-					D3DCOLOR lastcolr = D3DRGBA((*pInColor)[0],(*pInColor)[1],(*pInColor)[2],(*pInColor)[3]);
-					DWORD cStripLength=pLengthArr[j];
-					for (int i=0;i<cStripLength;i++,pOutColor++) {
-						*pOutColor = lastcolr;
+
+				if(!(_color_transform_enabled || _alpha_transform_enabled)) {
+					for (int j=0;j<nPrims;j++,pInColor++) {
+						D3DCOLOR lastcolr = Colorf_to_D3DCOLOR(*pInColor);
+						DWORD cStripLength=pLengthArr[j];
+						for (int i=0;i<cStripLength;i++,pOutColor++) {
+							*pOutColor = lastcolr;
+						}
+					}
+				} else {
+					for (int j=0;j<nPrims;j++,pInColor++) {
+						D3DCOLOR lastcolr;
+						transform_color(*pInColor,lastcolr);
+						DWORD cStripLength=pLengthArr[j];
+						for (int i=0;i<cStripLength;i++,pOutColor++) {
+							*pOutColor = lastcolr;
+						}
 					}
 				}
 			} else if (ColorBinding==G_PER_COMPONENT) {
@@ -2545,60 +2567,81 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 				// want to do this conversion once in retained mode
 				nassertv(colors.size() >= cTotalVerts-nPrims*cNumMoreVertsthanTris);
 
-				if (NeededShadeMode == D3DSHADE_FLAT) {
-					// FLAT shade mode.  for tristrips, skip writing last 2 verts.  for trifans, skip first and last verts
-					if (trilisttype==D3DPT_TRIANGLESTRIP) {
-						for (int j=0;j<nPrims;j++) {
-							DWORD cCurStripColorCnt=pLengthArr[j]-cNumMoreVertsthanTris;
-							for (int i=0;i<cCurStripColorCnt;i++,pInColor++,pOutColor++) {
-								*pOutColor = D3DRGBA((*pInColor)[0],(*pInColor)[1],(*pInColor)[2],(*pInColor)[3]);
-							}
-							pOutColor+=cNumMoreVertsthanTris;
-						}
-					} else {  // trifan
-						for (int j=0;j<nPrims;j++) {
-							DWORD cCurStripColorCnt=pLengthArr[j]-cNumMoreVertsthanTris;
-							pOutColor++;
-							for (int i=0;i<cCurStripColorCnt;i++,pInColor++,pOutColor++) {
-								*pOutColor = D3DRGBA((*pInColor)[0],(*pInColor)[1],(*pInColor)[2],(*pInColor)[3]);
-							}
-							pOutColor++;
-						}
-					}
-				} else {  // GOURAUD shademode (due to presence of normals)
-					D3DCOLOR lastcolr;
-					if (trilisttype==D3DPT_TRIANGLESTRIP) {
-						for (int j=0;j<nPrims;j++) {
-							DWORD cCurStripColorCnt=pLengthArr[j]-cNumMoreVertsthanTris;
-							for (int i=0;i<cCurStripColorCnt;i++,pInColor++,pOutColor++) {
-								*pOutColor = lastcolr = D3DRGBA((*pInColor)[0],(*pInColor)[1],(*pInColor)[2],(*pInColor)[3]);
-							}
-							*pOutColor++ = lastcolr;
-							*pOutColor++ = lastcolr;
-						}
-					} else {  // trifan
-						for (int j=0;j<nPrims;j++) {
-							DWORD cCurStripColorCnt=pLengthArr[j]-cNumMoreVertsthanTris;
-							*pOutColor++ = D3DRGBA((*pInColor)[0],(*pInColor)[1],(*pInColor)[2],(*pInColor)[3]);
-							for (int i=0;i<cCurStripColorCnt;i++,pInColor++,pOutColor++) {
-								*pOutColor = lastcolr = D3DRGBA((*pInColor)[0],(*pInColor)[1],(*pInColor)[2],(*pInColor)[3]);
-							}
-							*pOutColor++ = lastcolr;
-						}
-					}
+				#define MULTITRI_COLORCOPY_LOOP                                       \
+					DWORD cCurStripColorCnt=pLengthArr[j]-cNumMoreVertsthanTris;      \
+					for (int i=0;i<cCurStripColorCnt;i++,pInColor++,pOutColor++)
+
+				#define COLOR_CONVERT_COPY_STMT  {*pOutColor = Colorf_to_D3DCOLOR(*pInColor);}
+				#define COLOR_CONVERT_XFORM_STMT {transform_color(*pInColor,*pOutColor);}				
+
+				#define COMPONENT_COLOR_COPY_LOOPS(COLOR_COPYSTMT)  {                        \
+					if (NeededShadeMode == D3DSHADE_FLAT) {                                  \
+						/* FLAT shade mode.  for tristrips, skip writing last 2 verts.  */   \
+						/* for trifans, skip first and last verts                       */   \
+						if (trilisttype==D3DPT_TRIANGLESTRIP) {                              \
+							for (int j=0;j<nPrims;j++) {                                     \
+								MULTITRI_COLORCOPY_LOOP {                                    \
+								   COLOR_COPYSTMT;                                           \
+								}                                                            \
+								pOutColor+=cNumMoreVertsthanTris;                            \
+							}                                                                \
+						} else {  /* trifan */                								 \
+   				            for (int j=0;j<nPrims;j++) {                                     \
+				                pOutColor++;                                                 \
+								MULTITRI_COLORCOPY_LOOP {                                    \
+								   COLOR_COPYSTMT;                                           \
+								}                                                            \
+								pOutColor++;                                                 \
+							}                                                                \
+						}                                                                    \
+					} else {  /* GOURAUD shademode (due to presence of normals) */           \
+						if (trilisttype==D3DPT_TRIANGLESTRIP) {                              \
+							for (int j=0;j<nPrims;j++) {                                     \
+								MULTITRI_COLORCOPY_LOOP {                                    \
+								   COLOR_COPYSTMT;                                           \
+								}                                                            \
+								DWORD lastcolr = *(pOutColor-1);                             \
+								*pOutColor++ = lastcolr;                                     \
+								*pOutColor++ = lastcolr;                                     \
+							}                                                                \
+						} else {  /* trifan */                                               \
+							for (int j=0;j<nPrims;j++) {                                     \
+								COLOR_COPYSTMT;                                              \
+								pOutColor++;                                                 \
+								MULTITRI_COLORCOPY_LOOP {                                    \
+								   COLOR_COPYSTMT;                                           \
+								}                                                            \
+								*pOutColor++ = *(pOutColor-1);                               \
+							}                                                                \
+						}                                                                    \
+					}                                                                        \
+				  }
+				
+				if(!(_color_transform_enabled || _alpha_transform_enabled)) {
+				  COMPONENT_COLOR_COPY_LOOPS(COLOR_CONVERT_COPY_STMT);
+				} else {   
+				  COMPONENT_COLOR_COPY_LOOPS(COLOR_CONVERT_XFORM_STMT);
 				}
 			} else {
 #ifdef _DEBUG
 				nassertv(ColorBinding==G_OVERALL);
 #endif
-
 				// copy the one global color in, set stride to 0
 
-				if (bDoGlobalSceneGraphColor) {
-					Colorf colr = catt->get_color();
-					*pConvertedColorArray=D3DRGBA(colr[0],colr[1],colr[2],colr[3]);       
+				if(!(_color_transform_enabled || _alpha_transform_enabled)) {
+					if (bDoGlobalSceneGraphColor) {
+						Colorf colr = catt->get_color();
+						*pConvertedColorArray = Colorf_to_D3DCOLOR(colr);
+					} else {
+						*pConvertedColorArray = Colorf_to_D3DCOLOR(*pInColor);
+					}
 				} else {
-					*pConvertedColorArray=D3DRGBA((*pInColor)[0],(*pInColor)[1],(*pInColor)[2],(*pInColor)[3]);       
+					if (bDoGlobalSceneGraphColor) {
+						Colorf colr = catt->get_color();
+						transform_color(colr,*pConvertedColorArray);
+					} else {
+						transform_color(*pInColor,*pConvertedColorArray);
+					}
 				}
 
 				dps_data.diffuse.dwStride = 0;
@@ -2915,8 +2958,7 @@ draw_sphere(const GeomSphere *geom) {
 		_pCurFvfBufPtr = _pFvfBufBasePtr;
 
 		if (bPerPrimColor) {
-			p_color = geom->get_next_color(ci);  
-			p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
+			GET_NEXT_COLOR();
 		}
 
 		GenerateSphere(_pCurFvfBufPtr, VERT_BUFFER_SIZE,
@@ -2943,7 +2985,7 @@ void DXGraphicsStateGuardian::
 issue_color_transform(const ColorMatrixAttribute *attrib) {
 	_current_color_mat = attrib->get_matrix();
 
-	if (_current_color_mat == LMatrix4f::ident_mat()) {
+	if (_current_color_mat == LMatrix4f::ident_mat()) {  // couldnt we a single ptr instead of doing full comparison
 		_color_transform_enabled = false;
 	} else {
 		_color_transform_enabled = true;
@@ -2960,7 +3002,7 @@ issue_alpha_transform(const AlphaTransformAttribute *attrib) {
 	_current_alpha_offset= attrib->get_offset();
 	_current_alpha_scale = attrib->get_scale();
 
-	if (_current_alpha_offset == 0 && _current_alpha_scale == 1) {
+	if ((_current_alpha_offset == 0.0) && (_current_alpha_scale == 1.0)) {
 		_alpha_transform_enabled = false;
 	} else {
 		_alpha_transform_enabled = true;
@@ -4012,7 +4054,7 @@ issue_color(const ColorAttribute *attrib) {
 	if (attrib->is_on()&& attrib->is_real()) {
 		_issued_color_enabled = true;
 		Colorf c = attrib->get_color();
-		_issued_color = D3DRGBA(c[0], c[1], c[2], c[3]);
+		_issued_color = Colorf_to_D3DCOLOR(c);
 	} else _issued_color_enabled = false;
 }
 

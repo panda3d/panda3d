@@ -209,9 +209,6 @@ protected:
 
   RenderBuffer::Type _cur_read_pixel_buffer;  // source for copy_pixel_buffer operation 
 
-  bool _color_transform_enabled;
-  bool _alpha_transform_enabled;
-
   D3DDEVICEDESC7    _D3DDevDesc;
 
   void set_clipper(RECT cliprect);
@@ -256,8 +253,7 @@ protected:
   INLINE D3DSTENCILOP get_stencil_action_type(StencilProperty::Action a) const;
   INLINE D3DFOGMODE get_fog_mode_type(Fog::Mode m) const;
 
-  void draw_prim_inner_loop(int loops, const Geom *geom);
-  void draw_prim_inner_loop2(int loops, const Geom *geom, short& per);
+  void draw_prim_inner_loop(int nVerts, const Geom *geom, DWORD perFlags);
   size_t draw_prim_setup(const Geom *geom) ;
   void draw_multitri(const Geom *geom, D3DPRIMITIVETYPE tri_id);
 
@@ -359,6 +355,10 @@ protected:
 
   CPT(DisplayRegion) _actual_display_region;
 
+  // Color/Alpha Matrix Transition stuff
+  INLINE void transform_color(Colorf &InColor,D3DCOLOR &OutColor);
+  bool _color_transform_enabled;
+  bool _alpha_transform_enabled;
   LMatrix4f _current_color_mat;
   float _current_alpha_offset;
   float _current_alpha_scale;
