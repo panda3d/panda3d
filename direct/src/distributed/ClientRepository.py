@@ -52,6 +52,13 @@ class ClientRepository(DirectObject.DirectObject):
         self.bootedText = None
 
         self.tcpConn = None
+
+        # Reader statistics
+        self.rsDatagramCount = 0
+        self.rsUpdateObjs = {}
+        self.rsLastUpdate = 0
+        self.rsDoReport = base.config.GetBool('reader-statistics', 1)
+        self.rsUpdateInterval = base.config.GetDouble('reader-statistics-interval', 10)
         return None
 
     def setServerDelta(self, delta):
@@ -216,10 +223,15 @@ class ClientRepository(DirectObject.DirectObject):
             self.tcpConn.considerFlush()
         except:
             pass
+
+        if self.rsDoReport:
+            self.reportReaderStatistics()
         
         if self.connectHttp:
             datagram = Datagram()
             if self.tcpConn.receiveDatagram(datagram):
+                if self.rsDoReport:
+                    self.rsDatagramCount += 1
                 self.handleDatagram(datagram)
                 return 1
 
@@ -235,6 +247,8 @@ class ClientRepository(DirectObject.DirectObject):
             if self.qcr.dataAvailable():
                 datagram = NetDatagram()
                 if self.qcr.getData(datagram):
+                    if self.rsDoReport:
+                        self.rsDatagramCount += 1
                     self.handleDatagram(datagram)
                     return 1
             return 0
@@ -264,6 +278,19 @@ class ClientRepository(DirectObject.DirectObject):
         # This class is meant to be pure virtual, and any classes that
         # inherit from it need to make their own handleDatagram method
         pass
+
+    def reportReaderStatistics(self):
+        now = globalClock.getRealTime()
+        if now - self.rsLastUpdate < self.rsUpdateInterval:
+            return
+
+        self.rsLastUpdate = now
+        self.notify.info("Received %s datagrams" % (self.rsDatagramCount))
+        if self.rsUpdateObjs:
+            self.notify.info("Updates: %s" % (self.rsUpdateObjs))
+
+        self.rsDatagramCount = 0
+        self.rsUpdateObjs = {}
 
     def handleGenerateWithRequired(self, di):
         # Get the class Id
@@ -471,7 +498,10 @@ class ClientRepository(DirectObject.DirectObject):
         # Get the DO Id
         doId = di.getArg(STUint32)
         #print("Updating " + str(doId))
+        if self.rsDoReport:
+            self.rsUpdateObjs[doId] = self.rsUpdateObjs.get(doId, 0) + 1
         # Find the DO
+            
         do = self.doId2do.get(doId)
         cdc = self.doId2cdc.get(doId)
         if (do != None and cdc != None):
