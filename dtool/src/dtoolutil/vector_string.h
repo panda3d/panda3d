@@ -12,7 +12,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : vector_string
-// Description : A vector of ints.  This class is defined once here,
+// Description : A vector of strings.  This class is defined once here,
 //               and exported to DTOOL.DLL; other packages that want
 //               to use a vector of this type (whether they need to
 //               export it or not) should include this header file,

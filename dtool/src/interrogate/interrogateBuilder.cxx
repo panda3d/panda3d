@@ -66,9 +66,7 @@ add_source_file(const string &filename) {
     return;
   }
 
-  if (!CPPFile::is_c_or_i_file(filename)) {
-    _include_files.insert('"' + filename + '"');
-  }
+  _include_files[filename] = '"';
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -177,6 +175,9 @@ do_command(const string &command, const string &params) {
   } else if (command == "ignoremember") {
     insert_param_list(_ignoremember, params);
 
+  } else if (command == "noinclude") {
+    insert_param_list(_noinclude, params);
+
   } else {
     nout << "Ignoring " << command << " " << params << "\n";
   }
@@ -197,19 +198,13 @@ build() {
        ii != parser._quote_includes.end();
        ++ii) {
     const string &filename = (*ii);
-    // Don't add any C files to the include list.
-    if (!CPPFile::is_c_or_i_file(filename)) {
-      _include_files.insert('"' + filename + '"');
-    }
+    _include_files[filename] = '"';
   }
   for (ii = parser._angle_includes.begin();
        ii != parser._angle_includes.end();
        ++ii) {
     const string &filename = (*ii);
-    // Don't add any C files to the include list.
-    if (!CPPFile::is_c_or_i_file(filename)) {
-      _include_files.insert('<' + filename + '>');
-    }
+    _include_files[filename] = '<';
   }
 
   // First, get all the types that were explicitly forced.
@@ -321,14 +316,14 @@ write_code(ostream &out, InterrogateModuleDef *def) {
   for (ifi = _include_files.begin();
        ifi != _include_files.end();
        ++ifi) {
-    const string &filename = (*ifi);
-    // Much as I hate to do it, I'm going to code in a special-case
-    // for two particularly nasty header files that we probably don't
-    // want to actually ever include.
-    if (filename == "<winbase.h>" || filename == "<windows.h>") {
-      // Ignoring these.
-    } else {
-      out << "#include " << (*ifi) << "\n";
+    const string &filename = (*ifi).first;
+    char delimiter = (*ifi).second;
+    if (should_include(filename)) {
+      if (delimiter == '"') {
+	out << "#include \"" << filename << "\"\n";
+      } else {
+	out << "#include <" << filename << ">\n";
+      }
     }
   }
   out << "\n";
@@ -776,6 +771,48 @@ in_ignorefile(const string &name) const {
 bool InterrogateBuilder::
 in_ignoremember(const string &name) const {
   return (_ignoremember.count(name) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateBuilder::in_noinclude
+//       Access: Private
+//  Description: Returns true if the indicated filename is one that
+//               the user identified with a noinclude command.
+////////////////////////////////////////////////////////////////////
+bool InterrogateBuilder::
+in_noinclude(const string &name) const {
+  return (_noinclude.count(name) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateBuilder::should_include
+//       Access: Private
+//  Description: Returns true if the indicated filename is a valid
+//               file to explicitly #include in the generated .cxx
+//               file, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool InterrogateBuilder::
+should_include(const string &filename) const {
+  // Don't directly include any .cxx or .I files.
+  if (CPPFile::is_c_or_i_file(filename)) {
+    return false;
+  }
+
+  // Also, don't include any files specifically forbidden in a .N
+  // file.
+  if (in_noinclude(filename)) {
+    return false;
+  }
+
+  // Much as I hate to do it, I'm going to code in a special-case
+  // for two particularly nasty header files that we probably don't
+  // want to actually ever include.
+  if (filename == "winbase.h" || filename == "windows.h") {
+    return false;
+  }
+
+  // Otherwise, no problem.
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

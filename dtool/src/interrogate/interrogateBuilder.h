@@ -66,6 +66,8 @@ private:
   bool in_ignoreinvolved(CPPType *type) const;
   bool in_ignorefile(const string &name) const;
   bool in_ignoremember(const string &name) const;
+  bool in_noinclude(const string &name) const;
+  bool should_include(const string &filename) const;
 
   void remap_indices();
   void scan_function(CPPFunctionGroup *fgroup);
@@ -145,7 +147,7 @@ private:
   FunctionsBySignature _functions_by_signature;
   WrappersByHash _wrappers_by_hash;
 
-  typedef set<string> IncludeFiles;
+  typedef map<string, char> IncludeFiles;
   IncludeFiles _include_files;
 
   Commands _forcetype;
@@ -154,6 +156,7 @@ private:
   Commands _ignoreinvolved;
   Commands _ignorefile;
   Commands _ignoremember;
+  Commands _noinclude;
 
   string _library_hash_name;
 };
