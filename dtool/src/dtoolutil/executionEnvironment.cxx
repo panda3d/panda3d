@@ -25,6 +25,9 @@
 // Windows requires this for getcwd().
 #include <direct.h>
 #define getcwd _getcwd
+
+// And this is for GetModuleFileName().
+#include <windows.h>
 #endif
 
 
@@ -330,7 +333,17 @@ void ExecutionEnvironment::
 read_args() {
 #if defined(HAVE_GLOBAL_ARGV)
   int argc = GLOBAL_ARGC;
-  if (argc > 0) {
+
+#ifdef WIN32_VC
+  static const DWORD buffer_size = 1024;
+  char buffer[buffer_size];
+  DWORD size = GetModuleFileName(NULL, buffer, buffer_size);
+  if (size != 0) {
+    _binary_name = Filename::from_os_specific(string(buffer, size));
+  }
+#endif  // WIN32_VC
+
+  if (_binary_name.empty() && argc > 0) {
     _binary_name = GLOBAL_ARGV[0];
   }
 
