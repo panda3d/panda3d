@@ -527,7 +527,6 @@ search_for_valid_displaymode(DXScreenData &scrn,
                              D3DFORMAT *pSuggestedPixFmt,
                              bool bForce16bppZBuffer,
                              bool bVerboseMode) {
-  bVerboseMode = true;
   // Use this list of format modes when trying to find a valid graphics
   // format for the card.  Formats are scanned in the order listed.
   static D3DFORMAT valid_formats[] = {
