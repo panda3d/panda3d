@@ -4,6 +4,7 @@
 #       Cygwin file paths (i.e. '/' corresponds to 'C:\cygwin')
 
 my $WIN_INSTALLDIR="\\\\dimbo\\panda\\win";
+my $scriptpath = "C:\\cygwin\\home\\builder\\scripts";
 
 # $ENV{'USE_COMPILER'} = "INTEL";   #  experiment
 
@@ -229,7 +230,7 @@ sub make_bsc_file() {
     # edit binary so it looks for src on mountable Z drive, so src browsing
     # works with Z:\ pointed to \\dragon
 
-    $binreplace_str="perl binreplace.pl -i C:\\cygwin Z:\\cygwin ".$outputfilepath."\n";
+    $binreplace_str="perl ".$scriptpath."\\binreplace.pl -i C:\\cygwin Z:\\cygwin ".$outputfilepath."\n";
     &myexecstr($binreplace_str,"binreplace failed!!!","DO_LOG","NT cmd");
 
     &myexecstr("copy ".$outputfilepath." ".$inst_dirs[$DEBUGNUM], "copy of ".$outputfilepath." failed!!", "DO_LOG","NT cmd");
