@@ -271,7 +271,7 @@ static void correct_event(CPT_Event e) {
   }
 }
 
-typedef void event_func(CPT_Event);
+typedef void (*event_func)(CPT_Event);
 
 static inline GuiButton* make_button(const string& name, Node* font,
 				     EventHandler& eh, event_func func) {
