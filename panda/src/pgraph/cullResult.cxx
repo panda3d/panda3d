@@ -263,6 +263,7 @@ get_dual_transparent_state() {
     // ones that may have been decaled onto.
     state = RenderState::make(AlphaTestAttrib::make(AlphaTestAttrib::M_greater, 0.0f),
                               TransparencyAttrib::make(TransparencyAttrib::M_alpha),
+                              DepthWriteAttrib::make(DepthWriteAttrib::M_off),
                               RenderState::get_max_priority());
   }
 
@@ -300,6 +301,7 @@ get_dual_transparent_state_decals() {
     // the decals where the pixels are 1.0.
     state = RenderState::make(AlphaTestAttrib::make(AlphaTestAttrib::M_less, dual_opaque_level),
                               TransparencyAttrib::make(TransparencyAttrib::M_alpha),
+                              DepthWriteAttrib::make(DepthWriteAttrib::M_off),
                               RenderState::get_max_priority());
   }
 
