@@ -202,6 +202,8 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
         if func != None:
             self.accept(buttonName + '-down-rollover', func)
 
+        return button
+
 
     def getUniqueName(self):
         """getUniqueName(self):
