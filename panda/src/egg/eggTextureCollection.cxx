@@ -202,7 +202,6 @@ find_used_textures(EggNode *node) {
   if (node->is_of_type(EggPrimitive::get_class_type())) {
     EggPrimitive *primitive = DCAST(EggPrimitive, node);
 
-    bool found_any_new = false;
     int num_textures = primitive->get_num_textures();
     for (int i = 0; i < num_textures; i++) {
       EggTexture *tex = primitive->get_texture(i);
@@ -211,7 +210,6 @@ find_used_textures(EggNode *node) {
       if (ti == _textures.end()) {
         // Here's a new texture!
         num_found++;
-        found_any_new = true;
         _textures.insert(Textures::value_type(tex, 1));
         _ordered_textures.push_back(tex);
       } else {
