@@ -101,6 +101,9 @@ class Level:
     def isInitialized(self):
         return self.initialized
 
+    def getLevelId(self):
+        return self.levelId
+
     def destroyLevel(self):
         self.destroyAllEntities()
         self.initialized = 0
