@@ -144,7 +144,7 @@ compute_angle() const {
     angle += acos(dot(v1, v2));
   }
 
-  return angle * 180.0 / MathNumbers::pi;
+  return rad_2_deg(angle);
 }
 
 template <class PrimType>
