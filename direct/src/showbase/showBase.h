@@ -42,6 +42,7 @@ EXPCL_DIRECT PT(GraphicsWindow)
 EXPCL_DIRECT NodePath setup_panda_2d(PT(GraphicsWindow) win);
 
 EXPCL_DIRECT void set_collision_traverser(CollisionTraverser *traverser);
+EXPCL_DIRECT CollisionTraverser *get_collision_traverser();
 EXPCL_DIRECT void clear_collision_traverser();
 
 EXPCL_DIRECT void toggle_wireframe(NodeAttributes &initial_state);

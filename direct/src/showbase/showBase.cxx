@@ -57,47 +57,38 @@ void render_frame(GraphicsPipe *pipe,
   throw_event("NewFrame");
 }
 
-// to be used with new display callback system
-class DisplayCallback : public GraphicsWindow::Callback {
+class WindowCallback : public GraphicsWindow::Callback {
 public:
-  DisplayCallback(GraphicsPipe *pipe, Node *render, NodeAttributes *initial_state) :
+  WindowCallback(GraphicsPipe *pipe, Node *render, Node *data_root,
+		  NodeAttributes *initial_state) :
     _pipe(pipe),
     _render(render),
+    _data_root(data_root),
     _initial_state(initial_state),
     _app_traverser(RenderRelation::get_class_type()) { }
   
   virtual void draw(bool) {
     _app_traverser.traverse(_render);
-    render_frame(_pipe, *_initial_state);
-  }
-  
-  PT(GraphicsPipe) _pipe;
-  PT(Node) _render;
-  NodeAttributes *_initial_state;
-  AppTraverser _app_traverser;
-};
-
-
-
-// to be used with new display callback system
-class IdleCallback : public GraphicsWindow::Callback {
-public:
-  IdleCallback(Node *render, Node *data_root) {
-    _render = render;
-    _data_root = data_root;
-  }
-  
-  virtual void idle(void) {
     // Initiate the data traversal, to send device data down its
     // respective pipelines.
     traverse_data_graph(_data_root);
     if (collision_traverser != (CollisionTraverser *)NULL) {
       collision_traverser->traverse(_render);
     }
+    render_frame(_pipe, *_initial_state);
   }
   
+  virtual void idle(void) {
+    // We used to do the collision traversal here, but it's better to
+    // do it immediately before the draw, so we don't get one frame of
+    // lag in collision updates.
+  }
+  
+  PT(GraphicsPipe) _pipe;
   PT(Node) _render;
   PT(Node) _data_root;
+  NodeAttributes *_initial_state;
+  AppTraverser _app_traverser;
 };
 
 
@@ -151,12 +142,12 @@ PT(GraphicsWindow) make_graphics_window(GraphicsPipe *pipe,
   main_win = ChanConfig(pipe, conf, camera, render, override);
   assert(main_win != (GraphicsWindow*)0L);
 
-  DisplayCallback *dcb = new DisplayCallback(pipe, render, &initial_state);
-  IdleCallback *icb = new IdleCallback(render, data_root);
+  WindowCallback *wcb = 
+    new WindowCallback(pipe, render, data_root, &initial_state);
 
   // Set draw and idle callbacks
-  main_win->set_draw_callback(dcb);
-  main_win->set_idle_callback(icb);
+  main_win->set_draw_callback(wcb);
+  main_win->set_idle_callback(wcb);
 
   return main_win;
 }
@@ -206,6 +197,9 @@ setup_panda_2d(PT(GraphicsWindow) win) {
 // Enable the collision traversal using a particular traverser.
 void set_collision_traverser(CollisionTraverser *traverser) {
   collision_traverser = traverser;
+}
+CollisionTraverser *get_collision_traverser() {
+  return collision_traverser;
 }
 // Stop the collision traversal.
 void clear_collision_traverser() {
