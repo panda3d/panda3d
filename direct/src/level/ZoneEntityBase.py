@@ -24,5 +24,5 @@ class ZoneEntityBase(Entity.Entity):
         return self.zoneId
 
     def getZoneNum(self):
-        """zoneNum from model"""
-        return self.modelZoneNum
+        """zoneNum from model / entityId"""
+        return self.entId

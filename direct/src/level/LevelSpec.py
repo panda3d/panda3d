@@ -63,8 +63,6 @@ class LevelSpec:
                 # UberZone
                 entId = LevelConstants.UberZoneEntId
                 self.insertEntity(entId, 'zone')
-                self.doSetAttrib(entId, 'modelZoneNum',
-                                 LevelConstants.UberZoneNum)
                 self.doSetAttrib(entId, 'name', 'UberZone')
                 # LevelMgr
                 entId = LevelConstants.LevelMgrEntId
@@ -121,12 +119,6 @@ class LevelSpec:
         # keep looking up the heirarchy for a zone entity
         return self.getEntityZoneEntId(spec['parentEntId'])
 
-    def getEntityZoneNum(self, entId):
-        """ return the model zoneNum of zone that contains the entity """
-        zoneEntId = self.getEntityZoneEntId(entId)
-        spec = self.getEntitySpec(zoneEntId)
-        return spec['modelZoneNum']
-
     def getEntType2ids(self, entIds):
         """given list of entIds, return dict of entType 2 entIds"""
         entType2ids = {}
@@ -144,7 +136,7 @@ class LevelSpec:
         return self.specDict['scenarios'][scenario][0]
 
     def printZones(self):
-        """currently prints list of modelZoneNum->zone name"""
+        """currently prints list of zoneNum->zone name"""
         # this could be more efficient
         allIds = self.getAllEntIds()
         type2id = self.getEntType2ids(allIds)
@@ -152,17 +144,10 @@ class LevelSpec:
         # omit the UberZone
         if 0 in zoneIds:
             zoneIds.remove(0)
-        # need to sort the zones by modelZoneNum
-        zoneNum2zoneId = {}
-        for id in zoneIds:
-            spec = self.getEntitySpec(id)
-            zoneNum2zoneId[spec['modelZoneNum']] = id
-        modelZoneNums = zoneNum2zoneId.keys()
-        modelZoneNums.sort()
-        for zoneNum in modelZoneNums:
-            id = zoneNum2zoneId[zoneNum]
-            spec = self.getEntitySpec(id)
-            print 'zone %s : %s' % (spec['modelZoneNum'], spec['name'])
+        zoneIds.sort()
+        for zoneNum in zoneIds:
+            spec = self.getEntitySpec(zoneNum)
+            print 'zone %s : %s' % (zoneNum, spec['name'])
 
     if __dev__:
         def setLevel(self, level):

@@ -1,6 +1,7 @@
 """LevelUtil module: contains Level utility funcs"""
 
 import string
+import LevelConstants
 
 def getZoneNum2Node(levelModel):
     """ given model, returns dict of ZoneNumber -> ZoneNode """
@@ -24,15 +25,27 @@ def getZoneNum2Node(levelModel):
             if numDigits == 0:
                 continue
             num = int(name[:numDigits])
+            # is this a valid zoneNum?
+            if num == LevelConstants.UberZoneEntId:
+                print ('warning: cannot use UberZone zoneNum (%s). '
+                       'ignoring %s' % (LevelConstants.UberZoneEntId,
+                                        potentialNode))
+                continue
+            if (num < LevelConstants.MinZoneNum) or (
+                num > LevelConstants.MaxZoneNum):
+                print 'warning: zone %s is out of range. ignoring %s' % (
+                    num, potentialNode)
+                continue
             # do we already have a ZoneNode for this zone num?
             if num in num2node:
                 print 'warning: zone %s already assigned to %s. ignoring %s' % (
                     num, num2node[num], potentialNode)
+                continue
             num2node[num] = potentialNode
 
         return num2node
 
     zoneNum2node = findNumberedNodes('zone', levelModel)
     # add the UberZone to the table
-    zoneNum2node[0] = levelModel
+    zoneNum2node[LevelConstants.UberZoneEntId] = levelModel
     return zoneNum2node

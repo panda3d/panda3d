@@ -12,14 +12,13 @@ class LevelMgr(LevelMgrBase.LevelMgrBase):
         # load the model
         self.geom = loader.loadModel(self.modelFilename)
 
-        # modelZoneNum -> zone entId
-        self.level.zoneNum2entId = {}
-        # modelZoneNum -> network zoneId
+        # this will hold the zoneNums/entIds for our own bookkeeping
+        self.zoneNums = []
+
+        # zoneNum -> network zoneId
         self.level.zoneNum2zoneId = {}
-        # network zoneId -> modelZoneNum
+        # network zoneId -> zoneNum
         self.level.zoneId2zoneNum = {}
-        # zone entId -> network zoneId
-        self.level.zoneEntId2zoneId = {}
 
         # listen for every zone creation
         self.accept(self.level.getEntityOfTypeCreateEvent('zone'),
@@ -27,10 +26,8 @@ class LevelMgr(LevelMgrBase.LevelMgrBase):
 
     def destroy(self):
         del self.level.zoneIds
-        del self.level.zoneEntId2zoneId
         del self.level.zoneId2zoneNum
         del self.level.zoneNum2zoneId
-        del self.level.zoneNum2entId
         self.geom.removeNode()
         del self.geom
         LevelMgrBase.LevelMgrBase.destroy(self)
@@ -39,10 +36,11 @@ class LevelMgr(LevelMgrBase.LevelMgrBase):
         zoneEnt = self.level.getEntity(entId)
 
         # register the zone's info in the tables
-        # right off the bat, we have the zone's modelZoneNum and entId
-        self.level.zoneNum2entId[zoneEnt.modelZoneNum] = entId
 
-        # we can assume that we have a complete list of zoneIds in
+        assert (zoneEnt.entId not in self.zoneNums)
+        self.zoneNums.append(zoneEnt.entId)
+        
+        # we can assume that we have a complete list of network zoneIds in
         # self.level.zoneIds. As each zone entity is created, set up
         # as if we have all of the zone entities. This allows dynamic
         # zone entity creation and deletion during editing.
@@ -57,33 +55,26 @@ class LevelMgr(LevelMgrBase.LevelMgrBase):
     def handleZoneDestroy(self, entId):
         zoneEnt = self.level.getEntity(entId)
         # unregister the zone from the maps
-        del self.level.zoneNum2entId[zoneEnt.modelZoneNum]
         del self.level.zoneId2zoneNum[
-            self.level.zoneNum2zoneId[zoneEnt.modelZoneNum]]
-        del self.level.zoneNum2zoneId[zoneEnt.modelZoneNum]
-        del self.level.zoneEntId2zoneId[entId]
+            self.level.zoneNum2zoneId[zoneEnt.entId]]
+        del self.level.zoneNum2zoneId[zoneEnt.entId]
+        self.zoneNums.remove(zoneEnt.entId)
         # reassign the zoneIds (we may not need to do this, if all of the
         # other entities already have their correct zoneId...?)
         self.privAssignZoneIds()
 
     def privAssignZoneIds(self):
-        """assign zoneIds from self.level.zoneIds, according to the zones
-        that are registered so far in self.level.zoneNum2entId"""
-        # sort the model zoneNums
-        modelZoneNums = self.level.zoneNum2entId.keys()
-        modelZoneNums.sort()
+        """assign network zoneIds from self.level.zoneIds, according to
+        the zones that are registered so far"""
+        # sort the zoneNums
+        self.zoneNums.sort()
 
         # dole out the zoneIds, in increasing order of zoneNum
-        for i in range(len(modelZoneNums)):
-            zoneNum = modelZoneNums[i]
-            entId = self.level.zoneNum2entId[zoneNum]
-            zoneEnt = self.level.getEntity(entId)
-            zoneEnt.setZoneId(self.level.zoneIds[i])
-
-        # the zoneIds have shifted. update the tables
-        for entId in self.level.zoneNum2entId.values():
-            zoneEnt = self.level.getEntity(entId)
-            zoneId = zoneEnt.getZoneId()
-            self.level.zoneNum2zoneId[zoneEnt.modelZoneNum] = zoneId
-            self.level.zoneId2zoneNum[zoneId] = zoneEnt.modelZoneNum
-            self.level.zoneEntId2zoneId[entId] = zoneId
+        for i in range(len(self.zoneNums)):
+            zoneNum = self.zoneNums[i]
+            zoneEnt = self.level.getEntity(zoneNum)
+            zoneId = self.level.zoneIds[i]
+            zoneEnt.setZoneId(zoneId)
+            # the zoneIds have shifted. update the tables
+            self.level.zoneNum2zoneId[zoneNum] = zoneId
+            self.level.zoneId2zoneNum[zoneId] = zoneNum

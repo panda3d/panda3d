@@ -74,8 +74,8 @@ def privUpdateSpec(spec, modelPath, entTypeModule, newZonesGloballyVisible=0):
     assert model is not None
     TexturePool.clearFakeTextureImage()
     # get the model's zone info
-    modelZoneNum2node = LevelUtil.getZoneNum2Node(model)
-    modelZoneNums = modelZoneNum2node.keys()
+    zoneNum2node = LevelUtil.getZoneNum2Node(model)
+    zoneNums = zoneNum2node.keys()
 
     # what zone entities do we have specs for?
     type2ids = spec.getEntType2ids(spec.getAllEntIds())
@@ -86,50 +86,29 @@ def privUpdateSpec(spec, modelPath, entTypeModule, newZonesGloballyVisible=0):
         spec.removeEntity(entId)
         zoneEntIds.remove(entId)
 
-    def insertZoneEntity(entId, modelZoneNum, spec=spec, zoneEntIds=zoneEntIds):
-        spec.insertEntity(entId, 'zone', LevelConstants.UberZoneEntId)
-        spec.doSetAttrib(entId, 'name', 'zone%s' % modelZoneNum)
-        spec.doSetAttrib(entId, 'modelZoneNum', modelZoneNum)
-        zoneEntIds.append(entId)
-
-    # create dict of zoneNum -> entId
-    zoneNum2entId = {}
-    for entId in list(zoneEntIds):
-        zoneNum = spec.getEntitySpec(entId)['modelZoneNum']
-        if zoneNum in zoneNum2entId:
-            print ('multiple zone entities reference zoneNum %s; removing '
-                   'entity %s' % (zoneNum, entId))
-            removeZoneEntity(entId)
-            continue
-        zoneNum2entId[zoneNum] = entId
+    def insertZoneEntity(zoneNum, spec=spec, zoneEntIds=zoneEntIds):
+        spec.insertEntity(zoneNum, 'zone', LevelConstants.UberZoneEntId)
+        spec.doSetAttrib(zoneNum, 'name', 'zone%s' % zoneNum)
+        zoneEntIds.append(zoneNum)
 
     # prune zone entities that reference zones that no longer exist
     removedZoneNums = []
     for entId in list(zoneEntIds):
-        zoneNum = spec.getEntitySpec(entId)['modelZoneNum']
-        if zoneNum not in modelZoneNums:
-            print 'zone %s no longer exists; removing entity %s' % (
-                zoneNum, entId)
+        if entId not in zoneNums:
+            print 'zone %s no longer exists; removing' % entId
             removeZoneEntity(entId)
-            del zoneNum2entId[zoneNum]
-            removedZoneNums.append(zoneNum)
+            removedZoneNums.append(entId)
             
     # add new zone entities for new zones
     newZoneNums = []
-    for zoneNum in modelZoneNums:
-        if zoneNum not in zoneNum2entId:
+    for zoneNum in zoneNums:
+        if zoneNum not in zoneEntIds:
             newZoneNums.append(zoneNum)
 
-            entIdDict = list2dict(spec.getAllEntIds())
-            entId = LevelConstants.ZoneEntIdStart
-            # we could do better than linear
-            while entId in entIdDict:
-                entId += 1
-
-            print 'adding entity %s for new zone %s' % (entId, zoneNum)
-            insertZoneEntity(entId, zoneNum)
+            print 'adding new zone entity %s' % zoneNum
+            insertZoneEntity(zoneNum)
             # by default, new zone can't see any other zones
-            spec.doSetAttrib(entId, 'visibility', [])
+            spec.doSetAttrib(zoneNum, 'visibility', [])
 
     if newZonesGloballyVisible:
         for entId in zoneEntIds:

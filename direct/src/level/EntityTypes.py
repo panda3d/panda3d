@@ -63,7 +63,6 @@ class Zone(Nodepath):
         )
     attribs = (
         ('parentEntId', 0, 'const'),
-        ('modelZoneNum', -1, 'const'),
         ('description', '', 'string'),
         ('visibility', [], 'visZoneList'),
         )

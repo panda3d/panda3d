@@ -8,13 +8,9 @@ class LevelMgrAI(LevelMgrBase.LevelMgrBase):
     def __init__(self, level, entId):
         LevelMgrBase.LevelMgrBase.__init__(self, level, entId)
 
-        # modelZoneNum -> zone entId
-        self.level.zoneNum2entId = {}
-        # modelZoneNum -> network zoneId
+        # zoneNum -> network zoneId
         self.level.zoneNum2zoneId = {}
-        # zone entId -> network zoneId
-        self.level.zoneEntId2zoneId = {}
-        # list of network zoneIDs, sorted by modelZoneNum
+        # list of network zoneIDs, sorted by zoneNum
         self.level.zoneIds = []
 
         # listen for every zone creation
@@ -23,18 +19,14 @@ class LevelMgrAI(LevelMgrBase.LevelMgrBase):
 
     def destroy(self):
         del self.level.zoneIds
-        del self.level.zoneEntId2zoneId
         del self.level.zoneNum2zoneId
-        del self.level.zoneNum2entId
         LevelMgrBase.LevelMgrBase.destroy(self)
 
     def handleZoneCreated(self, entId):
         zoneEnt = self.level.getEntity(entId)
 
         # register the zone's info in the tables
-        self.level.zoneNum2entId[zoneEnt.modelZoneNum] = entId
-        self.level.zoneNum2zoneId[zoneEnt.modelZoneNum] = zoneEnt.getZoneId()
-        self.level.zoneEntId2zoneId[entId] = zoneEnt.getZoneId()
+        self.level.zoneNum2zoneId[zoneEnt.entId] = zoneEnt.getZoneId()
 
         # TODO: we should delay this until all zone entities have been
         # created on level init
@@ -46,23 +38,22 @@ class LevelMgrAI(LevelMgrBase.LevelMgrBase):
 
     def handleZoneDestroy(self, entId):
         zoneEnt = self.level.getEntity(entId)
-        # unregister the zone from the maps
-        del self.level.zoneNum2entId[zoneEnt.modelZoneNum]
-        del self.level.zoneNum2zoneId[zoneEnt.modelZoneNum]
-        del self.level.zoneEntId2zoneId[entId]
+        # unregister the zone from the tables
+        del self.level.zoneNum2zoneId[zoneEnt.entId]
         # recreate the sorted network zoneId list
         self.privCreateSortedZoneIdList()
 
     def privCreateSortedZoneIdList(self):
-        # sort the model zoneNums
-        modelZoneNums = self.level.zoneNum2entId.keys()
-        modelZoneNums.sort()
+        # sort the zoneNums
+        zoneNums = self.level.zoneNum2zoneId.keys()
+        zoneNums.sort()
 
         # create a list of network zoneIds, ordered by their corresponding
         # sorted model zoneNum values
         self.level.zoneIds = []
-        for zoneNum in modelZoneNums:
+        for zoneNum in zoneNums:
             self.level.zoneIds.append(self.level.zoneNum2zoneId[zoneNum])
 
-        # TODO: if we just added or removed a zone entity AFTER the level
-        # was initialized, we need to re-send the zoneId list
+        # TODO: if we ever allow dynamic insertion and removal of zone
+        # entities, and we just added or removed a zone entity AFTER the level
+        # was initialized, we would need to re-send the zoneId list

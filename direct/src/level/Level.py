@@ -22,9 +22,9 @@ you haven't created the zone's ZoneEntity, you're hurting.)
 
 """
 ZONE TERMINOLOGY
-zoneNum / modelZoneNum : the number that a modeler chooses for a zone
-zoneEntId : the entity ID of the ZoneEntity that represents a zone
-zoneId : the network ID of the zone
+zoneNum / zoneEntId: the number that a modeler chooses for a zone, and also
+                     the entity ID of the ZoneEntity that represents a zone
+zoneId : the network ID of a zone
 """
 
 class Level:
@@ -221,10 +221,6 @@ class Level:
         """return entId of zone that contains the entity"""
         return self.levelSpec.getEntityZoneEntId(entId)
 
-    def getEntityZoneNum(self, entId):
-        """return the model zoneNum of zone that contains the entity"""
-        return self.levelSpec.getEntityZoneNum(entId)
-
     def getEntityZoneId(self, entId):
         """return network zoneId of zone that contains the entity"""
         # this is called during entity creation on the AI; we have to
@@ -233,7 +229,7 @@ class Level:
         # entities have been instantiated.
         zoneEntId = self.getEntityZoneEntId(entId)
         # fundamental entities (levelMgr) are responsible for creating
-        # tables like 'zoneEntId2zoneId'; if those tables haven't been
+        # tables like 'zoneNum2zoneId'; if those tables haven't been
         # created yet, just return None
         if not hasattr(self, 'zoneNum2zoneId'):
             return None
@@ -241,18 +237,12 @@ class Level:
         # been created yet. this could be a problem if zone entities
         # are ever distributed. it also means that no distributed entities
         # should be created before the zone entities.
-        return self.zoneEntId2zoneId.get(zoneEntId)
+        return self.zoneNum2zoneId.get(zoneEntId)
 
-    def getZoneId(self, dummy=None, zoneNum=None, entId=None):
-        """look up network zoneId by zoneNum or entId"""
-        assert (zoneNum is not None) or (entId is not None)
-        assert not ((zoneNum is not None) and (entId is not None))
-        if zoneNum is not None:
-            assert zoneNum in self.zoneNum2zoneId
-            return self.zoneNum2zoneId[zoneNum]
-        else:
-            assert entId in self.zoneEntId2zoneId
-            return self.zoneEntId2zoneId[entId]
+    def getZoneId(self, zoneEntId):
+        """look up network zoneId by zone entId"""
+        assert zoneEntId in self.zoneNum2zoneId
+        return self.zoneNum2zoneId[zoneEntId]
 
     def getZoneNumFromId(self, zoneId):
         """returns the model zoneNum that corresponds to a network zoneId"""

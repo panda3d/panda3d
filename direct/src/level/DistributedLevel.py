@@ -195,11 +195,11 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # make sure the zoneNums from the model match the zoneNums from
         # the zone entities
         modelZoneNums = self.zoneNums
-        entityZoneNums = self.zoneNum2entId.keys()
-        if not sameElements(modelZoneNums, entityZoneNums):
+        specZoneNums = self.zoneNum2zoneId.keys()
+        if not sameElements(modelZoneNums, specZoneNums):
             self.reportModelSpecSyncError(
-                'model zone nums (%s) do not match entity zone nums (%s)' %
-                (modelZoneNums, entityZoneNums))
+                'model zone nums (%s) do not match spec zone nums (%s)' %
+                (modelZoneNums, specZoneNums))
 
         # load stuff
         self.initVisibility()
@@ -236,7 +236,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
             initialZoneEnt = self.getEntity(epEnt.getZoneEntId())
 
         # kickstart the visibility
-        self.enterZone(initialZoneEnt.getZoneNum())
+        self.enterZone(initialZoneEnt.entId)
 
     def createEntityCreator(self):
         """Create the object that will be used to create Entities.
@@ -263,13 +263,14 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
         self.zoneNums = self.zoneNum2node.keys()
         self.zoneNums.sort()
-        DistributedLevel.notify.debug('zones: %s' % self.zoneNums)
+        self.zoneNumDict = list2dict(self.zoneNums)
+        DistributedLevel.notify.debug('zones from model: %s' % self.zoneNums)
 
         # fix up the floor collisions for walkable zones *before*
         # any entities get put under the model
         for zoneNum,zoneNode in self.zoneNum2node.items():
             # don't do this to the uberzone
-            if zoneNum == LevelConstants.UberZoneNum:
+            if zoneNum == LevelConstants.UberZoneEntId:
                 continue
             # if this is a walkable zone, fix up the model
             allColls = zoneNode.findAllMatches('**/+CollisionNode').asList()
@@ -347,9 +348,6 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # make sure the ouch task is stopped
         self.stopOuch()
         
-    def getZoneNode(self, zoneNum):
-        return self.zoneNum2node.get(zoneNum)
-
     def requestReparent(self, entity, parentId):
         if __debug__:
             # some things (like cogs) are not actually entities yet;
@@ -389,8 +387,11 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
             self.parent2pendingChildren[parentId].append(entity)
     
+    def getZoneNode(self, zoneEntId):
+        return self.zoneNum2node.get(zoneEntId)
+
     def showZone(self, zoneNum):
-        zone = self.zoneNum2node[zoneNum]
+        zone = self.getZoneNode(zoneNum)
         zone.unstash()
         zone.clearColor()
 
@@ -402,7 +403,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         return self.fColorZones
 
     def hideZone(self, zoneNum):
-        zone = self.zoneNum2node[zoneNum]
+        zone = self.getZoneNode(zoneNum)
         if self.fColorZones:
             zone.unstash()
             zone.setColor(1,0,0)
@@ -414,7 +415,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         if zone is None:
             node = self.geom
         else:
-            node = self.zoneNum2node[zone]
+            node = self.getZoneNode(zoneNum)
         node.setAlphaScale(alpha)
 
     def initVisibility(self):
@@ -423,7 +424,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         self.curVisibleZoneNums = list2dict(self.zoneNums)
         # the UberZone is always visible, so it's not included in the
         # zones' viz lists
-        del self.curVisibleZoneNums[0]
+        del self.curVisibleZoneNums[LevelConstants.UberZoneEntId]
         # we have not entered any zone yet
         self.curZoneNum = None
 
@@ -452,7 +453,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # if no viz, listen to all the zones
         if not DistributedLevel.WantVisibility:
             zoneNums = list(self.zoneNums)
-            zoneNums.remove(LevelConstants.UberZoneNum)
+            zoneNums.remove(LevelConstants.UberZoneEntId)
             self.setVisibility(zoneNums)
 
         # send out any zone changes at the end of the frame, just before
@@ -527,7 +528,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
     def lockVisibility(self, zoneNum=None, zoneId=None):
         """call this to lock the visibility to a particular zone
-        pass in either network zoneId or model zoneNum
+        pass in either network zoneId or zoneNum
 
         this was added for battles in the HQ factories; if you engage a suit
         in zone A with your camera in zone B, and you don't call this func,
@@ -563,7 +564,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         if zoneNum == self.curZoneNum:
             return
 
-        if zoneNum not in self.zoneNum2entId:
+        if zoneNum not in self.zoneNumDict:
             DistributedLevel.notify.error(
                 'no ZoneEntity for this zone (%s)!!' % zoneNum)
 
@@ -580,8 +581,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         if hasattr(self, 'lockVizZone'):
             zoneNum = self.lockVizZone
             
-        zoneEntId = self.zoneNum2entId[zoneNum]
-        zoneEnt = self.getEntity(zoneEntId)
+        zoneEnt = self.getEntity(zoneNum)
         # use dicts to efficiently ensure that there are no duplicates
         visibleZoneNums = list2dict([zoneNum])
         visibleZoneNums.update(list2dict(zoneEnt.getVisibleZoneNums()))
@@ -600,7 +600,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
                     visibleZoneNums.update(list2dict([self.lastToonZone]))
 
         # we should not have the uberZone in the list at this point
-        assert not 0 in visibleZoneNums
+        assert not LevelConstants.UberZoneEntId in visibleZoneNums
         
         if DistributedLevel.HideZones:
             # figure out which zones are new and which are going invisible
@@ -640,14 +640,14 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # if we're showing all zones, get all the DOs
         if self.fColorZones and DistributedLevel.ColorZonesAllDOs:
             vizList = list(self.zoneNums)
-            vizList.remove(LevelConstants.UberZoneNum)
+            vizList.remove(LevelConstants.UberZoneEntId)
         # convert the zone numbers into their actual zoneIds
         # always include Toontown and factory uberZones
-        uberZone = self.getZoneId(zoneNum=LevelConstants.UberZoneNum)
+        uberZone = self.getZoneId(LevelConstants.UberZoneEntId)
         # the level itself is in the 'level zone'
         visibleZoneIds = [ToontownGlobals.UberZone, self.levelZone, uberZone]
         for vz in vizList:
-            visibleZoneIds.append(self.getZoneId(zoneNum=vz))
+            visibleZoneIds.append(self.getZoneId(vz))
         assert(uniqueElements(visibleZoneIds))
         DistributedLevel.notify.info('new viz list: %s' % visibleZoneIds)
 
@@ -659,7 +659,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         self.curVisibleZoneNums = list2dict(self.zoneNums)
         # the UberZone is always visible, so it's not included in the
         # zones' viz lists
-        del self.curVisibleZoneNums[0]
+        del self.curVisibleZoneNums[LevelConstants.UberZoneEntId]
         # Make sure every zone is visible
         for vz,dummy in self.curVisibleZoneNums.items():
             self.showZone(vz)
@@ -688,12 +688,10 @@ class DistributedLevel(DistributedObject.DistributedObject,
             self.levelSpec.setAttribChange(entId, attribName, value, username)
 
     def spawnTitleText(self):
-        def getDescription(zoneId, self=self):
-            entId = self.zoneNum2entId.get(zoneId)
-            if entId:
-                ent = self.entities.get(entId)
-                if ent and hasattr(ent, 'description'):
-                    return ent.description
+        def getDescription(zoneNum, self=self):
+            ent = self.entities.get(zoneNum)
+            if ent and hasattr(ent, 'description'):
+                return ent.description
             return None
 
         description = getDescription(self.lastCamZone)
