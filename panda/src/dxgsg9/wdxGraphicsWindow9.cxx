@@ -847,7 +847,12 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
                              dwBehaviorFlags, pPresParams, &Display.pD3DDevice);
 
     if (FAILED(hr)) {
-      wdxdisplay9_cat.fatal() << "D3D CreateDevice failed for device #" << Display.CardIDNum << D3DERRORSTRING(hr);
+      wdxdisplay9_cat.warning() << "pPresParams->BackBufferWidth : " << pPresParams->BackBufferWidth << endl;
+      wdxdisplay9_cat.warning() << "pPresParams->BackBufferHeight : " << pPresParams->BackBufferHeight << endl;
+      wdxdisplay9_cat.warning() << "pPresParams->BackBufferFormat : " << pPresParams->BackBufferFormat << endl;
+      wdxdisplay9_cat.warning() << "pPresParams->BackBufferCount : " << pPresParams->BackBufferCount << endl;
+      wdxdisplay9_cat.warning() << "D3D CreateDevice failed for device #" << Display.CardIDNum << D3DERRORSTRING(hr);
+      goto Fallback_to_16bpp_buffers;
       //exit(1);
       return false;
     }
@@ -882,7 +887,7 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
 
     if (wdxdisplay9_cat.info()) {
       wdxdisplay9_cat.info()
-        << "CreateDevice failed with out-of-vidmem, retrying w/16bpp buffers on device #"
+        << "CreateDevice failed with out-of-vidmem or invalid BackBufferFormat, retrying w/16bpp buffers on device #"
         << Display.CardIDNum << endl;
     }
     return create_screen_buffers_and_device(Display, true);
@@ -1774,6 +1779,11 @@ open_window(void) {
     if (dxgsg->get_pipe()->get_device() == NULL || discard_device) {
       wdxdisplay9_cat.debug() << "device is null or fullscreen\n";
 
+      // If device exists, free it
+      if (dxgsg->get_pipe()->get_device()) {
+        dxgsg->dx_cleanup(false, true);
+      }
+      
       wdxdisplay9_cat.debug()<<"device width "<<_wcontext.DisplayMode.Width<<"\n";
       if (!create_screen_buffers_and_device(_wcontext, dx_force_16bpp_zbuffer)) {
         // just crash here

@@ -788,7 +788,7 @@ make_device(void *scrn) {
   device->_pD3DDevice = device->_Scrn.pD3DDevice;
 
   _device = device;
-  wdxdisplay9_cat.error() << "walla: device" << device << "\n";
+  wdxdisplay9_cat.info() << "walla: device" << device << "\n";
 
   return device.p();
 
