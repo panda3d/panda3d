@@ -269,7 +269,6 @@ handle_args(ProgramBase::Args &args) {
     return false;
   }
 
-  RollDirectory *prev_roll_dir = (RollDirectory *)NULL;
   Args::const_iterator ai;
   for (ai = args.begin(); ai != args.end(); ++ai) {
     Filename filename = Filename::from_os_specific(*ai);
@@ -282,13 +281,7 @@ handle_args(ProgramBase::Args &args) {
 
       } else {
 	RollDirectory *roll_dir = new RollDirectory(filename);
-	if (prev_roll_dir != (RollDirectory *)NULL) {
-	  roll_dir->_prev = prev_roll_dir;
-	  prev_roll_dir->_next = roll_dir;
-	}
-	
 	_roll_dirs.push_back(roll_dir);
-	prev_roll_dir = roll_dir;
       }
 
     } else if (filename.exists()) {
@@ -349,6 +342,19 @@ post_command_line() {
   // Sort the roll directories, if specified.
   if (format_rose && sort_date) {
     sort(_roll_dirs.begin(), _roll_dirs.end(), SortRollDirs());
+  }
+
+  // Update the next/prev pointers in each roll directory so we can
+  // browse from one to the other.
+  RollDirectory *prev_roll_dir = (RollDirectory *)NULL;
+  RollDirs::iterator di;
+  for (di = _roll_dirs.begin(); di != _roll_dirs.end(); ++di) {
+    RollDirectory *roll_dir = (*di);
+    if (prev_roll_dir != (RollDirectory *)NULL) {
+      roll_dir->_prev = prev_roll_dir;
+      prev_roll_dir->_next = roll_dir;
+    }
+    prev_roll_dir = roll_dir;
   }
 
   if (_front_title.empty()) {
@@ -590,9 +596,9 @@ run() {
     if (!roll_dir->is_empty()) {
       index_html
 	<< "<a name=\"" << roll_dir->get_basename() << "\">\n"
-	<< "<a href=\"html/" << roll_dir->get_basename() << ".htm\"><li>"
+	<< "<li><a href=\"html/" << roll_dir->get_basename() << ".htm\">"
 	<< roll_dir->get_name() << " " << escape_html(roll_dir->get_desc())
-	<< "</li></a>\n";
+	<< "</a></li>\n";
     }
   }
 
