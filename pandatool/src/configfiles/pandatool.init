@@ -1,3 +1,1 @@
 ATTACH panda
-DOCSH if { \which gtkmm-config >& /dev/null } setenv HAVE_GTK yes
-DOSH if which gtkmm-config >/dev/null 2>&1; then HAVE_GTK="yes"; export HAVE_GTK; fi
