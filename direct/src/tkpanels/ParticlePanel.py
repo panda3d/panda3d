@@ -1029,6 +1029,8 @@ class ParticlePanel(AppShell):
             # Delete existing particles and forces
             self.particleEffect.loadConfig(Filename(particleFilename))
             self.selectEffectNamed(self.particleEffect.getName())
+            # Enable effect
+            self.particleEffect.enable()
 
     def saveParticleEffectToFile(self):
         # Find path to particle directory
@@ -1442,6 +1444,12 @@ class ParticlePanel(AppShell):
             texture = renderer.getTexture()
 	    if (texture != None):
 		self.rendererSpriteTexture.set(texture.getName())
+            fileName = renderer.getSourceFileName()
+            if fileName != None:
+                self.rendererSpriteFile.set(fileName)
+            nodeName = renderer.getSourceNodeName()
+            if nodeName != None:
+                self.rendererSpriteNode.set(nodeName)
             self.getVariable('Sprite Renderer', 'X Scale').set(
                 renderer.getXScaleFlag())
             self.getVariable('Sprite Renderer', 'Y Scale').set(
