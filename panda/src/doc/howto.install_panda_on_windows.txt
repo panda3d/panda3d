@@ -4,7 +4,7 @@ environment.  It is not useful for programmers who are not within the
 VR Studio firewall.
 
 If you are looking for documentation on installing Panda in the rest
-of the world, see INSTALL in the root of the panda3d directory.
+of the world, see INSTALL.txt in this directory.
 
                 ---------------------------------------
                 HOW TO INSTALL PANDA3D ON WINXP/WIN2000
@@ -151,6 +151,7 @@ of the world, see INSTALL in the root of the panda3d directory.
       - Under Shells : ash, bash, sh-utils, tcsh
       - Under Text : more (or less)
       - Under Archive : zip, unzip
+      - Under Network : openssh
   - You can also install other programs (like vi) if you want.  
     To rotate through the possible installation options, left-click on 
     the programs of your choice.
@@ -220,6 +221,10 @@ of the world, see INSTALL in the root of the panda3d directory.
   Step 5: Create your HOME directory
 *********************************************************************
 
+  - Add C:\Cygwin\bin to the $path environment variable in the registry 
+    to avoid errors (sed: Command not found) when executing the file 
+    complete.tcsh (in C:\Cygwin\etc\profile.d) on startup 
+    
   - Create a HOME directory:
       > mkdir /<home root>/<login>
 
@@ -249,15 +254,12 @@ of the world, see INSTALL in the root of the panda3d directory.
       matches your Windows login as part of your HOME directory name.
 ---------------------------------------------------------------------
 
-  - Add C:\Cygwin\bin to the $path environment variable in the registry 
-    to avoid errors (sed: Command not found) when executing the file 
-    complete.tcsh (in C:\Cygwin\etc\profile.d) on startup 
-
   - Copy important startup files into your home directory:
-    > cd /p/win/install/wintools/panda
+    > cd P:/win/install/wintools/panda
     > cp .cshrc .emacs Configrc Config.pp.sample /<home root>/<login>
     > cd /<home root>/<login>
     > mv Config.pp.sample Config.pp
+    > mv Configrc Config.prc
 
   - Make sure the contents of .cshrc are correct for your setup.  In 
     particular, make sure the definition for PANDA_ROOT matches the 
@@ -460,15 +462,18 @@ of the world, see INSTALL in the root of the panda3d directory.
     emacs may also work.  Note: unlike xemacs.exe compiled for cygwin, 
     this emacs does not use Cygwin paths, so "/" represents the real 
     root (C:\, not "C:\Cygwin")).  
-  - Copy the tarball to your local machine
-    > cp /p/emacs-21.3-fullbin-i386.tar /c
-  - Untar and install (This will install emacs into C:/emacs-21.3, do 
+  - Copy the gzipped tarball to your local machine
+    > cp /p/emacs-21.3-fullbin-i386.tar.gz /c
+  - Ungzip, untar and install (This will install emacs into C:/emacs-21.3, do 
     not attempt to install it under a directory containing a space,
     like "Program Files".)
     > cd /c
+    > gzip -d emacs-21.3-fullbin-i386.tar.gz
     > tar xvf emacs-21.3-fullbin-i386.tar
-  - Copy lisp files
-    > cp /p/win/install/direct/src/directscripts/*.el /c/emacs-21.3/site-lisp
+  - Set up the $DIRECT variable and copy lisp/script files
+    > cta direct install
+    > cp $DIRECT/src/directscripts/python-mode.el /c/emacs-21.3/lisp/progmodes
+    > cp $DIRECT/src/directscripts/runPythonEmacs /usr/local/bin
   - Update environment variables (win2000/XP).  Note: You should only 
     need to do this if you intend to invoke Emacs from a non-Cygwin 
     prompt.  If you will always be using Cygwin, simply edit your 
@@ -636,7 +641,7 @@ of the world, see INSTALL in the root of the panda3d directory.
     you run "pview".
 
 *********************************************************************
-  Step 14: Build $DIRECT
+  Step 14: (Optional) Build $DIRECT
 *********************************************************************
 
   > cta dtool personal  
@@ -647,7 +652,7 @@ of the world, see INSTALL in the root of the panda3d directory.
   > make install
 
 *********************************************************************
-  Step 15: Build $OTP
+  Step 15: (Optional) Build $OTP
 *********************************************************************
 
   > cta dtool personal
@@ -660,7 +665,7 @@ of the world, see INSTALL in the root of the panda3d directory.
   Exit the shell and create a new one
 
 *********************************************************************
-  Step 16: Build $TOONTOWN
+  Step 16: (Optional) Build $TOONTOWN
 *********************************************************************
 
   > cta dtool personal  
@@ -674,7 +679,7 @@ of the world, see INSTALL in the root of the panda3d directory.
   Exit the shell and create a new one
 
 *********************************************************************
-  Step 17: Generate Python Code
+  Step 17: (Optional) Generate Python Code
 *********************************************************************
 
   > genPyCode
@@ -686,12 +691,15 @@ of the world, see INSTALL in the root of the panda3d directory.
 
   - mkdir /c/toonsrv
   - unzip /p/toontown_server/dev_NOTAG_*.zip to /c/toonsrv
+  NOTE: You may also need to get one of the older zip files from
+  "/p/toontown_server/Toontown Database Server_files" in order
+  to get all the batch files.
   - copy zlib1.dll and other newer .dlls if not there from 
     /p/toontown_server
     > cp /p/toontown_server/*.dll /c/toonsrv/.
   - cd /c/toonsrv
-  - Be sure to set the execute bit for all .dll, .exe, and .bat files
-    chmod +x *.dll *.exe *.bat
+  - Be sure to set the execute bit for all .dll, .exe, *.BAT and .bat files
+    chmod +x *.dll *.exe *.bat *.BAT
   - Make sure your Windows account on your machine is an administrator
     type, or else you would not be able to start/stop services.  
     To check:
@@ -751,5 +759,40 @@ of the world, see INSTALL in the root of the panda3d directory.
     > /c/toonsrv/STOPALL.BAT 
     to stop them
 
+*********************************************************************
+  Step 19: (Optional) Launch a local Toontown Client and Server
+*********************************************************************
 
+  - Before the Toontown client and server will happily interact with
+    one another, a local.par file needs to be created in the
+    /c/toonsrv directory with some options in it and a couple of lines
+    need to be added to the Config.prc file in $HOME. A basic local.par
+    file can be copied from /p/toontown_server
+    > cp /p/toontown_server/local.par /c/toonsrv
+  - Add the following lines to your Config.prc file in $HOME
+    
+      account-old-auth 1
+      verify-ssl 0
+      
+  - To start the Toontown AI server, first start up Python Emacs
+    > runPythonEmacs
+  - In Emacs launch a Python shell
+    > Alt-x   (This will bring up an Emacs command line)
+    > py-shell
+  - From the Python command line type the following:
+    > from toontown.ai.AIStart import *
+  - This will start a Toontown game server
+  - To start a client, you will need to open a new Python Emacs session.
+    From the cygwin command prompt, type:
+    > runPythonEmacs
+  - In Emacs launch another Python shell as before
+    > Alt-x
+    > py-shell
+  - In this Python command prompt, enter:
+    > from toontown.toonbase.ToontownStart import *
+  - After the server and the client have started up, the game should
+    prompt to create an account.  After the account is created the
+    game will run as normal, but locally.
+    
+    
       ***************  When you get here, rejoice! ***************
