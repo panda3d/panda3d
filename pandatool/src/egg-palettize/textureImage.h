@@ -64,6 +64,9 @@ public:
   void force_replace();
   void mark_eggs_stale();
 
+  void mark_texture_named();
+  bool is_texture_named() const;
+
   void pre_txa_file();
   void post_txa_file();
   bool got_txa_file() const;
@@ -146,6 +149,7 @@ private:
 
   bool _read_source_image;
   PNMImage _source_image;
+  bool _texture_named;
   bool _got_txa_file;
 
 

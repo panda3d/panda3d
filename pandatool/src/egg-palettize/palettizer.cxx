@@ -392,7 +392,7 @@ process_command_line_eggs(bool force_texture_read, const Filename &state_filenam
 
     egg_file->scan_textures();
     egg_file->get_textures(_command_line_textures);
-
+    
     egg_file->pre_txa_file();
     _txa_file.match_egg(egg_file);
     egg_file->post_txa_file();
@@ -422,6 +422,7 @@ process_command_line_eggs(bool force_texture_read, const Filename &state_filenam
       texture->read_header();
     }
 
+    texture->mark_texture_named();
     texture->pre_txa_file();
     _txa_file.match_texture(texture);
     texture->post_txa_file();
@@ -525,6 +526,7 @@ process_all(bool force_texture_read, const Filename &state_filename) {
       texture->read_source_image();
     }
 
+    texture->mark_texture_named();
     texture->pre_txa_file();
     _txa_file.match_texture(texture);
     texture->post_txa_file();

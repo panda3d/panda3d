@@ -569,15 +569,20 @@ update_image(bool redo_all) {
       needs_update = true;
 
     } else {
-      SourceTextureImage *source =
-        placement->get_texture()->get_preferred_source();
+      TextureImage *texture = placement->get_texture();
 
-      if (source != (SourceTextureImage *)NULL &&
-          source->get_filename().compare_timestamps(get_filename()) > 0) {
-        // The source image is newer than the palette image; we need to
-        // regenerate.
-        placement->mark_unfilled();
-        needs_update = true;
+      // Only check the timestamps on textures that are named
+      // (indirectly) on the command line.
+      if (texture->is_texture_named()) {
+        SourceTextureImage *source = texture->get_preferred_source();
+
+        if (source != (SourceTextureImage *)NULL &&
+            source->get_filename().compare_timestamps(get_filename()) > 0) {
+          // The source image is newer than the palette image; we need to
+          // regenerate.
+          placement->mark_unfilled();
+          needs_update = true;
+        }
       }
     }
   }

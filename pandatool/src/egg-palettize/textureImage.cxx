@@ -50,6 +50,7 @@ TextureImage() {
   _forced_grayscale = false;
   _alpha_bits = 0;
   _alpha_mode = EggRenderMode::AM_unspecified;
+  _texture_named = false;
   _got_txa_file = false;
 }
 
@@ -246,6 +247,32 @@ mark_eggs_stale() {
   for (pi = _placement.begin(); pi != _placement.end(); ++pi) {
     (*pi).second->mark_eggs_stale();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureImage::mark_texture_named
+//       Access: Public
+//  Description: Indicates that this particular texture has been named
+//               by the user for processing this session, normally by
+//               listing an egg file on the command line that
+//               references it.
+////////////////////////////////////////////////////////////////////
+void TextureImage::
+mark_texture_named() {
+  _texture_named = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureImage::is_texture_named
+//       Access: Public
+//  Description: Returns true if this particular texture has been
+//               named by the user for procession this session, for
+//               instance by listing an egg file on the command line
+//               that references it.
+////////////////////////////////////////////////////////////////////
+bool TextureImage::
+is_texture_named() const {
+  return _texture_named;
 }
 
 ////////////////////////////////////////////////////////////////////
