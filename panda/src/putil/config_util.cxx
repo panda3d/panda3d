@@ -30,6 +30,12 @@
 #include "datagram.h"
 #include "typedWritable.h"
 #include "typedWritableReferenceCount.h"
+#include "virtualFileComposite.h"
+#include "virtualFile.h"
+#include "virtualFileMount.h"
+#include "virtualFileMountMultifile.h"
+#include "virtualFileMountSystem.h"
+#include "virtualFileSimple.h"
 #include "writableParam.h"
 #include "bamReaderParam.h"
 #include "writableConfigurable.h"
@@ -57,6 +63,12 @@ ConfigureFn(config_util) {
   WritableParam::init_type();
   BamReaderParam::init_type();
   TypedWritableReferenceCount::init_type();
+  VirtualFileComposite::init_type();
+  VirtualFile::init_type();
+  VirtualFileMount::init_type();
+  VirtualFileMountMultifile::init_type();
+  VirtualFileMountSystem::init_type();
+  VirtualFileSimple::init_type();
   WritableConfigurable::init_type();
 }
 

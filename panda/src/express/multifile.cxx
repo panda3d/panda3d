@@ -84,9 +84,9 @@ Multifile() {
   _last_index = 0;
   _needs_repack = false;
   _scale_factor = 1;
+  _new_scale_factor = 1;
   _file_major_ver = 0;
   _file_minor_ver = 0;
-  _open_subfile = (Subfile *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -97,6 +97,26 @@ Multifile() {
 Multifile::
 ~Multifile() {
   close();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::Copy Constructor
+//       Access: Private
+//  Description: Don't try to copy Multifiles.
+////////////////////////////////////////////////////////////////////
+Multifile::
+Multifile(const Multifile &copy) {
+  nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::Copy Assignment Operator
+//       Access: Private
+//  Description: Don't try to copy Multifiles.
+////////////////////////////////////////////////////////////////////
+void Multifile::
+operator = (const Multifile &copy) {
+  nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -192,14 +212,21 @@ open_read_write(const Filename &multifile_name) {
 ////////////////////////////////////////////////////////////////////
 void Multifile::
 close() {
-  close_subfile();
-  flush();
+  if (_new_scale_factor != _scale_factor) {
+    // If we have changed the scale factor recently, we need to force
+    // a repack.
+    repack();
+  } else {
+    flush();
+  }
+
   _read = (istream *)NULL;
   _write = (ostream *)NULL;
   _next_index = 0;
   _last_index = 0;
   _needs_repack = false;
   _scale_factor = 1;
+  _new_scale_factor = 1;
   _file_major_ver = 0;
   _file_minor_ver = 0;
 
@@ -209,6 +236,49 @@ close() {
   _multifile_name = Filename();
 
   clear_subfiles();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::set_scale_factor
+//       Access: Published
+//  Description: Changes the internal scale factor for this Multifile.
+//
+//               This is normally 1, but it may be set to any
+//               arbitrary value (greater than zero) to support
+//               Multifile archives that exceed 4GB, if necessary.
+//               (Individual subfiles may still not exceed 4GB.)
+//
+//               All addresses within the file are rounded up to the
+//               next multiple of _scale_factor, and zeros are written
+//               to the file to fill the resulting gaps.  Then the
+//               address is divided by _scale_factor and written out
+//               as a 32-bit integer.  Thus, setting a scale factor of
+//               2 supports up to 8GB files, 3 supports 12GB files,
+//               etc.
+//
+//               Calling this function on an already-existing
+//               Multifile will have no immediate effect until a
+//               future call to repack() or close() (or until the
+//               Multifile is destructed).
+////////////////////////////////////////////////////////////////////
+void Multifile::
+set_scale_factor(size_t scale_factor) {
+  nassertv(is_write_valid());
+  nassertv(scale_factor != (size_t)0);
+
+  if (_next_index == (streampos)0) {
+    // If it's a brand new Multifile, we can go ahead and set it
+    // immediately.
+    _scale_factor = scale_factor;
+  } else {
+    // Otherwise, we'd better have read access so we can repack it
+    // later.
+    nassertv(is_read_valid());
+  }
+
+  // Setting the _new_scale_factor different from the _scale_factor
+  // will force a repack operation on close.
+  _new_scale_factor = scale_factor;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -378,6 +448,12 @@ flush() {
 ////////////////////////////////////////////////////////////////////
 bool Multifile::
 repack() {
+  if (_next_index == (streampos)0) {
+    // If the Multifile hasn't yet been written, this is really just a
+    // flush operation.
+    return flush();
+  }
+
   nassertr(is_write_valid() && is_read_valid(), false);
   nassertr(!_multifile_name.empty(), false);
 
@@ -407,6 +483,7 @@ repack() {
   copy(_subfiles.begin(), _subfiles.end(), back_inserter(_new_subfiles));
   _next_index = 0;
   _last_index = 0;
+  _scale_factor = _new_scale_factor;
 
   // And we write our contents to our new temporary file.
   _write = &temp;
@@ -535,14 +612,14 @@ read_subfile(int index, Datagram &data) {
   nassertv(index >= 0 && index < (int)_subfiles.size());
   data.clear();
 
-  istream &in = open_read_subfile(index);
-  int byte = in.get();
-  while (!in.eof() && !in.fail()) {
+  istream *in = open_read_subfile(index);
+  int byte = in->get();
+  while (!in->eof() && !in->fail()) {
     data.add_int8(byte);
-    byte = in.get();
+    byte = in->get();
   }
-  bool failed = in.fail();
-  close_subfile();
+  bool failed = in->fail();
+  delete in;
   nassertv(!failed);
 }
 
@@ -568,6 +645,31 @@ extract_subfile(int index, const Filename &filename) {
   }
 
   return extract_subfile_to(index, out);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::output
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void Multifile::
+output(ostream &out) const {
+  out << "Multifile " << _multifile_name << ", " << get_num_subfiles()
+      << " subfiles.\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::ls
+//       Access: Published
+//  Description: Shows a list of all subfiles within the Multifile.
+////////////////////////////////////////////////////////////////////
+void Multifile::
+ls(ostream &out) const {
+  int num_subfiles = get_num_subfiles();
+  for (int i = 0; i < num_subfiles; i++) {
+    string subfile_name = get_subfile_name(i);
+    out << subfile_name << "\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -662,16 +764,16 @@ extract_subfile_to(int index, ostream &out) {
   nassertr(is_read_valid(), false);
   nassertr(index >= 0 && index < (int)_subfiles.size(), false);
 
-  istream &in = open_read_subfile(index);
+  istream *in = open_read_subfile(index);
 
-  int byte = in.get();
-  while (!in.fail() && !in.eof()) {
+  int byte = in->get();
+  while (!in->fail() && !in->eof()) {
     out.put(byte);
-    byte = in.get();
+    byte = in->get();
   }
 
-  bool failed = (in.fail() && !in.eof());
-  close_subfile();
+  bool failed = (in->fail() && !in->eof());
+  delete in;
   nassertr(!failed, false);
 
   return (!out.fail());
@@ -682,64 +784,47 @@ extract_subfile_to(int index, ostream &out) {
 //       Access: Public
 //  Description: Returns an istream that may be used to read the
 //               indicated subfile.  You may seek() within this
-//               istream to your heart's content; even though it is
-//               probably a reference to the already-opened fstream of
-//               the Multifile itself, byte 0 appears to be the
-//               beginning of the subfile and EOF appears to be the
-//               end of the subfile.
+//               istream to your heart's content; even though it will
+//               be a reference to the already-opened fstream of the
+//               Multifile itself, byte 0 appears to be the beginning
+//               of the subfile and EOF appears to be the end of the
+//               subfile.
 //
-//               It is not valid to perform any additional operations
-//               on this Multifile until close_subfile() has
-//               subsequently been called.
+//               The returned istream will have been allocated via
+//               new; you should delete it when you are finished
+//               reading the subfile.
+//
+//               Any future calls to repack() or close() (or the
+//               Multifile destructor) will invalidate all currently
+//               open subfile pointers.
+//
+//               The return value will never be NULL.  If there is a
+//               problem, an unopened fstream is returned.
 ////////////////////////////////////////////////////////////////////
-istream &Multifile::
+istream *Multifile::
 open_read_subfile(int index) {
-#ifndef NDEBUG
-  static ifstream empty_stream;
-  nassertr(_open_subfile == (Subfile *)NULL, empty_stream);
-  nassertr(is_read_valid(), empty_stream);
-  nassertr(index >= 0 && index < (int)_subfiles.size(), empty_stream);
-#endif
-  _open_subfile = _subfiles[index];
+  nassertr(is_read_valid(), new fstream);
+  nassertr(index >= 0 && index < (int)_subfiles.size(), new fstream);
+  Subfile *subfile = _subfiles[index];
 
-  if (_open_subfile->_source != (istream *)NULL) {
-    // The subfile has not yet been incorporated, and it is defined
-    // with an istream; return the istream directly.
-    _open_subfile->_source->seekg(0);
-    return *_open_subfile->_source;
+  if (subfile->_source != (istream *)NULL ||
+      !subfile->_source_filename.empty()) {
+    // The subfile has not yet been copied into the physical
+    // Multifile.  Force a flush operation to incorporate it.
+    flush();
+
+    // That shouldn't change the subfile index or delete the subfile
+    // pointer.
+    nassertr(subfile == _subfiles[index], new fstream);
   }
 
-  if (!_open_subfile->_source_filename.empty()) {
-    // The subfile has not yet been incorporated, and it is defined
-    // with a filename; open the filename and return that.
-    _open_subfile->_source_filename.open_read(_subfile_fstream);
-    return _subfile_fstream;
-  }
-
-  // The subfile has been incorporated; return an ISubStream object
-  // that references into the open Multifile istream.
-  nassertr(_open_subfile->_data_start != (streampos)0, empty_stream);
-  _subfile_substream.open(_read, _open_subfile->_data_start,
-                          _open_subfile->_data_start + (streampos)_open_subfile->_data_length); 
-  return _subfile_substream;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::close_subfile
-//       Access: Public
-//  Description: "Closes" the istream that was returned via a previous
-//               call to open_read_subfile(), and makes other
-//               operations on the Multifile valid once more.
-////////////////////////////////////////////////////////////////////
-void Multifile::
-close_subfile() {
-  if (_open_subfile != (Subfile *)NULL &&
-      _open_subfile->_source != (istream *)NULL) {
-    _open_subfile->_source->seekg(0);
-  }
-  _open_subfile = (Subfile *)NULL;
-  _subfile_fstream.close();
-  _subfile_substream.close();
+  // Return an ISubStream object that references into the open
+  // Multifile istream.
+  nassertr(subfile->_data_start != (streampos)0, new fstream);
+  ISubStream *stream = new ISubStream;
+  stream->open(_read, subfile->_data_start,
+               subfile->_data_start + (streampos)subfile->_data_length); 
+  return stream;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -850,6 +935,7 @@ read_index() {
   _file_major_ver = dgi.get_int16();
   _file_minor_ver = dgi.get_int16();
   _scale_factor = dgi.get_uint32();
+  _new_scale_factor = _scale_factor;
 
   if (_file_major_ver != _current_major_ver ||
       (_file_major_ver == _current_major_ver && 

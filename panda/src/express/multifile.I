@@ -18,6 +18,17 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Multifile::get_multifile_name
+//       Access: Published
+//  Description: Returns the filename of the Multifile, if it is
+//               available.
+////////////////////////////////////////////////////////////////////
+INLINE const Filename &Multifile::
+get_multifile_name() const {
+  return _multifile_name;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Multifile::is_read_valid
 //       Access: Published
 //  Description: Returns true if the Multifile has been opened for
@@ -26,8 +37,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE bool Multifile::
 is_read_valid() const {
-  return (_read != (istream *)NULL && !_read->fail() && 
-          _open_subfile == (Subfile *)NULL);
+  return (_read != (istream *)NULL && !_read->fail());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -39,8 +49,7 @@ is_read_valid() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool Multifile::
 is_write_valid() const {
-  return (_write != (ostream *)NULL && !_write->fail() && 
-          _open_subfile == (Subfile *)NULL);
+  return (_write != (ostream *)NULL && !_write->fail());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -51,39 +60,7 @@ is_write_valid() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool Multifile::
 needs_repack() const {
-  return _needs_repack;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::set_scale_factor
-//       Access: Published
-//  Description: Changes the internal scale factor for this Multifile.
-//
-//               This is normally 1, but it may be set to any
-//               arbitrary value (greater than zero) to support
-//               Multifile archives that exceed 4GB, if necessary.
-//               (Individual subfiles may still not exceed 4GB.)
-//
-//               All addresses within the file are rounded up to the
-//               next multiple of _scale_factor, and zeros are written
-//               to the file to fill the resulting gaps.  Then the
-//               address is divided by _scale_factor and written out
-//               as a 32-bit integer.  Thus, setting a scale factor of
-//               2 supports up to 8GB files, 3 supports 12GB files,
-//               etc.
-//
-//               Calling this function on an already-existing
-//               Multifile forces an immediate repack() operation.
-////////////////////////////////////////////////////////////////////
-INLINE void Multifile::
-set_scale_factor(size_t scale_factor) {
-  nassertv(scale_factor != (size_t)0);
-  if (_scale_factor != scale_factor) {
-    _scale_factor = scale_factor;
-    if (_next_index != (streampos)0) {
-      repack();
-    }
-  }
+  return _needs_repack || (_scale_factor != _new_scale_factor);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -94,7 +71,7 @@ set_scale_factor(size_t scale_factor) {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t Multifile::
 get_scale_factor() const {
-  return _scale_factor;
+  return _new_scale_factor;
 }
 
 ////////////////////////////////////////////////////////////////////

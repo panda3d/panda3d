@@ -46,6 +46,12 @@
     typedWritableReferenceCount.h updateSeq.I updateSeq.h \
     vector_double.h vector_float.h vector_typedWritable.h \
     vector_ushort.h vector_writable.h \
+    virtualFileComposite.h virtualFileComposite.I virtualFile.h \
+    virtualFile.I virtualFileList.I virtualFileList.h virtualFileMount.h \
+    virtualFileMount.I virtualFileMountMultifile.h \
+    virtualFileMountMultifile.I virtualFileMountSystem.h \
+    virtualFileMountSystem.I virtualFileSimple.h virtualFileSimple.I \
+    virtualFileSystem.h virtualFileSystem.I \
     writableConfigurable.h \
     writableParam.I writableParam.h 
     
@@ -75,6 +81,10 @@
     vector_double.cxx vector_float.cxx \
     vector_typedWritable.cxx \
     vector_ushort.cxx vector_writable.cxx \
+    virtualFileComposite.cxx virtualFile.cxx virtualFileList.cxx \
+    virtualFileMount.cxx \
+    virtualFileMountMultifile.cxx virtualFileMountSystem.cxx \
+    virtualFileSimple.cxx virtualFileSystem.cxx \
     writableConfigurable.cxx writableParam.cxx 
 
   #define INSTALL_HEADERS \
@@ -113,6 +123,12 @@
     typedWritableReferenceCount.h updateSeq.I updateSeq.h \
     vector_double.h vector_float.h vector_typedWritable.h \
     vector_ushort.h vector_writable.h \
+    virtualFileComposite.h virtualFileComposite.I virtualFile.h \
+    virtualFile.I virtualFileList.I virtualFileList.h virtualFileMount.h \
+    virtualFileMount.I virtualFileMountMultifile.h \
+    virtualFileMountMultifile.I virtualFileMountSystem.h \
+    virtualFileMountSystem.I virtualFileSimple.h virtualFileSimple.I \
+    virtualFileSystem.h virtualFileSystem.I \
     writableConfigurable.h writableParam.I \
     writableParam.h
 

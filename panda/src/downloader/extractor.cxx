@@ -123,13 +123,13 @@ run() {
 
     _subfile_length = _multifile.get_subfile_length(_subfile_index);
     _subfile_pos = 0;
-    _read = &_multifile.open_read_subfile(_subfile_index);
+    _read = _multifile.open_read_subfile(_subfile_index);
 
   } else if (_subfile_pos >= _subfile_length) {
     // Time to close this subfile.
-    _multifile.close_subfile();
-    _write.close();
+    delete _read;
     _read = (istream *)NULL;
+    _write.close();
     _subfile_index++;
 
   } else {
@@ -195,7 +195,10 @@ cleanup() {
     return;
   }
 
+  if (_read != (istream *)NULL) {
+    delete _read;
+    _read = (istream *)NULL;
+  }
   _multifile.close();
   _write.close();
-  _read = (istream *)NULL;
 }

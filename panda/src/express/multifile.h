@@ -38,16 +38,23 @@ PUBLISHED:
   Multifile();
   ~Multifile();
 
+private:
+  Multifile(const Multifile &copy);
+  void operator = (const Multifile &copy);
+
+PUBLISHED:
   bool open_read(const Filename &multifile_name);
   bool open_write(const Filename &multifile_name);
   bool open_read_write(const Filename &multifile_name);
   void close();
 
+  INLINE const Filename &get_multifile_name() const;
+
   INLINE bool is_read_valid() const;
   INLINE bool is_write_valid() const;
   INLINE bool needs_repack() const;
 
-  INLINE void set_scale_factor(size_t scale_factor);
+  void set_scale_factor(size_t scale_factor);
   INLINE size_t get_scale_factor() const;
 
   bool add_subfile(const string &subfile_name, const Filename &filename);
@@ -63,6 +70,9 @@ PUBLISHED:
   void read_subfile(int index, Datagram &datagram);
   bool extract_subfile(int index, const Filename &filename);
 
+  void output(ostream &out) const;
+  void ls(ostream &out = cout) const;
+
 public:
   // Special interfaces to work with iostreams, not necessarily files.
   bool open_read(istream *multifile_stream);
@@ -71,8 +81,7 @@ public:
   bool add_subfile(const string &subfile_name, istream *subfile_data);
 
   bool extract_subfile_to(int index, ostream &out);
-  istream &open_read_subfile(int index);
-  void close_subfile();
+  istream *open_read_subfile(int index);
 
 private:
   enum SubfileFlags {
@@ -129,6 +138,7 @@ private:
 
   bool _needs_repack;
   size_t _scale_factor;
+  size_t _new_scale_factor;
 
   ifstream _read_file;
   ofstream _write_file;
@@ -137,11 +147,6 @@ private:
 
   int _file_major_ver;
   int _file_minor_ver;
-
-  // These are used to open a subfile for reading.
-  Subfile *_open_subfile;
-  ifstream _subfile_fstream;
-  ISubStream _subfile_substream;
 
   static const char _header[];
   static const size_t _header_size;
