@@ -767,6 +767,9 @@ get_transform(const MDagPath &dag_path, EggGroup *egg_group) {
 ////////////////////////////////////////////////////////////////////
 void MayaToEggConverter::
 get_joint_transform(const MDagPath &dag_path, EggGroup *egg_group) {
+  // First, make sure there's not a transform on the group already.
+  egg_group->clear_transform();
+
   MStatus status;
   MObject transformNode = dag_path.transform(&status);
   // This node has no transform - i.e., it's the world node
