@@ -5,6 +5,7 @@ import math
 import operator
 import inspect
 import os
+import sys
 
 
 # NOTE: ifAbsentPut has been replaced with Python's dictionary's builtin setdefault
@@ -673,6 +674,18 @@ def lineTag(baseFileName=1, verbose=0, separator=':'):
     else:
         return '%s%s%s%s%s' % (fileName, separator, lineNum, separator,
                                funcName)
+
+def findPythonModule(module):
+    # Look along the python load path for the indicated filename.
+    # Returns the located pathname, or None if the filename is not
+    # found.
+    filename = module + '.py'
+    for dir in sys.path:
+        pathname = os.path.join(dir, filename)
+        if os.path.exists(pathname):
+            return pathname
+        
+    return None
 
 class PureVirtual:
     """ Python classes that want to have C++-style pure-virtual functions

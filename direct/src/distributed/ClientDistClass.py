@@ -3,6 +3,7 @@
 from PandaModules import *
 import DirectNotifyGlobal
 import ClientDistUpdate
+import PythonUtil
 
 class ClientDistClass:
     notify = DirectNotifyGlobal.directNotify.newCategory("ClientDistClass")
@@ -16,17 +17,22 @@ class ClientDistClass:
         self.name2CDU = self.createName2CDUDict(self.allCDU)
         self.broadcastRequiredCDU = self.listBroadcastRequiredCDU(self.allCDU)
         self.allRequiredCDU = self.listRequiredCDU(self.allCDU)
+
         # Import the class, and store the constructor
-        try:
-            exec("import " + self.name)
-            self.constructor = eval(self.name + "." + self.name)
-        except ImportError, e:
-            self.notify.warning("Unable to import %s.py: %s" % (self.name, e))
+        if not PythonUtil.findPythonModule(self.name):
+            self.notify.warning("%s.py does not exist." % (self.name))
             self.constructor = None
-        except (NameError, AttributeError), e:
-            self.notify.warning("%s.%s does not exist: %s" % (self.name, self.name, e))
-            self.constructor = None 
-        return None
+            
+        else:
+            exec("import " + self.name)
+
+            try:
+                self.constructor = eval(self.name + "." + self.name)
+            except (NameError, AttributeError), e:
+                self.notify.warning("%s.%s does not exist: %s" % (self.name, self.name, e))
+                self.constructor = None
+                
+        return
 
     def parseFields(self, dcClass):
         fields=[]
