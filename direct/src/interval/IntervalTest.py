@@ -24,8 +24,8 @@ BOAT_END = boatTrack.getIntervalEndTime('boatpath')
 # Make the dock lerp up so that it's up when the boat reaches the end of
 # its mopath
 dockLerp = LerpPosHprInterval(dock, 5.0, 
-			      Point3(0, 0, -5), 
-			      hpr = Vec3(0, 0, 0), 
+			      pos=Point3(0, 0, -5), 
+			      hpr=Vec3(0, 0, 0), 
 			      name='dock-lerp')
 # We need the dock's state to be defined before the lerp
 dockPos = PosHprInterval(dock, dock.getPos(), dock.getHpr(), 1.0, 'dockpos')
