@@ -969,7 +969,7 @@ event_window_event(CPT_Event event, void *data) {
     // Is this a window we've heard about?
     int window_index = self->find_window(win);
     if (window_index == -1) {
-      framework_cat.warning()
+      framework_cat.debug()
         << "Ignoring message from unknown window.\n";
     } else {
       if (!win->get_properties().get_open()) {

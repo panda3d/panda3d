@@ -102,6 +102,9 @@ protected:
   void setup_lights();
 
 private:
+  PT(PandaNode) load_image_as_model(const Filename &filename);
+
+private:
   PandaFramework *_panda_framework;
   PT(GraphicsWindow) _window;
 

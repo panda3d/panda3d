@@ -40,6 +40,12 @@
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
 #include "pgTop.h"
+#include "geomNode.h"
+#include "geomTristrip.h"
+#include "texture.h"
+#include "pnmImage.h"
+#include "loaderFileTypeRegistry.h"
+#include "pnmFileTypeRegistry.h"
 
 // This number is chosen arbitrarily to override any settings in model
 // files.
@@ -462,9 +468,36 @@ load_model(const NodePath &parent, Filename filename) {
   // If the filename already exists where it is, or if it is fully
   // qualified, don't search along the model path for it.
   bool search = !(filename.is_fully_qualified() || filename.exists());
+
+  // We allow loading image files here.  Check to see if it might be
+  // an image file, based on the filename extension.
+  bool is_image = false;
+  string extension = filename.get_extension();
+  if (!extension.empty()) {
+    LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_ptr();
+    LoaderFileType *model_type =
+      reg->get_type_from_extension(extension);
+    if (model_type == (LoaderFileType *)NULL) {
+      // The extension isn't a known model file type, is it a known
+      // image extension?
+      PNMFileTypeRegistry *reg = PNMFileTypeRegistry::get_ptr();
+      PNMFileType *image_type =
+        reg->get_type_from_extension(extension);
+      if (image_type != (PNMFileType *)NULL) {
+        // It is a known image extension.
+        is_image = true;
+      }
+    }
+  }
   
   Loader loader;
-  PT(PandaNode) node = loader.load_sync(filename, search);
+  PT(PandaNode) node;
+  if (is_image) {
+    node = load_image_as_model(filename);
+  } else {
+    node = loader.load_sync(filename, search);
+  }
+
   if (node == (PandaNode *)NULL) {
     nout << "Unable to load " << filename << "\n";
     return NodePath::not_found();
@@ -745,4 +778,71 @@ setup_lights() {
   light_group.attach_new_node(_dlight);
   
   _got_lights = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::load_image_as_model
+//       Access: Private
+//  Description: Loads the indicated image file as a texture, and
+//               creates a polygon to render it.  Returns the new
+//               model.
+////////////////////////////////////////////////////////////////////
+PT(PandaNode) WindowFramework::
+load_image_as_model(const Filename &filename) {
+  PNMImageHeader header;
+  if (!header.read_header(filename)) {
+    return NULL;
+  }
+
+  int x_size = header.get_x_size();
+  int y_size = header.get_y_size();
+  bool has_alpha = header.has_alpha();
+
+  // Yes, it is an image file; make a texture out of it.
+  PT(Texture) tex = new Texture;
+  if (!tex->read(filename)) {
+    return NULL;
+  }
+  tex->set_minfilter(Texture::FT_linear_mipmap_linear);
+  tex->set_magfilter(Texture::FT_linear);
+
+  // Ok, now make a polygon to show the texture.
+  PT(GeomNode) card_geode = new GeomNode("card");
+
+  // Choose the dimensions of the polygon appropriately.
+  float left = -x_size / 2.0;
+  float right = x_size / 2.0;
+  float bottom = -y_size / 2.0;
+  float top = y_size / 2.0;
+
+  GeomTristrip *geoset = new GeomTristrip;
+  PTA_int lengths=PTA_int::empty_array(0);
+  lengths.push_back(4);
+
+  PTA_Vertexf verts;
+  verts.push_back(Vertexf::rfu(left, 0.02f, top));
+  verts.push_back(Vertexf::rfu(left, 0.02f, bottom));
+  verts.push_back(Vertexf::rfu(right, 0.02f, top));
+  verts.push_back(Vertexf::rfu(right, 0.02f, bottom));
+
+  geoset->set_num_prims(1);
+  geoset->set_lengths(lengths);
+
+  geoset->set_coords(verts);
+
+  PTA_TexCoordf uvs;
+  uvs.push_back(TexCoordf(0.0f, 1.0f));
+  uvs.push_back(TexCoordf(0.0f, 0.0f));
+  uvs.push_back(TexCoordf(1.0f, 1.0f));
+  uvs.push_back(TexCoordf(1.0f, 0.0f));
+  
+  geoset->set_texcoords(uvs, G_PER_VERTEX);
+
+  card_geode->add_geom(geoset);
+  card_geode->set_attrib(TextureAttrib::make(tex));
+  if (has_alpha) {
+    card_geode->set_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
+  }
+
+  return card_geode.p();
 }
