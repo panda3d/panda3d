@@ -109,11 +109,15 @@ erase() {
 ////////////////////////////////////////////////////////////////////
 void DynamicTextGlyph::
 make_geom(int bitmap_top, int bitmap_left, float advance, float poly_margin, 
+          float tex_x_size, float tex_y_size,
           float font_pixels_per_unit, float tex_pixels_per_unit) {
   nassertv(_page != (DynamicTextPage *)NULL);
 
   // This function should not be called twice.
   nassertv(_geom_count == 0);
+
+  tex_x_size += _margin * 2;
+  tex_y_size += _margin * 2;
 
   // Determine the corners of the rectangle in geometric units.
   float tex_poly_margin = poly_margin / tex_pixels_per_unit;
@@ -121,14 +125,14 @@ make_geom(int bitmap_top, int bitmap_left, float advance, float poly_margin,
   float origin_x = bitmap_left / font_pixels_per_unit;
   float top = origin_y + tex_poly_margin;
   float left = origin_x - tex_poly_margin;
-  float bottom = origin_y - _y_size / tex_pixels_per_unit - tex_poly_margin;
-  float right = origin_x + _x_size / tex_pixels_per_unit + tex_poly_margin;
+  float bottom = origin_y - tex_y_size / tex_pixels_per_unit - tex_poly_margin;
+  float right = origin_x + tex_x_size / tex_pixels_per_unit + tex_poly_margin;
 
   // And the corresponding corners in UV units.
   float uv_top = 1.0f - (float)(_y - poly_margin) / _page->get_y_size();
   float uv_left = (float)(_x - poly_margin) / _page->get_x_size();
-  float uv_bottom = 1.0f - (float)(_y + _y_size + poly_margin) / _page->get_y_size();
-  float uv_right = (float)(_x + _x_size + poly_margin) / _page->get_x_size();
+  float uv_bottom = 1.0f - (float)(_y + poly_margin + tex_y_size) / _page->get_y_size();
+  float uv_right = (float)(_x + poly_margin + tex_x_size) / _page->get_x_size();
 
   // Create a corresponding tristrip.
   _geom = new GeomTextGlyph(this);

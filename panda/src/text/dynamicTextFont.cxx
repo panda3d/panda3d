@@ -459,6 +459,9 @@ make_glyph(int glyph_index) {
   } else {
     DynamicTextGlyph *glyph;
 
+    float tex_x_size = bitmap.width;
+    float tex_y_size = bitmap.rows;
+
     if (_tex_pixels_per_unit == _font_pixels_per_unit) {
       // If the bitmap produced from the font doesn't require scaling
       // before it goes to the texture, we can just copy it directly
@@ -469,21 +472,27 @@ make_glyph(int glyph_index) {
     } else {
       // Otherwise, we need to copy to a PNMImage first, so we can
       // scale it; and then copy it to the texture from there.
-      int tex_x_size = (int)(bitmap.width / _scale_factor + 0.5f);
-      int tex_y_size = (int)(bitmap.rows / _scale_factor + 0.5f);
-      glyph = slot_glyph(tex_x_size, tex_y_size);
-
-      PNMImage image(bitmap.width, bitmap.rows, PNMImage::CT_grayscale);
+      tex_x_size /= _scale_factor;
+      tex_y_size /= _scale_factor;
+      int int_x_size = (int)ceil(tex_x_size);
+      int int_y_size = (int)ceil(tex_y_size);
+      int bmp_x_size = (int)(int_x_size * _scale_factor + 0.5f);
+      int bmp_y_size = (int)(int_y_size * _scale_factor + 0.5f);
+      glyph = slot_glyph(int_x_size, int_y_size);
+      
+      PNMImage image(bmp_x_size, bmp_y_size, PNMImage::CT_grayscale);
       copy_bitmap_to_pnmimage(bitmap, image);
 
-      PNMImage reduced(tex_x_size, tex_y_size, PNMImage::CT_grayscale);
+      PNMImage reduced(int_x_size, int_y_size, PNMImage::CT_grayscale);
       reduced.quick_filter_from(image);
       copy_pnmimage_to_texture(reduced, glyph);
     }
       
     glyph->_page->mark_dirty(Texture::DF_image);
     
-    glyph->make_geom(slot->bitmap_top, slot->bitmap_left, advance, _poly_margin,
+    glyph->make_geom(slot->bitmap_top, slot->bitmap_left,
+                     advance, _poly_margin,
+                     tex_x_size, tex_y_size,
                      _font_pixels_per_unit, _tex_pixels_per_unit);
     return glyph;
   }
