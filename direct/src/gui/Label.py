@@ -11,7 +11,7 @@ ButtonDown = 3
 Sign = 4
 ScrollTitle = 5
 ScrollItem = 6
-
+ButtonUpGui = 7
 
 def textLabel(string, style,
               scale = 0.1,
@@ -64,6 +64,10 @@ def textLabelAndText(string, style,
     if style == ButtonUp:
         # This is the default: black on white.
         pass
+
+    elif style == ButtonUpGui:
+        # special GUI button with our lovely gui color
+        text.setCardColor(0.25, 0.7, 0.85, 1.0)
         
     elif style == ButtonLit:
         # When the mouse is over the button, the background turns

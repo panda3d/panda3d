@@ -14,7 +14,8 @@ class Button(DirectObject):
                  drawOrder = getDefaultDrawOrder(),
                  font = getDefaultFont(),
                  pos = (0, 0),
-                 geomRect = None):
+                 geomRect = None,
+                 style = Label.ButtonUp):
         self.name = name
         self.width = width
         # if no label given, use the button name
@@ -26,7 +27,7 @@ class Button(DirectObject):
             # text label, make text button
             self.label = label
 
-            self.l1 = Label.textLabel(self.label, Label.ButtonUp,
+            self.l1 = Label.textLabel(self.label, style,
                                       scale, width, drawOrder, font)
 
             if width == None:
