@@ -80,13 +80,13 @@ public:
 protected:
 
 private:
-  FSOUND_STREAM *_audio;
   PT(FmodAudioManager) _manager;
+  FSOUND_STREAM *_audio;
+  string _file_name;
   float _volume; // 0..1.0
   float _balance; // -1..1
-  mutable float _length; // in seconds.
   unsigned long _loop_count;
-  string _file_name;
+  mutable float _length; // in seconds.
   bool _active;
   bool _paused;
   int _channel;

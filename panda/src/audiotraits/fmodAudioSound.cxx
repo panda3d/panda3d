@@ -69,7 +69,6 @@ play() {
 
   // Play the stream, but start it paused so we can set the volume and
   // panning first.
-  bool bStatusOK = false;
   assert(_audio != NULL);
   _channel = FSOUND_Stream_PlayEx(FSOUND_FREE, _audio, NULL, 1);
   if (_channel == -1) {
@@ -134,7 +133,7 @@ void FmodAudioSound::set_time(float start_time) {
     start_time = _length - 0.01;
   }
   // FMOD measures time in milliseconds, so scale up by 1000.
-  FSOUND_Stream_SetTime(_audio, start_time * 1000.0f);
+  FSOUND_Stream_SetTime(_audio, (int)(start_time * 1000.0f));
 }
 
 float FmodAudioSound::get_time() const {
