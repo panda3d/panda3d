@@ -6,7 +6,6 @@
 /* okcircular */
 #include "multiAttribute.h"
 
-
 template<class Property, class NameClass>
 TypeHandle MultiTransition<Property, NameClass>::_type_handle;
 

@@ -61,22 +61,22 @@ protected:
   // in the chain will store a reference-counting pointer to the
   // chain's top node.
 
-  class ArcComponent : public ReferenceCount {
+  class EXPCL_PANDA ArcComponent : public ReferenceCount {
   public:
-    INLINE ArcComponent(Node *node);
-    INLINE ArcComponent(NodeRelation *arc, ArcComponent *next);
-    INLINE ArcComponent(const ArcComponent &copy);
+    INLINE_GRAPH ArcComponent(Node *node);
+    INLINE_GRAPH ArcComponent(NodeRelation *arc, ArcComponent *next);
+    INLINE_GRAPH ArcComponent(const ArcComponent &copy);
     void operator = (const ArcComponent &copy);
-    INLINE ~ArcComponent();
+    INLINE_GRAPH ~ArcComponent();
 
-    INLINE bool has_arc() const;
-    INLINE NodeRelation *get_arc() const;
-    INLINE Node *get_node() const;
-    INLINE bool is_top_node() const;
-    INLINE bool is_top_arc() const;
+    INLINE_GRAPH bool has_arc() const;
+    INLINE_GRAPH NodeRelation *get_arc() const;
+    INLINE_GRAPH Node *get_node() const;
+    INLINE_GRAPH bool is_top_node() const;
+    INLINE_GRAPH bool is_top_arc() const;
 
-    INLINE ArcComponent *get_next() const;
-    INLINE void set_next(ArcComponent *next);
+    INLINE_GRAPH ArcComponent *get_next() const;
+    INLINE_GRAPH void set_next(ArcComponent *next);
 
   private:
     union {
@@ -95,11 +95,11 @@ protected:
   // begin() .. end().
   class ForwardIterator {
   public:
-    INLINE ForwardIterator(ArcComponent *comp = NULL);
-    INLINE NodeRelation *operator * () const;
-    INLINE void operator ++();
-    INLINE bool operator == (const ForwardIterator &other) const;
-    INLINE bool operator != (const ForwardIterator &other) const;
+    INLINE_GRAPH ForwardIterator(ArcComponent *comp = NULL);
+    INLINE_GRAPH NodeRelation *operator * () const;
+    INLINE_GRAPH void operator ++();
+    INLINE_GRAPH bool operator == (const ForwardIterator &other) const;
+    INLINE_GRAPH bool operator != (const ForwardIterator &other) const;
 
   private:
     ArcComponent *_comp;
@@ -109,39 +109,38 @@ public:
   typedef ForwardIterator iterator;
   typedef ForwardIterator const_iterator;
 
-  INLINE ArcChain();
-  INLINE ArcChain(Node *top_node);
-  INLINE ArcChain(const ArcChain &copy);
-  INLINE void operator = (const ArcChain &copy);
+  INLINE_GRAPH ArcChain();
+  INLINE_GRAPH ArcChain(Node *top_node);
+  INLINE_GRAPH ArcChain(const ArcChain &copy);
+  INLINE_GRAPH void operator = (const ArcChain &copy);
 
-  INLINE bool has_node() const;
-  INLINE bool has_arcs() const;
+  INLINE_GRAPH bool has_node() const;
+  INLINE_GRAPH bool has_arcs() const;
 
-  INLINE const_iterator begin() const;
-  INLINE const_iterator end() const;
-  INLINE bool empty() const;
+  INLINE_GRAPH const_iterator begin() const;
+  INLINE_GRAPH const_iterator end() const;
+  INLINE_GRAPH bool empty() const;
 
-  INLINE void push_back(NodeRelation *arc);
-  INLINE void pop_back();
-  INLINE NodeRelation *back() const;
+  INLINE_GRAPH void push_back(NodeRelation *arc);
+  INLINE_GRAPH void pop_back();
+  INLINE_GRAPH NodeRelation *back() const;
 
-  INLINE bool operator == (const ArcChain &other) const;
-  INLINE bool operator != (const ArcChain &other) const;
-  INLINE bool operator < (const ArcChain &other) const;
-  INLINE int compare_to(const ArcChain &other) const;
+  INLINE_GRAPH bool operator == (const ArcChain &other) const;
+  INLINE_GRAPH bool operator != (const ArcChain &other) const;
+  INLINE_GRAPH bool operator < (const ArcChain &other) const;
+  INLINE_GRAPH int compare_to(const ArcChain &other) const;
 
-  INLINE void output(ostream &out) const;
+  INLINE_GRAPH void output(ostream &out) const;
 
 private:
   void r_output(ostream &out, ArcComponent *comp) const;
   static int r_compare_to(const ArcComponent *a, const ArcComponent *v);
 };
 
-INLINE ostream &operator << (ostream &out, const ArcChain &arc_chain) {
-  arc_chain.output(out);
-  return out;
-}
+INLINE_GRAPH ostream &operator << (ostream &out, const ArcChain &arc_chain);
 
+#ifdef BUILDING_PANDA
 #include "arcChain.I"
+#endif
 
 #endif

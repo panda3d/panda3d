@@ -26,16 +26,16 @@ class NodeRelation;
 template<class MaskType>
 class BitMaskTransition : public NodeTransition {
 protected:
-  INLINE BitMaskTransition();
-  INLINE BitMaskTransition(const MaskType &and, const MaskType &or);
-  INLINE BitMaskTransition(const BitMaskTransition &copy);
-  INLINE void operator = (const BitMaskTransition &copy);
+  INLINE_GRAPH BitMaskTransition();
+  INLINE_GRAPH BitMaskTransition(const MaskType &and, const MaskType &or);
+  INLINE_GRAPH BitMaskTransition(const BitMaskTransition &copy);
+  INLINE_GRAPH void operator = (const BitMaskTransition &copy);
 
 public:
-  INLINE void set_and(const MaskType &and);
-  INLINE const MaskType &get_and() const;
-  INLINE void set_or(const MaskType &or);
-  INLINE const MaskType &get_or() const;
+  INLINE_GRAPH void set_and(const MaskType &and);
+  INLINE_GRAPH const MaskType &get_and() const;
+  INLINE_GRAPH void set_or(const MaskType &or);
+  INLINE_GRAPH const MaskType &get_or() const;
 
   virtual NodeTransition *compose(const NodeTransition *other) const;
   virtual NodeTransition *invert() const;
@@ -74,6 +74,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "bitMaskTransition.I"
+#include "bitMaskTransition.T"
 
 #endif

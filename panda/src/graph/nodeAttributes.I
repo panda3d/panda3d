@@ -8,7 +8,7 @@
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NodeAttributes::size_type NodeAttributes::
+INLINE_GRAPH NodeAttributes::size_type NodeAttributes::
 size() const {
   return _attributes.size();
 }
@@ -18,7 +18,7 @@ size() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NodeAttributes::iterator NodeAttributes::
+INLINE_GRAPH NodeAttributes::iterator NodeAttributes::
 begin() {
   return _attributes.begin();
 }
@@ -28,7 +28,7 @@ begin() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NodeAttributes::iterator NodeAttributes::
+INLINE_GRAPH NodeAttributes::iterator NodeAttributes::
 end() {
   return _attributes.end();
 }
@@ -38,7 +38,7 @@ end() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NodeAttributes::const_iterator NodeAttributes::
+INLINE_GRAPH NodeAttributes::const_iterator NodeAttributes::
 begin() const {
   return _attributes.begin();
 }
@@ -48,7 +48,7 @@ begin() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NodeAttributes::const_iterator NodeAttributes::
+INLINE_GRAPH NodeAttributes::const_iterator NodeAttributes::
 end() const {
   return _attributes.end();
 }
@@ -58,7 +58,7 @@ end() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NodeAttributes::iterator NodeAttributes::
+INLINE_GRAPH NodeAttributes::iterator NodeAttributes::
 insert(NodeAttributes::iterator position, 
        const NodeAttributes::value_type &x) {
   return _attributes.insert(position, x);
@@ -69,7 +69,7 @@ insert(NodeAttributes::iterator position,
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeAttributes::
+INLINE_GRAPH void NodeAttributes::
 erase(NodeAttributes::iterator position) {
   _attributes.erase(position);
 }
@@ -80,7 +80,7 @@ erase(NodeAttributes::iterator position) {
 //  Description: Modifies the current NodeAttributes object to reflect
 //               the application of the indicated transitions.
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeAttributes::
+INLINE_GRAPH void NodeAttributes::
 apply_in_place(const NodeTransitionCache &trans) {
   apply_from(*this, trans);
 }
@@ -93,33 +93,15 @@ apply_in_place(const NodeTransitionCache &trans) {
 //               NodeAttributes to the indicated transition cache.
 //               This NodeAttributes object is not changed.
 ////////////////////////////////////////////////////////////////////
-INLINE NodeAttributes *NodeAttributes::
+INLINE_GRAPH NodeAttributes *NodeAttributes::
 apply(const NodeTransitionCache &trans) const {
   NodeAttributes *na = new NodeAttributes;
   na->apply_from(*this, trans);
   return na;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_attribute_into
-//  Description: This external template function is handy for
-//               extracting a attribute of a particular type from the
-//               set.  If the attribute exists, it is automatically
-//               downcasted to the correct type and stored in the
-//               pointer given in the first parameter, and the return
-//               value is true.  If the attribute does not exist, the
-//               pointer is filled with NULL and the return value is
-//               false.
-////////////////////////////////////////////////////////////////////
-template<class Attribute>
-INLINE bool 
-get_attribute_into(Attribute *&ptr, const NodeAttributes &attrib,
-		   TypeHandle transition_type) {
-  NodeAttribute *nt = attrib.get_attribute(transition_type);
-  if (nt == (NodeAttribute *)NULL) {
-    ptr = (Attribute *)NULL;
-    return false;
-  }
-  DCAST_INTO_R(ptr, nt, false);
-  return true;
+INLINE_GRAPH ostream &operator << (ostream &out, const NodeAttributes &nas) {
+  nas.output(out);
+  return out;
 }
+

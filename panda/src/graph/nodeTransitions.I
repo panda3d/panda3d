@@ -13,7 +13,7 @@
 //               set_transition; if the pointer might be NULL, use the
 //               above flavor instead (or just call clear_transition).
 ////////////////////////////////////////////////////////////////////
-INLINE PT(NodeTransition) NodeTransitions::
+INLINE_GRAPH PT(NodeTransition) NodeTransitions::
 set_transition(NodeTransition *trans) {
   nassertr(trans != (NodeTransition *)NULL, NULL);
   nassertr(trans->get_handle() != TypeHandle::none(), NULL);
@@ -25,7 +25,7 @@ set_transition(NodeTransition *trans) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NodeTransitions::size_type NodeTransitions::
+INLINE_GRAPH NodeTransitions::size_type NodeTransitions::
 size() const {
   return _transitions.size();
 }
@@ -35,7 +35,7 @@ size() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NodeTransitions::const_iterator NodeTransitions::
+INLINE_GRAPH NodeTransitions::const_iterator NodeTransitions::
 begin() const {
   return _transitions.begin();
 }
@@ -45,7 +45,7 @@ begin() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NodeTransitions::const_iterator NodeTransitions::
+INLINE_GRAPH NodeTransitions::const_iterator NodeTransitions::
 end() const {
   return _transitions.end();
 }
@@ -62,7 +62,7 @@ end() const {
 //               false.
 ////////////////////////////////////////////////////////////////////
 template<class Transition>
-INLINE bool 
+INLINE_GRAPH bool 
 get_transition_into(Transition *&ptr, const NodeTransitions &trans,
 		    TypeHandle transition_type) {
   NodeTransition *nt = trans.get_transition(transition_type);
@@ -75,7 +75,12 @@ get_transition_into(Transition *&ptr, const NodeTransitions &trans,
 }
 
 template<class Transition>
-INLINE bool 
+INLINE_GRAPH bool 
 get_transition_into(Transition *&ptr, const NodeTransitions &trans) {
   return get_transition_into(ptr, trans, Transition::get_class_type());
+}
+
+INLINE_GRAPH ostream &operator << (ostream &out, const NodeTransitions &nts) {
+  nts.output(out);
+  return out;
 }

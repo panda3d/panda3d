@@ -42,45 +42,44 @@ public:
   typedef NullTransitionWrapper TransitionWrapper;
   typedef NullAttributeWrapper AttributeWrapper;
 
-  INLINE NullTransitionWrapper();
-  INLINE NullTransitionWrapper(const NullTransitionWrapper &copy);
-  INLINE void operator = (const NullTransitionWrapper &copy);
+  INLINE_GRAPH NullTransitionWrapper();
+  INLINE_GRAPH NullTransitionWrapper(const NullTransitionWrapper &copy);
+  INLINE_GRAPH void operator = (const NullTransitionWrapper &copy);
 
-  INLINE static NullTransitionWrapper 
+  INLINE_GRAPH static NullTransitionWrapper 
   init_from(const NullTransitionWrapper &other);
-  INLINE static NullTransitionWrapper
+  INLINE_GRAPH static NullTransitionWrapper
   init_from(const NullAttributeWrapper &attrib);
 
-  INLINE bool is_identity() const;
-  INLINE int compare_to(const NullTransitionWrapper &other) const;
+  INLINE_GRAPH bool is_identity() const;
+  INLINE_GRAPH int compare_to(const NullTransitionWrapper &other) const;
 
-  INLINE void make_identity();
-  INLINE void extract_from(const NodeRelation *arc);
-  INLINE void store_to(NodeRelation *arc) const;
+  INLINE_GRAPH void make_identity();
+  INLINE_GRAPH void extract_from(const NodeRelation *arc);
+  INLINE_GRAPH void store_to(NodeRelation *arc) const;
 
-  INLINE void compose_in_place(const NullTransitionWrapper &other);
-  INLINE void invert_in_place();
-  INLINE void invert_compose_in_place(const NullTransitionWrapper &other);
+  INLINE_GRAPH void compose_in_place(const NullTransitionWrapper &other);
+  INLINE_GRAPH void invert_in_place();
+  INLINE_GRAPH void invert_compose_in_place(const NullTransitionWrapper &other);
 
-  INLINE Node *extract_from_cache(const NodeRelation *arc);
-  INLINE void store_to_cache(NodeRelation *arc, Node *top_subtree);
-  INLINE bool is_cache_verified(UpdateSeq now) const;
-  INLINE void set_computed_verified(UpdateSeq now);
+  INLINE_GRAPH Node *extract_from_cache(const NodeRelation *arc);
+  INLINE_GRAPH void store_to_cache(NodeRelation *arc, Node *top_subtree);
+  INLINE_GRAPH bool is_cache_verified(UpdateSeq now) const;
+  INLINE_GRAPH void set_computed_verified(UpdateSeq now);
 
-  INLINE void cached_compose(const NullTransitionWrapper &cache, 
+  INLINE_GRAPH void cached_compose(const NullTransitionWrapper &cache, 
 			     const NullTransitionWrapper &value,
 			     UpdateSeq now);
 
-  INLINE void output(ostream &out) const;
-  INLINE void write(ostream &out, int indent_level = 0) const;
+  INLINE_GRAPH void output(ostream &out) const;
+  INLINE_GRAPH void write(ostream &out, int indent_level = 0) const;
 };
 
-INLINE ostream &operator << (ostream &out, const NullTransitionWrapper &ntw) {
-  ntw.output(out);
-  return out;
-}
+INLINE_GRAPH ostream &operator << (ostream &out, const NullTransitionWrapper &ntw);
 
+#ifdef BUILDING_PANDA
 #include "nullTransitionWrapper.I"
+#endif
 
 #endif
 

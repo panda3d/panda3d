@@ -27,14 +27,14 @@ class NodeRelation;
 template<class Matrix>
 class MatrixTransition : public NodeTransition {
 protected:
-  INLINE MatrixTransition();
-  INLINE MatrixTransition(const Matrix &matrix);
-  INLINE MatrixTransition(const MatrixTransition &copy);
-  INLINE void operator = (const MatrixTransition &copy);
+  INLINE_GRAPH MatrixTransition();
+  INLINE_GRAPH MatrixTransition(const Matrix &matrix);
+  INLINE_GRAPH MatrixTransition(const MatrixTransition &copy);
+  INLINE_GRAPH void operator = (const MatrixTransition &copy);
 
 public:
-  INLINE void set_matrix(const Matrix &mat);
-  INLINE const Matrix &get_matrix() const;
+  INLINE_GRAPH void set_matrix(const Matrix &mat);
+  INLINE_GRAPH const Matrix &get_matrix() const;
 
   virtual NodeTransition *compose(const NodeTransition *other) const;
   virtual NodeTransition *invert() const;
@@ -82,6 +82,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "matrixTransition.I"
+#include "matrixTransition.T"
 
 #endif

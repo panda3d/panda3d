@@ -54,17 +54,17 @@ public:
   typedef Attributes::value_type value_type;
   typedef Attributes::size_type size_type;
 
-  INLINE size_type size() const;
-  INLINE iterator begin();
-  INLINE iterator end();
-  INLINE const_iterator begin() const;
-  INLINE const_iterator end() const;
-  INLINE iterator insert(iterator position, const value_type &x);
-  INLINE void erase(iterator position);
+  INLINE_GRAPH size_type size() const;
+  INLINE_GRAPH iterator begin();
+  INLINE_GRAPH iterator end();
+  INLINE_GRAPH const_iterator begin() const;
+  INLINE_GRAPH const_iterator end() const;
+  INLINE_GRAPH iterator insert(iterator position, const value_type &x);
+  INLINE_GRAPH void erase(iterator position);
 
 public:
-  INLINE void apply_in_place(const NodeTransitionCache &trans);
-  INLINE NodeAttributes *apply(const NodeTransitionCache &trans) const;
+  INLINE_GRAPH void apply_in_place(const NodeTransitionCache &trans);
+  INLINE_GRAPH NodeAttributes *apply(const NodeTransitionCache &trans) const;
   void apply_from(const NodeAttributes &other, 
 		  const NodeTransitionCache &trans);
 
@@ -76,19 +76,16 @@ PUBLISHED:
 
 private:
   Attributes _attributes;
-friend class NodeAttributeCache;
+  friend class NodeAttributeCache;
 };
 
-INLINE ostream &operator << (ostream &out, const NodeAttributes &nas) {
-  nas.output(out);
-  return out;
-}
+INLINE_GRAPH ostream &operator << (ostream &out, const NodeAttributes &nas);
 
-template<class Attribute>
-INLINE bool 
-get_attribute_into(Attribute *&ptr, const NodeAttributes &attrib,
-		   TypeHandle transition_type);
+#include "nodeAttributes.T"
 
+#ifdef BUILDING_PANDA
 #include "nodeAttributes.I"
+#endif
 
 #endif
+

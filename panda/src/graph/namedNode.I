@@ -9,7 +9,7 @@
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NamedNode::
+INLINE_GRAPH NamedNode::
 NamedNode(const string &initial_name) :
   Namable(initial_name) 
 { 
@@ -20,7 +20,7 @@ NamedNode(const string &initial_name) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NamedNode::
+INLINE_GRAPH NamedNode::
 NamedNode(const NamedNode &copy) :
   Node(copy), Namable(copy)
 {
@@ -31,8 +31,13 @@ NamedNode(const NamedNode &copy) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void NamedNode::
+INLINE_GRAPH void NamedNode::
 operator = (const NamedNode &copy) {
   Node::operator = (copy);
   Namable::operator = (copy);
+}
+
+EXPCL_PANDA INLINE_GRAPH ostream & operator << (ostream &out, const NamedNode &nod) {
+  nod.output(out);
+  return out;
 }

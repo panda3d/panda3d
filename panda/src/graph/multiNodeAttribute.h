@@ -30,9 +30,12 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, MULTIATTRIBUTE_NODE);
 class EXPCL_PANDA MultiNodeAttribute : 
   public MultiAttribute<PT_Node, PointerNameClass> {
 protected:
-  INLINE MultiNodeAttribute();
-  INLINE MultiNodeAttribute(const MultiNodeAttribute &copy);
-  INLINE void operator = (const MultiNodeAttribute &copy);
+  INLINE_GRAPH MultiNodeAttribute() {};
+  INLINE_GRAPH MultiNodeAttribute(const MultiNodeAttribute &copy) :
+	  MultiAttribute<PT_Node, PointerNameClass>(copy) {};
+
+  INLINE_GRAPH void operator = (const MultiNodeAttribute &copy) 
+          {MultiAttribute<PT_Node, PointerNameClass>::operator = (copy);}
 
 public:
   virtual TypeHandle get_type() const {
@@ -52,7 +55,5 @@ public:
 private:
   static TypeHandle _type_handle;
 };
-
-#include "multiNodeAttribute.I"
 
 #endif

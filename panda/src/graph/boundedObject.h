@@ -23,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA BoundedObject {
 public:
-  INLINE BoundedObject();
+  INLINE_GRAPH BoundedObject();
   virtual ~BoundedObject();
 
 PUBLISHED:
@@ -32,13 +32,13 @@ PUBLISHED:
     BVT_dynamic_sphere,
   };
 
-  INLINE void set_bound(BoundingVolumeType type);
-  INLINE void set_bound(const BoundingVolume &volume);
-  INLINE const BoundingVolume &get_bound() const;
+  INLINE_GRAPH void set_bound(BoundingVolumeType type);
+  INLINE_GRAPH void set_bound(const BoundingVolume &volume);
+  INLINE_GRAPH const BoundingVolume &get_bound() const;
 
-  INLINE bool mark_bound_stale();
-  INLINE void force_bound_stale();
-  INLINE bool is_bound_stale() const;
+  INLINE_GRAPH bool mark_bound_stale();
+  INLINE_GRAPH void force_bound_stale();
+  INLINE_GRAPH bool is_bound_stale() const;
 
 protected:
   virtual void propagate_stale_bound();
@@ -63,7 +63,9 @@ private:
   static TypeHandle _type_handle;
 };
 
+#ifdef BUILDING_PANDA
 #include "boundedObject.I"
+#endif
 
 #endif
 

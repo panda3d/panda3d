@@ -24,27 +24,26 @@ public:
   typedef NullTransitionWrapper TransitionWrapper;
   typedef NullAttributeWrapper AttributeWrapper;
 
-  INLINE NullAttributeWrapper();
-  INLINE NullAttributeWrapper(const NullAttributeWrapper &copy);
-  INLINE void operator = (const NullAttributeWrapper &copy);
-  INLINE static NullAttributeWrapper
+  INLINE_GRAPH NullAttributeWrapper();
+  INLINE_GRAPH NullAttributeWrapper(const NullAttributeWrapper &copy);
+  INLINE_GRAPH void operator = (const NullAttributeWrapper &copy);
+  INLINE_GRAPH static NullAttributeWrapper
   init_from(const NullTransitionWrapper &trans);
 
-  INLINE bool is_initial() const;
-  INLINE int compare_to(const NullAttributeWrapper &other) const;
+  INLINE_GRAPH bool is_initial() const;
+  INLINE_GRAPH int compare_to(const NullAttributeWrapper &other) const;
 
-  INLINE void make_initial();
-  INLINE void apply_in_place(const NullTransitionWrapper &trans);
+  INLINE_GRAPH void make_initial();
+  INLINE_GRAPH void apply_in_place(const NullTransitionWrapper &trans);
 
-  INLINE void output(ostream &out) const;
-  INLINE void write(ostream &out, int indent_level = 0) const;
+  INLINE_GRAPH void output(ostream &out) const;
+  INLINE_GRAPH void write(ostream &out, int indent_level = 0) const;
 };
 
-INLINE ostream &operator << (ostream &out, const NullAttributeWrapper &naw) {
-  naw.output(out);
-  return out;
-}
+INLINE_GRAPH ostream &operator << (ostream &out, const NullAttributeWrapper &naw);
 
+#ifdef BUILDING_PANDA
 #include "nullAttributeWrapper.I"
+#endif
 
 #endif

@@ -22,28 +22,28 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA NodeTransitionCacheEntry {
 public:
-  INLINE NodeTransitionCacheEntry(NodeTransition *trans = NULL);
-  INLINE NodeTransitionCacheEntry(const NodeTransitionCacheEntry &copy);
-  INLINE void operator = (const NodeTransitionCacheEntry &copy);
+  INLINE_GRAPH NodeTransitionCacheEntry(NodeTransition *trans = NULL);
+  INLINE_GRAPH NodeTransitionCacheEntry(const NodeTransitionCacheEntry &copy);
+  INLINE_GRAPH void operator = (const NodeTransitionCacheEntry &copy);
 
-  INLINE bool is_identity() const;
-  INLINE int compare_to(const NodeTransitionCacheEntry &other) const;
+  INLINE_GRAPH bool is_identity() const;
+  INLINE_GRAPH int compare_to(const NodeTransitionCacheEntry &other) const;
 
-  INLINE void clear();
+  INLINE_GRAPH void clear();
 
-  INLINE void set_trans(NodeTransition *trans);
-  INLINE void clear_trans();
-  INLINE bool has_trans() const;
-  INLINE NodeTransition *get_trans() const;
+  INLINE_GRAPH void set_trans(NodeTransition *trans);
+  INLINE_GRAPH void clear_trans();
+  INLINE_GRAPH bool has_trans() const;
+  INLINE_GRAPH NodeTransition *get_trans() const;
 
-  INLINE bool is_cache_verified(UpdateSeq as_of) const;
-  INLINE bool is_freshly_computed(UpdateSeq changed) const;
-  INLINE void set_computed_verified(UpdateSeq now);
+  INLINE_GRAPH bool is_cache_verified(UpdateSeq as_of) const;
+  INLINE_GRAPH bool is_freshly_computed(UpdateSeq changed) const;
+  INLINE_GRAPH void set_computed_verified(UpdateSeq now);
 
-  INLINE operator const PT(NodeTransition) &() const;
+  INLINE_GRAPH operator const PT(NodeTransition) &() const;
 
-  INLINE UpdateSeq get_computed() const;
-  INLINE UpdateSeq get_verified() const;
+  INLINE_GRAPH UpdateSeq get_computed() const;
+  INLINE_GRAPH UpdateSeq get_verified() const;
 
 public:
   // The following functions perform the basic transition operations
@@ -51,27 +51,27 @@ public:
   // keep the _computed and _verified members consistent across these
   // operations.
 
-  INLINE static NodeTransitionCacheEntry 
+  INLINE_GRAPH static NodeTransitionCacheEntry 
   invert(const NodeTransitionCacheEntry &a);
 
-  INLINE static NodeTransitionCacheEntry
+  INLINE_GRAPH static NodeTransitionCacheEntry
   compose(const NodeTransitionCacheEntry &a, 
 	  const NodeTransitionCacheEntry &b);
 
-  INLINE static NodeTransitionCacheEntry
+  INLINE_GRAPH static NodeTransitionCacheEntry
   invert_compose(const NodeTransitionCacheEntry &a, 
 		 const NodeTransitionCacheEntry &b);
 
-  INLINE static NodeTransitionCacheEntry
+  INLINE_GRAPH static NodeTransitionCacheEntry
   cached_compose(const NodeTransitionCacheEntry &a, 
 		 const NodeTransitionCacheEntry &cache, 
 		 const NodeTransitionCacheEntry &b,
 		 UpdateSeq now);
 
-  INLINE static NodeAttribute *
+  INLINE_GRAPH static NodeAttribute *
   apply(const NodeAttribute *a, const NodeTransitionCacheEntry &b);
 
-  INLINE NodeAttribute *make_attrib() const;
+  INLINE_GRAPH NodeAttribute *make_attrib() const;
 
 public:
   void output(ostream &out) const;
@@ -83,11 +83,10 @@ private:
   UpdateSeq _verified;
 };
 
-INLINE ostream &operator << (ostream &out, const NodeTransitionCacheEntry &e) {
-  e.output(out);
-  return out;
-}
+INLINE_GRAPH ostream &operator << (ostream &out, const NodeTransitionCacheEntry &e);
 
+#ifdef BUILDING_PANDA
 #include "nodeTransitionCacheEntry.I"
+#endif
 
 #endif

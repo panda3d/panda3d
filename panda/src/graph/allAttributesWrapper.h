@@ -24,29 +24,29 @@ public:
   typedef AllTransitionsWrapper TransitionWrapper;
   typedef AllAttributesWrapper AttributeWrapper;
 
-  INLINE AllAttributesWrapper();
-  INLINE AllAttributesWrapper(const NodeAttributes &attrib);
-  INLINE AllAttributesWrapper(const AllAttributesWrapper &copy);
-  INLINE void operator = (const AllAttributesWrapper &copy);
-  INLINE static AllAttributesWrapper 
+  INLINE_GRAPH AllAttributesWrapper();
+  INLINE_GRAPH AllAttributesWrapper(const NodeAttributes &attrib);
+  INLINE_GRAPH AllAttributesWrapper(const AllAttributesWrapper &copy);
+  INLINE_GRAPH void operator = (const AllAttributesWrapper &copy);
+  INLINE_GRAPH static AllAttributesWrapper 
   init_from(const AllTransitionsWrapper &trans);
-  INLINE ~AllAttributesWrapper();
+  INLINE_GRAPH ~AllAttributesWrapper();
 
-  INLINE bool is_empty() const;
-  INLINE PT(NodeAttribute) set_attribute(TypeHandle handle,
+  INLINE_GRAPH bool is_empty() const;
+  INLINE_GRAPH PT(NodeAttribute) set_attribute(TypeHandle handle,
 					 NodeAttribute *trans);
-  INLINE PT(NodeAttribute) set_attribute(NodeAttribute *trans);
-  INLINE PT(NodeAttribute) clear_attribute(TypeHandle handle);
-  INLINE bool has_attribute(TypeHandle handle) const;
-  INLINE NodeAttribute *get_attribute(TypeHandle handle) const;
+  INLINE_GRAPH PT(NodeAttribute) set_attribute(NodeAttribute *trans);
+  INLINE_GRAPH PT(NodeAttribute) clear_attribute(TypeHandle handle);
+  INLINE_GRAPH bool has_attribute(TypeHandle handle) const;
+  INLINE_GRAPH NodeAttribute *get_attribute(TypeHandle handle) const;
 
-  INLINE const NodeAttributes &get_attributes() const;
-  INLINE NodeAttributes &get_attributes();
+  INLINE_GRAPH const NodeAttributes &get_attributes() const;
+  INLINE_GRAPH NodeAttributes &get_attributes();
 
-  INLINE bool is_initial() const;
-  INLINE int compare_to(const AllAttributesWrapper &other) const;
+  INLINE_GRAPH bool is_initial() const;
+  INLINE_GRAPH int compare_to(const AllAttributesWrapper &other) const;
 
-  INLINE void make_initial();
+  INLINE_GRAPH void make_initial();
   void apply_in_place(const AllTransitionsWrapper &trans);
   void apply_from(const AllAttributesWrapper &other, 
 		  const AllTransitionsWrapper &trans);
@@ -59,16 +59,12 @@ private:
   NodeAttributes _attrib;
 };
 
-INLINE ostream &operator << (ostream &out, const AllAttributesWrapper &a) {
-  a.output(out);
-  return out;
-}
+INLINE_GRAPH ostream &operator << (ostream &out, const AllAttributesWrapper &a);
 
-template<class Attribute>
-INLINE bool 
-get_attribute_into(Attribute *&ptr, const AllAttributesWrapper &attrib,
-		   TypeHandle transition_type);
+#include "allAttributesWrapper.T"
 
+#ifdef BUILDING_PANDA
 #include "allAttributesWrapper.I"
+#endif
 
 #endif

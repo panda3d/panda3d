@@ -26,12 +26,12 @@ public:
   typedef TYPENAME Visitor::TransitionWrapper TransitionWrapper;
   typedef TYPENAME Visitor::AttributeWrapper AttributeWrapper;
 
-  INLINE DFTraverser(Visitor &visitor,
+  INLINE_GRAPH DFTraverser(Visitor &visitor,
 		     const AttributeWrapper &initial_render_state,
 		     TypeHandle graph_type);
 
-  INLINE void start(NodeRelation *arc, const LevelState &initial_level_state);
-  INLINE void start(Node *root, const LevelState &initial_level_state);
+  INLINE_GRAPH void start(NodeRelation *arc, const LevelState &initial_level_state);
+  INLINE_GRAPH void start(Node *root, const LevelState &initial_level_state);
 
 protected:
   void traverse(NodeRelation *arc, 
@@ -46,29 +46,6 @@ protected:
   TypeHandle _graph_type;
 };
 
-// Convenience functions.
-template<class Visitor, class AttributeWrapper, class LevelState>
-INLINE void
-df_traverse(NodeRelation *arc, Visitor &visitor, 
-	    const AttributeWrapper &initial_render_state,
-	    const LevelState &initial_level_state,
-	    TypeHandle graph_type) {
-  DFTraverser<Visitor, LevelState> 
-    dft(visitor, initial_render_state, graph_type);
-  dft.start(arc, initial_level_state);
-}
-
-template<class Visitor, class AttributeWrapper, class LevelState>
-INLINE void
-df_traverse(Node *root, Visitor &visitor,
-	    const AttributeWrapper &initial_render_state,
-	    const LevelState &initial_level_state,
-	    TypeHandle graph_type) {
-  DFTraverser<Visitor, LevelState> 
-    dft(visitor, initial_render_state, graph_type);
-  dft.start(root, initial_level_state);
-}
-
-#include "dftraverser.I"
+#include "dftraverser.T"
 
 #endif

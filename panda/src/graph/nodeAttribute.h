@@ -42,23 +42,23 @@ class GraphicsStateGuardianBase;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA NodeAttribute : public TypedReferenceCount {
 protected:
-  INLINE NodeAttribute();
-  INLINE NodeAttribute(const NodeAttribute &copy);
-  INLINE void operator = (const NodeAttribute &copy);
+  INLINE_GRAPH NodeAttribute();
+  INLINE_GRAPH NodeAttribute(const NodeAttribute &copy);
+  INLINE_GRAPH void operator = (const NodeAttribute &copy);
 
 public:
-  INLINE bool operator == (const NodeAttribute &other) const;
-  INLINE bool operator != (const NodeAttribute &other) const;
-  INLINE bool operator < (const NodeAttribute &other) const;
-  INLINE bool operator <= (const NodeAttribute &other) const;
-  INLINE bool operator > (const NodeAttribute &other) const;
-  INLINE bool operator >= (const NodeAttribute &other) const;
+  INLINE_GRAPH bool operator == (const NodeAttribute &other) const;
+  INLINE_GRAPH bool operator != (const NodeAttribute &other) const;
+  INLINE_GRAPH bool operator < (const NodeAttribute &other) const;
+  INLINE_GRAPH bool operator <= (const NodeAttribute &other) const;
+  INLINE_GRAPH bool operator > (const NodeAttribute &other) const;
+  INLINE_GRAPH bool operator >= (const NodeAttribute &other) const;
 
-  INLINE int compare_to(const NodeAttribute &other) const;
+  INLINE_GRAPH int compare_to(const NodeAttribute &other) const;
 
 PUBLISHED:
-  INLINE void set_priority(int priority);
-  INLINE int get_priority() const;
+  INLINE_GRAPH void set_priority(int priority);
+  INLINE_GRAPH int  get_priority() const;
 
 public:
   virtual NodeAttribute *make_copy() const=0;
@@ -99,11 +99,10 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const NodeAttribute &nab) {
-  nab.output(out);
-  return out;
-}
+INLINE_GRAPH ostream &operator << (ostream &out, const NodeAttribute &nab);
 
+#ifdef BUILDING_PANDA
 #include "nodeAttribute.I"
+#endif
 
 #endif

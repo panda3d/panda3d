@@ -8,7 +8,7 @@
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NodeAttributeWrapper::
+INLINE_GRAPH NodeAttributeWrapper::
 NodeAttributeWrapper(TypeHandle handle) : _handle(handle) {
   nassertv(_handle != TypeHandle::none());
 }
@@ -18,7 +18,7 @@ NodeAttributeWrapper(TypeHandle handle) : _handle(handle) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NodeAttributeWrapper::
+INLINE_GRAPH NodeAttributeWrapper::
 NodeAttributeWrapper(const NodeAttributeWrapper &copy) :
   _handle(copy._handle),
   _attrib(copy._attrib)
@@ -30,7 +30,7 @@ NodeAttributeWrapper(const NodeAttributeWrapper &copy) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeAttributeWrapper::
+INLINE_GRAPH void NodeAttributeWrapper::
 operator = (const NodeAttributeWrapper &copy) {
   _handle = copy._handle;
   _attrib = copy._attrib;
@@ -41,7 +41,7 @@ operator = (const NodeAttributeWrapper &copy) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE TypeHandle NodeAttributeWrapper::
+INLINE_GRAPH TypeHandle NodeAttributeWrapper::
 get_handle() const {
   return _handle;
 }
@@ -51,7 +51,7 @@ get_handle() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NodeAttribute *NodeAttributeWrapper::
+INLINE_GRAPH NodeAttribute *NodeAttributeWrapper::
 get_attrib() const {
   return _attrib;
 }
@@ -61,7 +61,7 @@ get_attrib() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeAttributeWrapper::
+INLINE_GRAPH void NodeAttributeWrapper::
 set_attrib(NodeAttribute *attrib) {
   _attrib = attrib;
 }
@@ -72,7 +72,7 @@ set_attrib(NodeAttribute *attrib) {
 //  Description: Returns true if the wrapper represents an initial
 //               attribute.
 ////////////////////////////////////////////////////////////////////
-INLINE bool NodeAttributeWrapper::
+INLINE_GRAPH bool NodeAttributeWrapper::
 is_initial() const {
   return (_attrib == (NodeAttribute *)NULL);
   // || _attrib->is_initial()
@@ -83,7 +83,7 @@ is_initial() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE int NodeAttributeWrapper::
+INLINE_GRAPH int NodeAttributeWrapper::
 compare_to(const NodeAttributeWrapper &other) const {
   nassertr(_handle == other._handle, false);
   if (_attrib == other._attrib) {
@@ -103,30 +103,12 @@ compare_to(const NodeAttributeWrapper &other) const {
 //       Access: Public
 //  Description: Resets the wrapper to the initial attribute.
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeAttributeWrapper::
+INLINE_GRAPH void NodeAttributeWrapper::
 make_initial() {
   _attrib.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_attribute_into
-//  Description: This external template function is handy for
-//               extracting the attribute (of a known type) from the
-//               wrapper.  If the attribute exists, it is
-//               automatically downcasted to the correct type and
-//               stored in the pointer given in the first parameter,
-//               and the return value is true.  If the attribute does
-//               not exist, the pointer is filled with NULL and the
-//               return value is false.
-////////////////////////////////////////////////////////////////////
-template<class Attribute>
-INLINE bool 
-get_attribute_into(Attribute *&ptr, const NodeAttributeWrapper &attrib) {
-  NodeAttribute *nt = attrib.get_attrib();
-  if (nt == (NodeAttribute *)NULL) {
-    ptr = (Attribute *)NULL;
-    return false;
-  }
-  DCAST_INTO_R(ptr, nt, false);
-  return true;
+INLINE_GRAPH ostream &operator << (ostream &out, const NodeAttributeWrapper &naw) {
+  naw.output(out);
+  return out;
 }

@@ -10,7 +10,7 @@
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NodeTransitionCacheEntry::
+INLINE_GRAPH NodeTransitionCacheEntry::
 NodeTransitionCacheEntry(NodeTransition *trans) : _trans(trans) {
 }
 
@@ -19,7 +19,7 @@ NodeTransitionCacheEntry(NodeTransition *trans) : _trans(trans) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NodeTransitionCacheEntry::
+INLINE_GRAPH NodeTransitionCacheEntry::
 NodeTransitionCacheEntry(const NodeTransitionCacheEntry &copy) :
   _trans(copy._trans),
   _computed(copy._computed),
@@ -32,7 +32,7 @@ NodeTransitionCacheEntry(const NodeTransitionCacheEntry &copy) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeTransitionCacheEntry::
+INLINE_GRAPH void NodeTransitionCacheEntry::
 operator = (const NodeTransitionCacheEntry &copy) {
   _trans = copy._trans;
   _computed = copy._computed;
@@ -44,7 +44,7 @@ operator = (const NodeTransitionCacheEntry &copy) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE bool NodeTransitionCacheEntry::
+INLINE_GRAPH bool NodeTransitionCacheEntry::
 is_identity() const {
   return (_trans == (NodeTransition *)NULL);
   //  ||  _trans->is_identity();
@@ -55,7 +55,7 @@ is_identity() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE int NodeTransitionCacheEntry::
+INLINE_GRAPH int NodeTransitionCacheEntry::
 compare_to(const NodeTransitionCacheEntry &other) const {
   bool this_ident = is_identity();
   bool other_ident = other.is_identity();
@@ -81,7 +81,7 @@ compare_to(const NodeTransitionCacheEntry &other) const {
 //       Access: Public
 //  Description: Reinitializes the cache entry to its original state.
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeTransitionCacheEntry::
+INLINE_GRAPH void NodeTransitionCacheEntry::
 clear() {
   _trans.clear();
   _computed.clear();
@@ -94,7 +94,7 @@ clear() {
 //  Description: Changes the transition associated with the cache
 //               entry without changing the associated time stamps.
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeTransitionCacheEntry::
+INLINE_GRAPH void NodeTransitionCacheEntry::
 set_trans(NodeTransition *trans) {
   _trans = trans;
 }
@@ -106,7 +106,7 @@ set_trans(NodeTransition *trans) {
 //               entry without changing the associated time stamps.
 //               This is of limited usefulness.
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeTransitionCacheEntry::
+INLINE_GRAPH void NodeTransitionCacheEntry::
 clear_trans() {
   _trans.clear();
 }
@@ -118,7 +118,7 @@ clear_trans() {
 //               NodeTransition, false if it doesn't (and the
 //               transition should be assumed to be identity).
 ////////////////////////////////////////////////////////////////////
-INLINE bool NodeTransitionCacheEntry::
+INLINE_GRAPH bool NodeTransitionCacheEntry::
 has_trans() const {
   return _trans != (NodeTransition *)NULL;
 }
@@ -131,7 +131,7 @@ has_trans() const {
 //               NodeTransition (in which case it should be assumed to
 //               be identity).
 ////////////////////////////////////////////////////////////////////
-INLINE NodeTransition *NodeTransitionCacheEntry::
+INLINE_GRAPH NodeTransition *NodeTransitionCacheEntry::
 get_trans() const {
   return _trans;
 }
@@ -141,7 +141,7 @@ get_trans() const {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool NodeTransitionCacheEntry::
+INLINE_GRAPH bool NodeTransitionCacheEntry::
 is_cache_verified(UpdateSeq as_of) const {
 #ifndef NDEBUG
   if (wrt_cat.is_spam()) {
@@ -159,7 +159,7 @@ is_cache_verified(UpdateSeq as_of) const {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool NodeTransitionCacheEntry::
+INLINE_GRAPH bool NodeTransitionCacheEntry::
 is_freshly_computed(UpdateSeq changed) const {
   return changed < _computed;
 }
@@ -169,7 +169,7 @@ is_freshly_computed(UpdateSeq changed) const {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeTransitionCacheEntry::
+INLINE_GRAPH void NodeTransitionCacheEntry::
 set_computed_verified(UpdateSeq now) {
   _computed = now;
   _verified = now;
@@ -184,7 +184,7 @@ set_computed_verified(UpdateSeq now) {
 //               setTransitionHelpers.h interchangeably between
 //               NodeTransitions and NodeTransitionCaches.
 ////////////////////////////////////////////////////////////////////
-INLINE NodeTransitionCacheEntry::
+INLINE_GRAPH NodeTransitionCacheEntry::
 operator const PT(NodeTransition) &() const {
   return _trans;
 }
@@ -195,7 +195,7 @@ operator const PT(NodeTransition) &() const {
 //  Description: Returns the timestamp at which this cache entry was
 //               computed.
 ////////////////////////////////////////////////////////////////////
-INLINE UpdateSeq NodeTransitionCacheEntry::
+INLINE_GRAPH UpdateSeq NodeTransitionCacheEntry::
 get_computed() const {
   return _computed;
 }
@@ -207,7 +207,7 @@ get_computed() const {
 //               was verified; i.e. when the graph was last walked up
 //               to the root to ensure the cache entry is still valid.
 ////////////////////////////////////////////////////////////////////
-INLINE UpdateSeq NodeTransitionCacheEntry::
+INLINE_GRAPH UpdateSeq NodeTransitionCacheEntry::
 get_verified() const {
   return _verified;
 }
@@ -218,7 +218,7 @@ get_verified() const {
 //  Description: Returns a new cache entry that represents the inverse
 //               of a.
 ////////////////////////////////////////////////////////////////////
-INLINE NodeTransitionCacheEntry NodeTransitionCacheEntry::
+INLINE_GRAPH NodeTransitionCacheEntry NodeTransitionCacheEntry::
 invert(const NodeTransitionCacheEntry &a) {
   if (a.is_identity()) {
     return a;
@@ -232,7 +232,7 @@ invert(const NodeTransitionCacheEntry &a) {
 //  Description: Returns a new cache entry that represents the
 //               composition of a and b.
 ////////////////////////////////////////////////////////////////////
-INLINE NodeTransitionCacheEntry NodeTransitionCacheEntry::
+INLINE_GRAPH NodeTransitionCacheEntry NodeTransitionCacheEntry::
 compose(const NodeTransitionCacheEntry &a, 
 	const NodeTransitionCacheEntry &b) {
   if (a.is_identity()) {
@@ -250,7 +250,7 @@ compose(const NodeTransitionCacheEntry &a,
 //  Description: Returns a new cache entry that represents the
 //               composition of invert(a) and b.
 ////////////////////////////////////////////////////////////////////
-INLINE NodeTransitionCacheEntry NodeTransitionCacheEntry::
+INLINE_GRAPH NodeTransitionCacheEntry NodeTransitionCacheEntry::
 invert_compose(const NodeTransitionCacheEntry &a, 
 	       const NodeTransitionCacheEntry &b) {
   if (a.is_identity()) {
@@ -286,7 +286,7 @@ invert_compose(const NodeTransitionCacheEntry &a,
 //               as computed using the cache value as a hint.  Mark
 //               the result as computed at time 'now'.
 ////////////////////////////////////////////////////////////////////
-INLINE NodeTransitionCacheEntry NodeTransitionCacheEntry::
+INLINE_GRAPH NodeTransitionCacheEntry NodeTransitionCacheEntry::
 cached_compose(const NodeTransitionCacheEntry &a, 
 	       const NodeTransitionCacheEntry &cache, 
 	       const NodeTransitionCacheEntry &b,
@@ -339,7 +339,7 @@ cached_compose(const NodeTransitionCacheEntry &a,
 //               NodeAttribute) that represents the indicated
 //               transition applied to the attribute.
 ////////////////////////////////////////////////////////////////////
-INLINE NodeAttribute *NodeTransitionCacheEntry::
+INLINE_GRAPH NodeAttribute *NodeTransitionCacheEntry::
 apply(const NodeAttribute *a, const NodeTransitionCacheEntry &b) {
   if (b.is_identity()) {
     return (NodeAttribute *)a;
@@ -353,10 +353,15 @@ apply(const NodeAttribute *a, const NodeTransitionCacheEntry &b) {
 //       Access: Public, Static
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NodeAttribute *NodeTransitionCacheEntry::
+INLINE_GRAPH NodeAttribute *NodeTransitionCacheEntry::
 make_attrib() const {
   if (_trans == (NodeTransition *)NULL) {
     return NULL;
   }
   return _trans->make_attrib();
+}
+
+INLINE_GRAPH ostream &operator << (ostream &out, const NodeTransitionCacheEntry &e) {
+  e.output(out);
+  return out;
 }

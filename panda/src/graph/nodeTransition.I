@@ -8,7 +8,7 @@
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NodeTransition::
+INLINE_GRAPH NodeTransition::
 NodeTransition() {
   _priority = 0;
 }
@@ -18,7 +18,7 @@ NodeTransition() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NodeTransition::
+INLINE_GRAPH NodeTransition::
 NodeTransition(const NodeTransition &copy) :
   TypedWriteableReferenceCount(copy),
   _priority(copy._priority)
@@ -31,7 +31,7 @@ NodeTransition(const NodeTransition &copy) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeTransition::
+INLINE_GRAPH void NodeTransition::
 operator = (const NodeTransition &copy) {
   TypedWriteableReferenceCount::operator = (copy);
   _priority = copy._priority;
@@ -43,7 +43,7 @@ operator = (const NodeTransition &copy) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE bool NodeTransition::
+INLINE_GRAPH bool NodeTransition::
 operator == (const NodeTransition &other) const {
   return compare_to(other) == 0;
 }
@@ -53,7 +53,7 @@ operator == (const NodeTransition &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE bool NodeTransition::
+INLINE_GRAPH bool NodeTransition::
 operator != (const NodeTransition &other) const {
   return compare_to(other) != 0;
 }
@@ -63,7 +63,7 @@ operator != (const NodeTransition &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE bool NodeTransition::
+INLINE_GRAPH bool NodeTransition::
 operator < (const NodeTransition &other) const {
   return compare_to(other) < 0;
 }
@@ -73,7 +73,7 @@ operator < (const NodeTransition &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE bool NodeTransition::
+INLINE_GRAPH bool NodeTransition::
 operator <= (const NodeTransition &other) const {
   return compare_to(other) <= 0;
 }
@@ -83,7 +83,7 @@ operator <= (const NodeTransition &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE bool NodeTransition::
+INLINE_GRAPH bool NodeTransition::
 operator > (const NodeTransition &other) const {
   return compare_to(other) > 0;
 }
@@ -93,7 +93,7 @@ operator > (const NodeTransition &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE bool NodeTransition::
+INLINE_GRAPH bool NodeTransition::
 operator >= (const NodeTransition &other) const {
   return compare_to(other) >= 0;
 }
@@ -112,7 +112,7 @@ operator >= (const NodeTransition &other) const {
 //               of equivalent transitions together in STL structures
 //               like maps and sets.
 ////////////////////////////////////////////////////////////////////
-INLINE int NodeTransition::
+INLINE_GRAPH int NodeTransition::
 compare_to(const NodeTransition &other) const {
   TypeHandle my_handle = get_handle();
   TypeHandle other_handle = other.get_handle();
@@ -136,7 +136,7 @@ compare_to(const NodeTransition &other) const {
 //               The transition will always override transitions with
 //               a lower priority.
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeTransition::
+INLINE_GRAPH void NodeTransition::
 set_priority(int priority) {
   _priority = priority;
   state_changed();
@@ -147,7 +147,7 @@ set_priority(int priority) {
 //       Access: Public
 //  Description: Returns the priority associated with this transition.
 ////////////////////////////////////////////////////////////////////
-INLINE int NodeTransition::
+INLINE_GRAPH int NodeTransition::
 get_priority() const {
   return _priority;
 }
@@ -161,7 +161,7 @@ get_priority() const {
 //               state changes on the transition will now notify the
 //               arc.
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeTransition::
+INLINE_GRAPH void NodeTransition::
 added_to_arc(NodeRelation *arc) {
   bool inserted = _arcs.insert(arc).second;
   nassertv(inserted);
@@ -176,8 +176,13 @@ added_to_arc(NodeRelation *arc) {
 //               is no longer assigned to the arc.  Further state
 //               changes on the transition will *not* notify the arc.
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeTransition::
+INLINE_GRAPH void NodeTransition::
 removed_from_arc(NodeRelation *arc) {
   size_t num_erased = _arcs.erase(arc);
   nassertv(num_erased == 1);
+}
+
+INLINE_GRAPH ostream &operator << (ostream &out, const NodeTransition &ntb) {
+  ntb.output(out);
+  return out;
 }

@@ -533,7 +533,7 @@ uncached_wrt_base(const Node *from,
 //               various wrt() wrappers instead.
 ////////////////////////////////////////////////////////////////////
 template<class InputIterator1, class InputIterator2, class TransitionWrapper>
-INLINE void
+INLINE_GRAPH void
 wrt_base(const Node *from,
 	 InputIterator1 from_arcs_begin, InputIterator1 from_arcs_end,
 	 const Node *to, 
@@ -554,7 +554,7 @@ wrt_base(const Node *from,
 }
 
 template<class TransitionWrapper>
-INLINE void
+INLINE_GRAPH void
 wrt(const Node *from, const Node *to,
     TransitionWrapper &result, TypeHandle graph_type) {
   // In the normal wrt() interface, we have no from_arcs or to_arcs
@@ -564,7 +564,7 @@ wrt(const Node *from, const Node *to,
 }
 
 template<class InputIterator, class TransitionWrapper>
-INLINE void
+INLINE_GRAPH void
 wrt(const Node *from,
     InputIterator from_arcs_begin, InputIterator from_arcs_end,
     const Node *to, 
@@ -575,7 +575,7 @@ wrt(const Node *from,
 }
 
 template<class InputIterator, class TransitionWrapper>
-INLINE void
+INLINE_GRAPH void
 wrt(const Node *from,
     const Node *to,  
     InputIterator to_arcs_begin, InputIterator to_arcs_end,
@@ -586,7 +586,7 @@ wrt(const Node *from,
 }
 
 template<class InputIterator1, class InputIterator2, class TransitionWrapper>
-INLINE void
+INLINE_GRAPH void
 wrt(const Node *from,
     InputIterator1 from_arcs_begin, InputIterator1 from_arcs_end,
     const Node *to, 
@@ -599,7 +599,7 @@ wrt(const Node *from,
 
 #ifndef NDEBUG
 template<class TransitionWrapper>
-INLINE void
+INLINE_GRAPH void
 uncached_wrt(const Node *from, const Node *to,
 	     TransitionWrapper &result, TypeHandle graph_type) {
   const NodeRelation *arc = NULL;
@@ -607,7 +607,7 @@ uncached_wrt(const Node *from, const Node *to,
 }
 
 template<class InputIterator, class TransitionWrapper>
-INLINE void
+INLINE_GRAPH void
 uncached_wrt(const Node *from,
 	     InputIterator from_arcs_begin, InputIterator from_arcs_end,
 	     const Node *to, 
@@ -618,7 +618,7 @@ uncached_wrt(const Node *from,
 }
 
 template<class InputIterator, class TransitionWrapper>
-INLINE void
+INLINE_GRAPH void
 uncached_wrt(const Node *from,
 	     const Node *to,  
 	     InputIterator to_arcs_begin, InputIterator to_arcs_end,
@@ -629,7 +629,7 @@ uncached_wrt(const Node *from,
 }
 
 template<class InputIterator1, class InputIterator2, class TransitionWrapper>
-INLINE void
+INLINE_GRAPH void
 uncached_wrt(const Node *from,
 	     InputIterator1 from_arcs_begin, InputIterator1 from_arcs_end,
 	     const Node *to, 
@@ -734,7 +734,7 @@ get_uncached_wrt_subtree(Node *node, Node *to, TransitionWrapper &result,
 }
 
 template<class TransitionWrapper>
-INLINE Node *
+INLINE_GRAPH Node *
 uncached_wrt_subtree(NodeRelation *arc, Node *to,
 		     TransitionWrapper &result, TypeHandle graph_type) {
   Node *stop = 
@@ -921,7 +921,7 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
 }
 
 template<class TransitionWrapper>
-INLINE Node *
+INLINE_GRAPH Node *
 wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
 	    TransitionWrapper &result, TypeHandle graph_type) {
 #ifndef NDEBUG

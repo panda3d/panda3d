@@ -20,13 +20,13 @@ class MatrixTransition;
 template<class Matrix>
 class MatrixAttribute : public NodeAttribute {
 protected:
-  INLINE MatrixAttribute();
-  INLINE MatrixAttribute(const MatrixAttribute &copy);
-  INLINE void operator = (const MatrixAttribute &copy);
+  INLINE_GRAPH MatrixAttribute();
+  INLINE_GRAPH MatrixAttribute(const MatrixAttribute &copy);
+  INLINE_GRAPH void operator = (const MatrixAttribute &copy);
 
 public:
-  INLINE void set_matrix(const Matrix &mat);
-  INLINE const Matrix &get_matrix() const;
+  INLINE_GRAPH void set_matrix(const Matrix &mat);
+  INLINE_GRAPH const Matrix &get_matrix() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
@@ -56,9 +56,9 @@ public:
 
 private:
   static TypeHandle _type_handle;
-friend class MatrixTransition<Matrix>;
+  friend class MatrixTransition<Matrix>;
 };
 
-#include "matrixAttribute.I"
+#include "matrixAttribute.T"
 
 #endif

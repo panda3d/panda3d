@@ -8,7 +8,7 @@
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE AllAttributesWrapper::
+INLINE_GRAPH AllAttributesWrapper::
 AllAttributesWrapper() {
 }
 
@@ -17,7 +17,7 @@ AllAttributesWrapper() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE AllAttributesWrapper::
+INLINE_GRAPH AllAttributesWrapper::
 AllAttributesWrapper(const NodeAttributes &attrib) :
   _attrib(attrib)
 {
@@ -28,7 +28,7 @@ AllAttributesWrapper(const NodeAttributes &attrib) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE AllAttributesWrapper::
+INLINE_GRAPH AllAttributesWrapper::
 AllAttributesWrapper(const AllAttributesWrapper &copy) :
   _attrib(copy._attrib)
 {
@@ -39,7 +39,7 @@ AllAttributesWrapper(const AllAttributesWrapper &copy) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void AllAttributesWrapper::
+INLINE_GRAPH void AllAttributesWrapper::
 operator = (const AllAttributesWrapper &copy) {
   _attrib = copy._attrib;
 }
@@ -51,7 +51,7 @@ operator = (const AllAttributesWrapper &copy) {
 //               AllAttributesWrapper ready to access the same type
 //               of AllAttributes as the other.
 ////////////////////////////////////////////////////////////////////
-INLINE AllAttributesWrapper AllAttributesWrapper::
+INLINE_GRAPH AllAttributesWrapper AllAttributesWrapper::
 init_from(const AllTransitionsWrapper &) {
   return AllAttributesWrapper();
 }
@@ -61,7 +61,7 @@ init_from(const AllTransitionsWrapper &) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE AllAttributesWrapper::
+INLINE_GRAPH AllAttributesWrapper::
 ~AllAttributesWrapper() {
 }
 
@@ -72,7 +72,7 @@ INLINE AllAttributesWrapper::
 //               the set, or false if there are any (even initial)
 //               Attributes.
 ////////////////////////////////////////////////////////////////////
-INLINE bool AllAttributesWrapper::
+INLINE_GRAPH bool AllAttributesWrapper::
 is_empty() const {
   return _attrib.is_empty();
 }
@@ -92,7 +92,7 @@ is_empty() const {
 //               attribute in the set, if any, or NULL if there was
 //               none.
 ////////////////////////////////////////////////////////////////////
-INLINE PT(NodeAttribute) AllAttributesWrapper::
+INLINE_GRAPH PT(NodeAttribute) AllAttributesWrapper::
 set_attribute(TypeHandle handle, NodeAttribute *trans) {
   return _attrib.set_attribute(handle, trans);
 }
@@ -107,7 +107,7 @@ set_attribute(TypeHandle handle, NodeAttribute *trans) {
 //               set_attribute; if the pointer might be NULL, use the
 //               above flavor instead (or just call clear_attribute).
 ////////////////////////////////////////////////////////////////////
-INLINE PT(NodeAttribute) AllAttributesWrapper::
+INLINE_GRAPH PT(NodeAttribute) AllAttributesWrapper::
 set_attribute(NodeAttribute *trans) {
   nassertr(trans != (NodeAttribute *)NULL, NULL);
   nassertr(trans->get_handle() != TypeHandle::none(), NULL);
@@ -124,7 +124,7 @@ set_attribute(NodeAttribute *trans) {
 //               attribute in the set, if any, or NULL if there was
 //               none.
 ////////////////////////////////////////////////////////////////////
-INLINE PT(NodeAttribute) AllAttributesWrapper::
+INLINE_GRAPH PT(NodeAttribute) AllAttributesWrapper::
 clear_attribute(TypeHandle handle) {
   return _attrib.clear_attribute(handle);
 }
@@ -136,7 +136,7 @@ clear_attribute(TypeHandle handle) {
 //               indicated handle has been stored in the set (even if
 //               it is the initial attribute), or false otherwise.
 ////////////////////////////////////////////////////////////////////
-INLINE bool AllAttributesWrapper::
+INLINE_GRAPH bool AllAttributesWrapper::
 has_attribute(TypeHandle handle) const {
   return _attrib.has_attribute(handle);
 }
@@ -148,7 +148,7 @@ has_attribute(TypeHandle handle) const {
 //               handle, or NULL if no such attribute has been stored
 //               in the set.
 ////////////////////////////////////////////////////////////////////
-INLINE NodeAttribute *AllAttributesWrapper::
+INLINE_GRAPH NodeAttribute *AllAttributesWrapper::
 get_attribute(TypeHandle handle) const {
   return _attrib.get_attribute(handle);
 }
@@ -159,7 +159,7 @@ get_attribute(TypeHandle handle) const {
 //  Description: Returns the entire set of attributes associated with
 //               the wrapper.
 ////////////////////////////////////////////////////////////////////
-INLINE const NodeAttributes &AllAttributesWrapper::
+INLINE_GRAPH const NodeAttributes &AllAttributesWrapper::
 get_attributes() const {
   return _attrib;
 }
@@ -170,7 +170,7 @@ get_attributes() const {
 //  Description: Returns the entire set of attributes associated with
 //               the wrapper.
 ////////////////////////////////////////////////////////////////////
-INLINE NodeAttributes &AllAttributesWrapper::
+INLINE_GRAPH NodeAttributes &AllAttributesWrapper::
 get_attributes() {
   return _attrib;
 }
@@ -181,7 +181,7 @@ get_attributes() {
 //  Description: Returns true if the wrapper represents an initial
 //               attribute.
 ////////////////////////////////////////////////////////////////////
-INLINE bool AllAttributesWrapper::
+INLINE_GRAPH bool AllAttributesWrapper::
 is_initial() const {
   return _attrib.is_initial();
 }
@@ -191,7 +191,7 @@ is_initial() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE int AllAttributesWrapper::
+INLINE_GRAPH int AllAttributesWrapper::
 compare_to(const AllAttributesWrapper &other) const {
   return _attrib.compare_to(other._attrib);
 }
@@ -201,31 +201,12 @@ compare_to(const AllAttributesWrapper &other) const {
 //       Access: Public
 //  Description: Resets the wrapper to the initial attribute.
 ////////////////////////////////////////////////////////////////////
-INLINE void AllAttributesWrapper::
+INLINE_GRAPH void AllAttributesWrapper::
 make_initial() {
   _attrib.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_attribute_into
-//  Description: This external template function is handy for
-//               extracting a attribute of a particular type from the
-//               set.  If the attribute exists, it is automatically
-//               downcasted to the correct type and stored in the
-//               pointer given in the first parameter, and the return
-//               value is true.  If the attribute does not exist, the
-//               pointer is filled with NULL and the return value is
-//               false.
-////////////////////////////////////////////////////////////////////
-template<class Attribute>
-INLINE bool 
-get_attribute_into(Attribute *&ptr, const AllAttributesWrapper &attrib,
-		   TypeHandle transition_type) {
-  NodeAttribute *nt = attrib.get_attribute(transition_type);
-  if (nt == (NodeAttribute *)NULL) {
-    ptr = (Attribute *)NULL;
-    return false;
-  }
-  DCAST_INTO_R(ptr, nt, false);
-  return true;
+INLINE_GRAPH ostream &operator << (ostream &out, const AllAttributesWrapper &a) {
+  a.output(out);
+  return out;
 }

@@ -31,7 +31,7 @@ public:
 
   bool is_empty() const;
   PT(NodeTransition) set_transition(TypeHandle handle, NodeTransition *trans);
-  INLINE PT(NodeTransition) set_transition(NodeTransition *trans);
+  INLINE_GRAPH PT(NodeTransition) set_transition(NodeTransition *trans);
   PT(NodeTransition) clear_transition(TypeHandle handle);
   bool has_transition(TypeHandle handle) const;
   NodeTransition *get_transition(TypeHandle handle) const;
@@ -60,9 +60,9 @@ public:
   typedef Transitions::value_type value_type;
   typedef Transitions::size_type size_type;
 
-  INLINE size_type size() const;
-  INLINE const_iterator begin() const;
-  INLINE const_iterator end() const;
+  INLINE_GRAPH size_type size() const;
+  INLINE_GRAPH const_iterator begin() const;
+  INLINE_GRAPH const_iterator end() const;
 
 public:
   void output(ostream &out) const;
@@ -73,20 +73,10 @@ private:
   friend class NodeTransitionCache;
 };
 
-INLINE ostream &operator << (ostream &out, const NodeTransitions &nts) {
-  nts.output(out);
-  return out;
-}
+INLINE_GRAPH ostream &operator << (ostream &out, const NodeTransitions &nts);
 
-template<class Transition>
-INLINE bool 
-get_transition_into(Transition *&ptr, const NodeTransitions &trans,
-		    TypeHandle transition_type);
-
-template<class Transition>
-INLINE bool 
-get_transition_into(Transition *&ptr, const NodeTransitions &trans);
-
+#ifdef BUILDING_PANDA
 #include "nodeTransitions.I"
+#endif
 
 #endif

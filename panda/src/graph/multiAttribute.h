@@ -38,7 +38,7 @@ PUBLISHED:
   bool is_on(const Property &prop) const;
   bool is_off(const Property &prop) const;
 
-  INLINE bool get_properties_is_on() const;
+  INLINE_GRAPH bool get_properties_is_on() const;
 
 public:
   virtual void output(ostream &out) const;
@@ -52,11 +52,11 @@ protected:
 			      int indent_level) const=0;
 
 private:
-  INLINE void set_property(const Property &prop);
-  INLINE bool has_property(const Property &prop) const;
-  INLINE void clear_property(const Property &prop);
+  INLINE_GRAPH void set_property(const Property &prop);
+  INLINE_GRAPH bool has_property(const Property &prop) const;
+  INLINE_GRAPH void clear_property(const Property &prop);
 
-  INLINE Properties::iterator
+  INLINE_GRAPH Properties::iterator
   find_property(const Property &prop, bool &found_flag);
 
   Properties::iterator
@@ -73,9 +73,9 @@ public:
   typedef Properties::value_type value_type;
   typedef Properties::size_type size_type;
 
-  INLINE size_type size() const;
-  INLINE const_iterator begin() const;
-  INLINE const_iterator end() const;
+  INLINE_GRAPH size_type size() const;
+  INLINE_GRAPH const_iterator begin() const;
+  INLINE_GRAPH const_iterator end() const;
 
 private:
   // The following is a set of properties listed in the attribute.  If
@@ -102,9 +102,9 @@ public:
 
 private:
   static TypeHandle _type_handle;
-friend class MultiTransition<Property, NameClass>;
+  friend class MultiTransition<Property, NameClass>;
 };
 
-#include "multiAttribute.I"
+#include "multiAttribute.T"
 
 #endif

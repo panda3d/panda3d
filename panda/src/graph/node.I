@@ -12,7 +12,7 @@
 //               removes it.  Returns true if the arc was found and
 //               removed, false if it did not exist.
 ////////////////////////////////////////////////////////////////////
-INLINE bool
+EXPCL_PANDA INLINE_GRAPH bool
 remove_child(Node *parent, Node *child, TypeHandle graph_type) {
   NodeRelation *arc = find_arc(parent, child, graph_type);
   if (arc != (NodeRelation *)NULL) {
@@ -20,4 +20,10 @@ remove_child(Node *parent, Node *child, TypeHandle graph_type) {
     return true;
   }
   return false;
+}
+
+INLINE_GRAPH ostream &
+operator << (ostream &out, const Node &node) {
+  node.output(out);
+  return out;
 }

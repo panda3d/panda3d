@@ -16,9 +16,9 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA NullLevelState {
 public:
-  INLINE NullLevelState() { }
-  INLINE NullLevelState(const NullLevelState &) { }
-  INLINE void operator = (const NullLevelState &) { }
+  INLINE_GRAPH NullLevelState() { }
+  INLINE_GRAPH NullLevelState(const NullLevelState &) { }
+  INLINE_GRAPH void operator = (const NullLevelState &) { }
 };
 
 #endif

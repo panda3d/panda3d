@@ -11,7 +11,7 @@
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NodeTransitionWrapper::
+INLINE_GRAPH NodeTransitionWrapper::
 NodeTransitionWrapper(TypeHandle handle) : _handle(handle) {
   nassertv(_handle != TypeHandle::none());
 }
@@ -21,7 +21,7 @@ NodeTransitionWrapper(TypeHandle handle) : _handle(handle) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NodeTransitionWrapper::
+INLINE_GRAPH NodeTransitionWrapper::
 NodeTransitionWrapper(const NodeTransitionWrapper &copy) :
   _handle(copy._handle),
   _entry(copy._entry)
@@ -33,7 +33,7 @@ NodeTransitionWrapper(const NodeTransitionWrapper &copy) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeTransitionWrapper::
+INLINE_GRAPH void NodeTransitionWrapper::
 operator = (const NodeTransitionWrapper &copy) {
   _handle = copy._handle;
   _entry = copy._entry;
@@ -46,7 +46,7 @@ operator = (const NodeTransitionWrapper &copy) {
 //               NodeTransitionWrapper ready to access the same type
 //               of NodeTransition as the other.
 ////////////////////////////////////////////////////////////////////
-INLINE NodeTransitionWrapper NodeTransitionWrapper::
+INLINE_GRAPH NodeTransitionWrapper NodeTransitionWrapper::
 init_from(const NodeTransitionWrapper &other) {
   return NodeTransitionWrapper(other._handle);
 }
@@ -56,7 +56,7 @@ init_from(const NodeTransitionWrapper &other) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE TypeHandle NodeTransitionWrapper::
+INLINE_GRAPH TypeHandle NodeTransitionWrapper::
 get_handle() const {
   return _handle;
 }
@@ -66,7 +66,7 @@ get_handle() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE bool NodeTransitionWrapper::
+INLINE_GRAPH bool NodeTransitionWrapper::
 has_trans() const {
   return _entry.has_trans();
 }
@@ -76,7 +76,7 @@ has_trans() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NodeTransition *NodeTransitionWrapper::
+INLINE_GRAPH NodeTransition *NodeTransitionWrapper::
 get_trans() const {
   return _entry.get_trans();
 }
@@ -87,7 +87,7 @@ get_trans() const {
 //  Description: Returns true if the wrapper represents an identity
 //               transition.
 ////////////////////////////////////////////////////////////////////
-INLINE bool NodeTransitionWrapper::
+INLINE_GRAPH bool NodeTransitionWrapper::
 is_identity() const {
   return _entry.is_identity();
 }
@@ -97,7 +97,7 @@ is_identity() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE int NodeTransitionWrapper::
+INLINE_GRAPH int NodeTransitionWrapper::
 compare_to(const NodeTransitionWrapper &other) const {
   return _entry.compare_to(other._entry);
 }
@@ -107,7 +107,7 @@ compare_to(const NodeTransitionWrapper &other) const {
 //       Access: Public
 //  Description: Resets the wrapper to the identity transition.
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeTransitionWrapper::
+INLINE_GRAPH void NodeTransitionWrapper::
 make_identity() {
   _entry.clear_trans();
 }
@@ -118,7 +118,7 @@ make_identity() {
 //  Description: Sets the wrapper to the transition contained on the
 //               arc.
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeTransitionWrapper::
+INLINE_GRAPH void NodeTransitionWrapper::
 extract_from(const NodeRelation *arc) {
   nassertv(arc != (NodeRelation *)NULL);
   nassertv(_handle != TypeHandle::none());
@@ -130,7 +130,7 @@ extract_from(const NodeRelation *arc) {
 //       Access: Public
 //  Description: Stores the transition in the wrapper to the arc.
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeTransitionWrapper::
+INLINE_GRAPH void NodeTransitionWrapper::
 store_to(NodeRelation *arc) const {
   nassertv(arc != (NodeRelation *)NULL);
   arc->set_transition(_handle, _entry.get_trans());
@@ -142,7 +142,7 @@ store_to(NodeRelation *arc) const {
 //  Description: Sets this transition to the composition of this
 //               transition and the following one.
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeTransitionWrapper::
+INLINE_GRAPH void NodeTransitionWrapper::
 compose_in_place(const NodeTransitionWrapper &other) {
   nassertv(_handle == other._handle);
   _entry = NodeTransitionCacheEntry::compose(_entry, other._entry);
@@ -153,7 +153,7 @@ compose_in_place(const NodeTransitionWrapper &other) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeTransitionWrapper::
+INLINE_GRAPH void NodeTransitionWrapper::
 invert_in_place() {
   _entry = NodeTransitionCacheEntry::invert(_entry);
 }
@@ -164,7 +164,7 @@ invert_in_place() {
 //  Description: Sets this transition to the composition of this
 //               transition and the following one.
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeTransitionWrapper::
+INLINE_GRAPH void NodeTransitionWrapper::
 invert_compose_in_place(const NodeTransitionWrapper &other) {
   _entry = NodeTransitionCacheEntry::invert_compose(_entry, other._entry);
 }
@@ -176,7 +176,7 @@ invert_compose_in_place(const NodeTransitionWrapper &other) {
 //               cache on the arc.  Also returns the arc's top_subtree
 //               indication.
 ////////////////////////////////////////////////////////////////////
-INLINE Node *NodeTransitionWrapper::
+INLINE_GRAPH Node *NodeTransitionWrapper::
 extract_from_cache(const NodeRelation *arc) {
   nassertr(_handle != TypeHandle::none(), NULL);
 
@@ -194,7 +194,7 @@ extract_from_cache(const NodeRelation *arc) {
 //  Description: Stores this transition into the arc's cache, and
 //               updates the arc's top_subtree.
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeTransitionWrapper::
+INLINE_GRAPH void NodeTransitionWrapper::
 store_to_cache(NodeRelation *arc, Node *top_subtree) {
   arc->_top_subtree = top_subtree;
   if (arc->_net_transitions == (NodeTransitionCache *)NULL) {
@@ -213,7 +213,7 @@ store_to_cache(NodeRelation *arc, Node *top_subtree) {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool NodeTransitionWrapper::
+INLINE_GRAPH bool NodeTransitionWrapper::
 is_cache_verified(UpdateSeq as_of) const {
   return _entry.is_cache_verified(as_of);
 }
@@ -223,7 +223,7 @@ is_cache_verified(UpdateSeq as_of) const {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeTransitionWrapper::
+INLINE_GRAPH void NodeTransitionWrapper::
 set_computed_verified(UpdateSeq now) {
   _entry.set_computed_verified(now);
 }
@@ -235,7 +235,7 @@ set_computed_verified(UpdateSeq now) {
 //               that indicated by value, using the cache as a helper,
 //               and stores the result in this wrapper.
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeTransitionWrapper::
+INLINE_GRAPH void NodeTransitionWrapper::
 cached_compose(const NodeTransitionWrapper &cache, 
 	       const NodeTransitionWrapper &value,
 	       UpdateSeq now) {
@@ -244,25 +244,7 @@ cached_compose(const NodeTransitionWrapper &cache,
 					     value._entry, now);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_transition_into
-//  Description: This external template function is handy for
-//               extracting the transition (of a known type) from the
-//               wrapper.  If the transition exists, it is
-//               automatically downcasted to the correct type and
-//               stored in the pointer given in the first parameter,
-//               and the return value is true.  If the transition does
-//               not exist, the pointer is filled with NULL and the
-//               return value is false.
-////////////////////////////////////////////////////////////////////
-template<class Transition>
-INLINE bool 
-get_transition_into(Transition *&ptr, const NodeTransitionWrapper &trans) {
-  NodeTransition *nt = trans.get_trans();
-  if (nt == (NodeTransition *)NULL) {
-    ptr = (Transition *)NULL;
-    return false;
-  }
-  DCAST_INTO_R(ptr, nt, false);
-  return true;
+INLINE_GRAPH ostream &operator << (ostream &out, const NodeTransitionWrapper &ntw) {
+  ntw.output(out);
+  return out;
 }

@@ -6,78 +6,119 @@
   #define LOCAL_LIBS \
     putil mathutil
 
-  #define SOURCES \
-    allAttributesWrapper.I allAttributesWrapper.cxx \
-    allAttributesWrapper.h allTransitionsWrapper.I \
-    allTransitionsWrapper.cxx allTransitionsWrapper.h \
-    arcChain.I arcChain.cxx arcChain.h \
-    bitMask32Transition.cxx bitMask32Transition.h \
-    bitMaskAttribute.I bitMaskAttribute.h \
-    bitMaskTransition.I bitMaskTransition.h \
-    boundedObject.I \
-    boundedObject.N boundedObject.cxx boundedObject.h config_graph.cxx \
-    config_graph.h graphReducer.cxx graphReducer.h immediateAttribute.I \
-    immediateAttribute.cxx immediateAttribute.h immediateTransition.I \
-    immediateTransition.cxx immediateTransition.h \
-    lmatrix4fTransition.cxx lmatrix4fTransition.h \
-    matrixAttribute.I matrixAttribute.h matrixTransition.I \
-    matrixTransition.h \
-    multiAttribute.I multiAttribute.h \
-    multiNodeAttribute.I \
-    multiNodeAttribute.cxx multiNodeAttribute.h multiNodeTransition.I \
-    multiNodeTransition.cxx multiNodeTransition.h \
-    multiTransition.I multiTransition.h multiTransitionHelpers.I \
-    multiTransitionHelpers.h namedNode.I \
-    namedNode.cxx namedNode.h node.I node.cxx node.h nodeAttribute.I \
-    nodeAttribute.N nodeAttribute.cxx nodeAttribute.h \
-    nodeAttributeWrapper.I nodeAttributeWrapper.cxx \
-    nodeAttributeWrapper.h nodeAttributes.I nodeAttributes.N \
-    nodeAttributes.cxx nodeAttributes.h nodeRelation.I nodeRelation.N \
-    nodeRelation.cxx nodeRelation.h nodeTransition.I nodeTransition.N \
-    nodeTransition.cxx nodeTransition.h nodeTransitionCache.I \
-    nodeTransitionCache.cxx nodeTransitionCache.h \
-    nodeTransitionCacheEntry.I nodeTransitionCacheEntry.cxx \
-    nodeTransitionCacheEntry.h nodeTransitionWrapper.I \
-    nodeTransitionWrapper.cxx nodeTransitionWrapper.h nodeTransitions.I \
-    nodeTransitions.cxx nodeTransitions.h nullAttributeWrapper.I \
-    nullAttributeWrapper.cxx nullAttributeWrapper.h nullLevelState.cxx \
-    nullLevelState.h nullTransitionWrapper.I nullTransitionWrapper.cxx \
-    nullTransitionWrapper.h onAttribute.I onAttribute.cxx onAttribute.h \
-    onOffAttribute.I onOffAttribute.cxx onOffAttribute.h \
-    onOffTransition.I onOffTransition.cxx onOffTransition.h \
-    onTransition.I onTransition.cxx onTransition.h pt_NamedNode.N \
-    pt_NamedNode.cxx pt_NamedNode.h pt_Node.N pt_Node.cxx pt_Node.h \
-    setTransitionHelpers.I setTransitionHelpers.h \
-    traverserVisitor.I traverserVisitor.h \
-    vector_PT_Node.cxx vector_PT_Node.h wrt.I wrt.h wrt.cxx
+  #define SOURCES \    
+	allAttributesWrapper.I	      nodeAttributes.T  \
+	allAttributesWrapper.T	      nodeAttributes.cxx  \
+	allAttributesWrapper.cxx      nodeAttributes.h  \
+	allAttributesWrapper.h	      nodeRelation.I  \
+	allTransitionsWrapper.I       nodeRelation.N  \
+	allTransitionsWrapper.T       nodeRelation.T  \
+	allTransitionsWrapper.cxx     nodeRelation.cxx  \
+	allTransitionsWrapper.h       nodeRelation.h  \
+	arcChain.I		      nodeTransition.I  \
+	arcChain.cxx		      nodeTransition.N  \
+	arcChain.h		      nodeTransition.cxx  \
+	bitMask32Transition.cxx       nodeTransition.h  \
+	bitMask32Transition.h	      nodeTransitionCache.I  \
+	bitMaskAttribute.T	      nodeTransitionCache.cxx  \
+	bitMaskAttribute.h	      nodeTransitionCache.h  \
+	bitMaskTransition.T	      nodeTransitionCacheEntry.I  \
+	bitMaskTransition.h	      nodeTransitionCacheEntry.cxx  \
+	boundedObject.I		      nodeTransitionCacheEntry.h  \
+	boundedObject.N		      nodeTransitionWrapper.I  \
+	boundedObject.cxx	      nodeTransitionWrapper.T  \
+	boundedObject.h		      nodeTransitionWrapper.cxx  \
+	config_graph.cxx	      nodeTransitionWrapper.h  \
+	config_graph.h		      nodeTransitions.I  \
+	dftraverser.T		      nodeTransitions.T  \
+	dftraverser.h		      nodeTransitions.cxx  \
+	graphReducer.cxx	      nodeTransitions.h  \
+	graphReducer.h		      nullAttributeWrapper.I  \
+	immediateAttribute.cxx	      nullAttributeWrapper.cxx  \
+	immediateAttribute.h	      nullAttributeWrapper.h  \
+	immediateTransition.I	      nullLevelState.cxx  \
+	immediateTransition.cxx       nullLevelState.h  \
+	immediateTransition.h	      nullTransitionWrapper.I  \
+	lmatrix4fTransition.cxx       nullTransitionWrapper.cxx  \
+	lmatrix4fTransition.h	      nullTransitionWrapper.h  \
+	matrixAttribute.T	      onAttribute.cxx  \
+	matrixAttribute.h	      onAttribute.h  \
+	matrixTransition.T	      onOffAttribute.I  \
+	matrixTransition.h	      onOffAttribute.cxx  \
+	multiAttribute.T	      onOffAttribute.h  \
+	multiAttribute.h	      onOffTransition.I  \
+	multiNodeAttribute.cxx	      onOffTransition.cxx  \
+	multiNodeAttribute.h	      onOffTransition.h  \
+	multiNodeTransition.cxx       onTransition.I  \
+	multiNodeTransition.h	      onTransition.cxx  \
+	multiTransition.I	      onTransition.h  \
+	multiTransition.T	      pointerNameClass.h  \
+	multiTransition.h	      pt_NamedNode.N  \
+	multiTransitionHelpers.I      pt_NamedNode.cxx  \
+	multiTransitionHelpers.h      pt_NamedNode.h  \
+	namedNode.I		      pt_Node.N  \
+	namedNode.cxx		      pt_Node.cxx  \
+	namedNode.h		      pt_Node.h  \
+	node.I			      setTransitionHelpers.T  \
+	node.cxx		      setTransitionHelpers.h  \
+	node.h			      \
+	nodeAttribute.I		      \
+	nodeAttribute.N		      \
+	nodeAttribute.cxx	      transitionDirection.h  \
+	nodeAttribute.h		      traverserVisitor.T  \
+	nodeAttributeWrapper.I	      traverserVisitor.h  \
+	nodeAttributeWrapper.T	      vector_PT_Node.cxx  \
+	nodeAttributeWrapper.cxx      vector_PT_Node.h  \
+	nodeAttributeWrapper.h	      wrt.I  \
+	nodeAttributes.I	      wrt.cxx  \
+	nodeAttributes.N	      wrt.h
+
 
   #define INSTALL_HEADERS \
-    allAttributesWrapper.I allAttributesWrapper.h \
-    allTransitionsWrapper.I allTransitionsWrapper.h \
-    arcChain.I arcChain.h \
-    bitMask32Transition.h bitMaskAttribute.I bitMaskAttribute.h \
-    bitMaskTransition.I bitMaskTransition.h boundedObject.I \
-    boundedObject.h config_graph.h dftraverser.I dftraverser.h \
-    graphReducer.h immediateAttribute.I immediateAttribute.h \
-    immediateTransition.I immediateTransition.h lmatrix4fTransition.h \
-    matrixAttribute.I matrixAttribute.h matrixTransition.I \
-    matrixTransition.h multiAttribute.I multiAttribute.h \
-    multiNodeAttribute.I multiNodeAttribute.h multiNodeTransition.I \
-    multiNodeTransition.h multiTransition.I multiTransition.h \
-    multiTransitionHelpers.I multiTransitionHelpers.h namedNode.I \
-    namedNode.h node.I node.h nodeAttribute.I nodeAttribute.h \
-    nodeAttributeWrapper.I nodeAttributeWrapper.h nodeAttributes.I \
-    nodeAttributes.h nodeRelation.I nodeRelation.h nodeTransition.I \
-    nodeTransition.h nodeTransitionCache.I nodeTransitionCache.h \
-    nodeTransitionCacheEntry.I nodeTransitionCacheEntry.h \
-    nodeTransitionWrapper.I nodeTransitionWrapper.h nodeTransitions.I \
-    nodeTransitions.h nullAttributeWrapper.I nullAttributeWrapper.h \
-    nullLevelState.h nullTransitionWrapper.I nullTransitionWrapper.h \
-    onAttribute.I onAttribute.h onOffAttribute.I onOffAttribute.h \
-    onOffTransition.I onOffTransition.h onTransition.I onTransition.h \
-    pointerNameClass.h pt_NamedNode.h pt_Node.h transitionDirection.h \
-    traverserVisitor.I traverserVisitor.h vector_PT_Node.h wrt.I wrt.h
-
+	allAttributesWrapper.I	    nodeAttributeWrapper.T  \
+	allAttributesWrapper.T	    nodeAttributeWrapper.h  \
+	allAttributesWrapper.h	    nodeAttributes.I  \
+	allTransitionsWrapper.I     nodeAttributes.T  \
+	allTransitionsWrapper.T     nodeAttributes.h  \
+	allTransitionsWrapper.h     nodeRelation.I  \
+	arcChain.I		    nodeRelation.T  \
+	arcChain.h		    nodeRelation.h  \
+	bitMask32Transition.h	    nodeTransition.I  \
+	bitMaskAttribute.T	    nodeTransition.h  \
+	bitMaskAttribute.h	    nodeTransitionCache.I  \
+	bitMaskTransition.T	    nodeTransitionCache.h  \
+	bitMaskTransition.h	    nodeTransitionCacheEntry.I  \
+	boundedObject.I		    nodeTransitionCacheEntry.h  \
+	boundedObject.h		    nodeTransitionWrapper.I  \
+	config_graph.h		    nodeTransitionWrapper.T  \
+	dftraverser.T		    nodeTransitionWrapper.h  \
+	dftraverser.h		    nodeTransitions.I  \
+	graphReducer.h		    nodeTransitions.T  \
+	immediateAttribute.h	    nodeTransitions.h  \
+	immediateTransition.I	    nullAttributeWrapper.I  \
+	immediateTransition.h	    nullAttributeWrapper.h  \
+	lmatrix4fTransition.h	    nullLevelState.h  \
+	matrixAttribute.T	    nullTransitionWrapper.I  \
+	matrixAttribute.h	    nullTransitionWrapper.h  \
+	matrixTransition.T	    onAttribute.h  \
+	matrixTransition.h	    onOffAttribute.I  \
+	multiAttribute.T	    onOffAttribute.h  \
+	multiAttribute.h	    onOffTransition.I  \
+	multiNodeAttribute.h	    onOffTransition.h  \
+	multiNodeTransition.h	    onTransition.I  \
+	multiTransition.I	    onTransition.h  \
+	multiTransition.T	    pointerNameClass.h  \
+	multiTransition.h	    pt_NamedNode.h  \
+	multiTransitionHelpers.I    pt_Node.h  \
+	multiTransitionHelpers.h    setTransitionHelpers.T  \
+	namedNode.I		    setTransitionHelpers.h  \
+	namedNode.h		    transitionDirection.h  \
+	node.I			    traverserVisitor.T  \
+	node.h			    traverserVisitor.h  \
+	nodeAttribute.I		    vector_PT_Node.h  \
+	nodeAttribute.h		    wrt.I  \
+	nodeAttributeWrapper.I	    wrt.h
+  
   #define IGATESCAN all
 
 #end lib_target

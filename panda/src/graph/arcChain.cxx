@@ -106,3 +106,4 @@ r_compare_to(const ArcComponent *a, const ArcComponent *b) {
     return r_compare_to(a->get_next(), b->get_next());
   }
 }
+

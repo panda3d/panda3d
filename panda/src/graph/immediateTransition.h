@@ -36,9 +36,9 @@ class NodeRelation;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ImmediateTransition : public NodeTransition {
 protected:
-  INLINE ImmediateTransition();
-  INLINE ImmediateTransition(const ImmediateTransition &copy);
-  INLINE void operator = (const ImmediateTransition &copy);
+  INLINE_GRAPH ImmediateTransition();
+  INLINE_GRAPH ImmediateTransition(const ImmediateTransition &copy);
+  INLINE_GRAPH void operator = (const ImmediateTransition &copy);
 
 public:
   virtual NodeAttribute *make_attrib() const;
@@ -75,7 +75,9 @@ private:
   static TypeHandle _type_handle;
 };
 
+#ifdef BUILDING_PANDA
 #include "immediateTransition.I"
+#endif
 
 #endif
 

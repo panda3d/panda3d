@@ -18,16 +18,16 @@ class OnOffTransition;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA OnOffAttribute : public NodeAttribute {
 protected:
-  INLINE OnOffAttribute(bool is_on = false);
-  INLINE OnOffAttribute(const OnOffAttribute &copy);
-  INLINE void operator = (const OnOffAttribute &copy);
+  INLINE_GRAPH OnOffAttribute(bool is_on = false);
+  INLINE_GRAPH OnOffAttribute(const OnOffAttribute &copy);
+  INLINE_GRAPH void operator = (const OnOffAttribute &copy);
 
 PUBLISHED:
-  INLINE void set_on();
-  INLINE void set_off();
+  INLINE_GRAPH void set_on();
+  INLINE_GRAPH void set_off();
 
-  INLINE bool is_on() const;
-  INLINE bool is_off() const;
+  INLINE_GRAPH bool is_on() const;
+  INLINE_GRAPH bool is_off() const;
 
 public:
   virtual void output(ostream &out) const;
@@ -63,6 +63,8 @@ private:
 friend class OnOffTransition;
 };
 
+#ifdef BUILDING_PANDA
 #include "onOffAttribute.I"
+#endif
 
 #endif

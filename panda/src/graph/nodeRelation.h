@@ -32,6 +32,8 @@ class Node;
 // type of graph, hence the parameter.
 extern EXPCL_PANDA UpdateSeq &last_graph_update(TypeHandle graph_type);
 
+extern EXPCL_PANDA INLINE_GRAPH void remove_arc(NodeRelation *arc);
+
 ///////////////////////////////////////////////////////////////////
 // 	 Class : NodeRelation
 // Description : The base class for all scene graph arcs.  This is the
@@ -70,41 +72,41 @@ public:
 
 PUBLISHED:
   void output(ostream &out) const;
-  INLINE void output_transitions(ostream &out) const;
-  INLINE void write_transitions(ostream &out, int indent = 0) const;
+  INLINE_GRAPH void output_transitions(ostream &out) const;
+  INLINE_GRAPH void write_transitions(ostream &out, int indent = 0) const;
 
-  INLINE Node *get_parent() const;
-  INLINE Node *get_child() const;
-  INLINE int get_sort() const;
-  INLINE TypeHandle get_graph_type() const;
+  INLINE_GRAPH Node *get_parent() const;
+  INLINE_GRAPH Node *get_child() const;
+  INLINE_GRAPH int get_sort() const;
+  INLINE_GRAPH TypeHandle get_graph_type() const;
 
   void ref_parent();
   void unref_parent();
 
-  INLINE void change_parent(Node *parent);
-  INLINE void change_parent(Node *parent, int sort);
-  INLINE void change_child(Node *child);
-  INLINE void change_parent_and_child(Node *parent, Node *child);
-  INLINE void set_sort(int sort);
-  INLINE void set_graph_type(TypeHandle graph_type);
+  INLINE_GRAPH void change_parent(Node *parent);
+  INLINE_GRAPH void change_parent(Node *parent, int sort);
+  INLINE_GRAPH void change_child(Node *child);
+  INLINE_GRAPH void change_parent_and_child(Node *parent, Node *child);
+  INLINE_GRAPH void set_sort(int sort);
+  INLINE_GRAPH void set_graph_type(TypeHandle graph_type);
 
-  PT(NodeTransition) set_transition(TypeHandle handle, NodeTransition *trans);  /*DONT INLINE THIS*/
-  INLINE PT(NodeTransition) set_transition(NodeTransition *trans);
-  INLINE PT(NodeTransition) set_transition(NodeTransition *trans, int priority);
-  PT(NodeTransition) clear_transition(TypeHandle handle);  /*DONT INLINE THIS*/
+  PT(NodeTransition) set_transition(TypeHandle handle, NodeTransition *trans);  /*DONT INLINE_GRAPH THIS*/
+  INLINE_GRAPH PT(NodeTransition) set_transition(NodeTransition *trans);
+  INLINE_GRAPH PT(NodeTransition) set_transition(NodeTransition *trans, int priority);
+  PT(NodeTransition) clear_transition(TypeHandle handle);  /*DONT INLINE_GRAPH THIS*/
 
-  INLINE bool has_transition(TypeHandle handle) const;
-  INLINE bool has_any_transition() const;
-  INLINE NodeTransition *get_transition(TypeHandle handle) const;
+  INLINE_GRAPH bool has_transition(TypeHandle handle) const;
+  INLINE_GRAPH bool has_any_transition() const;
+  INLINE_GRAPH NodeTransition *get_transition(TypeHandle handle) const;
   void copy_transitions_from(const NodeRelation *arc);
   void compose_transitions_from(const NodeRelation *arc);
   void copy_transitions_from(const NodeTransitions &trans);
   void compose_transitions_from(const NodeTransitions &trans);
   void adjust_all_priorities(int adjustment);
 
-  INLINE int compare_transitions_to(const NodeRelation *arc) const;
+  INLINE_GRAPH int compare_transitions_to(const NodeRelation *arc) const;
 
-  INLINE UpdateSeq get_last_update() const;
+  INLINE_GRAPH UpdateSeq get_last_update() const;
 
 public:
   bool sub_render_trans(const AllAttributesWrapper &attrib,
@@ -116,15 +118,15 @@ public:
 public:
   // Factory stuff: to create a new NodeRelation based on its
   // TypeHandle.
-  INLINE static NodeRelation *
+  INLINE_GRAPH static NodeRelation *
   create_typed_arc(TypeHandle type, Node *parent, Node *child, int sort = 0);
 
   // This is just to be called at initialization time; don't try to
   // call this directly.
-  INLINE static void register_with_factory();
+  INLINE_GRAPH static void register_with_factory();
 
 protected:
-  INLINE static Factory<NodeRelation> &get_factory(); 
+  INLINE_GRAPH static Factory<NodeRelation> &get_factory(); 
  
 private:
   static NodeRelation *make_arc(const FactoryParams &params);
@@ -196,8 +198,8 @@ protected:
   virtual void recompute_bound();
 
 PUBLISHED:
-  INLINE static TypeHandle get_class_type();
-  INLINE static TypeHandle get_stashed_type();
+  INLINE_GRAPH static TypeHandle get_class_type();
+  INLINE_GRAPH static TypeHandle get_stashed_type();
 
 public:
   static void init_type();
@@ -208,29 +210,15 @@ private:
   static TypeHandle _type_handle;
   static TypeHandle _stashed_type_handle;
 
-  friend INLINE void remove_arc(NodeRelation *arc);
+  friend extern EXPCL_PANDA INLINE_GRAPH void remove_arc(NodeRelation *arc);
   friend class Node;
   friend class NodeTransitionWrapper;
   friend class AllTransitionsWrapper;
   friend class GraphPriorityAdjuster;
 };
 
-INLINE ostream &
-operator << (ostream &out, const NodeRelation &arc) {
-  arc.output(out);
-  return out;
-}
-
-INLINE void remove_arc(NodeRelation *arc);
-
-template<class Transition>
-INLINE bool 
-get_transition_into(Transition *&ptr, const NodeRelation *arc,
-		    TypeHandle transition_type);
-
-template<class Transition>
-INLINE bool 
-get_transition_into(Transition *&ptr, const NodeRelation *arc);
+EXPCL_PANDA INLINE_GRAPH ostream &
+operator << (ostream &out, const NodeRelation &arc);
 
 typedef vector< PT(NodeRelation) > DownRelationPointers;
 typedef map<TypeHandle, DownRelationPointers> DownRelations;
@@ -238,7 +226,11 @@ typedef map<TypeHandle, DownRelationPointers> DownRelations;
 typedef vector<NodeRelation *> UpRelationPointers;
 typedef map<TypeHandle, UpRelationPointers> UpRelations;
 
+#include "nodeRelation.T"
+
+#ifdef BUILDING_PANDA
 #include "nodeRelation.I"
+#endif
 
 // We include node.h here at the end, so we'll know that nodes are of
 // type ReferenceCount and will be able to compile anything that uses

@@ -8,7 +8,7 @@
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE OnOffTransition::
+INLINE_GRAPH OnOffTransition::
 OnOffTransition(TransitionDirection direction) {
   _direction = direction;   
 }
@@ -18,7 +18,7 @@ OnOffTransition(TransitionDirection direction) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE OnOffTransition::
+INLINE_GRAPH OnOffTransition::
 OnOffTransition(const OnOffTransition &copy) :
   NodeTransition(copy),
   _direction(copy._direction)
@@ -30,7 +30,7 @@ OnOffTransition(const OnOffTransition &copy) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void OnOffTransition::
+INLINE_GRAPH void OnOffTransition::
 operator = (const OnOffTransition &copy) {
   NodeTransition::operator = (copy);
   _direction = copy._direction;
@@ -43,7 +43,7 @@ operator = (const OnOffTransition &copy) {
 //               this has no effect on the attribute for any nodes at
 //               this point and below.
 ////////////////////////////////////////////////////////////////////
-INLINE void OnOffTransition::
+INLINE_GRAPH void OnOffTransition::
 set_identity() {
   _direction = TD_identity;
   state_changed();
@@ -62,7 +62,7 @@ set_identity() {
 //               should override this function to accept a value
 //               parameter of the appropriate type.
 ////////////////////////////////////////////////////////////////////
-INLINE void OnOffTransition::
+INLINE_GRAPH void OnOffTransition::
 set_on() {
   _direction = TD_on;
   state_changed();
@@ -75,7 +75,7 @@ set_on() {
 //               turns off the attribute for all nodes at this point
 //               and below.
 ////////////////////////////////////////////////////////////////////
-INLINE void OnOffTransition::
+INLINE_GRAPH void OnOffTransition::
 set_off() {
   _direction = TD_off;
   state_changed();
@@ -87,7 +87,7 @@ set_off() {
 //  Description: Returns true if this is the identity transition,
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
-INLINE bool OnOffTransition::
+INLINE_GRAPH bool OnOffTransition::
 is_identity() const {
   return _direction == TD_identity;
 }
@@ -100,7 +100,7 @@ is_identity() const {
 //               value, it should define a get_value() function which
 //               allows you to query the on value.
 ////////////////////////////////////////////////////////////////////
-INLINE bool OnOffTransition::
+INLINE_GRAPH bool OnOffTransition::
 is_on() const {
   return _direction == TD_on;
 }
@@ -111,7 +111,7 @@ is_on() const {
 //  Description: Returns true if this transition is the 'off'
 //               transition, false otherwise.
 ////////////////////////////////////////////////////////////////////
-INLINE bool OnOffTransition::
+INLINE_GRAPH bool OnOffTransition::
 is_off() const {
   return _direction == TD_off;
 }

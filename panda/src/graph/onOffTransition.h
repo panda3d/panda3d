@@ -36,18 +36,18 @@ class NodeRelation;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA OnOffTransition : public NodeTransition {
 protected:
-  INLINE OnOffTransition(TransitionDirection direction = TD_identity);
-  INLINE OnOffTransition(const OnOffTransition &copy);
-  INLINE void operator = (const OnOffTransition &copy);
+  INLINE_GRAPH OnOffTransition(TransitionDirection direction = TD_identity);
+  INLINE_GRAPH OnOffTransition(const OnOffTransition &copy);
+  INLINE_GRAPH void operator = (const OnOffTransition &copy);
 
 PUBLISHED:
-  INLINE void set_identity();
-  INLINE void set_on();
-  INLINE void set_off();
+  INLINE_GRAPH void set_identity();
+  INLINE_GRAPH void set_on();
+  INLINE_GRAPH void set_off();
 
-  INLINE bool is_identity() const;
-  INLINE bool is_on() const;
-  INLINE bool is_off() const;
+  INLINE_GRAPH bool is_identity() const;
+  INLINE_GRAPH bool is_on() const;
+  INLINE_GRAPH bool is_off() const;
 
 public:
   virtual NodeTransition *compose(const NodeTransition *other) const;
@@ -92,10 +92,11 @@ public:
 
 private:
   static TypeHandle _type_handle;
-
-friend class OnOffAttribute;
+  friend class OnOffAttribute;
 };
 
+#ifdef BUILDING_PANDA
 #include "onOffTransition.I"
+#endif
 
 #endif

@@ -29,9 +29,9 @@ class NodeRelation;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA OnTransition : public NodeTransition {
 protected:
-  INLINE OnTransition();
-  INLINE OnTransition(const OnTransition &copy);
-  INLINE void operator = (const OnTransition &copy);
+  INLINE_GRAPH OnTransition();
+  INLINE_GRAPH OnTransition(const OnTransition &copy);
+  INLINE_GRAPH void operator = (const OnTransition &copy);
 
 public:
   virtual NodeTransition *compose(const NodeTransition *other) const;
@@ -72,10 +72,11 @@ public:
 
 private:
   static TypeHandle _type_handle;
-
-friend class OnAttribute;
+  friend class OnAttribute;
 };
 
+#ifdef BUILDING_PANDA
 #include "onTransition.I"
+#endif
 
 #endif

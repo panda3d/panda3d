@@ -120,6 +120,6 @@ template<class InputIterator>
 ostream &
 tmap_output(InputIterator first, InputIterator last, ostream &out);
 
-#include "setTransitionHelpers.I"
+#include "setTransitionHelpers.T"
 
 #endif

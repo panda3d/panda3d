@@ -62,7 +62,7 @@ init_last_graph_update() {
 ////////////////////////////////////////////////////////////////////
 #ifdef NDEBUG
 template<class Iterator>
-INLINE void
+INLINE_GRAPH void
 verify_arc_list(Iterator, Iterator) {
 }
 #else  // NDEBUG

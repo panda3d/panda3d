@@ -9,7 +9,7 @@
 //               will also delete the arc unless there are some
 //               additional outstanding pointers to it.
 ////////////////////////////////////////////////////////////////////
-INLINE void
+EXPCL_PANDA INLINE_GRAPH void
 remove_arc(NodeRelation *arc) {
   PT(NodeRelation) hold_arc = arc->detach();
   arc->_parent = NULL;
@@ -21,7 +21,7 @@ remove_arc(NodeRelation *arc) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeRelation::
+INLINE_GRAPH void NodeRelation::
 output_transitions(ostream &out) const {
   out << _transitions;
 }
@@ -31,7 +31,7 @@ output_transitions(ostream &out) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeRelation::
+INLINE_GRAPH void NodeRelation::
 write_transitions(ostream &out, int indent_level) const {
   _transitions.write(out, indent_level);
 }
@@ -41,7 +41,7 @@ write_transitions(ostream &out, int indent_level) const {
 //       Access: Public
 //  Description: Returns the node above the arc in the scene graph.
 ////////////////////////////////////////////////////////////////////
-INLINE Node *NodeRelation::
+INLINE_GRAPH Node *NodeRelation::
 get_parent() const {
   return _parent;
 }
@@ -51,7 +51,7 @@ get_parent() const {
 //       Access: Public
 //  Description: Returns the node below the arc in the scene graph.
 ////////////////////////////////////////////////////////////////////
-INLINE Node *NodeRelation::
+INLINE_GRAPH Node *NodeRelation::
 get_child() const {
   return _child;
 }
@@ -62,7 +62,7 @@ get_child() const {
 //  Description: Returns the sorting index of the arc.  This affects
 //               its apparent position among its list of siblings.
 ////////////////////////////////////////////////////////////////////
-INLINE int NodeRelation::
+INLINE_GRAPH int NodeRelation::
 get_sort() const {
   return _sort;
 }
@@ -76,7 +76,7 @@ get_sort() const {
 //               A node may simultaneously have many arcs of different
 //               types.
 ////////////////////////////////////////////////////////////////////
-INLINE TypeHandle NodeRelation::
+INLINE_GRAPH TypeHandle NodeRelation::
 get_graph_type() const {
   return _graph_type;
 }
@@ -86,7 +86,7 @@ get_graph_type() const {
 //       Access: Public
 //  Description: Changes the parent of the arc to a different node.
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeRelation::
+INLINE_GRAPH void NodeRelation::
 change_parent(Node *parent) {
   PT(NodeRelation) hold_arc = detach();
   _parent = parent;
@@ -99,7 +99,7 @@ change_parent(Node *parent) {
 //  Description: Changes the parent of the arc to a different node,
 //               simultaneously changing the sort index.
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeRelation::
+INLINE_GRAPH void NodeRelation::
 change_parent(Node *parent, int sort) {
   PT(NodeRelation) hold_arc = detach();
   _parent = parent;
@@ -112,7 +112,7 @@ change_parent(Node *parent, int sort) {
 //       Access: Public
 //  Description: Changes the child of the arc to a different node.
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeRelation::
+INLINE_GRAPH void NodeRelation::
 change_child(Node *child) {
   PT(NodeRelation) hold_arc = detach();
   _child = child;
@@ -125,7 +125,7 @@ change_child(Node *child) {
 //  Description: Simultaneously moves both the parent and child of the
 //               arc to different nodes.
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeRelation::
+INLINE_GRAPH void NodeRelation::
 change_parent_and_child(Node *parent, Node *child) {
   PT(NodeRelation) hold_arc = detach();
   _parent = parent;
@@ -139,7 +139,7 @@ change_parent_and_child(Node *parent, Node *child) {
 //  Description: Changes the sorting index of the arc.  This affects
 //               its apparent position among its list of siblings.
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeRelation::
+INLINE_GRAPH void NodeRelation::
 set_sort(int sort) {
   PT(NodeRelation) hold_arc = detach();
   _sort = sort;
@@ -153,7 +153,7 @@ set_sort(int sort) {
 //               arc into a totally different graph; it may now be
 //               detected only by a special traversal.
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeRelation::
+INLINE_GRAPH void NodeRelation::
 set_graph_type(TypeHandle graph_type) {
   PT(NodeRelation) hold_arc = detach();
   _graph_type = graph_type;
@@ -174,7 +174,7 @@ set_graph_type(TypeHandle graph_type) {
 //               transition in the set, if any, or NULL if there was
 //               none.
 ////////////////////////////////////////////////////////////////////
-INLINE PT(NodeTransition) NodeRelation::
+INLINE_GRAPH PT(NodeTransition) NodeRelation::
 set_transition(NodeTransition *trans) {
   nassertr(trans != (NodeTransition *)NULL, NULL);
   nassertr(trans->get_handle() != TypeHandle::none(), NULL);
@@ -190,7 +190,7 @@ set_transition(NodeTransition *trans) {
 //               this will be used for creating override transitions
 //               on-the-fly.
 ////////////////////////////////////////////////////////////////////
-INLINE PT(NodeTransition) NodeRelation::
+INLINE_GRAPH PT(NodeTransition) NodeRelation::
 set_transition(NodeTransition *trans, int priority) {
   nassertr(trans != (NodeTransition *)NULL, NULL);
   nassertr(trans->get_handle() != TypeHandle::none(), NULL);
@@ -205,7 +205,7 @@ set_transition(NodeTransition *trans, int priority) {
 //               indicated handle has been stored on the arc (even if
 //               it is the identity transition), or false otherwise.
 ////////////////////////////////////////////////////////////////////
-INLINE bool NodeRelation::
+INLINE_GRAPH bool NodeRelation::
 has_transition(TypeHandle handle) const {
   return _transitions.has_transition(handle);
 }
@@ -217,7 +217,7 @@ has_transition(TypeHandle handle) const {
 //               the arc (even if it is the identity transition), or
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
-INLINE bool NodeRelation::
+INLINE_GRAPH bool NodeRelation::
 has_any_transition() const {
   return !_transitions.is_empty();
 }
@@ -229,7 +229,7 @@ has_any_transition() const {
 //               handle, or NULL if no such transition has been stored
 //               on the arc.
 ////////////////////////////////////////////////////////////////////
-INLINE NodeTransition *NodeRelation::
+INLINE_GRAPH NodeTransition *NodeRelation::
 get_transition(TypeHandle handle) const {
   return _transitions.get_transition(handle);
 }
@@ -242,7 +242,7 @@ get_transition(TypeHandle handle) const {
 //               they sort after, or zero if the sets of transitions
 //               are equivalent.
 ////////////////////////////////////////////////////////////////////
-INLINE int NodeRelation::
+INLINE_GRAPH int NodeRelation::
 compare_transitions_to(const NodeRelation *arc) const {
   return _transitions.compare_to(arc->_transitions);
 }
@@ -256,7 +256,7 @@ compare_transitions_to(const NodeRelation *arc) const {
 //               can do with this is store it and note whether it
 //               increases.
 ////////////////////////////////////////////////////////////////////
-INLINE UpdateSeq NodeRelation::
+INLINE_GRAPH UpdateSeq NodeRelation::
 get_last_update() const {
   return _last_update;
 }
@@ -268,7 +268,7 @@ get_last_update() const {
 //               type, and immediately attaches it.  Returns NULL if
 //               the type is unknown.
 ////////////////////////////////////////////////////////////////////
-INLINE NodeRelation *NodeRelation::
+INLINE_GRAPH NodeRelation *NodeRelation::
 create_typed_arc(TypeHandle type, Node *parent, Node *child, int sort) {
   NodeRelation *arc = get_factory().make_instance(type);
   if (arc != (NodeRelation *)NULL) {
@@ -287,7 +287,7 @@ create_typed_arc(TypeHandle type, Node *parent, Node *child, int sort) {
 //               This is only intended to be called at initialization
 //               time; don't call it directly.
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeRelation::
+INLINE_GRAPH void NodeRelation::
 register_with_factory() {
   get_factory().register_factory(get_class_type(), make_arc);
 }
@@ -300,7 +300,7 @@ register_with_factory() {
 //               has been called.  This is necessary to guarantee
 //               ordering at static init time.
 ////////////////////////////////////////////////////////////////////
-INLINE Factory<NodeRelation> &NodeRelation::
+INLINE_GRAPH Factory<NodeRelation> &NodeRelation::
 get_factory() {
   if (_factory == (Factory<NodeRelation> *)NULL) {
     _factory = new Factory<NodeRelation>;
@@ -313,7 +313,7 @@ get_factory() {
 //       Access: Public, Static
 //  Description: Returns the TypeHandle associated with this type.
 ////////////////////////////////////////////////////////////////////
-INLINE TypeHandle NodeRelation::
+INLINE_GRAPH TypeHandle NodeRelation::
 get_class_type() {
   return _type_handle;
 }
@@ -328,37 +328,14 @@ get_class_type() {
 //               removing themselves from the bounding volumes of
 //               their parents, should set their graph_type to.
 ////////////////////////////////////////////////////////////////////
-INLINE TypeHandle NodeRelation::
+INLINE_GRAPH TypeHandle NodeRelation::
 get_stashed_type() {
   return _stashed_type_handle;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_transition_into
-//  Description: This external template function is handy for
-//               extracting a transition of a particular type from the
-//               arc.  If the transition exists, it is automatically
-//               downcasted to the correct type and stored in the
-//               pointer given in the first parameter, and the return
-//               value is true.  If the transition does not exist, the
-//               pointer is filled with NULL and the return value is
-//               false.
-////////////////////////////////////////////////////////////////////
-template<class Transition>
-INLINE bool 
-get_transition_into(Transition *&ptr, const NodeRelation *arc,
-		    TypeHandle transition_type) {
-  NodeTransition *nt = arc->get_transition(transition_type);
-  if (nt == (NodeTransition *)NULL) {
-    ptr = (Transition *)NULL;
-    return false;
-  }
-  DCAST_INTO_R(ptr, nt, false);
-  return true;
+EXPCL_PANDA INLINE_GRAPH ostream &
+operator << (ostream &out, const NodeRelation &arc) {
+  arc.output(out);
+  return out;
 }
 
-template<class Transition>
-INLINE bool 
-get_transition_into(Transition *&ptr, const NodeRelation *arc) {
-  return get_transition_into(ptr, arc, Transition::get_class_type());
-}

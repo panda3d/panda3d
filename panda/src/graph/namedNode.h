@@ -17,21 +17,19 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA NamedNode : public Node, public Namable {
 PUBLISHED:
-  INLINE NamedNode(const string &initial_name = "");
+  INLINE_GRAPH NamedNode(const string &initial_name = "");
 
 public:
-  INLINE NamedNode(const NamedNode &copy);
-  INLINE void operator = (const NamedNode &copy);
+  INLINE_GRAPH NamedNode(const NamedNode &copy);
+  INLINE_GRAPH void operator = (const NamedNode &copy);
 
   virtual Node *make_copy() const;
   virtual void output(ostream &out) const;
 
-public:
   static void register_with_read_factory(void);
   virtual void write_datagram(BamWriter* manager, Datagram &me);  
 
   static TypedWriteable *make_NamedNode(const FactoryParams &params);
-
 
 protected:
   void fillin(DatagramIterator& scan, BamReader* manager);
@@ -58,13 +56,11 @@ private:
 
 // We need this operator to specify which output operator (from Node
 // or Namable) that NamedNode uses.
-INLINE ostream &
-operator << (ostream &out, const NamedNode &node) {
-  node.output(out);
-  return out;
-}
+EXPCL_PANDA INLINE_GRAPH ostream & operator << (ostream &out, const NamedNode &nod);
 
+#ifdef BUILDING_PANDA
 #include "namedNode.I"
+#endif
 
 #endif
 

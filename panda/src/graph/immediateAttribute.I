@@ -8,7 +8,7 @@
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE ImmediateAttribute::
+INLINE_GRAPH ImmediateAttribute::
 ImmediateAttribute() {
 }
 
@@ -17,7 +17,7 @@ ImmediateAttribute() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE ImmediateAttribute::
+INLINE_GRAPH ImmediateAttribute::
 ImmediateAttribute(const ImmediateAttribute &copy) :
   NodeAttribute(copy)
 {
@@ -28,7 +28,7 @@ ImmediateAttribute(const ImmediateAttribute &copy) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void ImmediateAttribute::
+INLINE_GRAPH void ImmediateAttribute::
 operator = (const ImmediateAttribute &copy) {
   NodeAttribute::operator = (copy);
 }

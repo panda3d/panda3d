@@ -36,11 +36,12 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, MULTITRANSITION_NODE);
 class EXPCL_PANDA MultiNodeTransition : 
   public MultiTransition<PT_Node, PointerNameClass> {
 protected:
-  INLINE MultiNodeTransition();
-  INLINE MultiNodeTransition(const MultiNodeTransition &copy);
-  INLINE void operator = (const MultiNodeTransition &copy);
+  INLINE_GRAPH MultiNodeTransition() {};
+  INLINE_GRAPH MultiNodeTransition(const MultiNodeTransition &copy) :
+	  MultiTransition<PT_Node, PointerNameClass>(copy) {};
 
-public:
+  INLINE_GRAPH void operator = (const MultiNodeTransition &copy) 
+          {MultiTransition<PT_Node, PointerNameClass>::operator = (copy);};
 
 public:
   virtual TypeHandle get_type() const {
@@ -60,7 +61,5 @@ public:
 private:
   static TypeHandle _type_handle;
 };
-
-#include "multiNodeTransition.I"
 
 #endif

@@ -8,7 +8,7 @@
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE ImmediateTransition::
+INLINE_GRAPH ImmediateTransition::
 ImmediateTransition() {
 }
 
@@ -17,7 +17,7 @@ ImmediateTransition() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE ImmediateTransition::
+INLINE_GRAPH ImmediateTransition::
 ImmediateTransition(const ImmediateTransition &copy) :
   NodeTransition(copy)
 {
@@ -28,7 +28,7 @@ ImmediateTransition(const ImmediateTransition &copy) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void ImmediateTransition::
+INLINE_GRAPH void ImmediateTransition::
 operator = (const ImmediateTransition &copy) {
   NodeTransition::operator = (copy);
 }

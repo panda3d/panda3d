@@ -10,7 +10,7 @@
 
 #include <collideMask.h>
 
-class NodeRelation;
+#include "nodeRelation.h"
 class Node;
 
 ///////////////////////////////////////////////////////////////////

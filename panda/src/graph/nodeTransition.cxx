@@ -117,4 +117,3 @@ fillin(DatagramIterator& scan, BamReader*)
   _priority = scan.get_uint16();
 }
 
-

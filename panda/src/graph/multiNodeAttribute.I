@@ -8,7 +8,7 @@
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE MultiNodeAttribute::
+INLINE_GRAPH MultiNodeAttribute::
 MultiNodeAttribute() {
 }
 
@@ -17,7 +17,7 @@ MultiNodeAttribute() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE MultiNodeAttribute::
+INLINE_GRAPH MultiNodeAttribute::
 MultiNodeAttribute(const MultiNodeAttribute &copy) :
   MultiAttribute<PT_Node, PointerNameClass>(copy)
 {
@@ -28,7 +28,7 @@ MultiNodeAttribute(const MultiNodeAttribute &copy) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void MultiNodeAttribute::
+INLINE_GRAPH void MultiNodeAttribute::
 operator = (const MultiNodeAttribute &copy) {
   MultiAttribute<PT_Node, PointerNameClass>::operator = (copy);
 }

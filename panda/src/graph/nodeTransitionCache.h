@@ -31,7 +31,7 @@ public:
 
   bool is_empty() const;
   PT(NodeTransition) set_transition(TypeHandle handle, NodeTransition *trans);
-  INLINE PT(NodeTransition) set_transition(NodeTransition *trans);
+  INLINE_GRAPH PT(NodeTransition) set_transition(NodeTransition *trans);
   PT(NodeTransition) clear_transition(TypeHandle handle);
   bool has_transition(TypeHandle handle) const;
   NodeTransition *get_transition(TypeHandle handle) const;
@@ -56,9 +56,9 @@ public:
   typedef Cache::value_type value_type;
   typedef Cache::size_type size_type;
 
-  INLINE size_type size() const;
-  INLINE const_iterator begin() const;
-  INLINE const_iterator end() const;
+  INLINE_GRAPH size_type size() const;
+  INLINE_GRAPH const_iterator begin() const;
+  INLINE_GRAPH const_iterator end() const;
 
 
 public:
@@ -100,11 +100,10 @@ private:
   friend class NodeAttributes;
 };
 
-INLINE ostream &operator << (ostream &out, const NodeTransitionCache &ntc) {
-  ntc.output(out);
-  return out;
-}
+INLINE_GRAPH ostream &operator << (ostream &out, const NodeTransitionCache &ntc);
 
+#ifdef BUILDING_PANDA
 #include "nodeTransitionCache.I"
+#endif
 
 #endif

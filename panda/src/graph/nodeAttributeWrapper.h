@@ -24,19 +24,19 @@ public:
   typedef NodeTransitionWrapper TransitionWrapper;
   typedef NodeAttributeWrapper AttributeWrapper;
 
-  INLINE NodeAttributeWrapper(TypeHandle handle);
-  INLINE NodeAttributeWrapper(const NodeAttributeWrapper &copy);
-  INLINE void operator = (const NodeAttributeWrapper &copy);
+  INLINE_GRAPH NodeAttributeWrapper(TypeHandle handle);
+  INLINE_GRAPH NodeAttributeWrapper(const NodeAttributeWrapper &copy);
+  INLINE_GRAPH void operator = (const NodeAttributeWrapper &copy);
   static NodeAttributeWrapper init_from(const NodeTransitionWrapper &trans);
 
-  INLINE TypeHandle get_handle() const;
-  INLINE NodeAttribute *get_attrib() const;
-  INLINE void set_attrib(NodeAttribute *attrib);
+  INLINE_GRAPH TypeHandle get_handle() const;
+  INLINE_GRAPH NodeAttribute *get_attrib() const;
+  INLINE_GRAPH void set_attrib(NodeAttribute *attrib);
 
-  INLINE bool is_initial() const;
-  INLINE int compare_to(const NodeAttributeWrapper &other) const;
+  INLINE_GRAPH bool is_initial() const;
+  INLINE_GRAPH int compare_to(const NodeAttributeWrapper &other) const;
 
-  INLINE void make_initial();
+  INLINE_GRAPH void make_initial();
   void apply_in_place(const NodeTransitionWrapper &trans);
 
   void output(ostream &out) const;
@@ -47,15 +47,12 @@ private:
   PT(NodeAttribute) _attrib;
 };
 
-INLINE ostream &operator << (ostream &out, const NodeAttributeWrapper &naw) {
-  naw.output(out);
-  return out;
-}
+INLINE_GRAPH ostream &operator << (ostream &out, const NodeAttributeWrapper &naw);
 
+#include "nodeAttributeWrapper.T"
+
+#ifdef BUILDING_PANDA
 #include "nodeAttributeWrapper.I"
-
-template<class Attribute>
-INLINE bool 
-get_attribute_into(Attribute *&ptr, const NodeAttributeWrapper &trans);
+#endif
 
 #endif

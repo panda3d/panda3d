@@ -36,23 +36,23 @@ class DatagramIterator;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA NodeTransition : public TypedWriteableReferenceCount {
 protected:
-  INLINE NodeTransition();
-  INLINE NodeTransition(const NodeTransition &copy);
-  INLINE void operator = (const NodeTransition &copy);
+  INLINE_GRAPH NodeTransition();
+  INLINE_GRAPH NodeTransition(const NodeTransition &copy);
+  INLINE_GRAPH void operator = (const NodeTransition &copy);
 
 public:
-  INLINE bool operator == (const NodeTransition &other) const;
-  INLINE bool operator != (const NodeTransition &other) const;
-  INLINE bool operator < (const NodeTransition &other) const;
-  INLINE bool operator <= (const NodeTransition &other) const;
-  INLINE bool operator > (const NodeTransition &other) const;
-  INLINE bool operator >= (const NodeTransition &other) const;
+  INLINE_GRAPH bool operator == (const NodeTransition &other) const;
+  INLINE_GRAPH bool operator != (const NodeTransition &other) const;
+  INLINE_GRAPH bool operator < (const NodeTransition &other) const;
+  INLINE_GRAPH bool operator <= (const NodeTransition &other) const;
+  INLINE_GRAPH bool operator > (const NodeTransition &other) const;
+  INLINE_GRAPH bool operator >= (const NodeTransition &other) const;
 
-  INLINE int compare_to(const NodeTransition &other) const;
+  INLINE_GRAPH int compare_to(const NodeTransition &other) const;
 
 PUBLISHED:
-  INLINE void set_priority(int priority);
-  INLINE int get_priority() const;
+  INLINE_GRAPH void set_priority(int priority);
+  INLINE_GRAPH int get_priority() const;
 
 public:
   virtual NodeTransition *make_copy() const=0;
@@ -86,8 +86,8 @@ public:
   // These functions will be called by the arcs when appropriate.
   // Don't attempt to call them directly; they're public only to make
   // it convenient to call them from non-class template functions.
-  INLINE void added_to_arc(NodeRelation *arc);
-  INLINE void removed_from_arc(NodeRelation *arc);
+  INLINE_GRAPH void added_to_arc(NodeRelation *arc);
+  INLINE_GRAPH void removed_from_arc(NodeRelation *arc);
 
 protected:
   int _priority;
@@ -124,11 +124,10 @@ private:
   friend class NodeTransitionCache;
 };
 
-INLINE ostream &operator << (ostream &out, const NodeTransition &ntb) {
-  ntb.output(out);
-  return out;
-}
+INLINE_GRAPH ostream &operator << (ostream &out, const NodeTransition &ntb);
 
+#ifdef BUILDING_PANDA
 #include "nodeTransition.I"
+#endif
 
 #endif

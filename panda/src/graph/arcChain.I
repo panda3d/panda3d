@@ -10,7 +10,7 @@
 //               This kind of ArcComponent may *only* be at the head
 //               of the chain; i.e. _next must always be NULL.
 ////////////////////////////////////////////////////////////////////
-INLINE ArcChain::ArcComponent::
+INLINE_GRAPH ArcChain::ArcComponent::
 ArcComponent(Node *node) :
   _next(NULL)
 {
@@ -27,7 +27,7 @@ ArcComponent(Node *node) :
 //               tail of the chain; it may not be at the head of the
 //               chain; i.e. _next must never be NULL.
 ////////////////////////////////////////////////////////////////////
-INLINE ArcChain::ArcComponent::
+INLINE_GRAPH ArcChain::ArcComponent::
 ArcComponent(NodeRelation *arc, ArcComponent *next) :
   _next(next)
 {
@@ -43,7 +43,7 @@ ArcComponent(NodeRelation *arc, ArcComponent *next) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE ArcChain::ArcComponent::
+INLINE_GRAPH ArcChain::ArcComponent::
 ArcComponent(const ArcComponent &copy) :
   _next(copy._next)
 {
@@ -63,7 +63,7 @@ ArcComponent(const ArcComponent &copy) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE ArcChain::ArcComponent::
+INLINE_GRAPH ArcChain::ArcComponent::
 ~ArcComponent() {
   if (has_arc()) {
     _p._arc->unref_parent();
@@ -79,7 +79,7 @@ INLINE ArcChain::ArcComponent::
 //  Description: Returns true if this component stores an arc, false
 //               if it stores a node.
 ////////////////////////////////////////////////////////////////////
-INLINE bool ArcChain::ArcComponent::
+INLINE_GRAPH bool ArcChain::ArcComponent::
 has_arc() const {
   return (_next != (ArcComponent *)NULL);
 }
@@ -91,7 +91,7 @@ has_arc() const {
 //               an error to call this unless has_arc() has already
 //               returned true.
 ////////////////////////////////////////////////////////////////////
-INLINE NodeRelation *ArcChain::ArcComponent::
+INLINE_GRAPH NodeRelation *ArcChain::ArcComponent::
 get_arc() const {
   nassertr(has_arc(), (NodeRelation *)NULL);
   return _p._arc;
@@ -106,7 +106,7 @@ get_arc() const {
 //               references an arc (has_arc() is true), this will
 //               return the child node of the arc.
 ////////////////////////////////////////////////////////////////////
-INLINE Node *ArcChain::ArcComponent::
+INLINE_GRAPH Node *ArcChain::ArcComponent::
 get_node() const {
   if (has_arc()) {
     return _p._arc->get_child();
@@ -123,7 +123,7 @@ get_node() const {
 //               top of the chain that represents a node; the rest of
 //               the chain represents arcs.
 ////////////////////////////////////////////////////////////////////
-INLINE bool ArcChain::ArcComponent::
+INLINE_GRAPH bool ArcChain::ArcComponent::
 is_top_node() const {
   return (_next == (ArcComponent *)NULL);
 }
@@ -136,7 +136,7 @@ is_top_node() const {
 //               top of the chain; the highest component in the chain
 //               that still represents an arc.
 ////////////////////////////////////////////////////////////////////
-INLINE bool ArcChain::ArcComponent::
+INLINE_GRAPH bool ArcChain::ArcComponent::
 is_top_arc() const {
   return (_next != (ArcComponent *)NULL && _next->is_top_node());
 }
@@ -146,7 +146,7 @@ is_top_arc() const {
 //       Access: Public
 //  Description: Returns the next component in the chain.
 ////////////////////////////////////////////////////////////////////
-INLINE ArcChain::ArcComponent *ArcChain::ArcComponent::
+INLINE_GRAPH ArcChain::ArcComponent *ArcChain::ArcComponent::
 get_next() const {
   return _next;
 }
@@ -158,7 +158,7 @@ get_next() const {
 //               the chain at this component and relinks it to another
 //               chain.
 ////////////////////////////////////////////////////////////////////
-INLINE void ArcChain::ArcComponent::
+INLINE_GRAPH void ArcChain::ArcComponent::
 set_next(ArcComponent *next) {
   nassertv(next != (ArcComponent *)NULL);
   nassertv(_next != (ArcComponent *)NULL);
@@ -176,7 +176,7 @@ set_next(ArcComponent *next) {
 //               relative wrt to the particular instance we've reached
 //               so far.
 ////////////////////////////////////////////////////////////////////
-INLINE ArcChain::ForwardIterator::
+INLINE_GRAPH ArcChain::ForwardIterator::
 ForwardIterator(ArcChain::ArcComponent *comp) : _comp(comp) {
 }
 
@@ -185,7 +185,7 @@ ForwardIterator(ArcChain::ArcComponent *comp) : _comp(comp) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NodeRelation *ArcChain::ForwardIterator::
+INLINE_GRAPH NodeRelation *ArcChain::ForwardIterator::
 operator * () const {
   nassertr(_comp != (ArcComponent *)NULL, NULL);
   return _comp->get_arc();
@@ -196,7 +196,7 @@ operator * () const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void ArcChain::ForwardIterator::
+INLINE_GRAPH void ArcChain::ForwardIterator::
 operator ++() {
   nassertv(_comp != (ArcComponent *)NULL);
   if (_comp->is_top_arc()) {
@@ -213,7 +213,7 @@ operator ++() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE bool ArcChain::ForwardIterator::
+INLINE_GRAPH bool ArcChain::ForwardIterator::
 operator == (const ArcChain::ForwardIterator &other) const {
   return _comp == other._comp;
 }
@@ -223,7 +223,7 @@ operator == (const ArcChain::ForwardIterator &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE bool ArcChain::ForwardIterator::
+INLINE_GRAPH bool ArcChain::ForwardIterator::
 operator != (const ArcChain::ForwardIterator &other) const {
   return _comp != other._comp;
 }
@@ -237,7 +237,7 @@ operator != (const ArcChain::ForwardIterator &other) const {
 //               that receives a node if you ever want to do anything
 //               with this chain.
 ////////////////////////////////////////////////////////////////////
-INLINE ArcChain::
+INLINE_GRAPH ArcChain::
 ArcChain() {
 }
 
@@ -249,7 +249,7 @@ ArcChain() {
 //               push_back() with each arc below that node in
 //               sequence.
 ////////////////////////////////////////////////////////////////////
-INLINE ArcChain::
+INLINE_GRAPH ArcChain::
 ArcChain(Node *top_node) {
   _head = new ArcComponent(top_node);
 }
@@ -259,7 +259,7 @@ ArcChain(Node *top_node) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE ArcChain::
+INLINE_GRAPH ArcChain::
 ArcChain(const ArcChain &copy) :
   _head(copy._head)
 {
@@ -270,7 +270,7 @@ ArcChain(const ArcChain &copy) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void ArcChain::
+INLINE_GRAPH void ArcChain::
 operator = (const ArcChain &copy) {
   _head = copy._head;
 }
@@ -281,7 +281,7 @@ operator = (const ArcChain &copy) {
 //  Description: Returns true if there is at least a top node in the
 //               chain, or false otherwise.
 ////////////////////////////////////////////////////////////////////
-INLINE bool ArcChain::
+INLINE_GRAPH bool ArcChain::
 has_node() const {
   return (_head != (ArcComponent *)NULL);
 }
@@ -292,7 +292,7 @@ has_node() const {
 //  Description: Returns true if there are any arcs in the chain, or
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
-INLINE bool ArcChain::
+INLINE_GRAPH bool ArcChain::
 has_arcs() const {
   return (_head != (ArcComponent *)NULL && !_head->is_top_node());
 }
@@ -303,7 +303,7 @@ has_arcs() const {
 //  Description: Returns an iterator that can be used to traverse the
 //               list of arcs.
 ////////////////////////////////////////////////////////////////////
-INLINE ArcChain::const_iterator ArcChain::
+INLINE_GRAPH ArcChain::const_iterator ArcChain::
 begin() const {
   if (empty()) {
     return ForwardIterator();
@@ -318,7 +318,7 @@ begin() const {
 //  Description: Returns an iterator that can be used to traverse the
 //               list of arcs.
 ////////////////////////////////////////////////////////////////////
-INLINE ArcChain::const_iterator ArcChain::
+INLINE_GRAPH ArcChain::const_iterator ArcChain::
 end() const {
   return ForwardIterator();
 }
@@ -330,7 +330,7 @@ end() const {
 //               .. end() is empty (i.e. begin() == end()), false
 //               otherwise.  This is the same as !has_arcs().
 ////////////////////////////////////////////////////////////////////
-INLINE bool ArcChain::
+INLINE_GRAPH bool ArcChain::
 empty() const {
   return (_head == (ArcComponent *)NULL || _head->is_top_node());
 }
@@ -340,7 +340,7 @@ empty() const {
 //       Access: Public
 //  Description: Appends the indicated arc onto the end of the chain.
 ////////////////////////////////////////////////////////////////////
-INLINE void ArcChain::
+INLINE_GRAPH void ArcChain::
 push_back(NodeRelation *arc) {
   // It is invalid to push an arc onto a chain that does not already
   // have at least a top node.
@@ -353,7 +353,7 @@ push_back(NodeRelation *arc) {
 //       Access: Public
 //  Description: Removes the last arc from the end of the chain.
 ////////////////////////////////////////////////////////////////////
-INLINE void ArcChain::
+INLINE_GRAPH void ArcChain::
 pop_back() {
   nassertv(_head != (ArcComponent *)NULL);
   _head = _head->get_next();
@@ -367,7 +367,7 @@ pop_back() {
 //       Access: Public
 //  Description: Returns the last arc in the chain.
 ////////////////////////////////////////////////////////////////////
-INLINE NodeRelation *ArcChain::
+INLINE_GRAPH NodeRelation *ArcChain::
 back() const {
   nassertr(_head != (ArcComponent *)NULL, (NodeRelation *)NULL);
   return _head->get_arc();
@@ -380,7 +380,7 @@ back() const {
 //               is, if they contain the same list of arcs in the same
 //               order.
 ////////////////////////////////////////////////////////////////////
-INLINE bool ArcChain::
+INLINE_GRAPH bool ArcChain::
 operator == (const ArcChain &other) const {
   return (compare_to(other) == 0);
 }
@@ -390,7 +390,7 @@ operator == (const ArcChain &other) const {
 //       Access: Public
 //  Description: Returns true if the two chains are not equivalent.
 ////////////////////////////////////////////////////////////////////
-INLINE bool ArcChain::
+INLINE_GRAPH bool ArcChain::
 operator != (const ArcChain &other) const {
   return !operator == (other);
 }
@@ -404,7 +404,7 @@ operator != (const ArcChain &other) const {
 //               and is useful only for storing ArcChains in a sorted
 //               container like an STL set.
 ////////////////////////////////////////////////////////////////////
-INLINE bool ArcChain::
+INLINE_GRAPH bool ArcChain::
 operator < (const ArcChain &other) const {
   return (compare_to(other) < 0);
 }
@@ -424,7 +424,7 @@ operator < (const ArcChain &other) const {
 //               placing the ArcChains in a sorted container like an
 //               STL set.
 ////////////////////////////////////////////////////////////////////
-INLINE int ArcChain::
+INLINE_GRAPH int ArcChain::
 compare_to(const ArcChain &other) const {
   return r_compare_to(_head, other._head);
 }
@@ -435,7 +435,7 @@ compare_to(const ArcChain &other) const {
 //  Description: Writes a sensible description of the ArcChain to the
 //               indicated output stream.
 ////////////////////////////////////////////////////////////////////
-INLINE void ArcChain::
+INLINE_GRAPH void ArcChain::
 output(ostream &out) const {
   if (_head == (ArcComponent *)NULL) {
     out << "(empty)";
@@ -443,3 +443,9 @@ output(ostream &out) const {
     r_output(out, _head);
   }
 }
+
+INLINE_GRAPH ostream &operator << (ostream &out, const ArcChain &arc_chain) {
+  arc_chain.output(out);
+  return out;
+}
+

@@ -8,7 +8,7 @@
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE OnAttribute::
+INLINE_GRAPH OnAttribute::
 OnAttribute() {
 }
 
@@ -17,7 +17,7 @@ OnAttribute() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE OnAttribute::
+INLINE_GRAPH OnAttribute::
 OnAttribute(const OnAttribute &copy) :
   NodeAttribute(copy)
 {
@@ -28,7 +28,7 @@ OnAttribute(const OnAttribute &copy) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void OnAttribute::
+INLINE_GRAPH void OnAttribute::
 operator = (const OnAttribute &copy) {
   NodeAttribute::operator = (copy);
 }

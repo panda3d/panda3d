@@ -8,7 +8,7 @@
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE MultiNodeTransition::
+INLINE_GRAPH MultiNodeTransition::
 MultiNodeTransition() {
 }
 
@@ -17,7 +17,7 @@ MultiNodeTransition() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE MultiNodeTransition::
+INLINE_GRAPH MultiNodeTransition::
 MultiNodeTransition(const MultiNodeTransition &copy) :
   MultiTransition<PT_Node, PointerNameClass>(copy)
 {
@@ -28,7 +28,7 @@ MultiNodeTransition(const MultiNodeTransition &copy) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void MultiNodeTransition::
+INLINE_GRAPH void MultiNodeTransition::
 operator = (const MultiNodeTransition &copy) {
   MultiTransition<PT_Node, PointerNameClass>::operator = (copy);
 }

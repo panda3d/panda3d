@@ -20,14 +20,14 @@ class BitMaskTransition;
 template<class MaskType>
 class BitMaskAttribute : public NodeAttribute {
 protected:
-  INLINE BitMaskAttribute();
-  INLINE BitMaskAttribute(const MaskType &mask);
-  INLINE BitMaskAttribute(const BitMaskAttribute &copy);
-  INLINE void operator = (const BitMaskAttribute &copy);
+  INLINE_GRAPH BitMaskAttribute();
+  INLINE_GRAPH BitMaskAttribute(const MaskType &mask);
+  INLINE_GRAPH BitMaskAttribute(const BitMaskAttribute &copy);
+  INLINE_GRAPH void operator = (const BitMaskAttribute &copy);
 
 public:
-  INLINE void set_mask(const MaskType &mask);
-  INLINE const MaskType &get_mask() const;
+  INLINE_GRAPH void set_mask(const MaskType &mask);
+  INLINE_GRAPH const MaskType &get_mask() const;
 
   virtual void output(ostream &out) const;
 
@@ -59,6 +59,6 @@ private:
 friend class BitMaskTransition<MaskType>;
 };
 
-#include "bitMaskAttribute.I"
+#include "bitMaskAttribute.T"
 
 #endif

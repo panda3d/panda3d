@@ -44,44 +44,44 @@ public:
   typedef AllTransitionsWrapper TransitionWrapper;
   typedef AllAttributesWrapper AttributeWrapper;
 
-  INLINE AllTransitionsWrapper();
-  INLINE AllTransitionsWrapper(const AllTransitionsWrapper &copy);
-  INLINE void operator = (const AllTransitionsWrapper &copy);
-  INLINE ~AllTransitionsWrapper();
+  INLINE_GRAPH AllTransitionsWrapper();
+  INLINE_GRAPH AllTransitionsWrapper(const AllTransitionsWrapper &copy);
+  INLINE_GRAPH void operator = (const AllTransitionsWrapper &copy);
+  INLINE_GRAPH ~AllTransitionsWrapper();
 
-  INLINE static AllTransitionsWrapper 
+  INLINE_GRAPH static AllTransitionsWrapper 
   init_from(const AllTransitionsWrapper &other);
-  INLINE static AllTransitionsWrapper 
+  INLINE_GRAPH static AllTransitionsWrapper 
   init_from(const AllAttributesWrapper &attrib);
 
-  INLINE bool is_empty() const;
-  INLINE PT(NodeTransition) set_transition(TypeHandle handle,
+  INLINE_GRAPH bool is_empty() const;
+  INLINE_GRAPH PT(NodeTransition) set_transition(TypeHandle handle,
 					   NodeTransition *trans);
-  INLINE PT(NodeTransition) set_transition(NodeTransition *trans);
-  INLINE PT(NodeTransition) clear_transition(TypeHandle handle);
-  INLINE bool has_transition(TypeHandle handle) const;
-  INLINE NodeTransition *get_transition(TypeHandle handle) const;
+  INLINE_GRAPH PT(NodeTransition) set_transition(NodeTransition *trans);
+  INLINE_GRAPH PT(NodeTransition) clear_transition(TypeHandle handle);
+  INLINE_GRAPH bool has_transition(TypeHandle handle) const;
+  INLINE_GRAPH NodeTransition *get_transition(TypeHandle handle) const;
 
-  INLINE const NodeTransitionCache &get_transitions() const;
+  INLINE_GRAPH const NodeTransitionCache &get_transitions() const;
 
-  INLINE bool is_identity() const;
-  INLINE int compare_to(const AllTransitionsWrapper &other) const;
+  INLINE_GRAPH bool is_identity() const;
+  INLINE_GRAPH int compare_to(const AllTransitionsWrapper &other) const;
 
-  INLINE void make_identity();
-  INLINE void extract_from(const NodeRelation *arc);
-  INLINE void store_to(NodeRelation *arc) const;
+  INLINE_GRAPH void make_identity();
+  INLINE_GRAPH void extract_from(const NodeRelation *arc);
+  INLINE_GRAPH void store_to(NodeRelation *arc) const;
 
-  INLINE void compose_in_place(const AllTransitionsWrapper &other);
-  INLINE void invert_in_place();
-  INLINE void invert_compose_in_place(const AllTransitionsWrapper &other);
+  INLINE_GRAPH void compose_in_place(const AllTransitionsWrapper &other);
+  INLINE_GRAPH void invert_in_place();
+  INLINE_GRAPH void invert_compose_in_place(const AllTransitionsWrapper &other);
 
-  INLINE Node *extract_from_cache(const NodeRelation *arc);
-  INLINE void store_to_cache(NodeRelation *arc, Node *top_subtree);
-  INLINE void store_to_cache_partial(NodeRelation *arc, Node *top_subtree);
-  INLINE bool is_cache_verified(UpdateSeq as_of) const;
-  INLINE void set_computed_verified(UpdateSeq now);
+  INLINE_GRAPH Node *extract_from_cache(const NodeRelation *arc);
+  INLINE_GRAPH void store_to_cache(NodeRelation *arc, Node *top_subtree);
+  INLINE_GRAPH void store_to_cache_partial(NodeRelation *arc, Node *top_subtree);
+  INLINE_GRAPH bool is_cache_verified(UpdateSeq as_of) const;
+  INLINE_GRAPH void set_computed_verified(UpdateSeq now);
 
-  INLINE void cached_compose(const AllTransitionsWrapper &cache, 
+  INLINE_GRAPH void cached_compose(const AllTransitionsWrapper &cache, 
 			     const AllTransitionsWrapper &value,
 			     UpdateSeq now);
 
@@ -96,9 +96,9 @@ public:
   typedef NodeTransitionCache::value_type value_type;
   typedef NodeTransitionCache::size_type size_type;
 
-  INLINE size_type size() const;
-  INLINE const_iterator begin() const;
-  INLINE const_iterator end() const;
+  INLINE_GRAPH size_type size() const;
+  INLINE_GRAPH const_iterator begin() const;
+  INLINE_GRAPH const_iterator end() const;
 
 public:
   void output(ostream &out) const;
@@ -112,23 +112,15 @@ private:
   // empty.  It's used just so we can have a sensible return value
   // from begin() and end() when our pointer is NULL.
   static NodeTransitionCache _empty_cache;
-friend class AllAttributesWrapper;
+  friend class AllAttributesWrapper;
 };
 
-INLINE ostream &operator << (ostream &out, const AllTransitionsWrapper &ntw) {
-  ntw.output(out);
-  return out;
-}
+INLINE_GRAPH ostream &operator << (ostream &out, const AllTransitionsWrapper &ntw);
 
-template<class Transition>
-INLINE bool 
-get_transition_into(Transition *&ptr, const AllTransitionsWrapper &trans,
-		    TypeHandle transition_type);
+#include "allTransitionsWrapper.T"
 
-template<class Transition>
-INLINE bool 
-get_transition_into(Transition *&ptr, const AllTransitionsWrapper &trans);
-
+#ifdef BUILDING_PANDA
 #include "allTransitionsWrapper.I"
+#endif
 
 #endif

@@ -41,35 +41,35 @@ public:
   typedef NodeTransitionWrapper TransitionWrapper;
   typedef NodeAttributeWrapper AttributeWrapper;
 
-  INLINE NodeTransitionWrapper(TypeHandle handle);
-  INLINE NodeTransitionWrapper(const NodeTransitionWrapper &copy);
-  INLINE void operator = (const NodeTransitionWrapper &copy);
+  INLINE_GRAPH NodeTransitionWrapper(TypeHandle handle);
+  INLINE_GRAPH NodeTransitionWrapper(const NodeTransitionWrapper &copy);
+  INLINE_GRAPH void operator = (const NodeTransitionWrapper &copy);
 
-  INLINE static NodeTransitionWrapper 
+  INLINE_GRAPH static NodeTransitionWrapper 
   init_from(const NodeTransitionWrapper &other);
   static NodeTransitionWrapper init_from(const NodeAttributeWrapper &attrib);
 
-  INLINE TypeHandle get_handle() const;
-  INLINE bool has_trans() const;
-  INLINE NodeTransition *get_trans() const;
+  INLINE_GRAPH TypeHandle get_handle() const;
+  INLINE_GRAPH bool has_trans() const;
+  INLINE_GRAPH NodeTransition *get_trans() const;
 
-  INLINE bool is_identity() const;
-  INLINE int compare_to(const NodeTransitionWrapper &other) const;
+  INLINE_GRAPH bool is_identity() const;
+  INLINE_GRAPH int compare_to(const NodeTransitionWrapper &other) const;
 
-  INLINE void make_identity();
-  INLINE void extract_from(const NodeRelation *arc);
-  INLINE void store_to(NodeRelation *arc) const;
+  INLINE_GRAPH void make_identity();
+  INLINE_GRAPH void extract_from(const NodeRelation *arc);
+  INLINE_GRAPH void store_to(NodeRelation *arc) const;
 
-  INLINE void compose_in_place(const NodeTransitionWrapper &other);
-  INLINE void invert_in_place();
-  INLINE void invert_compose_in_place(const NodeTransitionWrapper &other);
+  INLINE_GRAPH void compose_in_place(const NodeTransitionWrapper &other);
+  INLINE_GRAPH void invert_in_place();
+  INLINE_GRAPH void invert_compose_in_place(const NodeTransitionWrapper &other);
 
-  INLINE Node *extract_from_cache(const NodeRelation *arc);
-  INLINE void store_to_cache(NodeRelation *arc, Node *top_subtree);
-  INLINE bool is_cache_verified(UpdateSeq as_of) const;
-  INLINE void set_computed_verified(UpdateSeq now);
+  INLINE_GRAPH Node *extract_from_cache(const NodeRelation *arc);
+  INLINE_GRAPH void store_to_cache(NodeRelation *arc, Node *top_subtree);
+  INLINE_GRAPH bool is_cache_verified(UpdateSeq as_of) const;
+  INLINE_GRAPH void set_computed_verified(UpdateSeq now);
 
-  INLINE void cached_compose(const NodeTransitionWrapper &cache, 
+  INLINE_GRAPH void cached_compose(const NodeTransitionWrapper &cache, 
 			     const NodeTransitionWrapper &value,
 			     UpdateSeq now);
 
@@ -79,18 +79,15 @@ public:
 private:
   TypeHandle _handle;
   NodeTransitionCacheEntry _entry;
-friend class NodeAttributeWrapper;
+  friend class NodeAttributeWrapper;
 };
 
-INLINE ostream &operator << (ostream &out, const NodeTransitionWrapper &ntw) {
-  ntw.output(out);
-  return out;
-}
+INLINE_GRAPH ostream &operator << (ostream &out, const NodeTransitionWrapper &ntw);
 
-template<class Transition>
-INLINE bool 
-get_transition_into(Transition *&ptr, const NodeTransitionWrapper &trans);
-
+#ifdef BUILDING_PANDA
 #include "nodeTransitionWrapper.I"
+#endif
+
+#include "nodeTransitionWrapper.T"
 
 #endif

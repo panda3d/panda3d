@@ -8,7 +8,7 @@
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE OnOffAttribute::
+INLINE_GRAPH OnOffAttribute::
 OnOffAttribute(bool is_on) {
   _is_on = is_on;
 }
@@ -18,7 +18,7 @@ OnOffAttribute(bool is_on) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE OnOffAttribute::
+INLINE_GRAPH OnOffAttribute::
 OnOffAttribute(const OnOffAttribute &copy) :
   NodeAttribute(copy),
   _is_on(copy._is_on)
@@ -30,7 +30,7 @@ OnOffAttribute(const OnOffAttribute &copy) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void OnOffAttribute::
+INLINE_GRAPH void OnOffAttribute::
 operator = (const OnOffAttribute &copy) {
   NodeAttribute::operator = (copy);
   _is_on = copy._is_on;
@@ -49,7 +49,7 @@ operator = (const OnOffAttribute &copy) {
 //               should override this function to accept a value
 //               parameter of the appropriate type.
 ////////////////////////////////////////////////////////////////////
-INLINE void OnOffAttribute::
+INLINE_GRAPH void OnOffAttribute::
 set_on() {
   _is_on = true;
 }
@@ -61,7 +61,7 @@ set_on() {
 //               turns off the attribute for all nodes at this point
 //               and below.
 ////////////////////////////////////////////////////////////////////
-INLINE void OnOffAttribute::
+INLINE_GRAPH void OnOffAttribute::
 set_off() {
   _is_on = false;
 }
@@ -72,7 +72,7 @@ set_off() {
 //  Description: Returns true if the attribute is on, false if it is
 //               not.
 ////////////////////////////////////////////////////////////////////
-INLINE bool OnOffAttribute::
+INLINE_GRAPH bool OnOffAttribute::
 is_on() const {
   return _is_on;
 }
@@ -83,7 +83,7 @@ is_on() const {
 //  Description: Returns true if the attribute is off, false if it is
 //               not.
 ////////////////////////////////////////////////////////////////////
-INLINE bool OnOffAttribute::
+INLINE_GRAPH bool OnOffAttribute::
 is_off() const {
   return !_is_on;
 }

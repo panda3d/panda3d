@@ -8,7 +8,7 @@
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NullAttributeWrapper::
+INLINE_GRAPH NullAttributeWrapper::
 NullAttributeWrapper() {
 }
 
@@ -17,7 +17,7 @@ NullAttributeWrapper() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NullAttributeWrapper::
+INLINE_GRAPH NullAttributeWrapper::
 NullAttributeWrapper(const NullAttributeWrapper &) {
 }
 
@@ -26,7 +26,7 @@ NullAttributeWrapper(const NullAttributeWrapper &) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void NullAttributeWrapper::
+INLINE_GRAPH void NullAttributeWrapper::
 operator = (const NullAttributeWrapper &) {
 }
 
@@ -35,7 +35,7 @@ operator = (const NullAttributeWrapper &) {
 //       Access: Public, Static
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NullAttributeWrapper NullAttributeWrapper::
+INLINE_GRAPH NullAttributeWrapper NullAttributeWrapper::
 init_from(const NullTransitionWrapper &) {
   return NullAttributeWrapper();
 }
@@ -45,7 +45,7 @@ init_from(const NullTransitionWrapper &) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE bool NullAttributeWrapper::
+INLINE_GRAPH bool NullAttributeWrapper::
 is_initial() const {
   return true;
 }
@@ -55,7 +55,7 @@ is_initial() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE int NullAttributeWrapper::
+INLINE_GRAPH int NullAttributeWrapper::
 compare_to(const NullAttributeWrapper &) const {
   return 0;
 }
@@ -65,7 +65,7 @@ compare_to(const NullAttributeWrapper &) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void NullAttributeWrapper::
+INLINE_GRAPH void NullAttributeWrapper::
 make_initial() {
 }
 
@@ -74,7 +74,7 @@ make_initial() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void NullAttributeWrapper::
+INLINE_GRAPH void NullAttributeWrapper::
 apply_in_place(const NullTransitionWrapper &) {
 }
 
@@ -83,7 +83,7 @@ apply_in_place(const NullTransitionWrapper &) {
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void NullAttributeWrapper::
+INLINE_GRAPH void NullAttributeWrapper::
 output(ostream &) const {
 }
 
@@ -92,6 +92,12 @@ output(ostream &) const {
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void NullAttributeWrapper::
+INLINE_GRAPH void NullAttributeWrapper::
 write(ostream &, int) const {
 }
+
+INLINE_GRAPH ostream &operator << (ostream &out, const NullAttributeWrapper &naw) {
+  naw.output(out);
+  return out;
+}
+

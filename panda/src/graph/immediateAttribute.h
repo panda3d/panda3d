@@ -18,10 +18,12 @@ class ImmediateTransition;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ImmediateAttribute : public NodeAttribute {
 public:
-  INLINE ImmediateAttribute();
-  INLINE ImmediateAttribute(const ImmediateAttribute &copy);
-  INLINE void operator = (const ImmediateAttribute &copy);
 
+  INLINE_GRAPH ImmediateAttribute() {};
+  INLINE_GRAPH ImmediateAttribute(const ImmediateAttribute &copy) :
+	       NodeAttribute(copy){};
+  INLINE_GRAPH void operator = (const ImmediateAttribute &copy)
+               {NodeAttribute::operator = (copy);}
 public:
   virtual NodeAttribute *make_copy() const;
   virtual NodeAttribute *make_initial() const;
@@ -47,7 +49,5 @@ public:
 private:
   static TypeHandle _type_handle;
 };
-
-#include "immediateAttribute.I"
 
 #endif

@@ -18,9 +18,9 @@ class OnTransition;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA OnAttribute : public NodeAttribute {
 protected:
-  INLINE OnAttribute();
-  INLINE OnAttribute(const OnAttribute &copy);
-  INLINE void operator = (const OnAttribute &copy);
+  INLINE_GRAPH OnAttribute() {};
+  INLINE_GRAPH OnAttribute(const OnAttribute &copy) : NodeAttribute(copy) {};
+  INLINE_GRAPH void operator = (const OnAttribute &copy) {NodeAttribute::operator = (copy);};
 
 public:
   virtual void output(ostream &out) const;
@@ -50,9 +50,7 @@ public:
 
 private:
   static TypeHandle _type_handle;
-friend class OnTransition;
+  friend class OnTransition;
 };
-
-#include "onAttribute.I"
 
 #endif

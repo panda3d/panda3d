@@ -141,43 +141,17 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &
-operator << (ostream &out, const Node &node) {
-  node.output(out);
-  return out;
-}
+INLINE_GRAPH ostream & operator << (ostream &out, const Node &node);
 
 EXPCL_PANDA NodeRelation *
 find_arc(Node *parent, Node *child, TypeHandle graph_type);
 
-INLINE bool
+EXPCL_PANDA INLINE_GRAPH bool
 remove_child(Node *parent, Node *child, TypeHandle graph_type);
 
-
+#ifdef BUILDING_PANDA
 #include "node.I"
+#endif
 
 #endif
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

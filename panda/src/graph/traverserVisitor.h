@@ -17,7 +17,7 @@ public:
   typedef TW TransitionWrapper;
   typedef TYPENAME TransitionWrapper::AttributeWrapper AttributeWrapper;
 
-  INLINE bool reached_node(Node *node, 
+  INLINE_GRAPH bool reached_node(Node *node, 
 			   AttributeWrapper &render_state,
 			   LevelState &level_state);
 
@@ -25,15 +25,15 @@ public:
   // following two functions to mark the crossing of arcs.  This will
   // allow the Visitor to maintain its own internal state as needed.
 
-  INLINE bool forward_arc(NodeRelation *arc, TransitionWrapper &trans,
+  INLINE_GRAPH bool forward_arc(NodeRelation *arc, TransitionWrapper &trans,
 			  AttributeWrapper &pre, AttributeWrapper &post,
 			  LevelState &level_state);
-  INLINE void backward_arc(NodeRelation *arc, TransitionWrapper &trans,
+  INLINE_GRAPH void backward_arc(NodeRelation *arc, TransitionWrapper &trans,
 			   AttributeWrapper &pre, AttributeWrapper &post,
 			   const LevelState &level_state);
 };
 
-#include "traverserVisitor.I"
+#include "traverserVisitor.T"
 
 #endif
 

@@ -8,7 +8,7 @@
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NodeAttribute::
+INLINE_GRAPH NodeAttribute::
 NodeAttribute() {
   _priority = 0;
 }
@@ -18,7 +18,7 @@ NodeAttribute() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NodeAttribute::
+INLINE_GRAPH NodeAttribute::
 NodeAttribute(const NodeAttribute &copy) :
   TypedReferenceCount(copy),
   _priority(copy._priority)
@@ -30,7 +30,7 @@ NodeAttribute(const NodeAttribute &copy) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeAttribute::
+INLINE_GRAPH void NodeAttribute::
 operator = (const NodeAttribute &copy) {
   TypedReferenceCount::operator = (copy);
   _priority = copy._priority;
@@ -41,7 +41,7 @@ operator = (const NodeAttribute &copy) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE bool NodeAttribute::
+INLINE_GRAPH bool NodeAttribute::
 operator == (const NodeAttribute &other) const {
   return compare_to(other) == 0;
 }
@@ -51,7 +51,7 @@ operator == (const NodeAttribute &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE bool NodeAttribute::
+INLINE_GRAPH bool NodeAttribute::
 operator != (const NodeAttribute &other) const {
   return compare_to(other) != 0;
 }
@@ -61,7 +61,7 @@ operator != (const NodeAttribute &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE bool NodeAttribute::
+INLINE_GRAPH bool NodeAttribute::
 operator < (const NodeAttribute &other) const {
   return compare_to(other) < 0;
 }
@@ -71,7 +71,7 @@ operator < (const NodeAttribute &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE bool NodeAttribute::
+INLINE_GRAPH bool NodeAttribute::
 operator <= (const NodeAttribute &other) const {
   return compare_to(other) <= 0;
 }
@@ -81,7 +81,7 @@ operator <= (const NodeAttribute &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE bool NodeAttribute::
+INLINE_GRAPH bool NodeAttribute::
 operator > (const NodeAttribute &other) const {
   return compare_to(other) > 0;
 }
@@ -91,7 +91,7 @@ operator > (const NodeAttribute &other) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE bool NodeAttribute::
+INLINE_GRAPH bool NodeAttribute::
 operator >= (const NodeAttribute &other) const {
   return compare_to(other) >= 0;
 }
@@ -110,7 +110,7 @@ operator >= (const NodeAttribute &other) const {
 //               of equivalent attributes together in STL structures
 //               like maps and sets.
 ////////////////////////////////////////////////////////////////////
-INLINE int NodeAttribute::
+INLINE_GRAPH int NodeAttribute::
 compare_to(const NodeAttribute &other) const {
   TypeHandle my_handle = get_handle();
   TypeHandle other_handle = other.get_handle();
@@ -131,7 +131,7 @@ compare_to(const NodeAttribute &other) const {
 //               The attribute will not be affected by transitions
 //               with a lower priority.
 ////////////////////////////////////////////////////////////////////
-INLINE void NodeAttribute::
+INLINE_GRAPH void NodeAttribute::
 set_priority(int priority) {
   _priority = priority;
 }
@@ -143,7 +143,12 @@ set_priority(int priority) {
 //               Normally this is of limited value; the priority is
 //               meaningful primarily on the transitions.
 ////////////////////////////////////////////////////////////////////
-INLINE int NodeAttribute::
+INLINE_GRAPH int NodeAttribute::
 get_priority() const {
   return _priority;
+}
+
+INLINE_GRAPH ostream &operator << (ostream &out, const NodeAttribute &nab) {
+  nab.output(out);
+  return out;
 }

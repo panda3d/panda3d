@@ -5,8 +5,6 @@
 
 #include "bitMaskAttribute.h"
 
-#include <indent.h>
-
 template<class MaskType>
 TypeHandle BitMaskTransition<MaskType>::_type_handle;
 

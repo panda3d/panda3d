@@ -35,26 +35,26 @@ class Node;
 // to_arcs_begin..to_arcs_end.
 
 template<class TransitionWrapper>
-INLINE void
+INLINE_GRAPH void
 wrt(const Node *from, const Node *to,
     TransitionWrapper &result, TypeHandle graph_type);
 
 template<class InputIterator, class TransitionWrapper>
-INLINE void
+INLINE_GRAPH void
 wrt(const Node *from,
     InputIterator from_arcs_begin, InputIterator from_arcs_end,
     const Node *to,
     TransitionWrapper &result, TypeHandle graph_type);
 
 template<class InputIterator, class TransitionWrapper>
-INLINE void
+INLINE_GRAPH void
 wrt(const Node *from,
     const Node *to,
     InputIterator to_arcs_begin, InputIterator to_arcs_end,
     TransitionWrapper &result, TypeHandle graph_type);
 
 template<class InputIterator1, class InputIterator2, class TransitionWrapper>
-INLINE void
+INLINE_GRAPH void
 wrt(const Node *from,
     InputIterator1 from_arcs_begin, InputIterator1 from_arcs_end,
     const Node *to,
@@ -67,26 +67,26 @@ wrt(const Node *from,
 // that you can configure 'cache-wrt' or 'paranoid-wrt' to disable or
 // force verification of the cache implicitly.
 template<class TransitionWrapper>
-INLINE void
+INLINE_GRAPH void
 uncached_wrt(const Node *from, const Node *to,
 	     TransitionWrapper &result, TypeHandle graph_type);
 
 template<class InputIterator, class TransitionWrapper>
-INLINE void
+INLINE_GRAPH void
 uncached_wrt(const Node *from,
 	     InputIterator from_arcs_begin, InputIterator from_arcs_end,
 	     const Node *to,
 	     TransitionWrapper &result, TypeHandle graph_type);
 
 template<class InputIterator, class TransitionWrapper>
-INLINE void
+INLINE_GRAPH void
 uncached_wrt(const Node *from,
 	     const Node *to,
 	     InputIterator to_arcs_begin, InputIterator to_arcs_end,
 	     TransitionWrapper &result, TypeHandle graph_type);
 
 template<class InputIterator1, class InputIterator2, class TransitionWrapper>
-INLINE void
+INLINE_GRAPH void
 uncached_wrt(const Node *from,
 	     InputIterator1 from_arcs_begin, InputIterator1 from_arcs_end,
 	     const Node *to,
@@ -123,11 +123,13 @@ uncached_wrt(const Node *from,
 // current most recent update sequence anywhere, used to use to mark
 // any computed cache values.
 template<class TransitionWrapper>
-INLINE Node *
+INLINE_GRAPH Node *
 wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
 	    TransitionWrapper &result, TypeHandle graph_type);
 
 
+#ifdef BUILDING_PANDA
 #include "wrt.I"
+#endif
 
 #endif

@@ -124,6 +124,8 @@ bmap_apply(InputIterator1 first1, InputIterator1 last1,
 	   bool complete_transition, TransitionDirection want_dirs,
 	   OutputIterator result);
 
+#ifdef BUILDING_PANDA
 #include "multiTransitionHelpers.I"
+#endif
 
 #endif

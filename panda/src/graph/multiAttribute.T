@@ -1,10 +1,7 @@
-// Filename: multiAttribute.I
+// Filename: multiAttribute.T
 // Created by:  drose (23Mar00)
 // 
 ////////////////////////////////////////////////////////////////////
-
-/* okcircular */
-#include "multiTransition.h"
 
 template<class Property, class NameClass>
 TypeHandle MultiAttribute<Property, NameClass>::_type_handle;

@@ -8,7 +8,7 @@
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE OnTransition::
+INLINE_GRAPH OnTransition::
 OnTransition() {
 }
 
@@ -17,7 +17,7 @@ OnTransition() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE OnTransition::
+INLINE_GRAPH OnTransition::
 OnTransition(const OnTransition &copy) :
   NodeTransition(copy)
 {
@@ -28,7 +28,7 @@ OnTransition(const OnTransition &copy) :
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void OnTransition::
+INLINE_GRAPH void OnTransition::
 operator = (const OnTransition &copy) {
   NodeTransition::operator = (copy);
 }

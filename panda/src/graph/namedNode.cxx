@@ -2,11 +2,11 @@
 // Created by:  drose (15Jan99)
 // 
 
-#include "namedNode.h"
 #include <bamWriter.h>
 #include <bamReader.h>
 #include <datagram.h>
 #include <datagramIterator.h>
+#include "namedNode.h"
 
 TypeHandle NamedNode::_type_handle;
 

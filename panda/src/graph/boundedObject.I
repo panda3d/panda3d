@@ -10,7 +10,7 @@
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE BoundedObject::
+INLINE_GRAPH BoundedObject::
 BoundedObject() {
   _bound_type = BVT_dynamic_sphere;
   _bound_stale = true;
@@ -23,7 +23,7 @@ BoundedObject() {
 //               dynamically computed for this particular node.
 //               Presently, this should only be BVT_dynamic_sphere.
 ////////////////////////////////////////////////////////////////////
-INLINE void BoundedObject::
+INLINE_GRAPH void BoundedObject::
 set_bound(BoundedObject::BoundingVolumeType type) {
   nassertv(type != BVT_static);
   mark_bound_stale();
@@ -37,7 +37,7 @@ set_bound(BoundedObject::BoundingVolumeType type) {
 //               This will be a static bounding volume that will no
 //               longer be recomputed automatically.
 ////////////////////////////////////////////////////////////////////
-INLINE void BoundedObject::
+INLINE_GRAPH void BoundedObject::
 set_bound(const BoundingVolume &bound) {
   mark_bound_stale();
   _bound_type = BVT_static;
@@ -55,7 +55,7 @@ set_bound(const BoundingVolume &bound) {
 //               different from the bounding volumes on the arcs,
 //               which enclose all geometry below them.
 ////////////////////////////////////////////////////////////////////
-INLINE const BoundingVolume &BoundedObject::
+INLINE_GRAPH const BoundingVolume &BoundedObject::
 get_bound() const {
   if (_bound_type == BVT_static) {
     ((BoundedObject *)this)->_bound_stale = false;
@@ -75,7 +75,7 @@ get_bound() const {
 //               setting was changed, or false if it was already
 //               marked stale (or if it is a static bounding volume).
 ////////////////////////////////////////////////////////////////////
-INLINE bool BoundedObject::
+INLINE_GRAPH bool BoundedObject::
 mark_bound_stale() {
   if (_bound_stale) {
     return false;
@@ -93,7 +93,7 @@ mark_bound_stale() {
 //               effect at least one level, even if it had already
 //               been marked stale.
 ////////////////////////////////////////////////////////////////////
-INLINE void BoundedObject::
+INLINE_GRAPH void BoundedObject::
 force_bound_stale() {
   _bound_stale = true;
   propagate_stale_bound();
@@ -106,7 +106,8 @@ force_bound_stale() {
 //               and will be recomputed the next time get_bound() is
 //               called.
 ////////////////////////////////////////////////////////////////////
-INLINE bool BoundedObject::
+INLINE_GRAPH bool BoundedObject::
 is_bound_stale() const {
   return _bound_stale;
 }
+

@@ -14,7 +14,7 @@
 //               set_transition; if the pointer might be NULL, use the
 //               above flavor instead (or just call clear_transition).
 ////////////////////////////////////////////////////////////////////
-INLINE PT(NodeTransition) NodeTransitionCache::
+INLINE_GRAPH PT(NodeTransition) NodeTransitionCache::
 set_transition(NodeTransition *trans) {
   nassertr(trans != (NodeTransition *)NULL, NULL);
   nassertr(trans->get_handle() != TypeHandle::none(), NULL);
@@ -26,7 +26,7 @@ set_transition(NodeTransition *trans) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NodeTransitionCache::size_type NodeTransitionCache::
+INLINE_GRAPH NodeTransitionCache::size_type NodeTransitionCache::
 size() const {
   return _cache.size();
 }
@@ -36,7 +36,7 @@ size() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NodeTransitionCache::const_iterator NodeTransitionCache::
+INLINE_GRAPH NodeTransitionCache::const_iterator NodeTransitionCache::
 begin() const {
   return _cache.begin();
 }
@@ -46,7 +46,12 @@ begin() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE NodeTransitionCache::const_iterator NodeTransitionCache::
+INLINE_GRAPH NodeTransitionCache::const_iterator NodeTransitionCache::
 end() const {
   return _cache.end();
+}
+
+INLINE_GRAPH ostream &operator << (ostream &out, const NodeTransitionCache &ntc) {
+  ntc.output(out);
+  return out;
 }

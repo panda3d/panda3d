@@ -33,3 +33,4 @@ write(ostream &out, int indent_level) const {
     _cache->write(out, indent_level);
   }
 }
+
