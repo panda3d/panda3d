@@ -9,9 +9,10 @@ void GuiItem::recompute_frame(void) {
 }
 
 GuiItem::GuiItem(const string& name) : Namable(name), _added_hooks(false),
-				       _mgr((GuiManager*)0L), _scale(1.),
-				       _pos(0., 0., 0.), _left(-1.),
-				       _right(1.), _bottom(-1.), _top(1.) {
+				       _scale(1.), _left(-1.), _right(1.),
+				       _bottom(-1.), _top(1.),
+				       _pos(0., 0., 0.),
+				       _mgr((GuiManager*)0L) {
 }
 
 GuiItem::~GuiItem(void) {

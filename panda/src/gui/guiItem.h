@@ -21,7 +21,7 @@ protected:
   virtual void recompute_frame(void) = 0;
 public:
   GuiItem(const string&);
-  ~GuiItem(void);
+  virtual ~GuiItem(void);
 
   virtual void manage(GuiManager*, EventHandler&) = 0;
   virtual void unmanage(void) = 0;

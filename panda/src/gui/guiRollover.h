@@ -23,7 +23,7 @@ private:
   virtual void recompute_frame(void);
 public:
   GuiRollover(const string&, GuiLabel*, GuiLabel*);
-  ~GuiRollover(void);
+  virtual ~GuiRollover(void);
 
   virtual void manage(GuiManager*, EventHandler&);
   virtual void unmanage(void);

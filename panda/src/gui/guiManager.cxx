@@ -39,7 +39,7 @@ GuiManager* GuiManager::get_ptr(GraphicsWindow* w, MouseAndKeyboard* mak) {
     // first see if there is a mouseWatcher already under the MouseAndKeyboard
     bool has_watcher = false;
     TypeHandle dgt = DataRelation::get_class_type();
-    MouseWatcher* watcher;
+    MouseWatcher* watcher = (MouseWatcher*)0L;
     for (int i=0; i<mak->get_num_children(dgt); ++i)
       if (mak->get_child(dgt, i)->get_child()->get_type() ==
 	  MouseWatcher::get_class_type()) {

@@ -86,7 +86,7 @@ void GuiButton::switch_state(GuiButton::States nstate) {
       _mgr->remove_label(_inactive);
     break;
   default:
-    gui_cat->warning() << "switching away from invalid state (" << _state
+    gui_cat->warning() << "switching away from invalid state (" << (int)_state
 		       << ")" << endl;
   }
   _state = nstate;
@@ -150,7 +150,7 @@ void GuiButton::switch_state(GuiButton::States nstate) {
     _rgn->trap_clicks(false);
     break;
   default:
-    gui_cat->warning() << "switched to invalid state (" << _state << ")"
+    gui_cat->warning() << "switched to invalid state (" << (int)_state << ")"
 		       << endl;
   }
 }
@@ -165,10 +165,10 @@ void GuiButton::recompute_frame(void) {
 GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* up_roll,
 		     GuiLabel* down, GuiLabel* down_roll, GuiLabel* inactive)
   : GuiItem(name), _up(up), _up_rollover(up_roll), _down(down),
-    _down_rollover(down_roll), _inactive(inactive), _state(GuiButton::NONE),
-    _up_event(name + "-up"), _up_rollover_event(name + "-up-rollover"),
-    _down_event(name +"-down"), _down_rollover_event(name + "-down-rollover"),
-    _inactive_event(name + "-inactive") {
+    _down_rollover(down_roll), _inactive(inactive), _up_event(name + "-up"),
+    _up_rollover_event(name + "-up-rollover"), _down_event(name +"-down"),
+    _down_rollover_event(name + "-down-rollover"),
+    _inactive_event(name + "-inactive"), _state(GuiButton::NONE) {
   GetExtents(up, down, up_roll, down_roll, inactive, _left, _right, _bottom,
 	     _top);
   _rgn = new GuiRegion("button-" + name, _left, _right, _bottom, _top, true);
@@ -247,5 +247,5 @@ void GuiButton::output(ostream& os) const {
   os << "    inactive event - '" << _inactive_event << "'" << endl;
   os << "    rgn - 0x" << (void*)_rgn << endl;
   os << "      frame - " << _rgn->get_frame() << endl;
-  os << "    state - " << _state << endl;
+  os << "    state - " << (int)_state << endl;
 }

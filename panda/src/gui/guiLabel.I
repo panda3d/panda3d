@@ -3,13 +3,14 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-INLINE GuiLabel::GuiLabel(void) : _type(GuiLabel::NONE), _scale(1.),
-				  _pos(0., 0., 0.), _tex((Texture*)0L),
+INLINE GuiLabel::GuiLabel(void) : _type(GuiLabel::NONE),
 				  _arc((RenderRelation*)0L),
-				  _internal((RenderRelation*)0L),
+				  _tex((Texture*)0L),
+				  _internal((RenderRelation*)0L), _scale(1.),
+				  _pos(0., 0., 0.),
 				  _foreground(1., 1., 1., 1.),
-				  _background(0., 0., 0., 0.),
-				  _have_background(false) {
+				  _have_background(false),
+				  _background(0., 0., 0., 0.) {
 }
 
 INLINE Node* GuiLabel::get_geometry(void) const {

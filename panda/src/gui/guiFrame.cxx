@@ -7,7 +7,7 @@
 
 GuiFrame::Boxes::iterator GuiFrame::find_box(GuiItem* item) {
   bool found = false;
-  Boxes::iterator ret;
+  Boxes::iterator ret = _items.end();
   Boxes::iterator i;
   for (i=_items.begin(); (!found)&&(i!=_items.end()); ++i)
     if ((*i).get_item() == item) {
@@ -79,7 +79,7 @@ void GuiFrame::recompute_frame(void) {
 	  }
 	  break;
 	default:
-	  gui_cat->warning() << "unknown packing type (" << pack << ")"
+	  gui_cat->warning() << "unknown packing type (" << (int)pack << ")"
 			     << endl;
 	}
       }
@@ -198,7 +198,7 @@ void GuiFrame::output(ostream& os) const {
     int n = (*i).get_num_links();
     if (n > 0) {
       for (int j=0; j<n; ++j)
-	os << "      linked by " << (*i).get_nth_packing(j) << " to 0x"
+	os << "      linked by " << (int)((*i).get_nth_packing(j)) << " to 0x"
 	   << (void*)((*i).get_nth_to(j)) << endl;
     }
   }

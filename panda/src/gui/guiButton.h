@@ -32,7 +32,7 @@ private:
 public:
   GuiButton(const string&, GuiLabel*, GuiLabel*, GuiLabel*, GuiLabel*,
 	    GuiLabel*);
-  ~GuiButton(void);
+  virtual ~GuiButton(void);
 
   virtual void manage(GuiManager*, EventHandler&);
   virtual void unmanage(void);
