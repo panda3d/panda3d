@@ -19,7 +19,7 @@
 #ifndef MOVINGPARTMATRIX_H
 #define MOVINGPARTMATRIX_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "movingPart.h"
 #include "animChannel.h"

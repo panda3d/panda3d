@@ -37,11 +37,6 @@ TypeHandle EggXfmSAnim::_type_handle;
 const string EggXfmSAnim::_standard_order_legacy = "sphrt";
 const string EggXfmSAnim::_standard_order_hpr_fix = "srpht";
 
-// These are the table ID's of all tables we support, in the order we
-// expect to write them to the egg file.
-const string EggXfmSAnim::_table_ids = "ijkhprxyz";
-const int EggXfmSAnim::_num_table_ids = 9;
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmSAnim::Conversion constructor
@@ -181,8 +176,8 @@ write(ostream &out, int indent_level) const {
   // write out all the non-table children first, then write out the
   // table children in our expected order.  (Normally there are only
   // table children.)
-  EggSAnimData *tables[_num_table_ids];
-  memset(tables, 0, sizeof(EggSAnimData *) * _num_table_ids);
+  EggSAnimData *tables[num_matrix_components];
+  memset(tables, 0, sizeof(EggSAnimData *) * num_matrix_components);
 
   const_iterator ci;
   for (ci = begin(); ci != end(); ++ci) {
@@ -193,9 +188,10 @@ write(ostream &out, int indent_level) const {
       // Each child SAnimData table should have a one-letter name.
       nassertv(sanim->get_name().length() == 1);
       char name = sanim->get_name()[0];
-      size_t index = _table_ids.find(name);
-      nassertv(index != string::npos);
-      if (index != string::npos) {
+      char *p = strchr(matrix_component_letters, name);
+      nassertv(p != (char *)NULL);
+      if (p != (char *)NULL) {
+        int index = p - matrix_component_letters;
         nassertv(tables[index] == (EggSAnimData *)NULL);
         tables[index] = sanim;
       }
@@ -206,7 +202,7 @@ write(ostream &out, int indent_level) const {
   }
 
   // Now write out the table children in our normal order.
-  for (int i = 0; i < _num_table_ids; i++) {
+  for (int i = 0; i < num_matrix_components; i++) {
     if (tables[i] != (EggSAnimData *)NULL) {
       tables[i]->write(out, indent_level + 2);
     }
@@ -227,6 +223,7 @@ write(ostream &out, int indent_level) const {
 void EggXfmSAnim::
 compose_with_order(LMatrix4d &mat,
                    const LVecBase3d &scale,
+                   const LVecBase3d &shear,
                    const LVecBase3d &hpr,
                    const LVecBase3d &trans,
                    const string &order,
@@ -247,7 +244,7 @@ compose_with_order(LMatrix4d &mat,
   for (pi = order.begin(); pi != order.end(); ++pi) {
     switch (*pi) {
     case 's':
-      mat = mat * LMatrix4d::scale_mat(scale);
+      mat = mat * LMatrix4d::scale_shear_mat(scale, shear, cs);
       break;
 
     case 'h':
@@ -318,11 +315,12 @@ get_num_rows() const {
 //               table of matrices.  It is an error to call this if
 //               any SAnimData children of this node have an improper
 //               name (e.g. not a single letter, or not one of
-//               "ijkhprxyz").
+//               "ijkabchprxyz").
 ////////////////////////////////////////////////////////////////////
 void EggXfmSAnim::
 get_value(int row, LMatrix4d &mat) const {
   LVector3d scale(1.0, 1.0, 1.0);
+  LVector3d shear(0.0, 0.0, 0.0);
   LVector3d hpr(0.0, 0.0, 0.0);
   LVector3d translate(0.0, 0.0, 0.0);
 
@@ -361,6 +359,18 @@ get_value(int row, LMatrix4d &mat) const {
         scale[2] = value;
         break;
 
+      case 'a':
+        shear[0] = value;
+        break;
+
+      case 'b':
+        shear[1] = value;
+        break;
+
+      case 'c':
+        shear[2] = value;
+        break;
+
       case 'h':
         hpr[0] = value;
         break;
@@ -393,7 +403,7 @@ get_value(int row, LMatrix4d &mat) const {
   }
 
   // So now we've got the nine components; build a matrix.
-  compose_with_order(mat, scale, hpr, translate, get_order(), _coordsys);
+  compose_with_order(mat, scale, shear, hpr, translate, get_order(), _coordsys);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -407,90 +417,69 @@ get_value(int row, LMatrix4d &mat) const {
 //               normalize() first if you are not sure.
 //
 //               The return value is true if the matrix can be
-//               decomposed and stored as scale, rotate, and
-//               translate, or false otherwise.
+//               decomposed and stored as scale, shear, rotate, and
+//               translate, or false otherwise.  The data is set in
+//               either case.
 ////////////////////////////////////////////////////////////////////
 bool EggXfmSAnim::
 set_value(int row, const LMatrix4d &mat) {
   nassertr(get_order() == get_standard_order(), false);
 
-  LVector3d scale, hpr, translate;
-  bool result = decompose_matrix(mat, scale, hpr, translate, _coordsys);
-  if (!result) {
-    return false;
-  }
+  double components[num_matrix_components];
+  bool add_ok = decompose_matrix(mat, components, _coordsys);
 
   // Sanity check our sub-tables.
 #ifndef NDEBUG
   int table_length = -1;
-  int num_tables = 0;
 #endif
 
-  const_iterator ci;
-  for (ci = begin(); ci != end(); ++ci) {
-    if ((*ci)->is_of_type(EggSAnimData::get_class_type())) {
-      EggSAnimData *sanim = DCAST(EggSAnimData, *ci);
+  for (int i = 0; i < num_matrix_components; i++) {
+    string name(1, matrix_component_letters[i]);
+    EggNode *child = find_child(name);
+    nassertr(child != (EggNode *)NULL && 
+             child->is_of_type(EggSAnimData::get_class_type()), false);
+    EggSAnimData *sanim = DCAST(EggSAnimData, child);
 
 #ifndef NDEBUG
-      num_tables++;
-
-      // Each table must have the same length.
-      if (table_length < 0) {
-        table_length = sanim->get_num_rows();
-      } else {
-        nassertr(sanim->get_num_rows() == table_length, false);
-      }
-#endif
-
-      // Each child SAnimData table should have a one-letter name.
-      nassertr(sanim->get_name().length() == 1, false);
-
-      switch (sanim->get_name()[0]) {
-      case 'i':
-        sanim->set_value(row, scale[0]);
-        break;
-
-      case 'j':
-        sanim->set_value(row, scale[1]);
-        break;
-
-      case 'k':
-        sanim->set_value(row, scale[2]);
-        break;
-
-      case 'h':
-        sanim->set_value(row, hpr[0]);
-        break;
-
-      case 'p':
-        sanim->set_value(row, hpr[1]);
-        break;
-
-      case 'r':
-        sanim->set_value(row, hpr[2]);
-        break;
-
-      case 'x':
-        sanim->set_value(row, translate[0]);
-        break;
-
-      case 'y':
-        sanim->set_value(row, translate[1]);
-        break;
-
-      case 'z':
-        sanim->set_value(row, translate[2]);
-        break;
-
-      default:
-        // One of the child tables had an invalid name.
-        nassertr(false, false);
-      }
+    // Each table must have the same length.
+    if (table_length < 0) {
+      table_length = sanim->get_num_rows();
+    } else {
+      nassertr(sanim->get_num_rows() == table_length, false);
     }
+#endif
+    sanim->set_value(row, components[i]);
   }
 
-  nassertr(num_tables == 9, false);
-  return true;
+#ifndef NDEBUG
+  // Sanity check the result.
+  LMatrix4d new_mat;
+  get_value(row, new_mat);
+  if (!new_mat.almost_equal(mat, 0.005)) {
+    egg_cat.warning()
+      << "After set_row(" << row << ", ...) to:\n";
+    mat.write(egg_cat.warning(false), 2);
+    egg_cat.warning(false)
+      << "which produces components:\n";
+    for (int i = 0; i < num_matrix_components; i += 3) {
+      egg_cat.warning(false)
+        << "  "
+        << matrix_component_letters[i] 
+        << matrix_component_letters[i + 1]
+        << matrix_component_letters[i + 2]
+        << ": "
+        << components[i] << " " 
+        << components[i + 1] << " " 
+        << components[i + 2] << "\n";
+    }
+    egg_cat.warning(false)
+      << "new mat set was:\n";
+    new_mat.write(egg_cat.warning(false), 2);
+    return false;
+  }
+#endif
+
+  return add_ok;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -504,14 +493,13 @@ set_value(int row, const LMatrix4d &mat) {
 //               table of matrices.  It is an error to call this if
 //               any SAnimData children of this node have an improper
 //               name (e.g. not a single letter, or not one of
-//               "ijkhprxyz").
+//               "ijkabchprxyz").
 //
 //               This function has the further requirement that all
 //               nine of the subtables must exist and be of the same
 //               length.  Furthermore, the order string must be the
-//               standard order string, "ijkrphxyz", which matches the
-//               system compose_matrix() and decompose_matrix()
-//               functions.
+//               standard order string, which matches the system
+//               compose_matrix() and decompose_matrix() functions.
 //
 //               Thus, you probably cannot take an existing
 //               EggXfmSAnim object and start adding matrices to the
@@ -521,21 +509,20 @@ set_value(int row, const LMatrix4d &mat) {
 //               you on an existing EggXfmSAnim.
 //
 //               This function may fail silently if the matrix cannot
-//               be decomposed into scale, rotate, and translate.  In
-//               this case, the closest approximation is added to the
-//               table, and false is returned.
+//               be decomposed into scale, shear, rotate, and
+//               translate.  In this case, the closest approximation
+//               is added to the table, and false is returned.
 ////////////////////////////////////////////////////////////////////
 bool EggXfmSAnim::
 add_data(const LMatrix4d &mat) {
-  LVector3d scale, hpr, translate;
-  bool add_ok = decompose_matrix(mat, scale, hpr, translate, _coordsys);
+  double components[num_matrix_components];
+  bool add_ok = decompose_matrix(mat, components, _coordsys);
 
   if (empty()) {
-    // If we have no children, create all nine tables now.
-    for (string::const_iterator p = _table_ids.begin();
-         p != _table_ids.end();
-         ++p) {
-      EggSAnimData *sanim = new EggSAnimData(string(1, *p));
+    // If we have no children, create all twelve tables now.
+    for (int i = 0; i < num_matrix_components; i++) {
+      char name = matrix_component_letters[i];
+      EggSAnimData *sanim = new EggSAnimData(string(1, name));
       add_child(sanim);
     }
 
@@ -547,73 +534,57 @@ add_data(const LMatrix4d &mat) {
 
 #ifndef NDEBUG
   int table_length = -1;
-  int num_tables = 0;
 #endif
 
-  const_iterator ci;
-  for (ci = begin(); ci != end(); ++ci) {
-    if ((*ci)->is_of_type(EggSAnimData::get_class_type())) {
-      EggSAnimData *sanim = DCAST(EggSAnimData, *ci);
+  for (int i = 0; i < num_matrix_components; i++) {
+    string name(1, matrix_component_letters[i]);
+    EggNode *child = find_child(name);
+    nassertr(child != (EggNode *)NULL && 
+             child->is_of_type(EggSAnimData::get_class_type()), false);
+    EggSAnimData *sanim = DCAST(EggSAnimData, child);
 
 #ifndef NDEBUG
-      num_tables++;
-
-      // Each table must have the same length.
-      if (table_length < 0) {
-        table_length = sanim->get_num_rows();
-      } else {
-        nassertr(sanim->get_num_rows() == table_length, false);
-      }
-#endif
-
-      // Each child SAnimData table should have a one-letter name.
-      nassertr(sanim->get_name().length() == 1, false);
-
-      switch (sanim->get_name()[0]) {
-      case 'i':
-        sanim->add_data(scale[0]);
-        break;
-
-      case 'j':
-        sanim->add_data(scale[1]);
-        break;
-
-      case 'k':
-        sanim->add_data(scale[2]);
-        break;
-
-      case 'h':
-        sanim->add_data(hpr[0]);
-        break;
-
-      case 'p':
-        sanim->add_data(hpr[1]);
-        break;
-
-      case 'r':
-        sanim->add_data(hpr[2]);
-        break;
-
-      case 'x':
-        sanim->add_data(translate[0]);
-        break;
-
-      case 'y':
-        sanim->add_data(translate[1]);
-        break;
-
-      case 'z':
-        sanim->add_data(translate[2]);
-        break;
-
-      default:
-        // One of the child tables had an invalid name.
-        nassertr(false, false);
-      }
+    // Each table must have the same length.
+    if (table_length < 0) {
+      table_length = sanim->get_num_rows();
+    } else {
+      nassertr(sanim->get_num_rows() == table_length, false);
     }
+#endif
+    sanim->add_data(components[i]);
   }
 
-  nassertr(num_tables == 9, false);
+#ifndef NDEBUG
+  // Sanity check the result.
+  LMatrix4d new_mat;
+  if (table_length >= 0) {
+    get_value(table_length, new_mat);
+  } else {
+    get_value(0, new_mat);
+  }
+  if (!new_mat.almost_equal(mat, 0.005)) {
+    egg_cat.warning()
+      << "After add_data():\n";
+    mat.write(egg_cat.warning(false), 2);
+    egg_cat.warning(false)
+      << "which produces components:\n";
+    for (int i = 0; i < num_matrix_components; i += 3) {
+      egg_cat.warning(false)
+        << "  "
+        << matrix_component_letters[i] 
+        << matrix_component_letters[i + 1]
+        << matrix_component_letters[i + 2]
+        << ": "
+        << components[i] << " " 
+        << components[i + 1] << " " 
+        << components[i + 2] << "\n";
+    }
+    egg_cat.warning(false)
+      << "new mat set was:\n";
+    new_mat.write(egg_cat.warning(false), 2);
+    return false;
+  }
+#endif
 
   return add_ok;
 }
@@ -723,7 +694,7 @@ normalize_by_expanding() {
   // are.
   int num_tables = 0;
   int table_length = 1;
-  string remaining_tables = "ijkhprxyz";
+  string remaining_tables = matrix_component_letters;
 
   for (ci = begin(); ci != end(); ++ci) {
     if ((*ci)->is_of_type(EggSAnimData::get_class_type())) {
@@ -746,7 +717,7 @@ normalize_by_expanding() {
     }
   }
 
-  if (num_tables < 9) {
+  if (num_tables < num_matrix_components) {
     // Create new, default, children for each table we lack.
     for (size_t p = 0; p < remaining_tables.length(); p++) {
       if (remaining_tables[p] != ' ') {

@@ -77,11 +77,12 @@ clear_table(char table_id) {
 //       Access: Protected, Static
 //  Description: Returns the table ID associated with the indicated
 //               table index number.  This is the letter 'i', 'j',
-//               'k', 'h', 'p', 'r', 'x', 'y', or 'z'.
+//               'k', 'a', 'b', 'c', 'h', 'p', 'r', 'x', 'y', or 'z'.
 ////////////////////////////////////////////////////////////////////
 INLINE char AnimChannelMatrixXfmTable::
 get_table_id(int table_index) {
-  return _table_ids[table_index];
+  nassertr(table_index >= 0 && table_index < num_matrix_components, '\0');
+  return matrix_component_letters[table_index];
 }
 
 
@@ -93,6 +94,7 @@ get_table_id(int table_index) {
 ////////////////////////////////////////////////////////////////////
 INLINE float AnimChannelMatrixXfmTable::
 get_default_value(int table_index) {
-  return _default_values[table_index];
+  nassertr(table_index >= 0 && table_index < num_matrix_components, 0.0);
+  return matrix_component_defaults[table_index];
 }
 

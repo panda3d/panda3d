@@ -455,7 +455,7 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
         EggXfmSAnim *anim = _tree.get_egg_anim(node_desc);
         if (!anim->add_data(tgroup->get_transform())) {
           mayaegg_cat.error()
-            << "Shear transform on " << node_desc->get_name()
+            << "Invalid transform on " << node_desc->get_name()
             << " frame " << frame.value() << ".\n";
         }
       }

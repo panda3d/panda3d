@@ -39,7 +39,6 @@
 #include "transparencyAttrib.h"
 #include "materialPool.h"
 #include "look_at.h"
-#include "compose_matrix.h"
 #include "plist.h"
 #include "boundingSphere.h"
 #include "geomNode.h"
@@ -693,19 +692,6 @@ get_hpr() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_hpr
-//       Access: Published
-//  Description: Retrieves the rotation component of the transform.
-////////////////////////////////////////////////////////////////////
-LVecBase3f NodePath::
-get_hpr(float roll) const {
-  // This function is deprecated.  It used to be a hack to work around
-  // a problem with decomposing Euler angles, but since we no longer
-  // depend on decomposing these, we shouldn't need this any more.
-  return get_hpr();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_quat
 //       Access: Published
 //  Description: Sets the rotation component of the transform,
@@ -783,6 +769,58 @@ get_scale() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shear
+//       Access: Published
+//  Description: Sets the shear component of the transform,
+//               leaving translation and rotation untouched.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_shear(const LVecBase3f &shear) {
+  nassertv_always(!is_empty());
+  CPT(TransformState) transform = get_transform();
+  set_transform(transform->set_shear(shear));
+}
+
+void NodePath::
+set_shxy(float shxy) {
+  nassertv_always(!is_empty());
+  CPT(TransformState) transform = get_transform();
+  LVecBase3f shear = transform->get_shear();
+  shear[0] = shxy;
+  set_transform(transform->set_shear(shear));
+}
+
+void NodePath::
+set_shxz(float shxz) {
+  nassertv_always(!is_empty());
+  CPT(TransformState) transform = get_transform();
+  LVecBase3f shear = transform->get_shear();
+  shear[1] = shxz;
+  set_transform(transform->set_shear(shear));
+}
+
+void NodePath::
+set_shyz(float shyz) {
+  nassertv_always(!is_empty());
+  CPT(TransformState) transform = get_transform();
+  LVecBase3f shear = transform->get_shear();
+  shear[2] = shyz;
+  set_transform(transform->set_shear(shear));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_shear
+//       Access: Published
+//  Description: Retrieves the shear component of the transform.
+////////////////////////////////////////////////////////////////////
+LVecBase3f NodePath::
+get_shear() const {
+  nassertr_always(!is_empty(), LVecBase3f(0.0f, 0.0f, 0.0f));
+  CPT(TransformState) transform = get_transform();
+  return transform->get_shear();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_pos_hpr
 //       Access: Published
 //  Description: Sets the translation and rotation component of the
@@ -792,8 +830,8 @@ void NodePath::
 set_pos_hpr(const LVecBase3f &pos, const LVecBase3f &hpr) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
-  transform = TransformState::make_pos_hpr_scale
-    (pos, hpr, transform->get_scale());
+  transform = TransformState::make_pos_hpr_scale_shear
+    (pos, hpr, transform->get_scale(), transform->get_shear());
   set_transform(transform);
 }
 
@@ -807,16 +845,16 @@ void NodePath::
 set_hpr_scale(const LVecBase3f &hpr, const LVecBase3f &scale) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
-  transform = TransformState::make_pos_hpr_scale
-    (transform->get_pos(), hpr, scale);
+  transform = TransformState::make_pos_hpr_scale_shear
+    (transform->get_pos(), hpr, scale, transform->get_shear());
   set_transform(transform);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_pos_hpr_scale
 //       Access: Published
-//  Description: Completely replaces the transform with new
-//               translation, rotation, and scale components.
+//  Description: Replaces the translation, rotation, and scale
+//               components, implicitly setting shear to 0.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_pos_hpr_scale(const LVecBase3f &pos, const LVecBase3f &hpr,
@@ -829,8 +867,8 @@ set_pos_hpr_scale(const LVecBase3f &pos, const LVecBase3f &hpr,
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_pos_quat_scale
 //       Access: Published
-//  Description: Completely replaces the transform with new
-//               translation, rotation, and scale components.
+//  Description: Replaces the translation, rotation, and scale
+//               components, implicitly setting shear to 0.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_pos_quat_scale(const LVecBase3f &pos, const LQuaternionf &quat,
@@ -838,6 +876,34 @@ set_pos_quat_scale(const LVecBase3f &pos, const LQuaternionf &quat,
   nassertv_always(!is_empty());
   set_transform(TransformState::make_pos_quat_scale
                 (pos, quat, scale));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_pos_hpr_scale_shear
+//       Access: Published
+//  Description: Completely replaces the transform with new
+//               translation, rotation, scale, and shear components.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_pos_hpr_scale_shear(const LVecBase3f &pos, const LVecBase3f &hpr,
+                        const LVecBase3f &scale, const LVecBase3f &shear) {
+  nassertv_always(!is_empty());
+  set_transform(TransformState::make_pos_hpr_scale_shear
+                (pos, hpr, scale, shear));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_pos_quat_scale_shear
+//       Access: Published
+//  Description: Completely replaces the transform with new
+//               translation, rotation, scale, and shear components.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_pos_quat_scale_shear(const LVecBase3f &pos, const LQuaternionf &quat,
+                         const LVecBase3f &scale, const LVecBase3f &shear) {
+  nassertv_always(!is_empty());
+  set_transform(TransformState::make_pos_quat_scale_shear
+                (pos, quat, scale, shear));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -900,14 +966,15 @@ set_pos(const NodePath &other, const LVecBase3f &pos) {
   CPT(TransformState) orig_transform = get_transform();
   if (orig_transform->has_components()) {
     // If we had a componentwise transform before we started, we
-    // should be careful to preserve the other two components.  We
+    // should be careful to preserve the other three components.  We
     // wouldn't need to do this, except for the possibility of
     // numerical error or decompose ambiguity.
     const LVecBase3f &orig_hpr = orig_transform->get_hpr();
     const LVecBase3f &orig_scale = orig_transform->get_scale();
+    const LVecBase3f &orig_shear = orig_transform->get_shear();
 
     set_transform(other, rel_transform->set_pos(pos));
-    set_pos_hpr_scale(get_transform()->get_pos(), orig_hpr, orig_scale);
+    set_pos_hpr_scale_shear(get_transform()->get_pos(), orig_hpr, orig_scale, orig_shear);
 
   } else {
     // If we didn't have a componentwise transform already, never
@@ -967,16 +1034,17 @@ set_hpr(const NodePath &other, const LVecBase3f &hpr) {
   CPT(TransformState) orig_transform = get_transform();
   if (orig_transform->has_components()) {
     // If we had a componentwise transform before we started, we
-    // should be careful to preserve the other two components.  We
+    // should be careful to preserve the other three components.  We
     // wouldn't need to do this, except for the possibility of
     // numerical error or decompose ambiguity.
     const LVecBase3f &orig_pos = orig_transform->get_pos();
     const LVecBase3f &orig_scale = orig_transform->get_scale();
+    const LVecBase3f &orig_shear = orig_transform->get_shear();
 
     set_transform(other, rel_transform->set_hpr(hpr));
     const TransformState *new_transform = get_transform();
     if (new_transform->has_components()) {
-      set_pos_hpr_scale(orig_pos, new_transform->get_hpr(), orig_scale);
+      set_pos_hpr_scale_shear(orig_pos, new_transform->get_hpr(), orig_scale, orig_shear);
     }
 
   } else {
@@ -1025,22 +1093,6 @@ get_hpr(const NodePath &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_hpr
-//       Access: Published
-//  Description: Returns the relative orientation of the bottom node
-//               as seen from the other node.
-////////////////////////////////////////////////////////////////////
-LVecBase3f NodePath::
-get_hpr(const NodePath &other, float roll) const {
-  // This is still doing it the dumb way, with a decomposition.  This
-  // function is deprecated anyway.
-  LMatrix4f mat = get_mat(other);
-  LVector3f scale, hpr, pos;
-  decompose_matrix(mat, scale, hpr, pos, roll, CS_default);
-  return hpr;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_quat
 //       Access: Published
 //  Description: Sets the rotation component of the transform,
@@ -1054,16 +1106,17 @@ set_quat(const NodePath &other, const LQuaternionf &quat) {
   CPT(TransformState) orig_transform = get_transform();
   if (orig_transform->has_components()) {
     // If we had a componentwise transform before we started, we
-    // should be careful to preserve the other two components.  We
+    // should be careful to preserve the other three components.  We
     // wouldn't need to do this, except for the possibility of
     // numerical error or decompose ambiguity.
     const LVecBase3f &orig_pos = orig_transform->get_pos();
     const LVecBase3f &orig_scale = orig_transform->get_scale();
+    const LVecBase3f &orig_shear = orig_transform->get_shear();
 
     set_transform(other, rel_transform->set_quat(quat));
     const TransformState *new_transform = get_transform();
     if (new_transform->has_components()) {
-      set_pos_quat_scale(orig_pos, new_transform->get_quat(), orig_scale);
+      set_pos_quat_scale_shear(orig_pos, new_transform->get_quat(), orig_scale, orig_shear);
     }
 
   } else {
@@ -1100,16 +1153,17 @@ set_scale(const NodePath &other, const LVecBase3f &scale) {
   CPT(TransformState) orig_transform = get_transform();
   if (orig_transform->has_components()) {
     // If we had a componentwise transform before we started, we
-    // should be careful to preserve the other two components.  We
+    // should be careful to preserve the other three components.  We
     // wouldn't need to do this, except for the possibility of
     // numerical error or decompose ambiguity.
     const LVecBase3f &orig_pos = orig_transform->get_pos();
     const LVecBase3f &orig_hpr = orig_transform->get_hpr();
+    const LVecBase3f &orig_shear = orig_transform->get_shear();
 
     set_transform(other, rel_transform->set_scale(scale));
     const TransformState *new_transform = get_transform();
     if (new_transform->has_components()) {
-      set_pos_hpr_scale(orig_pos, orig_hpr, new_transform->get_scale());
+      set_pos_hpr_scale_shear(orig_pos, orig_hpr, new_transform->get_scale(), orig_shear);
     }
 
   } else {
@@ -1157,6 +1211,77 @@ get_scale(const NodePath &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shear
+//       Access: Published
+//  Description: Sets the shear component of the transform,
+//               relative to the other node.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_shear(const NodePath &other, const LVecBase3f &shear) {
+  nassertv_always(!is_empty());
+  CPT(TransformState) rel_transform = get_transform(other);
+
+  CPT(TransformState) orig_transform = get_transform();
+  if (orig_transform->has_components()) {
+    // If we had a componentwise transform before we started, we
+    // should be careful to preserve the other three components.  We
+    // wouldn't need to do this, except for the possibility of
+    // numerical error or decompose ambiguity.
+    const LVecBase3f &orig_pos = orig_transform->get_pos();
+    const LVecBase3f &orig_hpr = orig_transform->get_hpr();
+    const LVecBase3f &orig_scale = orig_transform->get_scale();
+
+    set_transform(other, rel_transform->set_shear(shear));
+    const TransformState *new_transform = get_transform();
+    if (new_transform->has_components()) {
+      set_pos_hpr_scale_shear(orig_pos, orig_hpr, orig_scale, new_transform->get_shear());
+    }
+
+  } else {
+    // If we didn't have a componentwise transform already, never
+    // mind.
+    set_transform(other, rel_transform->set_shear(shear));
+  }
+}
+
+void NodePath::
+set_shxy(const NodePath &other, float shxy) {
+  nassertv_always(!is_empty());
+  LVecBase3f shear = get_shear(other);
+  shear[0] = shxy;
+  set_shear(other, shear);
+}
+
+void NodePath::
+set_shxz(const NodePath &other, float shxz) {
+  nassertv_always(!is_empty());
+  LVecBase3f shear = get_shear(other);
+  shear[1] = shxz;
+  set_shear(other, shear);
+}
+
+void NodePath::
+set_shyz(const NodePath &other, float shyz) {
+  nassertv_always(!is_empty());
+  LVecBase3f shear = get_shear(other);
+  shear[2] = shyz;
+  set_shear(other, shear);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_shear
+//       Access: Published
+//  Description: Returns the relative shear of the bottom node
+//               as seen from the other node.
+////////////////////////////////////////////////////////////////////
+LVecBase3f NodePath::
+get_shear(const NodePath &other) const {
+  nassertr_always(!is_empty(), LVecBase3f(0.0f, 0.0f, 0.0f));
+  CPT(TransformState) transform = get_transform(other);
+  return transform->get_shear();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_pos_hpr
 //       Access: Published
 //  Description: Sets the translation and rotation component of the
@@ -1175,20 +1300,21 @@ set_pos_hpr(const NodePath &other, const LVecBase3f &pos,
     // wouldn't need to do this, except for the possibility of
     // numerical error or decompose ambiguity.
     const LVecBase3f &orig_scale = orig_transform->get_scale();
+    const LVecBase3f &orig_shear = orig_transform->get_shear();
 
-    set_transform(other, TransformState::make_pos_hpr_scale
-                  (pos, hpr, rel_transform->get_scale()));
+    set_transform(other, TransformState::make_pos_hpr_scale_shear
+                  (pos, hpr, rel_transform->get_scale(), rel_transform->get_shear()));
     const TransformState *new_transform = get_transform();
     if (new_transform->has_components()) {
-      set_pos_hpr_scale(new_transform->get_pos(), new_transform->get_hpr(),
-                        orig_scale);
+      set_pos_hpr_scale_shear(new_transform->get_pos(), new_transform->get_hpr(),
+                              orig_scale, orig_shear);
     }
 
   } else {
     // If we didn't have a componentwise transform already, never
     // mind.
-    set_transform(other, TransformState::make_pos_hpr_scale
-                  (pos, hpr, rel_transform->get_scale()));
+    set_transform(other, TransformState::make_pos_hpr_scale_shear
+                  (pos, hpr, rel_transform->get_scale(), rel_transform->get_shear()));
   }
 }
 
@@ -1208,8 +1334,8 @@ set_hpr_scale(const NodePath &other, const LVecBase3f &hpr, const LVecBase3f &sc
   // few thousandths.
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform(other);
-  transform = TransformState::make_pos_hpr_scale
-    (transform->get_pos(), hpr, scale);
+  transform = TransformState::make_pos_hpr_scale_shear
+    (transform->get_pos(), hpr, scale, transform->get_shear());
   set_transform(other, transform);
 }
 
@@ -1218,7 +1344,7 @@ set_hpr_scale(const NodePath &other, const LVecBase3f &hpr, const LVecBase3f &sc
 //       Access: Published
 //  Description: Completely replaces the transform with new
 //               translation, rotation, and scale components, relative
-//               to the other node.
+//               to the other node, implicitly setting shear to 0.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_pos_hpr_scale(const NodePath &other,
@@ -1234,7 +1360,7 @@ set_pos_hpr_scale(const NodePath &other,
 //       Access: Published
 //  Description: Completely replaces the transform with new
 //               translation, rotation, and scale components, relative
-//               to the other node.
+//               to the other node, implicitly setting shear to 0.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_pos_quat_scale(const NodePath &other,
@@ -1243,6 +1369,38 @@ set_pos_quat_scale(const NodePath &other,
   nassertv_always(!is_empty());
   set_transform(other, TransformState::make_pos_quat_scale
                 (pos, quat, scale));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_pos_hpr_scale_shear
+//       Access: Published
+//  Description: Completely replaces the transform with new
+//               translation, rotation, scale, and shear components,
+//               relative to the other node.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_pos_hpr_scale_shear(const NodePath &other,
+                        const LVecBase3f &pos, const LVecBase3f &hpr,
+                        const LVecBase3f &scale, const LVecBase3f &shear) {
+  nassertv_always(!is_empty());
+  set_transform(other, TransformState::make_pos_hpr_scale_shear
+                (pos, hpr, scale, shear));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_pos_quat_scale_shear
+//       Access: Published
+//  Description: Completely replaces the transform with new
+//               translation, rotation, scale, and shear components,
+//               relative to the other node.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_pos_quat_scale_shear(const NodePath &other,
+                         const LVecBase3f &pos, const LQuaternionf &quat,
+                         const LVecBase3f &scale, const LVecBase3f &shear) {
+  nassertv_always(!is_empty());
+  set_transform(other, TransformState::make_pos_quat_scale_shear
+                (pos, quat, scale, shear));
 }
 
 ////////////////////////////////////////////////////////////////////

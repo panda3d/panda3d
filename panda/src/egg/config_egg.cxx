@@ -51,8 +51,8 @@
 #include "eggXfmAnimData.h"
 #include "eggXfmSAnim.h"
 
-#include <dconfig.h>
-#include <get_config_path.h>
+#include "dconfig.h"
+#include "get_config_path.h"
 
 Configure(config_egg);
 NotifyCategoryDef(egg, "");

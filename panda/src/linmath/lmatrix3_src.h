@@ -99,9 +99,6 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LMatrix3) operator * (FLOATTYPE scalar) const;
   INLINE_LINMATH FLOATNAME(LMatrix3) operator / (FLOATTYPE scalar) const;
 
-  // this = scale_mat(scale_vector) * other_mat, efficiently
-  INLINE_LINMATH void scale_multiply(const FLOATNAME(LVecBase3) &scale_vector,const FLOATNAME(LMatrix3) &other_mat);
-
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator += (const FLOATNAME(LMatrix3) &other);
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator -= (const FLOATNAME(LMatrix3) &other);
 
@@ -158,9 +155,20 @@ PUBLISHED:
     scale_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz);
 
   static INLINE_LINMATH FLOATNAME(LMatrix3)
-    shear_mat(const FLOATNAME(LVecBase3) &shear);
+    shear_mat(const FLOATNAME(LVecBase3) &shear, 
+              CoordinateSystem cs = CS_default);
   static INLINE_LINMATH FLOATNAME(LMatrix3)
-    shear_mat(FLOATTYPE shxy, FLOATTYPE shxz, FLOATTYPE shyz);
+    shear_mat(FLOATTYPE shxy, FLOATTYPE shxz, FLOATTYPE shyz, 
+              CoordinateSystem cs = CS_default);
+
+  static FLOATNAME(LMatrix3)
+    scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
+                    const FLOATNAME(LVecBase3) &shear, 
+                    CoordinateSystem cs = CS_default);
+  static INLINE_LINMATH FLOATNAME(LMatrix3)
+    scale_shear_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz,
+                    FLOATTYPE shxy, FLOATTYPE shxz, FLOATTYPE shyz, 
+                    CoordinateSystem cs = CS_default);
 
   static const FLOATNAME(LMatrix3) &convert_mat(CoordinateSystem from,
                                                 CoordinateSystem to);

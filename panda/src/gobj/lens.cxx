@@ -1275,8 +1275,8 @@ void Lens::
 compute_view_hpr() {
   if ((_user_flags & UF_view_hpr) == 0) {
     const LMatrix4f &view_mat = get_view_mat();
-    LVecBase3f scale, translate;
-    decompose_matrix(view_mat, scale, _view_hpr, translate, _cs);
+    LVecBase3f scale, shear, translate;
+    decompose_matrix(view_mat, scale, shear, _view_hpr, translate, _cs);
   }
   adjust_comp_flags(0, CF_view_hpr);
 }
@@ -1371,7 +1371,9 @@ compute_lens_mat() {
   if ((_user_flags & UF_view_mat) == 0) {
     if ((_user_flags & UF_view_hpr) != 0) {
       compose_matrix(_lens_mat,
-                     LVecBase3f(1.0f, 1.0f, 1.0f), _view_hpr,
+                     LVecBase3f(1.0f, 1.0f, 1.0f),
+                     LVecBase3f(0.0f, 0.0f, 0.0f),
+                     _view_hpr,
                      LVecBase3f(0.0f, 0.0f, 0.0f), _cs);
 
     } else if ((_user_flags & UF_view_vector) != 0) {

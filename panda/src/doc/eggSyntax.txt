@@ -1227,18 +1227,19 @@ GROUPING ENTRIES
   <Xfm$Anim> name {
       <Scalar> fps { 24 }
       <Char*> order { sphrt }
-      <Char*> contents { ijkphrxyz }
+      <Char*> contents { ijkabcphrxyz }
       <V> { values }
   }
 
     This is a table of matrix transforms, one per frame, such as may
     be applied to a joint.  The "contents" string consists of a subset
-    of the letters "ijkphrxyz", where each letter corresponds to a
+    of the letters "ijkabcphrxyz", where each letter corresponds to a
     column of the table; <V> is a list of numbers of length(contents)
     * num_frames.  Each letter of the contents string corresponds to a
     type of transformation:
 
       i, j, k - scale in x, y, z directions, respectively
+      a, b, c - shear in xy, xz, and yz planes, respectively
       p, h, r - rotate by pitch, heading, roll
       x, y, z - translate in x, y, z directions
 
@@ -1248,7 +1249,7 @@ GROUPING ENTRIES
     string.  The order the transforms are applied is defined by the
     order string:
 
-      s       - all scale transforms
+      s       - all scale and shear transforms
       p, h, r - individual rotate transforms
       t       - all translation transforms
 

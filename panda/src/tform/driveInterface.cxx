@@ -190,8 +190,8 @@ set_force_roll(float) {
 ////////////////////////////////////////////////////////////////////
 void DriveInterface::
 set_mat(const LMatrix4f &mat) {
-  LVecBase3f scale;
-  decompose_matrix(mat, scale, _hpr, _xyz);
+  LVecBase3f scale, shear;
+  decompose_matrix(mat, scale, shear, _hpr, _xyz);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -201,7 +201,10 @@ set_mat(const LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 const LMatrix4f &DriveInterface::
 get_mat() {
-  compose_matrix(_mat, LVecBase3f(1.0f, 1.0f, 1.0f), _hpr, _xyz);
+  compose_matrix(_mat, 
+                 LVecBase3f(1.0f, 1.0f, 1.0f), 
+                 LVecBase3f(0.0f, 0.0f, 0.0f),
+                 _hpr, _xyz);
   return _mat;
 }
 

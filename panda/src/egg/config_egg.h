@@ -19,8 +19,8 @@
 #ifndef CONFIG_EGG_H
 #define CONFIG_EGG_H
 
-#include <pandabase.h>
-#include <notifyCategoryProxy.h>
+#include "pandabase.h"
+#include "notifyCategoryProxy.h"
 
 class DSearchPath;
 

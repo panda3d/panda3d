@@ -19,6 +19,103 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: compose_matrix
+//  Description: Computes the 4x4 matrix according to scale, shear,
+//               rotation, and translation.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void
+compose_matrix(FLOATNAME(LMatrix4) &mat,
+               const FLOATNAME(LVecBase3) &scale,
+               const FLOATNAME(LVecBase3) &shear,
+               const FLOATNAME(LVecBase3) &hpr,
+               const FLOATNAME(LVecBase3) &translate,
+               CoordinateSystem cs) {
+  FLOATNAME(LMatrix3) upper3;
+  compose_matrix(upper3, scale, shear, hpr, cs);
+  mat = FLOATNAME(LMatrix4)(upper3, translate);
+}
+
+INLINE_LINMATH void
+compose_matrix(FLOATNAME(LMatrix4) &mat,
+               const FLOATTYPE components[num_matrix_components],
+               CoordinateSystem cs) {
+  FLOATNAME(LVector3) scale(components[0],
+                            components[1],
+                            components[2]);
+  FLOATNAME(LVector3) shear(components[3],
+                            components[4],
+                            components[5]);
+  FLOATNAME(LVector3) hpr(components[6],
+                          components[7],
+                          components[8]);
+  FLOATNAME(LVector3) translate(components[9],
+                                components[10],
+                                components[11]);
+  compose_matrix(mat, scale, shear, hpr, translate, cs);
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: decompose_matrix
+//  Description: Extracts out the components of an affine matrix.
+//               Returns true if the scale, shear, hpr, and translate
+//               completely describe the matrix, or false if the
+//               matrix is not affine.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH bool
+decompose_matrix(const FLOATNAME(LMatrix4) &mat,
+                 FLOATNAME(LVecBase3) &scale,
+		 FLOATNAME(LVecBase3) &shear,
+                 FLOATNAME(LVecBase3) &hpr,
+                 FLOATNAME(LVecBase3) &translate,
+                 CoordinateSystem cs) {
+  // Get the translation first.
+  mat.get_row3(translate,3);
+  if (!decompose_matrix(mat.get_upper_3(), scale, shear, hpr, cs)) {
+    return false;
+  }
+#ifndef NDEBUG
+  return mat.get_col(3).almost_equal(FLOATNAME(LVecBase4)(0.0, 0.0, 0.0, 1.0));
+#else
+  return true;
+#endif
+}
+
+INLINE_LINMATH bool
+decompose_matrix(const FLOATNAME(LMatrix4) &mat,
+                 FLOATTYPE components[num_matrix_components],
+                 CoordinateSystem cs) {
+  FLOATNAME(LVector3) scale, shear, hpr, translate;
+  bool result = decompose_matrix(mat, scale, shear, hpr, translate, cs);
+  components[0] = scale[0];
+  components[1] = scale[1];
+  components[2] = scale[2];
+  components[3] = shear[0];
+  components[4] = shear[1];
+  components[5] = shear[2];
+  components[6] = hpr[0];
+  components[7] = hpr[1];
+  components[8] = hpr[2];
+  components[9] = translate[0];
+  components[10] = translate[1];
+  components[11] = translate[2];
+  return result;
+}
+
+
+
+// The following functions are deprecated; they have been replaced
+// with new versions, above, that accept a shear component as well.
+
+INLINE EXPCL_PANDA void
+compose_matrix(FLOATNAME(LMatrix3) &mat,
+               const FLOATNAME(LVecBase3) &scale,
+               const FLOATNAME(LVecBase3) &hpr,
+               CoordinateSystem cs) {
+  compose_matrix(mat, scale, FLOATNAME(LVecBase3)(0, 0, 0), hpr, cs);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: compose_matrix
 //  Description: Computes the 4x4 matrix according to scale, rotation,
 //               and translation.
 ////////////////////////////////////////////////////////////////////
@@ -33,20 +130,16 @@ compose_matrix(FLOATNAME(LMatrix4) &mat,
   mat = FLOATNAME(LMatrix4)(upper3, translate);
 }
 
-INLINE_LINMATH void
-compose_matrix(FLOATNAME(LMatrix4) &mat,
-               const FLOATTYPE components[9],
-               CoordinateSystem cs) {
-  FLOATNAME(LVector3) scale(components[0],
-                            components[1],
-                            components[2]);
-  FLOATNAME(LVector3) hpr(components[3],
-                          components[4],
-                          components[5]);
-  FLOATNAME(LVector3) translate(components[6],
-                                components[7],
-                                components[8]);
-  compose_matrix(mat, scale, hpr, translate, cs);
+INLINE EXPCL_PANDA bool
+decompose_matrix(const FLOATNAME(LMatrix3) &mat,
+                 FLOATNAME(LVecBase3) &scale,
+                 FLOATNAME(LVecBase3) &hpr,
+                 CoordinateSystem cs) {
+  FLOATNAME(LVecBase3) shear;
+  if (!decompose_matrix(mat, scale, shear, hpr, cs)) {
+    return false;
+  }
+  return shear.almost_equal(FLOATNAME(LVecBase3)::zero());
 }
 
 
@@ -67,50 +160,4 @@ decompose_matrix(const FLOATNAME(LMatrix4) &mat,
   // Get the translation first.
   mat.get_row3(translate,3);
   return decompose_matrix(mat.get_upper_3(), scale, hpr, cs);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: decompose_matrix
-//  Description: Extracts out the components of an affine matrix.
-//               Returns true if the scale, hpr, translate
-//               completely describe the matrix, or false if there is
-//               also a shear component or if the matrix is not
-//               affine.
-//
-//               This flavor of the function accepts an expected roll
-//               amount.  This amount will be used as the roll
-//               component, rather than attempting to determine roll
-//               by examining the matrix; this helps alleviate roll
-//               instability due to roundoff errors or gimbal lock.
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH bool
-decompose_matrix(const FLOATNAME(LMatrix4) &mat,
-                 FLOATNAME(LVecBase3) &scale,
-                 FLOATNAME(LVecBase3) &hpr,
-                 FLOATNAME(LVecBase3) &translate,
-                 FLOATTYPE roll,
-                 CoordinateSystem cs) {
-  // Get the translation first.
-  mat.get_row3(translate,3);
-  return decompose_matrix(mat.get_upper_3(), scale, hpr, roll, cs);
-}
-
-INLINE_LINMATH bool
-decompose_matrix(const FLOATNAME(LMatrix4) &mat,
-                 FLOATTYPE components[9],
-                 CoordinateSystem cs) {
-  FLOATNAME(LVector3) scale, hpr, translate;
-  if (!decompose_matrix(mat, scale, hpr, translate, cs)) {
-    return false;
-  }
-  components[0] = scale[0];
-  components[1] = scale[1];
-  components[2] = scale[2];
-  components[3] = hpr[0];
-  components[4] = hpr[1];
-  components[5] = hpr[2];
-  components[6] = translate[0];
-  components[7] = translate[1];
-  components[8] = translate[2];
-  return true;
 }

@@ -71,6 +71,7 @@ public:
 
   static void compose_with_order(LMatrix4d &mat,
                                  const LVecBase3d &scale,
+                                 const LVecBase3d &shear,
                                  const LVecBase3d &hpr,
                                  const LVecBase3d &trans,
                                  const string &order,
@@ -94,8 +95,6 @@ private:
 
   static const string _standard_order_legacy;
   static const string _standard_order_hpr_fix;
-  static const string _table_ids;
-  static const int _num_table_ids;
   
 public:
 

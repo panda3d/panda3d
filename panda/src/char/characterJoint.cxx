@@ -19,7 +19,6 @@
 #include "characterJoint.h"
 #include "config_char.h"
 
-#include "compose_matrix.h"
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "bamReader.h"

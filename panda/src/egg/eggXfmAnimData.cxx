@@ -22,10 +22,10 @@
 #include "eggMiscFuncs.h"
 #include "config_egg.h"
 
-#include <indent.h>
-#include <luse.h>
-#include <lmatrix.h>
-#include <compose_matrix.h>
+#include "indent.h"
+#include "luse.h"
+#include "lmatrix.h"
+#include "compose_matrix.h"
 
 TypeHandle EggXfmAnimData::_type_handle;
 
@@ -94,6 +94,7 @@ EggXfmAnimData(const EggXfmSAnim &convert_from)
 void EggXfmAnimData::
 get_value(int row, LMatrix4d &mat) const {
   LVector3d scale(1.0, 1.0, 1.0);
+  LVector3d shear(0.0, 0.0, 0.0);
   LVector3d hpr(0.0, 0.0, 0.0);
   LVector3d translate(0.0, 0.0, 0.0);
 
@@ -111,6 +112,18 @@ get_value(int row, LMatrix4d &mat) const {
 
     case 'k':
       scale[2] = value;
+      break;
+
+    case 'a':
+      shear[0] = value;
+      break;
+      
+    case 'b':
+      shear[1] = value;
+      break;
+      
+    case 'c':
+      shear[2] = value;
       break;
 
     case 'h':
@@ -143,8 +156,8 @@ get_value(int row, LMatrix4d &mat) const {
     }
   }
 
-  // So now we've got the nine components; build a matrix.
-  EggXfmSAnim::compose_with_order(mat, scale, hpr, translate, get_order(),
+  // So now we've got the twelve components; build a matrix.
+  EggXfmSAnim::compose_with_order(mat, scale, shear, hpr, translate, get_order(),
                                   _coordsys);
 }
 
@@ -221,26 +234,28 @@ r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
       egg_cat.error()
         << "Transform from " << _coordsys << " to " << to_cs
         << " failed!\n";
-      LVector3d scale, hpr, trans;
-      bool d = decompose_matrix(orig_mat, scale, hpr, trans, _coordsys);
+      LVector3d scale, shear, hpr, trans;
+      bool d = decompose_matrix(orig_mat, scale, shear, hpr, trans, _coordsys);
       egg_cat.error(false)
         << "orig:\n" << orig_mat
         << "d = " << d
         << "\n  scale: " << scale
+        << "\n  shear: " << shear
         << "\n  hpr: " << hpr
         << "\n  trans: " << trans << "\n";
 
       LMatrix4d new_mat = inv1 * orig_mat * mat;
-      d = decompose_matrix(new_mat, scale, hpr, trans, to_cs);
+      d = decompose_matrix(new_mat, scale, shear, hpr, trans, to_cs);
       egg_cat.error(false)
         << "new:\n" << new_mat
         << "d = " << d
         << "\n  scale: " << scale
+        << "\n  shear: " << shear
         << "\n  hpr: " << hpr
         << "\n  trans: " << trans << "\n";
     }
 
-    // If this assertion fails, we attempted to transform by a skew
+    // If this assertion fails, we attempted to transform by non-affine
     // matrix or some such thing that cannot be represented in an anim
     // file.
     nassertv(result);

@@ -19,11 +19,13 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: compose_matrix
-//  Description: Computes the 3x3 matrix from scale and rotation.
+//  Description: Computes the 3x3 matrix from scale, shear, and
+//               rotation.
 ////////////////////////////////////////////////////////////////////
 void
 compose_matrix(FLOATNAME(LMatrix3) &mat,
                const FLOATNAME(LVecBase3) &scale,
+               const FLOATNAME(LVecBase3) &shear,
                const FLOATNAME(LVecBase3) &hpr,
                CoordinateSystem cs) {
 
@@ -31,16 +33,18 @@ compose_matrix(FLOATNAME(LMatrix3) &mat,
   // as default until legacy tools are fixed to work with correct way
 
   if (temp_hpr_fix) {
-    mat.scale_multiply(scale,
-                       FLOATNAME(LMatrix3)::rotate_mat_normaxis(hpr[2], FLOATNAME(LVector3)::forward(cs), cs) *
-                       FLOATNAME(LMatrix3)::rotate_mat_normaxis(hpr[1], FLOATNAME(LVector3)::right(cs), cs) *
-                       FLOATNAME(LMatrix3)::rotate_mat_normaxis(hpr[0], FLOATNAME(LVector3)::up(cs), cs));
+    mat =
+      FLOATNAME(LMatrix3)::scale_shear_mat(scale, shear, cs) *
+      FLOATNAME(LMatrix3)::rotate_mat_normaxis(hpr[2], FLOATNAME(LVector3)::forward(cs), cs) *
+      FLOATNAME(LMatrix3)::rotate_mat_normaxis(hpr[1], FLOATNAME(LVector3)::right(cs), cs) *
+      FLOATNAME(LMatrix3)::rotate_mat_normaxis(hpr[0], FLOATNAME(LVector3)::up(cs), cs);
 
   } else {
-    mat.scale_multiply(scale,
-                       FLOATNAME(LMatrix3)::rotate_mat_normaxis(hpr[1], FLOATNAME(LVector3)::right(cs), cs) *
-                       FLOATNAME(LMatrix3)::rotate_mat_normaxis(hpr[0], FLOATNAME(LVector3)::up(cs), cs) *
-                       FLOATNAME(LMatrix3)::rotate_mat_normaxis(hpr[2], FLOATNAME(LVector3)::back(cs), cs));
+    mat = 
+      FLOATNAME(LMatrix3)::scale_shear_mat(scale, shear, cs) *
+      FLOATNAME(LMatrix3)::rotate_mat_normaxis(hpr[1], FLOATNAME(LVector3)::right(cs), cs) *
+      FLOATNAME(LMatrix3)::rotate_mat_normaxis(hpr[0], FLOATNAME(LVector3)::up(cs), cs) *
+      FLOATNAME(LMatrix3)::rotate_mat_normaxis(hpr[2], FLOATNAME(LVector3)::back(cs), cs);
   }
 }
 
@@ -511,13 +515,15 @@ unwind_zup_rotation(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr,
 ////////////////////////////////////////////////////////////////////
 //     Function: decompose_matrix
 //  Description: Extracts out the components of a 3x3 rotation matrix.
-//               Returns true if the scale and hpr completely describe
-//               the matrix, or false if there is also a shear
-//               component or if the matrix is not affine.
+//               Returns true if successful, or false if there was an
+//               error.  Since a 3x3 matrix always contains an affine
+//               transform, this should succeed in the normal case;
+//               singular transforms are not treated as an error.
 ////////////////////////////////////////////////////////////////////
 bool
 decompose_matrix(const FLOATNAME(LMatrix3) &mat,
                  FLOATNAME(LVecBase3) &scale,
+                 FLOATNAME(LVecBase3) &shear,
                  FLOATNAME(LVecBase3) &hpr,
                  CoordinateSystem cs) {
   if (cs == CS_default) {
@@ -595,29 +601,28 @@ decompose_matrix(const FLOATNAME(LMatrix3) &mat,
       << "after unwind, mat is " << new_mat << "\n";
   }
 
-  scale[0] = new_mat._m.m._00;
-  scale[1] = new_mat._m.m._11;
-  scale[2] = new_mat._m.m._22;
-  /*
-  if (is_left_handed) {
-    scale[0] = -new_mat._m.m._00;
-    scale[1] = -new_mat._m.m._11;
-  }
-  */
-  
-  bool has_no_shear =
-    (fabs(new_mat(0, 1)) + fabs(new_mat(0, 2)) +
-     fabs(new_mat(1, 0)) + fabs(new_mat(1, 2)) +
-     fabs(new_mat(2, 0)) + fabs(new_mat(2, 1))) < 0.0001;
+  scale.set(new_mat(0, 0), new_mat(1, 1), new_mat(2, 2));
 
-  /*
-  if (!has_no_shear) {
-    linmath_cat.info() << "shear:\n";
-    new_mat.write(linmath_cat.info(false), 2);
+  // Normalize the scale out of the shear components, and return the
+  // shear.
+  if (scale[0] != 0.0) {
+    new_mat(0, 1) /= scale[0];
+    new_mat(0, 2) /= scale[0];
   }
-  */
+  if (scale[1] != 0.0) {
+    new_mat(1, 0) /= scale[1];
+    new_mat(1, 2) /= scale[1];
+  }
+  if (scale[2] != 0.0) {
+    new_mat(2, 0) /= scale[2];
+    new_mat(2, 1) /= scale[2];
+  }
+
+  shear.set(new_mat(0, 1) + new_mat(1, 0),
+            new_mat(2, 0) + new_mat(0, 2),
+            new_mat(2, 1) + new_mat(1, 2));
   
-  return has_no_shear;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -632,6 +637,10 @@ decompose_matrix(const FLOATNAME(LMatrix3) &mat,
 //               component, rather than attempting to determine roll
 //               by examining the matrix; this helps alleviate roll
 //               instability due to roundoff errors or gimbal lock.
+//
+//               This function is deprecated and will soon be removed,
+//               especially when the need for temp_hpr_fix is
+//               eliminated.
 ////////////////////////////////////////////////////////////////////
 bool
 decompose_matrix(const FLOATNAME(LMatrix3) &mat,

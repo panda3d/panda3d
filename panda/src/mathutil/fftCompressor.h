@@ -19,12 +19,12 @@
 #ifndef FFTCOMPRESSOR_H
 #define FFTCOMPRESSOR_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <pointerToArray.h>
-#include <vector_float.h>
-#include <vector_double.h>
-#include <vector_LVecBase3f.h>
+#include "pointerToArray.h"
+#include "vector_float.h"
+#include "vector_double.h"
+#include "vector_LVecBase3f.h"
 
 class Datagram;
 class DatagramIterator;

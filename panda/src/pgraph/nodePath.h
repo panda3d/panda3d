@@ -250,7 +250,6 @@ PUBLISHED:
   void set_p(float p);
   void set_r(float r);
   LVecBase3f get_hpr() const;
-  LVecBase3f get_hpr(float roll) const;
   INLINE float get_h() const;
   INLINE float get_p() const;
   INLINE float get_r() const;
@@ -268,6 +267,16 @@ PUBLISHED:
   INLINE float get_sx() const;
   INLINE float get_sy() const;
   INLINE float get_sz() const;
+
+  INLINE void set_shear(float shxy, float shxz, float shyz);
+  void set_shear(const LVecBase3f &shear);
+  void set_shxy(float shxy);
+  void set_shxz(float shxz);
+  void set_shyz(float shyz);
+  LVecBase3f get_shear() const;
+  INLINE float get_shxy() const;
+  INLINE float get_shxz() const;
+  INLINE float get_shyz() const;
 
   INLINE void set_pos_hpr(float x, float y, float z,
                           float h, float p, float r);
@@ -287,6 +296,14 @@ PUBLISHED:
   void set_pos_quat_scale(const LVecBase3f &pos,
                           const LQuaternionf &quat,
                           const LVecBase3f &scale);
+  void set_pos_hpr_scale_shear(const LVecBase3f &pos,
+                               const LVecBase3f &hpr,
+                               const LVecBase3f &scale,
+                               const LVecBase3f &shear);
+  void set_pos_quat_scale_shear(const LVecBase3f &pos,
+                                const LQuaternionf &quat,
+                                const LVecBase3f &scale,
+                                const LVecBase3f &shear);
 
   void set_mat(const LMatrix4f &mat);
   INLINE void clear_mat();
@@ -317,7 +334,6 @@ PUBLISHED:
   void set_p(const NodePath &other, float p);
   void set_r(const NodePath &other, float r);
   LVecBase3f get_hpr(const NodePath &other) const;
-  LVecBase3f get_hpr(const NodePath &other, float roll) const;
   INLINE float get_h(const NodePath &other) const;
   INLINE float get_p(const NodePath &other) const;
   INLINE float get_r(const NodePath &other) const;
@@ -334,6 +350,16 @@ PUBLISHED:
   INLINE float get_sx(const NodePath &other) const;
   INLINE float get_sy(const NodePath &other) const;
   INLINE float get_sz(const NodePath &other) const;
+
+  INLINE void set_shear(const NodePath &other, float shxy, float shxz, float shyz);
+  void set_shear(const NodePath &other, const LVecBase3f &shear);
+  void set_shxy(const NodePath &other, float shxy);
+  void set_shxz(const NodePath &other, float shxz);
+  void set_shyz(const NodePath &other, float shyz);
+  LVecBase3f get_shear(const NodePath &other) const;
+  INLINE float get_shxy(const NodePath &other) const;
+  INLINE float get_shxz(const NodePath &other) const;
+  INLINE float get_shyz(const NodePath &other) const;
 
   INLINE void set_pos_hpr(const NodePath &other,
                           float x, float y, float z,
@@ -359,6 +385,16 @@ PUBLISHED:
                           const LVecBase3f &pos,
                           const LQuaternionf &quat,
                           const LVecBase3f &scale);
+  void set_pos_hpr_scale_shear(const NodePath &other,
+                               const LVecBase3f &pos,
+                               const LVecBase3f &hpr,
+                               const LVecBase3f &scale,
+                               const LVecBase3f &shear);
+  void set_pos_quat_scale_shear(const NodePath &other,
+                                const LVecBase3f &pos,
+                                const LQuaternionf &quat,
+                                const LVecBase3f &scale,
+                                const LVecBase3f &shear);
 
   const LMatrix4f &get_mat(const NodePath &other) const;
   void set_mat(const NodePath &other, const LMatrix4f &mat);

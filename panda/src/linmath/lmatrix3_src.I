@@ -558,28 +558,6 @@ multiply(const FLOATNAME(LMatrix3) &other1, const FLOATNAME(LMatrix3) &other2) {
   MATRIX3_PRODUCT((*this),other1,other2);
 }
 
-// this = scale_mat(scale_vector) * other_mat, efficiently
-INLINE_LINMATH void FLOATNAME(LMatrix3)::
-scale_multiply(const FLOATNAME(LVecBase3) &scale_vector,const FLOATNAME(LMatrix3) &other_mat) {
-  #ifdef _DEBUG
-     assert(&other_mat != this);
-  #endif
-
-   // optimize for 0.0 or 1.0 factors?
-
-  _m.m._00 = other_mat._m.m._00 * scale_vector._v.v._0;
-  _m.m._01 = other_mat._m.m._01 * scale_vector._v.v._0;
-  _m.m._02 = other_mat._m.m._02 * scale_vector._v.v._0;
-
-  _m.m._10 = other_mat._m.m._10 * scale_vector._v.v._1;
-  _m.m._11 = other_mat._m.m._11 * scale_vector._v.v._1;
-  _m.m._12 = other_mat._m.m._12 * scale_vector._v.v._1;
-
-  _m.m._20 = other_mat._m.m._20 * scale_vector._v.v._2;
-  _m.m._21 = other_mat._m.m._21 * scale_vector._v.v._2;
-  _m.m._22 = other_mat._m.m._22 * scale_vector._v.v._2;
-}
-
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::matrix * scalar
 //       Access: Public
@@ -1102,10 +1080,9 @@ scale_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz) {
 //               shear in each of the three planes.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
-shear_mat(const FLOATNAME(LVecBase3) &shear) {
-  return FLOATNAME(LMatrix3)(1.0f, 0.0f, 0.0f,
-                             shear._v.v._0, 1.0f, 0.0f,
-                             shear._v.v._1, shear._v.v._2, 1.0f);
+shear_mat(const FLOATNAME(LVecBase3) &shear, CoordinateSystem cs) {
+  return scale_shear_mat(FLOATNAME(LVecBase3)(1.0f, 1.0f, 1.0f),
+                         shear, cs);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1115,10 +1092,24 @@ shear_mat(const FLOATNAME(LVecBase3) &shear) {
 //               shear in each of the three planes.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
-shear_mat(FLOATTYPE shxy, FLOATTYPE shxz, FLOATTYPE shyz) {
-  return FLOATNAME(LMatrix3)(1.0f, 0.0f, 0.0f,
-                             shxy, 1.0f, 0.0f,
-                             shxz, shyz, 1.0f);
+shear_mat(FLOATTYPE shxy, FLOATTYPE shxz, FLOATTYPE shyz, CoordinateSystem cs) {
+  return scale_shear_mat(1.0f, 1.0f, 1.0f,
+                         shxy, shxz, shyz, cs);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix::scale_shear_mat
+//       Access: Public, Static
+//  Description: Returns a matrix that applies the indicated
+//               scale and shear.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
+scale_shear_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz,
+                FLOATTYPE shxy, FLOATTYPE shxz, FLOATTYPE shyz,
+                CoordinateSystem cs) {
+  return scale_shear_mat(FLOATNAME(LVecBase3)(sx, sy, sz),
+                         FLOATNAME(LVecBase3)(shxy, shxz, shyz),
+                         cs);
 }
 
 ////////////////////////////////////////////////////////////////////

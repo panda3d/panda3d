@@ -44,17 +44,18 @@
 #include "lvec2_ops.h"
 #include "lvec3_ops.h"
 
+// These define the standard one-letter names for the components in
+// the array-accepting forms of compose_matrix() and
+// decompose_matrix().
+static const int num_matrix_components = 12;
+EXPCL_PANDA extern const char * const matrix_component_letters;
+EXPCL_PANDA extern const double matrix_component_defaults[num_matrix_components];
+
 #include "fltnames.h"
 #include "compose_matrix_src.h"
 
 #include "dblnames.h"
 #include "compose_matrix_src.h"
-
-// These define the standard one-letter names for the components in
-// the array-accepting forms of compose_matrix() and
-// decompose_matrix().
-EXPCL_PANDA extern const char * const matrix_components;
-EXPCL_PANDA extern const int num_matrix_components;
 
 #endif
 

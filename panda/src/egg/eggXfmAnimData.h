@@ -19,7 +19,7 @@
 #ifndef EGGXFMANIMDATA_H
 #define EGGXFMANIMDATA_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggAnimData.h"
 #include "eggXfmSAnim.h"

@@ -19,11 +19,11 @@
 
 #include "movingPartMatrix.h"
 
-#include <compose_matrix.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
+#include "compose_matrix.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+#include "bamWriter.h"
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__
@@ -93,6 +93,8 @@ get_blend_value(const PartBundle *root) {
       // resulting matrix to eliminate artificially-introduced scales,
       // and then reapply the scales.
 
+      // Perhaps we should treat shear the same as a scale here?
+
       _value = 0.0f;
       LVector3f scale(0.0f, 0.0f, 0.0f);
       float net = 0.0f;
@@ -124,9 +126,9 @@ get_blend_value(const PartBundle *root) {
 
       // Now rebuild the matrix with the correct scale values.
 
-      LVector3f false_scale, hpr, translate;
-      decompose_matrix(_value, false_scale, hpr, translate);
-      compose_matrix(_value, scale, hpr, translate);
+      LVector3f false_scale, shear, hpr, translate;
+      decompose_matrix(_value, false_scale, shear, hpr, translate);
+      compose_matrix(_value, scale, shear, hpr, translate);
     }
   }
 }

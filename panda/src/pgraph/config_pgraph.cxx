@@ -110,12 +110,6 @@ const bool paranoid_compose = config_pgraph.GetBool("paranoid-compose", false);
 // by matrix.
 const bool compose_componentwise = config_pgraph.GetBool("compose-componentwise", true);
 
-// Set this true to load transforms from bam files as componentwise
-// transforms always, even if they were stored as matrix transforms.
-// This works around old versions of the egg loader that only stored
-// matrix transforms.
-const bool bams_componentwise = config_pgraph.GetBool("bams-componentwise", false);
-
 // Set this false to disable TransparencyAttrib::M_dual altogether
 // (and use M_alpha in its place).
 const bool m_dual = config_pgraph.GetBool("m-dual", true);

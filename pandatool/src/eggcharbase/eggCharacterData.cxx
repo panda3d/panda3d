@@ -211,6 +211,10 @@ do_reparent() {
     }
   }
 
+  // Report the set of joints that failed.  It really shouldn't be
+  // possible for any joints to fail, so if you see anything reported
+  // here, something went wrong at a fundamental level.  Perhaps a
+  // problem with decompose_matrix().
   InvalidSet::const_iterator si;
   for (si = invalid_set.begin(); si != invalid_set.end(); ++si) {
     EggJointData *joint_data = (*si);
@@ -225,7 +229,7 @@ do_reparent() {
       } else {
         nout << joint_data->get_parent()->get_name();
       }
-      nout << " results in a skew transform.\n";
+      nout << " results in an invalid transform.\n";
     }
   }
 

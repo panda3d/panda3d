@@ -568,7 +568,10 @@ evaluate(float t, LMatrix4f &result, CoordinateSystem cs) const {
     return false;
   }
 
-  compose_matrix(result, LVecBase3f(1.0f, 1.0f, 1.0f), hpr, xyz, cs);
+  compose_matrix(result, 
+                 LVecBase3f(1.0f, 1.0f, 1.0f), 
+                 LVecBase3f(0.0f, 0.0f, 0.0f),
+                 hpr, xyz, cs);
   return true;
 }
 
@@ -935,9 +938,8 @@ determine_hpr(float t, ParametricCurve *xyz_curve, LVecBase3f &hpr) const {
   LMatrix3f mat;
   look_at(mat, tangent);
 
-  LVecBase3f scale;
-  decompose_matrix(mat, scale, hpr);
-  return true;
+  LVecBase3f scale, shear;
+  return decompose_matrix(mat, scale, shear, hpr);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -76,12 +76,21 @@ PUBLISHED:
                                                  const LVecBase3f &hpr);
   INLINE static CPT(TransformState) make_scale(float scale);
   INLINE static CPT(TransformState) make_scale(const LVecBase3f &scale);
-  static CPT(TransformState) make_pos_hpr_scale(const LVecBase3f &pos,
-                                                const LVecBase3f &hpr, 
-                                                const LVecBase3f &scale);
-  static CPT(TransformState) make_pos_quat_scale(const LVecBase3f &pos,
-                                                 const LQuaternionf &quat, 
-                                                 const LVecBase3f &scale);
+  INLINE static CPT(TransformState) make_shear(const LVecBase3f &scale);
+  INLINE static CPT(TransformState) make_pos_hpr_scale(const LVecBase3f &pos,
+                                                       const LVecBase3f &hpr, 
+                                                       const LVecBase3f &scale);
+  INLINE static CPT(TransformState) make_pos_quat_scale(const LVecBase3f &pos,
+                                                        const LQuaternionf &quat, 
+                                                        const LVecBase3f &scale);
+  static CPT(TransformState) make_pos_hpr_scale_shear(const LVecBase3f &pos,
+                                                      const LVecBase3f &hpr, 
+                                                      const LVecBase3f &scale,
+                                                      const LVecBase3f &shear);
+  static CPT(TransformState) make_pos_quat_scale_shear(const LVecBase3f &pos,
+                                                       const LQuaternionf &quat, 
+                                                       const LVecBase3f &scale,
+                                                       const LVecBase3f &shear);
   static CPT(TransformState) make_mat(const LMatrix4f &mat);
 
   INLINE bool is_identity() const;
@@ -96,18 +105,22 @@ PUBLISHED:
   INLINE bool has_quat() const;
   INLINE bool has_scale() const;
   INLINE bool has_uniform_scale() const;
+  INLINE bool has_shear() const;
+  INLINE bool has_nonzero_shear() const;
   INLINE bool has_mat() const;
   INLINE const LVecBase3f &get_pos() const;
   INLINE const LVecBase3f &get_hpr() const;
   INLINE const LQuaternionf &get_quat() const;
   INLINE const LVecBase3f &get_scale() const;
   INLINE float get_uniform_scale() const;
+  INLINE const LVecBase3f &get_shear() const;
   INLINE const LMatrix4f &get_mat() const;
 
   CPT(TransformState) set_pos(const LVecBase3f &pos) const;
   CPT(TransformState) set_hpr(const LVecBase3f &hpr) const;
   CPT(TransformState) set_quat(const LQuaternionf &quat) const;
   CPT(TransformState) set_scale(const LVecBase3f &scale) const;
+  CPT(TransformState) set_shear(const LVecBase3f &shear) const;
 
   CPT(TransformState) compose(const TransformState *other) const;
   CPT(TransformState) invert_compose(const TransformState *other) const;
@@ -175,22 +188,23 @@ private:
   INLINE bool is_destructing() const;
 
   enum Flags {
-    F_is_identity      = 0x0001,
-    F_is_singular      = 0x0002,
-    F_singular_known   = 0x0004,  // set if we know F_is_singular
-    F_components_given = 0x0008,
-    F_components_known = 0x0010,  // set if we know F_has_components
-    F_has_components   = 0x0020,
-    F_mat_known        = 0x0040,  // set if _mat is defined
-    F_is_invalid       = 0x0080,
-    F_quat_given       = 0x0100,
-    F_quat_known       = 0x0200,  // set if _quat is defined
-    F_hpr_given        = 0x0400,
-    F_hpr_known        = 0x0800,  // set if _hpr is defined
-    F_uniform_scale    = 0x1000,
-    F_is_destructing   = 0x8000,
+    F_is_identity        = 0x0001,
+    F_is_singular        = 0x0002,
+    F_singular_known     = 0x0004,  // set if we know F_is_singular
+    F_components_given   = 0x0008,
+    F_components_known   = 0x0010,  // set if we know F_has_components
+    F_has_components     = 0x0020,
+    F_mat_known          = 0x0040,  // set if _mat is defined
+    F_is_invalid         = 0x0080,
+    F_quat_given         = 0x0100,
+    F_quat_known         = 0x0200,  // set if _quat is defined
+    F_hpr_given          = 0x0400,
+    F_hpr_known          = 0x0800,  // set if _hpr is defined
+    F_uniform_scale      = 0x1000,
+    F_has_nonzero_shear  = 0x2000,
+    F_is_destructing     = 0x8000,
   };
-  LVecBase3f _pos, _hpr, _scale;
+  LVecBase3f _pos, _hpr, _scale, _shear;
   LQuaternionf _quat;
   LMatrix4f _mat;
   LMatrix4f *_inv_mat;

@@ -115,6 +115,44 @@ make_scale(const LVecBase3f &scale) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState::make_shear
+//       Access: Published, Static
+//  Description: Makes a new TransformState with the specified
+//               components.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) TransformState::
+make_shear(const LVecBase3f &shear) {
+  return make_pos_hpr_scale_shear(LVecBase3f(0.0f, 0.0f, 0.0f),
+                                  LVecBase3f(0.0f, 0.0f, 0.0f),
+                                  LVecBase3f(1.0f, 1.0f, 1.0f),
+                                  shear);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::make_pos_hpr_scale
+//       Access: Published, Static
+//  Description: Makes a new TransformState with the specified
+//               components.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) TransformState::
+make_pos_hpr_scale(const LVecBase3f &pos, const LVecBase3f &hpr, 
+                   const LVecBase3f &scale) {
+  return make_pos_hpr_scale_shear(pos, hpr, scale, LVecBase3f::zero());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::make_pos_quat_scale
+//       Access: Published, Static
+//  Description: Makes a new TransformState with the specified
+//               components.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) TransformState::
+make_pos_quat_scale(const LVecBase3f &pos, const LQuaternionf &quat, 
+                    const LVecBase3f &scale) {
+  return make_pos_quat_scale_shear(pos, quat, scale, LVecBase3f::zero());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformState::is_identity
 //       Access: Published
 //  Description: Returns true if the transform represents the identity
@@ -285,6 +323,31 @@ has_uniform_scale() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState::has_shear
+//       Access: Published
+//  Description: Returns true if the transform's shear component
+//               can be extracted out separately.  This is generally
+//               true only when has_components() is true.
+////////////////////////////////////////////////////////////////////
+INLINE bool TransformState::
+has_shear() const {
+  return has_components();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::has_nonzero_shear
+//       Access: Published
+//  Description: Returns true if the shear component is non-zero,
+//               false if it is zero or if the matrix cannot be
+//               decomposed.
+////////////////////////////////////////////////////////////////////
+INLINE bool TransformState::
+has_nonzero_shear() const {
+  check_components();
+  return (_flags & F_has_nonzero_shear) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformState::has_mat
 //       Access: Published
 //  Description: Returns true if the transform can be described as a
@@ -366,6 +429,20 @@ get_uniform_scale() const {
   check_components();
   nassertr(has_uniform_scale(), _scale[0]);
   return _scale[0];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::get_shear
+//       Access: Published
+//  Description: Returns the shear component of the transform.  It is
+//               an error to call this if has_components() returned
+//               false.
+////////////////////////////////////////////////////////////////////
+INLINE const LVecBase3f &TransformState::
+get_shear() const {
+  check_components();
+  nassertr(!is_invalid(), _shear);
+  return _shear;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -458,13 +535,17 @@ check_mat() const {
 //       Access: Private
 //  Description: Should be called immediately after _scale (and
 //               F_has_components) is set, this checks for a uniform
-//               scale and sets the bit appropriately.
+//               scale (as well as a non-zero shear) and sets the bit
+//               appropriately.
 ////////////////////////////////////////////////////////////////////
 INLINE void TransformState::
 check_uniform_scale() {
   if (IS_NEARLY_EQUAL(_scale[0], _scale[1]) && 
       IS_NEARLY_EQUAL(_scale[0], _scale[2])) {
     _flags |= F_uniform_scale;
+  }
+  if (!_shear.almost_equal(LVecBase3f::zero())) {
+    _flags |= F_has_nonzero_shear;
   }
 }
 

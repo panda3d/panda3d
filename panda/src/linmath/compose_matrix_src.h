@@ -21,6 +21,49 @@ BEGIN_PUBLISH
 EXPCL_PANDA void
 compose_matrix(FLOATNAME(LMatrix3) &mat,
                const FLOATNAME(LVecBase3) &scale,
+               const FLOATNAME(LVecBase3) &shear,
+               const FLOATNAME(LVecBase3) &hpr,
+               CoordinateSystem cs = CS_default);
+
+INLINE_LINMATH void
+compose_matrix(FLOATNAME(LMatrix4) &mat,
+               const FLOATNAME(LVecBase3) &scale,
+               const FLOATNAME(LVecBase3) &shear,
+               const FLOATNAME(LVecBase3) &hpr,
+               const FLOATNAME(LVecBase3) &translate,
+               CoordinateSystem cs = CS_default);
+
+INLINE_LINMATH void
+compose_matrix(FLOATNAME(LMatrix4) &mat, const FLOATTYPE components[num_matrix_components],
+               CoordinateSystem cs = CS_default);
+
+EXPCL_PANDA bool
+decompose_matrix(const FLOATNAME(LMatrix3) &mat,
+                 FLOATNAME(LVecBase3) &scale,
+                 FLOATNAME(LVecBase3) &shear,
+                 FLOATNAME(LVecBase3) &hpr,
+                 CoordinateSystem cs = CS_default);
+
+INLINE_LINMATH bool
+decompose_matrix(const FLOATNAME(LMatrix4) &mat,
+                 FLOATNAME(LVecBase3) &scale,
+                 FLOATNAME(LVecBase3) &shear,
+                 FLOATNAME(LVecBase3) &hpr,
+                 FLOATNAME(LVecBase3) &translate,
+                 CoordinateSystem cs = CS_default);
+
+INLINE_LINMATH bool
+decompose_matrix(const FLOATNAME(LMatrix4) &mat, FLOATTYPE components[num_matrix_components],
+                 CoordinateSystem CS = CS_default);
+
+
+
+// The following functions are deprecated; they have been replaced
+// with new versions, above, that accept a shear component as well.
+
+INLINE EXPCL_PANDA void
+compose_matrix(FLOATNAME(LMatrix3) &mat,
+               const FLOATNAME(LVecBase3) &scale,
                const FLOATNAME(LVecBase3) &hpr,
                CoordinateSystem cs = CS_default);
 
@@ -31,11 +74,7 @@ compose_matrix(FLOATNAME(LMatrix4) &mat,
                const FLOATNAME(LVecBase3) &translate,
                CoordinateSystem cs = CS_default);
 
-INLINE_LINMATH void
-compose_matrix(FLOATNAME(LMatrix4) &mat, const FLOATTYPE components[9],
-               CoordinateSystem cs = CS_default);
-
-EXPCL_PANDA bool
+INLINE EXPCL_PANDA bool
 decompose_matrix(const FLOATNAME(LMatrix3) &mat,
                  FLOATNAME(LVecBase3) &scale,
                  FLOATNAME(LVecBase3) &hpr,
@@ -54,18 +93,6 @@ decompose_matrix(const FLOATNAME(LMatrix4) &mat,
                  FLOATNAME(LVecBase3) &hpr,
                  FLOATNAME(LVecBase3) &translate,
                  CoordinateSystem cs = CS_default);
-
-INLINE_LINMATH bool
-decompose_matrix(const FLOATNAME(LMatrix4) &mat,
-                 FLOATNAME(LVecBase3) &scale,
-                 FLOATNAME(LVecBase3) &hpr,
-                 FLOATNAME(LVecBase3) &translate,
-                 FLOATTYPE roll,
-                 CoordinateSystem cs);
-
-INLINE_LINMATH bool
-decompose_matrix(const FLOATNAME(LMatrix4) &mat, FLOATTYPE components[9],
-                 CoordinateSystem CS = CS_default);
 
 END_PUBLISH
 

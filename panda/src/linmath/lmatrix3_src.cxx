@@ -49,6 +49,77 @@ const FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::_lz_to_ry_mat =
 const FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::_ly_to_rz_mat =
   FLOATNAME(LMatrix3)::_flip_z_mat * FLOATNAME(LMatrix3)::_y_to_z_up_mat;
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix::scale_shear_mat
+//       Access: Public, Static
+//  Description: Returns a matrix that applies the indicated
+//               scale and shear.
+////////////////////////////////////////////////////////////////////
+FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
+scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
+                const FLOATNAME(LVecBase3) &shear,
+                CoordinateSystem cs) {
+  if (cs == CS_default) {
+    cs = default_coordinate_system;
+  }
+
+  // We have to match the placement of the shear components in the
+  // matrix to the way we extract out the rotation in
+  // decompose_matrix().  Therefore, the shear is sensitive to the
+  // coordinate system.
+
+  switch (cs) {
+  case CS_zup_right:
+    if (temp_hpr_fix) {
+      return FLOATNAME(LMatrix3)(scale._v.v._0, shear._v.v._0 * scale._v.v._0, 0.0f,
+                                 0.0f, scale._v.v._1, 0.0f,
+                                 shear._v.v._1 * scale._v.v._2, shear._v.v._2 * scale._v.v._2, scale._v.v._2);
+    } else {
+      return FLOATNAME(LMatrix3)(scale._v.v._0, 0.0f, 0.0f,
+                                 shear._v.v._0 * scale._v.v._1, scale._v.v._1, 0.0f,
+                                 shear._v.v._1 * scale._v.v._2, shear._v.v._2 * scale._v.v._2, scale._v.v._2);
+    }
+
+  case CS_zup_left:
+    if (temp_hpr_fix) {
+      return FLOATNAME(LMatrix3)(scale._v.v._0, shear._v.v._0 * scale._v.v._0, 0.0f,
+                                 0.0f, scale._v.v._1, 0.0f,
+                                 -shear._v.v._1 * scale._v.v._2, -shear._v.v._2 * scale._v.v._2, scale._v.v._2);
+    } else {
+      return FLOATNAME(LMatrix3)(scale._v.v._0, 0.0f, 0.0f,
+                                 shear._v.v._0 * scale._v.v._1, scale._v.v._1, 0.0f,
+                                 -shear._v.v._1 * scale._v.v._2, -shear._v.v._2 * scale._v.v._2, scale._v.v._2);
+    }
+
+  case CS_yup_right:
+    if (temp_hpr_fix) {
+      return FLOATNAME(LMatrix3)(scale._v.v._0, 0.0f, shear._v.v._1 * scale._v.v._0,
+                                 shear._v.v._0 * scale._v.v._1, scale._v.v._1, shear._v.v._2 * scale._v.v._1,
+                                 0.0f, 0.0f, scale._v.v._2);
+    } else {
+      return FLOATNAME(LMatrix3)(scale._v.v._0, 0.0f, 0.0f,
+                                 shear._v.v._0 * scale._v.v._1, scale._v.v._1, shear._v.v._2 * scale._v.v._1,
+                                 shear._v.v._1 * scale._v.v._2, 0.0f, scale._v.v._2);
+    }
+
+  case CS_yup_left:
+    if (temp_hpr_fix) {
+      return FLOATNAME(LMatrix3)(scale._v.v._0, 0.0f, -shear._v.v._1 * scale._v.v._0,
+                                 shear._v.v._0 * scale._v.v._1, scale._v.v._1, -shear._v.v._2 * scale._v.v._1,
+                                 0.0f, 0.0f, scale._v.v._2);
+    } else {
+      return FLOATNAME(LMatrix3)(scale._v.v._0, 0.0f, 0.0f,
+                                 shear._v.v._0 * scale._v.v._1, scale._v.v._1, -shear._v.v._2 * scale._v.v._1,
+                                 -shear._v.v._1 * scale._v.v._2, 0.0f, scale._v.v._2);
+    }
+  }
+
+  linmath_cat.error()
+    << "Invalid coordinate system value!\n";
+  return _ident_mat;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix::convert_mat
 //       Access: Public, Static

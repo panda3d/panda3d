@@ -26,7 +26,6 @@
 #include <renderBuffer.h>
 #include <perspectiveProjection.h>
 #include <look_at.h>
-#include <compose_matrix.h>
 #include <get_rel_pos.h>
 #include <lightTransition.h>
 #include <depthTestTransition.h>

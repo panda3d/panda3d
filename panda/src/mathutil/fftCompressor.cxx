@@ -19,9 +19,9 @@
 #include "fftCompressor.h"
 #include "config_mathutil.h"
 
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <compose_matrix.h>
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "compose_matrix.h"
 #include <math.h>
 
 #ifdef HAVE_FFTW
@@ -348,7 +348,8 @@ write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
       m20, m21, m22;
     for (int i = 0; i < length; i++) {
       LMatrix3f mat;
-      compose_matrix(mat, LVecBase3f(1.0, 1.0, 1.0), array[i]);
+      compose_matrix(mat, LVecBase3f(1.0, 1.0, 1.0), LVecBase3f(0.0, 0.0, 0.0),
+                     array[i]);
       m00.push_back(mat(0, 0));
       m01.push_back(mat(0, 1));
       m02.push_back(mat(0, 2));
@@ -390,7 +391,8 @@ write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
 
   for (int i = 0; i < length; i++) {
     LMatrix3f mat;
-    compose_matrix(mat, LVecBase3f(1.0, 1.0, 1.0), array[i]);
+    compose_matrix(mat, LVecBase3f(1.0, 1.0, 1.0), LVecBase3f(0.0, 0.0, 0.0), 
+                   array[i]);
     if (_transpose_quats) {
       mat.transpose_in_place();
     }
@@ -418,31 +420,16 @@ write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
       rot.extract_to_matrix(mat2);
       if (!mat.almost_equal(mat2, 0.0001)) {
         LVecBase3f hpr1, hpr2;
-        LVecBase3f scale;
-        bool d1 = decompose_matrix(mat, scale, hpr1);
-        bool d2 = decompose_matrix(mat2, scale, hpr2);
+        LVecBase3f scale, shear;
+        decompose_matrix(mat, scale, shear, hpr1);
+        decompose_matrix(mat2, scale, shear, hpr2);
         mathutil_cat.warning()
           << "Converted hpr to quaternion incorrectly!\n"
-          << "  Source hpr: " << array[i];
-        if (d1) {
-          mathutil_cat.warning(false)
-            << ", or " << hpr1 << "\n";
-        } else {
-          mathutil_cat.warning(false)
-            << ", incorrectly converted to the non-ortho matrix:\n";
-          mat2.write(mathutil_cat.warning(false), 4);
-        }
+          << "  Source hpr: " << array[i] << ", or " << hpr1 << "\n";
         mathutil_cat.warning(false)
-          << "  Quaternion: " << rot << "\n";
-        if (d2) {
-          mathutil_cat.warning(false)
-            << "  Which represents: hpr " << hpr2 << " scale "
-            << scale << "\n";
-        } else {
-          mathutil_cat.warning(false)
-            << "  Which is incorrectly converted to the following non-ortho matrix:\n";
-          mat2.write(mathutil_cat.warning(false), 4);
-        }
+          << "  Quaternion: " << rot << "\n"
+          << "  Which represents: hpr " << hpr2 << " scale "
+          << scale << "\n";
       }
     }
 #endif
@@ -628,16 +615,9 @@ read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
         LMatrix3f mat(m00[i], m01[i], m02[i],
                       m10[i], m11[i], m12[i],
                       m20[i], m21[i], m22[i]);
-        LVecBase3f scale, hpr;
-        bool success = decompose_matrix(mat, scale, hpr);
-        if (success) {
-          array.push_back(hpr);
-        } else {
-          mathutil_cat.error()
-            << "Unable to decompose matrix:\n";
-          mat.write(mathutil_cat.error(false), 2);
-          array.push_back(LVecBase3f(0.0, 0.0, 0.0));
-        }
+        LVecBase3f scale, shear, hpr;
+        decompose_matrix(mat, scale, shear, hpr);
+        array.push_back(hpr);
       }
     }
 
@@ -694,10 +674,8 @@ read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
       if (_transpose_quats) {
         mat.transpose_in_place();
       }
-      LVecBase3f scale, hpr;
-      bool success = decompose_matrix(mat, scale, hpr);
-      nassertr(success, false);
-
+      LVecBase3f scale, shear, hpr;
+      decompose_matrix(mat, scale, shear, hpr);
       array.push_back(hpr);
     }
   }

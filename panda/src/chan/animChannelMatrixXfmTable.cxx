@@ -21,23 +21,15 @@
 #include "animBundle.h"
 #include "config_chan.h"
 
-#include <compose_matrix.h>
-#include <indent.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
-#include <fftCompressor.h>
+#include "compose_matrix.h"
+#include "indent.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+#include "bamWriter.h"
+#include "fftCompressor.h"
 
 TypeHandle AnimChannelMatrixXfmTable::_type_handle;
-
-const char
-AnimChannelMatrixXfmTable::_table_ids[AnimChannelMatrixXfmTable::num_tables] =
-{ 'i', 'j', 'k', 'h', 'p', 'r', 'x', 'y', 'z' };
-
-const float
-AnimChannelMatrixXfmTable::_default_values[AnimChannelMatrixXfmTable::num_tables] =
-{ 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelMatrixXfmTable::Constructor
@@ -66,7 +58,7 @@ AnimChannelMatrixXfmTable(void)
 ////////////////////////////////////////////////////////////////////
 bool AnimChannelMatrixXfmTable::
 has_changed(int last_frame, int this_frame) {
-  for (int i = 0; i < num_tables; i++) {
+  for (int i = 0; i < num_matrix_components; i++) {
     if (_tables[i].size() > 1) {
       if (_tables[i][last_frame % _tables[i].size()] !=
           _tables[i][this_frame % _tables[i].size()]) {
@@ -85,9 +77,9 @@ has_changed(int last_frame, int this_frame) {
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixXfmTable::
 get_value(int frame, LMatrix4f &mat) {
-  float components[num_tables];
+  float components[num_matrix_components];
 
-  for (int i = 0; i < num_tables; i++) {
+  for (int i = 0; i < num_matrix_components; i++) {
     if (_tables[i].empty()) {
       components[i] = get_default_value(i);
     } else {
@@ -106,12 +98,12 @@ get_value(int frame, LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixXfmTable::
 get_value_no_scale(int frame, LMatrix4f &mat) {
-  float components[num_tables];
+  float components[num_matrix_components];
   components[0] = 1.0f;
   components[1] = 1.0f;
   components[2] = 1.0f;
 
-  for (int i = 3; i < num_tables; i++) {
+  for (int i = 3; i < num_matrix_components; i++) {
     if (_tables[i].empty()) {
       components[i] = get_default_value(i);
     } else {
@@ -147,7 +139,7 @@ get_scale(int frame, float scale[3]) {
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixXfmTable::
 clear_all_tables() {
-  for (int i = 0; i < num_tables; i++) {
+  for (int i = 0; i < num_matrix_components; i++) {
     _tables[i] = NULL;
   }
 }
@@ -191,7 +183,7 @@ write(ostream &out, int indent_level) const {
 
   // Write a list of all the sub-tables that have data.
   bool found_any = false;
-  for (int i = 0; i < num_tables; i++) {
+  for (int i = 0; i < num_matrix_components; i++) {
     if (!_tables[i].empty()) {
       out << get_table_id(i) << _tables[i].size();
       found_any = true;
@@ -216,12 +208,12 @@ write(ostream &out, int indent_level) const {
 //     Function: AnimChannelMatrixXfmTable::get_table_index
 //       Access: Protected, Static
 //  Description: Returns the table index number, a value between 0 and
-//               num_tables, that corresponds to the indicate table
+//               num_matrix_components, that corresponds to the indicate table
 //               id.  Returns -1 if the table id is invalid.
 ////////////////////////////////////////////////////////////////////
 int AnimChannelMatrixXfmTable::
 get_table_index(char table_id) {
-  for (int i = 0; i < num_tables; i++) {
+  for (int i = 0; i < num_matrix_components; i++) {
     if (table_id == get_table_id(i)) {
       return i;
     }
@@ -237,8 +229,7 @@ get_table_index(char table_id) {
 //               the particular object to a Datagram
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixXfmTable::
-write_datagram(BamWriter *manager, Datagram &me)
-{
+write_datagram(BamWriter *manager, Datagram &me) {
   AnimChannelMatrix::write_datagram(manager, me);
 
   if (compress_channels && !FFTCompressor::is_compression_available()) {
@@ -250,7 +241,7 @@ write_datagram(BamWriter *manager, Datagram &me)
   me.add_bool(compress_channels);
   if (!compress_channels) {
     // Write out everything uncompressed, as a stream of floats.
-    for(int i = 0; i < num_tables; i++) {
+    for (int i = 0; i < num_matrix_components; i++) {
       me.add_uint16(_tables[i].size());
       for(int j = 0; j < (int)_tables[i].size(); j++) {
         me.add_float32(_tables[i][j]);
@@ -264,9 +255,9 @@ write_datagram(BamWriter *manager, Datagram &me)
     compressor.set_quality(compress_chan_quality);
     compressor.write_header(me);
 
-    // First, write out the scales.
+    // First, write out the scales and shears.
     int i;
-    for(i = 0; i < 3; i++) {
+    for (i = 0; i < 6; i++) {
       compressor.write_reals(me, _tables[i], _tables[i].size());
     }
 
@@ -274,18 +265,18 @@ write_datagram(BamWriter *manager, Datagram &me)
     // a HPR array.
     vector_LVecBase3f hprs;
     int hprs_length =
-      max(max(_tables[3].size(), _tables[4].size()), _tables[5].size());
+      max(max(_tables[6].size(), _tables[7].size()), _tables[8].size());
     hprs.reserve(hprs_length);
     for (i = 0; i < hprs_length; i++) {
-      float h = _tables[3].empty() ? 0.0f : _tables[3][i % _tables[3].size()];
-      float p = _tables[4].empty() ? 0.0f : _tables[4][i % _tables[4].size()];
-      float r = _tables[5].empty() ? 0.0f : _tables[5][i % _tables[5].size()];
+      float h = _tables[6].empty() ? 0.0f : _tables[6][i % _tables[6].size()];
+      float p = _tables[7].empty() ? 0.0f : _tables[7][i % _tables[7].size()];
+      float r = _tables[8].empty() ? 0.0f : _tables[8][i % _tables[8].size()];
       hprs.push_back(LVecBase3f(h, p, r));
     }
     compressor.write_hprs(me, &hprs[0], hprs_length);
 
     // And now the translations.
-    for(i = 6; i < 9; i++) {
+    for(i = 9; i < num_matrix_components; i++) {
       compressor.write_reals(me, _tables[i], _tables[i].size());
     }
   }
@@ -300,21 +291,26 @@ write_datagram(BamWriter *manager, Datagram &me)
 //               place
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixXfmTable::
-fillin(DatagramIterator& scan, BamReader* manager)
-{
+fillin(DatagramIterator &scan, BamReader *manager) {
   AnimChannelMatrix::fillin(scan, manager);
 
   bool wrote_compressed = scan.get_bool();
 
   if (!wrote_compressed) {
     // Regular floats.
-    for(int i = 0; i < num_tables; i++) {
-      int size = scan.get_uint16();
-      PTA_float ind_table;
-      for(int j = 0; j < size; j++) {
-        ind_table.push_back(scan.get_float32());
+    for (int i = 0; i < num_matrix_components; i++) {
+      if (manager->get_file_minor_ver() < 6 && i >= 3 && i < 6) {
+        // Old bam files didn't store a shear component.
+        _tables[i].clear();
+
+      } else {
+        int size = scan.get_uint16();
+        PTA_float ind_table;
+        for (int j = 0; j < size; j++) {
+          ind_table.push_back(scan.get_float32());
+        }
+        _tables[i] = ind_table;
       }
-      _tables[i] = ind_table;
     }
 
   } else {
@@ -330,32 +326,45 @@ fillin(DatagramIterator& scan, BamReader* manager)
     compressor.read_header(scan);
 
     int i;
-    // First, read in the scales.
-    for(i = 0; i < 3; i++) {
-      PTA_float ind_table=PTA_float::empty_array(0);
+    // First, read in the scales and shears.
+    for (i = 0; i < 3; i++) {
+      PTA_float ind_table = PTA_float::empty_array(0);
       compressor.read_reals(scan, ind_table.v());
       _tables[i] = ind_table;
+    }
+    if (manager->get_file_minor_ver() < 6) {
+      // Old bam files didn't store a shear.
+      _tables[3].clear();
+      _tables[4].clear();
+      _tables[5].clear();
+
+    } else {
+      for (i = 3; i < 6; i++) {
+        PTA_float ind_table = PTA_float::empty_array(0);
+        compressor.read_reals(scan, ind_table.v());
+        _tables[i] = ind_table;
+      }
     }
 
     // Read in the HPR array and store it back in the joint angles.
     vector_LVecBase3f hprs;
     compressor.read_hprs(scan, hprs);
-    PTA_float h_table=PTA_float::empty_array(hprs.size());
-    PTA_float p_table=PTA_float::empty_array(hprs.size());
-    PTA_float r_table=PTA_float::empty_array(hprs.size());
+    PTA_float h_table = PTA_float::empty_array(hprs.size());
+    PTA_float p_table = PTA_float::empty_array(hprs.size());
+    PTA_float r_table = PTA_float::empty_array(hprs.size());
 
     for (i = 0; i < (int)hprs.size(); i++) {
       h_table[i] = hprs[i][0];
       p_table[i] = hprs[i][1];
       r_table[i] = hprs[i][2];
     }
-    _tables[3] = h_table;
-    _tables[4] = p_table;
-    _tables[5] = r_table;
+    _tables[6] = h_table;
+    _tables[7] = p_table;
+    _tables[8] = r_table;
 
     // Now read in the translations.
-    for (i = 6; i < 9; i++) {
-      PTA_float ind_table=PTA_float::empty_array(0);
+    for (i = 9; i < num_matrix_components; i++) {
+      PTA_float ind_table = PTA_float::empty_array(0);
       compressor.read_reals(scan, ind_table.v());
       _tables[i] = ind_table;
     }
@@ -365,11 +374,11 @@ fillin(DatagramIterator& scan, BamReader* manager)
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelMatrixXfmTable::make_AnimChannelMatrixXfmTable
 //       Access: Protected
-//  Description: Factory method to generate a AnimChannelMatrixXfmTable object
+//  Description: Factory method to generate an
+//               AnimChannelMatrixXfmTable object.
 ////////////////////////////////////////////////////////////////////
-TypedWritable* AnimChannelMatrixXfmTable::
-make_AnimChannelMatrixXfmTable(const FactoryParams &params)
-{
+TypedWritable *AnimChannelMatrixXfmTable::
+make_AnimChannelMatrixXfmTable(const FactoryParams &params) {
   AnimChannelMatrixXfmTable *me = new AnimChannelMatrixXfmTable;
   DatagramIterator scan;
   BamReader *manager;
@@ -382,11 +391,11 @@ make_AnimChannelMatrixXfmTable(const FactoryParams &params)
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelMatrixXfmTable::register_with_factory
 //       Access: Public, Static
-//  Description: Factory method to generate a AnimChannelMatrixXfmTable object
+//  Description: Factory method to generate an
+//               AnimChannelMatrixXfmTable object.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixXfmTable::
-register_with_read_factory(void)
-{
+register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_AnimChannelMatrixXfmTable);
 }
 

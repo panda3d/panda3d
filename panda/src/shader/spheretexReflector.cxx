@@ -27,7 +27,6 @@
 #include <renderBuffer.h>
 #include <perspectiveLens.h>
 #include <look_at.h>
-#include <compose_matrix.h>
 #include <cullFaceTransition.h>
 #include <colorBlendTransition.h>
 #include <transformTransition.h>

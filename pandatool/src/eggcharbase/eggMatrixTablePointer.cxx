@@ -198,16 +198,18 @@ do_rebuild() {
     return false;
   }
 
+  bool all_ok = true;
+  
   _xform->clear_data();
   RebuildFrames::const_iterator fi;
   for (fi = _rebuild_frames.begin(); fi != _rebuild_frames.end(); ++fi) {
     if (!_xform->add_data(*fi)) {
-      return false;
+      all_ok = false;
     }
   }
 
   _rebuild_frames.clear();
-  return true;
+  return all_ok;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -523,6 +523,32 @@ get_sz() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shear
+//       Access: Published
+//  Description: Sets the shear component of the transform,
+//               leaving translation, rotation, and scale untouched.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_shear(float shxy, float shxz, float shyz) {
+  set_shear(LVecBase3f(shxy, shxz, shyz));
+}
+
+INLINE float NodePath::
+get_shxy() const {
+  return get_shear()[0];
+}
+
+INLINE float NodePath::
+get_shxz() const {
+  return get_shear()[1];
+}
+
+INLINE float NodePath::
+get_shyz() const {
+  return get_shear()[2];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_pos_hpr
 //       Access: Published
 //  Description: Sets the translation and rotation component of the
@@ -703,6 +729,38 @@ get_sy(const NodePath &other) const {
 INLINE float NodePath::
 get_sz(const NodePath &other) const {
   return get_scale(other)[2];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shear
+//       Access: Published
+//  Description: Sets the shear component of the transform,
+//               relative to the other node.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_shear(const NodePath &other, float shxy, float shxz, float shyz) {
+  set_shear(other, LPoint3f(shxy, shxz, shyz));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_shear
+//       Access: Published
+//  Description: Returns the relative shear of the referenced node
+//               as seen from the other node.
+////////////////////////////////////////////////////////////////////
+INLINE float NodePath::
+get_shxy(const NodePath &other) const {
+  return get_shear(other)[0];
+}
+
+INLINE float NodePath::
+get_shxz(const NodePath &other) const {
+  return get_shear(other)[1];
+}
+
+INLINE float NodePath::
+get_shyz(const NodePath &other) const {
+  return get_shear(other)[2];
 }
 
 ////////////////////////////////////////////////////////////////////

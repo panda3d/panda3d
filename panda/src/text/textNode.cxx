@@ -233,11 +233,12 @@ write(ostream &out, int indent_level) const {
     << "draw order is " << _draw_order << ", "
     << _draw_order + 1 << ", " << _draw_order + 2 << "\n";
 
-  LVecBase3f scale, hpr, trans;
-  if (decompose_matrix(_transform, scale, hpr, trans, _coordinate_system)) {
+  LVecBase3f scale, shear, hpr, trans;
+  if (decompose_matrix(_transform, scale, shear, hpr, trans, _coordinate_system)) {
   indent(out, indent_level + 2)
     << "transform is:\n"
     << "  scale: " << scale << "\n"
+    << "  shear: " << shear << "\n"
     << "    hpr: " << hpr << "\n"
     << "  trans: " << hpr << "\n";
   } else {

@@ -90,9 +90,9 @@ EggOptchar() {
      &EggOptchar::dispatch_vector_string_comma, NULL, &_expose_components);
 
   add_option
-    ("zero", "joint[,hprxyzijk]", 0,
+    ("zero", "joint[,hprxyzijkabc]", 0,
      "Zeroes out the animation channels for the named joint.  If "
-     "a subset of the component letters hprxyzijk is included, the "
+     "a subset of the component letters hprxyzijkabc is included, the "
      "operation is restricted to just those components; otherwise the "
      "entire transform is cleared.",
      &EggOptchar::dispatch_name_components, NULL, &_zero_channels);
@@ -272,14 +272,14 @@ dispatch_name_components(const string &opt, const string &arg, void *var) {
   }
 
   if (sp._b.empty()) {
-    sp._b = matrix_components;
+    sp._b = matrix_component_letters;
   } else {
     for (string::const_iterator si = sp._b.begin(); si != sp._b.end(); ++si) {
-      if (strchr(matrix_components, *si) == NULL) {
+      if (strchr(matrix_component_letters, *si) == NULL) {
         nout << "Not a standard matrix component: \"" << *si << "\"\n"
              << "-" << opt << " requires a joint name followed by a set "
              << "of component names.  The standard component names are \"" 
-             << matrix_components << "\".\n";
+             << matrix_component_letters << "\".\n";
         return false;
       }
     }

@@ -27,5 +27,10 @@
 #include "compose_matrix_src.cxx"
 
 
-const char * const matrix_components = "ijkhprxyz";
-const int num_matrix_components = 9;
+const char * const matrix_component_letters = "ijkabchprxyz";
+const double matrix_component_defaults[num_matrix_components] = {
+  1.0, 1.0, 1.0,
+  0.0, 0.0, 0.0,
+  0.0, 0.0, 0.0,
+  0.0, 0.0, 0.0
+};

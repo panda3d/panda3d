@@ -180,29 +180,29 @@ set_z(float z) {
 ////////////////////////////////////////////////////////////////////
 LVecBase3f Trackball::
 get_hpr() const {
-  LVecBase3f scale, hpr, translate;
-  decompose_matrix(_rotation, scale, hpr, translate);
+  LVecBase3f scale, shear, hpr, translate;
+  decompose_matrix(_rotation, scale, shear, hpr, translate);
   return hpr;
 }
 
 float Trackball::
 get_h() const {
-  LVecBase3f scale, hpr, translate;
-  decompose_matrix(_rotation, scale, hpr, translate);
+  LVecBase3f scale, shear, hpr, translate;
+  decompose_matrix(_rotation, scale, shear, hpr, translate);
   return hpr[0];
 }
 
 float Trackball::
 get_p() const {
-  LVecBase3f scale, hpr, translate;
-  decompose_matrix(_rotation, scale, hpr, translate);
+  LVecBase3f scale, shear, hpr, translate;
+  decompose_matrix(_rotation, scale, shear, hpr, translate);
   return hpr[1];
 }
 
 float Trackball::
 get_r() const {
-  LVecBase3f scale, hpr, translate;
-  decompose_matrix(_rotation, scale, hpr, translate);
+  LVecBase3f scale, shear, hpr, translate;
+  decompose_matrix(_rotation, scale, shear, hpr, translate);
   return hpr[2];
 }
 
@@ -214,45 +214,45 @@ get_r() const {
 ////////////////////////////////////////////////////////////////////
 void Trackball::
 set_hpr(const LVecBase3f &hpr) {
-  LVecBase3f scale, old_hpr, translate;
-  decompose_matrix(_rotation, scale, old_hpr, translate);
-  compose_matrix(_rotation, scale, hpr, translate);
+  LVecBase3f scale, shear, old_hpr, translate;
+  decompose_matrix(_rotation, scale, shear, old_hpr, translate);
+  compose_matrix(_rotation, scale, shear, hpr, translate);
   recompute();
 }
 
 void Trackball::
 set_hpr(float h, float p, float r) {
-  LVecBase3f scale, hpr, translate;
-  decompose_matrix(_rotation, scale, hpr, translate);
+  LVecBase3f scale, shear, hpr, translate;
+  decompose_matrix(_rotation, scale, shear, hpr, translate);
   hpr.set(h, p, r);
-  compose_matrix(_rotation, scale, hpr, translate);
+  compose_matrix(_rotation, scale, shear, hpr, translate);
   recompute();
 }
 
 void Trackball::
 set_h(float h) {
-  LVecBase3f scale, hpr, translate;
-  decompose_matrix(_rotation, scale, hpr, translate);
+  LVecBase3f scale, shear, hpr, translate;
+  decompose_matrix(_rotation, scale, shear, hpr, translate);
   hpr[0] = h;
-  compose_matrix(_rotation, scale, hpr, translate);
+  compose_matrix(_rotation, scale, shear, hpr, translate);
   recompute();
 }
 
 void Trackball::
 set_p(float p) {
-  LVecBase3f scale, hpr, translate;
-  decompose_matrix(_rotation, scale, hpr, translate);
+  LVecBase3f scale, shear, hpr, translate;
+  decompose_matrix(_rotation, scale, shear, hpr, translate);
   hpr[1] = p;
-  compose_matrix(_rotation, scale, hpr, translate);
+  compose_matrix(_rotation, scale, shear, hpr, translate);
   recompute();
 }
 
 void Trackball::
 set_r(float r) {
-  LVecBase3f scale, hpr, translate;
-  decompose_matrix(_rotation, scale, hpr, translate);
+  LVecBase3f scale, shear, hpr, translate;
+  decompose_matrix(_rotation, scale, shear, hpr, translate);
   hpr[2] = r;
-  compose_matrix(_rotation, scale, hpr, translate);
+  compose_matrix(_rotation, scale, shear, hpr, translate);
   recompute();
 }
 

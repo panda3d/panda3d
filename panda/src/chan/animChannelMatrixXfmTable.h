@@ -19,12 +19,13 @@
 #ifndef ANIMCHANNELMATRIXXFMTABLE_H
 #define ANIMCHANNELMATRIXXFMTABLE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "animChannel.h"
 
-#include <pointerToArray.h>
-#include <pta_float.h>
+#include "pointerToArray.h"
+#include "pta_float.h"
+#include "compose_matrix.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AnimChannelMatrixXfmTable
@@ -59,13 +60,7 @@ protected:
   static int get_table_index(char table_id);
   INLINE static float get_default_value(int table_index);
 
-  enum { num_tables = 9 };
-
-  CPTA_float _tables[num_tables];
-
-private:
-  static const char _table_ids[num_tables];
-  static const float _default_values[num_tables];
+  CPTA_float _tables[num_matrix_components];
 
 public:
   static void register_with_read_factory(void);
