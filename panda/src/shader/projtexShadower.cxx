@@ -18,22 +18,22 @@
 #include "projtexShadower.h"
 #include "config_shader.h"
 
-#include <light.h>
-#include <spotlight.h>
-#include <renderBuffer.h>
-#include <transformTransition.h>
-#include <lightTransition.h>
-#include <textureTransition.h>
-#include <colorBlendTransition.h>
-#include <colorTransition.h>
-#include <depthTestTransition.h>
-#include <depthWriteTransition.h>
-#include <polygonOffsetTransition.h>
-#include <get_rel_pos.h>
-#include <dftraverser.h>
-#include <displayRegion.h>
-#include <graphicsWindow.h>
-#include <directRenderTraverser.h>
+#include "light.h"
+#include "spotlight.h"
+#include "renderBuffer.h"
+#include "transformTransition.h"
+#include "lightTransition.h"
+#include "textureTransition.h"
+#include "colorBlendTransition.h"
+#include "colorTransition.h"
+#include "depthTestTransition.h"
+#include "depthWriteTransition.h"
+#include "polygonOffsetTransition.h"
+#include "get_rel_pos.h"
+#include "dftraverser.h"
+#include "displayRegion.h"
+#include "graphicsWindow.h"
+#include "directRenderTraverser.h"
 
 ////////////////////////////////////////////////////////////////////
 // Static variables
@@ -129,8 +129,9 @@ pre_apply(Node *node, const AllAttributesWrapper &init_state,
   // Compute an approximation for the shadow color
   Colorf diffuse = light->get_color();
   Colorf shadow_color;
-  for (int i = 0; i < 4; i++)
+  for (int i = 0; i < 4; i++) {
     shadow_color[i] = 1.0 / ((diffuse[i] + 1) * num_lights);
+  }
 
   nassertv(node != (Node *)NULL && gsg != (GraphicsStateGuardian *)NULL);
 
