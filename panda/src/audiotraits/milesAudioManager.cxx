@@ -97,7 +97,7 @@ MilesAudioManager() {
   _cache_limit = audio_cache_limit;
   _is_valid = true;
   _bHasMidiSounds = false;
-  if (!_active_managers) {
+  if (_active_managers==0) {
     S32 use_digital=(audio_play_wave || audio_play_mp3)?1:0;
     S32 use_MIDI=(audio_play_midi)?1:0;
     if (audio_play_midi && audio_software_midi) {
@@ -184,7 +184,7 @@ MilesAudioManager::
   clear_cache();
   --_active_managers;
   audio_debug("  _active_managers="<<_active_managers);
-  if (!_active_managers) {
+  if (_active_managers==0) {
     if (audio_software_midi) {
       HDLSDEVICE dls;
       AIL_quick_handles(0, 0, &dls);
@@ -491,13 +491,19 @@ stop_all_sounds(void) {
 
 void MilesAudioManager::
 forceMidiReset(void) {
+    if(!miles_audio_force_midi_reset) {
+        audio_debug("MilesAudioManager::skipping forceMidiReset");  
+        return;
+    }
+
     audio_debug("MilesAudioManager::ForceMidiReset");
-    
+
     // sometimes Miles seems to leave midi notes hanging, even after stop is called,
     // so perform an explicit reset using winMM.dll calls, just to ensure silence.
     HMDIDRIVER hMid=NULL;
     AIL_quick_handles(0, &hMid, 0);
     if ((hMid!=NULL) && (hMid->deviceid != MIDI_NULL_DRIVER) && (hMid->hMidiOut != NULL)) {
+        audio_debug("MilesAudioManager::calling midiOutReset");
         midiOutReset(hMid->hMidiOut);
     }
 }

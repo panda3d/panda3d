@@ -28,6 +28,8 @@
 ConfigureDecl(config_milesAudio, EXPCL_MILES_AUDIO, EXPTP_MILES_AUDIO);
 NotifyCategoryDecl(milesAudio, EXPCL_MILES_AUDIO, EXPTP_MILES_AUDIO);
 
+extern bool miles_audio_force_midi_reset;
+
 extern EXPCL_MILES_AUDIO void init_libMilesAudio();
 
 #endif //]
