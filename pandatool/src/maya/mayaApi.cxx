@@ -196,7 +196,7 @@ open_api(string program_name) {
         << "This program was compiled using Maya version " << compiled_version
         << ", but you are now running it with Maya version "
         << simple_runtime_version
-        << ".  The program may crash or produce incorrect results.\n";
+        << ".  The program may crash or produce incorrect results.\n\n";
     }
   }
 
