@@ -186,3 +186,8 @@ a           auto position snap point to selected object
 j           move selected object to snap point
 shift-s     place suit point
 shift-c     place battle cell
+
+# ROBOT TOON MANAGER
+f9          take screenshot
+f10         place new random robot toon
+f11         toggle visibility of render2d
