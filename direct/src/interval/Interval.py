@@ -143,7 +143,13 @@ class Interval(DirectObject):
             	self.setT(te)
             return Task.cont
         else:
-	    self.setT(self.endTime)
+            te = self.endTime
+            # If first call, init intervals
+	    if (self.firstTime):
+		self.setT(te, event = IVAL_INIT)
+		self.firstTime = 0
+	    else:
+                self.setT(te)
             messenger.send(self.name + "-loop")
             return Task.done
 
