@@ -30,4 +30,6 @@ void dcyywarning(const string &msg);
 
 int dcyylex();
 
+// we always read files
+#define YY_NEVER_INTERACTIVE 1
 #endif

@@ -40,4 +40,7 @@ void eggyywarning(ostringstream &strm);
 
 int eggyylex();
 
+// always read from files
+#define YY_NEVER_INTERACTIVE 1
+
 #endif
