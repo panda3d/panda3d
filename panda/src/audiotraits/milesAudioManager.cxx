@@ -519,13 +519,12 @@ get_active() {
 //  Description: Combine base\\subKeyname\\keyName to get
 //               'result' from the Windows registry.
 ////////////////////////////////////////////////////////////////////
-void MilesAudioManager::
+bool MilesAudioManager::
 get_registry_entry(HKEY base, const char* subKeyName,
     const char* keyName, string& result) {
-  // Create a key to access the registry:
+  // Open the key to access the registry:
   HKEY key;
-  long r=RegCreateKeyEx(base, subKeyName, 0, "",
-      REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &key, NULL);
+  long r=RegOpenKeyEx(base, subKeyName, 0, KEY_QUERY_VALUE, &key);
   if (r==ERROR_SUCCESS) {
     DWORD len=0;
     // Read the size of the value at keyName:
@@ -549,13 +548,15 @@ get_registry_entry(HKEY base, const char* subKeyName,
         } else if (type==REG_SZ) {
           result=src;
         } else {
-          audio_error("MilesAudioManager::get_gm_file_path() Unknown reg key type.");
+          audio_error("MilesAudioManager::get_reg_entry(): Unknown key type.");
         }
       }
       delete [] src;
     }
     RegCloseKey(key);
   }
+
+  return (r==ERROR_SUCCESS);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -565,8 +566,19 @@ get_registry_entry(HKEY base, const char* subKeyName,
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
 get_gm_file_path(string& result) {
-  get_registry_entry(HKEY_LOCAL_MACHINE,
-      "SOFTWARE\\Microsoft\\DirectMusic", "GMFilePath", result);
+  if(!get_registry_entry(HKEY_LOCAL_MACHINE,"SOFTWARE\\Microsoft\\DirectMusic", "GMFilePath", result)) {
+          const char *pDefaultGMLoc="%windir%\\system32\\drivers\\gm.dls";
+          // Find the size of the expanded string:
+          DWORD destSize=ExpandEnvironmentStrings(pDefaultGMLoc, 0, 0);
+          // Get a destination buffer of that size:
+          char* dest = new char[destSize];
+          // Do the expansion:
+          ExpandEnvironmentStrings(pDefaultGMLoc, dest, destSize);
+          // Propagate the result:
+          result=dest;
+          delete [] dest;
+  }
+
   audio_debug("MilesAudioManager::get_gm_file_path() result out=\""<<result<<"\"");
 }
 

@@ -83,7 +83,7 @@ private:
   void uncache_a_sound();
 
   // utility function that should be moved to another class:
-  void get_registry_entry(HKEY base, 
+  bool get_registry_entry(HKEY base, 
                           const char* subKeyName, 
                           const char* keyName, 
                           string& result);
