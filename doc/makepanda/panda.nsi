@@ -12,8 +12,8 @@
 ;   INSTALLDIR    - where to install the program                (ie, "C:\Panda3D-VERSION")
 ;   PPGAME        - only if making a prepackaged game.          (ie, "Airblade")
 
-!define PANDA ..\..\built
-!define PSOURCE ..\..
+!define PANDA ..\built
+!define PSOURCE ..
 
 ; Use the Modern UI
 !include "MUI.nsh"
@@ -22,7 +22,7 @@
 
 Name "${FULLNAME}"
 InstallDir "${INSTALLDIR}"
-OutFile "..\..\nsis-output.exe"
+OutFile "..\nsis-output.exe"
 
 SetCompress auto
 SetCompressor ${COMPRESSOR}
@@ -67,7 +67,8 @@ Section "${FULLNAME}" SecCore
         File /r /x CVS /x Opt?-Win32 ${PSOURCE}\direct\*.py
         File ${PANDA}\direct\__init__.py
         SetOutPath $INSTDIR\pandac
-        File /r ${PANDA}\pandac\*
+        File /r ${PANDA}\pandac\*.py
+        File /r ${PANDA}\pandac\*.pyz
         SetOutPath $INSTDIR\python
         File /r /x CVS /x *.pyc ${PANDA}\python\*
 
@@ -81,10 +82,12 @@ Section "${FULLNAME}" SecCore
             SetOutpath $INSTDIR\${PPGAME}
             File /r ${PSOURCE}\${PPGAME}\*
             SetOutPath $INSTDIR\${PPGAME}
-            CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\${FULLNAME}.lnk" "$INSTDIR\bin\ppython.exe" "${PPGAME}.py" "$INSTDIR\bin\ppython.exe" 0 "" "" "${FULLNAME}"
+            CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\${FULLNAME}.lnk" "$INSTDIR\bin\ppython.exe" "${PPGAME}.py" "$INSTDIR\bin\ppython.exe" 0 SW_SHOWMINIMIZED "" "${FULLNAME}"
 
         !else
 
+            SetOutPath $INSTDIR\pandac\input
+            File /r ${PANDA}\pandac\input\*
             SetOutPath $INSTDIR\bin
             File /r ${PANDA}\bin\*.exe
             SetOutPath $INSTDIR

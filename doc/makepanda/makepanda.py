@@ -6230,7 +6230,7 @@ if (sys.platform == "win32"):
             def4 = '/DINSTALLDIR="'   + installdir   + '" '
             def5 = ''
             if (ppgame): def5 = '/DPPGAME="' + ppgame + '" '
-            oscmd("thirdparty/win-nsis/makensis.exe /V2 "+def0+def1+def2+def3+def4+def5+" thirdparty/win-nsis/panda.nsi")
+            oscmd("thirdparty/win-nsis/makensis.exe /V2 "+def0+def1+def2+def3+def4+def5+" makepanda/panda.nsi")
             os.rename("nsis-output.exe", file)
 
     if (INSTALLER!=0):
@@ -6242,7 +6242,7 @@ if (sys.platform == "win32"):
             sys.exit("No such directory "+PPGAME)
         if (os.path.exists(os.path.join(PPGAME,PPGAME+".py"))==0):
             sys.exit("No such file "+PPGAME+"/"+PPGAME+".py")
-        MakeInstaller(PPGAME+"-"+VERSION+".exe", PPGAME, PPGAME,
+        MakeInstaller(PPGAME+"-"+VERSION+".exe", PPGAME+" "+VERSION, PPGAME+" "+VERSION,
                       PPGAME+" "+VERSION, "C:\\"+PPGAME+"-"+VERSION, PPGAME)
 
 
