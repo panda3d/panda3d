@@ -7,7 +7,7 @@
     audio grutil text tform graph linmath event putil gobj \
     mathutil sgraph sgraphutil
 
-//  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 
   #define SOURCES  \
     config_pgui.h \
@@ -20,9 +20,8 @@
     pgMouseWatcherRegion.I pgMouseWatcherRegion.h \
     pgTop.I pgTop.h \
     pgWaitBar.I pgWaitBar.h
-     
-//  #define INCLUDED_SOURCES  \
-  #define SOURCES $[SOURCES] \
+    
+  #define INCLUDED_SOURCES  \
     config_pgui.cxx \
     pgButton.cxx \
     pgEntry.cxx \
