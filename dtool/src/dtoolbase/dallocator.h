@@ -36,7 +36,7 @@
 //               within the MemoryUsage class itself.
 ////////////////////////////////////////////////////////////////////
 
-#ifdef GCC_STYLE_ALLOCATOR
+#ifdef OLD_STYLE_ALLOCATOR
 // Early versions of gcc used its own kind of allocator, somewhat
 // different from the STL standard.
 
@@ -49,7 +49,7 @@ public:
 #endif  // NDEBUG
 };
 
-#else  // GCC_STYLE_ALLOCATOR
+#else  // OLD_STYLE_ALLOCATOR
 
 template<class Type>
 class dallocator : public allocator<Type> {
@@ -60,7 +60,7 @@ public:
   INLINE void deallocate(void *p, size_type n);
 #endif  // NDEBUG
 };
-#endif  // GCC_STYLE_ALLOCATOR
+#endif  // OLD_STYLE_ALLOCATOR
 
 #include "dallocator.T"
 

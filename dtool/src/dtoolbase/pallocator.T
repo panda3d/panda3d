@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifdef GCC_STYLE_ALLOCATOR
+#ifdef OLD_STYLE_ALLOCATOR
 
 #ifndef NDEBUG
 template<class Type>
@@ -32,7 +32,7 @@ deallocate(void *p, size_t) {
 }
 #endif  // NDEBUG
 
-#else  // GCC_STYLE_ALLOCATOR
+#else  // OLD_STYLE_ALLOCATOR
 
 #ifndef NDEBUG
 template<class Type>
@@ -49,4 +49,4 @@ deallocate(void *p, allocator<Type>::size_type) {
 }
 #endif  // NDEBUG
 
-#endif  // GCC_STYLE_ALLOCATOR
+#endif  // OLD_STYLE_ALLOCATOR

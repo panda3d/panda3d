@@ -184,8 +184,8 @@ $[cdefine HAVE_RTTI]
 /* Must global operator new and delete functions throw exceptions? */
 $[cdefine GLOBAL_OPERATOR_NEW_EXCEPTIONS]
 
-/* Do we expect the old gcc custom STL allocator? */
-$[cdefine GCC_STYLE_ALLOCATOR]
+/* Do we expect the old style STL allocator? */
+$[cdefine OLD_STYLE_ALLOCATOR]
 
 #end dtool_config.h
 

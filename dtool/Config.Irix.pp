@@ -96,3 +96,6 @@
 
 // Must global operator new and delete functions throw exceptions?
 #define GLOBAL_OPERATOR_NEW_EXCEPTIONS
+
+// Do we expect the old STL allocator?
+#define OLD_STYLE_ALLOCATOR 1
