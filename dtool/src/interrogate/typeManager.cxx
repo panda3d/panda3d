@@ -34,6 +34,11 @@ resolve_type(CPPType *type, CPPScope *scope) {
 
   type = type->resolve_type(scope, &parser);
   string name = type->get_local_name(&parser);
+  if (name.empty()) {
+    // Don't try to resolve unnamed types.
+    return type;
+  }
+
   CPPType *new_type = parser.parse_type(name);
   if (new_type == (CPPType *)NULL) {
     nout << "Type " << name << " is unknown to parser.\n";

@@ -1842,6 +1842,12 @@ define_wrapped_type(InterrogateType &itype, CPPConstType *cpptype) {
 void InterrogateBuilder::
 define_struct_type(InterrogateType &itype, CPPStructType *cpptype, 
                    bool forced) {
+  if (cpptype->get_simple_name().empty()) {
+    // If the type has no name, forget it.  We don't export anonymous
+    // types.
+    return;
+  }
+
   cpptype = TypeManager::resolve_type(cpptype)->as_struct_type();
   assert(cpptype != (CPPStructType *)NULL);
   cpptype->check_virtual();

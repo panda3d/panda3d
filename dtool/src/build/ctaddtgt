@@ -45,16 +45,16 @@ while ( @arglist != () ) {
    require "$tool/inc/ctinstmake.pl" ;
    require "$tool/inc/ctcm.pl" ;
 
-   $item = "$projroot/src/all/$pkgname" ;
+   $item = "$projroot/src/$pkgname" ;
    if ( ! &CTCMCheckout( $item, $projname, $spec )) {
        die "Could not checkout package '" . $pkgname . "'\n" ;
    }
-   $item = "$projroot/src/all/$pkgname/Makefile" ;
+   $item = "$projroot/src/$pkgname/Makefile" ;
    if ( ! &CTCMCheckout( $item, $projname, $spec )) {
        die "Could not checkout package '" . $pkgname . "' Makefile\n" ;
    }
 
-   $curdir = "$projroot/src/all/$pkgname" ;
+   $curdir = "$projroot/src/$pkgname" ;
    # install target makefile, and update package makefile
    if ( $type eq "bin" ) {
       &CTInstallMake( "$tool/lib/Makefile.bin.template",
