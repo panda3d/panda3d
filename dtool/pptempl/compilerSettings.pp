@@ -112,7 +112,7 @@
   #define COMPILER icl
   #define LINKER xilink
   #define LIBBER xilib
-  #define COMMONFLAGS /Gi- /Qwd985
+  #define COMMONFLAGS /DHAVE_DINKUM /Gi- /Qwd985 /Qvc7 /G6 
   
   // Note: Zi cannot be used on multiproc builds with precomp hdrs, Z7 must be used instead
   #defer DEBUGPDBFLAGS /Zi /Qinline_debug_info /Fd"$[osfilename $[target:%.obj=%.pdb]]" 
@@ -134,8 +134,12 @@
   #define LDFLAGS_OPT3 /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF
   #define LDFLAGS_OPT4 /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF $[LDFLAGS_OPT4]
   
-//  #define OPTFLAGS /O3 /G6 /Qvc6 /Qipo /QaxW /Qvec_report1 
-  #define OPTFLAGS /O3 /G6 /Qvc6 /Qip /QIfist
+//  #define OPTFLAGS /O3 /Qipo /QaxW /Qvec_report1 
+  #define OPTFLAGS /O3 /Qip
+  
+  // use "unsafe" QIfist flt->int rounding only if FAST_FLT_TO_INT is defined
+  #define OPTFLAGS $[OPTFLAGS] $[if $[ne $[FAST_FLT_TO_INT],], /QIfist,]  
+  
   #define OPT1FLAGS /GZ /Od
   // We assume the Intel compiler installation dir is mounted as /ia32.
   #define EXTRA_LIBPATH /ia32/lib
@@ -146,7 +150,7 @@
   #endif   
   
   // Note: all Opts will link w/debug info now 
-  #define LINKER_FLAGS /DEBUG /DEBUGTYPE:CV $[PROFILE_FLAG] /MAP $[MAPINFOFLAGS] /fixed:no /incremental:no /WARN:3
+  #define LINKER_FLAGS /DEBUG /DEBUGTYPE:CV $[PROFILE_FLAG] /MAP $[MAPINFOFLAGS] /fixed:no /incremental:no
   
 #elif $[eq $[USE_COMPILER], BOUNDS] // NuMega BoundsChecker
   #define COMPILER nmcl
