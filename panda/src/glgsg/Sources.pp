@@ -9,13 +9,20 @@
   #define LOCAL_LIBS \
     cull gsgmisc gsgbase gobj sgattrib sgraphutil graph display light \
     putil linmath sgraph mathutil pnmimage
+    
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
 
   #define SOURCES \
-    config_glgsg.cxx config_glgsg.h glGraphicsStateGuardian.I \
-    glGraphicsStateGuardian.cxx glGraphicsStateGuardian.h \
-    glSavedFrameBuffer.I glSavedFrameBuffer.cxx glSavedFrameBuffer.h \
-    glTextureContext.I glGeomNodeContext.I glGeomNodeContext.cxx \
-    glGeomNodeContext.h glTextureContext.cxx glTextureContext.h
+     glGraphicsStateGuardian.cxx \
+     config_glgsg.h glGraphicsStateGuardian.I \
+     glGraphicsStateGuardian.h glSavedFrameBuffer.I \
+     glSavedFrameBuffer.h glTextureContext.I \
+     glGeomNodeContext.I glGeomNodeContext.h  glTextureContext.h
+
+  #define INCLUDED_SOURCES \
+     config_glgsg.cxx glSavedFrameBuffer.cxx \
+     glGeomNodeContext.cxx glTextureContext.cxx 
+
 
   #define INSTALL_HEADERS \
     config_glgsg.h glGraphicsStateGuardian.I glGraphicsStateGuardian.h
