@@ -20,7 +20,15 @@
 #define PRIMENUMBERGENERATOR_H
 
 #include "dcbase.h"
+
+#ifdef WITHIN_PANDA
+// We only have the vector_int header file if we're compiling this
+// package within the normal Panda environment.
 #include "vector_int.h"
+
+#else
+typedef vector<int> vector_int;
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PrimeNumberGenerator

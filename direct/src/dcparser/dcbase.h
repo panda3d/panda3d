@@ -37,7 +37,7 @@
 #include "pvector.h"
 #include "pmap.h"
 
-#else
+#else  // WITHIN_PANDA
 
 #ifdef WIN32
 /* C4786: 255 char debug symbols */
