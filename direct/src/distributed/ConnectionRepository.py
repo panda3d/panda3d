@@ -280,9 +280,9 @@ class ConnectionRepository(DirectObject.DirectObject):
         self.rsUpdateObjs = {}
 
     def send(self, datagram):
-        if self.notify.getDebug():
-            print "ConnectionRepository sending datagram:"
-            datagram.dumpHex(ostream)
+        #if self.notify.getDebug():
+        #    print "ConnectionRepository sending datagram:"
+        #    datagram.dumpHex(ostream)
 
         if not self.tcpConn:
             self.notify.warning("Unable to send message after connection is closed.")
