@@ -20,8 +20,10 @@
 #define XPARSERDEFS_H
 
 #include "pandatoolbase.h"
-
 #include "windowsGuid.h"
+#include "xFileDataDef.h"
+#include "pta_int.h"
+#include "pta_double.h"
 
 class XFile;
 class XFileNode;
@@ -40,12 +42,15 @@ int xyyparse();
 class XTokenType {
 public:
   union U {
-    int s_int;
-    double real;
+    int number;
     XFileNode *node;
+    XFileDataDef::Type primitive_type;
+    int separator_token;  // This is filled in for double_list and int_list.
   } u;
   string str;
   WindowsGuid guid;
+  PTA_double double_list;
+  PTA_int int_list;
 };
 
 // The yacc-generated code expects to use the symbol 'YYSTYPE' to

@@ -10,6 +10,7 @@
 #include "xParserDefs.h"
 #include "xParser.h"
 #include "indent.h"
+#include "string_utils.h"
 #include "notify.h"
 
 static int yyinput(void);        // declared by flex.
@@ -340,6 +341,42 @@ scan_guid_string() {
   return result;
 }
 
+// Parses the text into a list of integers and returns them.
+static PTA_int
+parse_int_list(const string &text, const string &delimiter) {
+  PTA_int result;
+
+  vector_string words;
+  tokenize(text, words, delimiter);
+
+  vector_string::const_iterator wi;
+  for (wi = words.begin(); wi != words.end(); ++wi) {
+    int number = 0;
+    string_to_int(*wi, number);
+    result.push_back(number);
+  }
+
+  return result;
+}
+
+// Parses the text into a list of doubles and returns them.
+static PTA_double
+parse_double_list(const string &text, const string &delimiter) {
+  PTA_double result;
+
+  vector_string words;
+  tokenize(text, words, delimiter);
+
+  vector_string::const_iterator wi;
+  for (wi = words.begin(); wi != words.end(); ++wi) {
+    double number = 0;
+    string_to_double(*wi, number);
+    result.push_back(number);
+  }
+
+  return result;
+}
+
 
 
 // accept() is called below as each piece is pulled off and
@@ -351,7 +388,6 @@ inline void accept() {
 %}
 
 INTEGERNUM           ([+-]?([0-9]+))
-UNSIGNED_HEXNUM      (0x[0-9a-fA-F]*)
 REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
 
 %%
@@ -388,128 +424,161 @@ REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   accept();
 }
 
+"{" {
+  accept();
+  return TOKEN_OBRACE;
+}
+
+"}" {
+  accept();
+  return TOKEN_CBRACE;
+}
+
+"[" {
+  accept();
+  return TOKEN_OBRACKET;
+}
+
+"]" {
+  accept();
+  return TOKEN_CBRACKET;
+}
+
+"." {
+  accept();
+  return TOKEN_DOT;
+}
+
+"," {
+  accept();
+  return TOKEN_COMMA;
+}
+
+";" {
+  accept();
+  return TOKEN_SEMICOLON;
+}
 
 "array" {
   accept();
-  return KW_ARRAY;
-}
-
-"binary" {
-  accept();
-  return KW_BINARY;
+  return TOKEN_ARRAY;
 }
 
 "byte" {
   accept();
-  return KW_BYTE;
+  return TOKEN_UCHAR;
 }
 
 "char" {
   accept();
-  return KW_CHAR;
+  return TOKEN_CHAR;
 }
 
 "cstring" {
   accept();
-  return KW_CSTRING;
+  return TOKEN_CSTRING;
 }
 
 "double" {
   accept();
-  return KW_DOUBLE;
+  return TOKEN_DOUBLE;
 }
 
 "dword" {
   accept();
-  return KW_DWORD;
+  return TOKEN_DWORD;
+}
+
+"sdword" {
+  accept();
+  return TOKEN_SDWORD;
 }
 
 "float" {
   accept();
-  return KW_FLOAT;
+  return TOKEN_FLOAT;
 }
 
 "string" {
   accept();
-  return KW_STRING;
+  return TOKEN_LPSTR;
 }
 
 "template" {
   accept();
-  return KW_TEMPLATE;
+  return TOKEN_TEMPLATE;
 }
 
 "uchar" {
   accept();
-  return KW_UCHAR;
+  return TOKEN_UCHAR;
 }
 
 "unicode" {
   accept();
-  return KW_UNICODE;
+  return TOKEN_UNICODE;
+}
+
+"sword" {
+  accept();
+  return TOKEN_SWORD;
 }
 
 "word" {
   accept();
-  return KW_WORD;
+  return TOKEN_WORD;
 }
 
 {INTEGERNUM} { 
   // A signed or unsigned integer number.
   accept();
-  xyylval.u.s_int = atol(xyytext); 
+  xyylval.u.number = atol(xyytext); 
   xyylval.str = yytext;
 
-  return INTEGER;
+  return TOKEN_INTEGER;
 }
 
-{UNSIGNED_HEXNUM} {
-  // A hexadecimal integer number.
-  accept(); 
+({INTEGERNUM};)+ { 
+  // An integer as part of a semicolon-delimited list.
+  accept();
+  xyylval.int_list = parse_int_list(xyytext, ";");
+  xyylval.u.separator_token = TOKEN_SEMICOLON;
 
-  // As above, we'll decode the hex string by hand.
-  xyylval.str = xyytext;
-  xyylval.u.s_int = 0;
-  const char *p = xyytext + 2;
-  while (*p != '\0') {
-    int next_value = xyylval.u.s_int * 16;
-    if (next_value < xyylval.u.s_int) {
-      xyyerror("Number out of range.");
-      xyylval.u.s_int = 1;
-      return INTEGER;
-    }
-
-    if (isalpha(*p)) {
-      xyylval.u.s_int = next_value + (tolower(*p) - 'a' + 10);
-    } else {
-      xyylval.u.s_int = next_value + (*p - '0');
-    }
-    ++p;
-  }
-
-  return INTEGER; 
+  return TOKEN_INTEGER_LIST;
 }
 
-{REALNUM} { 
-  // A floating-point number.
+({REALNUM};)+ { 
+  // A floating-point number as part of a semicolon-delimited list.
   accept(); 
-  xyylval.u.real = atof(xyytext); 
-  xyylval.str = xyytext;
-  return REAL; 
+  xyylval.double_list = parse_double_list(xyytext, ";");
+  xyylval.u.separator_token = TOKEN_SEMICOLON;
+
+  return TOKEN_REALNUM_LIST;
+}
+
+({INTEGERNUM},)+ { 
+  // An integer as part of a semicolon-delimited list.
+  accept();
+  xyylval.int_list = parse_int_list(xyytext, ",");
+  xyylval.u.separator_token = TOKEN_COMMA;
+
+  return TOKEN_INTEGER_LIST;
+}
+
+({REALNUM},)+ { 
+  // A floating-point number as part of a semicolon-delimited list.
+  accept(); 
+  xyylval.double_list = parse_double_list(xyytext, ",");
+  xyylval.u.separator_token = TOKEN_COMMA;
+
+  return TOKEN_REALNUM_LIST;
 }
 
 ["] {
   // Quoted string.
   accept();
   xyylval.str = scan_quoted_string('"');
-  return STRING;
-}
-
-['] {
-  // Single-quoted string.
-  accept();
-  xyylval.str = scan_quoted_string('\'');
-  return STRING;
+  return TOKEN_STRING;
 }
 
 [<] {
@@ -521,20 +590,14 @@ REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
     xyyerror("Malformed GUID.");
   }
 
-  return WINDOWS_GUID;
+  return TOKEN_GUID;
 }
 
 [A-Za-z_-][A-Za-z_0-9-]* { 
   // Identifier.
   accept();
   xyylval.str = xyytext;
-  return IDENTIFIER;
+  return TOKEN_NAME;
 }
 
-
-. {
-  // Send any other printable character as itself.
-  accept(); 
-  return xyytext[0];
-}
   

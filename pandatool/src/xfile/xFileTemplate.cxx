@@ -53,7 +53,7 @@ XFileTemplate::
 void XFileTemplate::
 clear() {
   XFileNode::clear();
-  _restrictions.clear();
+  _options.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -76,16 +76,16 @@ write_text(ostream &out, int indent_level) const {
     indent(out, indent_level + 2)
       << "[ ... ]\n";
 
-  } else if (!_restrictions.empty()) {
+  } else if (!_options.empty()) {
     // A restricted template
     indent(out, indent_level + 2);
 
     char delimiter = '[';
-    Restrictions::const_iterator ri;
-    for (ri = _restrictions.begin(); ri != _restrictions.end(); ++ri) {
-      XFileTemplate *restriction = (*ri);
+    Options::const_iterator ri;
+    for (ri = _options.begin(); ri != _options.end(); ++ri) {
+      XFileTemplate *option = (*ri);
       out << delimiter << " " 
-          << restriction->get_name() << " <" << restriction->get_guid()
+          << option->get_name() << " <" << option->get_guid()
           << ">";
       delimiter = ',';
     }

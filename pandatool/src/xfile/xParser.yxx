@@ -3,6 +3,12 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
+// The grammar defined in this file is taken more-or-less from the
+// Microsoft DirectX File Format Specification document, version 1.13.
+// The document actually describes a slightly incomplete and incorrect
+// grammar, so small changes had to be made, but an attempt was made
+// to be as faithful as possible to the intention of the spec.
+
 %{
 #include "xLexerDefs.h"
 #include "xParserDefs.h"
@@ -45,114 +51,119 @@ x_cleanup_parser() {
 
 %}
 
-%token <u.s_int> INTEGER
-%token <u.real> REAL
-%token <str> STRING IDENTIFIER
-%token <guid> WINDOWS_GUID
+// These token values are taken from the DirectX spec; the particular
+// numeric values are useful when reading an .x file in binary mode
+// (which basically just streams the tokens retrieved by the lexer).
 
-%token KW_ARRAY 
-%token KW_BINARY
-%token KW_BYTE
-%token KW_CHAR
-%token KW_CSTRING
-%token KW_DOUBLE
-%token KW_DWORD
-%token KW_FLOAT
-%token KW_STRING
-%token KW_TEMPLATE
-%token KW_UCHAR
-%token KW_UNICODE
-%token KW_WORD
+%token <str> TOKEN_NAME 1
+%token <str> TOKEN_STRING 2
+%token <u.number> TOKEN_INTEGER 3
+%token <guid> TOKEN_GUID 5
+%token <int_list> TOKEN_INTEGER_LIST 6
+%token <double_list> TOKEN_REALNUM_LIST 7
 
-%type <u.node> xtemplate
-%type <u.node> data_object
-%type <str> optional_identifier
+%token TOKEN_OBRACE 10
+%token TOKEN_CBRACE 11
+%token TOKEN_OPAREN 12
+%token TOKEN_CPAREN 13
+%token TOKEN_OBRACKET 14
+%token TOKEN_CBRACKET 15
+%token TOKEN_OANGLE 16
+%token TOKEN_CANGLE 17
+%token TOKEN_DOT 18
+%token TOKEN_COMMA 19
+%token TOKEN_SEMICOLON 20
+%token TOKEN_TEMPLATE 31
+%token TOKEN_WORD 40
+%token TOKEN_DWORD 41
+%token TOKEN_FLOAT 42
+%token TOKEN_DOUBLE 43
+%token TOKEN_CHAR 44
+%token TOKEN_UCHAR 45
+%token TOKEN_SWORD 46
+%token TOKEN_SDWORD 47
+%token TOKEN_VOID 48
+%token TOKEN_LPSTR 49
+%token TOKEN_UNICODE 50
+%token TOKEN_CSTRING 51
+%token TOKEN_ARRAY 52
+
+%type <u.node> template
+%type <u.node> object
+%type <u.primitive_type> primitive_type
+%type <int_list> integer_list
+%type <double_list> realnum_list
+%type <str> name
+%type <str> optional_name
+%type <guid> class_id
+%type <guid> optional_class_id
 
 %%
 
 xfile:
         empty
-        | xfile xtemplate
-        | xfile data_object
+        | xfile template
+        | xfile object
         ;
 
-xtemplate:
-	KW_TEMPLATE IDENTIFIER '{' WINDOWS_GUID
+template:
+	 TOKEN_TEMPLATE name TOKEN_OBRACE class_id
 {
   $$ = current_node;
   XFileTemplate *templ = new XFileTemplate($2, $4);
   current_node->add_child(templ);
   current_node = templ;
 }
-	template_members template_restrictions '}'
+	 template_parts TOKEN_CBRACE
 {
   $$ = current_node;
   current_node = $<u.node>5;
 }
-	;
+         ;
 
-template_members:
-	empty
-	| template_members template_member ';'
-	;
+template_parts: 
+         template_members_part TOKEN_OBRACKET template_option_info TOKEN_CBRACKET
+         | template_members_list
+         ;
 
-template_member:
-        data_def
-        | KW_ARRAY data_def array_dimensions
-	;
+template_members_part: 
+         empty
+         | template_members_list
+         ;
 
-data_def:
-        KW_WORD optional_identifier
+template_option_info: 
+         ellipsis
 {
-  current_data_def = new XFileDataDef(XFileDataDef::T_word, $2);
+  DCAST(XFileTemplate, current_node)->set_open(true);
+}
+         | template_option_list
+         ;
+                       
+template_members_list:
+         template_members
+         | template_members_list template_members
+         ;
+
+template_members: 
+         primitive
+         | array
+         | template_reference
+         ;
+
+primitive:
+         primitive_type optional_name TOKEN_SEMICOLON
+{
+  current_data_def = new XFileDataDef($1, $2);
   current_node->add_child(current_data_def);
 }
-	| KW_DWORD optional_identifier
-{
-  current_data_def = new XFileDataDef(XFileDataDef::T_dword, $2);
-  current_node->add_child(current_data_def);
-}
-	| KW_FLOAT optional_identifier
-{
-  current_data_def = new XFileDataDef(XFileDataDef::T_float, $2);
-  current_node->add_child(current_data_def);
-}
-	| KW_DOUBLE optional_identifier
-{
-  current_data_def = new XFileDataDef(XFileDataDef::T_double, $2);
-  current_node->add_child(current_data_def);
-}
-	| KW_CHAR optional_identifier
-{
-  current_data_def = new XFileDataDef(XFileDataDef::T_char, $2);
-  current_node->add_child(current_data_def);
-}
-	| KW_UCHAR optional_identifier
-{
-  current_data_def = new XFileDataDef(XFileDataDef::T_uchar, $2);
-  current_node->add_child(current_data_def);
-}
-	| KW_BYTE optional_identifier
-{
-  current_data_def = new XFileDataDef(XFileDataDef::T_byte, $2);
-  current_node->add_child(current_data_def);
-}
-	| KW_STRING optional_identifier
-{
-  current_data_def = new XFileDataDef(XFileDataDef::T_string, $2);
-  current_node->add_child(current_data_def);
-}
-	| KW_CSTRING optional_identifier
-{
-  current_data_def = new XFileDataDef(XFileDataDef::T_cstring, $2);
-  current_node->add_child(current_data_def);
-}
-	| KW_UNICODE optional_identifier
-{
-  current_data_def = new XFileDataDef(XFileDataDef::T_unicode, $2);
-  current_node->add_child(current_data_def);
-}
-	| IDENTIFIER optional_identifier
+         ;
+
+array: 
+         TOKEN_ARRAY array_data_type dimension_list TOKEN_SEMICOLON
+         ;
+
+template_reference: 
+         name optional_name TOKEN_SEMICOLON
 {
   XFileTemplate *xtemplate = x_file->find_template($1);
   if (xtemplate == (XFileTemplate *)NULL) {
@@ -162,58 +173,118 @@ data_def:
     current_node->add_child(current_data_def);
   }
 }
-	;
+         ;
 
-array_dimensions:
-	array_level
-	| array_dimensions array_level
-	;
+primitive_type:
+        TOKEN_WORD
+{
+  $$ = XFileDataDef::T_word;
+}
+        | TOKEN_DWORD
+{
+  $$ = XFileDataDef::T_dword;
+}
+        | TOKEN_FLOAT
+{
+  $$ = XFileDataDef::T_float;
+}
+        | TOKEN_DOUBLE
+{
+  $$ = XFileDataDef::T_double;
+}
+        | TOKEN_CHAR
+{
+  $$ = XFileDataDef::T_char;
+}
+        | TOKEN_UCHAR
+{
+  $$ = XFileDataDef::T_uchar;
+}
+        | TOKEN_SWORD
+{
+  $$ = XFileDataDef::T_sword;
+}
+        | TOKEN_SDWORD
+{
+  $$ = XFileDataDef::T_sdword;
+}
+        | TOKEN_LPSTR
+{
+  $$ = XFileDataDef::T_string;
+}
+        | TOKEN_UNICODE
+{
+  $$ = XFileDataDef::T_unicode;
+}
+        | TOKEN_CSTRING
+{
+  $$ = XFileDataDef::T_cstring;
+}
+        ;
 
-array_level:
-	'[' INTEGER ']'
+array_data_type:
+        primitive_type name
 {
-  current_data_def->add_array_def(XFileArrayDef($2));
+  current_data_def = new XFileDataDef($1, $2);
+  current_node->add_child(current_data_def);
 }
-	| '[' IDENTIFIER ']'
-{
-  XFileNode *data_def = current_node->find_child($2);
-  if (data_def == (XFileNode *)NULL) {
-    yyerror("Unknown identifier: " + $2);
-  } else {
-    current_data_def->add_array_def(XFileArrayDef(DCAST(XFileDataDef, data_def)));
-  }
-}
-	;
-
-template_restrictions:
-	empty
-	| '[' '.' '.' '.' ']'
-{
-  DCAST(XFileTemplate, current_node)->set_open(true);
-}
-        | '[' template_restriction_list ']'
-	;
-
-template_restriction_list:
-        template_restriction_element
-{
-}
-	| template_restriction_list ',' template_restriction_element
-{
-}
-	;
-
-template_restriction_element:
-	IDENTIFIER
+        | name name
 {
   XFileTemplate *xtemplate = x_file->find_template($1);
   if (xtemplate == (XFileTemplate *)NULL) {
     yyerror("Unknown template: " + $1);
   } else {
-    DCAST(XFileTemplate, current_node)->add_restriction(xtemplate);
+    current_data_def = new XFileDataDef(XFileDataDef::T_template, $2, xtemplate);
+    current_node->add_child(current_data_def);
   }
 }
-	| IDENTIFIER WINDOWS_GUID
+        ;
+
+dimension_list:
+        dimension
+        | dimension_list dimension
+        ;
+
+dimension:
+        TOKEN_OBRACKET dimension_size TOKEN_CBRACKET
+        ;
+
+dimension_size:
+        TOKEN_INTEGER
+{
+  current_data_def->add_array_def(XFileArrayDef($1));
+}
+        | name
+{
+  XFileNode *data_def = current_node->find_child($1);
+  if (data_def == (XFileNode *)NULL) {
+    yyerror("Unknown identifier: " + $1);
+  } else {
+    current_data_def->add_array_def(XFileArrayDef(DCAST(XFileDataDef, data_def)));
+  }
+}
+        ;
+
+template_option_list: 
+        template_option_part
+{
+}
+        | template_option_list template_option_part
+{
+}
+	;
+
+template_option_part:
+	name
+{
+  XFileTemplate *xtemplate = x_file->find_template($1);
+  if (xtemplate == (XFileTemplate *)NULL) {
+    yyerror("Unknown template: " + $1);
+  } else {
+    DCAST(XFileTemplate, current_node)->add_option(xtemplate);
+  }
+}
+	| name TOKEN_GUID
 {
   XFileTemplate *xtemplate = x_file->find_template($2);
   if (xtemplate == (XFileTemplate *)NULL) {
@@ -223,13 +294,41 @@ template_restriction_element:
       xyywarning("GUID identifies template " + xtemplate->get_name() +
                  ", not " + $1);
     }
-    DCAST(XFileTemplate, current_node)->add_restriction(xtemplate);
+    DCAST(XFileTemplate, current_node)->add_option(xtemplate);
   }
 }
-	;
+        ;
 
-data_object:
-	IDENTIFIER optional_identifier '{'
+name: 
+        TOKEN_NAME
+        ;
+
+optional_name:
+        empty
+{
+  $$ = string();
+}
+        | name
+        ;
+
+class_id:
+  	TOKEN_GUID
+        ;
+
+optional_class_id: 
+        empty
+{
+  $$ = WindowsGuid();
+}
+        | class_id
+        ;
+
+ellipsis:
+        TOKEN_DOT TOKEN_DOT TOKEN_DOT
+        ;
+
+object:
+        name optional_name TOKEN_OBRACE
 {
   XFileTemplate *xtemplate = x_file->find_template($1);
   $$ = current_node;
@@ -243,55 +342,59 @@ data_object:
     current_node = templ;
   }
 }
-	data_object_members '}'
+	optional_class_id data_parts_list TOKEN_CBRACE
 {
   $$ = current_node;
   current_node = $<u.node>4;
 }
 	;
 
+data_parts_list:
+        data_part
+        | data_parts_list data_part
+        ;
 
-data_object_members:
-	empty
-	| data_object_members data_object_member
-	;
+data_part:
+        data_reference
+{
+}
+	| object
+{
+}
+        | integer_list
+{
+}
+        | realnum_list
+{
+}
+	| string list_separator
+{
+}
+        | list_separator
+{
+}
+        ;
+        
+integer_list:
+	TOKEN_INTEGER_LIST
+        ;
 
-data_object_member:
-	data_object
-{
-}
-        | data_reference
-{
-}
-	| INTEGER
-{
-}
-	| REAL
-{
-}
-        | STRING
-{
-}
-        | ';'
-{
-}
-        | ','
-{
-}
+realnum_list:
+	TOKEN_REALNUM_LIST
+        ;
+
+string:
+	TOKEN_STRING
+        ;
+
+list_separator:
+	TOKEN_SEMICOLON
+	| TOKEN_COMMA
 	;
 
 data_reference:
-	'{' IDENTIFIER '}'
-	;
-
-optional_identifier:
-	empty
-{
-  $$ = string();
-}
-	| IDENTIFIER
-	;
+	TOKEN_OBRACE name optional_class_id TOKEN_CBRACE
+        ;
 
 empty:
         ;
-

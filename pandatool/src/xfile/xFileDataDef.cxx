@@ -92,8 +92,12 @@ write_text(ostream &out, int indent_level) const {
     out << "UCHAR";
     break;
 
-  case T_byte:
-    out << "BYTE";
+  case T_sword:
+    out << "SWORD";
+    break;
+
+  case T_sdword:
+    out << "SDWORD";
     break;
 
   case T_string:

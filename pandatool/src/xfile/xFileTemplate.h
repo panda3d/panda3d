@@ -43,16 +43,16 @@ public:
   INLINE void set_open(bool open);
   INLINE bool get_open() const;
 
-  INLINE void add_restriction(XFileTemplate *restriction);
-  INLINE int get_num_restrictions() const;
-  INLINE XFileTemplate *get_restriction(int n) const;
+  INLINE void add_option(XFileTemplate *option);
+  INLINE int get_num_options() const;
+  INLINE XFileTemplate *get_option(int n) const;
   
 private:
   WindowsGuid _guid;
   bool _open;
 
-  typedef pvector< PT(XFileTemplate) > Restrictions;
-  Restrictions _restrictions;
+  typedef pvector< PT(XFileTemplate) > Options;
+  Options _options;
   
 public:
   static TypeHandle get_class_type() {

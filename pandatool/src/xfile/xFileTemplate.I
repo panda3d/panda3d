@@ -32,7 +32,7 @@ get_guid() const {
 //       Access: Public
 //  Description: Sets whether the template is considered "open" or
 //               not.  If it is open (this flag is true), the set of
-//               restrictions is ignored and the instances of this
+//               options is ignored and the instances of this
 //               template may include any types of children.  If it is
 //               closed (false), only the named types may be added.
 ////////////////////////////////////////////////////////////////////
@@ -46,7 +46,7 @@ set_open(bool open) {
 //       Access: Public
 //  Description: Returns whether the template is considered "open" or
 //               not.  If it is open (this flag is true), the set of
-//               restrictions is ignored and the instances of this
+//               options is ignored and the instances of this
 //               template may include any types of children.  If it is
 //               closed (false), only the named types may be added.
 ////////////////////////////////////////////////////////////////////
@@ -56,36 +56,34 @@ get_open() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileTemplate::add_restriction
+//     Function: XFileTemplate::add_option
 //       Access: Public
 //  Description: Adds a new type to the list of allowable types of
-//               child nodes for an instance of this template.  The
-//               method is a little misnamed; we are actually removing
-//               a restriction by adding this type to the list.
+//               child nodes for an instance of this template.
 ////////////////////////////////////////////////////////////////////
 INLINE void XFileTemplate::
-add_restriction(XFileTemplate *restriction) {
-  _restrictions.push_back(restriction);
+add_option(XFileTemplate *option) {
+  _options.push_back(option);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileTemplate::get_num_restrictions
+//     Function: XFileTemplate::get_num_options
 //       Access: Public
-//  Description: Returns the number of templates on the restrictions
+//  Description: Returns the number of templates on the options
 //               list.
 ////////////////////////////////////////////////////////////////////
 INLINE int XFileTemplate::
-get_num_restrictions() const {
-  return _restrictions.size();
+get_num_options() const {
+  return _options.size();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileTemplate::get_restriction
+//     Function: XFileTemplate::get_option
 //       Access: Public
-//  Description: Returns the nth template on the restrictions list.
+//  Description: Returns the nth template on the options list.
 ////////////////////////////////////////////////////////////////////
 INLINE XFileTemplate *XFileTemplate::
-get_restriction(int n) const {
-  nassertr(n >= 0 && n < (int)_restrictions.size(), NULL);
-  return _restrictions[n];
+get_option(int n) const {
+  nassertr(n >= 0 && n < (int)_options.size(), NULL);
+  return _options[n];
 }
