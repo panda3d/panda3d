@@ -27,4 +27,5 @@
 #include "compose_matrix_src.cxx"
 
 
-
+const char * const matrix_components = "ijkhprxyz";
+const int num_matrix_components = 9;

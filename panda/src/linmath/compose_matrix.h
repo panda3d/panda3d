@@ -32,8 +32,9 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include <math.h>
+
 #include "lmatrix.h"
 #include "lvector3.h"
 #include "lvector2.h"
@@ -48,6 +49,12 @@
 
 #include "dblnames.h"
 #include "compose_matrix_src.h"
+
+// These define the standard one-letter names for the components in
+// the array-accepting forms of compose_matrix() and
+// decompose_matrix().
+EXPCL_PANDA extern const char * const matrix_components;
+EXPCL_PANDA extern const int num_matrix_components;
 
 #endif
 
