@@ -1274,10 +1274,6 @@ dx_setup()
        
        DX_DECLARE_CLEAN(DDCAPS,DDCaps);
        pDD->GetCaps(&DDCaps,NULL);
-       if((!(DDCaps.dwCaps2 & DDCAPS2_CANRENDERWINDOWED)) && !dx_full_screen) {
-        	  wdxdisplay_cat.fatal() << "wdxGraphicsWindow:: 3D HW cannot render windowed, exiting..." << endl;
-        	  exit(1);
-       }
 
       if (dx_full_screen) {
 		DWORD dwRenderWidth  = _props._xsize;
@@ -1426,9 +1422,21 @@ dx_setup()
 	      << "wdxGraphicsWindow::CreateFullscreenBuffers() - Can't get the backbuffer: result = " << ConvD3DErrorToString(hr) << endl;
 		  exit(1);
 	    }
+
+	    if( FAILED( hr = pBackDDSurf->Blt(NULL,NULL,NULL,DDBLT_COLORFILL | DDBLT_WAIT,&bltfx))) {
+		  wdxdisplay_cat.fatal()
+	      << "wdxGraphicsWindow:: Blt to Black of Back Surf failed! : result = " << ConvD3DErrorToString(hr) << endl;
+		  exit(1);
+	    }
 	  }	// end create full screen buffers
 
 	else  {			// CREATE WINDOWED BUFFERS
+
+        if(!(DDCaps.dwCaps2 & DDCAPS2_CANRENDERWINDOWED)) {
+               wdxdisplay_cat.fatal() << "wdxGraphicsWindow:: 3D HW cannot render windowed, exiting..." << endl;
+               exit(1);
+        }
+
         if(FAILED(hr = pDD->GetDisplayMode( &SurfaceDesc ))) {
 		  wdxdisplay_cat.fatal()
 	      << "wdxGraphicsWindow::GetDisplayMode failed result = " << ConvD3DErrorToString(hr) << endl;
@@ -1496,9 +1504,8 @@ dx_setup()
 
         // Clear the primary surface to black
 	    DX_DECLARE_CLEAN(DDBLTFX, bltfx)
-        hr = pPrimaryDDSurf->Blt(NULL,NULL,NULL,DDBLT_COLORFILL | DDBLT_WAIT,&bltfx);
 
-	    if( FAILED( hr )) {
+        if( FAILED( hr = pPrimaryDDSurf->Blt(NULL,NULL,NULL,DDBLT_COLORFILL | DDBLT_WAIT,&bltfx))) {
 		  wdxdisplay_cat.fatal()
 	      << "wdxGraphicsWindow:: Blt to Black of Primary Surf failed! : result = " << ConvD3DErrorToString(hr) << endl;
 		  exit(1);
@@ -1518,6 +1525,12 @@ dx_setup()
 	      << "wdxGraphicsWindow:: CreateSurface failed for backbuffer : result = " << ConvD3DErrorToString(hr) << endl;
 		  exit(1);
         }
+
+	    if( FAILED( hr = pBackDDSurf->Blt(NULL,NULL,NULL,DDBLT_COLORFILL | DDBLT_WAIT,&bltfx))) {
+		  wdxdisplay_cat.fatal()
+	      << "wdxGraphicsWindow:: Blt to Black of Back Surf failed! : result = " << ConvD3DErrorToString(hr) << endl;
+		  exit(1);
+	    }
 
     }  // end create windowed buffers
 
