@@ -58,6 +58,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PySequence_Check(...);
   EXPCL_DTOOLCONFIG int PyTuple_New(...);
   EXPCL_DTOOLCONFIG extern void *PyExc_AssertionError;
+  EXPCL_DTOOLCONFIG extern void *_Py_NoneStruct;
 };
 
 int
@@ -251,6 +252,7 @@ PyTuple_New(...) {
 }
 
 void *PyExc_AssertionError = (void *)NULL;
+void *_Py_NoneStruct = (void *)NULL;
 
 
 void
