@@ -13,6 +13,7 @@
     buttonThrower.I buttonThrower.h \
     config_tform.h \
     driveInterface.I driveInterface.h \
+    mouseInterfaceNode.I mouseInterfaceNode.h \
     mouseWatcher.I mouseWatcher.h \
     mouseWatcherGroup.h \
     mouseWatcherParameter.I mouseWatcherParameter.h \
@@ -24,6 +25,7 @@
     buttonThrower.cxx \
     config_tform.cxx \
     driveInterface.cxx \
+    mouseInterfaceNode.cxx \
     mouseWatcher.cxx \
     mouseWatcherGroup.cxx \
     mouseWatcherParameter.cxx mouseWatcherRegion.cxx  \
@@ -33,6 +35,7 @@
   #define INSTALL_HEADERS \
     buttonThrower.I buttonThrower.h \
     driveInterface.I driveInterface.h \
+    mouseInterfaceNode.I mouseInterfaceNode.h \
     mouseWatcher.I mouseWatcher.h \
     mouseWatcherGroup.h \
     mouseWatcherParameter.I mouseWatcherParameter.h \

@@ -67,6 +67,39 @@ operator < (const ModifierButtons &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ModifierButtons::operator &
+//       Access: Published
+//  Description: Returns a new ModifierButtons object for which
+//               is_down() will be true only if it is true on both
+//               source objects.  The set of buttons reported by
+//               has_button() is not completely defined if both source
+//               objects have a different set.
+////////////////////////////////////////////////////////////////////
+INLINE ModifierButtons ModifierButtons::
+operator & (const ModifierButtons &other) const {
+  ModifierButtons result = *this;
+  result &= other;
+  return result;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ModifierButtons::operator |
+//       Access: Published
+//  Description: Returns a new ModifierButtons object for which
+//               is_down() will be true if it is true on either of the
+//               source objects.  The set of buttons reported by
+//               has_button() is not completely defined if both source
+//               objects have a different set.
+////////////////////////////////////////////////////////////////////
+INLINE ModifierButtons ModifierButtons::
+operator | (const ModifierButtons &other) const {
+  ModifierButtons result = *this;
+  result |= other;
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::get_num_buttons
 //       Access: Published
 //  Description: Returns the number of buttons that the

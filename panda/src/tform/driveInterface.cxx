@@ -104,7 +104,7 @@ operator < (const DriveInterface::KeyHeld &other) const {
 ////////////////////////////////////////////////////////////////////
 DriveInterface::
 DriveInterface(const string &name) : 
-  DataNode(name) 
+  MouseInterfaceNode(name) 
 {
   _xy_input = define_input("xy", EventStoreVec2::get_class_type());
   _button_events_input = define_input("button_events", ButtonEventList::get_class_type());
@@ -138,9 +138,7 @@ DriveInterface(const string &name) :
   _force_mouse = false;
   _stop_this_frame = false;
 
-  _mods.add_button(MouseButton::one());
-  _mods.add_button(MouseButton::two());
-  _mods.add_button(MouseButton::three());
+  watch_button(MouseButton::one());
 }
 
 
@@ -168,8 +166,6 @@ reset() {
   _down_arrow.clear();
   _left_arrow.clear();
   _right_arrow.clear();
-
-  _mods.all_buttons_up();
 }
 
 
@@ -398,13 +394,17 @@ apply(double x, double y, bool any_button) {
 ////////////////////////////////////////////////////////////////////
 void DriveInterface::
 do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
+  // First, update our modifier buttons.
+  bool required_buttons_match;
+  const ButtonEventList *button_events = check_button_events(input, required_buttons_match);
+
   // Look for mouse activity.
   double x = 0.0f;
   double y = 0.0f;
 
   bool got_mouse = false;
 
-  if (input.has_data(_xy_input)) {
+  if (required_buttons_match && input.has_data(_xy_input)) {
     const EventStoreVec2 *xy;
     DCAST_INTO_V(xy, input.get_data(_xy_input).get_ptr());
     const LVecBase2f &p = xy->get_value();
@@ -415,28 +415,13 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
   }
 
   // Look for keyboard events.
-  if (input.has_data(_button_events_input)) {
-    const ButtonEventList *button_events;
-    DCAST_INTO_V(button_events, input.get_data(_button_events_input).get_ptr());
+  if (required_buttons_match && button_events != (const ButtonEventList *)NULL) {
 
     int num_events = button_events->get_num_events();
     for (int i = 0; i < num_events; i++) {
       const ButtonEvent &be = button_events->get_event(i);
       if (be._type != ButtonEvent::T_keystroke) {
         bool down = (be._type == ButtonEvent::T_down);
-
-        if (down) {
-          // We only trap button down events if (a) the mouse is in the
-          // window, and (b) we aren't set to ignore the mouse.
-          if (got_mouse && !_ignore_mouse) {
-            be.update_mods(_mods);
-          }
-        } else {
-          // However, we always trap button up events, so we don't get
-          // confused and believe a button is still being held down when
-          // it is not.
-          be.update_mods(_mods);
-        }
         
         if (be._button == KeyboardButton::up()) {
           _up_arrow.set_key(down);
@@ -451,7 +436,7 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
     }
   }
 
-  apply(x, y, _mods.is_any_down());
+  apply(x, y, !_ignore_mouse && is_down(MouseButton::one()));
   _transform = TransformState::make_pos_hpr(_xyz, _hpr);
   _velocity->set_value(_vel);
   output.set_data(_transform_output, EventParameter(_transform));

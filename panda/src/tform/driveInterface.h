@@ -21,7 +21,7 @@
 
 #include "pandabase.h"
 
-#include "dataNode.h"
+#include "mouseInterfaceNode.h"
 #include "modifierButtons.h"
 #include "luse.h"
 #include "linmath_events.h"
@@ -35,7 +35,7 @@
 //               The basic motion is on a horizontal plane, as if
 //               driving a vehicle.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DriveInterface : public DataNode {
+class EXPCL_PANDA DriveInterface : public MouseInterfaceNode {
 PUBLISHED:
   DriveInterface(const string &name = "");
   ~DriveInterface();
@@ -136,9 +136,6 @@ private:
   // This is only used to return a temporary value in get_mat().
   LMatrix4f _mat;
 
-  // Remember which mouse buttons are being held down.
-  ModifierButtons _mods;
-
   // Remember which arrow keys are being held down and which aren't,
   // and at what point they last changed state.
   class KeyHeld {
@@ -187,9 +184,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    DataNode::init_type();
+    MouseInterfaceNode::init_type();
     register_type(_type_handle, "DriveInterface",
-                  DataNode::get_class_type());
+                  MouseInterfaceNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

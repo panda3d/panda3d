@@ -21,7 +21,7 @@
 
 #include "pandabase.h"
 
-#include "dataNode.h"
+#include "mouseInterfaceNode.h"
 #include "nodePath.h"
 #include "modifierButtons.h"
 #include "luse.h"
@@ -41,7 +41,7 @@
 //               it to actually transform objects (or cameras) in the
 //               world.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Trackball : public DataNode {
+class EXPCL_PANDA Trackball : public MouseInterfaceNode {
 PUBLISHED:
   Trackball(const string &name);
   ~Trackball();
@@ -88,7 +88,7 @@ PUBLISHED:
   void set_invert(bool flag);
   bool get_invert() const;
 
-  void set_rel_to(const NodePath &_rel_to);
+  void set_rel_to(const NodePath &rel_to);
   const NodePath &get_rel_to() const;
 
   void set_coordinate_system(CoordinateSystem cs);
@@ -118,10 +118,6 @@ private:
   NodePath _rel_to;
   CoordinateSystem _cs;
 
-  // Remember which mouse buttons are being held down.
-  ModifierButtons _mods;
-
-
 protected:
   // Inherited from DataNode
   virtual void do_transmit_data(const DataNodeTransmit &input,
@@ -130,7 +126,6 @@ protected:
 private:
   // inputs
   int _pixel_xy_input;
-  int _button_events_input;
 
   // outputs
   int _transform_output;
@@ -142,9 +137,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    DataNode::init_type();
+    MouseInterfaceNode::init_type();
     register_type(_type_handle, "Trackball",
-                  DataNode::get_class_type());
+                  MouseInterfaceNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

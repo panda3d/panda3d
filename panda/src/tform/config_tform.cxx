@@ -46,6 +46,7 @@ const double drive_horizontal_ramp_down_time = config_tform.GetDouble("drive-hor
 ConfigureFn(config_tform) {
   DriveInterface::init_type();
   ButtonThrower::init_type();
+  MouseInterfaceNode::init_type();
   MouseWatcher::init_type();
   MouseWatcherGroup::init_type();
   MouseWatcherRegion::init_type();

@@ -29,7 +29,7 @@ ModifierButtons::
 ModifierButtons() :
   _state(0)
 {
-   _button_list= PTA(ButtonHandle)::empty_array(0);
+   _button_list = PTA(ButtonHandle)::empty_array(0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -51,6 +51,97 @@ ModifierButtons(const ModifierButtons &copy) :
 ////////////////////////////////////////////////////////////////////
 ModifierButtons::
 ~ModifierButtons() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ModifierButtons::operator &=
+//       Access: Published
+//  Description: Sets is_down() true for any button that is already
+//               true for this object and the other object.
+////////////////////////////////////////////////////////////////////
+void ModifierButtons::
+operator &= (const ModifierButtons &other) {
+  if (_button_list == other._button_list) {
+    // Trivially easy case: if the button lists are the same, we can
+    // do this using a bitmask operation.
+    _state &= other._state;
+
+  } else {
+    // More complicated case: if the button lists are different, we
+    // have to iterate through the buttons and compare them
+    // case-by-case.  This becomes an n^2 operation, but fortunately
+    // there won't be more than a handful of buttons.
+    int num_buttons = get_num_buttons();
+    for (int i = 0; i < num_buttons; i++) {
+      if (is_down(i) && !other.is_down(get_button(i))) {
+        _state &= ~((BitmaskType)1 << i);
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ModifierButtons::operator |=
+//       Access: Published
+//  Description: Sets is_down() true for any button that is already
+//               true for this object and the other object.  Adds
+//               whatever buttons are necessary to the list to make
+//               this so
+////////////////////////////////////////////////////////////////////
+void ModifierButtons::
+operator |= (const ModifierButtons &other) {
+  if (_button_list == other._button_list) {
+    // Trivially easy case: if the button lists are the same, we can
+    // do this using a bitmask operation.
+    _state |= other._state;
+
+  } else {
+    // More complicated case: if the button lists are different, we
+    // have to iterate through the buttons and compare them
+    // case-by-case.  This becomes an n^2 operation, but fortunately
+    // there won't be more than a handful of buttons.
+    int num_buttons = other.get_num_buttons();
+    for (int i = 0; i < num_buttons; i++) {
+      if (other.is_down(i)) {
+        add_button(other.get_button(i));
+        button_down(other.get_button(i));
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ModifierButtons::set_button_list
+//       Access: Published
+//  Description: Sets the list of buttons to watch to be the same as
+//               that of the other ModifierButtons object.  This makes
+//               the lists pointer equivalent (until one or the other
+//               is later modified).
+//
+//               This will preserve the state of any button that was
+//               on the original list and is also on the new lists.
+//               Any other buttons will get reset to the default state
+//               of "up".
+////////////////////////////////////////////////////////////////////
+void ModifierButtons::
+set_button_list(const ModifierButtons &other) {
+  if (_button_list != other._button_list) {
+    if (_state != 0) {
+      // If we have some buttons already down, we have to copy them to
+      // the new state.
+      BitmaskType new_state = 0;
+      int num_buttons = other.get_num_buttons();
+      for (int i = 0; i < num_buttons; i++) {
+        if (is_down(other.get_button(i))) {
+          new_state |= ((BitmaskType)1 << i);
+        }
+      }
+    
+      _state = new_state;
+    }
+
+    _button_list = other._button_list;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

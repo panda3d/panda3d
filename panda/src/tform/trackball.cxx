@@ -38,10 +38,9 @@ TypeHandle Trackball::_type_handle;
 ////////////////////////////////////////////////////////////////////
 Trackball::
 Trackball(const string &name) :
-  DataNode(name)
+  MouseInterfaceNode(name)
 {
   _pixel_xy_input = define_input("pixel_xy", EventStoreVec2::get_class_type());
-  _button_events_input = define_input("button_events", ButtonEventList::get_class_type());
 
   _transform_output = define_output("transform", TransformState::get_class_type());
 
@@ -59,9 +58,10 @@ Trackball(const string &name) :
   _invert = true;
   _cs = default_coordinate_system;
 
-  _mods.add_button(MouseButton::one());
-  _mods.add_button(MouseButton::two());
-  _mods.add_button(MouseButton::three());
+  // We want to track the state of these buttons.
+  watch_button(MouseButton::one());
+  watch_button(MouseButton::two());
+  watch_button(MouseButton::three());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -535,36 +535,33 @@ recompute() {
 void Trackball::
 do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
   // First, update our modifier buttons.
-  if (input.has_data(_button_events_input)) {
-    const ButtonEventList *button_events;
-    DCAST_INTO_V(button_events, input.get_data(_button_events_input).get_ptr());
-    button_events->update_mods(_mods);
-  }
+  bool required_buttons_match;
+  check_button_events(input, required_buttons_match);
 
   // Now, check for mouse motion.
-  if (input.has_data(_pixel_xy_input)) {
+  if (required_buttons_match && input.has_data(_pixel_xy_input)) {
     const EventStoreVec2 *pixel_xy;
     DCAST_INTO_V(pixel_xy, input.get_data(_pixel_xy_input).get_ptr());
     const LVecBase2f &p = pixel_xy->get_value();
     float this_x = p[0];
     float this_y = p[1];
     int this_button = 0;
-
-    if (_mods.is_down(MouseButton::one())) {
+    
+    if (is_down(MouseButton::one())) {
       this_button |= B1_MASK;
     }
-    if (_mods.is_down(MouseButton::two())) {
+    if (is_down(MouseButton::two())) {
       this_button |= B2_MASK;
     }
-    if (_mods.is_down(MouseButton::three())) {
+    if (is_down(MouseButton::three())) {
       this_button |= B3_MASK;
     }
-
+    
     float x = this_x - _lastx;
     float y = this_y - _lasty;
-
+    
     apply(x, y, this_button);
-
+    
     _lastx = this_x;
     _lasty = this_y;
   }
