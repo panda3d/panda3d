@@ -1,287 +1,280 @@
-// Filename: executionEnvironment.C
-// Created by:  drose (15May00)
+// Filename: dSearchPath.C
+// Created by:  drose (01Jul00)
 // 
 ////////////////////////////////////////////////////////////////////
 
-#include "executionEnvironment.h"
-#include <assert.h>
-#include <errno.h>
-#include <stdio.h>  // for perror
-
-#ifdef WIN32_VC
-// Windows requires this for getcwd().
-#include <direct.h>
-#define getcwd _getcwd
-#endif
-
-
-// We define the symbol PREREAD_ENVIRONMENT if we cannot rely on
-// getenv() to read environment variables at static init time.  In
-// this case, we must read all of the environment variables directly
-// and cache them locally.
-
-#ifndef STATIC_INIT_GETENV
-#define PREREAD_ENVIRONMENT
-#endif
-
-
-// We define the symbol HAVE_GLOBAL_ARGV if we have global variables
-// named GLOBAL_ARGC/GLOBAL_ARGV that we can read at static init time
-// to determine our command-line arguments.
-
-#if defined(HAVE_GLOBAL_ARGV) && defined(PROTOTYPE_GLOBAL_ARGV)
-extern char **GLOBAL_ARGV;
-extern int GLOBAL_ARGC;
-#endif
-
-// Linux with GNU libc does have global argv/argc variables, but we
-// can't safely access them at stat init time--at least, not in libc5.
-// (It does seem to work with glibc2, however.)
-
-ExecutionEnvironment *ExecutionEnvironment::_global_ptr = NULL;
-
+#include "dSearchPath.h"
+#include "filename.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::Constructor
-//       Access: Private
-//  Description: You shouldn't need to construct one of these; there's
-//               only one and it constructs itself.
+//     Function: DSearchPath::Results::Constructor
+//       Access: Public
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-ExecutionEnvironment::
-ExecutionEnvironment() {
-  read_environment_variables();
-  read_args();
+DSearchPath::Results::
+Results() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnviroment::get_cwd
-//       Access: Public, Static
-//  Description: Returns the name of the current working directory.
+//     Function: DSearchPath::Results::Copy Constructor
+//       Access: Public
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-Filename ExecutionEnvironment::
-get_cwd() {
-  // getcwd() requires us to allocate a dynamic buffer and grow it on
-  // demand.
-  static size_t bufsize = 1024;
-  static char *buffer = NULL;
+DSearchPath::Results::
+Results(const DSearchPath::Results &copy) :
+  _files(copy._files)
+{
+}
 
-  if (buffer == (char *)NULL) {
-    buffer = new char[bufsize];
-  }
+////////////////////////////////////////////////////////////////////
+//     Function: DSearchPath::Results::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void DSearchPath::Results::
+operator = (const DSearchPath::Results &copy) {
+  _files = copy._files;
+}
 
-  while (getcwd(buffer, bufsize) == (char *)NULL) {
-    if (errno != ERANGE) {
-      perror("getcwd");
-      return string();
+////////////////////////////////////////////////////////////////////
+//     Function: DSearchPath::Results::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+DSearchPath::Results::
+~Results() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DSearchPath::Results::clear
+//       Access: Public
+//  Description: Removes all the files from the list.
+////////////////////////////////////////////////////////////////////
+void DSearchPath::Results::
+clear() {
+  _files.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DSearchPath::Results::get_num_files
+//       Access: Public
+//  Description: Returns the number of files on the result list.
+////////////////////////////////////////////////////////////////////
+int DSearchPath::Results::
+get_num_files() const {
+  return _files.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DSearchPath::Results::get_file
+//       Access: Public
+//  Description: Returns the nth file on the result list.
+////////////////////////////////////////////////////////////////////
+Filename DSearchPath::Results::
+get_file(int n) const {
+  assert(n >= 0 && n < (int)_files.size());
+  return _files[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DSearchPath::Default Constructor
+//       Access: Public
+//  Description: Creates an empty search path.
+////////////////////////////////////////////////////////////////////
+DSearchPath::
+DSearchPath() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DSearchPath::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+DSearchPath::
+DSearchPath(const string &path, const string &delimiters) {
+  append_path(path, delimiters);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DSearchPath::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+DSearchPath::
+DSearchPath(const DSearchPath &copy) :
+  _directories(copy._directories)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DSearchPath::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void DSearchPath::
+operator = (const DSearchPath &copy) {
+  _directories = copy._directories;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DSearchPath::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+DSearchPath::
+~DSearchPath() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DSearchPath::clear
+//       Access: Public
+//  Description: Removes all the directories from the search list.
+////////////////////////////////////////////////////////////////////
+void DSearchPath::
+clear() {
+  _directories.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DSearchPath::append_directory
+//       Access: Public
+//  Description: Adds a new directory to the end of the search list.
+////////////////////////////////////////////////////////////////////
+void DSearchPath::
+append_directory(const Filename &directory) {
+  _directories.push_back(directory);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DSearchPath::prepend_directory
+//       Access: Public
+//  Description: Adds a new directory to the front of the search list.
+////////////////////////////////////////////////////////////////////
+void DSearchPath::
+prepend_directory(const Filename &directory) {
+  _directories.insert(_directories.begin(), directory);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DSearchPath::append_path
+//       Access: Public
+//  Description: Adds all of the directories listed in the search path
+//               to the end of the search list.
+////////////////////////////////////////////////////////////////////
+void DSearchPath::
+append_path(const string &path, const string &delimiters) {
+  size_t p = 0;
+  while (p < path.length()) {
+    size_t q = path.find_first_of(delimiters, p);
+    if (q == string::npos) {
+      _directories.push_back(path.substr(p));
+      return;
     }
-    delete[] buffer;
-    bufsize = bufsize * 2;
-    buffer = new char[bufsize];
-    assert(buffer != (char *)NULL);
+    if (q != p) {
+      _directories.push_back(path.substr(p, q - p));
+    }
+    p = q + 1;
   }
-
-  return Filename::from_os_specific(buffer);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::ns_has_environment_variable
-//       Access: Private
-//  Description: Returns true if the indicated environment variable
-//               is defined.  The nonstatic implementation.
+//     Function: DSearchPath::get_num_directories
+//       Access: Public
+//  Description: Returns the number of directories on the search list.
 ////////////////////////////////////////////////////////////////////
-bool ExecutionEnvironment::
-ns_has_environment_variable(const string &var) const {
-#ifdef PREREAD_ENVIRONMENT
-  return _variables.count(var) != 0;
-#else
-  return getenv(var.c_str()) != (char *)NULL;
-#endif
+int DSearchPath::
+get_num_directories() const {
+  return _directories.size();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::ns_get_environment_variable
-//       Access: Private
-//  Description: Returns the definition of the indicated environment
-//               variable, or the empty string if the variable is
-//               undefined.  The nonstatic implementation.
+//     Function: DSearchPath::get_directory
+//       Access: Public
+//  Description: Returns the nth directory on the search list.
 ////////////////////////////////////////////////////////////////////
-string ExecutionEnvironment::
-ns_get_environment_variable(const string &var) const {
-#ifdef PREREAD_ENVIRONMENT
-  EnvironmentVariables::const_iterator evi;
-  evi = _variables.find(var);
-  if (evi != _variables.end()) {
-    return (*evi).second;
+Filename DSearchPath::
+get_directory(int n) const {
+  assert(n >= 0 && n < (int)_directories.size());
+  return _directories[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DSearchPath::find_file
+//       Access: Public
+//  Description: Searches all the directories in the search list for
+//               the indicated file, in order.  Returns the full
+//               matching pathname of the first match if found, or the
+//               empty string if not found.
+////////////////////////////////////////////////////////////////////
+Filename DSearchPath::
+find_file(const Filename &filename) const {
+  Directories::const_iterator di;
+  for (di = _directories.begin(); di != _directories.end(); ++di) {
+    Filename match((*di), filename);
+    if (match.exists()) {
+      return match;
+    }
   }
+
   return string();
-#else
-  const char *def = getenv(var.c_str());
-  if (def != (char *)NULL) {
-    return def;
-  }
-  return string();
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::ns_get_num_args
-//       Access: Private
-//  Description: Returns the number of command-line arguments
-//               available, not counting arg 0, the binary name.  The
-//               nonstatic implementation.
+//     Function: DSearchPath::find_all_files
+//       Access: Public
+//  Description: Searches all the directories in the search list for
+//               the indicated file, in order.  Fills up the results
+//               list with *all* of the matching filenames found, if
+//               any.  Returns the number of matches found.
 ////////////////////////////////////////////////////////////////////
-int ExecutionEnvironment::
-ns_get_num_args() const {
-  return _args.size();
-}
+int DSearchPath::
+find_all_files(const Filename &filename, 
+	       DSearchPath::Results &results) const {
+  results._files.clear();
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::ns_get_arg
-//       Access: Private
-//  Description: Returns the nth command-line argument.  The index n
-//               must be in the range [0 .. get_num_args()).  The
-//               first parameter, n == 0, is the first actual
-//               parameter, not the binary name.  The nonstatic
-//               implementation.
-////////////////////////////////////////////////////////////////////
-string ExecutionEnvironment::
-ns_get_arg(int n) const {
-  assert(n >= 0 && n < ns_get_num_args());
-  return _args[n];
-}
-  
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::ns_get_binary_name
-//       Access: Private
-//  Description: Returns the name of the binary executable that
-//               started this program, if it can be determined.  The
-//               nonstatic implementation.
-////////////////////////////////////////////////////////////////////
-string ExecutionEnvironment::
-ns_get_binary_name() const {
-  if (_binary_name.empty()) {
-    return "unknown";
-  }
-  return _binary_name;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::get_ptr
-//       Access: Private, Static
-//  Description: Returns a static pointer that may be used to access
-//               the global ExecutionEnvironment object.
-////////////////////////////////////////////////////////////////////
-ExecutionEnvironment *ExecutionEnvironment::
-get_ptr() {
-  if (_global_ptr == (ExecutionEnvironment *)NULL) {
-    _global_ptr = new ExecutionEnvironment;
-  }
-  return _global_ptr;
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::read_environment_variables
-//       Access: Private
-//  Description: Fills up the internal table of existing environment
-//               variables, if we are in PREREAD_ENVIRONMENT mode.
-//               Otherwise, does nothing.
-////////////////////////////////////////////////////////////////////
-void ExecutionEnvironment::
-read_environment_variables() {
-#ifdef PREREAD_ENVIRONMENT
-#if defined(HAVE_PROC_SELF_ENVIRON)
-  // In Linux, and possibly in other systems, we might not be able to
-  // use getenv() at static init time.  However, we may be lucky and
-  // have a file called /proc/self/environ that may be read to
-  // determine all of our environment variables.
-
-  ifstream proc("/proc/self/environ");
-  if (proc.fail()) {
-    cerr << "Cannot read /proc/self/environ; environment variables unavailable.\n";
-    return;
-  }
-
-  int ch = proc.get();
-  while (!proc.eof() && !proc.fail()) {
-    string variable;
-    string value;
-      
-    while (!proc.eof() && !proc.fail() && ch != '=' && ch != '\0') {
-      variable += (char)ch;
-      ch = proc.get();
+  Directories::const_iterator di;
+  for (di = _directories.begin(); di != _directories.end(); ++di) {
+    Filename match((*di), filename);
+    if (match.exists()) {
+      results._files.push_back(match);
     }
-      
-    if (ch == '=') {
-      ch = proc.get();
-      while (!proc.eof() && !proc.fail() && ch != '\0') {
-	value += (char)ch;
-	ch = proc.get();
-      }
-    }
-
-    if (!variable.empty()) {
-      _variables[variable] = value;
-    }
-    ch = proc.get();
   }
-#else
-  cerr << "Warning: environment variables unavailable to dconfig.\n";
-#endif
-#endif // PREREAD_ENVIRONMENT
+
+  return results._files.size();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::read_args
-//       Access: Private
-//  Description: Reads all the command-line arguments and the name of
-//               the binary file, if possible.
+//     Function: DSearchPath::output
+//       Access: Public
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-void ExecutionEnvironment::
-read_args() {
-#if defined(HAVE_GLOBAL_ARGV)
-  int argc = GLOBAL_ARGC;
-  if (argc > 0) {
-    _binary_name = GLOBAL_ARGV[0];
-  }
-
-  for (int i = 1; i < argc; i++) {
-    _args.push_back(GLOBAL_ARGV[i]);
-  }
-
-#elif defined(HAVE_PROC_SELF_CMDLINE)
-  // In Linux, and possibly in other systems as well, we might not be
-  // able to use the global ARGC/ARGV variables at static init time.
-  // However, we may be lucky and have a file called
-  // /proc/self/cmdline that may be read to determine all of our
-  // command-line arguments.
-
-  ifstream proc("/proc/self/cmdline");
-  if (proc.fail()) {
-    cerr << "Cannot read /proc/self/cmdline; command-line arguments unavailable to config.\n";
-    return;
-  }
-
-  int ch = proc.get();
-  int index = 0;
-  while (!proc.eof() && !proc.fail()) {
-    string arg;
-
-    while (!proc.eof() && !proc.fail() && ch != '\0') {
-      arg += (char)ch;
-      ch = proc.get();
+void DSearchPath::
+output(ostream &out, const string &separator) const {
+  if (!_directories.empty()) {
+    Directories::const_iterator di = _directories.begin();
+    out << (*di);
+    ++di;
+    while (di != _directories.end()) {
+      out << separator << (*di);
+      ++di;
     }
-
-    if (index == 0) {
-      _binary_name = arg;
-    } else {
-      _args.push_back(arg);
-    }
-    index++;
-
-    ch = proc.get();
   }
-#else
-  cerr << "Warning: command line parameters unavailable to dconfig.\n";
-#endif
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: DSearchPath::write
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void DSearchPath::
+write(ostream &out, int indent_level) const {
+  Directories::const_iterator di;
+  for (di = _directories.begin(); di != _directories.end(); ++di) {
+    for (int i = 0; i < indent_level; i++) {
+      out << ' ';
+    }
+    out << (*di) << "\n";
+  }
+}
+
+
