@@ -253,6 +253,10 @@ class Level:
             assert entId in self.zoneEntId2zoneId
             return self.zoneEntId2zoneId[entId]
 
+    def getZoneNumFromId(self, zoneId):
+        """returns the model zoneNum that corresponds to a network zoneId"""
+        return self.zoneId2zoneNum[zoneId]
+
     # these events are thrown as the level initializes itself
     # LEVEL
     def getLevelPreCreateEvent(self):

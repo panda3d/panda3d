@@ -497,6 +497,26 @@ class DistributedLevel(DistributedObject.DistributedObject,
             self.smallTitleText.hide()
             self.spawnTitleText()
 
+    def lockVisibility(self, zoneNum=None, zoneId=None):
+        """call this to lock the visibility to a particular zone
+        pass in either network zoneId or model zoneNum
+        """
+        assert (zoneNum is None) or (zoneId is None)
+        assert not ((zoneNum is None) and (zoneId is None))
+        if zoneId is not None:
+            zoneNum = self.getZoneNumFromId(zoneId)
+
+        self.notify.info('lockVisibility to zoneNum %s' % zoneNum)
+        self.lockVizZone = zoneNum
+        self.enterZone(self.lockVizZone)
+
+    def unlockVisibility(self):
+        """release the visibility lock"""
+        self.notify.info('unlockVisibility')
+        if hasattr(self, 'lockVizZone'):
+            del self.lockVizZone
+            self.updateVisibility()
+
     def enterZone(self, zoneNum):
         DistributedLevel.notify.info("entering zone %s" % zoneNum)
 
@@ -518,6 +538,8 @@ class DistributedLevel(DistributedObject.DistributedObject,
         #print 'updateVisibility %s' % globalClock.getFrameCount()
         if zoneNum is None:
             zoneNum = self.curZoneNum
+        if hasattr(self, 'lockVizZone'):
+            zoneNum = self.lockVizZone
             
         zoneEntId = self.zoneNum2entId[zoneNum]
         zoneEnt = self.getEntity(zoneEntId)

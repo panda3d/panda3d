@@ -16,6 +16,8 @@ class LevelMgr(LevelMgrBase.LevelMgrBase):
         self.level.zoneNum2entId = {}
         # modelZoneNum -> network zoneId
         self.level.zoneNum2zoneId = {}
+        # network zoneId -> modelZoneNum
+        self.level.zoneId2zoneNum = {}
         # zone entId -> network zoneId
         self.level.zoneEntId2zoneId = {}
 
@@ -26,6 +28,7 @@ class LevelMgr(LevelMgrBase.LevelMgrBase):
     def destroy(self):
         del self.level.zoneIds
         del self.level.zoneEntId2zoneId
+        del self.level.zoneId2zoneNum
         del self.level.zoneNum2zoneId
         del self.level.zoneNum2entId
         self.geom.removeNode()
@@ -55,6 +58,8 @@ class LevelMgr(LevelMgrBase.LevelMgrBase):
         zoneEnt = self.level.getEntity(entId)
         # unregister the zone from the maps
         del self.level.zoneNum2entId[zoneEnt.modelZoneNum]
+        del self.level.zoneId2zoneNum[
+            self.level.zoneNum2zoneId[zoneEnt.modelZoneNum]]
         del self.level.zoneNum2zoneId[zoneEnt.modelZoneNum]
         del self.level.zoneEntId2zoneId[entId]
         # reassign the zoneIds (we may not need to do this, if all of the
@@ -80,4 +85,5 @@ class LevelMgr(LevelMgrBase.LevelMgrBase):
             zoneEnt = self.level.getEntity(entId)
             zoneId = zoneEnt.getZoneId()
             self.level.zoneNum2zoneId[zoneEnt.modelZoneNum] = zoneId
+            self.level.zoneId2zoneNum[zoneId] = zoneEnt.modelZoneNum
             self.level.zoneEntId2zoneId[entId] = zoneId
