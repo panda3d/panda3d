@@ -570,6 +570,7 @@ dx_init(HCURSOR hMouseCursor) {
 
     _pCurFvfBufPtr = NULL;
 
+    _clip_plane_bits = 0;
     scrn.pD3DDevice->SetRenderState(D3DRS_CLIPPLANEENABLE , 0x0);
 
     scrn.pD3DDevice->SetRenderState(D3DRS_CLIPPING, true);
@@ -610,7 +611,6 @@ dx_init(HCURSOR hMouseCursor) {
     _fog_enabled = false;
     scrn.pD3DDevice->SetRenderState(D3DRS_FOGENABLE, _fog_enabled);
 
-    _decal_level = 0;
     _current_projection_mat = LMatrix4f::ident_mat();
     _projection_mat_stack_count = 0;
     _has_scene_graph_color = false;
@@ -4342,6 +4342,68 @@ enable_light(int light_id, bool enable) {
   dxgsg_cat.debug()
     << "LightEnable(" << light << "=" << val << ")" << endl;
 #endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::slot_new_clip_plane
+//       Access: Protected, Virtual
+//  Description: This will be called by the base class before a
+//               particular clip plane id will be used for the first
+//               time.  It is intended to allow the derived class to
+//               reserve any additional resources, if required, for
+//               the new clip plane; and also to indicate whether the
+//               hardware supports this many simultaneous clipping
+//               planes.
+//
+//               The return value should be true if the additional
+//               plane is supported, or false if it is not.
+////////////////////////////////////////////////////////////////////
+bool DXGraphicsStateGuardian::
+slot_new_clip_plane(int plane_id) {
+  return (plane_id < D3DMAXUSERCLIPPLANES);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::enable_clip_plane
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by a derived class to
+//               enable the indicated clip_plane id.  A specific
+//               PlaneNode will already have been bound to this id via
+//               bind_clip_plane().
+////////////////////////////////////////////////////////////////////
+INLINE void DXGraphicsStateGuardian::
+enable_clip_plane(int plane_id, bool enable) {
+  assert(plane_id < D3DMAXUSERCLIPPLANES);
+
+  DWORD bitflag = ((DWORD)1 << plane_id);
+  if (enable) {
+    _clip_plane_bits |= bitflag;
+  } else {
+    _clip_plane_bits &= ~bitflag;
+  }
+
+  scrn.pD3DDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, _clip_plane_bits);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::bind_clip_plane
+//       Access: Protected, Virtual
+//  Description: Called the first time a particular clip_plane has been
+//               bound to a given id within a frame, this should set
+//               up the associated hardware clip_plane with the clip_plane's
+//               properties.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+bind_clip_plane(PlaneNode *plane, int plane_id) {
+  // Get the plane in "world coordinates".  This means the plane in
+  // the coordinate space of the camera, converted to DX's coordinate
+  // system.
+  NodePath plane_np(plane);
+  const LMatrix4f &plane_mat = plane_np.get_mat(_scene_setup->get_camera_path());
+  LMatrix4f rel_mat = plane_mat * LMatrix4f::convert_mat(CS_yup_left, CS_default);
+  Planef world_plane = plane->get_plane() * rel_mat;
+
+  scrn.pD3DDevice->SetClipPlane(plane_id, world_plane.get_data());
 }
 
 void DXGraphicsStateGuardian::

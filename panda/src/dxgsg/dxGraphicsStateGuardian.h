@@ -152,6 +152,10 @@ protected:
   virtual void set_ambient_light(const Colorf &color);
   virtual void enable_light(int light_id, bool enable);
 
+  virtual bool slot_new_clip_plane(int plane_id);
+  virtual void enable_clip_plane(int plane_id, bool enable);
+  virtual void bind_clip_plane(PlaneNode *plane, int plane_id);
+
   virtual void set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
                               ColorBlendAttrib::Mode color_blend_mode,
                               TransparencyAttrib::Mode transparency_mode);
@@ -199,7 +203,6 @@ protected:
 */  
 
   INLINE void enable_color_material(bool val);
-  INLINE void enable_clip_plane(int clip_plane, bool val);
   INLINE void enable_fog(bool val);
   INLINE void enable_zwritemask(bool val);
   INLINE void set_shademode(D3DSHADEMODE val);
@@ -286,15 +289,14 @@ protected:
   bool* _light_enabled;      // bool[_max_lights]
   bool _color_material_enabled;
   bool _texturing_enabled;
-  bool  _clipping_enabled;
+  bool _clipping_enabled;
   bool _dither_enabled;
   bool _stencil_test_enabled;
-  bool* _clip_plane_enabled;      // bool[_max_clip_planes]
   bool _blend_enabled;
   bool _depth_test_enabled;
   bool _depth_write_enabled;
   bool _alpha_test_enabled;
-  int _decal_level;
+  DWORD _clip_plane_bits;
 
   RenderModeAttrib::Mode _current_fill_mode;  //poinr/wireframe/solid
   GraphicsChannel *_panda_gfx_channel;  // cache the 1 channel dx supports

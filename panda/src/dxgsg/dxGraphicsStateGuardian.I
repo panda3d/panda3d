@@ -87,27 +87,6 @@ enable_color_material(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::enable_clip_plane
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian::
-enable_clip_plane(int clip_plane, bool val)
-{
-  if (_clip_plane_enabled[clip_plane] != val)
-    {
-    _clip_plane_enabled[clip_plane] = val;
-    DWORD  ClipPlaneBits;
-    scrn.pD3DDevice->GetRenderState(D3DRENDERSTATE_CLIPPLANEENABLE , &ClipPlaneBits);
-    if (val)
-        ClipPlaneBits |= 1 << clip_plane;
-    else
-        ClipPlaneBits &= ~(1 << clip_plane);
-    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_CLIPPLANEENABLE , ClipPlaneBits);
-    }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::enable_blend
 //       Access:
 //  Description:

@@ -88,54 +88,6 @@ enable_color_material(bool val) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::enable_clip_plane
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian::
-enable_clip_plane(int clip_plane_id, bool val)
-{
-  assert(clip_plane_id < D3DMAXUSERCLIPPLANES);
-
-  if (_clip_plane_enabled[clip_plane_id] != val) {
-    DWORD bitflag = 1 << clip_plane_id;
-
-    _clip_plane_enabled[clip_plane_id] = val;
-    DWORD  ClipPlaneBits;
-    scrn.pD3DDevice->GetRenderState(D3DRS_CLIPPLANEENABLE , &ClipPlaneBits);
-    if (val)
-        ClipPlaneBits |= bitflag;
-    else
-        ClipPlaneBits &= ~bitflag;
-    scrn.pD3DDevice->SetRenderState(D3DRS_CLIPPLANEENABLE , ClipPlaneBits);
-  }
-}
-
-#if 0
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::enable_clip_plane
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian::
-enable_clip_plane(int clip_plane_id, bool val)
-{
-  assert(clip_plane_id < D3DMAXUSERCLIPPLANES);
-
-  // clip plane stuff needs total rewriting to get rid of these arrays
-//  if (((_clip_planes_enabled & bitflag)!=0) != val) 
-  if (_clip_plane_enabled[clip_plane_id] != val) {
-    _clip_plane_enabled[clip_plane_id] = val;
-    if(val)
-      _clip_plane_enabled |= bitflag;
-     else _clip_plane_enabled &= ~bitflag;
-
-    scrn.pD3DDevice->SetRenderState(D3DRS_CLIPPLANEENABLE , _clip_planes_enabled);
-  }
-}
-#endif
-
-////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::enable_blend
 //       Access:
 //  Description:
