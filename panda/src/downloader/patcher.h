@@ -29,7 +29,7 @@ PUBLISHED:
   Patcher(PT(Buffer) buffer);
   virtual ~Patcher(void);
 
-  int initialize(Filename &patch, Filename &infile);
+  int initiate(Filename &patch, Filename &infile);
   int run(void);
 
 private:
