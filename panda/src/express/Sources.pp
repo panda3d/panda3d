@@ -35,7 +35,9 @@
     profileTimer.I profileTimer.h \
     pta_uchar.h referenceCount.I referenceCount.h \
     register_type.I register_type.h \
-    reversedNumericData.I reversedNumericData.h tokenBoard.I \
+    reversedNumericData.I reversedNumericData.h \
+    subStream.I subStream.h subStreamBuf.h \
+    tokenBoard.I \
     tokenBoard.h trueClock.I trueClock.h typeHandle.I \
     typeHandle.h typedObject.I typedObject.h \
     typedReferenceCount.I typedReferenceCount.h typedef.h \
@@ -59,7 +61,9 @@
     ordered_vector.cxx \
     profileTimer.cxx \
     pta_uchar.cxx referenceCount.cxx register_type.cxx \
-    reversedNumericData.cxx trueClock.cxx typeHandle.cxx \
+    reversedNumericData.cxx \
+    subStream.cxx subStreamBuf.cxx \
+    trueClock.cxx typeHandle.cxx \
     typedObject.cxx typedReferenceCount.cxx \
     typeRegistry.cxx typeRegistryNode.cxx vector_uchar.cxx
 
@@ -85,7 +89,9 @@
     pointerToArray.I pointerToArray.h profileTimer.I \
     profileTimer.h pta_uchar.h referenceCount.I referenceCount.h \
     register_type.I register_type.h \
-    reversedNumericData.I reversedNumericData.h tokenBoard.I \
+    reversedNumericData.I reversedNumericData.h \
+    subStream.I subStream.h subStreamBuf.h \
+    tokenBoard.I \
     tokenBoard.h trueClock.I trueClock.h typeHandle.I typeHandle.h \
     typedObject.I typedObject.h typedReferenceCount.I \
     typedReferenceCount.h typedef.h \

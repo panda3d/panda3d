@@ -23,7 +23,7 @@
 
 #include "datagram.h"
 #include "datagramIterator.h"
-
+#include "subStream.h"
 #include "filename.h"
 #include "ordered_vector.h"
 #include "indirectLess.h"
@@ -138,10 +138,10 @@ private:
   int _file_major_ver;
   int _file_minor_ver;
 
+  // These are used to open a subfile for reading.
   Subfile *_open_subfile;
-  // This is just to support open_read_subfile() for those subfiles
-  // that have recently been added but not flushed.
-  ifstream _subfile_read;
+  ifstream _subfile_fstream;
+  ISubStream _subfile_substream;
 
   static const char _header[];
   static const size_t _header_size;

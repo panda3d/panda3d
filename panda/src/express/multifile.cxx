@@ -532,10 +532,10 @@ read_subfile(int index, Datagram &data) {
   data.clear();
 
   istream &in = open_read_subfile(index);
-  size_t length = _subfiles[index]->_data_length;
-  for (size_t p = 0; p < length; p++) {
-    int byte = in.get();
+  int byte = in.get();
+  while (!in.eof() && !in.fail()) {
     data.add_int8(byte);
+    byte = in.get();
   }
   bool failed = in.fail();
   close_subfile();
@@ -659,11 +659,13 @@ extract_subfile_to(int index, ostream &out) {
   nassertr(index >= 0 && index < (int)_subfiles.size(), false);
 
   istream &in = open_read_subfile(index);
-  size_t length = _subfiles[index]->_data_length;
-  for (size_t p = 0; p < length; p++) {
-    int byte = in.get();
+
+  int byte = in.get();
+  while (!in.fail() && !in.eof()) {
     out.put(byte);
+    byte = in.get();
   }
+
   bool failed = in.fail();
   close_subfile();
   nassertr(!failed, false);
@@ -675,16 +677,16 @@ extract_subfile_to(int index, ostream &out) {
 //     Function: Multifile::open_read_subfile
 //       Access: Public
 //  Description: Returns an istream that may be used to read the
-//               indicated subfile.  The istream may or may not be a
-//               reference within the Multifile itself, so relative
-//               seeks are acceptable but global seeks will fail.
-//               Also, checking for eof() may fail; you must use
-//               get_subfile_length() instead.
+//               indicated subfile.  You may seek() within this
+//               istream to your heart's content; even though it is
+//               probably a reference to the already-opened fstream of
+//               the Multifile itself, byte 0 appears to be the
+//               beginning of the subfile and EOF appears to be the
+//               end of the subfile.
 //
-//               It is not valid to perform any other operations on
-//               this Multifile until the indicated subfile has been
-//               read to completion and close_subfile() has been
-//               called.
+//               It is not valid to perform any additional operations
+//               on this Multifile until close_subfile() has
+//               subsequently been called.
 ////////////////////////////////////////////////////////////////////
 istream &Multifile::
 open_read_subfile(int index) {
@@ -695,17 +697,27 @@ open_read_subfile(int index) {
   nassertr(index >= 0 && index < (int)_subfiles.size(), empty_stream);
 #endif
   _open_subfile = _subfiles[index];
+
   if (_open_subfile->_source != (istream *)NULL) {
+    // The subfile has not yet been incorporated, and it is defined
+    // with an istream; return the istream directly.
     _open_subfile->_source->seekg(0);
     return *_open_subfile->_source;
   }
+
   if (!_open_subfile->_source_filename.empty()) {
-    _open_subfile->_source_filename.open_read(_subfile_read);
-    return _subfile_read;
+    // The subfile has not yet been incorporated, and it is defined
+    // with a filename; open the filename and return that.
+    _open_subfile->_source_filename.open_read(_subfile_fstream);
+    return _subfile_fstream;
   }
+
+  // The subfile has been incorporated; return an ISubStream object
+  // that references into the open Multifile istream.
   nassertr(_open_subfile->_data_start != (streampos)0, empty_stream);
-  _read->seekg(_open_subfile->_data_start);
-  return *_read;
+  _subfile_substream.open(_read, _open_subfile->_data_start,
+                          _open_subfile->_data_start + _open_subfile->_data_length); 
+  return _subfile_substream;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -717,8 +729,13 @@ open_read_subfile(int index) {
 ////////////////////////////////////////////////////////////////////
 void Multifile::
 close_subfile() {
+  if (_open_subfile != (Subfile *)NULL &&
+      _open_subfile->_source != (istream *)NULL) {
+    _open_subfile->_source->seekg(0);
+  }
   _open_subfile = (Subfile *)NULL;
-  _subfile_read.close();
+  _subfile_fstream.close();
+  _subfile_substream.close();
 }
 
 ////////////////////////////////////////////////////////////////////
