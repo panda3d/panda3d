@@ -36,6 +36,12 @@ echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/random.py
 echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/getopt.py
 echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/fpformat.py
 echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/bisect.py
+echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/warnings.py
+echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/inspect.py
+echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/dis.py
+echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/tokenize.py
+echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/token.py
+
 
 # Libraries
 echo $WINTOOLS/lib
