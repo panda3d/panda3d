@@ -20,7 +20,7 @@
 // All of the Sources.pp files in the current source hierarchy
 // $DTOOL/pptempl/Global.pp
 // $DTOOL/pptempl/Global.gmsvc.pp
-// $DTOOL/Depends.pp, once for each Sources.pp file
+// $DTOOL/pptempl/Depends.pp, once for each Sources.pp file
 // Template.gmsvc.pp (this file), once for each Sources.pp file
 
 #defun decygwin frompat,topat,path
