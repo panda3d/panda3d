@@ -384,7 +384,7 @@ get_data3f(const unsigned char *pointer) {
   // We sneakily cast a float[3] array to an LVecBase3f reference,
   // making all kinds of assumptions about how an LVecBase3f is
   // stored.
-  return (LVecBase3f &)(float *)pointer;
+  return *(LVecBase3f *)pointer;
 }
 
 ////////////////////////////////////////////////////////////////////
