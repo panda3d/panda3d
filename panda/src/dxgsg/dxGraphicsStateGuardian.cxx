@@ -223,7 +223,9 @@ reset() {
     _issued_color_enabled = false;
     _enable_all_color = true;
 
-    _buffer_mask &= ~RenderBuffer::T_right;  // test for these later
+//   this is incorrect for mono displays, need both right and left flags set.
+//   stereo has not been handled yet for dx
+//    _buffer_mask &= ~RenderBuffer::T_right;  // test for these later
 
     // Set up our clear values to invalid values, so the glClear* calls
     // will be made initially.
