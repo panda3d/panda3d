@@ -97,6 +97,18 @@
 
 #begin lib_target
   #define USE_PACKAGES maya
+  #define TARGET mayasavepview
+
+  #if $[WINDOWS_PLATFORM]
+    #define dlllib mll
+  #endif
+
+  #define SOURCES \
+    mayaSavePview.cxx mayaSavePview.h
+#end lib_target
+
+#begin lib_target
+  #define USE_PACKAGES maya
   #define TARGET mayaloader
   #define BUILDING_DLL BUILDING_MISC
   #define LOCAL_LIBS \
