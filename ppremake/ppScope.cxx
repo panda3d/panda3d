@@ -2709,10 +2709,10 @@ expand_dependencies(const string &params) {
     PPDependableFile *file = _directory->get_dependable_file(*fi, false);
     assert(file != (PPDependableFile *)NULL);
 
-    set<PPDependableFile *> files;
+    vector<PPDependableFile *> files;
     file->get_complete_dependencies(files);
 
-    set<PPDependableFile *>::const_iterator dfi;
+    vector<PPDependableFile *>::const_iterator dfi;
     for (dfi = files.begin(); dfi != files.end(); ++dfi) {
       PPDependableFile *df = (*dfi);
       string rel_filename =

@@ -11,6 +11,27 @@
 #include <assert.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <algorithm>
+
+class SortDependableFilesByName {
+public:
+  bool operator () (PPDependableFile *a, PPDependableFile *b) const {
+    return a->get_filename() < b->get_filename();
+  }
+};
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPDependableFile::Ordering Operator
+//       Access: Public
+//  Description: We provide this function so we can sort the
+//               dependency list into a consistent ordering, so that
+//               the makefiles won't get randomly regenerated between
+//               different sessions.
+////////////////////////////////////////////////////////////////////
+bool PPDependableFile::Dependency::
+operator < (const Dependency &other) const {
+  return _file->get_filename() < other._file->get_filename();
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PPDependableFile::Constructor
@@ -80,6 +101,7 @@ update_from_cache(const vector<string> &words) {
     }
 
     _flags |= F_from_cache;
+    sort(_dependencies.begin(), _dependencies.end());
   }
 }
 
@@ -202,6 +224,24 @@ get_dependency(int n) {
   assert((_flags & F_updated) != 0);
   assert(n >= 0 && n < (int)_dependencies.size());
   return _dependencies[n]._file;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPDependableFile::get_complete_dependencies
+//       Access: Public
+//  Description: This flavor of get_complete_dependencies() works like
+//               the one below, except it returns the results in a
+//               consistently-ordered vector.  This allows us to keep
+//               the dependencies in the same order between sessions
+//               and prevent makefiles from being arbitrarily
+//               regenerated.
+////////////////////////////////////////////////////////////////////
+void PPDependableFile::
+get_complete_dependencies(vector<PPDependableFile *> &files) {
+  set<PPDependableFile *> files_set;
+
+  copy(files_set.begin(), files_set.end(), back_inserter(files));
+  sort(files.begin(), files.end(), SortDependableFilesByName());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -377,6 +417,7 @@ compute_dependencies(string &circularity) {
   }
 
   _flags = (_flags & ~F_updating) | F_updated;
+  sort(_dependencies.begin(), _dependencies.end());
   return circ;
 }
 

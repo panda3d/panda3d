@@ -39,6 +39,7 @@ public:
   int get_num_dependencies();
   PPDependableFile *get_dependency(int n);
 
+  void get_complete_dependencies(vector<PPDependableFile *> &files);
   void get_complete_dependencies(set<PPDependableFile *> &files);
 
   bool is_circularity();
@@ -70,6 +71,8 @@ private:
   public:
     PPDependableFile *_file;
     bool _okcircular;
+
+    bool operator < (const Dependency &other) const;
   };
 
   typedef vector<Dependency> Dependencies;
