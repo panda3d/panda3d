@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "luse.h"
 #include "nodePath.h"
+#include "pmap.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : NurbsVertex
@@ -51,10 +52,15 @@ public:
   INLINE void set_space(const string &space);
   INLINE NodePath get_space(const NodePath &rel_to) const;
 
+  void set_extended_vertex(int d, float value);
+  float get_extended_vertex(int d) const;
+
 private:
   LVecBase4f _vertex;
   NodePath _space;
   string _space_path;
+  typedef pmap<int, float> Extended;
+  Extended _extended;
 };
 
 #include "nurbsVertex.I"

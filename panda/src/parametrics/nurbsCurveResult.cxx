@@ -27,20 +27,26 @@
 //               and the indicated table of control vertex positions.
 ////////////////////////////////////////////////////////////////////
 NurbsCurveResult::
-NurbsCurveResult(const NurbsMatrixVector &basis, int order,
-                 const LVecBase4f verts[], int num_vertices) {
+NurbsCurveResult(const NurbsMatrixVector &basis,
+                 const LVecBase4f vecs[], const NurbsVertex *verts,
+                 int num_vertices) :
+  _basis(basis),
+  _verts(verts)
+{
   _last_segment = -1;
+  int order = _basis.get_order();
+  int num_segments = _basis.get_num_segments();
 
-  int num_segments = basis.get_num_segments();
+  _composed.reserve(num_segments);
   for (int i = 0; i < num_segments; i++) {
-    int vi = basis.get_vertex_index(i);
+    int vi = _basis.get_vertex_index(i);
     nassertv(vi >= 0 && vi < num_vertices);
 
-    // Create a matrix from our (up to) four involved vertices.
+    // Create a geometry matrix from our (up to) four involved vertices.
     LMatrix4f geom;
     int ci = 0;
     while (ci < order) {
-      geom.set_row(ci, verts[vi + ci]);
+      geom.set_row(ci, vecs[vi + ci]);
       ci++;
     }
     while (ci < 4) {
@@ -48,9 +54,11 @@ NurbsCurveResult(const NurbsMatrixVector &basis, int order,
       ci++;
     }
 
-    // And compose this matrix with the segment to produce a new
-    // matrix.
-    _prod.compose_segment(basis, i, geom);
+    // And compose this geometry matrix with the basis matrix to
+    // produce a new matrix, which will be used to evaluate the curve.
+    LMatrix4f result;
+    result.multiply(_basis.get_basis(i), geom);
+    _composed.push_back(result);
   }
 }
 
@@ -74,12 +82,13 @@ NurbsCurveResult(const NurbsMatrixVector &basis, int order,
 ////////////////////////////////////////////////////////////////////
 void NurbsCurveResult::
 eval_segment_point(int segment, float t, LVecBase3f &point) const {
-  const LMatrix4f &mat = _prod.get_matrix(segment);
-
   float t2 = t*t;
   LVecBase4f tvec(t*t2, t2, t, 1.0f);
-  LVecBase4f r = tvec * mat;
-  point.set(r[0] / r[3], r[1] / r[3], r[2] / r[3]);
+
+  float weight = tvec.dot(_composed[segment].get_col(3));
+  point.set(tvec.dot(_composed[segment].get_col(0)) / weight,
+            tvec.dot(_composed[segment].get_col(1)) / weight,
+            tvec.dot(_composed[segment].get_col(2)) / weight);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -92,12 +101,54 @@ eval_segment_point(int segment, float t, LVecBase3f &point) const {
 ////////////////////////////////////////////////////////////////////
 void NurbsCurveResult::
 eval_segment_tangent(int segment, float t, LVecBase3f &tangent) const {
-  const LMatrix4f &mat = _prod.get_matrix(segment);
-
   float t2 = t*t;
   LVecBase4f tvec(t2, t, 1.0f, 0.0f);
-  LVecBase4f r = tvec * mat;
-  tangent.set(r[0], r[1], r[2]);
+
+  tangent.set(tvec.dot(_composed[segment].get_col(0)),
+              tvec.dot(_composed[segment].get_col(1)),
+              tvec.dot(_composed[segment].get_col(2)));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurveResult::eval_segment_extended_point
+//       Access: Published
+//  Description: Evaluates the curve in n-dimensional space according
+//               to the extended vertices associated with the curve in
+//               the indicated dimension.
+////////////////////////////////////////////////////////////////////
+float NurbsCurveResult::
+eval_segment_extended_point(int segment, float t, int d) const {
+  nassertr(segment >= 0 && segment < _basis.get_num_segments(), 0.0f);
+
+  int order = _basis.get_order();
+  int vi = _basis.get_vertex_index(segment);
+
+  LVecBase4f geom;
+  int ci = 0;
+  while (ci < order) {
+    geom[ci] = _verts[vi + ci].get_extended_vertex(d);
+    ci++;
+  }
+  while (ci < 4) {
+    geom[ci] = 0.0f;
+    ci++;
+  }
+
+  const LMatrix4f &basis = _basis.get_basis(segment);
+
+  // Compute matrix * column vector.
+  LVecBase4f composed_geom(basis.get_row(0).dot(geom),
+                           basis.get_row(1).dot(geom),
+                           basis.get_row(2).dot(geom),
+                           basis.get_row(3).dot(geom));
+
+  float t2 = t*t;
+  LVecBase4f tvec(t*t2, t2, t, 1.0f);
+
+  float weight = tvec.dot(_composed[segment].get_col(3));
+
+  float result = tvec.dot(composed_geom) / weight;
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -111,7 +162,7 @@ int NurbsCurveResult::
 find_segment(float t) {
   // Trivially check the endpoints of the curve.
   if (t >= get_end_t()) {
-    return _prod.get_num_segments() - 1;
+    return _basis.get_num_segments() - 1;
   } else if (t <= get_start_t()) {
     return 0;
   }
@@ -123,11 +174,11 @@ find_segment(float t) {
   }
 
   // Look for the segment the hard way.
-  int segment = r_find_segment(t, 0, _prod.get_num_segments() - 1);
+  int segment = r_find_segment(t, 0, _basis.get_num_segments() - 1);
   if (segment != -1) {
     _last_segment = segment;
-    _last_from = _prod.get_from(segment);
-    _last_to = _prod.get_to(segment);
+    _last_from = _basis.get_from(segment);
+    _last_to = _basis.get_to(segment);
   }
   return segment;
 }
@@ -147,10 +198,10 @@ r_find_segment(float t, int top, int bot) const {
     return -1;
   }
   int mid = (top + bot) / 2;
-  nassertr(mid >= 0 && mid < _prod.get_num_segments(), -1);
+  nassertr(mid >= 0 && mid < _basis.get_num_segments(), -1);
 
-  float from = _prod.get_from(mid);
-  float to = _prod.get_to(mid);
+  float from = _basis.get_from(mid);
+  float to = _basis.get_to(mid);
   if (from > t) {
     // Too high, try lower.
     return r_find_segment(t, top, mid - 1);
@@ -164,3 +215,4 @@ r_find_segment(float t, int top, int bot) const {
     return mid;
   }
 }
+

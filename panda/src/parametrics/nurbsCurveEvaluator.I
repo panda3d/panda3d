@@ -60,7 +60,11 @@ get_num_vertices() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveEvaluator::set_vertex
 //       Access: Published
-//  Description: Sets the nth control vertex of the curve.
+//  Description: Sets the nth control vertex of the curve, as a vertex
+//               in 4-d homogeneous space.  In this form, the first
+//               three components of the vertex should already have
+//               been scaled by the fourth component, which is the
+//               homogeneous weight.
 ////////////////////////////////////////////////////////////////////
 INLINE void NurbsCurveEvaluator::
 set_vertex(int i, const LVecBase4f &vertex) {
@@ -71,7 +75,10 @@ set_vertex(int i, const LVecBase4f &vertex) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveEvaluator::set_vertex
 //       Access: Published
-//  Description: Sets the nth control vertex of the curve.
+//  Description: Sets the nth control vertex of the curve.  This
+//               flavor sets the vertex as a 3-d coordinate and a
+//               weight; the 3-d coordinate values are implicitly
+//               scaled up by the weight factor.
 ////////////////////////////////////////////////////////////////////
 INLINE void NurbsCurveEvaluator::
 set_vertex(int i, const LVecBase3f &vertex, float weight) {
@@ -126,6 +133,48 @@ INLINE void NurbsCurveEvaluator::
 set_vertex_space(int i, const string &space) {
   nassertv(i >= 0 && i < (int)_vertices.size());
   _vertices[i].set_space(space);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurveEvaluator::set_extended_vertex
+//       Access: Public
+//  Description: Sets an n-dimensional vertex value.  This allows
+//               definition of a NURBS surface or curve in a sparse
+//               n-dimensional space, typically used for associating
+//               additional properties (like color or joint
+//               membership) with each vertex of a surface.
+//
+//               The value d is an arbitrary integer value and
+//               specifies the dimension of question for this
+//               particular vertex.  Any number of dimensions may be
+//               specified, and they need not be consecutive.  If a
+//               value for a given dimension is not specified, is it
+//               implicitly 0.0.
+//
+//               The value is implicitly scaled by the homogenous
+//               weight value--that is, the fourth component of the
+//               value passed to set_vertex().  This means the
+//               ordinary vertex must be set first, before the
+//               extended vertices can be set.
+////////////////////////////////////////////////////////////////////
+void NurbsCurveEvaluator::
+set_extended_vertex(int i, int d, float value) {
+  nassertv(i >= 0 && i < (int)_vertices.size());
+  _vertices[i].set_extended_vertex(d, value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurveEvaluator::float_extended_vertex
+//       Access: Public
+//  Description: Returns an n-dimensional vertex value.  See
+//               set_extended_vertex().  This returns the value set
+//               for the indicated dimension, or 0.0 if nothing has
+//               been set.
+////////////////////////////////////////////////////////////////////
+float NurbsCurveEvaluator::
+get_extended_vertex(int i, int d) const {
+  nassertr(i >= 0 && i < (int)_vertices.size(), 0.0f);
+  return _vertices[i].get_extended_vertex(d);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -64,6 +64,9 @@ PUBLISHED:
   INLINE void set_vertex_space(int i, const string &space);
   NodePath get_vertex_space(int i, const NodePath &rel_to) const;
 
+  INLINE void set_extended_vertex(int i, int d, float value);
+  INLINE float get_extended_vertex(int i, int d) const;
+
   INLINE int get_num_knots() const;
   void set_knot(int i, float knot);
   float get_knot(int i) const;

@@ -121,12 +121,13 @@ evaluate(const NodePath &rel_to) const {
   }
 
   // First, transform the vertices as appropriate.
-  pvector<LVecBase4f> verts;
-  get_vertices(verts, rel_to);
+  pvector<LVecBase4f> vecs;
+  get_vertices(vecs, rel_to);
 
   // And apply those transformed vertices to the basis matrices to
   // derive the result.
-  return new NurbsCurveResult(_basis, _order, &verts[0], (int)verts.size());
+  return new NurbsCurveResult(_basis, &vecs[0], &_vertices[0],
+                              (int)_vertices.size());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -223,7 +224,7 @@ recompute_basis() {
     ((NurbsCurveEvaluator *)this)->recompute_knots();
   }
 
-  _basis.clear();
+  _basis.clear(_order);
   if ((int)_vertices.size() > _order - 1) {
     int min_knot = _order;
     int max_knot = (int)_vertices.size() + 1;
@@ -232,7 +233,7 @@ recompute_basis() {
       nassertv(i - 1 >= 0 && i < (int)_knots.size());
       if (_knots[i - 1] < _knots[i]) {
         // Here's a non-empty segment.
-        _basis.append_segment(_order, i - _order, &_knots[i - _order]);
+        _basis.append_segment(i - _order, &_knots[i - _order]);
       }
     }
   }

@@ -24,6 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE NurbsMatrixVector::
 NurbsMatrixVector() {
+  _order = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -33,6 +34,16 @@ NurbsMatrixVector() {
 ////////////////////////////////////////////////////////////////////
 INLINE NurbsMatrixVector::
 ~NurbsMatrixVector() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NurbsMatrixVector::get_order
+//       Access: Public
+//  Description: Returns the order of the segments in the curve.
+////////////////////////////////////////////////////////////////////
+INLINE int NurbsMatrixVector::
+get_order() const {
+  return _order;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -105,14 +116,17 @@ get_to(int segment) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NurbsMatrixVector::get_matrix
+//     Function: NurbsMatrixVector::get_basis
 //       Access: Public
-//  Description: Returns the matrix associated with the nth segment.
+//  Description: Returns the basis matrix associated with the nth
+//               segment.  This is the pure matrix based on the knot
+//               vector over the segment; it does not depend on the
+//               control vertices.
 ////////////////////////////////////////////////////////////////////
 INLINE const LMatrix4f &NurbsMatrixVector::
-get_matrix(int segment) const {
+get_basis(int segment) const {
   nassertr(segment >= 0 && segment < (int)_segments.size(), LMatrix4f::ident_mat());
-  return _segments[segment]._matrix;
+  return _segments[segment]._basis;
 }
 
 ////////////////////////////////////////////////////////////////////

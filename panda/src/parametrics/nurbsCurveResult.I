@@ -34,7 +34,7 @@ INLINE NurbsCurveResult::
 ////////////////////////////////////////////////////////////////////
 INLINE float NurbsCurveResult::
 get_start_t() const {
-  return _prod.get_start_t();
+  return _basis.get_start_t();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,7 +44,7 @@ get_start_t() const {
 ////////////////////////////////////////////////////////////////////
 INLINE float NurbsCurveResult::
 get_end_t() const {
-  return _prod.get_end_t();
+  return _basis.get_end_t();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -61,7 +61,7 @@ eval_point(float t, LVecBase3f &point) {
     return false;
   }
 
-  eval_segment_point(segment, _prod.scale_t(segment, t), point);
+  eval_segment_point(segment, _basis.scale_t(segment, t), point);
   return true;
 }
 
@@ -80,8 +80,25 @@ eval_tangent(float t, LVecBase3f &tangent) {
     return false;
   }
 
-  eval_segment_tangent(segment, _prod.scale_t(segment, t), tangent);
+  eval_segment_tangent(segment, _basis.scale_t(segment, t), tangent);
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurveResult::eval_extended_point
+//       Access: Published
+//  Description: Evaluates the curve in n-dimensional space according
+//               to the extended vertices associated with the curve in
+//               the indicated dimension.
+////////////////////////////////////////////////////////////////////
+INLINE float NurbsCurveResult::
+eval_extended_point(float t, int d) {
+  int segment = find_segment(t);
+  if (segment == -1) {
+    return 0.0f;
+  }
+
+  return eval_segment_extended_point(segment, _basis.scale_t(segment, t), d);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -94,7 +111,7 @@ eval_tangent(float t, LVecBase3f &tangent) {
 ////////////////////////////////////////////////////////////////////
 INLINE int NurbsCurveResult::
 get_num_segments() const {
-  return _prod.get_num_segments();
+  return _basis.get_num_segments();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -107,5 +124,5 @@ get_num_segments() const {
 ////////////////////////////////////////////////////////////////////
 INLINE float NurbsCurveResult::
 get_segment_t(int segment, float t) const {
-  return t * (_prod.get_to(segment) - _prod.get_from(segment)) + _prod.get_from(segment);
+  return t * (_basis.get_to(segment) - _basis.get_from(segment)) + _basis.get_from(segment);
 }

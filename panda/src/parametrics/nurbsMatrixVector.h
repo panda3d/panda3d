@@ -24,6 +24,8 @@
 #include "pvector.h"
 #include "pmap.h"
 
+class NurbsVertex;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : NurbsMatrixVector
 // Description : This encapsulates a series of matrices that are used
@@ -37,10 +39,12 @@
 //               eventually replace the whole ParametricCurve class
 //               hierarchy.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA NurbsMatrixVector {
+class NurbsMatrixVector {
 public:
   INLINE NurbsMatrixVector();
   INLINE ~NurbsMatrixVector();
+
+  INLINE int get_order() const;
 
   INLINE int get_num_segments() const;
   INLINE float get_start_t() const;
@@ -49,25 +53,25 @@ public:
   INLINE int get_vertex_index(int segment) const;
   INLINE float get_from(int segment) const;
   INLINE float get_to(int segment) const;
-  INLINE const LMatrix4f &get_matrix(int segment) const;
+  INLINE const LMatrix4f &get_basis(int segment) const;
   INLINE float scale_t(int segment, float t) const;
 
-  void clear();
-  void append_segment(int order, int vertex_index, const float knots[]);
-  void compose_segment(const NurbsMatrixVector &basis, int segment, 
-                       const LMatrix4f &geom);
+  void clear(int order);
+  void append_segment(int vertex_index, const float knots[]);
 
 private:
   static LVecBase4f nurbs_blending_function(int order, int i, int j, 
                                             const float knots[]);
 
 private:
+  int _order;
+
   class Segment {
   public:
     int _vertex_index;
     float _from;
     float _to;
-    LMatrix4f _matrix;
+    LMatrix4f _basis;
   };
 
   typedef pvector<Segment> Segments;

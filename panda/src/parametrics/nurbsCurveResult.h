@@ -23,6 +23,8 @@
 #include "referenceCount.h"
 #include "nurbsMatrixVector.h"
 
+class NurbsVertex;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : NurbsCurveResult
 // Description : The result of a NurbsCurveEvaluator.  This object
@@ -39,8 +41,9 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA NurbsCurveResult : public ReferenceCount {
 public:
-  NurbsCurveResult(const NurbsMatrixVector &basis, int order,
-                   const LVecBase4f verts[], int num_vertices);
+  NurbsCurveResult(const NurbsMatrixVector &basis, 
+                   const LVecBase4f vecs[], const NurbsVertex *verts,
+                   int num_vertices);
 
 PUBLISHED:
   INLINE ~NurbsCurveResult();
@@ -50,17 +53,27 @@ PUBLISHED:
 
   INLINE bool eval_point(float t, LVecBase3f &point);
   INLINE bool eval_tangent(float t, LVecBase3f &tangent);
+  INLINE float eval_extended_point(float t, int d);
   
   INLINE int get_num_segments() const;
   void eval_segment_point(int segment, float t, LVecBase3f &point) const;
   void eval_segment_tangent(int segment, float t, LVecBase3f &tangent) const;
+  float eval_segment_extended_point(int segment, float t, int d) const;
   INLINE float get_segment_t(int segment, float t) const;
   
 private:
   int find_segment(float t);
   int r_find_segment(float t, int top, int bot) const;
 
-  NurbsMatrixVector _prod;
+  NurbsMatrixVector _basis;
+  const NurbsVertex *_verts;
+
+  // We pre-compose the basis matrix and the geometry vectors, so we
+  // have these handy for evaluation.  There is one entry in the
+  // _composed_vector for each entry in basis._segments.
+  typedef pvector<LMatrix4f> ComposedGeom;
+  ComposedGeom _composed;
+
 
   int _last_segment;
   float _last_from;

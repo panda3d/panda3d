@@ -24,7 +24,8 @@
 //  Description: Removes all the segments from the curve.
 ////////////////////////////////////////////////////////////////////
 void NurbsMatrixVector::
-clear() {
+clear(int order) {
+  _order = order;
   _segments.clear();
 }
 
@@ -35,16 +36,16 @@ clear() {
 //               and appends it to the set of basis matrices.
 ////////////////////////////////////////////////////////////////////
 void NurbsMatrixVector::
-append_segment(int order, int vertex_index, const float knots[]) {
+append_segment(int vertex_index, const float knots[]) {
   int i;
 
   // Scale the supplied knots to the range 0..1.
   float scaled_knots[8];
-  float min_k = knots[order - 1];
-  float max_k = knots[order];
+  float min_k = knots[_order - 1];
+  float max_k = knots[_order];
 
   nassertv(min_k != max_k);
-  for (i = 0; i < order + order; i++) {
+  for (i = 0; i < _order + _order; i++) {
     scaled_knots[i] = (knots[i] - min_k) / (max_k - min_k);
   }
 
@@ -53,38 +54,16 @@ append_segment(int order, int vertex_index, const float knots[]) {
   segment._from = min_k;
   segment._to = max_k;
 
-  for (i = 0; i < order; i++) {
-    LVecBase4f b = nurbs_blending_function(order, i, order, scaled_knots);
-    segment._matrix.set_col(i, b);
+  for (i = 0; i < _order; i++) {
+    LVecBase4f b = nurbs_blending_function(_order, i, _order, scaled_knots);
+    segment._basis.set_col(i, b);
   }
 
-  for (i = order; i < 4; i++) {
-    segment._matrix.set_col(i, LVecBase4f::zero());
+  for (i = _order; i < 4; i++) {
+    segment._basis.set_col(i, LVecBase4f::zero());
   }
 
   _segments.push_back(segment);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsMatrixVector::compose_segment
-//       Access: Public
-//  Description: Appends a new segment to the vector by composing the
-//               indicated geometry matrix with the indicated basis
-//               matrix from the given vector.
-////////////////////////////////////////////////////////////////////
-void NurbsMatrixVector::
-compose_segment(const NurbsMatrixVector &basis, int segment, 
-                const LMatrix4f &geom) {
-  nassertv(segment >= 0 && segment < (int)basis._segments.size());
-  const Segment &source = basis._segments[segment];
-
-  Segment dest;
-  dest._vertex_index = source._vertex_index;
-  dest._from = source._from;
-  dest._to = source._to;
-  dest._matrix = source._matrix * geom;
-
-  _segments.push_back(dest);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -99,7 +78,7 @@ nurbs_blending_function(int order, int i, int j, const float knots[]) {
   LVecBase4f r;
 
   if (j == 1) {
-    if (i == order-1 && knots[i] < knots[i+1]) {
+    if (i == order - 1 && knots[i] < knots[i + 1]) {
       r.set(0.0f, 0.0f, 0.0f, 1.0f);
     } else {
       r.set(0.0f, 0.0f, 0.0f, 0.0f);
