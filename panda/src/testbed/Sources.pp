@@ -34,3 +34,8 @@
   #define UNIX_SYS_LIBS m
 //#end test_bin_target
 #end bin_target
+
+#begin test_bin_target
+  #define TARGET test_texmem
+  #define SOURCES test_texmem.cxx
+#end test_bin_target
