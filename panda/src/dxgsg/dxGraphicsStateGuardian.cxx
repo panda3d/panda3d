@@ -297,7 +297,7 @@ void DXGraphicsStateGuardian::FillFPSMeterTexture(void) {
         return;
     }
 
-    HFONT hfnt = (HFONT) GetStockObject(ANSI_FIXED_FONT); 
+    HFONT hfnt = (HFONT) GetStockObject(ANSI_VAR_FONT); 
     (void) SelectObject(hDC, hfnt);
 
     SetTextColor(hDC, RGB(255,255,128) );
@@ -6522,7 +6522,12 @@ void DXGraphicsStateGuardian::show_full_screen_frame(void) {
   // Flip the front and back buffers, to make what we just rendered
   // visible.
 
-  if(!_overlay_windows_supported) {
+  if (_overlay_windows_supported) {
+    // If we're asking for overlay windows, we have to blt instead of
+    // flip, so we don't lose the window.
+    hr = scrn.pddsPrimary->Blt( NULL, scrn.pddsBack,  NULL, DDBLT_WAIT, NULL );
+
+  } else {
     // Normally, we can just do the fast flip operation.
     DWORD dwFlipFlags = DDFLIP_WAIT;
 
@@ -6539,20 +6544,17 @@ void DXGraphicsStateGuardian::show_full_screen_frame(void) {
     // bugbug: dont we want triple buffering instead of wasting time
     // waiting for vsync?
     hr = scrn.pddsPrimary->Flip( NULL, dwFlipFlags);
-  } else {
-      // If we're asking for overlay windows, we have to blt instead of
-      // flip, so we don't lose the window.
-      hr = scrn.pddsPrimary->Blt( NULL, scrn.pddsBack,  NULL, DDBLT_WAIT, NULL );
-  }
 
-  if(FAILED(hr)) {
+    if(FAILED(hr)) {
       if((hr == DDERR_SURFACELOST) || (hr == DDERR_SURFACEBUSY)) {
         CheckCooperativeLevel();
       } else {
         dxgsg_cat.error() << "show_frame() - Flip failed w/unexpected error code: " << ConvD3DErrorToString(hr) << endl;
         exit(1);
       }
+    }
   }
+
 }
 
 ////////////////////////////////////////////////////////////////////
