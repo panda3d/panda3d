@@ -5,8 +5,6 @@ from IntervalGlobal import *
 import Mopath
 import IntervalPlayer
 
-#AudioManager.spawnUpdate()
-
 boat = loader.loadModel('models/directmodels/smiley')
 boat.reparentTo(render)
 

@@ -32,6 +32,7 @@ class SoundInterval(Interval.Interval):
 	if (t > self.duration):
 	    if (self.isPlaying == 1):
 		AudioManager.stop(self.sound)
+		self.isPlaying = 0
 	    return
 	assert(t >= 0)
 	if (t == 0):
