@@ -77,5 +77,5 @@ class CRCache:
         del(self.dict[doId])
         self.fifo.remove(distObj)
         # and delete it
-        oldestDistObj.delete()
+        distObj.delete()
         
