@@ -446,7 +446,15 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   float from_radius = length(from_radius_v);
 
   LVector3f normal = has_effective_normal() ? get_effective_normal() : get_normal();
-  nassertr(IS_NEARLY_EQUAL(normal.length_squared(), 1.0f), NULL);
+#ifndef NDEBUG
+  if (!IS_THRESHOLD_EQUAL(normal.length_squared(), 1.0f, 0.001), NULL) {
+    collide_cat.info()
+      << "polygon within " << entry.get_into_node_path()
+      << " has normal " << normal << " of length " << normal.length()
+      << "\n";
+    normal.normalize();
+  }
+#endif
 
   // The nearest point within the plane to our center is the
   // intersection of the line (center, center+normal) with the plane.
