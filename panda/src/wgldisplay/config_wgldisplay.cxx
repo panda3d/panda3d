@@ -29,8 +29,15 @@ ConfigureFn(config_wgldisplay) {
   init_libwgldisplay();
 }
 
+//  Configure this true to force the rendering to sync to the video
+//  refresh, or false to let your frame rate go as high as it can,
+//  irrespective of the video refresh.  (if this capability is available in the ICD)
+bool gl_sync_video = config_wgldisplay.GetBool("sync-video", true);
+
 bool gl_show_fps_meter = config_wgldisplay.GetBool("show-fps-meter", false);
 float gl_fps_meter_update_interval = max(0.5,config_wgldisplay.GetFloat("fps-meter-update-interval", 1.7));
+
+extern void AtExitFn(void);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libwgldisplay
@@ -56,6 +63,8 @@ init_libwgldisplay() {
   GraphicsWindow::get_factory().register_factory(
             wglGraphicsWindow::get_class_type(),
                 wglGraphicsWindow::make_wglGraphicsWindow);
+
+  atexit(AtExitFn);
 }
 
 // cant use global var cleanly because global var static init executed after init_libwgl(), incorrectly reiniting var

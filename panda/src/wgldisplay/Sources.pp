@@ -11,7 +11,7 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
 
   #define SOURCES \
-    config_wgldisplay.h wglGraphicsPipe.h wglGraphicsWindow.cxx wglGraphicsWindow.h
+    config_wgldisplay.h wglGraphicsPipe.h wglGraphicsWindow.cxx wglGraphicsWindow.h wglext.h
     
   #define INCLUDED_SOURCES \
     config_wgldisplay.cxx wglGraphicsPipe.cxx

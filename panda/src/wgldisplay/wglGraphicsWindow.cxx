@@ -21,21 +21,525 @@
 #include "config_wgldisplay.h"
 #include <keyboardButton.h>
 #include <mouseButton.h>
+#include <throw_event.h>
 #include <glGraphicsStateGuardian.h>
 #include <errno.h>
 #include <time.h>
 #include <mmsystem.h>
 #include <pStatTimer.h>
+#include <ddraw.h>
+#include <tchar.h>
+#include <map>
+
+#define WGL_WGLEXT_PROTOTYPES
+#include "wglext.h"
 
 ////////////////////////////////////////////////////////////////////
 // Static variables
 ////////////////////////////////////////////////////////////////////
 TypeHandle wglGraphicsWindow::_type_handle;
 
+#define WGLWIN_CONFIGURE 0x4
+
 #define MOUSE_ENTERED 0
 #define MOUSE_EXITED 1
 
-#define FONT_BITMAP_OGLDISPLAYLISTNUM 1000    // some arbitrary #
+#define FONT_BITMAP_OGLDISPLAYLISTNUM 1000    // an arbitrary ID #
+
+#define LAST_ERROR 0
+#define ERRORBOX_TITLE "Panda3D Error"
+#define WGL_WINDOWCLASSNAME "wglDisplay"
+
+typedef map<HWND,wglGraphicsWindow *> HWND_PANDAWIN_MAP;
+
+HWND_PANDAWIN_MAP hwnd_pandawin_map;
+wglGraphicsWindow *global_wglwinptr=NULL;  // need this for temporary windproc
+
+typedef enum {Software, MCD, ICD} OGLDriverType;
+
+LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam,LPARAM lparam);
+
+void PrintErrorMessage(DWORD msgID) {
+   LPTSTR pMessageBuffer;
+
+   if(msgID==LAST_ERROR)
+     msgID=GetLastError();
+
+   FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+                 NULL,msgID,  
+                 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), //The user default language
+                 (LPTSTR) &pMessageBuffer,  // the weird ptrptr->ptr cast is intentional, see FORMAT_MESSAGE_ALLOCATE_BUFFER
+                 1024, NULL);
+   MessageBox(GetDesktopWindow(),pMessageBuffer,_T(ERRORBOX_TITLE),MB_OK);
+   wgldisplay_cat.fatal() << "System error msg: " << pMessageBuffer << endl;
+   LocalFree( pMessageBuffer ); 
+}
+
+// fn exists so AtExitFn can call it without refcntr blowing up since its !=0
+void wglGraphicsWindow::DestroyMe(bool bAtExit) {
+
+  _exiting_window = true;  // needed before DestroyWindow call
+
+  if(_visual!=NULL)
+      free(_visual);
+
+  // several GL drivers (voodoo,ATI, not nvidia) crash if we call these wgl deletion routines from
+  // an atexit() fn.  So we just wont call them for now.  We're exiting the app anyway.
+  if(!bAtExit) {
+
+      if(gl_show_fps_meter)
+        glDeleteLists(FONT_BITMAP_OGLDISPLAYLISTNUM, 128);
+    
+      HGLRC curcxt=wglGetCurrentContext();
+      if(curcxt!=NULL) 
+        unmake_current();
+    
+      if(_context!=NULL)
+          wglDeleteContext(_context);
+  }
+
+  if(_hdc!=NULL) 
+    ReleaseDC(_mwindow,_hdc);
+
+  if(_mwindow!=NULL) {
+    DestroyWindow(_mwindow);
+    hwnd_pandawin_map.erase(_mwindow);
+  }
+
+  if(_pCurrent_display_settings!=NULL)
+      delete _pCurrent_display_settings;
+
+  if (_props._fullscreen) {
+      // revert to default display mode
+      ChangeDisplaySettings(NULL,0x0);
+  }
+  
+  global_wglwinptr=NULL;  //should be safe to do this now, since anyone who needs it at CreateWin will just set it during creation
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Destructor
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+wglGraphicsWindow::~wglGraphicsWindow(void) {
+   DestroyMe(false);
+}
+
+void DestroyAllWindows(bool bAtExit) {
+   // need to go through all windows in map var and delete them
+   while(!hwnd_pandawin_map.empty()) {
+     // cant use a for loop cause DestroyMe erases things out from under us, so iterator is invalid
+     HWND_PANDAWIN_MAP::iterator pwin = hwnd_pandawin_map.begin();
+     if((*pwin).second != NULL) 
+         (*pwin).second->DestroyMe(bAtExit);
+   }
+}
+
+void AtExitFn() {
+#ifdef _DEBUG
+    wgldisplay_cat.spam() << "AtExitFn called\n";
+#endif
+  
+     DestroyAllWindows(true);
+}
+
+// spare me the trouble of linking with dxguid.lib or defining ALL the dx guids in this .obj by #defining INITGUID
+#define MY_DEFINE_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
+        EXTERN_C const GUID DECLSPEC_SELECTANY name \
+                = { l, w1, w2, { b1, b2,  b3,  b4,  b5,  b6,  b7,  b8 } }
+MY_DEFINE_GUID( IID_IDirectDraw2, 0xB3A6F3E0,0x2B43,0x11CF,0xA2,0xDE,0x00,0xAA,0x00,0xB9,0x33,0x56 );
+
+////////////////////////////////////////////////////////////////////
+//  Function: GetAvailVidMem
+//  Description: Uses DDraw to get available video memory
+////////////////////////////////////////////////////////////////////
+static DWORD GetAvailVidMem(void) {
+
+    LPDIRECTDRAW2 pDD2;
+    LPDIRECTDRAW pDD;
+    HRESULT hr;
+
+    typedef HRESULT (WINAPI *DIRECTDRAWCREATEPROC)(GUID FAR *lpGUID,LPDIRECTDRAW FAR *lplpDD,IUnknown FAR *pUnkOuter); 
+    DIRECTDRAWCREATEPROC pfnDDCreate=NULL;
+
+    HINSTANCE DDHinst = LoadLibrary( "ddraw.dll" );
+    if(DDHinst == 0) {
+        wgldisplay_cat.fatal() << "LoadLibrary() can't find DDRAW.DLL!" << endl;
+        exit(1);
+    }
+
+    pfnDDCreate = (DIRECTDRAWCREATEPROC) GetProcAddress( DDHinst, "DirectDrawCreate" );
+
+    // just use DX5 DD interface, since that's the minimum ver we need
+    if(NULL == pfnDDCreate) {
+        wgldisplay_cat.fatal() << "GetProcAddress failed on DirectDrawCreate\n";
+        exit(1);
+    }
+
+    // Create the Direct Draw Object
+    hr = (*pfnDDCreate)((GUID *)DDCREATE_HARDWAREONLY, &pDD, NULL);
+    if(hr != DD_OK) {
+        wgldisplay_cat.fatal()
+        << "DirectDrawCreate failed : result = " << (void*)hr << endl;
+        exit(1);
+    }
+
+    FreeLibrary(DDHinst);    //undo LoadLib above, decrement ddrawl.dll refcnt (after DDrawCreate, since dont want to unload/reload)
+
+    // need DDraw2 interface for GetAvailVidMem
+    hr = pDD->QueryInterface(IID_IDirectDraw2, (LPVOID *)&pDD2); 
+    if(hr != DD_OK) {
+        wgldisplay_cat.fatal() << "DDraw QueryInterface failed : result = " << (void*)hr << endl;
+        exit(1);
+     }
+
+    pDD->Release();
+
+    // Now we try to figure out if we can use requested screen resolution and best
+    // rendertarget bpp and still have at least 2 meg of texture vidmem
+
+    // Get Current VidMem avail.  Note this is only an estimate, when we switch to fullscreen
+    // mode from desktop, more vidmem will be available (typically 1.2 meg).  I dont want
+    // to switch to fullscreen more than once due to the annoying monitor flicker, so try
+    // to figure out optimal mode using this estimate
+    DDSCAPS ddsCaps;
+    DWORD dwTotal,dwFree;
+    ZeroMemory(&ddsCaps,sizeof(DDSCAPS2));
+    ddsCaps.dwCaps = DDSCAPS_VIDEOMEMORY; //set internally by DX anyway, dont think this any different than 0x0
+
+    if(FAILED(  hr = pDD2->GetAvailableVidMem(&ddsCaps,&dwTotal,&dwFree))) {
+        wgldisplay_cat.fatal() << "GetAvailableVidMem failed : result = " << (void*)hr << endl;
+        exit(1);
+    }
+
+#ifdef _DEBUG
+    wgldisplay_cat.debug() << "before FullScreen switch: GetAvailableVidMem returns Total: " << dwTotal/1000000.0 << "  Free: " << dwFree/1000000.0 << endl;
+#endif
+
+    pDD2->Release();  // bye-bye ddraw
+
+    return dwFree;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: config
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+void wglGraphicsWindow::config(void) {
+
+  GraphicsWindow::config();
+
+  HINSTANCE hinstance = GetModuleHandle(NULL);
+  HWND hDesktopWindow = GetDesktopWindow();
+
+  global_wglwinptr = this;  // need this until we get an HWND from CreateWindow
+
+  _change_mask = 0;
+  _exiting_window = false;
+  _mouse_input_enabled = false;
+  _mouse_motion_enabled = false;
+  _mouse_passive_motion_enabled = false;
+  _mouse_entry_enabled = false;
+  _entry_state = -1;
+  _visual = NULL;
+  _context = NULL;
+  _hdc = NULL;
+  _window_inactive = false;
+  _pCurrent_display_settings = NULL;
+
+  _mwindow = NULL;
+  _gsg = NULL;
+
+#if 0
+// bugbug need to add wdx handling routines
+    _WindowAdjustingType = NotAdjusting;
+    _hMouseCursor = NULL;
+    _bSizeIsMaximized=FALSE;
+#endif
+
+#if 0
+   // for gl, do this after window creation
+    // Create a GSG to manage the graphics
+    make_gsg();
+    if(_gsg==NULL) {
+        wdxdisplay_cat.error() << "DXGSG creation failed!\n";
+        exit(1);
+    }
+    _dxgsg = DCAST(DXGraphicsStateGuardian, _gsg);
+#endif
+
+    WNDCLASS wc;
+
+    // Clear before filling in window structure!
+    ZeroMemory(&wc, sizeof(WNDCLASS));
+    wc.style      = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+    wc.lpfnWndProc = (WNDPROC) static_window_proc;
+    wc.hInstance   = hinstance;
+
+    string windows_icon_filename = get_icon_filename_().to_os_specific();
+
+    if(!windows_icon_filename.empty()) {
+        // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings)
+        // if icon is more than 8bpp
+        wc.hIcon = (HICON) LoadImage(NULL, windows_icon_filename.c_str(), IMAGE_ICON, 0, 0, LR_LOADFROMFILE);
+    } else {
+        wc.hIcon = NULL; // use default app icon
+    }
+
+    wc.hCursor        = _hMouseCursor = LoadCursor(NULL, IDC_ARROW);
+    wc.hbrBackground  = (HBRUSH)GetStockObject(BLACK_BRUSH);
+    wc.lpszMenuName   = NULL;
+    wc.lpszClassName  = WGL_WINDOWCLASSNAME;
+
+    if(!RegisterClass(&wc)) {
+        wgldisplay_cat.fatal() << "could not register window class!" << endl;
+        exit(1);
+    }
+
+    // rect now contains the coords for the entire window, not the client
+    if (_props._fullscreen) {
+      DWORD dwWidth =  _props._xsize;
+      DWORD dwHeight = _props._ysize;
+
+      HDC scrnDC=GetDC(hDesktopWindow);
+      DWORD drvr_ver=GetDeviceCaps(scrnDC,DRIVERVERSION);
+      DWORD cur_bitdepth=GetDeviceCaps(scrnDC,BITSPIXEL);
+      DWORD cur_scrnwidth=GetDeviceCaps(scrnDC,HORZRES);
+      DWORD cur_scrnheight=GetDeviceCaps(scrnDC,VERTRES);
+      ReleaseDC(hDesktopWindow,scrnDC);
+
+      DWORD dwFullScreenBitDepth=cur_bitdepth;
+
+      // dont pick any video modes < MIN_REFRESH_RATE Hz
+      #define MIN_REFRESH_RATE 60
+      
+      // EnumDisplaySettings may indicate 0 or 1 for refresh rate, which means use driver default rate
+      #define ACCEPTABLE_REFRESH_RATE(RATE) ((RATE >= MIN_REFRESH_RATE) || (RATE==0) || (RATE==1))
+      
+      #define LOWVIDMEMTHRESHOLD 3500000
+      if(GetAvailVidMem() < LOWVIDMEMTHRESHOLD) {
+          wgldisplay_cat.debug() << "small video memory card detect, switching fullscreen to minimum 640x480x16 config\n";
+          // we're going to need  640x480 at 16 bit to save enough tex vidmem
+          dwFullScreenBitDepth=16;
+          dwWidth=640;
+          dwHeight=480;
+      }
+
+      DEVMODE dm;
+      bool bGoodModeFound=false;
+      BOOL bGotNewMode;
+      int j=0;
+
+      while(1) {
+          memset( &dm, 0, sizeof( dm ) );
+          dm.dmSize = sizeof( dm );
+
+          bGotNewMode=EnumDisplaySettings(NULL,j,&dm);
+          if(!bGotNewMode)
+            break;
+
+          if((dm.dmPelsWidth==dwWidth) && (dm.dmPelsHeight==dwHeight) &&
+             (dm.dmBitsPerPel==dwFullScreenBitDepth) &&
+             ACCEPTABLE_REFRESH_RATE(dm.dmDisplayFrequency)) {
+              bGoodModeFound=true;
+              break;
+          }
+          j++;
+      }
+
+      if(!bGoodModeFound) {
+          wgldisplay_cat.fatal() << "Videocard has no supported display resolutions at specified res ( " << dwWidth << " X " << dwHeight << " X " << dwFullScreenBitDepth <<" )\n";
+          exit(1);
+      }
+
+      DWORD style = WS_POPUP | WS_MAXIMIZE;
+
+      // I'd prefer to CreateWindow after DisplayChange in case it messes up GL somehow,
+      // but I need the window's black background to cover up the desktop during the mode change
+      _mwindow = CreateWindow(WGL_WINDOWCLASSNAME, _props._title.c_str(),
+                style,0,0,dwWidth,dwHeight,hDesktopWindow, NULL, hinstance, 0);
+
+      // move window to top of zorder,
+      SetWindowPos(_mwindow, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE);
+    
+      ShowWindow(_mwindow, SW_SHOWNORMAL);
+      ShowWindow(_mwindow, SW_SHOWNORMAL);
+
+      int chg_result = ChangeDisplaySettings(&dm, CDS_FULLSCREEN);
+    
+      if(chg_result!=DISP_CHANGE_SUCCESSFUL) {
+            wgldisplay_cat.fatal() << "ChangeDisplaySettings failed (error code: " << chg_result <<") for specified res ( " << dwWidth << " X " << dwHeight << " X " << dwFullScreenBitDepth <<" ), " << dm.dmDisplayFrequency  << "Hz\n";
+            exit(1);
+      }
+
+      _pCurrent_display_settings = new(DEVMODE);
+      memcpy(_pCurrent_display_settings,&dm,sizeof(DEVMODE));
+
+      _props._xorg = 0;
+      _props._yorg = 0;
+      _props._xsize = dwWidth;
+      _props._ysize = dwHeight;
+
+       if(wgldisplay_cat.is_debug())
+           wgldisplay_cat.debug() << "set fullscreen mode at res ( " << dwWidth << " X " << dwHeight << " X " << dwFullScreenBitDepth <<" ), " << dm.dmDisplayFrequency  << "Hz\n";
+  } else {
+        
+        DWORD style;
+        RECT win_rect;
+        SetRect(&win_rect, _props._xorg,  _props._yorg, _props._xorg + _props._xsize,
+                _props._yorg + _props._ysize);
+
+        style = WS_POPUP | WS_MAXIMIZE;
+
+        if(_props._border) {
+            style |= WS_OVERLAPPEDWINDOW;
+        }
+
+        BOOL bRes = AdjustWindowRect(&win_rect, style, FALSE);  //compute window size based on desired client area size
+
+        if(!bRes) {
+            wgldisplay_cat.fatal() << "AdjustWindowRect failed!" << endl;
+            exit(1);
+        }
+
+        // make sure origin is on screen, slide far bounds over if necessary
+        if(win_rect.left < 0) {
+            win_rect.right += abs(win_rect.left); win_rect.left = 0;
+        }
+        if(win_rect.top < 0) {
+            win_rect.bottom += abs(win_rect.top); win_rect.top = 0;
+        }
+
+        _mwindow = CreateWindow(WGL_WINDOWCLASSNAME, _props._title.c_str(),
+                                style, win_rect.left, win_rect.top, win_rect.right-win_rect.left,
+                                win_rect.bottom-win_rect.top,
+                                NULL, NULL, hinstance, 0);
+  }
+    
+  if(!_mwindow) {
+        wgldisplay_cat.fatal() << "CreateWindow() failed!" << endl;
+        PrintErrorMessage(LAST_ERROR);
+        exit(1);
+  }
+    
+  hwnd_pandawin_map[_mwindow] = this;
+    
+  // move window to top of zorder
+  SetWindowPos(_mwindow, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE);
+    
+  _hdc = GetDC(_mwindow);
+
+  // Configure the framebuffer according to parameters specified in _props
+  // Initializes _visual
+  int pfnum=choose_visual();
+
+  //  int pfnum=ChoosePixelFormat(_hdc, _visual);
+  if(wgldisplay_cat.is_debug())
+     wgldisplay_cat.debug() << "wglGraphicsWindow::config() - picking pixfmt #"<< pfnum <<endl;
+
+  if (!SetPixelFormat(_hdc, pfnum, _visual)) {
+    wgldisplay_cat.fatal()
+      << "wglGraphicsWindow::config() - SetPixelFormat failed after window create" << endl;
+    exit(1);
+  }
+
+  // Initializes _colormap
+  setup_colormap();
+
+  _context = wglCreateContext(_hdc);
+  if (!_context) {
+    wgldisplay_cat.fatal()
+      << "wglGraphicsWindow::config() - failed to create Win32 rendering context" << endl;
+    exit(1);
+  }
+
+  // need to do twice to override any minimized flags in StartProcessInfo
+  ShowWindow(_mwindow, SW_SHOWNORMAL);
+  ShowWindow(_mwindow, SW_SHOWNORMAL);
+
+  // Enable detection of mouse input
+  enable_mouse_input(true);
+  enable_mouse_motion(true);
+  enable_mouse_passive_motion(true);
+
+  // Now indicate that we have our keyboard/mouse device ready.
+  GraphicsWindowInputDevice device =
+    GraphicsWindowInputDevice::pointer_and_keyboard("keyboard/mouse");
+  _input_devices.push_back(device);
+
+  // Create a GSG to manage the graphics
+  // First make the new context and window the current one so GL knows how
+  // to configure itself in the gsg
+  make_current();
+  make_gsg();
+
+  string tmpstr((char*)glGetString(GL_EXTENSIONS));
+
+  _extensions_str = tmpstr;
+
+  PFNWGLGETEXTENSIONSSTRINGEXTPROC wglGetExtensionsStringEXT;
+  PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB;
+  wglGetExtensionsStringARB = (PFNWGLGETEXTENSIONSSTRINGARBPROC)wglGetProcAddress("wglGetExtensionsStringARB");
+  wglGetExtensionsStringEXT = (PFNWGLGETEXTENSIONSSTRINGEXTPROC)wglGetProcAddress("wglGetExtensionsStringEXT");
+
+  if(wglGetExtensionsStringARB!=NULL) {
+       _extensions_str += " ";
+       const char *ARBextensions = wglGetExtensionsStringARB(wglGetCurrentDC());
+       _extensions_str.append(ARBextensions);
+  }
+
+  if(wglGetExtensionsStringEXT!=NULL) {
+      // usually this will be the same as ARB extensions, but whatever
+      _extensions_str += " ";
+      const char *EXTextensions = wglGetExtensionsStringEXT();
+      _extensions_str.append(EXTextensions);
+  }
+
+  if(wgldisplay_cat.is_spam())
+     wgldisplay_cat.spam() << "GL extensions: " << _extensions_str << endl;
+
+  if(gl_sync_video) {
+      // set swapbuffers to swap no more than once per monitor refresh
+      // note sometimes the ICD advertises this ext, but it still doesn't seem to work
+      if(_extensions_str.find("WGL_EXT_swap_control")!=_extensions_str.npos) {
+           PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
+           wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC) wglGetProcAddress("wglSwapIntervalEXT");
+           if(wglSwapIntervalEXT!=NULL)
+               wglSwapIntervalEXT(1);   
+
+           if(wgldisplay_cat.is_spam())
+               wgldisplay_cat.spam() << "setting swapbuffer interval to 1/refresh\n";
+      }
+  }
+
+  if(gl_show_fps_meter) {
+
+      _start_time = timeGetTime();
+      _current_fps = 0.0;
+      _start_frame_count = _cur_frame_count = 0;
+
+     // 128 enough to handle all the ascii chars
+     // this creates a display list for each char.  displist numbering starts
+     // at FONT_BITMAP_OGLDISPLAYLISTNUM.  Might want to optimize just to save
+     // mem by just allocing bitmaps for chars we need (0-9 fps,SPC)
+     wglUseFontBitmaps(_hdc, 0, 128, FONT_BITMAP_OGLDISPLAYLISTNUM);
+  }
+
+  if(wgldisplay_cat.is_debug()) {
+      const GLubyte *vendorname=glGetString(GL_VENDOR);
+      if(vendorname!=NULL) {
+          if(strncmp((const char *)vendorname,"Microsoft",9)==0) {
+              wgldisplay_cat.debug() << "wglGraphicsWindow:: GL VendorID: " <<   glGetString(GL_VENDOR) << " (Software Rendering)" << endl;
+          } else {
+              wgldisplay_cat.debug() << "wglGraphicsWindow:: GL VendorID: " <<   glGetString(GL_VENDOR) << endl;
+          }
+      } else {
+         wgldisplay_cat.info() << "wglGraphicsWindow:: glGetString(GL_VENDOR) returns NULL!!!\n";
+      }
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Constructor
@@ -56,26 +560,6 @@ wglGraphicsWindow::
 wglGraphicsWindow(GraphicsPipe* pipe, const
     GraphicsWindow::Properties& props) : GraphicsWindow(pipe, props) {
   config();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Destructor
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-wglGraphicsWindow::~wglGraphicsWindow(void) {
-
-  if(gl_show_fps_meter)
-    glDeleteLists(FONT_BITMAP_OGLDISPLAYLISTNUM, 128);
-
-  if(_visual!=NULL)
-    free(_visual);
-
-  // The GL context is already gone.  Don't try to destroy it again.
-  //  wglDeleteContext(_context);
-
-  ReleaseDC(_mwindow,_hdc);
-  DestroyWindow(_mwindow);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -239,254 +723,6 @@ try_for_visual(wglGraphicsPipe *pipe, int mask,
   return match;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_config
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void wglGraphicsWindow::
-get_config(PIXELFORMATDESCRIPTOR *visual, int attrib, int *value) {
-  if (visual == NULL)
-    return;
-
-  switch (attrib) {
-    case GLX_USE_GL:
-      if (visual->dwFlags & (PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW)) {
-    if (visual->iPixelType == PFD_TYPE_COLORINDEX &&
-        visual->cColorBits >= 24) {
-      *value = 0;
-    } else {
-      *value = 1;
-    }
-      } else {
-    *value = 0;
-      }
-      break;
-    case GLX_BUFFER_SIZE:
-      if (visual->iPixelType == PFD_TYPE_RGBA)
-    *value = visual->cColorBits;
-      else
-    *value = 8;
-      break;
-    case GLX_LEVEL:
-      *value = visual->bReserved;
-      break;
-    case GLX_RGBA:
-      *value = visual->iPixelType == PFD_TYPE_RGBA;
-      break;
-    case GLX_DOUBLEBUFFER:
-      *value = visual->dwFlags & PFD_DOUBLEBUFFER;
-      break;
-    case GLX_STEREO:
-      *value = visual->dwFlags & PFD_STEREO;
-      break;
-    case GLX_AUX_BUFFERS:
-      *value = visual->cAuxBuffers;
-      break;
-    case GLX_RED_SIZE:
-      *value = visual->cRedBits;
-      break;
-    case GLX_GREEN_SIZE:
-      *value = visual->cGreenBits;
-      break;
-    case GLX_BLUE_SIZE:
-      *value = visual->cBlueBits;
-      break;
-    case GLX_ALPHA_SIZE:
-      *value = visual->cAlphaBits;
-      break;
-    case GLX_DEPTH_SIZE:
-      *value = visual->cDepthBits;
-      break;
-    case GLX_STENCIL_SIZE:
-      *value = visual->cStencilBits;
-      break;
-    case GLX_ACCUM_RED_SIZE:
-      *value = visual->cAccumRedBits;
-      break;
-    case GLX_ACCUM_GREEN_SIZE:
-      *value = visual->cAccumGreenBits;
-      break;
-    case GLX_ACCUM_BLUE_SIZE:
-      *value = visual->cAccumBlueBits;
-      break;
-    case GLX_ACCUM_ALPHA_SIZE:
-      *value = visual->cAccumAlphaBits;
-      break;
-  }
-}
-
-#if 0
-////////////////////////////////////////////////////////////////////
-//     Function: choose visual
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-int wglGraphicsWindow::choose_visual(void) {
-  wglGraphicsPipe* pipe = DCAST(wglGraphicsPipe, _pipe);
-
-  int mask = _props._mask;
-
-    wgldisplay_cat.info()
-      << "wglGraphicsWindow::mask =0x" << (void*) _props._mask
-    << endl;
-
-  int want_depth_bits = _props._want_depth_bits;
-  int want_color_bits = _props._want_color_bits;
-
-  if (mask & W_MULTISAMPLE) {
-    wgldisplay_cat.info()
-      << "wglGraphicsWindow::config() - multisample not supported"
-    << endl;
-    mask &= ~W_MULTISAMPLE;
-  }
-
-  _visual = try_for_visual(pipe, mask, want_depth_bits, want_color_bits);
-
-  // This is the severity level at which we'll report the details of
-  // the visual we actually do find.  Normally, it's debug-level
-  // information: we don't care about that much detail.
-  NotifySeverity show_visual_severity = NS_debug;
-
-  if (_visual == NULL) {
-    wgldisplay_cat.info()
-      << "wglGraphicsWindow::choose_visual() - visual with requested\n"
-      << "   capabilities not found; trying for lesser visual.\n";
-
-    // If we're unable to get the visual we asked for, however, we
-    // probably *do* care to know the details about what we actually
-    // got, even if we don't have debug mode set.  So we'll report the
-    // visual at a higher level.
-    show_visual_severity = NS_info;
-
-    bool special_size_request =
-      (want_depth_bits != 1 || want_color_bits != 1);
-
-    // We try to be smart about choosing a close match for the visual.
-    // First, we'll eliminate some of the more esoteric options one at
-    // a time, then two at a time, and finally we'll try just the bare
-    // minimum.
-
-    if (special_size_request) {
-      // Actually, first we'll eliminate all of the minimum sizes, to
-      // try to open a window with all of the requested options, but
-      // maybe not as many bits in some options as we'd like.
-      _visual = try_for_visual(pipe, mask);
-    }
-
-    if (_visual == NULL) {
-      // Ok, not good enough.  Now try to eliminate options, but keep
-      // as many bits as we asked for.
-
-      // This array keeps the bitmasks of options that we pull out of
-      // the requested mask, in order.
-
-      static const int strip_properties[] = {
-    // One esoteric option removed.
-    W_MULTISAMPLE,
-    W_STENCIL,
-    W_ACCUM,
-    W_ALPHA,
-    W_STEREO,
-
-    // Two esoteric options removed.
-    W_STENCIL | W_MULTISAMPLE,
-    W_ACCUM | W_MULTISAMPLE,
-    W_ALPHA | W_MULTISAMPLE,
-    W_STEREO | W_MULTISAMPLE,
-    W_STENCIL | W_ACCUM,
-    W_ALPHA | W_STEREO,
-    W_STENCIL | W_ACCUM | W_MULTISAMPLE,
-    W_ALPHA | W_STEREO | W_MULTISAMPLE,
-
-    // All esoteric options removed.
-    W_STENCIL | W_ACCUM | W_ALPHA | W_STEREO | W_MULTISAMPLE,
-
-    // All esoteric options, plus some we'd really really prefer,
-    // removed.
-    W_STENCIL | W_ACCUM | W_ALPHA | W_STEREO | W_MULTISAMPLE | W_DOUBLE,
-
-    // A zero marks the end of the array.
-    0
-      };
-
-      pset<int> tried_masks;
-      tried_masks.insert(mask);
-
-      int i;
-      for (i = 0; _visual == NULL && strip_properties[i] != 0; i++) {
-    int new_mask = mask & ~strip_properties[i];
-    if (tried_masks.insert(new_mask).second) {
-      _visual = try_for_visual(pipe, new_mask, want_depth_bits,
-                   want_color_bits);
-    }
-      }
-
-      if (special_size_request) {
-    tried_masks.clear();
-    tried_masks.insert(mask);
-
-    if (_visual == NULL) {
-      // Try once more, this time eliminating all of the size
-      // requests.
-      for (i = 0; _visual == NULL && strip_properties[i] != 0; i++) {
-        int new_mask = mask & ~strip_properties[i];
-        if (tried_masks.insert(new_mask).second) {
-          _visual = try_for_visual(pipe, new_mask);
-        }
-      }
-    }
-      }
-
-      if (_visual == NULL) {
-    // Here's our last-ditch desparation attempt: give us any GLX
-    // visual at all!
-    _visual = try_for_visual(pipe, 0);
-      }
-
-      if (_visual == NULL) {
-    wgldisplay_cat.fatal()
-      << "wglGraphicsWindow::choose_visual() - could not get any "
-        "visual." << endl;
-    exit(1);
-      }
-    }
-  }
-
-  if (wgldisplay_cat.is_on(show_visual_severity)) {
-    int render_mode, double_buffer, stereo, red_size, green_size, blue_size,
-      alpha_size, ared_size, agreen_size, ablue_size, aalpha_size,
-      depth_size, stencil_size;
-
-    get_config(_visual, GLX_RGBA, &render_mode);
-    get_config(_visual, GLX_DOUBLEBUFFER, &double_buffer);
-    get_config(_visual, GLX_STEREO, &stereo);
-    get_config(_visual, GLX_RED_SIZE, &red_size);
-    get_config(_visual, GLX_GREEN_SIZE, &green_size);
-    get_config(_visual, GLX_BLUE_SIZE, &blue_size);
-    get_config(_visual, GLX_ALPHA_SIZE, &alpha_size);
-    get_config(_visual, GLX_ACCUM_RED_SIZE, &ared_size);
-    get_config(_visual, GLX_ACCUM_GREEN_SIZE, &agreen_size);
-    get_config(_visual, GLX_ACCUM_BLUE_SIZE, &ablue_size);
-    get_config(_visual, GLX_ACCUM_ALPHA_SIZE, &aalpha_size);
-    get_config(_visual, GLX_DEPTH_SIZE, &depth_size);
-    get_config(_visual, GLX_STENCIL_SIZE, &stencil_size);
-
-    wgldisplay_cat.out(show_visual_severity)
-      << "GLX Visual Info (# bits of each):" << endl
-      << " RGBA: " << red_size << " " << green_size << " " << blue_size
-      << " " << alpha_size << endl
-      << " Accum RGBA: " << ared_size << " " << agreen_size << " "
-      << ablue_size << " " << aalpha_size << endl
-      << " Depth: " << depth_size << endl
-      << " Stencil: " << stencil_size << endl
-      << " DoubleBuffer? " << double_buffer << endl
-      << " Stereo? " << stereo << endl;
-  }
-}
-#else
-
-typedef enum {Software, MCD, ICD} OGLDriverType;
 #ifdef _DEBUG
 void PrintPFD(PIXELFORMATDESCRIPTOR *pfd,char *msg) {
 
@@ -511,7 +747,6 @@ void PrintPFD(PIXELFORMATDESCRIPTOR *pfd,char *msg) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int wglGraphicsWindow::choose_visual(void) {
-  wglGraphicsPipe* pipe = DCAST(wglGraphicsPipe, _pipe);
 
   int mask = _props._mask;
   int want_depth_bits = _props._want_depth_bits;
@@ -544,8 +779,6 @@ int wglGraphicsWindow::choose_visual(void) {
   for(i=1;i<=MaxPixFmtNum;i++) {
       DescribePixelFormat(_hdc, i, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
 
-      if (wgldisplay_cat.is_debug())
-    wgldisplay_cat->debug() << "----------------" << endl;
 
       if((pfd.dwFlags & PFD_GENERIC_ACCELERATED) && (pfd.dwFlags & PFD_GENERIC_FORMAT))
           drvtype=MCD;
@@ -553,10 +786,11 @@ int wglGraphicsWindow::choose_visual(void) {
           drvtype=ICD;
        else {
          drvtype=Software;
-     if (wgldisplay_cat.is_debug())
-       wgldisplay_cat->debug() << "skipping software driver" << endl;
          continue;  // skipping all SW fmts
        }
+
+      if(wgldisplay_cat.is_debug())
+          wgldisplay_cat->debug() << "----------------" << endl;
 
       if((pfd.iPixelType == PFD_TYPE_COLORINDEX) && !(mask & W_INDEX))
           continue;
@@ -571,21 +805,21 @@ int wglGraphicsWindow::choose_visual(void) {
        DWORD dwReqFlags=(PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW);
 
        if (wgldisplay_cat.is_debug()) {
-     if (mask & W_ALPHA)
-       wgldisplay_cat->debug() << "want alpha, pfd says '"
-                   << (int)(pfd.cAlphaBits) << "'" << endl;
-     if (mask & W_DEPTH)
-       wgldisplay_cat->debug() << "want depth, pfd says '"
-                   << (int)(pfd.cDepthBits) << "'" << endl;
-     if (mask & W_STENCIL)
-       wgldisplay_cat->debug() << "want stencil, pfd says '"
-                   << (int)(pfd.cStencilBits) << "'" << endl;
-     wgldisplay_cat->debug() << "final flag check "
-                 << (int)(pfd.dwFlags & dwReqFlags) << " =? "
-                 << (int)dwReqFlags << endl;
-     wgldisplay_cat->debug() << "pfd bits = " << (int)(pfd.cColorBits)
-                 << endl;
-     wgldisplay_cat->debug() << "cur_bpp = " << cur_bpp << endl;
+         if (mask & W_ALPHA)
+           wgldisplay_cat->debug() << "want alpha, pfd says '"
+                       << (int)(pfd.cAlphaBits) << "'" << endl;
+         if (mask & W_DEPTH)
+           wgldisplay_cat->debug() << "want depth, pfd says '"
+                       << (int)(pfd.cDepthBits) << "'" << endl;
+         if (mask & W_STENCIL)
+           wgldisplay_cat->debug() << "want stencil, pfd says '"
+                       << (int)(pfd.cStencilBits) << "'" << endl;
+         wgldisplay_cat->debug() << "final flag check "
+                     << (int)(pfd.dwFlags & dwReqFlags) << " =? "
+                     << (int)dwReqFlags << endl;
+         wgldisplay_cat->debug() << "pfd bits = " << (int)(pfd.cColorBits)
+                     << endl;
+         wgldisplay_cat->debug() << "cur_bpp = " << cur_bpp << endl;
        }
 
        if(mask & W_DOUBLE)
@@ -636,8 +870,7 @@ int wglGraphicsWindow::choose_visual(void) {
   return i;
 }
 
-#endif
-
+#if 0
 ////////////////////////////////////////////////////////////////////
 //     Function: adjust_coords
 //       Access:
@@ -672,151 +905,13 @@ adjust_coords(int &xorg, int &yorg, int &xsize, int &ysize) {
   xsize = rect.right - rect.left;
   ysize = rect.bottom - rect.top;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: config
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void wglGraphicsWindow::config(void) {
-  GraphicsWindow::config();
-
-  wglGraphicsPipe* pipe = DCAST(wglGraphicsPipe, _pipe);
-  HINSTANCE hinstance = GetModuleHandle(NULL);
-  HWND desktop = GetDesktopWindow();
-
-  if (_props._fullscreen) {
-      // Note: to set fullscreen, use 'fullscreen #t' in Configurc
-      // This just runs fullscrn at current display res & depth
-      // want to be smarter about this like wdxdisplay and pick a res
-      // that will have HW acceleration and adequate texmem, but we cant
-      // get the appropriate info yet in GL (unlike DX).
-
-      // BUGBUG: The Configrc res vars (_props.x/ysize) are ignored;
-      // instead we should consider switching to the specified res
-      // (cant use DDraw for this though due to inconsistent driver support)
-
-    _props._xorg = 0;
-    _props._yorg = 0;
-    _props._xsize = GetSystemMetrics(SM_CXSCREEN);
-    _props._ysize = GetSystemMetrics(SM_CYSCREEN);
-    _mwindow = CreateWindow("wglFullscreen", _props._title.c_str(),
-                WS_POPUP | WS_MAXIMIZE,
-        _props._xorg, _props._yorg, _props._xsize, _props._ysize,
-                desktop, NULL, hinstance, 0);
-
-  } else {
-
-    int xorg = _props._xorg;
-    int yorg = _props._yorg;
-    int xsize = _props._xsize;
-    int ysize = _props._ysize;
-
-    int style = WS_POPUP | WS_MAXIMIZE;
-    if (_props._border == true) {
-      style = WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_OVERLAPPEDWINDOW;
-      adjust_coords(xorg, yorg, xsize, ysize);
-    }
-
-    _mwindow = CreateWindow("wglStandard", _props._title.c_str(),
-                style, xorg, yorg, xsize, ysize,
-                desktop, NULL, hinstance, 0);
-  }
-
-  if (!_mwindow) {
-    wgldisplay_cat.fatal()
-      << "wglGraphicsWindow::config() - failed to create Mwindow" << endl;
-    exit(1);
-  }
-
-  _hdc = GetDC(_mwindow);
-
-  // Configure the framebuffer according to parameters specified in _props
-  // Initializes _visual
-  int pfnum=choose_visual();
-
-//  int pfnum=ChoosePixelFormat(_hdc, _visual);
-  wgldisplay_cat.debug()
-      << "wglGraphicsWindow::config() - picking pixfmt #"<< pfnum <<endl;
-
-  if (!SetPixelFormat(_hdc, pfnum, _visual)) {
-    wgldisplay_cat.fatal()
-      << "wglGraphicsWindow::config() - SetPixelFormat failed after window create" << endl;
-    exit(1);
-  }
-
-  // Initializes _colormap
-  setup_colormap();
-
-  _context = wglCreateContext(_hdc);
-  if (!_context) {
-    wgldisplay_cat.fatal()
-      << "wglGraphicsWindow::config() - failed to create Win32 rendering "
-      << "context" << endl;
-    exit(1);
-  }
-
-  _change_mask = 0;
-
-  _mouse_input_enabled = false;
-  _mouse_motion_enabled = false;
-  _mouse_passive_motion_enabled = false;
-  _mouse_entry_enabled = false;
-  _entry_state = -1;
-
-  ShowWindow(_mwindow, SW_SHOWNORMAL);
-  ShowWindow(_mwindow, SW_SHOWNORMAL);
-
-  // Enable detection of mouse input
-  enable_mouse_input(true);
-  enable_mouse_motion(true);
-  enable_mouse_passive_motion(true);
-
-  // Now indicate that we have our keyboard/mouse device ready.
-  GraphicsWindowInputDevice device =
-    GraphicsWindowInputDevice::pointer_and_keyboard("keyboard/mouse");
-  _input_devices.push_back(device);
-
-  // Create a GSG to manage the graphics
-  // First make the new context and window the current one so GL knows how
-  // to configure itself in the gsg
-  make_current();
-  make_gsg();
-
-  if(gl_show_fps_meter) {
-
-      _start_time = timeGetTime();
-      _current_fps = 0.0;
-      _start_frame_count = _cur_frame_count = 0;
-
-     // 128 enough to handle all the ascii chars
-     // this creates a display list for each char.  displist numbering starts
-     // at FONT_BITMAP_OGLDISPLAYLISTNUM.  Might want to optimize just to save
-     // mem by just allocing bitmaps for chars we need (0-9 fps,SPC)
-     wglUseFontBitmaps(_hdc, 0, 128, FONT_BITMAP_OGLDISPLAYLISTNUM);
-  }
-
-  if(wgldisplay_cat.is_debug()) {
-      const GLubyte *vendorname=glGetString(GL_VENDOR);
-      if(vendorname!=NULL) {
-          if(strncmp((const char *)vendorname,"Microsoft",9)==0) {
-              wgldisplay_cat.debug() << "wglGraphicsWindow:: GL VendorID: " <<   glGetString(GL_VENDOR) << " (Software Rendering)" << endl;
-          } else {
-              wgldisplay_cat.debug() << "wglGraphicsWindow:: GL VendorID: " <<   glGetString(GL_VENDOR) << endl;
-          }
-      } else {
-         wgldisplay_cat.info() << "wglGraphicsWindow:: glGetString(GL_VENDOR) returns NULL!!!\n";
-      }
-  }
-}
-
+#endif
 ////////////////////////////////////////////////////////////////////
 //     Function: setup_colormap
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::setup_colormap(void) {
-  wglGraphicsPipe* pipe = DCAST(wglGraphicsPipe, _pipe);
 
   PIXELFORMATDESCRIPTOR pfd;
   LOGPALETTE *logical;
@@ -1001,7 +1096,7 @@ handle_keypress(ButtonHandle key, int x, int y) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::
-handle_keyrelease(ButtonHandle key, int, int) {
+handle_keyrelease(ButtonHandle key) {
   if (key != ButtonHandle::none()) {
     _input_devices[0].button_up(key);
   }
@@ -1035,36 +1130,21 @@ void wglGraphicsWindow::handle_changes(void) {
   _change_mask = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: process_events
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void wglGraphicsWindow::process_events(void) {
-  MSG event, msg;
-
-  do {
-    if (!GetMessage(&event, NULL, 0, 0))
-      exit(0);
-    // Translate virtual key messages
-    TranslateMessage(&event);
-    // Call window_proc
-    DispatchMessage(&event);
-  }
-  while (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: idle_wait
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void wglGraphicsWindow::idle_wait(void) {
+void INLINE wglGraphicsWindow::process_events(void) {
   MSG msg;
-  if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
-    process_events();
 
-  call_idle_callback();
+  while(PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
+      if(!GetMessage(&msg, NULL, 0, 0)) {
+          // WM_QUIT received
+          DestroyAllWindows(false);
+          exit(msg.wParam);  // this will invoke AtExitFn
+      }
+
+      // Translate virtual key messages
+      TranslateMessage(&msg);
+      // Call window_proc
+      DispatchMessage(&msg);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1088,21 +1168,36 @@ supports_update() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::update(void) {
-  _show_code_pcollector.stop();
-  PStatClient::main_tick();
+
+  if(_window_inactive) {
+      if (_change_mask)
+          handle_changes();
+
+      process_events();
+
+      Sleep( 500 );   // Dont consume CPU.
+      throw_event("PandaPaused");   // throw panda event to invoke network-only processing
+      return;
+  }
+
+#ifdef DO_PSTATS
+    _show_code_pcollector.stop();
+    PStatClient::main_tick();
+#endif
 
   if (_change_mask)
     handle_changes();
 
-  make_current();
-  // Always ask for a redisplay for now
+  process_events();
+
   call_draw_callback(true);
 
-  if (_idle_callback)
-    idle_wait();
-  else
-    process_events();
-  _show_code_pcollector.start();
+  if(_idle_callback)
+      call_idle_callback();
+
+#ifdef DO_PSTATS
+    _show_code_pcollector.start();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1139,11 +1234,12 @@ void wglGraphicsWindow::enable_mouse_passive_motion(bool val) {
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::make_current(void) {
   PStatTimer timer(_make_current_pcollector);
-
+  
   HGLRC current_context = wglGetCurrentContext();
   HDC current_dc = wglGetCurrentDC();
-  if (current_context != _context || current_dc != _hdc)
+  if ((current_context != _context) || (current_dc != _hdc)) {
     wglMakeCurrent(_hdc, _context);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1198,3 +1294,360 @@ void wglGraphicsWindow::init_type(void) {
 TypeHandle wglGraphicsWindow::get_type(void) const {
   return get_class_type();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: static_window_proc
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+   HWND_PANDAWIN_MAP::iterator pwin;
+   pwin=hwnd_pandawin_map.find(hwnd);
+
+   if(pwin!=hwnd_pandawin_map.end()) {
+      wglGraphicsWindow *wglwinptr=(*pwin).second;
+      return wglwinptr->window_proc(hwnd, msg, wparam, lparam);
+   } else if(global_wglwinptr!=NULL){
+       // this stuff should only be used during CreateWindow()
+       return global_wglwinptr->window_proc(hwnd, msg, wparam, lparam);
+   } else {
+       // should never need this??  (maybe at shutdwn?)
+       return DefWindowProc(hwnd, msg, wparam, lparam);
+   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: window_proc
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+LONG WINAPI wglGraphicsWindow::
+window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+  int button = -1;
+  int x, y, width, height;
+
+  switch (msg) {
+    case WM_CREATE:
+      break;
+
+    case WM_CLOSE:
+      PostQuitMessage(0);  // send WM_QUIT message
+      return 0;
+
+    case WM_ACTIVATE: {
+       if (_props._fullscreen && (!_exiting_window)) {
+           // handle switching out of fullscreen mode differently than windowed mode.
+           // here we want to suspend all gfx and execution, switch display modes and minimize ourself
+           // until we are switched back to
+
+           if(wparam==WA_INACTIVE) {
+               if(wgldisplay_cat.is_spam())
+                   wgldisplay_cat.spam() << "WGL window deactivated, releasing gl context and waiting...\n";
+               _window_inactive = true;
+               unmake_current();
+
+               // bugbug: this isnt working right now on many drivers.  may have to
+               // destroy window and recreate a new OGL context for this to work
+#ifdef ENABLE_ALTTAB_DISPLAYCHANGE
+               // revert to default display mode
+               ChangeDisplaySettings(NULL,0x0);
+#endif
+               ShowWindow(_mwindow, SW_MINIMIZE);
+           } else {
+               if(_window_inactive) {
+                   if(wgldisplay_cat.is_spam())
+                      wgldisplay_cat.spam() << "WGL window re-activated...\n";
+                   _window_inactive = false;
+                   
+                   // move window to top of zorder,
+                   SetWindowPos(_mwindow, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE);
+                   ShowWindow(_mwindow, SW_SHOWNORMAL);
+
+#ifdef ENABLE_ALTTAB_DISPLAYCHANGE
+                   ChangeDisplaySettings(_pCurrent_display_settings,CDS_FULLSCREEN);
+#endif
+
+                   make_current();
+               }
+           }
+           return 0;
+       } else break;
+    }
+
+    case WM_PAINT: {
+          PAINTSTRUCT ps;
+          BeginPaint(hwnd, &ps);
+          EndPaint(hwnd, &ps);
+          return 0;
+    }
+
+    case WM_SYSCHAR:
+    case WM_CHAR:
+      return 0;
+
+    case WM_SYSKEYDOWN:
+    case WM_KEYDOWN: {
+        POINT point;
+        make_current();
+        GetCursorPos(&point);
+        ScreenToClient(hwnd, &point);
+        handle_keypress(lookup_key(wparam), point.x, point.y);
+      }
+
+    case WM_SYSKEYUP:
+    case WM_KEYUP: {
+        // dont need x,y for this
+        handle_keyrelease(lookup_key(wparam));
+        return 0;
+    }
+    case WM_LBUTTONDOWN:
+      button = 0;
+    case WM_MBUTTONDOWN:
+      if (button < 0)
+        button = 1;
+    case WM_RBUTTONDOWN:
+      if (button < 0)
+        button = 2;
+      SetCapture(hwnd);
+      // Win32 doesn't return the same numbers as X does when the mouse
+      // goes beyond the upper or left side of the window
+      x = LOWORD(lparam);
+      y = HIWORD(lparam);
+      if (x & 1 << 15) 
+        x -= (1 << 16);
+      if (y & 1 << 15) 
+        y -= (1 << 16);
+      // make_current();  what does OGL have to do with mouse input??
+      handle_keypress(MouseButton::button(button), x, y);
+      return 0;
+    case WM_LBUTTONUP:
+      button = 0;
+    case WM_MBUTTONUP:
+      if (button < 0)
+          button = 1;
+    case WM_RBUTTONUP:
+      if (button < 0)
+          button = 2;
+      ReleaseCapture();
+      #if 0
+          x = LOWORD(lparam);
+          y = HIWORD(lparam);
+          if (x & 1 << 15) 
+              x -= (1 << 16);
+          if (y & 1 << 15)
+              y -= (1 << 16);
+          // make_current();  what does OGL have to do with mouse input??
+      #endif
+      handle_keyrelease(MouseButton::button(button));
+      return 0;
+
+    case WM_MOUSEMOVE:
+        x = LOWORD(lparam);
+        y = HIWORD(lparam);
+        if (x & 1 << 15) 
+          x -= (1 << 16);
+        if (y & 1 << 15) 
+          y -= (1 << 16);
+        if (mouse_motion_enabled() &&
+            (wparam & (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON))) {
+            // make_current();  what does OGL have to do with mouse input??
+            handle_mouse_motion(x, y);
+        } else if (mouse_passive_motion_enabled() &&
+                   ((wparam & (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON)) == 0)) {
+                    // make_current();  what does OGL have to do with mouse input??
+                    handle_mouse_motion(x, y);
+        }
+        return 0;
+
+    case WM_SIZE:
+          width = LOWORD(lparam);
+          height = HIWORD(lparam);
+          handle_reshape(width, height);
+          return 0;
+
+    case WM_SETFOCUS:
+          SetCursor(_hMouseCursor);
+          if (mouse_entry_enabled()) {
+               make_current();
+               handle_mouse_entry(MOUSE_ENTERED);
+          }
+          return 0;
+
+    case WM_KILLFOCUS:
+          if (mouse_entry_enabled()) {
+               //make_current();  this doesnt make any sense, we're leaving our window
+               handle_mouse_entry(MOUSE_EXITED);
+          }
+          return 0;
+  }
+
+  return DefWindowProc(hwnd, msg, wparam, lparam);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: lookup_key
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+ButtonHandle
+wglGraphicsWindow::lookup_key(WPARAM wparam) const {
+  // probably would be faster with a map var
+  switch (wparam) {
+  case VK_BACK: return KeyboardButton::backspace();
+  case VK_TAB: return KeyboardButton::tab();
+  case VK_ESCAPE: return KeyboardButton::escape();
+  case VK_SPACE: return KeyboardButton::space();
+  case VK_UP: return KeyboardButton::up();
+  case VK_DOWN: return KeyboardButton::down();
+  case VK_LEFT: return KeyboardButton::left();
+  case VK_RIGHT: return KeyboardButton::right();
+  case VK_PRIOR: return KeyboardButton::page_up();
+  case VK_NEXT: return KeyboardButton::page_down();
+  case VK_HOME: return KeyboardButton::home();
+  case VK_END: return KeyboardButton::end();
+  case VK_F1: return KeyboardButton::f1();
+  case VK_F2: return KeyboardButton::f2();
+  case VK_F3: return KeyboardButton::f3();
+  case VK_F4: return KeyboardButton::f4();
+  case VK_F5: return KeyboardButton::f5();
+  case VK_F6: return KeyboardButton::f6();
+  case VK_F7: return KeyboardButton::f7();
+  case VK_F8: return KeyboardButton::f8();
+  case VK_F9: return KeyboardButton::f9();
+  case VK_F10: return KeyboardButton::f10();
+  case VK_F11: return KeyboardButton::f11();
+  case VK_F12: return KeyboardButton::f12();
+  case VK_INSERT: return KeyboardButton::insert();
+  case VK_DELETE: return KeyboardButton::del();
+
+  case VK_SHIFT:
+  case VK_LSHIFT:
+  case VK_RSHIFT:
+    return KeyboardButton::shift();
+
+  case VK_CONTROL:
+  case VK_LCONTROL:
+  case VK_RCONTROL:
+    return KeyboardButton::control();
+
+  case VK_MENU:
+  case VK_LMENU:
+  case VK_RMENU:
+    return KeyboardButton::alt();
+
+  default:
+    int key = MapVirtualKey(wparam, 2);
+    if (isascii(key) && key != 0) {
+      if (GetKeyState(VK_SHIFT) >= 0)
+          key = tolower(key);
+      else {
+        switch (key) {
+            case '1': key = '!'; break;
+            case '2': key = '@'; break;
+            case '3': key = '#'; break;
+            case '4': key = '$'; break;
+            case '5': key = '%'; break;
+            case '6': key = '^'; break;
+            case '7': key = '&'; break;
+            case '8': key = '*'; break;
+            case '9': key = '('; break;
+            case '0': key = ')'; break;
+            case '-': key = '_'; break;
+            case '=': key = '+'; break;
+            case ',': key = '<'; break;
+            case '.': key = '>'; break;
+            case '/': key = '?'; break;
+            case ';': key = ':'; break;
+            case '\'': key = '"'; break;
+            case '[': key = '{'; break;
+            case ']': key = '}'; break;
+            case '\\': key = '|'; break;
+            case '`': key = '~'; break;
+        }
+      }
+      return KeyboardButton::ascii_key((uchar)key);
+    }
+    break;
+  }
+  return ButtonHandle::none();
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_config
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+void wglGraphicsWindow::
+get_config(PIXELFORMATDESCRIPTOR *visual, int attrib, int *value) {
+  if (visual == NULL)
+    return;
+
+  switch (attrib) {
+    case GLX_USE_GL:
+      if (visual->dwFlags & (PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW)) {
+    if (visual->iPixelType == PFD_TYPE_COLORINDEX &&
+        visual->cColorBits >= 24) {
+      *value = 0;
+    } else {
+      *value = 1;
+    }
+      } else {
+    *value = 0;
+      }
+      break;
+    case GLX_BUFFER_SIZE:
+      if (visual->iPixelType == PFD_TYPE_RGBA)
+    *value = visual->cColorBits;
+      else
+    *value = 8;
+      break;
+    case GLX_LEVEL:
+      *value = visual->bReserved;
+      break;
+    case GLX_RGBA:
+      *value = visual->iPixelType == PFD_TYPE_RGBA;
+      break;
+    case GLX_DOUBLEBUFFER:
+      *value = visual->dwFlags & PFD_DOUBLEBUFFER;
+      break;
+    case GLX_STEREO:
+      *value = visual->dwFlags & PFD_STEREO;
+      break;
+    case GLX_AUX_BUFFERS:
+      *value = visual->cAuxBuffers;
+      break;
+    case GLX_RED_SIZE:
+      *value = visual->cRedBits;
+      break;
+    case GLX_GREEN_SIZE:
+      *value = visual->cGreenBits;
+      break;
+    case GLX_BLUE_SIZE:
+      *value = visual->cBlueBits;
+      break;
+    case GLX_ALPHA_SIZE:
+      *value = visual->cAlphaBits;
+      break;
+    case GLX_DEPTH_SIZE:
+      *value = visual->cDepthBits;
+      break;
+    case GLX_STENCIL_SIZE:
+      *value = visual->cStencilBits;
+      break;
+    case GLX_ACCUM_RED_SIZE:
+      *value = visual->cAccumRedBits;
+      break;
+    case GLX_ACCUM_GREEN_SIZE:
+      *value = visual->cAccumGreenBits;
+      break;
+    case GLX_ACCUM_BLUE_SIZE:
+      *value = visual->cAccumBlueBits;
+      break;
+    case GLX_ACCUM_ALPHA_SIZE:
+      *value = visual->cAccumAlphaBits;
+      break;
+  }
+}
+
+

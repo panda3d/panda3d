@@ -31,20 +31,12 @@
 #undef WINDOWS_LEAN_AND_MEAN
 
 ////////////////////////////////////////////////////////////////////
-// Defines
-////////////////////////////////////////////////////////////////////
-class Xclass;
-
-////////////////////////////////////////////////////////////////////
 //       Class : wglGraphicsPipe
 // Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAGL wglGraphicsPipe : public InteractiveGraphicsPipe {
 public:
   wglGraphicsPipe(const PipeSpecifier&);
-
-  wglGraphicsWindow* find_window(HWND win);
-  ButtonHandle lookup_key(WPARAM wparam) const;
 
   virtual TypeHandle get_window_type() const;
 
@@ -61,19 +53,11 @@ private:
 
   static TypeHandle _type_handle;
 
-  int               _width;
-  int               _height;
-  bool              _shift;
-
 protected:
 
   wglGraphicsPipe(void);
   wglGraphicsPipe(const wglGraphicsPipe&);
   wglGraphicsPipe& operator=(const wglGraphicsPipe&);
-
-  static LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam,
-    LPARAM lparam);
-  LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 };
 
 #endif

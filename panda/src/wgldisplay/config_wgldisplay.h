@@ -28,6 +28,7 @@ NotifyCategoryDecl(wgldisplay, EXPCL_PANDAGL, EXPTP_PANDAGL);
 extern Filename get_icon_filename_();
 extern bool gl_show_fps_meter;
 extern float gl_fps_meter_update_interval;
+extern bool gl_sync_video;
 
 extern EXPCL_PANDAGL void init_libwgldisplay();
 

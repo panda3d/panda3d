@@ -33,9 +33,6 @@
 ////////////////////////////////////////////////////////////////////
 class wglGraphicsPipe;
 
-const int WGLWIN_CONFIGURE =    4;
-const int WGLWIN_EVENT =    8;
-
 #define GLX_USE_GL              1       /* support GLX rendering */
 #define GLX_BUFFER_SIZE         2       /* depth of the color buffer */
 #define GLX_LEVEL               3       /* level in plane stacking */
@@ -86,11 +83,11 @@ public:
   void handle_mouse_motion( int x, int y );
   void handle_mouse_entry( int state );
   void handle_keypress( ButtonHandle key, int x, int y );
-  void handle_keyrelease( ButtonHandle key, int x, int y );
+  void handle_keyrelease( ButtonHandle key );
 
 protected:
   PIXELFORMATDESCRIPTOR* try_for_visual(wglGraphicsPipe *pipe,
-    int mask, int want_depth_bits = 1, int want_color_bits = 1);
+                              int mask, int want_depth_bits = 1, int want_color_bits = 1);
   int choose_visual(void);
   static void get_config(PIXELFORMATDESCRIPTOR* visual, int attrib, int *value);
   virtual void config( void );
@@ -103,9 +100,6 @@ protected:
 
   void handle_changes(void);
   void process_events(void);
-  void idle_wait(void);
-
-  void adjust_coords(int &xorg, int &yorg, int &xsize, int &ysize);
 
 public:
   uint              _change_mask;
@@ -116,6 +110,12 @@ private:
   HDC               _hdc;
   PIXELFORMATDESCRIPTOR*    _visual;
   HPALETTE          _colormap;
+  HCURSOR           _hMouseCursor;
+
+  DEVMODE           *_pCurrent_display_settings;
+
+  bool              _window_inactive;
+  bool              _exiting_window;
 
   bool              _mouse_input_enabled;
   bool              _mouse_motion_enabled;
@@ -123,7 +123,7 @@ private:
   bool              _mouse_entry_enabled;
   int               _entry_state;
   bool              _ignore_key_repeat;
-  int                           _full_height, _full_width;
+  int               _full_height, _full_width;
 
   // vars for frames/sec meter
   DWORD _start_time;
@@ -131,11 +131,17 @@ private:
   DWORD _cur_frame_count;
   float _current_fps;
 
+  string _extensions_str;
+
 public:
   static TypeHandle get_class_type(void);
   static void init_type(void);
   virtual TypeHandle get_type(void) const;
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+  LONG WINAPI window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+  ButtonHandle lookup_key(WPARAM wparam) const;
+  void DestroyMe(bool bAtExit);
 
 private:
   static TypeHandle _type_handle;
