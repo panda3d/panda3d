@@ -427,7 +427,14 @@ assert_failure(const char *expression, int line,
 
   if (get_assert_abort()) {
 #ifdef WIN32
-    assert(false);
+    // How to trigger an exception in VC++ that offers to take us into
+    // the debugger?  abort() doesn't do it.  We used to be able to
+    // assert(false), but in VC++ 7 that just throws an exception, and
+    // an uncaught exception just exits, without offering to open the
+    // debugger.  Guess we'll have to force a segfault.
+
+    int *ptr = (int *)NULL;
+    *ptr = 1;
 #else
     abort();
 #endif
