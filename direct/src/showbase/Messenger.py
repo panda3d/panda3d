@@ -14,7 +14,7 @@ class Messenger:
                        object2: [method, extraArgs, persistent]},
              event2 : {object1: [method, extraArgs, persistent],
                        object2: [method, extraArgs, persistent]}}
-                       
+
         This dictionary allow for efficient callbacks when the messenger
         hears an event.
 
@@ -37,14 +37,14 @@ class Messenger:
         # under __debug__.
         self.quieting={"NewFrame":1, "avatarMoving":1} # see def quiet()
 
-        
+
     def accept(self, event, object, method, extraArgs=[], persistent=1):
         """ accept(self, string, DirectObject, Function, List, Boolean)
-        
+
         Make this object accept this event. When the event is
         sent (using Messenger.send or from C++), method will be executed,
         optionally passing in extraArgs.
-        
+
         If the persistent flag is set, it will continue to respond
         to this event, otherwise it will respond only once.
         """
@@ -54,7 +54,7 @@ class Messenger:
                                    + '\n method: ' + `method`
                                    + '\n extraArgs: ' + `extraArgs`
                                    + '\n persistent: ' + `persistent`)
-            
+
         acceptorDict = self.__callbacks.setdefault(event, {})
         acceptorDict[object] = [method, extraArgs, persistent]
 
@@ -93,9 +93,9 @@ class Messenger:
         Useful for cleanup
         """
         if Messenger.notify.getDebug():
-            Messenger.notify.debug(`object` + '\n now ignoring all events')            
+            Messenger.notify.debug(`object` + '\n now ignoring all events')
         # Get the list of events this object is listening to
-        eventDict = self.__objectEvents.get(object)        
+        eventDict = self.__objectEvents.get(object)
         if eventDict:
             for event in eventDict.keys():
                 # Find the dictionary of all the objects accepting this event
@@ -110,7 +110,7 @@ class Messenger:
             del self.__objectEvents[object]
 
     def isAccepting(self, event, object):
-        """ isAccepting(self, string, DirectOject)        
+        """ isAccepting(self, string, DirectOject)
         Is this object accepting this event?
         """
         acceptorDict = self.__callbacks.get(event)
@@ -126,7 +126,7 @@ class Messenger:
         Return objects accepting the given event
         """
         return self.__callbacks.get(event)
-        
+
     def isIgnoring(self, event, object):
         """ isIgnorning(self, string, DirectObject)
         Is this object ignoring this event?
@@ -138,7 +138,7 @@ class Messenger:
         event is usually a string.
         sentArgs is a list of any data that you want passed along to the
             handlers listening to this event.
-        
+
         Send this event, optionally passing in arguments
         """
         if Messenger.notify.getDebug() and not self.quieting.get(event):
@@ -209,7 +209,7 @@ class Messenger:
 
     def getEvents(self):
         return self.__callbacks.keys()
-        
+
     def replaceMethod(self, oldMethod, newFunction):
         """
         This is only used by Finder.py - the module that lets
@@ -239,7 +239,7 @@ class Messenger:
                     retFlag += 1
         # didn't find that method, return false
         return retFlag
-    
+
     def toggleVerbose(self):
         isVerbose = 1 - Messenger.notify.getDebug()
         Messenger.notify.setDebug(isVerbose)
@@ -356,7 +356,7 @@ class Messenger:
             str += "%s:\n" % object
             for event in eventDict.keys():
                 str += "     %s\n" % event
-            
+
         str += "="*64 + "\n" + "End of messenger info.\n"
         return str
 

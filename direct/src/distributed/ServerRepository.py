@@ -211,21 +211,21 @@ class ServerRepository:
         type = dgi.getUint16()
 
         if type == CLIENT_DISCONNECT:
-                self.handleClientDisconnect(datagram.getConnection())
+            self.handleClientDisconnect(datagram.getConnection())
         elif type == CLIENT_SET_ZONE:
-                self.handleSetZone(dgi, datagram.getConnection())
+            self.handleSetZone(dgi, datagram.getConnection())
         elif type == CLIENT_REMOVE_ZONE:
-                self.handleRemoveZone(dgi, datagram.getConnection())
+            self.handleRemoveZone(dgi, datagram.getConnection())
         elif type == CLIENT_CREATE_OBJECT_REQUIRED:
-                self.handleClientCreateObjectRequired(datagram, dgi)
+            self.handleClientCreateObjectRequired(datagram, dgi)
         elif type == CLIENT_OBJECT_UPDATE_FIELD:
-                self.handleClientUpdateField(datagram, dgi)
+            self.handleClientUpdateField(datagram, dgi)
         elif type == CLIENT_OBJECT_DELETE:
-                self.handleClientDeleteObject(datagram, dgi.getUint32())
+            self.handleClientDeleteObject(datagram, dgi.getUint32())
         elif type == CLIENT_OBJECT_DISABLE:
-                self.handleClientDisable(datagram, dgi.getUint32())
+            self.handleClientDisable(datagram, dgi.getUint32())
         else:
-                self.notify.error("unrecognized message")
+            self.notify.error("unrecognized message")
 
 # client wants to create an object, so we store appropriate data,
 # and then pass message along to corresponding zones
@@ -245,20 +245,19 @@ class ServerRepository:
         datagram.appendData(rest)
         dclass = self.dclassesByNumber[classid]
         if self.ClientObjects[connection].count(doid) == 0:
-                self.ClientObjects[connection].append(doid)
+            self.ClientObjects[connection].append(doid)
         self.DOIDtoZones[doid] = zone
         self.DOIDtoDClass[doid] = dclass
         if zone in self.ZonetoDOIDs:
-                if self.ZonetoDOIDs[zone].count(doid)==0:
-                        self.ZonetoDOIDs[zone].append(doid)
+            if self.ZonetoDOIDs[zone].count(doid)==0:
+                self.ZonetoDOIDs[zone].append(doid)
         else:
-                self.ZonetoDOIDs[zone] = [doid]
+            self.ZonetoDOIDs[zone] = [doid]
         self.sendToZoneExcept(zone, datagram, connection)
-        return None
 
 
-# client wants to update an object, forward message along
-# to corresponding zone
+    # client wants to update an object, forward message along
+    # to corresponding zone
 
     def handleClientUpdateField(self, datagram, dgi):
         connection = datagram.getConnection()
@@ -282,28 +281,25 @@ class ServerRepository:
         else:
           self.notify.warning(
                 "Message is not broadcast, p2p, or broadcast+p2p")
-        return None
 
-# client disables an object, let everyone know who is in
-# that zone know about it
+    # client disables an object, let everyone know who is in
+    # that zone know about it
 
     def handleClientDisable(self, datagram, doid):
         # now send disable message to all clients that need to know
         if doid in self.DOIDtoZones:
-                self.sendToZoneExcept(self.DOIDtoZones[doid], datagram, 0)
-        return None
+            self.sendToZoneExcept(self.DOIDtoZones[doid], datagram, 0)
 
-# client deletes an object, let everyone who is in zone with
-# object know about it
+    # client deletes an object, let everyone who is in zone with
+    # object know about it
 
     def handleClientDeleteObject(self, datagram, doid):
         if doid in self.DOIDtoZones:
-                self.sendToZoneExcept(self.DOIDtoZones[doid], datagram, 0)
-                self.ClientObjects[datagram.getConnection()].remove(doid)
-                self.ZonetoDOIDs[self.DOIDtoZones[doid]].remove(doid)
-                del self.DOIDtoZones[doid]
-                del self.DOIDtoDClass[doid]
-        return None
+            self.sendToZoneExcept(self.DOIDtoZones[doid], datagram, 0)
+            self.ClientObjects[datagram.getConnection()].remove(doid)
+            self.ZonetoDOIDs[self.DOIDtoZones[doid]].remove(doid)
+            del self.DOIDtoZones[doid]
+            del self.DOIDtoDClass[doid]
 
     def sendAvatarGenerate(self):
         datagram = PyDatagram()
@@ -317,7 +313,7 @@ class ServerRepository:
         datagram.addUint32(999)
         self.cw.send(datagram, self.lastConnection)
 
-#  sends the client the range of doid's that the client can use
+    #  sends the client the range of doid's that the client can use
 
     def sendDOIDrange(self, connection):
         # reuse DOID assignments if we can
@@ -331,87 +327,81 @@ class ServerRepository:
         datagram.addUint32(self.DOIDrange)
         print "Sending DOID range: ",id,self.DOIDrange
         self.cw.send(datagram, connection)
-        return None
 
     # a client disconnected from us, we need to update our data, also tell other clients to remove
     # the disconnected clients objects
     def handleClientDisconnect(self, connection):
         if (self.ClientIP.has_key(connection)):
-                del self.DOIDtoClient[self.ClientDOIDbase[connection]]
-                for zone in self.ClientZones[connection]:
-                        if len(self.ZonesToClients[zone]) == 1:
-                                del self.ZonesToClients[zone]
-                        else:
-                                self.ZonesToClients[zone].remove(connection)
-                for obj in self.ClientObjects[connection]:
-                        #create and send delete message
-                        datagram = NetDatagram()
-                        datagram.addUint16(CLIENT_OBJECT_DELETE_RESP)
-                        datagram.addUint32(obj)
-                        self.sendToZoneExcept(self.DOIDtoZones[obj], datagram, 0)
-                        self.ZonetoDOIDs[self.DOIDtoZones[obj]].remove(obj)
-                        del self.DOIDtoZones[obj]
-                        del self.DOIDtoDClass[obj]
-                del self.ClientIP[connection]
-                del self.ClientZones[connection]
-                del self.ClientDOIDbase[connection]
-                del self.ClientObjects[connection]
-        return None
+            del self.DOIDtoClient[self.ClientDOIDbase[connection]]
+            for zone in self.ClientZones[connection]:
+                if len(self.ZonesToClients[zone]) == 1:
+                    del self.ZonesToClients[zone]
+                else:
+                    self.ZonesToClients[zone].remove(connection)
+            for obj in self.ClientObjects[connection]:
+                #create and send delete message
+                datagram = NetDatagram()
+                datagram.addUint16(CLIENT_OBJECT_DELETE_RESP)
+                datagram.addUint32(obj)
+                self.sendToZoneExcept(self.DOIDtoZones[obj], datagram, 0)
+                self.ZonetoDOIDs[self.DOIDtoZones[obj]].remove(obj)
+                del self.DOIDtoZones[obj]
+                del self.DOIDtoDClass[obj]
+            del self.ClientIP[connection]
+            del self.ClientZones[connection]
+            del self.ClientDOIDbase[connection]
+            del self.ClientObjects[connection]
 
     #  client told us it's zone(s), store information
     def handleSetZone(self, dgi, connection):
         while dgi.getRemainingSize() > 0:
-                ZoneID = dgi.getUint32()
-                if self.ClientZones[connection].count(ZoneID) == 0:
-                        self.ClientZones[connection].append(ZoneID)
-                if ZoneID in self.ZonesToClients:
-                        if self.ZonesToClients[ZoneID].count(connection) == 0:
-                                self.ZonesToClients[ZoneID].append(connection)
-                else:
-                        self.ZonesToClients[ZoneID] = [connection]
+            ZoneID = dgi.getUint32()
+            if self.ClientZones[connection].count(ZoneID) == 0:
+                self.ClientZones[connection].append(ZoneID)
+            if ZoneID in self.ZonesToClients:
+                if self.ZonesToClients[ZoneID].count(connection) == 0:
+                    self.ZonesToClients[ZoneID].append(connection)
+            else:
+                self.ZonesToClients[ZoneID] = [connection]
 
-                # We have a new member, need to get all of the data from clients who may have objects in this zone
-                datagram = NetDatagram()
-                datagram.addUint16(CLIENT_REQUEST_GENERATES)
-                datagram.addUint32(ZoneID)
-                self.sendToAll(datagram)
-                print "SENDING REQUEST GENERATES (",ZoneID,") TO ALL"
-        return None
+            # We have a new member, need to get all of the data from clients who may have objects in this zone
+            datagram = NetDatagram()
+            datagram.addUint16(CLIENT_REQUEST_GENERATES)
+            datagram.addUint32(ZoneID)
+            self.sendToAll(datagram)
+            print "SENDING REQUEST GENERATES (",ZoneID,") TO ALL"
 
     # client has moved zones, need to update them
     def handleRemoveZone(self, dgi, connection):
         while dgi.getRemainingSize() > 0:
-                ZoneID = dgi.getUint32()
-                if self.ClientZones[connection].count(ZoneID) == 1:
-                        self.ClientZones[connection].remove(ZoneID)
-                if ZoneID in self.ZonesToClients:
-                        if self.ZonesToClients[ZoneID].count(connection) == 1:
-                                self.ZonesToClients[ZoneID].remove(connection)
-                for i in self.ZonetoDOIDs[ZoneID]:
-                        datagram = NetDatagram()
-                        datagram.addUint16(CLIENT_OBJECT_DELETE)
-                        datagram.addUint32(i)
-                        self.cw.send(datagram, connection)
-        return None
+            ZoneID = dgi.getUint32()
+            if self.ClientZones[connection].count(ZoneID) == 1:
+                self.ClientZones[connection].remove(ZoneID)
+            if ZoneID in self.ZonesToClients:
+                if self.ZonesToClients[ZoneID].count(connection) == 1:
+                    self.ZonesToClients[ZoneID].remove(connection)
+            for i in self.ZonetoDOIDs[ZoneID]:
+                datagram = NetDatagram()
+                datagram.addUint16(CLIENT_OBJECT_DELETE)
+                datagram.addUint32(i)
+                self.cw.send(datagram, connection)
 
     # client did not tell us he was leaving but we lost connection to him, so we need to update our data and tell others
 
     def clientHardDisconnectTask(self, task):
         for i in self.ClientIP.keys():
-                if (not self.qcr.isConnectionOk(i)):
-                        self.handleClientDisconnect(i)
+            if not self.qcr.isConnectionOk(i):
+                self.handleClientDisconnect(i)
         return Task.cont
-
 
     # sends a message to everyone who is in the zone
     def sendToZoneExcept(self, ZoneID, datagram, connection):
         if ZoneID in self.ZonesToClients:
-                for conn in self.ZonesToClients[ZoneID]:
-                        if (conn != connection): self.cw.send(datagram, conn)
-        return None
+            for conn in self.ZonesToClients[ZoneID]:
+                if (conn != connection):
+                    self.cw.send(datagram, conn)
 
     # sends a message to all connected clients
     def sendToAll(self, datagram):
         for client in self.ClientIP.keys():
             self.cw.send(datagram, client)
-        return None
