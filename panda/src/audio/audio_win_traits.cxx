@@ -87,7 +87,7 @@ static void initialize(void) {
   ZeroMemory(&wfx, sizeof(WAVEFORMATEX));
   wfx.wFormatTag      = WAVE_FORMAT_PCM;
   wfx.nChannels       = 2;
-  wfx.nSamplesPerSec  = 22050;
+  wfx.nSamplesPerSec  = audio_mix_freq;
   wfx.wBitsPerSample  = 16;
   wfx.nBlockAlign     = wfx.wBitsPerSample / 8 * wfx.nChannels;
   wfx.nAvgBytesPerSec = wfx.nSamplesPerSec * wfx.nBlockAlign;
@@ -391,6 +391,56 @@ WinSample* WinSample::load_wav(Filename filename) {
     delete [] wavData;
 
   return ret;
+}
+
+WinSample* WinSample::load_raw(unsigned char* data, unsigned long size) {
+  WinSample* ret = (WinSample*)0L;
+
+  initialize();
+
+  // synth a wav header for this data
+  WAVEFORMATEX wavInfo;
+  ZeroMemory(&wavInfo, sizeof(WAVEFORMATEX));
+  wavInfo.wFormatTag = WAVE_FORMAT_PCM;
+  wavInfo.nChannels = 2;
+  wavInfo.nSamplesPerSec = audio_mix_freq;
+  wavInfo.wBitsPerSample = 16;
+  wavInfo.nBlockAlign = wavInfo.wBitsPerSample / 8 * wavInfo.nChannels;
+  wavInfo.nAvgBytesPerSec = wavInfo.nSamplesPerSec * wavInfo.nBlockAlign;
+
+  if (data = (unsigned char*)0L)
+    return ret;
+
+  // create a direct sound channel for this data
+  ret = new WinSample();
+  DSBUFFERDESC dsbdDesc;
+  ZeroMemory(&dsbdDesc, sizeof(DSBUFFERDESC));
+  dsbdDesc.dwSize = sizeof(DSBUFFERDESC);
+  dsbdDesc.dwFlags = DSBCAPS_STATIC | DSBCAPS_GLOBALFOCUS;
+  dsbdDesc.dwBufferBytes = size;
+  dsbdDesc.lpwfxFormat = &wavInfo;
+  dsbdDesc.lpwfxFormat->cbSize = sizeof(wavInfo);
+  HRESULT result = soundDirectSound->CreateSoundBuffer(&dsbdDesc,
+						       &(ret->_channel), NULL);
+  if (FAILED(result)) {
+    delete ret;
+    ret = (WinSample*)0L;
+  }
+  if (ret) {
+    BYTE* dst = NULL;
+    dst = ret->lock();
+    try {
+      memcpy(dst, data, size);
+    }
+    catch (...) {
+      delete ret;
+      ret = (WinSample*)0L;
+    }
+    if (ret)
+      ret->unlock();
+    delete [] data;
+    return ret;
+  }
 }
 
 void WinSample::destroy(AudioTraits::SampleClass* sample) {

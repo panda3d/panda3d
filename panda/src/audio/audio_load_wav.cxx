@@ -78,6 +78,8 @@ void AudioDestroyWav(AudioTraits::SampleClass* sample) {
 void AudioLoadWav(AudioTraits::SampleClass** sample,
 		  AudioTraits::PlayerClass** player,
 		  AudioTraits::DeleteSampleFunc** destroy, Filename) {
+  audio_cat->error() << "Linux driver does not natively support WAV."
+		     << "  Try the 'st' loader." << endl;
   *sample = new NullSample();
   *player = new NullPlayer();
   *destroy = AudioDestroyWav;

@@ -397,18 +397,23 @@ void AudioLoadSt(AudioTraits::SampleClass** sample,
 
 #ifdef AUDIO_USE_WIN32
 
+#include "audio_win_traits.h"
+
 void AudioDestroySt(AudioTraits::SampleClass* sample) {
   delete sample;
 }
 
 void AudioLoadSt(AudioTraits::SampleClass** sample,
 		 AudioTraits::PlayerClass** player,
-		 AudioTraits::DeleteSampleFunc** destroy, Filename) {
-  audio_cat->warning() << "win32 doesn't support reading raw data yet"
-		       << endl;
-  *sample = (AudioTraits::SampleClass*)0L;
-  *player = (AudioTraits::PlayerClass*)0L;
-  *destroy = AudioDestroySt;
+		 AudioTraits::DeleteSampleFunc** destroy, Filename filename) {
+  unsigned char* buf;
+  unsigned long len;
+  read_file(filename, &buf, len);
+  if (buf != (unsigned char*)0L) {
+    *sample = WinSample::load_raw(buf, len);
+    *player = WinPlayer::get_instance();
+    *destroy = AudioDestroySt;
+  }
 }
 
 #else /* AUDIO_USE_WIN32 */

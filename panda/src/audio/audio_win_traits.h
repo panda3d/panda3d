@@ -32,6 +32,7 @@ public:
   BYTE* lock(void);
   void  unlock(void);
   static WinSample* load_wav(Filename);
+  static WinSample* load_raw(unsigned char*, unsigned long);
   static void destroy(AudioTraits::SampleClass*);
   // these are used by the player
   INLINE LPDIRECTSOUNDBUFFER get_channel(void);
