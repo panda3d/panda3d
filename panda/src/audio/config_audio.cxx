@@ -17,11 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_audio.h"
-#include "audioSound.h"
 #include "audio_gui_functor.h"
 #include <dconfig.h>
-#include <filename.h>
-#include <load_dso.h>
 
 Configure(config_audio);
 NotifyCategoryDef(audio, "");
@@ -60,7 +57,6 @@ string* audio_library_name;
 
 
 ConfigureFn(config_audio) {
-  AudioSound::init_type();
   AudioGuiFunctor::init_type();
 
   audio_dls_file = new string(

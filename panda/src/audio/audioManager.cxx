@@ -24,8 +24,6 @@
 
 #include "load_dso.h"
 
-TypeHandle AudioManager::_type_handle;
-
 namespace {
   PT(AudioManager) create_NullAudioManger() {
     audio_debug("create_NullAudioManger()");
@@ -33,7 +31,8 @@ namespace {
   }
 }
 
-Create_AudioManager_proc* AudioManager::_create_AudioManager=create_NullAudioManger;
+Create_AudioManager_proc* AudioManager::_create_AudioManager
+    =create_NullAudioManger;
 
 void AudioManager::
 register_AudioManager_creator(Create_AudioManager_proc* proc) {
@@ -51,7 +50,8 @@ create_AudioManager() {
   if (!lib_load) {
     lib_load=1;
     if (!audio_library_name->empty() && *audio_library_name != "null") {
-      Filename dl_name = Filename::dso_filename("lib"+*audio_library_name+".so");
+      Filename dl_name = Filename::dso_filename(
+          "lib"+*audio_library_name+".so");
       dl_name.to_os_specific();
       audio_debug("  dl_name=\""<<dl_name<<"\"");
       void* lib = load_dso(dl_name);

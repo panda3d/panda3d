@@ -20,6 +20,7 @@
 #include "pandabase.h"
 #ifdef HAVE_RAD_MSS //[
 
+#include "milesAudioSound.h"
 #include "milesAudioManager.h"
 #include "config_audio.h"
 #include "config_util.h"
@@ -179,8 +180,8 @@ get_sound(const string& file_name) {
   // Create an AudioSound from the sound:
   PT(AudioSound) audioSound = 0;
   if (audio) {
-    MilesAudioSound* milesAudioSound
-        =new MilesAudioSound(*this, audio, (*si).first);
+    PT(MilesAudioSound) milesAudioSound
+        =new MilesAudioSound(this, audio, (*si).first);
     nassertr(milesAudioSound, 0);
     milesAudioSound->set_active(_active);
     _soundsOnLoan.insert(milesAudioSound);

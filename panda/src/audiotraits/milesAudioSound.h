@@ -24,10 +24,9 @@
 #ifdef HAVE_RAD_MSS //[
 
 #include "audioSound.h"
+#include "milesAudioManager.h"
 #include "mss.h"
 
-
-class MilesAudioManager;
 
 class EXPCL_MILES_AUDIO MilesAudioSound : public AudioSound {
 public:
@@ -80,7 +79,7 @@ public:
 
 private:
   HAUDIO _audio;
-  MilesAudioManager& _manager;
+  PT(MilesAudioManager) _manager;
   float _start_time; // 0..length()
   float _volume; // 0..1.0
   float _balance; // -1..1
@@ -89,7 +88,7 @@ private:
   bool _active;
   bool _paused;
 
-  MilesAudioSound(MilesAudioManager& manager, 
+  MilesAudioSound(MilesAudioManager* manager, 
       HAUDIO audio, string file_name);
 
   friend class MilesAudioManager;

@@ -27,18 +27,6 @@ NotifyCategoryDef(milesAudio, "");
 ConfigureFn(config_milesAudio) {
   init_libMilesAudio();
 }
-/*
-const float LinearIntegrator::_max_linear_dt =
-  config_milesAudio.GetFloat("default_max_linear_dt", 1.0f / 30.0f);
-
-const float AngularIntegrator::_max_angular_dt =
-  config_milesAudio.GetFloat("default_max_angular_dt", 1.0f / 30.0f);
-
-int LinearNoiseForce::_random_seed =
-  config_milesAudio.GetInt("default_noise_force_seed", 665);
-
-const float milesAudioObject::_default_terminal_velocity =
-  config_milesAudio.GetFloat("default_terminal_velocity", 400.0f);*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libMilesAudio

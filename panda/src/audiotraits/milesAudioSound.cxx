@@ -25,7 +25,7 @@
 
 
 MilesAudioSound::
-MilesAudioSound(MilesAudioManager& manager,
+MilesAudioSound(MilesAudioManager* manager,
     HAUDIO audio, string file_name)
     : _manager(manager), _file_name(file_name),
     _start_time(0), _volume(1.0), _balance(0),
@@ -42,7 +42,7 @@ MilesAudioSound(MilesAudioManager& manager,
 MilesAudioSound::
 ~MilesAudioSound() {
   audio_debug("MilesAudioSound::~MilesAudioSound() "<<get_name());
-  _manager.release_sound(this);
+  _manager->release_sound(this);
   AIL_quick_unload(_audio);
 }
 
@@ -128,7 +128,7 @@ set_volume(float volume) {
   // Set the volume:
   _volume=volume;
   // Account for the category of sound:
-  volume*=_manager.get_volume();
+  volume*=_manager->get_volume();
   // Change to Miles volume, range 0 to 127:
   S32 milesVolume=(S32(127*volume))%128;
   // Account for type:

@@ -21,15 +21,14 @@
 #define __AUDIOSOUND_H__
 
 #include "config_audio.h"
-#include <typedReferenceCount.h>
-#include <typedObject.h>
+#include <ReferenceCount.h>
 #include <namable.h>
 #include <pointerTo.h>
 
 
 class AudioManager;
 
-class EXPCL_PANDA AudioSound : public TypedReferenceCount, public Namable {
+class EXPCL_PANDA AudioSound : public ReferenceCount {
 PUBLISHED:
   virtual ~AudioSound() {}
   
@@ -86,26 +85,6 @@ protected:
   }
 
   friend class AudioManager;
-
-public:
-  // type stuff
-  static TypeHandle get_class_type() {
-    return _type_handle;
-  }
-  static void init_type() {
-    TypedReferenceCount::init_type();
-    register_type(_type_handle, "AudioSound",
-                  TypedReferenceCount::get_class_type());
-  }
-  virtual TypeHandle get_type() const {
-    return get_class_type();
-  }
-  virtual TypeHandle force_init_type() {
-    init_type();
-    return get_class_type();
-  }
-private:
-  static TypeHandle _type_handle;
 };
 
 #endif /* __AUDIOSOUND_H__ */

@@ -24,10 +24,14 @@
 #ifdef HAVE_RAD_MSS //[
 
 #include "audioManager.h"
-#include "milesAudioSound.h"
+#include "mss.h"
+
+class MilesAudioSound;
 
 class EXPCL_MILES_AUDIO MilesAudioManager: public AudioManager {
 public:
+  // See AudioManager.h for documentation.
+  
   MilesAudioManager();
   ~MilesAudioManager();
 

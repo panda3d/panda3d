@@ -26,7 +26,7 @@
 typedef PT(AudioManager) Create_AudioManager_proc();
 
 
-class EXPCL_PANDA AudioManager : public TypedReferenceCount {
+class EXPCL_PANDA AudioManager : public ReferenceCount {
 PUBLISHED:
   // Create an AudioManager for each category of sounds you have.
   // E.g.
@@ -35,33 +35,35 @@ PUBLISHED:
   //   ...
   //   my_sound = MySoundEffects.get_sound("neatSfx.mp3");
   //   my_music = MyMusicManager.get_sound("introTheme.mid");
-  //
-  // You own the AudioManager*, please delete it when you're done with it.
-  // Do not delete the AudioManager (i.e. you're not done with it), until
-  // you have deleted all the associated AudioSounds.
   static PT(AudioManager) create_AudioManager();
   virtual ~AudioManager() {}
   
   // Get a sound:
-  // You own this sound.  Be sure to delete it when you're done.
   virtual PT(AudioSound) get_sound(const string& file_name) = 0;
   // Tell the AudioManager there is no need to keep this one cached.
+  // This doesn't break any connection between AudioSounds that have
+  // already given by get_sound() from this manager.  It's
+  // only affecting whether the AudioManager keeps a copy of the sound
+  // in its pool/cache.
   virtual void drop_sound(const string& file_name) = 0;
 
   // Control volume:
   // FYI:
   //   If you start a sound with the volume off and turn the volume 
   //   up later, you'll hear the sound playing at that late point.
+  // 0 = minimum; 1.0 = maximum.
+  // inits to 1.0.
   virtual void set_volume(float volume) = 0;
   virtual float get_volume() = 0;
   
-  // Turn the manager on an off.
+  // Turn the manager on or off.
   // If you play a sound while the manager is inactive, it won't start.
   // If you deactivate the manager while sounds are playing, they'll
   // stop.
   // If you activate the manager while looping sounds are playing
   // (those that have a loop_count of zero),
   // they will start playing from the begining of their loop.
+  // inits to true.
   virtual void set_active(bool flag) = 0;
   virtual bool get_active() = 0;
 
@@ -74,26 +76,6 @@ protected:
   AudioManager() {
     // intentionally blank.
   }
-
-public:
-  // type stuff
-  static TypeHandle get_class_type() {
-    return _type_handle;
-  }
-  static void init_type() {
-    TypedReferenceCount::init_type();
-    register_type(_type_handle, "AudioManager",
-        TypedReferenceCount::get_class_type());
-  }
-  virtual TypeHandle get_type() const {
-    return get_class_type();
-  }
-  virtual TypeHandle force_init_type() {
-    init_type();
-    return get_class_type();
-  }
-private:
-  static TypeHandle _type_handle;
 };
 
 #include "audioManager.I"
