@@ -70,7 +70,7 @@ main(int argc, char *argv[]) {
       PT(Connection) connection;
         if (cm.get_reset_connection(connection)) {
 	nout << "Lost connection from "
-	     << connection->get_address().get_ip() << "\n";
+	     << connection->get_address() << "\n";
 	cm.close_connection(connection);
 	if (connection == c) {
 	  lost_connection = true;

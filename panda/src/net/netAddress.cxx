@@ -126,13 +126,13 @@ set_port(int port) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NetAddress::get_ip
+//     Function: NetAddress::get_ip_string
 //       Access: Public
 //  Description: Returns the IP address to which this address refers,
 //               formatted as a string.
 ////////////////////////////////////////////////////////////////////
 string NetAddress::
-get_ip() const {
+get_ip_string() const {
   static const int buf_len = 1024;
   char buf[buf_len];
 
@@ -144,6 +144,32 @@ get_ip() const {
   }
 
   return string(buf);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NetAddress::get_ip
+//       Access: Public
+//  Description: Returns the IP address to which this address refers,
+//               as a 32-bit integer, in host byte order.
+////////////////////////////////////////////////////////////////////
+PN_uint32 NetAddress::
+get_ip() const {
+  return PR_ntohl(_addr.inet.ip);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NetAddress::get_ip_component
+//       Access: Public
+//  Description: Returns the nth 8-bit component of the IP address.
+//               An IP address has four components; component 0 is the
+//               first (leftmost), and component 3 is the last
+//               (rightmost) in the dotted number convention.
+////////////////////////////////////////////////////////////////////
+PN_uint8 NetAddress::
+get_ip_component(int n) const {
+  nassertr(n >= 0 && n < 4, 0);
+  const PN_uint8 *ip = (const PN_uint8 *)&_addr.inet.ip;
+  return ip[n];
 }
 
 
@@ -164,5 +190,5 @@ get_addr() const {
 ////////////////////////////////////////////////////////////////////
 void NetAddress::
 output(ostream &out) const {
-  out << get_ip();
+  out << get_ip_string();
 }

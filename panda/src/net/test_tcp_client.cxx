@@ -35,8 +35,10 @@ main(int argc, char *argv[]) {
     exit(1);
   }
 
-  nout << "Successfully opened TCP connection to " << hostname 
-       << " on port " << port << "\n";
+  nout << "Successfully opened TCP connection to " << hostname
+       << " on port " 
+       << c->get_address().get_port() << " and IP "
+       << c->get_address() << "\n";
 
   QueuedConnectionReader reader(&cm, 0);
   reader.add_connection(c);
@@ -57,7 +59,7 @@ main(int argc, char *argv[]) {
       PT(Connection) connection;
       if (cm.get_reset_connection(connection)) {
 	nout << "Lost connection from "
-	     << connection->get_address().get_ip() << "\n";
+	     << connection->get_address() << "\n";
 	cm.close_connection(connection);
 	if (connection == c) {
 	  lost_connection = true;
@@ -69,7 +71,7 @@ main(int argc, char *argv[]) {
     while (reader.data_available()) {
       if (reader.get_data(datagram)) {
 	nout << "Got datagram " << datagram << "from " 
-	     << datagram.get_address().get_ip() << "\n";
+	     << datagram.get_address() << "\n";
       }
     }
 

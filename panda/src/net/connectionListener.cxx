@@ -54,7 +54,7 @@ process_incoming_data(SocketInfo *sinfo) {
   } else {
     NetAddress net_addr(addr);
     net_cat.info()
-      << "Received TCP connection from client " << net_addr.get_ip()
+      << "Received TCP connection from client " << net_addr.get_ip_string()
       << " on port " << sinfo->_connection->get_address().get_port()
       << "\n";
 

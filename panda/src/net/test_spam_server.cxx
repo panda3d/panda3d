@@ -63,7 +63,7 @@ main(int argc, char *argv[]) {
       NetAddress address;
       PT(Connection) new_connection;
       if (listener.get_new_connection(rv, address, new_connection)) {
-	nout << "Got connection from " << address.get_ip() << "\n";
+	nout << "Got connection from " << address << "\n";
 	reader.add_connection(new_connection);
 	clients.insert(new_connection);
       }
@@ -74,7 +74,7 @@ main(int argc, char *argv[]) {
       PT(Connection) connection;
       if (cm.get_reset_connection(connection)) {
 	nout << "Lost connection from "
-	     << connection->get_address().get_ip() << "\n";
+	     << connection->get_address() << "\n";
 	clients.erase(connection);
 	cm.close_connection(connection);
       }

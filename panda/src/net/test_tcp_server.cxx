@@ -53,7 +53,7 @@ main(int argc, char *argv[]) {
       NetAddress address;
       PT(Connection) new_connection;
       if (listener.get_new_connection(rv, address, new_connection)) {
-	nout << "Got connection from " << address.get_ip() << "\n";
+	nout << "Got connection from " << address << "\n";
 	reader.add_connection(new_connection);
 	clients.insert(new_connection);
       }
@@ -64,7 +64,7 @@ main(int argc, char *argv[]) {
       PT(Connection) connection;
       if (cm.get_reset_connection(connection)) {
 	nout << "Lost connection from "
-	     << connection->get_address().get_ip() << "\n";
+	     << connection->get_address() << "\n";
 	clients.erase(connection);
 	cm.close_connection(connection);
       }
@@ -75,7 +75,7 @@ main(int argc, char *argv[]) {
       NetDatagram datagram;
       if (reader.get_data(datagram)) {
 	nout << "Got datagram " << datagram << "from " 
-	     << datagram.get_address().get_ip() << ", sending to "
+	     << datagram.get_address() << ", sending to "
 	     << clients.size() << " clients.\n";
 	
 	Clients::iterator ci;
@@ -91,7 +91,7 @@ main(int argc, char *argv[]) {
 	    nout << "Empty datagram from a null connection.\n";
 	  } else {
 	    nout << "Closing connection from " 
-		 << connection->get_address().get_ip() << "\n";
+		 << connection->get_address() << "\n";
 	    clients.erase(connection);
 	    cm.close_connection(connection);
 	    nout << "Closed " << connection << "\n";

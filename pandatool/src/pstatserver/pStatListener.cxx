@@ -35,7 +35,7 @@ connection_opened(const PT(Connection) &,
     return;
   }
 
-  nout << "Got new connection from " << address.get_ip() << "\n";
+  nout << "Got new connection from " << address << "\n";
 
   PStatReader *reader = new PStatReader(_manager, monitor);
   _manager->add_reader(new_connection, reader);

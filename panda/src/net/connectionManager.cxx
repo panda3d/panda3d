@@ -164,13 +164,13 @@ open_TCP_client_connection(const NetAddress &address, int timeout_ms) {
     }
     net_cat.info()
       << "Unable to open TCP connection to server " 
-      << address.get_ip() << " on port " << address.get_port() << "\n";
+      << address.get_ip_string() << " on port " << address.get_port() << "\n";
     PR_Close(socket);
     return PT(Connection)();
   }
 
   net_cat.info()
-    << "Opened TCP connection to server " << address.get_ip() << " "
+    << "Opened TCP connection to server " << address.get_ip_string() << " "
     << " on port " << address.get_port() << "\n";
 
   PT(Connection) connection = new Connection(this, socket);

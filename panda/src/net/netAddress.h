@@ -7,6 +7,7 @@
 #define NETADDRESS_H
 
 #include <pandabase.h>
+#include <numeric_types.h>
 
 #include <prio.h>
 
@@ -28,7 +29,9 @@ public:
 
   int get_port() const;
   void set_port(int port);
-  string get_ip() const;
+  string get_ip_string() const;
+  PN_uint32 get_ip() const;
+  PN_uint8 get_ip_component(int n) const;
 
   PRNetAddr *get_addr() const;
 
