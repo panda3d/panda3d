@@ -1,0 +1,77 @@
+// Filename: winStatsLabel.h
+// Created by:  drose (07Jan04)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef WINSTATSLABEL_H
+#define WINSTATSLABEL_H
+
+#include "pandatoolbase.h"
+
+#include <windows.h>
+
+class WinStatsMonitor;
+
+////////////////////////////////////////////////////////////////////
+//       Class : WinStatsLabel
+// Description : A text label that will draw in color appropriate for
+//               a particular collector.  It also responds when the
+//               user double-clicks on it.  This is handy for putting
+//               colored labels on strip charts.
+////////////////////////////////////////////////////////////////////
+class WinStatsLabel {
+public:
+  WinStatsLabel(WinStatsMonitor *monitor, int collector_index);
+  ~WinStatsLabel();
+
+  void setup(HWND parent_window);
+  void set_pos(int x, int y, int width);
+
+  int get_x() const;
+  int get_y() const;
+  int get_width() const;
+  int get_height() const;
+  int get_ideal_width() const;
+
+private:
+  void create_window(HWND parent_window);
+  static void register_window_class(HINSTANCE application);
+
+  static LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+  LONG WINAPI window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+
+  int _collector_index;
+  string _text;
+  HWND _window;
+  COLORREF _bg_color;
+  COLORREF _fg_color;
+  HBRUSH _bg_brush;
+
+  int _x;
+  int _y;
+  int _width;
+  int _height;
+  int _ideal_width;
+
+  static int _left_margin, _right_margin;
+  static int _top_margin, _bottom_margin;
+
+  static bool _window_class_registered;
+  static const char * const _window_class_name;
+};
+
+#endif
+

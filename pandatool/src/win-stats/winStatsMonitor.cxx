@@ -18,8 +18,10 @@
 
 #include "winStatsMonitor.h"
 #include "winStatsStripChart.h"
+#include "winStatsChartMenu.h"
 
 #include "pStatCollectorDef.h"
+#include "indent.h"
 
 bool WinStatsMonitor::_window_class_registered = false;
 const char * const WinStatsMonitor::_window_class_name = "monitor";
@@ -32,6 +34,7 @@ const char * const WinStatsMonitor::_window_class_name = "monitor";
 WinStatsMonitor::
 WinStatsMonitor() {
   _window = 0;
+  _menu_bar = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -47,6 +50,12 @@ WinStatsMonitor::
     delete (*gi);
   }
   _graphs.clear();
+
+  ChartMenus::iterator mi;
+  for (mi = _chart_menus.begin(); mi != _chart_menus.end(); ++mi) {
+    delete (*mi);
+  }
+  _chart_menus.clear();
 
   if (_window) {
     DestroyWindow(_window);
@@ -135,6 +144,30 @@ new_collector(int collector_index) {
     WinStatsGraph *graph = (*gi);
     graph->new_collector(collector_index);
   }
+
+  // We might need to update our menus.
+  ChartMenus::iterator mi;
+  for (mi = _chart_menus.begin(); mi != _chart_menus.end(); ++mi) {
+    (*mi)->do_update();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsMonitor::new_thread
+//       Access: Public, Virtual
+//  Description: Called whenever a new Thread definition is
+//               received from the client.  Generally, the client will
+//               send all of its threads over shortly after
+//               connecting, but there's no guarantee that they will
+//               all be received before the first frames are received.
+//               The monitor should be prepared to accept new Thread
+//               definitions midstream.
+////////////////////////////////////////////////////////////////////
+void WinStatsMonitor::
+new_thread(int thread_index) {
+  WinStatsChartMenu *chart_menu = new WinStatsChartMenu(this, thread_index);
+  chart_menu->add_to_menu_bar(_menu_bar);
+  _chart_menus.push_back(chart_menu);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -184,6 +217,11 @@ lost_connection() {
 ////////////////////////////////////////////////////////////////////
 void WinStatsMonitor::
 idle() {
+  // Check if any of our chart menus need updating.
+  ChartMenus::iterator mi;
+  for (mi = _chart_menus.begin(); mi != _chart_menus.end(); ++mi) {
+    (*mi)->check_update();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -246,6 +284,13 @@ create_window() {
   HINSTANCE application = GetModuleHandle(NULL);
   register_window_class(application);
 
+  _menu_bar = CreateMenu();
+
+  ChartMenus::iterator mi;
+  for (mi = _chart_menus.begin(); mi != _chart_menus.end(); ++mi) {
+    (*mi)->add_to_menu_bar(_menu_bar);
+  }
+
   _window_title = get_client_progname() + " on " + get_client_hostname();
   DWORD window_style = WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | 
     WS_CLIPSIBLINGS | WS_VISIBLE;
@@ -253,7 +298,7 @@ create_window() {
   _window = 
     CreateWindow(_window_class_name, _window_title.c_str(), window_style,
                  CW_USEDEFAULT, 0, CW_USEDEFAULT, 0,
-                 NULL, NULL, application, 0);
+                 NULL, _menu_bar, application, 0);
   if (!_window) {
     nout << "Could not create monitor window!\n";
     exit(1);

@@ -337,10 +337,12 @@ static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 ////////////////////////////////////////////////////////////////////
 LONG WinStatsStripChart::
 window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+  /*
   switch (msg) {
   default:
     break;
   }
+  */
 
   return WinStatsGraph::window_proc(hwnd, msg, wparam, lparam);
 }

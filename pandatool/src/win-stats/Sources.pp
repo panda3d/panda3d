@@ -12,6 +12,7 @@
 
   #define SOURCES \
     winStats.cxx \
+    winStatsChartMenu.cxx winStatsChartMenu.h \
     winStatsGraph.cxx winStatsGraph.h \
     winStatsLabel.cxx winStatsLabel.h \
     winStatsLabelStack.cxx winStatsLabelStack.h \

@@ -28,6 +28,8 @@
 
 #include <windows.h>
 
+class WinStatsChartMenu;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : WinStatsMonitor
 // Description : This class represents a connection to a PStatsClient
@@ -45,6 +47,7 @@ public:
   virtual void got_bad_version(int client_major, int client_minor,
                                int server_major, int server_minor);
   virtual void new_collector(int collector_index);
+  virtual void new_thread(int thread_index);
   virtual void new_data(int thread_index, int frame_number);
   virtual void lost_connection();
   virtual void idle();
@@ -65,7 +68,11 @@ private:
   typedef pset<WinStatsGraph *> Graphs;
   Graphs _graphs;
 
+  typedef pvector<WinStatsChartMenu *> ChartMenus;
+  ChartMenus _chart_menus;
+
   HWND _window;
+  HMENU _menu_bar;
   string _window_title;
 
   static bool _window_class_registered;

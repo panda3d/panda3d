@@ -156,12 +156,31 @@ get_collector_fullname(int index) const {
 //  Description: Indicates whether the given collector has level data
 //               (and consequently, whether it should appear on the
 //               Levels menu).
+//
+//               The return value is true if anything changed, false
+//               otherwise.
 ////////////////////////////////////////////////////////////////////
-void PStatClientData::
+bool PStatClientData::
 set_collector_has_level(int index, bool flag) {
+  bool any_changed = false;
   slot_collector(index);
-  nassertv(index >= 0 && index < (int)_collectors.size());
-  _collectors[index]._is_level = flag;
+  nassertr(index >= 0 && index < (int)_collectors.size(), false);
+
+  if (_collectors[index]._is_level != flag) {
+    any_changed = true;
+    _collectors[index]._is_level = flag;
+
+    // Turning this on for a given collector also implicitly turns all
+    // of its ancestors.
+    if (flag) {
+      PStatCollectorDef *def = _collectors[index]._def;
+      if (def->_parent_index != 0) {
+        set_collector_has_level(def->_parent_index, flag);
+      }
+    }
+  }
+
+  return any_changed;
 }
 
 
@@ -176,6 +195,32 @@ bool PStatClientData::
 get_collector_has_level(int index) const {
   return (index >= 0 && index < (int)_collectors.size() &&
           _collectors[index]._is_level);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClientData::get_num_toplevel_collectors
+//       Access: Public
+//  Description: Returns the total number of collectors that are
+//               toplevel collectors.  These are the collectors that
+//               are the children of "Frame", which is collector 0.
+////////////////////////////////////////////////////////////////////
+int PStatClientData::
+get_num_toplevel_collectors() const {
+  return _toplevel_collectors.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClientData::get_toplevel_collector
+//       Access: Public
+//  Description: Returns the collector index of the nth toplevel
+//               collector.  Use this function to iterate through the
+//               n toplevel collectors indicated by
+//               get_num_toplevel_collectors().
+////////////////////////////////////////////////////////////////////
+int PStatClientData::
+get_toplevel_collector(int n) const {
+  nassertr(n >= 0 && n < (int)_toplevel_collectors.size(), 0);
+  return _toplevel_collectors[n];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -278,6 +323,7 @@ add_collector(PStatCollectorDef *def) {
   }
 
   _collectors[def->_index]._def = def;
+  update_toplevel_collectors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -341,5 +387,23 @@ slot_collector(int collector_index) {
     collector._def = (PStatCollectorDef *)NULL;
     collector._is_level = false;
     _collectors.push_back(collector);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClientData::update_toplevel_collectors
+//       Access: Private
+//  Description: Rebuilds the list of toplevel collectors.
+////////////////////////////////////////////////////////////////////
+void PStatClientData::
+update_toplevel_collectors() {
+  _toplevel_collectors.clear();
+
+  Collectors::const_iterator ci;
+  for (ci = _collectors.begin(); ci != _collectors.end(); ++ci) {
+    PStatCollectorDef *def = (*ci)._def;
+    if (def->_parent_index == 0) {
+      _toplevel_collectors.push_back(def->_index);
+    }
   }
 }

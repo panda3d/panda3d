@@ -50,8 +50,11 @@ public:
   const PStatCollectorDef &get_collector_def(int index) const;
   string get_collector_name(int index) const;
   string get_collector_fullname(int index) const;
-  void set_collector_has_level(int index, bool flag);
+  bool set_collector_has_level(int index, bool flag);
   bool get_collector_has_level(int index) const;
+
+  int get_num_toplevel_collectors() const;
+  int get_toplevel_collector(int index) const;
 
   int get_num_threads() const;
   bool has_thread(int index) const;
@@ -68,7 +71,7 @@ public:
                         PStatFrameData *frame_data);
 private:
   void slot_collector(int collector_index);
-
+  void update_toplevel_collectors();
 
 private:
   bool _is_alive;
@@ -83,6 +86,9 @@ private:
   typedef pvector<Collector> Collectors;
   Collectors _collectors;
 
+  typedef pvector<int> ToplevelCollectors;
+  ToplevelCollectors _toplevel_collectors;
+  
   class Thread {
   public:
     string _name;
