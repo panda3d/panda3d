@@ -162,7 +162,7 @@ public:
   virtual bool wants_texcoords(void) const;
   virtual bool wants_colors(void) const;
 
-  virtual void begin_decal(GeomNode *base_geom);
+  virtual void begin_decal(GeomNode *base_geom, AllAttributesWrapper &attrib);
   virtual void end_decal(GeomNode *base_geom);
 
   virtual float compute_distance_to(const LPoint3f &point) const;

@@ -596,9 +596,14 @@ wants_colors() const {
 //               the GSG will render normally; subsequent geometry
 //               rendered up until the next call of end_decal() should
 //               be rendered as decals of the base_geom.
+//
+//               The attributes wrapper is the current state as of the
+//               base geometry node.  It may or may not be modified by
+//               the GSG to reflect whatever rendering state is
+//               necessary to render the decals properly.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-begin_decal(GeomNode *base_geom) {
+begin_decal(GeomNode *base_geom, AllAttributesWrapper &attrib) {
   base_geom->draw(this);
 }
 

@@ -3390,9 +3390,14 @@ wants_colors() const {
 //               the GSG will render normally; subsequent geometry
 //               rendered up until the next call of end_decal() should
 //               be rendered as decals of the base_geom.
+//
+//               The attributes wrapper is the current state as of the
+//               base geometry node.  It may or may not be modified by
+//               the GSG to reflect whatever rendering state is
+//               necessary to render the decals properly.
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-begin_decal(GeomNode *base_geom) {
+begin_decal(GeomNode *base_geom, AllAttributesWrapper &attrib) {
   nassertv(base_geom != (GeomNode *)NULL);
   _decal_level++;
 
@@ -3416,6 +3421,9 @@ begin_decal(GeomNode *base_geom) {
     } else {
       // Turn off writing the depth buffer to render the base geometry.
       call_glDepthMask(false);
+      DepthWriteAttribute *dwa = new DepthWriteAttribute;
+      dwa->set_off();
+      attrib.set_attribute(DepthWriteTransition::get_class_type(), dwa);
 
       // Now render the base geometry.
       base_geom->draw(this);

@@ -196,7 +196,7 @@ reached_node(Node *node, AllAttributesWrapper &render_state,
         return false;
       }
 #endif
-      _gsg->begin_decal(geom);
+      _gsg->begin_decal(geom, render_state);
 
     } else {
       geom->draw(_gsg);
