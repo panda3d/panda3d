@@ -762,7 +762,7 @@ process_model_node(MayaNodeDesc *node_desc) {
           << "Error in node " << path << ":\n"
           << "  it appears to have a polygon mesh, but does not.\n";
       } else {
-        make_polyset(dag_path, mesh, egg_group);
+        make_polyset(node_desc, dag_path, mesh, egg_group);
       }
     }
 
@@ -1026,7 +1026,7 @@ make_nurbs_surface(MayaNodeDesc *node_desc, const MDagPath &dag_path,
       status.perror("MFnMesh constructor");
       return;
     }
-    make_polyset(polyset_path, polyset_fn, egg_group, shader);
+    make_polyset(node_desc, polyset_path, polyset_fn, egg_group, shader);
 
     // Now remove the polyset we created.
     MFnDagNode parent_node(polyset_parent, &status);
@@ -1459,8 +1459,9 @@ make_nurbs_curve(const MDagPath &, const MFnNurbsCurve &curve,
 //               group.
 ////////////////////////////////////////////////////////////////////
 void MayaToEggConverter::
-make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
-             EggGroup *egg_group, MayaShader *default_shader) {
+make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path, 
+             const MFnMesh &mesh, EggGroup *egg_group,
+             MayaShader *default_shader) {
   MStatus status;
   string name = mesh.name().asChar();
 
@@ -1621,7 +1622,7 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
       EggVertex vert;
 
       MPoint p = pi.point(i, MSpace::kWorld);
-      LPoint3d p3d(p[0], p[1], p[2]);
+      LPoint3d p3d(p[0] / p[3], p[1] / p[3], p[2] / p[3]);
       p3d = p3d * vertex_frame_inv;
       vert.set_pos(p3d);
 
@@ -1704,16 +1705,6 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
     pi.next();
   }
 
-  // TODO: We also need to compute the vertex morphs for the polyset,
-  // based on whatever blend shapes may be present.  This should be
-  // similar to the code in make_nurbs_surface(), except that since we
-  // don't have a one-to-one relationship of egg vertices to Maya
-  // vertices, we probably have to get the morphs down here, after we
-  // have added all of the egg vertices.  I'll be happy to make this
-  // work as soon as someone gives me a sample Maya file that
-  // demonstrates blend shapes with polygon meshes.
-
-
   // Now that we've added all the polygons (and created all the
   // vertices), go back through the vertex pool and set up the
   // appropriate joint membership for each of the vertices.
@@ -1749,6 +1740,72 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
           }
         }
       }
+    }
+  }
+
+
+  // We also need to compute the vertex morphs for the polyset, based
+  // on whatever blend shapes may be present.  This is similar to the
+  // code in make_nurbs_surface(), except that since we don't have a
+  // one-to-one relationship of egg vertices to Maya vertices, we have
+  // to get the morphs down here, after we have added all of the egg
+  // vertices.
+
+  if (_animation_convert == AC_model) {
+    int num_orig_mesh_verts = mesh.numVertices();
+
+    int num_sliders = node_desc->get_num_blend_descs();
+    for (int i = 0; i < num_sliders; i++) {
+      MayaBlendDesc *blend_desc = node_desc->get_blend_desc(i);
+
+      // Temporarily push the slider up to 1.0 so we can see what the
+      // surface looks like at that value.
+      blend_desc->set_slider(1.0);
+
+      // We have to get the mesh object from the dag again after
+      // fiddling with the slider.
+      MFnMesh blend_mesh(dag_path, &status);
+      if (!status) {
+        mayaegg_cat.warning()
+          << name << " no longer has a mesh after applying "
+          << blend_desc->get_name() << "\n";
+
+      } else {
+        if (blend_mesh.numVertices() != num_orig_mesh_verts) {
+          mayaegg_cat.warning()
+            << "Ignoring " << blend_desc->get_name() << " for " 
+            << name << "; blend shape has " << blend_mesh.numVertices()
+            << " vertices while original shape has " 
+            << num_orig_mesh_verts << ".\n";
+          
+        } else {
+          MPointArray verts;
+          status = blend_mesh.getPoints(verts, MSpace::kWorld);
+          if (!status) {
+            status.perror("MFnMesh::getPoints");
+          } else {
+            int num_verts = (int)verts.length();
+            EggVertexPool::iterator vi;
+            for (vi = vpool->begin(); vi != vpool->end(); ++vi) {
+              EggVertex *vert = (*vi);
+              int maya_vi = vert->get_external_index();
+              nassertv(maya_vi >= 0 && maya_vi < num_verts);
+              
+              const MPoint &m = verts[maya_vi];
+              LPoint3d m3d(m[0] / m[3], m[1] / m[3], m[2] / m[3]);
+              m3d = m3d * vertex_frame_inv;
+              
+              LVector3d delta = m3d - vert->get_pos3();
+              if (!delta.almost_equal(LVector3d::zero())) {
+                EggMorphVertex dxyz(blend_desc->get_name(), delta);
+                vert->_dxyzs.insert(dxyz);
+              }
+            }
+          }
+        }
+      }
+
+      blend_desc->set_slider(0.0);
     }
   }
 }

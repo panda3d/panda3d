@@ -115,9 +115,8 @@ private:
   void make_nurbs_curve(const MDagPath &dag_path, 
                         const MFnNurbsCurve &curve,
                         EggGroup *group);
-  void make_polyset(const MDagPath &dag_path,
-                    const MFnMesh &mesh,
-                    EggGroup *egg_group,
+  void make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
+                    const MFnMesh &mesh, EggGroup *egg_group,
                     MayaShader *default_shader = NULL);
   void make_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
                     EggGroup *egg_group);
