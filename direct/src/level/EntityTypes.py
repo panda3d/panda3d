@@ -70,6 +70,8 @@ class EntrancePoint(Nodepath):
     type = 'entrancePoint'
     attribs = (
         ('entranceId', -1, 'int'),
+        ('radius', 15, 'float', {'min':0}),
+        ('theta', 20, 'float', {'min':0}),
         )
 
 class LogicGate(Entity):

@@ -6,14 +6,22 @@ import NodePath
 class EntrancePoint(BasicEntities.NodePathEntity):
     def __init__(self, level, entId):
         BasicEntities.NodePathEntity.__init__(self, level, entId)
+        self.rotator = self.attachNewNode('rotator')
+        self.placer = self.rotator.attachNewNode('placer')
         self.initEntrancePoint()
 
     def destroy(self):
         self.destroyEntrancePoint()
+        self.placer.removeNode()
+        self.rotator.removeNode()
+        del self.placer, self.rotator
         BasicEntities.NodePathEntity.destroy(self)
 
     def placeToon(self, toon, toonIndex, numToons):
-        toon.setPosHpr(self, 0,0,0, 0,0,0)
+        self.placer.setY(-self.radius)
+        self.rotator.setH((-self.theta*(numToons-1)*.5) +
+                          (toonIndex*self.theta))
+        toon.setPosHpr(self.placer, 0,0,0, 0,0,0)
 
     def initEntrancePoint(self):
         if self.entranceId >= 0:
