@@ -1,4 +1,4 @@
-// Filename: xFileVertex.h
+// Filename: xFileFace.cxx
 // Created by:  drose (19Jun01)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,29 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef XFILEVERTEX_H
-#define XFILEVERTEX_H
-
-#include "pandatoolbase.h"
-#include "luse.h"
-
-class EggVertex;
-class EggPrimitive;
+#include "xFileFace.h"
+#include "xFileMesh.h"
+#include "eggPolygon.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : XFileVertex
-// Description : This represents a single vertex associated with an
-//               XFileFace.
+//     Function: XFileFace::Constructor
+//       Access: Public
+//  Description:
 ////////////////////////////////////////////////////////////////////
-class XFileVertex {
-public:
-  XFileVertex(EggVertex *egg_vertex, EggPrimitive *egg_poly);
-  int compare_to(const XFileVertex &other) const;
-
-  Vertexf _point;
-  TexCoordf _uv;
-  Colorf _color;
-};
-
-#endif
-
+XFileFace::
+XFileFace(XFileMesh *mesh, EggPolygon *egg_poly) {
+  // Walk through the polygon's vertices in reverse order, to change
+  // from Egg's counter-clockwise convention to DX's clockwise.
+  EggPolygon::reverse_iterator vi;
+  for (vi = egg_poly->rbegin(); vi != egg_poly->rend(); ++vi) {
+    EggVertex *egg_vertex = (*vi);
+    Vertex v;
+    v._vertex_index = mesh->add_vertex(egg_vertex, egg_poly);
+    v._normal_index = mesh->add_normal(egg_vertex, egg_poly);
+    _vertices.push_back(v);
+  }
+}

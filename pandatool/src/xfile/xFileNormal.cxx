@@ -1,4 +1,4 @@
-// Filename: xFileVertex.cxx
+// Filename: xFileNormal.cxx
 // Created by:  drose (19Jun01)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,48 +16,34 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "xFileVertex.h"
+#include "xFileNormal.h"
 #include "eggVertex.h"
 #include "eggPrimitive.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileVertex::Constructor
+//     Function: XFileNormal::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-XFileVertex::
-XFileVertex(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
-  _point = LCAST(float, egg_vertex->get_pos3());
-
-  if (egg_vertex->has_uv()) {
-    _uv = LCAST(float, egg_vertex->get_uv());
+XFileNormal::
+XFileNormal(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
+  if (egg_vertex->has_normal()) {
+    _normal = LCAST(float, egg_vertex->get_normal());
+  } else if (egg_prim->has_normal()) {
+    _normal = LCAST(float, egg_prim->get_normal());
   } else {
-    _uv.set(0.0, 0.0);
-  }
-
-  if (egg_vertex->has_color()) {
-    _color = egg_vertex->get_color();
-  } else if (egg_prim->has_color()) {
-    _color = egg_prim->get_color();
-  } else {
-    _color.set(1.0, 1.0, 1.0, 1.0);
+    _normal.set(0.0, 0.0, 0.0);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileVertex::compare_to
+//     Function: XFileNormal::compare_to
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-int XFileVertex::
-compare_to(const XFileVertex &other) const {
+int XFileNormal::
+compare_to(const XFileNormal &other) const {
   int ct;
-  ct = _point.compare_to(other._point);
-  if (ct == 0) {
-    ct = _uv.compare_to(other._uv);
-  }
-  if (ct == 0) {
-    ct = _color.compare_to(other._color);
-  }
+  ct = _normal.compare_to(other._normal);
   return ct;
 }

@@ -35,6 +35,8 @@ class EggGroupNode;
 class EggGroup;
 class EggBin;
 class EggData;
+class EggVertexPool;
+class Datagram;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : XFileMaker
@@ -58,8 +60,11 @@ private:
   bool add_polyset(EggBin *egg_bin, LPDIRECTXFILEDATA dx_parent);
 
   bool recurse_nodes(EggGroupNode *egg_node, LPDIRECTXFILEDATA dx_parent);
-  bool create_frame(LPDIRECTXFILEDATA &data, const string &name);
-  bool attach_and_release(LPDIRECTXFILEDATA data, LPDIRECTXFILEDATA dx_parent);
+
+  bool create_object(LPDIRECTXFILEDATA &obj, REFGUID template_id,
+                     const string &name, const Datagram &dg);
+  bool create_frame(LPDIRECTXFILEDATA &obj, const string &name);
+  bool attach_and_release(LPDIRECTXFILEDATA obj, LPDIRECTXFILEDATA dx_parent);
 
   static string make_nice_name(const string &str);
 

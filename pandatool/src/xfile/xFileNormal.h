@@ -1,4 +1,4 @@
-// Filename: xFileVertex.h
+// Filename: xFileNormal.h
 // Created by:  drose (19Jun01)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef XFILEVERTEX_H
-#define XFILEVERTEX_H
+#ifndef XFILENORMAL_H
+#define XFILENORMAL_H
 
 #include "pandatoolbase.h"
 #include "luse.h"
@@ -26,18 +26,18 @@ class EggVertex;
 class EggPrimitive;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : XFileVertex
-// Description : This represents a single vertex associated with an
-//               XFileFace.
+//       Class : XFileNormal
+// Description : This represents a single normal associated with an
+//               XFileFace.  It is separate from XFileVertex, because
+//               the X syntax supports a different table of normals
+//               than that of vertices.
 ////////////////////////////////////////////////////////////////////
-class XFileVertex {
+class XFileNormal {
 public:
-  XFileVertex(EggVertex *egg_vertex, EggPrimitive *egg_poly);
-  int compare_to(const XFileVertex &other) const;
+  XFileNormal(EggVertex *egg_vertex, EggPrimitive *egg_prim);
+  int compare_to(const XFileNormal &other) const;
 
-  Vertexf _point;
-  TexCoordf _uv;
-  Colorf _color;
+  Normalf _normal;
 };
 
 #endif

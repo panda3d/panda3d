@@ -1,4 +1,4 @@
-// Filename: xFileVertex.h
+// Filename: xFileFace.h
 // Created by:  drose (19Jun01)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,28 +16,30 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef XFILEVERTEX_H
-#define XFILEVERTEX_H
+#ifndef XFILEFACE_H
+#define XFILEFACE_H
 
 #include "pandatoolbase.h"
-#include "luse.h"
+#include "pvector.h"
 
-class EggVertex;
-class EggPrimitive;
+class XFileMesh;
+class EggPolygon;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : XFileVertex
-// Description : This represents a single vertex associated with an
-//               XFileFace.
+//       Class : XFileFace
+// Description : This represents a single face of an XFileMesh.
 ////////////////////////////////////////////////////////////////////
-class XFileVertex {
+class XFileFace {
 public:
-  XFileVertex(EggVertex *egg_vertex, EggPrimitive *egg_poly);
-  int compare_to(const XFileVertex &other) const;
+  XFileFace(XFileMesh *mesh, EggPolygon *egg_poly);
 
-  Vertexf _point;
-  TexCoordf _uv;
-  Colorf _color;
+  class Vertex {
+  public:
+    int _vertex_index;
+    int _normal_index;
+  };
+  typedef pvector<Vertex> Vertices;
+  Vertices _vertices;
 };
 
 #endif

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "xFileMaker.h"
+#include "xFileMesh.h"
 #include "notify.h"
 #include "eggGroupNode.h"
 #include "eggGroup.h"
@@ -29,6 +30,7 @@
 #include "pvector.h"
 #include "vector_int.h"
 #include "string_utils.h"
+#include "datagram.h"
 
 // This must be included only in exactly one .cxx file, since
 // including defines the structure!
@@ -91,9 +93,18 @@ open(const Filename &filename) {
 
   // Save the templates we will use.
   static const GUID *temps[] = {
+    &TID_D3DRMCoords2d,
     &TID_D3DRMVector,
+    &TID_D3DRMColorRGBA,
+    &TID_D3DRMColorRGB,
+    &TID_D3DRMIndexedColor,
+    &TID_D3DRMTextureFilename,
+    &TID_D3DRMMaterial,
     &TID_D3DRMMeshFace,
     &TID_D3DRMMesh,
+    &TID_D3DRMMeshNormals,
+    &TID_D3DRMMeshTextureCoords,
+    &TID_D3DRMMeshMaterialList,
     &TID_D3DRMFrame,
   };
   static const int num_temps = sizeof(temps) / sizeof(temps[0]);
@@ -159,17 +170,17 @@ add_node(EggNode *egg_node, LPDIRECTXFILEDATA dx_parent) {
   } else if (egg_node->is_of_type(EggGroupNode::get_class_type())) {
     // A grouping node of some kind.
     EggGroupNode *egg_group = DCAST(EggGroupNode, egg_node);
-    LPDIRECTXFILEDATA data;
-    if (!create_frame(data, egg_group->get_name())) {
+    LPDIRECTXFILEDATA obj;
+    if (!create_frame(obj, egg_group->get_name())) {
       return false;
     }
     
-    if (!recurse_nodes(egg_group, data)) {
-      data->Release();
+    if (!recurse_nodes(egg_group, obj)) {
+      obj->Release();
       return false;
     }
     
-    if (!attach_and_release(data, dx_parent)) {
+    if (!attach_and_release(obj, dx_parent)) {
       return false;
     }
     
@@ -187,17 +198,17 @@ add_node(EggNode *egg_node, LPDIRECTXFILEDATA dx_parent) {
 ////////////////////////////////////////////////////////////////////
 bool XFileMaker::
 add_group(EggGroup *egg_group, LPDIRECTXFILEDATA dx_parent) {
-  LPDIRECTXFILEDATA data;
-  if (!create_frame(data, egg_group->get_name())) {
+  LPDIRECTXFILEDATA obj;
+  if (!create_frame(obj, egg_group->get_name())) {
     return false;
   }
 
-  if (!recurse_nodes(egg_group, data)) {
-    data->Release();
+  if (!recurse_nodes(egg_group, obj)) {
+    obj->Release();
     return false;
   }
 
-  if (!attach_and_release(data, dx_parent)) {
+  if (!attach_and_release(obj, dx_parent)) {
     return false;
   }
 
@@ -232,89 +243,31 @@ add_polyset(EggBin *egg_bin, LPDIRECTXFILEDATA dx_parent) {
   // Make sure that all our polygons are reasonable.
   egg_bin->remove_invalid_primitives();
 
-  // First, we need to collect all the common vertices for the
-  // polygons in this polyset.  We can do this fairly easily using a
-  // vertex pool.
-  PT(EggVertexPool) vpool = new EggVertexPool("");
-
-  int num_polys = 0;
+  XFileMesh mesh;
 
   EggGroupNode::iterator ci;
   for (ci = egg_bin->begin(); ci != egg_bin->end(); ++ci) {
     EggPolygon *poly;
     DCAST_INTO_R(poly, *ci, false);
 
-    // A temporary holder for the newly converted vertices of the
-    // polygon.
-    PT(EggPolygon) vertex_holder = new EggPolygon;
-
-    num_polys++;
-    EggPolygon::iterator vi;
-    for (vi = poly->begin(); vi != poly->end(); ++vi) {
-      // Make a copy of the polygon's original vertex.
-      PT(EggVertex) vtx_copy = new EggVertex(*(*vi));
-      
-      // Now change the properties on the vertex as appropriate to our
-      // mesh.
-      if (!vtx_copy->has_color()) {
-        vtx_copy->set_color(poly->get_color());
-      }
-      vtx_copy->_dnormals.clear();
-      vtx_copy->_duvs.clear();
-      vtx_copy->_drgbas.clear();
-      vtx_copy->_dxyzs.clear();
-
-      // And create the unique vertex.
-      EggVertex *vtx = vpool->create_unique_vertex(*vtx_copy);
-      vertex_holder->add_vertex(vtx);
-    }
-
-    poly->copy_vertices(*vertex_holder);
+    mesh.add_polygon(poly);
   }
 
-  // Now create the raw data for the Mesh object.
-  int highest_index = vpool->get_highest_index();
-  Datagram raw_data;
-  raw_data.add_int32(highest_index);
-  for (int i = 1; i <= highest_index; i++) {
-    EggVertex *vtx = vpool->get_vertex(i);
-    nassertr(vtx != (EggVertex *)NULL, false);
-    Vertexd pos = vtx->get_pos3();
-    raw_data.add_float32(pos[0]);
-    raw_data.add_float32(pos[1]);
-    raw_data.add_float32(pos[2]);
-  }
-
-  raw_data.add_int32(num_polys);
-  for (ci = egg_bin->begin(); ci != egg_bin->end(); ++ci) {
-    EggPolygon *poly;
-    DCAST_INTO_R(poly, *ci, false);
-
-    raw_data.add_int32(poly->size());
-    EggPolygon::reverse_iterator vi;
-    for (vi = poly->rbegin(); vi != poly->rend(); ++vi) {
-      int index = (*vi)->get_index();
-      raw_data.add_int32(index - 1);
-    }
-  }
+  // Get a unique number for each mesh.
+  _mesh_index++;
+  string mesh_index = format_string(_mesh_index);
 
   // Finally, create the Mesh object.
-  HRESULT hr;
-  LPDIRECTXFILEDATA data;
+  Datagram raw_data;
+  mesh.make_mesh_data(raw_data);
 
-  string name = "mesh" + format_string(_mesh_index);
-  _mesh_index++;
-
-  hr = _dx_file_save->CreateDataObject
-    (TID_D3DRMMesh, name.c_str(), NULL, 
-     raw_data.get_length(), (void *)raw_data.get_data(),
-     &data);
-  if (hr != DXFILE_OK) {
-    nout << "Unable to create Mesh object\n";
+  LPDIRECTXFILEDATA xobj;
+  cerr << "Creating mesh\n";
+  if (!create_object(xobj, TID_D3DRMMesh, "mesh" + mesh_index, raw_data)) {
     return false;
   }
 
-  if (!attach_and_release(data, dx_parent)) {
+  if (!attach_and_release(xobj, dx_parent)) {
     return false;
   }
   return true;
@@ -340,22 +293,44 @@ recurse_nodes(EggGroupNode *egg_node, LPDIRECTXFILEDATA dx_parent) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: XFileMaker::create_object
+//       Access: Private
+//  Description: Creates a DX data object.
+////////////////////////////////////////////////////////////////////
+bool XFileMaker::
+create_object(LPDIRECTXFILEDATA &obj, REFGUID template_id,
+              const string &name, const Datagram &dg) {
+  HRESULT hr;
+
+  string nice_name = make_nice_name(name);
+
+  int data_size = dg.get_length();
+  void *data_pointer = (void *)dg.get_data();
+
+  if (data_size == 0) {
+    data_pointer = (void *)NULL;
+  }
+
+  hr = _dx_file_save->CreateDataObject
+    (template_id, nice_name.c_str(), NULL, 
+     data_size, data_pointer, &obj);
+
+  if (hr != DXFILE_OK) {
+    nout << "Unable to create data object for " << name << "\n";
+    return false;
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: XFileMaker::create_frame
 //       Access: Private
 //  Description: Creates a "frame" object with the indicated name.
 ////////////////////////////////////////////////////////////////////
 bool XFileMaker::
-create_frame(LPDIRECTXFILEDATA &data, const string &name) {
-  HRESULT hr;
-
-  string nice_name = make_nice_name(name);
-  hr = _dx_file_save->CreateDataObject
-    (TID_D3DRMFrame, nice_name.c_str(), NULL, 0, NULL, &data);
-  if (hr != DXFILE_OK) {
-    nout << "Unable to create frame object for " << name << "\n";
-    return false;
-  }
-  return true;
+create_frame(LPDIRECTXFILEDATA &obj, const string &name) {
+  cerr << "Creating frame\n";
+  return create_object(obj, TID_D3DRMFrame, name, Datagram());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -365,28 +340,28 @@ create_frame(LPDIRECTXFILEDATA &data, const string &name) {
 //               parent, and releases the pointer.
 ////////////////////////////////////////////////////////////////////
 bool XFileMaker::
-attach_and_release(LPDIRECTXFILEDATA data, LPDIRECTXFILEDATA dx_parent) {
+attach_and_release(LPDIRECTXFILEDATA obj, LPDIRECTXFILEDATA dx_parent) {
   HRESULT hr;
 
   if (dx_parent == NULL) {
     // No parent; it's a toplevel object.
-    hr = _dx_file_save->SaveData(data);
+    hr = _dx_file_save->SaveData(obj);
     if (hr != DXFILE_OK) {
       nout << "Unable to save data object\n";
-      data->Release();
+      obj->Release();
       return false;
     }
   } else {
     // Got a parent; it's a child of the indicated object.
-    hr = dx_parent->AddDataObject(data);
+    hr = dx_parent->AddDataObject(obj);
     if (hr != DXFILE_OK) {
       nout << "Unable to save data object\n";
-      data->Release();
+      obj->Release();
       return false;
     }
   }
 
-  data->Release();
+  obj->Release();
   return true;
 }
 

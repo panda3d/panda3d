@@ -14,7 +14,11 @@
     d3dxof.lib
 
   #define SOURCES \
-    xFileMaker.cxx xFileMaker.h
+    xFileFace.cxx xFileFace.h \
+    xFileMaker.cxx xFileMaker.h \
+    xFileMesh.cxx xFileMesh.h \
+    xFileNormal.cxx xFileNormal.h \
+    xFileVertex.cxx xFileVertex.h
 
   #define SOURCES \
     $[SOURCES] \
