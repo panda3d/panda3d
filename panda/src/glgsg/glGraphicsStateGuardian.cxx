@@ -2172,13 +2172,17 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::apply_material(const Material *material) {
   GLenum face = material->get_twoside() ? GL_FRONT_AND_BACK : GL_FRONT;
+
+  glMaterialfv(face, GL_SPECULAR, material->get_specular().get_data());
+  glMaterialfv(face, GL_EMISSION, material->get_emission().get_data());
+  glMaterialf(face, GL_SHININESS, material->get_shininess());
   
   if (material->has_ambient() && material->has_diffuse()) {
     // The material has both an ambient and diffuse specified.  This
     // means we do not need glMaterialColor().
+    glDisable(GL_COLOR_MATERIAL);
     glMaterialfv(face, GL_AMBIENT, material->get_ambient().get_data());
     glMaterialfv(face, GL_DIFFUSE, material->get_diffuse().get_data());
-    glDisable(GL_COLOR_MATERIAL);
 
   } else if (material->has_ambient()) {
     // The material specifies an ambient, but not a diffuse component.
@@ -2190,7 +2194,7 @@ void GLGraphicsStateGuardian::apply_material(const Material *material) {
   } else if (material->has_diffuse()) {
     // The material specifies a diffuse, but not an ambient component.
     // The ambient component comes from the object's color.
-    glMaterialfv(face, GL_AMBIENT, material->get_ambient().get_data());
+    glMaterialfv(face, GL_DIFFUSE, material->get_diffuse().get_data());
     glColorMaterial(face, GL_AMBIENT);
     glEnable(GL_COLOR_MATERIAL);
 
@@ -2200,10 +2204,6 @@ void GLGraphicsStateGuardian::apply_material(const Material *material) {
     glColorMaterial(face, GL_AMBIENT_AND_DIFFUSE);
     glEnable(GL_COLOR_MATERIAL);
   }
-
-  glMaterialfv(face, GL_SPECULAR, material->get_specular().get_data());
-  glMaterialfv(face, GL_EMISSION, material->get_emission().get_data());
-  glMaterialf(face, GL_SHININESS, material->get_shininess());
   
   call_glLightModelLocal(material->get_local());
   call_glLightModelTwoSide(material->get_twoside());
