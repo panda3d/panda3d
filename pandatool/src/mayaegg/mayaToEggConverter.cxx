@@ -1577,8 +1577,12 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader) {
   // if present, replaces the color.
 
   if (shader._has_texture) {
-    Filename pathname = convert_texture_path(shader._texture);
-    EggTexture tex(shader._name, pathname);
+    Filename filename = Filename::from_os_specific(shader._texture);
+    Filename fullpath = 
+      _path_replace->match_path(filename, get_texture_path());
+    EggTexture tex(shader._name, _path_replace->store_path(fullpath));
+    tex.set_fullpath(fullpath);
+
     tex.set_wrap_u(shader._wrap_u ? EggTexture::WM_repeat : EggTexture::WM_clamp);
     tex.set_wrap_v(shader._wrap_v ? EggTexture::WM_repeat : EggTexture::WM_clamp);
  
