@@ -854,7 +854,7 @@ class TaskManager:
         # The priority heap is not actually in order - it is a tree
         # Make a shallow copy so we can sort it
         sortedDoLaterList = self.__doLaterList[:]
-        sortedDoLaterList.sort()
+        sortedDoLaterList.sort(lambda a,b: cmp(a.getWakeTime(), b.getWakeTime()))
         sortedDoLaterList.reverse()
         for task in sortedDoLaterList:
             remainingTime = ((task.getWakeTime()) - self.currentTime)
