@@ -99,7 +99,8 @@ get_document(const URLSpec &url, const string &body) {
 ////////////////////////////////////////////////////////////////////
 //     Function: HTTPClient::make_ctx
 //       Access: Private
-//  Description: Creates the OpenSSL context object.
+//  Description: Creates the OpenSSL context object.  This is only
+//               called by the constructor.
 ////////////////////////////////////////////////////////////////////
 void HTTPClient::
 make_ctx() {
@@ -109,7 +110,7 @@ make_ctx() {
   _ssl_ctx = SSL_CTX_new(SSLv23_client_method());
 
   // By default, insist on verifying servers.
-  SSL_CTX_set_verify(_ssl_ctx, SSL_VERIFY_PEER, NULL);
+  set_verify_ssl(true);
 
   // Load in any default certificates listed in the Configrc file.
   Config::ConfigTable::Symbol cert_files;
@@ -351,13 +352,22 @@ get_https_proxy(const URLSpec &url, const string &body) {
         << "proxy would not open connection to " << url.get_authority()
         << ": " << doc->get_status_code() << " "
         << doc->get_status_string() << "\n";
+
+      if (downloader_cat.is_debug()) {
+        doc->write_headers(downloader_cat.debug(false));
+      }
       
-      // If the proxy refused to open a raw connection for us, see if
-      // it will handle the https communication directly.  For other
-      // error codes, just return error.
-      if ((doc->get_status_code() / 100) == 4) {
-        BIO_free_all(bio);
-        return get_http_proxy(url, body);
+      if (!get_verify_ssl()) {
+        // If the proxy refused to open a raw connection for us, see
+        // if it will handle the https communication itself.  For
+        // other error codes, just return error.  (We can only
+        // reliably do this if verify_ssl is not true, since we're not
+        // sure whether to trust the proxy to do the verification for
+        // us.)
+        if ((doc->get_status_code() / 100) == 4) {
+          BIO_free_all(bio);
+          return get_http_proxy(url, body);
+        }
       }
       return NULL;
     }

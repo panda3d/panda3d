@@ -94,4 +94,17 @@ set_verify_ssl(bool verify_ssl) {
   } else {
     SSL_CTX_set_verify(_ssl_ctx, SSL_VERIFY_NONE, NULL);
   }
+  _verify_ssl = verify_ssl;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::get_verify_ssl
+//       Access: Published
+//  Description: Returns whether the client will insist on verifying
+//               the identity of the servers it connects to via SSL
+//               (that is, https).  See set_verify_ssl().
+////////////////////////////////////////////////////////////////////
+INLINE bool HTTPClient::
+get_verify_ssl() const {
+  return _verify_ssl;
 }

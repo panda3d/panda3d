@@ -54,6 +54,7 @@ PUBLISHED:
   bool load_certificates(const Filename &filename);
 
   INLINE void set_verify_ssl(bool verify_ssl);
+  INLINE bool get_verify_ssl() const;
 
   PT(HTTPDocument) get_document(const URLSpec &url, const string &body = string());
 
@@ -73,6 +74,7 @@ private:
 
   URLSpec _proxy;
   SSL_CTX *_ssl_ctx;
+  bool _verify_ssl;
 
   static bool _ssl_initialized;
 };
