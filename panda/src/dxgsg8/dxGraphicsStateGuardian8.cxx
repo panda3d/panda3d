@@ -3067,7 +3067,8 @@ copy_texture(Texture *tex, const DisplayRegion *dr) {
   dr->get_region_pixels(xo, yo, w, h);
 
   PixelBuffer *pb = tex->_pbuffer;
-  pb->set_size(0,0,w-xo,h-yo);
+  pb->set_xsize(w-xo);
+  pb->set_ysize(h-yo);
 
   TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
   if (tc == (TextureContext *)NULL) {

@@ -337,6 +337,11 @@ public:
   PFNGLMULTITEXCOORD2FVPROC _glMultiTexCoord2fv;
 
   GLenum _edge_clamp;
+  GLenum _border_clamp;
+  GLenum _mirror_repeat;
+  GLenum _mirror_clamp;
+  GLenum _mirror_edge_clamp;
+  GLenum _mirror_border_clamp;
 
 public:
   static GraphicsStateGuardian *

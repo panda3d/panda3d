@@ -91,12 +91,15 @@ PUBLISHED:
   void set_magfilter(FilterType filter);
   void set_anisotropic_degree(int anisotropic_degree);
   void set_border_color(const Colorf &color);
+  void set_border_width(int border_width);
 
   INLINE WrapMode get_wrapu() const;
   INLINE WrapMode get_wrapv() const;
   INLINE FilterType get_minfilter() const;
   INLINE FilterType get_magfilter() const;
   INLINE int get_anisotropic_degree() const;
+  INLINE Colorf get_border_color() const;
+  INLINE int get_border_width() const;
   INLINE bool uses_mipmaps() const;
 
   void prepare(PreparedGraphicsObjects *prepared_objects);
@@ -125,6 +128,7 @@ public:
     DF_wrap       = 0x002,  // The wrap properties have changed.
     DF_filter     = 0x004,  // The minfilter or magfilter have changed.
     DF_mipmap     = 0x008,  // The use of mipmaps or not has changed.
+    DF_border     = 0x010,  // The border has changed.
   };
 
   void mark_dirty(int flags_to_set);
@@ -142,6 +146,7 @@ private:
   int _anisotropic_degree;
   bool _keep_ram_image;
   Colorf _border_color;
+  int _border_width;
 
   // A Texture keeps a list (actually, a map) of all the
   // PreparedGraphicsObjects tables that it has been prepared into.

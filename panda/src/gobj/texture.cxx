@@ -142,7 +142,8 @@ Texture() : ImageBuffer() {
   _pbuffer = new PixelBuffer;
   // _has_requested_size = false;
   _all_dirty_flags = 0;
-  memset(&_border_color,0,sizeof(Colorf));
+  _border_color.set(0.0f, 0.0f, 0.0f, 1.0f);
+  _border_width = 0;
 }
 
 
@@ -152,7 +153,8 @@ Texture() : ImageBuffer() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Texture::
-Texture(int xsize, int ysize, int components, int component_width, PixelBuffer::Type type, 
+Texture(int xsize, int ysize, int components, int component_width, 
+        PixelBuffer::Type type, 
         PixelBuffer::Format format, bool bAllocateRAM) : ImageBuffer() {
   _magfilter = FT_linear;
   _minfilter = FT_linear;
@@ -163,7 +165,8 @@ Texture(int xsize, int ysize, int components, int component_width, PixelBuffer::
   _pbuffer = new PixelBuffer(xsize,ysize,components,component_width,type,format,bAllocateRAM);
   // _has_requested_size = false;
   _all_dirty_flags = 0;
-  memset(&_border_color,0,sizeof(Colorf));
+  _border_color.set(0.0f, 0.0f, 0.0f, 1.0f);
+  _border_width = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -406,11 +409,33 @@ set_anisotropic_degree(int anisotropic_degree) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_border_color
 //       Access: Published
-//  Description:
+//  Description: Specifies the uniform color of the texture border, if
+//               it has one (see set_border_width()), and if the
+//               border color is not part of the image.
 ////////////////////////////////////////////////////////////////////
 void Texture::
 set_border_color(const Colorf &color) {
-   memcpy(&_border_color,&color,sizeof(Colorf));
+  if (_border_color != color) {
+    mark_dirty(DF_border);
+    _border_color = color;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_border_width
+//       Access: Published
+//  Description: Specifies the width of the texture border, in pixels.
+//               Generally, this can be either 0 or 1, and the default
+//               is 0.  This is intended to be used for tiling large
+//               textures, although it has one or two other
+//               applications.
+////////////////////////////////////////////////////////////////////
+void Texture::
+set_border_width(int width) {
+  if (_border_width != width) {
+    mark_dirty(DF_border);
+    _border_width = width;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -870,9 +895,6 @@ fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
         _pbuffer->set_format(format);
         _pbuffer->set_xsize(scan.get_int32());
         _pbuffer->set_ysize(scan.get_int32());
-        _pbuffer->set_xorg(scan.get_int32());
-        _pbuffer->set_yorg(scan.get_int32());
-        _pbuffer->set_border(scan.get_uint8());
         _pbuffer->set_image_type((PixelBuffer::Type)scan.get_uint8());
         _pbuffer->set_num_components(scan.get_uint8());
         _pbuffer->set_component_width(scan.get_uint8());
@@ -927,9 +949,6 @@ write_datagram(BamWriter *manager, Datagram &me) {
   if (has_rawdata) {
     me.add_int32(_pbuffer->get_xsize());
     me.add_int32(_pbuffer->get_ysize());
-    me.add_int32(_pbuffer->get_xorg());
-    me.add_int32(_pbuffer->get_yorg());
-    me.add_uint8(_pbuffer->get_border());
     me.add_uint8(_pbuffer->get_image_type());
     me.add_uint8(_pbuffer->get_num_components());
     me.add_uint8(_pbuffer->get_component_width());

@@ -219,7 +219,23 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
 
     if (def._to_lens_node != (LensNode *)NULL &&
         def._to_lens_node->get_lens() != (Lens *)NULL) {
-      transform = TransformState::make_mat(def._to_lens_node->get_lens()->get_projection_mat())->compose(transform);
+      
+      // Get the lens's projection matrix, as a TransformState.
+      CPT(TransformState) projmat = TransformState::make_mat(def._to_lens_node->get_lens()->get_projection_mat());
+
+      // We need a special transform to convert the -0.5, 0.5
+      // centering of the lens's projection matrix to UV's in the
+      // range of (0, 1).
+      static CPT(TransformState) fixmat;
+      if (fixmat == (TransformState *)NULL) {
+        fixmat = TransformState::make_pos_hpr_scale
+          (LVecBase3f(0.5f, 0.5f, 0.0f),
+           LVecBase3f(0.0f, 0.0f, 0.0f),
+           LVecBase3f(0.5f, 0.5f, 1.0f));
+      }
+
+      // Now apply both to the current transform.
+      transform = fixmat->compose(projmat)->compose(transform);
     }
 
     if (!transform->is_identity()) {

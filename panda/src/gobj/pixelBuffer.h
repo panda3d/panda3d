@@ -108,10 +108,6 @@ public:
 
   INLINE void set_xsize(int size);
   INLINE void set_ysize(int size);
-  INLINE void set_xorg(int org);
-  INLINE void set_yorg(int org);
-  INLINE void set_size(int x_org, int y_org, int x_size, int y_size);
-  INLINE void set_border(int border); 
   INLINE void set_num_components(int num_components);
   INLINE void set_component_width(int component_width);
   INLINE void set_format(Format format);
@@ -120,9 +116,6 @@ public:
 
   INLINE int get_xsize() const;
   INLINE int get_ysize() const;
-  INLINE int get_xorg() const;
-  INLINE int get_yorg() const;
-  INLINE int get_border() const;
   INLINE int get_num_components() const;
   INLINE int get_component_width() const;
   INLINE Format get_format() const;
@@ -163,12 +156,6 @@ private:
 protected:
   int _xsize;
   int _ysize;
-
-  // pixelbuffer "origin" represents upper left screen point at which
-  // pixelbuffer should be drawn using draw_pixel_buffer
-  int _xorg;
-  int _yorg;
-  int _border;
   int _num_components;
   int _component_width;
   Format _format;

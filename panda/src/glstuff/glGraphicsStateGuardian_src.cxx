@@ -341,6 +341,27 @@ reset() {
     _edge_clamp = GL_CLAMP_TO_EDGE;
   }
 
+  _border_clamp = GL_CLAMP;
+  if (has_extension("GL_ARB_texture_border_clamp") ||
+      is_at_least_version(1, 3)) {
+    _border_clamp = GL_CLAMP_TO_BORDER;
+  }
+
+  _mirror_repeat = GL_REPEAT;
+  if (has_extension("GL_ARB_texture_mirrored_repeat") ||
+      is_at_least_version(1, 4)) {
+    _mirror_repeat = GL_MIRRORED_REPEAT;
+  }
+
+  _mirror_clamp = GL_CLAMP;
+  _mirror_edge_clamp = _edge_clamp;
+  _mirror_border_clamp = _border_clamp;
+  if (has_extension("GL_EXT_texture_mirror_clamp")) {
+    _mirror_clamp = GL_MIRROR_CLAMP_EXT;
+    _mirror_edge_clamp = GL_MIRROR_CLAMP_TO_EDGE_EXT;
+    _mirror_border_clamp = GL_MIRROR_CLAMP_TO_BORDER_EXT;
+  }
+
   report_my_gl_errors();
 
   _buffer_mask = 0;
@@ -1850,11 +1871,11 @@ apply_texture(TextureContext *tc) {
   bind_texture(gtc);
 
   int dirty = gtc->get_dirty_flags();
-  if ((dirty & (Texture::DF_wrap | Texture::DF_filter)) != 0) {
+  if ((dirty & (Texture::DF_wrap | Texture::DF_filter | Texture::DF_border)) != 0) {
     // We need to re-specify the texture properties.
     specify_texture(gtc->_texture);
   }
-  if ((dirty & (Texture::DF_image | Texture::DF_mipmap)) != 0) {
+  if ((dirty & (Texture::DF_image | Texture::DF_mipmap | Texture::DF_border)) != 0) {
     // We need to re-apply the image.
     apply_texture_immediate(gtc, gtc->_texture);
   }
@@ -2035,7 +2056,8 @@ copy_texture(Texture *tex, const DisplayRegion *dr) {
 #endif
 
   PixelBuffer *pb = tex->_pbuffer;
-  pb->set_size(xo,yo,w,h);
+  pb->set_xsize(w);
+  pb->set_ysize(h);
 
   TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
   nassertv(tc != (TextureContext *)NULL);
@@ -2043,7 +2065,7 @@ copy_texture(Texture *tex, const DisplayRegion *dr) {
 
   GLP(CopyTexImage2D)(GL_TEXTURE_2D, 0,
                       get_internal_image_format(pb->get_format()),
-                      xo, yo, w, h, pb->get_border());
+                      xo, yo, w, h, tex->get_border_width());
 
   // Clear the internal texture state, since we've just monkeyed with it.
   modify_state(get_untextured_state());
@@ -2138,7 +2160,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 
 #ifdef GSG_VERBOSE
   GLCAT.debug()
-    << "glReadPixels(" << pb->get_xorg() << ", " << pb->get_yorg()
+    << "glReadPixels(" << xo << ", " << yo
     << ", " << pb->get_xsize() << ", " << pb->get_ysize()
     << ", ";
   switch (external_format) {
@@ -2179,11 +2201,11 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
   // pixelbuffer "origin" represents upper left screen point at which
   // pixelbuffer should be drawn using draw_pixel_buffer
   nassertr(!pb->_image.empty(), false);
-  GLP(ReadPixels)(pb->get_xorg() + xo, pb->get_yorg() + yo,
-               pb->get_xsize(), pb->get_ysize(),
-               external_format,
-               get_image_type(pb->get_image_type()),
-               pb->_image.p());
+  GLP(ReadPixels)(xo, yo,
+                  pb->get_xsize(), pb->get_ysize(),
+                  external_format,
+                  get_image_type(pb->get_image_type()),
+                  pb->_image.p());
 
   // We may have to reverse the byte ordering of the image if GL
   // didn't do it for us.
@@ -3207,6 +3229,10 @@ specify_texture(Texture *tex) {
   GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
                      get_texture_wrap_mode(tex->get_wrapv()));
 
+  Colorf border_color = tex->get_border_color();
+  GLP(TexParameterfv)(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR,
+                      border_color.get_data());
+
   Texture::FilterType minfilter = tex->get_minfilter();
   Texture::FilterType magfilter = tex->get_magfilter();
 
@@ -3336,7 +3362,7 @@ apply_texture_immediate(CLP(TextureContext) *gtc, Texture *tex) {
     << "glTexImage2D(GL_TEXTURE_2D, "
     << (int)internal_format << ", "
     << width << ", " << height << ", "
-    << pb->get_border() << ", " << (int)external_format << ", "
+    << tex->get_border_width() << ", " << (int)external_format << ", "
     << (int)type << ", " << tex->get_name() << ")\n";
 #endif
 
@@ -3371,7 +3397,7 @@ apply_texture_immediate(CLP(TextureContext) *gtc, Texture *tex) {
         gtc->_internal_format = internal_format;
         gtc->_width = width;
         gtc->_height = height;
-        gtc->_border = 0;
+        gtc->_border_width = 0;
         
 #ifndef NDEBUG
         if (CLP(save_mipmaps)) {
@@ -3387,22 +3413,22 @@ apply_texture_immediate(CLP(TextureContext) *gtc, Texture *tex) {
     }
   }
 
-  GLint border = pb->get_border();
+  GLint border_width = tex->get_border_width();
 
   if (!gtc->_already_applied || 
       gtc->_internal_format != internal_format ||
       gtc->_width != width ||
       gtc->_height != height ||
-      gtc->_border != border) {
+      gtc->_border_width != border_width) {
     // We need to reload a new image.
     GLP(TexImage2D)(GL_TEXTURE_2D, 0, internal_format,
-                    width, height, pb->get_border(),
+                    width, height, border_width,
                     external_format, type, image);
     gtc->_already_applied = true;
     gtc->_internal_format = internal_format;
     gtc->_width = width;
     gtc->_height = height;
-    gtc->_border = border;
+    gtc->_border_width = border_width;
 
   } else {
     // We can reload the image over the previous image, saving on
@@ -3623,11 +3649,11 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
     << (void *)pb->_image.p() << ")" << endl;
 #endif
 
-  GLP(RasterPos2i)( pb->get_xorg(), pb->get_yorg() );
-  GLP(DrawPixels)( pb->get_xsize(), pb->get_ysize(),
-                get_external_image_format(pb->get_format()),
-                get_image_type(pb->get_image_type()),
-                pb->_image.p() );
+  GLP(RasterPos2i)(0, 0);
+  GLP(DrawPixels)(pb->get_xsize(), pb->get_ysize(),
+                  get_external_image_format(pb->get_format()),
+                  get_image_type(pb->get_image_type()),
+                  pb->_image.p() );
 
   GLP(MatrixMode)( GL_PROJECTION );
   GLP(PopMatrix)();
@@ -3663,14 +3689,18 @@ get_texture_wrap_mode(Texture::WrapMode wm) {
   switch (wm) {
   case Texture::WM_clamp:
     return _edge_clamp;
+
   case Texture::WM_repeat:
     return GL_REPEAT;
 
   case Texture::WM_mirror:
+    return _mirror_repeat;
+
   case Texture::WM_mirror_once:
+    return _mirror_border_clamp;
+
   case Texture::WM_border_color:
-    // These are unsupported for now.
-    return GL_REPEAT;
+    return _border_clamp;
 
   case Texture::WM_invalid:
     break;
@@ -4684,7 +4714,7 @@ build_phony_mipmap_level(int level, int xsize, int ysize) {
   GLenum type = get_image_type(pb->get_image_type());
 
   GLP(TexImage2D)(GL_TEXTURE_2D, level, internal_format,
-                  pb->get_xsize(), pb->get_ysize(), pb->get_border(),
+                  pb->get_xsize(), pb->get_ysize(), 0,
                   external_format, type, pb->_image );
 
   delete pb;

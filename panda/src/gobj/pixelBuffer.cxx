@@ -34,9 +34,6 @@ PixelBuffer(void) : ImageBuffer()
 {
   _xsize = 0;
   _ysize = 0;
-  _xorg = 0;
-  _yorg = 0;
-  _border = 0;
   _format = F_rgb;
   _type = T_unsigned_byte;
   _num_components = 3;
@@ -58,9 +55,6 @@ PixelBuffer(int xsize, int ysize, int components, int component_width,
 {
   _xsize = xsize;
   _ysize = ysize;
-  _xorg = 0;
-  _yorg = 0;
-  _border = 0;
   _num_components = components;
   _component_width = component_width;
   _type = type;
@@ -80,9 +74,6 @@ PixelBuffer(int xsize, int ysize, int components, int component_width, Type type
 {
   _xsize = xsize;
   _ysize = ysize;
-  _xorg = 0;
-  _yorg = 0;
-  _border = 0;
   _num_components = components;
   _component_width = component_width;
   _type = type;
@@ -102,9 +93,6 @@ PixelBuffer::
 PixelBuffer(const PixelBuffer &copy) :
   _xsize(copy._xsize),
   _ysize(copy._ysize),
-  _xorg(copy._xorg),
-  _yorg(copy._yorg),
-  _border(copy._border),
   _num_components(copy._num_components),
   _component_width(copy._component_width),
   _format(copy._format),
@@ -123,9 +111,6 @@ void PixelBuffer::
 operator = (const PixelBuffer &copy) {
   _xsize = copy._xsize;
   _ysize = copy._ysize;
-  _xorg = copy._xorg;
-  _yorg = copy._yorg;
-  _border = copy._border;
   _num_components = copy._num_components;
   _component_width = copy._component_width;
   _format = copy._format;
@@ -409,11 +394,8 @@ store(PNMImage &pnmimage) const {
 void PixelBuffer::
 copy(const PixelBuffer *pb) {
   nassertv(pb != NULL);
-  _xorg = pb->_xorg;
-  _yorg = pb->_yorg;
   _xsize = pb->_xsize;
   _ysize = pb->_ysize;
-  _border = pb->_border;
   _num_components = pb->_num_components;
   _component_width = pb->_component_width;
   _format = pb->_format;
