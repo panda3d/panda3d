@@ -21,8 +21,8 @@ class ClusterConfigItem:
 class DisplayConnection:
     def __init__(self,qcm,serverName,port,msgHandler):
         self.msgHandler = msgHandler
-        gameServerTimeoutMs = base.config.GetInt("game-server-timeout-ms",
-                                                 20000)
+        gameServerTimeoutMs = base.config.GetInt(
+            "game-server-timeout-ms", 20000)
         # A big old 20 second timeout.
         self.tcpConn = qcm.openTCPClientConnection(
             serverName, port, gameServerTimeoutMs)
@@ -60,7 +60,9 @@ class DisplayConnection:
 
     # the following should only be called by a synchronized cluster manger
     def sendSwapNow(self):
-        ClusterManager.notify.debug( ("dispaly connect send swap now, packet %d" % self.msgHandler.packetNumber))
+        ClusterManager.notify.debug( 
+            "display connect send swap now, packet %d" %
+            self.msgHandler.packetNumber)
         datagram = self.msgHandler.makeSwapNowDatagram()
         self.cw.send(datagram, self.tcpConn)
         
@@ -68,27 +70,26 @@ class ClusterManager(DirectObject.DirectObject):
     notify = DirectNotifyGlobal.directNotify.newCategory("ClusterClient")
     MGR_NUM = 1000000
 
-    def __init__(self, dispConfigs):
+    def __init__(self, configList):
         self.qcm=QueuedConnectionManager()
-        self.dispList = []
+        self.serverList = []
         self.msgHandler = MsgHandler(ClusterManager.MGR_NUM,self.notify)
-        for dispConfig in dispConfigs:
-            thisDisp = DisplayConnection(self.qcm,dispConfig.serverName,
-                                         dispConfig.port,self.msgHandler)
-            if thisDisp == None:
+        for serverConfig in configList:
+            server = DisplayConnection(self.qcm,serverConfig.serverName,
+                                         serverConfig.port,self.msgHandler)
+            if server == None:
                 self.notify.error( ('Could not open %s on %s port %d' %
-                                    (dispConfig.serverFunction,
-                                     dispConfig.serverName,
-                                     dispConfig.port)) )
+                                    (serverConfig.serverFunction,
+                                     serverConfig.serverName,
+                                     serverConfig.port)) )
             else:
-                self.dispList.append(thisDisp)
-                self.dispList[len(self.dispList)-1].sendCamOffset(
-                    dispConfig.xyz,dispConfig.hpr)
+                server.sendCamOffset(serverConfig.xyz,serverConfig.hpr)
+                self.serverList.append(server)
         self.startMoveCamTask()
 
     def moveCamera(self, xyz, hpr):
-        for disp in self.dispList:
-            disp.sendMoveCam(xyz,hpr)
+        for server in self.serverList:
+            server.sendMoveCam(xyz,hpr)
 
     def startMoveCamTask(self):
         task = Task.Task(self.moveCameraTask,49)
@@ -104,8 +105,8 @@ class ClusterManager(DirectObject.DirectObject):
 
 class ClusterManagerSync(ClusterManager):
 
-    def __init__(self, dispConfigs):
-        ClusterManager.__init__(self, dispConfigs)
+    def __init__(self, configList):
+        ClusterManager.__init__(self, configList)
         #I probably don't need this
         self.waitForSwap = 0
         self.ready = 0
@@ -120,20 +121,24 @@ class ClusterManagerSync(ClusterManager):
         self.ready = 1
         if self.waitForSwap:
             self.waitForSwap=0
-            self.notify.debug("START get swaps----------------------------------")
+            self.notify.debug(
+                "START get swaps----------------------------------")
             localClock = ClockObject()
             t1 = localClock.getRealTime()
-            for disp in self.dispList:
-                disp.getSwapReady()
-            self.notify.debug("----------------START swap now--------------------")
+            for server in self.serverList:
+                server.getSwapReady()
+            self.notify.debug(
+                "----------------START swap now--------------------")
             t2 = localClock.getRealTime()
-            for disp in self.dispList:
-                disp.sendSwapNow()
-            self.notify.debug("------------------------------START swap----------")
+            for server in self.serverList:
+                server.sendSwapNow()
+            self.notify.debug(
+                "------------------------------START swap----------")
             t3 = localClock.getRealTime()
             base.win.swap()
             t4 = localClock.getRealTime()
-            self.notify.debug("------------------------------------------END swap")
+            self.notify.debug(
+                "------------------------------------------END swap")
             self.notify.debug( ("times=%f %f %f %f" % (t1,t2,t3,t4)) )
             self.notify.debug( ("deltas=%f %f %f" % (t2-t1,t3-t2,t4-t3)) )
         return Task.cont

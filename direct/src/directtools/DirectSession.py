@@ -35,7 +35,10 @@ class DirectSession(PandaObject):
                                            "models/fonts/Comic",
                                            priority = 100)
         self.iAmAClient = base.config.GetBool("display-client",0)
-        self.clusterManager = createCluster()
+        if self.iAmAClient:
+            self.clusterManager = createClusterManager()
+        else:
+            self.clusterManager = None
         self.iAmAServer = base.config.GetBool("display-server",0)
         self.fEnabled = 0
         self.drList = DisplayRegionList()
