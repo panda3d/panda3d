@@ -21,6 +21,7 @@
 
 #include "pandatoolbase.h"
 #include "luse.h"
+#include "config_mayaegg.h"
 
 #include "pre_maya_include.h"
 #include <maya/MFnAttribute.h>
@@ -65,14 +66,10 @@ describe_maya_attribute(MObject &node, const string &attribute_name);
 // Also, we must define some output functions for Maya objects, since
 // we can't use those built into Maya (which forward-defines the
 // ostream type incorrectly).
-INLINE ostream &operator << (ostream &out, const MString &str) {
-  return out << str.asChar();
-}
-INLINE ostream &operator << (ostream &out, const MVector &vec) {
-  return out << vec.x << " " << vec.y << " " << vec.z;
-}
-
+INLINE ostream &operator << (ostream &out, const MString &str);
+INLINE ostream &operator << (ostream &out, const MVector &vec);
 
 #include "maya_funcs.I"
+#include "maya_funcs.T"
 
 #endif

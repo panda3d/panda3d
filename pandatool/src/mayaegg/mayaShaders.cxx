@@ -18,8 +18,8 @@
 
 #include "mayaShaders.h"
 #include "mayaShader.h"
-#include "global_parameters.h"
 #include "maya_funcs.h"
+#include "config_mayaegg.h"
 
 #include "pre_maya_include.h"
 #include <maya/MStatus.h>
@@ -30,6 +30,32 @@
 #include <maya/MFn.h>
 #include "post_maya_include.h"
 
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShaders::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+MayaShaders::
+MayaShaders(MayaToEggConverter *converter) :
+  _converter(converter)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShaders::Destructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+MayaShaders::
+~MayaShaders() {
+  clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShaders::find_shader_for_node
+//       Access: Public
+//  Description: Extracts the shader assigned to the indicated node.
+////////////////////////////////////////////////////////////////////
 MayaShader *MayaShaders::
 find_shader_for_node(MObject node) {
   MStatus status;
@@ -39,7 +65,8 @@ find_shader_for_node(MObject node) {
   MObject iog_attr = node_fn.attribute("instObjGroups", &status);
   if (!status) {
     // The node is not renderable.  What are you thinking?
-    nout << node_fn.name() << " : not a renderable object.\n";
+    mayaegg_cat.error()
+      << node_fn.name() << " : not a renderable object.\n";
     return (MayaShader *)NULL;
   }
 
@@ -52,7 +79,8 @@ find_shader_for_node(MObject node) {
   iog_plug.elementByLogicalIndex(0).connectedTo(iog_pa, false, true, &status);
   if (!status) {
     // No shading group defined for this object.
-    nout << node_fn.name() << " : no shading group defined.\n";
+    mayaegg_cat.error()
+      << node_fn.name() << " : no shading group defined.\n";
     return (MayaShader *)NULL;
   }
 
@@ -69,12 +97,19 @@ find_shader_for_node(MObject node) {
   }
 
   // Well, we didn't find a ShadingEngine after all.  Huh.
-  if (verbose >= 2) {
-    nout << node_fn.name() << " : no shading engine found.\n";
-  }
+  mayaegg_cat.info()
+    << node_fn.name() << " : no shading engine found.\n";
   return (MayaShader *)NULL;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShaders::find_shader_for_shading_engine
+//       Access: Public
+//  Description: Returns the MayaShader object associated with the
+//               indicated "shading engine".  This will create a new
+//               MayaShader object if this is the first time we have
+//               encountered the indicated engine.
+////////////////////////////////////////////////////////////////////
 MayaShader *MayaShaders::
 find_shader_for_shading_engine(MObject engine) {
   MFnDependencyNode engine_fn(engine);
@@ -88,11 +123,25 @@ find_shader_for_shading_engine(MObject engine) {
 
   // All right, this is a newly encountered shading engine.  Create a
   // new MayaShader object to represent it.
-  MayaShader *shader = new MayaShader(engine);
+  MayaShader *shader = new MayaShader(engine, _converter);
 
   // Record this for the future.
   _shaders.insert(Shaders::value_type(engine_name, shader));
   return shader;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShaders::clear
+//       Access: Public
+//  Description: Frees all of the previously-defined MayaShader
+//               objects associated with this set.
+////////////////////////////////////////////////////////////////////
+void MayaShaders::
+clear() {
+  Shaders::iterator si;
+  for (si = _shaders.begin(); si != _shaders.end(); ++si) {
+    delete (*si).second;
+  }
 
+  _shaders.clear();
+}

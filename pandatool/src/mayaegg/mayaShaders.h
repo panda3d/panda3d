@@ -1,5 +1,5 @@
-// Filename: mayaToEgg.h
-// Created by:  drose (15Feb00)
+// Filename: mayaShaders.h
+// Created by:  drose (11Feb00)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,24 +16,37 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef MAYATOEGG_H
-#define MAYATOEGG_H
+#ifndef MAYASHADERS_H
+#define MAYASHADERS_H
 
 #include "pandatoolbase.h"
-#include "mayaFile.h"
-#include "somethingToEgg.h"
+
+#include "pmap.h"
+
+class MayaShader;
+class MayaToEggConverter;
+class MObject;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : MayaToEgg
-// Description :
+//       Class : MayaShaders
+// Description : Collects the set of MayaShaders that have been
+//               encountered so far.
 ////////////////////////////////////////////////////////////////////
-class MayaToEgg : public SomethingToEgg {
+class MayaShaders {
 public:
-  MayaToEgg();
+  MayaShaders(MayaToEggConverter *converter);
+  ~MayaShaders();
+  MayaShader *find_shader_for_node(MObject node);
+  MayaShader *find_shader_for_shading_engine(MObject engine);
 
-  void run();
+  void clear();
 
-  MayaFile _maya;
+private:
+  typedef pmap<string, MayaShader *> Shaders;
+  Shaders _shaders;
+
+  MayaToEggConverter *_converter;
 };
 
 #endif
+

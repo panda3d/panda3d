@@ -1,4 +1,4 @@
-// Filename: global_parameters.cxx
+// Filename: mayaParameters.cxx
 // Created by:  drose (16Feb00)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,9 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "global_parameters.h"
+#include "mayaParameters.h"
 
-int verbose = 0;
-bool polygon_output = false;
-double polygon_tolerance = 0.01;
-bool ignore_transforms = false;
+bool MayaParameters::polygon_output = false;
+double MayaParameters::polygon_tolerance = 0.01;
+bool MayaParameters::ignore_transforms = false;

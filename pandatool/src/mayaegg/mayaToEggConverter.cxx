@@ -1,4 +1,4 @@
-// Filename: mayaFile.cxx
+// Filename: mayaToEggConverter.cxx
 // Created by:  drose (10Nov99)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,10 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "mayaFile.h"
+#include "mayaToEggConverter.h"
 #include "mayaShader.h"
-#include "global_parameters.h"
+#include "mayaParameters.h"
 #include "maya_funcs.h"
+#include "config_mayaegg.h"
 
 #include "eggData.h"
 #include "eggGroup.h"
@@ -28,14 +29,12 @@
 #include "eggNurbsSurface.h"
 #include "eggNurbsCurve.h"
 #include "eggPolygon.h"
+#include "string_utils.h"
 
 #include "pre_maya_include.h"
-#include <maya/MGlobal.h>
-#include <maya/MDistance.h>
 #include <maya/MArgList.h>
 #include <maya/MColor.h>
 #include <maya/MDagPath.h>
-#include <maya/MFileIO.h>
 #include <maya/MFnCamera.h>
 #include <maya/MFnDagNode.h>
 #include <maya/MFnLight.h>
@@ -61,95 +60,110 @@
 #include <maya/MTesselationParams.h>
 #include "post_maya_include.h"
 
-MayaFile::
-MayaFile() {
-  verbose = 0;
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+MayaToEggConverter::
+MayaToEggConverter(const string &program_name) :
+  _shaders(this)
+{
+  _maya = MayaApi::open_api(program_name);
 }
 
-MayaFile::
-~MayaFile() {
-  MLibrary::cleanup();
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+MayaToEggConverter::
+MayaToEggConverter(const MayaToEggConverter &copy) :
+  _shaders(this),
+  _maya(copy._maya)
+{
 }
 
-bool MayaFile::
-init(const string &program) {
-  MStatus stat = MLibrary::initialize((char *)program.c_str());
-  if (!stat) {
-    stat.perror("MLibrary::initialize");
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+MayaToEggConverter::
+~MayaToEggConverter() {
+  // We have to clear the shaders before we release the Maya API.
+  _shaders.clear();
+  _maya.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::make_copy
+//       Access: Public, Virtual
+//  Description: Allocates and returns a new copy of the converter.
+////////////////////////////////////////////////////////////////////
+SomethingToEggConverter *MayaToEggConverter::
+make_copy() {
+  return new MayaToEggConverter(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::get_name
+//       Access: Public, Virtual
+//  Description: Returns the English name of the file type this
+//               converter supports.
+////////////////////////////////////////////////////////////////////
+string MayaToEggConverter::
+get_name() const {
+  return "Maya";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::get_extension
+//       Access: Public, Virtual
+//  Description: Returns the common extension of the file type this
+//               converter supports.
+////////////////////////////////////////////////////////////////////
+string MayaToEggConverter::
+get_extension() const {
+  return "mb";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::convert_file
+//       Access: Public, Virtual
+//  Description: Handles the reading of the input file and converting
+//               it to egg.  Returns true if successful, false
+//               otherwise.
+//
+//               This is designed to be as generic as possible,
+//               generally in support of run-time loading.
+//               Command-line converters may choose to use
+//               convert_maya() instead, as it provides more control.
+////////////////////////////////////////////////////////////////////
+bool MayaToEggConverter::
+convert_file(const Filename &filename) {
+  if (!_maya->is_valid()) {
+    mayaegg_cat.error()
+      << "Maya is not available.\n";
     return false;
   }
-  return true;
-}
-
-
-bool MayaFile::
-read(const string &filename) {
-  MFileIO::newFile(true);
-
-  nout << "Loading \"" << filename << "\" ... " << flush;
-  // Load the file into Maya
-  MStatus stat = MFileIO::open(filename.c_str());
-  if (!stat) {
-    stat.perror(filename.c_str());
+  if (!_maya->read(filename)) {
+    mayaegg_cat.error()
+      << "Unable to read " << filename << "\n";
     return false;
   }
-  nout << " done.\n";
-  return true;
-}
-
-
-void MayaFile::
-make_egg(EggData &data) {
-  traverse(data);
+  return convert_maya();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MayaFile::get_units
-//       Access: Public, Static
-//  Description: Returns Maya's internal units in effect.
+//     Function: MayaToEggConverter::convert_maya
+//       Access: Public
+//  Description: Fills up the egg_data structure according to the
+//               global maya model data.  Returns true if successful,
+//               false if there is an error.
 ////////////////////////////////////////////////////////////////////
-DistanceUnit MayaFile::
-get_units() {
-  switch (MDistance::internalUnit()) {
-  case MDistance::kInches:
-    return DU_inches;
-  case MDistance::kFeet:
-    return DU_feet;
-  case MDistance::kYards:
-    return DU_yards;
-  case MDistance::kMiles:
-    return DU_statute_miles;
-  case MDistance::kMillimeters:
-    return DU_millimeters;
-  case MDistance::kCentimeters:
-    return DU_centimeters;
-  case MDistance::kKilometers:
-    return DU_kilometers;
-  case MDistance::kMeters:
-    return DU_meters;
-
-  default:
-    return DU_invalid;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MayaFile::get_coordinate_system
-//       Access: Public, Static
-//  Description: Returns Maya's internal coordinate system in effect.
-////////////////////////////////////////////////////////////////////
-CoordinateSystem MayaFile::
-get_coordinate_system() {
-  if (MGlobal::isYAxisUp()) {
-    return CS_yup_right;
-  } else {
-    return CS_zup_right;
-  }
-}
-
-
-bool MayaFile::
-traverse(EggData &data) {
+bool MayaToEggConverter::
+convert_maya() {
   MStatus status;
 
   MItDag dag_iterator(MItDag::kDepthFirst, MFn::kTransform, &status);
@@ -158,32 +172,49 @@ traverse(EggData &data) {
     return false;
   }
 
-  if (verbose >= 1) {
-    nout << "Traversing scene graph.\n";
+  if (mayaegg_cat.is_debug()) {
+    mayaegg_cat.debug()
+      << "Traversing scene graph.\n";
   }
 
-  //    Scan the entire DAG and output the name and depth of each node
+  // This while loop walks through the entire Maya hierarchy, one node
+  // at a time.  Maya's MItDag object automatically performs a
+  // depth-first traversal of its scene graph.
+  bool all_ok = true;
   while (!dag_iterator.isDone()) {
     MDagPath dag_path;
     status = dag_iterator.getPath(dag_path);
     if (!status) {
       status.perror("MItDag::getPath");
     } else {
-      process_node(dag_path, data);
+      if (!process_node(dag_path, get_egg_data())) {
+        all_ok = false;
+      }
     }
 
     dag_iterator.next();
   }
 
-  if (verbose == 1) {
-    nout << "\nDone.\n";
+  if (all_ok) {
+    mayaegg_cat.info()
+      << "\nDone, no errors.\n";
+  } else {
+    mayaegg_cat.info()
+      << "\nDone, errors encountered.\n";
   }
 
-  return true;
+  return all_ok;
 }
 
-
-bool MayaFile::
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::process_node
+//       Access: Private
+//  Description: Converts the indicated Maya node (given a MDagPath,
+//               similar in concept to Panda's NodePath) to the
+//               corresponding Egg structure.  Returns true if
+//               successful, false if an error was encountered.
+////////////////////////////////////////////////////////////////////
+bool MayaToEggConverter::
 process_node(const MDagPath &dag_path, EggData &data) {
   MStatus status;
   MFnDagNode dag_node(dag_path, &status);
@@ -192,21 +223,22 @@ process_node(const MDagPath &dag_path, EggData &data) {
     return false;
   }
 
-  if (verbose == 1) {
-    nout << "." << flush;
-  } else if (verbose >= 2) {
-    nout << dag_node.name() << ": " << dag_node.typeName() << "\n"
-         << "  dag_path: " << dag_path.fullPathName() << "\n";
+  if (mayaegg_cat.is_debug()) {
+    mayaegg_cat.debug()
+      << dag_node.name() << ": " << dag_node.typeName() << "\n"
+      << "  dag_path: " << dag_path.fullPathName() << "\n";
   }
 
   if (dag_path.hasFn(MFn::kCamera)) {
-    if (verbose >= 2) {
-      nout << "Ignoring camera node " << dag_path.fullPathName() << "\n";
+    if (mayaegg_cat.is_debug()) {
+      mayaegg_cat.debug()
+        << "Ignoring camera node " << dag_path.fullPathName() << "\n";
     }
 
   } else if (dag_path.hasFn(MFn::kLight)) {
-    if (verbose >= 2) {
-      nout << "Ignoring light node " << dag_path.fullPathName() << "\n";
+    if (mayaegg_cat.is_debug()) {
+      mayaegg_cat.debug()
+        << "Ignoring light node " << dag_path.fullPathName() << "\n";
     }
 
   } else if (dag_path.hasFn(MFn::kNurbsSurface)) {
@@ -214,17 +246,18 @@ process_node(const MDagPath &dag_path, EggData &data) {
       get_egg_group(dag_path.fullPathName().asChar(), data);
 
     if (egg_group == (EggGroup *)NULL) {
-      nout << "Cannot determine group node.\n";
+      mayaegg_cat.error()
+        << "Cannot determine group node.\n";
+      return false;
 
     } else {
       get_transform(dag_path, egg_group);
 
       MFnNurbsSurface surface(dag_path, &status);
       if (!status) {
-        if (verbose >= 2) {
-          nout << "Error in node " << dag_path.fullPathName() << ":\n"
-               << "  it appears to have a NURBS surface, but does not.\n";
-        }
+        mayaegg_cat.info()
+          << "Error in node " << dag_path.fullPathName() << ":\n"
+          << "  it appears to have a NURBS surface, but does not.\n";
       } else {
         make_nurbs_surface(dag_path, surface, egg_group);
       }
@@ -242,10 +275,9 @@ process_node(const MDagPath &dag_path, EggData &data) {
 
       MFnNurbsCurve curve(dag_path, &status);
       if (!status) {
-        if (verbose >= 2) {
-          nout << "Error in node " << dag_path.fullPathName() << ":\n"
-               << "  it appears to have a NURBS curve, but does not.\n";
-        }
+        mayaegg_cat.info()
+          << "Error in node " << dag_path.fullPathName() << ":\n"
+          << "  it appears to have a NURBS curve, but does not.\n";
       } else {
         make_nurbs_curve(dag_path, curve, egg_group);
       }
@@ -256,18 +288,18 @@ process_node(const MDagPath &dag_path, EggData &data) {
       get_egg_group(dag_path.fullPathName().asChar(), data);
 
     if (egg_group == (EggGroup *)NULL) {
-      nout << "Cannot determine group node.\n";
+      mayaegg_cat.error()
+        << "Cannot determine group node.\n";
+      return false;
 
     } else {
       get_transform(dag_path, egg_group);
 
       MFnMesh mesh(dag_path, &status);
-
       if (!status) {
-        if (verbose >= 2) {
-          nout << "Error in node " << dag_path.fullPathName() << ":\n"
-               << "  it appears to have a polygon mesh, but does not.\n";
-        }
+        mayaegg_cat.info()
+          << "Error in node " << dag_path.fullPathName() << ":\n"
+          << "  it appears to have a polygon mesh, but does not.\n";
       } else {
         make_polyset(dag_path, mesh, egg_group);
       }
@@ -286,17 +318,24 @@ process_node(const MDagPath &dag_path, EggData &data) {
   return true;
 }
 
-void MayaFile::
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::get_transform
+//       Access: Private
+//  Description: Extracts the transform on the indicated Maya node,
+//               and applies it to the corresponding Egg node.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
 get_transform(const MDagPath &dag_path, EggGroup *egg_group) {
-  if (ignore_transforms) {
+  if (MayaParameters::ignore_transforms) {
     return;
   }
 
   MStatus status;
   MObject transformNode = dag_path.transform(&status);
   // This node has no transform - i.e., it's the world node
-  if (!status && status.statusCode() == MStatus::kInvalidParameter)
+  if (!status && status.statusCode() == MStatus::kInvalidParameter) {
     return;
+  }
 
   MFnDagNode transform(transformNode, &status);
   if (!status) {
@@ -306,22 +345,25 @@ get_transform(const MDagPath &dag_path, EggGroup *egg_group) {
 
   MTransformationMatrix matrix(transform.transformationMatrix());
 
-  if (verbose >= 3) {
-    nout << "  translation: " << matrix.translation(MSpace::kWorld)
-         << "\n";
+  if (mayaegg_cat.is_spam()) {
+    mayaegg_cat.spam()
+      << "  translation: " << matrix.translation(MSpace::kWorld)
+      << "\n";
     double d[3];
     MTransformationMatrix::RotationOrder rOrder;
 
     matrix.getRotation(d, rOrder, MSpace::kWorld);
-    nout << "  rotation: ["
-         << d[0] << ", "
-         << d[1] << ", "
-         << d[2] << "]\n";
+    mayaegg_cat.spam()
+      << "  rotation: ["
+      << d[0] << ", "
+      << d[1] << ", "
+      << d[2] << "]\n";
     matrix.getScale(d, MSpace::kWorld);
-    nout << "  scale: ["
-         << d[0] << ", "
-         << d[1] << ", "
-         << d[2] << "]\n";
+    mayaegg_cat.spam()
+      << "  scale: ["
+      << d[0] << ", "
+      << d[1] << ", "
+      << d[2] << "]\n";
   }
 
   MMatrix mat = matrix.asMatrix();
@@ -337,40 +379,49 @@ get_transform(const MDagPath &dag_path, EggGroup *egg_group) {
   }
 }
 
-void MayaFile::
-make_nurbs_surface(const MDagPath &dag_path, 
-                   MFnNurbsSurface &surface,
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::make_nurbs_surface
+//       Access: Private
+//  Description: Converts the indicated Maya NURBS surface to a
+//               corresponding egg structure, and attaches it to the
+//               indicated egg group.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface &surface,
                    EggGroup *egg_group) {
   MStatus status;
   string name = surface.name().asChar();
 
-  if (verbose >= 3) {
-    nout << "  numCVs: "
-         << surface.numCVsInU()
-         << " * "
-         << surface.numCVsInV()
-         << "\n";
-    nout << "  numKnots: "
-         << surface.numKnotsInU()
-         << " * "
-         << surface.numKnotsInV()
-         << "\n";
-    nout << "  numSpans: "
-         << surface.numSpansInU()
-         << " * "
-         << surface.numSpansInV()
-         << "\n";
+  if (mayaegg_cat.is_spam()) {
+    mayaegg_cat.spam()
+      << "  numCVs: "
+      << surface.numCVsInU()
+      << " * "
+      << surface.numCVsInV()
+      << "\n";
+    mayaegg_cat.spam()
+      << "  numKnots: "
+      << surface.numKnotsInU()
+      << " * "
+      << surface.numKnotsInV()
+      << "\n";
+    mayaegg_cat.spam()
+      << "  numSpans: "
+      << surface.numSpansInU()
+      << " * "
+      << surface.numSpansInV()
+      << "\n";
   }
 
   MayaShader *shader = _shaders.find_shader_for_node(surface.object());
 
-  if (polygon_output) {
+  if (MayaParameters::polygon_output) {
     // If we want polygon output only, tesselate the NURBS and output
     // that.
     MTesselationParams params;
     params.setFormatType(MTesselationParams::kStandardFitFormat);
     params.setOutputType(MTesselationParams::kQuads);
-    params.setStdFractionalTolerance(polygon_tolerance);
+    params.setStdFractionalTolerance(MayaParameters::polygon_tolerance);
 
     // We'll create the tesselation as a sibling of the NURBS surface.
     // That way we inherit all of the transformations.
@@ -416,8 +467,11 @@ make_nurbs_surface(const MDagPath &dag_path,
     return;
   }
 
+  /*
+    We don't use these variables currently.
   MFnNurbsSurface::Form u_form = surface.formInU();
   MFnNurbsSurface::Form v_form = surface.formInV();
+  */
 
   int u_degree = surface.degreeU();
   int v_degree = surface.degreeV();
@@ -536,20 +590,31 @@ make_nurbs_surface(const MDagPath &dag_path,
   }
 }
 
-EggNurbsCurve *MayaFile::
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::make_trim_curve
+//       Access: Private
+//  Description: Converts the indicated Maya NURBS trim curve to a
+//               corresponding egg structure, and returns it, or NULL
+//               if there is a problem.
+////////////////////////////////////////////////////////////////////
+EggNurbsCurve *MayaToEggConverter::
 make_trim_curve(const MFnNurbsCurve &curve, const string &nurbs_name,
                 EggGroupNode *egg_group, int trim_curve_index) {
-  if (verbose >= 3) {
-    nout << "Trim curve:\n";
-    nout << "  numCVs: "
-         << curve.numCVs()
-         << "\n";
-    nout << "  numKnots: "
-         << curve.numKnots()
-         << "\n";
-    nout << "  numSpans: "
-         << curve.numSpans()
-         << "\n";
+  if (mayaegg_cat.is_spam()) {
+    mayaegg_cat.spam()
+      << "Trim curve:\n";
+    mayaegg_cat.spam()
+      << "  numCVs: "
+      << curve.numCVs()
+      << "\n";
+    mayaegg_cat.spam()
+      << "  numKnots: "
+      << curve.numKnots()
+      << "\n";
+    mayaegg_cat.spam()
+      << "  numSpans: "
+      << curve.numSpans()
+      << "\n";
   }
 
   MStatus status;
@@ -567,7 +632,9 @@ make_trim_curve(const MFnNurbsCurve &curve, const string &nurbs_name,
     return (EggNurbsCurve *)NULL;
   }
 
+  /*
   MFnNurbsCurve::Form form = curve.form();
+  */
 
   int degree = curve.degree();
   int cvs = curve.numCVs();
@@ -575,10 +642,7 @@ make_trim_curve(const MFnNurbsCurve &curve, const string &nurbs_name,
 
   assert(knots == cvs + degree - 1);
 
-  char trim_str[20];
-  sprintf(trim_str, "trim%d", trim_curve_index);
-  assert(strlen(trim_str) < 20);
-  string trim_name = trim_str;
+  string trim_name = "trim" + format_string(trim_curve_index);
 
   string vpool_name = nurbs_name + "." + trim_name;
   EggVertexPool *vpool = new EggVertexPool(vpool_name);
@@ -610,22 +674,32 @@ make_trim_curve(const MFnNurbsCurve &curve, const string &nurbs_name,
   return egg_curve;
 }
 
-void MayaFile::
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::make_nurbs_curve
+//       Access: Private
+//  Description: Converts the indicated Maya NURBS curve (a standalone
+//               curve, not a trim curve) to a corresponding egg
+//               structure and attaches it to the indicated egg group.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
 make_nurbs_curve(const MDagPath &, const MFnNurbsCurve &curve,
                  EggGroup *egg_group) {
   MStatus status;
   string name = curve.name().asChar();
 
-  if (verbose >= 3) {
-    nout << "  numCVs: "
-         << curve.numCVs()
-         << "\n";
-    nout << "  numKnots: "
-         << curve.numKnots()
-         << "\n";
-    nout << "  numSpans: "
-         << curve.numSpans()
-         << "\n";
+  if (mayaegg_cat.is_spam()) {
+    mayaegg_cat.spam()
+      << "  numCVs: "
+      << curve.numCVs()
+      << "\n";
+    mayaegg_cat.spam()
+      << "  numKnots: "
+      << curve.numKnots()
+      << "\n";
+    mayaegg_cat.spam()
+      << "  numSpans: "
+      << curve.numSpans()
+      << "\n";
   }
 
   MPointArray cv_array;
@@ -641,7 +715,9 @@ make_nurbs_curve(const MDagPath &, const MFnNurbsCurve &curve,
     return;
   }
 
+  /*
   MFnNurbsCurve::Form form = curve.form();
+  */
 
   int degree = curve.degree();
   int cvs = curve.numCVs();
@@ -683,24 +759,34 @@ make_nurbs_curve(const MDagPath &, const MFnNurbsCurve &curve,
   }
 }
 
-void MayaFile::
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::make_polyset
+//       Access: Private
+//  Description: Converts the indicated Maya polyset to a bunch of
+//               EggPolygons and parents them to the indicated egg
+//               group.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
 make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
              EggGroup *egg_group, MayaShader *default_shader) {
   MStatus status;
   string name = mesh.name().asChar();
 
-  if (verbose >= 3) {
-    nout << "  numPolygons: "
-         << mesh.numPolygons()
-         << "\n";
-    nout << "  numVertices: "
-         << mesh.numVertices()
-         << "\n";
+  if (mayaegg_cat.is_spam()) {
+    mayaegg_cat.spam()
+      << "  numPolygons: "
+      << mesh.numPolygons()
+      << "\n";
+    mayaegg_cat.spam()
+      << "  numVertices: "
+      << mesh.numVertices()
+      << "\n";
   }
 
   if (mesh.numPolygons() == 0) {
-    if (verbose >= 2) {
-      nout << "Ignoring empty mesh " << name << "\n";
+    if (mayaegg_cat.is_debug()) {
+      mayaegg_cat.debug()
+        << "Ignoring empty mesh " << name << "\n";
     }
     return;
   }
@@ -797,13 +883,29 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
 }
 
 
-EggGroup *MayaFile::
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::get_egg_group
+//       Access: Private
+//  Description: Returns the EggGroup corresponding to the indicated
+//               fully-qualified Maya path name.  If there is not
+//               already an EggGroup corresponding to this Maya path,
+//               creates one and returns it.
+//
+//               In this way we generate a unique EggGroup for each
+//               Maya node we care about about, and also preserve the
+//               Maya hierarchy sensibly.
+////////////////////////////////////////////////////////////////////
+EggGroup *MayaToEggConverter::
 get_egg_group(const string &name, EggData &data) {
+  // If we have already encountered this pathname, return the
+  // corresponding EggGroup immediately.
   Groups::const_iterator gi = _groups.find(name);
   if (gi != _groups.end()) {
     return (*gi).second;
   }
 
+  // Otherwise, we have to create it.  Do this recursively, so we
+  // create each node along the path.
   EggGroup *egg_group;
 
   if (name.empty()) {
@@ -811,6 +913,9 @@ get_egg_group(const string &name, EggData &data) {
     egg_group = (EggGroup *)NULL;
 
   } else {
+    // Maya uses vertical bars to separate path components.  Remove
+    // everything from the rightmost bar on; this will give us the
+    // parent's path name.
     size_t bar = name.rfind("|");
     string parent_name, local_name;
     if (bar != string::npos) {

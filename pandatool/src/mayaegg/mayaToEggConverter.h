@@ -1,4 +1,4 @@
-// Filename: mayaFile.h
+// Filename: mayaToEggConverter.h
 // Created by:  drose (10Nov99)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,10 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef MAYAFILE_H
-#define MAYAFILE_H
+#ifndef MAYATOEGGCONVERTER_H
+#define MAYATOEGGCONVERTER_H
 
 #include "pandatoolbase.h"
+#include "somethingToEggConverter.h"
+
+#include "mayaApi.h"
 #include "mayaShaders.h"
 #include "eggTextureCollection.h"
 #include "distanceUnit.h"
@@ -36,20 +39,31 @@ class MFnNurbsCurve;
 class MFnMesh;
 class MPointArray;
 
-class MayaFile {
+////////////////////////////////////////////////////////////////////
+//       Class : MayaToEggConverter
+// Description : This class supervises the construction of an EggData
+//               structure from a single Maya file, or from the data
+//               already in the global Maya model space.
+//
+//               Note that since the Maya API presents just one global
+//               model space, it is not possible to simultaneously
+//               load two distinct Maya files.
+////////////////////////////////////////////////////////////////////
+class MayaToEggConverter : public SomethingToEggConverter {
 public:
-  MayaFile();
-  ~MayaFile();
+  MayaToEggConverter(const string &program_name = "");
+  MayaToEggConverter(const MayaToEggConverter &copy);
+  virtual ~MayaToEggConverter();
 
-  bool init(const string &program);
-  bool read(const string &filename);
-  void make_egg(EggData &data);
+  virtual SomethingToEggConverter *make_copy();
 
-  static DistanceUnit get_units();
-  static CoordinateSystem get_coordinate_system();
+  virtual string get_name() const;
+  virtual string get_extension() const;
+
+  virtual bool convert_file(const Filename &filename);
+  bool convert_maya();
 
 private:
-  bool traverse(EggData &data);
   bool process_node(const MDagPath &dag_path, EggData &data);
   void get_transform(const MDagPath &dag_path, EggGroup *egg_group);
 
@@ -63,9 +77,11 @@ private:
                                  const string &nurbs_name,
                                  EggGroupNode *egg_group,
                                  int trim_curve_index);
-  void make_nurbs_curve(const MDagPath &dag_path, const MFnNurbsCurve &curve,
+  void make_nurbs_curve(const MDagPath &dag_path, 
+                        const MFnNurbsCurve &curve,
                         EggGroup *group);
-  void make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
+  void make_polyset(const MDagPath &dag_path,
+                    const MFnMesh &mesh,
                     EggGroup *egg_group,
                     MayaShader *default_shader = NULL);
 
@@ -77,6 +93,7 @@ private:
 public:
   MayaShaders _shaders;
   EggTextureCollection _textures;
+  PT(MayaApi) _maya;
 };
 
 

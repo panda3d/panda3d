@@ -1,4 +1,4 @@
-// Filename: global_parameters.h
+// Filename: mayaParameters.h
 // Created by:  drose (16Feb00)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,15 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef GLOBAL_PARAMETERS_H
-#define GLOBAL_PARAMETERS_H
+#ifndef MAYAPARAMETERS_H
+#define MAYAPARAMETERS_H
 
 #include "pandatoolbase.h"
 
-extern int verbose;
-extern bool polygon_output;
-extern double polygon_tolerance;
-extern bool ignore_transforms;
+////////////////////////////////////////////////////////////////////
+//       Class : MayaParameters
+// Description : This class is just used as a scope to hold the global
+//               parameters for the Maya converter.
+////////////////////////////////////////////////////////////////////
+class MayaParameters {
+public:
+  static bool polygon_output;
+  static double polygon_tolerance;
+  static bool ignore_transforms;
+};
+
 
 #endif
 

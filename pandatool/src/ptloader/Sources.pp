@@ -1,7 +1,8 @@
 #begin lib_target
   #define TARGET ptloader
   #define BUILDING_DLL BUILDING_PTLOADER
-  #define LOCAL_LIBS xfile fltegg flt lwoegg lwo converter pandatoolbase
+  #define LOCAL_LIBS \
+    xfile fltegg flt lwoegg lwo mayaegg converter pandatoolbase
   #define OTHER_LIBS \
     egg2pg:c builder:c egg:c pandaegg:m \
     mathutil:c linmath:c putil:c panda:m \
@@ -15,6 +16,9 @@
     #define WIN_SYS_LIBS d3dxof.lib
     #define USE_DX yes
   #endif
+
+  // If we've got Maya, link in the Maya libraries.
+  #define USE_MAYA yes
 
   #define SOURCES \
     config_ptloader.cxx config_ptloader.h \

@@ -18,8 +18,8 @@
 
 #include "mayaShader.h"
 #include "maya_funcs.h"
-#include "mayaFile.h"
-#include "global_parameters.h"
+#include "mayaToEggConverter.h"
+#include "config_mayaegg.h"
 
 #include "eggPrimitive.h"
 #include "eggTexture.h"
@@ -35,8 +35,16 @@
 #include <maya/MStatus.h>
 #include "post_maya_include.h"
 
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::Constructor
+//       Access: Public
+//  Description: Reads the Maya "shading engine" to determine the
+//               relevant shader properties.
+////////////////////////////////////////////////////////////////////
 MayaShader::
-MayaShader(MObject engine) {
+MayaShader(MObject engine, MayaToEggConverter *converter) :
+  _converter(converter)
+{
   _has_color = false;
   _transparency = 0.0;
 
@@ -59,8 +67,9 @@ MayaShader(MObject engine) {
 
   _name = engine_fn.name().asChar();
 
-  if (verbose >= 2) {
-    nout << "Reading shading engine " << _name << "\n";
+  if (mayaegg_cat.is_debug()) {
+    mayaegg_cat.debug()
+      << "Reading shading engine " << _name << "\n";
   }
 
   bool found_shader = false;
@@ -76,14 +85,25 @@ MayaShader(MObject engine) {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::set_attributes
+//       Access: Public
+//  Description: Applies the known shader attributes to the indicated
+//               egg primitive.
+////////////////////////////////////////////////////////////////////
 void MayaShader::
-set_attributes(EggPrimitive &primitive, MayaFile &file) {
+set_attributes(EggPrimitive &primitive, MayaToEggConverter &conv) {
+  // In Maya, a polygon is either textured or colored.  The texture,
+  // if present, replaces the color.
+
   if (_has_texture) {
-    EggTextureCollection &textures = file._textures;
-    EggTexture tex(_name, _texture);
+    EggTextureCollection &textures = conv._textures;
+
+    Filename pathname = _converter->convert_texture_path(_texture);
+    EggTexture tex(_name, pathname);
     tex.set_wrap_u(_wrap_u ? EggTexture::WM_repeat : EggTexture::WM_clamp);
     tex.set_wrap_v(_wrap_v ? EggTexture::WM_repeat : EggTexture::WM_clamp);
-
+ 
     // Let's mipmap all textures by default.
     tex.set_minfilter(EggTexture::FT_linear_mipmap_linear);
     tex.set_magfilter(EggTexture::FT_linear);
@@ -103,6 +123,12 @@ set_attributes(EggPrimitive &primitive, MayaFile &file) {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::compute_texture_matrix
+//       Access: Public
+//  Description: Returns a texture matrix corresponding to the texture
+//               transforms indicated by the shader.
+////////////////////////////////////////////////////////////////////
 LMatrix3d MayaShader::
 compute_texture_matrix() {
   LVector2d scale(_repeat_uv[0] / _coverage[0],
@@ -118,7 +144,11 @@ compute_texture_matrix() {
     LMatrix3d::translate_mat(trans);
 }
 
-
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::output
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
 void MayaShader::
 output(ostream &out) const {
   out << "Shader " << _name << ":\n";
@@ -140,13 +170,20 @@ output(ostream &out) const {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::read_surface_shader
+//       Access: Public
+//  Description: Extracts out the shading information from the Maya
+//               surface shader.
+////////////////////////////////////////////////////////////////////
 bool MayaShader::
 read_surface_shader(MObject shader) {
   MStatus status;
   MFnDependencyNode shader_fn(shader);
 
-  if (verbose >= 3) {
-    nout << "  Reading surface shader " << shader_fn.name() << "\n";
+  if (mayaegg_cat.is_spam()) {
+    mayaegg_cat.spam()
+      << "  Reading surface shader " << shader_fn.name() << "\n";
   }
 
   // First, check for a connection to the color attribute.  This could
@@ -175,13 +212,21 @@ read_surface_shader(MObject shader) {
   }
 
   if (!_has_color && !_has_texture) {
-    if (verbose >= 2) {
-      nout << "  Color definition not found.\n";
+    if (mayaegg_cat.is_spam()) {
+      mayaegg_cat.spam()
+        << "  Color definition not found.\n";
     }
   }
   return true;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::read_surface_color
+//       Access: Public
+//  Description: Determines the surface color specified by the shader.
+//               This includes texturing and other advanced shader
+//               properties.
+////////////////////////////////////////////////////////////////////
 void MayaShader::
 read_surface_color(MObject color) {
   if (color.hasFn(MFn::kFileTexture)) {
@@ -199,21 +244,22 @@ read_surface_color(MObject color) {
     get_vec2f_attribute(color, "repeatUV", _repeat_uv);
     get_vec2f_attribute(color, "offset", _offset);
     get_angle_attribute(color, "rotateUV", _rotate_uv);
+
   } else {
     // This shader wasn't understood.
-    if (verbose >= 2) {
-      nout << "**Don't know how to interpret color attribute type "
-           << color.apiTypeStr() << "\n";
+    if (mayaegg_cat.is_debug()) {
+      mayaegg_cat.info()
+        << "**Don't know how to interpret color attribute type "
+        << color.apiTypeStr() << "\n";
+
     } else {
       // If we don't have a heavy verbose count, only report each type
       // of unsupportted shader once.
       static pset<MFn::Type> bad_types;
       if (bad_types.insert(color.apiType()).second) {
-        if (verbose == 1) {
-          nout << "\n";
-        }
-        nout << "Don't know how to interpret color attribute type "
-             << color.apiTypeStr() << "\n";
+        mayaegg_cat.info()
+          << "**Don't know how to interpret color attribute type "
+          << color.apiTypeStr() << "\n";
       }
     }
   }

@@ -17,7 +17,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "mayaToEgg.h"
-#include "global_parameters.h"
+#include "mayaParameters.h"
+#include "mayaToEggConverter.h"
+#include "config_mayaegg.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaToEgg::Constructor
@@ -31,9 +33,9 @@ MayaToEgg() :
   add_units_options();
   add_normals_options();
   add_transform_options();
-  //  add_texture_path_options();
-  //  add_rel_dir_options();
-  //  add_search_path_options(false);
+  add_texture_path_options();
+  add_rel_dir_options();
+  add_search_path_options(false);
 
   set_program_description
     ("This program converts Maya model files to egg.  Nothing fancy yet.");
@@ -43,14 +45,14 @@ MayaToEgg() :
      "Generate polygon output only.  Tesselate all NURBS surfaces to "
      "polygons via the built-in Maya tesselator.  The tesselation will "
      "be based on the tolerance factor given by -ptol.",
-     &MayaToEgg::dispatch_none, &polygon_output);
+     &MayaToEgg::dispatch_none, &MayaParameters::polygon_output);
 
   add_option
     ("ptol", "tolerance", 0,
      "Specify the fit tolerance for Maya polygon tesselation.  The smaller "
      "the number, the more polygons will be generated.  The default is "
      "0.01.",
-     &MayaToEgg::dispatch_double, NULL, &polygon_tolerance);
+     &MayaToEgg::dispatch_double, NULL, &MayaParameters::polygon_tolerance);
 
   add_option
     ("notrans", "", 0,
@@ -59,13 +61,13 @@ MayaToEgg() :
      "one big transform space.  Using this option doesn't change the "
      "position of objects in the scene, just the number of explicit "
      "transforms appearing in the resulting egg file.",
-     &MayaToEgg::dispatch_none, &ignore_transforms);
+     &MayaToEgg::dispatch_none, &MayaParameters::ignore_transforms);
 
   add_option
     ("v", "", 0,
      "Increase verbosity.  More v's means more verbose.",
-     &MayaToEgg::dispatch_count, NULL, &verbose);
-  verbose = 0;
+     &MayaToEgg::dispatch_count, NULL, &_verbose);
+  _verbose = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -75,31 +77,43 @@ MayaToEgg() :
 ////////////////////////////////////////////////////////////////////
 void MayaToEgg::
 run() {
-  nout << "Initializing Maya.\n";
-  if (!_maya.init(_program_name)) {
-    nout << "Unable to initialize Maya.\n";
-    exit(1);
+  // Set the verbose level by using Notify.
+  if (_verbose >= 3) {
+    mayaegg_cat->set_severity(NS_spam);
+  } else if (_verbose >= 2) {
+    mayaegg_cat->set_severity(NS_debug);
+  } else if (_verbose >= 1) {
+    mayaegg_cat->set_severity(NS_info);
   }
 
-  if (!_maya.read(_input_filename.c_str())) {
-    nout << "Error reading " << _input_filename << ".\n";
+  nout << "Initializing Maya.\n";
+  MayaToEggConverter converter(_program_name);
+  if (!converter._maya->is_valid()) {
+    nout << "Unable to initialize Maya.\n";
     exit(1);
   }
 
   // Set the coordinate system to match Maya's.
   if (!_got_coordinate_system) {
-    _coordinate_system = MayaFile::get_coordinate_system();
+    _coordinate_system = converter._maya->get_coordinate_system();
   }
   _data.set_coordinate_system(_coordinate_system);
 
   // Get the units from the Maya file, if the user didn't override.
   if (_input_units == DU_invalid) {
-    _input_units = MayaFile::get_units();
+    _input_units = converter._maya->get_units();
   }
 
-  _maya.make_egg(_data);
+  converter.set_egg_data(&_data, false);
+  converter.set_texture_path_convert(_texture_path_convert, _make_rel_dir);
+
+  if (!converter.convert_file(_input_filename)) {
+    nout << "Errors in conversion.\n";
+    exit(1);
+  }
 
   write_egg_file();
+  nout << "\n";
 }
 
 

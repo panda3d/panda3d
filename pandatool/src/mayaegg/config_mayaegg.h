@@ -1,5 +1,5 @@
-// Filename: mayaShaders.h
-// Created by:  drose (11Feb00)
+// Filename: config_mayaegg.h
+// Created by:  drose (15Apr02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,26 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef MAYASHADERS_H
-#define MAYASHADERS_H
+#ifndef CONFIG_MAYAEGG_H
+#define CONFIG_MAYAEGG_H
 
 #include "pandatoolbase.h"
+#include "notifyCategoryProxy.h"
 
-#include "pmap.h"
+NotifyCategoryDeclNoExport(mayaegg);
 
-class MayaShader;
-class MObject;
-
-class MayaShaders {
-public:
-  MayaShader *find_shader_for_node(MObject node);
-  MayaShader *find_shader_for_shading_engine(MObject engine);
-
-protected:
-
-  typedef pmap<string, MayaShader *> Shaders;
-  Shaders _shaders;
-};
+extern void init_libmayaegg();
 
 #endif
-

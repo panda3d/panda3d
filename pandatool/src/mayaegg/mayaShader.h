@@ -25,14 +25,20 @@
 #include "lmatrix.h"
 
 class MObject;
-class MayaFile;
+class MayaToEggConverter;
 class EggPrimitive;
 
+////////////////////////////////////////////////////////////////////
+//       Class : MayaShader
+// Description : Corresponds to a single "shader" in Maya.  This
+//               extracts out all the parameters of a Maya shader that
+//               are meaningful to egg.
+////////////////////////////////////////////////////////////////////
 class MayaShader {
 public:
-  MayaShader(MObject engine);
+  MayaShader(MObject engine, MayaToEggConverter *converter);
 
-  void set_attributes(EggPrimitive &primitive, MayaFile &file);
+  void set_attributes(EggPrimitive &primitive, MayaToEggConverter &conv);
   LMatrix3d compute_texture_matrix();
 
   void output(ostream &out) const;
@@ -59,9 +65,11 @@ public:
   LVector2f _offset;
   double _rotate_uv;
 
-protected:
+private:
   bool read_surface_shader(MObject shader);
   void read_surface_color(MObject color);
+
+  MayaToEggConverter *_converter;
 };
 
 inline ostream &operator << (ostream &out, const MayaShader &shader) {

@@ -25,7 +25,7 @@
   #define USE_MAYA yes
   #define TARGET $[binary_name]
   #define LOCAL_LIBS \
-    eggbase progbase
+    mayaegg eggbase progbase
   #define OTHER_LIBS \
     egg:c pandaegg:m \
     linmath:c putil:c panda:m \
@@ -36,10 +36,7 @@
     m
 
   #define SOURCES \
-    global_parameters.cxx global_parameters.h mayaFile.cxx mayaFile.h \
-    mayaShader.cxx mayaShader.h mayaShaders.cxx mayaShaders.h \
-    mayaToEgg.cxx mayaToEgg.h maya_funcs.I maya_funcs.cxx maya_funcs.h \
-    post_maya_include.h pre_maya_include.h
+    mayaToEgg.cxx mayaToEgg.h
 
 #end bin_target
 

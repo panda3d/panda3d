@@ -29,6 +29,11 @@
 #include "xFileToEggConverter.h"
 #endif
 
+#ifdef HAVE_MAYA
+#include "config_mayaegg.h"
+#include "mayaToEggConverter.h"
+#endif
+
 #include "dconfig.h"
 #include "loaderFileTypeRegistry.h"
 #include "eggData.h"
@@ -71,5 +76,11 @@ init_libptloader() {
   init_libxfile();
   XFileToEggConverter *xfile = new XFileToEggConverter;
   reg->register_type(new LoaderFileTypePandatool(xfile));
+#endif
+
+#ifdef HAVE_MAYA
+  init_libmayaegg();
+  MayaToEggConverter *maya = new MayaToEggConverter;
+  reg->register_type(new LoaderFileTypePandatool(maya));
 #endif
 }
