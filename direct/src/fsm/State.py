@@ -78,7 +78,7 @@ class State(DirectObject):
         a list of states it can transition to."""
         self.__enterFunc = None
         self.__exitFunc = None
-        
+
         self.setName(name)
         self.setEnterFunc(enterFunc)
         self.setExitFunc(exitFunc)
@@ -88,7 +88,7 @@ class State(DirectObject):
 
 
     # setters and getters
-    
+
     def getName(self):
         """getName(self)"""
         return(self.__name)
@@ -117,7 +117,7 @@ class State(DirectObject):
         stateList = map.get(newMethod, [])
         stateList.append(self)
         map[newMethod] = stateList
-            
+
     def setEnterFunc(self, stateEnterFunc):
         self.redefineFunc(self.__enterFunc, stateEnterFunc, EnterFuncRedefineMap)
         self.__enterFunc = stateEnterFunc
@@ -153,7 +153,7 @@ class State(DirectObject):
 
 
     # support for HFSMs
-    
+
     def getChildren(self):
         """getChildren(self)
         Return the list of child FSMs"""
@@ -186,14 +186,19 @@ class State(DirectObject):
         for fsm in self.__FSMList:
             # Check to see if the child fsm is already in a state
             # if it is, politely request the initial state
+
             if fsm.getCurrentState():
-                fsm.request((fsm.getInitialState()).getName())
+                # made this 'conditional_request()' instead of 'request()' to avoid warning when
+                # loading minigames where rules->frameworkInit transition doesnt exist and you
+                # dont want to add it since it results in hanging the game
+                fsm.conditional_request((fsm.getInitialState()).getName())
+
             # If it has no current state, I assume this means it
             # has never entered the initial state, so enter it
             # explicitly
             else:
                 fsm.enterInitialState()
-                    
+
     def __exitChildren(self, argList):
         """__exitChildren(self, argList)
         Exit all child FSMs"""
@@ -202,18 +207,18 @@ class State(DirectObject):
 
 
     # basic State functionality
-    
+
     def enter(self, argList=[]):
         """enter(self)
         Call the enter function for this state"""
 
         # enter child FSMs first. It is assumed these have a start
-        # state that is safe to enter 
+        # state that is safe to enter
         self.__enterChildren(argList)
-        
+
         if (self.__enterFunc != None):
             apply(self.__enterFunc, argList)
-        
+
     def exit(self, argList=[]):
         """exit(self)
         Call the exit function for this state"""
@@ -223,7 +228,7 @@ class State(DirectObject):
         # call exit function if it exists
         if (self.__exitFunc != None):
             apply(self.__exitFunc, argList)
-        
+
     def __str__(self):
         """__str__(self)"""
         return "State: name = %s, enter = %s, exit = %s, trans = %s, children = %s" %\
@@ -232,10 +237,10 @@ class State(DirectObject):
 
 
 
-            
-        
 
-    
+
+
+
 
 
 
