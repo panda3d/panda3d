@@ -190,7 +190,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
 
         if 1:
             # Front sphere:
-            self.cBowSphere = CollisionSphere(0.0, 30.0, 0.0, avatarRadius)
+            self.cBowSphere = CollisionSphere(0.0, 35.0, -8.0, avatarRadius)
             cBowSphereNode = CollisionNode('SP.cBowSphereNode')
             cBowSphereNode.addSolid(self.cBowSphere)
             self.cBowSphereNodePath = self.avatarNodePath.attachNewNode(cBowSphereNode)
@@ -202,7 +202,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             self.pusher.addCollider(self.cBowSphereNodePath, self.avatarNodePath)
             
             # Back sphere:
-            self.cSternSphere = CollisionSphere(0.0, -20.0, 0.0, avatarRadius)
+            self.cSternSphere = CollisionSphere(0.0, -20.0, -8.0, avatarRadius)
             cSternSphereNode = CollisionNode('SP.cSternSphereNode')
             cSternSphereNode.addSolid(self.cSternSphere)
             self.cSternSphereNodePath = self.avatarNodePath.attachNewNode(cSternSphereNode)
