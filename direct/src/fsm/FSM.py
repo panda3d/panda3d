@@ -177,7 +177,7 @@ class FSM(DirectObject.DirectObject):
         self.notify.debug("%s.request(%s, %s" % (self.name, request, str(args)[1:]))
 
         if not self.state:
-            self.notify.warning("rejecting request %s while FSM is in transition." % (request))
+            self.notify.warning("rejecting request %s while FSM is in transition from %s to %s." % (request, self.oldState, self.newState))
             return None
 
         func = getattr(self, "filter" + self.state, None)
