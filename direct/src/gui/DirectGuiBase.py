@@ -516,6 +516,29 @@ class DirectGuiBase(PandaObject.PandaObject):
         # Find any keyword arguments for this component
         componentPrefix = componentName + '_'
         nameLen = len(componentPrefix)
+
+        # First, walk through the option list looking for arguments
+        # than refer to this component's group.
+        
+        for option in keywords.keys():
+            # Check if this keyword argument refers to the group
+            # of this component.  If so, add this to the options
+            # to use when constructing the widget.  Mark the
+            # keyword argument as being used, but do not remove it
+            # since it may be required when creating another
+            # component.
+            index = string.find(option, '_')
+            if index >= 0 and componentGroup == option[:index]:
+                rest = option[(index + 1):]
+                kw[rest] = keywords[option][0]
+                keywords[option][1] = 1
+
+        # Now that we've got the group arguments, walk through the
+        # option list again and get out the arguments that refer to
+        # this component specifically by name.  These are more
+        # specific than the group arguments, above; we walk through
+        # the list afterwards so they will override.
+        
         for option in keywords.keys():
             if len(option) > nameLen and option[:nameLen] == componentPrefix:
                 # The keyword argument refers to this component, so add
@@ -523,18 +546,6 @@ class DirectGuiBase(PandaObject.PandaObject):
                 kw[option[nameLen:]] = keywords[option][0]
                 # And delete it from main construction keywords
                 del keywords[option]
-            else:
-                # Check if this keyword argument refers to the group
-                # of this component.  If so, add this to the options
-                # to use when constructing the widget.  Mark the
-                # keyword argument as being used, but do not remove it
-                # since it may be required when creating another
-                # component.
-                index = string.find(option, '_')
-                if index >= 0 and componentGroup == option[:index]:
-                    rest = option[(index + 1):]
-                    kw[rest] = keywords[option][0]
-                    keywords[option][1] = 1
 
         # Return None if no widget class is specified
         if widgetClass is None:
