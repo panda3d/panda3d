@@ -512,10 +512,7 @@ get_clip_plane_id(int index) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DXGraphicsStateGuardian::
 set_pack_alignment(int alignment) {
-  if (_pack_alignment != alignment) {
-//    glPixelStorei(GL_PACK_ALIGNMENT, alignment);
-    _pack_alignment = alignment;
-  }
+    dxgsg_cat.error() << "set_pack_alignment() unimplemented, has no meaning in DX\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -525,10 +522,7 @@ set_pack_alignment(int alignment) {
 ////////////////////////////////////////////////////////////////////
 INLINE void DXGraphicsStateGuardian::
 set_unpack_alignment(int alignment) {
-  if (_unpack_alignment != alignment) {   
-//    glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
-    _unpack_alignment = alignment;
-  }
+   dxgsg_cat.error() << "set_unpack_alignment() unimplemented, has no meaning in DX\n";
 }
 
 ////////////////////////////////////////////////////////////////////
