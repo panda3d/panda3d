@@ -532,6 +532,8 @@ $[TAB] $[RGS_GENERATOR_RULE]
 #if $[verhdr_to_gen]
 $[verhdr_to_gen] : $[GENERATED_VERHEADER_DEPENDENCIES]
 $[TAB] $[VERHEADER_GENERATOR_RULE]
+
+$[VERHEADER_DEPENDENTS] : $[verhdr_to_gen]
 #endif
 
 #define MIDL_COMMAND $[COMPILE_IDL] /out $[ODIR] $[ODIR]/$[IDL_BASENAME].idl
