@@ -15,7 +15,6 @@ import EntryScale
 import VectorWidgets
 import sys, string
 import ProgressBar
-import __builtin__
 
 """
 TO FIX:
@@ -24,19 +23,19 @@ Radiobutton ordering change
 
 # Create toplevel widget dictionary
 try:
-    __builtin__.widgetDict
-except AttributeError:
-    __builtin__.widgetDict = {}
+    __builtins__["widgetDict"]
+except KeyError:
+    __builtins__["widgetDict"] = {}
 # Create toplevel variable dictionary
 try:
-    __builtin__.variableDict
-except AttributeError:
-    __builtin__.variableDict = {}
+    __builtins__["variableDict"]
+except KeyError:
+    __builtins__["variableDict"] = {}
 
 def resetWidgetDict():
-    __builtin__.widgetDict = {}
+    __builtins__["widgetDict"] = {}
 def resetVariableDict():
-    __builtin__.variableDict = {}
+    __builtins__["variableDict"] = {}
 
 # Inherit from MegaWidget instead of Toplevel so you can pass in a toplevel
 # to use as a container if you wish.  If no toplevel passed in, create one

@@ -55,7 +55,7 @@ class ClusterServer(DirectObject.DirectObject):
         # Send verification of startup to client
         self.daemon = DirectD()
         # These must be passed in as bootstrap arguments and stored in
-        # the __builtin__ namespace
+        # the __builtins__ namespace
         try:
             clusterDaemonClient
         except NameError:
@@ -202,7 +202,7 @@ class ClusterServer(DirectObject.DirectObject):
         """ Handle arbitrary command string from client """
         command = self.msgHandler.parseCommandStringDatagram(dgi)
         try:
-            exec( command, globals() )
+            exec( command, __builtins__ )
         except:
             pass
         

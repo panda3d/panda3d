@@ -21,5 +21,4 @@ def newimport(*args, **kw):
     return result
 
 # Replace the builtin import with our new import
-import __builtin__
-__builtin__.__import__ = newimport
+__builtins__["__import__"] = newimport

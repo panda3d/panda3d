@@ -23,6 +23,10 @@ CLUSTER_SERVER_PORT = 1970
 CLUSTER_DAEMON_PORT = 8001
 
 # Precede command string with ! to tell server to execute command string
+# NOTE: Had to stick with the import __builtin__ scheme, at startup,
+# __builtins__ is a module, not a dictionary, like it is inside of a module
+# Note, this startup string obviates the need to set any cluster related
+# config variables in the client Configrc files
 SERVER_STARTUP_STRING = (
     '!bash ppython -c ' + 
     '"import __builtin__; ' +

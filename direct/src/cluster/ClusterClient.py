@@ -105,21 +105,21 @@ class ClusterClient(DirectObject.DirectObject):
             return rootName
 
     def selectNodePath(self, nodePath):
-        self.cmd(self.getNodePathFindCmd(nodePath) + '.select()', 0)
+        self(self.getNodePathFindCmd(nodePath) + '.select()', 0)
 
     def deselectNodePath(self, nodePath):
-        self.cmd(self.getNodePathFindCmd(nodePath) + '.deselect()', 0)
+        self(self.getNodePathFindCmd(nodePath) + '.deselect()', 0)
 
     def loadModel(self, nodePath):
         pass
 
-    def cmd(self, commandString, fLocally = 1):
+    def __call__(self, commandString, fLocally = 1):
         # Execute remotely
         for server in self.serverList:
             server.sendCommandString(commandString)
         if fLocally:
             # Execute locally
-            exec( commandString, globals() )
+            exec( commandString, __builtins__ )
 
     def exit(self):
         # Execute remotely
@@ -349,9 +349,9 @@ class DummyClusterClient(DirectObject.DirectObject):
     def __init__(self):
         pass
 
-    def cmd(self, commandString, fLocally = 1):
+    def __call__(self, commandString, fLocally = 1):
         if fLocally:
             # Execute locally
-            exec( commandString, globals() )
+            exec( commandString, __builtins__ )
 
 

@@ -2,8 +2,7 @@
 from Tkinter import *
 import Pmw
 
-import __builtin__
-__builtin__.tkroot = Pmw.initialise()
+__builtins__["tkroot"] = Pmw.initialise()
 
 def tkloop(self):
     # Do all the tkinter events waiting on this frame

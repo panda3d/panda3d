@@ -3,7 +3,6 @@ from DirectGlobals import *
 from DirectUtil import *
 from DirectGeometry import *
 from DirectSelection import *
-import __builtin__
 
 # MRM: To do: handle broken node paths in selected and deselected dicts
 class DirectNodePath(NodePath):
@@ -48,7 +47,7 @@ class SelectedNodePaths(PandaObject):
     def reset(self):
         self.selectedDict = {}
         self.deselectedDict = {}
-        __builtin__.last = self.last = None
+        __builtins__["last"] = self.last = None
 
     def select(self, nodePath, fMultiSelect = 0):
         """ Select the specified node path.  Multiselect as required """
@@ -82,10 +81,10 @@ class SelectedNodePaths(PandaObject):
             # Add it to the selected dictionary
             self.selectedDict[dnp.id()] = dnp
         # And update last
-        __builtin__.last = self.last = dnp
+        __builtins__["last"] = self.last = dnp
         # Update cluster servers if this is a cluster client
         if direct.clusterMode == 'client':
-            direct.cluster.selectNodePath(dnp)
+            cluster.selectNodePath(dnp)
         return dnp
 
     def deselect(self, nodePath):
@@ -106,7 +105,7 @@ class SelectedNodePaths(PandaObject):
             messenger.send('DIRECT_deselectedNodePath', [dnp])
             # Update cluster servers if this is a cluster client
             if direct.clusterMode == 'client':
-                direct.cluster.deselectNodePath(dnp)
+                cluster.deselectNodePath(dnp)
         return dnp
 
     def getSelectedAsList(self):
@@ -188,7 +187,7 @@ class SelectedNodePaths(PandaObject):
         selected = self.last
         if selected:
             selected.remove()
-        __builtin__.last = self.last = None
+        __builtins__["last"] = self.last = None
         
     def removeAll(self):
         # Remove all selected nodePaths from the Scene Graph

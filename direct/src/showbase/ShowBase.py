@@ -22,10 +22,9 @@ import Loader
 import time
 import FSM
 import State
-import __builtin__
 
-__builtin__.FADE_SORT_INDEX = 1000
-__builtin__.NO_FADE_SORT_INDEX = 2000
+__builtins__["FADE_SORT_INDEX"] = 1000
+__builtins__["NO_FADE_SORT_INDEX"] = 2000
 
 class ShowBase:
 
@@ -138,22 +137,22 @@ class ShowBase:
 
         self.AppHasAudioFocus = 1
 
-        __builtin__.base = self
-        __builtin__.render2d = self.render2d
-        __builtin__.aspect2d = self.aspect2d
-        __builtin__.render = self.render
-        __builtin__.hidden = self.hidden
-        __builtin__.camera = self.camera
-        __builtin__.loader = self.loader
-        __builtin__.taskMgr = self.taskMgr
-        __builtin__.eventMgr = self.eventMgr
-        __builtin__.messenger = self.messenger
-        __builtin__.config = self.config
-        __builtin__.run = self.run
-        __builtin__.ostream = Notify.out()
-        __builtin__.directNotify = directNotify
-        __builtin__.globalClock = ClockObject.getGlobalClock()
-        __builtin__.vfs = vfs
+        __builtins__["base"] = self
+        __builtins__["render2d"] = self.render2d
+        __builtins__["aspect2d"] = self.aspect2d
+        __builtins__["render"] = self.render
+        __builtins__["hidden"] = self.hidden
+        __builtins__["camera"] = self.camera
+        __builtins__["loader"] = self.loader
+        __builtins__["taskMgr"] = self.taskMgr
+        __builtins__["eventMgr"] = self.eventMgr
+        __builtins__["messenger"] = self.messenger
+        __builtins__["config"] = self.config
+        __builtins__["run"] = self.run
+        __builtins__["ostream"] = Notify.out()
+        __builtins__["directNotify"] = directNotify
+        __builtins__["globalClock"] = ClockObject.getGlobalClock()
+        __builtins__["vfs"] = vfs
 
         # Transition effects (fade, iris, etc)
         import Transitions
@@ -166,7 +165,7 @@ class ShowBase:
             import DirectSession
             direct.enable()
         else:
-            __builtin__.direct = self.direct = None
+            __builtins__["direct"] = self.direct = None
 
         self.restart()
 

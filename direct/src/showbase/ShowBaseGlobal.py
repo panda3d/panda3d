@@ -12,6 +12,5 @@ def inspect(anObject):
     import Inspector
     return Inspector.inspect(anObject)
 
-import __builtin__
-__builtin__.inspect = inspect
+__builtins__["inspect"] = inspect
 

@@ -17,14 +17,13 @@ import SceneGraphExplorer
 import OnscreenText
 import types
 import string
-import __builtin__
 
 class DirectSession(PandaObject):
 
     def __init__(self):
         # Establish a global pointer to the direct object early on
         # so dependant classes can access it in their code
-        __builtin__.direct = self
+        __builtins__["direct"] = self
         # These come early since they are used later on
         self.group = render.attachNewNode('DIRECT')
         # Set priority to 100 so it always is textured
@@ -186,7 +185,7 @@ class DirectSession(PandaObject):
             self.cluster = ClusterServer(base.cameraList[0], base.camList[0])
         else:
             self.cluster = DummyClusterClient()
-        __builtin__.cluster = self.cluster
+        __builtins__['cluster'] = self.cluster
             
     def enable(self):
         # Make sure old tasks are shut down
@@ -408,7 +407,7 @@ class DirectSession(PandaObject):
         if self.clusterMode == 'client':
             if input in ('v','b','l','p', 'r', 'shift-r', 's', 't',
                          'shift-a', 'w'):
-                self.cluster.cmd('messenger.send("%s")' % input,0)
+                self.cluster('messenger.send("%s")' % input,0)
         
     def getModifiers(self, input, base):
         modifiers = DIRECT_NO_MOD
@@ -990,7 +989,7 @@ class DisplayRegionContext:
                          (self.nearHeight*0.5) * self.mouseY)
 
 # Create one
-__builtin__.direct = base.direct = DirectSession()
+__builtins__['direct'] = base.direct = DirectSession()
 
 
 

@@ -17,10 +17,10 @@ import os
 import getopt
 import sys
 import whrandom
-import __builtin__
 
 visualizeZones = base.config.GetBool("visualize-zones", 0)
 dnaDirectory = Filename.expandFrom(base.config.GetString("dna-directory", "$TTMODELS/src/dna"))
+fUseCVS = base.config.GetBool("level-editor-use-cvs", 1)
 
 # Colors used by all color menus
 DEFAULT_COLORS = [
@@ -205,7 +205,7 @@ try:
 except NameError:
     print "Loading LevelEditor for hoods: ", hoods
     # DNAStorage instance for storing level DNA info
-    __builtin__.DNASTORE = DNASTORE = DNAStorage()
+    __builtins__["DNASTORE"] = DNASTORE = DNAStorage()
     # Load the generic storage files
     loadDNAFile(DNASTORE, 'phase_4/dna/storage.dna', CSDefault, 1)
     loadDNAFile(DNASTORE, 'phase_5/dna/storage_town.dna', CSDefault, 1)
@@ -234,7 +234,7 @@ except NameError:
         loadDNAFile(DNASTORE, 'phase_8/dna/storage_DL.dna', CSDefault, 1)
         loadDNAFile(DNASTORE, 'phase_8/dna/storage_DL_sz.dna', CSDefault, 1)
         loadDNAFile(DNASTORE, 'phase_8/dna/storage_DL_town.dna', CSDefault, 1)
-    __builtin__.dnaLoaded = 1
+    __builtins__["dnaLoaded"] = 1
 
 # Precompute class types for type comparisons
 DNA_CORNICE = DNACornice.getClassType()
@@ -2476,7 +2476,8 @@ class LevelEditor(NodePath, PandaObject):
         self.reset(fDeleteToplevel = 1, fCreateToplevel = 0,
                    fUpdateExplorer = 0)
         # Now load in new file
-        self.cvsUpdate(filename)
+        if fUseCVS:
+            self.cvsUpdate(filename)
         node = loadDNAFile(DNASTORE, Filename.fromOsSpecific(filename).cStr(), CSDefault, 1)
         if node.getNumParents() == 1:
             # If the node already has a parent arc when it's loaded, we must
