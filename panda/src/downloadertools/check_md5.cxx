@@ -58,6 +58,8 @@ main(int argc, char *argv[]) {
 
   if(bRemoveBrackets) {
       hash.set_output_brackets(false);
+      // output base of Filename along w/md5
+      cout << source_file.get_basename() << " ";
   }
 
   cout << hash << endl;
