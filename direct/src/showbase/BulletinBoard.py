@@ -47,4 +47,10 @@ class BulletinBoard:
                 self.remove(postName)
 
     def __repr__(self):
-        return str(self._dict)
+        str  = 'Bulletin Board Contents\n'
+        str += '======================='
+        keys = self._dict.keys()
+        keys.sort()
+        for postName in keys:
+            str += '\n%s: %s' % (postName, self._dict[postName])
+        return str
