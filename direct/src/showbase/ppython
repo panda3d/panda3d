@@ -79,7 +79,7 @@ if [ "$TTMODELS" ]; then
 fi
 
 # Export the proper home environment variable
-HOME=`cygpath -w $HOME`
+HOME=`cygpath -w "$HOME"`
 export HOME
 
 if [ x"$1" = x"-devenv" ]; then
