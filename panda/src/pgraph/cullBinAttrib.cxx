@@ -54,7 +54,7 @@ output(ostream &out) const {
   if (_bin_name.empty()) {
     out << "(default)";
   } else {
-    out << _bin_name;
+    out << _bin_name << "," << _draw_order;
   }
 }
 
