@@ -70,6 +70,11 @@
 #set INTERROGATE_PYTHON_INTERFACE $[and $[HAVE_PYTHON],$[INTERROGATE_PYTHON_INTERFACE]]
 #define run_interrogate $[or $[INTERROGATE_C_INTERFACE],$[INTERROGATE_PYTHON_INTERFACE]]
 
+#define stl_ipath $[wildcard $[STL_IPATH]]
+#define stl_lpath $[wildcard $[STL_LPATH]]
+#define stl_cflags $[STL_CFLAGS]
+#define stl_libs $[STL_LIBS]
+
 #if $[HAVE_PYTHON]
   #define python_ipath $[wildcard $[PYTHON_IPATH]]
   #define python_lpath $[wildcard $[PYTHON_LPATH]]
@@ -344,7 +349,7 @@
 // on the various external packages this particular target claims to
 // require.
 #defun get_cflags
-  #define alt_cflags $[nspr_cflags] $[python_cflags]
+  #define alt_cflags $[stl_cflags] $[nspr_cflags] $[python_cflags]
   
   #if $[ne $[USE_CRYPTO] $[components $[USE_CRYPTO],$[active_component_libs]],]
     #set alt_cflags $[alt_cflags] $[crypto_cflags]
@@ -409,7 +414,7 @@
 // claims to require.  This returns a space-separated set of directory
 // names only; the -I switch is not included here.
 #defun get_ipath
-  #define alt_ipath $[nspr_ipath] $[python_ipath]
+  #define alt_ipath $[stl_ipath] $[nspr_ipath] $[python_ipath]
   
   #if $[ne $[USE_CRYPTO] $[components $[USE_CRYPTO],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[crypto_ipath]
@@ -474,7 +479,7 @@
 // target claims to require.  This returns a space-separated set of
 // directory names only; the -L switch is not included here.
 #defun get_lpath
-  #define alt_lpath $[nspr_lpath] $[python_lpath]
+  #define alt_lpath $[stl_lpath] $[nspr_lpath] $[python_lpath]
   
   #if $[ne $[USE_CRYPTO] $[components $[USE_CRYPTO],$[active_component_libs] $[transitive_link]],]
     #set alt_lpath $[alt_lpath] $[crypto_lpath]
@@ -540,7 +545,7 @@
 // space-separated set of library names only; the -l switch is not
 // included here.
 #defun get_libs
-  #define alt_libs $[nspr_libs] $[python_libs]
+  #define alt_libs $[stl_libs] $[nspr_libs] $[python_libs]
   
   #if $[ne $[USE_CRYPTO] $[components $[USE_CRYPTO],$[active_component_libs] $[transitive_link]],]
     #set alt_libs $[alt_libs] $[crypto_libs]

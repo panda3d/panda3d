@@ -158,6 +158,15 @@
 #define NSPR_LIBS nspr4
 #defer HAVE_NSPR $[libtest $[NSPR_LPATH],$[NSPR_LIBS]]
 
+// Is a third-party STL library installed, and where?  This is only
+// necessary if the default include and link lines that come with the
+// compiler don't provide adequate STL support.  At least some form of
+// STL is absolutely required in order to build Panda.
+#define STL_IPATH 
+#define STL_LPATH
+#define STL_CFLAGS
+#define STL_LIBS
+
 // Is Crypto++ installed, and where?
 #define CRYPTO_IPATH /usr/include/crypto++
 #define CRYPTO_LPATH /usr/lib
@@ -376,8 +385,7 @@
 // In general, it is safe to define these to be the same.  However,
 // don't define these to be '.', or you will be very sad the next time
 // you run 'make clean'.
-#defer BC_VARIANT $[if $[USE_BOUNDSCHECKER],-bc]
-#defer ODIR Opt$[OPTIMIZE]$[BC_VARIANT]-$[PLATFORM]
+#defer ODIR Opt$[OPTIMIZE]-$[PLATFORM]$[USE_COMPILER]
 #defer ODIR_SHARED $[ODIR]
 #defer ODIR_STATIC $[ODIR]
 

@@ -25,6 +25,9 @@ $[cdefine HAVE_NAMESPACE]
 /* Define if the C++ iostream library supports ios::binary.  */
 $[cdefine HAVE_IOS_BINARY]
 
+/* Define if we have Dinkumware STL installed.  */
+$[cdefine HAVE_DINKUM]
+
 /* Define if we have Python installed.  */
 $[cdefine HAVE_PYTHON]
 

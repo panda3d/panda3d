@@ -19,6 +19,10 @@
 //               rather than defining the vector again.
 ////////////////////////////////////////////////////////////////////
 
+#ifdef HAVE_DINKUM
+#define VV_STRING std::_Vector_val<std::string, std::allocator<std::string> >
+EXPORT_TEMPLATE_CLASS(EXPCL_DTOOL, EXPTP_DTOOL, VV_STRING)
+#endif
 EXPORT_TEMPLATE_CLASS(EXPCL_DTOOL, EXPTP_DTOOL, std::vector<std::string>)
 typedef vector<string> vector_string;
 

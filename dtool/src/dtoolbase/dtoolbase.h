@@ -33,6 +33,8 @@
 #pragma warning (disable : 4250)
 /* C4355: 'this' : used in base member initializer list */
 #pragma warning (disable : 4355)
+/* C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data */
+#pragma warning (disable : 4244)
 
 #endif  /* WIN32_VC */
 
