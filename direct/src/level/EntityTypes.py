@@ -26,7 +26,7 @@ class LevelMgr(Entity):
 class EditMgr(Entity):
     type = 'editMgr'
     permanent = 1
-    delAttribs = (
+    blockAttribs = (
         'comment',
         )
     attribs = (
@@ -50,7 +50,7 @@ class Nodepath(Entity):
 class Zone(Nodepath):
     type = 'zone'
     permanent = 1
-    delAttribs = (
+    blockAttribs = (
         'pos',
         'hpr',
         )

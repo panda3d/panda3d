@@ -71,7 +71,7 @@ class EntityTypeDesc:
             EntityTypeDesc.privCompileAttribDescs(base)
 
         # aggregate the attribute descriptors from our direct base classes
-        delAttribs = c.__dict__.get('delAttribs', [])
+        blockAttribs = c.__dict__.get('blockAttribs', [])
         baseADs = []
 
         bases = list(c.__bases__)
@@ -81,7 +81,7 @@ class EntityTypeDesc:
         for base in bases:
             for desc in base._attribDescs:
                 # are we blocking this attribute?
-                if desc.getName() in delAttribs:
+                if desc.getName() in blockAttribs:
                     continue
                     
                 # make sure we haven't already picked up this attribute
