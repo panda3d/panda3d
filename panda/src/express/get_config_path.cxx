@@ -52,10 +52,12 @@ get_config_path(const string &config_var_name, DSearchPath *&static_ptr) {
     if (!all_defs.empty()) {
       Config::ConfigTable::Symbol::reverse_iterator si =
         all_defs.rbegin();
-      (*static_ptr).append_path(ExecutionEnvironment::expand_string((*si).Val()), "");
+      string filename = ExecutionEnvironment::expand_string((*si).Val());
+      (*static_ptr).append_path(Filename::from_os_specific(filename), "");
       ++si;
       while (si != all_defs.rend()) {
-        (*static_ptr).append_path(ExecutionEnvironment::expand_string((*si).Val()), "");
+        string filename = ExecutionEnvironment::expand_string((*si).Val());
+        (*static_ptr).append_path(Filename::from_os_specific(filename), "");
         ++si;
       }
     }
