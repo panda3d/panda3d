@@ -38,32 +38,32 @@
 HxAdviseSink::HxAdviseSink(IUnknown* unknown, LONG32 client_index, bool sink_on)
   : _ref_count (0), 
     _client_index (client_index),
-	_unknown (0),
+    _unknown (0),
     _registry (0),
     _scheduler (0),
     _current_bandwidth(0),
     _average_bandwidth(0),
     _on_stop(0),
-	_sink_on(sink_on)
+    _sink_on(sink_on)
 {
     if (unknown != 0) {
-	  _unknown = unknown;
-	  _unknown->AddRef();
+      _unknown = unknown;
+      _unknown->AddRef();
 
-	  if (HXR_OK != _unknown->QueryInterface(IID_IHXRegistry, (void**)&_registry)) {
-	    _registry = 0;
-	  }
+      if (HXR_OK != _unknown->QueryInterface(IID_IHXRegistry, (void**)&_registry)) {
+        _registry = 0;
+      }
 
-	  if (HXR_OK != _unknown->QueryInterface(IID_IHXScheduler, (void**)&_scheduler)) {
-	    _scheduler = 0;
-	  }
+      if (HXR_OK != _unknown->QueryInterface(IID_IHXScheduler, (void**)&_scheduler)) {
+        _scheduler = 0;
+      }
 
-	  IHXPlayer* player;
-	  if(HXR_OK == _unknown->QueryInterface(IID_IHXPlayer, (void**)&player)) {
-	    player->AddAdviseSink(this);
-	    player->Release();
-	  }
-	}
+      IHXPlayer* player;
+      if(HXR_OK == _unknown->QueryInterface(IID_IHXPlayer, (void**)&player)) {
+        player->AddAdviseSink(this);
+        player->Release();
+      }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -79,18 +79,18 @@ HxAdviseSink::~HxAdviseSink() {
   // Release components and set the member variables to the
   // NULL-state.
   if (_scheduler != 0) {
-	_scheduler->Release();
-	_scheduler = 0;
+    _scheduler->Release();
+    _scheduler = 0;
   }
 
   if (_registry != 0) {
     _registry->Release();
-	_registry = 0;
+    _registry = 0;
   }
  
   if (_unknown != 0) {
     _unknown->Release();
-	_unknown = 0;
+    _unknown = 0;
   }
 }
 
@@ -112,24 +112,24 @@ HxAdviseSink::~HxAdviseSink() {
 STDMETHODIMP HxAdviseSink::QueryInterface(REFIID id, void** interface_obj) {
   // Determine if the IUnknown and ClientAdviseSink interfaces
   // are supported.
-	if (IsEqualIID(id, IID_IUnknown)) {
-	  // Increase the reference count, set the Interface Object,
-	  // and return that the interface is supported within this
-	  // object.
-	  AddRef();
-	  *interface_obj = (IUnknown*)(IHXClientAdviseSink*)this;
-	}
-	else if (IsEqualIID(id, IID_IHXClientAdviseSink)) {
-	  // Same as above.
-	  AddRef();
-	  *interface_obj = (IHXClientAdviseSink*)this;
-	}
-	else {
-	  // This Interface is not supported by this object. Set the
-	  // Interface Object to the NULL-state and return.
-	  *interface_obj = 0;
-	  return HXR_NOINTERFACE;
-	}
+    if (IsEqualIID(id, IID_IUnknown)) {
+      // Increase the reference count, set the Interface Object,
+      // and return that the interface is supported within this
+      // object.
+      AddRef();
+      *interface_obj = (IUnknown*)(IHXClientAdviseSink*)this;
+    }
+    else if (IsEqualIID(id, IID_IHXClientAdviseSink)) {
+      // Same as above.
+      AddRef();
+      *interface_obj = (IHXClientAdviseSink*)this;
+    }
+    else {
+      // This Interface is not supported by this object. Set the
+      // Interface Object to the NULL-state and return.
+      *interface_obj = 0;
+      return HXR_NOINTERFACE;
+    }
   return HXR_OK;
 }
 
@@ -190,7 +190,7 @@ STDMETHODIMP_(ULONG32) HxAdviseSink::Release() {
 STDMETHODIMP HxAdviseSink::OnPosLength(ULONG32 ulPosition, ULONG32 ulLength) {
   // Initialize Variables
   if(_sink_on) {
-	STDOUT("OnPosLength(%ld, %ld)\n", ulPosition, ulLength);
+    STDOUT("OnPosLength(%ld, %ld)\n", ulPosition, ulLength);
   }
   return HXR_OK;
 }
@@ -250,58 +250,58 @@ STDMETHODIMP HxAdviseSink::OnPresentationClosed() {
 ////////////////////////////////////////////////////////////////////
 void HxAdviseSink::get_statistics(char* registry_key) {
   if(_sink_on) {
-	char    RegistryValue[MAX_DISPLAY_NAME] = {0}; 
+    char    RegistryValue[MAX_DISPLAY_NAME] = {0}; 
     INT32   lValue = 0;
     INT32   i = 0;
     INT32   lStatistics = 8;
     UINT32 *plValue;
 
     // Collect all of the necessary statistics from the registry 
-	// and print them to the screen.
+    // and print them to the screen.
     for (i = 0; i < lStatistics; i++) {
-	  plValue = NULL;
-	  switch (i) {
-	    case 0:
-	      SafeSprintf(RegistryValue, MAX_DISPLAY_NAME, "%s.Normal", registry_key);
-	      break;
-	    case 1:
-	      SafeSprintf(RegistryValue, MAX_DISPLAY_NAME, "%s.Recovered", registry_key);
-	      break;
-	    case 2:
-	      SafeSprintf(RegistryValue, MAX_DISPLAY_NAME, "%s.Received", registry_key);
-	      break;
-	    case 3:
-	      SafeSprintf(RegistryValue, MAX_DISPLAY_NAME, "%s.Lost", registry_key);
-	      break;
-	    case 4:
-	      SafeSprintf(RegistryValue, MAX_DISPLAY_NAME, "%s.Late", registry_key);
-	      break;
-	    case 5:
-	      SafeSprintf(RegistryValue, MAX_DISPLAY_NAME, "%s.ClipBandwidth", registry_key);
-	      break;
-	    case 6:
-	      SafeSprintf(RegistryValue, MAX_DISPLAY_NAME, "%s._average_bandwidth", registry_key);
-	      plValue = &_average_bandwidth;
-	      break;
-	    case 7:
-	      SafeSprintf(RegistryValue, MAX_DISPLAY_NAME, "%s._current_bandwidth", registry_key);
-	      plValue = &_current_bandwidth;
-	      break;
-	    default:
-	      break;
-	  }
+      plValue = NULL;
+      switch (i) {
+        case 0:
+          SafeSprintf(RegistryValue, MAX_DISPLAY_NAME, "%s.Normal", registry_key);
+          break;
+        case 1:
+          SafeSprintf(RegistryValue, MAX_DISPLAY_NAME, "%s.Recovered", registry_key);
+          break;
+        case 2:
+          SafeSprintf(RegistryValue, MAX_DISPLAY_NAME, "%s.Received", registry_key);
+          break;
+        case 3:
+          SafeSprintf(RegistryValue, MAX_DISPLAY_NAME, "%s.Lost", registry_key);
+          break;
+        case 4:
+          SafeSprintf(RegistryValue, MAX_DISPLAY_NAME, "%s.Late", registry_key);
+          break;
+        case 5:
+          SafeSprintf(RegistryValue, MAX_DISPLAY_NAME, "%s.ClipBandwidth", registry_key);
+          break;
+        case 6:
+          SafeSprintf(RegistryValue, MAX_DISPLAY_NAME, "%s._average_bandwidth", registry_key);
+          plValue = &_average_bandwidth;
+          break;
+        case 7:
+          SafeSprintf(RegistryValue, MAX_DISPLAY_NAME, "%s._current_bandwidth", registry_key);
+          plValue = &_current_bandwidth;
+          break;
+        default:
+          break;
+      }
 
-	  _registry->GetIntByName(RegistryValue, lValue);
-	  if (plValue) {
-	    if (_on_stop || lValue == 0) {
-		  lValue = *plValue;
-	    }
-	    else {
-		  *plValue = lValue;
-	    }
-	  }
-	  STDOUT("%s = %ld\n", RegistryValue, lValue);
-	}
+      _registry->GetIntByName(RegistryValue, lValue);
+      if (plValue) {
+        if (_on_stop || lValue == 0) {
+          lValue = *plValue;
+        }
+        else {
+          *plValue = lValue;
+        }
+      }
+      STDOUT("%s = %ld\n", RegistryValue, lValue);
+    }
   }
 }
 
@@ -327,35 +327,35 @@ void HxAdviseSink::get_all_statistics() {
     // Display the content of whole statistic registry
     if (_registry) {
       // Start from the first player.
-	  SafeSprintf(RegistryName, MAX_DISPLAY_NAME, "%s.Player%ld", RegistryPrefix, _client_index);
-	  if (PT_COMPOSITE == _registry->GetTypeByName(RegistryName)) {
-	    // Display player statistic
-	    get_statistics(RegistryName);
+      SafeSprintf(RegistryName, MAX_DISPLAY_NAME, "%s.Player%ld", RegistryPrefix, _client_index);
+      if (PT_COMPOSITE == _registry->GetTypeByName(RegistryName)) {
+        // Display player statistic
+        get_statistics(RegistryName);
 
-	    SafeSprintf(RegistryName, MAX_DISPLAY_NAME, "%s.Source%ld", RegistryName, SourceIndex);
-	    while (PT_COMPOSITE == _registry->GetTypeByName(RegistryName)) {
-		  // Display source statistic
-		  get_statistics(RegistryName);
+        SafeSprintf(RegistryName, MAX_DISPLAY_NAME, "%s.Source%ld", RegistryName, SourceIndex);
+        while (PT_COMPOSITE == _registry->GetTypeByName(RegistryName)) {
+          // Display source statistic
+          get_statistics(RegistryName);
 
-		  
-		  SafeSprintf(RegistryName, MAX_DISPLAY_NAME, "%s.Stream%ld", RegistryName, StreamIndex);
-		  while (PT_COMPOSITE == _registry->GetTypeByName(RegistryName)) {
-		    // Display stream statistic
-		    get_statistics(RegistryName);
 
-		    StreamIndex++;
+          SafeSprintf(RegistryName, MAX_DISPLAY_NAME, "%s.Stream%ld", RegistryName, StreamIndex);
+          while (PT_COMPOSITE == _registry->GetTypeByName(RegistryName)) {
+            // Display stream statistic
+            get_statistics(RegistryName);
 
-		    SafeSprintf(RegistryName, MAX_DISPLAY_NAME, "%s.Player%ld.Source%ld.Stream%ld", 
-		    RegistryPrefix, PlayerIndex, SourceIndex, StreamIndex);
-		  }
+            StreamIndex++;
+
+            SafeSprintf(RegistryName, MAX_DISPLAY_NAME, "%s.Player%ld.Source%ld.Stream%ld", 
+            RegistryPrefix, PlayerIndex, SourceIndex, StreamIndex);
+          }
           SourceIndex++;
-		  SafeSprintf(RegistryName, MAX_DISPLAY_NAME, "%s.Player%ld.Source%ld",
-		              RegistryPrefix, PlayerIndex, SourceIndex);
-	    }
+          SafeSprintf(RegistryName, MAX_DISPLAY_NAME, "%s.Player%ld.Source%ld",
+                      RegistryPrefix, PlayerIndex, SourceIndex);
+        }
         PlayerIndex++;
-	    SafeSprintf(RegistryName, MAX_DISPLAY_NAME, "%s.Player%ld", 
-		            RegistryPrefix, PlayerIndex);
-	  }
+        SafeSprintf(RegistryName, MAX_DISPLAY_NAME, "%s.Player%ld", 
+                    RegistryPrefix, PlayerIndex);
+      }
     }
   }
 }
@@ -370,7 +370,7 @@ void HxAdviseSink::get_all_statistics() {
 ////////////////////////////////////////////////////////////////////
 STDMETHODIMP HxAdviseSink::OnStatisticsChanged() {
   if(_sink_on) {  
-	char        Buff[1024]; 
+    char        Buff[1024]; 
     HX_RESULT   res = HXR_OK;
     UINT16      Player = 0;
 
@@ -397,7 +397,7 @@ STDMETHODIMP HxAdviseSink::OnStatisticsChanged() {
 //  Return: HX_RESULT - result varies.
 ////////////////////////////////////////////////////////////////////
 HX_RESULT HxAdviseSink::dump_reg_tree(const char* tree_name) {
-  //Initialize Local Variables related to the Registry Tree	
+  //Initialize Local Variables related to the Registry Tree
   const char* pszName = NULL;
   ULONG32     ulRegID   = 0;
   HX_RESULT   res     = HXR_OK;
@@ -444,9 +444,9 @@ HX_RESULT HxAdviseSink::dump_reg_tree(const char* tree_name) {
         _registry->GetStrById( ulRegID, pBuff );
         STDOUT("%s : \"", pszName ); 
         
-		if( pBuff ) {
+        if( pBuff ) {
           STDOUT("%s", (const char *)(pBuff->GetBuffer()) );
-		}
+        }
         STDOUT("\"\n" ); 
         HX_RELEASE(pBuff);
         break;
@@ -459,7 +459,7 @@ HX_RESULT HxAdviseSink::dump_reg_tree(const char* tree_name) {
       default:
         STDOUT("%s Unkown registry type entry\n", pszName );
         break;
-	}    
+    }    
     res = pValues->GetNextPropertyULONG32(pszName, ulRegID);
   }
 

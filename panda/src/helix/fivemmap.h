@@ -50,24 +50,24 @@ class FiveMinuteMap {
 
     void**  KeyArray;
     void**  ValueArray;
-    int	    m_nMapSize;
-    int	    m_nAllocSize;
+    int     m_nMapSize;
+    int     m_nAllocSize;
     int     m_nCursor;
 public:
     FiveMinuteMap()
-	: KeyArray(NULL)
-	, ValueArray(NULL)
-	, m_nMapSize(0)
-	, m_nAllocSize(0)
+    : KeyArray(NULL)
+    , ValueArray(NULL)
+    , m_nMapSize(0)
+    , m_nAllocSize(0)
         , m_nCursor(0)
-	, AllocationSize(10)
-	{};
+    , AllocationSize(10)
+    {};
 
     ~FiveMinuteMap()
-	{
-	    delete [] KeyArray;
-	    delete [] ValueArray;
-	};
+    {
+        delete [] KeyArray;
+        delete [] ValueArray;
+    };
 
     int  GetCount() {return m_nMapSize;}
 

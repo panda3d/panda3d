@@ -39,7 +39,7 @@ HxErrorSink::HxErrorSink(IUnknown* unknown)
   : ref_count(0),
     _player(0) 
 {
-	IHXClientEngine* pEngine = 0;
+    IHXClientEngine* pEngine = 0;
     unknown->QueryInterface(IID_IHXClientEngine, (void**)&pEngine );
     if( pEngine != 0 )
     {
@@ -174,8 +174,8 @@ STDMETHODIMP_(ULONG32) HxErrorSink::Release() {
 //  Return: None 
 ////////////////////////////////////////////////////////////////////
 STDMETHODIMP HxErrorSink::ErrorOccurred(const UINT8 severity, const UINT32 hx_code,
-	                                    const UINT32 user_code, const char* user_string,
-										const char* more_info_url) {
+                                        const UINT32 user_code, const char* user_string,
+                                        const char* more_info_url) {
   // Initialize Local Variables to the Method.
   char HXDefine[256];
 
@@ -191,23 +191,23 @@ STDMETHODIMP HxErrorSink::ErrorOccurred(const UINT8 severity, const UINT32 hx_co
 }
 
 
-										
-										
-										
-										
-										
-										
-										
-										
-										
-										
+
+
+
+
+
+
+
+
+
+
 
 ////////////////////////////////////////////////////////////////////
 //  Member: HxErrorSink::ConvertErrorToText
 //  Access: Protected
 //  Purpose: Converts the Helix error code to text for the 
 //               client to display.
-////////////////////////////////////////////////////////////////////		
+////////////////////////////////////////////////////////////////////
 //  Params: hx_code - the error code to be translated to text.
 //          buffer - Text buffer that holds the code.
 //          buffer_length - The length of the text buffer.

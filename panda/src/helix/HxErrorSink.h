@@ -52,8 +52,8 @@ public:
 //          be called when an error message is generated.
 ////////////////////////////////////////////////////////////////////
   STDMETHOD (ErrorOccurred) (THIS_ const UINT8 severity, const UINT32 hx_code,
-	                               const UINT32 user_code, const char* user_string,
-								   const char* more_info_url);
+                                   const UINT32 user_code, const char* user_string,
+                                   const char* more_info_url);
 
 ////////////////////////////////////////////////////////////////////
 // IHUnkown Interface Methods Prototypes

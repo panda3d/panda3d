@@ -40,15 +40,15 @@
 HxSiteSupplier::HxSiteSupplier(IUnknown* unknown, Texture* tex)
   : _ref_count(0), 
     _site_manager(0), 
-	_ccf(0), 
-	_unknown(unknown),
-	_dest_buffer(0),
-	_texture(tex) {
+    _ccf(0), 
+    _unknown(unknown),
+    _dest_buffer(0),
+    _texture(tex) {
     
-	if(_unknown) {
-	  _unknown->QueryInterface(IID_IHXSiteManager, (void**)&_site_manager);
-	  _unknown->QueryInterface(IID_IHXCommonClassFactory, (void**)&_ccf);
-	  _unknown->AddRef();
+    if(_unknown) {
+      _unknown->QueryInterface(IID_IHXSiteManager, (void**)&_site_manager);
+      _unknown->QueryInterface(IID_IHXCommonClassFactory, (void**)&_ccf);
+      _unknown->AddRef();
     }
 }
 
@@ -83,14 +83,14 @@ HxSiteSupplier::~HxSiteSupplier() {
 ////////////////////////////////////////////////////////////////////
 STDMETHODIMP HxSiteSupplier::QueryInterface(REFIID _id, void** _interface_obj) {
   if (IsEqualIID(_id, IID_IUnknown)) {
-	AddRef();
-	*_interface_obj = (IUnknown*)(IHXSiteSupplier*)this;
-	return HXR_OK;
+    AddRef();
+    *_interface_obj = (IUnknown*)(IHXSiteSupplier*)this;
+    return HXR_OK;
   }
   else if (IsEqualIID(_id, IID_IHXSiteSupplier)) {
-	AddRef();
-	*_interface_obj = (IHXSiteSupplier*)this;
-	return HXR_OK;
+    AddRef();
+    *_interface_obj = (IHXSiteSupplier*)this;
+    return HXR_OK;
   }
   *_interface_obj = NULL;
   return HXR_NOINTERFACE;
@@ -148,49 +148,49 @@ STDMETHODIMP_(ULONG32)HxSiteSupplier::Release() {
 //          IHXValues * pProps - The properties of the requested site
 //  Return: None
 ////////////////////////////////////////////////////////////////////
-STDMETHODIMP HxSiteSupplier::SitesNeeded(UINT32	request_id, IHXValues*	pProps) {
+STDMETHODIMP HxSiteSupplier::SitesNeeded(UINT32 request_id, IHXValues*  pProps) {
   // Determine if there are valid properties. If not then a site
   // can not properly be created.
   if (!pProps) {
-	return HXR_INVALID_PARAMETER;
+    return HXR_INVALID_PARAMETER;
   }
 
   // Local Variable Declaration and Intialization
   HRESULT hres = HXR_OK;
-  IHXValues* site_props	= NULL;
-  IHXSiteWindowed* pSiteWindowed	= NULL;
-  IHXBuffer* pValue	= NULL;
+  IHXValues* site_props = NULL;
+  IHXSiteWindowed* pSiteWindowed    = NULL;
+  IHXBuffer* pValue = NULL;
   UINT32 style = 0;
   IHXSite* pSite = NULL;
 
   // Just let the Helix client core create a windowed site for us.
   hres = _ccf->CreateInstance(CLSID_IHXSiteWindowed,(void**)&pSiteWindowed);
   if (HXR_OK != hres) {
-	goto exit;
+    goto exit;
   }
 
   hres = pSiteWindowed->QueryInterface(IID_IHXSite,(void**)&pSite);
   if (HXR_OK != hres) {
-	goto exit;
+    goto exit;
   }
 
   hres = pSiteWindowed->QueryInterface(IID_IHXValues,(void**)&site_props);
   if (HXR_OK != hres) {
-	goto exit;
+    goto exit;
   }
-	
+
   // Figures out what type of site must be created.
   hres = pProps->GetPropertyCString("playto",pValue);
   if (HXR_OK == hres) {
-	site_props->SetPropertyCString("channel",pValue);
-	HX_RELEASE(pValue);
+    site_props->SetPropertyCString("channel",pValue);
+    HX_RELEASE(pValue);
   }
   else {
-	hres = pProps->GetPropertyCString("name",pValue);
-	if (HXR_OK == hres) {
-	    site_props->SetPropertyCString("LayoutGroup",pValue);
-    	    HX_RELEASE(pValue);
-	}
+    hres = pProps->GetPropertyCString("name",pValue);
+    if (HXR_OK == hres) {
+        site_props->SetPropertyCString("LayoutGroup",pValue);
+            HX_RELEASE(pValue);
+    }
   }
 
 #ifdef _WINDOWS
@@ -201,34 +201,34 @@ STDMETHODIMP HxSiteSupplier::SitesNeeded(UINT32	request_id, IHXValues*	pProps) {
   // so that it may be sent down into the sites video
   // surface object.
   if( _texture->has_ram_image() ) {
-	pSiteWindowed->SetDstBuffer(_texture->_pbuffer->_image, 
-								_texture->_pbuffer->get_xsize(),
-								_texture->_pbuffer->get_ysize());
+    pSiteWindowed->SetDstBuffer(_texture->_pbuffer->_image, 
+                                _texture->_pbuffer->get_xsize(),
+                                _texture->_pbuffer->get_ysize());
   }
   else {
     cout << "--- {{ HxSiteSupplier.cxx, RELOADED RAM IMAGE!!! }}---" << endl;
-	PixelBuffer* fake = _texture->get_ram_image();
-	if( fake ) {
-		pSiteWindowed->SetDstBuffer(fake->_image, 
-									_texture->_pbuffer->get_xsize(),
-									_texture->_pbuffer->get_ysize());
-	}
-	else {
-		cout << "--- {{ HxSiteSupplier.cxx, NO RAM IMAGE PRESENT!!! }} ---" << endl;
-	}
+    PixelBuffer* fake = _texture->get_ram_image();
+    if( fake ) {
+        pSiteWindowed->SetDstBuffer(fake->_image, 
+                                    _texture->_pbuffer->get_xsize(),
+                                    _texture->_pbuffer->get_ysize());
+    }
+    else {
+        cout << "--- {{ HxSiteSupplier.cxx, NO RAM IMAGE PRESENT!!! }} ---" << endl;
+    }
   }
 
   // Create the window. Not necessary later on.
   hres = pSiteWindowed->Create(NULL, style);
   //hres = pSiteWindowed->AttachWindow(NULL);
   if (HXR_OK != hres) {
-  	goto exit;
+    goto exit;
   }
 
   // Add the site to the site manager.
   hres = _site_manager->AddSite(pSite);
   if (HXR_OK != hres) {
-	goto exit;
+    goto exit;
   }
 
   _created_sites.SetAt((void*)request_id,pSite);
@@ -258,13 +258,13 @@ STDMETHODIMP HxSiteSupplier::SitesNeeded(UINT32	request_id, IHXValues*	pProps) {
 ////////////////////////////////////////////////////////////////////
 STDMETHODIMP HxSiteSupplier::SitesNotNeeded(UINT32 request_id) {
   // Local Variable Declaration and Initialization
-  IHXSite*		pSite = NULL;
-  IHXSiteWindowed*	pSiteWindowed = NULL;
-  void*	pVoid = NULL;
+  IHXSite*      pSite = NULL;
+  IHXSiteWindowed*  pSiteWindowed = NULL;
+  void* pVoid = NULL;
 
   // search for the site id in the map
   if (!_created_sites.Lookup((void*)request_id,pVoid)) {
-  	return HXR_INVALID_PARAMETER;
+    return HXR_INVALID_PARAMETER;
   }
   //SITES::iterator iter = _created_sites.find(request_id);
   //if(iter == _created_sites.end()) {

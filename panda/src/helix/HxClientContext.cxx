@@ -33,11 +33,11 @@
 HxClientContext::HxClientContext(LONG32 client_index)
   : _ref_count(0),
     _client_index(client_index),
-	_client_sink(0),
-	_error_sink(0),
-	_auth_mgr(0),
-	_site_supplier(0),
-	_default_prefs(0) {
+    _client_sink(0),
+    _error_sink(0),
+    _auth_mgr(0),
+    _site_supplier(0),
+    _default_prefs(0) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -99,11 +99,11 @@ void HxClientContext::init(IUnknown* unknown, IHXPreferences* prefs, char* guid,
 #endif
 
   if (_client_sink != 0) {
-	_client_sink->AddRef();
+    _client_sink->AddRef();
   }
 
   if (_error_sink != 0) {
-	_error_sink->AddRef();
+    _error_sink->AddRef();
   }
 
   if (_auth_mgr != 0) {
@@ -116,13 +116,13 @@ void HxClientContext::init(IUnknown* unknown, IHXPreferences* prefs, char* guid,
 
   if (prefs != 0) {
     _default_prefs = prefs;
-	_default_prefs->AddRef();
+    _default_prefs->AddRef();
   }
 
   if (guid && *guid) {
-	  // Encode GUID
-	  cipher = Cipher(guid);
-	  SafeStrCpy(_guid, cipher, 256);
+      // Encode GUID
+      cipher = Cipher(guid);
+      SafeStrCpy(_guid, cipher, 256);
   }
   else {
     _guid[0] = '\0';
@@ -172,41 +172,41 @@ HX_RESULT HxClientContext::QueryInterface(THIS_ REFIID id, void** interface_obj)
   HX_RESULT result = HXR_NOINTERFACE;
   // Determine if the IUnknown and ClientAdviseSink interfaces
   // are supported.
-	if (IsEqualIID(id, IID_IUnknown)) {
-	  // Increase the reference count, set the Interface Object,
-	  // and return that the interface is supported within this
-	  // object.
-	  AddRef();
-	  *interface_obj = (IUnknown*)(IHXClientAdviseSink*)this;
-	  result = HXR_OK;
-	}
-	else if (IsEqualIID(id, IID_IHXPreferences)) {
-	  // Same as above.
-	  AddRef();
-	  *interface_obj = (IHXPreferences*)this;
-	  result = HXR_OK;
-	}
-	else if ((_client_sink != 0) && 
-		     (_client_sink->QueryInterface(id, interface_obj) == HXR_OK)) {
-	  result = HXR_OK;
-	}
-	else if ((_error_sink != 0) && 
-		     (_error_sink->QueryInterface(id, interface_obj) == HXR_OK)) {
-	  result = HXR_OK;
-	}
-	else if ((_auth_mgr != 0) &&
-		     (_auth_mgr->QueryInterface(id, interface_obj) == HXR_OK)) {
-	  result = HXR_OK;
-	}
-	else if ((_site_supplier != 0) &&
-		     (_site_supplier->QueryInterface(id, interface_obj) == HXR_OK)) {
+    if (IsEqualIID(id, IID_IUnknown)) {
+      // Increase the reference count, set the Interface Object,
+      // and return that the interface is supported within this
+      // object.
+      AddRef();
+      *interface_obj = (IUnknown*)(IHXClientAdviseSink*)this;
       result = HXR_OK;
-	}
-	else {
-	  // This Interface is not supported by this object. Set the
-	  // Interface Object to the NULL-state and return.
-	  *interface_obj = 0;
-	}
+    }
+    else if (IsEqualIID(id, IID_IHXPreferences)) {
+      // Same as above.
+      AddRef();
+      *interface_obj = (IHXPreferences*)this;
+      result = HXR_OK;
+    }
+    else if ((_client_sink != 0) && 
+             (_client_sink->QueryInterface(id, interface_obj) == HXR_OK)) {
+      result = HXR_OK;
+    }
+    else if ((_error_sink != 0) && 
+             (_error_sink->QueryInterface(id, interface_obj) == HXR_OK)) {
+      result = HXR_OK;
+    }
+    else if ((_auth_mgr != 0) &&
+             (_auth_mgr->QueryInterface(id, interface_obj) == HXR_OK)) {
+      result = HXR_OK;
+    }
+    else if ((_site_supplier != 0) &&
+             (_site_supplier->QueryInterface(id, interface_obj) == HXR_OK)) {
+      result = HXR_OK;
+    }
+    else {
+      // This Interface is not supported by this object. Set the
+      // Interface Object to the NULL-state and return.
+      *interface_obj = 0;
+    }
   return result;
 }
 
@@ -288,18 +288,18 @@ STDMETHODIMP HxClientContext::ReadPref(const char* pref_key, IHXBuffer*& buffer)
   char * cipher = 0;
 
   if ((stricmp(pref_key, CLIENT_GUID_REGNAME) == 0) && 
-	  (*_guid != 0 )) {
+      (*_guid != 0 )) {
     // Create a buffer
     buffer = new CHXBuffer();
-	buffer->AddRef();
+    buffer->AddRef();
 
-	buffer->Set((UCHAR*)_guid, strlen(_guid) + 1);
+    buffer->Set((UCHAR*)_guid, strlen(_guid) + 1);
   }
   else if (_default_prefs != 0) {
     result = _default_prefs->ReadPref(pref_key, buffer);
   }
   else {
-	result = HXR_NOTIMPL;
+    result = HXR_NOTIMPL;
   }
   return result;
 }
@@ -322,6 +322,6 @@ STDMETHODIMP HxClientContext::WritePref(const char* pref_key, IHXBuffer *buffer)
     return _default_prefs->WritePref(pref_key, buffer);
   }
   else {
-	return HXR_OK;
+    return HXR_OK;
   }
 }

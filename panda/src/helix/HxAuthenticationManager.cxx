@@ -86,21 +86,21 @@ HX_RESULT HxAuthenticationManager::QueryInterface(THIS_ REFIID id, void** ppInte
   // are supported.
   if (IsEqualIID(id, IID_IUnknown)) {
     // Increase the reference count, set the Interface Object,
-	// and return that the interface is supported within this
-	// object.
+    // and return that the interface is supported within this
+    // object.
     AddRef();
-	*ppInterfaceObj = (IUnknown*)(IHXAuthenticationManager *)this;
+    *ppInterfaceObj = (IUnknown*)(IHXAuthenticationManager *)this;
   }
   else if (IsEqualIID(id, IID_IHXAuthenticationManager)) {
     // Same as above.
-	AddRef();
-	*ppInterfaceObj = (IHXAuthenticationManager *)this;
+    AddRef();
+    *ppInterfaceObj = (IHXAuthenticationManager *)this;
   }
   else {
-	// This Interface is not supported by this object. Set the
-	// Interface Object to the NULL-state and return.
-	*ppInterfaceObj = 0;
-	return HXR_NOINTERFACE;
+    // This Interface is not supported by this object. Set the
+    // Interface Object to the NULL-state and return.
+    *ppInterfaceObj = 0;
+    return HXR_NOINTERFACE;
   }
   return HXR_OK;
 }
@@ -119,7 +119,7 @@ HX_RESULT HxAuthenticationManager::QueryInterface(THIS_ REFIID id, void** ppInte
 //  Return: ULONG32 - The new reference count. 
 ////////////////////////////////////////////////////////////////////
 STDMETHODIMP_(ULONG32) HxAuthenticationManager::AddRef(THIS) {
-	return InterlockedIncrement(&_ref_count);
+    return InterlockedIncrement(&_ref_count);
 }
 
 
@@ -173,12 +173,12 @@ STDMETHODIMP_(ULONG32) HxAuthenticationManager::Release(THIS) {
 ////////////////////////////////////////////////////////////////////
 STDMETHODIMP HxAuthenticationManager::HandleAuthenticationRequest(IHXAuthenticationManagerResponse* pResponse)
 {
-	char      username[1024] = ""; /* Flawfinder: ignore */
-	char      password[1024] = ""; /* Flawfinder: ignore */
-	HX_RESULT res = HXR_FAIL;
-	    
-	if( !_sent_password )
-	{
+    char      username[1024] = ""; /* Flawfinder: ignore */
+    char      password[1024] = ""; /* Flawfinder: ignore */
+    HX_RESULT res = HXR_FAIL;
+
+    if( !_sent_password )
+    {
         res = HXR_OK;
         
         STDOUT("\nSending Username and Password...\n");
@@ -202,7 +202,7 @@ STDMETHODIMP HxAuthenticationManager::HandleAuthenticationRequest(IHXAuthenticat
         
         _sent_password = TRUE;
     }
-	if (FAILED(res))
+    if (FAILED(res))
         STDOUT("\nInvalid Username and/or Password.\n");
     
     pResponse->AuthenticationRequestDone(res, username, password);

@@ -73,12 +73,12 @@ BOOL FiveMinuteMap::Lookup(void* Key, void*& Value) const
     // If Key is alrady in the list, replace value
     for (; nIndex < m_nMapSize; nIndex++)
     {
-	if (KeyArray[nIndex] == Key)
-	{
-	    Value = ValueArray[nIndex];
-	    bFound = TRUE;
-	    goto exit;
-	}
+    if (KeyArray[nIndex] == Key)
+    {
+        Value = ValueArray[nIndex];
+        bFound = TRUE;
+        goto exit;
+    }
     }
 
 exit:
@@ -93,16 +93,16 @@ void FiveMinuteMap::RemoveKey(void* Key)
     // If Key is alrady in the list, replace value
     for (; nIndex < m_nMapSize; nIndex++)
     {
-	if (KeyArray[nIndex] == Key)
-	{
-	    if (nIndex < (m_nMapSize-1))
-	    {
-		memmove(&(KeyArray[nIndex]),&(KeyArray[nIndex+1]),sizeof(void*)*(m_nMapSize-(nIndex+1)));
-		memmove(&(ValueArray[nIndex]),&(ValueArray[nIndex+1]),sizeof(void*)*(m_nMapSize-(nIndex+1)));
-	    }
-	    m_nMapSize--;
-	    goto exit;
-	}
+    if (KeyArray[nIndex] == Key)
+    {
+        if (nIndex < (m_nMapSize-1))
+        {
+        memmove(&(KeyArray[nIndex]),&(KeyArray[nIndex+1]),sizeof(void*)*(m_nMapSize-(nIndex+1)));
+        memmove(&(ValueArray[nIndex]),&(ValueArray[nIndex+1]),sizeof(void*)*(m_nMapSize-(nIndex+1)));
+        }
+        m_nMapSize--;
+        goto exit;
+    }
     }
 
 exit:
@@ -117,16 +117,16 @@ void FiveMinuteMap::RemoveValue(void* Value)
     // If Value is alrady in the list, replace value
     for (; nIndex < m_nMapSize; nIndex++)
     {
-	if (ValueArray[nIndex] == Value)
-	{
-	    if (nIndex < (m_nMapSize-1))
-	    {
-		memmove(&(KeyArray[nIndex]),&(KeyArray[nIndex+1]),sizeof(void*)*(m_nMapSize-(nIndex+1)));
-		memmove(&(ValueArray[nIndex]),&(ValueArray[nIndex+1]),sizeof(void*)*(m_nMapSize-(nIndex+1)));
-	    }
-	    m_nMapSize--;
-	    goto exit;
-	}
+    if (ValueArray[nIndex] == Value)
+    {
+        if (nIndex < (m_nMapSize-1))
+        {
+        memmove(&(KeyArray[nIndex]),&(KeyArray[nIndex+1]),sizeof(void*)*(m_nMapSize-(nIndex+1)));
+        memmove(&(ValueArray[nIndex]),&(ValueArray[nIndex+1]),sizeof(void*)*(m_nMapSize-(nIndex+1)));
+        }
+        m_nMapSize--;
+        goto exit;
+    }
     }
 
 exit:
@@ -141,28 +141,28 @@ void FiveMinuteMap::SetAt(void* Key, void* Value)
     // If Key is alrady in the list, replace value
     for (; nIndex < m_nMapSize; nIndex++)
     {
-	if (KeyArray[nIndex] == Key)
-	{
-	    ValueArray[nIndex] = Value;
-	    goto exit;
-	}
+    if (KeyArray[nIndex] == Key)
+    {
+        ValueArray[nIndex] = Value;
+        goto exit;
+    }
     }
 
     // If we have room, add it to the end!
     if (m_nAllocSize == m_nMapSize)
     {
-	m_nAllocSize += AllocationSize;
-	void** pNewKeys   = new void*[m_nAllocSize];
-	void** pNewValues = new void*[m_nAllocSize];
+    m_nAllocSize += AllocationSize;
+    void** pNewKeys   = new void*[m_nAllocSize];
+    void** pNewValues = new void*[m_nAllocSize];
 
-	memcpy(pNewKeys,KeyArray,sizeof(void*)*m_nMapSize); /* Flawfinder: ignore */
-	memcpy(pNewValues,ValueArray,sizeof(void*)*m_nMapSize); /* Flawfinder: ignore */
+    memcpy(pNewKeys,KeyArray,sizeof(void*)*m_nMapSize); /* Flawfinder: ignore */
+    memcpy(pNewValues,ValueArray,sizeof(void*)*m_nMapSize); /* Flawfinder: ignore */
 
-	delete [] KeyArray;
-	delete [] ValueArray;
+    delete [] KeyArray;
+    delete [] ValueArray;
 
-	KeyArray = pNewKeys;
-	ValueArray = pNewValues;
+    KeyArray = pNewKeys;
+    ValueArray = pNewValues;
     }
 
     KeyArray[m_nMapSize] = Key;

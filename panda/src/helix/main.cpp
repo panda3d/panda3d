@@ -35,8 +35,8 @@ int main( int argc, char *argv[] )
      //Do Nothing for now
     MSG msg;
 
-	GetMessage(&msg, NULL, 0, 0);
-	DispatchMessage(&msg);
+    GetMessage(&msg, NULL, 0, 0);
+    DispatchMessage(&msg);
   }
 
   delete myClient;

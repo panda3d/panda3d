@@ -73,22 +73,22 @@ class HxAdviseSink : public IHXClientAdviseSink {
     STDMETHOD(OnBuffering) (THIS_ ULONG32 flags, UINT16 percent_complete);
     STDMETHOD(OnContacting) (THIS_ const char* host_name);
   private:
-	// Private Member Functions
+    // Private Member Functions
     ~HxAdviseSink();
-	HX_RESULT dump_reg_tree(const char* tree_name );
-	void get_statistics (char*  registry_key);
+    HX_RESULT dump_reg_tree(const char* tree_name );
+    void get_statistics (char*  registry_key);
     void get_all_statistics (void);
 
-	// Private Member variables
-	LONG32 _ref_count;
+    // Private Member variables
+    LONG32 _ref_count;
     LONG32 _client_index;
-	UINT32 _start_time;
+    UINT32 _start_time;
     UINT32 _stop_time;
-	UINT32 _current_bandwidth;
+    UINT32 _current_bandwidth;
     UINT32 _average_bandwidth;
     BOOL   _on_stop;
 
-	bool _sink_on;
+    bool _sink_on;
     
     IUnknown* _unknown;
     IHXRegistry* _registry;
