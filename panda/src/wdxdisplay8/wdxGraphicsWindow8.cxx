@@ -1653,6 +1653,8 @@ special_check_fullscreen_resolution(UINT xsize,UINT ysize) {
                (DeviceId==0x1132)) 
              */
             {
+                if((xsize==640)&&(ysize==480))
+                    return true;
                 if((xsize==800)&&(ysize==600))
                     return true;
                 if((xsize==1024)&&(ysize==768))
@@ -1887,6 +1889,7 @@ find_all_card_memavails(void) {
 
         // assume buggy drivers (this means you, FireGL2) may return zero (or small amts) for dwVidMemTotal, so ignore value if its < CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD
         bool bLowVidMemFlag = ((dwVidMemTotal>CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD) && (dwVidMemTotal< LOWVIDMEMTHRESHOLD));
+
         (*g_pCardIDVec)[i].bIsLowVidMemCard = bLowVidMemFlag;
         wdxdisplay_cat.info() << "SetLowVidMem flag to "<< bLowVidMemFlag<< " based on adjusted VidMemTotal: " <<dwVidMemTotal << endl;
     }

@@ -1556,6 +1556,8 @@ special_check_fullscreen_resolution(UINT xsize,UINT ysize) {
                (DeviceId==0x1132)) 
              */
             {
+                if((xsize==640)&&(ysize==480))
+                    return true;
                 if((xsize==800)&&(ysize==600))
                     return true;
                 if((xsize==1024)&&(ysize==768))
