@@ -23,6 +23,12 @@ class ModelEntity(BasicEntities.NodePathEntity):
             if self.model:
                 self.model.reparentTo(self)
 
+        # HACK SDN: special code for moving crate wall collisions down
+        # Uniquify the collision name
+        cNode = self.find("**/wall_collsion")
+        if not cNode.isEmpty():
+            cNode.setZ(-1.2)
+
     def setModelPath(self, path):
         self.modelPath = path
         self.loadModel()

@@ -17,6 +17,9 @@ class NodePathAttribs:
         if doReparent:
             self.callSetters('parentEntId')
 
+        if __debug__:
+            self.getNodePath().setTag('entity', '1')
+
     def setPos(self, *args): self.getNodePath().setPos(*args)
     def setX(self, *args): self.getNodePath().setX(*args)
     def setY(self, *args): self.getNodePath().setY(*args)
@@ -37,6 +40,21 @@ class NodePathAttribs:
     def setParentEntId(self, parentEntId):
         self.parentEntId = parentEntId
         self.level.requestReparent(self, self.parentEntId)
+
+# this is an abstract class, do not instantiate.
+class NodePathSelfAttribs:
+    """Derive from this class to give an entity that is already a Nodepath
+    the behavior of a NodePathEntity, with ability to reparent and be
+    picked from the Direct/FactoryEditor interface"""
+    def initNodePathSelfAttribs(self):
+        if __debug__:
+            self.setTag('entity', '1')
+        self.callSetters('parentEntId')
+            
+    def setParentEntId(self, parentEntId):
+        self.parentEntId = parentEntId
+        self.level.requestReparent(self, self.parentEntId)
+
 
 class privNodePathImpl(NodePath.NodePath):
     def __init__(self, name):

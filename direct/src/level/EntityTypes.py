@@ -83,3 +83,11 @@ class Model(Nodepath):
         ('scale', 1, 'pos'),
         ('modelPath', None, 'bamfilename'),
         )
+
+class Path(Nodepath):
+    type = 'path'
+    attribs = (
+        ('scale', 1, 'pos'),
+        ('pathIndex', 0, 'int'),
+        )
+    

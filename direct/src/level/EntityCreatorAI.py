@@ -50,6 +50,7 @@ class EntityCreatorAI(EntityCreatorBase.EntityCreatorBase):
             'logicGate': Functor(cLE, LogicGateAI.LogicGateAI),
             'model' : nothing,
             'nodepath': nothing,
+            'path': nothing,
             'zone': Functor(cLE, ZoneEntityAI.ZoneEntityAI),
             })
 

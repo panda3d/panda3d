@@ -8,6 +8,7 @@ import EditMgr
 import LevelMgr
 import ZoneEntity
 import ModelEntity
+import PathEntity
 
 # some useful constructor functions
 # ctor functions must take (level, entId)
@@ -32,6 +33,7 @@ class EntityCreator(EntityCreatorBase.EntityCreatorBase):
             'logicGate': nothing,
             'model' : ModelEntity.ModelEntity,
             'nodepath': BasicEntities.NodePathEntity,
+            'path' : PathEntity.PathEntity,
             'zone': ZoneEntity.ZoneEntity,
             })
 
