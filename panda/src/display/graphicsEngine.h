@@ -75,7 +75,7 @@ PUBLISHED:
   INLINE PT(GraphicsStateGuardian) make_gsg(GraphicsPipe *pipe);
   PT(GraphicsStateGuardian) make_gsg(GraphicsPipe *pipe,
                                      const FrameBufferProperties &properties,
-                                     GraphicsStateGuardian *share_with);
+                                     GraphicsStateGuardian *share_with = NULL);
 
   GraphicsWindow *make_window(GraphicsStateGuardian *gsg, const string &name,
                               int sort);
