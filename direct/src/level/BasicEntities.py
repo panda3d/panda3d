@@ -10,7 +10,9 @@ class privNodePathImpl(NodePath.NodePath):
         node = hidden.attachNewNode(name)
         NodePath.NodePath.__init__(self, node)
 
-    def initializeEntity(self):
+    def initNodePathAttribs(self):
+        """Call this after the entity has been initialized, and all
+        of its attributes have been set"""
         self.callSetters('pos','x','y','z',
                          'hpr','h','p','r',
                          'scale','sx','sx','sz')
@@ -34,7 +36,7 @@ class NodePathEntity(Entity.Entity, privNodePathImpl):
 
     def initializeEntity(self):
         Entity.Entity.initializeEntity(self)
-        privNodePathImpl.initializeEntity(self)
+        privNodePathImpl.initNodePathAttribs(self)
 
     def destroy(self):
         Entity.Entity.destroy(self)
@@ -51,7 +53,7 @@ class DistributedNodePathEntity(DistributedEntity.DistributedEntity,
         
     def initializeEntity(self):
         DistributedEntity.DistributedEntity.initializeEntity(self)
-        privNodePathImpl.initializeEntity(self)
+        privNodePathImpl.initNodePathAttribs(self)
 
     def destroy(self):
         DistributedEntity.DistributedEntity.destroy(self)
