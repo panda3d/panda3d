@@ -8,6 +8,7 @@ from DirectGeometry import *
 import Pmw
 import Dial
 import Floater
+import EntryScale
 
 class MopathRecorder(AppShell):
     # Override class variables here
@@ -143,17 +144,121 @@ class MopathRecorder(AppShell):
         self.mainNotebook['raisecommand'] = self.updateInfo
 
         ## RECORD PAGE ##
-        label = Label(self.recordPage, text = 'RECORD PATH',
+        recordFrame = Frame(self.recordPage, relief = SUNKEN,
+                            borderwidth = 2)
+        label = Label(recordFrame, text = 'RECORD PATH',
                       font=('MSSansSerif', 12, 'bold'))
         label.pack(fill = 'x')
-        frame = Frame(self.recordPage)
-        # Recording Button
-        self.createCheckbutton(frame, 'Recording', 'Record Path',
+        # Recording Buttons
+        frame = Frame(recordFrame)
+        self.createCheckbutton(frame, 'Recording', 'Recording Path',
                                'On: path is being recorded',
-                               self.toggleRecord, 0)
-        Label(frame, text = 'Start/Stop Hook').pack(side = 'left', fill = 'x')
-        entry = Entry(frame)
-        entry.pack(side = 'left', fill = 'x', expand = 1)
+                               self.toggleRecord, 0,
+                               side = 'left')
+        self.getWidget('Recording', 'Recording Path').configure(
+            foreground = 'Red', relief = RAISED, borderwidth = 2,
+            anchor = CENTER)
+        self.getWidget('Recording', 'Recording Path').pack(
+            fill = 'x', expand = 1)
+        self.createLabeledEntry(frame, 'Recording', 'Start/Stop Hook',
+                                'Hook used to start/stop recording',
+                                command = self.setStartStopHook)
+        frame.pack(fill = 'x', expand = 1)
+        recordFrame.pack(fill = 'x')
+        # Playback controls
+        playbackFrame = Frame(self.recordPage, relief = SUNKEN,
+                              borderwidth = 2)
+        Label(playbackFrame, text = 'PLAYBACK CONTROLS',
+              font=('MSSansSerif', 12, 'bold')).pack(fill = 'x')
+        self.createEntryScale(playbackFrame, 'Playback', 'Time',
+                              'Set current playback time',
+                              resolution = 0.01,
+                              command = self.setPlaybackTime)
+        frame = Frame(playbackFrame)
+        self.createButton(frame, 'Playback', 'Stop', 'Stop playback',
+                          self.stopPlayback, side = 'left', expand = 1)
+        self.createButton(frame, 'Playback', 'Play', 'Start playback',
+                          self.startPlayback, side = 'left', expand = 1)
+        self.createButton(frame, 'Playback', 'Pause', 'Pause playback',
+                          self.pausePlayback, side = 'left', expand = 1)
+        frame.pack(fill = 'x', expand = 1)
+        playbackFrame.pack(fill = 'x')
+
+        ## CV PAGE ##
+        cvFrame = Frame(self.cvPage, relief = SUNKEN,
+                        borderwidth = 2)
+        label = Label(cvFrame, text = 'CV CONTROLS',
+                      font=('MSSansSerif', 12, 'bold'))
+        label.pack(fill = 'x')
+        self.createEntryScale(cvFrame, 'CV Controls', 'Delta Pos',
+                              'Position threshold between selected points',
+                              resolution = 0.01,
+                              command = self.setDeltaPos)
+        self.createEntryScale(cvFrame, 'CV Controls', 'Delta Hpr',
+                              'Orientation threshold between selected points',
+                              resolution = 0.01,
+                              command = self.setDeltaHpr)
+        self.createEntryScale(cvFrame, 'CV Controls', 'Delta Time',
+                              'Time threshold between selected points',
+                              resolution = 0.01,
+                              command = self.setDeltaTime)
+
+        # Constant velocity frame
+        frame = Frame(cvFrame)
+        self.createCheckbutton(frame, 'CV Controls', 'Constant Velocity',
+                               'On: Resulting path has constant velocity',
+                               self.toggleConstantVelocity, 0,
+                               side = 'left')
+        self.getWidget('CV Controls', 'Constant Velocity').configure(
+            relief = RAISED, borderwidth = 2, anchor = CENTER)
+        self.getWidget('CV Controls', 'Constant Velocity').pack(
+            fill = 'x', expand = 1)
+        self.createLabeledEntry(frame, 'CV Controls', 'Total Time',
+                                'Set total curve duration',
+                                command = self.setTotalTime)
+        frame.pack(fill = 'x', expand = 1)
+        cvFrame.pack(fill = 'x')
+
+        ## REFINE PAGE ##
+        refineFrame = Frame(self.refinePage, relief = SUNKEN,
+                            borderwidth = 2)
+        label = Label(refineFrame, text = 'REFINE CURVE',
+                      font=('MSSansSerif', 12, 'bold'))
+        label.pack(fill = 'x')
+        self.createEntryScale(refineFrame, 'Refine Page', 'From',
+                              'Begin time of refine pass',
+                              resolution = 0.01,
+                              command = self.setRefineStart)
+        self.createEntryScale(refineFrame, 'Refine Page', 'To',
+                              'Stop time of refine pass',
+                              resolution = 0.01,
+                              command = self.setRefineStop)
+        refineFrame.pack(fill = 'x')
+
+        offsetFrame = Frame(self.refinePage)
+        self.createButton(offsetFrame, 'Refine Page', 'Offset',
+                          'Zero refine curve offset',
+                          self.resetOffset, side = 'left')
+        self.createLabeledEntry(offsetFrame, 'Refine Page', 'X',
+                                'Refine pass X offset', expand = 1)
+        self.createLabeledEntry(offsetFrame, 'Refine Page', 'Y',
+                                'Refine pass Y offset', expand = 1)
+        self.createLabeledEntry(offsetFrame, 'Refine Page', 'Z',
+                                'Refine pass Z offset', expand = 1)
+        self.createLabeledEntry(offsetFrame, 'Refine Page', 'H',
+                                'Refine pass H offset', expand = 1)
+        self.createLabeledEntry(offsetFrame, 'Refine Page', 'P',
+                                'Refine pass P offset', expand = 1)
+        self.createLabeledEntry(offsetFrame, 'Refine Page', 'R',
+                                'Refine pass R offset', expand = 1)
+        offsetFrame.pack(fill = 'x')
+
+        frame = Frame(self.refinePage)
+        self.createButton(frame, 'Refine Page', 'Speed',
+                          'Reset refine speed',
+                          self.resetRefineSpeed, side = 'left',)
+
+        self.mainNotebook.setnaturalsize()        
         
     def updateInfo(self, page = 'System'):
         pass
@@ -193,8 +298,6 @@ class MopathRecorder(AppShell):
         for event, method in self.undoEvents:
             self.ignore(event)
         self.tempCS.removeNode()
-        self.orbitFromCS.removeNode()
-        self.orbitToCS.removeNode()
 
     def selectPointSetNamed(self, setName):
         print setName
@@ -215,7 +318,49 @@ class MopathRecorder(AppShell):
         print self.tickVis.get()
 
     def toggleRecord(self):
-        print self.getVariable('Recording', 'Record Path').get()
+        print self.getVariable('Recording', 'Recording Path').get()
+
+    def setStartStopHook(self):
+        print 'start stop'
+
+    def setPlaybackTime(self, time):
+        print time
+
+    def stopPlayback(self):
+        print 'stop'
+
+    def startPlayback(self):
+        print 'start'
+
+    def pausePlayback(self):
+        print 'pause'
+
+    def setDeltaPos(self, dPos):
+        print dPos
+
+    def setDeltaHpr(self, dHpr):
+        print dHpr
+
+    def setDeltaTime(self, dTime):
+        print dTime
+
+    def toggleConstantVelocity(self):
+        print self.getWidget('CV Controls', 'Constant Velocity').get()
+
+    def setTotalTime(self):
+        print 'total time'
+
+    def setRefineStart(self,value):
+        print 'refine start'
+
+    def setRefineStop(self, value):
+        print 'refine stop'
+
+    def resetOffset(self):
+        print 'reset offset'
+
+    def resetRefineSpeed(self):
+        pass
     
     ## WIDGET UTILITY FUNCTIONS ##
     def addWidget(self, widget, category, text):
@@ -226,16 +371,38 @@ class MopathRecorder(AppShell):
 
     def getVariable(self, category, text):
         return self.variableDict[category + '-' + text]
-    
+
+    def createLabeledEntry(self, parent, category, text, balloonHelp,
+                           command = None, relief = 'sunken',
+                           side = 'left', expand = 1, width = 12):
+        frame = Frame(parent)
+        Label(frame, text = text).pack(side = 'left', fill = 'x')
+        entry = Entry(frame, width = width, relief = relief)
+        entry.pack(side = 'left', fill = 'x', expand = expand)
+        if command:
+            entry.bind('<Return>', command)
+        frame.pack(side = side, expand = expand)
+
+    def createButton(self, parent, category, text, balloonHelp, command,
+                     side = 'top', expand = 0):
+        widget = Button(parent, text = text)
+        # Do this after the widget so command isn't called on creation
+        widget['command'] = command
+        widget.pack(side = side, fill = X, expand = expand)
+        self.bind(widget, balloonHelp)
+        self.widgetDict[category + '-' + text] = widget
+        return widget
+        
     def createCheckbutton(self, parent, category, text,
-                          balloonHelp, command, initialState):
+                          balloonHelp, command, initialState,
+                          side = 'top'):
         bool = BooleanVar()
         bool.set(initialState)
         widget = Checkbutton(parent, text = text, anchor = W,
                          variable = bool)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
-        widget.pack(fill = X)
+        widget.pack(side = side, fill = X)
         self.bind(widget, balloonHelp)
         self.widgetDict[category + '-' + text] = widget
         self.variableDict[category + '-' + text] = bool
