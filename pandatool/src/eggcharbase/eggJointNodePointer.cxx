@@ -138,3 +138,20 @@ do_rebuild() {
   _rebuild_frames.clear();
   return true;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointNodePointer::has_vertices
+//       Access: Public, Virtual
+//  Description: Returns true if there are any vertices referenced by
+//               the node this points to, false otherwise.  For
+//               certain kinds of back pointers (e.g. table animation
+//               entries), this is always false.
+////////////////////////////////////////////////////////////////////
+bool EggJointNodePointer::
+has_vertices() const {
+  if (_joint != (EggGroup *)NULL) {
+    return (_joint->vref_size() != 0);
+  }
+
+  return false;
+}

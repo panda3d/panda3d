@@ -18,11 +18,15 @@
 
 #include "eggSliderData.h"
 #include "eggVertexPointer.h"
+#include "eggScalarTablePointer.h"
+#include "eggSliderPointer.h"
 
-#include <eggPrimitive.h>
-#include <eggVertex.h>
-#include <eggSAnimData.h>
-#include <indent.h>
+#include "eggPrimitive.h"
+#include "eggVertex.h"
+#include "eggSAnimData.h"
+#include "indent.h"
+
+TypeHandle EggSliderData::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggSliderData::Constructor
@@ -37,6 +41,44 @@ EggSliderData(EggCharacterCollection *collection,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggSliderData::get_num_frames
+//       Access: Public
+//  Description: Returns the number of frames of animation for this
+//               particular slider in the indicated model.
+////////////////////////////////////////////////////////////////////
+int EggSliderData::
+get_num_frames(int model_index) const {
+  EggBackPointer *back = get_model(model_index);
+  if (back == (EggBackPointer *)NULL) {
+    return 0;
+  }
+
+  EggSliderPointer *slider;
+  DCAST_INTO_R(slider, back, 0);
+
+  return slider->get_num_frames();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggSliderData::get_frame
+//       Access: Public
+//  Description: Returns the value corresponding to this slider
+//               position in the nth frame in the indicated model.
+////////////////////////////////////////////////////////////////////
+double EggSliderData::
+get_frame(int model_index, int n) const {
+  EggBackPointer *back = get_model(model_index);
+  if (back == (EggBackPointer *)NULL) {
+    return 0.0;
+  }
+
+  EggSliderPointer *slider;
+  DCAST_INTO_R(slider, back, 0.0);
+
+  return slider->get_frame(n);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggSliderData::add_back_pointer
 //       Access: Public, Virtual
 //  Description: Adds the indicated vertex, primitive, or morph table
@@ -48,7 +90,7 @@ add_back_pointer(int model_index, EggObject *egg_object) {
     // A primitive!
     EggBackPointer *back = get_model(model_index);
     if (back == (EggBackPointer *)NULL) {
-      back = new EggVertexPointer;
+      back = new EggVertexPointer(egg_object);
       set_model(model_index, back);
     }
 
@@ -56,7 +98,7 @@ add_back_pointer(int model_index, EggObject *egg_object) {
     // A vertex!
     EggBackPointer *back = get_model(model_index);
     if (back == (EggBackPointer *)NULL) {
-      back = new EggVertexPointer;
+      back = new EggVertexPointer(egg_object);
       set_model(model_index, back);
     }
 
@@ -64,7 +106,7 @@ add_back_pointer(int model_index, EggObject *egg_object) {
     // A slider animation table!  Woo hoo!
     EggBackPointer *back = get_model(model_index);
     if (back == (EggBackPointer *)NULL) {
-      back = new EggVertexPointer;
+      back = new EggScalarTablePointer(egg_object);
       set_model(model_index, back);
     }
 

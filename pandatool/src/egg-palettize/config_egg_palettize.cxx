@@ -32,11 +32,30 @@
 #include "texturePosition.h"
 #include "palettePage.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 Configure(config_egg_palettize);
 
 ConfigureFn(config_egg_palettize) {
+  init_egg_palettize();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: init_libegg_palettize
+//  Description: Initializes the library.  This must be called at
+//               least once before any of the functions or classes in
+//               this library can be used.  Normally it will be
+//               called by the static initializers and need not be
+//               called explicitly, but special cases exist.
+////////////////////////////////////////////////////////////////////
+void
+init_egg_palettize() {
+  static bool initialized = false;
+  if (initialized) {
+    return;
+  }
+  initialized = true;
+
   Palettizer::init_type();
   EggFile::init_type();
   PaletteGroup::init_type();

@@ -32,6 +32,7 @@ EggCharacterData::
 EggCharacterData(EggCharacterCollection *collection) {
   _collection = collection;
   _root_joint = _collection->make_joint_data(this);
+  // The fictitious root joint is not added to the _components list.
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -45,7 +46,7 @@ EggCharacterData::
 
   Sliders::iterator si;
   for (si = _sliders.begin(); si != _sliders.end(); ++si) {
-    EggSliderData *slider = (*si).second;
+    EggSliderData *slider = (*si);
     delete slider;
   }
 }
@@ -72,6 +73,23 @@ add_model(int model_index, EggNode *model_root) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterData::find_slider
+//       Access: Public
+//  Description: Returns the slider with the indicated name, or NULL
+//               if no slider has that name.
+////////////////////////////////////////////////////////////////////
+EggSliderData *EggCharacterData::
+find_slider(const string &name) const {
+  SlidersByName::const_iterator si;
+  si = _sliders_by_name.find(name);
+  if (si != _sliders_by_name.end()) {
+    return (*si).second;
+  }
+
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggCharacterData::make_slider
 //       Access: Public
 //  Description: Returns the slider matching the indicated name.  If
@@ -79,15 +97,17 @@ add_model(int model_index, EggNode *model_root) {
 ////////////////////////////////////////////////////////////////////
 EggSliderData *EggCharacterData::
 make_slider(const string &name) {
-  Sliders::iterator si;
-  si = _sliders.find(name);
-  if (si != _sliders.end()) {
+  SlidersByName::const_iterator si;
+  si = _sliders_by_name.find(name);
+  if (si != _sliders_by_name.end()) {
     return (*si).second;
   }
 
   EggSliderData *slider = _collection->make_slider_data(this);
   slider->set_name(name);
-  _sliders.insert(Sliders::value_type(name, slider));
+  _sliders_by_name.insert(SlidersByName::value_type(name, slider));
+  _sliders.push_back(slider);
+  _components.push_back(slider);
   return slider;
 }
 
@@ -104,7 +124,7 @@ write(ostream &out, int indent_level) const {
 
   Sliders::const_iterator si;
   for (si = _sliders.begin(); si != _sliders.end(); ++si) {
-    EggSliderData *slider = (*si).second;
+    EggSliderData *slider = (*si);
     slider->write(out, indent_level + 2);
   }
 }

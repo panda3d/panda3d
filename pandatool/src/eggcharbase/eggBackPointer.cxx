@@ -29,3 +29,16 @@ TypeHandle EggBackPointer::_type_handle;
 EggBackPointer::
 EggBackPointer() {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggBackPointer::has_vertices
+//       Access: Public, Virtual
+//  Description: Returns true if there are any vertices referenced by
+//               the node this points to, false otherwise.  For
+//               certain kinds of back pointers (e.g. table animation
+//               entries), this is always false.
+////////////////////////////////////////////////////////////////////
+bool EggBackPointer::
+has_vertices() const {
+  return false;
+}

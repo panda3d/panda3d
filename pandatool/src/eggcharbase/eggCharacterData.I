@@ -93,3 +93,52 @@ INLINE EggJointData *EggCharacterData::
 find_joint(const string &name) const {
   return _root_joint->find_joint(name);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterData::get_num_sliders
+//       Access: Public
+//  Description: Returns the number of sliders in the character
+//               slider list.
+////////////////////////////////////////////////////////////////////
+INLINE int EggCharacterData::
+get_num_sliders() const {
+  return _sliders.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterData::get_slider
+//       Access: Public
+//  Description: Returns the nth slider in the character slider list.
+////////////////////////////////////////////////////////////////////
+INLINE EggSliderData *EggCharacterData::
+get_slider(int n) const {
+  nassertr(n >= 0 && n < (int)_sliders.size(), NULL);
+  return _sliders[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterData::get_num_components
+//       Access: Public
+//  Description: Returns the total number of joints and sliders in
+//               the character.
+////////////////////////////////////////////////////////////////////
+INLINE int EggCharacterData::
+get_num_components() const {
+  return _components.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterData::get_component
+//       Access: Public
+//  Description: Returns the nth joint or slider in the character.
+//               This can be used to walk linearly through all joints
+//               and sliders in the character when you don't care
+//               about making a distinction between the two; it
+//               returns the same objects that can also be discovered
+//               via get_slider() and get_root_joint().
+////////////////////////////////////////////////////////////////////
+INLINE EggComponentData *EggCharacterData::
+get_component(int n) const {
+  nassertr(n >= 0 && n < (int)_components.size(), NULL);
+  return _components[n];
+}

@@ -1,5 +1,5 @@
-// Filename: config_eggcharbase.cxx
-// Created by:  drose (26Feb01)
+// Filename: config_egg_optchar.cxx
+// Created by:  drose (18Jul03)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,31 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_eggcharbase.h"
-#include "eggBackPointer.h"
-#include "eggComponentData.h"
-#include "eggJointData.h"
-#include "eggJointNodePointer.h"
-#include "eggJointPointer.h"
-#include "eggMatrixTablePointer.h"
-#include "eggScalarTablePointer.h"
-#include "eggSliderData.h"
-#include "eggSliderPointer.h"
-#include "eggVertexPointer.h"
+#include "config_egg_optchar.h"
+#include "eggOptcharUserData.h"
 
 #include "dconfig.h"
 
 
-Configure(config_eggcharbase);
+Configure(config_egg_optchar);
 
-// NotifyCategoryDef(eggcharbase, "");
-
-ConfigureFn(config_eggcharbase) {
-  init_libeggcharbase();
+ConfigureFn(config_egg_optchar) {
+  init_egg_optchar();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: init_libeggcharbase
+//     Function: init_libegg_optchar
 //  Description: Initializes the library.  This must be called at
 //               least once before any of the functions or classes in
 //               this library can be used.  Normally it will be
@@ -48,21 +37,12 @@ ConfigureFn(config_eggcharbase) {
 //               called explicitly, but special cases exist.
 ////////////////////////////////////////////////////////////////////
 void
-init_libeggcharbase() {
+init_egg_optchar() {
   static bool initialized = false;
   if (initialized) {
     return;
   }
   initialized = true;
 
-  EggBackPointer::init_type();
-  EggComponentData::init_type();
-  EggJointData::init_type();
-  EggJointNodePointer::init_type();
-  EggJointPointer::init_type();
-  EggMatrixTablePointer::init_type();
-  EggScalarTablePointer::init_type();
-  EggSliderData::init_type();
-  EggSliderPointer::init_type();
-  EggVertexPointer::init_type();
+  EggOptcharUserData::init_type();
 }

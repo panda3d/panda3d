@@ -25,6 +25,8 @@
 #include "eggTable.h"
 #include "indent.h"
 
+TypeHandle EggJointData::_type_handle;
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggJointData::Constructor

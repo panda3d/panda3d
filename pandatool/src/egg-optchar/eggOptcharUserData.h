@@ -1,5 +1,5 @@
-// Filename: eggJointNodePointer.h
-// Created by:  drose (26Feb01)
+// Filename: eggOptcharUserData.h
+// Created by:  drose (18Jul03)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,44 +16,47 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef EGGJOINTNODEPOINTER_H
-#define EGGJOINTNODEPOINTER_H
+#ifndef EGGOPTCHARUSERDATA_H
+#define EGGOPTCHARUSERDATA_H
 
 #include "pandatoolbase.h"
-
-#include "eggJointPointer.h"
-
-#include "eggGroup.h"
-#include "pointerTo.h"
+#include "eggUserData.h"
+#include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : EggJointNodePointer
-// Description : This stores a pointer back to a <Joint> node.
+//       Class : EggOptcharUserData
+// Description : This class contains extra user data which is
+//               piggybacked onto EggGroup objects for the purpose of
+//               the maya converter.
 ////////////////////////////////////////////////////////////////////
-class EggJointNodePointer : public EggJointPointer {
+class EggOptcharUserData : public EggUserData {
 public:
-  EggJointNodePointer(EggObject *object);
+  INLINE EggOptcharUserData();
+  INLINE EggOptcharUserData(const EggOptcharUserData &copy);
+  INLINE void operator = (const EggOptcharUserData &copy);
 
-  virtual int get_num_frames() const;
-  virtual LMatrix4d get_frame(int n) const;
-  virtual void set_frame(int n, const LMatrix4d &mat);
+  INLINE bool is_static() const;
+  INLINE bool is_identity() const;
+  INLINE bool is_empty() const;
 
-  virtual bool add_rebuild_frame(const LMatrix4d &mat);
-  virtual bool do_rebuild();
-
-  virtual bool has_vertices() const;
-
-private:
-  PT(EggGroup) _joint;
+  enum Flags {
+    F_static   = 0x0001,
+    F_identity = 0x0002,
+    F_empty    = 0x0004,
+    F_remove   = 0x0008
+  };
+  int _flags;
+  LMatrix4d _static_mat;
+  double _static_value;
 
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    EggJointPointer::init_type();
-    register_type(_type_handle, "EggJointNodePointer",
-                  EggJointPointer::get_class_type());
+    EggUserData::init_type();
+    register_type(_type_handle, "EggOptcharUserData",
+                  EggUserData::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -64,6 +67,6 @@ private:
   static TypeHandle _type_handle;
 };
 
+#include "eggOptcharUserData.I"
+
 #endif
-
-

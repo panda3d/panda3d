@@ -1,5 +1,5 @@
-// Filename: config_egg_palettize.h
-// Created by:  drose (01Dec00)
+// Filename: config_egg_optchar.h
+// Created by:  drose (18Jul03)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,11 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CONFIG_EGG_PALETTIZE_H
-#define CONFIG_EGG_PALETTIZE_H
+#ifndef CONFIG_EGG_OPTCHAR_H
+#define CONFIG_EGG_OPTCHAR_H
 
 #include "pandatoolbase.h"
 
-void init_egg_palettize();
+void init_egg_optchar();
 
 #endif /* __CONFIG_UTIL_H__ */

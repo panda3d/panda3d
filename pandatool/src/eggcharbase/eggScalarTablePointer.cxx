@@ -1,5 +1,5 @@
-// Filename: eggVertexPointer.cxx
-// Created by:  drose (26Feb01)
+// Filename: eggScalarTablePointer.cxx
+// Created by:  drose (18Jul03)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,52 +16,51 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "eggVertexPointer.h"
+#include "eggScalarTablePointer.h"
 
+#include "dcast.h"
 
-TypeHandle EggVertexPointer::_type_handle;
+TypeHandle EggScalarTablePointer::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggVertexPointer::Constructor
+//     Function: EggScalarTablePointer::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-EggVertexPointer::
-EggVertexPointer(EggObject *egg_object) {
+EggScalarTablePointer::
+EggScalarTablePointer(EggObject *object) {
+  _data = DCAST(EggSAnimData, object);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggVertexPointer::get_num_frames
+//     Function: EggScalarTablePointer::get_num_frames
 //       Access: Public, Virtual
 //  Description: Returns the number of frames of animation for this
 //               particular slider.
 ////////////////////////////////////////////////////////////////////
-int EggVertexPointer::
+int EggScalarTablePointer::
 get_num_frames() const {
-  return 0;
+  if (_data == (EggSAnimData *)NULL) {
+    return 0;
+  } else {
+    return _data->get_num_rows();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggVertexPointer::get_frame
+//     Function: EggScalarTablePointer::get_frame
 //       Access: Public, Virtual
 //  Description: Returns the value corresponding to this
 //               slider position in the nth frame.
 ////////////////////////////////////////////////////////////////////
-double EggVertexPointer::
+double EggScalarTablePointer::
 get_frame(int n) const {
-  nassertr(false, 0.0);
-  return 0.0;
-}
+  if (get_num_frames() == 1) {
+    // If we have exactly one frame, then we have as many frames as we
+    // want; just repeat the first frame.
+    n = 0;
+  }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertexPointer::has_vertices
-//       Access: Public, Virtual
-//  Description: Returns true if there are any vertices referenced by
-//               the node this points to, false otherwise.  For
-//               certain kinds of back pointers (e.g. table animation
-//               entries), this is always false.
-////////////////////////////////////////////////////////////////////
-bool EggVertexPointer::
-has_vertices() const {
-  return true;
+  nassertr(n >= 0 && n < get_num_frames(), 0.0);
+  return _data->get_value(n);
 }

@@ -21,12 +21,12 @@
 
 #include "pandatoolbase.h"
 
+#include "eggObject.h"
 #include "namable.h"
 
 class EggCharacterCollection;
 class EggCharacterData;
 class EggBackPointer;
-class EggObject;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggComponentData
@@ -36,7 +36,7 @@ class EggObject;
 //               back pointers to the references to this component in
 //               all model and animation egg files read.
 ////////////////////////////////////////////////////////////////////
-class EggComponentData : public Namable {
+class EggComponentData : public EggObject, public Namable {
 public:
   EggComponentData(EggCharacterCollection *collection,
                    EggCharacterData *char_data);
@@ -63,6 +63,24 @@ protected:
 
   EggCharacterCollection *_collection;
   EggCharacterData *_char_data;
+
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    EggObject::init_type();
+    register_type(_type_handle, "EggComponentData",
+                  EggObject::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
 };
 
 #include "eggComponentData.I"

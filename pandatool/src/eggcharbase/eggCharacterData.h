@@ -72,7 +72,13 @@ public:
   INLINE EggJointData *get_root_joint() const;
   INLINE EggJointData *find_joint(const string &name) const;
 
+  INLINE int get_num_sliders() const;
+  INLINE EggSliderData *get_slider(int n) const;
+  EggSliderData *find_slider(const string &name) const;
   EggSliderData *make_slider(const string &name);
+
+  INLINE int get_num_components() const;
+  INLINE EggComponentData *get_component(int n) const;
 
   virtual void write(ostream &out, int indent_level = 0) const;
 
@@ -88,8 +94,16 @@ protected:
   EggCharacterCollection *_collection;
   EggJointData *_root_joint;
 
-  typedef pmap<string, EggSliderData *> Sliders;
+  typedef pmap<string, EggSliderData *> SlidersByName;
+  SlidersByName _sliders_by_name;
+
+  typedef pvector<EggSliderData *> Sliders;
   Sliders _sliders;
+
+  typedef pvector<EggComponentData *> Components;
+  Components _components;
+
+  friend class EggCharacterCollection;
 };
 
 #include "eggCharacterData.I"

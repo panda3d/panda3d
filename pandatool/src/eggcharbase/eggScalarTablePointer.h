@@ -1,5 +1,5 @@
-// Filename: eggSliderData.h
-// Created by:  drose (26Feb01)
+// Filename: eggScalarTablePointer.h
+// Created by:  drose (18Jul03)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,42 +16,41 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef EGGSLIDERDATA_H
-#define EGGSLIDERDATA_H
+#ifndef EGGSCALARTABLEPOINTER_H
+#define EGGSCALARTABLEPOINTER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
-#include "eggComponentData.h"
+#include "eggSliderPointer.h"
 
+#include "eggSAnimData.h"
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : EggSliderData
-// Description : This corresponds to a single morph slider control.
-//               It contains back pointers to all the vertices and
-//               primitives that reference this slider across all
-//               models, as well as all the tables in which it appears
-//               in all animation files.
+//       Class : EggScalarTablePointer
+// Description : This stores a pointer back to an EggSAnimData table
+//               (i.e. an <S$Anim> entry in an egg file),
+//               corresponding to the animation data from a single
+//               bundle for this slider.
 ////////////////////////////////////////////////////////////////////
-class EggSliderData : public EggComponentData {
+class EggScalarTablePointer : public EggSliderPointer {
 public:
-  EggSliderData(EggCharacterCollection *collection,
-                EggCharacterData *char_data);
+  EggScalarTablePointer(EggObject *object);
 
-  int get_num_frames(int model_index) const;
-  double get_frame(int model_index, int n) const;
+  virtual int get_num_frames() const;
+  virtual double get_frame(int n) const;
 
-  virtual void add_back_pointer(int model_index, EggObject *egg_object);
-  virtual void write(ostream &out, int indent_level = 0) const;
-
+private:
+  PT(EggSAnimData) _data;
 
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    EggComponentData::init_type();
-    register_type(_type_handle, "EggSliderData",
-                  EggComponentData::get_class_type());
+    EggSliderPointer::init_type();
+    register_type(_type_handle, "EggScalarTablePointer",
+                  EggSliderPointer::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -61,8 +60,6 @@ public:
 private:
   static TypeHandle _type_handle;
 };
-
-#include "eggSliderData.I"
 
 #endif
 

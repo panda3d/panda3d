@@ -38,6 +38,7 @@ public:
   EggJointData(EggCharacterCollection *collection,
                EggCharacterData *char_data);
 
+  INLINE EggJointData *get_parent() const;
   INLINE int get_num_children() const;
   INLINE EggJointData *get_child(int n) const;
   EggJointData *find_joint(const string &name);
@@ -58,6 +59,24 @@ protected:
   EggJointData *_parent;
 
   friend class EggCharacterCollection;
+
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    EggComponentData::init_type();
+    register_type(_type_handle, "EggJointData",
+                  EggComponentData::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
 };
 
 #include "eggJointData.I"

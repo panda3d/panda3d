@@ -19,9 +19,9 @@
 #ifndef EGGBACKPOINTER_H
 #define EGGBACKPOINTER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
-#include <typedObject.h>
+#include "typedObject.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggBackPointer
@@ -40,6 +40,7 @@ class EggBackPointer : public TypedObject {
 public:
   EggBackPointer();
 
+  virtual bool has_vertices() const;
 
 public:
   static TypeHandle get_class_type() {

@@ -21,6 +21,8 @@
 
 #include "indent.h"
 
+TypeHandle EggComponentData::_type_handle;
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggComponentData::Constructor

@@ -1,5 +1,5 @@
-// Filename: config_egg_palettize.h
-// Created by:  drose (01Dec00)
+// Filename: eggOptcharUserData.cxx
+// Created by:  drose (18Jul03)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,11 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CONFIG_EGG_PALETTIZE_H
-#define CONFIG_EGG_PALETTIZE_H
+#include "eggOptcharUserData.h"
 
-#include "pandatoolbase.h"
-
-void init_egg_palettize();
-
-#endif /* __CONFIG_UTIL_H__ */
+TypeHandle EggOptcharUserData::_type_handle;

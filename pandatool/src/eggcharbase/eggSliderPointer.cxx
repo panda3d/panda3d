@@ -1,5 +1,5 @@
-// Filename: config_egg_palettize.h
-// Created by:  drose (01Dec00)
+// Filename: eggSliderPointer.cxx
+// Created by:  drose (18Jul03)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,11 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CONFIG_EGG_PALETTIZE_H
-#define CONFIG_EGG_PALETTIZE_H
+#include "eggSliderPointer.h"
 
-#include "pandatoolbase.h"
+TypeHandle EggSliderPointer::_type_handle;
 
-void init_egg_palettize();
-
-#endif /* __CONFIG_UTIL_H__ */

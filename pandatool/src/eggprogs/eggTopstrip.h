@@ -19,10 +19,10 @@
 #ifndef EGGTOPSTRIP_H
 #define EGGTOPSTRIP_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
-#include <eggCharacterFilter.h>
-#include <luse.h>
+#include "eggCharacterFilter.h"
+#include "luse.h"
 
 #include "pvector.h"
 

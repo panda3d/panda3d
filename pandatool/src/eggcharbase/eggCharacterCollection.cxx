@@ -459,6 +459,7 @@ match_egg_nodes(EggCharacterData *char_data, EggJointData *joint_data,
       EggNode *egg_node = (*ei);
       EggJointData *data = make_joint_data(char_data);
       joint_data->_children.push_back(data);
+      char_data->_components.push_back(data);
       data->_parent = joint_data;
       found_egg_match(char_data, data, egg_node, egg_index, model_index);
     }
@@ -564,6 +565,7 @@ match_egg_nodes(EggCharacterData *char_data, EggJointData *joint_data,
           EggNode *egg_node = (*ei);
           EggJointData *data = make_joint_data(char_data);
           joint_data->_children.push_back(data);
+          char_data->_components.push_back(data);
           data->_parent = joint_data;
           found_egg_match(char_data, data, egg_node, egg_index, model_index);
         }
