@@ -1,7 +1,7 @@
 #define LOCAL_LIBS \
   dcparser
 #define OTHER_LIBS \
-  express:c \
+  express:c pandaexpress:m \
   interrogatedb:c dconfig:c dtoolconfig:m \
   dtoolutil:c dtoolbase:c dtool:m \
   pystub
