@@ -121,14 +121,15 @@ class Loader:
         ModelPool.releaseModel(modelPath)
 
     # font loading funcs
-    def loadFont(self, modelPath, priority = 0, faceIndex = 0):
+    def loadFont(self, modelPath, priority = 0, faceIndex = 0,
+                 lineHeight = None):
         """loadFont(self, string)
 
-        This loads a special model that will be sent to a TextNode as
-        a "font"--this is a model generated with egg-mkfont (or
-        ttf2egg) that consists of a flat hierarchy, with one node per
-        each letter of the font.  The TextNode will assemble these
-        letters together, given a string.
+        This loads a special model as a TextFont object, for rendering
+        text with a TextNode.  A font file must be either a special
+        egg file (or bam file) generated with egg-mkfont, or a
+        standard font file (like a TTF file) that is supported by
+        FreeType.
         """
         Loader.notify.debug("Loading font: %s" % (modelPath))
         if phaseChecker:
@@ -145,20 +146,30 @@ class Loader:
             if node == None:
                 # If we couldn't load the model, at least return an
                 # empty font.
-                return StaticTextFont(PandaNode("empty"))
-            
-            # Create a temp node path so you can adjust priorities
-            nodePath = hidden.attachNewNode(node)
-            nodePath.adjustAllPriorities(priority)
-            # Now create the text font from the node
-            font = StaticTextFont(node)
-
-            # And remove the node path.
-            nodePath.removeNode()
+                font = StaticTextFont(PandaNode("empty"))
+            else:
+                # Create a temp node path so you can adjust priorities
+                nodePath = NodePath(node)
+                nodePath.adjustAllPriorities(priority)
+                # Now create the text font from the node
+                font = StaticTextFont(node)
         else:
             # Otherwise, it must be a new-style, dynamic font.  Maybe
             # it's just a TTF file or something.
             font = DynamicTextFont(fn, faceIndex)
+
+        if lineHeight != None:
+            # If the line height is specified, it overrides whatever
+            # the font itself thinks the line height should be.  This
+            # should be called last, since some of the other
+            # parameters can cause the line height to be reset to its
+            # default.
+            
+            # temporary try..except for old Pandas.
+            try:
+                font.setLineHeight(lineHeight)
+            except:
+                pass
 
         return font
 
