@@ -276,15 +276,23 @@ void toggle_texture(NodeAttributes &initial_state) {
 }
 
 void take_snapshot(GraphicsWindow *win, const string &name) {
-  PixelBuffer p;
-  GraphicsStateGuardian* g = win->get_gsg();
-  const RenderBuffer& r = g->get_render_buffer(RenderBuffer::T_front);
+  GraphicsStateGuardian* gsg = win->get_gsg();
+  const RenderBuffer& rb = gsg->get_render_buffer(RenderBuffer::T_front);
 
-  p.set_xsize(win->get_width());
-  p.set_ysize(win->get_height());
-  p._image = PTA_uchar(win->get_width() * win->get_height() + 3);
+  //  p.set_xsize(win->get_width());
+  //  p.set_ysize(win->get_height());
+  //  p._image = PTA_uchar(win->get_width() * win->get_height() * 3);
 
-  p.copy(g, g->get_current_display_region(), r);
+  CPT(DisplayRegion) dr = gsg->get_current_display_region();
+  nassertv(dr != (DisplayRegion *)NULL);
+
+  int width = dr->get_pixel_width();
+  int height = dr->get_pixel_height();
+  
+  PixelBuffer p(width, height, 3, 1, PixelBuffer::T_unsigned_byte, 
+		PixelBuffer::F_rgb);
+
+  p.copy(gsg, dr, rb);
   p.write(name.c_str());
 }
 

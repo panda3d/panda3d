@@ -8,7 +8,7 @@ class Loader:
     """Loader class: contains method to load models, sounds and code"""
 
     notify = directNotify.newCategory("Loader")
-    notify.setVerbose(1)
+    # notify.setVerbose(1)
     
     # special methods
     def __init__(self, base):
