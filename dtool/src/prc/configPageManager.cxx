@@ -153,7 +153,7 @@ reload_implicit_pages() {
       }
     }
   }
-
+  
   // PRC_PATH_ENVVARS lists one or more environment variables separated
   // by spaces.  Pull them out, and then each one of those contains a
   // list of directories to search.  Add each of those to the search
@@ -163,13 +163,22 @@ reload_implicit_pages() {
     vector_string prc_path_envvar_list;
     ConfigDeclaration::extract_words(prc_path_envvars, prc_path_envvar_list);
     for (size_t i = 0; i < prc_path_envvar_list.size(); ++i) {
-      string prc_path = ExecutionEnvironment::get_environment_variable(prc_path_envvar_list[i]);
-      if (!prc_path.empty()) {
-        _search_path.append_path(prc_path);
+      string path = ExecutionEnvironment::get_environment_variable(prc_path_envvar_list[i]);
+      size_t p = 0;
+      while (p < path.length()) {
+        size_t q = path.find_first_of(DEFAULT_PATHSEP, p);
+        if (q == string::npos) {
+          q = path.length();
+        }
+        Filename prc_dir_filename = path.substr(p, q - p);
+        if (scan_auto_prc_dir(prc_dir_filename)) {
+          _search_path.append_directory(prc_dir_filename);
+        }
+        p = q + 1;
       }
     }
   }
-
+  
   if (_search_path.is_empty()) {
     // If nothing's on the search path (PRC_DIR and PRC_PATH were not
     // defined), then use the DEFAULT_PRC_DIR.
@@ -444,8 +453,8 @@ scan_auto_prc_dir(Filename &prc_dir) const {
     Filename suffix = prc_dir_string.substr(6);
     
     // Start at the executable directory.
-    Filename binary = ExecutionEnvironment::get_binary_name();
-    Filename dir = binary.get_dirname();
+    Filename dtool = ExecutionEnvironment::get_dtool_name();
+    Filename dir = dtool.get_dirname();
 
     if (scan_up_from(prc_dir, dir, suffix)) {
       return true;

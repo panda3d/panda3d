@@ -47,7 +47,7 @@ ConfigVariableEnum(const string &name, EnumType default_value,
 ////////////////////////////////////////////////////////////////////
 template<class EnumType>
 INLINE ConfigVariableEnum<EnumType>::
-ConfigVariableEnum(const string &name, const string &adefault_value, 
+ConfigVariableEnum(const string &name, const string &default_value, 
                    const string &description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariable(name, ConfigVariableCore::VT_enum, description, flags),

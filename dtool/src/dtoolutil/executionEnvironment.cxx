@@ -30,7 +30,6 @@
 #include <windows.h>
 #endif
 
-
 // We define the symbol PREREAD_ENVIRONMENT if we cannot rely on
 // getenv() to read environment variables at static init time.  In
 // this case, we must read all of the environment variables directly
@@ -292,6 +291,21 @@ ns_get_binary_name() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ExecutionEnvironment::ns_get_dtool_name
+//       Access: Private
+//  Description: Returns the name of the libdtool DLL that
+//               is used in this program, if it can be determined.  The
+//               nonstatic implementation.
+////////////////////////////////////////////////////////////////////
+string ExecutionEnvironment::
+ns_get_dtool_name() const {
+  if (_dtool_name.empty()) {
+    return "unknown";
+  }
+  return _dtool_name;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ExecutionEnvironment::get_ptr
 //       Access: Private, Static
 //  Description: Returns a static pointer that may be used to access
@@ -365,9 +379,36 @@ read_environment_variables() {
 ////////////////////////////////////////////////////////////////////
 void ExecutionEnvironment::
 read_args() {
-#if defined(HAVE_GLOBAL_ARGV)
-  int argc = GLOBAL_ARGC;
 
+#ifdef WIN32_VC
+  HMODULE dllhandle = GetModuleHandle("libdtool.dll");
+  if (dllhandle != 0) {
+    static const DWORD buffer_size = 1024;
+    char buffer[buffer_size];
+    DWORD size = GetModuleFileName(dllhandle, buffer, buffer_size);
+    if (size != 0) {
+      _dtool_name = Filename::from_os_specific(string(buffer,size));
+    }
+  }
+#endif
+
+#if defined(HAVE_PROC_SELF_MAPS)
+  // This is how you tell whether or not libdtool.so is loaded,
+  // and if so, where it was loaded from.
+  ifstream maps("/proc/self/maps");
+  while (!maps.fail() && !maps.eof()) {
+    char buffer[PATH_MAX];
+    buffer[0] = 0;
+    maps.getline(buffer, PATH_MAX);
+    char *tail = strrchr(buffer,'/');
+    char *head = strchr(buffer,'/');
+    if (tail && head && (strcmp(tail,"/libdtool.so")==0)) {
+      _dtool_name = head;
+    }
+  }
+  maps.close();
+#endif
+  
 #ifdef WIN32_VC
   static const DWORD buffer_size = 1024;
   char buffer[buffer_size];
@@ -377,10 +418,26 @@ read_args() {
   }
 #endif  // WIN32_VC
 
+#if defined(HAVE_PROC_SELF_EXE)
+  // This is more reliable than using (argc,argv), so it given precedence.
+  if (_binary_name.empty()) {
+    char readlinkbuf[PATH_MAX];
+    int pathlen = readlink("/proc/self/exe",readlinkbuf,PATH_MAX-1);
+    if (pathlen > 0) {
+      readlinkbuf[pathlen] = 0;
+      _binary_name = readlinkbuf;
+    }
+  }
+#endif
+
+#if defined(HAVE_GLOBAL_ARGV)
+  int argc = GLOBAL_ARGC;
+
   if (_binary_name.empty() && argc > 0) {
     _binary_name = GLOBAL_ARGV[0];
+    // This really needs to be resolved against PATH.
   }
-
+  
   for (int i = 1; i < argc; i++) {
     _args.push_back(GLOBAL_ARGV[i]);
   }
@@ -397,7 +454,7 @@ read_args() {
     cerr << "Cannot read /proc/self/cmdline; command-line arguments unavailable to config.\n";
     return;
   }
-
+  
   int ch = proc.get();
   int index = 0;
   while (!proc.eof() && !proc.fail()) {
@@ -409,7 +466,8 @@ read_args() {
     }
 
     if (index == 0) {
-      _binary_name = arg;
+      if (_binary_name.empty())
+	_binary_name = arg;
     } else {
       _args.push_back(arg);
     }
@@ -420,4 +478,7 @@ read_args() {
 #else
   cerr << "Warning: command line parameters unavailable to dconfig.\n";
 #endif
+
+  if (_dtool_name.empty())
+    _dtool_name = _binary_name;
 }

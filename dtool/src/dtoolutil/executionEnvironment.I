@@ -112,3 +112,14 @@ INLINE string ExecutionEnvironment::
 get_binary_name() {
   return get_ptr()->ns_get_binary_name();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: ExecutionEnvironment::get_dtool_name
+//       Access: Public, Static
+//  Description: Returns the name of the libdtool DLL that
+//               is used in this program, if it can be determined.
+////////////////////////////////////////////////////////////////////
+INLINE string ExecutionEnvironment::
+get_dtool_name() {
+  return get_ptr()->ns_get_dtool_name();
+}

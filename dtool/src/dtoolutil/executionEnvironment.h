@@ -52,6 +52,7 @@ public:
   INLINE static string get_arg(int n);
 
   INLINE static string get_binary_name();
+  INLINE static string get_dtool_name();
 
   static Filename get_cwd();
 
@@ -66,6 +67,7 @@ private:
   string ns_get_arg(int n) const;
 
   string ns_get_binary_name() const;
+  string ns_get_dtool_name() const;
 
   static ExecutionEnvironment *get_ptr();
 
@@ -80,6 +82,7 @@ private:
   CommandArguments _args;
 
   string _binary_name;
+  string _dtool_name;
 
   static ExecutionEnvironment *_global_ptr;
 };
