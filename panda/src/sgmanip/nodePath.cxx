@@ -2565,7 +2565,9 @@ r_get_net_transitions(const ArcComponent *comp,
 ////////////////////////////////////////////////////////////////////
 string NodePath::
 format_node_name(Node *dnode) const {
-  nassertr(dnode != (Node *)NULL, string());
+  if (dnode == (Node *)NULL) {
+    return "(NULL)";
+  }
   string name;
   if (dnode->is_of_type(NamedNode::get_class_type())) {
     name = DCAST(NamedNode, dnode)->get_name();
