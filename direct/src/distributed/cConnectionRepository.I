@@ -183,6 +183,17 @@ get_msg_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::get_overflow_event_name
+//       Access: Published
+//  Description: Returns event string that will be thrown if the
+//               datagram reader queue overflows.
+////////////////////////////////////////////////////////////////////
+INLINE const string &CConnectionRepository::
+get_overflow_event_name() {
+  return _overflow_event_name;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::set_simulated_disconnect
 //       Access: Published
 //  Description: Sets the simulated disconnect flag.  While this is

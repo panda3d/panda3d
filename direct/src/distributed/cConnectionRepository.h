@@ -83,6 +83,8 @@ PUBLISHED:
   INLINE unsigned char get_sec_code() const;
   INLINE unsigned int get_msg_type() const;
 
+  INLINE static const string &get_overflow_event_name();
+
   bool is_connected();
 
   bool send_datagram(const Datagram &dg);
@@ -124,6 +126,8 @@ private:
   unsigned int _msg_sender;
   unsigned char _sec_code;
   unsigned int _msg_type;
+
+  static const string _overflow_event_name;
 };
 
 #include "cConnectionRepository.I"

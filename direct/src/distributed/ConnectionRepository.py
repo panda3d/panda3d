@@ -310,11 +310,14 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
     def startReaderPollTask(self):
         # Stop any tasks we are running now
         self.stopReaderPollTask()
+        self.accept(CConnectionRepository.getOverflowEventName(),
+                    self.handleReaderOverflow)
         taskMgr.add(self.readerPollUntilEmpty, "readerPollTask",
                     priority = self.taskPriority)
 
     def stopReaderPollTask(self):
         taskMgr.remove("readerPollTask")
+        self.ignore(CConnectionRepository.getOverflowEventName())
 
     def readerPollUntilEmpty(self, task):
         while self.readerPollOnce():
@@ -332,6 +335,11 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
             self.stopReaderPollTask()
             self.lostConnection()
         return 0
+
+    def handleReaderOverflow(self):
+        # this is called if the incoming-datagram queue overflowed and
+        # we lost some data. Override and handle if desired.
+        pass
 
     def lostConnection(self):
         # This should be overrided by a derived class to handle an

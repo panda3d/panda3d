@@ -24,6 +24,9 @@
 #include "httpChannel.h"
 #include "urlSpec.h"
 #include "datagramIterator.h"
+#include "throw_event.h"
+
+const string CConnectionRepository::_overflow_event_name = "CRDatagramOverflow";
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::Constructor
@@ -345,6 +348,10 @@ do_check_datagram() {
 #ifdef HAVE_NSPR
   if (_nspr_conn) {
     _nspr_conn->consider_flush();
+    if (_qcr.get_overflow_flag()) {
+      throw_event(get_overflow_event_name());
+      _qcr.reset_overflow_flag();
+    }
     return (_qcr.data_available() && _qcr.get_data(_dg));
   }
 #endif  // HAVE_NSPR
