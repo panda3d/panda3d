@@ -20,6 +20,9 @@
 #pragma hdrstop
 
 
+// print out simple drawprim stats every few secs
+//#define COUNT_DRAWPRIMS
+
 //#define DISABLE_DECALING
 #define DISABLE_POLYGON_OFFSET_DECALING
 // currently doesnt work well enough in toontown models for us to use
@@ -54,6 +57,19 @@ TypeHandle DXGraphicsStateGuardian::_type_handle;
 static D3DMATRIX matIdentity;
 
 #define Colorf_to_D3DCOLOR(out_color) (D3DRGBA((out_color)[0], (out_color)[1], (out_color)[2], (out_color)[3]))
+
+#ifdef COUNT_DRAWPRIMS
+static DWORD cDPcount=0;
+static DWORD cVertcount=0;
+static DWORD cTricount=0;
+static void CountDPs(DWORD nVerts,DWORD nTris) {
+    cDPcount++;
+    cVertcount+=nVerts;
+    cTricount+=nTris;
+}
+#else
+#define CountDPs(nv,nt)
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::Constructor
@@ -432,9 +448,17 @@ init_dx(  LPDIRECTDRAW7     context,
       }
     }
 
+#ifndef NDEBUG
     if(dx_force_backface_culling!=0) {
-      _d3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, dx_force_backface_culling);
+      if((dx_force_backface_culling > 0) &&
+         (dx_force_backface_culling < D3DCULL_FORCE_DWORD)) {
+             _d3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, dx_force_backface_culling);
+      } else {
+          dx_force_backface_culling=0;
+          dxgsg_cat.debug() << "error, invalid value for dx-force-backface-culling\n";
+      }
     }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -740,9 +764,43 @@ render_frame(const AllAttributesWrapper &initial_state) {
 
     show_frame();
 
+#ifdef COUNT_DRAWPRIMS
+    {
+        #define FRAMES_PER_DPINFO 90
+        static DWORD LastDPInfoFrame=0;
+        static DWORD LastTickCount=0;
+
+        if (_cur_frame_count-LastDPInfoFrame > FRAMES_PER_DPINFO) {
+            DWORD CurTickCount=GetTickCount();
+            float delta_secs=(CurTickCount-LastTickCount)/1000.0f;
+
+            float numframes=_cur_frame_count-LastDPInfoFrame;
+            float verts_per_frame = cVertcount/numframes;
+            float tris_per_frame = cTricount/numframes;
+            float DPs_per_frame = cDPcount/numframes;
+            float verts_per_DP = cVertcount/(float)cDPcount;
+            float verts_per_sec = cVertcount/delta_secs;
+            float tris_per_sec = cTricount/delta_secs;
+
+            dxgsg_cat.spam() 
+                << "\n Avg Verts/sec:\t\t" << verts_per_sec
+                << "\n Avg Tris/sec:\t\t" << tris_per_sec
+                << "\n Avg Verts/frame:\t" << verts_per_frame
+                << "\n Avg Tris/frame:\t" << tris_per_frame
+                << "\n Avg DrawPrims/frm:\t" << DPs_per_frame
+                << "\n Avg Verts/DrawPrim:\t" << verts_per_DP 
+                << endl;
+
+            LastDPInfoFrame=_cur_frame_count;
+            cDPcount = cVertcount=cTricount=0;
+            LastTickCount=CurTickCount;
+        }
+    }
+#endif
+
 #ifdef DO_PSTATS
   if (_texmgrmem_total_pcollector.is_active()) {
-      #define TICKS_PER_GETTEXINFO (2*1000)   // 2 second interval
+      #define TICKS_PER_GETTEXINFO (2.5*1000)   // 2.5 second interval
       static DWORD LastTickCount=0;
       DWORD CurTickCount=GetTickCount();
 
@@ -1000,7 +1058,7 @@ typedef enum {
 #ifdef _DEBUG
 typedef enum {DrawPrim,DrawPrimStrided} DP_Type;
 
-void INLINE TestDrawPrimFailure(DP_Type dptype,HRESULT hr,LPDIRECTDRAW7 pDD) {
+void INLINE TestDrawPrimFailure(DP_Type dptype,HRESULT hr,LPDIRECTDRAW7 pDD,DWORD nVerts,DWORD nTris) {
         if(FAILED(hr)) {
             // loss of exclusive mode is not a real DrawPrim problem
             HRESULT testcooplvl_hr = pDD->TestCooperativeLevel();
@@ -1009,9 +1067,11 @@ void INLINE TestDrawPrimFailure(DP_Type dptype,HRESULT hr,LPDIRECTDRAW7 pDD) {
             }
             exit(1);
         }
+
+        CountDPs(nVerts,nTris);
 }
 #else
-#define TestDrawPrimFailure(a,b,c)
+#define TestDrawPrimFailure(a,b,c,nVerts,nTris) CountDPs(nVerts,nTris);
 #endif
 
 INLINE void DXGraphicsStateGuardian::
@@ -1300,7 +1360,7 @@ draw_point(GeomPoint *geom, GeomContext *gc) {
         }
 
         HRESULT hr = _d3dDevice->DrawPrimitiveStrided(D3DPT_POINTLIST, p_flags, &dps_data, nPrims, NULL);
-        TestDrawPrimFailure(DrawPrimStrided,hr,_pDD);
+        TestDrawPrimFailure(DrawPrimStrided,hr,_pDD,nPrims,0);
     }
 
     _pCurFvfBufPtr = NULL;
@@ -1427,7 +1487,7 @@ draw_line(GeomLine* geom, GeomContext *gc) {
         hr = _d3dDevice->DrawPrimitive(D3DPT_LINELIST, p_flags, _tmp_fvf, nPrims*2, NULL);
         delete [] _tmp_fvf;
     }
-    TestDrawPrimFailure(DrawPrim,hr,_pDD);
+    TestDrawPrimFailure(DrawPrim,hr,_pDD,nPrims*2,0);
 
     _pCurFvfBufPtr = NULL;
 
@@ -1529,7 +1589,7 @@ draw_linestrip_base(Geom* geom, GeomContext *gc, bool bConnectEnds) {
         }
 
         HRESULT hr = _d3dDevice->DrawPrimitive(D3DPT_LINESTRIP, p_flags, _pFvfBufBasePtr, nVerts, NULL);
-        TestDrawPrimFailure(DrawPrim,hr,_pDD);
+        TestDrawPrimFailure(DrawPrim,hr,_pDD,nVerts,0);
 
         _pCurFvfBufPtr = NULL;
     }
@@ -1749,7 +1809,7 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
             pSpr->_x_ratio = *x_walk++;
         if (!y_overall)
             pSpr->_y_ratio = *y_walk++;    // go along array of ratio values stored in geom
-        if (theta_on && !theta_overall)
+        if (theta_on && (!theta_overall))
             pSpr->_theta = *theta_walk++;
     }
 
@@ -1805,6 +1865,7 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
     #endif
 
     _pCurFvfBufPtr = _pFvfBufBasePtr;          // _pCurFvfBufPtr changes,  _pFvfBufBasePtr doesn't
+
     const float TexCrdSets[4][2] = {
       { tex_left, tex_bottom },
       { tex_right, tex_bottom },
@@ -2036,7 +2097,7 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
         }
 
         hr = _d3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, p_flags, _pFvfBufBasePtr, nPrims*3, NULL);
-        TestDrawPrimFailure(DrawPrim,hr,_pDD);
+        TestDrawPrimFailure(DrawPrim,hr,_pDD, nPrims*3,nPrims);
 
         _pCurFvfBufPtr = NULL;
     } else {
@@ -2224,7 +2285,7 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
         set_shademode(NeededShadeMode);
 
         hr = _d3dDevice->DrawPrimitiveStrided(primtype, fvf_flags, &dps_data, nPrims*dwVertsPerPrim, NULL);
-        TestDrawPrimFailure(DrawPrimStrided,hr,_pDD);
+        TestDrawPrimFailure(DrawPrimStrided,hr,_pDD,nPrims*dwVertsPerPrim,nPrims);
 
         _pCurFvfBufPtr = NULL;
     }
@@ -2244,7 +2305,7 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
 
     p_flags =  D3DFVF_XYZ | (D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0)) ;
     HRESULT hr = _d3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST,  p_flags, vert_buf, nPrims*3, NULL);
-    TestDrawPrimFailure(DrawPrim,hr,_pDD);
+    TestDrawPrimFailure(DrawPrim,hr,_pDD,nPrims*3,nPrims);
 #endif
 }
 
@@ -2410,7 +2471,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
             draw_prim_inner_loop(nVerts-3, geom, perVertex | perComp);
 
             HRESULT hr = _d3dDevice->DrawPrimitive(trilisttype,  p_flags, _pFvfBufBasePtr, nVerts, NULL);
-            TestDrawPrimFailure(DrawPrim,hr,_pDD);
+            TestDrawPrimFailure(DrawPrim,hr,_pDD,nVerts,nVerts-2);
 
             _pCurFvfBufPtr = NULL;
         }
@@ -2649,7 +2710,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
             const int cCurNumStripVerts = pLengthArr[j];
 
             hr = _d3dDevice->DrawPrimitiveStrided(trilisttype, fvf_flags, &dps_data, cCurNumStripVerts, NULL);
-            TestDrawPrimFailure(DrawPrimStrided,hr,_pDD);
+            TestDrawPrimFailure(DrawPrimStrided,hr,_pDD,cCurNumStripVerts,cCurNumStripVerts-2);
 
             dps_data.position.lpvData = (VOID*)(((char*) dps_data.position.lpvData) + cCurNumStripVerts*dps_data.position.dwStride);
             dps_data.diffuse.lpvData = (VOID*)(((char*) dps_data.diffuse.lpvData) + cCurNumStripVerts*dps_data.diffuse.dwStride);
@@ -3994,7 +4055,7 @@ issue_transform(const TransformAttribute *attrib) {
 
         HRESULT hr = _d3dDevice->DrawPrimitive(D3DPT_LINELIST, D3DFVF_DIFFUSE | D3DFVF_XYZ | D3DFVF_NORMAL,
                                   vert_buf, 6, NULL);
-        TestDrawPrimFailure(DrawPrim,hr,_pDD);
+        TestDrawPrimFailure(DrawPrim,hr,_pDD,6,0);
 
         enable_lighting(lighting_was_enabled);
         enable_texturing(texturing_was_enabled);
@@ -4533,9 +4594,11 @@ issue_stencil(const StencilAttribute *attrib) {
 void DXGraphicsStateGuardian::
 issue_cull_face(const CullFaceAttribute *attrib) {
     
+#ifndef NDEBUG
     if(dx_force_backface_culling!=0) {
         return;  // leave as initially set
     }
+#endif
 
     CullFaceProperty::Mode mode = attrib->get_mode();
 
@@ -5378,7 +5441,7 @@ dx_setup_after_resize(RECT viewrect, HWND mwindow) {
 
 bool refill_tex_callback(TextureContext *tc,void *void_dxgsg_ptr) {
      DXTextureContext *dtc = DCAST(DXTextureContext, tc);
-//   DXGraphicsStateGuardian *dxgsg = (DXGraphicsStateGuardian *)void_dxgsg_ptr;
+//   DXGraphicsStateGuardian *dxgsg = (DXGraphicsStateGuardian *)void_dxgsg_ptr; not needed?
 
      // Re-fill the contents of textures and vertex buffers
      // which just got restored now.
@@ -5435,18 +5498,22 @@ void DXGraphicsStateGuardian::show_full_screen_frame(void) {
   
   // Flip the front and back buffers, to make what we just rendered
   // visible.
-  if (dx_sync_video) {
-    // bugbug: dont we want triple buffering instead of wasting time
-    // waiting for vsync?
-    hr = _pri->Flip( NULL, DDFLIP_WAIT );
-  } else {
+
+  DWORD dwFlipFlags = DDFLIP_WAIT;
+
+  if (!dx_sync_video) {
     // If the user indicated via Config that we shouldn't wait for
     // video sync, then don't wait (if the hardware supports this).
     // This will introduce visible artifacts like tearing, and may
     // cause the frame rate to grow excessively (and pointlessly)
     // high, starving out other processes.
-    hr = _pri->Flip( NULL, DDFLIP_WAIT | DDFLIP_NOVSYNC );
+    dwFlipFlags |= DDFLIP_NOVSYNC;
+//  dwFlipFlags = DDFLIP_DONOTWAIT | DDFLIP_NOVSYNC;
   }
+
+  // bugbug: dont we want triple buffering instead of wasting time
+  // waiting for vsync?
+  hr = _pri->Flip( NULL, dwFlipFlags);
 
   if(hr == DDERR_SURFACELOST || hr == DDERR_SURFACEBUSY) {
     //full screen app has been switched away
@@ -5464,7 +5531,8 @@ void DXGraphicsStateGuardian::show_full_screen_frame(void) {
       _dx_ready = FALSE;
 
 #ifdef _DEBUG
-      dxgsg_cat.spam() << "DXGraphicsStateGuardian:: no exclusive mode, waiting...\n";
+      if(dxgsg_cat.is_spam())
+          dxgsg_cat.spam() << "DXGraphicsStateGuardian:: no exclusive mode, waiting...\n";
 #endif
 
       Sleep( 500 ); // Dont consume CPU.

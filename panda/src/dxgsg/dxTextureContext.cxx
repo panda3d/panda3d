@@ -187,12 +187,16 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
     HRESULT hr;
     DX_DECLARE_CLEAN(DDSURFACEDESC2, ddsd);
 
+    if(IsBadWritePtr(pDDSurf,sizeof(DWORD))) {
+        dxgsg_cat.error() << "ConvertPixBuftoDDSurf failed: bad pDDSurf ptr value (" << ((void*)pDDSurf) << ")\n";
+        exit(1);
+    }
+
     if(FAILED( hr = pDDSurf->Lock( NULL, &ddsd,  DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL ))) {
         dxgsg_cat.error() << "CreateTexture failed: _surface->Lock() failed on texture! hr = " << ConvD3DErrorToString(hr) << "\n";
         return hr;
     }
-
-        //pbuf contains raw ARGB in PixelBuffer byteorder
+    //pbuf contains raw ARGB in PixelBuffer byteorder
 
     DWORD lPitch = ddsd.lPitch;
     BYTE* pDDSurfBytes = (BYTE*)ddsd.lpSurface;
@@ -674,6 +678,11 @@ HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf) 
     assert((dwNumComponents==3) || (dwNumComponents==4));  // cant handle anything else now
 
     BYTE *pbuf=pixbuf->_image.p();
+
+    if(IsBadWritePtr(pDDSurf,sizeof(DWORD))) {
+        dxgsg_cat.error() << "ConvertDDSurftoPixBuf failed: bad pDDSurf ptr value (" << ((void*)pDDSurf) << ")\n";
+        exit(1);
+    }
 
     if(FAILED( hr = pDDSurf->Lock( NULL, &ddsd,  DDLOCK_NOSYSLOCK | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL ))) {
         dxgsg_cat.error() << "ConvertDDSurftoPixBuf Lock() failed! hr = " << ConvD3DErrorToString(hr) << "\n";
@@ -1602,16 +1611,18 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
 
 HRESULT DXTextureContext::
 FillDDSurfTexturePixels(void) {
+    
     PixelBuffer *pbuf = _texture->get_ram_image();
     if (pbuf == (PixelBuffer *)NULL) {
+      dxgsg_cat.fatal() << "CreateTexture: get_ram_image() failed\n";
       // The texture doesn't have an image to load.
       return E_FAIL;
     }
-    DWORD cNumColorChannels = pbuf->get_num_components();
 
     HRESULT hr = ConvertPixBuftoDDSurf((ConversionType)_PixBufConversionType,pbuf->_image.p(),_surface);
-    if(FAILED(hr))
+    if(FAILED(hr)) {
         return hr;
+    }
 
     DX_DECLARE_CLEAN(DDSURFACEDESC2, ddsd);
 
@@ -1620,6 +1631,8 @@ FillDDSurfTexturePixels(void) {
     if(_bHasMipMaps) {
         DWORD i,oldcurxsize,oldcurysize,curxsize,curysize,cMipMapCount=ddsd.dwMipMapCount;
         assert(ddsd.dwMipMapCount<20);
+
+        DWORD cNumColorChannels = pbuf->get_num_components();
 
         curxsize=ddsd.dwWidth; curysize=ddsd.dwHeight;
 
@@ -1635,7 +1648,6 @@ FillDDSurfTexturePixels(void) {
         BYTE *pLastMipLevelStart  = (BYTE *) pbuf->_image.p();
 //    clock_t  start1,finish1;
 //    start1=clock();
-
         for(i=1;i<ddsd.dwMipMapCount;i++) {
             oldcurxsize=curxsize; oldcurysize=curysize;
             curysize = max(curysize>>1,1);
@@ -1843,7 +1855,11 @@ FillDDSurfTexturePixels(void) {
 //-----------------------------------------------------------------------------
 void DXTextureContext::
 DeleteTexture( ) {
-    if(_surface) _surface->Release();
+    if(dxgsg_cat.is_spam()) {
+        dxgsg_cat.spam() << "Deleting DX texture for " << _tex->get_name() << "\n";
+    }
+    if(_surface) 
+       _surface->Release();
     _surface = NULL;
 }
 
@@ -1868,11 +1884,6 @@ TextureContext(tex) {
 
 DXTextureContext::
 ~DXTextureContext() {
-#ifdef _DEBUG
-     if(dxgsg_cat.is_spam()) {
-      dxgsg_cat.spam() << "Deleting DX texture for " << _tex->get_name() << "\n";
-     }
-#endif
     DeleteTexture();
     TextureContext::~TextureContext();
     _tex = NULL;
