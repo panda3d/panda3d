@@ -13,7 +13,9 @@
 
 class EXPCL_PANDAEXPRESS TimeVal {
 PUBLISHED:
-  TimeVal();
+  INLINE TimeVal(void);
+  INLINE ulong get_sec(void) const;
+  INLINE ulong get_usec(void) const;
   ulong tv[2];
 };
 
