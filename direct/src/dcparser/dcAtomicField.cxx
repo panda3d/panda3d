@@ -19,195 +19,70 @@
 #include "dcAtomicField.h"
 #include "hashGenerator.h"
 #include "dcindent.h"
+#include "dcSimpleType.h"
 
 #include <math.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::ElementType::Constructor
 //       Access: Public
-//  Description:
+//  Description: The type parameter should be a newly-allocated DCType
+//               object; it will eventually be freed with delete when
+//               this object destructs.
 ////////////////////////////////////////////////////////////////////
 DCAtomicField::ElementType::
-ElementType() {
-  _type = ST_invalid;
-  _divisor = 1;
+ElementType(DCType *type) {
+  _type = type;
   _has_default_value = false;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::ElementType::set_default_value
+//     Function: DCAtomicField::ElementType::Copy Constructor
 //       Access: Public
-//  Description: Stores the indicated value as the default value for
-//               this element.
-//
-//               Returns true if the element type reasonably accepts a
-//               default value of numeric type, false otherwise.
+//  Description:
 ////////////////////////////////////////////////////////////////////
-bool DCAtomicField::ElementType::
-set_default_value(double num) {
-  switch (_type) {
-    // Only fields of these types accept numbers.
-  case ST_int8:
-  case ST_int16:
-  case ST_int32:
-  case ST_uint8:
-  case ST_uint16:
-  case ST_uint32:
-  case ST_float64:
-    break;
+DCAtomicField::ElementType::
+ElementType(const DCAtomicField::ElementType &copy) :
+  _type(copy._type->make_copy()),
+  _name(copy._name),
+  _default_value(copy._default_value),
+  _has_default_value(copy._has_default_value)
+{
+}
 
-  default:
-    return false;
-  }
+////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::ElementType::Copy Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DCAtomicField::ElementType::
+operator = (const DCAtomicField::ElementType &copy) {
+  delete _type;
+  _type = copy._type->make_copy();
+  _name = copy._name;
+  _default_value = copy._default_value;
+  _has_default_value = copy._has_default_value;
+}
 
-  string formatted;
-  if (!format_default_value(num, formatted)) {
-    return false;
-  }
-
-  _default_value = formatted;
-  _has_default_value = true;
-  return true;
+////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::ElementType::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+DCAtomicField::ElementType::
+~ElementType() {
+  delete _type;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::ElementType::set_default_value
 //       Access: Public
-//  Description: Stores the indicated value as the default value for
-//               this element.
-//
-//               Returns true if the element type reasonably accepts a
-//               default value of string type, false otherwise.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-bool DCAtomicField::ElementType::
-set_default_value(const string &str) {
-  if (_type != ST_string && _type != ST_blob && _type != ST_blob32) {
-    // Only fields of type string or blob accept quoted strings.
-    return false;
-  }
-
-  _default_value = str;
+void DCAtomicField::ElementType::
+set_default_value(const string &default_value) {
+  _default_value = default_value;
   _has_default_value = true;
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::ElementType::set_default_value_literal
-//       Access: Public
-//  Description: Explicitly sets the default value to the given
-//               pre-formatted string.
-////////////////////////////////////////////////////////////////////
-bool DCAtomicField::ElementType::
-set_default_value_literal(const string &str) {
-  _default_value = str;
-  _has_default_value = true;
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::ElementType::add_default_value
-//       Access: Public
-//  Description: Appends the indicated value as the next array element
-//               value for the default value for this type.
-//
-//               Returns true if the element type reasonably accepts a
-//               default value of numeric type, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCAtomicField::ElementType::
-add_default_value(double num) {
-  string formatted;
-  if (!format_default_value(num, formatted)) {
-    return false;
-  }
-
-  _default_value += formatted;
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::ElementType::add_default_value
-//       Access: Public
-//  Description: Appends the indicated value as the next array element
-//               value for the default value for this type.
-//
-//               Returns true if the element type reasonably accepts a
-//               default value of numeric type, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCAtomicField::ElementType::
-add_default_value(const string &str) {
-  string formatted;
-  if (!format_default_value(str, formatted)) {
-    return false;
-  }
-
-  _default_value += formatted;
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::ElementType::add_default_value_literal
-//       Access: Public
-//  Description: Appends the indicated value as the next array element
-//               value for the default value for this type.
-//
-//               Returns true if the element type reasonably accepts a
-//               default value of numeric type, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCAtomicField::ElementType::
-add_default_value_literal(const string &str) {
-  if (_type != ST_blob && _type != ST_blob32) {
-    // Only blobs can have literal hex strings nested within arrays.
-    return false;
-  }
-
-  _default_value += str;
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::ElementType::end_array
-//       Access: Public
-//  Description: Called by the parser after a number of calls to
-//               add_default_value(), to indicate the array has been
-//               completed.
-////////////////////////////////////////////////////////////////////
-bool DCAtomicField::ElementType::
-end_array() {
-  switch (_type) {
-  case ST_int8array:
-  case ST_int16array:
-  case ST_int32array:
-  case ST_uint8array:
-  case ST_uint16array:
-  case ST_uint32array:
-  case ST_blob:
-  case ST_blob32:
-    // These types accept arrays.
-    return true;
-
-  case ST_uint32uint8array:
-    {
-      // In this special case type, we collapse every other 32-bit
-      // value down to an 8-bit value after formatting.
-      string new_value;
-      size_t p = 0;
-      while (p < _default_value.size()) {
-        // We should have at least 8 bytes for each two elements.  If
-        // we don't, maybe the user gave us an odd number of elements.
-        if (p + 8 > _default_value.size()) {
-          return false;
-        }
-        new_value += _default_value.substr(p, 5);
-        p += 8;
-      }
-
-      _default_value = new_value;
-      return true;
-    }
-
-  default:
-    return false;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -217,513 +92,16 @@ end_array() {
 ////////////////////////////////////////////////////////////////////
 void DCAtomicField::ElementType::
 output(ostream &out, bool brief) const {
-  out << _type;
-  if (_divisor != 1) {
-    out << " / " << _divisor;
-  }
-  if (!brief) {
-    if (!_name.empty()) {
-      out << " " << _name;
+  _type->output(out, _name, brief);
+
+  if (!brief && _has_default_value) {
+    out << " = <" << hex;
+    string::const_iterator si;
+    for (si = _default_value.begin(); si != _default_value.end(); ++si) {
+      out << setw(2) << setfill('0') << (int)(unsigned char)(*si);
     }
-    if (_has_default_value) {
-      out << " = <" << hex;
-      string::const_iterator si;
-      for (si = _default_value.begin(); si != _default_value.end(); ++si) {
-        out << setw(2) << setfill('0') << (int)(unsigned char)(*si);
-      }
-      out << dec << ">";
-    }
+    out << dec << ">";
   }
-}
-
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::ElementType::pack_arg
-//       Access: Public
-//  Description: Packs the Python object into the datagram, appending
-//               to the end of the datagram.
-////////////////////////////////////////////////////////////////////
-void DCAtomicField::ElementType::
-pack_arg(Datagram &datagram, PyObject *item, DCSubatomicType type) const {
-  char *str;
-  int size;
-
-  if (type == ST_invalid) {
-    type = _type;
-  }
-
-  // Check for an array type.  These are handled recursively.
-  DCSubatomicType array_subtype;
-  int num_bytes = 0;
-  switch (type) {
-  case ST_int16array:
-    array_subtype = ST_int16;
-    num_bytes = 2;
-    break;
-
-  case ST_int32array:
-    array_subtype = ST_int32;
-    num_bytes = 4;
-    break;
-
-  case ST_uint16array:
-    array_subtype = ST_uint16;
-    num_bytes = 2;
-    break;
-
-  case ST_uint32array:
-    array_subtype = ST_uint32;
-    num_bytes = 4;
-    break;
-
-  case ST_int8array:
-    array_subtype = ST_int8;
-    num_bytes = 1;
-    break;
-
-  case ST_uint8array:
-    array_subtype = ST_uint8;
-    num_bytes = 1;
-    break;
-
-  case ST_uint32uint8array:
-    array_subtype = ST_uint32;
-    num_bytes = 5;
-    break;
-
-  default:
-    array_subtype = ST_invalid;
-  }
-
-  if (array_subtype != ST_invalid) {
-    int size = PySequence_Size(item);
-    datagram.add_uint16(size * num_bytes);
-    if (type == ST_uint32uint8array) {
-      // This one is a special case: an array of tuples.
-      for (int i = 0; i < size; i++) {
-        PyObject *tuple = PySequence_GetItem(item, i);
-        pack_arg(datagram, PyTuple_GetItem(tuple, 0), ST_uint32);
-        pack_arg(datagram, PyTuple_GetItem(tuple, 1), ST_uint8);
-        Py_DECREF(tuple);
-      }
-    } else {
-      for (int i = 0; i < size; i++) {
-        PyObject *element = PySequence_GetItem(item, i);
-        pack_arg(datagram, element, array_subtype);
-        Py_DECREF(element);
-      }
-    }
-
-    return;
-  }
-
-  if (_divisor == 1) {
-    switch (type) {
-    case ST_int8:
-      datagram.add_int8(PyInt_AsLong(item));
-      break;
-
-    case ST_int16:
-      datagram.add_int16(PyInt_AsLong(item));
-      break;
-
-    case ST_int32:
-      datagram.add_int32(PyInt_AsLong(item));
-      break;
-
-    case ST_int64:
-      datagram.add_int64(PyLong_AsLongLong(item));
-      break;
-
-    case ST_uint8:
-      datagram.add_uint8(PyInt_AsLong(item));
-      break;
-
-    case ST_uint16:
-      datagram.add_uint16(PyInt_AsLong(item));
-      break;
-
-    case ST_uint32:
-      datagram.add_uint32(PyInt_AsLong(item));
-      break;
-
-    case ST_uint64:
-      datagram.add_uint64(PyLong_AsUnsignedLongLong(item));
-      break;
-
-    case ST_float64:
-      datagram.add_float64(PyFloat_AsDouble(item));
-      break;
-
-    case ST_string:
-    case ST_blob:
-      PyString_AsStringAndSize(item, &str, &size);
-      datagram.add_string(string(str, size));
-      break;
-      
-    case ST_blob32:
-      PyString_AsStringAndSize(item, &str, &size);
-      datagram.add_string32(string(str, size));
-      break;
-
-    default:
-      break;
-    }
-
-  } else {
-    switch (type) {
-    case ST_int8:
-      datagram.add_int8((PN_int8)floor(PyFloat_AsDouble(item) * _divisor + 0.5));
-      break;
-
-    case ST_int16:
-      datagram.add_int16((PN_int16)floor(PyFloat_AsDouble(item) * _divisor + 0.5));
-      break;
-
-    case ST_int32:
-      datagram.add_int32((PN_int32)floor(PyFloat_AsDouble(item) * _divisor + 0.5));
-      break;
-
-    case ST_int64:
-      datagram.add_int64((PN_int64)floor(PyFloat_AsDouble(item) * _divisor + 0.5));
-      break;
-
-    case ST_uint8:
-      datagram.add_uint8((PN_uint8)floor(PyFloat_AsDouble(item) * _divisor + 0.5));
-      break;
-
-    case ST_uint16:
-      datagram.add_uint16((PN_uint16)floor(PyFloat_AsDouble(item) * _divisor + 0.5));
-      break;
-
-    case ST_uint32:
-      datagram.add_uint32((PN_uint32)floor(PyFloat_AsDouble(item) * _divisor + 0.5));
-      break;
-
-    case ST_uint64:
-      datagram.add_uint64((PN_uint64)floor(PyFloat_AsDouble(item) * _divisor + 0.5));
-      break;
-
-    case ST_float64:
-      datagram.add_float64(PyFloat_AsDouble(item) * _divisor);
-      break;
-
-    case ST_string:
-    case ST_blob:
-      PyString_AsStringAndSize(item, &str, &size);
-      datagram.add_string(string(str, size));
-      break;
-      
-    case ST_blob32:
-      PyString_AsStringAndSize(item, &str, &size);
-      datagram.add_string32(string(str, size));
-      break;
-
-    default:
-      break;
-    }
-  }
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::ElementType::unpack_arg
-//       Access: Public
-//  Description: Unpacks a Python object from the datagram, beginning
-//               at the current point in the interator, and returns a
-//               new reference, or NULL if there was not enough data
-//               in the datagram.
-////////////////////////////////////////////////////////////////////
-PyObject *DCAtomicField::ElementType::
-unpack_arg(DatagramIterator &iterator, DCSubatomicType type) const {
-  string str;
-
-  if (type == ST_invalid) {
-    type = _type;
-  }
-
-  // Check for an array type.  These are handled recursively.
-  DCSubatomicType array_subtype;
-  int num_bytes = 0;
-  switch (type) {
-  case ST_int16array:
-    array_subtype = ST_int16;
-    num_bytes = 2;
-    break;
-
-  case ST_int32array:
-    array_subtype = ST_int32;
-    num_bytes = 4;
-    break;
-
-  case ST_uint16array:
-    array_subtype = ST_uint16;
-    num_bytes = 2;
-    break;
-
-  case ST_uint32array:
-    array_subtype = ST_uint32;
-    num_bytes = 4;
-    break;
-
-  case ST_int8array:
-    array_subtype = ST_int8;
-    num_bytes = 1;
-    break;
-
-  case ST_uint8array:
-    array_subtype = ST_uint8;
-    num_bytes = 1;
-    break;
-
-  case ST_uint32uint8array:
-    array_subtype = ST_uint32;
-    num_bytes = 5;
-    break;
-
-  default:
-    array_subtype = ST_invalid;
-  }
-
-  if (array_subtype != ST_invalid) {
-    int size_bytes = iterator.get_uint16();
-    int size = size_bytes / num_bytes;
-    nassertr(size * num_bytes == size_bytes, NULL);
-
-    PyObject *list = PyList_New(size);
-    if (type == ST_uint32uint8array) {
-      // This one is a special case: an array of tuples.
-      for (int i = 0; i < size; i++) {
-        PyObject *a = unpack_arg(iterator, ST_uint32);
-        PyObject *b = unpack_arg(iterator, ST_uint8);
-        PyObject *tuple = PyTuple_New(2);
-        PyTuple_SET_ITEM(tuple, 0, a);
-        PyTuple_SET_ITEM(tuple, 1, b);
-        PyList_SET_ITEM(list, i, tuple);
-      }
-    } else {
-      for (int i = 0; i < size; i++) {
-        PyObject *element = unpack_arg(iterator, array_subtype);
-        PyList_SET_ITEM(list, i, element);
-      }
-    }
-
-    return list;
-  }
-
-  if (_divisor == 1) {
-    switch (type) {
-    case ST_int8:
-      return PyInt_FromLong(iterator.get_int8());
-
-    case ST_int16:
-      return PyInt_FromLong(iterator.get_int16());
-
-    case ST_int32:
-      return PyInt_FromLong(iterator.get_int32());
-
-    case ST_int64:
-      return PyLong_FromLongLong(iterator.get_int64());
-
-    case ST_uint8:
-      return PyInt_FromLong(iterator.get_uint8());
-
-    case ST_uint16:
-      return PyInt_FromLong(iterator.get_uint16());
-
-    case ST_uint32:
-      return PyInt_FromLong(iterator.get_uint32());
-
-    case ST_uint64:
-      return PyLong_FromUnsignedLongLong(iterator.get_uint64());
-
-    case ST_float64:
-      return PyFloat_FromDouble(iterator.get_float64());
-
-    case ST_string:
-    case ST_blob:
-      str = iterator.get_string();
-      return PyString_FromStringAndSize(str.data(), str.size());
-      
-    case ST_blob32:
-      str = iterator.get_string32();
-      return PyString_FromStringAndSize(str.data(), str.size());
-
-    default:
-      return Py_BuildValue("");
-    }
-
-  } else {
-    switch (type) {
-    case ST_int8:
-      return PyFloat_FromDouble(iterator.get_int8() / (double)_divisor);
-
-    case ST_int16:
-      return PyFloat_FromDouble(iterator.get_int16() / (double)_divisor);
-
-    case ST_int32:
-      return PyFloat_FromDouble(iterator.get_int32() / (double)_divisor);
-
-    case ST_int64:
-      return PyFloat_FromDouble(iterator.get_int64() / (double)_divisor);
-
-    case ST_uint8:
-      return PyFloat_FromDouble(iterator.get_uint8() / (double)_divisor);
-
-    case ST_uint16:
-      return PyFloat_FromDouble(iterator.get_uint16() / (double)_divisor);
-
-    case ST_uint32:
-      return PyFloat_FromDouble(iterator.get_uint32() / (double)_divisor);
-
-    case ST_uint64:
-      return PyFloat_FromDouble(iterator.get_uint64() / (double)_divisor);
-
-    case ST_float64:
-      return PyFloat_FromDouble(iterator.get_float64() / (double)_divisor);
-
-    case ST_string:
-    case ST_blob:
-      str = iterator.get_string();
-      return PyString_FromStringAndSize(str.data(), str.size());
-      
-    case ST_blob32:
-      str = iterator.get_string32();
-      return PyString_FromStringAndSize(str.data(), str.size());
-
-    default:
-      return Py_BuildValue("");
-    }
-  }
-}
-#endif  // HAVE_PYTHON
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::ElementType::format_default_value
-//       Access: Private
-//  Description: Formats the indicated default value to a sequence of
-//               bytes, according to the element type.  Returns true
-//               if the element type reasonably accepts a number,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCAtomicField::ElementType::
-format_default_value(double num, string &formatted) const {
-  double real_value = num * _divisor;
-  int int_value = (int)floor(real_value + 0.5);
-
-  switch (_type) {
-  case ST_int8:
-  case ST_uint8:
-  case ST_int8array:
-  case ST_uint8array:
-  case ST_blob:
-  case ST_blob32:
-    formatted = string(1, (char)(int_value & 0xff));
-    break;
-
-  case ST_int16:
-  case ST_uint16:
-  case ST_int16array:
-  case ST_uint16array:
-    formatted =
-      string(1, (char)(int_value & 0xff)) +
-      string(1, (char)((int_value >> 8) & 0xff));
-    break;
-
-  case ST_int32:
-  case ST_uint32:
-  case ST_int32array:
-  case ST_uint32array:
-  case ST_uint32uint8array:
-    formatted =
-      string(1, (char)(int_value & 0xff)) +
-      string(1, (char)((int_value >> 8) & 0xff)) +
-      string(1, (char)((int_value >> 16) & 0xff)) +
-      string(1, (char)((int_value >> 24) & 0xff));
-    break;
-
-  case ST_int64:
-    // We don't fully support default values for int64.  The
-    // high-order 32 bits cannot be specified.
-    formatted =
-      string(1, (char)(int_value & 0xff)) +
-      string(1, (char)((int_value >> 8) & 0xff)) +
-      string(1, (char)((int_value >> 16) & 0xff)) +
-      string(1, (char)((int_value >> 24) & 0xff)) +
-      ((int_value & 0x80000000) != 0 ? string(4, '\xff') : string(4, '\0'));
-    break;
-
-  case ST_uint64:
-    // We don't fully support default values for int64.  The
-    // high-order 32 bits cannot be specified.
-    formatted =
-      string(1, (char)(int_value & 0xff)) +
-      string(1, (char)((int_value >> 8) & 0xff)) +
-      string(1, (char)((int_value >> 16) & 0xff)) +
-      string(1, (char)((int_value >> 24) & 0xff)) +
-      string(4, '\0');
-    break;
-
-  case ST_float64:
-    // This may not be fully portable.
-    formatted = string((char *)&real_value, 8);
-#ifdef WORDS_BIGENDIAN
-    {
-      // Reverse the byte ordering for big-endian machines.
-      string str;
-      str.reserve(8);
-
-      int length = str.length();
-      for (size_t i = 0; i < 8; i++) {
-        str += formatted[length - 1 - i];
-      }
-      formatted = str;
-    }
-#endif
-    break;
-
-  case ST_string:
-    // It doesn't make sense to assign a numeric default value to a
-    // string.
-    return false;
-
-  case ST_invalid:
-    break;
-  }
-
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::ElementType::format_default_value
-//       Access: Private
-//  Description: Formats the indicated default value to a sequence of
-//               bytes, according to the element type.  Returns true
-//               if the element type reasonably accepts a string,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCAtomicField::ElementType::
-format_default_value(const string &str, string &formatted) const {
-  switch (_type) {
-  case ST_string:
-  case ST_blob:
-  case ST_blob32:
-    {
-      int length = str.length();
-      formatted =
-        string(1, (char)(length & 0xff)) +
-        string(1, (char)((length >> 8) & 0xff)) +
-        str;
-    }
-    break;
-
-  default:
-    // It doesn't make sense to assign a string default to a number.
-    return false;
-  }
-
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -741,7 +119,8 @@ as_atomic_field() {
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::get_num_elements
 //       Access: Public
-//  Description: Returns the number of elements of the atomic field.
+//  Description: Returns the number of elements (parameters) of the
+//               atomic field.
 ////////////////////////////////////////////////////////////////////
 int DCAtomicField::
 get_num_elements() const {
@@ -751,12 +130,12 @@ get_num_elements() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::get_element_type
 //       Access: Public
-//  Description: Returns the numeric type of the nth element of the
-//               field.
+//  Description: Returns the type object describing the type of the
+//               nth element (parameter).
 ////////////////////////////////////////////////////////////////////
-DCSubatomicType DCAtomicField::
-get_element_type(int n) const {
-  nassertr(n >= 0 && n < (int)_elements.size(), ST_invalid);
+DCType *DCAtomicField::
+get_element_type_obj(int n) const {
+  nassertr(n >= 0 && n < (int)_elements.size(), NULL);
   return _elements[n]._type;
 }
 
@@ -772,21 +151,6 @@ string DCAtomicField::
 get_element_name(int n) const {
   nassertr(n >= 0 && n < (int)_elements.size(), string());
   return _elements[n]._name;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::get_element_divisor
-//       Access: Public
-//  Description: Returns the divisor associated with the nth element
-//               of the field.  This implements an implicit
-//               fixed-point system; floating-point values are to be
-//               multiplied by this value before encoding into a
-//               packet, and divided by this number after decoding.
-////////////////////////////////////////////////////////////////////
-int DCAtomicField::
-get_element_divisor(int n) const {
-  nassertr(n >= 0 && n < (int)_elements.size(), 1);
-  return _elements[n]._divisor;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -807,34 +171,7 @@ get_element_default(int n) const {
   nassertr(has_element_default(n), string());
   nassertr(n >= 0 && n < (int)_elements.size(), string());
 
-  string default_value = _elements[n]._default_value;
-
-  switch (_elements[n]._type) {
-  case ST_int8array:
-  case ST_int16array:
-  case ST_int32array:
-  case ST_uint8array:
-  case ST_uint16array:
-  case ST_uint32array:
-  case ST_uint32uint8array:
-  case ST_blob:
-  case ST_blob32:
-  case ST_string:
-    // These array types also want an implicit length.
-    {
-      int length = default_value.length();
-      default_value =
-        string(1, (char)(length & 0xff)) +
-        string(1, (char)((length >> 8) & 0xff)) +
-        default_value;
-    }
-    break;
-
-  default:
-    break;
-  }
-
-  return default_value;
+  return _elements[n]._default_value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -847,6 +184,41 @@ bool DCAtomicField::
 has_element_default(int n) const {
   nassertr(n >= 0 && n < (int)_elements.size(), false);
   return _elements[n]._has_default_value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::get_element_type
+//       Access: Public
+//  Description: Returns the numeric type of the nth element of the
+//               field.  This method is deprecated; use
+//               get_element_type_obj() instead.
+////////////////////////////////////////////////////////////////////
+DCSubatomicType DCAtomicField::
+get_element_type(int n) const {
+  nassertr(n >= 0 && n < (int)_elements.size(), ST_invalid);
+  DCSimpleType *simple_type = _elements[n]._type->as_simple_type();
+  nassertr(simple_type != (DCSimpleType *)NULL, ST_invalid);
+  return simple_type->get_type();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::get_element_divisor
+//       Access: Public
+//  Description: Returns the divisor associated with the nth element
+//               of the field.  This implements an implicit
+//               fixed-point system; floating-point values are to be
+//               multiplied by this value before encoding into a
+//               packet, and divided by this number after decoding.
+//
+//               This method is deprecated; use get_element_type_obj()
+//               instead.
+////////////////////////////////////////////////////////////////////
+int DCAtomicField::
+get_element_divisor(int n) const {
+  nassertr(n >= 0 && n < (int)_elements.size(), 1);
+  DCSimpleType *simple_type = _elements[n]._type->as_simple_type();
+  nassertr(simple_type != (DCSimpleType *)NULL, 1);
+  return simple_type->get_divisor();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1030,8 +402,7 @@ generate_hash(HashGenerator &hashgen) const {
   Elements::const_iterator ei;
   for (ei = _elements.begin(); ei != _elements.end(); ++ei) {
     const ElementType &element = (*ei);
-    hashgen.add_int(element._type);
-    hashgen.add_int(element._divisor);
+    element._type->generate_hash(hashgen);
   }
   hashgen.add_int(_flags);
 }
@@ -1060,7 +431,7 @@ do_pack_args(Datagram &datagram, PyObject *tuple, int &index) const {
     }
     PyObject *item = PySequence_GetItem(tuple, index);
     index++;
-    element.pack_arg(datagram, item);
+    element._type->pack_arg(datagram, item);
     Py_DECREF(item);
   }
 
@@ -1083,7 +454,7 @@ do_unpack_args(pvector<PyObject *> &args, DatagramIterator &iterator) const {
   Elements::const_iterator ei;
   for (ei = _elements.begin(); ei != _elements.end(); ++ei) {
     const ElementType &element = (*ei);
-    PyObject *item = element.unpack_arg(iterator);
+    PyObject *item = element._type->unpack_arg(iterator);
     if (item == (PyObject *)NULL) {
       // Ran out of datagram bytes.
       return false;

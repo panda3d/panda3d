@@ -54,6 +54,12 @@ public:
   // definition as read from the file.
   typedef pvector<DCAtomicField *> Fields;
   Fields _fields;
+
+private:
+  DCType *get_next_pack_element();
+
+  size_t _pack_field_index;
+  size_t _pack_element_index;
 };
 
 #endif

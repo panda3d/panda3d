@@ -49,6 +49,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <sstream>
 
 #include <string>
 #include <assert.h>
@@ -64,6 +65,8 @@
 #endif
 
 using namespace std;
+
+#define INLINE inline
 
 // These symbols are used within the Panda environment for exporting
 // classes and functions to the scripting language.  They're largely
@@ -98,6 +101,14 @@ typedef string Filename;
 #include <map>
 #define pvector vector
 #define pmap map
+
+#ifdef WIN32
+typedef __int64 PN_int64;
+typedef unsigned __int64 PN_uint64;
+#else
+typedef long long PN_int64;
+typedef unsigned long long PN_uint64;
+#endif
 
 #endif  // WITHIN_PANDA
 

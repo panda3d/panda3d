@@ -17,12 +17,22 @@
   #define SOURCES \
      dcAtomicField.h dcClass.h dcField.h dcFile.h dcLexer.lxx  \
      dcLexerDefs.h dcMolecularField.h dcParser.yxx dcParserDefs.h  \
-     dcSubatomicType.h dcbase.h dcindent.h hashGenerator.h  \
+     dcSubatomicType.h \
+     dcPackData.h dcPackData.I \
+     dcPacker.h dcPacker.I \
+     dcPackerInterface.h \
+     dcType.h dcSimpleType.h \
+     dcbase.h dcindent.h hashGenerator.h  \
      primeNumberGenerator.h  
 
   #define INCLUDED_SOURCES \
      dcAtomicField.cxx dcClass.cxx dcField.cxx dcFile.cxx \
-     dcMolecularField.cxx dcSubatomicType.cxx dcindent.cxx  \
+     dcMolecularField.cxx dcSubatomicType.cxx \
+     dcPackData.cxx \
+     dcPacker.cxx \
+     dcPackerInterface.cxx \
+     dcType.cxx dcSimpleType.cxx \
+     dcindent.cxx  \
      hashGenerator.cxx primeNumberGenerator.cxx 
 
   #define IGATESCAN all

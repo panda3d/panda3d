@@ -1,4 +1,6 @@
 
+#include "dcType.cxx"
+#include "dcSimpleType.cxx"
 #include "dcField.cxx"
 #include "dcFile.cxx"
 #include "dcMolecularField.cxx"

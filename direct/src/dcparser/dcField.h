@@ -20,6 +20,7 @@
 #define DCFIELD_H
 
 #include "dcbase.h"
+#include "dcPackerInterface.h"
 
 #ifdef HAVE_PYTHON
 
@@ -41,7 +42,7 @@ class HashGenerator;
 // Description : A single field of a Distributed Class, either atomic
 //               or molecular.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DIRECT DCField {
+class EXPCL_DIRECT DCField : public DCPackerInterface {
 PUBLISHED:
   int get_number() const;
   const string &get_name() const;

@@ -22,6 +22,7 @@
 #include "dcbase.h"
 #include "dcField.h"
 #include "dcSubatomicType.h"
+#include "dcType.h"
 
 // Must use math.h instead of cmath.h so this can compile outside of
 // Panda.
@@ -39,11 +40,14 @@ PUBLISHED:
   virtual DCAtomicField *as_atomic_field();
 
   int get_num_elements() const;
-  DCSubatomicType get_element_type(int n) const;
+  DCType *get_element_type_obj(int n) const;
   string get_element_name(int n) const;
-  int get_element_divisor(int n) const;
   string get_element_default(int n) const;
   bool has_element_default(int n) const;
+
+  // These two methods are deprecated and will be removed soon.
+  DCSubatomicType get_element_type(int n) const;
+  int get_element_divisor(int n) const;
 
   bool is_required() const;
   bool is_broadcast() const;
@@ -71,32 +75,19 @@ public:
   // definition as read from the file.
   class ElementType {
   public:
-    ElementType();
-    bool set_default_value(double num);
-    bool set_default_value(const string &str);
-    bool set_default_value_literal(const string &str);
+    ElementType(DCType *type);
+    ElementType(const ElementType &copy);
+    void operator = (const ElementType &copy);
+    ~ElementType();
 
-    bool add_default_value(double num);
-    bool add_default_value(const string &str);
-    bool add_default_value_literal(const string &str);
-    bool end_array();
+    void set_default_value(const string &default_value);
 
     void output(ostream &out, bool brief) const;
 
-#ifdef HAVE_PYTHON
-    void pack_arg(Datagram &datagram, PyObject *item, DCSubatomicType = ST_invalid) const;
-    PyObject *unpack_arg(DatagramIterator &iterator, DCSubatomicType = ST_invalid) const;
-#endif
-
-    DCSubatomicType _type;
+    DCType *_type;
     string _name;
-    int _divisor;
     string _default_value;
     bool _has_default_value;
-
-  private:
-    bool format_default_value(double num, string &formatted) const;
-    bool format_default_value(const string &str, string &formatted) const;
   };
 
   typedef pvector<ElementType> Elements;
@@ -115,6 +106,7 @@ public:
   };
 
   int _flags;  // A bitmask union of any of the above values.
+  size_t _pack_index;
 };
 
 #endif

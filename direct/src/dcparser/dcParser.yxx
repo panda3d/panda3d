@@ -10,6 +10,8 @@
 #include "dcClass.h"
 #include "dcAtomicField.h"
 #include "dcMolecularField.h"
+#include "dcSimpleType.h"
+#include "dcPacker.h"
 
 // Because our token type contains objects of type string, which
 // require correct copy construction (and not simply memcpying), we
@@ -23,7 +25,8 @@ static DCFile *dc_file = (DCFile *)NULL;
 static DCClass *current_class = (DCClass *)NULL;
 static DCAtomicField *current_atomic = (DCAtomicField *)NULL;
 static DCMolecularField *current_molecular = (DCMolecularField *)NULL;
-static DCAtomicField::ElementType atomic_element;
+static DCAtomicField::ElementType atomic_element(new DCSimpleType(ST_invalid));
+static DCPacker default_value_packer;
 
 ////////////////////////////////////////////////////////////////////
 // Defining the interface to the parser.
@@ -241,8 +244,7 @@ nonempty_parameter_list:
 atomic_element:
         type_token 
 {
-  atomic_element = DCAtomicField::ElementType();
-  atomic_element._type = $1;
+  atomic_element = DCAtomicField::ElementType(new DCSimpleType($1));
 }
         atomic_element_definition
 {
@@ -254,42 +256,73 @@ atomic_element_definition:
         empty
         | atomic_element_definition '/' INTEGER
 {
-  atomic_element._divisor = $3;
+  if (atomic_element._type->as_simple_type() == NULL) {
+    yyerror("Invalid divisor on complex type");
+
+  } else {
+    atomic_element._type->as_simple_type()->set_divisor($3);
+  }
 }
         | atomic_element_definition IDENTIFIER
 {
   atomic_element._name = $2;
 }
-        | atomic_element_definition '=' INTEGER
+        | atomic_element_definition '='
 {
-  if (!atomic_element.set_default_value($3)) {
-    yyerror("Invalid default value: " + $<str>3);
-  }
+  default_value_packer.begin(atomic_element._type);
 }
-        | atomic_element_definition '=' REAL
+	default_value
 {
-  if (!atomic_element.set_default_value($3)) {
-    yyerror("Invalid default value: " + $<str>3);
-  }
-}
-        | atomic_element_definition '=' STRING
-{
-  if (!atomic_element.set_default_value($3)) {
-    yyerror("Invalid default value: \"" + $3 + "\"");
-  }
-}
-        | atomic_element_definition '=' HEX_STRING
-{
-  if (!atomic_element.set_default_value_literal($3)) {
-    yyerror("Invalid default hex string value");
-  }
-}
-        | atomic_element_definition '=' '{' default_array '}'
-{
-  if (!atomic_element.end_array()) {
-    yyerror("Array default value inappropriate");
+  if (!default_value_packer.end()) {
+    yyerror("Invalid default value for type");
+
   } else {
-    atomic_element._has_default_value = true;
+    atomic_element.set_default_value(default_value_packer.get_string());
+  }
+}
+	;
+
+default_value:
+	INTEGER
+{
+  default_value_packer.pack_value($1);
+}
+        | REAL
+{
+  default_value_packer.pack_value($1);
+}
+        | STRING
+{
+  default_value_packer.pack_value($1);
+}
+        | HEX_STRING
+{
+  default_value_packer.pack_literal_value($1);
+}
+        | '{' 
+{
+  default_value_packer.push();
+}
+        default_array '}'
+{
+  default_value_packer.pop();
+}
+        | INTEGER '*' INTEGER
+{
+  for (int i = 0; i < $3; i++) {
+    default_value_packer.pack_value($1);
+  }
+}
+        | REAL '*' INTEGER
+{
+  for (int i = 0; i < $3; i++) {
+    default_value_packer.pack_value($1);
+  }
+}
+        | HEX_STRING '*' INTEGER
+{
+  for (int i = 0; i < $3; i++) {
+    default_value_packer.pack_literal_value($1);
   }
 }
         ;
@@ -305,63 +338,9 @@ maybe_comma:
         ;
 
 default_array_def:
-        default_array_element
-        | default_array_def ',' default_array_element
+        default_value
+        | default_array_def ',' default_value
         ;
-
-default_array_element:
-        INTEGER
-{
-  if (!atomic_element.add_default_value($1)) {
-    yyerror("Invalid default value: " + $<str>1);
-  }
-}
-        | REAL
-{
-  if (!atomic_element.add_default_value($1)) {
-    yyerror("Invalid default value: " + $<str>1);
-  }
-}
-        | STRING
-{
-  if (!atomic_element.add_default_value($1)) {
-    yyerror("Invalid default value: " + $<str>1);
-  }
-}
-        | HEX_STRING
-{
-  if (!atomic_element.add_default_value_literal($1)) {
-    yyerror("Invalid hex literal in default array");
-  }
-}
-        | INTEGER '*' INTEGER
-{
-  for (int i = 0; i < $3; i++) {
-    if (!atomic_element.add_default_value($1)) {
-      yyerror("Invalid default value: " + $<str>1);
-      break;
-    }
-  }
-}
-        | REAL '*' INTEGER
-{
-  for (int i = 0; i < $3; i++) {
-    if (!atomic_element.add_default_value($1)) {
-      yyerror("Invalid default value: " + $<str>1);
-      break;
-    }
-  }
-}
-        | HEX_STRING '*' INTEGER
-{
-  for (int i = 0; i < $3; i++) {
-    if (!atomic_element.add_default_value_literal($1)) {
-      yyerror("Invalid hex literal in default array");
-      break;
-    }
-  }
-}
-        ;  
 
 type_token:
         KW_INT8
