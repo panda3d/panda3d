@@ -240,6 +240,6 @@ Step 11: Build $TOONTOWN
 
 Step 12: Generate Python Code
   > cd $DIRECT/bin
-  > ppython generatePythonCode
-  # Follow instructions presented there
+  > genPyCode win-debug (if you have built using OPTIMIZE = 1 or 2)
+  > genPyCode win-release (if you have built using OPTIMIZE = 3 or 4)
 
