@@ -79,7 +79,9 @@ record_current_state(GraphicsStateGuardian *, CullState *cs, int,
 ////////////////////////////////////////////////////////////////////
 void GeomBinUnsorted::
 draw(CullTraverser *trav) {
-  PStatTimer timer(CullTraverser::_draw_pcollector);
+  //  PStatTimer timer(CullTraverser::_draw_pcollector);
+  // Using the PStatTimer may cause a compiler fault.
+  CullTraverser::_draw_pcollector.start();
 
   GraphicsStateGuardian *gsg = trav->get_gsg();
 
@@ -124,6 +126,7 @@ draw(CullTraverser *trav) {
       trav->draw_direct(arc_chain, cs->get_attributes());
     }
   }
+  CullTraverser::_draw_pcollector.stop();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -51,7 +51,9 @@ clear_current_states() {
 void GeomBinBackToFront::
 record_current_state(GraphicsStateGuardian *gsg, CullState *cs, int,
                      CullTraverser *trav) {
-  PStatTimer timer(CullTraverser::_cull_bins_btf_pcollector);
+  //  PStatTimer timer(CullTraverser::_cull_bins_btf_pcollector);
+  // Using the PStatTimer may cause a compiler fault.
+  CullTraverser::_cull_bins_btf_pcollector.start();
 
   // Get the transform matrix from the state.
   TransformTransition *trans_attrib = NULL;
@@ -141,6 +143,8 @@ record_current_state(GraphicsStateGuardian *gsg, CullState *cs, int,
 
     _node_entries.insert(NodeEntry(distance, cs, arc_chain, true));
   }
+
+  CullTraverser::_cull_bins_btf_pcollector.stop();
 }
 
 ////////////////////////////////////////////////////////////////////
