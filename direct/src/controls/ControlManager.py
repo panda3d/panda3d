@@ -138,6 +138,13 @@ class ControlManager:
         for controls in self.controls.values():
             controls.setWalkSpeed(
                 forwardSpeed, jumpForce, reverseSpeed, rotateSpeed)
+
+    def delete(self):
+        assert self.notify.debugCall(id(self))
+        self.disable()
+        del self.controls
+        del self.currentControls
+        #self.monitorTask.remove()
     
     def getSpeeds(self):
         return self.currentControls.getSpeeds()
