@@ -107,9 +107,9 @@ class ForceGroup(DirectObject):
 		    	ftype = 'FTONEOVERRCUBED'
 		    forceCenter = f.getForceCenter()
 		    if isinstance(f, LinearSinkForce):
-			file.write(fname + ' = LinearSinkForce(Vec3(%.4f, %.4f, %.4f), LinearDistanceForce.%s, %.4f, %.4f, %d)\n' % (forceCenter[0], forceCenter[1], forceCenter[2], ftype, radius, amplitude, massDependent))
+			file.write(fname + ' = LinearSinkForce(Point3(%.4f, %.4f, %.4f), LinearDistanceForce.%s, %.4f, %.4f, %d)\n' % (forceCenter[0], forceCenter[1], forceCenter[2], ftype, radius, amplitude, massDependent))
 		    elif isinstance(f, LinearSourceForce):
-			file.write(fname + ' = LinearSourceForce(Vec3(%.4f, %.4f, %.4f), LinearDistanceForce.%s, %.4f, %.4f, %d)\n' % (forceCenter[0], forceCenter[1], forceCenter[2], ftype, radius, amplitude, massDependent))
+			file.write(fname + ' = LinearSourceForce(Point3(%.4f, %.4f, %.4f), LinearDistanceForce.%s, %.4f, %.4f, %d)\n' % (forceCenter[0], forceCenter[1], forceCenter[2], ftype, radius, amplitude, massDependent))
 		elif isinstance(f, LinearFrictionForce):
 		    file.write(fname + ' = LinearFrictionForce(%.4f, %.4f, %d)\n' % (f.getCoef(), amplitude, massDependent))
 		elif isinstance(f, LinearJitterForce):
@@ -117,7 +117,7 @@ class ForceGroup(DirectObject):
 		elif isinstance(f, LinearNoiseForce):
 		    file.write(fname + ' = LinearNoiseForce(%.4f, %d)\n' % (amplitude, massDependent))
 		elif isinstance(f, LinearVectorForce):
-		    vec = f.getVector()
+		    vec = f.getLocalVector()
 		    file.write(fname + ' = LinearVectorForce(Vec3(%.4f, %.4f, %.4f), %.4f, %d)\n' % (vec[0], vec[1], vec[2], amplitude, massDependent))
 	    elif isinstance(f, AngularForce):
 		if isinstance(f, AngularVectorForce):

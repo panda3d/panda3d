@@ -975,6 +975,12 @@ class ParticlePanel(AppShell):
             title = 'Load Particle Effect',
             parent = self.parent)
         if particleFilename:
+            # Delete existing particles and forces
+            pe = self.particleEffect
+            for p in pe.getParticlesList():
+                pe.removeParticles(p)
+            for fg in pe.getForceGroupList():
+                pe.removeForceGroup(fg)
             self.particleEffect.loadConfig(Filename(particleFilename))
             self.selectEffectNamed(self.particleEffect.getName())
 
@@ -1718,7 +1724,7 @@ class ParticlePanel(AppShell):
         forceName = 'Vector Force-' + `count`
         frame = self.createForceFrame(forcePage, forceName, force)
         self.createLinearForceWidgets(frame, pageName, forceName, force)
-        vec = force.getVector()
+        vec = force.getLocalVector()
         self.createVector3Entry(frame, pageName, forceName,
                                 'Set force direction and magnitude',
                                 command = setVec,

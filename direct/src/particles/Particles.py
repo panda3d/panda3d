@@ -200,8 +200,24 @@ class Particles(ParticleSystem.ParticleSystem):
 	file.write(targ + '.setRenderer(\"' + self.rendererType + '\")\n')
 	file.write(targ + '.setEmitter(\"' + self.emitterType + '\")\n')
 
+        # System parameters
+        file.write(targ + ('.setPoolSize(%d)\n' %
+                           int(self.getPoolSize())))
+        file.write(targ + ('.setBirthRate(%.4f)\n' %
+                           self.getBirthRate()))
+        file.write(targ + ('.setLitterSize(%d)\n' %
+                           int(self.getLitterSize())))
+        file.write(targ + ('.setLitterSpread(%d)\n' %
+                           self.getLitterSpread()))
+        file.write(targ + ('.setSystemLifespan(%.4f)\n' %
+                           self.getSystemLifespan()))
+        file.write(targ + ('.setLocalVelocityFlag(%d)\n' %
+                           self.getLocalVelocityFlag()))
+        file.write(targ + ('.setSystemGrowsOlderFlag(%d)\n' %
+                           self.getSystemGrowsOlderFlag()))
 	file.write('# Factory parameters\n')
-	file.write(targ + '.factory.setLifespanBase(%.4f)\n' % self.factory.getLifespanBase())
+	file.write(targ + ('.factory.setLifespanBase(%.4f)\n' %
+                           self.factory.getLifespanBase()))
 	file.write(targ + '.factory.setLifespanSpread(%.4f)\n' % self.factory.getLifespanSpread())
 	file.write(targ + '.factory.setMassBase(%.4f)\n' % self.factory.getMassBase())
 	file.write(targ + '.factory.setMassSpread(%.4f)\n' % self.factory.getMassSpread())

@@ -133,6 +133,16 @@ class ParticleEffect(NodePath):
 	f.write('self.particlesDict = {}\n')
 	f.write('self.forceGroupDict = {}\n')
 
+        pos = self.getPos()
+        hpr = self.getHpr()
+        scale = self.getScale()
+        f.write('self.setPos(%0.3f, %0.3f, %0.3f)\n' %
+                (pos[0], pos[1], pos[2]))
+        f.write('self.setHpr(%0.3f, %0.3f, %0.3f)\n' %
+                (hpr[0], hpr[1], hpr[2]))
+        f.write('self.setScale(%0.3f, %0.3f, %0.3f)\n' %
+                (scale[0], scale[1], scale[2]))
+
         # Save all the particles to file
 	num = 0
 	for p in self.particlesDict.values():
