@@ -38,20 +38,20 @@ MouseWatcherGroup::
 //               added, or false if it was already on the list.
 ////////////////////////////////////////////////////////////////////
 bool MouseWatcherGroup::
-add_region(PT(MouseWatcherRegion) region) {
+add_region(MouseWatcherRegion *region) {
   //return _regions.insert(region).second;
 
   // See if the region is in the set/vector already
-  Regions::const_iterator ri = find(_regions.begin(), 
-                                    _regions.end(), 
-                                    region);
+  PT(MouseWatcherRegion) pt = region;
+  Regions::const_iterator ri = 
+    find(_regions.begin(), _regions.end(), pt);
   if (ri != _regions.end()) {
     // Already in the set, return false
     return false;
   }
 
   // Not in the set, add it and return true
-  _regions.push_back(region);
+  _regions.push_back(pt);
   return true;
 }
 
@@ -62,11 +62,11 @@ add_region(PT(MouseWatcherRegion) region) {
 //               added to the MouseWatcherGroup, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool MouseWatcherGroup::
-has_region(PT(MouseWatcherRegion) region) const {
+has_region(MouseWatcherRegion *region) const {
   // See if the region is in the set/vector
-  Regions::const_iterator ri = find(_regions.begin(),
-                              _regions.end(),
-                              region);
+  PT(MouseWatcherRegion) pt = region;
+  Regions::const_iterator ri = 
+    find(_regions.begin(), _regions.end(), pt);
   if (ri != _regions.end()) {
     // Found it
     return true;
@@ -83,13 +83,13 @@ has_region(PT(MouseWatcherRegion) region) const {
 //               if it wasn't there in the first place.
 ////////////////////////////////////////////////////////////////////
 bool MouseWatcherGroup::
-remove_region(PT(MouseWatcherRegion) region) {
+remove_region(MouseWatcherRegion *region) {
   //return _regions.erase(region) != 0;
 
   // See if the region is in the set/vector
-  Regions::iterator ri = find(_regions.begin(),
-                              _regions.end(),
-                              region);
+  PT(MouseWatcherRegion) pt = region;
+  Regions::iterator ri = 
+    find(_regions.begin(), _regions.end(), pt);
   if (ri != _regions.end()) {
     // Found it, now erase it
     _regions.erase(ri);

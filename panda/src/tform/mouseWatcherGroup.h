@@ -36,9 +36,9 @@ public:
   virtual ~MouseWatcherGroup();
 
 PUBLISHED:
-  bool add_region(PT(MouseWatcherRegion) region);
-  bool has_region(PT(MouseWatcherRegion) region) const;
-  bool remove_region(PT(MouseWatcherRegion) region);
+  bool add_region(MouseWatcherRegion *region);
+  bool has_region(MouseWatcherRegion *region) const;
+  bool remove_region(MouseWatcherRegion *region);
   MouseWatcherRegion *find_region(const string &name) const;
   void clear_regions();
 
