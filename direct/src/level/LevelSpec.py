@@ -111,9 +111,6 @@ class LevelSpec:
         # if it's a zone, this is our entity
         if type == 'zone':
             return entId
-        # if we have no parentEntId, assume we're in the UberZone
-        if not spec.has_key('parentEntId'):
-            return LevelConstants.UberZoneEntId
         # keep looking up the heirarchy for a zone entity
         return self.getEntityZoneEntId(spec['parentEntId'])
 
@@ -188,8 +185,7 @@ class LevelSpec:
             for name, desc in attribDescs.items():
                 spec[name] = desc.getDefaultValue()
             spec['type'] = entType
-            if 'parentEntId' in spec:
-                spec['parentEntId'] = parentEntId
+            spec['parentEntId'] = parentEntId
 
             if self.hasLevel():
                 # notify the level

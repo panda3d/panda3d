@@ -195,6 +195,8 @@ class Level:
             entity.setAttribInit(key, value)
 
         # entity is initialized, add it to the list of entities
+        # if this assert fails, check distributed entities to make sure
+        # they're calling down to Entity.destroy
         assert not entId in self.entities
         self.entities[entId] = entity
 
@@ -214,8 +216,21 @@ class Level:
 
     def getEntityZoneId(self, entId):
         """return network zoneId of zone that contains the entity"""
+        # this is called during entity creation on the AI; we have to
+        # handle this carefully, since the information required to
+        # produce a zoneId is not available until the level's zone
+        # entities have been instantiated.
         zoneEntId = self.getEntityZoneEntId(entId)
-        return self.zoneEntId2zoneId[entId]
+        # fundamental entities (levelMgr) are responsible for creating
+        # tables like 'zoneEntId2zoneId'; if those tables haven't been
+        # created yet, just return None
+        if not hasattr(self, 'zoneNum2zoneId'):
+            return None
+        # this might return None if all of our zone entities haven't
+        # been created yet. this could be a problem if zone entities
+        # are ever distributed. it also means that no distributed entities
+        # should be created before the zone entities.
+        return self.zoneEntId2zoneId.get(zoneEntId)
 
     def getZoneId(self, dummy=None, zoneNum=None, entId=None):
         """look up network zoneId by zoneNum or entId"""

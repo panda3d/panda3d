@@ -10,6 +10,7 @@ import LevelMgr
 import ZoneEntity
 import ModelEntity
 import PathEntity
+import VisibilityExtender
 
 # some useful constructor functions
 # ctor functions must take (level, entId)
@@ -37,6 +38,7 @@ class EntityCreator(EntityCreatorBase.EntityCreatorBase):
             'model' : ModelEntity.ModelEntity,
             'nodepath': BasicEntities.NodePathEntity,
             'path' : PathEntity.PathEntity,
+            'visibilityExtender': VisibilityExtender.VisibilityExtender,
             'zone': ZoneEntity.ZoneEntity,
             })
 

@@ -330,7 +330,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
     
     def showZone(self, zoneNum):
         zone = self.zoneNum2node[zoneNum]
-        zone.show()
+        zone.unstash()
         zone.clearColor()
 
     def setColorZones(self, fColorZones):
@@ -339,10 +339,10 @@ class DistributedLevel(DistributedObject.DistributedObject,
     def hideZone(self, zoneNum):
         zone = self.zoneNum2node[zoneNum]
         if self.fColorZones:
-            zone.show()
+            zone.unstash()
             zone.setColor(1,0,0)
         else:
-            zone.hide()
+            zone.stash()
 
     def setTransparency(self, alpha, zone=None):
         self.geom.setTransparency(1)
@@ -418,10 +418,10 @@ class DistributedLevel(DistributedObject.DistributedObject,
             zoneNum = self.curZoneNum
             
         zoneEntId = self.zoneNum2entId[zoneNum]
-        zoneSpec = self.levelSpec.getEntitySpec(zoneEntId)
+        zoneEnt = self.getEntity(zoneEntId)
         # use dicts to efficiently ensure that there are no duplicates
         visibleZoneNums = list2dict([zoneNum])
-        visibleZoneNums.update(list2dict(zoneSpec['visibility']))
+        visibleZoneNums.update(list2dict(zoneEnt.getVisibleZoneNums()))
 
         # we should not have the uberZone in the list at this point
         assert not 0 in visibleZoneNums

@@ -52,6 +52,7 @@ class EntityCreatorAI(EntityCreatorBase.EntityCreatorBase):
             'model' : nothing,
             'nodepath': nothing,
             'path': nothing,
+            'visibilityExtender': nothing,
             'zone': Functor(cLE, ZoneEntityAI.ZoneEntityAI),
             })
 

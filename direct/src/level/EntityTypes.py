@@ -10,6 +10,7 @@ class Entity(EntityTypeDesc):
         ('type', None),
         ('name', '<unnamed>', 'string'),
         ('comment', '', 'string'),
+        ('parentEntId', 0, 'entId', {'type':'nodepath'}),
         )
 
 class LevelMgr(Entity):
@@ -39,7 +40,6 @@ class EditMgr(Entity):
 class Nodepath(Entity):
     type = 'nodepath'
     attribs = (
-        ('parentEntId', 0, 'entId', {'type':'nodepath'}),
         ('pos', Point3(0,0,0), 'pos'),
         ('hpr', Vec3(0,0,0), 'hpr'),
         )
@@ -48,7 +48,6 @@ class Zone(Nodepath):
     type = 'zone'
     permanent = 1
     delAttribs = (
-        'parentEntId',
         'pos',
         'hpr',
         )
@@ -101,4 +100,10 @@ class Path(Nodepath):
         ('scale', 1, 'pos'),
         ('pathIndex', 0, 'int'),
         )
-    
+
+class VisibilityExtender(Entity):
+    type = 'visibilityExtender'
+    attribs = (
+        ('event', None, 'entId', {'output':'bool'}),
+        ('newZones', [], 'visZoneList'),
+        )

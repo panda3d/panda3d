@@ -83,27 +83,6 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         Inheritors, override if desired."""
         return EntityCreatorAI.EntityCreatorAI(level=self)
 
-    def getEntityZoneId(self, entId):
-        """figure out what network zoneId an entity is in"""
-        # this func is called before the entity has been created; look
-        # into the spec data, since we can't yet get a handle on the
-        # object itself at this point
-        spec = self.levelSpec.getEntitySpec(entId)
-        type = spec['type']
-        if type == 'zone':
-            if not hasattr(self, 'zoneNum2zoneId'):
-                # we haven't even started creating our zone entities yet;
-                # we have no idea yet which zoneNums map to which
-                # network zoneIds. just return None.
-                return None
-            # If the entity *is* the zone, it will not yet be in the
-            # table; but since zone entities are currently not distributed,
-            # it's fine to return None.
-            return self.zoneNum2zoneId.get(spec['modelZoneNum'])
-        if not spec.has_key('parentEntId'):
-            return None
-        return self.getEntityZoneId(spec['parentEntId'])
-
     if __debug__:
         # level editors should call this func to tweak attributes of level
         # entities
