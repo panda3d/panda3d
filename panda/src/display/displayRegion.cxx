@@ -68,7 +68,7 @@ DisplayRegion(GraphicsLayer *layer, const float l,
 DisplayRegion::
 DisplayRegion(int xsize, int ysize) :
   _l(0.), _r(1.), _b(0.), _t(1.),
-  _pl(0), _pr(xsize), _pb(0), _pt(ysize),
+  _pl(0), _pr(xsize), _pb(0), _pt(ysize), _pbi(ysize), _pti(0),
   _layer((GraphicsLayer *)NULL),
   _camera_node((Camera *)NULL),
   _active(true)
@@ -384,6 +384,23 @@ get_region_pixels(int &xo, int &yo, int &w, int &h) const {
   yo = _pb;
   w = _pr - _pl;
   h = _pt - _pb;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_region_pixels_i
+//       Access: Published
+//  Description: Similar to get_region_pixels(), but returns the upper
+//               left corner, and the pixel numbers are numbered from
+//               the top-left corner down, in the DirectX way of
+//               things.
+////////////////////////////////////////////////////////////////////
+void DisplayRegion::
+get_region_pixels_i(int &xo, int &yo, int &w, int &h) const {
+  MutexHolder holder(_lock);
+  xo = _pl;
+  yo = _pti;
+  w = _pr - _pl;
+  h = _pbi - _pti;
 }
 
 ////////////////////////////////////////////////////////////////////

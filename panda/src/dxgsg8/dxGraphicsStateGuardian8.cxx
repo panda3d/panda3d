@@ -990,17 +990,18 @@ prepare_display_region() {
   } else if (_current_display_region != _actual_display_region) {
     _actual_display_region = _current_display_region;
     
-    int l, b, w, h;
-    _actual_display_region->get_region_pixels(l, b, w, h);
+    int l, u, w, h;
+    _actual_display_region->get_region_pixels_i(l, u, w, h);
 
     // Create the viewport
-    D3DVIEWPORT8 vp = {l,b,w,h,0.0f,1.0f};
+    D3DVIEWPORT8 vp = { l, u, w, h, 0.0f, 1.0f };
     HRESULT hr = _pD3DDevice->SetViewport( &vp );
     if (FAILED(hr)) {
       dxgsg8_cat.error()
-        << "SetViewport(" << l << ", " << b << ", " << w << ", " << h
+        << "SetViewport(" << l << ", " << u << ", " << w << ", " << h
         << ") failed" << D3DERRORSTRING(hr);
       throw_event("panda3d-render-error");
+      nassertv(false);
     }
     // Note: for DX9, also change scissor clipping state here
   }

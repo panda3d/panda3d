@@ -40,6 +40,8 @@ do_compute_pixels(int x_size, int y_size) {
   _pr = int((_r * x_size) + 0.5);
   _pb = int((_b * y_size) + 0.5);
   _pt = int((_t * y_size) + 0.5);
+  _pbi = int(((1.0f - _b) * y_size) + 0.5);
+  _pti = int(((1.0f - _t) * y_size) + 0.5);
 }
 
 

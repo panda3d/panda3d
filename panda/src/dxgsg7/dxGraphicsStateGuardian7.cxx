@@ -761,19 +761,15 @@ prepare_display_region() {
   } else if (_current_display_region != _actual_display_region) {
     _actual_display_region = _current_display_region;
 
-    int l, b, w, h;
-    _actual_display_region->get_region_pixels(l, b, w, h);
+    int l, u, w, h;
+    _actual_display_region->get_region_pixels_i(l, u, w, h);
 
     // Create the viewport
-    D3DVIEWPORT7 vp = {
-      l, b,
-      w, h, 
-      0.0f, 1.0f
-    };
+    D3DVIEWPORT7 vp = { l, u, w, h, 0.0f, 1.0f };
     HRESULT hr = _pScrn->pD3DDevice->SetViewport(&vp);
     if (FAILED(hr)) {
       dxgsg7_cat.error()
-        << "SetViewport(" << l << ", " << b << ", " << w << ", " << h
+        << "SetViewport(" << l << ", " << u << ", " << w << ", " << h
         << ") failed : result = " << ConvD3DErrorToString(hr)
         << endl;
       throw_event("panda3d-render-error"); 

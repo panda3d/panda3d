@@ -77,6 +77,7 @@ PUBLISHED:
   void compute_pixels(int x_size, int y_size);
   void get_pixels(int &pl, int &pr, int &pb, int &pt) const;
   void get_region_pixels(int &xo, int &yo, int &w, int &h) const;
+  void get_region_pixels_i(int &xo, int &yo, int &w, int &h) const;
 
   int get_pixel_width() const;
   int get_pixel_height() const;
@@ -97,6 +98,8 @@ private:
   int _pr;
   int _pb;
   int _pt;
+  int _pbi;
+  int _pti;
 
   GraphicsLayer *_layer;
   NodePath _camera;
