@@ -48,6 +48,9 @@ extern "C" {
  * without express or implied warranty.
  *
  * $Log$
+ * Revision 1.6  2001/08/02 21:26:39  drose
+ * fix bmp-bpp when requested size is too small
+ *
  * Revision 1.5  2001/08/02 20:01:58  drose
  * add bmp-bpp
  *
@@ -459,9 +462,15 @@ BMPEncode(
         unsigned long   nbyte = 0;
 
         bpp = bmp_bpp;
+        int needs_bpp = colorstobpp(colors);
+        if (bpp != 0 && bpp < needs_bpp) {
+          pnmimage_bmp_cat.info()
+            << "too many colors for " << bmp_bpp << "-bit image.\n";
+          bpp = 0;
+        }
 
         if (bpp == 0) {
-          bpp = colorstobpp(colors);
+          bpp = needs_bpp;
 
           /*
            * I have found empirically at least one BMP-displaying program
@@ -487,7 +496,8 @@ BMPEncode(
             }
         }
 
-        pm_message("Using %d bits per pixel", bpp);
+        pnmimage_bmp_cat.info()
+          << "Using " << bpp << " bits per pixel.\n";
 
         nbyte += BMPwritefileheader(fp, classv, bpp, x, y);
         nbyte += BMPwriteinfoheader(fp, classv, bpp, x, y);
@@ -521,7 +531,8 @@ BMPEncode24(
         unsigned long   nbyte = 0;
         int             bpp = 24;
 
-        pm_message("Using %d bits per pixel", bpp);
+        pnmimage_bmp_cat.info()
+          << "Using " << bpp << " bits per pixel.\n";
 
         nbyte += BMPwritefileheader(fp, classv, bpp, x, y);
         nbyte += BMPwriteinfoheader(fp, classv, bpp, x, y);
@@ -624,8 +635,11 @@ write_data(xel *array, xelval *) {
     BMPEncode24(_file, classv, _x_size, _y_size, pixels);
 
   } else if (chv == (colorhist_vector) 0) {
-    pnmimage_bmp_cat.debug()
-      << "too many colors; generating 24-bit BMP file\n";
+    if (bmp_bpp != 0) {
+      // Even though we asked for fewer bits, we have to settle for 24-bit.
+      pnmimage_bmp_cat.info()
+        << "too many colors for " << bmp_bpp << "-bit image.\n";
+    }
 
     BMPEncode24(_file, classv, _x_size, _y_size, pixels);
 
