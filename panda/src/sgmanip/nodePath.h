@@ -306,6 +306,11 @@ PUBLISHED:
   INLINE void heads_up(float x, float y, float z);
   void heads_up(const LPoint3f &point, const LVector3f &up = LVector3f::up());
 
+  INLINE void look_at_preserve_scale(float x, float y, float z);
+  void look_at_preserve_scale(const LPoint3f &point, const LVector3f &up = LVector3f::up());
+  INLINE void heads_up_preserve_scale(float x, float y, float z);
+  void heads_up_preserve_scale(const LPoint3f &point, const LVector3f &up = LVector3f::up());
+
   INLINE void print_pos() const;
   INLINE void print_hpr() const;
   INLINE void print_scale() const;
@@ -375,6 +380,17 @@ PUBLISHED:
   void heads_up(const NodePath &other, 
 		const LPoint3f &point = LPoint3f(0.0, 0.0, 0.0),
 		const LVector3f &up = LVector3f::up());
+
+  INLINE void look_at_preserve_scale(const NodePath &other, 
+				     float x, float y, float z);
+  void look_at_preserve_scale(const NodePath &other, 
+			      const LPoint3f &point = LPoint3f(0.0, 0.0, 0.0),
+			      const LVector3f &up = LVector3f::up());
+  INLINE void heads_up_preserve_scale(const NodePath &other, 
+				      float x, float y, float z);
+  void heads_up_preserve_scale(const NodePath &other, 
+			       const LPoint3f &point = LPoint3f(0.0, 0.0, 0.0),
+			       const LVector3f &up = LVector3f::up());
 
   INLINE void print_pos(const NodePath &other) const;
   INLINE void print_hpr(const NodePath &other) const;

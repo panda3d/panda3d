@@ -1287,9 +1287,19 @@ LVecBase3f NodePath::
 get_scale() const {
   nassertr(has_arcs(), LVecBase3f(1.0, 1.0, 1.0));
   LMatrix4f mat = get_mat();
-  LVecBase3f scale, hpr, pos;
-  decompose_matrix(mat, scale, hpr, pos);
-  return scale;
+
+  // We decompose the scale directly instead of calling
+  // decompose_matrix(), since we don't care about the hpr and don't
+  // need to go through all the work of unrolling the axes.
+
+  // Extract the axes from the matrix.
+  LVector3f x, y, z;
+  x = mat.get_row3(0);
+  y = mat.get_row3(1);
+  z = mat.get_row3(2);
+
+  // Now return the lengths of these axes as the scale.
+  return LVecBase3f(length(x), length(y), length(z));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1425,7 +1435,8 @@ set_mat(const LMatrix4f &mat) {
 //  Description: Sets the transform on this NodePath so that it
 //               rotates to face the indicated point in space.  This
 //               will overwrite any previously existing scale on the
-//               node, although it will preserve any translation.
+//               node, although it will preserve any translation.  See
+//               also look_at_preserve_scale().
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 look_at(const LPoint3f &point, const LVector3f &up) {
@@ -1454,6 +1465,76 @@ heads_up(const LPoint3f &point, const LVector3f &up) {
 
   LMatrix4f mat;
   ::heads_up(mat, point - pos, up);
+  mat.set_row(3, pos);
+  set_mat(mat);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::look_at_preserve_scale
+//       Access: Public
+//  Description: Functions like look_at(), but preforms additional
+//               work to preserve any scales that may already be
+//               present on the node.  Normally, look_at() blows away
+//               the scale because scale and rotation are represented
+//               in the same part of the matrix.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+look_at_preserve_scale(const LPoint3f &point, const LVector3f &up) {
+  nassertv(has_arcs());
+
+  LMatrix4f mat = get_mat();
+
+  // Extract the axes from the matrix.
+  LVector3f x, y, z;
+  x = mat.get_row3(0);
+  y = mat.get_row3(1);
+  z = mat.get_row3(2);
+
+  // The lengths of the axes defines the scale.
+  LVecBase3f scale(length(x), length(y), length(z));
+  LPoint3f pos = mat.get_row3(3);
+
+  ::look_at(mat, point - pos, up);
+
+  // Now reapply the scale and position.
+  mat.set_row(0, mat.get_row3(0) * scale[0]);
+  mat.set_row(1, mat.get_row3(1) * scale[1]);
+  mat.set_row(2, mat.get_row3(2) * scale[2]);
+  mat.set_row(3, pos);
+  set_mat(mat);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::heads_up_preserve_scale
+//       Access: Public
+//  Description: Functions like heads_up(), but preforms additional
+//               work to preserve any scales that may already be
+//               present on the node.  Normally, heads_up() blows away
+//               the scale because scale and rotation are represented
+//               in the same part of the matrix.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+heads_up_preserve_scale(const LPoint3f &point, const LVector3f &up) {
+  nassertv(has_arcs());
+
+  LMatrix4f mat = get_mat();
+
+  // Extract the axes from the matrix.
+  LVector3f x, y, z;
+  x = mat.get_row3(0);
+  y = mat.get_row3(1);
+  z = mat.get_row3(2);
+
+  // The lengths of the axes defines the scale.
+  LVecBase3f scale(length(x), length(y), length(z));
+  LPoint3f pos = mat.get_row3(3);
+
+  ::heads_up(mat, point - pos, up);
+
+  // Now reapply the scale and position.
+  mat.set_row(0, mat.get_row3(0) * scale[0]);
+  mat.set_row(1, mat.get_row3(1) * scale[1]);
+  mat.set_row(2, mat.get_row3(2) * scale[2]);
   mat.set_row(3, pos);
   set_mat(mat);
 }
@@ -1774,6 +1855,86 @@ heads_up(const NodePath &other, const LPoint3f &point, const LVector3f &up) {
 
   LMatrix4f mat;
   ::heads_up(mat, rel_point - pos, up);
+  mat.set_row(3, pos);
+  set_mat(mat);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::look_at_preserve_scale
+//       Access: Public
+//  Description: Functions like look_at(), but preforms additional
+//               work to preserve any scales that may already be
+//               present on the node.  Normally, look_at() blows away
+//               the scale because scale and rotation are represented
+//               in the same part of the matrix.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+look_at_preserve_scale(const NodePath &other, const LPoint3f &point,
+		       const LVector3f &up) {
+  nassertv(has_arcs());
+
+  LMatrix4f mat = get_mat();
+
+  // Extract the axes from the matrix.
+  LVector3f x, y, z;
+  x = mat.get_row3(0);
+  y = mat.get_row3(1);
+  z = mat.get_row3(2);
+
+  // The lengths of the axes defines the scale.
+  LVecBase3f scale(length(x), length(y), length(z));
+  LPoint3f pos = mat.get_row3(3);
+
+  NodePath parent(*this);
+  parent.shorten(1);
+  LPoint3f rel_point = point * other.get_mat(parent);
+
+  ::look_at(mat, rel_point - pos, up);
+
+  // Now reapply the scale and position.
+  mat.set_row(0, mat.get_row3(0) * scale[0]);
+  mat.set_row(1, mat.get_row3(1) * scale[1]);
+  mat.set_row(2, mat.get_row3(2) * scale[2]);
+  mat.set_row(3, pos);
+  set_mat(mat);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::heads_up_preserve_scale
+//       Access: Public
+//  Description: Functions like heads_up(), but preforms additional
+//               work to preserve any scales that may already be
+//               present on the node.  Normally, heads_up() blows away
+//               the scale because scale and rotation are represented
+//               in the same part of the matrix.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+heads_up_preserve_scale(const NodePath &other, const LPoint3f &point,
+			const LVector3f &up) {
+  nassertv(has_arcs());
+
+  LMatrix4f mat = get_mat();
+
+  // Extract the axes from the matrix.
+  LVector3f x, y, z;
+  x = mat.get_row3(0);
+  y = mat.get_row3(1);
+  z = mat.get_row3(2);
+
+  // The lengths of the axes defines the scale.
+  LVecBase3f scale(length(x), length(y), length(z));
+  LPoint3f pos = mat.get_row3(3);
+
+  NodePath parent(*this);
+  parent.shorten(1);
+  LPoint3f rel_point = point * other.get_mat(parent);
+
+  ::heads_up(mat, rel_point - pos, up);
+
+  // Now reapply the scale and position.
+  mat.set_row(0, mat.get_row3(0) * scale[0]);
+  mat.set_row(1, mat.get_row3(1) * scale[1]);
+  mat.set_row(2, mat.get_row3(2) * scale[2]);
   mat.set_row(3, pos);
   set_mat(mat);
 }

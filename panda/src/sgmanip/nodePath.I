@@ -741,6 +741,34 @@ heads_up(float x, float y, float z) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::look_at_preserve_scale
+//       Access: Public
+//  Description: Functions like look_at(), but preforms additional
+//               work to preserve any scales that may already be
+//               present on the node.  Normally, look_at() blows away
+//               the scale because scale and rotation are represented
+//               in the same part of the matrix.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+look_at_preserve_scale(float x, float y, float z) {
+  look_at_preserve_scale(LPoint3f(x, y, z));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::heads_up_preserve_scale
+//       Access: Public
+//  Description: Functions like heads_up(), but preforms additional
+//               work to preserve any scales that may already be
+//               present on the node.  Normally, heads_up() blows away
+//               the scale because scale and rotation are represented
+//               in the same part of the matrix.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+heads_up_preserve_scale(float x, float y, float z) {
+  heads_up_preserve_scale(LPoint3f(x, y, z));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::print_pos
 //       Access: Public
 //  Description: Displays the translation component.
@@ -977,6 +1005,34 @@ look_at(const NodePath &other, float x, float y, float z) {
 INLINE void NodePath::
 heads_up(const NodePath &other, float x, float y, float z) {
   heads_up(other, LPoint3f(x, y, z));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::look_at_preserve_scale
+//       Access: Public
+//  Description: Functions like look_at(), but preforms additional
+//               work to preserve any scales that may already be
+//               present on the node.  Normally, look_at() blows away
+//               the scale because scale and rotation are represented
+//               in the same part of the matrix.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+look_at_preserve_scale(const NodePath &other, float x, float y, float z) {
+  look_at_preserve_scale(other, LPoint3f(x, y, z));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::heads_up_preserve_scale
+//       Access: Public
+//  Description: Functions like heads_up(), but preforms additional
+//               work to preserve any scales that may already be
+//               present on the node.  Normally, heads_up() blows away
+//               the scale because scale and rotation are represented
+//               in the same part of the matrix.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+heads_up_preserve_scale(const NodePath &other, float x, float y, float z) {
+  heads_up_preserve_scale(other, LPoint3f(x, y, z));
 }
 
 ////////////////////////////////////////////////////////////////////
