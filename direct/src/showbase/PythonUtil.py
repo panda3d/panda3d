@@ -562,3 +562,29 @@ def formatElapsedSeconds(seconds):
         return "%s%d:%02d:%02d" % (sign, hours, minutes, seconds)
     else:
         return "%s%d:%02d" % (sign, minutes, seconds)
+
+def solveQuadratic(a, b, c):
+    # quadratic equation: ax^2 + bx + c = 0
+    # quadratic formula:  x = [-b +/- sqrt(b^2 - 4ac)] / 2a
+    # returns None, root, or [root1, root2]
+
+    # a cannot be zero.
+    if a == 0.:
+        return None
+
+    # calculate the determinant (b^2 - 4ac)
+    D = (b * b) - (4. * a * c)
+
+    if D < 0:
+        # there are no solutions (sqrt(negative number) is undefined)
+        return None
+    elif D == 0:
+        # only one root
+        return (-b) / (2. * a)
+    else:
+        # OK, there are two roots
+        sqrtD = math.sqrt(D)
+        twoA = 2. * a
+        root1 = ((-b) - sqrtD) / twoA
+        root2 = ((-b) + sqrtD) / twoA
+        return [root1, root2]

@@ -9,5 +9,6 @@ from MopathInterval import *
 from ParticleInterval import *
 from SoundInterval import *
 from WaitInterval import *
+from ProjectileInterval import *
 from MetaInterval import *
 from IntervalManager import *
