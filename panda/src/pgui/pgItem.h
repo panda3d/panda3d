@@ -58,6 +58,7 @@ public:
   void operator = (const PGItem &copy);
 
   virtual Node *make_copy() const;
+  virtual void xform(const LMatrix4f &mat);
 
   void activate_region(const LMatrix4f &transform, int sort);
   INLINE PGMouseWatcherRegion *get_region() const;

@@ -55,6 +55,43 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::xform
+//       Access: Public
+//  Description: Applies the indicated transform to the FrameStyle.
+//               The return value is true if the frame style is
+//               transformed, or false if it was not affected by the
+//               transform.
+////////////////////////////////////////////////////////////////////
+bool PGFrameStyle::
+xform(const LMatrix4f &mat) {
+  // All we can do is scale the X and Y bevel sizes.
+
+  // Extract the X and Z axes from the matrix.
+  LVector3f x, z;
+  mat.get_row3(x, 0);
+  float x_scale = x.length();
+  
+  mat.get_row3(z, 2);
+  float z_scale = z.length();
+
+  _width[0] *= x_scale;
+  _width[1] *= z_scale;
+
+  switch (_type) {
+  case T_none:
+  case T_flat:
+    return false;
+
+  case T_bevel_out:
+  case T_bevel_in:
+    return true;
+  }
+
+  // Shouldn't get here, but this makes the compiler happy.
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGFrameStyle::generate_into
 //       Access: Public
 //  Description: Generates geometry representing a frame of the
@@ -106,7 +143,7 @@ generate_into(Node *node, const LVecBase4f &frame) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PGFrameStyle::generate_flat_geom
-//       Access: Public
+//       Access: Private
 //  Description: Generates the GeomNode appropriate to a T_flat
 //               frame.
 ////////////////////////////////////////////////////////////////////
@@ -144,7 +181,7 @@ generate_flat_geom(const LVecBase4f &frame) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PGFrameStyle::generate_bevel_geom
-//       Access: Public
+//       Access: Private
 //  Description: Generates the GeomNode appropriate to a T_bevel_in or
 //               T_bevel_out frame.
 ////////////////////////////////////////////////////////////////////

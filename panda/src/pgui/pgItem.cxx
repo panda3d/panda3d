@@ -23,6 +23,8 @@
 #include "throw_event.h"
 #include "string_utils.h"
 #include "arcChain.h"
+#include "transformTransition.h"
+#include "sceneGraphReducer.h"
 
 TypeHandle PGItem::_type_handle;
 PT(TextNode) PGItem::_text_node;
@@ -94,6 +96,58 @@ operator = (const PGItem &copy) {
 Node *PGItem::
 make_copy() const {
   return new PGItem(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::xform
+//       Access: Public, Virtual
+//  Description: Transforms the contents of this node by the indicated
+//               matrix, if it means anything to do so.  For most
+//               kinds of nodes, this does nothing.
+////////////////////////////////////////////////////////////////////
+void PGItem::
+xform(const LMatrix4f &mat) {
+  // Transform the frame.
+  LPoint3f ll(_frame[0], 0.0, _frame[2]);
+  LPoint3f ur(_frame[1], 0.0, _frame[3]);
+  ll = ll * mat;
+  ur = ur * mat;
+  _frame.set(ll[0], ur[0], ll[2], ur[2]);
+
+  // Transform the individual states and their frame styles.
+  StateDefs::iterator di;
+  for (di = _state_defs.begin(); di != _state_defs.end(); ++di) {
+    Node *node = (*di)._node;
+    if (node != (Node *)NULL) {
+      // Apply the matrix to the previous transform on all the arcs
+      // here.
+      int num_children = node->get_num_children(RenderRelation::get_class_type());
+      for (int i = 0; i < num_children; i++) {
+        NodeRelation *arc = node->get_child(RenderRelation::get_class_type(), i);
+        if (arc != (*di)._frame_arc) {
+          LMatrix4f arc_mat;
+          TransformTransition *tt;
+          if (!get_transition_into(tt, arc)) {
+            // No previous transform.
+            arc_mat = mat;
+          } else {
+            arc_mat = tt->get_matrix() * mat;
+          }
+          tt = new TransformTransition(arc_mat);
+          arc->set_transition(tt);
+
+          // Now flatten the transform into the subgraph.
+          SceneGraphReducer gr;
+          gr.apply_transitions(arc);
+        }
+      }
+    }
+
+    // Transform the frame style too.
+    if ((*di)._frame_style.xform(mat)) {
+      (*di)._frame_stale = true;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -205,8 +205,8 @@ setup(const string &label) {
   style.set_color(0.9, 0.9, 0.9, 1.0);
   set_frame_style(S_rollover, style);
 
-  ColorTransition *col_trans = new ColorTransition(Colorf(0.8, 0.8, 0.8, 1.0));
-  inact->set_transition(col_trans);
+  ColorTransition *ct = new ColorTransition(Colorf(0.8, 0.8, 0.8, 1.0));
+  inact->set_transition(ct);
   style.set_color(0.6, 0.6, 0.6, 1.0);
   set_frame_style(S_inactive, style);
 
@@ -214,8 +214,8 @@ setup(const string &label) {
   style.set_color(0.8, 0.8, 0.8, 1.0);
   set_frame_style(S_depressed, style);
   LMatrix4f translate = LMatrix4f::translate_mat(0.05, 0.0, -0.05);
-  TransformTransition *ttrans = new TransformTransition(translate);
-  down->set_transition(ttrans);
+  TransformTransition *tt = new TransformTransition(translate);
+  down->set_transition(tt);
 }
 
 ////////////////////////////////////////////////////////////////////

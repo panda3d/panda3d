@@ -60,6 +60,7 @@ PUBLISHED:
   void output(ostream &out) const;
 
 public:
+  bool xform(const LMatrix4f &mat);
   NodeRelation *generate_into(Node *node, const LVecBase4f &frame);
 
 private:
