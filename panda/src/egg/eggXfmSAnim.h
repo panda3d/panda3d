@@ -43,7 +43,7 @@ public:
   INLINE EggXfmSAnim(const EggXfmSAnim &copy);
   INLINE EggXfmSAnim &operator = (const EggXfmSAnim &copy);
 
-  INLINE void set_fps(double type);
+  INLINE void set_fps(double fps);
   INLINE void clear_fps();
   INLINE bool has_fps() const;
   INLINE double get_fps() const;
