@@ -83,8 +83,10 @@ class Level:
             del self.createdEntities
         if hasattr(self, 'entities'):
             del self.entities
-        del self.entId2spec
-        del self.spec
+        if hasattr(self, 'entId2spec'):
+            del self.entId2spec
+        if hasattr(self, 'spec'):
+            del self.spec
 
     def createEntityCreator(self):
         self.notify.error(
