@@ -15,6 +15,7 @@
 #include "filename.h"
 #include "dSearchPath.h"
 #include "globPattern.h"
+#include "md5.h"
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -1024,6 +1025,8 @@ r_expand_variable(const string &str, size_t &vp,
       return expand_suffix(params);
     } else if (funcname == "basename") {
       return expand_basename(params);
+    } else if (funcname == "makeguid") {
+      return expand_makeguid(params);
     } else if (funcname == "word") {
       return expand_word(params);
     } else if (funcname == "wordlist") {
@@ -1894,6 +1897,73 @@ expand_basename(const string &params) {
 
   string result = repaste(words, " ");
   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_makeguid
+//       Access: Private
+//  Description: Expands the GUID (global unique identifier) of the
+//               given name (generally a directory).  A GUID looks
+//               like this: 398F2CC4-C683-26EB-3251-6FC996738F7F
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_makeguid(const string &params) {
+  // Split the parameter into tokens based on the spaces.
+  vector<string> names;
+  tokenize_whitespace(expand_string(params), names);
+
+  if (names.size() != 1) {
+    cerr << "makeguid only accepts one string.\n";
+    return string();
+  }
+
+  PP_MD5_CTX context;
+  unsigned char digest[16];
+  
+  unsigned int len = names[0].size();
+  unsigned char *name = new unsigned char[len];
+  MD5Init(&context);
+  MD5Update(&context, name, len);
+  MD5Final(digest, &context);
+  delete name;
+
+  string guid;
+  int i = 0;
+  char hex[2];
+
+  for (int i = 0; i < 4; i++) {
+    sprintf(hex, "%02x", digest[i]);
+    guid.append(hex);
+  }
+  guid += "-";
+
+  for (int i = 4; i < 6; i++) {
+    sprintf(hex, "%02x", digest[i]);
+    guid.append(hex);
+  }
+  guid += "-";
+
+  for (int i = 6; i < 8; i++) {
+    sprintf(hex, "%02x", digest[i]);
+    guid.append(hex);
+  }
+  guid += "-";
+
+  for (int i = 8; i < 10; i++) {
+    sprintf(hex, "%02x", digest[i]);
+    guid.append(hex);
+  }
+  guid += "-";
+
+  for (int i = 10; i < 16; i++) {
+    sprintf(hex, "%02x", digest[i]);
+    guid.append(hex);
+  }
+
+  // Convert the entire GUID string to uppercased letters.
+  transform(guid.begin(), guid.end(), guid.begin(), toupper);
+
+  return guid;
 }
 
 ////////////////////////////////////////////////////////////////////

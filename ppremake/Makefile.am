@@ -7,6 +7,7 @@ ppremake_SOURCES =							\
     filename.I filename.cxx filename.h					\
     globPattern.I globPattern.cxx globPattern.h				\
     gnu_getopt.c gnu_getopt.h gnu_regex.c gnu_regex.h			\
+    md5.c md5.h                                                         \
     ppCommandFile.cxx ppCommandFile.h ppDependableFile.cxx		\
     ppDependableFile.h ppDirectory.cxx					\
     ppDirectory.h ppDirectoryTree.cxx ppDirectoryTree.h			\

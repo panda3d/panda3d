@@ -103,6 +103,7 @@ private:
   string expand_notdir(const string &params);
   string expand_suffix(const string &params);
   string expand_basename(const string &params);
+  string expand_makeguid(const string &params);
   string expand_word(const string &params);
   string expand_wordlist(const string &params);
   string expand_words(const string &params);
@@ -146,7 +147,7 @@ private:
   string expand_map_variable(const string &varname, const string &params);
   string expand_map_variable(const string &varname, const string &expression,
                  const vector<string> &keys);
-
+  
   void
   r_expand_matrix(vector<string> &results,
           const vector<vector<string> > &words,

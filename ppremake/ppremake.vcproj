@@ -158,6 +158,12 @@
 			RelativePath="gnu_regex.h">
 		</File>
 		<File
+			RelativePath="md5.c">
+		</File>
+		<File
+			RelativePath="md5.h">
+		</File>
+		<File
 			RelativePath="ppCommandFile.cxx">
 		</File>
 		<File
