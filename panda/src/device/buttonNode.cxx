@@ -72,7 +72,9 @@ output(ostream &out) const {
 
   if (_button != (ClientButtonDevice *)NULL) {
     out << " (";
+    _button->lock();
     _button->output_buttons(out);
+    _button->unlock();
     out << ")";
   }
 }
@@ -87,7 +89,9 @@ write(ostream &out, int indent_level) const {
   DataNode::write(out, indent_level);
 
   if (_button != (ClientButtonDevice *)NULL) {
+    _button->lock();
     _button->write_buttons(out, indent_level + 2);
+    _button->unlock();
   }
 }
 

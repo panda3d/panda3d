@@ -17,6 +17,8 @@ class VrpnButton;
 class VrpnButtonDevice;
 class VrpnAnalog;
 class VrpnAnalogDevice;
+class VrpnDial;
+class VrpnDialDevice;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : VrpnClient
@@ -52,9 +54,11 @@ private:
   PT(ClientDevice) make_tracker_device(const string &device_name);
   PT(ClientDevice) make_button_device(const string &device_name);
   PT(ClientDevice) make_analog_device(const string &device_name);
+  PT(ClientDevice) make_dial_device(const string &device_name);
   void disconnect_tracker_device(VrpnTrackerDevice *device);
   void disconnect_button_device(VrpnButtonDevice *device);
   void disconnect_analog_device(VrpnAnalogDevice *device);
+  void disconnect_dial_device(VrpnDialDevice *device);
 
   VrpnTracker *get_tracker(const string &tracker_name);
   void free_tracker(VrpnTracker *vrpn_tracker);
@@ -65,6 +69,9 @@ private:
   VrpnAnalog *get_analog(const string &analog_name);
   void free_analog(VrpnAnalog *vrpn_analog);
 
+  VrpnDial *get_dial(const string &dial_name);
+  void free_dial(VrpnDial *vrpn_dial);
+
 private:
   string _server_name;
   vrpn_Connection *_connection;
@@ -72,10 +79,12 @@ private:
   typedef map<string, VrpnTracker *> Trackers;
   typedef map<string, VrpnButton *> Buttons;
   typedef map<string, VrpnAnalog *> Analogs;
+  typedef map<string, VrpnDial *> Dials;
 
   Trackers _trackers;
   Buttons _buttons;
   Analogs _analogs;
+  Dials _dials;
 
 
 public:

@@ -67,7 +67,9 @@ write(ostream &out, int indent_level) const {
   DataNode::write(out, indent_level);
 
   if (_analog != (ClientAnalogDevice *)NULL) {
+    _analog->lock();
     _analog->write_controls(out, indent_level + 2);
+    _analog->unlock();
   }
 }
 
@@ -83,15 +85,18 @@ transmit_data(NodeAttributes &data) {
 
     LPoint3f out(0.0, 0.0, 0.0);
 
+    _analog->lock();
     for (int i = 0; i < max_outputs; i++) {
-      if (_outputs[i]._index >= 0 && is_control_known(_outputs[i]._index)) {
+      if (_outputs[i]._index >= 0 && 
+	  _analog->is_control_known(_outputs[i]._index)) {
 	if (_outputs[i]._flip) {
-	  out[i] = -get_control_state(_outputs[i]._index);
+	  out[i] = -_analog->get_control_state(_outputs[i]._index);
 	} else {
-	  out[i] = get_control_state(_outputs[i]._index);
+	  out[i] = _analog->get_control_state(_outputs[i]._index);
 	}
       }
     }
+    _analog->unlock();
     _xyz->set_value(out);
   }
 

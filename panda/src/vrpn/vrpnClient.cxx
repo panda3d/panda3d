@@ -10,6 +10,8 @@
 #include "vrpnButtonDevice.h"
 #include "vrpnAnalog.h"
 #include "vrpnAnalogDevice.h"
+#include "vrpnDial.h"
+#include "vrpnDialDevice.h"
 #include "config_vrpn.h"
 
 #include <string_utils.h>
@@ -99,6 +101,16 @@ write(ostream &out, int indent_level) const {
       vrpn_analog->write(out, indent_level + 4);
     }
   }
+
+  if (!_dials.empty()) {
+    indent(out, indent_level + 2)
+      << _dials.size() << " dials:\n";
+    Dials::const_iterator di;
+    for (di = _dials.begin(); di != _dials.end(); ++di) {
+      VrpnDial *vrpn_dial = (*di).second;
+      vrpn_dial->write(out, indent_level + 4);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -124,6 +136,9 @@ make_device(TypeHandle device_type, const string &device_name) {
 
   } else if (device_type == ClientAnalogDevice::get_class_type()) {
     return make_analog_device(device_name);
+
+  } else if (device_type == ClientDialDevice::get_class_type()) {
+    return make_dial_device(device_name);
 
   } else {
     return NULL;
@@ -161,6 +176,9 @@ disconnect_device(TypeHandle device_type, const string &device_name,
     } else if (device->is_of_type(VrpnAnalogDevice::get_class_type())) {
       disconnect_analog_device(DCAST(VrpnAnalogDevice, device));
 
+    } else if (device->is_of_type(VrpnDialDevice::get_class_type())) {
+      disconnect_dial_device(DCAST(VrpnDialDevice, device));
+
     }
     return true;
   }
@@ -184,7 +202,7 @@ do_poll() {
   if (vrpn_cat.is_spam()) {
     vrpn_cat.spam()
       << "VrpnClient " << _server_name << " polling " 
-      << _trackers.size() + _buttons.size() + _analogs.size()
+      << _trackers.size() + _buttons.size() + _analogs.size() + _dials.size()
       << " devices.\n";
   }
 
@@ -204,6 +222,12 @@ do_poll() {
   for (ai = _analogs.begin(); ai != _analogs.end(); ++ai) {
     VrpnAnalog *vrpn_analog = (*ai).second;
     vrpn_analog->poll();
+  }
+
+  Dials::iterator di;
+  for (di = _dials.begin(); di != _dials.end(); ++di) {
+    VrpnDial *vrpn_dial = (*di).second;
+    vrpn_dial->poll();
   }
 }
 
@@ -346,6 +370,33 @@ make_analog_device(const string &device_name) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VrpnClient::make_dial_device
+//       Access: Private
+//  Description: Creates a new dial device.  The device_name is sent
+//               verbatim to the VRPN library.
+////////////////////////////////////////////////////////////////////
+PT(ClientDevice) VrpnClient::
+make_dial_device(const string &device_name) {
+  if (vrpn_cat.is_debug()) {
+    vrpn_cat.debug()
+      << "Making dial device for " << device_name << "\n";
+  }
+
+  VrpnDial *dial = get_dial(device_name);
+
+  VrpnDialDevice *device = 
+    new VrpnDialDevice(this, device_name, dial);
+
+  if (vrpn_cat.is_debug()) {
+    vrpn_cat.debug()
+      << "Creating " << *device << "\n";
+  }
+
+  dial->mark(device);
+  return device;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VrpnClient::disconnect_tracker_device
 //       Access: Private
 //  Description: Removes the tracker device from the list of things to
@@ -387,6 +438,21 @@ disconnect_analog_device(VrpnAnalogDevice *device) {
   vrpn_analog->unmark(device);
   if (vrpn_analog->is_empty()) {
     free_analog(vrpn_analog);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VrpnClient::disconnect_dial_device
+//       Access: Private
+//  Description: Removes the dial device from the list of things to
+//               be updated.
+////////////////////////////////////////////////////////////////////
+void VrpnClient::
+disconnect_dial_device(VrpnDialDevice *device) {
+  VrpnDial *vrpn_dial = device->get_vrpn_dial();
+  vrpn_dial->unmark(device);
+  if (vrpn_dial->is_empty()) {
+    free_dial(vrpn_dial);
   }
 }
 
@@ -541,6 +607,57 @@ free_analog(VrpnAnalog *vrpn_analog) {
 
   _analogs.erase(ai);
   delete vrpn_analog;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VrpnClient::get_dial
+//       Access: Private
+//  Description: Finds a VrpnDial of the indicated name, and
+//               returns it if one already exists, or creates a new
+//               one if it does not.
+////////////////////////////////////////////////////////////////////
+VrpnDial *VrpnClient::
+get_dial(const string &dial_name) {
+  Dials::iterator di;
+  di = _dials.find(dial_name);
+
+  if (di != _dials.end()) {
+    return (*di).second;
+  }
+
+  VrpnDial *vrpn_dial = new VrpnDial(dial_name, _connection);
+  _dials.insert(Dials::value_type(dial_name, vrpn_dial));
+
+  if (vrpn_cat.is_debug()) {
+    vrpn_cat.debug()
+      << "Creating dial " << *vrpn_dial << "\n";
+  }
+
+  return vrpn_dial;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VrpnClient::free_dial
+//       Access: Private
+//  Description: Removes and deletes the indicated VrpnDial, which
+//               is no longer referenced by any VrpnDialDevices.
+////////////////////////////////////////////////////////////////////
+void VrpnClient::
+free_dial(VrpnDial *vrpn_dial) {
+  nassertv(vrpn_dial->is_empty());
+
+  if (vrpn_cat.is_debug()) {
+    vrpn_cat.debug()
+      << "Deleting dial " << *vrpn_dial << "\n";
+  }
+
+  Dials::iterator di;
+  di = _dials.find(vrpn_dial->get_dial_name());
+  nassertv(di != _dials.end());
+  nassertv((*di).second == vrpn_dial);
+
+  _dials.erase(di);
+  delete vrpn_dial;
 }
 
 

@@ -12,13 +12,13 @@
     driveInterface.cxx driveInterface.h mouseWatcher.I mouseWatcher.cxx \
     mouseWatcher.h mouseWatcherRegion.I mouseWatcherRegion.cxx \
     mouseWatcherRegion.h planarSlider.cxx planarSlider.h trackball.cxx \
-    trackball.h trackerTransform.cxx trackerTransform.h \
+    trackball.h \
     transform2sg.cxx transform2sg.h
 
   #define INSTALL_HEADERS \
     buttonThrower.h driveInterface.h mouseWatcher.I mouseWatcher.h \
     mouseWatcherRegion.I mouseWatcherRegion.h planarSlider.h \
-    trackball.h trackerTransform.h transform2sg.h
+    trackball.h transform2sg.h
 
   #define IGATESCAN all
 

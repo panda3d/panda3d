@@ -10,7 +10,9 @@
 #include "clientBase.h"
 #include "clientButtonDevice.h"
 #include "clientDevice.h"
+#include "clientDialDevice.h"
 #include "clientTrackerDevice.h"
+#include "dialNode.h"
 #include "mouse.h"
 #include "trackerNode.h"
 
@@ -19,7 +21,7 @@
 Configure(config_device);
 NotifyCategoryDef(device, "");
 
-const bool asynchronous_clients = config_device.GetBool("asynchronous-clients", false);
+const bool asynchronous_clients = config_device.GetBool("asynchronous-clients", true);
 
 ConfigureFn(config_device) {
   init_libdevice();
@@ -47,7 +49,9 @@ init_libdevice() {
   ClientBase::init_type();
   ClientButtonDevice::init_type();
   ClientDevice::init_type();
+  ClientDialDevice::init_type();
   ClientTrackerDevice::init_type();
+  DialNode::init_type();
   MouseAndKeyboard::init_type();
   TrackerNode::init_type();
 }

@@ -22,10 +22,11 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TrackerNode
-// Description : Reads the data associated with a single tracker
-//               sensor accessed on some ClientBase, and makes the
-//               data available to user code.  Also places the current
-//               tracker's transform on the data graph.
+// Description : This is the primary interface to a Tracker object
+//               associated with a ClientBase.  It reads the position
+//               and orientation information from the tracker and
+//               makes it available as a transformation on the data
+//               graph.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA TrackerNode : public DataNode {
 PUBLISHED:

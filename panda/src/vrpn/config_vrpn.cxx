@@ -7,6 +7,7 @@
 #include "vrpnAnalogDevice.h"
 #include "vrpnButtonDevice.h"
 #include "vrpnClient.h"
+#include "vrpnDialDevice.h"
 #include "vrpnTrackerDevice.h"
 
 #include <dconfig.h>
@@ -19,5 +20,6 @@ ConfigureFn(config_vrpn) {
   VrpnAnalogDevice::init_type();
   VrpnButtonDevice::init_type();
   VrpnClient::init_type();
+  VrpnDialDevice::init_type();
   VrpnTrackerDevice::init_type();
 }

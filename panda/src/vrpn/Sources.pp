@@ -16,6 +16,8 @@
     vrpnButton.I vrpnButton.cxx vrpnButton.h \
     vrpnButtonDevice.I vrpnButtonDevice.cxx vrpnButtonDevice.h \
     vrpnClient.h \
+    vrpnDial.I vrpnDial.cxx vrpnDial.h \
+    vrpnDialDevice.I vrpnDialDevice.cxx vrpnDialDevice.h \
     vrpnTracker.I vrpnTracker.cxx vrpnTracker.h \
     vrpnTrackerDevice.I vrpnTrackerDevice.cxx vrpnTrackerDevice.h \
     vrpn_interface.h

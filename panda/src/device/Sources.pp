@@ -13,10 +13,12 @@
     clientBase.I clientBase.cxx clientBase.h \
     clientButtonDevice.I clientButtonDevice.cxx clientButtonDevice.h \
     clientDevice.I clientDevice.cxx clientDevice.h \
+    clientDialDevice.I clientDialDevice.cxx clientDialDevice.h \
     clientTrackerDevice.I clientTrackerDevice.cxx clientTrackerDevice.h \
     config_device.cxx config_device.h \
-    dialData.I dialData.cxx dialData.h mouse.cxx mouse.h trackerData.I \
-    trackerData.cxx trackerData.h \
+    dialNode.I dialNode.h dialNode.cxx \
+    mouse.cxx mouse.h \
+    trackerData.I trackerData.cxx trackerData.h \
     trackerNode.I trackerNode.cxx trackerNode.h
 
   #define INSTALL_HEADERS \
@@ -26,9 +28,12 @@
     clientBase.I clientBase.h \
     clientButtonDevice.I clientButtonDevice.h \
     clientDevice.I clientDevice.h \
+    clientDialDevice.I clientDialDevice.h \
     clientTrackerDevice.I clientTrackerDevice.h \
-    config_device.h dialData.I dialData.h mouse.h \
-    trackerData.I trackerData.h trackerNode.I trackerNode.h
+    config_device.h mouse.h \
+    dialNode.I dialNode.h \
+    trackerData.I trackerData.h \
+    trackerNode.I trackerNode.h
 
   #define IGATESCAN all
 

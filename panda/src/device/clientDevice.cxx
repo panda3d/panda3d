@@ -56,13 +56,18 @@ ClientDevice::
 //               (and it is probably a mistake to do so); it will
 //               automatically be called when the ClientDevice object
 //               destructs.
+//
+//               The lock should *not* be held while this call is
+//               made; it will explicitly grab the lock itself.
 ////////////////////////////////////////////////////////////////////
 void ClientDevice::
 disconnect() {
   if (_is_connected) {
+    lock();
     bool disconnected =
       _client->disconnect_device(_device_type, _device_name, this);
     _is_connected = false;
+    unlock();
     nassertv(disconnected);
   }
 }

@@ -11,7 +11,6 @@
 #include "planarSlider.h"
 #include "trackball.h"
 #include "transform2sg.h"
-#include "trackerTransform.h"
 
 #include <dconfig.h>
 
@@ -38,5 +37,4 @@ ConfigureFn(config_tform) {
   PlanarSlider::init_type();
   Trackball::init_type();
   Transform2SG::init_type();
-  TrackerTransform::init_type();
 }
