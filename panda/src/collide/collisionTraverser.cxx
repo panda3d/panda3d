@@ -142,14 +142,11 @@ remove_collider(CollisionNode *node) {
 
   // Update the set of handlers.
   Handlers::iterator hi = _handlers.find(handler);
-  // It's possible that the handler doesn't exist in the list (it may
-  // have removed itself if it detected some internal error).
-  if (hi != _handlers.end()) {
-    (*hi).second--;
-    nassertr((*hi).second >= 0, false);
-    if ((*hi).second == 0) {
-      _handlers.erase(hi);
-    }
+  nassertr(hi != _handlers.end(), false);
+  (*hi).second--;
+  nassertr((*hi).second >= 0, false);
+  if ((*hi).second == 0) {
+    _handlers.erase(hi);
   }
 
   _colliders.erase(ci);
@@ -259,10 +256,7 @@ traverse(const NodePath &root) {
   while (hi != _handlers.end()) {
     if (!(*hi).first->end_group()) {
       // This handler wants to remove itself from the traversal list.
-      Handlers::iterator hnext = hi;
-      ++hnext;
-      _handlers.erase(hi);
-      hi = hnext;
+      hi = remove_handler(hi);
     } else {
       ++hi;
     }
@@ -677,4 +671,56 @@ compare_collider_to_geom(CollisionEntry &entry, Geom *geom,
       }
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionTraverser::remove_handler
+//       Access: Private
+//  Description: Removes the indicated CollisionHandler from the list
+//               of handlers to be processed, and returns the iterator
+//               to the next handler in the list.  This is designed to
+//               be called safely from within a traversal of the handler
+//               list.
+//
+//               This also removes any colliders that depend on this
+//               handler, to keep internal structures intact.
+////////////////////////////////////////////////////////////////////
+CollisionTraverser::Handlers::iterator CollisionTraverser::
+remove_handler(CollisionTraverser::Handlers::iterator hi) {
+  nassertr(hi != _handlers.end(), hi);
+
+  CollisionHandler *handler = (*hi).first;
+  Handlers::iterator hnext = hi;
+  ++hnext;
+  _handlers.erase(hi);
+  hi = hnext;
+
+  // Now scan for colliders that reference this handler.
+  Colliders::iterator ci;
+  ci = _colliders.begin();
+  while (ci != _colliders.end()) {
+    if ((*ci).second == handler) {
+      // This collider references this handler; remove it.
+      PT(CollisionNode) node = (*ci).first;
+
+      Colliders::iterator cnext = ci;
+      ++cnext;
+      _colliders.erase(ci);
+      ci = cnext;
+
+      // Also remove it from the ordered list.
+      OrderedColliders::iterator oci =
+        find(_ordered_colliders.begin(), _ordered_colliders.end(), node);
+      nassertr(oci != _ordered_colliders.end(), hi);
+      _ordered_colliders.erase(oci);
+      
+      nassertr(_ordered_colliders.size() == _colliders.size(), false);
+
+    } else {
+      // This collider references some other handler; keep it.
+      ++ci;
+    }
+  }
+
+  return hi;
 }

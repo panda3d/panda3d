@@ -105,6 +105,8 @@ private:
   typedef pmap<PT(CollisionHandler), int> Handlers;
   Handlers _handlers;
 
+  Handlers::iterator remove_handler(Handlers::iterator hi);
+
 #ifdef DO_COLLISION_RECORDING
   CollisionRecorder *_recorder;
 #endif  // DO_COLLISION_RECORDING
