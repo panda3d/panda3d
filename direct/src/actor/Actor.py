@@ -463,13 +463,15 @@ class Actor(PandaObject, NodePath):
                 partNames.append(partName)
 
             # for each part in list, set play rate on given or current anim
-            for partName in partNames:
+            for thisPart in partNames:
                 if (animName==None):
-                    animName = self.getCurrentAnim(partName)          
-                animControl = self.getAnimControl(animName, partName, lodName)
+                    thisAnim = self.getCurrentAnim(thisPart)
+                else:
+                    thisAnim = animName
+                animControl = self.getAnimControl(thisAnim, thisPart, lodName)
                 if (animControl != None):
                     animControl.setPlayRate(rate)
-            
+
     def getDuration(self, animName=None, partName=None):
         """getDuration(self, string, string=None)
         Return duration of given anim name and given part.
