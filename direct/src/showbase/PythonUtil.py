@@ -688,6 +688,13 @@ def lerp(v0, v1, t):
     """
     return v0 + (t * (v1 - v0))
 
+def average(*args):
+    """ returns simple average of list of values """
+    val = 0.
+    for arg in args:
+        val += arg
+    return val / len(args)
+
 def boolEqual(a, b):
     """
     returns true if a and b are both true or both false.
