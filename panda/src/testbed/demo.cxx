@@ -334,6 +334,18 @@ event_fkey(CPT_Event event) {
 }
 
 static void
+event_B(CPT_Event event) {
+  if (selected_node.has_arcs()) {
+    // List everything under the selected bounding volume and
+    // recompute the volume.
+    selected_node.ls();
+    selected_node.analyze();
+
+    selected_node.arc()->force_bound_stale();
+  }
+}
+
+static void
 enable_highlight() {
   if (highlight_render_node == NULL) {
     highlight_render_node = new NamedNode("highlight");
@@ -552,6 +564,7 @@ void demo_keys(EventHandler&) {
   event_handler.add_hook("f7", event_fkey);
   event_handler.add_hook("f8", event_fkey);
   event_handler.add_hook("f9", event_fkey);
+  event_handler.add_hook("B", event_B);
 
   event_handler.add_hook("L", event_L);
   event_handler.add_hook("k", event_k);
