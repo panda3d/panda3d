@@ -897,7 +897,7 @@ class TaskManager:
         return TaskManagerPanel.TaskManagerPanel(self)
 
     def __getTimeFrame(self):
-        # WARNING: If you are testing tasks without an igloop,
+        # WARNING: If you are testing tasks without an igLoop,
         # you must manually tick the clock        
         # Ask for the time last frame
         return globalClock.getFrameTime(), globalClock.getFrameCount()
