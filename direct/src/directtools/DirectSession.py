@@ -59,6 +59,8 @@ class DirectSession(PandaObject):
             if joybox:
                 from DirectJoybox import *
                 self.joybox = DirectJoybox(joybox)
+            else:
+                self.joybox = None
         else:
             self.deviceManager = None
 

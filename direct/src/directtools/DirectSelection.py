@@ -380,9 +380,9 @@ class DirectBoundingBox:
 
 
 class SelectionRay:
-    def __init__(self, camera):
-        # Create a collision node path attached to the given camera
-        self.rayCollisionNodePath = camera.attachNewNode( CollisionNode() )
+    def __init__(self, parent):
+        # Create a collision node path attached to the given parent
+        self.rayCollisionNodePath = parent.attachNewNode( CollisionNode() )
         # Don't pay the penalty of drawing this collision ray
         self.rayCollisionNodePath.hide()
         self.rayCollisionNode = self.rayCollisionNodePath.node()
@@ -419,7 +419,7 @@ class SelectionRay:
         index = -1
         # Pick out the closest object that isn't a widget
         for i in range(0,numEntries):
-            entry = direct.iRay.cq.getEntry(i)
+            entry = self.cq.getEntry(i)
             node = entry.getIntoNode()
             # Don't pick hidden nodes
             if node.isHidden():
@@ -443,8 +443,8 @@ class SelectionRay:
         # Did we hit an object?
         if(index >= 0):
             # Yes!
-            # Find hit point in camera's space
-            hitPt = direct.iRay.camToHitPt(index)
+            # Find hit point in parent's space
+            hitPt = self.parentToHitPt(index)
             hitPtDist = Vec3(hitPt - ZERO_POINT).length()
             return (node, hitPt, hitPtDist)
         else:
@@ -460,11 +460,11 @@ class SelectionRay:
             # Yes!
             # Entry 0 is the closest hit point if multiple hits
             minPt = 0
-            # Find hit point in camera's space
-            hitPt = direct.iRay.camToHitPt(minPt)
+            # Find hit point in parent's space
+            hitPt = self.parentToHitPt(minPt)
             hitPtDist = Vec3(hitPt).length()
             # Get the associated collision queue object
-            entry = direct.iRay.cq.getEntry(minPt)
+            entry = self.cq.getEntry(minPt)
             # Extract the node
             node = entry.getIntoNode()
             # Return info
@@ -476,6 +476,55 @@ class SelectionRay:
         # Determine ray direction based upon the mouse coordinates
         # Note! This has to be a cam object (of type ProjectionNode)
         self.ray.setProjection( base.cam.node(), mouseX, mouseY )
+        self.ct.traverse( targetNodePath.node() )
+        self.numEntries = self.cq.getNumEntries()
+        self.cq.sortEntries()
+        return self.numEntries
+
+    def pickGeom3D(self, targetNodePath = render, origin = Point3(0),
+                   dir = Vec3(0,0,-1), fIntersectUnpickable = 0):
+        self.collideWithGeom()
+        numEntries = self.pick3D(targetNodePath, origin, dir)
+        # Init index
+        index = -1
+        # Pick out the closest object that isn't a widget
+        for i in range(0,numEntries):
+            entry = self.cq.getEntry(i)
+            node = entry.getIntoNode()
+            # Don't pick hidden nodes
+            if node.isHidden():
+                pass
+            # Can pick unpickable, use the first visible node
+            elif fIntersectUnpickable:
+                index = i
+                break
+            # Is it a named node?, If so, see if it has a name
+            elif issubclass(node.__class__, NamedNode):
+                name = node.getName()
+                if name in self.unpickable:
+                    pass
+                else:
+                    index = i
+                    break
+            # Not hidden and not one of the widgets, use it
+            else:
+                index = i
+                break
+        # Did we hit an object?
+        if(index >= 0):
+            # Yes!
+            # Find hit point in parent's space
+            hitPt = self.parentToHitPt(index)
+            hitPtDist = Vec3(hitPt - ZERO_POINT).length()
+            return (node, hitPt, hitPtDist)
+        else:
+            return (None, ZERO_POINT, 0)
+
+    def pick3D(self, targetNodePath, origin, dir):
+        # Determine ray direction based upon the mouse coordinates
+        # Note! This has to be a cam object (of type ProjectionNode)
+        self.ray.setOrigin( origin )
+        self.ray.setDirection( dir )
         self.ct.traverse( targetNodePath.node() )
         self.numEntries = self.cq.getNumEntries()
         self.cq.sortEntries()
@@ -496,10 +545,10 @@ class SelectionRay:
     def objectToHitPt(self, index):
         return self.cq.getEntry(index).getIntoIntersectionPoint()
 
-    def camToHitPt(self, index):
+    def parentToHitPt(self, index):
         # Get the specified entry
         entry = self.cq.getEntry(index)
         hitPt = entry.getIntoIntersectionPoint()
-        # Convert point from object local space to camera space
+        # Convert point from object local space to parent's space
         return entry.getInvWrtSpace().xformPoint(hitPt)
 

@@ -175,6 +175,9 @@ class DirectJoybox(PandaObject):
         self.enable()
         
     def joyboxFly(self):
+        # Do nothing if no nodePath selected
+        if self.nodePath == None:
+            return
         hprScale = (self.analogs.normalizeChannel(L_SLIDE, 0.1, 100) *
                     DirectJoybox.hprMultiplier)
         posScale = (self.analogs.normalizeChannel(R_SLIDE, 0.1, 100) *
@@ -215,6 +218,12 @@ class DirectJoybox(PandaObject):
         self.modifier = [1,1,1,-1,1,0]
         self.setMode(self.joyboxFly, 'Look At Mode')
 
+    def lookAroundMode(self):
+        self.mapping = [NULL_AXIS, NULL_AXIS, NULL_AXIS,
+                        R_LEFT_RIGHT, R_FWD_BACK, NULL_AXIS]
+        self.modifier = [0,0,0,-1,-1,0]
+        self.setMode(self.joyboxFly, 'Lookaround Mode')
+
     def demoMode(self):
         self.mapping = [R_LEFT_RIGHT, R_FWD_BACK, L_FWD_BACK,
                         R_TWIST, NULL_AXIS, NULL_AXIS]
@@ -227,12 +236,6 @@ class DirectJoybox(PandaObject):
         self.modifier = [1,1,-1,-1,-1,1]
         self.setMode(self.joyboxFly, 'HprXyz Mode')
 
-    def lookaroundMode(self):
-        self.mapping = [NULL_AXIS, NULL_AXIS, NULL_AXIS,
-                        R_LEFT_RIGHT, R_FWD_BACK, NULL_AXIS]
-        self.modifier = [0,0,0,-1,-1,0]
-        self.setMode(self.joyboxFly, 'Lookaround Mode')
-
     def walkthruMode(self):
         self.mapping = [R_LEFT_RIGHT, R_FWD_BACK, L_TWIST,
                         R_TWIST, L_FWD_BACK, L_LEFT_RIGHT]
@@ -243,6 +246,9 @@ class DirectJoybox(PandaObject):
         self.setMode(self.orbitFly, 'Orbit Mode')
 
     def orbitFly(self):
+        # Do nothing if no nodePath selected
+        if self.nodePath == None:
+            return
         hprScale = (self.analogs.normalizeChannel(L_SLIDE, 0.1, 100) *
                     DirectJoybox.hprMultiplier)
         posScale = (self.analogs.normalizeChannel(R_SLIDE, 0.1, 100) *
