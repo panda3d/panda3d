@@ -22,7 +22,7 @@
 
 //
 // The following bit of code, for setting up jpeg_istream_src(), was
-// lifted from jpeglib, and modified to work with istream istead of
+// lifted from jpeglib, and modified to work with istream instead of
 // stdio.
 //
 
