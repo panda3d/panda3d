@@ -2407,6 +2407,12 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
     if(dx_preserve_fpu_state)
        dwBehaviorFlags|=D3DCREATE_FPU_PRESERVE;
 
+    // if window is not foreground in exclusive mode, ddraw thinks you are 'not active', so
+    // it changes your WM_ACTIVATEAPP from true to false, causing us
+    // to go into a 'wait-for WM_ACTIVATEAPP true' loop, and the event never comes so we hang
+    // in fullscreen wait.  also doing this for windowed mode since it was requested.
+    SetForegroundWindow(Display.hWnd);
+
     if(_props._fullscreen) {
         pPresParams->SwapEffect = D3DSWAPEFFECT_DISCARD;  // we dont care about preserving contents of old frame
         pPresParams->FullScreen_PresentationInterval = (dx_sync_video ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE);
@@ -2434,13 +2440,6 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
             assert(pPresParams->SwapEffect == D3DSWAPEFFECT_DISCARD);  // only valid effect for multisample
         #endif
         
-
-        // if window is not foreground in exclusive mode, ddraw thinks you are 'not active', so
-        // it changes your WM_ACTIVATEAPP from true to false, causing us
-        // to go into a 'wait-for WM_ACTIVATEAPP true' loop, and the event never comes so we hang
-        // in fullscreen wait.
-
-        SetForegroundWindow(Display.hWnd);
         ClearToBlack(Display.hWnd,_props);
 
         hr = pD3D8->CreateDevice(Display.CardIDNum, D3DDEVTYPE_HAL, _pParentWindowGroup->_hParentWindow,

@@ -458,6 +458,8 @@ void wglGraphicsWindow::config() {
       ShowWindow(_mwindow, SW_SHOWNORMAL);
       ShowWindow(_mwindow, SW_SHOWNORMAL);
 
+      SetForegroundWindow(_mwindow);
+
       int chg_result = ChangeDisplaySettings(&dm, CDS_FULLSCREEN);
 
       if (chg_result!=DISP_CHANGE_SUCCESSFUL) {
@@ -504,6 +506,8 @@ void wglGraphicsWindow::config() {
                                 window_style, win_rect.left, win_rect.top, win_rect.right-win_rect.left,
                                 win_rect.bottom-win_rect.top,
                                 NULL, NULL, hinstance, 0);
+
+        SetForegroundWindow(_mwindow);
   }
 
   if (!_mwindow) {
