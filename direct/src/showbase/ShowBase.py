@@ -498,7 +498,13 @@ class ShowBase(DirectObject.DirectObject):
             # This doesn't really need to be an error condition, but I
             # figure any app that includes ShowBase really wants to
             # have a window open.
+
+            # For toontown, it is possible that window open failed
+            # because of a graphics card issue. In that case, take
+            # user to the appropriate page.
+            self.setPandaErrorCode(14)
             self.notify.error("Unable to open '%s' window." % (self.windowType))
+            sys.exit()
 
         return (self.win != None)
 
