@@ -672,10 +672,12 @@ tokenize_numeric_pair(const string &str, double &a, double &b) {
     const char *param = words[i].c_str();
     char *n;
     results[i] = strtod(param, &n);
-    if (n == param) {
+    if (*n != '\0') {
       // strtod failed--not a numeric representation.
       cerr << "Warning: " << words[i] << " is not a number.\n";
-      results[i] = 0.0;
+      if (n == param) {
+        results[i] = 0.0;
+      }
     }
   }
 
@@ -718,6 +720,19 @@ scan_to_whitespace(const string &str, size_t start) {
   }
 
   return p;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::format_int
+//       Access: Private, Static
+//  Description: Formats the indicated integer as a string and returns
+//               the string.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+format_int(int num) {
+  char buffer[32];
+  sprintf(buffer, "%d", num);
+  return buffer;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1024,6 +1039,16 @@ r_expand_variable(const string &str, size_t &vp,
       return expand_gtn(params);
     } else if (funcname == ">=") {
       return expand_gen(params);
+    } else if (funcname == "+") {
+      return expand_plus(params);
+    } else if (funcname == "-") {
+      return expand_minus(params);
+    } else if (funcname == "*") {
+      return expand_times(params);
+    } else if (funcname == "/") {
+      return expand_divide(params);
+    } else if (funcname == "%") {
+      return expand_modulo(params);
     } else if (funcname == "not") {
       return expand_not(params);
     } else if (funcname == "or") {
@@ -2542,6 +2567,123 @@ expand_gen(const string &params) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_plus
+//       Access: Private
+//  Description: Expands the "+" function variable.  This operates
+//               on integer numbers.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_plus(const string &params) {
+  double a, b;
+  if (!tokenize_numeric_pair(params, a, b)) {
+    return string();
+  }
+
+  int ai = (int)a;
+  int bi = (int)b;
+  return format_int(ai + bi);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_minus
+//       Access: Private
+//  Description: Expands the "-" function variable.  This operates
+//               on integer numbers.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_minus(const string &params) {
+  // We cannot use tokenize_numeric_pair(), because we also support
+  // unary minus.
+
+  vector<string> words;
+  tokenize_params(params, words, true);
+  double results[2];
+  int num_words = words.size();
+
+  if (num_words == 1) {
+    // Simular unary minus by setting the first operand to 0.
+    results[0] = 0.0;
+    
+  } else if (num_words != 2) {
+    cerr << num_words << " parameters supplied when two were expected:\n"
+         << params << "\n";
+    return string();
+  }
+
+  for (int i = 0; i < num_words; i++) {
+    const char *param = words[i].c_str();
+    char *n;
+    int j = 2 - num_words + i;
+    results[j] = strtod(param, &n);
+    if (*n != '\0') {
+      // strtod failed--not a numeric representation.
+      cerr << "Warning: " << words[i] << " is not a number.\n";
+      if (n == param) {
+        results[j] = 0.0;
+      }
+    }
+  }
+
+  int ai = (int)results[0];
+  int bi = (int)results[1];
+  return format_int(ai - bi);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_times
+//       Access: Private
+//  Description: Expands the "*" function variable.  This operates
+//               on integer numbers.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_times(const string &params) {
+  double a, b;
+  if (!tokenize_numeric_pair(params, a, b)) {
+    return string();
+  }
+
+  int ai = (int)a;
+  int bi = (int)b;
+  return format_int(ai * bi);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_divide
+//       Access: Private
+//  Description: Expands the "/" function variable.  This operates
+//               on integer numbers.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_divide(const string &params) {
+  double a, b;
+  if (!tokenize_numeric_pair(params, a, b)) {
+    return string();
+  }
+
+  int ai = (int)a;
+  int bi = (int)b;
+  return format_int(ai / bi);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_modulo
+//       Access: Private
+//  Description: Expands the "%" function variable.  This operates
+//               on integer numbers.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_modulo(const string &params) {
+  double a, b;
+  if (!tokenize_numeric_pair(params, a, b)) {
+    return string();
+  }
+
+  int ai = (int)a;
+  int bi = (int)b;
+  return format_int(ai % bi);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PPScope::expand_not
 //       Access: Private
 //  Description: Expands the "not" function variable.  This returns
@@ -2948,8 +3090,9 @@ expand_function(const string &funcname,
   PPScope nested_scope(_named_scopes);
   nested_scope.define_formals(funcname, sub->_formals, params);
 
-  // This won't compile on VC++.  It has only ostringstream, which is
-  // functionally equivalent but has a slightly different interface.
+  // This won't compile on VC++ with the new iostream library.  It has
+  // only ostringstream, which is functionally equivalent but has a
+  // slightly different interface.
   ostrstream ostr;
 
   PPCommandFile command(&nested_scope);

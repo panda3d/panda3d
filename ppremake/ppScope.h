@@ -62,6 +62,7 @@ public:
                        bool expand);
   bool tokenize_numeric_pair(const string &str, double &a, double &b);
   size_t scan_to_whitespace(const string &str, size_t start = 0);
+  static string format_int(int num);
 
   static MapVariableDefinition _null_map_def;
 
@@ -123,6 +124,11 @@ private:
   string expand_len(const string &params);
   string expand_gtn(const string &params);
   string expand_gen(const string &params);
+  string expand_plus(const string &params);
+  string expand_minus(const string &params);
+  string expand_times(const string &params);
+  string expand_divide(const string &params);
+  string expand_modulo(const string &params);
   string expand_not(const string &params);
   string expand_or(const string &params);
   string expand_and(const string &params);
