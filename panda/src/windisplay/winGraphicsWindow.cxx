@@ -94,6 +94,11 @@ WinGraphicsWindow::
 ////////////////////////////////////////////////////////////////////
 bool WinGraphicsWindow::
 move_pointer(int device, int x, int y) {
+  // First, indicate that the IME is no longer active, so that it won't
+  // send the string through WM_IME_COMPOSITION.  But we still leave
+  // _ime_open true, so that it also won't send the string through WM_CHAR.
+  _ime_active = false;
+
   // Note: this is not thread-safe; it should be called only from App.
   // Probably not an issue.
   nassertr(device == 0, false);
@@ -101,6 +106,7 @@ move_pointer(int device, int x, int y) {
       !_input_devices[0].get_pointer().get_in_window()) {
     // If the window doesn't have input focus, or the mouse isn't
     // currently within the window, forget it.
+
     return false;
   }
 
@@ -132,7 +138,7 @@ close_ime() {
     ImmReleaseContext(_hWnd, hIMC);
   }
   _ime_open = false;
-  _ime_active = false;
+
   windisplay_cat.debug() << "success: closed ime window\n";
   return;
 }
@@ -1120,63 +1126,71 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         
       case WM_IME_COMPOSITION:
         if (lparam & GCS_RESULTSTR) {
-          HIMC hIMC = ImmGetContext(hwnd);
-          nassertr(hIMC != 0, 0);
+
+          // If the ime window is not marked as active at this point, we
+          // must be in the process of closing it down (in close_ime), and
+          // we don't want to send the current composition string in that
+          // case.  But we do need to return 0 to tell windows not to try
+          // to send the composition string through WM_CHAR messages.
+          if (_ime_active) {
+            HIMC hIMC = ImmGetContext(hwnd);
+            nassertr(hIMC != 0, 0);
+            
+            static const int max_ime_result = 128;
+            static char ime_result[max_ime_result];
+            
+            if (_ime_composition_w) {
+              // Since ImmGetCompositionStringA() doesn't seem to work
+              // for Win2000 (it always returns question mark
+              // characters), we have to use ImmGetCompositionStringW()
+              // on this OS.  This is actually the easier of the two
+              // functions to use.
+              
+              DWORD result_size =
+                ImmGetCompositionStringW(hIMC, GCS_RESULTSTR,
+                                         ime_result, max_ime_result);
+              
+              // Add this string into the text buffer of the application.
+              
+              // ImmGetCompositionStringW() returns a string, but it's
+              // filled in with wstring data: every two characters defines a
+              // 16-bit unicode char.  The docs aren't clear on the
+              // endianness of this.  I guess it's safe to assume all Win32
+              // machines are little-endian.
+              for (DWORD i = 0; i < result_size; i += 2) {
+                int result =
+                  ((int)(unsigned char)ime_result[i + 1] << 8) |
+                  (unsigned char)ime_result[i];
+                _input_devices[0].keystroke(result);
+              }
+            } else {
+              // On the other hand, ImmGetCompositionStringW() doesn't
+              // work on Win95 or Win98; for these OS's we must use
+              // ImmGetCompositionStringA().
+              DWORD result_size =
+                ImmGetCompositionStringA(hIMC, GCS_RESULTSTR,
+                                         ime_result, max_ime_result);
+              
+              // ImmGetCompositionStringA() returns an encoded ANSI
+              // string, which we now have to map to wide-character
+              // Unicode.
+              static const int max_wide_result = 128;
+              static wchar_t wide_result[max_wide_result];
+              
+              int wide_size =
+                MultiByteToWideChar(CP_ACP, 0,
+                                    ime_result, result_size,
+                                    wide_result, max_wide_result);
+              if (wide_size == 0) {
+                show_error_message();
+              }
+              for (int i = 0; i < wide_size; i++) {
+                _input_devices[0].keystroke(wide_result[i]);
+              }
+            }
           
-          static const int max_ime_result = 128;
-          static char ime_result[max_ime_result];
-          
-          if (_ime_composition_w) {
-            // Since ImmGetCompositionStringA() doesn't seem to work
-            // for Win2000 (it always returns question mark
-            // characters), we have to use ImmGetCompositionStringW()
-            // on this OS.  This is actually the easier of the two
-            // functions to use.
-            
-            DWORD result_size =
-              ImmGetCompositionStringW(hIMC, GCS_RESULTSTR,
-                                       ime_result, max_ime_result);
-            
-            // Add this string into the text buffer of the application.
-            
-            // ImmGetCompositionStringW() returns a string, but it's
-            // filled in with wstring data: every two characters defines a
-            // 16-bit unicode char.  The docs aren't clear on the
-            // endianness of this.  I guess it's safe to assume all Win32
-            // machines are little-endian.
-            for (DWORD i = 0; i < result_size; i += 2) {
-              int result =
-                ((int)(unsigned char)ime_result[i + 1] << 8) |
-                (unsigned char)ime_result[i];
-              _input_devices[0].keystroke(result);
-            }
-          } else {
-            // On the other hand, ImmGetCompositionStringW() doesn't
-            // work on Win95 or Win98; for these OS's we must use
-            // ImmGetCompositionStringA().
-            DWORD result_size =
-              ImmGetCompositionStringA(hIMC, GCS_RESULTSTR,
-                                       ime_result, max_ime_result);
-            
-            // ImmGetCompositionStringA() returns an encoded ANSI
-            // string, which we now have to map to wide-character
-            // Unicode.
-            static const int max_wide_result = 128;
-            static wchar_t wide_result[max_wide_result];
-            
-            int wide_size =
-              MultiByteToWideChar(CP_ACP, 0,
-                                  ime_result, result_size,
-                                  wide_result, max_wide_result);
-            if (wide_size == 0) {
-              show_error_message();
-            }
-            for (int i = 0; i < wide_size; i++) {
-              _input_devices[0].keystroke(wide_result[i]);
-            }
+            ImmReleaseContext(hwnd, hIMC);
           }
-          
-          ImmReleaseContext(hwnd, hIMC);
           return 0;
         }
         //else if (0) {
