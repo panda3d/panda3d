@@ -89,9 +89,10 @@ private:
   bool write_to_disk(DownloadStatus &status);
   bool connect_to_server(void);
   int safe_send(int socket, const char *data, int length, long timeout);
-  int safe_receive(int socket, char *data, int length, long timeout, 
-								int &bytes);
+  int safe_receive(int socket, DownloadStatus &status, int length, 
+					long timeout, int &bytes);
   bool parse_http_response(const string &resp);
+  int attempt_read(int length, DownloadStatus &status, int &bytes_read);
 
   typedef TokenBoard<DownloaderToken> DownloaderTokenBoard;
   DownloaderTokenBoard *_token_board;

@@ -412,14 +412,14 @@ safe_send(int socket, const char *data, int length, long timeout) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int Downloader::
-safe_receive(int socket, char *data, int length, long timeout, int &bytes) {
-  char *data_ptr = data;
+safe_receive(int socket, DownloadStatus &status, int length, 
+					long timeout, int &bytes) {
+  bytes = 0;
   if (length == 0) {
     downloader_cat.error()
       << "Downloader::safe_receive() - requested 0 length receive!" << endl;
     return RS_error;
   }
-  bytes = 0;
   struct timeval tv;
   tv.tv_sec = timeout;
   tv.tv_usec = 0;
@@ -438,14 +438,15 @@ safe_receive(int socket, char *data, int length, long timeout, int &bytes) {
 	<< "Downloader::safe_receive() - error: " << strerror(errno) << endl;
       return RS_error;
     }
-    int ret = recv(socket, data_ptr, length - bytes, 0);
+    int ret = recv(socket, status._next_in, length - bytes, 0);
     if (ret > 0) {
       if (downloader_cat.is_debug())
         downloader_cat.debug()
 	  << "Downloader::safe_receive() - recv() got: " << ret << " bytes"
 	  << endl;
       bytes += ret;
-      data_ptr += ret;
+      status._next_in += ret;
+      status._bytes_in_buffer += ret;
     } else if (ret == 0) {
       if (downloader_cat.is_debug())
         downloader_cat.debug()
@@ -457,7 +458,59 @@ safe_receive(int socket, char *data, int length, long timeout, int &bytes) {
       return RS_error;
     }
   }
+  nassertr(bytes == length, RS_error);
   return RS_success;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Downloader::attempt_read
+//       Access: Private
+//  Description:
+////////////////////////////////////////////////////////////////////
+int Downloader::
+attempt_read(int length, DownloadStatus &status, int &bytes_read) {
+
+  bytes_read = 0;
+  for (int i = 0; i < downloader_timeout_retries; i++) {
+
+    // Ensure we have enough room in the buffer to download length bytes
+    // If we don't have enough room, write the buffer to disk
+    if (status._bytes_in_buffer + length > _buffer_size) {
+      if (downloader_cat.is_debug())
+        downloader_cat.debug()
+          << "Downloader::attempt_read() - Flushing buffer" << endl;
+
+      if (write_to_disk(status) == false)
+        return RS_error;
+    }
+
+    // Make the request for length bytes
+    int bytes;
+    int ans = safe_receive(_socket, status, length,
+					(long)downloader_timeout, bytes); 
+    bytes_read += bytes;
+
+    switch (ans) {
+      case RS_error:
+      case RS_eof:
+	return ans;
+      case RS_timeout:
+	// Try again
+	break;
+      case RS_success:
+	nassertr(bytes_read == length, RS_error);
+	return RS_success;
+      default:
+	downloader_cat.error()
+	  << "Downloader::attempt_read() - unknown return condition "
+	  << "from safe_receive() : " << ans << endl;
+	return RS_error;
+    }
+  }
+  
+  // We timed out on retries consecutive attempts - this is considered
+  // a true timeout
+  return RS_timeout;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -469,6 +522,13 @@ bool Downloader::
 download(const string &file_name, Filename file_dest, 
 		const string &event_name, int first_byte, int last_byte,
 		int total_bytes, bool partial_content, uint id) {
+
+  if (_download_enabled == false) {
+    if (downloader_cat.is_debug())
+      downloader_cat.debug()
+	<< "Downloader::download() - downloading is disabled" << endl;
+    return false;
+  }
 
   // Make sure we are still connected to the server
   if (connect_to_server() == false)
@@ -512,6 +572,7 @@ download(const string &file_name, Filename file_dest,
   int send_ret = safe_send(_socket, request.c_str(), outlen, 
 			(long)downloader_timeout);
 
+  // Handle timeouts on the send
   if (send_ret == SS_timeout) {
     for (int sr = 0; sr < downloader_timeout_retries; sr++) {
       send_ret = safe_send(_socket, request.c_str(), outlen,
@@ -536,167 +597,116 @@ download(const string &file_name, Filename file_dest,
   if (send_ret == SS_error)
     return false;
 
-  // Loop at the requested frequency until the download completes
+  // Create a download status to maintain download progress information
   DownloadStatus status(_buffer->_buffer, event_name, first_byte, last_byte,
 			total_bytes, partial_content, id);
   bool got_any_data = false;
-  bool timeout_updated_bytes_in_buffer = false;
   
+  // Loop at the requested frequency until the download completes
   for (;;) {
-    if (_download_enabled) { 
-      // Ensure that these don't change while we're computing read_size
+    // Ensure that these don't change while we're computing read_size
 #ifdef HAVE_IPC
-      _bandwidth_frequency_lock.lock();
+    _bandwidth_frequency_lock.lock();
 #endif
-	int read_size = (int)_bandwidth;
-	if (_frequency > 0)
- 	  read_size = (int)(_bandwidth * _frequency);	
+    // read_size is the length of the buffer requested via safe_receive()
+    int read_size = (int)_bandwidth;
+    if (_frequency > 0)
+      read_size = (int)(_bandwidth * _frequency);	
 #ifdef HAVE_IPC
-      _bandwidth_frequency_lock.unlock();
+    _bandwidth_frequency_lock.unlock();
 #endif
 
-      // Ensure we have enough room in the buffer to download read_size
-      // If we don't have enough room, write the buffer to disk
-      if (status._bytes_in_buffer + read_size > _buffer_size) {
-	if (downloader_cat.is_debug())
-	  downloader_cat.debug()
-	    << "Downloader::download() - Flushing buffer" << endl;
+    // Attempt to read
+    int bytes_read;
+    int ret = attempt_read(read_size, status, bytes_read);
+    if (bytes_read > 0)
+      got_any_data = true;
 
-	if (write_to_disk(status) == false)
-	  return false;
-      }
+    switch (ret) {
+      case RS_error:
 
-      // Grab the next chunk
-      int bytes = 0;
-      int ans = safe_receive(_socket, status._next_in, read_size,
-					(long)downloader_timeout, bytes); 
+        downloader_cat.error()
+          << "Downloader::download() - Error reading from socket: "
+    	  << strerror(errno) << endl;
+	return false;
 
-      // Handle receive timeouts by trying again
-      if (ans == RS_timeout) {
-	int extra_bytes = 0;
+      case RS_timeout: 
 
-	if (bytes > 0) {
-	  status._bytes_in_buffer += bytes;
-	  status._next_in += bytes;
-	  got_any_data = true;
-	  timeout_updated_bytes_in_buffer = true;
-	}
-
-	// Ensure we have enough room in the buffer to download read_size
-	// If we don't have enough room, write the buffer to disk
-	if (status._bytes_in_buffer + read_size > _buffer_size) {
-	  if (downloader_cat.is_debug())
-	    downloader_cat.debug()
-	      << "Downloader::download() - Flushing buffer" << endl;
-	  if (write_to_disk(status) == false)
-	    return false;
-	}
-
-	for (int r = 0; r < downloader_timeout_retries; r++) {
-	    extra_bytes = 0;
-
-	    // Ensure we have enough room in the buffer to download read_size
-	    // If we don't have enough room, write the buffer to disk
-	    if (status._bytes_in_buffer + read_size > _buffer_size) {
-	      if (downloader_cat.is_debug())
-		downloader_cat.debug()
-		  << "Downloader::download() - Flushing buffer" << endl;
-	      if (write_to_disk(status) == false)
-		return false;
-	    }
-
-	    ans = safe_receive(_socket, status._next_in, read_size,
-					(long)downloader_timeout, extra_bytes);
-
-	    if (extra_bytes > 0) {
-	      bytes += extra_bytes;
-	      status._bytes_in_buffer += bytes;
-	      status._next_in += bytes;
-	      got_any_data = true;
-	      timeout_updated_bytes_in_buffer = true;
-	    }
-
-	    if (ans != RS_timeout)
-	      break;
-	}
-
-	if (ans == RS_timeout) {
-	  // We've really timed out - throw an event
+	{
+          // We've really timed out - throw an event
 	  downloader_cat.error()
 	    << "Downloader::download() - receive timed out after: " 
 	    << downloader_timeout_retries << " retries" << endl;
-	  if (bytes > 0) {
-	    status._bytes_in_buffer += bytes;
-   	    status._next_in += bytes;
+	  if (bytes_read > 0) {
 	    if (write_to_disk(status) == false) {
 	      downloader_cat.error()
-		<< "Downloader::download() - write to disk failed after "
-		<< "timeout!" << endl;
+	        << "Downloader::download() - write to disk failed after "
+	        << "timeout!" << endl;
+	      return false;
 	    }
 	  }
+
+	  // Throw a timeout event
           PT_Event timeout_event = new Event(status._event_name);
           timeout_event->add_parameter(EventParameter((int)status._id));
-          timeout_event->add_parameter(
-				EventParameter(status._total_bytes_written));
+          timeout_event->add_parameter(EventParameter(0));
 	  timeout_event->add_parameter(EventParameter(-1));
           throw_event(timeout_event);
 	  return false;
-	}
-      }
+ 	}
 
-      // Handle receive errors
-      if (ans == RS_error) {
-        downloader_cat.error()
-          << "Downloader::download() - Error reading from socket: "
-	  << strerror(errno) << endl;
-	return false;
-      }
+      case RS_success:
 
-      if (ans == RS_eof) {
-
-	if (bytes > 0 || got_any_data == true) {
-	  if (downloader_cat.is_debug())
-	    downloader_cat.debug()
-	      << "Download for: " << file_name << " completed" << endl;
-	  if (bytes > 0) {
-	    status._bytes_in_buffer += bytes;
-   	    status._next_in += bytes;
-	  }
-	  bool ret = write_to_disk(status);
-	  _dest_stream.close();
-
-	  // The "Connection: close" line tells server to close connection
-	  // when the download is complete
-	  _connected = false;
-	  return ret;
-	} else {
-	  if (downloader_cat.is_debug())
-	    downloader_cat.debug()
-	      << "Downloader::download() - Received 0 bytes" << endl;
-	  nap();
-	}
-
-      } else { // ans == RS_success
 	if (downloader_cat.is_debug())
 	  downloader_cat.debug()
-	    << "Downloader::download() - Got: " << bytes << " bytes" << endl;
+	    << "Downloader::download() - Got: " << bytes_read << " bytes" 
+	    << endl;
+	break;
 
-	// If the timeout read data and already updated these variables
-	// we do not want to update them again
-	if (timeout_updated_bytes_in_buffer == true) {
-	  // reset this variable and do not update the byte count
-	  timeout_updated_bytes_in_buffer = false;
-	} else {
-	  status._bytes_in_buffer += bytes;
-	  status._next_in += bytes;
-	  got_any_data = true;
-	}
-	
-	// Sleep for the requested frequency
-	nap();
-	}
-    }
-  }
+      case RS_eof:
+
+	{
+	  // We occasionally will get 0 bytes on the first attempt - we
+	  // don't want to treat this as end of file in any case
+	  if (got_any_data == true) {
+	    if (downloader_cat.is_debug())
+	      downloader_cat.debug()
+	        << "Download for: " << file_name << " completed" << endl;
+	    bool ret = true;
+	    if (bytes_read > 0)
+	      ret = write_to_disk(status);
+	    _dest_stream.close();
+
+	    // The "Connection: close" line tells server to close connection
+	    // when the download is complete
+	    _connected = false;
+	    return ret;
+	  } else {
+	    if (downloader_cat.is_debug())
+	      downloader_cat.debug()
+	        << "Downloader::download() - Received 0 bytes" << endl;
+	  }
+ 	}
+	break;
+
+      default:
+
+	downloader_cat.error()
+	  << "Downloader::download() - Unknown return value from "
+	  << "attempt_read() : " << ret << endl;
+	return false;
+
+    } // switch(ret)
+
+    // Sleep for the requested frequency
+    nap();
+
+  } // for (;;) 
+
+  downloader_cat.error()
+    << "Downloader::download() - Dropped out of for loop without returning!"
+    << endl;
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
