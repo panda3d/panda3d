@@ -31,6 +31,7 @@ public:
   INLINE void trap_clicks(bool);
 
   INLINE void set_region(float, float, float, float);
+  INLINE LVector4f get_frame(void) const;
 };
 
 #include "guiRegion.I"

@@ -33,3 +33,8 @@ INLINE float GuiItem::get_top(void) const {
 INLINE LVector4f GuiItem::get_frame(void) const {
   return LVector4f(_left, _right, _bottom, _top);
 }
+
+INLINE ostream& operator<<(ostream& os, GuiItem& item) {
+  item.output(os);
+  return os;
+}

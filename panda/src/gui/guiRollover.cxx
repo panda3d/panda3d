@@ -86,3 +86,13 @@ void GuiRollover::set_pos(const LVector3f& p) {
   GuiItem::set_pos(p);
   recompute_frame();
 }
+
+void GuiRollover::output(ostream& os) const {
+  GuiItem::output(os);
+  os << "  Rollover data:" << endl;
+  os << "    off - 0x" << (void*)_off << endl;
+  os << "    on - 0x" << (void*)_on << endl;
+  os << "    region - 0x" << (void*)_rgn << endl;
+  os << "      frame - " << _rgn->get_frame() << endl;
+  os << "    state - " << _state << endl;
+}

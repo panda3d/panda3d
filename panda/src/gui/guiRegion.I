@@ -25,4 +25,12 @@ INLINE void GuiRegion::trap_clicks(bool t) {
 INLINE void GuiRegion::set_region(float left, float right, float bottom,
 				  float top) {
   _region->set_frame(left, right, bottom, top);
+  _left = left;
+  _right = right;
+  _bottom = bottom;
+  _top = top;
+}
+
+INLINE LVector4f GuiRegion::get_frame(void) const {
+  return LVector4f(_left, _right, _bottom, _top);
 }

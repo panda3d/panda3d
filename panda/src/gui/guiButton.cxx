@@ -231,3 +231,21 @@ void GuiButton::set_pos(const LVector3f& p) {
   GuiItem::set_pos(p);
   this->recompute_frame();
 }
+
+void GuiButton::output(ostream& os) const {
+  GuiItem::output(os);
+  os << "  Button data:" << endl;
+  os << "    up - 0x" << (void*)_up << endl;
+  os << "    up_rollover - 0x" << (void*)_up_rollover << endl;
+  os << "    down - 0x" << (void*)_down << endl;
+  os << "    down_rollover - 0x" << (void*)_down_rollover << endl;
+  os << "    inactive - 0x" << (void*)_inactive << endl;
+  os << "    up event - '" << _up_event << "'" << endl;
+  os << "    up_rollover event - '" << _up_rollover_event << "'" << endl;
+  os << "    down event - '" << _down_event << "'" << endl;
+  os << "    down_rollover event - '" << _down_rollover_event << "'" << endl;
+  os << "    inactive event - '" << _inactive_event << "'" << endl;
+  os << "    rgn - 0x" << (void*)_rgn << endl;
+  os << "      frame - " << _rgn->get_frame() << endl;
+  os << "    state - " << _state << endl;
+}

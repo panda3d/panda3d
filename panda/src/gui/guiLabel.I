@@ -3,7 +3,8 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-INLINE GuiLabel::GuiLabel(void) : _type(GuiLabel::NONE) {
+INLINE GuiLabel::GuiLabel(void) : _type(GuiLabel::NONE), _scale(1.),
+				  _pos(0., 0., 0.) {
 }
 
 INLINE Node* GuiLabel::get_geometry(void) const {

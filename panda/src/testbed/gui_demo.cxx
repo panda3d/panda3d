@@ -157,6 +157,7 @@ static void setup_gui(void) {
   f1->set_scale(0.1);
   f1->set_pos(LVector3f::rfu(0., 0., -0.25));
   f1->manage(mgr, event_handler);
+  cerr << *f1;
 }
 
 static void event_2(CPT_Event) {

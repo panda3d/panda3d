@@ -30,51 +30,52 @@ void GuiFrame::recompute_frame(void) {
     if (n > 0) {
       GuiItem* here = (*i).get_item();
       LVector4f ext_h = here->get_frame();
-      float x_h = (ext_h[0] + ext_h[1]) / 2.;
-      float y_h = (ext_h[2] + ext_h[3]) / 2.;
+      LVector3f pos_h = here->get_pos();
       for (int j=0; j<n; ++j) {
 	Packing pack = (*i).get_nth_packing(j);
 	if (pack == NONE)
 	  continue;
 	GuiItem* to = (*i).get_nth_to(j);
 	LVector4f ext_t = to->get_frame();
-	float x_t = (ext_t[0] + ext_h[1]) / 2.;
-	float y_t = (ext_t[2] + ext_h[3]) / 2.;
 	switch (pack) {
 	case ABOVE:
 	  {
 	    // to(top) - here(bottom)
 	    float diff = ext_t[3] - ext_h[2];
-	    y_h += diff;
-	    here->set_pos(LVector3f::rfu(x_h, 0., y_h));
+	    LVector3f move = LVector3f::rfu(0., 0., diff);
+	    here->set_pos(pos_h + move);
 	    ext_h = here->get_frame();
+	    pos_h = here->get_pos();
 	  }
 	  break;
 	case UNDER:
 	  {
 	    // to(bottom) - here(top)
 	    float diff = ext_t[2] - ext_h[3];
-	    y_h += diff;
-	    here->set_pos(LVector3f::rfu(x_h, 0., y_h));
+	    LVector3f move = LVector3f::rfu(0., 0., diff);
+	    here->set_pos(pos_h + move);
 	    ext_h = here->get_frame();
+	    pos_h = here->get_pos();
 	  }
 	  break;
 	case LEFT:
 	  {
 	    // to(left) - here(right)
 	    float diff = ext_t[0] - ext_h[1];
-	    x_h += diff;
-	    here->set_pos(LVector3f::rfu(x_h, 0., y_h));
+	    LVector3f move = LVector3f::rfu(diff, 0., 0.);
+	    here->set_pos(pos_h + move);
 	    ext_h = here->get_frame();
+	    pos_h = here->get_pos();
 	  }
 	  break;
 	case RIGHT:
 	  {
 	    // to(right) - here(left)
 	    float diff = ext_t[1] - ext_h[0];
-	    x_h += diff;
-	    here->set_pos(LVector3f::rfu(x_h, 0., y_h));
+	    LVector3f move = LVector3f::rfu(diff, 0., 0.);
+	    here->set_pos(pos_h + move);
 	    ext_h = here->get_frame();
+	    pos_h = here->get_pos();
 	  }
 	  break;
 	default:
@@ -151,7 +152,7 @@ void GuiFrame::pack_item(GuiItem* item, Packing rel, GuiItem* to) {
       << "tried to pack an item relative to something we don't have" << endl;
     return;
   }
-  (*box).add_link(Connection(rel, (*tobox).get_item()));
+  (*box).add_link(Connection(rel, to));
   this->recompute_frame();
 }
 
@@ -186,4 +187,22 @@ void GuiFrame::set_pos(const LVector3f& p) {
     (*i).get_item()->set_pos(p);
   GuiItem::set_pos(p);
   this->recompute_frame();
+}
+
+void GuiFrame::output(ostream& os) const {
+  GuiItem::output(os);
+  os << "  Frame data:" << endl;
+  Boxes::const_iterator i;
+  for (i=_items.begin(); i!=_items.end(); ++i) {
+    os << "    box - 0x" << (void*)((*i).get_item()) << endl;
+    int n = (*i).get_num_links();
+    if (n > 0) {
+      for (int j=0; j<n; ++j)
+	os << "      linked by " << (*i).get_nth_packing(j) << " to 0x"
+	   << (void*)((*i).get_nth_to(j)) << endl;
+    }
+  }
+  for (i=_items.begin(); i!=_items.end(); ++i) {
+    os << *((*i).get_item());
+  }
 }

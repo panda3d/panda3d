@@ -36,6 +36,8 @@ public:
   INLINE float get_bottom(void) const;
   INLINE float get_top(void) const;
   INLINE LVector4f get_frame(void) const;
+
+  virtual void output(ostream&) const = 0;
 };
 
 #include "guiItem.I"

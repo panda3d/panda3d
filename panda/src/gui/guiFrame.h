@@ -68,6 +68,8 @@ public:
 
   virtual void set_scale(float);
   virtual void set_pos(const LVector3f&);
+
+  virtual void output(ostream&) const;
 };
 
 #include "guiFrame.I"

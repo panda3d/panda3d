@@ -39,6 +39,9 @@ GuiLabel* GuiLabel::make_simple_text_label(const string& text, Node* font) {
   n->set_align(TM_ALIGN_CENTER);
   n->set_text_color(1., 1., 1., 1.);
   n->set_text(text);
+  ret->set_scale(1.);
+  ret->set_pos(LVector3f(0., 0., 0.));
+  ret->recompute_transform();
   return ret;
 }
 
