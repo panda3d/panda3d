@@ -289,8 +289,8 @@ get_frame_accurate() const {
 //       Access: Published, Virtual
 //  Description: Creates a series of line segments that approximates
 //               the curve.  These line segments may be made visible
-//               by adding the GeomNode returned by get_geom_node() into the
-//               scene graph.
+//               by parenting the node returned by get_geom_node()
+//               into the scene graph.
 ////////////////////////////////////////////////////////////////////
 bool ParametricCurveDrawer::
 draw() {
@@ -401,7 +401,8 @@ hide() {
 ////////////////////////////////////////////////////////////////////
 //     Function: ParametricCurveDrawer::set_tick_scale
 //       Access: Published
-//  Description: Sets the visible size of the time tick marks.
+//  Description: Sets the visible size of the time tick marks or
+//               geometry.
 ////////////////////////////////////////////////////////////////////
 void ParametricCurveDrawer::
 set_tick_scale(float scale) {
@@ -413,7 +414,7 @@ set_tick_scale(float scale) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ParametricCurveDrawer::get_tick_scale
 //       Access: Published
-//  Description: Returns the size of the time tick marks.
+//  Description: Returns the size of the time tick marks or geometry.
 ////////////////////////////////////////////////////////////////////
 float ParametricCurveDrawer::
 get_tick_scale() const {
@@ -422,7 +423,7 @@ get_tick_scale() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ParametricCurveDrawer::get_tick_marks
-//       Access: Protected, Static
+//       Access: Private, Static
 //  Description: Given a tangent vector, computes two vectors at right
 //               angles to the tangent and to each other, suitable for
 //               drawing as tick marks.

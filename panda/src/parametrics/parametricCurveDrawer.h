@@ -55,18 +55,21 @@ public:
   INLINE float get_max_t() const;
   INLINE void redraw();
 
-protected:
+private:
   static void get_tick_marks(const LVecBase3f &tangent, LVecBase3f &t1, LVecBase3f &t2);
 
+protected:
   PT(GeomNode) _geom_node;
   PT(ParametricCurveCollection) _curves;
+  bool _frame_accurate;
+
+private:
   float _num_segs;
   LineSegs _lines, _ticks;
   PT(Node) _tick_geometry;
   bool _drawn;
   float _num_ticks;
   float _tick_scale;
-  bool _frame_accurate;
 
   typedef vector<PT(NodeRelation)> TickArcs;
   TickArcs _tick_arcs;

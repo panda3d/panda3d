@@ -16,7 +16,7 @@
     curveFitter.I curveFitter.cxx curveFitter.h \
     hermiteCurve.cxx hermiteCurve.h \
     nurbsCurve.h \
-    nurbsCurveDrawer.cxx nurbsCurveDrawer.h \
+    nurbsCurveDrawer.I nurbsCurveDrawer.cxx nurbsCurveDrawer.h \
     nurbsCurveInterface.I nurbsCurveInterface.cxx nurbsCurveInterface.h \
     parametricCurve.cxx parametricCurve.h \
     parametricCurveCollection.I parametricCurveCollection.cxx \
@@ -34,7 +34,7 @@
     curveFitter.I curveFitter.h \
     hermiteCurve.h \
     nurbsCurve.h \
-    nurbsCurveDrawer.h \
+    nurbsCurveDrawer.I nurbsCurveDrawer.h \
     nurbsCurveInterface.I nurbsCurveInterface.h \
     nurbsPPCurve.h nurbsPPCurve.I \
     parametricCurve.h \

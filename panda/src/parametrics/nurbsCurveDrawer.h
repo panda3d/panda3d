@@ -36,7 +36,8 @@ PUBLISHED:
   void set_show_knots(bool flag);
   bool get_show_knots() const;
 
-  bool hilight(int n, float hr=1.0, float hg=1.0, float hb=0.0);
+  INLINE bool hilight(int n);
+  bool hilight(int n, float hr, float hg, float hb);
   bool unhilight(int n);
 
 protected:
@@ -65,6 +66,8 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+#include "nurbsCurveDrawer.I"
   
 #endif
 

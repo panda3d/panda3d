@@ -2,19 +2,6 @@
 // Created by:  drose (27Feb98)
 // 
 ////////////////////////////////////////////////////////////////////
-// Copyright (C) 1992,93,94,95,96,97  Walt Disney Imagineering, Inc.
-// 
-// These  coded  instructions,  statements,  data   structures   and
-// computer  programs contain unpublished proprietary information of
-// Walt Disney Imagineering and are protected by  Federal  copyright
-// law.  They may  not be  disclosed to third  parties  or copied or
-// duplicated in any form, in whole or in part,  without  the  prior
-// written consent of Walt Disney Imagineering Inc.
-////////////////////////////////////////////////////////////////////
-//
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
 
 #include "nurbsCurveDrawer.h"
 #include "nurbsCurveInterface.h"
@@ -26,7 +13,7 @@ TypeHandle NurbsCurveDrawer::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveDrawer::Constructor
-//       Access: Public, Scheme
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 NurbsCurveDrawer::
@@ -47,7 +34,7 @@ NurbsCurveDrawer() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveDrawer::Destructor
-//       Access: Public, Scheme, Virtual
+//       Access: Published, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 NurbsCurveDrawer::
@@ -58,7 +45,7 @@ NurbsCurveDrawer::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveDrawer::set_cv_color
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Specifies the color of the CV's.
 ////////////////////////////////////////////////////////////////////
 void NurbsCurveDrawer::
@@ -66,14 +53,12 @@ set_cv_color(float r, float g, float b) {
   _cv_color.set(r, g, b);
   _cvs.set_color(r, g, b);
 
-  if (_drawn) {
-    draw();
-  }
+  redraw();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveDrawer::set_knot_color
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Specifies the color of the knots.
 ////////////////////////////////////////////////////////////////////
 void NurbsCurveDrawer::
@@ -81,14 +66,12 @@ set_knot_color(float r, float g, float b) {
   _knot_color.set(r, g, b);
   _knots.set_color(r, g, b);
 
-  if (_drawn) {
-    draw();
-  }
+  redraw();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveDrawer::set_hull_color
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Specifies the color of the convex hull.
 ////////////////////////////////////////////////////////////////////
 void NurbsCurveDrawer::
@@ -96,16 +79,14 @@ set_hull_color(float r, float g, float b) {
   _hull_color.set(r, g, b);
   _hull.set_color(r, g, b);
 
-  if (_drawn) {
-    draw();
-  }
+  redraw();
 }
 
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveDrawer::draw
-//       Access: Public, Scheme, Virtual
+//       Access: Published, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool NurbsCurveDrawer::
@@ -182,7 +163,7 @@ draw() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveDrawer::recompute
-//       Access: Public, Scheme, Virtual
+//       Access: Published, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool NurbsCurveDrawer::
@@ -193,20 +174,18 @@ recompute(float t1, float t2, ParametricCurve *curve) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveDrawer::set_show_cvs
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Sets the flag that hides or shows the CV's.
 ////////////////////////////////////////////////////////////////////
 void NurbsCurveDrawer::
 set_show_cvs(bool flag) {
   _show_cvs = flag;
-  if (_drawn) {
-    draw();
-  }
+  redraw();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveDrawer::get_show_cvs
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Returns the current state of the show-CV's flag.
 ////////////////////////////////////////////////////////////////////
 bool NurbsCurveDrawer::
@@ -216,20 +195,18 @@ get_show_cvs() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveDrawer::set_show_hull
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Sets the flag that hides or shows the convex hull.
 ////////////////////////////////////////////////////////////////////
 void NurbsCurveDrawer::
 set_show_hull(bool flag) {
   _show_hull = flag;
-  if (_drawn) {
-    draw();
-  }
+  redraw();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveDrawer::get_show_hull
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Returns the current state of the show-hull flag.
 ////////////////////////////////////////////////////////////////////
 bool NurbsCurveDrawer::
@@ -239,20 +216,18 @@ get_show_hull() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveDrawer::set_show_knots
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Sets the flag that hides or shows the knots.
 ////////////////////////////////////////////////////////////////////
 void NurbsCurveDrawer::
 set_show_knots(bool flag) {
   _show_knots = flag;
-  if (_drawn) {
-    draw();
-  }
+  redraw();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveDrawer::get_show_knots
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Returns the current state of the show-knots flag.
 ////////////////////////////////////////////////////////////////////
 bool NurbsCurveDrawer::
@@ -263,7 +238,7 @@ get_show_knots() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveDrawer::hilight
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Hilights a particular CV by showing it and its knot
 //               in a different color.  Returns true if the CV exists
 //               and has been drawn, false otherwise.
@@ -289,7 +264,7 @@ hilight(int n, float hr, float hg, float hb) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveDrawer::unhilight
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Removes the hilight previously set on a CV.
 ////////////////////////////////////////////////////////////////////
 bool NurbsCurveDrawer::
