@@ -377,7 +377,8 @@ make_pbuffer(HDC twindow_dc) {
     memset(pformat, 0, sizeof(pformat));
     unsigned int nformats = 0;
     if (!wglgsg->_wglChoosePixelFormatARB(twindow_dc, iattrib_list, fattrib_list,
-                                          max_pformats, pformat, &nformats)) {
+                                          max_pformats, pformat, &nformats)
+        || nformats == 0) {
       wgldisplay_cat.info()
         << "Couldn't find a suitable pixel format for creating a pbuffer.\n";
       return false;
