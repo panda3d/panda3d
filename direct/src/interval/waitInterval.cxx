@@ -30,13 +30,15 @@ TypeHandle WaitInterval::_type_handle;
 ////////////////////////////////////////////////////////////////////
 void WaitInterval::
 priv_step(double t) {
+  // The WaitInterval is normally not run directly; it just fills up
+  // time when constructing a MetaInterval (specifically, a Sequence).
 #ifndef NDEBUG
   if (verify_intervals) {
     interval_cat.info() 
       << "running WaitInterval.  Intentional?\n";
   }
 #endif
-  check_started("priv_step");
+  check_started(get_class_type(), "priv_step");
   _state = S_started;
   _curr_t = t;
 }

@@ -51,6 +51,7 @@ CInterval(const string &name, double duration, bool open_ended) :
   _play_rate = 1.0;
   _do_loop = false;
   _loop_count = 0;
+  nassertv(_duration >= 0.0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -250,7 +251,7 @@ priv_do_event(double t, EventType event) {
 ////////////////////////////////////////////////////////////////////
 void CInterval::
 priv_initialize(double t) {
-  check_stopped("priv_initialize");
+  check_stopped(get_class_type(), "priv_initialize");
   recompute();
   _state = S_started;
   priv_step(t);
@@ -266,7 +267,7 @@ priv_initialize(double t) {
 ////////////////////////////////////////////////////////////////////
 void CInterval::
 priv_instant() {
-  check_stopped("priv_instant");
+  check_stopped(get_class_type(), "priv_instant");
   recompute();
   _state = S_started;
   priv_step(get_duration());
@@ -283,7 +284,7 @@ priv_instant() {
 ////////////////////////////////////////////////////////////////////
 void CInterval::
 priv_step(double t) {
-  check_started("priv_step");
+  check_started(get_class_type(), "priv_step");
   _state = S_started;
   _curr_t = t;
 }
@@ -298,7 +299,7 @@ priv_step(double t) {
 ////////////////////////////////////////////////////////////////////
 void CInterval::
 priv_finalize() {
-  check_started("priv_step");
+  check_started(get_class_type(), "priv_finalize");
   double duration = get_duration();
   priv_step(duration);
   _state = S_final;
@@ -315,7 +316,7 @@ priv_finalize() {
 ////////////////////////////////////////////////////////////////////
 void CInterval::
 priv_reverse_initialize(double t) {
-  check_stopped("priv_reverse_initialize");
+  check_stopped(get_class_type(), "priv_reverse_initialize");
   recompute();
   _state = S_started;
   priv_step(t);
@@ -332,7 +333,7 @@ priv_reverse_initialize(double t) {
 ////////////////////////////////////////////////////////////////////
 void CInterval::
 priv_reverse_instant() {
-  check_stopped("priv_reverse_instant");
+  check_stopped(get_class_type(), "priv_reverse_instant");
   recompute();
   _state = S_started;
   priv_step(0.0);
@@ -348,7 +349,7 @@ priv_reverse_instant() {
 ////////////////////////////////////////////////////////////////////
 void CInterval::
 priv_reverse_finalize() {
-  check_started("priv_reverse_finalize");
+  check_started(get_class_type(), "priv_reverse_finalize");
   priv_step(0.0);
   _state = S_initial;
 }
@@ -369,7 +370,7 @@ priv_reverse_finalize() {
 ////////////////////////////////////////////////////////////////////
 void CInterval::
 priv_interrupt() {
-  check_started("priv_interrupt");
+  check_started(get_class_type(), "priv_interrupt");
   _state = S_paused;
 }
 

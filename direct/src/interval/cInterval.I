@@ -233,11 +233,11 @@ recompute() const {
 //               one of the stopped states.
 ////////////////////////////////////////////////////////////////////
 INLINE void CInterval::
-check_stopped(const char *method_name) const {
+check_stopped(TypeHandle type, const char *method_name) const {
   if (_state == S_started) {
     interval_cat.warning()
-      << get_name() << "." << method_name << "() called in state "
-      << _state << ".\n";
+      << type.get_name() << "::" << method_name << "() called for "
+      << get_name() << " in state " << _state << ".\n";
     nassertv(!verify_intervals);
   }
 }
@@ -249,11 +249,11 @@ check_stopped(const char *method_name) const {
 //               one of the started states.
 ////////////////////////////////////////////////////////////////////
 INLINE void CInterval::
-check_started(const char *method_name) const {
+check_started(TypeHandle type, const char *method_name) const {
   if (_state != S_started && _state != S_paused) {
     interval_cat.warning()
-      << get_name() << "." << method_name << "() called in state "
-      << _state << ".\n";
+      << type.get_name() << "::" << method_name << "() called for "
+      << get_name() << " in state " << _state << ".\n";
     nassertv(!verify_intervals);
   }
 }

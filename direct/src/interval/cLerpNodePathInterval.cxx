@@ -81,7 +81,7 @@ CLerpNodePathInterval(const string &name, double duration,
 ////////////////////////////////////////////////////////////////////
 void CLerpNodePathInterval::
 priv_initialize(double t) {
-  check_stopped("initialize");
+  check_stopped(get_class_type(), "priv_initialize");
   recompute();
   _prev_d = 0.0;
   _state = S_started;
@@ -98,7 +98,7 @@ priv_initialize(double t) {
 ////////////////////////////////////////////////////////////////////
 void CLerpNodePathInterval::
 priv_instant() {
-  check_stopped("instant");
+  check_stopped(get_class_type(), "priv_instant");
   recompute();
   _prev_d = 0.0;
   _state = S_started;
@@ -115,7 +115,7 @@ priv_instant() {
 ////////////////////////////////////////////////////////////////////
 void CLerpNodePathInterval::
 priv_step(double t) {
-  check_started("step");
+  check_started(get_class_type(), "priv_step");
   _state = S_started;
   double d = compute_delta(t);
 
@@ -316,7 +316,7 @@ priv_step(double t) {
 ////////////////////////////////////////////////////////////////////
 void CLerpNodePathInterval::
 priv_reverse_initialize(double t) {
-  check_stopped("reverse_initialize");
+  check_stopped(get_class_type(), "priv_reverse_initialize");
   recompute();
   _state = S_started;
   _prev_d = 1.0;
@@ -334,7 +334,7 @@ priv_reverse_initialize(double t) {
 ////////////////////////////////////////////////////////////////////
 void CLerpNodePathInterval::
 priv_reverse_instant() {
-  check_stopped("reverse_initialize");
+  check_stopped(get_class_type(), "priv_reverse_initialize");
   recompute();
   _state = S_started;
   _prev_d = 1.0;

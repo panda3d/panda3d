@@ -127,8 +127,8 @@ protected:
 
   INLINE void recompute() const;
   virtual void do_recompute();
-  INLINE void check_stopped(const char *method_name) const;
-  INLINE void check_started(const char *method_name) const;
+  INLINE void check_stopped(TypeHandle type, const char *method_name) const;
+  INLINE void check_started(TypeHandle type, const char *method_name) const;
 
   State _state;
   double _curr_t;

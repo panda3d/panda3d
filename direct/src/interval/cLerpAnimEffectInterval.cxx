@@ -31,7 +31,7 @@ TypeHandle CLerpAnimEffectInterval::_type_handle;
 ////////////////////////////////////////////////////////////////////
 void CLerpAnimEffectInterval::
 priv_step(double t) {
-  check_started("step");
+  check_started(get_class_type(), "priv_step");
   _state = S_started;
   double d = compute_delta(t);
 

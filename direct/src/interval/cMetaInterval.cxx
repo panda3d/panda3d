@@ -364,7 +364,7 @@ priv_initialize(double t) {
     return;
   }
 
-  check_stopped("priv_initialize");
+  check_stopped(get_class_type(), "priv_initialize");
   // It may be tempting to flush the event_queue here, but don't do
   // it.  Those are events that must still be serviced from some
   // previous interval operation.  Throwing them away would be a
@@ -419,7 +419,7 @@ priv_instant() {
     return;
   }
 
-  check_stopped("priv_instant");
+  check_stopped(get_class_type(), "priv_instant");
   recompute();
   _active.clear();
 
@@ -460,7 +460,7 @@ priv_step(double t) {
     return;
   }
 
-  check_started("priv_step");
+  check_started(get_class_type(), "priv_step");
   int now = double_to_int_time(t);
 
   /*
@@ -568,7 +568,7 @@ priv_reverse_initialize(double t) {
     return;
   }
 
-  check_stopped("priv_reverse_initialize");
+  check_stopped(get_class_type(), "priv_reverse_initialize");
   // It may be tempting to flush the event_queue here, but don't do
   // it.  Those are events that must still be serviced from some
   // previous interval operation.  Throwing them away would be a
@@ -624,7 +624,7 @@ priv_reverse_instant() {
     return;
   }
 
-  check_stopped("priv_reverse_instant");
+  check_stopped(get_class_type(), "priv_reverse_instant");
   recompute();
   _active.clear();
 
@@ -1176,7 +1176,8 @@ recompute_level(int n, int level_begin, int &level_end) {
 
   while (n < (int)_defs.size() && _defs[n]._type != DT_pop_level) {
     IntervalDef &def = _defs[n];
-    int begin_time, end_time;
+    int begin_time = previous_begin;
+    int end_time = previous_end;
     switch (def._type) {
     case DT_c_interval:
       begin_time = get_begin_time(def, level_begin, previous_begin, previous_end);
