@@ -647,12 +647,11 @@ ppremake to define compile-time parameters; the Configrc file is read
 every time Panda is started and it defines parameters that control
 run-time behavior.
 
-Create a file called Configrc in your home directory (or wherever you
-find convenient).  Note that this file must have no extension; in
-particular, it should not have the extension "txt".  Notepad will add
-this extension by default, so if you use Notepad to create the file,
-you should then rename it so that it does not have the extension
-"txt".
+Create a file called Configrc in the $INSTALL_DIR/etc directory.  By
+convention, your custom Configrc file should not have any extension,
+not even the extension ".txt"; this differentiates it from the
+standard Configrc files which are installed into the $INSTALL_DIR/etc
+file.
 
 For now, add just the line:
 
@@ -667,15 +666,11 @@ Later you may add additional lines here to control the default
 behavior of Panda in other ways.  See the file Configrc in this
 directory for more examples.
 
-If you do not specify otherwise (and you did not redefine
-DEFAULT_CONFIGRC_DIR in your Config.pp file), Panda will look for the
-Configrc file in the current directory, so for now try to run pview
-from within the same directory as your Configrc file.  If all goes
-well, it should open up a window with a blue triangle.  You can use
-the mouse to move the triangle around.  You can also pass the name of
-an egg file, if you have one (look in the models directory for some
-sample egg files), on the command line, and pview will load up and
-display the egg file.
+Now try to run pview again.  If all goes well, it should open up a
+window with a blue triangle.  You can use the mouse to move the
+triangle around.  You can also pass the name of an egg file, if you
+have one (look in the models directory for some sample egg files), on
+the command line, and pview will load up and display the egg file.
 
 If you want to load the Configrc from other than the compiled-in
 default directory, set the environment variable:
@@ -684,7 +679,12 @@ default directory, set the environment variable:
   export CONFIGRC_DIR
 
 Where /my/home/directory is the name of your home directory (or
-wherever you put the Configrc file).
+wherever you put the Configrc file).  Note that if you redefine
+CONFIGRC_DIR, you will no longer automatically load the standard
+Configrc files that were installed into $INSTALL_DIR/etc.  It is
+possible to configure Panda to search for Configrc files in more than
+one directory, but this is a little more complicated and is outside
+the scope of this document.
 
 
 
