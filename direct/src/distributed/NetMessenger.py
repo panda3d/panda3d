@@ -1,6 +1,7 @@
 
 from cPickle import dumps, loads
 
+from direct.directnotify import DirectNotifyGlobal
 from direct.distributed.PyDatagram import PyDatagram
 from direct.showbase.Messenger import Messenger
 
@@ -13,13 +14,15 @@ from direct.showbase.Messenger import Messenger
 MESSAGE_TYPES=(
     "avatarOnline",
     "avatarOffline",
+    "create",
+    "needUberdogCreates",
 )
 
 # This is the reverse look up for the recipient of the
 # datagram:
 MESSAGE_STRINGS={}
-for mt, i in MESSAGE_TYPES, range(1, len(MESSAGE_TYPES)+1):
-    MESSAGE_STRINGS[mt]=i
+for i in zip(MESSAGE_TYPES, range(1, len(MESSAGE_TYPES)+1)):
+    MESSAGE_STRINGS[i[0]]=i[1]
 
 
 class NetMessenger(Messenger):
@@ -28,6 +31,9 @@ class NetMessenger(Messenger):
     are sent over the network and (possibly) handled (accepted) on a
     remote machine (server).
     """
+    if __debug__:
+        notify = DirectNotifyGlobal.directNotify.newCategory('NetMessenger')
+
     def __init__(self, air, channels):
         """
         air is the AI Repository.
@@ -61,8 +67,10 @@ class NetMessenger(Messenger):
 
         messageType=MESSAGE_STRINGS.get(message, 0)
         datagram.addUint16(messageType)
-
-        datagram.addString(str(dumps((message, sentArgs))))
+        if messageType:
+            datagram.addString(str(dumps(sentArgs)))
+        else:
+            datagram.addString(str(dumps((message, sentArgs))))
         self.air.send(datagram)
 
     def handle(self, pickleData):
