@@ -68,7 +68,9 @@ from_command_line(EggData *data,
   // relative to this directory.
   _current_directory = ExecutionEnvironment::get_cwd();
   _source_filename = source_filename;
+  _source_filename.make_absolute();
   _dest_filename = dest_filename;
+  _dest_filename.make_absolute();
 
   // We save the default PaletteGroup at this point, because the egg
   // file inherits the default group that was in effect when it was
