@@ -49,6 +49,21 @@ get_leak_memory() {
 
 //const bool track_memory_usage = config_express.GetBool("track-memory-usage", false);
 
+// Set this to false to avoid using the high-precision clock, even if
+// it is available.
+bool
+get_use_high_res_clock() {
+  static bool got_use_high_res_clock = false;
+  static bool use_high_res_clock;
+
+  if (!got_use_high_res_clock) {
+    use_high_res_clock = config_express.GetBool("use-high-res-clock", true);
+    got_use_high_res_clock = true;
+  }
+  
+  return use_high_res_clock;
+}
+
 const int patchfile_window_size =
 	config_express.GetInt("patchfile-window-size", 16);
 

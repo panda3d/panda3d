@@ -37,14 +37,6 @@ get_real_time() const {
     LARGE_INTEGER count;
     QueryPerformanceCounter(&count);
 
-    if (_init_count > count.QuadPart)
-      _init_count = count.QuadPart;
-
-    if (_frequency < 0) {
-      express_cat.error()
-	<< "TrueClock::get_real_time() - frequency is negative!" << endl;
-      QueryPerformanceFrequency((LARGE_INTEGER *)&_frequency);
-    }
     return (double)(count.QuadPart - _init_count) / (double)_frequency;
 
   } else {
@@ -57,12 +49,25 @@ get_real_time() const {
 
 TrueClock::
 TrueClock() {
-  _has_high_res = QueryPerformanceFrequency((LARGE_INTEGER *)&_frequency);
+  _has_high_res = false;
+  if (get_use_high_res_clock()) {
+    _has_high_res = QueryPerformanceFrequency((LARGE_INTEGER *)&_frequency);
+  }
 
   if (_has_high_res) {
-    QueryPerformanceCounter((LARGE_INTEGER *)&_init_count);
+    LARGE_INTEGER count;
+    QueryPerformanceCounter(&count);
+    _init_count = count.QuadPart;
 
-  } else {
+    if (_frequency <= 0) {
+      express_cat.error()
+	<< "TrueClock::get_real_time() - frequency is negative!" << endl;
+      _has_high_res = false;
+    }
+
+  }
+
+  if (!_has_high_res) {
     express_cat.warning()
       << "No high resolution clock available." << endl;
 
