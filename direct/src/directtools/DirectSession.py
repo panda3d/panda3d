@@ -158,8 +158,8 @@ class DirectSession(PandaObject):
                           'shift', 'shift-up', 'alt', 'alt-up',
                           'page_up', 'page_down', 
                           '[', '{', ']', '}',
-                          'A', 'b', 'l', 'L', 'o', 'p', 'r', 'R', 's',
-                          't', 'v', 'w']
+                          'shift-a', 'b', 'l', 'L', 'o', 'p', 'r', 'shift-r',
+                          's', 't', 'v', 'w']
         self.mouseEvents = ['mouse1', 'mouse1-up',
                             'mouse2', 'mouse2-up',
                             'mouse3', 'mouse3-up']
@@ -362,7 +362,7 @@ class DirectSession(PandaObject):
             base.toggleBackface()
         elif input == 'l':
             self.lights.toggle()
-        elif input == 'L':
+        elif input == 'shift-l':
             self.cameraControl.toggleCOALock()
         elif input == 'o':
             self.oobe()
@@ -373,7 +373,7 @@ class DirectSession(PandaObject):
             # Do wrt reparent
             if self.selected.last:
                 self.reparent(self.selected.last, fWrt = 1)
-        elif input == 'R':
+        elif input == 'shift-r':
             # Do regular reparent
             if self.selected.last:
                 self.reparent(self.selected.last)
@@ -382,7 +382,7 @@ class DirectSession(PandaObject):
                 self.select(self.selected.last)
         elif input == 't':
             base.toggleTexture()
-        elif input == 'A':
+        elif input == 'shift-a':
             self.selected.toggleVisAll()
         elif input == 'w':
             base.toggleWireframe()
