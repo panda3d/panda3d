@@ -82,7 +82,7 @@ class ShowBase:
 
         # This is a placeholder for a CollisionTraverser.  If someone
         # stores a CollisionTraverser pointer here, we'll traverse it
-        # in the igloop task.
+        # in the collisionloop task.
         self.cTrav = 0
         # Ditto for an AppTraverser.
         self.appTrav = 0
@@ -615,14 +615,16 @@ class ShowBase:
         ivalMgr.step()
         return Task.cont
 
-    def igloop(self, state):
+    def collisionloop(self, state):
         # run the collision traversal if we have a
         # CollisionTraverser set.
         if self.cTrav:
             self.cTrav.traverse(self.render)
         if self.appTrav:
             self.appTrav.traverse(self.render)
-            
+        return Task.cont
+
+    def igloop(self, state):
         # Finally, render the frame.
         self.graphicsEngine.renderFrame()
 
@@ -636,6 +638,10 @@ class ShowBase:
         # give the igloop task a reasonably "late" priority,
         # so that it will get run after most tasks
         self.taskMgr.add(self.igloop, 'igloop', priority = 50)
+        # make the collisionloop task run shortly before igloop,
+        # but leave enough room for the app to insert tasks
+        # between collisionloop and igloop
+        self.taskMgr.add(self.collisionloop, 'collisionloop', priority = 45)
         # give the dataloop task a reasonably "early" priority,
         # so that it will get run before most tasks
         self.taskMgr.add(self.dataloop, 'dataloop', priority = -50)
@@ -646,6 +652,7 @@ class ShowBase:
 
     def shutdown(self):
         self.taskMgr.remove('igloop')
+        self.taskMgr.remove('collisionloop')
         self.taskMgr.remove('dataloop')
         self.taskMgr.remove('ivalloop')
         self.eventMgr.shutdown()
