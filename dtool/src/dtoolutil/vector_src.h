@@ -40,11 +40,13 @@
 // With the Dinkum library, we must first export the base class,
 // _Vector_val.
     #define VV_BASE std::_Vector_val<TYPE, std::allocator<TYPE> >
+#pragma warning (disable : 4231)
 EXPORT_TEMPLATE_CLASS(EXPCL, EXPTP, VV_BASE)
     #undef VV_BASE
   #endif
 
 // Now we can export the vector class.
+#pragma warning (disable : 4231)
 EXPORT_TEMPLATE_CLASS(EXPCL, EXPTP, std::vector<TYPE>)
 
 #endif
@@ -57,9 +59,11 @@ typedef std::vector<TYPE> NAME;
   // the Dinkum STL implementation uses member templates to handle
   // this, but we cannot export the member templates from the DLL.
 
+/*
 extern EXPCL void
 insert_into_vector(NAME &vec, NAME::iterator where,
 		   const TYPE *begin, const TYPE *end);
+*/
 
 
 #undef EXPCL

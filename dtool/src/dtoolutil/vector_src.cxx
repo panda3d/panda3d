@@ -32,11 +32,13 @@
 //
 // They will automatically be undefined at the end of the file.
 
+/*
 void 
 insert_into_vector(NAME &vec, NAME::iterator where,
 		   NAME::const_pointer begin, NAME::const_pointer end) {
   vec.insert(where, begin, end);
 }
+*/
 
 #undef EXPCL
 #undef EXPTP
