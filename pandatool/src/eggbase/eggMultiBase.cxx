@@ -42,7 +42,7 @@ EggMultiBase() {
      "If any do, abort with an error.  This option is designed to help "
      "detect errors when populating or building a standalone model tree, "
      "which should be self-contained and include only relative pathnames.",
-     &EggReader::dispatch_none, &_noabs);
+     &EggMultiBase::dispatch_none, &_noabs);
 }
 
 ////////////////////////////////////////////////////////////////////
