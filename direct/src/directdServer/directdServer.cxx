@@ -26,17 +26,9 @@ DirectDServer::~DirectDServer() {
 
 void
 DirectDServer::handle_command(const string& cmd) {
-  if (_verbose) {
-    cerr<<"command: "<<cmd<<endl;
-  }
+  nout<<"DirectDServer::handle_command: "<<cmd<<", size="<<cmd.size()<<endl;
   if (cmd.size()==1) {
     switch (cmd[0]) {
-    case 's': {
-      string c;
-      read_command(c);
-      start_app(c);
-      }
-      break;
     case 'k':
       kill_app();
       break;
@@ -45,9 +37,20 @@ DirectDServer::handle_command(const string& cmd) {
       break;
     default:
       cerr<<"unknown command: "<<cmd<<endl;
+      break;
     }
   } else {
-    start_app(cmd);
+    switch (cmd[0]) {
+    case '!': {
+      string c=cmd.substr(1, string::npos);
+      //read_command(c);
+      start_app(c);
+      }
+      break;
+    default:
+      start_app(cmd);
+      break;
+    }
   }
 }
 
@@ -74,7 +77,7 @@ DirectDServer::read_command(string& cmd) {
 
 void
 DirectDServer::run_server(int port) {
-  if (_verbose) cerr<<"server"<<endl;
+  nout<<"server"<<endl;
   
   listen_to(port);
 
@@ -96,7 +99,7 @@ main(int argc, char *argv[]) {
     return 1;
   }
 
-  cerr<<"directdServer"<<endl;
+  cerr<<"directdServer "<<__DATE__<<endl;
   int port=8001;
   if (argc > 1) {
     port=(atoi(argv[argc-1]));

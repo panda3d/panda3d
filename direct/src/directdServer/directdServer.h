@@ -35,6 +35,6 @@ public:
 
 protected:
   void read_command(string& cmd);
-  void handle_command(const string& cmd);
+  virtual void handle_command(const string& cmd);
 };
 

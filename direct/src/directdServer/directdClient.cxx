@@ -49,9 +49,7 @@ DirectDClient::cli_command(const string& cmd) {
 
 void
 DirectDClient::run_client(const string& host, int port) {
-  if (_verbose) {
-    cerr<<"client"<<endl;
-  }
+  nout<<"client"<<endl;
   
   connect_to(host, port);
 

@@ -56,7 +56,9 @@ PUBLISHED:
 
   // Description: Call this function from the client when
   //              import ShowbaseGlobal is nearly finished.
-  int client_ready(const string& client_host, int port);
+  //              cmd: a cli command that will be executed on the remote
+  //                   machine.
+  int client_ready(const string& client_host, int port, const string& cmd);
 
   // Description: Call this function from the client after
   //              calling <count> client_ready() calls.
@@ -64,7 +66,7 @@ PUBLISHED:
   //              Call listen_to(port) prior to calling
   //              wait_for_servers() (or better yet, prior
   //              to calling client_ready()).
-  bool wait_for_servers(int count, int timeout_ms);
+  bool wait_for_servers(int count, int timeout_ms=2*60*1000);
 
   // Description: Call this function from the server when
   //              import ShowbaseGlobal is nearly finished.
@@ -79,16 +81,15 @@ PUBLISHED:
   // Description: process command string.
   void send_command(const string& cmd);
 
-public:
+protected:
   void spawn_background_server();
   void start_app(const string& cmd);
   void kill_app();
-  void handle_command(const string& cmd);
+  virtual void handle_command(const string& cmd);
   void handle_datagram(NetDatagram& datagram);
   void send_one_message(const string& host_name, 
       int port, const string& message);
 
-protected:
   QueuedConnectionManager _cm;
   QueuedConnectionReader _reader;
   ConnectionWriter _writer;
@@ -100,7 +101,6 @@ protected:
   typedef pset< PT(Connection) > ConnectionSet;
   ConnectionSet _connections;
 
-  bool _verbose;
   bool _shutdown;
   
   void check_for_new_clients();

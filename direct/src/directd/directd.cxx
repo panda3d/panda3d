@@ -134,7 +134,7 @@ DirectD::DirectD() :
     _host_name("localhost"),
     _port(8001), _app_pid(0),
     _reader(&_cm, 1), _writer(&_cm, 1), _listener(&_cm, 0),
-    _verbose(false), _shutdown(false) {
+    _shutdown(false) {
 }
 
 DirectD::~DirectD() {
@@ -148,10 +148,11 @@ DirectD::~DirectD() {
 }
 
 int 
-DirectD::client_ready(const string& client_host, int port) {
-  connect_to(client_host, port);
-  send_command("s");
-  disconnect_from(client_host, port);
+DirectD::client_ready(const string& client_host, int port,
+    const string& cmd) {
+  stringstream ss;
+  ss<<"!"<<cmd;
+  send_one_message(client_host, port, ss.str());
   return 0;
 }
 
@@ -175,11 +176,9 @@ DirectD::wait_for_servers(int count, int timeout_ms) {
     while (_reader.data_available()) {
       NetDatagram datagram;
       if (_reader.get_data(datagram)) {
-        if (_verbose) {
-          nout << "Got datagram " /*<< datagram <<*/ "from "
-               << datagram.get_address() << endl;
-          datagram.dump_hex(nout);
-        }
+        nout << "Got datagram " /*<< datagram <<*/ "from "
+             << datagram.get_address() << endl;
+        datagram.dump_hex(nout);
         //handle_datagram(datagram);
         DatagramIterator di(datagram);
         string s=di.get_string();
@@ -207,7 +206,9 @@ DirectD::server_ready(const string& client_host, int port) {
 
 void
 DirectD::start_app(const string& cmd) {
+  nout<<"start_app(cmd="<<cmd<<")"<<endl;
   _app_pid=StartApp(cmd);
+  nout<<"    _app_pid="<<_app_pid<<endl;
 }
 
 void
@@ -238,9 +239,7 @@ DirectD::handle_datagram(NetDatagram& datagram){
 
 void
 DirectD::handle_command(const string& cmd) {
-  if (_verbose) {
-    cerr<<"command: "<<cmd<<endl;
-  }
+  nout<<"DirectD::handle_command: "<<cmd<<endl;
 }
 
 void
@@ -331,11 +330,9 @@ DirectD::check_for_datagrams(){
   while (_reader.data_available()) {
     NetDatagram datagram;
     if (_reader.get_data(datagram)) {
-      if (_verbose) {
-        nout << "Got datagram " /*<< datagram <<*/ "from "
-             << datagram.get_address() << endl;
-        datagram.dump_hex(nout);
-      }
+      nout << "Got datagram " /*<< datagram <<*/ "from "
+           << datagram.get_address() << endl;
+      datagram.dump_hex(nout);
       handle_datagram(datagram);
     }
   }
@@ -355,7 +352,7 @@ DirectD::listen_to(int port, int backlog) {
     nout << "Cannot grab port " << _port << ".\n";
     exit(1);
   }
-  if (_verbose) nout << "Listening for connections on port " << _port << "\n";
+  nout << "Listening for connections on port " << _port << "\n";
   _listener.add_connection(rendezvous);
 }
 
@@ -366,7 +363,7 @@ DirectD::check_for_new_clients() {
     NetAddress address;
     PT(Connection) new_connection;
     if (_listener.get_new_connection(rv, address, new_connection)) {
-      if (_verbose) nout << "Got connection from " << address << "\n";
+      nout << "Got connection from " << address << "\n";
       _reader.add_connection(new_connection);
       _connections.insert(new_connection);
     }
