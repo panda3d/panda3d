@@ -31,7 +31,7 @@ Options:
   -i lib      interrogate library
   -O          no C++ comments or assertion statements
 """
-    
+
 # Initialize variables
 outputDir = ''
 extensionsDir = ''

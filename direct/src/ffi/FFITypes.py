@@ -56,6 +56,9 @@ class BaseTypeDescriptor:
         # By default this type is not atomic
         self.atomicType = 0
 
+        # What C module did this type come from?
+        self.moduleName = ''
+
     def isAtomic(self):
         return (self.atomicType != 0)
         
@@ -131,6 +134,7 @@ class EnumTypeDescriptor(PrimitiveTypeDescriptor):
         self.generateCode(file, 0)
 
     def generateCode(self, file, nesting):
+        indent(file, nesting, '# CMODULE [' + self.moduleName + ']\n')
         self.outputComment(file, nesting)
         self.outputValues(file, nesting)
         
@@ -232,6 +236,8 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         # Now look at all the methods that we might inherit if we are at
         # a multiple inheritance node and get their C modules
         for parentType in parent.parentTypes:
+            if (not (parentType.moduleName in self.CModules)):
+                self.CModules.append(parentType.moduleName)
             for method in parentType.instanceMethods:
                 if (not (method.typeDescriptor.moduleName in self.CModules)):
                     self.CModules.append(method.typeDescriptor.moduleName)
@@ -250,7 +256,8 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
             return self.CModules
         except:
             # Otherwise, it must be our first time through, do the real work
-            self.CModules = []
+            # Start with our own moduleName
+            self.CModules = [self.moduleName]
             for method in (self.constructors + [self.destructor] + self.instanceMethods
                            + self.upcastMethods + self.downcastMethods + self.staticMethods):
                 if method:
@@ -474,6 +481,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
 
 
     def generateCode(self, file, nesting):
+
         self.recordOverloadedMethods()
         self.cullOverloadedMethods()        
         self.outputImports(file, nesting)
@@ -583,6 +591,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         
 
     def outputBaseImports(self, file):
+        indent(file, 0, '# CMODULE [' + self.moduleName + ']\n')
         indent(file, 0, 'import ' + FFIConstants.staticModuleName + '\n')
         # Everybody imports types for type checking
         indent(file, 0, 'import types\n')

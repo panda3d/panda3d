@@ -47,6 +47,7 @@ def constructImportFile(codeDir, CModuleName):
 def outputGlobalFileImports(file, methodList, CModuleName):
     # Print the standard header
     file.write(FFIConstants.generatedHeader)
+    file.write('# CMODULE [' + CModuleName + ']\n')
 
     # Import Python's builtin types
     file.write('import types\n')
@@ -95,7 +96,7 @@ def outputImportFileImports(file, typeList, CModuleName):
     
     # Print the standard header
     file.write(FFIConstants.generatedHeader)
-    
+    file.write('# CMODULE [' + CModuleName + ']\n')
     file.write('# Import the interrogate module\n')
     file.write('import ' + FFIConstants.InterrogateModuleName + '\n')
     file.write('\n')
@@ -261,6 +262,8 @@ class FFIInterrogateDatabase:
             descriptor = FFITypes.PrimitiveTypeDescriptor()
             #descriptor.environment = self.environment
             descriptor.atomicType = interrogate_type_atomic_token(typeIndex)
+            if interrogate_type_has_module_name(typeIndex):
+                descriptor.moduleName = 'lib' + interrogate_type_module_name(typeIndex)
             descriptor.foreignTypeName = \
                 FFIRename.nonClassNameFromCppName(getTypeName(typeIndex))
             descriptor.typeIndex = typeIndex
@@ -277,6 +280,9 @@ class FFIInterrogateDatabase:
             if descriptor.isNested:
                 outerTypeIndex = interrogate_type_outer_class(typeIndex)
                 descriptor.outerType = self.constructDescriptor(outerTypeIndex)
+            if interrogate_type_has_module_name(typeIndex):
+                descriptor.moduleName = 'lib' + interrogate_type_module_name(typeIndex)
+
             # Enums are ints in C++ but we do not want to redefine the int type
             # So we will just call them enums
             descriptor.enumName = FFIRename.classNameFromCppName(getTypeName(typeIndex))
@@ -305,6 +311,8 @@ class FFIInterrogateDatabase:
         if descriptor.isNested:
             outerTypeIndex = interrogate_type_outer_class(typeIndex)
             descriptor.outerType = self.constructDescriptor(outerTypeIndex)
+        if interrogate_type_has_module_name(typeIndex):
+            descriptor.moduleName = 'lib' + interrogate_type_module_name(typeIndex)
         descriptor.foreignTypeName = \
              FFIRename.nonClassNameFromCppName(getTypeName(typeIndex))
         descriptor.typeIndex = typeIndex
@@ -323,6 +331,8 @@ class FFIInterrogateDatabase:
         if descriptor.isNested:
             outerTypeIndex = interrogate_type_outer_class(typeIndex)
             descriptor.outerType = self.constructDescriptor(outerTypeIndex)
+        if interrogate_type_has_module_name(typeIndex):
+            descriptor.moduleName = 'lib' + interrogate_type_module_name(typeIndex)
         descriptor.foreignTypeName = \
              FFIRename.nonClassNameFromCppName(getTypeName(typeIndex))
         descriptor.typeIndex = typeIndex
@@ -363,6 +373,8 @@ class FFIInterrogateDatabase:
         if descriptor.isNested:
             outerTypeIndex = interrogate_type_outer_class(typeIndex)
             descriptor.outerType = self.constructDescriptor(outerTypeIndex)
+        if interrogate_type_has_module_name(typeIndex):
+            descriptor.moduleName = 'lib' + interrogate_type_module_name(typeIndex)
         descriptor.foreignTypeName = FFIRename.classNameFromCppName(getTypeName(typeIndex))
         if FFIConstants.wantComments:
             if interrogate_type_has_comment(typeIndex):
