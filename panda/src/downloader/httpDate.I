@@ -179,16 +179,14 @@ operator - (const HTTPDate &other) const {
   return (int)(_time - other._time);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDate::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE void HTTPDate::
-output(ostream &out) const {
-  out << get_string();
-}
 
+INLINE istream &
+operator >> (istream &in, HTTPDate &date) {
+  if (!date.input(in)) {
+    in.clear(ios::failbit | in.rdstate());
+  }
+  return in;
+}
 
 INLINE ostream &
 operator << (ostream &out, const HTTPDate &date) {

@@ -55,7 +55,8 @@ PUBLISHED:
   INLINE HTTPDate operator - (int seconds) const;
   INLINE int operator - (const HTTPDate &other) const;
 
-  INLINE void output(ostream &out) const;
+  bool input(istream &in);
+  void output(ostream &out) const;
 
 private:
   static string get_token(const string &str, size_t &pos);
@@ -63,7 +64,8 @@ private:
   time_t _time;
 };
 
-INLINE ostream &operator << (ostream &out, const URLSpec &url);
+INLINE istream &operator >> (istream &in, HTTPDate &date);
+INLINE ostream &operator << (ostream &out, const HTTPDate &date);
 
 #include "httpDate.I"
 

@@ -70,8 +70,9 @@ PUBLISHED:
   INLINE void set_request_mode(RequestMode request_mode);
   INLINE RequestMode get_request_mode() const;
 
+  bool input(istream &in);
   void output(ostream &out) const;
-  void write(ostream &out) const;
+  void write(ostream &out, int indent_level = 0) const;
 
 private:
   URLSpec _url;
@@ -86,6 +87,7 @@ private:
   int _flags;
 };
 
+INLINE istream &operator >> (istream &in, DocumentSpec &doc);
 INLINE ostream &operator << (ostream &out, const DocumentSpec &doc);
 
 #include "documentSpec.I"

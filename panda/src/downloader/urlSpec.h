@@ -81,6 +81,7 @@ PUBLISHED:
   INLINE size_t length() const;
   INLINE char operator [] (int n) const;
 
+  bool input(istream &in);
   void output(ostream &out) const;
 
   static string quote(const string &source, const string &safe = "/");
@@ -117,6 +118,7 @@ private:
   size_t _query_start;
 };
 
+INLINE istream &operator >> (istream &in, URLSpec &url);
 INLINE ostream &operator << (ostream &out, const URLSpec &url);
 
 #include "urlSpec.I"

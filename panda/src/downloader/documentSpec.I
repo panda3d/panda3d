@@ -290,6 +290,13 @@ get_request_mode() const {
   return _request_mode;
 }
 
+INLINE istream &
+operator >> (istream &in, DocumentSpec &doc) {
+  if (!doc.input(in)) {
+    in.clear(ios::failbit | in.rdstate());
+  }
+  return in;
+}
 
 INLINE ostream &
 operator << (ostream &out, const DocumentSpec &doc) {

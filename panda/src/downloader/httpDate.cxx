@@ -254,6 +254,49 @@ get_string() const {
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPDate::input
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool HTTPDate::
+input(istream &in) {
+  (*this) = HTTPDate();
+
+  // Extract out the quoted date string.
+  char ch;
+  in >> ch;
+  if (ch != '"') {
+    return false;
+  }
+
+  string date;
+  ch = in.get();
+  while (!in.fail() && !in.eof() && ch != '"') {
+    date += ch;
+    ch = in.get();
+  }
+
+  if (ch != '"') {
+    return false;
+  }
+
+  (*this) = HTTPDate(date);
+  return is_valid();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPDate::output
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void HTTPDate::
+output(ostream &out) const {
+  // We put quotes around the string on output, so we can reliably
+  // detect the end of the date string on input, above.
+  out << '"' << get_string() << '"';
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPDate::get_token
 //       Access: Published
 //  Description: Extracts the next token from the string starting at

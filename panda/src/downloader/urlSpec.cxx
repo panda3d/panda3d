@@ -533,6 +533,22 @@ set_url(const string &url, bool server_name_expected) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: URLSpec::input
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool URLSpec::
+input(istream &in) {
+  string url;
+  in >> url;
+  if (!in) {
+    return false;
+  }
+  set_url(url);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: URLSpec::output
 //       Access: Published
 //  Description: 
@@ -655,7 +671,7 @@ unquote(const string &source) {
         if (isdigit(ch)) {
           value = ch - '0';
         } else {
-          value = tolower(ch) - 'a';
+          value = tolower(ch) - 'a' + 10;
         }
         hex = (hex << 4) | value;
       }
@@ -693,7 +709,7 @@ unquote_plus(const string &source) {
         if (isdigit(ch)) {
           value = ch - '0';
         } else {
-          value = tolower(ch) - 'a';
+          value = tolower(ch) - 'a' + 10;
         }
         hex = (hex << 4) | value;
       }

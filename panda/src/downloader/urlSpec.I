@@ -288,6 +288,13 @@ operator [] (int n) const {
   return _url[n];
 }
 
+INLINE istream &
+operator >> (istream &in, URLSpec &url) {
+  if (!url.input(in)) {
+    in.clear(ios::failbit | in.rdstate());
+  }
+  return in;
+}
 
 INLINE ostream &
 operator << (ostream &out, const URLSpec &url) {
