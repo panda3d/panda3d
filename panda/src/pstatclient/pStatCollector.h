@@ -100,7 +100,7 @@ PUBLISHED:
   INLINE PStatCollector(const string &,
                         PStatClient * = NULL) { }
   INLINE PStatCollector(const PStatCollector &,
-                        const string &) { }
+                        const string &);
 
   INLINE bool is_active() { return false; }
   INLINE void start() { }
