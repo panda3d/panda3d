@@ -81,28 +81,6 @@ PUBLISHED:
                LVector3f &surface_normal,
                LPoint3f &interior_point) const;
 
-
-  // The following methods are all deprecated in favor of the above
-  // methods.  They are here only temporarily to ease transition.
-
-  INLINE bool has_into_intersection_point() const;
-  INLINE LPoint3f get_into_intersection_point() const;
-
-  INLINE bool has_from_intersection_point() const;
-  INLINE LPoint3f get_from_intersection_point() const;
-
-  INLINE bool has_into_surface_normal() const;
-  INLINE LVector3f get_into_surface_normal() const;
-
-  INLINE bool has_from_surface_normal() const;
-  INLINE LVector3f get_from_surface_normal() const;
-
-  INLINE bool has_into_depth() const;
-  INLINE float get_into_depth() const;
-
-  INLINE bool has_from_depth() const;
-  INLINE float get_from_depth() const;
-
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
 
