@@ -1,2 +1,4 @@
 forcetype DSearchPath
+forcetype Filename
+
 

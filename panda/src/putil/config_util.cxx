@@ -22,6 +22,9 @@
 #include "writeableConfigurable.h"
 #include "get_config_path.h"
 
+// Just to make sure the forcetype defined in config_util.N picks this up.
+#include "filename.h"
+
 #include <dconfig.h>
 
 ConfigureDef(config_util);
