@@ -428,6 +428,14 @@ write_datagram(BamWriter *manager, Datagram &me)
   me.add_uint8(_magfiltercolor);
   me.add_uint8(_magfilteralpha);
   me.add_int16(_anisotropic_degree);
+
+  // We also need to write out the pixel buffer's format, even though
+  // that's not stored as part of the texture structure.
+  bool has_pbuffer = (_pbuffer != (PixelBuffer *)NULL);
+  me.add_bool(has_pbuffer);
+  if (has_pbuffer) {
+    me.add_uint8(_pbuffer->get_format());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -456,6 +464,16 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _magfilteralpha = (enum FilterType) scan.get_uint8();
 
   _anisotropic_degree = scan.get_int16();
+
+  if (scan.get_remaining_size() > 0) {
+    bool has_pbuffer = scan.get_bool();
+    if (has_pbuffer) {
+      PixelBuffer::Format format = (PixelBuffer::Format)scan.get_uint8();
+      if (_pbuffer != (PixelBuffer *)NULL) {
+	_pbuffer->set_format(format);
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
