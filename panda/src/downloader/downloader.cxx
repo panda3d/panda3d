@@ -237,12 +237,13 @@ fast_receive(int socket, DownloadStatus *status, int rec_size) {
   fd_set rset;
   FD_ZERO(&rset);
   FD_SET(socket, &rset);
-  int sret = select(socket + 1, &rset, NULL, NULL, &tv);
+  int sret = select(socket, &rset, NULL, NULL, &tv);
   if (sret == 0) {
     return FR_no_data;
   } else if (sret == -1) {
     downloader_cat.error()
-      << "Downloader::safe_receive() - error: " << strerror(errno) << endl;
+      << "Downloader::fast_receive() - select() error: " 
+      << strerror(errno) << endl;
     return FR_error;
   }
   int ret = recv(socket, status->_next_in, rec_size, 0);
@@ -250,7 +251,8 @@ fast_receive(int socket, DownloadStatus *status, int rec_size) {
     return FR_eof;
   } else if (ret == -1) {
     downloader_cat.error()
-      << "Downloader::fast_receive() - error: " << strerror(errno) << endl;
+      << "Downloader::fast_receive() - recv() error: " 
+      << strerror(errno) << endl;
     return FR_error;
   }
   if (downloader_cat.is_debug())
