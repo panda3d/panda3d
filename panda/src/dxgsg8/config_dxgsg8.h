@@ -45,6 +45,7 @@ extern bool dx_mipmap_everything;
 extern bool dx_show_transforms;
 extern bool dx_force_16bpptextures;
 extern bool dx_no_dithering;
+extern bool dx_force_anisotropic_filtering;
 
 #ifndef NDEBUG
 extern int dx_force_backface_culling;
@@ -53,7 +54,6 @@ extern int dx_force_backface_culling;
 #ifdef _DEBUG
 extern float dx_global_miplevel_bias;
 extern bool dx_debug_view_mipmaps;
-extern bool dx_force_anisotropic_filtering;
 #endif
 
 // Ways to implement decals.

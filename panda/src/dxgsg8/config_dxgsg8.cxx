@@ -82,9 +82,10 @@ bool dx_no_dithering = config_dxgsg.GetBool("dx-no-dithering", false);
 #ifdef _DEBUG
 float dx_global_miplevel_bias = config_dxgsg.GetFloat("dx-global-miplevel-bias", 0.0);
 bool dx_debug_view_mipmaps = config_dxgsg.GetBool("dx-debug-view-mipmaps", false);
-bool dx_force_anisotropic_filtering = config_dxgsg.GetBool("dx-force-anisotropic-filtering", false);
 //int dx_print_texstats = config_dxgsg.GetBool("dx-print-texstats", 0);
 #endif
+
+bool dx_force_anisotropic_filtering = config_dxgsg.GetBool("dx-force-anisotropic-filtering", false);
 
 // set 'retained-mode #t' and this to have prepare_geom concatenate all tristrips within a geom 
 // together using degenerate tris
