@@ -40,7 +40,9 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherRegion::
 write(ostream &out, int indent_level) const {
-  indent(out, indent_level) << get_name() << " lrbt = " << _frame << "\n";
+  indent(out, indent_level)
+    << get_name() << " lrbt = " << _frame
+    << ", sort = " << _sort << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
