@@ -1399,18 +1399,18 @@ int framework_main(int argc, char *argv[]) {
   event_handler.add_hook("l", event_l);
   event_handler.add_hook("w", event_w);
   event_handler.add_hook("b", event_b);
-  event_handler.add_hook("shift-R", event_R);
+  event_handler.add_hook("shift-r", event_R);
   event_handler.add_hook("`", event_grave);
   event_handler.add_hook("n", event_n);
   event_handler.add_hook("c", event_c);
-  event_handler.add_hook("shift-D", event_D);
+  event_handler.add_hook("shift-d", event_D);
   event_handler.add_hook("g", event_g);
-  event_handler.add_hook("shift-C", event_C);
-  event_handler.add_hook("shift-N", event_N);
-  event_handler.add_hook("shift-S", event_S);
-  event_handler.add_hook("shift-A", event_A);
+  event_handler.add_hook("shift-c", event_C);
+  event_handler.add_hook("shift-n", event_N);
+  event_handler.add_hook("shift-s", event_S);
+  event_handler.add_hook("shift-a", event_A);
   event_handler.add_hook("p", event_p);
-  event_handler.add_hook("shift-P", event_P);
+  event_handler.add_hook("shift-p", event_P);
 
 #ifdef USE_IPC
   event_handler.add_hook("x", event_x);

@@ -513,9 +513,9 @@ void demo_keys(EventHandler&) {
   event_handler.add_hook("shift-f7", event_fkey);
   event_handler.add_hook("shift-f8", event_fkey);
   event_handler.add_hook("shift-f9", event_fkey);
-  event_handler.add_hook("shift-B", event_B);
+  event_handler.add_hook("shift-b", event_B);
 
-  event_handler.add_hook("shift-L", event_L);
+  event_handler.add_hook("shift-l", event_L);
   event_handler.add_hook("k", event_k);
   event_handler.add_hook("a", event_a);
   event_handler.add_hook("v", event_v);

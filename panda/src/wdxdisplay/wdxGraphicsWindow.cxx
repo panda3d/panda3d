@@ -2721,44 +2721,21 @@ lookup_key(WPARAM wparam) const {
 
         default:
             int key = MapVirtualKey(wparam, 2);
-            if(isascii(key) && key != 0) {
-                bool bCapsLockDown=((GetKeyState(VK_CAPITAL) & 0x1)!=0);
-                bool bShiftUp = (GetKeyState(VK_SHIFT) >= 0);
-                if(bShiftUp) {
-                    if(bCapsLockDown) 
-                        key = toupper(key);
-                    else key = tolower(key);
-                } else {
-                    switch(key) {
-                        // these keys are unaffected by capslock
-                        case '1': key = '!'; break;
-                        case '2': key = '@'; break;
-                        case '3': key = '#'; break;
-                        case '4': key = '$'; break;
-                        case '5': key = '%'; break;
-                        case '6': key = '^'; break;
-                        case '7': key = '&'; break;
-                        case '8': key = '*'; break;
-                        case '9': key = '('; break;
-                        case '0': key = ')'; break;
-                        case '-': key = '_'; break;
-                        case '=': key = '+'; break;
-                        case ',': key = '<'; break;
-                        case '.': key = '>'; break;
-                        case '/': key = '?'; break;
-                        case ';': key = ':'; break;
-                        case '\'': key = '"'; break;
-                        case '[': key = '{'; break;
-                        case ']': key = '}'; break;
-                        case '\\': key = '|'; break;
-                        case '`': key = '~'; break;
-                        default:
-                            if(bCapsLockDown) 
-                                key = tolower(key);
-                            else key = toupper(key);
-                    }
-                }
-                return KeyboardButton::ascii_key((uchar)key);
+            if (isascii(key) && key != 0) {
+              // We used to try to remap lowercase to uppercase keys
+              // here based on the state of the shift and/or caps lock
+              // keys.  But that's a mistake, and doesn't allow for
+              // international or user-defined keyboards; let Windows
+              // do that mapping.
+
+              // Nowadays, we make a distinction between a "button"
+              // and a "keystroke".  A button corresponds to a
+              // physical button on the keyboard and has a down and up
+              // event associated.  A keystroke may or may not
+              // correspond to a physical button, but will be some
+              // Unicode character and will not have a corresponding
+              // up event.
+              return KeyboardButton::ascii_key(tolower(key));
             }
             break;
     }
