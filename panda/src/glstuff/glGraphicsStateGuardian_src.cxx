@@ -2728,18 +2728,17 @@ issue_depth_offset(const DepthOffsetAttrib *attrib) {
 //               properties.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-bind_light(PointLight *light, int light_id) {
+bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
   GLenum id = get_light_id(light_id);
   static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
   GLP(Lightfv)(id, GL_AMBIENT, black.get_data());
-  GLP(Lightfv)(id, GL_DIFFUSE, light->get_color().get_data());
-  GLP(Lightfv)(id, GL_SPECULAR, light->get_specular_color().get_data());
+  GLP(Lightfv)(id, GL_DIFFUSE, light_obj->get_color().get_data());
+  GLP(Lightfv)(id, GL_SPECULAR, light_obj->get_specular_color().get_data());
 
   // Position needs to specify x, y, z, and w
   // w == 1 implies non-infinite position
-  NodePath light_np(light);
-  const LMatrix4f &light_mat = light_np.get_mat(_scene_setup->get_scene_root());
-  LPoint3f pos = light->get_point() * light_mat;
+  const LMatrix4f &light_mat = light.get_mat(_scene_setup->get_scene_root());
+  LPoint3f pos = light_obj->get_point() * light_mat;
 
   LPoint4f fpos(pos[0], pos[1], pos[2], 1.0f);
   GLP(Lightfv)(id, GL_POSITION, fpos.get_data());
@@ -2752,7 +2751,7 @@ bind_light(PointLight *light, int light_id) {
   // Cutoff == 180 means uniform point light source
   GLP(Lightf)(id, GL_SPOT_CUTOFF, 180.0f);
 
-  const LVecBase3f &att = light->get_attenuation();
+  const LVecBase3f &att = light_obj->get_attenuation();
   GLP(Lightf)(id, GL_CONSTANT_ATTENUATION, att[0]);
   GLP(Lightf)(id, GL_LINEAR_ATTENUATION, att[1]);
   GLP(Lightf)(id, GL_QUADRATIC_ATTENUATION, att[2]);
@@ -2769,18 +2768,17 @@ bind_light(PointLight *light, int light_id) {
 //               properties.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-bind_light(DirectionalLight *light, int light_id) {
+bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
   GLenum id = get_light_id( light_id );
   static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
   GLP(Lightfv)(id, GL_AMBIENT, black.get_data());
-  GLP(Lightfv)(id, GL_DIFFUSE, light->get_color().get_data());
-  GLP(Lightfv)(id, GL_SPECULAR, light->get_specular_color().get_data());
+  GLP(Lightfv)(id, GL_DIFFUSE, light_obj->get_color().get_data());
+  GLP(Lightfv)(id, GL_SPECULAR, light_obj->get_specular_color().get_data());
 
   // Position needs to specify x, y, z, and w.
   // w == 0 implies light is at infinity
-  NodePath light_np(light);
-  const LMatrix4f &light_mat = light_np.get_mat(_scene_setup->get_scene_root());
-  LVector3f dir = light->get_direction() * light_mat;
+  const LMatrix4f &light_mat = light.get_mat(_scene_setup->get_scene_root());
+  LVector3f dir = light_obj->get_direction() * light_mat;
   LPoint4f fdir(-dir[0], -dir[1], -dir[2], 0);
   GLP(Lightfv)(id, GL_POSITION, fdir.get_data());
 
@@ -2811,20 +2809,19 @@ bind_light(DirectionalLight *light, int light_id) {
 //               properties.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-bind_light(Spotlight *light, int light_id) {
-  Lens *lens = light->get_lens();
+bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
+  Lens *lens = light_obj->get_lens();
   nassertv(lens != (Lens *)NULL);
 
   GLenum id = get_light_id(light_id);
   static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
   GLP(Lightfv)(id, GL_AMBIENT, black.get_data());
-  GLP(Lightfv)(id, GL_DIFFUSE, light->get_color().get_data());
-  GLP(Lightfv)(id, GL_SPECULAR, light->get_specular_color().get_data());
+  GLP(Lightfv)(id, GL_DIFFUSE, light_obj->get_color().get_data());
+  GLP(Lightfv)(id, GL_SPECULAR, light_obj->get_specular_color().get_data());
 
   // Position needs to specify x, y, z, and w
   // w == 1 implies non-infinite position
-  NodePath light_np(light);
-  const LMatrix4f &light_mat = light_np.get_mat(_scene_setup->get_scene_root());
+  const LMatrix4f &light_mat = light.get_mat(_scene_setup->get_scene_root());
   LPoint3f pos = lens->get_nodal_point() * light_mat;
   LVector3f dir = lens->get_view_vector() * light_mat;
 
@@ -2832,10 +2829,10 @@ bind_light(Spotlight *light, int light_id) {
   GLP(Lightfv)(id, GL_POSITION, fpos.get_data());
   GLP(Lightfv)(id, GL_SPOT_DIRECTION, dir.get_data());
 
-  GLP(Lightf)(id, GL_SPOT_EXPONENT, light->get_exponent());
+  GLP(Lightf)(id, GL_SPOT_EXPONENT, light_obj->get_exponent());
   GLP(Lightf)(id, GL_SPOT_CUTOFF, lens->get_hfov());
 
-  const LVecBase3f &att = light->get_attenuation();
+  const LVecBase3f &att = light_obj->get_attenuation();
   GLP(Lightf)(id, GL_CONSTANT_ATTENUATION, att[0]);
   GLP(Lightf)(id, GL_LINEAR_ATTENUATION, att[1]);
   GLP(Lightf)(id, GL_QUADRATIC_ATTENUATION, att[2]);

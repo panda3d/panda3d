@@ -24,6 +24,7 @@
 #include "light.h"
 #include "renderAttrib.h"
 #include "ordered_vector.h"
+#include "nodePath.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LightAttrib
@@ -74,20 +75,20 @@ PUBLISHED:
   static CPT(RenderAttrib) make_all_off();
 
   INLINE int get_num_on_lights() const;
-  INLINE Light *get_on_light(int n) const;
-  INLINE bool has_on_light(Light *light) const;
+  INLINE NodePath get_on_light(int n) const;
+  INLINE bool has_on_light(const NodePath &light) const;
 
   INLINE int get_num_off_lights() const;
-  INLINE Light *get_off_light(int n) const;
-  INLINE bool has_off_light(Light *light) const;
+  INLINE NodePath get_off_light(int n) const;
+  INLINE bool has_off_light(const NodePath &light) const;
   INLINE bool has_all_off() const;
 
   INLINE bool is_identity() const;
 
-  CPT(RenderAttrib) add_on_light(Light *light) const;
-  CPT(RenderAttrib) remove_on_light(Light *light) const;
-  CPT(RenderAttrib) add_off_light(Light *light) const;
-  CPT(RenderAttrib) remove_off_light(Light *light) const;
+  CPT(RenderAttrib) add_on_light(const NodePath &light) const;
+  CPT(RenderAttrib) remove_on_light(const NodePath &light) const;
+  CPT(RenderAttrib) add_off_light(const NodePath &light) const;
+  CPT(RenderAttrib) remove_off_light(const NodePath &light) const;
 
 public:
   virtual void issue(GraphicsStateGuardianBase *gsg) const;
@@ -100,7 +101,7 @@ protected:
   virtual RenderAttrib *make_default_impl() const;
 
 private:
-  typedef ov_set< PT(Light) > Lights;
+  typedef ov_set<NodePath> Lights;
   Lights _on_lights, _off_lights;
   bool _off_all_lights;
 

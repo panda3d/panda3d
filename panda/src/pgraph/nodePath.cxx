@@ -2027,54 +2027,6 @@ get_color_scale() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_light
 //       Access: Published
-//  Description: Adds the indicated Light to the list of lights that
-//               illuminate geometry at this node and below.  The
-//               light itself should be parented into the scene graph
-//               elsewhere, to represent the light's position in
-//               space; but until set_light() is called it will
-//               illuminate no geometry.
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_light(Light *light, int priority) {
-  nassertv_always(!is_empty());
-
-  const RenderAttrib *attrib =
-    node()->get_attrib(LightAttrib::get_class_type());
-  if (attrib != (const RenderAttrib *)NULL) {
-    priority = max(priority,
-                   node()->get_state()->get_override(LightAttrib::get_class_type()));
-    const LightAttrib *la = DCAST(LightAttrib, attrib);
-
-    // Modify the existing LightAttrib to add the indicated
-    // light.
-    node()->set_attrib(la->add_on_light(light), priority);
-
-  } else {
-    // Create a new LightAttrib for this node.
-    CPT(LightAttrib) la = DCAST(LightAttrib, LightAttrib::make());
-    node()->set_attrib(la->add_on_light(light), priority);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_light
-//       Access: Published
-//  Description: Adds a PolylightEffect to the geometry at this node
-//               and below.  This makes the geometry at this point in
-//               the scene graph grow brighter or dimmer according to
-//               its proximity to the indicated PolylightNode; this is
-//               an effect similar to lighting, but is not related to
-//               traditional hardware T&L.
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_light(PolylightNode *) {
-  // Not yet implemented.
-  nassertv(false);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_light
-//       Access: Published
 //  Description: Adds the indicated Light or PolylightNode to the list
 //               of lights that illuminate geometry at this node and
 //               below.  The light itself should be parented into the
@@ -2084,11 +2036,26 @@ set_light(PolylightNode *) {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_light(const NodePath &light, int priority) {
+  nassertv_always(!is_empty());
   if (!light.is_empty()) {
-    PandaNode *node = light.node();
-    Light *light_obj = node->as_light();
+    Light *light_obj = light.node()->as_light();
     if (light_obj != (Light *)NULL) {
-      set_light(light_obj, priority);
+      const RenderAttrib *attrib =
+        node()->get_attrib(LightAttrib::get_class_type());
+      if (attrib != (const RenderAttrib *)NULL) {
+        priority = max(priority,
+                       node()->get_state()->get_override(LightAttrib::get_class_type()));
+        const LightAttrib *la = DCAST(LightAttrib, attrib);
+        
+        // Modify the existing LightAttrib to add the indicated
+        // light.
+        node()->set_attrib(la->add_on_light(light), priority);
+        
+      } else {
+        // Create a new LightAttrib for this node.
+        CPT(LightAttrib) la = DCAST(LightAttrib, LightAttrib::make());
+        node()->set_attrib(la->add_on_light(light), priority);
+      }
       return;
     }
   }
@@ -2124,51 +2091,35 @@ set_light_off(int priority) {
 //               specifically contradicts set_light() at a higher node
 //               level (or, with a priority, overrides a set_light()
 //               at a lower level).
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_light_off(Light *light, int priority) {
-  nassertv_always(!is_empty());
-
-  const RenderAttrib *attrib =
-    node()->get_attrib(LightAttrib::get_class_type());
-  if (attrib != (const RenderAttrib *)NULL) {
-    priority = max(priority,
-                   node()->get_state()->get_override(LightAttrib::get_class_type()));
-    const LightAttrib *la = DCAST(LightAttrib, attrib);
-
-    // Modify the existing LightAttrib to add the indicated light
-    // to the "off" list.  This also, incidentally, removes it from
-    // the "on" list if it is there.
-    node()->set_attrib(la->add_off_light(light), priority);
-
-  } else {
-    // Create a new LightAttrib for this node that turns off the
-    // indicated light.
-    CPT(LightAttrib) la = DCAST(LightAttrib, LightAttrib::make());
-    node()->set_attrib(la->add_off_light(light), priority);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_light_off
-//       Access: Published
-//  Description: Sets the geometry at this level and below to render
-//               using without the indicated Light.  This is different
-//               from not specifying the Light; rather, this
-//               specifically contradicts set_light() at a higher node
-//               level (or, with a priority, overrides a set_light()
-//               at a lower level).
 //
 //               This interface does not support PolylightNodes, which
 //               cannot be turned off at a lower level.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_light_off(const NodePath &light, int priority) {
+  nassertv_always(!is_empty());
+
   if (!light.is_empty()) {
-    PandaNode *node = light.node();
-    Light *light_obj = node->as_light();
+    Light *light_obj = light.node()->as_light();
     if (light_obj != (Light *)NULL) {
-      set_light_off(light_obj, priority);
+      const RenderAttrib *attrib =
+        node()->get_attrib(LightAttrib::get_class_type());
+      if (attrib != (const RenderAttrib *)NULL) {
+        priority = max(priority,
+                       node()->get_state()->get_override(LightAttrib::get_class_type()));
+        const LightAttrib *la = DCAST(LightAttrib, attrib);
+        
+        // Modify the existing LightAttrib to add the indicated light
+        // to the "off" list.  This also, incidentally, removes it from
+        // the "on" list if it is there.
+        node()->set_attrib(la->add_off_light(light), priority);
+        
+      } else {
+        // Create a new LightAttrib for this node that turns off the
+        // indicated light.
+        CPT(LightAttrib) la = DCAST(LightAttrib, LightAttrib::make());
+        node()->set_attrib(la->add_off_light(light), priority);
+      }
       return;
     }
   }
@@ -2192,96 +2143,35 @@ clear_light() {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::clear_light
 //       Access: Published
-//  Description: Removes any reference to the indicated Light 
-//               from the NodePath.
-////////////////////////////////////////////////////////////////////
-void NodePath::
-clear_light(Light *light) {
-  nassertv_always(!is_empty());
-
-  const RenderAttrib *attrib =
-    node()->get_attrib(LightAttrib::get_class_type());
-  if (attrib != (const RenderAttrib *)NULL) {
-    CPT(LightAttrib) la = DCAST(LightAttrib, attrib);
-    la = DCAST(LightAttrib, la->remove_on_light(light));
-    la = DCAST(LightAttrib, la->remove_off_light(light));
-
-    if (la->is_identity()) {
-      node()->clear_attrib(LightAttrib::get_class_type());
-
-    } else {
-      int priority = node()->get_state()->get_override(LightAttrib::get_class_type());
-      node()->set_attrib(la, priority);
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::clear_light
-//       Access: Published
-//  Description: Removes the indicated PolylightEffect from the
-//               geometry.  This undoes a previous set_light() call.
-////////////////////////////////////////////////////////////////////
-void NodePath::
-clear_light(PolylightNode *) {
-  // Not yet implemented.
-  nassertv(false);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::clear_light
-//       Access: Published
 //  Description: Removes any reference to the indicated Light or
 //               PolylightNode from the NodePath.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 clear_light(const NodePath &light) {
+  nassertv_always(!is_empty());
+
   if (!light.is_empty()) {
-    PandaNode *node = light.node();
-    Light *light_obj = node->as_light();
+    Light *light_obj = light.node()->as_light();
     if (light_obj != (Light *)NULL) {
-      clear_light(light_obj);
+      const RenderAttrib *attrib =
+        node()->get_attrib(LightAttrib::get_class_type());
+      if (attrib != (const RenderAttrib *)NULL) {
+        CPT(LightAttrib) la = DCAST(LightAttrib, attrib);
+        la = DCAST(LightAttrib, la->remove_on_light(light));
+        la = DCAST(LightAttrib, la->remove_off_light(light));
+        
+        if (la->is_identity()) {
+          node()->clear_attrib(LightAttrib::get_class_type());
+          
+        } else {
+          int priority = node()->get_state()->get_override(LightAttrib::get_class_type());
+          node()->set_attrib(la, priority);
+        }
+      }
       return;
     }
   }
   nassert_raise("Not a Light object.");
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::has_light
-//       Access: Published
-//  Description: Returns true if the indicated Light has been
-//               specifically enabled on this particular node.  This
-//               means that someone called set_light() on this node
-//               with the indicated light.
-////////////////////////////////////////////////////////////////////
-bool NodePath::
-has_light(Light *light) const {
-  nassertr_always(!is_empty(), false);
-
-  const RenderAttrib *attrib =
-    node()->get_attrib(LightAttrib::get_class_type());
-  if (attrib != (const RenderAttrib *)NULL) {
-    const LightAttrib *la = DCAST(LightAttrib, attrib);
-    return la->has_on_light(light);
-  }
-
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::has_light
-//       Access: Published
-//  Description: Returns true if the indicated PolylightNode has been
-//               specifically enabled on this particular node.  This
-//               means that someone called set_light() on this node
-//               with the indicated light.
-////////////////////////////////////////////////////////////////////
-bool NodePath::
-has_light(PolylightNode *) const {
-  // Not yet implemented.
-  nassertr(false, false);
-  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2294,11 +2184,17 @@ has_light(PolylightNode *) const {
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
 has_light(const NodePath &light) const {
+  nassertr_always(!is_empty(), false);
+
   if (!light.is_empty()) {
-    PandaNode *node = light.node();
-    Light *light_obj = node->as_light();
+    Light *light_obj = light.node()->as_light();
     if (light_obj != (Light *)NULL) {
-      return has_light(light_obj);
+      const RenderAttrib *attrib =
+        node()->get_attrib(LightAttrib::get_class_type());
+      if (attrib != (const RenderAttrib *)NULL) {
+        const LightAttrib *la = DCAST(LightAttrib, attrib);
+        return la->has_on_light(light);
+      }
     }
   }
   nassert_raise("Not a Light object.");
@@ -2316,33 +2212,12 @@ has_light(const NodePath &light) const {
 bool NodePath::
 has_light_off() const {
   nassertr_always(!is_empty(), false);
+
   const RenderAttrib *attrib =
     node()->get_attrib(LightAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
     const LightAttrib *la = DCAST(LightAttrib, attrib);
     return la->has_all_off();
-  }
-
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::has_light_off
-//       Access: Published
-//  Description: Returns true if the indicated Light has been
-//               specifically disabled on this particular node.  This
-//               means that someone called set_light_off() on this
-//               node with the indicated light.
-////////////////////////////////////////////////////////////////////
-bool NodePath::
-has_light_off(Light *light) const {
-  nassertr_always(!is_empty(), false);
-
-  const RenderAttrib *attrib =
-    node()->get_attrib(LightAttrib::get_class_type());
-  if (attrib != (const RenderAttrib *)NULL) {
-    const LightAttrib *la = DCAST(LightAttrib, attrib);
-    return la->has_off_light(light);
   }
 
   return false;
@@ -2361,11 +2236,16 @@ has_light_off(Light *light) const {
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
 has_light_off(const NodePath &light) const {
+  nassertr_always(!is_empty(), false);
   if (!light.is_empty()) {
-    PandaNode *node = light.node();
-    Light *light_obj = node->as_light();
+    Light *light_obj = light.node()->as_light();
     if (light_obj != (Light *)NULL) {
-      return has_light(light_obj);
+      const RenderAttrib *attrib =
+        node()->get_attrib(LightAttrib::get_class_type());
+      if (attrib != (const RenderAttrib *)NULL) {
+        const LightAttrib *la = DCAST(LightAttrib, attrib);
+        return la->has_off_light(light);
+      }
     }
   }
   nassert_raise("Not a Light object.");

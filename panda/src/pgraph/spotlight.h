@@ -62,7 +62,8 @@ PUBLISHED:
   INLINE void set_attenuation(const LVecBase3f &attenuation);
   
 public:
-  virtual void bind(GraphicsStateGuardianBase *gsg, int light_id);
+  virtual void bind(GraphicsStateGuardianBase *gsg, const NodePath &light,
+                    int light_id);
 
   bool make_image(Texture *texture, float radius);
 

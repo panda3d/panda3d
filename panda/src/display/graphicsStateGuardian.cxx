@@ -335,7 +335,7 @@ begin_frame() {
         enable_light(i, false);
         _light_info[i]._enabled = false;
       }
-      _light_info[i]._light = (Light *)NULL;
+      _light_info[i]._light = NodePath();
     }
 
     // Also force the lighting state to unlit, so that issue_light()
@@ -683,8 +683,9 @@ issue_light(const LightAttrib *attrib) {
   int num_enabled = 0;
   int num_on_lights = attrib->get_num_on_lights();
   for (int li = 0; li < num_on_lights; li++) {
-    Light *light = attrib->get_on_light(li);
-    nassertv(light != (Light *)NULL);
+    NodePath light = attrib->get_on_light(li);
+    nassertv(!light.is_empty() && light.node()->as_light() != (Light *)NULL);
+    Light *light_obj = light.node()->as_light();
 
     num_enabled++;
 
@@ -693,10 +694,10 @@ issue_light(const LightAttrib *attrib) {
     _lighting_enabled = true;
     _lighting_enabled_this_frame = true;
 
-    if (light->get_type() == AmbientLight::get_class_type()) {
+    if (light_obj->get_type() == AmbientLight::get_class_type()) {
       // Ambient lights don't require specific light ids; simply add
       // in the ambient contribution to the current total
-      cur_ambient_light += light->get_color();
+      cur_ambient_light += light_obj->get_color();
         
     } else {
       // Check to see if this light has already been bound to an id
@@ -716,7 +717,7 @@ issue_light(const LightAttrib *attrib) {
       // See if there are any unbound light ids
       if (cur_light_id == -1) {
         for (i = 0; i < max_lights; i++) {
-          if (_light_info[i]._light == (Light *)NULL) {
+          if (_light_info[i]._light.is_empty()) {
             _light_info[i]._light = light;
             cur_light_id = i;
             break;
@@ -728,7 +729,7 @@ issue_light(const LightAttrib *attrib) {
       // a currently unused but previously bound id
       if (cur_light_id == -1) {
         for (i = 0; i < max_lights; i++) {
-          if (!attrib->has_light(_light_info[i]._light)) {
+          if (!attrib->has_on_light(_light_info[i]._light)) {
             _light_info[i]._light = light;
             cur_light_id = i;
             break;
@@ -758,11 +759,11 @@ issue_light(const LightAttrib *attrib) {
 
         // This is the first time this frame that this light has been
         // bound to this particular id.
-        light->bind(this, cur_light_id);
+        light_obj->bind(this, light, cur_light_id);
 
       } else if (cur_light_id == -1) {
         gsg_cat.warning()
-          << "Failed to bind " << *light << " to id.\n";
+          << "Failed to bind " << light << " to id.\n";
       }
     }
   }
@@ -949,7 +950,7 @@ issue_clip_plane(const ClipPlaneAttrib *attrib) {
 //               properties.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-bind_light(PointLight *light, int light_id) {
+bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -961,7 +962,7 @@ bind_light(PointLight *light, int light_id) {
 //               properties.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-bind_light(DirectionalLight *light, int light_id) {
+bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -973,7 +974,7 @@ bind_light(DirectionalLight *light, int light_id) {
 //               properties.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-bind_light(Spotlight *light, int light_id) {
+bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
 }
 
 ////////////////////////////////////////////////////////////////////

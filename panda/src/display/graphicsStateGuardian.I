@@ -484,11 +484,11 @@ get_coordinate_system() const {
 //     Function: GraphicsStateGuardian::get_light
 //       Access: Protected
 //  Description: Returns the Light object that is bound to the
-//               indicated id, or NULL if no Light is bound.
+//               indicated id, or empty NodePath if no Light is bound.
 ////////////////////////////////////////////////////////////////////
-INLINE Light *GraphicsStateGuardian::
+INLINE NodePath GraphicsStateGuardian::
 get_light(int light_id) const {
-  nassertr(light_id >= 0 && light_id < (int)_light_info.size(), (Light *)NULL);
+  nassertr(light_id >= 0 && light_id < (int)_light_info.size(), NodePath::fail());
   return _light_info[light_id]._light;
 }
 

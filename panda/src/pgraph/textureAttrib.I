@@ -160,7 +160,8 @@ get_off_stage(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool TextureAttrib::
 has_off_stage(TextureStage *stage) const {
-  return _off_all_stages || _off_stages.find(stage) != _off_stages.end();
+  return _off_stages.find(stage) != _off_stages.end() ||
+    (_off_all_stages && !has_on_stage(stage));
 }
 
 ////////////////////////////////////////////////////////////////////

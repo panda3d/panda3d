@@ -51,7 +51,8 @@ PUBLISHED:
   INLINE void set_direction(const LVector3f &direction);
   
 public:
-  virtual void bind(GraphicsStateGuardianBase *gsg, int light_id);
+  virtual void bind(GraphicsStateGuardianBase *gsg, const NodePath &light,
+                    int light_id);
 
 private:
   // This is the data that must be cycled between pipeline stages.

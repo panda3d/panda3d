@@ -44,17 +44,17 @@ make(LightAttrib::Operation op, Light *light) {
   switch (op) {
   case O_set:
     attrib = make_all_off();
-    attrib = DCAST(LightAttrib, attrib)->add_on_light(light);
+    attrib = DCAST(LightAttrib, attrib)->add_on_light(NodePath(light->as_node()));
     return attrib;
    
   case O_add:
     attrib = make();
-    attrib = DCAST(LightAttrib, attrib)->add_on_light(light);
+    attrib = DCAST(LightAttrib, attrib)->add_on_light(NodePath(light->as_node()));
     return attrib;
 
   case O_remove:
     attrib = make();
-    attrib = DCAST(LightAttrib, attrib)->add_off_light(light);
+    attrib = DCAST(LightAttrib, attrib)->add_off_light(NodePath(light->as_node()));
     return attrib;
   }
 
@@ -78,20 +78,20 @@ make(LightAttrib::Operation op, Light *light1, Light *light2) {
   switch (op) {
   case O_set:
     attrib = make_all_off();
-    attrib = DCAST(LightAttrib, attrib)->add_on_light(light1);
-    attrib = DCAST(LightAttrib, attrib)->add_on_light(light2);
+    attrib = DCAST(LightAttrib, attrib)->add_on_light(NodePath(light1->as_node()));
+    attrib = DCAST(LightAttrib, attrib)->add_on_light(NodePath(light2->as_node()));
     return attrib;
    
   case O_add:
     attrib = make();
-    attrib = DCAST(LightAttrib, attrib)->add_on_light(light1);
-    attrib = DCAST(LightAttrib, attrib)->add_on_light(light2);
+    attrib = DCAST(LightAttrib, attrib)->add_on_light(NodePath(light1->as_node()));
+    attrib = DCAST(LightAttrib, attrib)->add_on_light(NodePath(light2->as_node()));
     return attrib;
 
   case O_remove:
     attrib = make();
-    attrib = DCAST(LightAttrib, attrib)->add_off_light(light1);
-    attrib = DCAST(LightAttrib, attrib)->add_off_light(light2);
+    attrib = DCAST(LightAttrib, attrib)->add_off_light(NodePath(light1->as_node()));
+    attrib = DCAST(LightAttrib, attrib)->add_off_light(NodePath(light2->as_node()));
     return attrib;
   }
 
@@ -116,23 +116,23 @@ make(LightAttrib::Operation op, Light *light1, Light *light2,
   switch (op) {
   case O_set:
     attrib = make_all_off();
-    attrib = DCAST(LightAttrib, attrib)->add_on_light(light1);
-    attrib = DCAST(LightAttrib, attrib)->add_on_light(light2);
-    attrib = DCAST(LightAttrib, attrib)->add_on_light(light3);
+    attrib = DCAST(LightAttrib, attrib)->add_on_light(NodePath(light1->as_node()));
+    attrib = DCAST(LightAttrib, attrib)->add_on_light(NodePath(light2->as_node()));
+    attrib = DCAST(LightAttrib, attrib)->add_on_light(NodePath(light3->as_node()));
     return attrib;
    
   case O_add:
     attrib = make();
-    attrib = DCAST(LightAttrib, attrib)->add_on_light(light1);
-    attrib = DCAST(LightAttrib, attrib)->add_on_light(light2);
-    attrib = DCAST(LightAttrib, attrib)->add_on_light(light3);
+    attrib = DCAST(LightAttrib, attrib)->add_on_light(NodePath(light1->as_node()));
+    attrib = DCAST(LightAttrib, attrib)->add_on_light(NodePath(light2->as_node()));
+    attrib = DCAST(LightAttrib, attrib)->add_on_light(NodePath(light3->as_node()));
     return attrib;
 
   case O_remove:
     attrib = make();
-    attrib = DCAST(LightAttrib, attrib)->add_off_light(light1);
-    attrib = DCAST(LightAttrib, attrib)->add_off_light(light2);
-    attrib = DCAST(LightAttrib, attrib)->add_off_light(light3);
+    attrib = DCAST(LightAttrib, attrib)->add_off_light(NodePath(light1->as_node()));
+    attrib = DCAST(LightAttrib, attrib)->add_off_light(NodePath(light2->as_node()));
+    attrib = DCAST(LightAttrib, attrib)->add_off_light(NodePath(light3->as_node()));
     return attrib;
   }
 
@@ -157,26 +157,26 @@ make(LightAttrib::Operation op, Light *light1, Light *light2,
   switch (op) {
   case O_set:
     attrib = make_all_off();
-    attrib = DCAST(LightAttrib, attrib)->add_on_light(light1);
-    attrib = DCAST(LightAttrib, attrib)->add_on_light(light2);
-    attrib = DCAST(LightAttrib, attrib)->add_on_light(light3);
-    attrib = DCAST(LightAttrib, attrib)->add_on_light(light4);
+    attrib = DCAST(LightAttrib, attrib)->add_on_light(NodePath(light1->as_node()));
+    attrib = DCAST(LightAttrib, attrib)->add_on_light(NodePath(light2->as_node()));
+    attrib = DCAST(LightAttrib, attrib)->add_on_light(NodePath(light3->as_node()));
+    attrib = DCAST(LightAttrib, attrib)->add_on_light(NodePath(light4->as_node()));
     return attrib;
    
   case O_add:
     attrib = make();
-    attrib = DCAST(LightAttrib, attrib)->add_on_light(light1);
-    attrib = DCAST(LightAttrib, attrib)->add_on_light(light2);
-    attrib = DCAST(LightAttrib, attrib)->add_on_light(light3);
-    attrib = DCAST(LightAttrib, attrib)->add_on_light(light4);
+    attrib = DCAST(LightAttrib, attrib)->add_on_light(NodePath(light1->as_node()));
+    attrib = DCAST(LightAttrib, attrib)->add_on_light(NodePath(light2->as_node()));
+    attrib = DCAST(LightAttrib, attrib)->add_on_light(NodePath(light3->as_node()));
+    attrib = DCAST(LightAttrib, attrib)->add_on_light(NodePath(light4->as_node()));
     return attrib;
 
   case O_remove:
     attrib = make();
-    attrib = DCAST(LightAttrib, attrib)->add_off_light(light1);
-    attrib = DCAST(LightAttrib, attrib)->add_off_light(light2);
-    attrib = DCAST(LightAttrib, attrib)->add_off_light(light3);
-    attrib = DCAST(LightAttrib, attrib)->add_off_light(light4);
+    attrib = DCAST(LightAttrib, attrib)->add_off_light(NodePath(light1->as_node()));
+    attrib = DCAST(LightAttrib, attrib)->add_off_light(NodePath(light2->as_node()));
+    attrib = DCAST(LightAttrib, attrib)->add_off_light(NodePath(light3->as_node()));
+    attrib = DCAST(LightAttrib, attrib)->add_off_light(NodePath(light4->as_node()));
     return attrib;
   }
 
@@ -235,7 +235,7 @@ get_num_lights() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LightAttrib::get_light
 //       Access: Published
-//  Description: Returns the nth lights listed in the attribute.
+//  Description: Returns the nth light listed in the attribute.
 //
 //               This method is now deprecated.  LightAttribs nowadays
 //               have a separate list of on_lights and off_lights, so
@@ -245,9 +245,9 @@ get_num_lights() const {
 Light *LightAttrib::
 get_light(int n) const {
   if (get_num_off_lights() == 0) {
-    return get_on_light(n);
+    return get_on_light(n).node()->as_light();
   } else {
-    return get_off_light(n);
+    return get_off_light(n).node()->as_light();
   }
 }
 
@@ -265,9 +265,9 @@ get_light(int n) const {
 bool LightAttrib::
 has_light(Light *light) const {
   if (get_num_off_lights() == 0) {
-    return has_on_light(light);
+    return has_on_light(NodePath(light->as_node()));
   } else {
-    return has_off_light(light);
+    return has_off_light(NodePath(light->as_node()));
   }
 }
 
@@ -283,9 +283,9 @@ has_light(Light *light) const {
 CPT(RenderAttrib) LightAttrib::
 add_light(Light *light) const {
   if (get_num_off_lights() == 0) {
-    return add_on_light(light);
+    return add_on_light(NodePath(light->as_node()));
   } else {
-    return add_off_light(light);
+    return add_off_light(NodePath(light->as_node()));
   }
 }
 
@@ -302,9 +302,9 @@ add_light(Light *light) const {
 CPT(RenderAttrib) LightAttrib::
 remove_light(Light *light) const {
   if (get_num_off_lights() == 0) {
-    return remove_on_light(light);
+    return remove_on_light(NodePath(light->as_node()));
   } else {
-    return remove_off_light(light);
+    return remove_off_light(NodePath(light->as_node()));
   }
 }
 
@@ -352,7 +352,8 @@ make_all_off() {
 //               turned on by this attrib.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) LightAttrib::
-add_on_light(Light *light) const {
+add_on_light(const NodePath &light) const {
+  nassertr(!light.is_empty() && light.node()->as_light() != (Light *)NULL, this);
   LightAttrib *attrib = new LightAttrib(*this);
   attrib->_on_lights.insert(light);
   attrib->_off_lights.erase(light);
@@ -375,7 +376,8 @@ add_on_light(Light *light) const {
 //               lights turned on by this attrib.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) LightAttrib::
-remove_on_light(Light *light) const {
+remove_on_light(const NodePath &light) const {
+  nassertr(!light.is_empty() && light.node()->as_light() != (Light *)NULL, this);
   LightAttrib *attrib = new LightAttrib(*this);
   attrib->_on_lights.erase(light);
   return return_new(attrib);
@@ -389,7 +391,8 @@ remove_on_light(Light *light) const {
 //               turned off by this attrib.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) LightAttrib::
-add_off_light(Light *light) const {
+add_off_light(const NodePath &light) const {
+  nassertr(!light.is_empty() && light.node()->as_light() != (Light *)NULL, this);
   LightAttrib *attrib = new LightAttrib(*this);
   if (!_off_all_lights) {
     attrib->_off_lights.insert(light);
@@ -406,7 +409,8 @@ add_off_light(Light *light) const {
 //               lights turned off by this attrib.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) LightAttrib::
-remove_off_light(Light *light) const {
+remove_off_light(const NodePath &light) const {
+  nassertr(!light.is_empty() && light.node()->as_light() != (Light *)NULL, this);
   LightAttrib *attrib = new LightAttrib(*this);
   attrib->_off_lights.erase(light);
   return return_new(attrib);
@@ -453,8 +457,8 @@ output(ostream &out) const {
     out << "off";
     Lights::const_iterator fi;
     for (fi = _off_lights.begin(); fi != _off_lights.end(); ++fi) {
-      Light *light = (*fi);
-      out << " " << *light;
+      NodePath light = (*fi);
+      out << " " << light;
     }
 
     if (!_on_lights.empty()) {
@@ -464,8 +468,8 @@ output(ostream &out) const {
     
   Lights::const_iterator li;
   for (li = _on_lights.begin(); li != _on_lights.end(); ++li) {
-    Light *light = (*li);
-    out << " " << *light;
+    NodePath light = (*li);
+    out << " " << light;
   }
 }
 
@@ -497,11 +501,12 @@ compare_to_impl(const RenderAttrib *other) const {
   Lights::const_iterator oli = ta->_on_lights.begin();
 
   while (li != _on_lights.end() && oli != ta->_on_lights.end()) {
-    Light *light = (*li);
-    Light *other_light = (*oli);
+    NodePath light = (*li);
+    NodePath other_light = (*oli);
 
-    if (light != other_light) {
-      return light < other_light ? -1 : 1;
+    int compare = light.compare_to(other_light);
+    if (compare != 0) {
+      return compare;
     }
 
     ++li;
@@ -519,11 +524,12 @@ compare_to_impl(const RenderAttrib *other) const {
   Lights::const_iterator ofi = ta->_off_lights.begin();
 
   while (fi != _off_lights.end() && ofi != ta->_off_lights.end()) {
-    Light *light = (*fi);
-    Light *other_light = (*ofi);
+    NodePath light = (*fi);
+    NodePath other_light = (*ofi);
 
-    if (light != other_light) {
-      return light < other_light ? -1 : 1;
+    int compare = light.compare_to(other_light);
+    if (compare != 0) {
+      return compare;
     }
 
     ++fi;
@@ -612,7 +618,7 @@ compose_impl(const RenderAttrib *other) const {
 
     } else {  // (*bi) == (*ai)
       // Here is a light we have in both.
-      *result = *ai;
+      *result = *bi;
       ++ai;
       ++bi;
       ++result;
@@ -636,7 +642,7 @@ compose_impl(const RenderAttrib *other) const {
 
     } else {
       // Here is a light we have in both.
-      *result = *ai;
+      *result = *bi;
       ++ai;
       ++bi;
       ++result;
@@ -740,8 +746,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   // write the off lights pointers if any
   Lights::const_iterator fi;
   for (fi = _off_lights.begin(); fi != _off_lights.end(); ++fi) {
-    Light *light = (*fi);
-    manager->write_pointer(dg, light->as_node());
+    NodePath light = (*fi);
+
+    // Whoops, we don't have a way to write out a NodePath right now.
+    manager->write_pointer(dg, light.node());
   }
 
   // write the number of on lights
@@ -749,8 +757,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   // write the on lights pointers if any
   Lights::const_iterator nti;
   for (nti = _on_lights.begin(); nti != _on_lights.end(); ++nti) {
-    Light *light = (*nti);
-    manager->write_pointer(dg, light->as_node());
+    NodePath light = (*nti);
+    manager->write_pointer(dg, light.node());
   }
 }
 
@@ -769,7 +777,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   while (ci != _off_lights.end()) {
     PandaNode *node;
     DCAST_INTO_R(node, p_list[pi++], pi);
-    (*ci) = node->as_light();
+    (*ci) = NodePath(node);
     ++ci;
   }
 
@@ -777,7 +785,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   while (ci != _on_lights.end()) {
     PandaNode *node;
     DCAST_INTO_R(node, p_list[pi++], pi);
-    (*ci) = node->as_light();
+    (*ci) = NodePath(node);
     ++ci;
   }
 

@@ -165,12 +165,15 @@ public:
   virtual void issue_color_blend(const ColorBlendAttrib *attrib);
   virtual void issue_clip_plane(const ClipPlaneAttrib *attrib);
 
-  virtual void bind_light(PointLight *light, int light_id);
-  virtual void bind_light(DirectionalLight *light, int light_id);
-  virtual void bind_light(Spotlight *light, int light_id);
+  virtual void bind_light(PointLight *light_obj, const NodePath &light, 
+                          int light_id);
+  virtual void bind_light(DirectionalLight *light_obj, const NodePath &light,
+                          int light_id);
+  virtual void bind_light(Spotlight *light_obj, const NodePath &light,
+                          int light_id);
 
 protected:
-  INLINE Light *get_light(int light_id) const;
+  INLINE NodePath get_light(int light_id) const;
   virtual bool slot_new_light(int light_id);
   virtual void enable_lighting(bool enable);
   virtual void set_ambient_light(const Colorf &color);
@@ -301,7 +304,7 @@ private:
   class LightInfo {
   public:
     INLINE LightInfo();
-    PT(Light) _light;
+    NodePath _light;
     bool _enabled;
     bool _next_enabled;
   };

@@ -42,7 +42,8 @@ public:
   virtual void write(ostream &out, int indent_level) const;
   
 public:
-  virtual void bind(GraphicsStateGuardianBase *gsg, int light_id);
+  virtual void bind(GraphicsStateGuardianBase *gsg, const NodePath &light,
+                    int light_id);
 
 public:
   static void register_with_read_factory();

@@ -139,8 +139,8 @@ write(ostream &out, int indent_level) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DirectionalLight::
-bind(GraphicsStateGuardianBase *gsg, int light_id) {
-  gsg->bind_light(this, light_id);
+bind(GraphicsStateGuardianBase *gsg, const NodePath &light, int light_id) {
+  gsg->bind_light(this, light, light_id);
 }
 
 ////////////////////////////////////////////////////////////////////

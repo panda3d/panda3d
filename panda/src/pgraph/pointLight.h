@@ -51,7 +51,8 @@ PUBLISHED:
   INLINE void set_point(const LPoint3f &point);
   
 public:
-  virtual void bind(GraphicsStateGuardianBase *gsg, int light_id);
+  virtual void bind(GraphicsStateGuardianBase *gsg, const NodePath &light,
+                    int light_id);
 
 private:
   // This is the data that must be cycled between pipeline stages.

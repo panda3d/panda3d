@@ -1200,7 +1200,6 @@ fillin(DatagramIterator& scan, BamReader* manager) {
     // read the multitexture data
     int num_texcoords_by_names = scan.get_uint8();
     // read the TexCoordsByName pointers of num_texcoords_by_names
-    TexCoordsByName::const_iterator tci;
     _temp_texcoord_set.reserve(num_texcoords_by_names);
     for (int i=0; i<num_texcoords_by_names; ++i) {
       manager->read_pointer(scan);

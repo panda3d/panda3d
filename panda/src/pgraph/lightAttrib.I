@@ -60,9 +60,9 @@ get_num_on_lights() const {
 //  Description: Returns the nth light turned on by the attribute,
 //               sorted in render order.
 ////////////////////////////////////////////////////////////////////
-INLINE Light *LightAttrib::
+INLINE NodePath LightAttrib::
 get_on_light(int n) const {
-  nassertr(n >= 0 && n < (int)_on_lights.size(), (Light *)NULL);
+  nassertr(n >= 0 && n < (int)_on_lights.size(), NodePath::fail());
   return _on_lights[n];
 }
 
@@ -73,7 +73,7 @@ get_on_light(int n) const {
 //               the attrib, false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool LightAttrib::
-has_on_light(Light *light) const {
+has_on_light(const NodePath &light) const {
   return _on_lights.find(light) != _on_lights.end();
 }
 
@@ -94,9 +94,9 @@ get_num_off_lights() const {
 //  Description: Returns the nth light turned off by the attribute,
 //               sorted in arbitrary (pointer) order.
 ////////////////////////////////////////////////////////////////////
-INLINE Light *LightAttrib::
+INLINE NodePath LightAttrib::
 get_off_light(int n) const {
-  nassertr(n >= 0 && n < (int)_off_lights.size(), (Light *)NULL);
+  nassertr(n >= 0 && n < (int)_off_lights.size(), NodePath::fail());
   return _off_lights[n];
 }
 
@@ -107,8 +107,9 @@ get_off_light(int n) const {
 //               the attrib, false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool LightAttrib::
-has_off_light(Light *light) const {
-  return _off_all_lights || _off_lights.find(light) != _off_lights.end();
+has_off_light(const NodePath &light) const {
+  return _off_lights.find(light) != _off_lights.end() ||
+    (_off_all_lights && !has_on_light(light));
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -112,9 +112,12 @@ public:
   virtual void issue_cg_shader_bind(const CgShaderAttrib *attrib);
   //  virtual void issue_stencil(const StencilAttrib *attrib);
 
-  virtual void bind_light(PointLight *light, int light_id);
-  virtual void bind_light(DirectionalLight *light, int light_id);
-  virtual void bind_light(Spotlight *light, int light_id);
+  virtual void bind_light(PointLight *light_obj, const NodePath &light, 
+                          int light_id);
+  virtual void bind_light(DirectionalLight *light_obj, const NodePath &light, 
+                          int light_id);
+  virtual void bind_light(Spotlight *light_obj, const NodePath &light, 
+                          int light_id);
 
   virtual bool wants_texcoords(void) const;
 

@@ -80,7 +80,7 @@ write(ostream &out, int indent_level) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void AmbientLight::
-bind(GraphicsStateGuardianBase *, int) {
+bind(GraphicsStateGuardianBase *, const NodePath &, int) {
   // AmbientLights aren't bound to light id's; this function should
   // never be called.
   nassertv(false);

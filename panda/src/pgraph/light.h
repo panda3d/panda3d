@@ -29,6 +29,7 @@
 #include "pipelineCycler.h"
 #include "geomNode.h"
 
+class NodePath;
 class PandaNode;
 class GraphicsStateGuardianBase;
 
@@ -58,7 +59,8 @@ PUBLISHED:
 public:
   virtual void output(ostream &out) const=0;
   virtual void write(ostream &out, int indent_level) const=0;
-  virtual void bind(GraphicsStateGuardianBase *gsg, int light_id)=0;
+  virtual void bind(GraphicsStateGuardianBase *gsg, const NodePath &light,
+                    int light_id)=0;
 
   GeomNode *get_viz();
 
