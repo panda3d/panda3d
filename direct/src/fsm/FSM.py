@@ -192,7 +192,8 @@ class FSM(DirectObject):
         self.__enter(aState, enterArgList)
         assert(not self.__internalStateInFlux)
 
-    def request(self, aStateName, enterArgList=[], exitArgList=[]):
+    def request(self, aStateName, enterArgList=[], exitArgList=[],
+                force=0):
         """request(self, string)
         Attempt transition from currentState to given one.
         Return true is transition exists to given state,
@@ -224,7 +225,7 @@ class FSM(DirectObject):
             FSM.notify.error("[%s]: request: %s, no such state" %
                              (self.__name, aStateName))
 
-        if (aStateName in self.__currentState.getTransitions()):
+        if force or (aStateName in self.__currentState.getTransitions()):
             self.__transition(aState,
                               enterArgList,
                               exitArgList)
@@ -260,6 +261,10 @@ class FSM(DirectObject):
                                     aStateName))
             return 0
 
+
+    def forceTransition(self, aStateName, enterArgList=[], exitArgList=[]):
+        """ force a transition """
+        self.request(aStateName, enterArgList, exitArgList, force=1)
 
     def conditional_request(self, aStateName, enterArgList=[], exitArgList=[]):
         """request(self, string)
