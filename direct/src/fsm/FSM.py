@@ -7,6 +7,7 @@ class FSM(DirectObject):
 
     # create FSM DirectNotify category
     notify = directNotify.newCategory("FSM")
+    notify.setDebug(1)
 
     # special methods
     

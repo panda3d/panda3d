@@ -20,7 +20,7 @@ class FSMInspector(AppShell):
     def __init__(self, fsm, **kw):
         INITOPT = Pmw.INITOPT
         optiondefs = (
-            ('title',     self.appname,       None),
+            ('title', fsm.getName(), None),
             ('gridSize', '0.25i', self._setGridSize),
             )
         self.defineoptions(kw, optiondefs)
@@ -424,6 +424,8 @@ class StateInspector(Pmw.MegaArchetype):
 
     def inspectSubMachine(self):
         print 'inspect ' + self.tag + ' subMachine'
+        for childFSM in self.state.getChildren():
+            FSMInspector(childFSM)
 
     def enteredState(self):
         self._canvas.itemconfigure(self.marker, fill = 'Red')
