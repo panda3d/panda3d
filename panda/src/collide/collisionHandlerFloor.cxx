@@ -86,14 +86,23 @@ handle_entries() {
       }
 
       // Now set our height accordingly.
-      if (collide_cat.is_debug()) {
-	collide_cat.debug()
-	  << "Resetting height to " << max_height << " + " << _offset << "\n";
-      }
       LMatrix4f mat;
       def.get_mat(mat);
-      mat(3, 2) = max_height + _offset;
-      def.set_mat(mat);
+      if (!IS_THRESHOLD_EQUAL(mat(3, 2), max_height + _offset, 0.001)) {
+	if (collide_cat.is_debug()) {
+	  collide_cat.debug()
+	    << "Resetting height to " << max_height << " + " 
+	    << _offset << "\n";
+	}
+	mat(3, 2) = max_height + _offset;
+	def.set_mat(mat);
+      } else {
+	if (collide_cat.is_spam()) {
+	  collide_cat.spam()
+	    << "Height is already at " << max_height << " + " 
+	    << _offset << "\n";
+	}
+      }
     }
   }
 }

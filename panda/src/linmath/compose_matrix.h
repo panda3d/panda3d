@@ -42,6 +42,12 @@ decompose_matrix(const LMatrix3f &mat,
 		 LVecBase3f &scale,
 		 LVecBase3f &hpr,
 		 CoordinateSystem cs = CS_default);
+EXPCL_PANDA bool
+decompose_matrix(const LMatrix3f &mat,
+		 LVecBase3f &scale,
+		 LVecBase3f &hpr,
+		 float roll,
+		 CoordinateSystem cs = CS_default);
 
 EXPCL_PANDA void
 compose_matrix(LMatrix3d &mat,
@@ -52,6 +58,12 @@ EXPCL_PANDA bool
 decompose_matrix(const LMatrix3d &mat,
 		 LVecBase3d &scale,
 		 LVecBase3d &hpr,
+		 CoordinateSystem cs = CS_default);
+EXPCL_PANDA bool
+decompose_matrix(const LMatrix3d &mat,
+		 LVecBase3d &scale,
+		 LVecBase3d &hpr,
+		 double roll,
 		 CoordinateSystem cs = CS_default);
 
 EXPCL_PANDA void
@@ -68,6 +80,13 @@ decompose_matrix(const LMatrix4f &mat,
 		 LVecBase3f &scale,
 		 LVecBase3f &hpr,
 		 LVecBase3f &translate,
+		 CoordinateSystem cs = CS_default);
+EXPCL_PANDA bool
+decompose_matrix(const LMatrix4f &mat,
+		 LVecBase3f &scale,
+		 LVecBase3f &hpr,
+		 LVecBase3f &translate,
+		 float roll,
 		 CoordinateSystem cs = CS_default);
 INLINE bool decompose_matrix(const LMatrix4f &mat, float components[9],
 			     CoordinateSystem CS = CS_default);
@@ -86,6 +105,13 @@ decompose_matrix(const LMatrix4d &mat,
 		 LVecBase3d &scale,
 		 LVecBase3d &hpr,
 		 LVecBase3d &translate,
+		 CoordinateSystem cs = CS_default);
+bool EXPCL_PANDA
+decompose_matrix(const LMatrix4d &mat,
+		 LVecBase3d &scale,
+		 LVecBase3d &hpr,
+		 LVecBase3d &translate,
+		 double roll,
 		 CoordinateSystem cs = CS_default);
 INLINE bool decompose_matrix(const LMatrix4d &mat, double components[9],
 			     CoordinateSystem cs = CS_default);

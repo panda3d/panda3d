@@ -121,6 +121,8 @@ DriveInterface(const string &name) : DataNode(name) {
   _xyz.set(0.0, 0.0, 0.0);
   _hpr.set(0.0, 0.0, 0.0);
   _mat = LMatrix4f::ident_mat();
+  _force_roll = 0.0;
+  _is_force_roll = true;
 
   _cs = default_coordinate_system;
 
@@ -398,6 +400,7 @@ void DriveInterface::
 reset() {
   _xyz.set(0.0, 0.0, 0.0);
   _hpr.set(0.0, 0.0, 0.0);
+  _force_roll = 0.0;
   _mat = LMatrix4f::ident_mat();
   _up_arrow.clear();
   _down_arrow.clear();
@@ -509,6 +512,10 @@ void DriveInterface::
 set_hpr(float h, float p, float r) {
   _hpr.set(h, p, r);
   recompute();
+
+  if (_is_force_roll && r != _force_roll) {
+    reextract();
+  }
 }
 
 void DriveInterface::
@@ -527,8 +534,58 @@ void DriveInterface::
 set_r(float r) {
   _hpr[2] = r;
   recompute();
+
+  if (_is_force_roll && r != _force_roll) {
+    reextract();
+  }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: DriveInterface::set_force_roll
+//       Access: Public, Scheme
+//  Description: Sets the force_roll state.  In this state, roll is
+//               always fixed to a particular value (typically zero),
+//               regardless of what it is explicitly set to via
+//               set_hpr().
+////////////////////////////////////////////////////////////////////
+void DriveInterface::
+set_force_roll(float force_roll) {
+  if (_is_force_roll) {
+    // If we already had force_roll() in effect, we have to
+    // recompensate for it.
+    if (_force_roll != force_roll) {
+      _force_roll = force_roll;
+      reextract();
+    }
+
+  } else {
+    _force_roll = force_roll;
+    _is_force_roll = true;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DriveInterface::is_force_roll
+//       Access: Public, Scheme
+//  Description: Returns true if the force_roll state is in effect,
+//               e.g. because of a previous call to set_force_roll().
+//               In this state, the roll cannot be set to any value
+//               other than what the force_roll value indicates.
+////////////////////////////////////////////////////////////////////
+bool DriveInterface::
+is_force_roll() const {
+  return _is_force_roll;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DriveInterface::clear_force_roll
+//       Access: Public, Scheme
+//  Description: Disables the force_roll state.  See set_force_roll().
+////////////////////////////////////////////////////////////////////
+void DriveInterface::
+clear_force_roll() {
+  _is_force_roll = false;
+}
 
 
 ////////////////////////////////////////////////////////////////////
@@ -761,7 +818,19 @@ apply(double x, double y, bool any_button) {
 void DriveInterface::
 reextract() {
   LVecBase3f scale;
-  decompose_matrix(_mat, scale, _hpr, _xyz);
+
+  if (_is_force_roll) {
+    // We strongly discourage a roll other than _force_roll.
+    decompose_matrix(_mat, scale, _hpr, _xyz, _force_roll);
+  } else {
+    decompose_matrix(_mat, scale, _hpr, _xyz);
+  }
+
+  if (tform_cat.is_debug()) {
+    tform_cat.debug() 
+      << "Reextract " << _hpr << ", " << _xyz << " from:\n";
+    _mat.write(tform_cat.debug(false), 2);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -12,8 +12,7 @@
 
 #include <prtypes.h>
 
-static const int datagram_udp_header_size =
-  sizeof(PRUint16) + sizeof(PRUint16);
+static const int datagram_udp_header_size = sizeof(PRUint16);
 
 class NetDatagram;
 
@@ -30,7 +29,6 @@ public:
   DatagramUDPHeader(const NetDatagram &datagram);
   DatagramUDPHeader(const void *data);
 
-  int get_datagram_size() const;
   int get_datagram_checksum() const;
 
   const string &get_header() const;

@@ -451,24 +451,15 @@ process_incoming_udp_data(SocketInfo *sinfo) {
   }
 
   DatagramUDPHeader header(buffer);
-  PRInt32 size = header.get_datagram_size();
 
   PRInt8 *dp = buffer + datagram_udp_header_size;
   bytes_read -= datagram_udp_header_size;
 
-  PRInt32 datagram_bytes = min(bytes_read, size);
-  NetDatagram datagram(dp, datagram_bytes);
+  NetDatagram datagram(dp, bytes_read);
 
   if (_shutdown) {
     finish_socket(sinfo);
     return;
-  }
-
-  if (bytes_read > datagram_bytes) {
-    // There were some extra bytes at the end of the datagram.  Huh.
-    net_cat.error()
-      << "Discarding " << bytes_read - datagram_bytes
-      << " bytes following UDP datagram.\n";
   }
 
   // Now that we've read all the data, it's time to finish the socket

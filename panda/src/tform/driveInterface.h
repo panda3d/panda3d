@@ -79,6 +79,10 @@ PUBLISHED:
   void set_p(float p);
   void set_r(float r);
 
+  void set_force_roll(float force_roll);
+  bool is_force_roll() const;
+  void clear_force_roll();
+
   void set_coordinate_system(CoordinateSystem cs);
   CoordinateSystem get_coordinate_system() const;
 
@@ -114,6 +118,8 @@ private:
   LPoint3f _xyz;
   LVecBase3f _hpr;
   LMatrix4f _mat;
+  float _force_roll;
+  bool _is_force_roll;
   CoordinateSystem _cs;
 
   // Remember which arrow keys are being held down and which aren't,

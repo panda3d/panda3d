@@ -19,16 +19,12 @@
 DatagramUDPHeader::
 DatagramUDPHeader(const NetDatagram &datagram) {
   const string &str = datagram.get_message();
-  PRUint16 size = str.length();
-  nassertv(size == str.length());
-
   PRUint16 checksum = 0;
   for (size_t p = 0; p < str.size(); p++) {
     checksum += (PRUint16)(PRUint8)str[p];
   }
 
   // Now pack the header.
-  _header.add_uint16(size);
   _header.add_uint16(checksum);
   nassertv((int)_header.get_length() == datagram_udp_header_size);
 }
@@ -42,18 +38,6 @@ DatagramUDPHeader(const NetDatagram &datagram) {
 ////////////////////////////////////////////////////////////////////
 DatagramUDPHeader::
 DatagramUDPHeader(const void *data) : _header(data, datagram_udp_header_size) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramUDPHeader::get_datagram_size
-//       Access: Public
-//  Description: Returns the number of bytes in the associated
-//               datagram.
-////////////////////////////////////////////////////////////////////
-int DatagramUDPHeader::
-get_datagram_size() const {
-  DatagramIterator di(_header);
-  return di.get_uint16();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -90,26 +74,19 @@ get_header() const {
 bool DatagramUDPHeader::
 verify_datagram(const NetDatagram &datagram) const {
   const string &str = datagram.get_message();
-  PRUint16 size = str.length();
-  nassertr(size == str.length(), false);
 
   PRUint16 checksum = 0;
   for (size_t p = 0; p < str.size(); p++) {
     checksum += (PRUint16)(PRUint8)str[p];
   }
 
-  if (size == get_datagram_size() && checksum == get_datagram_checksum()) {
+  if (checksum == get_datagram_checksum()) {
     return true;
   }
 
   if (net_cat.is_debug()) {
     net_cat.debug()
       << "Invalid datagram!\n";
-    if (size != get_datagram_size()) {
-      net_cat.debug()
-	<< "  size is " << size << " bytes, header reports " 
-	<< get_datagram_size() << "\n";
-    }
     if (checksum != get_datagram_checksum()) {
       net_cat.debug()
 	<< "  checksum is " << checksum << ", header reports " 
