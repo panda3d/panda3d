@@ -262,9 +262,21 @@ add_polyset(EggBin *egg_bin, LPDIRECTXFILEDATA dx_parent) {
   mesh.make_mesh_data(raw_data);
 
   LPDIRECTXFILEDATA xobj;
-  cerr << "Creating mesh\n";
   if (!create_object(xobj, TID_D3DRMMesh, "mesh" + mesh_index, raw_data)) {
     return false;
+  }
+
+  if (mesh.has_normals()) {
+    // Tack on normals.
+    LPDIRECTXFILEDATA xnormals;
+    mesh.make_normal_data(raw_data);
+    if (!create_object(xnormals, TID_D3DRMMeshNormals, "norms" + mesh_index,
+                       raw_data)) {
+      return false;
+    }
+    if (!attach_and_release(xnormals, xobj)) {
+      return false;
+    }
   }
 
   if (!attach_and_release(xobj, dx_parent)) {
@@ -329,7 +341,6 @@ create_object(LPDIRECTXFILEDATA &obj, REFGUID template_id,
 ////////////////////////////////////////////////////////////////////
 bool XFileMaker::
 create_frame(LPDIRECTXFILEDATA &obj, const string &name) {
-  cerr << "Creating frame\n";
   return create_object(obj, TID_D3DRMFrame, name, Datagram());
 }
 

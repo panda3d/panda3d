@@ -27,12 +27,14 @@
 ////////////////////////////////////////////////////////////////////
 XFileNormal::
 XFileNormal(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
+  _has_normal = true;
   if (egg_vertex->has_normal()) {
     _normal = LCAST(float, egg_vertex->get_normal());
   } else if (egg_prim->has_normal()) {
     _normal = LCAST(float, egg_prim->get_normal());
   } else {
     _normal.set(0.0, 0.0, 0.0);
+    _has_normal = false;
   }
 }
 

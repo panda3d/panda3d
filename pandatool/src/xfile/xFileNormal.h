@@ -38,6 +38,7 @@ public:
   int compare_to(const XFileNormal &other) const;
 
   Normalf _normal;
+  bool _has_normal;
 };
 
 #endif

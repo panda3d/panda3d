@@ -28,6 +28,7 @@
 ////////////////////////////////////////////////////////////////////
 XFileMesh::
 XFileMesh() {
+  _has_normals = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -89,6 +90,10 @@ int XFileMesh::
 add_normal(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
   int next_index = _normals.size();
   XFileNormal *normal = new XFileNormal(egg_vertex, egg_prim);
+  if (normal->_has_normal) {
+    _has_normals = true;
+  }
+
   pair<UniqueNormals::iterator, bool> result =
     _unique_normals.insert(UniqueNormals::value_type(normal, next_index));
 
@@ -105,6 +110,17 @@ add_normal(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: XFileMesh::has_normals
+//       Access: Public
+//  Description: Returns true if any of the vertices or faces added to
+//               this mesh used a normal, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool XFileMesh::
+has_normals() const {
+  return _has_normals;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: XFileMesh::make_mesh_data
 //       Access: Public
 //  Description: Fills the datagram with the raw data for the DX
@@ -112,6 +128,7 @@ add_normal(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
 ////////////////////////////////////////////////////////////////////
 void XFileMesh::
 make_mesh_data(Datagram &raw_data) {
+  raw_data.clear();
   raw_data.add_int32(_vertices.size());
   
   Vertices::const_iterator vi;
@@ -134,6 +151,41 @@ make_mesh_data(Datagram &raw_data) {
          fvi != face->_vertices.end();
          ++fvi) {
       raw_data.add_int32((*fvi)._vertex_index);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileMesh::make_normal_data
+//       Access: Public
+//  Description: Fills the datagram with the raw data for the DX
+//               MeshNormals template.
+////////////////////////////////////////////////////////////////////
+void XFileMesh::
+make_normal_data(Datagram &raw_data) {
+  raw_data.clear();
+  raw_data.add_int32(_normals.size());
+  
+  Normals::const_iterator ni;
+  for (ni = _normals.begin(); ni != _normals.end(); ++ni) {
+    XFileNormal *normal = (*ni);
+    const Normalf &norm = normal->_normal;
+    raw_data.add_float32(norm[0]);
+    raw_data.add_float32(norm[1]);
+    raw_data.add_float32(norm[2]);
+  }
+
+  raw_data.add_int32(_faces.size());
+  Faces::const_iterator fi;
+  for (fi = _faces.begin(); fi != _faces.end(); ++fi) {
+    XFileFace *face = (*fi);
+
+    raw_data.add_int32(face->_vertices.size());
+    XFileFace::Vertices::const_iterator fvi;
+    for (fvi = face->_vertices.begin();
+         fvi != face->_vertices.end();
+         ++fvi) {
+      raw_data.add_int32((*fvi)._normal_index);
     }
   }
 }

@@ -46,9 +46,12 @@ public:
   int add_vertex(EggVertex *egg_vertex, EggPrimitive *egg_prim);
   int add_normal(EggVertex *egg_vertex, EggPrimitive *egg_prim);
 
-  void make_mesh_data(Datagram &raw_data);
+  bool has_normals() const;
 
-public:
+  void make_mesh_data(Datagram &raw_data);
+  void make_normal_data(Datagram &raw_data);
+
+private:
   typedef pvector<XFileVertex *> Vertices;
   typedef pvector<XFileNormal *> Normals;
   typedef pvector<XFileFace *> Faces;
@@ -62,6 +65,8 @@ private:
   typedef pmap<XFileNormal *, int, IndirectCompareTo<XFileNormal> > UniqueNormals;
   UniqueVertices _unique_vertices;
   UniqueNormals _unique_normals;
+
+  bool _has_normals;
 };
 
 #endif
