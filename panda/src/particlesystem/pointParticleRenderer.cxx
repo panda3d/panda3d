@@ -175,14 +175,24 @@ create_color(const BaseParticle *p) {
 
   // handle alpha channel
 
-  if (!((_alpha_mode == PR_ALPHA_NONE) || (_alpha_mode == PR_ALPHA_USER))) {
+  if(_alpha_mode != PR_ALPHA_NONE) {
+
     if (have_alpha_t == false)
       alpha_linear_t = p->get_parameterized_age();
 
-    if (_alpha_mode == PR_ALPHA_OUT)
-      color[3] = 1.0f - alpha_linear_t;
-    else
-      color[3] = alpha_linear_t;
+	switch(_alpha_mode) {
+	    case PR_ALPHA_OUT:
+			color[3] = 1.0f - alpha_linear_t;        
+			break;
+
+	    case PR_ALPHA_IN:
+			color[3] = alpha_linear_t;        
+			break;
+
+	    case PR_ALPHA_USER:
+			color[3] = get_user_alpha();
+			break;
+	}
   }
 
   return color;

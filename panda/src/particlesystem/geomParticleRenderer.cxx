@@ -148,17 +148,18 @@ render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
       PT(ColorTransition) alpha;
       xform = new TransformTransition(LMatrix4f::translate_mat(pos));
 
-      if ((_alpha_mode != PR_ALPHA_NONE) && (_alpha_mode != PR_ALPHA_USER)) {
+      if ((_alpha_mode != PR_ALPHA_NONE)) {
+        float alpha_scalar;
 
-        float alpha_scalar = cur_particle->get_parameterized_age();
-
-        if (_alpha_mode == PR_ALPHA_IN) {
-          alpha = new ColorTransition(1.0f, 1.0f, 1.0f, alpha_scalar);
+	    if(_alpha_mode == PR_ALPHA_USER) {
+			alpha_scalar=get_user_alpha();
+		} else {
+			alpha_scalar = cur_particle->get_parameterized_age();
+			if (_alpha_mode == PR_ALPHA_OUT) 
+				alpha_scalar = 1.0f - alpha_scalar;
         }
-        else if (_alpha_mode == PR_ALPHA_OUT) {
-          alpha = new ColorTransition(1.0f, 1.0f, 1.0f, 1.0f - alpha_scalar);
-        }
 
+        alpha = new ColorTransition(1.0f, 1.0f, 1.0f, alpha_scalar);
         cur_arc->set_transition(alpha);
       }
 
