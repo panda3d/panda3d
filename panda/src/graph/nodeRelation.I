@@ -290,6 +290,21 @@ get_last_update() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::clear_wrt_cache
+//       Access: Public
+//  Description: Blows away the wrt cache information on this arc.
+//               This forces the wrt to be recomputed next time it is
+//               asked for.
+////////////////////////////////////////////////////////////////////
+INLINE_GRAPH void NodeRelation::
+clear_wrt_cache() {
+  _net_transitions.clear();
+  _top_subtree = (Node *)NULL;
+  _all_verified = UpdateSeq::initial();
+  _last_update = ++last_graph_update(_graph_type);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodeRelation::create_typed_arc
 //       Access: Public, Static
 //  Description: Creates a new arc of the scene graph of the indicated

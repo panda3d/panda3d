@@ -22,6 +22,8 @@
 #include <pandabase.h>
 
 #include "typedObject.h"
+#include "memoryInfo.h"
+#include "memoryUsagePointerCounts.h"
 
 #include <map>
 
@@ -42,7 +44,6 @@ class EXPCL_PANDAEXPRESS MemoryUsage {
 public:
   INLINE static bool get_track_memory_usage();
 
-PUBLISHED:
 #if defined(__GNUC__) && !defined(NDEBUG)
   // There seems to be a problem with egcs-2.91.66: it gets confused
   // with too many nested inline functions, and sets the wrong pointer
@@ -62,7 +63,20 @@ PUBLISHED:
   INLINE static void remove_pointer(ReferenceCount *ptr);
 #endif // __GNUC__ && !NDEBUG
 
-#ifndef NDEBUG
+#ifdef NDEBUG
+public:
+  INLINE static bool is_tracking() { return false; }
+  INLINE static size_t get_allocated_size() { return 0; }
+
+#else  // NDEBUG
+public:
+  static void *operator_new_handler(size_t size);
+  static void operator_delete_handler(void *ptr);
+
+PUBLISHED:
+  INLINE static bool is_tracking();
+  INLINE static size_t get_allocated_size();
+  INLINE static size_t get_total_size();
   INLINE static int get_num_pointers();
   INLINE static void get_pointers(MemoryUsagePointers &result);
   INLINE static void get_pointers_of_type(MemoryUsagePointers &result,
@@ -87,6 +101,11 @@ private:
   void ns_update_type(ReferenceCount *ptr, TypedObject *typed_ptr);
   void ns_remove_pointer(ReferenceCount *ptr);
 
+  void ns_record_void_pointer(void *ptr, size_t size);
+  void ns_remove_void_pointer(void *ptr);
+
+  size_t ns_get_allocated_size();
+  size_t ns_get_total_size();
   int ns_get_num_pointers();
   void ns_get_pointers(MemoryUsagePointers &result);
   void ns_get_pointers_of_type(MemoryUsagePointers &result,
@@ -101,38 +120,25 @@ private:
   void ns_show_current_ages();
   void ns_show_trend_ages();
 
+  void consolidate_void_ptr(MemoryInfo &info);
+
   static MemoryUsage *_global_ptr;
 
-  class MemoryInfo {
-  public:
-    TypeHandle get_type();
-    void determine_dynamic_type();
-    void update_type_handle(TypeHandle &destination, TypeHandle refined);
-
-    ReferenceCount *_ptr;
-    TypedObject *_typed_ptr;
-    TypeHandle _static_type;
-    TypeHandle _dynamic_type;
-
-    double _time;
-    int _freeze_index;
-    bool _reconsider_dynamic_type;
-  };
-
-  typedef map<ReferenceCount *, MemoryInfo> Table;
+  typedef map<void *, MemoryInfo> Table;
   Table _table;
   int _freeze_index;
   int _count;
-
+  size_t _allocated_size;
+  size_t _total_size;
 
   class TypeHistogram {
   public:
-    void add_info(TypeHandle type);
+    void add_info(TypeHandle type, MemoryInfo &info);
     void show() const;
     void clear();
 
   private:
-    typedef map<TypeHandle, int> Counts;
+    typedef map<TypeHandle, MemoryUsagePointerCounts> Counts;
     Counts _counts;
   };
   TypeHistogram _trend_types;
@@ -140,7 +146,7 @@ private:
   class AgeHistogram {
   public:
     AgeHistogram();
-    void add_info(double age);
+    void add_info(double age, MemoryInfo &info);
     void show() const;
     void clear();
 
@@ -148,7 +154,7 @@ private:
     int choose_bucket(double age) const;
 
     enum { num_buckets = 5 };
-    int _counts[num_buckets];
+    MemoryUsagePointerCounts _counts[num_buckets];
     static double _cutoff[num_buckets];
   };
   AgeHistogram _trend_ages;
@@ -156,7 +162,7 @@ private:
 
   bool _track_memory_usage;
 
-#endif
+#endif  // NDEBUG
 };
 
 #include "memoryUsage.I"

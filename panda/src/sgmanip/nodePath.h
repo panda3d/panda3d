@@ -510,6 +510,7 @@ PUBLISHED:
   NodePath get_stashed_ancestor() const;
 
   void prepare_scene(GraphicsStateGuardianBase *gsg);
+  INLINE void clear_wrt_cache();
 
   void show_bounds();
   void hide_bounds();
@@ -542,6 +543,7 @@ private:
   void r_list_transitions(ostream &out, int indent_level) const;
 
   void r_adjust_all_priorities(NodeRelation *arc, int adjustment);
+  void r_clear_wrt_cache(NodeRelation *arc);
 
   // It's important that there are no data members in this class.  Put
   // them in NodePathBase instead.

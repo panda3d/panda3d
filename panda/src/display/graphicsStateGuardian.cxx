@@ -126,6 +126,27 @@ release_all_textures() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::clear_attribute
+//       Access: Public
+//  Description: Explicitly clear the indicated attribute, specified
+//               by the TypeHandle of its associated transition.  If
+//               the attribute is not set already, this does nothing;
+//               if it is set, it resets it to its default value.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+clear_attribute(TypeHandle type) {
+  NodeAttributes::iterator ai = _state.find(type);
+  if (ai != _state.end()) {
+    // The state is already set; get the initial value and reset it.
+    PT(NodeAttribute) initial = (*ai).second->make_initial();
+    initial->issue(this);
+
+    // Now remove the state entry from the set.
+    _state.erase(ai);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::reset
 //       Access: Public, Virtual
 //  Description: Resets all internal state as if the gsg were newly

@@ -64,6 +64,7 @@ public:
   // of PANDA.DLL.
   typedef Attributes::iterator iterator;
   typedef Attributes::const_iterator const_iterator;
+  typedef Attributes::key_type key_type;
   typedef Attributes::value_type value_type;
   typedef Attributes::size_type size_type;
 
@@ -73,6 +74,7 @@ public:
   INLINE_GRAPH const_iterator begin() const;
   INLINE_GRAPH const_iterator end() const;
   INLINE_GRAPH iterator insert(iterator position, const value_type &x);
+  INLINE_GRAPH iterator find(const key_type &k);
   INLINE_GRAPH void erase(iterator position);
 
 public:

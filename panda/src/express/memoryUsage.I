@@ -116,6 +116,40 @@ remove_pointer(ReferenceCount *ptr) {
 #endif  // __GNUC__
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::is_tracking
+//       Access: Public, Static
+//  Description: Returns true if the MemoryUsage object is currently
+//               tracking memory (e.g. track-memory-usage is
+//               configured #t).
+////////////////////////////////////////////////////////////////////
+INLINE bool MemoryUsage::
+is_tracking() {
+  return get_global_ptr()->_track_memory_usage;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::get_allocated_size
+//       Access: Public, Static
+//  Description: Returns the total number of bytes of allocated memory
+//               as counted, excluding the memory previously frozen.
+////////////////////////////////////////////////////////////////////
+INLINE size_t MemoryUsage::
+get_allocated_size() {
+  return get_global_ptr()->ns_get_allocated_size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::get_total_size
+//       Access: Public, Static
+//  Description: Returns the total number of bytes of allocated memory
+//               as counted, including the memory previously frozen.
+////////////////////////////////////////////////////////////////////
+INLINE size_t MemoryUsage::
+get_total_size() {
+  return get_global_ptr()->ns_get_total_size();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsage::get_num_pointers
 //       Access: Public, Static
 //  Description: Returns the number of pointers currently active.

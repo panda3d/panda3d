@@ -17,3 +17,21 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "dtoolbase.h"
+
+
+#ifndef NDEBUG
+
+void *default_operator_new(size_t size) {
+  return malloc(size);
+}
+
+void default_operator_delete(void *ptr) {
+  free(ptr);
+}
+
+// We absolutely depend on the static initialization of these pointers
+// to happen at load time, before any static constructors are called.
+void *(*global_operator_new)(size_t size) = &default_operator_new;
+void (*global_operator_delete)(void *ptr) = &default_operator_delete;
+
+#endif  // NDEBUG

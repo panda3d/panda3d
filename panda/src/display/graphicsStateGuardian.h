@@ -78,10 +78,11 @@ PUBLISHED:
   }
 
   void enable_frame_clear(bool clear_color, bool clear_depth);
-
-public:
   void release_all_textures();
 
+  void clear_attribute(TypeHandle type);
+
+public:
   virtual void clear(const RenderBuffer &buffer)=0;
   virtual void clear(const RenderBuffer &buffer, const DisplayRegion* region)=0;
 

@@ -45,7 +45,7 @@
 //
 // They will automatically be undefined at the end of the file.
 
-#include <vector>
+#include "pvector.h"
 
 #if defined(WIN32_VC) && !defined(CPPPARSER)
 
@@ -65,7 +65,7 @@ EXPORT_TEMPLATE_CLASS(EXPCL, EXPTP, std::vector<TYPE>)
 #endif
 
 // Now make a typedef for the vector.
-typedef std::vector<TYPE> NAME;
+typedef pvector<TYPE> NAME;
 
   // Finally, we must define a non-inline function that performs the
   // insert operation given a range of pointers.  We do this because

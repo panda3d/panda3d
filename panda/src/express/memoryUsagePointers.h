@@ -64,12 +64,12 @@ PUBLISHED:
   void clear();
 
 private:
-  void add_entry(ReferenceCount *ptr, TypedObject *typed_ptr,
+  void add_entry(ReferenceCount *ref_ptr, TypedObject *typed_ptr,
                  TypeHandle type, double age);
 
   class Entry {
   public:
-    INLINE Entry(ReferenceCount *ptr, TypedObject *typed_ptr,
+    INLINE Entry(ReferenceCount *ref_ptr, TypedObject *typed_ptr,
                  TypeHandle type, double age);
     INLINE Entry(const Entry &copy);
     INLINE void operator = (const Entry &copy);
@@ -80,7 +80,7 @@ private:
     // (since ReferenceCount has no public destructor).  If we can't
     // delete it, we can't make a PointerTo it, since PointerTo wants
     // to be able to delete things.
-    ReferenceCount *_ptr;
+    ReferenceCount *_ref_ptr;
     TypedObject *_typed_ptr;
     TypeHandle _type;
     double _age;

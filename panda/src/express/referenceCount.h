@@ -118,7 +118,7 @@ private:
 //               only works when the base type is, in fact, a class.
 ////////////////////////////////////////////////////////////////////
 template<class Base>
-class EXPCL_PANDAEXPRESS RefCountObj : public Base, public ReferenceCount {
+class EXPCL_PANDAEXPRESS RefCountObj : public ReferenceCount, public Base {
 public:
   INLINE RefCountObj();
   INLINE RefCountObj(const Base &copy);

@@ -144,6 +144,35 @@ clear_bins() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::clear_state
+//       Access: Public
+//  Description: Removes all the cached state information stored
+//               within the CullTraverser, and forces it to rebuild
+//               this state from scratch the next frame.
+//
+//               This can be used to clear out state that has gone
+//               bad, as well as to free up memory pointers that
+//               otherwise may be held for another frame.
+////////////////////////////////////////////////////////////////////
+void CullTraverser::
+clear_state() {
+  _states.clear();
+  _lookup.clear();
+
+  ToplevelBins::const_iterator tbi;
+  for (tbi = _toplevel_bins.begin(); tbi != _toplevel_bins.end(); ++tbi) {
+    (*tbi).second->clear_current_states();
+  }
+  SubBins::const_iterator sbi;
+  for (sbi = _sub_bins.begin(); sbi != _sub_bins.end(); ++sbi) {
+    (*sbi).second->clear_current_states();
+  }
+  _default_bin->clear_current_states();
+
+  _initial_state = AllAttributesWrapper();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::output
 //       Access: Public
 //  Description:

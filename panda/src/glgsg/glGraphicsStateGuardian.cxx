@@ -495,9 +495,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
   // texture state has changed, we have to be sure to clear the
   // current texture state now.  A bit unfortunate, but probably not
   // measurably expensive.
-  NodeAttributes state;
-  state.set_attribute(TextureTransition::get_class_type(), new TextureAttribute);
-  set_state(state, false);
+  clear_attribute(TextureTransition::get_class_type());
 #endif
 
   if (_clear_buffer_type != 0) {
@@ -558,9 +556,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
     // Also force the lighting state to unlit, so that issue_light()
     // will be guaranteed to be called next frame even if we have the
     // same set of light pointers we had this frame.
-    NodeAttributes state;
-    state.set_attribute(LightTransition::get_class_type(), new LightAttribute);
-    set_state(state, false);
+    clear_attribute(LightTransition::get_class_type());
 
     // All this work to undo the lighting state each frame doesn't seem
     // ideal--there may be a better way.  Maybe if the lights were just
@@ -1997,15 +1993,11 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
   //  activate();
   set_pack_alignment(1);
 
-  NodeAttributes state;
-
   // Bug fix for RE, RE2, and VTX - need to disable texturing in order
   // for glReadPixels() to work
   // NOTE: reading the depth buffer is *much* slower than reading the
   // color buffer
-  state.set_attribute(TextureTransition::get_class_type(),
-              new TextureAttribute);
-  set_state(state, false);
+  clear_attribute(TextureTransition::get_class_type());
 
   int xo, yo, w, h;
   dr->get_region_pixels(xo, yo, w, h);

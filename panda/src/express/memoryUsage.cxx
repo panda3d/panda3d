@@ -49,116 +49,6 @@ double MemoryUsage::AgeHistogram::_cutoff[MemoryUsage::AgeHistogram::num_buckets
   60.0,
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::MemoryInfo::get_type
-//       Access: Public
-//  Description: Returns the best known type, dynamic or static, of
-//               the pointer.
-////////////////////////////////////////////////////////////////////
-TypeHandle MemoryUsage::MemoryInfo::
-get_type() {
-  // If we don't want to consider the dynamic type any further, use
-  // what we've got.
-  if (!_reconsider_dynamic_type) {
-    if (_dynamic_type == TypeHandle::none()) {
-      return _static_type;
-    }
-    return _dynamic_type;
-  }
-
-  // Otherwise, examine the pointer again and make sure it's still the
-  // best information we have.  We have to do this each time because
-  // if we happen to be examining the pointer from within the
-  // constructor or destructor, its dynamic type will appear to be
-  // less-specific than it actually is, so our idea of what type this
-  // thing is could change from time to time.
-  determine_dynamic_type();
-
-  // Now return the more specific of the two.
-  TypeHandle type = _static_type;
-  update_type_handle(type, _dynamic_type);
-
-  return type;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::MemoryInfo::determine_dynamic_type
-//       Access: Public
-//  Description: Tries to determine the actual type of the object to
-//               which this thing is pointed, if possible.
-////////////////////////////////////////////////////////////////////
-void MemoryUsage::MemoryInfo::
-determine_dynamic_type() {
-  if (_reconsider_dynamic_type && _static_type != TypeHandle::none()) {
-    // See if we know enough now to infer the dynamic type from the
-    // pointer.
-
-    if (_typed_ptr == (TypedObject *)NULL) {
-      // If our static type is known to inherit from
-      // TypedReferenceCount, then we can directly downcast to get the
-      // TypedObject pointer.
-      if (_static_type.is_derived_from(TypedReferenceCount::get_class_type())) {
-        _typed_ptr = (TypedReferenceCount *)_ptr;
-      }
-    }
-
-    if (_typed_ptr != (TypedObject *)NULL) {
-      // If we have a TypedObject pointer, we can determine the type.
-      // This might still not return the exact type, particularly if
-      // we are being called within the destructor or constructor of
-      // this object.
-      TypeHandle got_type = _typed_ptr->get_type();
-
-      if (got_type == TypeHandle::none()) {
-        express_cat.warning()
-          << "Found an unregistered type in a " << _static_type
-          << " pointer:\n"
-          << "Check derived types of " << _static_type
-          << " and make sure that all are being initialized.\n";
-        _dynamic_type = _static_type;
-        _reconsider_dynamic_type = false;
-        return;
-      }
-
-      update_type_handle(_dynamic_type, got_type);
-    }
-  }
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::MemoryInfo::update_type_handle
-//       Access: Public
-//  Description: Updates the given destination TypeHandle with the
-//               refined TypeHandle, if it is in fact more specific
-//               than the original value for the destination.
-////////////////////////////////////////////////////////////////////
-void MemoryUsage::MemoryInfo::
-update_type_handle(TypeHandle &destination, TypeHandle refined) {
-  if (refined == TypeHandle::none()) {
-    express_cat.error()
-      << "Attempt to update type of " << (void *)_ptr
-      << "(type is " << get_type()
-      << ") to an undefined type!\n";
-
-  } else if (destination == refined) {
-    // Updating with the same type, no problem.
-
-  } else if (destination.is_derived_from(refined)) {
-    // Updating with a less-specific type, no problem.
-
-  } else if (refined.is_derived_from(destination)) {
-    // Updating with a more-specific type, no problem.
-    destination = refined;
-
-  } else {
-    express_cat.error()
-      << "Pointer " << (void *)_ptr << " previously indicated as type "
-      << destination << " is now type " << refined << "!\n";
-    destination = refined;
-  }
-}
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsage::TypeHistogram::add_info
@@ -166,8 +56,8 @@ update_type_handle(TypeHandle &destination, TypeHandle refined) {
 //  Description: Adds a single entry to the histogram.
 ////////////////////////////////////////////////////////////////////
 void MemoryUsage::TypeHistogram::
-add_info(TypeHandle type) {
-  _counts[type]++;
+add_info(TypeHandle type, MemoryInfo &info) {
+  _counts[type].add_info(info);
 }
 
 
@@ -175,14 +65,16 @@ add_info(TypeHandle type) {
 // below, to sort the types in descending order by counts.
 class TypeHistogramCountSorter {
 public:
-  TypeHistogramCountSorter(int count, TypeHandle type) {
-    _count = count;
-    _type = type;
+  TypeHistogramCountSorter(const MemoryUsagePointerCounts &count, 
+                           TypeHandle type) :
+    _count(count),
+    _type(type)
+  {
   }
   bool operator < (const TypeHistogramCountSorter &other) const {
     return _count > other._count;
   }
-  int _count;
+  MemoryUsagePointerCounts _count;
   TypeHandle _type;
 };
 
@@ -206,7 +98,13 @@ show() const {
 
   vector<TypeHistogramCountSorter>::const_iterator vi;
   for (vi = count_sorter.begin(); vi != count_sorter.end(); ++vi) {
-    nout << (*vi)._type << " : " << (*vi)._count << " pointers.\n";
+    TypeHandle type = (*vi)._type;
+    if (type == TypeHandle::none()) {
+      nout << "unknown";
+    } else {
+      nout << type;
+    }
+    nout << " : " << (*vi)._count << "\n";
   }
 }
 
@@ -236,10 +134,10 @@ AgeHistogram() {
 //  Description: Adds a single entry to the histogram.
 ////////////////////////////////////////////////////////////////////
 void MemoryUsage::AgeHistogram::
-add_info(double age) {
+add_info(double age, MemoryInfo &info) {
   int bucket = choose_bucket(age);
   nassertv(bucket >= 0 && bucket < num_buckets);
-  _counts[bucket]++;
+  _counts[bucket].add_info(info);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -250,11 +148,13 @@ add_info(double age) {
 void MemoryUsage::AgeHistogram::
 show() const {
   for (int i = 0; i < num_buckets - 1; i++) {
-    nout << _cutoff[i] << " to " << _cutoff[i + 1] << " seconds old : "
-         << _counts[i] << " pointers.\n";
+    nout << _cutoff[i] << " to " << _cutoff[i + 1] << " seconds old : ";
+    _counts[i].output(nout);
+    nout << "\n";
   }
-  nout << _cutoff[num_buckets - 1] << " seconds old and up : "
-       << _counts[num_buckets - 1] << " pointers.\n";
+  nout << _cutoff[num_buckets - 1] << " seconds old and up : ";
+  _counts[num_buckets - 1].output(nout);
+  nout << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -265,7 +165,7 @@ show() const {
 void MemoryUsage::AgeHistogram::
 clear() {
   for (int i = 0; i < num_buckets; i++) {
-    _counts[i] = 0;
+    _counts[i].clear();
   }
 }
 
@@ -342,6 +242,37 @@ remove_pointer(ReferenceCount *ptr) {
 #endif // __GNUC__ && !NDEBUG
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::operator_new_handler
+//       Access: Public, Static
+//  Description: This is set up as a global handler function (by
+//               redefining a function pointer in Dtool) for the
+//               operator new function.  If track-memory-usage is
+//               enabled, this function will be called whenever any
+//               new operator within the Panda source is invoked.
+////////////////////////////////////////////////////////////////////
+void *MemoryUsage::
+operator_new_handler(size_t size) {
+  void *ptr = default_operator_new(size);
+  get_global_ptr()->ns_record_void_pointer(ptr, size);
+  return ptr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::operator_delete_handler
+//       Access: Public, Static
+//  Description: This is set up as a global handler function (by
+//               redefining a function pointer in Dtool) for the
+//               operator delete function.  If track-memory-usage is
+//               enabled, this function will be called whenever any
+//               delete operator within the Panda source is invoked.
+////////////////////////////////////////////////////////////////////
+void MemoryUsage::
+operator_delete_handler(void *ptr) {
+  get_global_ptr()->ns_remove_void_pointer(ptr);
+  return default_operator_delete(ptr);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsage::Constructor
 //       Access: Private
 //  Description:
@@ -354,8 +285,18 @@ MemoryUsage() {
   _track_memory_usage =
     config_express.GetBool("track-memory-usage", false);
 
+  if (_track_memory_usage) {
+    // Redefine the global pointers for operator new and operator
+    // delete (these pointers are defined up in DTOOL) to vector into
+    // this class.
+    global_operator_new = &operator_new_handler;
+    global_operator_delete = &operator_delete_handler;
+  }
+
   _freeze_index = 0;
   _count = 0;
+  _allocated_size = 0;
+  _total_size = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -382,24 +323,31 @@ get_global_ptr() {
 void MemoryUsage::
 ns_record_pointer(ReferenceCount *ptr) {
   if (_track_memory_usage) {
-    MemoryInfo info;
-    info._ptr = ptr;
-    info._typed_ptr = (TypedObject *)NULL;
+    pair<Table::iterator, bool> insert_result =
+      _table.insert(Table::value_type((void *)ptr, MemoryInfo()));
+    
+    // This shouldn't fail.
+    assert(insert_result.first != _table.end());
+
+    if (insert_result.second) {
+      _count++;
+    }
+
+    MemoryInfo &info = (*insert_result.first).second;
+
+    // We shouldn't already have a ReferenceCount pointer.
+    if ((info._flags & MemoryInfo::F_got_ref) != 0) {
+      express_cat.error()
+        << "Pointer " << (void *)ptr << " recorded twice!\n";
+    }
+
+    info._void_ptr = (void *)ptr;
+    info._ref_ptr = ptr;
     info._static_type = ReferenceCount::get_class_type();
     info._dynamic_type = ReferenceCount::get_class_type();
     info._time = TrueClock::get_ptr()->get_real_time();
     info._freeze_index = _freeze_index;
-    info._reconsider_dynamic_type = true;
-
-    Table::iterator ti;
-    ti = _table.find(ptr);
-    if (ti != _table.end()) {
-      express_cat.error() << "Pointer " << (void *)ptr << " recorded twice!\n";
-      (*ti).second = info;
-    } else {
-      _table[ptr] = info;
-      _count++;
-    }
+    info._flags |= (MemoryInfo::F_reconsider_dynamic_type | MemoryInfo::F_got_ref);
   }
 }
 
@@ -427,6 +375,8 @@ ns_update_type(ReferenceCount *ptr, TypeHandle type) {
     MemoryInfo &info = (*ti).second;
     info.update_type_handle(info._static_type, type);
     info.determine_dynamic_type();
+
+    consolidate_void_ptr(info);
   }
 }
 
@@ -456,6 +406,8 @@ ns_update_type(ReferenceCount *ptr, TypedObject *typed_ptr) {
     MemoryInfo &info = (*ti).second;
     info._typed_ptr = typed_ptr;
     info.determine_dynamic_type();
+
+    consolidate_void_ptr(info);
   }
 }
 
@@ -481,6 +433,14 @@ ns_remove_pointer(ReferenceCount *ptr) {
 
     MemoryInfo &info = (*ti).second;
 
+    if ((info._flags & MemoryInfo::F_got_ref) == 0) {
+      express_cat.error()
+        << "Pointer " << (void *)ptr << " deleted twice!\n";
+      return;
+    }
+
+    info._flags &= ~MemoryInfo::F_got_ref;
+
     // Since the pointer has been destructed, we can't safely call its
     // TypedObject virtual methods any more.  Better clear out the
     // typed_ptr for good measure.
@@ -488,13 +448,141 @@ ns_remove_pointer(ReferenceCount *ptr) {
 
     if (info._freeze_index == _freeze_index) {
       double now = TrueClock::get_ptr()->get_real_time();
-      _count--;
-      _trend_types.add_info(info.get_type());
-      _trend_ages.add_info(now - info._time);
+      _trend_types.add_info(info.get_type(), info);
+      _trend_ages.add_info(now - info._time, info);
     }
 
-    _table.erase(ti);
+    if ((info._flags & (MemoryInfo::F_got_ref | MemoryInfo::F_got_void)) == 0) {
+      // If we don't expect to call any more remove_*_pointer on this
+      // pointer, remove it from the table.
+      if (info._freeze_index == _freeze_index) {
+        _count--;
+        _allocated_size -= info._size;
+      }
+      _total_size -= info._size;
+
+      _table.erase(ti);
+    }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::ns_record_void_pointer
+//       Access: Private
+//  Description: Records a pointer that's not even necessarily a
+//               ReferenceCount object (but for which we know the size
+//               of the allocated structure).
+////////////////////////////////////////////////////////////////////
+void MemoryUsage::
+ns_record_void_pointer(void *ptr, size_t size) {
+  if (_track_memory_usage) {
+    pair<Table::iterator, bool> insert_result =
+      _table.insert(Table::value_type((void *)ptr, MemoryInfo()));
+    
+    // This shouldn't fail.
+    assert(insert_result.first != _table.end());
+
+    if (insert_result.second) {
+      _count++;
+    }
+
+    MemoryInfo &info = (*insert_result.first).second;
+
+    // We shouldn't already have a void pointer.
+    if ((info._flags & MemoryInfo::F_got_void) != 0) {
+      express_cat.error()
+        << "Pointer " << (void *)ptr << " recorded twice!\n";
+    }
+
+    if (info._freeze_index == _freeze_index) {
+      _allocated_size += size - info._size;
+    } else {
+      _allocated_size += size;
+    }
+    _total_size += size - info._size;
+
+    info._void_ptr = ptr;
+    info._size = size;
+    info._time = TrueClock::get_ptr()->get_real_time();
+    info._freeze_index = _freeze_index;
+    info._flags |= (MemoryInfo::F_got_void | MemoryInfo::F_size_known);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::ns_remove_void_pointer
+//       Access: Private
+//  Description: Removes a pointer previously recorded via
+//               record_void_pointer.
+////////////////////////////////////////////////////////////////////
+void MemoryUsage::
+ns_remove_void_pointer(void *ptr) {
+  if (_track_memory_usage) {
+    Table::iterator ti;
+    ti = _table.find(ptr);
+    if (ti == _table.end()) {
+      // The pointer we tried to delete was not recorded in the table.
+
+      // We can't report this as an error, because (a) we might have
+      // removed the void pointer entry already when we consolidated,
+      // and (b) a few objects might have been created during static
+      // init time, before we grabbed the operator new/delete function
+      // handlers.
+      return;
+    }
+
+    MemoryInfo &info = (*ti).second;
+
+    if ((info._flags & MemoryInfo::F_got_void) == 0) {
+      express_cat.error()
+        << "Pointer " << (void *)ptr << " deleted twice!\n";
+      return;
+    }
+
+    if ((info._flags & MemoryInfo::F_got_ref) != 0) {
+      express_cat.error()
+        << "Pointer " << (void *)ptr << " did not destruct before being deleted!\n";
+    }
+
+    info._flags &= ~MemoryInfo::F_got_void;
+
+    if ((info._flags & (MemoryInfo::F_got_ref | MemoryInfo::F_got_void)) == 0) {
+      // If we don't expect to call any more remove_*_pointer on this
+      // pointer, remove it from the table.
+
+      if (info._freeze_index == _freeze_index) {
+        _count--;
+        _allocated_size -= info._size;
+      }
+      _total_size -= info._size;
+
+      _table.erase(ti);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::ns_get_allocated_size
+//       Access: Private
+//  Description: Returns the total number of bytes of allocated memory
+//               as counted, excluding the memory previously frozen.
+////////////////////////////////////////////////////////////////////
+size_t MemoryUsage::
+ns_get_allocated_size() {
+  nassertr(_track_memory_usage, 0);
+  return _allocated_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::ns_get_total_size
+//       Access: Private
+//  Description: Returns the total number of bytes of allocated memory
+//               as counted, including the memory previously frozen.
+////////////////////////////////////////////////////////////////////
+size_t MemoryUsage::
+ns_get_total_size() {
+  nassertr(_track_memory_usage, 0);
+  return _total_size;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -523,8 +611,9 @@ ns_get_pointers(MemoryUsagePointers &result) {
   Table::iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
     MemoryInfo &info = (*ti).second;
-    if (info._freeze_index == _freeze_index) {
-      result.add_entry(info._ptr, info._typed_ptr, info.get_type(),
+    if (info._freeze_index == _freeze_index &&
+        info._ref_ptr != (ReferenceCount *)NULL) {
+      result.add_entry(info._ref_ptr, info._typed_ptr, info.get_type(),
                        now - info._time);
     }
   }
@@ -546,11 +635,12 @@ ns_get_pointers_of_type(MemoryUsagePointers &result, TypeHandle type) {
   Table::iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
     MemoryInfo &info = (*ti).second;
-    if (info._freeze_index == _freeze_index) {
+    if (info._freeze_index == _freeze_index &&
+        info._ref_ptr != (ReferenceCount *)NULL) {
       TypeHandle info_type = info.get_type();
       if (info_type != TypeHandle::none() &&
           info_type.is_derived_from(type)) {
-        result.add_entry(info._ptr, info._typed_ptr, info_type,
+        result.add_entry(info._ref_ptr, info._typed_ptr, info_type,
                          now - info._time);
       }
     }
@@ -574,11 +664,12 @@ ns_get_pointers_of_age(MemoryUsagePointers &result,
   Table::iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
     MemoryInfo &info = (*ti).second;
-    if (info._freeze_index == _freeze_index) {
+    if (info._freeze_index == _freeze_index &&
+        info._ref_ptr != (ReferenceCount *)NULL) {
       double age = now - info._time;
       if ((age >= from && age <= to) ||
           (age >= to && age <= from)) {
-        result.add_entry(info._ptr, info._typed_ptr, info.get_type(), age);
+        result.add_entry(info._ref_ptr, info._typed_ptr, info.get_type(), age);
       }
     }
   }
@@ -616,10 +707,11 @@ ns_get_pointers_with_zero_count(MemoryUsagePointers &result) {
   Table::iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
     MemoryInfo &info = (*ti).second;
-    if (info._freeze_index == _freeze_index) {
-      if ((*ti).first->get_ref_count() == 0) {
-        (*ti).first->ref();
-        result.add_entry(info._ptr, info._typed_ptr, info.get_type(),
+    if (info._freeze_index == _freeze_index && 
+        info._ref_ptr != (ReferenceCount *)NULL) {
+      if (info._ref_ptr->get_ref_count() == 0) {
+        info._ref_ptr->ref();
+        result.add_entry(info._ref_ptr, info._typed_ptr, info.get_type(),
                          now - info._time);
       }
     }
@@ -639,6 +731,7 @@ ns_get_pointers_with_zero_count(MemoryUsagePointers &result) {
 void MemoryUsage::
 ns_freeze() {
   _count = 0;
+  _allocated_size = 0;
   _trend_types.clear();
   _trend_ages.clear();
   _freeze_index++;
@@ -658,7 +751,7 @@ ns_show_current_types() {
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
     MemoryInfo &info = (*ti).second;
     if (info._freeze_index == _freeze_index) {
-      hist.add_info(info.get_type());
+      hist.add_info(info.get_type(), info);
     }
   }
 
@@ -692,7 +785,7 @@ ns_show_current_ages() {
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
     MemoryInfo &info = (*ti).second;
     if (info._freeze_index == _freeze_index) {
-      hist.add_info(now - info._time);
+      hist.add_info(now - info._time, info);
     }
   }
 
@@ -711,6 +804,68 @@ ns_show_trend_ages() {
   _trend_ages.show();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::consolidate_void_ptr
+//       Access: Private
+//  Description: If the size information has not yet been determined
+//               for this pointer, checks to see if it has possible
+//               been recorded under the TypedObject pointer (this
+//               will happen when the class inherits from TypedObject
+//               before ReferenceCount, e.g. TypedReferenceCount).
+////////////////////////////////////////////////////////////////////
+void MemoryUsage::
+consolidate_void_ptr(MemoryInfo &info) {
+  if (info.is_size_known()) {
+    // We already know the size, so no sweat.
+    return;
+  }
+
+  if (info.get_typed_ptr() == (TypedObject *)NULL) {
+    // We don't have a typed pointer for this thing yet.
+    return;
+  }
+
+  void *typed_ptr = (void *)info.get_typed_ptr();
+
+  if (typed_ptr == (void *)info.get_ref_ptr()) {
+    // The TypedObject pointer is the same pointer as the
+    // ReferenceCount pointer, so there's no point in looking it up
+    // separately.  Actually, this really shouldn't even be possible.
+    return;
+  }
+
+  Table::iterator ti;
+  ti = _table.find(typed_ptr);
+  if (ti == _table.end()) {
+    // No entry for the typed pointer, either.
+    return;
+  }
+
+  // We do have an entry!  Copy over the relevant pieces.
+  MemoryInfo &typed_info = (*ti).second;
+
+  if (typed_info.is_size_known()) {
+    info._size = typed_info.get_size();
+    info._flags |= MemoryInfo::F_size_known;
+    if (typed_info._freeze_index == _freeze_index) {
+      _allocated_size += info._size;
+    }
+  }
+
+  // The typed_ptr is clearly the more accurate pointer to the
+  // beginning of the structure.
+  info._void_ptr = typed_ptr;
+
+  // Now that we've consolidated the pointers, remove the void pointer
+  // entry.
+  if (info._freeze_index == _freeze_index) {
+    _count--;
+    _allocated_size -= info._size;
+  }
+    
+
+  _table.erase(ti);
+}
 
 
 #endif  // NDEBUG

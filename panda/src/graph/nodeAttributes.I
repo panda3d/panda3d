@@ -78,6 +78,16 @@ insert(NodeAttributes::iterator position,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodeAttributes::find
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_GRAPH NodeAttributes::iterator NodeAttributes::
+find(const key_type &k) {
+  return _attributes.find(k);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodeAttributes::erase
 //       Access: Public
 //  Description:

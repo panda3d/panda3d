@@ -59,6 +59,8 @@ PUBLISHED:
   GeomBin *get_bin(const string &name) const;
   void clear_bins();
 
+  void clear_state();
+
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
 

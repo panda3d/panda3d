@@ -122,6 +122,7 @@ PUBLISHED:
   INLINE_GRAPH int compare_transitions_to(const NodeRelation *arc) const;
 
   INLINE_GRAPH UpdateSeq get_last_update() const;
+  INLINE_GRAPH void clear_wrt_cache();
 
 public:
   bool sub_render_trans(const AllAttributesWrapper &attrib,

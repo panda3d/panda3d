@@ -3147,3 +3147,23 @@ r_adjust_all_priorities(NodeRelation *arc, int adjustment) {
     r_adjust_all_priorities(child_arc, adjustment);
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::r_clear_wrt_cache
+//       Access: Private
+//  Description: The recursive implementation of
+//               clear_wrt_cache().  This walks through the
+//               subgraph defined by the indicated arc and below.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+r_clear_wrt_cache(NodeRelation *arc) {
+  arc->clear_wrt_cache();
+
+  Node *dnode = arc->get_child();
+
+  int num_children = dnode->get_num_children(_graph_type);
+  for (int i = 0; i < num_children; i++) {
+    NodeRelation *child_arc = dnode->get_child(_graph_type, i);
+    r_clear_wrt_cache(child_arc);
+  }
+}

@@ -95,5 +95,45 @@ using namespace std;
 
 #endif  // CPPPARSER
 
+// Now redefine global operators new and delete so we can optionally
+// provide custom handlers for them.  The MemoryUsage class in Panda
+// takes advantage of this to track the size of allocated pointers.
+#ifndef NDEBUG
+EXPCL_DTOOL void *default_operator_new(size_t size);
+EXPCL_DTOOL void default_operator_delete(void *ptr);
+
+extern EXPCL_DTOOL void *(*global_operator_new)(size_t size);
+extern EXPCL_DTOOL void (*global_operator_delete)(void *ptr);
+
+#ifdef GLOBAL_OPERATOR_NEW_EXCEPTIONS
+INLINE void *operator new(size_t size) throw (std::bad_alloc) {
+  return (*global_operator_new)(size);
+}
+INLINE void *operator new[](size_t size) throw (std::bad_alloc) {
+  return (*global_operator_new)(size);
+}
+
+INLINE void operator delete(void *ptr) throw() {
+  (*global_operator_delete)(ptr);
+}
+INLINE void operator delete[](void *ptr) throw() {
+  (*global_operator_delete)(ptr);
+}
+#else   // GLOBAL_OPERATOR_NEW_EXCEPTIONS
+INLINE void *operator new(size_t size) {
+  return (*global_operator_new)(size);
+}
+INLINE void *operator new[](size_t size) {
+  return (*global_operator_new)(size);
+}
+
+INLINE void operator delete(void *ptr) {
+  (*global_operator_delete)(ptr);
+}
+INLINE void operator delete[](void *ptr) {
+  (*global_operator_delete)(ptr);
+}
+#endif  // GLOBAL_OPERATOR_NEW_EXCEPTIONS
+#endif  // NDEBUG
 
 #endif

@@ -94,8 +94,9 @@
 // Do we have RTTI (and <typeinfo>)?
 #define HAVE_RTTI 1
 
+// Must global operator new and delete functions throw exceptions?
+#define GLOBAL_OPERATOR_NEW_EXCEPTIONS
+
 // can Intel C++ build this directory successfully (if not, change CC to msvc)
 #define NOT_INTEL_BUILDABLE false
-
-
 

@@ -72,8 +72,7 @@
 
 #include "referenceCount.h"
 #include "pointerTo.h"
-
-#include <vector>
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PointerToArray
@@ -84,17 +83,17 @@
 //               with a reference count.
 ////////////////////////////////////////////////////////////////////
 template <class Element>
-class PointerToArray : public PointerToBase<RefCountObj<vector<Element> > > {
+class PointerToArray : public PointerToBase<RefCountObj<pvector<Element> > > {
 public:
-  typedef vector<Element>::value_type value_type;
-  typedef vector<Element>::reference reference;
-  typedef vector<Element>::const_reference const_reference;
-  typedef vector<Element>::iterator iterator;
-  typedef vector<Element>::const_iterator const_iterator;
-  typedef vector<Element>::reverse_iterator reverse_iterator;
-  typedef vector<Element>::const_reverse_iterator const_reverse_iterator;
-  typedef vector<Element>::difference_type difference_type;
-  typedef vector<Element>::size_type size_type;
+  typedef pvector<Element>::value_type value_type;
+  typedef pvector<Element>::reference reference;
+  typedef pvector<Element>::const_reference const_reference;
+  typedef pvector<Element>::iterator iterator;
+  typedef pvector<Element>::const_iterator const_iterator;
+  typedef pvector<Element>::reverse_iterator reverse_iterator;
+  typedef pvector<Element>::const_reverse_iterator const_reverse_iterator;
+  typedef pvector<Element>::difference_type difference_type;
+  typedef pvector<Element>::size_type size_type;
 
 PUBLISHED:
   INLINE PointerToArray();
@@ -153,7 +152,7 @@ public:
 
   INLINE operator Element *() const;
   INLINE Element *p() const;
-  INLINE vector<Element> &v() const;
+  INLINE pvector<Element> &v() const;
 
   //These functions are only to be used in Reading through BamReader.
   //They are designed to work in pairs, so that you register what is
@@ -168,7 +167,7 @@ public:
 
   // Reassignment is by pointer, not memberwise as with a vector.
   INLINE PointerToArray<Element> &
-  operator = (RefCountObj<vector<Element> > *ptr);
+  operator = (RefCountObj<pvector<Element> > *ptr);
   INLINE PointerToArray<Element> &
   operator = (const PointerToArray<Element> &copy);
   INLINE void clear();
@@ -179,7 +178,7 @@ private:
   // NULL pointer.  It might not be shared properly between different
   // .so's, since it's a static member of a template class, but we
   // don't really care.
-  static vector<Element> _empty_array;
+  static pvector<Element> _empty_array;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -188,22 +187,22 @@ private:
 //               may not be modified.
 ////////////////////////////////////////////////////////////////////
 template <class Element>
-class ConstPointerToArray : public PointerToBase<RefCountObj<vector<Element> > > {
+class ConstPointerToArray : public PointerToBase<RefCountObj<pvector<Element> > > {
 public:
-  typedef vector<Element>::value_type value_type;
-  typedef vector<Element>::const_reference reference;
-  typedef vector<Element>::const_reference const_reference;
-  typedef vector<Element>::const_iterator iterator;
-  typedef vector<Element>::const_iterator const_iterator;
+  typedef pvector<Element>::value_type value_type;
+  typedef pvector<Element>::const_reference reference;
+  typedef pvector<Element>::const_reference const_reference;
+  typedef pvector<Element>::const_iterator iterator;
+  typedef pvector<Element>::const_iterator const_iterator;
 #ifdef WIN32_VC
   // VC++ seems to break the const_reverse_iterator definition somehow.
-  typedef vector<Element>::reverse_iterator reverse_iterator;
+  typedef pvector<Element>::reverse_iterator reverse_iterator;
 #else
-  typedef vector<Element>::const_reverse_iterator reverse_iterator;
+  typedef pvector<Element>::const_reverse_iterator reverse_iterator;
 #endif
-  typedef vector<Element>::const_reverse_iterator const_reverse_iterator;
-  typedef vector<Element>::difference_type difference_type;
-  typedef vector<Element>::size_type size_type;
+  typedef pvector<Element>::const_reverse_iterator const_reverse_iterator;
+  typedef pvector<Element>::difference_type difference_type;
+  typedef pvector<Element>::size_type size_type;
 
   INLINE ConstPointerToArray();
   INLINE ConstPointerToArray(const PointerToArray<Element> &copy);
@@ -233,13 +232,13 @@ public:
 
   INLINE operator const Element *() const;
   INLINE const Element *p() const;
-  INLINE const vector<Element> &v() const;
+  INLINE const pvector<Element> &v() const;
 
   INLINE int get_ref_count() const;
 
   // Reassignment is by pointer, not memberwise as with a vector.
   INLINE ConstPointerToArray<Element> &
-  operator = (RefCountObj<vector<Element> > *ptr);
+  operator = (RefCountObj<pvector<Element> > *ptr);
   INLINE ConstPointerToArray<Element> &
   operator = (const PointerToArray<Element> &copy);
   INLINE ConstPointerToArray<Element> &
@@ -252,7 +251,7 @@ private:
   // NULL pointer.  It might not be shared properly between different
   // .so's, since it's a static member of a template class, but we
   // don't really care.
-  static vector<Element> _empty_array;
+  static pvector<Element> _empty_array;
 };
 
 

@@ -93,3 +93,6 @@
 
 // Do we have RTTI (and <typeinfo>)?
 #define HAVE_RTTI 1
+
+// Must global operator new and delete functions throw exceptions?
+#define GLOBAL_OPERATOR_NEW_EXCEPTIONS

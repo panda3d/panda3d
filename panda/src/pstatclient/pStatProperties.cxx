@@ -147,6 +147,7 @@ static LevelCollectorProperties level_properties[] = {
   { 1, "State changes",                    { 1.0, 0.5, 0.2 },  "", 500.0 },
   { 1, "State changes:Transforms",         { 0.2, 0.2, 0.8 }, },
   { 1, "State changes:Textures",           { 0.8, 0.2, 0.2 }, },
+  { 1, "Panda memory usage",               { 0.8, 0.2, 0.5 },  "MB", 64, 1048576 },
   { 0, NULL }
 };
 

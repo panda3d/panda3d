@@ -20,8 +20,11 @@
      datagramOutputFile.h datagramSink.I datagramSink.h \
      get_config_path.h hashGeneratorBase.I hashGeneratorBase.h \
      hashVal.I hashVal.h indent.I indent.h littleEndian.h \
-     memoryUsage.I memoryUsage.h memoryUsagePointers.I \
-     memoryUsagePointers.h multifile.I multifile.h namable.I \
+     memoryInfo.I memoryInfo.h \
+     memoryUsage.I memoryUsage.h \
+     memoryUsagePointerCounts.I memoryUsagePointerCounts.h \
+     memoryUsagePointers.I memoryUsagePointers.h \
+     multifile.I multifile.h namable.I \
      namable.h nativeNumericData.I nativeNumericData.h \
      numeric_types.h pointerTo.I pointerTo.h referenceCount.I \
      profileTimer.I profileTimer.h referenceCount.h \
@@ -36,7 +39,8 @@
      config_express.cxx datagram.cxx datagramGenerator.cxx \
      datagramInputFile.cxx datagramIterator.cxx \
      datagramOutputFile.cxx datagramSink.cxx get_config_path.cxx \
-     hashGeneratorBase.cxx hashVal.cxx indent.cxx memoryUsage.cxx \
+     hashGeneratorBase.cxx hashVal.cxx indent.cxx \
+     memoryInfo.cxx memoryUsage.cxx memoryUsagePointerCounts.cxx \
      memoryUsagePointers.cxx multifile.cxx namable.cxx \
      nativeNumericData.cxx profileTimer.cxx referenceCount.cxx \
      reversedNumericData.cxx trueClock.cxx typeHandle.cxx \
@@ -58,9 +62,11 @@
     datagramGenerator.h get_config_path.h               \
     hashGeneratorBase.I hashGeneratorBase.h \
     hashVal.I hashVal.h \
-    indent.I indent.h littleEndian.h            \
-    memoryUsage.I memoryUsage.h memoryUsagePointers.I           \
-    memoryUsagePointers.h multifile.I multifile.h \
+    indent.I indent.h littleEndian.h                    \
+    memoryInfo.I memoryInfo.h \
+    memoryUsage.I memoryUsage.h \
+    memoryUsagePointerCounts.I memoryUsagePointerCounts.h \
+    memoryUsagePointers.I memoryUsagePointers.h multifile.I multifile.h \
     nativeNumericData.I nativeNumericData.h \
     numeric_types.h \
     pointerTo.I pointerTo.h referenceCount.I referenceCount.h       \

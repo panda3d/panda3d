@@ -1446,12 +1446,14 @@ hide_collision_solids() {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::is_hidden
 //       Access: Public
-//  Description: Returns true if some arc above this bottom node has
-//               been set to 'hide', false if it should be visible.
+//  Description: Returns true if the bottom arc has been hidden,
+//               false otherwise.  The bottom node may still be
+//               invisible due to a higher ancestor having been
+//               hidden; use get_hidden_ancestor() to check this.
 ////////////////////////////////////////////////////////////////////
 INLINE bool NodePath::
 is_hidden() const {
-  return !get_hidden_ancestor().is_empty();
+  return (arc()->has_transition(PruneTransition::get_class_type()));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1489,10 +1491,26 @@ unstash() {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::is_stashed
 //       Access: Public
-//  Description: Returns true if some arc above this bottom node has
-//               been set to 'stash', false if it should be visible.
+//  Description: Returns true if the bottom arc has been 'stashed',
+//               false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool NodePath::
 is_stashed() const {
-  return !get_stashed_ancestor().is_empty();
+  return (arc()->get_graph_type() == NodeRelation::get_stashed_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_wrt_cache
+//       Access: Public
+//  Description: Recursively calls clear_wrt_cache() on every arc
+//               beginning at the bottom arc and below.  This wipes
+//               out the cached wrt information, which will make the
+//               next call to wrt() more expensive, but may reclaim
+//               some memory and free up some otherwise unused
+//               pointers.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+clear_wrt_cache() {
+  nassertv_always(!is_empty());
+  r_clear_wrt_cache(arc());
 }
