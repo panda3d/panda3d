@@ -58,7 +58,7 @@ def findClass(namespace, className):
 def rebindClass(builtinGlobals, filename):
     file = open(filename, 'r')
     lines = file.readlines()
-    for i in range(len(lines)):
+    for i in xrange(len(lines)):
         line = lines[i]
         if (line[0:6] == 'class '):
             # Chop off the "class " syntax and strip extra whitespace
