@@ -721,18 +721,18 @@ update_text() {
       wstring source_wtext = get_display_wtext();
 
       display_wtext = source_wtext.substr(0, _cursor_position);
-      display_wtext += wstring(1, text_push_properties_key);
+      display_wtext += wstring(1, (wchar_t)text_push_properties_key);
       display_wtext += node->decode_text(_candidate_inactive);
-      display_wtext += wstring(1, text_push_properties_key);
+      display_wtext += wstring(1, (wchar_t)text_push_properties_key);
       display_wtext += _candidate_wtext.substr(0, _candidate_highlight_start);
-      display_wtext += wstring(1, text_push_properties_key);
+      display_wtext += wstring(1, (wchar_t)text_push_properties_key);
       display_wtext += node->decode_text(_candidate_active);
-      display_wtext += wstring(1, text_push_properties_key);
+      display_wtext += wstring(1, (wchar_t)text_push_properties_key);
       display_wtext += _candidate_wtext.substr(_candidate_highlight_start,
                                                _candidate_highlight_end - _candidate_highlight_start);
-      display_wtext += wstring(1, text_pop_properties_key);
+      display_wtext += wstring(1, (wchar_t)text_pop_properties_key);
       display_wtext += _candidate_wtext.substr(_candidate_highlight_end);
-      display_wtext += wstring(1, text_pop_properties_key);
+      display_wtext += wstring(1, (wchar_t)text_pop_properties_key);
 
       display_wtext += source_wtext.substr(_cursor_position);
     }
