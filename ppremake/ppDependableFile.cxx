@@ -80,23 +80,23 @@ update_from_cache(const vector<string> &words) {
       dep._okcircular = false;
 
       if (dirpath.length() > 1 && dirpath[0] == '/') {
-	// If the first character is '/', it means that the file has
-	// been marked okcircular.
-	dep._okcircular = true;
-	dirpath = dirpath.substr(1);
+    // If the first character is '/', it means that the file has
+    // been marked okcircular.
+    dep._okcircular = true;
+    dirpath = dirpath.substr(1);
       }
 
       if (dirpath.length() > 2 && dirpath.substr(0, 2) == "*/") {
-	// This is an extra include file, not a file in this source
-	// tree.
-	_extra_includes.push_back(dirpath.substr(2));
+    // This is an extra include file, not a file in this source
+    // tree.
+    _extra_includes.push_back(dirpath.substr(2));
 
       } else {
-	dep._file = 
-	  tree->get_dependable_file_by_dirpath(dirpath, false);
-	if (dep._file != (PPDependableFile *)NULL) {
-	  _dependencies.push_back(dep);
-	}
+    dep._file = 
+      tree->get_dependable_file_by_dirpath(dirpath, false);
+    if (dep._file != (PPDependableFile *)NULL) {
+      _dependencies.push_back(dep);
+    }
       }
     }
 
@@ -351,11 +351,11 @@ compute_dependencies(string &circularity) {
     if (!in) {
       // Can't read the file, or the file doesn't exist.  Interesting.
       if (exists()) {
-	cerr << "Warning: dependent file " << get_pathname() 
-	     << " exists but cannot be read.\n";
+          cerr << "Warning: dependent file " << get_pathname() 
+          << " exists but cannot be read.\n";
       } else {
-	cerr << "Warning: dependent file " << get_pathname() 
-	     << " does not exist.\n";
+          cerr << "Warning: dependent file " << get_pathname() 
+          << " does not exist.\n";
       }
 
     } else {
@@ -365,30 +365,30 @@ compute_dependencies(string &circularity) {
       string line;
       getline(in, line);
       while (!in.fail() && !in.eof()) {
-	if (line.substr(0, 16) == "/* okcircular */") {
-	  okcircular = true;
-	} else {
-	  string filename = check_include(line);
-	  if (!filename.empty() && filename.find('/') == string::npos) {
-	    Dependency dep;
-	    dep._okcircular = okcircular;
-	    dep._file = tree->find_dependable_file(filename);
-	    if (dep._file != (PPDependableFile *)NULL) {
-	      // All right!  Here's a file we depend on.  Add it to the
-	      // list.
-	      _dependencies.push_back(dep);
-	      
-	    } else {
-	      // It's an include file from somewhere else, not from within
-	      // our source tree.  We don't care about it, but we do need
-	      // to record it so we can easily check later if the cache
-	      // file has gone stale.
-	      _extra_includes.push_back(filename);
-	    }
-	  }
-	  okcircular = false;
-	}
-	getline(in, line);
+    if (line.substr(0, 16) == "/* okcircular */") {
+      okcircular = true;
+    } else {
+      string filename = check_include(line);
+      if (!filename.empty() && filename.find('/') == string::npos) {
+        Dependency dep;
+        dep._okcircular = okcircular;
+        dep._file = tree->find_dependable_file(filename);
+        if (dep._file != (PPDependableFile *)NULL) {
+          // All right!  Here's a file we depend on.  Add it to the
+          // list.
+          _dependencies.push_back(dep);
+          
+        } else {
+          // It's an include file from somewhere else, not from within
+          // our source tree.  We don't care about it, but we do need
+          // to record it so we can easily check later if the cache
+          // file has gone stale.
+          _extra_includes.push_back(filename);
+        }
+      }
+      okcircular = false;
+    }
+    getline(in, line);
       }
     }
   }
@@ -406,13 +406,13 @@ compute_dependencies(string &circularity) {
     if (!(*di)._okcircular) {
       circ = (*di)._file->compute_dependencies(circularity);
       if (circ != (PPDependableFile *)NULL) {
-	// Oops, a circularity.  Silly user.
-	circularity = get_dirpath() + " => " + circularity;
-	
-	if (circ == this) {
-	  _flags |= F_circularity;
-	  _circularity = circularity;
-	}
+    // Oops, a circularity.  Silly user.
+    circularity = get_dirpath() + " => " + circularity;
+    
+    if (circ == this) {
+      _flags |= F_circularity;
+      _circularity = circularity;
+    }
       }
     }
   }
