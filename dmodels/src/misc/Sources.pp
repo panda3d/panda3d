@@ -19,5 +19,4 @@
 #begin install_egg
   #define SOURCES \
     fade.egg iris.egg
-  #define PHASE 3
 #end install_egg
