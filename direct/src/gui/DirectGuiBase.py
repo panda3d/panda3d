@@ -743,7 +743,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         self.bind(B2PRESS, self.editStart)
         self.bind(B2RELEASE, self.editStop)
         self.bind(PRINT, self.printConfig)
-        mb = ModifierButtons(base.mouseWatcherNode.getModifierButtons())
+        mb = base.mouseWatcherNode.getModifierButtons()
         mb.addButton(KeyboardButton.alt())
         base.mouseWatcherNode.setModifierButtons(mb)
 
@@ -751,7 +751,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         self.unbind(B2PRESS)
         self.unbind(B2RELEASE)
         self.unbind(PRINT)
-        mb = ModifierButtons(base.mouseWatcherNode.getModifierButtons())
+        mb = base.mouseWatcherNode.getModifierButtons()
         mb.removeButton(KeyboardButton.alt())
         base.mouseWatcherNode.setModifierButtons(mb)
         
