@@ -149,12 +149,8 @@ static void update_linux(void) {
   case 2:
     if (!initializing)
       audio_cat->warning() << "audio buffers are being starved" << endl;
-    // mix 2 buffers and put them in place.
     mix_buffer(current_buffer);
     mix_buffer(back_buffer);
-    if (initializing)
-      audio_cat->debug() << "mixed 2 buffers, want is currently at ("
-			 << want_buffers << ")" << endl;
     initializing = false;
     break;
   default:
