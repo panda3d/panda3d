@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "stringDecoder.h"
-#include "config_text.h"
+#include "config_express.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StringDecoder::Destructor
@@ -83,7 +83,7 @@ get_next_character() {
       // First byte of two.
       unsigned int two = 0;
       if (test_eof()) {
-        text_cat.warning()
+        express_cat.warning()
           << "utf-8 encoded string ends abruptly.\n";
         return -1;
       }
@@ -94,13 +94,13 @@ get_next_character() {
     } else if ((result & 0xf0) == 0xe0) {
       // First byte of three.
       if (test_eof()) {
-        text_cat.warning()
+        express_cat.warning()
           << "utf-8 encoded string ends abruptly.\n";
         return -1;
       }
       unsigned int two = (unsigned char)_input[_p++];
       if (test_eof()) {
-        text_cat.warning()
+        express_cat.warning()
           << "utf-8 encoded string ends abruptly.\n";
         return -1;
       }
@@ -111,7 +111,7 @@ get_next_character() {
 
     // Otherwise--the high bit is set but it is not one of the
     // introductory utf-8 bytes--we have an error.
-    text_cat.warning()
+    express_cat.warning()
       << "Non utf-8 byte in string: 0x" << hex << result << dec << "\n";
   }
 
@@ -132,7 +132,7 @@ get_next_character() {
 
   unsigned int high = (unsigned char)_input[_p++];
   if (test_eof()) {
-    text_cat.warning()
+    express_cat.warning()
       << "Unicode-encoded string has odd number of bytes.\n";
     return -1;
   }

@@ -20,11 +20,9 @@
     fontPool.I fontPool.h \
     geomTextGlyph.I geomTextGlyph.h \
     staticTextFont.I staticTextFont.h \
-    stringDecoder.I stringDecoder.h \
     textFont.I textFont.h \
     textGlyph.I textGlyph.h \
-    textNode.I textNode.h textNode.cxx \
-    unicodeLatinMap.h
+    textNode.I textNode.h textNode.cxx
 
   #define INCLUDED_SOURCES \
     config_text.cxx \
@@ -34,10 +32,8 @@
     dynamicTextPage.cxx \
     fontPool.cxx \
     geomTextGlyph.cxx \
-    stringDecoder.cxx \
     staticTextFont.cxx \
-    textFont.cxx textGlyph.cxx \
-    unicodeLatinMap.cxx
+    textFont.cxx textGlyph.cxx
 
   #define INSTALL_HEADERS \
     config_text.h \
@@ -47,11 +43,9 @@
     fontPool.I fontPool.h \
     geomTextGlyph.I geomTextGlyph.h \
     staticTextFont.I staticTextFont.h \
-    stringDecoder.I stringDecoder.h \
     textFont.I textFont.h \
     textGlyph.I textGlyph.h \
-    textNode.I textNode.h \
-    unicodeLatinMap.h
+    textNode.I textNode.h
 
 
   #define IGATESCAN all

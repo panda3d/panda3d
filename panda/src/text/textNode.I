@@ -99,96 +99,6 @@ get_default_font() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::set_encoding
-//       Access: Published
-//  Description: Specifies how the string set via set_text() is to be
-//               interpreted.  The default, E_iso8859, means a
-//               standard string with one-byte characters
-//               (i.e. ASCII).  Other encodings are possible to take
-//               advantage of character sets with more than 256
-//               characters.
-//
-//               This affects only future calls to set_text(); it does
-//               not change text that was set previously.
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
-set_encoding(TextNode::Encoding encoding) {
-  // Force the previously-set strings to be encoded or decoded now.
-  get_text();
-  get_wtext();
-  _encoding = encoding;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_encoding
-//       Access: Published
-//  Description: Returns the encoding by which the string set via
-//               set_text() is to be interpreted.  See set_encoding().
-////////////////////////////////////////////////////////////////////
-INLINE TextNode::Encoding TextNode::
-get_encoding() const {
-  return _encoding;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::set_default_encoding
-//       Access: Published, Static
-//  Description: Specifies the default encoding to be used for all
-//               subsequently created TextNode objects.  See
-//               set_encoding().
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
-set_default_encoding(TextNode::Encoding encoding) {
-  _default_encoding = encoding;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_default_encoding
-//       Access: Published, Static
-//  Description: Specifies the default encoding to be used for all
-//               subsequently created TextNode objects.  See
-//               set_encoding().
-////////////////////////////////////////////////////////////////////
-INLINE TextNode::Encoding TextNode::
-get_default_encoding() {
-  return _default_encoding;
-}
-
-/*
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::set_expand_amp
-//       Access: Published
-//  Description: Sets the state of the expand_amp flag.  When this is
-//               true, embedded ampersands in the text string are
-//               expanded to special characters according to a subset
-//               of the HTML conventions.  When this is false,
-//               ampersands are treated as ordinary characters.
-//
-//               This affects only future calls to set_text(); it does
-//               not change text that was set previously.
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
-set_expand_amp(bool expand_amp) {
-  if (expand_amp) {
-    _flags |= F_expand_amp;
-  } else {
-    _flags &= ~F_expand_amp;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_expand_amp
-//       Access: Published
-//  Description: Returns the state of the expand_amp flag.  See
-//               set_expand_amp().
-////////////////////////////////////////////////////////////////////
-INLINE bool TextNode::
-get_expand_amp() const {
-  return (_flags & F_expand_amp) != 0;
-}
-*/
-
-////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_line_height
 //       Access: Published
 //  Description: Returns the number of units high each line of text
@@ -1124,11 +1034,8 @@ get_coordinate_system() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 set_text(const string &text) {
-  if (!has_text() || _text != text) {
-    _text = text;
-    _flags = (_flags | F_got_text) & ~F_got_wtext;
-    invalidate_with_measure();
-  }
+  TextEncoder::set_text(text);
+  invalidate_with_measure();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1143,7 +1050,8 @@ set_text(const string &text) {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 set_text(const string &text, TextNode::Encoding encoding) {
-  set_wtext(decode_text(text, encoding));
+  TextEncoder::set_text(text, encoding);
+  invalidate_with_measure();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1153,50 +1061,8 @@ set_text(const string &text, TextNode::Encoding encoding) {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 clear_text() {
-  _text = string();
-  _wtext = wstring();
-  _flags |= (F_got_text | F_got_wtext);
+  TextEncoder::clear_text();
   invalidate_with_measure();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::has_text
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE bool TextNode::
-has_text() const {
-  if (_flags & F_got_wtext) {
-    return !_wtext.empty();
-  } else {
-    return !_text.empty();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_text
-//       Access: Published
-//  Description: Returns the current text, as encoded via the current
-//               encoding system.
-////////////////////////////////////////////////////////////////////
-INLINE string TextNode::
-get_text() const {
-  if ((_flags & F_got_text) == 0) {
-    ((TextNode *)this)->_text = encode_wtext(_wtext);
-    ((TextNode *)this)->_flags |= F_got_text;
-  }
-  return _text;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_text
-//       Access: Published
-//  Description: Returns the current text, as encoded via the indicated
-//               encoding system.
-////////////////////////////////////////////////////////////////////
-INLINE string TextNode::
-get_text(TextNode::Encoding encoding) const {
-  return encode_wtext(get_wtext(), encoding);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1207,8 +1073,7 @@ get_text(TextNode::Encoding encoding) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 append_text(const string &text) {
-  _text = get_text() + text;
-  _flags = (_flags | F_got_text) & ~F_got_wtext;
+  TextEncoder::append_text(text);
   invalidate_with_measure();
 }
 
@@ -1221,98 +1086,8 @@ append_text(const string &text) {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 append_unicode_char(int character) {
-  _wtext = get_wtext() + wstring(1, (wchar_t)character);
-  _flags = (_flags | F_got_wtext) & ~F_got_text;
+  TextEncoder::append_unicode_char(character);
   invalidate_with_measure();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_num_chars
-//       Access: Published
-//  Description: Returns the number of characters in the stored text.
-//               This is a count of wide characters, after the string
-//               has been decoded according to set_encoding().
-////////////////////////////////////////////////////////////////////
-INLINE int TextNode::
-get_num_chars() const {
-  return get_wtext().length();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_unicode_char
-//       Access: Published
-//  Description: Returns the Unicode value of the nth character in the
-//               stored text.  This may be a wide character (greater
-//               than 255), after the string has been decoded
-//               according to set_encoding().
-////////////////////////////////////////////////////////////////////
-INLINE int TextNode::
-get_unicode_char(int index) const {
-  get_wtext();
-  nassertr(index >= 0 && index < (int)_wtext.length(), 0);
-  return _wtext[index];
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_encoded_char
-//       Access: Published
-//  Description: Returns the nth char of the stored text, as a one-,
-//               two-, or three-byte encoded string.
-////////////////////////////////////////////////////////////////////
-INLINE string TextNode::
-get_encoded_char(int index) const {
-  return get_encoded_char(index, get_encoding());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_encoded_char
-//       Access: Published
-//  Description: Returns the nth char of the stored text, as a one-,
-//               two-, or three-byte encoded string.
-////////////////////////////////////////////////////////////////////
-INLINE string TextNode::
-get_encoded_char(int index, TextNode::Encoding encoding) const {
-  wstring wch(1, (wchar_t)get_unicode_char(index));
-  return encode_wtext(wch, encoding);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_text_as_ascii
-//       Access: Published
-//  Description: Returns the text associated with the node, converted
-//               as nearly as possible to a fully-ASCII
-//               representation.  This means replacing accented
-//               letters with their unaccented ASCII equivalents.
-//
-//               It is possible that some characters in the string
-//               cannot be converted to ASCII.  (The string may
-//               involve symbols like the copyright symbol, for
-//               instance, or it might involve letters in some other
-//               alphabet such as Greek or Cyrillic, or even Latin
-//               letters like thorn or eth that are not part of the
-//               ASCII character set.)  In this case, as much of the
-//               string as possible will be converted to ASCII, and
-//               the nonconvertible characters will remain encoded in
-//               the encoding specified by set_encoding().
-////////////////////////////////////////////////////////////////////
-INLINE string TextNode::
-get_text_as_ascii() const {
-  return encode_wtext(get_wtext_as_ascii());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::reencode_text
-//       Access: Published, Static
-//  Description: Given the indicated text string, which is assumed to
-//               be encoded via the encoding "from", decodes it and
-//               then reencodes it into the encoding "to", and returns
-//               the newly encoded string.  This does not change or
-//               affect any properties on the TextNode itself.
-////////////////////////////////////////////////////////////////////
-INLINE string TextNode::
-reencode_text(const string &text, TextNode::Encoding from, 
-              TextNode::Encoding to) {
-  return encode_wtext(decode_text(text, from), to);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1494,26 +1269,8 @@ force_update() {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 set_wtext(const wstring &wtext) {
-  if (!has_text() || _wtext != wtext) {
-    _wtext = wtext;
-    _flags = (_flags | F_got_wtext) & ~F_got_text;
-    invalidate_with_measure();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_wtext
-//       Access: Public
-//  Description: Returns the text associated with the TextNode, as a
-//               wide-character string.
-////////////////////////////////////////////////////////////////////
-INLINE const wstring &TextNode::
-get_wtext() const {
-  if ((_flags & F_got_wtext) == 0) {
-    ((TextNode *)this)->_wtext = decode_text(_text);
-    ((TextNode *)this)->_flags |= F_got_wtext;
-  }
-  return _wtext;
+  TextEncoder::set_wtext(wtext);
+  invalidate_with_measure();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1524,8 +1281,7 @@ get_wtext() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 append_wtext(const wstring &wtext) {
-  _wtext = get_wtext() + wtext;
-  _flags = (_flags | F_got_wtext) & ~F_got_text;
+  TextEncoder::append_wtext(wtext);
   invalidate_with_measure();
 }
 
@@ -1556,28 +1312,6 @@ wordwrap_to(const wstring &wtext, float wordwrap_width,
             bool preserve_trailing_whitespace) const {
   nassertr(_font != (TextFont *)NULL, wtext);
   return _font->wordwrap_to(wtext, wordwrap_width, preserve_trailing_whitespace);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::encode_wtext
-//       Access: Public
-//  Description: Encodes a wide-text string into a single-char string,
-//               according to the current encoding.
-////////////////////////////////////////////////////////////////////
-INLINE string TextNode::
-encode_wtext(const wstring &wtext) const {
-  return encode_wtext(wtext, _encoding);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::decode_text
-//       Access: Public
-//  Description: Returns the given wstring decoded to a single-byte
-//               string, via the current encoding system.
-////////////////////////////////////////////////////////////////////
-INLINE wstring TextNode::
-decode_text(const string &text) const {
-  return decode_text(text, _encoding);
 }
 
 ////////////////////////////////////////////////////////////////////

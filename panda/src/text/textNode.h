@@ -22,6 +22,7 @@
 #include "pandabase.h"
 
 #include "config_text.h"
+#include "textEncoder.h"
 #include "textFont.h"
 #include "unicodeLatinMap.h"
 #include "pandaNode.h"
@@ -52,7 +53,7 @@ class StringDecoder;
 //               you may use however you like.  Each time you call
 //               generate() a new node is returned.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TextNode : public PandaNode {
+class EXPCL_PANDA TextNode : public PandaNode, public TextEncoder {
 PUBLISHED:
   TextNode(const string &name);
   ~TextNode();
@@ -61,12 +62,6 @@ PUBLISHED:
     A_left,
     A_right,
     A_center,
-  };
-
-  enum Encoding {
-    E_iso8859,
-    E_utf8,
-    E_unicode
   };
  
   INLINE int freeze();
@@ -77,17 +72,6 @@ PUBLISHED:
 
   INLINE static void set_default_font(TextFont *);
   INLINE static TextFont *get_default_font();
-
-  INLINE void set_encoding(Encoding encoding);
-  INLINE Encoding get_encoding() const;
-
-  INLINE static void set_default_encoding(Encoding encoding);
-  INLINE static Encoding get_default_encoding();
-
-  /*
-  INLINE void set_expand_amp(bool expand_amp);
-  INLINE bool get_expand_amp() const;
-  */
 
   INLINE float get_line_height() const;
 
@@ -181,21 +165,14 @@ PUBLISHED:
   INLINE void set_coordinate_system(CoordinateSystem cs);
   INLINE CoordinateSystem get_coordinate_system() const;
 
+  // These methods are inherited from TextEncoder, but we override
+  // here so we can flag the TextNode as dirty when they have been
+  // change.
   INLINE void set_text(const string &text);
   INLINE void set_text(const string &text, Encoding encoding);
   INLINE void clear_text();
-  INLINE bool has_text() const;
-  INLINE string get_text() const;
-  INLINE string get_text(Encoding encoding) const;
   INLINE void append_text(const string &text);
   INLINE void append_unicode_char(int character);
-  INLINE int get_num_chars() const;
-  INLINE int get_unicode_char(int index) const;
-  INLINE string get_encoded_char(int index) const;
-  INLINE string get_encoded_char(int index, Encoding encoding) const;
-  INLINE string get_text_as_ascii() const;
-
-  INLINE static string reencode_text(const string &text, Encoding from, Encoding to);
 
   INLINE float calc_width(int character) const;
   INLINE float calc_width(const string &line) const;
@@ -225,19 +202,11 @@ PUBLISHED:
 public:
   // Direct support for wide-character strings.
   INLINE void set_wtext(const wstring &wtext);
-  INLINE const wstring &get_wtext() const;
   INLINE void append_wtext(const wstring &text);
-  wstring get_wtext_as_ascii() const;
 
   INLINE float calc_width(const wstring &line) const;
   INLINE wstring wordwrap_to(const wstring &wtext, float wordwrap_width,
                              bool preserve_trailing_whitespace) const;
-
-  static string encode_wchar(wchar_t ch, Encoding encoding);
-  INLINE string encode_wtext(const wstring &wtext) const;
-  static string encode_wtext(const wstring &wtext, Encoding encoding);
-  INLINE wstring decode_text(const string &text) const;
-  static wstring decode_text(const string &text, Encoding encoding);
 
   // From parent class PandaNode
   virtual int get_unsafe_to_apply_attribs() const;
@@ -255,9 +224,6 @@ public:
   virtual BoundingVolume *recompute_internal_bound();
 
 private:
-  static wstring decode_text_impl(StringDecoder &decoder);
-  //  int expand_amp_sequence(StringDecoder &decoder) const;
-
   INLINE void invalidate_no_measure();
   INLINE void invalidate_with_measure();
   INLINE void check_rebuild() const;
@@ -333,7 +299,6 @@ private:
   PT(TextFont) _font;
   PT(PandaNode) _internal_geom;
 
-  Encoding _encoding;
   float _slant;
 
   PT(Texture) _card_texture;
@@ -354,9 +319,6 @@ private:
     F_frame_corners    =  0x00000100,
     F_card_transp      =  0x00000200,
     F_has_card_border  =  0x00000400,
-    //    F_expand_amp       =  0x00000800,
-    F_got_text         =  0x00001000,
-    F_got_wtext        =  0x00002000,
     F_needs_rebuild    =  0x00004000,
     F_needs_measure    =  0x00008000,
     F_small_caps       =  0x00010000,
@@ -380,16 +342,12 @@ private:
   LMatrix4f _transform;
   CoordinateSystem _coordinate_system;
 
-  string _text;
-  wstring _wtext;
-
   LPoint2f _ul2d, _lr2d;
   LPoint3f _ul3d, _lr3d;
   int _num_rows;
 
   static PT(TextFont) _default_font;
   static bool _loaded_default_font;
-  static Encoding _default_encoding;
 
 public:
   static TypeHandle get_class_type() {
@@ -398,7 +356,8 @@ public:
   static void init_type() {
     PandaNode::init_type();
     register_type(_type_handle, "TextNode",
-                  PandaNode::get_class_type());
+                  PandaNode::get_class_type(),
+                  TextEncoder::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

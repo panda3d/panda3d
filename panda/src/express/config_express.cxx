@@ -20,6 +20,7 @@
 #include "config_express.h"
 #include "datagram.h"
 #include "referenceCount.h"
+#include "textEncoder.h"
 #include "thread.h"
 #include "typedObject.h"
 #include "typedReferenceCount.h"
@@ -39,8 +40,28 @@ NotifyCategoryDef(thread, "");
 extern void init_system_type_handles();
 
 ConfigureFn(config_express) {
+  init_libexpress();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: init_libexpress
+//  Description: Initializes the library.  This must be called at
+//               least once before any of the functions or classes in
+//               this library can be used.  Normally it will be
+//               called by the static initializers and need not be
+//               called explicitly, but special cases exist.
+////////////////////////////////////////////////////////////////////
+void
+init_libexpress() {
+  static bool initialized = false;
+  if (initialized) {
+    return;
+  }
+  initialized = true;
+
   Datagram::init_type();
   ReferenceCount::init_type();
+  TextEncoder::init_type();
   Thread::init_type();
   TypedObject::init_type();
   TypedReferenceCount::init_type();
@@ -52,6 +73,18 @@ ConfigureFn(config_express) {
   VirtualFileSimple::init_type();
 
   init_system_type_handles();
+
+  string text_encoding = config_express.GetString("text-encoding", "iso8859");
+  if (text_encoding == "iso8859") {
+    TextEncoder::set_default_encoding(TextEncoder::E_iso8859);
+  } else if (text_encoding == "utf8") {
+    TextEncoder::set_default_encoding(TextEncoder::E_utf8);
+  } else if (text_encoding == "unicode") {
+    TextEncoder::set_default_encoding(TextEncoder::E_unicode);
+  } else {
+    express_cat.error()
+      << "Invalid text-encoding: " << text_encoding << "\n";
+  }
 }
 
 

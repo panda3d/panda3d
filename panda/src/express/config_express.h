@@ -56,4 +56,6 @@ typedef Config::Config<ConfigureGetConfig_config_express> ConfigExpress;
 EXPCL_PANDAEXPRESS ConfigExpress &get_config_express();
 END_PUBLISH
 
+extern EXPCL_PANDAEXPRESS void init_libexpress();
+
 #endif /* __CONFIG_UTIL_H__ */

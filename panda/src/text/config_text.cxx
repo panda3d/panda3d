@@ -79,18 +79,6 @@ init_libtext() {
   GeomTextGlyph::register_with_read_factory();
 #endif
 
-  string text_encoding = config_text.GetString("text-encoding", "iso8859");
-  if (text_encoding == "iso8859") {
-    TextNode::set_default_encoding(TextNode::E_iso8859);
-  } else if (text_encoding == "utf8") {
-    TextNode::set_default_encoding(TextNode::E_utf8);
-  } else if (text_encoding == "unicode") {
-    TextNode::set_default_encoding(TextNode::E_unicode);
-  } else {
-    text_cat.error()
-      << "Invalid text-encoding: " << text_encoding << "\n";
-  }
-
   // FT_linear_mipmap_nearest (that is, choose the nearest mipmap
   // level and bilinear filter the pixels from there) gives us some
   // mipmapping to avoid dropping pixels, but avoids the hideous

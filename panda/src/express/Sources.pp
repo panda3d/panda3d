@@ -47,7 +47,9 @@
     reversedNumericData.I reversedNumericData.h \
     selectThreadImpl.h \
     streamReader.I streamReader.h streamWriter.I streamWriter.h \
+    stringDecoder.h stringDecoder.I \
     subStream.I subStream.h subStreamBuf.h \
+    textEncoder.h textEncoder.I \
     threadDummyImpl.h threadDummyImpl.I thread.h thread.I threadImpl.h \
     threadNsprImpl.h threadNsprImpl.I threadPriority.h \
     tokenBoard.I \
@@ -56,6 +58,7 @@
     typedReferenceCount.I typedReferenceCount.h typedef.h \
     typeRegistry.I typeRegistry.h \
     typeRegistryNode.I typeRegistryNode.h \
+    unicodeLatinMap.h \
     vector_uchar.h \
     virtualFileComposite.h virtualFileComposite.I virtualFile.h \
     virtualFile.I virtualFileList.I virtualFileList.h virtualFileMount.h \
@@ -87,11 +90,15 @@
     pta_uchar.cxx referenceCount.cxx register_type.cxx \
     reversedNumericData.cxx \
     streamReader.cxx streamWriter.cxx \
+    stringDecoder.cxx \
     subStream.cxx subStreamBuf.cxx \
+    textEncoder.cxx \
     thread.cxx threadDummyImpl.cxx threadNsprImpl.cxx \
     trueClock.cxx typeHandle.cxx \
     typedObject.cxx typedReferenceCount.cxx \
-    typeRegistry.cxx typeRegistryNode.cxx vector_uchar.cxx \
+    typeRegistry.cxx typeRegistryNode.cxx \
+    unicodeLatinMap.cxx \
+    vector_uchar.cxx \
     virtualFileComposite.cxx virtualFile.cxx virtualFileList.cxx \
     virtualFileMount.cxx \
     virtualFileMountMultifile.cxx virtualFileMountSystem.cxx \
@@ -132,7 +139,9 @@
     reversedNumericData.I reversedNumericData.h \
     selectThreadImpl.h \
     streamReader.I streamReader.h streamWriter.I streamWriter.h \
+    stringDecoder.h stringDecoder.I \
     subStream.I subStream.h subStreamBuf.h \
+    textEncoder.h textEncoder.I \
     threadDummyImpl.h threadDummyImpl.I thread.h thread.I threadImpl.h \
     threadNsprImpl.h threadNsprImpl.I threadPriority.h \
     tokenBoard.I \
@@ -141,6 +150,7 @@
     typedReferenceCount.h typedef.h \
     typeRegistry.I typeRegistry.h \
     typeRegistryNode.I typeRegistryNode.h \
+    unicodeLatinMap.h \
     vector_uchar.h \
     virtualFileComposite.h virtualFileComposite.I virtualFile.h \
     virtualFile.I virtualFileList.I virtualFileList.h virtualFileMount.h \
