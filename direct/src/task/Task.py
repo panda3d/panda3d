@@ -17,7 +17,7 @@ def getTimeFrame():
 
     # Ask for the time last frame
     t = globalClock.getTime()
-    
+
     # Get the new frame count
     f = globalClock.getFrameCount()
 
@@ -25,14 +25,15 @@ def getTimeFrame():
 
 
 class Task:
-    def __init__(self, callback):
+    def __init__(self, callback, priority = 0):
         self.__call__ = callback
+        self.__priority__ = priority
         self.uponDeath = None
-        
+
     def setStartTimeFrame(self, startTime, startFrame):
         self.starttime = startTime
         self.startframe = startFrame
-        
+
     def setCurrentTimeFrame(self, currentTime, currentFrame):
         # Calculate and store this task's time (relative to when it started)
         self.time = currentTime - self.starttime
@@ -47,7 +48,7 @@ def doLater(delayTime, task, taskName):
 def spawnMethodNamed(self, func, name):
         task = Task(func)
         self.spawnTaskNamed(task, name)
-    
+
 def pause(delayTime):
     def func(self):
         if (self.time < self.delayTime):
@@ -91,7 +92,7 @@ def make_sequence(taskList):
 
             # Calculate this task's time since it started
             task.setCurrentTimeFrame(self.time, self.frame)
-            
+
             # Execute the current task
             ret = task(task)
 
@@ -100,7 +101,7 @@ def make_sequence(taskList):
             # come back to it next frame
             if (ret == cont):
                 return cont
-            
+
             # If this task is done, increment the index so that next frame
             # we will start executing the next task on the list
             elif (ret == done):
@@ -149,11 +150,11 @@ def timeline(*timelineList):
     def func(self):
         # Step our sub task manager (returns the number of tasks remaining)
         lenTaskList = self.taskMgr.step()
-        
+
         # The sequence start time is the same as our start time
         self.sequence.time = self.time
         self.sequence.frame = self.frame
-        
+
         if (not self.sequenceDone):
             # Execute the sequence for this frame
             seqRet = self.sequence(self.sequence)
@@ -181,7 +182,7 @@ def timeline(*timelineList):
 class TaskManager:
 
     notify = None
-    
+
     def __init__(self):
         self.running = 0
         self.stepping = 0
@@ -197,12 +198,22 @@ class TaskManager:
     def spawnMethodNamed(self, func, name):
         task = Task(func)
         return self.spawnTaskNamed(task, name)
-        
+
     def spawnTaskNamed(self, task, name):
         TaskManager.notify.debug('spawning task named: ' + name)
         task.name = name
         task.setStartTimeFrame(self.currentTime, self.currentFrame)
-        self.taskList.append(task)
+        # search back from the end of the list until we find a
+        # task with a lower priority, or we hit the start of the list
+        index = len(self.taskList) - 1
+        while (1):
+            if (index < 0):
+                break
+            if (self.taskList[index].__priority__ <= task.__priority__):
+                break
+            index = index - 1
+        index = index + 1
+        self.taskList.insert(index, task)
         return task
 
     def doMethodLater(self, delayTime, func, taskName):
@@ -228,7 +239,7 @@ class TaskManager:
     def removeTasksNamed(self, taskName):
         TaskManager.notify.debug('removing tasks named: ' + taskName)
         removedTasks = []
-        
+
         # Find the tasks that match by name and make a list of them
         for task in self.taskList:
             if (task.name == taskName):
@@ -317,7 +328,7 @@ def keyframe2(state):
 def keyframe3(state):
     print 'keyframe3'
     return Task.done
-    
+
 testtl = Task.timeline(
     (0.5, Task.Task(keyframe1), 'key1'),
     (0.6, Task.Task(keyframe2), 'key2'),
