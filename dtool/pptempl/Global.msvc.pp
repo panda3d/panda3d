@@ -20,9 +20,11 @@
   #foreach lib $[complete_libs]
     // Only consider libraries that we're actually building.
     #if $[all_libs $[and $[build_directory],$[build_target]],$[lib]]
-      #define modmeta $[module $[target],$[lib]]
+      #define modmeta $[module $[TARGET],$[lib]]
       #if $[ne $[modmeta],]
-        #set actual_libs $[actual_libs] $[modmeta]
+        #if $[ne $[modmeta],$[target]]  // We don't link with ourselves.
+          #set actual_libs $[actual_libs] $[modmeta]
+        #endif
       #else
         #set actual_libs $[actual_libs] $[lib]
       #endif
@@ -42,9 +44,6 @@
   #end file
 #end decygwin
 
-#defer CC cl
-#defer CXX cl
-
 // Define this if we want to make .sbr files.
 #defer BROWSEINFO_FLAG -Fr$[target:%.obj=%.sbr]
 
@@ -60,10 +59,13 @@
 
 #defer extra_cflags -nologo -W3 -EHsc -Zm250 -D_WINDOWS -DWIN32 -D_WINDLL -DSTRICT -DPENV_WIN32 -DWIN32_VC
 #defer extra_so_lflags -DLL -NOLOGO
-#defer extra_bin_lflags = -NOLOGO
+#defer extra_bin_lflags -NOLOGO
 
-#defer COMPILE_C $[CC] -c -Fo$[target] $[decygwin %,-I"%",$[ipath]] $[flags] $[extra_cflags] $[source]
+#defer COMPILE_C cl -c -Fo$[target] $[decygwin %,-I"%",$[ipath]] $[flags] $[extra_cflags] $[source]
 #defer COMPILE_C++ $[COMPILE_C]
 
-#defer SHARED_LIB_C link $[LFLAGS_OPT$[OPTIMIZE]] $[extra_so_lflags] $[decygwin %,-LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] $[sources] -OUT:$[target]
+#defer SHARED_LIB_C link $[LFLAGS_OPT$[OPTIMIZE]] $[extra_so_lflags] $[sources] $[decygwin %,-LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] -OUT:$[target]
 #defer SHARED_LIB_C++ $[SHARED_LIB_C]
+
+#defer LINK_BIN_C link $[LFLAGS_OPT$[OPTIMIZE]] $[extra_bin_lflags] $[sources] $[decygwin %,-LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] -OUT:$[target]
+#defer LINK_BIN_C++ $[LINK_BIN_C]
