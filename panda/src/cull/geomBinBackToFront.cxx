@@ -11,10 +11,7 @@
 #include <transformTransition.h>
 #include <transformAttribute.h>
 #include <geometricBoundingVolume.h>
-
-#ifdef DO_PSTATS
 #include <pStatTimer.h>
-#endif
 
 TypeHandle GeomBinBackToFront::_type_handle;
 
@@ -41,6 +38,8 @@ clear_current_states() {
 void GeomBinBackToFront::
 record_current_state(GraphicsStateGuardian *gsg, CullState *cs, int,
 		     CullTraverser *trav) {
+  PStatTimer timer(CullTraverser::_cull_bins_btf_pcollector);
+
   // Get the transform matrix from the state.
   TransformAttribute *trans_attrib = NULL;
   get_attribute_into(trans_attrib, cs->get_attributes(),
@@ -138,9 +137,8 @@ record_current_state(GraphicsStateGuardian *gsg, CullState *cs, int,
 ////////////////////////////////////////////////////////////////////
 void GeomBinBackToFront::
 draw(CullTraverser *trav) {
-#ifdef DO_PSTATS
   PStatTimer timer(CullTraverser::_draw_pcollector);
-#endif
+
   if (cull_cat.is_spam()) {
     cull_cat.spam() 
       << "GeomBinBackToFront drawing " << _node_entries.size() << " entries.\n";

@@ -12,10 +12,7 @@
 #include <transformAttribute.h>
 #include <geometricBoundingVolume.h>
 #include <directRenderTraverser.h>
-
-#ifdef DO_PSTATS
 #include <pStatTimer.h>
-#endif
 
 TypeHandle GeomBinFixed::_type_handle;
 
@@ -42,6 +39,8 @@ clear_current_states() {
 void GeomBinFixed::
 record_current_state(GraphicsStateGuardian *, CullState *cs,
 		     int draw_order, CullTraverser *) {
+  PStatTimer timer(CullTraverser::_cull_bins_fixed_pcollector);
+
   // Get the transform matrix from the state.
   TransformAttribute *trans_attrib = NULL;
   get_attribute_into(trans_attrib, cs->get_attributes(),
@@ -67,9 +66,8 @@ record_current_state(GraphicsStateGuardian *, CullState *cs,
 ////////////////////////////////////////////////////////////////////
 void GeomBinFixed::
 draw(CullTraverser *trav) {
-#ifdef DO_PSTATS
   PStatTimer timer(CullTraverser::_draw_pcollector);
-#endif
+
   NodeEntries::iterator nei;
   for (nei = _node_entries.begin(); nei != _node_entries.end(); ++nei) {
     (*nei).draw(trav);

@@ -31,6 +31,15 @@ TypeHandle CullTraverser::_type_handle;
 #ifndef CPPPARSER
 PStatCollector CullTraverser::_cull_pcollector("Cull");
 PStatCollector CullTraverser::_draw_pcollector("Draw");
+PStatCollector CullTraverser::_cull_traverse_pcollector("Cull:Traverse");
+PStatCollector CullTraverser::_cull_geom_node_pcollector("Cull:Geom node");
+PStatCollector CullTraverser::_cull_direct_node_pcollector("Cull:Direct node");
+PStatCollector CullTraverser::_cull_draw_get_bin_pcollector("Cull:Apply initial");
+PStatCollector CullTraverser::_cull_draw_pcollector("Cull:Draw");
+PStatCollector CullTraverser::_cull_clean_pcollector("Cull:Clean");
+PStatCollector CullTraverser::_cull_bins_unsorted_pcollector("Cull:Bins:Unsorted");
+PStatCollector CullTraverser::_cull_bins_fixed_pcollector("Cull:Bins:Fixed");
+PStatCollector CullTraverser::_cull_bins_btf_pcollector("Cull:Bins:BTF");
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -310,6 +319,8 @@ setup_initial_bins() {
 ////////////////////////////////////////////////////////////////////
 void CullTraverser::
 draw() {
+  PStatTimer timer(_cull_draw_pcollector);
+
   if (cull_cat.is_debug()) {
     // Count up the nonempty states for debug output.
     int num_states = 0;
@@ -325,18 +336,24 @@ draw() {
       << "Initiating draw with " << num_states
       << " nonempty states of " << _states.size() << " total.\n";
   }
-
+  
   SubBins::const_iterator sbi;
-  for (sbi = _sub_bins.begin(); sbi != _sub_bins.end(); ++sbi) {
-    (*sbi).second->clear_current_states();
+  {
+    PStatTimer timer(_cull_clean_pcollector);
+    for (sbi = _sub_bins.begin(); sbi != _sub_bins.end(); ++sbi) {
+      (*sbi).second->clear_current_states();
+    }
   }
 
   States::iterator si;
   for (si = _states.begin(); si != _states.end(); ++si) {
     CullState *cs = (*si);
     if (!cs->is_empty()) {
-      cs->apply_to(_initial_state);
-
+      {
+        PStatTimer timer(_cull_draw_get_bin_pcollector);
+        cs->apply_to(_initial_state);
+      }
+      
       static string default_bin_name = "default";
       string bin_name = default_bin_name;
       GeomBin *requested_bin = _default_bin;
@@ -345,21 +362,20 @@ draw() {
       // Check the requested bin for the Geoms in this state.
       const GeomBinAttribute *bin_attrib;
       if (get_attribute_into(bin_attrib, cs->get_attributes(),
-			     GeomBinTransition::get_class_type())) {
-	draw_order = bin_attrib->get_draw_order();
-	bin_name = bin_attrib->get_bin();
-	requested_bin = get_bin(bin_name);
+                             GeomBinTransition::get_class_type())) {
+        draw_order = bin_attrib->get_draw_order();
+        bin_name = bin_attrib->get_bin();
+        requested_bin = get_bin(bin_name);
       }
-
+        
       if (requested_bin == (GeomBin *)NULL) {
-	// If we don't have a bin by this name, create one.
-	cull_cat.warning()
-	  << "Bin " << bin_name << " is unknown; creating a default bin.\n";
-
-	requested_bin = new GeomBinNormal(bin_name);
-	requested_bin->set_traverser(this);
+        // If we don't have a bin by this name, create one.
+        cull_cat.warning()
+          << "Bin " << bin_name << " is unknown; creating a default bin.\n";
+        
+        requested_bin = new GeomBinNormal(bin_name);
+        requested_bin->set_traverser(this);
       }
-
       requested_bin->record_current_state(_gsg, cs, draw_order, this);
     }
   }
@@ -388,6 +404,8 @@ draw() {
 ////////////////////////////////////////////////////////////////////
 void CullTraverser::
 clean_out_old_states() {
+  PStatTimer timer(_cull_clean_pcollector);
+
   _lookup.clean_out_old_nodes();
 
   States::iterator si, snext;
@@ -416,6 +434,12 @@ clean_out_old_states() {
 void CullTraverser::
 add_geom_node(GeomNode *node, const AllTransitionsWrapper &trans,
 	      const CullLevelState &level_state) {
+  // Using the PStatTimer here to start and stop the collector
+  // implicitly gives VC++ a headache and an internal compiler error,
+  // but explicitly starting and stopping it is ok.
+  //PStatTimer timer(_cull_geom_node_pcollector);
+  _cull_geom_node_pcollector.start();
+
   nassertv(node != (GeomNode *)NULL);
   const ArcChain &arc_chain = get_arc_chain();
   nassertv(!arc_chain.empty());
@@ -447,6 +471,7 @@ add_geom_node(GeomNode *node, const AllTransitionsWrapper &trans,
   }
 
   cs->record_current_geom_node(arc_chain);
+  _cull_geom_node_pcollector.stop();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -461,6 +486,8 @@ add_geom_node(GeomNode *node, const AllTransitionsWrapper &trans,
 void CullTraverser::
 add_direct_node(Node *node, const AllTransitionsWrapper &trans,
 		const CullLevelState &level_state) {
+  PStatTimer timer(_cull_direct_node_pcollector);
+
   nassertv(node != (Node *)NULL);
   const ArcChain &arc_chain = get_arc_chain();
   nassertv(!arc_chain.empty());
@@ -501,6 +528,8 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
   if (arc->has_transition(PruneTransition::get_class_type())) {
     return false;
   }
+
+  PStatTimer timer(_cull_traverse_pcollector);
 
   Node *node = arc->get_child();
 

@@ -122,6 +122,15 @@ public:
   // Statistics
   static PStatCollector _cull_pcollector;
   static PStatCollector _draw_pcollector;
+  static PStatCollector _cull_traverse_pcollector;
+  static PStatCollector _cull_geom_node_pcollector;
+  static PStatCollector _cull_direct_node_pcollector;
+  static PStatCollector _cull_draw_get_bin_pcollector;
+  static PStatCollector _cull_draw_pcollector;
+  static PStatCollector _cull_clean_pcollector;
+  static PStatCollector _cull_bins_unsorted_pcollector;
+  static PStatCollector _cull_bins_fixed_pcollector;
+  static PStatCollector _cull_bins_btf_pcollector;
   
 public:
   static TypeHandle get_class_type() {

@@ -38,6 +38,7 @@ public:
   float _suggested_scale;
   float _factor;
   bool _is_active;
+  bool _active_explicitly_set;
 };
 
 #endif

@@ -9,10 +9,7 @@
 #include <indent.h>
 #include <nodeAttributes.h>
 #include <graphicsStateGuardian.h>
-
-#ifdef DO_PSTATS
 #include <pStatTimer.h>
-#endif
 
 TypeHandle GeomBinUnsorted::_type_handle;
 
@@ -47,13 +44,15 @@ clear_current_states() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBinUnsorted::record_current_state
 //       Access: Public, Virtual
-//  Description: Called each frame by the CullTraverser to indicated
+//  Description: Called each frame by the CullTraverser to indicate
 //               that the given CullState (and all of its current
 //               GeomNodes) is visible this frame.
 ////////////////////////////////////////////////////////////////////
 void GeomBinUnsorted::
 record_current_state(GraphicsStateGuardian *, CullState *cs, int,
 		     CullTraverser *) {
+  PStatTimer timer(CullTraverser::_cull_bins_unsorted_pcollector);
+
   // This shouldn't be called twice for a particular CullState on this
   // bin, since we don't preserve any CullStates between frames.
   nassertv(cs->get_bin() != this);
@@ -69,9 +68,8 @@ record_current_state(GraphicsStateGuardian *, CullState *cs, int,
 ////////////////////////////////////////////////////////////////////
 void GeomBinUnsorted::
 draw(CullTraverser *trav) {
-#ifdef DO_PSTATS
   PStatTimer timer(CullTraverser::_draw_pcollector);
-#endif
+
   GraphicsStateGuardian *gsg = trav->get_gsg();
 
   if (cull_cat.is_spam()) {

@@ -23,6 +23,7 @@ PStatCollectorDef() {
   _suggested_scale = 0.0;
   _factor = 1.0;
   _is_active = true;
+  _active_explicitly_set = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -41,6 +42,7 @@ PStatCollectorDef(int index, const string &name) :
   _suggested_scale = 0.0;
   _factor = 1.0;
   _is_active = true;
+  _active_explicitly_set = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,6 +60,7 @@ set_parent(const PStatCollectorDef &parent) {
   _suggested_scale = parent._suggested_scale;
   _factor = parent._factor;
   _is_active = parent._is_active;
+  _active_explicitly_set = parent._active_explicitly_set;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -94,9 +94,19 @@ static TimeCollectorProperties time_properties[] = {
   { 1, "App",                              { 0.0, 1.0, 1.0 },  1.0 / 30.0 },
   { 1, "App:Animation",                    { 1.0, 0.0, 1.0 } },
   { 1, "App:Collisions",                   { 1.0, 0.5, 0.0 } },
-  { 1, "App:Data graph",                   { 0.5, 0.8, 0.4 } },
+  { 0, "App:Data graph",                   { 0.5, 0.8, 0.4 } },
   { 1, "App:Show code",                    { 0.8, 0.2, 1.0 } },
   { 1, "Cull",                             { 0.0, 1.0, 0.0 },  1.0 / 30.0 },
+  { 0, "Cull:Traverse",                    { 0.0, 1.0, 1.0 } },
+  { 0, "Cull:Geom node",                   { 1.0, 0.0, 1.0 } },
+  { 0, "Cull:Direct node",                 { 1.0, 0.5, 0.0 } },
+  { 0, "Cull:Apply initial",               { 0.2, 1.0, 0.8 } },
+  { 0, "Cull:Draw",                        { 1.0, 1.0, 0.0 } },
+  { 0, "Cull:Clean",                       { 0.0, 0.0, 1.0 } },
+  { 0, "Cull:Bins",                        { 0.8, 1.0, 0.8 } },
+  { 0, "Cull:Bins:BTF",                    { 1.0, 0.5, 0.5 } },
+  { 0, "Cull:Bins:Unsorted",               { 0.5, 0.5, 1.0 } },
+  { 0, "Cull:Bins:Fixed",                  { 0.5, 1.0, 0.5 } },
   { 1, "Draw",                             { 1.0, 0.0, 0.0 },  1.0 / 30.0 },
   { 1, "Draw:Swap buffers",                { 0.5, 1.0, 0.8 } },
   { 1, "Draw:Clear",                       { 0.5, 0.7, 0.7 } },
@@ -144,7 +154,9 @@ initialize_collector_def_from_table(const string &fullname, PStatCollectorDef *d
     const TimeCollectorProperties &tp = time_properties[i];
     if (fullname == tp.name) {
       def->_sort = i;
-      def->_is_active = tp.is_active;
+      if (!def->_active_explicitly_set) {
+        def->_is_active = tp.is_active;
+      }
       def->_suggested_color.set(tp.color.r, tp.color.g, tp.color.b);
       if (tp.suggested_scale != 0.0) {
         def->_suggested_scale = tp.suggested_scale;
@@ -159,7 +171,9 @@ initialize_collector_def_from_table(const string &fullname, PStatCollectorDef *d
     const LevelCollectorProperties &lp = level_properties[i];
     if (fullname == lp.name) {
       def->_sort = i;
-      def->_is_active = lp.is_active;
+      if (!def->_active_explicitly_set) {
+        def->_is_active = lp.is_active;
+      }
       def->_suggested_color.set(lp.color.r, lp.color.g, lp.color.b);
       if (lp.suggested_scale != 0.0) {
         def->_suggested_scale = lp.suggested_scale;
@@ -221,8 +235,12 @@ initialize_collector_def(PStatClient *client, PStatCollectorDef *def) {
     }
   }
 
-  def->_is_active =
-    config_pstats.GetBool("pstats-active-" + config_name, def->_is_active);
+  if (!config_pstats.GetString("pstats-active-" + config_name, "").empty()) {
+    def->_is_active =
+      config_pstats.GetBool("pstats-active-" + config_name, true);
+    def->_active_explicitly_set = true;
+  }
+
   def->_sort =
     config_pstats.GetInt("pstats-sort-" + config_name, def->_sort);
   def->_suggested_scale =
