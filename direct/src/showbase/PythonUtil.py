@@ -315,14 +315,14 @@ def intersection(a, b):
     """
     if not a: return []
     if not b: return []
-    c = a + b
     d = []
-    for i in c:
-        if (i in a) and (i in b):
-            # make it unique, like a set
-            if (i not in d):
-                d.append(i)
-    return d   
+    for i in a:
+        if (i in b) and (i not in d):
+            d.append(i)
+    for i in b:
+        if (i in a) and (i not in d):
+            d.append(i)
+    return d
 
 def union(a, b):
     """

@@ -115,8 +115,6 @@ def pause(delayTime):
         if (self.time < self.delayTime):
             return cont
         else:
-            # Time is up, return done
-            # TaskManager.notify.debug('pause done: ' + self.name)
             return done
     task = Task(func)
     task.name = 'pause'
@@ -160,7 +158,7 @@ def make_sequence(taskList):
 
             # If we got to the end of the list, this sequence is done
             if (self.index >= len(self.taskList)):
-                TaskManager.notify.debug('sequence done: ' + self.name)
+                assert(TaskManager.notify.debug('sequence done: ' + self.name))
                 frameFinished = 1
                 taskDoneStatus = done
                 
@@ -336,7 +334,7 @@ class TaskManager:
                 # is not ready to go, we can return
                 break
             else:
-                TaskManager.notify.debug('__doLaterProcessor: spawning %s' % (dl))
+                assert(TaskManager.notify.debug('__doLaterProcessor: spawning %s' % (dl)))
                 removedTasks.append(dl)
                 dl.setStartTimeFrame(self.currentTime, self.currentFrame)
                 self.__addPendingTask(dl)
@@ -347,8 +345,7 @@ class TaskManager:
         return cont
 
     def __spawnDoLater(self, task):
-        if TaskManager.notify.getDebug():
-            TaskManager.notify.debug('spawning doLater: %s' % (task))
+        assert(TaskManager.notify.debug('spawning doLater: %s' % (task)))
         # Add this task to the nameDict
         nameList = ifAbsentPut(self.nameDict, task.name, [])
         nameList.append(task)
@@ -371,8 +368,7 @@ class TaskManager:
         return task
 
     def doLater(self, delayTime, task, taskName):
-        if TaskManager.notify.getDebug():
-            TaskManager.notify.debug('doLater: %s' % (taskName))
+        assert(TaskManager.notify.debug('doLater: %s' % (taskName)))
         task.delayTime = delayTime
         task.name = taskName
         return self.__spawnDoLater(task)
@@ -386,8 +382,7 @@ class TaskManager:
         Add a new task to the taskMgr.
         You can add a Task object or a method that takes one argument.
         """
-        if TaskManager.notify.getDebug():
-            TaskManager.notify.debug('add: %s' % (name))
+        assert(TaskManager.notify.debug('add: %s' % (name)))
         if isinstance(funcOrTask, Task):
             funcOrTask.setPriority(priority)
             return self.__spawnTaskNamed(funcOrTask, name)
@@ -401,8 +396,7 @@ class TaskManager:
         return self.__spawnTaskNamed(task, name)
 
     def __spawnTaskNamed(self, task, name):
-        if TaskManager.notify.getDebug():
-            TaskManager.notify.debug('__spawnTaskNamed: %s' % (name))
+        assert(TaskManager.notify.debug('__spawnTaskNamed: %s' % (name)))
         # Init params
         task.name = name
         task.setStartTimeFrame(self.currentTime, self.currentFrame)
@@ -413,8 +407,7 @@ class TaskManager:
         return task
 
     def __addPendingTask(self, task):
-        if TaskManager.notify.getDebug():
-            TaskManager.notify.debug('__addPendingTask: %s' % (task.name))
+        assert(TaskManager.notify.debug('__addPendingTask: %s' % (task.name)))
         pri = task.getPriority()
         taskPriList = ifAbsentPut(self.pendingTaskDict, pri, TaskPriorityList(pri))
         taskPriList.add(task)
@@ -483,8 +476,7 @@ class TaskManager:
         standard shell globbing characters like *, ?, and [].
 
         """
-        if TaskManager.notify.getDebug():
-            TaskManager.notify.debug('removing tasks matching: ' + taskPattern)
+        assert(TaskManager.notify.debug('removing tasks matching: ' + taskPattern))
         num = 0
         keyList = filter(lambda key: fnmatch.fnmatchcase(key, taskPattern), self.nameDict.keys())
         for key in keyList:
@@ -494,7 +486,7 @@ class TaskManager:
     def __removeTasksEqual(self, task):
         # Remove this task from the nameDict (should be a short list)
         if self.__removeTaskFromNameDict(task):
-            TaskManager.notify.debug('__removeTasksEqual: removing task: %s' % (task))
+            assert(TaskManager.notify.debug('__removeTasksEqual: removing task: %s' % (task)))
             # Flag the task for removal from the real list
             task.remove()
             # Cleanup stuff
@@ -506,8 +498,7 @@ class TaskManager:
     def __removeTasksNamed(self, taskName):
         if not self.nameDict.has_key(taskName):
             return 0
-        if TaskManager.notify.getDebug():
-            TaskManager.notify.debug('__removeTasksNamed: removing tasks named: %s' % (taskName))
+        assert(TaskManager.notify.debug('__removeTasksNamed: removing tasks named: %s' % (taskName)))
         for task in self.nameDict[taskName]:
             # Flag for removal
             task.remove()
@@ -572,7 +563,7 @@ class TaskManager:
                 break
             # See if this task has been removed in show code
             if task.isRemoved():
-                TaskManager.notify.debug('__stepThroughList: task is flagged for removal %s' % (task))
+                assert(TaskManager.notify.debug('__stepThroughList: task is flagged for removal %s' % (task)))
                 task.finishTask(self.fVerbose)
                 taskPriList.remove(i)
                 # Do not increment the iterator
@@ -584,15 +575,15 @@ class TaskManager:
                 # Leave it for next frame, its not done yet
                 pass
             elif ((ret == done) or (ret == exit)):
-                TaskManager.notify.debug('__stepThroughList: task is finished %s' % (task))
+                assert(TaskManager.notify.debug('__stepThroughList: task is finished %s' % (task)))
                 # Remove the task
                 if not task.isRemoved():
-                    TaskManager.notify.debug('__stepThroughList: task not removed %s' % (task))
+                    assert(TaskManager.notify.debug('__stepThroughList: task not removed %s' % (task)))
                     task.remove()
                     task.finishTask(self.fVerbose)
                     self.__removeTaskFromNameDict(task)
                 else:
-                    TaskManager.notify.debug('__stepThroughList: task already removed %s' % (task))
+                    assert(TaskManager.notify.debug('__stepThroughList: task already removed %s' % (task)))
                     self.__removeTaskFromNameDict(task)
                 taskPriList.remove(i)
                 # Do not increment the iterator
@@ -603,8 +594,7 @@ class TaskManager:
             i += 1
     
     def step(self):
-        if TaskManager.notify.getDebug():
-            TaskManager.notify.debug('step: begin')
+        assert(TaskManager.notify.debug('step: begin'))
         self.currentTime, self.currentFrame = self.__getTimeFrame()
         # Replace keyboard interrupt handler during task list processing
         # so we catch the keyboard interrupt but don't handle it until
@@ -616,13 +606,13 @@ class TaskManager:
         # Traverse the task list in order because it is in priority order
         for taskPriList in self.taskList:
             pri = taskPriList.getPriority()
-            TaskManager.notify.debug('step: running through taskList at pri: %s' % (pri))
+            assert(TaskManager.notify.debug('step: running through taskList at pri: %s' % (pri)))
             self.__stepThroughList(taskPriList)
 
             # Now see if that generated any pending tasks for this taskPriList
             pendingTasks = self.pendingTaskDict.get(pri, [])
             while pendingTasks:
-                TaskManager.notify.debug('step: running through pending tasks at pri: %s' % (pri))
+                assert(TaskManager.notify.debug('step: running through pending tasks at pri: %s' % (pri)))
                 # Remove them from the pendingTaskDict
                 del self.pendingTaskDict[pri]
                 # Execute them
@@ -630,7 +620,7 @@ class TaskManager:
                 # Add these to the real taskList
                 for task in pendingTasks:
                     if (task and not task.isRemoved()):
-                        TaskManager.notify.debug('step: moving %s from pending to taskList' % (task.name))
+                        assert(TaskManager.notify.debug('step: moving %s from pending to taskList' % (task.name)))
                         self.__addNewTask(task)
                 # See if we generated any more for this pri level
                 pendingTasks = self.pendingTaskDict.get(pri, [])
@@ -640,8 +630,7 @@ class TaskManager:
         for taskList in self.pendingTaskDict.values():
             for task in taskList:
                 if (task and not task.isRemoved()):
-                    if TaskManager.notify.getDebug():
-                        TaskManager.notify.debug('step: moving %s from pending to taskList' % (task.name))
+                    assert(TaskManager.notify.debug('step: moving %s from pending to taskList' % (task.name)))
                     self.__addNewTask(task)
         self.pendingTaskDict.clear()
         
