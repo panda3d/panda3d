@@ -122,7 +122,7 @@ write(ostream &out, int indent_level) const {
     << _num_vertices << " vertices, " << _num_normals << " normals, "
     << _num_texcoords << " texture coordinates.\n";
 
-  if (_num_normals != 0) {
+  if (_num_long_normals != 0 || _num_short_normals != 0) {
     indent(out, indent_level)
       << _num_long_normals << " normals are too long, " 
       << _num_short_normals << " are too short.  Average normal length is "
