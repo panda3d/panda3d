@@ -78,6 +78,11 @@ EggOptchar() {
      &EggOptchar::dispatch_vector_string_comma, NULL, &_keep_components);
 
   add_option
+    ("drop", "joint[,joint...]", 0,
+     "Removes the named joints or sliders, even if they appear to be needed.",
+     &EggOptchar::dispatch_vector_string_comma, NULL, &_drop_components);
+
+  add_option
     ("expose", "joint[,joint...]", 0,
      "Expose the named joints by flagging them with a DCS attribute, so "
      "each one can be found in the scene graph when the character is loaded, "
@@ -295,12 +300,16 @@ void EggOptchar::
 determine_removed_components() {
   typedef pset<string> Names;
   Names keep_names;
+  Names drop_names;
   Names expose_names;
   Names names_used;
 
   vector_string::const_iterator si;
   for (si = _keep_components.begin(); si != _keep_components.end(); ++si) {
     keep_names.insert(*si);
+  }
+  for (si = _drop_components.begin(); si != _drop_components.end(); ++si) {
+    drop_names.insert(*si);
   }
   for (si = _expose_components.begin(); si != _expose_components.end(); ++si) {
     keep_names.insert(*si);
@@ -329,6 +338,11 @@ determine_removed_components() {
           user_data->_flags |= EggOptcharUserData::F_expose;
         }
 
+      } else if (drop_names.find(name) != drop_names.end()) {
+        // Remove this component by user request.
+        names_used.insert(name);
+        user_data->_flags |= EggOptcharUserData::F_remove;
+
       } else {
         // Remove this component if it's unanimated or empty.
         if ((user_data->_flags & (EggOptcharUserData::F_static | EggOptcharUserData::F_empty)) != 0) {
@@ -343,13 +357,19 @@ determine_removed_components() {
   for (si = _keep_components.begin(); si != _keep_components.end(); ++si) {
     const string &name = (*si);
     if (names_used.find(name) == names_used.end()) {
-      nout << "No such joint: " << name << "\n";
+      nout << "No such component: " << name << "\n";
+    }
+  }
+  for (si = _drop_components.begin(); si != _drop_components.end(); ++si) {
+    const string &name = (*si);
+    if (names_used.find(name) == names_used.end()) {
+      nout << "No such component: " << name << "\n";
     }
   }
   for (si = _expose_components.begin(); si != _expose_components.end(); ++si) {
     const string &name = (*si);
     if (names_used.find(name) == names_used.end()) {
-      nout << "No such joint: " << name << "\n";
+      nout << "No such component: " << name << "\n";
     }
   }
 }
@@ -410,6 +430,7 @@ process_joints() {
     int num_static = 0;
     int num_empty = 0;
     int num_identity = 0;
+    int num_other = 0;
     int num_kept = 0;
     
     for (int i = 0; i < num_joints; i++) {
@@ -429,6 +450,8 @@ process_joints() {
           num_static++;
         } else if ((user_data->_flags & EggOptcharUserData::F_empty) != 0) {
           num_empty++;
+        } else {
+          num_other++;
         }
         removed_any = true;
 
@@ -448,10 +471,23 @@ process_joints() {
       nout << char_data->get_name() << ": keeping " << num_joints
            << " joints.\n";
     } else {
-      nout << char_data->get_name() << ": of " << num_joints 
-           << " joints, removing " << num_identity << " identity, "
-           << num_static << " unanimated, and " << num_empty
-           << " empty joints, leaving " << num_kept << ".\n";
+      nout << setw(5) << num_joints
+           << " original joints in " << char_data->get_name()
+           << "\n";
+      if (num_identity != 0) {
+        nout << setw(5) << num_identity << " identity joints\n";
+      }
+      if (num_static != 0) {
+        nout << setw(5) << num_static << " unanimated joints\n";
+      }
+      if (num_empty != 0) {
+        nout << setw(5) << num_empty << " empty joints\n";
+      }
+      if (num_other != 0) {
+        nout << setw(5) << num_other << " other joints\n";
+      }
+      nout << " ----\n" 
+           << setw(5) << num_kept << " joints remaining\n\n";
     }
   }
 

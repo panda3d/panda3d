@@ -89,6 +89,7 @@ private:
   StringPairs _zero_channels;
 
   vector_string _keep_components;
+  vector_string _drop_components;
   vector_string _expose_components;
 
   double _vref_quantum;

@@ -64,9 +64,16 @@ EggComponentData::
 //               that will be accepted by matched_name().
 ////////////////////////////////////////////////////////////////////
 void EggComponentData::
-add_name(const string &name) {
-  if (!has_name()) {
-    set_name(name);
+add_name(const string &name, NameUniquifier &uniquifier) {
+  if (_names.insert(name).second) {
+    // This is a new name for this component.
+    if (!has_name()) {
+      set_name(uniquifier.add_name(name));
+      if (get_name() != name) {
+        nout << "Warning: renamed " << name << " to " << get_name()
+             << " to avoid naming conflict.\n";
+      }
+    }
   }
 }
 
@@ -79,7 +86,10 @@ add_name(const string &name) {
 ////////////////////////////////////////////////////////////////////
 bool EggComponentData::
 matches_name(const string &name) const {
-  return false;
+  if (name == get_name()) {
+    return true;
+  }
+  return (_names.find(name) != _names.end());
 }
 
 ////////////////////////////////////////////////////////////////////

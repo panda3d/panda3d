@@ -23,10 +23,12 @@
 
 #include "eggObject.h"
 #include "namable.h"
+#include "pset.h"
 
 class EggCharacterCollection;
 class EggCharacterData;
 class EggBackPointer;
+class NameUniquifier;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggComponentData
@@ -42,7 +44,7 @@ public:
                    EggCharacterData *char_data);
   virtual ~EggComponentData();
 
-  void add_name(const string &name);
+  void add_name(const string &name, NameUniquifier &uniquifier);
   bool matches_name(const string &name) const;
 
   int get_num_frames(int model_index) const;
@@ -63,6 +65,8 @@ protected:
   typedef pvector<EggBackPointer *> BackPointers;
   BackPointers _back_pointers;
 
+  typedef pset<string> Names;
+  Names _names;
 
   EggCharacterCollection *_collection;
   EggCharacterData *_char_data;
