@@ -17,8 +17,12 @@
 ////////////////////////////////////////////////////////////////////
 
 
+#ifdef DO_PIPELINING
+// The following implementations are to support compiled-in pipeline
+// sanity checks.
+
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerBase::read
+//     Function: PipelineCyclerBase::read (sanity-check)
 //       Access: Public
 //  Description: Returns a const CycleData pointer, filled with the
 //               data for the current stage of the pipeline as seen by
@@ -34,7 +38,7 @@ read() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerBase::increment_read
+//     Function: PipelineCyclerBase::increment_read (sanity-check)
 //       Access: Public
 //  Description: Increments the count on a pointer previously
 //               retrieved by read(); now the pointer will need to be
@@ -50,7 +54,7 @@ increment_read(const CycleData *pointer) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerBase::release_read
+//     Function: PipelineCyclerBase::release_read (sanity-check)
 //       Access: Public
 //  Description: Releases a pointer previously obtained via a call to
 //               read().
@@ -65,7 +69,7 @@ release_read(const CycleData *pointer) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerBase::write
+//     Function: PipelineCyclerBase::write (sanity-check)
 //       Access: Public
 //  Description: Returns a non-const CycleData pointer, filled with a
 //               unique copy of the data for the current stage of the
@@ -82,7 +86,7 @@ write() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerBase::increment_write
+//     Function: PipelineCyclerBase::increment_write (sanity-check)
 //       Access: Public
 //  Description: Increments the count on a pointer previously
 //               retrieved by write(); now the pointer will need to be
@@ -96,7 +100,7 @@ increment_write(CycleData *pointer) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerBase::release_write
+//     Function: PipelineCyclerBase::release_write (sanity-check)
 //       Access: Public
 //  Description: Releases a pointer previously obtained via a call to
 //               write().
@@ -109,7 +113,7 @@ release_write(CycleData *pointer) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerBase::get_num_stages
+//     Function: PipelineCyclerBase::get_num_stages (sanity-check)
 //       Access: Public
 //  Description: Returns the number of stages in the pipeline.
 ////////////////////////////////////////////////////////////////////
@@ -119,7 +123,7 @@ get_num_stages() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerBase::is_stage_unique
+//     Function: PipelineCyclerBase::is_stage_unique (sanity-check)
 //       Access: Public
 //  Description: Returns true if the nth stage is a different pointer
 //               than the previous stage, or false if its pointer is
@@ -132,7 +136,7 @@ is_stage_unique(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerBase::write_stage
+//     Function: PipelineCyclerBase::write_stage (sanity-check)
 //       Access: Public
 //  Description: Returns a pointer suitable for writing to the nth
 //               stage of the pipeline.  This is for special
@@ -149,7 +153,7 @@ write_stage(int n) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerBase::release_write_stage
+//     Function: PipelineCyclerBase::release_write_stage (sanity-check)
 //       Access: Public
 //  Description: Releases a pointer previously obtained via a call to
 //               write_stage().
@@ -160,3 +164,148 @@ release_write_stage(int n, CycleData *pointer) {
   nassertv(_stage_count > 0);
   _stage_count--;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::Destructor (sanity-check)
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PipelineCyclerBase::
+~PipelineCyclerBase() {
+  nassertv(_read_count == 0 && _write_count == 0 && _stage_count == 0);
+}
+
+#else  // !DO_PIPELINING
+// The following implementations are provided for when pipelining is
+// not compiled in.  They are trivial functions that do as little as
+// possible.
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::Destructor (trivial)
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PipelineCyclerBase::
+~PipelineCyclerBase() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::read (trivial)
+//       Access: Public
+//  Description: Returns a const CycleData pointer, filled with the
+//               data for the current stage of the pipeline as seen by
+//               this thread.  This pointer should eventually be
+//               released by calling release_read().
+////////////////////////////////////////////////////////////////////
+INLINE const CycleData *PipelineCyclerBase::
+read() const {
+  return (const CycleData *)this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::increment_read (trivial)
+//       Access: Public
+//  Description: Increments the count on a pointer previously
+//               retrieved by read(); now the pointer will need to be
+//               released twice.
+////////////////////////////////////////////////////////////////////
+INLINE void PipelineCyclerBase::
+increment_read(const CycleData *) const {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::release_read (trivial)
+//       Access: Public
+//  Description: Releases a pointer previously obtained via a call to
+//               read().
+////////////////////////////////////////////////////////////////////
+INLINE void PipelineCyclerBase::
+release_read(const CycleData *) const {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::write (trivial)
+//       Access: Public
+//  Description: Returns a non-const CycleData pointer, filled with a
+//               unique copy of the data for the current stage of the
+//               pipeline as seen by this thread.  This pointer may
+//               now be used to write to the data, and that copy of
+//               the data will be propagate to all later stages of the
+//               pipeline.  This pointer should eventually be released
+//               by calling release_write().
+////////////////////////////////////////////////////////////////////
+INLINE CycleData *PipelineCyclerBase::
+write() {
+  return (CycleData *)this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::increment_write (trivial)
+//       Access: Public
+//  Description: Increments the count on a pointer previously
+//               retrieved by write(); now the pointer will need to be
+//               released twice.
+////////////////////////////////////////////////////////////////////
+INLINE void PipelineCyclerBase::
+increment_write(CycleData *) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::release_write (trivial)
+//       Access: Public
+//  Description: Releases a pointer previously obtained via a call to
+//               write().
+////////////////////////////////////////////////////////////////////
+INLINE void PipelineCyclerBase::
+release_write(CycleData *) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::get_num_stages (trivial)
+//       Access: Public
+//  Description: Returns the number of stages in the pipeline.
+////////////////////////////////////////////////////////////////////
+INLINE int PipelineCyclerBase::
+get_num_stages() {
+  return 1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::is_stage_unique (trivial)
+//       Access: Public
+//  Description: Returns true if the nth stage is a different pointer
+//               than the previous stage, or false if its pointer is
+//               shared with the previous one.
+////////////////////////////////////////////////////////////////////
+INLINE bool PipelineCyclerBase::
+is_stage_unique(int n) const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::write_stage (trivial)
+//       Access: Public
+//  Description: Returns a pointer suitable for writing to the nth
+//               stage of the pipeline.  This is for special
+//               applications that need to update the entire pipeline
+//               at once (for instance, to remove an invalid pointer).
+//               This pointer should later be released with
+//               release_write_stage().
+////////////////////////////////////////////////////////////////////
+INLINE CycleData *PipelineCyclerBase::
+write_stage(int) {
+  return (CycleData *)this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCyclerBase::release_write_stage (trivial)
+//       Access: Public
+//  Description: Releases a pointer previously obtained via a call to
+//               write_stage().
+////////////////////////////////////////////////////////////////////
+INLINE void PipelineCyclerBase::
+release_write_stage(int, CycleData *) {
+}
+
+
+#endif   // DO_PIPELINING

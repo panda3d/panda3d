@@ -17,8 +17,12 @@
 ////////////////////////////////////////////////////////////////////
 
 
+#ifdef DO_PIPELINING
+// The following implementations are to support compiled-in pipeline
+// sanity checks.
+
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCycler::Constructor
+//     Function: PipelineCycler::Constructor (sanity-check)
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -30,7 +34,7 @@ PipelineCycler(Pipeline *pipeline) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCycler::read
+//     Function: PipelineCycler::read (sanity-check)
 //       Access: Public
 //  Description: See PipelineCyclerBase::read().
 ////////////////////////////////////////////////////////////////////
@@ -41,7 +45,7 @@ read() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCycler::write
+//     Function: PipelineCycler::write (sanity-check)
 //       Access: Public
 //  Description: See PipelineCyclerBase::write().
 ////////////////////////////////////////////////////////////////////
@@ -52,7 +56,7 @@ write() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCycler::write_stage
+//     Function: PipelineCycler::write_stage (sanity-check)
 //       Access: Public
 //  Description: See PipelineCyclerBase::write_stage().
 ////////////////////////////////////////////////////////////////////
@@ -61,3 +65,56 @@ INLINE CycleDataType *PipelineCycler<CycleDataType>::
 write_stage(int n) {
   return (CycleDataType *)PipelineCyclerBase::write_stage(n);
 }
+
+#else  // !DO_PIPELINING
+// The following implementations are provided for when pipelining is
+// not compiled in.  They are trivial functions that do as little as
+// possible.
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::Constructor (trivial)
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE PipelineCycler<CycleDataType>::
+PipelineCycler(Pipeline *pipeline) :
+  PipelineCyclerBase(&_data, pipeline)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::read (trivial)
+//       Access: Public
+//  Description: See PipelineCyclerBase::read().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE const CycleDataType *PipelineCycler<CycleDataType>::
+read() const {
+  return &_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::write (trivial)
+//       Access: Public
+//  Description: See PipelineCyclerBase::write().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataType *PipelineCycler<CycleDataType>::
+write() {
+  return &_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipelineCycler::write_stage (trivial)
+//       Access: Public
+//  Description: See PipelineCyclerBase::write_stage().
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataType *PipelineCycler<CycleDataType>::
+write_stage(int) {
+  return &_data;
+}
+
+
+#endif   // DO_PIPELINING

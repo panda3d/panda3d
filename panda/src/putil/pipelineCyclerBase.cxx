@@ -19,8 +19,12 @@
 #include "pipelineCyclerBase.h"
 
 
+#ifdef DO_PIPELINING
+// The following implementations are to support compiled-in pipeline
+// sanity checks.
+
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerBase::Constructor
+//     Function: PipelineCyclerBase::Constructor (sanity-check)
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -37,13 +41,29 @@ PipelineCyclerBase(CycleData *initial_data, Pipeline *pipeline) :
   }
 }
 
+
+#else  // !DO_PIPELINING
+// The following implementations are provided for when pipelining is
+// not compiled in.  They are trivial functions that do as little as
+// possible.
+
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerBase::Destructor
+//     Function: PipelineCyclerBase::Constructor (trivial)
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 PipelineCyclerBase::
-~PipelineCyclerBase() {
-  nassertv(_read_count == 0 && _write_count == 0 && _stage_count == 0);
+PipelineCyclerBase(CycleData *initial_data, Pipeline *) {
+  // In the trivial implementation, a derived class (the
+  // PipelineCycler template class) stores the CycleData object
+  // directly within itself, and since we have no data members or
+  // virtual functions, we get away with assuming the pointer is the
+  // same as the 'this' pointer.
+
+  // If this turns out not to be true on a particular platform, we
+  // will have to store the pointer in this class, for a little bit of
+  // extra overhead.
+  nassertv(initial_data == (CycleData *)this);
 }
 
+#endif

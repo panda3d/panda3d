@@ -33,7 +33,7 @@
 class EXPCL_PANDA PipelineCyclerBase {
 public:
   PipelineCyclerBase(CycleData *initial_data, Pipeline *pipeline = NULL);
-  ~PipelineCyclerBase();
+  INLINE ~PipelineCyclerBase();
 
   INLINE const CycleData *read() const;
   INLINE void increment_read(const CycleData *pointer) const;
@@ -48,10 +48,16 @@ public:
   INLINE CycleData *write_stage(int n);
   INLINE void release_write_stage(int n, CycleData *pointer);
 
+#ifdef DO_PIPELINING
+  // This private data is only stored here if we have pipelining
+  // compiled in.  Actually, this particular data is only used for
+  // sanity checking the pipelining code; it doesn't do anything
+  // useful.
 private:
   PT(CycleData) _data;
   Pipeline *_pipeline;
   short _read_count, _write_count, _stage_count;
+#endif  // DO_PIPELINING
 };
 
 #include "pipelineCyclerBase.I"

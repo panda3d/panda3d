@@ -57,6 +57,13 @@ public:
   INLINE const CycleDataType *read() const;
   INLINE CycleDataType *write();
   INLINE CycleDataType *write_stage(int n);
+
+#ifndef DO_PIPELINING
+private:
+  // If we are *not* compiling in support for pipelining, we just
+  // store the CycleData object right here.  No pointers needed.
+  CycleDataType _data;
+#endif  // !DO_PIPELINING
 };
 
 #include "pipelineCycler.I"
