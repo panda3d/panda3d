@@ -302,12 +302,12 @@ class DirectManipulationControl(PandaObject):
         if self.rotateAxis == 'x':
             direct.widget.setP(direct.widget, deltaAngle)
         elif self.rotateAxis == 'y':
-            direct.widget.setR(direct.widget, -deltaAngle)
-        elif self.rotateAxis == 'z':
             if base.config.GetBool('temp-hpr-fix',0):
-                direct.widget.setH(direct.widget, -deltaAngle)
+                direct.widget.setR(direct.widget, deltaAngle)
             else:
-                direct.widget.setH(direct.widget, deltaAngle)
+                direct.widget.setR(direct.widget, -deltaAngle)
+        elif self.rotateAxis == 'z':
+            direct.widget.setH(direct.widget, deltaAngle)
         # Record crank angle for next time around
         self.lastCrankAngle = newAngle
 

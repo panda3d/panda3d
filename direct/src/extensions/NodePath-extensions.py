@@ -35,9 +35,10 @@
     # For iterating over children
     def getChildrenAsList(self):
         """Converts a node path's child NodePathCollection into a list"""
+        children = self.getChildren()
         childrenList = []
         for childNum in range(self.getNumChildren()):
-            childrenList.append(self.getChild(childNum))
+            childrenList.append(children[childNum])
         return childrenList
 
     def printChildren(self):
@@ -779,7 +780,7 @@
         from ShowBaseGlobal import *
         import TkGlobal
         import Placer
-        Placer.place(self)
+        return Placer.place(self)
 
     def explore(self):
         base.wantDIRECT = 1
@@ -787,7 +788,7 @@
         from ShowBaseGlobal import *
         import TkGlobal
         import SceneGraphExplorer
-        SceneGraphExplorer.explore(self)
+        return SceneGraphExplorer.explore(self)
 
     def rgbPanel(self, cb = None):
         base.wantDIRECT = 1
@@ -795,7 +796,7 @@
         from ShowBaseGlobal import *
         import TkGlobal
         import EntryScale
-        EntryScale.rgbPanel(self, cb)
+        return EntryScale.rgbPanel(self, cb)
 
     def select(self):
         base.wantDIRECT = 1

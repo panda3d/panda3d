@@ -10,6 +10,7 @@ from DirectSessionPanel import *
 from tkSimpleDialog import askstring
 import Placer
 import EntryScale
+import SceneGraphExplorer
 import OnscreenText
 import types
 import __builtin__
@@ -104,6 +105,7 @@ class DirectSession(PandaObject):
             ['SGE_Fit', self.fitOnNodePath],
             ['SGE_Place', Placer.place],
             ['SGE_Set Color', EntryScale.rgbPanel],
+            ['SGE_Explore', SceneGraphExplorer.explore],
             ['SGE_Delete', self.removeNodePath],
             ['SGE_Set Name', self.getAndSetName],
             ]
@@ -320,12 +322,22 @@ class DirectSession(PandaObject):
         messenger.send('DIRECT_activeParent', [self.activeParent])
         
     def reparent(self, nodePath = None):
-        if nodePath and self.activeParent:
+        if (nodePath and self.activeParent and
+            self.isNotCycle(nodePath, self.activeParent)):
             oldParent = nodePath.getParent()
             nodePath.reparentTo(self.activeParent)
             # Alert everyone else
             messenger.send('DIRECT_reparent',
                            [nodePath, oldParent, self.activeParent])
+
+    def isNotCycle(self, nodePath, parent):
+        if nodePath.id() == parent.id():
+            print 'DIRECT.reparent: Invalid parent'
+            return 0
+        elif parent.hasParent():
+            return self.isNotCycle(nodePath, parent.getParent())
+        else:
+            return 1
         
     def flash(self, nodePath = 'None Given'):
         """ Highlight an object by setting it red for a few seconds """

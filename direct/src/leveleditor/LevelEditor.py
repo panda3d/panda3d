@@ -1,25 +1,3 @@
-
-import getopt
-import sys
-
-# If you run this from the command line you can pass in the hood codes
-# you want to load. For example:
-#    ppython LevelEditor.py DD TT BR
-#
-if sys.argv[1:]:
-    try:
-        opts, pargs = getopt.getopt(sys.argv[1:], '')
-        hoods = pargs
-    except Exception, e:
-        print e
-# If you do not run from the command line, we just load all of them
-# or you can hack this up for your own purposes.
-else:
-    # hoods = ['TT', 'DD', 'BR', 'DG', 'DL', 'MM']
-    hoods = ['TT' ]
-
-print "Loading LevelEditor for hoods: ", hoods
-
 from ShowBaseGlobal import *
 from PandaObject import *
 from PieMenu import *
@@ -31,13 +9,15 @@ from tkMessageBox import showinfo
 from tkFileDialog import *
 from whrandom import *
 import Pmw
+import Floater
 import EntryScale
 import VectorWidgets
 import string
 import os
-import __builtin__
+import getopt
+import sys
 import whrandom
-import Floater
+import __builtin__
 
 # Colors used by all color menus
 DEFAULT_COLORS = [
@@ -57,24 +37,6 @@ BUILDING_TYPES = ['10_10', '20', '10_20', '20_10', '10_10_10',
                   '4_21', '3_22', '4_13_8', '3_13_9', '10',
                   '12_8', '13_9_8'
                   ]
-
-# The list of neighborhoods to edit
-hoodIds = {'TT' : 'toontown_central',
-           'DD' : 'donalds_dock',
-           'MM' : 'minnies_melody_land',
-           'BR' : 'the_burrrgh',
-           'DG' : 'daisys_garden',
-           'DL' : 'donalds_dreamland',
-           }
-NEIGHBORHOODS = []
-NEIGHBORHOOD_CODES = {}
-for hoodId in hoods:
-    if hoodIds.has_key(hoodId):
-        hoodName = hoodIds[hoodId]
-        NEIGHBORHOOD_CODES[hoodName] = hoodId
-        NEIGHBORHOODS.append(hoodName)
-    else:
-        print 'Error: no hood defined for: ', hoodId
 
 OBJECT_SNAP_POINTS = {
     'street_5x20': [(Vec3(5.0,0,0), Vec3(0)),
@@ -190,27 +152,74 @@ OBJECT_SNAP_POINTS = {
     }
 SNAP_ANGLE = 15.0
 
+# NEIGHBORHOOD DATA
+# If you run this from the command line you can pass in the hood codes
+# you want to load. For example:
+#    ppython LevelEditor.py DD TT BR
+#
+if sys.argv[1:]:
+    try:
+        opts, pargs = getopt.getopt(sys.argv[1:], '')
+        hoods = pargs
+    except Exception, e:
+        print e
+# If you do not run from the command line, we just load all of them
+# or you can hack this up for your own purposes.
+else:
+    hoodString = base.config.GetString('level-editor-hoods',
+                                       'TT DD BR DG DL MM')
+    hoods = string.split(hoodString)
+
+# The list of neighborhoods to edit
+hoodIds = {'TT' : 'toontown_central',
+           'DD' : 'donalds_dock',
+           'MM' : 'minnies_melody_land',
+           'BR' : 'the_burrrgh',
+           'DG' : 'daisys_garden',
+           'DL' : 'donalds_dreamland',
+           }
+
+# Init neighborhood arrays
+NEIGHBORHOODS = []
+NEIGHBORHOOD_CODES = {}
+for hoodId in hoods:
+    if hoodIds.has_key(hoodId):
+        hoodName = hoodIds[hoodId]
+        NEIGHBORHOOD_CODES[hoodName] = hoodId
+        NEIGHBORHOODS.append(hoodName)
+    else:
+        print 'Error: no hood defined for: ', hoodId
+
+# Load DNA
 try:
     if dnaLoaded:
         pass
 except NameError:
+    print "Loading LevelEditor for hoods: ", hoods
     # DNAStorage instance for storing level DNA info
     __builtin__.DNASTORE = DNASTORE = DNAStorage()
     # Load the generic storage file
-    loadDNAFile(DNASTORE, 'phase_4/dna/storage.dna', CSDefault, 1)
+    loadDNAFile(DNASTORE,
+                'phase_4/dna/storage.dna', CSDefault, 1)
     # Load all the neighborhood specific storage files
     if 'TT' in hoods:
-        loadDNAFile(DNASTORE, 'phase_4/dna/storage_TT.dna', CSDefault, 1)
+        loadDNAFile(DNASTORE,
+                    'phase_4/dna/storage_TT.dna', CSDefault, 1)
     if 'DD' in hoods:
-        loadDNAFile(DNASTORE, 'phase_6/dna/storage_DD.dna', CSDefault, 1)
+        loadDNAFile(DNASTORE,
+                    'phase_6/dna/storage_DD.dna', CSDefault, 1)
     if 'MM' in hoods:
-        loadDNAFile(DNASTORE, 'phase_6/dna/storage_MM.dna', CSDefault, 1)
+        loadDNAFile(DNASTORE,
+                    'phase_6/dna/storage_MM.dna', CSDefault, 1)
     if 'BR' in hoods:
-        loadDNAFile(DNASTORE, 'phase_8/dna/storage_BR.dna', CSDefault, 1)
+        loadDNAFile(DNASTORE,
+                    'phase_8/dna/storage_BR.dna', CSDefault, 1)
     if 'DG' in hoods:
-        loadDNAFile(DNASTORE, 'phase_8/dna/storage_DG.dna', CSDefault, 1)
+        loadDNAFile(DNASTORE,
+                    'phase_8/dna/storage_DG.dna', CSDefault, 1)
     if 'DL' in hoods:
-        loadDNAFile(DNASTORE, 'phase_8/dna/storage_DL.dna', CSDefault, 1)
+        loadDNAFile(DNASTORE,
+                    'phase_8/dna/storage_DL.dna', CSDefault, 1)
     __builtin__.dnaLoaded = 1
 
 # Precompute class types for type comparisons
@@ -376,14 +385,14 @@ class LevelEditor(NodePath, PandaObject):
     # selectedDNARoot: DNA Node of currently selected object
     # selectedNPRoot: Corresponding Node Path
     # DNATarget: Subcomponent being modified by Pie Menu
-    def __init__(self):
+    def __init__(self, hoods = hoods):
         # Make the level editor a node path so that you can show/hide
         # The level editor separately from loading/saving the top level node
         # Initialize superclass
         NodePath.__init__(self)
         # Become the new node path
         self.assign(hidden.attachNewNode('LevelEditor'))
-        
+
         # Enable replaceSelected by default:
         self.replaceSelectedEnabled=1
         
@@ -517,6 +526,9 @@ class LevelEditor(NodePath, PandaObject):
         self.battleCellMarker.setScale(1)
         self.currentBattleCellType = "20w 20l"
 
+        # Update scene graph explorer
+        self.panel.sceneGraphExplorer.update()
+
     # ENABLE/DISABLE
     def enable(self):
         """ Enable level editing and show level """
@@ -551,7 +563,8 @@ class LevelEditor(NodePath, PandaObject):
         # Remove insertion marker task
         taskMgr.removeTasksNamed('insertionMarkerTask')
 
-    def reset(self, fDeleteToplevel = 1, fCreateToplevel = 1):
+    def reset(self, fDeleteToplevel = 1, fCreateToplevel = 1,
+              fUpdateExplorer = 1):
         """
         Reset level and re-initialize main class variables
         Pass in the new top level group
@@ -602,6 +615,9 @@ class LevelEditor(NodePath, PandaObject):
         self.snapList = []
         # Last menu used
         self.activeMenu = None
+        # Update scene graph explorer
+        if fUpdateExplorer:
+            self.panel.sceneGraphExplorer.update()
 
     def deleteToplevel(self):
         # Destory old toplevel node path and DNA
@@ -609,7 +625,7 @@ class LevelEditor(NodePath, PandaObject):
         self.DNAData.remove(self.DNAToplevel)
         # Then the toplevel Node Path
         self.NPToplevel.reparentTo(hidden)
-        self.NPToplevel.remove()
+        self.NPToplevel.removeNode()
 
     def createToplevel(self, dnaNode, nodePath = None):
         # When you create a new level, data is added to this node
@@ -627,8 +643,8 @@ class LevelEditor(NodePath, PandaObject):
         self.DNAParent = self.DNAToplevel
         self.NPParent = self.NPToplevel
         self.VGParent = None
-        # Update scene graph explorer
-        # self.panel.sceneGraphExplorer.update()
+        # Add toplevel node path for suit points
+        self.suitPointToplevel = self.NPToplevel.attachNewNode('suitPoints')
 
     def destroy(self):
         """ Disable level editor and destroy node path """
@@ -740,8 +756,8 @@ class LevelEditor(NodePath, PandaObject):
         dnaNode = self.findDNANode(nodePath)
         # Does the node path correspond to a DNA Object
         if dnaNode:
-            for i in self.removeHookList:
-                i(dnaNode, nodePath)
+            for hook in self.removeHookList:
+                hook(dnaNode, nodePath)
             # Get DNANode's parent
             parentDNANode = dnaNode.getParent()
             if parentDNANode:
@@ -749,6 +765,43 @@ class LevelEditor(NodePath, PandaObject):
                 parentDNANode.remove(dnaNode)
             # Delete DNA and associated Node Relations from DNA Store
             DNASTORE.removeDNAGroup(dnaNode)
+        else:
+            pointOrCell, type = self.findPointOrCell(nodePath)
+            if pointOrCell and type:
+                if (type == 'suitPointMarker'):
+                    print 'Suit Point:', pointOrCell
+                    if DNASTORE.removeSuitPoint(pointOrCell):
+                        print "Removed from DNASTORE"
+                        del(self.pointDict[pointOrCell])
+                        # Update edge dict
+                        for edge in self.point2edgeDict[pointOrCell]:
+                            # Is it still in edge dict?
+                            oldEdgeLine = self.edgeDict.get(edge, None)
+                            if oldEdgeLine:
+                                del self.edgeDict[edge]
+                                oldEdgeLine.reset()
+                                del oldEdgeLine
+                    else:
+                        print "Not found in DNASTORE"
+                elif (type == 'battleCellMarker'):
+                    # Get parent vis group
+                    visGroupNP, visGroupDNA = self.findParentVisGroup(nodePath)
+                    print 'Battle Cell:', pointOrCell
+                    # Remove cell from vis group
+                    if visGroupNP and visGroupDNA:
+                        if visGroupDNA.removeBattleCell(pointOrCell):
+                            print "Removed from Vis Group"
+                        else:
+                            print "Not found in Vis Group"
+                    else:
+                        print "Parent Vis Group not found"
+                    # Remove cell from DNASTORE
+                    if DNASTORE.removeBattleCell(pointOrCell):
+                        print "Removed from DNASTORE"
+                    else:
+                        print "Not found in DNASTORE"
+                    # Remove cell from cellDict
+                    del(self.cellDict[pointOrCell])
 
     def reparent(self, nodePath, oldParent, newParent):
         """ Move node path (and its DNA) to active parent """
@@ -972,7 +1025,7 @@ class LevelEditor(NodePath, PandaObject):
             # mouse position
             hitPt = self.getGridIntersectionPoint()
             # Attach a node, so we can set pos with respect to:
-            tempNode=hidden.attachNewNode('tempNode')
+            tempNode = hidden.attachNewNode('tempNode')
             # Place it:
             tempNode.setPos(direct.grid, hitPt)
             # Copy the pos to where we really want it:
@@ -1685,6 +1738,17 @@ class LevelEditor(NodePath, PandaObject):
         for child in children:
             childVisGroups = (childVisGroups + self.getDNAVisGroups(child))
         return childVisGroups
+
+    def findParentVisGroup(self, nodePath):
+        """ Find the containing vis group """
+        dnaNode = self.findDNANode(nodePath)
+        if dnaNode:
+            if DNAClassEqual(dnaNode, DNA_VIS_GROUP):
+                return nodePath, dnaNode
+        elif nodePath.hasParent():
+            return self.findParentVisGroup(nodePath.getParent())
+        else:
+            return None
     
     def showGrid(self,flag):
         """ toggle direct grid """
@@ -1702,8 +1766,10 @@ class LevelEditor(NodePath, PandaObject):
         self.levelMap = hidden.attachNewNode('level-map')
         self.activeMap = None
         self.mapDictionary = {}
+        """
         for neighborhood in NEIGHBORHOODS:
             self.createMap(neighborhood)
+        """
 
     def createMap(self, neighborhood):
         map = loader.loadModel('models/level_editor/' + neighborhood +
@@ -1949,7 +2015,8 @@ class LevelEditor(NodePath, PandaObject):
 
     def loadDNAFromFile(self, filename):
         # Reset level, destroying existing scene/DNA hierarcy
-        self.reset(fDeleteToplevel = 1, fCreateToplevel = 0)
+        self.reset(fDeleteToplevel = 1, fCreateToplevel = 0,
+                   fUpdateExplorer = 0)
         # Now load in new file
         node = loadDNAFile(DNASTORE, filename, CSDefault, 1)
 
@@ -1957,7 +2024,8 @@ class LevelEditor(NodePath, PandaObject):
             # If the node already has a parent arc when it's loaded, we must
             # be using the level editor and we want to preserve that arc.
             newNPToplevel = NodePath()
-            newNPToplevel.extendBy(node.getParent(RenderRelation.getClassType(), 0))
+            newNPToplevel.extendBy(node.getParent(
+                RenderRelation.getClassType(), 0))
             newNPToplevel.reparentTo(hidden)
         else:
             # Otherwise, we should create a new arc for the node.
@@ -1983,7 +2051,8 @@ class LevelEditor(NodePath, PandaObject):
         self.hideBattleCells()
         # Set the title bar to have the filename to make it easier
         # to remember what file you are working on
-        self.panel["title"] = filename
+        self.panel["title"] = 'Level Editor: ' + os.path.basename(filename)
+        self.panel.sceneGraphExplorer.update()
 
     def outputDNADefaultFile(self):
         f = Filename(self.styleManager.stylePathPrefix +
@@ -2233,11 +2302,26 @@ class LevelEditor(NodePath, PandaObject):
         mat = self.NPToplevel.getMat(parent)
         relStartPos = Point3(mat.xformPoint(edge.getStartPoint().getPos()))
         relEndPos = Point3(mat.xformPoint(edge.getEndPoint().getPos()))
+        # Compute offset: a vector rotated 90 degrees clockwise
+        offset = Vec3(relEndPos - relStartPos)
+        offset.normalize()
+        offset *= 0.1
+        a = offset[0]
+        offset.setX(offset[1])
+        offset.setY(-1 * a)
+        # Just to get it above the street
+        offset.setZ(0.05)
+        # Add offset to start and end to help differentiate lines
+        relStartPos += offset
+        relEndPos += offset
+        # Draw arrow
         edgeLine.drawArrow(relStartPos,
                            relEndPos,
                            15, # arrow angle
                            1) # arrow length
         edgeLine.create()
+        # Clean up:
+        tempNode.removeNode()
         return edgeLine
 
     def drawSuitPoint(self, pos, type, parent):
@@ -2268,7 +2352,8 @@ class LevelEditor(NodePath, PandaObject):
         suitPoint = DNASTORE.storeSuitPoint(self.currentSuitPointType, absPos)
         if not self.pointDict.has_key(suitPoint):
             marker = self.drawSuitPoint(
-                absPos, self.currentSuitPointType, self.NPToplevel)
+                absPos, self.currentSuitPointType,
+                self.suitPointToplevel)
             self.pointDict[suitPoint] = marker
         self.currentSuitPointIndex = suitPoint.getIndex()
 
@@ -2304,6 +2389,57 @@ class LevelEditor(NodePath, PandaObject):
         else:
             # First point, store it
             self.startSuitPoint = suitPoint
+
+    def highlightConnected(self, nodePath = None, fReversePath = 0):
+        if nodePath == None:
+            nodePath = direct.selected.last
+        if nodePath:
+            suitPoint = self.findPointOrCell(nodePath)[0]
+            if suitPoint:
+                self.clearPathHighlights()
+                self.highlightConnectedRec(suitPoint, fReversePath)
+
+    def highlightConnectedRec(self, suitPoint, fReversePath):
+        nodePath = self.pointDict.get(suitPoint, None)
+        if nodePath:
+            # highlight marker
+            nodePath.setColor(1,0,0,1)
+            # Add point to visited points
+            self.visitedPoints.append(suitPoint)
+            # highlight connected edges
+            for edge in self.point2edgeDict[suitPoint]:
+                if ((fReversePath or (suitPoint == edge.getStartPoint())) and
+                    (edge not in self.visitedEdges)):
+                    edgeLine = self.edgeDict[edge]
+                    # Call node path not LineNodePath setColor
+                    NodePath.setColor(edgeLine,1,0,0,1)
+                    # Add edge to visited edges
+                    self.visitedEdges.append(edge)
+                    # Color components connected to the edge
+                    if fReversePath:
+                        startPoint = edge.getStartPoint()
+                        if startPoint not in self.visitedPoints:
+                            self.highlightConnectedRec(startPoint,
+                                                       fReversePath)
+                    endPoint = edge.getEndPoint()
+                    if endPoint not in self.visitedPoints:
+                        self.highlightConnectedRec(endPoint,
+                                                   fReversePath)
+
+    def clearPathHighlights(self):
+        for point in self.pointDict.keys():
+            type = point.getPointType()
+            marker = self.pointDict[point]
+            if (type == DNASuitPoint.STREETPOINT):
+                marker.setColor(0,0,0.6)
+            elif (type == DNASuitPoint.FRONTDOORPOINT):
+                marker.setColor(0,0,1)
+            elif (type == DNASuitPoint.SIDEDOORPOINT):
+                marker.setColor(0,0.2,0.4)
+        for edge in self.edgeDict.values():
+            edge.clearColor()
+        self.visitedPoints = []
+        self.visitedEdges = []
 
     def drawBattleCell(self, cell, parent):
         marker = self.battleCellMarker.copyTo(parent)
@@ -2349,7 +2485,8 @@ class LevelEditor(NodePath, PandaObject):
         for i in range(numPoints):
             point = DNASTORE.getSuitPointAtIndex(i)
             marker = self.drawSuitPoint(
-                point.getPos(), point.getPointType(), self.NPToplevel)
+                point.getPos(), point.getPointType(),
+                self.suitPointToplevel)
             self.pointDict[point] = marker
 
         # Edges
@@ -2443,6 +2580,12 @@ class LevelEditor(NodePath, PandaObject):
                 return cell
         return None
 
+    def toggleZoneColors(self):
+        if self.panel.zoneColor.get():
+            self.colorZones()
+        else:
+            self.clearZoneColors()
+
     def colorZones(self):
         # Give each zone a random color to see them better
         visGroups = self.getDNAVisGroups(self.NPToplevel)
@@ -2451,6 +2594,13 @@ class LevelEditor(NodePath, PandaObject):
             np.setColor(0.5 + random()/2.0,
                         0.5 + random()/2.0,
                         0.5 + random()/2.0)
+
+    def clearZoneColors(self):
+        # Clear random colors
+        visGroups = self.getDNAVisGroups(self.NPToplevel)
+        for visGroup in visGroups:
+            np = visGroup[0]
+            np.clearColor()
     
     def getBlockFromName(self, name):
         block=name[2:name.find(':')]
@@ -3225,7 +3375,7 @@ class LevelStyleManager:
                                                          sf = 0.25))
             elif (dnaType == 'sign'):
                 attribute.setMenu(self.createDNAPieMenu(dnaType, dnaList,
-                                                         sf = 0.1))
+                                                         sf = 0.05))
             elif (dnaType == 'door'):
                 attribute.setMenu(self.createDNAPieMenu(dnaType, dnaList,
                                                          sf = 0.035))
@@ -3750,7 +3900,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.fUpdateSelected = 1
         # Handle to the toplevels hull
         hull = self.component('hull')
-        hull.geometry('400x680')
+        hull.geometry('400x550')
         
         balloon = self.balloon = Pmw.Balloon(hull)
         # Start with balloon help disabled
@@ -3836,7 +3986,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             selectioncommand = self.levelEditor.setEditMode, history = 0,
             scrolledlist_items = NEIGHBORHOODS)
         self.editMenu.selectitem(NEIGHBORHOODS[0])
-        self.editMenu.pack(side = 'left', expand = 0)
+        self.editMenu.pack(side = LEFT, expand = 0)
                                      
 
         # Create the notebook pages
@@ -3845,72 +3995,22 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         streetsPage = self.notebook.add('Streets')
         toonBuildingsPage = self.notebook.add('Toon Bldgs')
         landmarkBuildingsPage = self.notebook.add('Landmark Bldgs')
-        suitPathPage = self.notebook.add('Paths')
-        battleCellPage = self.notebook.add('Cells')
         # suitBuildingsPage = self.notebook.add('Suit Buildings')
         propsPage = self.notebook.add('Props')
         signPage = self.notebook.add('Signs')
+        suitPathPage = self.notebook.add('Paths')
+        battleCellPage = self.notebook.add('Cells')
         sceneGraphPage = self.notebook.add('SceneGraph')
         self.notebook['raisecommand'] = self.updateInfo
 
-
-        self.fPaths = IntVar()
-        self.fPaths.set(0)
-        self.pathButton = Checkbutton(suitPathPage,
-                                      text = 'Show Paths',
-                                      width = 6,
-                                      variable = self.fPaths,
-                                      command = self.toggleSuitPaths)
-        self.pathButton.pack(side = 'top', expand = 1, fill = 'x')
-        self.suitPointSelector = Pmw.ComboBox(
-            suitPathPage,
-            dropdown = 0,
-            listheight = 200,
-            labelpos = W,
-            label_text = 'Point type:',
-            label_width = 12,
-            label_anchor = W,
-            entry_width = 30,
-            selectioncommand = self.setSuitPointType,
-            scrolledlist_items = ['street', 'front door', 'side door']
-            )
-        self.suitPointSelector.selectitem('street')
-        self.suitPointSelector.pack(expand = 1, fill = 'both')
-
-        self.fCells = IntVar()
-        self.fCells.set(0)
-        self.cellButton = Checkbutton(battleCellPage,
-                                      text = 'Show Cells',
-                                      width = 6,
-                                      variable = self.fCells,
-                                      command = self.toggleBattleCells)
-        self.cellButton.pack(side = 'top', expand = 1, fill = 'x')
-
-        self.colorZoneButton = Button(battleCellPage,
-                                      text = 'Color Zones',
-                                      command = self.levelEditor.colorZones)
-        self.colorZoneButton.pack(side = 'top', expand = 1, fill = 'x')
-
-        self.battleCellSelector = Pmw.ComboBox(
-            battleCellPage,
-            dropdown = 0,
-            listheight = 200,
-            labelpos = W,
-            label_text = 'Cell type:',
-            label_width = 12,
-            label_anchor = W,
-            entry_width = 30,
-            selectioncommand = self.setBattleCellType,
-            scrolledlist_items = ['20w 20l', '20w 30l', '30w 20l', '30w 30l']
-            )
-        self.battleCellSelector.selectitem('20w 20l')
-        self.battleCellSelector.pack(expand = 1, fill = 'both')
-
+        # STREETS
+        Label(streetsPage, text = 'Streets',
+              font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
         self.addStreetButton = Button(
             streetsPage,
             text = 'ADD STREET',
             command = self.addStreet)
-        self.addStreetButton.pack(fill = 'x')
+        self.addStreetButton.pack(fill = X, padx = 20, pady = 10)
         self.streetSelector = Pmw.ComboBox(
             streetsPage,
             dropdown = 0,
@@ -3927,13 +4027,16 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             )
         self.streetModuleType = self.styleManager.getCatalogCode('street',0)
         self.streetSelector.selectitem(self.streetModuleType[7:])
-        self.streetSelector.pack(expand = 1, fill = 'both')
+        self.streetSelector.pack(expand = 1, fill = BOTH)
 
+        # TOON BUILDINGS
+        Label(toonBuildingsPage, text = 'Toon Buildings',
+              font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
         self.addToonBuildingButton = Button(
             toonBuildingsPage,
             text = 'ADD TOON BUILDING',
             command = self.addFlatBuilding)
-        self.addToonBuildingButton.pack(fill = 'x')
+        self.addToonBuildingButton.pack(fill = X, padx = 20, pady = 10)
         self.toonBuildingSelector = Pmw.ComboBox(
             toonBuildingsPage,
             dropdown = 0,
@@ -3948,19 +4051,22 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             )
         self.toonBuildingType = 'random20'
         self.toonBuildingSelector.selectitem(self.toonBuildingType)
-        self.toonBuildingSelector.pack(expand = 1, fill = 'both')
+        self.toonBuildingSelector.pack(expand = 1, fill = BOTH)
         
         #self.toonBuildingWidthScale = EntryScale.EntryScale(
         #toonBuildingsPage, min = 1.0, max = 30.0,
         #   resolution = 0.01, text = 'Wall Width',
         #   command = self.updateSelectedWallWidth)
-        #self.toonBuildingWidthScale.pack(fill = 'x')
-        
+        #self.toonBuildingWidthScale.pack(fill = X)
+
+        # LANDMARK BUILDINGS
+        Label(landmarkBuildingsPage, text = 'Landmark Buildings',
+              font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
         self.addLandmarkBuildingButton = Button(
             landmarkBuildingsPage,
             text = 'ADD LANDMARK BUILDING',
             command = self.addLandmark)
-        self.addLandmarkBuildingButton.pack(fill = 'x')
+        self.addLandmarkBuildingButton.pack(fill = X, padx = 20, pady = 10)
         self.landmarkBuildingSelector = Pmw.ComboBox(
             landmarkBuildingsPage,
             dropdown = 0,
@@ -3979,14 +4085,16 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             'toon_landmark',0)
         self.landmarkBuildingSelector.selectitem(
             self.styleManager.getCatalogCode('toon_landmark',0)[14:])
-        self.landmarkBuildingSelector.pack(expand = 1, fill = 'both')
+        self.landmarkBuildingSelector.pack(expand = 1, fill = BOTH)
         
-        # Signs:
+        # SIGNS
+        Label(signPage, text = 'Signs',
+              font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
         self.currentSignDNA=None
         self.currentBaselineDNA=None
         self.levelEditor.selectedNodePathHookHooks.append(self.updateSignPage)
-        gridFrame = Frame(signPage)
 
+        gridFrame = Frame(signPage)
         signSelectedFrame = Frame(gridFrame)
 
         self.currentBaselineIndex=0
@@ -3998,17 +4106,17 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             history = 0, # unique = 0,
             scrolledlist_items = ['<the sign>'])
         self.baselineMenu.selectitem(self.currentBaselineIndex)
-        self.baselineMenu.pack(side = 'left', expand = 1, fill = 'x')
+        self.baselineMenu.pack(side = LEFT, expand = 1, fill = X)
 
         self.baselineAddButton = Button(
             signSelectedFrame, 
             text="Add Baseline", command=self.addBaseline)
-        self.baselineAddButton.pack(side = 'left', expand = 1, fill = 'x')
+        self.baselineAddButton.pack(side = LEFT, expand = 1, fill = X)
 
         self.baselineDeleteButton = Button(
             signSelectedFrame, 
             text="Del", command=self.deleteSignItem)
-        self.baselineDeleteButton.pack(side = 'left', expand = 1, fill = 'x')
+        self.baselineDeleteButton.pack(side = LEFT, expand = 1, fill = X)
 
         signSelectedFrame.grid(row=0, column=0, columnspan=6)
 
@@ -4044,21 +4152,22 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             signButtonFrame,
             text = 'Big First Letter',
             variable=self.bigFirstLetterIntVar, command=self.setBigFirstLetter)
-        self.bigFirstLetterCheckbutton.pack(side = 'left', expand = 1, fill = 'x')
+        self.bigFirstLetterCheckbutton.pack(
+            side = LEFT, expand = 1, fill = X)
 
         self.allCapsIntVar = IntVar()
         self.allCapsCheckbutton = Checkbutton(
             signButtonFrame,
             text = 'All Caps',
             variable=self.allCapsIntVar, command=self.setAllCaps)
-        self.allCapsCheckbutton.pack(side = 'left', expand = 1, fill = 'x')
+        self.allCapsCheckbutton.pack(side = LEFT, expand = 1, fill = X)
 
         self.dropShadowIntVar = IntVar()
         self.dropShadowCheckbutton = Checkbutton(
             signButtonFrame,
             text = 'Drop Shadow',
             variable=self.dropShadowIntVar, command=self.setDropShadow)
-        self.dropShadowCheckbutton.pack(side = 'left', expand = 1, fill = 'x')
+        self.dropShadowCheckbutton.pack(side = LEFT, expand = 1, fill = X)
         
         signButtonFrame.grid(row=3, column=0, columnspan=6)
 
@@ -4123,14 +4232,16 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             command=self.setDNATargetRoll)
         self.addRollFloater.grid(row=12, column=3, rowspan=2, columnspan=3)
 
-        gridFrame.pack(fill='both')
+        gridFrame.pack(fill=BOTH)
 
-        # Props:
+        # PROPS
+        Label(propsPage, text = 'Props',
+              font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
         self.addPropsButton = Button(
             propsPage,
             text = 'ADD PROP',
             command = self.addProp)
-        self.addPropsButton.pack(fill = 'x')
+        self.addPropsButton.pack(fill = X, padx = 20, pady = 10)
         self.propSelector = Pmw.ComboBox(
             propsPage,
             dropdown = 0,
@@ -4146,19 +4257,125 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.propType = self.styleManager.getCatalogCode('prop',0)
         self.propSelector.selectitem(
             self.styleManager.getCatalogCode('prop',0))
-        self.propSelector.pack(expand = 1, fill = 'both')
+        self.propSelector.pack(expand = 1, fill = BOTH)
 
+        # SUIT PATHS
+        Label(suitPathPage, text = 'Suit Paths',
+              font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
+
+        spButtons = Frame(suitPathPage)
+        self.fPaths = IntVar()
+        self.fPaths.set(0)
+        self.pathButton = Checkbutton(spButtons,
+                                      text = 'Show Paths',
+                                      width = 6,
+                                      variable = self.fPaths,
+                                      command = self.toggleSuitPaths)
+        self.pathButton.pack(side = LEFT, expand = 1, fill = X)
+
+        self.zoneColor = IntVar()
+        self.zoneColor.set(0)
+        self.colorZoneButton1 = Checkbutton(
+            spButtons,
+            text = 'Color Zones', width = 6,
+            variable = self.zoneColor,
+            command = self.levelEditor.toggleZoneColors)
+        self.colorZoneButton1.pack(side = LEFT, expand = 1, fill = X)
+        spButtons.pack(fill = X)
+
+        spButtons = Frame(suitPathPage)
+        Label(spButtons, text = 'Highlight:').pack(side = LEFT, fill = X)
+        self.highlightConnectedButton = Button(
+            spButtons,
+            text = 'Forward',
+            width = 6,
+            command = self.levelEditor.highlightConnected)
+        self.highlightConnectedButton.pack(side = LEFT, expand = 1, fill = X)
+
+        self.highlightConnectedButton2 = Button(
+            spButtons,
+            text = 'Connected',
+            width = 6,
+            command = lambda s = self: s.levelEditor.highlightConnected(fReversePath = 1))
+        self.highlightConnectedButton2.pack(side = LEFT, expand = 1, fill = X)
+
+        self.clearHighlightButton = Button(
+            spButtons,
+            text = 'Clear',
+            width = 6,
+            command = self.levelEditor.clearPathHighlights)
+        self.clearHighlightButton.pack(side = LEFT, expand = 1, fill = X)
+        spButtons.pack(fill = X, pady = 4)
+        
+        self.suitPointSelector = Pmw.ComboBox(
+            suitPathPage,
+            dropdown = 0,
+            listheight = 200,
+            labelpos = W,
+            label_text = 'Point type:',
+            label_width = 12,
+            label_anchor = W,
+            entry_width = 30,
+            selectioncommand = self.setSuitPointType,
+            scrolledlist_items = ['street', 'front door', 'side door']
+            )
+        self.suitPointSelector.selectitem('street')
+        self.suitPointSelector.pack(expand = 1, fill = BOTH)
+
+        # BATTLE CELLS
+        Label(battleCellPage, text = 'Battle Cells',
+              font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
+        bcButtons = Frame(battleCellPage)
+        self.fCells = IntVar()
+        self.fCells.set(0)
+        self.cellButton = Checkbutton(bcButtons,
+                                      text = 'Show Cells',
+                                      width = 6,
+                                      variable = self.fCells,
+                                      command = self.toggleBattleCells)
+        self.cellButton.pack(side = LEFT, expand = 1, fill = X)
+
+        self.colorZoneButton2 = Checkbutton(
+            bcButtons,
+            text = 'Color Zones', width = 6,
+            variable = self.zoneColor,
+            command = self.levelEditor.toggleZoneColors)
+        self.colorZoneButton2.pack(side = LEFT, expand = 1, fill = X)
+        bcButtons.pack(fill = X)
+
+        self.battleCellSelector = Pmw.ComboBox(
+            battleCellPage,
+            dropdown = 0,
+            listheight = 200,
+            labelpos = W,
+            label_text = 'Cell type:',
+            label_width = 12,
+            label_anchor = W,
+            entry_width = 30,
+            selectioncommand = self.setBattleCellType,
+            scrolledlist_items = ['20w 20l', '20w 30l', '30w 20l', '30w 30l']
+            )
+        self.battleCellSelector.selectitem('20w 20l')
+        self.battleCellSelector.pack(expand = 1, fill = BOTH)
+
+        # SCENE GRAPH EXPLORER
+        Label(sceneGraphPage, text = 'Level Scene Graph',
+              font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
+        self.sceneGraphExplorer = SceneGraphExplorer(
+            parent = sceneGraphPage,
+            nodePath = self.levelEditor,
+            menuItems = ['Add Group', 'Add Vis Group'])
+        self.sceneGraphExplorer.pack(expand = 1, fill = BOTH)
 
         # Compact down notebook
         self.notebook.setnaturalsize()
-
 
         self.colorEntry = VectorWidgets.ColorEntry(
             hull, text = 'Select Color',
             command = self.updateSelectedObjColor)
         self.colorEntry.menu.add_command(
             label = 'Save Color', command = self.levelEditor.saveColor)
-        self.colorEntry.pack(fill = 'x')
+        self.colorEntry.pack(fill = X)
 
         buttonFrame = Frame(hull)
         self.fMapVis = IntVar()
@@ -4168,7 +4385,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                                       width = 6,
                                       variable = self.fMapVis,
                                       command = self.toggleMapVis)
-        self.mapSnapButton.pack(side = 'left', expand = 1, fill = 'x')
+        #self.mapSnapButton.pack(side = LEFT, expand = 1, fill = X)
 
         self.fXyzSnap = IntVar()
         self.fXyzSnap.set(1)
@@ -4177,7 +4394,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                                       width = 6,
                                       variable = self.fXyzSnap,
                                       command = self.toggleXyzSnap)
-        self.xyzSnapButton.pack(side = 'left', expand = 1, fill = 'x')
+        self.xyzSnapButton.pack(side = LEFT, expand = 1, fill = X)
 
         self.fHprSnap = IntVar()
         self.fHprSnap.set(1)
@@ -4186,15 +4403,23 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                                       width = 6,
                                       variable = self.fHprSnap,
                                       command = self.toggleHprSnap)
-        self.hprSnapButton.pack(side = 'left', expand = 1, fill = 'x')
+        self.hprSnapButton.pack(side = LEFT, expand = 1, fill = X)
 
+        def toggleWidgetHandles(s = self):
+            if s.fPlaneSnap.get():
+                direct.widget.disableHandles(['x-ring', 'x-disc',
+                                              'y-ring', 'y-disc',
+                                              'z-post'])
+            else:
+                direct.widget.enableHandles('all')
         self.fPlaneSnap = IntVar()
         self.fPlaneSnap.set(1)
         self.planeSnapButton = Checkbutton(buttonFrame,
                                            text = 'PlaneSnap',
                                            width = 6,
-                                           variable = self.fPlaneSnap)
-        self.planeSnapButton.pack(side = 'left', expand = 1, fill = 'x')
+                                           variable = self.fPlaneSnap,
+                                           command = toggleWidgetHandles)
+        self.planeSnapButton.pack(side = LEFT, expand = 1, fill = X)
 
         self.fGrid = IntVar()
         self.fGrid.set(0)
@@ -4203,7 +4428,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                                       width = 6,
                                       variable = self.fGrid,
                                       command = self.toggleGrid)
-        direct.gridButton.pack(side = 'left', expand = 1, fill = 'x')
+        direct.gridButton.pack(side = LEFT, expand = 1, fill = X)
         buttonFrame.pack(fill = X)
 
         buttonFrame4 = Frame(hull)
@@ -4215,21 +4440,15 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             value = 0,
             variable = self.driveMode,
             command = self.levelEditor.useDriveMode)
-        self.driveModeButton.pack(side = 'left', expand = 1, fill = 'x')
-        directModeButton = Radiobutton(
+        self.driveModeButton.pack(side = LEFT, fill = X, expand = 1)
+        self.directModeButton = Radiobutton(
             buttonFrame4,
             text = 'DIRECT Fly',
             value = 1,
             variable = self.driveMode,
             command = self.levelEditor.useDirectFly)
-        directModeButton.pack(side = 'left', expand = 1, fill = 'x')
-        buttonFrame4.pack(fill = X)
-
-        self.sceneGraphExplorer = SceneGraphExplorer(
-            parent = sceneGraphPage,
-            nodePath = self.levelEditor,
-            menuItems = ['Add Group', 'Add Vis Group', 'Set Color'])
-        self.sceneGraphExplorer.pack(expand = 1, fill = BOTH)
+        self.directModeButton.pack(side = LEFT, fill = X, expand = 1)
+        buttonFrame4.pack(fill = X, padx = 60)
         
         # Make sure input variables processed 
         self.initialiseoptions(LevelEditorPanel)
@@ -4755,7 +4974,7 @@ class VisGroupsEditor(Pmw.MegaToplevel):
                                usehullsize = 1, hull_width = 200,
                                hull_height = 400)
         frame = sf.interior()
-        sf.pack(padx=5, pady=3, fill = 'both', expand = 1)
+        sf.pack(padx=5, pady=3, fill = BOTH, expand = 1)
 
         # Add vis groups selector
         self.selected = Pmw.RadioSelect(frame, selectmode=MULTIPLE,
@@ -4779,7 +4998,7 @@ class VisGroupsEditor(Pmw.MegaToplevel):
         sf.reposition()
 
         buttonFrame = Frame(hull)
-        buttonFrame.pack(fill='x', expand = 1)
+        buttonFrame.pack(fill=X, expand = 1)
 
         self.showMode = IntVar()
         self.showMode.set(0)
@@ -4787,12 +5006,12 @@ class VisGroupsEditor(Pmw.MegaToplevel):
                                          value = 0, indicatoron = 1,
                                          variable = self.showMode,
                                          command = self.refreshVisibility)
-        self.showAllButton.pack(side = LEFT, fill = 'x', expand = 1)
+        self.showAllButton.pack(side = LEFT, fill = X, expand = 1)
         self.showActiveButton = Radiobutton(buttonFrame, text = 'Show Target',
                                             value = 1, indicatoron = 1,
                                             variable = self.showMode,
                                             command = self.refreshVisibility)
-        self.showActiveButton.pack(side = LEFT, fill = 'x', expand = 1)
+        self.showActiveButton.pack(side = LEFT, fill = X, expand = 1)
 
         # Make sure input variables processed 
         self.initialiseoptions(VisGroupsEditor)

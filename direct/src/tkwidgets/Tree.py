@@ -188,8 +188,6 @@ class TreeNode:
         if self.state != 'expanded':
             return y+17
         # draw children
-        #if not self.children:
-        #self.children = []
         sublist = self.item._GetSubList()
         if not sublist:
             # IsExpandable() was mistaken; that's allowed
@@ -203,6 +201,10 @@ class TreeNode:
                 child = TreeNode(self.canvas, self, item, self.menuList)
             self.children[key] = child
             self.kidKeys.append(key)
+        # Remove unused children
+        for key in self.children.keys():
+            if key not in self.kidKeys:
+                del(self.children[key])
         cx = x+20
         cy = y+17
         cylast = 0
@@ -275,6 +277,9 @@ class TreeNode:
         self.label.bind("<1>", self.select_or_edit)
         self.label.bind("<Double-1>", self.flip)
         self.label.bind("<3>", self.popupMenu)
+        # Update text if necessary
+        if text != self.label['text']:
+            self.label['text'] = text
         self.text_id = id
 
     def select_or_edit(self, event=None):

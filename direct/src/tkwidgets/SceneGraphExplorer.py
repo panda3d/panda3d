@@ -12,7 +12,7 @@ DEFAULT_MENU_ITEMS = [
     'Separator',
     'Fit', 'Flash', 'Isolate', 'Toggle Vis', 'Show All',
     'Separator',
-    'Place', 'Set Color',
+    'Place', 'Set Color', 'Explore',
     'Separator']
 
 class SceneGraphExplorer(Pmw.MegaWidget, PandaObject):
@@ -41,7 +41,7 @@ class SceneGraphExplorer(Pmw.MegaWidget, PandaObject):
             'scrolledCanvas',
             (), None,
             Pmw.ScrolledCanvas, (interior,),
-            hull_width = 200, hull_height = 500,
+            hull_width = 200, hull_height = 300,
             usehullsize = 1)
         self._canvas = self._scrolledCanvas.component('canvas')
         self._canvas['scrollregion'] = ('0i', '0i', '2i', '4i')
@@ -53,7 +53,8 @@ class SceneGraphExplorer(Pmw.MegaWidget, PandaObject):
         self._canvas.bind('<Configure>',
                           lambda e, sc = self._scrolledCanvas:
                           sc.resizescrollregion())
-
+        self.interior().bind('<Destroy>', self.onDestroy)
+        
         # Create the contents
         self._treeItem = SceneGraphExplorerItem(self.nodePath)
 
@@ -68,7 +69,7 @@ class SceneGraphExplorer(Pmw.MegaWidget, PandaObject):
             Label, (interior,),
             text = 'Active Parent: ',
             anchor = W, justify = LEFT)
-        self._label.pack(expand = 1, fill = X)
+        self._label.pack(fill = X)
 
         # Add update parent label
         def updateLabel(nodePath = None, s = self):
@@ -108,6 +109,10 @@ class SceneGraphExplorer(Pmw.MegaWidget, PandaObject):
         self._left = self._canvas.xview()[0]
         self._top = self._canvas.yview()[0]
 
+    def onDestroy(self, event):
+        # Remove hooks
+        self.ignore('DIRECT_activeParent')
+        self.ignore('SGE_Update Explorer')
 
 class SceneGraphExplorerItem(TreeItem):
 
@@ -126,7 +131,7 @@ class SceneGraphExplorerItem(TreeItem):
 
     def SetText(self, text):
         try:
-            self.nodePath.node().setName(text)
+            self.nodePath.setName(text)
         except AttributeError:
             pass
 
