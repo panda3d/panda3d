@@ -32,6 +32,14 @@
 #end bin_target
 
 #begin bin_target
+  #define TARGET egg-make-tube
+
+  #define SOURCES \
+    eggMakeTube.cxx eggMakeTube.h
+
+#end bin_target
+
+#begin bin_target
   #define LOCAL_LIBS eggcharbase $[LOCAL_LIBS]
   #define TARGET egg-topstrip
 
