@@ -50,6 +50,9 @@ public:
   virtual void generate_hash(HashGenerator &hashgen) const;
 
 private:
+  typedef pvector<DCPackerInterface *> Fields;
+  Fields _nested_fields;
+
   DCClass *_dclass;
 };
 

@@ -31,9 +31,22 @@ DCClassParameter(DCClass *dclass) :
 {
   set_name(dclass->get_name());
 
+  int num_fields = _dclass->get_num_inherited_fields();
+
   _has_nested_fields = true;
-  _num_nested_fields = _dclass->get_num_inherited_fields();
+  _num_nested_fields = num_fields;
+  if (_dclass->has_constructor()) {
+    _num_nested_fields++;
+  }
   _pack_type = PT_class;
+
+  _nested_fields.reserve(_num_nested_fields);
+  if (_dclass->has_constructor()) {
+    _nested_fields.push_back(_dclass->get_constructor());
+  }
+  for (int i = 0 ; i < num_fields; i++) {
+    _nested_fields.push_back(_dclass->get_inherited_field(i));
+  }
 
   // If all of the nested fields have a fixed byte size, then so does
   // the class (and its byte size is the sum of all of the nested
@@ -57,6 +70,7 @@ DCClassParameter(DCClass *dclass) :
 DCClassParameter::
 DCClassParameter(const DCClassParameter &copy) :
   DCParameter(copy),
+  _nested_fields(copy._nested_fields),
   _dclass(copy._dclass)
 {
 }
@@ -113,7 +127,8 @@ get_class() const {
 ////////////////////////////////////////////////////////////////////
 DCPackerInterface *DCClassParameter::
 get_nested_field(int n) const {
-  return _dclass->get_inherited_field(n);
+  nassertr(n >= 0 && n < (int)_nested_fields.size(), NULL);
+  return _nested_fields[n];
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -34,6 +34,7 @@ DCClass(const string &name, bool is_struct, bool bogus_class) :
   _bogus_class(bogus_class)
 {
   _number = -1;
+  _constructor = NULL;
       
 #ifdef HAVE_PYTHON
   _class_def = NULL;
@@ -47,6 +48,10 @@ DCClass(const string &name, bool is_struct, bool bogus_class) :
 ////////////////////////////////////////////////////////////////////
 DCClass::
 ~DCClass() {
+  if (_constructor != (DCField *)NULL) {
+    delete _constructor;
+  }
+
   Fields::iterator fi;
   for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
     delete (*fi);
@@ -111,6 +116,29 @@ DCClass *DCClass::
 get_parent() const {
   nassertr(has_parent(), NULL);
   return _parents.front();
+}
+  
+////////////////////////////////////////////////////////////////////
+//     Function: DCClass::has_constructor
+//       Access: Published
+//  Description: Returns true if this class has a constructor method,
+//               false if it just uses the default constructor.
+////////////////////////////////////////////////////////////////////
+bool DCClass::
+has_constructor() const {
+  return (_constructor != (DCField *)NULL);
+}
+  
+////////////////////////////////////////////////////////////////////
+//     Function: DCClass::get_constructor
+//       Access: Published
+//  Description: Returns the constructor method for this class if it
+//               is defined, or NULL if the class uses the default
+//               constructor.
+////////////////////////////////////////////////////////////////////
+DCField *DCClass::
+get_constructor() const {
+  return _constructor;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -473,38 +501,49 @@ pack_required_field(DCPacker &packer, PyObject *distobj,
   // good, robust way to get this; presently, we just mangle the
   // "setFoo()" name of the required field into "getFoo()" and call
   // that.
-  string set_name = atom->get_name();
+  string setter_name = atom->get_name();
+
+  if (setter_name.empty()) {
+    ostringstream strm;
+    strm << "Required field is unnamed!";
+    nassert_raise(strm.str());
+    return false;
+  }
 
   if (atom->get_num_elements() == 0) {
     // It sure doesn't make sense to have a required field with no
     // parameters.  What data, exactly, is required?
     ostringstream strm;
-    strm << "Required field " << set_name << " has no parameters!";
+    strm << "Required field " << setter_name << " has no parameters!";
     nassert_raise(strm.str());
     return false;
   }
   
-  if (set_name.substr(0, 3) != string("set")) {
-    // This is required to suit our set/get mangling convention.
-    ostringstream strm;
-    strm << "Required field " << set_name << " does not begin with 'set'";
-    nassert_raise(strm.str());
-    return false;
+  string getter_name = setter_name;
+  if (setter_name.substr(0, 3) == "set") {
+    // If the original method started with "set", we mangle this
+    // directly to "get".
+    getter_name[0] = 'g';
+
+  } else {
+    // Otherwise, we add a "get" prefix, and capitalize the next
+    // letter.
+    getter_name = "get" + setter_name;
+    getter_name[3] = toupper(getter_name[3]);
   }
-  string get_name = set_name;
-  get_name[0] = 'g';
   
   // Now we have to look up the getter on the distributed object
   // and call it.
-  if (!PyObject_HasAttrString(distobj, (char *)get_name.c_str())) {
+  if (!PyObject_HasAttrString(distobj, (char *)getter_name.c_str())) {
     ostringstream strm;
-    strm << "Required field " << set_name
-         << " doesn't have matching field named " << get_name;
+    strm << "Distributed class " << get_name()
+         << " doesn't have getter named " << getter_name
+         << " to match required field " << setter_name;
     nassert_raise(strm.str());
     return false;
   }
   PyObject *func = 
-    PyObject_GetAttrString(distobj, (char *)get_name.c_str());
+    PyObject_GetAttrString(distobj, (char *)getter_name.c_str());
   nassertr(func != (PyObject *)NULL, false);
   
   PyObject *empty_args = PyTuple_New(0);
@@ -514,7 +553,7 @@ pack_required_field(DCPacker &packer, PyObject *distobj,
   if (result == (PyObject *)NULL) {
     // We don't set this as an exception, since presumably the Python
     // method itself has already triggered a Python exception.
-    cerr << "Error when calling " << get_name << "\n";
+    cerr << "Error when calling " << getter_name << "\n";
     return false;
   }
   
@@ -695,6 +734,10 @@ write(ostream &out, bool brief, int indent_level) const {
   }
   out << "\n";
 
+  if (_constructor != (DCField *)NULL) {
+    _constructor->write(out, brief, indent_level + 2);
+  }
+
   Fields::const_iterator fi;
   for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
     (*fi)->write(out, brief, indent_level + 2);
@@ -733,6 +776,11 @@ output_instance(ostream &out, bool brief, const string &prename,
 
   out << " {";
 
+  if (_constructor != (DCField *)NULL) {
+    _constructor->output(out, brief);
+    out << "; ";
+  }
+
   Fields::const_iterator fi;
   for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
     (*fi)->output(out, brief);
@@ -761,6 +809,10 @@ generate_hash(HashGenerator &hashgen) const {
     hashgen.add_int((*pi)->get_number());
   }
 
+  if (_constructor != (DCField *)NULL) {
+    _constructor->generate_hash(hashgen);
+  }
+
   hashgen.add_int(_fields.size());
   Fields::const_iterator fi;
   for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
@@ -779,6 +831,22 @@ generate_hash(HashGenerator &hashgen) const {
 ////////////////////////////////////////////////////////////////////
 bool DCClass::
 add_field(DCField *field) {
+  if (!_name.empty() && field->get_name() == _name) {
+    // This field is a constructor.
+    if (_constructor != (DCField *)NULL) {
+      // We already have a constructor.
+      return false;
+    }
+    if (field->as_atomic_field() == (DCAtomicField *)NULL) {
+      // The constructor must be an atomic field.
+      return false;
+    }
+    _constructor = field;
+    _fields_by_name.insert
+      (FieldsByName::value_type(field->get_name(), field));
+    return true;
+  }
+
   bool inserted = _fields_by_name.insert
     (FieldsByName::value_type(field->get_name(), field)).second;
 

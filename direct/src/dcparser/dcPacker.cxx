@@ -1126,17 +1126,36 @@ unpack_class_object(DCClass *dclass) {
   PyObject *class_def = dclass->get_class_def();
   nassertr(class_def != (PyObject *)NULL, NULL);
 
-  PyObject *object = PyObject_CallObject(class_def, NULL);
-  if (object == (PyObject *)NULL) {
-    return NULL;
+  PyObject *object = NULL;
+
+  if (!dclass->has_constructor()) {
+    // If the class uses a default constructor, go ahead and create
+    // the Python object for it now.
+    object = PyObject_CallObject(class_def, NULL);
+    if (object == (PyObject *)NULL) {
+      return NULL;
+    }
   }
 
   push();
+  if (object == (PyObject *)NULL && more_nested_fields()) {
+    // The first nested field will be the constructor.
+    const DCField *field = ((DCPackerInterface *)get_current_field())->as_field();
+    nassertr(field != (DCField *)NULL, object);
+    nassertr(field == dclass->get_constructor(), object);
+
+    set_class_element(class_def, object, field);
+
+    // By now, the object should have been constructed.
+    if (object == (PyObject *)NULL) {
+      return NULL;
+    }
+  }
   while (more_nested_fields()) {
     const DCField *field = ((DCPackerInterface *)get_current_field())->as_field();
     nassertr(field != (DCField *)NULL, object);
 
-    set_class_element(object, field);
+    set_class_element(class_def, object, field);
   }
   pop();
 
@@ -1150,10 +1169,11 @@ unpack_class_object(DCClass *dclass) {
 //     Function: DCPacker::set_class_element
 //       Access: Private
 //  Description: Unpacks the current element and stuffs it on the
-//               Python class object in whatever way is appopriate.
+//               Python class object in whatever way is appropriate.
 ////////////////////////////////////////////////////////////////////
 void DCPacker::
-set_class_element(PyObject *object, const DCField *field) {
+set_class_element(PyObject *class_def, PyObject *&object, 
+                  const DCField *field) {
   string field_name = field->get_name();
   DCPackType pack_type = get_pack_type();
 
@@ -1168,7 +1188,8 @@ set_class_element(PyObject *object, const DCField *field) {
       while (more_nested_fields()) {
         const DCField *field = ((DCPackerInterface *)get_current_field())->as_field();
         nassertv(field != (DCField *)NULL);
-        set_class_element(object, field);
+        nassertv(object != (PyObject *)NULL);
+        set_class_element(class_def, object, field);
       }
       pop();
       break;
@@ -1186,14 +1207,24 @@ set_class_element(PyObject *object, const DCField *field) {
     PyObject *element = unpack_object();
 
     if (pack_type == PT_field) {
-      PyObject *func = PyObject_GetAttrString(object, (char *)field_name.c_str());
-      if (func != (PyObject *)NULL) {
-        PyObject *result = PyObject_CallObject(func, element);
-        Py_XDECREF(result);
+      if (object == (PyObject *)NULL) {
+        // If the object hasn't been constructed yet, assume this is
+        // the constructor.
+        object = PyObject_CallObject(class_def, element);
+
+      } else {
+        if (PyObject_HasAttrString(object, (char *)field_name.c_str())) {
+          PyObject *func = PyObject_GetAttrString(object, (char *)field_name.c_str());
+          if (func != (PyObject *)NULL) {
+            PyObject *result = PyObject_CallObject(func, element);
+            Py_XDECREF(result);
+            Py_DECREF(func);
+          }
+        }
       }
-      Py_DECREF(func);
       
     } else {
+      nassertv(object != (PyObject *)NULL);
       PyObject_SetAttrString(object, (char *)field_name.c_str(), element);
     }
 

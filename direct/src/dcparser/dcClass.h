@@ -45,6 +45,9 @@ PUBLISHED:
 
   bool has_parent() const;
   DCClass *get_parent() const;
+  
+  bool has_constructor() const;
+  DCField *get_constructor() const;
 
   int get_num_fields() const;
   DCField *get_field(int n) const;
@@ -101,6 +104,8 @@ private:
 
   typedef pvector<DCClass *> Parents;
   Parents _parents;
+
+  DCField *_constructor;
 
   typedef pvector<DCField *> Fields;
   Fields _fields;
