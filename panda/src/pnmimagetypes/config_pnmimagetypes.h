@@ -48,6 +48,8 @@ extern const int jpeg_quality;
 extern const int jpeg_scale_num;
 extern const int jpeg_scale_denom;
 
+extern const int bmp_bpp;
+
 enum IMGHeaderType {
   IHT_none,
   IHT_short,

@@ -48,6 +48,9 @@ extern "C" {
  * without express or implied warranty.
  *
  * $Log$
+ * Revision 1.5  2001/08/02 20:01:58  drose
+ * add bmp-bpp
+ *
  * Revision 1.4  2001/05/25 21:30:42  drose
  * Update copyright header
  *
@@ -455,29 +458,33 @@ BMPEncode(
         int             bpp;    /* bits per pixel */
         unsigned long   nbyte = 0;
 
-        bpp = colorstobpp(colors);
+        bpp = bmp_bpp;
 
-        /*
-         * I have found empirically at least one BMP-displaying program
-         * that can't deal with (for instance) using 3 bits per pixel.
-         * I have seen no programs that can deal with using 3 bits per
-         * pixel.  I have seen programs which can deal with 1, 4, and
-         * 8 bits per pixel.
-         *
-         * Based on this, I adjust actual the number of bits per pixel
-         * as follows.  If anyone knows better, PLEASE tell me!
-         */
-        switch(bpp)
-        {
-        case 2:
-        case 3:
-                bpp = 4;
-                break;
-        case 5:
-        case 6:
-        case 7:
-                bpp = 8;
-                break;
+        if (bpp == 0) {
+          bpp = colorstobpp(colors);
+
+          /*
+           * I have found empirically at least one BMP-displaying program
+           * that can't deal with (for instance) using 3 bits per pixel.
+           * I have seen no programs that can deal with using 3 bits per
+           * pixel.  I have seen programs which can deal with 1, 4, and
+           * 8 bits per pixel.
+           *
+           * Based on this, I adjust actual the number of bits per pixel
+           * as follows.  If anyone knows better, PLEASE tell me!
+           */
+          switch(bpp)
+            {
+            case 2:
+            case 3:
+              bpp = 4;
+              break;
+            case 5:
+            case 6:
+            case 7:
+              bpp = 8;
+              break;
+            }
         }
 
         pm_message("Using %d bits per pixel", bpp);
@@ -612,7 +619,11 @@ write_data(xel *array, xelval *) {
 
   /* Figure out the colormap. */
   chv = ppm_computecolorhist(pixels, _x_size, _y_size, MAXCOLORS, &colors);
-  if (chv == (colorhist_vector) 0) {
+  if (bmp_bpp > 8) {
+    // Quietly generate a 24-bit image.
+    BMPEncode24(_file, classv, _x_size, _y_size, pixels);
+
+  } else if (chv == (colorhist_vector) 0) {
     pnmimage_bmp_cat.debug()
       << "too many colors; generating 24-bit BMP file\n";
 

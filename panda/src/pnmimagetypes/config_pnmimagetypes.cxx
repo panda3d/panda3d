@@ -94,6 +94,11 @@ const int jpeg_quality = config_pnmimagetypes.GetInt("jpeg-quality", 95);
 const int jpeg_scale_num = config_pnmimagetypes.GetInt("jpeg-scale-num", 1);
 const int jpeg_scale_denom = config_pnmimagetypes.GetInt("jpeg-scale-denom", 1);
 
+// This controls how many bits per pixel are written out for BMP
+// files.  If this is zero, the default, the number of bits per pixel
+// is based on the image.
+const int bmp_bpp = config_pnmimagetypes.GetInt("bmp-bpp", 0);
+
 ConfigureFn(config_pnmimagetypes) {
   init_libpnmimagetypes();
 }
