@@ -90,8 +90,7 @@
 #include <polygonOffsetAttribute.h>
 #include <clockObject.h>
 #include <pStatTimer.h>
-
-#include <pandabase.h>
+#include <string_utils.h>
 
 #include "pvector.h"
 #include <algorithm>
@@ -3775,6 +3774,11 @@ apply_texture_immediate(Texture *tex) {
       gluBuild2DMipmaps(GL_TEXTURE_2D, internal_format,
                         pb->get_xsize(), pb->get_ysize(),
                         external_format, type, pb->_image);
+#ifndef NDEBUG
+      if (gl_save_mipmaps) {
+        save_mipmap_images(tex);
+      }
+#endif
       report_errors();
       return true;
     }
@@ -4356,7 +4360,61 @@ build_phony_mipmap_level(int level, int xsize, int ysize) {
 
   delete pb;
 }
-#endif
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::save_mipmap_images
+//       Access: Protected
+//  Description: Saves out each mipmap level of the indicated texture
+//               (which must also be the currently active texture in
+//               the GL state) as a separate image file to disk.
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+save_mipmap_images(Texture *tex) {
+  Filename filename = tex->get_name();
+  string name;
+  if (filename.empty()) {
+    static index = 0;
+    name = "texture" + format_string(index);
+    index++;
+  } else {
+    name = filename.get_basename_wo_extension();
+  }
+
+  PixelBuffer *pb = tex->get_ram_image();
+  nassertv(pb != (PixelBuffer *)NULL);
+
+  GLenum external_format = get_external_image_format(pb->get_format());
+  GLenum type = get_image_type(pb->get_image_type());
+
+  int xsize = pb->get_xsize();
+  int ysize = pb->get_ysize();
+
+  // Specify byte-alignment for the pixels on output.
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
+
+  int mipmap_level = 0;
+  do {
+    xsize = max(xsize, 1);
+    ysize = max(ysize, 1);
+
+    PT(PixelBuffer) mpb = 
+      new PixelBuffer(xsize, ysize, pb->get_num_components(),
+                      pb->get_component_width(), pb->get_image_type(),
+                      pb->get_format());
+    glGetTexImage(GL_TEXTURE_2D, mipmap_level, external_format, 
+                  type, mpb->_image);
+    Filename mipmap_filename = name + "_" + format_string(mipmap_level) + ".pnm";
+    nout << "Writing mipmap level " << mipmap_level
+         << " (" << xsize << " by " << ysize << ") " 
+         << mipmap_filename << "\n";
+    mpb->write(mipmap_filename);
+
+    xsize >>= 1;
+    ysize >>= 1;
+    mipmap_level++;
+  } while (xsize > 0 && ysize > 0);
+}
+#endif  // NDEBUG
 
 // factory and type stuff
 

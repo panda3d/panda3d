@@ -268,6 +268,7 @@ protected:
 #ifndef NDEBUG
   void build_phony_mipmaps(Texture *tex);
   void build_phony_mipmap_level(int level, int xsize, int ysize);
+  void save_mipmap_images(Texture *tex);
 #endif
 
   GLclampf _clear_color_red, _clear_color_green, _clear_color_blue,

@@ -53,6 +53,10 @@ bool gl_force_mipmaps = config_glgsg.GetBool("gl-force-mipmaps", false);
 // colors, using mipmap_level_*.rgb if they are available.
 bool gl_show_mipmaps = config_glgsg.GetBool("gl-show-mipmaps", false);
 
+// Configure this true to cause the generated mipmap images to be
+// written out to image files on the disk as they are generated.
+bool gl_save_mipmaps = config_glgsg.GetBool("gl-save-mipmaps", false);
+
 // Configure this true to cause all lighting normals to automatically
 // be normalized by the graphics hardware before rendering.  This is
 // necessary if you intend to render things under scale transforms and

@@ -31,6 +31,7 @@ extern bool gl_ignore_mipmaps;
 extern bool gl_force_mipmaps;
 extern bool gl_show_mipmaps;
 extern bool gl_auto_normalize_lighting;
+extern bool gl_save_mipmaps;
 
 // Ways to implement decals.
 enum GLDecalType {
@@ -39,6 +40,7 @@ enum GLDecalType {
   GDT_offset  // The fastest, using GL 1.1 style glPolygonOffset
 };
 extern GLDecalType gl_decal_type;
+
 
 extern EXPCL_PANDAGL void init_libglgsg();
 
