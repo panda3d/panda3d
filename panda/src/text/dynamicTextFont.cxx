@@ -43,23 +43,16 @@ static const float points_per_inch = 72.0f;
 //  Description: The constructor expects the name of some font file
 //               that FreeType can read, along with face_index,
 //               indicating which font within the file to load
-//               (usually 0), the point size of the font, and the
-//               resolution at which to generate the font.  
-//
-//               The choice of point size affects the apparent size of
-//               the generated characters (as well as the clarity),
-//               while the pixels_per_unit affects only the clarity.
+//               (usually 0).
 ////////////////////////////////////////////////////////////////////
 DynamicTextFont::
-DynamicTextFont(const Filename &font_filename, int face_index,
-                float point_size, float pixels_per_unit) {
-  _margin = 2;
+DynamicTextFont(const Filename &font_filename, int face_index) {
+  _texture_margin = 2;
+  _poly_margin = 1.0f;
   _page_x_size = 256;
   _page_y_size = 256;
-  _pixels_per_unit = pixels_per_unit;
-
-  float units_per_inch = (points_per_inch / points_per_unit);
-  int dpi = (int)(_pixels_per_unit * units_per_inch);
+  _point_size = 10.0f;
+  _pixels_per_unit = 40.0f;
 
   if (!_ft_initialized) {
     initialize_ft_library();
@@ -90,23 +83,16 @@ DynamicTextFont(const Filename &font_filename, int face_index,
 
     } else {
       string name = _face->family_name;
-      name += " ";
-      name += _face->style_name;
-
-      _is_valid = true;
+      if (_face->style_name != NULL) {
+        name += " ";
+        name += _face->style_name;
+      }
       set_name(name);
 
       text_cat.info()
         << "Loaded font " << get_name() << "\n";
-
-      error = FT_Set_Char_Size(_face,
-                               (int)(point_size * 64), (int)(point_size * 64),
-                               dpi, dpi);
-      if (error) {
-        text_cat.warning()
-          << "Unable to set point size of " << get_name() 
-          << " to " << point_size << " at " << dpi << " dots per inch.\n";
-      }
+      _is_valid = true;
+      reset_scale();
     }
   }
 }
@@ -143,6 +129,25 @@ get_page(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::clear
+//       Access: Published
+//  Description: Drops all the glyphs out of the cache and frees any
+//               association with any previously-generated pages.
+//
+//               Calling this frequently can result in wasted texture
+//               memory, as any previously rendered text will still
+//               keep a pointer to the old, previously-generated
+//               pages.  As long as the previously rendered text
+//               remains around, the old pages will also remain
+//               around.
+////////////////////////////////////////////////////////////////////
+void DynamicTextFont::
+clear() {
+  _pages.clear();
+  _cache.clear();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextFont::write
 //       Access: Published, Virtual
 //  Description:
@@ -150,7 +155,9 @@ get_page(int n) const {
 void DynamicTextFont::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
-    << "DynamicTextFont " << get_name() << ".\n";
+    << "DynamicTextFont " << get_name() << ", " 
+    << _cache.size() << " glyphs, "
+    << get_num_pages() << " pages.\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -165,9 +172,44 @@ get_glyph(int character) {
   if (ci != _cache.end()) {
     return (*ci).second;
   }
+  if (!_is_valid) {
+    return (TextGlyph *)NULL;
+  }
+
   DynamicTextGlyph *glyph = make_glyph(character);
   _cache.insert(Cache::value_type(character, glyph));
   return glyph;
+}
+ 
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::reset_scale
+//       Access: Private
+//  Description: Resets the font to use the current _point_size and
+//               _pixels_per_unit.  Returns true if successful, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool DynamicTextFont::
+reset_scale() {
+  float units_per_inch = (points_per_inch / points_per_unit);
+  int dpi = (int)(_pixels_per_unit * units_per_inch);
+  
+  int error = FT_Set_Char_Size(_face,
+                               (int)(_point_size * 64), (int)(_point_size * 64),
+                               dpi, dpi);
+  if (error) {
+    text_cat.warning()
+      << "Unable to set " << get_name() 
+      << " to " << _point_size << "pt at " << dpi << " dpi.\n";
+    _line_height = 1.0f;
+    return false;
+  }
+
+  // The face's height is only relevant for scalable fonts,
+  // according to FreeType.  How should we determine whether we
+  // have a scalable font or otherwise?
+  float pixel_size = _point_size * (_pixels_per_unit / points_per_unit);
+  _line_height = (float)_face->height * pixel_size / ((float)_face->units_per_EM * 64.0f);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -217,7 +259,7 @@ make_glyph(int character) {
 
   float advance = slot->advance.x / 64.0;
   glyph->make_geom(slot->bitmap_top, slot->bitmap_left, advance,
-                   _pixels_per_unit);
+                   _poly_margin, _pixels_per_unit);
   return glyph;
 }
 
@@ -233,14 +275,14 @@ make_glyph(int character) {
 DynamicTextGlyph *DynamicTextFont::
 slot_glyph(int x_size, int y_size) {
   // Increase the indicated size by the current margin.
-  x_size += _margin * 2;
-  y_size += _margin * 2;
+  x_size += _texture_margin * 2;
+  y_size += _texture_margin * 2;
 
   Pages::iterator pi;
   for (pi = _pages.begin(); pi != _pages.end(); ++pi) {
     DynamicTextPage *page = (*pi);
 
-    DynamicTextGlyph *glyph = page->slot_glyph(x_size, y_size, _margin);
+    DynamicTextGlyph *glyph = page->slot_glyph(x_size, y_size, _texture_margin);
     if (glyph != (DynamicTextGlyph *)NULL) {
       return glyph;
     }
@@ -257,7 +299,7 @@ slot_glyph(int x_size, int y_size) {
   // We need to make a new page.
   PT(DynamicTextPage) page = new DynamicTextPage(this);
   _pages.push_back(page);
-  return page->slot_glyph(x_size, y_size, _margin);
+  return page->slot_glyph(x_size, y_size, _texture_margin);
 }
 
 

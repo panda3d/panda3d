@@ -63,18 +63,18 @@ get_row(int y) {
 ////////////////////////////////////////////////////////////////////
 void DynamicTextGlyph::
 make_geom(int bitmap_top, int bitmap_left, 
-          float advance, float pixels_per_unit) {
+          float advance, float poly_margin, float pixels_per_unit) {
   // Determine the corners of the rectangle in geometric units.
-  float top = (bitmap_top + _margin) / pixels_per_unit;
-  float left = (bitmap_left - _margin) / pixels_per_unit;
-  float bottom = (bitmap_top - _y_size - _margin) / pixels_per_unit;
-  float right = (bitmap_left + _x_size + _margin) / pixels_per_unit;
+  float top = (bitmap_top + poly_margin) / pixels_per_unit;
+  float left = (bitmap_left - poly_margin) / pixels_per_unit;
+  float bottom = (bitmap_top - _y_size - poly_margin) / pixels_per_unit;
+  float right = (bitmap_left + _x_size + poly_margin) / pixels_per_unit;
 
   // And the corresponding corners in UV units.
-  float uv_top = 1.0f - (float)_y / _page->get_y_size();
-  float uv_left = (float)_x / _page->get_x_size();
-  float uv_bottom = 1.0f - (float)(_y + _y_size) / _page->get_y_size();
-  float uv_right = (float)(_x + _x_size) / _page->get_x_size();
+  float uv_top = 1.0f - (float)(_y - poly_margin) / _page->get_y_size();
+  float uv_left = (float)(_x - poly_margin) / _page->get_x_size();
+  float uv_bottom = 1.0f - (float)(_y + _y_size + poly_margin) / _page->get_y_size();
+  float uv_right = (float)(_x + _x_size + poly_margin) / _page->get_x_size();
 
   // Create a corresponding tristrip.
   _geom = new GeomTristrip;

@@ -44,11 +44,18 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DynamicTextFont : public TextFont {
 PUBLISHED:
-  DynamicTextFont(const Filename &font_filename, int face_index,
-                  float point_size, float pixels_per_unit);
+  DynamicTextFont(const Filename &font_filename, int face_index = 0);
 
-  INLINE void set_margin(int margin);
-  INLINE int get_margin() const;
+  INLINE bool set_point_size(float point_size);
+  INLINE float get_point_size() const;
+
+  INLINE bool set_pixels_per_unit(float pixels_per_unit);
+  INLINE float get_pixels_per_unit() const;
+
+  INLINE void set_texture_margin(int texture_margin);
+  INLINE int get_texture_margin() const;
+  INLINE void set_poly_margin(float poly_margin);
+  INLINE float get_poly_margin() const;
 
   INLINE void set_page_size(int x_size, int y_size);
   INLINE int get_page_x_size() const;
@@ -57,20 +64,25 @@ PUBLISHED:
   int get_num_pages() const;
   DynamicTextPage *get_page(int n) const;
 
+  void clear();
+
   virtual void write(ostream &out, int indent_level) const;
 
 public:
   virtual const TextGlyph *get_glyph(int character);
 
 private:
+  bool reset_scale();
   DynamicTextGlyph *make_glyph(int character);
   DynamicTextGlyph *slot_glyph(int x_size, int y_size);
 
   static void initialize_ft_library();
 
-  int _margin;
-  int _page_x_size, _page_y_size;
+  float _point_size;
   float _pixels_per_unit;
+  int _texture_margin;
+  float _poly_margin;
+  int _page_x_size, _page_y_size;
 
   typedef pvector< PT(DynamicTextPage) > Pages;
   Pages _pages;

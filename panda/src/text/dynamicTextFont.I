@@ -18,7 +18,72 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::set_margin
+//     Function: DynamicTextFont::set_point_size
+//       Access: Published
+//  Description: Sets the point size of the font.  This controls the
+//               apparent size of the font onscreen.  By convention, a
+//               10 point font is about 1 screen unit high.
+//
+//               This should only be called before any characters have
+//               been requested out of the font, or immediately after
+//               calling clear().
+////////////////////////////////////////////////////////////////////
+INLINE bool DynamicTextFont::
+set_point_size(float point_size) {
+  // If this assertion fails, you didn't call clear() first.  RTFM.
+  nassertr(get_num_pages() == 0, false);
+
+  _point_size = point_size;
+  return reset_scale();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::get_point_size
+//       Access: Published
+//  Description: Returns the point size of the font.
+////////////////////////////////////////////////////////////////////
+INLINE float DynamicTextFont::
+get_point_size() const {
+  return _point_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::set_pixels_per_unit
+//       Access: Published
+//  Description: Set the resolution of the texture map, and hence the
+//               clarity of the resulting font.  This sets the number
+//               of pixels in the texture map that are used for each
+//               onscreen unit.
+//
+//               Setting this number larger results in an easier to
+//               read font, but at the cost of more texture memory.
+//
+//               This should only be called before any characters have
+//               been requested out of the font, or immediately after
+//               calling clear().
+////////////////////////////////////////////////////////////////////
+INLINE bool DynamicTextFont::
+set_pixels_per_unit(float pixels_per_unit) {
+  // If this assertion fails, you didn't call clear() first.  RTFM.
+  nassertr(get_num_pages() == 0, false);
+
+  _pixels_per_unit = pixels_per_unit;
+  return reset_scale();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::get_pixels_per_unit
+//       Access: Published
+//  Description: Returns the resolution of the texture map.  See
+//               set_pixels_per_unit().
+////////////////////////////////////////////////////////////////////
+INLINE float DynamicTextFont::
+get_pixels_per_unit() const {
+  return _pixels_per_unit;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::set_texture_margin
 //       Access: Published
 //  Description: Sets the number of pixels of padding that is added
 //               around the border of each glyph before adding it to
@@ -26,19 +91,48 @@
 //               neighboring glyphs in the texture map.
 ////////////////////////////////////////////////////////////////////
 INLINE void DynamicTextFont::
-set_margin(int margin) {
-  _margin = margin;
+set_texture_margin(int texture_margin) {
+  _texture_margin = texture_margin;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::get_margin
+//     Function: DynamicTextFont::get_texture_margin
 //       Access: Published
 //  Description: Returns the number of pixels of padding that is added
-//               around the border of each glyph.  See set_margin().
+//               around the border of each glyph in the texture map.
+//               See set_texture_margin().
 ////////////////////////////////////////////////////////////////////
 INLINE int DynamicTextFont::
-get_margin() const {
-  return _margin;
+get_texture_margin() const {
+  return _texture_margin;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::set_poly_margin
+//       Access: Published
+//  Description: Sets the number of pixels of padding that is included
+//               around each glyph in the generated polygons.  This
+//               helps prevent the edges of the glyphs from being cut
+//               off at small minifications.  It is not related to the
+//               amount of extra pixels reserved in the texture map
+//               (but it should be no larger than this number, which
+//               is controlled by set_texture_margin()).
+////////////////////////////////////////////////////////////////////
+INLINE void DynamicTextFont::
+set_poly_margin(float poly_margin) {
+  _poly_margin = poly_margin;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::get_poly_margin
+//       Access: Published
+//  Description: Returns the number of pixels of padding that is
+//               included around each glyph in the generated polygons.
+//               See set_poly_margin().
+////////////////////////////////////////////////////////////////////
+INLINE float DynamicTextFont::
+get_poly_margin() const {
+  return _poly_margin;
 }
 
 ////////////////////////////////////////////////////////////////////

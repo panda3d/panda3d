@@ -41,7 +41,8 @@ public:
 
   INLINE bool intersects(int x, int y, int x_size, int y_size) const;
   unsigned char *get_row(int y);
-  void make_geom(int top, int left, float advance, float pixels_per_unit);
+  void make_geom(int top, int left, float advance, float poly_margin,
+                 float pixels_per_unit);
 
   DynamicTextPage *_page;
 
