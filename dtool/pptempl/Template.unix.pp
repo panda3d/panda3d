@@ -260,7 +260,15 @@ $[TAB]@test -d $[directory] || mkdir -p $[directory]
 // Now it's time to start generating the rules to make our actual
 // targets.
 
-igate : $[get_igatedb(metalib_target lib_target ss_lib_target):%=$[so_dir]/%]
+// Determine which files will be generated during the interrogate
+// pass, and make a special "igate" rule to generate all of them.
+#define build_igate
+#forscopes metalib_target lib_target ss_lib_target
+  #define igatemscan $[components $[get_igatedb],$[active_component_libs]]
+  #define igatemout $[if $[igatemscan],lib$[TARGET]_module.cxx]
+  #set build_igate $[build_igate] $[get_igatedb:%=$[so_dir]/%] $[igatemout:%=$[so_dir]/%]
+#end metalib_target lib_target ss_lib_target
+igate : $[sort $[build_igate]]
 
 
 /////////////////////////////////////////////////////////////////////
@@ -375,7 +383,7 @@ lib$[TARGET]_igatemscan = $[igatemscan]
 #define target $[so_dir]/$[igatemout]
 #define sources $(lib$[TARGET]_igatemscan)
 $[target] : $[sources]
-$[TAB]interrogate_module -oc $[target] -module "$[igatemod]" -library "$[igatelib]" -python $[sources]
+$[TAB]interrogate_module -oc $[target] -module "$[igatemod]" -library "$[igatelib]" $[interrogate_module_options] $[sources]
 
 #define target $[igatemout:%.cxx=$[so_dir]/%.o]
 #define source $[so_dir]/$[igatemout]

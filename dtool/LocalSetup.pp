@@ -31,6 +31,9 @@ $[cdefine HAVE_DINKUM]
 /* Define if we have Python installed.  */
 $[cdefine HAVE_PYTHON]
 
+/* Define if we have want to track callbacks from within the show code.  */
+$[cdefine TRACK_IN_INTERPRETER]
+
 /* Define if we have NSPR installed.  */
 $[cdefine HAVE_NSPR]
 

@@ -144,6 +144,10 @@ write_wrapper(ostream &out, const string &wrapper_name) const {
   out << "  if (PyArg_ParseTuple(args, \"" << format_specifiers
       << "\"" << parameter_list << ")) {\n";
 
+  if (track_interpreter) {
+    out << "    in_interpreter = 0;\n";
+  }
+
   if (_return_type->new_type_is_atomic_string()) {
     // Treat strings as a special case.  We don't want to format the
     // return expression.
@@ -153,6 +157,11 @@ write_wrapper(ostream &out, const string &wrapper_name) const {
     out << "    ";
     type->output_instance(out, "return_value", &parser);
     out << " = " << return_expr << ";\n";
+
+    if (track_interpreter) {
+      out << "    in_interpreter = 1;\n";
+    }
+
     return_expr = manage_return_value(out, 4, "return_value");
     test_assert(out, 4);
     pack_return_value(out, return_expr);
@@ -160,6 +169,9 @@ write_wrapper(ostream &out, const string &wrapper_name) const {
   } else {
     string return_expr = call_function(out, 4, true, pexprs);
     if (return_expr.empty()) {
+      if (track_interpreter) {
+        out << "    in_interpreter = 1;\n";
+      }
       test_assert(out, 4);
       out << "    return Py_BuildValue(\"\");\n";
 
@@ -168,6 +180,9 @@ write_wrapper(ostream &out, const string &wrapper_name) const {
       out << "    ";
       type->output_instance(out, "return_value", &parser);
       out << " = " << return_expr << ";\n";
+      if (track_interpreter) {
+        out << "    in_interpreter = 1;\n";
+      }
 
       return_expr = manage_return_value(out, 4, "return_value");
       test_assert(out, 4);

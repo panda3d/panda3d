@@ -40,6 +40,7 @@ string module_name;
 string library_name;
 bool build_c_wrappers = false;
 bool build_python_wrappers = false;
+bool track_interpreter = false;
 
 // Short command-line options.
 static const char *short_options = "";
@@ -51,6 +52,7 @@ enum CommandOptions {
   CO_library,
   CO_c,
   CO_python,
+  CO_track_interpreter,
 };
 
 static struct option long_options[] = {
@@ -59,6 +61,7 @@ static struct option long_options[] = {
   { "library", required_argument, NULL, CO_library },
   { "c", no_argument, NULL, CO_c },
   { "python", no_argument, NULL, CO_python },
+  { "track-interpreter", no_argument, NULL, CO_track_interpreter },
   { NULL }
 };
 
@@ -77,8 +80,9 @@ upcase_string(const string &str) {
 
 int
 write_python_table(ostream &out) {
-  out << "\n#include <dtoolbase.h>\n\n"
-      << "\n#include <Python.h>\n\n";
+  out << "\n#include <dtoolbase.h>\n"
+      << "#include <interrogate_request.h>\n\n"
+      << "#include <Python.h>\n\n";
 
   int count = 0;
 
@@ -160,8 +164,11 @@ write_python_table(ostream &out) {
       << "extern \"C\" void init" << library_name << "();\n"
       << "#endif\n\n"
 
-      << "void init" << library_name << "() {\n"
-      << "  Py_InitModule(\"" << library_name << "\", python_methods);\n"
+      << "void init" << library_name << "() {\n";
+  if (track_interpreter) {
+    out << "  in_interpreter = 1;\n";
+  }
+  out << "  Py_InitModule(\"" << library_name << "\", python_methods);\n"
       << "}\n\n";
 
   return count;
@@ -194,6 +201,10 @@ main(int argc, char *argv[]) {
 
     case CO_python:
       build_python_wrappers = true;
+      break;
+
+    case CO_track_interpreter:
+      track_interpreter = true;
       break;
 
     default:

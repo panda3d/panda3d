@@ -132,6 +132,16 @@
 #define PYTHON_LPATH
 #defer HAVE_PYTHON $[isdir $[PYTHON_IPATH]]
 
+// Do you want to enable the "in_interpreter" global variable?  This
+// will enable some callbacks, particularly the MemoryUsage object, to
+// know whether they were called from Python code (or other high-level
+// show code) and react accordingly, generally for debugging
+// purporses.  It adds a bit of runtime overhead, and isn't usually
+// useful unless we're building a debug tree anyway.  The default is
+// to enable it only for optimize levels 1 and 2.
+#defer TRACK_IN_INTERPRETER $[<= $[OPTIMIZE], 2]
+
+
 // Is NSPR installed, and where?  This is the Netscape Portable
 // Runtime library, downloadable as part of the Mozilla package from
 // mozilla.org.  It provides portable threading and networking

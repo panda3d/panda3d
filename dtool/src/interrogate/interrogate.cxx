@@ -46,6 +46,7 @@ bool watch_asserts = false;
 bool true_wrapper_names = false;
 bool build_c_wrappers = false;
 bool build_python_wrappers = false;
+bool track_interpreter = false;
 bool save_unique_names = false;
 bool no_database = false;
 bool generate_spam = false;
@@ -72,6 +73,7 @@ enum CommandOptions {
   CO_true_names,
   CO_c,
   CO_python,
+  CO_track_interpreter,
   CO_unique_names,
   CO_nodb,
   CO_longlong,
@@ -94,6 +96,7 @@ static struct option long_options[] = {
   { "true-names", no_argument, NULL, CO_true_names },
   { "c", no_argument, NULL, CO_c },
   { "python", no_argument, NULL, CO_python },
+  { "track-interpreter", no_argument, NULL, CO_track_interpreter },
   { "unique-names", no_argument, NULL, CO_unique_names },
   { "nodb", no_argument, NULL, CO_nodb },
   { "longlong", required_argument, NULL, CO_longlong },
@@ -231,6 +234,11 @@ void show_help() {
     << "  Either or both of -c and/or -python may be specified.  If both are\n"
     << "  omitted, the default is -c.\n\n"
 
+    << "  -track-interpreter\n"
+    << "        Generate code within each wrapper function to adjust the global\n"
+    << "        variable \"in_interpreter\" to indicated whether code is running\n"
+    << "        within the Panda C++ environment or within the high-level language.\n"
+
     << "  -unique-names\n"
     << "        Compile a table into the library (i.e. generate code into the -oc\n"
     << "        file) that defines a lookup of each function wrapper by its unique\n"
@@ -359,6 +367,10 @@ main(int argc, char *argv[]) {
 
     case CO_python:
       build_python_wrappers = true;
+      break;
+
+    case CO_track_interpreter:
+      track_interpreter = true;
       break;
 
     case CO_unique_names:

@@ -71,7 +71,8 @@ show_type_or_expression(const string &str) {
     CPPType *type = parser.parse_type(str);
     if (type != NULL) {
       cout << "\nType: " << *type << "\n"
-           << "Defined in: " << type->_file << "\n\n";
+           << "Defined in: " << type->_file << "\n"
+           << "Subtype code is: " << (int)type->get_subtype() << "\n\n";
 
       CPPStructType *stype = type->as_struct_type();
       if (stype != (CPPStructType *)NULL) {

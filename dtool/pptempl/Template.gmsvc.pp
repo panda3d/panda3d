@@ -494,7 +494,7 @@ lib$[TARGET]_igatemscan = $[igatemscan]
 #define target $[so_dir]/$[igatemout]
 #define sources $(lib$[TARGET]_igatemscan)
 $[target] : $[sources] $[so_dir]/stamp
-$[TAB] interrogate_module -oc $[target] -module "$[igatemod]" -library "$[igatelib]" -python $[sources]
+$[TAB] interrogate_module -oc $[target] -module "$[igatemod]" -library "$[igatelib]" $[interrogate_module_options] $[sources]
 
 #define target $[igatemout:%.cxx=$[so_dir]/%.obj]
 #define source $[so_dir]/$[igatemout]

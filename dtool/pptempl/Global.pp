@@ -739,9 +739,14 @@ Warning: Variable $[upcase $[tree]]_INSTALL is not set!
     $[filter -D%,$[C++FLAGS]] \
     $[INTERROGATE_OPTIONS] \
     $[if $[INTERROGATE_PYTHON_INTERFACE],-python] \
-    $[if $[<= $[OPTIMIZE], 1],-spam] \
-    $[if $[INTERROGATE_C_INTERFACE],-c]
+    $[if $[INTERROGATE_C_INTERFACE],-c] \
+    $[if $[TRACK_IN_INTERPRETER],-track-interpreter] \
+    $[if $[<= $[OPTIMIZE], 1],-spam]
 
+#defer interrogate_module_options \
+    $[if $[INTERROGATE_PYTHON_INTERFACE],-python] \
+    $[if $[INTERROGATE_C_INTERFACE],-c] \
+    $[if $[TRACK_IN_INTERPRETER],-track-interpreter]
 
 
 // Include the global definitions for this particular build_type, if
