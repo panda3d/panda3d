@@ -16,13 +16,13 @@ def makeNewSpec(filename, modelPath, entTypeModule=EntityTypes):
     spec.saveToDisk(filename, makeBackup=0)
 
 """
-FOR NEW VERSION OF SAME LEVEL MODEL:
+FOR SAME LEVEL MODEL PATH:
 import SpecUtil
 import SellbotLegFactorySpec
 import FactoryEntityTypes
 SpecUtil.updateSpec(SellbotLegFactorySpec, FactoryEntityTypes)
 
-IF YOU WANT TO SWITCH THE SPEC TO USE A NEW LEVEL MODEL:
+FOR DIFFERENT LEVEL MODEL PATH:
 import SpecUtil
 import SellbotLegFactorySpec
 import FactoryEntityTypes
