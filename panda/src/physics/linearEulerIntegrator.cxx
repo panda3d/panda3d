@@ -21,8 +21,6 @@
 #include "physicalNode.h"
 #include "config_physics.h"
 
-#include <get_rel_pos.h>
-
 ////////////////////////////////////////////////////////////////////
 //     Function : LinearEulerIntegrator
 //       Access : Public

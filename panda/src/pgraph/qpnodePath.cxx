@@ -1463,7 +1463,7 @@ get_texture() const {
 Texture *qpNodePath::
 find_texture(const string &name) const {
   GlobPattern glob(name);
-  return r_find_texture(node(), RenderState::make_empty(), glob);
+  return r_find_texture(node(), get_net_state(), glob);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1475,7 +1475,7 @@ find_texture(const string &name) const {
 TextureCollection qpNodePath::
 find_all_textures() const {
   Textures textures;
-  r_find_all_textures(node(), RenderState::make_empty(), textures);
+  r_find_all_textures(node(), get_net_state(), textures);
 
   TextureCollection tc;
   Textures::iterator ti;
@@ -1495,7 +1495,7 @@ find_all_textures() const {
 TextureCollection qpNodePath::
 find_all_textures(const string &name) const {
   Textures textures;
-  r_find_all_textures(node(), RenderState::make_empty(), textures);
+  r_find_all_textures(node(), get_net_state(), textures);
 
   GlobPattern glob(name);
 
@@ -2919,8 +2919,6 @@ r_calc_tight_bounds(PandaNode *node, LPoint3f &min_point, LPoint3f &max_point,
 Texture * qpNodePath::
 r_find_texture(PandaNode *node, const RenderState *state,
                const GlobPattern &glob) const {
-  CPT(RenderState) next_state = state->compose(node->get_state());
-
   if (node->is_geom_node()) {
     qpGeomNode *gnode;
     DCAST_INTO_R(gnode, node, NULL);
@@ -2928,7 +2926,7 @@ r_find_texture(PandaNode *node, const RenderState *state,
     int num_geoms = gnode->get_num_geoms();
     for (int i = 0; i < num_geoms; i++) {
       CPT(RenderState) geom_state = 
-        next_state->compose(gnode->get_geom_state(i));
+        state->compose(gnode->get_geom_state(i));
 
       // Look for a TextureAttrib on the state.
       const RenderAttrib *attrib =
@@ -2949,7 +2947,10 @@ r_find_texture(PandaNode *node, const RenderState *state,
   PandaNode::Children cr = node->get_children();
   int num_children = cr.get_num_children();
   for (int i = 0; i < num_children; i++) {
-    Texture *result = r_find_texture(cr.get_child(i), next_state, glob);
+    PandaNode *child = cr.get_child(i);
+    CPT(RenderState) next_state = state->compose(child->get_state());
+
+    Texture *result = r_find_texture(child, next_state, glob);
     if (result != (Texture *)NULL) {
       return result;
     }
@@ -2966,8 +2967,6 @@ r_find_texture(PandaNode *node, const RenderState *state,
 void qpNodePath::
 r_find_all_textures(PandaNode *node, const RenderState *state,
                     qpNodePath::Textures &textures) const {
-  CPT(RenderState) next_state = state->compose(node->get_state());
-
   if (node->is_geom_node()) {
     qpGeomNode *gnode;
     DCAST_INTO_V(gnode, node);
@@ -2975,7 +2974,7 @@ r_find_all_textures(PandaNode *node, const RenderState *state,
     int num_geoms = gnode->get_num_geoms();
     for (int i = 0; i < num_geoms; i++) {
       CPT(RenderState) geom_state = 
-        next_state->compose(gnode->get_geom_state(i));
+        state->compose(gnode->get_geom_state(i));
 
       // Look for a TextureAttrib on the state.
       const RenderAttrib *attrib =
@@ -2994,7 +2993,9 @@ r_find_all_textures(PandaNode *node, const RenderState *state,
   PandaNode::Children cr = node->get_children();
   int num_children = cr.get_num_children();
   for (int i = 0; i < num_children; i++) {
-    r_find_all_textures(cr.get_child(i), next_state, textures);
+    PandaNode *child = cr.get_child(i);
+    CPT(RenderState) next_state = state->compose(child->get_state());
+    r_find_all_textures(child, next_state, textures);
   }
 }
 

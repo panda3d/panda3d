@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <get_rel_pos.h>
-
 #include "linearIntegrator.h"
 #include "config_physics.h"
 #include "physicalNode.h"

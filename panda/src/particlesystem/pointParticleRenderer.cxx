@@ -16,8 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <boundingSphere.h>
 #include "pointParticleRenderer.h"
+#include "boundingSphere.h"
+#include "qpgeomNode.h"
 
 ////////////////////////////////////////////////////////////////////
 //    Function : PointParticleRenderer
@@ -114,9 +115,10 @@ init_geoms(void) {
 
   _point_primitive->set_num_prims(0);
   _point_primitive->set_size(_point_size);
-
-  _interface_node->clear();
-  _interface_node->add_geom(_point_primitive);
+  
+  qpGeomNode *render_node = get_render_node();
+  render_node->remove_all_geoms();
+  render_node->add_geom(_point_primitive, _render_state);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -276,5 +278,5 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   LPoint3f aabb_center = _aabb_min + ((_aabb_max - _aabb_min) * 0.5f);
   float radius = (aabb_center - _aabb_min).length();
 
-  _interface_node->set_bound(BoundingSphere(aabb_center, radius));
+  get_render_node()->set_bound(BoundingSphere(aabb_center, radius));
 }

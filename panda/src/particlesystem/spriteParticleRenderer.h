@@ -19,18 +19,18 @@
 #ifndef SPRITEPARTICLERENDERER_H
 #define SPRITEPARTICLERENDERER_H
 
-#include <pandabase.h>
-#include <texture.h>
-#include <pointerTo.h>
-#include <pointerToArray.h>
-#include <pta_float.h>
-#include <geom.h>
-#include <geomSprite.h>
+#include "pandabase.h"
+#include "texture.h"
+#include "pointerTo.h"
+#include "pointerToArray.h"
+#include "pta_float.h"
+#include "geom.h"
+#include "geomSprite.h"
 
 #include "baseParticleRenderer.h"
 #include "baseParticle.h"
 
-class NodePath;
+class qpNodePath;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : SpriteParticleRenderer
@@ -88,7 +88,7 @@ PUBLISHED:
 
   INLINE SourceType get_source_type() const;
 
-  void set_from_node(const NodePath &node_path);
+  void set_from_node(const qpNodePath &node_path);
 
   INLINE void set_texture(Texture *tex);
   INLINE void set_ll_uv(const TexCoordf &ll_uv);

@@ -18,7 +18,8 @@
 
 #include "sparkleParticleRenderer.h"
 
-#include <boundingSphere.h>
+#include "boundingSphere.h"
+#include "qpgeomNode.h"
 
 ////////////////////////////////////////////////////////////////////
 //    Function : SparkleParticleRenderer
@@ -146,8 +147,9 @@ void SparkleParticleRenderer::
 init_geoms(void) {
   _line_primitive->set_num_prims(0);
 
-  _interface_node->clear();
-  _interface_node->add_geom(_line_primitive);
+  qpGeomNode *render_node = get_render_node();
+  render_node->remove_all_geoms();
+  render_node->add_geom(_line_primitive, _render_state);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -266,5 +268,5 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   LPoint3f aabb_center = _aabb_min + ((_aabb_max - _aabb_min) * 0.5f);
   float radius = (aabb_center - _aabb_min).length();
 
-  _interface_node->set_bound(BoundingSphere(aabb_center, radius));
+  get_render_node()->set_bound(BoundingSphere(aabb_center, radius));
 }

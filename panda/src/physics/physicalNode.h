@@ -19,8 +19,8 @@
 #ifndef PHYSICALNODE_H
 #define PHYSICALNODE_H
 
-#include <pandabase.h>
-#include <namedNode.h>
+#include "pandabase.h"
+#include "pandaNode.h"
 
 #include "pvector.h"
 
@@ -32,20 +32,22 @@
 //  Description : Graph node that encapsulated a series of physical
 //                objects
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAPHYSICS PhysicalNode : public NamedNode {
+class EXPCL_PANDAPHYSICS PhysicalNode : public PandaNode {
 private:
   pvector< PT(Physical) > _physicals;
 
 PUBLISHED:
-  PhysicalNode(const string &name = "");
+  PhysicalNode(const string &name);
+
+protected:
   PhysicalNode(const PhysicalNode &copy);
+
+public:
   virtual ~PhysicalNode(void);
-
-  PhysicalNode &operator =(const PhysicalNode &copy);
-
   virtual bool safe_to_flatten(void) const { return false; }
-  virtual Node *make_copy(void) const;
+  virtual PandaNode *make_copy(void) const;
 
+PUBLISHED:
   INLINE void clear(void);
   INLINE Physical *get_physical(int index) const;
   INLINE int get_num_physicals(void) const;
@@ -60,9 +62,9 @@ public:
     return _type_handle;
   }
   static void init_type(void) {
-    NamedNode::init_type();
+    PandaNode::init_type();
     register_type(_type_handle, "PhysicalNode",
-                  NamedNode::get_class_type());
+                  PandaNode::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

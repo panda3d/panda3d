@@ -19,7 +19,7 @@
 #ifndef FORCENODE_H
 #define FORCENODE_H
 
-#include <namedNode.h>
+#include "pandaNode.h"
 #include "pvector.h"
 
 #include "baseForce.h"
@@ -31,20 +31,22 @@
 //                An example of this would be simulating gravity
 //                in a rotating space station.  or something.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAPHYSICS ForceNode : public NamedNode {
+class EXPCL_PANDAPHYSICS ForceNode : public PandaNode {
 private:
   pvector< PT(BaseForce) > _forces;
 
 PUBLISHED:
-  ForceNode(const string &name = "");
+  ForceNode(const string &name);
+
+protected:
   ForceNode(const ForceNode &copy);
+
+public:
   virtual ~ForceNode(void);
-
-  ForceNode &operator =(const ForceNode &copy);
-
   virtual bool safe_to_flatten(void) const { return false; }
-  virtual Node *make_copy(void) const;
+  virtual PandaNode *make_copy(void) const;
 
+PUBLISHED:
   INLINE void clear(void);
   INLINE BaseForce *get_force(int index) const;
   INLINE int get_num_forces(void) const;
@@ -59,9 +61,9 @@ public:
     return _type_handle;
   }
   static void init_type(void) {
-    NamedNode::init_type();
+    PandaNode::init_type();
     register_type(_type_handle, "ForceNode",
-                  NamedNode::get_class_type());
+                  PandaNode::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

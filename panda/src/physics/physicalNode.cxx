@@ -28,22 +28,23 @@ TypeHandle PhysicalNode::_type_handle;
 ////////////////////////////////////////////////////////////////////
 PhysicalNode::
 PhysicalNode(const string &name) :
-  NamedNode(name) {
+  PandaNode(name) 
+{
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function : PhysicalNode
-//       Access : public
+//       Access : protected
 //  Description : copy constructor
 ////////////////////////////////////////////////////////////////////
 PhysicalNode::
 PhysicalNode(const PhysicalNode &copy) :
-  NamedNode(copy), _physicals(copy._physicals) {
+  PandaNode(copy), _physicals(copy._physicals) {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function : ~PhysicalNode
-//       Access : public, virtual
+//       Access : protected, virtual
 //  Description : destructor
 ////////////////////////////////////////////////////////////////////
 PhysicalNode::
@@ -51,23 +52,11 @@ PhysicalNode::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : operator =
-//       Access : public
-//  Description : assignment operator
-////////////////////////////////////////////////////////////////////
-PhysicalNode &PhysicalNode::
-operator =(const PhysicalNode &copy) {
-  NamedNode::operator =(copy);
-  _physicals = copy._physicals;
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function : make_copy
 //       Access : public, virtual
 //  Description : dynamic child copy
 ////////////////////////////////////////////////////////////////////
-Node *PhysicalNode::
+PandaNode *PhysicalNode::
 make_copy(void) const {
   return new PhysicalNode(*this);
 }

@@ -19,13 +19,11 @@
 #ifndef BASEPARTICLERENDERER_H
 #define BASEPARTICLERENDERER_H
 
-#include <pandabase.h>
-#include <referenceCount.h>
-#include <physicsObject.h>
-#include <geomNode.h>
-#include <renderRelation.h>
-#include <nodeRelation.h>
-#include <transparencyTransition.h>
+#include "pandabase.h"
+#include "referenceCount.h"
+#include "physicsObject.h"
+#include "renderState.h"
+#include "qpgeomNode.h"
 
 #include "particleCommonFuncs.h"
 #include "baseParticle.h"
@@ -38,14 +36,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS BaseParticleRenderer : public ReferenceCount {
 private:
-  PT(GeomNode) _render_node;
-
-  // children of this class don't know anything about alpha.
-  // they should just interact with _interface_node, and link geometry
-  // from/to that.
-
-  PT(GeomNode) _alpha_node;
-  PT(RenderRelation) _alpha_arc;
+  PT(qpGeomNode) _render_node;
 
   float _user_alpha;
 
@@ -81,7 +72,7 @@ PUBLISHED:
 
   virtual ~BaseParticleRenderer(void);
 
-  INLINE GeomNode *get_render_node(void) const;
+  INLINE qpGeomNode *get_render_node(void) const;
 
   INLINE void set_alpha_mode(ParticleRendererAlphaMode am);
   INLINE ParticleRendererAlphaMode get_alpha_mode(void) const;
@@ -90,8 +81,6 @@ PUBLISHED:
   INLINE float get_user_alpha(void) const;
 
 protected:
-  GeomNode *_interface_node;
-
   ParticleRendererAlphaMode _alpha_mode;
 
   BaseParticleRenderer(ParticleRendererAlphaMode alpha_decay = PR_ALPHA_NONE);
@@ -100,11 +89,13 @@ protected:
   void update_alpha_mode(ParticleRendererAlphaMode am);
 
   void enable_alpha(void);
-  INLINE void disable_alpha(void);
+  void disable_alpha(void);
 
   INLINE float get_cur_alpha(BaseParticle* bp);
 
   virtual void resize_pool(int new_size) = 0;
+
+  CPT(RenderState) _render_state;
 
 public:
   virtual BaseParticleRenderer *make_copy(void) = 0;

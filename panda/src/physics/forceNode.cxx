@@ -28,17 +28,18 @@ TypeHandle ForceNode::_type_handle;
 ////////////////////////////////////////////////////////////////////
 ForceNode::
 ForceNode(const string &name) :
-  NamedNode(name) {
+  PandaNode(name) 
+{
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function : ForceNode
-//       Access : public
+//       Access : protected
 //  Description : copy constructor
 ////////////////////////////////////////////////////////////////////
 ForceNode::
 ForceNode(const ForceNode &copy) :
-  NamedNode(copy), _forces(copy._forces) {
+  PandaNode(copy), _forces(copy._forces) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -51,23 +52,11 @@ ForceNode::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : operator =
-//       Access : public
-//  Description : assignment operator
-////////////////////////////////////////////////////////////////////
-ForceNode &ForceNode::
-operator =(const ForceNode &copy) {
-  NamedNode::operator =(copy);
-  _forces = copy._forces;
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function : make_copy
 //       Access : public, virtual
 //  Description : dynamic child copy
 ////////////////////////////////////////////////////////////////////
-Node *ForceNode::
+PandaNode *ForceNode::
 make_copy(void) const {
   return new ForceNode(*this);
 }

@@ -84,10 +84,11 @@ set_renderer(BaseParticleRenderer *r) {
   _renderer = r;
   _renderer->resize_pool(_particle_pool_size);
 
-  if (_render_arc.is_null() == false)
-    remove_arc(_render_arc);
+  if (!_render_node.is_null())
+    _render_parent->remove_child(_render_node);
 
-  _render_arc = new RenderRelation(_render_parent, r->get_render_node());
+  _render_node = _renderer->get_render_node();
+  _render_parent->add_child(_render_node);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -180,7 +181,7 @@ set_system_age(float age) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ParticleSystem::
-set_spawn_render_node(Node *node) {
+set_spawn_render_node(PandaNode *node) {
   _spawn_render_node = node;
 }
 
@@ -190,14 +191,13 @@ set_spawn_render_node(Node *node) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ParticleSystem::
-set_render_parent(Node *node) {
-  if (_render_arc.is_null() == false) {
-    remove_arc(_render_arc);
-  }
+set_render_parent(PandaNode *node) {
+  if (!_render_node.is_null())
+    _render_parent->remove_child(_render_node);
 
   _render_parent = node;
-  _render_arc = new RenderRelation(_render_parent,
-                                   _renderer->get_render_node());
+  _render_node = _renderer->get_render_node();
+  _render_parent->add_child(_render_node);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -372,7 +372,7 @@ get_i_was_spawned_flag(void) const {
 //    Function : get_spawn_render_node
 //      Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE Node *ParticleSystem::
+INLINE PandaNode *ParticleSystem::
 get_spawn_render_node(void) const {
   return _spawn_render_node;
 }
@@ -381,7 +381,7 @@ get_spawn_render_node(void) const {
 //    Function : get_render_parent
 //      Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE Node *ParticleSystem::
+INLINE PandaNode *ParticleSystem::
 get_render_parent(void) const {
   return _render_parent;
 }

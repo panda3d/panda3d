@@ -18,15 +18,14 @@
 
 #include <stdlib.h>
 
-#include <luse.h>
-#include <lmat_ops.h>
-#include <get_rel_pos.h>
-#include <clockObject.h>
-#include <nodeRelation.h>
-#include <transformTransition.h>
-#include <physicsManager.h>
-#include <physicalNode.h>
-#include <nearly_zero.h>
+#include "luse.h"
+#include "lmat_ops.h"
+#include "clockObject.h"
+#include "physicsManager.h"
+#include "physicalNode.h"
+#include "nearly_zero.h"
+#include "transformState.h"
+#include "qpnodePath.h"
 
 #include "config_particlesystem.h"
 #include "particleSystem.h"
@@ -63,8 +62,8 @@ ParticleSystem(int pool_size) :
   // set_emitter(), etc...) forces them to set themselves up for the
   // system, keeping the pool sizes consistent.
 
-  _render_arc.clear();
-  _render_parent = new NamedNode("ParticleSystem default render parent");
+  _render_node.clear();
+  _render_parent = new PandaNode("ParticleSystem default render parent");
 
   set_emitter(new SphereSurfaceEmitter);
 
@@ -100,9 +99,9 @@ ParticleSystem(const ParticleSystem& copy) :
   _renderer = copy._renderer->make_copy();
   _factory = copy._factory;
 
-  _render_arc = copy._render_arc;
-
   _render_parent = copy._render_parent;
+  _render_node = _renderer->get_render_node();
+  _render_parent->add_child(_render_node);
 
   _tics_since_birth = _birth_rate;
   _system_lifespan = copy._system_lifespan;
@@ -120,15 +119,12 @@ ParticleSystem::
 ~ParticleSystem(void) {
   set_pool_size(0);
 
-  if (_template_system_flag == false) {
+  if (!_template_system_flag) {
     _renderer.clear();
 
-    if (_render_arc.is_null() == false)
-      remove_arc(_render_arc);
+    if (!_render_node.is_null())
+      _render_parent->remove_child(_render_node);
   }
-
-  if (_i_was_spawned_flag == true)
-    remove_arc(_physical_node_arc);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -174,14 +170,15 @@ birth_particle(void) {
   // get the location of the new particle.
   LPoint3f new_pos, world_pos;
   LVector3f new_vel;
-  LMatrix4f birth_to_render_xform;
-  GeomNode *render_node;
+  qpGeomNode *render_node;
 
   _emitter->generate(new_pos, new_vel);
   render_node = _renderer->get_render_node();
 
   // go from birth space to render space
-  get_rel_mat(get_physical_node(), render_node, birth_to_render_xform);
+  qpNodePath physical_np(get_physical_node());
+  qpNodePath render_np(render_node);
+  const LMatrix4f &birth_to_render_xform = physical_np.get_mat(render_np);
   world_pos = new_pos * birth_to_render_xform;
 
   //  cout << "New particle at " << world_pos << endl;
@@ -240,17 +237,14 @@ spawn_child_system(BaseParticle *bp) {
     return;
   }
 
-  if (this_pn->get_num_parents(RenderRelation::get_class_type()) == 0) {
+  if (this_pn->get_num_parents() == 0) {
     physics_cat.error() << "ParticleSystem::spawn_child_system: "
                         << "PhysicalNode this system is contained in "
                         << "has no parent, aborting." << endl;
     return;
   }
 
-  NodeRelation *parent_relation =
-    this_pn->get_parent(RenderRelation::get_class_type(), 0);
-
-  Node *parent = parent_relation->get_parent();
+  PandaNode *parent = this_pn->get_parent(0);
 
   // handle the spawn templates
   int new_ps_index = rand() % _spawn_templates.size();
@@ -262,25 +256,27 @@ spawn_child_system(BaseParticle *bp) {
 
   // first, set up the render node info.
   new_ps->_render_parent = _spawn_render_node;
-  new_ps->_render_arc = new RenderRelation(new_ps->_render_parent,
-                                           new_ps->_renderer->get_render_node());
+  new_ps->_render_node = new_ps->_renderer->get_render_node();
+  new_ps->_render_parent->add_child(new_ps->_render_node);
 
   // now set up the new system's PhysicalNode.
-  PT(PhysicalNode) new_pn = new PhysicalNode;
+  PT(PhysicalNode) new_pn = new PhysicalNode("new_pn");
   new_pn->add_physical(new_ps);
 
-  // the arc from the parent to the new child has to represent the
-  // transform from the current system up to its parent, and then
-  // subsequently down to the new child.
-  PT(RenderRelation) rr = new RenderRelation(parent, new_pn);
+  // the transform on the new child has to represent the transform
+  // from the current system up to its parent, and then subsequently
+  // down to the new child.
+  parent->add_child(new_pn);
 
-  LMatrix4f old_system_to_parent_xform;
-  get_rel_mat(get_physical_node(), parent, old_system_to_parent_xform);
+  qpNodePath parent_np(parent);
+  qpNodePath physical_np(get_physical_node());
+
+  const LMatrix4f &old_system_to_parent_xform = physical_np.get_mat(parent_np);
 
   LMatrix4f child_space_xform = old_system_to_parent_xform *
     bp->get_lcs();
 
-  rr->set_transition(new TransformTransition(child_space_xform));
+  new_pn->set_transform(TransformState::make_mat(child_space_xform));
 
   // tack the new system onto the managers
   _manager->attach_particlesystem(new_ps);

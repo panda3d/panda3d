@@ -16,12 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <boundingSphere.h>
-#include <geom.h>
-#include <nodePath.h>
-#include <nodeTransitionWrapper.h>
-#include <textureTransition.h>
-#include <wrt.h>
+#include "boundingSphere.h"
+#include "geom.h"
+#include "qpnodePath.h"
 
 #include "spriteParticleRenderer.h"
 
@@ -99,36 +96,24 @@ make_copy(void) {
 //               Texture and UV range from the GeomNode.
 ////////////////////////////////////////////////////////////////////
 void SpriteParticleRenderer::
-set_from_node(const NodePath &node_path) {
+set_from_node(const qpNodePath &node_path) {
   nassertv(!node_path.is_empty());
 
   // The bottom node must be a GeomNode.  If it is not, find the first
   // GeomNode beneath it.
-  NodePath geom_node_path = node_path;
-  if (!geom_node_path.node()->is_of_type(GeomNode::get_class_type())) {
+  qpNodePath geom_node_path = node_path;
+  if (!geom_node_path.node()->is_geom_node()) {
     geom_node_path = node_path.find("**/+GeomNode");
-    if (geom_node_path.empty()) {
+    if (geom_node_path.is_empty()) {
       particlesystem_cat.error()
         << node_path << " does not contain a GeomNode.\n";
       return;
     }
   }
-  GeomNode *gnode = DCAST(GeomNode, geom_node_path.node());
+  qpGeomNode *gnode = DCAST(qpGeomNode, geom_node_path.node());
 
-  // Get the texture off the node.  We use wrt() to determine the net
-  // texture that's applied, based on all the arcs from the root; not
-  // just the bottom arc.
-  Texture *tex = (Texture *)NULL;
-
-  NodeTransitionWrapper ntw(TextureTransition::get_class_type());
-  wrt(gnode, geom_node_path.begin(), geom_node_path.end(), 
-      (Node *)NULL, ntw, RenderRelation::get_class_type());
-  const TextureTransition *tt;
-  if (get_transition_into(tt, ntw)) {
-    if (tt->is_on()) {
-      tex = tt->get_texture();
-    }
-  }
+  // Get the texture off the node.  We'll take just the first texture.
+  Texture *tex = geom_node_path.find_texture("*");
 
   if (tex == (Texture *)NULL) {
     particlesystem_cat.error()
@@ -138,7 +123,7 @@ set_from_node(const NodePath &node_path) {
 
   // Now examine the UV's of the first Geom within the GeomNode.
   nassertv(gnode->get_num_geoms() > 0);
-  Geom *geom = DCAST(Geom, gnode->get_geom(0));
+  Geom *geom = gnode->get_geom(0);
 
   PTA_TexCoordf texcoords;
   GeomBindType bind;
@@ -248,8 +233,9 @@ void SpriteParticleRenderer::
 init_geoms(void) {
   _sprite_primitive->set_num_prims(0);
 
-  _interface_node->clear();
-  _interface_node->add_geom(_sprite_primitive);
+  qpGeomNode *render_node = get_render_node();
+  render_node->remove_all_geoms();
+  render_node->add_geom(_sprite_primitive, _render_state);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -388,5 +374,5 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   LPoint3f aabb_center = _aabb_min + ((_aabb_max - _aabb_min) * 0.5f);
   float radius = (aabb_center - _aabb_min).length();
 
-  _interface_node->set_bound(BoundingSphere(aabb_center, radius));
+  get_render_node()->set_bound(BoundingSphere(aabb_center, radius));
 }

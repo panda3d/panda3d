@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <pandabase.h>
-#include <nodeRelation.h>
+#include "pandabase.h"
 
 #include "baseParticleRenderer.h"
+#include "transparencyAttrib.h"
 
 ////////////////////////////////////////////////////////////////////
 //    Function : BaseParticleRenderer
@@ -28,9 +28,8 @@
 ////////////////////////////////////////////////////////////////////
 BaseParticleRenderer::
 BaseParticleRenderer(ParticleRendererAlphaMode alpha_mode) :
-  _alpha_arc((RenderRelation *) NULL),
   _alpha_mode(PR_NOT_INITIALIZED_YET) {
-  _render_node = new GeomNode("BaseParticleRenderer render node");
+  _render_node = new qpGeomNode("BaseParticleRenderer render node");
 
   _user_alpha = 1.0f;
 
@@ -44,9 +43,8 @@ BaseParticleRenderer(ParticleRendererAlphaMode alpha_mode) :
 ////////////////////////////////////////////////////////////////////
 BaseParticleRenderer::
 BaseParticleRenderer(const BaseParticleRenderer& copy) :
-  _alpha_arc((RenderRelation *) NULL),
   _alpha_mode(PR_ALPHA_NONE) {
-  _render_node = new GeomNode("BaseParticleRenderer render node");
+  _render_node = new qpGeomNode("BaseParticleRenderer render node");
 
   _user_alpha = copy._user_alpha;
 
@@ -60,8 +58,6 @@ BaseParticleRenderer(const BaseParticleRenderer& copy) :
 ////////////////////////////////////////////////////////////////////
 BaseParticleRenderer::
 ~BaseParticleRenderer(void) {
-  if(_alpha_mode != PR_ALPHA_NONE)
-    remove_arc(_alpha_arc);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -72,14 +68,17 @@ BaseParticleRenderer::
 ////////////////////////////////////////////////////////////////////
 void BaseParticleRenderer::
 enable_alpha(void) {
-  _render_node->clear();
+  _render_state = RenderState::make(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
+}
 
-  _alpha_node = new GeomNode("BaseParticleRenderer alpha node");
-
-  _alpha_arc = new RenderRelation(_render_node, _alpha_node);
-  _alpha_arc->set_transition(new TransparencyTransition(TransparencyProperty::M_alpha));
-
-  _interface_node = _alpha_node;
+////////////////////////////////////////////////////////////////////
+//    Function : disable_alpha
+//      Access : Private
+// Description : kills the intermediate alpha node/arc
+////////////////////////////////////////////////////////////////////
+void BaseParticleRenderer::
+disable_alpha(void) {
+  _render_state = RenderState::make(TransparencyAttrib::make(TransparencyAttrib::M_none));
 }
 
 ////////////////////////////////////////////////////////////////////

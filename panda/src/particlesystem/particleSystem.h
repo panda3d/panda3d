@@ -25,12 +25,11 @@
 #ifndef PARTICLESYSTEM_H
 #define PARTICLESYSTEM_H
 
-#include <pandabase.h>
-#include <pointerTo.h>
-#include <physical.h>
-#include <node.h>
-#include <referenceCount.h>
-#include <renderRelation.h>
+#include "pandabase.h"
+#include "pointerTo.h"
+#include "physical.h"
+#include "pandaNode.h"
+#include "referenceCount.h"
 
 #include "pdeque.h"
 
@@ -78,8 +77,8 @@ private:
   // _render_parent is the ALREADY ALLOC'D node under which this
   // system will render its particles.
 
-  PT(Node) _render_parent;
-  PT(RenderRelation) _render_arc;
+  PT(PandaNode) _render_parent;
+  PT(PandaNode) _render_node;
 
   bool _active_system_flag;
   bool _local_velocity_flag;
@@ -88,15 +87,13 @@ private:
   // information for systems that will spawn
 
   bool _spawn_on_death_flag;
-  PT(Node) _spawn_render_node;
+  PT(PandaNode) _spawn_render_node;
   pvector< PT(ParticleSystem) > _spawn_templates;
 
   void spawn_child_system(BaseParticle *bp);
 
   // information for spawned systems
-
   bool _i_was_spawned_flag;
-  PT(RenderRelation) _physical_node_arc;
 
 PUBLISHED:
   // constructor/destructor
@@ -116,9 +113,9 @@ PUBLISHED:
   INLINE void set_system_age(float age);
   INLINE void set_active_system_flag(bool a);
   INLINE void set_spawn_on_death_flag(bool sod);
-  INLINE void set_spawn_render_node(Node *node);
+  INLINE void set_spawn_render_node(PandaNode *node);
   INLINE void set_template_system_flag(bool tsf);
-  INLINE void set_render_parent(Node *node);
+  INLINE void set_render_parent(PandaNode *node);
   INLINE void set_renderer(BaseParticleRenderer *r);
   INLINE void set_emitter(BaseParticleEmitter *e);
   INLINE void set_factory(BaseParticleFactory *f);
@@ -133,10 +130,10 @@ PUBLISHED:
   INLINE float get_system_age(void) const;
   INLINE bool get_active_system_flag(void) const;
   INLINE bool get_spawn_on_death_flag(void) const;
-  INLINE Node *get_spawn_render_node(void) const;
+  INLINE PandaNode *get_spawn_render_node(void) const;
   INLINE bool get_i_was_spawned_flag(void) const;
   INLINE int get_living_particles(void) const;
-  INLINE Node *get_render_parent(void) const;
+  INLINE PandaNode *get_render_parent(void) const;
   INLINE BaseParticleRenderer *get_renderer(void) const;
   INLINE BaseParticleEmitter *get_emitter(void) const;
   INLINE BaseParticleFactory *get_factory(void) const;

@@ -32,14 +32,11 @@
 class EXPCL_PANDAPHYSICS GeomParticleRenderer : public BaseParticleRenderer {
 private:
 
-  PT(Node) _geom_node;
-  PT(Node) _dead_particle_parent_node;
+  PT(PandaNode) _geom_node;
 
-  pvector< PT(RenderRelation) > _arc_vector;
+  pvector< PT(PandaNode) > _node_vector;
 
   int _pool_size;
-
-  INLINE void kill_arcs(void);
 
   // geomparticlerenderer takes advantage of the birth/death functions
 
@@ -51,15 +48,16 @@ private:
                       int ttl_particles);
 
   virtual void resize_pool(int new_size);
+  void kill_nodes(void);
 
 PUBLISHED:
   GeomParticleRenderer(ParticleRendererAlphaMode am = PR_ALPHA_NONE,
-                       Node *geom_node = (Node *) NULL);
+                       PandaNode *geom_node = (PandaNode *) NULL);
   GeomParticleRenderer(const GeomParticleRenderer& copy);
   virtual ~GeomParticleRenderer(void);
 
-  INLINE void set_geom_node(Node *node);
-  INLINE Node *get_geom_node(void);
+  INLINE void set_geom_node(PandaNode *node);
+  INLINE PandaNode *get_geom_node(void);
 
   virtual BaseParticleRenderer *make_copy(void);
 };

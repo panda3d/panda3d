@@ -21,26 +21,9 @@
 //       Class : Public
 // Description : Query the geomnode pointer
 ////////////////////////////////////////////////////////////////////
-INLINE GeomNode *BaseParticleRenderer::
+INLINE qpGeomNode *BaseParticleRenderer::
 get_render_node(void) const {
   return _render_node;
-}
-
-////////////////////////////////////////////////////////////////////
-//    Function : disable_alpha
-//      Access : Private
-// Description : kills the intermediate alpha node/arc
-////////////////////////////////////////////////////////////////////
-INLINE void BaseParticleRenderer::
-disable_alpha(void) {
-  _alpha_node.clear();
-
-  if (_alpha_arc.is_null() == false) {
-    remove_arc(_alpha_arc);
-    _alpha_arc.clear();
-  }
-
-  _interface_node = _render_node;
 }
 
 ////////////////////////////////////////////////////////////////////
