@@ -69,6 +69,13 @@ public:
   {
     _owns_str = false;
   }
+
+  // str() doesn't seem to compile cross-platform too reliably--Irix
+  // doesn't define pcount() for some reason.  On the other hand, why
+  // are you calling str() on a stringstream?  Just use an
+  // ostringstream.
+
+  /*
   string str() {
     int length = pcount();
     char *s = strstream::str();
@@ -78,6 +85,7 @@ public:
     }
     return result;
   }
+  */
 
 private:
   bool _owns_str;
