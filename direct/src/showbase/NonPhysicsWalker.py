@@ -162,6 +162,10 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         """
         Check on the arrow keys and update the avatar.
         """
+        if not self.lifter.hasContact():
+            # hack fix for falling through the floor:
+            messenger.send("walkerIsOutOfWorld", [self.avatarNodePath])
+
         # get the button states:
         forward = inputState.isSet("forward")
         reverse = inputState.isSet("reverse")
@@ -211,11 +215,9 @@ class NonPhysicsWalker(DirectObject.DirectObject):
     
     def doDeltaPos(self):
         assert(self.debugPrint("doDeltaPos()"))
-        pass
     
     def reset(self):
         assert(self.debugPrint("reset()"))
-        pass
 
     def enableAvatarControls(self):
         """

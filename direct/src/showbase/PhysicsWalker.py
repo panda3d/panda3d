@@ -415,6 +415,7 @@ class PhysicsWalker(DirectObject.DirectObject):
             # DCR: don't reset X and Y; allow player to move
             self.reset()
             self.avatarNodePath.setZ(50.0)
+            messenger.send("walkerIsOutOfWorld", [self.avatarNodePath])
 
         # get the button states:
         forward = inputState.isSet("forward")

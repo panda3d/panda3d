@@ -349,13 +349,18 @@ class GravityWalker(DirectObject.DirectObject):
         as floor, but are nearly vertical.  This ray is
         a hack to help deal with the cliff.
         """
+        #print "FixCliff() ...self.collisionsActive=%s, self.moving=%s, self.lifter.hasContact()=%s"%(
+        #        self.collisionsActive, self.moving, self.lifter.hasContact())
         if (self.collisionsActive
                 and self.moving
-                and self.lifter.isInOuterSpace()):
+                and not self.lifter.hasContact()):
             temp = self.cRayNodePath.getZ()
             self.cRayNodePath.setZ(14.0)
             self.oneTimeCollide()
             self.cRayNodePath.setZ(temp)
+            if not self.lifter.hasContact():
+                # ...we're still in outer space.
+                messenger.send("walkerIsOutOfWorld", [self.avatarNodePath])
         return Task.cont
     
     def placeOnFloor(self):
@@ -401,16 +406,19 @@ class GravityWalker(DirectObject.DirectObject):
             "jumpDelay-%s"%id(self))
 
     def displayDebugInfo(self):
-        onScreenDebug.add("airborneHeight", self.lifter.getAirborneHeight()) #*#
-        onScreenDebug.add("falling", self.falling) #*#
-        onScreenDebug.add("isOnGround", self.lifter.isOnGround()) #*#
-        onScreenDebug.add("gravity", self.lifter.getGravity()) #*#
-        onScreenDebug.add("jumpForce", self.avatarControlJumpForce) #*#
-        onScreenDebug.add("mayJump", self.mayJump) #*#
-        onScreenDebug.add("impact", self.lifter.getImpactVelocity()) #*#
-        onScreenDebug.add("velocity", self.lifter.getVelocity()) #*#
-        onScreenDebug.add("isAirborne", self.isAirborne) #*#
-        onScreenDebug.add("inOuterSpace", self.lifter.isInOuterSpace()) #*#
+        """
+        For debug use.
+        """
+        onScreenDebug.add("airborneHeight", self.lifter.getAirborneHeight())
+        onScreenDebug.add("falling", self.falling)
+        onScreenDebug.add("isOnGround", self.lifter.isOnGround())
+        onScreenDebug.add("gravity", self.lifter.getGravity())
+        onScreenDebug.add("jumpForce", self.avatarControlJumpForce)
+        onScreenDebug.add("mayJump", self.mayJump)
+        onScreenDebug.add("impact", self.lifter.getImpactVelocity())
+        onScreenDebug.add("velocity", self.lifter.getVelocity())
+        onScreenDebug.add("isAirborne", self.isAirborne)
+        onScreenDebug.add("hasContact", self.lifter.hasContact())
 
     def handleAvatarControls(self, task):
         """
