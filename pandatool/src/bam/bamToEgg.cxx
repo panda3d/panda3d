@@ -239,7 +239,7 @@ convert_geom_node(GeomNode *node, const WorkingNodePath &node_path,
   for (int i = 0; i < num_geoms; i++) {
     CPT(RenderState) geom_state = net_state->compose(node->get_geom_state(i));
 
-    Geom *geom = node->get_geom(i);
+    const Geom *geom = node->get_geom(i);
     // Explode the Geom before we try to deal with it.  That way, we
     // don't have to know about tristrips or whatnot.
     PT(Geom) exploded = geom->explode();
@@ -424,8 +424,9 @@ apply_node_properties(EggGroup *egg_group, PandaNode *node) {
   }
 
   const RenderEffects *effects = node->get_effects();
-  const BillboardEffect *bbe = effects->get_billboard();
-  if (bbe != (const BillboardEffect *)NULL) {
+  const RenderEffect *effect = effects->get_effect(BillboardEffect::get_class_type());
+  if (effect != (RenderEffect *)NULL) {
+    const BillboardEffect *bbe = DCAST(BillboardEffect, effect);
     if (bbe->get_axial_rotate()) {
       egg_group->set_billboard_type(EggGroup::BT_axis);
       any_applied = true;
