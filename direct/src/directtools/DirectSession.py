@@ -63,6 +63,7 @@ class DirectSession(PandaObject):
                 self.joybox = None
         else:
             self.deviceManager = None
+            self.joybox = None
 
         self.fControl = 0
         self.fAlt = 0
