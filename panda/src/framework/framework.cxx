@@ -977,14 +977,30 @@ int framework_main(int argc, char *argv[]) {
 
   typedef vector<Filename> Files;
   Files files;
+  Files grided_files;
 
   if (first_init != NULL)
     first_init();
 
-  for (int a = 1; a < argc; a++)
+  Files *pFileCollection = &files;
+
+  int gridrepeats=1;
+
+  for (int a = 1; a < argc; a++) {
     if ((argv[a] != (char*)0L) && ((argv[a])[0] != '-') &&
 	((argv[a])[0] != '+') && ((argv[a])[0] != '#'))
-      files.push_back(Filename::from_os_specific(argv[a]));
+      pFileCollection->push_back(Filename::from_os_specific(argv[a]));
+	else if((argv[a])[1]=='g') {
+			 pFileCollection = &grided_files;
+
+			 char *pStr=(argv[a])+2;
+			 if(*pStr!=NULL) {
+				 gridrepeats=atoi(pStr);
+				 if(gridrepeats<1)
+					 gridrepeats=1;
+			 }
+	}
+  }
 
   // load display modules
   GraphicsPipe::resolve_modules();
@@ -1124,7 +1140,7 @@ int framework_main(int argc, char *argv[]) {
   root = new NamedNode("root");
   first_arc = new RenderRelation(render, root, 100);
 
-  if (files.empty() && framework.GetBool("have-omnitriangle", true)) {
+  if (files.empty() && grided_files.empty() && framework.GetBool("have-omnitriangle", true)) {
     // The user did not specify a model file to load.  Create some
     // default geometry.
       
@@ -1169,10 +1185,9 @@ int framework_main(int argc, char *argv[]) {
     // Load up some geometry from one or more files.
     DSearchPath local_path(".");
 
+
     Files::const_iterator fi;
-    for (fi = files.begin();
-	 fi != files.end();
-	 ++fi) {
+    for (fi = files.begin(); fi != files.end(); ++fi) {
       Filename filename = (*fi);
 
       // First, we always try to resolve a filename from the current
@@ -1183,19 +1198,77 @@ int framework_main(int argc, char *argv[]) {
       PT_Node node = loader.load_sync(filename);
 
       if (node == (Node *)NULL) {
-	framework_cat.error()
-	  << "Unable to load file " << filename << "\n";
-      } else {
-	new RenderRelation(root, node);
-      }
-    }
+		  framework_cat.error() << "Unable to load file " << filename << "\n";
+		  continue;
+	  }
+
+	  RenderRelation *pArc = new RenderRelation(root, node);
+	}
+
+	if(!grided_files.empty()) {
+
+		int grided_files_size = grided_files.size();
+		PT_Node *pNodeArr = new PT_Node[grided_files.size()];
+
+		int i=0;
+
+		for (fi = grided_files.begin(); fi != grided_files.end(); (++fi),i++) {
+			  Filename filename = (*fi);
+		
+			  filename.resolve_filename(local_path);
+		
+			  pNodeArr[i] = loader.load_sync(filename);
+		
+			  if (pNodeArr[i] == (Node *)NULL) {
+				  framework_cat.error() << "Unable to load file " << filename << "\n";
+				  i--;
+				  grided_files_size--;
+				  continue;
+			  }
+		}
+	
+		#define GRIDCELLSIZE 5.0
+		 
+		int gridwidth=1;
+		while(gridwidth*gridwidth < grided_files_size*gridrepeats) {
+			gridwidth++;
+		}
+	
+		float xpos= -gridwidth*GRIDCELLSIZE/2.0;
+		float ypos = xpos;
+		int filenum=0;
+	
+		for(int passnum=0;passnum<gridrepeats;passnum++) {
+  		  for (i = 0; i < grided_files_size; i++) {
+
+			  PT_Node pNodePtr=pNodeArr[i];
+			  if(passnum>0) {
+				// cant directly instance characters due to LOD problems,
+				// must copy using copy_subgraph for now
+
+				  pNodePtr = pNodeArr[i]->copy_subgraph(RenderRelation::get_class_type());
+			  }
+
+			  RenderRelation *pArc = new RenderRelation(root, pNodePtr);
+			  pArc->set_transition(
+					  new TransformTransition
+					  (LMatrix4f::translate_mat(LVector3f(xpos, ypos, 0.0))));
+		
+			  if(((filenum+1) % gridwidth) == 0) {
+				  xpos= -gridwidth*GRIDCELLSIZE/2.0;
+				  ypos+=GRIDCELLSIZE;
+			  } else {
+				  xpos+=GRIDCELLSIZE;
+			  }
+			}
+		}
+		delete [] pNodeArr;
+	}
 
     // If we happened to load up both a character file and its
     // matching animation file, attempt to bind them together now.
     AnimControlCollection anim_controls;
     auto_bind(root, anim_controls, ~0);
-
-    // And start looping any animations we successfully bound.
     anim_controls.loop_all(true);
 
     // Now prepare all the textures with the GSG.
