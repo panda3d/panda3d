@@ -1,4 +1,4 @@
-// Filename: audio_sound.cxx
+// Filename: audioSound.cxx
 // Created by:  skyler (June 6, 2001)
 // Prior system by: cary
 //

@@ -1,4 +1,4 @@
-// Filename: MilesAudioManager.h
+// Filename: milesAudioManager.h
 // Created by:  skyler (June 6, 2001)
 // Prior system by: cary
 //

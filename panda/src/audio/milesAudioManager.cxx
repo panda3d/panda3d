@@ -1,4 +1,4 @@
-// Filename: audio_manager.cxx
+// Filename: milesAudioManager.cxx
 // Created by:  skyler (June 6, 2001)
 // Prior system by: cary
 //

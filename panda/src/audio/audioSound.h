@@ -1,4 +1,4 @@
-// Filename: audio_sound.h
+// Filename: audioSound.h
 // Created by:  skyler (June 6, 2001)
 // Prior system by: cary
 //
@@ -93,11 +93,6 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    /*
-    TypedObject::init_type();
-    register_type(_type_handle, "AudioSound",
-                  TypedObject::get_class_type());
-    */
     TypedReferenceCount::init_type();
     register_type(_type_handle, "AudioSound",
                   TypedReferenceCount::get_class_type());

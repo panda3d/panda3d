@@ -1,4 +1,4 @@
-// Filename: audio_manager.h
+// Filename: audioManager.h
 // Created by:  skyler (June 6, 2001)
 // Prior system by: cary
 //
@@ -22,8 +22,6 @@
 
 #include "config_audio.h"
 #include "audioSound.h"
-
-class AudioManagerInternal;
 
 class EXPCL_PANDA AudioManager {
 PUBLISHED:

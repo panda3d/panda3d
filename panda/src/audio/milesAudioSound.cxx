@@ -222,16 +222,6 @@ AudioSound::SoundStatus MilesAudioSound::status() const {
       return AudioSound::BAD;
   }
 }
-/*
-bool MilesAudioSound::operator==(const AudioSound& other) const {
-  // These sounds only match if they are the same instance (address):
-  return ((int)this) == ((int)&other);
-}
-
-bool MilesAudioSound::operator!=(const AudioSound& other) const {
-  return ! (*this == other);
-}
-*/
 
 
 #endif //]
