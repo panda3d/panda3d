@@ -24,8 +24,11 @@
 typedef int streamsize;
 #endif /* HAVE_STREAMSIZE */
 
-PipeStreamBuf::PipeStreamBuf(PipeStreamBuf::Direction dir) : _dir(dir),
-                                                             _pipe((FILE*)0L) {
+PipeStreamBuf::PipeStreamBuf(PipeStreamBuf::Direction dir) : 
+  _dir(dir)
+{
+  init_pipe();
+
 #ifndef WIN32_VC
   // taken from Dr. Ose.
   // These lines, which are essential on Irix and Linux, seem to be
@@ -33,7 +36,6 @@ PipeStreamBuf::PipeStreamBuf(PipeStreamBuf::Direction dir) : _dir(dir),
   allocate();
   assert((dir == Input) || (dir == Output));
   if (dir == Input) {
-    //    cerr << "allocated reserve is " << blen() << " bytes long" << endl;
     setg(base(), ebuf(), ebuf());
   } else {
     setp(base(), ebuf());
@@ -41,30 +43,29 @@ PipeStreamBuf::PipeStreamBuf(PipeStreamBuf::Direction dir) : _dir(dir),
 #endif /* WIN32_VC */
 }
 
-PipeStreamBuf::~PipeStreamBuf(void) {
-  if (_pipe != (FILE*)0L) {
+PipeStreamBuf::
+~PipeStreamBuf(void) {
+  if (is_open()) {
     sync();
     flush();
-    // any other cleanup needed (pclose, etc)
-    pclose(_pipe);
+    close_pipe();
   }
 }
 
 void PipeStreamBuf::flush(void) {
-  assert(_pipe != (FILE*)0L);
+  assert(is_open());
   if (_dir == Output) {
     write_chars("", 0, true);
   }
 }
 
 void PipeStreamBuf::command(const string cmd) {
-  assert(_pipe == (FILE*)0L);
-  const char *typ = (_dir == Output)?"w":"r";
-  _pipe = popen(cmd.c_str(), typ);
+  assert(!is_open());
+  open_pipe(cmd);
 }
 
 int PipeStreamBuf::overflow(int c) {
-  assert(_pipe != (FILE*)0L);
+  assert(is_open());
   assert(_dir == Output);
   streamsize n = pptr() - pbase();
   if (n != 0) {
@@ -80,7 +81,7 @@ int PipeStreamBuf::overflow(int c) {
 }
 
 int PipeStreamBuf::sync(void) {
-  assert(_pipe != (FILE*)0L);
+  assert(is_open());
   if (_dir == Output) {
     streamsize n = pptr() - pbase();
     write_chars(pbase(), n, false);
@@ -89,14 +90,15 @@ int PipeStreamBuf::sync(void) {
     streamsize n = egptr() - gptr();
     if (n != 0) {
       gbump(n);  // flush all our stored input away
+#ifndef NDEBUG
       cerr << "pfstream tossed out " << n << " bytes" << endl;
+#endif
     }
   }
   return 0;
 }
 
 int PipeStreamBuf::underflow(void) {
-  assert(_pipe != (FILE*)0L);
   assert(_dir == Input);
   if ((eback() == (char*)0L) || (gptr() == (char*)0L) ||
       (egptr() == (char*)0L)) {
@@ -109,15 +111,16 @@ int PipeStreamBuf::underflow(void) {
     char c = *(gptr());
     return c;
   }
-  if (feof(_pipe) != 0)
+  if (eof_pipe()) {
     return EOF;
+  }
 #ifdef WIN32_VC
   size_t len = 4096;
 #else /* WIN32_VC */
   size_t len = ebuf() - base();
 #endif /* WIN32_VC */
   char* buf = new char[len];
-  size_t n = fread(buf, 1, len, _pipe);
+  size_t n = read_pipe(buf, len);
   int ret = buf[0];
   if (n == 0)
     ret = EOF;
@@ -154,9 +157,303 @@ void PipeStreamBuf::write_chars(const char* start, int length, bool flush) {
     }
   }
   // now output 'line'
-  size_t wrote = fwrite(line.c_str(), 1, line.length(), _pipe);
+  size_t wrote = write_pipe(line.c_str(), line.length());
+#ifndef NDEBUG
   if (wrote != line.length())
     cerr << "wrote only " << wrote << " of " << line.length()
          << " bytes to pipe" << endl;
-  fflush(_pipe);
+#endif
 }
+
+#ifndef WIN_PIPE_CALLS
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipeStreamBuf::init_pipe
+//       Access: Private
+//  Description: Initializes whatever data structures store the child
+//               process information.  This function is only called
+//               once at startup, by the constructor.
+////////////////////////////////////////////////////////////////////
+void PipeStreamBuf::
+init_pipe() {
+  _pipe = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipeStreamBuf::is_open
+//       Access: Private
+//  Description: Returns true if the pipe has been opened, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool PipeStreamBuf::
+is_open() const {
+  return _pipe != NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipeStreamBuf::eof_pipe
+//       Access: Private
+//  Description: Returns true if there is an end-of-file condition on
+//               the input, or if the pipe was never opened.
+////////////////////////////////////////////////////////////////////
+bool PipeStreamBuf::
+eof_pipe() const {
+  return (_pipe == NULL) && feof(_pipe);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipeStreamBuf::open_pipe
+//       Access: Private
+//  Description: Forks a child to run the indicated command, and
+//               according to the setting of _dir, binds either its
+//               input or output to this process for writing or
+//               reading.
+//
+//               Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool PipeStreamBuf::
+open_pipe(const string &cmd) {
+  const char *typ = (_dir == Output)?"w":"r";
+  _pipe = popen(cmd.c_str(), typ);
+  return (_pipe != NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipeStreamBuf::close_pipe
+//       Access: Private
+//  Description: Closes the pipe opened previously.
+////////////////////////////////////////////////////////////////////
+void PipeStreamBuf::
+close_pipe() {
+  if (_pipe != NULL) {
+    fclose(_pipe);
+    _pipe = NULL;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipeStreamBuf::write_pipe
+//       Access: Private
+//  Description: Writes the indicated data out to the child process
+//               opened previously.  Returns the number of bytes read.
+////////////////////////////////////////////////////////////////////
+size_t PipeStreamBuf::
+write_pipe(const char *data, size_t len) {
+  size_t wrote_count = fwrite(data, 1, len, _pipe);
+  fflush(_pipe);
+  return wrote_count;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipeStreamBuf::read_pipe
+//       Access: Private
+//  Description: Reads the indicated amount of data from the child
+//               process opened previously.  Returns the number of
+//               bytes read.
+////////////////////////////////////////////////////////////////////
+size_t PipeStreamBuf::
+read_pipe(char *data, size_t len) {
+  return fread(data, 1, len, _pipe);
+}
+
+#else  // WIN_PIPE_CALLS
+
+// The official Windows way of reading from a child process, without
+// using a Unix-style convenience function like popen(), is similar in
+// principle to the Unix pipe() method.  We have to first redirect our
+// own stdout to an anonymous pipe, then we spawn a child, who
+// inherits this new stdout.  Then we can restore our own stdout, and
+// read from the other end of the pipe.
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipeStreamBuf::init_pipe
+//       Access: Private
+//  Description: Initializes whatever data structures store the child
+//               process information.  This function is only called
+//               once at startup, by the constructor.
+////////////////////////////////////////////////////////////////////
+void PipeStreamBuf::
+init_pipe() {
+  _child_out = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipeStreamBuf::is_open
+//       Access: Private
+//  Description: Returns true if the pipe has been opened, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool PipeStreamBuf::
+is_open() const {
+  return (_child_out != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipeStreamBuf::eof_pipe
+//       Access: Private
+//  Description: Returns true if there is an end-of-file condition on
+//               the input, or if the pipe was never opened.
+////////////////////////////////////////////////////////////////////
+bool PipeStreamBuf::
+eof_pipe() const {
+  return (_child_out == 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipeStreamBuf::open_pipe
+//       Access: Private
+//  Description: Forks a child to run the indicated command, and
+//               according to the setting of _dir, binds either its
+//               input or output to this process for writing or
+//               reading.
+//
+//               Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool PipeStreamBuf::
+open_pipe(const string &cmd) {
+  close_pipe();
+
+  // At the present, this only works for input pipes.  We can add code
+  // to support output pipes later if anyone cares.
+  if (_dir == Output) {
+    return false;
+  }
+
+  // First, save our current stdout, so we can restore it after all of
+  // this nonsense.
+  HANDLE hSaveStdout = GetStdHandle(STD_OUTPUT_HANDLE); 
+ 
+  // Now create a pipe to accept the child processes' output.
+  HANDLE hChildStdoutRd, hChildStdoutWr;
+  
+  // Set the bInheritHandle flag so pipe handles are inherited. 
+  SECURITY_ATTRIBUTES saAttr; 
+  saAttr.nLength = sizeof(SECURITY_ATTRIBUTES); 
+  saAttr.bInheritHandle = TRUE; 
+  saAttr.lpSecurityDescriptor = NULL; 
+  if (!CreatePipe(&hChildStdoutRd, &hChildStdoutWr, &saAttr, 0)) {
+#ifndef NDEBUG
+    cerr << "Unable to create output pipe\n";
+#endif
+    return false;
+  }
+ 
+  // Remap stdout to the "write" end of this pipe.
+  if (!SetStdHandle(STD_OUTPUT_HANDLE, hChildStdoutWr)) {
+#ifndef NDEBUG
+    cerr << "Unable to redirect stdout\n";
+#endif
+    return false;
+  }
+ 
+  // Create noninheritable read handle and close the inheritable read 
+  // handle. 
+
+  BOOL fSuccess = DuplicateHandle(GetCurrentProcess(), hChildStdoutRd,
+                                  GetCurrentProcess(), &_child_out,
+                                  0, FALSE, DUPLICATE_SAME_ACCESS);
+  
+  if (!fSuccess) {
+#ifndef NDEBUG
+    cerr << "DuplicateHandle failed\n";
+#endif
+    return false;
+  }
+  CloseHandle(hChildStdoutRd);
+ 
+  // Now spawn the child process.
+  
+  PROCESS_INFORMATION piProcInfo; 
+  STARTUPINFO siStartInfo; 
+  
+  // Set up members of the PROCESS_INFORMATION structure. 
+  ZeroMemory(&piProcInfo, sizeof(PROCESS_INFORMATION));
+
+  // Set up members of the STARTUPINFO structure. 
+  ZeroMemory(&siStartInfo, sizeof(STARTUPINFO));
+  siStartInfo.cb = sizeof(STARTUPINFO); 
+  siStartInfo.dwFlags = STARTF_USESTDHANDLES;
+  siStartInfo.hStdError = hChildStdoutWr;
+  siStartInfo.hStdInput = (HANDLE)STD_INPUT_HANDLE;
+  siStartInfo.hStdOutput = hChildStdoutWr; 
+
+  if (!CreateProcess(NULL, 
+                     (LPSTR)cmd.c_str(),       // command line 
+                     NULL,          // process security attributes 
+                     NULL,          // primary thread security attributes 
+                     TRUE,          // handles are inherited 
+                     0,             // creation flags 
+                     NULL,          // use parent's environment 
+                     NULL,          // use parent's current directory 
+                     &siStartInfo,  // STARTUPINFO pointer 
+                     &piProcInfo)) {// receives PROCESS_INFORMATION 
+#ifndef NDEBUG
+    cerr << "Unable to spawn process.\n";
+#endif
+    return false;
+  }
+ 
+  // Now restore our own stdout, up here in the parent process.
+  if (!SetStdHandle(STD_OUTPUT_HANDLE, hSaveStdout)) {
+#ifndef NDEBUG
+    cerr << "Unable to restore stdout\n";
+#endif
+    return false;
+  }
+
+  // Close the write end of the pipe before reading from the 
+  // read end of the pipe. 
+  if (!CloseHandle(hChildStdoutWr)) {
+#ifndef NDEBUG
+    cerr << "Unable to close write end of pipe\n";
+#endif
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipeStreamBuf::close_pipe
+//       Access: Private
+//  Description: Closes the pipe opened previously.
+////////////////////////////////////////////////////////////////////
+void PipeStreamBuf::
+close_pipe() {
+  if (_child_out != 0) {
+    CloseHandle(_child_out);
+    _child_out = 0;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipeStreamBuf::write_pipe
+//       Access: Private
+//  Description: Writes the indicated data out to the child process
+//               opened previously.  Returns the number of bytes read.
+////////////////////////////////////////////////////////////////////
+size_t PipeStreamBuf::
+write_pipe(const char *data, size_t len) {
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipeStreamBuf::read_pipe
+//       Access: Private
+//  Description: Reads the indicated amount of data from the child
+//               process opened previously.  Returns the number of
+//               bytes read.
+////////////////////////////////////////////////////////////////////
+size_t PipeStreamBuf::
+read_pipe(char *data, size_t len) {
+  DWORD dwRead; 
+  if (!ReadFile(_child_out, data, len, &dwRead, NULL)) {
+    close_pipe();
+    return 0;
+  }
+
+  return dwRead;
+}
+
+
+#endif  // WIN_PIPE_CALLS
