@@ -1404,11 +1404,14 @@ class LevelEditor(NodePath, PandaObject):
 
         # Reset last Code (for autoPositionGrid)
         if DNAClassEqual(dnaNode, DNA_STREET):
-            self.snapList = OBJECT_SNAP_POINTS[dnaNode.getCode()]
+            self.snapList = self.getSnapPoint(dnaNode.getCode())
         # Select the instance
         direct.select(newNodePath)
         # Update grid to get ready for the next object
         self.autoPositionGrid()
+
+    def getSnapPoint(self, code):
+        return OBJECT_SNAP_POINTS.get(code, [(Vec3(0.0,0,0), Vec3(0)), (Vec3(0), Vec3(0))])
 
     def addGroup(self, nodePath):
         """ Add a new DNA Node Group to the specified Node Path """
@@ -1949,7 +1952,7 @@ class LevelEditor(NodePath, PandaObject):
                     self.toggleShowLandmarkBlock()
             # Reset last Code (for autoPositionGrid)
             if DNAClassEqual(dnaNode, DNA_STREET):
-                self.snapList = OBJECT_SNAP_POINTS[dnaNode.getCode()]
+                self.snapList = self.getSnapPoint(dnaNode.getCode())
         else:
             pointOrCell, type = self.findPointOrCell(nodePath)
             if pointOrCell and (type == 'suitPointMarker'):
