@@ -336,8 +336,8 @@ is_nan() const {
 ////////////////////////////////////////////////////////////////////
 INLINE FLOATTYPE FLOATNAME(LMatrix4)::
 get_cell(int row, int col) const {
-  nassertr(row >= 0 && row < 4, 0.0);
-  nassertr(col >= 0 && col < 4, 0.0);
+//  nassertr(row >= 0 && row < 4, 0.0);
+//  nassertr(col >= 0 && col < 4, 0.0);
   return _data[row * 4 + col];
 }
 
@@ -348,8 +348,8 @@ get_cell(int row, int col) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void FLOATNAME(LMatrix4)::
 set_cell(int row, int col, FLOATTYPE value) {
-  nassertv(row >= 0 && row < 4);
-  nassertv(col >= 0 && col < 4);
+//  nassertv(row >= 0 && row < 4);
+//  nassertv(col >= 0 && col < 4);
   _data[row * 4 + col] = value;
 }
 

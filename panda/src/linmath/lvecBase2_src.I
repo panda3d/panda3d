@@ -144,7 +144,7 @@ is_nan() const {
 ////////////////////////////////////////////////////////////////////
 INLINE FLOATTYPE FLOATNAME(LVecBase2)::
 get_cell(int i) const {
-  nassertr(i >= 0 && i < 2, 0);
+//  nassertr(i >= 0 && i < 2, 0);
   return _data[i];
 }
 
@@ -175,7 +175,7 @@ get_y() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void FLOATNAME(LVecBase2)::
 set_cell(int i, FLOATTYPE value) {
-  nassertv(i >= 0 && i < 2);
+//  nassertv(i >= 0 && i < 2);
   _data[i] = value;
 }
 
