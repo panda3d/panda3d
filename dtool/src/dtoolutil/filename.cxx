@@ -1159,7 +1159,42 @@ find_on_searchpath(const DSearchPath &searchpath) {
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 scan_directory(vector_string &contents) const {
-#if defined(HAVE_GLOB_H)
+#if defined(WIN32_VC)
+  // Use FindFirstFile()/FindNextFile() to walk through the list of
+  // files in a directory.
+  size_t orig_size = contents.size();
+
+  string match;
+  if (empty()) {
+    match = "*.*";
+  } else {
+    match = to_os_specific() + "\\*.*";
+  }
+  WIN32_FIND_DATA find_data;
+
+  HANDLE handle = FindFirstFile(match.c_str(), &find_data);
+  if (handle == INVALID_HANDLE_VALUE) {
+    if (GetLastError() == ERROR_NO_MORE_FILES) {
+      // No matching files is not an error.
+      return true;
+    }
+    return false;
+  }
+
+  do {
+    string filename = find_data.cFileName;
+    if (filename != "." && filename != "..") {
+      contents.push_back(filename);
+    }
+  } while (FindNextFile(handle, &find_data));
+
+  bool scan_ok = (GetLastError() == ERROR_NO_MORE_FILES);
+  FindClose(handle);
+
+  sort(contents.begin() + orig_size, contents.end());
+  return scan_ok;
+
+#elif defined(HAVE_GLOB_H)
   // In some cases, particularly with NFS, it seems that opendir()
   // .. readdir() fails to properly read the entire directory ("Value
   // too large for defined data type"), but glob() succeeds.
@@ -1175,10 +1210,12 @@ scan_directory(vector_string &contents) const {
   glob_t globbuf;
 
   int r = glob(dirname.c_str(), GLOB_ERR, NULL, &globbuf);
+#ifdef GLOB_NOMATCH
   if (r != 0 && r != GLOB_NOMATCH) {
     perror(dirname.c_str());
     return false;
   }
+#endif
   size_t offset = dirname.size() - 1;
 
   for (int i = 0; globbuf.gl_pathv[i] != NULL; i++) {
@@ -1221,41 +1258,6 @@ scan_directory(vector_string &contents) const {
 
   sort(contents.begin() + orig_size, contents.end());
   return true;
-
-#elif defined(WIN32_VC)
-  // Use FindFirstFile()/FindNextFile() to walk through the list of
-  // files in a directory.
-  size_t orig_size = contents.size();
-
-  string match;
-  if (empty()) {
-    match = "*.*";
-  } else {
-    match = to_os_specific() + "\\*.*";
-  }
-  WIN32_FIND_DATA find_data;
-
-  HANDLE handle = FindFirstFile(match.c_str(), &find_data);
-  if (handle == INVALID_HANDLE_VALUE) {
-    if (GetLastError() == ERROR_NO_MORE_FILES) {
-      // No matching files is not an error.
-      return true;
-    }
-    return false;
-  }
-
-  do {
-    string filename = find_data.cFileName;
-    if (filename != "." && filename != "..") {
-      contents.push_back(filename);
-    }
-  } while (FindNextFile(handle, &find_data));
-
-  bool scan_ok = (GetLastError() == ERROR_NO_MORE_FILES);
-  FindClose(handle);
-
-  sort(contents.begin() + orig_size, contents.end());
-  return scan_ok;
   
 #else
   // Don't know how to scan directories!
