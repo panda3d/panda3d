@@ -103,6 +103,26 @@ class LevelSpec:
     def getEntityType(self, entId):
         return self.getEntitySpec(entId)['type']
 
+    def getEntityZoneEntId(self, entId):
+        """ return the entId of the zone that entity is in; if entity
+        is a zone, returns its entId """
+        spec = self.getEntitySpec(entId)
+        type = spec['type']
+        # if it's a zone, this is our entity
+        if type == 'zone':
+            return entId
+        # if we have no parentEntId, assume we're in the UberZone
+        if not spec.has_key('parentEntId'):
+            return LevelConstants.UberZoneEntId
+        # keep looking up the heirarchy for a zone entity
+        return self.getEntityZoneId(spec['parentEntId'])
+
+    def getEntityZoneNum(self, entId):
+        """ return the model zoneNum of zone that contains the entity """
+        zoneEntId = self.getEntityZoneEntId(entId)
+        spec = self.getEntitySpec(zoneEntId)
+        return spec['modelZoneNum']
+
     def getEntType2ids(self, entIds):
         """given list of entIds, return dict of entType 2 entIds"""
         entType2ids = {}

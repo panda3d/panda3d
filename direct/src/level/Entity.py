@@ -38,6 +38,10 @@ class Entity(DirectObject):
         del self.level
         del self.entId
         
+    def getZoneEntId(self):
+        """returns entId of zone that contains this entity"""
+        return self.level.getEntityZoneEntId(self.entId)
+
     def privGetSetter(self, attrib):
         setFuncName = 'set%s%s' % (string.upper(attrib[0]), attrib[1:])
         if hasattr(self, setFuncName):

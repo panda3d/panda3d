@@ -13,11 +13,20 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
     """DistributedLevelAI"""
     notify = DirectNotifyGlobal.directNotify.newCategory('DistributedLevelAI')
 
-    def __init__(self, air, zoneId):
+    def __init__(self, air, zoneId, entranceId, avIds):
         DistributedObjectAI.DistributedObjectAI.__init__(self, air)
         Level.Level.__init__(self)
-        # this is one of the required fields
+        # these are required fields
         self.zoneId = zoneId
+        self.entranceId = entranceId
+
+        assert len(avIds) > 0 and len(avIds) <= 4
+        assert 0 not in avIds
+        assert None not in avIds
+        self.avIdList = avIds
+        self.numPlayers = len(self.avIdList)
+        self.notify.debug("expecting avatars: %s" % str(self.avIdList))
+
         if __debug__:
             self.modified = 0
 
@@ -36,6 +45,12 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         nasty race conditions on the client if there are entities in the
         same zone with the level"""
         return self.zoneId
+
+    def getPlayerIds(self):
+        return self.avIdList
+
+    def getEntranceId(self):
+        return self.entranceId
 
     def delete(self):
         self.notify.debug('delete')

@@ -53,6 +53,9 @@ class Level:
         self.entType2ids = self.levelSpec.getEntType2ids(
             self.levelSpec.getAllEntIds())
 
+        # entranceId to entrance entity
+        self.entranceId2entity = {}
+
         # this list contains the entIds of entities that we have actually
         # created, in order of creation
         self.createdEntIds = []
@@ -197,6 +200,19 @@ class Level:
 
     def getEntityType(self, entId):
         return self.levelSpec.getEntityType(entId)
+
+    def getEntityZoneEntId(self, entId):
+        """return entId of zone that contains the entity"""
+        return self.levelSpec.getEntityZoneEntId(entId)
+
+    def getEntityZoneNum(self, entId):
+        """return the model zoneNum of zone that contains the entity"""
+        return self.levelSpec.getEntityZoneNum(entId)
+
+    def getEntityZoneId(self, entId):
+        """return network zoneId of zone that contains the entity"""
+        zoneEntId = self.getEntityZoneEntId(entId)
+        return self.zoneEntId2zoneId[entId]
 
     def getZoneId(self, dummy=None, zoneNum=None, entId=None):
         """look up network zoneId by zoneNum or entId"""

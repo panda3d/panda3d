@@ -53,6 +53,12 @@ class Zone(Nodepath):
         ('visibility', [], 'visZoneList'),
         )
 
+class EntrancePoint(Nodepath):
+    type = 'entrancePoint'
+    attribs = (
+        ('entranceId', -1, 'int'),
+        )
+
 class LogicGate(Entity):
     type = 'logicGate'
     output = 'bool'

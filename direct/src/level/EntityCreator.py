@@ -5,6 +5,7 @@ import EntityCreatorBase
 import BasicEntities
 import DirectNotifyGlobal
 import EditMgr
+import EntrancePoint
 import LevelMgr
 import ZoneEntity
 import ModelEntity
@@ -14,7 +15,8 @@ import PathEntity
 # ctor functions must take (level, entId)
 # and they must return the entity that was created, or 'nothing'
 def nothing(*args):
-    """For entities that don't need to be created by the client"""
+    """For entities that don't need to be created by the client or don't
+    exist on the client at all"""
     return 'nothing'
 
 class EntityCreator(EntityCreatorBase.EntityCreatorBase):
@@ -29,6 +31,7 @@ class EntityCreator(EntityCreatorBase.EntityCreatorBase):
         self.privRegisterTypes({
             'cutScene': CutScene.CutScene,
             'editMgr': EditMgr.EditMgr,
+            'entrancePoint': EntrancePoint.EntrancePoint,
             'levelMgr': LevelMgr.LevelMgr,
             'logicGate': nothing,
             'model' : ModelEntity.ModelEntity,

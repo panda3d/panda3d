@@ -81,6 +81,16 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # zone the entire time we're in here
         self.levelZone = zoneId
 
+    def setPlayerIds(self, avIdList):
+        self.avIdList = avIdList
+        assert toonbase.localToon.doId in self.avIdList
+
+    def setEntranceId(self, entranceId):
+        self.entranceId = entranceId
+
+    def getEntranceId(self):
+        return self.entranceId
+
     # "required" fields (these ought to be required fields, but
     # the AI level obj doesn't know the data values until it has been
     # generated.)
@@ -167,6 +177,19 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
         # load stuff
         self.initVisibility()
+
+        self.placeLocalToon()
+
+    def placeLocalToon(self):
+        # the entrancePoint entities register themselves with us
+        if self.entranceId not in self.entranceId2entity:
+            self.notify.warning('unknown entranceId %s' % self.entranceId)
+            toonbase.localToon.setPos(0,0,0)
+        else:
+            epEnt = self.entranceId2entity[self.entranceId]
+            epEnt.placeToon(toonbase.localToon,
+                            self.avIdList.index(toonbase.localToon.doId),
+                            len(self.avIdList))
 
     def createEntityCreator(self):
         """Create the object that will be used to create Entities.

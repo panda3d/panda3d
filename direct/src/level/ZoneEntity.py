@@ -8,7 +8,11 @@ class ZoneEntity(ZoneEntityBase.ZoneEntityBase, BasicEntities.NodePathAttribs):
         ZoneEntityBase.ZoneEntityBase.__init__(self, level, entId)
 
         self.nodePath = self.level.getZoneNode(self.modelZoneNum)
-        self.initNodePathAttribs(doReparent=0)
+        BasicEntities.NodePathAttribs.initNodePathAttribs(self, doReparent=0)
+
+    def destroy(self):
+        BasicEntities.NodePathAttribs.destroy(self)
+        ZoneEntityBase.ZoneEntityBase.destroy(self)
 
     def getNodePath(self):
         return self.nodePath
