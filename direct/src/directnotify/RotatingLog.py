@@ -3,7 +3,6 @@
 import os
 import time
 
-
 class RotatingLog:
     """
     A file() (or open()) replacement that will automatically open and write
@@ -37,7 +36,14 @@ class RotatingLog:
             self.file.flush()
             self.file.close()
             del self.file
-    
+        if hasattr(self, "closed"):
+            del self.closed
+            del self.mode
+            del self.name
+            del self.softspace
+            #del self.encoding
+            #del self.newlines
+
     def shouldRotate(self):
         """
         Returns a bool about whether a new log file should
@@ -61,7 +67,7 @@ class RotatingLog:
         # Hmm, 26 files are full?  throw the rest in z:
         # Maybe we should clear the self.sizeLimit here... maybe.
         return path
-    
+
     def rotate(self):
         """
         Rotate the log now.  You normally shouldn't need to call this.
@@ -76,6 +82,15 @@ class RotatingLog:
             # until the first write:
             file.seek(0, 2)
             self.file=file
+            
+            # Some of these data members may be expected by some of our clients:
+            self.closed = self.file.closed
+            self.mode = self.file.mode
+            self.name = self.file.name
+            self.softspace = self.file.softspace
+            #self.encoding = self.file.encoding # Python 2.3
+            #self.newlines = self.file.newlines # Python 2.3, maybe
+            
             if self.timeLimit is not None and time.time() > self.timeLimit:
                 self.timeLimit=time.time()+self.timeInterval
         else:
@@ -91,6 +106,42 @@ class RotatingLog:
         if self.shouldRotate():
             self.rotate()
         if hasattr(self, "file"):
-            self.file.write(data)
+            r = self.file.write(data)
             self.file.flush()
- 
+            return r
+
+    def flush(self):
+        return self.file.flush()
+
+    def fileno(self): 
+        return self.file.fileno()
+
+    def isatty(self):
+        return self.file.isatty()
+
+    def next(self):
+        return self.file.next()
+
+    def read(self, size): 
+        return self.file.read(size)
+
+    def readline(self, size):
+        return self.file.readline(size)
+
+    def readlines(self, sizehint):
+        return self.file.readlines(sizehint)
+
+    def xreadlines(self):
+        return self.file.xreadlines()
+
+    def seek(self, offset, whence=0):
+        return self.file.seek(offset, whence)
+
+    def tell(self):
+        return self.file.tell()
+
+    def truncate(self, size):
+        return self.file.truncate(size)
+
+    def writelines(self, sequence):
+        return self.file.writelines(sequence)
