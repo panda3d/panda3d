@@ -19,11 +19,11 @@
 #ifndef EGGTEXTURECARDS_H
 #define EGGTEXTURECARDS_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
-#include <eggWriter.h>
-#include <eggTexture.h>
-#include <luse.h>
+#include "eggWriter.h"
+#include "eggTexture.h"
+#include "luse.h"
 
 class EggVertexPool;
 class EggVertex;
@@ -45,7 +45,8 @@ protected:
   static bool dispatch_format(const string &opt, const string &arg, void *var);
 
 private:
-  bool scan_texture(const Filename &filename, LVecBase4d &geometry);
+  bool scan_texture(const Filename &filename, LVecBase4d &geometry,
+                    int &num_channels);
   void make_vertices(const LPoint4d &geometry, EggVertexPool *vpool,
                      EggVertex *&v1, EggVertex *&v2, EggVertex *&v3, EggVertex *&v4);
 
@@ -59,6 +60,7 @@ public:
   vector_string _texture_names;
   EggTexture::WrapMode _wrap_mode;
   EggTexture::Format _format;
+  EggTexture::Format _format_1, _format_2, _format_3, _format_4;
   bool _apply_bface;
 };
 

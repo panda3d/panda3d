@@ -18,12 +18,12 @@
 
 #include "eggTextureCards.h"
 
-#include <eggGroup.h>
-#include <eggVertexPool.h>
-#include <eggVertex.h>
-#include <eggTexture.h>
-#include <eggPolygon.h>
-#include <pnmImageHeader.h>
+#include "eggGroup.h"
+#include "eggVertexPool.h"
+#include "eggVertex.h"
+#include "eggTexture.h"
+#include "eggPolygon.h"
+#include "pnmImageHeader.h"
 
 #include <algorithm>
 
@@ -82,9 +82,33 @@ EggTextureCards() : EggWriter(true, true) {
 
   add_option
     ("f", "format", 0,
-     "Indicates the format of the texture: typical choices are \"rgba12\" "
+     "Indicates the format for all textures: typical choices are \"rgba12\" "
      "or \"rgb5\" or \"alpha\".  The default is to leave this unspecified.",
      &EggTextureCards::dispatch_format, NULL, &_format);
+
+  add_option
+    ("f1", "format", 0,
+     "Indicates the format for one-channel textures only.  If specified, this "
+     "overrides the format specified by -f.",
+     &EggTextureCards::dispatch_format, NULL, &_format_1);
+
+  add_option
+    ("f2", "format", 0,
+     "Indicates the format for two-channel textures only.  If specified, this "
+     "overrides the format specified by -f.",
+     &EggTextureCards::dispatch_format, NULL, &_format_2);
+
+  add_option
+    ("f3", "format", 0,
+     "Indicates the format for three-channel textures only.  If specified, this "
+     "overrides the format specified by -f.",
+     &EggTextureCards::dispatch_format, NULL, &_format_3);
+
+  add_option
+    ("f4", "format", 0,
+     "Indicates the format for four-channel textures only.  If specified, this "
+     "overrides the format specified by -f.",
+     &EggTextureCards::dispatch_format, NULL, &_format_4);
 
   add_option
     ("b", "", 0,
@@ -96,6 +120,10 @@ EggTextureCards() : EggWriter(true, true) {
   _polygon_color.set(1.0, 1.0, 1.0, 1.0);
   _wrap_mode = EggTexture::WM_unspecified;
   _format = EggTexture::F_unspecified;
+  _format_1 = EggTexture::F_unspecified;
+  _format_2 = EggTexture::F_unspecified;
+  _format_3 = EggTexture::F_unspecified;
+  _format_4 = EggTexture::F_unspecified;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -187,12 +215,15 @@ dispatch_format(const string &opt, const string &arg, void *var) {
 //               cannot be read.
 ////////////////////////////////////////////////////////////////////
 bool EggTextureCards::
-scan_texture(const Filename &filename, LVecBase4d &geometry) {
+scan_texture(const Filename &filename, LVecBase4d &geometry,
+             int &num_channels) {
   PNMImageHeader header;
   if (!header.read_header(filename)) {
     nout << "Unable to read image " << filename << "\n";
     return false;
   }
+
+  num_channels = header.get_num_channels();
 
   double xscale = header.get_x_size() / _pixel_scale[0];
   double yscale = header.get_y_size() / _pixel_scale[1];
@@ -275,21 +306,40 @@ run() {
     Filename filename = (*ti);
     string name = filename.get_basename_wo_extension();
 
-    bool texture_ok = true;
-    if (_got_pixel_scale) {
-      // If we have a per-texture pixel scale, we have to read in the
-      // texture header and determine its size.
-      LVecBase4d geometry;
-      texture_ok = scan_texture(filename, geometry);
-      if (texture_ok) {
-        make_vertices(geometry, vpool, v1, v2, v3, v4);
-      }
-    }
+    // Read in the texture header and determine its size.
+    LVecBase4d geometry;
+    int num_channels;
+    bool texture_ok = scan_texture(filename, geometry, num_channels);
 
     if (texture_ok) {
+      if (_got_pixel_scale) {
+        make_vertices(geometry, vpool, v1, v2, v3, v4);
+      }
+
       EggTexture *tref = new EggTexture(name, filename);
       tref->set_wrap_mode(_wrap_mode);
-      tref->set_format(_format);
+
+      switch (num_channels) {
+      case 1:
+        tref->set_format(_format_1);
+        break;
+
+      case 2:
+        tref->set_format(_format_2);
+        break;
+
+      case 3:
+        tref->set_format(_format_3);
+        break;
+
+      case 4:
+        tref->set_format(_format_4);
+        break;
+      }
+
+      if (tref->get_format() == EggTexture::F_unspecified) {
+        tref->set_format(_format);
+      }
       group->add_child(tref);
 
       // Each polygon gets placed in its own sub-group.  This will make
