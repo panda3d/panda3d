@@ -265,14 +265,12 @@ class DirectGuiBase(PandaObject.PandaObject):
                     
     def isinitoption(self, option):
         """
-        isinitoption(option)
         Is this opition one that can only be specified at construction?
         """
         return self._optionInfo[option][_OPT_FUNCTION] is INITOPT
     
     def options(self):
         """
-        options()
         Print out a list of available widget options.
         Does not include subcomponent options.
         """
@@ -432,7 +430,6 @@ class DirectGuiBase(PandaObject.PandaObject):
         
     def cget(self, option):
         """
-        cget(option)
         Get current configuration setting for this option
         """
         # Return the value of an option, for example myWidget['font']. 
@@ -716,7 +713,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         # Attach button to parent and make that self
         if (parent == None):
             parent = aspect2d
-        self.assign(parent.attachNewNode( self.guiItem, self['sortOrder'] ) )
+        self.assign(parent.attachNewNode(self.guiItem, self['sortOrder']))
         # Update pose to initial values
         if self['pos']:
             pos = self['pos']
