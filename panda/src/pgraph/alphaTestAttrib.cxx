@@ -61,6 +61,7 @@ void AlphaTestAttrib::
 output(ostream &out) const {
   out << get_type() << ":";
   output_comparefunc(out,_mode);
+  out << "," << _reference_alpha;
 }
 
 ////////////////////////////////////////////////////////////////////
