@@ -569,7 +569,7 @@
 // space-separated set of library names only; the -l switch is not
 // included here.
 #defun get_libs
-  #define alt_libs $[stl_libs] $[nspr_libs] $[python_libs]
+  #define alt_libs $[stl_libs] $[nspr_libs] $[python_libs] $[TARGET_LIBS]
   
   #if $[ne $[USE_CRYPTO] $[components $[USE_CRYPTO],$[active_component_libs] $[transitive_link]],]
     #set alt_libs $[alt_libs] $[crypto_libs]
