@@ -252,6 +252,8 @@ class SliderWidget(Pmw.MegaWidget):
 	else:
             createSlider(interior)
             self._widget['command'] = self._firstScaleCommand
+	    self._widget.bind('<ButtonRelease-1>', self._scaleBtnRelease)
+	    self._widget.bind('<ButtonPress-1>', self._scaleBtnPress)
             
 	# Check keywords and initialise options.
 	self.initialiseoptions(SliderWidget)
@@ -390,6 +392,15 @@ class SliderWidget(Pmw.MegaWidget):
                 self._unpostOnNextRelease()
         elif self._fUpdate:
             self._updateValue(event)
+
+    def _scaleBtnPress(self, event):
+        if self['preCallback']:
+            apply(self['preCallback'], self['callbackData'])
+            
+    def _scaleBtnRelease(self, event):
+        # Do post callback if any
+        if self['postCallback']:
+            apply(self['postCallback'], self['callbackData'])
 
     def _widgetBtnRelease(self, event):
         # Do post callback if any
