@@ -351,6 +351,9 @@ class DistributedLevel(DistributedObject.DistributedObject,
     def setColorZones(self, fColorZones):
         self.fColorZones = fColorZones
 
+    def getColorZones(self):
+        return self.fColorZones
+
     def hideZone(self, zoneNum):
         zone = self.zoneNum2node[zoneNum]
         if self.fColorZones:
@@ -485,6 +488,19 @@ class DistributedLevel(DistributedObject.DistributedObject,
         DistributedLevel.notify.debug('new viz list: %s' % visibleZoneIds)
 
         toonbase.tcr.sendSetZoneMsg(self.levelZone, visibleZoneIds)
+
+    def resetVisibility(self):
+        # start out with every zone visible, since none of the zones have
+        # been hidden
+        self.curVisibleZoneNums = list2dict(self.zoneNums)
+        # the UberZone is always visible, so it's not included in the
+        # zones' viz lists
+        del self.curVisibleZoneNums[0]
+        # Make sure every zone is visible
+        for vz,dummy in self.curVisibleZoneNums.items():
+            self.showZone(vz)
+        # Redo visibility using current zone num
+        self.updateVisibility()
 
     if __debug__:
         # level editing stuff
