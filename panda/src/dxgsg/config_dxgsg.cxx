@@ -75,11 +75,15 @@ int dx_force_backface_culling = config_dxgsg.GetInt("dx-force-backface-culling",
 bool dx_mipmap_everything = config_dxgsg.GetBool("dx-mipmap-everything", false);
 bool dx_ignore_mipmaps = config_dxgsg.GetBool("dx-ignore-mipmaps", false);
 
+// if this is set, more accurate but more expensive fog computations are performed
+bool dx_use_rangebased_fog = config_dxgsg.GetBool("dx-use-rangebased-fog", false);
+
 #ifdef _DEBUG
 float dx_global_miplevel_bias = config_dxgsg.GetFloat("dx-global-miplevel-bias", 0.0);
 bool dx_debug_view_mipmaps = config_dxgsg.GetBool("dx-debug-view-mipmaps", false);
 bool dx_force_16bpptextures = config_dxgsg.GetBool("dx-force-16bpptextures", false);
 bool dx_force_anisotropic_filtering = config_dxgsg.GetBool("dx-force-anisotropic-filtering", false);
+//int dx_print_texstats = config_dxgsg.GetBool("dx-print-texstats", 0);
 #endif
 
 // set 'retained-mode #t' and this to have prepare_geom concatenate all tristrips within a geom 

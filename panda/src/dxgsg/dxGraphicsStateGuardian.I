@@ -230,7 +230,7 @@ set_shademode(D3DSHADEMODE val) {
 ////////////////////////////////////////////////////////////////////
 INLINE void DXGraphicsStateGuardian::
 enable_fog(bool val) {
-  if (_fog_enabled != val) {
+  if ((_fog_enabled != val) && (_doFogType!=None)) {
     _fog_enabled = val;
     _d3dDevice->SetRenderState(D3DRENDERSTATE_FOGENABLE, (DWORD)val);
   }

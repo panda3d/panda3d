@@ -32,7 +32,7 @@ extern bool dx_no_vertex_fog;
 extern bool dx_full_screen_antialiasing;
 extern float dx_fps_meter_update_interval;
 extern bool dx_auto_normalize_lighting;
-
+extern bool dx_use_rangebased_fog;
 extern const bool link_tristrips;
 
 // debug flags

@@ -223,7 +223,6 @@ protected:
   bool              _bTransformIssued;  // decaling needs to tell when a transform has been issued
   D3DMATRIX         _SavedTransform;   
 
-
   RenderBuffer::Type _cur_read_pixel_buffer;  // source for copy_pixel_buffer operation
 
   D3DDEVICEDESC7    _D3DDevDesc;
@@ -283,12 +282,21 @@ protected:
   Normalf   p_normal;
   Vertexf   p_vertex;
   TexCoordf p_texcoord;
-  D3DCOLOR  p_colr;
+  D3DCOLOR  _curD3Dcolor;
+  DWORD     _curFVFflags;
+  short     _perPrim;
+  short     _perVertex;
+  short     _perComp;
 
-  int       p_flags;
-  short     perPrim;
-  short     perVertex;
-  short     perComp;
+  bool  _issued_color_enabled;      // WBD ADDED
+  bool  _enable_all_color;
+  Colorf _issued_color;           // WBD ADDED
+  D3DCOLOR _issued_color_D3DCOLOR;           // WBD ADDED
+
+  D3DSHADEMODE _CurShadeMode;
+
+  bool _bDrawPrimDoSetupVertexBuffer;       // if true, draw methods just copy vertex data into pCurrentGeomContext
+  DXGeomNodeContext *_pCurrentGeomContext;  // used in vertex buffer setup
 
   // iterators for primitives
   Geom::VertexIterator vi;
@@ -317,6 +325,12 @@ protected:
   float _line_width;
   float _point_size;
   bool  _depth_mask;
+
+  typedef enum {None,
+                PerVertexFog=D3DRENDERSTATE_FOGVERTEXMODE,
+                PerPixelFog=D3DRENDERSTATE_FOGTABLEMODE
+               } DxgsgFogType;
+  DxgsgFogType _doFogType;
   int   _fog_mode;
   float _fog_start;
   float _fog_end;
@@ -326,13 +340,6 @@ protected:
   D3DCMPFUNC  _alpha_func;
   D3DBLEND _blend_source_func;
   D3DBLEND _blend_dest_func;
-
-  bool  _issued_color_enabled;      // WBD ADDED
-  bool  _enable_all_color;
-  Colorf _issued_color;           // WBD ADDED
-  D3DCOLOR _issued_color_D3DCOLOR;           // WBD ADDED
-
-  D3DSHADEMODE _CurShadeMode;
 
   bool _multisample_enabled;
   bool _line_smooth_enabled;

@@ -35,6 +35,11 @@
 #define D3D_OVERLOADS   //  get D3DVECTOR '+' operator, etc from d3dtypes.h
 #include <d3d.h>
 
+typedef struct {
+     DWORD nVerts;
+     D3DPRIMITIVETYPE primtype;
+} DPInfo;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : DXGeomNodeContext
 // Description :
@@ -58,6 +63,12 @@ public:
 
   int _start_index;   // starting offset of this geom's verts within the VB
   int _num_verts;     // number of verts used by this geomcontext within the VB
+  
+  BYTE *_pEndofVertData;  // ptr to end of current vert data in VB (note: only used/valid during setup)
+
+  // for multiple geoms per VB, either will have to regen lengths based on per* flags, or store
+  // per geom vector of perprim vectors lengths
+  vector<DPInfo> _PrimInfo;
 
 public:
   static TypeHandle get_class_type() {
