@@ -29,7 +29,7 @@ class Notifier:
         Return the time as a string suitable for printing at the
         head of any notify message
         """
-        return time.strftime(":%m-%d-%Y %H:%M:%S: ", time.localtime(time.time()))
+        return time.strftime(":%m-%d-%Y %H:%M:%S ", time.localtime(time.time()))
 
     def __str__(self):
         """__str__(self)

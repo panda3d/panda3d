@@ -7,9 +7,10 @@ class DirectObject:
     This is the class that all Direct/SAL classes should inherit from
     """
     def __del__(self):
-	"""__del__(self)
-	"""
         # print "Destructing: ", self.__class__.__name__
+        
+        # This is really old and we really should not be relying on it
+        # One day I'll see if anybody still needs this
 	try: 
 	    self.cleanup()
 	except AttributeError:

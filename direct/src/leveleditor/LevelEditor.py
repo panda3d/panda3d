@@ -1,3 +1,4 @@
+
 from ShowBaseGlobal import *
 from PandaObject import *
 from PieMenu import *
@@ -200,28 +201,34 @@ except NameError:
     print "Loading LevelEditor for hoods: ", hoods
     # DNAStorage instance for storing level DNA info
     __builtin__.DNASTORE = DNASTORE = DNAStorage()
-    # Load the generic storage file
-    loadDNAFile(DNASTORE,
-                'phase_4/dna/storage.dna', CSDefault, 1)
+    # Load the generic storage files
+    loadDNAFile(DNASTORE, 'phase_4/dna/storage.dna', CSDefault, 1)
+    loadDNAFile(DNASTORE, 'phase_5/dna/storage_town.dna', CSDefault, 1)
     # Load all the neighborhood specific storage files
     if 'TT' in hoods:
-        loadDNAFile(DNASTORE,
-                    'phase_4/dna/storage_TT.dna', CSDefault, 1)
+        loadDNAFile(DNASTORE, 'phase_4/dna/storage_TT.dna', CSDefault, 1)
+        loadDNAFile(DNASTORE, 'phase_4/dna/storage_TT_sz.dna', CSDefault, 1)
+        loadDNAFile(DNASTORE, 'phase_5/dna/storage_TT_town.dna', CSDefault, 1)
     if 'DD' in hoods:
-        loadDNAFile(DNASTORE,
-                    'phase_6/dna/storage_DD.dna', CSDefault, 1)
+        loadDNAFile(DNASTORE, 'phase_6/dna/storage_DD.dna', CSDefault, 1)
+        loadDNAFile(DNASTORE, 'phase_6/dna/storage_DD_sz.dna', CSDefault, 1)
+        loadDNAFile(DNASTORE, 'phase_6/dna/storage_DD_town.dna', CSDefault, 1)
     if 'MM' in hoods:
-        loadDNAFile(DNASTORE,
-                    'phase_6/dna/storage_MM.dna', CSDefault, 1)
+        loadDNAFile(DNASTORE, 'phase_6/dna/storage_MM.dna', CSDefault, 1)
+        loadDNAFile(DNASTORE, 'phase_6/dna/storage_MM_sz.dna', CSDefault, 1)
+        loadDNAFile(DNASTORE, 'phase_6/dna/storage_MM_town.dna', CSDefault, 1)
     if 'BR' in hoods:
-        loadDNAFile(DNASTORE,
-                    'phase_8/dna/storage_BR.dna', CSDefault, 1)
+        loadDNAFile(DNASTORE, 'phase_8/dna/storage_BR.dna', CSDefault, 1)
+        loadDNAFile(DNASTORE, 'phase_8/dna/storage_BR_sz.dna', CSDefault, 1)
+        loadDNAFile(DNASTORE, 'phase_8/dna/storage_BR_town.dna', CSDefault, 1)
     if 'DG' in hoods:
-        loadDNAFile(DNASTORE,
-                    'phase_8/dna/storage_DG.dna', CSDefault, 1)
+        loadDNAFile(DNASTORE, 'phase_8/dna/storage_DG.dna', CSDefault, 1)
+        loadDNAFile(DNASTORE, 'phase_8/dna/storage_DG_sz.dna', CSDefault, 1)
+        loadDNAFile(DNASTORE, 'phase_8/dna/storage_DG_town.dna', CSDefault, 1)
     if 'DL' in hoods:
-        loadDNAFile(DNASTORE,
-                    'phase_8/dna/storage_DL.dna', CSDefault, 1)
+        loadDNAFile(DNASTORE, 'phase_8/dna/storage_DL.dna', CSDefault, 1)
+        loadDNAFile(DNASTORE, 'phase_8/dna/storage_DL_sz.dna', CSDefault, 1)
+        loadDNAFile(DNASTORE, 'phase_8/dna/storage_DL_town.dna', CSDefault, 1)
     __builtin__.dnaLoaded = 1
 
 # Precompute class types for type comparisons
@@ -418,6 +425,9 @@ class LevelEditor(NodePath, PandaObject):
         self.pointDict = {}
         self.point2edgeDict = {}
         self.cellDict = {}
+
+        self.visitedPoints = []
+        self.visitedEdges = []
         
         # Initialize LevelEditor variables DNAData, DNAToplevel, NPToplevel
         # DNAParent, NPParent, groupNum, lastAngle
