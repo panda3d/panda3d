@@ -82,6 +82,21 @@ get_graph_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::is_attached
+//       Access: Public
+//  Description: Returns true if this arc is attached to the scene
+//               graph, false otherwise.  Normally, an arc should
+//               always be attached; generally you will only see an
+//               unattached arc if the arc (or some parent of the arc)
+//               has been disconnected from all nodes via
+//               remove_arc().
+////////////////////////////////////////////////////////////////////
+INLINE_GRAPH bool NodeRelation::
+is_attached() const {
+  return _attached;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodeRelation::change_parent
 //       Access: Public
 //  Description: Changes the parent of the arc to a different node.

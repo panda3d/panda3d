@@ -491,31 +491,27 @@ render_frame(const AllAttributesWrapper &initial_state) {
     if (_win->is_channel_defined(c)) {
       GraphicsChannel *chan = _win->get_channel(c);
       if (chan->is_active()) {
-    int num_layers = chan->get_num_layers();
-    for (int l = 0; l < num_layers; l++) {
-      GraphicsLayer *layer = chan->get_layer(l);
-      if (layer->is_active()) {
-        int num_drs = layer->get_num_drs();
-        for (int d = 0; d < num_drs; d++) {
-          DisplayRegion *dr = layer->get_dr(d);
-          if (dr == (DisplayRegion*)NULL)
-          {
-        cerr << "null camera layer " << endl;
-        exit(0);
-          }
-          Camera *cam = dr->get_camera();
-        
-          // For each display region, render from the camera's view.
-          if (dr->is_active() && cam != (Camera *)NULL && 
-          cam->is_active() && cam->get_scene() != (Node *)NULL) {
-        DisplayRegionStack old_dr = push_display_region(dr);
-        prepare_display_region();
-        render_scene(cam->get_scene(), cam, initial_state);
-        pop_display_region(old_dr);
-          }
-        }
-      }
-    }
+	int num_layers = chan->get_num_layers();
+	for (int l = 0; l < num_layers; l++) {
+	  GraphicsLayer *layer = chan->get_layer(l);
+	  if (layer->is_active()) {
+	    int num_drs = layer->get_num_drs();
+	    for (int d = 0; d < num_drs; d++) {
+	      DisplayRegion *dr = layer->get_dr(d);
+	      nassertv(dr != (DisplayRegion *)NULL);
+	      Camera *cam = dr->get_camera();
+	      
+	      // For each display region, render from the camera's view.
+	      if (dr->is_active() && cam != (Camera *)NULL && 
+		  cam->is_active() && cam->get_scene() != (Node *)NULL) {
+		DisplayRegionStack old_dr = push_display_region(dr);
+		prepare_display_region();
+		render_scene(cam->get_scene(), cam, initial_state);
+		pop_display_region(old_dr);
+	      }
+	    }
+	  }
+	}
       }
     }
   }
@@ -523,28 +519,28 @@ render_frame(const AllAttributesWrapper &initial_state) {
   // Now we're done with the frame processing.  Clean up.
 
   if(_lighting_enabled) {
-	  // Let's turn off all the lights we had on, and clear the light
-	  // cache--to force the lights to be reissued next frame, in case
-	  // their parameters or positions have changed between frames.
-
-	  for (int i = 0; i < _max_lights; i++) {
-		if (_light_enabled[i]) {
-		  enable_light(i, false);
-		}
-		_available_light_ids[i] = NULL;
-	  }
-
-	  // Also force the lighting state to unlit, so that issue_light()
-	  // will be guaranteed to be called next frame even if we have the
-	  // same set of light pointers we had this frame.
-	  NodeAttributes state;
-	  state.set_attribute(LightTransition::get_class_type(), new LightAttribute);
-	  set_state(state, false);
-
-	  // All this work to undo the lighting state each frame doesn't seem
-	  // ideal--there may be a better way.  Maybe if the lights were just
-	  // more aware of whether their parameters or positions have changed
-	  // at all?
+    // Let's turn off all the lights we had on, and clear the light
+    // cache--to force the lights to be reissued next frame, in case
+    // their parameters or positions have changed between frames.
+    
+    for (int i = 0; i < _max_lights; i++) {
+      if (_light_enabled[i]) {
+	enable_light(i, false);
+      }
+      _available_light_ids[i] = NULL;
+    }
+    
+    // Also force the lighting state to unlit, so that issue_light()
+    // will be guaranteed to be called next frame even if we have the
+    // same set of light pointers we had this frame.
+    NodeAttributes state;
+    state.set_attribute(LightTransition::get_class_type(), new LightAttribute);
+    set_state(state, false);
+    
+    // All this work to undo the lighting state each frame doesn't seem
+    // ideal--there may be a better way.  Maybe if the lights were just
+    // more aware of whether their parameters or positions have changed
+    // at all?
   }
 
 #ifndef NDEBUG

@@ -80,6 +80,8 @@ PUBLISHED:
   INLINE_GRAPH int get_sort() const;
   INLINE_GRAPH TypeHandle get_graph_type() const;
 
+  INLINE_GRAPH bool is_attached() const;
+
   void ref_parent();
   void unref_parent();
 

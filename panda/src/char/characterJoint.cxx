@@ -89,27 +89,43 @@ update_internals(PartGroup *parent, bool self_changed, bool) {
     net_changed = true;
   }
 
-  if (net_changed) {
+  if (net_changed && !_net_transform_arcs.empty()) {
     PT(TransformTransition) t = new TransformTransition(_net_transform);
 
-    ArcList::const_iterator ai;
-    for (ai = _net_transform_arcs.begin();
-	 ai != _net_transform_arcs.end();
-	 ++ai) {
+    ArcList::iterator ai;
+    ai = _net_transform_arcs.begin();
+    while (ai != _net_transform_arcs.end()) {
       NodeRelation *arc = *ai;
-      arc->set_transition(t);
+      if (arc->is_attached()) {
+	arc->set_transition(t);
+	++ai;
+      } else {
+	// The arc is now invalid; its geometry must have been
+	// removed.  Remove the arc from our set.
+	ArcList::iterator invalid = ai;
+	++ai;
+	_net_transform_arcs.erase(invalid);
+      }
     }
   }
 
-  if (self_changed) {
+  if (self_changed && !_local_transform_arcs.empty()) {
     PT(TransformTransition) t = new TransformTransition(_value);
 
-    ArcList::const_iterator ai;
-    for (ai = _local_transform_arcs.begin();
-	 ai != _local_transform_arcs.end();
-	 ++ai) {
+    ArcList::iterator ai;
+    ai = _local_transform_arcs.begin();
+    while (ai != _local_transform_arcs.end()) {
       NodeRelation *arc = *ai;
-      arc->set_transition(t);
+      if (arc->is_attached()) {
+	arc->set_transition(t);
+	++ai;
+      } else {
+	// The arc is now invalid; its geometry must have been
+	// removed.  Remove the arc from our set.
+	ArcList::iterator invalid = ai;
+	++ai;
+	_local_transform_arcs.erase(invalid);
+      }
     }
   }
 }
@@ -229,11 +245,39 @@ write_datagram(BamWriter *manager, Datagram &me)
 {
   ArcList::iterator ai;
 
+  // First, make sure all of our arcs are still valid, before we try
+  // to write them out.  Remove any invalid arcs.
+  ai = _net_transform_arcs.begin();
+  while (ai != _net_transform_arcs.end()) {
+    NodeRelation *arc = *ai;
+    if (arc->is_attached()) {
+      ++ai;
+    } else {
+      // The arc is now invalid; its geometry must have been
+      // removed.  Remove the arc from our set.
+      ArcList::iterator invalid = ai;
+      ++ai;
+      _net_transform_arcs.erase(invalid);
+    }
+  }
+  ai = _local_transform_arcs.begin();
+  while (ai != _local_transform_arcs.end()) {
+    NodeRelation *arc = *ai;
+    if (arc->is_attached()) {
+      ++ai;
+    } else {
+      // The arc is now invalid; its geometry must have been
+      // removed.  Remove the arc from our set.
+      ArcList::iterator invalid = ai;
+      ++ai;
+      _local_transform_arcs.erase(invalid);
+    }
+  }
+
   MovingPartMatrix::write_datagram(manager, me);
   me.add_uint16(_net_transform_arcs.size());
 
-  for(ai = _net_transform_arcs.begin(); ai != _net_transform_arcs.end(); ai++)
-  {
+  for(ai = _net_transform_arcs.begin(); ai != _net_transform_arcs.end(); ai++) {
     manager->write_pointer(me, (*ai));
   }
 
