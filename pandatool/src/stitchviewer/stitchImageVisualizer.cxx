@@ -24,6 +24,7 @@
 #include <cullFaceAttribute.h>
 #include <clockObject.h>
 #include <config_gobj.h>
+#include <allAttributesWrapper.h>
 
 #include <algorithm>
 
