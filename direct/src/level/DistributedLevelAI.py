@@ -77,13 +77,16 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
     if __debug__:
         # level editors should call this func to tweak attributes of level
         # entities
-        def setAttribChange(self, entId, attribName, value):
+        def setAttribChange(self, entId, attribName, valueStr):
             # send a copy to the client-side level obj
             self.sendUpdate('setAttribChange',
-                            [entId, attribName, repr(value)])
+                            [entId, attribName, valueStr])
             
             entity = self.getEntity(entId)
-            entity.handleAttribChange(attribName, value)
+            # the entity might be client-side-only
+            if entity is not None:
+                value = eval(valueStr)
+                entity.handleAttribChange(attribName, value)
 
             # send a copy of the entire spec for any new users that
             # might come in

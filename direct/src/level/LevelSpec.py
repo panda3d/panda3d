@@ -76,6 +76,13 @@ class LevelSpec:
         return self.specDict['scenarios'][scenario][0]
 
     if __debug__:
+        def setAttribEditEventName(self, event):
+            self.attribEditEventName = event
+        def setAttribEdit(self, entId, attrib, value):
+            # broadcast the change to someone else that knows what to do
+            # with it
+            messenger.send(self.attribEditEventName, [entId, attrib, value])
+            
         def setAttribChange(self, entId, attrib, value):
             pass
 
