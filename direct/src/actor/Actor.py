@@ -934,7 +934,7 @@ class Actor(PandaObject, NodePath):
         for control in self.getAnimControls(animName, partName, lodName):
             control.pose(frame)
 
-    def enableBlend(self, partName = None):
+    def enableBlend(self, blendType = PartBundle.BTNormalizedLinear, partName = None):
         """Enables blending of multiple animations simultaneously.
         After this is called, you may call play(), loop(), or pose()
         on multiple animations and have all of them contribute to the
@@ -949,11 +949,11 @@ class Actor(PandaObject, NodePath):
         for lodName, bundleDict in self.__partBundleDict.items():
             if partName == None:
                 for partBundle in bundleDict.values():
-                    partBundle.node().getBundle().setBlendType(PartBundle.BTNormalizedLinear)
+                    partBundle.node().getBundle().setBlendType(blendType)
             else:
                 partBundle = bundleDict.get(partName)
                 if partBundle != None:
-                    partBundle.node().getBundle().setBlendType(PartBundle.BTNormalizedLinear)
+                    partBundle.node().getBundle().setBlendType(blendType)
                 else:
                     Actor.notify.warning("Couldn't find part: %s" % (partName))
 
@@ -961,16 +961,7 @@ class Actor(PandaObject, NodePath):
         """ Restores normal one-animation-at-a-time operation after a
         previous call to enableBlend().
         """
-        for lodName, bundleDict in self.__partBundleDict.items():
-            if partName == None:
-                for partBundle in bundleDict.values():
-                    partBundle.node().getBundle().setBlendType(PartBundle.BTSingle)
-            else:
-                partBundle = bundleDict.get(partName)
-                if partBundle != None:
-                    partBundle.node().getBundle().setBlendType(PartBundle.BTSingle)
-                else:
-                    Actor.notify.warning("Couldn't find part: %s" % (partName))
+        self.enableBlend(PartBundle.BTSingle, partName)
 
     def setControlEffect(self, animName, effect,
                          partName = None, lodName = None):
