@@ -10,6 +10,10 @@ DowncastMap = {}
 # FFIConstants.notify.setInfo(1)
 # FFIConstants.notify.setDebug(1)
 
+# Uncomment the notify statements if you need to debug,
+# otherwise leave them commented out to prevent runtime
+# overhead of calling them
+
 
 
 # Register a python class in the type map if it is a typed object
@@ -41,8 +45,8 @@ class FFIExternalObject:
     def getLineageInternal(self, thisClass, targetBaseClass, chain):
         # Recursively determine the path in the heirarchy tree from thisClass
         # to the targetBaseClass
-        FFIConstants.notify.debug('getLineageInternal: checking %s to %s'
-                                  % (thisClass.__name__, targetBaseClass.__name__))
+        #FFIConstants.notify.debug('getLineageInternal: checking %s to %s'
+        #                          % (thisClass.__name__, targetBaseClass.__name__))
         if (targetBaseClass in thisClass.__bases__):
             # Found a link
             return chain + [targetBaseClass]
@@ -54,15 +58,15 @@ class FFIExternalObject:
             for base in thisClass.__bases__:
                 res = self.getLineageInternal(base, targetBaseClass, chain+[base])
                 if res:
-                    FFIConstants.notify.debug('getLineageInternal: found path: ' + `res`)
+                    # FFIConstants.notify.debug('getLineageInternal: found path: ' + `res`)
                     return res
             # Not found anywhere
             return 0
 
     def getDowncastFunctions(self, thisClass, baseClass):
-        FFIConstants.notify.debug(
-            'getDowncastFunctions: Looking for downcast function from %s to %s'
-            % (baseClass.__name__, thisClass.__name__))
+        #FFIConstants.notify.debug(
+        #    'getDowncastFunctions: Looking for downcast function from %s to %s'
+        #    % (baseClass.__name__, thisClass.__name__))
         lineage = self.getLineage(thisClass, baseClass)
         # Start with an empty list of downcast functions
         downcastFunctionList = []
@@ -80,36 +84,26 @@ class FFIExternalObject:
             fromClass = lineage[top - i]
             downcastFuncName = ('downcastTo' + toClass.__name__
                                 + 'From' + fromClass.__name__)
+            print downcastFuncName
             # Look over this classes global modules dictionaries
             # for the downcast function name
             for globmod in toClass.__CModuleDowncasts__:
-                if globmod.__dict__.has_key(downcastFuncName):
-                    func = globmod.__dict__[downcastFuncName]
-                    FFIConstants.notify.debug(
-                        'getDowncastFunctions: Found downcast function %s in %s'
-                        % (downcastFuncName, globmod.__name__))
+                func = globmod.__dict__.get(downcastFuncName)
+                if func:
+                    #FFIConstants.notify.debug(
+                    #    'getDowncastFunctions: Found downcast function %s in %s'
+                    #    % (downcastFuncName, globmod.__name__))
                     downcastFunctionList.append(func)
-                else:
-                    FFIConstants.notify.debug(
-                        'getDowncastFunctions: Did not find downcast function %s in %s'
-                        % (downcastFuncName, globmod.__name__))
         return downcastFunctionList
         
     def setPointer(self):
-        if (self.this == 0):
-            # Null pointer, return None
-            return None
-        # If it is not a typed object, our work is done, just return the object
-        if (not isinstance(self, TypedObject.TypedObject)): 
-            return self
-        # Ok, it is a typed object. See what type it really is and downcast
-        # to that type (if necessary)
-        exactWrapperClass = self.wrapperClassForTypeHandle(self.getType())
+        # See what type it really is and downcast to that type (if necessary)
+        # Look up the TypeHandle in the dict. get() returns None if it is not there
+        exactWrapperClass = WrapperClassMap.get(self.getType().getIndex())
         # We do not need to downcast if we already have the same class
         if (exactWrapperClass and (exactWrapperClass != self.__class__)):
             # Create a new wrapper class instance
             exactObject = exactWrapperClass(None)
-
             # Get the downcast pointer that has had all the downcast
             # funcs called
             downcastObject = self.downcast(exactWrapperClass)
@@ -124,31 +118,22 @@ class FFIExternalObject:
         else:
             return self
  
-    def wrapperClassForTypeHandle(self, aTypeHandle):
-        if WrapperClassMap.has_key(aTypeHandle.getIndex()):
-            return WrapperClassMap[aTypeHandle.getIndex()]
-        else:
-            return None
-        
     def downcast(self, toClass):
         fromClass = self.__class__
-        FFIConstants.notify.debug('downcast: downcasting from %s to %s' % \
-            (fromClass.__name__, toClass.__name__))
+        #FFIConstants.notify.debug('downcast: downcasting from %s to %s' % \
+        #    (fromClass.__name__, toClass.__name__))
 
         # Check the cache to see if we have looked this up before
-        if DowncastMap.has_key((fromClass, toClass)):
-            downcastChain = DowncastMap[(fromClass, toClass)]
-            FFIConstants.notify.debug('downcast: found cached downcast chain: ' + `downcastChain`)            
-        else:
+        downcastChain = DowncastMap.get((fromClass, toClass))
+        if downcastChain == None:
             downcastChain = self.getDowncastFunctions(toClass, fromClass)
-            FFIConstants.notify.debug('downcast: computed downcast chain: ' + `downcastChain`)
+            #FFIConstants.notify.debug('downcast: computed downcast chain: ' + `downcastChain`)
             # Store it for next time
             DowncastMap[(fromClass, toClass)] = downcastChain
-            
         newObject = self
         for downcastFunc in downcastChain:
-            FFIConstants.notify.debug('downcast: downcasting %s using %s' % \
-                                      (newObject.__class__.__name__, downcastFunc))
+            #FFIConstants.notify.debug('downcast: downcasting %s using %s' % \
+            #                         (newObject.__class__.__name__, downcastFunc))
             newObject = downcastFunc(newObject)
         return newObject
 

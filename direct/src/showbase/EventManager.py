@@ -22,7 +22,7 @@ class EventManager:
         self.eventQueue = EventQueue.getGlobalEventQueue()
         self.eventHandler = EventHandler(self.eventQueue)
 
-    def eventLoop(self, state):
+    def eventLoop(self, task):
         """
         Process all the events on the C++ event queue
         """
@@ -56,7 +56,6 @@ class EventManager:
 	if event.hasName():
             # Get the event name
             eventName = event.getName()
-
             numParameters = event.getNumParameters()
             paramList = []
             for i in range(numParameters):

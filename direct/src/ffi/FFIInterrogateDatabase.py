@@ -21,6 +21,7 @@ FFIConstants.notify.info('Importing interrogate library: ' + FFIConstants.Interr
 # to be dependent on the name of the interrogate library in this code
 exec('from ' + FFIConstants.InterrogateModuleName + ' import *')
 
+
 def constructGlobalFile(codeDir, CModuleName):
     """
     Open a file that will hold the global values and functions code
@@ -370,6 +371,12 @@ class FFIInterrogateDatabase:
         self.typeIndexMap[typeIndex] = descriptor
         #descriptor.environment = self.environment
         descriptor.foreignTypeName = FFIRename.classNameFromCppName(getTypeName(typeIndex))
+
+        if (descriptor.foreignTypeName == "TypedObject"):
+            print "Found typed object descriptor"
+            FFITypes.TypedObjectDescriptor = descriptor
+            
+        
         descriptor.isNested = interrogate_type_is_nested(typeIndex)
         if descriptor.isNested:
             outerTypeIndex = interrogate_type_outer_class(typeIndex)

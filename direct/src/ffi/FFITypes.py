@@ -17,6 +17,9 @@ import FFIOverload
 
 from PythonUtil import *
 
+TypedObjectDescriptor = None
+
+
 class BaseTypeDescriptor:
     """
     A type descriptor contains everything you need to know about a C++ function,
@@ -803,10 +806,16 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         file.write(typeName)
         file.write('(None)\n')
         indent(file, nesting, 'returnObject.this = returnValue\n')
+        # Zero this pointers get returned as the Python None object
+        indent(file, nesting, 'if (returnObject.this == 0): return None\n')
         if userManagesMemory:
             indent(file, nesting, 'returnObject.userManagesMemory = 1\n')
         if needsDowncast:
-            indent(file, nesting, 'return returnObject.setPointer()\n')
+            if (FFIOverload.inheritsFrom(self, TypedObjectDescriptor) or
+                self == TypedObjectDescriptor):
+                indent(file, nesting, 'return returnObject.setPointer()\n')
+            else:
+                indent(file, nesting, 'return returnObject\n')
         else:
             indent(file, nesting, 'return returnObject\n')
             

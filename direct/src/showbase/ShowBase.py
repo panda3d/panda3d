@@ -65,6 +65,8 @@ class ShowBase:
         # And put it in the list
         self.cameraList = [ self.camera ]
         self.dataRoot = NodePath(NamedNode('dataRoot'), DataRelation.getClassType())
+        # Cache the node so we do not ask for it every frame
+        self.dataRootNode = self.dataRoot.node()
         self.dataUnused = NodePath(NamedNode('dataUnused'), DataRelation.getClassType())
         self.pipe = makeGraphicsPipe()
         self.win = makeGraphicsWindow(self.pipe,
@@ -302,8 +304,7 @@ class ShowBase:
         # traverse the data graph.  This reads all the control
         # inputs (from the mouse and keyboard, for instance) and also
         # directly acts upon them (for instance, to move the avatar).
-        traverseDataGraph(self.dataRoot.node())
-
+        traverseDataGraph(self.dataRootNode)
         return Task.cont
 
     def igloop(self, state):
@@ -311,10 +312,8 @@ class ShowBase:
         # CollisionTraverser set.
         if self.cTrav:
             self.cTrav.traverse(self.render)
-
         # Finally, render the frame.
         self.win.update()
-
         return Task.cont
 
     def restart(self):
