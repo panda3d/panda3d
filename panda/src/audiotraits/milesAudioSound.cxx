@@ -30,7 +30,7 @@ TypeHandle MilesAudioSound::_type_handle;
 #define NEED_MILES_LENGTH_WORKAROUND
 
 #if (((MSS_MAJOR_VERSION == 6) && (MSS_MINOR_VERSION >= 5)) || (MSS_MAJOR_VERSION >= 7))
-#define MILES_6_5
+#define MILES_6_5_OR_HIGHER
 #endif
 
 #ifndef NDEBUG //[
@@ -360,7 +360,7 @@ set_volume(float volume) {
   _volume=volume;
   // Account for the category of sound:
   volume*=_manager->get_volume();
-  #ifdef MILES_6_5
+  #ifdef MILES_6_5_OR_HIGHER
     // Change to Miles volume, range 0 to 1.0:
     F32 milesVolume=volume;
     milesVolume=min(milesVolume,1.0f);
@@ -375,7 +375,7 @@ set_volume(float volume) {
     // ...it's a midi file.
 
     // 0 delay, set to this volume immediately    
-    #ifdef MILES_6_5
+    #ifdef MILES_6_5_OR_HIGHER
       F32 midiVolDelay =0.0f; 
     #else
       S32 midiVolDelay =0;
@@ -385,7 +385,7 @@ set_volume(float volume) {
     audio_debug("  volume for this midi is now "<<milesVolume);
   } else {
     // ...it's a wav or mp3.
-    #ifdef MILES_6_5
+    #ifdef MILES_6_5_OR_HIGHER
       // Convert balance of -1.0..1.0 to 0-1.0:
       F32 milesBalance=(F32)((_balance+1.0f)*0.5f);
     #else
