@@ -120,6 +120,18 @@ changed_graph_size(int graph_xsize, int graph_ysize) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WinStatsGraph::set_time_units
+//       Access: Public, Virtual
+//  Description: Called when the user selects a new time units from
+//               the monitor pulldown menu, this should adjust the
+//               units for the graph to the indicated mask if it is a
+//               time-based graph.
+////////////////////////////////////////////////////////////////////
+void WinStatsGraph::
+set_time_units(int unit_mask) {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WinStatsGraph::close
 //       Access: Protected
 //  Description: Should be called when the user closes the associated

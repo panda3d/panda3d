@@ -61,7 +61,13 @@ get_menu_handle() {
 void WinStatsChartMenu::
 add_to_menu_bar(HMENU menu_bar) {
   const PStatClientData *client_data = _monitor->get_client_data();
-  string thread_name = client_data->get_thread_name(_thread_index);
+  string thread_name;
+  if (_thread_index == 0) {
+    // A special case for the main thread.
+    thread_name = "Graphs";
+  } else {
+    thread_name = client_data->get_thread_name(_thread_index);
+  }
 
   MENUITEMINFO mii;
   memset(&mii, 0, sizeof(mii));

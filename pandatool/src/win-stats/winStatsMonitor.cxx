@@ -19,7 +19,8 @@
 #include "winStatsMonitor.h"
 #include "winStatsStripChart.h"
 #include "winStatsChartMenu.h"
-
+#include "winStatsMenuId.h"
+#include "pStatGraph.h"
 #include "pStatCollectorDef.h"
 #include "indent.h"
 
@@ -35,6 +36,8 @@ WinStatsMonitor::
 WinStatsMonitor() {
   _window = 0;
   _menu_bar = 0;
+  _options_menu = 0;
+  _time_units = PStatGraph::GBU_ms;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -246,15 +249,17 @@ get_window() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::open_strip_chart_
+//     Function: WinStatsMonitor::open_strip_chart
 //       Access: Public
 //  Description: Opens a new strip chart showing the indicated data.
 ////////////////////////////////////////////////////////////////////
 void WinStatsMonitor::
 open_strip_chart(int thread_index, int collector_index) {
-  WinStatsStripChart *chart = 
+  WinStatsStripChart *graph = 
     new WinStatsStripChart(this, thread_index, collector_index);
-  add_graph(chart);
+  add_graph(graph);
+
+  graph->set_time_units(_time_units);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -267,8 +272,9 @@ open_strip_chart(int thread_index, int collector_index) {
 const WinStatsMonitor::MenuDef &WinStatsMonitor::
 lookup_menu(int menu_id) const {
   static MenuDef invalid(0, 0);
-  nassertr(menu_id >= 0 && menu_id < (int)_menu_by_id.size(), invalid);
-  return _menu_by_id[menu_id];
+  int menu_index = menu_id - MI_new_chart;
+  nassertr(menu_index >= 0 && menu_index < (int)_menu_by_id.size(), invalid);
+  return _menu_by_id[menu_index];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -289,11 +295,46 @@ get_menu_id(const MenuDef &menu_def) {
   }
 
   // Slot a new id.
-  int menu_id = (int)_menu_by_id.size();
+  int menu_id = (int)_menu_by_id.size() + MI_new_chart;
   _menu_by_id.push_back(menu_def);
   _menu_by_def[menu_def] = menu_id;
 
   return menu_id;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsMonitor::set_time_units
+//       Access: Public
+//  Description: Called when the user selects a new time units from
+//               the monitor pulldown menu, this should adjust the
+//               units for all graphs to the indicated mask if it is a
+//               time-based graph.
+////////////////////////////////////////////////////////////////////
+void WinStatsMonitor::
+set_time_units(int unit_mask) {
+  _time_units = unit_mask;
+
+  // First, change all of the open graphs appropriately.
+  Graphs::iterator gi;
+  for (gi = _graphs.begin(); gi != _graphs.end(); ++gi) {
+    WinStatsGraph *graph = (*gi);
+    graph->set_time_units(_time_units);
+  }
+
+  // Now change the checkmark on the pulldown menu.
+  MENUITEMINFO mii;
+  memset(&mii, 0, sizeof(mii));
+  mii.cbSize = sizeof(mii);
+  mii.fMask = MIIM_STATE;
+  mii.fState = MFS_CHECKED;
+
+  mii.fState = ((_time_units & PStatGraph::GBU_ms) != 0) ? 
+    MFS_CHECKED : MFS_UNCHECKED;
+  SetMenuItemInfo(_options_menu, MI_time_ms, FALSE, &mii);
+
+  mii.fState = ((_time_units & PStatGraph::GBU_hz) != 0) ? 
+    MFS_CHECKED : MFS_UNCHECKED;
+  SetMenuItemInfo(_options_menu, MI_time_hz, FALSE, &mii);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -337,6 +378,8 @@ create_window() {
 
   _menu_bar = CreateMenu();
 
+  setup_options_menu();
+
   ChartMenus::iterator mi;
   for (mi = _chart_menus.begin(); mi != _chart_menus.end(); ++mi) {
     (*mi)->add_to_menu_bar(_menu_bar);
@@ -356,9 +399,47 @@ create_window() {
   }
 
   SetWindowLongPtr(_window, 0, (LONG_PTR)this);
-  ShowWindow(_window, SW_SHOWNORMAL);
-  SetWindowPos(_window, HWND_TOP, 0, 0, 0, 0, 
-               SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+
+  // For some reason, SW_SHOWNORMAL doesn't always work, but
+  // SW_RESTORE seems to.
+  ShowWindow(_window, SW_RESTORE);
+  SetForegroundWindow(_window);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsMonitor::setup_options_menu
+//       Access: Private
+//  Description: Creates the "Options" pulldown menu.
+////////////////////////////////////////////////////////////////////
+void WinStatsMonitor::
+setup_options_menu() {
+  _options_menu = CreatePopupMenu();
+
+  MENUITEMINFO mii;
+  memset(&mii, 0, sizeof(mii));
+  mii.cbSize = sizeof(mii);
+
+  mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_SUBMENU;
+  mii.fType = MFT_STRING; 
+  mii.hSubMenu = _options_menu;
+  mii.dwTypeData = "Options"; 
+  InsertMenuItem(_menu_bar, GetMenuItemCount(_menu_bar), TRUE, &mii);
+
+  
+  mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID | MIIM_CHECKMARKS | MIIM_STATE;
+  mii.fType = MFT_STRING | MFT_RADIOCHECK; 
+  mii.hbmpChecked = NULL;
+  mii.hbmpUnchecked = NULL;
+  mii.fState = MFS_CHECKED;
+  mii.wID = MI_time_ms;
+  mii.dwTypeData = "ms";
+  InsertMenuItem(_options_menu, GetMenuItemCount(_options_menu), TRUE, &mii);
+
+  mii.fState = MFS_UNCHECKED;
+  mii.wID = MI_time_hz;
+  mii.dwTypeData = "Hz";
+  InsertMenuItem(_options_menu, GetMenuItemCount(_options_menu), TRUE, &mii);
+
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -425,8 +506,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   case WM_COMMAND:
     if (HIWORD(wparam) <= 1) {
       int menu_id = LOWORD(wparam);
-      const MenuDef &menu_def = lookup_menu(menu_id);
-      open_strip_chart(menu_def._thread_index, menu_def._collector_index);
+      handle_menu_command(menu_id);
       return 0;
     }
     break;
@@ -436,4 +516,31 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   }
 
   return DefWindowProc(hwnd, msg, wparam, lparam);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsMonitor::handle_menu_command
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void WinStatsMonitor::
+handle_menu_command(int menu_id) {
+  switch (menu_id) {
+  case MI_none:
+    break;
+
+  case MI_time_ms:
+    set_time_units(PStatGraph::GBU_ms);
+    break;
+
+  case MI_time_hz:
+    set_time_units(PStatGraph::GBU_hz);
+    break;
+
+  default:
+    if (menu_id >= MI_new_chart) {
+      const MenuDef &menu_def = lookup_menu(menu_id);
+      open_strip_chart(menu_def._thread_index, menu_def._collector_index);
+    }
+  }
 }

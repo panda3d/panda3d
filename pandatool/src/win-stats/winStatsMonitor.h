@@ -69,16 +69,20 @@ public:
 
   const MenuDef &lookup_menu(int menu_id) const;
   int get_menu_id(const MenuDef &menu_def);
+
+  void set_time_units(int unit_mask);
   
 private:
   void add_graph(WinStatsGraph *graph);
   void remove_graph(WinStatsGraph *graph);
 
   void create_window();
+  void setup_options_menu();
   static void register_window_class(HINSTANCE application);
 
   static LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+  void handle_menu_command(int menu_id);
 
   typedef pset<WinStatsGraph *> Graphs;
   Graphs _graphs;
@@ -93,7 +97,9 @@ private:
 
   HWND _window;
   HMENU _menu_bar;
+  HMENU _options_menu;
   string _window_title;
+  int _time_units;
 
   static bool _window_class_registered;
   static const char * const _window_class_name;

@@ -43,6 +43,9 @@ WinStatsStripChart(WinStatsMonitor *monitor, int thread_index,
   _drag_vscale = false;
   _drag_vscale_start = 0.0f;
 
+  // Let's show the units on the guide bar labels.  There's room.
+  set_guide_bar_units(get_guide_bar_units() | GBU_show_units);
+
   create_window();
   clear_region();
 }
@@ -107,6 +110,29 @@ force_redraw() {
 void WinStatsStripChart::
 changed_graph_size(int graph_xsize, int graph_ysize) {
   PStatStripChart::changed_size(graph_xsize, graph_ysize);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsStripChart::set_time_units
+//       Access: Public, Virtual
+//  Description: Called when the user selects a new time units from
+//               the monitor pulldown menu, this should adjust the
+//               units for the graph to the indicated mask if it is a
+//               time-based graph.
+////////////////////////////////////////////////////////////////////
+void WinStatsStripChart::
+set_time_units(int unit_mask) {
+  int old_unit_mask = get_guide_bar_units();
+  if ((old_unit_mask & (GBU_hz | GBU_ms)) != 0) {
+    unit_mask = unit_mask & (GBU_hz | GBU_ms);
+    unit_mask |= (old_unit_mask & GBU_show_units);
+    set_guide_bar_units(unit_mask);
+
+    RECT rect;
+    GetClientRect(_window, &rect);
+    rect.left = _right_margin;
+    InvalidateRect(_window, &rect, TRUE);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -283,12 +309,20 @@ end_draw(int from_x, int to_x) {
 ////////////////////////////////////////////////////////////////////
 LONG WinStatsStripChart::
 window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-  /*
   switch (msg) {
+  case WM_RBUTTONDOWN:
+    {
+      set_guide_bar_units(GBU_hz | GBU_show_units);
+      RECT rect;
+      GetClientRect(_window, &rect);
+      rect.left = _right_margin;
+      InvalidateRect(_window, &rect, TRUE);
+    }
+    return 0;
+    
   default:
     break;
-    }
-  */
+  }
 
   return WinStatsGraph::window_proc(hwnd, msg, wparam, lparam);
 }
@@ -333,6 +367,7 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       return 0;
     }
     break;
+
 
   default:
     break;

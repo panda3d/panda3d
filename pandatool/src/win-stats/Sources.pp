@@ -16,8 +16,9 @@
     winStatsGraph.cxx winStatsGraph.h \
     winStatsLabel.cxx winStatsLabel.h \
     winStatsLabelStack.cxx winStatsLabelStack.h \
-    winStatsServer.cxx winStatsServer.h \
+    winStatsMenuId.h \
     winStatsMonitor.cxx winStatsMonitor.h winStatsMonitor.I \
+    winStatsServer.cxx winStatsServer.h \
     winStatsStripChart.cxx winStatsStripChart.h
 
   #define WIN_SYS_LIBS Imm32.lib winmm.lib kernel32.lib oldnames.lib user32.lib gdi32.lib

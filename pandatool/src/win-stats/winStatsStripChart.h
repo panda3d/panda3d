@@ -44,6 +44,7 @@ public:
   virtual void force_redraw();
   virtual void changed_graph_size(int graph_xsize, int graph_ysize);
 
+  virtual void set_time_units(int unit_mask);
   void set_vertical_scale(float value_height);
 
 protected:
