@@ -6,8 +6,10 @@
 // Template.gmsvc.pp.
 //
 
-#if $[< $[PPREMAKE_VERSION],0.58]
-  #error You need at least ppremake version 0.58 to use BUILD_TYPE gmsvc.
+#define REQUIRED_VERSION 1.00
+
+#if $[< $[PPREMAKE_VERSION],$[REQUIRED_VERSION]]
+  #error You need at least ppremake version $[REQUIRED_VERSION] to use BUILD_TYPE gmsvc.
 #endif
 
 #defun get_metalibs target,complete_libs
@@ -59,6 +61,10 @@
 #define BROWSEINFO_FLAG
 #endif
 
+#if $[eq $[NO_PCH],]
+#define DO_PCH 1
+#endif
+
 #define CFLAGS_SHARED
 
 // Define LINK_ALL_STATIC to generate static libs instead of DLL's.
@@ -72,6 +78,24 @@
   #define build_dlls yes
   #define build_libs  
   #define dlllib dll
+#endif
+
+// multi-processor PCH cannot use .pdb debug fmt because
+// .pdb file name must be the same for obj and pch header obj
+// and currently every cxx generates its own separate pdb
+// to avoid write file conflict in multi-proc build
+
+#if $[NO_PCH]
+// different .pdb for every .obj
+#defer DEBUG_TYPE_FLAGS /Zi /Fd"$[osfilename $[target:%.obj=%.pdb]]"
+#elif $[eq $[NUMBER_OF_PROCESSORS],1]
+// no multi-proc, so can use same .pdb file for each compile
+//#defer DEBUG_TYPE_FLAGS /Zi /Fd"$[osfilename $[st_dir]/$[TARGET].pdb]"
+#defer DEBUG_TYPE_FLAGS /Zi /Fd"$[osfilename $[target_dirname].pdb]"
+#else
+// puts dbg info inside first .obj
+#defer DEBUG_TYPE_FLAGS /Z7 
+#define NO_PDB 1
 #endif
 
 #include $[THISDIRPREFIX]compilerSettings.pp
@@ -92,7 +116,7 @@
 #defer CDEFINES_OPT4 NDEBUG $[dlink_all_static] $[EXTRA_CDEFS]
 
 //  /GZ disables OPT flags, so OPT1 only
-#defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] $[COMMONFLAGS] $[OPT1FLAGS] $[DEBUGFLAGS] 
+#defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPT1FLAGS] 
 #defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPTFLAGS] 
 #defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] 
 #defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] 
@@ -131,8 +155,17 @@
 
 #defer extra_cflags /EHsc /Zm250 /DWIN32_VC /DWIN32 $[WARNING_LEVEL_FLAG] $[END_CFLAGS]
 
-#defer COMPILE_C $[COMPILER] /nologo /c /Fo"$[osfilename $[target]]" $[decygwin %,/I"%",$[EXTRA_INCPATH] $[ipath]] $[flags] $[extra_cflags] $[source]
+#defer MAIN_C_COMPILE_ARGS /nologo /c $[decygwin %,/I"%",$[EXTRA_INCPATH] $[ipath]] $[flags] $[extra_cflags] $[source]
+
+#defer COMPILE_C $[COMPILER] /Fo"$[osfilename $[target]]" $[MAIN_C_COMPILE_ARGS]
 #defer COMPILE_C++ $[COMPILE_C]
+
+#if $[DO_PCH]
+#defer MAIN_C_COMPILE_ARGS_PCH /Fp"$[osfilename $[target_pch]]" $[MAIN_C_COMPILE_ARGS]
+#defer COMPILE_C_WITH_PCH $[COMPILER] /Yu /Fo"$[osfilename $[target]]" $[MAIN_C_COMPILE_ARGS_PCH]
+#defer COMPILE_CSTYLE_PCH $[COMPILER] /TC /Yc /Fo"$[osfilename $[target_obj]]" $[MAIN_C_COMPILE_ARGS_PCH]
+#defer COMPILE_CXXSTYLE_PCH $[COMPILER] /TP /Yc /Fo"$[osfilename $[target_obj]]" $[MAIN_C_COMPILE_ARGS_PCH]
+#endif
 
 #defer STATIC_LIB_C $[LIBBER] /nologo $[sources] /OUT:"$[osfilename $[target]]" 
 #defer STATIC_LIB_C++ $[STATIC_LIB_C]

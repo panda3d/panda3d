@@ -292,6 +292,7 @@
 // target.
 #defer get_sources \
   $[SOURCES] \
+  $[PRECOMPILED_HEADER] \  
   $[if $[HAVE_CRYPTO],$[IF_CRYPTO_SOURCES]] \
   $[if $[HAVE_JPEG],$[IF_JPEG_SOURCES]] \
   $[if $[HAVE_TIFF],$[IF_TIFF_SOURCES]] \
@@ -304,6 +305,7 @@
 
 #defer all_sources \
   $[SOURCES] \
+  $[PRECOMPILED_HEADER] \
   $[IF_CRYPTO_SOURCES] \
   $[IF_JPEG_SOURCES] \
   $[IF_TIFF_SOURCES] \
@@ -336,6 +338,16 @@
   $[if $[and $[run_interrogate],$[IGATESCAN]], \
     lib$[TARGET]_igate.cxx]
 
+#defer get_precompiled_header $[PRECOMPILED_HEADER]
+
+// This variable returns the name of the fake precompiled header cxx
+// that will be used to force linking of the generated pch .obj into libs
+// returns non-empty if sources var contains a *_headers.h
+// should probably use PRECOMPILED_HEADER var directly here instead
+#defer get_pch_outputcxx \
+  $[if $[and $[DO_PCH], $[filter %_headers.h, $[get_sources]]], \
+  $[TARGET]_headers.cxx]
+
 // This variable returns the name of the interrogate module, if the
 // current metalib target should include one, or empty string if it
 // should not.
@@ -343,8 +355,6 @@
   $[if $[and $[run_interrogate],$[components $[IGATESCAN],$[active_component_libs]]], \
     $[TARGET]]
     
-
-
 // This function returns the appropriate cflags for the target, based
 // on the various external packages this particular target claims to
 // require.
