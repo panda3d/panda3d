@@ -4355,12 +4355,15 @@ finish_modify_state() {
       if (_current_tex_mat->has_stage(stage)) {
         GLP(LoadMatrixf)(_current_tex_mat->get_mat(stage).get_data());
       } else {
+        GLP(LoadIdentity)();
+
         // For some reason, the glLoadIdentity() call doesn't work on
         // my Dell laptop's IBM OpenGL driver, when used in
         // conjunction with glTexGen(), below.  But explicitly loading
-        // an identity matrix does work.
-        //        GLP(LoadIdentity)();
-        GLP(LoadMatrixf)(LMatrix4f::ident_mat().get_data());
+        // an identity matrix does work.  But this buggy-driver
+        // workaround might have other performance implications, so I
+        // leave it out.
+        //GLP(LoadMatrixf)(LMatrix4f::ident_mat().get_data());
       }
     }
     report_my_gl_errors();
