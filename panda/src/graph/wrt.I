@@ -3,7 +3,7 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-#ifndef NDEBUG
+#ifdef NOTIFY_DEBUG
 ////////////////////////////////////////////////////////////////////
 //     Function: describe_ambiguous_wrt
 //  Description: Writes an error message to wrt_cat describing an
@@ -106,7 +106,6 @@ get_cached_net_transition(NodeRelation *arc, Node *&root,
     root = top_subtree;
     net = cur_cache;
 
-#ifndef NDEBUG
     if (wrt_cat.is_debug()) {
       wrt_cat.debug()
 	<< "get_cached_net_transition(" << *arc->get_child() << ", ";
@@ -122,7 +121,6 @@ get_cached_net_transition(NodeRelation *arc, Node *&root,
 	wrt_cat.spam() << "result of " << *arc << " is " << net << "\n";
       }	
     }
-#endif
 
   } else {
     // This arc's cache hasn't recently been verified, and we need to
@@ -168,7 +166,6 @@ get_cached_net_transition(NodeRelation *arc, Node *&root,
       net.store_to_cache(arc, root);
     }
 
-#ifndef NDEBUG
     if (wrt_cat.is_debug()) {
       wrt_cat.debug()
 	<< "get_cached_net_transition(" << *arc->get_child() << ", ";
@@ -184,7 +181,6 @@ get_cached_net_transition(NodeRelation *arc, Node *&root,
 	wrt_cat.spam() << "result of " << *arc << " is " << net << "\n";
       }	
     }
-#endif
   }
 }    
 
@@ -216,12 +212,10 @@ get_cached_net_transition(const Node *node,
     // the NULL node is by convention equivalent to the root.
     result.make_identity();
 
-#ifndef NDEBUG
     if (wrt_cat.is_debug()) {
       wrt_cat.debug()
 	<< "get_cached_net_transition((top))\n";
     }
-#endif
     return;
   }
 
@@ -239,12 +233,10 @@ get_cached_net_transition(const Node *node,
     // This node has no parents.  Stop here.
     result.make_identity();
     
-#ifndef NDEBUG
     if (wrt_cat.is_debug()) {
       wrt_cat.debug()
 	<< "get_cached_net_transition(" << *node << ") has no parents.\n";
     }
-#endif
     return;
 
   } else {
@@ -260,7 +252,7 @@ get_cached_net_transition(const Node *node,
     }
 
     if (parent_arc == (NodeRelation *)NULL) {
-#ifndef NDEBUG
+#ifndef NOTIFY_DEBUG
       // No, it wasn't mentioned.  Issue a warning and use the first
       // one.
       describe_ambiguous_wrt(node, arc_list_begin, arc_list_end, graph_type);
@@ -352,7 +344,7 @@ get_uncached_net_transition(const Node *node,
     }
 
     if (parent_arc == (NodeRelation *)NULL) {
-#ifndef NDEBUG
+#ifndef NOTIFY_DEBUG
       // No, it wasn't mentioned.  Issue a warning and use the first
       // one. 
       describe_ambiguous_wrt(node, arc_list_begin, arc_list_end, graph_type);
@@ -405,7 +397,6 @@ cached_wrt_base(const Node *from,
 
   TransitionWrapper net_from_trans = TransitionWrapper::init_from(result);
 
-#ifndef NDEBUG
   if (wrt_cat.is_debug()) {
     wrt_cat.debug()
       << "Computing wrt(";
@@ -423,7 +414,6 @@ cached_wrt_base(const Node *from,
       << "), as of " << now << " (now is " 
       << now << ")\n";
   }
-#endif
 
   get_cached_net_transition(from, from_arcs_begin, from_arcs_end, 
 			    now, now, net_from_trans, graph_type);
@@ -743,7 +733,6 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
     // If the top of the subtree is the node we asked to wrt to,
     // excellent!  Stop here.
 
-#ifndef NDEBUG
     if (wrt_cat.is_spam()) {
       wrt_cat.spam()
 	<< "cached_wrt_subtree(" << *arc << ", ";
@@ -755,7 +744,6 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
       wrt_cat.spam(false) << ") stops at top, result is:\n";
       result.write(wrt_cat.spam(false), 2);
     }
-#endif
 
   } else {
 
@@ -763,7 +751,6 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
     // some descendent of the top_subtree node.  It also therefore
     // follows that this node has exactly one parent.
 
-#ifndef NDEBUG
     if (wrt_cat.is_spam()) {
       wrt_cat.spam()
 	<< "cached_wrt_subtree(" << *arc << ", " << *to << ") stops at ";
@@ -775,7 +762,6 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
       wrt_cat.spam(false) << ", first result is:\n";
       result.write(wrt_cat.spam(false), 2);
     }
-#endif
 
     if (to->get_num_parents(graph_type) != 1) {
       // Oops!  We *don't* have exactly one parent.  This means our
@@ -785,12 +771,11 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
 
       // This, of course, assumes we haven't just asked for the wrt()
       // from the very latest timestamp.
-#ifndef NDEBUG
       if (wrt_cat.is_warning()) {
 	wrt_cat.warning()
 	  << "Recovering from stale cache.\n";
       }
-#endif
+
       nassertr(as_of != UpdateSeq::fresh(), NULL);
       return cached_wrt_subtree(arc, to, UpdateSeq::fresh(), now,
 				result, graph_type);
@@ -812,7 +797,6 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
     // And now compute the actual wrt.
     result.invert_compose_in_place(net_from_trans);
 
-#ifndef NDEBUG
     if (wrt_cat.is_spam()) {
       wrt_cat.spam()
 	<< "cached_wrt_subtree(" << *arc << ", " << *to << ") stops at ";
@@ -826,7 +810,6 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
       wrt_cat.spam() << ", final result is:\n";
       result.write(wrt_cat.spam(false), 2);
     }
-#endif
   }
 
 #ifndef NDEBUG

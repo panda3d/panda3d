@@ -130,7 +130,6 @@ xform(const LMatrix4f &mat) {
   // and then convert them back.  Hopefully we won't lose too much
   // precision during all of this.
 
-#ifndef NDEBUG
   if (collide_cat.is_debug()) {
     collide_cat.debug()
       << "CollisionPolygon transformed by:\n";
@@ -140,7 +139,6 @@ xform(const LMatrix4f &mat) {
 	<< "  (no points)\n";
     }
   }
-#endif
 
   if (!_points.empty()) {
     vector<LPoint3f> verts;

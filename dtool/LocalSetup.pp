@@ -91,7 +91,8 @@ $[cdefine HAVE_NET]
 /* Define if we want to use PStats.  */
 $[cdefine DO_PSTATS]
 
-/* Define if we want to use keep Notify debug messages.  */
+/* Define if we want to keep Notify debug messages around, or undefine 
+   to compile them out.  */
 $[cdefine NOTIFY_DEBUG]
 
 /* Define if we want to compile the audio code.  */

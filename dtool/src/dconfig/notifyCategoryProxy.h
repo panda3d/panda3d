@@ -72,13 +72,8 @@ public:
 
   INLINE bool is_on(NotifySeverity severity);
 
-#ifdef NOTIFY_DEBUG
   INLINE bool is_spam();
   INLINE bool is_debug();
-#else
-  INLINE static bool is_spam();
-  INLINE static bool is_debug();
-#endif
   INLINE bool is_info();
   INLINE bool is_warning();
   INLINE bool is_error();

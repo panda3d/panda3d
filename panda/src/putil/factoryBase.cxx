@@ -44,7 +44,6 @@ make_instance(TypeHandle handle, const FactoryParams &params) {
     instance = make_instance_more_specific(handle, params);
   }
 
-#ifndef NDEBUG
   if (util_cat.is_debug()) {
     util_cat.debug()
       << "make_instance(" << handle << ", params) returns "
@@ -55,7 +54,6 @@ make_instance(TypeHandle handle, const FactoryParams &params) {
     }
     util_cat.debug(false) << "\n";
   }
-#endif
   return instance;
 }
 
@@ -80,7 +78,6 @@ make_instance_more_general(TypeHandle handle, const FactoryParams &params) {
     object = make_instance_exact(handle, params);
   }
 
-#ifndef NDEBUG
   if (util_cat.is_debug()) {
     util_cat.debug()
       << "make_instance(" << handle << ", params) returns "
@@ -91,7 +88,6 @@ make_instance_more_general(TypeHandle handle, const FactoryParams &params) {
     }
     util_cat.debug(false) << "\n";
   }
-#endif
 
   return object;
 }

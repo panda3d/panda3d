@@ -47,11 +47,12 @@ operator = (const SwitchNodeOne &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE void SwitchNodeOne::
 select_child(int index) {
-#ifndef NDEBUG
-  if (_selected_child_index != index && switchnode_cat.is_debug()) {
-    switchnode_cat.debug()
-      << *this << " selecting child " << index << "\n";
+  if (switchnode_cat.is_debug()) {
+    if (_selected_child_index != index) {
+      switchnode_cat.debug()
+	<< *this << " selecting child " << index << "\n";
+    }
   }
-#endif
+
   _selected_child_index = index;
 }

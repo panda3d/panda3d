@@ -166,7 +166,7 @@ recompute_bound() {
   bool success =
     _bound->around(child_begin, child_end);
 
-#ifndef NDEBUG
+#ifdef NOTIFY_DEBUG
   if (!success) {
     collide_cat.error()
       << "Unable to generate bounding volume for " << *this << ":\n"

@@ -22,7 +22,7 @@ r_traverse(Node *node, NodeAttributes &data, bool has_spam_mode) {
   if (node->is_of_type(DataNode::get_class_type())) {
     DCAST_INTO_V(data_node, node);
 
-#ifndef NDEBUG
+#ifdef NOTIFY_DEBUG
     has_spam_mode = has_spam_mode || data_node->get_spam_mode();
 #endif
   }
@@ -37,7 +37,7 @@ r_traverse(Node *node, NodeAttributes &data, bool has_spam_mode) {
 
     // Now ask the node to transmit its overall data.
     if (data_node != (DataNode *)NULL) {
-#ifndef NDEBUG
+#ifdef NOTIFY_DEBUG
       if (has_spam_mode && dgraph_cat.is_info()) {
 	dgraph_cat.info() << "Sending into " << *node << " {\n";
 	describe_data_verbose(dgraph_cat.info(false), data, 2);
@@ -70,7 +70,7 @@ r_traverse_below(Node *node, NodeAttributes &data, bool has_spam_mode) {
   if (node->is_of_type(DataNode::get_class_type())) {
     DCAST_INTO_V(data_node, node);
 
-#ifndef NDEBUG
+#ifdef NOTIFY_DEBUG
     has_spam_mode = has_spam_mode || data_node->get_spam_mode();
 #endif
   }
@@ -173,7 +173,7 @@ resume(Node *node, DataGraphTraverser::SavedState &state) {
   if (node->is_of_type(DataNode::get_class_type())) {
     DCAST_INTO_V(data_node, node);
 
-#ifndef NDEBUG
+#ifdef NOTIFY_DEBUG
     if (state._has_spam_mode && dgraph_cat.is_info()) {
       dgraph_cat.info() << "Sending into " << *node << " {\n";
       describe_data_verbose(dgraph_cat.info(false), state._data, 2);

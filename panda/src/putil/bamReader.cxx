@@ -91,7 +91,6 @@ init() {
     return false;
   }
 
-#ifndef NDEBUG
   if (bam_cat.is_debug()) {
     bam_cat.debug() 
       << "Bam file is version " << _file_major << "." << _file_minor
@@ -102,7 +101,6 @@ init() {
 	<< ".)\n";
     }
   }
-#endif
 
   return true;
 }
@@ -150,12 +148,10 @@ read_object() {
   // Now look up the pointer of the object we read first.  It should
   // be available now.
   if (object_id == 0) {
-#ifndef NDEBUG
     if (bam_cat.is_spam()) {
       bam_cat.spam()
 	<< "Returning NULL\n";
     }
-#endif
     return (TypedWritable *)NULL;
   }
 
@@ -169,14 +165,12 @@ read_object() {
   } else {
     TypedWritable *object = (*oi).second;
 
-#ifndef NDEBUG
     if (bam_cat.is_spam()) {
       if (object != (TypedWritable *)NULL) {
 	bam_cat.spam()
 	  << "Returning object of type " << object->get_type() << "\n";
       }
     }
-#endif
     
     return object;
   }
@@ -342,12 +336,10 @@ read_handle(DatagramIterator &scan) {
   bool inserted = _index_map.insert(IndexMap::value_type(id, type)).second;
   nassertr(inserted, type);
 
-#ifndef NDEBUG
   if (bam_cat.is_spam()) {
     bam_cat.spam()
       << "Read TypeHandle for " << type << ".\n";
   }
-#endif
 
   return type;
 }
@@ -549,12 +541,10 @@ p_read_object() {
   if (!_source->get_datagram(packet)) {
     // When we run out of datagrams, we're at the end of the file.
 
-#ifndef NDEBUG
     if (bam_cat.is_debug()) {
       bam_cat.debug()
 	<< "Reached end of bam source.\n";
     }
-#endif
     return 0;
   }
 
@@ -616,12 +606,10 @@ p_read_object() {
 	<< " was created instead." << endl;
 
     } else {
-#ifndef NDEBUG
       if (bam_cat.is_spam()) {
 	bam_cat.spam()
 	  << "Read a " << object->get_type() << "\n";
       }
-#endif
     }
   }
 
@@ -637,12 +625,10 @@ p_read_object() {
 ////////////////////////////////////////////////////////////////////
 void BamReader::
 finalize() {
-#ifndef NDEBUG
   if (bam_cat.is_debug()) {
     bam_cat.debug()
       << "Finalizing bam source\n";
   }
-#endif
 
   Finalize::iterator fi = _finalize_list.begin();
   while (fi != _finalize_list.end()) {

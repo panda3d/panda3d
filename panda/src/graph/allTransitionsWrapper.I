@@ -321,13 +321,11 @@ INLINE_GRAPH Node *AllTransitionsWrapper::
 extract_from_cache(const NodeRelation *arc) {
   _cache = arc->_net_transitions;
   _all_verified = arc->_all_verified;
-#ifndef NDEBUG
   if (wrt_cat.is_spam()) {
     wrt_cat.spam()
       << "AllTransitionsWrapper::extract_from_cache(" << *arc
       << "), _all_verified = " << _all_verified << "\n";
   }
-#endif
   return arc->_top_subtree;
 }
 
@@ -345,13 +343,11 @@ store_to_cache(NodeRelation *arc, Node *top_subtree) {
   arc->_net_transitions = _cache;
   arc->_all_verified = _all_verified;
 
-#ifndef NDEBUG
   if (wrt_cat.is_spam()) {
     wrt_cat.spam()
       << "AllTransitionsWrapper::store_to_cache(" << *arc
       << "), _all_verified = " << _all_verified << "\n";
   }
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -370,13 +366,11 @@ store_to_cache_partial(NodeRelation *arc, Node *top_subtree) {
   arc->_net_transitions = 
     NodeTransitionCache::c_union(arc->_net_transitions, _cache);
 
-#ifndef NDEBUG
   if (wrt_cat.is_spam()) {
     wrt_cat.spam()
       << "AllTransitionsWrapper::store_to_cache_partial(" << *arc
       << "), _all_verified = " << _all_verified << "\n";
   }
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -386,14 +380,12 @@ store_to_cache_partial(NodeRelation *arc, Node *top_subtree) {
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH bool AllTransitionsWrapper::
 is_cache_verified(UpdateSeq as_of) const {
-#ifndef NDEBUG
   if (wrt_cat.is_spam()) {
     wrt_cat.spam()
       << "AllTransitionsWrapper::is_cache_verified(" << as_of 
       << "), _all_verified = " << _all_verified << ", result = "
       << (as_of <= _all_verified) << "\n";
   }
-#endif
   return as_of <= _all_verified;
 }
 
@@ -407,12 +399,10 @@ set_computed_verified(UpdateSeq now) {
   _cache = NodeTransitionCache::set_computed_verified(_cache, now);
   _all_verified = now;
 
-#ifndef NDEBUG
   if (wrt_cat.is_spam()) {
     wrt_cat.spam()
       << "AllTransitionsWrapper::set_computed_verified(" << now << ")\n";
   }
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////

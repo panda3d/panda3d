@@ -19,12 +19,10 @@
 ////////////////////////////////////////////////////////////////////
 INLINE void CullTraverser::
 draw_geom(GeomNode *geom_node, const AllAttributesWrapper &initial_state) {
-#ifndef NDEBUG
   if (cull_cat.is_spam()) {
     cull_cat.spam() 
       << "Drawing " << *geom_node << " with state: " << initial_state << "\n";
   }
-#endif
   nassertv(geom_node != (GeomNode *)NULL);
   _gsg->set_state(initial_state.get_attributes(), true);
   _gsg->prepare_display_region();
@@ -58,12 +56,10 @@ draw_direct(const ArcChain &arc_chain,
 	    const AllAttributesWrapper &initial_state) {
   nassertv(!arc_chain.empty());
   Node *node = arc_chain.back()->get_child();
-#ifndef NDEBUG
   if (cull_cat.is_spam()) {
     cull_cat.spam() 
       << "Drawing " << *node << " in direct mode.\n";
   }
-#endif
   nassertv(node != (Node *)NULL);
   DirectRenderTraverser drt(_gsg, _graph_type, arc_chain);
   drt.traverse(node, initial_state, AllTransitionsWrapper());
@@ -105,7 +101,7 @@ find_bin_state(const AllTransitionsWrapper &trans) {
   // corresponding CullState that is (now) stored in the set.
   pair<States::iterator, bool> result = _states.insert(cs);
 
-#ifndef NDEBUG
+#ifdef NOTIFY_DEBUG
   if (cull_cat.is_spam()) {
     if (result.second) {
       // The insert succeeded, so the CullState was not there

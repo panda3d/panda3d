@@ -577,7 +577,6 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
 
   mark_forward_arc(arc);
 
-#ifndef NDEBUG
   if (cull_cat.is_spam()) {
     cull_cat.spam() 
       << "Reached " << *node << ":\n"
@@ -590,7 +589,6 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
       << " has_direct_render = " << has_direct_render
       << "\n";
   }
-#endif
 
   if (is_instanced || is_geom || node_has_sub_render || 
       arc_num_sub_render != 0 || has_direct_render) {

@@ -104,11 +104,9 @@ app_traverse() {
   double now = ClockObject::get_global_clock()->get_frame_time();
   get_bundle()->advance_time(now);
 
-#ifndef NDEBUG
   if (char_cat.is_debug()) {
     char_cat.debug() << "Animating " << *this << " at time " << now << "\n";
   }
-#endif
 
   update();
 }

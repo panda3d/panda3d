@@ -764,9 +764,9 @@ invert_from(const FLOATNAME(LMatrix3) &other) {
   FLOATTYPE other_det = MATRIX3_DETERMINANT(other._m.m);
 
   if (IS_NEARLY_ZERO(other_det)) {
-	#ifndef NDEBUG
-       linmath_cat.warning() << "Tried to invert singular LMatrix3.\n";
-	#endif
+#ifdef NOTIFY_DEBUG
+    linmath_cat.warning() << "Tried to invert singular LMatrix3.\n";
+#endif
     (*this) = ident_mat();
     return false;
   }

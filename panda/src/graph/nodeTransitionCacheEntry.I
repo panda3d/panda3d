@@ -155,14 +155,12 @@ get_trans() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH bool NodeTransitionCacheEntry::
 is_cache_verified(UpdateSeq as_of) const {
-#ifndef NDEBUG
   if (wrt_cat.is_spam()) {
     wrt_cat.spam()
       << "NodeTransitionCacheEntry::is_cache_verified(" << as_of 
       << "), _verified = " << _verified << ", result = "
       << (as_of <= _verified) << "\n";
   }
-#endif
   return as_of <= _verified;
 }
 
@@ -303,7 +301,6 @@ cached_compose(const NodeTransitionCacheEntry &a,
 	       const NodeTransitionCacheEntry &cache, 
 	       const NodeTransitionCacheEntry &b,
 	       UpdateSeq now) {
-#ifndef NDEBUG
   if (wrt_cat.is_spam()) {
     wrt_cat.spam()
       << "Composing:\n"
@@ -311,7 +308,7 @@ cached_compose(const NodeTransitionCacheEntry &a,
       << " cache) " << cache << " = " << cache._computed << "\n"
       << "     b) " << b << " = " << b._computed << "\n";
   }
-#endif
+
   if (cache._computed == UpdateSeq::initial() ||
       (a._computed == UpdateSeq::initial() && 
        b._computed == UpdateSeq::initial()) ||
@@ -323,11 +320,11 @@ cached_compose(const NodeTransitionCacheEntry &a,
     // directly.
     NodeTransitionCacheEntry result = compose(a, b);
     result.set_computed_verified(now);
-#ifndef NDEBUG
+
     if (wrt_cat.is_spam()) {
       wrt_cat.spam() << "computed result is " << result << "\n";
     }
-#endif
+
     return result;
 
   } else {
@@ -335,11 +332,11 @@ cached_compose(const NodeTransitionCacheEntry &a,
     // directly.
     NodeTransitionCacheEntry result = cache;
     result._verified = now;
-#ifndef NDEBUG
+
     if (wrt_cat.is_spam()) {
       wrt_cat.spam() << "cached result is " << result << "\n";
     }
-#endif
+
     return result;
   }
 }
