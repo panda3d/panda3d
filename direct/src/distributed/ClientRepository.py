@@ -359,7 +359,10 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
 
         # if we have an explicit list of visible zones, add them
         if visibleZoneList is not None:
-            for zone in visibleZoneList:
+            vzl = list(visibleZoneList)
+            vzl.sort()
+            assert PythonUtil.uniqueElements(vzl)
+            for zone in vzl:
                 datagram.addUint32(zone)
 
         # send the message
