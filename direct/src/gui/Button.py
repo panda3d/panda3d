@@ -24,7 +24,7 @@ class Button(DirectObject):
                  inactiveStyle = Label.ButtonInactive):
         self.name = name
         self.width = width
-        
+
         # if no label given, use the button name
         if (label == None):
             label = self.name
@@ -102,7 +102,7 @@ class Button(DirectObject):
             self.xoffset = -width / 2.0 * scale
         else:
             self.xoffset = 0
-            
+
         self.setPos(pos[0], pos[1])
         self.managed = 0
 
@@ -162,7 +162,7 @@ class Button(DirectObject):
                 self.button.inactive()
 
             self.managed = 1
-                
+
 
     def unmanage(self):
         if self.managed:
@@ -185,9 +185,14 @@ class Button(DirectObject):
     def setBehaviorEvent(self, eventName):
         self.button.setBehaviorEvent(eventName)
 
+    def setBehaviorEventParameter(self, param):
+        self.button.setBehaviorEventParameter(param)
+
     def startBehavior(self):
         self.button.startBehavior()
 
     def stopBehavior(self):
         self.button.stopBehavior()
 
+    def setRolloverEvent(self, eventName):
+        self.button.setUpRolloverEvent(eventName)
