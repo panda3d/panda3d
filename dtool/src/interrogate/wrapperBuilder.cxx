@@ -429,7 +429,7 @@ get_parameter_name(int n) const {
 //               of the nth parameter is it is empty.
 ////////////////////////////////////////////////////////////////////
 string WrapperBuilder::
-get_parameter_expr(int n, const vector<string> &pexprs) const {
+get_parameter_expr(int n, const vector_string &pexprs) const {
   if (n < (int)pexprs.size()) {
     return pexprs[n];
   }
@@ -445,7 +445,7 @@ get_parameter_expr(int n, const vector<string> &pexprs) const {
 //               parameter value.
 ////////////////////////////////////////////////////////////////////
 string WrapperBuilder::
-get_call_str(const vector<string> &pexprs) const {
+get_call_str(const vector_string &pexprs) const {
   // Build up the call to the actual function.
   ostringstream call;
 
@@ -521,7 +521,7 @@ get_call_str(const vector<string> &pexprs) const {
 ////////////////////////////////////////////////////////////////////
 string WrapperBuilder::
 call_function(ostream &out, int indent_level, bool convert_result,
-	      const vector<string> &pexprs) const {
+	      const vector_string &pexprs) const {
   string return_expr;
 
   if (_type == T_destructor) {

@@ -8,16 +8,6 @@
 
 #include <notify.h>
 
-#ifdef WIN32_VC
-// Windows uses a different API for scanning for files in a directory.
-#define WINDOWS_LEAN_AND_MEAN
-#include <windows.h>
-
-#else
-#include <sys/types.h>
-#include <dirent.h>
-#endif
-
 ////////////////////////////////////////////////////////////////////
 //     Function: CVSSourceDirectory::Constructor
 //       Access: Public
@@ -230,40 +220,34 @@ find_dirname(const string &dirname) {
 //               success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool CVSSourceDirectory::
-scan(const string &fullpath, const string &key_filename) {
-  DIR *root = opendir(fullpath.c_str());
-  if (root == (DIR *)NULL) {
-    nout << "Unable to scan directory " << fullpath << "\n";
+scan(const Filename &directory, const string &key_filename) {
+  vector_string contents;
+  if (!directory.scan_directory(contents)) {
+    nout << "Unable to scan directory " << directory << "\n";
     return false;
   }
 
-  struct dirent *d;
-  d = readdir(root);
-  while (d != (struct dirent *)NULL) {
-    string filename = d->d_name;
+  vector_string::const_iterator fi;
+  for (fi = contents.begin(); fi != contents.end(); ++fi) {
+    const string &filename = (*fi);
 
-    if (!filename.empty() && filename[0] != '.') {
-      // Is this possibly a subdirectory name?
-      string next_path = fullpath + "/" + filename;
-      string key = next_path + "/" + key_filename;
-      if (access(key.c_str(), F_OK) == 0) {
-	CVSSourceDirectory *subdir = 
-	  new CVSSourceDirectory(_tree, this, filename);
-	_children.push_back(subdir);
-
-	if (!subdir->scan(next_path, key_filename)) {
-	  closedir(root);
-	  return false;
-	}
-
-      } else {
-	// It's not a subdirectory; call it a regular file.
-	_tree->add_file(filename, this);
+    // Is this possibly a subdirectory name?
+    Filename next_path(directory, filename);
+    Filename key(next_path, key_filename);
+    if (key.exists()) {
+      CVSSourceDirectory *subdir = 
+	new CVSSourceDirectory(_tree, this, filename);
+      _children.push_back(subdir);
+      
+      if (!subdir->scan(next_path, key_filename)) {
+	return false;
       }
+      
+    } else {
+      // It's not a subdirectory; call it a regular file.
+      _tree->add_file(filename, this);
     }
-
-    d = readdir(root);
   }
-  closedir(root);
+
   return true;
 }

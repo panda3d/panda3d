@@ -57,7 +57,7 @@ write_wrapper(ostream &out, const string &wrapper_name) const {
 
   string format_specifiers;
   string parameter_list;
-  vector<string> pexprs;
+  vector_string pexprs;
 
   // Make one pass through the parameter list.  We will output a
   // one-line temporary variable definition for each parameter, while

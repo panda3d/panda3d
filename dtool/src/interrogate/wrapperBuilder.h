@@ -9,6 +9,7 @@
 #include <dtoolbase.h>
 
 #include <interrogate_interface.h>
+#include <vector_string.h>
 
 #include <vector>
 
@@ -105,12 +106,12 @@ protected:
   void output_ref(ostream &out, int indent_level, const string &varname) const;
 
   string get_parameter_name(int n) const;
-  string get_parameter_expr(int n, const vector<string> &pexprs) const;
+  string get_parameter_expr(int n, const vector_string &pexprs) const;
 
-  string get_call_str(const vector<string> &pexprs = vector<string>()) const;
+  string get_call_str(const vector_string &pexprs = vector_string()) const;
   string call_function(ostream &out, int indent_level, 
 		       bool convert_result = true,
-		       const vector<string> &pexprs = vector<string>()) const;
+		       const vector_string &pexprs = vector_string()) const;
 
   void write_spam_message(ostream &out) const;
   void write_quoted_string(ostream &out, const string &str) const;

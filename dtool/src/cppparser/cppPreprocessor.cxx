@@ -1508,7 +1508,7 @@ get_identifier(int c) {
 ////////////////////////////////////////////////////////////////////
 CPPToken CPPPreprocessor::
 expand_manifest(const CPPManifest *manifest) {
-  vector<string> args;
+  vector_string args;
   
   if (manifest->_has_parameters) {
     // Hmm, we're expecting arguments.
@@ -1538,7 +1538,7 @@ expand_manifest(const CPPManifest *manifest) {
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
 extract_manifest_args(const string &name, int num_args, 
-		      vector<string> &args) {
+		      vector_string &args) {
   CPPFile first_file = get_file();
   int first_line = get_line_number();
   int first_col = get_col_number();
@@ -1608,7 +1608,7 @@ void CPPPreprocessor::
 expand_defined_function(string &expr, size_t q, size_t &p) {
   string result;
 
-  vector<string> args;
+  vector_string args;
   extract_manifest_args_inline("defined", 1, args, expr, p);
   if (args.size() >= 1) {
     const string &manifest_name = args[0];
@@ -1634,7 +1634,7 @@ expand_defined_function(string &expr, size_t q, size_t &p) {
 void CPPPreprocessor::
 expand_manifest_inline(string &expr, size_t q, size_t &p,
 		       const CPPManifest *manifest) {
-  vector<string> args;
+  vector_string args;
   if (manifest->_has_parameters) {
     extract_manifest_args_inline(manifest->_name, manifest->_num_parameters,
 				 args, expr, p);
@@ -1652,7 +1652,7 @@ expand_manifest_inline(string &expr, size_t q, size_t &p,
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
 extract_manifest_args_inline(const string &name, int num_args, 
-			     vector<string> &args,
+			     vector_string &args,
 			     const string &expr, size_t &p) {
   // Skip whitespace till paren.
   while (p < expr.size() && isspace(expr[p])) {

@@ -5,21 +5,9 @@
 
 #include "softCVS.h"
 
-#include <filename.h>
 #include <notify.h>
-#include <vector_string.h>
 
 #include <algorithm>
-
-#ifdef WIN32_VC
-// Windows uses a different API for scanning for files in a directory.
-#define WINDOWS_LEAN_AND_MEAN
-#include <windows.h>
-
-#else
-#include <sys/types.h>
-#include <dirent.h>
-#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SoftCVS::Constructor
@@ -114,32 +102,20 @@ run() {
 //               and renames these to *.1-0.ext.
 ////////////////////////////////////////////////////////////////////
 void SoftCVS::
-traverse(const string &dirname) {
+traverse(const Filename &directory) {
   // Get the list of files in the directory.
   vector_string files;
-
-  DIR *root = opendir(dirname.c_str());
-  if (root == (DIR *)NULL) {
-    nout << "Unable to scan directory " << dirname << "\n";
+  if (!directory.scan_directory(files)) {
+    nout << "Unable to scan directory " << directory << "\n";
+    return;
   }
-
-  struct dirent *d;
-  d = readdir(root);
-  while (d != (struct dirent *)NULL) {
-    files.push_back(d->d_name);
-    d = readdir(root);
-  }
-  closedir(root);
-
-  // Sort the directory entries just for the user's sanity.
-  sort(files.begin(), files.end());
 
   // We need to know the set of files in this directory that are CVS
   // elements.
   set<string> cvs_elements;
   bool in_cvs = false;
   if (!_no_cvs) {
-    in_cvs = scan_cvs(dirname, cvs_elements);
+    in_cvs = scan_cvs(directory, cvs_elements);
   }
 
   // Now go through and identify files with version numbers, and
@@ -156,14 +132,14 @@ traverse(const string &dirname) {
 	versions.push_back(v);
       } else {
 	// Maybe this is a subdirectory?
-	Filename subdir = dirname + "/" + filename;
+	Filename subdir(directory, filename);
 	if (subdir.is_directory()) {
 	  traverse(subdir);
 	} else {
 	  // No, not a subdirectory; maybe a regular file that needs
 	  // to get added to CVS?
 	  if (in_cvs) {
-	    consider_add_cvs(dirname, filename, cvs_elements);
+	    consider_add_cvs(directory, filename, cvs_elements);
 	  }
 	}
       }
@@ -190,23 +166,23 @@ traverse(const string &dirname) {
 	  ++vi;
 	}
 	
-	if (rename_file(dirname, start_vi, vi)) {
+	if (rename_file(directory, start_vi, vi)) {
 	  if (in_cvs) {
-	    consider_add_cvs(dirname, file.get_1_0_filename(), cvs_elements);
+	    consider_add_cvs(directory, file.get_1_0_filename(), cvs_elements);
 	  }
 
 	  if (file.get_extension() == ".dsc") {
-	    _scene_files.insert(dirname + "/" + file.get_1_0_filename());
+	    _scene_files.insert(Filename(directory, file.get_1_0_filename()));
 	  }
 	}
 	
       } else {
 	if (in_cvs) {
-	  consider_add_cvs(dirname, file.get_filename(), cvs_elements);
+	  consider_add_cvs(directory, file.get_filename(), cvs_elements);
 	}
 
 	if (file.get_extension() == ".dsc") {
-	  _scene_files.insert(dirname + "/" + file.get_filename());
+	  _scene_files.insert(Filename(directory, file.get_filename()));
 	}
 	++vi;
       }

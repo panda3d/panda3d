@@ -53,7 +53,7 @@ CPPManifest(const string &args, const CPPFile &file) : _file(file) {
 
   _name = args.substr(0, p);
   
-  vector<string> parameter_names;
+  vector_string parameter_names;
 
   if (args[p] == '(') {
     // Hmm, parameters.
@@ -95,7 +95,7 @@ CPPManifest::
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 string CPPManifest::
-expand(const vector<string> &args) const {
+expand(const vector_string &args) const {
   string result;
 
   Expansion::const_iterator ei;
@@ -172,7 +172,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void CPPManifest::
 parse_parameters(const string &args, size_t &p, 
-		 vector<string> &parameter_names) {
+		 vector_string &parameter_names) {
   assert(p < args.size());
   assert(args[p] == '(');
 
@@ -211,7 +211,7 @@ parse_parameters(const string &args, size_t &p,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void CPPManifest::
-save_expansion(const string &exp, const vector<string> &parameter_names) {
+save_expansion(const string &exp, const vector_string &parameter_names) {
   if (parameter_names.empty()) {
     // No parameters; this is an easy case.
     _expansion.push_back(ExpansionNode(exp));

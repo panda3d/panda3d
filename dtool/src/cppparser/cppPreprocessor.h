@@ -14,6 +14,7 @@
 #include "cppCommentBlock.h"
 
 #include <dSearchPath.h>
+#include <vector_string.h>
 
 #include <map>
 #include <list>
@@ -129,12 +130,12 @@ private:
   CPPToken get_identifier(int c);
   CPPToken expand_manifest(const CPPManifest *manifest);
   void extract_manifest_args(const string &name, int num_args,
-			     vector<string> &args);
+			     vector_string &args);
   void expand_defined_function(string &expr, size_t q, size_t &p);
   void expand_manifest_inline(string &expr, size_t q, size_t &p,
 			      const CPPManifest *manifest);
   void extract_manifest_args_inline(const string &name, int num_args,
-				    vector<string> &args,
+				    vector_string &args,
 				    const string &expr, size_t &p);
 
   CPPToken get_number(int c, int c2 = 0);

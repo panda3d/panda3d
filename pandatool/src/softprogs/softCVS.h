@@ -12,6 +12,7 @@
 
 #include <programBase.h>
 #include <vector_string.h>
+#include <filename.h>
 
 #include <vector>
 #include <set>
@@ -29,7 +30,7 @@ public:
   void run();
 
 private:
-  void traverse(const string &dirname);
+  void traverse(const Filename &directory);
 
   bool rename_file(const string &dirname,
 		   vector<SoftFilename>::const_iterator begin, 

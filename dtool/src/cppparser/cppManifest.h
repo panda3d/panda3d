@@ -11,8 +11,7 @@
 #include "cppFile.h"
 #include "cppVisibility.h"
 
-#include <vector>
-#include <string>
+#include <vector_string.h>
 
 class CPPExpression;
 class CPPType;
@@ -25,7 +24,7 @@ class CPPManifest {
 public:
   CPPManifest(const string &args, const CPPFile &file = CPPFile());
   ~CPPManifest();
-  string expand(const vector<string> &args = vector<string>()) const;
+  string expand(const vector_string &args = vector_string()) const;
 
   CPPType *determine_type() const;
 
@@ -45,9 +44,9 @@ public:
 
 private:
   void parse_parameters(const string &args, size_t &p,
-			vector<string> &parameter_names);
+			vector_string &parameter_names);
   void save_expansion(const string &exp,
-		      const vector<string> &parameter_names);
+		      const vector_string &parameter_names);
 
   class ExpansionNode {
   public:

@@ -7,6 +7,7 @@
 #define CVSSOURCEDIRECTORY_H
 
 #include <pandatoolbase.h>
+#include <filename.h>
 
 #include <vector>
 
@@ -37,7 +38,7 @@ public:
   CVSSourceDirectory *find_dirname(const string &dirname);
 
 public:
-  bool scan(const string &prefix, const string &key_filename);
+  bool scan(const Filename &directory, const string &key_filename);
 
 private:
   CVSSourceTree *_tree;
