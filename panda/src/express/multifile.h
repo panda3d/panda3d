@@ -57,6 +57,8 @@ PUBLISHED:
 
   string add_subfile(const string &subfile_name, const Filename &filename,
                      int compression_level);
+  string update_subfile(const string &subfile_name, const Filename &filename,
+                        int compression_level);
   bool flush();
   bool repack();
 
@@ -74,6 +76,7 @@ PUBLISHED:
   INLINE string read_subfile(int index);
   istream *open_read_subfile(int index);
   bool extract_subfile(int index, const Filename &filename);
+  bool compare_subfile(int index, const Filename &filename);
 
   void output(ostream &out) const;
   void ls(ostream &out = cout) const;
@@ -129,8 +132,9 @@ private:
   INLINE streampos normalize_streampos(streampos fpos) const;
   streampos pad_to_streampos(streampos fpos);
 
-  string add_new_subfile(const string &subfile_name, Subfile *subfile,
-                         int compression_level);
+  void add_new_subfile(Subfile *subfile, int compression_level);
+  string standardize_subfile_name(const string &subfile_name) const;
+
   void clear_subfiles();
   bool read_index();
   bool write_header();

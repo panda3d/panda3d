@@ -294,7 +294,10 @@ set_scale_factor(size_t scale_factor) {
 //       Access: Published
 //  Description: Adds a file on disk as a subfile to the Multifile.
 //               The file named by filename will be read and added to
-//               the Multifile at the next call to flush().
+//               the Multifile at the next call to flush().  If there
+//               already exists a subfile with the indicated name, it
+//               is replaced without examining its contents (but see
+//               also update_subfile).
 //
 //               Returns the subfile name on success (it might have
 //               been modified slightly), or empty string on failure.
@@ -307,11 +310,58 @@ add_subfile(const string &subfile_name, const Filename &filename,
   if (!filename.exists()) {
     return string();
   }
-  Subfile *subfile = new Subfile;
-  subfile->_source_filename = filename;
-  subfile->_source_filename.set_binary();
+  string name = standardize_subfile_name(subfile_name);
+  if (!name.empty()) {
+    Subfile *subfile = new Subfile;
+    subfile->_name = name;
+    subfile->_source_filename = filename;
+    subfile->_source_filename.set_binary();
+    
+    add_new_subfile(subfile, compression_level);
+  }
 
-  return add_new_subfile(subfile_name, subfile, compression_level);
+  return name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::update_subfile
+//       Access: Published
+//  Description: Adds a file on disk to the subfile.  If a subfile
+//               already exists with the same name, its contents are
+//               compared to the disk file, and it is replaced only if
+//               it is different; otherwise, the multifile is left
+//               unchanged.
+////////////////////////////////////////////////////////////////////
+string Multifile::
+update_subfile(const string &subfile_name, const Filename &filename,
+               int compression_level) {
+  nassertr(is_write_valid(), string());
+
+  if (!filename.exists()) {
+    return string();
+  }
+  string name = standardize_subfile_name(subfile_name);
+  if (!name.empty()) {
+    int index = find_subfile(name);
+    if (index >= 0) {
+      // The subfile already exists; compare it to the source file.
+      if (compare_subfile(index, filename)) {
+        // The files are identical; do nothing.
+        return name;
+      }
+    }
+
+    // The subfile does not already exist or it is different from the
+    // source file.  Add the new source file.
+    Subfile *subfile = new Subfile;
+    subfile->_name = name;
+    subfile->_source_filename = filename;
+    subfile->_source_filename.set_binary();
+
+    add_new_subfile(subfile, compression_level);
+  }
+
+  return name;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -545,7 +595,7 @@ get_num_subfiles() const {
 int Multifile::
 find_subfile(const string &subfile_name) const {
   Subfile find_subfile;
-  find_subfile._name = subfile_name;
+  find_subfile._name = standardize_subfile_name(subfile_name);
   Subfiles::const_iterator fi;
   fi = _subfiles.find(&find_subfile);
   if (fi == _subfiles.end()) {
@@ -590,7 +640,7 @@ has_directory(const string &subfile_name) const {
 //       Access: Published
 //  Description: Considers subfile_name to be the name of a
 //               subdirectory within the Multifile, but not a file
-//               itself; ills the given vector up with the sorted list
+//               itself; fills the given vector up with the sorted list
 //               of subdirectories or files within the named
 //               directory.
 //
@@ -809,6 +859,57 @@ extract_subfile(int index, const Filename &filename) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Multifile::compare_subfile
+//       Access: Published
+//  Description: Performs a byte-for-byte comparison of the indicated
+//               file on disk with the nth subfile.  Returns true if
+//               the files are equivalent, or false if they are
+//               different (or the file is missing).
+////////////////////////////////////////////////////////////////////
+bool Multifile::
+compare_subfile(int index, const Filename &filename) {
+  nassertr(is_read_valid(), false);
+  nassertr(index >= 0 && index < (int)_subfiles.size(), false);
+
+  if (!filename.exists()) {
+    express_cat.info()
+      << "File is missing: " << filename << "\n";
+    return false;
+  }
+
+  istream *in1 = open_read_subfile(index);
+  if (in1 == (istream *)NULL) {
+    return false;
+  }
+
+  ifstream in2;
+  Filename bin_filename = Filename::binary_filename(filename);
+  if (!bin_filename.open_read(in2)) {
+    express_cat.info()
+      << "Cannot read " << filename << "\n";
+    return false;
+  }
+
+  int byte1 = in1->get();
+  int byte2 = in2.get();
+  while (!in1->fail() && !in1->eof() &&
+         !in2.fail() && !in2.eof()) {
+    if (byte1 != byte2) {
+      delete in1;
+      return false;
+    }
+    byte1 = in1->get();
+    byte2 = in2.get();
+  }
+
+  bool failed = (in1->fail() && !in1->eof()) || (in2.fail() && !in2.eof());
+  delete in1;
+
+  nassertr(!failed, false);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Multifile::output
 //       Access: Published
 //  Description: 
@@ -928,7 +1029,7 @@ open_read_write(iostream *multifile_stream) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Multifile::add_subfile
 //       Access: Public
-//  Description: Adds a file on disk as a subfile to the Multifile.
+//  Description: Adds a file from a stream as a subfile to the Multifile.
 //               The indicated istream will be read and its contents
 //               added to the Multifile at the next call to flush().
 //
@@ -940,10 +1041,15 @@ add_subfile(const string &subfile_name, istream *subfile_data,
             int compression_level) {
   nassertr(is_write_valid(), string());
 
-  Subfile *subfile = new Subfile;
-  subfile->_source = subfile_data;
+  string name = standardize_subfile_name(subfile_name);
+  if (!name.empty()) {
+    Subfile *subfile = new Subfile;
+    subfile->_name = name;
+    subfile->_source = subfile_data;
+    add_new_subfile(subfile, compression_level);
+  }
 
-  return add_new_subfile(subfile_name, subfile, compression_level);
+  return name;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1001,9 +1107,8 @@ pad_to_streampos(streampos fpos) {
 //  Description: Adds a newly-allocated Subfile pointer to the
 //               Multifile.
 ////////////////////////////////////////////////////////////////////
-string Multifile::
-add_new_subfile(const string &subfile_name, Subfile *subfile,
-                int compression_level) {
+void Multifile::
+add_new_subfile(Subfile *subfile, int compression_level) {
   if (compression_level != 0) {
 #ifndef HAVE_ZLIB
     express_cat.warning()
@@ -1021,20 +1126,6 @@ add_new_subfile(const string &subfile_name, Subfile *subfile,
     _needs_repack = true;
   }
 
-  // Normalize the Subfile name: eliminate ./, leading slash, etc.
-  Filename name = subfile_name;
-  name.standardize();
-  if (name.empty() || name == "/") {
-    // Invalid empty name.
-    return string();
-  }
-
-  if (name[0] == '/') {
-    subfile->_name = name.get_fullpath().substr(1);
-  } else {
-    subfile->_name = name;
-  }
-
   pair<Subfiles::iterator, bool> insert_result = _subfiles.insert(subfile);
   if (!insert_result.second) {
     // Hmm, unable to insert.  There must already be a subfile by that
@@ -1046,7 +1137,27 @@ add_new_subfile(const string &subfile_name, Subfile *subfile,
   }
 
   _new_subfiles.push_back(subfile);
-  return subfile->_name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::standardize_subfile_name
+//       Access: Private
+//  Description: Returns the standard form of the subfile name.
+////////////////////////////////////////////////////////////////////
+string Multifile::
+standardize_subfile_name(const string &subfile_name) const {
+  Filename name = subfile_name;
+  name.standardize();
+  if (name.empty() || name == "/") {
+    // Invalid empty name.
+    return string();
+  }
+
+  if (name[0] == '/') {
+    return name.get_fullpath().substr(1);
+  } else {
+    return name.get_fullpath();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

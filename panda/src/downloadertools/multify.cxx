@@ -30,6 +30,7 @@
 
 bool create = false;      // -c
 bool append = false;      // -r
+bool update = false;      // -u
 bool list = false;        // -t
 bool extract = false;     // -x
 bool verbose = false;     // -v
@@ -49,7 +50,7 @@ string dont_compress_str = "jpg,mp3";
 void 
 usage() {
   cerr <<
-    "Usage: multify -[c|r|t|x] -f <multifile_name> [options] <subfile_name> ...\n";
+    "Usage: multify -[c|r|u|t|x] -f <multifile_name> [options] <subfile_name> ...\n";
 }
 
 void 
@@ -81,6 +82,12 @@ help() {
     "      line will be added to the Multifile or will replace subfiles within\n"
     "      the Multifile with the same name.  The Multifile will be repacked\n"
     "      after completion, even if no Subfiles were added.\n\n"
+
+    "  -u\n"
+    "      Update an existing Multifile archive.  This is similar to -r, except\n"
+    "      that files are compared byte-for-byte with their corresponding files\n"
+    "      in the archive first.  If they have not changed, the multifile is not\n"
+    "      modified (other than to repack it if necessary).\n\n"
 
     "  -t\n"
     "      List the contents of an existing Multifile.  With -v, this shows\n"
@@ -127,7 +134,6 @@ help() {
 
     "  -O\n"
     "      With -x, extract subfiles to standard output instead of to disk.\n\n"
-
     "  -Z <extension_list>\n"
     "      Specify a comma-separated list of filename extensions that represent\n"
     "      files that are not to be compressed.  The default if this is omitted is\n"
@@ -191,16 +197,23 @@ add_directory(Multifile &multifile, const Filename &directory_name) {
   for (fi = files.begin(); fi != files.end(); ++fi) {
     Filename subfile_name(directory_name, (*fi));
     if (subfile_name.is_directory()) {
-      okflag = add_directory(multifile, subfile_name);
+      if (!add_directory(multifile, subfile_name)) {
+        okflag = false;
+      }
 
     } else if (!subfile_name.exists()) {
       cerr << "Not found: " << subfile_name << "\n";
       okflag = false;
 
     } else {
-      string new_subfile_name =
-        multifile.add_subfile(subfile_name, subfile_name,
-                              get_compression_level(subfile_name));
+      string new_subfile_name;
+      if (update) {
+        new_subfile_name = multifile.update_subfile
+          (subfile_name, subfile_name, get_compression_level(subfile_name));
+      } else {
+        new_subfile_name = multifile.add_subfile
+          (subfile_name, subfile_name, get_compression_level(subfile_name));
+      }
       if (new_subfile_name.empty()) {
         cerr << "Unable to add " << subfile_name << ".\n";
         okflag = false;
@@ -218,7 +231,7 @@ add_directory(Multifile &multifile, const Filename &directory_name) {
 bool
 add_files(int argc, char *argv[]) {
   Multifile multifile;
-  if (append) {
+  if (append || update) {
     if (!multifile.open_read_write(multifile_name)) {
       cerr << "Unable to open " << multifile_name << " for updating.\n";
       return false;
@@ -248,9 +261,14 @@ add_files(int argc, char *argv[]) {
       okflag = false;
 
     } else {
-      string new_subfile_name =
-        multifile.add_subfile(subfile_name, subfile_name,
-                              get_compression_level(subfile_name));
+      string new_subfile_name;
+      if (update) {
+        new_subfile_name = multifile.update_subfile
+          (subfile_name, subfile_name, get_compression_level(subfile_name));
+      } else {
+        new_subfile_name = multifile.add_subfile
+          (subfile_name, subfile_name, get_compression_level(subfile_name));
+      }
       if (new_subfile_name.empty()) {
         cerr << "Unable to add " << subfile_name << ".\n";
         okflag = false;
@@ -406,7 +424,7 @@ main(int argc, char *argv[]) {
 
   extern char *optarg;
   extern int optind;
-  static const char *optflags = "crtxvz123456789Z:f:OC:F:h";
+  static const char *optflags = "crutxvz123456789Z:f:OC:F:h";
   int flag = getopt(argc, argv, optflags);
   Filename rel_path;
   while (flag != EOF) {
@@ -416,6 +434,9 @@ main(int argc, char *argv[]) {
       break;
     case 'r':
       append = true;
+      break;
+    case 'u':
+      update = true;
       break;
     case 't':
       list = true;
@@ -512,8 +533,8 @@ main(int argc, char *argv[]) {
   argv += (optind - 1);
 
   // We should have exactly one of these options.
-  if ((create?1:0) + (append?1:0) + (list?1:0) + (extract?1:0) != 1) {
-    cerr << "Exactly one of -c, -r, -t, -x must be specified.\n";
+  if ((create?1:0) + (append?1:0) + (update?1:0) + (list?1:0) + (extract?1:0) != 1) {
+    cerr << "Exactly one of -c, -r, -u, -t, -x must be specified.\n";
     usage();
     return 1;
   }
@@ -528,7 +549,7 @@ main(int argc, char *argv[]) {
   tokenize_extensions(dont_compress_str, dont_compress);
 
   bool okflag = true;
-  if (create || append) {
+  if (create || append || update) {
     okflag = add_files(argc, argv);
   } else if (extract) {
     okflag = extract_files(argc, argv);
