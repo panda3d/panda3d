@@ -279,6 +279,12 @@ class FSMInspector(AppShell):
         else:
             self.balloon.configure(state = 'none')
             
+    def onDestroy(self, event):
+        """ Called on FSM Panel shutdown """
+        for si in self.stateInspectorDict.values():
+            self.ignore(self.name + '_' + si.getName() + '_entered')
+            self.ignore(self.name + '_' + si.getName() + '_exited')
+            
 class StateInspector(Pmw.MegaArchetype):
     def __init__(self, inspector, state, **kw):
 
@@ -432,6 +438,7 @@ class StateInspector(Pmw.MegaArchetype):
 
     def exitedState(self):
         self._canvas.itemconfigure(self.marker, fill = 'CornflowerBlue')
+
 
 """
 # USING FINITE STATE INSPECTOR

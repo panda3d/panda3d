@@ -365,9 +365,6 @@ class Placer(AppShell):
         # Set up placer for inital node path
         self.selectNodePathNamed('init')
 
-        # Clean up things when you destroy the panel
-        interior.bind('<Destroy>', self.onDestroy)
-
         self.createButtons()
 
     def createButtons(self):

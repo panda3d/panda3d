@@ -570,9 +570,6 @@ class DirectSessionPanel(AppShell):
         # Create some buttons in the bottom tray
         self.createButtons()
 
-        # Clean up things when you destroy the panel
-        interior.bind('<Destroy>', self.onDestroy)
-
     def createButtons(self):
         # Grid: enable/disable, xyz/hpr snap, snap to plane
         # Render mode: wireframe, lights, texture

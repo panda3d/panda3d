@@ -105,6 +105,8 @@ class AppShell(Pmw.MegaWidget, PandaObject):
         self.__createCommandArea()
         self.__createMessageBar()
         self.__createAboutBox()
+        # Add binding for panel cleanup code
+        self.interior().bind('<Destroy>', self.onDestroy)
         #
         # Create the parts of the interface
         # which can be modified by subclasses
@@ -230,6 +232,10 @@ class AppShell(Pmw.MegaWidget, PandaObject):
         
     def createInterface(self):
         # Override this method to create the interface for the app.
+        pass
+
+    def onDestroy(self, event):
+        # Override this method with actions to be performed on panel shutdown
         pass
 
     def createMenuBar(self):

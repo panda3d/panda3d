@@ -162,11 +162,6 @@ class MopathRecorder(AppShell, PandaObject):
             self.accept(event, method)
 
     def createInterface(self):
-        # The interior of the toplevel panel
-        interior = self.interior()
-        # Clean up things when you destroy the panel
-        interior.bind('<Destroy>', self.onDestroy)
-
         # FILE MENU
         # Get a handle on the file menu so commands can be inserted
         # before quit item
