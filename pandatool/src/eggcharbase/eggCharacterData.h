@@ -8,12 +8,15 @@
 
 #include <pandatoolbase.h>
 
+#include "eggJointData.h"
+
+#include <eggNode.h>
+#include <pointerTo.h>
 #include <namable.h>
 
 #include <map>
 
 class EggCharacterCollection;
-class EggJointData;
 class EggSliderData;
 
 ////////////////////////////////////////////////////////////////////
@@ -45,13 +48,27 @@ public:
   EggCharacterData(EggCharacterCollection *collection);
   virtual ~EggCharacterData();
 
+  void add_model(int model_index, EggNode *model_root);
+  INLINE int get_num_models() const;
+  INLINE int get_model_index(int n) const;
+  INLINE EggNode *get_model_root(int n) const;
+
   INLINE EggJointData *get_root_joint() const;
+  INLINE EggJointData *find_joint(const string &name) const;
 
   EggSliderData *make_slider(const string &name);
 
   virtual void write(ostream &out, int indent_level = 0) const;
 
 protected:
+  class Model {
+  public:
+    int _model_index;
+    PT(EggNode) _model_root;
+  };
+  typedef vector<Model> Models;
+  Models _models;
+
   EggCharacterCollection *_collection;
   EggJointData *_root_joint;
 

@@ -49,25 +49,28 @@ EggCharacterCollection::
 //       Access: Public
 //  Description: Adds a new egg file to the list of models and
 //               animation files for this particular character.
-//               Returns true if the file is successfully added, or
-//               false if there is some problem (for instance, it does
-//               not contain a character model or animation table).
+//
+//               Returns the new egg_index if the file is successfully
+//               added, or -1 if there is some problem (for instance,
+//               it does not contain a character model or animation
+//               table).
 //
 //               If the joint hierarchy does not match the existing
 //               joint hierarchy, a best match is attempted.
 ////////////////////////////////////////////////////////////////////
-bool EggCharacterCollection::
+int EggCharacterCollection::
 add_egg(EggData *egg) {
   _top_egg_nodes.clear();
 
   if (!scan_hierarchy(egg)) {
-    return false;
+    return -1;
   }
 
   int egg_index = _eggs.size();
   _eggs.push_back(EggInfo());
   EggInfo &egg_info = _eggs.back();
   egg_info._egg = egg;
+  egg_info._first_model_index = 0;
 
   // Now, for each model, add an entry in the egg_info and match the
   // joint hierarchy to the known joints.
@@ -84,7 +87,13 @@ add_egg(EggData *egg) {
       EggNodeList &egg_nodes = (*ti).second;
       
       int model_index = _next_model_index++;
+      if (egg_info._models.empty()) {
+	egg_info._first_model_index = model_index;
+      }
       egg_info._models.push_back(model_root);
+
+      char_data->add_model(model_index, model_root);
+
       match_egg_nodes(char_data, root_joint, egg_nodes,
 		      egg_index, model_index);
 
@@ -93,7 +102,7 @@ add_egg(EggData *egg) {
     }
   }
 
-  return true;
+  return egg_index;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -10,19 +10,23 @@
 
 #include "eggBackPointer.h"
 
-#include <eggGroup.h>
-#include <pointerTo.h>
+#include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : EggJointPointer
-// Description : This stores a pointer back to a <Joint> node.
+// Description : This is a base class for EggJointNodePointer and
+//               EggMatrixTablePointer.  It stores a back pointer to
+//               either a <Joint> entry or an xform <Table> data, and
+//               thus presents an interface that returns 1-n matrices,
+//               one for each frame.  (<Joint> entries, for model
+//               files, appear the same as one-frame animations.)
 ////////////////////////////////////////////////////////////////////
 class EggJointPointer : public EggBackPointer {
 public:
-  EggJointPointer(EggObject *object);
-
-private:
-  PT(EggGroup) _joint;
+  virtual int get_num_frames() const=0;
+  virtual LMatrix4d get_frame(int n) const=0;
+  virtual void set_frame(int n, const LMatrix4d &mat)=0;
+  virtual bool add_frame(const LMatrix4d &mat);
 
 public:
   static TypeHandle get_class_type() {

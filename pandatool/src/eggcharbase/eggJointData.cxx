@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "eggJointData.h"
-#include "eggJointPointer.h"
+#include "eggJointNodePointer.h"
 #include "eggMatrixTablePointer.h"
 
 #include <eggGroup.h>
@@ -25,6 +25,29 @@ EggJointData(EggCharacterCollection *collection,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::find_joint
+//       Access: Public
+//  Description: Returns the first descendent joint found with the
+//               indicated name, or NULL if no joint has that name.
+////////////////////////////////////////////////////////////////////
+INLINE EggJointData *EggJointData::
+find_joint(const string &name) {
+  Children::const_iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    EggJointData *child = (*ci);
+    if (child->get_name() == name) {
+      return child;
+    }
+    EggJointData *result = child->find_joint(name);
+    if (result != (EggJointData *)NULL) {
+      return result;
+    }
+  }
+
+  return (EggJointData *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggJointData::add_back_pointer
 //       Access: Public, Virtual
 //  Description: Adds the indicated model joint or anim table to the
@@ -34,13 +57,13 @@ void EggJointData::
 add_back_pointer(int model_index, EggObject *egg_object) {
   if (egg_object->is_of_type(EggGroup::get_class_type())) {
     // It must be a <Joint>.
-    EggJointPointer *joint = new EggJointPointer(egg_object);
-    set_back_pointer(model_index, joint);
+    EggJointNodePointer *joint = new EggJointNodePointer(egg_object);
+    set_model(model_index, joint);
 
   } else if (egg_object->is_of_type(EggTable::get_class_type())) {
     // It's a <Table> with an "xform" child beneath it.
     EggMatrixTablePointer *xform = new EggMatrixTablePointer(egg_object);
-    set_back_pointer(model_index, xform);
+    set_model(model_index, xform);
 
   } else {
     nout << "Invalid object added to joint for back pointer.\n";
@@ -57,9 +80,9 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "Joint " << get_name()
     << " (models:";
-  int num_back_pointers = get_num_back_pointers();
-  for (int model_index = 0; model_index < num_back_pointers; model_index++) {
-    if (has_back_pointer(model_index)) {
+  int num_models = get_num_models();
+  for (int model_index = 0; model_index < num_models; model_index++) {
+    if (has_model(model_index)) {
       out << " " << model_index;
     }
   }

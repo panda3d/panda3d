@@ -49,14 +49,12 @@ post_command_line() {
   for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {
     EggData *data = (*ei);
     
-    if (!_collection->add_egg(data)) {
+    if (_collection->add_egg(data) < 0) {
       nout << data->get_egg_filename().get_basename()
 	   << " does not contain a character model or animation channel.\n";
       return false;
     }
   }
-
-  _collection->write(cerr);
 
   return true;
 }

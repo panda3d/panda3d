@@ -43,3 +43,57 @@ EggMatrixTablePointer(EggObject *object) {
     }
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMatrixTablePointer::get_num_frames
+//       Access: Public, Virtual
+//  Description: Returns the number of frames of animation for this
+//               particular joint.
+////////////////////////////////////////////////////////////////////
+int EggMatrixTablePointer::
+get_num_frames() const {
+  if (_xform == (EggXfmSAnim *)NULL) {
+    return 0;
+  } else {
+    return _xform->get_num_rows();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMatrixTablePointer::get_frame
+//       Access: Public, Virtual
+//  Description: Returns the transform matrix corresponding to this
+//               joint position in the nth frame.
+////////////////////////////////////////////////////////////////////
+LMatrix4d EggMatrixTablePointer::
+get_frame(int n) const {
+  nassertr(n >= 0 && n < get_num_frames(), LMatrix4d::ident_mat());
+  LMatrix4d mat;
+  _xform->get_value(n, mat);
+  return mat;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMatrixTablePointer::set_frame
+//       Access: Public, Virtual
+//  Description: Sets the transform matrix corresponding to this
+//               joint position in the nth frame.
+////////////////////////////////////////////////////////////////////
+void EggMatrixTablePointer::
+set_frame(int n, const LMatrix4d &mat) {
+  nassertv(n >= 0 && n < get_num_frames());
+  // Do something here.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMatrixTablePointer::add_frame
+//       Access: Public, Virtual
+//  Description: Appends a new frame onto the end of the data, if
+//               possible; returns true if not possible, or false
+//               otherwise (e.g. for a static joint).
+////////////////////////////////////////////////////////////////////
+bool EggMatrixTablePointer::
+add_frame(const LMatrix4d &mat) {
+  // Do something here.
+  return true;
+}

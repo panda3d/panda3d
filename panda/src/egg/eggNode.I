@@ -214,6 +214,19 @@ transform(const LMatrix4d &mat) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggNode::transform_vertices_only
+//       Access: Public
+//  Description: Applies the indicated transformation only to vertices
+//               that appear in global space within vertex pools at
+//               this node and below.  Joints and other transforms are
+//               not affected, nor are local vertices.
+////////////////////////////////////////////////////////////////////
+INLINE void EggNode::
+transform_vertices_only(const LMatrix4d &mat) {
+  r_transform_vertices(mat);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggNode::flatten_transforms
 //       Access: Public
 //  Description: Removes any transform and instance records from this

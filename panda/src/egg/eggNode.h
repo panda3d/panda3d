@@ -45,6 +45,7 @@ public:
   INLINE const LMatrix4d &get_vertex_to_node() const;
 
   INLINE void transform(const LMatrix4d &mat);
+  INLINE void transform_vertices_only(const LMatrix4d &mat);
   INLINE void flatten_transforms();
   void apply_texmats();
 
@@ -75,6 +76,7 @@ protected:
 
   virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
 			   CoordinateSystem to_cs);
+  virtual void r_transform_vertices(const LMatrix4d &mat);
   virtual void r_mark_coordsys(CoordinateSystem cs);
   virtual void r_flatten_transforms();
   virtual void r_apply_texmats(EggTextureCollection &textures);

@@ -38,6 +38,21 @@ EggCharacterData::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterData::add_model
+//       Access: Public
+//  Description: Indicates that the given model_index (with the
+//               indicated model_root) is associated with this
+//               character.
+////////////////////////////////////////////////////////////////////
+void EggCharacterData::
+add_model(int model_index, EggNode *model_root) {
+  Model m;
+  m._model_index = model_index;
+  m._model_root = model_root;
+  _models.push_back(m);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggCharacterData::make_slider
 //       Access: Public
 //  Description: Returns the slider matching the indicated name.  If

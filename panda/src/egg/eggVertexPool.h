@@ -104,6 +104,7 @@ public:
 protected:
   virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
 			   CoordinateSystem to_cs);
+  virtual void r_transform_vertices(const LMatrix4d &mat);
 
 private:
   UniqueVertices _unique_vertices;

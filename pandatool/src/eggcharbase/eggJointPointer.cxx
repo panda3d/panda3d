@@ -8,12 +8,15 @@
 
 TypeHandle EggJointPointer::_type_handle;
 
+
 ////////////////////////////////////////////////////////////////////
-//     Function: EggJointPointer::Constructor
-//       Access: Public
-//  Description: 
+//     Function: EggJointPointer::add_frame
+//       Access: Public, Virtual
+//  Description: Appends a new frame onto the end of the data, if
+//               possible; returns true if not possible, or false
+//               otherwise (e.g. for a static joint).
 ////////////////////////////////////////////////////////////////////
-EggJointPointer::
-EggJointPointer(EggObject *object) {
-  _joint = DCAST(EggGroup, object);
+bool EggJointPointer::
+add_frame(const LMatrix4d &) {
+  return false;
 }

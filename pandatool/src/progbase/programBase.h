@@ -66,6 +66,8 @@ protected:
   bool remove_option(const string &option);
 
   static bool dispatch_none(const string &opt, const string &arg, void *);
+  static bool dispatch_true(const string &opt, const string &arg, void *var);
+  static bool dispatch_false(const string &opt, const string &arg, void *var);
   static bool dispatch_count(const string &opt, const string &arg, void *var);
   static bool dispatch_int(const string &opt, const string &arg, void *var);
   static bool dispatch_int_pair(const string &opt, const string &arg, void *var);

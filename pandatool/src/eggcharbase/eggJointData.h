@@ -25,6 +25,7 @@ public:
 
   INLINE int get_num_children() const;
   INLINE EggJointData *get_child(int n) const;
+  EggJointData *find_joint(const string &name);
 
   virtual void add_back_pointer(int model_index, EggObject *egg_object);
   virtual void write(ostream &out, int indent_level = 0) const;

@@ -233,6 +233,19 @@ r_transform(const LMatrix4d &, const LMatrix4d &, CoordinateSystem) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggNode::r_transform_vertices
+//       Access: Protected, Virtual
+//  Description: This is called from within the egg code by
+//               transform_vertices_only()().  It applies a
+//               transformation matrix to the current node in some
+//               sensible way (if the current node is a vertex pool
+//               with vertices), then continues down the tree.
+////////////////////////////////////////////////////////////////////
+void EggNode::
+r_transform_vertices(const LMatrix4d &) {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggNode::r_mark_coordsys
 //       Access: Protected, Virtual
 //  Description: This is only called immediately after loading an egg

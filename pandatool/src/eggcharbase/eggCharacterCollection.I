@@ -27,6 +27,44 @@ get_egg(int i) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterCollection::get_first_model_index
+//       Access: Public
+//  Description: Returns the first model index associated with the
+//               indicated egg file.  An egg file may contain multiple
+//               models, which will be consecutive integers beginning
+//               at get_first_model_index() and continuing for
+//               get_num_models().
+//
+//               Each "model" corresponds to a single character model,
+//               or one LOD of a multiple-LOD model, or a single
+//               animation bundle.
+////////////////////////////////////////////////////////////////////
+INLINE int EggCharacterCollection::
+get_first_model_index(int egg_index) const {
+  nassertr(egg_index >= 0 && egg_index < (int)_eggs.size(), 0);
+  return _eggs[egg_index]._first_model_index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterCollection::get_num_models
+//       Access: Public
+//  Description: Returns the number of different models found in the
+//               indicated egg file.  An egg file may contain multiple
+//               models, which will be consecutive integers beginning
+//               at get_first_model_index() and continuing for
+//               get_num_models().
+//
+//               Each "model" corresponds to a single character model,
+//               or one LOD of a multiple-LOD model, or a single
+//               animation bundle.
+////////////////////////////////////////////////////////////////////
+INLINE int EggCharacterCollection::
+get_num_models(int egg_index) const {
+  nassertr(egg_index >= 0 && egg_index < (int)_eggs.size(), 0);
+  return _eggs[egg_index]._models.size();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggCharacterCollection::get_num_characters
 //       Access: Public
 //  Description: Returns the number of separate Characters that have

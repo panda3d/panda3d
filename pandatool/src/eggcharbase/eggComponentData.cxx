@@ -68,13 +68,13 @@ matches_name(const string &name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggComponentData::set_back_pointer
+//     Function: EggComponentData::set_model
 //       Access: Public
 //  Description: Sets the back_pointer associated with the given
 //               model_index.
 ////////////////////////////////////////////////////////////////////
 void EggComponentData::
-set_back_pointer(int model_index, EggBackPointer *back) {
+set_model(int model_index, EggBackPointer *back) {
   while ((int)_back_pointers.size() <= model_index) {
     _back_pointers.push_back((EggBackPointer *)NULL);
   }

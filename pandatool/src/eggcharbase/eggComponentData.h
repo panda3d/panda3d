@@ -35,10 +35,10 @@ public:
   virtual void add_back_pointer(int model_index, EggObject *egg_object)=0;
   virtual void write(ostream &out, int indent_level = 0) const=0;
 
-  INLINE int get_num_back_pointers() const;
-  INLINE bool has_back_pointer(int model_index) const;
-  INLINE EggBackPointer *get_back_pointer(int model_index) const;
-  void set_back_pointer(int model_index, EggBackPointer *back);
+  INLINE int get_num_models() const;
+  INLINE bool has_model(int model_index) const;
+  INLINE EggBackPointer *get_model(int model_index) const;
+  void set_model(int model_index, EggBackPointer *back);
 
 protected:
 

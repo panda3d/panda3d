@@ -28,10 +28,12 @@ public:
   EggCharacterCollection();
   virtual ~EggCharacterCollection();
 
-  bool add_egg(EggData *egg);
+  int add_egg(EggData *egg);
 
   INLINE int get_num_eggs() const;
   INLINE EggData *get_egg(int i) const;
+  INLINE int get_first_model_index(int egg_index) const;
+  INLINE int get_num_models(int egg_index) const;
 
   INLINE int get_num_characters() const;
   INLINE EggCharacterData *get_character(int i) const;
@@ -51,6 +53,7 @@ public:
     PT(EggData) _egg;
     typedef vector<PT(EggNode)> Models;
     Models _models;
+    int _first_model_index;
   };
   
   typedef vector<EggInfo> Eggs;

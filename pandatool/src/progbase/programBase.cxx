@@ -568,6 +568,42 @@ dispatch_none(const string &, const string &, void *) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ProgramBase::dispatch_true
+//       Access: Protected, Static
+//  Description: Standard dispatch function for an option that takes
+//               no parameters, and when it is present sets a bool
+//               variable to the 'true' value.  This is another way to
+//               handle a boolean flag.  See also dispatch_none() and
+//               dispatch_false().
+//
+//               The data pointer is to a bool variable.
+////////////////////////////////////////////////////////////////////
+bool ProgramBase::
+dispatch_true(const string &, const string &, void *var) {
+  bool *bp = (bool *)var;
+  (*bp) = true;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProgramBase::dispatch_false
+//       Access: Protected, Static
+//  Description: Standard dispatch function for an option that takes
+//               no parameters, and when it is present sets a bool
+//               variable to the 'false' value.  This is another way to
+//               handle a boolean flag.  See also dispatch_none() and
+//               dispatch_true().
+//
+//               The data pointer is to a bool variable.
+////////////////////////////////////////////////////////////////////
+bool ProgramBase::
+dispatch_false(const string &, const string &, void *var) {
+  bool *bp = (bool *)var;
+  (*bp) = false;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ProgramBase::dispatch_count
 //       Access: Protected, Static
 //  Description: Standard dispatch function for an option that takes

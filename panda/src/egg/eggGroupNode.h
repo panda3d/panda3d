@@ -111,6 +111,7 @@ protected:
 
   virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
 			   CoordinateSystem to_cs);
+  virtual void r_transform_vertices(const LMatrix4d &mat);
   virtual void r_mark_coordsys(CoordinateSystem cs);
   virtual void r_flatten_transforms();
   virtual void r_apply_texmats(EggTextureCollection &textures);

@@ -654,6 +654,25 @@ r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::r_transform_vertices
+//       Access: Protected, Virtual
+//  Description: This is called from within the egg code by
+//               transform_vertices_only()().  It applies a
+//               transformation matrix to the current node in some
+//               sensible way (if the current node is a vertex pool
+//               with vertices), then continues down the tree.
+////////////////////////////////////////////////////////////////////
+void EggGroupNode::
+r_transform_vertices(const LMatrix4d &mat) {
+  Children::iterator ci;
+  for (ci = _children.begin();
+       ci != _children.end();
+       ++ci) {
+    (*ci)->r_transform_vertices(mat);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::r_mark_coordsys
 //       Access: Protected, Virtual
 //  Description: This is only called immediately after loading an egg

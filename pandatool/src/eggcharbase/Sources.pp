@@ -6,6 +6,7 @@
     egg:c panda:m
 
   #define SOURCES \
+    config_eggcharbase.cxx config_eggcharbase.h \
     eggBackPointer.cxx eggBackPointer.h \
     eggCharacterCollection.cxx eggCharacterCollection.h \
     eggCharacterCollection.I \
@@ -14,6 +15,7 @@
     eggComponentData.cxx eggComponentData.h eggComponentData.I \
     eggJointData.cxx eggJointData.h eggJointData.I \
     eggJointPointer.cxx eggJointPointer.h \
+    eggJointNodePointer.cxx eggJointNodePointer.h \
     eggMatrixTablePointer.cxx eggMatrixTablePointer.h \
     eggSliderData.cxx eggSliderData.h eggSliderData.I \
     eggVertexPointer.cxx eggVertexPointer.h
@@ -25,6 +27,7 @@
     eggComponentData.I eggComponentData.h \
     eggJointData.h eggJointData.I \
     eggJointPointer.h \
+    eggJointNodePointer.h \
     eggMatrixTablePointer.h \
     eggSliderData.I eggSliderData.h \
     eggVertexPointer.h
