@@ -13,6 +13,17 @@ class DirectScrolledList(DirectFrame):
         #   and when that item is needed, itemMakeFunction will be called
         #   with the text, the index, and itemMakeExtraArgs.  If itemMakeFunction
         #   is not specified, it will create a DirectFrame with the text.
+
+        # if 'items' is a list of strings, make a copy for our use
+        # so we can modify it without mangling the user's list
+        if kw.has_key('items'):
+            for item in kw['items']:
+                if type(item) != type(''):
+                    break
+            else:
+                # we get here if every item in 'items' is a string
+                # make a copy
+                kw['items'] = kw['items'][:]
         
         # Inherits from DirectFrame
         optiondefs = (
