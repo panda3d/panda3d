@@ -5,8 +5,8 @@ import TypedObject
 WrapperClassMap = {}
 
 # For testing, you can turn verbose and debug on
-FFIConstants.notify.setVerbose(1)
-FFIConstants.notify.setDebug(1)
+# FFIConstants.notify.setVerbose(1)
+# FFIConstants.notify.setDebug(1)
 
 
 # Register a python class in the type map if it is a typed object
