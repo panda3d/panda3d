@@ -3151,8 +3151,8 @@ copy_texture(Texture *tex, const DisplayRegion *dr) {
   dr->get_region_pixels(xo, yo, w, h);
 
   PixelBuffer *pb = tex->_pbuffer;
-  pb->set_xsize(w-xo);
-  pb->set_ysize(h-yo);
+  pb->set_xsize(w);
+  pb->set_ysize(h);
 
   TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
   if (tc == (TextureContext *)NULL) {
@@ -3170,6 +3170,7 @@ copy_texture(Texture *tex, const DisplayRegion *dr) {
   hr = _pD3DDevice->GetRenderTarget(&pCurRenderTarget);
   if(FAILED(hr)) {
     dxgsg8_cat.error() << "GetRenderTgt failed in copy_texture" << D3DERRORSTRING(hr);
+    SAFE_RELEASE(pTexSurfaceLev0);
     return;
   }
 
@@ -3181,10 +3182,10 @@ copy_texture(Texture *tex, const DisplayRegion *dr) {
   SrcRect.bottom = yo+h;
 
   // now copy from fb to tex
-  hr = _pD3DDevice->CopyRects(pCurRenderTarget,&SrcRect,1,pTexSurfaceLev0,NULL);
+  hr = _pD3DDevice->CopyRects(pCurRenderTarget,&SrcRect,1,pTexSurfaceLev0,0);
   if(FAILED(hr)) {
-    dxgsg8_cat.error() << "CopyRects failed in copy_texture" << D3DERRORSTRING(hr);
-    return;
+    dxgsg8_cat.error() 
+      << "CopyRects failed in copy_texture" << D3DERRORSTRING(hr);
   }
 
   SAFE_RELEASE(pCurRenderTarget);

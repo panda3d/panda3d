@@ -30,8 +30,7 @@ TypeHandle PixelBuffer::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PixelBuffer::
-PixelBuffer(void) : ImageBuffer()
-{
+PixelBuffer() {
   _xsize = 0;
   _ysize = 0;
   _format = F_rgb;
@@ -49,38 +48,19 @@ PixelBuffer(void) : ImageBuffer()
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PixelBuffer::
-PixelBuffer(int xsize, int ysize, int components, int component_width,
-            Type type, Format format) :
-  ImageBuffer()
-{
+PixelBuffer(int xsize, int ysize, int components, int component_width, 
+            Type type, Format format, bool allocate_ram) {
   _xsize = xsize;
   _ysize = ysize;
   _num_components = components;
   _component_width = component_width;
   _type = type;
   _format = format;
-  _image = PTA_uchar::empty_array((unsigned int)(_xsize * _ysize * _num_components * _component_width));
-  _loaded = true;
-}
 
-////////////////////////////////////////////////////////////////////
-//     Function: PixelBuffer::Constructor
-//       Access: Public
-//  Description:  create a pixel buffer with specified format but do not alloc CPU RAM for it
-////////////////////////////////////////////////////////////////////
-PixelBuffer::
-PixelBuffer(int xsize, int ysize, int components, int component_width, Type type, Format format,
-            bool bAllocateRAM) : ImageBuffer()
-{
-  _xsize = xsize;
-  _ysize = ysize;
-  _num_components = components;
-  _component_width = component_width;
-  _type = type;
-  _format = format;
-  if(bAllocateRAM)
-    _image = PTA_uchar::empty_array((unsigned int)(_xsize * _ysize * _num_components * _component_width));
-   else _image = PTA_uchar();
+  if (allocate_ram) {
+    int num_pixels = _xsize * _ysize * _num_components * _component_width;
+    _image = PTA_uchar::empty_array((size_t)num_pixels);
+  }
   _loaded = false;
 }
 
@@ -399,7 +379,12 @@ copy(const PixelBuffer *pb) {
   _num_components = pb->_num_components;
   _component_width = pb->_component_width;
   _format = pb->_format;
-  _image = PTA_uchar::empty_array(0);
-  if (!pb->_image.empty())
+
+  if (!pb->_image.is_null()) {
+    _image = PTA_uchar::empty_array(0);
     _image.v() = pb->_image.v();
+  } else {
+    _image = PTA_uchar();
+  }
+
 }

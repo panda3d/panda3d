@@ -75,9 +75,10 @@ PUBLISHED:
   };
 
 PUBLISHED:
-  Texture();
-  Texture(int xsize, int ysize, int components, int component_width, PixelBuffer::Type type, PixelBuffer::Format format,
-          bool bAllocateRAM);
+  Texture(bool match_framebuffer_format = false);
+  Texture(int xsize, int ysize, int components, int component_width, 
+          PixelBuffer::Type type, PixelBuffer::Format format,
+          bool allocate_ram);
   ~Texture();
 
   bool read(const Filename &fullpath, int primary_file_num_channels = 0);
@@ -104,6 +105,8 @@ PUBLISHED:
   INLINE Colorf get_border_color() const;
   INLINE int get_border_width() const;
   INLINE bool uses_mipmaps() const;
+
+  INLINE bool get_match_framebuffer_format() const;
 
   void prepare(PreparedGraphicsObjects *prepared_objects);
 
@@ -148,6 +151,7 @@ private:
   bool _keep_ram_image;
   Colorf _border_color;
   int _border_width;
+  bool _match_framebuffer_format;
 
   // A Texture keeps a list (actually, a map) of all the
   // PreparedGraphicsObjects tables that it has been prepared into.
@@ -166,17 +170,6 @@ public:
   // These are public to allow direct manipulation of the underlying
   // pixel buffer when needed.  Know what you are doing!
   PT(PixelBuffer) _pbuffer;
-
-/*
-  // If you request a region from the framebuffer that is not a power of 2,
-  // we need to grab a larger region that is a power of 2 that contains the
-  // requested region and set the pixel buffer size accordingly.  We store
-  // the size you requested in the members below.
-  bool _has_requested_size;
-  int _requested_w;
-  int _requested_h;
-*/
-
 
   // Datagram stuff
 public:

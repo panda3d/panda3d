@@ -81,10 +81,8 @@ public:
 
   PixelBuffer(void);
   PixelBuffer(int xsize, int ysize, int components,
-              int component_width, Type type, Format format);
-  PixelBuffer(int xsize, int ysize, int components,
               int component_width, Type type, Format format,
-              bool bAllocateRAM);
+              bool allocate_ram = true);
   PixelBuffer(const PixelBuffer &copy);
   void operator = (const PixelBuffer &copy);
 

@@ -3148,8 +3148,8 @@ copy_texture(Texture *tex, const DisplayRegion *dr) {
   dr->get_region_pixels(xo, yo, w, h);
 
   PixelBuffer *pb = tex->_pbuffer;
-  pb->set_xsize(w-xo);
-  pb->set_ysize(h-yo);
+  pb->set_xsize(w);
+  pb->set_ysize(h);
 
   TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
   if (tc == (TextureContext *)NULL) {
@@ -3167,6 +3167,7 @@ copy_texture(Texture *tex, const DisplayRegion *dr) {
   hr = _pD3DDevice->GetRenderTarget(0, &pCurRenderTarget);
   if(FAILED(hr)) {
     dxgsg9_cat.error() << "GetRenderTgt failed in copy_texture" << D3DERRORSTRING(hr);
+    SAFE_RELEASE(pTexSurfaceLev0);
     return;
   }
 
@@ -3178,15 +3179,15 @@ copy_texture(Texture *tex, const DisplayRegion *dr) {
   SrcRect.bottom = yo+h;
 
   // now copy from fb to tex
-  //hr = _pD3DDevice->UpdateSurface(pCurRenderTarget,&SrcRect,pTexSurfaceLev0,NULL);
+  //hr = _pD3DDevice->UpdateSurface(pCurRenderTarget,&SrcRect,pTexSurfaceLev0,0);
   // the following call does what we want. Interesting though, why Dx9 took out the 
   // functionality of copying from VRAM to VRAM and put it in D3DX library. Perhaps
   // to promote D3DX!?
   hr = D3DXLoadSurfaceFromSurface(pTexSurfaceLev0, NULL, NULL, pCurRenderTarget, NULL, &SrcRect, D3DX_FILTER_NONE, 0);
   
   if(FAILED(hr)) {
-    dxgsg9_cat.error() << "UpdateSurface failed in copy_texture" << D3DERRORSTRING(hr);
-    return;
+    dxgsg9_cat.error() 
+      << "UpdateSurface failed in copy_texture" << D3DERRORSTRING(hr);
   }
 
   SAFE_RELEASE(pCurRenderTarget);

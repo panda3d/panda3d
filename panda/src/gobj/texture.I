@@ -105,6 +105,21 @@ uses_mipmaps() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_match_framebuffer_format
+//       Access: Published
+//  Description: Returns true if the Texture was created with a
+//               special flag that indicates to the GSG that the
+//               Texture's format should be chosen to exactly match
+//               the framebuffer's format, presumably because the
+//               application intends to copy image data from the
+//               framebuffer into the Texture (or vice-versa).
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+get_match_framebuffer_format() const {
+  return _match_framebuffer_format;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::has_ram_image
 //       Access: Public
 //  Description: Returns true if the Texture has its image contents

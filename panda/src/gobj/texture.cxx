@@ -132,7 +132,7 @@ consider_downgrade(PNMImage &pnmimage, int num_channels,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Texture::
-Texture() : ImageBuffer() {
+Texture(bool match_framebuffer_format) {
   _magfilter = FT_linear;
   _minfilter = FT_linear;
   _wrapu = WM_repeat;
@@ -140,12 +140,24 @@ Texture() : ImageBuffer() {
   _anisotropic_degree = 1;
   _keep_ram_image = false;
   _pbuffer = new PixelBuffer;
-  // _has_requested_size = false;
   _all_dirty_flags = 0;
   _border_color.set(0.0f, 0.0f, 0.0f, 1.0f);
   _border_width = 0;
-}
+  _match_framebuffer_format = match_framebuffer_format;
 
+  if (_match_framebuffer_format) {
+    // If this flag is true, it indicates to the GSG that the texture
+    // will be created in a format consistent with the framebuffer
+    // (presumably to allow copying from the framebuffer), regardless
+    // of the pbuffer format.
+
+    // Make up a default format for the pbuffer.
+    _pbuffer->set_format(PixelBuffer::F_rgba8);
+    _pbuffer->set_num_components(4);
+    _pbuffer->set_component_width(1);
+    _pbuffer->set_image_type(PixelBuffer::T_unsigned_byte);
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::Constructor
@@ -154,19 +166,20 @@ Texture() : ImageBuffer() {
 ////////////////////////////////////////////////////////////////////
 Texture::
 Texture(int xsize, int ysize, int components, int component_width, 
-        PixelBuffer::Type type, 
-        PixelBuffer::Format format, bool bAllocateRAM) : ImageBuffer() {
+        PixelBuffer::Type type, PixelBuffer::Format format, 
+        bool allocate_ram) {
   _magfilter = FT_linear;
   _minfilter = FT_linear;
   _wrapu = WM_repeat;
   _wrapv = WM_repeat;
   _anisotropic_degree = 1;
-  _keep_ram_image = bAllocateRAM;
-  _pbuffer = new PixelBuffer(xsize,ysize,components,component_width,type,format,bAllocateRAM);
-  // _has_requested_size = false;
+  _keep_ram_image = allocate_ram;
+  _pbuffer = new PixelBuffer(xsize, ysize, components, component_width, 
+                             type, format, allocate_ram);
   _all_dirty_flags = 0;
   _border_color.set(0.0f, 0.0f, 0.0f, 1.0f);
   _border_width = 0;
+  _match_framebuffer_format = false;
 }
 
 ////////////////////////////////////////////////////////////////////
