@@ -26,6 +26,7 @@
 #include "renderState.h"
 #include "depthWriteAttrib.h"
 #include "colorWriteAttrib.h"
+#include "textureAttrib.h"
 
 #include "clockObject.h"
 #include "geomNode.h"
@@ -972,10 +973,12 @@ CPT(RenderState) GraphicsStateGuardian::
 begin_decal_base_second() {
   // Now let the depth buffer go back on, but turn off writing the
   // color buffer to render the base geometry after the second pass.
+  // Also, turn off texturing since there's no need for it now.
   static CPT(RenderState) decal_base_second;
   if (decal_base_second == (const RenderState *)NULL) {
     decal_base_second = RenderState::make
-      (ColorWriteAttrib::make(ColorWriteAttrib::M_off));
+      (ColorWriteAttrib::make(ColorWriteAttrib::M_off),
+       TextureAttrib::make_off());
   }
   return decal_base_second;
 }
