@@ -5,13 +5,17 @@
 #begin lib_target
   #define TARGET event
   
-  #define SOURCES                                                       \
-    config_event.cxx config_event.h \
-    event.I event.cxx event.h eventHandler.cxx  \
-    eventHandler.h eventParameter.I eventParameter.cxx                  \
-    eventParameter.h eventQueue.I eventQueue.cxx eventQueue.h           \
-    eventReceiver.cxx eventReceiver.h pt_Event.cxx pt_Event.h           \
-    throw_event.I throw_event.h
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx
+  
+  #define SOURCES \
+     config_event.h event.I event.h eventHandler.h eventParameter.I \
+     eventParameter.h eventQueue.I eventQueue.h eventReceiver.h \
+     pt_Event.h throw_event.I throw_event.h 
+    
+  #define INCLUDED_SOURCES \
+     config_event.cxx event.cxx eventHandler.cxx \ 
+     eventParameter.cxx eventQueue.cxx eventReceiver.cxx \
+     pt_Event.cxx
 
   #define INSTALL_HEADERS                                       \
     event.I event.h eventHandler.h eventParameter.I eventParameter.h    \
