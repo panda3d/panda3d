@@ -2746,9 +2746,6 @@ expand_object_types(EggGroup *egg_group, const pset<string> &expanded,
         // Ignorable group; stop here.
         return false;
       }
-      //else
-        //egg2pg_cat.debug() << "returned true\n";
-
     }
   }
 
