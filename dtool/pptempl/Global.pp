@@ -527,6 +527,15 @@ Warning: Variable $[upcase $[tree]]_INSTALL is not set!
 // platforms will leave this empty.
 #define dllext
 
+// $[obj_prefix] defines the prefix that is prepended to the name of
+// the object files.  It can be used to avoid potential collisions
+// when a source file is used by multiple targets but with different
+// compile options for each.
+//
+// $[obj_prefix] may be redefined by one of the Global.platform.pp
+// files.
+#defer obj_prefix $[TARGET]_
+
 // Caution!  interrogate_ipath might be redefined in the
 // Global.platform.pp file.
 #defer interrogate_ipath $[target_ipath:%=-I%]

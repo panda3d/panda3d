@@ -80,7 +80,7 @@
 
     // Define what the object files are.
     #foreach file $[c_sources] $[cxx_sources] $[yxx_sources] $[lxx_sources]
-      #define $[file]_obj $[patsubst %.c %.cxx %.cpp %.yxx %.lxx,$[ODIR]/$[TARGET]_%$[OBJ],$[notdir $[file]]]
+      #define $[file]_obj $[patsubst %.c %.cxx %.cpp %.yxx %.lxx,$[ODIR]/$[obj_prefix]%$[OBJ],$[notdir $[file]]]
       #push 1 $[file]_obj
     #end file
 
