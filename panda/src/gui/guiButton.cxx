@@ -13,6 +13,8 @@
 typedef map<string, GuiButton*> ButtonMap;
 static ButtonMap buttons;
 
+TypeHandle GuiButton::_type_handle;
+
 inline void GetExtents(GuiLabel* v, GuiLabel* w, GuiLabel* x, GuiLabel* y,
 		       GuiLabel* z, float& l, float& r, float& b, float& t) {
   float l1, l2, r1, r2, b1, b2, t1, t2;
@@ -167,7 +169,9 @@ GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* down)
     _down_rollover((GuiLabel*)0L), _inactive((GuiLabel*)0L),
     _up_event(name + "-up"), _up_rollover_event(""),
     _down_event(name +"-down"), _down_rollover_event(""),
-    _inactive_event(""), _state(GuiButton::NONE) {
+    _inactive_event(""), _up_scale(up->get_scale()), _upr_scale(1.),
+    _down_scale(down->get_scale()), _downr_scale(1.), _inactive_scale(1.),
+    _state(GuiButton::NONE) {
   GetExtents(up, down, _up_rollover, _down_rollover, _inactive, _left, _right,
 	     _bottom, _top);
   _rgn = new GuiRegion("button-" + name, _left, _right, _bottom, _top, true);
@@ -184,7 +188,9 @@ GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* down,
     _down_rollover((GuiLabel*)0L), _inactive(inactive),
     _up_event(name + "-up"), _up_rollover_event(""),
     _down_event(name +"-down"), _down_rollover_event(""),
-    _inactive_event(name + "-inactive"), _state(GuiButton::NONE) {
+    _inactive_event(name + "-inactive"), _up_scale(up->get_scale()),
+    _upr_scale(1.), _down_scale(down->get_scale()), _downr_scale(1.),
+    _inactive_scale(inactive->get_scale()), _state(GuiButton::NONE) {
   GetExtents(up, down, _up_rollover, _down_rollover, inactive, _left, _right,
 	     _bottom, _top);
   _rgn = new GuiRegion("button-" + name, _left, _right, _bottom, _top, true);
@@ -201,7 +207,10 @@ GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* up_roll,
     _down_rollover(down_roll), _inactive(inactive), _up_event(name + "-up"),
     _up_rollover_event(name + "-up-rollover"), _down_event(name +"-down"),
     _down_rollover_event(name + "-down-rollover"),
-    _inactive_event(name + "-inactive"), _state(GuiButton::NONE) {
+    _inactive_event(name + "-inactive"), _up_scale(up->get_scale()),
+    _upr_scale(up_roll->get_scale()), _down_scale(down->get_scale()),
+    _downr_scale(down_roll->get_scale()),
+    _inactive_scale(inactive->get_scale()), _state(GuiButton::NONE) {
   GetExtents(up, down, up_roll, down_roll, inactive, _left, _right, _bottom,
 	     _top);
   _rgn = new GuiRegion("button-" + name, _left, _right, _bottom, _top, true);
@@ -235,20 +244,21 @@ void GuiButton::manage(GuiManager* mgr, EventHandler& eh) {
 }
 
 void GuiButton::unmanage(void) {
-  _mgr->remove_region(_rgn);
+  if (_mgr != (GuiManager*)0L)
+    _mgr->remove_region(_rgn);
   switch_state(NONE);
   GuiItem::unmanage();
 }
 
 void GuiButton::set_scale(float f) {
-  _up->set_scale(f);
-  _down->set_scale(f);
+  _up->set_scale(f * _up_scale);
+  _down->set_scale(f * _down_scale);
   if (_up_rollover != (GuiLabel*)0L)
-    _up_rollover->set_scale(f);
+    _up_rollover->set_scale(f * _upr_scale);
   if (_down_rollover != (GuiLabel*)0L)
-    _down_rollover->set_scale(f);
+    _down_rollover->set_scale(f * _downr_scale);
   if (_inactive != (GuiLabel*)0L)
-    _inactive->set_scale(f);
+    _inactive->set_scale(f * _inactive_scale);
   GuiItem::set_scale(f);
   this->recompute_frame();
 }

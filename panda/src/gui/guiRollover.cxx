@@ -11,6 +11,8 @@
 typedef map<string, GuiRollover*> RolloverMap;
 static RolloverMap rollovers;
 
+TypeHandle GuiRollover::_type_handle;
+
 inline void GetExtents(GuiLabel* x, GuiLabel* y, float& l, float& r, float& b,
 		       float& t) {
   float l1, l2, r1, r2, b1, b2, t1, t2;
@@ -39,7 +41,8 @@ void GuiRollover::recompute_frame(void) {
 }
 
 GuiRollover::GuiRollover(const string& name, GuiLabel* off, GuiLabel* on)
-  : GuiItem(name), _off(off), _on(on), _state(false) {
+  : GuiItem(name), _off(off), _on(on), _off_scale(off->get_scale()),
+    _on_scale(on->get_scale()), _state(false) {
   GetExtents(off, on, _left, _right, _bottom, _top);
   _rgn = new GuiRegion("rollover-" + name, _left, _right, _bottom, _top,
 		       false);
@@ -68,15 +71,17 @@ void GuiRollover::manage(GuiManager* mgr, EventHandler& eh) {
 }
 
 void GuiRollover::unmanage(void) {
-  _mgr->remove_region(_rgn);
-  _mgr->remove_label(_off);
-  _mgr->remove_label(_on);
+  if (_mgr != (GuiManager*)0L) {
+    _mgr->remove_region(_rgn);
+    _mgr->remove_label(_off);
+    _mgr->remove_label(_on);
+  }
   GuiItem::unmanage();
 }
 
 void GuiRollover::set_scale(float f) {
-  _on->set_scale(f);
-  _off->set_scale(f);
+  _on->set_scale(f * _on_scale);
+  _off->set_scale(f * _off_scale);
   GuiItem::set_scale(f);
   recompute_frame();
 }

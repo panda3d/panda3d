@@ -9,6 +9,8 @@
 #include <transformTransition.h>
 #include <colorTransition.h>
 
+TypeHandle GuiLabel::_type_handle;
+
 void GuiLabel::recompute_transform(void) {
   switch (_type) {
   case SIMPLE_TEXT:
@@ -92,6 +94,8 @@ void GuiLabel::set_properties(void) {
 }
 
 GuiLabel::~GuiLabel(void) {
+  if (gui_cat->is_debug())
+    gui_cat->debug() << "deleting label (0x" << (void*)this << ")" << endl;
 }
 
 #include <textureTransition.h>
@@ -220,15 +224,27 @@ void GuiLabel::get_extents(float& l, float& r, float& b, float& t) {
 }
 
 float GuiLabel::get_width(void) {
-  float l, r, b, t;
-  this->get_extents(l, r, b, t);
-  return (r - l);
+  float w;
+  TextNode* n = DCAST(TextNode, _geom);
+  if (n->has_card()) {
+    LVecBase4f v = n->get_card_actual();
+    w = v[1] - v[0];
+  } else {
+    w = n->get_width();
+  }
+  return w;
 }
 
 float GuiLabel::get_height(void) {
-  float l, r, b, t;
-  this->get_extents(l, r, b, t);
-  return (t - b);
+  float h;
+  TextNode* n = DCAST(TextNode, _geom);
+  if (n->has_card()) {
+    LVecBase4f v = n->get_card_actual();
+    h = v[3] - v[2];
+  } else {
+    h = n->get_width();
+  }
+  return h;
 }
 
 void GuiLabel::set_foreground_color(const Colorf& color) {

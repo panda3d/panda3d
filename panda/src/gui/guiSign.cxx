@@ -6,13 +6,15 @@
 #include "guiSign.h"
 #include "config_gui.h"
 
+TypeHandle GuiSign::_type_handle;
+
 void GuiSign::recompute_frame(void) {
   GuiItem::recompute_frame();
   _sign->get_extents(_left, _right, _bottom, _top);
 }
 
-GuiSign::GuiSign(const string& name, GuiLabel* sign) : GuiItem(name),
-						       _sign(sign) {
+GuiSign::GuiSign(const string& name, GuiLabel* sign)
+  : GuiItem(name), _sign(sign), _sign_scale(sign->get_scale()) {
   _sign->get_extents(_left, _right, _bottom, _top);
 }
 
@@ -32,12 +34,13 @@ void GuiSign::manage(GuiManager* mgr, EventHandler& eh) {
 }
 
 void GuiSign::unmanage(void) {
-  _mgr->remove_label(_sign);
+  if (_mgr != (GuiManager*)0L)
+    _mgr->remove_label(_sign);
   GuiSign::unmanage();
 }
 
 void GuiSign::set_scale(float f) {
-  _sign->set_scale(f);
+  _sign->set_scale(f * _sign_scale);
   GuiItem::set_scale(f);
   recompute_frame();
 }

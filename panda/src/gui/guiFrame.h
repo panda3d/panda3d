@@ -39,18 +39,22 @@ private:
   typedef vector<Connection> Connections;
   class Box {
   private:
-    GuiItem* _thing;
+    PT(GuiItem) _thing;
+    float _scale;
     Connections _links;
   public:
-    inline Box(void) : _thing((GuiItem*)0L) {}
-    inline Box(GuiItem* i) : _thing(i) {}
-    inline Box(const Box& c) : _thing(c._thing), _links(c._links) {}
+    inline Box(void) : _thing((GuiItem*)0L), _scale(1.) {}
+    inline Box(GuiItem* i) : _thing(i), _scale(i->get_scale()) {}
+    inline Box(const Box& c) : _thing(c._thing), _scale(c._scale),
+			       _links(c._links) {}
     ~Box(void) {}
 
     inline void set_item(GuiItem* i) { _thing = i; }
+    inline void set_scale(float f) { _scale = f; }
     inline void add_link(Connection c) { _links.push_back(c); }
 
     inline GuiItem* get_item(void) const { return _thing; }
+    inline float get_scale(void) const { return _scale; }
     inline int get_num_links(void) const { return _links.size(); }
     inline Packing get_nth_packing(int n) const { return _links[n].get_how(); }
     inline GuiItem* get_nth_to(int n) const { return _links[n].get_who(); }
@@ -81,6 +85,25 @@ public:
   virtual void set_pos(const LVector3f&);
 
   virtual void output(ostream&) const;
+public:
+  // type interface
+  static TypeHandle get_class_type(void) {
+    return _type_handle;
+  }
+  static void init_type(void) {
+    GuiItem::init_type();
+    register_type(_type_handle, "GuiFrame",
+		  GuiItem::get_class_type());
+  }
+  virtual TypeHandle get_type(void) const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type(void) {
+    init_type();
+    return get_class_type();
+  }
+private:
+  static TypeHandle _type_handle;
 };
 
 #include "guiFrame.I"

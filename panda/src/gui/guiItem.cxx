@@ -5,6 +5,8 @@
 
 #include "guiItem.h"
 
+TypeHandle GuiItem::_type_handle;
+
 void GuiItem::recompute_frame(void) {
 }
 
@@ -16,6 +18,8 @@ GuiItem::GuiItem(const string& name) : Namable(name), _added_hooks(false),
 }
 
 GuiItem::~GuiItem(void) {
+  if (gui_cat->is_debug())
+    gui_cat->debug() << "deleting item '" << this->get_name() << "'" << endl;
   this->unmanage();
 }
 

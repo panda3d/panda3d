@@ -13,18 +13,19 @@
 #include <pt_Node.h>
 #include <renderRelation.h>
 #include <texture.h>
+#include <typedReferenceCount.h>
 
 // label-ish behavior for GUI objects (labels, buttons, rollovers)
 
 class GuiManager;
 
-class EXPCL_PANDA GuiLabel {
+class EXPCL_PANDA GuiLabel : public TypedReferenceCount {
 private:
   enum LabelType { NONE, SIMPLE_TEXTURE, SIMPLE_TEXT };
   LabelType _type;
   PT_Node _geom;
   RenderRelation* _arc;
-  Texture* _tex;
+  PT(Texture) _tex;
   RenderRelation* _internal;
 
   float _scale;
@@ -73,6 +74,25 @@ public:
 
   INLINE Colorf get_foreground_color(void) const;
   INLINE Colorf get_background_color(void) const;
+public:
+  // type interface
+  static TypeHandle get_class_type(void) {
+    return _type_handle;
+  }
+  static void init_type(void) {
+    TypedReferenceCount::init_type();
+    register_type(_type_handle, "GuiLabel",
+		  TypedReferenceCount::get_class_type());
+  }
+  virtual TypeHandle get_type(void) const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type(void) {
+    init_type();
+    return get_class_type();
+  }
+private:
+  static TypeHandle _type_handle;
 };
 
 #include "guiLabel.I"

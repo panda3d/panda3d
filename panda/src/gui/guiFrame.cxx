@@ -5,6 +5,8 @@
 
 #include "guiFrame.h"
 
+TypeHandle GuiFrame::_type_handle;
+
 GuiFrame::Boxes::iterator GuiFrame::find_box(GuiItem* item) {
   bool found = false;
   Boxes::iterator ret = _items.end();
@@ -190,7 +192,7 @@ void GuiFrame::unmanage(void) {
 
 void GuiFrame::set_scale(float f) {
   for (Boxes::iterator i=_items.begin(); i!=_items.end(); ++i)
-    (*i).get_item()->set_scale(f);
+    (*i).get_item()->set_scale(f * (*i).get_scale());
   GuiItem::set_scale(f);
   this->recompute_frame();
 }

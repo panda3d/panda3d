@@ -10,7 +10,7 @@
 
 #include <eventHandler.h>
 
-class EXPCL_PANDA GuiItem : public Namable {
+class EXPCL_PANDA GuiItem : public TypedReferenceCount, public Namable {
 protected:
   bool _added_hooks;
   float _scale, _left, _right, _bottom, _top;
@@ -38,6 +38,25 @@ public:
   INLINE LVector4f get_frame(void) const;
 
   virtual void output(ostream&) const = 0;
+public:
+  // type interface
+  static TypeHandle get_class_type(void) {
+    return _type_handle;
+  }
+  static void init_type(void) {
+    TypedReferenceCount::init_type();
+    register_type(_type_handle, "GuiItem",
+		  TypedReferenceCount::get_class_type());
+  }
+  virtual TypeHandle get_type(void) const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type(void) {
+    init_type();
+    return get_class_type();
+  }
+private:
+  static TypeHandle _type_handle;
 };
 
 #include "guiItem.I"

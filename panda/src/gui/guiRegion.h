@@ -9,12 +9,13 @@
 #include <pandabase.h>
 #include <mouseWatcherRegion.h>
 #include <pointerTo.h>
+#include <typedReferenceCount.h>
 
 // container for active regions of a GUI
 
 class GuiManager;
 
-class EXPCL_PANDA GuiRegion : public Namable {
+class EXPCL_PANDA GuiRegion : public TypedReferenceCount, public Namable {
 private:
   float _left, _right, _bottom, _top;
   PT(MouseWatcherRegion) _region;
@@ -32,6 +33,25 @@ public:
 
   INLINE void set_region(float, float, float, float);
   INLINE LVector4f get_frame(void) const;
+public:
+  // type interface
+  static TypeHandle get_class_type(void) {
+    return _type_handle;
+  }
+  static void init_type(void) {
+    TypedReferenceCount::init_type();
+    register_type(_type_handle, "GuiRegion",
+		  TypedReferenceCount::get_class_type());
+  }
+  virtual TypeHandle get_type(void) const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type(void) {
+    init_type();
+    return get_class_type();
+  }
+private:
+  static TypeHandle _type_handle;
 };
 
 #include "guiRegion.I"

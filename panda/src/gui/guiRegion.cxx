@@ -3,7 +3,12 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
+#include "config_gui.h"
 #include "guiRegion.h"
 
+TypeHandle GuiRegion::_type_handle;
+
 GuiRegion::~GuiRegion(void) {
+  if (gui_cat->is_debug())
+    gui_cat->debug() << "deleting region '" << *this << "'" << endl;
 }

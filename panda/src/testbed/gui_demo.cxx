@@ -51,7 +51,7 @@
 extern PT(GeomNode) geomnode;
 extern RenderRelation* first_arc;
 
-static GuiFrame* global_frame;
+static PT(GuiFrame) global_frame;
 
 static void setup_gui(void) {
   GuiManager* mgr = GuiManager::get_ptr(main_win, mak);
@@ -205,7 +205,7 @@ static void event_2(CPT_Event) {
 }
 
 static void event_3(CPT_Event) {
-  delete global_frame;
+  global_frame = (GuiFrame*)0L;
 }
 
 void demo_keys(EventHandler&) {

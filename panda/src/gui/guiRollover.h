@@ -13,9 +13,12 @@
 
 class EXPCL_PANDA GuiRollover : public GuiItem {
 private:
-  GuiLabel* _off;
-  GuiLabel* _on;
-  GuiRegion* _rgn;
+  PT(GuiLabel) _off;
+  PT(GuiLabel) _on;
+  PT(GuiRegion) _rgn;
+
+  float _off_scale;
+  float _on_scale;
 
   bool _state;
 
@@ -36,6 +39,25 @@ public:
   virtual void set_pos(const LVector3f&);
 
   virtual void output(ostream&) const;
+public:
+  // type interface
+  static TypeHandle get_class_type(void) {
+    return _type_handle;
+  }
+  static void init_type(void) {
+    GuiItem::init_type();
+    register_type(_type_handle, "GuiRollover",
+		  GuiItem::get_class_type());
+  }
+  virtual TypeHandle get_type(void) const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type(void) {
+    init_type();
+    return get_class_type();
+  }
+private:
+  static TypeHandle _type_handle;
 };
 
 #include "guiRollover.I"
