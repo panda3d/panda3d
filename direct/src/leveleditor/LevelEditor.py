@@ -16,6 +16,7 @@ import os
 import __builtin__
 import whrandom
 import Floater
+import EntryScale
 
 # Colors used by all color menus
 DEFAULT_COLORS = [
@@ -196,6 +197,16 @@ def DNARemoveAllChildrenOfClass(dnaNode, classType):
         dnaNode.remove(child)
         #skyler? DNASTORE.removeDNAGroup(child)
 
+def DNAGetChildren(dnaNode, classType=None):
+    """ Return the objects of that type """
+    children = []
+    for i in range(dnaNode.getNumChildren()):
+        child=dnaNode.at(i)
+        if ((not classType)
+            or DNAClassEqual(child, classType)):
+            children.append(child)
+    return children
+
 def DNAGetChild(dnaObject, type = DNA_NODE, childNum = 0):
     childCount = 0
     for i in range(dnaObject.getNumChildren()):
@@ -204,6 +215,22 @@ def DNAGetChild(dnaObject, type = DNA_NODE, childNum = 0):
             if childCount == childNum:
                 return child
             childCount = childCount + 1
+    # Not found
+    return None
+
+def DNAGetChildRecursive(dnaObject, type = DNA_NODE, childNum = 0):
+    childCount = 0
+    for i in range(dnaObject.getNumChildren()):
+        child = dnaObject.at(i)
+        if DNAClassEqual(child, type):
+            if childCount == childNum:
+                return child
+            childCount = childCount + 1
+        else:
+            child = DNAGetChildRecursive(child, type, childNum-childCount)
+            if child:
+                return child
+            
     # Not found
     return None
 
@@ -3089,6 +3116,8 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         signPage = self.notebook.add('Signs')
         propsPage = self.notebook.add('Props')
         sceneGraphPage = self.notebook.add('SceneGraph')
+        self.notebook['raisecommand'] = self.updateInfo
+
 
         self.fPaths = IntVar()
         self.fPaths.set(0)
@@ -3212,6 +3241,8 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.landmarkBuildingSelector.pack(expand = 1, fill = 'both')
         
         # Signs:
+        self.currentSignDNA=None
+        self.currentBaselineDNA=None
         self.levelEditor.selectedNodePathHookHooks.append(self.updateSignPage)
         gridFrame = Frame(signPage)
 
@@ -3230,9 +3261,10 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             history = 0,
             scrolledlist_items = ['<the sign>'])
         self.baselineMenu.selectitem(self.currentBaselineIndex)
-        self.baselineMenu.grid(row=0, column=0)
+        self.baselineMenu.grid(row=0, column=0, columnspan=3)
+
         self.baselineAddButton = Button(
-            gridFrame, text="Add", command=self.addBaseline)
+            gridFrame, text="Add Baseline", command=self.addBaseline)
         self.baselineAddButton.grid(row=1, column=0, columnspan=3)
 
         fontList = [""]+self.styleManager.getCatalogCodes('font')
@@ -3268,41 +3300,42 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             maxVelocity=1.0,
             command=self.setSignBaselineStomp)
         self.addStompFloater.grid(row=8, column=0, rowspan=2, columnspan=3)
-        self.addCurveFloater = Floater.Floater(
+        self.addCurveFloater = EntryScale.EntryScale(
             gridFrame, 
             text='Curve',
-            maxVelocity=1.0,
+            min = -1.0, max = 1.0,
+            resolution = .01,
             command=self.setSignBaselineCurve)
         self.addCurveFloater.grid(row=10, column=0, rowspan=2, columnspan=3)
         self.addXFloater = Floater.Floater(
             gridFrame, 
             text='X',
             maxVelocity=1.0,
-            command=self.setSignBaselineX)
+            command=self.setDNATargetX)
         self.addXFloater.grid(row=2, column=3, rowspan=2, columnspan=3)
         self.addZFloater = Floater.Floater(
             gridFrame, 
             text='Z',
             maxVelocity=1.0,
-            command=self.setSignBaselineZ)
+            command=self.setDNATargetZ)
         self.addZFloater.grid(row=4, column=3, rowspan=2, columnspan=3)
         self.addScaleXFloater = Floater.Floater(
             gridFrame, 
             text='Scale X',
             maxVelocity=1.0,
-            command=self.setSignBaselineScaleX)
+            command=self.setDNATargetScaleX)
         self.addScaleXFloater.grid(row=6, column=3, rowspan=2, columnspan=3)
         self.addScaleZFloater = Floater.Floater(
             gridFrame, 
             text='Scale Z',
             maxVelocity=1.0,
-            command=self.setSignBaselineScaleZ)
+            command=self.setDNATargetScaleZ)
         self.addScaleZFloater.grid(row=8, column=3, rowspan=2, columnspan=3)
         self.addRollFloater = Floater.Floater(
             gridFrame, 
             text='Roll',
             maxVelocity=10.0,
-            command=self.setSignBaselineRoll)
+            command=self.setDNATargetRoll)
         self.addRollFloater.grid(row=10, column=3, rowspan=2, columnspan=3)
 
         gridFrame.pack(fill='both')
@@ -3461,6 +3494,10 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         # Make sure input variables processed 
         self.initialiseoptions(LevelEditorPanel)
 
+    def updateInfo(self, page):
+        if page == 'Signs':
+            self.updateSignPage()
+    
     def toggleGrid(self):
         if self.fGrid.get():
             direct.grid.enable()
@@ -3512,67 +3549,44 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.landmarkType = 'toon_landmark_' + name
         self.levelEditor.setCurrent('toon_landmark_texture', self.landmarkType)
     
+    def signPanelSync(self):
+        self.baselineMenu.delete(0, END)
+        sign=self.findSignFromDNARoot()
+        if not sign:
+            return
+        baselineList = DNAGetChildren(sign, DNA_SIGN_BASELINE)
+        for baseline in baselineList:
+            s=DNAGetBaselineString(baseline)
+            self.baselineMenu.insert(END, s)
+        self.baselineMenu.selectitem(0)
+        self.selectSignBaseline(0)
+    
     def updateSignPage(self):
-        #if (self.notebook.getcurselection() == 'Signs'):
-        #    self.baselineMenu.selectitem(0)
-        #    self.selectSignBaseline(0)
-        pass
+        if (self.notebook.getcurselection() == 'Signs'):
+            sign=self.findSignFromDNARoot()
+            # Only update if it's not the current sign:
+            if (self.currentSignDNA != sign):
+                self.currentSignDNA = sign
+                self.signPanelSync()
         
-    def findSign(self):
-        target=self.levelEditor.DNATarget
-        if not target:
+    def findSignFromDNARoot(self):
+        dnaRoot=self.levelEditor.selectedDNARoot
+        if not dnaRoot:
             return
-        if DNAGetClassType(target).eq(DNA_SIGN):
+        if (DNAGetClassType(dnaRoot).eq(DNA_LANDMARK_BUILDING)):
+            target=DNAGetChildRecursive(dnaRoot, DNA_SIGN)
             return target
-        elif DNAGetClassType(target).eq(DNA_SIGN_BASELINE):
-            return target.getParent()
-        elif (DNAGetClassType(target).eq(DNA_SIGN_TEXT) or
-                DNAGetClassType(target).eq(DNA_SIGN_GRAPHIC)):
-            return (target.getParent()).getParent()
-        else:
-            print "findSign: That's not a DNA_SIGN* object"
-    
-    def findAnySignTarget(self):
-        target=self.levelEditor.DNATarget
-        if target and (DNAGetClassType(target).eq(DNA_SIGN)
-                or DNAGetClassType(target).eq(DNA_SIGN_BASELINE)
-                or DNAGetClassType(target).eq(DNA_SIGN_TEXT)
-                or DNAGetClassType(target).eq(DNA_SIGN_GRAPHIC)):
-            return target
-        return None
-    
-    def findBaseline(self):
-        parent=target=self.levelEditor.DNATarget
-        #childNum=int((self.baselineMenu.curselection())[0]) #skyler
-        childNum=self.currentBaselineIndex
-        if not target:
-            return
-        # Make parent point to the sign:
-        if DNAGetClassType(target).eq(DNA_SIGN):
-            pass
-        elif DNAGetClassType(target).eq(DNA_SIGN_BASELINE):
-            parent=target.getParent()
-        elif (DNAGetClassType(target).eq(DNA_SIGN_TEXT)
-                or DNAGetClassType(target).eq(DNA_SIGN_GRAPHIC)):
-            parent=(target.getParent()).getParent()
-        else:
-            print "findBaseline: That's not a DNA_SIGN* object"
-            return
-        # Ask the sign for the baseline:
-        target=DNAGetChild(parent, DNA_SIGN_BASELINE, childNum)
-        self.levelEditor.DNATarget=target
-        return target
     
     def selectSignBaseline(self, val):
         self.currentBaselineIndex=int((self.baselineMenu.curselection())[0])
-        print "selectSignBaseline() self.currentBaselineIndex",self.currentBaselineIndex
-        target=self.findBaseline()
+        target=DNAGetChild(self.currentSignDNA, DNA_SIGN_BASELINE, self.currentBaselineIndex)
         if target:
             # Temporarily undefine DNATarget (this will speed 
             # up setting the values, because the callbacks won't
             # call self.levelEditor.replaceSelected() with each
             # setting):
             self.levelEditor.DNATarget=None
+            self.currentBaselineDNA=None
             # Update panel info:
             self.baselineString.set(DNAGetBaselineString(target))
             self.fontMenu.selectitem(target.getCode())
@@ -3589,14 +3603,11 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             self.addScaleZFloater.set(scale[2])
             hpr=target.getHpr()
             self.addRollFloater.set(hpr[2])
-            # Set the DNATarget:
-            self.levelEditor.DNATarget=target   
-        else:
-            print "\n\n selectSignBaseline(), no target"
+        self.currentBaselineDNA=self.levelEditor.DNATarget=target
     
     def signBaselineTrace(self, a, b, mode):
         #print self, a, b, mode, self.baselineString.get()
-        baseline=self.findBaseline()
+        baseline=self.currentBaselineDNA
         if baseline:
             s=self.baselineString.get()
             DNASetBaselineString(baseline, s);
@@ -3606,7 +3617,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             self.levelEditor.replaceSelected()
     
     def addBaseline(self):
-        sign=self.findSign()
+        sign=self.findSignFromDNARoot()
         if sign:
             baseline=DNASignBaseline()
             text="Zoo"
@@ -3617,7 +3628,6 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             self.baselineMenu.insert(END, text)
             current=self.baselineMenu.size()-1
             self.baselineMenu.selectitem(current)
-            self.baselineMenu.activate(current)
             self.selectSignBaseline(current)
             self.levelEditor.replaceSelected()
     
@@ -3625,7 +3635,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         pass
     
     def selectSignBaselineItem(self, val):
-        baseline=self.findBaseline()
+        baseline=self.currentBaselineDNA
         if baseline:
             baseline.setCode(val)
             self.levelEditor.replaceSelected()
@@ -3638,70 +3648,74 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             self.levelEditor.replaceSelected()
 
     def setSignBaselineCurve(self, val):
-        baseline=self.findBaseline()
+        baseline=self.currentBaselineDNA
         if baseline:
+            try:
+                val=1.0/val
+            except ZeroDivisionError:
+                val=0    
             baseline.setWidth(val)
             baseline.setHeight(val)
             self.levelEditor.replaceSelected()
 
     def setSignBaselineKern(self, val):
-        baseline=self.findBaseline()
+        baseline=self.currentBaselineDNA
         if baseline:
             baseline.setKern(val)
             self.levelEditor.replaceSelected()
 
     def setSignBaselineWiggle(self, val):
-        baseline=self.findBaseline()
+        baseline=self.currentBaselineDNA
         if baseline:
             baseline.setWiggle(val)
             self.levelEditor.replaceSelected()
 
     def setSignBaselineStumble(self, val):
-        baseline=self.findBaseline()
+        baseline=self.currentBaselineDNA
         if baseline:
             baseline.setStumble(val)
             self.levelEditor.replaceSelected()
 
     def setSignBaselineStomp(self, val):
-        baseline=self.findBaseline()
+        baseline=self.currentBaselineDNA
         if baseline:
             baseline.setStomp(val)
             self.levelEditor.replaceSelected()
 
-    def setSignBaselineX(self, val):
-        target=self.findAnySignTarget()
+    def setDNATargetX(self, val):
+        target=self.levelEditor.DNATarget
         if target:
             pos=target.getPos()
             pos=VBase3(val, pos[1], pos[2])
             target.setPos(pos)
             self.levelEditor.replaceSelected()
 
-    def setSignBaselineZ(self, val):
-        target=self.findAnySignTarget()
+    def setDNATargetZ(self, val):
+        target=self.levelEditor.DNATarget
         if target:
             pos=target.getPos()
             pos=VBase3(pos[0], pos[1], val)
             target.setPos(pos)
             self.levelEditor.replaceSelected()
 
-    def setSignBaselineScaleX(self, val):
-        target=self.findAnySignTarget()
+    def setDNATargetScaleX(self, val):
+        target=self.levelEditor.DNATarget
         if target:
             scale=target.getScale()
             scale=VBase3(val, scale[1], scale[2])
             target.setScale(scale)
             self.levelEditor.replaceSelected()
 
-    def setSignBaselineScaleZ(self, val):
-        target=self.findAnySignTarget()
+    def setDNATargetScaleZ(self, val):
+        target=self.levelEditor.DNATarget
         if target:
             scale=target.getScale()
             scale=VBase3(scale[0], scale[1], val)
             target.setScale(scale)
             self.levelEditor.replaceSelected()
 
-    def setSignBaselineRoll(self, val):
-        target=self.findAnySignTarget()
+    def setDNATargetRoll(self, val):
+        target=self.levelEditor.DNATarget
         if target:
             hpr=target.getHpr()
             hpr=VBase3(hpr[0], hpr[1], val)
