@@ -16,7 +16,7 @@ are also a number of individually named scopes, one scope for each
 directory in the source hierarchy that contains a Sources.pp file.
 Each of these scopes is a child of the global scope, each of these
 defines the varibles defined within its Sources.pp file.  The name of
-each scope is the name of the directory.
+each scope is the name of the directory, with a trailing slash.
 
 For instance, imagine the following simple directory hierarchy:
 
@@ -470,7 +470,7 @@ Map variables:
 
 Function calls:
 
-  Function calls are a little more conventional to other scripting
+  Function calls are a little more familiar from other scripting
   languages.  User functions are defined with the syntax:
 
     #defun <funcname> <params>
@@ -506,5 +506,5 @@ Function calls:
 
     $[updowncase $[filename],]
 
-  Many pre-defined functions are also available; see
+  Many builtin functions are also available; see
   ppremake-variables.txt.
