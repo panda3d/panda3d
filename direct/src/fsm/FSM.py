@@ -336,6 +336,7 @@ class FSM(DirectObject.DirectObject):
         # Internal function to change unconditionally to the indicated
         # state.
         assert(self.state)
+        assert(self.notify.debug("%s to state %s." % (self.name, newState)))
         
         self.oldState = self.state
         self.newState = newState
