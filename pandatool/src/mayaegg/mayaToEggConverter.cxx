@@ -51,8 +51,6 @@
 #include <maya/MFnMesh.h>
 #include <maya/MFnMeshData.h>
 #include <maya/MItMeshPolygon.h>
-#include <maya/MItMeshVertex.h>
-#include <maya/MItSurfaceCV.h>
 #include <maya/MFnPlugin.h>
 #include <maya/MItDag.h>
 #include <maya/MLibrary.h>
@@ -1950,7 +1948,7 @@ get_vertex_weights(const MDagPath &dag_path, const MFnMesh &mesh,
   // creates the mesh is named "inMesh" 
   // 
   MObject attr = mesh.attribute("inMesh"); 
-
+  
   // Create the plug to the "inMesh" attribute then use the 
   // DG iterator to walk through the DG, at the node level.
   // 
@@ -1965,7 +1963,6 @@ get_vertex_weights(const MDagPath &dag_path, const MFnMesh &mesh,
     // spot a skinCluster node.
     // 
     MObject c_node = it.thisNode(); 
-    //mayaegg_cat.info() << "thisNode type: " << c_node.apiTypeStr() << endl;
     if (c_node.hasFn(MFn::kSkinClusterFilter)) { 
       // We've found the cluster handle. Try to get the weight
       // data.
@@ -1976,13 +1973,10 @@ get_vertex_weights(const MDagPath &dag_path, const MFnMesh &mesh,
         return false;
       }
 
-      mayaegg_cat.info() << "getting weights of mesh: " << dag_path.fullPathName() << endl;
-      mayaegg_cat.info() << "and cluster: " << cluster.name() << endl;
-
       // Get the set of objects that influence the vertices of this
       // mesh.  Hopefully these will all be joints.
       MDagPathArray influence_objects;
-      cluster.influenceObjects(influence_objects, &status);
+      cluster.influenceObjects(influence_objects, &status); 
       if (!status) {
         status.perror("MFnSkinCluster::influenceObjects");
 
@@ -1990,59 +1984,36 @@ get_vertex_weights(const MDagPath &dag_path, const MFnMesh &mesh,
         // Fill up the vector with the corresponding table of egg
         // groups for each joint.
         joints.clear();
-        int numWeights = 0;
         for (unsigned oi = 0; oi < influence_objects.length(); oi++) {
           MDagPath joint_dag_path = influence_objects[oi];
-          //mayaegg_cat.info() << "influence joint[" << oi << "]:" << joint_dag_path.partialPathName() <<endl;
           MayaNodeDesc *joint_node_desc = _tree.build_node(joint_dag_path);
           EggGroup *joint = _tree.get_egg_group(joint_node_desc);
           joints.push_back(joint);
         }
-        
+
         // Now use a component object to retrieve all of the weight
         // data in one API call.
-        // To get a handle to the mesh verices component create an MItMeshVertex
-        MItMeshVertex mvIt(dag_path, MObject::kNullObj , &status );
-        if (!status)
-          status.perror("MItMeshVertex::constructor");
-        else {
-          MObject component = mvIt.vertex(&status);
-          if (!status)
-            status.perror("MItMeshVertex::vertex");
-          else {
-            MFnSingleIndexedComponent sic(component, &status);
-            if (!status)
-              status.perror("MFnSingleIndexedComponent::constructor");
-            else {
-              int numVertices;
-              numVertices = mvIt.count(&status);
-              if (!status)
-                status.perror("MItMeshVertex::count");
-              else {
-                mayaegg_cat.info() << "numVertices in Mesh: " << numVertices << endl;
-                sic.setCompleteData(numVertices);
-                unsigned influence_count;
-                status = cluster.getWeights(dag_path, sic.object(),
-                                            weights, influence_count);
-                if (!status)
-                  status.perror("MFnSkinCluster::getWeights");
-                else {
-                  if (influence_count != influence_objects.length()) {
-                    mayaegg_cat.error()
-                      << "MFnSkinCluster::influenceObjects() returns " 
-                      << influence_objects.length()
-                      << " objects, but MFnSkinCluster::getWeights() reports "
-                      << influence_count << " objects.\n";
-                  } else {
-                    // We've got the weights and the set of objects.  That's all
-                    // we need.
-                    mayaegg_cat.info() << "influence_count :" << influence_count << endl;
-                    mayaegg_cat.info() << "number of weights :" << weights.length() << endl;
-                    return true;
-                  }
-                }
-              }
-            }
+        MFnSingleIndexedComponent sic; 
+        MObject sic_object = sic.create(MFn::kMeshVertComponent); 
+        sic.setCompleteData(mesh.numVertices()); 
+        unsigned influence_count; 
+
+        status = cluster.getWeights(dag_path, sic_object, 
+                                    weights, influence_count); 
+        if (!status) {
+          status.perror("MFnSkinCluster::getWeights");
+        } else {
+          if (influence_count != influence_objects.length()) {
+            mayaegg_cat.error()
+              << "MFnSkinCluster::influenceObjects() returns " 
+              << influence_objects.length()
+              << " objects, but MFnSkinCluster::getWeights() reports "
+              << influence_count << " objects.\n";
+            
+          } else {
+            // We've got the weights and the set of objects.  That's all
+            // we need.
+            return true;
           }
         }
       }
@@ -2115,52 +2086,27 @@ get_vertex_weights(const MDagPath &dag_path, const MFnNurbsSurface &surface,
 
         // Now use a component object to retrieve all of the weight
         // data in one API call.
-        // To get a handle to the surface cvs component create an MItSurfaceCV
-        MItSurfaceCV scvIt(dag_path, MObject::kNullObj , true, &status );
-        if (!status)
-          status.perror("MItSurfaceCV::constructor");
-        else {
-          MObject component = scvIt.cv(&status);
-          if (!status)
-            status.perror("MItSurfaceCV::cv");
-          else {
-            MFnDoubleIndexedComponent dic(component,&status); 
-            if (!status)
-              status.perror("MFnDoubleIndexedComponent::constructor");
-            else {
-              int numUCVs, numVCVs;
-              status = scvIt.getIndex(numUCVs, numVCVs);
-              if (!status)
-                status.perror("mItSurfaceCV::getIndex");
-              else {
-                mayaegg_cat.info() << "numCVs in U: " << numUCVs << endl;
-                mayaegg_cat.info() << "numCVs in V: " << numVCVs << endl;
-                mayaegg_cat.info() << "numCVs in U from surface: " << surface.numCVsInU() << endl;
-                mayaegg_cat.info() << "numCVs in V from surface: " << surface.numCVsInV() << endl;
-                //dic.setCompleteData(surface.numCVsInU(), surface.numCVsInV()); 
-                dic.setCompleteData(numUCVs, numVCVs); 
-                unsigned influence_count; 
-                status = cluster.getWeights(dag_path, dic.object(),
-                                            weights, influence_count);
-                if (!status) {
-                  status.perror("MFnSkinCluster::getWeights");
-                } else {
-                  if (influence_count != influence_objects.length()) {
-                    mayaegg_cat.error()
-                      << "MFnSkinCluster::influenceObjects() returns " 
-                      << influence_objects.length()
-                      << " objects, but MFnSkinCluster::getWeights() reports "
-                      << influence_count << " objects.\n";
-                  } else {
-                    // We've got the weights and the set of objects.  That's all
-                    // we need.
-                    mayaegg_cat.info() << "influence_count :" << influence_count << endl;
-                    mayaegg_cat.info() << "number of weights :" << weights.length() << endl;
-                    return true;
-                  }
-                }
-              }
-            }
+        MFnDoubleIndexedComponent dic; 
+        MObject dic_object = dic.create(MFn::kSurfaceCVComponent); 
+        dic.setCompleteData(surface.numCVsInU(), surface.numCVsInV()); 
+        unsigned influence_count; 
+
+        status = cluster.getWeights(dag_path, dic_object, 
+                                    weights, influence_count); 
+        if (!status) {
+          status.perror("MFnSkinCluster::getWeights");
+        } else {
+          if (influence_count != influence_objects.length()) {
+            mayaegg_cat.error()
+              << "MFnSkinCluster::influenceObjects() returns " 
+              << influence_objects.length()
+              << " objects, but MFnSkinCluster::getWeights() reports "
+              << influence_count << " objects.\n";
+            
+          } else {
+            // We've got the weights and the set of objects.  That's all
+            // we need.
+            return true;
           }
         }
       }
@@ -2168,6 +2114,7 @@ get_vertex_weights(const MDagPath &dag_path, const MFnNurbsSurface &surface,
 
     it.next();
   }
+
   // The surface was not soft-skinned.
   return false;
 }
