@@ -16,20 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "builder_headers.h"
-#endif
-
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "builderMisc.h"
 #include "builderTypes.h"
 
 #include <luse.h>
 #include <stdlib.h>
-#endif
-
 ////////////////////////////////////////////////////////////////////
 //     Function: make_random_color
 //  Description: Chooses a reasonable random color.

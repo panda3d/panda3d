@@ -16,17 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "builder_headers.h"
-#endif
-
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "builderAttrib.h"
 #include "builderVertex.h"
-#endif
-
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__
 #pragma implementation

@@ -16,16 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "builder_headers.h"
-#endif
-
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "builderFuncs.h"
-#endif
-
 #include "builderNormalVisualizer.h"
 
 #ifdef SUPPORT_SHOW_NORMALS

@@ -16,22 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "builder_headers.h"
-#endif
-
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "builderFuncs.h"
 #include "builderMisc.h"
-
 #include <notify.h>
 #include <namedNode.h>
 #include <geomNode.h>
 #include "pmap.h"
-#endif
-
 #include "builder.h"
 #include <renderRelation.h>
 
