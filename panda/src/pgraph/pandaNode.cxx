@@ -105,6 +105,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   _state = DCAST(RenderState, p_list[pi++]);
   _effects = DCAST(RenderEffects, p_list[pi++]);
   _transform = DCAST(TransformState, p_list[pi++]);
+  _prev_transform = _transform;
 
   // Finalize these pointers now to decrement their artificially-held
   // reference counts.  We do this now, rather than later, in case
