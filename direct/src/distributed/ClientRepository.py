@@ -593,6 +593,8 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             self.handleGoGetLost(di)
         elif msgType == CLIENT_HEARTBEAT:
             self.handleServerHeartbeat(di)
+        elif msgType == CLIENT_SYSTEM_MESSAGE:
+            self.handleSystemMessage(di)
         elif wantOtpServer:
             if msgType == CLIENT_CREATE_OBJECT_REQUIRED:
                 self.handleGenerateWithRequired(di)
@@ -604,8 +606,6 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
                 self.handleDisable(di)
             elif msgType == CLIENT_OBJECT_DELETE_RESP:
                 self.handleDelete(di)
-            elif msgType == CLIENT_SYSTEM_MESSAGE:
-                self.handleSystemMessage(di)
             elif msgType == CLIENT_CREATE_OBJECT_REQUIRED:
                 self.handleGenerateWithRequired(di)
             elif msgType == CLIENT_CREATE_OBJECT_REQUIRED_OTHER:

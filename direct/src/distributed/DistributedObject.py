@@ -301,27 +301,37 @@ class DistributedObject(PandaObject):
         # handling whatever it should handle in its current state, it
         # should call doneBarrier(), which will send the context
         # number back to the AI.
-        for context, avIds in data:
+        for context, name, avIds in data:
             if base.localAvatar.doId in avIds:
                 # We found localToon's id; stop here.
-                self.__barrierContext = context
-                assert(self.notify.debug('setBarrierData(%s)' % (context)))
+                self.__barrierContext = (context, name)
+                assert(self.notify.debug('setBarrierData(%s, %s)' % (context, name)))
                 return
                 
         assert(self.notify.debug('setBarrierData(%s)' % (None)))
         self.__barrierContext = None
         
-    def doneBarrier(self):
-        # Tells the AI we have finished handling our task.
-        assert(self.notify.debug('doneBarrier(%s)' % (self.__barrierContext)))
+    def doneBarrier(self, name = None):
+        # Tells the AI we have finished handling our task.  If the
+        # optional name parameter is specified, it must match the
+        # barrier name specified on the AI, or the barrier is ignored.
+        # This is used to ensure we are not clearing the wrong
+        # barrier.
 
         # If this is None, it either means we have called
         # doneBarrier() twice, or we have not received a barrier
         # context from the AI.  I think in either case it's ok to
         # silently ignore the error.
         if self.__barrierContext != None:
-            self.sendUpdate("setBarrierReady", [self.__barrierContext])
-            self.__barrierContext = None
+            context, aiName = self.__barrierContext
+            if name == None or name == aiName:
+                assert(self.notify.debug('doneBarrier(%s, %s)' % (context, aiName)))
+                self.sendUpdate("setBarrierReady", [context])
+                self.__barrierContext = None
+            else:
+                assert(self.notify.debug('doneBarrier(%s) ignored; current barrier is %s' % (name, aiName)))
+        else:
+            assert(self.notify.debug('doneBarrier(%s) ignored; no active barrier.' % (name)))
     
     if wantOtpServer:
         def addInterest(self, zoneId, note="", event=None):

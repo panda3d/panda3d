@@ -379,7 +379,7 @@ class DistributedObjectAI(DirectObject.DirectObject):
 
         if avIds:
             barrier = ToonBarrier.ToonBarrier(
-                self.uniqueName(name), avIds, timeout,
+                name, self.uniqueName(name), avIds, timeout,
                 doneFunc = PythonUtil.Functor(self.__barrierCallback, context, callback))
             self.__barriers[context] = barrier
 
@@ -399,7 +399,7 @@ class DistributedObjectAI(DirectObject.DirectObject):
         for context, barrier in self.__barriers.items():
             toons = barrier.pendingToons
             if toons:
-                data.append((context, toons))
+                data.append((context, barrier.name, toons))
         return data
 
     def ignoreBarrier(self, context):
