@@ -34,7 +34,7 @@
 
 // Where should we install DIRECT?
 #if $[or $[CTPROJS],$[DIRECT]]
-  #set DTOOL $[unixfilename $[DIRECT]]
+  #set DIRECT $[unixfilename $[DIRECT]]
   #define DIRECT_INSTALL $[DIRECT]
   #define DIRECT_INSTALL_OTHER $(DIRECT)
   #if $[eq $[DIRECT],]
@@ -56,4 +56,3 @@
 #endif
 
 #include $[PANDA_SOURCE]/Package.pp
-

@@ -12,7 +12,6 @@
 // responsible for explicitly including all of the relevent Config.pp
 // files.
 
-
 // What is the name and version of this source tree?
 #if $[eq $[PACKAGE],]
   #define PACKAGE panda

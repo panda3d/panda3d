@@ -24,7 +24,7 @@
 // Where should we find the PANDA source directory?
 #if $[or $[CTPROJS],$[PANDA]]
   // If we are presently attached, use the environment variable.
-  #define PANDA_SOURCE $[PANDA]
+  #define PANDA_SOURCE $[unixfilename $[PANDA]]
   #if $[eq $[PANDA],]
     #error You seem to be attached to some trees, but not PANDA!
   #endif
@@ -36,14 +36,15 @@
 
 // Where should we install PANDATOOL?
 #if $[or $[CTPROJS],$[PANDATOOL]]
+  #set PANDATOOL $[unixfilename $[PANDATOOL]]
   #define PANDATOOL_INSTALL $[PANDATOOL]
   #define PANDATOOL_INSTALL_OTHER $(PANDATOOL)
   #if $[eq $[PANDATOOL],]
     #error You seem to be attached to some trees, but not PANDATOOL!
   #endif
 #else
-  #defer PANDATOOL_INSTALL $[INSTALL_DIR]
-  #defer PANDATOOL_INSTALL_OTHER $[INSTALL_DIR]
+  #defer PANDATOOL_INSTALL $[unixfilename $[INSTALL_DIR]]
+  #defer PANDATOOL_INSTALL_OTHER $[unixfilename $[INSTALL_DIR]]
 #endif
 
 
