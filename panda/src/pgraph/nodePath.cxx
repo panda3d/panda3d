@@ -605,7 +605,7 @@ void NodePath::
 set_hpr(const LVecBase3f &hpr) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
-  nassertv(transform->has_components());
+  nassertv(transform->has_hpr());
   set_transform(transform->set_hpr(hpr));
 }
 
@@ -613,7 +613,7 @@ void NodePath::
 set_h(float h) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
-  nassertv(transform->has_components());
+  nassertv(transform->has_hpr());
   LVecBase3f hpr = transform->get_hpr();
   hpr[0] = h;
   set_transform(transform->set_hpr(hpr));
@@ -623,7 +623,7 @@ void NodePath::
 set_p(float p) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
-  nassertv(transform->has_components());
+  nassertv(transform->has_hpr());
   LVecBase3f hpr = transform->get_hpr();
   hpr[1] = p;
   set_transform(transform->set_hpr(hpr));
@@ -633,7 +633,7 @@ void NodePath::
 set_r(float r) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
-  nassertv(transform->has_components());
+  nassertv(transform->has_hpr());
   LVecBase3f hpr = transform->get_hpr();
   hpr[2] = r;
   set_transform(transform->set_hpr(hpr));
@@ -648,7 +648,7 @@ LVecBase3f NodePath::
 get_hpr() const {
   nassertr_always(!is_empty(), LVecBase3f(0.0f, 0.0f, 0.0f));
   CPT(TransformState) transform = get_transform();
-  nassertr(transform->has_components(), LVecBase3f(0.0f, 0.0f, 0.0f));
+  nassertr(transform->has_hpr(), LVecBase3f(0.0f, 0.0f, 0.0f));
   return transform->get_hpr();
 }
 
@@ -675,7 +675,7 @@ void NodePath::
 set_scale(const LVecBase3f &scale) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
-  nassertv(transform->has_components());
+  nassertv(transform->has_scale());
   set_transform(transform->set_scale(scale));
 }
 
@@ -683,7 +683,7 @@ void NodePath::
 set_sx(float sx) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
-  nassertv(transform->has_components());
+  nassertv(transform->has_scale());
   LVecBase3f scale = transform->get_scale();
   scale[0] = sx;
   set_transform(transform->set_scale(scale));
@@ -693,7 +693,7 @@ void NodePath::
 set_sy(float sy) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
-  nassertv(transform->has_components());
+  nassertv(transform->has_scale());
   LVecBase3f scale = transform->get_scale();
   scale[1] = sy;
   set_transform(transform->set_scale(scale));
@@ -703,7 +703,7 @@ void NodePath::
 set_sz(float sz) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
-  nassertv(transform->has_components());
+  nassertv(transform->has_scale());
   LVecBase3f scale = transform->get_scale();
   scale[2] = sz;
   set_transform(transform->set_scale(scale));
@@ -718,7 +718,7 @@ LVecBase3f NodePath::
 get_scale() const {
   nassertr_always(!is_empty(), LVecBase3f(0.0f, 0.0f, 0.0f));
   CPT(TransformState) transform = get_transform();
-  nassertr(transform->has_components(), LVecBase3f(0.0f, 0.0f, 0.0f));
+  nassertr(transform->has_scale(), LVecBase3f(0.0f, 0.0f, 0.0f));
   return transform->get_scale();
 }
 
@@ -957,7 +957,7 @@ void NodePath::
 set_hpr(const NodePath &other, const LVecBase3f &hpr) {
   nassertv_always(!is_empty());
   CPT(TransformState) rel_transform = get_transform(other);
-  nassertv(rel_transform->has_components());
+  nassertv(rel_transform->has_hpr());
 
   CPT(TransformState) orig_transform = get_transform();
   if (orig_transform->has_components()) {
@@ -1015,7 +1015,7 @@ LVecBase3f NodePath::
 get_hpr(const NodePath &other) const {
   nassertr_always(!is_empty(), LVecBase3f(0.0f, 0.0f, 0.0f));
   CPT(TransformState) transform = get_transform(other);
-  nassertr(transform->has_components(), LVecBase3f(0.0f, 0.0f, 0.0f));
+  nassertr(transform->has_hpr(), LVecBase3f(0.0f, 0.0f, 0.0f));
   return transform->get_hpr();
 }
 
@@ -1045,7 +1045,7 @@ void NodePath::
 set_scale(const NodePath &other, const LVecBase3f &scale) {
   nassertv_always(!is_empty());
   CPT(TransformState) rel_transform = get_transform(other);
-  nassertv(rel_transform->has_components());
+  nassertv(rel_transform->has_scale());
 
   CPT(TransformState) orig_transform = get_transform();
   if (orig_transform->has_components()) {
@@ -1103,7 +1103,7 @@ LVecBase3f NodePath::
 get_scale(const NodePath &other) const {
   nassertr_always(!is_empty(), LVecBase3f(0.0f, 0.0f, 0.0f));
   CPT(TransformState) transform = get_transform(other);
-  nassertr(transform->has_components(), LVecBase3f(0.0f, 0.0f, 0.0f));
+  nassertr(transform->has_scale(), LVecBase3f(0.0f, 0.0f, 0.0f));
   return transform->get_scale();
 }
 
