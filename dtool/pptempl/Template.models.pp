@@ -372,9 +372,9 @@ $[TAB]egg-optchar $[OPTCHAR_OPTS] -d $[TARGET_DIR] $[sources]
     #define target $[pal_egg_dir]/$[notdir $[egg]]
 $[target] : $[source] $[pt] $[pal_egg_dir]/stamp
     #if $[PHASE]
-$[TAB]egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -dr $[install_dir] -dm $[install_dir]/%g/maps -ds $[install_dir]/shadow_pal -g phase_$[PHASE] -gdir phase_$[PHASE] -o $[target] $[source]
+$[TAB]egg-palettize $[PALETTIZE_OPTS] -af $[texattrib_file] -dr $[install_dir] -dm $[install_dir]/%g/maps -ds $[install_dir]/shadow_pal -g phase_$[PHASE] -gdir phase_$[PHASE] -o $[target] $[source]
     #else
-$[TAB]egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -dr $[install_dir] -dm $[install_dir]/%g/maps -ds $[install_dir]/shadow_pal -o $[target] $[source]
+$[TAB]egg-palettize $[PALETTIZE_OPTS] -af $[texattrib_file] -dr $[install_dir] -dm $[install_dir]/%g/maps -ds $[install_dir]/shadow_pal -o $[target] $[source]
     #endif
 
 $[pt] :
@@ -596,7 +596,7 @@ opt-pal : pal do-opt-pal install
 optimize-palettes : opt-pal
 
 do-opt-pal :
-$[TAB]egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -dm $[install_dir]/%g/maps -opt -egg
+$[TAB]egg-palettize $[PALETTIZE_OPTS] -af $[texattrib_file] -dm $[install_dir]/%g/maps -opt -egg
 
 #
 # repal : reexamine the textures.txa file and do whatever needs to be
@@ -604,7 +604,7 @@ $[TAB]egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -dm $[install_dir]/%g
 # files are up-to-date.
 #
 repal :
-$[TAB]egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -dm $[install_dir]/%g/maps -all -egg
+$[TAB]egg-palettize $[PALETTIZE_OPTS] -af $[texattrib_file] -dm $[install_dir]/%g/maps -all -egg
 
 re-pal : repal
 
@@ -613,7 +613,7 @@ re-pal : repal
 # palette images to fix it.
 #
 fix-pal :
-$[TAB]egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -dm $[install_dir]/%g/maps -redo -all -egg
+$[TAB]egg-palettize $[PALETTIZE_OPTS] -af $[texattrib_file] -dm $[install_dir]/%g/maps -redo -all -egg
 
 #
 # undo-pal : blow away all the palettization information and start fresh.
@@ -626,14 +626,14 @@ $[TAB]rm -f $[texattrib_file:%.txa=%.boo]
 # user's perusal.
 #
 pi :
-$[TAB]egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -dm $[install_dir]/%g/maps -pi
+$[TAB]egg-palettize $[PALETTIZE_OPTS] -af $[texattrib_file] -dm $[install_dir]/%g/maps -pi
 
 #
 # pal-stats : report palettization statistics to standard output for the
 # user's perusal.
 #
 pal-stats :
-$[TAB]egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -dm $[install_dir]/%g/maps -s
+$[TAB]egg-palettize $[PALETTIZE_OPTS] -af $[texattrib_file] -dm $[install_dir]/%g/maps -s
 stats-pal : pal-stats
 
 // Somehow, something in the cttools confuses some shells, so that
