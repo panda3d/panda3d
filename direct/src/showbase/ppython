@@ -47,6 +47,13 @@ fi
 HOME=`cygpath -w $HOME`
 export HOME
 
+# -w will run with WireGL.
+wgl=
+if [ x"$1" = x"-w" ]; then
+  shift 1
+  wgl=wgl
+fi
+
 if [ x"$1" = x"-msdev" ]; then
   # used for local machine debugging of vc dlls called by python
   shift 1
@@ -62,8 +69,8 @@ elif [ x"$1" = x"-d" ]; then
 # parameter -d to indicate we should run python_d.
 
   shift 1
-  exec python_d ${1+"$@"}
+  exec $wgl python_d ${1+"$@"}
 else
-  exec python ${1+"$@"}
+  exec $wgl python ${1+"$@"}
 fi
 
