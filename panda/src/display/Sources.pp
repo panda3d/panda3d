@@ -7,23 +7,29 @@
     putil gsgbase gobj linmath graph mathutil sgraph \
     pstatclient
 
-  #define SOURCES \
-    config_display.cxx config_display.h displayRegion.I \
-    displayRegion.cxx displayRegion.h graphicsChannel.I \
-    graphicsChannel.cxx graphicsChannel.h graphicsLayer.I \
-    graphicsLayer.cxx graphicsLayer.h graphicsPipe.I graphicsPipe.N \
-    graphicsPipe.cxx graphicsPipe.h graphicsStateGuardian.I \
-    graphicsStateGuardian.N graphicsStateGuardian.cxx \
-    graphicsStateGuardian.h graphicsWindow.I graphicsWindow.N \
-    graphicsWindow.cxx graphicsWindow.h graphicsWindowInputDevice.I \
-    graphicsWindowInputDevice.cxx graphicsWindowInputDevice.h \
-    hardwareChannel.I hardwareChannel.cxx hardwareChannel.h \
-    interactiveGraphicsPipe.I interactiveGraphicsPipe.cxx \
-    interactiveGraphicsPipe.h noninteractiveGraphicsPipe.I \
-    noninteractiveGraphicsPipe.cxx noninteractiveGraphicsPipe.h \
-    pipeSpec.I pipeSpec.cxx pipeSpec.h savedFrameBuffer.I \
-    savedFrameBuffer.cxx savedFrameBuffer.h textureContext.I \
-    textureContext.cxx textureContext.h
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
+ 
+  #define SOURCES  \
+     config_display.h displayRegion.I displayRegion.h  \
+     graphicsChannel.I graphicsChannel.h graphicsLayer.I  \
+     graphicsLayer.h graphicsPipe.I graphicsPipe.N graphicsPipe.h  \
+     graphicsStateGuardian.I graphicsStateGuardian.N  \
+     graphicsStateGuardian.h graphicsWindow.I graphicsWindow.N  \
+     graphicsWindow.h graphicsWindowInputDevice.I  \
+     graphicsWindowInputDevice.h hardwareChannel.I  \
+     hardwareChannel.h interactiveGraphicsPipe.I  \
+     interactiveGraphicsPipe.h noninteractiveGraphicsPipe.I  \
+     noninteractiveGraphicsPipe.h pipeSpec.I pipeSpec.h  \
+     savedFrameBuffer.I savedFrameBuffer.h textureContext.I  \
+     textureContext.h  
+     
+ #define INCLUDED_SOURCES  \
+     config_display.cxx displayRegion.cxx graphicsChannel.cxx  \
+     graphicsLayer.cxx graphicsPipe.cxx graphicsStateGuardian.cxx  \
+     graphicsWindow.cxx graphicsWindowInputDevice.cxx  \
+     hardwareChannel.cxx interactiveGraphicsPipe.cxx  \
+     noninteractiveGraphicsPipe.cxx pipeSpec.cxx  \
+     savedFrameBuffer.cxx textureContext.cxx 
 
   #define INSTALL_HEADERS \
     config_display.h \
@@ -39,7 +45,7 @@
     savedFrameBuffer.I savedFrameBuffer.h textureContext.I \
     textureContext.h
 
-  #define PRECOMPILED_HEADER display_headers.h  
+//  #define PRECOMPILED_HEADER display_headers.h    
 
   #define IGATESCAN all
 
