@@ -146,14 +146,8 @@ get_output_filename() const {
 ////////////////////////////////////////////////////////////////////
 bool EggWriter::
 handle_args(ProgramBase::Args &args) {
-  if (_allow_last_param && !_got_output_filename && !args.empty()) {
-    _got_output_filename = true;
-    _output_filename = args.back();
-    args.pop_back();
-
-    if (!verify_output_file_safe()) {
-      return false;
-    }
+  if (!check_last_arg(args)) {
+    return false;
   }
 
   if (!args.empty()) {
@@ -161,6 +155,33 @@ handle_args(ProgramBase::Args &args) {
     copy(args.begin(), args.end(), ostream_iterator<string>(nout, " "));
     nout << "\r";
     return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggWriter::check_last_arg
+//       Access: Protected
+//  Description: Checks if the last filename on the argument list is
+//               an egg file (if _allow_last_param was set true), and
+//               removes it from the argument list if it is.  Returns
+//               true if the arguments are good, false if something is
+//               invalid.
+////////////////////////////////////////////////////////////////////
+bool EggWriter::
+check_last_arg(ProgramBase::Args &args) {
+  if (_allow_last_param && !_got_output_filename && !args.empty()) {
+    Filename filename = args.back();
+    if (filename.get_extension() == "egg") {
+      _got_output_filename = true;
+      _output_filename = filename;
+      args.pop_back();
+
+      if (!verify_output_file_safe()) {
+	return false;
+      }
+    }
   }
 
   return true;

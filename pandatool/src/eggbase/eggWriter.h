@@ -27,6 +27,7 @@ public:
 
 protected:
   virtual bool handle_args(Args &args);
+  bool check_last_arg(Args &args);
   virtual bool post_command_line();
 
   bool verify_output_file_safe() const;

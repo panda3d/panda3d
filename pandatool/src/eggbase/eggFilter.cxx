@@ -42,14 +42,8 @@ EggFilter(bool allow_last_param, bool allow_stdout) :
 ////////////////////////////////////////////////////////////////////
 bool EggFilter::
 handle_args(ProgramBase::Args &args) {
-  if (_allow_last_param && !_got_output_filename && args.size() > 1) {
-    _got_output_filename = true;
-    _output_filename = args.back();
-    args.pop_back();
-
-    if (!verify_output_file_safe()) {
-      return false;
-    }
+  if (!check_last_arg(args)) {
+    return false;
   }
 
   return EggReader::handle_args(args);

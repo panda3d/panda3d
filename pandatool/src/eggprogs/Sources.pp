@@ -14,3 +14,11 @@
     eggTrans.cxx eggTrans.h
 
 #end noinst_bin_target
+
+#begin bin_target
+  #define TARGET egg-texture-cards
+
+  #define SOURCES \
+    eggTextureCards.cxx eggTextureCards.h
+
+#end bin_target
