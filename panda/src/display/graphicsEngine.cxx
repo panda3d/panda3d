@@ -209,46 +209,47 @@ make_window(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
 
   // TODO: ask the window thread to make the window.
   PT(GraphicsWindow) window = pipe->make_window(gsg);
-  if (window != (GraphicsWindow *)NULL) {
-    MutexHolder holder(_lock);
-    _windows.insert(window.p());
-
-    WindowRenderer *cull = get_window_renderer(threading_model.get_cull_name());
-    WindowRenderer *draw = get_window_renderer(threading_model.get_draw_name());
-    draw->add_gsg(gsg);
-
-    if (threading_model.get_cull_sorting()) {
-      cull->add_window(cull->_cull, window);
-      draw->add_window(draw->_draw, window);
-    } else {
-      cull->add_window(cull->_cdraw, window);
-    }
-
-    // We should ask the pipe which thread it prefers to run its
-    // windowing commands in (the "window thread").  This is the
-    // thread that handles the commands to open, resize, etc. the
-    // window.  X requires this to be done in the app thread, but some
-    // pipes might prefer this to be done in draw, for instance.  For
-    // now, we assume this is the app thread.
-    _app.add_window(_app._window, window);
-
-    display_cat.info()
-      << "Created " << window->get_type() << "\n";
-  }
+  do_add_window(window, gsg, threading_model);
   return window;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::make_buffer
+//       Access: Published
+//  Description: Creates a new offscreen buffer using the indicated
+//               GraphicsStateGuardian and returns it.  The
+//               GraphicsEngine becomes the owner of the buffer; it
+//               will persist at least until remove_window() is called
+//               later.
+////////////////////////////////////////////////////////////////////
+GraphicsBuffer *GraphicsEngine::
+make_buffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
+            int x_size, int y_size,
+            const GraphicsThreadingModel &threading_model) {
+  if (gsg != (GraphicsStateGuardian *)NULL) {
+    nassertr(pipe == gsg->get_pipe(), NULL);
+    nassertr(this == gsg->get_engine(), NULL);
+    nassertr(threading_model.get_draw_name() ==
+             gsg->get_threading_model().get_draw_name(), NULL);
+  }
+
+  // TODO: ask the window thread to make the buffer.
+  PT(GraphicsBuffer) buffer = pipe->make_buffer(gsg, x_size, y_size);
+  do_add_window(buffer, gsg, threading_model);
+  return buffer;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::remove_window
 //       Access: Published
-//  Description: Removes the indicated window from the set of windows
-//               that will be processed when render_frame() is called.
-//               This also closes the window if it is open, and
-//               removes the window from its GraphicsPipe, allowing
-//               the window to be destructed if there are no other
-//               references to it.  (However, the window may not be
-//               actually closed until next frame, if it is controlled
-//               by a sub-thread.)
+//  Description: Removes the indicated window or offscreen buffer from
+//               the set of windows that will be processed when
+//               render_frame() is called.  This also closes the
+//               window if it is open, and removes the window from its
+//               GraphicsPipe, allowing the window to be destructed if
+//               there are no other references to it.  (However, the
+//               window may not be actually closed until next frame,
+//               if it is controlled by a sub-thread.)
 //
 //               The return value is true if the window was removed,
 //               false if it was not found.
@@ -842,6 +843,45 @@ setup_gsg(GraphicsStateGuardian *gsg, SceneSetup *scene_setup) {
   gsg->set_scene(scene_setup);
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::do_add_window
+//       Access: Private
+//  Description: An internal function called by make_window() and
+//               make_buffer() and similar functions to add the
+//               newly-created GraphicsOutput object to the engine's
+//               tables.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+do_add_window(GraphicsOutput *window, GraphicsStateGuardian *gsg,
+              const GraphicsThreadingModel &threading_model) {
+  if (window != (GraphicsOutput *)NULL) {
+    MutexHolder holder(_lock);
+    _windows.insert(window);
+
+    WindowRenderer *cull = get_window_renderer(threading_model.get_cull_name());
+    WindowRenderer *draw = get_window_renderer(threading_model.get_draw_name());
+    draw->add_gsg(gsg);
+
+    if (threading_model.get_cull_sorting()) {
+      cull->add_window(cull->_cull, window);
+      draw->add_window(draw->_draw, window);
+    } else {
+      cull->add_window(cull->_cdraw, window);
+    }
+
+    // We should ask the pipe which thread it prefers to run its
+    // windowing commands in (the "window thread").  This is the
+    // thread that handles the commands to open, resize, etc. the
+    // window.  X requires this to be done in the app thread, but some
+    // pipes might prefer this to be done in draw, for instance.  For
+    // now, we assume this is the app thread.
+    _app.add_window(_app._window, window);
+
+    display_cat.info()
+      << "Created " << window->get_type() << "\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "graphicsPipe.h"
+#include "graphicsWindow.h"
+#include "graphicsBuffer.h"
 #include "config_display.h"
 #include "mutexHolder.h"
 
@@ -33,13 +35,12 @@ GraphicsPipe() {
   // should set this to false if it determines otherwise.
   _is_valid = true;
 
-  // Similarly, we initially assume the pipe will support fullscreen
-  // windows.  A derived class can choose to inform us otherwise.
-  _supports_fullscreen = true;
+  // A derived class must indicate the kinds of GraphicsOutput objects
+  // it can create.
+  _supported_types = 0;
 
   _display_width = 0;
   _display_height = 0;
-
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -145,4 +146,24 @@ close_gsg(GraphicsStateGuardian *gsg) {
   if (gsg != (GraphicsStateGuardian *)NULL) {
     gsg->close_gsg();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsPipe::make_window
+//       Access: Protected, Virtual
+//  Description: Creates a new window on the pipe, if possible.
+////////////////////////////////////////////////////////////////////
+PT(GraphicsWindow) GraphicsPipe::
+make_window(GraphicsStateGuardian *) {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsPipe::make_buffer
+//       Access: Protected, Virtual
+//  Description: Creates a new offscreen buffer on the pipe, if possible.
+////////////////////////////////////////////////////////////////////
+PT(GraphicsBuffer) GraphicsPipe::
+make_buffer(GraphicsStateGuardian *, int, int) {
+  return NULL;
 }

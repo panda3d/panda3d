@@ -29,6 +29,7 @@
 class HardwareChannel;
 class GraphicsOutput;
 class GraphicsWindow;
+class GraphicsBuffer;
 class GraphicsStateGuardian;
 class FrameBufferProperties;
 
@@ -64,8 +65,15 @@ private:
 PUBLISHED:
   virtual ~GraphicsPipe();
 
+  enum OutputTypes {
+    OT_window            = 0x0001,
+    OT_fullscreen_window = 0x0002,
+    OT_buffer            = 0x0004,
+  };
+
   INLINE bool is_valid() const;
-  INLINE bool supports_fullscreen() const;
+  INLINE int get_supported_types() const;
+  INLINE bool supports_type(int flags) const;
 
   INLINE int get_display_width() const;
   INLINE int get_display_height() const;
@@ -85,12 +93,13 @@ protected:
   // the interface on GraphicsEngine to make a new window or gsg.
   virtual PT(GraphicsStateGuardian) make_gsg(const FrameBufferProperties &properties);
   virtual void close_gsg(GraphicsStateGuardian *gsg);
-  virtual PT(GraphicsWindow) make_window(GraphicsStateGuardian *gsg)=0;
+  virtual PT(GraphicsWindow) make_window(GraphicsStateGuardian *gsg);
+  virtual PT(GraphicsBuffer) make_buffer(GraphicsStateGuardian *gsg, int x_size, int y_size);
 
   Mutex _lock;
 
   bool _is_valid;
-  bool _supports_fullscreen;
+  int _supported_types;
   int _display_width;
   int _display_height;
   PT(GraphicsDevice) _device;

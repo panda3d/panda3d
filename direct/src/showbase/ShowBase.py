@@ -111,6 +111,8 @@ class ShowBase(DirectObject.DirectObject):
             self.config.GetFloat('win-background-b', 0.41),
             1.0)
 
+        self.windowType = self.config.GetString('window-type', 'onscreen')
+
         # base.win is the main, or only window; base.winList is a list of
         # *all* windows.  Similarly with base.camList.
         self.win = None
@@ -184,29 +186,8 @@ class ShowBase(DirectObject.DirectObject):
         sys.exitfunc = self.exitfunc
 
         # Open the default rendering window.
-        if self.config.GetBool('open-default-window', 1):
-            self.openMainWindow()
-
-            # Give the window a chance to truly open.
-            self.graphicsEngine.renderFrame()
-            self.graphicsEngine.renderFrame()
-            if self.win != None and self.win.isClosed():
-                self.notify.info("Window did not open, removing.")
-                self.closeWindow(self.win)
-
-            if self.win == None:
-                # Try a little harder if the window wouldn't open.
-                self.makeAllPipes()
-                while self.win == None and len(self.pipeList) > 1:
-                    self.pipeList.remove(self.pipe)
-                    self.pipe = self.pipeList[0]
-                    self.openMainWindow()
-
-                    self.graphicsEngine.renderFrame()
-                    self.graphicsEngine.renderFrame()
-                    if self.win != None and self.win.isClosed():
-                        self.notify.info("Window did not open, removing.")
-                        self.closeWindow(self.win)
+        if self.windowType != 'none':
+            self.openDefaultWindow()
 
         self.loader = Loader.Loader(self)
         self.eventMgr = eventMgr
@@ -353,7 +334,8 @@ class ShowBase(DirectObject.DirectObject):
                 else:
                     self.notify.info("Could not make graphics pipe %s." % (pipeType.getName()))
 
-    def openWindow(self, props = None, pipe = None, gsg = None):
+    def openWindow(self, props = None, pipe = None, gsg = None,
+                   type = None):
         """
         Creates a window and adds it to the list of windows that are
         to be updated every frame.
@@ -378,15 +360,24 @@ class ShowBase(DirectObject.DirectObject):
                 # Couldn't make a gsg.
                 return None
 
-        win = self.graphicsEngine.makeWindow(pipe, gsg)
-        if win == None:
-            # Couldn't create a window!
-            return None
+        if type == None:
+            type = self.windowType
 
         if props == None:
             props = self.defaultWindowProps
 
-        win.requestProperties(props)
+        if type == 'onscreen':
+            win = self.graphicsEngine.makeWindow(pipe, gsg)
+        elif type == 'offscreen':
+            win = self.graphicsEngine.makeBuffer(
+                pipe, gsg, props.getXSize(), props.getYSize())
+            
+        if win == None:
+            # Couldn't create a window!
+            return None
+
+        if hasattr(win, "requestProperties"):
+            win.requestProperties(props)
 
         # By default, the window is cleared to the background color.
         win.setClearColorActive(1)
@@ -438,6 +429,59 @@ class ShowBase(DirectObject.DirectObject):
             self.win = None
             self.frameRateMeter = None
 
+    def openDefaultWindow(self):
+        # Creates the main window for the first time, without being
+        # too particular about the kind of graphics API that is
+        # chosen.  The suggested window type from the load-display
+        # config variable is tried first; if that fails, the first
+        # window type that can be successfully opened at all is
+        # accepted.  Returns true on success, false otherwise.
+        #
+        # This is intended to be called only once, at application
+        # startup.  It is normally called automatically unless
+        # window-type is configured to 'none'.
+        
+        self.openMainWindow()
+
+        # Give the window a chance to truly open.
+        self.graphicsEngine.renderFrame()
+        self.graphicsEngine.renderFrame()
+        if self.win != None and not self.isMainWindowOpen():
+            self.notify.info("Window did not open, removing.")
+            self.closeWindow(self.win)
+
+        if self.win == None:
+            # Try a little harder if the window wouldn't open.
+            self.makeAllPipes()
+            while self.win == None and len(self.pipeList) > 1:
+                self.pipeList.remove(self.pipe)
+                self.pipe = self.pipeList[0]
+                self.openMainWindow()
+
+                self.graphicsEngine.renderFrame()
+                self.graphicsEngine.renderFrame()
+                if self.win != None and not self.isMainWindowOpen():
+                    self.notify.info("Window did not open, removing.")
+                    self.closeWindow(self.win)
+
+        if self.win == None:
+            # This doesn't really need to be an error condition, but I
+            # figure any app that includes ShowBase really wants to
+            # have a window open.
+            self.notify.error("Unable to open %s window." % (self.windowType))
+
+        return (self.win != None)
+
+    def isMainWindowOpen(self):
+        if self.win != None:
+            # Temporary try .. except for old Pandas.
+            try:
+                valid = self.win.isValid()
+            except:
+                valid = self.win.isOpen()
+            return valid
+        return 0
+        
     def openMainWindow(self):
         """
         Creates the initial, main window for the application, and sets
@@ -562,13 +606,15 @@ class ShowBase(DirectObject.DirectObject):
         if win == None:
             win = self.win
 
-        props = self.defaultWindowProps
-        if win:
-            props = win.getProperties()
-        if not props.hasSize():
-            props = win.getRequestedProperties()
-        if props.hasSize():
-            aspectRatio = float(props.getXSize()) / float(props.getYSize())
+        if win.hasSize():
+            aspectRatio = float(win.getXSize()) / float(win.getYSize())
+
+        else:
+            props = self.defaultWindowProps
+            if not props.hasSize():
+                props = win.getRequestedProperties()
+            if props.hasSize():
+                aspectRatio = float(props.getXSize()) / float(props.getYSize())
 
         return aspectRatio
 

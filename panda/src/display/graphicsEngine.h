@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "graphicsWindow.h"
+#include "graphicsBuffer.h"
 #include "frameBufferProperties.h"
 #include "graphicsThreadingModel.h"
 #include "sceneSetup.h"
@@ -75,6 +76,14 @@ PUBLISHED:
   GraphicsWindow *make_window(GraphicsPipe *pipe,
                               GraphicsStateGuardian *gsg,
                               const GraphicsThreadingModel &threading_model);
+  INLINE GraphicsBuffer *make_buffer(GraphicsPipe *pipe,
+                                     GraphicsStateGuardian *gsg,
+                                     int x_size, int y_size);
+  GraphicsBuffer *make_buffer(GraphicsPipe *pipe,
+                              GraphicsStateGuardian *gsg,
+                              int x_size, int y_size,
+                              const GraphicsThreadingModel &threading_model);
+
   bool remove_window(GraphicsOutput *window);
   void remove_all_windows();
   void reset_all_windows(bool swapchain);
@@ -121,6 +130,8 @@ private:
 
   bool setup_gsg(GraphicsStateGuardian *gsg, SceneSetup *scene_setup);
 
+  void do_add_window(GraphicsOutput *window, GraphicsStateGuardian *gsg,
+                     const GraphicsThreadingModel &threading_model);
   void do_remove_window(GraphicsOutput *window);
   void terminate_threads();
 

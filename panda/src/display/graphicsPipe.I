@@ -36,21 +36,39 @@ is_valid() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsPipe::supports_fullscreen
+//     Function: GraphicsPipe::get_supported_types
 //       Access: Published
-//  Description: Returns false if this pipe is known to not support
-//               any creation of fullscreen windows.  If this returns
-//               false, any attempt to create a window with the
-//               fullscreen property set will certainly fail.
+//  Description: Returns the mask of bits that represents the kinds of
+//               GraphicsOutput objects this pipe might be able to
+//               successfully create.  The return value is the union
+//               of bits in GraphicsPipe::OutputTypes that represents
+//               the set of GraphicsOutput types.
 //
-//               Returns true when the pipe will probably support
-//               fullscreen windows.  This is not, however, a
-//               guarantee that an attempt to create a fullscreen
-//               window will not fail.
+//               A 1 bit in a particular position is not a guarantee
+//               of success, but a 0 bit is a guarantee of failure.
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsPipe::
+get_supported_types() const {
+  return _supported_types;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsPipe::supports_type
+//       Access: Published
+//  Description: A convenience function to ask if a particular type or
+//               types of GraphicsObjects are supported.  The
+//               parameter is a union of one or more bits defined in
+//               GrpahicsPipe::OutputTypes.
+//
+//               Returns true if all of the requested types are listed
+//               in the supported_types mask, false if any one of them
+//               is not.  This is not a guarantee that the indicated
+//               output type will successfully be created when it is
+//               attempted.
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsPipe::
-supports_fullscreen() const {
-  return _supports_fullscreen;
+supports_type(int flags) const {
+  return (_supported_types & flags) == flags;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -5,9 +5,7 @@
 #include "graphicsChannel.cxx"
 #include "graphicsEngine.cxx"
 #include "graphicsLayer.cxx"
-#include "graphicsOutput.cxx"
 #include "graphicsPipe.cxx"
 #include "graphicsStateGuardian.cxx"
-#include "graphicsWindow.cxx"
 #include "graphicsWindowInputDevice.cxx"
 

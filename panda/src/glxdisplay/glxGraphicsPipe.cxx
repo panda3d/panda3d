@@ -49,7 +49,7 @@ glxGraphicsPipe(const string &display) {
   setlocale(LC_ALL, "");
 
   _is_valid = false;
-  _supports_fullscreen = false;
+  _supported_types = OT_window;
   _display = NULL;
   _screen = 0;
   _root = (Window)NULL;

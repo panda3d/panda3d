@@ -21,6 +21,8 @@
 #include "graphicsStateGuardian.h"
 #include "savedFrameBuffer.h"
 #include "graphicsPipe.h"
+#include "graphicsOutput.h"
+#include "graphicsBuffer.h"
 #include "graphicsWindow.h"
 #include "graphicsChannel.h"
 #include "graphicsLayer.h"
@@ -103,7 +105,9 @@ init_libdisplay() {
   GraphicsStateGuardian::init_type();
   SavedFrameBuffer::init_type();
   GraphicsPipe::init_type();
+  GraphicsOutput::init_type();
   GraphicsWindow::init_type();
+  GraphicsBuffer::init_type();
   GraphicsChannel::init_type();
   GraphicsLayer::init_type();
   HardwareChannel::init_type();

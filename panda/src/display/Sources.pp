@@ -24,6 +24,7 @@
     graphicsLayer.I  \
     graphicsLayer.h \
     graphicsOutput.I graphicsOutput.h \
+    graphicsBuffer.I graphicsBuffer.h \
     graphicsPipe.I graphicsPipe.h  \
     graphicsPipeSelection.I graphicsPipeSelection.h \
     graphicsStateGuardian.I \
@@ -48,6 +49,7 @@
     graphicsEngine.cxx \
     graphicsLayer.cxx \
     graphicsOutput.cxx \
+    graphicsBuffer.cxx \
     graphicsPipe.cxx \
     graphicsPipeSelection.cxx \
     graphicsStateGuardian.cxx  \
@@ -70,6 +72,7 @@
     graphicsEngine.I graphicsEngine.h \
     graphicsLayer.I graphicsLayer.h \
     graphicsOutput.I graphicsOutput.h \
+    graphicsBuffer.I graphicsBuffer.h \
     graphicsPipe.I graphicsPipe.h \
     graphicsPipeSelection.I graphicsPipeSelection.h \
     graphicsStateGuardian.I \

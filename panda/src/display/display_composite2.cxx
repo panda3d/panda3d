@@ -6,3 +6,6 @@
 #include "hardwareChannel.cxx"
 #include "savedFrameBuffer.cxx"
 #include "windowProperties.cxx"
+#include "graphicsWindow.cxx"
+#include "graphicsBuffer.cxx"
+#include "graphicsOutput.cxx"

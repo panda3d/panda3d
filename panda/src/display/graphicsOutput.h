@@ -33,6 +33,8 @@
 #include "filename.h"
 #include "pvector.h"
 
+class PNMImage;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsOutput
 // Description : This is a base class for the various different
@@ -85,8 +87,9 @@ PUBLISHED:
   int get_num_display_regions() const;
   DisplayRegion *get_display_region(int n) const;
 
-  Filename take_screenshot(const string &prefix = "screenshot");
-  bool take_screenshot(const Filename &filename);
+  Filename save_screenshot(const string &prefix = "screenshot");
+  bool save_screenshot(const Filename &filename);
+  bool get_screenshot(PNMImage &image);
 
 public:
   // No need to publish these.

@@ -28,6 +28,8 @@ TypeHandle WinGraphicsPipe::_type_handle;
 ////////////////////////////////////////////////////////////////////
 WinGraphicsPipe::
 WinGraphicsPipe() {
+  _supported_types = OT_window | OT_fullscreen_window;
+
   // these fns arent defined on win95, so get dynamic ptrs to them
   // to avoid ugly DLL loader failures on w95
   _pfnTrackMouseEvent = NULL;

@@ -95,6 +95,21 @@ make_window(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::make_buffer
+//       Access: Published
+//  Description: Creates a new offscreen buffer using the indicated
+//               GraphicsStateGuardian and returns it.  The
+//               GraphicsEngine becomes the owner of the buffer; it
+//               will persist at least until remove_buffer() is called
+//               later.
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsBuffer *GraphicsEngine::
+make_buffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
+            int x_size, int y_size) {
+  return make_buffer(pipe, gsg, x_size, y_size, get_threading_model());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::close_gsg
 //       Access: Published
 //  Description: Calls GraphicsPipe::close_gsg() on the indicated pipe

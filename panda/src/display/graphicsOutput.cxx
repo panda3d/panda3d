@@ -267,7 +267,7 @@ get_display_region(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::take_screenshot
+//     Function: GraphicsOutput::save_screenshot
 //       Access: Published
 //  Description: Saves a screenshot of the window to a default
 //               filename, and returns the filename, or empty string
@@ -282,7 +282,7 @@ get_display_region(int n) const {
 //                 All other % strings in strftime().
 ////////////////////////////////////////////////////////////////////
 Filename GraphicsOutput::
-take_screenshot(const string &prefix) {
+save_screenshot(const string &prefix) {
   time_t now = time(NULL);
   struct tm *ttm = localtime(&now);
   int frame_count = ClockObject::get_global_clock()->get_frame_count();
@@ -340,20 +340,40 @@ take_screenshot(const string &prefix) {
   }
 
   Filename filename = filename_strm.str();
-  if (take_screenshot(filename)) {
+  if (save_screenshot(filename)) {
     return filename;
   }
   return Filename();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::take_screenshot
+//     Function: GraphicsOutput::save_screenshot
 //       Access: Published
 //  Description: Saves a screenshot of the window to the indicated
 //               filename.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool GraphicsOutput::
-take_screenshot(const Filename &filename) {
+save_screenshot(const Filename &filename) {
+  PNMImage image;
+  if (!get_screenshot(image)) {
+    return false;
+  }
+
+  if (!image.write(filename)) {
+    return false;
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_screenshot
+//       Access: Published
+//  Description: Captures the most-recently rendered image from the
+//               framebuffer into the indicated PNMImage.  Returns
+//               true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool GraphicsOutput::
+get_screenshot(PNMImage &image) {
   if (_gsg == (GraphicsStateGuardian *)NULL) {
     return false;
   }
@@ -371,7 +391,7 @@ take_screenshot(const Filename &filename) {
     return false;
   }
 
-  if (!p.write(filename)) {
+  if (!p.store(image)) {
     return false;
   }
 
