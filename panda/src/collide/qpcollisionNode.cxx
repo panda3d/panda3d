@@ -233,6 +233,23 @@ output(ostream &out) const {
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpCollisionNode::recompute_bound
+//       Access: Protected, Virtual
+//  Description: Recomputes the dynamic bounding volume for this
+//               object.  This is the bounding volume for the node and
+//               all of its children, and normally does not need to be
+//               specialized beyond PandaNode; we specialize this
+//               function just so we can piggyback on it the
+//               setting the _net_collide_mask bits.
+////////////////////////////////////////////////////////////////////
+BoundingVolume *qpCollisionNode::
+recompute_bound() {
+  BoundingVolume *result = PandaNode::recompute_bound();
+  add_net_collide_mask(get_into_collide_mask());
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpCollisionNode::recompute_internal_bound
 //       Access: Protected, Virtual
 //  Description: Called when needed to recompute the node's

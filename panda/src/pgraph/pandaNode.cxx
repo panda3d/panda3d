@@ -1179,6 +1179,10 @@ recompute_bound() {
   BoundingVolume *bound = BoundedObject::recompute_bound();
   nassertr(bound != (BoundingVolume*)NULL, bound);
 
+  // Also, recompute the net_collide_mask bits while we do this.
+  CDWriter cdata(_cycler);
+  cdata->_net_collide_mask = CollideMask::all_off();
+
   // Now actually compute the bounding volume by putting it around all
   // of our child bounding volumes.
   pvector<const BoundingVolume *> child_volumes;
@@ -1186,13 +1190,13 @@ recompute_bound() {
   // It goes around this node's internal bounding volume . . .
   child_volumes.push_back(internal_bound);
 
-  CDReader cdata(_cycler);
   Down::const_iterator di;
   for (di = cdata->_down.begin(); di != cdata->_down.end(); ++di) {
     // . . . plus each node's external bounding volume.
     PandaNode *child = (*di).get_child();
     const BoundingVolume &child_bound = child->get_bound();
     child_volumes.push_back(&child_bound);
+    cdata->_net_collide_mask |= child->get_net_collide_mask();
   }
 
   const BoundingVolume **child_begin = &child_volumes[0];

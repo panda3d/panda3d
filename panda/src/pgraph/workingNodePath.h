@@ -55,6 +55,8 @@ public:
   INLINE qpNodePath get_node_path() const;
   INLINE PandaNode *node() const;
 
+  int get_num_nodes() const;
+
 private:
   PT(qpNodePathComponent) r_get_node_path() const;
 

@@ -69,6 +69,7 @@ PUBLISHED:
   INLINE int add_solid(CollisionSolid *solid);
 
 protected:
+  virtual BoundingVolume *recompute_bound();
   virtual BoundingVolume *recompute_internal_bound();
 
 private:

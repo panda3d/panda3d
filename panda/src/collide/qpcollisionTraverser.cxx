@@ -27,6 +27,7 @@
 #include "geom.h"
 #include "qpnodePath.h"
 #include "pStatTimer.h"
+#include "indent.h"
 
 #ifndef CPPPARSER
 PStatCollector qpCollisionTraverser::_collisions_pcollector("App:Collisions");
@@ -236,7 +237,7 @@ traverse(const qpNodePath &root) {
     (*hi).first->begin_group();
   }
 
-  r_traverse(root.node(), level_state);
+  r_traverse(level_state);
 
   hi = _handlers.begin();
   while (hi != _handlers.end()) {
@@ -339,7 +340,13 @@ prepare_colliders(qpCollisionLevelState &level_state) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void qpCollisionTraverser::
-r_traverse(PandaNode *node, qpCollisionLevelState &level_state) {
+r_traverse(qpCollisionLevelState &level_state) {
+  if (!level_state.any_in_bounds()) {
+    return;
+  }
+  level_state.apply_transform();
+
+  PandaNode *node = level_state.node();
   if (node->is_exact_type(qpCollisionNode::get_class_type())) {
     level_state.reached_collision_node();
 
@@ -420,65 +427,10 @@ r_traverse(PandaNode *node, qpCollisionLevelState &level_state) {
 
   int num_children = node->get_num_children();
   for (int i = 0; i < num_children; i++) {
-    PandaNode *child_node = node->get_child(i);
-    qpCollisionLevelState next_state(level_state, child_node);
-    r_traverse(child_node, next_state);
+    qpCollisionLevelState next_state(level_state, node->get_child(i));
+    r_traverse(next_state);
   }
 }
-
-/*
-////////////////////////////////////////////////////////////////////
-//     Function: qpCollisionTraverser::forward_arc
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-bool qpCollisionTraverser::
-forward_arc(NodeRelation *arc, NullTransitionWrapper &,
-            NullTransitionWrapper &, NullTransitionWrapper &,
-            qpCollisionLevelState &level_state) {
-  // Check the bounding volume on the arc against each of our
-  // colliders.
-  const BoundingVolume &arc_bv = arc->get_bound();
-  if (arc_bv.is_of_type(GeometricBoundingVolume::get_class_type())) {
-    const GeometricBoundingVolume *arc_gbv;
-    DCAST_INTO_R(arc_gbv, &arc_bv, false);
-
-    int num_colliders = level_state.get_num_colliders();
-    for (int c = 0; c < num_colliders; c++) {
-      if (level_state.has_collider(c)) {
-        const GeometricBoundingVolume *col_gbv =
-          level_state.get_local_bound(c);
-        if (col_gbv != (GeometricBoundingVolume *)NULL) {
-          if (arc_gbv->contains(col_gbv) == 0) {
-            // This collider certainly does not intersect with any
-            // geometry at this arc or below.
-            level_state.omit_collider(c);
-          }
-        }
-      }
-    }
-  }
-
-  if (!level_state.has_any_collider()) {
-    // No colliders intersect with the geometry at this arc or below,
-    // so don't bother traversing them.
-    return false;
-  }
-
-  TransformState *tt;
-  if (get_transition_into(tt, arc)) {
-    // There's a transform on the arc; apply it to our colliders'
-    // bounding volumes.
-    LMatrix4f inv_mat;
-    inv_mat.invert_from(tt->get_matrix());
-    level_state.xform(inv_mat);
-  }
-
-  level_state.forward_arc(arc);
-
-  return true;
-}
-*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpCollisionTraverser::compare_collider_to_node

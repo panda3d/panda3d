@@ -31,6 +31,7 @@
 #include "drawMask.h"
 #include "typedWritable.h"
 #include "boundedObject.h"
+#include "collideMask.h"
 #include "namable.h"
 #include "referenceCount.h"
 #include "luse.h"
@@ -135,6 +136,8 @@ PUBLISHED:
   INLINE void set_draw_mask(DrawMask mask);
   INLINE DrawMask get_draw_mask() const;
 
+  INLINE CollideMask get_net_collide_mask() const;
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
 
@@ -170,6 +173,7 @@ protected:
   INLINE void changed_internal_bound();
   virtual void parents_changed();
   virtual void children_changed();
+  INLINE void add_net_collide_mask(CollideMask mask);
 
   typedef pmap<PandaNode *, PandaNode *> InstanceMap;
   virtual PT(PandaNode) r_copy_subgraph(InstanceMap &inst_map) const;
@@ -270,7 +274,17 @@ private:
     CPT(RenderState) _state;
     CPT(RenderEffects) _effects;
     CPT(TransformState) _transform;
+
+    // This is the draw_mask of this particular node.
     DrawMask _draw_mask;
+
+    // This is the union of all into_collide_mask bits for any
+    // CollisionNodes at and below this level.  It's conceptually
+    // similar to a bounding volume--it represents the bounding volume
+    // of this node in the space of collision bits--and it needs to be
+    // updated for the same reasons the bounding volume needs to be
+    // updated.  So we update them together.
+    CollideMask _net_collide_mask;
   };
 
   PipelineCycler<CData> _cycler;

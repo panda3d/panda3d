@@ -25,8 +25,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE void qpCollisionNode::
 set_collide_mask(CollideMask mask) {
-  _from_collide_mask = mask;
-  _into_collide_mask = mask;
+  set_from_collide_mask(mask);
+  set_into_collide_mask(mask);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -55,6 +55,11 @@ set_from_collide_mask(CollideMask mask) {
 INLINE void qpCollisionNode::
 set_into_collide_mask(CollideMask mask) {
   _into_collide_mask = mask;
+
+  // We mark the bound stale when this changes, not because the actual
+  // bounding volume changes, but rather because we piggyback the
+  // computing of the _net_collide_mask on the bounding volume.
+  mark_bound_stale();
 }
 
 ////////////////////////////////////////////////////////////////////

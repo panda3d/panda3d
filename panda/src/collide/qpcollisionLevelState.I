@@ -56,6 +56,17 @@ get_node_path() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpCollisionLevelState::node
+//       Access: Public
+//  Description: Returns the PandaNode pointer of the node we have
+//               traversed to.
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode *qpCollisionLevelState::
+node() const {
+  return _node_path.node();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpCollisionLevelState::get_num_colliders
 //       Access: Public
 //  Description:
@@ -212,7 +223,8 @@ omit_collider(int n) {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpCollisionLevelState::get_mask
 //       Access: Private
-//  Description:
+//  Description: Returns a single bit associated with the nth
+//               collider.
 ////////////////////////////////////////////////////////////////////
 INLINE qpCollisionLevelState::ColliderMask qpCollisionLevelState::
 get_mask(int n) const {

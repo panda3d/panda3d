@@ -55,9 +55,12 @@ public:
   void clear();
   void reserve(int max_colliders);
   void prepare_collider(const ColliderDef &def);
-  void xform(const LMatrix4f &mat);
 
+  bool any_in_bounds();
+  void apply_transform();
+  
   INLINE qpNodePath get_node_path() const;
+  INLINE PandaNode *node() const;
 
   INLINE int get_num_colliders() const;
   INLINE bool has_collider(int n) const;
@@ -75,7 +78,7 @@ public:
 
   INLINE void omit_collider(int n);
 
-private:
+  //private:
   typedef int ColliderMask;
 
   INLINE ColliderMask get_mask(int n) const;

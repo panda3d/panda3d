@@ -119,6 +119,7 @@ CData() {
   _effects = RenderEffects::make_empty();
   _transform = TransformState::make_identity();
   _draw_mask = DrawMask::all_on();
+  _net_collide_mask = CollideMask::all_off();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,6 +138,7 @@ CData(const PandaNode::CData &copy) :
   _transform(copy._transform),
   _draw_mask(copy._draw_mask)
 {
+  _net_collide_mask = CollideMask::all_off();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -693,6 +695,20 @@ get_draw_mask() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_net_collide_mask
+//       Access: Published
+//  Description: Returns the union of all into_collide_mask() values
+//               set at CollisionNodes at this level and below.
+////////////////////////////////////////////////////////////////////
+INLINE CollideMask PandaNode::
+get_net_collide_mask() const {
+  // Call get_bound() first to ensure the mask is recomputed.
+  BoundedObject::get_bound();
+  CDReader cdata(_cycler);
+  return cdata->_net_collide_mask;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::set_bound
 //       Access: Published
 //  Description: Sets the type of the external bounding volume that is
@@ -755,6 +771,19 @@ get_internal_bound() const {
 INLINE void PandaNode::
 changed_internal_bound() {
   BoundedObject::mark_bound_stale();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::add_net_collide_mask
+//       Access: Protected
+//  Description: Adds the indicated bits into the net_collide_mask for
+//               this node.  This is normally called only by
+//               CollisionNode::recompute_bound().
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::
+add_net_collide_mask(CollideMask mask) {
+  CDWriter cdata(_cycler);
+  cdata->_net_collide_mask |= mask;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -63,7 +63,7 @@ PUBLISHED:
 private:
   void prepare_colliders(qpCollisionLevelState &state);
 
-  void r_traverse(PandaNode *node, qpCollisionLevelState &level_state);
+  void r_traverse(qpCollisionLevelState &level_state);
 
   void compare_collider_to_node(qpCollisionEntry &entry,
                                 const GeometricBoundingVolume *from_node_gbv,

@@ -20,6 +20,21 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WorkingNodePath::get_num_nodes
+//       Access: Public
+//  Description: Returns the number of nodes in the path from the root
+//               to the current node.
+////////////////////////////////////////////////////////////////////
+int WorkingNodePath::
+get_num_nodes() const {
+  if (_next == (WorkingNodePath *)NULL) {
+    return _start->get_length();
+  }
+
+  return _next->get_num_nodes() + 1;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WorkingNodePath::r_get_node_path
 //       Access: Private
 //  Description: The private, recursive implementation of

@@ -2406,21 +2406,7 @@ hide_bounds() {
 PT(BoundingVolume) qpNodePath::
 get_bounds() const {
   nassertr_always(!is_empty(), new BoundingSphere);
-
-  PandaNode *this_node = node();
-  PT(BoundingVolume) bv = this_node->get_bound().make_copy();
-  if (bv->is_of_type(GeometricBoundingVolume::get_class_type()) &&
-      !this_node->get_transform()->is_identity()) {
-
-    // The bounding volume has already been transformed by the node's
-    // matrix.  We'd rather return a bounding volume in the node's
-    // space, so we have to untransform it now.  Ick.
-    GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, bv);
-    const LMatrix4f &mat = get_parent().get_mat(*this);
-    gbv->xform(mat);
-  }
-
-  return bv;
+  return node()->get_bound().make_copy();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -73,28 +73,85 @@ prepare_collider(const ColliderDef &def) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpCollisionLevelState::xform
+//     Function: qpCollisionLevelState::any_in_bounds
 //       Access: Public
-//  Description:
+//  Description: Checks the bounding volume of the current node
+//               against each of our colliders.  Eliminates from the
+//               current collider list any that are outside of the
+//               bounding volume.  Returns true if any colliders
+//               remain, false if all of them fall outside this node's
+//               bounding volume.
 ////////////////////////////////////////////////////////////////////
-void qpCollisionLevelState::
-xform(const LMatrix4f &mat) {
-  BoundingVolumes new_bounds;
+bool qpCollisionLevelState::
+any_in_bounds() {
+  const BoundingVolume &node_bv = node()->get_bound();
+  if (node_bv.is_of_type(GeometricBoundingVolume::get_class_type())) {
+    const GeometricBoundingVolume *node_gbv;
+    DCAST_INTO_R(node_gbv, &node_bv, false);
 
-  int num_colliders = get_num_colliders();
-  new_bounds.reserve(num_colliders);
-  for (int c = 0; c < num_colliders; c++) {
-    if (!has_collider(c) ||
-        get_local_bound(c) == (GeometricBoundingVolume *)NULL) {
-      new_bounds.push_back((GeometricBoundingVolume *)NULL);
-    } else {
-      const GeometricBoundingVolume *old_bound = get_local_bound(c);
-      GeometricBoundingVolume *new_bound = 
-        DCAST(GeometricBoundingVolume, old_bound->make_copy());
-      new_bound->xform(mat);
-      new_bounds.push_back(new_bound);
+    int num_colliders = get_num_colliders();
+    for (int c = 0; c < num_colliders; c++) {
+      if (has_collider(c)) {
+        bool is_in = false;
+
+        // Don't even bother testing the bounding volume if there are
+        // no collide bits in common between our collider and this
+        // node.
+        CollideMask from_mask = get_node(c)->get_from_collide_mask();
+        if ((from_mask & node()->get_net_collide_mask()) != 0) {
+          // There are bits in common, so go ahead and try the
+          // bounding volume.
+          const GeometricBoundingVolume *col_gbv =
+            get_local_bound(c);
+          if (col_gbv != (GeometricBoundingVolume *)NULL) {
+            is_in = (node_gbv->contains(col_gbv) != 0);
+          }
+        }
+
+        if (!is_in) {
+          // This collider cannot intersect with any geometry at
+          // this node or below.
+          omit_collider(c);
+        }
+      }
     }
   }
 
-  _local_bounds = new_bounds;
+  return has_any_collider();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpCollisionLevelState::apply_transform
+//       Access: Public
+//  Description: Applies the inverse transform from the current node,
+//               if any, onto all the colliders in the level state.
+////////////////////////////////////////////////////////////////////
+void qpCollisionLevelState::
+apply_transform() {
+  const TransformState *node_transform = node()->get_transform();
+  if (!node_transform->is_identity()) {
+    CPT(TransformState) inv_transform = 
+      node_transform->invert_compose(TransformState::make_identity());
+    const LMatrix4f &mat = inv_transform->get_mat();
+
+    // Now build the new bounding volumes list.
+    BoundingVolumes new_bounds;
+
+    int num_colliders = get_num_colliders();
+    new_bounds.reserve(num_colliders);
+    for (int c = 0; c < num_colliders; c++) {
+      if (!has_collider(c) ||
+          get_local_bound(c) == (GeometricBoundingVolume *)NULL) {
+        new_bounds.push_back((GeometricBoundingVolume *)NULL);
+      } else {
+        const GeometricBoundingVolume *old_bound = get_local_bound(c);
+        GeometricBoundingVolume *new_bound = 
+          DCAST(GeometricBoundingVolume, old_bound->make_copy());
+        new_bound->xform(mat);
+        new_bounds.push_back(new_bound);
+      }
+    }
+    
+    _local_bounds = new_bounds;
+  }    
 }
