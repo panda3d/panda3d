@@ -1,2 +1,2 @@
 #define INSTALL_CONFIG \
-  panda.emacs panda.emacs.Xdefaults panda.init Configrc panda.pth
+  panda.emacs panda.emacs.Xdefaults panda.init Configrc
