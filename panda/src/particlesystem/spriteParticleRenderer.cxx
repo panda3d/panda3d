@@ -192,6 +192,7 @@ set_from_node(const NodePath &node_path) {
   set_texture(tex);
   set_ll_uv(min_uv);
   set_ur_uv(max_uv);
+  _source_type = ST_from_node;
 }
 
 ////////////////////////////////////////////////////////////////////

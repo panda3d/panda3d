@@ -17,12 +17,27 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
+//    Function : SpriteParticleRenderer::get_source_type
+//      Access : public
+// Description : Returns an indication of whether the texture for this
+//               renderer was set via a call to set_texture(), or via
+//               set_from_node().
+////////////////////////////////////////////////////////////////////
+INLINE SpriteParticleRenderer::SourceType SpriteParticleRenderer::
+get_source_type() const {
+  return _source_type;
+}
+
+////////////////////////////////////////////////////////////////////
 // Function : SpriteParticleRenderer::set_texture
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
 set_texture(Texture *tex) {
   _sprite_primitive->set_texture(tex);
+  _sprite_primitive->set_ll_uv(TexCoordf(0.0, 0.0));
+  _sprite_primitive->set_ur_uv(TexCoordf(0.0, 0.0));
+  _source_type = ST_texture;
 }
 
 ////////////////////////////////////////////////////////////////////

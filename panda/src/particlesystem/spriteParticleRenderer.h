@@ -38,6 +38,16 @@ class NodePath;
 //               trick sprites.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS SpriteParticleRenderer : public BaseParticleRenderer {
+
+PUBLISHED:
+  // This enumerated type indicates the source of the sprite texture:
+  // whether it came from an explicit call to set_texture(), or
+  // whether from a call to set_from_node().
+  enum SourceType {
+    ST_texture,
+    ST_from_node,
+  };
+
 private:
   PT(GeomSprite) _sprite_primitive;
   PTA_Vertexf _vertex_array;
@@ -60,6 +70,7 @@ private:
   Vertexf _aabb_min, _aabb_max;
 
   int _pool_size;
+  SourceType _source_type;
 
   virtual void birth_particle(int index);
   virtual void kill_particle(int index);
@@ -74,6 +85,8 @@ PUBLISHED:
   virtual ~SpriteParticleRenderer(void);
 
   virtual BaseParticleRenderer *make_copy(void);
+
+  INLINE SourceType get_source_type() const;
 
   void set_from_node(const NodePath &node_path);
 
