@@ -797,7 +797,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
       static DWORD LastTickCount=0;
       DWORD CurTickCount=GetTickCount();
 
-      if (CurTickCount-LastTickCount > TICKSPERINFO) {
+      if (CurTickCount-LastTickCount > TICKS_PER_GETTEXINFO) {
           LastTickCount=CurTickCount;
           report_texmgr_stats();
       }
@@ -811,7 +811,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
         static DWORD LastTickCount=0;
         DWORD CurTickCount=GetTickCount();
 
-        if (CurTickCount-LastTickCount > TICKSPERINFO) {
+        if (CurTickCount-LastTickCount > TICKS_PER_GETTEXINFO) {
             LastTickCount=CurTickCount;
             HRESULT hr;
 
