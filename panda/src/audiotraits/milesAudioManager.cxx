@@ -26,6 +26,7 @@
 #include "config_util.h"
 #include "config_express.h"
 #include "virtualFileSystem.h"
+#include "nullAudioSound.h"
 #include <algorithm>
 
 int MilesAudioManager::_active_managers = 0;
@@ -256,6 +257,12 @@ load(Filename file_name) {
 PT(AudioSound) MilesAudioManager::
 get_sound(const string& file_name) {
   audio_debug("MilesAudioManager::get_sound(file_name=\""<<file_name<<"\")");
+
+  if(!is_valid()) {
+     audio_debug("invalid MilesAudioManager returning NullSound");
+     return new NullAudioSound();
+  }
+
   assert(is_valid());
   Filename path = file_name;
 
