@@ -36,6 +36,10 @@ char *ConvNameStrs[] = {"None","Conv32to32","Conv32to32_NoAlpha","Conv32to24","C
     "ConvLum16to32","ConvLum16to16","ConvLum8to8","ConvLum8to24","ConvLum8to32",
     "ConvLum8to16_0555","ConvLum8to16_0565","ConvAlpha8to16_4444","ConvAlpha8to32","ConvAlpha8to8"
 };
+
+char *PandaFilterNameStrs[] = {"FT_nearest","FT_linear","FT_nearest_mipmap_nearest","FT_linear_mipmap_nearest",
+    "FT_nearest_mipmap_linear", "FT_linear_mipmap_linear"
+};
 #endif
 
 TypeHandle DXTextureContext::_type_handle;
@@ -1478,9 +1482,6 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
     _bHasMipMaps=FALSE;
 
     if(!dx_ignore_mipmaps) {  // set if no HW mipmap capable
-#ifdef _DEBUG
-        _bHasMipMaps=dx_mipmap_everything;
-#endif
         switch(ft) {
             case Texture::FT_nearest_mipmap_nearest:
             case Texture::FT_linear_mipmap_nearest:
@@ -1488,6 +1489,14 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
             case Texture::FT_linear_mipmap_linear:
                 _bHasMipMaps=TRUE;
         }
+#ifdef _DEBUG
+        if(dx_mipmap_everything) {  // debug toggle
+           _bHasMipMaps=TRUE;
+           ft = Texture::FT_linear_mipmap_linear;
+           _tex->set_magfilter(ft);
+           _tex->set_minfilter(ft);
+        }
+#endif
     } else if((ft==Texture::FT_nearest_mipmap_nearest) ||   // cvt to no-mipmap filter types
               (ft==Texture::FT_nearest_mipmap_linear)) {
         ft=Texture::FT_nearest;
@@ -1847,7 +1856,9 @@ DXTextureContext::
 DXTextureContext(Texture *tex) :
 TextureContext(tex) {
 #ifdef _DEBUG
-    dxgsg_cat.spam() << "Making DX texture for " << tex->get_name() << "\n";
+    if(dxgsg_cat.is_spam()) {
+       dxgsg_cat.spam() << "creating texture [" << tex->get_name() << "], minfilter(" << PandaFilterNameStrs[tex->get_minfilter()] << "), magfilter("<<PandaFilterNameStrs[tex->get_magfilter()] << "), anisodeg(" << tex->get_anisotropic_degree() << ")\n";
+    }
 #endif
     _surface = NULL;
     _bHasMipMaps = FALSE;
@@ -1857,7 +1868,9 @@ TextureContext(tex) {
 DXTextureContext::
 ~DXTextureContext() {
 #ifdef _DEBUG
-    dxgsg_cat.spam() << "Deleting DX texture for " << _tex->get_name() << "\n";
+     if(dxgsg_cat.is_spam()) {
+      dxgsg_cat.spam() << "Deleting DX texture for " << _tex->get_name() << "\n";
+     }
 #endif
     DeleteTexture();
     TextureContext::~TextureContext();
