@@ -70,6 +70,18 @@ get_datagram(Datagram &data) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DatagramInputFile::is_eof
+//       Access: Public, Virtual
+//  Description: Returns true if the file has reached the end-of-file.
+//               This test may only be made after a call to
+//               read_header() or get_datagram() has failed.
+////////////////////////////////////////////////////////////////////
+bool DatagramInputFile::
+is_eof() {
+  return _in.eof();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DatagramInputFile::is_error
 //       Access: Public, Virtual
 //  Description: Returns true if the file has reached an error

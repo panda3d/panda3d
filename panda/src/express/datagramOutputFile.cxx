@@ -18,7 +18,7 @@ bool DatagramOutputFile::
 write_header(const string &header) {
   nassertr(!_wrote_first_datagram, false);
 
-  _out.write((void *)header.data(), header.size());
+  _out.write(header.data(), header.size());
   return !_out.fail();
 }
 
@@ -36,10 +36,10 @@ put_datagram(const Datagram &data) {
   // the help of a second datagram.
   Datagram size;
   size.add_uint32(data.get_length());
-  _out.write(size.get_data(), size.get_length());
+  _out.write((const char *)size.get_data(), size.get_length());
 
   // Now, write the datagram itself.
-  _out.write(data.get_data(), data.get_length());
+  _out.write((const char *)data.get_data(), data.get_length());
 
   return !_out.fail();
 }
