@@ -332,8 +332,9 @@ draw() {
     ParametricCurve *xyz_curve = _curves->get_default_curve();
     //    ParametricCurve *hpr_curve = _curves->get_hpr_curve();
 
-    scale = max_t / (float)(total_ticks-1);
-    for (i = 0; i < total_ticks; i++) {
+    scale = max_t / (float)total_ticks;
+
+    for (i = 0; i <= total_ticks; i++) {
       t = (float)i * scale;
       float t0 = _curves->evaluate_t(t);
       LVecBase3f tangent;
@@ -342,7 +343,7 @@ draw() {
         // Draw crosses.
         LVecBase3f t1, t2;
         get_tick_marks(tangent, t1, t2);
-        
+
         _ticks.move_to(point - t1 * _tick_scale);
         _ticks.draw_to(point + t1 * _tick_scale);
         _ticks.move_to(point - t2 * _tick_scale);
