@@ -46,10 +46,12 @@
    $[SOURCES(flt_egg):%.flt=%.egg] \
    $[patsubst %.lwo %.LWO,%.egg,$[SOURCES(lwo_egg)]] \
    $[patsubst %.ma %.mb,%.egg,$[SOURCES(maya_egg)]] \
-   $[forscopes soft_char_egg,$[POLY_MODEL:%=$[EGG_PREFIX]%.egg] $[NURBS_MODEL:%=$[EGG_PREFIX]%.egg]]
+   $[forscopes soft_char_egg,$[POLY_MODEL:%=$[EGG_PREFIX]%.egg] $[NURBS_MODEL:%=$[EGG_PREFIX]%.egg]] \
+   $[forscopes maya_char_egg,$[POLY_MODEL:%=$[EGG_PREFIX]%.egg] $[NURBS_MODEL:%=$[EGG_PREFIX]%.egg]]
 
 #define build_anims \
-   $[forscopes soft_char_egg,$[ANIMS:%=$[EGG_PREFIX]%$[CHAN_SUFFIX].egg]]
+   $[forscopes soft_char_egg,$[ANIMS:%=$[EGG_PREFIX]%$[CHAN_SUFFIX].egg]] \
+   $[forscopes maya_char_egg,$[ANIMS:%=$[EGG_PREFIX]%$[CHAN_SUFFIX].egg]]
 
 #define build_eggs $[sort $[build_models] $[build_anims]]
 #define install_eggs $[sort $[notdir $[SOURCES(install_egg)] $[UNPAL_SOURCES(install_egg)] $[UNPAL_SOURCES_NC(install_egg)]]]
@@ -190,7 +192,7 @@ $[TAB]lwo2egg $[LWO2EGG_OPTS] -o $[target] $[source]
   #end lwo
 #end lwo_egg
 
-// Egg file generation from Maya files.
+// Egg file generation from Maya files (for unanimated models).
 #forscopes maya_egg
   #foreach maya $[SOURCES]
     #define target $[patsubst %.ma %.mb,%.egg,$[maya]]
@@ -200,6 +202,33 @@ $[TAB]maya2egg $[MAYA2EGG_OPTS] -o $[target] $[source]
 
   #end maya
 #end maya_egg
+
+// Egg character model generation from Maya files.
+#forscopes maya_char_egg
+  #if $[POLY_MODEL]
+    #define target $[EGG_PREFIX]$[POLY_MODEL].egg
+    #define source $[MAYA_PREFIX]$[POLY_MODEL].mb
+$[target] : $[source]
+$[TAB]maya2egg $[MAYA2EGG_OPTS] -p -a model -cn "$[CHAR_NAME]" -o $[target] $[source]
+  #endif
+
+#end maya_char_egg
+
+// Egg animation generation from Maya files.
+#forscopes maya_char_egg
+  #foreach anim $[ANIMS]
+    #define target $[EGG_PREFIX]$[anim]$[CHAN_SUFFIX].egg
+    #define source $[MAYA_PREFIX]$[anim].mb
+    #define begin 0
+    #define end
+    #if $[$[anim]_frames]
+      #set begin $[word 1,$[$[anim]_frames]]
+      #set end $[word 2,$[$[anim]_frames]]
+    #endif
+$[target] : $[source]
+$[TAB]maya2egg $[MAYA2EGG_OPTS] -a chan -cn "$[CHAR_NAME]" -o $[target] -sf $[begin] $[if $[end],-ef $[end]] $[source]
+  #end anim
+#end maya_char_egg
 
 // Egg character model generation from Soft databases.
 #forscopes soft_char_egg
