@@ -25,6 +25,7 @@ ConfigureFn(config_gui) {
   GuiRollover::init_type();
   GuiButton::init_type();
   GuiFrame::init_type();
+  GuiListBox::init_type();
 }
 
 float simple_text_margin_top =
