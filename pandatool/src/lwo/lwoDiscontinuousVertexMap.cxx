@@ -7,6 +7,7 @@
 #include "lwoInputFile.h"
 
 #include <indent.h>
+#include <algorithm>
 
 TypeHandle LwoDiscontinuousVertexMap::_type_handle;
 
@@ -79,10 +80,26 @@ read_iff(IffInputFile *in, size_t stop_at) {
       value.push_back(lin->get_be_float32());
     }
 
-    bool inserted = _vmad[polygon_index].insert(VMap::value_type(vertex_index, value)).second;
-    if (!inserted) {
-      nout << "Duplicate pair " << polygon_index << ", " << vertex_index
-	   << " in map.\n";
+    VMap &vmap = _vmad[polygon_index];
+    pair<VMap::iterator, bool> ir = 
+      vmap.insert(VMap::value_type(vertex_index, value));
+    if (!ir.second) {
+      // This polygon/vertex pair was repeated in the vmad.  Is it
+      // simply redundant, or is it contradictory?
+      PTA_float orig_value = (*ir.first).second;
+
+      if (value.v() != orig_value.v()) {
+	nout << "Multiple UV values for vertex " << vertex_index
+	     << " of polygon " << polygon_index
+	     << " specified by discontinuous vertex map.\n"
+	     << "Original value = ";
+	copy(orig_value.begin(), orig_value.end(),
+	     ostream_iterator<float>(nout, " "));
+	nout << " new value = ";
+	copy(value.begin(), value.end(),
+	     ostream_iterator<float>(nout, " "));
+	nout << "\n";
+      }
     }
   }
 
