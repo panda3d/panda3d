@@ -18,21 +18,23 @@ class ClientDistClass:
     def __init__(self, dcClass):
         self.number = dcClass.getNumber()
         self.name = dcClass.getName()
-        self.allFields = self.parseFields(dcClass)
-        self.allCDU = self.createAllCDU(self.allFields)
-        self.number2CDU = self.createNumber2CDUDict(self.allCDU)
-        self.name2CDU = self.createName2CDUDict(self.allCDU)
-        self.broadcastRequiredCDU = self.listBroadcastRequiredCDU(self.allCDU)
-        self.allRequiredCDU = self.listRequiredCDU(self.allCDU)
 
         stuff = ihooks.current_importer.get_loader().find_module(self.name)
         if not stuff:
             self.notify.warning("Unable to import %s.py" % (self.name))
             self.constructor = None
             return
-
         module = __import__(self.name, moduleGlobals, moduleLocals)
+        # The constructor is really the classObj, which is of course callable
         self.constructor = getattr(module, self.name, None)
+
+        self.allFields = self.parseFields(dcClass)
+        self.allCDU = self.createAllCDU(self.allFields, self.constructor)
+        self.number2CDU = self.createNumber2CDUDict(self.allCDU)
+        self.name2CDU = self.createName2CDUDict(self.allCDU)
+        self.broadcastRequiredCDU = self.listBroadcastRequiredCDU(self.allCDU)
+        self.allRequiredCDU = self.listRequiredCDU(self.allCDU)
+
         # If this assertion fails, you probably had an import error in
         # a file named in your toon.dc file, or in some file included
         # in a file named in your toon.dc file.
@@ -44,10 +46,10 @@ class ClientDistClass:
             fields.append(dcClass.getInheritedField(i))
         return fields
 
-    def createAllCDU(self, allFields):
+    def createAllCDU(self, allFields, classObj):
         allCDU = []
         for i in allFields:
-            allCDU.append(ClientDistUpdate.ClientDistUpdate(self, i))
+            allCDU.append(ClientDistUpdate.ClientDistUpdate(self, i, classObj))
         return allCDU
 
     def createNumber2CDUDict(self, allCDU):

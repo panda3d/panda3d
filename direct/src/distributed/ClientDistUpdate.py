@@ -14,7 +14,7 @@ moduleLocals = locals()
 class ClientDistUpdate:
     notify = DirectNotifyGlobal.directNotify.newCategory("ClientDistUpdate")
 
-    def __init__(self, cdc, dcField):
+    def __init__(self, cdc, dcField, classObj):
         self.cdc = cdc
         self.field = dcField
         self.number = dcField.getNumber()
@@ -22,17 +22,6 @@ class ClientDistUpdate:
         self.types = []
         self.divisors = []
         self.deriveTypesFromParticle(dcField)
-
-        stuff = ihooks.current_importer.get_loader().find_module(cdc.name)
-        if not stuff:
-            # This will be printed by ClientDistClass
-            # self.notify.warning("Unable to import %s.py" % (cdc.name))
-            self.func = None
-            return
-            
-        module = __import__(cdc.name, moduleGlobals, moduleLocals)
-        # If there is no class here, that is an error
-        classObj = getattr(module, cdc.name)
         # If there is no func, it will just be None
         self.func = getattr(classObj, self.name, None)
 
