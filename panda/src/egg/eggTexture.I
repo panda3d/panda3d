@@ -276,11 +276,11 @@ has_transform() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::get_transform
 //       Access: Public
-//  Description:
+//  Description: Returns the texture matrix transform if one has been
+//               specified, or identity matrix otherwise.
 ////////////////////////////////////////////////////////////////////
-INLINE LMatrix3d EggTexture::
+INLINE const LMatrix3d &EggTexture::
 get_transform() const {
-  nassertr(has_transform(), LMatrix3d::ident_mat());
   return _transform;
 }
 

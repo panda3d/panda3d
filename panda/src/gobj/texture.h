@@ -79,8 +79,9 @@ PUBLISHED:
           bool bAllocateRAM);
   ~Texture();
 
-  bool read(const Filename &fullpath);
-  bool read(const Filename &fullpath, const Filename &alpha_fullpath);
+  bool read(const Filename &fullpath, int num_components = 0);
+  bool read(const Filename &fullpath, const Filename &alpha_fullpath,
+            int num_components = 0);
   bool write(const Filename &fullpath = "") const;
 
   void set_wrapu(WrapMode wrap);

@@ -65,7 +65,7 @@ ns_has_texture(const Filename &orig_filename) {
 //  Description: The nonstatic implementation of load_texture().
 ////////////////////////////////////////////////////////////////////
 Texture *TexturePool::
-ns_load_texture(const Filename &orig_filename) {
+ns_load_texture(const Filename &orig_filename, int num_components) {
   Filename filename(orig_filename);
 
   if (!fake_texture_image.empty()) {
@@ -92,7 +92,7 @@ ns_load_texture(const Filename &orig_filename) {
   gobj_cat.info()
     << "Loading texture " << filename << "\n";
   PT(Texture) tex = new Texture;
-  if (!tex->read(filename)) {
+  if (!tex->read(filename, num_components)) {
     // This texture was not found.
     gobj_cat.error()
       << "Unable to read texture " << filename << "\n";
@@ -113,12 +113,13 @@ ns_load_texture(const Filename &orig_filename) {
 ////////////////////////////////////////////////////////////////////
 Texture *TexturePool::
 ns_load_texture(const Filename &orig_filename, 
-                const Filename &orig_alpha_filename) {
+                const Filename &orig_alpha_filename,
+                int num_components) {
   Filename filename(orig_filename);
   Filename alpha_filename(orig_alpha_filename);
 
   if (!fake_texture_image.empty()) {
-    return ns_load_texture(fake_texture_image);
+    return ns_load_texture(fake_texture_image, num_components);
   }
 
   if (use_vfs) {
@@ -148,7 +149,7 @@ ns_load_texture(const Filename &orig_filename,
     << "Loading texture " << filename << " and alpha component "
     << alpha_filename << endl;
   PT(Texture) tex = new Texture;
-  if (!tex->read(filename, alpha_filename)) {
+  if (!tex->read(filename, alpha_filename, num_components)) {
     // This texture was not found.
     gobj_cat.error() << "Unable to read texture " << filename << "\n";
     return NULL;

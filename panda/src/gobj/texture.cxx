@@ -16,9 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
 #include "pandabase.h"
 #include "texture.h"
 #include "config_gobj.h"
@@ -33,11 +30,7 @@
 #include <stddef.h>
 
 
-////////////////////////////////////////////////////////////////////
-// Static variables
-////////////////////////////////////////////////////////////////////
 TypeHandle Texture::_type_handle;
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: up_to_power_2
@@ -111,6 +104,28 @@ consider_rescale(PNMImage &pnmimage, const string &name) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: consider_downgrade
+//  Description: Reduces the number of channels in the texture, if
+//               necessary, according to num_components.
+////////////////////////////////////////////////////////////////////
+static void
+consider_downgrade(PNMImage &pnmimage, int num_components, 
+                   const string &name) {
+  if (num_components != 0 && num_components < pnmimage.get_num_channels()) {
+    // One special case: we can't reduce from 3 to 2 components, since
+    // that would require adding an alpha channel.
+    if (pnmimage.get_num_channels() == 3 && num_components == 2) {
+      return;
+    }
+
+    gobj_cat.info()
+      << "Downgrading " << name << " from " << pnmimage.get_num_channels()
+      << " components to " << num_components << ".\n";
+    pnmimage.set_num_channels(num_components);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Constructor
 //       Access: Published
 //  Description:
@@ -163,10 +178,13 @@ Texture::
 ////////////////////////////////////////////////////////////////////
 //     Function: read
 //       Access: Published
-//  Description: Reads the texture from the indicated filename.
+//  Description: Reads the texture from the indicated filename.  If
+//               num_components is not 0, it specifies the number of
+//               components to downgrade the image to if it is greater
+//               than this number.
 ////////////////////////////////////////////////////////////////////
 bool Texture::
-read(const Filename &fullpath) {
+read(const Filename &fullpath, int num_components) {
   PNMImage image;
 
   if (!image.read(fullpath)) {
@@ -188,7 +206,7 @@ read(const Filename &fullpath) {
 
   // Check to see if we need to scale it.
   consider_rescale(image, get_name());
-
+  consider_downgrade(image, num_components, get_name());
   return load(image);
 }
 
@@ -199,7 +217,8 @@ read(const Filename &fullpath) {
 //               to get a 4-component image
 ////////////////////////////////////////////////////////////////////
 bool Texture::
-read(const Filename &fullpath, const Filename &alpha_fullpath) {
+read(const Filename &fullpath, const Filename &alpha_fullpath,
+     int num_components) {
   PNMImage image;
   if (!image.read(fullpath)) {
     gobj_cat.error()
@@ -244,22 +263,16 @@ read(const Filename &fullpath, const Filename &alpha_fullpath) {
     alpha_image = scaled;
   }
 
-  // Make the original image a 4-component image
+  // Make the original image a 4-component image by taking the
+  // grayscale value from the second image.
   image.add_alpha();
-  if (alpha_image.has_alpha()) {
-    for (int x = 0; x < image.get_x_size(); x++) {
-      for (int y = 0; y < image.get_y_size(); y++) {
-        image.set_alpha(x, y, alpha_image.get_alpha(x, y));
-      }
-    }
-  } else {
-    for (int x = 0; x < image.get_x_size(); x++) {
-      for (int y = 0; y < image.get_y_size(); y++) {
-        image.set_alpha(x, y, alpha_image.get_gray(x, y));
-      }
+  for (int x = 0; x < image.get_x_size(); x++) {
+    for (int y = 0; y < image.get_y_size(); y++) {
+      image.set_alpha(x, y, alpha_image.get_gray(x, y));
     }
   }
 
+  consider_downgrade(image, num_components, get_name());
   return load(image);
 }
 
@@ -687,9 +700,16 @@ make_Texture(const FactoryParams &params) {
   string name;
   Filename filename, alpha_filename;
 
+  // Get the properties written by ImageBuffer::write_datagram().
   name = scan.get_string();
   filename = scan.get_string();
   alpha_filename = scan.get_string();
+
+  // Get the expected number of components.
+  int num_components = 0;
+  if (manager->get_file_minor_ver() >= 2) {
+    num_components = scan.get_uint8();
+  }
 
   PT(Texture) me;
 
@@ -702,9 +722,9 @@ make_Texture(const FactoryParams &params) {
   } else {
     // This texture does have a filename, so try to load it from disk.
     if (alpha_filename.empty()) {
-      me = TexturePool::load_texture(filename);
+      me = TexturePool::load_texture(filename, num_components);
     } else {
-      me = TexturePool::load_texture(filename, alpha_filename);
+      me = TexturePool::load_texture(filename, alpha_filename, num_components);
     }
   }
 
@@ -774,19 +794,29 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 write_datagram(BamWriter *manager, Datagram &me) {
+  // We also need to write out the pixel buffer's format, even though
+  // that's not stored as part of the texture structure.
+  bool has_pbuffer = (_pbuffer != (PixelBuffer *)NULL);
+
+  // These properties are read in again by make_Texture(), above.
   ImageBuffer::write_datagram(manager, me);
+  if (has_pbuffer) {
+    me.add_uint8(_pbuffer->get_num_components());
+  } else {
+    me.add_uint8(0);
+  }
+
+  // These properties are read in again by fillin(), above.
   me.add_uint8(_wrapu);
   me.add_uint8(_wrapv);
   me.add_uint8(_minfilter);
   me.add_uint8(_magfilter);
   me.add_int16(_anisotropic_degree);
 
-  // We also need to write out the pixel buffer's format, even though
-  // that's not stored as part of the texture structure.
-  bool has_pbuffer = (_pbuffer != (PixelBuffer *)NULL);
   me.add_bool(has_pbuffer);
   if (has_pbuffer) {
     me.add_uint8(_pbuffer->get_format());
+    // I know this has already been written, above.
     me.add_uint8(_pbuffer->get_num_components());
   }
 }

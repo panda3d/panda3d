@@ -117,7 +117,7 @@ public:
   INLINE void set_transform(const LMatrix3d &transform);
   INLINE void clear_transform();
   INLINE bool has_transform() const;
-  INLINE LMatrix3d get_transform() const;
+  INLINE const LMatrix3d &get_transform() const;
   INLINE bool transform_is_identity() const;
 
   INLINE void set_alpha_filename(const Filename &filename);

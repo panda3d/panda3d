@@ -94,6 +94,13 @@ write(ostream &out, int indent_level) const {
   write_header(out, indent_level, "<Texture>");
   enquote_string(out, get_filename(), indent_level + 2) << "\n";
 
+  if (has_alpha_filename()) {
+    indent(out, indent_level + 2)
+      << "<Scalar> alpha-file { ";
+    enquote_string(out, get_alpha_filename());
+    out << " }\n";
+  }
+
   if (get_format() != F_unspecified) {
     indent(out, indent_level + 2)
       << "<Scalar> format { " << get_format() << " }\n";
@@ -132,13 +139,6 @@ write(ostream &out, int indent_level) const {
   if (get_env_type() != ET_unspecified) {
     indent(out, indent_level + 2)
       << "<Scalar> envtype { " << get_env_type() << " }\n";
-  }
-
-  if (has_alpha_filename()) {
-    indent(out, indent_level + 2)
-      << "<Scalar> alpha-file { ";
-    enquote_string(out, get_alpha_filename());
-    out << " }\n";
   }
 
   EggRenderMode::write(out, indent_level + 2);

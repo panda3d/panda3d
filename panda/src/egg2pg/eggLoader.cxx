@@ -476,20 +476,60 @@ load_textures() {
 ////////////////////////////////////////////////////////////////////
 bool EggLoader::
 load_texture(TextureDef &def, const EggTexture *egg_tex) {
+  // Check to see if we should reduce the number of components in
+  // the texture.
+  int wanted_components = 0;
+  switch (egg_tex->get_format()) {
+  case EggTexture::F_red:
+  case EggTexture::F_green:
+  case EggTexture::F_blue:
+  case EggTexture::F_alpha:
+  case EggTexture::F_luminance:
+    wanted_components = 1;
+    break;
+
+  case EggTexture::F_luminance_alpha:
+  case EggTexture::F_luminance_alphamask:
+    wanted_components = 2;
+    break;
+
+  case EggTexture::F_rgb:
+  case EggTexture::F_rgb12:
+  case EggTexture::F_rgb8:
+  case EggTexture::F_rgb5:
+  case EggTexture::F_rgb332:
+    wanted_components = 3;
+    break;
+
+  case EggTexture::F_rgba:
+  case EggTexture::F_rgbm:
+  case EggTexture::F_rgba12:
+  case EggTexture::F_rgba8:
+  case EggTexture::F_rgba4:
+  case EggTexture::F_rgba5:
+    wanted_components = 4;
+    break;
+
+  case EggTexture::F_unspecified:
+    break;
+  }
+
   Texture *tex;
   if (egg_tex->has_alpha_filename()) {
     tex = TexturePool::load_texture(egg_tex->get_fullpath(),
-                                    egg_tex->get_alpha_fullpath());
+                                    egg_tex->get_alpha_fullpath(),
+                                    wanted_components);
   } else {
-    tex = TexturePool::load_texture(egg_tex->get_fullpath());
+    tex = TexturePool::load_texture(egg_tex->get_fullpath(),
+                                    wanted_components);
   }
   if (tex == (Texture *)NULL) {
     return false;
   }
 
-  // Record the original original filenames in the textures (as loaded
-  // from the egg file).  These filenames will be written back to the
-  // bam file if the bam file is written out.
+  // Record the original filenames in the textures (as loaded from the
+  // egg file).  These filenames will be written back to the bam file
+  // if the bam file is written out.
   tex->set_filename(egg_tex->get_filename());
   if (egg_tex->has_alpha_filename()) {
     tex->set_alpha_filename(egg_tex->get_alpha_filename());

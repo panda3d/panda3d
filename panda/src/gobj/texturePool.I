@@ -52,8 +52,8 @@ verify_texture(const string &filename) {
 //               file cannot be found, returns NULL.
 ////////////////////////////////////////////////////////////////////
 INLINE Texture *TexturePool::
-load_texture(const string &filename) {
-  return get_ptr()->ns_load_texture(filename);
+load_texture(const string &filename, int num_components) {
+  return get_ptr()->ns_load_texture(filename, num_components);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -66,8 +66,9 @@ load_texture(const string &filename) {
 //               file cannot be found, returns NULL.
 ////////////////////////////////////////////////////////////////////
 INLINE Texture *TexturePool::
-load_texture(const string &filename, const string &alpha_filename) {
-  return get_ptr()->ns_load_texture(filename, alpha_filename);
+load_texture(const string &filename, const string &alpha_filename,
+             int num_components) {
+  return get_ptr()->ns_load_texture(filename, alpha_filename, num_components);
 }
 
 ////////////////////////////////////////////////////////////////////
