@@ -16,27 +16,3 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: NonlinearImager::get_viewer
-//       Access: Published
-//  Description: Returns the NodePath to the LensNode that is to serve
-//               as the viewer for this screen, or empty if no
-//               viewer is associated.
-////////////////////////////////////////////////////////////////////
-INLINE const NodePath &NonlinearImager::
-get_viewer() const {
-  return _viewer;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NonlinearImager::get_internal_scene
-//       Access: Published
-//  Description: Returns a pointer to the root node of the internal
-//               scene graph, which is used to render all of the
-//               screen meshes.
-////////////////////////////////////////////////////////////////////
-INLINE NodePath NonlinearImager::
-get_internal_scene() const {
-  return _internal_scene;
-}

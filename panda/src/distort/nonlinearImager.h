@@ -31,12 +31,14 @@
 #include "pvector.h"
 
 class GraphicsEngine;
+class GraphicsStateGuardian;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : NonlinearImager
 // Description : This class object combines the rendered output of a
-//               3-d from one or more linear cameras, as seen through
-//               a single, possibly non-linear camera.
+//               3-d from one or more linear (e.g. perspective)
+//               cameras, as seen through a single, possibly nonlinear
+//               camera.
 //
 //               This can be used to generate real-time imagery of a
 //               3-d scene using a nonlinear camera, for instance a
@@ -44,7 +46,7 @@ class GraphicsEngine;
 //               only supports linear cameras.
 //
 //               
-//               A NonlinearImager may be visualized as a theater room
+//               A NonlinearImager may be visualized as a dark room
 //               into which a number of projection screens have been
 //               placed, of arbitrary size and shape and at any
 //               arbitrary position and orientation to each other.
@@ -52,14 +54,33 @@ class GraphicsEngine;
 //               seen by a normal perspective camera that exists in
 //               the world (that is, under render).
 //
-//               There is also in the theater a single, possibly
-//               nonlinear, camera that observes these screens.  The
-//               user's window (or DisplayRegion) will display the
-//               output of this camera.
+//               There also exists in the theater one or more
+//               (possibly nonlinear) cameras, called viewers, that
+//               observe these screens.  Each of these viewers is
+//               associated with a single DisplayRegion, where the
+//               final results are presented.
+//
+//
+//               There are several different LensNode (Camera) objects
+//               involved at each stage in the process.  To help keep
+//               them all straight, different words are used to refer
+//               to each different kind of Camera used within this
+//               object.  The camera(s) under render, that capture the
+//               original view of the world to be projected onto the
+//               screens, are called source cameras, and are set per
+//               screen via set_source_camera().  The LensNode that is
+//               associated with each screen to project the image as
+//               seen from the screen's source camera is called a
+//               projector; these are set via the
+//               ProjectionScreen::set_projector() interface.
+//               Finally, the (possibly nonlinear) cameras that view
+//               the whole configuration of screens are called
+//               viewers; each of these is associated with a
+//               DisplayRegion, and they are set via set_viewer_camera().
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAFX NonlinearImager {
 PUBLISHED:
-  NonlinearImager(DisplayRegion *dr);
+  NonlinearImager();
   ~NonlinearImager();
 
   int add_screen(ProjectionScreen *screen);
@@ -69,49 +90,69 @@ PUBLISHED:
 
   int get_num_screens() const;
   ProjectionScreen *get_screen(int index) const;
-  void set_size(int index, int width, int height);
+  void set_texture_size(int index, int width, int height);
   void set_source_camera(int index, const NodePath &source_camera);
 
-  void set_active(int index, bool active);
-  bool get_active(int index) const;
+  void set_screen_active(int index, bool active);
+  bool get_screen_active(int index) const;
 
-  void set_viewer(const NodePath &viewer);
-  INLINE const NodePath &get_viewer() const;
+  int add_viewer(DisplayRegion *dr);
+  int find_viewer(DisplayRegion *dr) const;
+  void remove_viewer(int index);
+  void remove_all_viewers();
 
-  INLINE NodePath get_internal_scene() const;
+  void set_viewer_camera(int index, const NodePath &viewer_camera);
+  NodePath get_viewer_camera(int index) const;
+
+  NodePath get_internal_scene(int index) const;
+
+  int get_num_viewers() const;
+  DisplayRegion *get_viewer(int index) const;
 
   void recompute();
   void render(GraphicsEngine *engine);
 
 private:
+  class Viewer {
+  public:
+    PT(DisplayRegion) _dr;
+    PT(Camera) _internal_camera;
+    NodePath _internal_scene;
+    NodePath _viewer;
+    PT(LensNode) _viewer_node;
+    UpdateSeq _viewer_lens_change;
+  };
+  typedef pvector<Viewer> Viewers;
+
+  class Mesh {
+  public:
+    NodePath _mesh;
+    UpdateSeq _last_screen;
+  };
+  typedef pvector<Mesh> Meshes;
+
   class Screen {
   public:
     PT(ProjectionScreen) _screen;
-    NodePath _mesh;
     PT(Texture) _texture;
     NodePath _source_camera;
     int _tex_width, _tex_height;
-    UpdateSeq _last_screen;
     bool _active;
+
+    // One mesh per viewer.
+    Meshes _meshes;
   };
+  typedef pvector<Screen> Screens;
 
   void recompute_if_stale();
-  void recompute_screen(Screen &screen);
+  void recompute_screen(Screen &screen, size_t vi);
   void render_screen(GraphicsEngine *engine, Screen &screen);
 
-  PT(DisplayRegion) _dr;
-
-  typedef pvector<Screen> Screens;
+  Viewers _viewers;
   Screens _screens;
-
-  NodePath _viewer;
-  PT(LensNode) _viewer_node;
-
-  PT(Camera) _internal_camera;
-  NodePath _internal_scene;
+  GraphicsStateGuardian *_gsg;
 
   bool _stale;
-  UpdateSeq _viewer_lens_change;
 };
 
 #include "nonlinearImager.I"
