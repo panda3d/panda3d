@@ -194,7 +194,7 @@ get_class_by_name(const string &name) {
 //               very likely to be different if the contents of the
 //               file do change.
 ////////////////////////////////////////////////////////////////////
-long DCFile::
+unsigned long DCFile::
 get_hash() const {
   HashGenerator hash;
   generate_hash(hash);

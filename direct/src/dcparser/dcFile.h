@@ -35,7 +35,7 @@ PUBLISHED:
 
   DCClass *get_class_by_name(const string &name);
 
-  long get_hash() const;
+  unsigned long get_hash() const;
 
 public:
   void generate_hash(HashGenerator &hash) const;

@@ -34,9 +34,11 @@
 #if defined(WIN32)
 #include <iostream>
 #include <fstream>
+#include <iomanip>
 #else
 #include <iostream.h>
 #include <fstream.h>
+#include <iomanip.h>
 #endif
 
 #include <string>

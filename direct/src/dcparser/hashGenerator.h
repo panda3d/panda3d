@@ -21,7 +21,7 @@ public:
   void add_int(int num);
   void add_string(const string &str);
 
-  long get_hash() const;
+  unsigned long get_hash() const;
 
 private:
   long _hash;

@@ -60,7 +60,7 @@ add_string(const string &str) {
 //       Access: Public
 //  Description: Returns the hash number generated.
 ////////////////////////////////////////////////////////////////////
-long HashGenerator::
+unsigned long HashGenerator::
 get_hash() const {
-  return _hash & 0xffffffff;
+  return (unsigned long)(_hash & 0xffffffff);
 }

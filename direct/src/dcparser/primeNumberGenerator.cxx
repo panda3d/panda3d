@@ -42,7 +42,7 @@ operator [] (int n) {
 	maybe_prime = false;
       }
       j++;
-      nassertr(j < (int)_primes.size(), 0)
+      nassertr(j < (int)_primes.size(), 0);
     }
     if (maybe_prime) {
       // Hey, we found a prime!
