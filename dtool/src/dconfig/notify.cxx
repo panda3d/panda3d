@@ -265,9 +265,19 @@ get_category(const string &basename, NotifyCategory *parent_category) {
     }
   }
 
-  NotifyCategory *category =
-    new NotifyCategory(fullname, basename, parent_category);
-  _categories.insert(Categories::value_type(fullname, category));
+  pair<Categories::iterator, bool> result = 
+    _categories.insert(Categories::value_type(fullname, NULL));
+
+  bool inserted = result.second;
+  NotifyCategory *&category = (*result.first).second;
+
+  if (inserted) {
+    // If we just inserted a new record, then we have to create a new
+    // Category pointer.  Otherwise, there was already one created
+    // from before.
+    category = new NotifyCategory(fullname, basename, parent_category);
+  }
+
   return category;
 }
 
