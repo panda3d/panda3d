@@ -1,7 +1,8 @@
 ;; make the mouse pointer avoid the text point
-(cond (window-system
-       (require 'avoid)
-       (mouse-avoidance-mode 'cat-and-mouse)))
+;; Actually, everyone really hates this.
+;(cond (window-system
+;       (require 'avoid)
+;       (mouse-avoidance-mode 'cat-and-mouse)))
 
 ;; make sure we have the compile library available to us
 (load-library "compile")
