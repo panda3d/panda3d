@@ -24,7 +24,7 @@ public:
   INLINE void set_scale(float scale);
   INLINE float get_scale() const;
 
-  INLINE int compare_to(const AlphaTransformProperty &other) const;
+  int compare_to(const AlphaTransformProperty &other) const;
   void output(ostream &out) const;
 
 private:

@@ -64,17 +64,3 @@ INLINE float AlphaTransformProperty::
 get_scale() const {
   return _scale;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: AlphaTransformProperty::compare_to
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE int AlphaTransformProperty::
-compare_to(const AlphaTransformProperty &other) const {
-  if (_offset < other._offset)
-    return -1;
-  else if (_offset > other._offset)
-    return 1;
-  return 0;
-}
