@@ -576,7 +576,7 @@ bool Downloader::
 parse_http_response(const string &resp) {
   size_t ws = resp.find(" ", 0);
   string httpstr = resp.substr(0, ws);
-  if (httpstr != "HTTP/1.1") {
+  if (!(httpstr == "HTTP/1.1")) {
     downloader_cat.error()
       << "Downloader::parse_http_response() - not HTTP/1.1 - got: " 
       << httpstr << endl;
