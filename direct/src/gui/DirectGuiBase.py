@@ -146,8 +146,10 @@ class DirectGuiBase(PandaObject.PandaObject):
         # no components with this group have been created.
         # self._dynamicGroups = ()
 
-    def __del__(self):
-        print 'Bye'
+    # Looks like they are being deleted, add this back in if
+    # we need to check again
+    #def __del__(self):
+    #    print 'Bye'
 
     def defineoptions(self, keywords, optionDefs, dynamicGroups = ()):
         """ defineoptions(keywords, optionDefs, dynamicGroups = {}) """

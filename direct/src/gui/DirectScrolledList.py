@@ -106,7 +106,6 @@ class DirectScrolledList(DirectFrame):
             item = self["items"][i]
             item.show()
             item.setPos(0,0, - (i - self.index) * self.maxHeight)
-        print 'joe'
         return ret
 
     def __scrollByTask(self, task):
