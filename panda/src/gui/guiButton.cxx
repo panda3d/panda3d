@@ -111,6 +111,13 @@ static void click_button_up(CPT_Event e) {
 }
 
 void GuiButton::switch_state(GuiButton::States nstate) {
+  if (_mgr == (GuiManager*)0L) {
+    gui_cat.warning()
+      << "Tried to switch state of unmanaged button\n";
+    _state = nstate;
+    return;
+  }
+
   test_ref_count_integrity();
   States ostate = _state;
   // cleanup old state
