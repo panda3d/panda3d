@@ -1,0 +1,69 @@
+//
+// This is a sample mel script to flag a Maya node with one, two, or
+// three eggObjectTypes* attributes.  These attributes are used to tag
+// geometry with special meaning to Panda.  There are a handful of
+// attribute values that are predefined within Panda, but you can also
+// make up your own attribute values, and define an arbitrary egg
+// syntax to associate with each one.
+//
+// Each type you invoke this script to add an attribute to a node, it
+// adds a new pull-down menu on the node attributes list, giving all
+// of the values listed in $eggFlags, below.  You can then select one
+// of these values to assign to the node.  If you need to assign
+// multiple different values to the same node, run this script
+// multiple times.
+//
+// The maya2egg converter will look for eggObjectTypes* attributes and
+// insert the line "<ObjectType> { value }" for each one found, where
+// "value" is the particular value you have selected from the
+// pull-down menu.  Eventually, when the egg loader loads the egg file
+// into Panda (either by loading the egg file interactively into a
+// Panda session, or via an egg2bam command), the <ObjectType> line
+// will be replaced with arbitrary egg syntax defined by your
+// Config.prc file with a line like this:
+//
+//   egg-object-type-value  [your egg syntax here]
+//
+// See panda/src/configfiles/panda.prc.pp and
+// direct/src/configfiles/direct.prc.pp for examples of this.
+//
+
+global proc eggObjectFlags()
+{       
+string $sel[] =`ls -sl`;
+for ($i in $sel)
+  {
+  string $attrName = "eggObjectTypes";
+
+  // Modify this line as needed to add your own object types.
+  string $eggFlags = "none:portal:polylight:seq24:seq12:indexed:model:dcs:barrier:sphere:tube:trigger:trigger-sphere:bubble:ghost"
+  
+  string $object = ($i + ".eggObjectTypes");
+  
+    if( `objExists ($object + "1")` ) 
+    {
+    
+      if( `objExists ($object + "2")` ) 
+      {
+      
+        if( `objExists ($object + "3")` ) 
+        {
+        warning("No More Egg Object Types Supported");
+        } 
+         else 
+        {
+        addAttr -ln ($attrName + "3") -k 1 -at "enum" -en ($eggFlags)  $i;
+        }
+      
+      } 
+       else 
+      {
+      addAttr -ln ($attrName + "2") -k 1 -at "enum" -en ($eggFlags)  $i;
+      }
+    } 
+     else 
+    {
+    addAttr -ln ($attrName + "1") -k 1 -at "enum" -en ($eggFlags)  $i;
+    }
+  }
+}
