@@ -93,6 +93,9 @@ PUBLISHED:
   INLINE const void *get_data() const;
   INLINE size_t get_length() const;
 
+  void compress(size_t from_byte);
+  void uncompress(size_t from_byte);
+
   INLINE bool operator == (const Datagram &other) const;
   INLINE bool operator != (const Datagram &other) const;
   INLINE bool operator < (const Datagram &other) const;

@@ -46,15 +46,9 @@
 #pragma warning (disable : 4503)
 #endif  /* WIN32_VC */
 
-#if defined(WIN32)
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-#else
-#include <iostream.h>
-#include <fstream.h>
-#include <iomanip.h>
-#endif
 
 #include <string>
 #include <assert.h>

@@ -182,21 +182,21 @@ class DistributedObject(PandaObject):
     
     def updateRequiredFields(self, cdc, di):
         for i in cdc.broadcastRequiredCDU:
-            i.updateField(cdc, self, di)
+            i.updateField(cdc, self, di, 0)
     
     def updateAllRequiredFields(self, cdc, di):
         for i in cdc.allRequiredCDU:
-            i.updateField(cdc, self, di)
+            i.updateField(cdc, self, di, 0)
 
     def updateRequiredOtherFields(self, cdc, di):
         # First, update the required fields
         for i in cdc.broadcastRequiredCDU:
-            i.updateField(cdc, self, di)
+            i.updateField(cdc, self, di, 0)
         # Determine how many other fields there are
         numberOfOtherFields = di.getArg(STUint16)
         # Update each of the other fields
         for i in range(numberOfOtherFields):
-            cdc.updateField(self, di)
+            cdc.updateField(self, di, 0)
         return None
 
     def sendUpdate(self, fieldName, args = [], sendToId = None):

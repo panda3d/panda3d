@@ -77,6 +77,7 @@ dc_cleanup_parser() {
 %token KW_CLSEND
 %token KW_CLRECV
 %token KW_OWNSEND
+%token KW_COMPRESS
 
 %type <u.dclass> dclass_name
 %type <u.atomic> atomic_name
@@ -414,6 +415,10 @@ atomic_flags:
         | atomic_flags KW_OWNSEND
 {
   current_atomic->_flags |= DCAtomicField::F_ownsend;
+}
+        | atomic_flags KW_COMPRESS
+{
+  current_atomic->_flags |= DCAtomicField::F_compress;
 }
         ;
 

@@ -471,6 +471,11 @@ mol[0-9]+ {
   return KW_OWNSEND;
 }
 
+"compress" {
+  accept();
+  return KW_COMPRESS;
+}
+
 {INTEGERNUM} { 
   // An integer number.
   accept(); 

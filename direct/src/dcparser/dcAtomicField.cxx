@@ -240,7 +240,7 @@ end_array() {
 bool DCAtomicField::ElementType::
 format_default_value(double num, string &formatted) const {
   double real_value = num * _divisor;
-  int int_value = (int)cfloor(real_value + 0.5);
+  int int_value = (int)floor(real_value + 0.5);
 
   switch (_type) {
   case ST_int8:
@@ -565,6 +565,17 @@ is_ownsend() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::is_compress
+//       Access: Public
+//  Description: Returns true if the "compress" flag is set for this
+//               field, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCAtomicField::
+is_compress() const {
+  return (_flags & F_compress) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::Constructor
 //       Access: Public
 //  Description:
@@ -620,6 +631,9 @@ write(ostream &out, int indent_level) const {
   }
   if ((_flags & F_ownsend) != 0) {
     out << " ownsend";
+  }
+  if ((_flags & F_compress) != 0) {
+    out << " compress";
   }
 
   out << ";  // field " << _number << "\n";

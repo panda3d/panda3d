@@ -20,6 +20,7 @@ class ClientDistUpdate:
         self.name = dcField.getName()
         self.types = []
         self.divisors = []
+        self.compress = 0
         self.deriveTypesFromParticle(dcField)
         # Figure out our function pointer
         exec("import " + cdc.name, moduleGlobals, moduleLocals)
@@ -40,19 +41,24 @@ class ClientDistUpdate:
             for i in range(0, dcFieldAtomic.getNumElements()):
                 self.types.append(dcFieldAtomic.getElementType(i))
                 self.divisors.append(dcFieldAtomic.getElementDivisor(i))
+            if dcFieldAtomic.isCompress():
+                self.compress = 1
+                
         elif dcFieldMolecular:
             for i in range(0, dcFieldMolecular.getNumAtomics()):
                 componentField = dcFieldMolecular.getAtomic(i)
                 for j in range(0, componentField.getNumElements()):
                     self.types.append(componentField.getElementType(j))
                     self.divisors.append(componentField.getElementDivisor(j))
+                if componentField.isCompress():
+                    self.compress = 1
         else:
             ClientDistUpdate.notify.error("field is neither atom nor molecule")
         return None
 
-    def updateField(self, cdc, do, di):
+    def updateField(self, cdc, do, di, allowCompress):
         # Get the arguments into a list
-        args = self.extractArgs(di)
+        args = self.extractArgs(di, allowCompress)
 
         assert(self.notify.debug("Received update for %d: %s.%s(%s)" % (do.doId, cdc.name, self.name, args)))
 
@@ -61,7 +67,13 @@ class ClientDistUpdate:
             apply(self.func, [do] + args)
         return None
 
-    def extractArgs(self, di):
+    def extractArgs(self, di, allowCompress):
+        if allowCompress and self.compress:
+            # Technically, the datagram pointer is const, so this is
+            # invalid.  Ignore that for now.
+            argsAt = di.getCurrentIndex()
+            di.getDatagram().uncompress(argsAt)
+
         args = []
         assert(len(self.types) == len(self.divisors))
         numTypes = len(self.types)
@@ -88,7 +100,10 @@ class ClientDistUpdate:
         datagram.addUint32(sendToId)
         # Add the field id
         datagram.addUint16(self.number)
+        argsAt = datagram.getLength()
         # Add the arguments
         self.addArgs(datagram, args)
+        if self.compress:
+            datagram.compress(argsAt)
         # send the datagram
         cr.send(datagram)
