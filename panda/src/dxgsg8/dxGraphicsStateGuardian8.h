@@ -21,22 +21,24 @@
 
 //#define GSG_VERBOSE
 
-#include <pandabase.h>
-#include <graphicsStateGuardian.h>
-#include <geomprimitives.h>
-#include <texture.h>
-#include <pixelBuffer.h>
-#include <displayRegion.h>
-#include <material.h>
-#include <textureApplyProperty.h>
-#include <depthTestProperty.h>
-#include <stencilProperty.h>
-#include <fog.h>
-#include <renderModeProperty.h>
-#include <colorMatrixTransition.h>
-#include <alphaTransformTransition.h>
-#include <pointerToArray.h>
-#include <planeNode.h>
+#include "pandabase.h"
+#include "graphicsStateGuardian.h"
+#include "geomprimitives.h"
+#include "texture.h"
+#include "pixelBuffer.h"
+#include "displayRegion.h"
+#include "material.h"
+#include "textureApplyProperty.h"
+#include "depthTestProperty.h"
+#include "depthTestAttrib.h"
+#include "stencilProperty.h"
+#include "fog.h"
+#include "qpfog.h"
+#include "renderModeProperty.h"
+#include "colorMatrixTransition.h"
+#include "alphaTransformTransition.h"
+#include "pointerToArray.h"
+#include "planeNode.h"
 
 #include "dxgsg8base.h"
 #include "dxGeomNodeContext8.h"
@@ -85,6 +87,7 @@ public:
   virtual void clear(const RenderBuffer &buffer, const DisplayRegion* region);
 
   virtual void prepare_display_region();
+  virtual bool prepare_lens();
 
   virtual void render_frame();
   virtual void render_scene(Node *root, LensNode *projnode);
@@ -137,11 +140,7 @@ public:
 
   virtual void apply_material(const Material *material);
   virtual void apply_fog(Fog *fog);
-
-  virtual void apply_light(PointLight* light);
-  virtual void apply_light(DirectionalLight* light);
-  virtual void apply_light(Spotlight* light);
-  virtual void apply_light(AmbientLight* light);
+  virtual void apply_fog(qpFog *fog);
 
   virtual void issue_transform(const TransformTransition *attrib);
   virtual void issue_tex_matrix(const TexMatrixTransition *attrib);
@@ -164,13 +163,34 @@ public:
   virtual void issue_fog(const FogTransition *attrib);
   virtual void issue_linesmooth(const LinesmoothTransition *attrib);
 
+  virtual void issue_transform(const TransformState *transform);
+  virtual void issue_tex_matrix(const TexMatrixAttrib *attrib);
+  virtual void issue_texture(const TextureAttrib *attrib);
+  virtual void issue_material(const MaterialAttrib *attrib);
+  virtual void issue_render_mode(const RenderModeAttrib *attrib);
+  virtual void issue_texture_apply(const TextureApplyAttrib *attrib);
+  virtual void issue_depth_test(const DepthTestAttrib *attrib);
+  virtual void issue_depth_write(const DepthWriteAttrib *attrib);
+  virtual void issue_cull_face(const CullFaceAttrib *attrib);
+  virtual void issue_fog(const FogAttrib *attrib);
+  virtual void issue_depth_offset(const DepthOffsetAttrib *attrib);
+
+  virtual void bind_light(PointLight *light, int light_id);
+  virtual void bind_light(DirectionalLight *light, int light_id);
+  virtual void bind_light(Spotlight *light, int light_id);
+
+  virtual void begin_frame();
+  virtual void end_frame();
+
   virtual bool wants_normals(void) const;
   virtual bool wants_texcoords(void) const;
-  virtual bool wants_colors(void) const;
 
   virtual void begin_decal(GeomNode *base_geom, AllTransitionsWrapper &attrib);
   virtual void end_decal(GeomNode *base_geom);
 
+  virtual bool depth_offset_decals();
+
+  virtual CoordinateSystem get_internal_coordinate_system() const;
   INLINE float compute_distance_to(const LPoint3f &point) const;
   virtual void set_color_clear_value(const Colorf& value);
 
@@ -180,7 +200,12 @@ public:
 
 protected:
   virtual void enable_lighting(bool enable);
+  virtual void set_ambient_light(const Colorf &color);
   virtual void enable_light(int light_id, bool enable);
+
+  virtual void set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
+                              ColorBlendAttrib::Mode color_blend_mode,
+                              TransparencyAttrib::Mode transparency_mode);
 
   void free_local_resources();            // free local internal buffers
   void free_dxgsg_objects(void);   // free the DirectX objects we create
@@ -229,7 +254,9 @@ protected:
 
   INLINE D3DTEXTUREADDRESS get_texture_wrap_mode(Texture::WrapMode wm) const;
   INLINE D3DCMPFUNC get_depth_func_type(DepthTestProperty::Mode m) const;
+  INLINE D3DCMPFUNC get_depth_func_type(DepthTestAttrib::Mode m) const;
   INLINE D3DFOGMODE get_fog_mode_type(Fog::Mode m) const;
+  INLINE D3DFOGMODE get_fog_mode_type(qpFog::Mode m) const;
 
   INLINE D3DCMPFUNC get_stencil_func_type(StencilProperty::Mode m) const;
   INLINE D3DSTENCILOP get_stencil_action_type(StencilProperty::Action a) const;
@@ -262,10 +289,7 @@ protected:
   BYTE *_pCurFvfBufPtr,*_pFvfBufBasePtr;
   WORD *_index_buf;  // base of malloced array
 
-  bool  _issued_color_enabled;      // WBD ADDED
-  bool  _enable_all_color;
-  Colorf _issued_color;           // WBD ADDED
-  D3DCOLOR _issued_color_D3DCOLOR;           // WBD ADDED
+  D3DCOLOR _scene_graph_color_D3DCOLOR;
   D3DCOLOR _d3dcolor_clear_value;
 //  D3DSHADEMODE _CurShadeMode;
   bool _bGouraudShadingOn;
@@ -350,12 +374,6 @@ protected:
 
   // Color/Alpha Matrix Transition stuff
   INLINE void transform_color(Colorf &InColor,D3DCOLOR &OutColor);
-  bool _color_transform_required;  // _color_transform_enabled || _alpha_transform_enabled
-  bool _color_transform_enabled;
-  bool _alpha_transform_enabled;
-  LMatrix4f _current_color_mat;
-  float _current_alpha_offset;
-  float _current_alpha_scale;
 
   // vars for frames/sec meter
   DWORD _start_time;
