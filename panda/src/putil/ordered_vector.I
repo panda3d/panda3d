@@ -18,31 +18,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ordered_vector::EquivalentTest::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-template<class Key, class Compare>
-INLINE ordered_vector<Key, Compare>::EquivalentTest::
-EquivalentTest(const Compare &compare) :
-  _compare(compare)
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ordered_vector::EquivalentTest::operator ()
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-template<class Key, class Compare>
-INLINE bool ordered_vector<Key, Compare>::EquivalentTest::
-operator () (const ordered_vector<Key, Compare>::key_type &a,
-             const ordered_vector<Key, Compare>::key_type &b) {
-  nassertr(!_compare(b, a), false);
-  return !_compare(a, b);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: ordered_vector::Constructor
 //       Access: Public
 //  Description: 
@@ -734,7 +709,7 @@ verify_list() {
 template<class Key, class Compare>
 INLINE ov_set<Key, Compare>::
 ov_set(const Compare &compare) :
-  ordered_vector(compare)
+  ordered_vector<Key, Compare>(compare)
 {
 }
 
@@ -746,7 +721,7 @@ ov_set(const Compare &compare) :
 template<class Key, class Compare>
 INLINE ov_set<Key, Compare>::
 ov_set(const ov_set<Key, Compare> &copy) :
-  ordered_vector(copy)
+  ordered_vector<Key, Compare>(copy)
 {
 }
 
@@ -758,7 +733,7 @@ ov_set(const ov_set<Key, Compare> &copy) :
 template<class Key, class Compare>
 INLINE ov_set<Key, Compare> &ov_set<Key, Compare>::
 operator = (const ov_set<Key, Compare> &copy) {
-  ordered_vector::operator = (copy);
+  ordered_vector<Key, Compare>::operator = (copy);
   return *this;
 }
 
@@ -771,7 +746,7 @@ template<class Key, class Compare>
 ov_set<Key, Compare>::iterator ov_set<Key, Compare>::
 insert(ordered_vector<Key, Compare>::iterator position, 
        const ordered_vector<Key, Compare>::value_type &key) {
-  return ordered_vector::insert_unique(position, key);
+  return ordered_vector<Key, Compare>::insert_unique(position, key);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -782,7 +757,7 @@ insert(ordered_vector<Key, Compare>::iterator position,
 template<class Key, class Compare>
 INLINE pair<ov_set<Key, Compare>::iterator, bool> ov_set<Key, Compare>::
 insert(const ordered_vector<Key, Compare>::value_type &key) {
-  return ordered_vector::insert_unique(key);
+  return ordered_vector<Key, Compare>::insert_unique(key);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -793,7 +768,7 @@ insert(const ordered_vector<Key, Compare>::value_type &key) {
 template<class Key, class Compare>
 INLINE void ov_set<Key, Compare>::
 sort() {
-  return ordered_vector::sort_unique();
+  return ordered_vector<Key, Compare>::sort_unique();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -804,7 +779,7 @@ sort() {
 template<class Key, class Compare>
 INLINE ov_multiset<Key, Compare>::
 ov_multiset(const Compare &compare) :
-  ordered_vector(compare)
+  ordered_vector<Key, Compare>(compare)
 {
 }
 
@@ -816,7 +791,7 @@ ov_multiset(const Compare &compare) :
 template<class Key, class Compare>
 INLINE ov_multiset<Key, Compare>::
 ov_multiset(const ov_multiset<Key, Compare> &copy) :
-  ordered_vector(copy)
+  ordered_vector<Key, Compare>(copy)
 {
 }
 
@@ -828,7 +803,7 @@ ov_multiset(const ov_multiset<Key, Compare> &copy) :
 template<class Key, class Compare>
 INLINE ov_multiset<Key, Compare> &ov_multiset<Key, Compare>::
 operator = (const ov_multiset<Key, Compare> &copy) {
-  ordered_vector::operator = (copy);
+  ordered_vector<Key, Compare>::operator = (copy);
   return *this;
 }
 
@@ -841,7 +816,7 @@ template<class Key, class Compare>
 ov_multiset<Key, Compare>::iterator ov_multiset<Key, Compare>::
 insert(ordered_vector<Key, Compare>::iterator position, 
        const ordered_vector<Key, Compare>::value_type &key) {
-  return ordered_vector::insert_nonunique(position, key);
+  return ordered_vector<Key, Compare>::insert_nonunique(position, key);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -852,7 +827,7 @@ insert(ordered_vector<Key, Compare>::iterator position,
 template<class Key, class Compare>
 INLINE ov_multiset<Key, Compare>::iterator ov_multiset<Key, Compare>::
 insert(const ordered_vector<Key, Compare>::value_type &key) {
-  return ordered_vector::insert_nonunique(key);
+  return ordered_vector<Key, Compare>::insert_nonunique(key);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -863,5 +838,5 @@ insert(const ordered_vector<Key, Compare>::value_type &key) {
 template<class Key, class Compare>
 INLINE void ov_multiset<Key, Compare>::
 sort() {
-  return ordered_vector::sort_nonunique();
+  return ordered_vector<Key, Compare>::sort_nonunique();
 }

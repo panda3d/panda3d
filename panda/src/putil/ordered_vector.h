@@ -189,8 +189,17 @@ private:
   // if two consecutive sorted elements are equivalent.
   class EquivalentTest {
   public:
-    INLINE EquivalentTest(const Compare &compare);
-    INLINE bool operator () (const key_type &a, const key_type &b);
+    // For some reason, VC++ won't allow us to define these bodies
+    // outside the class; they must be defined here.  The error
+    // message is C3206: "member functions of nested classes of a
+    // template class cannot be defined outside the class".
+    INLINE EquivalentTest(const Compare &compare) :
+      _compare(compare) { }
+    INLINE bool operator () (const key_type &a, const key_type &b) {
+      nassertr(!_compare(b, a), false);
+      return !_compare(a, b);
+    }
+
     Compare _compare;
   };
 
