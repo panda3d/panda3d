@@ -15,13 +15,13 @@ from PyDatagram import PyDatagram
 from PyDatagramIterator import PyDatagramIterator
 
 class ClientRepository(ConnectionRepository.ConnectionRepository):
-
-    """ This maintains a client-side connection with a Panda server.
+    """
+    This maintains a client-side connection with a Panda server.
     It currently supports several different versions of the server:
     within the VR Studio, we are currently in transition from the
     Toontown server to the OTP server; people outside the VR studio
-    will use the Panda LAN server provided by CMU."""
-    
+    will use the Panda LAN server provided by CMU.
+    """
     notify = DirectNotifyGlobal.directNotify.newCategory("ClientRepository")
 
     def __init__(self):
@@ -29,11 +29,11 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         self.setClientDatagram(1)
 
         self.recorder = base.recorder
-        if wantOtpServer:        
-            # this is used to imulate the old setzone behavior 
-            # with set locationa and set interest        
+        if wantOtpServer:
+            # this is used to imulate the old setzone behavior
+            # with set locationa and set interest
             self.old_setzone_interest_handle = None
-        
+
         # Dict of {DistributedObject ids : DistributedObjects}
         self.doId2do = {}
         if wantOtpServer:
@@ -49,7 +49,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         self.worldScale = render.attachNewNode("worldScale") # for grid zones.
         self.worldScale.setScale(base.config.GetFloat('world-scale', 100))
         self.priorWorldPos = None
-        
+
         # create a parentMgr to handle distributed reparents
         # this used to be 'token2nodePath'
         self.parentMgr = ParentMgr.ParentMgr()
@@ -63,12 +63,12 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         self.heartbeatInterval = base.config.GetDouble('heartbeat-interval', 10)
         self.heartbeatStarted = 0
         self.lastHeartbeat = 0
-        
-        if wantOtpServer:
-            # Top level Interest Manager
-            self._interestIdAssign = 1
-            self._interestIdScops = 100;
-            self._interests = {}
+
+#%#        if wantOtpServer:
+#%#            # Top level Interest Manager
+#%#            self._interestIdAssign = 1
+#%#            self._interestIdScops = 100;
+#%#            self._interests = {}
 
         # By default, the ClientRepository is set up to respond to
         # datagrams from the CMU Panda LAN server.  You can
@@ -169,7 +169,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
 
     if wantOtpServer:
         def handleObjectLocation(self, di):
-            # CLIENT_OBJECT_LOCATION        
+            # CLIENT_OBJECT_LOCATION
             doId = di.getUint32()
             parentId = di.getUint32()
             zoneId = di.getUint32()
@@ -208,7 +208,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
                     # Just add this objId to the existing list
                     assert(objId not in objList)
                     objList.append(objId)
-                    return 
+                    return
 
             # Case 2: New parent, valid old parent
             # First delete the old location
@@ -247,17 +247,17 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             else:
                 # Just remove the object
                 objList.remove(objId)
-            
+
 
     def handleGenerateWithRequired(self, di):
-        if wantOtpServer:        
+        if wantOtpServer:
             parentId = di.getUint32()
             zoneId = di.getUint32()
         # Get the class Id
         classId = di.getUint16()
         # Get the DO Id
         doId = di.getUint32()
-        # Look up the dclass                       
+        # Look up the dclass
         dclass = self.dclassesByNumber[classId]
         dclass.startGenerate()
         # Create a new distributed object, and put it in the dictionary
@@ -268,9 +268,9 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         dclass.stopGenerate()
 
     def handleGenerateWithRequiredOther(self, di):
-        if wantOtpServer:        
+        if wantOtpServer:
             parentId = di.getUint32()
-            zoneId = di.getUint32()            
+            zoneId = di.getUint32()
         # Get the class Id
         classId = di.getUint16()
         # Get the DO Id
@@ -287,9 +287,9 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
 
     def handleQuietZoneGenerateWithRequired(self, di):
         # Special handler for quiet zone generates -- we need to filter
-        if wantOtpServer:        
+        if wantOtpServer:
             parentId = di.getUint32()
-            zoneId = di.getUint32()                    
+            zoneId = di.getUint32()
         # Get the class Id
         classId = di.getUint16()
         # Get the DO Id
@@ -309,9 +309,9 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
 
     def handleQuietZoneGenerateWithRequiredOther(self, di):
         # Special handler for quiet zone generates -- we need to filter
-        if wantOtpServer:        
+        if wantOtpServer:
             parentId = di.getUint32()
-            zoneId = di.getUint32()                    
+            zoneId = di.getUint32()
         # Get the class Id
         classId = di.getUint16()
         # Get the DO Id
@@ -382,7 +382,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         dclass = self.dclassesByName[dcname]
         # Create a new distributed object, and put it in the dictionary
         #distObj = self.generateWithRequiredFields(dclass, doId, di)
-        
+
         # Construct a new one
         classDef = dclass.getClassDef()
         if classDef == None:
@@ -535,7 +535,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         doId = di.getUint32()
         #print("Updating " + str(doId))
         # Find the DO
-        
+
         do = self.doId2do.get(doId)
         if (do != None):
             # Let the dclass finish the job
@@ -573,11 +573,10 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
     def handleSetDOIDrange(self, di):
         # This method is only used in conjunction with the CMU LAN
         # server.
-        
+
         self.DOIDbase = di.getUint32()
         self.DOIDlast = self.DOIDbase + di.getUint32()
         self.DOIDnext = self.DOIDbase
-        return None
 
     def handleRequestGenerates(self, di):
         # When new clients join the zone of an object, they need to hear
@@ -586,7 +585,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
 
         # This method is only used in conjunction with the CMU LAN
         # server.
-        
+
         assert(self.DOIDnext < self.DOIDlast);
         zone = di.getUint32()
         for obj in self.doId2do.values():
@@ -595,7 +594,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
                 if (self.isLocalId(id)):
                     self.send(obj.dclass.clientFormatGenerate(obj, id, zone, []))
 
-    def handleUnexpectedMsgType(self, msgType, di):        
+    def handleUnexpectedMsgType(self, msgType, di):
         if msgType == CLIENT_GO_GET_LOST:
             self.handleGoGetLost(di)
         elif msgType == CLIENT_HEARTBEAT:
@@ -618,7 +617,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             elif msgType == CLIENT_CREATE_OBJECT_REQUIRED_OTHER:
                 self.handleGenerateWithRequiredOther(di)
             elif msgType == CLIENT_DONE_INTEREST_RESP:
-                self.handleInterestDoneMessage(di)                    
+                self.handleInterestDoneMessage(di)
             elif msgType == CLIENT_OBJECT_LOCATION:
                 self.handleObjectLocation(di)
         else:
@@ -715,52 +714,52 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
     if wantOtpServer:
         def sendEmulateSetZone(self, zoneId, visibleZoneList=None, parentIdin=None, event=None):
             """
-            This Will Move The avatar and set an interest to that location ..            
+            This Will Move The avatar and set an interest to that location ..
             """
             parentId = parentIdin;
             if parentId is None:
                 parentId = base.localAvatar.defaultShard;
-                
+
             MyAvID = base.localAvatar.doId;
             # move thwe avatar..
-            self.sendSetLocation(MyAvID,parentId,zoneId);                
+            self.sendSetLocation(MyAvID,parentId,zoneId);
             # move the interest..
 
             InterestZones = zoneId;
             if visibleZoneList is not None:
                 InterestZones = visibleZoneList
-            
+
             if(self.old_setzone_interest_handle == None):
                 self.old_setzone_interest_handle = self.addInterest(parentId, InterestZones, "OldSetZone Imulator", event)
             else:
-                self.alterInterest(self.old_setzone_interest_handle,parentId, InterestZones, "OldSetZone Imulator", event)                    
+                self.alterInterest(self.old_setzone_interest_handle,parentId, InterestZones, "OldSetZone Imulator", event)
 
         def sendEmulateSetZoneOff(self):
             MyAvID = base.localAvatar.doId;
-            self.sendSetLocation(MyAvID,0,0);                
-            if self.old_setzone_interest_handle is not None:            
+            self.sendSetLocation(MyAvID,0,0);
+            if self.old_setzone_interest_handle is not None:
                 self.removeInterest(self.old_setzone_interest_handle)
                 self.old_setzone_interest_handle = None
-        
+
 
         def  sendSetLocation(self,doId,parentId,zoneId):
             datagram = PyDatagram()
-            datagram.addUint16(CLIENT_OBJECT_LOCATION)       
-            datagram.addUint32(doId)       
-            datagram.addUint32(parentId)       
-            datagram.addUint32(zoneId)       
-            self.send(datagram)        
-                    
-        
-        
+            datagram.addUint16(CLIENT_OBJECT_LOCATION)
+            datagram.addUint32(doId)
+            datagram.addUint32(parentId)
+            datagram.addUint32(zoneId)
+            self.send(datagram)
+
+
+
     else:
         def sendSetZoneMsg(self, zoneId, visibleZoneList=None):
             datagram = PyDatagram()
             # Add message type
-            datagram.addUint16(CLIENT_SET_ZONE)       
+            datagram.addUint16(CLIENT_SET_ZONE)
             # Add zone id
             datagram.addUint32(zoneId)
-    
+
             # if we have an explicit list of visible zones, add them
             if visibleZoneList is not None:
                 vzl = list(visibleZoneList)
@@ -778,7 +777,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             di.getDatagram().dumpHex(ostream)
 
         msgType = self.getMsgType()
-       
+
 
         if not wantOtpServer:
             if msgType == CLIENT_DONE_SET_ZONE_RESP:
@@ -788,7 +787,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             self.handleUnexpectedMsgType(msgType, di)
         else:
             self.handler(msgType, di)
-            
+
         # If we're processing a lot of datagrams within one frame, we
         # may forget to send heartbeats.  Keep them coming!
         self.considerHeartbeat()
@@ -797,7 +796,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
 
         # These are the sort of messages we may expect from the public
         # Panda server.
-        
+
         if msgType == CLIENT_SET_DOID_RANGE:
             self.handleSetDOIDrange(di)
         elif msgType == CLIENT_CREATE_OBJECT_REQUIRED_RESP:
@@ -815,9 +814,10 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         else:
             self.handleUnexpectedMsgType(msgType, di)
 
-    
-    if wantOtpServer:
-        # interest managment 
+
+#%#:
+    if 0 and wantOtpServer:
+        # interest managment
         def addInterest(self, parentId, zoneIdList, description, event=None):
             """
             Part of the new otp-server code.
@@ -830,53 +830,53 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             self._sendAddInterest(contextId, scopeId, parentId, zoneIdList)
             assert self.printInterests()
             return contextId
-            
-        def removeInterest(self,  contextId, event=None):        
+
+        def removeInterest(self,  contextId, event=None):
             """
             Part of the new otp-server code.
             """
             answer = 0
             if  self._interests.has_key(contextId):
                 if event is not None:
-                    self._interestIdScops  += 1                
-                    self._interests[contextId][2] = event                    
+                    self._interestIdScops  += 1
+                    self._interests[contextId][2] = event
                     self._interests[contextId][1] = self._interestIdScops
                     self._sendRemoveInterest(contextId)
                     del self._interests[contextId]
                 else:
                     self._interests[contextId][3] = "PendingDel"
                     self._interests[contextId][2] = None
-                    self._interests[contextId][1] = 0 
-                    self._sendRemoveInterest(contextId)                
-                    
-                answer = 1                                
-            assert self.printInterests()            
+                    self._interests[contextId][1] = 0
+                    self._sendRemoveInterest(contextId)
+
+                answer = 1
+            assert self.printInterests()
             return answer
 
         def alterInterest(self, contextId, parentId, zoneIdList, description = None, event=None):
             """
-            Part of the new otp-server code.        
-                Removes old and adds new.. 
+            Part of the new otp-server code.
+                Removes old and adds new..
             """
             answer = 0
             if  self._interests.has_key(contextId):
                 self._interestIdScops  += 1
                 if description is not None:
                     self._interests[contextId][0] = description
-                    
+
                 self._interests[contextId][1] = self._interestIdScops;
-                self._interests[contextId][2] = event;               
+                self._interests[contextId][2] = event;
                 self._sendAddInterest(contextId,self._interestIdScops, parentId, zoneIdList)
                 answer = 1
                 assert self.printInterests()
             else:
                 self.notify.warning("alterInterest: contextId not found: %s" % (contextId))
             return answer
-            
-            
+
+
         def GetInterestScopeID(self, contextId):
             """
-            Part of the new otp-server code.        
+            Part of the new otp-server code.
                  Return a ScopeId Id for an Interest
             """
             answer = 0
@@ -885,11 +885,11 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             else:
                 self.notify.warning("GetInterestScopeID: contextId not found: %s" % (contextId))
             return answer
-            
+
 
         def GetInterestScopeEvent(self, contextId):
             """
-            Part of the new otp-server code.        
+            Part of the new otp-server code.
                  Return a ScopeId Id for an Interest
             """
             answer = None
@@ -898,29 +898,29 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             else:
                 self.notify.warning("GetInterestScopeEvent: contextId not found: %s" % (contextId))
             return answer
-                       
-            
+
+
         def _PonderRemoveFlaggedInterest(self, handle):
             """
-            Part of the new otp-server code.        
+            Part of the new otp-server code.
                  Return a ScopeId Id for an Interest
             """
             answer = None
             if  self._interests.has_key(handle):
                     if self._interests[handle][3] == "PendingDel":
                         del self._interests[handle]
-                    
+
         if __debug__:
             def printInterests(self):
                 """
-                Part of the new otp-server code.        
+                Part of the new otp-server code.
                 """
                 print "*********************** Interest Sets **************"
-                for i in self._interests.keys():                     
+                for i in self._interests.keys():
                      print "Interest ID:%s, Description=%s Scope=%s Event=%s Mode=%s"%(i, self._interests[i][0],self._interests[i][1],self._interests[i][2],self._interests[i][3])
                 print "****************************************************"
                 return 1 # for assert()
-        
+
         def _sendAddInterest(self, contextId, scopeId, parentId, zoneIdList):
             """
             Part of the new otp-server code.
@@ -936,17 +936,17 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             datagram.addUint16(contextId)
             datagram.addUint32(scopeId)
             datagram.addUint32(parentId)
-                
-            print zoneIdList                
-                                    
+
+            print zoneIdList
+
             if isinstance(zoneIdList,types.ListType):
                 vzl = list(zoneIdList)
                 vzl.sort()
                 PythonUtil.uniqueElements(vzl)
                 for zone in vzl:
-                    datagram.addUint32(zone)                       
+                    datagram.addUint32(zone)
             else:
-               datagram.addUint32(zoneIdList)                       
+               datagram.addUint32(zoneIdList)
 
             self.send(datagram)
 
@@ -964,29 +964,29 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             datagram.addUint16(CLIENT_REMOVE_INTEREST)
             datagram.addUint16(contextId)
             self.send(datagram)
-            
+
         def handleInterestDoneMessage(self, di):
             """
-              This handles the interest done messages and may dispatch a 
+              This handles the interest done messages and may dispatch a
               action based on the ID , Context
-            """            
+            """
             id = di.getUint16()
-            scope = di.getUint32()            
+            scope = di.getUint32()
             expect_scope = self.GetInterestScopeID(id)
             print "handleInterestDoneMessage--> Received ID:%s Scope:%s"%(id,scope);
             if expect_scope == scope:
                 print "handleInterestDoneMessage--> Scope Match:%s Scope:%s"%(id,scope);
-                event = self.GetInterestScopeEvent(id)                
+                event = self.GetInterestScopeEvent(id)
                 if event is not None:
                     print "handleInterestDoneMessage--> Send Event : %s"%(event);
-                    messenger.send(event)           
-                else:                    
+                    messenger.send(event)
+                else:
                     print "handleInterestDoneMessage--> No Event ";
-                self._PonderRemoveFlaggedInterest(id)                    
+                self._PonderRemoveFlaggedInterest(id)
             else:
                 print "handleInterestDoneMessage--> Scope MisMatch :%s :%s"%(expect_scope,scope);
-                                
-            assert self.printInterests()                    
+
+            assert self.printInterests()
 
     def sendHeartbeat(self):
         datagram = PyDatagram()
@@ -1004,7 +1004,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         if not self.heartbeatStarted:
             self.notify.debug("Heartbeats not started; not sending.")
             return
-        
+
         elapsed = globalClock.getRealTime() - self.lastHeartbeat
         if elapsed < 0 or elapsed > self.heartbeatInterval:
             # It's time to send the heartbeat again (or maybe someone
@@ -1029,7 +1029,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
 
     def waitForNextHeartBeat(self):
         taskMgr.doMethodLater(self.heartbeatInterval, self.sendHeartbeatTask,
-                              "heartBeat")        
+                              "heartBeat")
 
     def sendUpdate(self, do, fieldName, args, sendToId = None):
         dg = do.dclass.clientFormatUpdate(fieldName, sendToId or do.doId, args)
@@ -1038,7 +1038,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
     def sendUpdateZone(self, obj, zoneId):
         # This method is only used in conjunction with the CMU LAN
         # server.
-        
+
         id = obj.doId
         assert(self.isLocalId(id))
         self.sendDeleteMsg(id, 1)

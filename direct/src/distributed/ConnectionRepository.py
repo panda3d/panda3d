@@ -1,14 +1,14 @@
 from pandac.PandaModules import *
 from direct.task import Task
 from direct.directnotify import DirectNotifyGlobal
-from direct.showbase import DirectObject
+from direct.distributed.DoInterestManager import DoInterestManager
 from PyDatagram import PyDatagram
 from PyDatagramIterator import PyDatagramIterator
 
 import types
 import imp
 
-class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
+class ConnectionRepository(DoInterestManager, CConnectionRepository):
     """
     This is a base class for things that know how to establish a
     connection (and exchange datagrams) with a gameserver.  This
@@ -18,12 +18,13 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
     taskPriority = -30
 
     def __init__(self, config):
-        DirectObject.DirectObject.__init__(self)
+        assert self.notify.debugCall()
+        DoInterestManager.__init__(self)
         CConnectionRepository.__init__(self)
         self.setPythonRepository(self)
 
         self.config = config
-        
+
         # Set this to 'http' to establish a connection to the server
         # using the HTTPClient interface, which ultimately uses the
         # OpenSSL socket library (even though SSL is not involved).
@@ -66,7 +67,7 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
         self.dclassesByName = {}
         self.dclassesByNumber = {}
         self.hashVal = 0
-        
+
         dcImports = {}
         if dcFileNames == None:
             readResult = dcFile.readAll()
@@ -100,7 +101,7 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
                     symbolName += self.dcSuffix
 
                 importSymbols.append(symbolName)
-                
+
             self.importModule(dcImports, moduleName, importSymbols)
 
         # Now get the class definition for the classes named in the DC
@@ -120,7 +121,7 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
                     if not hasattr(classDef, className):
                         self.notify.error("Module %s does not define class %s." % (className, className))
                     classDef = getattr(classDef, className)
-                    
+
                 if type(classDef) != types.ClassType:
                     self.notify.error("Symbol %s is not a class name." % (className))
                 else:
@@ -147,7 +148,7 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
                     importSymbols = module.__all__
                 else:
                     importSymbols = module.__dict__.keys()
-            
+
             for symbolName in importSymbols:
                 if hasattr(module, symbolName):
                     dcImports[symbolName] = getattr(module, symbolName)
@@ -185,7 +186,7 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
         ##     self.connectHttp = 1
         ##     self.tcpConn = SocketStreamRecorder()
         ##     self.recorder.addRecorder('gameserver', self.tcpConn)
-            
+
         ##     self.startReaderPollTask()
         ##     if successCallback:
         ##         successCallback(*successArgs)
@@ -245,7 +246,7 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
         self.notify.info("Closing connection to server.")
         CConnectionRepository.disconnect(self)
         self.stopReaderPollTask()
-                    
+
     def httpConnectCallback(self, ch, serverList, serverIndex,
                             successCallback, successArgs,
                             failureCallback, failureArgs):
@@ -268,17 +269,17 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
             ##     # connection to the SocketStreamRecorder object.
             ##     self.tcpConn.userManagesMemory = 0
             ##     self.tcpConn = stream
-            
+
             self.startReaderPollTask()
             if successCallback:
                 successCallback(*successArgs)
         elif serverIndex < len(serverList):
             # No connection yet, but keep trying.
-            
+
             url = serverList[serverIndex]
             self.notify.info("Connecting to %s via HTTP interface." % (url.cStr()))
             ch.preserveStatus()
-            
+
             ch.beginConnectTo(DocumentSpec(url))
             ch.spawnTask(name = 'connect-to-server',
                          callback = self.httpConnectCallback,
@@ -296,7 +297,7 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
         # already.  This might fail if the OpenSSL library isn't
         # available.  Returns the HTTPClient (also self.http), or None
         # if not set.
-        
+
         if self.http == None:
             try:
                 self.http = HTTPClient()
