@@ -3,6 +3,7 @@
 from PythonUtil import uniqueElements
 
 EntIdRange = 10000
+# Once a range has been assigned to a user, please don't change it.
 username2entIdBase = {
     'darren': 1*EntIdRange,
     'samir':  2*EntIdRange,
