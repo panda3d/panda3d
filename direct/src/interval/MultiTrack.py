@@ -37,8 +37,7 @@ class MultiTrack(Interval):
 	    Go to time t
 	"""
 	if (t > self.duration):
-	    Interval.notify.warning(
-		'MultiTrack.setT(): t = %f > duration' % t)
+            pass
 	for track in self.tlist:
 	    track.setT(t, entry)
 

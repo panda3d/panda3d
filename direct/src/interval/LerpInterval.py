@@ -5,16 +5,13 @@ from Interval import *
 import Lerp
 
 class LerpInterval(Interval):
-
-    # special methods
-    
+    # Class methods
     def __init__(self, name, duration, functorFunc, blendType='noBlend'):
         """__init__(name, duration, functorFunc, blendType)
         """
 	self.functorFunc = functorFunc
-	self.blendType = self.__getBlend(blendType)
+	self.blendType = self.getBlend(blendType)
 	Interval.__init__(self, name, duration)
-
     def setT(self, t, entry=0):
 	""" setT(t, entry)
 	"""
@@ -27,13 +24,11 @@ class LerpInterval(Interval):
 	    self.lerp.setT(self.duration)
 	elif (t <= self.duration):
 	    self.lerp.setT(t)
-
-    def __getBlend(self, blendType):
+    def getBlend(self, blendType):
         """__getBlend(self, string)
         Return the C++ blend class corresponding to blendType string
         """
         import LerpBlendHelpers
-
         if (blendType == "easeIn"):
             return LerpBlendHelpers.LerpBlendHelpers.easeIn
         elif (blendType == "easeOut"):
@@ -46,7 +41,112 @@ class LerpInterval(Interval):
             raise Exception(
 		'Error: LerpInterval.__getBlend: Unknown blend type')
 
+class LerpPosInterval(LerpInterval):
+
+    lerpPosNum = 1
+
+    def __init__(self, node, duration, pos, startPos=None,
+				other=None, blendType='noBlend', name=None):
+	""" __init__(node, duration, pos, startPos, other, blendType, name)
+	"""
+	def functorFunc(self=self, node=node, pos=pos, startPos=startPos,
+			other=other):
+            import PosLerpFunctor
+
+	    assert(not node.isEmpty())
+            if (other != None):
+            	# lerp wrt other
+	    	if (startPos == None):
+                    startPos = node.getPos(other)
+            	functor = PosLerpFunctor.PosLerpFunctor(
+                    node, startPos, pos, other)
+            else:
+	    	if (startPos == None):
+            	    startPos = node.getPos()
+            	functor = PosLerpFunctor.PosLerpFunctor(
+                    node, startPos, pos)
+	    return functor
+
+	if (name == None):
+	    n = 'LerpPosInterval-%d' % LerpPosInterval.lerpPosNum
+	    LerpPosInterval.lerpPosNum += 1
+	else:
+	    n = name
+
+	LerpInterval.__init__(self, n, duration, functorFunc, blendType) 
+
+class LerpHprInterval(LerpInterval):
+
+    # Interval counter
+    lerpHprNum = 1
+    # Class methods
+    def __init__(self, node, duration, hpr, startHpr=None,
+				other=None, blendType='noBlend', name=None):
+	""" __init__(node, duration, hpr, startHpr, other, blendType, name)
+	"""
+	def functorFunc(self=self, node=node, hpr=hpr, startHpr=startHpr,
+			other=other):
+            import HprLerpFunctor
+
+	    assert(not node.isEmpty())
+            if (other != None):
+            	# lerp wrt other
+	    	if (startHpr == None):
+                    startHpr = node.getHpr(other)
+            	functor = HprLerpFunctor.HprLerpFunctor(
+                    node, startHpr, hpr, other)
+            else:
+	    	if (startHpr == None):
+            	    startHpr = node.getHpr()
+            	functor = HprLerpFunctor.HprLerpFunctor(
+                    node, startHpr, hpr)
+	    return functor
+
+	if (name == None):
+	    n = 'LerpHprInterval-%d' % LerpHprInterval.lerpHprNum
+	    LerpHprInterval.lerpHprNum += 1
+	else:
+	    n = name
+
+	LerpInterval.__init__(self, n, duration, functorFunc, blendType) 
+
+class LerpScaleInterval(LerpInterval):
+
+    # Interval counter
+    lerpScaleNum = 1
+    # Class methods
+    def __init__(self, node, duration, scale, startScale=None,
+				other=None, blendType='noBlend', name=None):
+	""" __init__(node, duration, scale, startScale, other, blendType, name)
+	"""
+	def functorFunc(self=self, node=node, scale=scale,
+                        startScale=startScale, other=other):
+            import ScaleLerpFunctor
+
+	    assert(not node.isEmpty())
+            if (other != None):
+            	# lerp wrt other
+	    	if (startScale == None):
+                    startScale = node.getScale(other)
+            	functor = ScaleLerpFunctor.ScaleLerpFunctor(
+                    node, startScale, scale, other)
+            else:
+	    	if (startScale == None):
+            	    startScale = node.getScale()
+            	functor = ScaleLerpFunctor.ScaleLerpFunctor(
+                    node, startScale, scale)
+	    return functor
+
+	if (name == None):
+	    n = 'LerpScaleInterval-%d' % LerpScaleInterval.lerpScaleNum
+	    LerpScaleInterval.lerpScaleNum += 1
+	else:
+	    n = name
+
+	LerpInterval.__init__(self, n, duration, functorFunc, blendType) 
+
 class LerpPosHprInterval(LerpInterval):
+    # Interval counter
 
     lerpPosHprNum = 1
 
@@ -87,71 +187,117 @@ class LerpPosHprInterval(LerpInterval):
 
 	LerpInterval.__init__(self, n, duration, functorFunc, blendType)
 
-
-class LerpPosInterval(LerpInterval):
-
-    lerpPosNum = 1
-
-    def __init__(self, node, duration, pos, startPos=None,
-				other=None, blendType='noBlend', name=None):
-	""" __init__(node, duration, pos, startPos, other, blendType, name)
+class LerpPosHprScaleInterval(LerpInterval):
+    # Interval counter
+    lerpPosHprScaleNum = 1
+    # Class methods
+    def __init__(self, node, duration, pos, hpr, scale,
+                 startPos=None, startHpr=None, startScale=None,
+                 other=None, blendType='noBlend', name=None): 
+	""" __init__(node, duration, pos, hpr, scale,
+                     startPos, startHpr, startScale, 
+                     other, blendType, name)
 	"""
-	def functorFunc(self=self, node=node, pos=pos, startPos=startPos,
-			other=other):
-            import PosLerpFunctor
+	def functorFunc(self=self, node=node, pos=pos, hpr=hpr, scale=scale,
+			startPos=startPos, startHpr=startHpr,
+                        startScale=startScale, other=other):
+            import PosHprScaleLerpFunctor
 
 	    assert(not node.isEmpty())
             if (other != None):
             	# lerp wrt other
 	    	if (startPos == None):
-                    startPos = node.getPos(other)
-            	functor = PosLerpFunctor.PosLerpFunctor(
-                    node, startPos, pos, other)
+            	    startPos = node.getPos(other)
+	    	if (startHpr == None):
+            	    startHpr = node.getHpr(other)
+	    	if (startScale == None):
+            	    startScale = node.getScale(other)
+            	functor = PosHprScaleLerpFunctor.PosHprScaleLerpFunctor(
+                    node, startPos, pos, startHpr, hpr,
+                    startScale, scale, other)
             else:
 	    	if (startPos == None):
             	    startPos = node.getPos()
-            	functor = PosLerpFunctor.PosLerpFunctor(
-                    node, startPos, pos)
-	    return functor
-
-	if (name == None):
-	    n = 'LerpPos-%d' % LerpPosInterval.lerpPosNum
-	    LerpPosInterval.lerpPosNum += 1
-	else:
-	    n = name
-
-	LerpInterval.__init__(self, n, duration, functorFunc, blendType) 
-
-class LerpHprInterval(LerpInterval):
-
-    lerpHprNum = 1
-
-    def __init__(self, node, duration, hpr, startHpr=None,
-				other=None, blendType='noBlend', name=None):
-	""" __init__(node, duration, hpr, startHpr, other, blendType, name)
-	"""
-	def functorFunc(self=self, node=node, hpr=hpr, startHpr=startHpr,
-			other=other):
-            import HprLerpFunctor
-
-	    assert(not node.isEmpty())
-            if (other != None):
-            	# lerp wrt other
-	    	if (startHpr == None):
-                    startHpr = node.getHpr(other)
-            	functor = HprLerpFunctor.HprLerpFunctor(
-                    node, startHpr, hpr, other)
-            else:
 	    	if (startHpr == None):
             	    startHpr = node.getHpr()
-            	functor = HprLerpFunctor.HprLerpFunctor(
-                    node, startHpr, hpr)
+	    	if (startScale == None):
+            	    startScale = node.getScale()
+            	functor = PosHprScaleLerpFunctor.PosHprScaleLerpFunctor(
+                    node, startPos, pos, startHpr, hpr, startScale, scale)
 	    return functor
 
 	if (name == None):
-	    n = 'LerpHpr-%d' % LerpHprInterval.lerpHprNum
-	    LerpHprInterval.lerpHprNum += 1
+	    n = ('LerpPosHprScale-%d' %
+                 LerpPosHprScaleInterval.lerpPosHprScaleNum)
+	    LerpPosHprScaleInterval.lerpPosHprScaleNum += 1
 	else:
 	    n = name
 
-	LerpInterval.__init__(self, n, duration, functorFunc, blendType) 
+	LerpInterval.__init__(self, n, duration, functorFunc, blendType)
+
+# Class used to execute a function over time.  Function can access fromData
+# and toData to perform blend
+class LerpFunctionInterval(Interval):
+    # Interval counter
+    lerpFunctionIntervalNum = 1
+    # Class methods
+    def __init__(self, function, fromData = 0, toData = 1, duration = 0.0,
+                 blendType = 'noBlend', name = None):
+        """__init__(function, duration, fromData, toData, name)
+        """
+	self.function = function
+        self.fromData = fromData
+        self.toData = toData
+	self.blendType = self.getBlend(blendType)
+	if (name == None):
+	    name = ('LerpFunctionInterval-%d' %
+                    LerpFunctionInterval.lerpFunctionIntervalNum)
+            LerpFunctionInterval.lerpFunctionIntervalNum += 1
+        # Initialize superclass
+	Interval.__init__(self, name, duration)
+    def setT(self, t, entry=0):
+	""" setT(t, entry)
+	"""
+	if (t < 0):
+	    return
+	if (entry == 1) and (t > self.duration):
+	    self.function(self.toData)
+	elif (t <= self.duration):
+            try:
+                #bt = self.blendType(t/self.duration)
+                bt = t/self.duration
+                data = (self.fromData * (1 - bt)) + (self.toData * bt)
+                self.function(data)
+            except ZeroDivisionError:
+                self.function(self.toData)
+    def getBlend(self, blendType):
+        """__getBlend(self, string)
+        Return the C++ blend class corresponding to blendType string
+        """
+        import LerpBlendHelpers
+        def easeIn(t):
+            x = t*t
+            return ((3 * x) - (t * x)) * 0.5
+        def easeOut(t):
+            return ((3 * t) - (t * t * t)) * 0.5
+        def easeInOut(t):
+            x = t*t
+            return (3 * x) - (2 * t * x)
+        def noBlend(t):
+            return t
+        if (blendType == "easeIn"):
+            #return LerpBlendHelpers.LerpBlendHelpers.easeIn
+            return easeIn
+        elif (blendType == "easeOut"):
+            #return LerpBlendHelpers.LerpBlendHelpers.easeOut
+            return easeOut
+        elif (blendType == "easeInOut"):
+            #return LerpBlendHelpers.LerpBlendHelpers.easeInOut
+            return easeInOut
+        elif (blendType == "noBlend"):
+            #return LerpBlendHelpers.LerpBlendHelpers.noBlend
+            return noBlend
+        else:
+            raise Exception(
+		'Error: LerpInterval.__getBlend: Unknown blend type')
+

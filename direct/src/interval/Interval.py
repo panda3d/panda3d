@@ -1,6 +1,9 @@
 """Interval module: contains the Interval class"""
 
 from DirectObject import *
+from Tkinter import *
+import Pmw
+import EntryScale
 
 import ClockObject
 import Task
@@ -88,3 +91,11 @@ class Interval(DirectObject):
 	for l in range(indent):
 	    space = space + ' '
 	print (space + self.name + ' dur: %.2f' % self.duration)
+
+    def popupControls(self):
+        tl = Toplevel()
+        es = EntryScale.EntryScale(
+            tl, min = 0, max = self.duration,
+            command = lambda t, s = self: s.setT(t))
+        es.onPress = lambda s=self: s.setT(s.curr_t, entry = 1)
+        es.pack(expand = 1, fill = X)
