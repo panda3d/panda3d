@@ -373,7 +373,8 @@ make_texture_buffer(const string &name, int x_size, int y_size) {
           }
 
           // No good; delete the buffer and keep trying.
-          engine->remove_window(buffer);
+          bool removed = engine->remove_window(buffer);
+          nassertr(removed, NULL);
           buffer = (GraphicsOutput *)NULL;
         }
       }
@@ -390,7 +391,8 @@ make_texture_buffer(const string &name, int x_size, int y_size) {
       return buffer;
     }
     
-    engine->remove_window(buffer);
+    bool removed = engine->remove_window(buffer);
+    nassertr(removed, NULL);
     buffer = (GraphicsOutput *)NULL;
   }
 

@@ -130,7 +130,7 @@ private:
     void *_data;
   };
 
-  typedef ov_multiset< PT(GraphicsOutput), IndirectLess<GraphicsOutput> > Windows;
+  typedef ov_set< PT(GraphicsOutput), IndirectLess<GraphicsOutput> > Windows;
   typedef pset< PT(GraphicsStateGuardian) > GSGs;
   typedef pset< Callback > Callbacks;
 

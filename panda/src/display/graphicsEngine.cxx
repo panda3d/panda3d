@@ -359,6 +359,9 @@ remove_window(GraphicsOutput *window) {
   size_t count;
   {
     MutexHolder holder(_lock);
+    if (!_windows_sorted) {
+      do_resort_windows();
+    }
     count = _windows.erase(ptwin);
   }
   if (count == 0) {
@@ -367,6 +370,8 @@ remove_window(GraphicsOutput *window) {
   }
 
   do_remove_window(window);
+
+  nassertr(count == 1, true);
   return true;
 }
 
@@ -1167,6 +1172,7 @@ do_resort_windows() {
     RenderThread *thread = (*ti).second;
     thread->resort_windows();
   }
+
   _windows.sort();
 }
 

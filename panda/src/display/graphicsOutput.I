@@ -264,7 +264,10 @@ needs_context() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsOutput::
 operator < (const GraphicsOutput &other) const {
-  return _sort < other._sort;
+  if (_sort != other._sort) {
+    return _sort < other._sort;
+  }
+  return this < &other;
 }
 
 
