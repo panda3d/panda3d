@@ -71,8 +71,8 @@ add_entry(CollisionEntry *entry) {
 
   if (collide_cat.is_spam()) {
     collide_cat.spam()
-      << "Detected collision from " << (void *)entry->get_from_node()
-      << " to " << (void *)entry->get_into_node()
+      << "Detected collision from " << entry->get_from_node_path()
+      << " to " << entry->get_into_node_path()
       << ", inserted = " << inserted << "\n";
   }
 }
@@ -227,12 +227,12 @@ throw_event_pattern(const string &pattern, CollisionEntry *entry) {
           (entry->has_into() ? 'c' : 'g');
 
       } else if (cmd == "fh") {
-        if (!entry->get_from_node()->has_tag(key)) {
+        if (!entry->get_from_node_path().has_net_tag(key)) {
           return;
         }
 
       } else if (cmd == "fx") {
-        if (entry->get_from_node()->has_tag(key)) {
+        if (entry->get_from_node_path().has_net_tag(key)) {
           return;
         }
 
@@ -247,7 +247,7 @@ throw_event_pattern(const string &pattern, CollisionEntry *entry) {
         }
 
       } else if (cmd == "ft") {
-        event += entry->get_from_node()->get_tag(key);
+        event += entry->get_from_node_path().get_net_tag(key);
 
       } else if (cmd == "it") {
         if (entry->has_into()) {

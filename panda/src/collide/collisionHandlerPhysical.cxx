@@ -69,7 +69,7 @@ add_entry(CollisionEntry *entry) {
 
   if (entry->get_from()->is_tangible() &&
       (!entry->has_into() || entry->get_into()->is_tangible())) {
-    _from_entries[entry->get_from_node()].push_back(entry);
+    _from_entries[entry->get_from_node_path()].push_back(entry);
   }
 }
 

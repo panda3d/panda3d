@@ -27,13 +27,11 @@
 INLINE bool CollisionHandlerEvent::SortEntries::
 operator () (const PT(CollisionEntry) &a,
              const PT(CollisionEntry) &b) const {
-  if (a->get_from_node() != b->get_from_node()) {
-    return a->get_from_node() < b->get_from_node();
+  int compare_from = a->get_from_node_path().compare_to(b->get_from_node_path());
+  if (compare_from != 0) {
+    return compare_from < 0;
   }
-  if (a->get_into_node() != b->get_into_node()) {
-    return a->get_into_node() < b->get_into_node();
-  }
-  return false;
+  return a->get_into_node_path() < b->get_into_node_path();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -75,14 +73,14 @@ clear_in_patterns() {
 //                          CollisionNode, 'g' if it is a geom.
 //
 //                  %(tag)fh - generate event only if "from" node has
-//                          the indicated tag.
+//                          the indicated net tag.
 //                  %(tag)fx - generate event only if "from" node does 
-//                          not have the indicated tag.
+//                          not have the indicated net tag.
 //                  %(tag)ih - generate event only if "into" node has
 //                          the indicated net tag.
 //                  %(tag)ix - generate event only if "into" node does 
 //                          not have the indicated net tag.
-//                  %(tag)ft - the indicated tag value of the "from" node.
+//                  %(tag)ft - the indicated net tag value of the "from" node.
 //                  %(tag)it - the indicated net tag value of the "into" node.
 //
 //               Parentheses in the above are literal and should be

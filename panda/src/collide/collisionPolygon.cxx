@@ -425,7 +425,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 
   if (collide_cat.is_debug()) {
     collide_cat.debug()
-      << "intersection detected from " << *entry.get_from_node() << " into "
+      << "intersection detected from " << entry.get_from_node_path() << " into "
       << entry.get_into_node_path() << "\n";
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
@@ -501,7 +501,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 
   if (collide_cat.is_debug()) {
     collide_cat.debug()
-      << "intersection detected from " << *entry.get_from_node() << " into "
+      << "intersection detected from " << entry.get_from_node_path() << " into "
       << entry.get_into_node_path() << "\n";
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
@@ -570,7 +570,7 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
 
   if (collide_cat.is_debug()) {
     collide_cat.debug()
-      << "intersection detected from " << *entry.get_from_node() << " into "
+      << "intersection detected from " << entry.get_from_node_path() << " into "
       << entry.get_into_node_path() << "\n";
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
