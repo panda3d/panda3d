@@ -8,16 +8,7 @@
 
 #include <pandatoolbase.h>
 
-#include "txaFile.h"
-
 #include <eggMultiFilter.h>
-
-#include <vector>
-
-class PNMFileType;
-class EggFile;
-class PaletteGroup;
-class TextureImage;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : EggPalettize
@@ -46,20 +37,6 @@ public:
   bool _got_default_groupname;
   string _default_groupdir;
   bool _got_default_groupdir;
-  int _pal_size[2];
-  bool _got_palette_size;
-  int _margin;
-  bool _got_margin;
-  double _repeat_threshold;
-  bool _got_repeat_threshold;
-  bool _force_power_2;
-  bool _off_force_power_2;
-  bool _aggressively_clean_mapdir;
-  bool _off_aggressively_clean_mapdir;
-  string _image_type;
-  bool _got_image_type;
-  PNMFileType *_color_type;
-  PNMFileType *_alpha_type;
 
 private:
   // The following values control behavior specific to this session.

@@ -8,8 +8,6 @@
 #include "eggFile.h"
 #include "string_utils.h"
 
-#include <pnmFileTypeRegistry.h>
-#include <pnmFileType.h>
 #include <eggData.h>
 #include <bamFile.h>
 
@@ -122,55 +120,7 @@ EggPalettize() : EggMultiFilter(true) {
      "line.  Presumably a future make pass will cause them to be run "
      "through egg-palettize again.",
      &EggPalettize::dispatch_none, &_touch_eggs);
-  add_option
-    ("C", "", 0, 
-     "Aggressively keep the map directory clean by deleting unused "
-     "textures from previous passes.  This will remain in effect across "
-     "future sessions until -offC is specified.",
-     &EggPalettize::dispatch_none, &_aggressively_clean_mapdir);
-  add_option
-    ("offC", "", 0, 
-     "Turn off the aggressive cleaning specified by a past -C.",
-     &EggPalettize::dispatch_none, &_off_aggressively_clean_mapdir);
-  add_option
-    ("2", "", 0, 
-     "Force textures that have been left out of the palette to a size "
-     "which is an integer power of 2.  They will be scaled down to "
-     "achieve this.  This will remain in effect across future sessions "
-     "until -off2 is specified.",
-     &EggPalettize::dispatch_none, &_force_power_2);
-  add_option
-    ("off2", "", 0, 
-     "Turn off the power-of-2 scaling specified by a past -2.",
-     &EggPalettize::dispatch_none, &_off_force_power_2);
-  add_option
-    ("type", "imagetype[,alphatype]", 0, 
-     "Specify the type of image file to output.  All image files, whether "
-     "palettes or unplaced textures, will be converted to files of this "
-     "type.  If the optional alpha type is specified, then an alpha channel, "
-     "if present, will be written as a separate file of the indicated "
-     "type--useful if the primary image type does not support alpha.  "
-     "Use '-type list' to show the available image types.",
-     &EggPalettize::dispatch_string, &_got_image_type, &_image_type);
-  add_option
-    ("m", "margin", 0, 
-     "Specify the default margin size.",
-     &EggPalettize::dispatch_int, &_got_margin, &_margin);
-  add_option
-    ("r", "percent", 0, 
-     "A repeating texture may still be palettized if it does not repeat "
-     "very many times, by adding multiple adjacent copies of the "
-     "texture to the palette.  This parameter specifies the cutoff "
-     "threshold for this.  This is the maximum "
-     "percentage a texture will be expanded to palettize a repeating "
-     "texture.  If this is set to 100, no repeating textures will be "
-     "palettized; if this is set to 200, a texture that repeats twice "
-     "will be palettized by adding it to the palette twice.",
-     &EggPalettize::dispatch_double, &_got_repeat_threshold, &_repeat_threshold);
-  add_option
-    ("P", "x,y", 0, 
-     "Specify the default palette size.",
-     &EggPalettize::dispatch_int_pair, &_got_palette_size, _pal_size);
+
   add_option
     ("nolock", "", 0, 
      "Don't attempt to lock the .pi file before rewriting it.  Use "
@@ -184,8 +134,6 @@ EggPalettize() : EggMultiFilter(true) {
      &EggPalettize::dispatch_none, &_describe_input_file);
 
   _txa_filename = "textures.txa";
-  _color_type = (PNMFileType *)NULL;
-  _alpha_type = (PNMFileType *)NULL;
 }
 
 
@@ -202,16 +150,6 @@ handle_args(ProgramBase::Args &args) {
   if (_describe_input_file) {
     describe_input_file();
     exit(1);
-  }
-
-  if (_got_image_type) {
-    if (_image_type == "list" ||
-	!parse_image_type_request(_image_type, _color_type, _alpha_type)) {
-      nout << "\nKnown image types are:\n";
-      PNMFileTypeRegistry::get_ptr()->write_types(nout, 2);
-      nout << "\n";
-      exit(1);
-    }
   }
 
   return EggMultiFilter::handle_args(args);
@@ -345,37 +283,6 @@ run() {
   if (_report_pi) {
     pal->report_pi();
     exit(0);
-  }
-
-  if (_got_image_type) {
-    pal->_color_type = _color_type;
-    pal->_alpha_type = _alpha_type;
-  }
-
-  if (_got_margin) {
-    pal->_margin = _margin;
-  }
-
-  if (_got_repeat_threshold) {
-    pal->_repeat_threshold = _repeat_threshold;
-  }
-
-  if (_got_palette_size) {
-    pal->_pal_x_size = _pal_size[0];
-    pal->_pal_y_size = _pal_size[1];
-  }
-
-  if (_force_power_2) {
-    pal->_force_power_2 = true;
-  }
-  if (_off_force_power_2) {
-    pal->_force_power_2 = false;
-  }
-  if (_aggressively_clean_mapdir) {
-    pal->_aggressively_clean_mapdir = true;
-  }
-  if (_off_aggressively_clean_mapdir) {
-    pal->_aggressively_clean_mapdir = false;
   }
 
   if (_got_default_groupname) {

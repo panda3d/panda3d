@@ -34,6 +34,12 @@ public:
 
 private:
   bool parse_group_line(const vector_string &words);
+  bool parse_palette_line(const vector_string &words);
+  bool parse_margin_line(const vector_string &words);
+  bool parse_repeat_line(const vector_string &words);
+  bool parse_imagetype_line(const vector_string &words);
+  bool parse_round_line(const vector_string &words);
+  bool parse_remap_line(const vector_string &words);
 
   typedef vector<TxaLine> Lines;
   Lines _lines;

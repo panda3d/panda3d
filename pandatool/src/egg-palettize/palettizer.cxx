@@ -38,11 +38,11 @@ Palettizer() {
 
   _margin = 2;
   _repeat_threshold = 250.0;
-  _aggressively_clean_mapdir = false;
-  _force_power_2 = false;
+  _aggressively_clean_mapdir = true;
+  _force_power_2 = true;
   _color_type = PNMFileTypeRegistry::get_ptr()->get_type_from_extension("rgb");
   _alpha_type = (PNMFileType *)NULL;
-  _pal_x_size = _pal_y_size = 256;
+  _pal_x_size = _pal_y_size = 512;
 
   _round_uvs = true;
   _round_unit = 0.1;
@@ -123,7 +123,7 @@ report_pi() const {
     cout << "\n";
   }
 
-  cerr << "textures\n";
+  cout << "textures\n";
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
     TextureImage *texture = (*ti).second;
     texture->write_scale_info(cout, 2);
@@ -139,6 +139,12 @@ report_pi() const {
 ////////////////////////////////////////////////////////////////////
 void Palettizer::
 run(const TxaFile &txa_file) {
+  if (_color_type == (PNMFileType *)NULL) {
+    nout << "No valid output image file type available, cannot run.\n"
+	 << "Use :imagetype command in .txa file.\n";
+    exit(1);
+  }
+
   set<TextureImage *> command_line_textures;
 
   // Start by scanning all the egg files we read up on the command

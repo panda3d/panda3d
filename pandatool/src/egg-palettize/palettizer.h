@@ -121,6 +121,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class EggPalettize;
+  friend class TxaLine;
 };
 
 extern Palettizer *pal;
