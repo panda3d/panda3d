@@ -105,6 +105,7 @@ end_group() {
 
     } else {
       // This element is in both b and a.  It hasn't changed.
+      throw_event_pattern(_again_pattern, *cb);
       ++ca;
       ++cb;
     }
@@ -123,6 +124,27 @@ end_group() {
     throw_event_pattern(_out_pattern, *cb);
     ++cb;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerEvent::clear
+//       Access: Public
+//  Description: Empties the list of elements that all colliders are
+//               known to be colliding with.  No "out" events will be
+//               thrown; if the same collision is detected next frame,
+//               a new "in" event will be thrown for each collision.
+//
+//               This can be called each frame to defeat the
+//               persistant "in" event mechanism, which prevents the
+//               same "in" event from being thrown repeatedly.
+//               However, also see set_again_pattern(), which can be
+//               used to set the event that is thrown when a collision
+//               is detected for more than one consecutive frames.
+////////////////////////////////////////////////////////////////////
+void CollisionHandlerEvent::
+clear() {
+  _last_colliding.clear();
+  _current_colliding.clear();
 }
 
 ////////////////////////////////////////////////////////////////////

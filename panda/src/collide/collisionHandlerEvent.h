@@ -35,13 +35,18 @@ public:
 PUBLISHED:
   INLINE void set_in_pattern(const string &pattern);
   INLINE string get_in_pattern() const;
+  INLINE void set_again_pattern(const string &pattern);
+  INLINE string get_again_pattern() const;
   INLINE void set_out_pattern(const string &pattern);
   INLINE string get_out_pattern() const;
+
+  void clear();
 
 private:
   void throw_event_pattern(const string &pattern, CollisionEntry *entry);
 
   string _in_pattern;
+  string _again_pattern;
   string _out_pattern;
 
   int _index;
