@@ -35,6 +35,7 @@ class ControlManager:
         inputState.watch("forward", "alt-arrow_up", "arrow_up-up")
         inputState.watch("forward", "control-alt-arrow_up", "arrow_up-up")
         inputState.watch("forward", "shift-arrow_up", "arrow_up-up")
+        inputState.watch("forward", "force-forward", "force-forward-stop")
         
         inputState.watch("reverse", "arrow_down", "arrow_down-up")
         inputState.watch("reverse", "control-arrow_down", "arrow_down-up")
