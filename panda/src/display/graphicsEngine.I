@@ -105,8 +105,9 @@ make_window(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
 ////////////////////////////////////////////////////////////////////
 INLINE GraphicsBuffer *GraphicsEngine::
 make_buffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
-            int x_size, int y_size) {
-  return make_buffer(pipe, gsg, x_size, y_size, get_threading_model());
+            int x_size, int y_size, bool want_texture) {
+  return make_buffer(pipe, gsg, x_size, y_size, want_texture, 
+                     get_threading_model());
 }
 
 ////////////////////////////////////////////////////////////////////

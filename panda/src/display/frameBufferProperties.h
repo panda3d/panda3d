@@ -44,6 +44,7 @@ PUBLISHED:
     FM_single_buffer = 0x0000,
     FM_double_buffer = 0x0002,
     FM_triple_buffer = 0x0004,
+    FM_buffer        = 0x0006,  // == (FM_single_buffer | FM_double_buffer | FM_triple_buffer)
     FM_accum =         0x0008,
     FM_alpha =         0x0010,
     FM_depth =         0x0020,

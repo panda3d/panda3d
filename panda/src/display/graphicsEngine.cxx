@@ -224,7 +224,7 @@ make_window(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
 ////////////////////////////////////////////////////////////////////
 GraphicsBuffer *GraphicsEngine::
 make_buffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
-            int x_size, int y_size,
+            int x_size, int y_size, bool want_texture,
             const GraphicsThreadingModel &threading_model) {
   if (gsg != (GraphicsStateGuardian *)NULL) {
     nassertr(pipe == gsg->get_pipe(), NULL);
@@ -234,7 +234,8 @@ make_buffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   }
 
   // TODO: ask the window thread to make the buffer.
-  PT(GraphicsBuffer) buffer = pipe->make_buffer(gsg, x_size, y_size);
+  PT(GraphicsBuffer) buffer = 
+    pipe->make_buffer(gsg, x_size, y_size, want_texture);
   do_add_window(buffer, gsg, threading_model);
   return buffer;
 }
@@ -881,6 +882,9 @@ do_add_window(GraphicsOutput *window, GraphicsStateGuardian *gsg,
 
     display_cat.info()
       << "Created " << window->get_type() << "\n";
+
+    // By default, try to open each window as it is added.
+    window->request_open();
   }
 }
 

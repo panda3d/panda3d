@@ -73,15 +73,19 @@ public:
 public:
   virtual void request_open();
   virtual void request_close();
-  virtual void set_close_now();
 
   // It is an error to call any of the following methods from any
   // thread other than the window thread.  These methods are normally
   // called by the GraphicsEngine.
+  virtual void set_close_now();
   virtual void process_events();
   virtual void set_properties_now(WindowProperties &properties);
 
 protected:
+  virtual void close_window();
+  virtual bool open_window();
+  virtual void reset_window(bool swapchain);
+
   virtual bool do_reshape_request(int x_origin, int y_origin,
                                   int x_size, int y_size);
 

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_wgldisplay.h"
+#include "wglGraphicsBuffer.h"
 #include "wglGraphicsPipe.h"
 #include "wglGraphicsStateGuardian.h"
 #include "wglGraphicsWindow.h"
@@ -46,6 +47,7 @@ init_libwgldisplay() {
   }
   initialized = true;
 
+  wglGraphicsBuffer::init_type();
   wglGraphicsPipe::init_type();
   wglGraphicsStateGuardian::init_type();
   wglGraphicsWindow::init_type();

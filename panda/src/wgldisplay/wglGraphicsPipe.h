@@ -39,11 +39,12 @@ public:
 protected:
   virtual PT(GraphicsStateGuardian) make_gsg(const FrameBufferProperties &properties);
   virtual PT(GraphicsWindow) make_window(GraphicsStateGuardian *gsg);
-
+  virtual PT(GraphicsBuffer) make_buffer(GraphicsStateGuardian *gsg, 
+                                         int x_size, int y_size, bool want_texture);
 private:
-  int choose_pfnum(FrameBufferProperties &properties, HDC hdc) const;
-  int find_pixfmtnum(FrameBufferProperties &properties, HDC hdc,
-                     bool bLookforHW) const;
+  static int choose_pfnum(FrameBufferProperties &properties, HDC hdc);
+  static int find_pixfmtnum(FrameBufferProperties &properties, HDC hdc,
+                            bool bLookforHW);
 
 public:
   static TypeHandle get_class_type() {

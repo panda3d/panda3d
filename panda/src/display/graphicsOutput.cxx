@@ -461,6 +461,18 @@ request_close() {
 void GraphicsOutput::
 set_close_now() {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::reset_window
+//       Access: Protected, Virtual
+//  Description: resets the window framebuffer from its derived
+//               children. Does nothing here.
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+reset_window(bool swapchain) {
+  display_cat.info()
+    << "Resetting " << get_type() << "\n";
+}
  
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::begin_frame
@@ -586,42 +598,6 @@ end_flip() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
 process_events() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::close_window
-//       Access: Protected, Virtual
-//  Description: Closes the window right now.  Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
-void GraphicsOutput::
-close_window() {
-  display_cat.info()
-    << "Closing " << get_type() << "\n";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::reset_window
-//       Access: Protected, Virtual
-//  Description: resets the window framebuffer from its derived
-//               children. Does nothing here.
-////////////////////////////////////////////////////////////////////
-void GraphicsOutput::
-reset_window(bool swapchain) {
-  display_cat.info()
-    << "Resetting " << get_type() << "\n";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::open_window
-//       Access: Protected, Virtual
-//  Description: Opens the window right now.  Called from the window
-//               thread.  Returns true if the window is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
-bool GraphicsOutput::
-open_window() {
-  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

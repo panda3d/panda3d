@@ -19,6 +19,8 @@
 #include "wglGraphicsPipe.h"
 #include "config_wgldisplay.h"
 #include "config_windisplay.h"
+#include "wglGraphicsWindow.h"
+#include "wglGraphicsBuffer.h"
 
 typedef enum {Software, MCD, ICD} OGLDriverType;
 static const char * const OGLDrvStrings[] = { "Software", "MCD", "ICD" };
@@ -82,14 +84,16 @@ make_gsg(const FrameBufferProperties &properties) {
   if (!_is_valid) {
     return NULL;
   }
-  
+
+  // Make a copy of the supplied properties so we can possibly modify
+  // them to suit our available properties.
   FrameBufferProperties new_properties = properties;
 
-  // Get a handle to the screen's DC so we can choose a pixel format
-  // (and a corresponding set of frame buffer properties) suitable for
-  // rendering to windows on this screen.
+  // We need a DC to examine the available pixel formats.  We'll use
+  // the screen DC.
   HDC hdc = GetDC(NULL);
   int pfnum = choose_pfnum(new_properties, hdc);
+  ReleaseDC(NULL, hdc);
 
   if (gl_force_pixfmt != 0) {
     wgldisplay_cat.info()
@@ -103,12 +107,8 @@ make_gsg(const FrameBufferProperties &properties) {
       << "config() - picking pixfmt #" << pfnum <<endl;
   }
 
-  // Now we're done with the screen's hdc, so release it.
-  ReleaseDC(NULL, hdc);
-
-  // Now we can make a GSG.
   PT(wglGraphicsStateGuardian) gsg = 
-    new wglGraphicsStateGuardian(new_properties, pfnum);
+    new wglGraphicsStateGuardian(properties, pfnum);
 
   return gsg.p();
 }
@@ -124,8 +124,19 @@ make_window(GraphicsStateGuardian *gsg) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsPipe::make_buffer
+//       Access: Protected, Virtual
+//  Description: Creates a new offscreen buffer on the pipe, if possible.
+////////////////////////////////////////////////////////////////////
+PT(GraphicsBuffer) wglGraphicsPipe::
+make_buffer(GraphicsStateGuardian *gsg, int x_size, int y_size, 
+            bool want_texture) {
+  return new wglGraphicsBuffer(this, gsg, x_size, y_size, want_texture);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsPipe::choose_pfnum
-//       Access: Private
+//       Access: Private, Static
 //  Description: Selects a suitable pixel format number for the given
 //               frame buffer properties.  Returns the selected number
 //               if successful, or 0 otherwise.
@@ -134,9 +145,8 @@ make_window(GraphicsStateGuardian *gsg) {
 //               the actual visual chosen.
 ////////////////////////////////////////////////////////////////////
 int wglGraphicsPipe::
-choose_pfnum(FrameBufferProperties &properties, HDC hdc) const {
+choose_pfnum(FrameBufferProperties &properties, HDC hdc) {
   int pfnum;
-  bool bUsingSoftware = false;
 
   if (force_software_renderer) {
     pfnum = find_pixfmtnum(properties, hdc, false);
@@ -146,7 +156,6 @@ choose_pfnum(FrameBufferProperties &properties, HDC hdc) const {
         << "Couldn't find compatible software-renderer OpenGL pixfmt, check your window properties!\n";
       return 0;
     }
-    bUsingSoftware = true;
 
   } else {
     pfnum = find_pixfmtnum(properties, hdc, true);
@@ -156,7 +165,11 @@ choose_pfnum(FrameBufferProperties &properties, HDC hdc) const {
         if (pfnum == 0) {
           wgldisplay_cat.error()
             << "Couldn't find HW or Software OpenGL pixfmt appropriate for this desktop!!\n";
+        } else {
+          wgldisplay_cat.info()
+            << "Couldn't find compatible OGL HW pixelformat, using software rendering.\n";
         }
+
       } else {
         wgldisplay_cat.error()
           << "Couldn't find HW-accelerated OpenGL pixfmt appropriate for this desktop!!\n";
@@ -168,13 +181,7 @@ choose_pfnum(FrameBufferProperties &properties, HDC hdc) const {
           << "desktop screen pixeldepth to 16bpp,and check your panda window properties\n";
         return 0;
       }
-      bUsingSoftware = true;
     }
-  }
-  
-  if (bUsingSoftware) {
-    wgldisplay_cat.info()
-      << "Couldn't find compatible OGL HW pixelformat, using software rendering.\n";
   }
   
   return pfnum;
@@ -182,7 +189,7 @@ choose_pfnum(FrameBufferProperties &properties, HDC hdc) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsPipe::find_pixfmtnum
-//       Access: Private
+//       Access: Private, Static
 //  Description: This helper routine looks for either HW-only or
 //               SW-only format, but not both.  Returns the
 //               pixelformat number, or 0 if a suitable format could
@@ -190,7 +197,7 @@ choose_pfnum(FrameBufferProperties &properties, HDC hdc) const {
 ////////////////////////////////////////////////////////////////////
 int wglGraphicsPipe::
 find_pixfmtnum(FrameBufferProperties &properties, HDC hdc,
-               bool bLookforHW) const {
+               bool bLookforHW) {
   int frame_buffer_mode = properties.get_frame_buffer_mode();
   bool want_depth_bits = properties.has_depth_bits();
   bool want_color_bits = properties.has_color_bits();
@@ -201,14 +208,14 @@ find_pixfmtnum(FrameBufferProperties &properties, HDC hdc,
   pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
   pfd.nVersion = 1;
 
-  // just use the pixfmt of the current desktop
+  // We have to call DescribePixelFormat() once just to get the
+  // highest pfnum available.  Then we can iterate through all of the
+  // pfnums.
+  int max_pfnum = DescribePixelFormat(hdc, 1, 0, NULL);
+  int cur_bpp = GetDeviceCaps(hdc, BITSPIXEL);
+  int pfnum = 0;
 
-  int MaxPixFmtNum = 
-    DescribePixelFormat(hdc, 1, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
-  int cur_bpp = GetDeviceCaps(hdc,BITSPIXEL);
-  int pfnum;
-
-  for(pfnum = 1; pfnum <= MaxPixFmtNum; pfnum++) {
+  for (pfnum = 1; pfnum <= max_pfnum; pfnum++) {
     DescribePixelFormat(hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
 
     // official, nvidia sanctioned way.
@@ -237,58 +244,70 @@ find_pixfmtnum(FrameBufferProperties &properties, HDC hdc,
     }
 
     DWORD dwReqFlags = (PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW);
+    if ((frame_buffer_mode & FrameBufferProperties::FM_double_buffer) != 0) {
+      dwReqFlags|= PFD_DOUBLEBUFFER;
+    }
 
     if (wgldisplay_cat.is_debug()) {
-      wgldisplay_cat->debug()
+      wgldisplay_cat.debug()
         << "----------------" << endl;
 
       if ((frame_buffer_mode & FrameBufferProperties::FM_alpha) != 0) {
-        wgldisplay_cat->debug()
+        wgldisplay_cat.debug()
           << "want alpha, pfd says '"
           << (int)(pfd.cAlphaBits) << "'" << endl;
       }
       if ((frame_buffer_mode & FrameBufferProperties::FM_depth) != 0) {
-        wgldisplay_cat->debug()
+        wgldisplay_cat.debug()
           << "want depth, pfd says '"
           << (int)(pfd.cDepthBits) << "'" << endl;
       }
       if ((frame_buffer_mode & FrameBufferProperties::FM_stencil) != 0) {
-        wgldisplay_cat->debug()
+        wgldisplay_cat.debug()
           << "want stencil, pfd says '"
           << (int)(pfd.cStencilBits) << "'" << endl;
       }
-      wgldisplay_cat->debug()
+      wgldisplay_cat.debug()
         << "final flag check " << (int)(pfd.dwFlags & dwReqFlags) << " =? "
         << (int)dwReqFlags << endl;
-      wgldisplay_cat->debug() 
+      wgldisplay_cat.debug() 
         << "pfd bits = " << (int)(pfd.cColorBits) << endl;
-      wgldisplay_cat->debug() 
+      wgldisplay_cat.debug() 
         << "cur_bpp = " << cur_bpp << endl;
     }
 
-    if ((frame_buffer_mode & FrameBufferProperties::FM_double_buffer) != 0) {
-      dwReqFlags|= PFD_DOUBLEBUFFER;
-    }
     if ((frame_buffer_mode & FrameBufferProperties::FM_alpha) != 0 && 
         (pfd.cAlphaBits==0)) {
+      wgldisplay_cat.debug() 
+        << "  rejecting because alpha is missing.\n";
       continue;
     }
     if ((frame_buffer_mode & FrameBufferProperties::FM_depth) != 0 && 
         (pfd.cDepthBits==0)) {
+      wgldisplay_cat.debug() 
+        << "  rejecting because depth is missing.\n";
       continue;
     }
     if ((frame_buffer_mode & FrameBufferProperties::FM_stencil) != 0 && 
         (pfd.cStencilBits==0)) {
+      wgldisplay_cat.debug() 
+        << "  rejecting because stencil is missing.\n";
       continue;
     }
 
     if ((pfd.dwFlags & dwReqFlags) != dwReqFlags) {
+      wgldisplay_cat.debug() 
+        << "  rejecting because some other required flags are missing.\n";
       continue;
     }
 
     // now we ignore the specified want_color_bits for windowed mode
     // instead we use the current screen depth
 
+    // drose: Does this help anything?  Checking the current screen
+    // depth doesn't make sense if we are rendering offscreen or if we
+    // are planning to open a fullscreen window, and it seems like it
+    // shouldn't be necessary anyway.
     if ((pfd.cColorBits!=cur_bpp) && 
         (!((cur_bpp==16) && (pfd.cColorBits==15))) && 
         (!((cur_bpp==32) && (pfd.cColorBits==24)))) {
@@ -299,12 +318,9 @@ find_pixfmtnum(FrameBufferProperties &properties, HDC hdc,
     // Note: could go continue looping looking for more alpha bits or
     // more depth bits so this would pick 16bpp depth buffer, probably
     // not 24bpp
-    break;
+    return pfnum;
   }
 
-  if (pfnum > MaxPixFmtNum) {
-    pfnum = 0;
-  }
-
-  return pfnum;
+  // No pfnum was acceptable.
+  return 0;
 }

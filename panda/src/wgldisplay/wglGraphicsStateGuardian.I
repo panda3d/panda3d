@@ -20,7 +20,12 @@
 //     Function: wglGraphicsStateGuardian::get_pfnum
 //       Access: Public
 //  Description: Returns the pixel format number chosen for windows
-//               that use this context.
+//               that use this context.  In OpenGL under Microsoft
+//               Windows, the window must be created first and then
+//               the GL context is created from the window, and the
+//               context inherits the pixel format of the window.
+//               Therefore, all windows that share a particular
+//               context must also share the same pixel format.
 ////////////////////////////////////////////////////////////////////
 INLINE int wglGraphicsStateGuardian::
 get_pfnum() const {

@@ -164,6 +164,6 @@ make_window(GraphicsStateGuardian *) {
 //  Description: Creates a new offscreen buffer on the pipe, if possible.
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsBuffer) GraphicsPipe::
-make_buffer(GraphicsStateGuardian *, int, int) {
+make_buffer(GraphicsStateGuardian *, int, int, bool) {
   return NULL;
 }

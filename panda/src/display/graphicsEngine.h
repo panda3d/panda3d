@@ -36,6 +36,7 @@ class Pipeline;
 class DisplayRegion;
 class GraphicsPipe;
 class FrameBufferProperties;
+class Texture;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsEngine
@@ -78,10 +79,10 @@ PUBLISHED:
                               const GraphicsThreadingModel &threading_model);
   INLINE GraphicsBuffer *make_buffer(GraphicsPipe *pipe,
                                      GraphicsStateGuardian *gsg,
-                                     int x_size, int y_size);
+                                     int x_size, int y_size, bool want_texture);
   GraphicsBuffer *make_buffer(GraphicsPipe *pipe,
                               GraphicsStateGuardian *gsg,
-                              int x_size, int y_size,
+                              int x_size, int y_size, bool want_texture,
                               const GraphicsThreadingModel &threading_model);
 
   bool remove_window(GraphicsOutput *window);

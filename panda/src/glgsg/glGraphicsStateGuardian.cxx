@@ -1643,35 +1643,6 @@ draw_sphere(GeomSphere *geom, GeomContext *) {
 ////////////////////////////////////////////////////////////////////
 TextureContext *GLGraphicsStateGuardian::
 prepare_texture(Texture *tex) {
-  GLint max_tex_size; 
-  glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_tex_size); 
-
-  int xsize = tex->_pbuffer->get_xsize();
-  int ysize = tex->_pbuffer->get_ysize();
-
-  if ((xsize> max_tex_size) || (ysize > max_tex_size)) {
-    glgsg_cat.warning() 
-      << tex->get_name() <<": "<< xsize << "x" << ysize
-      << " exceeds max tex size " << max_tex_size << "x" << max_tex_size << endl;
-    // Rather than returning NULL in these error cases, which will
-    // crab out Panda, we simply let GL go ahead and do the best it
-    // can do.
-  }
-
-  // regular GL does not allow non-pow2 size textures
-  // the GL_NV_texture_rectangle EXT does allow non-pow2 sizes, albeit with no mipmaps or coord wrapping
-  // should probably add checks for that in here at some point
-  // or you could use gluBuild2DMipMaps to scale the texture to the nearest pow2 size
-
-  if (!(ISPOW2(xsize) && ISPOW2(ysize))) {
-    glgsg_cat.warning() 
-      << tex->get_name() <<": "<< xsize << "x" << ysize 
-      << " is not a power of 2 size!\n";
-    // Rather than returning NULL in these error cases, which will
-    // crab out Panda, we simply let GL go ahead and do the best it
-    // can do.
-  }
-
   GLTextureContext *gtc = new GLTextureContext(tex);
   glGenTextures(1, &gtc->_index);
 

@@ -13,21 +13,21 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
   
   #define INSTALL_HEADERS \
-     config_wgldisplay.h \
-     wglGraphicsPipe.I wglGraphicsPipe.h \
-     wglGraphicsStateGuardian.I wglGraphicsStateGuardian.h \
-     wglGraphicsWindow.I wglGraphicsWindow.h
-//     Win32Defs.h  
+    config_wgldisplay.h \
+    wglGraphicsBuffer.I wglGraphicsBuffer.h \
+    wglGraphicsPipe.I wglGraphicsPipe.h \
+    wglGraphicsStateGuardian.I wglGraphicsStateGuardian.h \
+    wglGraphicsWindow.I wglGraphicsWindow.h
     
   #define INCLUDED_SOURCES \
     config_wgldisplay.cxx \
+    wglGraphicsBuffer.cxx \
     wglGraphicsPipe.cxx \
     wglGraphicsStateGuardian.cxx \
     wglGraphicsWindow.cxx
 
   #define SOURCES \
     $[INSTALL_HEADERS]
-//    wglext.h
 
 
 #end lib_target

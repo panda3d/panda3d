@@ -32,6 +32,7 @@ class GraphicsWindow;
 class GraphicsBuffer;
 class GraphicsStateGuardian;
 class FrameBufferProperties;
+class Texture;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsPipe
@@ -94,7 +95,8 @@ protected:
   virtual PT(GraphicsStateGuardian) make_gsg(const FrameBufferProperties &properties);
   virtual void close_gsg(GraphicsStateGuardian *gsg);
   virtual PT(GraphicsWindow) make_window(GraphicsStateGuardian *gsg);
-  virtual PT(GraphicsBuffer) make_buffer(GraphicsStateGuardian *gsg, int x_size, int y_size);
+  virtual PT(GraphicsBuffer) make_buffer(GraphicsStateGuardian *gsg, 
+                                         int x_size, int y_size, bool want_texture);
 
   Mutex _lock;
 

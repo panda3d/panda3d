@@ -538,6 +538,42 @@ set_properties_now(WindowProperties &properties) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::close_window
+//       Access: Protected, Virtual
+//  Description: Closes the window right now.  Called from the window
+//               thread.
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+close_window() {
+  display_cat.info()
+    << "Closing " << get_type() << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::open_window
+//       Access: Protected, Virtual
+//  Description: Opens the window right now.  Called from the window
+//               thread.  Returns true if the window is successfully
+//               opened, or false if there was a problem.
+////////////////////////////////////////////////////////////////////
+bool GraphicsWindow::
+open_window() {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::reset_window
+//       Access: Protected, Virtual
+//  Description: resets the window framebuffer from its derived
+//               children. Does nothing here.
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+reset_window(bool swapchain) {
+  display_cat.info()
+    << "Resetting " << get_type() << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::do_reshape_request
 //       Access: Protected, Virtual
 //  Description: Called from the window thread in response to a request

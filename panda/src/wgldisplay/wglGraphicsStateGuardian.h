@@ -39,8 +39,12 @@ public:
 private:
   void make_context(HDC hdc);
 
-  bool _made_context;
+  // All windows that share a particular GL context must also share
+  // the same pixel format; therefore, we store the pixel format
+  // number in the GSG.
   int _pfnum;
+
+  bool _made_context;
   HGLRC _context;
 
 public:

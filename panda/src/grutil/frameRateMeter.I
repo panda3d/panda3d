@@ -24,7 +24,7 @@
 //               render itself into the indicated window.
 ////////////////////////////////////////////////////////////////////
 INLINE void FrameRateMeter::
-setup_layer(GraphicsWindow *window) {
+setup_layer(GraphicsOutput *window) {
   setup_layer(window->get_channel(0));
 }
 

@@ -22,7 +22,7 @@
 #include "pandabase.h"
 #include "textNode.h"
 #include "nodePath.h"
-#include "graphicsWindow.h"
+#include "graphicsOutput.h"
 #include "graphicsLayer.h"
 #include "pointerTo.h"
 #include "pStatCollector.h"
@@ -47,7 +47,7 @@ PUBLISHED:
   FrameRateMeter(const string &name);
   virtual ~FrameRateMeter();
 
-  INLINE void setup_layer(GraphicsWindow *window);
+  INLINE void setup_layer(GraphicsOutput *window);
   void setup_layer(GraphicsChannel *channel);
   void clear_layer();
 
