@@ -84,6 +84,7 @@ run() {
 
     CVSSourceDirectory *dest = import(*fi, &ed, _model_dir);
     if (dest == (CVSSourceDirectory *)NULL) {
+      nout << "\nUnable to copy, aborting!\n\n";
       exit(1);
     }
   }
@@ -162,9 +163,14 @@ copy_maya_file(const Filename &source, const Filename &dest,
     if (shader->_has_texture) {
       Filename texture_filename = 
         _path_replace->convert_path(shader->_texture);
+      cerr << "texture " << shader->_name << " is " << shader->_texture << "\n"
+           << "filename is " << texture_filename << "\n";
       if (!texture_filename.exists()) {
         nout << "*** Warning: texture " << texture_filename
              << " does not exist.\n";
+      } else if (!texture_filename.is_regular_file()) {
+        nout << "*** Warning: texture " << texture_filename
+             << " is not a regular file.\n";
       } else {
         ExtraData ed;
         ed._type = FT_texture;
