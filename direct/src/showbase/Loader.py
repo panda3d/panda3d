@@ -193,12 +193,7 @@ class Loader:
             # and spaceAdvance should be set last, since some of the
             # other parameters can cause these to be reset to their
             # default.
-            
-            # temporary try..except for old Pandas.
-            try:
-                font.setLineHeight(lineHeight)
-            except:
-                pass
+            font.setLineHeight(lineHeight)
 
         if spaceAdvance != None:
             font.setSpaceAdvance(spaceAdvance)
