@@ -94,12 +94,13 @@ Downloader::
 int Downloader::
 connect_to_server_by_proxy(const string &proxy_name, uint proxy_port,
 			   const string &server_name) {
-  if (connect_to_server(proxy_name, proxy_port) != EU_success)
+  if (connect_to_server(proxy_name, proxy_port) != EU_success) {
     downloader_cat.error()
       << "Downloader::connect_to_server_by_proxy() - could not connect to: "
       << proxy_name << endl;	
     return EU_error_abort;
-
+  }
+  
   _proxy_string = "http://";
   _proxy_string += server_name;
   _use_proxy = true;
@@ -114,8 +115,6 @@ connect_to_server_by_proxy(const string &proxy_name, uint proxy_port,
 ////////////////////////////////////////////////////////////////////
 int Downloader::
 connect_to_server(const string &name, uint port) {
-
-  _use_proxy = false;
 
 #if defined(WIN32)
   if (_TCP_stack_initialized == false) {
@@ -295,8 +294,8 @@ fast_receive(int socket, DownloadStatus *status, int rec_size) {
       << handle_socket_error() << endl;
     return get_network_error();
   }
-  if (downloader_cat.is_debug())
-    downloader_cat.debug()
+  if (downloader_cat.is_spam())
+    downloader_cat.spam()
       << "Downloader::fast_receive() - recv() requested: " << rec_size
       << " got: " << ret << " bytes" << endl;
   status->_next_in += ret;
@@ -506,8 +505,8 @@ run(void) {
 
   // Recompute the buffer size if necessary
   if (_recompute_buffer == true) {
-    if (downloader_cat.is_debug())
-      downloader_cat.debug()
+    if (downloader_cat.is_spam())
+      downloader_cat.spam()
         << "Downloader::run() - Recomputing the buffer" << endl;
 
     // Flush the current buffer if it holds any data
@@ -535,8 +534,8 @@ run(void) {
   } else if (_current_status->_bytes_in_buffer + _receive_size > ((unsigned int)_disk_buffer_size)) {
 
     // Flush the current buffer if the next request would overflow it
-    if (downloader_cat.is_debug())
-      downloader_cat.debug()
+    if (downloader_cat.is_spam())
+      downloader_cat.spam()
         << "Downloader::run() - Flushing buffer" << endl;
     write_ret = write_to_disk(_current_status);
     if (write_ret < 0)
@@ -550,8 +549,8 @@ run(void) {
   if (_receive_size > (ulong)MAX_RECEIVE_BYTES) {
     int repeat = (int)(_receive_size / MAX_RECEIVE_BYTES);
     int remain = (int)fmod((double)_receive_size, (double)MAX_RECEIVE_BYTES);
-    if (downloader_cat.is_debug())
-      downloader_cat.debug()
+    if (downloader_cat.is_spam())
+      downloader_cat.spam()
         << "Downloader::run() - fast connection - repeat: " << repeat
         << " remain: " << remain << endl;
     // Make multiple requests at once but do not exceed MAX_RECEIVE_BYTES
@@ -568,8 +567,8 @@ run(void) {
       }
     }
   } else { // Handle the normal speed connection case
-    if (downloader_cat.is_debug())
-      downloader_cat.debug()
+    if (downloader_cat.is_spam())
+      downloader_cat.spam()
         << "Downloader::run() - normal connection" << endl;
     fret = fast_receive(_socket, _current_status, _receive_size);
   }
@@ -584,20 +583,20 @@ run(void) {
         if (write_ret < 0)
           return write_ret;
       }
-      if (downloader_cat.is_debug())
-        downloader_cat.debug()
+      if (downloader_cat.is_spam())
+        downloader_cat.spam()
           << "Downloader::run() - Got eof" << endl;
       cleanup();
       return EU_success;
     } else {
-      if (downloader_cat.is_debug())
-        downloader_cat.debug()
+      if (downloader_cat.is_spam())
+        downloader_cat.spam()
           << "Downloader::run() - Got 0 bytes" << endl;
       return ret;
     }
   } else if (fret == EU_network_no_data) {
-    if (downloader_cat.is_debug())
-      downloader_cat.debug()
+    if (downloader_cat.is_spam())
+      downloader_cat.spam()
         << "Downloader::run() - No data" << endl;
       return ret;
   } else if (fret < 0) {
@@ -629,8 +628,8 @@ run_to_ram(void) {
 
   // Recompute the buffer size if necessary
   if (_recompute_buffer == true) {
-    if (downloader_cat.is_debug())
-      downloader_cat.debug()
+    if (downloader_cat.is_spam())
+      downloader_cat.spam()
         << "Downloader::run_to_ram() - Recomputing the buffer" << endl;
 
     // Flush the current buffer if it holds any data
@@ -658,8 +657,8 @@ run_to_ram(void) {
                                                 ((unsigned int)_disk_buffer_size)) {
 
     // Flush the current buffer if the next request would overflow it
-    if (downloader_cat.is_debug())
-      downloader_cat.debug()
+    if (downloader_cat.is_spam())
+      downloader_cat.spam()
         << "Downloader::run_to_ram() - Flushing buffer" << endl;
     write_ret = write_to_ram(_current_status);
     if (write_ret < 0)
@@ -673,8 +672,8 @@ run_to_ram(void) {
   if (_receive_size > (ulong)MAX_RECEIVE_BYTES) {
     int repeat = (int)(_receive_size / MAX_RECEIVE_BYTES);
     int remain = (int)fmod((double)_receive_size, (double)MAX_RECEIVE_BYTES);
-    if (downloader_cat.is_debug())
-      downloader_cat.debug()
+    if (downloader_cat.is_spam())
+      downloader_cat.spam()
         << "Downloader::run_to_ram() - fast connection - repeat: " << repeat
         << " remain: " << remain << endl;
     // Make multiple requests at once but do not exceed MAX_RECEIVE_BYTES
@@ -691,8 +690,8 @@ run_to_ram(void) {
       }
     }
   } else { // Handle the normal speed connection case
-    if (downloader_cat.is_debug())
-      downloader_cat.debug()
+    if (downloader_cat.is_spam())
+      downloader_cat.spam()
         << "Downloader::run_to_ram() - normal connection" << endl;
     fret = fast_receive(_socket, _current_status, _receive_size);
   }
@@ -707,20 +706,20 @@ run_to_ram(void) {
         if (write_ret < 0)
           return write_ret;
       }
-      if (downloader_cat.is_debug())
-        downloader_cat.debug()
+      if (downloader_cat.is_spam())
+        downloader_cat.spam()
           << "Downloader::run_to_ram() - Got eof" << endl;
       cleanup();
       return EU_success;
     } else {
-      if (downloader_cat.is_debug())
-        downloader_cat.debug()
+      if (downloader_cat.is_spam())
+        downloader_cat.spam()
           << "Downloader::run_to_ram() - Got 0 bytes" << endl;
       return ret;
     }
   } else if (fret == EU_network_no_data) {
-    if (downloader_cat.is_debug())
-      downloader_cat.debug()
+    if (downloader_cat.is_spam())
+      downloader_cat.spam()
         << "Downloader::run_to_ram() - No data" << endl;
       return ret;
   } else if (fret < 0) {
@@ -838,8 +837,8 @@ parse_header(DownloadStatus *status) {
       status->_first_line_complete = true;
       int parse_ret = parse_http_response(component);
       if (parse_ret == EU_success) {
-        if (downloader_cat.is_debug())
-          downloader_cat.debug()
+        if (downloader_cat.is_spam())
+          downloader_cat.spam()
             << "Downloader::parse_header() - Header is valid: "
             << component << endl;
         status->_header_is_valid = true;
@@ -886,8 +885,8 @@ parse_header(DownloadStatus *status) {
           << "Location directive" << endl;
         return EU_error_abort;
       }
-      if (downloader_cat.is_debug())
-        downloader_cat.debug()
+      if (downloader_cat.is_spam())
+        downloader_cat.spam()
           << "Downloader::parse_header() - Header is complete" << endl;
       status->_header_is_complete = true;
 
@@ -896,8 +895,8 @@ parse_header(DownloadStatus *status) {
       status->_start += header_length;
       status->_bytes_in_buffer -= header_length;
 
-      if (downloader_cat.is_debug())
-        downloader_cat.debug()
+      if (downloader_cat.is_spam())
+        downloader_cat.spam()
           << "Downloader::parse_header() - Stripping out header of size: "
           << header_length << endl;
 
@@ -946,8 +945,8 @@ write_to_disk(DownloadStatus *status) {
 
   // Write what we have so far to disk
   if (status->_bytes_in_buffer > 0) {
-    if (downloader_cat.is_debug())
-      downloader_cat.debug()
+    if (downloader_cat.is_spam())
+      downloader_cat.spam()
         << "Downloader::write_to_disk() - Writing "
         << status->_bytes_in_buffer << " to disk" << endl;
 
@@ -990,8 +989,8 @@ write_to_ram(DownloadStatus *status) {
 
   // Write what we have so far to memory
   if (status->_bytes_in_buffer > 0) {
-    if (downloader_cat.is_debug())
-      downloader_cat.debug()
+    if (downloader_cat.is_spam())
+      downloader_cat.spam()
         << "Downloader::write_to_ram() - Writing "
         << status->_bytes_in_buffer << " to memory" << endl;
 

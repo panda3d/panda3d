@@ -191,6 +191,7 @@ get_server_multifile_hash(string mfname) const {
 void DownloadDb::
 set_client_multifile_hash(string mfname, HashVal val) {
   _client_db.get_multifile_record_named(mfname)->_hash = val;
+  write_client_db(_client_db._filename);
 }
 
 
@@ -320,7 +321,7 @@ write_db(Filename &file, Db db, bool want_server_info) {
     return false;
   }
 
-  downloader_cat.debug()
+  downloader_cat.spam()
     << "Writing to file: " << file << endl;
 
   // Initialize the write stream with a bogus header
