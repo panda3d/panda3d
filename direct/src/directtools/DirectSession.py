@@ -21,6 +21,7 @@ class DirectSession(PandaObject):
         __builtin__.direct = self
         self.fEnabled = 0
         self.drList = DisplayRegionList()
+        self.iRayList = map(lambda x: x.iRay, self.drList)
         self.dr = self.drList[0]
         self.camera = self.dr.camera
         self.iRay = self.dr.iRay
@@ -79,6 +80,7 @@ class DirectSession(PandaObject):
             ['SGENodePath_Isolate', self.isolate],
             ['SGENodePath_Toggle Vis', self.toggleVis],
             ['SGENodePath_Show All', self.showAllDescendants],
+            ['SGENodePath_Fit', self.fitOnNodePath],
             ['SGENodePath_Place', Placer.place],
             ['SGENodePath_Delete', self.removeNodePath],
             ]
@@ -87,7 +89,7 @@ class DirectSession(PandaObject):
                           'shift', 'shift-up', 'alt', 'alt-up',
                           'page_up', 'page_down', 'tab',
                           '[', '{', ']', '}',
-                          'b', 'c', 'f', 'l', 's', 't', 'v', 'w']
+                          'b', 'l', 's', 't', 'v', 'w']
         self.mouseEvents = ['mouse1', 'mouse1-up',
                             'mouse2', 'mouse2-up',
                             'mouse3', 'mouse3-up']
@@ -329,6 +331,16 @@ class DirectSession(PandaObject):
         else:
             state.nodePath.clearColor()
 
+    def fitOnNodePath(self, nodePath = 'None Given'):
+        if nodePath == 'None Given':
+            # If nothing specified, try selected node path
+            nodePath = self.selected.last
+        direct.select(nodePath)
+        def fitTask(state, self = self):
+            self.cameraControl.fitOnWidget()
+            return Task.done
+        taskMgr.doMethodLater(0.1, fitTask, 'manipulateCamera')
+
     def isolate(self, nodePath = 'None Given'):
         """ Show a node path and hide its siblings """
         # First kill the flashing task to avoid complications
@@ -489,6 +501,14 @@ class DirectSession(PandaObject):
 
     def isEnabled(self):
         return self.fEnabled
+
+    def addUnpickable(self, item):
+        for iRay in self.iRayList:
+            iRay.addUnpickable(item)
+
+    def removeUnpickable(self, item):
+        for iRay in self.iRayList:
+            iRay.removeUnpickable(item)
 
 class DisplayRegionList:
     def __init__(self):

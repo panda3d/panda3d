@@ -43,6 +43,10 @@ def doLater(delayTime, task, taskName):
     # make a sequence out of the delay and the task
     seq = sequence(pause(delayTime), task)
     return seq
+
+def spawnMethodNamed(self, func, name):
+        task = Task(func)
+        self.spawnTaskNamed(task, name)
     
 def pause(delayTime):
     def func(self):
@@ -192,7 +196,7 @@ class TaskManager:
 
     def spawnMethodNamed(self, func, name):
         task = Task(func)
-        self.spawnTaskNamed(task, name)
+        return self.spawnTaskNamed(task, name)
         
     def spawnTaskNamed(self, task, name):
         TaskManager.notify.debug('spawning task named: ' + name)
@@ -200,6 +204,11 @@ class TaskManager:
         task.setStartTimeFrame(self.currentTime, self.currentFrame)
         self.taskList.append(task)
         return task
+
+    def doMethodLater(self, delayTime, func, taskName):
+        task = Task(func)
+        seq = doLater(delayTime, task, taskName)
+        return self.spawnTaskNamed(seq, 'doLater-' + taskName)
 
     def removeAllTasks(self):
         # Make a shallow copy so we do not modify the list in place

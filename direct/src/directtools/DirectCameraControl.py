@@ -1,7 +1,7 @@
 from PandaObject import *
 from DirectGeometry import *
 
-CAM_MOVE_DURATION = 1.0
+CAM_MOVE_DURATION = 1.2
 COA_MARKER_SF = 0.0075
 Y_AXIS = Vec3(0,1,0)
 
@@ -454,12 +454,10 @@ class DirectCameraControl(PandaObject):
         direct.camera.wrtReparentTo(state.parent)
         self.updateCoaMarkerSize()
 
-    def fitOnWidget(self):
+    def fitOnWidget(self, nodePath = 'None Given'):
         # Fit the node on the screen
-        
         # stop any ongoing tasks
         taskMgr.removeTasksNamed('manipulateCamera')
-
         # How big is the node?
         nodeScale = direct.widget.scalingNode.getScale(render)
         maxScale = max(nodeScale[0],nodeScale[1],nodeScale[2])
@@ -484,9 +482,9 @@ class DirectCameraControl(PandaObject):
 	parent = direct.camera.getParent()
 	direct.camera.wrtReparentTo(self.camManipRef)
 	fitTask = direct.camera.lerpPos(Point3(0,0,0),
-                                      CAM_MOVE_DURATION,
-                                      blendType = 'easeInOut',
-                                      task = 'manipulateCamera')
+                                        CAM_MOVE_DURATION,
+                                        blendType = 'easeInOut',
+                                        task = 'manipulateCamera')
         # Upon death, reparent Cam to parent
         fitTask.parent = parent
         fitTask.uponDeath = self.reparentCam                                

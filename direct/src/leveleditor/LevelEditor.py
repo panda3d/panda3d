@@ -1297,7 +1297,7 @@ class LevelEditor(NodePath, PandaObject):
 	map.setColor(Vec4(1,1,1,.4))
         self.mapDictionary[neighborhood] = map
         # Make sure this item isn't pickable
-        direct.manipulationControl.addUnpickable(neighborhood + '_layout')
+        direct.addUnpickable(neighborhood + '_layout')
 
     def selectMap(self, neighborhood):
         if self.activeMap:
@@ -1408,7 +1408,7 @@ class LevelEditor(NodePath, PandaObject):
 	if ((abs(handlesToCam[0]) > (direct.dr.nearWidth * 0.4)) |
             (abs(handlesToCam[2]) > (direct.dr.nearHeight * 0.4))):
             taskMgr.removeTasksNamed('manipulateCamera')
-            direct.cameraControl.centerCamIn(direct.dr, 0.5)
+            direct.cameraControl.centerCamIn(0.5)
 
     def autoPositionCleanup(self,state):
         direct.grid.setPosHpr(state.selectedNode, state.deltaPos,
@@ -2910,7 +2910,6 @@ class LevelEditorPanel(Pmw.MegaToplevel):
 
         self.sceneGraphExplorer = SceneGraphExplorer(
             parent = sceneGraphPage,
-            root = self.levelEditor,
             menuItems = ['Set Parent', 'Reparent', 'Add Group',
                          'Add Vis Group', 'Set Color',
                          'Set Name'])

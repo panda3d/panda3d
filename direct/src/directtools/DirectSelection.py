@@ -400,6 +400,14 @@ class SelectionRay:
         # List of objects that can't be selected
         self.unpickable = UNPICKABLE
 
+    def addUnpickable(self, item):
+        if item not in self.unpickable:
+            self.unpickable.append(item)
+
+    def removeUnpickable(self, item):
+        if item in self.unpickable:
+            self.unpickable.remove(item)
+
     def pickGeom(self, targetNodePath = render, fIntersectUnpickable = 0):
         self.collideWithGeom()
         numEntries = self.pick(targetNodePath,

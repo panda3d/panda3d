@@ -3,8 +3,9 @@ from Tkinter import *
 from Tree import *
 import Pmw
 
-DEFAULT_MENU_ITEMS = ['Select', 'Deselect', 'Flash', 'Toggle Vis',
-                      'Isolate', 'Show All', 'Place', 'Delete']
+DEFAULT_MENU_ITEMS = ['Select', 'Deselect', 'Flash', 
+                      'Isolate', 'Toggle Vis', 'Show All',
+                      'Fit', 'Place', 'Delete']
 
 class SceneGraphExplorer(Pmw.MegaWidget):
     "Graphical display of a scene graph"

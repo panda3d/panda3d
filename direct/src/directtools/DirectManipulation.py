@@ -147,14 +147,6 @@ class DirectManipulationControl(PandaObject):
         for event in self.actionEvents:
             self.ignore(event[0])
 
-    def addUnpickable(self, item):
-        if item not in self.unpickable:
-            self.unpickable.append(item)
-
-    def removeUnpickable(self, item):
-        if item in self.unpickable:
-            self.unpickable.remove(item)
-
     def toggleObjectHandlesMode(self):
         self.fSetCoa = 1 - self.fSetCoa
         if self.fSetCoa:

@@ -111,7 +111,7 @@ class Particles(ParticleSystem.ParticleSystem):
 	    self.renderer = SparkleParticleRenderer.SparkleParticleRenderer()
 	elif (type == "SpriteParticleRenderer"):
 	    self.renderer = SpriteParticleRenderer.SpriteParticleRenderer()
-	    t = loader.loadTexture("I:/beta/toons/install/maps/evil_eye.rgb")
+	    t = loader.loadTexture('phase_3/maps/eyes.jpg')
 	    if (t == None):
 		print "Couldn't find default texture: evil_eye.rgb!"
 		return None
