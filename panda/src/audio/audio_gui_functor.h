@@ -14,12 +14,12 @@ protected:
   GuiBehavior::BehaviorFunctor* _prev;
   PT(AudioSound) _sound;
 public:
+  virtual ~AudioGuiFunctor(void);
   virtual void doit(GuiBehavior*);
 PUBLISHED:
   AudioGuiFunctor(AudioSound* = (AudioSound*)0L,
 		  GuiBehavior::BehaviorFunctor* =
 		  (GuiBehavior::BehaviorFunctor*)0L);
-  virtual ~AudioGuiFunctor(void);
   INLINE AudioSound* get_sound(void) const { return _sound; }
   INLINE GuiBehavior::BehaviorFunctor* get_prev(void) const { return _prev; }
 };

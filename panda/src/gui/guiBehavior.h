@@ -18,9 +18,9 @@ PUBLISHED:
   class EXPCL_PANDA BehaviorFunctor {
   public:
     virtual void doit(GuiBehavior*) = 0;
+    virtual ~BehaviorFunctor(void);
   PUBLISHED:
     BehaviorFunctor(void);
-    virtual ~BehaviorFunctor(void);
   };
 PUBLISHED:
   GuiBehavior(const string&);

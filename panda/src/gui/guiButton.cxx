@@ -59,7 +59,7 @@ inline void GetExtents(GuiLabel* v, GuiLabel* w, GuiLabel* x, GuiLabel* y,
 static void enter_button(CPT_Event e) {
   const MouseWatcherRegion* rgn = DCAST(MouseWatcherRegion, e->get_parameter(0).get_ptr());
   GuiButton* val = find_in_buttons_map(rgn);
-  if (val == (GuiButton *)0L)
+  if (val == (GuiButton*)0L)
     return;  // this one wasn't for us
   val->test_ref_count_integrity();
   val->enter();
