@@ -99,11 +99,11 @@ GuiManager* GuiManager::get_ptr(GraphicsWindow* w, MouseAndKeyboard* mak) {
     frust2d.make_ortho_2D();
     cam->set_projection(OrthoProjection(frust2d));
     GraphicsChannel *chan = w->get_channel(0);  // root/full-window channel
-    nassertv(chan != (GraphicsChannel*)0L);
+    nassertr(chan != (GraphicsChannel*)0L, NULL);
     GraphicsLayer *layer = chan->make_layer();
-    nassertv(layer != (GraphicsLayer*)0L);
+    nassertr(layer != (GraphicsLayer*)0L, NULL);
     DisplayRegion *dr = layer->make_display_region();
-    nassertv(dr != (DisplayRegion*)0L);
+    nassertr(dr != (DisplayRegion*)0L, NULL);
     dr->set_camera(cam);
     if (gui_cat->is_debug())
       gui_cat->debug() << "2D layer created" << endl;
