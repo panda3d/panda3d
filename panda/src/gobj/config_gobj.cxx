@@ -25,6 +25,7 @@
 #include "imageBuffer.h"
 #include "material.h"
 #include "orthographicLens.h"
+#include "matrixLens.h"
 #include "perspectiveLens.h"
 #include "pixelBuffer.h"
 #include "lens.h"
@@ -177,6 +178,7 @@ ConfigureFn(config_gobj) {
   LOD::init_type();
   Material::init_type();
   OrthographicLens::init_type();
+  MatrixLens::init_type();
   PerspectiveLens::init_type();
   PixelBuffer::init_type();
   Lens::init_type();

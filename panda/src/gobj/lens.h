@@ -129,11 +129,11 @@ PUBLISHED:
   const LMatrix4f &get_projection_mat() const;
   const LMatrix4f &get_projection_mat_inv() const;
 
-public:
-  INLINE const UpdateSeq &get_last_change() const;
-
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
+
+public:
+  INLINE const UpdateSeq &get_last_change() const;
 
 protected:
   INLINE void adjust_user_flags(int clear_flags, int set_flags);

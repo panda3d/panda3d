@@ -6,6 +6,7 @@
 #include "material.cxx"
 #include "materialPool.cxx"
 #include "orthographicLens.cxx"
+#include "matrixLens.cxx"
 #include "perspectiveLens.cxx"
 #include "pixelBuffer.cxx"
 #include "lens.cxx"
