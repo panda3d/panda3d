@@ -24,6 +24,10 @@
 
 #define NEED_MILES_LENGTH_WORKAROUND
 
+#if (MSS_MAJOR_VERSION >= 6) && (MSS_MINOR_VERSION >= 5)
+#define MILES_6_5
+#endif
+
 #ifndef NDEBUG //[
   namespace {
     char
@@ -156,22 +160,40 @@ set_volume(float volume) {
   _volume=volume;
   // Account for the category of sound:
   volume*=_manager->get_volume();
-  // Change to Miles volume, range 0 to 127:
-  S32 milesVolume=((S32)(127*volume))%128;
+  #ifdef MILES_6_5
+    // Change to Miles volume, range 0 to 1.0:
+    F32 milesVolume=volume;
+    milesVolume=min(milesVolume,1.0f);
+    milesVolume=max(milesVolume,0.0f);
+  #else
+    // Change to Miles volume, range 0 to 127:
+    S32 milesVolume=((S32)(127*volume))%128;
+  #endif
   // Account for type:
   S32 audioType=AIL_quick_type(_audio);
-  if (audioType==AIL_QUICK_XMIDI_TYPE
-      ||
-      audioType==AIL_QUICK_DLS_XMIDI_TYPE) {
+  if ((audioType==AIL_QUICK_XMIDI_TYPE) || (audioType==AIL_QUICK_DLS_XMIDI_TYPE)) {
     // ...it's a midi file.
-    AIL_quick_set_volume(_audio, milesVolume, 0); // 0 delay.
+
+    // 0 delay, set to this volume immediately    
+    #ifdef MILES_6_5
+      F32 midiVolDelay =0.0f; 
+    #else
+      S32 midiVolDelay =0;
+    #endif
+    
+    AIL_quick_set_volume(_audio, milesVolume, midiVolDelay); 
     audio_debug("  volume for this midi is now "<<milesVolume);
   } else {
     // ...it's a wav or mp3.
-    // Convert balance of -1.0..1.0 to 0..127:
-    S32 milesBalance=((S32)(63.5f*(_balance+1.0f)))%128;
+    #ifdef MILES_6_5
+      // Convert balance of -1.0..1.0 to 0-1.0:
+      F32 milesBalance=(F32)((_balance+1.0f)*0.5f);
+    #else
+      // Convert balance of -1.0..1.0 to 0..127:
+      S32 milesBalance=((S32)(63.5f*(_balance+1.0f)))%128;  
+    #endif
     AIL_quick_set_volume(_audio, milesVolume, milesBalance);
-    audio_debug("  volume for this wav or mp3 is now "<<milesVolume
+    audio_debug("  volume for this wav or mp3 is now " << milesVolume
         <<", balance="<<milesBalance);
   }
 }
