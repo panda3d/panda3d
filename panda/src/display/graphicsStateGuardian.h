@@ -293,9 +293,9 @@ public:
   static PStatCollector _vertices_trifan_pcollector;
   static PStatCollector _vertices_tri_pcollector;
   static PStatCollector _vertices_other_pcollector;
+  static PStatCollector _state_pcollector;
   static PStatCollector _transform_state_pcollector;
   static PStatCollector _texture_state_pcollector;
-  static PStatCollector _other_state_pcollector;
   static PStatCollector _draw_primitive_pcollector;
   static PStatCollector _clear_pcollector;
   static PStatCollector _flush_pcollector;

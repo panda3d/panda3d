@@ -55,9 +55,9 @@ PStatCollector GraphicsStateGuardian::_vertices_tristrip_pcollector("Vertices:Tr
 PStatCollector GraphicsStateGuardian::_vertices_trifan_pcollector("Vertices:Triangle fans");
 PStatCollector GraphicsStateGuardian::_vertices_tri_pcollector("Vertices:Triangles");
 PStatCollector GraphicsStateGuardian::_vertices_other_pcollector("Vertices:Other");
+PStatCollector GraphicsStateGuardian::_state_pcollector("State changes");
 PStatCollector GraphicsStateGuardian::_transform_state_pcollector("State changes:Transforms");
 PStatCollector GraphicsStateGuardian::_texture_state_pcollector("State changes:Textures");
-PStatCollector GraphicsStateGuardian::_other_state_pcollector("State changes:Other");
 PStatCollector GraphicsStateGuardian::_draw_primitive_pcollector("Draw:Primitive");
 PStatCollector GraphicsStateGuardian::_clear_pcollector("Draw:Clear");
 PStatCollector GraphicsStateGuardian::_flush_pcollector("Draw:Flush");
@@ -233,7 +233,6 @@ release_geom(GeomContext *) {
 void GraphicsStateGuardian::
 set_state_and_transform(const RenderState *state,
                         const TransformState *transform) {
-
   set_transform(transform);
   set_state(state);
 }
@@ -1246,9 +1245,9 @@ init_frame_pstats() {
     _vertices_tri_pcollector.clear_level();
     _vertices_other_pcollector.clear_level();
     
+    _state_pcollector.clear_level();
     _transform_state_pcollector.clear_level();
     _texture_state_pcollector.clear_level();
-    _other_state_pcollector.clear_level();
   }
 }
 

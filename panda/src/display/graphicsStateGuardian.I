@@ -241,14 +241,17 @@ reset_if_new() {
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsStateGuardian::
 modify_state(const RenderState *state) {
+  if (!state->is_empty()) {
 #ifndef NDEBUG
-  if (gsg_cat.is_spam()) {
-    gsg_cat.spam() << "Modifying GSG state with:\n";
-    state->write(gsg_cat.spam(false), 2);
-  }
+    if (gsg_cat.is_spam()) {
+      gsg_cat.spam() << "Modifying GSG state with:\n";
+      state->write(gsg_cat.spam(false), 2);
+    }
 #endif
-  _state = _state->issue_delta_modify(state, this);
-  finish_modify_state();
+    _state_pcollector.add_level(1);
+    _state = _state->issue_delta_modify(state, this);
+    finish_modify_state();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -265,14 +268,17 @@ modify_state(const RenderState *state) {
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsStateGuardian::
 set_state(const RenderState *state) {
+  if (state != _state) {
 #ifndef NDEBUG
-  if (gsg_cat.is_spam()) {
-    gsg_cat.spam() << "Setting GSG state to:\n";
-    state->write(gsg_cat.spam(false), 2);
-  }
+    if (gsg_cat.is_spam()) {
+      gsg_cat.spam() << "Setting GSG state to:\n";
+      state->write(gsg_cat.spam(false), 2);
+    }
 #endif
-  _state = _state->issue_delta_set(state, this);
-  finish_modify_state();
+    _state_pcollector.add_level(1);
+    _state = _state->issue_delta_set(state, this);
+    finish_modify_state();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -286,6 +292,7 @@ set_state(const RenderState *state) {
 INLINE void GraphicsStateGuardian::
 set_transform(const TransformState *transform) {
   if (transform != _transform) {
+    _state_pcollector.add_level(1);
     _transform = transform;
     issue_transform(transform);
   }
