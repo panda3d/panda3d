@@ -904,8 +904,8 @@ parse_header(DownloadStatus *status) {
 
     } else if (authenticate && tline == "Proxy-Authenticate") {
       // We don't presently support authentication-demanding proxies.
-      downloader_cat.warning()
-        << tline << "\n";
+      downloader_cat.error()
+        << component << "\n";
       return EU_error_http_proxy_authentication;
 
     } else if (redirect == true && tline == "Location") {
@@ -974,6 +974,9 @@ write_to_disk(DownloadStatus *status) {
 
   // Ensure the header has been parsed successfully first
   int parse_ret = parse_header(status);
+  if (parse_ret < 0)
+    return parse_ret;
+
   if (status->_header_is_complete == false) {
     downloader_cat.error()
       << "Downloader::write_to_disk() - Incomplete HTTP header - "
@@ -981,9 +984,6 @@ write_to_disk(DownloadStatus *status) {
       << "try increasing download-buffer-size" << endl;
     return EU_error_abort;
   }
-
-  if (parse_ret < 0)
-    return parse_ret;
 
   // Write what we have so far to disk
   if (status->_bytes_in_buffer > 0) {
@@ -1016,6 +1016,8 @@ write_to_ram(DownloadStatus *status) {
 
   // Ensure the header has been parsed successfully first
   int parse_ret = parse_header(status);
+  if (parse_ret < 0)
+    return parse_ret;
 
   if (status->_header_is_complete == false) {
     downloader_cat.error()
@@ -1024,10 +1026,6 @@ write_to_ram(DownloadStatus *status) {
       << "try increasing download-buffer-size" << endl;
     return EU_error_abort;
   }
-
-  if (parse_ret < 0)
-    return parse_ret;
-
 
   // Write what we have so far to memory
   if (status->_bytes_in_buffer > 0) {

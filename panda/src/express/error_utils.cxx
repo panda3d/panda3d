@@ -31,80 +31,118 @@
 //     Function: error_to_text
 //  Description:
 ////////////////////////////////////////////////////////////////////
-string error_to_text(int err) {
-  char *errmsg;
+string error_to_text(ErrorUtilCode err) {
+  const char *errmsg = "Unknown error";
 
   switch (err) {
-    case EU_eof:
-      errmsg = "EU_eof";
-    case EU_network_no_data:
-      errmsg = "EU_network_no_data";
-    case EU_ok:
-      errmsg = "EU_ok";
-    case EU_write:
-      errmsg = "EU_write";
-    case EU_success:
-      errmsg = "EU_success";
-    case EU_error_abort:
-      errmsg = "EU_error_abort";
-    case EU_error_file_empty:
-      errmsg = "EU_error_file_empty";
-    case EU_error_file_invalid:
-      errmsg = "EU_error_file_invalid";
-    case EU_error_invalid_checksum:
-      errmsg = "EU_error_invalid_checksum";
-    case EU_error_network_dead:
-      errmsg = "EU_error_network_dead";
-    case EU_error_network_unreachable:
-      errmsg = "EU_error_network_unreachable";
-    case EU_error_network_disconnected:
-      errmsg = "EU_error_network_disconnected";
-    case EU_error_network_timeout:
-      errmsg = "EU_error_network_timeout";
-    case EU_error_network_no_data:
-      errmsg = "EU_error_network_no_data";
-    case EU_error_network_disconnected_locally:
-      errmsg = "EU_error_network_disconnected_locally";
-    case EU_error_network_buffer_overflow:
-      errmsg = "EU_error_network_buffer_overflow";
-    case EU_error_network_disk_quota_exceeded:
-      errmsg = "EU_error_network_disk_quota_exceeded";
-    case EU_error_network_remote_host_disconnected:
-      errmsg = "EU_error_network_remote_host_disconnected";
-    case EU_error_network_remote_host_down:
-      errmsg = "EU_error_network_remote_host_down";
-    case EU_error_network_remote_host_unreachable:
-      errmsg = "EU_error_network_remote_host_unreachable";
-    case EU_error_network_remote_host_not_found:
-      errmsg = "EU_error_network_remote_host_not_found";
-    case EU_error_network_remote_host_no_response:
-      errmsg = "EU_error_network_remote_host_no_response";
-    case EU_error_write_out_of_files:
-      errmsg = "EU_error_write_out_of_files";
-    case EU_error_write_out_of_memory:
-      errmsg = "EU_error_write_out_of_memory";
-    case EU_error_write_sharing_violation:
-      errmsg = "EU_error_write_sharing_violation";
-    case EU_error_write_disk_full:
-      errmsg = "EU_error_write_disk_full";
-    case EU_error_write_disk_not_found:
-      errmsg = "EU_error_write_disk_not_found";
-    case EU_error_write_disk_sector_not_found:
-      errmsg = "EU_error_write_disk_sector_not_found";
-    case EU_error_write_disk_fault:
-      errmsg = "EU_error_write_disk_fault";
-    case EU_error_write_file_rename:
-      errmsg = "EU_error_write_file_rename";
-    case EU_error_http_server_timeout:
-      errmsg = "EU_error_http_server_timeout";
-    case EU_error_http_gateway_timeout:
-      errmsg = "EU_error_http_gateway_timeout";
-    case EU_error_http_service_unavailable:
-      errmsg = "EU_error_http_service_unavailable";
-    case EU_error_zlib:
-      errmsg = "EU_error_zlib";
-    default:
-      errmsg = "Unknown error";
+  case EU_http_redirect:
+    errmsg = "EU_http_redirect";
+    break;
+  case EU_eof:
+    errmsg = "EU_eof";
+    break;
+  case EU_network_no_data:
+    errmsg = "EU_network_no_data";
+    break;
+  case EU_ok:
+    errmsg = "EU_ok";
+    break;
+  case EU_write:
+    errmsg = "EU_write";
+    break;
+  case EU_success:
+    errmsg = "EU_success";
+    break;
+  case EU_error_abort:
+    errmsg = "EU_error_abort";
+    break;
+  case EU_error_file_empty:
+    errmsg = "EU_error_file_empty";
+    break;
+  case EU_error_file_invalid:
+    errmsg = "EU_error_file_invalid";
+    break;
+  case EU_error_invalid_checksum:
+    errmsg = "EU_error_invalid_checksum";
+    break;
+  case EU_error_network_dead:
+    errmsg = "EU_error_network_dead";
+    break;
+  case EU_error_network_unreachable:
+    errmsg = "EU_error_network_unreachable";
+    break;
+  case EU_error_network_disconnected:
+    errmsg = "EU_error_network_disconnected";
+    break;
+  case EU_error_network_timeout:
+    errmsg = "EU_error_network_timeout";
+    break;
+  case EU_error_network_no_data:
+    errmsg = "EU_error_network_no_data";
+    break;
+  case EU_error_network_disconnected_locally:
+    errmsg = "EU_error_network_disconnected_locally";
+    break;
+  case EU_error_network_buffer_overflow:
+    errmsg = "EU_error_network_buffer_overflow";
+    break;
+  case EU_error_network_disk_quota_exceeded:
+    errmsg = "EU_error_network_disk_quota_exceeded";
+    break;
+  case EU_error_network_remote_host_disconnected:
+    errmsg = "EU_error_network_remote_host_disconnected";
+    break;
+  case EU_error_network_remote_host_down:
+    errmsg = "EU_error_network_remote_host_down";
+    break;
+  case EU_error_network_remote_host_unreachable:
+    errmsg = "EU_error_network_remote_host_unreachable";
+    break;
+  case EU_error_network_remote_host_not_found:
+    errmsg = "EU_error_network_remote_host_not_found";
+    break;
+  case EU_error_network_remote_host_no_response:
+    errmsg = "EU_error_network_remote_host_no_response";
+    break;
+  case EU_error_write_out_of_files:
+    errmsg = "EU_error_write_out_of_files";
+    break;
+  case EU_error_write_out_of_memory:
+    errmsg = "EU_error_write_out_of_memory";
+    break;
+  case EU_error_write_sharing_violation:
+    errmsg = "EU_error_write_sharing_violation";
+    break;
+  case EU_error_write_disk_full:
+    errmsg = "EU_error_write_disk_full";
+    break;
+  case EU_error_write_disk_not_found:
+    errmsg = "EU_error_write_disk_not_found";
+    break;
+  case EU_error_write_disk_sector_not_found:
+    errmsg = "EU_error_write_disk_sector_not_found";
+    break;
+  case EU_error_write_disk_fault:
+    errmsg = "EU_error_write_disk_fault";
+    break;
+  case EU_error_write_file_rename:
+    errmsg = "EU_error_write_file_rename";
+    break;
+  case EU_error_http_server_timeout:
+    errmsg = "EU_error_http_server_timeout";
+    break;
+  case EU_error_http_gateway_timeout:
+    errmsg = "EU_error_http_gateway_timeout";
+    break;
+  case EU_error_http_service_unavailable:
+    errmsg = "EU_error_http_service_unavailable";
+    break;
+  case EU_error_http_proxy_authentication:
+    errmsg = "EU_error_http_proxy_authentication";
+    break;
+  case EU_error_zlib:
+    errmsg = "EU_error_zlib";
+    break;
   }
 
   char msgbuf[1024];
