@@ -1103,19 +1103,19 @@ translate_3d: TRANSLATE '{' real real real '}'
 
 rotx_3d: ROTX '{' real '}'
 {
-  matrix_3d *= LMatrix4d::rotate_mat($3, LVector3d(1.0, 0.0, 0.0));
+  matrix_3d *= LMatrix4d::rotate_mat_normaxis($3, LVector3d(1.0, 0.0, 0.0));
 }
 	;
 
 roty_3d: ROTY '{' real '}'
 {
-  matrix_3d *= LMatrix4d::rotate_mat($3, LVector3d(0.0, 1.0, 0.0));
+  matrix_3d *= LMatrix4d::rotate_mat_normaxis($3, LVector3d(0.0, 1.0, 0.0));
 }
 	;
 
 rotz_3d: ROTZ '{' real '}'
 {
-  matrix_3d *= LMatrix4d::rotate_mat($3, LVector3d(0.0, 0.0, 1.0));
+  matrix_3d *= LMatrix4d::rotate_mat_normaxis($3, LVector3d(0.0, 0.0, 1.0));
 }
 	;
 

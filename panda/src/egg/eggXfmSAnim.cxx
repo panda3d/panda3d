@@ -198,18 +198,18 @@ compose_with_order(LMatrix4d &mat,
       break;
       
     case 'h':
-      mat = mat * LMatrix4d::rotate_mat(hpr[0], LVector3d::up(cs), cs);
+      mat = mat * LMatrix4d::rotate_mat_normaxis(hpr[0], LVector3d::up(cs), cs);
       break;
       
     case 'p':
-      mat = mat * LMatrix4d::rotate_mat(hpr[1], LVector3d::right(cs), cs);
+      mat = mat * LMatrix4d::rotate_mat_normaxis(hpr[1], LVector3d::right(cs), cs);
       break;
       
     case 'r':
       if (reverse_roll) {
-	mat = mat * LMatrix4d::rotate_mat(-hpr[2], LVector3d::forward(cs), cs);
+	mat = mat * LMatrix4d::rotate_mat_normaxis(-hpr[2], LVector3d::forward(cs), cs);
       } else {
-	mat = mat * LMatrix4d::rotate_mat(hpr[2], LVector3d::forward(cs), cs);
+	mat = mat * LMatrix4d::rotate_mat_normaxis(hpr[2], LVector3d::forward(cs), cs);
       }
       break;
       

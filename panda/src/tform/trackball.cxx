@@ -398,7 +398,7 @@ apply(double x, double y, int button) {
     // screen.
     
     _rotation *= 
-      LMatrix4f::rotate_mat((x - y) * _rotscale, 
+      LMatrix4f::rotate_mat_normaxis((x - y) * _rotscale, 
 			    LVector3f::forward(_cs), _cs);
     
   } else if ((button == B2_MASK) || (button == (B1_MASK | B3_MASK))) {
@@ -407,8 +407,8 @@ apply(double x, double y, int button) {
     // support two-button mice.)
     
     _rotation *=
-      LMatrix4f::rotate_mat(x * _rotscale, LVector3f::up(_cs), _cs) *
-      LMatrix4f::rotate_mat(y * _rotscale, LVector3f::right(_cs), _cs);
+      LMatrix4f::rotate_mat_normaxis(x * _rotscale, LVector3f::up(_cs), _cs) *
+      LMatrix4f::rotate_mat_normaxis(y * _rotscale, LVector3f::right(_cs), _cs);
     
   } else if ((button == B3_MASK) || (button == (B1_MASK | B2_MASK))) {
     // Button 3, or buttons 1 + 2: dolly in and out along the forward

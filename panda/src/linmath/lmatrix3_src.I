@@ -782,11 +782,13 @@ rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
 
   // Normalize the axis.  
   
+/*
   // hack check for prenormalization, only works for simple unit vecs, 
   // which is what we usually pass in anyway. screws up if you happen to
   // pass in something like (.5,.5,0).  need to add flag parameter so caller
   // can request normalization if needed
   if((cabs(axis_0)+cabs(axis_1)+cabs(axis_2)) != 1.0) {
+*/  
 	  FLOATTYPE length_sq = axis_0 * axis_0 + axis_1 * axis_1 + axis_2 * axis_2;
 	  #ifdef _DEBUG
 	      nassertr(length_sq != 0.0, ident_mat());
@@ -796,7 +798,75 @@ rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
 	  axis_0 *= recip_length;
 	  axis_1 *= recip_length;
 	  axis_2 *= recip_length;  
+//  }
+
+  FLOATTYPE angle_rad=deg_2_rad(angle);
+  FLOATTYPE s,c;
+  csincos(angle_rad,&s,&c);
+  FLOATTYPE t = 1.0 - c;
+
+  FLOATTYPE t0,t1,t2,s0,s1,s2;
+
+  t0 = t * axis_0;
+  t1 = t * axis_1;
+  t2 = t * axis_2;
+  s0 = s * axis_0;
+  s1 = s * axis_1;
+  s2 = s * axis_2;
+
+  mat._m.m._00 = t0 * axis_0 + c;
+  mat._m.m._01 = t0 * axis_1 + s2;
+  mat._m.m._02 = t0 * axis_2 - s1;
+
+  mat._m.m._10 = t1 * axis_0 - s2;
+  mat._m.m._11 = t1 * axis_1 + c;
+  mat._m.m._12 = t1 * axis_2 + s0;
+
+  mat._m.m._20 = t2 * axis_0 + s1;
+  mat._m.m._21 = t2 * axis_1 - s0;
+  mat._m.m._22 = t2 * axis_2 + c;
+
+/*
+  mat._m.m._00 = t * axis._v.v._0 * axis._v.v._0 + c;
+  mat._m.m._01 = t * axis._v.v._0 * axis._v.v._1 + s * axis._v.v._2;
+  mat._m.m._02 = t * axis._v.v._0 * axis._v.v._2 - s * axis._v.v._1;
+
+  mat._m.m._10 = t * axis._v.v._1 * axis._v.v._0 - s * axis._v.v._2;
+  mat._m.m._11 = t * axis._v.v._1 * axis._v.v._1 + c;
+  mat._m.m._12 = t * axis._v.v._1 * axis._v.v._2 + s * axis._v.v._0;
+
+  mat._m.m._20 = t * axis._v.v._2 * axis._v.v._0 + s * axis._v.v._1;
+  mat._m.m._21 = t * axis._v.v._2 * axis._v.v._1 - s * axis._v.v._0;
+  mat._m.m._22 = t * axis._v.v._2 * axis._v.v._2 + c;
+*/  
+
+  return mat;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix::rotate_mat_normaxis
+//       Access: Public, Static
+//  Description: Returns a matrix that rotates by the given angle in
+//               degrees counterclockwise about the indicated vector.
+//               Assumes axis has been normalized.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
+rotate_mat_normaxis(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
+	   CoordinateSystem cs) {
+  if (cs == CS_default) {
+    cs = default_coordinate_system;
   }
+  FLOATNAME(LMatrix3) mat;
+
+  if(IS_LEFT_HANDED_COORDSYSTEM(cs)) {
+    // In a left-handed coordinate system, counterclockwise is the
+    // other direction.
+    angle = -angle;
+  }
+
+  FLOATTYPE axis_0 = axis._v.v._0;
+  FLOATTYPE axis_1 = axis._v.v._1;
+  FLOATTYPE axis_2 = axis._v.v._2;
 
   FLOATTYPE angle_rad=deg_2_rad(angle);
   FLOATTYPE s,c;

@@ -263,13 +263,13 @@ void ChanEval(GraphicsWindow* win, WindowItem& W, LayoutItem& L, SVec& S,
 	case SetupItem::Up:
 	  break;
 	case SetupItem::Down:
-	  orient = new TransformTransition(LMatrix4f::rotate_mat(180., LVector3f::forward()));
+	  orient = new TransformTransition(LMatrix4f::rotate_mat_normaxis(180., LVector3f::forward()));
 	  break;
 	case SetupItem::Left:
-	  orient = new TransformTransition(LMatrix4f::rotate_mat(90., LVector3f::forward()));
+	  orient = new TransformTransition(LMatrix4f::rotate_mat_normaxis(90., LVector3f::forward()));
 	  break;
 	case SetupItem::Right:
-	  orient = new TransformTransition(LMatrix4f::rotate_mat(-90., LVector3f::forward()));
+	  orient = new TransformTransition(LMatrix4f::rotate_mat_normaxis(-90., LVector3f::forward()));
 	  break;
 	}
 

@@ -323,7 +323,7 @@ apply(double x, double y, bool any_button) {
   // rot_mat is the rotation matrix corresponding to our previous
   // heading.
   LMatrix3f rot_mat = 
-    LMatrix3f::rotate_mat(_hpr[0], LVector3f::up(_cs), _cs);
+    LMatrix3f::rotate_mat_normaxis(_hpr[0], LVector3f::up(_cs), _cs);
 
   // Take a step in the direction of our previous heading.
   LVector3f step = distance * (LVector3f::forward(_cs) * rot_mat);
