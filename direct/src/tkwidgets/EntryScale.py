@@ -6,7 +6,7 @@ from Tkinter import *
 import Pmw
 import string
 import tkColorChooser
-from tkSimpleDialog import askfloat
+from tkSimpleDialog import *
 
 """
 Change Min/Max buttons to labels, add highlight binding
@@ -74,6 +74,7 @@ class EntryScale(Pmw.MegaWidget):
                                           anchor = 'center',
                                           font = "Arial 12 bold")
         self.label.pack(side='left', expand = 1, fill = 'x')
+        self.label.bind('<Button-3>', self.askForLabel)
 
         # Now pack the frame
         self.labelFrame.pack(expand = 1, fill = 'both')
@@ -83,14 +84,14 @@ class EntryScale(Pmw.MegaWidget):
                                                 Frame, interior)
         # Create the EntryScale's min max labels
         self.minLabel = self.createcomponent('minLabel', (), None,
-                                             Button, self.minMaxFrame,
-                                             command = self.askForMin,
+                                             Label, self.minMaxFrame,
                                              text = `self['min']`,
                                              relief = FLAT,
                                              width = 5,
                                              anchor = W,
                                              font = "Arial 8")
         self.minLabel.pack(side='left', fill = 'x')
+        self.minLabel.bind('<Button-3>', self.askForMin)
 
         # Create the scale component.
         self.scale = self.createcomponent('scale', (), None,
@@ -107,15 +108,16 @@ class EntryScale(Pmw.MegaWidget):
         self.scale.set(self['initialValue'])
         self.scale.bind('<Button-1>', self.__onPress)
         self.scale.bind('<ButtonRelease-1>', self.__onRelease)
+        self.scale.bind('<Button-3>', self.askForResolution)
 
         self.maxLabel = self.createcomponent('maxLabel', (), None,
-                                             Button, self.minMaxFrame,
-                                             command = self.askForMax,
+                                             Label, self.minMaxFrame,
                                              text = `self['max']`,
                                              relief = FLAT,
                                              width = 5,
                                              anchor = E,
                                              font = "Arial 8")
+        self.maxLabel.bind('<Button-3>', self.askForMax)
         self.maxLabel.pack(side='left', fill = 'x')
         self.minMaxFrame.pack(expand = 1, fill = 'both')
          
@@ -129,9 +131,18 @@ class EntryScale(Pmw.MegaWidget):
     def entry(self):
         return self.entry
 
-    def askForMin(self):
+    def askForLabel(self, event = None):
+        newLabel = askstring(title = self['text'],
+                             prompt = 'New label:',
+                             initialvalue = `self['text']`,
+                             parent = self.interior())
+        if newLabel:
+            self['text'] = newLabel
+            
+    def askForMin(self, event = None):
         newMin = askfloat(title = self['text'],
                           prompt = 'New min val:',
+                          initialvalue = `self['min']`,
                           parent = self.interior())
         if newMin:
             self.setMin(newMin)
@@ -142,9 +153,10 @@ class EntryScale(Pmw.MegaWidget):
         self.minLabel['text'] = newMin
         self.entry.checkentry()
     
-    def askForMax(self):
+    def askForMax(self, event = None):
         newMax = askfloat(title = self['text'],
                           parent = self.interior(),
+                          initialvalue = self['max'],
                           prompt = 'New max val:')
         if newMax:
             self.setMax(newMax)
@@ -153,6 +165,19 @@ class EntryScale(Pmw.MegaWidget):
         self['max'] = newMax
         self.scale['to'] = newMax
         self.maxLabel['text'] = newMax
+        self.entry.checkentry()
+    
+    def askForResolution(self, event = None):
+        newResolution = askfloat(title = self['text'],
+                                 parent = self.interior(),
+                                 initialvalue = self['resolution'],
+                                 prompt = 'New resolution:')
+        if newResolution:
+            self.setResolution(newResolution)
+
+    def setResolution(self, newResolution):
+        self['resolution'] = newResolution
+        self.scale['resolution'] = newResolution
         self.entry.checkentry()
     
     def _updateLabelText(self):

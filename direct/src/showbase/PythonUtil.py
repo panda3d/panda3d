@@ -145,7 +145,6 @@ def _pdir(obj, str = None, fOverloaded = 0, width = None,
             strvalue = strvalue[:max(1,lineWidth - maxWidth)]
         print (format % key)[:maxWidth] + '\t' + strvalue
 
-
 # Magic numbers: These are the bit masks in func_code.co_flags that
 # reveal whether or not the function has a *arg or **kw argument.
 _POS_LIST = 4
@@ -266,6 +265,42 @@ def doc(obj):
     if (isinstance(obj, types.MethodType)) or \
        (isinstance(obj, types.FunctionType)):
         print obj.__doc__
+
+def adjust(parent = None, **kw):
+    """
+    adjust(parent = None, **kw)
+    Popup and entry scale to adjust a parameter
+    
+    Accepts any EntryScale keyword argument.  Typical arguments include:
+    command: The one argument command to execute
+    min: The min value of the slider
+    max: The max value of the slider
+    resolution: The resolution of the slider
+    text: The label on the slider
+    
+    These values can be accessed and/or changed after the fact
+    >>> es = adjust()
+    >>> es['min']
+    0.0
+    >>> es['min'] = 10.0
+    >>> es['min']
+    10.0
+    """
+    # Make sure we enable Tk
+    base.wantDIRECT = 1
+    base.wantTk = 1
+    import TkGlobal
+    from Tkinter import *
+    import EntryScale
+    import Pmw
+    # Create toplevel if needed
+    if not parent:
+        parent = Toplevel()
+        parent.title('Parameter Adjust')
+    es = apply(EntryScale.EntryScale, (parent,), kw)
+    es.pack(expand = 1, fill = X)
+    es.parent = parent
+    return es
 
 def intersection(a, b):
     """

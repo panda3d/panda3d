@@ -1,25 +1,4 @@
 from PandaObject import *
-from EntryScale import EntryScale
-
-def adjust(**kw):
-    """
-    Popup and entry scale to adjust a parameter
-    Accepts any EntryScale keyword argument.  Typical arguments include:
-    command: The one argument command to execute
-    min: The min value of the slider
-    max: The max value of the slider
-    resolution: The resolution of the slider
-    text: The label on the slider
-    """
-    from Tkinter import *
-    import Pmw
-    from EntryScale import *
-    tl = Toplevel()
-    tl.title('Parameter Adjust')
-    es = apply(EntryScale, (tl,), kw)
-    es.pack(expand = 1, fill = X)
-    es.tl = tl
-    return es
 
 ## Background Color ##
 def setBackgroundColor(r,g,b):
