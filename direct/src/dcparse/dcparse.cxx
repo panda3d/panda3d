@@ -100,7 +100,8 @@ main(int argc, char *argv[]) {
     cerr << "File is incomplete.  The following objects are undefined:\n";
 
     int num_typedefs = file.get_num_typedefs();
-    for (int i = 0; i < num_typedefs; i++) {
+    int i;
+    for (i = 0; i < num_typedefs; i++) {
       DCTypedef *dtypedef = file.get_typedef(i);
       if (dtypedef->is_bogus_typedef()) {
         cerr << "  " << dtypedef->get_name() << "\n";
@@ -108,7 +109,7 @@ main(int argc, char *argv[]) {
     }
 
     int num_classes = file.get_num_classes();
-    for (int i = 0; i < num_classes; i++) {
+    for (i = 0; i < num_classes; i++) {
       DCClass *dclass = file.get_class(i);
       if (dclass->is_bogus_class()) {
         cerr << "  " << dclass->get_name() << "\n";
