@@ -47,6 +47,8 @@
 #include "depthOffsetAttrib.h"
 #include "fog.h"
 
+#include "throw_event.h"
+
 #ifdef DO_PSTATS
 #include "pStatTimer.h"
 #include "pStatCollector.h"
@@ -732,8 +734,10 @@ do_clear(const RenderBuffer &buffer) {
 
     HRESULT  hr = _pScrn->pD3DDevice->Clear(0, NULL, flags, _d3dcolor_clear_value,
                                     (D3DVALUE) _depth_clear_value, (DWORD)_stencil_clear_value);
-    if (hr != DD_OK)
+    if (hr != DD_OK) {
         dxgsg7_cat.error() << "clear_buffer failed:  Clear returned " << ConvD3DErrorToString(hr) << endl;
+        throw_event("panda3d-render-error");
+    }
     /*  The following line will cause the background to always clear to a medium red
     _color_clear_value[0] = .5;
     /*  The following lines will cause the background color to cycle from black to red.
@@ -772,6 +776,7 @@ prepare_display_region() {
         << "SetViewport(" << l << ", " << b << ", " << w << ", " << h
         << ") failed : result = " << ConvD3DErrorToString(hr)
         << endl;
+      throw_event("panda3d-render-error"); 
     }
     
     // Note: for DX9, also change scissor clipping state here
