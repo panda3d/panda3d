@@ -8,6 +8,10 @@ import string
 import tkColorChooser
 from tkSimpleDialog import askfloat
 
+"""
+Change Min/Max buttons to labels, add highlight binding
+"""
+
 class EntryScale(Pmw.MegaWidget):
     "Scale with linked and validated entry"
  

@@ -971,7 +971,10 @@ class ParticlePanel(AppShell):
         # Find path to particle directory
         pPath = getParticlePath()
         if pPath.getNumDirectories() > 0:
-            path = pPath.getDirectory(0).toOsSpecific()
+            if `pPath.getDirectory(0)` == '.':
+                path = '.'
+            else:
+                path = pPath.getDirectory(0).toOsSpecific()
         else:
             path = '.'
         if not os.path.isdir(path):
@@ -993,7 +996,10 @@ class ParticlePanel(AppShell):
         # Find path to particle directory
         pPath = getParticlePath()
         if pPath.getNumDirectories() > 0:
-            path = pPath.getDirectory(0).toOsSpecific()
+            if `pPath.getDirectory(0)` == '.':
+                path = '.'
+            else:
+                path = pPath.getDirectory(0).toOsSpecific()
         else:
             path = '.'
         if not os.path.isdir(path):

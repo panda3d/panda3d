@@ -176,6 +176,8 @@ class DirectManipulationControl(PandaObject):
             direct.selected.getWrtAll()
             # hide the bbox of the selected objects during interaction
             direct.selected.dehighlightAll()
+            # Send event to signal start of manipulation
+            messenger.send('manipulateObjectStart')
             # Manipulate the real object with the constraint
             # The constraint is passed as the name of the node 
             self.spawnManipulateObjectTask()

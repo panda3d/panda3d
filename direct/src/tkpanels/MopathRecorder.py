@@ -59,17 +59,34 @@ class MopathRecorder(AppShell, PandaObject):
         self.selectPlaybackNodePathNamed('init')
 
     def appInit(self):
+        self.name = self['name']
         # Dictionary of widgets
         self.widgetDict = {}
         self.variableDict = {}
         # Initialize state
-        self.recorderNodePath = direct.group.attachNewNode(self['name'])
+        self.recorderNodePath = direct.group.attachNewNode(self.name)
         self.tempCS = self.recorderNodePath.attachNewNode(
             'mopathRecorderTempCS')
         self.editCS = self.recorderNodePath.attachNewNode(
             'mopathRecorderEditCS')
         self.playbackMarker = loader.loadModel('models/directmodels/smiley')
         self.playbackMarker.reparentTo(self.recorderNodePath)
+        self.playbackMarker.hide()
+        self.playbackMarker.setName('Playback Marker')
+        self.manipulandumId = None
+        self.tangentGroup = self.playbackMarker.attachNewNode('Tangent Group')
+        self.tangentGroup.hide()
+        self.tangentMarker = loader.loadModel('models/directmodels/sphere')
+        self.tangentMarker.reparentTo(self.tangentGroup)
+        self.tangentMarker.setScale(0.5)
+        self.tangentMarker.setColor(1,0,1,1)
+        self.tangentMarker.setName('Tangent Marker')
+        self.tangentLines = LineNodePath(self.tangentGroup)
+	self.tangentLines.setColor(VBase4(1,0,1,1))
+	self.tangentLines.setThickness(1)
+	self.tangentLines.moveTo(0,0,0)
+        self.tangentLines.drawTo(0,0,0)
+        self.tangentLines.create()
         self.playbackNodePath = None
         self.lastPlaybackNodePath = None
         # For node path selectors
@@ -93,7 +110,7 @@ class MopathRecorder(AppShell, PandaObject):
         self.postPoints = []
         self.pointSetDict = {}
         self.pointSetCount = 0
-        self.pointSetName = self['name'] + '-ps-' + `self.pointSetCount`
+        self.pointSetName = self.name + '-ps-' + `self.pointSetCount`
         # User callback to call before recording point
         self.preRecordFunc = None
         # Hook to start/stop recording
@@ -108,7 +125,7 @@ class MopathRecorder(AppShell, PandaObject):
         self.numTicks = 1
         # Number of segments to represent each parametric unit
         # This just affects the visual appearance of the curve
-        self.numSegs = 5
+        self.numSegs = 20
         # The nurbs curves
         self.xyzNurbsCurve = None
         self.hprNurbsCurve = None
@@ -116,11 +133,14 @@ class MopathRecorder(AppShell, PandaObject):
         self.xyzNurbsCurveDrawer = NurbsCurveDrawer(NurbsCurve())
         self.xyzNurbsCurveDrawer.setNumSegs(self.numSegs)
         self.xyzNurbsCurveDrawer.setShowHull(0)
+        self.xyzNurbsCurveDrawer.setShowCvs(0)
+        self.xyzNurbsCurveDrawer.setNumTicks(0)
         self.curveNodePath = self.recorderNodePath.attachNewNode(
             self.xyzNurbsCurveDrawer.getGeomNode())
         # Playback variables
         self.playbackTime = 0.0
         self.loopPlayback = 1
+        self.playbackSF = 1.0
         # Sample variables
         self.fEven = 0
         self.desampleFrequency = 1
@@ -141,6 +161,8 @@ class MopathRecorder(AppShell, PandaObject):
             ('pushRedo', self.pushRedoHook),
             ('redoListEmpty', self.redoListEmptyHook),
             ('selectedNodePath', self.selectedNodePathHook),
+            ('deselectedNodePath', self.deselectedNodePathHook),
+            ('manipulateObjectStart', self.manipulateObjectStartHook),
             ('manipulateObjectCleanup', self.manipulateObjectCleanupHook),
             ]
         for event, method in self.actionEvents:
@@ -167,17 +189,15 @@ class MopathRecorder(AppShell, PandaObject):
 
         # Add mopath recorder commands to menubar
         self.menuBar.addmenu('Recorder', 'Mopath Recorder Panel Operations')
+        self.menuBar.addmenuitem(
+            'Recorder', 'command',
+            'Save current curve as a new point set',
+            label = 'Save Point Set',
+            command = self.savePointSet)
         self.menuBar.addcascademenu(
             'Recorder', 'Show/Hide',
             statusHelp = 'Show/Hide Mopath Recorder Objects',
             tearoff = 1)
-        self.traceVis = BooleanVar()
-        self.traceVis.set(1)
-        self.menuBar.addmenuitem('Show/Hide', 'checkbutton',
-                                 'Toggle Trace Visability',
-                                 label = 'Toggle Trace Vis',
-                                 variable = self.traceVis,
-                                 command = self.setTraceVis)
         self.pathVis = BooleanVar()
         self.pathVis.set(1)
         self.menuBar.addmenuitem('Show/Hide', 'checkbutton',
@@ -193,7 +213,7 @@ class MopathRecorder(AppShell, PandaObject):
                                  variable = self.hullVis,
                                  command = self.setHullVis)
         self.cvVis = BooleanVar()
-        self.cvVis.set(1)
+        self.cvVis.set(0)
         self.menuBar.addmenuitem('Show/Hide', 'checkbutton',
                                  'Toggle CV Visability',
                                  label = 'Toggle CV Vis',
@@ -207,7 +227,7 @@ class MopathRecorder(AppShell, PandaObject):
                                  variable = self.knotVis,
                                  command = self.setKnotVis)
         self.tickVis = BooleanVar()
-        self.tickVis.set(1)
+        self.tickVis.set(0)
         self.menuBar.addmenuitem('Show/Hide', 'checkbutton',
                                  'Toggle Tick Visability',
                                  label = 'Toggle Tick Vis',
@@ -306,19 +326,27 @@ class MopathRecorder(AppShell, PandaObject):
                                 'Set total curve duration',
                                 command = self.setPathDuration)
         frame.pack(fill = X, expand = 1)
-        frame = Frame(playbackFrame)
+        
         widget = self.createEntryScale(
-            frame, 'Playback', 'Time', 'Set current playback time',
-            resolution = 0.01, command = self.playbackGoTo, side = LEFT)
+            playbackFrame, 'Playback', 'Time', 'Set current playback time',
+            resolution = 0.01, command = self.playbackGoTo, side = TOP)
         widget.component('hull')['relief'] = RIDGE
         # Kill playback task if drag slider
         widget.component('scale').bind(
             '<ButtonPress-1>', lambda e = None, s = self: s.stopPlayback())
-        self.createCheckbutton(frame, 'Playback', 'Loop',
-                               'On: loop playback',
-                               self.setLoopPlayback, self.loopPlayback,
-                               side = LEFT, fill = BOTH, expand = 0)
+        
+        # Speed control
+        frame = Frame(playbackFrame)
+        Label(frame, text = 'PB Speed Vernier').pack(side = LEFT, expand = 0)
+        self.speedScale = Scale(frame, from_ = -1, to = 1,
+                                resolution = 0.01, showvalue = 0,
+                                width = 10, orient = 'horizontal',
+                                command = self.setPlaybackSF)
+        self.speedScale.pack(fill = X, expand = 0)
+        self.speedScale.bind('<ButtonRelease-1>',
+                             lambda e = None, s = self: s.speedScale.set(0.0))
         frame.pack(fill = X, expand = 1)
+        
         # Start stop buttons
         frame = Frame(playbackFrame)
         widget = self.createButton(frame, 'Playback', '<<',
@@ -337,6 +365,10 @@ class MopathRecorder(AppShell, PandaObject):
                                    self.jumpToEndOfPlayback,
                                    side = LEFT, expand = 1)
         widget['font'] = (('MSSansSerif', 12, 'bold'))
+        self.createCheckbutton(frame, 'Playback', 'Loop',
+                               'On: loop playback',
+                               self.setLoopPlayback, self.loopPlayback,
+                               side = LEFT, fill = BOTH, expand = 0)
         frame.pack(fill = X, expand = 1)
 
         playbackFrame.pack(fill = X, pady = 2)
@@ -593,19 +625,81 @@ class MopathRecorder(AppShell, PandaObject):
         Hook called upon selection of a node path used to select playback
         marker if subnode selected
         """
-        if direct.selected.last.id() == self.playbackMarker.getChild(0).id():
+        taskMgr.removeTasksNamed(self.name + '-curveEditTask')
+        if nodePath.id() == self.playbackMarker.getChild(0).id():
             direct.select(self.playbackMarker)
+        elif nodePath.id() == self.tangentMarker.getChild(0).id():
+            direct.select(self.tangentMarker)
+        elif nodePath.id() == self.playbackMarker.id():
+            self.tangentGroup.show()
+            taskMgr.spawnMethodNamed(self.curveEditTask,
+                                     self.name + '-curveEditTask')
+        elif nodePath.id() == self.tangentMarker.id():
+            self.tangentGroup.show()
+            taskMgr.spawnMethodNamed(self.curveEditTask,
+                                     self.name + '-curveEditTask')
+        else:
+            self.tangentGroup.hide()
 
+    def deselectedNodePathHook(self, nodePath):
+        """
+        Hook called upon deselection of a node path used to select playback
+        marker if subnode selected
+        """
+        if ((nodePath.id() == self.playbackMarker.id()) |
+            (nodePath.id() == self.tangentMarker.id())):
+            self.tangentGroup.hide()
+
+    def curveEditTask(self,state):
+        if self.xyzNurbsCurve != None:
+            # Update curve position
+            if self.manipulandumId == self.playbackMarker.id():
+                # Show playback marker
+                self.playbackMarker.getChild(0).show()
+                pos = Point3(0)
+                pos = self.playbackMarker.getPos()
+                self.xyzNurbsCurve.adjustPoint(
+                    self.playbackTime,
+                    pos[0], pos[1], pos[2])
+                hpr = Point3(0)
+                hpr = self.playbackMarker.getHpr()
+                self.hprNurbsCurve.adjustPoint(
+                    self.playbackTime,
+                    hpr[0], hpr[1], hpr[2])
+                self.hprNurbsCurve.recompute()
+                self.xyzNurbsCurveDrawer.draw()
+            # Update tangent
+            if self.manipulandumId == self.tangentMarker.id():
+                # Hide playback marker
+                self.playbackMarker.getChild(0).hide()
+                # If manipulating marker, update curve
+                tan = self.tangentMarker.getPos()
+                self.xyzNurbsCurve.adjustTangent(
+                    self.playbackTime,
+                    tan[0], tan[1], tan[2])
+                self.xyzNurbsCurveDrawer.draw()
+            else:
+                # Show playback marker
+                self.playbackMarker.getChild(0).show()
+                # Update tangent marker line
+                tan = Point3(0)
+                self.xyzNurbsCurve.getTangent(self.playbackTime, tan)
+                self.tangentMarker.setPos(tan)
+            # In either case update tangent line
+            self.tangentLines.setVertex(1, tan[0], tan[1], tan[2])
+        return Task.cont
+
+    def manipulateObjectStartHook(self):
+        self.manipulandumId = None
+        if direct.selected.last:
+            if direct.selected.last.id() == self.playbackMarker.id():
+                self.manipulandumId = self.playbackMarker.id()
+            elif direct.selected.last.id() == self.tangentMarker.id():
+                self.manipulandumId = self.tangentMarker.id()
+              
     def manipulateObjectCleanupHook(self):
-        if direct.selected.last.id() == self.playbackMarker.id():
-            pos = Point3(0)
-            self.xyzNurbsCurve.getPoint(self.playbackTime, pos)
-            print pos
-            pos2 = self.playbackMarker.getPos()
-            print pos2
-            self.xyzNurbsCurve.adjustPoint(
-                self.playbackTime, pos[0], pos[1], pos[2])
-            self.xyzNurbsCurveDrawer.draw()
+        # Clear flag
+        self.manipulandumId = None
             
     def onDestroy(self, event):
         # Remove hooks
@@ -615,9 +709,32 @@ class MopathRecorder(AppShell, PandaObject):
         self.ignore(self.startStopHook)
         self.ignore(self.keyframeHook)
         self.recorderNodePath.removeNode()
+        # Make sure markers are deselected
+        direct.deselect(self.playbackMarker)
+        direct.deselect(self.tangentMarker)
+        # Remove tasks
+        taskMgr.removeTasksNamed(self.name + '-recordTask')
+        taskMgr.removeTasksNamed(self.name + '-playbackTask')
+        taskMgr.removeTasksNamed(self.name + '-curveEditTask')
+
+    def savePointSet(self):
+        # Use curve to compute default point set at 30 fps
+        # Keep a handle on the original curve
+        xyzCurve = self.xyzNurbsCurve
+        hprCurve = self.hprNurbsCurve
+        # Sample curves
+        self.maxT = self.xyzNurbsCurve.getMaxT()
+        self.setNumSamples(self.maxT * 30.0)
+        self.sampleCurve()
+        # Restore curves to those loaded in
+        self.xyzNurbsCurve = xyzCurve
+        self.hprNurbsCurve = hprCurve
+        # Redraw
+        self.xyzNurbsCurveDrawer.setCurve(self.xyzNurbsCurve)
+        self.xyzNurbsCurveDrawer.draw()
 
     def createNewPointSet(self):
-        self.pointSetName = self['name'] + '-ps-' + `self.pointSetCount`
+        self.pointSetName = self.name + '-ps-' + `self.pointSetCount`
         # Update dictionary and record pointer to new point set
         self.pointSet = self.pointSetDict[self.pointSetName] = []
         # Update combo box
@@ -644,9 +761,6 @@ class MopathRecorder(AppShell, PandaObject):
         # Compute curve
         self.computeCurves()
 
-    def setTraceVis(self):
-        print self.traceVis.get()
-        
     def setHullVis(self):
         self.xyzNurbsCurveDrawer.setShowHull(self.hullVis.get())
         
@@ -736,7 +850,7 @@ class MopathRecorder(AppShell, PandaObject):
     def toggleRecord(self):
         if self.getVariable('Recording', 'Record').get():
             # Kill old task
-            taskMgr.removeTasksNamed(self['name'] + '-recordTask')
+            taskMgr.removeTasksNamed(self.name + '-recordTask')
             # Remove old curve
             self.xyzNurbsCurveDrawer.hide()
             # Reset curve fitters
@@ -775,7 +889,7 @@ class MopathRecorder(AppShell, PandaObject):
                     self.startPlayback()
                 # Start new task
                 t = taskMgr.spawnMethodNamed(
-                    self.recordTask, self['name'] + '-recordTask')
+                    self.recordTask, self.name + '-recordTask')
                 t.startTime = globalClock.getTime()
 
             # Don't want to change record modes
@@ -786,13 +900,16 @@ class MopathRecorder(AppShell, PandaObject):
         else:
             if self.samplingMode.get() == 'Continuous':
                 # Kill old task
-                taskMgr.removeTasksNamed(self['name'] + '-recordTask')
+                taskMgr.removeTasksNamed(self.name + '-recordTask')
                 if ((self.recordingType.get() == 'Refine') |
                     (self.recordingType.get() == 'Extend')):
                     # Reparent node path back to parent
                     self['nodePath'].wrtReparentTo(self.nodePathParent)
                     # Restore playback Node Path
                     self.playbackNodePath = self.lastPlaybackNodePath
+                    # See if it was the playback marker
+                    if self.playbackNodePath.id() == self.playbackMarker.id():
+                        self.playbackMarker.show()
             else:
                 # Add last point
                 self.addKeyframe(0)
@@ -1024,7 +1141,16 @@ class MopathRecorder(AppShell, PandaObject):
             else:
                 if name == 'widget':
                     # Record relationship between selected nodes and widget
-                    direct.selected.getWrtAll()                    
+                    direct.selected.getWrtAll()
+                if name == 'marker':
+                    self.playbackMarker.show()
+                    # Initialize tangent marker position
+                    tan = Point3(0)
+                    if self.xyzNurbsCurve != None:
+                        self.xyzNurbsCurve.getTangent(self.playbackTime, tan)
+                    self.tangentMarker.setPos(tan)
+                else:
+                    self.playbackMarker.hide()
         # Update active node path
         self.setPlaybackNodePath(nodePath)
 
@@ -1089,16 +1215,24 @@ class MopathRecorder(AppShell, PandaObject):
         self.getVariable('Playback', 'Play').set(1)
         # Start new playback task
         t = taskMgr.spawnMethodNamed(
-            self.playbackTask, self['name'] + '-playbackTask')
-        t.startOffset = self.playbackTime
-        t.startTime = globalClock.getTime()
+            self.playbackTask, self.name + '-playbackTask')
+        t.currentTime = self.playbackTime
+        t.lastTime = globalClock.getTime()
+
+    def setSpeedScale(self, value):
+        self.speedScale.set(value)
+
+    def setPlaybackSF(self, value):
+        self.playbackSF = pow(10.0, float(value))
         
     def playbackTask(self, state):
-        dTime = globalClock.getTime() - state.startTime
+        time = globalClock.getTime()
+        dTime = self.playbackSF * (time - state.lastTime)
+        state.lastTime = time
         if self.loopPlayback:
-            cTime = (state.startOffset + dTime) % self.maxT
+            cTime = (state.currentTime + dTime) % self.maxT
         else:
-            cTime = state.startOffset + dTime
+            cTime = state.currentTime + dTime
         # Stop task if not looping and at end of curve
         # Or if refining curve and past recordStop
         if (((self.loopPlayback == 0) & (cTime > self.maxT)) |
@@ -1112,11 +1246,12 @@ class MopathRecorder(AppShell, PandaObject):
             return Task.done
         # Otherwise go to specified time
         self.getWidget('Playback', 'Time').set(cTime)
+        state.currentTime = cTime
         return Task.cont
 
     def stopPlayback(self):
         self.getVariable('Playback', 'Play').set(0)
-        taskMgr.removeTasksNamed(self['name'] + '-playbackTask')
+        taskMgr.removeTasksNamed(self.name + '-playbackTask')
 
     def jumpToStartOfPlayback(self):
         self.stopPlayback()
@@ -1411,7 +1546,10 @@ class MopathRecorder(AppShell, PandaObject):
         # Use first directory in model path
         mPath = getModelPath()
         if mPath.getNumDirectories() > 0:
-            path = mPath.getDirectory(0).toOsSpecific()
+            if `mPath.getDirectory(0)` == '.':
+                path = '.'
+            else:
+                path = mPath.getDirectory(0).toOsSpecific()
         else:
             path = '.'
         if not os.path.isdir(path):
@@ -1433,20 +1571,8 @@ class MopathRecorder(AppShell, PandaObject):
                 self.extractCurves(nodePath)
                 if ((self.xyzNurbsCurve != None) & 
                     (self.hprNurbsCurve != None)):
-                    # Use curve to compute default point set at 30 fps
-                    # Keep a handle on the original curve
-                    xyzCurve = self.xyzNurbsCurve
-                    hprCurve = self.hprNurbsCurve
-                    # Sample curves
-                    self.maxT = self.xyzNurbsCurve.getMaxT()
-                    self.setNumSamples(self.maxT * 30.0)
-                    self.sampleCurve(0)
-                    # Restore curves to those loaded in
-                    self.xyzNurbsCurve = xyzCurve
-                    self.hprNurbsCurve = hprCurve
-                    # Redraw
-                    self.xyzNurbsCurveDrawer.setCurve(self.xyzNurbsCurve)
-                    self.xyzNurbsCurveDrawer.draw()
+                    # Save a pointset for this curve
+                    self.savePointSet()
                 else:
                     if (self.xyzNurbsCurve != None):
                         print 'Mopath Recorder: HPR Curve not found'
@@ -1472,7 +1598,10 @@ class MopathRecorder(AppShell, PandaObject):
         # Use first directory in model path
         mPath = getModelPath()
         if mPath.getNumDirectories() > 0:
-            path = mPath.getDirectory(0).toOsSpecific()
+            if `mPath.getDirectory(0)` == '.':
+                path = '.'
+            else:
+                path = mPath.getDirectory(0).toOsSpecific()
         else:
             path = '.'
         if not os.path.isdir(path):
