@@ -482,7 +482,7 @@ write(ostream &out) const {
       << "    phase: " << _phase   << endl
       << "     size: " << _size    << endl
       << "   status: " << _status  << endl
-      << "     hash: " << _hash << endl;
+      << "     hash: " << _hash.as_dec() << endl;
   out << "--------------------------------------------------" << endl;
   pvector< PT(FileRecord) >::const_iterator i = _file_records.begin();
   for(; i != _file_records.end(); ++i) {
