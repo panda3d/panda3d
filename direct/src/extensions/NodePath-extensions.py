@@ -1020,3 +1020,21 @@
         collNode.setIntoCollideMask(intoCollide)
         collNodePath = self.attachNewNode(collNode)
         return collNodePath
+
+    def flattenMultitex(self, stateFrom = None, target = None,
+                        useGeom = 0, allowTexMat = 0, win = None):
+        from pandac import MultitexReducer
+        mr = MultitexReducer.MultitexReducer()
+        if target != None:
+            mr.setTarget(target)
+        mr.setUseGeom(useGeom)
+        mr.setAllowTexMat(allowTexMat)
+
+        if win == None:
+            win = base.win
+
+        if stateFrom == None:
+            mr.scan(self)
+        else:
+            mr.scan(self, stateFrom)
+        mr.flatten(win)
