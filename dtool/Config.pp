@@ -510,6 +510,10 @@
   #define USE_COMPILER GCC
 #endif
 
+// Permission masks to install data and executable files,
+// respectively.  This is only meaningful for Unix systems.
+#define INSTALL_UMASK_DATA 644
+#define INSTALL_UMASK_PROG 755
 
 // How to invoke bison and flex.  Panda takes advantage of some
 // bison/flex features, and therefore specifically requires bison and
@@ -660,8 +664,8 @@
 // a running program without crashing the running instance.  However,
 // it doesn't understanding installing a program from a subdirectory,
 // so we have to cd into the source directory first.
-#defer INSTALL $[if $[ne $[dir $[local]], ./],cd ./$[dir $[local]] &&] install -m 666 $[notdir $[local]] $[dest]
-#defer INSTALL_PROG $[if $[ne $[dir $[local]], ./],cd ./$[dir $[local]] &&] install -m 777 $[notdir $[local]] $[dest]
+#defer INSTALL $[if $[ne $[dir $[local]], ./],cd ./$[dir $[local]] &&] install -m $[INSTALL_UMASK_DATA] $[notdir $[local]] $[dest]/
+#defer INSTALL_PROG $[if $[ne $[dir $[local]], ./],cd ./$[dir $[local]] &&] install -m $[INSTALL_UMASK_PROG] $[notdir $[local]] $[dest]/
 
 // Variable definitions for building with the Irix MIPSPro compiler.
 #if $[eq $[USE_COMPILER], MIPS]
