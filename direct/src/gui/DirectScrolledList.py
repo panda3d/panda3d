@@ -1,6 +1,5 @@
 from DirectFrame import *
 from DirectButton import *
-import GuiGlobals
 import Task
 
 class DirectScrolledList(DirectFrame):
@@ -18,26 +17,23 @@ class DirectScrolledList(DirectFrame):
             ('scrollSpeed',     8,         self.setScrollSpeed),
             )
         # Merge keyword options with default options
-        self.defineoptions(kw, optiondefs, dynamicGroups = ("items",))
+        self.defineoptions(kw, optiondefs)
 
         # Initialize superclasses
         DirectFrame.__init__(self, parent)
 
-        self.incButton = self.createcomponent("incButton", (), "incButton",
-                                              DirectButton, (),
-                                              parent = self,
+        self.incButton = self.createcomponent("incButton", (), None,
+                                              DirectButton, (self,),
                                               )
         self.incButton.bind(B1PRESS, self.__incButtonDown)
         self.incButton.bind(B1RELEASE, self.__buttonUp)
-        self.decButton = self.createcomponent("decButton", (), "decButton",
-                                              DirectButton, (),
-                                              parent = self,
+        self.decButton = self.createcomponent("decButton", (), None,
+                                              DirectButton, (self,),
                                               )
         self.decButton.bind(B1PRESS, self.__decButtonDown)
         self.decButton.bind(B1RELEASE, self.__buttonUp)
-        self.itemFrame = self.createcomponent("itemFrame", (), "itemFrame",
-                                              DirectFrame, (),
-                                              parent = self,
+        self.itemFrame = self.createcomponent("itemFrame", (), None,
+                                              DirectFrame, (self,),
                                               )
         for item in self["items"]:
             item.reparentTo(self.itemFrame)

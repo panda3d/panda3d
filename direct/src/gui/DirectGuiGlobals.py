@@ -63,6 +63,7 @@ TEXT_SORT_INDEX = 30
 defaultFont = None
 defaultClickSound = None
 defaultRolloverSound = None
+defaultDialogGeom = None
 
 def getDefaultRolloverSound():
     global defaultRolloverSound
@@ -91,3 +92,13 @@ def getDefaultFont():
 def setDefaultFont(newFont):
     global defaultFont
     defaultFont = newFont
+
+def getDefaultDialogGeom():
+    global defaultDialogGeom
+    if defaultDialogGeom == None:
+        defaultDialogGeom = loader.loadModelOnce('phase_3/models/props/panel')
+    return defaultDialogGeom
+
+def setDefaultDialogGeom(newDialogGeom):
+    global defaultDialogGeom
+    defaultDialogGeom = newDialogGeom
