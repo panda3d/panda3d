@@ -107,7 +107,7 @@ compute_child(const LPoint3f &cam_pos, const LPoint3f &center) const {
 
   if(debug_LOD_mode) {
       //not ifndef NDEBUG'ing this out since need it at Opt4 for perf measurements
-      if(select_LOD_number>0) {
+      if(select_LOD_number>=0) {
           return select_LOD_number;
       }
 
