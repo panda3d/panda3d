@@ -103,8 +103,10 @@
 
 #defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] $[COMMONFLAGS] $[OPT1FLAGS] $[DEBUGFLAGS]
 #defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPTFLAGS]
-#defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS]
+#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] $[DEBUGPDBFLAGS]
+#defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] $[DEBUGPDBFLAGS]
 
+#if $[eq 0,1]
 // should be OK to build debug info for all builds, although it increases size of DLL by a tiny amt
 //#define FORCE_DEBUG_FLAGS 0
 #if $[FORCE_DEBUG_FLAGS]
@@ -117,12 +119,13 @@
 #else
 #defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] 
 #endif
+#endif
 
 // NODEFAULTLIB ensures static libs linked in will connect to the correct msvcrt, so no debug/release mixing occurs
-#defer LDFLAGS_OPT1 /debug /incremental:no /NODEFAULTLIB:MSVCRT.LIB /WARN:3 $[LINKER_FLAGS]
-#defer LDFLAGS_OPT2 /debug /incremental:no /NODEFAULTLIB:MSVCRT.LIB /WARN:3 $[LINKER_FLAGS] 
-#defer LDFLAGS_OPT3 /fixed:no /incremental:no /NODEFAULTLIB:MSVCRTD.LIB /WARN:3 $[LINKER_FLAGS] /OPT:REF
-#defer LDFLAGS_OPT4 /fixed:no /incremental:no /NODEFAULTLIB:MSVCRTD.LIB /WARN:3 $[LINKER_FLAGS] /OPT:REF
+#defer LDFLAGS_OPT1 /fixed:no /incremental:no $[LINKER_FLAGS] /NODEFAULTLIB:MSVCRT.LIB /WARN:3 
+#defer LDFLAGS_OPT2 /fixed:no /incremental:no $[LINKER_FLAGS] /NODEFAULTLIB:MSVCRT.LIB /WARN:3 
+#defer LDFLAGS_OPT3 /fixed:no /incremental:no $[LINKER_FLAGS] /NODEFAULTLIB:MSVCRTD.LIB /WARN:3 /OPT:REF
+#defer LDFLAGS_OPT4 /fixed:no /incremental:no $[LINKER_FLAGS] /NODEFAULTLIB:MSVCRTD.LIB /WARN:3 /OPT:REF
 
 
 // $[build_pdbs] will be nonempty (true) if we should expect to

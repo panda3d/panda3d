@@ -6,10 +6,9 @@
   #define COMMONFLAGS /Gi-
   #define OPTFLAGS /O2 /Ob1 /G6
   #define OPT1FLAGS /GZ 
-  
-//  #defer DEBUGFLAGS /MDd $[BROWSEINFO_FLAG] $[DEBUG_TYPE_FLAGS]
-//  #defer DEBUGINFOFLAGS /Zi /Fd"$[osfilename $[target:%.obj=%.pdb]]"  
-  #defer DEBUGFLAGS /MDd $[BROWSEINFO_FLAG] $[DEBUGINFOFLAGS] /Zi /Fd"$[osfilename $[target:%.obj=%.pdb]]"  
+
+  #defer DEBUGPDBFLAGS /Zi /Fd"$[osfilename $[target:%.obj=%.pdb]]"  
+  #defer DEBUGFLAGS /MDd $[BROWSEINFO_FLAG] $[DEBUGINFOFLAGS] $[DEBUGPDBFLAGS]
   #define RELEASEFLAGS /MD
   
   #define MAPINFOFLAGS /MAPINFO:EXPORTS /MAPINFO:FIXUPS /MAPINFO:LINES
@@ -20,8 +19,9 @@
   #else
     #define PROFILE_FLAG 
   #endif
-  
-  #define LINKER_FLAGS $[PROFILE_FLAG] /MAP $[MAPINFOFLAGS]
+ 
+  // Note: all Opts will link w/debug info now 
+  #define LINKER_FLAGS /DEBUG /DEBUGTYPE:CV $[PROFILE_FLAG] /MAP $[MAPINFOFLAGS]
   
 // in case we have mixed intel/msvc build
   #define EXTRA_LIBPATH /ia32/lib
