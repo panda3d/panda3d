@@ -107,6 +107,7 @@ mkdir -p $RPM_BUILD_ROOT/usr/include
 mkdir -p $RPM_BUILD_ROOT/usr/lib
 mkdir -p $RPM_BUILD_ROOT/usr/share/panda3d
 mkdir -p $RPM_BUILD_ROOT/usr/lib/$PYTHONV/lib-dynload
+mkdir -p $RPM_BUILD_ROOT/usr/lib/$PYTHONV/site-packages
 mkdir -p $RPM_BUILD_ROOT/etc/ld.so.conf.d
 mkdir -p $RPM_BUILD_ROOT/usr/bin
 
