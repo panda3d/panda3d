@@ -48,7 +48,7 @@ class Particles(ParticleSystem.ParticleSystem):
 
         # Set up a physical node
         self.node = PhysicalNode(self.name)
-        self.nodePath = hidden.attachNewNode(self.node)
+        self.nodePath = NodePath(self.node)
         self.setRenderParent(self.node)
         self.node.addPhysical(self)
 
@@ -72,7 +72,7 @@ class Particles(ParticleSystem.ParticleSystem):
         self.clearAngularForces()
         self.setRenderParent(self.node)
         self.node.removePhysical(self)
-        self.nodePath.removeNode()
+        self.nodePath.detachNode()
         self.node = None
         self.factory = None
         self.renderer = None
@@ -131,7 +131,7 @@ class Particles(ParticleSystem.ParticleSystem):
             self.renderer = LineParticleRenderer.LineParticleRenderer()
         elif (type == "GeomParticleRenderer"):
             self.renderer = GeomParticleRenderer.GeomParticleRenderer()
-            npath = hidden.attachNewNode('default-geom')
+            npath = NodePath('default-geom')
             # This was moved here because we do not want to download
             # the direct tools with toontown.
             import DirectSelection

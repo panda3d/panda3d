@@ -10,11 +10,10 @@ class ParticleEffect(NodePath):
 
     def __init__(self, name=None, particles=None):
         """__init__()"""
-        NodePath.__init__(self)
         if (name == None):
             name = 'particle-effect-%d' % ParticleEffect.pid
             ParticleEffect.pid += 1
-        self.assign(hidden.attachNewNode(name))
+        NodePath.__init__(self, name)
         # Record particle effect name
         self.name = name
         # Enabled flag
@@ -35,15 +34,12 @@ class ParticleEffect(NodePath):
             self.reparentTo(parent)
 
     def cleanup(self):
-        self.reparentTo(hidden)
+        self.detachNode()
         self.disable()
         for f in self.forceGroupDict.values():
             f.cleanup()
         for p in self.particlesDict.values():
             p.cleanup()
-        forceGroupDict = {}
-        particlesDict = {}
-        self.removeNode()
 
     def reset(self):
         self.removeAllForces()
@@ -64,6 +60,7 @@ class ParticleEffect(NodePath):
 
     def disable(self):
         """disable()"""
+        self.detachNode()
         for p in self.particlesDict.values():
             p.setRenderParent(p.node)
         for f in self.forceGroupDict.values():
@@ -100,7 +97,7 @@ class ParticleEffect(NodePath):
         for f in forceGroup.asList():
             self.removeForce(f)
 
-        forceGroup.nodePath.reparentTo(hidden)
+        forceGroup.nodePath.detachNode()
         forceGroup.particleEffect = None
         del self.forceGroupDict[forceGroup.getName()]
 

@@ -28,30 +28,43 @@ class ParticleInterval(Interval.Interval):
         assert(duration > 0.0 or loop == 1)
         # Initialize superclass
         Interval.Interval.__init__(self, name, duration)
-        self.cleanedUp = 0
+
+    def __del__(self):
+        if self.particleEffect:
+            self.particleEffect.cleanup()
+            self.particleEffect = None
 
     def privInitialize(self, t):
         renderParent = None
         if self.worldRelative:
             renderParent = render
-        self.particleEffect.start(self.parent, renderParent)
+        if self.particleEffect:
+            self.particleEffect.start(self.parent, renderParent)
         self.state = CInterval.SStarted
         self.currT = t
 
     def privStep(self, t):
         if self.state == CInterval.SPaused:
             # Restarting from a pause.
-            self.particleEffect.start(self.parent, renderParent)
-        self.state = CInterval.SStarted
-        self.currT = t
+            self.privInitialize(t)
+        else:
+            self.state = CInterval.SStarted
+            self.currT = t
 
     def privFinalize(self):
-        self.particleEffect.cleanup()
-        self.cleanedUp = 1
+        if self.particleEffect:
+            self.particleEffect.cleanup()
+            self.particleEffect = None
+        self.currT = self.getDuration()
+        self.state = CInterval.SFinal
+
+    def privInstant(self):
+        if self.particleEffect:
+            self.particleEffect.cleanup()
+            self.particleEffect = None
         self.currT = self.getDuration()
         self.state = CInterval.SFinal
 
     def privInterrupt(self):
-        self.particleEffect.cleanup()
-        self.cleanedUp = 1
+        self.particleEffect.disable()
         self.state = CInterval.SPaused

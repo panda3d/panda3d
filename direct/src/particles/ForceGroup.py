@@ -21,7 +21,7 @@ class ForceGroup(DirectObject):
             self.name = name
 
         self.node = ForceNode.ForceNode(self.name)
-        self.nodePath = hidden.attachNewNode(self.node)
+        self.nodePath = NodePath(self.node)
         self.fEnabled = 0
 
         self.particleEffect = None
@@ -29,8 +29,7 @@ class ForceGroup(DirectObject):
     def cleanup(self):
         for f in self.asList():
             self.removeForce(f)
-        self.nodePath.removeNode()
-        self.node = None
+        self.nodePath.detachNode()
         self.particleEffect = None
 
     def enable(self):
