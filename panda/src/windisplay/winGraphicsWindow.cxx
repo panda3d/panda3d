@@ -313,6 +313,9 @@ fullscreen_restored(WindowProperties &) {
 ////////////////////////////////////////////////////////////////////
 bool WinGraphicsWindow::
 do_reshape_request(int x_origin, int y_origin, int x_size, int y_size) {
+  windisplay_cat.info()
+    << "Got reshape request (" << x_origin << ", " << y_origin
+    << ", " << x_size << ", " << y_size << ")\n";
   if (!is_fullscreen()) {
     // Compute the appropriate size and placement for the window,
     // including decorations.
@@ -415,7 +418,23 @@ do_fullscreen_resize(int x_size, int y_size) {
 
   _fullscreen_display_mode = dm;
 
+  windisplay_cat.info()
+    << "Resized fullscreen window to " << x_size << ", " << y_size 
+    << " bitdepth " << dwFullScreenBitDepth << ", "
+    << dm.dmDisplayFrequency << "Hz\n";
+
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::reconsider_fullscreen_size
+//       Access: Protected, Virtual
+//  Description: Called before creating a fullscreen window to give
+//               the driver a chance to adjust the particular
+//               resolution request, if necessary.
+////////////////////////////////////////////////////////////////////
+void WinGraphicsWindow::
+reconsider_fullscreen_size(DWORD &, DWORD &, DWORD &) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -466,9 +485,6 @@ open_fullscreen_window() {
     _properties.set_size(640, 480);
   }
 
-  DWORD dwWidth = _properties.get_x_size();
-  DWORD dwHeight = _properties.get_y_size();
-
   HWND hDesktopWindow = GetDesktopWindow();
   HDC scrnDC = GetDC(hDesktopWindow);
   DWORD cur_bitdepth = GetDeviceCaps(scrnDC, BITSPIXEL);
@@ -476,9 +492,12 @@ open_fullscreen_window() {
   //  DWORD cur_scrnwidth = GetDeviceCaps(scrnDC, HORZRES);
   //  DWORD cur_scrnheight = GetDeviceCaps(scrnDC, VERTRES);
   ReleaseDC(hDesktopWindow, scrnDC);
-  
+
+  DWORD dwWidth = _properties.get_x_size();
+  DWORD dwHeight = _properties.get_y_size();
   DWORD dwFullScreenBitDepth = cur_bitdepth;
   
+  reconsider_fullscreen_size(dwWidth, dwHeight, dwFullScreenBitDepth);
   if (!find_acceptable_display_mode(dwWidth, dwHeight, dwFullScreenBitDepth,
                                     _fullscreen_display_mode)) {
     windisplay_cat.error() 

@@ -68,6 +68,9 @@ protected:
   virtual void handle_reshape();
   virtual bool do_fullscreen_resize(int x_size, int y_size);
 
+  virtual void reconsider_fullscreen_size(DWORD &x_size, DWORD &y_size, 
+                                          DWORD &bitdepth);
+
   void get_client_rect_screen(HWND hwnd, RECT *view_rect);
 
 private:
