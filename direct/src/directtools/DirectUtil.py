@@ -27,6 +27,7 @@ def lerpBackgroundColor(r,g,b,duration):
 
 Q_EPSILON = 1e-10
 
+# Quaternion interpolation
 def qSlerp(startQuat, endQuat, t):
     startQ = Quat(startQuat)
     destQuat = Quat.identQuat()
@@ -79,3 +80,25 @@ def qSlerp(startQuat, endQuat, t):
         destQuat.setK(startScale * startQ.getK() +
                       endScale * endQuat.getK())
     return destQuat
+
+# File data util
+def getFileData(filename, separator = ','):
+    """
+    Open the specified file and strip out unwanted whitespace and
+    empty lines.  Return file as list of lists, one file line per element,
+    list elements based upon separator
+    """
+    f = open(filename.toOsSpecific(), 'r')
+    rawData = f.readlines()
+    f.close()
+    fileData = []
+    for line in rawData:
+        # First strip whitespace from both ends of line
+        l = string.strip(line)
+        if l:
+            # If its a valid line, split on separator and
+            # strip leading/trailing whitespace from each element
+            data = map(string.strip, l.split(separator))
+            fileData.append(data)
+    return fileData
+

@@ -47,7 +47,7 @@ class PosInterval(Interval):
 	    self.posNum = self.posNum + 1
 	else:
 	    n = name
-	Interval.__init__(n, duration)
+	Interval.__init__(self, n, duration)
 
     def setT(self, t, entry=0):
 	""" setT(t, entry)
@@ -74,7 +74,7 @@ class HprInterval(Interval):
 	    self.hprNum = self.hprNum + 1
 	else:
 	    n = name
-	Interval.__init__(n, duration)
+	Interval.__init__(self, n, duration)
 
     def setT(self, t, entry=0):
 	""" setT(t, entry)
