@@ -1847,7 +1847,7 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
     Colorf color;
     float radius;
     
-    if(!make_sphere(egg_group,center,radius,color)) {
+    if (!make_sphere(egg_group, EggGroup::CF_none, center, radius, color)) {
       egg2pg_cat.warning()
         << "Polylight " << egg_group->get_name() << " make_sphere failed!\n";
     }
@@ -2099,9 +2099,10 @@ find_first_polygon(EggGroup *egg_group) {
 //               Polylight sphere. It could be used for other spheres.
 ////////////////////////////////////////////////////////////////////
 bool EggLoader::
-make_sphere(EggGroup *egg_group, LPoint3f &center, float &radius, Colorf &color) {
+make_sphere(EggGroup *egg_group, EggGroup::CollideFlags flags, 
+            LPoint3f &center, float &radius, Colorf &color) {
   bool success=false;
-  EggGroup *geom_group = find_collision_geometry(egg_group);
+  EggGroup *geom_group = find_collision_geometry(egg_group, flags);
   if (geom_group != (EggGroup *)NULL) {
     // Collect all of the vertices.
     pset<EggVertex *> vertices;
@@ -2130,7 +2131,7 @@ make_sphere(EggGroup *egg_group, LPoint3f &center, float &radius, Colorf &color)
 
     if (num_vertices > 0) {
       d_center /= (double)num_vertices;
-	  //egg2pg_cat.debug() << "make_sphere d_center: " << d_center << "\n";
+      //egg2pg_cat.debug() << "make_sphere d_center: " << d_center << "\n";
 
       LMatrix4d mat = egg_group->get_vertex_to_node();
       d_center = d_center * mat;
@@ -2146,15 +2147,15 @@ make_sphere(EggGroup *egg_group, LPoint3f &center, float &radius, Colorf &color)
 
       center = LCAST(float,d_center);
       radius = sqrtf(radius2);
-	  //egg2pg_cat.debug() << "make_sphere radius: " << radius << "\n";
-	  vi = vertices.begin();
-	  EggVertex *clr_vtx = (*vi);
-	  if (clr_vtx->has_color()) {
-	    color = clr_vtx->get_color();
-	  }
-	  else {
-	    color = Colorf(1.0,1.0,1.0,1.0);
-	  }
+
+      //egg2pg_cat.debug() << "make_sphere radius: " << radius << "\n";
+      vi = vertices.begin();
+      EggVertex *clr_vtx = (*vi);
+      if (clr_vtx->has_color()) {
+        color = clr_vtx->get_color();
+      } else {
+        color = Colorf(1.0,1.0,1.0,1.0);
+      }
       success = true;
 
     }
@@ -2226,7 +2227,7 @@ make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
 void EggLoader::
 make_collision_plane(EggGroup *egg_group, CollisionNode *cnode,
                      EggGroup::CollideFlags flags) {
-  EggGroup *geom_group = find_collision_geometry(egg_group);
+  EggGroup *geom_group = find_collision_geometry(egg_group, flags);
   if (geom_group != (EggGroup *)NULL) {
     EggGroup::const_iterator ci;
     for (ci = geom_group->begin(); ci != geom_group->end(); ++ci) {
@@ -2253,7 +2254,7 @@ void EggLoader::
 make_collision_polygon(EggGroup *egg_group, CollisionNode *cnode,
                        EggGroup::CollideFlags flags) {
 
-  EggGroup *geom_group = find_collision_geometry(egg_group);
+  EggGroup *geom_group = find_collision_geometry(egg_group, flags);
   if (geom_group != (EggGroup *)NULL) {
     EggGroup::const_iterator ci;
     for (ci = geom_group->begin(); ci != geom_group->end(); ++ci) {
@@ -2274,7 +2275,7 @@ make_collision_polygon(EggGroup *egg_group, CollisionNode *cnode,
 void EggLoader::
 make_collision_polyset(EggGroup *egg_group, CollisionNode *cnode,
                        EggGroup::CollideFlags flags) {
-  EggGroup *geom_group = find_collision_geometry(egg_group);
+  EggGroup *geom_group = find_collision_geometry(egg_group, flags);
   if (geom_group != (EggGroup *)NULL) {
     EggGroup::const_iterator ci;
     for (ci = geom_group->begin(); ci != geom_group->end(); ++ci) {
@@ -2298,7 +2299,7 @@ make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
   LPoint3f center;
   float radius;
   Colorf dummycolor;
-  if (make_sphere(egg_group, center, radius, dummycolor)) {
+  if (make_sphere(egg_group, flags, center, radius, dummycolor)) {
     CollisionSphere *cssphere =
       new CollisionSphere(center, radius);
     apply_collision_flags(cssphere, flags);
@@ -2318,7 +2319,7 @@ make_collision_inv_sphere(EggGroup *egg_group, CollisionNode *cnode,
   LPoint3f center;
   float radius;
   Colorf dummycolor;
-  if (make_sphere(egg_group, center, radius, dummycolor)) {
+  if (make_sphere(egg_group, flags, center, radius, dummycolor)) {
     CollisionInvSphere *cssphere =
       new CollisionInvSphere(center, radius);
     apply_collision_flags(cssphere, flags);
@@ -2335,7 +2336,7 @@ make_collision_inv_sphere(EggGroup *egg_group, CollisionNode *cnode,
 void EggLoader::
 make_collision_tube(EggGroup *egg_group, CollisionNode *cnode,
                     EggGroup::CollideFlags flags) {
-  EggGroup *geom_group = find_collision_geometry(egg_group);
+  EggGroup *geom_group = find_collision_geometry(egg_group, flags);
   if (geom_group != (EggGroup *)NULL) {
     // Collect all of the vertices.
     pset<EggVertex *> vertices;
@@ -2536,8 +2537,7 @@ make_collision_tube(EggGroup *egg_group, CollisionNode *cnode,
 //               CollideFlags.
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
-apply_collision_flags(CollisionSolid *solid,
-                      EggGroup::CollideFlags flags) {
+apply_collision_flags(CollisionSolid *solid, EggGroup::CollideFlags flags) {
   if ((flags & EggGroup::CF_intangible) != 0) {
     solid->set_tangible(false);
   }
@@ -2553,8 +2553,8 @@ apply_collision_flags(CollisionSolid *solid,
 //               that contains the associated collision geometry.
 ////////////////////////////////////////////////////////////////////
 EggGroup *EggLoader::
-find_collision_geometry(EggGroup *egg_group) {
-  if ((egg_group->get_collide_flags() & EggGroup::CF_descend) != 0) {
+find_collision_geometry(EggGroup *egg_group, EggGroup::CollideFlags flags) {
+  if ((flags & EggGroup::CF_descend) != 0) {
     // If we have the "descend" instruction, we'll get to it when we
     // get to it.  Don't worry about it now.
     return egg_group;

@@ -126,7 +126,8 @@ private:
   void set_portal_polygon(EggGroup *egg_group, PortalNode *pnode);
   EggPolygon *find_first_polygon(EggGroup *egg_group);
 
-  bool make_sphere(EggGroup *start_group, LPoint3f &center, float &radius, Colorf &color);
+  bool make_sphere(EggGroup *start_group, EggGroup::CollideFlags flags,
+                   LPoint3f &center, float &radius, Colorf &color);
 
   void make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
                              CollisionNode *cnode);
@@ -144,7 +145,8 @@ private:
                            EggGroup::CollideFlags flags);
   void apply_collision_flags(CollisionSolid *solid,
                              EggGroup::CollideFlags flags);
-  EggGroup *find_collision_geometry(EggGroup *egg_group);
+  EggGroup *find_collision_geometry(EggGroup *egg_group, 
+                                    EggGroup::CollideFlags flags);
   CollisionPlane *create_collision_plane(EggPolygon *egg_poly,
                                          EggGroup *parent_group);
   void create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
