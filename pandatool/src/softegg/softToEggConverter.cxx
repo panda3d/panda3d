@@ -1909,7 +1909,7 @@ cleanup_soft_skin()
 
     SAA_modelGetType( &scene, model, &type );
     
-    softegg_cat.debug() << "Cleaning up model " << node_desc->get_name() << endl;
+    softegg_cat.debug() << "Cleaning up model------- " << node_desc->get_name() << endl;
     
     // this step is weird - I think I want it here but it seems
     // to break some models. Files like props-props_wh_cookietime.3-0 in
@@ -1923,7 +1923,7 @@ cleanup_soft_skin()
       DCAST_INTO_R(vpool, t, NULL);
     
     if (!vpool) {
-      softegg_cat.spam() << "couldn't find vpool " << vpool_name << endl;
+      //softegg_cat.spam() << "couldn't find vpool " << vpool_name << endl;
       continue;
     }
     
@@ -1968,22 +1968,24 @@ cleanup_soft_skin()
       // if this vertex has not been soft assigned, then hard assign it to the parentJoint
       if ( vert->gref_size() == 0 ) {
         
-        softegg_cat.spam() << "vert " << i << " not assigned!\n";
+        softegg_cat.spam() << "vert " << vert->get_external_index() << " not assigned!\n";
         
         // hard skin this vertex
         joint->ref_vertex( vert, 1.0f );
       }
+      /*
       else {    
         membership = joint->get_vertex_membership(vert);
         if ( membership == 0 ) {
           
-          softegg_cat.spam() << "vert " << i << " has membership " << membership << endl;
-          softegg_cat.spam() << "adding full weight..\n";
+          softegg_cat.spam() << "vert " << vert->get_external_index() << " has membership " << membership << endl;
+          //softegg_cat.spam() << "adding full weight..\n";
           
           // hard skin this vertex
           joint->ref_vertex( vert, 1.0f );
         }
       }
+      */
     }
   }
   return true;
