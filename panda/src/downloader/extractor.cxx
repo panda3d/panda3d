@@ -84,6 +84,7 @@ initiate(Filename &source_file, const Filename &rel_path) {
   _total_bytes_read = 0;
   _read_all_input = false;
   _handled_all_input = false;
+  _mfile.reset();
   return ES_success;
 }
 
@@ -111,7 +112,6 @@ run(void) {
   if (_mfile.write(start, size, _rel_path) == true) {
     _read_stream.close();
     _source_file.unlink();
-    _mfile.reset();
     return ES_success;
   }
   return ES_ok;

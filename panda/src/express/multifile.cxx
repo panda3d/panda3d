@@ -47,6 +47,7 @@ Multifile::Memfile::
 ~Memfile(void) {
   if (_buffer != (char *)0L)
     delete _buffer;
+  _buffer = (char *)0L;
   delete _header_length_buf;
 }
 
@@ -61,12 +62,12 @@ reset(void) {
   _header_parsed = false;
   _header_length = 0;
   _buffer_length = 0;
-  if (_buffer != (char *)0L)
-    delete _buffer;
+  //if (_buffer != (char *)0L)
+  //  delete _buffer;
   _buffer = (char *)0L;
   _file_open = false;
   _bytes_written = 0;
-  _datagram.clear();
+  //_datagram.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -583,13 +584,16 @@ write(char *&start, int &size, const Filename &rel_path) {
   if (parse_header(start, size) == false)
     return false;
 
-  if (_current_mfile == (Memfile *)0L)
-    _current_mfile = new Memfile;
+  //if (_current_mfile == (Memfile *)0L)
+  //  _current_mfile = new Memfile;
 
   while (_num_mfiles > 0) {
+    if (_current_mfile == NULL)
+      _current_mfile = new Memfile;
     if (_current_mfile->write(start, size, rel_path) == true) {
       _num_mfiles--;
-      _current_mfile->reset();
+      delete _current_mfile;
+   //   _current_mfile->reset();
     } else
       return false;
   }
