@@ -3599,7 +3599,23 @@ issue_transform(const TransformState *transform) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 issue_tex_matrix(const TexMatrixAttrib *attrib) {
-  // Not implemented yet.
+  const LMatrix4f &m = attrib->get_mat();
+
+  // This is ugly.  Need to make this a simple boolean test instead of
+  // a matrix compare.
+  if (m == LMatrix4f::ident_mat()) {
+    _pD3DDevice->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, 
+                                      D3DTTFF_DISABLE);
+  } else {
+    // We have to reorder the elements of the matrix for some reason.
+    LMatrix4f dm(m(0, 0), m(0, 1), m(0, 3), 0.0f,
+                 m(1, 0), m(1, 1), m(1, 3), 0.0f,
+                 m(3, 0), m(3, 1), m(3, 3), 0.0f,
+                 0.0f, 0.0f, 0.0f, 1.0f);
+    _pD3DDevice->SetTransform(D3DTS_TEXTURE0, (D3DMATRIX *)dm.get_data());
+    _pD3DDevice->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, 
+                                      D3DTTFF_COUNT2);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
