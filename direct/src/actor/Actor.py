@@ -1157,12 +1157,18 @@ class Actor(PandaObject, NodePath):
             lodNames = [lodName]
 
         if (partName == None):
-            partNames = self.__animControlDict[lodNames[0]].keys()
+            if len(lodNames) > 0:
+                partNames = self.__animControlDict[lodNames[0]].keys()
+            else:
+                partNames = []
         else:
             partNames = [partName]
 
         if (anims==None):
-            anims = self.__animControlDict[lodNames[0]][partNames[0]].keys()
+            if len(lodNames) > 0 and len(partNames) > 0:
+                anims = self.__animControlDict[lodNames[0]][partNames[0]].keys()
+            else:
+                anims = []
 
         for lodName in lodNames:
             for partName in partNames:
