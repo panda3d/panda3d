@@ -17,8 +17,10 @@
 // Description : An orthographic-type projection, with a frustum.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA OrthoProjection : public Projection {
-public:
+PUBLISHED:
   INLINE OrthoProjection(const Frustumf &frustum);
+
+public:
   virtual Projection *make_copy() const;
   virtual LMatrix4f get_projection_mat(CoordinateSystem cs = CS_default) const;
 

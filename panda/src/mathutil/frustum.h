@@ -23,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 template<class P_numtype>
 class EXPCL_PANDA Frustum {
-public:
+PUBLISHED:
   Frustum();
  
   void make_ortho_2D(void);
@@ -44,7 +44,8 @@ public:
   void get_perspective_params(P_numtype &xfov, P_numtype &yfov,
 			      P_numtype &aspect, P_numtype &fnear,
 			      P_numtype &ffar) const;
- 
+
+public: 
   LMatrix4<P_numtype>
   get_perspective_projection_mat(CoordinateSystem cs = CS_default) const;
 

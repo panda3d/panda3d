@@ -16,6 +16,7 @@
     config_mathutil.h \
     fftCompressor.cxx fftCompressor.h \
     finiteBoundingVolume.cxx finiteBoundingVolume.h \
+    frustum.I frustum.h \
     geometricBoundingVolume.I geometricBoundingVolume.cxx \
     geometricBoundingVolume.h look_at.I look_at.cxx look_at.h \
     omniBoundingVolume.I omniBoundingVolume.cxx omniBoundingVolume.h \
