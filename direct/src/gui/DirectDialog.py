@@ -35,7 +35,7 @@ class DirectDialog(DirectFrame):
     AllDialogs = {}
     PanelIndex = 0
 
-    def __init__(self, parent = guiTop, **kw):
+    def __init__(self, parent = aspect2d, **kw):
         """
         DirectDialog(kw)
 
@@ -103,9 +103,11 @@ class DirectDialog(DirectFrame):
             ('topPad',            0.06,          INITOPT),
             ('midPad',            0.12,          INITOPT),
             ('buttonPadSF',       1.05,          INITOPT),
+            # Alpha of fade screen behind dialog
             ('fadeScreen',        0,             None),
             ('command',           None,          None),
             ('extraArgs',         [],            None),
+            ('sortOrder',    NO_FADE_SORT_INDEX, None),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs, dynamicGroups = ("button",))
@@ -296,7 +298,7 @@ class DirectDialog(DirectFrame):
         """show(self)
         """
         if self['fadeScreen']:
-            base.transitions.guiFadeScreen()
+            base.transitions.fadeScreen(self['fadeScreen'])
         NodePath.show(self)
 
     def hide(self):
@@ -329,7 +331,7 @@ class DirectDialog(DirectFrame):
         DirectFrame.destroy(self)
 
 class OkDialog(DirectDialog):
-    def __init__(self, parent = guiTop, **kw):
+    def __init__(self, parent = aspect2d, **kw):
         # Inherits from DirectFrame
         optiondefs = (
             # Define type of DirectGuiWidget
@@ -342,7 +344,7 @@ class OkDialog(DirectDialog):
         self.initialiseoptions(OkDialog)
 
 class OkCancelDialog(DirectDialog):
-    def __init__(self, parent = guiTop, **kw):
+    def __init__(self, parent = aspect2d, **kw):
         # Inherits from DirectFrame
         optiondefs = (
             # Define type of DirectGuiWidget
@@ -355,7 +357,7 @@ class OkCancelDialog(DirectDialog):
         self.initialiseoptions(OkCancelDialog)
 
 class YesNoDialog(DirectDialog):
-    def __init__(self, parent = guiTop, **kw):
+    def __init__(self, parent = aspect2d, **kw):
         # Inherits from DirectFrame
         optiondefs = (
             # Define type of DirectGuiWidget
@@ -368,7 +370,7 @@ class YesNoDialog(DirectDialog):
         self.initialiseoptions(YesNoDialog)
 
 class YesNoCancelDialog(DirectDialog):
-    def __init__(self, parent = guiTop, **kw):
+    def __init__(self, parent = aspect2d, **kw):
         # Inherits from DirectFrame
         optiondefs = (
             # Define type of DirectGuiWidget
@@ -382,7 +384,7 @@ class YesNoCancelDialog(DirectDialog):
         self.initialiseoptions(YesNoCancelDialog)
 
 class RetryCancelDialog(DirectDialog):
-    def __init__(self, parent = guiTop, **kw):
+    def __init__(self, parent = aspect2d, **kw):
         # Inherits from DirectFrame
         optiondefs = (
             # Define type of DirectGuiWidget

@@ -1,7 +1,7 @@
 from DirectGuiBase import *
 
 class DirectFrame(DirectGuiWidget):
-    def __init__(self, parent = guiTop, **kw):
+    def __init__(self, parent = aspect2d, **kw):
         # Inherits from DirectGuiWidget
         # A Direct Frame can have:
         # - A background texture (pass in path to image, or Texture Card)
@@ -66,7 +66,7 @@ class DirectFrame(DirectGuiWidget):
                 else:
                     self.createcomponent(
                         component, (), 'text',
-                        OnscreenText.OnscreenText,
+                        OnscreenText,
                         (), parent = self.stateNodePath[i],
                         text = text, scale = 1,
                         sort = TEXT_SORT_INDEX,
@@ -105,7 +105,7 @@ class DirectFrame(DirectGuiWidget):
                 else:
                     self.createcomponent(
                         component, (), 'geom',
-                        OnscreenGeom.OnscreenGeom,
+                        OnscreenGeom,
                         (), parent = self.stateNodePath[i],
                         geom = geom, scale = 1,
                         sort = GEOM_SORT_INDEX)
@@ -153,7 +153,7 @@ class DirectFrame(DirectGuiWidget):
                 else:
                     self.createcomponent(
                         component, (), 'image',
-                        OnscreenImage.OnscreenImage,
+                        OnscreenImage,
                         (), parent = self.stateNodePath[i],
                         image = image, scale = 1,
                         sort = IMAGE_SORT_INDEX)

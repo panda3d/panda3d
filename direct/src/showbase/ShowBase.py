@@ -22,6 +22,10 @@ import Loader
 import time
 import FSM
 import State
+import __builtin__
+
+__builtin__.FADE_SORT_INDEX = 1000
+__builtin__.NO_FADE_SORT_INDEX = 2000
 
 globalClock = ClockObject.getGlobalClock()
 class ShowBase:
@@ -123,7 +127,7 @@ class ShowBase:
         # For now, we assume that the window will have an aspect ratio
         # matching that of a traditional PC screen.
         self.aspectRatio = 4.0 / 3.0
-        self.aspect2d = self.render2d.attachNewNode("aspect2d")
+        self.aspect2d = self.render2d.attachNewNode(PGTop("aspect2d"))
         self.aspect2d.setScale(1.0 / self.aspectRatio, 1.0, 1.0)
 
         # It's important to know the bounds of the aspect2d screen.
@@ -186,6 +190,10 @@ class ShowBase:
 
         self.buttonThrower = self.mouseWatcher.attachNewNode(ButtonThrower())
 
+        # Set up gui mouse watcher
+        self.aspect2d.node().setMouseWatcher(self.mouseWatcherNode)
+        self.mouseWatcherNode.addRegion(PGMouseWatcherBackground())
+
         self.loader = Loader.Loader(self)
         self.eventMgr = eventMgr
         self.messenger = messenger
@@ -211,7 +219,6 @@ class ShowBase:
 
         self.AppHasAudioFocus = 1
 
-        import __builtin__
         __builtin__.base = self
         __builtin__.render2d = self.render2d
         __builtin__.aspect2d = self.aspect2d
@@ -224,6 +231,8 @@ class ShowBase:
         __builtin__.messenger = self.messenger
         __builtin__.config = self.config
         __builtin__.run = self.run
+        __builtin__.ostream = Notify.out()
+        __builtin__.directNotify = directNotify
 
         # Tk
         if self.wantTk:

@@ -5,9 +5,7 @@ import Task
 class Transitions:
     def __init__(self, loader):
         self.iris = loader.loadModel("phase_3/models/misc/iris")
-        self.iris.setBin("fixed", 1000)
         self.fade = loader.loadModel("phase_3/models/misc/fade")
-        self.fade.setBin("fixed", 1000)
 
         self.iris.setPos(0,0,0)
         self.fade.setScale(3)
@@ -30,7 +28,7 @@ class Transitions:
         """
         self.noTransitions()
 
-        self.fade.reparentTo(aspect2d)
+        self.fade.reparentTo(aspect2d, FADE_SORT_INDEX)
 
         if (t == 0):
             # Fade in immediately with no lerp
@@ -67,7 +65,7 @@ class Transitions:
         """
         self.noTransitions()
 
-        self.fade.reparentTo(aspect2d)
+        self.fade.reparentTo(aspect2d, FADE_SORT_INDEX)
 
         if (t == 0):
             # Fade out immediately with no lerp
@@ -90,17 +88,7 @@ class Transitions:
         a dialog box for instance
         """
         self.noTransitions()
-        self.fade.reparentTo(aspect2d)
-        self.fade.setColor(0,0,0,alpha)
-
-    def guiFadeScreen(self, alpha=0.5):
-        """
-        Put a semitransparent screen over the camera plane
-        to darken out the world. Useful for drawing attention to
-        a dialog box for instance
-        """
-        self.noTransitions()
-        self.fade.reparentTo(guiTop, 100)
+        self.fade.reparentTo(aspect2d, FADE_SORT_INDEX)
         self.fade.setColor(0,0,0,alpha)
 
     def fadeOutTask(self, task, time=0.3, noFade=1):
@@ -146,7 +134,7 @@ class Transitions:
         if (t == 0):
             self.iris.reparentTo(hidden)
         else:
-            self.iris.reparentTo(aspect2d)
+            self.iris.reparentTo(aspect2d, FADE_SORT_INDEX)
             self.iris.setScale(0.015)
             # Create a sequence that scales the iris up,
             # then parents the fade to hidden
@@ -186,7 +174,7 @@ class Transitions:
         if (t == 0):
             self.iris.reparentTo(hidden)
         else:
-            self.iris.reparentTo(aspect2d)
+            self.iris.reparentTo(aspect2d, FADE_SORT_INDEX)
             self.iris.setScale(0.18)
             # Create a sequence that scales the iris up,
             # then parents the fade to hidden

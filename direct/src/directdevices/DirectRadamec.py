@@ -4,7 +4,6 @@ from PandaObject import *
 from DirectDeviceManager import *
 
 import DirectNotifyGlobal
-import OnscreenText
 
 
 """

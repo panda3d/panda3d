@@ -20,13 +20,6 @@ class StateData(DirectObject):
         self.isEntered = 0
         return None
     
-    def cleanup(self):
-        """cleanup(self)
-        """
-        print "state data cleanup!!!"
-        self.unload()
-        return None
-
     def enter(self):
         """enter(self)
         """

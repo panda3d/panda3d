@@ -657,7 +657,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         inactiveInitState = DISABLED
             
 
-    def __init__(self, parent = guiTop, **kw):
+    def __init__(self, parent = aspect2d, **kw):
         # Direct gui widgets are node paths
         # Direct gui widgets have:
         # -  stateNodePaths (to hold visible representation of widget)

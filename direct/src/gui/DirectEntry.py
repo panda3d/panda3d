@@ -10,7 +10,7 @@ class DirectEntry(DirectFrame):
     DirectEntry(parent) - Create a DirectGuiWidget which responds
     to keyboard buttons
     """
-    def __init__(self, parent = guiTop, **kw):
+    def __init__(self, parent = aspect2d, **kw):
         # Inherits from DirectFrame
         # A Direct Frame can have:
         # - A background texture (pass in path to image, or Texture Card)
@@ -49,7 +49,7 @@ class DirectEntry(DirectFrame):
         # Create Text Node Component
         self.onscreenText = self.createcomponent(
             'text', (), None,
-            OnscreenText.OnscreenText,
+            OnscreenText,
             (), parent = hidden,
             # Pass in empty text to avoid extra work, since its really
             # The PGEntry which will use the TextNode to generate geometry

@@ -11,7 +11,7 @@ class DirectWaitBar(DirectFrame):
     DirectEntry(parent) - Create a DirectGuiWidget which responds
     to keyboard buttons
     """
-    def __init__(self, parent = guiTop, **kw):
+    def __init__(self, parent = aspect2d, **kw):
         # Inherits from DirectFrame
         # A Direct Frame can have:
         # - A background texture (pass in path to image, or Texture Card)
@@ -19,22 +19,30 @@ class DirectWaitBar(DirectFrame):
         # - A foreground text Node (pass in text string or Onscreen Text)
         optiondefs = (
             # Define type of DirectGuiWidget
-            ('pgFunc',          PGWaitBar,        None),
-            ('frameSize',       (-1,1,-0.1,0.1),  None),
-            ('range',           100,              self.setRange),
-            ('value',           50,               self.setValue),
-            ('barBorderWidth',  (0,0),            self.setBarBorderWidth),
-            ('barColor',        (1,0,0,1),        self.setBarColor),
-            ('barRelief',       FLAT,             self.setBarRelief),
+            ('pgFunc',         PGWaitBar,          None),
+            ('frameSize',      (-1,1,-0.08,0.08),  None),
+            ('borderWidth',    (0,0),              None),
+            ('range',          100,                self.setRange),
+            ('value',          50,                 self.setValue),
+            ('barBorderWidth', (0,0),              self.setBarBorderWidth),
+            ('barColor',       (1,0,0,1),          self.setBarColor),
+            ('barRelief',      FLAT,               self.setBarRelief),
+            ('sortOrder',      NO_FADE_SORT_INDEX, None),
             )
-        
-        self.barStyle = PGFrameStyle()
-        
+        if kw.has_key('text'):
+            textoptiondefs = (
+                ('text_pos',    (0,-0.025),          None),
+                ('text_scale',  0.1,                 None)
+                )
+        else:
+            textoptiondefs = ()
         # Merge keyword options with default options
-        self.defineoptions(kw, optiondefs)
+        self.defineoptions(kw, optiondefs + textoptiondefs)
 
         # Initialize superclasses
         DirectFrame.__init__(self, parent)
+
+        self.barStyle = PGFrameStyle()
 
         # Call option initialization functions
         self.initialiseoptions(DirectWaitBar)
@@ -65,6 +73,22 @@ class DirectWaitBar(DirectFrame):
     def setBarColor(self):
         self.barStyle.setColor(*self['barColor'])
         self.updateBarStyle()
+
+    def update(self, value):
+        self['value'] = value
+        # finally update the window
+        base.win.update()
+
+    def finish(self):
+        # Fill the bar in N frames
+        N = 10 # take 10 frames
+        remaining = self['range'] - self['value']
+        if remaining:
+            step = max(1, int(remaining / N))
+            count = self['value']
+            while count != self['range']:
+                count += step
+                if count > self['range']:
+                    count = self['range']
+                self.update(count)
         
-        
-    

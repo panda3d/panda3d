@@ -3,7 +3,7 @@ from DirectButton import *
 import Task
 
 class DirectScrolledList(DirectFrame):
-    def __init__(self, parent = guiTop, **kw):
+    def __init__(self, parent = aspect2d, **kw):
 
         self.index = 0
 

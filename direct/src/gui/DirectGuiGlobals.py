@@ -2,12 +2,7 @@
 Global definitions used by Direct Gui Classes and handy constants
 that can be used during widget construction
 """
-
 from PandaModules import *
-import OnscreenText
-import OnscreenGeom
-import OnscreenImage
-import types
 
 # USEFUL GUI CONSTANTS
 # Constant used to indicate that an option can only be set by a call
@@ -70,12 +65,13 @@ IMAGE_SORT_INDEX = 10
 GEOM_SORT_INDEX = 20
 TEXT_SORT_INDEX = 30
 FADE_SORT_INDEX = 100
-DIALOG_SORT_INDEX = 200
 
 defaultFont = None
 defaultClickSound = None
 defaultRolloverSound = None
 defaultDialogGeom = None
+drawOrder = 100
+panel = None
 
 def getDefaultRolloverSound():
     global defaultRolloverSound
@@ -115,3 +111,21 @@ def getDefaultDialogGeom():
 def setDefaultDialogGeom(newDialogGeom):
     global defaultDialogGeom
     defaultDialogGeom = newDialogGeom
+
+def getDefaultDrawOrder():
+    return drawOrder
+
+def setDefaultDrawOrder(newDrawOrder):
+    global drawOrder
+    drawOrder = newDrawOrder
+
+def getDefaultPanel():
+    return panel
+
+def setDefaultPanel(newPanel):
+    global panel
+    panel = newPanel
+
+from OnscreenText import *
+from OnscreenGeom import *
+from OnscreenImage import *
