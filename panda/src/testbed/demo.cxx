@@ -317,36 +317,73 @@ event_right(CPT_Event) {
 static void
 event_fkey(CPT_Event event) {
   if (selected_node.has_arcs()) {
-    // Apply a color to the selected node.
-    NodeRelation *arc = selected_node.arc();
-    nassertv(arc != (NodeRelation *)NULL);
+    string name = event->get_name();
+    if (name.substr(0, 6) == "shift-") {
+      // Shift-fkey: work with color scale.
+      if (name == "shift-f9") {
+        selected_node.clear_color_scale();
+        selected_node.clear_transparency();
+        cerr << "Clearing color scale on " << selected_node << "\n";
 
-    if (event->get_name() == "f9") {
-      // F9: restore the natural color.
-      arc->clear_transition(ColorTransition::get_class_type());
-      cerr << "Clearing color on " << *arc << "\n";
-
-    } else {
-      Colorf color;
-      if (event->get_name() == "f1") {
-        color.set(0.0, 0.0, 1.0, 1.0);
-      } else if (event->get_name() == "f2") {
-        color.set(0.0, 1.0, 0.0, 1.0);
-      } else if (event->get_name() == "f3") {
-        color.set(0.0, 1.0, 1.0, 1.0);
-      } else if (event->get_name() == "f4") {
-        color.set(1.0, 0.0, 0.0, 1.0);
-      } else if (event->get_name() == "f5") {
-        color.set(1.0, 0.0, 1.0, 1.0);
-      } else if (event->get_name() == "f6") {
-        color.set(1.0, 1.0, 0.0, 1.0);
-      } else if (event->get_name() == "f7") {
-        color.set(1.0, 1.0, 1.0, 1.0);
-      } else if (event->get_name() == "f8") {
-        color.set(0.0, 0.0, 0.0, 1.0);
+      } else {
+        Colorf color_scale;
+        if (name == "shift-f1") {
+          color_scale.set(0.5, 0.5, 1.0, 1.0);
+        } else if (name == "shift-f2") {
+          color_scale.set(0.5, 1.0, 0.5, 1.0);
+        } else if (name == "shift-f3") {
+          color_scale.set(0.5, 1.0, 1.0, 1.0);
+        } else if (name == "shift-f4") {
+          color_scale.set(1.0, 0.5, 0.5, 1.0);
+        } else if (name == "shift-f5") {
+          color_scale.set(1.0, 0.5, 1.0, 1.0);
+        } else if (name == "shift-f6") {
+          color_scale.set(1.0, 1.0, 0.5, 1.0);
+        } else if (name == "shift-f7") {
+          color_scale.set(1.0, 1.0, 1.0, 1.0);
+        } else if (name == "shift-f8") {
+          color_scale.set(1.0, 1.0, 1.0, 0.5);
+        }
+        selected_node.set_color_scale(color_scale);
+        if (color_scale[3] != 1.0) { 
+          selected_node.set_transparency(true);
+        }
+        cerr << "Setting color scale on " << selected_node << " to " << color_scale << "\n";
       }
-      arc->set_transition(new ColorTransition(color));
-      cerr << "Setting color on " << *arc << " to " << color << "\n";
+    } else {
+      // Non shifted fkey: work with flat color.
+        
+      if (name == "f9") {
+        // F9: restore the natural color.
+        selected_node.clear_color();
+        selected_node.clear_transparency();
+        cerr << "Clearing color on " << selected_node << "\n";
+        
+      } else {
+        Colorf color;
+        if (name == "f1") {
+          color.set(0.0, 0.0, 1.0, 1.0);
+        } else if (name == "f2") {
+          color.set(0.0, 1.0, 0.0, 1.0);
+        } else if (name == "f3") {
+          color.set(0.0, 1.0, 1.0, 1.0);
+        } else if (name == "f4") {
+          color.set(1.0, 0.0, 0.0, 1.0);
+        } else if (name == "f5") {
+          color.set(1.0, 0.0, 1.0, 1.0);
+        } else if (name == "f6") {
+          color.set(1.0, 1.0, 0.0, 1.0);
+        } else if (name == "f7") {
+          color.set(1.0, 1.0, 1.0, 1.0);
+        } else if (name == "f8") {
+          color.set(1.0, 1.0, 1.0, 0.5);
+        }
+        selected_node.set_color(color, 1);
+        if (color[3] != 1.0) { 
+          selected_node.set_transparency(true);
+        }
+        cerr << "Setting color on " << selected_node << " to " << color << "\n";
+      }
     }
   }
 }
@@ -582,9 +619,18 @@ void demo_keys(EventHandler&) {
   event_handler.add_hook("f7", event_fkey);
   event_handler.add_hook("f8", event_fkey);
   event_handler.add_hook("f9", event_fkey);
-  event_handler.add_hook("B", event_B);
+  event_handler.add_hook("shift-f1", event_fkey);
+  event_handler.add_hook("shift-f2", event_fkey);
+  event_handler.add_hook("shift-f3", event_fkey);
+  event_handler.add_hook("shift-f4", event_fkey);
+  event_handler.add_hook("shift-f5", event_fkey);
+  event_handler.add_hook("shift-f6", event_fkey);
+  event_handler.add_hook("shift-f7", event_fkey);
+  event_handler.add_hook("shift-f8", event_fkey);
+  event_handler.add_hook("shift-f9", event_fkey);
+  event_handler.add_hook("shift-B", event_B);
 
-  event_handler.add_hook("L", event_L);
+  event_handler.add_hook("shift-L", event_L);
   event_handler.add_hook("k", event_k);
   event_handler.add_hook("a", event_a);
   event_handler.add_hook("v", event_v);
