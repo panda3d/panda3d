@@ -18,6 +18,8 @@
 
 #include "dcSwitch.h"
 #include "dcField.h"
+#include "dcParameter.h"
+#include "hashGenerator.h"
 #include "dcindent.h"
 
 ////////////////////////////////////////////////////////////////////
