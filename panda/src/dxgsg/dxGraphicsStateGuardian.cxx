@@ -2632,7 +2632,7 @@ GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
 		dwNumTriangles = (wNumRings-1) * wNumSections * 2;
 	} else {
 		dwNumVertices =	*pNumVertices = wNumRings * wNumSections + 2;
-		dwNumTriangles = (wNumRings+1) * wNumSections * 2;
+		dwNumTriangles = wNumRings*wNumSections*2;
 	}
 
     dwNumIndices = *pNumIndices = dwNumTriangles*3;
@@ -2660,9 +2660,16 @@ GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
 	if(fvfFlags & D3DFVF_TEXCOUNT_MASK)                           \
 		add_to_FVFBuf((void *)texCoords, sizeof(TexCoordf));   
 	
+#ifdef DBG_GENSPHERE
+	int nvs_written=0;
+    memset(pVertexSpace,0xFF,dwNumVertices*dwVertSize);
+#endif
 
 	if(! DOTEXTURING) {
 		ADD_GENSPHERE_VERTEX_TO_BUFFER(vTopPoint);
+		#ifdef DBG_GENSPHERE
+		  nvs_written++;
+		#endif
 	}
 
     // Generate vertex points for rings
@@ -2682,11 +2689,6 @@ GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
 	}
     float phi,dphi   = (float)(2*M_PI / (wNumSections-1)); //Angle between each section
 
-#ifdef DBG_GENSPHERE
-	int nvs_written=0;
-    memset(pVertexSpace,0xFF,dwNumVertices*dwVertSize);
-#endif
-    
     for(i = 0; i < wNumRings; i++ ) {
 		float costheta,sintheta,cosphi,sinphi;
         phi =	0.0;
@@ -2732,15 +2734,19 @@ GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
         theta += dtheta;
     }
 	
-#ifdef DBG_GENSPHERE
-	assert(nvs_written == dwNumVertices);
-#endif
-
 	if(! DOTEXTURING) {
 		// Generate bottom vertex
 		vNormal = D3DVECTOR( 0.0f, -1.0f, 0.0f );
 		ADD_GENSPHERE_VERTEX_TO_BUFFER(vBotPoint);
+		#ifdef DBG_GENSPHERE
+		  nvs_written++;
+		#endif
 	}
+
+#ifdef DBG_GENSPHERE
+	assert(nvs_written == dwNumVertices);
+#endif
+
 
 #ifdef DBG_GENSPHERE
     memset(pwIndices,0xFF,dwNumIndices*sizeof(WORD));
@@ -2814,8 +2820,14 @@ GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
 	 }
 
 #ifdef DBG_GENSPHERE
-	 assert(CurFinalTriIndex == dwNumTriangles); 
-	 assert(base_index == dwNumIndices);
+	 if(DOTEXTURING) {
+		 assert(CurFinalTriIndex == dwNumTriangles); 
+		 assert(base_index == dwNumIndices);
+	 } else {
+		 assert(CurFinalTriIndex == dwNumTriangles-wNumSections); 
+		 assert(base_index == dwNumIndices-wNumSections*3);
+	 }
+
  	 for(i = 0; i < dwNumIndices; i++ ) 
 		 assert(pwIndices[i] <dwNumVertices);
 #endif
