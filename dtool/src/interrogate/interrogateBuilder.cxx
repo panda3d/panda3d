@@ -2040,47 +2040,52 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
       CPPType *base_type = TypeManager::resolve_type(base._base, scope);
       TypeIndex base_index = get_type(base_type, true);
 
-      InterrogateType::Derivation d;
-      d._flags = 0;
-      d._base = base_index;
-      d._upcast = 0;
-      d._downcast = 0;
+      if (base_index == 0) {
+        nout << *cpptype << " reports a derivation from an invalid type.\n";
 
-      // Do we need to synthesize upcast and downcast functions?
-      bool generate_casts = false;
-      if (base._is_virtual) {
-        // We do in the presence of virtual inheritance.
-        generate_casts = true;
-
-      } else if (bi != cpptype->_derivation.begin()) {
-        // Or if we're not talking about the leftmost fork of multiple
-        // inheritance.
-        generate_casts = true;
-
-      } else if (cpptype->_derivation.size() != 1 &&
-                 left_inheritance_requires_upcast) {
-        // Or even if we are the leftmost fork of multiple
-        // inheritance, if the flag is set indicating that this
-        // requires a pointer change.  (For most compilers, this does
-        // not require a pointer change.)
-        generate_casts = true;
-      }
-
-      if (generate_casts) {
-        d._upcast = get_cast_function(base_type, cpptype, "upcast");
-        d._flags |= InterrogateType::DF_upcast;
-
+      } else {
+        InterrogateType::Derivation d;
+        d._flags = 0;
+        d._base = base_index;
+        d._upcast = 0;
+        d._downcast = 0;
+        
+        // Do we need to synthesize upcast and downcast functions?
+        bool generate_casts = false;
         if (base._is_virtual) {
-          // If this is a virtual inheritance, we can't write a
-          // downcast.
-          d._flags |= InterrogateType::DF_downcast_impossible;
-        } else {
-          d._downcast = get_cast_function(cpptype, base_type, "downcast");
-          d._flags |= InterrogateType::DF_downcast;
+          // We do in the presence of virtual inheritance.
+          generate_casts = true;
+          
+        } else if (bi != cpptype->_derivation.begin()) {
+          // Or if we're not talking about the leftmost fork of multiple
+          // inheritance.
+          generate_casts = true;
+          
+        } else if (cpptype->_derivation.size() != 1 &&
+                   left_inheritance_requires_upcast) {
+          // Or even if we are the leftmost fork of multiple
+          // inheritance, if the flag is set indicating that this
+          // requires a pointer change.  (For most compilers, this does
+          // not require a pointer change.)
+          generate_casts = true;
         }
-      }
+        
+        if (generate_casts) {
+          d._upcast = get_cast_function(base_type, cpptype, "upcast");
+          d._flags |= InterrogateType::DF_upcast;
+          
+          if (base._is_virtual) {
+            // If this is a virtual inheritance, we can't write a
+            // downcast.
+            d._flags |= InterrogateType::DF_downcast_impossible;
+          } else {
+            d._downcast = get_cast_function(cpptype, base_type, "downcast");
+            d._flags |= InterrogateType::DF_downcast;
+          }
+        }
 
-      itype._derivations.push_back(d);
+        itype._derivations.push_back(d);
+      }
     }
   }
 
