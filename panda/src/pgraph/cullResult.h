@@ -65,6 +65,7 @@ private:
 
   static CPT(RenderState) get_binary_state();
   static CPT(RenderState) get_dual_transparent_state();
+  static CPT(RenderState) get_dual_transparent_state_decals();
   static CPT(RenderState) get_dual_opaque_state();
 
   GraphicsStateGuardianBase *_gsg;

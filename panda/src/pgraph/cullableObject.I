@@ -81,7 +81,6 @@ CullableObject(const CullableObject &copy) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullableObject::Copy Assignment Operator
-//       Access: Private
 //       Access: Public
 //  Description: Copies the CullableObject, but does not copy its
 //               children (decals).
@@ -91,6 +90,17 @@ operator = (const CullableObject &copy) {
   _geom = copy._geom;
   _state = copy._state;
   _transform = copy._transform;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullableObject::has_decals
+//       Access: Public
+//  Description: Returns true if the object has one or more decals
+//               placed on it, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool CullableObject::
+has_decals() const {
+  return (_next != (CullableObject *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////

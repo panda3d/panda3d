@@ -87,7 +87,10 @@ add_object(CullableObject *object) {
 #endif
           {
             CullableObject *transparent_part = new CullableObject(*object);
-            transparent_part->_state = state->compose(get_dual_transparent_state());
+            CPT(RenderState) transparent_state = object->has_decals() ? 
+              get_dual_transparent_state_decals() : 
+              get_dual_transparent_state();
+            transparent_part->_state = state->compose(transparent_state);
             CullBin *bin = get_bin(transparent_part->_state->get_bin_index());
             nassertv(bin != (CullBin *)NULL);
             bin->add_object(transparent_part);
@@ -219,12 +222,59 @@ static const double m_dual_flash_rate = 1.0;  // 1 state change per second
 //       Access: Private
 //  Description: Returns a RenderState that renders only the
 //               transparent parts of an object, in support of M_dual.
+//               This state is suitable only for objects that do not
+//               contain decals.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) CullResult::
 get_dual_transparent_state() {
   static CPT(RenderState) state = NULL;
   if (state == (const RenderState *)NULL) {
+    // The alpha test for > 0 prevents us from drawing empty pixels,
+    // and hence filling up the depth buffer with large empty spaces
+    // that may obscure other things.  However, this does mean we draw
+    // pixels twice where the alpha == 1.0 (since they were already
+    // drawn in the opaque pass).  This is not normally a problem,
+    // except when we are using decals; in the case of decals, we
+    // don't want to draw the 1.0 pixels again, since these are the
+    // ones that may have been decaled onto.
     state = RenderState::make(AlphaTestAttrib::make(AlphaTestAttrib::M_greater, 0.0f),
+                              TransparencyAttrib::make(TransparencyAttrib::M_alpha),
+                              RenderState::get_max_priority());
+  }
+
+#ifndef NDEBUG
+  if (m_dual_flash) {
+    int cycle = (int)(ClockObject::get_global_clock()->get_real_time() * m_dual_flash_rate);
+    if ((cycle & 1) == 0) {
+      static CPT(RenderState) flash_state = NULL;
+      if (flash_state == (const RenderState *)NULL) {
+        flash_state = state->add_attrib(ColorScaleAttrib::make(LVecBase4f(0.8f, 0.2f, 0.2f, 1.0f)));
+        flash_state = flash_state->add_attrib(AlphaTestAttrib::make(AlphaTestAttrib::M_less, 1.0f));
+      }
+      return flash_state;
+    }
+  }
+#endif  // NDEBUG
+
+  return state;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullResult::get_dual_transparent_state_decals
+//       Access: Private
+//  Description: Returns a RenderState that renders only the
+//               transparent parts of an object, but suitable for
+//               objects that contain decals.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) CullResult::
+get_dual_transparent_state_decals() {
+  static CPT(RenderState) state = NULL;
+  if (state == (const RenderState *)NULL) {
+    // This is exactly the same as above except here we make the alpha
+    // test of < 1.0 instead of > 0.0.  This makes us draw big empty
+    // pixels where the alpha values are 0.0, but we don't overwrite
+    // the decals where the pixels are 1.0.
+    state = RenderState::make(AlphaTestAttrib::make(AlphaTestAttrib::M_less, 1.0f),
                               TransparencyAttrib::make(TransparencyAttrib::M_alpha),
                               RenderState::get_max_priority());
   }

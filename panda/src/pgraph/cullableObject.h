@@ -49,6 +49,8 @@ public:
   INLINE CullableObject(const CullableObject &copy);
   INLINE void operator = (const CullableObject &copy);
 
+  INLINE bool has_decals() const;
+
 public:
   ~CullableObject();
 
