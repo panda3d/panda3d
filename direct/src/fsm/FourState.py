@@ -120,7 +120,7 @@ class FourState:
                            [names[1]]),
             }
         self.stateIndex = 0
-        self.fsm = FSM.FSM('DistributedDoorEntity',
+        self.fsm = FSM.FSM('FourState',
                            self.states.values(),
                            # Initial State
                            names[0],

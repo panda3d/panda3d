@@ -125,7 +125,7 @@ class FourStateAI:
                            self.exitState4,
                            [names[1]]),
             }
-        self.fsm = FSM.FSM('DistributedDoorEntity',
+        self.fsm = FSM.FSM('FourState',
                            self.states.values(),
                            # Initial State
                            names[0],
