@@ -27,15 +27,29 @@
 // We don't care about the actual definition of the various iostream
 // classes, but we do need to know the classnames that are available.
 
-class iostream {};
-class ostream {};
-class istream {};
-class fstream {};
-class ofstream {};
-class ifstream {};
-class stringstream {};
-class ostringstream {};
-class istringstream {};
+// We need to expose one method in each class to force it to publish.
+// We should fix that sometime.
+class ostream {
+__published:
+  void put(char c);
+  void flush();
+};
+class istream {
+__published:
+  int get();
+};
+class iostream : public istream, public ostream {
+__published:
+  void flush();
+};
+
+
+class ofstream : public ostream {};
+class ifstream : public istream {};
+class fstream : public iostream {};
+class ostringstream : public ostream {};
+class istringstream : public istream {};
+class stringstream : public iostream {};
 class streambuf {};
 
 extern istream cin;
