@@ -65,3 +65,9 @@ if [ "$firstarg" = "install" ]; then
     exec install/bin/ppython -d install/bin/generatePythonCode -O -v -d install/lib/py -e direct/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs
     exit 1
 fi
+
+if [ "$firstarg" = "release" ]; then
+    # as installed on a machine without ctattach etc.
+    exec install/bin/ppython install/bin/generatePythonCode -v -d install/lib/py -e direct/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs
+    exit 1
+fi
