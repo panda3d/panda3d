@@ -5,7 +5,7 @@ import DistributedBeanBarrelAI
 import DistributedLiftAI
 import DistributedDoorEntityAI
 import DistributedGagBarrelAI
-#import DistributedStomperPairAI
+import DistributedStomperPairAI
 import DistributedSwitchAI
 import DistributedStomperAI
 import LogicGateAI
@@ -32,6 +32,7 @@ EntityType2Ctor = {
     'nodepath': nothing,
     'platform': nothing,
     'stomper': Functor(cDE, DistributedStomperAI.DistributedStomperAI),
+    'stomperPair': Functor(cDE, DistributedStomperPairAI.DistributedStomperPairAI),
     'switch': DistributedSwitchAI.DistributedSwitchAI,
 
     'logicGate': LogicGateAI.LogicGateAI,

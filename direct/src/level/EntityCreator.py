@@ -19,6 +19,7 @@ EntityType2Ctor = {
     'nodepath': BasicEntities.NodePathEntity,
     'platform': PlatformEntity.PlatformEntity,
     'stomper': nothing,
+    'stomperPair': nothing,
     'switch': nothing,
 
     'andLogicObject': nothing,
