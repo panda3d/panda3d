@@ -41,8 +41,8 @@ EggQtess() {
 
   add_option
     ("f", "filename", 0,
-     "Read the indicated qtess-style parameter file.  Type qtess -H "
-     "to print a description of the qtess-style format.",
+     "Read the indicated parameter file.  Type egg-qtess -H "
+     "to print a description of the parameter file format.",
      &EggQtess::dispatch_filename, NULL, &_qtess_filename);
 
   add_option
@@ -102,13 +102,13 @@ EggQtess() {
 
   add_option
     ("q", "", 0,
-     "Instead of writing an egg file, generate a qtess-style input file "
+     "Instead of writing an egg file, generate a parameter file "
      "for output.",
      &EggQtess::dispatch_none, &_qtess_output);
 
   add_option
     ("H", "", 0,
-     "Describe the format of the qtess parameter file specified with -f.",
+     "Describe the format of the parameter file specified with -f.",
      &EggQtess::dispatch_none, &_describe_qtess);
 
   _uniform_per_isoparam = 0.0;
@@ -228,7 +228,7 @@ run() {
 void EggQtess::
 describe_qtess_format() {
   nout <<
-    "A qtess-style parameter file consists of lines of the form:\n\n"
+    "An egg-qtess parameter file consists of lines of the form:\n\n"
 
     "name [name...] : parameters\n\n"
 
