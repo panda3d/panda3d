@@ -515,9 +515,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     // We also introduced the concept of the CollisionNode-reserved
     // bits and the GeomNode-reserved bits with version 4.12.  Prior
     // to that, CollisionNodes tended to have all bits set.  Assume
-    // they only meant to have the CollisionNode bits set.
-    into_collide_mask &= get_default_collide_mask();
-    _from_collide_mask &= get_default_collide_mask();
+    // they didn't mean to have the GeomNode bits set.
+    into_collide_mask &= ~GeomNode::get_default_collide_mask();
+    _from_collide_mask &= ~GeomNode::get_default_collide_mask();
 
     set_into_collide_mask(into_collide_mask);
 
