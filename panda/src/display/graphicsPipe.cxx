@@ -231,6 +231,24 @@ get_pipe(int n) {
   return get_all_pipes()[n];
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsPipe::get_glx_display
+//       Access: Public, Virtual
+//  Description: Returns the glxDisplay information associated with
+//               this pipe, if any.  This allows us to define several
+//               kinds of GraphicsPipe objects that manage some
+//               glx-specific stuff, without having them all inherit
+//               from a common glx base class.  This allows the
+//               glxGraphicsWindow to ask questions about the
+//               glx-specific stuff without knowing what kind of
+//               glxGraphicsPipe it has.  Non-glx pipes will simply
+//               return NULL for this function.
+////////////////////////////////////////////////////////////////////
+glxDisplay *GraphicsPipe::
+get_glx_display() {
+  return (glxDisplay *)NULL;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsPipe::get_num_hw_channels

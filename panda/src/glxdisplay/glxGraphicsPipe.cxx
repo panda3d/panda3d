@@ -17,27 +17,9 @@
 TypeHandle glxGraphicsPipe::_type_handle;
 
 glxGraphicsPipe::glxGraphicsPipe(const PipeSpecifier& spec)
-  : InteractiveGraphicsPipe(spec)
+  : InteractiveGraphicsPipe(spec),
+    glxDisplay(this, spec.get_X_specifier())
 {
-  // _display = XOpenDisplay(get_name().c_str());
-  _display = XOpenDisplay((spec.get_X_specifier()).c_str());
-  if (!_display) {
-    glxdisplay_cat.fatal()
-      << "glxGraphicsPipe::construct(): Could not open display: "
-      << spec.get_X_specifier() << endl;
-    exit(0);
-  }
-  int errorBase, eventBase;
-  if (!glXQueryExtension(_display, &errorBase, &eventBase)) {
-    glxdisplay_cat.fatal()
-      << "glxGraphicsPipe::construct(): OpenGL GLX extension not "
-      << "supported by display: " << spec.get_X_specifier() << endl;
-    exit(0);
-  }
-  _screen = DefaultScreen(_display);
-  _root = RootWindow(_display, _screen);
-  _width = DisplayWidth(_display, _screen);
-  _height = DisplayHeight(_display, _screen);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -49,6 +31,17 @@ glxGraphicsPipe::glxGraphicsPipe(const PipeSpecifier& spec)
 TypeHandle glxGraphicsPipe::
 get_window_type() const {
   return glxGraphicsWindow::get_class_type();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsPipe::get_glx_display
+//       Access: Public, Virtual
+//  Description: Returns the glxDisplay information associated with
+//               this pipe.
+////////////////////////////////////////////////////////////////////
+glxDisplay *glxGraphicsPipe::
+get_glx_display() {
+  return this;
 }
 
 GraphicsPipe *glxGraphicsPipe::
@@ -67,44 +60,12 @@ TypeHandle glxGraphicsPipe::get_class_type(void) {
 
 void glxGraphicsPipe::init_type(void) {
   InteractiveGraphicsPipe::init_type();
+  glxDisplay::init_type();
   register_type(_type_handle, "glxGraphicsPipe",
-		InteractiveGraphicsPipe::get_class_type());
+		InteractiveGraphicsPipe::get_class_type(),
+		glxDisplay::get_class_type());
 }
 
 TypeHandle glxGraphicsPipe::get_type(void) const {
   return get_class_type();
-}
-
-glxGraphicsPipe::glxGraphicsPipe(void) {
-  glxdisplay_cat.error()
-    << "glxGraphicsPipes should not be created with the default constructor"
-    << endl;
-}
-
-glxGraphicsPipe::glxGraphicsPipe(const glxGraphicsPipe&) {
-  glxdisplay_cat.error()
-    << "glxGraphicsPipes should not be copied" << endl;
-}
-
-glxGraphicsPipe& glxGraphicsPipe::operator=(const glxGraphicsPipe&) {
-  glxdisplay_cat.error()
-    << "glxGraphicsPipes should not be assigned" << endl;
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: find_window
-//       Access:
-//  Description: Find the window that has the xwindow "win" in the
-//		 window list for the pipe (if it exists)
-////////////////////////////////////////////////////////////////////
-glxGraphicsWindow *glxGraphicsPipe::
-find_window(Window win) {
-  int num_windows = get_num_windows();
-  for (int w = 0; w < num_windows; w++) {
-    glxGraphicsWindow *window = DCAST(glxGraphicsWindow, get_window(w));
-    if (window->get_xwindow() == win)
-      return window;
-  }
-  return NULL;
 }

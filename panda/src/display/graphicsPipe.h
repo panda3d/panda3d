@@ -27,6 +27,7 @@
 // Defines
 ////////////////////////////////////////////////////////////////////
 class GraphicsPipe;
+class glxDisplay;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsPipe
@@ -52,6 +53,10 @@ public:
 
   static int get_num_pipes();
   static GraphicsPipe *get_pipe(int n);
+
+  // This function's interface must be defined here even though we
+  // know nothing about glx displays at this point.
+  virtual glxDisplay *get_glx_display();
 
 protected:
   virtual int get_num_hw_channels();

@@ -7,9 +7,10 @@
 // Includes
 ////////////////////////////////////////////////////////////////////
 #include "glxGraphicsWindow.h"
-#include "glxGraphicsPipe.h"
+#include "glxDisplay.h"
 #include "config_glxdisplay.h"
 
+#include <graphicsPipe.h>
 #include <keyboardButton.h>
 #include <mouseButton.h>
 #include <glGraphicsStateGuardian.h>
@@ -82,11 +83,14 @@ bool glxGraphicsWindow::glx_supports(const char* extension)
   char* where, *terminator;
   int major, minor;
 
+  glxDisplay *glx = _pipe->get_glx_display();
+  nassertr(glx != (glxDisplay *)NULL, false);
+
   glXQueryVersion(_display, &major, &minor);
   if ((major == 1 && minor >= 1) || (major > 1)) {
     if (!_glx_extensions) {
-      _glx_extensions = glXQueryExtensionsString(_display, 
-		((glxGraphicsPipe *)_pipe)->get_screen());
+      _glx_extensions = 
+	glXQueryExtensionsString(_display, glx->get_screen());
     }
     start = _glx_extensions;
     for (;;) {
@@ -116,7 +120,7 @@ bool glxGraphicsWindow::glx_supports(const char* extension)
 //               visual information if possible, or NULL if it is not.
 ////////////////////////////////////////////////////////////////////
 static XVisualInfo *
-try_for_visual(glxGraphicsPipe *pipe, int mask,
+try_for_visual(glxDisplay *glx, int mask,
 	       int want_depth_bits = 1, int want_color_bits = 1) {
   static const int max_attrib_list = 32;
   int attrib_list[max_attrib_list];
@@ -191,7 +195,7 @@ try_for_visual(glxGraphicsPipe *pipe, int mask,
   attrib_list[n] = (int)None;
 
   XVisualInfo *vinfo =
-    glXChooseVisual(pipe->get_display(), pipe->get_screen(), attrib_list);
+    glXChooseVisual(glx->get_display(), glx->get_screen(), attrib_list);
 
   if (glxdisplay_cat.is_debug()) {
     if (vinfo != NULL) {
@@ -211,7 +215,8 @@ try_for_visual(glxGraphicsPipe *pipe, int mask,
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsWindow::choose_visual(void)
 {
-  glxGraphicsPipe* pipe = DCAST(glxGraphicsPipe, _pipe);
+  glxDisplay *glx = _pipe->get_glx_display();
+  nassertv(glx != (glxDisplay *)NULL);
 
   int mask = _props._mask;
   int want_depth_bits = _props._want_depth_bits;
@@ -228,7 +233,7 @@ void glxGraphicsWindow::choose_visual(void)
   }
 #endif
 
-  _visual = try_for_visual(pipe, mask, want_depth_bits, want_color_bits);
+  _visual = try_for_visual(glx, mask, want_depth_bits, want_color_bits);
 
   // This is the severity level at which we'll report the details of
   // the visual we actually do find.  Normally, it's debug-level
@@ -258,7 +263,7 @@ void glxGraphicsWindow::choose_visual(void)
       // Actually, first we'll eliminate all of the minimum sizes, to
       // try to open a window with all of the requested options, but
       // maybe not as many bits in some options as we'd like.
-      _visual = try_for_visual(pipe, mask);
+      _visual = try_for_visual(glx, mask);
     }
 
     if (_visual == NULL) {
@@ -304,7 +309,7 @@ void glxGraphicsWindow::choose_visual(void)
       for (i = 0; _visual == NULL && strip_properties[i] != 0; i++) {
 	int new_mask = mask & ~strip_properties[i];
 	if (tried_masks.insert(new_mask).second) {
-	  _visual = try_for_visual(pipe, new_mask, want_depth_bits,
+	  _visual = try_for_visual(glx, new_mask, want_depth_bits,
 				   want_color_bits);
 	}
       }
@@ -319,7 +324,7 @@ void glxGraphicsWindow::choose_visual(void)
 	  for (i = 0; _visual == NULL && strip_properties[i] != 0; i++) {
 	    int new_mask = mask & ~strip_properties[i];
 	    if (tried_masks.insert(new_mask).second) {
-	      _visual = try_for_visual(pipe, new_mask);
+	      _visual = try_for_visual(glx, new_mask);
 	    }
 	  }
 	}
@@ -328,7 +333,7 @@ void glxGraphicsWindow::choose_visual(void)
       if (_visual == NULL) {
 	// Here's our last-ditch desparation attempt: give us any GLX
 	// visual at all!
-	_visual = try_for_visual(pipe, 0);
+	_visual = try_for_visual(glx, 0);
       }
 	
       if (_visual == NULL) {
@@ -384,9 +389,10 @@ void glxGraphicsWindow::config( void )
 {
   GraphicsWindow::config();
 
-  // glxGraphicsPipe* pipe = (glxGraphicsPipe *)_pipe;
-  glxGraphicsPipe* pipe = DCAST(glxGraphicsPipe, _pipe);
-  _display = pipe->get_display();
+  glxDisplay *glx = _pipe->get_glx_display();
+  nassertv(glx != (glxDisplay *)NULL);
+
+  _display = glx->get_display();
 
   // Configure the framebuffer according to parameters specified in _props
   // Initializes _visual
@@ -408,7 +414,7 @@ void glxGraphicsWindow::config( void )
   wa.event_mask = _event_mask; 
   wa.do_not_propagate_mask = 0;
 
-  _xwindow = XCreateWindow(_display, pipe->get_root(),
+  _xwindow = XCreateWindow(_display, glx->get_root(),
 	_props._xorg, _props._yorg, _props._xsize, _props._ysize, 0,
 	_visual->depth, InputOutput, _visual->visual, attrib_mask, &wa); 
   if (!_xwindow) {
@@ -481,9 +487,8 @@ void glxGraphicsWindow::setup_colormap(void)
 #else
   visual_class = _visual->class;
 #endif  
-
-  // glxGraphicsPipe* pipe = (glxGraphicsPipe *)_pipe;
-  glxGraphicsPipe* pipe = DCAST(glxGraphicsPipe, _pipe);
+  glxDisplay *glx = _pipe->get_glx_display();
+  nassertv(glx != (glxDisplay *)NULL);
   
   switch (visual_class) {
     case PseudoColor:
@@ -495,19 +500,19 @@ void glxGraphicsWindow::setup_colormap(void)
 	// this is a terrible terrible hack, that seems to work
         _colormap = (Colormap)0;
       } else {
-        _colormap = XCreateColormap(_display, pipe->get_root(),
+        _colormap = XCreateColormap(_display, glx->get_root(),
 	  _visual->visual, AllocAll);	
       }
       break;
     case TrueColor:
     case DirectColor:
-      _colormap = XCreateColormap(_display, pipe->get_root(),
+      _colormap = XCreateColormap(_display, glx->get_root(),
 	_visual->visual, AllocNone); 
       break;
     case StaticColor:
     case StaticGray:
     case GrayScale:
-      _colormap = XCreateColormap(_display, pipe->get_root(),
+      _colormap = XCreateColormap(_display, glx->get_root(),
 	_visual->visual, AllocNone); 
       break;
     default:
@@ -1097,8 +1102,8 @@ void glxGraphicsWindow::process_events(void)
   int got_event;
   glxGraphicsWindow* window;
 
-  // glxGraphicsPipe* pipe = (glxGraphicsPipe *)_pipe;
-  glxGraphicsPipe* pipe = DCAST(glxGraphicsPipe, _pipe);
+  glxDisplay *glx = _pipe->get_glx_display();
+  nassertv(glx != (glxDisplay *)NULL);
 
   do {
     got_event = interruptible_xnextevent(_display, &event);
@@ -1108,7 +1113,7 @@ void glxGraphicsWindow::process_events(void)
 	  XRefreshKeyboardMapping((XMappingEvent *) &event);
 	  break;
         case ConfigureNotify:
-	  if ((window = pipe->find_window(event.xconfigure.window)) != NULL)
+	  if ((window = glx->find_window(event.xconfigure.window)) != NULL)
 	    window->process_event(event);
 	  break;
         case Expose:
@@ -1124,16 +1129,16 @@ void glxGraphicsWindow::process_events(void)
           break;
         case ButtonPress:
         case ButtonRelease:
-	  if ((window = pipe->find_window(event.xbutton.window)) != NULL)
+	  if ((window = glx->find_window(event.xbutton.window)) != NULL)
 	    window->process_event(event);
 	  break;
         case MotionNotify:
-	  if ((window = pipe->find_window(event.xmotion.window)) != NULL)
+	  if ((window = glx->find_window(event.xmotion.window)) != NULL)
 	    window->process_event(event);
           break;
         case KeyPress:
         case KeyRelease:
-	  if ((window = pipe->find_window(event.xmotion.window)) != NULL)
+	  if ((window = glx->find_window(event.xmotion.window)) != NULL)
 	    window->process_event(event);
 	  break;
         case EnterNotify:
@@ -1144,7 +1149,7 @@ void glxGraphicsWindow::process_events(void)
 	    // Ignore "virtual" window enter/leave events
 	    break;
 	  }
-  	  if ((window = pipe->find_window(event.xcrossing.window)) != NULL)
+  	  if ((window = glx->find_window(event.xcrossing.window)) != NULL)
 	    window->process_event(event);
 	  break;
         case UnmapNotify:

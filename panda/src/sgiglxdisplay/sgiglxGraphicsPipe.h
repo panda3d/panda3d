@@ -12,7 +12,7 @@
 #include <pandabase.h>
 
 #include <sgiGraphicsPipe.h>
-#include <glxGraphicsWindow.h>
+#include <glxDisplay.h>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : SgiGlxGraphicsPipe
@@ -20,12 +20,12 @@
 //		 supports the functionality of an sgi pipe with
 //		 hardware channels
 ////////////////////////////////////////////////////////////////////
-class SgiGlxGraphicsPipe : public sgiGraphicsPipe
-{
+class SgiGlxGraphicsPipe : public sgiGraphicsPipe, public glxDisplay {
 public:
   SgiGlxGraphicsPipe( const PipeSpecifier& );
 
   virtual TypeHandle get_window_type() const;
+  virtual glxDisplay *get_glx_display();
 
   static GraphicsPipe* make_sgiglxgraphicspipe(const FactoryParams &params);
 

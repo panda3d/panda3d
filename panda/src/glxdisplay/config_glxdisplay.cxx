@@ -6,6 +6,7 @@
 #include "config_glxdisplay.h"
 #include "glxGraphicsPipe.h"
 #include "glxGraphicsWindow.h"
+#include "glxDisplay.h"
 
 #include <dconfig.h>
 
@@ -19,4 +20,5 @@ ConfigureFn(config_glxdisplay) {
   glxGraphicsWindow::init_type();
   GraphicsWindow::_factory.register_factory(glxGraphicsWindow::get_class_type(),
 					    glxGraphicsWindow::make_GlxGraphicsWindow);
+  glxDisplay::init_type();
 }

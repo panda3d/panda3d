@@ -12,7 +12,10 @@
 TypeHandle SgiGlxGraphicsPipe::_type_handle;
 
 SgiGlxGraphicsPipe::SgiGlxGraphicsPipe(const PipeSpecifier& spec)
-  : sgiGraphicsPipe(spec) {}
+  : sgiGraphicsPipe(spec)
+    glxDisplay(this, spec.get_X_specifier()) 
+{
+}
 
 
 ////////////////////////////////////////////////////////////////////
@@ -24,6 +27,17 @@ SgiGlxGraphicsPipe::SgiGlxGraphicsPipe(const PipeSpecifier& spec)
 TypeHandle SgiGlxGraphicsPipe::
 get_window_type() const {
   return glxGraphicsWindow::get_class_type();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SgiGlxGraphicsPipe::get_glx_display
+//       Access: Public, Virtual
+//  Description: Returns the glxDisplay information associated with
+//               this pipe.
+////////////////////////////////////////////////////////////////////
+SgiGlxDisplay *glxGraphicsPipe::
+get_glx_display() {
+  return this;
 }
 
 GraphicsPipe *SgiGlxGraphicsPipe::
@@ -42,8 +56,10 @@ TypeHandle SgiGlxGraphicsPipe::get_class_type(void) {
 
 void SgiGlxGraphicsPipe::init_type(void) {
   sgiGraphicsPipe::init_type();
+  glxDisplay::init_type();
   register_type(_type_handle, "SgiGlxGraphicsPipe",
-		sgiGraphicsPipe::get_class_type());
+		sgiGraphicsPipe::get_class_type(),
+		glxDisplay::get_class_type());
 }
 
 TypeHandle SgiGlxGraphicsPipe::get_type(void) const {
