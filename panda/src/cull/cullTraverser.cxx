@@ -16,28 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "cullTraverser.h"
-#include "geomBinTransition.h"
-#include "geomBinAttribute.h"
-#include "cullStateSubtree.h"
-#include "geomBinNormal.h"
-#include "geomBinFixed.h"
-#include "directRenderTransition.h"
-#include "config_cull.h"
-
-#include <wrt.h>
-#include <frustumCullTraverser.h>
-#include <graphicsStateGuardian.h>
-#include <decalTransition.h>
-#include <pruneTransition.h>
-#include <transformTransition.h>
-#include <nodeTransitionWrapper.h>
-#include <switchNode.h>
-#include <indent.h>
-#include <config_sgraphutil.h>  // for implicit_app_traversal
-#include <config_sgattrib.h>    // for support_decals
-#include <string_utils.h>
-#include <pStatTimer.h>
+#include "cull_headers.h"
+#pragma hdrstop
 
 TypeHandle CullTraverser::_type_handle;
 

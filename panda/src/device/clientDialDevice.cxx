@@ -16,9 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "clientDialDevice.h"
-
-#include <indent.h>
+#include "device_headers.h"
+#pragma hdrstop
 
 TypeHandle ClientDialDevice::_type_handle;
 

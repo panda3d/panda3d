@@ -16,12 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "geomBinTransition.h"
-#include "geomBinAttribute.h"
-
-#include <indent.h>
-
-#include <string.h>
+#include "cull_headers.h"
+#pragma hdrstop
 
 TypeHandle GeomBinTransition::_type_handle;
 

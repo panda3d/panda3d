@@ -16,12 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "geomBinGroup.h"
-#include "cullTraverser.h"
-
-#include <indent.h>
-#include <nodeAttributes.h>
-#include <graphicsStateGuardian.h>
+#include "cull_headers.h"
+#pragma hdrstop
 
 TypeHandle GeomBinGroup::_type_handle;
 

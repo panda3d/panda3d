@@ -1,5 +1,5 @@
-// Filename: trackerData.cxx
-// Created by:  jason (04Aug00)
+// Filename: device_headers.h
+// Created by:  georges (30May01)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,20 +16,26 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "device_headers.h"
+#include <buttonEvent.h>
+#include <buttonEventDataTransition.h>
+#include <buttonHandle.h>
+#include <dconfig.h>
+#include <indent.h>
+#include <mouseData.h>
+
+#include "analogNode.h"
+#include "buttonNode.h"
+#include "clientAnalogDevice.h"
+#include "clientBase.h"
+#include "clientButtonDevice.h"
+#include "clientDevice.h"
+#include "clientDialDevice.h"
+#include "clientTrackerDevice.h"
+#include "config_device.h"
+#include "dialNode.h"
+#include "mouse.h"
+#include "trackerData.h"
+#include "trackerNode.h"
+
 #pragma hdrstop
 
-////////////////////////////////////////////////////////////////////
-//     Function: TrackerData::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-void TrackerData::
-operator = (const TrackerData &copy) {
-  _flags = copy._flags;
-
-  _time = copy._time;
-  _pos = copy._pos;
-  _orient = copy._orient;
-  _dt = copy._dt;
-}

@@ -16,9 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "directRenderTransition.h"
-
-#include <indent.h>
+#include "cull_headers.h"
+#pragma hdrstop
 
 TypeHandle DirectRenderTransition::_type_handle;
 

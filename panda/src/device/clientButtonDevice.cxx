@@ -16,9 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "clientButtonDevice.h"
-
-#include <indent.h>
+#include "device_headers.h"
+#pragma hdrstop
 
 TypeHandle ClientButtonDevice::_type_handle;
 

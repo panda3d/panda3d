@@ -16,19 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_cull.h"
-#include "cullTraverser.h"
-#include "geomBin.h"
-#include "geomBinUnsorted.h"
-#include "geomBinBackToFront.h"
-#include "geomBinGroup.h"
-#include "geomBinNormal.h"
-#include "geomBinTransition.h"
-#include "geomBinAttribute.h"
-#include "geomBinFixed.h"
-#include "directRenderTransition.h"
-
-#include <dconfig.h>
+#include "cull_headers.h"
+#pragma hdrstop
 
 ConfigureDef(config_cull);
 NotifyCategoryDef(cull, "");

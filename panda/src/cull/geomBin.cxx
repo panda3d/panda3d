@@ -16,18 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "geomBin.h"
-#include "cullTraverser.h"
-#include "config_cull.h"
-#include "geomBinNormal.h"
-#include "geomBinUnsorted.h"
-#include "geomBinFixed.h"
-#include "geomBinBackToFront.h"
-
-#include <indent.h>
-#include <nodeAttributes.h>
-#include <graphicsStateGuardian.h>
-#include <string_utils.h>
+#include "cull_headers.h"
+#pragma hdrstop
 
 TypeHandle GeomBin::_type_handle;
 

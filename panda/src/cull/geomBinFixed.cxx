@@ -16,16 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "geomBinFixed.h"
-#include "cullTraverser.h"
-
-#include <nodeAttributes.h>
-#include <graphicsStateGuardian.h>
-#include <transformTransition.h>
-#include <transformAttribute.h>
-#include <geometricBoundingVolume.h>
-#include <directRenderTraverser.h>
-#include <pStatTimer.h>
+#include "cull_headers.h"
+#pragma hdrstop
 
 TypeHandle GeomBinFixed::_type_handle;
 

@@ -16,15 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "geomBinBackToFront.h"
-#include "cullTraverser.h"
-
-#include <nodeAttributes.h>
-#include <graphicsStateGuardian.h>
-#include <transformTransition.h>
-#include <transformAttribute.h>
-#include <geometricBoundingVolume.h>
-#include <pStatTimer.h>
+#include "cull_headers.h"
+#pragma hdrstop
 
 TypeHandle GeomBinBackToFront::_type_handle;
 

@@ -16,13 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "geomBinNormal.h"
-#include "geomBinUnsorted.h"
-#include "geomBinBackToFront.h"
-
-#include <transparencyTransition.h>
-#include <transparencyAttribute.h>
-#include <nodeAttributes.h>
+#include "cull_headers.h"
+#pragma hdrstop
 
 TypeHandle GeomBinNormal::_type_handle;
 

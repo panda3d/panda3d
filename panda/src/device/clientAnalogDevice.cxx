@@ -16,9 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "clientAnalogDevice.h"
-
-#include <indent.h>
+#include "device_headers.h"
+#pragma hdrstop
 
 TypeHandle ClientAnalogDevice::_type_handle;
 

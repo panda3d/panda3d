@@ -16,12 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "cullState.h"
-#include "config_cull.h"
-
-#include <indent.h>
-#include <graphicsStateGuardian.h>
-#include <allAttributesWrapper.h>
+#include "cull_headers.h"
+#pragma hdrstop
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullState::check_currency

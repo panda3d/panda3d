@@ -1,6 +1,6 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
-				   
+                   
 #begin lib_target
   #define TARGET cull
   #define LOCAL_LIBS \
@@ -34,6 +34,8 @@
     geomBinUnsorted.h
 
   #define IGATESCAN all
+  
+  #define PRECOMPILED_HEADER cull_headers.h
 
 #end lib_target
 

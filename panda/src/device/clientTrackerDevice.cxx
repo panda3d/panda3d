@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "clientTrackerDevice.h"
+#include "device_headers.h"
+#pragma hdrstop
 
 TypeHandle ClientTrackerDevice::_type_handle;

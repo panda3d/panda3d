@@ -15,11 +15,8 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
-#include "mouse.h"
-
-#include <mouseData.h>
-#include <buttonHandle.h>
-#include <buttonEvent.h>
+#include "device_headers.h"
+#pragma hdrstop
 
 ////////////////////////////////////////////////////////////////////
 // Static variables

@@ -16,20 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_device.h"
-#include "analogNode.h"
-#include "buttonNode.h"
-#include "clientAnalogDevice.h"
-#include "clientBase.h"
-#include "clientButtonDevice.h"
-#include "clientDevice.h"
-#include "clientDialDevice.h"
-#include "clientTrackerDevice.h"
-#include "dialNode.h"
-#include "mouse.h"
-#include "trackerNode.h"
-
-#include <dconfig.h>
+#include "device_headers.h"
+#pragma hdrstop
 
 Configure(config_device);
 NotifyCategoryDef(device, "");

@@ -16,11 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "cullStateLookup.h"
-#include "cullState.h"
-#include "cullStateSubtree.h"
-
-#include <indent.h>
+#include "cull_headers.h"
+#pragma hdrstop
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullStateLookup::Destructor

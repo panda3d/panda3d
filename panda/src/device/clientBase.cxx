@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "clientBase.h"
-#include "config_device.h"
+#include "device_headers.h"
+#pragma hdrstop
 
 TypeHandle ClientBase::_type_handle;
 

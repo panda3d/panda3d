@@ -1,6 +1,6 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
-				   
+                   
 #begin lib_target
   #define TARGET device
   #define LOCAL_LIBS \
@@ -34,6 +34,8 @@
     dialNode.I dialNode.h \
     trackerData.I trackerData.h \
     trackerNode.I trackerNode.h
+
+  #define PRECOMPILED_HEADER device_headers.h
 
   #define IGATESCAN all
 
