@@ -74,7 +74,7 @@ main(int argc, char *argv[]) {
     return 1;
   }
 
-  cerr<<"directdClient"<<endl;
+  cerr<<"directdClient "<<__DATE__<<" "<<__TIME__<<endl;
   string host="localhost";
   int port=8001;
   if (argc >= 3) {

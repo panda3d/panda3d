@@ -107,7 +107,7 @@ main(int argc, char *argv[]) {
     return 1;
   }
 
-  cerr<<"directdServer "<<__DATE__<<endl;
+  cerr<<"directdServer "<<__DATE__<<" "<<__TIME__<<endl;
   int port=8001;
   if (argc > 1) {
     port=(atoi(argv[argc-1]));
