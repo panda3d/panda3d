@@ -345,7 +345,7 @@ def shortestDestAngle(src, dest):
     assumed that src is between -180. and 180.
     Example: (shortest-dest-angle 50. -170.) --> 190.
     """
-    return (src + (reduceAngle(reduceAngle(dest) - reduceAngle(src))))
+    return (src + (reduceAngle(dest - src)))
 
 def binaryRepr(number, max_length = 32):
     # This will only work reliably for relatively small numbers.
