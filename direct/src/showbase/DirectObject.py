@@ -12,7 +12,7 @@ class DirectObject:
 	try: 
 	    self.cleanup()
 	except:
-	    directNotify.notify.warning('No cleanup() method defined!')
+	    print "No cleanup() method defined!"
 
     # Event Handling
 

@@ -97,6 +97,7 @@ class ScrollingLabel(PandaObject.PandaObject):
 	self.itemSign = None
 	self.leftButton = None
 	self.rightButton = None
+	self.frame = None
 	return None
 
     # accessing
