@@ -87,39 +87,71 @@ class GravityWalker(DirectObject.DirectObject):
             del self.moveIval
             self.platform.destroy()
             del self.platform
+            self.platform2.destroy()
+            del self.platform2
         
         model = loader.loadModelCopy('phase_9/models/cogHQ/platform1')
         fakeId = id(self)
         self.platform = MovingPlatform.MovingPlatform()
         self.platform.setupCopyModel(fakeId, model, 'platformcollision')
         self.platformRoot = render.attachNewNode("GravityWalker-spawnTest-%s"%fakeId)
-        self.platformRoot.setPos(toonbase.localToon, Vec3(0.0, 3.0, 1.0))
+        self.platformRoot.setPos(toonbase.localToon, Vec3(0.0, 0.0, 1.0))
         self.platformRoot.setHpr(toonbase.localToon, Vec3.zero())
         self.platform.reparentTo(self.platformRoot)
 
-        duration = 7
-        self.moveIval = Sequence(
-            WaitInterval(0.3),
-            LerpPosInterval(self.platform, duration,
-                            Vec3(0.0, 15.0, 0.0),
-                            name='platformOut%s' % fakeId,
-                            fluid = 1),
-            WaitInterval(0.3),
-            LerpPosInterval(self.platform, duration,
-                            Vec3(0.0, -15.0, 0.0),
-                            name='platformBack%s' % fakeId,
-                            fluid = 1),
-            WaitInterval(0.3),
-            LerpPosInterval(self.platform, duration,
-                            Vec3(0.0, -15.0, 15.0),
-                            name='platformUp%s' % fakeId,
-                            fluid = 1),
-            WaitInterval(0.3),
-            LerpPosInterval(self.platform, duration,
-                            Vec3(0.0, -15.0, 0.0),
-                            name='platformDown%s' % fakeId,
-                            fluid = 1),
+        self.platform2 = MovingPlatform.MovingPlatform()
+        self.platform2.setupCopyModel(1+fakeId, model, 'platformcollision')
+        self.platform2Root = render.attachNewNode("GravityWalker-spawnTest2-%s"%fakeId)
+        self.platform2Root.setPos(toonbase.localToon, Vec3(-16.0, 30.0, 1.0))
+        self.platform2Root.setHpr(toonbase.localToon, Vec3.zero())
+        self.platform2.reparentTo(self.platform2Root)
 
+        duration = 5
+        self.moveIval = Parallel(
+                Sequence(
+                    WaitInterval(0.3),
+                    LerpPosInterval(self.platform, duration,
+                                    Vec3(0.0, 30.0, 0.0),
+                                    name='platformOut%s' % fakeId,
+                                    fluid = 1),
+                    WaitInterval(0.3),
+                    LerpPosInterval(self.platform, duration,
+                                    Vec3(0.0, 0.0, 0.0),
+                                    name='platformBack%s' % fakeId,
+                                    fluid = 1),
+                    WaitInterval(0.3),
+                    LerpPosInterval(self.platform, duration,
+                                    Vec3(0.0, 0.0, 30.0),
+                                    name='platformUp%s' % fakeId,
+                                    fluid = 1),
+                    WaitInterval(0.3),
+                    LerpPosInterval(self.platform, duration,
+                                    Vec3(0.0, 0.0, 0.0),
+                                    name='platformDown%s' % fakeId,
+                                    fluid = 1),
+                ),
+                Sequence(
+                    WaitInterval(0.3),
+                    LerpPosInterval(self.platform2, duration,
+                                    Vec3(0.0, -30.0, 0.0),
+                                    name='platform2Out%s' % fakeId,
+                                    fluid = 1),
+                    WaitInterval(0.3),
+                    LerpPosInterval(self.platform2, duration,
+                                    Vec3(0.0, 30.0, 30.0),
+                                    name='platform2Back%s' % fakeId,
+                                    fluid = 1),
+                    WaitInterval(0.3),
+                    LerpPosInterval(self.platform2, duration,
+                                    Vec3(0.0, -30.0, 0.0),
+                                    name='platform2Up%s' % fakeId,
+                                    fluid = 1),
+                    WaitInterval(0.3),
+                    LerpPosInterval(self.platform2, duration,
+                                    Vec3(0.0, 0.0, 0.0),
+                                    name='platformDown%s' % fakeId,
+                                    fluid = 1),
+                ),
             name='platformIval%s' % fakeId,
             )
         self.moveIval.loop()
@@ -183,14 +215,14 @@ class GravityWalker(DirectObject.DirectObject):
         self.pusher = handler
         self.cWallSphereNodePath = cSphereNodePath
 
-    def setupFloorSphere(self, bitmask, avatarRadius):
+    def setupEventSphere(self, bitmask, avatarRadius):
         """
         Set up the collision sphere
         """
         # This is a sphere on the ground to detect barrier collisions
         self.avatarRadius = avatarRadius
         self.cSphere = CollisionSphere(0.0, 0.0, avatarRadius-0.1, avatarRadius*1.04)
-        cSphereNode = CollisionNode('GW.cFloorSphereNode')
+        cSphereNode = CollisionNode('GW.cEventSphereNode')
         cSphereNode.addSolid(self.cSphere)
         cSphereNodePath = self.avatarNodePath.attachNewNode(cSphereNode)
 
@@ -203,6 +235,29 @@ class GravityWalker(DirectObject.DirectObject):
         handler.setOutPattern("exit%in")
 
         self.event = handler
+        self.cEventSphereNodePath = cSphereNodePath
+
+    def setupFloorSphere(self, bitmask, avatarRadius):
+        """
+        Set up the collision sphere
+        """
+        # This is a sphere on the ground to detect barrier collisions
+        self.avatarRadius = avatarRadius
+        self.cSphere = CollisionSphere(0.0, 0.0, avatarRadius, 0.01)
+        cSphereNode = CollisionNode('GW.cFloorSphereNode')
+        cSphereNode.addSolid(self.cSphere)
+        cSphereNodePath = self.avatarNodePath.attachNewNode(cSphereNode)
+
+        cSphereNode.setFromCollideMask(bitmask)
+        cSphereNode.setIntoCollideMask(BitMask32.allOff())
+
+        # set up collision mechanism
+        handler = CollisionHandlerPusher()
+        handler.setInPattern("pusherFloor_enter%in")
+        handler.setOutPattern("pusherFloor_exit%in")
+
+        handler.addCollider(cSphereNodePath, self.avatarNodePath)
+        self.pusherFloor = handler
         self.cFloorSphereNodePath = cSphereNodePath
 
     def initializeCollisions(self, collisionTraverser, avatarNodePath, 
@@ -221,7 +276,8 @@ class GravityWalker(DirectObject.DirectObject):
 
         self.setupRay(floorBitmask, self.floorOffset)
         self.setupWallSphere(wallBitmask, avatarRadius)
-        self.setupFloorSphere(wallBitmask|floorBitmask, avatarRadius)
+        self.setupEventSphere(wallBitmask|floorBitmask, avatarRadius)
+        self.setupFloorSphere(floorBitmask, avatarRadius)
 
         self.setCollisionsActive(1)
 
@@ -249,6 +305,7 @@ class GravityWalker(DirectObject.DirectObject):
         del self.cFloorSphereNodePath
 
         del self.pusher
+        del self.pusherFloor
         del self.event
         del self.lifter
         
@@ -263,11 +320,13 @@ class GravityWalker(DirectObject.DirectObject):
             self.oneTimeCollide()
             if active:
                 self.cTrav.addCollider(self.cWallSphereNodePath, self.pusher)
-                self.cTrav.addCollider(self.cFloorSphereNodePath, self.event)
+                self.cTrav.addCollider(self.cFloorSphereNodePath, self.pusherFloor)
+                self.cTrav.addCollider(self.cEventSphereNodePath, self.event)
                 self.cTrav.addCollider(self.cRayNodePath, self.lifter)
             else:
                 self.cTrav.removeCollider(self.cWallSphereNodePath)
                 self.cTrav.removeCollider(self.cFloorSphereNodePath)
+                self.cTrav.removeCollider(self.cEventSphereNodePath)
                 self.cTrav.removeCollider(self.cRayNodePath)
 
     def getCollisionsActive(self):
