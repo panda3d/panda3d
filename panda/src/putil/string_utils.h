@@ -47,6 +47,7 @@ EXPCL_PANDA void tokenize(const string &str, vector_string &words,
 // Trims leading and/or trailing whitespace from the string.
 EXPCL_PANDA string trim_left(const string &str);
 EXPCL_PANDA string trim_right(const string &str);
+EXPCL_PANDA string trim(const string &str);
 
 // Functions to parse numeric values out of a string.
 EXPCL_PANDA int string_to_int(const string &str, string &tail);

@@ -18,6 +18,18 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::get_name
+//       Access: Public
+//  Description: Disambiguates the get_name() method between that
+//               inherited from TextFont and that inherited from
+//               FreetypeFont.
+////////////////////////////////////////////////////////////////////
+INLINE const string &DynamicTextFont::
+get_name() const {
+  return TextFont::get_name();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextFont::set_point_size
 //       Access: Published
 //  Description: Sets the point size of the font.  This controls the
@@ -33,8 +45,7 @@ set_point_size(float point_size) {
   // If this assertion fails, you didn't call clear() first.  RTFM.
   nassertr(get_num_pages() == 0, false);
 
-  _point_size = point_size;
-  return reset_scale();
+  return FreetypeFont::set_point_size(point_size);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,7 +55,7 @@ set_point_size(float point_size) {
 ////////////////////////////////////////////////////////////////////
 INLINE float DynamicTextFont::
 get_point_size() const {
-  return _point_size;
+  return FreetypeFont::get_point_size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -67,8 +78,7 @@ set_pixels_per_unit(float pixels_per_unit) {
   // If this assertion fails, you didn't call clear() first.  RTFM.
   nassertr(get_num_pages() == 0, false);
 
-  _tex_pixels_per_unit = pixels_per_unit;
-  return reset_scale();
+  return FreetypeFont::set_pixels_per_unit(pixels_per_unit);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -79,7 +89,7 @@ set_pixels_per_unit(float pixels_per_unit) {
 ////////////////////////////////////////////////////////////////////
 INLINE float DynamicTextFont::
 get_pixels_per_unit() const {
-  return _tex_pixels_per_unit;
+  return FreetypeFont::get_pixels_per_unit();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -103,8 +113,7 @@ set_scale_factor(float scale_factor) {
   // If this assertion fails, you didn't call clear() first.  RTFM.
   nassertr(get_num_pages() == 0, false);
 
-  _scale_factor = scale_factor;
-  return reset_scale();
+  return FreetypeFont::set_scale_factor(scale_factor);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -115,7 +124,28 @@ set_scale_factor(float scale_factor) {
 ////////////////////////////////////////////////////////////////////
 INLINE float DynamicTextFont::
 get_scale_factor() const {
-  return _scale_factor;
+  return FreetypeFont::get_scale_factor();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::get_line_height
+//       Access: Public
+//  Description: Returns the number of units high each line of text
+//               is.
+////////////////////////////////////////////////////////////////////
+INLINE float DynamicTextFont::
+get_line_height() const {
+  return TextFont::get_line_height();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::get_space_advance
+//       Access: Public
+//  Description: Returns the number of units wide a space is.
+////////////////////////////////////////////////////////////////////
+INLINE float DynamicTextFont::
+get_space_advance() const {
+  return TextFont::get_space_advance();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -313,4 +343,9 @@ set_update_cleared_glyphs(bool update_cleared_glyphs) {
 INLINE bool DynamicTextFont::
 get_update_cleared_glyphs() {
   return _update_cleared_glyphs;
+}
+
+INLINE ostream &
+operator << (ostream &out, const DynamicTextFont &dtf) {
+  return out << dtf.get_name();
 }

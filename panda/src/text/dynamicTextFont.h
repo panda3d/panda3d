@@ -25,6 +25,7 @@
 
 #include "config_text.h"
 #include "textFont.h"
+#include "freetypeFont.h"
 #include "dynamicTextGlyph.h"
 #include "dynamicTextPage.h"
 #include "filename.h"
@@ -42,11 +43,13 @@
 //               FreeType 2.0 library (or any higher,
 //               backward-compatible version).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DynamicTextFont : public TextFont {
+class EXPCL_PANDA DynamicTextFont : public TextFont, public FreetypeFont {
 PUBLISHED:
   DynamicTextFont(const Filename &font_filename, int face_index = 0);
   DynamicTextFont(const char *font_data, int data_length, int face_index);
   virtual ~DynamicTextFont();
+
+  INLINE const string &get_name() const;
 
   INLINE bool set_point_size(float point_size);
   INLINE float get_point_size() const;
@@ -56,6 +59,9 @@ PUBLISHED:
 
   INLINE bool set_scale_factor(float scale_factor);
   INLINE float get_scale_factor() const;
+
+  INLINE float get_line_height() const;
+  INLINE float get_space_advance() const;
 
   INLINE void set_texture_margin(int texture_margin);
   INLINE int get_texture_margin() const;
@@ -91,19 +97,11 @@ public:
 private:
   void initialize();
   void update_filters();
-  bool reset_scale();
   DynamicTextGlyph *make_glyph(int glyph_index);
   void copy_bitmap_to_texture(const FT_Bitmap &bitmap, DynamicTextGlyph *glyph);
-  void copy_bitmap_to_pnmimage(const FT_Bitmap &bitmap, PNMImage &image);
   void copy_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph);
   DynamicTextGlyph *slot_glyph(int x_size, int y_size);
 
-  static void initialize_ft_library();
-
-  float _point_size;
-  float _tex_pixels_per_unit;
-  float _scale_factor;
-  float _font_pixels_per_unit;
   int _texture_margin;
   float _poly_margin;
   int _page_x_size, _page_y_size;
@@ -129,17 +127,6 @@ private:
   typedef pvector< PT(DynamicTextGlyph) > EmptyGlyphs;
   EmptyGlyphs _empty_glyphs;
 
-  FT_Face _face;
-
-  // This string is used to hold the data read from the font file in
-  // vfs mode.  Since the FreeType library keeps pointers into this
-  // data, we have to keep it around.
-  string _raw_font_data;
-
-  static FT_Library _ft_library;
-  static bool _ft_initialized;
-  static bool _ft_ok;
-
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -159,6 +146,8 @@ private:
 
   friend class TextNode;
 };
+
+INLINE ostream &operator << (ostream &out, const DynamicTextFont &dtf);
 
 #include "dynamicTextFont.I"
 

@@ -190,6 +190,27 @@ trim_right(const string &str) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: trim
+//  Description: Returns a new string representing the contents of the
+//               given string with both leading and trailing
+//               whitespace removed.
+////////////////////////////////////////////////////////////////////
+string
+trim(const string &str) {
+  size_t begin = 0;
+  while (begin < str.size() && isspace((unsigned int)str[begin])) {
+    begin++;
+  }
+
+  size_t end = str.size();
+  while (end > begin && isspace((unsigned int)str[end - 1])) {
+    end--;
+  }
+
+  return str.substr(begin, end - begin);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: string_to_int
 //  Description: A string-interface wrapper around the C library
 //               strtol().  This parses the ASCII representation of an
