@@ -38,7 +38,7 @@ class BattleWalker(GravityWalker.GravityWalker):
         if run and self.speed>0.0:
             self.speed*=2.0 #*#
         # Should fSlide be renamed slideButton?
-        self.slideSpeed=.2*(turnLeft and -self.avatarControlForwardSpeed or 
+        self.slideSpeed=.15*(turnLeft and -self.avatarControlForwardSpeed or 
                             turnRight and self.avatarControlForwardSpeed)
         self.rotationSpeed=0
         
