@@ -395,14 +395,29 @@ void GuiButton::set_pos(const LVector3f& p) {
 
 void GuiButton::start_behavior(void) {
   GuiBehavior::start_behavior();
+  if (_mgr == (GuiManager*)0L)
+    return;
+  _eh->add_hook(_down_event, GuiButton::behavior_down, (void*)this);
+  _eh->add_hook(_down_rollover_event, GuiButton::behavior_down, (void*)this);
 }
 
 void GuiButton::stop_behavior(void) {
   GuiBehavior::stop_behavior();
+  if (_mgr == (GuiManager*)0L)
+    return;
+  _eh->remove_hook(_up_event, GuiButton::behavior_up, (void*)this);
+  _eh->remove_hook(_up_rollover_event, GuiButton::behavior_up, (void*)this);
+  _eh->remove_hook(_down_event, GuiButton::behavior_down, (void*)this);
+  _eh->remove_hook(_down_rollover_event, GuiButton::behavior_down,
+		   (void*)this);
 }
 
 void GuiButton::reset_behavior(void) {
   GuiBehavior::reset_behavior();
+  if (_mgr == (GuiManager*)0L)
+    return;
+  _eh->remove_hook(_up_event, GuiButton::behavior_up, (void*)this);
+  _eh->remove_hook(_up_rollover_event, GuiButton::behavior_up, (void*)this);
 }
 
 void GuiButton::output(ostream& os) const {

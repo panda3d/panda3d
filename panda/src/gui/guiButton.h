@@ -74,15 +74,20 @@ PUBLISHED:
   INLINE void set_down_event(const string&);
   INLINE void set_down_rollover_event(const string&);
   INLINE void set_inactive_event(const string&);
+  INLINE void set_behavior_event(const string&);
 
   INLINE const string& get_up_event(void) const;
   INLINE const string& get_up_rollover_event(void) const;
   INLINE const string& get_down_event(void) const;
   INLINE const string& get_down_rollover_event(void) const;
   INLINE const string& get_inactive_event(void) const;
+  INLINE const string& get_behavior_event(void) const;
 
   INLINE void set_up_rollover(GuiLabel*);
   INLINE void set_down_rollover(GuiLabel*);
+
+  INLINE void set_behavior_functor(GuiBehavior::BehaviorFunctor*);
+  INLINE GuiBehavior::BehaviorFunctor* get_behavior_functor(void) const;
 
   virtual void set_scale(float);
   virtual void set_pos(const LVector3f&);

@@ -52,6 +52,7 @@ INLINE void GuiButton::up(void) {
     gui_cat->warning() << "got up from invalid state (" << (int)_state << "),"
 		       << " button '" << this->get_name() << "'" << endl;
   }
+  this->reset_behavior();
 }
 
 INLINE void GuiButton::down(void) {
@@ -84,6 +85,7 @@ INLINE void GuiButton::inactive(void) {
     gui_cat->warning() << "got inactive from invalid state (" << (int)_state
 		       << "), button '" << this->get_name() << "'" << endl;
   }
+  this->stop_behavior();
 }
 
 INLINE void GuiButton::click(void) {
@@ -124,23 +126,53 @@ INLINE bool GuiButton::is_active(void) const {
 }
 
 INLINE void GuiButton::set_up_event(const string& s) {
+  if (_behavior_running)
+    if (_mgr != (GuiManager*)0L)
+      _eh->remove_hook(_up_event, GuiButton::behavior_up, (void*)this);
   _up_event = s;
+  if (_behavior_running)
+    if (_mgr != (GuiManager*)0L)
+      _eh->add_hook(_up_event, GuiButton::behavior_up, (void*)this);
 }
 
 INLINE void GuiButton::set_up_rollover_event(const string& s) {
+  if (_behavior_running)
+    if (_mgr != (GuiManager*)0L)
+      _eh->remove_hook(_up_rollover_event, GuiButton::behavior_up,
+		       (void*)this);
   _up_rollover_event = s;
+  if (_behavior_running)
+    if (_mgr != (GuiManager*)0L)
+      _eh->add_hook(_up_rollover_event, GuiButton::behavior_up, (void*)this);
 }
 
 INLINE void GuiButton::set_down_event(const string& s) {
+  if (_behavior_running)
+    if (_mgr != (GuiManager*)0L)
+      _eh->remove_hook(_down_event, GuiButton::behavior_up, (void*)this);
   _down_event = s;
+  if (_behavior_running)
+    if (_mgr != (GuiManager*)0L)
+      _eh->add_hook(_down_event, GuiButton::behavior_up, (void*)this);
 }
 
 INLINE void GuiButton::set_down_rollover_event(const string& s) {
+  if (_behavior_running)
+    if (_mgr != (GuiManager*)0L)
+      _eh->remove_hook(_down_rollover_event, GuiButton::behavior_up,
+		       (void*)this);
   _down_rollover_event = s;
+  if (_behavior_running)
+    if (_mgr != (GuiManager*)0L)
+      _eh->add_hook(_down_rollover_event, GuiButton::behavior_up, (void*)this);
 }
 
 INLINE void GuiButton::set_inactive_event(const string& s) {
   _inactive_event = s;
+}
+
+INLINE void GuiButton::set_behavior_event(const string& s) {
+  _behavior_event = s;
 }
 
 INLINE const string& GuiButton::get_up_event(void) const {
@@ -163,6 +195,10 @@ INLINE const string& GuiButton::get_inactive_event(void) const {
   return _inactive_event;
 }
 
+INLINE const string& GuiButton::get_behavior_event(void) const {
+  return _behavior_event;
+}
+
 INLINE void GuiButton::set_up_rollover(GuiLabel* upr) {
   _up_rollover = upr;
   if (_up_rollover_event.empty())
@@ -173,4 +209,13 @@ INLINE void GuiButton::set_down_rollover(GuiLabel* downr) {
   _down_rollover = downr;
   if (_down_rollover_event.empty())
     _down_rollover_event = this->get_name() + "-down-rollover";
+}
+
+INLINE void GuiButton::set_behavior_functor(GuiBehavior::BehaviorFunctor* f) {
+  _behavior_functor = f;
+}
+
+INLINE GuiBehavior::BehaviorFunctor*
+GuiButton::get_behavior_functor(void) const {
+  return _behavior_functor;
 }
