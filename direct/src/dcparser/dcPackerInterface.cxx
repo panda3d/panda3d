@@ -55,6 +55,21 @@ get_num_nested_fields() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::get_num_nested_fields
+//       Access: Public, Virtual
+//  Description: This flavor of get_num_nested_fields is used during
+//               unpacking.  It returns the number of nested fields to
+//               expect, given a certain length in bytes (as read from
+//               the get_length_bytes() stored in the stream on the
+//               pack).  This will only be called if
+//               get_length_bytes() returns nonzero.
+////////////////////////////////////////////////////////////////////
+int DCPackerInterface::
+get_num_nested_fields(size_t length_bytes) const {
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::get_nested_field
 //       Access: Public, Virtual
 //  Description: Returns the DCPackerInterface object that represents
@@ -84,13 +99,11 @@ get_length_bytes() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::get_pack_type
 //       Access: Public, Virtual
-//  Description: Returns the type of value expected by this field, or
-//               ST_invalid if this field cannot accept simple value
-//               types.
+//  Description: Returns the type of value expected by this field.
 ////////////////////////////////////////////////////////////////////
-DCSubatomicType DCPackerInterface::
+DCPackType DCPackerInterface::
 get_pack_type() const {
-  return ST_invalid;
+  return PT_invalid;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -134,5 +147,49 @@ pack_int64(DCPackData &, PN_int64) const {
 ////////////////////////////////////////////////////////////////////
 bool DCPackerInterface::
 pack_string(DCPackData &, const string &) const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::unpack_double
+//       Access: Public, Virtual
+//  Description: Unpacks the current numeric or string value from the
+//               stream.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool DCPackerInterface::
+unpack_double(const char *, size_t, size_t &, double &) const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::unpack_int
+//       Access: Public, Virtual
+//  Description: Unpacks the current numeric or string value from the
+//               stream.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool DCPackerInterface::
+unpack_int(const char *, size_t, size_t &, int &) const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::unpack_int64
+//       Access: Public, Virtual
+//  Description: Unpacks the current numeric or string value from the
+//               stream.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool DCPackerInterface::
+unpack_int64(const char *, size_t, size_t &, PN_int64 &) const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::unpack_string
+//       Access: Public, Virtual
+//  Description: Unpacks the current numeric or string value from the
+//               stream.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool DCPackerInterface::
+unpack_string(const char *, size_t, size_t &, string &) const {
   return false;
 }

@@ -64,14 +64,8 @@ public:
   virtual void write(ostream &out, bool brief, int indent_level) const;
   virtual void generate_hash(HashGenerator &hash) const;
 
-  virtual bool has_nested_fields() const;
   virtual int get_num_nested_fields() const;
   virtual DCPackerInterface *get_nested_field(int n) const;
-
-public:
-#ifdef HAVE_PYTHON
-  virtual bool do_unpack_args(pvector<PyObject *> &args, DatagramIterator &iterator) const;
-#endif
 
 public:
   // These members define the primary interface to the atomic field

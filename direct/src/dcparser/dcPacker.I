@@ -52,17 +52,34 @@ get_num_nested_fields() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::more_nested_fields
+//       Access: Published
+//  Description: Returns true if there are more nested fields to pack
+//               or unpack in the current push sequence, false if it
+//               is time to call pop().
+////////////////////////////////////////////////////////////////////
+INLINE bool DCPacker::
+more_nested_fields() const {
+  return (_current_field != (DCPackerInterface *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPacker::get_pack_type
 //       Access: Published
 //  Description: Returns the type of value expected by the current
-//               field, or ST_invalid if it is not correct to call
-//               pack_value() at this point (e.g. the current field is
-//               an array, not the element of an array).
+//               field.  See the enumerated type definition at the top
+//               of DCPackerInterface.h.  If this returns one of
+//               PT_double, PT_int, PT_int64, or PT_string, then you
+//               should call the corresponding pack_double(),
+//               pack_int() function (or unpack_double(),
+//               unpack_int(), etc.) to transfer data.  Otherwise, you
+//               should call push() and begin packing or unpacking the
+//               nested fields.
 ////////////////////////////////////////////////////////////////////
-INLINE DCSubatomicType DCPacker::
+INLINE DCPackType DCPacker::
 get_pack_type() const {
   if (_current_field == NULL) {
-    return ST_invalid;
+    return PT_invalid;
   } else {
     return _current_field->get_pack_type();
   }
@@ -76,6 +93,7 @@ get_pack_type() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPacker::
 pack_double(double value) {
+  nassertv(_mode == M_pack);
   if (_current_field == NULL) {
     _pack_error = true;
   } else {
@@ -94,6 +112,7 @@ pack_double(double value) {
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPacker::
 pack_int(int value) {
+  nassertv(_mode == M_pack);
   if (_current_field == NULL) {
     _pack_error = true;
   } else {
@@ -112,6 +131,7 @@ pack_int(int value) {
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPacker::
 pack_int64(PN_int64 value) {
+  nassertv(_mode == M_pack);
   if (_current_field == NULL) {
     _pack_error = true;
   } else {
@@ -130,6 +150,7 @@ pack_int64(PN_int64 value) {
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPacker::
 pack_string(const string &value) {
+  nassertv(_mode == M_pack);
   if (_current_field == NULL) {
     _pack_error = true;
   } else {
@@ -149,12 +170,105 @@ pack_string(const string &value) {
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPacker::
 pack_literal_value(const string &value) {
+  nassertv(_mode == M_pack);
   if (_current_field == NULL) {
     _pack_error = true;
   } else {
     _pack_data.append_data(value.data(), value.length());
     advance();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::unpack_double
+//       Access: Published
+//  Description: Unpacks the current numeric or string value from the
+//               stream.
+////////////////////////////////////////////////////////////////////
+INLINE double DCPacker::
+unpack_double() {
+  double value = 0.0;
+  nassertr(_mode == M_unpack, value);
+  if (_current_field == NULL) {
+    _pack_error = true;
+
+  } else {
+    if (!_current_field->unpack_double(_unpack_data, _unpack_length, _unpack_p, value)) {
+      _pack_error = true;
+    }
+    advance();
+  }
+
+  return value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::unpack_int
+//       Access: Published
+//  Description: Unpacks the current numeric or string value from the
+//               stream.
+////////////////////////////////////////////////////////////////////
+INLINE int DCPacker::
+unpack_int() {
+  int value = 0;
+  nassertr(_mode == M_unpack, value);
+  if (_current_field == NULL) {
+    _pack_error = true;
+
+  } else {
+    if (!_current_field->unpack_int(_unpack_data, _unpack_length, _unpack_p, value)) {
+      _pack_error = true;
+    }
+    advance();
+  }
+
+  return value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::unpack_int64
+//       Access: Published
+//  Description: Unpacks the current numeric or string value from the
+//               stream.
+////////////////////////////////////////////////////////////////////
+INLINE PN_int64 DCPacker::
+unpack_int64() {
+  PN_int64 value = 0;
+  nassertr(_mode == M_unpack, value);
+  if (_current_field == NULL) {
+    _pack_error = true;
+
+  } else {
+    if (!_current_field->unpack_int64(_unpack_data, _unpack_length, _unpack_p, value)) {
+      _pack_error = true;
+    }
+    advance();
+  }
+
+  return value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::unpack_string
+//       Access: Published
+//  Description: Unpacks the current numeric or string value from the
+//               stream.
+////////////////////////////////////////////////////////////////////
+INLINE string DCPacker::
+unpack_string() {
+  string value;
+  nassertr(_mode == M_unpack, value);
+  if (_current_field == NULL) {
+    _pack_error = true;
+
+  } else {
+    if (!_current_field->unpack_string(_unpack_data, _unpack_length, _unpack_p, value)) {
+      _pack_error = true;
+    }
+    advance();
+  }
+
+  return value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -168,6 +282,21 @@ pack_literal_value(const string &value) {
 INLINE bool DCPacker::
 had_pack_error() const {
   return _pack_error;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::get_num_unpacked_bytes
+//       Access: Published
+//  Description: Returns the number of bytes that have been unpacked
+//               so far, or after unpack_end(), the total number of
+//               bytes that were unpacked at all.  This can be used to
+//               validate that all of the bytes in the buffer were
+//               actually unpacked (which is not otherwise considered
+//               an error).
+////////////////////////////////////////////////////////////////////
+INLINE size_t DCPacker::
+get_num_unpacked_bytes() const {
+  return _unpack_p;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -218,6 +347,12 @@ advance() {
   _current_field_index++;
   if (_num_nested_fields >= 0 &&
       _current_field_index >= _num_nested_fields) {
+    // Done with all the fields on this parent.  The caller must now
+    // call pop().
+    _current_field = NULL;
+
+  } else if (_mode == M_unpack && _push_marker != 0 &&
+             _unpack_p >= _push_marker) {
     // Done with all the fields on this parent.  The caller must now
     // call pop().
     _current_field = NULL;

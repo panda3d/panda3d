@@ -25,6 +25,10 @@
 ////////////////////////////////////////////////////////////////////
 DCPacker::
 DCPacker() {
+  _mode = M_idle;
+  _unpack_data = NULL;
+  _unpack_length = 0;
+  _unpack_p = 0;
   _current_field = NULL;
   _current_parent = NULL;
   _current_field_index = 0;
@@ -42,19 +46,17 @@ DCPacker::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCPacker::begin
+//     Function: DCPacker::begin_pack
 //       Access: Published
 //  Description: Begins a packing session.  The parameter is the DC
 //               object that describes the packing format; it may be a
 //               DCType or DCField.
 ////////////////////////////////////////////////////////////////////
 void DCPacker::
-begin(const DCPackerInterface *root) {
-  // If this assertion fails, we didn't match begin() up with end().
-  nassertv(_stack.empty() && 
-           _current_field == NULL &&
-           _current_parent == NULL);
+begin_pack(const DCPackerInterface *root) {
+  nassertv(_mode == M_idle);
   
+  _mode = M_pack;
   _pack_error = false;
   _pack_data.clear();
 
@@ -66,7 +68,7 @@ begin(const DCPackerInterface *root) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCPacker::end
+//     Function: DCPacker::end_pack
 //       Access: Published, Virtual
 //  Description: Finishes a packing session.
 //
@@ -74,7 +76,76 @@ begin(const DCPackerInterface *root) {
 //               there has been some error during packing.
 ////////////////////////////////////////////////////////////////////
 bool DCPacker::
-end() {
+end_pack() {
+  nassertr(_mode == M_pack, false);
+  
+  _mode = M_idle;
+
+  if (!_stack.empty() || _current_field != NULL || _current_parent != NULL) {
+    _pack_error = true;
+    _stack.clear();
+    _current_field = NULL;
+    _current_parent = NULL;
+    _current_field_index = 0;
+    _num_nested_fields = 0;
+  }
+
+  return !_pack_error;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::begin_unpack
+//       Access: Published
+//  Description: Begins an unpacking session.  Unlike the other
+//               version of begin_unpack(), this version makes a copy
+//               of the data string.
+////////////////////////////////////////////////////////////////////
+void DCPacker::
+begin_unpack(const string &data, const DCPackerInterface *root) {
+  _unpack_str = data;
+  begin_unpack(data.data(), data.length(), root);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::begin_unpack
+//       Access: Public
+//  Description: Begins an unpacking session.  The data pointer is
+//               used directly; the data buffer is not copied.
+//               Therefore, you must not delete or modify the data
+//               pointer until you call end_unpack().
+////////////////////////////////////////////////////////////////////
+void DCPacker::
+begin_unpack(const char *data, size_t length,
+             const DCPackerInterface *root) {
+  nassertv(_mode == M_idle);
+  
+  _mode = M_unpack;
+  _pack_error = false;
+  _unpack_data = data;
+  _unpack_length = length;
+  _unpack_p = 0;
+
+  _stack.clear();
+  _current_field = root;
+  _current_parent = NULL;
+  _current_field_index = 0;
+  _num_nested_fields = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::end_unpack
+//       Access: Published
+//  Description: Finishes the unpacking session.
+//
+//               The return value is true on success, or false if
+//               there has been some error during unpacking.
+////////////////////////////////////////////////////////////////////
+bool DCPacker::
+end_unpack() {
+  nassertr(_mode == M_unpack, false);
+  
+  _mode = M_idle;
+
   if (!_stack.empty() || _current_field != NULL || _current_parent != NULL) {
     _pack_error = true;
     _stack.clear();
@@ -105,14 +176,59 @@ push() {
     _pack_error = true;
 
   } else {
-    int num_nested_fields = _current_field->get_num_nested_fields();
     StackElement element;
     element._current_parent = _current_parent;
     element._current_field_index = _current_field_index;
-    element._push_start = _push_start;
+    element._push_marker = _push_marker;
     _stack.push_back(element);
-    
     _current_parent = _current_field;
+
+
+    // Now deal with the length prefix that might or might not be
+    // before a sequence of nested fields.
+    int num_nested_fields = _current_parent->get_num_nested_fields();
+    size_t length_bytes = _current_parent->get_length_bytes();
+    
+    if (_mode == M_pack) {
+      // Reserve length_bytes for when we figure out what the length
+      // is.
+      _push_marker = _pack_data.get_length();
+      _pack_data.append_junk(length_bytes);
+
+    } else { // _mode == M_unpack
+      // Read length_bytes to determine the end of this nested
+      // sequence.
+      _push_marker = 0;
+
+      if (length_bytes != 0) {
+        if (_unpack_p + length_bytes > _unpack_length) {
+          _pack_error = true;
+
+        } else {
+          size_t length;
+          if (length_bytes == 4) {
+            length = ((size_t)(unsigned char)_unpack_data[_unpack_p + 0] |
+                      ((size_t)(unsigned char)_unpack_data[_unpack_p + 1] << 8) |
+                      ((size_t)(unsigned char)_unpack_data[_unpack_p + 2] << 16) |
+                      ((size_t)(unsigned char)_unpack_data[_unpack_p + 3] << 24));
+            _unpack_p += 4;
+            _push_marker = _unpack_p + length;
+          } else {
+            length = ((size_t)(unsigned char)_unpack_data[_unpack_p + 0] |
+                      ((size_t)(unsigned char)_unpack_data[_unpack_p + 1] << 8));
+            _unpack_p += 2;
+          }
+          _push_marker = _unpack_p + length;
+        
+          // The explicit length trumps the number of nested fields
+          // reported by get_num_nested_fields().
+          num_nested_fields = _current_parent->get_num_nested_fields(length);
+        }
+      }
+    }
+
+
+    // Now point to the first field in the nested range.
     _num_nested_fields = num_nested_fields;
     _current_field_index = 0;
 
@@ -123,12 +239,7 @@ push() {
     } else {
       _current_field = _current_parent->get_nested_field(_current_field_index);
     }
-    
-    // Reserve length_bytes for when we figure out what the length
-    // is.
-    _push_start = _pack_data.get_length();
-    size_t length_bytes = _current_parent->get_length_bytes();
-    _pack_data.append_junk(length_bytes);
+
   }
 }
 
@@ -145,7 +256,12 @@ push() {
 void DCPacker::
 pop() {
   if (_current_field != NULL && _num_nested_fields >= 0) {
-    // Oops, didn't pack enough values.
+    // Oops, didn't pack or unpack enough values.
+    _pack_error = true;
+
+  } else if (_mode == M_unpack && _push_marker != 0 && 
+             _unpack_p != _push_marker) {
+    // Didn't unpack the right number of values.
     _pack_error = true;
   }
 
@@ -154,28 +270,30 @@ pop() {
     _pack_error = true;
 
   } else {
-    size_t length_bytes = _current_parent->get_length_bytes();
-    if (length_bytes != 0) {
-      // Now go back and fill in the length of the array.
-      char buffer[4];
-      size_t length = _pack_data.get_length() - _push_start - length_bytes;
-      if (length_bytes == 4) {
-        buffer[0] = (char)(length & 0xff);
-        buffer[1] = (char)((length >> 8) & 0xff);
-        buffer[2] = (char)((length >> 16) & 0xff);
-        buffer[3] = (char)((length >> 24) & 0xff);
-        _pack_data.rewrite_data(_push_start, buffer, 4);
-      } else {
-        buffer[0] = (char)(length & 0xff);
-        buffer[1] = (char)((length >> 8) & 0xff);
-        _pack_data.rewrite_data(_push_start, buffer, 2);
+    if (_mode == M_pack) {
+      size_t length_bytes = _current_parent->get_length_bytes();
+      if (length_bytes != 0) {
+        // Now go back and fill in the length of the array.
+        char buffer[4];
+        size_t length = _pack_data.get_length() - _push_marker - length_bytes;
+        if (length_bytes == 4) {
+          buffer[0] = (char)(length & 0xff);
+          buffer[1] = (char)((length >> 8) & 0xff);
+          buffer[2] = (char)((length >> 16) & 0xff);
+          buffer[3] = (char)((length >> 24) & 0xff);
+          _pack_data.rewrite_data(_push_marker, buffer, 4);
+        } else {
+          buffer[0] = (char)(length & 0xff);
+          buffer[1] = (char)((length >> 8) & 0xff);
+          _pack_data.rewrite_data(_push_marker, buffer, 2);
+        }
       }
     }
 
     _current_field = _current_parent;
     _current_parent = _stack.back()._current_parent;
     _current_field_index = _stack.back()._current_field_index;
-    _push_start = _stack.back()._push_start;
+    _push_marker = _stack.back()._push_marker;
     _num_nested_fields = (_current_parent == NULL) ? 0 : _current_parent->get_num_nested_fields();
     _stack.pop_back();
   }
@@ -195,6 +313,7 @@ pop() {
 ////////////////////////////////////////////////////////////////////
 void DCPacker::
 pack_object(PyObject *object) {
+  nassertv(_mode == M_pack);
   PyObject *str = PyObject_Str(object);
   Py_DECREF(str);
 
@@ -225,5 +344,78 @@ pack_object(PyObject *object) {
     }
     pop();
   }
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::unpack_object
+//       Access: Published
+//  Description: Unpacks a Python object of the appropriate type from
+//               the stream for the current field.  This may be an
+//               integer or a string for a simple field object; if the
+//               current field represents a list of fields it will be
+//               a tuple.
+////////////////////////////////////////////////////////////////////
+PyObject *DCPacker::
+unpack_object() {
+  PyObject *object = NULL;
+
+  DCPackType pack_type = get_pack_type();
+
+  switch (pack_type) {
+  case PT_double:
+    {
+      double value = unpack_double();
+      object = PyFloat_FromDouble(value);
+    }
+    break;
+      
+  case PT_int:
+    {
+      int value = unpack_int();
+      object = PyInt_FromLong(value);
+    }
+    break;
+      
+  case PT_int64:
+    {
+      PN_int64 value = unpack_int64();
+      object = PyLong_FromLongLong(value);
+    }
+    break;
+
+  case PT_string:
+    {
+      string str = unpack_string();
+      object = PyString_FromStringAndSize(str.data(), str.size());
+    }
+    break;
+
+  default:
+    {
+      // First, build up a list from the nested objects.
+      object = PyList_New(0);
+
+      push();
+      while (more_nested_fields()) {
+        PyObject *element = unpack_object();
+        PyList_Append(object, element);
+        Py_DECREF(element);
+      }
+      pop();
+
+      if (pack_type != PT_array) {
+        // For these other kinds of objects, we'll convert the list
+        // into a tuple.
+        PyObject *tuple = PyList_AsTuple(object);
+        Py_DECREF(object);
+        object = tuple;
+      }
+    }
+    break;
+  }
+
+  return object;
 }
 #endif  // HAVE_PYTHON

@@ -239,7 +239,7 @@ receive_update(PyObject *distobj, DatagramIterator &iterator) const {
 void DCClass::
 receive_update_broadcast_required(PyObject *distobj, DatagramIterator &iterator) const {
   int num_fields = get_num_inherited_fields();
-  for (int i = 0; i < num_fields; i++) {
+  for (int i = 0; i < num_fields && !PyErr_Occurred(); i++) {
     DCField *field = get_inherited_field(i);
     DCAtomicField *atom = field->as_atomic_field();
     if (atom != (DCAtomicField *)NULL &&
@@ -262,7 +262,7 @@ receive_update_broadcast_required(PyObject *distobj, DatagramIterator &iterator)
 void DCClass::
 receive_update_all_required(PyObject *distobj, DatagramIterator &iterator) const {
   int num_fields = get_num_inherited_fields();
-  for (int i = 0; i < num_fields; i++) {
+  for (int i = 0; i < num_fields && !PyErr_Occurred(); i++) {
     DCField *field = get_inherited_field(i);
     DCAtomicField *atom = field->as_atomic_field();
     if (atom != (DCAtomicField *)NULL && atom->is_required()) {
@@ -282,7 +282,7 @@ receive_update_all_required(PyObject *distobj, DatagramIterator &iterator) const
 void DCClass::
 receive_update_other(PyObject *distobj, DatagramIterator &iterator) const {
   int num_fields = iterator.get_uint16();
-  for (int i = 0; i < num_fields; i++) {
+  for (int i = 0; i < num_fields && !PyErr_Occurred(); i++) {
     receive_update(distobj, iterator);
   }
 }

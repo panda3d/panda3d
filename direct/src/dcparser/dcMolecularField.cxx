@@ -133,20 +133,6 @@ generate_hash(HashGenerator &hashgen) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCMolecularField::has_nested_fields
-//       Access: Public, Virtual
-//  Description: Returns true if this field type has any nested fields
-//               (and thus expects a push() .. pop() interface to the
-//               DCPacker), or false otherwise.  If this returns true,
-//               get_num_nested_fields() may be called to determine
-//               how many nested fields are expected.
-////////////////////////////////////////////////////////////////////
-bool DCMolecularField::
-has_nested_fields() const {
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DCMolecularField::get_num_nested_fields
 //       Access: Public, Virtual
 //  Description: Returns the number of nested fields required by this
@@ -172,26 +158,3 @@ get_nested_field(int n) const {
   nassertr(n >= 0 && n < (int)_nested_fields.size(), NULL);
   return _nested_fields[n];
 }
-
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCMolecularField::do_unpack_args
-//       Access: Public, Virtual
-//  Description: Unpacks the values from the datagram, beginning at
-//               the current point in the interator, into a vector of
-//               Python objects (each with its own reference count).
-//               Returns true if there are enough values in the
-//               datagram, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCMolecularField::
-do_unpack_args(pvector<PyObject *> &args, DatagramIterator &iterator) const {
-  Fields::const_iterator fi;
-  for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
-    if (!(*fi)->do_unpack_args(args, iterator)) {
-      return false;
-    }
-  }
-
-  return true;
-}
-#endif  // HAVE_PYTHON

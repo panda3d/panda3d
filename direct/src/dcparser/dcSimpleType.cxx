@@ -38,38 +38,52 @@ DCSimpleType(DCSubatomicType type, int divisor) :
   // nested fields of the appropriate type.
   switch (_type) {
   case ST_int8array:
+    _pack_type = PT_array;
     _nested_type = ST_int8;
     _is_array = true;
+    _bytes_per_element = 1;
     break;
 
   case ST_int16array:
+    _pack_type = PT_array;
     _nested_type = ST_int16;
     _is_array = true;
+    _bytes_per_element = 2;
     break;
 
   case ST_int32array:
+    _pack_type = PT_array;
     _nested_type = ST_int32;
     _is_array = true;
+    _bytes_per_element = 4;
     break;
 
   case ST_uint8array:
+    _pack_type = PT_array;
     _nested_type = ST_uint8;
     _is_array = true;
+    _bytes_per_element = 1;
     break;
 
   case ST_uint16array:
+    _pack_type = PT_array;
     _nested_type = ST_uint16;
     _is_array = true;
+    _bytes_per_element = 2;
     break;
 
   case ST_uint32array:
+    _pack_type = PT_array;
     _nested_type = ST_uint32;
     _is_array = true;
+    _bytes_per_element = 4;
     break;
 
   case ST_uint32uint8array:
+    _pack_type = PT_array;
     _nested_type = ST_invalid;
     _is_array = true;
+    _bytes_per_element = 5;
     break;
 
   case ST_blob:
@@ -78,13 +92,81 @@ DCSimpleType(DCSubatomicType type, int divisor) :
     // For these types, we will present an array interface as an array
     // of uint8, but we will also accept a set_value() with a string
     // parameter.
+    _pack_type = PT_string;
     _nested_type = ST_uint8;
     _is_array = true;
+    _bytes_per_element = 1;
     break;
 
-  default:
+    // The simple types can be packed directly.
+  case ST_int8:
+    _pack_type = PT_int;
     _nested_type = ST_invalid;
     _is_array = false;
+    _bytes_per_element = 0;
+    break;
+
+  case ST_int16:
+    _pack_type = PT_int;
+    _nested_type = ST_invalid;
+    _is_array = false;
+    _bytes_per_element = 0;
+    break;
+
+  case ST_int32:
+    _pack_type = PT_int;
+    _nested_type = ST_invalid;
+    _is_array = false;
+    _bytes_per_element = 0;
+    break;
+
+  case ST_int64:
+    _pack_type = PT_int64;
+    _nested_type = ST_invalid;
+    _is_array = false;
+    _bytes_per_element = 0;
+    break;
+
+  case ST_uint8:
+    _pack_type = PT_int;
+    _nested_type = ST_invalid;
+    _is_array = false;
+    _bytes_per_element = 0;
+    break;
+
+  case ST_uint16:
+    _pack_type = PT_int;
+    _nested_type = ST_invalid;
+    _is_array = false;
+    _bytes_per_element = 0;
+    break;
+
+  case ST_uint32:
+    _pack_type = PT_int;
+    _nested_type = ST_invalid;
+    _is_array = false;
+    _bytes_per_element = 0;
+    break;
+
+  case ST_uint64:
+    _pack_type = PT_int64;
+    _nested_type = ST_invalid;
+    _is_array = false;
+    _bytes_per_element = 0;
+    break;
+
+  case ST_float64:
+    _pack_type = PT_double;
+    _nested_type = ST_invalid;
+    _is_array = false;
+    _bytes_per_element = 0;
+    break;
+
+  case ST_invalid:
+    _pack_type = PT_invalid;
+    _nested_type = ST_invalid;
+    _is_array = false;
+    _bytes_per_element = 0;
   }
 
   if (_nested_type != ST_invalid) {
@@ -155,6 +237,9 @@ get_divisor() const {
 void DCSimpleType::
 set_divisor(int divisor) {
   _divisor = divisor;
+  if (_pack_type == PT_int || _pack_type == PT_int64) {
+    _pack_type = PT_double;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -182,6 +267,24 @@ has_nested_fields() const {
 int DCSimpleType::
 get_num_nested_fields() const {
   return _is_array ? -1 : 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSimpleType::get_num_nested_fields
+//       Access: Public, Virtual
+//  Description: This flavor of get_num_nested_fields is used during
+//               unpacking.  It returns the number of nested fields to
+//               expect, given a certain length in bytes (as read from
+//               the get_length_bytes() stored in the stream on the
+//               pack).  This will only be called if
+//               get_length_bytes() returns nonzero.
+////////////////////////////////////////////////////////////////////
+int DCSimpleType::
+get_num_nested_fields(size_t length_bytes) const {
+  if (_is_array) {
+    return length_bytes / _bytes_per_element;
+  }
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -214,13 +317,11 @@ get_length_bytes() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DCSimpleType::get_pack_type
 //       Access: Public, Virtual
-//  Description: Returns the type of value expected by this field, or
-//               ST_invalid if this field cannot accept simple value
-//               types.
+//  Description: Returns the type of value expected by this field.
 ////////////////////////////////////////////////////////////////////
-DCSubatomicType DCSimpleType::
+DCPackType DCSimpleType::
 get_pack_type() const {
-  return _type;
+  return _pack_type;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -498,6 +599,427 @@ pack_string(DCPackData &pack_data, const string &value) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCSimpleType::unpack_double
+//       Access: Public, Virtual
+//  Description: Unpacks the current numeric or string value from the
+//               stream.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool DCSimpleType::
+unpack_double(const char *data, size_t length, size_t &p, double &value) const {
+  switch (_type) {
+  case ST_int8:
+    if (p + 1 > length) {
+      return false;
+    }
+    value = (double)(int)(signed char)data[p];
+    p++;
+    break;
+
+  case ST_int16:
+    if (p + 2 > length) {
+      return false;
+    }
+    value = (double)(int)((unsigned int)(unsigned char)data[p] |
+                          ((int)(signed char)data[p + 1] << 8));
+    p += 2;
+    break;
+
+  case ST_int32:
+    if (p + 4 > length) {
+      return false;
+    }
+    value = (double)(int)((unsigned int)(unsigned char)data[p] |
+                          ((unsigned int)(unsigned char)data[p + 1] << 8) |
+                          ((unsigned int)(unsigned char)data[p + 2] << 16) |
+                          ((int)(signed char)data[p + 3] << 24));
+    p += 4;
+    break;
+
+  case ST_int64:
+    if (p + 8 > length) {
+      return false;
+    }
+    value = (double)(PN_int64)((PN_uint64)(unsigned char)data[p] |
+                               ((PN_uint64)(unsigned char)data[p + 1] << 8) |
+                               ((PN_uint64)(unsigned char)data[p + 2] << 16) |
+                               ((PN_uint64)(unsigned char)data[p + 3] << 24) |
+                               ((PN_uint64)(unsigned char)data[p + 4] << 32) |
+                               ((PN_uint64)(unsigned char)data[p + 5] << 40) |
+                               ((PN_uint64)(unsigned char)data[p + 6] << 48) |
+                               ((PN_int64)(signed char)data[p + 7] << 54));
+    p += 8;
+    break;
+
+  case ST_uint8:
+    if (p + 1 > length) {
+      return false;
+    }
+    value = (double)(unsigned int)(unsigned char)data[p];
+    p++;
+    break;
+
+  case ST_uint16:
+    if (p + 2 > length) {
+      return false;
+    }
+    value = (double)(unsigned int)((unsigned int)(unsigned char)data[p] |
+                                   ((unsigned int)(unsigned char)data[p + 1] << 8));
+    p += 2;
+    break;
+
+  case ST_uint32:
+    if (p + 4 > length) {
+      return false;
+    }
+    value = (double)(unsigned int)((unsigned int)(unsigned char)data[p] |
+                                   ((unsigned int)(unsigned char)data[p + 1] << 8) |
+                                   ((unsigned int)(unsigned char)data[p + 2] << 16) |
+                                   ((unsigned int)(unsigned char)data[p + 3] << 24));
+    p += 4;
+    break;
+
+  case ST_uint64:
+    if (p + 8 > length) {
+      return false;
+    }
+    value = (double)(PN_uint64)((PN_uint64)(unsigned char)data[p] |
+                                ((PN_uint64)(unsigned char)data[p + 1] << 8) |
+                                ((PN_uint64)(unsigned char)data[p + 2] << 16) |
+                                ((PN_uint64)(unsigned char)data[p + 3] << 24) |
+                                ((PN_uint64)(unsigned char)data[p + 4] << 32) |
+                                ((PN_uint64)(unsigned char)data[p + 5] << 40) |
+                                ((PN_uint64)(unsigned char)data[p + 6] << 48) |
+                                ((PN_uint64)(unsigned char)data[p + 7] << 54));
+    p += 8;
+    break;
+
+  case ST_float64:
+    if (p + 8 > length) {
+      return false;
+    }
+    {
+      double *real_value;
+#ifdef WORDS_BIGENDIAN
+      char buffer[8];
+
+      // Reverse the byte ordering for big-endian machines.
+      for (size_t i = 0; i < 8; i++) {
+        buffer[i] = data[p + 7 - i];
+      }
+      real_value = (double *)buffer;
+#else
+      real_value = (double *)(data + p);
+#endif  // WORDS_BIGENDIAN 
+      value = (*real_value);
+    }
+    p += 8;
+    break;
+
+  default:
+    return false;
+  }
+
+  if (_divisor != 1) {
+    value = value / _divisor;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSimpleType::unpack_int
+//       Access: Public, Virtual
+//  Description: Unpacks the current numeric or string value from the
+//               stream.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool DCSimpleType::
+unpack_int(const char *data, size_t length, size_t &p, int &value) const {
+  switch (_type) {
+  case ST_int8:
+    if (p + 1 > length) {
+      return false;
+    }
+    value = (int)(signed char)data[p];
+    p++;
+    break;
+
+  case ST_int16:
+    if (p + 2 > length) {
+      return false;
+    }
+    value = (int)((unsigned int)(unsigned char)data[p] |
+                  ((int)(signed char)data[p + 1] << 8));
+    p += 2;
+    break;
+
+  case ST_int32:
+    if (p + 4 > length) {
+      return false;
+    }
+    value = (int)((unsigned int)(unsigned char)data[p] |
+                  ((unsigned int)(unsigned char)data[p + 1] << 8) |
+                  ((unsigned int)(unsigned char)data[p + 2] << 16) |
+                  ((int)(signed char)data[p + 3] << 24));
+    p += 4;
+    break;
+
+  case ST_int64:
+    if (p + 8 > length) {
+      return false;
+    }
+    value = (int)((unsigned int)(unsigned char)data[p] |
+                  ((unsigned int)(unsigned char)data[p + 1] << 8) |
+                  ((unsigned int)(unsigned char)data[p + 2] << 16) |
+                  ((unsigned int)(unsigned char)data[p + 3] << 24));
+    p += 8;
+    break;
+
+  case ST_uint8:
+    if (p + 1 > length) {
+      return false;
+    }
+    value = (unsigned int)(unsigned char)data[p];
+    p++;
+    break;
+
+  case ST_uint16:
+    if (p + 2 > length) {
+      return false;
+    }
+    value = (unsigned int)((unsigned int)(unsigned char)data[p] |
+                           ((unsigned int)(unsigned char)data[p + 1] << 8));
+    p += 2;
+    break;
+
+  case ST_uint32:
+    if (p + 4 > length) {
+      return false;
+    }
+    value = (unsigned int)((unsigned int)(unsigned char)data[p] |
+                           ((unsigned int)(unsigned char)data[p + 1] << 8) |
+                           ((unsigned int)(unsigned char)data[p + 2] << 16) |
+                           ((unsigned int)(unsigned char)data[p + 3] << 24));
+    p += 4;
+    break;
+
+  case ST_uint64:
+    if (p + 8 > length) {
+      return false;
+    }
+    value = (unsigned int)((unsigned int)(unsigned char)data[p] |
+                           ((unsigned int)(unsigned char)data[p + 1] << 8) |
+                           ((unsigned int)(unsigned char)data[p + 2] << 16) |
+                           ((unsigned int)(unsigned char)data[p + 3] << 24));
+    p += 8;
+    break;
+
+  case ST_float64:
+    if (p + 8 > length) {
+      return false;
+    }
+    {
+      double *real_value;
+#ifdef WORDS_BIGENDIAN
+      char buffer[8];
+
+      // Reverse the byte ordering for big-endian machines.
+      for (size_t i = 0; i < 8; i++) {
+        buffer[i] = data[p + 7 - i];
+      }
+      real_value = (double *)buffer;
+#else
+      real_value = (double *)(data + p);
+#endif  // WORDS_BIGENDIAN 
+      value = (int)(*real_value);
+    }
+    p += 8;
+    break;
+
+  default:
+    return false;
+  }
+
+  if (_divisor != 1) {
+    value = value / _divisor;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSimpleType::unpack_int64
+//       Access: Public, Virtual
+//  Description: Unpacks the current numeric or string value from the
+//               stream.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool DCSimpleType::
+unpack_int64(const char *data, size_t length, size_t &p, PN_int64 &value) const {
+  switch (_type) {
+  case ST_int8:
+    if (p + 1 > length) {
+      return false;
+    }
+    value = (int)(signed char)data[p];
+    p++;
+    break;
+
+  case ST_int16:
+    if (p + 2 > length) {
+      return false;
+    }
+    value = (int)((unsigned int)(unsigned char)data[p] |
+                  ((int)(signed char)data[p + 1] << 8));
+    p += 2;
+    break;
+
+  case ST_int32:
+    if (p + 4 > length) {
+      return false;
+    }
+    value = (int)((unsigned int)(unsigned char)data[p] |
+                  ((unsigned int)(unsigned char)data[p + 1] << 8) |
+                  ((unsigned int)(unsigned char)data[p + 2] << 16) |
+                  ((int)(signed char)data[p + 3] << 24));
+    p += 4;
+    break;
+
+  case ST_int64:
+    if (p + 8 > length) {
+      return false;
+    }
+    value = (PN_int64)((PN_uint64)(unsigned char)data[p] |
+                       ((PN_uint64)(unsigned char)data[p + 1] << 8) |
+                       ((PN_uint64)(unsigned char)data[p + 2] << 16) |
+                       ((PN_uint64)(unsigned char)data[p + 3] << 24) |
+                       ((PN_uint64)(unsigned char)data[p + 4] << 32) |
+                       ((PN_uint64)(unsigned char)data[p + 5] << 40) |
+                       ((PN_uint64)(unsigned char)data[p + 6] << 48) |
+                       ((PN_int64)(signed char)data[p + 7] << 54));
+    p += 8;
+    break;
+
+  case ST_uint8:
+    if (p + 1 > length) {
+      return false;
+    }
+    value = (unsigned int)(unsigned char)data[p];
+    p++;
+    break;
+
+  case ST_uint16:
+    if (p + 2 > length) {
+      return false;
+    }
+    value = (unsigned int)((unsigned int)(unsigned char)data[p] |
+                           ((unsigned int)(unsigned char)data[p + 1] << 8));
+    p += 2;
+    break;
+
+  case ST_uint32:
+    if (p + 4 > length) {
+      return false;
+    }
+    value = (unsigned int)((unsigned int)(unsigned char)data[p] |
+                           ((unsigned int)(unsigned char)data[p + 1] << 8) |
+                           ((unsigned int)(unsigned char)data[p + 2] << 16) |
+                           ((unsigned int)(unsigned char)data[p + 3] << 24));
+    p += 4;
+    break;
+
+  case ST_uint64:
+    if (p + 8 > length) {
+      return false;
+    }
+    value = (PN_int64)((PN_uint64)(unsigned char)data[p] |
+                       ((PN_uint64)(unsigned char)data[p + 1] << 8) |
+                       ((PN_uint64)(unsigned char)data[p + 2] << 16) |
+                       ((PN_uint64)(unsigned char)data[p + 3] << 24) |
+                       ((PN_uint64)(unsigned char)data[p + 4] << 32) |
+                       ((PN_uint64)(unsigned char)data[p + 5] << 40) |
+                       ((PN_uint64)(unsigned char)data[p + 6] << 48) |
+                       ((PN_uint64)(unsigned char)data[p + 7] << 54));
+    p += 8;
+    break;
+
+  case ST_float64:
+    if (p + 8 > length) {
+      return false;
+    }
+    {
+      double *real_value;
+#ifdef WORDS_BIGENDIAN
+      char buffer[8];
+
+      // Reverse the byte ordering for big-endian machines.
+      for (size_t i = 0; i < 8; i++) {
+        buffer[i] = data[p + 7 - i];
+      }
+      real_value = (double *)buffer;
+#else
+      real_value = (double *)(data + p);
+#endif  // WORDS_BIGENDIAN 
+      value = (PN_int64)(*real_value);
+    }
+    p += 8;
+    break;
+
+  default:
+    return false;
+  }
+
+  if (_divisor != 1) {
+    value = value / _divisor;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSimpleType::unpack_string
+//       Access: Public, Virtual
+//  Description: Unpacks the current numeric or string value from the
+//               stream.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool DCSimpleType::
+unpack_string(const char *data, size_t length, size_t &p, string &value) const {
+  size_t string_length;
+
+  switch (_type) {
+  case ST_string:
+  case ST_blob:
+    if (p + 2 > length) {
+      return false;
+    }
+    string_length = ((unsigned int)(unsigned char)data[p] |
+                     ((unsigned int)(unsigned char)data[p + 1] << 8));
+    p += 2;
+    break;
+
+  case ST_blob32:
+    if (p + 4 > length) {
+      return false;
+    }
+    string_length = ((unsigned int)(unsigned char)data[p] |
+                     ((unsigned int)(unsigned char)data[p + 1] << 8) |
+                     ((unsigned int)(unsigned char)data[p + 2] << 16) |
+                     ((unsigned int)(unsigned char)data[p + 3] << 24));
+    p += 4;
+    break;
+
+  default:
+    return false;
+  }
+
+  if (p + string_length > length) {
+    return false;
+  }
+  value = string(data + p, string_length);
+  p += string_length;
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCSimpleType::output
 //       Access: Public, Virtual
 //  Description: 
@@ -562,390 +1084,6 @@ create_uint32uint8_type() {
   return _uint32uint8_type;
 }
 
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::pack_arg
-//       Access: Public, Virtual
-//  Description: Packs the Python object into the datagram, appending
-//               to the end of the datagram.
-////////////////////////////////////////////////////////////////////
-void DCSimpleType::
-pack_arg(Datagram &datagram, PyObject *item) const {
-  do_pack_arg(datagram, item, _type);
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::unpack_arg
-//       Access: Public, Virtual
-//  Description: Unpacks a Python object from the datagram, beginning
-//               at the current point in the interator, and returns a
-//               new reference, or NULL if there was not enough data
-//               in the datagram.
-////////////////////////////////////////////////////////////////////
-PyObject *DCSimpleType::
-unpack_arg(DatagramIterator &iterator) const {
-  return do_unpack_arg(iterator, _type);
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::do_pack_arg
-//       Access: Private
-//  Description: Packs the Python object into the datagram, appending
-//               to the end of the datagram.
-////////////////////////////////////////////////////////////////////
-void DCSimpleType::
-do_pack_arg(Datagram &datagram, PyObject *item, DCSubatomicType type) const {
-  char *str;
-  int size;
-
-  // Check for an array type.  These are handled recursively.
-  DCSubatomicType array_subtype;
-  int num_bytes = 0;
-  switch (type) {
-  case ST_int16array:
-    array_subtype = ST_int16;
-    num_bytes = 2;
-    break;
-
-  case ST_int32array:
-    array_subtype = ST_int32;
-    num_bytes = 4;
-    break;
-
-  case ST_uint16array:
-    array_subtype = ST_uint16;
-    num_bytes = 2;
-    break;
-
-  case ST_uint32array:
-    array_subtype = ST_uint32;
-    num_bytes = 4;
-    break;
-
-  case ST_int8array:
-    array_subtype = ST_int8;
-    num_bytes = 1;
-    break;
-
-  case ST_uint8array:
-    array_subtype = ST_uint8;
-    num_bytes = 1;
-    break;
-
-  case ST_uint32uint8array:
-    array_subtype = ST_uint32;
-    num_bytes = 5;
-    break;
-
-  default:
-    array_subtype = ST_invalid;
-  }
-
-  if (array_subtype != ST_invalid) {
-    int size = PySequence_Size(item);
-    datagram.add_uint16(size * num_bytes);
-    if (type == ST_uint32uint8array) {
-      // This one is a special case: an array of tuples.
-      for (int i = 0; i < size; i++) {
-        PyObject *tuple = PySequence_GetItem(item, i);
-        do_pack_arg(datagram, PyTuple_GetItem(tuple, 0), ST_uint32);
-        do_pack_arg(datagram, PyTuple_GetItem(tuple, 1), ST_uint8);
-        Py_DECREF(tuple);
-      }
-    } else {
-      for (int i = 0; i < size; i++) {
-        PyObject *element = PySequence_GetItem(item, i);
-        do_pack_arg(datagram, element, array_subtype);
-        Py_DECREF(element);
-      }
-    }
-
-    return;
-  }
-
-  if (_divisor == 1) {
-    switch (type) {
-    case ST_int8:
-      datagram.add_int8(PyInt_AsLong(item));
-      break;
-
-    case ST_int16:
-      datagram.add_int16(PyInt_AsLong(item));
-      break;
-
-    case ST_int32:
-      datagram.add_int32(PyInt_AsLong(item));
-      break;
-
-    case ST_int64:
-      datagram.add_int64(PyLong_AsLongLong(item));
-      break;
-
-    case ST_uint8:
-      datagram.add_uint8(PyInt_AsLong(item));
-      break;
-
-    case ST_uint16:
-      datagram.add_uint16(PyInt_AsLong(item));
-      break;
-
-    case ST_uint32:
-      datagram.add_uint32(PyInt_AsLong(item));
-      break;
-
-    case ST_uint64:
-      datagram.add_uint64(PyLong_AsUnsignedLongLong(item));
-      break;
-
-    case ST_float64:
-      datagram.add_float64(PyFloat_AsDouble(item));
-      break;
-
-    case ST_string:
-    case ST_blob:
-      PyString_AsStringAndSize(item, &str, &size);
-      datagram.add_string(string(str, size));
-      break;
-      
-    case ST_blob32:
-      PyString_AsStringAndSize(item, &str, &size);
-      datagram.add_string32(string(str, size));
-      break;
-
-    default:
-      break;
-    }
-
-  } else {
-    switch (type) {
-    case ST_int8:
-      datagram.add_int8((PN_int8)floor(PyFloat_AsDouble(item) * _divisor + 0.5));
-      break;
-
-    case ST_int16:
-      datagram.add_int16((PN_int16)floor(PyFloat_AsDouble(item) * _divisor + 0.5));
-      break;
-
-    case ST_int32:
-      datagram.add_int32((PN_int32)floor(PyFloat_AsDouble(item) * _divisor + 0.5));
-      break;
-
-    case ST_int64:
-      datagram.add_int64((PN_int64)floor(PyFloat_AsDouble(item) * _divisor + 0.5));
-      break;
-
-    case ST_uint8:
-      datagram.add_uint8((PN_uint8)floor(PyFloat_AsDouble(item) * _divisor + 0.5));
-      break;
-
-    case ST_uint16:
-      datagram.add_uint16((PN_uint16)floor(PyFloat_AsDouble(item) * _divisor + 0.5));
-      break;
-
-    case ST_uint32:
-      datagram.add_uint32((PN_uint32)floor(PyFloat_AsDouble(item) * _divisor + 0.5));
-      break;
-
-    case ST_uint64:
-      datagram.add_uint64((PN_uint64)floor(PyFloat_AsDouble(item) * _divisor + 0.5));
-      break;
-
-    case ST_float64:
-      datagram.add_float64(PyFloat_AsDouble(item) * _divisor);
-      break;
-
-    case ST_string:
-    case ST_blob:
-      PyString_AsStringAndSize(item, &str, &size);
-      datagram.add_string(string(str, size));
-      break;
-      
-    case ST_blob32:
-      PyString_AsStringAndSize(item, &str, &size);
-      datagram.add_string32(string(str, size));
-      break;
-
-    default:
-      break;
-    }
-  }
-}
-#endif  // HAVE_PYTHON
-
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::do_unpack_arg
-//       Access: Private
-//  Description: Unpacks a Python object from the datagram, beginning
-//               at the current point in the interator, and returns a
-//               new reference, or NULL if there was not enough data
-//               in the datagram.
-////////////////////////////////////////////////////////////////////
-PyObject *DCSimpleType::
-do_unpack_arg(DatagramIterator &iterator, DCSubatomicType type) const {
-  string str;
-
-  // Check for an array type.  These are handled recursively.
-  DCSubatomicType array_subtype;
-  int num_bytes = 0;
-  switch (type) {
-  case ST_int16array:
-    array_subtype = ST_int16;
-    num_bytes = 2;
-    break;
-
-  case ST_int32array:
-    array_subtype = ST_int32;
-    num_bytes = 4;
-    break;
-
-  case ST_uint16array:
-    array_subtype = ST_uint16;
-    num_bytes = 2;
-    break;
-
-  case ST_uint32array:
-    array_subtype = ST_uint32;
-    num_bytes = 4;
-    break;
-
-  case ST_int8array:
-    array_subtype = ST_int8;
-    num_bytes = 1;
-    break;
-
-  case ST_uint8array:
-    array_subtype = ST_uint8;
-    num_bytes = 1;
-    break;
-
-  case ST_uint32uint8array:
-    array_subtype = ST_uint32;
-    num_bytes = 5;
-    break;
-
-  default:
-    array_subtype = ST_invalid;
-  }
-
-  if (array_subtype != ST_invalid) {
-    int size_bytes = iterator.get_uint16();
-    int size = size_bytes / num_bytes;
-    nassertr(size * num_bytes == size_bytes, NULL);
-
-    PyObject *list = PyList_New(size);
-    if (type == ST_uint32uint8array) {
-      // This one is a special case: an array of tuples.
-      for (int i = 0; i < size; i++) {
-        PyObject *a = do_unpack_arg(iterator, ST_uint32);
-        PyObject *b = do_unpack_arg(iterator, ST_uint8);
-        PyObject *tuple = PyTuple_New(2);
-        PyTuple_SET_ITEM(tuple, 0, a);
-        PyTuple_SET_ITEM(tuple, 1, b);
-        PyList_SET_ITEM(list, i, tuple);
-      }
-    } else {
-      for (int i = 0; i < size; i++) {
-        PyObject *element = do_unpack_arg(iterator, array_subtype);
-        PyList_SET_ITEM(list, i, element);
-      }
-    }
-
-    return list;
-  }
-
-  if (_divisor == 1) {
-    switch (type) {
-    case ST_int8:
-      return PyInt_FromLong(iterator.get_int8());
-
-    case ST_int16:
-      return PyInt_FromLong(iterator.get_int16());
-
-    case ST_int32:
-      return PyInt_FromLong(iterator.get_int32());
-
-    case ST_int64:
-      return PyLong_FromLongLong(iterator.get_int64());
-
-    case ST_uint8:
-      return PyInt_FromLong(iterator.get_uint8());
-
-    case ST_uint16:
-      return PyInt_FromLong(iterator.get_uint16());
-
-    case ST_uint32:
-      return PyInt_FromLong(iterator.get_uint32());
-
-    case ST_uint64:
-      return PyLong_FromUnsignedLongLong(iterator.get_uint64());
-
-    case ST_float64:
-      return PyFloat_FromDouble(iterator.get_float64());
-
-    case ST_string:
-    case ST_blob:
-      str = iterator.get_string();
-      return PyString_FromStringAndSize(str.data(), str.size());
-      
-    case ST_blob32:
-      str = iterator.get_string32();
-      return PyString_FromStringAndSize(str.data(), str.size());
-
-    default:
-      return Py_BuildValue("");
-    }
-
-  } else {
-    switch (type) {
-    case ST_int8:
-      return PyFloat_FromDouble(iterator.get_int8() / (double)_divisor);
-
-    case ST_int16:
-      return PyFloat_FromDouble(iterator.get_int16() / (double)_divisor);
-
-    case ST_int32:
-      return PyFloat_FromDouble(iterator.get_int32() / (double)_divisor);
-
-    case ST_int64:
-      return PyFloat_FromDouble(iterator.get_int64() / (double)_divisor);
-
-    case ST_uint8:
-      return PyFloat_FromDouble(iterator.get_uint8() / (double)_divisor);
-
-    case ST_uint16:
-      return PyFloat_FromDouble(iterator.get_uint16() / (double)_divisor);
-
-    case ST_uint32:
-      return PyFloat_FromDouble(iterator.get_uint32() / (double)_divisor);
-
-    case ST_uint64:
-      return PyFloat_FromDouble(iterator.get_uint64() / (double)_divisor);
-
-    case ST_float64:
-      return PyFloat_FromDouble(iterator.get_float64() / (double)_divisor);
-
-    case ST_string:
-    case ST_blob:
-      str = iterator.get_string();
-      return PyString_FromStringAndSize(str.data(), str.size());
-      
-    case ST_blob32:
-      str = iterator.get_string32();
-      return PyString_FromStringAndSize(str.data(), str.size());
-
-    default:
-      return Py_BuildValue("");
-    }
-  }
-}
-#endif  // HAVE_PYTHON
-
-
 ////////////////////////////////////////////////////////////////////
 //     Function: DCSimpleType::Uint32Uint8Type::Constructor
 //       Access: Public
@@ -997,4 +1135,14 @@ get_nested_field(int n) const {
   default:
     return NULL;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSimpleType::Uint32Uint8Type::get_pack_type
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+DCPackType DCSimpleType::Uint32Uint8Type::
+get_pack_type() const {
+  return PT_struct;
 }

@@ -66,14 +66,12 @@ public:
   virtual void write(ostream &out, bool brief, int indent_level) const=0;
   virtual void generate_hash(HashGenerator &hash) const;
 
+  virtual bool has_nested_fields() const;
+  virtual DCPackType get_pack_type() const;
+
 protected:
   int _number;
   string _name;
-
-public:
-#ifdef HAVE_PYTHON
-  virtual bool do_unpack_args(pvector<PyObject *> &args, DatagramIterator &iterator) const=0;
-#endif
 
   friend class DCClass;
 };

@@ -35,26 +35,42 @@ PUBLISHED:
   DCPacker();
   ~DCPacker();
 
-  void begin(const DCPackerInterface *root);
-  bool end();
+  void begin_pack(const DCPackerInterface *root);
+  bool end_pack();
+
+public:
+  void begin_unpack(const char *data, size_t length,
+                    const DCPackerInterface *root);
+PUBLISHED:
+  void begin_unpack(const string &data, const DCPackerInterface *root);
+  bool end_unpack();
 
   INLINE bool has_nested_fields() const;
   INLINE int get_num_nested_fields() const;
+  INLINE bool more_nested_fields() const;
+
   void push();
   void pop();
 
-  INLINE DCSubatomicType get_pack_type() const;
+  INLINE DCPackType get_pack_type() const;
   INLINE void pack_double(double value);
   INLINE void pack_int(int value);
   INLINE void pack_int64(PN_int64 value);
   INLINE void pack_string(const string &value);
   INLINE void pack_literal_value(const string &value);
 
+  INLINE double unpack_double();
+  INLINE int unpack_int();
+  INLINE PN_int64 unpack_int64();
+  INLINE string unpack_string();
+
 #ifdef HAVE_PYTHON
   void pack_object(PyObject *object);
+  PyObject *unpack_object();
 #endif
 
   INLINE bool had_pack_error() const;
+  INLINE size_t get_num_unpacked_bytes() const;
 
   INLINE string get_string() const;
   INLINE size_t get_length() const;
@@ -65,13 +81,24 @@ private:
   INLINE void advance();
 
 private:
+  enum Mode {
+    M_idle,
+    M_pack,
+    M_unpack,
+  };
+  Mode _mode;
+
   DCPackData _pack_data;
+  string _unpack_str;
+  const char *_unpack_data;
+  size_t _unpack_length;
+  size_t _unpack_p;
 
   class StackElement {
   public:
     const DCPackerInterface *_current_parent;
     int _current_field_index;
-    size_t _push_start;
+    size_t _push_marker;
   };
   typedef pvector<StackElement> Stack;
 
@@ -79,12 +106,15 @@ private:
   const DCPackerInterface *_current_field;
   const DCPackerInterface *_current_parent;
   int _current_field_index;
-  size_t _push_start;
+
+  // In pack mode, _push_marker marks the beginning of the push record
+  // (so we can go back and write in the length later).  In unpack
+  // mode, it marks the end of the push record (so we know when we've
+  // reached the end).
+  size_t _push_marker;
   int _num_nested_fields;
 
   bool _pack_error;
-
-  friend class DCPackerInterface;
 };
 
 #include "dcPacker.I"

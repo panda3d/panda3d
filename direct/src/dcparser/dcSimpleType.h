@@ -47,14 +47,20 @@ PUBLISHED:
 public:
   virtual bool has_nested_fields() const;
   virtual int get_num_nested_fields() const;
+  virtual int get_num_nested_fields(size_t length_bytes) const;
   virtual DCPackerInterface *get_nested_field(int n) const;
   virtual size_t get_length_bytes() const;
 
-  virtual DCSubatomicType get_pack_type() const;
+  virtual DCPackType get_pack_type() const;
   virtual bool pack_double(DCPackData &pack_data, double value) const;
   virtual bool pack_int(DCPackData &pack_data, int value) const;
   virtual bool pack_int64(DCPackData &pack_data, PN_int64 value) const;
   virtual bool pack_string(DCPackData &pack_data, const string &value) const;
+
+  virtual bool unpack_double(const char *data, size_t length, size_t &p, double &value) const;
+  virtual bool unpack_int(const char *data, size_t length, size_t &p, int &value) const;
+  virtual bool unpack_int64(const char *data, size_t length, size_t &p, PN_int64 &value) const;
+  virtual bool unpack_string(const char *data, size_t length, size_t &p, string &value) const;
 
   virtual void output(ostream &out, const string &parameter_name, 
                       bool brief) const;
@@ -64,23 +70,15 @@ private:
   static DCSimpleType *create_nested_field(DCSubatomicType type, int divisor);
   static DCPackerInterface *create_uint32uint8_type();
 
-#ifdef HAVE_PYTHON
-public:
-  virtual void pack_arg(Datagram &datagram, PyObject *item) const;
-  virtual PyObject *unpack_arg(DatagramIterator &iterator) const;
-
-private:
-  void do_pack_arg(Datagram &datagram, PyObject *item, DCSubatomicType type) const;
-  PyObject *do_unpack_arg(DatagramIterator &iterator, DCSubatomicType type) const;
-#endif  // HAVE_PYTHON
-
 private:
   DCSubatomicType _type;
   int _divisor;
 
+  DCPackType _pack_type;
   bool _is_array;
   DCSubatomicType _nested_type;
   DCPackerInterface *_nested_field;
+  size_t _bytes_per_element;
 
   // The rest of this is to maintain the static list of
   // DCPackerInterface objects for _nested_field, above.  We allocate
@@ -95,6 +93,7 @@ private:
     virtual bool has_nested_fields() const;
     virtual int get_num_nested_fields() const;
     virtual DCPackerInterface *get_nested_field(int n) const;
+    virtual DCPackType get_pack_type() const;
 
     DCSimpleType *_uint32_type;
     DCSimpleType *_uint8_type;

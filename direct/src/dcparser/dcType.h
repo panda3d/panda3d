@@ -70,12 +70,6 @@ public:
   virtual void output(ostream &out, const string &parameter_name, 
                       bool brief) const=0;
   virtual void generate_hash(HashGenerator &hash) const;
-
-#ifdef HAVE_PYTHON
-  virtual void pack_arg(Datagram &datagram, PyObject *item) const=0;
-  virtual PyObject *unpack_arg(DatagramIterator &iterator) const=0;
-#endif
-
 };
 
 #endif

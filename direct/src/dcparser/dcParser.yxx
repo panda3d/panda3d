@@ -269,11 +269,11 @@ atomic_element_definition:
 }
         | atomic_element_definition '='
 {
-  default_value_packer.begin(atomic_element._type);
+  default_value_packer.begin_pack(atomic_element._type);
 }
 	default_value
 {
-  if (!default_value_packer.end()) {
+  if (!default_value_packer.end_pack()) {
     yyerror("Invalid default value for type");
 
   } else {

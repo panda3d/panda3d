@@ -408,20 +408,6 @@ generate_hash(HashGenerator &hashgen) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::has_nested_fields
-//       Access: Public, Virtual
-//  Description: Returns true if this field type has any nested fields
-//               (and thus expects a push() .. pop() interface to the
-//               DCPacker), or false otherwise.  If this returns true,
-//               get_num_nested_fields() may be called to determine
-//               how many nested fields are expected.
-////////////////////////////////////////////////////////////////////
-bool DCAtomicField::
-has_nested_fields() const {
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::get_num_nested_fields
 //       Access: Public, Virtual
 //  Description: Returns the number of nested fields required by this
@@ -447,30 +433,3 @@ get_nested_field(int n) const {
   nassertr(n >= 0 && n < (int)_elements.size(), NULL);
   return _elements[n]._type;
 }
-
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::do_unpack_args
-//       Access: Public, Virtual
-//  Description: Unpacks the values from the datagram, beginning at
-//               the current point in the interator, into a vector of
-//               Python objects (each with its own reference count).
-//               Returns true if there are enough values in the
-//               datagram, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCAtomicField::
-do_unpack_args(pvector<PyObject *> &args, DatagramIterator &iterator) const {
-  Elements::const_iterator ei;
-  for (ei = _elements.begin(); ei != _elements.end(); ++ei) {
-    const ElementType &element = (*ei);
-    PyObject *item = element._type->unpack_arg(iterator);
-    if (item == (PyObject *)NULL) {
-      // Ran out of datagram bytes.
-      return false;
-    }
-    args.push_back(item);
-  }
-
-  return true;
-}
-#endif  // HAVE_PYTHON

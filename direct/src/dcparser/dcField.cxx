@@ -79,10 +79,17 @@ bool DCField::
 pack_args(Datagram &datagram, PyObject *sequence) const {
   nassertr(PySequence_Check(sequence), false);
   DCPacker packer;
-  packer.begin(this);
+  packer.begin_pack(this);
   packer.pack_object(sequence);
-  if (packer.end()) {
+  if (packer.end_pack()) {
     datagram.append_data(packer.get_data(), packer.get_length());
+
+    /*
+    PyObject *str = PyObject_Str(sequence);
+    cerr << "pack " << get_name() << PyString_AsString(str) << "\n";
+    Py_DECREF(str);
+    */
+
     return true;
   }
 
@@ -113,16 +120,29 @@ pack_args(Datagram &datagram, PyObject *sequence) const {
 ////////////////////////////////////////////////////////////////////
 PyObject *DCField::
 unpack_args(DatagramIterator &iterator) const {
-  pvector<PyObject *> args;
-  bool enough_data = do_unpack_args(args, iterator);
-  nassertr(enough_data, NULL);
+  DCPacker packer;
+  packer.begin_unpack(iterator.get_remaining_bytes(), this);
 
-  PyObject *tuple = PyTuple_New(args.size());
-  for (size_t i = 0; i < args.size(); i++) {
-    PyTuple_SET_ITEM(tuple, i, args[i]);
+  PyObject *object = packer.unpack_object();
+
+  if (packer.end_unpack()) {
+    // Successfully unpacked.
+    iterator.skip_bytes(packer.get_num_unpacked_bytes());
+
+    /*
+    PyObject *str = PyObject_Str(object);
+    cerr << "recv " << get_name() << PyString_AsString(str) << "\n";
+    Py_DECREF(str);
+    */
+
+    return object;
   }
-
-  return tuple;
+  
+  ostringstream strm;
+  strm << "Error unpacking field " << get_name();
+    
+  nassert_raise(strm.str());
+  return object;
 }
 #endif  // HAVE_PYTHON
 
@@ -146,6 +166,7 @@ receive_update(PyObject *distobj, DatagramIterator &iterator) const {
     Py_XDECREF(result);
     Py_DECREF(func);
   }
+
   Py_DECREF(args);
 }
 #endif  // HAVE_PYTHON
@@ -224,4 +245,28 @@ generate_hash(HashGenerator &hashgen) const {
   // field with the other fields, so adding it explicitly will be
   // redundant.  However, the field name is significant.
   hashgen.add_string(_name);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::has_nested_fields
+//       Access: Public, Virtual
+//  Description: Returns true if this field type has any nested fields
+//               (and thus expects a push() .. pop() interface to the
+//               DCPacker), or false otherwise.  If this returns true,
+//               get_num_nested_fields() may be called to determine
+//               how many nested fields are expected.
+////////////////////////////////////////////////////////////////////
+bool DCField::
+has_nested_fields() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::get_pack_type
+//       Access: Public, Virtual
+//  Description: Returns the type of value expected by this field.
+////////////////////////////////////////////////////////////////////
+DCPackType DCField::
+get_pack_type() const {
+  return PT_field;
 }
