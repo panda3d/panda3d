@@ -505,7 +505,7 @@ get_global_ptr() {
     // Then, we add whatever mounts are listed in the Configrc file.
     ConfigVariableList mounts
       ("vfs-mount",
-       "vfs-mount system-filename mount-point [options]");
+       PRC_DESC("vfs-mount system-filename mount-point [options]"));
 
     int num_unique_values = mounts.get_num_unique_values();
     for (int i = 0; i < num_unique_values; i++) {

@@ -246,10 +246,10 @@ make_global_clock() {
 
   ConfigVariableEnum<ClockObject::Mode> clock_mode
     ("clock-mode", ClockObject::M_normal,
-     "Specifies the mode of the global clock.  The default mode, normal, "
-     "is a real-time clock; other modes allow non-real-time special "
-     "effects like simulated reduced frame rate.  See "
-     "ClockObject::set_mode().");
+     PRC_DESC("Specifies the mode of the global clock.  The default mode, normal, "
+              "is a real-time clock; other modes allow non-real-time special "
+              "effects like simulated reduced frame rate.  See "
+              "ClockObject::set_mode()."));
 
   _global_clock = new ClockObject;
   _global_clock->set_mode(clock_mode);

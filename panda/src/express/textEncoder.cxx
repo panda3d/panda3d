@@ -23,8 +23,8 @@
 TypeHandle TextEncoder::_type_handle;
 ConfigVariableEnum<TextEncoder::Encoding> TextEncoder::_default_encoding
 ("default-encoding", TextEncoder::E_iso8859,
- "Specifies how international characters are represented in strings "
- "of 8-byte characters presented to Panda.  See TextEncoder::set_encoding().");
+ PRC_DESC("Specifies how international characters are represented in strings "
+          "of 8-byte characters presented to Panda.  See TextEncoder::set_encoding()."));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextEncoder::make_upper
