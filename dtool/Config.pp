@@ -406,7 +406,7 @@
 #define COMPILE_IN_DEFAULT_FONT 1
 
 // Is Maya installed?  This matters only to programs in PANDATOOL.
-#define MAYA_LOCATION /usr/aw/maya3.0
+#define MAYA_LOCATION /usr/aw/maya
 #defer MAYA_LIBS $[if $[WINDOWS_PLATFORM],Foundation.lib OpenMaya.lib OpenMayaAnim.lib,Foundation OpenMaya OpenMayaAnim]
 #defer HAVE_MAYA $[isdir $[MAYA_LOCATION]/include/maya]
 
