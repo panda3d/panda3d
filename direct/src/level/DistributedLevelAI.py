@@ -151,12 +151,17 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
                 ['EntityTypeRegistry hashes do not match! '
                  '(server:%s, client:%s' % (srvHash, entTypeRegHash)])
             return
-        spec = None
-        # don't need to hit disk if we're just sending 'None' over the wire
-        useDisk = 0
+
+        # now compare the hashes of the client and server specs
         if hash(self.levelSpec) != specHash:
+            self.notify.info('spec hashes do not match, sending our spec')
             spec = self.levelSpec
             useDisk=simbase.config.GetBool('spec-by-disk', 0)
+        else:
+            self.notify.info('spec hashes match, sending null spec')
+            spec = None
+            # don't need to hit disk if we're just sending 'None' over the wire
+            useDisk = 0
         specStr = repr(spec)
 
         import DistributedLargeBlobSenderAI
