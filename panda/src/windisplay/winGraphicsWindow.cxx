@@ -740,7 +740,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             if(!_properties.get_cursor_hidden()) {
                 if(!_bCursor_in_WindowClientArea) {
                     // SetCursor(_pParentWindowGroup->_hMouseCursor);
-                    ShowCursor(true);
+                    hide_or_show_cursor(false);
                     _bCursor_in_WindowClientArea=true;
                 }
             }
@@ -749,7 +749,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     
       case WM_NCMOUSELEAVE: {
             if(!_properties.get_cursor_hidden()) {
-                ShowCursor(false);
+                hide_or_show_cursor(true);
                 // SetCursor(NULL);
                 _bCursor_in_WindowClientArea=false;
             }
