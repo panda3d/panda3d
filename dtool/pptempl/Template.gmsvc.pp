@@ -54,7 +54,7 @@
     // This library is on a metalib, so we can't build it, but we
     // should build all the obj's that go into it.
     #set deferred_objs $[deferred_objs] \
-      $[patsubst %.c %.cxx %.yxx %.lxx,$[so_dir]/%.obj,%,,$[get_sources] $[get_igateoutput]]
+      $[patsubst %_src.cxx,,%.c %.cxx %.yxx %.lxx,$[so_dir]/%.obj,%,,$[get_sources] $[get_igateoutput]]
   #endif
 #end lib_target
 
@@ -103,8 +103,8 @@
 #endif
 
 // And these are the various source files, extracted out by type.
-#define cxx_so_sources $[filter %.cxx,$[so_sources]]
-#define cxx_st_sources $[filter %.cxx,$[st_sources]]
+#define cxx_so_sources $[filter_out %_src.cxx,$[filter %.cxx,$[so_sources]]]
+#define cxx_st_sources $[filter_out %_src.cxx,$[filter %.cxx,$[st_sources]]]
 #define c_so_sources $[filter %.c,$[so_sources]]
 #define c_st_sources $[filter %.c,$[st_sources]]
 #define yxx_so_sources $[filter %.yxx,$[so_sources]]
@@ -354,8 +354,8 @@ $[directory]/stamp :
   // Now output the rule to actually link the library from all of its
   // various .obj files.
   #define sources \
-   $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]/%.obj,%,,$[get_sources] $[igateoutput] $[igatemout]]] \
-   $[components $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[RELDIR]/$[so_dir]/%.obj,%,,$[get_sources] $[get_igateoutput]]],$[active_component_libs]]
+   $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[so_dir]/%.obj,%,,$[get_sources] $[igateoutput] $[igatemout]]] \
+   $[components $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[RELDIR]/$[so_dir]/%.obj,%,,$[get_sources] $[get_igateoutput]]],$[active_component_libs]]
   #define varname $[subst -,_,lib$[TARGET]_so]
 $[varname] = $[sources]
   #define target $[so_dir]/lib$[TARGET]$[dllext].$[dlllib]
@@ -508,7 +508,7 @@ $[target] : $[source] $[so_dir]/stamp
 
 #forscopes noinst_lib_target
 #define varname $[subst -,_,lib$[TARGET]_so]
-$[varname] = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]/%.obj,%,,$[get_sources]]]
+$[varname] = $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[so_dir]/%.obj,%,,$[get_sources]]]
 #define target $[so_dir]/lib$[TARGET]$[dllext].$[dlllib]
 #define sources $($[varname])
 $[target] : $[sources] $[so_dir]/stamp
@@ -537,7 +537,7 @@ $[so_dir]/lib$[TARGET]$[dllext].pdb : $[so_dir]/lib$[TARGET]$[dllext].dll
 
 #forscopes static_lib_target ss_lib_target
 #define varname $[subst -,_,lib$[TARGET]_a]
-$[varname] = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.obj,%,,$[get_sources]]]
+$[varname] = $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[st_dir]/%.obj,%,,$[get_sources]]]
 #define target $[st_dir]/lib$[TARGET]$[dllext].lib
 #define sources $($[varname])
 $[target] : $[sources] $[st_dir]/stamp
@@ -613,7 +613,7 @@ $[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET] $[st_dir]/stamp
 $[TARGET] : $[st_dir]/$[TARGET].exe $[st_dir]/stamp
 
 #define varname $[subst -,_,bin_$[TARGET]]
-$[varname] = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.obj,%,,$[get_sources]]]
+$[varname] = $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[st_dir]/%.obj,%,,$[get_sources]]]
 #define target $[st_dir]/$[TARGET].exe
 #define sources $($[varname])
 #define ld $[get_ld]
@@ -674,7 +674,7 @@ $[install_bin_dir]/$[TARGET].pdb : $[st_dir]/$[TARGET].pdb $[st_dir]/stamp
 $[TARGET] : $[st_dir]/$[TARGET].exe $[st_dir]/stamp
 
 #define varname $[subst -,_,bin_$[TARGET]]
-$[varname] = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.obj,%,,$[get_sources]]]
+$[varname] = $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[st_dir]/%.obj,%,,$[get_sources]]]
 #define target $[st_dir]/$[TARGET].exe
 #define sources $($[varname])
 $[target] : $[sources] $[st_dir]/stamp

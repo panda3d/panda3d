@@ -76,8 +76,8 @@
 #endif
 
 // And these are the various source files, extracted out by type.
-#define cxx_so_sources $[filter %.cxx,$[so_sources]]
-#define cxx_st_sources $[filter %.cxx,$[st_sources]]
+#define cxx_so_sources $[filter_out %_src.cxx,$[filter %.cxx,$[so_sources]]]
+#define cxx_st_sources $[filter_out %_src.cxx,$[filter %.cxx,$[st_sources]]]
 #define c_so_sources $[filter %.c,$[so_sources]]
 #define c_st_sources $[filter %.c,$[st_sources]]
 #define yxx_so_sources $[filter %.yxx,$[so_sources]]
@@ -295,7 +295,7 @@ $[directory] :
 // Now output the rule to actually link the library from all of its
 // various .o files.
 #define varname $[subst -,_,lib$[TARGET]_so]
-$[varname] = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]/%.o,%,,$[get_sources] $[igateoutput] $[igatemout]]]
+$[varname] = $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[so_dir]/%.o,%,,$[get_sources] $[igateoutput] $[igatemout]]]
 #define target $[so_dir]/lib$[TARGET].so
 #define sources $($[varname])
 $[target] : $[sources]
@@ -398,7 +398,7 @@ $[target] : $[source]
 
 #forscopes noinst_lib_target
 #define varname $[subst -,_,lib$[TARGET]_so]
-$[varname] = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]/%.o,%,,$[get_sources]]]
+$[varname] = $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[so_dir]/%.o,%,,$[get_sources]]]
 #define target $[so_dir]/lib$[TARGET].so
 #define sources $($[varname])
 $[target] : $[sources]
@@ -420,7 +420,7 @@ $[target] : $[sources]
 
 #forscopes static_lib_target
 #define varname $[subst -,_,lib$[TARGET]_a]
-$[varname] = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.o,%,,$[get_sources]]]
+$[varname] = $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[st_dir]/%.o,%,,$[get_sources]]]
 #define target $[st_dir]/lib$[TARGET].a
 #define sources $($[varname])
 $[target] : $[sources]
@@ -499,7 +499,7 @@ $[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET]
 $[TARGET] : $[st_dir]/$[TARGET]
 
 #define varname $[subst -,_,bin_$[TARGET]]
-$[varname] = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.o,%,,$[get_sources]]]
+$[varname] = $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[st_dir]/%.o,%,,$[get_sources]]]
 #define target $[st_dir]/$[TARGET]
 #define sources $($[varname])
 #define ld $[get_ld]
@@ -548,7 +548,7 @@ $[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET]
 $[TARGET] : $[st_dir]/$[TARGET]
 
 #define varname $[subst -,_,bin_$[TARGET]]
-$[varname] = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.o,%,,$[get_sources]]]
+$[varname] = $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[st_dir]/%.o,%,,$[get_sources]]]
 #define target $[st_dir]/$[TARGET]
 #define sources $($[varname])
 $[target] : $[sources]
