@@ -155,6 +155,7 @@ class ShowBase(DirectObject.DirectObject):
         self.camLens = None
         self.camera = None
         self.camera2d = None
+        self.camFrustumVis = None
 
         # This is used for syncing multiple PCs in a distributed cluster
         try:
@@ -1429,6 +1430,19 @@ class ShowBase(DirectObject.DirectObject):
             if self.oobeCullFrustumVis != None:
                 self.oobeCullFrustumVis.removeNode()
                 self.oobeCullFrustumVis = None
+
+    def showCameraFrustum(self):
+        # Create a visible representation of the frustum.
+        self.removeCameraFrustum()
+        geom = self.camLens.makeGeometry()
+        if geom != None:
+            gn = GeomNode('frustum')
+            gn.addGeom(geom)
+            self.camFrustumVis = self.camera.attachNewNode(gn)
+
+    def removeCameraFrustum(self):
+        if self.camFrustumVis:
+            self.camFrustumVis.removeNode()
 
     def screenshot(self, namePrefix='screenshot'):
         filename = self.win.saveScreenshotDefault(namePrefix)
