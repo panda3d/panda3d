@@ -499,7 +499,7 @@ attempt_read(int length, DownloadStatus &status, int &bytes_read) {
 	// Try again
 	break;
       case RS_success:
-	nassertr(bytes_read == length, RS_error);
+	nassertr(bytes == length, RS_error);
 	return RS_success;
       default:
 	downloader_cat.error()
