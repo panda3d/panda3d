@@ -1,9 +1,9 @@
 """LerpInterval module: contains the LerpInterval class"""
 
-from PandaModules import *
-from DirectNotifyGlobal import *
+from pandac.PandaModules import *
+from direct.directnotify.DirectNotifyGlobal import *
 import Interval
-import LerpBlendHelpers
+from direct.showbase import LerpBlendHelpers
 
 #
 # Most of the intervals defined in this module--the group up here at

@@ -1,6 +1,6 @@
 from DirectFrame import *
 from DirectButton import *
-import Task
+from direct.task import Task
 import types
 
 class DirectScrolledList(DirectFrame):

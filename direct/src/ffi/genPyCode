@@ -57,7 +57,7 @@ if [ "$DIRECT" == "" ]; then
   fi
 fi
 
-pyDir=$DIRECT/lib/py
+pyDir=$DIRECT/lib/pandac
 extDir=$DIRECT/src/extensions
 pSqueezer=$DIRECT/src/showbase/pandaSqueezer.py
 
@@ -90,13 +90,13 @@ elif [ "$buildType" = "win-publish" ]; then
 
 elif [ "$buildType" = "install" ]; then
     # Use relative paths; as installed on a machine without ctattach etc.
-    pyDir=$install_dir/lib/py
+    pyDir=$install_dir/pandac
     ppython=$install_dir/bin/ppython
     pSqueezer=$DIRECT/src/showbase/pandaSqueezer.py
     $ppython -d $install_dir/bin/generatePythonCode -O -v -d $pyDir -e $DIRECT/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
 elif [ "$buildType" = "release" ]; then
     # Use relative paths; as installed on a machine without ctattach etc.
-    pyDir=$install_dir/lib/py
+    pyDir=$install_dir/pandac
     ppython=$install_dir/bin/ppython
     pSqueezer=$DIRECT/src/showbase/pandaSqueezer.py
     $ppython $install_dir/bin/generatePythonCode -v -d $pyDir -e $DIRECT/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
@@ -107,8 +107,9 @@ fi
 
 if [ "$fSqueeze" = "squeezeMe" ]; then
     echo SQUEEZING PandaModules
-    rm -f $pyDir/PandaModules.py* || exit
+    rm -f $pyDir/PandaModules.py* $pyDir/__init__.py || exit
     $ppython $ppythonOptimizeFlag $pSqueezer $optimizeFlag -d $pyDir || exit
+    touch $pyDir/__init__.py || exit
 else
     # renaming PandaModulesUnsqueezed.py to PandaModules.py
     cd $pyDir              || exit

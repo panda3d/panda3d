@@ -2,13 +2,13 @@
 Dial Class: Velocity style controller for floating point values with
              a label, entry (validated), and scale
 """
-from TkGlobal import *
+from direct.showbase.TkGlobal import *
 from Valuator import *
-import Task
+from direct.task import Task
 import math
 import string
 import operator
-from PandaModules import ClockObject
+from pandac.PandaModules import ClockObject
 
 TWO_PI = 2.0 * math.pi
 ONEPOINTFIVE_PI = 1.5 * math.pi

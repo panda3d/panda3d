@@ -1,16 +1,16 @@
 """ DIRECT Session Main panel """
 
 # Import Tkinter, Pmw, and the dial code
-from PandaObject import *
-from TkGlobal import *
-from AppShell import *
+from direct.showbase.PandaObject import *
+from direct.showbase.TkGlobal import *
+from direct.tkwidgets.AppShell import *
 
 import string
-import Dial
-import Floater
-import Slider
-import VectorWidgets
-import SceneGraphExplorer
+from direct.tkwidgets import Dial
+from direct.tkwidgets import Floater
+from direct.tkwidgets import Slider
+from direct.tkwidgets import VectorWidgets
+from direct.tkwidgets import SceneGraphExplorer
 from TaskManagerPanel import TaskManagerWidget
 
 """

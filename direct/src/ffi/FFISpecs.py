@@ -4,7 +4,7 @@ import FFITypes
 import FFIOverload
 import string
 
-from PythonUtil import *
+from direct.showbase.PythonUtil import *
 
 augmentedAssignments = ['__iadd__', '__isub__', '__imul__', '__idiv__',
                         '__ior__', '__iand__', '__ixor__',

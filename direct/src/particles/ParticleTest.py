@@ -1,7 +1,7 @@
-from ShowBaseGlobal import *
+from direct.showbase.ShowBaseGlobal import *
 
 import ParticleEffect
-import ParticlePanel
+from direct.tkpanels import ParticlePanel
 import ForceGroup
 
 # Showbase

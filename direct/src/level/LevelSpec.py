@@ -1,7 +1,7 @@
 """LevelSpec module: contains the LevelSpec class"""
 
-import DirectNotifyGlobal
-from PythonUtil import list2dict, uniqueElements
+from direct.directnotify import DirectNotifyGlobal
+from direct.showbase.PythonUtil import list2dict, uniqueElements
 import string
 import LevelConstants
 import types

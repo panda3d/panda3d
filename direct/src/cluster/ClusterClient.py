@@ -1,11 +1,11 @@
 """ClusterClient: Master for mutli-piping or PC clusters.  """
 
-from PandaModules import *
+from pandac.PandaModules import *
 from ClusterMsgs import *
 from ClusterConfig import *
-import DirectNotifyGlobal
-import DirectObject
-import Task
+from direct.directnotify import DirectNotifyGlobal
+from direct.showbase import DirectObject
+from direct.task import Task
 import os
 
 class ClusterClient(DirectObject.DirectObject):

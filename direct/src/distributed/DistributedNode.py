@@ -1,9 +1,9 @@
 """DistributedNode module: contains the DistributedNode class"""
 
-from ShowBaseGlobal import *
-from PandaModules import NodePath
+from direct.showbase.ShowBaseGlobal import *
+from pandac.PandaModules import NodePath
 import DistributedObject
-import Task
+from direct.task import Task
 import types
 
 class DistributedNode(DistributedObject.DistributedObject, NodePath):

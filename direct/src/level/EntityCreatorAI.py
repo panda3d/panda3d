@@ -5,7 +5,7 @@ import LogicGate
 import EditMgrAI
 import LevelMgrAI
 import ZoneEntityAI
-from PythonUtil import Functor
+from direct.showbase.PythonUtil import Functor
 
 # some useful constructor functions
 # ctor functions for entities must take

@@ -1,10 +1,10 @@
 """ActorInterval module: contains the ActorInterval class"""
 
-from PandaModules import *
-from DirectNotifyGlobal import *
+from pandac.PandaModules import *
+from direct.directnotify.DirectNotifyGlobal import *
 import Interval
 import math
-import LerpBlendHelpers
+from direct.showbase import LerpBlendHelpers
 
 class ActorInterval(Interval.Interval):
 

@@ -1,7 +1,7 @@
 """Actor module: contains the Actor class"""
 
-from PandaObject import *
-import LODNode
+from direct.showbase.PandaObject import *
+from pandac import LODNode
 import types
 
 class Actor(PandaObject, NodePath):
@@ -935,8 +935,8 @@ class Actor(PandaObject, NodePath):
 
     # actions
     def animPanel(self):
-        import TkGlobal
-        import AnimPanel
+        from direct.showbase import TkGlobal
+        from direct.tkpanels import AnimPanel
         return AnimPanel.AnimPanel(self)
     
     def stop(self, animName=None, partName=None):
@@ -1369,6 +1369,6 @@ class Actor(PandaObject, NodePath):
                         [other.__animControlDict[lodName][partName][animName][0], None]
 
     def actorInterval(self, *args, **kw):
-        import ActorInterval
+        from direct.interval import ActorInterval
         return ActorInterval.ActorInterval(self, *args, **kw)
 

@@ -8,7 +8,7 @@ the its parent node.
 
 from ShowBaseGlobal import *
 
-import DirectNotifyGlobal
+from direct.directnotify import DirectNotifyGlobal
 import DirectObject
 
 class ShadowPlacer(DirectObject.DirectObject):

@@ -1,7 +1,7 @@
 """ Showutil Effects module: contains code for useful showcode effects. """
-from DirectObject import *
-from PandaModules import *
-from IntervalGlobal import *
+from direct.showbase.DirectObject import *
+from pandac.PandaModules import *
+from direct.interval.IntervalGlobal import *
 
 # bounce types
 SX_BOUNCE = 0

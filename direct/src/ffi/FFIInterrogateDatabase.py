@@ -13,7 +13,7 @@ import FFISpecs
 import FFIRename
 import FFIConstants
 import FFIOverload
-from PythonUtil import *
+from direct.showbase.PythonUtil import *
 
 # FFIConstants.notify.setDebug(1)
 FFIConstants.notify.info('Importing interrogate library: ' + FFIConstants.InterrogateModuleName)
@@ -155,7 +155,7 @@ def outputImportFileImports(file, typeList, CModuleName):
     file.write('\n')
 
     file.write('# Put the classes in the wrapper class map\n')
-    file.write('from FFIExternalObject import registerInTypeMap\n')
+    file.write('from direct.ffi.FFIExternalObject import registerInTypeMap\n')
     file.write('\n')
     for moduleName in moduleList:
         file.write('registerInTypeMap(' + moduleName + ')\n')
@@ -716,6 +716,12 @@ class FFIInterrogateDatabase:
         file = open(os.path.join(codeDir, FFIConstants.importModuleName + '.py'), 'w')
         for CModuleName in FFIConstants.CodeModuleNameList:
             file.write('from ' + CModuleName + 'Modules import *\n')
+        file.close()
+
+        # Generate an empty __init__.py to make the directory a Python
+        # package.
+        init = os.path.join(codeDir, '__init__.py')
+        file = open(init, 'w')
         file.close()
 
         # Commented out based upon assumption that squeeze will do the compile

@@ -1,10 +1,10 @@
 """ParticleInterval module: contains the ParticleInterval class"""
 
-from PandaModules import *
-from DirectNotifyGlobal import *
+from pandac.PandaModules import *
+from direct.directnotify.DirectNotifyGlobal import *
 import Interval
 
-import ParticleEffect
+from direct.particles import ParticleEffect
 
 class ParticleInterval(Interval.Interval):
     # Name counter

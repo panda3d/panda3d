@@ -1,7 +1,7 @@
 
-from PandaModules import *
-from DirectGui import *
-import Task
+from pandac.PandaModules import *
+from direct.gui.DirectGui import *
+from direct.task import Task
 
 class Transitions:
 

@@ -97,7 +97,7 @@ PUBLISHED:
 
 private:
   bool do_check_datagram();
-  void handle_update_field();
+  bool handle_update_field();
 
 #ifdef HAVE_PYTHON
   PyObject *_python_repository;

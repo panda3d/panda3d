@@ -1,21 +1,21 @@
 """ Mopath Recorder Panel Module """
 
 # Import Tkinter, Pmw, and the dial code from this directory tree.
-from PandaObject import *
-from TkGlobal import *
-from AppShell import *
-from DirectGlobals import *
-from DirectUtil import *
-from DirectGeometry import *
-from DirectSelection import *
+from direct.showbase.PandaObject import *
+from direct.showbase.TkGlobal import *
+from direct.tkwidgets.AppShell import *
+from direct.directtools.DirectGlobals import *
+from direct.directtools.DirectUtil import *
+from direct.directtools.DirectGeometry import *
+from direct.directtools.DirectSelection import *
 from tkFileDialog import *
 import os
 import string
-import Dial
-import Floater
-import Slider
-import EntryScale
-import VectorWidgets
+from direct.tkwidgets import Dial
+from direct.tkwidgets import Floater
+from direct.tkwidgets import Slider
+from direct.tkwidgets import EntryScale
+from direct.tkwidgets import VectorWidgets
 import __builtin__
 
 PRF_UTILITIES = [
@@ -1785,7 +1785,7 @@ class MopathRecorder(AppShell, PandaObject):
         kw['max'] = max
         kw['resolution'] = resolution
         #widget = apply(EntryScale.EntryScale, (parent,), kw)
-        import Slider
+        from direct.tkwidgets import Slider
         widget = apply(Slider.Slider, (parent,), kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command

@@ -1,4 +1,4 @@
-from PandaObject import *
+from direct.showbase.PandaObject import *
 from DirectGlobals import *
 from DirectUtil import*
 from DirectCameraControl import *
@@ -7,15 +7,15 @@ from DirectSelection import *
 from DirectGrid import *
 from DirectGeometry import *
 from DirectLights import *
-from ClusterClient import *
-from ClusterServer import *
-import Placer
-import Slider
-import SceneGraphExplorer
-import OnscreenText
+from direct.cluster.ClusterClient import *
+from direct.cluster.ClusterServer import *
+from direct.tkpanels import Placer
+from direct.tkwidgets import Slider
+from direct.tkwidgets import SceneGraphExplorer
+from direct.gui import OnscreenText
 import types
 import string
-import Loader
+from direct.showbase import Loader
 
 class DirectSession(PandaObject):
 
@@ -84,20 +84,20 @@ class DirectSession(PandaObject):
         self.radamec = None
         self.fastrak = []
         if base.config.GetBool('want-vrpn', 0):
-            import DirectDeviceManager
+            from direct.directdevices import DirectDeviceManager
             self.deviceManager = DirectDeviceManager.DirectDeviceManager()
             # Automatically create any devices specified in config file
             joybox = base.config.GetString('vrpn-joybox-device', '')
             radamec = base.config.GetString('vrpn-radamec-device', '')
             fastrak = base.config.GetString('vrpn-fastrak-device', '')
             if joybox:
-                import DirectJoybox
+                from direct.directdevices import DirectJoybox
                 self.joybox = DirectJoybox.DirectJoybox(joybox)
             if radamec:
-                import DirectRadamec
+                from direct.directdevices import DirectRadamec
                 self.radamec = DirectRadamec.DirectRadamec(radamec)
             if fastrak:
-                import DirectFastrak
+                from direct.directdevices import DirectFastrak
                 # parse string into format device:N where N is the sensor name
                 fastrak = string.split(fastrak)
                 for i in range(len(fastrak))[1:]:
@@ -170,8 +170,8 @@ class DirectSession(PandaObject):
                             ]
 
         if base.wantTk:
-            import TkGlobal
-            import DirectSessionPanel
+            from direct.showbase import TkGlobal
+            from direct.tkpanels import DirectSessionPanel
             self.panel = DirectSessionPanel.DirectSessionPanel(parent = tkroot)
         try:
             # Has the clusterMode been set externally (i.e. via the

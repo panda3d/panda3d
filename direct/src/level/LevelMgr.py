@@ -1,6 +1,6 @@
 """LevelMgr module: contains the LevelMgr class"""
 
-from PythonUtil import Functor
+from direct.showbase.PythonUtil import Functor
 import LevelMgrBase
 
 class LevelMgr(LevelMgrBase.LevelMgrBase):

@@ -1,7 +1,7 @@
 """EntityTypes module: contains classes that describe Entity types"""
 
 from EntityTypeDesc import EntityTypeDesc
-from SpecImports import *
+from toontown.coghq.SpecImports import *
 
 class Entity(EntityTypeDesc):
     abstract = 1

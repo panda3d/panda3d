@@ -1,4 +1,4 @@
 print 'DirectStart: Starting the game.'
 
-import ShowBase
+from direct.showbase import ShowBase
 ShowBase.ShowBase()

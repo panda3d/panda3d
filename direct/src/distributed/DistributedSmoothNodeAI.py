@@ -1,4 +1,4 @@
-from AIBaseGlobal import *
+from otp.ai.AIBaseGlobal import *
 import DistributedNodeAI
 import DistributedSmoothNodeBase
 

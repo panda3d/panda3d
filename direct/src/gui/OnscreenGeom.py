@@ -1,6 +1,6 @@
 """OnscreenGeom module: contains the OnscreenGeom class"""
 
-from PandaObject import *
+from direct.showbase.PandaObject import *
 import types
 
 class OnscreenGeom(PandaObject, NodePath):

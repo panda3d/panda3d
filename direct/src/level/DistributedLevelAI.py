@@ -1,12 +1,12 @@
 """DistributedLevelAI.py: contains the DistributedLevelAI class"""
 
-from AIBaseGlobal import *
-from ClockDelta import *
-import DistributedObjectAI
+from otp.ai.AIBaseGlobal import *
+from direct.distributed.ClockDelta import *
+from direct.distributed import DistributedObjectAI
 import Level
-import DirectNotifyGlobal
+from direct.directnotify import DirectNotifyGlobal
 import EntityCreatorAI
-from PythonUtil import Functor, weightedChoice
+from direct.showbase.PythonUtil import Functor, weightedChoice
 
 class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
                          Level.Level):
@@ -162,7 +162,7 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
             useDisk = 0
         specStr = repr(spec)
 
-        import DistributedLargeBlobSenderAI
+        from direct.directutil import DistributedLargeBlobSenderAI
         largeBlob = DistributedLargeBlobSenderAI.\
                     DistributedLargeBlobSenderAI(
             self.air, self.zoneId, senderId, specStr,

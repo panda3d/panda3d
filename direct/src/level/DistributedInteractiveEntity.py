@@ -1,11 +1,11 @@
 """ DistributedInteractiveEntity module: contains the DistributedInteractiveEntity
     class, the client side representation of a 'landmark door'."""
 
-from ShowBaseGlobal import *
-from ClockDelta import *
+from direct.showbase.ShowBaseGlobal import *
+from direct.distributed.ClockDelta import *
 
-import DirectNotifyGlobal
-import ClassicFSM
+from direct.directnotify import DirectNotifyGlobal
+from direct.fsm import ClassicFSM
 import DistributedEntity
 
 class DistributedInteractiveEntity(DistributedEntity.DistributedEntity):

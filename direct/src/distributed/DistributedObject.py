@@ -1,7 +1,7 @@
 """DistributedObject module: contains the DistributedObject class"""
 
-from PandaObject import *
-from DirectNotifyGlobal import *
+from direct.showbase.PandaObject import *
+from direct.directnotify.DirectNotifyGlobal import *
 from PyDatagram import PyDatagram
 from PyDatagramIterator import PyDatagramIterator
 

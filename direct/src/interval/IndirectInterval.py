@@ -1,9 +1,9 @@
 """IndirectInterval module: contains the IndirectInterval class"""
 
-from PandaModules import *
-from DirectNotifyGlobal import *
+from pandac.PandaModules import *
+from direct.directnotify.DirectNotifyGlobal import *
 import Interval
-import LerpBlendHelpers
+from direct.showbase import LerpBlendHelpers
 
 class IndirectInterval(Interval.Interval):
     """

@@ -15,7 +15,7 @@ import FFIConstants
 import FFIOverload
 
 
-from PythonUtil import *
+from direct.showbase.PythonUtil import *
 
 TypedObjectDescriptor = None
 
@@ -639,7 +639,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
                 indent(file, 0, 'import ' + moduleName + '\n')            
                 indent(file, 0, 'import ' + moduleName + 'Downcasts\n')
         indent(file, 0, '\n')
-        indent(file, 0, 'import FFIExternalObject\n')
+        indent(file, 0, 'from direct.ffi import FFIExternalObject\n')
 
 
     def outputImportsRecursively(self, parent, file, nesting):

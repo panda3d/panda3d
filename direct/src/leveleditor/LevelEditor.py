@@ -1,22 +1,22 @@
-from DirectStart import *
-from PandaObject import *
+from direct.directbase.DirectStart import *
+from direct.showbase.PandaObject import *
 from PieMenu import *
-from DirectGuiGlobals import *
-from TkGlobal import *
-from DirectUtil import *
-from DirectGeometry import *
-from SceneGraphExplorer import *
+from direct.gui.DirectGuiGlobals import *
+from direct.showbase.TkGlobal import *
+from direct.directtools.DirectUtil import *
+from direct.directtools.DirectGeometry import *
+from direct.tkwidgets.SceneGraphExplorer import *
 from tkMessageBox import showinfo
 from tkFileDialog import *
 from whrandom import *
-import Floater
-import VectorWidgets
+from direct.tkwidgets import Floater
+from direct.tkwidgets import VectorWidgets
 import string
 import os
 import getopt
 import sys
 import whrandom
-import Task
+from direct.task import Task
 import __builtin__
 
 visualizeZones = base.config.GetBool("visualize-zones", 0)
@@ -3161,7 +3161,7 @@ class LevelEditor(NodePath, PandaObject):
         # First clear out old labels if any
         self.clearZoneLabels()
         visGroups = self.getDNAVisGroups(self.NPToplevel)
-        import DirectGui
+        from direct.gui import DirectGui
         for np, dna in visGroups:
             name = dna.getName()
             label = DirectGui.DirectLabel(text = name,

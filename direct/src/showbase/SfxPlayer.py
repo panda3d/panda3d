@@ -1,6 +1,6 @@
 
 import math
-from PandaModules import *
+from pandac.PandaModules import *
 
 class SfxPlayer:
     """

@@ -1,6 +1,6 @@
 """ParentMgr module: contains the ParentMgr class"""
 
-import DirectNotifyGlobal
+from direct.directnotify import DirectNotifyGlobal
 
 class ParentMgr:
     # This is now used on the AI as well.

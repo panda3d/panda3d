@@ -1,8 +1,8 @@
 """MopathInterval module: contains the MopathInterval class"""
 
 import LerpInterval
-from PandaModules import *
-from DirectNotifyGlobal import *
+from pandac.PandaModules import *
+from direct.directnotify.DirectNotifyGlobal import *
 
 # import Mopath
 

@@ -1,6 +1,6 @@
 """LevelMgrAI module: contains the LevelMgrAI class"""
 
-from PythonUtil import Functor
+from direct.showbase.PythonUtil import Functor
 import LevelMgrBase
 
 class LevelMgrAI(LevelMgrBase.LevelMgrBase):

@@ -1,6 +1,6 @@
 
 # create a DirectNotify category for FFI modules
-from  DirectNotifyGlobal import *
+from direct.directnotify.DirectNotifyGlobal import *
 notify = directNotify.newCategory("FFI")
 
 # This is the name of the file that the importing code will be stored

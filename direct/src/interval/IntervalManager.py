@@ -1,6 +1,6 @@
-from PandaModules import *
-from DirectNotifyGlobal import *
-import EventManager
+from pandac.PandaModules import *
+from direct.directnotify.DirectNotifyGlobal import *
+from direct.showbase import EventManager
 import Interval
 import types
 import fnmatch

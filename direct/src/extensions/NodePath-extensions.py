@@ -105,7 +105,7 @@
             return [self]
 
     def getTightBounds(self):
-        import Point3
+        from pandac import Point3
         v1 = Point3.Point3(0)
         v2 = Point3.Point3(0)
         self.calcTightBounds(v1,v2)
@@ -277,9 +277,9 @@
         # functorFunc is a function which can be called to create a functor.
         # functor creation is defered so initial state (sampled in functorFunc)
         # will be appropriate for the time the lerp is spawned
-        import Task
-        import LerpBlendHelpers
-        from TaskManagerGlobal import taskMgr
+        from direct.task import Task
+        from direct.showbase import LerpBlendHelpers
+        from direct.task.TaskManagerGlobal import taskMgr
         
         # upon death remove the functorFunc
         def lerpUponDeath(task):
@@ -295,9 +295,9 @@
         
         # make the task function
         def lerpTaskFunc(task):
-            from Lerp import Lerp
-            from ClockObject import ClockObject
-            from Task import Task, cont, done
+            from pandac.Lerp import Lerp
+            from pandac.ClockObject import ClockObject
+            from direct.task.Task import Task, cont, done
             if task.init == 1:
                 # make the lerp
                 functor = task.functorFunc()
@@ -333,8 +333,8 @@
         """_autoLerp(self, functor, float, string, string)
         This lerp uses C++ to handle the stepping. Bonus is
         its more efficient, trade-off is there is less control"""
-        import AutonomousLerp
-        import LerpBlendHelpers
+        from pandac import AutonomousLerp
+        from direct.showbase import LerpBlendHelpers
         # make a lerp that lives in C++ land
         functor = functorFunc()
         lerp = AutonomousLerp.AutonomousLerp(functor, time,
@@ -368,7 +368,7 @@
         string="noBlend", string=none, string=none)
         """
         def functorFunc(self = self, r = r, g = g, b = b, a = a):
-            import ColorLerpFunctor
+            from pandac import ColorLerpFunctor
             # just end rgba values, use current color rgba values for start
             startColor = self.getColor()
             functor = ColorLerpFunctor.ColorLerpFunctor(
@@ -392,7 +392,7 @@
         """
         def functorFunc(self = self, sr = sr, sg = sg, sb = sb, sa = sa,
                         er = er, eg = eg, eb = eb, ea = ea):
-            import ColorLerpFunctor
+            from pandac import ColorLerpFunctor
             # start and end rgba values
             functor = ColorLerpFunctor.ColorLerpFunctor(self, sr, sg, sb, sa,
                                                         er, eg, eb, ea)
@@ -411,7 +411,7 @@
         string=none)
         """
         def functorFunc(self = self, endColor = endColor):
-            import ColorLerpFunctor
+            from pandac import ColorLerpFunctor
             # just end vec4, use current color for start
             startColor = self.getColor()
             functor = ColorLerpFunctor.ColorLerpFunctor(
@@ -432,7 +432,7 @@
         """
         def functorFunc(self = self, startColor = startColor,
                         endColor = endColor):
-            import ColorLerpFunctor
+            from pandac import ColorLerpFunctor
             # start color and end vec
             functor = ColorLerpFunctor.ColorLerpFunctor(
                 self, startColor, endColor)
@@ -471,7 +471,7 @@
         string="noBlend", string=none, string=none)
         """
         def functorFunc(self = self, r = r, g = g, b = b, a = a):
-            import ColorScaleLerpFunctor
+            from pandac import ColorScaleLerpFunctor
             # just end rgba values, use current color rgba values for start
             startColor = self.getColor()
             functor = ColorScaleLerpFunctor.ColorScaleLerpFunctor(
@@ -495,7 +495,7 @@
         """
         def functorFunc(self = self, sr = sr, sg = sg, sb = sb, sa = sa,
                         er = er, eg = eg, eb = eb, ea = ea):
-            import ColorScaleLerpFunctor
+            from pandac import ColorScaleLerpFunctor
             # start and end rgba values
             functor = ColorScaleLerpFunctor.ColorScaleLerpFunctor(self, sr, sg, sb, sa,
                                                         er, eg, eb, ea)
@@ -514,7 +514,7 @@
         string=none)
         """
         def functorFunc(self = self, endColor = endColor):
-            import ColorScaleLerpFunctor
+            from pandac import ColorScaleLerpFunctor
             # just end vec4, use current color for start
             startColor = self.getColor()
             functor = ColorScaleLerpFunctor.ColorScaleLerpFunctor(
@@ -535,7 +535,7 @@
         """
         def functorFunc(self = self, startColor = startColor,
                         endColor = endColor):
-            import ColorScaleLerpFunctor
+            from pandac import ColorScaleLerpFunctor
             # start color and end vec
             functor = ColorScaleLerpFunctor.ColorScaleLerpFunctor(
                 self, startColor, endColor)
@@ -573,7 +573,7 @@
         """
         def functorFunc(self = self, h = h, p = p, r = r,
                         other = other, shortest=shortest):
-            import HprLerpFunctor
+            from pandac import HprLerpFunctor
             # it's individual hpr components
             if (other != None):
                 # lerp wrt other
@@ -609,7 +609,7 @@
         """
         def functorFunc(self = self, hpr = hpr,
                         other = other, shortest=shortest):
-            import HprLerpFunctor
+            from pandac import HprLerpFunctor
             # it's a vbase3 hpr
             if (other != None):
                 # lerp wrt other
@@ -654,7 +654,7 @@
         Perform a pos lerp with three floats as the end point
         """
         def functorFunc(self = self, x = x, y = y, z = z, other = other):
-            import PosLerpFunctor
+            from pandac import PosLerpFunctor
             if (other != None):
                 # lerp wrt other
                 startPos = self.getPos(other)
@@ -681,7 +681,7 @@
         Perform a pos lerp with a Point3 as the end point
         """
         def functorFunc(self = self, pos = pos, other = other):
-            import PosLerpFunctor
+            from pandac import PosLerpFunctor
             if (other != None):
                 #lerp wrt other
                 functor = PosLerpFunctor.PosLerpFunctor(
@@ -721,7 +721,7 @@
         """
         def functorFunc(self = self, pos = pos, hpr = hpr,
                         other = other, shortest=shortest):
-            import PosHprLerpFunctor
+            from pandac import PosHprLerpFunctor
             if (other != None):
                 # lerp wrt other
                 startPos = self.getPos(other)
@@ -755,7 +755,7 @@
         """
         def functorFunc(self = self, x = x, y = y, z = z,
                         h = h, p = p, r = r, other = other, shortest=shortest):
-            import PosHprLerpFunctor
+            from pandac import PosHprLerpFunctor
             if (other != None):
                 # lerp wrt other
                 startPos = self.getPos(other)
@@ -797,7 +797,7 @@
         """
         def functorFunc(self = self, pos = pos, hpr = hpr,
                         scale = scale, other = other, shortest=shortest):
-            import PosHprScaleLerpFunctor
+            from pandac import PosHprScaleLerpFunctor
             if (other != None):
                 # lerp wrt other
                 startPos = self.getPos(other)
@@ -850,7 +850,7 @@
         string=none, NodePath=None)
         """
         def functorFunc(self = self, scale = scale, other = other):
-            import ScaleLerpFunctor
+            from pandac import ScaleLerpFunctor
             if (other != None):
                 # lerp wrt other
                 functor = ScaleLerpFunctor.ScaleLerpFunctor(self,
@@ -875,7 +875,7 @@
         string=none, string=none, NodePath=None)
         """
         def functorFunc(self = self, sx = sx, sy = sy, sz = sz, other = other):
-            import ScaleLerpFunctor
+            from pandac import ScaleLerpFunctor
             if (other != None):
                 # lerp wrt other
                 startScale = self.getScale(other)
@@ -901,17 +901,17 @@
             
     def place(self):
         base.startDirect(fWantTk = 1)
-        import Placer
+        from direct.tkpanels import Placer
         return Placer.place(self)
 
     def explore(self):
         base.startDirect(fWantTk = 1)
-        import SceneGraphExplorer
+        from direct.tkwidgets import SceneGraphExplorer
         return SceneGraphExplorer.explore(self)
 
     def rgbPanel(self, cb = None):
         base.startTk()
-        import Slider
+        from direct.tkwidgets import Slider
         return Slider.rgbPanel(self, cb)
 
     def select(self):
@@ -949,48 +949,48 @@
                 np.hide()
 
     def posInterval(self, *args, **kw):
-        import LerpInterval
+        from direct.interval import LerpInterval
         return LerpInterval.LerpPosInterval(self, *args, **kw)
     
     def hprInterval(self, *args, **kw):
-        import LerpInterval
+        from direct.interval import LerpInterval
         return LerpInterval.LerpHprInterval(self, *args, **kw)
 
     def scaleInterval(self, *args, **kw):
-        import LerpInterval
+        from direct.interval import LerpInterval
         return LerpInterval.LerpScaleInterval(self, *args, **kw)
 
     def shearInterval(self, *args, **kw):
-        import LerpInterval
+        from direct.interval import LerpInterval
         return LerpInterval.LerpShearInterval(self, *args, **kw)
 
     def posHprInterval(self, *args, **kw):
-        import LerpInterval
+        from direct.interval import LerpInterval
         return LerpInterval.LerpPosHprInterval(self, *args, **kw)
 
     def hprScaleInterval(self, *args, **kw):
-        import LerpInterval
+        from direct.interval import LerpInterval
         return LerpInterval.LerpHprScaleInterval(self, *args, **kw)
 
     def posHprScaleInterval(self, *args, **kw):
-        import LerpInterval
+        from direct.interval import LerpInterval
         return LerpInterval.LerpPosHprScaleInterval(self, *args, **kw)
 
     def posHprScaleShearInterval(self, *args, **kw):
-        import LerpInterval
+        from direct.interval import LerpInterval
         return LerpInterval.LerpPosHprScaleShearInterval(self, *args, **kw)
 
     def colorInterval(self, *args, **kw):
-        import LerpInterval
+        from direct.interval import LerpInterval
         return LerpInterval.LerpColorInterval(self, *args, **kw)
 
     def colorScaleInterval(self, *args, **kw):
-        import LerpInterval
+        from direct.interval import LerpInterval
         return LerpInterval.LerpColorScaleInterval(self, *args, **kw)
 
     def attachCollisionSphere(self, name, cx,cy,cz,r, fromCollide, intoCollide):
-        import CollisionSphere
-        import CollisionNode
+        from pandac import CollisionSphere
+        from pandac import CollisionNode
         coll = CollisionSphere.CollisionSphere(cx,cy,cz,r)
         collNode = CollisionNode.CollisionNode(name)
         collNode.addSolid(coll)
@@ -1000,8 +1000,8 @@
         return collNodePath
 
     def attachCollisionSegment(self, name, ax,ay,az, bx,by,bz, fromCollide, intoCollide):
-        import CollisionSegment
-        import CollisionNode
+        from pandac import CollisionSegment
+        from pandac import CollisionNode
         coll = CollisionSegment.CollisionSegment(ax,ay,az, bx,by,bz)
         collNode = CollisionNode.CollisionNode(name)
         collNode.addSolid(coll)
@@ -1011,8 +1011,8 @@
         return collNodePath
 
     def attachCollisionRay(self, name, ox,oy,oz, dx,dy,dz, fromCollide, intoCollide):
-        import CollisionRay
-        import CollisionNode
+        from pandac import CollisionRay
+        from pandac import CollisionNode
         coll = CollisionRay.CollisionRay(ox,oy,oz, dx,dy,dz)
         collNode = CollisionNode.CollisionNode(name)
         collNode.addSolid(coll)

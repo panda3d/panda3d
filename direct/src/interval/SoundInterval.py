@@ -1,7 +1,7 @@
 """SoundInterval module: contains the SoundInterval class"""
 
-from PandaModules import *
-from DirectNotifyGlobal import *
+from pandac.PandaModules import *
+from direct.directnotify.DirectNotifyGlobal import *
 import Interval
 
 class SoundInterval(Interval.Interval):

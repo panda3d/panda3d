@@ -1,11 +1,11 @@
 """ DIRECT Nine DoF Manipulation Panel """
 
 # Import Tkinter, Pmw, and the dial code from this directory tree.
-from PandaObject import *
-from TkGlobal import *
-from AppShell import *
-import Dial
-import Floater
+from direct.showbase.PandaObject import *
+from direct.showbase.TkGlobal import *
+from direct.tkwidgets.AppShell import *
+from direct.tkwidgets import Dial
+from direct.tkwidgets import Floater
 
 """
 TODO:

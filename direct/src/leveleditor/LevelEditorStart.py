@@ -1,3 +1,3 @@
-from ShowBaseGlobal import *
+from direct.showbase.ShowBaseGlobal import *
 import LevelEditor
 l = LevelEditor.LevelEditor()

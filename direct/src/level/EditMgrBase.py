@@ -1,7 +1,7 @@
 """EditMgrBase module: contains the EditMgrBase class"""
 
 import Entity
-import DirectNotifyGlobal
+from direct.directnotify import DirectNotifyGlobal
 
 class EditMgrBase(Entity.Entity):
     """This class contains EditMgr code shared between AI and client"""

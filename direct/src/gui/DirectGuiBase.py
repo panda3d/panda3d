@@ -2,11 +2,11 @@ from DirectGuiGlobals import *
 from OnscreenText import *
 from OnscreenGeom import *
 from OnscreenImage import *
-from DirectUtil import ROUND_TO
-import PandaObject
-import Task
+from direct.directtools.DirectUtil import ROUND_TO
+from direct.showbase import PandaObject
+from direct.task import Task
 import string
-import ShowBase
+from direct.showbase import ShowBase
 
 """
 Base class for all Direct Gui items.  Handles composite widgets and

@@ -1,8 +1,8 @@
 """
 EntryScale Class: Scale with a label, and a linked and validated entry
 """
-from PandaObject import *
-from TkGlobal import *
+from direct.showbase.PandaObject import *
+from direct.showbase.TkGlobal import *
 import string
 import tkColorChooser
 from tkSimpleDialog import *

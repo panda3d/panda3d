@@ -1,5 +1,5 @@
-from PandaObject import *
-from TkGlobal import *
+from direct.showbase.PandaObject import *
+from direct.showbase.TkGlobal import *
 from Tree import *
 
 # changing these strings requires changing DirectSession.py SGE_ strs too!

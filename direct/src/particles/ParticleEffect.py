@@ -1,7 +1,7 @@
-from PandaModules import *
+from pandac.PandaModules import *
 import Particles
 import ForceGroup
-import DirectNotifyGlobal
+from direct.directnotify import DirectNotifyGlobal
 
 class ParticleEffect(NodePath):
 

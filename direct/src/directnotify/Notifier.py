@@ -2,7 +2,7 @@
    for the programmer/user"""
 
 from LoggerGlobal import *
-import PythonUtil
+from direct.showbase import PythonUtil
 import time
 
 class Notifier:
@@ -41,7 +41,7 @@ class Notifier:
         delta = int(round(delta))
         Notifier.serverDelta = delta + time.timezone - timezone
 
-        import NotifyCategory
+        from pandac import NotifyCategory
         NotifyCategory.NotifyCategory.setServerDelta(self.serverDelta)
             
         self.info("Notify clock adjusted by %s (and timezone adjusted by %s hours) to synchronize with server." % (PythonUtil.formatElapsedSeconds(delta), (time.timezone - timezone) / 3600))
@@ -71,7 +71,7 @@ class Notifier:
 
     # Severity funcs
     def setSeverity(self, severity):
-        import NotifySeverity
+        from pandac import NotifySeverity
         if severity >= NotifySeverity.NSError:
             self.setWarning(0)
             self.setInfo(0)
@@ -90,7 +90,7 @@ class Notifier:
             self.setDebug(1)
 
     def getSeverity(self):
-        import NotifySeverity
+        from pandac import NotifySeverity
         if self.getDebug():
             return NotifySeverity.NSDebug
         elif self.getInfo():

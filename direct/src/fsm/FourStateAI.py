@@ -1,10 +1,10 @@
 
 
-import DirectNotifyGlobal
+from direct.directnotify import DirectNotifyGlobal
 #import DistributedObjectAI
 import ClassicFSM
 import State
-import Task
+from direct.task import Task
 
 
 class FourStateAI:

@@ -1,8 +1,8 @@
 
-from libpandaexpressModules import *
-from DirectNotifyGlobal import *
-from PythonUtil import *
-from MessengerGlobal import *
+from pandac.libpandaexpressModules import *
+from direct.directnotify.DirectNotifyGlobal import *
+from direct.showbase.PythonUtil import *
+from direct.showbase.MessengerGlobal import *
 import time
 import fnmatch
 import string
@@ -106,7 +106,7 @@ class Task:
 
     def setupPStats(self, name):
         if __debug__:
-            import PStatCollector
+            from pandac import PStatCollector
             self.pstats = PStatCollector.PStatCollector("App:Show code:" + name)
 
     def finishTask(self, verbose):
@@ -906,7 +906,7 @@ class TaskManager:
             task.setStartTimeFrame(self.currentTime, self.currentFrame)
 
     def popupControls(self):
-        import TaskManagerPanel
+        from direct.tkpanels import TaskManagerPanel
         return TaskManagerPanel.TaskManagerPanel(self)
 
     def __getTimeFrame(self):

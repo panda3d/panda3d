@@ -30,8 +30,8 @@ LogicGate.py
         0 0    -   0    0     -    1     1
 """
 
-import PandaObject
-import DirectNotifyGlobal
+from direct.showbase import PandaObject
+from direct.directnotify import DirectNotifyGlobal
 import Entity
 
 

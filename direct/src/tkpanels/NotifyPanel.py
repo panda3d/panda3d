@@ -9,11 +9,11 @@ class NotifyPanel:
         notify levels for all available DIRECT and PANDA notify categories
         """
         # Make sure TK mainloop is running
-        from TkGlobal import Pmw, Toplevel, Frame, Label , Radiobutton
-        from TkGlobal import HORIZONTAL, X, W, NW, BOTH, LEFT, RIGHT, IntVar
+        from direct.showbase.TkGlobal import Pmw, Toplevel, Frame, Label , Radiobutton
+        from direct.showbase.TkGlobal import HORIZONTAL, X, W, NW, BOTH, LEFT, RIGHT, IntVar
         # To get severity levels
-        from NotifySeverity import NSFatal, NSError, NSWarning, NSInfo
-        from NotifySeverity import NSDebug, NSSpam
+        from pandac.NotifySeverity import NSFatal, NSError, NSWarning, NSInfo
+        from pandac.NotifySeverity import NSDebug, NSSpam
 
         if tl == None:
             tl = Toplevel()
@@ -29,7 +29,7 @@ class NotifyPanel:
         categoryFrame = framePane.add('categories', size = 200)
         severityFrame = framePane.add('severities', size = 50)
         # Category frame
-        import NotifyCategory
+        from pandac import NotifyCategory
         # Assemble PANDA categories
         categories = self.getPandaCategoriesAsList()
         self.__categories = {}
@@ -122,7 +122,7 @@ class NotifyPanel:
         return categories
 
     def getPandaCategories(self):
-        from PandaModules import Notify
+        from pandac.PandaModules import Notify
         topCategory = Notify.ptr().getTopCategory()
         return self._getPandaCategories(topCategory)
 

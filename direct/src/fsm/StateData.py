@@ -1,9 +1,9 @@
 
 """StateData module: contains StateData class"""
 
-from DirectObject import *
+from direct.showbase.DirectObject import *
 
-import DirectNotifyGlobal
+from direct.directnotify import DirectNotifyGlobal
 
 class StateData(DirectObject):
     """

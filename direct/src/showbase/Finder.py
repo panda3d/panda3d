@@ -155,7 +155,7 @@ def replaceTaskMgrFunc(oldFunc, newFunc):
         print ('replaced taskMgr function: ' + newFunc.__name__)
 
 def replaceStateFunc(oldFunc, newFunc):
-    import State
+    from direct.fsm import State
     res = State.redefineEnterFunc(oldFunc, newFunc)
     if res:
         print ('replaced state enter function: ' + newFunc.__name__)

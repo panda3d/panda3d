@@ -1,7 +1,7 @@
 
 from MessengerGlobal import *
-from TaskManagerGlobal import *
-from DirectNotifyGlobal import *
+from direct.task.TaskManagerGlobal import *
+from direct.directnotify.DirectNotifyGlobal import *
 
 class EventManager:
 
@@ -79,7 +79,7 @@ class EventManager:
 
 
     def restart(self):
-        from PandaModules import EventQueue, EventHandler
+        from pandac.PandaModules import EventQueue, EventHandler
         
         if self.eventQueue == None:
             self.eventQueue = EventQueue.getGlobalEventQueue()

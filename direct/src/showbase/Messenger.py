@@ -1,6 +1,6 @@
 
 from PythonUtil import *
-from DirectNotifyGlobal import *
+from direct.directnotify.DirectNotifyGlobal import *
 import types
 
 class Messenger:

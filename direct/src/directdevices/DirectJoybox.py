@@ -1,9 +1,9 @@
 """ Class used to create and control joybox device """
-from PandaObject import *
+from direct.showbase.PandaObject import *
 from DirectDeviceManager import *
-from DirectUtil import *
-import OnscreenText
-import Task
+from direct.directtools.DirectUtil import *
+from direct.gui import OnscreenText
+from direct.task import Task
 
 """
 TODO:

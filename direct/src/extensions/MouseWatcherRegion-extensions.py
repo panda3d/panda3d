@@ -13,7 +13,7 @@
         node parented within the render2d hierarchy.
 
         """
-        import Point3
+        from pandac import Point3
         
         # Get the relative transform to the node.
         mat = np.getMat(render2d)

@@ -102,5 +102,5 @@ class DirectNotify:
             self.setDconfigLevel(categoryName)
 
     def popupControls(self, tl = None):
-        import NotifyPanel
+        from direct.tkpanels import NotifyPanel
         NotifyPanel.NotifyPanel(self, tl)

@@ -1,9 +1,9 @@
 """Interval module: contains the Interval class"""
 
-from DirectObject import *
-from PandaModules import *
-import Task
-import PythonUtil
+from direct.showbase.DirectObject import *
+from pandac.PandaModules import *
+from direct.task import Task
+from direct.showbase import PythonUtil
 import math
 
 class Interval(DirectObject):
@@ -342,7 +342,7 @@ class Interval(DirectObject):
 
     def __spawnTask(self):
         # Spawn task
-        import Task
+        from direct.task import Task
         self.__removeTask()
         taskName = self.getName() + '-play'
         task = Task.Task(self.__playTask)
@@ -360,7 +360,7 @@ class Interval(DirectObject):
                 taskMgr.remove(task)
 
     def __playTask(self, task):
-        import Task
+        from direct.task import Task
         again = self.stepPlay()
         self.privPostEvent()
         if again:
@@ -372,12 +372,12 @@ class Interval(DirectObject):
         """
         Popup control panel for interval.
         """
-        import TkGlobal
+        from direct.showbase import TkGlobal
         import math
         # I moved this here because Toontown does not ship Tk
         from Tkinter import Toplevel, Frame, Button, LEFT, X
         import Pmw
-        import EntryScale
+        from direct.tkwidgets import EntryScale
         if tl == None:
             tl = Toplevel()
             tl.title('Interval Controls')

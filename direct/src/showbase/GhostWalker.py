@@ -16,7 +16,7 @@ animations based on walker events.
 
 from ShowBaseGlobal import *
 
-import DirectNotifyGlobal
+from direct.directnotify import DirectNotifyGlobal
 import NonPhysicsWalker
 
 class GhostWalker(NonPhysicsWalker.NonPhysicsWalker):

@@ -1,6 +1,6 @@
 """EditorGlobals module: contains global editor data"""
 
-from PythonUtil import uniqueElements
+from direct.showbase.PythonUtil import uniqueElements
 
 EntIdRange = 10000
 # Once a range has been assigned to a user, please don't change it.

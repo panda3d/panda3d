@@ -1,7 +1,7 @@
-from ToontownGlobals import *
-import DirectNotifyGlobal
+from toontown.toonbase.ToontownGlobals import *
+from direct.directnotify import DirectNotifyGlobal
 import BasicEntities
-import NodePath
+from pandac import NodePath
 
 class EntrancePoint(BasicEntities.NodePathEntity):
     def __init__(self, level, entId):

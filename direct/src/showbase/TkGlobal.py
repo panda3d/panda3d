@@ -18,7 +18,7 @@ def tkloop(self):
     return Task.cont
 
 # Get the taskMgr
-from TaskManagerGlobal import *
+from direct.task.TaskManagerGlobal import *
 
 def spawnTkLoop():
     # Spawn this task

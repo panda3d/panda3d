@@ -1,6 +1,6 @@
 """OnscreenText module: contains the OnscreenText class"""
 
-from PandaObject import *
+from direct.showbase.PandaObject import *
 import DirectGuiGlobals
 import types
 

@@ -1,7 +1,7 @@
 """DistributedLargeBlobSenderAI module: contains the DistributedLargeBlobSenderAI class"""
 
-import DistributedObjectAI
-import DirectNotifyGlobal
+from direct.distributed import DistributedObjectAI
+from direct.directnotify import DirectNotifyGlobal
 import LargeBlobSenderConsts
 
 class DistributedLargeBlobSenderAI(DistributedObjectAI.DistributedObjectAI):

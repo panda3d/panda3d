@@ -3,13 +3,13 @@
     prop."""
 
 
-from AIBaseGlobal import *
-from ClockDelta import *
+from otp.ai.AIBaseGlobal import *
+from direct.distributed.ClockDelta import *
 
-import DirectNotifyGlobal
-import ClassicFSM
+from direct.directnotify import DirectNotifyGlobal
+from direct.fsm import ClassicFSM
 import DistributedEntityAI
-import State
+from direct.fsm import State
 
 
 class DistributedInteractiveEntityAI(DistributedEntityAI.DistributedEntityAI):

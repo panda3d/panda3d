@@ -1,31 +1,31 @@
-from PandaModules import *
+from pandac.PandaModules import *
 from ParticleManagerGlobal import *
-from PhysicsManagerGlobal import *
+from direct.showbase.PhysicsManagerGlobal import *
 
-import ParticleSystem
-import BaseParticleFactory
-import PointParticleFactory
-import ZSpinParticleFactory
+from pandac import ParticleSystem
+from pandac import BaseParticleFactory
+from pandac import PointParticleFactory
+from pandac import ZSpinParticleFactory
 #import OrientedParticleFactory
-import BaseParticleRenderer
-import PointParticleRenderer
-import LineParticleRenderer
-import GeomParticleRenderer
-import SparkleParticleRenderer
-import SpriteParticleRenderer
-import BaseParticleEmitter
-import BoxEmitter
-import DiscEmitter
-import LineEmitter
-import PointEmitter
-import RectangleEmitter
-import RingEmitter
-import SphereSurfaceEmitter
-import SphereVolumeEmitter
-import TangentRingEmitter
+from pandac import BaseParticleRenderer
+from pandac import PointParticleRenderer
+from pandac import LineParticleRenderer
+from pandac import GeomParticleRenderer
+from pandac import SparkleParticleRenderer
+from pandac import SpriteParticleRenderer
+from pandac import BaseParticleEmitter
+from pandac import BoxEmitter
+from pandac import DiscEmitter
+from pandac import LineEmitter
+from pandac import PointEmitter
+from pandac import RectangleEmitter
+from pandac import RingEmitter
+from pandac import SphereSurfaceEmitter
+from pandac import SphereVolumeEmitter
+from pandac import TangentRingEmitter
 import string
 import os
-import DirectNotifyGlobal
+from direct.directnotify import DirectNotifyGlobal
 import sys
 
 class Particles(ParticleSystem.ParticleSystem):
@@ -135,7 +135,7 @@ class Particles(ParticleSystem.ParticleSystem):
             npath = NodePath('default-geom')
             # This was moved here because we do not want to download
             # the direct tools with toontown.
-            import DirectSelection
+            from direct.directtools import DirectSelection
             bbox = DirectSelection.DirectBoundingBox(npath)
             self.renderer.setGeomNode(bbox.lines.node())
         elif (type == "SparkleParticleRenderer"):

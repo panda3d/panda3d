@@ -1,6 +1,6 @@
-import DistributedObjectAI
+from direct.distributed import DistributedObjectAI
 import Entity
-import DirectNotifyGlobal
+from direct.directnotify import DirectNotifyGlobal
 
 class DistributedEntityAI(DistributedObjectAI.DistributedObjectAI,
                           Entity.Entity):

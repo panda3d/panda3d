@@ -1,5 +1,5 @@
 from DirectObject import *
-from PandaModules import *
+from pandac.PandaModules import *
 
 class PandaObject(DirectObject):
     """

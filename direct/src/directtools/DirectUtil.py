@@ -1,4 +1,4 @@
-from PandaObject import *
+from direct.showbase.PandaObject import *
 from DirectGlobals import *
 
 # Routines to adjust values

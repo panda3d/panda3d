@@ -1,4 +1,4 @@
-from IntervalGlobal import * 
+from direct.interval.IntervalGlobal import * 
 import Entity
 
 class PropSpinner(Entity.Entity):

@@ -1,21 +1,21 @@
 """DistributedLevel.py: contains the DistributedLevel class"""
 
-from ClockDelta import *
-from PandaModules import *
-from PythonUtil import Functor, sameElements, list2dict, uniqueElements
-from IntervalGlobal import *
-from ToontownMsgTypes import *
-import ToontownGlobals
-import OTPGlobals
-import DistributedObject
+from direct.distributed.ClockDelta import *
+from pandac.PandaModules import *
+from direct.showbase.PythonUtil import Functor, sameElements, list2dict, uniqueElements
+from direct.interval.IntervalGlobal import *
+from toontown.distributed.ToontownMsgTypes import *
+from toontown.toonbase import ToontownGlobals
+from otp.otpbase import OTPGlobals
+from direct.distributed import DistributedObject
 import Level
 import LevelConstants
-import DirectNotifyGlobal
+from direct.directnotify import DirectNotifyGlobal
 import EntityCreator
-import OnscreenText
-import Task
+from direct.gui import OnscreenText
+from direct.task import Task
 import LevelUtil
-import FactoryCameraViews
+from toontown.coghq import FactoryCameraViews
 import random
 
 class DistributedLevel(DistributedObject.DistributedObject,

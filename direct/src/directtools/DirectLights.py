@@ -1,4 +1,4 @@
-from PandaObject import *
+from direct.showbase.PandaObject import *
 from string import lower
 
 class DirectLight(NodePath):

@@ -1,4 +1,4 @@
-from AppShell import *
+from direct.tkwidgets.AppShell import *
 
 class TaskManagerPanel(AppShell):
     # Override class variables here
@@ -46,7 +46,7 @@ class TaskManagerWidget(PandaObject):
         tasks managed by the taskManager.
         """
         # Make sure TK mainloop is running
-        import TkGlobal
+        from direct.showbase import TkGlobal
         # Record parent (used by ok cancel dialog boxes)
         self.parent = parent
         # Record taskManager

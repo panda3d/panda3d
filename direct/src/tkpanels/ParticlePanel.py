@@ -1,19 +1,19 @@
 """PANDA3D Particle Panel"""
 
 # Import Tkinter, Pmw, and the floater code from this directory tree.
-from AppShell import *
-from TkGlobal import *
+from direct.tkwidgets.AppShell import *
+from direct.showbase.TkGlobal import *
 from tkFileDialog import *
 from tkSimpleDialog import askstring
 import os
-import Dial
-import Floater
-import Slider
-import VectorWidgets
+from direct.tkwidgets import Dial
+from direct.tkwidgets import Floater
+from direct.tkwidgets import Slider
+from direct.tkwidgets import VectorWidgets
 import Placer
-import ForceGroup
-import Particles
-import ParticleEffect
+from direct.particles import ForceGroup
+from direct.particles import Particles
+from direct.particles import ParticleEffect
 
 class ParticlePanel(AppShell):
     # Override class variables

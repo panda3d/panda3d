@@ -3,33 +3,33 @@
 # Annoying and very noisy, but sometimes useful
 #import VerboseImport
 
-from PandaModules import *
+from pandac.PandaModules import *
 
 # This needs to be available early for DirectGUI imports
 __builtins__["config"] = ConfigConfigureGetConfigConfigShowbase
 
-from DirectNotifyGlobal import *
+from direct.directnotify.DirectNotifyGlobal import *
 from MessengerGlobal import *
-from TaskManagerGlobal import *
+from direct.task.TaskManagerGlobal import *
 from EventManagerGlobal import *
 from PythonUtil import *
-from ParticleManagerGlobal import *
+from direct.particles.ParticleManagerGlobal import *
 from PhysicsManagerGlobal import *
-from IntervalManager import ivalMgr
+from direct.interval.IntervalManager import ivalMgr
 from InputStateGlobal import inputState
 
-import Task
+from direct.task import Task
 import EventManager
 import math
 import sys
 import Loader
 import time
-import ClassicFSM
-import State
+from direct.fsm import ClassicFSM
+from direct.fsm import State
 import DirectObject
 import SfxPlayer
 if __debug__:
-    import DeltaProfiler
+    from direct.directutil import DeltaProfiler
     import OnScreenDebug
 
 __builtins__["FADE_SORT_INDEX"] = 1000
@@ -1526,7 +1526,7 @@ class ShowBase(DirectObject.DirectObject):
         self.startTk(fWantTk)
         self.wantDirect = fWantDirect
         if self.wantDirect:
-            import DirectSession
+            from direct.directtools import DirectSession
             direct.enable()
         else:
             __builtins__["direct"] = self.direct = None

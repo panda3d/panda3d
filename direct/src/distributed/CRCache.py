@@ -1,6 +1,6 @@
 """CRCache module: contains the CRCache class"""
 
-import DirectNotifyGlobal
+from direct.directnotify import DirectNotifyGlobal
 import DistributedObject
 
 class CRCache:
@@ -86,7 +86,7 @@ class CRCache:
     def checkCache(self):
         # For debugging; this verifies that the cache is sensible and
         # returns true if so.
-        from PandaModules import NodePath
+        from pandac.PandaModules import NodePath
         for obj in self.dict.values():
             if isinstance(obj, NodePath):
                 assert(not obj.isEmpty() and obj.getTopNode() != render.node())

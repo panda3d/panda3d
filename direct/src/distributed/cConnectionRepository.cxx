@@ -153,7 +153,9 @@ check_datagram() {
 #ifdef HAVE_PYTHON
     case CLIENT_OBJECT_UPDATE_FIELD:
     case STATESERVER_OBJECT_UPDATE_FIELD:
-      handle_update_field();
+      if (!handle_update_field()) {
+        return false;
+      }
       break;
 #endif  // HAVE_PYTHON
 
@@ -363,16 +365,18 @@ do_check_datagram() {
 //  Description: Directly handles an update message on a field.
 //               Python never touches the datagram; it just gets its
 //               distributed method called with the appropriate
-//               parameters.
+//               parameters.  Returns true if everything is ok, false
+//               if there was an error processing the field's update
+//               method.
 ////////////////////////////////////////////////////////////////////
-void CConnectionRepository::
+bool CConnectionRepository::
 handle_update_field() {
 #ifdef HAVE_PYTHON
   int do_id = _di.get_uint32();
   if (_python_repository != (PyObject *)NULL) {
     PyObject *doId2do =
       PyObject_GetAttrString(_python_repository, "doId2do");
-    nassertv(doId2do != NULL);
+    nassertr(doId2do != NULL, false);
 
     PyObject *doId = PyInt_FromLong(do_id);
     PyObject *distobj = PyDict_GetItem(doId2do, doId);
@@ -381,11 +385,11 @@ handle_update_field() {
 
     if (distobj != NULL) {
       PyObject *dclass_obj = PyObject_GetAttrString(distobj, "dclass");
-      nassertv(dclass_obj != NULL);
+      nassertr(dclass_obj != NULL, false);
 
       PyObject *dclass_this = PyObject_GetAttrString(dclass_obj, "this");
       Py_DECREF(dclass_obj);
-      nassertv(dclass_this != NULL);
+      nassertr(dclass_this != NULL, false);
 
       DCClass *dclass = (DCClass *)PyInt_AsLong(dclass_this);
       Py_DECREF(dclass_this);
@@ -397,7 +401,13 @@ handle_update_field() {
       Py_INCREF(distobj);
       dclass->receive_update(distobj, _di); 
       Py_DECREF(distobj);
+      
+      if (PyErr_Occurred()) {
+        return false;
+      }
     }
   }
 #endif  // HAVE_PYTHON  
+
+  return true;
 }

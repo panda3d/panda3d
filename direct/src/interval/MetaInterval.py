@@ -1,8 +1,8 @@
-from PandaModules import *
-from DirectNotifyGlobal import *
+from pandac.PandaModules import *
+from direct.directnotify.DirectNotifyGlobal import *
 from IntervalManager import ivalMgr
 import Interval
-import Task
+from direct.task import Task
 import types
 
 PREVIOUS_END = CMetaInterval.RSPreviousEnd

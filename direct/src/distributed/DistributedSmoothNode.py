@@ -1,10 +1,10 @@
 """DistributedSmoothNode module: contains the DistributedSmoothNode class"""
 
-from PandaModules import *
+from pandac.PandaModules import *
 from ClockDelta import *
 import DistributedNode
 import DistributedSmoothNodeBase
-import Task
+from direct.task import Task
 
 # This number defines our tolerance for out-of-sync telemetry packets.
 # If a packet appears to have originated from more than MaxFuture

@@ -1,7 +1,7 @@
-from PandaObject import *
-from DirectGeometry import *
+from direct.showbase.PandaObject import *
+from direct.directtools.DirectGeometry import *
 
-import NodePath
+from pandac import NodePath
 
 class Mopath(PandaObject):
 

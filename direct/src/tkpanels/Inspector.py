@@ -4,7 +4,7 @@
 ### so that I can just type: inspect(anObject) any time.
 
 import string
-from TkGlobal import *
+from direct.showbase.TkGlobal import *
 
 ### public API
 
@@ -407,8 +407,8 @@ class InspectorWindow:
             return
         part = self.topInspector().partNumber(partNumber)
         print part
-        from PandaModules import NodePath
-        import ClassicFSM
+        from pandac.PandaModules import NodePath
+        from direct.fsm import ClassicFSM
         popupMenu = None
         if isinstance(part, NodePath):
             popupMenu = self.createPopupMenu(

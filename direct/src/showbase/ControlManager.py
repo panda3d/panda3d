@@ -4,15 +4,15 @@ from ShowBaseGlobal import *
 #from PythonUtil import *
 #from IntervalGlobal import *
 
-import Avatar
+from otp.avatar import Avatar
 if __debug__:
     import DevWalker
-import DirectNotifyGlobal
+from direct.directnotify import DirectNotifyGlobal
 import GhostWalker
 import GravityWalker
 import NonPhysicsWalker
 import PhysicsWalker
-import Task
+from direct.task import Task
 
 
 class ControlManager:

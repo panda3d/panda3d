@@ -5,7 +5,7 @@ existing code.  New code should use the FSM module instead.
 
 """
 
-from DirectObject import *
+from direct.showbase.DirectObject import *
 import types
 
 class ClassicFSM(DirectObject):
@@ -348,7 +348,7 @@ class ClassicFSM(DirectObject):
             return 0
 
     def view(self):
-        import FSMInspector
+        from direct.tkpanels import FSMInspector
         FSMInspector.FSMInspector(self)
 
 

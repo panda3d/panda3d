@@ -1,20 +1,20 @@
 """CutScene.py"""
 
 
-import DirectObject
-import DirectNotifyGlobal
+from direct.showbase import DirectObject
+from direct.directnotify import DirectNotifyGlobal
 import BasicEntities
 
-from PandaModules import *
-from ShowBaseGlobal import *
-from IntervalGlobal import *
-from ClockDelta import *
+from pandac.PandaModules import *
+from direct.showbase.ShowBaseGlobal import *
+from direct.interval.IntervalGlobal import *
+from direct.distributed.ClockDelta import *
 
-import ToontownGlobals
-import DirectNotifyGlobal
-import ClassicFSM
+from toontown.toonbase import ToontownGlobals
+from direct.directnotify import DirectNotifyGlobal
+from direct.fsm import ClassicFSM
 #import DistributedInteractiveEntity
-import DelayDelete
+from direct.distributed import DelayDelete
 
 # effects #
 

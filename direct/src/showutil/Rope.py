@@ -1,4 +1,4 @@
-from PandaModules import *
+from pandac.PandaModules import *
 import types
 
 class Rope(NodePath):

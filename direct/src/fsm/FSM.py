@@ -2,8 +2,8 @@
 previously called FSM.py (now called ClassicFSM.py).
 """
 
-import DirectObject
-import DirectNotifyGlobal
+from direct.showbase import DirectObject
+from direct.directnotify import DirectNotifyGlobal
 import types
 import string
 

@@ -1,6 +1,6 @@
 
 
-import DirectNotifyGlobal
+from direct.directnotify import DirectNotifyGlobal
 import DirectObject
 
 

@@ -1,4 +1,4 @@
 """ParticleManagerGlobal module: contains the global particle system manager"""
-import ParticleSystemManager
+from pandac import ParticleSystemManager
 
 particleMgr = ParticleSystemManager.ParticleSystemManager()

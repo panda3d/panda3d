@@ -1,6 +1,6 @@
 import FSM
-from PandaModules import *
-import Task
+from pandac.PandaModules import *
+from direct.task import Task
 import string
 
 

@@ -4,7 +4,7 @@
 import getopt
 import sys
 import os
-import FFIConstants
+from direct.ffi import FFIConstants
 
 # Define a help string for the user
 helpString ="""
@@ -117,7 +117,7 @@ else:
     FFIConstants.CodeModuleNameList = codeLibs
 
 # Ok, now we can start generating code
-import FFIInterrogateDatabase
+from direct.ffi import FFIInterrogateDatabase
 db = FFIInterrogateDatabase.FFIInterrogateDatabase()
 db.generateCode(outputDir, extensionsDir)
 

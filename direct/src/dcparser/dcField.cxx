@@ -19,7 +19,6 @@
 #include "dcField.h"
 #include "hashGenerator.h"
 #include "dcmsgtypes.h"
-#include "notify.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCField::get_number

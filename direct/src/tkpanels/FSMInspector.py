@@ -1,7 +1,7 @@
 """ Finite State Machine Inspector module """
-from PandaObject import *
-from AppShell import *
-from TkGlobal import *
+from direct.showbase.PandaObject import *
+from direct.tkwidgets.AppShell import *
+from direct.showbase.TkGlobal import *
 from tkSimpleDialog import askstring
 import math
 import operator
@@ -452,10 +452,10 @@ want-tk #t
 
 2)      start up the show and create a Finite State Machine
 
-from ShowBaseGlobal import *
+from direct.showbase.ShowBaseGlobal import *
 
-import ClassicFSM
-import State
+from direct.fsm import ClassicFSM
+from direct.fsm import State
 
 def enterState():
     print 'enterState'
@@ -522,7 +522,7 @@ occasionally results in everything locking up.  This procedure seems to
 avoid the problem for me:
 
 # Start up the show
-from ShowBaseGlobal import *
+from direct.showbase.ShowBaseGlobal import *
 
 # You will see the window and a Tk panel pop open
 

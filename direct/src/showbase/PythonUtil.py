@@ -8,7 +8,7 @@ import os
 import sys
 import random
 
-import Verify
+from direct.directutil import Verify
 
 
 # NOTE: ifAbsentPut has been replaced with Python's dictionary's builtin setdefault
@@ -377,7 +377,7 @@ def adjust(command = None, dim = 1, parent = None, **kw):
     10.0
     """
     # Make sure we enable Tk
-    import Valuator
+    from direct.tkwidgets import Valuator
     # Set command if specified
     if command:
         kw['command'] = lambda x: apply(command, x)

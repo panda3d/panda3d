@@ -1,10 +1,10 @@
 """ProjectileInterval module: contains the ProjectileInterval class"""
 
-from DirectObject import *
-from PandaModules import *
+from direct.showbase.DirectObject import *
+from pandac.PandaModules import *
 from Interval import Interval
-from PythonUtil import lerp
-import PythonUtil
+from direct.showbase.PythonUtil import lerp
+from direct.showbase import PythonUtil
 
 class ProjectileInterval(Interval):
     """ProjectileInterval class: moves a nodepath through the trajectory

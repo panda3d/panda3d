@@ -1,7 +1,7 @@
 """Loader module: contains the Loader class"""
 
-from PandaModules import *
-from DirectNotifyGlobal import *
+from pandac.PandaModules import *
+from direct.directnotify.DirectNotifyGlobal import *
 
 # You can specify a phaseChecker callback to check
 # a modelPath to see if it is being loaded in the correct

@@ -1,8 +1,8 @@
-from PandaObject import *
+from direct.showbase.PandaObject import *
 from DirectUtil import *
 from DirectGeometry import *
 from DirectGlobals import *
-import Task
+from direct.task import Task
 
 CAM_MOVE_DURATION = 1.2
 COA_MARKER_SF = 0.0075

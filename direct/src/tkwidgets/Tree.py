@@ -18,8 +18,8 @@
 import os
 import sys
 import string
-from TkGlobal import *
-from PandaObject import *
+from direct.showbase.TkGlobal import *
+from direct.showbase.PandaObject import *
 
 # Initialize icon directory
 f = Filename('icons')

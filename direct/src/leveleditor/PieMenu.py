@@ -1,6 +1,6 @@
-from PandaObject import *
-from DirectGeometry import *
-import Task
+from direct.showbase.PandaObject import *
+from direct.directtools.DirectGeometry import *
+from direct.task import Task
 
 class PieMenu(NodePath, PandaObject):
     def __init__(self, visibleMenu, menuItems,
@@ -133,7 +133,7 @@ class TextPieMenu(PieMenu):
             height = 480
         aspectRatio = width/float(height)
         # Add items
-        from DirectGuiGlobals import getDefaultFont
+        from direct.gui.DirectGuiGlobals import getDefaultFont
         for i in range (numItems):
             # Create text node for each item
             if (textList[i] != None):

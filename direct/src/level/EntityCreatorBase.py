@@ -1,6 +1,6 @@
 """EntityCreatorBase module: contains the EntityCreatorBase class"""
 
-import DirectNotifyGlobal
+from direct.directnotify import DirectNotifyGlobal
 
 class EntityCreatorBase:
     """This class is responsible for creating instances of Entities on the

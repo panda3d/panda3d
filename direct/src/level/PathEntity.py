@@ -1,8 +1,8 @@
-from ToontownGlobals import *
-from IntervalGlobal import *
-import DirectNotifyGlobal
+from toontown.toonbase.ToontownGlobals import *
+from direct.interval.IntervalGlobal import *
+from direct.directnotify import DirectNotifyGlobal
 import BasicEntities
-import GoonPathData
+from toontown.suit import GoonPathData
 
 class PathEntity(BasicEntities.NodePathEntity):
     def __init__(self, level, entId):

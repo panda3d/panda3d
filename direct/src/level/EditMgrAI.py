@@ -2,7 +2,7 @@
 
 import EditMgrBase
 if __dev__:
-    from PythonUtil import list2dict
+    from direct.showbase.PythonUtil import list2dict
     import EditorGlobals
 
 class EditMgrAI(EditMgrBase.EditMgrBase):

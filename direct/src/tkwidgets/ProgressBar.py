@@ -1,7 +1,7 @@
 """
 A  basic widget for showing the progress being made in a task.
 """
-from TkGlobal import *
+from direct.showbase.TkGlobal import *
 
 class ProgressBar:
     def __init__(self, master=None, orientation="horizontal",

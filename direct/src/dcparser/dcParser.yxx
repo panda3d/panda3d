@@ -85,6 +85,8 @@ dc_cleanup_parser() {
 %type <u.dclass> dclass_name
 %type <u.atomic> atomic_name
 %type <u.subatomic> type_token
+%type <str> import_identifier
+%type <str> slash_identifier
 
 %%
 
@@ -120,12 +122,28 @@ dclass_name:
 }
 	;
 
+slash_identifier:
+        IDENTIFIER
+	| slash_identifier '/' IDENTIFIER
+{
+  $$ = $1 + string("/") + $3;
+}
+	;
+
+import_identifier:
+        slash_identifier
+	| import_identifier '.' slash_identifier
+{
+  $$ = $1 + string(".") + $3;
+}
+	;
+
 import:
-	KW_IMPORT IDENTIFIER
+	KW_IMPORT import_identifier
 {
   dc_file->add_import_module($2);
 }
-	| KW_FROM IDENTIFIER KW_IMPORT 
+	| KW_FROM import_identifier KW_IMPORT 
 {
   dc_file->add_import_module($2);
 }
@@ -141,11 +159,11 @@ import_symbol_list_or_star:
 	;
 
 import_symbol_list:
-	IDENTIFIER
+	slash_identifier
 {
   dc_file->add_import_symbol($1);
 }
-	| import_symbol_list ',' IDENTIFIER
+	| import_symbol_list ',' slash_identifier
 {
   dc_file->add_import_symbol($3);
 }

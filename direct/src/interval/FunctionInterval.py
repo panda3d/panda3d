@@ -1,8 +1,8 @@
 """FunctionInterval module: contains the FunctionInterval class"""
 
-from PandaModules import *
-from MessengerGlobal import *
-from DirectNotifyGlobal import *
+from pandac.PandaModules import *
+from direct.showbase.MessengerGlobal import *
+from direct.directnotify.DirectNotifyGlobal import *
 import Interval
 import types
 
@@ -381,7 +381,7 @@ t2.play()
 
 smiley = loader.loadModel('models/misc/smiley')
 
-import Actor
+from direct.actor import Actor
 donald = Actor.Actor()
 donald.loadModel("phase_6/models/char/donald-wheel-1000")
 donald.loadAnims({"steer":"phase_6/models/char/donald-wheel-wheel"})

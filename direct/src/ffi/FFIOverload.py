@@ -1,4 +1,4 @@
-from PythonUtil import *    
+from direct.showbase.PythonUtil import *    
 from types import *
 import string
 import FFIConstants

@@ -1,11 +1,11 @@
 """EntityTypeRegistry module: contains the EntityTypeRegistry class"""
 
-from PandaModules import *
-import DirectNotifyGlobal
+from pandac.PandaModules import *
+from direct.directnotify import DirectNotifyGlobal
 import types
 import AttribDesc
 import EntityTypeDesc
-from PythonUtil import mostDerivedLast
+from direct.showbase.PythonUtil import mostDerivedLast
 
 class EntityTypeRegistry:
     notify = DirectNotifyGlobal.directNotify.newCategory('EntityTypeRegistry')

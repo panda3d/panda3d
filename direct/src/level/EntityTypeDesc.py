@@ -1,8 +1,8 @@
 """EntityTypeDesc module: contains the EntityTypeDesc class"""
 
-import DirectNotifyGlobal
+from direct.directnotify import DirectNotifyGlobal
 import AttribDesc
-from PythonUtil import mostDerivedLast
+from direct.showbase.PythonUtil import mostDerivedLast
 
 class EntityTypeDesc:
     """This class is meta-data that describes an Entity type."""

@@ -1,8 +1,8 @@
-from PandaObject import *
+from direct.showbase.PandaObject import *
 from DirectGlobals import *
 from DirectUtil import *
 from DirectGeometry import *
-import Task
+from direct.task import Task
 
 class DirectManipulationControl(PandaObject):
     def __init__(self):

@@ -1,6 +1,6 @@
-from AIBaseGlobal import *
-from PandaModules import NodePath
-import DistributedObjectAI
+from otp.ai.AIBaseGlobal import *
+from pandac.PandaModules import NodePath
+from direct.distributed import DistributedObjectAI
 
 class DistributedNodeAI(DistributedObjectAI.DistributedObjectAI, NodePath):
     def __init__(self, air, name=None):

@@ -1,7 +1,7 @@
 """DistributedSmoothNodeBase module: contains the DistributedSmoothNodeBase class"""
 
 from ClockDelta import *
-import Task
+from direct.task import Task
 
 class DistributedSmoothNodeBase:
     """common base class for DistributedSmoothNode and DistributedSmoothNodeAI

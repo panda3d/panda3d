@@ -1,10 +1,10 @@
 
 
-from PandaModules import *
+from pandac.PandaModules import *
 
 import types
-import OnscreenText
-import DirectUtil
+from direct.gui import OnscreenText
+from direct.directtools import DirectUtil
 
 class OnScreenDebug:
     def __init__(self):

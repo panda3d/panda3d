@@ -1,9 +1,9 @@
-from PandaModules import *
-from DirectObject import *
-from PhysicsManagerGlobal import *
+from pandac.PandaModules import *
+from direct.showbase.DirectObject import *
+from direct.showbase.PhysicsManagerGlobal import *
 
-import ForceNode
-import DirectNotifyGlobal
+from pandac import ForceNode
+from direct.directnotify import DirectNotifyGlobal
 import sys
 
 class ForceGroup(DirectObject):

@@ -15,14 +15,14 @@
         """
         if not name:
             name = self.getUrl().cStr()
-        import Task
+        from direct.task import Task
         task = Task.Task(self.doTask)
         task.callback = callback
         task.callbackArgs = extraArgs
         return taskMgr.add(task, name)    
         
     def doTask(self, task):
-        import Task
+        from direct.task import Task
         if self.run():
             return Task.cont
         if task.callback:

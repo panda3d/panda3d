@@ -4,7 +4,7 @@
     of the CInterval class
     """
 
-    from DirectNotifyGlobal import directNotify
+    from direct.directnotify.DirectNotifyGlobal import directNotify
     notify = directNotify.newCategory("Interval")
 
     def setT(self, t):
@@ -41,9 +41,9 @@
         """
         Popup control panel for interval.
         """
-        from TkGlobal import Toplevel, Frame, Button, LEFT, X, Pmw
+        from direct.showbase.TkGlobal import Toplevel, Frame, Button, LEFT, X, Pmw
         import math
-        import EntryScale
+        from direct.tkwidgets import EntryScale
         if tl == None:
             tl = Toplevel()
             tl.title('Interval Controls')

@@ -1,4 +1,4 @@
-from ShowBaseGlobal import *
+from direct.showbase.ShowBaseGlobal import *
 from DirectGui import *
 from whrandom import *
 

@@ -1,6 +1,6 @@
 """DistributedActor module: contains the DistributedActor class"""
 
-import DistributedNode
+from direct.distributed import DistributedNode
 import Actor
 
 class DistributedActor(DistributedNode.DistributedNode, Actor.Actor):

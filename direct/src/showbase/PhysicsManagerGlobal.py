@@ -1,4 +1,4 @@
 """PhysicsManagerGlobal module: contains the global physics manager"""
-import PhysicsManager
+from pandac import PhysicsManager
 
 physicsMgr = PhysicsManager.PhysicsManager()

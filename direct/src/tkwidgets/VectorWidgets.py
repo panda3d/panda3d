@@ -1,4 +1,4 @@
-from TkGlobal import *
+from direct.showbase.TkGlobal import *
 import Valuator
 import Floater
 import Slider

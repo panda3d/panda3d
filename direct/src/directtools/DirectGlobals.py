@@ -1,4 +1,4 @@
-from PandaModules import Vec3, Point3
+from pandac.PandaModules import Vec3, Point3
 
 UNPICKABLE = ['x-disc-visible', 'y-disc-visible', 'z-disc-visible',
               'GridBack', 'unpickable']

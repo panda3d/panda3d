@@ -1,5 +1,5 @@
-from ToontownGlobals import *
-import DirectNotifyGlobal
+from toontown.toonbase.ToontownGlobals import *
+from direct.directnotify import DirectNotifyGlobal
 import BasicEntities
 
 class ModelEntity(BasicEntities.NodePathEntity):

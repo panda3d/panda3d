@@ -1,9 +1,9 @@
 """Level.py: contains the Level class"""
 
-import DirectNotifyGlobal
+from direct.directnotify import DirectNotifyGlobal
 import string
 import LevelConstants
-from PythonUtil import lineInfo, uniqueElements
+from direct.showbase.PythonUtil import lineInfo, uniqueElements
 import types
 
 """

@@ -3,7 +3,7 @@
 import CutScene
 import EntityCreatorBase
 import BasicEntities
-import DirectNotifyGlobal
+from direct.directnotify import DirectNotifyGlobal
 import EditMgr
 import EntrancePoint
 import LevelMgr

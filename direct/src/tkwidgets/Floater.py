@@ -2,10 +2,10 @@
 Floater Class: Velocity style controller for floating point values with
                 a label, entry (validated), and scale
 """
-from PandaObject import *
-from TkGlobal import *
+from direct.showbase.PandaObject import *
+from direct.showbase.TkGlobal import *
 from Valuator import *
-import Task
+from direct.task import Task
 import math
 import string
 

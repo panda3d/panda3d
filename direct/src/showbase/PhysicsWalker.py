@@ -16,9 +16,9 @@ animations based on walker events.
 
 from ShowBaseGlobal import *
 
-import DirectNotifyGlobal
+from direct.directnotify import DirectNotifyGlobal
 import DirectObject
-import PhysicsManager
+from pandac import PhysicsManager
 import math
 
 #import LineStream
@@ -66,9 +66,9 @@ class PhysicsWalker(DirectObject.DirectObject):
         assert(self.debugPrint("\n\nspawnTest()\n"))
         if not self.wantAvatarPhysicsIndicator:
             return
-        from PandaModules import *
-        from IntervalGlobal import *
-        import MovingPlatform
+        from pandac.PandaModules import *
+        from direct.interval.IntervalGlobal import *
+        from toontown.coghq import MovingPlatform
         
         if hasattr(self, "platform"):
             # Remove the prior instantiation:

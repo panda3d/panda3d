@@ -1,9 +1,9 @@
-from PandaObject import *
-from TkGlobal import *
+from direct.showbase.PandaObject import *
+from direct.showbase.TkGlobal import *
 import tkColorChooser
 import WidgetPropertiesDialog
 import string
-from DirectUtil import getTkColorString
+from direct.directtools.DirectUtil import getTkColorString
 
 VALUATOR_MINI = 'mini'
 VALUATOR_FULL = 'full'

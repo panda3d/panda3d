@@ -1,11 +1,12 @@
-from PandaModules import *
-import Task
-import DirectNotifyGlobal
-import DirectObject
+from pandac.PandaModules import *
+from direct.task import Task
+from direct.directnotify import DirectNotifyGlobal
+from direct.showbase import DirectObject
 from PyDatagram import PyDatagram
 from PyDatagramIterator import PyDatagramIterator
 
 import types
+import imp
 
 class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
     """
@@ -52,6 +53,10 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
 
         self.recorder = None
 
+        # This is the string that is appended to symbols read from the
+        # DC file.  The AIRepository will redefine this to 'AI'.
+        self.dcSuffix = ''
+
     def readDCFile(self, dcFileNames = None):
 
         """ Reads in the dc files listed in dcFileNames, or if
@@ -79,43 +84,33 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
         # Now import all of the modules required by the DC file.
         for n in range(dcFile.getNumImportModules()):
             moduleName = dcFile.getImportModule(n)
-            moduleName = self.mangleDCName(moduleName)
 
-            module = __import__(moduleName, globals(), locals())
+            # Maybe the module name is represented as "moduleName/AI".
+            suffix = moduleName.split('/')
+            moduleName = suffix[0]
+            if self.dcSuffix and self.dcSuffix in suffix[1:]:
+                moduleName += self.dcSuffix
 
-            if dcFile.getNumImportSymbols(n) > 0:
-                # "from moduleName import symbolName, symbolName, ..."
-                # Copy just the named symbols into the dictionary.
-                for i in range(dcFile.getNumImportSymbols(n)):
-                    symbolName = dcFile.getImportSymbol(n, i)
-                    if symbolName == '*':
-                        # Get all symbols.
-                        dcImports.update(module.__dict__)
-                    else:
-                        mangledName = self.mangleName(symbolName)
-                        gotAny = 0
-                        if hasattr(module, symbolName):
-                            dcImports[symbolName] = getattr(module, symbolName)
-                            gotAny = 1
-                        if hasattr(module, mangledName): 
-                            dcImports[mangledName] = getattr(module, mangledName)
-                            gotAny = 1
-                            
-                        if not gotAny:
-                            self.notify.error("Symbol %s not found in module %s." % (
-                                symbolName, moduleName))
-            else:
-                # "import moduleName"
-                # Copy the module itself into the dictionary.
-                dcImports[moduleName] = module
+            importSymbols = []
+            for i in range(dcFile.getNumImportSymbols(n)):
+                symbolName = dcFile.getImportSymbol(n, i)
+
+                # Maybe the symbol name is represented as "symbolName/AI".
+                suffix = symbolName.split('/')
+                symbolName = suffix[0]
+                if self.dcSuffix and self.dcSuffix in suffix[1:]:
+                    symbolName += self.dcSuffix
+
+                importSymbols.append(symbolName)
+                
+            self.importModule(dcImports, moduleName, importSymbols)
 
         # Now get the class definition for the classes named in the DC
         # file.
         for i in range(dcFile.getNumClasses()):
             dclass = dcFile.getClass(i)
             number = dclass.getNumber()
-            className = dclass.getName()
-            className = self.mangleDCName(className)
+            className = dclass.getName() + self.dcSuffix
 
             # Does the class have a definition defined in the newly
             # imported namespace?
@@ -136,14 +131,38 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
             self.dclassesByName[className] = dclass
             self.dclassesByNumber[number] = dclass
 
-    def mangleDCName(self, name):
-        """ This is provided as a hook so that derived classes
-        (e.g. the AIRepository) can rename symbols from the .dc file
-        according to the conventions associated with this particular
-        repository (e.g., an AIRepository appends 'AI' to class and
-        module names)."""
-        
-        return name
+    def importModule(self, dcImports, moduleName, importSymbols):
+        """ Imports the indicated moduleName and all of its symbols
+        into the current namespace.  This more-or-less reimplements
+        the Python import command. """
+
+        module = __import__(moduleName, globals(), locals(), importSymbols)
+
+        if importSymbols:
+            # "from moduleName import symbolName, symbolName, ..."
+            # Copy just the named symbols into the dictionary.
+            if importSymbols == ['*']:
+                # "from moduleName import *"
+                if hasattr(module, "__all__"):
+                    importSymbols = module.__all__
+                else:
+                    importSymbols = module.__dict__.keys()
+            
+            for symbolName in importSymbols:
+                if hasattr(module, symbolName):
+                    dcImports[symbolName] = getattr(module, symbolName)
+
+                else:
+                    raise StandardError, 'Symbol %s not defined in module %s.' % (symbolName, moduleName)
+
+        else:
+            # "import moduleName"
+
+            # Copy the root module name into the dictionary.
+
+            # Follow the dotted chain down to the actual module.
+            components = moduleName.split('.')
+            dcImports[components[0]] = module
 
     def connect(self, serverList, 
                 successCallback = None, successArgs = [],

@@ -1,9 +1,9 @@
-from PandaModules import *
-from ShowBaseGlobal import *
+from pandac.PandaModules import *
+from direct.showbase.ShowBaseGlobal import *
 from IntervalGlobal import *
-from Actor import *
+from direct.actor.Actor import *
 
-import Mopath
+from direct.directutil import Mopath
 
 boat = loader.loadModel('models/misc/smiley')
 boat.reparentTo(render)

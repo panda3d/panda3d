@@ -14,7 +14,7 @@ assert(base)
 directNotify.setDconfigLevels()
 
 def inspect(anObject):
-    import Inspector
+    from direct.tkpanels import Inspector
     return Inspector.inspect(anObject)
 
 __builtins__["inspect"] = inspect

@@ -1,9 +1,9 @@
 """ Class used to create and control radamec device """
 from math import *
-from PandaObject import *
+from direct.showbase.PandaObject import *
 from DirectDeviceManager import *
 
-import DirectNotifyGlobal
+from direct.directnotify import DirectNotifyGlobal
 
 """
 TODO:

@@ -1,12 +1,12 @@
 """ClientRepository module: contains the ClientRepository class"""
 
-from PandaModules import *
+from pandac.PandaModules import *
 from MsgTypes import *
-import Task
-import DirectNotifyGlobal
+from direct.task import Task
+from direct.directnotify import DirectNotifyGlobal
 import CRCache
 import ConnectionRepository
-import PythonUtil
+from direct.showbase import PythonUtil
 import ParentMgr
 import RelatedObjectMgr
 import time

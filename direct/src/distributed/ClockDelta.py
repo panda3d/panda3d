@@ -1,9 +1,9 @@
 # ClockDelta provides the ability to use clock synchronization for
 # distributed objects
 
-from PandaModules import *
-import DirectNotifyGlobal
-import DirectObject
+from pandac.PandaModules import *
+from direct.directnotify import DirectNotifyGlobal
+from direct.showbase import DirectObject
 import math
 
 # The following two parameters, NetworkTimeBits and

@@ -2,7 +2,7 @@
 Global definitions used by Direct Gui Classes and handy constants
 that can be used during widget construction
 """
-from PandaModules import *
+from pandac.PandaModules import *
 
 # USEFUL GUI CONSTANTS
 # Constant used to indicate that an option can only be set by a call

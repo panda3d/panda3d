@@ -1,17 +1,17 @@
 """SpecUtil module: contains utility functions for creating and managing level specs"""
 
-from ShowBaseGlobal import *
+from direct.showbase.ShowBaseGlobal import *
 import LevelSpec
 import LevelConstants
 import LevelUtil
-from PythonUtil import list2dict
+from direct.showbase.PythonUtil import list2dict
 import EntityTypes
 import types
 
 """
 TO CREATE A NEW SPEC:
 import SpecUtil
-import FactoryEntityTypes
+from toontown.coghq import FactoryEntityTypes
 SpecUtil.makeNewSpec('$TOONTOWN/src/coghq/FactoryMockupSpec.py', 'phase_9/models/cogHQ/SelbotLegFactory', FactoryEntityTypes)
 """
 def makeNewSpec(filename, modelPath, entTypeModule=EntityTypes):
@@ -28,14 +28,14 @@ def makeNewSpec(filename, modelPath, entTypeModule=EntityTypes):
 """
 FOR SAME LEVEL MODEL PATH:
 import SpecUtil
-import SellbotLegFactorySpec
-import FactoryEntityTypes
+from toontown.coghq import SellbotLegFactorySpec
+from toontown.coghq import FactoryEntityTypes
 SpecUtil.updateSpec(SellbotLegFactorySpec, FactoryEntityTypes)
 
 FOR DIFFERENT LEVEL MODEL PATH:
 import SpecUtil
-import SellbotLegFactorySpec
-import FactoryEntityTypes
+from toontown.coghq import SellbotLegFactorySpec
+from toontown.coghq import FactoryEntityTypes
 SpecUtil.updateSpec(SellbotLegFactorySpec, FactoryEntityTypes, '/i/beta/toons/maya/work/CogHeadquarters/CogFactoriesInteriors/AllFactories/LegFactory/SelbotLegFactory_v##s#.mb')
 """
 

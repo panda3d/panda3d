@@ -3,9 +3,9 @@
 # This module is intended to supply routines and dataformats common to
 # both ClusterClient and ClusterServer.
 
-from PandaModules import *
-from PyDatagram import PyDatagram
-from PyDatagramIterator import PyDatagramIterator
+from pandac.PandaModules import *
+from direct.distributed.PyDatagram import PyDatagram
+from direct.distributed.PyDatagramIterator import PyDatagramIterator
 import time
 
 #these are the types of messages that are currently supported.

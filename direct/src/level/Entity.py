@@ -1,9 +1,9 @@
 """Entity.py: contains the Entity class"""
 
-from DirectObject import *
-from PythonUtil import lineInfo
+from direct.showbase.DirectObject import *
+from direct.showbase.PythonUtil import lineInfo
 import string
-import DirectNotifyGlobal
+from direct.directnotify import DirectNotifyGlobal
 
 class Entity(DirectObject):
     """Entity is the base class for all objects that exist in a Level
