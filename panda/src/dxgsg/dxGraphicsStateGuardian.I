@@ -326,6 +326,13 @@ call_dxBlendFunc(D3DBLEND sfunc, D3DBLEND dfunc )
     }
 }
 
+INLINE void DXGraphicsStateGuardian::
+enable_zwritemask(bool val) {
+    if (_depth_write_enabled != val) {
+        _depth_write_enabled = val;
+        _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, val);
+    }
+}
 
 /**  unimplemented
 

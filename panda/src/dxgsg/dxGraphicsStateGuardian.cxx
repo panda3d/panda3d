@@ -475,9 +475,6 @@ dx_init(  LPDIRECTDRAW7     context,
     _d3dDevice = pDevice;
     _view_rect = viewrect;
 
-    _depth_write_enabled = true;
-    _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, _depth_write_enabled);
-
     ZeroMemory(&_lmodel_ambient,sizeof(Colorf));
     _d3dDevice->SetRenderState( D3DRENDERSTATE_AMBIENT, 0x0);
 
@@ -489,6 +486,9 @@ dx_init(  LPDIRECTDRAW7     context,
 
     _CurShadeMode =  D3DSHADE_FLAT;
     _d3dDevice->SetRenderState(D3DRENDERSTATE_SHADEMODE, _CurShadeMode);
+
+    _depth_test_enabled = true; 
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, _depth_test_enabled);
 
     // need to free these properly
     _cNumTexPixFmts = 0;
@@ -5297,7 +5297,9 @@ issue_texture_apply(const TextureApplyTransition *attrib) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_color_mask(const ColorMaskTransition *attrib) {
-    dxgsg_cat.fatal() << "DXGSG issue_color_mask unimplemented (not implementable on DX7)!!!";
+    dxgsg_cat.fatal() << "DXGSG issue_color_mask unimplemented (not implementable on DX7, need DX8)!!!";
+    // because PLANEMASK renderstate has inconsistent to poor driver support on dx6 and before, and is
+    // explicitly disabled on dx7
     return;
 }
 
@@ -5320,16 +5322,6 @@ issue_depth_test(const DepthTestTransition *attrib) {
         _d3dDevice->SetRenderState(D3DRENDERSTATE_ZENABLE, D3DZB_TRUE);
         _d3dDevice->SetRenderState(D3DRENDERSTATE_ZFUNC, get_depth_func_type(mode));
     }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_depth_write
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-issue_depth_write(const DepthWriteTransition *attrib) {
-    _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, attrib->is_on());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5584,6 +5576,17 @@ wants_texcoords() const {
     return _texturing_enabled;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::issue_depth_write
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+issue_depth_write(const DepthWriteTransition *attrib) {
+    enable_zwritemask(attrib->is_on());
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::begin_decal
 //       Access: Public, Virtual
@@ -5602,6 +5605,8 @@ wants_texcoords() const {
 void DXGraphicsStateGuardian::
 begin_decal(GeomNode *base_geom, AllTransitionsWrapper &attrib) {
     nassertv(base_geom != (GeomNode *)NULL);
+
+    assert(_decal_level>=0);
 
     _decal_level++;
 
@@ -5632,10 +5637,7 @@ begin_decal(GeomNode *base_geom, AllTransitionsWrapper &attrib) {
             _d3dDevice->GetTransform( D3DTRANSFORMSTATE_WORLD, &_SavedTransform);
 
             // First turn off writing the depth buffer to render the base geometry.
-            DWORD bIsDepthWriteEnabled;  // _depth_write_enabled is only char sized, cant use GetRenderState directly
-            _d3dDevice->GetRenderState(D3DRENDERSTATE_ZWRITEENABLE, &bIsDepthWriteEnabled);
-            _depth_write_enabled = (bIsDepthWriteEnabled!=0);
-            _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
+            enable_zwritemask(false);
 
             // It is also important to update the current state to
             // indicate the depth buffer write is off, so that future
@@ -5666,6 +5668,8 @@ void DXGraphicsStateGuardian::
 end_decal(GeomNode *base_geom) {
     _decal_level--;
 
+    assert(_decal_level>=0);
+
 #ifdef DISABLE_DECALING
     return;
 #endif
@@ -5690,8 +5694,7 @@ end_decal(GeomNode *base_geom) {
             D3DBLEND old_blend_dest_func = _blend_dest_func;
 
             // Enable the writing to the depth buffer.
-            _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
-
+            enable_zwritemask(true);
 
             // Disable the writing to the color buffer, however we have to
             // do this.  (I don't think this is possible in DX without blending.)
@@ -5707,7 +5710,7 @@ end_decal(GeomNode *base_geom) {
                 _d3dDevice->SetRenderState(D3DRENDERSTATE_PLANEMASK,0x0);  // note PLANEMASK is supposedly obsolete for DX7
             }
 #endif
-// Note: For DX8, use D3DRS_COLORWRITEENABLE  (check D3DPMISCCAPS_COLORWRITEENABLE first)
+            // Note: For DX8, use D3DRS_COLORWRITEENABLE  (check D3DPMISCCAPS_COLORWRITEENABLE first)
 
             // No need to have texturing on for this.
             enable_texturing(false);
@@ -5731,9 +5734,16 @@ end_decal(GeomNode *base_geom) {
                 _d3dDevice->SetRenderState(D3DRENDERSTATE_PLANEMASK,0xFFFFFFFF);  // this is unlikely to work due to poor driver support
             }
 #endif
-
             enable_texturing(was_textured);
-            _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, _depth_write_enabled);
+
+            // Finally, restore the depth write state to the
+            // way they're supposed to be.
+
+            // could we do this faster by saving last issued depth writemask?
+            DepthWriteTransition *depth_write;
+            if (get_attribute_into(depth_write, this)) {
+                issue_depth_write(depth_write);
+            }
         }
     }
 }

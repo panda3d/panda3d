@@ -287,6 +287,7 @@ protected:
   INLINE void enable_color_material(bool val);
   INLINE void enable_clip_plane(int clip_plane, bool val);
   INLINE void enable_fog(bool val);
+  INLINE void enable_zwritemask(bool val);
   INLINE void set_shademode(D3DSHADEMODE val);
 
   INLINE D3DTEXTUREADDRESS get_texture_wrap_mode(Texture::WrapMode wm) const;
