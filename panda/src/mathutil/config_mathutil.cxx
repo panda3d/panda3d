@@ -33,6 +33,7 @@ NotifyCategoryDef(mathutil, "");
 const double fft_offset = config_mathutil.GetDouble("fft-offset", 0.001);
 const double fft_factor = config_mathutil.GetDouble("fft-factor", 0.1);
 const double fft_exponent = config_mathutil.GetDouble("fft-exponent", 4);
+const double fft_error_threshold = config_mathutil.GetDouble("fft-error-threshold", 0.2);
 
 ConfigureFn(config_mathutil) {
   BoundingHexahedron::init_type();

@@ -264,9 +264,9 @@ write_datagram(BamWriter *manager, Datagram &me) {
 
   } else {
     // Write out everything using lossy compression.
-
     FFTCompressor compressor;
     compressor.set_quality(compress_chan_quality);
+    compressor.set_use_error_threshold(true);
     compressor.write_header(me);
 
     // First, write out the scales and shears.
@@ -337,7 +337,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     }
 
     FFTCompressor compressor;
-    compressor.read_header(scan);
+    compressor.read_header(scan, manager->get_file_minor_ver());
 
     int i;
     // First, read in the scales and shears.

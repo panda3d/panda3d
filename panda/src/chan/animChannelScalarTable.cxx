@@ -21,12 +21,12 @@
 #include "animBundle.h"
 #include "config_chan.h"
 
-#include <indent.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
-#include <fftCompressor.h>
+#include "indent.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+#include "bamWriter.h"
+#include "fftCompressor.h"
 
 TypeHandle AnimChannelScalarTable::_type_handle;
 
@@ -225,6 +225,7 @@ write_datagram(BamWriter *manager, Datagram &me)
 
       FFTCompressor compressor;
       compressor.set_quality(compress_chan_quality);
+      compressor.set_use_error_threshold(true);
       compressor.write_header(me);
 
       compressor.write_reals(me, _table, _table.size());
@@ -298,7 +299,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
     } else {
       // Continuous channels.
       FFTCompressor compressor;
-      compressor.read_header(scan);
+      compressor.read_header(scan, manager->get_file_minor_ver());
       compressor.read_reals(scan, temp_table.v());
     }
   }

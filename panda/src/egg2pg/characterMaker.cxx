@@ -31,6 +31,7 @@
 #include "transformState.h"
 #include "eggSurface.h"
 #include "eggCurve.h"
+#include "modelNode.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterMaker::Construtor
@@ -190,7 +191,9 @@ build_joint_hierarchy(EggNode *egg_node, PartGroup *part) {
       if (egg_group->get_dcs_type() != EggGroup::DC_none) {
         // If the joint requested an explicit DCS, create a node for
         // it.
-        joint->_geom_node = new PandaNode(egg_group->get_name());
+        PT(ModelNode) geom_node = new ModelNode(egg_group->get_name());
+        geom_node->set_preserve_transform(ModelNode::PT_local);
+        joint->_geom_node = geom_node.p();
       }
 
       part = joint;

@@ -54,6 +54,9 @@ public:
   void set_quality(int quality);
   int get_quality() const;
 
+  void set_use_error_threshold(bool use_error_threshold);
+  bool get_use_error_threshold() const;
+
   void set_transpose_quats(bool flag);
   bool get_transpose_quats() const;
 
@@ -61,7 +64,7 @@ public:
   void write_reals(Datagram &datagram, const float *array, int length);
   void write_hprs(Datagram &datagram, const LVecBase3f *array, int length);
 
-  bool read_header(DatagramIterator &di);
+  bool read_header(DatagramIterator &di, int bam_minor_version);
   bool read_reals(DatagramIterator &di, vector_float &array);
   bool read_hprs(DatagramIterator &di, vector_LVecBase3f &array);
 
@@ -89,7 +92,11 @@ private:
   double get_scale_factor(int i, int length) const;
   static double interpolate(double t, double a, double b);
 
+  double get_error(const double *data, const double *half_complex, int length) const;
+
+  int _bam_minor_version;
   int _quality;
+  bool _use_error_threshold;
   double _fft_offset;
   double _fft_factor;
   double _fft_exponent;
