@@ -26,6 +26,7 @@ import DirectObject
 import SfxPlayer
 if __debug__:
     import DeltaProfiler
+    import OnScreenDebug
 
 __builtins__["FADE_SORT_INDEX"] = 1000
 __builtins__["NO_FADE_SORT_INDEX"] = 2000
@@ -40,6 +41,8 @@ class ShowBase(DirectObject.DirectObject):
     def __init__(self):
         # Get the dconfig object
         self.config = ConfigConfigureGetConfigConfigShowbase
+        
+        self.printEnvDebugInfo()
 
         if self.config.GetBool('use-vfs', 1):
             vfs = VirtualFileSystem.getGlobalPtr()
@@ -194,6 +197,7 @@ class ShowBase(DirectObject.DirectObject):
         __builtins__["vfs"] = vfs
         if __debug__:
             __builtins__["deltaProfiler"] = DeltaProfiler.DeltaProfiler("ShowBase")
+            __builtins__["onScreenDebug"] = OnScreenDebug.OnScreenDebug()
 
         # Now hang a hook on the window-event from Panda.  This allows
         # us to detect when the user resizes, minimizes, or closes the
@@ -213,6 +217,19 @@ class ShowBase(DirectObject.DirectObject):
         self.startDirect(fWantDirect = fDirect, fWantTk = fTk)
         # Start IGLOOP
         self.restart()
+
+    def printEnvDebugInfo(self):
+        """
+        Print some information about the environment that we are running
+        in.  Stuff like the model paths and other paths.  Feel free to
+        add stuff to this.
+        """
+        if self.config.GetBool('want-env-debug-info', 0):
+           print "\n\nEnvironment Debug Info {"
+           print "* model path:", getModelPath()
+           print "* texture path:", getTexturePath()
+           print "* sound path:", getSoundPath()
+           print "}"
 
     def exitfunc(self):
         """
@@ -827,10 +844,20 @@ class ShowBase(DirectObject.DirectObject):
         return Task.cont
 
     def igloop(self, state):
+        if __debug__:
+            # We render the watch variables for the onScreenDebug as soon
+            # as we reasonably can before the renderFrame().
+            onScreenDebug.render()
+
         # Finally, render the frame.
         self.graphicsEngine.renderFrame()
         if self.clusterSyncFlag:
             self.graphicsEngine.syncFrame()
+
+        if __debug__:
+            # We clear the text buffer for the onScreenDebug as soon
+            # as we reasonably can after the renderFrame().
+            onScreenDebug.clear()
     
         if self.mainWinMinimized:
             # If the main window is minimized, slow down the app a bit
@@ -842,6 +869,7 @@ class ShowBase(DirectObject.DirectObject):
             # minimized, not just the main window.  But it will do for
             # now until someone complains.
             time.sleep(0.1)
+            print "\n\nmain window minimized."
 
         # Lerp stuff needs this event, and it must be generated in
         # C++, not in Python.
