@@ -900,9 +900,27 @@ dx_setup() {
 //		if(dx_preserve_fpu_state)
 //		   SCL_FPUFlag = DDSCL_FPUPRESERVE;  // tell d3d to preserve the fpu state across calls.  this hurts perf, but is good for dbgging
 
-		if(FAILED(hr = pDD->SetCooperativeLevel(_mwindow, SCL_FPUFlag | DDSCL_FULLSCREEN | DDSCL_EXCLUSIVE | DDSCL_ALLOWREBOOT ))) {
+		DWORD SCL_FLAGS = SCL_FPUFlag | DDSCL_FULLSCREEN | DDSCL_EXCLUSIVE | DDSCL_ALLOWREBOOT;
+
+		if(FAILED(hr = pDD->SetCooperativeLevel(_mwindow, SCL_FLAGS))) {
 			wdxdisplay_cat.fatal()
 			<< "wdxGraphicsWindow::config() - SetCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
+			exit(1);
+		}
+
+		// s3 savage2000 on w95 seems to set EXCLUSIVE_MODE only if you call SetCoopLevel twice. 
+		// so we do it, it really shouldnt be necessary if drivers werent buggy
+		if(FAILED(hr = pDD->SetCooperativeLevel(_mwindow, SCL_FLAGS))) {
+			wdxdisplay_cat.fatal()
+			<< "wdxGraphicsWindow::config() - SetCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
+			exit(1);
+		}
+
+ 		if(FAILED(hr = pDD->TestCooperativeLevel())) {
+			wdxdisplay_cat.fatal()
+			<< "wdxGraphicsWindow::config() - TestCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
+			wdxdisplay_cat.fatal()
+			<< "wdxGraphicsWindow::config() - Full screen app failed to get exclusive mode on init, exiting..\n";
 			exit(1);
 		}
 
