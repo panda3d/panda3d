@@ -108,13 +108,16 @@ class FFIExternalObject:
         if (exactWrapperClass and (exactWrapperClass != self.__class__)):
             # Create a new wrapper class instance
             exactObject = exactWrapperClass(None)
-            # Get the downcast pointer that has had all the downcast funcs called
+
+            # Get the downcast pointer that has had all the downcast
+            # funcs called
             downcastObject = self.downcast(exactWrapperClass)
             exactObject.this = downcastObject.this
             exactObject.userManagesMemory = downcastObject.userManagesMemory
-            # Make sure the original downcast object does not get garbage collected
-            # so that the exactObject will not get gc'd thereby transferring ownership
-            # of the object to this new exactObject
+            # Make sure the original downcast object does not get
+            # garbage collected so that the exactObject will not get
+            # gc'd thereby transferring ownership of the object to
+            # this new exactObject
             downcastObject.userManagesMemory = 0
             return exactObject
         else:
