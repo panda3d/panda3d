@@ -169,8 +169,7 @@ MAKEFLAGS := -j$[NUMBER_OF_PROCESSORS]
 #define all_targets \
     Makefile \
     $[if $[dep_sources],$[DEPENDENCY_CACHE_FILENAME]] \
-    $[sort $[lib_targets] $[static_lib_targets] $[bin_targets]] \
-    $[deferred_objs]
+    $[sort $[lib_targets] $[static_lib_targets] $[bin_targets]]
 all : $[all_targets]
 
 // The 'test' rule makes all the test_bin_targets.
@@ -269,7 +268,7 @@ igate : $[get_igatedb(metalib_target lib_target ss_lib_target)]
 // is a dynamic library.
 /////////////////////////////////////////////////////////////////////
 
-#forscopes metalib_target lib_target
+#forscopes metalib_target lib_target ss_lib_target
 
 // In Unix, we always build all the libraries, unlike Windows.
 #define build_it 1
@@ -306,8 +305,7 @@ igate : $[get_igatedb(metalib_target lib_target ss_lib_target)]
   // various .obj files.
 
   #define sources \
-   $[patsubst %,$[%_obj],$[compile_sources]] \
-   $[components $[patsubst %,$[RELDIR]/$[%_obj],$[compile_sources]],$[active_component_libs]]
+   $[patsubst %,$[%_obj],$[compile_sources]]
 
   #define varname $[subst -,_,lib$[TARGET]_so]
 $[varname] = $[sources]
@@ -391,7 +389,7 @@ $[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[iga
 
 #endif  // igatemout
 
-#end metalib_target lib_target
+#end metalib_target lib_target ss_lib_target
 
 
 
@@ -426,7 +424,7 @@ $[TAB] $[SHARED_LIB_C]
 // a metalib, making the rules relatively simple.
 /////////////////////////////////////////////////////////////////////
 
-#forscopes static_lib_target ss_lib_target
+#forscopes static_lib_target
 #define varname $[subst -,_,lib$[TARGET]_a]
 $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
 #define target $[ODIR]/lib$[TARGET]$[dllext].a
@@ -457,7 +455,7 @@ $[install_lib_dir]/lib$[TARGET]$[dllext].a : $[ODIR]/lib$[TARGET]$[dllext].a
 #define dest $[install_lib_dir]
 $[TAB] cp -f $[ODIR]/$[local] $[dest]
 
-#end static_lib_target ss_lib_target
+#end static_lib_target
 
 
 
