@@ -21,9 +21,9 @@
 #include "pbm.h"
 #include "libpbm.h"
 
-#if __STDC__
+#if defined(__STDC__) || defined(WIN32_VC)
 void
-pnm_writepnminit( FILE* file, int cols, int rows, xelval maxval, int format, int forceplain )
+EXPCL_PANDA pnm_writepnminit( FILE* file, int cols, int rows, xelval maxval, int format, int forceplain )
 #else /*__STDC__*/
 void
 pnm_writepnminit( file, cols, rows, maxval, format, forceplain )
@@ -52,9 +52,8 @@ pnm_writepnminit( file, cols, rows, maxval, format, forceplain )
 	}
     }
 
-#if __STDC__
-void
-pnm_writepnmrow( FILE* file, xel* xelrow, int cols, xelval maxval, int format, int forceplain )
+#if defined(__STDC__) || defined(WIN32_VC)
+EXPCL_PANDA void pnm_writepnmrow( FILE* file, xel* xelrow, int cols, xelval maxval, int format, int forceplain )
 #else /*__STDC__*/
 void
 pnm_writepnmrow( file, xelrow, cols, maxval, format, forceplain )

@@ -64,12 +64,11 @@ pnm_readpnminit( file, colsP, rowsP, maxvalP, formatP )
 	}
     }
 
-#if __STDC__
+#if defined(__STDC__) || defined(WIN32_VC)
 void
-pnm_readpnmrow( FILE* file, xel* xelrow, int cols, xelval maxval, int format )
+EXPCL_PANDA pnm_readpnmrow( FILE* file, xel* xelrow, int cols, xelval maxval, int format )
 #else /*__STDC__*/
-void
-pnm_readpnmrow( file, xelrow, cols, maxval, format )
+void pnm_readpnmrow( file, xelrow, cols, maxval, format )
     FILE* file;
     xel* xelrow;
     xelval maxval;
