@@ -21,9 +21,19 @@ class FunctionInterval(Interval.Interval):
     notify = directNotify.newCategory('FunctionInterval')
 
     # Class methods
-    def __init__(self, function, name = None, openEnded = 1, extraArgs = []):
-        """__init__(function, name = None)
+    def __init__(self, function, **kw):
+        """__init__(function, name = None, openEnded = 1, extraArgs = [])
         """
+        name = kw.get('name', None)
+        openEnded = kw.get('openEnded', 1)
+        extraArgs = kw.get('extraArgs', [])
+        if kw.has_key('name'):
+            del kw['name']
+        if kw.has_key('openEnded'):
+            del kw['openEnded']
+        if kw.has_key('extraArgs'):
+            del kw['extraArgs']
+        
         # Record instance variables
         self.function = function
         # Create a unique name for the interval if necessary
@@ -33,6 +43,7 @@ class FunctionInterval(Interval.Interval):
         assert(isinstance(name, types.StringType))
         # Record any arguments
         self.extraArgs = extraArgs
+        self.kw = kw
         # Initialize superclass
         # Set openEnded true if privInitialize after end time cause interval
         # function to be called.  If false, privInitialize calls have no effect
@@ -42,7 +53,7 @@ class FunctionInterval(Interval.Interval):
     
     def privInstant(self):
         # Evaluate the function
-        apply(self.function, self.extraArgs)
+        self.function(*self.extraArgs, **self.kw)
         # Print debug information
         self.notify.debug(
             'updateFunc() - %s: executing Function' % self.name)
