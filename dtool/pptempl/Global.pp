@@ -283,7 +283,7 @@
 // is.
 #defer active_target $[if $[build_target],$[TARGET]]
 
-#if $[and $[eq $[NUMBER_OF_PROCESSORS],1], $[eq $[NO_COMBINED_SOURCES],]]
+#if $[and $[or $[eq $[BUILD_TYPE],msvc], $[and $[eq $[BUILD_TYPE],gmsvc], $[eq $[NUMBER_OF_PROCESSORS],1]]], $[eq $[NO_COMBINED_SOURCES],]]
  // for non-composite dirs, want to avoid returning the composite default name
 #defer get_combined_sources $[if $[ne $[COMBINED_SOURCES],], $[TARGET]_composite.cxx,]
 #else
