@@ -121,7 +121,7 @@ class GlobPattern;
 //
 //               A NodePath is a list of connected nodes from the root
 //               of the graph to any sub-node.  Each NodePath
-//               therefore unqiuely describes one instance of a node.
+//               therefore uniquely describes one instance of a node.
 //
 //               NodePaths themselves are lightweight objects that may
 //               easily be copied and passed by value.  Their data is
