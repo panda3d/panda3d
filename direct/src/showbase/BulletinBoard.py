@@ -1,9 +1,5 @@
 from direct.directnotify import DirectNotifyGlobal
 
-# TODO: add callback mechanism when values change.
-# Should we announce every change through the messenger?
-# Should you be able to hang a hook on a particular name?
-
 class BulletinBoard:
     """This class implements a global location for key/value pairs to be
     stored. Intended to prevent coders from putting global variables directly
@@ -14,8 +10,8 @@ class BulletinBoard:
     def __init__(self):
         self._dict = {}
 
-    def get(self, postName):
-        return self._dict.get(postName)
+    def get(self, postName, default=None):
+        return self._dict.get(postName, default)
 
     def has(self, postName):
         return postName in self._dict
