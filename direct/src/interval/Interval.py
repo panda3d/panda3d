@@ -20,6 +20,7 @@ class Interval(DirectObject):
         """
 	self.name = name
 	self.duration = duration
+	assert(t >= 0.0)
 	self.startTime = t0
 	self.type = type
 
@@ -37,6 +38,13 @@ class Interval(DirectObject):
 	""" getStartTime()
 	"""
 	return self.startTime
+
+    def setStartTime(self, t, rel=PrevEndRelative):
+	""" setStartTime()
+	"""
+	assert(t >= 0.0)
+	self.startTime = t
+	self.type = rel
 
     def getType(self):
 	""" getType()

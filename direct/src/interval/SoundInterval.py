@@ -16,6 +16,10 @@ class SoundInterval(Interval.Interval):
 	self.name = name
 	self.sound = sound
 	self.duration = self.sound.length() 
+	if (self.duration == 0.0):
+	    Interval.Interval.notify.warning(
+		'SoundInterval(): zero length sound - setting duration = 1.0')
+	self.duration = 1.0
 	self.loop = loop
 	self.isPlaying = 0
 	self.startTime = t0
@@ -25,8 +29,9 @@ class SoundInterval(Interval.Interval):
 	""" setT(t)
 	    Go to time t
 	"""
-	print 'SoundInterval.setT(): t: %f' % t
 	if (t > self.duration):
+	    if (self.isPlaying == 1):
+		AudioManager.stop(self.sound)
 	    return
 	assert(t >= 0)
 	if (t == 0):

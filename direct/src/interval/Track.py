@@ -56,7 +56,7 @@ class Track(Interval.Interval):
 	"""
 	for i in range(len(self.ilist)):
 	    if (self.ilist[i].getName() == name):	
-		return self.__computeDuration(i) - self.ilist[i].getDuration()
+		return self.__computeDuration(i+1) - self.ilist[i].getDuration()
 	Interval.notify.warning(
 		'Track.getRelativeStartTime(): no Interval named: %s' % name)
 	return 0.0
@@ -72,7 +72,7 @@ class Track(Interval.Interval):
 	"""
 	for i in range(len(self.ilist)):
 	    if (self.ilist[i].getName() == name):	
-		return self.__computeDuration(i)
+		return self.__computeDuration(i+1)
 	Interval.notify.warning(
 		'Track.getRelativeEndTime(): no Interval named: %s' % name)
 	return 0.0
@@ -88,11 +88,9 @@ class Track(Interval.Interval):
 	    # Anything beyond the end of the track is assumed to be the 
 	    # final state of the last Interval on the track
 	    self.ilist[len(self.ilist)-1].setT(t)
-	    print self.name + ': t > self.duration'
 	else:
 	    # Find out which Interval applies
 	    prev = None
-	    print self.name
 	    for i in self.ilist:
 		# Calculate the track relative start time for the interval
 		t0 = self.__getTrackRelativeStartTime(i)
@@ -100,7 +98,6 @@ class Track(Interval.Interval):
 		# Determine if the Interval is applicable
 		if (t < t0):
 		    if (prev != None):
-			print 'in a gap at t: %f' % t
 			# Gaps between Intervals take the final state of
 			# the previous Interval
 			prev.setT(t)
@@ -110,8 +107,6 @@ class Track(Interval.Interval):
 				'Track.setT(): state undefined at t: %f' % t)
 			return
 		elif (t0 <= t) and (t <= t0 + i.getDuration()):
-		    print 'in interval: ' + i.getName() + ' at t: %f' % t
 		    i.setT(t - t0)
 		    return
 		prev = i
-	    print 'no intervals apply at t: %f' % t
