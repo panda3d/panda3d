@@ -14,6 +14,7 @@ def makeNewSpec(filename, modelPath, entTypeModule=EntityTypes):
     spec = LevelSpec.LevelSpec()
     privUpdateSpec(spec, modelPath, entTypeModule)
     spec.saveToDisk(filename, makeBackup=0)
+    print 'Done.'
 
 """
 FOR SAME LEVEL MODEL PATH:
@@ -36,6 +37,7 @@ def updateSpec(specModule, entTypeModule=EntityTypes, modelPath=None):
     spec = LevelSpec.LevelSpec(specModule)
     privUpdateSpec(spec, modelPath, entTypeModule)
     spec.saveToDisk()
+    print 'Done.'
 
 def privUpdateSpec(spec, modelPath, entTypeModule):
     """internal: take a spec and update it to match its level model"""
