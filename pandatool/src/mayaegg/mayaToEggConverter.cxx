@@ -1148,8 +1148,9 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
   MStatus status;
   string name = mesh.name().asChar();
 
+  MObject mesh_object = mesh.object();
   bool double_sided = false;
-  get_bool_attribute(mesh.object(), "doubleSided", double_sided);
+  get_bool_attribute(mesh_object, "doubleSided", double_sided);
 
   if (mayaegg_cat.is_spam()) {
     mayaegg_cat.spam()
@@ -1465,8 +1466,18 @@ r_get_egg_group(const string &name, const MDagPath &dag_path,
     }
 
     // Check for an object type setting, from Oliver's plug-in.
+    MObject dag_object = dag_path.node();
     string object_type;
-    if (get_enum_attribute(dag_path.node(), "eggObjectTypes", object_type)) {
+    if (get_enum_attribute(dag_object, "eggObjectTypes", object_type)) {
+      egg_group->add_object_type(object_type);
+    }
+    if (get_enum_attribute(dag_object, "eggObjectTypes1", object_type)) {
+      egg_group->add_object_type(object_type);
+    }
+    if (get_enum_attribute(dag_object, "eggObjectTypes2", object_type)) {
+      egg_group->add_object_type(object_type);
+    }
+    if (get_enum_attribute(dag_object, "eggObjectTypes3", object_type)) {
       egg_group->add_object_type(object_type);
     }
   }

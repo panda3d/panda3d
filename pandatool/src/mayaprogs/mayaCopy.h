@@ -47,6 +47,8 @@ protected:
                          CVSSourceDirectory *dir, void *extra_data,
                          bool new_file);
 
+  virtual string filter_filename(const string &source);
+
 private:
   enum FileType {
     FT_maya,
@@ -66,6 +68,8 @@ private:
 
   bool collect_shaders();
   bool collect_shader_for_node(const MDagPath &dag_path);
+
+  bool _keep_ver;
 
   PT(MayaApi) _maya;
   MayaShaders _shaders;

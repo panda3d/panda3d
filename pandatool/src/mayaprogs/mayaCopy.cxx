@@ -54,6 +54,12 @@ MayaCopy() {
 
   clear_runlines();
   add_runline("[opts] file.mb [file.mb ... ]");
+
+  add_option
+    ("keepver", "", 0,
+     "Don't attempt to strip the Maya version number from the tail of the "
+     "source filename before it is copied into the tree.",
+     &CVSCopy::dispatch_none, &_keep_ver);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -103,6 +109,32 @@ copy_file(const Filename &source, const Filename &dest,
 
   nout << "Internal error: invalid type " << (int)ed->_type << "\n";
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaCopy::filter_filename
+//       Access: Protected, Virtual
+//  Description: Given a source filename (including the basename only,
+//               without a dirname), return the appropriate
+//               corresponding filename within the source directory.
+//               This may be used by derived classes to, for instance,
+//               strip a version number from the filename.
+////////////////////////////////////////////////////////////////////
+string MayaCopy::
+filter_filename(const string &source) {
+  if (_keep_ver) {
+    return source;
+  }
+
+  size_t dot = source.rfind('.');
+  size_t underscore = source.rfind("_v", dot);
+
+  if (underscore == string::npos) {
+    // No version number appears to be present.
+    return source;
+  }
+
+  return source.substr(0, underscore) + source.substr(dot);
 }
 
 ////////////////////////////////////////////////////////////////////

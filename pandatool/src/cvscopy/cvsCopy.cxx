@@ -127,7 +127,7 @@ import(const Filename &source, void *extra_data,
     return (CVSSourceDirectory *)NULL;
   }
 
-  string basename = source.get_basename();
+  string basename = filter_filename(source.get_basename());
 
   CVSSourceDirectory *dir =
     _tree.choose_directory(basename, suggested_dir, _force, _interactive);
@@ -402,6 +402,20 @@ protect_from_shell(const string &source) {
   }
 
   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CVSCopy::filter_filename
+//       Access: Protected, Virtual
+//  Description: Given a source filename (including the basename only,
+//               without a dirname), return the appropriate
+//               corresponding filename within the source directory.
+//               This may be used by derived classes to, for instance,
+//               strip a version number from the filename.
+////////////////////////////////////////////////////////////////////
+string CVSCopy::
+filter_filename(const string &source) {
+  return source;
 }
 
 ////////////////////////////////////////////////////////////////////

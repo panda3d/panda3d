@@ -58,6 +58,8 @@ protected:
   bool cvs_add(const Filename &filename);
   static string protect_from_shell(const string &source);
 
+  virtual string filter_filename(const string &source);
+
 private:
   bool scan_hierarchy();
   bool scan_for_root(const string &dirname);
