@@ -1,4 +1,5 @@
 import types
+import string
 import re
 import math
 
@@ -56,7 +57,7 @@ def pdir(obj, str = None, fOverloaded = 0, width = None,
                 break
         uniqueLineage.append(l)
     # Pretty print out directory info
-    print
+    uniqueLineage.reverse()
     for obj in uniqueLineage:
         _pdir(obj, str, fOverloaded, width, fTruncate, lineWidth)
         print
@@ -136,11 +137,125 @@ def _pdir(obj, str = None, fOverloaded = 0, width = None,
     keys = aproposKeys + privateKeys + remainingKeys + overloadedKeys
     format = '%-' + `maxWidth` + 's'
     for key in keys:
-        value = `dict[key]`
+        value = dict[key]
+        if callable(value):
+            strvalue = `Signature(value)`
+        else:
+            strvalue = `value`
         if fTruncate:
             # Cut off line (keeping at least 1 char)
-            value = value[:max(1,lineWidth - maxWidth)]
-        print (format % key)[:maxWidth] + '\t' + value
+            strvalue = strvalue[:max(1,lineWidth - maxWidth)]
+        print (format % key)[:maxWidth] + '\t' + strvalue
+
+
+# Magic numbers: These are the bit masks in func_code.co_flags that
+# reveal whether or not the function has a *arg or **kw argument.
+_POS_LIST = 4
+_KEY_DICT = 8
+
+def _is_variadic(function):
+    return function.func_code.co_flags & _POS_LIST
+
+def _has_keywordargs(function):
+    return function.func_code.co_flags & _KEY_DICT
+
+def _varnames(function):
+    return function.func_code.co_varnames
+
+def _getcode(f):
+    """_getcode(f)
+
+    This function returns the name and function object of a callable
+    object."""
+    def method_get(f):
+        return f.__name__, f.im_func
+    def function_get(f):
+        return f.__name__, f
+    def instance_get(f):
+        if hasattr(f, '__call__'):
+            method = f.__call__
+            if (type(method) == types.MethodType):
+                func = method.im_func
+            else:
+                func = method
+            return ("%s%s" % (f.__class__.__name__, '__call__'), func)
+        else:
+            s = ("Instance %s of class %s does not have a __call__ method" %
+                 (f, f.__class__.__name__))
+            raise TypeError, s
+    def class_get(f):
+        if hasattr(f, '__init__'):
+            return f.__name__, f.__init__.im_func
+        else:
+            return f.__name__, lambda: None
+    codedict = { types.UnboundMethodType: method_get,
+                 types.MethodType       : method_get,
+                 types.FunctionType     : function_get,
+                 types.InstanceType     : instance_get,
+                 types.ClassType        : class_get
+                 }
+    try:
+        return codedict[type(f)](f)
+    except KeyError:
+        if callable(f): # eg, built-in functions and methods
+            raise ValueError, "type %s not supported yet." % type(f)
+        else:
+            raise TypeError, ("object %s of type %s is not callable." %
+                                     (f, type(f)))
+
+class Signature:
+    def __init__(self, func):
+        self.type = type(func)
+        self.name, self.func = _getcode(func)
+    def ordinary_args(self):
+        n = self.func.func_code.co_argcount
+        return _varnames(self.func)[0:n]
+    def special_args(self):
+        n = self.func.func_code.co_argcount
+        x = {}
+        #
+        if _is_variadic(self.func):
+            x['positional'] = _varnames(self.func)[n]
+            if _has_keywordargs(self.func):
+                x['keyword'] = _varnames(self.func)[n+1]
+        elif _has_keywordargs(self.func):
+            x['keyword'] = _varnames(self.func)[n]
+        else:
+            pass
+        return x
+    def full_arglist(self):
+        base = list(self.ordinary_args())
+        x = self.special_args()
+        if x.has_key('positional'):
+            base.append(x['positional'])
+        if x.has_key('keyword'):
+            base.append(x['keyword'])
+        return base
+    def defaults(self):
+        defargs = self.func.func_defaults
+        args = self.ordinary_args()
+        mapping = {}
+        if defargs is not None:
+            for i in range(-1, -(len(defargs)+1), -1):
+                mapping[args[i]] = defargs[i]
+        else:
+            pass
+        return mapping
+    def __repr__(self):
+        defaults = self.defaults()
+        specials = self.special_args()
+        l = []
+        for arg in self.ordinary_args():
+            if defaults.has_key(arg):
+                l.append( arg + '=' + str(defaults[arg]) )
+            else:
+                l.append( arg )
+        if specials.has_key('positional'):
+            l.append( '*' + specials['positional'] )
+        if specials.has_key('keyword'):
+            l.append( '**' + specials['keyword'] )
+        return "%s(%s)" % (self.name, string.join(l, ', '))
+
 
 def aproposAll(obj):
     """
