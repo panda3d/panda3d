@@ -366,7 +366,12 @@ append_data(const string &data) {
 ////////////////////////////////////////////////////////////////////
 INLINE string Datagram::
 get_message() const {
-  return string((const char *)_data.p(), _data.size());
+  // Silly special case for gcc 3.2, which can't tolerate string(NULL, 0).
+  if (_data.size() == 0) {
+    return string();
+  } else {
+    return string((const char *)_data.p(), _data.size());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
