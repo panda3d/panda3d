@@ -115,7 +115,7 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
 
         if isinstance(geom, types.StringType):
             # If 'geom' is a string, it's the name of a model to load.
-            self.panelGeom = loader.loadModelOnce(geom)
+            self.panelGeom = loader.loadModelCopy(geom)
             self.panelGeom.reparentTo(self)
         else:
             # Otherwise, it's a model to instance.
