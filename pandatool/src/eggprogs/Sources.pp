@@ -31,3 +31,11 @@
     eggTopstrip.cxx eggTopstrip.h
 
 #end bin_target
+
+#begin bin_target
+  #define TARGET egg2c
+
+  #define SOURCES \
+    eggToC.cxx eggToC.h
+
+#end bin_target

@@ -344,6 +344,56 @@ parse_command_line(int argc, char *argv[]) {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: ProgramBase::get_exec_command
+//       Access: Public
+//  Description: Returns the command that invoked this program, as a
+//               shell-friendly string, suitable for pasting into the
+//               comments of output files.
+////////////////////////////////////////////////////////////////////
+string ProgramBase::
+get_exec_command() const {
+  string command;
+
+  command = _program_name;
+  Args::const_iterator ai;
+  for (ai = _program_args.begin(); ai != _program_args.end(); ++ai) {
+    const string &arg = (*ai);
+
+    // First, check to see if the string is shell-acceptable.
+    bool legal = true;
+    string::const_iterator si;
+    for (si = arg.begin(); legal && si != arg.end(); ++si) {
+      switch (*si) {
+      case ' ':
+      case '\n':
+      case '\t':
+      case '*':
+      case '?':
+      case '\\':
+      case '(':
+      case ')':
+      case '|':
+      case '&':
+      case '<':
+      case '>':
+      case '"':
+      case ';':
+      case '$':
+        legal = false;
+      }
+    }
+
+    if (legal) {
+      command += " " + arg;
+    } else {
+      command += " '" + arg + "'";
+    }
+  }
+
+  return command;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ProgramBase::handle_args

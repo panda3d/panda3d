@@ -51,6 +51,8 @@ public:
 
   virtual void parse_command_line(int argc, char *argv[]);
 
+  string get_exec_command() const;
+
   typedef pdeque<string> Args;
   Filename _program_name;
   Args _program_args;

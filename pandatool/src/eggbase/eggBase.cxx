@@ -99,43 +99,6 @@ post_command_line() {
 ////////////////////////////////////////////////////////////////////
 void EggBase::
 append_command_comment(EggData &data) {
-  string comment;
-
-  comment = _program_name;
-  Args::const_iterator ai;
-  for (ai = _program_args.begin(); ai != _program_args.end(); ++ai) {
-    const string &arg = (*ai);
-
-    // First, check to see if the string is shell-acceptable.
-    bool legal = true;
-    string::const_iterator si;
-    for (si = arg.begin(); legal && si != arg.end(); ++si) {
-      switch (*si) {
-      case ' ':
-      case '\n':
-      case '\t':
-      case '*':
-      case '?':
-      case '\\':
-      case '(':
-      case ')':
-      case '|':
-      case '&':
-      case '<':
-      case '>':
-      case '"':
-      case ';':
-      case '$':
-        legal = false;
-      }
-    }
-
-    if (legal) {
-      comment += " " + arg;
-    } else {
-      comment += " '" + arg + "'";
-    }
-  }
-
+  string comment = get_exec_command();
   data.insert(data.begin(), new EggComment("", comment));
 }
