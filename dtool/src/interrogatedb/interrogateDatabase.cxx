@@ -501,6 +501,7 @@ get_next_index() {
 ////////////////////////////////////////////////////////////////////
 void InterrogateDatabase::
 add_type(TypeIndex index, const InterrogateType &type) {
+  assert(index != 0);
   bool inserted =
     _type_map.insert(TypeMap::value_type(index, type)).second;
 
@@ -593,6 +594,7 @@ add_element(ElementIndex index, const InterrogateElement &element) {
 ////////////////////////////////////////////////////////////////////
 InterrogateType &InterrogateDatabase::
 update_type(TypeIndex type) {
+  assert(type != 0);
   check_latest();
   return _type_map[type];
 }
@@ -697,6 +699,7 @@ remap_indices(int first_index, IndexRemapper &remap) {
   TypeMap new_type_map;
   TypeMap::iterator ti;
   for (ti = _type_map.begin(); ti != _type_map.end(); ++ti) {
+    assert((*ti).first != 0);
     remap.add_mapping((*ti).first, first_index);
     new_type_map[first_index] = (*ti).second;
     first_index++;

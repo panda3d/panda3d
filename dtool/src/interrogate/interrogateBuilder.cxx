@@ -1777,6 +1777,11 @@ get_type(CPPType *type, bool global) {
   if (tni != _types_by_name.end()) {
     // It's already here, so update the global flag.
     index = (*tni).second;
+    if (index == 0) {
+      // This is an invalid type; we don't know anything about it.
+      return 0;
+    }
+
     InterrogateType &itype = InterrogateDatabase::get_ptr()->update_type(index);
     if (global) {
       itype._flags |= InterrogateType::F_global;
