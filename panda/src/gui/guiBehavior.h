@@ -15,12 +15,31 @@ protected:
 
   INLINE GuiBehavior(void);
 PUBLISHED:
-  class EXPCL_PANDA BehaviorFunctor {
+  class EXPCL_PANDA BehaviorFunctor : public TypedReferenceCount {
   public:
     virtual void doit(GuiBehavior*) = 0;
-    virtual ~BehaviorFunctor(void);
   PUBLISHED:
     BehaviorFunctor(void);
+    virtual ~BehaviorFunctor(void);
+  public:
+    // type interface
+    static TypeHandle get_class_type(void) {
+      return _type_handle;
+    }
+    static void init_type(void) {
+      TypedReferenceCount::init_type();
+      register_type(_type_handle, "GuiBehavior::BehaviorFunctor",
+		    TypedReferenceCount::get_class_type());
+    }
+    virtual TypeHandle get_type(void) const {
+      return get_class_type();
+    }
+    virtual TypeHandle force_init_type(void) {
+      init_type();
+      return get_class_type();
+    }
+  private:
+    static TypeHandle _type_handle;
   };
 PUBLISHED:
   GuiBehavior(const string&);

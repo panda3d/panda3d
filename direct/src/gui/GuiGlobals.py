@@ -9,7 +9,6 @@ guiMgr = GuiManager.GuiManager.getPtr(base.win, base.mak.node(),
 font = None
 panel = None
 drawOrder = 100
-massiveLeak = []
 
 def getDefaultFont():
     global font
@@ -45,8 +44,6 @@ def getNewRolloverFunctor(sound = None):
         val = AudioGuiFunctor(roll)
     else:
         val = AudioGuiFunctor()
-    global massiveLeak
-    massiveLeak.append(val)
     return val
 
 def getNewClickFunctor(sound = None):
@@ -60,6 +57,4 @@ def getNewClickFunctor(sound = None):
         val = AudioGuiFunctor(click)
     else:
         val = AudioGuiFunctor()
-    global massiveLeak
-    massiveLeak.append(val)
     return val

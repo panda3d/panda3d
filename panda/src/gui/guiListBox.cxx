@@ -6,13 +6,15 @@
 #include "guiListBox.h"
 
 TypeHandle GuiListBox::_type_handle;
+TypeHandle GuiListBox::ListFunctor::_type_handle;
 
 GuiListBox::ListFunctor::ListFunctor(GuiListBox* box,
 				     GuiBehavior::BehaviorFunctor* func)
-  : _prev(func), _lb(box) {
+  : GuiBehavior::BehaviorFunctor(), _prev(func), _lb(box) {
 }
 
 GuiListBox::ListFunctor::~ListFunctor(void) {
+  _prev.clear();
 }
 
 void GuiListBox::ListFunctor::doit(GuiBehavior* b) {
@@ -332,7 +334,7 @@ void GuiListBox::start_behavior(void) {
     return;
   if (_up_functor != (GuiListBox::ListFunctor*)0L) {
     _up_arrow->set_behavior_functor(_up_functor->get_prev());
-    delete _up_functor;
+    _up_functor.clear();
   }
   _up_functor =
     new GuiListBox::ListFunctor(this, _up_arrow->get_behavior_functor());
@@ -340,7 +342,7 @@ void GuiListBox::start_behavior(void) {
   _up_arrow->start_behavior();
   if (_down_functor != (GuiListBox::ListFunctor*)0L) {
     _down_arrow->set_behavior_functor(_down_functor->get_prev());
-    delete _down_functor;
+    _down_functor.clear();
   }
   _down_functor =
     new GuiListBox::ListFunctor(this, _down_arrow->get_behavior_functor());
@@ -354,14 +356,12 @@ void GuiListBox::stop_behavior(void) {
     return;
   if (_up_functor != (GuiListBox::ListFunctor*)0L) {
     _up_arrow->set_behavior_functor(_up_functor->get_prev());
-    delete _up_functor;
-    _up_functor = (GuiListBox::ListFunctor*)0L;
+    _up_functor.clear();
     _up_arrow->stop_behavior();
   }
   if (_down_functor != (GuiListBox::ListFunctor*)0L) {
     _down_arrow->set_behavior_functor(_down_functor->get_prev());
-    delete _down_functor;
-    _down_functor = (GuiListBox::ListFunctor*)0L;
+    _down_functor.clear();
     _down_arrow->stop_behavior();
   }
 }

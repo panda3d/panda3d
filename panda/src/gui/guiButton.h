@@ -36,8 +36,8 @@ private:
   string _behavior_event;
   bool _have_event_param;
   int _event_param;
-  GuiBehavior::BehaviorFunctor* _behavior_functor;
-  GuiBehavior::BehaviorFunctor* _rollover_functor;
+  PT(GuiBehavior::BehaviorFunctor) _behavior_functor;
+  PT(GuiBehavior::BehaviorFunctor) _rollover_functor;
 
   INLINE GuiButton(void);
   void switch_state(States);

@@ -19,13 +19,32 @@ private:
 
   class EXPCL_PANDA ListFunctor : public GuiBehavior::BehaviorFunctor {
   protected:
-    GuiBehavior::BehaviorFunctor* _prev;
+    PT(GuiBehavior::BehaviorFunctor) _prev;
     GuiListBox* _lb;
   public:
     ListFunctor(GuiListBox*, GuiBehavior::BehaviorFunctor*);
     virtual ~ListFunctor(void);
     virtual void doit(GuiBehavior*);
     INLINE GuiBehavior::BehaviorFunctor* get_prev(void) { return _prev; }
+  public:
+    // type interface
+    static TypeHandle get_class_type(void) {
+      return _type_handle;
+    }
+    static void init_type(void) {
+      GuiBehavior::BehaviorFunctor::init_type();
+      register_type(_type_handle, "ListFunctor",
+		    GuiBehavior::BehaviorFunctor::get_class_type());
+    }
+    virtual TypeHandle get_type(void) const {
+      return get_class_type();
+    }
+    virtual TypeHandle force_init_type(void) {
+      init_type();
+      return get_class_type();
+    }
+  private:
+    static TypeHandle _type_handle;
   };
 
   friend ListFunctor;
@@ -37,8 +56,8 @@ private:
   PT(GuiButton) _down_arrow;
   unsigned int _n_visible;
 
-  ListFunctor* _up_functor;
-  ListFunctor* _down_functor;
+  PT(ListFunctor) _up_functor;
+  PT(ListFunctor) _down_functor;
 
   INLINE GuiListBox(void);
   virtual void recompute_frame(void);

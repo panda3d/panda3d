@@ -5,13 +5,14 @@
 
 #include "audio_gui_functor.h"
 
+TypeHandle AudioGuiFunctor::_type_handle;
+
 AudioGuiFunctor::AudioGuiFunctor(AudioSound* sound,
 				 GuiBehavior::BehaviorFunctor* prev)
-  : _prev(prev), _sound(sound) {}
+  : GuiBehavior::BehaviorFunctor(), _prev(prev), _sound(sound) {}
 
 AudioGuiFunctor::~AudioGuiFunctor(void) {
-  if (_prev != (GuiBehavior::BehaviorFunctor*)0L)
-    delete _prev;
+  _prev.clear();
 }
 
 #include "audio_manager.h"

@@ -25,6 +25,7 @@ ConfigureFn(config_gui) {
   GuiLabel::init_type();
   GuiItem::init_type();
   GuiBehavior::init_type();
+  GuiBehavior::BehaviorFunctor::init_type();
   GuiSign::init_type();
   GuiRollover::init_type();
   GuiButton::init_type();

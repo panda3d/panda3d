@@ -6,8 +6,9 @@
 #include "guiBehavior.h"
 
 TypeHandle GuiBehavior::_type_handle;
+TypeHandle GuiBehavior::BehaviorFunctor::_type_handle;
 
-GuiBehavior::BehaviorFunctor::BehaviorFunctor(void) {
+GuiBehavior::BehaviorFunctor::BehaviorFunctor(void) : TypedReferenceCount() {
 }
 
 GuiBehavior::BehaviorFunctor::~BehaviorFunctor(void) {

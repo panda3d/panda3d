@@ -531,9 +531,9 @@ GuiButton::~GuiButton(void) {
   }
 
   if (_behavior_functor != (GuiBehavior::BehaviorFunctor*)0L)
-    delete _behavior_functor;
+    _behavior_functor.clear();
   if (_rollover_functor != (GuiBehavior::BehaviorFunctor*)0L)
-    delete _behavior_functor;
+    _rollover_functor.clear();
 }
 
 void GuiButton::manage(GuiManager* mgr, EventHandler& eh) {

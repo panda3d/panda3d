@@ -19,13 +19,32 @@ private:
 
   class EXPCL_PANDA ChooseFunctor : public GuiBehavior::BehaviorFunctor {
   protected:
-    GuiBehavior::BehaviorFunctor* _prev;
+    PT(GuiBehavior::BehaviorFunctor) _prev;
     GuiChooser* _ch;
   public:
     ChooseFunctor(GuiChooser*, GuiBehavior::BehaviorFunctor*);
     virtual ~ChooseFunctor(void);
     virtual void doit(GuiBehavior*);
     INLINE GuiBehavior::BehaviorFunctor* get_prev(void) { return _prev; }
+  public:
+    // type interface
+    static TypeHandle get_class_type(void) {
+      return _type_handle;
+    }
+    static void init_type(void) {
+      GuiBehavior::BehaviorFunctor::init_type();
+      register_type(_type_handle, "ChooseFunctor",
+		    GuiBehavior::BehaviorFunctor::get_class_type());
+    }
+    virtual TypeHandle get_type(void) const {
+      return get_class_type();
+    }
+    virtual TypeHandle force_init_type(void) {
+      init_type();
+      return get_class_type();
+    }
+  private:
+    static TypeHandle _type_handle;
   };
 
   friend ChooseFunctor;
@@ -36,8 +55,8 @@ private:
   PT(GuiButton) _prev_button;
   PT(GuiButton) _next_button;
 
-  ChooseFunctor* _prev_functor;
-  ChooseFunctor* _next_functor;
+  PT(ChooseFunctor) _prev_functor;
+  PT(ChooseFunctor) _next_functor;
 
   INLINE GuiChooser(void);
   virtual void recompute_frame(void);

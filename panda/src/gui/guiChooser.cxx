@@ -6,13 +6,15 @@
 #include "guiChooser.h"
 
 TypeHandle GuiChooser::_type_handle;
+TypeHandle GuiChooser::ChooseFunctor::_type_handle;
 
 GuiChooser::ChooseFunctor::ChooseFunctor(GuiChooser* ch,
 					 GuiBehavior::BehaviorFunctor* func)
-  : _prev(func), _ch(ch) {
+  : GuiBehavior::BehaviorFunctor(), _prev(func), _ch(ch) {
 }
 
 GuiChooser::ChooseFunctor::~ChooseFunctor(void) {
+  _prev.clear();
 }
 
 void GuiChooser::ChooseFunctor::doit(GuiBehavior* b) {
@@ -260,7 +262,7 @@ void GuiChooser::start_behavior(void) {
     return;
   if (_prev_functor != (GuiChooser::ChooseFunctor*)0L) {
     _prev_button->set_behavior_functor(_prev_functor->get_prev());
-    delete _prev_functor;
+    _prev_functor.clear();
   }
   _prev_functor =
     new GuiChooser::ChooseFunctor(this, _prev_button->get_behavior_functor());
@@ -268,7 +270,7 @@ void GuiChooser::start_behavior(void) {
   _prev_button->start_behavior();
   if (_next_functor != (GuiChooser::ChooseFunctor*)0L) {
     _next_button->set_behavior_functor(_next_functor->get_prev());
-    delete _next_functor;
+    _next_functor.clear();
   }
   _next_functor =
     new GuiChooser::ChooseFunctor(this, _next_button->get_behavior_functor());
@@ -282,14 +284,12 @@ void GuiChooser::stop_behavior(void) {
     return;
   if (_prev_functor != (GuiChooser::ChooseFunctor*)0L) {
     _prev_button->set_behavior_functor(_prev_functor->get_prev());
-    delete _prev_functor;
-    _prev_functor = (GuiChooser::ChooseFunctor*)0L;
+    _prev_functor.clear();
     _prev_button->stop_behavior();
   }
   if (_next_functor != (GuiChooser::ChooseFunctor*)0L) {
     _next_button->set_behavior_functor(_next_functor->get_prev());
-    delete _next_functor;
-    _next_functor = (GuiChooser::ChooseFunctor*)0L;
+    _next_functor.clear();
     _next_button->stop_behavior();
   }
 }
