@@ -80,6 +80,10 @@ class DirectDialog(DirectFrame):
         optiondefs = (
             # Define type of DirectGuiWidget
             ('dialogName',        None,          INITOPT),
+            # Default position is slightly forward in Y, so as not to
+            # intersect the near plane, which is incorrectly set to 0
+            # in DX for some reason.
+            ('pos',               (0, 0.1, 0),   None),
             ('pad',               (0.1, 0.1),    None),
             ('text',              '',            None),
             ('text_align',        TMALIGNLEFT,   None),
