@@ -38,8 +38,21 @@ MouseWatcherGroup::
 //               added, or false if it was already on the list.
 ////////////////////////////////////////////////////////////////////
 bool MouseWatcherGroup::
-add_region(MouseWatcherRegion *region) {
-  return _regions.insert(region).second;
+add_region(PT(MouseWatcherRegion) region) {
+  //return _regions.insert(region).second;
+
+  // See if the region is in the set/vector already
+  Regions::const_iterator ri = find(_regions.begin(), 
+                                    _regions.end(), 
+                                    region);
+  if (ri != _regions.end()) {
+    // Already in the set, return false
+    return false;
+  }
+
+  // Not in the set, add it and return true
+  _regions.push_back(region);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -49,8 +62,17 @@ add_region(MouseWatcherRegion *region) {
 //               added to the MouseWatcherGroup, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool MouseWatcherGroup::
-has_region(MouseWatcherRegion *region) const {
-  return _regions.count(region) != 0;
+has_region(PT(MouseWatcherRegion) region) const {
+  // See if the region is in the set/vector
+  Regions::const_iterator ri = find(_regions.begin(),
+                              _regions.end(),
+                              region);
+  if (ri != _regions.end()) {
+    // Found it
+    return true;
+  }
+  // Did not find the region 
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -61,8 +83,21 @@ has_region(MouseWatcherRegion *region) const {
 //               if it wasn't there in the first place.
 ////////////////////////////////////////////////////////////////////
 bool MouseWatcherGroup::
-remove_region(MouseWatcherRegion *region) {
-  return _regions.erase(region) != 0;
+remove_region(PT(MouseWatcherRegion) region) {
+  //return _regions.erase(region) != 0;
+
+  // See if the region is in the set/vector
+  Regions::iterator ri = find(_regions.begin(),
+                              _regions.end(),
+                              region);
+  if (ri != _regions.end()) {
+    // Found it, now erase it
+    _regions.erase(ri);
+    return true;
+  }
+
+  // Did not find the region to erase
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
