@@ -131,6 +131,12 @@ class ShowBase(DirectObject.DirectObject):
         if self.config.GetBool('open-default-window', 1):
             self.openMainWindow()
 
+            # Give the window a chance to truly open.
+            self.graphicsEngine.renderFrame()
+            if self.win.isClosed():
+                self.notify.info("Window did not open, removing.")
+                self.closeWindow(self.win)
+
             if self.win == None:
                 # Try a little harder if the window wouldn't open.
                 self.makeAllPipes()
@@ -138,6 +144,11 @@ class ShowBase(DirectObject.DirectObject):
                     self.pipeList.remove(self.pipe)
                     self.pipe = self.pipeList[0]
                     self.openMainWindow()
+
+                    self.graphicsEngine.renderFrame()
+                    if self.win.isClosed():
+                        self.notify.info("Window did not open, removing.")
+                        self.closeWindow(self.win)
 
         self.loader = Loader.Loader(self)
         self.eventMgr = eventMgr
@@ -501,7 +512,7 @@ class ShowBase(DirectObject.DirectObject):
 
             # Reset the currently-held modifier button list for good
             # measure.
-            bt = base.buttonThrower.node()
+            bt = self.buttonThrower.node()
             mb = ModifierButtons(bt.getModifierButtons())
             mb.allButtonsUp()
             bt.setModifierButtons(mb)
@@ -618,15 +629,15 @@ class ShowBase(DirectObject.DirectObject):
             self.camLens = self.camNode.getLens()
 
     def getAlt(self):
-        return base.mouseWatcherNode.getModifierButtons().isDown(
+        return self.mouseWatcherNode.getModifierButtons().isDown(
             KeyboardButton.alt())
 
     def getShift(self):
-        return base.mouseWatcherNode.getModifierButtons().isDown(
+        return self.mouseWatcherNode.getModifierButtons().isDown(
             KeyboardButton.shift())
 
     def getControl(self):
-        return base.mouseWatcherNode.getModifierButtons().isDown(
+        return self.mouseWatcherNode.getModifierButtons().isDown(
             KeyboardButton.control())
 
     def addAngularIntegrator(self):
@@ -809,7 +820,7 @@ class ShowBase(DirectObject.DirectObject):
         # Finally, render the frame.
         self.graphicsEngine.renderFrame()
         if self.clusterSyncFlag:
-            base.graphicsEngine.syncFrame()
+            self.graphicsEngine.syncFrame()
     
         if self.mainWinMinimized:
             # If the main window is minimized, slow down the app a bit
