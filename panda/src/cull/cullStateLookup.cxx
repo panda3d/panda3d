@@ -178,9 +178,18 @@ clean_out_old_nodes() {
   while (csi != _cull_states.end()) {
     ++csnext;
 
+    Node *node = (*csi).first;
     CullState *cs = (*csi).second;
-    if (!cs->has_bin() && cs->is_empty() &&
-        cs->get_empty_frames_count() > 100) {
+
+    if (node->get_ref_count() == 1) {
+      // If we've got the only outstanding pointer to this node,
+      // the node was deleted.  Drop our reference.
+      _cull_states.erase(csi);
+
+    } else if (!cs->has_bin() && cs->is_empty() &&
+               cs->get_empty_frames_count() > 100) {
+      // If the CullState doesn't even have any nodes, delete it after
+      // 100 frames have elapsed.
       _cull_states.erase(csi);
     }
     csi = csnext;
