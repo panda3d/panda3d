@@ -73,7 +73,7 @@ PUBLISHED:
   GraphicsPipe *get_pipe() const;
 
   void set_camera(const NodePath &camera);
-  const NodePath &get_camera() const;
+  NodePath get_camera() const;
 
   void set_active(bool active);
   INLINE bool is_active() const;

@@ -293,7 +293,7 @@ set_camera(const NodePath &camera) {
 //               DisplayRegion, or an empty NodePath if no camera is
 //               associated.
 ////////////////////////////////////////////////////////////////////
-const NodePath &DisplayRegion::
+NodePath DisplayRegion::
 get_camera() const {
   MutexHolder holder(_lock);
   return _camera;
