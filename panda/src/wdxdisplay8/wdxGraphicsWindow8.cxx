@@ -1343,6 +1343,9 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
             pWindowClassName=WDX_WINDOWCLASSNAME;
         }
 
+        wdxdisplay_cat.info() << "opening " << xsize << "x" << ysize
+                              << ((_windows[devnum]->_props._fullscreen) ? " fullscreen" : " regular") << " window\n";
+
         if((xsize==0) || (ysize==0)) {
             wdxdisplay_cat.fatal() << "can't create window with zero area for device " << devnum << "!\n";
             exit(1);
