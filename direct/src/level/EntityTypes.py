@@ -80,6 +80,18 @@ class Zone(Entity, NodepathAttribs):
         ('visibility', []),
         )
 
+class CutScene(Entity):
+    type = 'cutScene'
+    output = 'bool'
+    attribs = (
+        ('pos', Point3(0,0,0), 'pos'),
+        ('hpr', Vec3(0,0,0), 'hpr'),
+        ('startStop', 0),
+        ('effect', 'irisInOut'),
+        ('motion', 'foo1'),
+        ('duration', 5.0),
+        )
+
 class BarrelBase(Nodepath):
     delAttribs = (
         'hpr',

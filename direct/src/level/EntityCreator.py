@@ -1,5 +1,6 @@
 """EntityCreator module: contains the EntityCreator class"""
 
+import CutScene
 import EntityCreatorBase
 import BasicEntities
 import DirectNotifyGlobal
@@ -14,13 +15,16 @@ def nothing(*args):
     return None
 
 class EntityCreator(EntityCreatorBase.EntityCreatorBase):
-    """This class is responsible for creating instances of Entities on the
-    client. It can be subclassed to handle more Entity types."""
+    """
+    This class is responsible for creating instances of Entities on the
+    client. It can be subclassed to handle more Entity types.
+    """
     
     def __init__(self, level):
         EntityCreatorBase.EntityCreatorBase.__init__(self, level)
         self.level = level
         self.privRegisterTypes({
+            'cutScene': CutScene.CutScene,
             'editMgr': EditMgr.EditMgr,
             'levelMgr': LevelMgr.LevelMgr,
             'logicGate': nothing,
