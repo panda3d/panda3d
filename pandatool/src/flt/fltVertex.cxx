@@ -194,7 +194,7 @@ extract_record(FltRecordReader &reader) {
     return false;
   }
   if (_header->get_flt_version() >= 15.2) {
-    _color_index = iterator.get_be_uint32();
+    _color_index = iterator.get_be_int32();
 
     if (_has_normal && iterator.get_remaining_size() > 0) {
       // If we extracted a normal, our double-word alignment is off; now

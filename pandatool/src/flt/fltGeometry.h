@@ -83,8 +83,8 @@ public:
   FltPackedColor _packed_color;
   FltPackedColor _alt_packed_color;
   int _texture_mapping_index;
-  unsigned int _color_index;
-  unsigned int _alt_color_index;
+  int _color_index;
+  int _alt_color_index;
 
 public:
   INLINE bool has_texture() const;
