@@ -42,6 +42,8 @@
 
 #defer source_prefix $[SOURCE_DIR:%=%/]
 
+#map soft_scenes soft_scene_file(soft_char_egg)
+
 #define build_models \
    $[SOURCES(flt_egg):%.flt=%.egg] \
    $[patsubst %.lwo %.LWO,%.egg,$[SOURCES(lwo_egg)]] \
@@ -133,6 +135,8 @@ egg : $[egg_targets]
 pal : $[if $[pal_egg_targets],$[pal_egg_dir]] $[pal_egg_targets]
 
 bam : pal $[if $[bam_targets],$[bam_dir]] $[bam_targets]
+
+unpack-soft : $[soft_scenes]
 
 #define install_bam_targets \
     $[install_egg_dirs] \
@@ -267,6 +271,14 @@ $[target] : $[source]
 $[TAB]maya2egg $[MAYA2EGG_OPTS] -a chan -cn "$[CHAR_NAME]" -o $[target] -sf $[begin] $[if $[end],-ef $[end]] $[source]
   #end anim
 #end maya_char_egg
+
+// Unpack the Soft scene database from its multifile.
+#formap scene_file soft_scenes
+  #define target $[scene_file]
+  #define source $[DATABASE]/$[SCENE_PREFIX]$[MODEL].mf
+$[target] : $[source]
+$[TAB]multify xvf $[source] -C $[DATABASE]
+#end scene_file
 
 // Egg character model generation from Soft databases.
 #forscopes soft_char_egg
@@ -568,6 +580,7 @@ clean-bam : $[subdirs:%=clean-bam-%]
 clean-pal : $[subdirs:%=clean-pal-%]
 clean : $[subdirs:%=clean-%]
 cleanall : $[subdirs:%=cleanall-%]
+unpack-soft : $[subdirs:%=unpack-soft-%]
 install-bam : egg pal repal $[subdirs:%=install-bam-%]
 install-other : $[subdirs:%=install-other-%]
 install : egg pal repal $[subdirs:%=install-%]
@@ -666,6 +679,11 @@ $[TAB]cd ./$[RELDIR] && $(MAKE) clean
 #formap dirname subdirs
 cleanall-$[dirname] :
 $[TAB]cd ./$[RELDIR] && $(MAKE) cleanall
+#end dirname
+
+#formap dirname subdirs
+unpack-soft-$[dirname] :
+$[TAB]cd ./$[RELDIR] && $(MAKE) unpack-soft
 #end dirname
 
 #formap dirname subdirs

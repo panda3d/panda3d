@@ -569,6 +569,8 @@ Warning: Variable $[upcase $[tree]]_INSTALL is not set!
 #define language_egg_filters $[language_filters:%=%.egg]
 #define language_dna_filters $[language_filters:%=%.dna]
 
+// This is used for evaluating SoftImage unpack rules in Template.models.pp.
+#defer soft_scene_file $[DATABASE]/SCENES/$[SCENE_PREFIX]$[MODEL].1-0.dsc
 
 // Include the global definitions for this particular build_type, if
 // the file is there.
