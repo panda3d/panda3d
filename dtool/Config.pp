@@ -400,16 +400,24 @@
 //////////////////////////////////////////////////////////////////////
 
 // How to invoke the C and C++ compilers.
-#defer CC gcc
-#defer CXX g++
+#if $[eq $[USE_COMPILER], GCC]
+  #define CC gcc
+  #define CXX g++
+
+  // gcc might run into template limits on some parts of Panda.
+  #define C++FLAGS_GEN -ftemplate-depth-20
+#else
+  #define CC cc
+  #define CXX CC
+#endif
 
 // How to compile a C or C++ file into a .o file.  $[target] is the
 // name of the .o file, $[source] is the name of the source file,
 // $[ipath] is a space-separated list of directories to search for
 // include files, and $[flags] is a list of additional flags to pass
 // to the compiler.
-#defer COMPILE_C $[CC] -c -o $[target] $[ipath:%=-I%] $[flags] $[source]
-#defer COMPILE_C++ $[CXX] -c -o $[target] $[ipath:%=-I%] $[flags] $[source]
+#defer COMPILE_C $[CC] $[CFLAGS_GEN] -c -o $[target] $[ipath:%=-I%] $[flags] $[source]
+#defer COMPILE_C++ $[CXX] $[C++FLAGS_GEN] -c -o $[target] $[ipath:%=-I%] $[flags] $[source]
 
 // What flags should be passed to both C and C++ compilers to enable
 // compiler optimizations?  This will be supplied when OPTIMIZE
@@ -473,12 +481,10 @@
 #defer INSTALL install -m 666 $[local] $[dest]
 #defer INSTALL_PROG install -m 777 $[local] $[dest]
 
-// When building under Irix, we assume you want to use the MIPSPro
-// compiler.  Comment this bit out (or redefine the variables
-// yourself) if you'd rather use gcc or some other compiler.
-#if $[eq $[PLATFORM],Irix]
-  #defer CC cc -n32 -mips3
-  #defer CXX CC -n32 -mips3
+// Variable definitions for building with the Irix MIPSPro compiler.
+#if $[eq $[USE_COMPILER], MIPS]
+  #define CC cc -n32 -mips3
+  #define CXX CC -n32 -mips3
     
   // Turn off a few annoying warning messages.
   // 1174 - function 'blah' was declared but never used
