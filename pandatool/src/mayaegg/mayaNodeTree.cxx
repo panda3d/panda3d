@@ -294,8 +294,13 @@ get_egg_group(MayaNodeDesc *node_desc) {
         egg_group->set_group_type(EggGroup::GT_instance);
         egg_group->set_billboard_type(EggGroup::BT_axis);
         
-      } else if (egg_group->has_object_type("billboard-point")) {    
+      } else if (egg_group->has_object_type("billboard-point")) {
         egg_group->remove_object_type("billboard-point");
+        egg_group->set_group_type(EggGroup::GT_instance);
+        egg_group->set_billboard_type(EggGroup::BT_point_camera_relative);
+        
+      } else if (egg_group->has_object_type("bbpoint")) {
+        egg_group->remove_object_type("bbpoint");
         egg_group->set_group_type(EggGroup::GT_instance);
         egg_group->set_billboard_type(EggGroup::BT_point_camera_relative);
       }
