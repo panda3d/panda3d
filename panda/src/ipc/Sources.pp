@@ -1,5 +1,5 @@
 #define LOCAL_LIBS express pandabase
-#define OTHER_LIBS interrogatedb dconfig dtoolutil
+#define OTHER_LIBS interrogatedb:c dconfig:c dtoolutil:c dtoolbase:c dtool:m
 
 #begin lib_target
   #define TARGET ipc
