@@ -75,6 +75,8 @@ class ShowBase:
         # stores a CollisionTraverser pointer here, we'll traverse it
         # in the igloop task.
         self.cTrav = 0
+        # Ditto for an AppTraverser.
+        self.appTrav = 0
 
         # base.win is the main, or only window; base.winList is a list of
         # *all* windows.  Similarly with base.pipeList and base.camList.
@@ -513,10 +515,19 @@ class ShowBase:
         # CollisionTraverser set.
         if self.cTrav:
             self.cTrav.traverse(self.render)
+        if self.appTrav:
+            self.appTrav.traverse(self.render.getTopNode())
+            
         # Finally, render the frame.
         for win in self.winList:
-            win.update()
+            win.renderAndUpdate()
+
+        # The clock needs to be ticked once per frame.
         globalClock.tick()
+
+        # Lerp stuff needs this event, and it must be generated in
+        # C++, not in Python.
+        throwNewFrame()
         return Task.cont
 
     def restart(self):

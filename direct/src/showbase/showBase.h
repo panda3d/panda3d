@@ -47,6 +47,7 @@ EXPCL_DIRECT ChanConfig
   make_graphics_window(GraphicsPipe *pipe,
                        NodeRelation *render_arc);
 
+EXPCL_DIRECT void throw_new_frame();
 EXPCL_DIRECT NodePath setup_panda_2d(GraphicsWindow *win, const string &name);
 EXPCL_DIRECT void add_render_layer(GraphicsWindow *win, Node *render_top,
                                    Camera *camera);

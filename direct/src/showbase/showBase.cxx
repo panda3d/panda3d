@@ -60,38 +60,6 @@ get_particle_path() {
 std::string chan_config = "single";
 std::string window_title = "Panda3D";
 
-void render_frame(GraphicsPipe *pipe) {
-  int num_windows = pipe->get_num_windows();
-  for (int w = 0; w < num_windows; w++) {
-    GraphicsWindow *win = pipe->get_window(w);
-    win->get_gsg()->render_frame();
-  }
-  // clock tick moved to igloop in ShowBase.py because
-  // clock must tick while app is iconified and draw
-  // callback is not being called by panda gsg
-
-  //  ClockObject::get_global_clock()->tick();
-  throw_event("NewFrame");
-}
-
-class WindowCallback : public GraphicsWindow::Callback {
-public:
-  WindowCallback(GraphicsPipe *pipe, Node *render_top) :
-    _pipe(pipe),
-    _render_top(render_top),
-    _app_traverser(RenderRelation::get_class_type()) { }
-  virtual ~WindowCallback() { }
-
-  virtual void draw(bool) {
-    _app_traverser.traverse(_render_top);
-    render_frame(_pipe);
-  }
-
-  PT(GraphicsPipe) _pipe;
-  PT(Node) _render_top;
-  AppTraverser _app_traverser;
-};
-
 
 PT(GraphicsPipe) make_graphics_pipe() {
   PT(GraphicsPipe) main_pipe;
@@ -142,13 +110,16 @@ ChanConfig make_graphics_window(GraphicsPipe *pipe, NodeRelation *render_arc) {
   main_win = chan_config.get_win();
   assert(main_win != (GraphicsWindow*)0L);
 
-  WindowCallback *wcb = new WindowCallback(pipe, render_top);
-
-  // Set draw callback.  Currently there is no reason to use the idle callback.
-  main_win->set_draw_callback(wcb);
-
   return chan_config;
 }
+
+// Throw the "NewFrame" event in the C++ world.  Some of the lerp code
+// depends on receiving this.
+void 
+throw_new_frame() {
+  throw_event("NewFrame");
+}
+
 
 // Create a scene graph, associated with the indicated window, that
 // can contain 2-d geometry and will be rendered on top of the

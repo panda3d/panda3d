@@ -77,7 +77,7 @@ class DirectWaitBar(DirectFrame):
     def update(self, value):
         self['value'] = value
         # finally update the window
-        base.win.update()
+        base.win.renderAndUpdate()
 
     def finish(self):
         # Fill the bar in N frames
