@@ -763,10 +763,31 @@ hash_function_signature(FunctionRemap *remap) {
 ////////////////////////////////////////////////////////////////////
 void InterfaceMaker::
 write_spam_message(ostream &out, FunctionRemap *remap) const {
+  ostringstream strm;
+  remap->write_orig_prototype(strm, 0);
+  string prototype = strm.str();
+
   out <<
     "  if (interrogatedb_cat.is_spam()) {\n"
     "    interrogatedb_cat.spam() << \"";
-  remap->write_orig_prototype(out, 0);
+
+  for (string::const_iterator si = prototype.begin();
+       si != prototype.end();
+       ++si) {
+    switch (*si) {
+    case '"':
+      out << "\\\"";
+      break;
+
+    case '\\':
+      out << "\\\\";
+      break;
+
+    default:
+      out << *si;
+    }
+  }
+
   out << "\\n\";\n"
     "  }\n";
 }
