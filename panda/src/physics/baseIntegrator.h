@@ -39,7 +39,7 @@ class Physical;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS BaseIntegrator : public ReferenceCount {
 public:
-  typedef pvector< LMatrix4f > MatrixVector;
+  typedef pvector<LMatrix4f> MatrixVector;
 
   virtual ~BaseIntegrator();
   
