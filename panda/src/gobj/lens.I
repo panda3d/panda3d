@@ -339,6 +339,19 @@ set_view_vector(float x, float y, float z, float i, float j, float k) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_last_change
+//       Access: Public
+//  Description: Returns the UpdateSeq that is incremented whenever
+//               the lens properties are changed.  As long as this
+//               number remains the same, you may assume the lens
+//               properties are unchanged.
+////////////////////////////////////////////////////////////////////
+INLINE const UpdateSeq &Lens::
+get_last_change() const {
+  return _last_change;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Lens::adjust_user_flags
 //       Access: Protected
 //  Description: Clears from _user_flags the bits in the first

@@ -24,6 +24,7 @@
 #include "typedReferenceCount.h"
 #include "luse.h"
 #include "geom.h"
+#include "updateSeq.h"
 
 class BoundingVolume;
 
@@ -103,6 +104,20 @@ PUBLISHED:
 
   void set_view_mat(const LMatrix4f &view_mat);
   const LMatrix4f &get_view_mat() const;
+  
+  // These flags are passed in as the last parameter to control the
+  // behavior of set_frustum_from_corners().  See the documentation
+  // for that method for an explanation of each flag.
+  enum FromCorners {
+    FC_roll         = 0x0001,
+    FC_camera_plane = 0x0002,
+    FC_off_axis     = 0x0004,
+    FC_aspect_ratio = 0x0008,
+    FC_shear        = 0x0010,
+  };
+  void set_frustum_from_corners(const LVecBase3f &ul, const LVecBase3f &ur,
+                                const LVecBase3f &ll, const LVecBase3f &lr,
+                                int flags);
 
   void recompute_all();
 
@@ -113,6 +128,9 @@ PUBLISHED:
 
   const LMatrix4f &get_projection_mat() const;
   const LMatrix4f &get_projection_mat_inv() const;
+
+public:
+  INLINE const UpdateSeq &get_last_change() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
@@ -151,9 +169,15 @@ protected:
 private:
   static void resequence_fov_triad(char &newest, char &older_a, char &older_b);
   int define_geom_coords();
+  static void build_shear_mat(LMatrix4f &shear_mat,
+                              const LPoint3f &cul, const LPoint3f &cur,
+                              const LPoint3f &cll, const LPoint3f &clr);
+  static float sqr_dist_to_line(const LPoint3f &point, const LPoint3f &origin, 
+                                const LVector3f &vector);
 
 protected:
   string _change_event;
+  UpdateSeq _last_change;
   CoordinateSystem _cs;
 
   LVecBase2f _film_size;

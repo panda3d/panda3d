@@ -24,6 +24,7 @@
 #include "boundingHexahedron.h"
 #include "indent.h"
 #include "config_gobj.h"
+#include "plane.h"
 
 TypeHandle Lens::_type_handle;
 
@@ -540,6 +541,207 @@ get_view_mat() const {
   return _lens_mat;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::set_frustum_from_corners
+//       Access: Published
+//  Description: Sets up the lens to use the frustum defined by the
+//               four indicated points.  This is most useful for a
+//               PerspectiveLens, but it may be called for other kinds
+//               of lenses as well.
+//
+//               The frustum will be rooted at the origin (or offset
+//               by iod_offset, or by whatever translation might have
+//               been specified in a previous call to set_view_mat).
+//
+//               It is legal for the four points not to be arranged in
+//               a rectangle; if this is the case, the frustum will be
+//               fitted as tightly as possible to cover all four
+//               points.
+//
+//               The flags parameter contains the union of one or more
+//               of the following bits to control the behavior of this
+//               function:
+//
+//               FC_roll - If this is included, the camera may be
+//               rotated so that its up vector is perpendicular to the
+//               top line.  Otherwise, the standard up vector is used.
+//
+//               FC_camera_plane - This allows the camera plane to be
+//               adjusted to be as nearly perpendicular to the center
+//               of the frustum as possible.  Without this bit, the
+//               orientation camera plane is defined by position of
+//               the four points (which should all be coplanar).  With
+//               this bit, the camera plane is arbitarary, and may be
+//               chosen so that the four points do not themselves lie
+//               in the camera plane (but the points will still be
+//               within the frustum).
+//
+//               FC_off_axis - This allows the resulting frustum to be
+//               off-axis to get the tightest possible fit.  Without
+//               this bit, the viewing axis will be centered within
+//               the frustum, but there may be more wasted space along
+//               the edges.
+//
+//               FC_aspect_ratio - This allows the frustum to be
+//               scaled non-proportionately in the vertical and
+//               horizontal dimensions, if necessary, to get a tighter
+//               fit.  Without this bit, the current aspect ratio will
+//               be preserved.
+//
+//               FC_shear - This allows the frustum to be sheared, if
+//               necessary, to get the tightest possible fit.  This
+//               may result in a parallelogram-based frustum, which
+//               will give a slanted appearance to the rendered image.
+//               Without this bit, the frustum will be
+//               rectangle-based.
+//
+//               In general, if 0 is passed in as the value for flags,
+//               the generated frustum will be a loose fit but sane;
+//               if -1 is passed in, it will be a tighter fit and
+//               possibly screwy.
+////////////////////////////////////////////////////////////////////
+void Lens::
+set_frustum_from_corners(const LVecBase3f &ul, const LVecBase3f &ur,
+                         const LVecBase3f &ll, const LVecBase3f &lr,
+                         int flags) {
+  // We'll need to know the pre-existing eyepoint translation from the
+  // center, so we can preserve it in the new frustum.  This is
+  // usually just a shift along the x axis, if anything at all, for
+  // the iod offset, but it could be an arbitrary vector.
+  const LMatrix4f &lens_mat_inv = get_lens_mat_inv();
+  LVector3f eye_offset;
+  lens_mat_inv.get_row3(eye_offset, 3);
+
+  // Now choose the viewing axis.  If FC_camera_plane is specified,
+  // we'll pass it through the centroid for the best camera plane;
+  // otherwise, it's perpendicular to the plane in which the points
+  // lie.
+  LVector3f view_vector;
+  if ((flags & FC_camera_plane) != 0) {
+    view_vector = (ul + ur + ll + lr) / 4.0f;
+  } else {
+    Planef plane(ll, ul, ur);
+    view_vector = plane.get_normal();
+  }
+
+  // Now determine the up axis.  If FC_roll is specified, or if our
+  // view vector is straight up, it is the vector perpendicular to
+  // both the viewing axis and the top line.  Otherwise, it is the
+  // standard up axis.
+  LVector3f up_vector = LVector3f::up(_cs);
+  if (view_vector == up_vector || ((flags & FC_roll) != 0)) {
+    LVector3f top = ul - ur;
+    up_vector = view_vector.cross(top);
+  }
+
+  // Now compute the matrix that applies this rotation.
+  LMatrix4f rot_mat;
+  look_at(rot_mat, view_vector, up_vector, CS_zup_right);
+
+  // And invert it.
+  LMatrix4f inv_rot_mat;
+  inv_rot_mat.invert_affine_from(rot_mat);
+
+  // Use that inverse matrix to convert the four corners to a local
+  // coordinate system, looking down the Y axis.
+  LPoint3f cul = inv_rot_mat.xform_point(ul);
+  LPoint3f cur = inv_rot_mat.xform_point(ur);
+  LPoint3f cll = inv_rot_mat.xform_point(ll);
+  LPoint3f clr = inv_rot_mat.xform_point(lr);
+
+  // Project all points into the Y == 1 plane, so we can do 2-d
+  // manipulation on them.
+  cul /= cul[1];
+  cur /= cur[1];
+  cll /= cll[1];
+  clr /= clr[1];
+
+  LMatrix4f shear_mat = LMatrix4f::ident_mat();
+  LMatrix4f inv_shear_mat = LMatrix4f::ident_mat();
+
+  // Now, if we're allowed to shear the frustum, do so.
+  if ((flags & FC_shear) != 0) {
+    build_shear_mat(shear_mat, cul, cur, cll, clr);
+    inv_shear_mat.invert_from(shear_mat);
+  } 
+
+  // Now build the complete view matrix.
+  LMatrix4f inv_view_mat =
+    inv_rot_mat *
+    inv_shear_mat;
+
+  // And reapply the eye offset to this matrix.
+  inv_view_mat.set_row(3, eye_offset);
+
+  LMatrix4f view_mat;
+  view_mat.invert_from(inv_view_mat);
+  set_view_mat(view_mat);
+
+  LPoint3f ful = inv_view_mat.xform_point(ul);
+  LPoint3f fur = inv_view_mat.xform_point(ur);
+  LPoint3f fll = inv_view_mat.xform_point(ll);
+  LPoint3f flr = inv_view_mat.xform_point(lr);
+
+  // Normalize *these* points into the y == 1 plane.
+  ful /= ful[1];
+  fur /= fur[1];
+  fll /= fll[1];
+  flr /= flr[1];
+
+  // Determine the minimum field of view necesary to cover all four
+  // transformed points.
+  float min_x = min(min(ful[0], fur[0]), min(fll[0], flr[0]));
+  float max_x = max(max(ful[0], fur[0]), max(fll[0], flr[0]));
+  float min_z = min(min(ful[2], fur[2]), min(fll[2], flr[2]));
+  float max_z = max(max(ful[2], fur[2]), max(fll[2], flr[2]));
+
+  float x_spread, x_center, z_spread, z_center;
+
+  if ((flags & FC_off_axis) != 0) {
+    // If we're allowed to make an off-axis projection, then pick the
+    // best center.
+    x_center = (max_x + min_x) / 2.0f;
+    z_center = (max_z + min_z) / 2.0f;
+    x_spread = x_center - min_x;
+    z_spread = z_center - min_z;
+  } else {
+    // Otherwise, the center must be (0, 0).
+    x_center = 0.0f;
+    z_center = 0.0f;
+    x_spread = max(cabs(max_x), cabs(min_x));
+    z_spread = max(cabs(max_z), cabs(min_z));
+  }
+
+  float aspect_ratio = get_aspect_ratio();
+  if ((flags & FC_aspect_ratio) == 0) {
+    // If we must preserve the aspect ratio, then the x and z spreads
+    // must be adjusted to match.
+    if (x_spread < z_spread * aspect_ratio) {
+      // x_spread is too small.
+      x_spread = z_spread * aspect_ratio;
+    } else if (z_spread < x_spread / aspect_ratio) {
+      // z_spread is too small.
+      z_spread = x_spread / aspect_ratio;
+    }
+  }
+
+  float hfov = rad_2_deg(catan(x_spread)) * 2.0f;
+  float vfov = rad_2_deg(catan(z_spread)) * 2.0f;
+
+  set_fov(hfov, vfov);
+
+  if ((flags & FC_aspect_ratio) == 0) {
+    // If we must preserve the aspect ratio, store it one more time.
+    // This is mainly in case we have a non-perspective lens with a
+    // funny relationship between fov and aspect ratio.
+    set_aspect_ratio(aspect_ratio);
+  }
+
+  const LVecBase2f &film_size = get_film_size();
+  set_film_offset(film_size[0] * x_center / (x_spread * 2.0f),
+                  film_size[1] * z_center / (z_spread * 2.0f));
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Lens::recompute_all
@@ -749,6 +951,8 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void Lens::
 throw_change_event() {
+  ++_last_change;
+
   if (!_change_event.empty()) {
     throw_event(_change_event);
   }
@@ -1288,4 +1492,179 @@ define_geom_coords() {
   }
 
   return num_segments;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::build_shear_mat
+//       Access: Private, Static
+//  Description: A support function for set_frustum_from_corners(),
+//               this computes a matrix that will shear the four
+//               indicated points to the most nearly rectangular.
+////////////////////////////////////////////////////////////////////
+void Lens::
+build_shear_mat(LMatrix4f &shear_mat,
+                const LPoint3f &cul, const LPoint3f &cur,
+                const LPoint3f &cll, const LPoint3f &clr) {
+  // Fit a parallelogram around these four points.
+
+  // Put the points in an array so we can rotate it around to find
+  // the longest edge.
+  LPoint3f points[4] = {
+    cul, cur, clr, cll
+  };
+
+  float edge_lengths[4];
+  float max_edge_length = -1.0f;
+  int base_edge = -1;
+  for (int i = 0; i < 4; i++) {
+    LVector3f edge = points[(i + 1) % 4] - points[i];
+    float length = edge.length_squared();
+    edge_lengths[i] = length;
+    if (length > max_edge_length) {
+      base_edge = i;
+      max_edge_length = length;
+    }
+  }
+
+  const LPoint3f &base_origin = points[base_edge];
+  LVector3f base_vec = points[(base_edge + 1) % 4] - base_origin;
+
+  float base_edge_length = csqrt(max_edge_length);
+
+  // The longest edge is the base of our parallelogram.  The parallel
+  // edge must pass through the point furthest from this edge.
+
+  int a = (base_edge + 2) % 4;
+  int b = (base_edge + 3) % 4;
+
+  float a_dist = sqr_dist_to_line(points[a], base_origin, base_vec);
+  float b_dist = sqr_dist_to_line(points[b], base_origin, base_vec);
+
+  int far_point;
+  float dist;
+  if (a_dist > b_dist) {
+    far_point = a;
+    dist = csqrt(a_dist);
+  } else {
+    far_point = b;
+    dist = csqrt(b_dist);
+  }
+
+  // Try to make the parallelogram as nearly rectangular as possible.
+  // How suitable is a true rectangle?
+  LVector3f perpendic = base_vec.cross(LVector3f(0.0, -1.0, 0.0));
+  perpendic.normalize();
+  perpendic *= dist;
+  LPoint3f parallel_origin = points[base_edge] + perpendic;
+
+  // It follows that far_point is on the line passing through the
+  // parallel edge.  Is it within the endpoints?
+  LVector3f base_norm_vec = base_vec / base_edge_length;
+
+  LVector3f far_point_delta = points[far_point] - parallel_origin;
+  float far_point_pos = far_point_delta.dot(base_norm_vec);
+
+  if (far_point_pos < 0.0f) {
+    // We have to slide the parallel_origin back to include far_point.
+    parallel_origin += base_norm_vec * far_point_pos;
+
+  } else if (far_point_pos > base_edge_length) {
+    // We have to slide the parallel_origin forward to include
+    // far_point.
+    parallel_origin += base_norm_vec * (far_point_pos - base_edge_length);
+  }
+
+  // Finally, is the other point within the parallelogram?
+  float t;
+  float Ox = parallel_origin[0];
+  float Oy = parallel_origin[2];
+  float Vx = base_vec[0];
+  float Vy = base_vec[2];
+  float Ax, Ay, Bx, By;
+
+  if (far_point == a) {
+    // near point is b
+    LVector3f v = points[b] - base_origin;
+    Ax = points[b][0];
+    Ay = points[b][2];
+    Bx = v[0];
+    By = v[2];
+  } else {
+    // near point is a
+    LVector3f v = points[a] - (base_origin + base_vec);
+    Ax = points[a][0];
+    Ay = points[a][2];
+    Bx = v[0];
+    By = v[2];
+  }
+  t = ((Ox - Ax) * By + (Ay - Oy) * Bx) / (Bx * Vy - By * Vx);
+
+  if (t < 0.0f) {
+    // We need to slide the parallel_origin back to include
+    // the near point.
+    parallel_origin += base_vec * t;
+  } else if (t > 1.0f) {
+    // We need to slide the parallel_origin forward to include the far
+    // point.
+    parallel_origin += base_vec * (1.0f - t);
+  }
+
+  LVector3f adjacent_norm_vec = parallel_origin - base_origin;
+  adjacent_norm_vec.normalize();
+
+  // Now we've defined a parallelogram that includes all four points,
+  // and we're ready to build a shear transform.
+  shear_mat = LMatrix4f::ident_mat();
+
+  // The edges of the parallelogram become the axes.
+  switch (base_edge) {
+  case 0:
+    // The base_origin is the upper-left corner.  X axis is base_norm_vec,
+    // Z axis is -adjacent_norm_vec.
+    shear_mat.set_row(0, base_norm_vec);
+    shear_mat.set_row(2, -adjacent_norm_vec);
+    break;
+
+  case 1:
+    // The base_origin is the upper-right corner.  X axis is
+    // -adjacent_norm_vec, Z axis is -base_norm_vec.
+    shear_mat.set_row(0, -adjacent_norm_vec);
+    shear_mat.set_row(2, -base_norm_vec);
+    break;
+
+  case 2:
+    // The base_origin is the lower-right corner.  X axis is
+    // -base_norm_vec, Z axis is adjacent_norm_vec.
+    shear_mat.set_row(0, -base_norm_vec);
+    shear_mat.set_row(2, adjacent_norm_vec);
+    break;
+
+  case 3:
+    // The base_origin is the lower-left corner.  X axis is
+    // adjacent_norm_vec, Z axis is base_norm_vec.
+    shear_mat.set_row(0, adjacent_norm_vec);
+    shear_mat.set_row(2, base_norm_vec);
+    break;
+    
+  default:
+    nassertv(false);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::sqr_dist_to_line
+//       Access: Private, Static
+//  Description: A support function for build_shear_mat(), this
+//               computes the minimum distance from a point to a line,
+//               and returns the distance squared.
+////////////////////////////////////////////////////////////////////
+float Lens::
+sqr_dist_to_line(const LPoint3f &point, const LPoint3f &origin, 
+                 const LVector3f &vector) {
+  LVector3f norm = vector;
+  norm.normalize();
+  LVector3f d = point - origin;
+  float hyp_2 = d.length_squared();
+  float leg = d.dot(norm);
+  return hyp_2 - leg * leg;
 }
