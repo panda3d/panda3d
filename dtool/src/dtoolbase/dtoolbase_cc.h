@@ -106,6 +106,10 @@ extern EXPCL_DTOOL void *(*global_operator_new)(size_t size);
 extern EXPCL_DTOOL void (*global_operator_delete)(void *ptr);
 
 #ifdef GLOBAL_OPERATOR_NEW_EXCEPTIONS
+
+// Redefinitions of operator new/delete, for O1 - O3 builds (!NDEBUG)
+// only.  These flavors are for modern compilers that expect these
+// function prototypes to handle exceptions.
 INLINE void *operator new(size_t size) throw (std::bad_alloc) {
   return (*global_operator_new)(size);
 }
@@ -121,7 +125,8 @@ INLINE void operator delete[](void *ptr) throw() {
 }
 #else   // GLOBAL_OPERATOR_NEW_EXCEPTIONS
 
-/* at O4 should these even be here?
+// The same definitions as above, for compilers that don't expect
+// exception handing in global operator new/delete functions.
 INLINE void *operator new(size_t size) {
   return (*global_operator_new)(size);
 }
@@ -135,7 +140,7 @@ INLINE void operator delete(void *ptr) {
 INLINE void operator delete[](void *ptr) {
   (*global_operator_delete)(ptr);
 }
-*/
+
 #endif  // GLOBAL_OPERATOR_NEW_EXCEPTIONS
 #endif  // NDEBUG
 
