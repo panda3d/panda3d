@@ -44,6 +44,7 @@ private:
   SymbolTable unqualified;
   TableMap qualified;
   bool _initializing;
+  bool configexe;
   bool configdbg;
   bool readargs;
   bool readenvs;
@@ -69,6 +70,7 @@ private:
   void ParseCommandEnv(ConfigString&, const ConfigString&);
   void ParseArgs();
   INLINE void ConfigDbgDefault();
+  INLINE void ConfigExeDefault();
   INLINE void ReadArgsDefault();
   INLINE void ReadEnvsDefault();
   INLINE void PathSepDefault();
@@ -77,6 +79,7 @@ private:
   INLINE void ConfigSuffixDefault();
   INLINE void ConfigArgsDefault();
   INLINE void ConfigPathDefault();
+  void ConfigDirDefault();
   INLINE void ConfigCmtDefault();
   INLINE void ArgSuffixDefault();
   INLINE void CommandStubDefault();

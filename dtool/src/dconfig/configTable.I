@@ -24,6 +24,10 @@ INLINE void ConfigTable::ConfigDbgDefault() {
   dconfig_cat->set_severity(NS_info);
 }
 
+INLINE void ConfigTable::ConfigExeDefault() {
+  configexe = false;
+}
+
 INLINE void ConfigTable::ReadArgsDefault() {
   readargs = true;
 }
@@ -45,7 +49,7 @@ INLINE void ConfigTable::ConfigNameDefault() {
 }
 
 INLINE void ConfigTable::ConfigSuffixDefault() {
-  configsuffix = "";
+  configsuffix = "*";
 }
 
 INLINE void ConfigTable::ConfigArgsDefault() {
@@ -53,7 +57,7 @@ INLINE void ConfigTable::ConfigArgsDefault() {
 }
 
 INLINE void ConfigTable::ConfigPathDefault() {
-  configpath = "CFG_PATH";
+  configpath = "";
 }
 
 INLINE void ConfigTable::ConfigCmtDefault() {
