@@ -42,12 +42,26 @@ PUBLISHED:
   INLINE void set_frame(float left, float right, float bottom, float top);
   INLINE void set_frame(const LVecBase4f &frame);
 
+  INLINE void set_color(float r, float g, float b, float a);
+  INLINE void set_color(const Colorf &color);
+
+  INLINE void set_source_geometry(Node *node, const LVecBase4f &frame);
+  INLINE void clear_source_geometry();
+
   PT_Node generate();
 
 private:
+  PT_Node rescale_source_geometry();
+
   bool _has_uvs;
   TexCoordf _ll, _ur;
   LVecBase4f _frame;
+
+  bool _has_color;
+  Colorf _color;
+
+  PT_Node _source_geometry;
+  LVecBase4f _source_frame;
 };
 
 #include "cardMaker.I"

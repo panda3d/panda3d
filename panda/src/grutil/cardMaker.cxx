@@ -19,6 +19,10 @@
 #include "cardMaker.h"
 #include "geomNode.h"
 #include "geomTristrip.h"
+#include "renderRelation.h"
+#include "transformTransition.h"
+#include "colorTransition.h"
+#include "sceneGraphReducer.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -32,6 +36,10 @@ reset() {
   _ll.set(0.0, 0.0);
   _ur.set(1.0, 1.0);
   _frame.set(0.0, 1.0, 0.0, 1.0);
+  _has_color = false;
+  _color.set(1.0, 1.0, 1.0, 1.0);
+  _source_geometry = (Node *)NULL;
+  _source_frame.set(0.0, 0.0, 0.0, 0.0);
 }
 
 
@@ -43,6 +51,10 @@ reset() {
 ////////////////////////////////////////////////////////////////////
 PT_Node CardMaker::
 generate() {
+  if (_source_geometry != (Node *)NULL) {
+    return rescale_source_geometry();
+  }
+
   PT(GeomNode) gnode = new GeomNode("card");
   Geom *geom = new GeomTristrip;
   gnode->add_geom(geom);
@@ -67,7 +79,7 @@ generate() {
   geom->set_coords(verts, G_PER_VERTEX);
 
   PTA_Colorf colors;
-  colors.push_back(Colorf(1.0, 1.0, 1.0, 1.0));
+  colors.push_back(_color);
   geom->set_colors(colors, G_OVERALL);
 
   if (_has_uvs) {
@@ -80,4 +92,59 @@ generate() {
   }
   
   return gnode.p();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CardMaker::rescale_source_geometry
+//       Access: Private
+//  Description: Generates the card by rescaling the source geometry
+//               appropriately.
+////////////////////////////////////////////////////////////////////
+PT_Node CardMaker::
+rescale_source_geometry() {
+  PT_Node root = new NamedNode;
+  NodeRelation *root_arc = 
+    new RenderRelation(root, _source_geometry->copy_subgraph(RenderRelation::get_class_type()));
+
+  // Determine the translate and scale appropriate for our geometry.
+  float geom_center_x = (_source_frame[0] + _source_frame[1]) / 2.0;
+  float geom_center_y = (_source_frame[2] + _source_frame[3]) / 2.0;
+
+  float frame_center_x = (_frame[0] + _frame[1]) / 2.0;
+  float frame_center_y = (_frame[2] + _frame[3]) / 2.0;
+
+  float scale_x = 
+    (_frame[1] - _frame[0]) / (_source_frame[1] - _source_frame[0]);
+  float scale_y = 
+    (_frame[3] - _frame[2]) / (_source_frame[3] - _source_frame[2]);
+
+  LVector3f trans = LVector3f::rfu(frame_center_x - geom_center_x, 0.0, 
+                                   frame_center_y - geom_center_y);
+  LVector3f scale = LVector3f::rfu(scale_x, 1.0, scale_y);
+
+  LMatrix4f mat = 
+    LMatrix4f::translate_mat(trans) *
+    LMatrix4f::scale_mat(scale);
+
+  root_arc->set_transition(new TransformTransition(mat));
+
+  if (_has_color) {
+    root_arc->set_transition(new ColorTransition(_color));
+  }
+
+  // Now flatten out the geometry as much as we can.
+  SceneGraphReducer reducer;
+  reducer.apply_transitions(root_arc);
+  reducer.flatten(root, true);
+
+  if (root->get_num_children(RenderRelation::get_class_type()) == 1) {
+    // If we ended up with only one child, and no transitions on the
+    // arc to it, return that child.
+    NodeRelation *arc = root->get_child(RenderRelation::get_class_type(), 0);
+    if (!arc->has_any_transition()) {
+      return arc->get_child();
+    }
+  }
+
+  return root;
 }

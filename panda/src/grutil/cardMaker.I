@@ -81,3 +81,56 @@ INLINE void CardMaker::
 set_frame(const LVecBase4f &frame) {
   _frame = frame;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CardMaker::set_color
+//       Access: Public
+//  Description: Sets the color of the card.
+////////////////////////////////////////////////////////////////////
+INLINE void CardMaker::
+set_color(float r, float g, float b, float a) {
+  set_color(LVecBase4f(r, g, b, a));
+} 
+
+////////////////////////////////////////////////////////////////////
+//     Function: CardMaker::set_color
+//       Access: Public
+//  Description: Sets the color of the card.
+////////////////////////////////////////////////////////////////////
+INLINE void CardMaker::
+set_color(const LVecBase4f &color) {
+  _color = color;
+  _has_color = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CardMaker::set_source_geometry
+//       Access: Published
+//  Description: Sets a node that will be copied (and scaled and
+//               translated) to generate the frame, instead of
+//               generating a new polygon.  The node may contain
+//               arbitrary geometry that describes a flat polygon
+//               contained within the indicated left, right, bottom,
+//               top frame.
+//
+//               When generate() is called, the geometry in this node
+//               will be scaled and translated appropriately to give
+//               it the size and aspect ratio specified by
+//               set_frame().
+////////////////////////////////////////////////////////////////////
+INLINE void CardMaker::
+set_source_geometry(Node *node, const LVecBase4f &frame) {
+  _source_geometry = node;
+  _source_frame = frame;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CardMaker::clear_source_geometry
+//       Access: Published
+//  Description: Removes the node specified by an earlier call to
+//               set_source_geometry().
+////////////////////////////////////////////////////////////////////
+INLINE void CardMaker::
+clear_source_geometry() {
+  _source_geometry = (Node *)NULL;
+}

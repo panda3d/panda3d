@@ -4,7 +4,7 @@
 #begin lib_target
   #define TARGET grutil
   #define LOCAL_LIBS \
-    sgraph gobj linmath putil
+    sgraphutil sgattrib sgraph gobj linmath putil
 
   #define SOURCES \
     cardMaker.I cardMaker.cxx cardMaker.h \
