@@ -289,16 +289,22 @@ class Actor(PandaObject, NodePath):
         Actor cleanup function
         """
         self.stop()
-        del self.__partBundleDict
-        del self.__animControlDict
+
+        self.__partBundleDict = {}
+        self.__animControlDict = {}
+        self.__controlJoints = {}
+
         self.__geomNode.removeNode()
-        del self.__geomNode
+
         if self.__LODNode:
             self.__LODNode.removeNode()
-        del self.__LODNode
+            self.__LODNode = None
+
         self.__hasLOD = 0
+
         if not self.isEmpty():
             self.removeNode()
+            
     # accessing
 
     def getAnimControlDict(self):
