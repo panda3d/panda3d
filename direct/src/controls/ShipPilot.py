@@ -233,7 +233,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         #fnp.reparentTo(physicsActor)
         fnp.reparentTo(render)
         self.nodes.append(fnp)
-        self.keel=AngularVectorForce(0.0, 0.0, 80.0)
+        self.keel=AngularVectorForce(0.0, 0.0, 0.0)
         fn.addForce(self.keel)
         self.phys.addAngularForce(self.keel)
         
@@ -259,7 +259,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             self.phys.addLinearForce(self.avatarViscosity)
 
         self.phys.attachLinearIntegrator(LinearEulerIntegrator())
-        #*#self.phys.attachAngularIntegrator(AngularEulerIntegrator())
+        self.phys.attachAngularIntegrator(AngularEulerIntegrator())
         self.phys.attachPhysicalnode(physicsActor.node())
         
         self.momentumForce=LinearVectorForce(0.0, 0.0, 0.0)
@@ -297,7 +297,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         self.setCollisionsActive(1)
 
     def initializeCollisions(self, collisionTraverser,
-            wallBitmask, floorBitmask, 
+            wallBitmask, floorBitmask,
             avatarRadius = 1.4, floorOffset = 1.0, reach = 1.0):
         """
         Set up the avatar collisions
