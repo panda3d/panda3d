@@ -11,6 +11,7 @@ class DistributedObjectAI(DirectObject.DirectObject):
     """Distributed Object class:"""
     
     notify = directNotify.newCategory("DistributedObjectAI")
+    QuietZone = 1
     
     def __init__(self, air):
         try:
@@ -25,6 +26,11 @@ class DistributedObjectAI(DirectObject.DirectObject):
             # init doId pre-allocated flag
             self.__preallocDoId = 0
 
+            # used to track zone changes across the quiet zone
+            # NOTE: the quiet zone is defined in OTP, but we need it
+            # here.
+            self.lastNonQuietZone = None
+
             # These are used to implement beginBarrier().
             self.__nextBarrierContext = 0
             self.__barriers = {}
@@ -37,9 +43,16 @@ class DistributedObjectAI(DirectObject.DirectObject):
     #    print ("Destructing: " + self.__class__.__name__)
 
     def getDeleteEvent(self):
+        # this is sent just before we get deleted
         if hasattr(self, 'doId'):
             return 'distObjDelete-%s' % self.doId
         return None
+
+    def sendDeleteEvent(self):
+        # this is called just before we get deleted
+        delEvent = self.getDeleteEvent()
+        if delEvent:
+            messenger.send(delEvent)
 
     def delete(self):
         """
@@ -109,13 +122,36 @@ class DistributedObjectAI(DirectObject.DirectObject):
         self.air.sendSetZone(self, zoneId)
 
     def getZoneChangeEvent(self):
+        # this event is generated whenever this object changes zones.
+        # arguments are newZoneId, oldZoneId
+        # includes the quiet zone.
         return 'DOChangeZone-%s' % self.doId
+    def getLogicalZoneChangeEvent(self):
+        # this event is generated whenever this object changes to a
+        # non-quiet-zone zone.
+        # arguments are newZoneId, oldZoneId
+        # does not include the quiet zone.
+        return 'DOLogicalChangeZone-%s' % self.doId
     
     def handleZoneChange(self, newZoneId, oldZoneId):
         assert oldZoneId == self.zoneId
         self.zoneId = newZoneId
         self.air.changeDOZoneInTables(self, newZoneId, oldZoneId)
         messenger.send(self.getZoneChangeEvent(), [newZoneId, oldZoneId])
+        # if we are not going into the quiet zone, send a 'logical' zone change
+        # message
+        if newZoneId != DistributedObjectAI.QuietZone:
+            lastLogicalZone = oldZoneId
+            if oldZoneId == DistributedObjectAI.QuietZone:
+                lastLogicalZone = self.lastNonQuietZone
+            self.handleLogicalZoneChange(newZoneId, lastLogicalZone)
+            self.lastNonQuietZone = newZoneId
+
+    def handleLogicalZoneChange(self, newZoneId, oldZoneId):
+        """this function gets called as if we never go through the
+        quiet zone"""
+        messenger.send(self.getLogicalZoneChangeEvent(),
+                       [newZoneId, oldZoneId])
 
     def getRender(self):
         # note that this will return a different node if we change zones
