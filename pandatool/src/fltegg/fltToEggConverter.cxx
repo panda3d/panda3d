@@ -251,7 +251,7 @@ convert_lod(const FltLOD *flt_lod, FltToEggLevelState &state) {
      flt_lod->_transition_range);
   egg_group->set_lod(lod);
 
-  set_transform(flt_lod, egg_group);
+  state.set_transform(flt_lod, egg_group);
   parse_comment(flt_lod, egg_group);
 
   FltToEggLevelState next_state(state);
@@ -275,7 +275,7 @@ convert_group(const FltGroup *flt_group, FltToEggLevelState &state) {
     egg_group->set_switch_fps(24.0);
   }
 
-  set_transform(flt_group, egg_group);
+  state.set_transform(flt_group, egg_group);
   parse_comment(flt_group, egg_group);
 
   ///*** replicate count.
@@ -295,7 +295,7 @@ convert_object(const FltObject *flt_object, FltToEggLevelState &state) {
   EggGroup *egg_group = new EggGroup(flt_object->get_id());
   state._egg_parent->add_child(egg_group);
 
-  set_transform(flt_object, egg_group);
+  state.set_transform(flt_object, egg_group);
   parse_comment(flt_object, egg_group);
 
   FltToEggLevelState next_state(state);
@@ -317,7 +317,7 @@ convert_bead_id(const FltBeadID *flt_bead, FltToEggLevelState &state) {
   EggGroup *egg_group = new EggGroup(flt_bead->get_id());
   state._egg_parent->add_child(egg_group);
 
-  set_transform(flt_bead, egg_group);
+  state.set_transform(flt_bead, egg_group);
   parse_comment(flt_bead, egg_group);
 
   FltToEggLevelState next_state(state);
@@ -338,7 +338,7 @@ convert_bead(const FltBead *flt_bead, FltToEggLevelState &state) {
   EggGroup *egg_group = new EggGroup;
   state._egg_parent->add_child(egg_group);
 
-  set_transform(flt_bead, egg_group);
+  state.set_transform(flt_bead, egg_group);
   parse_comment(flt_bead, egg_group);
 
   FltToEggLevelState next_state(state);
@@ -404,7 +404,7 @@ void FltToEggConverter::
 convert_ext_ref(const FltExternalReference *flt_ext, FltToEggLevelState &state) {
   // Get a group node to put the reference into.
   EggGroupNode *egg_parent =
-    state.get_synthetic_group("", flt_ext->get_transform());
+    state.get_synthetic_group("", flt_ext);
 
   handle_external_reference(egg_parent,
                             flt_ext->_filename, _flt_header->get_model_path());
@@ -426,7 +426,7 @@ setup_geometry(const FltGeometry *flt_geom, FltToEggLevelState &state,
 
   // Determine what the appropriate parent will be.
   EggGroupNode *egg_parent =
-    state.get_synthetic_group(flt_geom->get_id(), flt_geom->get_transform(),
+    state.get_synthetic_group(flt_geom->get_id(), flt_geom,
                               flt_geom->_billboard_type);
 
   // Create a new state to reflect the new parent.
@@ -576,20 +576,6 @@ convert_subfaces(const FltRecord *flt_record, FltToEggLevelState &state) {
   for (int i = 0; i < num_subfaces; i++) {
     const FltRecord *subface = flt_record->get_subface(i);
     dispatch_record(subface, next_state);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::set_transform
-//       Access: Private
-//  Description: Sets up the group to reflect the transform indicated
-//               by the given record, if any.
-////////////////////////////////////////////////////////////////////
-void FltToEggConverter::
-set_transform(const FltBead *flt_bead, EggGroup *egg_group) {
-  if (flt_bead->has_transform()) {
-    egg_group->set_transform(flt_bead->get_transform());
-    egg_group->set_group_type(EggGroup::GT_instance);
   }
 }
 

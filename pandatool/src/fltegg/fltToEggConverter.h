@@ -88,7 +88,6 @@ private:
 
   void convert_subfaces(const FltRecord *flt_record, FltToEggLevelState &state);
 
-  void set_transform(const FltBead *flt_bead, EggGroup *egg_group);
   bool parse_comment(const FltBeadID *flt_bead, EggNode *egg_node);
   bool parse_comment(const FltBead *flt_bead, EggNode *egg_node);
   bool parse_comment(const FltTexture *flt_texture, EggNode *egg_node);

@@ -130,6 +130,20 @@ get_transform_step(int n) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FltBead::get_transform_step
+//       Access: Public
+//  Description: Returns the nth individual step that defines
+//               the net transform on this bead.  See
+//               get_num_transform_steps().
+////////////////////////////////////////////////////////////////////
+const FltTransformRecord *FltBead::
+get_transform_step(int n) const {
+  nassertr(n >= 0 && n < (int)_transform_steps.size(),
+           (const FltTransformRecord *)NULL);
+  return _transform_steps[n];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FltBead::add_transform_step
 //       Access: Public
 //  Description: Applies the indicated transform step to the net

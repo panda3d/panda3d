@@ -19,11 +19,11 @@
 #ifndef FLTTOEGGLEVELSTATE_H
 #define FLTTOEGGLEVELSTATE_H
 
-#include <pandatoolbase.h>
-
-#include <fltGeometry.h>
+#include "pandatoolbase.h"
+#include "fltGeometry.h"
 
 class FltObject;
+class FltBead;
 class EggGroupNode;
 class EggGroup;
 
@@ -40,8 +40,10 @@ public:
   ~FltToEggLevelState();
 
   EggGroupNode *get_synthetic_group(const string &name,
-                                    const LMatrix4d &transform,
+                                    const FltBead *transform_bead,
                                     FltGeometry::BillboardType type = FltGeometry::BT_none);
+
+  static void set_transform(const FltBead *flt_bead, EggGroup *egg_group);
 
   const FltObject *_flt_object;
   EggGroupNode *_egg_parent;

@@ -17,8 +17,14 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "fltToEggLevelState.h"
-
-#include <eggGroup.h>
+#include "fltTransformTranslate.h"
+#include "fltTransformRotateAboutPoint.h"
+#include "fltTransformRotateAboutEdge.h"
+#include "fltTransformScale.h"
+#include "fltTransformPut.h"
+#include "eggGroup.h"
+#include "dcast.h"
+#include "look_at.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -63,9 +69,9 @@ ParentNodes() {
 ////////////////////////////////////////////////////////////////////
 EggGroupNode *FltToEggLevelState::
 get_synthetic_group(const string &name,
-                    const LMatrix4d &transform,
+                    const FltBead *transform_bead,
                     FltGeometry::BillboardType type) {
-
+  LMatrix4d transform = transform_bead->get_transform();
   bool is_identity = transform.almost_equal(LMatrix4d::ident_mat());
   if (is_identity && 
       (type != FltGeometry::BT_axial &&
@@ -94,7 +100,7 @@ get_synthetic_group(const string &name,
       _egg_parent->add_child(nodes->_axial_billboard);
       nodes->_axial_billboard->set_billboard_type(EggGroup::BT_axis);
       if (!is_identity) {
-        nodes->_axial_billboard->set_transform(transform);
+        set_transform(transform_bead, nodes->_axial_billboard);
         nodes->_axial_billboard->set_group_type(EggGroup::GT_instance);
       }
     }
@@ -106,7 +112,7 @@ get_synthetic_group(const string &name,
       _egg_parent->add_child(nodes->_point_billboard);
       nodes->_point_billboard->set_billboard_type(EggGroup::BT_point_world_relative);
       if (!is_identity) {
-        nodes->_point_billboard->set_transform(transform);
+        set_transform(transform_bead, nodes->_point_billboard);
         nodes->_point_billboard->set_group_type(EggGroup::GT_instance);
       }
     }
@@ -118,10 +124,121 @@ get_synthetic_group(const string &name,
       nodes->_plain = new EggGroup(name);
       _egg_parent->add_child(nodes->_plain);
       if (!is_identity) {
-        nodes->_plain->set_transform(transform);
+        set_transform(transform_bead, nodes->_plain);
         nodes->_plain->set_group_type(EggGroup::GT_instance);
       }
     }
     return nodes->_plain;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltToEggLevelState::set_transform
+//       Access: Public, Static
+//  Description: Sets up the group to reflect the transform indicated
+//               by the given record, if any.
+////////////////////////////////////////////////////////////////////
+void FltToEggLevelState::
+set_transform(const FltBead *flt_bead, EggGroup *egg_group) {
+  if (flt_bead->has_transform()) {
+    egg_group->set_group_type(EggGroup::GT_instance);
+
+    int num_steps = flt_bead->get_num_transform_steps();
+    bool componentwise_ok = true;
+
+    if (num_steps == 0) {
+      componentwise_ok = false;
+    } else {
+      // Walk through each transform step and store the individual
+      // components in the egg file.  If we come across a step we
+      // don't know how to interpret, just store the whole transform
+      // matrix in the egg file.
+      egg_group->clear_transform();
+
+      for (int i = 0; i < num_steps && componentwise_ok; i++) {
+        const FltTransformRecord *step = flt_bead->get_transform_step(i);
+        if (step->is_exact_type(FltTransformTranslate::get_class_type())) {
+          const FltTransformTranslate *trans;
+          DCAST_INTO_V(trans, step);
+          if (!trans->get_delta().almost_equal(LVector3d::zero())) {
+            egg_group->add_translate(trans->get_delta());
+          }
+
+        } else if (step->is_exact_type(FltTransformRotateAboutPoint::get_class_type())) {
+          const FltTransformRotateAboutPoint *rap;
+          DCAST_INTO_V(rap, step);
+          if (!IS_NEARLY_ZERO(rap->get_angle())) {
+            if (!rap->get_center().almost_equal(LVector3d::zero())) {
+              egg_group->add_translate(-rap->get_center());
+            }
+            LVector3d axis = LCAST(double, rap->get_axis());
+            egg_group->add_rotate(rap->get_angle(), axis);
+            if (!rap->get_center().almost_equal(LVector3d::zero())) {
+              egg_group->add_translate(rap->get_center());
+            }
+          }
+
+        } else if (step->is_exact_type(FltTransformRotateAboutEdge::get_class_type())) {
+          const FltTransformRotateAboutEdge *rae;
+          DCAST_INTO_V(rae, step);
+          if (!IS_NEARLY_ZERO(rae->get_angle())) {
+            if (!rae->get_point_a().almost_equal(LVector3d::zero())) {
+              egg_group->add_translate(-rae->get_point_a());
+            }
+            LVector3d axis = rae->get_point_b() - rae->get_point_a();
+            egg_group->add_rotate(rae->get_angle(), axis);
+            if (!rae->get_point_a().almost_equal(LVector3d::zero())) {
+              egg_group->add_translate(rae->get_point_a());
+            }
+          }
+
+        } else if (step->is_exact_type(FltTransformScale::get_class_type())) {
+          const FltTransformScale *scale;
+          DCAST_INTO_V(scale, step);
+          if (!scale->get_scale().almost_equal(LVecBase3f(1.0f, 1.0f, 1.0f))) {
+            if (!scale->get_center().almost_equal(LVector3d::zero())) {
+              egg_group->add_translate(-scale->get_center());
+            }
+            egg_group->add_scale(LCAST(double, scale->get_scale()));
+            if (!scale->get_center().almost_equal(LVector3d::zero())) {
+              egg_group->add_translate(scale->get_center());
+            }
+          }
+
+        } else if (step->is_exact_type(FltTransformPut::get_class_type())) {
+          const FltTransformPut *put;
+          DCAST_INTO_V(put, step);
+
+          if (!put->get_from_origin().almost_equal(LVector3d::zero())) {
+            egg_group->add_translate(-put->get_from_origin());
+          }
+          LQuaterniond q1, q2;
+          look_at(q1, put->get_from_align() - put->get_from_origin(),
+                  put->get_from_track() - put->get_from_origin(),
+                  CS_zup_right);
+          look_at(q2, put->get_to_align() - put->get_to_origin(),
+                  put->get_to_track() - put->get_to_origin(),
+                  CS_zup_right);
+
+          LQuaterniond q = invert(q1) * q2;
+
+          if (!q.is_identity()) {
+            egg_group->add_rotate(q);
+          }
+          if (!put->get_to_origin().almost_equal(LVector3d::zero())) {
+            egg_group->add_translate(put->get_to_origin());
+          }
+
+        } else {
+          // Here's a transform component we haven't implemented here.
+          // Give up on storing the componentwise transform.
+          componentwise_ok = false;
+        }
+      }
+    }
+
+    if (!componentwise_ok) {
+      egg_group->set_transform(flt_bead->get_transform());
+    }
   }
 }

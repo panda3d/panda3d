@@ -45,6 +45,7 @@ public:
 
   int get_num_transform_steps() const;
   FltTransformRecord *get_transform_step(int n);
+  const FltTransformRecord *get_transform_step(int n) const;
   void add_transform_step(FltTransformRecord *record);
 
   int get_replicate_count() const;
