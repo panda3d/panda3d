@@ -508,3 +508,22 @@ def bound(value, bound1, bound2):
         return min(max(value, bound2), bound1)
     else:
         return min(max(value, bound1), bound2)
+
+def lerp(v0, v1, t):
+    """
+    returns a value lerped between v0 and v1, according to t
+    t must be in [0,1]
+    t == 0 maps to v0, t == 1 maps to v1
+    """
+    return v0 + (t * (v1 - v0))
+
+def lineupPos(i, num, spacing):
+    """
+    use to line up a series of 'num' objects, centered around zero
+    'i' is the index of the object in the lineup
+    'spacing' is the amount of space between objects in the lineup
+    """
+    assert num >= 1
+    assert i >= 0 and i < num
+    pos = float(i) * spacing
+    return pos - ((float(spacing) * (num-1))/2.)
