@@ -196,7 +196,6 @@ class FSM(DirectObject.DirectObject):
             # These are direct requests to a particular state.
             if request[0] in string.uppercase:
                 return (request,) + args
-            
         else:
             # If self.defaultTransitions is not None, it is a map of
             # allowed transitions from each state.  That is, each key
