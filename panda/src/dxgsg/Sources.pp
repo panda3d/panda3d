@@ -18,7 +18,7 @@
     dxSavedFrameBuffer.I dxSavedFrameBuffer.cxx dxSavedFrameBuffer.h \
     dxTextureContext.I dxTextureContext.cxx dxTextureContext.h
     
-  #define PRECOMPILED_HEADER dxgsg_headers.h
+//  #define PRECOMPILED_HEADER dxgsg_headers.h
     
   #define INSTALL_HEADERS \
     config_dxgsg.h dxGraphicsStateGuardian.I dxGraphicsStateGuardian.h \

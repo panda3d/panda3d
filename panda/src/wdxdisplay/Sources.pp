@@ -16,7 +16,7 @@
   #define INSTALL_HEADERS \
     config_wdxdisplay.h wdxGraphicsPipe.h wdxGraphicsWindow.h
     
-  #define PRECOMPILED_HEADER wdxdisplay_headers.h 
+//  #define PRECOMPILED_HEADER wdxdisplay_headers.h 
 
 #end lib_target
 
