@@ -48,6 +48,9 @@ class ActorInterval(Interval):
 	""" updateFunc(t, event)
 	    Go to time t
 	"""
+	if (self.actor.isEmpty()):
+	    self.notify.warning('updateFunc() - empty actor!')
+	    return
         # Update animation based upon current time
         # Pose or stop anim
         if (t >= self.getDuration()):
