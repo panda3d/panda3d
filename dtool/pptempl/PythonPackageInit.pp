@@ -111,6 +111,7 @@ else:
 
         checkDirEnv("PANDA_ROOT", "c:/cygwin")
         # checkDirEnv("PANDA_ROOT", "/usr/local/panda")
+        checkDirEnv("DMODELS", "c:/dmodels")
         checkDirEnv("TTMODELS", "c:/ttmodels")
         checkDirEnv("PMOCKUP", "c:/pmockup")
         checkDirEnv("GWMODELS", "c:/gwmodels")
