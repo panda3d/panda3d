@@ -50,12 +50,12 @@ def lerpBackgroundColor(r,g,b,duration):
 
 # Set direct drawing style for an object
 # Never light object or draw in wireframe
-def useDirectRenderStyle(nodePath):
+def useDirectRenderStyle(nodePath, priority = 0):
     """
     Function to force a node path to use direct render style:
     no lighting, and no wireframe
     """
-    nodePath.node().setAttrib(LightAttrib.makeAllOff())
+    nodePath.setLightOff(priority)
     nodePath.setRenderModeFilled()
 
 # File data util
