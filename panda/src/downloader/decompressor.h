@@ -54,7 +54,7 @@ private:
   bool _read_all_input;
   bool _handled_all_input;
   int _source_buffer_length;
-  ZDecompressor _decompressor;
+  ZDecompressor *_decompressor;
 };
 
 #endif

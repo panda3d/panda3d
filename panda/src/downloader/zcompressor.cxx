@@ -41,6 +41,7 @@ ZCompressor(void) {
 ZCompressor::
 ~ZCompressor(void) {
   handle_zerror(deflateEnd(_stream), _stream);
+  delete _stream;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -53,6 +53,7 @@ init(PT(Buffer) buffer) {
   _temp_file_name = temp_name;
   _temp_file_name.set_binary();
   delete temp_name;
+  _decompressor = new ZDecompressor();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -139,6 +140,9 @@ initiate(Filename &source_file, Filename &dest_file) {
 ////////////////////////////////////////////////////////////////////
 int Decompressor::
 run(void) {
+  if (_decompressor == NULL) {
+    _decompressor = new ZDecompressor();
+  }
 
   // See if there is anything left in the source file
   if (_read_all_input == false) {
@@ -160,16 +164,18 @@ run(void) {
   nassertr(avail_out > 0 && avail_in > 0, false);
 
   while (avail_in > 0) {
-    int ret = _decompressor.decompress_to_stream(next_in, avail_in,
+    int ret = _decompressor->decompress_to_stream(next_in, avail_in,
 			next_out, avail_out, dest_buffer, 
 			dest_buffer_length, _write_stream);
     if (ret == ZCompressorBase::S_error)
       return DS_error_zlib;
-    if ((int)_decompressor.get_total_in() == _source_file_length &&
+    if ((int)_decompressor->get_total_in() == _source_file_length &&
 	  avail_out == dest_buffer_length)
       _read_stream.close();
       _write_stream.close();
       _source_file.unlink();
+      delete _decompressor;
+      _decompressor = NULL;
       return DS_success;
   }
 
