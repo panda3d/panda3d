@@ -185,12 +185,18 @@ reset() {
     _buffer_mask &= ~RenderBuffer::T_back;
   }
 
+#if 0
+  //Note 8/01: This is incorrect for mono displays, if stereo is not in use, we need
+  //           to use the GL_BACK constants and not the GL_BACK_LEFT ones, which
+  //           under the RenderBuffer flag schemes require both left and right flags set.
+
   // Check to see if we have stereo (and therefore a right buffer).
   GLboolean has_stereo;
   glGetBooleanv(GL_STEREO, &has_stereo);
   if (!has_stereo) {
     _buffer_mask &= ~RenderBuffer::T_right;
   }
+#endif
 
   // Set up our clear values to invalid values, so the glClear* calls
   // will be made initially.
