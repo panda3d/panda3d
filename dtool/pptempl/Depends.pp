@@ -70,28 +70,31 @@
 
     // Define what the object files are.
     #foreach file $[c_sources] $[cxx_sources] $[yxx_sources] $[lxx_sources]
-      #define $[file]_obj $[patsubst %.c %.cxx %.yxx %.lxx,$[st_dir]/$[TARGET]_%.obj,$[file]]
+      #define $[file]_obj $[patsubst %.c %.cxx %.yxx %.lxx,$[ODIR]/$[TARGET]_%.obj,$[file]]
+      #push 1 $[file]_obj
     #end file
 
     #if $[USE_SINGLE_COMPOSITE_SOURCEFILE]
       #if $[> $[words $[cxx_sources]], 1]
         // If we have multiple C++ files, put them together into one
         // composite file.
-        #define composite_file $[st_dir]/$[TARGET]_composite.cxx
+        #define composite_file $[ODIR]/$[TARGET]_composite.cxx
         #set composite_list $[composite_list] $[composite_file]
         #define $[composite_file]_sources $[cxx_sources]
+        #define $[composite_file]_obj $[ODIR]/$[TARGET]_composite.obj
         #push 1 $[composite_file]_sources
-        #define $[composite_file]_obj $[st_dir]/$[TARGET]_composite.obj
+        #push 1 $[composite_file]_obj
         #set cxx_sources $[composite_file]
       #endif
       #if $[> $[words $[c_sources]], 1]
         // If we have multiple C files, put them together into one
         // composite file also.
-        #define composite_file $[st_dir]/$[TARGET]_composite_c.c
+        #define composite_file $[ODIR]/$[TARGET]_composite_c.c
         #set composite_list $[composite_list] $[composite_file]
         #define $[composite_file]_sources $[c_sources]
+        #define $[composite_file]_obj $[ODIR]/$[TARGET]_composite_c.obj
         #push 1 $[composite_file]_sources
-        #define $[composite_file]_obj $[st_dir]/$[TARGET]_composite_c.obj
+        #push 1 $[composite_file]_obj
         #set c_sources $[composite_file]
       #endif
     #endif
@@ -102,20 +105,23 @@
     // tend to be very large files themselves.
     #foreach source_file $[yxx_sources] $[lxx_sources]
       #define generated_file $[patsubst %.yxx %.lxx,%.cxx,$[source_file]]
-      #define $[generated_file]_obj $[patsubst %.yxx %.lxx,$[st_dir]/$[TARGET]_%.obj,$[source_file]]
+      #define $[generated_file]_obj $[patsubst %.yxx %.lxx,$[ODIR]/$[TARGET]_%.obj,$[source_file]]
       #define $[generated_file]_sources $[source_file]
+      #push 1 $[generated_file]_obj
       #set cxx_sources $[cxx_sources] $[generated_file]
     #end source_file
     #if $[get_igateoutput]
       #define generated_file $[get_igateoutput]
       #define $[generated_file]_obj $[get_igateoutput:%.cxx=%.obj]
       #define $[generated_file]_sources $[get_igatescan]
+      #push 1 $[generated_file]_obj
       #set cxx_sources $[cxx_sources] $[generated_file]
     #endif
     #if $[get_igatemout]
       #define generated_file $[get_igatemout]
       #define $[generated_file]_obj $[get_igatemout:%.cxx=%.obj]
       #define $[generated_file]_sources none
+      #push 1 $[generated_file]_obj
       #set cxx_sources $[cxx_sources] $[generated_file]
     #endif
 

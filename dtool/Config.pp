@@ -444,14 +444,12 @@
 #defer SED ppremake -s '$[script]' <$[source] >$[target]
 
 // What directory name (within each source directory) should the .o
-// (or .obj) files be written to, for both shared and static sources?
-// In general, it is safe to define these to be the same.  However,
-// don't define these to be '.', or you will be very sad the next time
-// you run 'make clean'.
+// (or .obj) files be written to?  This can be any name, and it can be
+// used to differentiate different builds within the same tree.
+// However, don't define this to be '.', or you will be very sad the
+// next time you run 'make clean'.
 //#defer ODIR Opt$[OPTIMIZE]-$[PLATFORM]$[USE_COMPILER]
 #defer ODIR Opt$[OPTIMIZE]-$[PLATFORM]
-#defer ODIR_SHARED $[ODIR]
-#defer ODIR_STATIC $[ODIR]
 
 
 

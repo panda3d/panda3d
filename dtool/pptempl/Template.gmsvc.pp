@@ -57,12 +57,12 @@
   // $[bin_targets] the list of binaries.  $[test_bin_targets] is the
   // list of binaries that are to be built only when specifically asked
   // for.
-  #define lib_targets $[patsubst %,$[st_dir]/lib%$[dllext].$[dlllib],$[active_target(metalib_target noinst_lib_target)] $[real_lib_targets]]
-  #define static_lib_targets $[active_target(static_lib_target ss_lib_target):%=$[st_dir]/lib%$[dllext].lib]
+  #define lib_targets $[patsubst %,$[ODIR]/lib%$[dllext].$[dlllib],$[active_target(metalib_target noinst_lib_target)] $[real_lib_targets]]
+  #define static_lib_targets $[active_target(static_lib_target ss_lib_target):%=$[ODIR]/lib%$[dllext].lib]
   #define bin_targets \
-      $[active_target(bin_target noinst_bin_target):%=$[st_dir]/%.exe] \
-      $[active_target(sed_bin_target):%=$[st_dir]/%]
-  #define test_bin_targets $[active_target(test_bin_target):%=$[st_dir]/%.exe]
+      $[active_target(bin_target noinst_bin_target):%=$[ODIR]/%.exe] \
+      $[active_target(sed_bin_target):%=$[ODIR]/%]
+  #define test_bin_targets $[active_target(test_bin_target):%=$[ODIR]/%.exe]
   
   // And these variables will define the various things we need to
   // install.
@@ -75,13 +75,12 @@
   #define install_config $[sort $[INSTALL_CONFIG(metalib_target lib_target static_lib_target ss_lib_target bin_target)] $[INSTALL_CONFIG]]
   #define install_igatedb $[sort $[get_igatedb(metalib_target lib_target)]]
 
-  // Since we don't make a distinction in Windows between building for
-  // static or dynamic targets, let's eliminate so_sources and just
-  // use st_sources for simplicity.
-  #define st_sources $[compile_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]
-  #define yxx_st_sources $[yxx_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]
-  #define lxx_st_sources $[lxx_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]
-  #define dep_sources_1 $[get_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]
+  // These are the various sources collected from all targets within the
+  // directory.
+  #define st_sources $[sort $[compile_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]]
+  #define yxx_st_sources $[sort $[yxx_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]]
+  #define lxx_st_sources $[sort $[lxx_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]]
+  #define dep_sources_1 $[sort $[get_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]]
   
   // These are the source files that our dependency cache file will
   // depend on.  If it's an empty list, we won't bother writing rules to
@@ -116,7 +115,7 @@
 
 // $[complete_lpath] is rather like $[complete_ipath]: the list of
 // directories (from within this tree) we should add to our -L list.
-#defer complete_lpath $[static_libs $[RELDIR:%=%/$[st_dir]],$[actual_local_libs]] $[dynamic_libs $[RELDIR:%=%/$[st_dir]],$[actual_local_libs]]
+#defer complete_lpath $[static_libs $[RELDIR:%=%/$[ODIR]],$[actual_local_libs]] $[dynamic_libs $[RELDIR:%=%/$[ODIR]],$[actual_local_libs]]
 
 // $[lpath] is like $[target_ipath]: it's the list of directories we
 // should add to our -L list, from the context of a particular target.
@@ -142,10 +141,10 @@
     $[if $[install_igatedb],$[install_igatedb_dir]] \
     ]
 
-// Similarly, we need to ensure that $[st_dir] exists.  Trying to make
+// Similarly, we need to ensure that $[ODIR] exists.  Trying to make
 // the makefiles do this automatically just causes problems with
 // multiprocess builds.
-#mkdir $[st_dir]
+#mkdir $[ODIR]
 
 // Pre-compiled headers are one way to speed the compilation of many
 // C++ source files that include similar headers, but it turns out a
@@ -197,7 +196,10 @@ test : $[test_bin_targets]
 
 clean :
 #if $[st_sources]
-$[TAB] rm -f $[st_dir]/*
+$[TAB] rm -f $[patsubst %,$[%_obj],$[st_sources]]
+#endif
+#if $[lib_targets] $[static_lib_targets] $[bin_targets] $[test_bin_targets]
+$[TAB] rm -f $[lib_targets] $[static_lib_targets] $[bin_targets] $[test_bin_targets]
 #endif
 $[TAB] rm -f *.pyc *.pyo // Also scrub out old generated Python code.
                          
@@ -205,7 +207,7 @@ $[TAB] rm -f *.pyc *.pyo // Also scrub out old generated Python code.
 // and building.  It removes everything except the Makefile.
 cleanall : clean
 #if $[st_sources]
-$[TAB] rm -rf $[st_dir]
+$[TAB] rm -rf $[ODIR]
 #endif
 #if $[yxx_st_sources] $[lxx_st_sources]
 $[TAB] rm -f $[patsubst %.yxx,%.cxx %.h,$[yxx_st_sources]] $[patsubst %.lxx,%.cxx,$[lxx_st_sources]]
@@ -245,7 +247,7 @@ $[TAB] rm -f $[igatemout] $[$[igatemout]_obj]
      $[INSTALL_CONFIG:%=$[install_config_dir]/%]
 
 #define installed_igate_files \
-     $[get_igatedb(metalib_target lib_target ss_lib_target):$[st_dir]/%=$[install_igatedb_dir]/%]
+     $[get_igatedb(metalib_target lib_target ss_lib_target):$[ODIR]/%=$[install_igatedb_dir]/%]
 
 #define install_targets \
      $[active_target(metalib_target lib_target static_lib_target ss_lib_target):%=install-lib%] \
@@ -289,7 +291,7 @@ igate : $[get_igatedb(metalib_target lib_target ss_lib_target)]
 
 // In Windows, we don't actually build all the libraries.  In
 // particular, we don't build any libraries that are listed on a
-// metalib.  Is this one such library?
+// metalib.  Is this one such a library?
 #define build_it $[eq $[module $[TARGET],$[TARGET]],]
 
 // We might need to define a BUILDING_ symbol for win32.  We use the
@@ -332,7 +334,7 @@ igate : $[get_igatedb(metalib_target lib_target ss_lib_target)]
 
   #define varname $[subst -,_,lib$[TARGET]_so]
 $[varname] = $[sources]
-  #define target $[st_dir]/lib$[TARGET]$[dllext].$[dlllib]
+  #define target $[ODIR]/lib$[TARGET]$[dllext].$[dlllib]
   #define sources $($[varname])
   #define flags   $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]
   #define mybasename $[basename $[notdir $[target]]]  
@@ -362,10 +364,10 @@ $[TAB] $[SHARED_LIB_C]
 #endif
 
 #if $[build_dlls]
-$[st_dir]/lib$[TARGET]$[dllext].lib : $[st_dir]/lib$[TARGET]$[dllext].dll
+$[ODIR]/lib$[TARGET]$[dllext].lib : $[ODIR]/lib$[TARGET]$[dllext].dll
 #endif
 #if $[build_pdbs]
-$[st_dir]/lib$[TARGET]$[dllext].pdb : $[st_dir]/lib$[TARGET]$[dllext].dll
+$[ODIR]/lib$[TARGET]$[dllext].pdb : $[ODIR]/lib$[TARGET]$[dllext].dll
 #endif
 
 #endif
@@ -382,7 +384,7 @@ $[st_dir]/lib$[TARGET]$[dllext].pdb : $[st_dir]/lib$[TARGET]$[dllext].dll
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
     $[INSTALL_DATA:%=$[install_data_dir]/%] \
     $[INSTALL_CONFIG:%=$[install_config_dir]/%] \
-    $[igatedb:$[st_dir]/%=$[install_igatedb_dir]/%]
+    $[igatedb:$[ODIR]/%=$[install_igatedb_dir]/%]
 
 install-lib$[TARGET] : $[installed_files]
 
@@ -392,22 +394,22 @@ $[TAB] rm -f $[sort $[installed_files]]
 #endif
 
 #if $[build_dlls]
-$[install_lib_dir]/lib$[TARGET]$[dllext].dll : $[st_dir]/lib$[TARGET]$[dllext].dll
+$[install_lib_dir]/lib$[TARGET]$[dllext].dll : $[ODIR]/lib$[TARGET]$[dllext].dll
 #define local lib$[TARGET]$[dllext].dll
 #define dest $[install_lib_dir]
-$[TAB] cp -f $[st_dir]/$[local] $[dest]
+$[TAB] cp -f $[ODIR]/$[local] $[dest]
 #endif
 
-$[install_lib_dir]/lib$[TARGET]$[dllext].lib : $[st_dir]/lib$[TARGET]$[dllext].lib
+$[install_lib_dir]/lib$[TARGET]$[dllext].lib : $[ODIR]/lib$[TARGET]$[dllext].lib
 #define local lib$[TARGET]$[dllext].lib
 #define dest $[install_lib_dir]
-$[TAB] cp -f $[st_dir]/$[local] $[dest]
+$[TAB] cp -f $[ODIR]/$[local] $[dest]
 
 #if $[and $[build_dlls],$[build_pdbs]]
-$[install_lib_dir]/lib$[TARGET]$[dllext].pdb : $[st_dir]/lib$[TARGET]$[dllext].pdb
+$[install_lib_dir]/lib$[TARGET]$[dllext].pdb : $[ODIR]/lib$[TARGET]$[dllext].pdb
 #define local lib$[TARGET]$[dllext].pdb
 #define dest $[install_lib_dir]
-$[TAB] cp -f $[st_dir]/$[local] $[dest]
+$[TAB] cp -f $[ODIR]/$[local] $[dest]
 #endif
 
 #if $[igatescan]
@@ -423,7 +425,7 @@ $[TAB] cp -f $[st_dir]/$[local] $[dest]
   #define igatemod $[TARGET]
 #endif
 
-$[igatedb:$[st_dir]/%=$[install_igatedb_dir]/%] : $[igatedb]
+$[igatedb:$[ODIR]/%=$[install_igatedb_dir]/%] : $[igatedb]
 #define local $[igatedb]
 #define dest $[install_igatedb_dir]
 $[TAB] cp -f $[local] $[dest]
@@ -472,7 +474,7 @@ $[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[iga
 #forscopes noinst_lib_target
 #define varname $[subst -,_,lib$[TARGET]_so]
 $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
-#define target $[st_dir]/lib$[TARGET]$[dllext].$[dlllib]
+#define target $[ODIR]/lib$[TARGET]$[dllext].$[dlllib]
 #define sources $($[varname])
 $[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
@@ -482,10 +484,10 @@ $[TAB] $[SHARED_LIB_C]
 #endif
 
 #if $[build_dlls]
-$[st_dir]/lib$[TARGET]$[dllext].lib : $[st_dir]/lib$[TARGET]$[dllext].dll
+$[ODIR]/lib$[TARGET]$[dllext].lib : $[ODIR]/lib$[TARGET]$[dllext].dll
 #endif
 #if $[build_pdbs]
-$[st_dir]/lib$[TARGET]$[dllext].pdb : $[st_dir]/lib$[TARGET]$[dllext].dll
+$[ODIR]/lib$[TARGET]$[dllext].pdb : $[ODIR]/lib$[TARGET]$[dllext].dll
 #endif
 
 #end noinst_lib_target
@@ -501,7 +503,7 @@ $[st_dir]/lib$[TARGET]$[dllext].pdb : $[st_dir]/lib$[TARGET]$[dllext].dll
 #forscopes static_lib_target ss_lib_target
 #define varname $[subst -,_,lib$[TARGET]_a]
 $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
-#define target $[st_dir]/lib$[TARGET]$[dllext].lib
+#define target $[ODIR]/lib$[TARGET]$[dllext].lib
 #define sources $($[varname])
 $[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
@@ -524,10 +526,10 @@ uninstall-lib$[TARGET] :
 $[TAB] rm -f $[sort $[installed_files]]
 #endif
 
-$[install_lib_dir]/lib$[TARGET]$[dllext].lib : $[st_dir]/lib$[TARGET]$[dllext].lib
+$[install_lib_dir]/lib$[TARGET]$[dllext].lib : $[ODIR]/lib$[TARGET]$[dllext].lib
 #define local lib$[TARGET]$[dllext].lib
 #define dest $[install_lib_dir]
-$[TAB] cp -f $[st_dir]/$[local] $[dest]
+$[TAB] cp -f $[ODIR]/$[local] $[dest]
 
 #end static_lib_target ss_lib_target
 
@@ -540,9 +542,9 @@ $[TAB] cp -f $[st_dir]/$[local] $[dest]
 /////////////////////////////////////////////////////////////////////
 
 #forscopes sed_bin_target
-$[TARGET] : $[st_dir]/$[TARGET]
+$[TARGET] : $[ODIR]/$[TARGET]
 
-#define target $[st_dir]/$[TARGET]
+#define target $[ODIR]/$[TARGET]
 #define source $[SOURCE]
 #define script $[COMMAND]
 $[target] : $[source]
@@ -561,8 +563,8 @@ $[TAB] rm -f $[sort $[installed_files]]
 
 #define local $[TARGET]
 #define dest $[install_bin_dir]
-$[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET]
-$[TAB] cp -f $[st_dir]/$[local] $[dest]
+$[install_bin_dir]/$[TARGET] : $[ODIR]/$[TARGET]
+$[TAB] cp -f $[ODIR]/$[local] $[dest]
 
 #end sed_bin_target
 
@@ -573,11 +575,11 @@ $[TAB] cp -f $[st_dir]/$[local] $[dest]
 /////////////////////////////////////////////////////////////////////
 
 #forscopes bin_target
-$[TARGET] : $[st_dir]/$[TARGET].exe
+$[TARGET] : $[ODIR]/$[TARGET].exe
 
 #define varname $[subst -,_,bin_$[TARGET]]
 $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
-#define target $[st_dir]/$[TARGET].exe
+#define target $[ODIR]/$[TARGET].exe
 #define sources $($[varname])
 #define ld $[get_ld]
 $[target] : $[sources]
@@ -594,7 +596,7 @@ $[TAB] $[LINK_BIN_C]
 #endif
 
 #if $[build_pdbs]
-$[st_dir]/$[TARGET].pdb : $[st_dir]/$[TARGET].exe
+$[ODIR]/$[TARGET].pdb : $[ODIR]/$[TARGET].exe
 #endif
 
 #define installed_files \
@@ -612,16 +614,16 @@ uninstall-$[TARGET] :
 $[TAB] rm -f $[sort $[installed_files]]
 #endif
 
-$[install_bin_dir]/$[TARGET].exe : $[st_dir]/$[TARGET].exe
+$[install_bin_dir]/$[TARGET].exe : $[ODIR]/$[TARGET].exe
 #define local $[TARGET].exe
 #define dest $[install_bin_dir]
-$[TAB] cp -f $[st_dir]/$[local] $[dest]
+$[TAB] cp -f $[ODIR]/$[local] $[dest]
 
 #if $[build_pdbs]
-$[install_bin_dir]/$[TARGET].pdb : $[st_dir]/$[TARGET].pdb
+$[install_bin_dir]/$[TARGET].pdb : $[ODIR]/$[TARGET].pdb
 #define local $[TARGET].pdb
 #define dest $[install_bin_dir]
-$[TAB] cp -f $[st_dir]/$[local] $[dest]
+$[TAB] cp -f $[ODIR]/$[local] $[dest]
 #endif
 
 #end bin_target
@@ -634,11 +636,11 @@ $[TAB] cp -f $[st_dir]/$[local] $[dest]
 /////////////////////////////////////////////////////////////////////
 
 #forscopes noinst_bin_target test_bin_target
-$[TARGET] : $[st_dir]/$[TARGET].exe
+$[TARGET] : $[ODIR]/$[TARGET].exe
 
 #define varname $[subst -,_,bin_$[TARGET]]
 $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
-#define target $[st_dir]/$[TARGET].exe
+#define target $[ODIR]/$[TARGET].exe
 #define sources $($[varname])
 $[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
