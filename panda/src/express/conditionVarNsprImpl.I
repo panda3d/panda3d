@@ -1,5 +1,5 @@
-// Filename: mutexNsprImpl.I
-// Created by:  drose (08Aug02)
+// Filename: conditionVarNsprImpl.I
+// Created by:  drose (09Aug02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,43 +18,55 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MutexNsprImpl::Constructor
+//     Function: ConditionVarNsprImpl::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE MutexNsprImpl::
-MutexNsprImpl() {
-  _lock = PR_NewLock();
-  nassertv(_lock != (PRLock *)NULL);
+INLINE ConditionVarNsprImpl::
+ConditionVarNsprImpl(MutexNsprImpl &mutex) {
+  _cvar = PR_NewCondVar(mutex._lock);
+  nassertv(_cvar != (PRCondVar *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MutexNsprImpl::Destructor
+//     Function: ConditionVarNsprImpl::Destructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE MutexNsprImpl::
-~MutexNsprImpl() {
-  PR_DestroyLock(_lock);
+INLINE ConditionVarNsprImpl::
+~ConditionVarNsprImpl() {
+  PR_DestroyCondVar(_cvar);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MutexNsprImpl::lock
+//     Function: ConditionVarNsprImpl::wait
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void MutexNsprImpl::
-lock() {
-  PR_Lock(_lock);
+INLINE void ConditionVarNsprImpl::
+wait() {
+  int status = PR_WaitCondVar(_cvar, PR_INTERVAL_NO_TIMEOUT);
+  nassertv(status == PR_SUCCESS);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MutexNsprImpl::release
+//     Function: ConditionVarNsprImpl::signal
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void MutexNsprImpl::
-release() {
-  int status = PR_Unlock(_lock);
+INLINE void ConditionVarNsprImpl::
+signal() {
+  int status = PR_NotifyCondVar(_cvar);
+  nassertv(status == PR_SUCCESS);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConditionVarNsprImpl::signal_all
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void ConditionVarNsprImpl::
+signal_all() {
+  int status = PR_NotifyAllCondVar(_cvar);
   nassertv(status == PR_SUCCESS);
 }

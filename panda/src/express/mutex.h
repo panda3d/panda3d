@@ -44,6 +44,7 @@ public:
 
 private:
   MutexImpl _impl;
+  friend class ConditionVar;
 };
 
 #include "mutex.I"

@@ -1,5 +1,5 @@
-// Filename: mutexNsprImpl.h
-// Created by:  drose (08Aug02)
+// Filename: conditionVarNsprImpl.cxx
+// Created by:  drose (09Aug02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,37 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef MUTEXNSPRIMPL_H
-#define MUTEXNSPRIMPL_H
-
-#include "pandabase.h"
 #include "selectIpcImpl.h"
 
 #ifdef IPC_NSPR_IMPL
 
-#include "notify.h"
-
-#include <prlock.h>
-
-////////////////////////////////////////////////////////////////////
-//       Class : MutexNsprImpl
-// Description : Uses NSPR to implement a mutex.
-////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS MutexNsprImpl {
-public:
-  INLINE MutexNsprImpl();
-  INLINE ~MutexNsprImpl();
-
-  INLINE void lock();
-  INLINE void release();
-
-private:
-  PRLock *_lock;
-  friend class ConditionVarNsprImpl;
-};
-
-#include "mutexNsprImpl.I"
+#include "conditionVarNsprImpl.h"
 
 #endif  // IPC_NSPR_IMPL
-
-#endif

@@ -1,5 +1,5 @@
-// Filename: mutexNsprImpl.h
-// Created by:  drose (08Aug02)
+// Filename: conditionVarDummyImpl.h
+// Created by:  drose (09Aug02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,37 +16,36 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef MUTEXNSPRIMPL_H
-#define MUTEXNSPRIMPL_H
+#ifndef CONDITIONVARDUMMYIMPL_H
+#define CONDITIONVARDUMMYIMPL_H
 
 #include "pandabase.h"
 #include "selectIpcImpl.h"
 
-#ifdef IPC_NSPR_IMPL
+#ifdef IPC_DUMMY_IMPL
 
 #include "notify.h"
 
-#include <prlock.h>
+class MutexDummyImpl;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : MutexNsprImpl
-// Description : Uses NSPR to implement a mutex.
+//       Class : ConditionVarDummyImpl
+// Description : A fake condition variable implementation for
+//               single-threaded applications that don't need any
+//               synchronization control.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS MutexNsprImpl {
+class EXPCL_PANDAEXPRESS ConditionVarDummyImpl {
 public:
-  INLINE MutexNsprImpl();
-  INLINE ~MutexNsprImpl();
+  INLINE ConditionVarDummyImpl(MutexDummyImpl &mutex);
+  INLINE ~ConditionVarDummyImpl();
 
-  INLINE void lock();
-  INLINE void release();
-
-private:
-  PRLock *_lock;
-  friend class ConditionVarNsprImpl;
+  INLINE void wait();
+  INLINE void signal();
+  INLINE void signal_all();
 };
 
-#include "mutexNsprImpl.I"
+#include "conditionVarDummyImpl.I"
 
-#endif  // IPC_NSPR_IMPL
+#endif  // IPC_DUMMY_IMPL
 
 #endif

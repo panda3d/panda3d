@@ -14,7 +14,11 @@
     atomicAdjustNsprImpl.I \
     bigEndian.h buffer.I buffer.h \
     checksumHashGenerator.I checksumHashGenerator.h circBuffer.I \
-    circBuffer.h clockObject.I clockObject.h config_express.h \
+    circBuffer.h clockObject.I clockObject.h \
+    conditionVarDummyImpl.h conditionVarDummyImpl.I conditionVar.h \
+    conditionVar.I conditionVarImpl.h conditionVarNsprImpl.h \
+    conditionVarNsprImpl.I \
+    config_express.h \
     datagram.I datagram.h datagramGenerator.I \
     datagramGenerator.h \
     datagramIterator.I datagramIterator.h datagramSink.I datagramSink.h \
@@ -67,6 +71,7 @@
   #define INCLUDED_SOURCES  \
     atomicAdjust.cxx atomicAdjustDummyImpl.cxx atomicAdjustNsprImpl.cxx \
     buffer.cxx checksumHashGenerator.cxx clockObject.cxx \
+    conditionVar.cxx conditionVarDummyImpl.cxx conditionVarNsprImpl.cxx \
     config_express.cxx datagram.cxx datagramGenerator.cxx \
     datagramIterator.cxx \
     datagramSink.cxx dcast.cxx error_utils.cxx \
@@ -99,7 +104,11 @@
     atomicAdjustNsprImpl.I \
     bigEndian.h buffer.I buffer.h checksumHashGenerator.I  \
     checksumHashGenerator.h circBuffer.I circBuffer.h clockObject.I \
-    clockObject.h config_express.h datagram.I datagram.h \
+    clockObject.h \
+    conditionVarDummyImpl.h conditionVarDummyImpl.I conditionVar.h \
+    conditionVar.I conditionVarImpl.h conditionVarNsprImpl.h \
+    conditionVarNsprImpl.I \
+    config_express.h datagram.I datagram.h \
     datagramGenerator.I datagramGenerator.h \
     datagramIterator.I datagramIterator.h \
     datagramSink.I datagramSink.h dcast.T dcast.h \
@@ -189,6 +198,17 @@
 
   #define SOURCES \
     test_threaddata.cxx
+
+#end test_bin_target
+
+
+#begin test_bin_target
+  #define TARGET test_diners
+  #define LOCAL_LIBS $[LOCAL_LIBS] express
+  #define OTHER_LIBS dtoolutil:c dtool:m pystub
+
+  #define SOURCES \
+    test_diners.cxx
 
 #end test_bin_target
 

@@ -1,5 +1,5 @@
-// Filename: mutexNsprImpl.I
-// Created by:  drose (08Aug02)
+// Filename: conditionVarDummyImpl.I
+// Created by:  drose (09Aug02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,43 +18,46 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MutexNsprImpl::Constructor
+//     Function: ConditionVarDummyImpl::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE MutexNsprImpl::
-MutexNsprImpl() {
-  _lock = PR_NewLock();
-  nassertv(_lock != (PRLock *)NULL);
+INLINE ConditionVarDummyImpl::
+ConditionVarDummyImpl(MutexDummyImpl &) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MutexNsprImpl::Destructor
+//     Function: ConditionVarDummyImpl::Destructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE MutexNsprImpl::
-~MutexNsprImpl() {
-  PR_DestroyLock(_lock);
+INLINE ConditionVarDummyImpl::
+~ConditionVarDummyImpl() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MutexNsprImpl::lock
+//     Function: ConditionVarDummyImpl::lock
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void MutexNsprImpl::
-lock() {
-  PR_Lock(_lock);
+INLINE void ConditionVarDummyImpl::
+wait() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MutexNsprImpl::release
+//     Function: ConditionVarDummyImpl::signal
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void MutexNsprImpl::
-release() {
-  int status = PR_Unlock(_lock);
-  nassertv(status == PR_SUCCESS);
+INLINE void ConditionVarDummyImpl::
+signal() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConditionVarDummyImpl::signal_all
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void ConditionVarDummyImpl::
+signal_all() {
 }

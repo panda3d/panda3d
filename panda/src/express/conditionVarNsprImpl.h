@@ -1,5 +1,5 @@
-// Filename: mutexNsprImpl.h
-// Created by:  drose (08Aug02)
+// Filename: conditionVarNsprImpl.h
+// Created by:  drose (09Aug02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,36 +16,39 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef MUTEXNSPRIMPL_H
-#define MUTEXNSPRIMPL_H
+#ifndef CONDITIONVARNSPRIMPL_H
+#define CONDITIONVARNSPRIMPL_H
 
 #include "pandabase.h"
 #include "selectIpcImpl.h"
 
 #ifdef IPC_NSPR_IMPL
 
+#include "mutexNsprImpl.h"
 #include "notify.h"
 
-#include <prlock.h>
+#include <prcvar.h>
+
+class MutexNsprImpl;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : MutexNsprImpl
-// Description : Uses NSPR to implement a mutex.
+//       Class : ConditionVarNsprImpl
+// Description : Uses NSPR to implement a conditionVar.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS MutexNsprImpl {
+class EXPCL_PANDAEXPRESS ConditionVarNsprImpl {
 public:
-  INLINE MutexNsprImpl();
-  INLINE ~MutexNsprImpl();
+  INLINE ConditionVarNsprImpl(MutexNsprImpl &mutex);
+  INLINE ~ConditionVarNsprImpl();
 
-  INLINE void lock();
-  INLINE void release();
+  INLINE void wait();
+  INLINE void signal();
+  INLINE void signal_all();
 
 private:
-  PRLock *_lock;
-  friend class ConditionVarNsprImpl;
+  PRCondVar *_cvar;
 };
 
-#include "mutexNsprImpl.I"
+#include "conditionVarNsprImpl.I"
 
 #endif  // IPC_NSPR_IMPL
 
