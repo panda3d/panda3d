@@ -68,14 +68,19 @@ def redefineExitFunc(oldMethod, newFunction):
 
 
 class State(DirectObject):
+    notify = directNotify.newCategory("State")
+
+    # this 'constant' can be used to specify that the state
+    # can transition to any other state
+    Any = 'ANY'
 
     """State class: """
 
-    def __init__(self, name, enterFunc=None, exitFunc=None, transitions=[],
-                 inspectorPos = []):
+    def __init__(self, name, enterFunc=None, exitFunc=None,
+                 transitions=Any, inspectorPos = []):
         """__init__(self, string, func, func, string[], inspectorPos = [])
         State constructor: takes name, enter func, exit func, and
-        a list of states it can transition to."""
+        a list of states it can transition to (or State.Any)."""
         self.__enterFunc = None
         self.__exitFunc = None
 
@@ -131,9 +136,29 @@ class State(DirectObject):
         self.redefineFunc(self.__exitFunc, stateExitFunc, ExitFuncRedefineMap)
         self.__exitFunc = stateExitFunc
 
+    def transitionsToAny(self):
+        """ returns true if State defines transitions to any other state """
+        return self.__transitions is State.Any
+
     def getTransitions(self):
-        """getTransitions(self)"""
-        return(self.__transitions)
+        """getTransitions(self)
+        warning -- if the state transitions to any other state,
+        returns an empty list (falsely implying that the state
+        has no transitions)
+        see State.transitionsToAny()
+        """
+        if self.transitionsToAny():
+            return []
+        return self.__transitions
+
+    def isTransitionDefined(self, otherState):
+        if self.transitionsToAny():
+            return 1
+        
+        # if we're given a state object, get its name instead
+        if type(otherState) != type(''):
+            otherState = otherState.getName()
+        return (otherState in self.__transitions)
 
     def setTransitions(self, stateTransitions):
         """setTransitions(self, string[])"""
@@ -141,7 +166,12 @@ class State(DirectObject):
 
     def addTransition(self, transition):
         """addTransitions(self, string)"""
-        self.__transitions.append(transition)
+        if not self.transitionsToAny():
+            self.__transitions.append(transition)
+        else:
+            State.notify.warning(
+                'attempted to add transition %s to state that '
+                'transitions to any state')
 
     def getInspectorPos(self):
         """getInspectorPos(self)"""

@@ -11,9 +11,15 @@ class FSM(DirectObject):
 
     # special methods
 
+    # these are flags that tell the FSM what to do when an
+    # undefined transition is requested
+    ALLOW = 0    # print a warning, and do the transition
+    DISALLOW = 1 # print a warning, and don't do the transition
+    ERROR = 2    # print an error message and raise an exception
+
     def __init__(self, name, states=[], initialStateName=None,
-                 finalStateName=None):
-        """__init__(self, string, State[], string, string)
+                 finalStateName=None, onUndefTransition=ALLOW):
+        """__init__(self, string, State[], string, string, int)
 
         FSM constructor: takes name, list of states, initial state and
         final state as:
@@ -25,12 +31,22 @@ class FSM(DirectObject):
           'red',
           'red')
 
+        each state's last argument, a list of allowed state transitions,
+        is optional; if left out (or explicitly specified to be
+        State.State.Any) then any transition from the state is 'defined'
+        and allowed
+
+        'onUndefTransition' flag determines behavior when undefined
+        transition is requested; see flag definitions above
+
         """
 
         self.setName(name)
         self.setStates(states)
         self.setInitialState(initialStateName)
         self.setFinalState(finalStateName)
+
+        self.onUndefTransition = onUndefTransition
 
         # Flag to see if we are inspecting
         self.inspecting = 0
@@ -43,7 +59,6 @@ class FSM(DirectObject):
         # should recursively attempt to modify the state while we are
         # doing this.
         self.__internalStateInFlux = 0
-        return None
 
     # I know this isn't how __repr__ is supposed to be used, but it
     # is nice and convenient.
@@ -71,7 +86,6 @@ class FSM(DirectObject):
         self.__internalStateInFlux = 1
         self.__enter(self.__initialState, argList)
         assert(not self.__internalStateInFlux)
-        return
 
     # Jesse decided that simpler was better with the __str__ function
     def __str_not__(self):
@@ -180,8 +194,10 @@ class FSM(DirectObject):
             self.__internalStateInFlux = 0
             aState.enter(argList)
         else:
-            FSM.notify.error("[%s]: enter: no such state" % (self.__name))
+            # notify.error is going to raise an exception; reset the
+            # flux flag first
             self.__internalStateInFlux = 0
+            FSM.notify.error("[%s]: enter: no such state" % (self.__name))
 
     def __transition(self, aState, enterArgList=[], exitArgList=[]):
         """__transition(self, State, enterArgList, exitArgList)
@@ -225,7 +241,22 @@ class FSM(DirectObject):
             FSM.notify.error("[%s]: request: %s, no such state" %
                              (self.__name, aStateName))
 
-        if force or (aStateName in self.__currentState.getTransitions()):
+        # is the transition defined? if it isn't, should we allow it?
+        transitionDefined = self.__currentState.isTransitionDefined(aStateName)
+        transitionAllowed = transitionDefined
+
+        if self.onUndefTransition == FSM.ALLOW:
+            transitionAllowed = 1
+            if not transitionDefined:
+                # the transition is not defined, but we're going to do it
+                # anyway.
+                FSM.notify.warning(
+                    "[%s]: performing undefined transition from %s to %s" %
+                    (self.__name,
+                     self.__currentState.getName(),
+                     aStateName))
+
+        if transitionAllowed or force:
             self.__transition(aState,
                               enterArgList,
                               exitArgList)
@@ -254,24 +285,28 @@ class FSM(DirectObject):
                                  (self.__name, aStateName))
             return 0
         else:
-            if FSM.notify.getWarning():
-                FSM.notify.warning("[%s]: no transition exists from %s to %s" %
-                                   (self.__name,
-                                    self.__currentState.getName(),
-                                    aStateName))
+            msg = ("[%s]: no transition exists from %s to %s" %
+                   (self.__name,
+                    self.__currentState.getName(),
+                    aStateName))
+            if self.onUndefTransition == FSM.ERROR:
+                FSM.notify.error(msg)
+            else:
+                FSM.notify.warning(msg)
             return 0
 
 
     def forceTransition(self, aStateName, enterArgList=[], exitArgList=[]):
-        """ force a transition """
+        """ force a transition -- for debugging ONLY """
         self.request(aStateName, enterArgList, exitArgList, force=1)
 
     def conditional_request(self, aStateName, enterArgList=[], exitArgList=[]):
         """request(self, string)
+        'if this transition is defined, do it'
         Attempt transition from currentState to given one, if it exists.
-        Return true is transition exists to given state,
+        Return true if transition exists to given state,
         false otherwise.  It is NOT an error/warning to attempt a cond_request
-        if the transition doesnt exist.  This lets people be sloppy about
+        if the transition doesn't exist.  This lets people be sloppy about
         FSM transitions, letting the same fn be used for different states
         that may not have the same out transitions.
         """
@@ -295,10 +330,13 @@ class FSM(DirectObject):
             FSM.notify.error("[%s]: request: %s, no such state" %
                                 (self.__name, aStateName))
 
-        fulltransitionnameset = self.__currentState.getTransitions()
-        fulltransitionnameset.extend([self.__currentState.getName(),self.__finalState.getName()])
-        
-        if (aStateName in fulltransitionnameset):
+        transitionDefined = (
+            self.__currentState.isTransitionDefined(aStateName) or
+            aStateName in [self.__currentState.getName(),
+                           self.__finalState.getName()]
+            )
+
+        if transitionDefined:
             return self.request(aStateName, enterArgList, exitArgList)
         else:
             FSM.notify.debug("[%s]: condition_request: %s, transition doesnt exist" %
