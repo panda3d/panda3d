@@ -52,9 +52,12 @@ private:
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Ramfile {
 PUBLISHED:
-  INLINE Ramfile(void);
+  INLINE Ramfile();
+
+  string readline();
 
 public:
+  size_t _pos;
   string _data;
 };
 

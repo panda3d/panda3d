@@ -41,3 +41,32 @@ Buffer::
 ~Buffer() {
   delete _buffer;
 }
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: Ramfile::readline
+//       Access: Published
+//  Description: Assumes the stream represents a text file, and
+//               extracts one line up to and including the trailing
+//               newline character.  Returns empty string when the end
+//               of file is reached.
+//
+//               The interface here is intentionally designed to be
+//               similar to that for Python's File.readline()
+//               function.
+////////////////////////////////////////////////////////////////////
+string Ramfile::
+readline() {
+  size_t start = _pos;
+  while (_pos < _data.length() && _data[_pos] != '\n') {
+    ++_pos;
+  }
+
+  if (_pos < _data.length() && _data[_pos] == '\n') {
+    // Include the newline character also.
+    ++_pos;
+  }
+
+  return _data.substr(start, _pos - start);
+}
+
