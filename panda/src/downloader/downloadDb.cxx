@@ -942,16 +942,18 @@ add_version(const Filename &name, Hash hash, Version version) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::add_version
 //       Access: Public
-//  Description:
+//  Description: Note: version numbers start at 1
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::
 add_version(int name_code, Hash hash, Version version) {
   // Try to find this name_code in the map
   VersionMap::iterator i = _versions.find(name_code);
+  nassertv(version >= 1);
 
   // If we did not find it, put a new vector_ulong at this name_code
   if (i == _versions.end()) {
     vector_ulong v;
+    nassertv(version == 1);
     v.push_back(hash);
     _versions[name_code] = v;
   } else {
@@ -961,8 +963,8 @@ add_version(int name_code, Hash hash, Version version) {
     nassertv(version<=size);
 
     // If you are overwriting an old hash value, just insert the new value
-    if (version < size) {
-      (*i).second[version] = hash;
+    if (version-1 < size) {
+      (*i).second[version-1] = hash;
     } else {
       //  add this hash at the end of the vector
       (*i).second.push_back(hash);
@@ -985,7 +987,7 @@ get_version(const Filename &name, Hash hash) {
   vector_ulong ulvec = (*vmi).second;
   vector_ulong::iterator i = find(ulvec.begin(), ulvec.end(), hash);
   if (i != ulvec.end())
-    return (i - ulvec.begin());
+    return (i - ulvec.begin() + 1);
   return -1;
 }
 
