@@ -48,7 +48,7 @@ DatagramUDPHeader(const void *data) : _header(data, datagram_udp_header_size) {
 ////////////////////////////////////////////////////////////////////
 int DatagramUDPHeader::
 get_datagram_checksum() const {
-  DatagramIterator di(_header, sizeof(PRUint16));
+  DatagramIterator di(_header);
   return di.get_uint16();
 }
 
@@ -99,7 +99,7 @@ verify_datagram(const NetDatagram &datagram) const {
     ostringstream hex;
     datagram.dump_hex(hex);
     hex << "\n";
-    net_cat.debug() << hex.str();
+    net_cat.debug(false) << hex.str();
   }
 
   return false;

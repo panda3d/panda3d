@@ -113,6 +113,10 @@ send_datagram(const NetDatagram &datagram) {
 		       0,
 		       datagram.get_address().get_addr(),
 		       PR_INTERVAL_NO_TIMEOUT);
+
+    if (net_cat.is_debug()) {
+      header.verify_datagram(datagram);
+    }
   } else {
     DatagramTCPHeader header(datagram);
     string data = header.get_header() + datagram.get_message();
@@ -121,6 +125,10 @@ send_datagram(const NetDatagram &datagram) {
 		     data.data(), bytes_sent,
 		     0,
 		     PR_INTERVAL_NO_TIMEOUT);
+
+    if (net_cat.is_debug()) {
+      header.verify_datagram(datagram);
+    }
   }
 
   PRErrorCode errcode = PR_GetError();
