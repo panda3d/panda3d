@@ -1,0 +1,4 @@
+
+#define IDI_ICON1   101
+
+IDI_ICON1  ICON    "pandaIcon.ico"
