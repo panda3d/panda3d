@@ -1090,7 +1090,7 @@ event_f9(CPT_Event event, void *data) {
       self->_engine.render_frame();
     }
 
-    Filename filename = wf->get_graphics_window()->save_screenshot();
+    Filename filename = wf->get_graphics_window()->save_screenshot_default();
     string text;
     if (filename.empty()) {
       text = "Screenshot failed";

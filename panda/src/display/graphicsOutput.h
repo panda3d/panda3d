@@ -87,7 +87,7 @@ PUBLISHED:
   int get_num_display_regions() const;
   DisplayRegion *get_display_region(int n) const;
 
-  Filename save_screenshot(const string &prefix = "screenshot");
+  Filename save_screenshot_default(const string &prefix = "screenshot");
   bool save_screenshot(const Filename &filename);
   bool get_screenshot(PNMImage &image);
 

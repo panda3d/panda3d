@@ -267,7 +267,7 @@ get_display_region(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::save_screenshot
+//     Function: GraphicsOutput::save_screenshot_default
 //       Access: Published
 //  Description: Saves a screenshot of the window to a default
 //               filename, and returns the filename, or empty string
@@ -282,7 +282,7 @@ get_display_region(int n) const {
 //                 All other % strings in strftime().
 ////////////////////////////////////////////////////////////////////
 Filename GraphicsOutput::
-save_screenshot(const string &prefix) {
+save_screenshot_default(const string &prefix) {
   time_t now = time(NULL);
   struct tm *ttm = localtime(&now);
   int frame_count = ClockObject::get_global_clock()->get_frame_count();
