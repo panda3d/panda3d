@@ -18,6 +18,7 @@
     pnmTextMaker.cxx pnmTextMaker.h pnmTextMaker.I
 
   #define INSTALL_HEADERS \
+    config_pnmtext.h \
     freetypeFont.h freetypeFont.I \
     pnmTextGlyph.h pnmTextGlyph.I \
     pnmTextMaker.h pnmTextMaker.I
