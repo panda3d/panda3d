@@ -82,3 +82,9 @@ def privUpdateSpec(spec, modelPath=None):
             spec.insertEntity(entId, 'zone', LevelConstants.UberZoneEntId)
             spec.doSetAttrib(entId, 'name', 'zone%s' % zoneNum)
             spec.doSetAttrib(entId, 'modelZoneNum', zoneNum)
+            # by default, new zone can see every other zone
+            visList = list(modelZoneNums)
+            # cur zone and uberzone are implicit
+            visList.remove(zoneNum)
+            visList.remove(0)
+            spec.doSetAttrib(entId, 'visibility', visList)

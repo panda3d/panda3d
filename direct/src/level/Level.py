@@ -322,3 +322,7 @@ class Level:
                 entity.destroy()
             # update our local type->entId table
             self.entType2ids[self.getEntityType(entId)].remove(entId)
+
+        def handleVisChange(self):
+            """the zone visibility lists have changed"""
+            pass

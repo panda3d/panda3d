@@ -17,12 +17,6 @@ class NodePathAttribs:
         if doReparent:
             self.callSetters('parentEntId')
 
-    def setParentEntId(self, parentEntId):
-        self.parentEntId = parentEntId
-        self.level.requestReparent(self.getNodePath(), self.parentEntId)
-
-    def reparentTo(self, *args): self.getNodePath().reparentTo(*args)
-
     def setPos(self, *args): self.getNodePath().setPos(*args)
     def setX(self, *args): self.getNodePath().setX(*args)
     def setY(self, *args): self.getNodePath().setY(*args)
@@ -38,6 +32,12 @@ class NodePathAttribs:
     def setSy(self, *args): self.getNodePath().setSy(*args)
     def setSz(self, *args): self.getNodePath().setSz(*args)
     
+    def reparentTo(self, *args): self.getNodePath().reparentTo(*args)
+
+    def setParentEntId(self, parentEntId):
+        self.parentEntId = parentEntId
+        self.level.requestReparent(self, self.parentEntId)
+
 class privNodePathImpl(NodePath.NodePath):
     def __init__(self, name):
         node = hidden.attachNewNode(name)

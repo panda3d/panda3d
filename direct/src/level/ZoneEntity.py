@@ -12,3 +12,7 @@ class ZoneEntity(ZoneEntityBase.ZoneEntityBase, BasicEntities.NodePathAttribs):
 
     def getNodePath(self):
         return self.nodePath
+
+    def setVisibility(self, visibility):
+        self.visibility = visibility
+        self.level.handleVisChange()

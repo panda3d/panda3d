@@ -198,6 +198,9 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # fix up the floor collisions for walkable zones *before*
         # any entities get put under the model
         for zoneNum,zoneNode in self.zoneNum2node.items():
+            # don't do this to the uberzone
+            if zoneNum == LevelConstants.UberZoneNum:
+                continue
             # if this is a walkable zone, fix up the model
             allColls = zoneNode.findAllMatches('**/+CollisionNode').asList()
             # which of them, if any, are floors?
@@ -224,35 +227,6 @@ class DistributedLevel(DistributedObject.DistributedObject,
                     # eat the collisionEntry
                     self.toonEnterZone(zoneNum)
                 self.accept('enter%s' % floorCollName, handleZoneEnter)
-
-        # hack in another doorway
-        dw = self.geom.attachNewNode('Doorway27')
-        dw.setPos(-49.4,86.7,19.26)
-        dw.setH(0)
-
-        # find the doorway nodes
-        # this is going to go away soon.
-        def findNumberedNodes(baseString, model=self.geom, self=self):
-            # finds nodes whose name follows the pattern 'baseString#'
-            # where there are no characters after #
-            # returns dictionary that maps # to node
-            potentialNodes = model.findAllMatches(
-                '**/%s*' % baseString).asList()
-            num2node = {}
-            for potentialNode in potentialNodes:
-                name = potentialNode.getName()
-                DistributedLevel.notify.debug('potential match for %s: %s' %
-                                  (baseString, name))
-                try:
-                    num = int(name[len(baseString):])
-                except:
-                    continue
-                
-                num2node[num] = potentialNode
-
-            return num2node
-
-        self.doorwayNum2Node = findNumberedNodes('Doorway')
 
     def announceGenerate(self):
         DistributedLevel.notify.debug('announceGenerate')
@@ -286,10 +260,6 @@ class DistributedLevel(DistributedObject.DistributedObject,
         DistributedObject.DistributedObject.delete(self)
         # remove factory menu to SpeedChat
         toonbase.localToon.chatMgr.chatInputSpeedChat.removeFactoryMenu()
-
-    def getDoorwayNode(self, doorwayNum):
-        # returns node that doors should parent themselves to
-        return self.doorwayNum2Node[doorwayNum]
 
     def getZoneNode(self, zoneNum):
         return self.zoneNum2node[zoneNum]
@@ -400,13 +370,23 @@ class DistributedLevel(DistributedObject.DistributedObject,
         if zoneNum not in self.zoneNum2entId:
             DistributedLevel.notify.error(
                 'no ZoneEntity for this zone (%s)!!' % zoneNum)
-            return
 
+        self.updateVisibility(zoneNum)
+
+    def updateVisibility(self, zoneNum=None):
+        """update the visibility assuming that we're in the specified
+        zone; don't check to see if it's the zone we're already in"""
+        if zoneNum is None:
+            zoneNum = self.curZoneNum
+            
         zoneEntId = self.zoneNum2entId[zoneNum]
         zoneSpec = self.levelSpec.getEntitySpec(zoneEntId)
         # use dicts to efficiently ensure that there are no duplicates
         visibleZoneNums = list2dict([zoneNum])
         visibleZoneNums.update(list2dict(zoneSpec['visibility']))
+
+        # we should not have the uberZone in the list at this point
+        assert not 0 in visibleZoneNums
         
         if DistributedLevel.HideZones:
             # figure out which zones are new and which are going invisible
@@ -416,7 +396,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
             removedZoneNums = []
             allVZ = dict(visibleZoneNums)
             allVZ.update(self.curVisibleZoneNums)
-            for vz,None in allVZ.items():
+            for vz,dummy in allVZ.items():
                 new = vz in visibleZoneNums
                 old = vz in self.curVisibleZoneNums
                 if new and old:
@@ -459,6 +439,11 @@ class DistributedLevel(DistributedObject.DistributedObject,
             from the AI"""
             value = eval(valueStr)
             self.levelSpec.setAttribChange(entId, attribName, value, username)
+
+        def handleVisChange(self):
+            """the zone visibility lists have changed"""
+            Level.Level.handleVisChange(self)
+            self.updateVisibility()
 
     def spawnTitleText(self):
         def getDescription(zoneId, self=self):
