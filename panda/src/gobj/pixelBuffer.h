@@ -72,11 +72,11 @@ public:
     F_luminance_alphamask   // 8 bits luminance, only needs 1 bit of alpha
   };
 
-  INLINE PixelBuffer(void);
-  INLINE PixelBuffer(int xsize, int ysize, int components,
-             int component_width, Type type, Format format);
-  INLINE PixelBuffer(const PixelBuffer &copy);
-  INLINE void operator = (const PixelBuffer &copy);
+  PixelBuffer(void);
+  PixelBuffer(int xsize, int ysize, int components,
+              int component_width, Type type, Format format);
+  PixelBuffer(const PixelBuffer &copy);
+  void operator = (const PixelBuffer &copy);
 
   // Some named constructors for common PixelBuffer types.
   INLINE static PixelBuffer rgb_buffer(int xsize, int ysize);
@@ -165,6 +165,8 @@ protected:
   int _component_width;
   Format _format;
   Type _type;
+
+  bool _loaded;
 
 public:
   // This is public to allow direct manipulation of the image data.

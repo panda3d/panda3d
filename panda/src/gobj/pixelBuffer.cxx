@@ -24,6 +24,92 @@
 TypeHandle PixelBuffer::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+PixelBuffer::
+PixelBuffer(void) : ImageBuffer()
+{
+  _xsize = 0;
+  _ysize = 0;
+  _xorg = 0;
+  _yorg = 0;
+  _border = 0;
+  _format = F_rgb;
+  _type = T_unsigned_byte;
+  _components = 3;
+  _component_width = 1;
+  _image = PTA_uchar();
+
+  _loaded = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+PixelBuffer::
+PixelBuffer(int xsize, int ysize, int components, int component_width,
+            Type type, Format format) :
+  ImageBuffer()
+{
+  _xsize = xsize;
+  _ysize = ysize;
+  _xorg = 0;
+  _yorg = 0;
+  _border = 0;
+  _components = components;
+  _component_width = component_width;
+  _type = type;
+  _format = format;
+  _image = PTA_uchar(_xsize * _ysize * _components * _component_width);
+  _loaded = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+PixelBuffer::
+PixelBuffer(const PixelBuffer &copy) :
+  _xsize(copy._xsize),
+  _ysize(copy._ysize),
+  _xorg(copy._xorg),
+  _yorg(copy._yorg),
+  _border(copy._border),
+  _components(copy._components),
+  _component_width(copy._component_width),
+  _format(copy._format),
+  _type(copy._type),
+  _loaded(copy._loaded),
+  _image(copy._image)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::Copy Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void PixelBuffer::
+operator = (const PixelBuffer &copy) {
+  _xsize = copy._xsize;
+  _ysize = copy._ysize;
+  _xorg = copy._xorg;
+  _yorg = copy._yorg;
+  _border = copy._border;
+  _components = copy._components;
+  _component_width = copy._component_width;
+  _format = copy._format;
+  _type = copy._type;
+  _loaded = copy._loaded;
+  _image = copy._image;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: config
 //       Access:
 //  Description:
@@ -87,46 +173,55 @@ bool PixelBuffer::write( const string& name ) const
 ////////////////////////////////////////////////////////////////////
 bool PixelBuffer::load(const PNMImage& pnmimage)
 {
+  int num_components = pnmimage.get_num_channels();
+
+  if (!_loaded || num_components != _components) {
+    // Come up with a default format based on the number of channels.
+    // But only do this the first time the file is loaded, or if the
+    // number of channels in the image changes on subsequent loads.
+
+    switch (pnmimage.get_color_type()) {
+    case PNMImage::CT_grayscale:
+      _format = F_luminance;
+      break;
+      
+    case PNMImage::CT_two_channel:
+      _format = F_luminance_alpha;
+      break;
+      
+    case PNMImage::CT_color:
+      _format = F_rgb;
+      break;
+      
+    case PNMImage::CT_four_channel:
+      _format = F_rgba;
+      break;
+      
+    default:
+      // Eh?
+      nassertr(false, false);
+      _format = F_rgb;
+    };
+  }
+
   _xsize = pnmimage.get_x_size();
   _ysize = pnmimage.get_y_size();
-  _components = pnmimage.get_num_channels();
+  _components = num_components;
+  _loaded = true;
 
-  xelval maxval = pnmimage.get_maxval();
-
-  // Come up with a default format based on the number of channels.
-  switch (pnmimage.get_color_type()) {
-  case PNMImage::CT_grayscale:
-    _format = F_luminance;
-    break;
-
-  case PNMImage::CT_two_channel:
-    _format = F_luminance_alpha;
-    break;
-
-  case PNMImage::CT_color:
-    _format = F_rgb;
-    break;
-
-  case PNMImage::CT_four_channel:
-    _format = F_rgba;
-    break;
-
-  default:
-    // Eh?
-    nassertr(false, false);
-    _format = F_rgb;
-  };
-
+  // Now copy the pixel data from the PNMImage into our internal
+  // _image component.
   bool has_alpha = pnmimage.has_alpha();
   bool is_grayscale = pnmimage.is_grayscale();
-
+  xelval maxval = pnmimage.get_maxval();
+    
   if (maxval == 255) {
     // Most common case: one byte per pixel, and the source image
     // shows a maxval of 255.  No scaling is necessary.
     _type = T_unsigned_byte;
     _image = PTA_uchar(_xsize * _ysize * _components);
     int idx = 0;
-
+    
     for (int j = _ysize-1; j >= 0; j--) {
       for (int i = 0; i < _xsize; i++) {
         if (is_grayscale) {
@@ -141,14 +236,14 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
         }
       }
     }
-
+    
   } else if (maxval == 65535) {
     // Another possible case: two bytes per pixel, and the source
     // image shows a maxval of 65535.  Again, no scaling is necessary.
     _type = T_unsigned_short;
     _image = PTA_uchar(_xsize * _ysize * _components * 2);
     int idx = 0;
-
+    
     for (int j = _ysize-1; j >= 0; j--) {
       for (int i = 0; i < _xsize; i++) {
         if (is_grayscale) {
@@ -163,7 +258,7 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
         }
       }
     }
-
+    
   } else if (maxval <= 255) {
     // A less common case: one byte per pixel, but the maxval is
     // something other than 255.  In this case, we should scale the
@@ -172,7 +267,7 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
     _image = PTA_uchar(_xsize * _ysize * _components);
     int idx = 0;
     double scale = 255.0 / (double)maxval;
-
+    
     for (int j = _ysize-1; j >= 0; j--) {
       for (int i = 0; i < _xsize; i++) {
         if (is_grayscale) {
@@ -187,7 +282,7 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
         }
       }
     }
-
+    
   } else {
     // Another uncommon case: two bytes per pixel, and the maxval is
     // something other than 65535.  Again, we must scale the pixel
@@ -196,7 +291,7 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
     _image = PTA_uchar(_xsize * _ysize * _components * 2);
     int idx = 0;
     double scale = 65535.0 / (double)maxval;
-
+    
     for (int j = _ysize-1; j >= 0; j--) {
       for (int i = 0; i < _xsize; i++) {
         if (is_grayscale) {
@@ -316,4 +411,3 @@ void PixelBuffer::draw(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
                         const RenderBuffer &rb) {
   gsg->draw_pixel_buffer(this, dr, rb);
 }
-
