@@ -57,7 +57,7 @@ class Logger:
         Open a file for logging error/warning messages"""
         self.resetStartTime()
         t = time.localtime(self.__startTime)
-        st = time.strftime("%m.%d.%Y-%H:%M:%S", t)
+        st = time.strftime("%m-%d-%Y-%H-%M-%S", t)
         logFileName = self.__logFileName + "." + st
         self.__logFile = open(logFileName, "w")
 

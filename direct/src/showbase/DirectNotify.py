@@ -43,12 +43,12 @@ class DirectNotify:
             self.__categories[categoryName] = category
             return(1)
 
-    def newCategory(self, categoryName):
+    def newCategory(self, categoryName, logger=None):
         """newCategory(self, string)
         Make a new notify category named categoryName. Return new category
         if no such category exists, else return existing category"""
         if (not self.__categories.has_key(categoryName)):
-            self.__categories[categoryName] = Notifier.Notifier(categoryName)
+            self.__categories[categoryName] = Notifier.Notifier(categoryName, logger)
         else:
             print "Warning: DirectNotify: category '%s' already exists" % \
                   (categoryName)

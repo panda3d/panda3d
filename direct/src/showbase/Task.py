@@ -1,5 +1,5 @@
 
-from PandaModules import *
+from libpandaexpressModules import *
 from DirectNotify import *
 from PythonUtil import *
 
@@ -239,7 +239,11 @@ class TaskManager:
         for task in self.taskList:
             task.setCurrentTimeFrame(self.currentTime, self.currentFrame)
             # Run the task and check the return value
+            if task.name == 'test':
+                print 'before task'
             ret = task(task)
+            if task.name == 'test':
+                print 'after  task'
             if (ret == cont):
                 continue
             elif (ret == done):

@@ -1,5 +1,5 @@
 
-from PandaModules import *
+from libpandaexpressModules import *
 from MessengerGlobal import *
 from TaskManagerGlobal import *
 from DirectNotifyGlobal import *
