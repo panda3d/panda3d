@@ -152,12 +152,13 @@ fraction_used() const {
 ////////////////////////////////////////////////////////////////////
 void UniqueIdAllocator::
 output(ostream& os, bool verbose) const {
-  os  <<"[_next_free: "<<long(_next_free)
+  os  <<"[_min: "<<_min<<"; _max: "<<_max
+      <<";\n_next_free: "<<long(_next_free)
       <<"; _last_free: "<<long(_last_free)
       <<"; _size: "<<_size
       <<"; _free: "<<_free
       <<"; used: "<<_size-_free
-      <<"; %used: "<<float(_size-_free)/_size;
+      <<"; fraction_used: "<<fraction_used();
   if (verbose) {
     os <<";\n     ";
     for (U32 i=0; i<_size; ++i) {
