@@ -703,7 +703,7 @@ class FFIInterrogateDatabase:
         # Reset the environment so we are clean from any old modules
         self.environment.reset()
 
-        FFIConstants.notify.info('==================================================')
+        FFIConstants.notify.info('='*50)
         FFIConstants.notify.info('Importing code library: ' + CModuleName)
         exec('import ' + CModuleName)
 
