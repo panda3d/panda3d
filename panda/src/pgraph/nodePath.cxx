@@ -169,6 +169,29 @@ get_stashed_children() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_sort
+//       Access: Published
+//  Description: Returns the sort value of the referenced node within
+//               its parent; that is, the sort number passed on the
+//               last reparenting operation for this node.  This will
+//               control the position of the node within its parent's
+//               list of children.
+////////////////////////////////////////////////////////////////////
+int NodePath::
+get_sort() const {
+  if (!has_parent()) {
+    return 0;
+  }
+  PandaNode *parent = _head->get_next()->get_node();
+  PandaNode *child = node();
+  nassertr(parent != (PandaNode *)NULL && child != (PandaNode *)NULL, 0);
+  int child_index = parent->find_child(child);
+  nassertr(child_index != -1, 0);
+
+  return parent->get_child_sort(child_index);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::find
 //       Access: Published
 //  Description: Searches for a node below the referenced node that

@@ -186,6 +186,7 @@ PUBLISHED:
 
   INLINE bool has_parent() const;
   INLINE NodePath get_parent() const;
+  int get_sort() const;
 
   NodePath find(const string &path) const;
   NodePath find_path_to(PandaNode *node) const;
