@@ -24,6 +24,9 @@
 #include "dcSwitchParameter.h"
 #include "dcClass.h"
 
+DCPacker::StackElement *DCPacker::StackElement::_deleted_chain = NULL;
+int DCPacker::StackElement::_num_ever_allocated = 0;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DCPacker::Constructor
 //       Access: Published
@@ -39,6 +42,7 @@ DCPacker() {
   _live_catalog = NULL;
   _pack_error = false;
   _range_error = false;
+  _stack = NULL;
   
   clear();
 }
@@ -99,7 +103,7 @@ end_pack() {
   
   _mode = M_idle;
 
-  if (!_stack.empty() || _current_field != NULL || _current_parent != NULL) {
+  if (_stack != NULL || _current_field != NULL || _current_parent != NULL) {
     _pack_error = true;
   }
 
@@ -192,7 +196,7 @@ end_unpack() {
   
   _mode = M_idle;
 
-  if (!_stack.empty() || _current_field != NULL || _current_parent != NULL) {
+  if (_stack != NULL || _current_field != NULL || _current_parent != NULL) {
     // This happens if we have not unpacked all of the fields.
     // However, this is not an error if we have called seek() during
     // the unpack session (in which case the _catalog will be
@@ -313,7 +317,7 @@ seek(const string &field_name) {
 
     // If we are seeking, we don't need to remember our current stack
     // position.
-    _stack.clear();
+    clear_stack();
     _current_field = entry._field;
     _current_parent = entry._parent;
     _current_field_index = entry._field_index;
@@ -332,7 +336,7 @@ seek(const string &field_name) {
   } else if (_mode == M_repack) {
     nassertr(_catalog != (DCPackerCatalog *)NULL, false);
 
-    if (!_stack.empty() || _current_field != (DCPackerInterface *)NULL) {
+    if (_stack != NULL || _current_field != NULL) {
       // It is an error to reseek while the stack is nonempty--that
       // means we haven't finished packing the current field.
       _pack_error = true;
@@ -427,12 +431,13 @@ push() {
     _pack_error = true;
 
   } else {
-    StackElement element;
-    element._current_parent = _current_parent;
-    element._current_field_index = _current_field_index;
-    element._push_marker = _push_marker;
-    element._pop_marker = _pop_marker;
-    _stack.push_back(element);
+    StackElement *element = new StackElement;
+    element->_current_parent = _current_parent;
+    element->_current_field_index = _current_field_index;
+    element->_push_marker = _push_marker;
+    element->_pop_marker = _pop_marker;
+    element->_next = _stack;
+    _stack = element;
     _current_parent = _current_field;
 
 
@@ -521,7 +526,7 @@ pop() {
     _pack_error = true;
   }
 
-  if (_stack.empty()) {
+  if (_stack == NULL) {
     // Unbalanced pop().
     _pack_error = true;
 
@@ -548,12 +553,15 @@ pop() {
     }
 
     _current_field = _current_parent;
-    _current_parent = _stack.back()._current_parent;
-    _current_field_index = _stack.back()._current_field_index;
-    _push_marker = _stack.back()._push_marker;
-    _pop_marker = _stack.back()._pop_marker;
+    _current_parent = _stack->_current_parent;
+    _current_field_index = _stack->_current_field_index;
+    _push_marker = _stack->_push_marker;
+    _pop_marker = _stack->_pop_marker;
     _num_nested_fields = (_current_parent == NULL) ? 0 : _current_parent->get_num_nested_fields();
-    _stack.pop_back();
+
+    StackElement *next = _stack->_next;
+    delete _stack;
+    _stack = next;
   }
 
   advance();
@@ -1093,7 +1101,7 @@ handle_switch(const DCSwitchParameter *switch_parameter) {
 ////////////////////////////////////////////////////////////////////
 void DCPacker::
 clear() {
-  _stack.clear();
+  clear_stack();
   _current_field = NULL;
   _current_parent = NULL;
   _current_field_index = 0;
@@ -1108,6 +1116,20 @@ clear() {
   }
   _catalog = NULL;
   _root = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::clear_stack
+//       Access: Private
+//  Description: Empties the stack.
+////////////////////////////////////////////////////////////////////
+void DCPacker::
+clear_stack() {
+  while (_stack != (StackElement *)NULL) {
+    StackElement *next = _stack->_next;
+    delete _stack;
+    _stack = next;
+  }
 }
 
 #ifdef HAVE_PYTHON

@@ -681,6 +681,19 @@ get_write_pointer(size_t size) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::StackElement::get_num_stack_elements_ever_allocated
+//       Access: Published, Static
+//  Description: Returns the number of DCPacker::StackElement pointers
+//               ever simultaneously allocated; these are now either
+//               in active use or have been recycled into the deleted
+//               DCPacker::StackElement pool to be used again.
+////////////////////////////////////////////////////////////////////
+INLINE int DCPacker::
+get_num_stack_elements_ever_allocated() {
+  return StackElement::_num_ever_allocated;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPacker::raw_pack_int8
 //       Access: Published
 //  Description: Packs the data into the buffer between packing
@@ -1137,4 +1150,38 @@ advance() {
     // We have another field to advance to.
     _current_field = _current_parent->get_nested_field(_current_field_index);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::StackElement::operator new
+//       Access: Public
+//  Description: Allocates the memory for a new DCPacker::StackElement.
+//               This is specialized here to provide for fast
+//               allocation of these things.
+////////////////////////////////////////////////////////////////////
+INLINE void *DCPacker::StackElement::
+operator new(size_t size) {
+  if (_deleted_chain != (DCPacker::StackElement *)NULL) {
+    StackElement *obj = _deleted_chain;
+    _deleted_chain = _deleted_chain->_next;
+    return obj;
+  }
+#ifndef NDEBUG
+  _num_ever_allocated++;
+#endif  // NDEBUG
+  return ::operator new(size);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::StackElement::operator delete
+//       Access: Public
+//  Description: Frees the memory for a deleted DCPacker::StackElement.
+//               This is specialized here to provide for fast
+//               allocation of these things.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::StackElement::
+operator delete(void *ptr) {
+  StackElement *obj = (StackElement *)ptr;
+  obj->_next = _deleted_chain;
+  _deleted_chain = obj;
 }

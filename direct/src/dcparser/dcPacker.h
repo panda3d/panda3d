@@ -131,6 +131,8 @@ public:
   INLINE char *get_write_pointer(size_t size);
 
 PUBLISHED:
+  INLINE static int get_num_stack_elements_ever_allocated();
+
   // The following methods are used only for packing (or unpacking)
   // raw data into the buffer between packing sessions (e.g. between
   // calls to end_pack() and the next begin_pack()).
@@ -177,6 +179,7 @@ private:
   INLINE void advance();
   void handle_switch(const DCSwitchParameter *switch_parameter);
   void clear();
+  void clear_stack();
 
 #ifdef HAVE_PYTHON
   void pack_class_object(const DCClass *dclass, PyObject *object);
@@ -208,14 +211,22 @@ private:
 
   class StackElement {
   public:
+    // As an optimization, we implement operator new and delete here
+    // to minimize allocation overhead during push() and pop().
+    INLINE void *operator new(size_t size);
+    INLINE void operator delete(void *ptr);
+
     const DCPackerInterface *_current_parent;
     int _current_field_index;
     size_t _push_marker;
     size_t _pop_marker;
-  };
-  typedef pvector<StackElement> Stack;
+    StackElement *_next;
 
-  Stack _stack;
+    static StackElement *_deleted_chain;
+    static int _num_ever_allocated;
+  };
+  StackElement *_stack;
+
   const DCPackerInterface *_current_field;
   const DCPackerInterface *_current_parent;
   int _current_field_index;
