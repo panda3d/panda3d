@@ -38,8 +38,9 @@ make_egg() {
     make_faces();
 
   } else {
-    nout << "Ignoring unknown geometry type " << _polygons->_polygon_type
-	 << "\n";
+    nout << "Unknown geometry type " << _polygons->_polygon_type
+	 << "; treating as FACE.\n";
+    make_faces();
   }
 }
 
@@ -50,6 +51,8 @@ make_egg() {
 ////////////////////////////////////////////////////////////////////
 void CLwoPolygons::
 connect_egg() {
+  nassertv(_points->_layer->_egg_group != (EggGroup *)NULL);
+  nassertv(_egg_group != (EggGroup *)NULL);
   _points->_layer->_egg_group->steal_children(*_egg_group);
 }
 

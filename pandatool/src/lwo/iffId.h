@@ -29,6 +29,8 @@ public:
   INLINE bool operator < (const IffId &other) const;
 
   INLINE string get_name() const;
+
+  void output(ostream &out) const;
   
 private:
   union {
@@ -40,7 +42,8 @@ private:
 #include "iffId.I"
 
 INLINE ostream &operator << (ostream &out, const IffId &id) {
-  return out << id.get_name();
+  id.output(out);
+  return out;
 }
  
 #endif

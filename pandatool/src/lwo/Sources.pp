@@ -16,8 +16,8 @@
     lwoClip.cxx lwoClip.h \
     lwoDiscontinuousVertexMap.cxx lwoDiscontinuousVertexMap.h \
     lwoGroupChunk.cxx lwoGroupChunk.h \
-    lwoHeader.cxx \
-    lwoHeader.h lwoInputFile.cxx lwoInputFile.h \
+    lwoHeader.I lwoHeader.cxx lwoHeader.h \
+    lwoInputFile.I lwoInputFile.cxx lwoInputFile.h \
     lwoLayer.h lwoLayer.cxx \
     lwoPoints.h lwoPoints.cxx \
     lwoPolygons.h lwoPolygons.cxx \
@@ -53,8 +53,8 @@
     lwoClip.h \
     lwoDiscontinuousVertexMap.h \
     lwoGroupChunk.h \
-    lwoHeader.h \
-    lwoInputFile.h \
+    lwoHeader.I lwoHeader.h \
+    lwoInputFile.I lwoInputFile.h \
     lwoLayer.h \
     lwoPoints.h \
     lwoPolygons.h \

@@ -64,6 +64,7 @@ protected:
   Filename _filename;
   bool _owns_istream;
   bool _eof;
+  bool _unexpected_eof;
   size_t _bytes_read;
 
 public:

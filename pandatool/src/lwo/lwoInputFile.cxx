@@ -120,7 +120,8 @@ make_new_chunk(IffId id) {
   } else if (id == IffId("POLS")) {
     return new LwoPolygons;
 
-  } else if (id == IffId("TAGS")) {
+  } else if (id == IffId("TAGS") || 
+	     id == IffId("SRFS")) {
     return new LwoTags;
 
   } else if (id == IffId("PTAG")) {

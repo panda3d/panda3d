@@ -21,6 +21,7 @@ IffInputFile() {
   _input = (istream *)NULL;
   _owns_istream = false;
   _eof = true;
+  _unexpected_eof = false;
   _bytes_read = 0;
 }
 
@@ -70,6 +71,7 @@ set_input(istream *input, bool owns_istream) {
   _input = input;
   _owns_istream = owns_istream;
   _eof = false;
+  _unexpected_eof = false;
   _bytes_read = 0;
 }
 
@@ -241,7 +243,10 @@ get_chunk() {
 
     if (chunk->read_iff(this, end_point)) {
       if (is_eof()) {
-	nout << "Unexpected EOF on file.\n";
+	if (!_unexpected_eof) {
+	  nout << "Unexpected EOF on file reading " << *chunk << "\n";
+	  _unexpected_eof = true;
+	}
 	return (IffChunk *)NULL;
       }
 
@@ -292,7 +297,10 @@ get_subchunk(IffChunk *context) {
 
     if (chunk->read_iff(this, end_point)) {
       if (is_eof()) {
-	nout << "Unexpected EOF on file.\n";
+	if (!_unexpected_eof) {
+	  nout << "Unexpected EOF on file reading " << *chunk << "\n";
+	  _unexpected_eof = true;
+	}
 	return (IffChunk *)NULL;
       }
 

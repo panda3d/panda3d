@@ -25,13 +25,24 @@ public:
   enum PolygonFlags {
     PF_continuity_1    = 0x0400,
     PF_continuity_2    = 0x0800,
-    PF_numverts_mask   = 0x03ff
+    PF_numverts_mask   = 0x03ff,
+
+    // This "flag" is stored artificially when reading 5.x LWOB files,
+    // and indicates that the polygon is a decal of a preceding
+    // polygon.
+    PF_decal           = 0x0001
   };
 
   class Polygon : public ReferenceCount {
   public:
     int _flags;
     vector_int _vertices;
+    
+    // This value is only filled in when reading 5.x LWOB files, and
+    // indicates the surface index of the polygon within a preceding
+    // SRFS (LwoTags) chunk.  For 6.x and later files, this will be
+    // set to -1.
+    int _surface_index;
   };
 
   int get_num_polygons() const;

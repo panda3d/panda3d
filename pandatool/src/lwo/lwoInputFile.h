@@ -22,12 +22,18 @@ public:
   LwoInputFile();
   ~LwoInputFile();
 
+  INLINE double get_lwo_version() const;
+  INLINE void set_lwo_version(double version);
+
   int get_vx();
   LVecBase3f get_vec3();
   Filename get_filename();
 
 protected:
   virtual IffChunk *make_new_chunk(IffId id);
+
+private:
+  double _lwo_version;
 
 public:
   virtual TypeHandle get_type() const {
@@ -46,6 +52,8 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+#include "lwoInputFile.I"
 
 #endif
 

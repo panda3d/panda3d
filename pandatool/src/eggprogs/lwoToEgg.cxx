@@ -62,6 +62,12 @@ run() {
   }
 
   LwoHeader *header = DCAST(LwoHeader, chunk);
+  if (!header->is_valid()) {
+    nout << "File " << _input_filename
+	 << " is not recognized as a Lightwave Object file.  "
+	 << "Perhaps the version is too recent.\n";
+    exit(1);
+  }
 
   _data.set_coordinate_system(_coordinate_system);
 

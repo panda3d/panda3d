@@ -17,6 +17,11 @@
 // 	 Class : LwoTags
 // Description : An array of tag strings that will be referenced by
 //               later chunks.
+//
+//               This also serves as an array of surface names to be
+//               referenced by a later LwoPolygons chunk, in 5.x LWOB
+//               files.  The chunk id can be used to differentiate the
+//               meaning (TAGS vs. SRFS).
 ////////////////////////////////////////////////////////////////////
 class LwoTags : public LwoChunk {
 public:

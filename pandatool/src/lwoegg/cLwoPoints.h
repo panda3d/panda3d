@@ -12,7 +12,10 @@
 #include <eggVertexPool.h>
 #include <pointerTo.h>
 
+#include <map>
+
 class LwoToEggConverter;
+class LwoVertexMap;
 class CLwoLayer;
 
 ////////////////////////////////////////////////////////////////////
@@ -26,6 +29,8 @@ public:
   INLINE CLwoPoints(LwoToEggConverter *converter, const LwoPoints *points,
 		    CLwoLayer *layer);
 
+  void add_vmap(const LwoVertexMap *lwo_vmap);
+
   void make_egg();
   void connect_egg();
 
@@ -33,6 +38,12 @@ public:
   CPT(LwoPoints) _points;
   CLwoLayer *_layer;
   PT(EggVertexPool) _egg_vpool;
+
+  // A number of vertex maps may be associated, by type and then by
+  // name.
+  typedef map<string, const LwoVertexMap *> VMapNames;
+  typedef map<IffId, VMapNames> VmapTypes;
+  VmapTypes _vmap;
 };
 
 #include "cLwoPoints.I"

@@ -7,7 +7,25 @@
 #include "lwoToEggConverter.h"
 #include "cLwoLayer.h"
 
+#include <lwoVertexMap.h>
 #include <string_utils.h>
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLwoPoints::add_vmap
+//       Access: Public
+//  Description: Associated the indicated VertexMap with the points
+//               set.  This may define such niceties as UV coordinates
+//               or per-vertex color.
+////////////////////////////////////////////////////////////////////
+void CLwoPoints::
+add_vmap(const LwoVertexMap *lwo_vmap) {
+  VMapNames &names = _vmap[lwo_vmap->_map_type];
+  bool inserted = names.insert(VMapNames::value_type(lwo_vmap->_name, lwo_vmap)).second;
+  if (!inserted) {
+    nout << "Multiple vertex maps on the same points of type " 
+	 << lwo_vmap->_map_type << " named " << lwo_vmap->_name << "\n";
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLwoPoints::make_egg

@@ -12,6 +12,7 @@
 #include <lwoLayer.h>
 #include <lwoPoints.h>
 #include <lwoPolygons.h>
+#include <lwoVertexMap.h>
 
 
 ////////////////////////////////////////////////////////////////////
@@ -98,6 +99,7 @@ void LwoToEggConverter::
 collect_lwo() {  
   CLwoLayer *last_layer = (CLwoLayer *)NULL;
   CLwoPoints *last_points = (CLwoPoints *)NULL;
+  CLwoPolygons *last_polygons = (CLwoPolygons *)NULL;
 
   int num_chunks = _lwo_header->get_num_chunks();
   for (int i = 0; i < num_chunks; i++) {
@@ -115,6 +117,7 @@ collect_lwo() {
       _layers[number] = layer;
       last_layer = layer;
       last_points = (CLwoPoints *)NULL;
+      last_polygons = (CLwoPolygons *)NULL;
 
     } else if (chunk->is_of_type(LwoPoints::get_class_type())) {
       if (last_layer == (CLwoLayer *)NULL) {
@@ -126,6 +129,14 @@ collect_lwo() {
       _points.push_back(points);
       last_points = points;
 
+    } else if (chunk->is_of_type(LwoVertexMap::get_class_type())) {
+      if (last_points == (CLwoPoints *)NULL) {
+	nout << "Vertex map chunk encountered without a preceding points chunk.\n";
+      } else {
+	const LwoVertexMap *lwo_vmap = DCAST(LwoVertexMap, chunk);
+	last_points->add_vmap(lwo_vmap);
+      }
+
     } else if (chunk->is_of_type(LwoPolygons::get_class_type())) {
       if (last_points == (CLwoPoints *)NULL) {
 	nout << "Polygon chunk encountered without a preceding points chunk.\n";
@@ -133,6 +144,7 @@ collect_lwo() {
 	const LwoPolygons *lwo_polygons = DCAST(LwoPolygons, chunk);
 	CLwoPolygons *polygons = new CLwoPolygons(this, lwo_polygons, last_points);
 	_polygons.push_back(polygons);
+	last_polygons = polygons;
       }
     }
   }
@@ -146,6 +158,10 @@ collect_lwo() {
 ////////////////////////////////////////////////////////////////////
 void LwoToEggConverter::
 make_egg() {  
+  if (_generic_layer != (CLwoLayer *)NULL) {
+    _generic_layer->make_egg();
+  }
+
   Layers::iterator li;
   for (li = _layers.begin(); li != _layers.end(); ++li) {
     CLwoLayer *layer = (*li);
@@ -174,6 +190,10 @@ make_egg() {
 ////////////////////////////////////////////////////////////////////
 void LwoToEggConverter::
 connect_egg() {  
+  if (_generic_layer != (CLwoLayer *)NULL) {
+    _generic_layer->connect_egg();
+  }
+
   Layers::iterator li;
   for (li = _layers.begin(); li != _layers.end(); ++li) {
     CLwoLayer *layer = (*li);

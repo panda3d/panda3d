@@ -4,11 +4,22 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "lwoHeader.h"
-#include "iffInputFile.h"
+#include "lwoInputFile.h"
 
 #include <indent.h>
 
 TypeHandle LwoHeader::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: LwoHeader::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+LwoHeader::
+LwoHeader() {
+  _valid = false;
+  _version = 0.0;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LwoHeader::read_iff
@@ -22,8 +33,24 @@ TypeHandle LwoHeader::_type_handle;
 ////////////////////////////////////////////////////////////////////
 bool LwoHeader::
 read_iff(IffInputFile *in, size_t stop_at) {
-  _lwid = in->get_id();
-  read_chunks_iff(in, stop_at);
+  LwoInputFile *lin = DCAST(LwoInputFile, in);
+
+  _lwid = lin->get_id();
+
+  if (_lwid == IffId("LWO2")) {
+    _valid = true;
+    _version = 6.0;
+  } else if (_lwid == IffId("LWOB")) {
+    _valid = true;
+    _version = 5.0;
+  }
+
+  if (_valid) {
+    lin->set_lwo_version(_version);
+  }
+
+  read_chunks_iff(lin, stop_at);
+
   return true;
 }
 

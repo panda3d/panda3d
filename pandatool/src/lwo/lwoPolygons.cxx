@@ -45,23 +45,68 @@ bool LwoPolygons::
 read_iff(IffInputFile *in, size_t stop_at) {
   LwoInputFile *lin = DCAST(LwoInputFile, in);
 
-  _polygon_type = lin->get_id();
+  if (lin->get_lwo_version() >= 6.0) {
+    // 6.x style syntax:
+    // POLS { type[ID4], ( numvert+flags[U2], vert[VX] # numvert )* }
 
-  while (lin->get_bytes_read() < stop_at && !lin->is_eof()) {
-    int nf = lin->get_be_int16();
-    int num_vertices = nf & PF_numverts_mask;
+    _polygon_type = lin->get_id();
 
-    PT(Polygon) poly = new Polygon;
-    poly->_flags = nf & ~PF_numverts_mask;
-
-    for (int i = 0; i < num_vertices; i++) {
-      poly->_vertices.push_back(lin->get_vx());
+    while (lin->get_bytes_read() < stop_at && !lin->is_eof()) {
+      int nf = lin->get_be_uint16();
+      int num_vertices = nf & PF_numverts_mask;
+	
+      PT(Polygon) poly = new Polygon;
+      poly->_flags = nf & ~PF_numverts_mask;
+      poly->_surface_index = -1;
+	
+      for (int i = 0; i < num_vertices; i++) {
+	int vindex = lin->get_vx();
+	poly->_vertices.push_back(vindex);
+      }
+	
+      _polygons.push_back(poly);
     }
 
-    _polygons.push_back(poly);
+  } else {
+    // 5.x style syntax:
+    // POLS { ( numvert[U2], vert[VX] # numvert, +/-(surf+1)[I2], numdetail[U2]? )* }
+    _polygon_type = IffId("FACE");
+
+    int num_decals = 0;
+    while (lin->get_bytes_read() < stop_at && !lin->is_eof()) {
+      int num_vertices = lin->get_be_uint16();
+	
+      PT(Polygon) poly = new Polygon;
+      poly->_flags = 0;
+	
+      for (int i = 0; i < num_vertices; i++) {
+	int vindex = lin->get_vx();
+	poly->_vertices.push_back(vindex);
+      }
+
+      int surface = lin->get_be_int16();
+
+      if (num_decals > 0) {
+	// This is a decal polygon of a previous polygon.
+	num_decals--;
+	poly->_flags |= PF_decal;
+
+      } else {
+	if (surface < 0) {
+	  num_decals = lin->get_be_int16();
+	  surface = -surface;
+	}
+      }
+
+      // The surface index is stored +1 to allow signedness to be
+      // examined.
+      poly->_surface_index = surface - 1;
+
+      _polygons.push_back(poly);
+    }
   }
 
-  return (lin->get_bytes_read() == stop_at);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
