@@ -2034,8 +2034,9 @@ void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT Re
     HRESULT hr;
 
     #ifndef NDEBUG
-    if(_dxgsg->scrn.bIsLowVidMemCard)
-        nassertv((RequestedXsize==640)&&(RequestedYsize==480));
+//   no longer true, due to special_check_fullscreen_res, where lowvidmem cards are allowed higher resolutions
+//    if(_dxgsg->scrn.bIsLowVidMemCard)
+//        nassertv((RequestedXsize==640)&&(RequestedYsize==480));
     #endif
 
     *pSuggestedPixFmt = D3DFMT_UNKNOWN;
@@ -2075,13 +2076,14 @@ void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT Re
                  wdxdisplay_cat.error() << "CheckDeviceFormat failed for device #" <<_dxgsg->scrn.CardIDNum << D3DERRORSTRING(hr);
                  exit(1);
              }
-        }
+        } 
 
         bool bIs16bppRenderTgt = IS_16BPP_DISPLAY_FORMAT(dispmode.Format);
         float RendTgtMinMemReqmt;
 
         // if we have a valid memavail value, try to determine if we have enough space
-        if(_dxgsg->scrn.MaxAvailVidMem!=UNKNOWN_VIDMEM_SIZE) {
+        if( (_dxgsg->scrn.MaxAvailVidMem!=UNKNOWN_VIDMEM_SIZE) && 
+            (!(special_check_fullscreen_resolution(RequestedXsize,RequestedYsize)))) {
             // assume user is testing fullscreen, not windowed, so use the dwTotal value
             // see if 3 scrnbufs (front/back/z)at 16bpp at xsize*ysize will fit with a few
             // extra megs for texmem
@@ -2117,8 +2119,9 @@ void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT Re
                 continue;
             }
 
-            if(_dxgsg->scrn.MaxAvailVidMem!=UNKNOWN_VIDMEM_SIZE) {
-                // test memory
+            if((_dxgsg->scrn.MaxAvailVidMem!=UNKNOWN_VIDMEM_SIZE) &&
+               (!(special_check_fullscreen_resolution(RequestedXsize,RequestedYsize)))) {
+                // test memory again, this time including zbuf size
                 float zbytes_per_pixel = (IS_16BPP_ZBUFFER(zformat) ? 2 : 4);
                 float MinMemReqmt = RendTgtMinMemReqmt + ((float)RequestedXsize)*((float)RequestedYsize)*zbytes_per_pixel;
 
