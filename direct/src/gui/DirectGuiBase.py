@@ -766,7 +766,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         # Now allow changes to take effect
         self.updateFrameStyle()
         if not self['frameSize']:
-            self.setFrameSize()
+            self.resetFrameSize()
 
     def enableEdit(self):
         self.bind(B2PRESS, self.editStart)
