@@ -271,16 +271,16 @@ static const short yyrline[] =
      451,   455,   461,   461,   474,   476,   479,   481,   484,   493,
      493,   504,   508,   510,   510,   538,   540,   540,   568,   570,
      573,   575,   578,   583,   587,   593,   598,   606,   617,   631,
-     645,   680,   692,   706,   711,   718,   725,   734,   740,   746,
-     756,   761,   768,   775,   781,   789,   791,   801,   807,   821,
-     827,   837,   840,   851,   855,   859,   864,   868,   871,   881,
-     885,   890,   894,   898,   902,   906,   906,   914,   914,   922,
-     922,   930,   936,   942,   948,   956,   958,   961,   963,   966,
-     968,   971,   976,   980,   984,   988,   992,   996,  1000,  1004,
-    1008,  1012,  1016,  1020,  1024,  1028,  1032,  1036,  1040,  1044,
-    1048,  1054,  1059,  1063,  1067,  1071,  1075,  1079,  1083,  1087,
-    1091,  1097,  1107,  1107,  1118,  1134,  1141,  1154,  1159,  1162,
-    1162,  1176,  1178,  1179,  1180,  1192,  1192,  1209,  1214,  1220
+     645,   680,   696,   714,   719,   726,   733,   742,   748,   754,
+     764,   769,   776,   783,   789,   797,   799,   809,   815,   829,
+     835,   845,   848,   859,   863,   867,   872,   876,   879,   889,
+     893,   898,   902,   906,   910,   914,   914,   922,   922,   930,
+     930,   938,   944,   950,   956,   964,   966,   969,   971,   974,
+     976,   979,   984,   988,   992,   996,  1000,  1004,  1008,  1012,
+    1016,  1020,  1024,  1028,  1032,  1036,  1040,  1044,  1048,  1052,
+    1056,  1062,  1067,  1071,  1075,  1079,  1083,  1087,  1091,  1095,
+    1099,  1105,  1115,  1115,  1126,  1142,  1149,  1162,  1167,  1170,
+    1170,  1184,  1186,  1187,  1188,  1200,  1200,  1217,  1222,  1228
 };
 #endif
 
@@ -1744,13 +1744,17 @@ case 81:
   } else {
     if (dc_file != (DCFile *)NULL) {
       dc_file->add_thing_to_delete(yyvsp[0].u.dclass);
+    } else {
+      // This is a memory leak--this happens when we put an anonymous
+      // struct reference within the string passed to
+      // DCPackerInterface::check_match().  Maybe it doesn't really matter.
     }
     yyval.u.parameter = new DCClassParameter(yyvsp[0].u.dclass);
   }
 }
     break;
 case 82:
-#line 693 "dcParser.yxx"
+#line 697 "dcParser.yxx"
 {
   // This is an inline switch definition.
   if (yyvsp[0].u.dswitch == (DCSwitch *)NULL) {
@@ -1758,19 +1762,23 @@ case 82:
   } else {
     if (dc_file != (DCFile *)NULL) {
       dc_file->add_thing_to_delete(yyvsp[0].u.dswitch);
+    } else {
+      // This is a memory leak--this happens when we put an anonymous
+      // switch reference within the string passed to
+      // DCPackerInterface::check_match().  Maybe it doesn't really matter.
     }
     yyval.u.parameter = new DCSwitchParameter(yyvsp[0].u.dswitch);
   }
 }
     break;
 case 83:
-#line 708 "dcParser.yxx"
+#line 716 "dcParser.yxx"
 {
   double_range.clear();
 }
     break;
 case 84:
-#line 712 "dcParser.yxx"
+#line 720 "dcParser.yxx"
 {
   double_range.clear();
   if (!double_range.add_range(yyvsp[0].u.real, yyvsp[0].u.real)) {
@@ -1779,7 +1787,7 @@ case 84:
 }
     break;
 case 85:
-#line 719 "dcParser.yxx"
+#line 727 "dcParser.yxx"
 {
   double_range.clear();
   if (!double_range.add_range(yyvsp[-2].u.real, yyvsp[0].u.real)) {
@@ -1788,7 +1796,7 @@ case 85:
 }
     break;
 case 86:
-#line 726 "dcParser.yxx"
+#line 734 "dcParser.yxx"
 {
   double_range.clear();
   if (yyvsp[0].u.real >= 0) {
@@ -1799,7 +1807,7 @@ case 86:
 }
     break;
 case 87:
-#line 735 "dcParser.yxx"
+#line 743 "dcParser.yxx"
 {
   if (!double_range.add_range(yyvsp[0].u.real, yyvsp[0].u.real)) {
     yyerror("Overlapping range");
@@ -1807,7 +1815,7 @@ case 87:
 }
     break;
 case 88:
-#line 741 "dcParser.yxx"
+#line 749 "dcParser.yxx"
 {
   if (!double_range.add_range(yyvsp[-2].u.real, yyvsp[0].u.real)) {
     yyerror("Overlapping range");
@@ -1815,7 +1823,7 @@ case 88:
 }
     break;
 case 89:
-#line 747 "dcParser.yxx"
+#line 755 "dcParser.yxx"
 {
   if (yyvsp[0].u.real >= 0) {
     yyerror("Syntax error");
@@ -1825,13 +1833,13 @@ case 89:
 }
     break;
 case 90:
-#line 758 "dcParser.yxx"
+#line 766 "dcParser.yxx"
 {
   uint_range.clear();
 }
     break;
 case 91:
-#line 762 "dcParser.yxx"
+#line 770 "dcParser.yxx"
 {
   uint_range.clear();
   if (!uint_range.add_range(yyvsp[0].u.s_uint, yyvsp[0].u.s_uint)) {
@@ -1840,7 +1848,7 @@ case 91:
 }
     break;
 case 92:
-#line 769 "dcParser.yxx"
+#line 777 "dcParser.yxx"
 {
   uint_range.clear();
   if (!uint_range.add_range(yyvsp[-2].u.s_uint, yyvsp[0].u.s_uint)) {
@@ -1849,7 +1857,7 @@ case 92:
 }
     break;
 case 93:
-#line 776 "dcParser.yxx"
+#line 784 "dcParser.yxx"
 {
   if (!uint_range.add_range(yyvsp[0].u.s_uint, yyvsp[0].u.s_uint)) {
     yyerror("Overlapping range");
@@ -1857,7 +1865,7 @@ case 93:
 }
     break;
 case 94:
-#line 782 "dcParser.yxx"
+#line 790 "dcParser.yxx"
 {
   if (!uint_range.add_range(yyvsp[-2].u.s_uint, yyvsp[0].u.s_uint)) {
     yyerror("Overlapping range");
@@ -1865,7 +1873,7 @@ case 94:
 }
     break;
 case 96:
-#line 792 "dcParser.yxx"
+#line 800 "dcParser.yxx"
 {
   if (yyvsp[-3].u.parameter == (DCParameter *)NULL) {
     yyval.u.parameter = NULL;
@@ -1875,14 +1883,14 @@ case 96:
 }
     break;
 case 97:
-#line 803 "dcParser.yxx"
+#line 811 "dcParser.yxx"
 {
   current_parameter->set_name(yyvsp[0].str);
   yyval.u.parameter = current_parameter;
 }
     break;
 case 98:
-#line 808 "dcParser.yxx"
+#line 816 "dcParser.yxx"
 {
   if (yyvsp[0].u.s_uint == 0) {
     yyerror("Invalid divisor.");
@@ -1898,13 +1906,13 @@ case 98:
 }
     break;
 case 99:
-#line 822 "dcParser.yxx"
+#line 830 "dcParser.yxx"
 {
   yyval.u.parameter = new DCArrayParameter(yyvsp[-3].u.parameter, uint_range);
 }
     break;
 case 100:
-#line 829 "dcParser.yxx"
+#line 837 "dcParser.yxx"
 {
   if (yyvsp[0].str.length() != 1) {
     yyerror("Single character required.");
@@ -1915,7 +1923,7 @@ case 100:
 }
     break;
 case 102:
-#line 842 "dcParser.yxx"
+#line 850 "dcParser.yxx"
 {
   yyval.u.s_uint = (unsigned int)yyvsp[0].u.uint64;
   if (yyval.u.s_uint != yyvsp[0].u.uint64) {
@@ -1925,19 +1933,19 @@ case 102:
 }
     break;
 case 105:
-#line 861 "dcParser.yxx"
+#line 869 "dcParser.yxx"
 {
   yyval.u.real = (double)yyvsp[0].u.uint64;
 }
     break;
 case 106:
-#line 865 "dcParser.yxx"
+#line 873 "dcParser.yxx"
 {
   yyval.u.real = (double)yyvsp[0].u.int64;
 }
     break;
 case 108:
-#line 873 "dcParser.yxx"
+#line 881 "dcParser.yxx"
 {
   if (yyvsp[0].str.length() != 1) {
     yyerror("Single character required.");
@@ -1948,73 +1956,73 @@ case 108:
 }
     break;
 case 110:
-#line 887 "dcParser.yxx"
+#line 895 "dcParser.yxx"
 {
   current_packer->pack_int64(yyvsp[0].u.int64);
 }
     break;
 case 111:
-#line 891 "dcParser.yxx"
+#line 899 "dcParser.yxx"
 {
   current_packer->pack_uint64(yyvsp[0].u.uint64);
 }
     break;
 case 112:
-#line 895 "dcParser.yxx"
+#line 903 "dcParser.yxx"
 {
   current_packer->pack_double(yyvsp[0].u.real);
 }
     break;
 case 113:
-#line 899 "dcParser.yxx"
+#line 907 "dcParser.yxx"
 {
   current_packer->pack_string(yyvsp[0].str);
 }
     break;
 case 114:
-#line 903 "dcParser.yxx"
+#line 911 "dcParser.yxx"
 {
   current_packer->pack_literal_value(yyvsp[0].str);
 }
     break;
 case 115:
-#line 907 "dcParser.yxx"
-{
-  current_packer->push();
-}
-    break;
-case 116:
-#line 911 "dcParser.yxx"
-{
-  current_packer->pop();
-}
-    break;
-case 117:
 #line 915 "dcParser.yxx"
 {
   current_packer->push();
 }
     break;
-case 118:
+case 116:
 #line 919 "dcParser.yxx"
 {
   current_packer->pop();
 }
     break;
-case 119:
+case 117:
 #line 923 "dcParser.yxx"
 {
   current_packer->push();
 }
     break;
-case 120:
+case 118:
 #line 927 "dcParser.yxx"
 {
   current_packer->pop();
 }
     break;
-case 121:
+case 119:
 #line 931 "dcParser.yxx"
+{
+  current_packer->push();
+}
+    break;
+case 120:
+#line 935 "dcParser.yxx"
+{
+  current_packer->pop();
+}
+    break;
+case 121:
+#line 939 "dcParser.yxx"
 {
   for (unsigned int i = 0; i < yyvsp[0].u.s_uint; i++) {
     current_packer->pack_int64(yyvsp[-2].u.int64);
@@ -2022,7 +2030,7 @@ case 121:
 }
     break;
 case 122:
-#line 937 "dcParser.yxx"
+#line 945 "dcParser.yxx"
 {
   for (unsigned int i = 0; i < yyvsp[0].u.s_uint; i++) {
     current_packer->pack_uint64(yyvsp[-2].u.uint64);
@@ -2030,7 +2038,7 @@ case 122:
 }
     break;
 case 123:
-#line 943 "dcParser.yxx"
+#line 951 "dcParser.yxx"
 {
   for (unsigned int i = 0; i < yyvsp[0].u.s_uint; i++) {
     current_packer->pack_double(yyvsp[-2].u.real);
@@ -2038,7 +2046,7 @@ case 123:
 }
     break;
 case 124:
-#line 949 "dcParser.yxx"
+#line 957 "dcParser.yxx"
 {
   for (unsigned int i = 0; i < yyvsp[0].u.s_uint; i++) {
     current_packer->pack_literal_value(yyvsp[-2].str);
@@ -2046,187 +2054,187 @@ case 124:
 }
     break;
 case 131:
-#line 973 "dcParser.yxx"
+#line 981 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_int8;
 }
     break;
 case 132:
-#line 977 "dcParser.yxx"
+#line 985 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_int16;
 }
     break;
 case 133:
-#line 981 "dcParser.yxx"
+#line 989 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_int32;
 }
     break;
 case 134:
-#line 985 "dcParser.yxx"
+#line 993 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_int64;
 }
     break;
 case 135:
-#line 989 "dcParser.yxx"
+#line 997 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_uint8;
 }
     break;
 case 136:
-#line 993 "dcParser.yxx"
+#line 1001 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_uint16;
 }
     break;
 case 137:
-#line 997 "dcParser.yxx"
+#line 1005 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_uint32;
 }
     break;
 case 138:
-#line 1001 "dcParser.yxx"
+#line 1009 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_uint64;
 }
     break;
 case 139:
-#line 1005 "dcParser.yxx"
+#line 1013 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_float64;
 }
     break;
 case 140:
-#line 1009 "dcParser.yxx"
+#line 1017 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_string;
 }
     break;
 case 141:
-#line 1013 "dcParser.yxx"
+#line 1021 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_blob;
 }
     break;
 case 142:
-#line 1017 "dcParser.yxx"
+#line 1025 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_blob32;
 }
     break;
 case 143:
-#line 1021 "dcParser.yxx"
+#line 1029 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_int8array;
 }
     break;
 case 144:
-#line 1025 "dcParser.yxx"
+#line 1033 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_int16array;
 }
     break;
 case 145:
-#line 1029 "dcParser.yxx"
+#line 1037 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_int32array;
 }
     break;
 case 146:
-#line 1033 "dcParser.yxx"
+#line 1041 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_uint8array;
 }
     break;
 case 147:
-#line 1037 "dcParser.yxx"
+#line 1045 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_uint16array;
 }
     break;
 case 148:
-#line 1041 "dcParser.yxx"
+#line 1049 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_uint32array;
 }
     break;
 case 149:
-#line 1045 "dcParser.yxx"
+#line 1053 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_uint32uint8array;
 }
     break;
 case 150:
-#line 1049 "dcParser.yxx"
+#line 1057 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_char;
 }
     break;
 case 151:
-#line 1056 "dcParser.yxx"
+#line 1064 "dcParser.yxx"
 {
   yyval.u.s_int = 0;
 }
     break;
 case 152:
-#line 1060 "dcParser.yxx"
+#line 1068 "dcParser.yxx"
 {
   yyval.u.s_int = yyvsp[-1].u.s_int | DCAtomicField::F_required;
 }
     break;
 case 153:
-#line 1064 "dcParser.yxx"
+#line 1072 "dcParser.yxx"
 {
   yyval.u.s_int = yyvsp[-1].u.s_int | DCAtomicField::F_broadcast;
 }
     break;
 case 154:
-#line 1068 "dcParser.yxx"
+#line 1076 "dcParser.yxx"
 {
   yyval.u.s_int = yyvsp[-1].u.s_int | DCAtomicField::F_p2p;
 }
     break;
 case 155:
-#line 1072 "dcParser.yxx"
+#line 1080 "dcParser.yxx"
 {
   yyval.u.s_int = yyvsp[-1].u.s_int | DCAtomicField::F_ram;
 }
     break;
 case 156:
-#line 1076 "dcParser.yxx"
+#line 1084 "dcParser.yxx"
 {
   yyval.u.s_int = yyvsp[-1].u.s_int | DCAtomicField::F_db;
 }
     break;
 case 157:
-#line 1080 "dcParser.yxx"
+#line 1088 "dcParser.yxx"
 {
   yyval.u.s_int = yyvsp[-1].u.s_int | DCAtomicField::F_clsend;
 }
     break;
 case 158:
-#line 1084 "dcParser.yxx"
+#line 1092 "dcParser.yxx"
 {
   yyval.u.s_int = yyvsp[-1].u.s_int | DCAtomicField::F_clrecv;
 }
     break;
 case 159:
-#line 1088 "dcParser.yxx"
+#line 1096 "dcParser.yxx"
 {
   yyval.u.s_int = yyvsp[-1].u.s_int | DCAtomicField::F_ownsend;
 }
     break;
 case 160:
-#line 1092 "dcParser.yxx"
+#line 1100 "dcParser.yxx"
 {
   yyval.u.s_int = yyvsp[-1].u.s_int | DCAtomicField::F_airecv;
 }
     break;
 case 161:
-#line 1099 "dcParser.yxx"
+#line 1107 "dcParser.yxx"
 {
   if (yyvsp[0].u.s_int != 0) {
     yyerror("Server flags are not allowed here.");
@@ -2235,19 +2243,19 @@ case 161:
 }
     break;
 case 162:
-#line 1109 "dcParser.yxx"
+#line 1117 "dcParser.yxx"
 {
   current_molecular = new DCMolecularField(yyvsp[-1].str);
 }
     break;
 case 163:
-#line 1113 "dcParser.yxx"
+#line 1121 "dcParser.yxx"
 {
   yyval.u.field = current_molecular;
 }
     break;
 case 164:
-#line 1120 "dcParser.yxx"
+#line 1128 "dcParser.yxx"
 {
   DCField *field = current_class->get_field_by_name(yyvsp[0].str);
   yyval.u.atomic = (DCAtomicField *)NULL;
@@ -2262,7 +2270,7 @@ case 164:
 }
     break;
 case 165:
-#line 1136 "dcParser.yxx"
+#line 1144 "dcParser.yxx"
 {
   if (yyvsp[0].u.atomic != (DCAtomicField *)NULL) {
     current_molecular->add_atomic(yyvsp[0].u.atomic);
@@ -2270,7 +2278,7 @@ case 165:
 }
     break;
 case 166:
-#line 1142 "dcParser.yxx"
+#line 1150 "dcParser.yxx"
 {
   if (yyvsp[0].u.atomic != (DCAtomicField *)NULL) {
     current_molecular->add_atomic(yyvsp[0].u.atomic);
@@ -2283,27 +2291,27 @@ case 166:
 }
     break;
 case 167:
-#line 1156 "dcParser.yxx"
+#line 1164 "dcParser.yxx"
 {
   yyval.str = "";
 }
     break;
 case 169:
-#line 1164 "dcParser.yxx"
+#line 1172 "dcParser.yxx"
 {
   yyval.u.dswitch = current_switch;
   current_switch = new DCSwitch(yyvsp[-4].str, yyvsp[-2].u.parameter);
 }
     break;
 case 170:
-#line 1169 "dcParser.yxx"
+#line 1177 "dcParser.yxx"
 {
   yyval.u.dswitch = current_switch;
   current_switch = (DCSwitch *)yyvsp[-2].u.parameter;
 }
     break;
 case 174:
-#line 1181 "dcParser.yxx"
+#line 1189 "dcParser.yxx"
 {
   if (current_switch->get_num_cases() == 0) {
     yyerror("case declaration required before first element");
@@ -2315,7 +2323,7 @@ case 174:
 }
     break;
 case 175:
-#line 1194 "dcParser.yxx"
+#line 1202 "dcParser.yxx"
 {
   current_packer = &default_packer;
   current_packer->clear_data();
@@ -2323,7 +2331,7 @@ case 175:
 }
     break;
 case 176:
-#line 1200 "dcParser.yxx"
+#line 1208 "dcParser.yxx"
 {
   if (!current_packer->end_pack()) {
     yyerror("Invalid value for switch parameter");
@@ -2333,13 +2341,13 @@ case 176:
 }
     break;
 case 177:
-#line 1211 "dcParser.yxx"
+#line 1219 "dcParser.yxx"
 {
   yyval.u.field = yyvsp[-1].u.parameter;
 }
     break;
 case 178:
-#line 1215 "dcParser.yxx"
+#line 1223 "dcParser.yxx"
 {
   yyval.u.field = yyvsp[0].u.parameter;
 }
@@ -2577,4 +2585,4 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 1223 "dcParser.yxx"
+#line 1231 "dcParser.yxx"

@@ -685,6 +685,10 @@ type_name:
   } else {
     if (dc_file != (DCFile *)NULL) {
       dc_file->add_thing_to_delete($1);
+    } else {
+      // This is a memory leak--this happens when we put an anonymous
+      // struct reference within the string passed to
+      // DCPackerInterface::check_match().  Maybe it doesn't really matter.
     }
     $$ = new DCClassParameter($1);
   }
@@ -697,6 +701,10 @@ type_name:
   } else {
     if (dc_file != (DCFile *)NULL) {
       dc_file->add_thing_to_delete($1);
+    } else {
+      // This is a memory leak--this happens when we put an anonymous
+      // switch reference within the string passed to
+      // DCPackerInterface::check_match().  Maybe it doesn't really matter.
     }
     $$ = new DCSwitchParameter($1);
   }
