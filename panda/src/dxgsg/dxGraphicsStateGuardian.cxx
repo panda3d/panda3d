@@ -2073,31 +2073,13 @@ draw_tri(const GeomTri *geom) {
 			dps_data.diffuse.lpvData = (VOID*)pConvertedColorArray;
 			dps_data.diffuse.dwStride = sizeof(D3DCOLOR);
 
-			// Geom nodes store floats for colors, drawprim requires ARGB dwords
-			// BUGBUG: eventually this hack every-frame all-colors conversion needs 
-			// to be done only once as part of a vertex buffer
-
-			if(_color_transform_enabled || _alpha_transform_enabled) {
-				for (int i=0;i<nPrims;i++) {
-					D3DCOLOR RGBA_color;
-					transform_color(colors[i],RGBA_color);
-					add_DWORD_to_FVFBuf(RGBA_color);
-				}
-			} else 
- 			 for (int i=0;i<nPrims;i++) {
-				Colorf out_color=colors[i];
-				add_DWORD_to_FVFBuf(Colorf_to_D3DCOLOR(out_color));
-			 }
-
 			if (ColorBinding==G_PER_PRIM) {
 				// must use tmp array to expand per-prim info to per-vert info
 
+				// Geom nodes store floats for colors, drawprim requires ARGB dwords
+				// BUGBUG: eventually this hack every-frame all-colors conversion needs 
+				// to be done only once as part of a vertex buffer
 
-	// Geom nodes store floats for colors, drawprim requires ARGB dwords
-			// BUGBUG: eventually this hack every-frame all-colors conversion needs 
-			// to be done only once as part of a vertex buffer
-
-				// eventually want to do this conversion once in retained mode
 				if (NeededShadeMode!=D3DSHADE_FLAT) {
 					// but if lighting enabled, we need to color every vert since shading will be GOURAUD
 
@@ -2111,7 +2093,7 @@ draw_tri(const GeomTri *geom) {
 					 } else {
 						for (int i=0;i<nPrims;i++,pInColor++,pOutColor+=dwVertsPerPrim) {
 							D3DCOLOR newcolr;
-							transform_color((*pInColor),newcolr);
+							transform_color(*pInColor,newcolr);
 
 							*pOutColor     = newcolr;
 							*(pOutColor+1) = newcolr;
