@@ -26,7 +26,17 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 XFileFace::
-XFileFace(XFileMesh *mesh, EggPolygon *egg_poly) {
+XFileFace() {
+  _material_index = -1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileFace::set_from_egg
+//       Access: Public
+//  Description: Sets the structure up from the indicated egg data.
+////////////////////////////////////////////////////////////////////
+void XFileFace::
+set_from_egg(XFileMesh *mesh, EggPolygon *egg_poly) {
   // Walk through the polygon's vertices in reverse order, to change
   // from Egg's counter-clockwise convention to DX's clockwise.
   EggPolygon::reverse_iterator vi;
@@ -37,4 +47,6 @@ XFileFace(XFileMesh *mesh, EggPolygon *egg_poly) {
     v._normal_index = mesh->add_normal(egg_vertex, egg_poly);
     _vertices.push_back(v);
   }
+
+  _material_index = mesh->add_material(egg_poly);
 }

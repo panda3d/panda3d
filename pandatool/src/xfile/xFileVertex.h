@@ -32,7 +32,8 @@ class EggPrimitive;
 ////////////////////////////////////////////////////////////////////
 class XFileVertex {
 public:
-  XFileVertex(EggVertex *egg_vertex, EggPrimitive *egg_poly);
+  XFileVertex();
+  void set_from_egg(EggVertex *egg_vertex, EggPrimitive *egg_poly);
   int compare_to(const XFileVertex &other) const;
 
   Vertexf _point;

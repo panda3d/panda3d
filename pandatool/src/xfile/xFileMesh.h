@@ -23,56 +23,88 @@
 #include "pvector.h"
 #include "pmap.h"
 #include "indirectCompareTo.h"
+#include "namable.h"
 
 class XFileMesh;
 class XFileVertex;
 class XFileNormal;
+class XFileMaterial;
 class XFileFace;
+class EggGroupNode;
 class EggVertex;
 class EggPolygon;
 class EggPrimitive;
+class EggTextureCollection;
+class EggMaterialCollection;
 class Datagram;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : XFileMesh
 // Description : This is a collection of polygons; i.e. a polyset.
 ////////////////////////////////////////////////////////////////////
-class XFileMesh {
+class XFileMesh : public Namable {
 public:
   XFileMesh();
   ~XFileMesh();
 
+  void clear();
+
   void add_polygon(EggPolygon *egg_poly);
   int add_vertex(EggVertex *egg_vertex, EggPrimitive *egg_prim);
   int add_normal(EggVertex *egg_vertex, EggPrimitive *egg_prim);
+  int add_material(EggPrimitive *egg_prim);
+
+  int add_vertex(XFileVertex *vertex);
+  int add_normal(XFileNormal *normal);
+  int add_material(XFileMaterial *material);
+
+  bool create_polygons(EggGroupNode *egg_parent, 
+                       EggTextureCollection &textures,
+                       EggMaterialCollection &materials);
 
   bool has_normals() const;
   bool has_colors() const;
   bool has_uvs() const;
+  bool has_materials() const;
+
+  int get_num_materials() const;
+  XFileMaterial *get_material(int n) const;
 
   void make_mesh_data(Datagram &raw_data);
   void make_normal_data(Datagram &raw_data);
   void make_color_data(Datagram &raw_data);
   void make_uv_data(Datagram &raw_data);
+  void make_material_list_data(Datagram &raw_data);
+
+  bool read_mesh_data(const Datagram &raw_data);
+  bool read_normal_data(const Datagram &raw_data);
+  bool read_color_data(const Datagram &raw_data);
+  bool read_uv_data(const Datagram &raw_data);
+  bool read_material_list_data(const Datagram &raw_data);
 
 private:
   typedef pvector<XFileVertex *> Vertices;
   typedef pvector<XFileNormal *> Normals;
+  typedef pvector<XFileMaterial *> Materials;
   typedef pvector<XFileFace *> Faces;
 
   Vertices _vertices;
   Normals _normals;
+  Materials _materials;
   Faces _faces;
 
 private:
   typedef pmap<XFileVertex *, int, IndirectCompareTo<XFileVertex> > UniqueVertices;
   typedef pmap<XFileNormal *, int, IndirectCompareTo<XFileNormal> > UniqueNormals;
+  typedef pmap<XFileMaterial *, int, IndirectCompareTo<XFileMaterial> > UniqueMaterials;
   UniqueVertices _unique_vertices;
   UniqueNormals _unique_normals;
+  UniqueMaterials _unique_materials;
 
   bool _has_normals;
   bool _has_colors;
   bool _has_uvs;
+  bool _has_materials;
 };
 
 #endif

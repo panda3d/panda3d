@@ -26,25 +26,45 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 XFileVertex::
-XFileVertex(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
-  _has_color = true;
-  _has_uv = true;
+XFileVertex() {
+  _has_color = false;
+  _has_uv = false;
+  _point.set(0.0, 0.0, 0.0);
+  _uv.set(0.0, 0.0);
+  _color.set(1.0, 1.0, 1.0, 1.0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileVertex::set_from_egg
+//       Access: Public
+//  Description: Sets the structure up from the indicated egg data.
+////////////////////////////////////////////////////////////////////
+void XFileVertex::
+set_from_egg(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
   _point = LCAST(float, egg_vertex->get_pos3());
 
   if (egg_vertex->has_uv()) {
-    _uv = LCAST(float, egg_vertex->get_uv());
-  } else {
-    _uv.set(0.0, 0.0);
-    _has_uv = false;
+    TexCoordd uv = egg_vertex->get_uv();
+    if (egg_prim->has_texture()) {
+      // Check if there's a texture matrix on the texture.
+      EggTexture *egg_tex = egg_prim->get_texture();
+      if (egg_tex->has_transform()) {
+        uv = uv * egg_tex->get_transform();
+      }
+    }
+
+    _uv[0] = uv[0];
+    // Windows draws the UV's upside-down.
+    _uv[1] = 1.0 - uv[1];
+    _has_uv = true;
   }
 
   if (egg_vertex->has_color()) {
     _color = egg_vertex->get_color();
+    _has_color = true;
   } else if (egg_prim->has_color()) {
     _color = egg_prim->get_color();
-  } else {
-    _color.set(1.0, 1.0, 1.0, 1.0);
-    _has_color = false;
+    _has_color = true;
   }
 }
 

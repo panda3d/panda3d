@@ -26,15 +26,24 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 XFileNormal::
-XFileNormal(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
-  _has_normal = true;
+XFileNormal() {
+  _normal.set(0.0, 0.0, 0.0);
+  _has_normal = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileNormal::set_from_egg
+//       Access: Public
+//  Description: Sets the structure up from the indicated egg data.
+////////////////////////////////////////////////////////////////////
+void XFileNormal::
+set_from_egg(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
   if (egg_vertex->has_normal()) {
     _normal = LCAST(float, egg_vertex->get_normal());
+    _has_normal = true;
   } else if (egg_prim->has_normal()) {
     _normal = LCAST(float, egg_prim->get_normal());
-  } else {
-    _normal.set(0.0, 0.0, 0.0);
-    _has_normal = false;
+    _has_normal = true;
   }
 }
 

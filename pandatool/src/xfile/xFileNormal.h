@@ -34,7 +34,8 @@ class EggPrimitive;
 ////////////////////////////////////////////////////////////////////
 class XFileNormal {
 public:
-  XFileNormal(EggVertex *egg_vertex, EggPrimitive *egg_prim);
+  XFileNormal();
+  void set_from_egg(EggVertex *egg_vertex, EggPrimitive *egg_prim);
   int compare_to(const XFileNormal &other) const;
 
   Normalf _normal;

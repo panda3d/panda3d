@@ -1,5 +1,5 @@
-// Filename: xFileFace.h
-// Created by:  drose (19Jun01)
+// Filename: xFileToEgg.h
+// Created by:  drose (21Jun01)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,33 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef XFILEFACE_H
-#define XFILEFACE_H
+#ifndef XFILETOEGG_H
+#define XFILETOEGG_H
 
 #include "pandatoolbase.h"
-#include "pvector.h"
+#include "somethingToEgg.h"
+#include "xFileToEggConverter.h"
 
-class XFileMesh;
-class EggPolygon;
+#include "dSearchPath.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : XFileFace
-// Description : This represents a single face of an XFileMesh.
+//       Class : XFileToEgg
+// Description : A program to read a DirectX "x" file and generate an
+//               egg file.
 ////////////////////////////////////////////////////////////////////
-class XFileFace {
+class XFileToEgg : public SomethingToEgg {
 public:
-  XFileFace();
-  void set_from_egg(XFileMesh *mesh, EggPolygon *egg_poly);
+  XFileToEgg();
 
-  class Vertex {
-  public:
-    int _vertex_index;
-    int _normal_index;
-  };
-  typedef pvector<Vertex> Vertices;
-  Vertices _vertices;
-
-  int _material_index;
+  void run();
 };
 
 #endif
