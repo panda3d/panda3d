@@ -18,11 +18,9 @@
 #include <sys/types.h>
 #include <ctype.h>
 #include <stdio.h>
-#if defined(VMS) || defined(PENV_WIN32)
+#include <errno.h>
 #ifdef VMS
 #include <perror.h>
-#endif
-#include <errno.h>
 #endif
 
 #if defined(USG) || defined(SVR4) || defined(VMS)
@@ -122,11 +120,6 @@ extern long random();
 #include <time.h>
 #include <stdlib.h>
 #else
-#ifndef VMS
-#ifndef PENV_WIN32
-#include <unistd.h>
-#endif
-#endif
 #ifndef __cplusplus
 extern int atoi();
 extern void exit();

@@ -11,26 +11,18 @@
 // this case, we must read all of the environment variables directly
 // and cache them locally.
 
-#if defined(PENV_LINUX)
+#ifdef STATIC_INIT_GETENV
 #define PREREAD_ENVIRONMENT
 #endif
 
 
-// We define the symbol USE_ARGV if we have global variables named
-// ARGC/ARGV that we can read at static init time to determine our
-// command-line arguments.
+// We define the symbol HAVE_GLOBAL_ARGV if we have global variables
+// named GLOBAL_ARGC/GLOBAL_ARGV that we can read at static init time
+// to determine our command-line arguments.
 
-#if defined(WIN32_VC)
-  #define USE_ARGV
-  #define ARGV __argv
-  #define ARGC __argc
-
-#elif defined(PENV_SGI)
-  #define USE_ARGV
-  extern char **__Argv;
-  extern int __Argc;
-  #define ARGV __Argv
-  #define ARGC __Argc
+#if defined(HAVE_GLOBAL_ARGV) && defined(PROTOTYPE_GLOBAL_ARGV)
+extern char **GLOBAL_ARGV;
+extern int GLOBAL_ARGC;
 #endif
 
 // Linux with GNU libc does have global argv/argc variables, but we
@@ -158,11 +150,11 @@ get_ptr() {
 ////////////////////////////////////////////////////////////////////
 void ExecutionEnvironment::
 read_environment_variables() {
-#if defined(PENV_LINUX)
-  // In Linux, we might not be able to use getenv() at static init
-  // time.  However, we may be lucky and have a file called
-  // /proc/self/environ that may be read to determine all of our
-  // environment variables.
+#if defined(HAVE_PROC_SELF_ENVIRON)
+  // In Linux, and possibly in other systems, we might not be able to
+  // use getenv() at static init time.  However, we may be lucky and
+  // have a file called /proc/self/environ that may be read to
+  // determine all of our environment variables.
 
   ifstream proc("/proc/self/environ");
   if (proc.fail()) {
@@ -204,21 +196,22 @@ read_environment_variables() {
 ////////////////////////////////////////////////////////////////////
 void ExecutionEnvironment::
 read_args() {
-#if defined(USE_ARGV)
-  int argc = ARGC;
+#if defined(HAVE_GLOBAL_ARGV)
+  int argc = GLOBAL_ARGC;
   if (argc > 0) {
-    _binary_name = ARGV[0];
+    _binary_name = GLOBAL_ARGV[0];
   }
 
   for (int i = 1; i < argc; i++) {
-    _args.push_back(ARGV[i]);
+    _args.push_back(GLOBAL_ARGV[i]);
   }
 
-#elif defined(PENV_LINUX)
-  // In Linux, we might not be able to use the global ARGC/ARGV
-  // variables at static init time.  However, we may be lucky and have
-  // a file called /proc/self/cmdline that may be read to determine
-  // all of our command-line arguments.
+#elif defined(HAVE_PROC_SELF_CMDLINE)
+  // In Linux, and possibly in other systems as well, we might not be
+  // able to use the global ARGC/ARGV variables at static init time.
+  // However, we may be lucky and have a file called
+  // /proc/self/cmdline that may be read to determine all of our
+  // command-line arguments.
 
   ifstream proc("/proc/self/cmdline");
   if (proc.fail()) {

@@ -1,2 +1,2 @@
-#define INSTALL_DATA \
+#define INSTALL_CONFIG \
   direct.init Configrc

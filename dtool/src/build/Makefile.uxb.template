@@ -4,4 +4,4 @@
 UFLAGS = 
 
 #### The uxb action is here.
-include $(DTOOL)/inc/Makefile.uxb.rules
+include $(DTOOL)/include/Makefile.uxb.rules

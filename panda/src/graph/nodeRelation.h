@@ -230,6 +230,11 @@ typedef map<TypeHandle, UpRelationPointers> UpRelations;
 // type ReferenceCount and will be able to compile anything that uses
 // a NodeRelation.  We have to include it here at the end instead of
 // the beginning because node.h also includes nodeRelation.h.
+
+// This comment tells ppremake that we know this is a circular
+// #include reference, and please don't bother us about it.  The line
+// must be exactly as shown.
+/* okcircular */
 #include "node.h"
 
 #endif

@@ -5,7 +5,7 @@ if ( $tool eq "" ) {
    die "Environment not configured to run CTtools" ;
 }
 
-require "$tool/inc/ctproj.pl" ;
+require "$tool/include/ctproj.pl" ;
 
 @arglist = @ARGV ;
 

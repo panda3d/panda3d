@@ -3,6 +3,10 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
+// This comment tells ppremake that we know this is a circular
+// #include reference, and please don't bother us about it.  The line
+// must be exactly as shown.
+/* okcircular */
 #include "character.h"
 
 ////////////////////////////////////////////////////////////////////

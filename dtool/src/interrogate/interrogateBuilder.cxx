@@ -508,7 +508,7 @@ make_module_def(int file_identifier) {
   def->library_hash_name = _library_hash_name.c_str();
   def->module_name = module_name.c_str();
   if (!output_data_filename.empty()) {
-    def->database_filename = output_data_filename.c_str();
+    def->database_filename = output_data_basename.c_str();
   }
 
   return def;

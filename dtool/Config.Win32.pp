@@ -2,9 +2,12 @@
 // Config.Win32.pp
 //
 // This file defines some custom config variables for the Windows
-// platform.  It makes some initial guesses about compiler features,
-// etc.
+// platform, using MS VC++.  It makes some initial guesses about
+// compiler features, etc.
 //
+
+// What additional flags should we pass to interrogate?
+#define SYSTEM_IGATE_FLAGS -longlong __int64 -D_X86_ -DWIN32_VC -D"_declspec(param)="
 
 // Is the platform big-endian (like an SGI workstation) or
 // little-endian (like a PC)?  Define this to the empty string to
@@ -31,6 +34,27 @@
 // Can we determine the terminal width by making an ioctl(TIOCGWINSZ) call?
 #define IOCTL_TERMINAL_WIDTH
 
+// Do the compiler or the system headers define a "streamsize" typedef?
+#define HAVE_STREAMSIZE 1
+
+// Can we safely call getenv() at static init time?
+#define STATIC_INIT_GETENV 1
+
+// Can we read the file /proc/self/environ to determine our
+// environment variables at static init time?
+#define HAVE_PROC_SELF_ENVIRON
+
+// Do we have a global pair of argc/argv variables that we can read at
+// static init time?  Should we prototype them?  What are they called?
+#define HAVE_GLOBAL_ARGV 1
+#define PROTOTYPE_GLOBAL_ARGV
+#define GLOBAL_ARGV __argv
+#define GLOBAL_ARGC __argc
+
+// Can we read the file /proc/self/cmdline to determine our
+// command-line arguments at static init time?
+#define HAVE_PROC_SELF_CMDLINE
+
 // Should we include <iostream> or <iostream.h>?  Define HAVE_IOSTREAM
 // to nonempty if we should use <iostream>, or empty if we should use
 // <iostream.h>.
@@ -56,3 +80,7 @@
 
 // Do we have <unistd.h>?
 #define HAVE_UNISTD_H
+
+// Do we have <sys/soundcard.h> (and presumably a Linux-style audio
+// interface)?
+#define HAVE_SYS_SOUNDCARD_H

@@ -39,7 +39,7 @@ ifneq (,$(PACKAGE))
 # OTHER = 
 
 #### Where the action happens.
-include $(DTOOL)/inc/Makefile.install.rules
+include $(DTOOL)/include/Makefile.install.rules
 
 #### Install actions for OTHER files (source must be in $(PKGROOT)):
 # [ installed file ] : $(PKGROOT)/[ source file ]  # Files must have same name

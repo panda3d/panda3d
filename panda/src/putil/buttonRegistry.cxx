@@ -67,7 +67,7 @@ register_button(ButtonHandle &button_handle, const string &name,
   RegistryNode *rnode = (*ri).second;
   nassertr(rnode->_name == (*ri).first, false);
   nassertr(rnode->_handle._index >= 0 && 
-	   rnode->_handle._index < _handle_registry.size(), false);
+	   rnode->_handle._index < (int)_handle_registry.size(), false);
   nassertr(_handle_registry[rnode->_handle._index] == rnode, false);
   nassertr(rnode->_handle._index != 0, false);
 
@@ -178,7 +178,7 @@ look_up(ButtonHandle handle) const {
   nassertr(handle._index != 0, NULL);
 
   if (handle._index < 0 ||
-      handle._index >= _handle_registry.size()) {
+      handle._index >= (int)_handle_registry.size()) {
     util_cat->fatal()
       << "Invalid ButtonHandle index " << handle._index 
       << "!  Is memory corrupt?\n";

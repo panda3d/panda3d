@@ -29,12 +29,6 @@
 ** other special, indirect and consequential damages.
 */
 
-#ifndef WIN32VC
-#ifndef PENV_WIN32
-#include <alloca.h>
-#endif
-#endif
-
 #include "pnmImage.h"
 #include "pnmReader.h"
 #include "pnmReaderTypes.h"

@@ -30,7 +30,7 @@ DatagramUDPHeader(const NetDatagram &datagram) {
   // Now pack the header.
   _header.add_uint16(size);
   _header.add_uint16(checksum);
-  nassertv(_header.get_length() == datagram_udp_header_size);
+  nassertv((int)_header.get_length() == datagram_udp_header_size);
 }
 
 ////////////////////////////////////////////////////////////////////

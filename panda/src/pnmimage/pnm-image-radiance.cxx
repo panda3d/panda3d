@@ -27,11 +27,6 @@
 
 #include <stdio.h>
 #include <math.h>
-#ifndef WIN32VC
-#ifndef PENV_WIN32
-#include <alloca.h>
-#endif
-#endif
 
 #include "pnmImage.h"
 #include "pnmReader.h"

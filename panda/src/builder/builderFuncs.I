@@ -13,17 +13,12 @@
 #include <geomNode.h>
 
 #include <algorithm>
-#ifndef PENV_WIN32
-#include <alloca.h>
-#endif
 
-#ifdef WIN32_VC
-struct Vtx {
+struct DecompVtx {
   int index;
   BuilderV coord;
-  struct Vtx *next;
+  struct DecompVtx *next;
 };
-#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: decomp_concave
@@ -36,20 +31,12 @@ static bool
 decomp_concave(const PrimType &prim, BuilderBucket &bucket, 
 	       OutputIterator result,
 	       int asum, int x, int y) {
-#ifndef WIN32_VC
-  struct Vtx {
-    int index;
-    BuilderV coord;
-    struct Vtx *next;
-  };
-#endif
-  
 #define VX(p, c)    p->coord[c]
 
   vector<PrimType> output_prims;
 
-  Vtx *p0, *p1, *p2, *t0, *vert;
-  Vtx *m[3];
+  DecompVtx *p0, *p1, *p2, *t0, *vert;
+  DecompVtx *m[3];
   float	xmin, xmax, ymin, ymax;
   int i, init, csum, chek;
   float a[3], b[3], c[3], s[3];
@@ -58,13 +45,13 @@ decomp_concave(const PrimType &prim, BuilderBucket &bucket,
   nassertr(num_verts >= 3, false);
   
   /* Make linked list of verts */
-  vert = (Vtx *) alloca(sizeof(Vtx));
+  vert = (DecompVtx *) alloca(sizeof(DecompVtx));
   vert->index = 0;
   vert->coord = prim.get_vertex(0).get_coord_value(bucket);
   p1 = vert;
 
   for (i = 1; i < num_verts; i++) {
-    p0 = (Vtx *) alloca(sizeof(Vtx));
+    p0 = (DecompVtx *) alloca(sizeof(DecompVtx));
     p0->index = i;
     p0->coord = prim.get_vertex(i).get_coord_value(bucket);
     // There shouldn't be two consecutive identical vertices.  If

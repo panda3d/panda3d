@@ -18,7 +18,7 @@ void IoPtaDatagramShort::
 write_datagram(Datagram &dest, CPTA_ushort array)
 {
   dest.add_uint32(array.size());
-  for(int i = 0; i < array.size(); i++)
+  for(int i = 0; i < (int)array.size(); i++)
   {
     dest.add_uint16(array[i]);
   }

@@ -24,7 +24,7 @@ DatagramTCPHeader(const NetDatagram &datagram) {
 
   // Now pack the header.
   _header.add_uint16(size);
-  nassertv(_header.get_length() == datagram_tcp_header_size);
+  nassertv((int)_header.get_length() == datagram_tcp_header_size);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -11,17 +11,10 @@
 #include <string>
 #include <stdio.h>
 
-#if defined(PENV_LINUX) || defined(PENV_WIN32)
-extern "C" {
-#if defined(PENV_WIN32)
-  #define popen _popen
-  #define pclose _pclose
-#else
-  FILE* popen(const char*, const char*);
-  int pclose(FILE *);
+#ifdef WIN32_VC
+#define popen _popen
+#define pclose _pclose
 #endif
-}
-#endif /* PENV_LINUX */
 
 class EXPCL_DTOOL ipfstream {
    private:
@@ -75,7 +68,7 @@ class EXPCL_DTOOL opfstream {
 #ifndef PENV_PS2
 	 fd = popen(cmd.c_str(), (mode & ios::out)?"w":"r");
 	 if (fd != (FILE *)0L) {
-#ifndef PENV_WIN32 
+#ifndef WIN32_VC 
 	    ofs = new ofstream(fileno(fd));
 #endif
 	    ok = true;

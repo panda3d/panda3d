@@ -12,7 +12,7 @@
 #include "ipc_thread.h"
 #include "ipc_condition.h"
 
-#ifdef PENV_WIN32
+#ifdef WIN32_VC
 static int last_rand = 0;
 #endif /* __WIN32__ */
 
@@ -22,7 +22,7 @@ static int random_l(void)
 {
    mutex_lock l(rand_mutex);
    int i = rand();
-#ifdef PENV_WIN32
+#ifdef WIN32_VC
    last_rand = i;
 #endif /* __WIN32__ */
    return i;
@@ -54,7 +54,7 @@ class philosopher : public thread {
       void run(void* arg) {
 	 int id = *(int*)arg;
 	 delete (int*)arg;
-#ifdef PENV_WIN32
+#ifdef WIN32_VC
 	 rand_mutex.lock();
 	 srand(last_rand);
 	 rand_mutex.unlock();

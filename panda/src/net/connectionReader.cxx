@@ -554,7 +554,7 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
   // We have to loop until the entire datagram is read.
   NetDatagram datagram;
 
-  while (!_shutdown && datagram.get_length() < size) {
+  while (!_shutdown && (int)datagram.get_length() < size) {
     PRInt32 bytes_read;
     
     bytes_read =
@@ -686,7 +686,7 @@ get_next_available_socket(PRIntervalTime timeout,
   PR_Lock(_select_mutex);
   
   int num_sockets = _polled_sockets.size();
-  nassertr(num_sockets == _poll.size(), NULL);
+  nassertr(num_sockets == (int)_poll.size(), NULL);
 
   do {
     // First, check the result from the previous PR_Poll() call.  If
@@ -737,7 +737,7 @@ get_next_available_socket(PRIntervalTime timeout,
 	_reexamine_sockets = false;
 	rebuild_poll_list();
 	num_sockets = _polled_sockets.size();
-	nassertr(num_sockets == _poll.size(), NULL);
+	nassertr(num_sockets == (int)_poll.size(), NULL);
       }
 
       // Now we can execute PR_Poll().  This basically maps to a Unix

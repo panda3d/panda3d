@@ -1,4 +1,4 @@
-require "$tool/inc/ctutils.pl" ;
+require "$tool/include/ctutils.pl" ;
 
 # get list of all projects
 sub CTAttachListProj {
@@ -490,7 +490,7 @@ sub CTAttachAddToSet {
 $docnt = 0 ;
 @attachqueue = () ;
 
-require "$tool/inc/ctquery.pl" ;
+require "$tool/include/ctquery.pl" ;
 
 # given the project and flavor, build the lists of variables to set/modify
 # input is in:
@@ -566,7 +566,7 @@ sub CTAttachCompute {
       &CTAttachAddToMod( "PATH", $root . "/bin" ) ;
       &CTAttachAddToMod( "LD_LIBRARY_PATH", $root . "/lib" ) ;
       &CTAttachAddToMod( "CDPATH", $root . "/src/all" ) ;
-      &CTAttachAddToMod( "CT_INCLUDE_PATH", $root . "/inc" ) ;
+      &CTAttachAddToMod( "CT_INCLUDE_PATH", $root . "/include" ) ;
       &CTAttachAddToMod( "DC_PATH", $root . "/etc" ) ;
       &CTAttachAddToMod( "PFPATH", $root . "/etc/models" ) ;
       &CTAttachAddToMod( "SSPATH", $root . "/lib/ss" ) ;

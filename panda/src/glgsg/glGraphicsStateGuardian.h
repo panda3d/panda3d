@@ -21,12 +21,13 @@
 #include <stencilProperty.h>
 #include <fog.h>
 
-#ifdef PENV_WIN32
+#ifdef WIN32_VC
 // Must include windows.h before gl.h on NT
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #undef WIN32_LEAN_AND_MEAN
 #endif
+
 #include <GL/gl.h>
 
 #include <pointerToArray.h>

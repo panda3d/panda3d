@@ -9,7 +9,7 @@
 #CTPROJECT
 #CTPROJROOT
 
-include $(DTOOL)/inc/Makefile.project.vars
+include $(DTOOL)/include/Makefile.project.vars
 
 # Add packages to end of file as follows:
 # 	include src/all/PACKAGE/Makefile.install

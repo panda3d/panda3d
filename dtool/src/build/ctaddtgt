@@ -9,9 +9,9 @@ if ($#ARGV == -1) {
    exit print "Usage: ctaddtgt [{bin,a,so,ss,foreign}] target-name ...\n" ;
 }
 
-require "$tool/inc/ctproj.pl" ;
-require "$tool/inc/ctvspec.pl" ;
-require "$tool/inc/ctquery.pl" ;
+require "$tool/include/ctproj.pl" ;
+require "$tool/include/ctvspec.pl" ;
+require "$tool/include/ctquery.pl" ;
 
 @arglist = @ARGV ;
 
@@ -42,8 +42,8 @@ while ( @arglist != () ) {
    $fulltgtname = $tgtname ;
    shift( @arglist ) ;
 
-   require "$tool/inc/ctinstmake.pl" ;
-   require "$tool/inc/ctcm.pl" ;
+   require "$tool/include/ctinstmake.pl" ;
+   require "$tool/include/ctcm.pl" ;
 
    $item = "$projroot/src/$pkgname" ;
    if ( ! &CTCMCheckout( $item, $projname, $spec )) {

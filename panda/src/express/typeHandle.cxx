@@ -120,7 +120,7 @@ register_type(TypeHandle &type_handle, const string &name) {
   RegistryNode *rnode = (*ri).second;
   nassertr(rnode->_name == (*ri).first, false);
   nassertr(rnode->_handle._index >= 0 && 
-	   rnode->_handle._index < _handle_registry.size(), false);
+	   rnode->_handle._index < (int)_handle_registry.size(), false);
   nassertr(_handle_registry[rnode->_handle._index] == rnode, false);
   nassertr(rnode->_handle._index != 0, false);
 
@@ -340,7 +340,7 @@ TypeHandle TypeRegistry::
 get_parent_class(TypeHandle child, int index) const {
   RegistryNode *rnode = look_up(child, (TypedObject *)NULL);
   nassertr(rnode != (RegistryNode *)NULL, TypeHandle::none());
-  nassertr(index >= 0 && index < rnode->_parent_classes.size(),
+  nassertr(index >= 0 && index < (int)rnode->_parent_classes.size(),
 	   TypeHandle::none());
   return rnode->_parent_classes[index]->_handle;
 }
@@ -375,7 +375,7 @@ TypeHandle TypeRegistry::
 get_child_class(TypeHandle child, int index) const {
   RegistryNode *rnode = look_up(child, (TypedObject *)NULL);
   nassertr(rnode != (RegistryNode *)NULL, TypeHandle::none());
-  nassertr(index >= 0 && index < rnode->_child_classes.size(),
+  nassertr(index >= 0 && index < (int)rnode->_child_classes.size(),
 	   TypeHandle::none());
   return rnode->_child_classes[index]->_handle;
 }
@@ -537,13 +537,13 @@ write_node(ostream &out, int indent_level, const RegistryNode *node) const {
   indent(out, indent_level) << node->_handle.get_index() << " " << node->_name;
   if (!node->_parent_classes.empty()) {
     out << " : " << node->_parent_classes[0]->_name;
-    for (int pi = 1; pi < node->_parent_classes.size(); pi++) {
+    for (int pi = 1; pi < (int)node->_parent_classes.size(); pi++) {
       out << ", " << node->_parent_classes[pi]->_name;
     }
   }
   out << "\n";
   
-  for (int i = 0; i < node->_child_classes.size(); i++) {
+  for (int i = 0; i < (int)node->_child_classes.size(); i++) {
     write_node(out, indent_level + 2, node->_child_classes[i]);
   }
 }
@@ -603,7 +603,7 @@ look_up(TypeHandle handle, TypedObject *object) const {
   }
 
   if (handle._index < 0 ||
-      handle._index >= _handle_registry.size()) {
+      handle._index >= (int)_handle_registry.size()) {
     express_cat->fatal()
       << "Invalid TypeHandle index " << handle._index 
       << "!  Is memory corrupt?\n";

@@ -67,7 +67,7 @@ shutdown() {
 bool DatagramQueue::
 insert(const NetDatagram &data) {
   PR_Lock(_cvlock);
-  bool enqueue_ok = (_queue.size() < _max_queue_size);
+  bool enqueue_ok = ((int)_queue.size() < _max_queue_size);
   if (enqueue_ok) {
     _queue.push_back(data);
   }

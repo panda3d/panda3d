@@ -4,7 +4,7 @@
 #CTTARGET
 
 #### Pull in standard foreign package make variables
-include $(DTOOL)/inc/Makefile.foreign.vars
+include $(DTOOL)/include/Makefile.foreign.vars
 
 #### commands for building a foreign package.  DIR?, if ommitted, defaults to
 #### '.'.  COMMAND?, if ommitted, does nothing.
@@ -25,4 +25,4 @@ include $(DTOOL)/inc/Makefile.foreign.vars
 
 
 #### The foreign package build action is here.
-include $(DTOOL)/inc/Makefile.foreign.rules
+include $(DTOOL)/include/Makefile.foreign.rules

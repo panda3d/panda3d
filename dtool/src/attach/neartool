@@ -205,6 +205,7 @@ function is_install_dir {
   case $rel_dir in
     inc) return 0;;
     inc/*) return 0;;
+    include/*) return 0;;
     lib) return 0;;
     lib/*) return 0;;
   esac

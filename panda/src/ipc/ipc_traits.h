@@ -54,7 +54,7 @@
 #define __IPC_FLAVOR_DUJOUR__ posix
 #define __IPC_FLAVOR_DUJOUR_TOKEN__ 2
 
-#elif defined(PENV_WIN32)
+#elif defined(WIN32_VC)
 
 #define __IPC_FLAVOR_DUJOUR__ nt
 #define __IPC_FLAVOR_DUJOUR_TOKEN__ 1

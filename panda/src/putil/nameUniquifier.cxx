@@ -50,7 +50,7 @@ add_name_body(const string &name, const string &prefix) {
     static const int max_len = 16;
     char num_str[max_len];
     sprintf(num_str, "%d", ++_counter);
-    nassertr(strlen(num_str) <= max_len, "");
+    nassertr((int)strlen(num_str) <= max_len, "");
 
     if (prefix.empty()) {
       temp_name = _empty + num_str;

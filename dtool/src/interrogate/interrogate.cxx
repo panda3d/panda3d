@@ -23,6 +23,7 @@ CPPParser parser;
 
 Filename output_code_filename;
 Filename output_data_filename;
+string output_data_basename;
 bool output_module_specific = false;
 bool output_function_pointers = false;
 bool output_function_names = false;
@@ -376,6 +377,7 @@ main(int argc, char *argv[]) {
 
   output_code_filename.set_text();
   output_data_filename.set_text();
+  output_data_basename = output_data_filename.get_basename();
 
   if (output_function_names && true_wrapper_names) {
     cerr

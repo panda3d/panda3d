@@ -11,12 +11,13 @@
 ////////////////////////////////////////////////////////////////////
 #include <pandabase.h>
 
-#include <typedef.h>
+#include "typedef.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+
 #include <notify.h>
 #include <filename.h>
 #include <list>
-#include <datagram.h>
-#include <datagramIterator.h>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Multifile 

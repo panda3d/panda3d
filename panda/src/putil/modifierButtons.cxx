@@ -55,7 +55,7 @@ add_button(ButtonHandle button) {
 
   static const int max_buttons = sizeof(BitmaskType) * 8;
 
-  if (_button_list.size() >= max_buttons) {
+  if ((int)_button_list.size() >= max_buttons) {
     return false;
   }
 
@@ -103,7 +103,7 @@ remove_button(ButtonHandle button) {
   // modify_button_list() just before we remove the button, and that
   // may invalidate all of the iterators.
 
-  for (int i = 0; i < _button_list.size(); i++) {
+  for (int i = 0; i < (int)_button_list.size(); i++) {
     if (button == _button_list[i]) {
       modify_button_list();
       _button_list.erase(_button_list.begin() + i);
@@ -133,7 +133,7 @@ remove_button(ButtonHandle button) {
 ////////////////////////////////////////////////////////////////////
 void ModifierButtons::
 button_down(ButtonHandle button) {
-  for (int i = 0; i < _button_list.size(); i++) {
+  for (int i = 0; i < (int)_button_list.size(); i++) {
     if (button == _button_list[i]) {
       _state |= ((BitmaskType)1 << i);
       return;
@@ -152,7 +152,7 @@ button_down(ButtonHandle button) {
 ////////////////////////////////////////////////////////////////////
 void ModifierButtons::
 button_up(ButtonHandle button) {
-  for (int i = 0; i < _button_list.size(); i++) {
+  for (int i = 0; i < (int)_button_list.size(); i++) {
     if (button == _button_list[i]) {
       _state &= ~((BitmaskType)1 << i);
       return;
@@ -169,7 +169,7 @@ button_up(ButtonHandle button) {
 ////////////////////////////////////////////////////////////////////
 bool ModifierButtons::
 is_down(ButtonHandle button) const {
-  for (int i = 0; i < _button_list.size(); i++) {
+  for (int i = 0; i < (int)_button_list.size(); i++) {
     if (button == _button_list[i]) {
       return ((_state & ((BitmaskType)1 << i)) != 0);
     }
@@ -187,7 +187,7 @@ is_down(ButtonHandle button) const {
 void ModifierButtons::
 output(ostream &out) const {
   out << "[";
-  for (int i = 0; i < _button_list.size(); i++) {
+  for (int i = 0; i < (int)_button_list.size(); i++) {
     if ((_state & ((BitmaskType)1 << i)) != 0) {
       out << " " << _button_list[i];
     }
@@ -205,7 +205,7 @@ output(ostream &out) const {
 void ModifierButtons::
 write(ostream &out) const {
   out << "ModifierButtons:\n";
-  for (int i = 0; i < _button_list.size(); i++) {
+  for (int i = 0; i < (int)_button_list.size(); i++) {
     out << "  " << _button_list[i];
     if ((_state & ((BitmaskType)1 << i)) != 0) {
       out << " (down)";

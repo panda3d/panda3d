@@ -1,7 +1,7 @@
 # Standard .o file conversion information.
 
 #### Pull in standard .o make variables
-include $(DTOOL)/inc/Makefile.o.vars
+include $(DTOOL)/include/Makefile.o.vars
 
 #### Lex files 
 # LFILES = 
@@ -40,4 +40,4 @@ include $(DTOOL)/inc/Makefile.o.vars
 # foo.c: foo.h
 
 #### The .o action is here.
-include $(DTOOL)/inc/Makefile.o.rules
+include $(DTOOL)/include/Makefile.o.rules

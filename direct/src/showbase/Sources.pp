@@ -1,7 +1,7 @@
 #begin lib_target
   #define TARGET showbase
   #define LOCAL_LIBS \
-    pandatoolbase
+    directbase
   #define OTHER_LIBS \
     linmath:c putil:c express:c panda:m pandaexpress:m dtool
 

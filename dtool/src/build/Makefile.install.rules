@@ -6,12 +6,12 @@ PACKAGE := $(strip $(PACKAGE))
 
 # Pull in standard install make variables.
 ifeq (,$(MAKEFILE_INSTALL_VARS))
-include $(DTOOL)/inc/Makefile.install.vars
+include $(DTOOL)/include/Makefile.install.vars
 endif
 
 # We need this one to define DEBUGNAME for us.
 ifeq (,$(MAKEFILE_O_VARS))
-include $(DTOOL)/inc/Makefile.o.vars
+include $(DTOOL)/include/Makefile.o.vars
 endif
 
 # Infer the package root from the package name, if not already set.
@@ -115,12 +115,12 @@ endif
 INCLUDE := $(strip $(INCLUDE))
 SRCINCLUDE := $(addprefix $(PKGROOT)/,$(INCLUDE))
 ALLSRC := $(ALLSRC) $(SRCINCLUDE)
-INSTINCLUDE := $(addprefix inc/,$(INCLUDE))
+INSTINCLUDE := $(addprefix include/,$(INCLUDE))
 ALLINST := $(ALLINST) $(INSTINCLUDE)
 INCLUDE = 
 
 ifneq (,$(INSTINCLUDE))
-$(INSTINCLUDE): inc/% : $(PKGROOT)/%
+$(INSTINCLUDE): include/% : $(PKGROOT)/%
 	$(MKINSTALL)
 endif
 
@@ -426,7 +426,7 @@ ALLUSES := $(ALLUSES) $(addprefix lib/,$(strip $(USESLIBS)))
 USESLIBS = 
 
 # USESINCLUDE supplied by package's Makefile.install.
-ALLUSES := $(ALLUSES) $(addprefix inc/,$(strip $(USESINCLUDE)))
+ALLUSES := $(ALLUSES) $(addprefix include/,$(strip $(USESINCLUDE)))
 USESINCLUDE = 
 
 # USESDEFERREDLIBS supplied by package's Makefile.install, but only

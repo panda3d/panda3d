@@ -241,7 +241,7 @@ $timestamp =~ s/:/_/g ;
 # output:
 # return success or failure
 sub CTCcaseDelta {
-    require "$tool/inc/ctdelta.pl" ;
+    require "$tool/include/ctdelta.pl" ;
 
     &CTUDebug( "in CTCcaseDelta\n" ) ;
     local( $ret ) = 0 ;
@@ -310,7 +310,7 @@ sub CTCcaseCheckin {
 # output:
 # return success or failure
 sub CTCcaseUncheckout {
-    require "$tool/inc/unco.pl" ;
+    require "$tool/include/unco.pl" ;
     &CTUDebug( "in CTCcaseUncheckout\n" ) ;
     local( $ret ) = 1 ;
     # need better error checking on this

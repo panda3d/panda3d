@@ -47,6 +47,6 @@ private:
   int _element_count;
 };
 
-#include <timedCycle.I>
+#include "timedCycle.I"
 
 #endif

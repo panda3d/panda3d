@@ -1,1 +1,1 @@
-#define INSTALL_DATA pandatool.init
+#define INSTALL_CONFIG pandatool.init

@@ -25,12 +25,6 @@
 ** 29Jan94: first version
 */
 
-#ifndef WIN32VC
-  #ifndef PENV_WIN32
-    #include <alloca.h>
-  #endif
-#endif
-
 #include "pnmImage.h"
 #include "pnmWriter.h"
 #include "pnmWriterTypes.h"

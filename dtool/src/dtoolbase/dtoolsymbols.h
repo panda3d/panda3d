@@ -36,7 +36,7 @@
 
 #define EXPCL_EMPTY
 
-#if defined(PENV_WIN32) && !defined(CPPPARSER)
+#if defined(WIN32_VC) && !defined(CPPPARSER)
 
 #ifdef BUILDING_DTOOL
   #define EXPCL_DTOOL __declspec(dllexport)
@@ -54,7 +54,7 @@
   #define EXPTP_MISC extern
 #endif /* BUILDING_MISC */
 
-#else   /* !PENV_WIN32 */
+#else   /* !WIN32_VC */
 
 #define EXPCL_DTOOL
 #define EXPTP_DTOOL
@@ -62,6 +62,6 @@
 #define EXPCL_MISC
 #define EXPTP_MISC
 
-#endif  /* PENV_WIN32 */
+#endif  /* WIN32_VC */
 
 #endif

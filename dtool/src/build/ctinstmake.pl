@@ -8,7 +8,7 @@ sub CTInstallMakeWrite {
 	 local( @CTIMWlist ) ;
 	 @CTIMWlist = split ;
 	 local( $tool ) = $ENV{ "DTOOL" } ;
-	 require "$tool/inc/ctutils.pl" ;
+	 require "$tool/include/ctutils.pl" ;
 	 local( $CTIMWtmp ) = &CTUShellEval( $CTIMWlist[1] ) ;
 	 &CTInstallMakeWrite( $CTIMWtmp ) ;
       } elsif (( /^#CTPROJECT/ ) && ( $projname ne "" )){

@@ -22,6 +22,7 @@
 
 #begin bin_target
   #define TARGET check_adler
+  #define TARGET_IF_ZLIB yes
 
   #define SOURCES \
     check_adler.cxx

@@ -17,7 +17,7 @@
     chansetup.h chanshare.h chanviewport.I chanviewport.h chanwindow.I \
     chanwindow.h
 
-  #define INSTALL_DATA \
+  #define INSTALL_CONFIG \
     layout_db setup_db window_db
 
   #define IGATESCAN chancfg.h

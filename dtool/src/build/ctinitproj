@@ -11,9 +11,9 @@ if ( $tool eq "" ) {
    die "Environment not configured for CTtools" ;
 }
 
-require "$tool/inc/ctutils.pl" ;
-require "$tool/inc/ctvspec.pl" ;
-require "$tool/inc/ctquery.pl" ;
+require "$tool/include/ctutils.pl" ;
+require "$tool/include/ctvspec.pl" ;
+require "$tool/include/ctquery.pl" ;
 
 $projname = $ARGV[0] ;
 $projroot = &CTUShellEval( $ARGV[1] );
@@ -25,7 +25,7 @@ if ( ! -e $projroot ) {
    die "Project root ('$projroot') does not exist" ;
 }
 
-require "$tool/inc/ctcm.pl" ;
+require "$tool/include/ctcm.pl" ;
 
 # make all the default subdirectories
 $item = "$projroot/bin" ;
@@ -40,7 +40,7 @@ if ( ! -e $item ) {
 	die "Could not create directory '" . $item . "'\n" ;
     }
 }
-$item = "$projroot/inc" ;
+$item = "$projroot/include" ;
 if ( ! -e $item ) {
     if ( ! &CTCMMkdir( $item, $projname, $spec ) ) {
 	die "Could not create directory '" . $item . "'\n" ;
@@ -78,7 +78,7 @@ if ( ! -e "$projroot/src/all" ) {
 }
 
 # install the project-wide Makefile
-require "$tool/inc/ctinstmake.pl" ;
+require "$tool/include/ctinstmake.pl" ;
 
 $item = "$projroot/Makefile" ;
 &CTInstallMake( "$tool/lib/Makefile.project.template", $item ) ;
@@ -110,7 +110,7 @@ $item = "$projroot/lib" ;
 if ( ! &CTCMDelta( $item, $projname, $spec ) ) {
     die "Could not delta '" . $item . "'\n" ;
 }
-$item = "$projroot/inc" ;
+$item = "$projroot/include" ;
 if ( ! &CTCMDelta( $item, $projname, $spec ) ) {
     die "Could not delta '" . $item . "'\n" ;
 }

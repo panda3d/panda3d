@@ -3657,9 +3657,9 @@ get_fog_mode_type(Fog::Mode m) const {
     case Fog::M_linear: return GL_LINEAR;
     case Fog::M_exponential: return GL_EXP;
     case Fog::M_super_exponential: return GL_EXP2;
-#ifdef PENV_SGI
+#ifdef GL_FOG_FUNC_SGIS
     case Fog::M_spline: return GL_FOG_FUNC_SGIS;
-#endif /* PENV_SGI */
+#endif
   }
   glgsg_cat.error() << "Invalid Fog::Mode value" << endl;
   return GL_EXP;
@@ -3701,9 +3701,11 @@ print_gfx_visual() {
 
   glGetBooleanv( GL_STEREO, &j ); cout << "Stereo? " << (int)j << endl;
 
-#ifdef PENV_SGI
+#ifdef GL_MULTISAMPLE_SGIS
   glGetBooleanv( GL_MULTISAMPLE_SGIS, &j ); cout << "Multisample? " 
 						 << (int)j << endl;
+#endif
+#ifdef GL_SAMPLES_SGIS
   glGetIntegerv( GL_SAMPLES_SGIS, &i ); cout << "Samples: " << i << endl;
 #endif
 

@@ -59,9 +59,9 @@ public:
 // this is really ugly.  But since we have to be able to include/compile
 // all of the driver files on any system, I need to centralize a switch
 // for which one is real.
-#ifdef PENV_LINUX
+#ifdef HAVE_SYS_SOUNDCARD_H
 #define AUDIO_USE_LINUX
-#elif defined(PENV_WIN32)
+#elif defined(WIN32_VC)
 #define AUDIO_USE_WIN32
 #elif defined(HAVE_MIKMOD)
 #define AUDIO_USE_MIKMOD

@@ -13,6 +13,13 @@
 // files.
 
 
+// Check the version of ppremake in use.  This is temporary until
+// everyone gets up to at least 0.50.  After that, the test in dtool
+// will suffice.
+#if $[not $[>= $[PPREMAKE_VERSION],0.50]]
+  #error You need at least ppremake version 0.50 to process this tree.
+#endif
+
 
 // What is the name and version of this source tree?
 #if $[eq $[PACKAGE],]
@@ -21,14 +28,39 @@
 #endif
 
 
-// Pull in the package-level Config file.  This contains a few
-// configuration variables that the user might want to fine-tune.
-#include $[THISDIRPREFIX]Config.pp
+// Where should we find the DTOOL source directory?
+#if $[or $[CTPROJS],$[DTOOL]]
+  // If we are presently attached, use the environment variable.
+  #define DTOOL_SOURCE $[DTOOL]
+  #if $[eq $[DTOOL],]
+    #error You seem to be attached to some trees, but not DTOOL!
+  #endif
+#else
+  // Otherwise, if we are not attached, we guess that the source is a
+  // sibling directory to this source root.
+  #define DTOOL_SOURCE $[standardize $[TOPDIR]/../dtool]
+#endif
+
+// Where should we install PANDA?
+#if $[or $[CTPROJS],$[PANDA]]
+  #define PANDA_INSTALL $[PANDA]
+  #define PANDA_INSTALL_OTHER $(PANDA)
+  #if $[eq $[PANDA],]
+    #error You seem to be attached to some trees, but not PANDA!
+  #endif
+#else
+  #defer PANDA_INSTALL $[INSTALL_DIR]
+  #defer PANDA_INSTALL_OTHER $[INSTALL_DIR]
+#endif
+
+
+// Define the inter-tree dependencies.
+#define NEEDS_TREES $[NEEDS_TREES] dtool
 
 
 // Also get the DTOOL Package file and everything that includes.
-#if $[eq $[wildcard $[DTOOL]],]
-  #error Directory defined by $DTOOL not found!  Are you attached properly?
+#if $[not $[isfile $[DTOOL_SOURCE]/Package.pp]]
+  #error DTOOL source directory not found!  Are you attached properly?
 #endif
 
-#include $[DTOOL]/Package.pp
+#include $[DTOOL_SOURCE]/Package.pp

@@ -6,7 +6,7 @@
 #CTINCLUDE $DTOOL/lib/Makefile.o.include
 
 #### Pull in standard binary make variables.
-include $(DTOOL)/inc/Makefile.bin.vars
+include $(DTOOL)/include/Makefile.bin.vars
 
 #### Other files and lib.  Include $(ODIR) in any .o names.
 # OFILES = 
@@ -19,4 +19,4 @@ include $(DTOOL)/inc/Makefile.bin.vars
 # LDFLAGS = 
 
 #### The .so action is here.
-include $(DTOOL)/inc/Makefile.so.rules
+include $(DTOOL)/include/Makefile.so.rules

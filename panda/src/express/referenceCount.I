@@ -169,7 +169,7 @@ ref() const {
   // somewhere.
   nassertv(_ref_count >= 0);
 
-#ifdef PENV_SGI  
+#if 0
   // This is an SGI-specific hack.  Maybe this isn't a valid test at
   // all.  This is supposed to fail if the 'this' pointer is on the
   // stack, instead of on the heap--I assume if the first two hex

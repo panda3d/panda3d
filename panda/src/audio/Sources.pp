@@ -3,6 +3,7 @@
 
 #begin lib_target
   #define USE_AUDIO yes
+  #define USE_MIKMOD yes
 
   #define TARGET audio
   #define LOCAL_LIBS putil ipc

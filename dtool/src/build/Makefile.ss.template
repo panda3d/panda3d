@@ -4,7 +4,7 @@
 #CTTARGET
 
 #### Pull in standard .ss make variables
-include $(DTOOL)/inc/Makefile.ss.vars
+include $(DTOOL)/include/Makefile.ss.vars
 
 #### Source files
 # HFILES  = 
@@ -18,4 +18,4 @@ include $(DTOOL)/inc/Makefile.ss.vars
 # STRAIGHTINCLUDE = TRUE
 
 #### The .ss action is here.
-include $(DTOOL)/inc/Makefile.ss.rules
+include $(DTOOL)/include/Makefile.ss.rules

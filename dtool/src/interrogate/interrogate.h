@@ -17,6 +17,7 @@ extern CPPParser parser;
 // A few global variables that control the interrogate process.
 extern Filename output_code_filename;
 extern Filename output_data_filename;
+extern string output_data_basename;
 extern bool output_module_specific;
 extern bool output_function_pointers;
 extern bool output_function_names;

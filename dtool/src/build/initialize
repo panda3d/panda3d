@@ -6,10 +6,10 @@ if test "$1" = ""; then
   exit 1
 fi
 
-test -d ../../inc || mkdir ../../inc
+test -d ../../include || mkdir ../../include
 test -d ../../bin || mkdir ../../bin
 
-cp Makefile.install.rules Makefile.meta.rules Makefile.install.vars Makefile.project.vars Makefile.penv.vars Makefile.o.vars ctproj.pl ../../inc
+cp Makefile.install.rules Makefile.meta.rules Makefile.install.vars Makefile.project.vars Makefile.penv.vars Makefile.o.vars ctproj.pl ../../include
 cp ctproj ctpathadjust ../../bin
 cd ../..
 if test "$DTOOL" = ""; then

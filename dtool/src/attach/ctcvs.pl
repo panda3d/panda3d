@@ -81,7 +81,7 @@ sub CTCvsLogin {
     $ret ;
 }
 
-require "$tool/inc/ctproj.pl" ;
+require "$tool/include/ctproj.pl" ;
 
 # add a versioned element to the repository
 # input is in:

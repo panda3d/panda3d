@@ -7,4 +7,4 @@
 #define REQUIRED_TREES dtool
 
 #define EXTRA_DIST \
-    Config.Irix.pp Config.Linux.pp Config.Win32.pp Package.pp
+    Config.pp Package.pp Sources.pp

@@ -39,6 +39,4 @@
 
   #define IGATESCAN all
 
-  #define IGATESCAN all
-
 #end lib_target

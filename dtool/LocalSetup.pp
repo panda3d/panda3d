@@ -11,233 +11,122 @@
 
 #if $[ne $[BUILD_TYPE],autoconf]
 
-// A couple of variables to output the C #define and #undef
-// directives, since we can't type them literally.
-#define define #define
-#define undef #undef
-
-#output dtool_config.h
+#output dtool_config.h notouch
 #format straight
-/* dtool_config.h.  Generated automatically by $[PROGRAM] $[PROGVER] from $[SOURCEFILE]. */
-
-/* Define if you have the ANSI C header files.  */
-$[define] STDC_HEADERS 1
+/* dtool_config.h.  Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE]. */
 
 /* Define if your processor stores words with the most significant
    byte first (like Motorola and SPARC, unlike Intel and VAX).  */
-#if $[WORDS_BIGENDIAN]
-$[define] WORDS_BIGENDIAN 1
-#else
-$[undef] WORDS_BIGENDIAN
-#endif
-
-/* Define if the X Window System is missing or not being used.  */
-$[undef] X_DISPLAY_MISSING
-
-/* Define if lex declares yytext as a char * by default, not a char[].  */
-$[undef] YYTEXT_POINTER
+$[cdefine WORDS_BIGENDIAN]
 
 /* Define if the C++ compiler uses namespaces.  */
-#if $[HAVE_NAMESPACE]
-$[define] HAVE_NAMESPACE 1
-#else
-$[undef] HAVE_NAMESPACE
-#endif
+$[cdefine HAVE_NAMESPACE]
 
 /* Define if the C++ iostream library supports ios::binary.  */
-#if $[HAVE_IOS_BINARY]
-$[define] HAVE_IOS_BINARY 1
-#else
-$[undef] HAVE_IOS_BINARY
-#endif
+$[cdefine HAVE_IOS_BINARY]
 
 /* Define if we have Python installed.  */
-#if $[HAVE_PYTHON]
-$[define] HAVE_PYTHON 1
-#else
-$[undef] HAVE_PYTHON
-#endif
+$[cdefine HAVE_PYTHON]
 
 /* Define if we have NSPR installed.  */
-#if $[HAVE_NSPR]
-$[define] HAVE_NSPR 1
-#else
-$[undef] HAVE_NSPR
-#endif
+$[cdefine HAVE_NSPR]
 
 /* Define if we have VRPN installed.  */
-#if $[HAVE_VRPN]
-$[define] HAVE_VRPN 1
-#else
-$[undef] HAVE_VRPN
-#endif
+$[cdefine HAVE_VRPN]
 
 /* Define if we have zlib installed.  */
-#if $[HAVE_ZLIB]
-$[define] HAVE_ZLIB 1
-#else
-$[undef] HAVE_ZLIB
-#endif
+$[cdefine HAVE_ZLIB]
 
 /* Define if we have sox libst installed.  */
-#if $[HAVE_SOXST]
-$[define] HAVE_SOXST 1
-#else
-$[undef] HAVE_SOXST
-#endif
+$[cdefine HAVE_SOXST]
 
 /* Define if we have OpenGL installed and want to build for GL.  */
-#if $[HAVE_GL]
-$[define] HAVE_GL 1
-#else
-$[undef] HAVE_GL
-#endif
+$[cdefine HAVE_GL]
 
 /* Define if we have GLX installed and want to build for GLX.  */
-#if $[HAVE_GLX]
-$[define] HAVE_GLX 1
-#else
-$[undef] HAVE_GLX
-#endif
+$[cdefine HAVE_GLX]
 
 /* Define if we have Glut installed and want to build for Glut.  */
-#if $[HAVE_GLUT]
-$[define] HAVE_GLUT 1
-#else
-$[undef] HAVE_GLUT
-#endif
+$[cdefine HAVE_GLUT]
 
 /* Define if we have DirectX installed and want to build for DX.  */
-#if $[HAVE_DX]
-$[define] HAVE_DX 1
-#else
-$[undef] HAVE_DX
-#endif
+$[cdefine HAVE_DX]
 
 /* Define if we want to build the Renderman interface.  */
-#if $[HAVE_RIB]
-$[define] HAVE_RIB 1
-#else
-$[undef] HAVE_RIB
-#endif
+$[cdefine HAVE_RIB]
 
 /* Define if we want to use mikmod for audio.  */
-#if $[HAVE_MIKMOD]
-$[define] HAVE_MIKMOD 1
-#else
-$[undef] HAVE_MIKMOD
-#endif
+$[cdefine HAVE_MIKMOD]
 
 /* Define if we want to compile the net code.  */
-#if $[HAVE_NET]
-$[define] HAVE_NET 1
-#else
-$[undef] HAVE_NET
-#endif
+$[cdefine HAVE_NET]
 
 /* Define if we want to compile the audio code.  */
-#if $[HAVE_AUDIO]
-$[define] HAVE_AUDIO 1
-#else
-$[undef] HAVE_AUDIO
-#endif
+$[cdefine HAVE_AUDIO]
 
 /* Define if we have a gettimeofday() function. */
-#if $[HAVE_GETTIMEOFDAY]
-$[define] HAVE_GETTIMEOFDAY 1
-#else
-$[undef] HAVE_GETTIMEOFDAY
-#endif
+$[cdefine HAVE_GETTIMEOFDAY]
 
 /* Define if gettimeofday() takes only one parameter. */
-#if $[GETTIMEOFDAY_ONE_PARAM]
-$[define] GETTIMEOFDAY_ONE_PARAM 1
-#else
-$[undef] GETTIMEOFDAY_ONE_PARAM
-#endif
+$[cdefine GETTIMEOFDAY_ONE_PARAM]
 
 /* Define if you have the getopt function.  */
-#if $[HAVE_GETOPT]
-$[define] HAVE_GETOPT 1
-#else
-$[undef] HAVE_GETOPT
-#endif
+$[cdefine HAVE_GETOPT]
 
 /* Define if you have the getopt_long_only function.  */
-#if $[HAVE_GETOPT_LONG_ONLY]
-$[define] HAVE_GETOPT_LONG_ONLY 1
-#else
-$[undef] HAVE_GETOPT_LONG_ONLY
-#endif
+$[cdefine HAVE_GETOPT_LONG_ONLY]
 
 /* Define if you have ioctl(TIOCGWINSZ) to determine terminal width. */
-#if $[IOCTL_TERMINAL_WIDTH]
-$[define] IOCTL_TERMINAL_WIDTH 1
-#else
-$[undef] IOCTL_TERMINAL_WIDTH
-#endif
+$[cdefine IOCTL_TERMINAL_WIDTH]
+
+/* Do the compiler or the system headers define a "streamsize" typedef? */
+$[cdefine HAVE_STREAMSIZE]
+
+/* Can we safely call getenv() at static init time? */
+$[cdefine STATIC_INIT_GETENV]
+
+/* Can we read the file /proc/self/environ to determine our
+   environment variables at static init time? */
+$[cdefine HAVE_PROC_SELF_ENVIRON]
+
+/* Do we have a global pair of argc/argv variables that we can read at
+   static init time?  Should we prototype them?  What are they called? */
+$[cdefine HAVE_GLOBAL_ARGV]
+$[cdefine PROTOTYPE_GLOBAL_ARGV]
+$[cdefine GLOBAL_ARGV]
+$[cdefine GLOBAL_ARGC]
+
+/* Can we read the file /proc/self/cmdline to determine our
+   command-line arguments at static init time? */
+$[cdefine HAVE_PROC_SELF_CMDLINE]
 
 /* Define if you have the <io.h> header file.  */
-#if $[HAVE_IO_H]
-$[define] HAVE_IO_H 1
-#else
-$[undef] HAVE_IO_H
-#endif
+$[cdefine HAVE_IO_H]
 
 /* Define if you have the <iostream> header file.  */
-#if $[HAVE_IOSTREAM]
-$[define] HAVE_IOSTREAM 1
-#else
-$[undef] HAVE_IOSTREAM
-#endif
+$[cdefine HAVE_IOSTREAM]
 
 /* Define if you have the <malloc.h> header file.  */
-#if $[HAVE_MALLOC_H]
-$[define] HAVE_MALLOC_H 1
-#else
-$[undef] HAVE_MALLOC_H
-#endif
+$[cdefine HAVE_MALLOC_H]
 
 /* Define if you have the <alloca.h> header file.  */
-#if $[HAVE_ALLOCA_H]
-$[define] HAVE_ALLOCA_H 1
-#else
-$[undef] HAVE_ALLOCA_H
-#endif
+$[cdefine HAVE_ALLOCA_H]
 
 /* Define if you have the <minmax.h> header file.  */
-#if $[HAVE_MINMAX_H]
-$[define] HAVE_MINMAX_H 1
-#else
-$[undef] HAVE_MINMAX_H
-#endif
+$[cdefine HAVE_MINMAX_H]
 
 /* Define if you have the <sstream> header file.  */
-#if $[HAVE_SSTREAM]
-$[define] HAVE_SSTREAM 1
-#else
-$[undef] HAVE_SSTREAM
-#endif
+$[cdefine HAVE_SSTREAM]
 
 /* Define if you have the <sys/types.h> header file.  */
-#if $[HAVE_SYS_TYPES]
-$[define] HAVE_SYS_TYPES 1
-#else
-$[undef] HAVE_SYS_TYPES
-#endif
+$[cdefine HAVE_SYS_TYPES]
 
 /* Define if you have the <unistd.h> header file.  */
-#if $[HAVE_UNISTD_H]
-$[define] HAVE_UNISTD_H 1
-#else
-$[undef] HAVE_UNISTD_H
-#endif
+$[cdefine HAVE_UNISTD_H]
 
-/* Name of package */
-$[define] PACKAGE $[PACKAGE]
-
-/* Version number of package */
-$[define] VERSION $[VERSION]
+/* Do we have <sys/soundcard.h> (and presumably a Linux-style audio
+   interface)? */
+$[cdefine HAVE_SYS_SOUNDCARD_H]
 
 #end dtool_config.h
 

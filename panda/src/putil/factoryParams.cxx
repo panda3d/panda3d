@@ -63,7 +63,7 @@ get_num_params() const {
 ////////////////////////////////////////////////////////////////////
 FactoryParam *FactoryParams::
 get_param(int n) const {
-  nassertr(n >= 0 && n < _params.size(), NULL);
+  nassertr(n >= 0 && n < (int)_params.size(), NULL);
   return DCAST(FactoryParam, _params[n]);
 }
 

@@ -12,9 +12,9 @@ if ( $tool eq "" ) {
 }
 
 #pull in tools for getting information on the project
-require "$tool/inc/ctproj.pl" ;
-require "$tool/inc/ctvspec.pl" ;
-require "$tool/inc/ctquery.pl" ;
+require "$tool/include/ctproj.pl" ;
+require "$tool/include/ctvspec.pl" ;
+require "$tool/include/ctquery.pl" ;
 
 #get what project we're currently in, and where it's root is.
 $proj = &CTProj ;
@@ -45,7 +45,7 @@ if ( ! -e "$tool/lib/Makefile.install.template" ) {
 }
 
 #make the package directory
-require "$tool/inc/ctcm.pl" ;
+require "$tool/include/ctcm.pl" ;
 $item = "$projroot/src/all/$pkgname" ;
 if ( ! -e $item ) {
     if ( ! &CTCMMkdir( $item, $projname, $spec ) ) {
@@ -54,7 +54,7 @@ if ( ! -e $item ) {
 }
 
 #pull in tools for installing Makefiles
-require "$tool/inc/ctinstmake.pl" ;
+require "$tool/include/ctinstmake.pl" ;
 
 #install a package makefile and package install makefile into the package
 $item = "$projroot/src/all/$pkgname/Makefile" ;

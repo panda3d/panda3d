@@ -139,7 +139,7 @@ send(const Datagram &datagram, const PT(Connection) &connection,
   }
 
   if (PR_GetDescType(connection->get_socket()) == PR_DESC_SOCKET_UDP &&
-      datagram.get_length() > maximum_udp_datagram) {
+      (int)datagram.get_length() > maximum_udp_datagram) {
     net_cat.warning()
       << "Attempt to send UDP datagram of " << datagram.get_length()
       << " bytes, more than the\n"

@@ -27,7 +27,7 @@ foreach $item ( @ARGV ) {
     }
 }
 
-require "$tool/inc/ctvspec.pl" ;
+require "$tool/include/ctvspec.pl" ;
 
 if ( $check_vspecs ) {
     local( $projs ) = &CTListAllProjects ;

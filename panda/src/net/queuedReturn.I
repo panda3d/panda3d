@@ -131,7 +131,7 @@ template<class Thing>
 bool QueuedReturn<Thing>::
 enqueue_thing(const Thing &thing) {
   PR_Lock(_mutex);
-  bool enqueue_ok = (_things.size() < _max_queue_size);
+  bool enqueue_ok = ((int)_things.size() < _max_queue_size);
   if (enqueue_ok) {
     _things.push_back(thing);
   }
@@ -154,7 +154,7 @@ template<class Thing>
 bool QueuedReturn<Thing>::
 enqueue_unique_thing(const Thing &thing) {
   PR_Lock(_mutex);
-  bool enqueue_ok = (_things.size() < _max_queue_size);
+  bool enqueue_ok = ((int)_things.size() < _max_queue_size);
   if (enqueue_ok) {
     if (find(_things.begin(), _things.end(), thing) == _things.end()) {
       // It wasn't there already; add it now.

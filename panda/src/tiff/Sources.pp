@@ -1,4 +1,5 @@
 #define OTHER_LIBS dtool
+#define LOCAL_LIBS pandabase
 
 #begin lib_target
   #define TARGET tiff

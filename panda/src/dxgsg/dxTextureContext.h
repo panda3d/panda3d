@@ -6,14 +6,13 @@
 #ifndef DXTEXTURECONTEXT_H
 #define DXTEXTURECONTEXT_H
 
-#ifdef PENV_WIN32
-// Must include windows.h before gl.h on NT
-#define WIN32_LEAN_AND_MEAN
 #include <pandabase.h>
 
+// Must include windows.h before gl.h on NT
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #undef WIN32_LEAN_AND_MEAN
-#endif
+
 #include <texture.h>
 #include <textureContext.h>
 

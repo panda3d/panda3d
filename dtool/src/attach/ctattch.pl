@@ -1,4 +1,4 @@
-require "$tool/inc/ctutils.pl" ;
+require "$tool/include/ctutils.pl" ;
 
 $shell_type = "csh" ;
 if ( $ENV{"SHELL_TYPE"} ne "" ) {
@@ -10,7 +10,7 @@ if ( $ENV{"SHELL_TYPE"} ne "" ) {
 $docnt = 0 ;
 @attachqueue = () ;
 
-require "$tool/inc/ctquery.pl" ;
+require "$tool/include/ctquery.pl" ;
 
 # force set a variable in the 'new' environment
 # input is in:
@@ -136,7 +136,7 @@ sub CTAttachMod {
     }
 }
 
-require "$tool/inc/ctcm.pl" ;
+require "$tool/include/ctcm.pl" ;
 
 # given the project and flavor, build the lists of variables to set/modify
 # input is in:
@@ -367,7 +367,7 @@ sub CTAttachCompute {
       #if ( -e $item ) {
 	  &CTAttachMod( "CDPATH", $item, $root, $proj ) ;
       #}
-      $item = $root . "/inc" ;
+      $item = $root . "/include" ;
       #if ( -e $item ) {
 	  &CTAttachMod( "CT_INCLUDE_PATH", $item, $root, $proj ) ;
       #}

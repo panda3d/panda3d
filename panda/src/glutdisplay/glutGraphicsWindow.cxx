@@ -15,11 +15,12 @@
 #include <keyboardButton.h>
 #include <pStatTimer.h>
 
-#ifdef PENV_WIN32
+#ifdef WIN32_VC
 #define WINDOWS_LEAN_AND_MEAN
 #include <windows.h>
 #undef WINDOWS_LEAN_AND_MEAN
 #endif
+
 #include <GL/glut.h>
 
 ////////////////////////////////////////////////////////////////////

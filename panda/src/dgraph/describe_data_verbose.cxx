@@ -35,7 +35,7 @@ describe_data_verbose(ostream &out, const NodeAttributes &state,
 	string actual_name = type.get_name();
 	string::size_type underscore = actual_name.rfind('_');
 	string name;
-	if (underscore == NPOS) {
+	if (underscore == string::npos) {
 	  // There was no underscore, so this name wasn't created via
 	  // register_data_transition().  Huh.  Well, that's legitimate
 	  // (if unexpected), so just print the whole name.

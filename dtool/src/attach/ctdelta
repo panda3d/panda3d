@@ -9,11 +9,11 @@ if ( $tool eq "" ) {
     die "not configured for using ct-tools\n" ;
 }
 
-require "$tool/inc/ctutils.pl" ;
-require "$tool/inc/ctvspec.pl" ;
-require "$tool/inc/ctquery.pl" ;
-require "$tool/inc/ctproj.pl" ;
-require "$tool/inc/ctcm.pl" ;
+require "$tool/include/ctutils.pl" ;
+require "$tool/include/ctvspec.pl" ;
+require "$tool/include/ctquery.pl" ;
+require "$tool/include/ctproj.pl" ;
+require "$tool/include/ctcm.pl" ;
 
 $comment = "" ;
 $skip = 0 ;

@@ -1,4 +1,4 @@
-require "$tool/inc/ctquery.pl" ;
+require "$tool/include/ctquery.pl" ;
 
 $shell_type = "csh" ;
 if ( $ENV{"SHELL_TYPE"} ne "" ) {
@@ -94,7 +94,7 @@ sub CTUnattachCompute {
       &CTUnattachMod( "LD_LIBRARY_PATH", $item ) ;
       $item = $root . "/src/all" ;
       &CTUnattachMod( "CDPATH", $item ) ;
-      $item = $root . "/inc" ;
+      $item = $root . "/include" ;
       &CTUnattachMod( "CT_INCLUDE_PATH", $item ) ;
       $item = $root . "/etc" ;
       &CTUnattachMod( "ETC_PATH", $item ) ;

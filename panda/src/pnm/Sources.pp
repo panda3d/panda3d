@@ -1,4 +1,5 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolutil:c dtoolbase:c dtool:m
+#define LOCAL_LIBS pandabase
 
 #begin lib_target
   #define TARGET pnm

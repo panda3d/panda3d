@@ -10,8 +10,11 @@
 ////////////////////////////////////////////////////////////////////
 INLINE TimedCycle::
 TimedCycle() :
-  _next_switch(-1), _current_child(0), _cycle_time(30), 
-  _inv_cycle_time(1./30), _element_count(0)
+  _cycle_time(30), 
+  _inv_cycle_time(1./30),
+  _next_switch(-1),
+  _current_child(0),
+  _element_count(0)
 {
   _global_clock = ClockObject::get_global_clock();
 }
@@ -23,8 +26,9 @@ TimedCycle() :
 ////////////////////////////////////////////////////////////////////
 INLINE TimedCycle::
 TimedCycle(float cycle_time, int element_count) :
-   _cycle_time(cycle_time), _current_child(0), 
-   _element_count(element_count)
+  _cycle_time(cycle_time),
+  _current_child(0),
+  _element_count(element_count)
 {
   nassertv(_cycle_time > 0);
   _global_clock = ClockObject::get_global_clock();

@@ -93,7 +93,6 @@ bool BamWriter::
 write_object(TypedWriteable* obj) 
 {
   Datagram objData;
-  bool backreference = false;
 
   nassertr(obj != TypedWriteable::Null, false);
 

@@ -10,10 +10,6 @@
 #include "config_builder.h"
 
 #include <algorithm>
-#ifndef PENV_WIN32
-#include <alloca.h>
-#endif
-
 
 template <class PrimType>
 MesherTempl<PrimType>::

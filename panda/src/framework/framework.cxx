@@ -92,14 +92,6 @@
 #include <ipc_thread.h>
 #endif
 
-/*
-#ifdef PENV_WIN32
-#include <time.h>
-#else
-#include <sys/time.h>
-#endif
-*/
-
 Configure(framework);
 
 ConfigureFn(framework) {

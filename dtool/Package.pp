@@ -12,11 +12,38 @@
 // responsible for explicitly including all of the relevent Config.pp
 // files.
 
+// Check the version of ppremake in use.
+#if $[not $[>= $[PPREMAKE_VERSION],0.50]]
+  #error You need at least ppremake version 0.50 to process this tree.
+#endif
 
 // What is the name and version of this source tree?
 #if $[eq $[PACKAGE],]
   #define PACKAGE dtool
   #define VERSION 0.80
+#endif
+
+// Where should install DTOOL, specifically?
+#if $[or $[CTPROJS],$[DTOOL]]
+  // If we are presently attached, use the environment variable.
+  // We define two variables: one for ourselves, which burns in the
+  // current value of the DTOOL environment variable (so that any
+  // attempt to install in this tree will install correctly, no
+  // matter whether we are attached to a different DTOOL later by
+  // mistake), and one for other trees to use, which expands to a
+  // ordinary reference to the DTOOL environment variable, so
+  // they will read from the right tree no matter which DTOOL they're
+  // attached to.
+  #define DTOOL_INSTALL $[DTOOL]
+  #define DTOOL_INSTALL_OTHER $(DTOOL)
+  #if $[eq $[DTOOL],]
+    #error You seem to be attached to some trees, but not DTOOL!
+  #endif
+#else
+  // Otherwise, if we are not attached, install in the standard place
+  // (unless the user specifies otherwise).
+  #defer DTOOL_INSTALL $[INSTALL_DIR]
+  #defer DTOOL_INSTALL_OTHER $[INSTALL_DIR]
 #endif
 
 
@@ -69,7 +96,6 @@
   #define MIKMOD_LIBS $[patsubst -l%,%,$[filter -l%,$[libs]]]
 #endif
 
-// Now infer a few more variables based on what was defined.
 #if $[and $[HAVE_GTKMM],$[GTKMM_CONFIG]]
   #define cflags $[shell $[GTKMM_CONFIG] --cflags]
   #define libs $[shell $[GTKMM_CONFIG] --libs]
@@ -82,4 +108,4 @@
 
 
 // Finally, include the system configure file.
-#include $[PPREMAKE_DIR]/System.pp
+#include $[THISDIRPREFIX]pptempl/System.pp

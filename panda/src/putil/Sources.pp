@@ -1,9 +1,8 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolutil:c dtoolbase:c dtool:m
+#define LOCAL_LIBS express pandabase
 
 #begin lib_target
   #define TARGET putil
-  #define LOCAL_LIBS \
-    express pandabase
 
   #define SOURCES \
     bamReader.I bamReader.N bamReader.cxx bamReader.h bamReaderParam.I \
@@ -96,7 +95,9 @@
   #define TARGET test_glob
 
   #define SOURCES \
-    globPattern.I globPattern.cxx globPattern.h test_glob.cxx
+    test_glob.cxx
+
+  #define LOCAL_LIBS $[LOCAL_LIBS] putil
 
 #end test_bin_target
 
@@ -110,8 +111,7 @@
 
 #begin test_bin_target
   #define TARGET test_types
-  #define LOCAL_LIBS \
-    putil
+  #define LOCAL_LIBS $[LOCAL_LIBS] putil
 
   #define SOURCES \
     test_types.cxx

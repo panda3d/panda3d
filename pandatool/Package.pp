@@ -14,6 +14,14 @@
 
 
 
+// Check the version of ppremake in use.  This is temporary until
+// everyone gets up to at least 0.50.  After that, the test in dtool
+// will suffice.
+#if $[not $[>= $[PPREMAKE_VERSION],0.50]]
+  #error You need at least ppremake version 0.50 to process this tree.
+#endif
+
+
 // What is the name and version of this source tree?
 #if $[eq $[PACKAGE],]
   #define PACKAGE pandatool
@@ -21,14 +29,39 @@
 #endif
 
 
-// Pull in the package-level Config file.  This contains a few
-// configuration variables that the user might want to fine-tune.
-#include $[THISDIRPREFIX]Config.pp
+// Where should we find the PANDA source directory?
+#if $[or $[CTPROJS],$[PANDA]]
+  // If we are presently attached, use the environment variable.
+  #define PANDA_SOURCE $[PANDA]
+  #if $[eq $[PANDA],]
+    #error You seem to be attached to some trees, but not PANDA!
+  #endif
+#else
+  // Otherwise, if we are not attached, we guess that the source is a
+  // sibling directory to this source root.
+  #define PANDA_SOURCE $[standardize $[TOPDIR]/../panda]
+#endif
+
+// Where should we install PANDATOOL?
+#if $[or $[CTPROJS],$[PANDATOOL]]
+  #define PANDATOOL_INSTALL $[PANDATOOL]
+  #define PANDATOOL_INSTALL_OTHER $(PANDATOOL)
+  #if $[eq $[PANDATOOL],]
+    #error You seem to be attached to some trees, but not PANDATOOL!
+  #endif
+#else
+  #defer PANDATOOL_INSTALL $[INSTALL_DIR]
+  #defer PANDATOOL_INSTALL_OTHER $[INSTALL_DIR]
+#endif
+
+
+// Define the inter-tree dependencies.
+#define NEEDS_TREES $[NEEDS_TREES] panda
 
 
 // Also get the PANDA Package file and everything that includes.
-#if $[eq $[wildcard $[PANDA]],]
-  #error Directory defined by $PANDA not found!  Are you attached properly?
+#if $[not $[isfile $[PANDA_SOURCE]/Package.pp]]
+  #error PANDA source directory not found!  Are you attached properly?
 #endif
 
-#include $[PANDA]/Package.pp
+#include $[PANDA_SOURCE]/Package.pp

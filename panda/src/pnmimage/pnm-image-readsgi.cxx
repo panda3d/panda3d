@@ -24,10 +24,6 @@
 ** 08Feb94: minor bugfix
 */
 
-#ifndef PENV_WIN32 
-  #include <alloca.h>
-#endif
-
 #include "pnmImage.h"
 #include "pnmReader.h"
 #include "pnmReaderTypes.h"
