@@ -24,11 +24,6 @@
 
 int
 main(int argc, char* argv[]) {
-  for (int i=1; i<argc; ++i)
-    if (! AudioPool::verify_sound(argv[i])) {
-      audio_cat->fatal() << "could not locate '" << argv[i] << "'" << endl;
-      exit(-1);
-    }
 
   AudioManager::spawn_update();
   {
