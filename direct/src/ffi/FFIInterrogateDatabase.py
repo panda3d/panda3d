@@ -130,6 +130,10 @@ def outputImportFileImports(file, typeList, CModuleName):
         file.write('from ' + type.enumName + ' import *\n')
     file.write('\n')
 
+    file.write('# Import downcast functions\n')
+    file.write('from ' + CModuleName + 'Downcasts import *\n')
+    file.write('\n')
+
     file.write('# Import classes\n')
     for moduleName in moduleList:
         if moduleName:
@@ -137,7 +141,7 @@ def outputImportFileImports(file, typeList, CModuleName):
     file.write('\n')
 
     file.write('# Import the global module file into our name space\n')
-    file.write('from ' + CModuleName + 'Globals' + ' import *\n')
+    file.write('from ' + CModuleName + 'Globals import *\n')
     file.write('\n')
 
     file.write('# Generate the classes\n')
