@@ -89,7 +89,7 @@ PUBLISHED:
   bool add_expected_server(const string &server_attributes);
   void clear_expected_servers();
 
-  PT(HTTPChannel) make_channel();
+  PT(HTTPChannel) make_channel(bool persistent_connection);
   PT(HTTPChannel) post_form(const URLSpec &url, const string &body);
   PT(HTTPChannel) get_document(const URLSpec &url,
                                 const string &body = string());

@@ -301,11 +301,18 @@ clear_expected_servers() {
 //               connection, for greater network efficiency than
 //               calling HTTPClient::get_document() repeatedly (and
 //               thus forcing a new connection for each document).
+//
+//               Pass true for persistent_connection to gain this
+//               network efficiency.  If, on the other hand, your
+//               intention is to use the channel to retrieve only one
+//               document, then pass false to inform the server that
+//               we will be dropping the connection after the first
+//               document.
 ////////////////////////////////////////////////////////////////////
 PT(HTTPChannel) HTTPClient::
-make_channel() {
+make_channel(bool persistent_connection) {
   PT(HTTPChannel) doc = new HTTPChannel(this);
-  doc->set_persistent_connection(true);
+  doc->set_persistent_connection(persistent_connection);
   return doc;
 }
 

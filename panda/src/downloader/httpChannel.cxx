@@ -64,6 +64,7 @@ HTTPChannel(HTTPClient *client) :
   _bytes_requested = 0;
   _status_code = 0;
   _status_string = string();
+  _response_type = RT_none;
   _proxy = _client->get_proxy();
   _http_version = _client->get_http_version();
   _http_version_string = _client->get_http_version_string();
@@ -602,11 +603,21 @@ run_proxy_request_sent() {
   // Wait for the first line to come back from the server.
   string line;
   if (!http_getline(line)) {
+    if (_bio.is_null()) {
+      // Huh, the proxy hung up on us as soon as we tried to connect.
+      if (_response_type == RT_hangup) {
+        // This was our second immediate hangup in a row.  Give up.
+        _state = S_failure;
+        
+      } else {
+        // Try again, once.
+        _response_type = RT_hangup;
+      }
+    }
     return true;
   }
 
   if (!parse_http_response(line)) {
-    _state = S_failure;
     return false;
   }
 
@@ -614,6 +625,7 @@ run_proxy_request_sent() {
   _current_field_name = string();
   _current_field_value = string();
   _headers.clear();
+  _file_size = 0;
   return false;
 }
 
@@ -832,11 +844,21 @@ run_request_sent() {
   // Wait for the first line to come back from the server.
   string line;
   if (!http_getline(line)) {
+    if (_bio.is_null()) {
+      // Huh, the server hung up on us as soon as we tried to connect.
+      if (_response_type == RT_hangup) {
+        // This was our second immediate hangup in a row.  Give up.
+        _state = S_failure;
+        
+      } else {
+        // Try again, once.
+        _response_type = RT_hangup;
+      }
+    }
     return true;
   }
 
   if (!parse_http_response(line)) {
-    _state = S_failure;
     return false;
   }
 
@@ -844,6 +866,7 @@ run_request_sent() {
   _current_field_name = string();
   _current_field_value = string();
   _headers.clear();
+  _file_size = 0;
   return false;
 }
 
@@ -996,6 +1019,18 @@ run_begin_body() {
     // These status codes, or method HEAD, indicate we have no body.
     // Therefore, we have already read the (nonexistent) body.
     _state = S_ready;
+
+  } else if (_file_size > 8192) {
+    // If we know the size of the body we are about to skip and it's
+    // too large (and here we arbitrarily say 8KB is too large), then
+    // don't bother skipping it--just drop the connection and get a
+    // new one.
+    if (downloader_cat.is_debug()) {
+      downloader_cat.debug()
+        << "Dropping connection rather than skipping past " << _file_size
+        << " bytes.\n";
+    }
+    free_bio();
 
   } else {
     nassertr(_body_stream == NULL, false);
@@ -1281,11 +1316,9 @@ begin_request(const string &method, const URLSpec &url, const string &body,
 void HTTPChannel::
 reset_for_new_request() {
   reset_download_to();
-  _status_code = 0;
-  _status_string = string();
-  _redirect_trail.clear();
   _last_status_code = 0;
-  _file_size = 0;
+  _response_type = RT_none;
+  _redirect_trail.clear();
   _bytes_downloaded = 0;
   _bytes_requested = 0;
 }
@@ -1397,8 +1430,21 @@ parse_http_response(const string &line) {
     // Not an HTTP response.
     _status_code = 0;
     _status_string = "Not an HTTP response";
+    if (_response_type == RT_non_http) {
+      // This was our second non-HTTP response in a row.  Give up.
+      _state = S_failure;
+
+    } else {
+      // Maybe we were just in some bad state.  Drop the connection
+      // and try again, once.
+      free_bio();
+      _response_type = RT_non_http;
+    }
     return false;
   }
+
+  // Okay, we're sane.
+  _response_type = RT_http;
 
   // Split out the first line into its three components.
   size_t p = 5;
@@ -1529,6 +1575,25 @@ parse_content_range(const string &content_range) {
   return false;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::check_socket
+//       Access: Private
+//  Description: Checks whether the connection to the server has been
+//               closed after a failed read.  If it has, issues a
+//               warning and calls free_bio().
+////////////////////////////////////////////////////////////////////
+void HTTPChannel::
+check_socket() {
+  nassertv(!_source.is_null());
+  if ((*_source)->is_closed()) {
+    if (downloader_cat.is_debug()) {
+      downloader_cat.debug()
+        << "Lost connection to server unexpectedly during read.\n";
+    }
+    free_bio();
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::verify_server

@@ -484,22 +484,3 @@ is_download_complete() const {
   return (_download_dest != DD_none &&
           (_state == S_read_body || _state == S_read_trailer));
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::check_socket
-//       Access: Private
-//  Description: Checks whether the connection to the server has been
-//               closed after a failed read.  If it has, issues a
-//               warning and calls free_bio().
-////////////////////////////////////////////////////////////////////
-INLINE void HTTPChannel::
-check_socket() {
-  nassertv(!_source.is_null());
-  if ((*_source)->is_closed()) {
-    if (downloader_cat.is_debug()) {
-      downloader_cat.debug()
-        << "Lost connection to server unexpectedly during read.\n";
-    }
-    free_bio();
-  }
-}

@@ -153,7 +153,7 @@ private:
   bool parse_http_header();
   bool parse_content_range(const string &content_range);
 
-  INLINE void check_socket();
+  void check_socket();
   bool verify_server(X509_NAME *subject) const;
 
   static string get_x509_name_component(X509_NAME *name, int nid);
@@ -217,6 +217,15 @@ private:
   string _status_string;
   string _realm;
   URLSpec _redirect;
+
+  enum ResponseType {
+    RT_none,
+    RT_hangup,
+    RT_non_http,
+    RT_http
+  };
+  ResponseType _response_type;
+  
 
   typedef pmap<string, string> Headers;
   Headers _headers;
