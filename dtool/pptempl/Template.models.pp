@@ -54,17 +54,62 @@
    $[forscopes maya_char_egg,$[ANIMS:%=$[EGG_PREFIX]%$[CHAN_SUFFIX].egg]]
 
 #define build_eggs $[sort $[build_models] $[build_anims]]
-#define install_eggs $[sort $[notdir $[SOURCES(install_egg)] $[UNPAL_SOURCES(install_egg)] $[UNPAL_SOURCES_NC(install_egg)]]]
-#define install_other $[sort $[SOURCES(install_audio install_dna install_icons install_misc)]]
 
+// Get the list of egg files that are to be installed
+#define install_pal_eggs
+#define install_unpal_eggs
+#forscopes install_egg
+  #define egglist $[notdir $[SOURCES]]
+  #set install_pal_eggs $[install_pal_eggs] $[filter-out $[language_egg_filters],$[egglist]]
+  #if $[LANGUAGES]
+    // Now look for the eggs of the current language.
+    #foreach egg $[filter %_$[DEFAULT_LANGUAGE].egg,$[egglist]]
+      #define wantegg $[egg:%_$[DEFAULT_LANGUAGE].egg=%_$[LANGUAGE].egg]
+      #if $[filter $[wantegg],$[egglist]]
+          // The current language file exists.
+        #set install_pal_eggs $[install_pal_eggs] $[wantegg]
+      #else
+        #set install_pal_eggs $[install_pal_eggs] $[egg]
+      #endif
+    #end egg
+  #endif
+  #define egglist $[notdir $[UNPAL_SOURCES] $[UNPAL_SOURCES_NC]]
+  #set install_unpal_eggs $[install_unpal_eggs] $[filter-out $[language_egg_filters],$[egglist]]
+  #if $[LANGUAGES]
+    // Now look for the eggs of the current language.
+    #foreach egg $[filter %_$[DEFAULT_LANGUAGE].egg,$[egglist]]
+      #define wantegg $[egg:%_$[DEFAULT_LANGUAGE].egg=%_$[LANGUAGE].egg]
+      #if $[filter $[wantegg],$[egglist]]
+          // The current language file exists.
+        #set install_unpal_eggs $[install_unpal_eggs] $[wantegg]
+      #else
+        #set install_unpal_eggs $[install_unpal_eggs] $[egg]
+      #endif
+    #end egg
+  #endif
+#end install_egg
+#define install_eggs $[install_pal_eggs] $[install_unpal_eggs]
+
+
+// Get the list of bam files in the install directories
 #define install_egg_dirs $[sort $[forscopes install_egg,$[install_model_dir]]]
-#define installed_eggs $[sort $[forscopes install_egg,$[patsubst %,$[install_model_dir]/%,$[notdir $[SOURCES] $[UNPAL_SOURCES] $[UNPAL_SOURCES_NC]]]]]
-#define installed_bams $[sort $[forscopes install_egg,$[patsubst %.egg,$[install_model_dir]/%.bam,$[notdir $[SOURCES] $[UNPAL_SOURCES] $[UNPAL_SOURCES_NC]]]]]
+#define installed_generic_bams $[sort $[forscopes install_egg,$[patsubst %.egg,$[install_model_dir]/%.bam,$[filter-out $[language_egg_filters],$[notdir $[SOURCES] $[UNPAL_SOURCES] $[UNPAL_SOURCES_NC]]]]]]
+#if $[LANGUAGES]
+  #define installed_language_bams $[sort $[forscopes install_egg,$[patsubst %.egg,$[install_model_dir]/%.bam,$[patsubst %_$[DEFAULT_LANGUAGE].egg,%.egg,%,,$[notdir $[SOURCES] $[UNPAL_SOURCES] $[UNPAL_SOURCES_NC]]]]]]
+#endif
 
-#define install_other_dirs $[sort $[forscopes install_audio install_dna install_icons install_misc,$[install_model_dir]]]
-#define installed_other $[sort $[forscopes install_audio install_dna install_icons install_misc,$[SOURCES:%=$[install_model_dir]/%]]]
+// And the list of dna files in the install directories.
+#define install_dna_dirs $[sort $[forscopes install_dna,$[install_model_dir]]]
+#define installed_generic_dna $[sort $[forscopes install_dna,$[patsubst %,$[install_model_dir]/%,$[filter-out $[language_dna_filters],$[notdir $[SOURCES]]]]]]
+#if $[LANGUAGES]
+  #define installed_language_dna $[sort $[forscopes install_dna,$[patsubst %,$[install_model_dir]/%,$[patsubst %_$[DEFAULT_LANGUAGE].dna,%.dna,%,,$[notdir $[SOURCES]]]]]]
+#endif
 
-#define pal_egg_targets $[sort $[patsubst %,$[pal_egg_dir]/%,$[notdir $[SOURCES(install_egg)]]]]
+#define install_other_dirs $[sort $[forscopes install_audio install_icons install_misc,$[install_model_dir]]]
+#define installed_other $[sort $[forscopes install_audio install_icons install_misc,$[SOURCES:%=$[install_model_dir]/%]]]
+
+
+#define pal_egg_targets $[sort $[patsubst %,$[pal_egg_dir]/%,$[notdir $[install_pal_eggs]]]]
 #define bam_targets $[install_eggs:%.egg=$[bam_dir]/%.bam]
 
 #output Makefile
@@ -85,32 +130,24 @@ all : $[all_targets]
     $[build_eggs]
 egg : $[egg_targets]
 
-#define filter_targets \
-    $[filter_dirs] \
-    $[forscopes install_egg,$[patsubst %,$[source_prefix]%,$[notdir $[SOURCES] $[UNPAL_SOURCES] $[UNPAL_SOURCES_NC]]]]
-filter : egg $[filter_targets]
-
-pal : filter $[if $[pal_egg_targets],$[pal_egg_dir]] $[pal_egg_targets]
+pal : $[if $[pal_egg_targets],$[pal_egg_dir]] $[pal_egg_targets]
 
 bam : pal $[if $[bam_targets],$[bam_dir]] $[bam_targets]
 
-#define install_egg_targets \
-    $[install_egg_dirs] \
-    $[installed_eggs]
-install-egg : $[install_egg_targets]
-
 #define install_bam_targets \
     $[install_egg_dirs] \
-    $[installed_bams]
+    $[installed_generic_bams] $[installed_language_bams]
 install-bam : $[install_bam_targets]
 
 #define install_other_targets \
+    $[install_dna_dirs] \
+    $[installed_generic_dna] $[installed_language_dna] \
     $[install_other_dirs] \
     $[installed_other]
 install-other : $[install_other_targets]
 
 install : all install-other install-bam
-uninstall : uninstall-other uninstall-bam uninstall-egg
+uninstall : uninstall-other uninstall-bam
 
 clean-bam :
 #if $[bam_targets]
@@ -124,7 +161,7 @@ $[TAB]rm -rf $[pal_egg_dir]
 
 clean : clean-pal
 #if $[build_eggs]
-$[TAB]rm -f $[build_eggs] $[install_eggs:%.egg=%.pt]
+$[TAB]rm -f $[build_eggs] *.pt
 #endif
 #if $[POLY_MODEL(soft_char_egg)] $[NURBS_MODEL(soft_char_egg)]
 $[TAB]rm -rf $[soft_maps_dir]
@@ -340,42 +377,10 @@ $[TAB]egg2bam $[EGG2BAM_OPTS] -NC -o $[target] $[source]
 #end install_egg
 
 
-// Egg file installation.
-#forscopes install_egg
-  #foreach egg $[notdir $[SOURCES]]
-    #define local $[egg]
-    #define sourcedir $[pal_egg_dir]
-    #define dest $[install_model_dir]
-$[dest]/$[local] : $[sourcedir]/$[local]
-//      cd ./$[sourcedir] && $[INSTALL]
-$[TAB]rm -f $[dest]/$[local]
-$[TAB]cp $[sourcedir]/$[local] $[dest]
-
-  #end egg
-  #foreach egg $[UNPAL_SOURCES] $[UNPAL_SOURCES_NC]
-    #define local $[egg]
-    #define dest $[install_model_dir]
-$[dest]/$[notdir $[local]] : $[source_prefix]$[local]
-//      $[INSTALL]
-$[TAB]rm -f $[dest]/$[notdir $[local]]
-$[TAB]cp $[source_prefix]$[local] $[dest]
-
-  #end egg
-#end install_egg
-
-// Egg file uninstallation.
-uninstall-egg :
-#forscopes install_egg
-  #define files $[patsubst %,$[install_model_dir]/%,$[SOURCES] $[UNPAL_SOURCES] $[UNPAL_SOURCES_NC]]
-  #if $[files]
-$[TAB]rm -f $[files]
-  #endif
-#end install_egg
-
-
 // Bam file installation.
 #forscopes install_egg
-  #foreach egg $[notdir $[SOURCES] $[UNPAL_SOURCES] $[UNPAL_SOURCES_NC]]
+  #define egglist $[notdir $[SOURCES] $[UNPAL_SOURCES] $[UNPAL_SOURCES_NC]]
+  #foreach egg $[filter-out $[language_egg_filters],$[egglist]]
     #define local $[egg:%.egg=%.bam]
     #define sourcedir $[bam_dir]
     #define dest $[install_model_dir]
@@ -385,40 +390,116 @@ $[TAB]rm -f $[dest]/$[local]
 $[TAB]cp $[sourcedir]/$[local] $[dest]
 
   #end egg
+  #if $[LANGUAGES]
+    // Now look for the eggs of the current language.
+    #foreach egg $[filter %_$[DEFAULT_LANGUAGE].egg,$[egglist]]
+      #define wantegg $[egg:%_$[DEFAULT_LANGUAGE].egg=%_$[LANGUAGE].egg]
+      #if $[filter $[wantegg],$[egglist]]
+        // The current language file exists.
+        #define local $[wantegg:%.egg=%.bam]
+      #else
+        #print Warning: $[wantegg] not listed, using $[egg]
+        #define local $[egg:%.egg=%.bam]
+      #endif
+      #define remote $[egg:%_$[DEFAULT_LANGUAGE].egg=%.bam]
+      #define sourcedir $[bam_dir]
+      #define dest $[install_model_dir]
+$[dest]/$[remote] : $[sourcedir]/$[local]
+//      cd ./$[sourcedir] && $[INSTALL]
+$[TAB]rm -f $[dest]/$[remote]
+$[TAB]cp $[sourcedir]/$[local] $[dest]/$[remote]
+
+    #end egg
+  #endif
 #end install_egg
 
 // Bam file uninstallation.
 uninstall-bam :
 #forscopes install_egg
-  #define files $[patsubst %.egg,$[install_model_dir]/%.bam,$[notdir $[SOURCES] $[UNPAL_SOURCES] $[UNPAL_SOURCES_NC]]]
+  #define egglist $[notdir $[SOURCES] $[UNPAL_SOURCES] $[UNPAL_SOURCES_NC]]
+  #define generic_egglist $[filter-out $[language_egg_filters],$[egglist]]
+  #if $[LANGUAGES]
+    #define language_egglist $[patsubst %_$[DEFAULT_LANGUAGE].egg,%.egg,%,,$[egglist]]
+  #endif
+  #define files $[patsubst %.egg,$[install_model_dir]/%.bam,$[generic_egglist] $[language_egglist]]
   #if $[files]
 $[TAB]rm -f $[files]
   #endif
 #end install_egg
 
 
-
-// Miscellaneous file installation.
-#forscopes install_audio install_dna install_icons install_misc
-  #foreach file $[SOURCES]
+// DNA file installation.
+#forscopes install_dna
+  #foreach file $[filter-out $[language_dna_filters],$[SOURCES]]
     #define local $[file]
+    #define remote $[notdir $[file]]
     #define dest $[install_model_dir]
-$[dest]/$[local] : $[local]
+$[dest]/$[remote] : $[local]
 //      $[INSTALL]
-$[TAB]rm -f $[dest]/$[local]
+$[TAB]rm -f $[dest]/$[remote]
 $[TAB]cp $[local] $[dest]
 
   #end file
-#end install_audio install_dna install_icons install_misc
+  #if $[LANGUAGES]
+    // Now files of the current langauge.
+    #foreach file $[filter %_$[DEFAULT_LANGUAGE].dna,$[SOURCES]]
+      #define wantfile $[file:%_$[DEFAULT_LANGUAGE].dna=%_$[LANGUAGE].dna]
+      #if $[filter $[wantfile],$[SOURCES]]
+        // The current language file exists.
+        #define local $[wantfile]
+      #else
+        #print Warning: $[wantfile] not listed, using $[file]
+        #define local $[file]
+      #endif
+      #define remote $[notdir $[file:%_$[DEFAULT_LANGUAGE].dna=%.dna]]
+      #define dest $[install_model_dir]
+$[dest]/$[remote] : $[local]
+//      cd ./$[sourcedir] && $[INSTALL]
+$[TAB]rm -f $[dest]/$[remote]
+$[TAB]cp $[sourcedir]/$[local] $[dest]/$[remote]
+
+    #end file
+  #endif
+#end install_dna
+
+// DNA file uninstallation.
+uninstall-other:
+#forscopes install_dna
+  #define sources $[notdir $[SOURCES]]
+  #define generic_sources $[filter-out $[language_dna_filters],$[sources]]
+  #if $[LANGUAGES]
+    #define language_sources $[patsubst %_$[DEFAULT_LANGUAGE].dna,%.dna,%,,$[sources]]
+  #endif
+  #define files $[patsubst %,$[install_model_dir]/%,$[generic_sources] $[language_sources]]
+  #if $[files]
+$[TAB]rm -f $[files]
+  #endif
+#end install_dna
+
+
+
+// Miscellaneous file installation.
+#forscopes install_audio install_icons install_misc
+  #foreach file $[SOURCES]
+    #define local $[file]
+    #define remote $[notdir $[file]]
+    #define dest $[install_model_dir]
+$[dest]/$[remote] : $[local]
+//      $[INSTALL]
+$[TAB]rm -f $[dest]/$[remote]
+$[TAB]cp $[local] $[dest]
+
+  #end file
+#end install_audio install_icons install_misc
 
 // Miscellaneous file uninstallation.
 uninstall-other:
-#forscopes install_audio install_dna install_icons install_misc
+#forscopes install_audio install_icons install_misc
   #define files $[patsubst %,$[install_model_dir]/%,$[SOURCES]]
   #if $[files]
 $[TAB]rm -f $[files]
   #endif
-#end install_audio install_dna install_icons install_misc
+#end install_audio install_icons install_misc
 
 
 #end Makefile
@@ -467,11 +548,9 @@ clean-bam : $[subdirs:%=clean-bam-%]
 clean-pal : $[subdirs:%=clean-pal-%]
 clean : $[subdirs:%=clean-%]
 cleanall : $[subdirs:%=cleanall-%]
-install-egg : egg pal repal $[subdirs:%=install-egg-%]
 install-bam : egg pal repal $[subdirs:%=install-bam-%]
 install-other : $[subdirs:%=install-other-%]
 install : egg pal repal $[subdirs:%=install-%]
-uninstall-egg : $[subdirs:%=uninstall-egg-%]
 uninstall-bam : $[subdirs:%=uninstall-bam-%]
 uninstall-other : $[subdirs:%=uninstall-other-%]
 uninstall : $[subdirs:%=uninstall-%]
@@ -570,11 +649,6 @@ $[TAB]cd ./$[RELDIR] && $(MAKE) cleanall
 #end dirname
 
 #formap dirname subdirs
-install-egg-$[dirname] :
-$[TAB]cd ./$[RELDIR] && $(MAKE) install-egg
-#end dirname
-
-#formap dirname subdirs
 install-bam-$[dirname] :
 $[TAB]cd ./$[RELDIR] && $(MAKE) install-bam
 #end dirname
@@ -587,11 +661,6 @@ $[TAB]cd ./$[RELDIR] && $(MAKE) install-other
 #formap dirname subdirs
 install-$[dirname] :
 $[TAB]cd ./$[RELDIR] && $(MAKE) install
-#end dirname
-
-#formap dirname subdirs
-uninstall-egg-$[dirname] :
-$[TAB]cd ./$[RELDIR] && $(MAKE) uninstall-egg
 #end dirname
 
 #formap dirname subdirs

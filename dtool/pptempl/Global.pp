@@ -558,6 +558,18 @@ Warning: Variable $[upcase $[tree]]_INSTALL is not set!
     $[if $[TRACK_IN_INTERPRETER],-track-interpreter]
 
 
+// The language stuff is used by model builds only.
+// Set language_filters to be "%_english %_castillian" etc.
+#if $[LANGUAGES]
+  #define language_filters $[subst <pct>,%,$[LANGUAGES:%=<pct>_%]]
+  #print Using language $[LANGUAGE]
+#else
+  #define language_filters
+#endif
+#define language_egg_filters $[language_filters:%=%.egg]
+#define language_dna_filters $[language_filters:%=%.dna]
+
+
 // Include the global definitions for this particular build_type, if
 // the file is there.
 #sinclude $[GLOBAL_TYPE_FILE]
