@@ -141,15 +141,18 @@ make_canonical(Filename &filename) {
     return;
   }
 
-  string dirname = filename.get_dirname();
+  Filename orig_dirname = filename.get_dirname();
 
   CanonicalFilenames::iterator fi;
-  fi = _canonical_filenames.find(dirname);
+  fi = _canonical_filenames.find(orig_dirname);
   if (fi != _canonical_filenames.end()) {
     filename.set_dirname((*fi).second);
     return;
   }
 
-  filename.make_canonical();
-  _canonical_filenames.insert(CanonicalFilenames::value_type(dirname, filename.get_dirname()));
+  Filename new_dirname = orig_dirname;
+  new_dirname.make_canonical();
+  filename.set_dirname(new_dirname);
+
+  _canonical_filenames.insert(CanonicalFilenames::value_type(orig_dirname, new_dirname));
 }
