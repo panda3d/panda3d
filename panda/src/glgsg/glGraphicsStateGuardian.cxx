@@ -610,11 +610,17 @@ render_subgraph(RenderTraverser *traverser,
 
   //  activate();
 
+  Lens *lens = projnode->get_lens();
+  if (!lens->is_linear()) {
+    glgsg_cat.error()
+      << "Cannot render with a nonlinear lens!\n";
+    return;
+  }
+
   LensNode *old_camera = _current_camera;
   _current_camera = projnode;
   LMatrix4f old_projection_mat = _current_projection_mat;
 
-  Lens *lens = projnode->get_lens();
   const LMatrix4f &projection_mat = lens->get_projection_mat();
 
   // The projection matrix must always be right-handed Y-up, even if
@@ -1998,6 +2004,7 @@ copy_texture(TextureContext *tc, const DisplayRegion *dr) {
                    get_internal_image_format(pb->get_format()),
                    pb->get_xorg(), pb->get_yorg(),
                    pb->get_xsize(), pb->get_ysize(), pb->get_border());
+  clear_attribute(TextureTransition::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////

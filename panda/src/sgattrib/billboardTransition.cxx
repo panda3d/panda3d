@@ -78,6 +78,11 @@ sub_render(NodeRelation *arc, const AllTransitionsWrapper &,
   // DisplayRegion instead of the GSG.
   const DisplayRegion *dr = gsg->get_current_display_region();
   LensNode *camera = dr->get_cull_frustum();
+  if (camera == (LensNode *)NULL) {
+    // Never mind; ask the gsg.
+    camera = gsg->get_current_camera();
+  }
+
   nassertr(camera != (LensNode *)NULL, true);
 
   // And the relative coordinate space.

@@ -10,6 +10,7 @@
     config_distort.cxx config_distort.h \
     cylindricalLens.cxx cylindricalLens.h cylindricalLens.I \
     fisheyeLens.cxx fisheyeLens.h fisheyeLens.I \
+    nonlinearImager.cxx nonlinearImager.h nonlinearImager.I \
     pSphereLens.cxx pSphereLens.h pSphereLens.I \
     projectionScreen.cxx projectionScreen.h projectionScreen.I
 
