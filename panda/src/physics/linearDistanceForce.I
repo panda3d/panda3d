@@ -1,6 +1,6 @@
 // Filename: LinearDistanceForce.I
 // Created by:  charles (21Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
@@ -38,7 +38,7 @@ set_force_center(const LPoint3f& p) {
 //      Access : public
 // Description : falloff_type query
 ////////////////////////////////////////////////////////////////////
-INLINE FalloffType LinearDistanceForce::
+INLINE LinearDistanceForce::FalloffType LinearDistanceForce::
 get_falloff_type(void) const {
   return _falloff;
 }
