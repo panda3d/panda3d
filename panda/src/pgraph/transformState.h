@@ -148,24 +148,14 @@ private:
   };
   typedef pvector<CompositionCycleDescEntry> CompositionCycleDesc;
   typedef pset<const TransformState *> VisitedStates;
-  class CycleChain {
-  public:
-    INLINE CycleChain(const TransformState *state);
-    INLINE CycleChain(CycleChain *prev, const TransformState *state);
-
-    bool has_result(const TransformState *state) const;
-
-    const TransformState *_state;
-    CycleChain *_prev;
-    int _length;
-  };
 
   static CPT(TransformState) return_new(TransformState *state);
   CPT(TransformState) do_compose(const TransformState *other) const;
   CPT(TransformState) do_invert_compose(const TransformState *other) const;
-  static bool r_detect_cycles(const TransformState *state,
+  static bool r_detect_cycles(const TransformState *start_state,
+                              const TransformState *current_state,
+                              int length,
                               VisitedStates &visited_this_cycle,
-                              CycleChain *chain,
                               CompositionCycleDesc &cycle_desc);
 
 private:

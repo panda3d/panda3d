@@ -881,8 +881,7 @@ list_cycles(ostream &out) {
     bool inserted = visited.insert(state).second;
     if (inserted) {
       VisitedStates visited_this_cycle;
-      CycleChain chain(state);
-      if (r_detect_cycles(state, visited_this_cycle, &chain, cycle_desc)) {
+      if (r_detect_cycles(state, state, 1, visited_this_cycle, cycle_desc)) {
         // This state begins a cycle.
         CompositionCycleDesc::reverse_iterator csi;
 
@@ -1294,28 +1293,30 @@ do_invert_compose(const RenderState *other) const {
 //               in reverse order.
 ////////////////////////////////////////////////////////////////////
 bool RenderState::
-r_detect_cycles(const RenderState *state,
+r_detect_cycles(const RenderState *start_state,
+                const RenderState *current_state,
+                int length,
                 RenderState::VisitedStates &visited_this_cycle,
-                RenderState::CycleChain *chain,
                 RenderState::CompositionCycleDesc &cycle_desc) {
-  bool inserted = visited_this_cycle.insert(state).second;
-  if (!inserted && chain->has_result(state)) {
+  bool inserted = visited_this_cycle.insert(current_state).second;
+  if (!inserted) {
     // We've already seen this state; therefore, we've found a cycle.
 
-    // However, we only care about cycles that involve more than two
-    // steps.  If only one or two nodes are involved, it doesn't
-    // represent a memory leak, so no problem there.
-    return (chain->_length > 2);
+    // However, we only care about cycles that return to the starting
+    // state and involve more than two steps.  If only one or two
+    // nodes are involved, it doesn't represent a memory leak, so no
+    // problem there.
+    return (current_state == start_state && length > 2);
   }
     
   CompositionCache::const_iterator ci;
-  for (ci = state->_composition_cache.begin();
-       ci != state->_composition_cache.end();
+  for (ci = current_state->_composition_cache.begin();
+       ci != current_state->_composition_cache.end();
        ++ci) {
     const RenderState *result = (*ci).second._result;
     if (result != (const RenderState *)NULL) {
-      CycleChain next_chain(chain, result);
-      if (r_detect_cycles(result, visited_this_cycle, &next_chain, cycle_desc)) {
+      if (r_detect_cycles(start_state, result, length + 1, 
+                          visited_this_cycle, cycle_desc)) {
         // Cycle detected.
         CompositionCycleDescEntry entry((*ci).first, result, false);
         cycle_desc.push_back(entry);
@@ -1324,13 +1325,13 @@ r_detect_cycles(const RenderState *state,
     }
   }
 
-  for (ci = state->_invert_composition_cache.begin();
-       ci != state->_invert_composition_cache.end();
+  for (ci = current_state->_invert_composition_cache.begin();
+       ci != current_state->_invert_composition_cache.end();
        ++ci) {
     const RenderState *result = (*ci).second._result;
     if (result != (const RenderState *)NULL) {
-      CycleChain next_chain(chain, result);
-      if (r_detect_cycles(result, visited_this_cycle, &next_chain, cycle_desc)) {
+      if (r_detect_cycles(start_state, result, length + 1,
+                          visited_this_cycle, cycle_desc)) {
         // Cycle detected.
         CompositionCycleDescEntry entry((*ci).first, result, true);
         cycle_desc.push_back(entry);
@@ -1598,21 +1599,4 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     int override = scan.get_int32();
     _attributes.push_back(Attribute(override));
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::CycleChain::has_result
-//       Access: Public
-//  Description: Returns true if the indicated state has been reached
-//               in this chain previously, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool RenderState::CycleChain::
-has_result(const RenderState *state) const {
-  if (_state == state) {
-    return true;
-  }
-  if (_prev != NULL) {
-    return _prev->has_result(state);
-  }
-  return false;
 }

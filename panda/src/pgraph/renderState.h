@@ -133,24 +133,14 @@ private:
   };
   typedef pvector<CompositionCycleDescEntry> CompositionCycleDesc;
   typedef pset<const RenderState *> VisitedStates;
-  class CycleChain {
-  public:
-    INLINE CycleChain(const RenderState *state);
-    INLINE CycleChain(CycleChain *prev, const RenderState *state);
-
-    bool has_result(const RenderState *state) const;
-
-    const RenderState *_state;
-    CycleChain *_prev;
-    int _length;
-  };
 
   static CPT(RenderState) return_new(RenderState *state);
   CPT(RenderState) do_compose(const RenderState *other) const;
   CPT(RenderState) do_invert_compose(const RenderState *other) const;
-  static bool r_detect_cycles(const RenderState *state,
+  static bool r_detect_cycles(const RenderState *start_state,
+                              const RenderState *current_state,
+                              int length,
                               VisitedStates &visited_this_cycle,
-                              CycleChain *chain,
                               CompositionCycleDesc &cycle_desc);
 
   void determine_bin_index();

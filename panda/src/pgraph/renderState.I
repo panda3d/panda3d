@@ -323,29 +323,3 @@ CompositionCycleDescEntry(const RenderState *obj,
   _inverted(inverted)
 {
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::CycleChain::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE RenderState::CycleChain::
-CycleChain(const RenderState *state) :
-  _state(state),
-  _prev(NULL),
-  _length(1)
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::CycleChain::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE RenderState::CycleChain::
-CycleChain(CycleChain *prev, const RenderState *state) :
-  _state(state),
-  _prev(prev),
-  _length(prev->_length + 1)
-{
-}

@@ -597,29 +597,3 @@ CompositionCycleDescEntry(const TransformState *obj,
   _inverted(inverted)
 {
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::CycleChain::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE TransformState::CycleChain::
-CycleChain(const TransformState *state) :
-  _state(state),
-  _prev(NULL),
-  _length(1)
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::CycleChain::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE TransformState::CycleChain::
-CycleChain(CycleChain *prev, const TransformState *state) :
-  _state(state),
-  _prev(prev),
-  _length(prev->_length + 1)
-{
-}
