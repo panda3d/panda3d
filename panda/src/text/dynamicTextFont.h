@@ -137,6 +137,11 @@ private:
 
   FT_Face _face;
 
+  // This string is used to hold the data read from the font file in
+  // vfs mode.  Since the FreeType library keeps pointers into this
+  // data, we have to keep it around.
+  string _raw_font_data;
+
   static FT_Library _ft_library;
   static bool _ft_initialized;
   static bool _ft_ok;

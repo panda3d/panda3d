@@ -22,6 +22,8 @@
 
 #include "config_text.h"
 #include "config_util.h"
+#include "config_express.h"
+#include "virtualFileSystem.h"
 
 bool DynamicTextFont::_update_cleared_glyphs = text_update_cleared_glyphs;
 
@@ -84,18 +86,33 @@ DynamicTextFont(const Filename &font_filename, int face_index) {
     return;
   }
 
+  bool exists = false;
+  int error;
   Filename path(font_filename);
-  path.resolve_filename(get_model_path());
-  if (!path.exists()) {
+  if (use_vfs) {
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    vfs->resolve_filename(path, get_model_path());
+    exists = vfs->read_file(path, _raw_font_data);
+    if (exists) {
+      error = FT_New_Memory_Face(_ft_library, 
+                                 (const FT_Byte *)_raw_font_data.data(),
+                                 _raw_font_data.length(),
+                                 face_index, &_face);
+    }
+  } else {
+    path.resolve_filename(get_model_path());
+    exists = path.exists();
+    if (exists) {
+      string os_specific = path.to_os_specific();
+      error = FT_New_Face(_ft_library, os_specific.c_str(),
+                          face_index, &_face);
+    }
+  }
+
+  if (!exists) {
     text_cat.error()
       << "Unable to find font file " << font_filename << "\n";
   } else {
-    string os_specific = path.to_os_specific();
-    
-    int error = FT_New_Face(_ft_library,
-                            os_specific.c_str(),
-                            face_index,
-                            &_face);
     if (error == FT_Err_Unknown_File_Format) {
       text_cat.error()
         << "Unable to read font " << font_filename << ": unknown file format.\n";
