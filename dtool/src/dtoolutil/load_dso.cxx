@@ -63,7 +63,7 @@ unload_dso(void *dso_handle) {
   HMODULE dll_handle = (HMODULE) dso_handle;
 
   // true indicates success
-  return FreeLibrary(dll_handle);
+  return (FreeLibrary(dll_handle)!=0);
 }
 
 string
