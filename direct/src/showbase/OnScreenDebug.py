@@ -8,9 +8,18 @@ import DirectUtil
 
 class OnScreenDebug:
     def __init__(self):
+        self.enabled = config.GetBool("on-screen-debug-enabled", 0)
+        self.onScreenText = None
+        self.frame = 0
+        self.text = ""
+        self.data = {}
+
+    def load(self):
+        if self.onScreenText:
+            return
+        
         fontPath = config.GetString("on-screen-debug-font", "cmtt12")
         fontScale = config.GetFloat("on-screen-debug-font-scale", 0.05)
-        self.enabled = config.GetBool("on-screen-debug-enabled", 0)
         font = loader.loadFont(fontPath)
         if not font.isValid():
             print "failed to load OnScreenDebug font", fontPath
@@ -21,13 +30,12 @@ class OnScreenDebug:
                 mayChange = 1, font = font)
         # Make sure readout is never lit or drawn in wireframe
         DirectUtil.useDirectRenderStyle(self.onScreenText)
-        self.frame = 0
-        self.text = ""
-        self.data = {}
 
     def render(self):
         if not self.enabled:
             return
+        if not self.onScreenText:
+            self.load()
         self.onScreenText.clearText()
         for k, v in self.data.items():
             if v[0] == self.frame:
@@ -49,7 +57,8 @@ class OnScreenDebug:
 
     def clear(self):
         self.text = ""
-        self.onScreenText.clearText()
+        if self.onScreenText:
+            self.onScreenText.clearText()
 
     def add(self, key, value):
         self.data[key] = (self.frame, value)
