@@ -30,8 +30,9 @@
 class EXPCL_DTOOLCONFIG ConfigVariableInt : public ConfigVariable {
 PUBLISHED:
   INLINE ConfigVariableInt(const string &name);
-  ConfigVariableInt(const string &name, int default_value,
-                    const string &description = string(), int flags = 0);
+  INLINE ConfigVariableInt(const string &name, int default_value,
+                           const string &description = string(), 
+                           int flags = 0);
 
   INLINE void operator = (int value);
   INLINE operator int () const;
@@ -45,6 +46,9 @@ PUBLISHED:
 
   INLINE int get_word(int n) const;
   INLINE void set_word(int n, int value);
+
+private:
+  void set_default_value(int default_value);
 };
 
 #include "configVariableInt.I"

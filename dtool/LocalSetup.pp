@@ -279,6 +279,9 @@ $[cdefine LINK_IN_PHYSICS]
    above. */
 $[cdefine PRC_RESPECT_TRUST_LEVEL]
 
+/* Define if you want to save the descriptions for ConfigVariables. */
+$[cdefine PRC_SAVE_DESCRIPTIONS]
+
 
 /* Define if your processor stores words with the most significant
    byte first (like Motorola and SPARC, unlike Intel and VAX).  */

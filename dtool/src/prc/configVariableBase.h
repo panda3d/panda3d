@@ -26,6 +26,16 @@
 #include "configVariableManager.h"
 #include "vector_string.h"
 
+// Use this macro to wrap around a description passed to a
+// ConfigVariable constructor.  This allows the description to be
+// completely compiled out, so that it won't even be a part of the
+// string table, in the absence of PRC_SAVE_DESCRIPTIONS.
+#ifdef PRC_SAVE_DESCRIPTIONS
+#define PRC_DESC(description) description
+#else
+#define PRC_DESC(description) ""
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //       Class : ConfigVariableBase
 // Description : This class is the base class for both

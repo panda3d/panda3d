@@ -37,7 +37,11 @@ ConfigVariableString(const string &name) :
 INLINE ConfigVariableString::
 ConfigVariableString(const string &name, const string &default_value, 
                      const string &description, int flags) :
+#ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariable(name, VT_string, description, flags)
+#else
+  ConfigVariable(name, VT_string, string(), flags)
+#endif
 {
   _core->set_default_value(default_value);
   _core->set_used();

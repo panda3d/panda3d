@@ -19,25 +19,6 @@
 #include "configVariableList.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableList::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-ConfigVariableList::
-ConfigVariableList(const string &name, 
-                   const string &description, int flags) :
-  ConfigVariableBase(name, VT_list, description, flags)
-{
-  // A list variable implicitly defines a default value of the empty
-  // string.  This is just to prevent the core variable from
-  // complaining should anyone ask for its solitary value.
-  if (_core->get_default_value() == (ConfigDeclaration *)NULL) {
-    _core->set_default_value("");
-  }
-  _core->set_used();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableList::output
 //       Access: Published
 //  Description: 

@@ -38,8 +38,9 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOLCONFIG ConfigVariableList : public ConfigVariableBase {
 PUBLISHED:
-  ConfigVariableList(const string &name, 
-                     const string &description = string(), int flags = 0);
+  INLINE ConfigVariableList(const string &name,
+                            const string &description = string(), 
+                            int flags = 0);
   INLINE ~ConfigVariableList();
 
   INLINE int get_num_values() const;

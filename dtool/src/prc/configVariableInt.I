@@ -30,6 +30,24 @@ ConfigVariableInt(const string &name) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableInt::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ConfigVariableInt::
+ConfigVariableInt(const string &name, int default_value, 
+                  const string &description, int flags) :
+#ifdef PRC_SAVE_DESCRIPTIONS
+  ConfigVariable(name, ConfigVariableCore::VT_int, description, flags)
+#else
+  ConfigVariable(name, ConfigVariableCore::VT_int, string(), flags)
+#endif
+{
+  set_default_value(default_value);
+  _core->set_used();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableInt::operator =
 //       Access: Published
 //  Description: Reassigns the variable's local value.

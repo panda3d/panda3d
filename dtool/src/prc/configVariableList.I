@@ -27,6 +27,29 @@ INLINE ConfigVariableList::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableList::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ConfigVariableList::
+ConfigVariableList(const string &name, 
+                   const string &description, int flags) :
+#ifdef PRC_SAVE_DESCRIPTIONS
+  ConfigVariableBase(name, VT_list, description, flags)
+#else
+  ConfigVariableBase(name, VT_list, string(), flags)
+#endif
+{
+  // A list variable implicitly defines a default value of the empty
+  // string.  This is just to prevent the core variable from
+  // complaining should anyone ask for its solitary value.
+  if (_core->get_default_value() == (ConfigDeclaration *)NULL) {
+    _core->set_default_value("");
+  }
+  _core->set_used();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableList::get_num_values
 //       Access: Published
 //  Description: Returns the number of values in the variable.

@@ -45,8 +45,9 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOLCONFIG ConfigVariableSearchPath : public ConfigVariableBase {
 PUBLISHED:
-  ConfigVariableSearchPath(const string &name, 
-                           const string &description = string(), int flags = 0);
+  INLINE ConfigVariableSearchPath(const string &name, 
+                                  const string &description = string(), 
+                                  int flags = 0);
   INLINE ~ConfigVariableSearchPath();
 
   INLINE operator const DSearchPath & () const;

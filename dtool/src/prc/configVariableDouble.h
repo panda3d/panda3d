@@ -30,8 +30,9 @@
 class EXPCL_DTOOLCONFIG ConfigVariableDouble : public ConfigVariable {
 PUBLISHED:
   INLINE ConfigVariableDouble(const string &name);
-  ConfigVariableDouble(const string &name, double default_value,
-                       const string &description = string(), int flags = 0);
+  INLINE ConfigVariableDouble(const string &name, double default_value,
+                              const string &description = string(), 
+                              int flags = 0);
 
   INLINE void operator = (double value);
   INLINE operator double () const;
@@ -45,6 +46,9 @@ PUBLISHED:
 
   INLINE double get_word(int n) const;
   INLINE void set_word(int n, double value);
+
+private:
+  void set_default_value(double default_value);
 };
 
 #include "configVariableDouble.I"

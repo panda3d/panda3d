@@ -19,18 +19,14 @@
 #include "configVariableInt.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableInt::Constructor
-//       Access: Published
+//     Function: ConfigVariableInt::set_default_value
+//       Access: Private
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-ConfigVariableInt::
-ConfigVariableInt(const string &name, int default_value, 
-                  const string &description, int flags) :
-  ConfigVariable(name, ConfigVariableCore::VT_int, description, flags)
-{
+void ConfigVariableInt::
+set_default_value(int default_value) {
   ostringstream strm;
   strm << default_value;
 
   _core->set_default_value(strm.str());
-  _core->set_used();
 }

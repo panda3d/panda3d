@@ -33,9 +33,11 @@ ConfigVariableBase(const string &name,
   if (value_type != VT_undefined) {
     _core->set_value_type(value_type);
   }
+#ifdef PRC_SAVE_DESCRIPTIONS
   if (!description.empty()) {
     _core->set_description(description);
   }
+#endif  // PRC_SAVE_DESCRIPTIONS
   if (flags != 0) {
     _core->set_flags(flags);
   }

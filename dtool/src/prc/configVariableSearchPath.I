@@ -18,6 +18,31 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableSearchPath::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ConfigVariableSearchPath::
+ConfigVariableSearchPath(const string &name, 
+                         const string &description, int flags) :
+#ifdef PRC_SAVE_DESCRIPTIONS
+  ConfigVariableBase(name, VT_search_path, description, flags),
+#else
+  ConfigVariableBase(name, VT_search_path, string(), flags),
+#endif
+  _value_seq(-1),
+  _value_stale(true)
+{
+  // A SearchPath variable implicitly defines a default value of the empty
+  // string.  This is just to prevent the core variable from
+  // complaining should anyone ask for its solitary value.
+  if (_core->get_default_value() == (ConfigDeclaration *)NULL) {
+    _core->set_default_value("");
+  }
+  _core->set_used();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableSearchPath::Destructor
 //       Access: Published
 //  Description: 

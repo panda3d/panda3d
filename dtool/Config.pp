@@ -198,6 +198,11 @@
 // (empty) to explicitly enable or disable this feature.
 #defer PRC_RESPECT_TRUST_LEVEL $[= $[OPTIMIZE],4]
 
+// Similarly, the descriptions are normally saved only in a
+// development build, not in a release build.  Set this value true to
+// explicitly save them anyway.
+#defer PRC_SAVE_DESCRIPTIONS $[< $[OPTIMIZE],4]
+
 // This is the end of the PRC variable customization section.  The
 // remaining variables are of general interest to everyone.
 

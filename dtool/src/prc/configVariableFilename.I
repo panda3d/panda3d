@@ -39,7 +39,11 @@ ConfigVariableFilename(const string &name) :
 INLINE ConfigVariableFilename::
 ConfigVariableFilename(const string &name, const Filename &default_value, 
                        const string &description, int flags) :
+#ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariable(name, VT_filename, description, flags)
+#else
+  ConfigVariable(name, VT_filename, string(), flags)
+#endif
 {
   _core->set_default_value(default_value);
   _core->set_used();

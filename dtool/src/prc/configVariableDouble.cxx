@@ -19,18 +19,14 @@
 #include "configVariableDouble.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableDouble::Constructor
-//       Access: Published
+//     Function: ConfigVariableDouble::set_default_value
+//       Access: Private
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-ConfigVariableDouble::
-ConfigVariableDouble(const string &name, double default_value, 
-                     const string &description, int flags) :
-  ConfigVariable(name, ConfigVariableCore::VT_double, description, flags)
-{
+void ConfigVariableDouble::
+set_default_value(double default_value) {
   ostringstream strm;
   strm << default_value;
 
   _core->set_default_value(strm.str());
-  _core->set_used();
 }
