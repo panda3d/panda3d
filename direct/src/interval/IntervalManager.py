@@ -48,15 +48,19 @@ class IntervalManager(CIntervalManager):
         # Call C++ step, then do all the required Python post-processing.
         CIntervalManager.step(self)
 
+        # It is important to call all of the python callbacks on the
+        # just-removed intervals before we call any of the callbacks
+        # on the still-running intervals.
+        index = self.getNextRemoval()
+        while index >= 0:
+            self.ivals[index].privPostEvent()
+            self.ivals[index] = None
+            index = self.getNextRemoval()
+
         index = self.getNextEvent()
         while index >= 0:
             self.ivals[index].privPostEvent()
             index = self.getNextEvent()
-
-        index = self.getNextRemoval()
-        while index >= 0:
-            self.ivals[index] = None
-            index = self.getNextRemoval()
         
     def __storeInterval(self, interval, index):
         while index >= len(self.ivals):
