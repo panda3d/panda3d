@@ -276,14 +276,14 @@ class ParticlePanel(Pmw.MegaToplevel):
         kw['min'] = min
         kw['initialValue'] = min
         kw['resolution'] = resolution
-        widget = apply(floater.Floater, (parent,), kw)
+        widget = apply(Floater.Floater, (parent,), kw)
         widget.pack(fill = X)
         self.balloon.bind(widget, balloonHelp)
         return widget
 
     def createAngleDial(self, parent, text, balloonHelp, **kw):
         kw['text'] = text
-        widget = apply(dial.AngleDial,(parent,), kw)
+        widget = apply(Dial.AngleDial,(parent,), kw)
         widget.pack(fill = X)
         self.balloon.bind(widget, balloonHelp)
         return widget
@@ -291,7 +291,7 @@ class ParticlePanel(Pmw.MegaToplevel):
     def createVector3Entry(self, parent, text, balloonHelp, **kw):
         # Set label's text
         kw['text'] = text
-        widget = apply(vectorWidgets.Vector3Entry, (parent,), kw)
+        widget = apply(VectorWidgets.Vector3Entry, (parent,), kw)
         widget.pack(fill = X)
         self.balloon.bind(widget, balloonHelp)
         return widget
@@ -299,7 +299,7 @@ class ParticlePanel(Pmw.MegaToplevel):
     def createColorEntry(self, parent, text, balloonHelp, **kw):
         # Set label's text
         kw['text'] = text
-        widget = apply(vectorWidgets.ColorEntry, (parent,) ,kw)
+        widget = apply(VectorWidgets.ColorEntry, (parent,) ,kw)
         widget.pack(fill = X)
         self.balloon.bind(widget, balloonHelp)
         return widget
