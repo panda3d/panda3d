@@ -29,7 +29,6 @@
 #include "dconfig.h"
 #include "dSearchPath.h"
 #include "nodePath.h"
-#include "chancfg.h"
 
 ConfigureDecl(config_showbase, EXPCL_DIRECT, EXPTP_DIRECT);
 typedef Config::Config<ConfigureGetConfig_config_showbase> ConfigShowbase;
