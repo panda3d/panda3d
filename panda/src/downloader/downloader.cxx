@@ -722,6 +722,11 @@ parse_header(DownloadStatus &status) {
       downloader_cat.error()
 	<< "Downloader::parse_header() - No newlines in buffer!" << endl;
       return false;
+    } else if (p == 0 && nl == p) {
+      downloader_cat.error()
+        << "Downloader::parse_header() - Buffer begins with newline!"
+	<< endl;
+	return false;
     }
 
     string component = bufstr.substr(p, nl - p);
