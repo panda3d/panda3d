@@ -2429,7 +2429,7 @@ class LevelEditor(NodePath, PandaObject):
                     endPoint = edge.getEndPoint()
                     type = endPoint.getPointType()
                     if ((endPoint not in self.visitedPoints) and
-                        (type == DNASuitPoint.STREETPOINT)):
+                        (fReversePath or (type == DNASuitPoint.STREETPOINT))):
                         self.highlightConnectedRec(endPoint,
                                                    fReversePath)
 
