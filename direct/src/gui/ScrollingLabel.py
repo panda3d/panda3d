@@ -236,14 +236,18 @@ class ScrollingLabel(PandaObject.PandaObject):
         self.leftButton.getGuiItem().down()
         self.spawnButtonUpTask(self.leftButton)
         # then act like a mouse click
-        self.handleLeftButton(self.leftButton.button)
+        # not needed, using the behavior system, this will happen once the
+        # button transitions to up again.
+        # self.handleLeftButton(self.leftButton.button)
 
     def handleRightArrow(self):
         # make the button toggle
         self.rightButton.getGuiItem().down()
         self.spawnButtonUpTask(self.rightButton)
         # then act like a mouse click
-        self.handleRightButton(self.rightButton.button)
+        # not needed, using the behavior system, this will happen once the
+        # button transitions to up again.
+        # self.handleRightButton(self.rightButton.button)
 
     def spawnButtonUpTask(self, button):
         def buttonUp(state):
