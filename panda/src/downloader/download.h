@@ -58,6 +58,7 @@ PUBLISHED:
   INLINE float get_byte_rate(void) const;
   INLINE void set_disk_write_frequency(int frequency);
   INLINE int get_disk_write_frequency(void) const;
+  INLINE int get_bytes_written(void) const;
   INLINE float get_bytes_per_second(void) const;
 
 private:

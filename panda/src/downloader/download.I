@@ -79,6 +79,17 @@ get_disk_write_frequency(void) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Download::get_bytes_written
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE int Download::
+get_bytes_written(void) const {
+  nassertr(_current_status != NULL, 0);
+  return _current_status->_total_bytes_written;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Download::get_bytes_per_second
 //       Access: Public
 //  Description:
@@ -86,5 +97,6 @@ get_disk_write_frequency(void) const {
 INLINE float Download::
 get_bytes_per_second(void) const {
   nassertr(_tlast - _tfirst > 0.0, 0.0);
+  nassertr(_current_status != NULL, 0.0);
   return (float)((double)_current_status->_total_bytes / (_tlast - _tfirst));
 }

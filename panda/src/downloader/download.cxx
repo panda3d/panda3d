@@ -361,6 +361,7 @@ run(void) {
   if (connect_to_server() == false)
     return DS_error_connect;
 
+  int ret = DS_ok;
   double t0 = _clock.get_real_time();
   if (_tfirst == 0.0) {
     _tfirst = t0;
@@ -376,6 +377,7 @@ run(void) {
       if (write_to_disk(_current_status) == false) {
 	return DS_error_write;
       }
+      ret = DS_write;
     }
 
     // Allocate a new buffer
@@ -395,6 +397,7 @@ run(void) {
 	<< "Download::run() - Flushing buffer" << endl;
     if (write_to_disk(_current_status) == false)
       return DS_error_write;
+    ret = DS_write;
   }
 
   // Attempt to receive the bytes from the socket
@@ -407,6 +410,7 @@ run(void) {
       if (_current_status->_bytes_in_buffer > 0) {
         if (write_to_disk(_current_status) == false)
           return DS_error_write;
+	ret = DS_write;
       }
       return DS_success;
     } else {
@@ -420,7 +424,7 @@ run(void) {
   }
 
   _got_any_data = true;
-  return DS_ok;
+  return ret;
 }
 
 ////////////////////////////////////////////////////////////////////
