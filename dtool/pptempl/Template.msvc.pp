@@ -181,6 +181,10 @@
 // And $[libs] is the set of libraries we will link with.
 #defer libs $[unique $[actual_local_libs:%=%$[dllext]] $[patsubst %:c,,%:m %,%$[dllext],$[OTHER_LIBS]] $[get_libs]]
 
+// This is the set of files we might copy into *.prebuilt, if we have
+// bison and flex (or copy from *.prebuilt if we don't have them).
+#define bison_prebuilt $[patsubst %.yxx,%.h,$[yxx_so_sources] $[yxx_st_sources]] $[patsubst %.yxx,%.cxx,$[yxx_so_sources] $[yxx_st_sources]] $[patsubst %.lxx,%.cxx,$[lxx_so_sources] $[lxx_st_sources]]
+
 // for single-processor builds (all nmake msvc-type builds can use only a single-proc), 
 // write out *_composite.cxx files that include all composite
 // files into 1 in order to speed the build of our heavily templated source
@@ -302,6 +306,14 @@ uninstall-igate :
 #foreach file $[sort $[installed_igate_files]]
 $[TAB] -del /f $[file]
 #end file
+
+#if $[HAVE_BISON]
+prebuild-bison : $[patsubst %,%.prebuilt,$[bison_prebuilt]]
+clean-prebuild-bison : 
+#foreach file $[sort $[patsubst %,%.prebuilt,$[bison_prebuilt]]]
+$[TAB] -del /f $[file]
+#end file
+#endif
 
 
 // We need a rule for each directory we might need to make.  This
@@ -705,17 +717,31 @@ $[TAB] $[LINK_BIN_C]
 // Rules to generate a C++ file from a Bison input file.
 #foreach file $[sort $[yxx_so_sources] $[yxx_st_sources]]
 #define target $[patsubst %.yxx,%.cxx,$[file]]
+#define target_header $[patsubst %.yxx,%.h,$[file]]
+#if $[HAVE_BISON]
 #define source $[file]
 $[target] : $[source]
 $[TAB] $[BISON] $[YFLAGS] -y $[if $[YACC_PREFIX],-d --name-prefix=$[YACC_PREFIX]] $[source]
 $[TAB] move y.tab.c $[target]
 $[TAB] move y.tab.h $[patsubst %.yxx,%.h,$[source]]
+$[target].prebuilt : $[target]
+$[TAB] copy $[target] $[target].prebuilt
+$[target_header].prebuilt : $[target_header]
+$[TAB] copy $[target_header] $[target_header].prebuilt
+#else // HAVE_BISON
+#define source $[target].prebuilt
+$[target] : $[source]
+$[TAB] copy $[source] $[target]
+$[target_header] : $[source]
+$[TAB] copy $[source] $[target_header]
+#endif // HAVE_BISON
 
 #end file
 
 // Rules to generate a C++ file from a Flex input file.
 #foreach file $[sort $[lxx_so_sources] $[lxx_st_sources]]
 #define target $[patsubst %.lxx,%.cxx,$[file]]
+#if $[HAVE_BISON]
 #define source $[file]
 $[target] : $[source]
 $[TAB] $[FLEX] $[LFLAGS] $[if $[YACC_PREFIX],-P$[YACC_PREFIX]] -olex.yy.c $[source]
@@ -723,6 +749,13 @@ $[TAB] $[FLEX] $[LFLAGS] $[if $[YACC_PREFIX],-P$[YACC_PREFIX]] -olex.yy.c $[sour
 #define script /#include <unistd.h>/d
 $[TAB] $[SED]
 $[TAB] -del $[source]
+$[target].prebuilt : $[target]
+$[TAB] copy $[target] $[target].prebuilt
+#else // HAVE_BISON
+#define source $[target].prebuilt
+$[target] : $[source]
+$[TAB] copy $[source] $[target]
+#endif // HAVE_BISON
 
 #end file
 
@@ -972,6 +1005,11 @@ $[TAB] -del /f $[install_headers_dir]\$[CONFIG_HEADER]
 #endif
 uninstall-igate : $[subdirs:%=uninstall-igate-%]
 
+#if $[HAVE_BISON]
+prebuild-bison : $[subdirs:%=prebuild-bison-%]
+clean-prebuild-bison : $[subdirs:%=clean-prebuild-bison-%]
+#endif
+
 #formap dirname subdirs
 #define depends 
 $[dirname] : $[dirnames $[if $[build_directory],$[DIRNAME]],$[DEPEND_DIRS]]
@@ -1022,6 +1060,15 @@ $[TAB] cd $[osfilename $[PATH]] && $(MAKE) /nologo uninstall
 uninstall-igate-$[dirname] :
 $[TAB] cd $[osfilename $[PATH]] && $(MAKE) /nologo uninstall-igate
 #end dirname
+
+#if $[HAVE_BISON]
+#formap dirname subdirs
+prebuild-bison-$[dirname] :
+$[TAB]cd $[osfilename $[PATH]] && $(MAKE) /nologo prebuild-bison
+clean-prebuild-bison-$[dirname] :
+$[TAB]cd $[osfilename $[PATH]] && $(MAKE) /nologo clean-prebuild-bison
+#end dirname
+#endif
 
 #if $[ne $[CONFIG_HEADER],]
 $[install_headers_dir] :

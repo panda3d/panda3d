@@ -244,6 +244,8 @@ $[TAB]rm -f $[sort $[installed_igate_files]]
 
 #if $[HAVE_BISON]
 prebuild-bison : $[patsubst %,%.prebuilt,$[bison_prebuilt]]
+clean-prebuild-bison : 
+$[TAB]rm -f $[sort $[patsubst %,%.prebuilt,$[bison_prebuilt]]]
 #endif
 
 // We need a rule for each directory we might need to make.  This
@@ -608,6 +610,7 @@ $[TAB]cp $[source] $[target]
 $[target_header] : $[source]
 $[TAB]cp $[source] $[target_header]
 #endif // HAVE_BISON
+
 #end file
 
 // Rules to generate a C++ file from a Flex input file.
@@ -628,6 +631,7 @@ $[TAB]cp $[target] $[target].prebuilt
 $[target] : $[source]
 $[TAB]cp $[source] $[target]
 #endif // HAVE_BISON
+
 #end file
 
 
@@ -816,6 +820,7 @@ uninstall-igate : $[subdirs:%=uninstall-igate-%]
 
 #if $[HAVE_BISON]
 prebuild-bison : $[subdirs:%=prebuild-bison-%]
+clean-prebuild-bison : $[subdirs:%=clean-prebuild-bison-%]
 #endif
 
 // Somehow, something in the cttools confuses some shells, so that
@@ -878,6 +883,8 @@ $[TAB]cd ./$[PATH] && $(MAKE) uninstall-igate
 #formap dirname subdirs
 prebuild-bison-$[dirname] :
 $[TAB]cd ./$[PATH] && $(MAKE) prebuild-bison
+clean-prebuild-bison-$[dirname] :
+$[TAB]cd ./$[PATH] && $(MAKE) clean-prebuild-bison
 #end dirname
 #endif
 
