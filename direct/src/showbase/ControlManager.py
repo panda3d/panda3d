@@ -244,6 +244,9 @@ class ControlManager:
         assert(self.debugPrint("collisionsOff()"))
         self.currentControls.setCollisionsActive(0)
 
+    def placeOnFloor(self):
+        self.currentControls.placeOnFloor()
+
     def enable(self):
         assert(self.debugPrint("enable()"))
         self.isEnabled = 1

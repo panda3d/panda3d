@@ -97,31 +97,27 @@ class GravityWalker(DirectObject.DirectObject):
         self.platformRoot.setHpr(toonbase.localToon, Vec3.zero())
         self.platform.reparentTo(self.platformRoot)
 
-        startPos = Vec3(0.0, -15.0, 0.0)
-        upPos = Vec3(0.0, 0.0, 15.0)
-        endPos = Vec3(0.0, 15.0, 0.0)
-        distance = Vec3(startPos-endPos).length()
-        duration = distance/4
+        duration = 7
         self.moveIval = Sequence(
             WaitInterval(0.3),
             LerpPosInterval(self.platform, duration,
-                            endPos, startPos=startPos,
+                            Vec3(0.0, 15.0, 0.0),
                             name='platformOut%s' % fakeId,
                             fluid = 1),
             WaitInterval(0.3),
             LerpPosInterval(self.platform, duration,
-                            startPos, startPos=endPos,
+                            Vec3(0.0, -15.0, 0.0),
                             name='platformBack%s' % fakeId,
                             fluid = 1),
             WaitInterval(0.3),
             LerpPosInterval(self.platform, duration,
-                            upPos,
-                            name='platformOut%s' % fakeId,
+                            Vec3(0.0, -15.0, 15.0),
+                            name='platformUp%s' % fakeId,
                             fluid = 1),
             WaitInterval(0.3),
             LerpPosInterval(self.platform, duration,
-                            startPos,
-                            name='platformOut%s' % fakeId,
+                            Vec3(0.0, -15.0, 0.0),
+                            name='platformDown%s' % fakeId,
                             fluid = 1),
 
             name='platformIval%s' % fakeId,
@@ -232,6 +228,9 @@ class GravityWalker(DirectObject.DirectObject):
     def setAirborneHeightFunc(self, unused_parameter):
         self.getAirborneHeight = self.lifter.getAirborneHeight
 
+    def getAirborneHeight(self):
+        self.lifter.getAirborneHeight()
+
     def setAvatarPhysicsIndicator(self, indicator):
         """
         indicator is a NodePath
@@ -290,6 +289,15 @@ class GravityWalker(DirectObject.DirectObject):
             self.oneTimeCollide()
             self.cRayNodePath.setZ(temp)
         return Task.cont
+    
+    def placeOnFloor(self):
+        """
+        Make a reasonable effor to place the avatar on the ground.
+        For example, this is useful when switching away from the 
+        current walker.
+        """
+        self.oneTimeCollide()
+        self.avatarNodePath.setZ(self.avatarNodePath.getZ()-self.lifter.getAirborneHeight())
 
     def oneTimeCollide(self):
         """
@@ -303,7 +311,7 @@ class GravityWalker(DirectObject.DirectObject):
         tempCTrav.addCollider(self.cFloorSphereNodePath, self.event)
         tempCTrav.addCollider(self.cRayNodePath, self.lifter)
         tempCTrav.traverse(render)
-    
+
     def setMayJump(self, task):
         """
         This function's use is internal to this class (maybe I'll add

@@ -374,6 +374,15 @@ class PhysicsWalker(DirectObject.DirectObject):
         assert(self.debugPrint("getCollisionsActive() returning=%s"%(
             self.collisionsActive,)))
         return self.collisionsActive
+    
+    def placeOnFloor(self):
+        """
+        Make a reasonable effor to place the avatar on the ground.
+        For example, this is useful when switching away from the 
+        current walker.
+        """
+        self.oneTimeCollide()
+        self.setZ(self.getZ()-self.getAirborneHeight())
 
     def oneTimeCollide(self):
         """

@@ -133,6 +133,15 @@ class NonPhysicsWalker(DirectObject.DirectObject):
                 # Now that we have disabled collisions, make one more pass
                 # right now to ensure we aren't standing in a wall.
                 self.oneTimeCollide()
+    
+    def placeOnFloor(self):
+        """
+        Make a reasonable effor to place the avatar on the ground.
+        For example, this is useful when switching away from the 
+        current walker.
+        """
+        self.oneTimeCollide()
+        self.setZ(self.getZ()-self.getAirborneHeight())
 
     def oneTimeCollide(self):
         """
