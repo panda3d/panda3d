@@ -12,6 +12,7 @@
 BEGIN_PUBLISH
 
 enum ErrorUtilCode {
+  EU_http_redirect = 7,
   EU_eof = 6,
   EU_network_no_data = 5,
 

@@ -718,6 +718,13 @@ parse_http_response(const string &resp) {
     case 204:
     case 205:
       break;
+    case 302:
+      if (downloader_cat.is_debug())
+	downloader_cat.debug()
+	  << "Downloader::parse_http_response() - got a 302 redirect"
+	  << endl;
+      return EU_http_redirect;
+      break;
     case 408:
       return EU_error_http_server_timeout;
     case 503:
@@ -776,6 +783,7 @@ parse_header(DownloadStatus *status) {
 
     // The first line of the response should say whether
     // got an error or not
+    bool redirect = false;
     if (status->_first_line_complete == false) {
       status->_first_line_complete = true;
       int parse_ret = parse_http_response(component);
@@ -785,12 +793,15 @@ parse_header(DownloadStatus *status) {
             << "Downloader::parse_header() - Header is valid: "
             << component << endl;
         status->_header_is_valid = true;
+      } else if (parse_ret == EU_http_redirect) {
+	redirect = true;
+	status->_header_is_valid = true;
       } else {
         return parse_ret;
       }
     }
 
-    // Look for content length
+    // Look for content length and location
     size_t cpos = component.find(":");
     string tline = component.substr(0, cpos);
     if (status->_partial_content == true && tline == "Content-Length") {
@@ -807,6 +818,13 @@ parse_header(DownloadStatus *status) {
           << status->_last_byte << "-" << status->_first_byte << ")" << endl;
         return EU_error_abort;
       }
+    } else if (redirect == true && tline == "Location") {
+      tline = component.substr(cpos + 2, string::npos);
+      if (downloader_cat.is_debug())
+	downloader_cat.debug()
+	  << "Downloader::parse_header() - file redirected to: "
+	  << tline << endl;
+      return EU_error_abort;
     }
 
     // Two consecutive (CR LF)s indicates end of HTTP header
