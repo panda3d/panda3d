@@ -81,6 +81,13 @@ scanned:
   $[PATH] - The relative pathname to the current directory, from
     $[TOPDIR], without a trailing slash.
 
+  $[RELDIR] - This is a special variable that is similar to $[PATH] in
+    that it contains the relative pathname to the current directory,
+    but instead of being relative to $[TOPDIR] it is relative to the
+    current *output* directory--the directory in which the current
+    #output command in effect is directing its output.  This value of
+    this variable is therefore dependant on context.
+
   $[SUBDIRS] - A space-delimited list of source subdirectories within
     this source directory.  These are simply directory names, without
     slashes; prefix each name with $[DIRPREFIX] to make them relative
