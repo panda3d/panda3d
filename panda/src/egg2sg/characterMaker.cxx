@@ -30,7 +30,7 @@ CharacterMaker(EggGroup *root, EggLoader &loader)
   _character_node = new Character(_egg_root->get_name());
   _bundle = _character_node->get_bundle();
 
-  _morph_root = new PartGroup(_bundle, "morph");
+  _morph_root = (PartGroup *)NULL;
   _skeleton_root = new PartGroup(_bundle, "<skeleton>");
 }
 
@@ -113,6 +113,9 @@ part_to_node(PartGroup *part) const {
 ////////////////////////////////////////////////////////////////////
 int CharacterMaker::
 create_slider(const string &name) {
+  if (_morph_root == (PartGroup *)NULL) {
+    _morph_root = new PartGroup(_bundle, "morph");
+  }
   CharacterSlider *slider = new CharacterSlider(_morph_root, name);
   int index = _parts.size();
   _parts.push_back(slider);
