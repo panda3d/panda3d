@@ -1960,7 +1960,10 @@ expand_makeguid(const string &params) {
   }
 
   // Convert the entire GUID string to uppercased letters.
-  transform(guid.begin(), guid.end(), guid.begin(), toupper);
+  string::iterator si;
+  for (si = guid.begin(); si != guid.end(); ++si) {
+    (*si) = toupper(*si);
+  }
 
   return guid;
 }
