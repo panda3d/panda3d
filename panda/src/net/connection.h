@@ -46,6 +46,18 @@ PUBLISHED:
 
   PRFileDesc *get_socket() const;
 
+  // Socket options.
+  void set_nonblock(bool flag);
+  void set_linger(bool flag, double time);
+  void set_reuse_addr(bool flag);
+  void set_keep_alive(bool flag);
+  void set_recv_buffer_size(int size);
+  void set_send_buffer_size(int size);
+  void set_ip_time_to_live(int ttl);
+  void set_ip_type_of_service(int tos);
+  void set_no_delay(bool flag);
+  void set_max_segment(int size);
+
 private:
   bool send_datagram(const NetDatagram &datagram);
 
