@@ -64,6 +64,7 @@ protected:
   bool dispatch_double(const string &opt, const string &arg, void *var);
   bool dispatch_string(const string &opt, const string &arg, void *var);
   bool dispatch_filename(const string &opt, const string &arg, void *var);
+  bool dispatch_search_path(const string &opt, const string &arg, void *var);
   bool dispatch_coordinate_system(const string &opt, const string &arg, void *var);
 
   bool handle_help_option(const string &opt, const string &arg, void *);

@@ -234,7 +234,7 @@ bool CVSSourceDirectory::
 scan(const string &fullpath, const string &key_filename) {
   DIR *root = opendir(fullpath.c_str());
   if (root == (DIR *)NULL) {
-    cerr << "Unable to scan directory " << fullpath << "\n";
+    nout << "Unable to scan directory " << fullpath << "\n";
     return false;
   }
 

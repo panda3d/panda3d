@@ -251,7 +251,7 @@ restore_cwd() {
   if (chdir(start_fullpath.c_str()) < 0) {
     // Hey!  We can't get back to the directory we started from!
     perror(start_fullpath.c_str());
-    cerr << "Can't continue, aborting.\n";
+    nout << "Can't continue, aborting.\n";
     exit(1);
   }
 }
@@ -269,7 +269,7 @@ prompt_user(const string &filename, CVSSourceDirectory *suggested_dir,
 	    bool force, bool interactive) {
   if (dirs.size() == 1) {
     // The file already exists in exactly one place.
-    if (interactive) {
+    if (!interactive) {
       return dirs[0];
     }
     CVSSourceDirectory *result = ask_existing(filename, dirs[0]);
@@ -285,6 +285,13 @@ prompt_user(const string &filename, CVSSourceDirectory *suggested_dir,
     CVSSourceDirectory *result = ask_existing(filename, dirs, suggested_dir);
     if (result != (CVSSourceDirectory *)NULL) {
       return result;
+    }
+
+  } else { // dirs.empty()
+    nassertr(dirs.empty(), (CVSSourceDirectory *)NULL);
+    // The file does not already exist.
+    if (!interactive) {
+      return suggested_dir;
     }
   }
 

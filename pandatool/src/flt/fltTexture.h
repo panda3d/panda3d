@@ -30,6 +30,7 @@ public:
   Filename get_attr_filename() const;
   FltError read_attr_data();
   FltError write_attr_data() const;
+  FltError write_attr_data(Filename attr_filename) const;
 
   // The remaining fields are from the attr file.
   enum FileFormat {

@@ -49,40 +49,9 @@ run() {
 //               true, then dest does not already exist.
 ////////////////////////////////////////////////////////////////////
 bool TestCopy::
-copy_file(Filename source, Filename dest,
-	  CVSSourceDirectory *dir, int type, bool new_file) {
-  source.set_binary();
-  dest.set_binary();
-
-  ifstream in;
-  ofstream out;
-  if (!source.open_read(in)) {
-    cerr << "Cannot read " << source << "\n";
-    return false;
-  }
-
-  if (!dest.open_write(out)) {
-    cerr << "Cannot write " << dest << "\n";
-    return false;
-  }
-
-  int c;
-  c = in.get();
-  while (!in.eof() && !in.fail() && !out.fail()) {
-    out.put(c);
-    c = in.get();
-  }
-
-  if (in.fail()) {
-    cerr << "Error reading " << source << "\n";
-    return false;
-  }
-  if (out.fail()) {
-    cerr << "Error writing " << dest << "\n";
-    return false;
-  }
-  
-  return true;
+copy_file(const Filename &source, const Filename &dest,
+	  CVSSourceDirectory *, void *, bool) {
+  return copy_binary_file(source, dest);
 }
 
 

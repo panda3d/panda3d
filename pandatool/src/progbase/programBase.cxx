@@ -12,6 +12,7 @@
 // with libprogbase.so.
 
 #include <indent.h>
+#include <dSearchPath.h>
 #include <coordinateSystem.h>
 #include <dconfig.h>
 #include <config_dconfig.h>
@@ -625,6 +626,29 @@ dispatch_filename(const string &opt, const string &arg, void *var) {
 
   Filename *ip = (Filename *)var;
   (*ip) = arg;
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProgramBase::dispatch_search_path
+//       Access: Protected
+//  Description: Standard dispatch function for an option that takes
+//               one parameter, which is to be interpreted as a
+//               colon-delimited search path.  The data pointer is to
+//               a DSearchPath variable.  This kind of option may
+//               appear multiple times on the command line; each time,
+//               the new search paths are appended.
+////////////////////////////////////////////////////////////////////
+bool ProgramBase::
+dispatch_search_path(const string &opt, const string &arg, void *var) {
+  if (arg.empty()) {
+    nout << "-" << opt << " requires a search path parameter.\n";
+    return false;
+  }
+
+  DSearchPath *ip = (DSearchPath *)var;
+  ip->append_path(arg);
 
   return true;
 }

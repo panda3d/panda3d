@@ -5,6 +5,8 @@
 
 #include "programBase.h"
 
+#include <notify.h>
+
 class TestProgram : public ProgramBase {
 public:
   TestProgram();

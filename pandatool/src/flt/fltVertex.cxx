@@ -216,6 +216,6 @@ build_record(FltRecordWriter &writer) const {
 
   datagram.add_be_uint32(_color_index);
 
-  nassertr(datagram.get_length() == get_record_length() - 4, true);
+  nassertr((int)datagram.get_length() == get_record_length() - 4, true);
   return true;
 }

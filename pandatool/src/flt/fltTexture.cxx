@@ -158,14 +158,24 @@ read_attr_data() {
 ////////////////////////////////////////////////////////////////////
 FltError FltTexture::
 write_attr_data() const {
+  return write_attr_data(get_attr_filename());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltTexture::write_attr_data
+//       Access: Public
+//  Description: Writes the texture's .attr file to the named
+//               file.
+////////////////////////////////////////////////////////////////////
+FltError FltTexture::
+write_attr_data(Filename attr_filename) const {
   Datagram datagram;
   FltError result = pack_attr(datagram);
   if (result != FE_ok) {
     return result;
   }
 
-  Filename attr_filename = get_attr_filename();
-
+  attr_filename.set_binary();
   ofstream attr;
   if (!attr_filename.open_write(attr)) {
     return FE_could_not_open;

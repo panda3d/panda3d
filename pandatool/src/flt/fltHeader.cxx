@@ -6,6 +6,7 @@
 #include "fltHeader.h"
 #include "fltRecordReader.h"
 #include "fltRecordWriter.h"
+#include "fltUnsupportedRecord.h"
 
 TypeHandle FltHeader::_type_handle;
 
@@ -1104,6 +1105,9 @@ extract_ancillary(FltRecordReader &reader) {
   case FO_texture:
     return extract_texture(reader);
 
+  case FO_texture_map_palette:
+    return extract_texture_map(reader);
+
   case FO_light_definition:
     return extract_light_source(reader);
 
@@ -1320,6 +1324,28 @@ extract_texture(FltRecordReader &reader) {
     return false;
   }
   add_texture(texture);
+  
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltHeader::extract_texture_map
+//       Access: Private
+//  Description: Reads the a single texture mapping ancillary record.
+//               This describes a kind of texture mapping in the
+//               texture mapping palette.
+////////////////////////////////////////////////////////////////////
+bool FltHeader::
+extract_texture_map(FltRecordReader &reader) {
+  // At the moment, we ignore this, since it's not needed for
+  // meaningful extraction of data: we can get this information from
+  // the UV's for a particular model.  We just add an
+  // UnsupportedRecord for it.
+  FltUnsupportedRecord *rec = new FltUnsupportedRecord(this);
+  if (!rec->extract_record(reader)) {
+    return false;
+  }
+  add_ancillary(rec);
   
   return true;
 }

@@ -277,6 +277,7 @@ private:
   bool extract_color_palette(FltRecordReader &reader);
   bool extract_material(FltRecordReader &reader);
   bool extract_texture(FltRecordReader &reader);
+  bool extract_texture_map(FltRecordReader &reader);
   bool extract_light_source(FltRecordReader &reader);
   bool extract_eyepoint_palette(FltRecordReader &reader);
 

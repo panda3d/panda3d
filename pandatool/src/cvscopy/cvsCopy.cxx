@@ -26,7 +26,7 @@ CVSCopy() {
 
   add_option
     ("f", "", 80,
-     "Force copy to happen without any input from the user.  If a file "
+     "Force the copy to happen without any input from the user.  If a file "
      "with the same name exists anywhere in the source hierarchy, it will "
      "be overwritten without prompting; if a file does not yet exist, it "
      "will be created in the directory named by -d or by -m, as appropriate.",
@@ -53,8 +53,8 @@ CVSCopy() {
   add_option
     ("root", "dirname", 80, 
      "Specify the root of the CVS source hierarchy.  The default is to "
-     "use the ppremake convention of locating the directory containing "
-     "Package.pp.",
+     "use the ppremake convention of locating the directory above the -d "
+     "directory that contains a file called Package.pp.",
      &CVSCopy::dispatch_filename, &_got_root_dirname, &_root_dirname);
 
   add_option
@@ -62,8 +62,8 @@ CVSCopy() {
      "Specify the name of the file that must exist in each directory for "
      "it to be considered part of the CVS source hierarchy.  The default "
      "is the ppremake convention, \"Sources.pp\".  Other likely candidates "
-     "are \"CVS\" to search the entire CVS hierarchy, or \".\" to include "
-     "all subdirectories.",
+     "are \"CVS\" to search a CVS hierarchy, or \".\" to include "
+     "all subdirectories indiscriminately.",
      &CVSCopy::dispatch_filename, NULL, &_key_filename);
 
   add_option
@@ -86,18 +86,20 @@ CVSCopy() {
 //               directory hierarchy, and chooses a place to import
 //               it.  Copies the file by calling copy_file().
 //
-//               Type is an integer number that is defined by the
-//               derivated class; CVSCopy simply passes it unchanged
-//               to copy_file().  It presumably gives the class a hint
-//               as to how the file should be copied.  Suggested_dir
-//               is the suggested directory in which to copy the file,
-//               if it does not already exist elsewhere.
+//               Extra_data may be NULL or a pointer to some
+//               user-defined structure; CVSCopy simply passes it
+//               unchanged to copy_file().  It presumably gives the
+//               class a hint as to how the file should be copied.
+//               Suggested_dir is the suggested directory in which to
+//               copy the file, if it does not already exist
+//               elsewhere.
 //
 //               On success, returns the CVSSourceDirectory it was
 //               actually copied to.  On failure, returns NULL.
 ////////////////////////////////////////////////////////////////////
 CVSSourceDirectory *CVSCopy::
-import(const Filename &source, int type, CVSSourceDirectory *suggested_dir) {
+import(const Filename &source, void *extra_data, 
+       CVSSourceDirectory *suggested_dir) {
   CopiedFiles::const_iterator ci;
   ci = _copied_files.find(source);
   if (ci != _copied_files.end()) {
@@ -106,7 +108,7 @@ import(const Filename &source, int type, CVSSourceDirectory *suggested_dir) {
   }
 
   if (!source.exists()) {
-    cerr << "Source filename " << source << " does not exist!\n";
+    nout << "Source filename " << source << " does not exist!\n";
     return (CVSSourceDirectory *)NULL;
   }
 
@@ -116,12 +118,14 @@ import(const Filename &source, int type, CVSSourceDirectory *suggested_dir) {
     _tree.choose_directory(basename, suggested_dir, _force, _interactive);
   nassertr(dir != (CVSSourceDirectory *)NULL, dir);
 
+  nout << "Copying " << basename << " to " << dir->get_path() << "\n";
+
   Filename dest = dir->get_fullpath() + "/" + basename;
 
   _copied_files[source] = dir;
 
   bool new_file = !dest.exists();
-  if (!copy_file(source, dest, dir, type, new_file)) {
+  if (!copy_file(source, dest, dir, extra_data, new_file)) {
     return (CVSSourceDirectory *)NULL;
   }
   if (new_file) {
@@ -193,6 +197,52 @@ post_command_line() {
     }
   }
 
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CVSCopy::copy_binary_file
+//       Access: Protected
+//  Description: Copies a file without modifying it or scanning it in
+//               any way.  This is particularly useful for copying
+//               textures.  This is provided as a convenience function
+//               for derived programs because so many model file
+//               formats will also require copying textures or other
+//               black-box files.
+////////////////////////////////////////////////////////////////////
+bool CVSCopy::
+copy_binary_file(Filename source, Filename dest) {
+  source.set_binary();
+  dest.set_binary();
+
+  ifstream in;
+  ofstream out;
+  if (!source.open_read(in)) {
+    nout << "Cannot read " << source << "\n";
+    return false;
+  }
+
+  if (!dest.open_write(out)) {
+    nout << "Cannot write " << dest << "\n";
+    return false;
+  }
+
+  int c;
+  c = in.get();
+  while (!in.eof() && !in.fail() && !out.fail()) {
+    out.put(c);
+    c = in.get();
+  }
+
+  if (in.fail()) {
+    nout << "Error reading " << source << "\n";
+    return false;
+  }
+  if (out.fail()) {
+    nout << "Error writing " << dest << "\n";
+    return false;
+  }
+  
   return true;
 }
 

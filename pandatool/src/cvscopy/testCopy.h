@@ -22,8 +22,9 @@ public:
   void run();
 
 protected:
-  virtual bool copy_file(Filename source, Filename dest,
-			 CVSSourceDirectory *dir, int type, bool new_file);
+  virtual bool copy_file(const Filename &source, const Filename &dest,
+			 CVSSourceDirectory *dir, void *extra_data,
+			 bool new_file);
 };
 
 #endif

@@ -337,6 +337,7 @@ is_ancillary(FltOpcode opcode) {
   case FO_texture:
   case FO_eyepoint_palette:
   case FO_light_definition:
+  case FO_texture_map_palette:
     return true;
 
   case FO_header:

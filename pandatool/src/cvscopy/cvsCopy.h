@@ -25,15 +25,19 @@ public:
   CVSCopy();
 
   CVSSourceDirectory *
-  import(const Filename &source, int type, CVSSourceDirectory *suggested_dir);
+  import(const Filename &source, void *extra_data, 
+	 CVSSourceDirectory *suggested_dir);
 
 protected:
   virtual bool handle_args(Args &args);
   virtual bool post_command_line();
 
-  virtual bool copy_file(Filename source, Filename dest,
+  virtual bool copy_file(const Filename &source, const Filename &dest,
 			 CVSSourceDirectory *dest_dir,
-			 int type, bool new_file)=0;
+			 void *extra_data, bool new_file)=0;
+
+  bool copy_binary_file(Filename source, Filename dest);
+
   bool create_file(const Filename &filename);
 
 private:
