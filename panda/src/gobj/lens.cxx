@@ -618,7 +618,7 @@ set_frustum_from_corners(const LVecBase3f &ul, const LVecBase3f &ur,
   // lie.
   LVector3f view_vector;
   if ((flags & FC_camera_plane) != 0) {
-    view_vector = (ul + ur + ll + lr) / 4.0f;
+    view_vector = (ul + ur + ll + lr) * 0.25f;
   } else {
     Planef plane(ll, ul, ur);
     view_vector = plane.get_normal();
@@ -700,8 +700,8 @@ set_frustum_from_corners(const LVecBase3f &ul, const LVecBase3f &ur,
   if ((flags & FC_off_axis) != 0) {
     // If we're allowed to make an off-axis projection, then pick the
     // best center.
-    x_center = (max_x + min_x) / 2.0f;
-    z_center = (max_z + min_z) / 2.0f;
+    x_center = (max_x + min_x) * 0.5f;
+    z_center = (max_z + min_z) * 0.5f;
     x_spread = x_center - min_x;
     z_spread = z_center - min_z;
   } else {
@@ -840,7 +840,7 @@ make_geometry() {
   lengths.push_back(2);
 
   // We just specify overall color.
-  colors.push_back(Colorf(1.0, 1.0, 1.0, 1.0));
+  colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
 
   GeomLinestrip *gline = new GeomLinestrip;
   gline->set_coords(_geom_coords, vindex);
@@ -865,24 +865,33 @@ make_bounds() const {
   // corners of the frustum.
   LPoint3f fll, flr, ful, fur;
   LPoint3f nll, nlr, nul, nur;
+  LPoint2f corner;
+
+  corner[0] = -1.0f; corner[1] = 1.0f;
 
   // Upper left.
-  if (!extrude(LPoint2f(-1.0, 1.0), nul, ful)) {
+  if (!extrude(corner, nul, ful)) {
     return (BoundingVolume *)NULL;
   }
+
+  corner[0] = 1.0f; corner[1] = 1.0f;
 
   // Upper right.
-  if (!extrude(LPoint2f(1.0, 1.0), nur, fur)) {
+  if (!extrude(corner, nur, fur)) {
     return (BoundingVolume *)NULL;
   }
+
+  corner[0] = 1.0f; corner[1] = -1.0f;
 
   // Lower right.
-  if (!extrude(LPoint2f(1.0, -1.0), nlr, flr)) {
+  if (!extrude(corner, nlr, flr)) {
     return (BoundingVolume *)NULL;
   }
 
+  corner[0] = -1.0f; corner[1] = -1.0f;
+
   // Lower left.
-  if (!extrude(LPoint2f(-1.0, -1.0), nll, fll)) {
+  if (!extrude(corner, nll, fll)) {
     return (BoundingVolume *)NULL;
   }
 
@@ -1059,7 +1068,9 @@ extrude_impl(const LPoint3f &point2d, LPoint3f &near_point, LPoint3f &far_point)
     if (full[3] == 0.0f) {
       return false;
     }
-    near_point.set(full[0] / full[3], full[1] / full[3], full[2] / full[3]);
+
+    float recip_full3 = 1.0f/full[3];
+    near_point.set(full[0] * recip_full3, full[1] * recip_full3, full[2] * recip_full3);
   }
   {
     LVecBase4f full(point2d[0], point2d[1], 1.0f, 1.0f);
@@ -1067,7 +1078,8 @@ extrude_impl(const LPoint3f &point2d, LPoint3f &near_point, LPoint3f &far_point)
     if (full[3] == 0.0f) {
       return false;
     }
-    far_point.set(full[0] / full[3], full[1] / full[3], full[2] / full[3]);
+    float recip_full3 = 1.0f/full[3];
+    far_point.set(full[0] * recip_full3, full[1] * recip_full3, full[2] * recip_full3);
   }
   return true;
 }
@@ -1099,11 +1111,12 @@ project_impl(const LPoint3f &point3d, LPoint3f &point2d) const {
     point2d.set(0.0f, 0.0f, 0.0f);
     return false;
   }
-  point2d.set(full[0] / full[3], full[1] / full[3], full[2] / full[3]);
+  float recip_full3 = 1.0f/full[3];
+  point2d.set(full[0] * recip_full3, full[1] * recip_full3, full[2] * recip_full3);
   return
-    full[3] > 0.0f &&
-    point2d[0] >= -1.0f && point2d[0] <= 1.0f && 
-    point2d[1] >= -1.0f && point2d[1] <= 1.0f;
+    (full[3] > 0.0f) &&
+    (point2d[0] >= -1.0f) && (point2d[0] <= 1.0f) && 
+    (point2d[1] >= -1.0f) && (point2d[1] <= 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1291,9 +1304,19 @@ compute_film_mat() {
   // also apply the offset.
   const LVecBase2f &film_size = get_film_size();
   const LVector2f &film_offset = get_film_offset();
+  /* this line triggers a VC7 opt bug, so explicitly set matrix below instead
   _film_mat =
-    LMatrix4f::translate_mat(-film_offset[0], -film_offset[1], 0.0) *
-    LMatrix4f::scale_mat(2.0f / film_size[0], 2.0f / film_size[1], 1.0);
+    LMatrix4f::translate_mat(-film_offset[0], -film_offset[1], 0.0f) *
+    LMatrix4f::scale_mat(2.0f / film_size[0], 2.0f / film_size[1], 1.0f);
+   */ 
+
+  float scale_x = 2.0f / film_size[0];
+  float scale_y = 2.0f / film_size[1];
+  _film_mat.set(scale_x,            0.0f, 0.0f,  0.0f,
+                   0.0f,         scale_y, 0.0f,  0.0f,
+                   0.0f,            0.0f, 1.0f,  0.0f,
+        -film_offset[0], -film_offset[1], 0.0f,  1.0f);
+
   adjust_comp_flags(CF_film_mat_inv,
                     CF_film_mat);
 }
@@ -1339,7 +1362,7 @@ compute_lens_mat() {
 ////////////////////////////////////////////////////////////////////
 float Lens::
 fov_to_film(float, float, bool) const {
-  return 1.0;
+  return 1.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1353,7 +1376,7 @@ fov_to_film(float, float, bool) const {
 ////////////////////////////////////////////////////////////////////
 float Lens::
 fov_to_focal_length(float, float, bool) const {
-  return 1.0;
+  return 1.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1441,7 +1464,7 @@ define_geom_coords() {
     float t = 2.0f * (float)si / (float)num_segments;
 
     // Upper left, top edge.
-    LPoint2f p1(-1.0f + t, 1.0);
+    LPoint2f p1(-1.0f + t, 1.0f);
     if (!extrude(p1, near_point, far_point)) {
       // Hey, this point is off the lens!  Can't do a frustum.
       return 0;
@@ -1450,7 +1473,7 @@ define_geom_coords() {
     coords.push_back(far_point);
 
     // Upper right, right edge.
-    LPoint2f p2(1.0, 1.0f - t);
+    LPoint2f p2(1.0f, 1.0f - t);
     if (!extrude(p2, near_point, far_point)) {
       // Hey, this point is off the lens!  Can't do a frustum.
       return 0;
@@ -1459,7 +1482,7 @@ define_geom_coords() {
     coords.push_back(far_point);
 
     // Lower right, bottom edge.
-    LPoint2f p3(1.0f - t, -1.0);
+    LPoint2f p3(1.0f - t, -1.0f);
     if (!extrude(p3, near_point, far_point)) {
       // Hey, this point is off the lens!  Can't do a frustum.
       return 0;
@@ -1468,7 +1491,7 @@ define_geom_coords() {
     coords.push_back(far_point);
 
     // Lower left, left edge.
-    LPoint2f p4(-1.0, -1.0f + t);
+    LPoint2f p4(-1.0f, -1.0f + t);
     if (!extrude(p4, near_point, far_point)) {
       // Hey, this point is off the lens!  Can't do a frustum.
       return 0;
@@ -1556,7 +1579,7 @@ build_shear_mat(LMatrix4f &shear_mat,
 
   // Try to make the parallelogram as nearly rectangular as possible.
   // How suitable is a true rectangle?
-  LVector3f perpendic = base_vec.cross(LVector3f(0.0, -1.0, 0.0));
+  LVector3f perpendic = base_vec.cross(LVector3f(0.0f, -1.0f, 0.0f));
   perpendic.normalize();
   perpendic *= dist;
   LPoint3f parallel_origin = points[base_edge] + perpendic;
