@@ -65,6 +65,26 @@ class Messenger:
             if (len(acceptorDict) == 0):
                 del self.dict[event]
 
+
+    def ignoreAll(self, object):
+        """ ignoreAll(self, DirectObject)
+        Make this object no longer respond to any events it was accepting
+        """
+
+        Messenger.notify.debug(`object` + '\n now ignoring all events')
+
+        for event in self.dict.keys():
+            # Find the dictionary of all the objects accepting this event
+            acceptorDict = self.dict[event]
+            # If this object is there, delete it from the dictionary
+            if acceptorDict.has_key(object):
+                del acceptorDict[object]
+            # If this dictionary is now empty, remove the event
+            # entry from the Messenger alltogether
+            if (len(acceptorDict) == 0):
+                del self.dict[event]
+
+
     def isAccepting(self, event, object):
         """ isAccepting(self, string, DirectOject)        
         Is this object accepting this event?

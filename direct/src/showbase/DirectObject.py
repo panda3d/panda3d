@@ -26,6 +26,8 @@ class DirectObject:
         messenger.accept(event, self, method, extraArgs, 0)
     def ignore(self, event):
         messenger.ignore(event, self)
+    def ignoreAll(self):
+        messenger.ignoreAll(self)
     def isAccepting(self, event):
         return messenger.isAccepting(event, self)
     def isIgnoring(self, event):
