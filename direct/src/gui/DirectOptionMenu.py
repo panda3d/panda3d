@@ -43,23 +43,29 @@ class DirectOptionMenu(DirectButton):
             relief = RAISED)
         # This needs to popup the menu too
         self.popupMarker.bind(B1PRESS, self.showPopupMenu)
+        # Check if item is highlighted on release and select it if it is
+        self.popupMarker.bind(B1RELEASE, self.selectHighlightedIndex)
         # Make popup marker have the same click sound
         self.popupMarker.guiItem.setSound(
             B1PRESS + self.popupMarker.guiId,self['clickSound'])
         # This is created when you set the menu's items
         self.popupMenu = None
         self.selectedIndex = None
+        self.highlightedIndex = None
         # A big screen encompassing frame to catch the cancel clicks
         self.cancelFrame = self.createcomponent(
             'cancelframe', (), None,
             DirectFrame, (self,),
             frameSize = (-1,1,-1,1),
-            relief = None)
+            relief = None,
+            state = 'normal')
         # Make sure this is on top of all the other widgets
         self.cancelFrame.setBin('gui-popup', 0)
         self.cancelFrame.bind(B1PRESS, self.hidePopupMenu)
         # Default action on press is to show popup menu
         self.bind(B1PRESS, self.showPopupMenu)
+        # Check if item is highlighted on release and select it if it is
+        self.bind(B1RELEASE, self.selectHighlightedIndex)
         # Call option initialization functions
         self.initialiseoptions(DirectOptionMenu)
         # Need to call this since we explicitly set frame size
@@ -123,11 +129,12 @@ class DirectOptionMenu(DirectButton):
             item.setPos(-self.minX, 0 , -self.maxZ - i * self.maxHeight)
             item.bind(B1RELEASE, self.hidePopupMenu)
             # Highlight background when mouse is in item
-            item.bind(ENTER, lambda x, item=item: self._highlightItem(item))
+            item.bind(WITHIN,
+                      lambda x,i=i,item=item:self._highlightItem(item, i))
             # Restore specified color upon exiting
             fc = item['frameColor']
-            item.bind(
-                EXIT,lambda x,item=item,fc=fc: self._unhighlightItem(item,fc))
+            item.bind(WITHOUT,
+                      lambda x,item=item,fc=fc: self._unhighlightItem(item,fc))
         # Set popup menu frame size to encompass all items
         f = self.component('popupMenu')
         f['frameSize'] = (0, self.maxWidth, -self.maxHeight * itemIndex, 0)
@@ -206,11 +213,24 @@ class DirectOptionMenu(DirectButton):
         self.popupMenu.hide()
         self.cancelFrame.hide()
 
-    def _highlightItem(self, item):
+    def _highlightItem(self, item, index):
+        """ Set frame color of highlighted item, record index """
         item['frameColor'] = self['highlightColor']
+        self.highlightedIndex = index
 
     def _unhighlightItem(self, item, frameColor):
+        """ Clear frame color, clear highlightedIndex """
         item['frameColor'] = frameColor
+        self.highlightedIndex = None
+
+    def selectHighlightedIndex(self, event = None):
+        """
+        Check to see if item is highlighted (by cursor being within
+        that item).  If so, selected it.  If not, do nothing
+        """
+        if self.highlightedIndex is not None:
+            self.set(self.highlightedIndex)
+            self.hidePopupMenu()
 
     def index(self, index):
         intIndex = None
@@ -246,10 +266,3 @@ class DirectOptionMenu(DirectButton):
         Command is executed in response to selecting menu items
         """
         pass
-        
-
-
-
-
-
-

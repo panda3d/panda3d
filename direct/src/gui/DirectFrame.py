@@ -23,7 +23,9 @@ class DirectFrame(DirectGuiWidget):
             ('geom',            None,       self.setGeom),
             # A foreground text node
             ('text',            None,       self.setText),
-            ('textMayChange',   1,          None),
+            # Change default value of text mayChange flag from 0
+            # (OnscreenText.py) to 1
+            ('text_mayChange',  1,          None),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs,
@@ -75,7 +77,6 @@ class DirectFrame(DirectGuiWidget):
                         (), parent = self.stateNodePath[i],
                         text = text, scale = 1,
                         sort = TEXT_SORT_INDEX,
-                        mayChange = self['textMayChange'],
                         )
 
     def setGeom(self):
