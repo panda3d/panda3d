@@ -252,10 +252,12 @@ void glutGraphicsWindow::register_idle_function(GraphicsWindow::vfn f) {
   glutIdleFunc(f);
 }
 
+/*
 void glutGraphicsWindow::register_resize_function(GraphicsWindow::vfnii f) {
   GraphicsWindow::register_resize_function(f);
   glutReshapeFunc(f);
 }
+*/
 
 void glutGraphicsWindow::main_loop(void) {
   glutMainLoop();

@@ -90,7 +90,7 @@ public:
   virtual void flag_redisplay(void);
   virtual void register_draw_function(GraphicsWindow::vfn);
   virtual void register_idle_function(GraphicsWindow::vfn);
-  virtual void register_resize_function(GraphicsWindow::vfnii);
+  //  virtual void register_resize_function(GraphicsWindow::vfnii);
   virtual void main_loop(void);
 
   virtual TypeHandle get_gsg_type() const;
