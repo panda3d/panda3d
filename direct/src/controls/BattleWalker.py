@@ -8,7 +8,7 @@ class BattleWalker(GravityWalker.GravityWalker):
 
     def getSpeeds(self):
         #assert(self.debugPrint("getSpeeds()"))
-        return (self.speed+self.slideSpeed, self.rotationSpeed)
+        return (self.speed, self.rotationSpeed, self.slideSpeed)
 
 
     def handleAvatarControls(self, task):
@@ -38,8 +38,8 @@ class BattleWalker(GravityWalker.GravityWalker):
         if run and self.speed>0.0:
             self.speed*=2.0 #*#
         # Should fSlide be renamed slideButton?
-        self.slideSpeed=(turnLeft and -self.avatarControlForwardSpeed or 
-                         turnRight and self.avatarControlForwardSpeed)
+        self.slideSpeed=.2*(turnLeft and -self.avatarControlForwardSpeed or 
+                            turnRight and self.avatarControlForwardSpeed)
         self.rotationSpeed=0
         
         if __debug__:
