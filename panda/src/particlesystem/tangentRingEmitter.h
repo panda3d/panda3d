@@ -26,7 +26,7 @@ private:
   virtual void assign_initial_position(LPoint3f& pos);
   virtual void assign_initial_velocity(LVector3f& vel);
 
-public:
+PUBLISHED:
   TangentRingEmitter(void);
   TangentRingEmitter(const TangentRingEmitter &copy);
   virtual ~TangentRingEmitter(void);

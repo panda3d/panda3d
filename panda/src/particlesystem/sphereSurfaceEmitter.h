@@ -20,7 +20,7 @@ private:
   virtual void assign_initial_position(LPoint3f& pos);
   virtual void assign_initial_velocity(LVector3f& vel);
 
-public:
+PUBLISHED:
   SphereSurfaceEmitter(void);
   SphereSurfaceEmitter(const SphereSurfaceEmitter &copy);
   virtual ~SphereSurfaceEmitter(void);

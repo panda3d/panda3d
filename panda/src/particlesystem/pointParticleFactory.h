@@ -18,7 +18,7 @@ private:
   virtual BaseParticle *alloc_particle(void) const;
   virtual void populate_child_particle(BaseParticle *bp) const;
 
-public:
+PUBLISHED:
   PointParticleFactory(void);
   PointParticleFactory(const PointParticleFactory &copy);
   virtual ~PointParticleFactory(void);

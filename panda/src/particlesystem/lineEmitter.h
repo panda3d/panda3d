@@ -20,7 +20,7 @@ private:
   virtual void assign_initial_position(LPoint3f& pos);
   virtual void assign_initial_velocity(LVector3f& vel);
 
-public:
+PUBLISHED:
   LineEmitter(void);
   LineEmitter(const LineEmitter &copy);
   virtual ~LineEmitter(void);

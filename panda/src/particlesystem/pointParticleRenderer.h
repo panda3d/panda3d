@@ -55,8 +55,7 @@ private:
 		      int ttl_particles);
   virtual void resize_pool(int new_size);
 
-public:
-
+PUBLISHED:
   PointParticleRenderer(const PointParticleRenderer& copy);
   PointParticleRenderer(ParticleRendererAlphaMode ad = PR_ALPHA_NONE,
 			float point_size = 1.0f,

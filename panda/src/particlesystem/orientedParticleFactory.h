@@ -23,7 +23,7 @@ private:
   LOrientationf _initial_orientation;
   LOrientationf _final_orientation;
 
-public:
+PUBLISHED:
   OrientedParticleFactory(void);
   OrientedParticleFactory(const OrientedParticleFactory &copy);
   virtual ~OrientedParticleFactory(void);  

@@ -20,7 +20,7 @@ private:
   virtual void assign_initial_position(LPoint3f& pos);
   virtual void assign_initial_velocity(LVector3f& vel);
 
-public:
+PUBLISHED:
   BoxEmitter(void);
   BoxEmitter(const BoxEmitter &copy);
   virtual ~BoxEmitter(void);

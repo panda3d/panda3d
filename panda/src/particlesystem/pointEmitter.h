@@ -20,7 +20,7 @@ private:
   virtual void assign_initial_position(LPoint3f& pos);
   virtual void assign_initial_velocity(LVector3f& vel);
  
-public:
+PUBLISHED:
   PointEmitter(void);
   PointEmitter(const PointEmitter &copy);
   virtual ~PointEmitter(void);

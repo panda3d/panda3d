@@ -28,7 +28,7 @@ private:
   virtual void assign_initial_position(LPoint3f& pos);
   virtual void assign_initial_velocity(LVector3f& vel);
 
-public:
+PUBLISHED:
   RingEmitter(void);
   RingEmitter(const RingEmitter &copy);
   virtual ~RingEmitter(void);

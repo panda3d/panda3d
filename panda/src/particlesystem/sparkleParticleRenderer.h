@@ -52,8 +52,7 @@ private:
 		      int ttl_particles);
   virtual void resize_pool(int new_size);
 
-public:
-
+PUBLISHED:
   SparkleParticleRenderer(void);
   SparkleParticleRenderer(const SparkleParticleRenderer& copy);
   SparkleParticleRenderer(const Colorf& center,

@@ -42,8 +42,7 @@ private:
                       int ttl_particles);
   virtual void resize_pool(int new_size);
 
-public:
-
+PUBLISHED:
   LineParticleRenderer(void);
   LineParticleRenderer(const LineParticleRenderer& copy);
   LineParticleRenderer(const Colorf& head,

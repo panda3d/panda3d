@@ -23,7 +23,7 @@ private:
   float _initial_angle_spread;
   float _final_angle_spread;
 
-public:
+PUBLISHED:
   ZSpinParticleFactory(void);
   ZSpinParticleFactory(const ZSpinParticleFactory &copy);
   virtual ~ZSpinParticleFactory(void);

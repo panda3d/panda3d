@@ -53,7 +53,7 @@ private:
 		      int ttl_particles);
   virtual void resize_pool(int new_size);
 
-public:
+PUBLISHED:
   SpriteParticleRenderer(Texture *tex = (Texture *) NULL);
   SpriteParticleRenderer(const SpriteParticleRenderer &copy);
   virtual ~SpriteParticleRenderer(void);

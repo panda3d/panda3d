@@ -30,7 +30,7 @@ private:
   virtual void assign_initial_position(LPoint3f& pos);
   virtual void assign_initial_velocity(LVector3f& vel);
 
-public:
+PUBLISHED:
   DiscEmitter(void);
   DiscEmitter(const DiscEmitter &copy);
   virtual ~DiscEmitter(void);

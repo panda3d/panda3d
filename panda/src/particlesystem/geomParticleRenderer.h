@@ -39,8 +39,7 @@ private:
 
   virtual void resize_pool(int new_size);
 
-public:
-
+PUBLISHED:
   GeomParticleRenderer(ParticleRendererAlphaMode am = PR_ALPHA_NONE,
 		       Node *geom_node = (Node *) NULL);
   GeomParticleRenderer(const GeomParticleRenderer& copy);
