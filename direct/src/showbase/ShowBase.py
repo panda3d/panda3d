@@ -18,6 +18,7 @@ import ClockObject
 import Transitions
 import Loader
 import time
+import FSM
 
 globalClock = ClockObject.ClockObject.getGlobalClock()
 
@@ -37,6 +38,8 @@ class ShowBase:
         self.wantStats = self.config.GetBool('want-stats', 0)
 
         taskMgr.taskTimerVerbose = self.config.GetBool('task-timer-verbose', 0)
+        fsmDebug = self.config.GetBool('fsm-debug', 0)
+        FSM.FSM.notify.setDebug(fsmDebug)
 
         self.initialState = NodeAttributes()
         # Set a default "off color" (i.e. use poly color) for color transitions

@@ -38,7 +38,7 @@ class Messenger:
         """
 
         Messenger.notify.debug('object: ' + `object`
-                  + '\n accept: ' + `event`
+                  + '\n now accepting: ' + `event`
                   + '\n method: ' + `method`
                   + '\n extraArgs: ' + `extraArgs`
                   + '\n persistent: ' + `persistent`)
@@ -52,7 +52,7 @@ class Messenger:
         It is safe to call even if it was not alread
         """
 
-        Messenger.notify.debug(`object` + '\n ignore: ' + `event`)
+        Messenger.notify.debug(`object` + '\n now ignoring: ' + `event`)
             
         if self.dict.has_key(event):
             # Find the dictionary of all the objects accepting this event
