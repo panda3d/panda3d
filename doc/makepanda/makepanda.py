@@ -32,11 +32,11 @@ skylerTest=0
 def filedate(path):
     global FileDateCache
     if (FileDateCache.has_key(path)):
-        return(FileDateCache[path])
+        return FileDateCache[path]
     try: date = os.path.getmtime(path)
     except: date = 0
     FileDateCache[path] = date
-    return(date)
+    return date
 
 def updatefiledate(path):
     global FileDateCache
@@ -50,12 +50,12 @@ def youngest(files):
         if (source==0):
             import pdb; pdb.set_trace()
             sys.exit("Error: source file not readable: "+files)
-        return(source)
+        return source
     result = 0
     for sfile in files:
         source = youngest(sfile)
         if (source > result): result = source
-    return(result)
+    return result
 
 def debug_older(file,others):
     print [file, others]
@@ -71,11 +71,11 @@ def older(file,others):
 
 def xpaths(prefix,base,suffix):
     if (type(base) == str):
-        return(prefix + base + suffix)
+        return prefix + base + suffix
     result = []
     for x in base:
         result.append(xpaths(prefix,x,suffix))
-    return(result)
+    return result
 
 if (sys.platform == "win32"):
     import _winreg
@@ -195,14 +195,14 @@ def buildingwhat(opts):
     building = 0
     for x in opts:
         if (x[:9]=="BUILDING_"): building = x[9:]
-    return(building)
+    return building
 
 def ReadFile(wfile):
     try:
         srchandle = open(wfile, "rb")
         data = srchandle.read()
         srchandle.close()
-        return(data)
+        return data
     except: sys.exit("Cannot read "+wfile)
 
 def WriteFile(wfile,data):
@@ -902,9 +902,9 @@ MakeDirectory(PREFIX+"/tmp")
 ########################################################################
 
 def PkgSelected(pkglist, pkg):
-    if (pkglist.count(pkg)==0): return(0)
-    if (OMIT.count(pkg)): return(0)
-    return(1)
+    if (pkglist.count(pkg)==0): return 0
+    if (OMIT.count(pkg)): return 0
+    return 1
 
 ########################################################################
 ##
@@ -1036,7 +1036,7 @@ CxxDependencyCache = {}
 def CxxCalcDependencies(srcfile, ipath, ignore):
     if (CxxDependencyCache.has_key(srcfile)):
         return CxxDependencyCache[srcfile]
-    if (ignore.count(srcfile)): return([])
+    if (ignore.count(srcfile)): return []
     dep = {}
     dep[srcfile] = 1
     includes = CxxGetIncludes(srcfile)
@@ -1126,7 +1126,7 @@ def CopyAllFiles(dstdir,srcdir):
 ########################################################################
 
 def CopyTree(dstdir,srcdir):
-    if (os.path.isdir(dstdir)): return(0)
+    if (os.path.isdir(dstdir)): return 0
     if (COMPILER=="MSVC7"): cmd = "xcopy.exe /I/Y/E/Q \""+srcdir+"\" \""+dstdir+"\""
     if (COMPILER=="LINUXA"): cmd = "cp --recursive --force "+srcdir+" "+dstdir
     oscmd(cmd)
