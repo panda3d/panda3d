@@ -156,6 +156,12 @@ open_api(string program_name) {
     }
 
     _global_api = new MayaApi(program_name);
+
+    if (maya_cat.is_debug()) {
+      maya_cat.debug()
+        << "Using Maya library version " << MGlobal::mayaVersion().asChar()
+        << ".\n";
+    }
   }
 
   return _global_api;
