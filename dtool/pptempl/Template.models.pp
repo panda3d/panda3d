@@ -230,9 +230,9 @@ $[target] : $[sources] $[TARGET_DIR]/stamp
     #define target $[pal_egg_dir]/$[egg]
 $[target] : $[source] $[pt] $[pal_egg_dir]/stamp
     #if $[PHASE]
-	egg-palettize-new $[PALETTIZE_OPTS] -type jpg,rgb -C -dr $[install_dir] -dm $[install_dir]/%s/maps -g phase_$[PHASE] -gdir phase_$[PHASE] -P256,256 -2 -o $[target] $[texattrib_file] $[source]
+	egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -dr $[install_dir] -dm $[install_dir]/%g/maps -ds $[install_dir]/shadow_pal -g phase_$[PHASE] -gdir phase_$[PHASE] -o $[target] $[source]
     #else
-	egg-palettize-new $[PALETTIZE_OPTS] -type jpg,rgb -C -dr $[install_dir] -dm $[install_dir]/maps -P256,256 -2 -o $[target] $[texattrib_file] $[source]
+	egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -dr $[install_dir] -dm $[install_dir]/%g/maps -ds $[install_dir]/shadow_pal -o $[target] $[source]
     #endif
 
 $[pt] :
@@ -344,7 +344,7 @@ $[dest]/$[local] : $[local]
 #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE].
 ################################# DO NOT EDIT ###########################
 
-all : egg $[subdirs]
+all : egg pal repal $[subdirs]
 egg : $[subdirs:%=egg-%]
 pal : $[subdirs:%=pal-%]
 bam : $[subdirs:%=bam-%]
@@ -352,16 +352,45 @@ clean-bam : $[subdirs:%=clean-bam-%]
 clean-pal : $[subdirs:%=clean-pal-%]
 clean : $[subdirs:%=clean-%]
 cleanall : $[subdirs:%=cleanall-%]
-install-egg : $[subdirs:%=install-egg-%]
-install-bam : $[subdirs:%=install-bam-%]
+install-egg : egg pal repal $[subdirs:%=install-egg-%]
+install-bam : egg pal repal $[subdirs:%=install-bam-%]
 install-misc : $[subdirs:%=install-misc-%]
-install : egg $[subdirs:%=install-%]
+install : egg pal repal $[subdirs:%=install-%]
 uninstall : $[subdirs:%=uninstall-%]
 
-optimize-palettes : regen-palettes pal install
+#
+# opt-pal : reorder and resize the palettes to be as optimal as
+# possible.  This forces a rebuild of all the egg files.
+#
+opt-pal : do-opt-pal install
+optimize-palettes : opt-pal
 
-regen-palettes :
-	egg-palettize-new $[PALETTIZE_OPTS] -C -fRt $[texattrib_file]
+do-opt-pal :
+	egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -opt -egg
+
+#
+# repal : reexamine the textures.txa file and do whatever needs to be
+# done to bring everything up to sync with it.  Also make sure all egg
+# files are up-to-date.
+#
+repal :
+	egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -all -egg
+
+re-pal : repal
+
+#
+# fix-pal : something has gone wrong with the palettes; rebuild all
+# palette images to fix it.
+#
+fix-pal :
+	egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -redo -all -egg
+
+#
+# pi : report the palettization information to standard output for the
+# user's perusal.
+#
+pi :
+	egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -pi
 
 // Somehow, something in the cttools confuses some shells, so that
 // when we are attached, 'cd foo' doesn't work, but 'cd ./foo' does.
