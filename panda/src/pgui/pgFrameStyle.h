@@ -22,8 +22,7 @@
 #include "pandabase.h"
 
 #include "luse.h"
-#include "geom.h"
-#include "pointerTo.h"
+#include "pt_Node.h"
 
 class NodeRelation;
 class Node;
@@ -54,8 +53,9 @@ PUBLISHED:
   INLINE void set_color(const Colorf &color);
   INLINE const Colorf &get_color() const;
 
-  INLINE void set_width(float width);
-  INLINE float get_width() const;
+  INLINE void set_width(float x, float y);
+  INLINE void set_width(const LVecBase2f &width);
+  INLINE const LVecBase2f &get_width() const;
 
   void output(ostream &out) const;
 
@@ -63,12 +63,13 @@ public:
   NodeRelation *generate_into(Node *node, const LVecBase4f &frame);
 
 private:
-  PT(Geom) generate_flat_geom(const LVecBase4f &frame);
+  PT_Node generate_flat_geom(const LVecBase4f &frame);
+  PT_Node generate_bevel_geom(const LVecBase4f &frame, bool in);
 
 private:
   Type _type;
   Colorf _color;
-  float _width;
+  LVecBase2f _width;
 };
 
 INLINE ostream &operator << (ostream &out, const PGFrameStyle &pfs);

@@ -18,10 +18,12 @@
 
 #include "pgFrameStyle.h"
 #include "geomTristrip.h"
+#include "geomTrifan.h"
 #include "geomNode.h"
 #include "transparencyProperty.h"
 #include "transparencyTransition.h"
 #include "renderRelation.h"
+#include "pointerTo.h"
 
 ostream &
 operator << (ostream &out, PGFrameStyle::Type type) {
@@ -65,24 +67,30 @@ output(ostream &out) const {
 NodeRelation *PGFrameStyle::
 generate_into(Node *node, const LVecBase4f &frame) {
   NodeRelation *arc = (NodeRelation *)NULL;
-  PT(Geom) geom;
+  PT_Node gnode;
 
   switch (_type) {
   case T_none:
     return (NodeRelation *)NULL;
 
   case T_flat:
-    geom = generate_flat_geom(frame);
+    gnode = generate_flat_geom(frame);
+    break;
+
+  case T_bevel_out:
+    gnode = generate_bevel_geom(frame, false);
+    break;
+
+  case T_bevel_in:
+    gnode = generate_bevel_geom(frame, true);
     break;
 
   default:
     break;
   }
 
-  if (geom != (Geom *)NULL) {
-    // We've got a basic Geom; create a GeomNode for it.
-    PT(GeomNode) gnode = new GeomNode("frame");
-    gnode->add_geom(geom);
+  if (gnode != (GeomNode *)NULL) {
+    // We've got a GeomNode.
     arc = new RenderRelation(node, gnode, -1);
   }
 
@@ -99,12 +107,14 @@ generate_into(Node *node, const LVecBase4f &frame) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PGFrameStyle::generate_flat_geom
 //       Access: Public
-//  Description: Generates the Geom object appropriate to a T_flat
+//  Description: Generates the GeomNode appropriate to a T_flat
 //               frame.
 ////////////////////////////////////////////////////////////////////
-PT(Geom) PGFrameStyle::
+PT_Node PGFrameStyle::
 generate_flat_geom(const LVecBase4f &frame) {
-  PT(Geom) geom = new GeomTristrip;
+  PT(GeomNode) gnode = new GeomNode("flat");
+  Geom *geom = new GeomTristrip;
+  gnode->add_geom(geom);
 
   float left = frame[0];
   float right = frame[1];
@@ -129,5 +139,176 @@ generate_flat_geom(const LVecBase4f &frame) {
   colors.push_back(_color);
   geom->set_colors(colors, G_OVERALL);
   
-  return geom;
+  return gnode.p();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::generate_bevel_geom
+//       Access: Public
+//  Description: Generates the GeomNode appropriate to a T_bevel_in or
+//               T_bevel_out frame.
+////////////////////////////////////////////////////////////////////
+PT_Node PGFrameStyle::
+generate_bevel_geom(const LVecBase4f &frame, bool in) {
+  //
+  // Colors:
+  //
+  // 
+  //  * * * * * * * * * * * * * * * * * * * * * * *
+  //  * *                                       * *
+  //  *   *               ctop                *   *
+  //  *     *                               *     *
+  //  *       * * * * * * * * * * * * * * *       *
+  //  *       *                           *       *
+  //  *       *                           *       *
+  //  * cleft *          _color           * cright*
+  //  *       *                           *       *
+  //  *       *                           *       *
+  //  *       * * * * * * * * * * * * * * *       *
+  //  *     *                               *     *
+  //  *   *              cbottom              *   *
+  //  * *                                       * *
+  //  * * * * * * * * * * * * * * * * * * * * * * *
+  //
+  //
+  // Vertices:
+  //
+  //  fan:
+  //  2 * * * * * * * * * * * * * * * * * * * * * 1
+  //    *                                       * *
+  //      *                                   *   *
+  //        *                               *     *
+  //          3 * * * * * * * * * * * * * 0       *
+  //          *                           *       *
+  //          *                           *       *
+  //          *                           *       *
+  //          *                           *       *
+  //          *                           *       *
+  //          4 * * * * * * * * * * * * * 5       *
+  //                                        *     *
+  //  tristrip:                               *   *
+  //  4                                         * *
+  //  * *                                         6
+  //  *   *
+  //  *     *
+  //  *       5
+  //  *       *
+  //  *       *
+  //  *       *
+  //  *       *
+  //  *       *
+  //  *       3 * * * * * * * * * * * * * 1
+  //  *     *                               *
+  //  *   *                                   *
+  //  * *                                       *
+  //  2 * * * * * * * * * * * * * * * * * * * * * 0
+
+  PT(GeomNode) gnode = new GeomNode("bevel");
+
+  float left = frame[0];
+  float right = frame[1];
+  float bottom = frame[2];
+  float top = frame[3];
+
+  float inner_left = left + _width[0];
+  float inner_right = right - _width[0];
+  float inner_bottom = bottom + _width[1];
+  float inner_top = top - _width[1];
+
+  float left_color_scale = 1.2;
+  float right_color_scale = 0.8;
+  float bottom_color_scale = 0.7;
+  float top_color_scale = 1.3;
+
+  if (in) {
+    right_color_scale = 1.2;
+    left_color_scale = 0.8;
+    top_color_scale = 0.7;
+    bottom_color_scale = 1.3;
+  }
+
+  // Clamp all colors at white, and don't scale the alpha.
+  Colorf cleft(min(_color[0] * left_color_scale, 1.0f),
+               min(_color[1] * left_color_scale, 1.0f),
+               min(_color[2] * left_color_scale, 1.0f),
+               _color[3]);
+
+  Colorf cright(min(_color[0] * right_color_scale, 1.0f),
+                min(_color[1] * right_color_scale, 1.0f),
+                min(_color[2] * right_color_scale, 1.0f),
+                _color[3]);
+
+  Colorf cbottom(min(_color[0] * bottom_color_scale, 1.0f),
+                 min(_color[1] * bottom_color_scale, 1.0f),
+                 min(_color[2] * bottom_color_scale, 1.0f),
+                 _color[3]);
+
+  Colorf ctop(min(_color[0] * top_color_scale, 1.0f),
+              min(_color[1] * top_color_scale, 1.0f),
+              min(_color[2] * top_color_scale, 1.0f),
+              _color[3]);
+
+  {
+    // First, the fan.
+    Geom *geom = new GeomTrifan;
+    gnode->add_geom(geom);
+    
+    PTA_int lengths(0);
+    lengths.push_back(8);
+    
+    PTA_Vertexf verts;
+    verts.push_back(Vertexf(inner_right, 0.0, inner_top));
+    verts.push_back(Vertexf(right, 0.0, top));
+    verts.push_back(Vertexf(left, 0.0, top));
+    verts.push_back(Vertexf(inner_left, 0.0, inner_top));
+    verts.push_back(Vertexf(inner_left, 0.0, inner_bottom));
+    verts.push_back(Vertexf(inner_right, 0.0, inner_bottom));
+    verts.push_back(Vertexf(right, 0.0, bottom));
+    verts.push_back(Vertexf(right, 0.0, top));
+    
+    geom->set_num_prims(1);
+    geom->set_lengths(lengths);
+    
+    geom->set_coords(verts, G_PER_VERTEX);
+    
+    PTA_Colorf colors;
+    colors.push_back(ctop);
+    colors.push_back(ctop);
+    colors.push_back(_color);
+    colors.push_back(_color);
+    colors.push_back(cright);
+    colors.push_back(cright);
+    geom->set_colors(colors, G_PER_COMPONENT);
+  }
+
+  {
+    // Now, the strip.
+    Geom *geom = new GeomTristrip;
+    gnode->add_geom(geom);
+    
+    PTA_int lengths(0);
+    lengths.push_back(6);
+    
+    PTA_Vertexf verts;
+    verts.push_back(Vertexf(right, 0.0, bottom));
+    verts.push_back(Vertexf(inner_right, 0.0, inner_bottom));
+    verts.push_back(Vertexf(left, 0.0, bottom));
+    verts.push_back(Vertexf(inner_left, 0.0, inner_bottom));
+    verts.push_back(Vertexf(left, 0.0, top));
+    verts.push_back(Vertexf(inner_left, 0.0, inner_top));
+    
+    geom->set_num_prims(1);
+    geom->set_lengths(lengths);
+    
+    geom->set_coords(verts, G_PER_VERTEX);
+    
+    PTA_Colorf colors;
+    colors.push_back(cbottom);
+    colors.push_back(cbottom);
+    colors.push_back(cleft);
+    colors.push_back(cleft);
+    geom->set_colors(colors, G_PER_COMPONENT);
+  }
+  
+  return gnode.p();
 }

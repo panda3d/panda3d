@@ -26,7 +26,7 @@ INLINE PGFrameStyle::
 PGFrameStyle() {
   _type = T_none;
   _color.set(1.0, 1.0, 1.0, 1.0);
-  _width = 0.01;
+  _width.set(0.1, 0.1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -122,7 +122,20 @@ get_color() const {
 //               units are in screen units.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGFrameStyle::
-set_width(float width) {
+set_width(float x, float y) {
+  set_width(LVecBase2f(x, y));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::set_width
+//       Access: Published
+//  Description: Sets the width parameter, which has meaning only for
+//               certain frame types.  For instance, this is the width
+//               of the bevel for T_bevel_in or T_bevel_out.  The
+//               units are in screen units.
+////////////////////////////////////////////////////////////////////
+INLINE void PGFrameStyle::
+set_width(const LVecBase2f &width) {
   _width = width;
 }
 
@@ -134,7 +147,7 @@ set_width(float width) {
 //               width of the bevel for T_bevel_in or T_bevel_out.
 //               The units are in screen units.
 ////////////////////////////////////////////////////////////////////
-INLINE float PGFrameStyle::
+INLINE const LVecBase2f &PGFrameStyle::
 get_width() const {
   return _width;
 }
