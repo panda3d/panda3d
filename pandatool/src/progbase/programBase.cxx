@@ -73,6 +73,7 @@ ProgramBase() {
 
   _next_sequence = 0;
   _sorted_options = false;
+  _last_newline = false;
   _got_terminal_width = false;
   _got_option_indent = false;
 
@@ -171,7 +172,8 @@ show_text(const string &prefix, int indent_width, string text) {
   // This is correct!  It goes go to cerr, not to nout.  Sending it to
   // nout would be cyclic, since nout is redefined to map back through
   // this function.
-  format_text(cerr, prefix, indent_width, text, _terminal_width);
+  format_text(cerr, _last_newline, 
+	      prefix, indent_width, text, _terminal_width);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -679,12 +681,19 @@ handle_help_option(const string &, const string &, void *) {
 //
 //               An embedded newline character ('\n') forces a line
 //               break, while an embedded carriage-return character
-//               ('\r') marks a paragraph break, which is usually
-//               printed as a blank line.  Redundant newline and
-//               carriage-return characters are generally ignored.
+//               ('\r'), or two or more consecutive newlines, marks a
+//               paragraph break, which is usually printed as a blank
+//               line.  Redundant newline and carriage-return
+//               characters are generally ignored.
+//
+//               The flag last_newline should be initialized to false
+//               for the first call to format_text, and then preserved
+//               for future calls; it tracks the state of trailing
+//               newline characters between calls so we can correctly
+//               identify doubled newlines.
 ////////////////////////////////////////////////////////////////////
 void ProgramBase::
-format_text(ostream &out,
+format_text(ostream &out, bool &last_newline,
 	    const string &prefix, int indent_width,
 	    const string &text, int line_width) {
   indent_width = min(indent_width, line_width - 20);
@@ -705,7 +714,9 @@ format_text(ostream &out,
 
   // Skip any initial whitespace and newlines.
   while (p < text.length() && isspace(text[p])) {
-    if (text[p] == '\r') {
+    if (text[p] == '\r' ||
+	(p > 0 && text[p] == '\n' && text[p - 1] == '\n') ||
+ 	(p == 0 && text[p] == '\n' && last_newline)) {
       if (!initial_break) {
 	// Here's an initial paragraph break, however.
 	out << "\n";
@@ -724,6 +735,8 @@ format_text(ostream &out,
     p++;
   }
 
+  last_newline = (!text.empty() && text[text.length() - 1] == '\n');
+
   while (p < text.length()) {
     // Look for the paragraph or line break--the next newline
     // character, if any.
@@ -731,8 +744,11 @@ format_text(ostream &out,
     bool is_paragraph_break = false;
     if (par == string::npos) {
       par = text.length();
+      /*
+	This shouldn't be necessary.
     } else {
       is_paragraph_break = (text[par] == '\r');
+      */
     }
 
     indent(out, indent_amount);
@@ -771,7 +787,8 @@ format_text(ostream &out,
 
     // Skip additional whitespace between the lines.
     while (p < text.length() && isspace(text[p])) {
-      if (text[p] == '\r') {
+      if (text[p] == '\r' ||
+	  (p > 0 && text[p] == '\n' && text[p - 1] == '\n')) {
 	is_paragraph_break = true;
       }
       p++;
@@ -780,6 +797,11 @@ format_text(ostream &out,
     if (eol == par && is_paragraph_break) {
       // Print the paragraph break as a blank line.
       out << "\n";
+      if (p >= text.length()) {
+	// If we end on a paragraph break, don't try to insert a new
+	// one in the next pass.
+	last_newline = false;
+      }
     }
 
     indent_amount = indent_width;

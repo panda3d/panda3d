@@ -68,7 +68,7 @@ protected:
 
   bool handle_help_option(const string &opt, const string &arg, void *);
 
-  static void format_text(ostream &out,
+  static void format_text(ostream &out, bool &last_newline,
 			  const string &prefix, int indent_width,
 			  const string &text, int line_width);
 
@@ -107,6 +107,7 @@ private:
   typedef map<string, string> GotOptions;
   GotOptions _got_options;
 
+  bool _last_newline;
   int _terminal_width;
   bool _got_terminal_width;
   int _option_indent;
