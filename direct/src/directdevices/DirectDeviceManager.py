@@ -208,7 +208,7 @@ class DirectTimecodeReader(AnalogNode, PandaObject):
                         (((timeBits & 0xF000) >> 12) * 10))
         self.minutes = (((timeBits & 0x0F0000) >> 16) +
                         (((timeBits & 0xF00000) >> 20) * 10))
-        self.hours = (((timeBits & 0xF0000000) >> 24) +
+        self.hours = (((timeBits & 0xF000000) >> 24) +
                       (((timeBits & 0xF0000000) >> 28) * 10))
         self.totalSeconds = ((self.hours * 3600) +
                              (self.minutes * 60) +

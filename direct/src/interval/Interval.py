@@ -133,7 +133,7 @@ class Interval(DirectObject):
 	    space = space + ' '
 	return (space + self.name + ' dur: %.2f' % self.duration)
 
-    def popupControls(self):
+    def popupControls(self, tl = None):
         """ popupControls()
             Popup control panel for interval.
         """
@@ -143,10 +143,12 @@ class Interval(DirectObject):
         from Tkinter import *
         import Pmw
         import EntryScale
-        tl = Toplevel()
-        tl.title(self.getName() + ' Interval Controls')
+        if tl == None:
+            tl = Toplevel()
+            tl.title(self.getName() + ' Interval Controls')
+        outerFrame = Frame(tl)
         self.es = es = EntryScale.EntryScale(
-            tl, text = 'Time',
+            outerFrame, text = 'Time',
             min = 0, max = string.atof(fpformat.fix(self.duration, 2)),
             command = lambda t, s = self: s.setT(t))
         # So when you drag scale with mouse its like you started a playback
@@ -162,7 +164,7 @@ class Interval(DirectObject):
         es.onReturnRelease = lambda s=self, es = es: s.setT(es.get(),
                                                             event = IVAL_INIT)
         es.pack(expand = 1, fill = X)
-        f = Frame(tl)
+        bf = Frame(outerFrame)
         # Jump to start and end
         def toStart(s=self, es=es):
             s.stop()
@@ -170,19 +172,20 @@ class Interval(DirectObject):
         def toEnd(s=self):
             s.stop()
             s.setT(s.getDuration(), event = IVAL_INIT)
-        jumpToStart = Button(tl, text = '<<', command = toStart)
+        jumpToStart = Button(bf, text = '<<', command = toStart)
         # Stop/play buttons
-        stop = Button(tl, text = 'Stop',
+        stop = Button(bf, text = 'Stop',
                       command = lambda s=self: s.stop())
         play = Button(
-            tl, text = 'Play',
+            bf, text = 'Play',
             command = lambda s=self, es=es: s.play(es.get()))
-        jumpToEnd = Button(tl, text = '>>', command = toEnd)
+        jumpToEnd = Button(bf, text = '>>', command = toEnd)
         jumpToStart.pack(side = LEFT, expand = 1, fill = X)
         play.pack(side = LEFT, expand = 1, fill = X)
         stop.pack(side = LEFT, expand = 1, fill = X)
         jumpToEnd.pack(side = LEFT, expand = 1, fill = X)
-        f.pack(expand = 1, fill = X)
+        bf.pack(expand = 1, fill = X)
+        outerFrame.pack(expand = 1, fill = X)
         # Add function to update slider during setT calls
         def update(t,es=es):
             es.set(t, fCommand = 0)
