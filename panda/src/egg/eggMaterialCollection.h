@@ -19,13 +19,12 @@
 #ifndef EGGMATERIALCOLLECTION_H
 #define EGGMATERIALCOLLECTION_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggMaterial.h"
 #include "eggGroupNode.h"
 #include "vector_PT_EggMaterial.h"
 
-#include <string>
 #include "pmap.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -55,7 +54,7 @@ public:
 
   // Here begins the actual public interface to EggMaterialCollection.
 
-public:
+PUBLISHED:
   EggMaterialCollection();
   EggMaterialCollection(const EggMaterialCollection &copy);
   EggMaterialCollection &operator = (const EggMaterialCollection &copy);
@@ -64,9 +63,12 @@ public:
   void clear();
 
   int extract_materials(EggGroupNode *node);
+
+public:
   EggGroupNode::iterator insert_materials(EggGroupNode *node);
   EggGroupNode::iterator insert_materials(EggGroupNode *node, EggGroupNode::iterator position);
 
+PUBLISHED:
   int find_used_materials(EggNode *node);
   void remove_unused_materials(EggNode *node);
 
@@ -80,11 +82,13 @@ public:
 
   // Can be used to traverse all the materials in the collection, in
   // order as last sorted.
+public:
   INLINE iterator begin() const;
   INLINE iterator end() const;
   INLINE bool empty() const;
   INLINE size_type size() const;
 
+PUBLISHED:
   bool add_material(EggMaterial *material);
   bool remove_material(EggMaterial *material);
 

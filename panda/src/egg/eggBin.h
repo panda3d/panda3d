@@ -19,7 +19,7 @@
 #ifndef EGGBIN_H
 #define EGGBIN_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggGroup.h"
 
@@ -32,7 +32,7 @@
 //               EggBinMaker.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggBin : public EggGroup {
-public:
+PUBLISHED:
   EggBin(const string &name = "");
   EggBin(const EggGroup &copy);
   EggBin(const EggBin &copy);

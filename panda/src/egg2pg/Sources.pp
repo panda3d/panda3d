@@ -42,4 +42,6 @@
   #define INSTALL_HEADERS \
     load_egg_file.h config_egg2pg.h
 
+  #define IGATESCAN load_egg_file.h 
+
 #end lib_target

@@ -19,12 +19,12 @@
 #ifndef EGGANIMDATA_H
 #define EGGANIMDATA_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggNode.h"
 
-#include <pointerToArray.h>
-#include <pta_double.h>
+#include "pointerToArray.h"
+#include "pta_double.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggAnimData
@@ -32,7 +32,7 @@
 //               which contain rows and columns of numbers.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggAnimData : public EggNode {
-public:
+PUBLISHED:
 
   INLINE EggAnimData(const string &name = "");
   INLINE EggAnimData(const EggAnimData &copy);

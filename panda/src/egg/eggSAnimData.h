@@ -19,7 +19,7 @@
 #ifndef EGGSANIMDATA_H
 #define EGGSANIMDATA_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggAnimData.h"
 
@@ -30,7 +30,7 @@
 //               target, or as one column in an EggXfmSAnim.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggSAnimData : public EggAnimData {
-public:
+PUBLISHED:
   INLINE EggSAnimData(const string &name = "");
   INLINE EggSAnimData(const EggSAnimData &copy);
   INLINE EggSAnimData &operator = (const EggSAnimData &copy);

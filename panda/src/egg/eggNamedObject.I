@@ -48,3 +48,8 @@ operator = (const EggNamedObject &copy) {
   Namable::operator = (copy);
   return *this;
 }
+
+INLINE ostream &operator << (ostream &out, const EggNamedObject &n) {
+  n.output(out);
+  return out;
+}

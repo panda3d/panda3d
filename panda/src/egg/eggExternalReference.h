@@ -19,7 +19,7 @@
 #ifndef EGGEXTERNALREFERENCE_H
 #define EGGEXTERNALREFERENCE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggFilenameNode.h"
 
@@ -29,7 +29,7 @@
 //               be inserted at this point.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggExternalReference : public EggFilenameNode {
-public:
+PUBLISHED:
   EggExternalReference(const string &node_name, const string &filename);
   EggExternalReference(const EggExternalReference &copy);
   EggExternalReference &operator = (const EggExternalReference &copy);

@@ -38,7 +38,7 @@
 //               of this class.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggPolysetMaker : public EggBinMaker {
-public:
+PUBLISHED:
   // The BinNumber serves to identify why a particular EggBin was
   // created.
   enum BinNumber {

@@ -19,16 +19,13 @@
 #ifndef EGGDATA_H
 #define EGGDATA_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggGroupNode.h"
-#include <filename.h>
-#include <coordinateSystem.h>
-#include <notify.h>
-#include <dSearchPath.h>
-
-#include <string>
-
+#include "filename.h"
+#include "coordinateSystem.h"
+#include "notify.h"
+#include "dSearchPath.h"
 
 ///////////////////////////////////////////////////////////////////
 //       Class : EggData
@@ -44,7 +41,7 @@
 //               are the toplevel nodes in the egg file.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggData : public EggGroupNode {
-public:
+PUBLISHED:
   INLINE EggData();
   INLINE EggData(const EggData &copy);
   INLINE EggData &operator = (const EggData &copy);

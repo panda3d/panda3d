@@ -19,9 +19,22 @@
 #include "eggNamedObject.h"
 #include "eggMiscFuncs.h"
 
-#include <indent.h>
+#include "indent.h"
 
 TypeHandle EggNamedObject::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggNamedObject::output
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void EggNamedObject::
+output(ostream &out) const {
+  out << get_type();
+  if (has_name()) {
+    out << " " << get_name();
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggNamedObject::write_header

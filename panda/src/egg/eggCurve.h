@@ -19,7 +19,7 @@
 #ifndef EGGCURVE_H
 #define EGGCURVE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggPrimitive.h"
 
@@ -29,7 +29,7 @@
 //               EggNurbsCurve.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggCurve : public EggPrimitive {
-public:
+PUBLISHED:
   INLINE EggCurve(const string &name = "");
   INLINE EggCurve(const EggCurve &copy);
   INLINE EggCurve &operator = (const EggCurve &copy);

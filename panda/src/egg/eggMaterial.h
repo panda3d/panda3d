@@ -19,18 +19,18 @@
 #ifndef EGGMATERIAL_H
 #define EGGMATERIAL_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggNode.h"
 
-#include <luse.h>
+#include "luse.h"
 
 ///////////////////////////////////////////////////////////////////
 //       Class : EggMaterial
 // Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggMaterial : public EggNode {
-public:
+PUBLISHED:
   EggMaterial(const string &mref_name);
   EggMaterial(const EggMaterial &copy);
 

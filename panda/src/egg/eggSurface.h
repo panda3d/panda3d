@@ -19,7 +19,7 @@
 #ifndef EGGSURFACE_H
 #define EGGSURFACE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggPrimitive.h"
 
@@ -29,7 +29,7 @@
 //               EggNurbsSurface.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggSurface : public EggPrimitive {
-public:
+PUBLISHED:
   INLINE EggSurface(const string &name = "");
   INLINE EggSurface(const EggSurface &copy);
   INLINE EggSurface &operator = (const EggSurface &copy);

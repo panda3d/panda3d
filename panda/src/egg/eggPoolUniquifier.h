@@ -19,7 +19,7 @@
 #ifndef EGGPOOLUNIQUIFIER_H
 #define EGGPOOLUNIQUIFIER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggNameUniquifier.h"
 
@@ -32,7 +32,7 @@
 //               an egg file.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggPoolUniquifier : public EggNameUniquifier {
-public:
+PUBLISHED:
   EggPoolUniquifier();
 
   virtual string get_category(EggNode *node);

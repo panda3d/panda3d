@@ -26,6 +26,7 @@
 
 class EggData;
 
+BEGIN_PUBLISH
 ////////////////////////////////////////////////////////////////////
 //     Function: load_egg_file
 //  Description: A convenience function; the primary interface to this
@@ -47,6 +48,7 @@ load_egg_file(const string &filename, CoordinateSystem cs = CS_default);
 //               loading.
 ////////////////////////////////////////////////////////////////////
 EXPCL_PANDAEGG PT(PandaNode)
-load_egg_data(EggData &data);
+load_egg_data(EggData &data, CoordinateSystem cs = CS_default);
+END_PUBLISH
 
 #endif

@@ -63,7 +63,7 @@ private:
 
   // Here begins the actual public interface to EggGroupNode.
 
-public:
+PUBLISHED:
   EggGroupNode(const string &name = "") : EggNode(name) { }
   EggGroupNode(const EggGroupNode &copy);
   EggGroupNode &operator = (const EggGroupNode &copy);
@@ -75,7 +75,7 @@ public:
   // pointers to EggNodes.  The set of children is read-only, however,
   // except through the limited add_child/remove_child or insert/erase
   // interface.  The following implements this.
-
+public:
 #ifdef WIN32_VC
   typedef const PT(EggNode) *pointer;
   typedef const PT(EggNode) *const_pointer;
@@ -96,17 +96,26 @@ public:
   iterator end() const;
   reverse_iterator rbegin() const;
   reverse_iterator rend() const;
-  bool empty() const;
-  size_type size() const;
 
   iterator insert(iterator position, PT(EggNode) x);
   iterator erase(iterator position);
   iterator erase(iterator first, iterator last);
   void replace(iterator position, PT(EggNode) x);
+
+PUBLISHED:
+  bool empty() const;
+  size_type size() const;
   void clear();
 
-  PT(EggNode) add_child(PT(EggNode) node);
-  PT(EggNode) remove_child(PT(EggNode) node);
+  // This is an alternate way to traverse the list of children.  It is
+  // mainly provided for scripting code, which can't use the iterators
+  // defined above (they don't export through interrogate very well).
+  // These are, of course, non-thread-safe.
+  EggNode *get_first_child();
+  EggNode *get_next_child();
+
+  EggNode *add_child(EggNode *node);
+  PT(EggNode) remove_child(EggNode *node);
   void steal_children(EggGroupNode &other);
 
   EggNode *find_child(const string &name) const;
@@ -143,6 +152,7 @@ protected:
 
 private:
   Children _children;
+  const_iterator _gnc_iterator;
 
   // Don't try to use these private functions.  User code should add
   // and remove children via add_child()/remove_child(), or via the

@@ -36,8 +36,8 @@ class CharacterJointBundle;
 class Character;
 class CharacterSlider;
 class MovingPartBase;
-class NamedNode;
 class EggLoader;
+class PandaNode;
 
 ///////////////////////////////////////////////////////////////////
 //       Class : CharacterMaker

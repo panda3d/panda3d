@@ -35,7 +35,7 @@ class EggXfmAnimData;
 //               any number of EggSAnimData children.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggXfmSAnim : public EggGroupNode {
-public:
+PUBLISHED:
   INLINE EggXfmSAnim(const string &name = "",
                      CoordinateSystem cs = CS_default);
   EggXfmSAnim(const EggXfmAnimData &convert_from);

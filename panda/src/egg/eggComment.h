@@ -19,11 +19,9 @@
 #ifndef EGGCOMMENT_H
 #define EGGCOMMENT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggNode.h"
-
-#include <string>
 
 ///////////////////////////////////////////////////////////////////
 //       Class : EggComment
@@ -31,7 +29,7 @@
 //               <Comment> entry.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggComment : public EggNode {
-public:
+PUBLISHED:
   INLINE EggComment(const string &node_name, const string &comment);
   INLINE EggComment(const EggComment &copy);
 

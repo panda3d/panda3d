@@ -314,6 +314,16 @@ clear() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::get_num_vertices
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE int EggPrimitive::
+get_num_vertices() const {
+  return size();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::set_vertex
 //       Access: Public
 //  Description: Replaces a particular vertex based on its index

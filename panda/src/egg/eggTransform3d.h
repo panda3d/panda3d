@@ -31,7 +31,7 @@
 //               computes a 4x4 matrix.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggTransform3d {
-public:
+PUBLISHED:
   EggTransform3d();
   EggTransform3d(const EggTransform3d &copy);
   EggTransform3d &operator = (const EggTransform3d &copy);

@@ -74,7 +74,7 @@
 //
 ///////////////////////////////////////////////////////////////////
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggObject.h"
 
@@ -90,7 +90,7 @@ class EggNode;
 //               comment above.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggNameUniquifier : public EggObject {
-public:
+PUBLISHED:
   EggNameUniquifier();
   ~EggNameUniquifier();
 

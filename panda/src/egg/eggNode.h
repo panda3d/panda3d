@@ -19,14 +19,14 @@
 #ifndef EGGNODE_H
 #define EGGNODE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggNamedObject.h"
 
-#include <typedObject.h>
-#include <lmatrix.h>
-#include <pointerTo.h>
-#include <referenceCount.h>
+#include "typedObject.h"
+#include "lmatrix.h"
+#include "pointerTo.h"
+#include "referenceCount.h"
 
 class EggGroupNode;
 class EggRenderMode;
@@ -40,7 +40,7 @@ class EggTextureCollection;
 //               include things like vertices.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggNode : public EggNamedObject {
-public:
+PUBLISHED:
   INLINE EggNode(const string &name = "");
   INLINE EggNode(const EggNode &copy);
   INLINE EggNode &operator = (const EggNode &copy);

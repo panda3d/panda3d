@@ -34,7 +34,7 @@
 //               currently--it's replaced by EggXfmSAnim.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggXfmAnimData : public EggAnimData {
-public:
+PUBLISHED:
   INLINE EggXfmAnimData(const string &name = "",
                         CoordinateSystem cs = CS_default);
   EggXfmAnimData(const EggXfmSAnim &convert_from);

@@ -22,8 +22,8 @@
 #include "eggTextureCollection.h"
 #include "lexerDefs.h"
 
-#include <indent.h>
-#include <vector_int.h>
+#include "indent.h"
+#include "vector_int.h"
 
 TypeHandle EggPrimitive::_type_handle;
 
@@ -334,7 +334,7 @@ add_vertex(EggVertex *vertex) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::remove_vertex
 //       Access: Public
-//  Description: Removes the indicated vertex vertex from the
+//  Description: Removes the indicated vertex from the
 //               primitive and returns it.  If the vertex was not
 //               already in the primitive, does nothing and returns
 //               NULL.

@@ -30,7 +30,7 @@
 //               (Almost) all things egg inherit from this.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggObject : public TypedReferenceCount {
-public:
+PUBLISHED:
   INLINE EggObject();
   INLINE EggObject(const EggObject &copy);
   INLINE EggObject &operator = (const EggObject &copy);

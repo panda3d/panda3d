@@ -19,7 +19,7 @@
 #ifndef EGGPOLYGON_H
 #define EGGPOLYGON_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggPrimitive.h"
 
@@ -28,7 +28,7 @@
 // Description : A single polygon.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggPolygon : public EggPrimitive {
-public:
+PUBLISHED:
   INLINE EggPolygon(const string &name = "");
   INLINE EggPolygon(const EggPolygon &copy);
   INLINE EggPolygon &operator = (const EggPolygon &copy);

@@ -28,13 +28,13 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggTexture.h"
 #include "pt_EggTexture.h"
 
-#include <filename.h>
-#include <pointerTo.h>
+#include "filename.h"
+#include "pointerTo.h"
 
 #include "pset.h"
 #include "pmap.h"

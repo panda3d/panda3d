@@ -19,10 +19,10 @@
 #ifndef EGGFILENAMENODE_H
 #define EGGFILENAMENODE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggNode.h"
-#include <filename.h>
+#include "filename.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggFilenameNode
@@ -32,7 +32,7 @@
 //               EggTexture and EggExternalReference.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggFilenameNode : public EggNode {
-public:
+PUBLISHED:
   INLINE EggFilenameNode();
   INLINE EggFilenameNode(const string &node_name, const Filename &filename);
   INLINE EggFilenameNode(const EggFilenameNode &copy);

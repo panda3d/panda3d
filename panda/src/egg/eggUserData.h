@@ -36,7 +36,7 @@
 //               object only.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggUserData : public TypedReferenceCount {
-public:
+PUBLISHED:
   INLINE EggUserData();
   INLINE EggUserData(const EggUserData &copy);
   INLINE EggUserData &operator = (const EggUserData &copy);

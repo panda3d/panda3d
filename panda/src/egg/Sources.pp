@@ -87,6 +87,7 @@
     pt_EggTexture.h vector_PT_EggTexture.h \
     pt_EggVertex.h vector_PT_EggVertex.h
 
+  #define IGATESCAN all
 
 #end lib_target
 

@@ -19,21 +19,21 @@
 #ifndef EGGTEXTURE_H
 #define EGGTEXTURE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggRenderMode.h"
 #include "eggFilenameNode.h"
 
-#include <luse.h>
+#include "luse.h"
 
 
 ////////////////////////////////////////////////////////////////////
-//   Class : EggTexture
+//       Class : EggTexture
 // Description : Defines a texture map that may be applied to
 //               geometry.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggTexture : public EggFilenameNode, public EggRenderMode {
-public:
+PUBLISHED:
   EggTexture(const string &tref_name, const string &filename);
   EggTexture(const EggTexture &copy);
   EggTexture &operator = (const EggTexture &copy);

@@ -19,10 +19,10 @@
 #ifndef EGGMORPH_H
 #define EGGMORPH_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <namable.h>
-#include <luse.h>
+#include "namable.h"
+#include "luse.h"
 #include "pset.h"
 
 ////////////////////////////////////////////////////////////////////

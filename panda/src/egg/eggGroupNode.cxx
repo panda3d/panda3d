@@ -149,26 +149,6 @@ rend() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::empty
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-bool EggGroupNode::
-empty() const {
-  return _children.empty();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::size
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-EggGroupNode::size_type EggGroupNode::
-size() const {
-  return _children.size();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::insert
 //       Access: Public
 //  Description:
@@ -222,6 +202,26 @@ replace(iterator position, PT(EggNode) x) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::empty
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool EggGroupNode::
+empty() const {
+  return _children.empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::size
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+EggGroupNode::size_type EggGroupNode::
+size() const {
+  return _children.size();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::clear
 //       Access: Public
 //  Description:
@@ -231,6 +231,45 @@ clear() {
   erase(begin(), end());
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::get_first_child
+//       Access: Public
+//  Description: Returns the first child in the group's list of
+//               children, or NULL if the list of children is empty.
+//               Can be used with get_next_child() to return the
+//               complete list of children without using the iterator
+//               class; however, this is non-thread-safe, and so is
+//               not recommended except for languages other than C++
+//               which cannot use the iterators.
+////////////////////////////////////////////////////////////////////
+EggNode *EggGroupNode::
+get_first_child() {
+  _gnc_iterator = begin();
+  return get_next_child();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::get_next_child
+//       Access: Public
+//  Description: Returns the next child in the group's list of
+//               children since the last call to get_first_child() or
+//               get_next_child(), or NULL if the last child has been
+//               returned.  Can be used with get_first_child() to
+//               return the complete list of children without using
+//               the iterator class; however, this is non-thread-safe,
+//               and so is not recommended except for languages other
+//               than C++ which cannot use the iterators.
+//
+//               It is an error to call this without previously
+//               calling get_first_child().
+////////////////////////////////////////////////////////////////////
+EggNode *EggGroupNode::
+get_next_child() {
+  if (_gnc_iterator != end()) {
+    return *_gnc_iterator++;
+  }
+  return NULL;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::add_child
@@ -239,8 +278,9 @@ clear() {
 //               If the child node is already a child of some other
 //               node, removes it first.
 ////////////////////////////////////////////////////////////////////
-PT(EggNode) EggGroupNode::
-add_child(PT(EggNode) node) {
+EggNode *EggGroupNode::
+add_child(EggNode *node) {
+  PT(EggNode) ptnode = node;
   if (node->_parent != NULL) {
     node->_parent->remove_child(node);
   }
@@ -257,14 +297,15 @@ add_child(PT(EggNode) node) {
 //               group, does nothing and returns NULL.
 ////////////////////////////////////////////////////////////////////
 PT(EggNode) EggGroupNode::
-remove_child(PT(EggNode) node) {
-  iterator i = find(begin(), end(), node);
+remove_child(EggNode *node) {
+  PT(EggNode) ptnode = node;
+  iterator i = find(begin(), end(), ptnode);
   if (i == end()) {
     return PT(EggNode)();
   } else {
     // erase() calls prepare_remove_child().
     erase(i);
-    return node;
+    return ptnode;
   }
 }
 

@@ -19,7 +19,7 @@
 #ifndef EGGPOINT_H
 #define EGGPOINT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggPrimitive.h"
 
@@ -29,7 +29,7 @@
 //               by a single <PointLight> entry.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggPoint : public EggPrimitive {
-public:
+PUBLISHED:
   INLINE EggPoint(const string &name = "");
   INLINE EggPoint(const EggPoint &copy);
   INLINE EggPoint &operator = (const EggPoint &copy);

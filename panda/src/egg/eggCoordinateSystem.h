@@ -19,11 +19,11 @@
 #ifndef EGGCOORDINATESYSTEM_H
 #define EGGCOORDINATESYSTEM_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggNode.h"
 #include "eggData.h"
-#include <coordinateSystem.h>
+#include "coordinateSystem.h"
 
 
 ///////////////////////////////////////////////////////////////////

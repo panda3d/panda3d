@@ -38,7 +38,7 @@
 //               to the <Group>, <Instance>, and <Joint> type nodes.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggGroup : public EggGroupNode, public EggRenderMode, public EggTransform3d {
-public:
+PUBLISHED:
   typedef pmap<PT_EggVertex, double> VertexRef;
   typedef pmap<string, string> TagData;
 
@@ -199,10 +199,12 @@ public:
   INLINE bool has_tag(const string &key) const;
   INLINE void clear_tag(const string &key);
 
+public:
   INLINE TagData::const_iterator tag_begin() const;
   INLINE TagData::const_iterator tag_end() const;
   INLINE TagData::size_type tag_size() const;
 
+PUBLISHED:
   void ref_vertex(EggVertex *vert, double membership = 1.0);
   void unref_vertex(EggVertex *vert);
   void unref_all_vertices();
@@ -210,10 +212,12 @@ public:
   void set_vertex_membership(EggVertex *vert, double membership);
   void steal_vrefs(EggGroup *other);
 
+public:
   INLINE VertexRef::const_iterator vref_begin() const;
   INLINE VertexRef::const_iterator vref_end() const;
   INLINE VertexRef::size_type vref_size() const;
 
+PUBLISHED:
 #ifndef NDEBUG
   void test_vref_integrity() const;
 #else

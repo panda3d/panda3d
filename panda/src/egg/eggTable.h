@@ -19,7 +19,7 @@
 #ifndef EGGTABLE_H
 #define EGGTABLE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggGroupNode.h"
 
@@ -33,7 +33,7 @@
 //               hierarchy of tables.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggTable : public EggGroupNode {
-public:
+PUBLISHED:
   enum TableType {
     TT_invalid,
     TT_table,

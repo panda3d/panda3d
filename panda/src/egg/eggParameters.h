@@ -19,7 +19,7 @@
 #ifndef EGGPARAMETERS_H
 #define EGGPARAMETERS_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 ///////////////////////////////////////////////////////////////////
 //       Class : EggParameters

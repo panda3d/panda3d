@@ -38,7 +38,7 @@
 //               EggObject a virtual base class is just no fun.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggRenderMode {
-public:
+PUBLISHED:
   INLINE EggRenderMode();
   INLINE EggRenderMode(const EggRenderMode &copy);
   INLINE EggRenderMode &operator = (const EggRenderMode &copy);

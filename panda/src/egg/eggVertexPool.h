@@ -19,17 +19,17 @@
 #ifndef EGGVERTEXPOOL_H
 #define EGGVERTEXPOOL_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggVertex.h"
 #include "eggNode.h"
 #include "pt_EggVertex.h"
 
-#include <pointerTo.h>
+#include "pointerTo.h"
 #include "pset.h"
 #include "pmap.h"
-#include <lmatrix.h>
-#include <iterator_types.h>
+#include "lmatrix.h"
+#include "iterator_types.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggVertexPool
@@ -72,7 +72,7 @@ public:
 
   // Here begins the actual public interface to EggVertexPool.
 
-public:
+PUBLISHED:
   EggVertexPool(const string &name);
   EggVertexPool(const EggVertexPool &copy);
   ~EggVertexPool();
@@ -84,12 +84,14 @@ public:
   // Returns 0 if the pool is empty.
   int get_highest_index() const;
 
+public:
   // Can be used to traverse all the vertices in index number order.
   iterator begin() const;
   iterator end() const;
   bool empty() const;
   size_type size() const;
 
+PUBLISHED:
   // add_vertex() adds a freshly-allocated vertex.  It is up to the
   // user to allocate the vertex.
   void add_vertex(EggVertex *vertex, int index = -1);

@@ -19,18 +19,18 @@
 #ifndef EGGNURBSCURVE_H
 #define EGGNURBSCURVE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggCurve.h"
 
-#include <vector_double.h>
+#include "vector_double.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggNurbsCurve
 // Description : A parametric NURBS curve.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggNurbsCurve : public EggCurve {
-public:
+PUBLISHED:
   INLINE EggNurbsCurve(const string &name = "");
   INLINE EggNurbsCurve(const EggNurbsCurve &copy);
   INLINE EggNurbsCurve &operator = (const EggNurbsCurve &copy);

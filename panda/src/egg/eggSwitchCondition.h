@@ -19,10 +19,10 @@
 #ifndef EGGSWITCHCONDITION
 #define EGGSWITCHCONDITION
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggObject.h"
-#include <luse.h>
+#include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggSwitchCondition
@@ -35,7 +35,7 @@
 //               actually supported.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggSwitchCondition : public EggObject {
-public:
+PUBLISHED:
   virtual EggSwitchCondition *make_copy() const=0;
   virtual void write(ostream &out, int indent_level) const=0;
 

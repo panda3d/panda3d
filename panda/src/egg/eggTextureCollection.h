@@ -19,13 +19,12 @@
 #ifndef EGGTEXTURECOLLECTION_H
 #define EGGTEXTURECOLLECTION_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggTexture.h"
 #include "eggGroupNode.h"
 #include "vector_PT_EggTexture.h"
 
-#include <string>
 #include "pmap.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -55,7 +54,7 @@ public:
 
   // Here begins the actual public interface to EggTextureCollection.
 
-public:
+PUBLISHED:
   EggTextureCollection();
   EggTextureCollection(const EggTextureCollection &copy);
   EggTextureCollection &operator = (const EggTextureCollection &copy);
@@ -64,9 +63,12 @@ public:
   void clear();
 
   int extract_textures(EggGroupNode *node);
+
+public:
   EggGroupNode::iterator insert_textures(EggGroupNode *node);
   EggGroupNode::iterator insert_textures(EggGroupNode *node, EggGroupNode::iterator position);
 
+PUBLISHED:
   int find_used_textures(EggNode *node);
   void remove_unused_textures(EggNode *node);
 
@@ -80,11 +82,13 @@ public:
 
   // Can be used to traverse all the textures in the collection, in
   // order as last sorted.
+public:
   INLINE iterator begin() const;
   INLINE iterator end() const;
   INLINE bool empty() const;
   INLINE size_type size() const;
 
+PUBLISHED:
   bool add_texture(EggTexture *texture);
   bool remove_texture(EggTexture *texture);
 

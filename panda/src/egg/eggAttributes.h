@@ -19,12 +19,12 @@
 #ifndef EGGATTRIBUTES_H
 #define EGGATTRIBUTES_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggMorphList.h"
 
-#include <typedObject.h>
-#include <luse.h>
+#include "typedObject.h"
+#include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggAttributes
@@ -38,7 +38,7 @@
 //               EggObject a virtual base class is just no fun.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggAttributes {
-public:
+PUBLISHED:
   EggAttributes();
   EggAttributes(const EggAttributes &copy);
   EggAttributes &operator = (const EggAttributes &copy);

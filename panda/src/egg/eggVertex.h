@@ -19,14 +19,14 @@
 #ifndef EGGVERTEX_H
 #define EGGVERTEX_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggObject.h"
 #include "eggAttributes.h"
 #include "eggMorphList.h"
 
-#include <referenceCount.h>
-#include <luse.h>
+#include "referenceCount.h"
+#include "luse.h"
 #include "pset.h"
 
 class EggVertexPool;
@@ -44,6 +44,7 @@ public:
   typedef pset<EggGroup *> GroupRef;
   typedef pmultiset<EggPrimitive *> PrimitiveRef;
 
+PUBLISHED:
   EggVertex();
   EggVertex(const EggVertex &copy);
   EggVertex &operator = (const EggVertex &copy);
@@ -84,17 +85,21 @@ public:
 
   void transform(const LMatrix4d &mat);
 
+public:
   GroupRef::const_iterator gref_begin() const;
   GroupRef::const_iterator gref_end() const;
   GroupRef::size_type gref_size() const;
+PUBLISHED:
   bool has_gref(const EggGroup *group) const;
 
   void copy_grefs_from(const EggVertex &other);
   void clear_grefs();
 
+public:
   PrimitiveRef::const_iterator pref_begin() const;
   PrimitiveRef::const_iterator pref_end() const;
   PrimitiveRef::size_type pref_size() const;
+PUBLISHED:
   int has_pref(const EggPrimitive *prim) const;
 
 #ifndef NDEBUG

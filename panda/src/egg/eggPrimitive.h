@@ -19,7 +19,7 @@
 #ifndef EGGPRIMITIVE_H
 #define EGGPRIMITIVE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggNode.h"
 #include "eggAttributes.h"
@@ -31,7 +31,7 @@
 #include "pt_EggMaterial.h"
 #include "vector_PT_EggVertex.h"
 
-#include <pointerTo.h>
+#include "pointerTo.h"
 #include "pvector.h"
 
 class EggVertexPool;
@@ -62,7 +62,7 @@ private:
 
   // Here begins the actual public interface to EggPrimitive.
 
-public:
+PUBLISHED:
   INLINE EggPrimitive(const string &name = "");
   INLINE EggPrimitive(const EggPrimitive &copy);
   INLINE EggPrimitive &operator = (const EggPrimitive &copy);
@@ -101,7 +101,7 @@ public:
   // pointers to EggVertex objects.  The set of vertices is read-only,
   // however, except through the limited add_vertex/remove_vertex or
   // insert/erase interface.  The following implements this.
-
+public:
 #ifdef WIN32_VC
   typedef PT_EggVertex *pointer;
   typedef PT_EggVertex *const_pointer;
@@ -131,6 +131,8 @@ public:
   INLINE iterator erase(iterator position);
   iterator erase(iterator first, iterator last);
   INLINE void replace(iterator position, EggVertex *vertex);
+
+PUBLISHED:
   INLINE void clear();
 
   EggVertex *add_vertex(EggVertex *vertex);
@@ -138,6 +140,7 @@ public:
   void copy_vertices(const EggPrimitive &other);
 
   // These are shorthands if you don't want to use the iterators.
+  INLINE int get_num_vertices() const;
   INLINE void set_vertex(int index, EggVertex *vertex);
   INLINE EggVertex *get_vertex(int index) const;
 

@@ -204,12 +204,12 @@
 ///////////////////////////////////////////////////////////////////
 
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggObject.h"
 
-#include <pointerTo.h>
-#include <notify.h>
+#include "pointerTo.h"
+#include "notify.h"
 
 #include "pset.h"
 #include "pmap.h"
@@ -248,7 +248,7 @@ public:
 //               comment above.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggBinMaker : public EggObject {
-public:
+PUBLISHED:
   EggBinMaker();
   ~EggBinMaker();
 

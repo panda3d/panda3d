@@ -19,7 +19,7 @@
 #ifndef EGGGROUPUNIQUIFIER_H
 #define EGGGROUPUNIQUIFIER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggNameUniquifier.h"
 
@@ -31,7 +31,7 @@
 //               you want it.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggGroupUniquifier : public EggNameUniquifier {
-public:
+PUBLISHED:
   EggGroupUniquifier();
 
   virtual string get_category(EggNode *node);

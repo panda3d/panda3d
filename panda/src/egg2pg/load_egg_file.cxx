@@ -22,7 +22,6 @@
 #include "sceneGraphReducer.h"
 #include "virtualFileSystem.h"
 #include "config_util.h"
-#include "config_express.h"
 
 static PT(PandaNode)
 load_from_loader(EggLoader &loader) {
@@ -80,32 +79,18 @@ load_egg_file(const string &filename, CoordinateSystem cs) {
   EggLoader loader;
   loader._data.set_egg_filename(egg_filename);
   loader._data.set_auto_resolve_externals(true);
-  if (cs != CS_default) {
-    loader._data.set_coordinate_system(cs);
-  }
+  loader._data.set_coordinate_system(cs);
+
   bool okflag;
-  
-  if (use_vfs) {
-    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    istream *istr = vfs->open_read_file(egg_filename);
-    if (istr == (istream *)NULL) {
-      egg2pg_cat.error()
-        << "Could not open " << egg_filename << " for reading.\n";
-      return NULL;
-    }
-    okflag = loader._data.read(*istr);
-    delete istr;
-
-  } else {
-    ifstream file;
-
-    if (!egg_filename.open_read(file)) {
-      egg2pg_cat.error()
-        << "Could not open " << egg_filename << " for reading.\n";
-      return NULL;
-    } 
-    okflag = loader._data.read(file);
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  istream *istr = vfs->open_read_file(egg_filename);
+  if (istr == (istream *)NULL) {
+    egg2pg_cat.error()
+      << "Could not open " << egg_filename << " for reading.\n";
+    return NULL;
   }
+  okflag = loader._data.read(*istr);
+  delete istr;
 
   if (!okflag) {
     egg2pg_cat.error()
@@ -124,7 +109,7 @@ load_egg_file(const string &filename, CoordinateSystem cs) {
 //               loading.
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode)
-load_egg_data(EggData &data) {
+load_egg_data(EggData &data, CoordinateSystem cs) {
   // We temporarily shuttle the children to a holding node so we can
   // copy them into the EggLoader's structure without it complaining.
   EggGroupNode children_holder;
@@ -132,6 +117,9 @@ load_egg_data(EggData &data) {
 
   EggLoader loader(data);
   loader._data.steal_children(children_holder);
+
+  loader._data.set_auto_resolve_externals(true);
+  loader._data.set_coordinate_system(cs);
 
   return load_from_loader(loader);
 }

@@ -27,15 +27,18 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggNamedObject
-// Description : This is a fairly high-level base class--any egg
+// Description : This is a fairly low-level base class--any egg
 //               object that has a name.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggNamedObject : public EggObject, public Namable {
-public:
+PUBLISHED:
   INLINE EggNamedObject(const string &name = "");
   INLINE EggNamedObject(const EggNamedObject &copy);
   INLINE EggNamedObject &operator = (const EggNamedObject &copy);
 
+  void output(ostream &out) const;
+
+public:
   void write_header(ostream &out, int indent_level,
                     const char *egg_keyword) const;
 
@@ -58,6 +61,8 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+INLINE ostream &operator << (ostream &out, const EggNamedObject &n);
 
 #include "eggNamedObject.I"
 
