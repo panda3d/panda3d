@@ -354,6 +354,19 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       }
       break;
 
+    case WM_IME_STARTCOMPOSITION:
+      // In case we're running fullscreen mode, we have to turn on
+      // explicit DX support for overlay windows now, so we'll be able
+      // to see the IME window.
+      _dxgsg->support_overlay_window(true);
+      break;
+
+    case WM_IME_ENDCOMPOSITION:
+      // Turn off the support for overlay windows, since we're done
+      // with the IME window for now and it just slows things down.
+      _dxgsg->support_overlay_window(false);
+      break;
+
     case WM_IME_COMPOSITION:
       if (lparam & GCS_RESULTSTR) {
         if (!_input_devices.empty()) {

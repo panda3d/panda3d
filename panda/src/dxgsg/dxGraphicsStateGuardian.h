@@ -460,6 +460,7 @@ protected:
   LMatrix4f _current_color_mat;
   float _current_alpha_offset;
   float _current_alpha_scale;
+  bool _overlay_windows_supported;
 
   // vars for frames/sec meter
   DWORD _start_time;
@@ -503,6 +504,10 @@ public:
   void  show_frame();
   void  show_full_screen_frame();
   void  show_windowed_frame();
+
+  void support_overlay_window(bool flag);
+
+
 /*  void  dx_init(  LPDIRECTDRAW7     context,
           LPDIRECTDRAWSURFACE7  pri,
           LPDIRECTDRAWSURFACE7  back,

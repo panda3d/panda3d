@@ -366,6 +366,7 @@ DXGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
     _fpsmeter_verts=NULL;
     _fpsmeter_font_surf=NULL;
     _dx_ready = false;
+    _overlay_windows_supported = false;
 
 //    scrn.pddsPrimary = scrn.pddsZBuf = scrn.pddsBack = NULL;
 //    _pDD = NULL;
@@ -6467,6 +6468,50 @@ void DXGraphicsStateGuardian::show_frame(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: dxGraphicsStateGuardian::support_overlay_window
+//       Access: Public
+//  Description: Specifies whether dialog windows placed on top of the
+//               dx rendering window should be supported.  This
+//               requires a bit of extra overhead, so it should only
+//               be activated when necessary; however, if it is not
+//               activated, a window that pops up over the fullscreen
+//               DX window (like a dialog box, or particularly like
+//               the IME composition or candidate windows) may not be
+//               visible.
+//
+//               This is not necessary when running in windowed mode,
+//               but it does no harm.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+support_overlay_window(bool flag) {
+  if (_overlay_windows_supported && !flag) {
+    // Disable support for overlay windows.
+    _overlay_windows_supported = false;
+    
+    if (dx_full_screen) {
+      scrn.pddsPrimary->SetClipper(NULL);
+    }
+
+  } else if (!_overlay_windows_supported && flag) {
+    // Enable support for overlay windows.
+    _overlay_windows_supported = true;
+
+    if (dx_full_screen) {
+      // Create a Clipper object to blt the whole screen.
+      LPDIRECTDRAWCLIPPER Clipper;
+      
+      if (scrn.pDD->CreateClipper(0, &Clipper, NULL) == DD_OK) {
+        Clipper->SetHWnd(0, scrn.hWnd);
+        scrn.pddsPrimary->SetClipper(Clipper);
+      }
+      scrn.pDD->FlipToGDISurface();
+      Clipper->Release();
+    }
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: show_full_screen_frame
 //       Access:
 //       Description:   Repaint primary buffer from back buffer
@@ -6477,28 +6522,36 @@ void DXGraphicsStateGuardian::show_full_screen_frame(void) {
   // Flip the front and back buffers, to make what we just rendered
   // visible.
 
-  DWORD dwFlipFlags = DDFLIP_WAIT;
+  if (_overlay_windows_supported) {
+    // If we're asking for overlay windows, we have to blt instead of
+    // flip, so we don't lose the window.
+    hr = scrn.pddsPrimary->Blt( NULL, scrn.pddsBack,  NULL, DDBLT_WAIT, NULL );
 
-  if (!dx_sync_video) {
-    // If the user indicated via Config that we shouldn't wait for
-    // video sync, then don't wait (if the hardware supports this).
-    // This will introduce visible artifacts like tearing, and may
-    // cause the frame rate to grow excessively (and pointlessly)
-    // high, starving out other processes.
-    dwFlipFlags |= DDFLIP_NOVSYNC;
-//  dwFlipFlags = DDFLIP_DONOTWAIT | DDFLIP_NOVSYNC;
-  }
+  } else {
+    // Normally, we can just do the fast flip operation.
+    DWORD dwFlipFlags = DDFLIP_WAIT;
 
-  // bugbug: dont we want triple buffering instead of wasting time
-  // waiting for vsync?
-  hr = scrn.pddsPrimary->Flip( NULL, dwFlipFlags);
+    if (!dx_sync_video) {
+      // If the user indicated via Config that we shouldn't wait for
+      // video sync, then don't wait (if the hardware supports this).
+      // This will introduce visible artifacts like tearing, and may
+      // cause the frame rate to grow excessively (and pointlessly)
+      // high, starving out other processes.
+      dwFlipFlags |= DDFLIP_NOVSYNC;
+      //  dwFlipFlags = DDFLIP_DONOTWAIT | DDFLIP_NOVSYNC;
+    }
 
-  if(FAILED(hr)) {
-    if((hr == DDERR_SURFACELOST) || (hr == DDERR_SURFACEBUSY)) {
-      CheckCooperativeLevel();
-    } else {
-      dxgsg_cat.error() << "show_frame() - Flip failed w/unexpected error code: " << ConvD3DErrorToString(hr) << endl;
-      exit(1);
+    // bugbug: dont we want triple buffering instead of wasting time
+    // waiting for vsync?
+    hr = scrn.pddsPrimary->Flip( NULL, dwFlipFlags);
+
+    if(FAILED(hr)) {
+      if((hr == DDERR_SURFACELOST) || (hr == DDERR_SURFACEBUSY)) {
+        CheckCooperativeLevel();
+      } else {
+        dxgsg_cat.error() << "show_frame() - Flip failed w/unexpected error code: " << ConvD3DErrorToString(hr) << endl;
+        exit(1);
+      }
     }
   }
 
