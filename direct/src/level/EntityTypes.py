@@ -7,16 +7,18 @@ class Entity(EntityTypeDesc):
     abstract = 1
     type = 'entity'
     attribs = (
-        ('type', None),
+        ('type', None, 'const'),
         ('name', '<unnamed>', 'string'),
         ('comment', '', 'string'),
-        ('parentEntId', 0, 'entId', {'type':'nodepath'}),
+        ('parentEntId', 0, 'entId'),
         )
 
 class LevelMgr(Entity):
     type = 'levelMgr'
     permanent = 1
     attribs = (
+        ('name', 'LevelMgr', 'const'),
+        ('parentEntId', 0, 'const'),
         ('cogLevel', 0, 'int', {'min':0, 'max':11}),
         ('cogTrack', 'c', 'choice', {'choiceSet':('sellbot','cashbot',
                                                   'lawbot','bossbot',),
@@ -24,22 +26,28 @@ class LevelMgr(Entity):
                                                   'cashbot':'m',
                                                   'lawbot':'l',
                                                   'bossbot':'c'}}),
-        ('modelFilename', '', 'bamfilename'),
+        ('modelFilename', '', 'const'),
         )
 
 class EditMgr(Entity):
     type = 'editMgr'
     permanent = 1
+    delAttribs = (
+        'comment',
+        )
     attribs = (
-        ('requestSave', None),
-        ('requestNewEntity', None),
-        ('insertEntity', None),
-        ('removeEntity', None),
+        ('name', 'LevelMgr', 'const'),
+        ('parentEntId', 0, 'const'),
+        ('requestSave', None, 'const'),
+        ('requestNewEntity', None, 'const'),
+        ('insertEntity', None, 'const'),
+        ('removeEntity', None, 'const'),
         )
 
 class Nodepath(Entity):
     type = 'nodepath'
     attribs = (
+        ('parentEntId', 0, 'entId', {'type':'nodepath'}),
         ('pos', Point3(0,0,0), 'pos'),
         ('hpr', Vec3(0,0,0), 'hpr'),
         )
@@ -52,8 +60,9 @@ class Zone(Nodepath):
         'hpr',
         )
     attribs = (
+        ('parentEntId', 0, 'const'),
+        ('modelZoneNum', -1, 'const'),
         ('description', '', 'string'),
-        ('modelZoneNum', -1, 'int'),
         ('visibility', [], 'visZoneList'),
         )
 
