@@ -7,9 +7,7 @@
 //#define PSDEBUG
 #endif
 
-#define PSSANITYCHECK
-
-#define DYNAMIC_POOL_RESIZING
+//#define PSSANITYCHECK
 
 #ifndef PARTICLESYSTEM_H
 #define PARTICLESYSTEM_H
@@ -39,10 +37,6 @@ private:
 
 #ifdef PSSANITYCHECK
   int sanity_check();
-#endif
-
-#ifndef DYNAMIC_POOL_RESIZING
-  INLINE void set_pool_size(int size);
 #endif
 
   bool birth_particle(void);
@@ -99,9 +93,7 @@ PUBLISHED:
   ~ParticleSystem(void);
 
   // access/queries
-#ifdef DYNAMIC_POOL_RESIZING
   INLINE void set_pool_size(int size);
-#endif
   INLINE void set_birth_rate(float new_br);
   INLINE void set_litter_size(int new_ls);
   INLINE void set_litter_spread(int new_ls);
