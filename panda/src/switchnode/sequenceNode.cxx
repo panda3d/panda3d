@@ -57,6 +57,20 @@ set_switch_time(float switch_time)
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SequenceNode::make_copy
+//       Access: Public, Virtual
+//  Description: Returns a newly-allocated Node that is a shallow copy
+//               of this one.  It will be a different Node pointer,
+//               but its internal data may or may not be shared with
+//               that of the original Node.  No children will be
+//               copied.
+////////////////////////////////////////////////////////////////////
+Node *SequenceNode::
+make_copy() const {
+  return new SequenceNode(*this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SequenceNode::sub_render
 //       Access: Public, Virtual
 //  Description:

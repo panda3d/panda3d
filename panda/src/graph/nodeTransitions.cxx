@@ -227,6 +227,35 @@ compare_to(const NodeTransitions &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodeTransitions::adjust_all_proriorities
+//       Access: Public
+//  Description: Adds the indicated adjustment amount (which may be
+//               negative) to the priority for all transitions on the
+//               arc.  If the priority would drop below zero, it is
+//               set to zero.
+////////////////////////////////////////////////////////////////////
+void NodeTransitions::
+adjust_all_priorities(int adjustment, NodeRelation *arc) {
+  Transitions::iterator ti;
+  for (ti = _transitions.begin(); ti != _transitions.end(); ++ti) {
+    nassertv((*ti).second != (NodeTransition *)NULL);
+    PT(NodeTransition) &trans = (*ti).second;
+    int new_priority = max(trans->_priority + adjustment, 0);
+
+    if (trans->_priority != new_priority) {
+      if (trans->get_ref_count() > 1) {
+	// Copy-on-write.
+	trans->removed_from_arc(arc);
+	trans = trans->make_copy();
+	trans->added_to_arc(arc);
+      }
+      trans->_priority = new_priority;
+      arc->changed_transition((*ti).first);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitions::remove_all_from_arc
 //       Access: Public
 //  Description: Marks all of the transitions in the set as removed

@@ -117,12 +117,15 @@ compare_to(const NodeTransition &other) const {
   TypeHandle my_handle = get_handle();
   TypeHandle other_handle = other.get_handle();
 
-  if (my_handle == other_handle) {
-    return internal_compare_to(&other);
-
-  } else {
+  if (my_handle != other_handle) {
     return 
       (my_handle < other_handle) ? -1 : 1;
+
+  } else if (_priority != other._priority) {
+    return _priority - other._priority;
+
+  } else {
+    return internal_compare_to(&other);
   }
 }
 

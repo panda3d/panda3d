@@ -30,6 +30,8 @@ PUBLISHED:
   void set_switch_time(float switch_time);
 
 public:
+  virtual Node *make_copy() const;
+
   virtual bool sub_render(const AllAttributesWrapper &attrib,
 			  AllTransitionsWrapper &trans,
 			  RenderTraverser *trav);

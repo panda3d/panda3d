@@ -9,6 +9,7 @@
 #include <boundingSphere.h>
 #include <notify.h>
 
+#include <algorithm>
 
 TypeHandle NodeRelation::_type_handle;
 
@@ -399,6 +400,20 @@ compose_transitions_from(const NodeTransitions &trans) {
       changed_transition((*ti).first);
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::adjust_all_proriorities
+//       Access: Public
+//  Description: Adds the indicated adjustment amount (which may be
+//               negative) to the priority for all transitions on the
+//               arc.  If the priority would drop below zero, it is
+//               set to zero.
+////////////////////////////////////////////////////////////////////
+void NodeRelation::
+adjust_all_priorities(int adjustment) {
+  _net_transitions.clear();
+  _transitions.adjust_all_priorities(adjustment, this);
 }
 
 ////////////////////////////////////////////////////////////////////

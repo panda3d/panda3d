@@ -1424,7 +1424,24 @@ has_transparency() const {
   return _head->_arc->has_transition(TransparencyTransition::get_class_type());
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::adjust_all_priorities
+//       Access: Public
+//  Description: Adds the indicated adjustment amount (which may be
+//               negative) to the priority for all transitions on the
+//               bottom arc, and for all arcs in the subgraph below.
+//               This can be used to force these nodes not to be
+//               overridden by a high-level state change above.  If
+//               the priority would drop below zero, it is set to
+//               zero.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+adjust_all_priorities(int adjustment) {
+  nassertv(has_arcs());
+  nassertv(_head != (ArcComponent *)NULL);
 
+  r_adjust_all_priorities(_head->_arc, adjustment);
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::show

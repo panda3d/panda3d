@@ -19,10 +19,12 @@
 ////////////////////////////////////////////////////////////////////
 INLINE void CullTraverser::
 draw_geom(GeomNode *geom_node, const AllAttributesWrapper &initial_state) {
+#ifndef NDEBUG
   if (cull_cat.is_spam()) {
     cull_cat.spam() 
       << "Drawing " << *geom_node << " with state: " << initial_state << "\n";
   }
+#endif
   nassertv(geom_node != (GeomNode *)NULL);
   _gsg->set_state(initial_state.get_attributes(), true);
   _gsg->prepare_display_region();
@@ -56,10 +58,12 @@ draw_direct(const ArcChain &arc_chain,
 	    const AllAttributesWrapper &initial_state) {
   nassertv(!arc_chain.empty());
   Node *node = arc_chain.back()->get_child();
+#ifndef NDEBUG
   if (cull_cat.is_spam()) {
     cull_cat.spam() 
       << "Drawing " << *node << " in direct mode.\n";
   }
+#endif
   nassertv(node != (Node *)NULL);
   DirectRenderTraverser drt(_gsg, _graph_type, arc_chain);
   drt.traverse(node, initial_state, AllTransitionsWrapper());
@@ -101,6 +105,7 @@ find_bin_state(const AllTransitionsWrapper &trans) {
   // corresponding CullState that is (now) stored in the set.
   pair<States::iterator, bool> result = _states.insert(cs);
 
+#ifndef NDEBUG
   if (cull_cat.is_spam()) {
     if (result.second) {
       // The insert succeeded, so the CullState was not there
@@ -109,12 +114,17 @@ find_bin_state(const AllTransitionsWrapper &trans) {
 	<< "Created CullState " << (void *)cs << " for:\n";
       trans.write(cull_cat.spam(false), 2);
     } else {
+      CullState *found_cs = *result.first;
       cull_cat.spam() 
-	<< "Found existing CullState " << (void *)(*result.first)
-	<< " for:\n";
+	<< "Found existing CullState " << (void *)found_cs
+	<< " which has:\n";
+      found_cs->get_transitions().write(cull_cat.spam(false), 2);
+      cull_cat.spam(false) 
+	<< "for:\n";
       trans.write(cull_cat.spam(false), 2);
     }
   }
+#endif
 		       
   return *result.first;
 }

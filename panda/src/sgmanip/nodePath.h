@@ -413,6 +413,8 @@ PUBLISHED:
   INLINE bool has_transparency() const;
   bool get_transparency() const;
 
+  INLINE void adjust_all_priorities(int adjustment);
+
   INLINE void show();
   INLINE void hide();
   INLINE void show_collision_solids();
@@ -447,7 +449,7 @@ private:
   void r_write_transitions(const ArcComponent *comp,
 			   ostream &out, int indent_level) const;
   void r_get_net_transitions(const ArcComponent *comp, 
-		      AllTransitionsWrapper &trans) const;
+			     AllTransitionsWrapper &trans) const;
   string format_node_name(Node *node) const;
 
   void find_matches(NodePathCollection &result, 
@@ -464,6 +466,8 @@ private:
 
   void r_list_descendants(ostream &out, int indent_level) const;
   void r_list_transitions(ostream &out, int indent_level) const;
+
+  void r_adjust_all_priorities(NodeRelation *arc, int adjustment);
 
   // It's important that there are no data members in this class.  Put
   // them in NodePathBase instead.

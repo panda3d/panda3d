@@ -98,6 +98,7 @@ PUBLISHED:
   void compose_transitions_from(const NodeRelation *arc);
   void copy_transitions_from(const NodeTransitions &trans);
   void compose_transitions_from(const NodeTransitions &trans);
+  void adjust_all_priorities(int adjustment);
 
   INLINE int compare_transitions_to(const NodeRelation *arc) const;
 
@@ -214,6 +215,7 @@ private:
   friend class Node;
   friend class NodeTransitionWrapper;
   friend class AllTransitionsWrapper;
+  friend class GraphPriorityAdjuster;
 };
 
 INLINE ostream &

@@ -40,6 +40,7 @@ public:
 			     NodeRelation *to_arc);
   void compose_transitions_from(const NodeTransitions &other, 
 				NodeRelation *to_arc);
+  void adjust_all_priorities(int adjustment, NodeRelation *arc);
 
   void clear();
 

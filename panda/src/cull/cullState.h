@@ -60,6 +60,7 @@ public:
 
   INLINE void apply_to(const AllAttributesWrapper &initial_state);
   INLINE const NodeAttributes &get_attributes() const;
+  INLINE const AllTransitionsWrapper &get_transitions() const;
 
   INLINE bool has_bin() const;
   INLINE GeomBin *get_bin() const;

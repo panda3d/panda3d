@@ -2599,3 +2599,27 @@ r_list_transitions(ostream &out, int indent_level) const {
     }
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::r_adjust_all_priorities
+//       Access: Private
+//  Description: The recursive implementation of
+//               adjust_all_priorities().  This walks through the
+//               subgraph defined by the indicated arc and below.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+r_adjust_all_priorities(NodeRelation *arc, int adjustment) {
+  arc->adjust_all_priorities(adjustment);
+
+  Node *node = arc->get_child();
+  DownRelations::const_iterator dri;
+  dri = node->_children.find(_graph_type);
+  if (dri != node->_children.end()) {
+    const DownRelationPointers &drp = (*dri).second;
+    
+    DownRelationPointers::const_iterator drpi;
+    for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
+      r_adjust_all_priorities(*drpi, adjustment);
+    }
+  }
+}

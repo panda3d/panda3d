@@ -170,6 +170,17 @@ get_attributes() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullState::get_transitions
+//       Access: Public
+//  Description: Returns the net transitions indicated by the
+//               CullState object.
+////////////////////////////////////////////////////////////////////
+INLINE const AllTransitionsWrapper &CullState::
+get_transitions() const {
+  return _trans;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullState::has_bin
 //       Access: Public
 //  Description: Returns true if the CullState has been assigned to a
