@@ -67,7 +67,7 @@ class EXPCL_PANDA MikModPlaying : public AudioTraits::PlayingClass {
 public:
   MikModPlaying(void);
   ~MikModPlaying(void);
-}
+};
 
 class EXPCL_PANDA MikModSamplePlayer : public AudioTraits::PlayerClass {
 public:
