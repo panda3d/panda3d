@@ -2513,22 +2513,31 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 #endif
             _pCurFvfBufPtr = _pFvfBufBasePtr;            // _pCurFvfBufPtr changes,  _pFvfBufBasePtr doesn't
 
-            // Store all but last 3 verts
-            draw_prim_inner_loop(nVerts-3, geom, perVertex | perComp);
-
-            // Note for flat shading, D3D uses 1st vert, so last 2 vert attribs will be ignored 
-            // for flat shading.  So loop is structured to special-case last tri to not do 
-            // per-Component shading
-
-            // handles last triangle strip/fan
-            if (perComp & PER_COLOR) {
-                GET_NEXT_COLOR();
-            }
-            if (perComp & PER_NORMAL)
-                p_normal = geom->get_next_normal(ni);   // set primitive normal if there is one.
-
-            // Store last tri
-            draw_prim_inner_loop(3, geom, perVertex);
+                        if(perComp==0x0) {
+                                draw_prim_inner_loop(nVerts, geom, perVertex);
+                        } else {
+                                if(trilisttype==D3DPT_TRIANGLEFAN) {
+                                   // in flat shade mode, D3D fans color using the 2nd vertex. 
+                                   // (note: differs from OGL, which always uses last vtx for strips&fans
+                                   // perComp attribs should not be fetched for first & last verts, they will
+                                   // be associated with middle n-2 verts
+        
+                                        draw_prim_inner_loop(1, geom, perVertex);
+        
+                                        draw_prim_inner_loop(nVerts-2, geom, perVertex | perComp);
+        
+                                        draw_prim_inner_loop(1, geom, perVertex);
+                                } else {
+                                   // in flat shade mode, D3D strips color using the 1st vertex. 
+                                   // (note: differs from OGL, which always uses last vtx for strips&fans
+        
+                                        // Store all but last 2 verts
+                                        draw_prim_inner_loop(nVerts-2, geom, perVertex | perComp);
+        
+                                        // perComp attribs should not be fetched for last 2 verts
+                                        draw_prim_inner_loop(2, geom, perVertex);
+                                }
+                        }
 
             HRESULT hr = _d3dDevice->DrawPrimitive(trilisttype,  p_flags, _pFvfBufBasePtr, nVerts, NULL);
             TestDrawPrimFailure(DrawPrim,hr,_pDD,nVerts,nVerts-2);
