@@ -452,12 +452,14 @@
                     self,
                     startHpr[0], startHpr[1], startHpr[2],
                     h, p, r, other)
+                functor.takeShortest()
             else:
                 startHpr = self.getHpr()
                 functor = HprLerpFunctor.HprLerpFunctor(
                     self,
                     startHpr[0], startHpr[1], startHpr[2],
                     h, p, r)
+                functor.takeShortest()
             return functor
         #determine whether to use auto, spawned, or blocking lerp
         if (auto != None):
@@ -480,9 +482,11 @@
                 # lerp wrt other
                 functor = HprLerpFunctor.HprLerpFunctor(
                     self, (self.getHpr(other)), hpr, other)
+                functor.takeShortest()
             else:
                 functor = HprLerpFunctor.HprLerpFunctor(
                     self, (self.getHpr()), hpr)
+                functor.takeShortest()
             return functor
         #determine whether to use auto, spawned, or blocking lerp
         if (auto != None):
@@ -589,12 +593,14 @@
                 functor = PosHprLerpFunctor.PosHprLerpFunctor(
                     self, startPos, pos,
                     startHpr, hpr, other)
+                functor.takeShortest()
             else:
                 startPos = self.getPos()
                 startHpr = self.getHpr()
                 functor = PosHprLerpFunctor.PosHprLerpFunctor(
                     self, startPos, pos,
                     startHpr, hpr)
+                functor.takeShortest()
             return functor
         #determine whether to use auto, spawned, or blocking lerp
         if (auto != None):
@@ -622,6 +628,7 @@
                                             startHpr[0], startHpr[1],
                                             startHpr[2], h, p, r,
                                             other)
+                functor.takeShortest()
             else:
                 startPos = self.getPos()
                 startHpr = self.getHpr()
@@ -630,6 +637,7 @@
                                             startPos[2], x, y, z,
                                             startHpr[0], startHpr[1],
                                             startHpr[2], h, p, r)
+                functor.takeShortest()
             return functor
         #determine whether to use auto, spawned, or blocking lerp
         if (auto != None):
@@ -659,6 +667,7 @@
                                                  startPos, pos,
                                                  startHpr, hpr,
                                                  startScale, scale, other)
+                functor.takeShortest()
             else:
                 startPos = self.getPos()
                 startHpr = self.getHpr()
@@ -668,6 +677,7 @@
                                                  startHpr, hpr,
                                                  startScale, scale)
 
+                functor.takeShortest()
             return functor
         #determine whether to use auto, spawned, or blocking lerp
         if (auto != None):
