@@ -77,6 +77,7 @@ class MopathRecorder(AppShell, PandaObject):
 	self.tangentLines.moveTo(0,0,0)
         self.tangentLines.drawTo(0,0,0)
         self.tangentLines.create()
+        self.trace = LineNodePath(self.recorderNodePath)
         self.playbackNodePath = None
         self.lastPlaybackNodePath = None
         # For node path selectors
@@ -162,6 +163,7 @@ class MopathRecorder(AppShell, PandaObject):
             self.accept(event, method)
 
     def createInterface(self):
+        interior = self.interior()
         # FILE MENU
         # Get a handle on the file menu so commands can be inserted
         # before quit item
@@ -540,6 +542,10 @@ class MopathRecorder(AppShell, PandaObject):
             'On: path hull is visible', self.setHullVis, 0,
             side = LEFT, fill = X, expand = 1)
         widget = self.createCheckbutton(
+            frame, 'Style', 'Show Trace',
+            'On: record is visible', self.setTraceVis, 0,
+            side = LEFT, fill = X, expand = 1)
+        widget = self.createCheckbutton(
             frame, 'Style', 'Show Marker',
             'On: playback marker is visible', self.setMarkerVis, 0,
             side = LEFT, fill = X, expand = 1)
@@ -714,6 +720,7 @@ class MopathRecorder(AppShell, PandaObject):
         # remove start stop hook
         self.ignore(self.startStopHook)
         self.ignore(self.keyframeHook)
+        self.curveNodePath.reparentTo(self.recorderNodePath)
         self.recorderNodePath.removeNode()
         # Make sure markers are deselected
         direct.deselect(self.playbackMarker)
@@ -785,6 +792,12 @@ class MopathRecorder(AppShell, PandaObject):
         self.xyzNurbsCurveDrawer.setShowHull(
             self.getVariable('Style', 'Show Hull').get())
         
+    def setTraceVis(self):
+        if self.getVariable('Style', 'Show Trace').get():
+            self.trace.reparentTo(self.recorderNodePath)
+        else:
+            self.trace.reparentTo(hidden)
+
     def setMarkerVis(self):
         if self.getVariable('Style', 'Show Marker').get():
             self.playbackMarker.reparentTo(self.recorderNodePath)
@@ -1143,6 +1156,8 @@ class MopathRecorder(AppShell, PandaObject):
         if self['nodePath']:
             self.recNodePathMenuEntry.configure(
                 background = self.recNodePathMenuBG)
+            # Put curve drawer under record node path's parent
+            self.curveNodePath.reparentTo(nodePath.getParent())
         else:
             # Flash entry
             self.recNodePathMenuEntry.configure(background = 'Pink')
