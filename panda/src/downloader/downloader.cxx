@@ -261,6 +261,7 @@ fast_receive(int socket, DownloadStatus *status, int rec_size) {
   if (ret == 0) {
     return FR_eof;
   } else if (ret == -1) {
+#if defined(WIN32_VC)
     int err = WSAGetLastError();
     if (err == 0) {
       if (downloader_cat.is_debug())
@@ -268,17 +269,17 @@ fast_receive(int socket, DownloadStatus *status, int rec_size) {
 	  << "Downloader::fast_receive() - recv() error = 0" << endl;
       return FR_no_data;
     } else {
-#if defined(WIN32_VC)
       downloader_cat.error()
         << "Downloader::fast_receive() - recv() error: " 
         << err << endl;
-#else
-      downloader_cat.error()
-        << "Downloader::fast_receive() - recv() error: " 
-        << errno << endl;
-#endif
       return FR_error;
     }
+#else
+    downloader_cat.error()
+      << "Downloader::fast_receive() - recv() error: " 
+      << errno << endl;
+    return FR_error;
+#endif
   }
   if (downloader_cat.is_debug())
     downloader_cat.debug()
