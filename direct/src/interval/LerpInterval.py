@@ -58,6 +58,9 @@ class LerpPosInterval(LerpInterval):
 	def functorFunc(node=node, pos=pos, startPos=startPos,
 			other=other):
 	    assert(not node.isEmpty())
+            if callable(pos):
+                # This may be a thunk that returns a point.
+                pos = pos()
             if (other != None):
             	# lerp wrt other
 	    	if (startPos == None):
@@ -87,6 +90,9 @@ class LerpHprInterval(LerpInterval):
 	def functorFunc(node=node, hpr=hpr, startHpr=startHpr,
 			other=other):
 	    assert(not node.isEmpty())
+            if callable(hpr):
+                # This may be a thunk that returns a point.
+                hpr = hpr()
             if (other != None):
             	# lerp wrt other
 	    	if (startHpr == None):
@@ -117,6 +123,9 @@ class LerpScaleInterval(LerpInterval):
 	def functorFunc(node=node, scale=scale,
                         startScale=startScale, other=other):
 	    assert(not node.isEmpty())
+            if callable(scale):
+                # This may be a thunk that returns a point.
+                scale = scale()
             if (other != None):
             	# lerp wrt other
 	    	if (startScale == None):
@@ -148,6 +157,12 @@ class LerpPosHprInterval(LerpInterval):
 	def functorFunc(node=node, pos=pos, hpr=hpr, 
 			startPos=startPos, startHpr=startHpr, other=other):
 	    assert(not node.isEmpty())
+            if callable(pos):
+                # This may be a thunk that returns a point.
+                pos = pos()
+            if callable(hpr):
+                # This may be a thunk that returns a point.
+                hpr = hpr()
             if (other != None):
             	# lerp wrt other
 	    	if (startPos == None):
@@ -189,6 +204,15 @@ class LerpPosHprScaleInterval(LerpInterval):
 			startPos=startPos, startHpr=startHpr,
                         startScale=startScale, other=other):
 	    assert(not node.isEmpty())
+            if callable(pos):
+                # This may be a thunk that returns a point.
+                pos = pos()
+            if callable(hpr):
+                # This may be a thunk that returns a point.
+                hpr = hpr()
+            if callable(scale):
+                # This may be a thunk that returns a point.
+                scale = scale()
             if (other != None):
             	# lerp wrt other
 	    	if (startPos == None):
