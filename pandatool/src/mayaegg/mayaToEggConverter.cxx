@@ -1371,7 +1371,7 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
     // If this flag is false, we respect the maya double-sided
     // settings only if the egg "double-sided" flag is also set.
     if (!egg_double_sided) {
-      maya_double_sided = false;
+      double_sided = false;
     }
   }
 
