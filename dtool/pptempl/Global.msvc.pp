@@ -76,14 +76,6 @@
   #define dlllib dll
 #endif
 
-// NO_PCH is just a user override, if it is false, 
-// we still only do pch on dirs that request it
-#if $[eq $[NO_PCH],]
-#define DO_PCH 1
-#else
-#define EXTRA_CDEFS NO_PCH $[EXTRA_CDEFS]
-#endif
-
 #define CFLAGS_SHARED
 
 #include $[THISDIRPREFIX]compilerSettings.pp
@@ -136,13 +128,6 @@
 
 #defer COMPILE_C $[COMPILER] /Fo"$[osfilename $[target]]" $[MAIN_C_COMPILE_ARGS]
 #defer COMPILE_C++ $[COMPILE_C]
-
-#if $[DO_PCH]
-#defer MAIN_C_COMPILE_ARGS_PCH /Fp"$[osfilename $[target_pch]]" $[MAIN_C_COMPILE_ARGS]
-#defer COMPILE_C_WITH_PCH $[COMPILER] /Yu /Fo"$[osfilename $[target]]" $[MAIN_C_COMPILE_ARGS_PCH]
-#defer COMPILE_CSTYLE_PCH $[COMPILER] /TC /Yc /Fo"$[osfilename $[target_obj]]" $[MAIN_C_COMPILE_ARGS_PCH]
-#defer COMPILE_CXXSTYLE_PCH $[COMPILER] /TP /Yc /Fo"$[osfilename $[target_obj]]" $[MAIN_C_COMPILE_ARGS_PCH]
-#endif
 
 #defer STATIC_LIB_C $[LIBBER] /nologo $[sources] /OUT:"$[osfilename $[target]]" 
 #defer STATIC_LIB_C++ $[STATIC_LIB_C]

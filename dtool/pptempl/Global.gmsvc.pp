@@ -6,12 +6,6 @@
 // Template.gmsvc.pp.
 //
 
-#define REQUIRED_PPREMAKE_VERSION 1.02
-
-#if $[< $[PPREMAKE_VERSION],$[REQUIRED_PPREMAKE_VERSION]]
-  #error You need at least ppremake version $[REQUIRED_PPREMAKE_VERSION] to use BUILD_TYPE gmsvc.
-#endif
-
 #defun get_metalibs target,complete_libs
   // In Windows, we need to know the complete set of metalibs that
   // encapsulates each of the libraries we'd be linking with normally.
@@ -57,12 +51,6 @@
 #define BROWSEINFO_FLAG
 #endif
 
-#if $[eq $[NO_PCH],]
-#define DO_PCH 1
-#else
-#define EXTRA_CDEFS NO_PCH $[EXTRA_CDEFS]
-#endif
-
 #define CFLAGS_SHARED
 
 // Define LINK_ALL_STATIC to generate static libs instead of DLL's.
@@ -79,26 +67,6 @@
 #endif
 
 #include $[THISDIRPREFIX]compilerSettings.pp
-
-// multi-proc PCH /Z7 workaround conflicts with our need to have pdb at Opt3/4 with no increase in file size,
-// so commenting this out and removing all pch for now
-
-//#if $[and $[DO_PCH],$[>= $[NUMBER_OF_PROCESSORS],2]]
-// multi-processor PCH cannot use .pdb debug fmt because
-// .pdb file name must be the same for obj and pch header obj
-// and currently every cxx generates its own separate pdb
-// to avoid write file conflict in multi-proc build
-// multi-proc case
-// single-processor case will act like nmake, conditionally renaming .pdb each file in Template.gmsvc.pp
-// Note: need to do /Z7 for /Zi subst to support precomp pch headers on multi-proc build
-//#defer DEBUGFLAGS $[patsubst /Fd%,,$[subst /Zi,/Z7, $[DEBUGFLAGS]]]
-//#define NO_PDB 1
-//#else
-//
-// on multi-proc, since /Z7 opt required by precomp hdrs on multi-proc puts debug info into dlls,
-// dont want to force debug flag by default since it expands dll size
-//#define FORCE_DEBUG_FLAGS 1
-//#endif
 
 #if $[TEST_INLINING]
 // /W4 will make MSVC spit out if it inlined a fn or not, but also cause a lot of other spam warnings
