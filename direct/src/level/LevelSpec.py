@@ -115,7 +115,7 @@ class LevelSpec:
         if not spec.has_key('parentEntId'):
             return LevelConstants.UberZoneEntId
         # keep looking up the heirarchy for a zone entity
-        return self.getEntityZoneId(spec['parentEntId'])
+        return self.getEntityZoneEntId(spec['parentEntId'])
 
     def getEntityZoneNum(self, entId):
         """ return the model zoneNum of zone that contains the entity """
