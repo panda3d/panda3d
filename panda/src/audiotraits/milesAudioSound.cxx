@@ -130,7 +130,7 @@ set_volume(float volume) {
   // Account for the category of sound:
   volume*=_manager->get_volume();
   // Change to Miles volume, range 0 to 127:
-  S32 milesVolume=(S32(127*volume))%128;
+  S32 milesVolume=((S32)(127*volume))%128;
   // Account for type:
   S32 audioType=AIL_quick_type(_audio);
   if (audioType==AIL_QUICK_XMIDI_TYPE
@@ -142,7 +142,7 @@ set_volume(float volume) {
   } else {
     // ...it's a wav or mp3.
     // Convert balance of -1.0..1.0 to 0..127:
-    S32 milesBalance=(S32(63.5*(_balance+1.0)))%128;
+    S32 milesBalance=((S32)(63.5*(_balance+1.0)))%128;
     AIL_quick_set_volume(_audio, milesVolume, milesBalance);
     audio_debug("  volume for this wav or mp3 is now "<<milesVolume
         <<", balance="<<milesBalance);
