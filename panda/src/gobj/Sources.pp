@@ -4,7 +4,7 @@
 #begin lib_target
   #define TARGET gobj
   #define LOCAL_LIBS \
-    event linmath mathutil pnmimage gsgbase putil
+    pstatclient event linmath mathutil pnmimage gsgbase putil
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 
@@ -19,7 +19,9 @@
     matrixLens.I matrixLens.h \
     orthographicLens.I orthographicLens.h perspectiveLens.I  \
     perspectiveLens.h pixelBuffer.I pixelBuffer.N  \
-    pixelBuffer.h lens.h lens.I \
+    pixelBuffer.h \
+    preparedGraphicsObjects.I preparedGraphicsObjects.h \
+    lens.h lens.I \
     savedContext.I savedContext.h \
     texture.I texture.N texture.h \
     textureContext.I textureContext.h \
@@ -33,7 +35,9 @@
     geomQuad.cxx geomSphere.cxx geomSprite.cxx geomTri.cxx  \
     geomTrifan.cxx geomTristrip.cxx imageBuffer.cxx material.cxx  \
     materialPool.cxx matrixLens.cxx orthographicLens.cxx  \
-    perspectiveLens.cxx pixelBuffer.cxx lens.cxx  \
+    perspectiveLens.cxx pixelBuffer.cxx \
+    preparedGraphicsObjects.cxx \
+    lens.cxx  \
     savedContext.cxx texture.cxx textureContext.cxx texturePool.cxx
 
   #define INSTALL_HEADERS \
@@ -47,6 +51,7 @@
     materialPool.I materialPool.h matrixLens.I matrixLens.h \
     orthographicLens.I orthographicLens.h perspectiveLens.I \
     perspectiveLens.h pixelBuffer.I pixelBuffer.h \
+    preparedGraphicsObjects.I preparedGraphicsObjects.h \
     lens.h lens.I \
     savedContext.I savedContext.h \
     texture.I texture.h \

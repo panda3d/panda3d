@@ -227,7 +227,9 @@ make_image(Texture *texture, float radius) {
       pb->set_uchar_rgb_texel(C, size - tx2 - 1, size - ty2 - 1, size);
     }
   }
-  texture->unprepare();
+
+  // Force the texture to be reloaded into texture memory.
+  texture->mark_dirty(Texture::DF_image);
 
   return true;
 }

@@ -437,7 +437,8 @@ end_frame() {
     nassertv(has_texture());
     DisplayRegion dr(this, _x_size, _y_size);
     RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type());
-    get_texture()->copy(_gsg, &dr, buffer);
+    TextureContext *tc = get_texture()->prepare_now(_gsg->get_prepared_objects(), _gsg);
+    _gsg->copy_texture(tc, &dr, buffer);
   }
 }
 

@@ -138,8 +138,10 @@ ostream &operator << (ostream &out, GeomAttrType t) {
 ////////////////////////////////////////////////////////////////////
 Geom::
 Geom(void) : dDrawable() {
+  /*
   _prepared_gsg = (GraphicsStateGuardianBase *)NULL;
   _prepared_context = (GeomContext *)NULL;
+  */
   init();
 }
 
@@ -150,8 +152,10 @@ Geom(void) : dDrawable() {
 ////////////////////////////////////////////////////////////////////
 Geom::
 Geom(const Geom& copy) : dDrawable() {
+  /*
   _prepared_gsg = (GraphicsStateGuardianBase *)NULL;
   _prepared_context = (GeomContext *)NULL;
+  */
   *this = copy;
 }
 
@@ -162,7 +166,7 @@ Geom(const Geom& copy) : dDrawable() {
 ////////////////////////////////////////////////////////////////////
 Geom::
 ~Geom() {
-  unprepare();
+  //  unprepare();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -463,9 +467,10 @@ draw(GraphicsStateGuardianBase *gsg) {
   if (is_dirty()) {
     config(); 
   }
+  /*
   if (_prepared_gsg == gsg) {
     draw_immediate(gsg, _prepared_context);
-  } else {
+    } else */ {
     draw_immediate(gsg, (GeomContext *)NULL);
   }
 }
@@ -513,7 +518,7 @@ config() {
   }
 
   // Mark the Geom as needing to be prepared again.
-  unprepare();
+  //  unprepare();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -547,6 +552,7 @@ output(ostream &out) const {
   */
 }
 
+/*
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::prepare
 //       Access: Public
@@ -620,6 +626,7 @@ clear_gsg(GraphicsStateGuardianBase *gsg) {
     _prepared_context = (GeomContext *)NULL;
   }
 }
+*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::init

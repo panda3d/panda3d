@@ -44,6 +44,7 @@ class GeomTristrip;
 class GeomTrifan;
 class GeomSphere;
 
+class PreparedGraphicsObjects;
 class TextureContext;
 class Texture;
 class PixelBuffer;
@@ -111,6 +112,8 @@ public:
   // These are some general interface functions; they're defined here
   // mainly to make it easy to call these from code in some directory
   // that display depends on.
+  virtual PreparedGraphicsObjects *get_prepared_objects()=0;
+
   virtual TextureContext *prepare_texture(Texture *tex)=0;
   virtual void apply_texture(TextureContext *tc)=0;
   virtual void release_texture(TextureContext *tc)=0;

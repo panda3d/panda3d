@@ -608,8 +608,9 @@ render_screen(GraphicsEngine *engine, NonlinearImager::Screen &screen) {
 
   // Copy the results of the render from the frame buffer into the
   // screen's texture.
-  screen._texture->copy(_gsg, scratch_region, 
-                        _gsg->get_render_buffer(RenderBuffer::T_back));
+  TextureContext *tc = screen._texture->prepare_now(_gsg->get_prepared_objects(), _gsg);
+  _gsg->copy_texture(tc, scratch_region,
+                     _gsg->get_render_buffer(RenderBuffer::T_back));
 
   // It might be nice if we didn't throw away the scratch region every
   // time, which prevents us from preserving cull state from one frame

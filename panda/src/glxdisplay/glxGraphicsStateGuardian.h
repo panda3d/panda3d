@@ -32,6 +32,7 @@
 class glxGraphicsStateGuardian : public GLGraphicsStateGuardian {
 public:
   glxGraphicsStateGuardian(const FrameBufferProperties &properties,
+                           glxGraphicsStateGuardian *share_with,
                            GLXContext context, GLXFBConfig fbconfig,
                            Display *display, int screen);
   virtual ~glxGraphicsStateGuardian();

@@ -43,10 +43,6 @@ PUBLISHED:
 public:
   virtual void config( void ) { WritableConfigurable::config(); }
 
-  virtual bool copy(GraphicsStateGuardianBase *, const DisplayRegion *)=0;
-  virtual bool copy(GraphicsStateGuardianBase *, const DisplayRegion *,
-                    const RenderBuffer &rb)=0;
-
 PUBLISHED:
   INLINE bool has_filename() const;
   INLINE const Filename &get_filename() const;

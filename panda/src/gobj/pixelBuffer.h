@@ -105,10 +105,6 @@ public:
   bool store( PNMImage& pnmimage ) const;
 
   void copy(const PixelBuffer *pb);
-  
-  virtual bool copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr);
-  virtual bool copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
-                    const RenderBuffer &rb);
 
   INLINE void set_xsize(int size);
   INLINE void set_ysize(int size);

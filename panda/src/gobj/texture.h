@@ -28,6 +28,7 @@
 class PNMImage;
 class TextureContext;
 class FactoryParams;
+class PreparedGraphicsObjects;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Texture
@@ -98,27 +99,23 @@ PUBLISHED:
   INLINE int get_anisotropic_degree() const;
   INLINE bool uses_mipmaps() const;
 
+  void prepare(PreparedGraphicsObjects *prepared_objects);
+
 public:
   bool load(const PNMImage &pnmimage);
   bool store(PNMImage &pnmimage) const;
 
   static bool is_mipmap(FilterType type);
 
-  TextureContext *prepare(GraphicsStateGuardianBase *gsg);
-  void unprepare();
-  void unprepare(GraphicsStateGuardianBase *gsg);
-  void clear_gsg(GraphicsStateGuardianBase *gsg);
+  TextureContext *prepare_now(PreparedGraphicsObjects *prepared_objects, 
+                              GraphicsStateGuardianBase *gsg);
+  bool release(PreparedGraphicsObjects *prepared_objects);
+  int release_all();
 
   INLINE bool has_ram_image() const;
   PixelBuffer *get_ram_image();
   INLINE void set_keep_ram_image(bool keep_ram_image);
   INLINE bool get_keep_ram_image() const;
-
-  INLINE void apply(GraphicsStateGuardianBase *gsg);
-
-  virtual bool copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr);
-  virtual bool copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
-                    const RenderBuffer &rb);
 
   // These bits are used as parameters to Texture::mark_dirty() and
   // also TextureContext::mark_dirty() (and related functions in
@@ -136,6 +133,8 @@ public:
   static FilterType string_filter_type(const string &string);
 
 private:
+  void clear_prepared(PreparedGraphicsObjects *prepared_objects);
+
   WrapMode _wrapu;
   WrapMode _wrapv;
   FilterType _minfilter;
@@ -144,11 +143,12 @@ private:
   bool _keep_ram_image;
   Colorf _border_color;
 
-  // A Texture keeps a list (actually, a map) of all the GSG's that it
-  // has been prepared into.  Each GSG conversely keeps a list (a set)
-  // of all the Textures that have been prepared there.  When either
-  // destructs, it removes itself from the other's list.
-  typedef pmap<GraphicsStateGuardianBase *, TextureContext *> Contexts;
+  // A Texture keeps a list (actually, a map) of all the
+  // PreparedGraphicsObjects tables that it has been prepared into.
+  // Each PGO conversely keeps a list (a set) of all the Textures that
+  // have been prepared there.  When either destructs, it removes
+  // itself from the other's list.
+  typedef pmap<PreparedGraphicsObjects *, TextureContext *> Contexts;
   Contexts _contexts;
 
   // This value represents the intersection of all the dirty flags of
@@ -201,6 +201,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class TextureContext;
+  friend class PreparedGraphicsObjects;
 };
 
 #include "texture.I"

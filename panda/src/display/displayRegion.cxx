@@ -551,7 +551,7 @@ get_screenshot(PNMImage &image) {
                 PixelBuffer::F_rgb);
 
   RenderBuffer buffer = gsg->get_render_buffer(get_screenshot_buffer_type());
-  if (!p.copy(gsg, this, buffer)) {
+  if (!gsg->copy_pixel_buffer(&p, this, buffer)) {
     return false;
   }
 

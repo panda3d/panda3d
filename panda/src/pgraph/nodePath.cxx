@@ -47,6 +47,7 @@
 #include "globPattern.h"
 #include "config_gobj.h"
 #include "bamFile.h"
+#include "preparedGraphicsObjects.h"
 #include "dcast.h"
 
 // stack seems to overflow on Intel C++ at 7000.  If we need more than 
@@ -3246,19 +3247,18 @@ verify_complete() const {
 //               but this may take some of the overhead away from that
 //               process.
 //
-//               If force_retained_mode is true, retained mode is set
-//               on the geometry encountered, regardless of the
-//               setting of the retained-mode Config variable.
-//               Otherwise, retained mode is set only if the
-//               retained-mode Config variable is true.
+//               In particular, this will ensure that textures within
+//               the scene are loaded in texture memory, and display
+//               lists are built up from static geometry.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-prepare_scene(GraphicsStateGuardianBase *gsg, bool force_retained_mode) {
+prepare_scene(GraphicsStateGuardianBase *gsg) {
   nassertv_always(!is_empty());
 
+  PreparedGraphicsObjects *prepared_objects = gsg->get_prepared_objects();
+
   CPT(RenderState) net_state = get_net_state();
-  r_prepare_scene(node(), net_state, gsg, 
-                  retained_mode || force_retained_mode);
+  r_prepare_scene(node(), net_state, prepared_objects);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3895,14 +3895,14 @@ r_find_all_textures(PandaNode *node, const RenderState *state,
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 r_prepare_scene(PandaNode *node, const RenderState *state,
-                GraphicsStateGuardianBase *gsg, bool do_retained_mode) {
+                PreparedGraphicsObjects *prepared_objects) {
   if (node->is_geom_node()) {
     GeomNode *gnode;
     DCAST_INTO_V(gnode, node);
 
     /* 
        Not implemented yet in pgraph.  Maybe we don't need this anyway.
-    if (do_retained_mode) {
+    if (retained_mode) {
       gnode->prepare(gsg);
     }
     */
@@ -3917,7 +3917,7 @@ r_prepare_scene(PandaNode *node, const RenderState *state,
         DCAST_INTO_V(ta, attrib);
         Texture *texture = ta->get_texture();
         if (texture != (Texture *)NULL) {
-          texture->prepare(gsg);
+          texture->prepare(prepared_objects);
         }
       }
     }
@@ -3927,6 +3927,6 @@ r_prepare_scene(PandaNode *node, const RenderState *state,
   for (int i = 0; i < num_children; i++) {
     PandaNode *child = node->get_child(i);
     CPT(RenderState) child_state = state->compose(child->get_state());
-    r_prepare_scene(child, child_state, gsg, do_retained_mode);
+    r_prepare_scene(child, child_state, prepared_objects);
   }
 }

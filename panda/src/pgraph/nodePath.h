@@ -39,6 +39,7 @@ class Texture;
 class Material;
 class Fog;
 class GlobPattern;
+class PreparedGraphicsObjects;
 
 //
 // A NodePath is the fundamental unit of high-level interaction with
@@ -577,7 +578,7 @@ PUBLISHED:
   // Miscellaneous
   bool verify_complete() const;
 
-  void prepare_scene(GraphicsStateGuardianBase *gsg, bool force_retained_mode = false);
+  void prepare_scene(GraphicsStateGuardianBase *gsg);
 
   void show_bounds();
   void hide_bounds();
@@ -635,7 +636,7 @@ private:
   void r_find_all_textures(PandaNode *node, const RenderState *state,
                            Textures &textures) const;
   void r_prepare_scene(PandaNode *node, const RenderState *state,
-                       GraphicsStateGuardianBase *gsg, bool do_retained_mode);
+                       PreparedGraphicsObjects *prepared_objects);
 
   PT(NodePathComponent) _head;
   int _backup_key;

@@ -28,6 +28,7 @@ TypeHandle glxGraphicsStateGuardian::_type_handle;
 ////////////////////////////////////////////////////////////////////
 glxGraphicsStateGuardian::
 glxGraphicsStateGuardian(const FrameBufferProperties &properties,
+                         glxGraphicsStateGuardian *share_with,
                          GLXContext context, GLXFBConfig fbconfig,
                          Display *display, int screen) :
   GLGraphicsStateGuardian(properties),
@@ -36,6 +37,9 @@ glxGraphicsStateGuardian(const FrameBufferProperties &properties,
   _display(display),
   _screen(screen)
 {
+  if (share_with != (glxGraphicsStateGuardian *)NULL) {
+    _prepared_objects = share_with->get_prepared_objects();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

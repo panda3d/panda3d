@@ -150,14 +150,4 @@ get_keep_ram_image() const {
   return _keep_ram_image;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::apply
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void Texture::
-apply(GraphicsStateGuardianBase *gsg) {
-  gsg->apply_texture(prepare(gsg));
-}
-
 

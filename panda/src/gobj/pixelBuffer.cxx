@@ -421,13 +421,3 @@ copy(const PixelBuffer *pb) {
   if (!pb->_image.empty())
     _image.v() = pb->_image.v();
 }
-
-bool PixelBuffer::copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr) {
-  return gsg->copy_pixel_buffer(this, dr);
-}
-
-bool PixelBuffer::copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
-                       const RenderBuffer &rb) {
-  return gsg->copy_pixel_buffer(this, dr, rb);
-}
-

@@ -41,6 +41,17 @@ ClipPlaneInfo() {
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::release_all_textures
+//       Access: Public
+//  Description: Frees the resources for all textures associated with
+//               this GSG.
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsStateGuardian::
+release_all_textures() {
+  return _prepared_objects->release_all_textures();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::set_active
 //       Access: Published
 //  Description: Sets the active flag associated with the

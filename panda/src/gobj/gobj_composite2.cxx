@@ -9,6 +9,7 @@
 #include "matrixLens.cxx"
 #include "perspectiveLens.cxx"
 #include "pixelBuffer.cxx"
+#include "preparedGraphicsObjects.cxx"
 #include "lens.cxx"
 #include "savedContext.cxx"
 #include "texture.cxx"

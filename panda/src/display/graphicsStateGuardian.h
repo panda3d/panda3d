@@ -26,6 +26,7 @@
 #include "frameBufferProperties.h"
 #include "displayRegionStack.h"
 #include "lensStack.h"
+#include "preparedGraphicsObjects.h"
 
 #include "graphicsStateGuardianBase.h"
 #include "graphicsThreadingModel.h"
@@ -69,8 +70,8 @@ public:
   virtual ~GraphicsStateGuardian();
 
 PUBLISHED:
-  void release_all_textures();
-  void release_all_geoms();
+  INLINE int release_all_textures();
+  //  int release_all_geoms();
 
   INLINE void set_active(bool active);
   INLINE bool is_active() const;
@@ -83,6 +84,8 @@ PUBLISHED:
 public:
   INLINE void set_scene(SceneSetup *scene_setup);
   INLINE SceneSetup *get_scene() const;
+
+  virtual PreparedGraphicsObjects *get_prepared_objects();
 
   virtual TextureContext *prepare_texture(Texture *tex);
   virtual void apply_texture(TextureContext *tc);
@@ -193,13 +196,6 @@ protected:
                                                  CPT(DisplayRegion) dr)=0;
   virtual void restore_frame_buffer(SavedFrameBuffer *frame_buffer)=0;
 
-  bool mark_prepared_texture(TextureContext *tc);
-  bool unmark_prepared_texture(TextureContext *tc);
-  bool mark_prepared_geom(GeomContext *gc);
-  bool unmark_prepared_geom(GeomContext *gc);
-  bool mark_prepared_geom_node(GeomNodeContext *gnc);
-  bool unmark_prepared_geom_node(GeomNodeContext *gnc);
-
   virtual void free_pointers();
   virtual void close_gsg();
   void panic_deactivate();
@@ -276,6 +272,8 @@ protected:
   bool _closing_gsg;
   bool _active;
 
+  PT(PreparedGraphicsObjects) _prepared_objects;
+
 public:
   // Statistics
   static PStatCollector _total_texusage_pcollector;
@@ -320,15 +318,6 @@ private:
 
   pvector<ClipPlaneInfo> _clip_plane_info;
   bool _clip_planes_enabled_this_frame;
-
-  // NOTE: on win32 another DLL (e.g. libpandadx.dll) cannot access
-  // these sets directly due to exported template issue
-  typedef pset<TextureContext *> Textures;
-  Textures _prepared_textures;  
-  typedef pset<GeomContext *> Geoms;
-  Geoms _prepared_geoms;  
-  typedef pset<GeomNodeContext *> GeomNodes;
-  GeomNodes _prepared_geom_nodes;  
 
   FrameBufferProperties _properties;
   PT(GraphicsPipe) _pipe;

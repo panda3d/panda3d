@@ -224,10 +224,12 @@ public:
   INLINE ColorIterator make_color_iterator() const;
   INLINE const Colorf &get_next_color(ColorIterator &citerator) const;
 
+  /*
   GeomContext *prepare(GraphicsStateGuardianBase *gsg);
   void unprepare();
   void unprepare(GraphicsStateGuardianBase *gsg);
   void clear_gsg(GraphicsStateGuardianBase *gsg);
+  */
 
 protected:
   void init();
@@ -261,8 +263,10 @@ protected:
   // intended to reduce memory overhead that would otherwise be
   // required to support a little-used feature (having two
   // simultaneous GSG's).
+  /*
   GraphicsStateGuardianBase *_prepared_gsg;
   GeomContext *_prepared_context;
+  */
 
 public:
   //static void register_with_read_factory(void);

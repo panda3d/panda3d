@@ -1643,6 +1643,9 @@ draw_sphere(GeomSphere *geom, GeomContext *) {
 //               responsibility of the calling function to later
 //               call release_texture() with this same pointer (which
 //               will also delete the pointer).
+//
+//               This function should not be called directly to
+//               prepare a texture.  Instead, call Texture::prepare().
 ////////////////////////////////////////////////////////////////////
 TextureContext *CLP(GraphicsStateGuardian)::
 prepare_texture(Texture *tex) {
@@ -1653,13 +1656,6 @@ prepare_texture(Texture *tex) {
   GLP(PrioritizeTextures)(1, &gtc->_index, &gtc->_priority);
   specify_texture(tex);
   apply_texture_immediate(tex);
-
-  bool inserted = mark_prepared_texture(gtc);
-
-  // If this assertion fails, the same texture was prepared twice,
-  // which shouldn't be possible, since the texture itself should
-  // detect this.
-  nassertr(inserted, gtc);
 
   report_my_gl_errors();
   return gtc;
@@ -1695,32 +1691,19 @@ apply_texture(TextureContext *tc) {
 //     Function: CLP(GraphicsStateGuardian)::release_texture
 //       Access: Public, Virtual
 //  Description: Frees the GL resources previously allocated for the
-//               texture.
+//               texture.  This function should never be called
+//               directly; instead, call Texture::release() (or simply
+//               let the Texture destruct).
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 release_texture(TextureContext *tc) {
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
-  Texture *tex = tc->_texture;
 
-  if (!_closing_gsg) {
-    // Don't bother to delete the GL texture if we're about to destroy
-    // the context anyway.
-    GLP(DeleteTextures)(1, &gtc->_index);
-  }
+  GLP(DeleteTextures)(1, &gtc->_index);
+  report_my_gl_errors();
+
   gtc->_index = 0;
-
-  bool erased = unmark_prepared_texture(gtc);
-
-  // If this assertion fails, a texture was released that hadn't been
-  // prepared (or a texture was released twice).
-  nassertv(erased);
-
-  tex->clear_gsg(this);
-
   delete gtc;
-  if (!_closing_gsg) {
-    report_my_gl_errors();
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1811,7 +1794,7 @@ prepare_geom_node(GeomNode *node) {
   _texturing_enabled = old_texturing_enabled;
   _vertex_colors_enabled = old_vertex_colors_enabled;
 
-  bool inserted = mark_prepared_geom_node(ggnc);
+  bool inserted = _prepared_objects->mark_prepared_geom_node(ggnc);
 
   // If this assertion fails, the same GeomNode was prepared twice,
   // which shouldn't be possible, since the GeomNode itself should
@@ -1875,7 +1858,7 @@ release_geom_node(GeomNodeContext *gnc) {
     CLP(GeomNodeContext) *ggnc = DCAST(CLP(GeomNodeContext), gnc);
     GLP(DeleteLists)(ggnc->_index, 1);
 
-    bool erased = unmark_prepared_geom_node(ggnc);
+    bool erased = _prepared_objects->unmark_prepared_geom_node(ggnc);
 
     // If this assertion fails, a GeomNode was released that hadn't
     // been prepared (or a GeomNode was released twice).
@@ -2220,7 +2203,9 @@ issue_texture(const TextureAttrib *attrib) {
     enable_texturing(true);
     Texture *tex = attrib->get_texture();
     nassertv(tex != (Texture *)NULL);
-    tex->apply(this);
+
+    TextureContext *tc = tex->prepare_now(_prepared_objects, this);
+    apply_texture(tc);
   }
   report_my_gl_errors();
 }
@@ -3916,7 +3901,8 @@ save_frame_buffer(const RenderBuffer &buffer,
   if (buffer._buffer_type & RenderBuffer::T_back) {
     // Save the color buffer.
     sfb->_back_rgba = new Texture;
-    copy_texture(sfb->_back_rgba->prepare(this), dr, buffer);
+    TextureContext *tc = sfb->_back_rgba->prepare_now(_prepared_objects, this);
+    copy_texture(tc, dr, buffer);
   }
 
   return sfb;
@@ -3934,8 +3920,8 @@ restore_frame_buffer(SavedFrameBuffer *frame_buffer) {
   if (sfb->_back_rgba != (Texture *)NULL &&
       (sfb->_buffer._buffer_type & RenderBuffer::T_back) != 0) {
     // Restore the color buffer.
-    draw_texture(sfb->_back_rgba->prepare(this),
-                 sfb->_display_region, sfb->_buffer);
+    TextureContext *tc = sfb->_back_rgba->prepare_now(_prepared_objects, this);
+    draw_texture(tc, sfb->_display_region, sfb->_buffer);
   }
 
   if (sfb->_depth != (PixelBuffer *)NULL &&

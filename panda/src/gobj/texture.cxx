@@ -26,6 +26,7 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "string_utils.h"
+#include "preparedGraphicsObjects.h"
 
 #include <stddef.h>
 
@@ -126,7 +127,7 @@ consider_downgrade(PNMImage &pnmimage, int num_channels,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Constructor
+//     Function: Texture::Constructor
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -146,7 +147,7 @@ Texture() : ImageBuffer() {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Constructor
+//     Function: Texture::Constructor
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -166,17 +167,17 @@ Texture(int xsize, int ysize, int components, int component_width, PixelBuffer::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Destructor
+//     Function: Texture::Destructor
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Texture::
 ~Texture() {
-  unprepare();
+  release_all();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: read
+//     Function: Texture::read
 //       Access: Published
 //  Description: Reads the texture from the indicated filename.  If
 //               num_channels is not 0, it specifies the number of
@@ -215,7 +216,7 @@ read(const Filename &fullpath, int primary_file_num_channels) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: read
+//     Function: Texture::read
 //       Access: Published
 //  Description: Combine a 3-component image with a grayscale image
 //               to get a 4-component image
@@ -309,7 +310,7 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: write
+//     Function: Texture::write
 //       Access: Published
 //  Description: Writes the texture to the indicated filename.
 ////////////////////////////////////////////////////////////////////
@@ -330,7 +331,7 @@ write(const Filename &name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: set_wrapu
+//     Function: Texture::set_wrapu
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -343,7 +344,7 @@ set_wrapu(Texture::WrapMode wrap) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: set_wrapv
+//     Function: Texture::set_wrapv
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -356,7 +357,7 @@ set_wrapv(Texture::WrapMode wrap) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: set_minfilter
+//     Function: Texture::set_minfilter
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -373,7 +374,7 @@ set_minfilter(Texture::FilterType filter) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: set_magfilter
+//     Function: Texture::set_magfilter
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -386,7 +387,7 @@ set_magfilter(Texture::FilterType filter) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: set_anisotropic_degree
+//     Function: Texture::set_anisotropic_degree
 //       Access: Published
 //  Description: Specifies the level of anisotropic filtering to apply
 //               to the texture.  Normally, this is 1, to indicate
@@ -403,7 +404,7 @@ set_anisotropic_degree(int anisotropic_degree) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: set_border_color
+//     Function: Texture::set_border_color
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -413,7 +414,24 @@ set_border_color(const Colorf &color) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: load
+//     Function: Texture::prepare
+//       Access: Published
+//  Description: Indicates that the texture should be enqueued to be
+//               prepared in the indicated prepared_objects at the
+//               beginning of the next frame.  This will ensure the
+//               texture is already loaded into texture memory if it
+//               is expected to be rendered soon.
+//
+//               Use this function instead of prepare_now() to preload
+//               textures from a user interface standpoint.
+////////////////////////////////////////////////////////////////////
+void Texture::
+prepare(PreparedGraphicsObjects *prepared_objects) {
+  prepared_objects->enqueue_texture(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::load
 //       Access: Public
 //  Description: Creates the texture from the already-read PNMImage.
 ////////////////////////////////////////////////////////////////////
@@ -428,7 +446,7 @@ load(const PNMImage &pnmimage) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: store
+//     Function: Texture::store
 //       Access: Public
 //  Description: Saves the texture to the indicated PNMImage, but does
 //               not write it to disk.
@@ -459,22 +477,32 @@ is_mipmap(FilterType type) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: prepare
+//     Function: Texture::prepare_now
 //       Access: Public
 //  Description: Creates a context for the texture on the particular
 //               GSG, if it does not already exist.  Returns the new
-//               (or old) TextureContext.
+//               (or old) TextureContext.  This assumes that the
+//               GraphicsStateGuardian is the currently active
+//               rendering context and that it is ready to accept new
+//               textures.  If this is not necessarily the case, you
+//               should use prepare_later() instead.
+//
+//               Normally, this is not called directly except by the
+//               GraphicsStateGuardian; a texture does not need to be
+//               explicitly prepared by the user before it may be
+//               rendered.
 ////////////////////////////////////////////////////////////////////
 TextureContext *Texture::
-prepare(GraphicsStateGuardianBase *gsg) {
+prepare_now(PreparedGraphicsObjects *prepared_objects, 
+            GraphicsStateGuardianBase *gsg) {
   Contexts::const_iterator ci;
-  ci = _contexts.find(gsg);
+  ci = _contexts.find(prepared_objects);
   if (ci != _contexts.end()) {
     return (*ci).second;
   }
 
-  TextureContext *tc = gsg->prepare_texture(this);
-  _contexts[gsg] = tc;
+  TextureContext *tc = prepared_objects->prepare_texture_now(this, gsg);
+  _contexts[prepared_objects] = tc;
 
   // Now that we have a new TextureContext with zero dirty flags, our
   // intersection of all dirty flags must be zero.  This doesn't mean
@@ -498,67 +526,54 @@ prepare(GraphicsStateGuardianBase *gsg) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Texture::unprepare
+//     Function: Texture::release
 //       Access: Public
-//  Description: Frees the context allocated on all GSG's for which
-//               the texture has been declared.
+//  Description: Frees the texture context only on the indicated object,
+//               if it exists there.  Returns true if it was released,
+//               false if it had not been prepared.
 ////////////////////////////////////////////////////////////////////
-void Texture::
-unprepare() {
-  // We have to traverse a copy of the _contexts list, because the GSG
-  // will call clear_gsg() in response to each release_texture(), and
-  // we don't want to be modifying the _contexts list while we're
-  // traversing it.
+bool Texture::
+release(PreparedGraphicsObjects *prepared_objects) {
+  Contexts::iterator ci;
+  ci = _contexts.find(prepared_objects);
+  if (ci != _contexts.end()) {
+    TextureContext *tc = (*ci).second;
+    prepared_objects->release_texture(tc);
+    return true;
+  }
+
+  // Maybe it wasn't prepared yet, but it's about to be.
+  return prepared_objects->dequeue_texture(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::release_all
+//       Access: Public
+//  Description: Frees the context allocated on all objects for which
+//               the texture has been declared.  Returns the number of
+//               contexts which have been freed.
+////////////////////////////////////////////////////////////////////
+int Texture::
+release_all() {
+  // We have to traverse a copy of the _contexts list, because the
+  // PreparedGraphicsObjects object will call clear_prepared() in response
+  // to each release_texture(), and we don't want to be modifying the
+  // _contexts list while we're traversing it.
   Contexts temp = _contexts;
+  int num_freed = (int)_contexts.size();
 
   Contexts::const_iterator ci;
   for (ci = temp.begin(); ci != temp.end(); ++ci) {
-    GraphicsStateGuardianBase *gsg = (*ci).first;
+    PreparedGraphicsObjects *prepared_objects = (*ci).first;
     TextureContext *tc = (*ci).second;
-    gsg->release_texture(tc);
+    prepared_objects->release_texture(tc);
   }
 
-  // Now that we've called release_texture() on every known GSG, the
-  // _contexts list should have completely emptied itself.
-  nassertv(_contexts.empty());
-}
+  // Now that we've called release_texture() on every known context,
+  // the _contexts list should have completely emptied itself.
+  nassertr(_contexts.empty(), num_freed);
 
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::unprepare
-//       Access: Public
-//  Description: Frees the texture context only on the indicated GSG,
-//               if it exists there.
-////////////////////////////////////////////////////////////////////
-void Texture::
-unprepare(GraphicsStateGuardianBase *gsg) {
-  Contexts::iterator ci;
-  ci = _contexts.find(gsg);
-  if (ci != _contexts.end()) {
-    TextureContext *tc = (*ci).second;
-    gsg->release_texture(tc);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::clear_gsg
-//       Access: Public
-//  Description: Removes the indicated GSG from the Texture's known
-//               GSG's, without actually releasing the texture on that
-//               GSG.  This is intended to be called only from
-//               GSG::release_texture(); it should never be called by
-//               user code.
-////////////////////////////////////////////////////////////////////
-void Texture::
-clear_gsg(GraphicsStateGuardianBase *gsg) {
-  Contexts::iterator ci;
-  ci = _contexts.find(gsg);
-  if (ci != _contexts.end()) {
-    _contexts.erase(ci);
-  } else {
-    // If this assertion fails, clear_gsg() was called on a GSG which
-    // the texture didn't know about.
-    nassertv(false);
-  }
+  return num_freed;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -606,17 +621,6 @@ get_ram_image() {
   }
 }
 
-bool Texture::copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr) {
-  gsg->copy_texture(prepare(gsg), dr);
-  return true;
-}
-
-bool Texture::copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
-                   const RenderBuffer &rb) {
-  gsg->copy_texture(prepare(gsg), dr, rb);
-  return true;
-}
-
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::mark_dirty
 //       Access: Public
@@ -648,6 +652,28 @@ mark_dirty(int flags_to_set) {
   }
 
   _all_dirty_flags |= flags_to_set;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::clear_prepared
+//       Access: Private
+//  Description: Removes the indicated PreparedGraphicsObjects table
+//               from the Texture's table, without actually releasing
+//               the texture.  This is intended to be called only from
+//               PreparedGraphicsObjects::release_texture(); it should
+//               never be called by user code.
+////////////////////////////////////////////////////////////////////
+void Texture::
+clear_prepared(PreparedGraphicsObjects *prepared_objects) {
+  Contexts::iterator ci;
+  ci = _contexts.find(prepared_objects);
+  if (ci != _contexts.end()) {
+    _contexts.erase(ci);
+  } else {
+    // If this assertion fails, clear_prepared() was given a
+    // prepared_objects which the texture didn't know about.
+    nassertv(false);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
