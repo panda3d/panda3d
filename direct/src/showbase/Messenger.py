@@ -23,6 +23,11 @@ class Messenger:
         if __debug__:
             self.isWatching=0
             self.watching={}
+        # I'd like this to be in the __debug__, but I fear that someone will
+        # want this in a release build.  If you're sure that that will not be
+        # then please remove this comment and put the quiet/verbose stuff
+        # under __debug__.
+        self.quieting={"NewFrame":1, "avatarMoving":1} # see def quiet()
 
         if (Messenger.notify == None):
             Messenger.notify = directNotify.newCategory("Messenger")
@@ -114,8 +119,7 @@ class Messenger:
         """ send(self, string, [arg1, arg2,...])
         Send this event, optionally passing in arguments
         """
-        # Do not print the new frame debug, it is too noisy!
-        if (Messenger.notify.getDebug() and (event != 'NewFrame')):
+        if Messenger.notify.getDebug() and not self.quieting.get(event):
             Messenger.notify.debug('sent event: ' + event + ' sentArgs: ' + `sentArgs`)
         acceptorDict = self.dict.get(event)
         if not acceptorDict:
@@ -152,6 +156,7 @@ class Messenger:
 
                 if __debug__:
                     if foundWatch:
+                        foundWatch=2
                         print "Message: \"%s\" --> %s%s"%(
                             event,
                             self.__methodRepr(method),
@@ -162,6 +167,9 @@ class Messenger:
                 # method itself might call accept() or acceptOnce()
                 # again.
                 apply(method, (extraArgs + sentArgs))
+        if __debug__:
+            if foundWatch == 1:
+                print "Message: \"%s\" was sent, but no one listened."%(event,)
 
     def clear(self):
         """
@@ -201,13 +209,17 @@ class Messenger:
         return retFlag
     
     def toggleVerbose(self):
-        Messenger.notify.setDebug(1 - Messenger.notify.getDebug())
+        isVerbose = 1 - Messenger.notify.getDebug()
+        Messenger.notify.setDebug(isVerbose)
+        if isVerbose:
+            print "Verbose mode true.  quiet list = %s"%(self.quieting.keys(),)
 
     if __debug__:
         def watch(self, needle):
             """
             return a matching event (needle) if found (in haystack).
             This is primarily a debugging tool.
+            See Also: unwatch
             """
             if not self.watching.get(needle):
                 self.isWatching += 1
@@ -217,10 +229,31 @@ class Messenger:
             """
             return a matching event (needle) if found (in haystack).
             This is primarily a debugging tool.
+            See Also: watch
             """
             if self.watching.get(needle):
                 self.isWatching -= 1
                 del self.watching[needle]
+
+        def quiet(self, message):
+            """
+            When verbose mode is on, don't spam the output with messages
+            marked as quiet.
+            This is primarily a debugging tool.
+            See Also: unquiet
+            """
+            if not self.quieting.get(message):
+                self.quieting[message]=1
+
+        def unquiet(self, message):
+            """
+            Remove a message from the list of messages that are not reported
+            in verbose mode.
+            This is primarily a debugging tool.
+            See Also: quiet
+            """
+            if self.quieting.get(message):
+                del self.quieting[message]
 
     def find(self, needle):
         """
