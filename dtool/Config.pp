@@ -307,7 +307,7 @@
 // meaningful if LINK_ALL_STATIC is not defined, and we are building
 // on Windows.  This can only be used if VC++ is the compiler in
 // use, since other compilers don't support the syntax.
-#defer EXPORT_TEMPLATES $[eq $[USE_COMPILER],MSVC]
+#defer EXPORT_TEMPLATES $[or [eq $[USE_COMPILER],MSVC],[eq $[USE_COMPILER],INTEL]]
 
 // Define this to explicitly link in the various external drivers, which
 // are normally separate, as part of the Panda library.
