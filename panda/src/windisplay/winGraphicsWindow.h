@@ -19,10 +19,10 @@
 #ifndef WINGRAPHICSWINDOW_H
 #define WINGRAPHICSWINDOW_H
 
-// include win32 defns for everything up to XP, and assume I'm smart
+// include win32 defns for everything up to WinServer2003, and assume I'm smart
 // enough to use GetProcAddress for backward compat on w95/w98 for
 // newer fns
-#define _WIN32_WINNT 0x0501
+#define _WIN32_WINNT 0x0502
 
 #define WINDOWS_LEAN_AND_MEAN
 #include <windows.h>

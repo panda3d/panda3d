@@ -19,11 +19,9 @@
 #ifndef DXGSGBASE_H
 #define DXGSGBASE_H
 
-#include <pandabase.h>
-
-// include win32 defns for everything up to XP, and assume I'm smart enough to
+// include win32 defns for everything up to WinServer2003, and assume I'm smart enough to
 // use GetProcAddress for backward compat on w95/w98 for newer fns
-#define _WIN32_WINNT 0x0501
+#define _WIN32_WINNT 0x0502
 
 #define WIN32_LEAN_AND_MEAN   // get rid of mfc win32 hdr stuff
 #ifndef STRICT
@@ -41,6 +39,8 @@
 #if DIRECT3D_VERSION != 0x0700
 #error DX7 headers not available, you need to install MS Platform SDK or DirectX 8+ SDK!
 #endif
+
+#include <pandabase.h>
 
 // disable nameless struct 'warning'
 #pragma warning (disable : 4201)

@@ -22,10 +22,10 @@
 #include <pandabase.h>
 #include <graphicsWindow.h>
 
-// include win32 defns for everything up to XP, and assume I'm smart enough to
+// include win32 defns for everything up to WinServer2003, and assume I'm smart enough to
 // use GetProcAddress for backward compat on newer fns
 // Note DX8 cannot be installed on w95, so OK to assume base of win98
-#define _WIN32_WINNT 0x0501
+#define _WIN32_WINNT 0x0502
 
 #define WIN32_LEAN_AND_MEAN   // get rid of mfc win32 hdr stuff
 #ifndef STRICT
