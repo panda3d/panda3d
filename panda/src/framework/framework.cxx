@@ -876,6 +876,7 @@ void event_x(CPT_Event) {
 int framework_main(int argc, char *argv[]) {
   pystub();
 
+  /*
   // The first thing we should do is to set up a multiplexing Notify.
   MultiplexStream *mstream = new MultiplexStream;
   Notify::ptr()->set_ostream_ptr(mstream, true);
@@ -892,6 +893,7 @@ int framework_main(int argc, char *argv[]) {
 	<< "Sending Notify output to " << framework_notify_output << "\n";
     }
   }
+  */
 
   GeomNorms::init_type();
 
