@@ -18,17 +18,18 @@
 #define	KW_SHOW_POINTS	274
 #define	KW_IMAGE_SIZE	275
 #define	KW_FILM_SIZE	276
-#define	KW_GRID	277
-#define	KW_UNTEXTURED_COLOR	278
-#define	KW_HPR	279
-#define	KW_LAYERS	280
-#define	KW_STITCH	281
-#define	KW_POINTS	282
-#define	KW_USING	283
-#define	KW_IN	284
-#define	KW_MM	285
-#define	KW_CM	286
-#define	KW_P	287
+#define	KW_FILM_OFFSET	277
+#define	KW_GRID	278
+#define	KW_UNTEXTURED_COLOR	279
+#define	KW_HPR	280
+#define	KW_LAYERS	281
+#define	KW_STITCH	282
+#define	KW_POINTS	283
+#define	KW_USING	284
+#define	KW_IN	285
+#define	KW_MM	286
+#define	KW_CM	287
+#define	KW_P	288
 
 
 extern YYSTYPE stitchyylval;

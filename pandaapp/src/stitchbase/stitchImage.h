@@ -28,7 +28,8 @@ public:
   StitchImage(const string &name, const string &filename,
 	      StitchLens *lens, 
 	      const LVecBase2d &size_pixels,
-	      const LVecBase2d &pixels_per_mm);
+	      const LVecBase2d &pixels_per_mm,
+	      const LVecBase2d &film_offset_mm);
 
   bool has_name() const;
   string get_name() const;
@@ -99,6 +100,7 @@ public:
   StitchLens *_lens;
   LVecBase2d _size_pixels, _size_mm;
   LVecBase2d _pixels_per_mm;
+  LVecBase2d _film_offset_mm;
   LMatrix3d _mm_to_uv, _uv_to_mm;
   LMatrix3d _pixels_to_mm, _mm_to_pixels;
   LMatrix3d _pixels_to_uv, _uv_to_pixels;

@@ -13,10 +13,12 @@
 StitchImage::
 StitchImage(const string &name, const string &filename,
 	    StitchLens *lens, const LVecBase2d &size_pixels,
-	    const LVecBase2d &pixels_per_mm) :
+	    const LVecBase2d &pixels_per_mm,
+	    const LVecBase2d &film_offset_mm) :
   _lens(lens),
   _size_pixels(size_pixels),
   _pixels_per_mm(pixels_per_mm),
+  _film_offset_mm(film_offset_mm),
   _rotate(LMatrix3d::ident_mat()),
   _inv_rotate(LMatrix3d::ident_mat()),
   _filename(filename),
@@ -36,8 +38,9 @@ StitchImage(const string &name, const string &filename,
   // _size_pixels[1] - 1) at the lower-right.
 
   // Millimeters are used when interfacing with the lens.  They start
-  // at (0, 0) at the center, and range from -size_mm at the
-  // lower-left, to size_mm at the upper-right.
+  // at -film_offset_mm at the center, and range from
+  // -film_offset_mm-size_mm at the lower-left, to
+  // -film_offset_mm+size_mm at the upper-right.
 
   LVector2d pixels_per_uv(_size_pixels[0] - 1.0, _size_pixels[1] - 1.0);
 
@@ -64,11 +67,13 @@ StitchImage(const string &name, const string &filename,
 
   _uv_to_mm = 
     LMatrix3d::translate_mat(LVector2d(-0.5, -0.5)) *
-    LMatrix3d::scale_mat(mm_per_uv);
+    LMatrix3d::scale_mat(mm_per_uv) *
+    LMatrix3d::translate_mat(-_film_offset_mm);
 
   _mm_to_uv =
+    LMatrix3d::translate_mat(_film_offset_mm) *
     LMatrix3d::scale_mat(1.0 / mm_per_uv[0], 1.0 / mm_per_uv[1]) *
-    LMatrix3d::translate_mat(LVector2d(0.5, 0.5));
+    LMatrix3d::translate_mat(LVector2d(0.5, 0.5) + _film_offset_mm);
 
   _pixels_to_mm = _pixels_to_uv * _uv_to_mm;
   _mm_to_pixels = _mm_to_uv * _uv_to_pixels;

@@ -41,6 +41,7 @@ public:
     C_show_points,
     C_image_size,
     C_film_size,
+    C_film_offset,
     C_grid,
     C_untextured_color,
     C_hpr,

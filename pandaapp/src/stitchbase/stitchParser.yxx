@@ -50,6 +50,7 @@ stitch_init_parser(istream &in, const string &filename,
 %token KW_SHOW_POINTS
 %token KW_IMAGE_SIZE
 %token KW_FILM_SIZE
+%token KW_FILM_OFFSET
 %token KW_GRID
 %token KW_UNTEXTURED_COLOR
 %token KW_HPR
@@ -217,6 +218,11 @@ simple_command:
 	| KW_FILM_SIZE length_pair
 {
   $$ = new StitchCommand(parent, StitchCommand::C_film_size);
+  $$->set_length_pair((const LPoint2d &)$2);
+}
+	| KW_FILM_OFFSET length_pair
+{
+  $$ = new StitchCommand(parent, StitchCommand::C_film_offset);
   $$->set_length_pair((const LPoint2d &)$2);
 }
 	| KW_GRID vec2

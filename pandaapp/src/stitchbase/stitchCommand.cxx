@@ -92,6 +92,10 @@ operator << (ostream &out, StitchCommand::Command c) {
     return out << "film_size";
     break;
 
+  case StitchCommand::C_film_offset:
+    return out << "film_offset";
+    break;
+
   case StitchCommand::C_grid:
     return out << "grid";
     break;
@@ -588,8 +592,15 @@ create_image() {
     }
   }
 
+  LVecBase2d film_offset_mm(0.0, 0.0);
+  cmd = find_command(C_film_offset);
+  if (cmd != NULL) {
+    film_offset_mm = cmd->get_point2d();
+  }
+
   StitchImage *image = 
-    new StitchImage(get_name(), filename, lens, size_pixels, resolution);
+    new StitchImage(get_name(), filename, lens, size_pixels, film_offset_mm,
+		    resolution);
   image->setup_grid(50, 50);
 
   // Also look for points and other stuff.

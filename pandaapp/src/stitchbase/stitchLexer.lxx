@@ -11,6 +11,7 @@
 #include "stitchParser.h"
 
 #include <indent.h>
+#include <string_utils.h>
 
 #include <assert.h>
 #include <math.h>
@@ -296,61 +297,63 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   string str = yytext;
   stitchyylval.str = str;
 
-  if (str == "define") {
+  if (cmp_nocase_uh(str, "define") == 0) {
     return KW_DEFINE;
-  } else if (str == "lens") {
+  } else if (cmp_nocase_uh(str, "lens") == 0) {
     return KW_LENS;
-  } else if (str == "input_image") {
+  } else if (cmp_nocase_uh(str, "input_image") == 0) {
     return KW_INPUT_IMAGE;
-  } else if (str == "output_image") {
+  } else if (cmp_nocase_uh(str, "output_image") == 0) {
     return KW_OUTPUT_IMAGE;
-  } else if (str == "perspective") {
+  } else if (cmp_nocase_uh(str, "perspective") == 0) {
     return KW_PERSPECTIVE;
-  } else if (str == "fisheye") {
+  } else if (cmp_nocase_uh(str, "fisheye") == 0) {
     return KW_FISHEYE;
-  } else if (str == "cylindrical") {
+  } else if (cmp_nocase_uh(str, "cylindrical") == 0) {
     return KW_CYLINDRICAL;
-  } else if (str == "psphere") {
+  } else if (cmp_nocase_uh(str, "psphere") == 0) {
     return KW_PSPHERE;
-  } else if (str == "focal_length") {
+  } else if (cmp_nocase_uh(str, "focal_length") == 0) {
     return KW_FOCAL_LENGTH;
-  } else if (str == "fov") {
+  } else if (cmp_nocase_uh(str, "fov") == 0) {
     return KW_FOV;
-  } else if (str == "singularity_tolerance") {
+  } else if (cmp_nocase_uh(str, "singularity_tolerance") == 0) {
     return KW_SINGULARITY_TOLERANCE;
-  } else if (str == "resolution") {
+  } else if (cmp_nocase_uh(str, "resolution") == 0) {
     return KW_RESOLUTION;
-  } else if (str == "filename") {
+  } else if (cmp_nocase_uh(str, "filename") == 0) {
     return KW_FILENAME;
-  } else if (str == "point") {
+  } else if (cmp_nocase_uh(str, "point") == 0) {
     return KW_POINT;
-  } else if (str == "show_points") {
+  } else if (cmp_nocase_uh(str, "show_points") == 0) {
     return KW_SHOW_POINTS;
-  } else if (str == "image_size") {
+  } else if (cmp_nocase_uh(str, "image_size") == 0) {
     return KW_IMAGE_SIZE;
-  } else if (str == "film_size") {
+  } else if (cmp_nocase_uh(str, "film_size") == 0) {
     return KW_FILM_SIZE;
-  } else if (str == "grid") {
+  } else if (cmp_nocase_uh(str, "film_offset") == 0) {
+    return KW_FILM_OFFSET;
+  } else if (cmp_nocase_uh(str, "grid") == 0) {
     return KW_GRID;
-  } else if (str == "untextured_color") {
+  } else if (cmp_nocase_uh(str, "untextured_color") == 0) {
     return KW_UNTEXTURED_COLOR;
-  } else if (str == "hpr") {
+  } else if (cmp_nocase_uh(str, "hpr") == 0) {
     return KW_HPR;
-  } else if (str == "layers") {
+  } else if (cmp_nocase_uh(str, "layers") == 0) {
     return KW_LAYERS;
-  } else if (str == "stitch") {
+  } else if (cmp_nocase_uh(str, "stitch") == 0) {
     return KW_STITCH;
-  } else if (str == "points") {
+  } else if (cmp_nocase_uh(str, "points") == 0) {
     return KW_POINTS;
-  } else if (str == "using") {
+  } else if (cmp_nocase_uh(str, "using") == 0) {
     return KW_USING;
-  } else if (str == "in") {
+  } else if (cmp_nocase_uh(str, "in") == 0) {
     return KW_IN;
-  } else if (str == "mm") {
+  } else if (cmp_nocase_uh(str, "mm") == 0) {
     return KW_MM;
-  } else if (str == "cm") {
+  } else if (cmp_nocase_uh(str, "cm") == 0) {
     return KW_CM;
-  } else if (str == "p") {
+  } else if (cmp_nocase_uh(str, "p") == 0) {
     return KW_P;
   }
 
