@@ -1,4 +1,3 @@
-
 #include "config_egg.cxx"
 #include "eggAnimData.cxx"
 #include "eggAttributes.cxx"

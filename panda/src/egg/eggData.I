@@ -39,7 +39,8 @@ EggData(const EggData &copy) :
   EggGroupNode(copy),
   _auto_resolve_externals(copy._auto_resolve_externals),
   _coordsys(copy._coordsys),
-  _egg_filename(copy._egg_filename) {
+  _egg_filename(copy._egg_filename) 
+{
 }
 
 ////////////////////////////////////////////////////////////////////

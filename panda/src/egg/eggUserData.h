@@ -1,5 +1,5 @@
-// Filename: eggObject.h
-// Created by:  drose (17Jan99)
+// Filename: eggUserData.h
+// Created by:  drose (03Jun03)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,34 +16,32 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef EGGOBJECT_H
-#define EGGOBJECT_H
+#ifndef EGGUSERDATA_H
+#define EGGUSERDATA_H
 
 #include "pandabase.h"
-#include "eggUserData.h"
+
 #include "typedReferenceCount.h"
-#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : EggObject
-// Description : The highest-level base class in the egg directory.
-//               (Almost) all things egg inherit from this.
+//       Class : EggUserData
+// Description : This is a base class for a user-defined data type to
+//               extend egg structures in processing code.  The user
+//               of the egg library may derive from EggUserData to
+//               associate any arbitrary data with various egg
+//               objects.
+//
+//               However, this data will not be written out to the
+//               disk when the egg file is written; it is an in-memory
+//               object only.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEGG EggObject : public TypedReferenceCount {
+class EXPCL_PANDAEGG EggUserData : public TypedReferenceCount {
 public:
-  INLINE EggObject();
-  INLINE EggObject(const EggObject &copy);
-  INLINE EggObject &operator = (const EggObject &copy);
+  INLINE EggUserData();
+  INLINE EggUserData(const EggUserData &copy);
+  INLINE EggUserData &operator = (const EggUserData &copy);
 
-  virtual ~EggObject();
-
-  INLINE void set_user_data(EggUserData *user_data);
-  INLINE EggUserData *get_user_data() const;
-  INLINE bool has_user_data() const;
-  INLINE void clear_user_data();
-
-private:
-  PT(EggUserData) _user_data;
+  virtual ~EggUserData();
 
 public:
   static TypeHandle get_class_type() {
@@ -51,7 +49,7 @@ public:
   }
   static void init_type() {
     TypedReferenceCount::init_type();
-    register_type(_type_handle, "EggObject",
+    register_type(_type_handle, "EggUserData",
                   TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -63,6 +61,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "eggObject.I"
+#include "eggUserData.I"
 
 #endif
+

@@ -45,6 +45,7 @@
 #include "eggSwitchCondition.h"
 #include "eggTable.h"
 #include "eggTexture.h"
+#include "eggUserData.h"
 #include "eggVertex.h"
 #include "eggVertexPool.h"
 #include "eggXfmAnimData.h"
@@ -116,6 +117,7 @@ init_libegg() {
   EggSwitchConditionDistance::init_type();
   EggTable::init_type();
   EggTexture::init_type();
+  EggUserData::init_type();
   EggVertex::init_type();
   EggVertexPool::init_type();
   EggXfmAnimData::init_type();

@@ -33,7 +33,10 @@ EggObject() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggObject::
-EggObject(const EggObject &copy) : TypedReferenceCount(copy) {
+EggObject(const EggObject &copy) : 
+  TypedReferenceCount(copy),
+  _user_data(copy._user_data)
+{
 }
 
 
@@ -45,5 +48,56 @@ EggObject(const EggObject &copy) : TypedReferenceCount(copy) {
 INLINE EggObject &EggObject::
 operator = (const EggObject &copy) {
   TypedReferenceCount::operator = (copy);
+  _user_data = copy._user_data;
   return *this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggObject::set_user_data
+//       Access: Public
+//  Description: Sets the user data associated with this object.  This
+//               may be any EggUserData-derived object.  The egg
+//               library will do nothing with this pointer, except to
+//               hold its reference count and return the pointer on
+//               request.
+//
+//               This pointer is also copied by the copy assignment
+//               operator and copy constructor.
+////////////////////////////////////////////////////////////////////
+INLINE void EggObject::
+set_user_data(EggUserData *user_data) {
+  _user_data = user_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggObject::get_user_data
+//       Access: Public
+//  Description: Returns the user data pointer previously stored on
+//               this object, or NULL if nothing was previously
+//               stored.
+////////////////////////////////////////////////////////////////////
+INLINE EggUserData *EggObject::
+get_user_data() const {
+  return _user_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggObject::has_user_data
+//       Access: Public
+//  Description: Returns true if the user data pointer has been set,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggObject::
+has_user_data() const {
+  return !_user_data.is_null();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggObject::clear_user_data
+//       Access: Public
+//  Description: Resets the user data pointer to NULL.
+////////////////////////////////////////////////////////////////////
+INLINE void EggObject::
+clear_user_data() {
+  _user_data.clear();
 }

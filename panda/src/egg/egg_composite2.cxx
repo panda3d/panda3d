@@ -1,4 +1,3 @@
-
 #include "eggObject.cxx"
 #include "eggParameters.cxx"
 #include "eggPoint.cxx"
@@ -14,6 +13,7 @@
 #include "eggTexture.cxx"
 #include "eggTextureCollection.cxx"
 #include "eggTransform3d.cxx"
+#include "eggUserData.cxx"
 #include "eggUtilities.cxx"
 #include "eggVertex.cxx"
 #include "eggVertexPool.cxx"

@@ -31,6 +31,7 @@
      eggSwitchCondition.h eggTable.I eggTable.h eggTexture.I  \
      eggTexture.h eggTextureCollection.I eggTextureCollection.h  \
      eggTransform3d.I eggTransform3d.h \
+     eggUserData.I eggUserData.h \
      eggUtilities.I eggUtilities.h eggVertex.I eggVertex.h  \
      eggVertexPool.I eggVertexPool.h eggXfmAnimData.I  \
      eggXfmAnimData.h eggXfmSAnim.I eggXfmSAnim.h parserDefs.h  \
@@ -52,6 +53,7 @@
      eggSAnimData.cxx eggSurface.cxx eggSwitchCondition.cxx  \
      eggTable.cxx eggTexture.cxx eggTextureCollection.cxx  \
      eggTransform3d.cxx \
+     eggUserData.cxx \
      eggUtilities.cxx eggVertex.cxx eggVertexPool.cxx  \
      eggXfmAnimData.cxx eggXfmSAnim.cxx xx xx pt_EggMaterial.cxx  \
      vector_PT_EggMaterial.cxx pt_EggTexture.cxx  \
@@ -77,6 +79,7 @@
     eggSwitchCondition.h eggTable.I eggTable.h eggTexture.I \
     eggTexture.h eggTextureCollection.I eggTextureCollection.h \
     eggTransform3d.I eggTransform3d.h \
+    eggUserData.I eggUserData.h \
     eggUtilities.I eggUtilities.h eggVertex.I eggVertex.h \
     eggVertexPool.I eggVertexPool.h eggXfmAnimData.I eggXfmAnimData.h \
     eggXfmSAnim.I eggXfmSAnim.h \
