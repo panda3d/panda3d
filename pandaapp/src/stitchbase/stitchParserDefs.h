@@ -37,7 +37,7 @@ void stitch_init_parser(istream &in, const string &filename,
 // union), so we'll use a class instead.  That means we need to
 // declare it externally, here.
 
-class YYSTYPE {
+class yystype {
 public:
   double number;
   string str;
@@ -45,5 +45,6 @@ public:
   LVecBase4d vec;
   int num_components;
 };
+#define YYSTYPE yystype
 
 #endif
