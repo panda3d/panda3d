@@ -23,7 +23,7 @@
 
 ModelPool *ModelPool::_global_ptr = (ModelPool *)NULL;
 
-static Loader _model_loader;
+static Loader model_loader;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ModelPool::ns_has_model
@@ -58,7 +58,7 @@ ns_load_model(const string &filename) {
 
   loader_cat.info()
     << "Loading model " << filename << "\n";
-  PT(PandaNode) node = _model_loader.load_sync(filename);
+  PT(PandaNode) node = model_loader.load_sync(filename);
   if (node.is_null()) {
     // This model was not found.
     return (PandaNode *)NULL;
