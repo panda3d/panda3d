@@ -147,7 +147,8 @@ PUBLISHED:
   void print() const;
   void write(ostream &out) const;
 
-  INLINE void rebuild();
+  INLINE void rebuild(bool needs_measure);
+  INLINE void measure();
 
   // The following functions return information about the text that
   // was last built (and is currently visible).
@@ -166,12 +167,17 @@ PUBLISHED:
 
 private:
   void do_rebuild();
+  void do_measure();
   bool find_character_gsets(Node *root, Geom *&ch, GeomPoint *&dot,
 			    AllTransitionsWrapper &trans);
   void find_characters(Node *root);
   float assemble_row(const char *&source, Node *dest);
   Node *assemble_text(const char *source, LVector2f &ul, LVector2f &lr,
 		      int &num_rows);
+  float measure_row(const char *&source);
+  void measure_text(const char *source, LVector2f &ul, LVector2f &lr,
+		    int &num_rows);
+
   Node *make_frame();
   Node *make_card();
   Node *make_card_with_border();

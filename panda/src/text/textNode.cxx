@@ -477,6 +477,44 @@ do_rebuild() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextNode::do_measure
+//       Access: Private
+//  Description: Can be called in lieu of do_rebuild() to measure the
+//               text and set up the bounding boxes properly without
+//               actually assembling it.
+////////////////////////////////////////////////////////////////////
+void TextNode::
+do_measure() {
+  _ul2d.set(0.0, 0.0);
+  _lr2d.set(0.0, 0.0);
+  _ul3d.set(0.0, 0.0, 0.0);
+  _lr3d.set(0.0, 0.0, 0.0);
+  _num_rows = 0;
+
+  if (_text.empty() || _defs.empty()) {
+    return;
+  }
+
+  string text = _text;
+  if (has_wordwrap()) {
+    text = wordwrap_to(text, _wordwrap_width);
+  }
+
+  LVector2f ul, lr;
+  int num_rows;
+  measure_text(text.c_str(), ul, lr, num_rows);
+
+  _num_rows = num_rows;
+  _ul2d = ul;
+  _lr2d = lr;
+  _ul3d.set(ul[0], 0.0, ul[1]);
+  _lr3d.set(lr[0], 0.0, lr[1]);
+
+  _ul3d = _ul3d * _transform;
+  _lr3d = _lr3d * _transform;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextNode::find_character_gsets
 //       Access: Private
 //  Description: Given that 'root' is a Node containing at least a
@@ -628,7 +666,8 @@ assemble_row(const char *&source, Node *dest) {
 
       CharDefs::const_iterator cdi = _defs.find(character);
       if (cdi == _defs.end()) {
-	nout << "No definition for character " << character << endl;
+	text_cat.warning()
+	  << "No definition for character " << character << endl;
   
       } else {
 	Geom *char_geom = (*cdi).second._geom;
@@ -664,7 +703,7 @@ assemble_row(const char *&source, Node *dest) {
 ////////////////////////////////////////////////////////////////////
 Node *TextNode::
 assemble_text(const char *source, LVector2f &ul, LVector2f &lr,
-        int &num_rows) {
+	      int &num_rows) {
   ul.set(0.0, 0.8 * _font_height);
   lr.set(0.0, 0.0);
 
@@ -720,6 +759,80 @@ assemble_text(const char *source, LVector2f &ul, LVector2f &lr,
   lr[1] = posy + 0.8 * _font_height;
 
   return root_node;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::measure_row
+//       Access: Private
+//  Description: Returns the length of the row in units, as it would
+//               be if it were assembled, without actually assembling
+//               it.
+////////////////////////////////////////////////////////////////////
+float TextNode::
+measure_row(const char *&source) {
+  float xpos = 0.0;
+  while (*source != '\0' && *source != '\n') {
+    int character = (unsigned char)*source;
+
+    if (character == ' ') {
+      // A space is a special case.
+      xpos += 0.25;
+
+    } else {
+      // A printable character.
+
+      CharDefs::const_iterator cdi = _defs.find(character);
+      if (cdi == _defs.end()) {
+	text_cat.warning()
+	  << "No definition for character " << character << endl;
+  
+      } else {
+	float char_width = (*cdi).second._width;
+	xpos += char_width;
+      }
+    }
+    source++;
+  }
+
+  return xpos;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::measure_text
+//       Access: Private
+//  Description: Sets the ul, lr corners to fit the text, without
+//               actually assembling it.
+////////////////////////////////////////////////////////////////////
+void TextNode::
+measure_text(const char *source, LVector2f &ul, LVector2f &lr,
+	     int &num_rows) {
+  ul.set(0.0, 0.8 * _font_height);
+  lr.set(0.0, 0.0);
+
+  float posy = 0.0;
+  while (*source != '\0') {
+    float row_width = measure_row(source);
+    if (*source != '\0') {
+      // Skip past the newline.
+      source++;
+    }
+    
+    if (_align == TM_ALIGN_LEFT) {
+      lr[0] = max(lr[0], row_width);
+
+    } else if (_align == TM_ALIGN_RIGHT) {
+      ul[0] = min(ul[0], -row_width);
+
+    } else {
+      lr[0] = max(lr[0], row_width / 2);
+      ul[0] = min(ul[0], -row_width / 2);
+    }
+
+    posy -= _font_height;
+    num_rows++;
+  }
+
+  lr[1] = posy + 0.8 * _font_height;
 }
 
 ////////////////////////////////////////////////////////////////////

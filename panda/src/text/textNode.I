@@ -86,7 +86,7 @@ set_font(Node *font_def) {
   _font_height = 1.0;
 
   find_characters(font_def);
-  rebuild();
+  rebuild(true);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -118,7 +118,7 @@ get_line_height() const {
 INLINE void TextNode::
 set_slant(float slant) {
   _slant = slant;
-  rebuild();
+  rebuild(true);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -139,7 +139,7 @@ get_slant() const {
 INLINE void TextNode::
 set_align(int align_type) {
   _align = align_type;
-  rebuild();
+  rebuild(true);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -162,7 +162,7 @@ INLINE void TextNode::
 set_wordwrap(float wordwrap) {
   _flags |= F_has_wordwrap;
   _wordwrap_width = wordwrap;
-  rebuild();
+  rebuild(true);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -174,7 +174,7 @@ set_wordwrap(float wordwrap) {
 INLINE void TextNode::
 clear_wordwrap() {
   _flags &= ~F_has_wordwrap;
-  rebuild();
+  rebuild(true);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -216,7 +216,7 @@ INLINE void TextNode::
 set_text_color(const Colorf &text_color) {
   _text_color = text_color;
   _flags |= F_has_text_color;
-  rebuild();
+  rebuild(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -268,7 +268,7 @@ set_frame_color(float r, float g, float b, float a) {
 INLINE void TextNode::
 set_frame_color(const Colorf &frame_color) {
   _frame_color = frame_color;
-  rebuild();
+  rebuild(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -291,7 +291,7 @@ set_card_border(float size, float uv_portion) {
   _flags |= F_has_card_border;
   _card_border_size = size;
   _card_border_uv_portion = uv_portion;
-  rebuild();
+  rebuild(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -302,7 +302,7 @@ set_card_border(float size, float uv_portion) {
 INLINE void TextNode::
 clear_card_border() {
   _flags &= ~F_has_card_border;
-  rebuild();
+  rebuild(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -353,7 +353,7 @@ set_card_color(float r, float g, float b, float a) {
 INLINE void TextNode::
 set_card_color(const Colorf &card_color) {
   _card_color = card_color;
-  rebuild();
+  rebuild(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -375,7 +375,7 @@ INLINE void TextNode::
 set_card_texture(Texture *card_texture) {
   _flags |= F_has_card_texture;
   _card_texture = card_texture;
-  rebuild();
+  rebuild(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -387,7 +387,7 @@ INLINE void TextNode::
 clear_card_texture() {
   _flags &= ~F_has_card_texture;
   _card_texture = NULL;
-  rebuild();
+  rebuild(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -428,7 +428,7 @@ set_shadow_color(float r, float g, float b, float a) {
 INLINE void TextNode::
 set_shadow_color(const Colorf &shadow_color) {
   _shadow_color = shadow_color;
-  rebuild();
+  rebuild(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -455,7 +455,7 @@ set_frame_as_margin(float left, float right, float bottom, float top) {
   _flags |= (F_has_frame | F_frame_as_margin);
   _frame_ul.set(left, top);
   _frame_lr.set(right, bottom);
-  rebuild();
+  rebuild(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -474,7 +474,7 @@ set_frame_actual(float left, float right, float bottom, float top) {
   _flags &= ~F_frame_as_margin;
   _frame_ul.set(left, top);
   _frame_lr.set(right, bottom);
-  rebuild();
+  rebuild(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -486,7 +486,7 @@ set_frame_actual(float left, float right, float bottom, float top) {
 INLINE void TextNode::
 clear_frame() {
   _flags &= ~F_has_frame;
-  rebuild();
+  rebuild(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -618,7 +618,7 @@ set_card_as_margin(float left, float right, float bottom, float top) {
   _flags |= (F_has_card | F_card_as_margin);
   _card_ul.set(left, top);
   _card_lr.set(right, bottom);
-  rebuild();
+  rebuild(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -637,7 +637,7 @@ set_card_actual(float left, float right, float bottom, float top) {
   _flags &= ~F_card_as_margin;
   _card_ul.set(left, top);
   _card_lr.set(right, bottom);
-  rebuild();
+  rebuild(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -649,7 +649,7 @@ set_card_actual(float left, float right, float bottom, float top) {
 INLINE void TextNode::
 clear_card() {
   _flags &= ~F_has_card;
-  rebuild();
+  rebuild(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -746,7 +746,7 @@ INLINE void TextNode::
 set_shadow(float xoffset, float yoffset) {
   _flags |= F_has_shadow;
   _shadow_offset.set(xoffset, yoffset);
-  rebuild();
+  rebuild(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -758,7 +758,7 @@ set_shadow(float xoffset, float yoffset) {
 INLINE void TextNode::
 clear_shadow() {
   _flags &= ~F_has_shadow;
-  rebuild();
+  rebuild(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -795,7 +795,7 @@ get_shadow() const {
 INLINE void TextNode::
 set_draw_order(int draw_order) {
   _draw_order = draw_order;
-  rebuild();
+  rebuild(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -822,7 +822,7 @@ set_billboard(bool billboard) {
   } else {
     _flags &= ~F_billboard;
   }
-  rebuild();
+  rebuild(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -844,7 +844,7 @@ get_billboard() const {
 INLINE void TextNode::
 set_transform(const LMatrix4f &transform) {
   _transform = transform;
-  rebuild();
+  rebuild(true);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -866,7 +866,7 @@ get_transform() const {
 INLINE void TextNode::
 set_coordinate_system(CoordinateSystem coordinate_system) {
   _coordinate_system = coordinate_system;
-  rebuild();
+  rebuild(true);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -888,7 +888,7 @@ get_coordinate_system() const {
 INLINE void TextNode::
 set_text(const string &text) {
   _text = text;
-  rebuild();
+  rebuild(true);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -899,7 +899,7 @@ set_text(const string &text) {
 INLINE void TextNode::
 clear_text() {
   _text = "";
-  rebuild();
+  rebuild(true);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -926,7 +926,11 @@ get_text() const {
 //     Function: TextNode::rebuild
 //       Access: Public
 //  Description: Updates the TextNode, if it is not frozen, or marks
-//               the TextNode as requiring an update if it is.
+//               the TextNode as requiring an update if it is.  If the
+//               text is currently frozen, nothing will be done until
+//               it is thawed, unless needs_measure is true, in which
+//               case the text will be re-measured even if it is
+//               currently frozen.
 //
 //               Normally, this function is called automatically
 //               whenever any of the parameters changes.  It should
@@ -934,12 +938,30 @@ get_text() const {
 //               goes wrong.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-rebuild() {
+rebuild(bool needs_measure) {
   if (_freeze_level <= 0) {
     do_rebuild();
   } else {
     _needs_rebuild = true;
+
+    if (needs_measure) {
+      measure();
+    }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::measure
+//       Access: Public
+//  Description: Measures the extent of the text as it will be placed,
+//               without actually placing it.  Normally, this function
+//               is called automatically whenever any of the
+//               parameters changes.  It should not need to be called
+//               explicitly unless something goes wrong.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+measure() {
+  do_measure();
 }
 
 ////////////////////////////////////////////////////////////////////
