@@ -853,7 +853,7 @@ void event_D(CPT_Event) {
 }
 
 //  sample code to verify and pick a new fullscreen size dynamically
-#define NUMWINDOWSIZES 4
+#define NUMWINDOWSIZES 5
 static int cur_winsize_idx=0;
 static unsigned int window_sizearr[NUMWINDOWSIZES*2] = 
       {640,480, 1024,768, 800,600, 454,656, 1280,1024};
