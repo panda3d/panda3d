@@ -3838,12 +3838,17 @@ issue_render_mode(const RenderModeAttrib *attrib) {
   RenderModeAttrib::Mode mode = attrib->get_mode();
 
   switch (mode) {
+  case RenderModeAttrib::M_unchanged:
   case RenderModeAttrib::M_filled:
     _pScrn->pD3DDevice->SetRenderState(D3DRENDERSTATE_FILLMODE, D3DFILL_SOLID);
     break;
 
   case RenderModeAttrib::M_wireframe:
     _pScrn->pD3DDevice->SetRenderState(D3DRENDERSTATE_FILLMODE, D3DFILL_WIREFRAME);
+    break;
+
+  case RenderModeAttrib::M_point:
+    _pScrn->pD3DDevice->SetRenderState(D3DRENDERSTATE_FILLMODE, D3DFILL_POINT);
     break;
 
   default:
