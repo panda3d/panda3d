@@ -358,3 +358,29 @@ def binaryRepr(number, max_length = 32):
     if not digits.count (1): return 0
     digits = digits [digits.index (1):]
     return string.join (map (repr, digits), '')
+
+# constant profile defaults
+PyUtilProfileDefaultFilename = 'profiledata'
+PyUtilProfileDefaultLines = 80
+PyUtilProfileDefaultSorts = ['cumulative', 'time', 'calls']
+
+# first, call this from the prompt
+def startProfile(filename=PyUtilProfileDefaultFilename,
+                 lines=PyUtilProfileDefaultLines,
+                 sorts=PyUtilProfileDefaultSorts,
+                 silent=0):
+    import profile
+    profile.run('run()', filename)
+    if not silent:
+        printProfile(filename, lines, sorts)
+
+# finally, break out to the prompt and call this
+def printProfile(filename=PyUtilProfileDefaultFilename,
+                 lines=PyUtilProfileDefaultLines,
+                 sorts=PyUtilProfileDefaultSorts,):
+    import pstats
+    s = pstats.Stats(filename)
+    s.strip_dirs()
+    for sort in sorts:
+        s.sort_stats(sort)
+        s.print_stats(lines)
