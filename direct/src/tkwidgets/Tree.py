@@ -161,6 +161,17 @@ class TreeNode:
         fraction = float(fraction) / y1
         self.canvas.yview_moveto(fraction)
 
+    def reveal(self):
+        parent = self.parent
+        while parent:
+            if parent.state == 'collapsed':
+                parent.state = 'expanded'
+                parent = parent.parent
+            else:
+                break
+        self.update()
+        self.view()
+
     def lastvisiblechild(self):
         if self.kidKeys and self.state == 'expanded':
             return self.children[self.kidKeys[-1]].lastvisiblechild()
@@ -317,6 +328,22 @@ class TreeNode:
         self.drawtext()
         self.canvas.focus_set()
 
+    def find(self, searchKey):
+        if searchKey == self.item.GetKey():
+            return self
+        sublist = self.item._GetSubList()
+        for item in sublist:
+            key = item.GetKey()
+            if self.children.has_key(key):
+                child = self.children[key]
+            else:
+                child = TreeNode(self.canvas, self, item, self.menuList)
+                self.children[key] = child
+                self.kidKeys.append(key)
+            retVal = child.find(searchKey)
+            if retVal:
+                return retVal
+        return None
 
 class TreeItem:
 

@@ -204,6 +204,24 @@ class DirectSession(PandaObject):
         # Set flag
         self.fEnabled = 1
 
+    def enableLight(self):
+        if self.fEnabled:
+            return
+        # Make sure old tasks are shut down
+        self.disable()
+        # Start all display region context tasks
+        self.drList.spawnContextTask()
+        # Turn on object manipulation
+        self.manipulationControl.enableManipulation()
+        # Make sure list of selected items is reset
+        self.deselectAll()
+        self.selected.reset()
+        # Accept appropriate hooks
+        self.enableMouseEvents()
+        self.enableActionEvents()
+        # Set flag
+        self.fEnabled = 1
+
     def disable(self):
         # Shut down all display region context tasks
         self.drList.removeContextTask()

@@ -38,6 +38,8 @@ class privNodePathImpl(NodePath.NodePath):
     def __init__(self, name):
         node = hidden.attachNewNode(name)
         NodePath.NodePath.__init__(self, node)
+        if __debug__:
+            self.setTag('entity', '1')
 
     def initNodePathAttribs(self):
         """Call this after the entity has been initialized, and all
@@ -48,6 +50,8 @@ class privNodePathImpl(NodePath.NodePath):
         self.level.requestReparent(self, self.parent)
         
     def destroy(self):
+        if __debug__:
+            self.clearTag('entity')
         self.removeNode()
 
     def getNodePath(self):
