@@ -31,6 +31,7 @@ static void DebugPrintPixFmt(DDPIXELFORMAT* pddpf) {
 
     if(pddpf->dwFlags & DDPF_RGB) {
        *dbgout << " RGBmask:" << (void *) (pddpf->dwRBitMask | pddpf->dwGBitMask | pddpf->dwBBitMask);
+       *dbgout << " Rmask:" << (void *) (pddpf->dwRBitMask);
     }
 
     if(pddpf->dwFlags & DDPF_ALPHAPIXELS) {
@@ -296,6 +297,7 @@ CreateTexture( HDC hdc, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPI
 #ifdef _DEBUG
     { static BOOL bPrinted=FALSE;
        if(!bPrinted) {
+            dxgsg_cat.debug() << "Gfx card supported TexFmts:\n";
             for(i=0;i<cNumTexPixFmts;i++) { DebugPrintPixFmt(&pTexPixFmts[i]); }
             bPrinted=TRUE;
        }
@@ -356,15 +358,19 @@ CreateTexture( HDC hdc, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPI
             for(i=0,pCurPixFmt=&pTexPixFmts[cNumTexPixFmts-1];i<cNumTexPixFmts;i++,pCurPixFmt--) {
                 // assume ALPHAMASK is x8000 and RGBMASK is x7fff to simplify 32->16 conversion
                 // this should be true on most cards.  
+#if 0
                 if((pCurPixFmt->dwRGBBitCount==16) && (pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS)
                    && (pCurPixFmt->dwRGBAlphaBitMask==0x8000)) {
                       ConvNeeded=Conv32to16_1555;
                       goto found_matching_format;
                   }
-#if 0
+#else
             // 32 bit RGBA was requested, but only 16 bit alpha fmts are avail
-            // by default, convert to 15-1, which is the most common fmt
+            // by default, convert to 4-4-4-4 which has 4-bit alpha for blurry edges
+            // egg fmt needs an indicator of alpha values, whether it is 1-bit alpha
+            // or multi-valued alpha buffer that requires more bits
 
+            // old comment:
             // 4-4-4-4 would be useful if we know pixelbuf contains non-binary alpha,
             // but hard to infer that from RGBA request, and 15-1 is the better general choice
 
@@ -535,7 +541,7 @@ CreateTexture( HDC hdc, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPI
         DWORD x,y,dwPixel;
 
 #ifdef _DEBUG
-        dxgsg_cat.spam() << "CreateTexture executing conversion " << ConvNameStrs[ConvNeeded] << "\n";    
+        dxgsg_cat.debug() << "CreateTexture executing conversion " << ConvNameStrs[ConvNeeded] << "\n";    
 #endif
 
         switch(ConvNeeded) {
@@ -671,7 +677,6 @@ CreateTexture( HDC hdc, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPI
            DWORD *pSrcWord = (DWORD *) pbuf->_image.p();
            WORD *pDstWord;
     
-           assert(cNumAlphaBits==4);  
            assert(ddsd.ddpfPixelFormat.dwRGBAlphaBitMask==0xf000);  // assumes ARGB
            assert(ddsd.ddpfPixelFormat.dwRBitMask==0x0f00);  // assumes ARGB
     

@@ -404,27 +404,27 @@ init_dx(  LPDIRECTDRAW7		context,
 
   if(((D3DDevDesc.dpcTriCaps.dwSrcBlendCaps & REQUIRED_BLENDCAPS)!=REQUIRED_BLENDCAPS) ||
      ((D3DDevDesc.dpcTriCaps.dwDestBlendCaps & REQUIRED_BLENDCAPS)!=REQUIRED_BLENDCAPS)) {
-         dxgsg_cat.error() << "device is missing alpha blending capabilities, blending may not work correctly: SrcBlendCaps: "<< (void*) D3DDevDesc.dpcTriCaps.dwSrcBlendCaps << "  DestBlendCaps: "<< (void*) D3DDevDesc.dpcTriCaps.dwDestBlendCaps << endl;
+         dxgsg_cat.error() << "device is missing alpha blending capabilities, blending may not work correctly: SrcBlendCaps: 0x"<< (void*) D3DDevDesc.dpcTriCaps.dwSrcBlendCaps << "  DestBlendCaps: "<< (void*) D3DDevDesc.dpcTriCaps.dwDestBlendCaps << endl;
   }
 
   if(!(D3DDevDesc.dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_TRANSPARENCY)) {
-         dxgsg_cat.error() << "device is missing texture transparency capability, transparency will work correctly!!!\n";
+         dxgsg_cat.error() << "device is missing texture transparency capability, transparency may not work correctly!  TextureCaps: 0x"<< (void*) D3DDevDesc.dpcTriCaps.dwTextureCaps << endl;
   }
 
   // just require trilinear.  if it can do that, it can probably do all the lesser point-sampling variations too
 #define REQUIRED_TEXFILTERCAPS (D3DPTFILTERCAPS_MAGFLINEAR |  D3DPTFILTERCAPS_MINFLINEAR | D3DPTFILTERCAPS_LINEAR)
   if((D3DDevDesc.dpcTriCaps.dwTextureFilterCaps & REQUIRED_TEXFILTERCAPS)!=REQUIRED_TEXFILTERCAPS) {
-         dxgsg_cat.error() << "device is missing texture bilinear filtering capability, textures may appear blocky!!!\n";
+         dxgsg_cat.error() << "device is missing texture bilinear filtering capability, textures may appear blocky!  TextureFilterCaps: 0x"<< (void*) D3DDevDesc.dpcTriCaps.dwTextureFilterCaps << endl;
   }
 
 #define REQUIRED_MIPMAP_TEXFILTERCAPS (D3DPTFILTERCAPS_MIPFLINEAR | D3DPTFILTERCAPS_LINEARMIPLINEAR)
   if((D3DDevDesc.dpcTriCaps.dwTextureFilterCaps & REQUIRED_MIPMAP_TEXFILTERCAPS)!=REQUIRED_MIPMAP_TEXFILTERCAPS) {
-         dxgsg_cat.error() << "device is missing tri-linear mipmap filtering capability, texture mipmaps may not supported!!!\n";
+         dxgsg_cat.error() << "device is missing tri-linear mipmap filtering capability, texture mipmaps may not supported! TextureFilterCaps: 0x"<< (void*) D3DDevDesc.dpcTriCaps.dwTextureFilterCaps << endl;
   }
 
 #define REQUIRED_TEXBLENDCAPS (D3DTEXOPCAPS_MODULATE | D3DTEXOPCAPS_SELECTARG1 | D3DTEXOPCAPS_SELECTARG2)
   if((D3DDevDesc.dwTextureOpCaps & REQUIRED_TEXBLENDCAPS)!=REQUIRED_TEXBLENDCAPS) {
-         dxgsg_cat.error() << "device is missing some required texture blending capabilities, texture blending may not work properly!!!\n";
+         dxgsg_cat.error() << "device is missing some required texture blending capabilities, texture blending may not work properly! TextureOpCaps: 0x"<< (void*) D3DDevDesc.dwTextureOpCaps << endl;
   }
 
   SetRect(&clip_rect, 0,0,0,0);		// no clip rect set
@@ -4015,7 +4015,7 @@ apply_texture_immediate(DXTextureContext *tc) {
     //          we dont see this bug cause we never mix textured/untextured
 
 	_d3dDevice->SetTexture(0, tc->_surface );
-#ifdef _DEBUG
+#if 0
     if(tc!=NULL) {
        dxgsg_cat.spam() << "Setting active DX texture: " << tc->_tex->get_name() << "\n";
     } 
