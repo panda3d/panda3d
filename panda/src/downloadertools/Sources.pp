@@ -79,13 +79,3 @@
     pdecompress.cxx
 
 #end bin_target
-
-#begin bin_target
-  #define TARGET test_downloader
-  #define BUILD_TARGET $[HAVE_ZLIB]
-  #define USE_PACKAGES $[USE_PACKAGES] zlib
-
-  #define SOURCES \
-    test_downloader.cxx
-
-#end bin_target
