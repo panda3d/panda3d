@@ -92,7 +92,15 @@ scan_textures() {
     TextureReference *ref = new TextureReference;
     ref->from_egg(this, _data, egg_tex);
 
-    _textures.push_back(ref);
+    if (!ref->has_uvs()) {
+      // This texture isn't *really* referenced.  (Usually this
+      // happens if the texture is only referenced by "backstage"
+      // geometry, which we don't care about.)
+      delete ref;
+
+    } else {
+      _textures.push_back(ref);
+    }
   }
 }
 

@@ -11,6 +11,8 @@ Filename FilenameUnifier::_txa_filename;
 Filename FilenameUnifier::_txa_dir;
 Filename FilenameUnifier::_rel_dirname;
 
+FilenameUnifier::CanonicalFilenames FilenameUnifier::_canonical_filenames;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: FilenameUnifier::set_txa_filename
 //       Access: Public, Static
@@ -28,7 +30,7 @@ set_txa_filename(const Filename &txa_filename) {
   if (_txa_dir.empty()) {
     _txa_dir = ".";
   }
-  _txa_dir.make_canonical();
+  make_canonical(_txa_dir);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -47,7 +49,7 @@ void FilenameUnifier::
 set_rel_dirname(const Filename &rel_dirname) {
   _rel_dirname = rel_dirname;
   if (!_rel_dirname.empty()) {
-    _rel_dirname.make_canonical();
+    make_canonical(_rel_dirname);
   }
 }
 
@@ -59,7 +61,7 @@ set_rel_dirname(const Filename &rel_dirname) {
 ////////////////////////////////////////////////////////////////////
 Filename FilenameUnifier::
 make_bam_filename(Filename filename) {
-  filename.make_canonical();
+  make_canonical(filename);
   filename.make_relative_to(_txa_dir);
   return filename;
 }
@@ -89,7 +91,7 @@ get_bam_filename(Filename filename) {
 Filename FilenameUnifier::
 make_egg_filename(Filename filename) {
   if (!filename.empty()) {
-    filename.make_canonical();
+    make_canonical(filename);
     filename.make_relative_to(_rel_dirname);
   }
   return filename;
@@ -105,8 +107,36 @@ make_egg_filename(Filename filename) {
 Filename FilenameUnifier::
 make_user_filename(Filename filename) {
   if (!filename.empty()) {
-    filename.make_canonical();
+    make_canonical(filename);
     filename.make_relative_to(ExecutionEnvironment::get_cwd());
   }
   return filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FilenameUnifier::make_canonical
+//       Access: Private, Static
+//  Description: Does the same thing as Filename::make_canonical()--it
+//               converts the filename to its canonical form--but
+//               caches the operation so that repeated calls to
+//               filenames in the same directory will tend to be
+//               faster.
+////////////////////////////////////////////////////////////////////
+void FilenameUnifier::
+make_canonical(Filename &filename) {
+  if (filename.empty()) {
+    return;
+  }
+
+  string dirname = filename.get_dirname();
+
+  CanonicalFilenames::iterator fi;
+  fi = _canonical_filenames.find(dirname);
+  if (fi != _canonical_filenames.end()) {
+    filename.set_dirname((*fi).second);
+    return;
+  }
+
+  filename.make_canonical();
+  _canonical_filenames.insert(CanonicalFilenames::value_type(dirname, filename.get_dirname()));
 }

@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "txaLine.h"
-#include "string_utils.h"
+#include "pal_string_utils.h"
 #include "eggFile.h"
 #include "palettizer.h"
 #include "textureImage.h"

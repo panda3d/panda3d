@@ -16,12 +16,14 @@
 #include <eggTexture.h>
 #include <eggData.h>
 #include <eggGroupNode.h>
+#include <eggGroup.h>
 #include <eggNurbsSurface.h>
 #include <eggVertexPool.h>
 #include <datagram.h>
 #include <datagramIterator.h>
 #include <bamReader.h>
 #include <bamWriter.h>
+#include <string_utils.h>
 
 #include <math.h>
 
@@ -394,11 +396,21 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void TextureReference::
 get_uv_range(EggGroupNode *group) {
-  EggGroupNode::iterator ci;
+  if (group->is_of_type(EggGroup::get_class_type())) {
+    EggGroup *egg_group;
+    DCAST_INTO_V(egg_group, group);
+    if (egg_group->has_objecttype() &&
+	cmp_nocase_uh(egg_group->get_objecttype(), "backstage") == 0) {
+      // If we reach a <Group> node with the "backstage" flag set,
+      // ignore it and everything under it.
+      return;
+    }
+  }
 
   bool group_any_uvs = false;
   TexCoordd group_min_uv, group_max_uv;
 
+  EggGroupNode::iterator ci;
   for (ci = group->begin(); ci != group->end(); ci++) {
     EggNode *child = (*ci);
     if (child->is_of_type(EggNurbsSurface::get_class_type())) {
@@ -473,11 +485,21 @@ get_uv_range(EggGroupNode *group) {
 ////////////////////////////////////////////////////////////////////
 void TextureReference::
 update_uv_range(EggGroupNode *group) {
-  EggGroupNode::iterator ci;
+  if (group->is_of_type(EggGroup::get_class_type())) {
+    EggGroup *egg_group;
+    DCAST_INTO_V(egg_group, group);
+    if (egg_group->has_objecttype() &&
+	cmp_nocase_uh(egg_group->get_objecttype(), "backstage") == 0) {
+      // If we reach a <Group> node with the "backstage" flag set,
+      // ignore it and everything under it.
+      return;
+    }
+  }
 
   bool group_any_uvs = false;
   TexCoordd group_min_uv, group_max_uv;
 
+  EggGroupNode::iterator ci;
   for (ci = group->begin(); ci != group->end(); ci++) {
     EggNode *child = (*ci);
     if (child->is_of_type(EggNurbsSurface::get_class_type())) {

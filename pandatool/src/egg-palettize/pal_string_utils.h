@@ -1,10 +1,10 @@
-// Filename: string_utils.h
+// Filename: pal_string_utils.h
 // Created by:  drose (30Nov00)
 // 
 ////////////////////////////////////////////////////////////////////
 
-#ifndef STRING_UTILS_H
-#define STRING_UTILS_H
+#ifndef PAL_STRING_UTILS_H
+#define PAL_STRING_UTILS_H
 
 #include <pandatoolbase.h>
 #include <vector_string.h>

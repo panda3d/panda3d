@@ -10,6 +10,8 @@
 
 #include <filename.h>
 
+#include <map>
+
 ////////////////////////////////////////////////////////////////////
 // 	 Class : FilenameUnifier
 // Description : This static class does the job of converting
@@ -31,9 +33,14 @@ public:
   static Filename make_user_filename(Filename filename);
 
 private:
+  static void make_canonical(Filename &filename);
+
   static Filename _txa_filename;
   static Filename _txa_dir;
   static Filename _rel_dirname;
+
+  typedef map<string, string> CanonicalFilenames;
+  static CanonicalFilenames _canonical_filenames;
 };
 
 #endif

@@ -15,12 +15,13 @@
     eggFile.cxx eggFile.h eggPalettize.cxx eggPalettize.h \
     filenameUnifier.cxx filenameUnifier.h \
     imageFile.cxx imageFile.h omitReason.cxx omitReason.h \
+    pal_string_utils.cxx pal_string_utils.h \
     paletteGroup.h paletteGroup.cxx \
     paletteGroups.h paletteGroups.cxx paletteImage.h paletteImage.cxx \
     palettePage.cxx palettePage.h \
     palettizer.cxx palettizer.h \
-    sourceTextureImage.cxx sourceTextureImage.h string_utils.cxx \
-    string_utils.h textureImage.cxx textureImage.h \
+    sourceTextureImage.cxx sourceTextureImage.h \
+    textureImage.cxx textureImage.h \
     texturePlacement.cxx texturePlacement.h \
     texturePosition.cxx texturePosition.h \
     textureProperties.cxx textureProperties.h textureReference.cxx \

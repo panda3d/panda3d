@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "txaFile.h"
-#include "string_utils.h"
+#include "pal_string_utils.h"
 #include "palettizer.h"
 #include "paletteGroup.h"
 #include "textureImage.h"

@@ -601,6 +601,7 @@ get_image() {
     if (pal->_shadow_color_type != (PNMFileType *)NULL) {
       if (_shadow_image.read(_image)) {
 	_got_image = true;
+	return;
       }
     } else {
       if (read(_image)) {

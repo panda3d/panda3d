@@ -6,7 +6,7 @@
 #include "eggPalettize.h"
 #include "palettizer.h"
 #include "eggFile.h"
-#include "string_utils.h"
+#include "pal_string_utils.h"
 #include "filenameUnifier.h"
 
 #include <eggData.h>
@@ -252,8 +252,17 @@ describe_input_file() {
 	    "to groups; instead, it is more useful to assign the egg files "
 	    "they appear on to groups; see below.\n\n");
 
+  show_text("  cont", 10,
+	    "Normally, a texture file (or egg file) scans the lines in the "
+	    "attributes file from the top, and stops on the first line that "
+	    "matches its name.  If the keyword 'cont' is included on the "
+	    "line, however, the texture will apply the properties given "
+	    "on the line, and then continue scanning.  This trick may be "
+	    "used to specify general parameters for all files while still "
+	    "allowing the texture to match a more specific line below.\n\n");
+
   nout << 
-    "The attributes file may also assign certain egg files into various "
+    "The attributes file may also assign egg files to various "
     "named palette groups.  The syntax is similar to the above:\n\n"
 
     "  car-blue.egg : main\n"
@@ -263,7 +272,7 @@ describe_input_file() {
 
     "Any number of egg files may be named on one line, and the group of "
     "egg files may be simultaneously assigned to one or more groups.  "
-    "The groups are defined using the :group command (see below).  "
+    "The valid set of groups are defined using the :group command (see below).  "
     "Each texture that is referenced by a given egg file will be palettized "
     "into at least one of the groups assigned to the egg file.\n\n"
 
@@ -303,6 +312,31 @@ describe_input_file() {
 	    "to avoid palettizing repeating textures altogether.  This may "
 	    "also be overridden for a particular texture using the 'coverage' "
 	    "keyword on the texture line.\n\n");
+
+  show_text("  :imagetype type[,alpha_type]", 10,
+	    "This specifies the default type of image file that should be "
+	    "generated for each palette image and for each unplaced texture "
+	    "copied into the install directory.  This may be overridden for "
+	    "a particular texture by specifying the image type on the "
+	    "texture line.\n\n"
+
+	    "If two image type names separate by a comma are given, it means "
+	    "to generate a second file of the second type for the alpha "
+	    "channel, for images that require an alpha channel.  This allows "
+	    "support for image file formats that do not support alpha "
+	    "(for instance, JPEG).\n\n");
+
+  show_text("  :shadowtype type[,alpha_type]", 10,
+	    "When generating palette images, egg-palettize sometimes has to "
+	    "read and write the same palette image repeatedly.  If the "
+	    "palette image is stored in a lossy file format (like JPEG, see "
+	    ":imagetype), this can eventually lead to degradation of the "
+	    "palette images.  As a workaround, egg-palettize can store "
+	    "its working copies of the palette images in lossless shadow "
+	    "images.  Specify this to enable this feature; give it the "
+	    "name of a lossless image file format.  The shadow images will "
+	    "be written to the directory specified by -ds on the command "
+	    "line.\n\n");
 
   show_text("  :group groupname [dir dirname] [with group1 group2 ...]", 10,
 	    "This defines a palette group, a logical division of textures.  "
@@ -369,6 +403,9 @@ run() {
     // Read the Palettizer object from the Bam file written
     // previously.  This will recover all of the state saved from the
     // past session.
+    nout << "Reading " << FilenameUnifier::make_user_filename(state_filename)
+	 << "\n";
+
     if (!state_file.open_read(state_filename)) {
       nout << FilenameUnifier::make_user_filename(state_filename)
 	   << " exists, but cannot be read.  Perhaps you should remove it so a new one can be created.\n";

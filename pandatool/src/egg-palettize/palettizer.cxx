@@ -6,7 +6,7 @@
 #include "palettizer.h"
 #include "eggFile.h"
 #include "textureImage.h"
-#include "string_utils.h"
+#include "pal_string_utils.h"
 #include "paletteGroup.h"
 #include "filenameUnifier.h"
 

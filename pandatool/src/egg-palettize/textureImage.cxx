@@ -374,6 +374,12 @@ get_margin() const {
 ////////////////////////////////////////////////////////////////////
 bool TextureImage::
 is_surprise() const {
+  if (_placement.empty()) {
+    // A texture that is not actually placed anywhere is not
+    // considered a surprise.
+    return false;
+  }
+
   return _is_surprise;
 }
 

@@ -1,9 +1,9 @@
-// Filename: string_utils.cxx
+// Filename: pal_string_utils.cxx
 // Created by:  drose (30Nov00)
 // 
 ////////////////////////////////////////////////////////////////////
 
-#include "string_utils.h"
+#include "pal_string_utils.h"
 
 #include <pnmFileType.h>
 #include <pnmFileTypeRegistry.h>
