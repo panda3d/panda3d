@@ -15,7 +15,9 @@ class RotatingLog:
         path is a full or partial path with file name.
         hourInterval is the number of hours at which to rotate the file.
         megabyteLimit is the number of megabytes of file size the log
-            may grow to, afterwhich the log is rotated.
+            may grow to, after which the log is rotated.  Note: The log
+            file may get a bit larger than limit do to writing out whole
+            lines (last line may exceed megabyteLimit or "megabyteGuidline").
         """
         self.path=path
         self.timeInterval=None
@@ -31,7 +33,6 @@ class RotatingLog:
         self.close()
 
     def close(self):
-        print "close"
         if hasattr(self, "file"):
             self.file.flush()
             self.file.close()
@@ -70,12 +71,16 @@ class RotatingLog:
         file=open(path, "a")
         if file:
             self.close()
+            # This should be redundant with "a" open() mode, 
+            # but on some platforms tell() will return 0 
+            # until the first write:
+            file.seek(0, 2)
             self.file=file
             if self.timeLimit is not None and time.time() > self.timeLimit:
                 self.timeLimit=time.time()+self.timeInterval
         else:
-            # I guess we keep writing to the old file.
-            print "unable to open new log file \"%s\""%(path,)
+            # We'll keep writing to the old file, if available.
+            print "RotatingLog error: Unable to open new log file \"%s\"."%(path,)
     
     def write(self, data):
         """
