@@ -320,9 +320,9 @@ DirectD::read_command(string& cmd) {
       cerr<<"read_command "<<cmd<<endl;
     }
     f.close();
-  catch (...) {
+  } catch (...) {
     // This could be bad, I suppose.  But we're going to throw out
-    // and exceptions that happen during the above read.
+    // any exceptions that happen during the above read.
     cerr<<"DirectD::read_command() exception."<<endl;
   }
 }

@@ -431,7 +431,7 @@ class SelectionRay:
                 self.cqIndex = i
                 break
             # Is it a named node?, If so, see if it has a name
-            elif issubclass(node.__class__, NamedNode):
+            elif issubclass(node.__class__, PandaNode):
                 name = node.getName()
                 if name in self.unpickable:
                     pass
@@ -519,7 +519,7 @@ class SelectionRay:
                 self.cqIndex = i
                 break
             # Is it a named node?, If so, see if it has a name
-            elif issubclass(node.__class__, NamedNode):
+            elif issubclass(node.__class__, PandaNode):
                 name = node.getName()
                 if name in self.unpickable:
                     pass
