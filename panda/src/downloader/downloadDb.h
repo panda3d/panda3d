@@ -32,6 +32,10 @@
 #include "hashVal.h"
 #include "buffer.h"
 
+class StreamReader;
+class StreamWriter;
+typedef float Phase;
+
 /*
 //////////////////////////////////////////////////
 //  Database Format
@@ -52,7 +56,6 @@ A Db is a Vector<MultifileRecord>
 MultifileRecord is a Vector<FileRecord>
 */
 
-typedef float Phase;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DownloadDb
@@ -178,22 +181,18 @@ public:
     bool multifile_exists(string mfname) const;
     PT(MultifileRecord) get_multifile_record_named(string mfname) const;
     void add_multifile_record(PT(MultifileRecord) mfr);
-    int parse_header(uchar *start, int size);
-    int parse_record_header(uchar *start, int size);
-    PT(MultifileRecord) parse_mfr(uchar *start, int size);
-    PT(FileRecord) parse_fr(uchar *start, int size);
-    bool read(istream &read_stream, bool want_server_info);
-    bool write(ofstream &write_stream, bool want_server_info);
+    int parse_header(const string &data);
+    int parse_record_header(const string &data);
+    PT(MultifileRecord) parse_mfr(const string &data);
+    PT(FileRecord) parse_fr(const string &data);
+    bool read(StreamReader &sr, bool want_server_info);
+    bool write(StreamWriter &sw, bool want_server_info);
     Filename _filename;
     MultifileRecords _mfile_records;
-    bool write_header(ofstream &write_stream);
-    bool write_bogus_header(ofstream &write_stream);
+    bool write_header(ostream &write_stream);
+    bool write_bogus_header(StreamWriter &sw);
   private:
     PN_int32 _header_length;
-
-    // Datagram used for reading and writing to disk
-    Datagram _datagram;
-
   };
 
 PUBLISHED:
@@ -224,10 +223,9 @@ PUBLISHED:
   const HashVal &get_hash(const Filename &name, int version) const;
 
 protected:
-  void write_version_map(ofstream &write_stream);
-  bool read_version_map(istream &read_stream);
+  void write_version_map(StreamWriter &sw);
+  bool read_version_map(StreamReader &sr);
   VersionMap _versions;
-  Datagram _master_datagram;
 };
 
 INLINE ostream &operator << (ostream &out, const DownloadDb &dldb) {

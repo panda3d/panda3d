@@ -18,6 +18,9 @@
 
 #include "config_downloader.h"
 #include "downloadDb.h"
+#include "streamReader.h"
+#include "streamWriter.h"
+
 #include <algorithm>
 
 ////////////////////////////////////////////////////////////////////
@@ -297,21 +300,22 @@ read_db(Filename &file, bool want_server_info) {
 
   if (!file.open_read(read_stream)) {
     downloader_cat.error()
-      << "DownloadDb::read() - Failed to open input file: "
+      << "failed to open input file: "
       << file << endl;
     return db;
   }
 
-  if (!db.read(read_stream, want_server_info)) {
+  StreamReader sr(read_stream);
+  if (!db.read(sr, want_server_info)) {
     downloader_cat.error()
-      << "DownloadDb::read() - Read failed: "
+      << "read failed: "
       << file << endl;
     return db;
   }
   if (want_server_info) {
-    if (!read_version_map(read_stream)) {
+    if (!read_version_map(sr)) {
       downloader_cat.error()
-        << "DownloadDb::read() - read_version_map() failed: "
+        << "read_version_map() failed: "
         << file << endl;
     }
   }
@@ -330,15 +334,17 @@ read_db(Ramfile &file, bool want_server_info) {
   istringstream read_stream(file._data);
   Db db;
 
-  if (!db.read(read_stream, want_server_info)) {
+  StreamReader sr(read_stream);
+
+  if (!db.read(sr, want_server_info)) {
     downloader_cat.error()
-      << "DownloadDb::read() - Read failed" << endl;
+      << "read failed" << endl;
     return db;
   }
   if (want_server_info) {
-    if (!read_version_map(read_stream)) {
+    if (!read_version_map(sr)) {
       downloader_cat.error()
-        << "DownloadDb::read() - read_version_map() failed" << endl;
+        << "read_version_map() failed" << endl;
     }
   }
 
@@ -365,11 +371,13 @@ write_db(Filename &file, Db db, bool want_server_info) {
   downloader_cat.spam()
     << "Writing to file: " << file << endl;
 
+  StreamWriter sw(write_stream);
+
   // Initialize the write stream with a bogus header
-  db.write_bogus_header(write_stream);
-  db.write(write_stream, want_server_info);
+  db.write_bogus_header(sw);
+  db.write(sw, want_server_info);
   if (want_server_info) {
-    write_version_map(write_stream);
+    write_version_map(sw);
   }
   // Now write the real header
   db.write_header(write_stream);
@@ -665,12 +673,11 @@ add_multifile_record(PT(MultifileRecord) mfr) {
 //               multifiles or -1 if invalid
 ////////////////////////////////////////////////////////////////////
 int DownloadDb::Db::
-parse_header(uchar *start, int size) {
-  _datagram.clear();
-  _datagram.append_data(start, size);
+parse_header(const string &data) {
+  Datagram dg(data);
 
   // Make sure we have a good header
-  DatagramIterator di(_datagram);
+  DatagramIterator di(dg);
   PN_uint32 magic_number = di.get_uint32();
   downloader_cat.debug()
     << "Parsed magic number: " << magic_number << endl;
@@ -709,11 +716,9 @@ parse_header(uchar *start, int size) {
 //               the length of the next file record
 ////////////////////////////////////////////////////////////////////
 int DownloadDb::Db::
-parse_record_header(uchar *start, int size) {
-  _datagram.clear();
-  _datagram.append_data(start, size);
-
-  DatagramIterator di(_datagram);
+parse_record_header(const string &data) {
+  Datagram dg(data);
+  DatagramIterator di(dg);
   PN_int32 record_length = di.get_int32();
   downloader_cat.spam()
     << "Parsed record header length: " << record_length << endl;
@@ -729,14 +734,12 @@ parse_record_header(uchar *start, int size) {
 //  Description: Parses a multifile record (mfr) and returns one
 ////////////////////////////////////////////////////////////////////
 PT(DownloadDb::MultifileRecord) DownloadDb::Db::
-parse_mfr(uchar *start, int size) {
+parse_mfr(const string &data) {
 
   PT(DownloadDb::MultifileRecord) mfr = new DownloadDb::MultifileRecord;
 
-  _datagram.clear();
-  _datagram.append_data(start, size);
-
-  DatagramIterator di(_datagram);
+  Datagram dg(data);
+  DatagramIterator di(dg);
   PN_int32 mfr_name_length = di.get_int32();
   mfr->_name = di.extract_bytes(mfr_name_length);
   mfr->_phase = di.get_float64();
@@ -775,14 +778,12 @@ parse_mfr(uchar *start, int size) {
 //  Description: Parses a file record (fr) and returns one
 ////////////////////////////////////////////////////////////////////
 PT(DownloadDb::FileRecord) DownloadDb::Db::
-parse_fr(uchar *start, int size) {
+parse_fr(const string &data) {
 
   PT(DownloadDb::FileRecord) fr = new DownloadDb::FileRecord;
 
-  _datagram.clear();
-  _datagram.append_data(start, size);
-
-  DatagramIterator di(_datagram);
+  Datagram dg(data);
+  DatagramIterator di(dg);
   PN_int32 fr_name_length = di.get_int32();
   fr->_name = di.extract_bytes(fr_name_length);
 
@@ -807,26 +808,21 @@ parse_fr(uchar *start, int size) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool DownloadDb::Db::
-read(istream &read_stream, bool want_server_info) {
-
-  // Make a little buffer to read the header into
-  uchar *header_buf = new uchar[_header_length];
+read(StreamReader &sr, bool want_server_info) {
   // Read the header
-  read_stream.read((char *)header_buf, _header_length);
-  if (read_stream.gcount() != _header_length) {
-    downloader_cat.error() << "DownloadDb::read() - Empty file" << endl;
+  string header;
+  header = sr.extract_bytes(_header_length);
+  if (header.size() != _header_length) {
+    downloader_cat.error() << "truncated db file" << endl;
     return false;
   }
 
   // Parse the header
-  int num_multifiles = parse_header(header_buf, _header_length);
-  if (num_multifiles == -1) {
-    delete header_buf;
-    downloader_cat.error() << "DownloadDb::read() - Invalid header" << endl;
+  int num_multifiles = parse_header(header);
+  if (num_multifiles < 0) {
+    downloader_cat.error() << "invalid db header" << endl;
     return false;
   }
-
-  delete header_buf;
 
   // Now that we know how many multifiles this db has, we can iterate
   // reading them off one by one
@@ -835,55 +831,59 @@ read(istream &read_stream, bool want_server_info) {
     // represents the size of the record
     int mfr_header_length = sizeof(PN_int32);
 
-    // Make a little buffer to read the multifile record header into
-    header_buf = new uchar[mfr_header_length];
-
-    // Read the header
-    read_stream.read((char *)header_buf, mfr_header_length);
+    string mfr_header = sr.extract_bytes(mfr_header_length);
+    if (mfr_header.size() != mfr_header_length) {
+      downloader_cat.error() << "invalid mfr header" << endl;
+      return false;
+    }
 
     // Parse the header
-    int mfr_length = parse_record_header(header_buf, mfr_header_length);
-    delete header_buf;
+    int mfr_length = parse_record_header(mfr_header);
 
     // Ok, now that we know the size of the mfr, read it in
     // Make a buffer to read the multifile record into
-    header_buf = new uchar[mfr_length];
-
-    // Read the mfr -- do not count the header length twice
-    read_stream.read((char *)header_buf, (mfr_length - mfr_header_length));
+    // do not count the header length twice
+    int read_length = (mfr_length - mfr_header_length);
+    string mfr_record = sr.extract_bytes(read_length);
+    if (mfr_record.size() != read_length) {
+      downloader_cat.error() << "invalid mfr record" << endl;
+      return false;
+    }
 
     // Parse the mfr
-    PT(DownloadDb::MultifileRecord) mfr = parse_mfr(header_buf, mfr_length);
-    delete header_buf;
+    PT(DownloadDb::MultifileRecord) mfr = parse_mfr(mfr_record);
 
     // Only read in the individual file info if you are the server
     if (want_server_info) {
 
       // Read off all the file records this multifile has
-      for (int j = 0; j<mfr->_num_files; j++) {
+      for (int j = 0; j < mfr->_num_files; j++) {
         // The file record header is just one int which
         // represents the size of the record
         int fr_header_length = sizeof(PN_int32);
 
-        // Make a little buffer to read the file record header into
-        header_buf = new uchar[fr_header_length];
-
         // Read the header
-        read_stream.read((char *)header_buf, fr_header_length);
+        string fr_header = sr.extract_bytes(fr_header_length);
+        if (fr_header.size() != fr_header_length) {
+          downloader_cat.error() << "invalid fr header" << endl;
+          return false;
+        }
 
         // Parse the header
-        int fr_length = parse_record_header(header_buf, fr_header_length);
-        delete header_buf;
+        int fr_length = parse_record_header(fr_header);
 
         // Ok, now that we know the size of the mfr, read it in
-        // Make a buffer to read the file record into
-        header_buf = new uchar[fr_length];
+        // do not count the header length twice
+        int read_length = (fr_length - fr_header_length);
 
-        // Read the file record -- do not count the header length twice
-        read_stream.read((char *)header_buf, (fr_length - fr_header_length));
+        string fr_record = sr.extract_bytes(read_length);
+        if (fr_record.size() != read_length) {
+          downloader_cat.error() << "invalid fr record" << endl;
+          return false;
+        }
 
-        // Parse the file recrod
-        PT(DownloadDb::FileRecord) fr = parse_fr(header_buf, fr_length);
+        // Parse the file record
+        PT(DownloadDb::FileRecord) fr = parse_fr(fr_record);
 
         // Add this file record to the current multifilerecord
         mfr->add_file_record(fr);
@@ -892,7 +892,6 @@ read(istream &read_stream, bool want_server_info) {
 
     // Add the current multifilerecord to our database
     add_multifile_record(mfr);
-
   }
 
   return true;
@@ -906,7 +905,7 @@ read(istream &read_stream, bool want_server_info) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool DownloadDb::Db::
-write(ofstream &write_stream, bool want_server_info) {
+write(StreamWriter &sw, bool want_server_info) {
   // Declare these outside the loop so we do not keep creating
   // and deleting them
   PN_float64 phase;
@@ -920,8 +919,6 @@ write(ofstream &write_stream, bool want_server_info) {
   // Iterate over the multifiles writing them to the stream
   pvector< PT(MultifileRecord) >::const_iterator i = _mfile_records.begin();
   for(; i != _mfile_records.end(); ++i) {
-    _datagram.clear();
-
     // Cache some properties so we do not have to keep asking for them
     phase = (*i)->_phase;
     size = (*i)->_size;
@@ -939,29 +936,24 @@ write(ofstream &write_stream, bool want_server_info) {
       sizeof(PN_uint32)*4; // Size of hash value
 
     // Add the length of this entire datagram
-    _datagram.add_int32(header_length);
+    sw.add_int32(header_length);
 
     // Add the length of the name
-    _datagram.add_int32(name_length);
+    sw.add_int32(name_length);
     // Add the name
-    _datagram.append_data((*i)->_name.c_str(), (*i)->_name.length());
+    sw.append_data((*i)->_name);
 
     // Add all the properties
-    _datagram.add_float64(phase);
-    _datagram.add_int32(size);
-    _datagram.add_int32(status);
-    _datagram.add_int32(num_files);
+    sw.add_float64(phase);
+    sw.add_int32(size);
+    sw.add_int32(status);
+    sw.add_int32(num_files);
     
     hash = (*i)->_hash;
-    _datagram.add_uint32(hash.get_value(0));
-    _datagram.add_uint32(hash.get_value(1));
-    _datagram.add_uint32(hash.get_value(2));
-    _datagram.add_uint32(hash.get_value(3));
-
-
-    // Now put this datagram on the write stream
-    string msg = _datagram.get_message();
-    write_stream.write(msg.data(), msg.length());
+    sw.add_uint32(hash.get_value(0));
+    sw.add_uint32(hash.get_value(1));
+    sw.add_uint32(hash.get_value(2));
+    sw.add_uint32(hash.get_value(3));
 
     // Only write out the file information if you are the server
     if (want_server_info) {
@@ -969,9 +961,6 @@ write(ofstream &write_stream, bool want_server_info) {
       // Iterate over the multifiles writing them to the stream
       pvector< PT(FileRecord) >::const_iterator j = (*i)->_file_records.begin();
       for(; j != (*i)->_file_records.end(); ++j) {
-        // Clear the datagram before we jam a bunch of stuff on it
-        _datagram.clear();
-
         name_length = (*j)->_name.length();
 
         // Compute the length of this datagram
@@ -981,16 +970,12 @@ write(ofstream &write_stream, bool want_server_info) {
           (*j)->_name.length();    // Size of the name string
 
         // Add the length of this entire datagram
-        _datagram.add_int32(header_length);
+        sw.add_int32(header_length);
 
         // Add the length of the name
-        _datagram.add_int32(name_length);
+        sw.add_int32(name_length);
         // Add the name
-        _datagram.append_data((*j)->_name.c_str(), (*j)->_name.length());
-
-        // Now put this datagram on the write stream
-        string msg = _datagram.get_message();
-        write_stream.write(msg.data(), msg.length());
+        sw.append_data((*j)->_name);
       }
     }
   }
@@ -1007,17 +992,13 @@ write(ofstream &write_stream, bool want_server_info) {
 //               step in the write
 ////////////////////////////////////////////////////////////////////
 bool DownloadDb::Db::
-write_bogus_header(ofstream &write_stream) {
-  _datagram.clear();
-
+write_bogus_header(StreamWriter &sw) {
   // Write the db magic number
-  _datagram.add_uint32(_bogus_magic_number);
+  sw.add_uint32(_bogus_magic_number);
 
   // Write the number of multifiles
-  _datagram.add_int32(get_num_multifiles());
+  sw.add_int32(get_num_multifiles());
 
-  string msg = _datagram.get_message();
-  write_stream.write(msg.data(), msg.length());
   return true;
 }
 
@@ -1028,16 +1009,17 @@ write_bogus_header(ofstream &write_stream) {
 //               independent byte ordering
 ////////////////////////////////////////////////////////////////////
 bool DownloadDb::Db::
-write_header(ofstream &write_stream) {
-  _datagram.clear();
+write_header(ostream &write_stream) {
+  Datagram dg;
 
   // Write the db magic number
-  _datagram.add_uint32(_magic_number);
+  dg.add_uint32(_magic_number);
 
   // Write the number of multifiles
-  _datagram.add_int32(get_num_multifiles());
+  dg.add_int32(get_num_multifiles());
 
-  string msg = _datagram.get_message();
+  string msg = dg.get_message();
+
   // Seek back to the beginning of the write stream
   write_stream.seekp(0);
   // Overwrite the old bogus header with the real header
@@ -1231,35 +1213,31 @@ get_hash(const Filename &name, int version) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::
-write_version_map(ofstream &write_stream) {
-  _master_datagram.clear();
-
+write_version_map(StreamWriter &sw) {
   VersionMap::iterator vmi;
   VectorHash::iterator i;
   string name;
   HashVal hash;
 
-  _master_datagram.add_int32(_versions.size());
+  sw.add_int32(_versions.size());
   for (vmi = _versions.begin(); vmi != _versions.end(); ++vmi) {
     name = (*vmi).first;
     downloader_cat.spam()
       << "DownloadDb::write_version_map() - writing file: "
       << name << " of length: " << name.length() << endl;
-    _master_datagram.add_int32(name.length());
-    _master_datagram.append_data(name.c_str(), name.length());
-    _master_datagram.add_int32((*vmi).second.size());
+    sw.add_int32(name.length());
+    sw.append_data(name);
+    sw.add_int32((*vmi).second.size());
     for (i = (*vmi).second.begin(); i != (*vmi).second.end(); ++i) {
       // *i will point to a HashVal
       hash = *i;
       // Write out each uint separately
-      _master_datagram.add_uint32(hash.get_value(0));
-      _master_datagram.add_uint32(hash.get_value(1));
-      _master_datagram.add_uint32(hash.get_value(2));
-      _master_datagram.add_uint32(hash.get_value(3));
+      sw.add_uint32(hash.get_value(0));
+      sw.add_uint32(hash.get_value(1));
+      sw.add_uint32(hash.get_value(2));
+      sw.add_uint32(hash.get_value(3));
     }
   }
-  string msg = _master_datagram.get_message();
-  write_stream.write((char *)msg.data(), msg.length());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1268,68 +1246,49 @@ write_version_map(ofstream &write_stream) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool DownloadDb::
-read_version_map(istream &read_stream) {
-  _master_datagram.clear();
-  char *buffer = new char[sizeof(PN_uint64)];
-  read_stream.read(buffer, sizeof(PN_int32));
-  _master_datagram.append_data(buffer, sizeof(PN_int32));
-  DatagramIterator di(_master_datagram);
-  int num_entries = di.get_int32();
+read_version_map(StreamReader &sr) {
+  int num_entries = sr.get_int32();
+  if (sr.get_istream()->fail()) {
+    return false;
+  }
 
   for (int i = 0; i < num_entries; i++) {
 
     // Get the length of the file name
-    _master_datagram.clear();
-    read_stream.read(buffer, sizeof(PN_int32));
-    _master_datagram.append_data(buffer, sizeof(PN_int32));
-    DatagramIterator di2(_master_datagram);
-    int name_length = di2.get_int32();
+    int name_length = sr.get_int32();
+    if (sr.get_istream()->fail()) {
+      return false;
+    }
     downloader_cat.spam()
       << "DownloadDb::read_version_map() - name length: " << name_length
       << endl;
 
     // Get the file name
-    _master_datagram.clear();
-    char *namebuffer = new char[name_length];
-    read_stream.read(namebuffer, name_length);
-    _master_datagram.append_data(namebuffer, name_length);
-    DatagramIterator di4(_master_datagram);
-    string name = di4.extract_bytes(name_length);
+    string name = sr.extract_bytes(name_length);
     downloader_cat.spam()
       << "DownloadDb::read_version_map() - name: " << name << endl;
 
     // Get number of hash values for name
-    _master_datagram.clear();
-    read_stream.read(buffer, sizeof(PN_int32));
-    _master_datagram.append_data(buffer, sizeof(PN_int32));
-    DatagramIterator di5(_master_datagram);
-    int length = di5.get_int32();
+    int length = sr.get_int32();
+    if (sr.get_istream()->fail()) {
+      return false;
+    }
     downloader_cat.spam()
       << "DownloadDb::read_version_map() - number of values: " << length
       << endl;
 
     for (int j = 0; j < length; j++) {
-      _master_datagram.clear();
-      // Read all 4 uint values for the hash
-      read_stream.read(buffer, sizeof(PN_uint32));
-      _master_datagram.append_data(buffer, sizeof(PN_uint32));
-      read_stream.read(buffer, sizeof(PN_uint32));
-      _master_datagram.append_data(buffer, sizeof(PN_uint32));
-      read_stream.read(buffer, sizeof(PN_uint32));
-      _master_datagram.append_data(buffer, sizeof(PN_uint32));
-      read_stream.read(buffer, sizeof(PN_uint32));
-      _master_datagram.append_data(buffer, sizeof(PN_uint32));
-      DatagramIterator di3(_master_datagram);
       HashVal hash;
-      hash.set_value(0, di3.get_uint32());
-      hash.set_value(1, di3.get_uint32());
-      hash.set_value(2, di3.get_uint32());
-      hash.set_value(3, di3.get_uint32());
+      hash.set_value(0, sr.get_uint32());
+      hash.set_value(1, sr.get_uint32());
+      hash.set_value(2, sr.get_uint32());
+      hash.set_value(3, sr.get_uint32());
+      if (sr.get_istream()->fail()) {
+        return false;
+      }
       add_version(name, hash, j + 1);
     }
-    delete namebuffer;
   }
-  delete buffer;
   return true;
 }
 
