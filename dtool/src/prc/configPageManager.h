@@ -69,6 +69,10 @@ private:
   INLINE void check_sort_pages() const;
   void sort_pages();
 
+  bool scan_auto_prc_dir(Filename &prc_dir) const;
+  bool scan_up_from(Filename &result, const Filename &dir, 
+                    const Filename &suffix) const;
+
   typedef pvector<ConfigPage *> Pages;
   Pages _implicit_pages;
   Pages _explicit_pages;

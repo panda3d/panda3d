@@ -96,52 +96,8 @@ reload_implicit_pages() {
   }
   _implicit_pages.clear();
 
-  // Build up the search path for .prc files.
-  _search_path.clear();
-
-  // PRC_DIR_ENVVARS lists one or more environment variables separated
-  // by spaces.  Pull them out, and each of those contains the name of
-  // a single directory to search.  Add it to the search path.
-  string prc_dir_envvars = PRC_DIR_ENVVARS;
-  if (!prc_dir_envvars.empty()) {
-    vector_string prc_dir_envvar_list;
-    ConfigDeclaration::extract_words(prc_dir_envvars, prc_dir_envvar_list);
-    for (size_t i = 0; i < prc_dir_envvar_list.size(); ++i) {
-      string prc_dir = ExecutionEnvironment::get_environment_variable(prc_dir_envvar_list[i]);
-      if (!prc_dir.empty()) {
-        _search_path.append_directory(Filename::from_os_specific(prc_dir));
-      }
-    }
-  }
-
-  // PRC_PATH_ENVVARS lists one or more environment variables separated
-  // by spaces.  Pull them out, and then each one of those contains a
-  // list of directories to search.  Add each of those to the search
-  // path.
-  string prc_path_envvars = PRC_PATH_ENVVARS;
-  if (!prc_path_envvars.empty()) {
-    vector_string prc_path_envvar_list;
-    ConfigDeclaration::extract_words(prc_path_envvars, prc_path_envvar_list);
-    for (size_t i = 0; i < prc_path_envvar_list.size(); ++i) {
-      string prc_path = ExecutionEnvironment::get_environment_variable(prc_path_envvar_list[i]);
-      if (!prc_path.empty()) {
-        _search_path.append_path(prc_path);
-      }
-    }
-  }
-
-  if (_search_path.is_empty()) {
-    // If nothing's on the search path (PRC_DIR and PRC_PATH were not
-    // defined), then use the DEFAULT_PRC_DIR.
-    string default_prc_dir = DEFAULT_PRC_DIR;
-    if (!default_prc_dir.empty()) {
-      // It's already from-os-specific by ppremake.
-      _search_path.append_directory(default_prc_dir);
-    }
-  }
-
   // PRC_PATTERNS lists one or more filename templates separated by
-  // spaces.  Pull them out too.
+  // spaces.  Pull them out and store them in _prc_patterns.
   _prc_patterns.clear();
 
   string prc_patterns = PRC_PATTERNS;
@@ -174,6 +130,56 @@ reload_implicit_pages() {
       glob.set_case_sensitive(false);
 #endif  // WIN32
       _prc_executable_patterns.push_back(glob);
+    }
+  }
+
+  // Now build up the search path for .prc files.
+  _search_path.clear();
+
+  // PRC_DIR_ENVVARS lists one or more environment variables separated
+  // by spaces.  Pull them out, and each of those contains the name of
+  // a single directory to search.  Add it to the search path.
+  string prc_dir_envvars = PRC_DIR_ENVVARS;
+  if (!prc_dir_envvars.empty()) {
+    vector_string prc_dir_envvar_list;
+    ConfigDeclaration::extract_words(prc_dir_envvars, prc_dir_envvar_list);
+    for (size_t i = 0; i < prc_dir_envvar_list.size(); ++i) {
+      string prc_dir = ExecutionEnvironment::get_environment_variable(prc_dir_envvar_list[i]);
+      if (!prc_dir.empty()) {
+        Filename prc_dir_filename = Filename::from_os_specific(prc_dir);
+        if (scan_auto_prc_dir(prc_dir_filename)) {
+          _search_path.append_directory(prc_dir_filename);
+        }
+      }
+    }
+  }
+
+  // PRC_PATH_ENVVARS lists one or more environment variables separated
+  // by spaces.  Pull them out, and then each one of those contains a
+  // list of directories to search.  Add each of those to the search
+  // path.
+  string prc_path_envvars = PRC_PATH_ENVVARS;
+  if (!prc_path_envvars.empty()) {
+    vector_string prc_path_envvar_list;
+    ConfigDeclaration::extract_words(prc_path_envvars, prc_path_envvar_list);
+    for (size_t i = 0; i < prc_path_envvar_list.size(); ++i) {
+      string prc_path = ExecutionEnvironment::get_environment_variable(prc_path_envvar_list[i]);
+      if (!prc_path.empty()) {
+        _search_path.append_path(prc_path);
+      }
+    }
+  }
+
+  if (_search_path.is_empty()) {
+    // If nothing's on the search path (PRC_DIR and PRC_PATH were not
+    // defined), then use the DEFAULT_PRC_DIR.
+    string default_prc_dir = DEFAULT_PRC_DIR;
+    if (!default_prc_dir.empty()) {
+      // It's already from-os-specific by ppremake.
+      Filename prc_dir_filename = default_prc_dir;
+      if (scan_auto_prc_dir(prc_dir_filename)) {
+        _search_path.append_directory(default_prc_dir);
+      }
     }
   }
 
@@ -414,4 +420,101 @@ sort_pages() {
   sort(_explicit_pages.begin(), _explicit_pages.end(), CompareConfigPages());
 
   _pages_sorted = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigPageManager::scan_auto_prc_dir
+//       Access: Private
+//  Description: Checks for the prefix "<auto>" in the value of the
+//               $PRC_DIR environment variable (or in the compiled-in
+//               DEFAULT_PRC_DIR value).  If it is found, then the
+//               actual directory is determined by searching upward
+//               from the executable's starting directory, or from the
+//               current working directory, until at least one .prc
+//               file is found.
+//
+//               Returns true if the prc_dir has been filled with a
+//               valid directory name, false if no good directory name
+//               was found.
+////////////////////////////////////////////////////////////////////
+bool ConfigPageManager::
+scan_auto_prc_dir(Filename &prc_dir) const {
+  string prc_dir_string = prc_dir;
+  if (prc_dir_string.substr(0, 6) == "<auto>") {
+    Filename suffix = prc_dir_string.substr(6);
+    
+    // Start at the executable directory.
+    Filename binary = ExecutionEnvironment::get_binary_name();
+    Filename dir = binary.get_dirname();
+
+    if (scan_up_from(prc_dir, dir, suffix)) {
+      return true;
+    }
+    
+    // Try the current working directory.
+    dir = ExecutionEnvironment::get_cwd();
+    if (scan_up_from(prc_dir, dir, suffix)) {
+      return true;
+    }
+
+    // Didn't find it; too bad.
+    cerr << "Warning: unable to auto-locate config files in directory named by \""
+         << prc_dir << "\".\n";
+    return false;
+  }
+
+  // The filename did not begin with "<auto>", so it stands unchanged.
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigPageManager::scan_up_from
+//       Access: Private
+//  Description: Used to implement scan_auto_prc_dir(), above, this
+//               scans upward from the indicated directory name until
+//               a directory is found that includes at least one .prc
+//               file, or the root directory is reached.  
+//
+//               If a match is found, puts it result and returns true;
+//               otherwise, returns false.
+////////////////////////////////////////////////////////////////////
+bool ConfigPageManager::
+scan_up_from(Filename &result, const Filename &dir, 
+             const Filename &suffix) const {
+  Filename consider(dir, suffix);
+
+  vector_string files;
+  if (consider.scan_directory(files)) {
+    vector_string::const_iterator fi;
+    for (fi = files.begin(); fi != files.end(); ++fi) {
+      Globs::const_iterator gi;
+      for (gi = _prc_patterns.begin();
+           gi != _prc_patterns.end();
+           ++gi) {
+        if ((*gi).matches(*fi)) {
+          result = consider;
+          return true;
+        }
+      }
+      
+      for (gi = _prc_executable_patterns.begin();
+           gi != _prc_executable_patterns.end();
+           ++gi) {
+        if ((*gi).matches(*fi)) {
+          result = consider;
+          return true;
+        }
+      }
+    }
+  }
+
+  Filename parent = dir.get_dirname();
+
+  if (dir == parent) {
+    // Too bad; couldn't find a match.
+    return false;
+  }
+
+  // Recursively try again on the parent.
+  return scan_up_from(result, parent, suffix);
 }
