@@ -135,7 +135,6 @@ class FourState:
             self.track.pause()
             self.track = None
         if track is not None:
-            print "\n\nstarting", self.stateIndex, "duration", self.duration, "at", self.stateTime #*#
             track.start(self.stateTime)
             self.track = track
     
