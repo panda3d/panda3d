@@ -573,18 +573,23 @@ dx_init(  LPDIRECTDRAW7     context,
 
     assert(_pTexPixFmts!=NULL);
 
-    if (pDevice->EnumTextureFormats(EnumTexFmtsCallback, this) != S_OK) {
-        dxgsg_cat.error() << "EnumTextureFormats failed!\n";
+    if(FAILED(hr=pDevice->EnumTextureFormats(EnumTexFmtsCallback, this))) {
+        if(hr==D3DERR_TEXTURE_NO_SUPPORT) {
+            dxgsg_cat.error() << "EnumTextureFormats indicates No Texturing Support on this HW! exiting...\n";
+            exit(1);
+        } else {
+            dxgsg_cat.error() << "EnumTextureFormats failed! hr = " << ConvD3DErrorToString(hr) << endl;
+        }
     }
 
-    if (FAILED(hr = pDevice->GetCaps(&_D3DDevDesc))) {
-        dxgsg_cat.fatal() << "GetCaps failed on D3D Device\n";
+    if(FAILED(hr = pDevice->GetCaps(&_D3DDevDesc))) {
+        dxgsg_cat.fatal() << "GetCaps failed on D3D Device! hr = " << ConvD3DErrorToString(hr) << endl;
         exit(1);
     }
 
     DX_DECLARE_CLEAN(DDCAPS,ddCaps);
     if (FAILED(hr = _pDD->GetCaps(&ddCaps,NULL))) {
-        dxgsg_cat.fatal() << "GetCaps failed on DDraw\n";
+        dxgsg_cat.fatal() << "GetCaps failed on DDraw! hr = " << ConvD3DErrorToString(hr) << "\n";
         exit(1);
     }
 
