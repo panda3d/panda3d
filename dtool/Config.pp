@@ -297,11 +297,11 @@
 // only need to define HAVE_MESA if you want to run totally headless,
 // or if you want to be able to easily switch between Mesa and the
 // system OpenGL implementation at runtime.  If you compiled Mesa with
-// USE_MGL_NAMESPACE defined, define it also here.
+// USE_MGL_NAMESPACE defined, define MESA_MGL here.
 #define MESA_IPATH
 #define MESA_LPATH
 #define MESA_LIBS
-#define USE_MGL_NAMESPACE
+#define MESA_MGL
 #defer HAVE_MESA $[libtest $[MESA_LPATH],$[MESA_LIBS]]
 
 

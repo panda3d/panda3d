@@ -69,7 +69,7 @@ $[cdefine HAVE_GL]
 
 /* Define if we have Mesa installed and want to build mesadisplay.  */
 $[cdefine HAVE_MESA]
-$[cdefine USE_MGL_NAMESPACE]
+$[cdefine MESA_MGL]
 
 /* Define if we want to build with SGI OpenGL extensions.  */
 $[cdefine HAVE_SGIGL]

@@ -22,8 +22,7 @@
 #include "pandabase.h"
 #include "graphicsWindow.h"
 #include "graphicsPipe.h"
-
-#include <GL/osmesa.h>
+#include "mesagsg.h"
 
 class FrameBufferProperties;
 

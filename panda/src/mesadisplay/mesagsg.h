@@ -26,8 +26,9 @@
 #include "pandabase.h"
 #include "config_mesadisplay.h"
 
-#ifdef USE_MGL_NAMESPACE
+#ifdef MESA_MGL
   #define GLP(name) mgl##name
+  #define USE_MGL_NAMESPACE 1
 #else
   #define GLP(name) gl##name
 #endif
@@ -40,6 +41,7 @@
 
 #include <GL/gl.h>
 #include <GL/glu.h>
+#include <GL/osmesa.h>
 
 #include "glstuff_src.h"
 

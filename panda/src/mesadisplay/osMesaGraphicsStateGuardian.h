@@ -22,8 +22,6 @@
 #include "pandabase.h"
 #include "mesagsg.h"
 
-#include <GL/osmesa.h>
-
 ////////////////////////////////////////////////////////////////////
 //       Class : OSMesaGraphicsStateGuardian
 // Description : A tiny specialization on MesaGraphicsStateGuardian to
