@@ -107,25 +107,24 @@ end_frame() {
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
   _gsg->end_frame();
 
+  wglGraphicsStateGuardian *wglgsg;
+  DCAST_INTO_V(wglgsg, _gsg);
 
-  if (_copy_texture) {
-    wglGraphicsStateGuardian *wglgsg;
-    DCAST_INTO_V(wglgsg, _gsg);
-
-    // If we've lost the pbuffer image (due to a mode-switch, for
-    // instance), don't attempt to copy it to the texture, since the
-    // frame is invalid.  In fact, now we need to recreate the
-    // pbuffer.
-    if (_pbuffer_dc) {
-      int flag = 0;
-      wglgsg->_wglQueryPbufferARB(_pbuffer, WGL_PBUFFER_LOST_ARB, &flag);
-      if (flag != 0) {
-        wgldisplay_cat.info()
-          << "Pbuffer contents lost.\n";
-        return;
-      }
+  // If we've lost the pbuffer image (due to a mode-switch, for
+  // instance), don't attempt to copy it to the texture, since the
+  // frame is invalid.  In fact, now we need to recreate the
+  // pbuffer.
+  if (_pbuffer_dc) {
+    int flag = 0;
+    wglgsg->_wglQueryPbufferARB(_pbuffer, WGL_PBUFFER_LOST_ARB, &flag);
+    if (flag != 0) {
+      wgldisplay_cat.info()
+        << "Pbuffer contents lost.\n";
+      return;
     }
-
+  }
+  
+  if (_copy_texture) {
     nassertv(has_texture());
     Texture *tex = get_texture();
 
@@ -146,9 +145,28 @@ end_frame() {
       // texture.  This is an older interface that guarantees a copy
       // operation will take place, and it might even require
       // reformatting pixels on the way, so it may be slower.
+      if (display_cat.is_debug()) {
+        display_cat.debug()
+          << "Copying texture for " << (void *)this << " at frame end.\n";
+      }
+      PStatTimer timer(_copy_texture_pcollector);
       RenderBuffer buffer = wglgsg->get_render_buffer(get_draw_buffer_type());
       wglgsg->copy_texture(tex, _default_display_region, buffer);
     }
+  }
+
+  // If we're not single-buffered, we're now ready to flip.
+  if (!_gsg->get_properties().is_single_buffered()) {
+    _flip_ready = true;
+  }
+
+  if (_one_shot && !show_buffers) {
+    // In one-shot mode, we request the GraphicsEngine to delete the
+    // window after we have rendered a frame.  But when show-buffers
+    // mode is enabled, we don't do this, to give the user a chance to
+    // see the output.
+    _active = false;
+    _delete_flag = true;
   }
 }
 
