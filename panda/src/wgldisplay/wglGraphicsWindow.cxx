@@ -524,6 +524,9 @@ int wglGraphicsWindow::choose_visual(void) {
   for(i=1;i<=MaxPixFmtNum;i++) {
       DescribePixelFormat(_hdc, i, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
 
+      if (wgldisplay_cat->is_debug())
+	wgldisplay_cat->debug() << "----------------" << endl;
+
       if((pfd.dwFlags & PFD_GENERIC_ACCELERATED) && (pfd.dwFlags & PFD_GENERIC_FORMAT))
           drvtype=MCD;
        else if(!(pfd.dwFlags & PFD_GENERIC_ACCELERATED) && !(pfd.dwFlags & PFD_GENERIC_FORMAT))
