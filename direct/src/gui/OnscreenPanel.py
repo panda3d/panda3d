@@ -185,9 +185,11 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
         
         for button in self.panelButtons:
             button.cleanup()
+        del self.panelButtons
 
         for text in self.panelText:
             text.cleanup()
+        del self.panelText
 
         if not self.isEmpty():
             self.removeNode()
@@ -396,6 +398,4 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
         self.panelRegion.setRelative(self.panelGeom,
                                      self.geomRect[0], self.geomRect[1],
                                      self.geomRect[2], self.geomRect[3])
-
-
 
