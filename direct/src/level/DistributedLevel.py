@@ -207,6 +207,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
     def announceLeaving(self):
         """call this just before leaving the level; this may result in
         the factory being destroyed on the AI"""
+        DistributedLevel.notify.info('announceLeaving')
         self.doneBarrier()
 
     def placeLocalToon(self):
