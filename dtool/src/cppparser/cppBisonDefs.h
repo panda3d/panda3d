@@ -107,6 +107,9 @@ struct cppyyltype {
 
 // Beginning around bison 1.35 or so, we need to define this macro as
 // well, to tell bison how to collect multiple locations together.
+// (The default implementation copies only first_line through
+// last_column, whereas here we use the struct assignment operator to
+// copy all the members of the structure).
 #define YYLLOC_DEFAULT(Current, Rhs, N)          \
   Current = Rhs[1];                              \
   Current.last_line    = Rhs[N].last_line;       \
