@@ -65,7 +65,9 @@ private:
   int _output_xsize, _output_ysize, _output_zsize;
   double _buffer_pixels;
   double _poly_pixels;
+  bool _got_scale_factor;
   double _scale_factor;
+  bool _no_reduce;
   double _gaussian_radius;
   double _ds;
   double _scale;

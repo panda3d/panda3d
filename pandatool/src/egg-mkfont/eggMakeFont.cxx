@@ -84,6 +84,26 @@ EggMakeFont() : EggWriter(true, false) {
      &EggMakeFont::dispatch_dimensions, &_got_output_size);
 
   add_option
+    ("sf", "factor", 0, 
+
+     "The scale factor of the generated image.  This is the factor by which "
+     "the font image is generated oversized, then reduced to its final size, "
+     "to generate antialiased letters.  Values between 2.5 and 4 are generally "
+     "best.  Normally, you should not specify this parameter, as egg-mkfont "
+     "will choose a scale factor automatically to best fit the letters in the "
+     "space available.  If you do specify a scale factor with -sf, you must "
+     "also specify an image size with -d.",
+     &EggMakeFont::dispatch_double, &_got_scale_factor, &_scale_factor);
+
+  add_option
+    ("nr", "", 0, 
+     "No reduce.  After the oversized image is generated, rather than reducing "
+     "it to its final size, just leave it as it is, and assume the user will "
+     "reduce it later.  This may be desireable if you intend to adjust the "
+     "letters by hand in some way after the image is generated.",
+     &EggMakeFont::dispatch_none, &_no_reduce);
+
+  add_option
     ("g", "radius", 0, 
      "The radius of the Gaussian filter used to antialias the letters. [1.2]",
      &EggMakeFont::dispatch_double, NULL, &_gaussian_radius);
@@ -141,7 +161,7 @@ EggMakeFont() : EggWriter(true, false) {
   add_option
     ("scs", "", 0, 
      "Small caps scale: the ratio of the size of a lowercase letter to "
-     "its uppercase equivalent, when -sc is in effect.  [0.7]",
+     "its uppercase equivalent, when -sc is in effect.  [0.8]",
      &EggMakeFont::dispatch_double, NULL, &_small_caps_scale);
 
   _fg.set(1.0, 1.0, 1.0, 1.0);
@@ -155,7 +175,7 @@ EggMakeFont() : EggWriter(true, false) {
   _gaussian_radius = 1.2;
   _ds = 1.0;
   _scale = 1.0;
-  _small_caps_scale = 0.7;
+  _small_caps_scale = 0.8;
 }
 
 
@@ -639,21 +659,37 @@ run() {
   _font->sort_chars_by_height();
  
 
-  // Choose a suitable image size if the user didn't specify one.
-  if (!_got_output_size) {
+  // Choose a suitable image size and/or scale factor.
+  if (_got_scale_factor && _got_output_size) {
+    // The user specified both; we accept the scale factor.
+    if (!consider_scale_factor(_scale_factor)) {
+      nout << "Ran out of room on font image; try increasing the image "
+	"size or the scale factor.\n";
+      exit(1);
+    }
+
+  } else if (_got_output_size) {
+    // The user specified an output size, but not a scale factor.
+    choose_scale_factor();
+
+  } else if (_got_scale_factor) {
+    // The user specified a scale factor, but not an output size.
+    // This is really an error.
+    nout << "It is meaningless to specify a scale factor (-sf) without "
+      "also specifying an image size (-d).  Ignoring scale factor.\n";
     choose_image_size();
 
   } else {
-    // The user constrained us to use a particular image size, so
-    // choose a suitable scale factor for that size.
-    choose_scale_factor();
+    // The user did not specify anything.  This is really preferred.
+    // We'll decide what's best.
+    choose_image_size();
   }
 
   _working_poly_pixels = _poly_pixels * _scale_factor;
   _output_image.clear(_working_xsize, _working_ysize, _output_zsize);
 
-  // If we specified 1.0 for both foreground and background alpha, we
-  // don't really want to use alpha.
+  // If the user specified 1.0 for both foreground and background
+  // alpha, we don't really want to use alpha.
   _use_alpha = (_output_zsize != 3) && (_fg[3] != 1.0 || _bg[3] != 1.0); 
   if (_use_alpha && _output_zsize == 1) {
     // If we have only one channel and we're using alpha, then the
@@ -748,21 +784,45 @@ run() {
 
   // All done!  Write everything out.
   nout << "Scale factor is " << _scale_factor << "\n";
-  PNMImage small_image(_output_xsize, _output_ysize, _output_zsize);
-  small_image.gaussian_filter_from(_gaussian_radius, _output_image);
+
+  if (_no_reduce) {
+    // Scaling of the final image forbidden by the user.
+    nout << "Image destination size is " << _output_xsize
+	 << " by " << _output_ysize << " by " << _output_zsize
+	 << "; not reducing.\n";
+    nout << "Generating " << _working_xsize << " by " << _working_ysize
+	 << " by " << _output_zsize << " image: "
+	 << _output_image_filename << "\n";  
+
+    _output_image.write(_output_image_filename);
+
+  } else if (_output_xsize == _working_xsize &&
+	     _output_ysize == _working_ysize) {
+    // Scaling unnecessary, because the scale factor is 1.0.
+    nout << "Generating " << _output_xsize << " by " << _output_ysize
+	 << " by " << _output_zsize << " image: "
+	 << _output_image_filename << "\n";  
+    _output_image.write(_output_image_filename);
+
+  } else {
+    // The normal path: reduce the final image by the scale factor to
+    // antialias the letters.
+    PNMImage small_image(_output_xsize, _output_ysize, _output_zsize);
+    small_image.gaussian_filter_from(_gaussian_radius, _output_image);
   
-  // Fix antialiasing, if required.
-  if (_use_alpha && _bg[3] != 0.0 && _bg[3] != 1.0) {
-    // If we have some non-transparent background, we need to
-    // compensate for the antialiasing.
-    unsmooth_rgb(small_image);
+    // Fix antialiasing, if required.
+    if (_use_alpha && _bg[3] != 0.0 && _bg[3] != 1.0) {
+      // If we have some non-transparent background, we need to
+      // compensate for the antialiasing.
+      unsmooth_rgb(small_image);
+    }
+    
+    
+    nout << "Generating " << _output_xsize << " by " << _output_ysize
+	 << " by " << _output_zsize << " image: "
+	 << _output_image_filename << "\n";  
+    small_image.write(_output_image_filename);
   }
-
-
-  nout << "Generating " << _output_xsize << " by " << _output_ysize
-       << " by " << _output_zsize << " image: "
-       << _output_image_filename << "\n";  
-  small_image.write(_output_image_filename);
 
   write_egg_file();
 }
