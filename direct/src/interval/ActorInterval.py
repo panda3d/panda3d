@@ -173,7 +173,13 @@ class ActorInterval(Interval.Interval):
             
         self.state = CInterval.SFinal
         self.intervalDone()
-        
+
+    # If we want to change what part this interval is playing on after
+    # the interval has been created, call resetControls and pass in a partName
+    # and optional lod param
+    def resetControls(self, partName, lodName=None):
+        self.controls = self.actor.getAnimControls(
+            self.animName, partName = partName, lodName = lodName)
 
 class LerpAnimInterval(CLerpAnimEffectInterval):
     # Blends between two anims.  Start both anims first (or use
