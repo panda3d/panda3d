@@ -31,6 +31,10 @@
 // Description : This class can be used for packing a series of
 //               numeric and string data into a binary stream,
 //               according to the DC specification.
+//
+//               See also direct/src/doc/dcPacker.txt for a more
+//               complete description and examples of using this
+//               class.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DIRECT DCPacker {
 PUBLISHED:

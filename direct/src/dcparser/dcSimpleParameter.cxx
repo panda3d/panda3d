@@ -1054,6 +1054,10 @@ unpack_int(const char *data, size_t length, size_t &p, int &value,
       PN_int64 int_value = do_unpack_uint64(data + p);
       _int64_range.validate(int_value, range_error);
       value = (int)int_value;
+      if (value != int_value) {
+        // uint exceeded the storage capacity of a signed int.
+        pack_error = true;
+      }
       p += 8;
     }
     break;
@@ -1093,6 +1097,9 @@ unpack_int(const char *data, size_t length, size_t &p, int &value,
       unsigned int uint_value = do_unpack_uint32(data + p);
       _uint_range.validate(uint_value, range_error);
       value = (int)uint_value;
+      if (value < 0) {
+        pack_error = true;
+      }
       p += 4;
     }
     break;
@@ -1106,6 +1113,9 @@ unpack_int(const char *data, size_t length, size_t &p, int &value,
       PN_uint64 uint_value = do_unpack_uint64(data + p);
       _uint64_range.validate(uint_value, range_error);
       value = (int)(unsigned int)uint_value;
+      if (value != uint_value || value < 0) {
+        pack_error = true;
+      }
       p += 8;
     }
     break;
@@ -1153,6 +1163,9 @@ unpack_uint(const char *data, size_t length, size_t &p, unsigned int &value,
       }
       int int_value = do_unpack_int8(data + p);
       _int_range.validate(int_value, range_error);
+      if (int_value < 0) {
+        pack_error = true;
+      }
       value = (unsigned int)int_value;
       p++;
     }
@@ -1166,6 +1179,9 @@ unpack_uint(const char *data, size_t length, size_t &p, unsigned int &value,
       }
       int int_value = do_unpack_int16(data + p);
       _int_range.validate(int_value, range_error);
+      if (int_value < 0) {
+        pack_error = true;
+      }
       value = (unsigned int)int_value;
       p += 2;
     }
@@ -1179,6 +1195,9 @@ unpack_uint(const char *data, size_t length, size_t &p, unsigned int &value,
       }
       int int_value = do_unpack_int32(data + p);
       _int_range.validate(int_value, range_error);
+      if (int_value < 0) {
+        pack_error = true;
+      }
       value = (unsigned int)int_value;
       p += 4;
     }
@@ -1192,7 +1211,13 @@ unpack_uint(const char *data, size_t length, size_t &p, unsigned int &value,
       }
       PN_int64 int_value = do_unpack_int64(data + p);
       _int64_range.validate(int_value, range_error);
+      if (int_value < 0) {
+        pack_error = true;
+      }
       value = (unsigned int)(int)int_value;
+      if (value != int_value) {
+        pack_error = true;
+      }
       p += 8;
     }
     break;
@@ -1236,6 +1261,9 @@ unpack_uint(const char *data, size_t length, size_t &p, unsigned int &value,
       PN_uint64 uint_value = do_unpack_uint64(data + p);
       _uint64_range.validate(uint_value, range_error);
       value = (unsigned int)uint_value;
+      if (value != uint_value || value < 0) {
+        pack_error = true;
+      }
       p += 8;
     }
     break;
@@ -1363,6 +1391,9 @@ unpack_int64(const char *data, size_t length, size_t &p, PN_int64 &value,
       PN_uint64 uint_value = do_unpack_uint64(data + p);
       _uint64_range.validate(uint_value, range_error);
       value = (PN_int64)uint_value;
+      if (value != uint_value) {
+        pack_error = true;
+      }
       p += 8;
     }
     break;
@@ -1410,6 +1441,9 @@ unpack_uint64(const char *data, size_t length, size_t &p, PN_uint64 &value,
       }
       int int_value = do_unpack_int8(data + p);
       _int_range.validate(int_value, range_error);
+      if (int_value < 0) {
+        pack_error = true;
+      }
       value = (PN_uint64)(unsigned int)int_value;
       p++;
     }
@@ -1423,6 +1457,9 @@ unpack_uint64(const char *data, size_t length, size_t &p, PN_uint64 &value,
       }
       int int_value = do_unpack_int16(data + p);
       _int_range.validate(int_value, range_error);
+      if (int_value < 0) {
+        pack_error = true;
+      }
       value = (PN_uint64)(unsigned int)int_value;
       p += 2;
     }
@@ -1436,6 +1473,9 @@ unpack_uint64(const char *data, size_t length, size_t &p, PN_uint64 &value,
       }
       int int_value = do_unpack_int32(data + p);
       _int_range.validate(int_value, range_error);
+      if (int_value < 0) {
+        pack_error = true;
+      }
       value = (PN_uint64)(unsigned int)int_value;
       p += 4;
     }
@@ -1449,6 +1489,9 @@ unpack_uint64(const char *data, size_t length, size_t &p, PN_uint64 &value,
       }
       PN_int64 int_value = do_unpack_int64(data + p);
       _int64_range.validate(int_value, range_error);
+      if (int_value < 0) {
+        pack_error = true;
+      }
       value = (PN_uint64)int_value;
       p += 8;
     }
