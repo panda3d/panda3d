@@ -701,6 +701,13 @@ process_model_node(MayaNodeDesc *node_desc) {
         << "\n";
     }
 
+  } else if (dag_path.hasFn(MFn::kCamera)) {
+    if (mayaegg_cat.is_debug()) {
+      mayaegg_cat.debug()
+        << "Ignoring camera node " << path
+        << "\n";
+    }
+
   } else if (dag_path.hasFn(MFn::kLight)) {
     if (mayaegg_cat.is_debug()) {
       mayaegg_cat.debug()
@@ -780,29 +787,6 @@ process_model_node(MayaNodeDesc *node_desc) {
       }
       get_transform(node_desc, dag_path, egg_group);
       make_locator(dag_path, dag_node, egg_group);
-    }
-
-  } else if (dag_path.hasFn(MFn::kCamera)) {
-    // For some reason, Maya 6.0 on the Windows build seems to report
-    // that every node has kCamera, even if it's not a camera.  This
-    // second check is designed to filter those.
-    MFnCamera camera(dag_path, &status);
-    if (!status) {
-      if (mayaegg_cat.is_debug()) {
-        mayaegg_cat.debug()
-          << "Node is not really a camera: " << path << "\n";
-      }
-
-      // Just a generic node.
-      EggGroup *egg_group = _tree.get_egg_group(node_desc);
-      get_transform(node_desc, dag_path, egg_group);
-
-    } else {
-      if (mayaegg_cat.is_debug()) {
-        mayaegg_cat.debug()
-          << "Ignoring camera node " << path
-          << "\n";
-      }
     }
 
   } else {
