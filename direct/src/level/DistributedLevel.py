@@ -1,6 +1,7 @@
 """DistributedLevel.py: contains the DistributedLevel class"""
 
 from ClockDelta import *
+from PandaModules import *
 from PythonUtil import Functor, sameElements, list2dict, uniqueElements
 from IntervalGlobal import *
 from ToontownMsgTypes import *
@@ -409,7 +410,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
                 try:
                     zoneNum = int(name[prefixLen:])
                 except:
-                    DistributedLevel.notify.debug(
+                    DistributedLevel.notify.warning(
                         'Invalid zone floor collision node: %s'
                         % name)
                 else:
@@ -447,9 +448,17 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
     def handleDatagram(self, msgType, di):
         if msgType == CLIENT_DONE_SET_ZONE_RESP:
-            print 'setZone %s complete' % self.setZonesReceived
-            messenger.send(self.getSetZoneCompleteEvent(self.setZonesReceived))
-            self.setZonesReceived += 1
+            # snoop to see what zone we're talking about
+            di2 = DatagramIterator(di)
+            zone = di2.getUint32()
+            if zone != self.levelZone:
+                self.notify.warning('got setZoneComplete for unknown zone %s' %
+                                    zone)
+            else:
+                print 'setZone %s complete' % self.setZonesReceived
+                messenger.send(self.getSetZoneCompleteEvent(
+                    self.setZonesReceived))
+                self.setZonesReceived += 1
             
         if self.oldTcrHandler is None:
             toonbase.tcr.handleUnexpectedMsgType(msgType, di)
@@ -465,7 +474,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         a zone.
         See camEnterZone()
         """
-        DistributedLevel.notify.debug('toonEnterZone%s' % zoneNum)
+        DistributedLevel.notify.info('toonEnterZone%s' % zoneNum)
 
         if zoneNum != self.lastToonZone:
             self.lastToonZone = zoneNum
@@ -480,7 +489,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         a zone.
         See toonEnterZone()
         """
-        DistributedLevel.notify.debug('camEnterZone%s' % zoneNum)
+        DistributedLevel.notify.info('camEnterZone%s' % zoneNum)
         self.enterZone(zoneNum)
 
         if zoneNum != self.lastCamZone:
@@ -489,7 +498,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
             self.spawnTitleText()
 
     def enterZone(self, zoneNum):
-        DistributedLevel.notify.debug("entering zone %s" % zoneNum)
+        DistributedLevel.notify.info("entering zone %s" % zoneNum)
 
         if not DistributedLevel.WantVisibility:
             return
@@ -537,10 +546,10 @@ class DistributedLevel(DistributedObject.DistributedObject,
                 else:
                     removedZoneNums.append(vz)
             # show the new, hide the old
-            DistributedLevel.notify.debug('showing zones %s' % addedZoneNums)
+            DistributedLevel.notify.info('showing zones %s' % addedZoneNums)
             for az in addedZoneNums:
                 self.showZone(az)
-            DistributedLevel.notify.debug('hiding zones %s' % removedZoneNums)
+            DistributedLevel.notify.info('hiding zones %s' % removedZoneNums)
             for rz in removedZoneNums:
                 self.hideZone(rz)
 
@@ -562,7 +571,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         for vz in vizList:
             visibleZoneIds.append(self.getZoneId(zoneNum=vz))
         assert(uniqueElements(visibleZoneIds))
-        DistributedLevel.notify.debug('new viz list: %s' % visibleZoneIds)
+        DistributedLevel.notify.info('new viz list: %s' % visibleZoneIds)
 
         toonbase.tcr.sendSetZoneMsg(self.levelZone, visibleZoneIds)
 
