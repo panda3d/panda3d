@@ -27,11 +27,7 @@ class DirectSession(PandaObject):
         __builtins__["direct"] = self
         # These come early since they are used later on
         self.group = render.attachNewNode('DIRECT')
-        # Set priority to 100 so it always is textured
-        # Call class method to avoid conflict with ToontownLoader
-        self.font = Loader.Loader.loadFont(loader,
-                                           "models/fonts/Comic",
-                                           priority = 100)
+        self.font = TextNode.getDefaultFont()
         self.fEnabled = 0
         self.drList = DisplayRegionList()
         self.iRayList = map(lambda x: x.iRay, self.drList)
