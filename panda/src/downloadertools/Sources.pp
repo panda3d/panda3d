@@ -1,5 +1,6 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolutil:c dtoolbase:c dtool:m pystub
 #define LOCAL_LIBS downloader express event ipc
+#define USE_ZLIB yes
 
 #begin bin_target
   #define TARGET apply_patch
