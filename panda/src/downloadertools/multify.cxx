@@ -19,7 +19,8 @@ main(int argc, char *argv[]) {
 
   extern char *optarg;
   extern int optind;
-  int flag = getopt(argc, argv, "x:c:v");
+  int flag = getopt(argc, argv, "xcvr:");
+  Filename rel_path;
   while (flag != EOF) {
     switch (flag) {
       case 'x':
@@ -30,16 +31,24 @@ main(int argc, char *argv[]) {
       case 'v':
 	verbose = true;
  	break;
+      case 'r':
+	rel_path = optarg;
+	break;
       default:
 	cerr << "Unhandled switch: " << flag << endl;
 	break;
     } 
-    flag = getopt(argc, argv, "x:c:v");
+    flag = getopt(argc, argv, "xcvr:");
   }
   argc -= (optind - 1);
   argv += (optind - 1);
 
-  Filename dest_file = argv[0];
+  if (argc <= 1) {
+    cerr << "Usage: multify -[x,c|v] <dest_file> <src_file> ..." << endl;
+    return 0;
+  }
+
+  Filename dest_file = argv[1];
   dest_file.set_binary();
 
   if (verbose == true) {
@@ -52,7 +61,7 @@ main(int argc, char *argv[]) {
   Multifile mfile;
 
   if (extract == false) {
-    for (int i = 1; i < argc; i++) {
+    for (int i = 2; i < argc; i++) {
       Filename in_file = argv[i];
       in_file.set_binary();
       mfile.add(in_file);
@@ -62,7 +71,7 @@ main(int argc, char *argv[]) {
       cerr << "Failed to write: " << dest_file << endl;
   } else {
     mfile.read(dest_file);
-    mfile.extract_all();
+    mfile.extract_all(rel_path);
   }
 
   return 1;

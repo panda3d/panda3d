@@ -45,8 +45,8 @@ public:
   bool write(Filename name);
   bool write(char *&start, int &size);
   bool write_extract(char *&start, int &size);
-  bool extract(const Filename &name);
-  void extract_all(void);
+  bool extract(const Filename &name, const Filename &rel_path = "");
+  void extract_all(const Filename &rel_path = "");
 
   void reset(void);
   bool parse_header(char *&start, int &size);
@@ -64,7 +64,7 @@ private:
 
     bool read(const Filename &name);
     bool read_from_multifile(ifstream &read_stream);
-    bool write(void);
+    bool write(const Filename &rel_path);
     void write_to_multifile(ofstream &write_stream);
     bool write(char *&start, int &size);
     void reset(void);

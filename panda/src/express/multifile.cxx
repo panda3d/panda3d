@@ -233,19 +233,20 @@ read_from_multifile(ifstream &read_stream) {
 //  Description: Writes to a individual file
 ////////////////////////////////////////////////////////////////////
 bool Multifile::Memfile::
-write(void) {
+write(const Filename &rel_path) {
   ofstream write_stream;
-  _name.set_binary();
-  _name.make_dir();
-  if (!_name.open_write(write_stream)) {
+  Filename name = rel_path.get_fullpath() + _name.get_fullpath();
+  name.set_binary();
+  name.make_dir();
+  if (!name.open_write(write_stream)) {
     express_cat.error()
       << "Multifile::Memfile::write() - Failed to open output file: "
-      << _name << endl;
+      << name << endl;
     return false;
   }
 
   express_cat.debug()
-    << "Writing to file: " << _name << endl;
+    << "Writing to file: " << name << endl;
 
   write_stream.write(_buffer, _buffer_length);
   return true;
@@ -607,11 +608,11 @@ reset(void) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool Multifile::
-extract(const Filename &name) {
+extract(const Filename &name, const Filename &rel_path) {
   MemfileList::iterator found;
   found = find_if(_files.begin(), _files.end(), MemfileMatch(name));
   if (found != _files.end()) {
-    (*found)->write();
+    (*found)->write(rel_path);
     return true;
   }
   return false;
@@ -623,11 +624,11 @@ extract(const Filename &name) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Multifile::
-extract_all(void) {
+extract_all(const Filename &rel_path) {
   express_cat.debug()
     << "Multifile::extract_all() - Extracting all files" << endl;
 
   MemfileList::iterator i;
   for (i = _files.begin(); i != _files.end(); ++i)
-    (*i)->write();
+    (*i)->write(rel_path);
 }
