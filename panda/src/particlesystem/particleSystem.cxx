@@ -55,7 +55,7 @@ ParticleSystem(int pool_size) :
   _system_lifespan = 0.0f;
   _i_was_spawned_flag = false;
   _particle_pool_size = 0;
-  _floor_z = _FPCLASS_NINF;
+  _floor_z = -HUGE_VAL;
 
   // just in case someone tries to do something that requires the
   // use of an emitter, renderer, or factory before they've actually
@@ -512,7 +512,7 @@ update(float dt) {
     //cerr<<"bp->get_position().get_z() returning "<<bp->get_position().get_z()<<endl;
     if (age >= bp->get_lifespan()) {
       kill_particle(current_index);
-    } else if (get_floor_z() != _FPCLASS_NINF
+    } else if (get_floor_z() != -HUGE_VAL
             && bp->get_position().get_z() <= get_floor_z()) {
       // ...the particle is going under the floor.
       // Maybe tell the particle to bounce: bp->bounce()?

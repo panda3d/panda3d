@@ -70,6 +70,8 @@ PUBLISHED:
   INLINE void set_emitter(BaseParticleEmitter *e);
   INLINE void set_factory(BaseParticleFactory *f);
   INLINE void set_floor_z(float z);
+  
+  INLINE void clear_floor_z();
 
   INLINE int get_pool_size() const;
   INLINE float get_birth_rate() const;
