@@ -93,6 +93,7 @@ extend_to(int num_frames) {
 
   while (num_rows < num_frames) {
     _xform->add_data(last_mat);
+    num_rows++;
   }
 }
 

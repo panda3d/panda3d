@@ -65,6 +65,7 @@ extend_to(int num_frames) {
 
   while (num_rows < num_frames) {
     _data->add_data(last_value);
+    num_rows++;
   }
 }
 
