@@ -68,10 +68,8 @@ handle_entries() {
 	nassertv(entry != (CollisionEntry *)NULL);
 	nassertv(from_node == entry->get_from_node());
 
-	if (entry->has_into_intersection_point()) {
-	  LPoint3f point =
-	    entry->get_into_intersection_point() * 
-	    entry->get_into_space();
+	if (entry->has_from_intersection_point()) {
+	  LPoint3f point = entry->get_from_intersection_point();
 	  if (collide_cat.is_debug()) {
 	    collide_cat.debug()
 	      << "Intersection point detected at " << point << "\n";
@@ -86,21 +84,19 @@ handle_entries() {
       }
 
       // Now set our height accordingly.
-      LMatrix4f mat;
-      def.get_mat(mat);
-      if (!IS_THRESHOLD_EQUAL(mat(3, 2), max_height + _offset, 0.001)) {
+      if (!IS_THRESHOLD_ZERO(max_height + _offset, 0.001)) {
 	if (collide_cat.is_debug()) {
 	  collide_cat.debug()
-	    << "Resetting height to " << max_height << " + " 
-	    << _offset << "\n";
+	    << "Adjusting height by " << max_height + _offset << "\n";
 	}
-	mat(3, 2) = max_height + _offset;
+	LMatrix4f mat;
+	def.get_mat(mat);
+	mat(3, 2) += max_height + _offset;
 	def.set_mat(mat);
       } else {
 	if (collide_cat.is_spam()) {
 	  collide_cat.spam()
-	    << "Height is already at " << max_height << " + " 
-	    << _offset << "\n";
+	    << "Leaving height unchanged.\n";
 	}
       }
     }
