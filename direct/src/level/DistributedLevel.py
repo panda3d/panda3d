@@ -188,6 +188,13 @@ class DistributedLevel(DistributedObject.DistributedObject,
         self.initVisibility()
         self.placeLocalToon()
 
+        self.acceptOnce('leavingFactory', self.announceLeaving)
+
+    def announceLeaving(self):
+        """call this just before leaving the level; this may result in
+        the factory being destroyed on the AI"""
+        self.doneBarrier()
+
     def placeLocalToon(self):
         # the entrancePoint entities register themselves with us
         if self.entranceId not in self.entranceId2entity:
@@ -414,7 +421,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
         if zoneNum != self.lastToonZone:
             self.lastToonZone = zoneNum
-            print "made zone transition to %s" % zoneNum
+            print "toon is standing in zone %s" % zoneNum
             messenger.send("factoryZoneChanged", [zoneNum])
             self.smallTitleText.hide()
             self.spawnTitleText()

@@ -7,6 +7,7 @@ import Level
 import DirectNotifyGlobal
 import EntityCreatorAI
 import WeightedChoice
+from PythonUtil import Functor
 
 class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
                          Level.Level):
@@ -25,6 +26,8 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         assert None not in avIds
         self.avIdList = avIds
         self.numPlayers = len(self.avIdList)
+        # this is the list of avatars that are actually present
+        self.presentAvIds = list(self.avIdList)
         self.notify.debug("expecting avatars: %s" % str(self.avIdList))
 
         if __debug__:
@@ -57,6 +60,7 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         if __debug__:
             self.removeAutosaveTask()
         self.destroyLevel()
+        self.ignoreAll()
         DistributedObjectAI.DistributedObjectAI.delete(self)
 
     def initializeLevel(self, levelSpec):
@@ -77,6 +81,34 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         if __debug__:
             # listen for requests to save the spec
             self.accept(self.editMgrEntity.getSpecSaveEvent(), self.saveSpec)
+
+        # listen for avatar disconnects
+        for avId in self.avIdList:
+            self.acceptOnce(self.air.getAvatarExitEvent(avId),
+                            Functor(self.handleAvatarDisconnect, avId))
+
+        # set up a barrier that will clear when all avs have left or
+        # disconnected
+        self.allToonsGoneBarrier = self.beginBarrier(
+            'allToonsGone', self.avIdList, 3*24*60*60, self.allToonsGone)
+
+    def handleAvatarDisconnect(self, avId):
+        try:
+            self.presentAvIds.remove(avId)
+            DistributedLevelAI.notify.warning('av %s has disconnected' % avId)
+        except:
+            DistributedLevelAI.notify.warning(
+                'got disconnect for av %s, not in list' % avId)
+        if not self.presentAvIds:
+            self.allToonsGone([])
+
+    def allToonsGone(self, toonsThatCleared):
+        print 'allToonsGone'
+        if hasattr(self, 'allToonsGoneBarrier'):
+            self.ignoreBarrier(self.allToonsGoneBarrier)
+            del self.allToonsGoneBarrier
+        self.requestDelete()
+        self.air.deallocateZone(self.zoneId)
 
     def createEntityCreator(self):
         """Create the object that will be used to create Entities.
