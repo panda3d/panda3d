@@ -113,18 +113,24 @@ def textLabelAndText(string, style,
     return (label, text)
 
 
-def modelLabel(model, height, width,
+def modelLabel(model, height, width, bottom = None, top = None,
                scale = 0.1,
                drawOrder = getDefaultDrawOrder()):
 
     # Preserve transitions on the arc by creating an intervening node.
     topnode = NamedNode('model')
-    top = NodePath(topnode)
-    mi = model.instanceTo(top)
+    topnp = NodePath(topnode)
+    mi = model.instanceTo(topnp)
     mi.setScale(scale)
     mi.setBin('fixed', drawOrder)
-            
-    label = GuiLabel.makeModelLabel(topnode, height * scale, width * scale)
+
+    if top == None or bottom == None:
+        # If we got only two parameters, it's height and width.
+        label = GuiLabel.makeModelLabel(topnode, height * scale, width * scale)
+    else:
+        # If we got four, they're left, right, bottom, top.
+        label = GuiLabel.makeModelLabel(topnode, height * scale, width * scale,
+                                        bottom * scale, top * scale)
     label.setDrawOrder(drawOrder)
     return label
                                     

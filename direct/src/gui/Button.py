@@ -12,7 +12,12 @@ class Button(DirectObject):
                  scale = 0.1,
                  width = None,
                  drawOrder = getDefaultDrawOrder(),
-                 font = getDefaultFont()):
+                 font = getDefaultFont(),
+                 height = None,
+                 left = None,
+                 right = None,
+                 bottom = None,
+                 top = None):
         self.name = name
         # if no label given, use the button name
         if (label == None):
@@ -32,7 +37,20 @@ class Button(DirectObject):
 
         elif (isinstance(label, NodePath)):
             # If it's a NodePath, assume it's a little texture card.
-            self.l1 = Label.modelLabel(label, 1, 1, scale, drawOrder)
+            if height != None and width != None:
+                self.l1 = Label.modelLabel(label, height, width,
+                                           scale = scale,
+                                           drawOrder = drawOrder)
+            elif left != None and right != None and \
+                 bottom != None and top != None:
+                self.l1 = Label.modelLabel(label, left, right, bottom, top,
+                                           scale = scale,
+                                           drawOrder = drawOrder)
+            else:
+                self.l1 = Label.modelLabel(label, 1, 1,
+                                           scale = scale,
+                                           drawOrder = drawOrder)
+            
             self.l2 = self.l1
             self.l3 = self.l1
             
