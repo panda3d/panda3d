@@ -40,7 +40,10 @@ public:
   bool is_valid();
   
   PT(AudioSound) get_sound(const string& file_name);
-  void drop_sound(const string& file_name);
+  void uncache_sound(const string& file_name);
+  void clear_cache();
+  void set_cache_limit(int count);
+  int get_cache_limit();
 
   void set_volume(float volume);
   float get_volume();
@@ -58,6 +61,7 @@ private:
   // State:
   float _volume;
   bool _active;
+  int _cache_limit;
   // keep a count for startup and shutdown:
   static int _active_managers;
   // Optional Downloadable Sound field for software midi:
@@ -69,6 +73,8 @@ private:
   // Tell the manager that the sound dtor was called.
   void release_sound(MilesAudioSound* audioSound);
   
+  void uncache_a_sound();
+
   // utility function that should be moved to another class:
   void get_registry_entry(HKEY base, 
                           const char* subKeyName, 

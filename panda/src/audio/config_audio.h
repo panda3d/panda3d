@@ -29,6 +29,7 @@
 NotifyCategoryDecl(audio, EXPCL_PANDA, EXPTP_PANDA);
 
 extern EXPCL_PANDA bool audio_active;
+extern EXPCL_PANDA int audio_cache_limit;
 extern EXPCL_PANDA float audio_volume;
 
 extern EXPCL_PANDA bool audio_software_midi;

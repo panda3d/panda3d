@@ -42,12 +42,16 @@ PUBLISHED:
   
   // Get a sound:
   virtual PT(AudioSound) get_sound(const string& file_name) = 0;
+
   // Tell the AudioManager there is no need to keep this one cached.
   // This doesn't break any connection between AudioSounds that have
   // already given by get_sound() from this manager.  It's
   // only affecting whether the AudioManager keeps a copy of the sound
   // in its pool/cache.
-  virtual void drop_sound(const string& file_name) = 0;
+  virtual void uncache_sound(const string& file_name) = 0;
+  virtual void clear_cache() = 0;
+  virtual void set_cache_limit(int count) = 0;
+  virtual int get_cache_limit() = 0;
 
   // Control volume:
   // FYI:

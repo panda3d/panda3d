@@ -46,6 +46,7 @@ MilesAudioManager() {
   audio_debug("  audio_volume="<<audio_volume);
   _active = audio_active;
   _volume = audio_volume;
+  _cache_limit = audio_cache_limit;
   _is_valid = true;
   if (!_active_managers) {
     S32 use_digital=(audio_play_wave || audio_play_mp3)?1:0;
@@ -114,11 +115,7 @@ MilesAudioManager::
   audio_debug("MilesAudioManager::~MilesAudioManager()");
   // Be sure to delete associated sounds before deleting the manager:
   nassertv(_soundsOnLoan.empty());
-  SoundMap::iterator i=_sounds.begin();
-  for (; i!=_sounds.end(); ++i) {
-    AIL_quick_unload(i->second);
-  }
-  _sounds.clear();
+  clear_cache();
   --_active_managers;
   audio_debug("  _active_managers="<<_active_managers);
   if (!_active_managers) {
@@ -185,6 +182,9 @@ get_sound(const string& file_name) {
     // ...the sound was not found in the cache/pool.
     audio=load(path);
     if (audio) {
+      while (_sounds.size() >= _cache_limit) {
+        uncache_a_sound();
+      }
       // Put it in the pool:
       // The following is roughly like: _sounds[path] = audio;
       // But, it gives us an iterator into the map.
@@ -215,13 +215,13 @@ get_sound(const string& file_name) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::drop_sound
+//     Function: MilesAudioManager::uncache_sound
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
-drop_sound(const string& file_name) {
-  audio_debug("MilesAudioManager::drop_sound(file_name=\""
+uncache_sound(const string& file_name) {
+  audio_debug("MilesAudioManager::uncache_sound(file_name=\""
       <<file_name<<"\")");
   Filename path = file_name;
   path.resolve_filename(get_sound_path());
@@ -231,6 +231,64 @@ drop_sound(const string& file_name) {
     AIL_quick_unload(i->second);
     _sounds.erase(i);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::uncache_a_sound
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+uncache_a_sound() {
+  audio_debug("MilesAudioManager::uncache_a_sound()");
+  SoundMap::iterator i = _sounds.begin();
+  if (i != _sounds.end()) {
+    audio_debug("  uncaching \""<<i->first<<"\"");
+    _sounds.erase(i);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::clear_cache
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+clear_cache() {
+  audio_debug("MilesAudioManager::clear_cache()");
+  SoundMap::iterator i=_sounds.begin();
+  for (; i!=_sounds.end(); ++i) {
+    AIL_quick_unload(i->second);
+  }
+  _sounds.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::set_cache_limit
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+set_cache_limit(int count) {
+  audio_debug("MilesAudioManager::set_cache_limit(count="
+      <<count<<")");
+  while (count < _cache_limit) {
+    uncache_a_sound();
+    --_cache_limit;
+  }
+  _cache_limit=count;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::get_cache_limit
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int MilesAudioManager::
+get_cache_limit() {
+  audio_debug("MilesAudioManager::get_cache_limit() returning "
+      <<_cache_limit);
+  return _cache_limit;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -310,8 +368,8 @@ get_active() {
 //               'result' from the Windows registry.
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
-get_registry_entry(HKEY base, const char* subKeyName, const char* keyName, 
-  string& result) {
+get_registry_entry(HKEY base, const char* subKeyName, 
+    const char* keyName, string& result) {
   // Create a key to access the registry:
   HKEY key;
   long r=RegCreateKeyEx(base, subKeyName, 0, "", 

@@ -35,7 +35,10 @@ public:
   virtual bool is_valid();
   
   virtual PT(AudioSound) get_sound(const string&);
-  virtual void drop_sound(const string&);
+  virtual void uncache_sound(const string&);
+  virtual void clear_cache();
+  virtual void set_cache_limit(int);
+  virtual int get_cache_limit();
 
   virtual void set_volume(float);
   virtual float get_volume();
