@@ -71,9 +71,8 @@ precompute_linear_matrices(Physical *physical,
   NodePath global_physical_np = physical_np.get_parent();
 
   // tally the global xforms
-  for (LinearForceVector::const_iterator fi = forces.begin(); 
-      fi != forces.end(); 
-      ++fi) {
+  LinearForceVector::const_iterator fi;
+  for (fi = forces.begin(); fi != forces.end(); ++fi) {
     //LinearForce *cur_force = *fi;
     force_node = (*fi)->get_force_node();
     nassertv(force_node != (ForceNode *) NULL);
@@ -85,9 +84,7 @@ precompute_linear_matrices(Physical *physical,
 
   // tally the local xforms
   const LinearForceVector &force_vector = physical->get_linear_forces();
-  for (LinearForceVector::const_iterator fi = force_vector.begin(); 
-      fi != force_vector.end(); 
-      ++fi) {
+  for (fi = force_vector.begin(); fi != force_vector.end(); ++fi) {
     force_node = (*fi)->get_force_node();
     nassertv(force_node != (ForceNode *) NULL);
 
@@ -128,9 +125,8 @@ precompute_angular_matrices(Physical *physical,
   NodePath global_physical_np = physical_np.get_parent();
 
   // tally the global xforms
-  for (AngularForceVector::const_iterator fi = forces.begin(); 
-      fi != forces.end(); 
-      ++fi) {
+  AngularForceVector::const_iterator fi;
+  for (fi = forces.begin(); fi != forces.end(); ++fi) {
     force_node = (*fi)->get_force_node();
     nassertv(force_node != (ForceNode *) NULL);
 
@@ -141,9 +137,7 @@ precompute_angular_matrices(Physical *physical,
 
   // tally the local xforms
   const AngularForceVector &force_vector = physical->get_angular_forces();
-  for (AngularForceVector::const_iterator fi = force_vector.begin(); 
-      fi != force_vector.end(); 
-      ++fi) {
+  for (fi = force_vector.begin(); fi != force_vector.end(); ++fi) {
     force_node = (*fi)->get_force_node();
     nassertv(force_node != (ForceNode *) NULL);
 
