@@ -81,7 +81,8 @@ CLIENT_GET_PET_DETAILS_RESP =                82
 # (Proposed new message): CLIENT_SET_WORLD_POS =                       83
 if wantOtpServer:        
     CLIENT_ADD_INTEREST =                        97
-    CLIENT_ALTER_INTEREST =                      98
+    # This is no longer supported. Alter just calls ADD_INTEREST
+    # CLIENT_ALTER_INTEREST =                      98
     CLIENT_REMOVE_INTEREST =                     99
     CLIENT_OBJECT_LOCATION =                     102
 

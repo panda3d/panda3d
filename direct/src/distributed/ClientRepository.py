@@ -713,9 +713,9 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             datagram.addUint16(CLIENT_SET_ZONE)       
             # Add Parent
             if parent is not None:
-                datagram.addUint32(zoneId)
+                datagram.addUint32(parent)
             else:
-                datagram.addUint32(base.localAvatar.defaultShard)                                    
+                datagram.addUint32(base.localAvatar.defaultShard)
             # Add zone id
             datagram.addUint32(zoneId)
             # if we have an explicit list of visible zones, add them
@@ -814,17 +814,21 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             assert self.printInterests()            
             return answer
 
-        def alterInterest(self, contextId, parentId, zoneId, description):        
+        def alterInterest(self, contextId, parentId, zoneId, description = None):
             """
             Part of the new otp-server code.        
                 Removes old and adds new.. 
             """
+            print 'new'
             answer = 0
             if  self._interests.has_key(contextId):
-                self._interests[contextId] = description
-                self._sendAlterInterest(contextId, parentId, zoneId)
+                if description is not None:
+                    self._interests[contextId] = description
+                self._sendAddInterest(contextId, parentId, zoneId)
                 answer = 1
-            assert self.printInterests()            
+                assert self.printInterests()
+            else:
+                self.notify.warning("alterInterest: contextId not found: %s" % (contextId))
             return answer
             
         if __debug__:
@@ -850,23 +854,6 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             datagram = PyDatagram()
             # Add message type
             datagram.addUint16(CLIENT_ADD_INTEREST)
-            datagram.addUint16(contextId)
-            datagram.addUint32(parentId)
-            datagram.addUint32(zoneId)
-            self.send(datagram)
-
-        def _sendAlterInterest(self, contextId, parentId, zoneId):
-            """
-            Part of the new otp-server code.
-
-            contextId is a client-side created number that refers to
-                    a set of interests.  The same contextId number doesn't
-                    necessarily have any relationship to the same contextId
-                    on another client.
-            """
-            datagram = PyDatagram()
-            # Add message type
-            datagram.addUint16(CLIENT_ALTER_INTEREST)
             datagram.addUint16(contextId)
             datagram.addUint32(parentId)
             datagram.addUint32(zoneId)
