@@ -1069,7 +1069,7 @@ class LevelEditor(NodePath, PandaObject):
             else:
                 return
             # Valid type, add color to file
-            filename = 'level_editor/' + self.editMode + 'Colors.txtnew'
+            filename = 'level_editor/' + self.editMode + 'Colors.txt'
             f = Filename(filename)
             f.resolveFilename(getModelPath())
             f = open(f.toOsSpecific(), 'a')
