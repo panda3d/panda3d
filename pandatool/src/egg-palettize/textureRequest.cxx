@@ -35,6 +35,7 @@ TextureRequest() {
   _force_format = false;
   _minfilter = EggTexture::FT_unspecified;
   _magfilter = EggTexture::FT_unspecified;
+  _alpha_mode = EggRenderMode::AM_unspecified;
   _omit = false;
   _margin = 0;
   _coverage_threshold = 0.0;

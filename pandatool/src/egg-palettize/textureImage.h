@@ -19,15 +19,16 @@
 #ifndef TEXTUREIMAGE_H
 #define TEXTUREIMAGE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "imageFile.h"
 #include "paletteGroups.h"
 #include "textureRequest.h"
 
-#include <namable.h>
-#include <filename.h>
-#include <pnmImage.h>
+#include "namable.h"
+#include "filename.h"
+#include "pnmImage.h"
+#include "eggRenderMode.h"
 
 #include "pmap.h"
 #include "pset.h"
@@ -73,6 +74,7 @@ public:
   int get_margin() const;
   bool is_surprise() const;
   bool is_used() const;
+  EggRenderMode::AlphaMode get_alpha_mode() const;
 
   SourceTextureImage *get_source(const Filename &filename,
                                  const Filename &alpha_filename);
@@ -83,6 +85,7 @@ public:
 
   const PNMImage &read_source_image();
   void read_header();
+  bool is_newer_than(const Filename &reference_filename);
 
   void write_source_pathnames(ostream &out, int indent_level = 0) const;
   void write_scale_info(ostream &out, int indent_level = 0);
@@ -98,7 +101,7 @@ private:
 
   void assign_to_groups(const PaletteGroups &groups);
   void consider_grayscale();
-  void consider_unalpha();
+  void consider_alpha();
 
   void remove_old_dests(const Dests &a, const Dests &b);
   void copy_new_dests(const Dests &a, const Dests &b);
@@ -109,12 +112,23 @@ private:
 private:
   TextureRequest _request;
   TextureProperties _pre_txa_properties;
+  EggRenderMode::AlphaMode _pre_txa_alpha_mode;
   SourceTextureImage *_preferred_source;
   bool _is_surprise;
 
   bool _ever_read_image;
   bool _forced_grayscale;
-  bool _forced_unalpha;
+
+  enum AlphaBits {
+    // consider_alpha() sets alpha_bits to the union of all of these
+    // pixel values that might be found in the alpha channel.
+    AB_one   = 0x01,
+    AB_mid   = 0x02,
+    AB_zero  = 0x04,
+    AB_all   = 0x07 // == AB_zero | AB_mid | AB_one
+  };
+  int _alpha_bits;
+  EggRenderMode::AlphaMode _alpha_mode;
 
   PaletteGroups _explicitly_assigned_groups;
   PaletteGroups _actual_assigned_groups;

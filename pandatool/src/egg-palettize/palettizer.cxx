@@ -41,12 +41,13 @@ Palettizer *pal = (Palettizer *)NULL;
 // allows us to easily update egg-palettize to write out additional
 // information to its pi file, without having it increment the bam
 // version number for all bam and boo files anywhere in the world.
-int Palettizer::_pi_version = 5;
+int Palettizer::_pi_version = 6;
 // Updated to version 1 on 12/11/00 to add _remap_char_uv.
 // Updated to version 2 on 12/19/00 to add TexturePlacement::_dest.
 // Updated to version 3 on 12/19/00 to add PaletteGroup::_dependency_order.
 // Updated to version 4 on 5/3/01 to add PaletteGroup::_dirname_order.
 // Updated to version 5 on 10/31/01 to add TextureProperties::_force_format.
+// Updated to version 6 on 3/14/02 to add TextureImage::_alpha_mode.
 
 int Palettizer::_read_pi_version = 0;
 
@@ -377,7 +378,7 @@ all_params_set() {
 //               for grayscaleness etc.) before placing.
 ////////////////////////////////////////////////////////////////////
 void Palettizer::
-process_command_line_eggs(bool force_texture_read) {
+process_command_line_eggs(bool force_texture_read, const Filename &state_filename) {
   _command_line_textures.clear();
 
   // Start by scanning all the egg files we read up on the command
@@ -411,8 +412,9 @@ process_command_line_eggs(bool force_texture_read) {
        ++ti) {
     TextureImage *texture = *ti;
 
-    if (force_texture_read) {
-      // If we're forcing a redo, re-read the complete image.
+    if (force_texture_read || texture->is_newer_than(state_filename)) {
+      // If we're forcing a redo, or the texture image has changed,
+      // re-read the complete image.
       texture->read_source_image();
     } else {
       // Otherwise, just the header is sufficient.
@@ -470,7 +472,7 @@ process_command_line_eggs(bool force_texture_read) {
 //               for grayscaleness etc.) before placing.
 ////////////////////////////////////////////////////////////////////
 void Palettizer::
-process_all(bool force_texture_read) {
+process_all(bool force_texture_read, const Filename &state_filename) {
   // If there *were* any egg files on the command line, deal with
   // them.
   CommandLineEggs::const_iterator ei;
@@ -505,7 +507,7 @@ process_all(bool force_texture_read) {
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
     TextureImage *texture = (*ti).second;
 
-    if (force_texture_read) {
+    if (force_texture_read || texture->is_newer_than(state_filename)) {
       texture->read_source_image();
     }
 
@@ -637,7 +639,7 @@ read_stale_eggs(bool redo_all) {
   for (ii = invalid_eggs.begin(); ii != invalid_eggs.end(); ++ii) {
     EggFiles::iterator ei = (*ii);
     EggFile *egg_file = (*ei).second;
-    cerr << "Removing " << (*ei).first << "\n";
+    nout << "Removing " << (*ei).first << "\n";
     egg_file->remove_egg();
     _egg_files.erase(ei);
   }

@@ -53,8 +53,8 @@ public:
 
   void read_txa_file(const Filename &txa_filename);
   void all_params_set();
-  void process_command_line_eggs(bool force_texture_read);
-  void process_all(bool force_texture_read);
+  void process_command_line_eggs(bool force_texture_read, const Filename &state_filename);
+  void process_all(bool force_texture_read, const Filename &state_filename);
   void optimal_resize();
   void reset_images();
   void generate_images(bool redo_all);

@@ -41,6 +41,7 @@ TxaLine() {
   _num_channels = 0;
   _format = EggTexture::F_unspecified;
   _force_format = false;
+  _alpha_mode = EggRenderMode::AM_unspecified;
   _got_margin = false;
   _margin = 0;
   _got_coverage_threshold = false;
@@ -220,24 +221,31 @@ parse(const string &line) {
         }
 
       } else {
-        // Maybe it's a format name.  This suggests an image format,
-        // but may be overridden to reflect the number of channels in
-        // the image.
-        EggTexture::Format format = EggTexture::string_format(word);
-        if (format != EggTexture::F_unspecified) {
-          if (!_force_format) {
-            _format = format;
-          }
+        // Maybe it's a group name.
+        PaletteGroup *group = pal->test_palette_group(word);
+        if (group != (PaletteGroup *)NULL) {
+          _palette_groups.insert(group);
+          
         } else {
-          // Maybe it's a group name.
-          PaletteGroup *group = pal->test_palette_group(word);
-          if (group != (PaletteGroup *)NULL) {
-            _palette_groups.insert(group);
-
+          // Maybe it's a format name.  This suggests an image format,
+          // but may be overridden to reflect the number of channels in
+          // the image.
+          EggTexture::Format format = EggTexture::string_format(word);
+          if (format != EggTexture::F_unspecified) {
+            if (!_force_format) {
+              _format = format;
+            }
           } else {
-            // Maybe it's an image file request.
-            if (!parse_image_type_request(word, _color_type, _alpha_type)) {
-              return false;
+            // Maybe it's an alpha mode.
+            EggRenderMode::AlphaMode am = EggRenderMode::string_alpha_mode(word);
+            if (am != EggRenderMode::AM_unspecified) {
+              _alpha_mode = am;
+              
+            } else {
+              // Maybe it's an image file request.
+              if (!parse_image_type_request(word, _color_type, _alpha_type)) {
+                return false;
+              }
             }
           }
         }
@@ -384,6 +392,10 @@ match_texture(TextureImage *texture) const {
   if (_format != EggTexture::F_unspecified) {
     request._format = _format;
     request._force_format = _force_format;
+  }
+
+  if (_alpha_mode != EggRenderMode::AM_unspecified) {
+    request._alpha_mode = _alpha_mode;
   }
 
   bool got_cont = false;

@@ -361,7 +361,7 @@ check_solitary() {
       /*
       if (!(placement->get_omit_reason() == OR_none ||
             placement->get_omit_reason() == OR_solitary)) {
-        cerr << "texture " << *placement->get_texture() << " is omitted for "
+        nout << "texture " << *placement->get_texture() << " is omitted for "
              << placement->get_omit_reason() << "\n";
       }
       */

@@ -284,6 +284,17 @@ describe_input_file() {
             "formats cannot be placed together on the same palette "
             "images.\n\n");
 
+  show_text("  force-rgba", 10,
+            "This specifies a particular format, as above, that should be "
+            "in effect for this texture, but it will not be downgraded to "
+            "match the number of channels.  As above, any valid egg texture "
+            "format may be used, e.g. force-rgba12, force-rgb5, etc.\n\n");
+
+  show_text("  (alpha mode)", 10,
+            "A particular alpha mode may be applied to a texture by naming "
+            "the alpha mode.  This may be any valid egg alpha mode, e.g. "
+            "blend, binary, ms, or dual.\n\n");
+
   show_text("  (image type)", 10,
             "A texture may be converted to a particular image type, for "
             "instance jpg or rgb, by naming the type.  If present, this "
@@ -637,9 +648,9 @@ run() {
   }
 
   if (_all_textures) {
-    pal->process_all(_redo_all);
+    pal->process_all(_redo_all, state_filename);
   } else {
-    pal->process_command_line_eggs(_redo_all);
+    pal->process_command_line_eggs(_redo_all, state_filename);
   }
 
   if (_optimal) {

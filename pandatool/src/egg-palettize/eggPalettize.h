@@ -19,9 +19,9 @@
 #ifndef EGGPALETTIZE_H
 #define EGGPALETTIZE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
-#include <eggMultiFilter.h>
+#include "eggMultiFilter.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggPalettize

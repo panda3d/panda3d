@@ -46,7 +46,8 @@ TextureImage() {
   _is_surprise = true;
   _ever_read_image = false;
   _forced_grayscale = false;
-  _forced_unalpha = false;
+  _alpha_bits = 0;
+  _alpha_mode = EggRenderMode::AM_unspecified;
   _got_txa_file = false;
 }
 
@@ -256,12 +257,15 @@ pre_txa_file() {
   // Save our current properties, so we can note if they change.
   _pre_txa_properties = _properties;
 
-  // Update our properties from the egg files that reference this
-  // texture.  It's possible the .txa file will update them further.
+  // Get our properties from the actual image for this texture.  It's
+  // possible the .txa file will update them further.
   SourceTextureImage *source = get_preferred_source();
   if (source != (SourceTextureImage *)NULL) {
     _properties = source->get_properties();
   }
+
+  _pre_txa_alpha_mode = _alpha_mode;
+  _alpha_mode = EggRenderMode::AM_unspecified;
 
   _request.pre_txa_file();
   _is_surprise = true;
@@ -306,10 +310,11 @@ post_txa_file() {
     consider_grayscale();
   }
 
-  // Also consider downgrading from alpha to non-alpha.
+  // Also consider the alpha properties, and whether we should
+  // downgrade from alpha to non-alpha.
   if (_properties._got_num_channels &&
       (_properties._num_channels == 2 || _properties._num_channels == 4)) {
-    consider_unalpha();
+    consider_alpha();
   }
 
   // However, if we got an explicit request for channels, honor that.
@@ -350,6 +355,25 @@ post_txa_file() {
     if (!_properties.egg_properties_match(_pre_txa_properties)) {
       mark_eggs_stale();
     }
+  }
+
+  // The alpha mode isn't stored in the properties, because it doesn't
+  // affect which textures may be associated into a common palette.
+  if (_request._alpha_mode != EggRenderMode::AM_unspecified) {
+    _alpha_mode = _request._alpha_mode;
+  }
+
+  // On the other hand, if we don't use alpha, we shouldn't have an
+  // alpha mode.
+  if (_properties._got_num_channels &&
+      (_properties._num_channels == 1 || _properties._num_channels == 3)) {
+    _alpha_mode = EggRenderMode::AM_unspecified;
+  }
+
+  // If we've changed the alpha mode, we should also mark the eggs
+  // stale.
+  if (_pre_txa_alpha_mode != _alpha_mode) {
+    mark_eggs_stale();
   }
 }
 
@@ -449,6 +473,19 @@ is_surprise() const {
 bool TextureImage::
 is_used() const {
   return !_placement.empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureImage::get_alpha_mode
+//       Access: Public
+//  Description: Returns the alpha mode that should be used to render
+//               objects with this texture, as specified by the user
+//               or as determined from examining the texture's alpha
+//               channel.
+////////////////////////////////////////////////////////////////////
+EggRenderMode::AlphaMode TextureImage::
+get_alpha_mode() const {
+  return _alpha_mode;
 }
 
 
@@ -675,6 +712,26 @@ read_header() {
       source->read_header();
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureImage::is_newer_than
+//       Access: Public
+//  Description: Returns true if the source image is newer than the
+//               indicated file, false otherwise.  If the image has
+//               already been read, this always returns false.
+////////////////////////////////////////////////////////////////////
+bool TextureImage::
+is_newer_than(const Filename &reference_filename) {
+  if (!_read_source_image) {
+    SourceTextureImage *source = get_preferred_source();
+    if (source != (SourceTextureImage *)NULL) {
+      const Filename &source_filename = source->get_filename();
+      return source_filename.compare_timestamps(reference_filename) >= 0;
+    }
+  }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -960,46 +1017,76 @@ consider_grayscale() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureImage::consider_unalpha
+//     Function: TextureImage::consider_alpha
 //       Access: Private
 //  Description: Examines the actual contents of the image to
-//               determine if its alpha channel should be eliminated
-//               (e.g. it's completely white, and therefore
-//               pointless).
+//               determine what alpha properties it has.
 ////////////////////////////////////////////////////////////////////
 void TextureImage::
-consider_unalpha() {
+consider_alpha() {
   // As above, we don't bother doing this if we've already done this
   // in a previous session.
-  if (!_read_source_image && _ever_read_image) {
-    if (_forced_unalpha) {
-      _properties._num_channels--;
-    }
-    return;
-  }
 
-  const PNMImage &source = read_source_image();
-  if (!source.is_valid()) {
-    return;
-  }
+  // _alpha_bits == -1 indicates we have read an older textures.boo
+  // file that didn't define these bits.
+  if (_read_source_image || !_ever_read_image || _alpha_bits == -1) {
+    _alpha_bits = 0;
 
-  if (!source.has_alpha()) {
-    return;
-  }
-
-  for (int y = 0; y < source.get_y_size(); y++) {
-    for (int x = 0; x < source.get_x_size(); x++) {
-      if (source.get_alpha_val(x, y) != source.get_maxval()) {
-        // Here's a non-white pixel; the alpha channel is meaningful.
-        _forced_unalpha = false;
-        return;
+    const PNMImage &source = read_source_image();
+    if (source.is_valid() && source.has_alpha()) {
+      xelval maxval = source.get_maxval();
+      for (int y = 0; y < source.get_y_size(); y++) {
+        for (int x = 0; x < source.get_x_size(); x++) {
+          xelval alpha_val = source.get_alpha_val(x, y);
+          if (alpha_val == 0) {
+            _alpha_bits |= AB_zero;
+          } else if (alpha_val == maxval) {
+            _alpha_bits |= AB_one;
+          } else {
+            _alpha_bits |= AB_mid;
+          }
+          if (_alpha_bits == AB_all) {
+            // Once we've found a sample of everything, we can stop
+            // searching.
+            break;
+          }
+        }
       }
     }
   }
 
-  // All alpha pixels in the image were white!
-  _properties._num_channels--;
-  _forced_unalpha = true;
+  if (_alpha_bits != 0) {
+    if (_alpha_bits == AB_one) {
+      // All alpha pixels are white; drop the alpha channel.
+      nassertv(_properties._num_channels == 2 || _properties._num_channels == 4);
+      _properties._num_channels--;
+
+    } else if (_alpha_bits == AB_zero) {
+      // All alpha pixels are invisible; this is probably a mistake.
+      // Drop the alpha channel and complain.
+      nassertv(_properties._num_channels == 2 || _properties._num_channels == 4);
+      _properties._num_channels--;
+      if (_read_source_image) {
+        nout << *this << " has an all-zero alpha channel; dropping alpha.\n";
+      }
+      
+    } else if (_alpha_mode == EggRenderMode::AM_unspecified) {
+      // Consider fiddling with the alpha mode, if the user hasn't
+      // specified a particular alpha mode in the txa file.
+      if ((_alpha_bits & AB_mid) == 0) {
+        // No middle range bits: a binary alpha image.
+        _alpha_mode = EggRenderMode::AM_binary;
+        
+      } else if ((_alpha_bits & AB_one) != 0) {
+        // At least some opaque bits: a dual alpha image.
+        _alpha_mode = EggRenderMode::AM_dual;
+
+      } else {
+        // No opaque bits; just use regular alpha blending.
+        _alpha_mode = EggRenderMode::AM_blend;
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1133,7 +1220,8 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   datagram.add_bool(_is_surprise);
   datagram.add_bool(_ever_read_image);
   datagram.add_bool(_forced_grayscale);
-  datagram.add_bool(_forced_unalpha);
+  datagram.add_uint8(_alpha_bits);
+  datagram.add_int16((int)_alpha_mode);
 
   // We don't write out _explicitly_assigned_groups; this is re-read
   // from the .txa file each time.
@@ -1240,7 +1328,14 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _is_surprise = scan.get_bool();
   _ever_read_image = scan.get_bool();
   _forced_grayscale = scan.get_bool();
-  _forced_unalpha = scan.get_bool();
+  if (pal->_read_pi_version >= 6) {
+    _alpha_bits = scan.get_uint8();
+    _alpha_mode = (EggRenderMode::AlphaMode)scan.get_int16();
+  } else {
+    scan.get_uint8();
+    _alpha_bits = -1;
+    _alpha_mode = EggRenderMode::AM_unspecified;
+  }
 
   _actual_assigned_groups.fillin(scan, manager);
 

@@ -19,11 +19,12 @@
 #ifndef TEXTUREREQUEST_H
 #define TEXTUREREQUEST_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "textureProperties.h"
 
-#include <eggTexture.h>
+#include "eggTexture.h"
+#include "eggRenderMode.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextureRequest
@@ -47,6 +48,7 @@ public:
   bool _force_format;
   EggTexture::FilterType _minfilter;
   EggTexture::FilterType _magfilter;
+  EggRenderMode::AlphaMode _alpha_mode;
   bool _omit;
   int _margin;
   double _coverage_threshold;

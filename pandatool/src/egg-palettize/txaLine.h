@@ -19,12 +19,13 @@
 #ifndef TXALINE_H
 #define TXALINE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "paletteGroups.h"
 
-#include <globPattern.h>
-#include <eggTexture.h>
+#include "globPattern.h"
+#include "eggTexture.h"
+#include "eggRenderMode.h"
 
 #include "pvector.h"
 
@@ -69,6 +70,7 @@ private:
   int _num_channels;
   EggTexture::Format _format;
   bool _force_format;
+  EggRenderMode::AlphaMode _alpha_mode;
 
   bool _got_margin;
   int _margin;

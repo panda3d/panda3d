@@ -297,6 +297,16 @@ update_egg() {
 
   nassertv(_placement != (TexturePlacement *)NULL);
 
+  // Make sure the alpha mode is set according to what the texture
+  // image wants.
+  TextureImage *texture = get_texture();
+  if (texture != (TextureImage *)NULL) {
+    EggRenderMode::AlphaMode am = texture->get_alpha_mode();
+    if (am != EggRenderMode::AM_unspecified) {
+      _egg_tex->set_alpha_mode(am);
+    }
+  }
+
   // We check for an OmitReason of OR_none, rather than asking
   // is_placed(), because in this case we don't want to consider an
   // OR_solitary texture as having been placed.
