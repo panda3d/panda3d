@@ -35,6 +35,20 @@ get_cached_net_transition(NodeRelation *arc, Node *&root, UpdateSeq now,
     root = top_subtree;
     net = cur_cache;
 
+#ifndef NDEBUG
+    if (wrt_cat.is_debug()) {
+      wrt_cat.debug()
+	<< "get_cached_net_transition(" << *arc->get_child() << ", ";
+      if (root == (Node *)NULL) {
+	wrt_cat.debug(false) << "(top)";
+      } else {
+	wrt_cat.debug(false) << *root;
+      }
+      wrt_cat.debug(false)
+	<< ") is current as of " << now << "\n";
+    }
+#endif
+
   } else {
     // This arc's cache hasn't recently been verified, and we need to
     // verify it now.  This will entail at least walking up the scene
@@ -78,6 +92,20 @@ get_cached_net_transition(NodeRelation *arc, Node *&root, UpdateSeq now,
       net.cached_compose(cur_cache, cur_value, now);
       net.store_to_cache(arc, root);
     }
+
+#ifndef NDEBUG
+    if (wrt_cat.is_debug()) {
+      wrt_cat.debug()
+	<< "get_cached_net_transition(" << *arc->get_child() << ", ";
+      if (root == (Node *)NULL) {
+	wrt_cat.debug(false) << "(top)";
+      } else {
+	wrt_cat.debug(false) << *root;
+      }
+      wrt_cat.debug(false)
+	<< ") is recomputed as of " << now << "\n";
+    }
+#endif
   }
 }    
 
@@ -104,6 +132,13 @@ get_cached_net_transition(const Node *node,
   if (node == NULL) {
     // the NULL node is by convention equivalent to the root.
     result.make_identity();
+
+#ifndef NDEBUG
+    if (wrt_cat.is_debug()) {
+      wrt_cat.debug()
+	<< "get_cached_net_transition((top))\n";
+    }
+#endif
     return;
   }
 
@@ -113,6 +148,13 @@ get_cached_net_transition(const Node *node,
   if (uri == node->_parents.end()) {
     // This node has no parents.  Stop here.
     result.make_identity();
+
+#ifndef NDEBUG
+    if (wrt_cat.is_debug()) {
+      wrt_cat.debug()
+	<< "get_cached_net_transition(" << *node << ") has no parents.\n";
+    }
+#endif
     return;
   }
 
@@ -120,6 +162,13 @@ get_cached_net_transition(const Node *node,
   if (urp.empty()) {
     // Again, this node has no parents.
     result.make_identity();
+
+#ifndef NDEBUG
+    if (wrt_cat.is_debug()) {
+      wrt_cat.debug()
+	<< "get_cached_net_transition(" << *node << ") has no parents.\n";
+    }
+#endif
     return;
   }
 
@@ -146,19 +195,19 @@ get_cached_net_transition(const Node *node,
 #ifndef NDEBUG
       // No, it wasn't mentioned.  Issue a warning and use the first
       // one.
-      if (graph_cat.is_warning()) {
-	graph_cat.warning()
+      if (wrt_cat.is_warning()) {
+	wrt_cat.warning()
 	  << *node << " has " << urp.size() << " parents; wrt() ambiguous.\n"
 	  << "  parents are: ";
 	UpRelationPointers::const_iterator urpi;
 	urpi = urp.begin();
-	graph_cat.warning(false) << *(*urpi)->get_parent();
+	wrt_cat.warning(false) << *(*urpi)->get_parent();
 	urpi++;
 	while (urpi != urp.end()) {  
-	  graph_cat.warning(false) << ", " << *(*urpi)->get_parent();
+	  wrt_cat.warning(false) << ", " << *(*urpi)->get_parent();
 	  urpi++;
 	}
-	graph_cat.warning(false) << "\n";
+	wrt_cat.warning(false) << "\n";
       }
       if (ambiguous_wrt_abort) {
 	abort();
@@ -211,6 +260,10 @@ get_uncached_net_transition(const Node *node,
 			    TypeHandle graph_type) {
   if (node == NULL) {
     // the NULL node is by convention equivalent to the root.
+    if (wrt_cat.is_spam()) {
+      wrt_cat.spam()
+	<< "get_uncached_net_transition(top)" << *node;
+    }
     result.make_identity();
     return;
   }
@@ -220,6 +273,10 @@ get_uncached_net_transition(const Node *node,
 
   if (uri == node->_parents.end()) {
     // This node has no parents.  Stop here.
+    if (wrt_cat.is_spam()) {
+      wrt_cat.spam()
+	<< "get_uncached_net_transition(" << *node << ") has no parents.\n";
+    }
     result.make_identity();
     return;
   }
@@ -227,6 +284,10 @@ get_uncached_net_transition(const Node *node,
   const UpRelationPointers &urp = (*uri).second;
   if (urp.empty()) {
     // Again, this node has no parents.
+    if (wrt_cat.is_spam()) {
+      wrt_cat.spam()
+	<< "get_uncached_net_transition(" << *node << ") has no parents.\n";
+    }
     result.make_identity();
     return;
   }
@@ -254,19 +315,19 @@ get_uncached_net_transition(const Node *node,
 #ifndef NDEBUG
       // No, it wasn't mentioned.  Issue a warning and use the first
       // one. 
-      if (graph_cat.is_warning()) {
-	graph_cat.warning()
+      if (wrt_cat.is_warning()) {
+	wrt_cat.warning()
 	  << *node << " has " << urp.size() << " parents; wrt() ambiguous.\n"
 	  << "  parents are:";
 	UpRelationPointers::const_iterator urpi;
 	urpi = urp.begin();
-	graph_cat.warning(false) << *(*urpi)->get_parent();
+	wrt_cat.warning(false) << *(*urpi)->get_parent();
 	urpi++;
 	while (urpi != urp.end()) {  
-	  graph_cat.warning(false) << ", " << *(*urpi)->get_parent();
+	  wrt_cat.warning(false) << ", " << *(*urpi)->get_parent();
 	  urpi++;
 	}
-	graph_cat.warning(false) << "\n";
+	wrt_cat.warning(false) << "\n";
       }
       if (ambiguous_wrt_abort) {
 	abort();
@@ -285,6 +346,19 @@ get_uncached_net_transition(const Node *node,
   next.extract_from(parent_arc);
 
   result.compose_in_place(next);
+
+  if (wrt_cat.is_spam()) {
+    wrt_cat.spam()
+      << "get_uncached_net_transition(" << *node;
+    InputIterator ri;
+    for (ri = arc_list_begin; ri != arc_list_end; ++ri) {
+      wrt_cat.spam(false) << ", " << *(*ri);
+    }
+    
+    wrt_cat.spam(false)
+      << "), " << urp.size() << " parents, is:\n";
+    result.write(wrt_cat.spam(false), 2);
+  }
 }
 #endif
 
@@ -307,10 +381,29 @@ cached_wrt_base(const Node *from,
 
   TransitionWrapper net_from_trans = TransitionWrapper::init_from(result);
 
+#ifndef NDEBUG
+  if (wrt_cat.is_debug()) {
+    wrt_cat.debug()
+      << "Computing wrt(";
+    if (from == (Node *)NULL) {
+      wrt_cat.debug(false) << "(top), ";
+    } else {
+      wrt_cat.debug(false) << *from << ", ";
+    }
+    if (to == (Node *)NULL) {
+      wrt_cat.debug(false) << "(top)";
+    } else {
+      wrt_cat.debug(false) << *to;
+    }
+    wrt_cat.debug(false)
+      << "), as of " << now << "\n";
+  }
+#endif
+
   get_cached_net_transition(from, from_arcs_begin, from_arcs_end, now,
-		     net_from_trans, graph_type);
+			    net_from_trans, graph_type);
   get_cached_net_transition(to, to_arcs_begin, to_arcs_end, now,
-		     result, graph_type);
+			    result, graph_type);
   
 #ifndef NDEBUG
   if (paranoid_wrt) {
@@ -323,26 +416,26 @@ cached_wrt_base(const Node *from,
     get_uncached_net_transition(from, from_arcs_begin, from_arcs_end,
 				check_from_trans, graph_type);
     if (check_from_trans.compare_to(net_from_trans) != 0) {
-      graph_cat.warning()
+      wrt_cat.warning()
 	<< "WRT cache from " << *from << " is invalid!\n"
 	<< "  cached value is:\n";
-      net_from_trans.write(graph_cat.warning(false), 4);
-      graph_cat.warning(false)
+      net_from_trans.write(wrt_cat.warning(false), 4);
+      wrt_cat.warning(false)
 	<< "  should be:\n";
-      check_from_trans.write(graph_cat.warning(false), 4);
+      check_from_trans.write(wrt_cat.warning(false), 4);
       net_from_trans = check_from_trans;
     }
     
     get_uncached_net_transition(to, to_arcs_begin, to_arcs_end,
 				check_to_trans, graph_type);
     if (check_to_trans.compare_to(result) != 0) {
-      graph_cat.warning()
+      wrt_cat.warning()
 	<< "WRT cache to " << *to << " is invalid!\n"
 	<< "  cached value is:\n";
-      result.write(graph_cat.warning(false), 4);
-      graph_cat.warning(false)
+      result.write(wrt_cat.warning(false), 4);
+      wrt_cat.warning(false)
 	<< "  should be:\n";
-      check_to_trans.write(graph_cat.warning(false), 4);
+      check_to_trans.write(wrt_cat.warning(false), 4);
       result = check_to_trans;
     }
   }
@@ -510,27 +603,58 @@ get_uncached_wrt_subtree(Node *node, Node *to, TransitionWrapper &result,
 
   if (uri == node->_parents.end()) {
     // This node has no parents.  Stop here.
+    if (wrt_cat.is_spam()) {
+      wrt_cat.spam()
+	<< "get_uncached_wrt_subtree(" << *node << ") has no parents.\n";
+    }
     result.make_identity();
-    return to;
+    return (Node *)NULL;
   }
 
   const UpRelationPointers &urp = (*uri).second;
   if (urp.empty()) {
     // Again, no parents.  Stop here.
+    if (wrt_cat.is_spam()) {
+      wrt_cat.spam()
+	<< "get_uncached_wrt_subtree(" << *node << ") has no parents.\n";
+    }
     result.make_identity();
-    return to;
-  }
-
-  if (node == to) {
-    // We've reached our stopping point.  Stop here.
-    result.make_identity();
-    return node;
+    return (Node *)NULL;
   }
 
   if (urp.size() != 1) {
     // There are multiple parents, so stop here.
+    if (wrt_cat.is_spam()) {
+      wrt_cat.spam()
+	<< "get_uncached_wrt_subtree(" << *node << ") has " << urp.size()
+	<< " parents.\n";
+    }
     result.make_identity();
     return node;
+  }
+
+  if (node == to) {
+    // We've reached our stopping point.  Stop here.
+    if (wrt_cat.is_spam()) {
+      wrt_cat.spam()
+	<< "get_uncached_wrt_subtree(" << *node << ") is at stopping point.\n";
+    }
+    result.make_identity();
+
+    // Actually, we do need to keep walking up till we find the actual
+    // top of the instanced subtree, so we can return the correct
+    // pointer.
+    int num_parents = node->get_num_parents(graph_type);
+    while (num_parents == 1) {
+      node = node->get_parent(graph_type, 0)->get_parent();
+      num_parents = node->get_num_parents(graph_type);
+    }
+
+    if (num_parents == 0) {
+      return (Node *)NULL;
+    } else {
+      return node;
+    }
   }
 
   const NodeRelation *parent_arc = *(urp.begin());
@@ -543,6 +667,19 @@ get_uncached_wrt_subtree(Node *node, Node *to, TransitionWrapper &result,
   next.extract_from(parent_arc);
 
   result.compose_in_place(next);
+
+  if (wrt_cat.is_spam()) {
+    wrt_cat.spam()
+      << "get_uncached_wrt_subtree(" << *node
+      << "), top at ";
+    if (stop == (Node *)NULL) {
+      wrt_cat.spam(false) << "(top)";
+    } else {
+      wrt_cat.spam(false) << *stop;
+    }
+    wrt_cat.spam(false) << " is:\n";
+    result.write(wrt_cat.spam(false), 2);
+  }
 
   return stop;
 }
@@ -559,6 +696,19 @@ uncached_wrt_subtree(NodeRelation *arc, Node *to, TransitionWrapper &result,
   next.extract_from(arc);
 
   result.compose_in_place(next);
+
+  if (wrt_cat.is_spam()) {
+    wrt_cat.spam()
+      << "uncached_wrt_subtree(" << *arc
+      << "), top at ";
+    if (stop == (Node *)NULL) {
+      wrt_cat.spam(false) << "(top)";
+    } else {
+      wrt_cat.spam(false) << *stop;
+    }
+    wrt_cat.spam(false) << " is:\n";
+    result.write(wrt_cat.spam(false), 2);
+  }
 
   return stop;
 }
@@ -580,6 +730,20 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, TransitionWrapper &result,
     // If the top of the subtree is the node we asked to wrt to,
     // excellent!  Stop here.
 
+#ifndef NDEBUG
+    if (wrt_cat.is_spam()) {
+      wrt_cat.spam()
+	<< "cached_wrt_subtree(" << *arc << ", ";
+      if (to == (Node *)NULL) {
+	wrt_cat.spam(false) << "(top)";
+      } else {
+	wrt_cat.spam(false) << *to;
+      }
+      wrt_cat.spam(false) << ") stops at top, result is:\n";
+      result.write(wrt_cat.spam(false), 2);
+    }
+#endif
+
   } else {
 
     // Otherwise, it must be the case that the node we want to wrt to is
@@ -591,6 +755,20 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, TransitionWrapper &result,
     
     // Save the result from the first pass.
     TransitionWrapper net_from_trans = result;
+
+#ifndef NDEBUG
+    if (wrt_cat.is_spam()) {
+      wrt_cat.spam()
+	<< "cached_wrt_subtree(" << *arc << ", " << *to << ") stops at ";
+      if (top_subtree == (Node *)NULL) {
+	wrt_cat.spam(false) << "(top)";
+      } else {
+	wrt_cat.spam(false) << *top_subtree;
+      }
+      wrt_cat.spam() << ", first result is:\n";
+      result.write(wrt_cat.spam(false), 2);
+    }
+#endif
     
     // Now determine the net transition to the top of the subtree from
     // this arc.  It had better be the same subtree!
@@ -600,6 +778,22 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, TransitionWrapper &result,
     
     // And now compute the actual wrt.
     result.invert_compose_in_place(net_from_trans);
+
+#ifndef NDEBUG
+    if (wrt_cat.is_spam()) {
+      wrt_cat.spam()
+	<< "cached_wrt_subtree(" << *arc << ", " << *to << ") stops at ";
+      if (top_subtree == (Node *)NULL) {
+	wrt_cat.spam(false) << "(top)";
+      } else {
+	wrt_cat.spam(false) << *top_subtree;
+      }
+      wrt_cat.spam() << ", second result is:\n";
+      net_from_trans.write(wrt_cat.spam(false), 2);
+      wrt_cat.spam() << ", final result is:\n";
+      result.write(wrt_cat.spam(false), 2);
+    }
+#endif
   }
 
 #ifndef NDEBUG
@@ -611,46 +805,46 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, TransitionWrapper &result,
       uncached_wrt_subtree(arc, to, check_trans, graph_type);
 
     if (top_subtree_3 != top_subtree) {
-      graph_cat.warning()
+      wrt_cat.warning()
 	<< "WRT subtree cache from " << *arc->get_child() << " to ";
       if (to == (Node *)NULL) {
-	graph_cat.warning(false) << "(top)";
+	wrt_cat.warning(false) << "(top)";
       } else {
-	graph_cat.warning(false) << *to;
+	wrt_cat.warning(false) << *to;
       }
-      graph_cat.warning(false)
+      wrt_cat.warning(false)
 	<< " computes incorrect top_subtree!\n"
 	<< "  computed ";
       if (top_subtree == (Node *)NULL) {
-	graph_cat.warning(false) << "(top)\n";
+	wrt_cat.warning(false) << "(top)\n";
       } else {
-	graph_cat.warning(false) << *top_subtree << "\n";
+	wrt_cat.warning(false) << *top_subtree << "\n";
       }
-      graph_cat.warning(false)
+      wrt_cat.warning(false)
 	<< "  should be ";
       if (top_subtree_3 == (Node *)NULL) {
-	graph_cat.warning(false) << "(top)\n";
+	wrt_cat.warning(false) << "(top)\n";
       } else {
-	graph_cat.warning(false) << *top_subtree_3 << "\n";
+	wrt_cat.warning(false) << *top_subtree_3 << "\n";
       }
       top_subtree = top_subtree_3;
     }
 
     if (check_trans.compare_to(result) != 0) {
-      graph_cat.warning()
+      wrt_cat.warning()
 	<< "WRT subtree cache from " << *arc->get_child() << " to ";
       if (to == (Node *)NULL) {
-	graph_cat.warning(false) << "(top)";
+	wrt_cat.warning(false) << "(top)";
       } else {
-	graph_cat.warning(false) << *to;
+	wrt_cat.warning(false) << *to;
       }
-      graph_cat.warning(false)
+      wrt_cat.warning(false)
 	<< " is invalid!\n"
 	<< "  cached value is:\n";
-      result.write(graph_cat.warning(false), 4);
-      graph_cat.warning(false)
+      result.write(wrt_cat.warning(false), 4);
+      wrt_cat.warning(false)
 	<< "  should be:\n";
-      check_trans.write(graph_cat.warning(false), 4);
+      check_trans.write(wrt_cat.warning(false), 4);
       result = check_trans;
     }
   }

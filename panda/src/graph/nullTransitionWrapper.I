@@ -169,7 +169,9 @@ set_computed_verified(UpdateSeq) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NullTransitionWrapper::cached_compose
 //       Access: Public
-//  Description:
+//  Description: Computes the composition of this wrapper's value with
+//               that indicated by value, using the cache as a helper,
+//               and stores the result in this wrapper.
 ////////////////////////////////////////////////////////////////////
 INLINE void NullTransitionWrapper::
 cached_compose(const NullTransitionWrapper &, 

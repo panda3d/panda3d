@@ -274,7 +274,8 @@ invert_compose(const NodeTransitionCacheEntry &a,
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionCacheEntry::cached_compose
 //       Access: Public, Static
-//  Description: 
+//  Description: Sets this cache entry to the result of compose(a, b),
+//               as computed using the cache value as a hint.
 ////////////////////////////////////////////////////////////////////
 INLINE NodeTransitionCacheEntry NodeTransitionCacheEntry::
 cached_compose(const NodeTransitionCacheEntry &a, 
@@ -282,8 +283,8 @@ cached_compose(const NodeTransitionCacheEntry &a,
 	       const NodeTransitionCacheEntry &b,
 	       UpdateSeq now) {
 #ifndef NDEBUG
-  if (wrt_cat.is_debug()) {
-    wrt_cat.debug()
+  if (wrt_cat.is_spam()) {
+    wrt_cat.spam()
       << "Composing:\n"
       << "     a) " << a << " = " << a._computed << "\n"
       << " cache) " << cache << " = " << cache._computed << "\n"
@@ -291,22 +292,31 @@ cached_compose(const NodeTransitionCacheEntry &a,
   }
 #endif
   if (cache._computed == UpdateSeq::initial() ||
+      (a._computed == UpdateSeq::initial() && 
+       b._computed == UpdateSeq::initial()) ||
       cache._computed < a._computed) {
+
+    // If the cache value has not yet been computed, or if the values
+    // in a and b are both empty, or if the cache is older than the
+    // source value (a), discard the cache and compute the composition
+    // directly.
     NodeTransitionCacheEntry result = compose(a, b);
     result.set_computed_verified(now);
 #ifndef NDEBUG
-    if (wrt_cat.is_debug()) {
-      wrt_cat.debug() << "computed result is " << result << "\n";
+    if (wrt_cat.is_spam()) {
+      wrt_cat.spam() << "computed result is " << result << "\n";
     }
 #endif
     return result;
 
   } else {
+    // Otherwise, the cache value is recent and we can simply use it
+    // directly.
     NodeTransitionCacheEntry result = cache;
     result._verified = now;
 #ifndef NDEBUG
-    if (wrt_cat.is_debug()) {
-      wrt_cat.debug() << "cached result is " << result << "\n";
+    if (wrt_cat.is_spam()) {
+      wrt_cat.spam() << "cached result is " << result << "\n";
     }
 #endif
     return result;

@@ -340,7 +340,9 @@ set_computed_verified(UpdateSeq now) {
 ////////////////////////////////////////////////////////////////////
 //     Function: AllTransitionsWrapper::cached_compose
 //       Access: Public
-//  Description:
+//  Description: Computes the composition of this wrapper's value with
+//               that indicated by value, using the cache as a helper,
+//               and stores the result in this wrapper.
 ////////////////////////////////////////////////////////////////////
 INLINE void AllTransitionsWrapper::
 cached_compose(const AllTransitionsWrapper &cache, 

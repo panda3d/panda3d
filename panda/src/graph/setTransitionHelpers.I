@@ -320,8 +320,8 @@ tmap_invert_compose(InputIterator1 first1, InputIterator1 last1,
 #ifndef NDEBUG
 #define OUTPUT_CC_ELEM(desc, type) \
 { \
-  if (wrt_cat.is_debug()) { \
-    wrt_cat.debug() << "in " << desc << ": " << (type) << "\n"; \
+  if (wrt_cat.is_spam()) { \
+    wrt_cat.spam() << "in " << desc << ": " << (type) << "\n"; \
   } \
 }
 #else
@@ -332,7 +332,7 @@ tmap_invert_compose(InputIterator1 first1, InputIterator1 last1,
 //     Function: tmap_cached_compose_not_1
 //  Description: One of several support functions for
 //               tmap_cached_compose(), below, this handles the case
-//               of tmap_cached_compose() for an NodeTransition that
+//               of tmap_cached_compose() for a NodeTransition that
 //               is already known not to be present in list 1, but may
 //               be in one or both of lists 2 and 3.
 ////////////////////////////////////////////////////////////////////
