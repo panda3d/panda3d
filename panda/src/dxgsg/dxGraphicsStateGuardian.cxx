@@ -3398,16 +3398,15 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
         _perComp = 0x0;
 
         bool bIsTriList=(trilisttype==D3DPT_TRIANGLESTRIP);
-        bool bPerPrimColor=false;
+        bool bPerPrimColor=(ColorBinding == G_PER_PRIM);
         bool bPerPrimNormal;
-        bool bUseTexCoordOnlyLoop = (((ColorBinding == G_OVERALL) || (ColorBinding == G_PER_PRIM)) &&
+        bool bUseTexCoordOnlyLoop = (((ColorBinding == G_OVERALL) || bPerPrimColor) &&
                                      (NormalBinding == G_OFF) &&
                                      (TexCoordBinding != G_OFF));
 
         if(bUseTexCoordOnlyLoop) {
-           if(ColorBinding == G_PER_PRIM) {
-                _perPrim |= PER_COLOR;
-                 bPerPrimColor=true;
+           if(bPerPrimColor) {
+              _perPrim = PER_COLOR;
            }
         } else {
             switch (NormalBinding) {
