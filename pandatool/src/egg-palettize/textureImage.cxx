@@ -520,7 +520,7 @@ get_preferred_source() {
   SourceTextureImage *best = (SourceTextureImage *)NULL;
   int best_size = 0;
 
-  for (si = _sources.begin(); si != _sources.end() && !any_referenced; ++si) {
+  for (si = _sources.begin(); si != _sources.end(); ++si) {
     SourceTextureImage *source = (*si).second;
 
     if (source->get_egg_count() > 0 || !any_referenced) {
@@ -550,8 +550,20 @@ get_preferred_source() {
   if (best == (SourceTextureImage *)NULL && !_sources.empty()) {
     // If we didn't pick any that pass, it must be that all of them
     // are unreadable.  In this case, it really doesn't matter which
-    // one we pick.
-    best = (*_sources.begin()).second;
+    // one we pick, but we should at least pick one that has an egg
+    // reference, if any of them do.
+    if (any_referenced) {
+      for (si = _sources.begin(); 
+           si != _sources.end() && best == (SourceTextureImage *)NULL;
+           ++si) {
+        SourceTextureImage *source = (*si).second;
+        if (source->get_egg_count() > 0) {
+          best = source;
+        }
+      }
+    } else {
+      best = (*_sources.begin()).second;
+    }
   }
 
   _preferred_source = best;
