@@ -247,7 +247,7 @@ count_bytes(ImageFile *image, int x_size, int y_size) {
   int bytes = pixels * bpp;
 
   // If we're mipmapping, it's worth 1/3 more bytes.
-  switch (image->get_properties()._magfilter) {
+  switch (image->get_properties()._minfilter) {
   case EggTexture::FT_nearest_mipmap_nearest:
   case EggTexture::FT_linear_mipmap_nearest:
   case EggTexture::FT_nearest_mipmap_linear:
