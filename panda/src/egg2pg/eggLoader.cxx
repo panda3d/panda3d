@@ -2275,7 +2275,7 @@ create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
       if (cspoly->is_valid()) {
         apply_collision_flags(cspoly, flags);
         cnode->add_solid(cspoly);
-      }
+      }        
     }
   }
 }

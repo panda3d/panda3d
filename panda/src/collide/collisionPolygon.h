@@ -55,6 +55,7 @@ public:
   static bool verify_points(const LPoint3f *begin, const LPoint3f *end);
 
   bool is_valid() const;
+  bool is_concave() const;
 
   virtual void xform(const LMatrix4f &mat);
   virtual LPoint3f get_collision_origin() const;

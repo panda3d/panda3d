@@ -36,6 +36,7 @@
 #include "geomPolygon.h"
 #include "transformState.h"
 #include "clipPlaneAttrib.h"
+#include "nearly_zero.h"
 
 #include <algorithm>
 
@@ -139,13 +140,25 @@ verify_points(const LPoint3f *begin, const LPoint3f *end) {
 //     Function: CollisionPolygon::is_valid
 //       Access: Public
 //  Description: Returns true if the CollisionPolygon is valid
-//               (that is, it has at least three vertices, and is not
-//               concave), or false otherwise.
+//               (that is, it has at least three vertices), or false
+//               otherwise.
 ////////////////////////////////////////////////////////////////////
 bool CollisionPolygon::
 is_valid() const {
+  return (_points.size() >= 3);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::is_concave
+//       Access: Public
+//  Description: Returns true if the CollisionPolygon appears to be
+//               concave, or false if it is safely convex.
+////////////////////////////////////////////////////////////////////
+bool CollisionPolygon::
+is_concave() const {
   if (_points.size() < 3) {
-    return false;
+    // It's not even a valid polygon.
+    return true;
   }
 
   LPoint2f p0 = _points[0];
@@ -171,12 +184,12 @@ is_valid() const {
 
     if (csum ^ asum) {
       // Oops, the polygon is concave.
-      return false;
+      return true;
     }
   }
 
   // The polygon is safely convex.
-  return true;
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -907,7 +920,7 @@ setup_points(const LPoint3f *begin, const LPoint3f *end) {
 #ifndef NDEBUG
   /*
   // Now make sure the points define a convex polygon.
-  if (!is_valid()) {
+  if (is_concave()) {
     collide_cat.error() << "Invalid concave CollisionPolygon defined:\n";
     const LPoint3f *pi;
     for (pi = begin; pi != end; ++pi) {
