@@ -2,12 +2,13 @@
 from PandaModules import *
 import Task
 
-# These may be reassigned before the fade or iris transitions are
-# actually invoked to change the models that will be used.
-IrisModelName = "phase_3/models/misc/iris"
-FadeModelName = "phase_3/models/misc/fade"
-
 class Transitions:
+
+    # These may be reassigned before the fade or iris transitions are
+    # actually invoked to change the models that will be used.
+    IrisModelName = "models/misc/iris"
+    FadeModelName = "models/misc/fade"
+
     def __init__(self, loader):
         self.iris = None
         self.fade = None
@@ -238,7 +239,7 @@ class Transitions:
 
     def loadIris(self):
         if self.iris == None:
-            self.iris = loader.loadModel(IrisModelName)
+            self.iris = loader.loadModel(self.IrisModelName)
             self.iris.setPos(0,0,0)
 
     def loadFade(self):
@@ -249,7 +250,7 @@ class Transitions:
             # simply loading the polygon model and using it directly,
             # so that it will also obscure mouse events for objects
             # positioned behind it.
-            fadeModel = loader.loadModel(FadeModelName)
+            fadeModel = loader.loadModel(self.FadeModelName)
 
             self.fade = DirectFrame(
                 parent = hidden,
