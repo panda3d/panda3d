@@ -18,13 +18,14 @@
 
 #include "eventQueue.h"
 #include "config_event.h"
+#include "mutexHolder.h"
 
 EventQueue *EventQueue::_global_event_queue = NULL;
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventQueue::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 EventQueue::
@@ -33,7 +34,7 @@ EventQueue() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventQueue::Destructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 EventQueue::
@@ -42,74 +43,76 @@ EventQueue::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventQueue::queue_event
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void EventQueue::
 queue_event(CPT_Event event) {
   nassertv(!event.is_null());
-  #ifdef OLD_HAVE_IPC
-  mutex_lock lock(_lock);
-  #endif
-  if (_queue.full()) {
-    event_cat.error()
-      << "Ignoring event " << *event << "; event queue full.\n";
-  } else {
-    _queue.push_back(event);
-    if (event_cat.is_spam() || event_cat.is_debug()) {
-      if (event->get_name() == "NewFrame") {
-        // Don't bother us with this particularly spammy event.
-        event_cat.spam()
-          << "Throwing event " << *event << "\n";
-      } else {
-        event_cat.debug()
-          << "Throwing event " << *event << "\n";
-      }
+  MutexHolder holder(_lock);
+
+  _queue.push_back(event);
+  if (event_cat.is_spam() || event_cat.is_debug()) {
+    if (event->get_name() == "NewFrame") {
+      // Don't bother us with this particularly spammy event.
+      event_cat.spam()
+        << "Throwing event " << *event << "\n";
+    } else {
+      event_cat.debug()
+        << "Throwing event " << *event << "\n";
     }
   }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventQueue::clear
-//       Access: Public
+//       Access: Published
 //  Description: Empties all events on the queue, throwing them on the
 //               floor.
 ////////////////////////////////////////////////////////////////////
 void EventQueue::
 clear() {
-  while (!_queue.empty()) {
-    _queue.pop_front();
-  }
+  MutexHolder holder(_lock);
+
+  _queue.clear();
 }
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventQueue::is_queue_empty
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool EventQueue::
 is_queue_empty() const {
+  MutexHolder holder(_lock);
   return _queue.empty();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EventQueue::is_queue_full
+//       Access: Published
+//  Description: This function is deprecated--the queue is never full
+//               these days.
+////////////////////////////////////////////////////////////////////
 bool EventQueue::
 is_queue_full() const {
-  return _queue.full();
+  return false;
 }
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventQueue::dequeue_event
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 CPT_Event EventQueue::
 dequeue_event() {
-  // We need no mutex protection here, as long as there is only one
-  // thread extracting events.  The magic of circular buffers.
+  MutexHolder holder(_lock);
+
   CPT_Event result = _queue.front();
   _queue.pop_front();
+
   nassertr(!result.is_null(), result);
   return result;
 }

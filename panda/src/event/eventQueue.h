@@ -23,12 +23,8 @@
 
 #include "event.h"
 #include "pt_Event.h"
-
-#include "circBuffer.h"
-
-#ifdef OLD_HAVE_IPC
-#include <ipc_mutex.h>
-#endif
+#include "pmutex.h"
+#include "pdeque.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EventQueue
@@ -38,9 +34,6 @@
 //               processed.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA EventQueue {
-public:
-  enum { max_events = 500 };
-
 PUBLISHED:
   EventQueue();
   ~EventQueue();
@@ -54,15 +47,14 @@ PUBLISHED:
 
   INLINE static EventQueue *get_global_event_queue();
 
-protected:
-  CircBuffer<CPT_Event, max_events> _queue;
-
+private:
   static void make_global_event_queue();
   static EventQueue *_global_event_queue;
 
-#ifdef OLD_HAVE_IPC
-  mutex _lock;
-#endif
+  typedef pdeque<CPT_Event> Events;
+  Events _queue;
+
+  Mutex _lock;
 };
 
 #include "eventQueue.I"
