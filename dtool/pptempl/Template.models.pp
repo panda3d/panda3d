@@ -34,7 +34,6 @@
 
 #define pal_egg_dir pal_egg
 #define bam_dir bams
-#define soft_maps_dir soft_maps
 #defer phase_prefix $[if $[PHASE],phase_$[PHASE]/]
 
 #defer install_model_dir $[install_dir]/$[phase_prefix]$[INSTALL_TO]
@@ -42,18 +41,27 @@
 
 #defer source_prefix $[SOURCE_DIR:%=%/]
 
-#define build_models \
-   $[SOURCES(flt_egg):%.flt=%.egg] \
-   $[patsubst %.lwo %.LWO,%.egg,$[SOURCES(lwo_egg)]] \
-   $[patsubst %.ma %.mb,%.egg,$[SOURCES(maya_egg)]] \
-   $[forscopes soft_char_egg,$[POLY_MODEL:%=$[EGG_PREFIX]%.egg] $[NURBS_MODEL:%=$[EGG_PREFIX]%.egg]] \
-   $[forscopes maya_char_egg,$[POLY_MODEL:%=$[EGG_PREFIX]%.egg] $[NURBS_MODEL:%=$[EGG_PREFIX]%.egg]]
+#define build_flt_eggs \
+   $[SOURCES(flt_egg):%.flt=%.egg]
 
-#define build_anims \
-   $[forscopes soft_char_egg,$[ANIMS:%=$[EGG_PREFIX]%$[CHAN_SUFFIX].egg]] \
+#define build_lwo_eggs \
+   $[patsubst %.lwo %.LWO,%.egg,$[SOURCES(lwo_egg)]]
+
+#define build_maya_eggs \
+   $[patsubst %.ma %.mb,%.egg,$[SOURCES(maya_egg)]] \
+   $[forscopes maya_char_egg,$[POLY_MODEL:%=$[EGG_PREFIX]%.egg] $[NURBS_MODEL:%=$[EGG_PREFIX]%.egg]] \
    $[forscopes maya_char_egg,$[ANIMS:%=$[EGG_PREFIX]%$[CHAN_SUFFIX].egg]]
 
-#define build_eggs $[sort $[build_models] $[build_anims]]
+#define build_soft_eggs \
+   $[forscopes soft_char_egg,$[POLY_MODEL:%=$[EGG_PREFIX]%.egg] $[NURBS_MODEL:%=$[EGG_PREFIX]%.egg]] \
+   $[forscopes soft_char_egg,$[ANIMS:%=$[EGG_PREFIX]%$[CHAN_SUFFIX].egg]]
+
+#define build_eggs \
+   $[sort \
+     $[build_flt_eggs] \
+     $[build_lwo_eggs] \
+     $[build_maya_eggs] \
+     $[build_soft_eggs]]
 
 // Get the list of egg files that are to be installed
 #define install_pal_eggs
@@ -125,10 +133,12 @@
     egg bam
 all : $[all_targets]
 
-#define egg_targets \
-    $[if $[POLY_MODEL(soft_char_egg)] $[NURBS_MODEL(soft_char_egg)],$[soft_maps_dir]] \
-    $[build_eggs]
-egg : $[egg_targets]
+egg : $[build_eggs]
+
+flt : $[build_flt_eggs]
+lwo : $[build_lwo_eggs]
+maya : $[build_maya_eggs]
+soft : $[build_soft_eggs]
 
 pal : $[if $[pal_egg_targets],$[pal_egg_dir]] $[pal_egg_targets]
 
@@ -167,9 +177,6 @@ clean : clean-pal
 #if $[build_eggs]
 $[TAB]rm -f $[build_eggs] *.pt
 #endif
-#if $[POLY_MODEL(soft_char_egg)] $[NURBS_MODEL(soft_char_egg)]
-$[TAB]rm -rf $[soft_maps_dir]
-#endif
 #if $[filter_dirs]
 $[TAB]rm -rf $[filter_dirs]
 #endif
@@ -181,7 +188,6 @@ $[TAB]rm -rf $[filter_dirs]
     $[filter_dirs] \
     $[if $[pal_egg_targets],$[pal_egg_dir]] \
     $[if $[bam_targets],$[bam_dir]] \
-    $[if $[POLY_MODEL(soft_char_egg)] $[NURBS_MODEL(soft_char_egg)],$[soft_maps_dir]] \
     $[TARGET_DIR(filter_char_egg)] \
     $[texattrib_dir] \
     $[install_egg_dirs] \
@@ -580,20 +586,15 @@ $[TAB]rm -f $[files]
 ################################# DO NOT EDIT ###########################
 
 all : egg pal repal $[subdirs]
-egg : $[subdirs:%=egg-%]
-pal : $[subdirs:%=pal-%]
-bam : $[subdirs:%=bam-%]
-clean-bam : $[subdirs:%=clean-bam-%]
-clean-pal : $[subdirs:%=clean-pal-%]
-clean : $[subdirs:%=clean-%]
-cleanall : $[subdirs:%=cleanall-%]
-unpack-soft : $[subdirs:%=unpack-soft-%]
-install-bam : egg pal repal $[subdirs:%=install-bam-%]
-install-other : $[subdirs:%=install-other-%]
-install : egg pal repal $[subdirs:%=install-%]
-uninstall-bam : $[subdirs:%=uninstall-bam-%]
-uninstall-other : $[subdirs:%=uninstall-other-%]
-uninstall : $[subdirs:%=uninstall-%]
+
+#define sub_targets egg flt lwo maya soft bam pal clean-bam clean-pal clean cleanall unpack-soft install-bam install-other install uninstall-bam uninstall-other uninstall
+
+// Define the rules to propogate these targets to the Makefile within
+// each directory.
+#foreach target $[sub_targets]
+$[target] : $[subdirs:%=$[target]-%]
+#end target
+
 
 #
 # opt-pal : reorder and resize the palettes to be as optimal as
@@ -657,75 +658,15 @@ $[dirname] : $[dirnames $[if $[build_directory],$[DIRNAME]],$[DEPEND_DIRS]]
 $[TAB]cd ./$[RELDIR] && $(MAKE) all
 #end dirname
 
-#formap dirname subdirs
-egg-$[dirname] :
-$[TAB]cd ./$[RELDIR] && $(MAKE) egg
-#end dirname
+// Define the rules to propogate these targets to the Makefile within
+// each directory.
+#foreach target $[sub_targets]
+  #formap dirname subdirs
+$[target]-$[dirname] :
+$[TAB]cd ./$[RELDIR] && $(MAKE) $[target]
 
-#formap dirname subdirs
-bam-$[dirname] :
-$[TAB]cd ./$[RELDIR] && $(MAKE) bam
-#end dirname
-
-#formap dirname subdirs
-pal-$[dirname] :
-$[TAB]cd ./$[RELDIR] && $(MAKE) pal
-#end dirname
-
-#formap dirname subdirs
-clean-bam-$[dirname] :
-$[TAB]cd ./$[RELDIR] && $(MAKE) clean-bam
-#end dirname
-
-#formap dirname subdirs
-clean-pal-$[dirname] :
-$[TAB]cd ./$[RELDIR] && $(MAKE) clean-pal
-#end dirname
-
-#formap dirname subdirs
-clean-$[dirname] :
-$[TAB]cd ./$[RELDIR] && $(MAKE) clean
-#end dirname
-
-#formap dirname subdirs
-cleanall-$[dirname] :
-$[TAB]cd ./$[RELDIR] && $(MAKE) cleanall
-#end dirname
-
-#formap dirname subdirs
-unpack-soft-$[dirname] :
-$[TAB]cd ./$[RELDIR] && $(MAKE) unpack-soft
-#end dirname
-
-#formap dirname subdirs
-install-bam-$[dirname] :
-$[TAB]cd ./$[RELDIR] && $(MAKE) install-bam
-#end dirname
-
-#formap dirname subdirs
-install-other-$[dirname] :
-$[TAB]cd ./$[RELDIR] && $(MAKE) install-other
-#end dirname
-
-#formap dirname subdirs
-install-$[dirname] :
-$[TAB]cd ./$[RELDIR] && $(MAKE) install
-#end dirname
-
-#formap dirname subdirs
-uninstall-bam-$[dirname] :
-$[TAB]cd ./$[RELDIR] && $(MAKE) uninstall-bam
-#end dirname
-
-#formap dirname subdirs
-uninstall-other-$[dirname] :
-$[TAB]cd ./$[RELDIR] && $(MAKE) uninstall-other
-#end dirname
-
-#formap dirname subdirs
-uninstall-$[dirname] :
-$[TAB]cd ./$[RELDIR] && $(MAKE) uninstall
-#end dirname
+  #end dirname
+#end target
 
 #end Makefile
 
