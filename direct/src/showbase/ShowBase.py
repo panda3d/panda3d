@@ -720,7 +720,7 @@ class ShowBase:
                 self.oobeVis.reparentTo(self.hidden)
 
             # Restore the mouse interface node.
-            self.mouseInterface.reparentTo(self.mouseWatcher)
+            #self.mouseInterface.reparentTo(self.mouseWatcher)
             self.oobeTrackball.reparentTo(self.dataUnused)
                 
             self.cam.reparentTo(self.camera)
@@ -735,7 +735,7 @@ class ShowBase:
 
             # Move aside the current mouse interface node and put the
             # oobeTrackball in its place.
-            self.mouseInterface.reparentTo(self.dataUnused)
+            #self.mouseInterface.reparentTo(self.dataUnused)
             self.oobeTrackball.reparentTo(self.mouseWatcher)
 
             # Set our initial OOB position to be just behind the camera.
