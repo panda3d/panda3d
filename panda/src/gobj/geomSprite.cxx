@@ -37,7 +37,10 @@ TypeHandle GeomSprite::_type_handle;
 ////////////////////////////////////////////////////////////////////
 GeomSprite::
 GeomSprite(Texture *tex, bool alpha_disable) :
-  _texture(tex), _alpha_disable(alpha_disable) {
+  _texture(tex), _alpha_disable(alpha_disable) 
+{
+  _ll_uv.set(0.0, 0.0);
+  _ur_uv.set(1.0, 1.0);
   _x_texel_ratio.clear();
   _y_texel_ratio.clear();
 

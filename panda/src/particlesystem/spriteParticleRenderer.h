@@ -30,6 +30,8 @@
 #include "baseParticleRenderer.h"
 #include "baseParticle.h"
 
+class NodePath;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : SpriteParticleRenderer
 // Description : Renders a particle system with high-speed nasty
@@ -73,7 +75,11 @@ PUBLISHED:
 
   virtual BaseParticleRenderer *make_copy(void);
 
+  void set_from_node(const NodePath &node_path);
+
   INLINE void set_texture(Texture *tex);
+  INLINE void set_ll_uv(const TexCoordf &ll_uv);
+  INLINE void set_ur_uv(const TexCoordf &ur_uv);
   INLINE void set_color(const Colorf &color);
   INLINE void set_x_scale_flag(bool animate_x_ratio);
   INLINE void set_y_scale_flag(bool animate_y_ratio);
@@ -87,6 +93,8 @@ PUBLISHED:
   INLINE void set_alpha_disable(bool ad);
 
   INLINE Texture *get_texture(void) const;
+  INLINE const TexCoordf &get_ll_uv() const;
+  INLINE const TexCoordf &get_ur_uv() const;
   INLINE Colorf get_color(void) const;
   INLINE bool get_x_scale_flag(void) const;
   INLINE bool get_y_scale_flag(void) const;

@@ -18,11 +18,15 @@
 
 #include <boundingSphere.h>
 #include <geom.h>
+#include <nodePath.h>
+#include <nodeTransitionWrapper.h>
+#include <textureTransition.h>
+#include <wrt.h>
 
 #include "spriteParticleRenderer.h"
 
 ////////////////////////////////////////////////////////////////////
-//    Function : SpriteParticleRenderer
+//    Function : SpriteParticleRenderer::SpriteParticleRenderer
 //      Access : public
 // Description : constructor
 ////////////////////////////////////////////////////////////////////
@@ -46,7 +50,7 @@ SpriteParticleRenderer(Texture *tex) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : SpriteParticleRenderer
+//    Function : SpriteParticleRenderer::SpriteParticleRenderer
 //      Access : public
 // Description : copy constructor
 ////////////////////////////////////////////////////////////////////
@@ -68,7 +72,7 @@ SpriteParticleRenderer(const SpriteParticleRenderer& copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ~SpriteParticleRenderer
+//    Function : SpriteParticleRenderer::~SpriteParticleRenderer
 //      Access : public
 // Description : destructor
 ////////////////////////////////////////////////////////////////////
@@ -77,7 +81,7 @@ SpriteParticleRenderer::
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : make_copy
+//    Function : SpriteParticleRenderer::make_copy
 //      Access : public
 // Description : child dynamic copy
 ////////////////////////////////////////////////////////////////////
@@ -87,7 +91,96 @@ make_copy(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : resize_pool
+//    Function : SpriteParticleRenderer::set_from_node
+//      Access : public
+// Description : Sets the properties on this render from the geometry
+//               referenced by the indicated NodePath.  This should be
+//               a reference to a GeomNode; it extracts out the
+//               Texture and UV range from the GeomNode.
+////////////////////////////////////////////////////////////////////
+void SpriteParticleRenderer::
+set_from_node(const NodePath &node_path) {
+  nassertv(!node_path.is_empty());
+
+  // The bottom node must be a GeomNode.  If it is not, find the first
+  // GeomNode beneath it.
+  NodePath geom_node_path = node_path;
+  if (!geom_node_path.node()->is_of_type(GeomNode::get_class_type())) {
+    geom_node_path = node_path.find("**/+GeomNode");
+    if (geom_node_path.empty()) {
+      particlesystem_cat.error()
+        << node_path << " does not contain a GeomNode.\n";
+      return;
+    }
+  }
+  GeomNode *gnode = DCAST(GeomNode, geom_node_path.node());
+
+  // Get the texture off the node.  We use wrt() to determine the net
+  // texture that's applied, based on all the arcs from the root; not
+  // just the bottom arc.
+  Texture *tex;
+  NodeTransitionWrapper ntw(TextureTransition::get_class_type());
+  wrt(gnode, geom_node_path.begin(), geom_node_path.end(), 
+      (Node *)NULL, ntw, RenderRelation::get_class_type());
+  const TextureTransition *tt;
+  if (get_transition_into(tt, ntw)) {
+    if (tt->is_on()) {
+      tex = tt->get_texture();
+    }
+  }
+
+  if (tex == (Texture *)NULL) {
+    particlesystem_cat.error()
+      << geom_node_path << " has no texture.\n";
+    return;
+  }
+
+  // Now examine the UV's of the first Geom within the GeomNode.
+  nassertv(gnode->get_num_geoms() > 0);
+  Geom *geom = DCAST(Geom, gnode->get_geom(0));
+
+  PTA_TexCoordf texcoords;
+  GeomBindType bind;
+  PTA_ushort tindex;
+  geom->get_texcoords(texcoords, bind, tindex);
+  if (bind != G_PER_VERTEX) {
+    particlesystem_cat.error()
+      << geom_node_path << " has no UV's in its first Geom.\n";
+    return;
+  }
+
+  int num_verts = geom->get_num_vertices();
+  if (num_verts == 0) {
+    particlesystem_cat.error()
+      << geom_node_path << " has no vertices in its first Geom.\n";
+    return;
+  }
+
+  Geom::TexCoordIterator ti = geom->make_texcoord_iterator();
+
+  const TexCoordf &first_texcoord = geom->get_next_texcoord(ti);
+  TexCoordf min_uv = first_texcoord;
+  TexCoordf max_uv = first_texcoord;
+
+  for (int v = 1; v < num_verts; v++) {
+    const TexCoordf &texcoord = geom->get_next_texcoord(ti);    
+
+    min_uv[0] = min(min_uv[0], texcoord[0]);
+    max_uv[0] = max(max_uv[0], texcoord[0]);
+    min_uv[1] = min(min_uv[1], texcoord[1]);
+    max_uv[1] = max(max_uv[1], texcoord[1]);
+  }
+
+  // We don't really pay attention to orientation of UV's here; a
+  // minor flaw.  We assume the minimum is in the lower-left, and the
+  // maximum is in the upper-right.
+  set_texture(tex);
+  set_ll_uv(min_uv);
+  set_ur_uv(max_uv);
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : SpriteParticleRenderer::resize_pool
 //      Access : private
 // Description : reallocate the vertex pool.
 ////////////////////////////////////////////////////////////////////
@@ -143,7 +236,7 @@ resize_pool(int new_size) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : init_geoms
+//    Function : SpriteParticleRenderer::init_geoms
 //      Access : private
 // Description : initializes everything, called on traumatic events
 //               such as construction and serious particlesystem
@@ -158,7 +251,7 @@ init_geoms(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : birth_particle
+//    Function : SpriteParticleRenderer::birth_particle
 //      Access : private
 // Description : child birth, one of those 'there-if-we-want-it'
 //               things.  not really too useful here, so it turns
@@ -169,7 +262,7 @@ birth_particle(int) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : kill_particle
+//    Function : SpriteParticleRenderer::kill_particle
 //      Access : private
 // Description : child death
 ////////////////////////////////////////////////////////////////////
@@ -178,7 +271,7 @@ kill_particle(int) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : render
+//    Function : SpriteParticleRenderer::render
 //      Access : private
 // Description : big child render.  populates the geom node.
 ////////////////////////////////////////////////////////////////////

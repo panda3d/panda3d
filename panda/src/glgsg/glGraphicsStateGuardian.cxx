@@ -1025,8 +1025,13 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   glLoadIdentity();
 
   // precomputation stuff
-  float half_width = 0.5f * (float) tex->_pbuffer->get_xsize();
-  float half_height = 0.5f * (float) tex->_pbuffer->get_ysize();
+  float tex_left = geom->get_ll_uv()[0];
+  float tex_right = geom->get_ur_uv()[0];
+  float tex_bottom = geom->get_ll_uv()[1];
+  float tex_top = geom->get_ur_uv()[1];
+
+  float half_width = 0.5f * (float) tex->_pbuffer->get_xsize() * fabs(tex_right - tex_left);
+  float half_height = 0.5f * (float) tex->_pbuffer->get_ysize() * fabs(tex_top - tex_bottom);
   float scaled_width, scaled_height;
 
   // set up the texture-rendering state
@@ -1153,7 +1158,6 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
          draw_sprite_vertex_less());
   }
 
-  int tex_bottom = 0, tex_top = 1, tex_right = 1, tex_left = 0;
   Vertexf ul, ur, ll, lr;
 
   if (color_overall == true)
@@ -1210,10 +1214,10 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
     // draw each one as a 2-element tri-strip
     glBegin(GL_TRIANGLE_STRIP);
     glNormal3f(0.0f, 0.0f, 1.0f);
-    glTexCoord2i(tex_left, tex_bottom);  glVertex3fv(ll.get_data());
-    glTexCoord2i(tex_right, tex_bottom); glVertex3fv(lr.get_data());
-    glTexCoord2i(tex_left, tex_top);     glVertex3fv(ul.get_data());
-    glTexCoord2i(tex_right, tex_top);    glVertex3fv(ur.get_data());
+    glTexCoord2f(tex_left, tex_bottom);  glVertex3fv(ll.get_data());
+    glTexCoord2f(tex_right, tex_bottom); glVertex3fv(lr.get_data());
+    glTexCoord2f(tex_left, tex_top);     glVertex3fv(ul.get_data());
+    glTexCoord2f(tex_right, tex_top);    glVertex3fv(ur.get_data());
     glEnd();
   }
 

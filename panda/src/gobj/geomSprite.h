@@ -43,24 +43,30 @@ public:
   virtual Geom *explode() const {
     return new GeomSprite(*this); }
 
-  static float get_frustum_top(void) { return 1.0f; }
-  static float get_frustum_bottom(void) { return -1.0f; }
-  static float get_frustum_left(void) { return -1.0f; }
-  static float get_frustum_right(void) { return 1.0f; }
+  static float get_frustum_top() { return 1.0f; }
+  static float get_frustum_bottom() { return -1.0f; }
+  static float get_frustum_left() { return -1.0f; }
+  static float get_frustum_right() { return 1.0f; }
 
   INLINE void set_texture(Texture *tex);
-  INLINE Texture *get_texture(void) const;
+  INLINE Texture *get_texture() const;
+
+  INLINE void set_ll_uv(const TexCoordf &ll_uv);
+  INLINE const TexCoordf &get_ll_uv() const;
+
+  INLINE void set_ur_uv(const TexCoordf &ur_uv);
+  INLINE const TexCoordf &get_ur_uv() const;
 
   INLINE void set_alpha_disable(bool a);
-  INLINE bool get_alpha_disable(void) const;
+  INLINE bool get_alpha_disable() const;
 
   INLINE void set_x_texel_ratio(PTA_float x_texel_ratio, GeomBindType x_bind_type);
   INLINE void set_y_texel_ratio(PTA_float y_texel_ratio, GeomBindType y_bind_type);
   INLINE void set_thetas(PTA_float theta, GeomBindType theta_bind_type);
 
-  INLINE GeomBindType get_x_bind_type(void) const;
-  INLINE GeomBindType get_y_bind_type(void) const;
-  INLINE GeomBindType get_theta_bind_type(void) const;
+  INLINE GeomBindType get_x_bind_type() const;
+  INLINE GeomBindType get_y_bind_type() const;
+  INLINE GeomBindType get_theta_bind_type() const;
 
   // public so we don't have to issue them...
   PTA_float _x_texel_ratio;
@@ -69,6 +75,8 @@ public:
 
 protected:
   PT(Texture) _texture;
+  TexCoordf _ll_uv;
+  TexCoordf _ur_uv;
 
   bool _alpha_disable;
 
@@ -77,7 +85,7 @@ protected:
   GeomBindType _theta_bind_type;
 
 public:
-  static void register_with_read_factory(void);
+  static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &me);
 
   int complete_pointers(vector_typedWritable &plist, BamReader *manager);

@@ -4,7 +4,7 @@
 #begin lib_target
   #define TARGET particlesystem
   #define LOCAL_LIBS \
-    physics sgraph sgattrib graph sgraphutil
+    sgmanip physics sgraph sgattrib graph sgraphutil
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
 
