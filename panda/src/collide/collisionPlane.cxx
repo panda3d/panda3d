@@ -129,7 +129,9 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 
   LVector3f from_normal = get_normal() * entry.get_inv_wrt_mat();
 
-  new_entry->set_surface_normal(has_effective_normal() ? get_effective_normal() : get_normal());
+  LVector3f normal = (has_effective_normal() && sphere->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
+
+  new_entry->set_surface_normal(normal);
   new_entry->set_surface_point(from_center - get_normal() * dist);
   new_entry->set_interior_point(from_center - get_normal() * from_radius);
 
@@ -170,7 +172,10 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
   LPoint3f into_intersection_point = from_origin + t * from_direction;
-  new_entry->set_surface_normal(has_effective_normal() ? get_effective_normal() : get_normal());
+
+  LVector3f normal = (has_effective_normal() && ray->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
+
+  new_entry->set_surface_normal(normal);
   new_entry->set_surface_point(into_intersection_point);
 
   return new_entry;

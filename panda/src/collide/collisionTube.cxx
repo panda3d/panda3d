@@ -694,7 +694,11 @@ set_intersection_point(CollisionEntry *new_entry,
   // our collision was tangential.
   LPoint3f orig_point = into_intersection_point - normal * extra_radius;
 
-  new_entry->set_surface_normal(has_effective_normal() ? get_effective_normal() : normal);
+  if (has_effective_normal() && new_entry->get_from()->get_respect_effective_normal()) {
+    normal = get_effective_normal();
+  }
+
+  new_entry->set_surface_normal(normal);
   new_entry->set_surface_point(point);
   new_entry->set_interior_point(orig_point);
 }

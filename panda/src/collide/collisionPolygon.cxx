@@ -451,7 +451,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   float from_radius_2 = from_radius_v.length_squared();
   float from_radius = csqrt(from_radius_2);
 
-  LVector3f normal = has_effective_normal() ? get_effective_normal() : get_normal();
+  LVector3f normal = (has_effective_normal() && sphere->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
 #ifndef NDEBUG
   if (!IS_THRESHOLD_EQUAL(normal.length_squared(), 1.0f, 0.001), NULL) {
     collide_cat.info()
@@ -613,7 +613,9 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  new_entry->set_surface_normal(has_effective_normal() ? get_effective_normal() : get_normal());
+  LVector3f normal = (has_effective_normal() && ray->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
+
+  new_entry->set_surface_normal(normal);
   new_entry->set_surface_point(plane_point);
 
   return new_entry;
@@ -682,7 +684,9 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  new_entry->set_surface_normal(has_effective_normal() ? get_effective_normal() : get_normal());
+  LVector3f normal = (has_effective_normal() && segment->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
+
+  new_entry->set_surface_normal(normal);
   new_entry->set_surface_point(plane_point);
 
   return new_entry;

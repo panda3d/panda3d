@@ -68,6 +68,9 @@ PUBLISHED:
   INLINE bool has_effective_normal() const;
   INLINE const LVector3f &get_effective_normal() const;
 
+  INLINE void set_respect_effective_normal(bool respect_effective_normal);
+  INLINE bool get_respect_effective_normal() const;
+
 public:
   virtual PT(CollisionEntry)
   test_intersection(const CollisionEntry &entry) const;
@@ -107,9 +110,10 @@ private:
   // Be careful reordering these bits, since they are written to a bam
   // file.
   enum Flags {
-    F_tangible         = 0x01,
-    F_effective_normal = 0x02,
-    F_viz_geom_stale   = 0x04,
+    F_tangible                  = 0x01,
+    F_effective_normal          = 0x02,
+    F_viz_geom_stale            = 0x04,
+    F_ignore_effective_normal   = 0x08,
   };
   int _flags;
 

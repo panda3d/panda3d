@@ -155,7 +155,9 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     surface_normal = vec / vec_length;
   }
 
-  new_entry->set_surface_normal(has_effective_normal() ? get_effective_normal() : surface_normal);
+  LVector3f normal = (has_effective_normal() && sphere->get_respect_effective_normal()) ? get_effective_normal() : surface_normal;
+
+  new_entry->set_surface_normal(normal);
   new_entry->set_surface_point(into_center + surface_normal * into_radius);
   new_entry->set_interior_point(from_center - surface_normal * from_radius);
 

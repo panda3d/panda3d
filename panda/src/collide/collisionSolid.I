@@ -105,6 +105,37 @@ get_effective_normal() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionSolid::set_respect_effective_normal
+//       Access: Published
+//  Description: This is only meaningful for CollisionSolids that will
+//               be added to a traverser as colliders.  It is normally
+//               true, but if set false, it means that this particular
+//               solid does not care about the "effective" normal of
+//               other solids it meets, but rather always uses the
+//               true normal.
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionSolid::
+set_respect_effective_normal(bool respect_effective_normal) {
+  // For historical reasons, the bit we store is the opposite of the
+  // bool flag we present.
+  if (respect_effective_normal) {
+    _flags &= ~F_ignore_effective_normal;
+  } else {
+    _flags |= F_ignore_effective_normal;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSolid::get_respect_effective_normal
+//       Access: Published
+//  Description: See set_respect_effective_normal().
+////////////////////////////////////////////////////////////////////
+INLINE bool CollisionSolid::
+get_respect_effective_normal() const {
+  return (_flags & F_ignore_effective_normal) == 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::mark_viz_stale
 //       Access: Protected
 //  Description: Called internally when the visualization may have
