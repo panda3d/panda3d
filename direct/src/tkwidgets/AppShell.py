@@ -41,7 +41,7 @@ def resetVariableDict():
 class AppShell(Pmw.MegaWidget, PandaObject):
     appversion      = '1.0'
     appname         = 'Generic Application Frame'
-    copyright       = ('Copyright 2001 Walt Disney Imagineering.' +
+    copyright       = ('Copyright 2004 Walt Disney Imagineering.' +
                        ' All Rights Reserved')
     contactname     = 'Mark R. Mine'
     contactphone    = '(818) 544-2921'

@@ -154,6 +154,7 @@ class SliderWidget(Pmw.MegaWidget):
                     Scale, (interior,),
                     variable = self._widgetVar,
                     from_ = self['min'], to = self['max'],
+                    resolution = 0.0,
                     width = 10,
                     orient = 'horizontal',
                     showvalue = 0,
