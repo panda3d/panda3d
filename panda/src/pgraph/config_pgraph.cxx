@@ -221,6 +221,8 @@ init_libpgraph() {
   ColorLerpFunctor::init_type();
   ColorScaleLerpFunctor::init_type();
 
+  EventStoreTransform::init_type("EventStoreTransform");
+
   AlphaTestAttrib::register_with_read_factory();
   AmbientLight::register_with_read_factory();
   BillboardEffect::register_with_read_factory();

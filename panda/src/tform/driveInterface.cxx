@@ -111,10 +111,10 @@ DriveInterface(const string &name) :
   _xy_input = define_input("xy", EventStoreVec2::get_class_type());
   _button_events_input = define_input("button_events", ButtonEventList::get_class_type());
 
-  _transform_output = define_output("transform", EventStoreMat4::get_class_type());
+  _transform_output = define_output("transform", EventStoreTransform::get_class_type());
   _velocity_output = define_output("velocity", EventStoreVec3::get_class_type());
 
-  _transform = new EventStoreMat4(LMatrix4f::ident_mat());
+  _transform = new EventStoreTransform(TransformState::make_identity());
   _velocity = new EventStoreVec3(LVector3f::zero());
 
   _forward_speed = drive_forward_speed;
@@ -135,11 +135,7 @@ DriveInterface(const string &name) :
 
   _xyz.set(0.0f, 0.0f, 0.0f);
   _hpr.set(0.0f, 0.0f, 0.0f);
-  _mat = LMatrix4f::ident_mat();
-  _force_roll = 0.0f;
-  _is_force_roll = true;
 
-  _cs = default_coordinate_system;
   _ignore_mouse = false;
   _force_mouse = false;
 
@@ -169,8 +165,6 @@ void DriveInterface::
 reset() {
   _xyz.set(0.0f, 0.0f, 0.0f);
   _hpr.set(0.0f, 0.0f, 0.0f);
-  _force_roll = 0.0f;
-  _mat = LMatrix4f::ident_mat();
   _up_arrow.clear();
   _down_arrow.clear();
   _left_arrow.clear();
@@ -183,49 +177,32 @@ reset() {
 ////////////////////////////////////////////////////////////////////
 //     Function: DriveInterface::set_force_roll
 //       Access: Published
-//  Description: Sets the force_roll state.  In this state, roll is
-//               always fixed to a particular value (typically zero),
-//               regardless of what it is explicitly set to via
-//               set_hpr().
+//  Description: This function is no longer used and does nothing.  It
+//               will be removed soon.
 ////////////////////////////////////////////////////////////////////
 void DriveInterface::
-set_force_roll(float force_roll) {
-  if (_is_force_roll) {
-    // If we already had force_roll() in effect, we have to
-    // recompensate for it.
-    if (_force_roll != force_roll) {
-      _force_roll = force_roll;
-      reextract();
-    }
-
-  } else {
-    _force_roll = force_roll;
-    _is_force_roll = true;
-  }
+set_force_roll(float) {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DriveInterface::set_mat
 //       Access: Published
 //  Description: Stores the indicated transform in the DriveInterface.
-//               This is a transform in global space, regardless of
-//               the rel_to node.
 ////////////////////////////////////////////////////////////////////
 void DriveInterface::
 set_mat(const LMatrix4f &mat) {
-  _mat = mat;
-  reextract();
+  LVecBase3f scale;
+  decompose_matrix(mat, scale, _hpr, _xyz);
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DriveInterface::get_mat
 //       Access: Published
-//  Description: Returns the net transformation applied by the
-//               current state.
+//  Description: Returns the current transform.
 ////////////////////////////////////////////////////////////////////
 const LMatrix4f &DriveInterface::
-get_mat() const {
+get_mat() {
+  compose_matrix(_mat, LVecBase3f(1.0f, 1.0f, 1.0f), _hpr, _xyz);
   return _mat;
 }
 
@@ -240,7 +217,7 @@ get_mat() const {
 ////////////////////////////////////////////////////////////////////
 void DriveInterface::
 force_dgraph() {
-  _transform->set_value(_mat);
+  _transform->set_value(TransformState::make_pos_hpr(_xyz, _hpr));
   _velocity->set_value(_vel);
 
   DataNodeTransmit output;
@@ -373,16 +350,16 @@ apply(double x, double y, bool any_button) {
   // rot_mat is the rotation matrix corresponding to our previous
   // heading.
   LMatrix3f rot_mat =
-    LMatrix3f::rotate_mat_normaxis(_hpr[0], LVector3f::up(_cs), _cs);
+    LMatrix3f::rotate_mat_normaxis(_hpr[0], LVector3f::up());
 
   // Take a step in the direction of our previous heading.
-  _vel = LVector3f::forward(_cs) * distance;
+  _vel = LVector3f::forward() * distance;
   LVector3f step = (_vel * rot_mat);
 
   // To prevent upward drift due to numerical errors, force the
   // vertical component of our step to zero (it should be pretty near
   // zero anyway).
-  switch (_cs) {
+  switch (default_coordinate_system) {
   case CS_zup_right:
   case CS_zup_left:
     step[2] = 0.0f;
@@ -399,44 +376,6 @@ apply(double x, double y, bool any_button) {
 
   _xyz += step;
   _hpr[0] -= rotation;
-
-  recompute();
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::reextract
-//       Access: Private
-//  Description: Given a correctly computed _mat matrix, rederive the
-//               translation and rotation elements.
-////////////////////////////////////////////////////////////////////
-void DriveInterface::
-reextract() {
-  LVecBase3f scale;
-
-  if (_is_force_roll) {
-    // We strongly discourage a roll other than _force_roll.
-    decompose_matrix(_mat, scale, _hpr, _xyz, _force_roll);
-  } else {
-    decompose_matrix(_mat, scale, _hpr, _xyz);
-  }
-
-  if (tform_cat.is_debug()) {
-    tform_cat.debug()
-      << "Reextract " << _hpr << ", " << _xyz << " from:\n";
-    _mat.write(tform_cat.debug(false), 2);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::recompute
-//       Access: Private
-//  Description: Rebuilds the matrix according to the stored rotation
-//               and translation components.
-////////////////////////////////////////////////////////////////////
-void DriveInterface::
-recompute() {
-  compose_matrix(_mat, LVecBase3f(1.0f, 1.0f, 1.0f), _hpr, _xyz, _cs);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -508,7 +447,7 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
   }
 
   apply(x, y, _mods.is_any_down());
-  _transform->set_value(_mat);
+  _transform->set_value(TransformState::make_pos_hpr(_xyz, _hpr));
   _velocity->set_value(_vel);
   output.set_data(_transform_output, EventParameter(_transform));
   output.set_data(_velocity_output, EventParameter(_velocity));

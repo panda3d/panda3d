@@ -300,31 +300,26 @@ get_z() const {
 INLINE void DriveInterface::
 set_pos(const LVecBase3f &vec) {
   _xyz = vec;
-  recompute();
 }
 
 INLINE void DriveInterface::
 set_pos(float x, float y, float z) {
   _xyz.set(x, y, z);
-  recompute();
 }
 
 INLINE void DriveInterface::
 set_x(float x) {
   _xyz[0] = x;
-  recompute();
 }
 
 INLINE void DriveInterface::
 set_y(float y) {
   _xyz[1] = y;
-  recompute();
 }
 
 INLINE void DriveInterface::
 set_z(float z) {
   _xyz[2] = z;
-  recompute();
 }
 
 
@@ -362,90 +357,26 @@ get_r() const {
 INLINE void DriveInterface::
 set_hpr(const LVecBase3f &hpr) {
   _hpr = hpr;
-  recompute();
 }
 
 INLINE void DriveInterface::
 set_hpr(float h, float p, float r) {
   _hpr.set(h, p, r);
-  recompute();
-
-  if (_is_force_roll && r != _force_roll) {
-    reextract();
-  }
 }
 
 INLINE void DriveInterface::
 set_h(float h) {
   _hpr[0] = h;
-  recompute();
 }
 
 INLINE void DriveInterface::
 set_p(float p) {
   _hpr[1] = p;
-  recompute();
 }
 
 INLINE void DriveInterface::
 set_r(float r) {
   _hpr[2] = r;
-  recompute();
-
-  if (_is_force_roll && r != _force_roll) {
-    reextract();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::is_force_roll
-//       Access: Published
-//  Description: Returns true if the force_roll state is in effect,
-//               e.g. because of a previous call to set_force_roll().
-//               In this state, the roll cannot be set to any value
-//               other than what the force_roll value indicates.
-////////////////////////////////////////////////////////////////////
-INLINE bool DriveInterface::
-is_force_roll() const {
-  return _is_force_roll;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::clear_force_roll
-//       Access: Published
-//  Description: Disables the force_roll state.  See set_force_roll().
-////////////////////////////////////////////////////////////////////
-INLINE void DriveInterface::
-clear_force_roll() {
-  _is_force_roll = false;
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::set_coordinate_system
-//       Access: Published
-//  Description: Sets the coordinate system of the DriveInterface.
-//               Normally, this is the default coordinate system.
-//               This changes the plane the user drives around in;
-//               it's normally the horizontal plane (e.g. the X-Y
-//               plane in a Z-up coordinate system, or the X-Z plane
-//               in a Y-up coordinate system).
-////////////////////////////////////////////////////////////////////
-INLINE void DriveInterface::
-set_coordinate_system(CoordinateSystem cs) {
-  _cs = cs;
-  recompute();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::get_coordinate_system
-//       Access: Published
-//  Description: Returns the coordinate system of the DriveInterface.
-//               See set_coordinate_system().
-////////////////////////////////////////////////////////////////////
-INLINE CoordinateSystem DriveInterface::
-get_coordinate_system() const {
-  return _cs;
 }
 
 ////////////////////////////////////////////////////////////////////

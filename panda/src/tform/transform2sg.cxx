@@ -31,7 +31,7 @@ Transform2SG::
 Transform2SG(const string &name) :
   DataNode(name)
 {
-  _transform_input = define_input("transform", EventStoreMat4::get_class_type());
+  _transform_input = define_input("transform", EventStoreTransform::get_class_type());
   _velocity_input = define_input("velocity", EventStoreVec3::get_class_type());
 
   _node = NULL;
@@ -103,11 +103,11 @@ get_velocity_node() const {
 void Transform2SG::
 do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &) {
   if (input.has_data(_transform_input)) {
-    const EventStoreMat4 *transform;
+    const EventStoreTransform *transform;
     DCAST_INTO_V(transform, input.get_data(_transform_input).get_ptr());
-    const LMatrix4f &mat = transform->get_value();
+    CPT(TransformState) ts = transform->get_value();
     if (_node != (PandaNode *)NULL) {
-      _node->set_transform(TransformState::make_mat(mat));
+      _node->set_transform(ts);
     }
   }
 

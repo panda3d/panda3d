@@ -25,6 +25,7 @@
 #include "modifierButtons.h"
 #include "luse.h"
 #include "linmath_events.h"
+#include "transformState.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -89,11 +90,6 @@ PUBLISHED:
   INLINE void set_r(float r);
 
   void set_force_roll(float force_roll);
-  INLINE bool is_force_roll() const;
-  INLINE void clear_force_roll();
-
-  INLINE void set_coordinate_system(CoordinateSystem cs);
-  INLINE CoordinateSystem get_coordinate_system() const;
 
   INLINE void set_ignore_mouse(bool ignore_mouse);
   INLINE bool get_ignore_mouse() const;
@@ -102,15 +98,12 @@ PUBLISHED:
   INLINE bool get_force_mouse() const;
 
   void set_mat(const LMatrix4f &mat);
-  const LMatrix4f &get_mat() const;
+  const LMatrix4f &get_mat();
 
   void force_dgraph();
 
 private:
   void apply(double x, double y, bool any_button);
-
-  void reextract();
-  void recompute();
 
   float _forward_speed;  // units / sec, mouse all the way up
   float _reverse_speed;  // units / sec, mouse all the way down
@@ -132,13 +125,12 @@ private:
 
   LPoint3f _xyz;
   LVecBase3f _hpr;
-  LMatrix4f _mat;
   LVector3f _vel;
-  float _force_roll;
-  bool _is_force_roll;
-  CoordinateSystem _cs;
   bool _ignore_mouse;
   bool _force_mouse;
+
+  // This is only used to return a temporary value in get_mat().
+  LMatrix4f _mat;
 
   // Remember which mouse buttons are being held down.
   ModifierButtons _mods;
@@ -176,7 +168,7 @@ private:
   int _transform_output;
   int _velocity_output;
 
-  PT(EventStoreMat4) _transform;
+  PT(EventStoreTransform) _transform;
   PT(EventStoreVec3) _velocity;
 
 public:

@@ -25,7 +25,7 @@
 #include "nodePath.h"
 #include "modifierButtons.h"
 #include "luse.h"
-#include "linmath_events.h"
+#include "transformState.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -135,7 +135,7 @@ private:
   // outputs
   int _transform_output;
 
-  PT(EventStoreMat4) _transform;
+  PT(EventStoreTransform) _transform;
 
 public:
   static TypeHandle get_class_type() {

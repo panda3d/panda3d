@@ -26,6 +26,7 @@
 #include "indirectLess.h"
 #include "luse.h"
 #include "pset.h"
+#include "event.h"
 
 class GraphicsStateGuardianBase;
 class FactoryParams;
@@ -224,6 +225,12 @@ INLINE ostream &operator << (ostream &out, const TransformState &state) {
   state.output(out);
   return out;
 }
+
+// This class is used to pass TransformState pointers as parameters to
+// events, or as elements on a data graph.
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, EventStoreValue<CPT(TransformState)>);
+
+typedef EventStoreValue<CPT(TransformState)> EventStoreTransform;
 
 #include "transformState.I"
 
