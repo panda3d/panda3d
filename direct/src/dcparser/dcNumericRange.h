@@ -21,6 +21,7 @@
 
 #include "dcbase.h"
 #include "hashGenerator.h"
+#include "dcPacker.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DCNumericRange
@@ -47,6 +48,7 @@ public:
   void generate_hash(HashGenerator &hashgen) const;
 
   void output(ostream &out, Number divisor = 1) const;
+  void output_char(ostream &out, Number divisor = 1) const;
 
 public:
   INLINE void clear();
@@ -66,6 +68,7 @@ private:
     Number _max;
   };
   INLINE void output_minmax(ostream &out, Number divisor, const MinMax &range) const;
+  INLINE void output_minmax_char(ostream &out, const MinMax &range) const;
 
   typedef pvector<MinMax> Ranges;
   Ranges _ranges;

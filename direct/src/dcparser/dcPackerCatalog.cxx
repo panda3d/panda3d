@@ -252,7 +252,8 @@ r_fill_live_catalog(LiveCatalog *live_catalog, DCPacker &packer,
     live_catalog->_live_entries[field_index]._begin = packer.get_num_unpacked_bytes();
   }
 
-  if (packer.has_nested_fields() && packer.get_pack_type() != PT_string) {
+  if (packer.has_nested_fields() && 
+      (packer.get_pack_type() != PT_string && packer.get_pack_type() != PT_blob)) {
     packer.push();
     while (packer.more_nested_fields()) {
       r_fill_live_catalog(live_catalog, packer, last_switch);

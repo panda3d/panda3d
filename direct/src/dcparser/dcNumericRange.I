@@ -167,6 +167,33 @@ output(ostream &out, Number divisor) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCNumericRange::output_char
+//       Access: Public
+//  Description: Outputs the range, formatting the numeric values as
+//               quoted ASCII characters.
+////////////////////////////////////////////////////////////////////
+template <class NUM>
+void DCNumericRange<NUM>::
+output_char(ostream &out, Number divisor) const {
+  if (divisor != 1) {
+    output(out, divisor);
+
+  } else {
+    if (!_ranges.empty()) {
+      TYPENAME Ranges::const_iterator ri;
+      ri = _ranges.begin();
+      output_minmax_char(out, *ri);
+      ++ri;
+      while (ri != _ranges.end()) {
+        out << ", ";
+        output_minmax_char(out, *ri);
+        ++ri;
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCNumericRange::clear
 //       Access: Public
 //  Description: 
@@ -282,5 +309,22 @@ output_minmax(ostream &out, Number divisor, const MinMax &range) const {
           << "-"
           << (double)range._max / (double)divisor;
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCNumericRange::output_minmax_char
+//       Access: Private
+//  Description: Outputs a single element of the range description.
+////////////////////////////////////////////////////////////////////
+template <class NUM>
+INLINE void DCNumericRange<NUM>::
+output_minmax_char(ostream &out, const MinMax &range) const {
+  if (range._min == range._max) {
+    DCPacker::enquote_string(out, '\'', string(1, range._min));
+  } else {
+    DCPacker::enquote_string(out, '\'', string(1, range._min));
+    out << "-";
+    DCPacker::enquote_string(out, '\'', string(1, range._max));
   }
 }

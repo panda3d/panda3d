@@ -78,6 +78,9 @@ operator << (ostream &out, DCSubatomicType type) {
   case ST_uint32uint8array:
     return out << "uint32uint8array";
 
+  case ST_char:
+    return out << "char";
+
   case ST_invalid:
     return out << "invalid";
   }

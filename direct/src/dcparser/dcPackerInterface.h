@@ -35,13 +35,15 @@ enum DCPackType {
 
   // These PackTypes are all fundamental types, and should be packed
   // (or unpacked) with the corresponding call to pack_double(),
-  // pack_int(), etc.
+  // pack_int(), etc.  PT_blob is the same as PT_string, but implies
+  // that the string contains binary data.
   PT_double,
   PT_int,
   PT_uint,
   PT_int64,
   PT_uint64,
   PT_string,
+  PT_blob,
 
   // The remaining PackTypes imply a need to call push() and pop().
   // They are all variants on the same thing: a list of nested fields,

@@ -96,6 +96,7 @@ dc_cleanup_parser() {
 %token KW_UINT16ARRAY
 %token KW_UINT32ARRAY
 %token KW_UINT32UINT8ARRAY
+%token KW_CHAR
 
 %token KW_REQUIRED
 %token KW_BROADCAST
@@ -131,9 +132,11 @@ dc_cleanup_parser() {
 %type <str> import_identifier
 %type <str> slash_identifier
 %type <str> optional_name
+%type <u.s_uint> char_or_uint
 %type <u.s_uint> small_unsigned_integer
 %type <u.int64> signed_integer
 %type <u.uint64> unsigned_integer
+%type <u.real> char_or_number
 %type <u.real> number
 
 %%
@@ -448,21 +451,21 @@ double_range:
 {
   double_range.clear();
 }
-	| number
+	| char_or_number
 {
   double_range.clear();
   if (!double_range.add_range($1, $1)) {
     yyerror("Overlapping range");
   }
 }
-	| number '-' number
+	| char_or_number '-' char_or_number
 {
   double_range.clear();
   if (!double_range.add_range($1, $3)) {
     yyerror("Overlapping range");
   }
 }
-	| number number
+	| char_or_number number
 {
   double_range.clear();
   if ($2 >= 0) {
@@ -471,19 +474,19 @@ double_range:
     yyerror("Overlapping range");
   }
 }
-	| double_range ',' number
+	| double_range ',' char_or_number
 {
   if (!double_range.add_range($3, $3)) {
     yyerror("Overlapping range");
   }
 }
-	| double_range ',' number '-' number
+	| double_range ',' char_or_number '-' char_or_number
 {
   if (!double_range.add_range($3, $5)) {
     yyerror("Overlapping range");
   }
 }
-	| double_range ',' number number
+	| double_range ',' char_or_number number
 {
   if ($4 >= 0) {
     yyerror("Syntax error");
@@ -498,27 +501,27 @@ uint_range:
 {
   uint_range.clear();
 }
-	| small_unsigned_integer
+	| char_or_uint
 {
   uint_range.clear();
   if (!uint_range.add_range($1, $1)) {
     yyerror("Overlapping range");
   }
 }
-	| small_unsigned_integer '-' small_unsigned_integer
+	| char_or_uint '-' char_or_uint
 {
   uint_range.clear();
   if (!uint_range.add_range($1, $3)) {
     yyerror("Overlapping range");
   }
 }
-	| uint_range ',' small_unsigned_integer
+	| uint_range ',' char_or_uint
 {
   if (!uint_range.add_range($3, $3)) {
     yyerror("Overlapping range");
   }
 }
-	| uint_range ',' small_unsigned_integer '-' small_unsigned_integer
+	| uint_range ',' char_or_uint '-' char_or_uint
 {
   if (!uint_range.add_range($3, $5)) {
     yyerror("Overlapping range");
@@ -560,6 +563,19 @@ parameter_definition:
 }
 	;
 
+char_or_uint:
+	STRING
+{
+  if ($1.length() != 1) {
+    yyerror("Single character required.");
+    $$ = 0;
+  } else {
+    $$ = (unsigned char)$1[0];
+  }
+}
+	| small_unsigned_integer
+	;
+
 small_unsigned_integer:
 	UNSIGNED_INTEGER
 {
@@ -590,6 +606,20 @@ number:
 }
 	| REAL
 	;
+
+char_or_number:
+	STRING
+{
+  if ($1.length() != 1) {
+    yyerror("Single character required.");
+    $$ = 0;
+  } else {
+    $$ = (double)(unsigned char)$1[0];
+  }
+}
+	| number
+	;
+
 
 parameter_value:
 	signed_integer
@@ -753,6 +783,10 @@ type_token:
         | KW_UINT32UINT8ARRAY
 {
   $$ = ST_uint32uint8array;
+}
+        | KW_CHAR
+{
+  $$ = ST_char;
 }
         ;
 

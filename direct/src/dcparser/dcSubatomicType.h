@@ -57,6 +57,10 @@ enum DCSubatomicType {
   // values.  In Python, this becomes a list of 2-tuples.
   ST_uint32uint8array,
 
+  // Equivalent to uint8, except that it suggests a pack_type of
+  // PT_string.
+  ST_char,
+
   // New additions should be added at the end to prevent the file hash
   // code from changing.
 

@@ -563,6 +563,11 @@ REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   return KW_UINT32UINT8ARRAY;
 }
 
+"char" {
+  accept();
+  return KW_CHAR;
+}
+
 "required" {
   accept();
   return KW_REQUIRED;

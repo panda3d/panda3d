@@ -96,14 +96,19 @@ DCSimpleParameter(DCSubatomicType type, unsigned int divisor) :
   case ST_blob32:
     _num_length_bytes = 4;
     // fall through
-
   case ST_blob:
-  case ST_string: 
-    // For these types, we will present an array interface as an array
-    // of uint8, but we will also accept a set_value() with a string
-    // parameter.
-    _pack_type = PT_string;
+    // For blob and string, we will present an array interface
+    // as an array of uint8, but we will also accept a set_value()
+    // with a string parameter.
+    _pack_type = PT_blob;
     _nested_type = ST_uint8;
+    _has_nested_fields = true;
+    _bytes_per_element = 1;
+    break;
+
+  case ST_string: 
+    _pack_type = PT_string;
+    _nested_type = ST_char;
     _has_nested_fields = true;
     _bytes_per_element = 1;
     break;
@@ -131,6 +136,12 @@ DCSimpleParameter(DCSubatomicType type, unsigned int divisor) :
     _pack_type = PT_int64;
     _has_fixed_byte_size = true;
     _fixed_byte_size = 8;
+    break;
+
+  case ST_char:
+    _pack_type = PT_string;
+    _has_fixed_byte_size = true;
+    _fixed_byte_size = 1;
     break;
 
   case ST_uint8:
@@ -271,7 +282,7 @@ get_divisor() const {
 ////////////////////////////////////////////////////////////////////
 bool DCSimpleParameter::
 set_divisor(unsigned int divisor) {
-  if (_pack_type == PT_string || divisor == 0) {
+  if (_pack_type == PT_string || _pack_type == PT_blob || divisor == 0) {
     return false;
   }
 
@@ -347,6 +358,7 @@ set_range(const DCDoubleRange &range) {
     }
     break;
     
+  case ST_char:
   case ST_uint8:
   case ST_uint8array:
     _uint_range.clear();
@@ -532,6 +544,7 @@ pack_double(DCPackData &pack_data, double value,
     }
     break;
     
+  case ST_char:
   case ST_uint8:
     {
       unsigned int int_value = (unsigned int)floor(real_value + 0.5);
@@ -610,6 +623,7 @@ pack_int(DCPackData &pack_data, int value,
     do_pack_int64(pack_data.get_write_pointer(8), int_value);
     break;
 
+  case ST_char:
   case ST_uint8:
     _uint_range.validate((unsigned int)int_value, range_error);
     validate_uint_limits((unsigned int)int_value, 8, range_error);
@@ -676,6 +690,7 @@ pack_uint(DCPackData &pack_data, unsigned int value,
     do_pack_int64(pack_data.get_write_pointer(8), (int)int_value);
     break;
 
+  case ST_char:
   case ST_uint8:
     _uint_range.validate(int_value, range_error);
     validate_uint_limits(int_value, 8, range_error);
@@ -743,6 +758,7 @@ pack_int64(DCPackData &pack_data, PN_int64 value,
     do_pack_int64(pack_data.get_write_pointer(8), int_value);
     break;
 
+  case ST_char:
   case ST_uint8:
     _uint_range.validate((unsigned int)(PN_uint64)int_value, range_error);
     validate_uint64_limits((PN_uint64)int_value, 8, range_error);
@@ -811,6 +827,7 @@ pack_uint64(DCPackData &pack_data, PN_uint64 value,
     do_pack_int64(pack_data.get_write_pointer(8), (PN_int64)int_value);
     break;
 
+  case ST_char:
   case ST_uint8:
     _uint_range.validate((unsigned int)int_value, range_error);
     validate_uint64_limits(int_value, 8, range_error);
@@ -854,11 +871,25 @@ void DCSimpleParameter::
 pack_string(DCPackData &pack_data, const string &value,
             bool &pack_error, bool &range_error) const {
   size_t string_length = value.length();
-  _uint_range.validate(string_length, range_error);
 
   switch (_type) {
+  case ST_char:
+  case ST_uint8:
+  case ST_int8:
+    if (string_length == 0) {
+      pack_error = true;
+    } else {
+      if (string_length != 1) {
+        range_error = true;
+      }
+      _uint_range.validate((unsigned int)value[0], range_error);
+      do_pack_uint8(pack_data.get_write_pointer(1), (unsigned int)value[0]);
+    }
+    break;
+
   case ST_string:
   case ST_blob:
+    _uint_range.validate(string_length, range_error);
     validate_uint_limits(string_length, 16, range_error);
     if (_num_length_bytes != 0) {
       do_pack_uint16(pack_data.get_write_pointer(2), string_length);
@@ -867,6 +898,7 @@ pack_string(DCPackData &pack_data, const string &value,
     break;
 
   case ST_blob32:
+    _uint_range.validate(string_length, range_error);
     if (_num_length_bytes != 0) {
       do_pack_uint32(pack_data.get_write_pointer(4), string_length);
     }
@@ -940,6 +972,7 @@ unpack_double(const char *data, size_t length, size_t &p, double &value,
     }
     break;
 
+  case ST_char:
   case ST_uint8:
     {
       if (p + 1 > length) {
@@ -1073,6 +1106,7 @@ unpack_int(const char *data, size_t length, size_t &p, int &value,
     }
     break;
 
+  case ST_char:
   case ST_uint8:
     {
       if (p + 1 > length) {
@@ -1233,6 +1267,7 @@ unpack_uint(const char *data, size_t length, size_t &p, unsigned int &value,
     }
     break;
 
+  case ST_char:
   case ST_uint8:
     if (p + 1 > length) {
       pack_error = true;
@@ -1354,6 +1389,7 @@ unpack_int64(const char *data, size_t length, size_t &p, PN_int64 &value,
     p += 8;
     break;
 
+  case ST_char:
   case ST_uint8:
     {
       if (p + 1 > length) {
@@ -1508,6 +1544,7 @@ unpack_uint64(const char *data, size_t length, size_t &p, PN_uint64 &value,
     }
     break;
 
+  case ST_char:
   case ST_uint8:
     if (p + 1 > length) {
       pack_error = true;
@@ -1582,6 +1619,27 @@ unpack_uint64(const char *data, size_t length, size_t &p, PN_uint64 &value,
 void DCSimpleParameter::
 unpack_string(const char *data, size_t length, size_t &p, string &value,
               bool &pack_error, bool &range_error) const {
+  // If the type is a single byte, unpack it into a string of length 1.
+  switch (_type) {
+  case ST_char:
+  case ST_int8:
+  case ST_uint8:
+    {
+      if (p + 1 > length) {
+        pack_error = true;
+        return;
+      }
+      unsigned int int_value = do_unpack_uint8(data + p);
+      _uint_range.validate(int_value, range_error);
+      value.assign(1, int_value);
+      p++;
+    }
+    return;
+
+  default:
+    break;
+  }
+
   size_t string_length;
 
   if (_num_length_bytes == 0) {
@@ -1687,6 +1745,7 @@ unpack_validate(const char *data, size_t length, size_t &p,
     }
     break;
 
+  case ST_char:
   case ST_uint8:
     {
       if (p + 1 > length) {
@@ -1798,6 +1857,7 @@ unpack_skip(const char *data, size_t length, size_t &p) const {
   size_t string_length;
 
   switch (_type) {
+  case ST_char:
   case ST_int8:
   case ST_uint8:
     p++;
@@ -1900,6 +1960,14 @@ output_instance(ostream &out, const string &prename, const string &name,
       if (!_uint_range.is_empty()) {
         out << "(";
         _uint_range.output(out, _divisor);
+        out << ")";
+      }
+      break;
+
+    case ST_char:
+      if (!_uint_range.is_empty()) {
+        out << "(";
+        _uint_range.output_char(out, _divisor);
         out << ")";
       }
       break;

@@ -33,17 +33,18 @@
 # define	KW_UINT16ARRAY	286
 # define	KW_UINT32ARRAY	287
 # define	KW_UINT32UINT8ARRAY	288
-# define	KW_REQUIRED	289
-# define	KW_BROADCAST	290
-# define	KW_P2P	291
-# define	KW_RAM	292
-# define	KW_DB	293
-# define	KW_CLSEND	294
-# define	KW_CLRECV	295
-# define	KW_OWNSEND	296
-# define	KW_AIRECV	297
-# define	START_DC	298
-# define	START_PARAMETER_VALUE	299
+# define	KW_CHAR	289
+# define	KW_REQUIRED	290
+# define	KW_BROADCAST	291
+# define	KW_P2P	292
+# define	KW_RAM	293
+# define	KW_DB	294
+# define	KW_CLSEND	295
+# define	KW_CLRECV	296
+# define	KW_OWNSEND	297
+# define	KW_AIRECV	298
+# define	START_DC	299
+# define	START_PARAMETER_VALUE	300
 
 
 extern YYSTYPE dcyylval;

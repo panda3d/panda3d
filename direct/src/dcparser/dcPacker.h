@@ -124,13 +124,15 @@ PUBLISHED:
 public:
   INLINE const char *get_data() const;
 
+  static void enquote_string(ostream &out, char quote_mark, const string &str);
+  static void output_hex_string(ostream &out, const string &str);
+
 private:
   INLINE void advance();
   void handle_switch(const DCSwitch *dswitch);
   void clear();
   void set_unpack_data(const char *unpack_data, size_t unpack_length, 
                        bool owns_unpack_data);
-  void enquote_string(ostream &out, char quote_mark, const string &str) const;
 
 private:
   enum Mode {
