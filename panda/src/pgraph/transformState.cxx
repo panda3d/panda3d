@@ -360,7 +360,7 @@ make_mat(const LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) TransformState::
 set_pos(const LVecBase3f &pos) const {
-  if (components_given()) {
+  if (is_identity() || components_given()) {
     // If we started with a componentwise transform, we keep it that
     // way.
     if (quat_given()) {
@@ -597,16 +597,15 @@ output(ostream &out) const {
       out << lead << "pos " << get_pos();
       lead = ' ';
     }
-    if (quat_given()) {
-      if (!get_quat().almost_equal(LQuaternionf::ident_quat())) {
-        out << lead << "quat " << get_quat();
-        lead = ' ';
-      }
-    } else {
-      if (!get_hpr().almost_equal(LVecBase3f(0.0f, 0.0f, 0.0f))) {
+    if (!get_hpr().almost_equal(LVecBase3f(0.0f, 0.0f, 0.0f))) {
+      if (quat_given()) {
+        // Output hpr even if we were given a quat, since that's
+        // friendlier to show programmers.
+        out << lead << "(q)hpr " << get_hpr();
+      } else {
         out << lead << "hpr " << get_hpr();
-        lead = ' ';
       }
+      lead = ' ';
     }
     if (!get_scale().almost_equal(LVecBase3f(1.0f, 1.0f, 1.0f))) {
       if (has_uniform_scale()) {
@@ -688,9 +687,43 @@ do_compose(const TransformState *other) const {
   nassertr((_flags & F_is_invalid) == 0, this);
   nassertr((other->_flags & F_is_invalid) == 0, other);
 
-  // We should do this operation componentwise if both transforms were
-  // given componentwise.
+  if (compose_componentwise && 
+      components_given() && has_uniform_scale() && 
+      other->components_given() && other->has_uniform_scale()) {
+    // We will do this operation componentwise if both transforms were
+    // given componentwise, and no non-uniform scale is involved.
 
+    LVecBase3f pos = get_pos();
+    LQuaternionf quat = get_quat();
+    float scale = get_uniform_scale();
+
+    pos += quat.xform(other->get_pos()) * scale;
+    quat *= other->get_quat();
+    quat.normalize();
+    scale *= other->get_uniform_scale();
+
+    CPT(TransformState) result =
+      make_pos_quat_scale(pos, quat, LVecBase3f(scale, scale, scale));
+
+#ifndef NDEBUG
+    if (paranoid_compose) {
+      // Now verify against the matrix.
+      LMatrix4f new_mat = other->get_mat() * get_mat();
+      if (!new_mat.almost_equal(result->get_mat(), 0.0001)) {
+        CPT(TransformState) correct = make_mat(new_mat);
+        pgraph_cat.warning()
+          << "Componentwise composition of " << *this << " and " << *other
+          << " produced:\n"
+          << *result << "\n  instead of:\n" << *correct << "\n";
+        result = correct;
+      }
+    }
+#endif  // NDEBUG
+
+    return result;
+  }
+
+  // Do the operation with matrices.
   LMatrix4f new_mat = other->get_mat() * get_mat();
   return make_mat(new_mat);
 }
@@ -705,14 +738,66 @@ do_invert_compose(const TransformState *other) const {
   nassertr((_flags & F_is_invalid) == 0, this);
   nassertr((other->_flags & F_is_invalid) == 0, other);
 
+  if (compose_componentwise && 
+      components_given() && has_uniform_scale() && 
+      (other->is_identity() || 
+       (other->components_given() && other->has_uniform_scale()))) {
+    // We will do this operation componentwise if both transforms were
+    // given componentwise, and no non-uniform scale is involved.
+
+    LVecBase3f pos = get_pos();
+    LQuaternionf quat = get_quat();
+    float scale = get_uniform_scale();
+
+    // First, invert our own transform.
+    if (scale == 0.0f) {
+      ((TransformState *)this)->_flags |= F_is_singular | F_singular_known;
+      return make_invalid();
+    }
+    scale = 1.0f / scale;
+    quat.invert_in_place();
+    pos = quat.xform(-pos) * scale;
+
+    // Now compose the inverted transform with the other transform.
+    if (!other->is_identity()) {
+      pos += quat.xform(other->get_pos()) * scale;
+      quat *= other->get_quat();
+      quat.normalize();
+      scale *= other->get_uniform_scale();
+    }
+
+    CPT(TransformState) result =
+      make_pos_quat_scale(pos, quat, LVecBase3f(scale, scale, scale));
+
+#ifndef NDEBUG
+    if (paranoid_compose) {
+      // Now verify against the matrix.
+      if (is_singular()) {
+        pgraph_cat.warning()
+          << "Unexpected singular matrix found for " << *this << "\n";
+      } else {
+        nassertr(_inv_mat != (LMatrix4f *)NULL, make_invalid());
+        LMatrix4f new_mat = other->get_mat() * (*_inv_mat);
+        if (!new_mat.almost_equal(result->get_mat(), 0.0001)) {
+          CPT(TransformState) correct = make_mat(new_mat);
+          pgraph_cat.warning()
+            << "Componentwise invert-composition of " << *this << " and " << *other
+            << " produced:\n"
+            << *result << "\n  instead of:\n" << *correct << "\n";
+          result = correct;
+        }
+      }
+    }
+#endif  // NDEBUG
+
+    return result;
+  }
+
   if (is_singular()) {
     return make_invalid();
   }
 
-  // We should do this operation componentwise if both transforms were
-  // given componentwise.
-
-  // Now that is_singular() has returned true, we can assume that
+  // Now that is_singular() has returned false, we can assume that
   // _inv_mat has been allocated and filled in.
   nassertr(_inv_mat != (LMatrix4f *)NULL, make_invalid());
 
@@ -776,7 +861,7 @@ calc_components() {
     if (!possible) {
       // Some matrices can't be decomposed into scale, hpr, pos.  In
       // this case, we now know that we cannot compute the components.
-      _flags |= F_components_known | F_hpr_known | F_quat_known;
+      _flags |= F_components_known;
 
     } else {
       // Otherwise, we do have the components, or at least the hpr.
@@ -1009,5 +1094,12 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   if ((_flags & F_mat_known) != 0) {
     // General matrix.
     _mat.read_datagram(scan);
+
+    if (bams_componentwise) {
+      // Decompose the matrix if we can, and store it componentwise.
+      if (has_components()) {
+        _flags |= F_components_given | F_hpr_given;
+      }
+    }
   }
 }

@@ -96,6 +96,24 @@ const bool fake_view_frustum_cull = config_pgraph.GetBool("fake-view-frustum-cul
 // trapped with assert-abort).
 const bool unambiguous_graph = config_pgraph.GetBool("unambiguous-graph", false);
 
+// Set this true to double-check the componentwise transform compose
+// (or invert) operation against the equivalent matrix-based
+// operation.  This has no effect if NDEBUG is defined.
+
+// Default is true for now.
+const bool paranoid_compose = config_pgraph.GetBool("paranoid-compose", true);
+
+// Set this true to perform componentwise compose and invert
+// operations at all.  If this is false, the compositions are computed
+// by matrix.
+const bool compose_componentwise = config_pgraph.GetBool("compose-componentwise", true);
+
+// Set this true to load transforms from bam files as componentwise
+// transforms always, even if they were stored as matrix transforms.
+// This works around old versions of the egg loader that only stored
+// matrix transforms.
+const bool bams_componentwise = config_pgraph.GetBool("bams-componentwise", true);
+
 // Set this false to disable TransparencyAttrib::M_dual altogether
 // (and use M_alpha in its place).
 const bool m_dual = config_pgraph.GetBool("m-dual", true);

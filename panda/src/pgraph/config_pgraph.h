@@ -31,6 +31,9 @@ NotifyCategoryDecl(loader, EXPCL_PANDA, EXPTP_PANDA);
 
 extern const bool fake_view_frustum_cull;
 extern const bool unambiguous_graph;
+extern const bool paranoid_compose;
+extern const bool compose_componentwise;
+extern const bool bams_componentwise;
 
 extern const bool m_dual;
 extern const bool m_dual_opaque;
