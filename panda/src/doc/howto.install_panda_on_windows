@@ -90,8 +90,9 @@ Step 2: On Win2000, install ServicePack 2 and DX 8.1
   - run
     v:\win2k-servicepack2.exe  
     v:\dx8.1\DX81NTeng.exe
-    
-    or download them from http://windowsupdate.microsoft.com
+    or download them from http://windowsupdate.microsoft.com (this will be MUCH slower).
+    Also check your video card manufacturer's website for updated drivers, the ones
+    on the original win2k CD are most likely too old.
 
 Step 3: Install Cygwin (v1.3.5 or above should work)
   - Install Cygwin by running V:\cygwin-1.3.5\setup.exe, and selecting 
