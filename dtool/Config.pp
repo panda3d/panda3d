@@ -312,6 +312,8 @@
   #define AUDIO_LPATH /mspsdk/Lib  
   #define AUDIO_LIBS winmm.lib dsound.lib user32.lib ole32.lib dxguid.lib
 #else
+  #define AUDIO_IPATH
+  #define AUDIO_LPATH
   #define AUDIO_LIBS
 #endif
 
