@@ -69,6 +69,7 @@ WinGraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) :
   _tracking_mouse_leaving = false;
   _maximized = false;
   memset(_keyboard_state, 0, sizeof(BYTE) * num_virtual_keys);
+  _lost_keypresses = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -772,6 +773,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         }
         // fall through
       case WM_RBUTTONDOWN:
+        if (_lost_keypresses) {
+          resend_lost_keypresses();
+        }
         if (button < 0) {
           button = 2;
         }
@@ -789,6 +793,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         }
         // fall through
       case WM_RBUTTONUP:
+        if (_lost_keypresses) {
+          resend_lost_keypresses();
+        }
         if (button < 0) {
           button = 2;
         }
@@ -891,6 +898,13 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         break;
     
       case WM_SYSKEYDOWN: 
+        if (_lost_keypresses) {
+          resend_lost_keypresses();
+        }
+        if (windisplay_cat.is_debug()) {
+          windisplay_cat.debug()
+            << "keydown: " << wparam << " (" << lookup_key(wparam) << ")\n";
+        }
         {
           // Alt and F10 are sent as WM_SYSKEYDOWN instead of WM_KEYDOWN
           // want to use defwindproc on Alt syskey so std windows cmd
@@ -912,12 +926,23 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           // if Alt is released (alone w/o other keys), defwindproc will
           // send this command, which will 'activate' the title bar menu
           // (we have none) and give focus to it.  we dont want this to
-          // happen, so kill this msg
+          // happen, so kill this msg.
+
+          // Note that the WM_SYSKEYUP message for Alt has already
+          // been sent (if it is going to be), so ignoring this
+          // special message does no harm.
           return 0;
         }
         break;
         
       case WM_KEYDOWN: 
+        if (_lost_keypresses) {
+          resend_lost_keypresses();
+        }
+        if (windisplay_cat.is_debug()) {
+          windisplay_cat.debug()
+            << "keydown: " << wparam << " (" << lookup_key(wparam) << ")\n";
+        }
         {
           POINT point;
           
@@ -954,78 +979,77 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     
       case WM_SYSKEYUP:
       case WM_KEYUP:
+        if (_lost_keypresses) {
+          resend_lost_keypresses();
+        }
+        if (windisplay_cat.is_debug()) {
+          windisplay_cat.debug()
+            << "keyup: " << wparam << " (" << lookup_key(wparam) << ")\n";
+        }
         handle_keyrelease(lookup_key(wparam));
         break;
     
       case WM_KILLFOCUS: 
+        if (windisplay_cat.is_debug()) {
+          windisplay_cat.debug()
+            << "killfocus\n";
+        }
+        if (_lost_keypresses) {
+          resend_lost_keypresses();
+        }
+
         // Record the current state of the keyboard when the focus is
         // lost, so we can check it for changes when we regain focus.
         GetKeyboardState(_keyboard_state);
-        break;
-    
-      case WM_SETFOCUS: 
-        {
-          // When we lose focus, the app may miss key-up events for keys
-          // that were formerly held down (and vice-versa).  Therefore,
-          // when focus is regained, compare the state of the keyboard to
-          // the last known state (stored above, when focus was lost) to
-          // regenerate the lost keyboard events.
-    
-          if (GetForegroundWindow() != _hWnd) {
-            // Sometimes, particularly on window create, it appears we get
-            // a WM_SETFOCUS event even though the window hasn't really
-            // received focus yet.  That's bad and confuses the
-            // GetKeyboardState logic, below.  The above check filters out
-            // this case (while testing GetFocus() instead of
-            // GetForegroundWindow() doesn't).
-            windisplay_cat.info()
-              << "Ignoring non-foreground WM_SETFOCUS\n";
-            break;
-          }
-    
-          BYTE new_keyboard_state[num_virtual_keys];
-          GetKeyboardState(new_keyboard_state);
+        if (windisplay_cat.is_debug()) {
+          // Report the set of keys that are held down at the time of
+          // the killfocus event.
           for (int i = 0; i < num_virtual_keys; i++) {
-            // Filter out these particular three.  We don't want to test
-            // these, because these are virtual duplicates for
-            // VK_LSHIFT/VK_RSHIFT, etc.; and the left/right equivalent is
-            // also in the table.  If we respect both VK_LSHIFT as well as
-            // VK_SHIFT, we'll generate two keyboard messages when
-            // VK_LSHIFT changes state.
             if (i != VK_SHIFT && i != VK_CONTROL && i != VK_MENU) {
-              if (((new_keyboard_state[i] ^ _keyboard_state[i]) & 0x80) != 0) {
-                // This key has changed state.
-                if ((new_keyboard_state[i] & 0x80) != 0) {
-                  // The key is now held down.
-                  if (windisplay_cat.is_debug()) {
-                    windisplay_cat.debug()
-                      << "key is down: " << lookup_key(i) << "\n";
-                  }
-                  handle_keyresume(lookup_key(i));
-                } else {
-                  // The key is now released.
-                  if (windisplay_cat.is_debug()) {
-                    windisplay_cat.debug()
-                      << "key is up: " << lookup_key(i) << "\n";
-                  }
-                  handle_keyrelease(lookup_key(i));
-                }
+              if ((_keyboard_state[i] & 0x80) != 0) {
+                windisplay_cat.debug()
+                  << "on killfocus, key is down: " << i << " (" << lookup_key(i) << ")\n";
               }
             }
           }
-          
-          // Save the new keyboard state, just for good measure.  This
-          // really shouldn't be necessary, but it protects against
-          // inadvertently getting WM_SETFOCUS twice in a row, for
-          // instance.
-          memcpy(_keyboard_state, new_keyboard_state,
-                 sizeof(BYTE) * num_virtual_keys);
+        }
+
+        // Now set the flag indicating that some keypresses from now
+        // on may be lost.
+        _lost_keypresses = true;
+        break;
+    
+      case WM_SETFOCUS: 
+        // You would think that this would be a good time to call
+        // resend_lost_keypresses(), but it turns out that we get
+        // WM_SETFOCUS slightly before Windows starts resending key
+        // up/down events to us.
+
+        // In particular, if the user restored focus using alt-tab,
+        // then at this point the keyboard state will indicate that
+        // both the alt and tab keys are held down.  However, there is
+        // a small window of opportunity for the user to release these
+        // keys before Windows starts telling us about keyup events.
+        // Thus, if we record the fact that alt and tab are being held
+        // down now, we may miss the keyup events for them, and they
+        // can get "stuck" down.
+
+        // So we have to defer calling resend_lost_keypresses() until
+        // we know Windows is ready to send us key up/down events.  I
+        // don't know when we can guarantee that, except when we
+        // actually do start to receive key up/down events, so that
+        // call is made there.
+
+        if (windisplay_cat.is_debug()) {
+          windisplay_cat.debug()
+            << "setfocus\n";
         }
         break;
   }
 
   return DefWindowProc(hwnd, msg, wparam, lparam);
 }
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: WinGraphicsWindow::static_window_proc
@@ -1073,6 +1097,68 @@ process_1_event() {
   TranslateMessage(&msg);
   // Call window_proc
   DispatchMessage(&msg);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::resend_lost_keypresses
+//       Access: Private, Static
+//  Description: Called when the keyboard focus has been restored to
+//               the window after it has been lost for a time, this
+//               rechecks the keyboard state and generates key up/down
+//               messages for keys that have changed state in the
+//               meantime.
+////////////////////////////////////////////////////////////////////
+void WinGraphicsWindow::
+resend_lost_keypresses() {
+  nassertv(_lost_keypresses);
+  if (windisplay_cat.is_debug()) {
+    windisplay_cat.debug()
+      << "resending lost keypresses\n";
+  }
+
+  BYTE new_keyboard_state[num_virtual_keys];
+  GetKeyboardState(new_keyboard_state);
+
+  for (int i = 0; i < num_virtual_keys; i++) {
+    // Filter out these particular three.  We don't want to test
+    // these, because these are virtual duplicates for
+    // VK_LSHIFT/VK_RSHIFT, etc.; and the left/right equivalent is
+    // also in the table.  If we respect both VK_LSHIFT as well as
+    // VK_SHIFT, we'll generate two keyboard messages when
+    // VK_LSHIFT changes state.
+    if (i != VK_SHIFT && i != VK_CONTROL && i != VK_MENU) {
+      if (((new_keyboard_state[i] ^ _keyboard_state[i]) & 0x80) != 0) {
+        // This key has changed state.
+        if ((new_keyboard_state[i] & 0x80) != 0) {
+          // The key is now held down.
+          if (windisplay_cat.is_debug()) {
+            windisplay_cat.debug()
+              << "key has gone down: " << i << " (" << lookup_key(i) << ")\n";
+          }
+          
+          handle_keyresume(lookup_key(i));
+        } else {
+          // The key is now released.
+          if (windisplay_cat.is_debug()) {
+            windisplay_cat.debug()
+              << "key has gone up: " << i << " (" << lookup_key(i) << ")\n";
+          }
+          handle_keyrelease(lookup_key(i));
+        }
+      } else {
+        // This key is in the same state.
+        if (windisplay_cat.is_debug()) {
+          if ((new_keyboard_state[i] & 0x80) != 0) {
+            windisplay_cat.debug()
+              << "key is still down: " << i << " (" << lookup_key(i) << ")\n";
+          }
+        }
+      }
+    }
+  }
+
+  // Keypresses are no longer lost.
+  _lost_keypresses = false;
 }
 
 ////////////////////////////////////////////////////////////////////

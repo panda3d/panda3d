@@ -92,6 +92,8 @@ private:
   INLINE int translate_mouse(int pos) const;
   INLINE void set_cursor_in_window();
   INLINE void set_cursor_out_of_window();
+
+  void resend_lost_keypresses();
   static void update_cursor_window(WinGraphicsWindow *to_window);
 
   static void register_window_class();
@@ -125,6 +127,7 @@ private:
   // to work around the problem.
 
   BYTE _keyboard_state[num_virtual_keys];
+  bool _lost_keypresses;
 
 protected:
   static bool _loaded_custom_cursor;
