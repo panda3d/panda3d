@@ -572,8 +572,8 @@
 // $[sources] is the list of .o files.  $[libs] is a space-separated
 // list of dependent libraries, and $[lpath] is a space-separated list
 // of directories in which those libraries can be found.
-#defer LINK_BIN_C $[CC] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
-#defer LINK_BIN_C++ $[CXX] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
+#defer LINK_BIN_C $[cc_ld] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
+#defer LINK_BIN_C++ $[cxx_ld] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
 
 // How to generate a static C or C++ library.  $[target] is the
 // name of the library to generate, and $[sources] is the list of .o
@@ -596,11 +596,11 @@
 // libraries, and $[lpath] is a space-separated list of directories in
 // which those libraries can be found.
 #if $[eq $[PLATFORM], osx]
-  #defer SHARED_LIB_C $[CC] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
-  #defer SHARED_LIB_C++ $[CXX] -dynamic -dynamiclib -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
+  #defer SHARED_LIB_C $[cc_ld] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
+  #defer SHARED_LIB_C++ $[cxx_ld] -dynamic -dynamiclib -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
 #else
-  #defer SHARED_LIB_C $[CC] -shared -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
-  #defer SHARED_LIB_C++ $[CXX] -shared -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
+  #defer SHARED_LIB_C $[cc_ld] -shared -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
+  #defer SHARED_LIB_C++ $[cxx_ld] -shared -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
 #endif
 
 // How to install a data file or executable file.  $[local] is the
@@ -652,8 +652,8 @@
   #defer RANLIB
 
   #define SHARED_FLAGS -Wl,-none -Wl,-update_registry,$[TOPDIR]/so_locations
-  #defer SHARED_LIB_C $[CC] -shared $[SHARED_FLAGS] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
-  #defer SHARED_LIB_C++ $[CXX] -shared $[SHARED_FLAGS] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
+  #defer SHARED_LIB_C $[cc_ld] -shared $[SHARED_FLAGS] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
+  #defer SHARED_LIB_C++ $[cxx_ld] -shared $[SHARED_FLAGS] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
 #endif
 
 
