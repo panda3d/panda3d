@@ -17,6 +17,8 @@ class EventManager:
         if (EventManager.notify == None):
             EventManager.notify = directNotify.newCategory("EventManager")
 
+        # EventManager.notify.setDebug(1)
+
         self.eventQueue = EventQueue.getGlobalEventQueue()
         self.eventHandler = EventHandler(self.eventQueue)
 
