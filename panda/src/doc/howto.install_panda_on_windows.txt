@@ -416,37 +416,67 @@ Step 6: Grab the cvs trees
 
         Tell somebody like David Rose, Dave Schuyler, or Mark Mine to add your 
           new sourceforge username to the list of Panda3D developers.
-      2. setup ssh and access through the corporate firewall to cvs.sourceforge.net
-        - copy the setup from /p/win/install/wintools/etc/ssh_config to your ~/.ssh/config
-        - You may also need to copy the config file to /etc/ssh_config
-        - If you have not generated a key before on another machine, generate a dsa key now with:
+
+      2. setup ssh and access through the corporate firewall to
+         cvs.sourceforge.net
+
+        - make a directory ~/.ssh and copy the file from
+          /p/win/install/wintools/etc/ssh_config to a file named
+          ~/.ssh/config .
+
+        - Alternatively, you can copy the config file to
+          /etc/ssh_config instead of to your ~/.ssh directory, but you
+          probably shouldn't do this, since it will just make it
+          difficult to detect errors in reading your ~/.ssh directory.
+
+        - If you have not generated a key before on another machine,
+          generate a dsa key now with:
+
           > ssh-keygen -t dsa
-        (If you have generated this key before, copy the id_dsa and id_dsa.pub 
-          from ~/.ssh/config on your other machine. Just press enter if prompted for filename)
-        If the above does not put a file in ~/.ssh/config, check that your 
-          /etc/passwd file has an entry for your username and that it points 
-          to the correct home directory for you.
+
+        Just press enter if prompted for password.
+
+        (If you have generated this key before, copy the id_dsa and
+        id_dsa.pub from ~/.ssh on your other machine.)
+
+        If the above does not put a file in ~/.ssh, check that
+        your /etc/passwd file has an entry for your username and that
+        it points to the correct home directory for you.
+
         register your generated ssh public key (id_dsa.pub) at 
           https://sourceforge.net/account/editsshkeys.php
+
       3. type this at the shell or/and put it into your .cshrc
           > setenv CVS_RSH /bin/ssh
-      4. check out these trees in ~/player (only if a local version will be built) with:
+
+      4. check out these trees in ~/player (only if a local version
+         will be built) with:
+
           > setenv SFROOT :ext:<your-sourceforge-username>@cvs.sourceforge.net:/cvsroot/panda3d
+
     B. anonymous CVS (read-only access) from SourceForge
+
         > setenv SFROOT :pserver:anonymous@nit:/cvsroot/panda3d
 
-    now check out these trees
+       Note that, for the past six months or so, anonymous access from
+       SourceForge has been consistently in the poor-to-unusable
+       quality range.  You probably will be happier choosing option A,
+       above, until SourceForge gets these issues ironed out.
+
+
+    - Now check out these trees
       > cvs -d $SFROOT co dtool (only if local dtool will be built)
       > cvs -d $SFROOT co panda (only if local panda will be built)
       > cvs -d $SFROOT co direct (only if local direct will be built)
       
-    - Choose which optimize level you want. This is set in Config.pp in
-      your $HOME directory.  Look for #define OPTIMIZE and follow
+    - Choose which optimize level you want. This is set in Config.pp
+      in your $HOME directory.  Look for #define OPTIMIZE and follow
       instructions above that.  You can only choose an arbitrary
       optimize level if you are building your own DTOOL and PANDA;
-      otherwise, you must set it to the optimize level corresponding to
-      the version of DTOOL/PANDA you intend to attach to (install is
-      built OPTIMIZE 2, release is built OPTIMIZE 3).  A good choice is OPTIMIZE 3.
+      otherwise, you must set it to the optimize level corresponding
+      to the version of DTOOL/PANDA you intend to attach to (install
+      is built OPTIMIZE 2, release is built OPTIMIZE 3).  A good
+      choice is OPTIMIZE 3.
 
     Your normal, non-SourceForge CVSROOT should be set to the default:
       > setenv CVSROOT :pserver:<your-unix-username>@dimbo:/fit/cvs
