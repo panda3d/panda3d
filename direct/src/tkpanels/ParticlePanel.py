@@ -33,7 +33,10 @@ class ParticlePanel(AppShell):
             self.particleEffect = particleEffect
         else:
             # Or create a new one if none given
-            self.particleEffect = ParticleEffect.ParticleEffect(name)
+            pe = ParticleEffect.ParticleEffect('particle-fx')
+            self.particleEffect = pe
+            pe.reparentTo(render)
+            pe.enable()
 
         # Initialize application specific info
         AppShell.__init__(self)
@@ -553,13 +556,11 @@ class ParticlePanel(AppShell):
         self.forceMenu.pack(side = 'left', fill = 'x', expand = 0)
         self.bind(self.forceMenu, 'Select force to configure')
         
-        self.forceActive = BooleanVar()
-        self.forceActiveButton = Checkbutton(
+        self.createCheckbutton(
             forceMenuFrame,
-            text = 'On/Off',
-            variable = self.forceActive,
-            command = self.toggleActiveForce)
-        self.forceActiveButton.pack(side = 'left', fill = 'x', expand = 0)
+            'Force', 'On/Off',
+            'Turn selected force on/off',
+            self.toggleActiveForce, 0)
 
         # Pack force menu
         forceMenuFrame.pack(fill = 'x', expand = 0, padx = 2)
@@ -715,7 +716,7 @@ class ParticlePanel(AppShell):
 
     def createComboBox(self, parent, category, text, balloonHelp,
                          items, command):
-        widget = Pmw.ComboBox(parent
+        widget = Pmw.ComboBox(parent,
                               labelpos = W,
                               label_text = text,
                               entry_width = 16,
@@ -774,9 +775,9 @@ class ParticlePanel(AppShell):
         self.getWidget('System', 'Pos').set([pos[0], pos[1], pos[2]], 0)
         hpr = self.particles.nodePath.getHpr()
         self.getWidget('System', 'Hpr').set([hpr[0], hpr[1], hpr[2]], 0)
-        self.getWidget('System', 'Render Relative Velocities').set(
+        self.getVariable('System', 'Render Relative Velocities').set(
             self.particles.getLocalVelocityFlag())
-        self.getWidget('System', 'Grows Older').set(
+        self.getVariable('System', 'Grows Older').set(
             self.particles.getSystemGrowsOlderFlag())
     def setSystemPoolSize(self, value):
 	self.particles.setPoolSize(int(value))
@@ -790,10 +791,10 @@ class ParticlePanel(AppShell):
 	self.particles.setSystemLifespan(value)
     def toggleSystemLocalVelocity(self):
 	self.particles.setLocalVelocityFlag(
-            self.getWidget('System', 'Render Relative Velocities').get())
+            self.getVariable('System', 'Render Relative Velocities').get())
     def toggleSystemGrowsOlder(self):
 	self.particles.setSystemGrowsOlderFlag(
-            self.getWidget('System', 'Grows Older').get())
+            self.getVariable('System', 'Grows Older').get())
     def setSystemPos(self, pos):
 	self.particles.nodePath.setPos(Vec3(pos[0], pos[1], pos[2]))
     def setSystemHpr(self, pos):
@@ -895,7 +896,7 @@ class ParticlePanel(AppShell):
             self.getWidget('Disc Emitter', 'Inner Velocity').set(
                 outerMagnitude, 0)
             cubicLerping = emitter.getCubicLerping()
-            self.getWidget('Disc Emitter', 'Cubic Lerping').set(cubicLerping)
+            self.getVariable('Disc Emitter', 'Cubic Lerping').set(cubicLerping)
         elif isinstance(emitter, LineEmitter):
             min = emitter.getEndpoint1()
             self.getWidget('Line Emitter', 'Min').set(
@@ -1057,7 +1058,7 @@ class ParticlePanel(AppShell):
             aMode = 'ALPHA_IN'
         elif alphaMode == BaseParticleRenderer.PRALPHAUSER:
             aMode = 'ALPHA_USER'
-        self.getWidget('Renderer', 'Alpha Mode').set(aMode)
+        self.getVariable('Renderer', 'Alpha Mode').set(aMode)
         userAlpha = renderer.getUserAlpha()
         self.getWidget('Renderer', 'User Alpha').set(userAlpha)
         if isinstance(renderer, LineParticleRenderer):
@@ -1085,7 +1086,7 @@ class ParticlePanel(AppShell):
 		bType = "PP_BLEND_LIFE"	
 	    elif (blendType == PointParticleRenderer.PPBLENDVEL):
 		bType = "PP_BLEND_VEL"	
-            self.getWidget('Point Renderer', 'Blend Type').set(bType)
+            self.getVariable('Point Renderer', 'Blend Type').set(bType)
             blendMethod = renderer.getBlendMethod()
 	    bMethod = "PP_NO_BLEND"
 	    if (blendMethod == BaseParticleRenderer.PPNOBLEND):
@@ -1094,7 +1095,7 @@ class ParticlePanel(AppShell):
 		bMethod = "PP_BLEND_LINEAR"
 	    elif (blendMethod == BaseParticleRenderer.PPBLENDCUBIC):
 		bMethod = "PP_BLEND_CUBIC"
-            self.getWidget('Point Renderer', 'Blend Method').set(bMethod)
+            self.getVariable('Point Renderer', 'Blend Method').set(bMethod)
         elif isinstance(renderer, SparkleParticleRenderer):
             centerColor = renderer.getCenterColor() * 255.0
             self.getWidget('Sparkle Renderer', 'Center Color').set(
@@ -1111,17 +1112,17 @@ class ParticlePanel(AppShell):
 	    lScale = "SP_NO_SCALE"
 	    if (lifeScale == SparkleParticleRenderer.SPSCALE):
 		lScale = "SP_SCALE"
-            self.getWidget('Sparkle Renderer', 'Life Scale').set(lScale)
+            self.getVariable('Sparkle Renderer', 'Life Scale').set(lScale)
         elif isinstance(renderer, SpriteParticleRenderer):
             color = renderer.getColor() * 255.0
             texture = renderer.getTexture()
 	    if (texture != None):
 		self.rendererSpriteTexture = texture.getName()
-            self.getWidget('Sprite Renderer', 'X Scale').set(
+            self.getVariable('Sprite Renderer', 'X Scale').set(
                 renderer.getXScaleFlag())
-            self.getWidget('Sprite Renderer', 'Y Scale').set(
+            self.getVariable('Sprite Renderer', 'Y Scale').set(
                 renderer.getYScaleFlag())
-            self.getWidget('Sprite Renderer', 'Anim Angle').set(
+            self.getVariable('Sprite Renderer', 'Anim Angle').set(
                 renderer.getAnimAngleFlag())
             initialXScale = renderer.getInitialXScale()
             self.getWidget('Sprite Renderer', 'Initial X Scale').set(
@@ -1146,7 +1147,7 @@ class ParticlePanel(AppShell):
 		bMethod = "PP_BLEND_LINEAR"
 	    elif (blendMethod == BaseParticleRenderer.PPBLENDCUBIC):
 		bMethod = "PP_BLEND_CUBIC"
-            self.getWidget('Sprite Renderer', 'Alpha Disable').set(
+            self.getVariable('Sprite Renderer', 'Alpha Disable').set(
                 renderer.getAlphaDisable())
 
     def selectRendererPage(self):
@@ -1239,13 +1240,13 @@ class ParticlePanel(AppShell):
 	    print "Couldn't find rendererSpriteTexture"
     def toggleRendererSpriteXScale(self):
 	self.particles.renderer.setXScaleFlag(
-            self.getWidget('Sprite Renderer', 'X Scale').get())
+            self.getVariable('Sprite Renderer', 'X Scale').get())
     def toggleRendererSpriteYScale(self):
 	self.particles.renderer.setYScaleFlag(
-            self.getWidget('Sprite Renderer', 'Y Scale').get())
+            self.getVariable('Sprite Renderer', 'Y Scale').get())
     def toggleRendererSpriteAnimAngle(self):
 	self.particles.renderer.setAnimAngleFlag(
-            self.getWidget('Sprite Renderer', 'Anim Angle').get())
+            self.getVariable('Sprite Renderer', 'Anim Angle').get())
     def setRendererSpriteInitialXScale(self, xScale):
 	self.particles.renderer.setInitialXScale(xScale)
     def setRendererSpriteFinalXScale(self, xScale):
@@ -1269,9 +1270,11 @@ class ParticlePanel(AppShell):
 	self.particles.renderer.setAlphaBlendMethod(bMethod)
     def toggleRendererSpriteAlphaDisable(self):
 	self.particles.renderer.setAlphaDisable(
-            self.getWidget('Sprite Renderer', 'Alpha Disable').get())
+            self.getVariable('Sprite Renderer', 'Alpha Disable').get())
         
     ## FORCES COMMANDS ##
+    def selectForceNamed(self, name):
+        pass
     def selectForceType(self, type):
         self.forceNotebook.selectpage(type)
         self.updateForceWidgets()
@@ -1281,6 +1284,9 @@ class ParticlePanel(AppShell):
             type = self.forces.__class__.__name__
             self.forceNotebook.selectpage(type)
             self.getVariable('Emitter', 'Emitter Type').set(type)
+
+    def toggleActiveForce(self):
+        pass
         
     def updateForceWidgets(self):
         pass

@@ -21,7 +21,7 @@ class ParticleEffect(NodePath):
 	"""enable()"""
 	for f in self.forcesDict.values():
 	    f.enable()
-	for p in self.particlesDict.value():
+	for p in self.particlesDict.values():
 	    p.enable()
 
     def disable(self):
