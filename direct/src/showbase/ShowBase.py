@@ -213,8 +213,7 @@ class ShowBase(DirectObject.DirectObject):
         self.restart()
 
     def exitfunc(self):
-        """exitfunc(self)
-
+        """
         This should be assigned to sys.exitfunc to be called just
         before Python shutdown.  It guarantees that the Panda window
         is closed cleanly, so that we free system resources, restore
@@ -236,7 +235,7 @@ class ShowBase(DirectObject.DirectObject):
             self.oldexitfunc()
 
     def makeDefaultPipe(self):
-        """makeDefaultPipe(self)
+        """
         Creates the default GraphicsPipe, which will be used to make
         windows unless otherwise specified.
         """
@@ -250,7 +249,7 @@ class ShowBase(DirectObject.DirectObject):
         self.pipeList.append(self.pipe)
 
     def makeAllPipes(self):
-        """makeAllPipes(self)
+        """
         Creates all GraphicsPipes that the system knows about and fill up
         self.pipeList with them.
         """
@@ -285,11 +284,10 @@ class ShowBase(DirectObject.DirectObject):
                     self.notify.info("Could not make graphics pipe %s." % (pipeType.getName()))
 
     def openWindow(self):
-        """openWindow(self)
+        """
         Invokes ChanConfig to create a window and adds it to the list
         of windows that are to be updated every frame.
         """
-
         if self.pipe == None:
             self.makeDefaultPipe()
 
@@ -316,7 +314,7 @@ class ShowBase(DirectObject.DirectObject):
         return win
 
     def closeWindow(self, win):
-        """closeWindow(self, win)
+        """
         Closes the indicated window and removes it from the list of
         windows.  If it is the main window, clears the main window
         pointer to None.
@@ -352,7 +350,7 @@ class ShowBase(DirectObject.DirectObject):
             self.win = None
 
     def openMainWindow(self):
-        """openMainWindow(self)
+        """
         Creates the initial, main window for the application, and sets
         up the mouse and render2d structures appropriately for it.  If
         this method is called a second time, it will close the
@@ -401,8 +399,7 @@ class ShowBase(DirectObject.DirectObject):
         return success
     
     def setupRender(self):
-        """setupRender(self)
-
+        """
         Creates the render scene graph, the primary scene graph for
         rendering 3-d geometry.
         """

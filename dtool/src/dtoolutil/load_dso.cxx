@@ -18,7 +18,7 @@
 
 #include "load_dso.h"
 
-#if 1 || defined(PENV_OSX)
+#if defined(PENV_OSX)
 // These are not used on Macintosh OS X
 
 void *
@@ -33,7 +33,7 @@ unload_dso(void *dso_handle) {
 
 string
 load_dso_error() {
-  const char *message="load_dso_error() unsupported on PS2";
+  const char *message="load_dso_error() unsupported on OS X";
   return message;
 }
 
