@@ -122,16 +122,16 @@ setup(float width, float height, float range) {
   set_state(0);
   clear_state_def(0);
 
-  set_frame(-0.5 * width, 0.5 * width, -0.5 * height, 0.5 * height);
+  set_frame(-0.5f * width, 0.5f * width, -0.5f * height, 0.5f * height);
 
   PGFrameStyle style;
-  style.set_width(0.05, 0.05);
+  style.set_width(0.05f, 0.05f);
 
-  style.set_color(0.6, 0.6, 0.6, 1.0);
+  style.set_color(0.6f, 0.6f, 0.6f, 1.0f);
   style.set_type(PGFrameStyle::T_bevel_in);
   set_frame_style(0, style);
 
-  style.set_color(0.8, 0.8, 0.8, 1.0);
+  style.set_color(0.8f, 0.8f, 0.8f, 1.0f);
   style.set_type(PGFrameStyle::T_bevel_out);
   set_bar_style(style);
 }
@@ -156,7 +156,7 @@ update() {
   _bar.remove_node();
 
   // Now create new bar geometry.
-  if (_value != 0.0 && _range != 0.0) {
+  if ((_value != 0.0f) && (_range != 0.0f)) {
     NodePath &root = get_state_def(state);
     nassertv(!root.is_empty());
 

@@ -197,21 +197,21 @@ setup(const string &label) {
   inactive->add_child(geom);
 
   PGFrameStyle style;
-  style.set_color(0.8f, 0.8f, 0.8f, 1.0);
+  style.set_color(0.8f, 0.8f, 0.8f, 1.0f);
   style.set_width(0.1f, 0.1f);
 
   style.set_type(PGFrameStyle::T_bevel_out);
   set_frame_style(S_ready, style);
 
-  style.set_color(0.9f, 0.9f, 0.9f, 1.0);
+  style.set_color(0.9f, 0.9f, 0.9f, 1.0f);
   set_frame_style(S_rollover, style);
 
   inactive->set_attrib(ColorAttrib::make_flat(Colorf(0.8f, 0.8f, 0.8f, 1.0f)));
-  style.set_color(0.6f, 0.6f, 0.6f, 1.0);
+  style.set_color(0.6f, 0.6f, 0.6f, 1.0f);
   set_frame_style(S_inactive, style);
 
   style.set_type(PGFrameStyle::T_bevel_in);
-  style.set_color(0.8f, 0.8f, 0.8f, 1.0);
+  style.set_color(0.8f, 0.8f, 0.8f, 1.0f);
   set_frame_style(S_depressed, style);
   depressed->set_transform(TransformState::make_pos(LVector3f(0.05f, 0.0f, -0.05f)));
 }

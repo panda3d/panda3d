@@ -111,8 +111,8 @@ make_copy() const {
 void PGItem::
 xform(const LMatrix4f &mat) {
   // Transform the frame.
-  LPoint3f ll(_frame[0], 0.0, _frame[2]);
-  LPoint3f ur(_frame[1], 0.0, _frame[3]);
+  LPoint3f ll(_frame[0], 0.0f, _frame[2]);
+  LPoint3f ur(_frame[1], 0.0f, _frame[3]);
   ll = ll * mat;
   ur = ur * mat;
   _frame.set(ll[0], ur[0], ll[2], ur[2]);
@@ -282,10 +282,10 @@ void PGItem::
 activate_region(const LMatrix4f &transform, int sort) {
   // Transform all four vertices, and get the new bounding box.  This
   // way the region works (mostly) even if has been rotated.
-  LPoint3f ll(_frame[0], 0.0, _frame[2]);
-  LPoint3f lr(_frame[1], 0.0, _frame[2]);
-  LPoint3f ul(_frame[0], 0.0, _frame[3]);
-  LPoint3f ur(_frame[1], 0.0, _frame[3]);
+  LPoint3f ll(_frame[0], 0.0f, _frame[2]);
+  LPoint3f lr(_frame[1], 0.0f, _frame[2]);
+  LPoint3f ul(_frame[0], 0.0f, _frame[3]);
+  LPoint3f ur(_frame[1], 0.0f, _frame[3]);
   ll = ll * transform;
   lr = lr * transform;
   ul = ul * transform;
@@ -780,7 +780,7 @@ get_text_node() {
   if (_text_node == (TextNode *)NULL) {
     _text_node = new TextNode("pguiText");
     _text_node->freeze();
-    _text_node->set_text_color(0.0, 0.0, 0.0, 1.0);
+    _text_node->set_text_color(0.0f, 0.0f, 0.0f, 1.0f);
 
     // The default TextNode is aligned to the left, for the
     // convenience of PGEntry.

@@ -25,8 +25,8 @@
 INLINE PGFrameStyle::
 PGFrameStyle() {
   _type = T_none;
-  _color.set(1.0, 1.0, 1.0, 1.0);
-  _width.set(0.1, 0.1);
+  _color.set(1.0f, 1.0f, 1.0f, 1.0f);
+  _width.set(0.1f, 0.1f);
 }
 
 ////////////////////////////////////////////////////////////////////
