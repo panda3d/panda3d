@@ -1325,7 +1325,6 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
   }
 
   bool double_sided = _respect_maya_double_sided ? maya_double_sided : egg_double_sided;
-  cerr << "respect = " << _respect_maya_double_sided << " maya = " << maya_double_sided << " egg = " << egg_double_sided << " result = " << double_sided << "\n";
 
   while (!pi.isDone()) {
     EggPolygon *egg_poly = new EggPolygon;
