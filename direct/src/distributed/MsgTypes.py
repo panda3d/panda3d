@@ -69,7 +69,7 @@ CLIENT_SET_AVTYPE =                          80
 CLIENT_GET_PET_DETAILS =                     81
 CLIENT_GET_PET_DETAILS_RESP =                82
 
-CLIENT_SET_WORLD_POS =                       83
+# (Proposed new message): CLIENT_SET_WORLD_POS =                       83
 
 # These messages are ignored when the client is headed to the quiet zone
 QUIET_ZONE_IGNORED_LIST = [
