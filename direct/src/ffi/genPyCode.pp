@@ -27,7 +27,7 @@
 rem #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[notdir $[THISFILENAME]].
 rem ################################# DO NOT EDIT ###########################
 
-python $[osfilename $[install_bin_dir]/genPyCode.py] %1 %2 %3 %4 %5 %6 %7 %8 %9
+python -u $[osfilename $[install_bin_dir]/genPyCode.py] %1 %2 %3 %4 %5 %6 %7 %8 %9
 #end genPyCode.bat
 
 #else  // Win32
@@ -37,7 +37,7 @@ python $[osfilename $[install_bin_dir]/genPyCode.py] %1 %2 %3 %4 %5 %6 %7 %8 %9
 #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[notdir $[THISFILENAME]].
 ################################# DO NOT EDIT ###########################
 
-python '$[osfilename $[install_bin_dir]/genPyCode.py]' "$@"
+python -u '$[osfilename $[install_bin_dir]/genPyCode.py]' "$@"
 #end genPyCode
 
 #endif  // Win32
