@@ -77,7 +77,8 @@ public:
   EggRenderMode::AlphaMode get_alpha_mode() const;
 
   SourceTextureImage *get_source(const Filename &filename,
-                                 const Filename &alpha_filename);
+                                 const Filename &alpha_filename,
+                                 int alpha_file_channel);
 
   SourceTextureImage *get_preferred_source();
   void clear_source_basic_properties();
@@ -108,7 +109,8 @@ private:
   void copy_new_dests(const Dests &a, const Dests &b);
 
   string get_source_key(const Filename &filename,
-                        const Filename &alpha_filename);
+                        const Filename &alpha_filename,
+                        int alpha_file_channel);
 
 private:
   TextureRequest _request;

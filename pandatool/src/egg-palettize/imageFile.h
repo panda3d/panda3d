@@ -19,12 +19,12 @@
 #ifndef IMAGEFILE_H
 #define IMAGEFILE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "textureProperties.h"
 
-#include <filename.h>
-#include <typedWritable.h>
+#include "filename.h"
+#include "typedWritable.h"
 
 class PNMImage;
 class EggTexture;
@@ -57,6 +57,7 @@ public:
   void set_filename(const string &dirname, const string &basename);
   const Filename &get_filename() const;
   const Filename &get_alpha_filename() const;
+  int get_alpha_file_channel() const;
   bool exists() const;
 
   bool read(PNMImage &image) const;
@@ -71,6 +72,7 @@ protected:
   TextureProperties _properties;
   Filename _filename;
   Filename _alpha_filename;
+  int _alpha_file_channel;
 
   bool _size_known;
   int _x_size, _y_size;

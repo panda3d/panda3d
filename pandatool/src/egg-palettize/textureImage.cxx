@@ -506,8 +506,9 @@ get_alpha_mode() const {
 //               that.
 ////////////////////////////////////////////////////////////////////
 SourceTextureImage *TextureImage::
-get_source(const Filename &filename, const Filename &alpha_filename) {
-  string key = get_source_key(filename, alpha_filename);
+get_source(const Filename &filename, const Filename &alpha_filename,
+           int alpha_file_channel) {
+  string key = get_source_key(filename, alpha_filename, alpha_file_channel);
 
   Sources::iterator si;
   si = _sources.find(key);
@@ -516,7 +517,7 @@ get_source(const Filename &filename, const Filename &alpha_filename) {
   }
 
   SourceTextureImage *source =
-    new SourceTextureImage(this, filename, alpha_filename);
+    new SourceTextureImage(this, filename, alpha_filename, alpha_file_channel);
   _sources.insert(Sources::value_type(key, source));
 
   // Clear out the preferred source image to force us to rederive this
@@ -1217,11 +1218,13 @@ copy_new_dests(const TextureImage::Dests &a, const TextureImage::Dests &b) {
 //               stored in, given its one or two filenames.
 ////////////////////////////////////////////////////////////////////
 string TextureImage::
-get_source_key(const Filename &filename, const Filename &alpha_filename) {
+get_source_key(const Filename &filename, const Filename &alpha_filename,
+               int alpha_file_channel) {
   Filename f = FilenameUnifier::make_bam_filename(filename);
   Filename a = FilenameUnifier::make_bam_filename(alpha_filename);
 
-  return f.get_fullpath() + ":" + a.get_fullpath();
+  return f.get_fullpath() + ":" + a.get_fullpath() + ":" +
+    format_string(alpha_file_channel);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1317,7 +1320,8 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     SourceTextureImage *source;
     DCAST_INTO_R(source, p_list[pi++], pi);
     string key = get_source_key(source->get_filename(),
-                                source->get_alpha_filename());
+                                source->get_alpha_filename(),
+                                source->get_alpha_file_channel());
 
     bool inserted = _sources.insert(Sources::value_type(key, source)).second;
     if (!inserted) {

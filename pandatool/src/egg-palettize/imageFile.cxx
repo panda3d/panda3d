@@ -21,13 +21,13 @@
 #include "filenameUnifier.h"
 #include "paletteGroup.h"
 
-#include <pnmImage.h>
-#include <pnmFileType.h>
-#include <eggTexture.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
+#include "pnmImage.h"
+#include "pnmFileType.h"
+#include "eggTexture.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+#include "bamWriter.h"
 
 TypeHandle ImageFile::_type_handle;
 
@@ -38,6 +38,7 @@ TypeHandle ImageFile::_type_handle;
 ////////////////////////////////////////////////////////////////////
 ImageFile::
 ImageFile() {
+  _alpha_file_channel = 0;
   _size_known = false;
   _x_size = 0;
   _y_size = 0;
@@ -252,6 +253,22 @@ get_alpha_filename() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ImageFile::get_alpha_file_channel
+//       Access: Public
+//  Description: Returns the particular channel number of the alpha
+//               image file from which the alpha channel should be
+//               extracted.  This is normally 0 to represent the
+//               grayscale combination of r, g, and b; or it may be a
+//               1-based channel number (for instance, 4 for the alpha
+//               channel of a 4-component image).
+////////////////////////////////////////////////////////////////////
+int ImageFile::
+get_alpha_file_channel() const {
+  return _alpha_file_channel;
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: ImageFile::exists
 //       Access: Public
 //  Description: Returns true if the file or files named by the image
@@ -306,15 +323,29 @@ read(PNMImage &image) const {
     }
 
     image.add_alpha();
-    if (alpha_image.has_alpha()) {
-      for (int y = 0; y < image.get_y_size(); y++) {
-        for (int x = 0; x < image.get_x_size(); x++) {
+
+    if (_alpha_file_channel == 4 || 
+        (_alpha_file_channel == 2 && alpha_image.get_num_channels() == 2)) {
+      // Use the alpha channel.
+      for (int x = 0; x < image.get_x_size(); x++) {
+        for (int y = 0; y < image.get_y_size(); y++) {
           image.set_alpha(x, y, alpha_image.get_alpha(x, y));
         }
       }
+      
+    } else if (_alpha_file_channel >= 1 && _alpha_file_channel <= 3 &&
+               alpha_image.get_num_channels() >= 3) {
+      // Use the appropriate red, green, or blue channel.
+      for (int x = 0; x < image.get_x_size(); x++) {
+        for (int y = 0; y < image.get_y_size(); y++) {
+          image.set_alpha(x, y, alpha_image.get_channel_val(x, y, _alpha_file_channel - 1));
+        }
+      }
+      
     } else {
-      for (int y = 0; y < image.get_y_size(); y++) {
-        for (int x = 0; x < image.get_x_size(); x++) {
+      // Use the grayscale channel.
+      for (int x = 0; x < image.get_x_size(); x++) {
+        for (int y = 0; y < image.get_y_size(); y++) {
           image.set_alpha(x, y, alpha_image.get_gray(x, y));
         }
       }
@@ -408,8 +439,10 @@ update_egg_tex(EggTexture *egg_tex) const {
   if (_properties.uses_alpha() &&
       !_alpha_filename.empty()) {
     egg_tex->set_alpha_filename(FilenameUnifier::make_egg_filename(_alpha_filename));
+    egg_tex->set_alpha_file_channel(_alpha_file_channel);
   } else {
     egg_tex->clear_alpha_filename();
+    egg_tex->clear_alpha_file_channel();
   }
 
   _properties.update_egg_tex(egg_tex);
@@ -442,6 +475,7 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   _properties.write_datagram(writer, datagram);
   datagram.add_string(FilenameUnifier::make_bam_filename(_filename));
   datagram.add_string(FilenameUnifier::make_bam_filename(_alpha_filename));
+  datagram.add_uint8(_alpha_file_channel);
   datagram.add_bool(_size_known);
   datagram.add_int32(_x_size);
   datagram.add_int32(_y_size);
@@ -478,6 +512,11 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _properties.fillin(scan, manager);
   _filename = FilenameUnifier::get_bam_filename(scan.get_string());
   _alpha_filename = FilenameUnifier::get_bam_filename(scan.get_string());
+  if (Palettizer::_read_pi_version >= 10) {
+    _alpha_file_channel = scan.get_uint8();
+  } else {
+    _alpha_file_channel = 0;
+  }
   _size_known = scan.get_bool();
   _x_size = scan.get_int32();
   _y_size = scan.get_int32();

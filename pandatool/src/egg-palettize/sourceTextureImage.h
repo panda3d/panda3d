@@ -36,7 +36,7 @@ private:
 
 public:
   SourceTextureImage(TextureImage *texture, const Filename &filename,
-                     const Filename &alpha_filename);
+                     const Filename &alpha_filename, int alpha_file_channel);
 
   TextureImage *get_texture() const;
 

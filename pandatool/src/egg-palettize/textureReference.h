@@ -19,13 +19,13 @@
 #ifndef TEXTUREREFERENCE_H
 #define TEXTUREREFERENCE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "textureProperties.h"
 #include "palettizer.h"
 
-#include <luse.h>
-#include <typedWritable.h>
+#include "luse.h"
+#include "typedWritable.h"
 
 class TextureImage;
 class SourceTextureImage;

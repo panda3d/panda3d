@@ -50,11 +50,12 @@ SourceTextureImage() {
 ////////////////////////////////////////////////////////////////////
 SourceTextureImage::
 SourceTextureImage(TextureImage *texture, const Filename &filename,
-                   const Filename &alpha_filename) :
+                   const Filename &alpha_filename, int alpha_file_channel) :
   _texture(texture)
 {
   _filename = filename;
   _alpha_filename = alpha_filename;
+  _alpha_file_channel = alpha_file_channel;
   _egg_count = 0;
   _read_header = false;
   _successfully_read_header = false;

@@ -25,18 +25,18 @@
 #include "palettizer.h"
 #include "eggFile.h"
 
-#include <indent.h>
-#include <eggTexture.h>
-#include <eggData.h>
-#include <eggGroupNode.h>
-#include <eggGroup.h>
-#include <eggNurbsSurface.h>
-#include <eggVertexPool.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
-#include <string_utils.h>
+#include "indent.h"
+#include "eggTexture.h"
+#include "eggData.h"
+#include "eggGroupNode.h"
+#include "eggGroup.h"
+#include "eggNurbsSurface.h"
+#include "eggVertexPool.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+#include "bamWriter.h"
+#include "string_utils.h"
 
 #include <math.h>
 
@@ -100,6 +100,7 @@ from_egg(EggFile *egg_file, EggData *data, EggTexture *egg_tex) {
   if (_egg_tex->has_alpha_filename()) {
     alpha_filename = _egg_tex->get_alpha_filename();
   }
+  int alpha_file_channel = _egg_tex->get_alpha_file_channel();
 
   _properties._format = _egg_tex->get_format();
   _properties._minfilter = _egg_tex->get_minfilter();
@@ -108,7 +109,8 @@ from_egg(EggFile *egg_file, EggData *data, EggTexture *egg_tex) {
 
   string name = filename.get_basename_wo_extension();
   TextureImage *texture = pal->get_texture(name);
-  _source_texture = texture->get_source(filename, alpha_filename);
+  _source_texture = texture->get_source(filename, alpha_filename, 
+                                        alpha_file_channel);
   _source_texture->update_properties(_properties);
 
   _uses_alpha = false;
