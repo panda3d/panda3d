@@ -6,38 +6,32 @@
 
 ; release dlls
 
-libpanda         0x60000000 0x00790000
-libpandadx       0x61000000 0x00050000 ; hacked
-libpandagl       0x62000000 0x00040000 ; hacked
-libpandaexpress  0x63000000 0x000c0000 ; hacked
-libpandaphysics  0x608e0000 0x00080000
-libshader        0x60960000 0x00030000
-libdtool         0x60990000 0x00020000
-libdtoolconfig   0x609b0000 0x00060000
-libpystub        0x60a10000 0x00010000
-libdirect        0x60a20000 0x00040000
-libtoontown      0x60a60000 0x000a0000
-libaudio_load_midi 0x60b00000 0x00010000
-libaudio_load_mp3 0x60b10000 0x00010000
-libaudio_load_st 0x60b20000 0x00010000
-libaudio_load_wav 0x60b30000 0x00010000
-libpandaegg      0x60b40000 0x001a0000
+libpanda         0x60000000 0x007b0000
+libpandadx       0x62000000 0x00050000
+libpandagl       0x63000000 0x00050000
+libpandaexpress  0x60850000 0x000c0000
+libpandaphysics  0x60910000 0x00080000
+libshader        0x60990000 0x00030000
+libdtool         0x609c0000 0x00020000
+libdtoolconfig   0x609e0000 0x00060000
+libpystub        0x60a40000 0x00010000
+libdirect        0x60a50000 0x00040000
+libtoontown      0x60a90000 0x000a0000
+libmiles_audio   0x60b30000 0x00020000
+libpandaegg      0x60b50000 0x001a0000
 
 ; debug dlls
 
-libpanda_d       0x60000000 0x00800000
-libpandadx_d     0x60800000 0x00060000
-libpandagl_d     0x60860000 0x00050000
-libpandaexpress_d 0x608b0000 0x000e0000
-libpandaphysics_d 0x60990000 0x000a0000
-libshader_d      0x60a30000 0x00030000
-libdtool_d       0x60a60000 0x00020000
-libdtoolconfig_d 0x60a80000 0x00060000
-libpystub_d      0x60ae0000 0x00010000
-libdirect_d      0x60af0000 0x00040000
-libtoontown_d    0x60b30000 0x000b0000
-libaudio_load_midi_d 0x60be0000 0x00010000
-libaudio_load_mp3_d 0x60bf0000 0x00010000
-libaudio_load_st_d 0x60c00000 0x00010000
-libaudio_load_wav_d 0x60c10000 0x00010000
-libpandaegg_d    0x60c20000 0x001c0000
+libpanda_d       0x60000000 0x00810000
+libpandadx_d     0x60810000 0x00070000
+libpandagl_d     0x60880000 0x00050000
+libpandaexpress_d 0x608d0000 0x000e0000
+libpandaphysics_d 0x609b0000 0x000a0000
+libshader_d      0x60a50000 0x00030000
+libdtool_d       0x60a80000 0x00020000
+libdtoolconfig_d 0x60aa0000 0x00060000
+libpystub_d      0x60b00000 0x00010000
+libdirect_d      0x60b10000 0x00040000
+libtoontown_d    0x60b50000 0x000c0000
+libmiles_audio_d 0x60c10000 0x00020000
+libpandaegg_d    0x60c30000 0x001c0000
