@@ -10,6 +10,7 @@ import Pmw
 import string
 import math
 import types
+import Task
 
 FRAMES = 0
 SECONDS = 1
