@@ -100,6 +100,7 @@
 
   #define SOURCES \
     test_particles.cxx
+  #define LOCAL_LIBS $[LOCAL_LIBS] physics particlesystem
 
 #end test_bin_target
 
