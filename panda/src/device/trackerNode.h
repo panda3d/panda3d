@@ -3,73 +3,59 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-#ifndef _TRACKER_NODE
-#define _TRACKER_NODE
+#ifndef TRACKERNODE_H
+#define TRACKERNODE_H
 
 #include <pandabase.h>
 
-#include <dataNode.h>
-#include <nodeAttributes.h>
-#include <doubleDataAttribute.h>
-#include <doubleDataTransition.h>
-#include <vec3DataAttribute.h>
-#include <vec3DataTransition.h>
-#include <vec3DataAttribute.h>
-#include <vec4DataTransition.h>
-#include <vec4DataAttribute.h>
-
-#include <pointerTo.h>
 #include "clientBase.h"
+#include "trackerData.h"
+#include "clientTrackerDevice.h"
+
+#include <dataNode.h>
+#include <matrixDataTransition.h>
+#include <matrixDataAttribute.h>
+#include <nodeAttributes.h>
+#include <luse.h>
+#include <lmatrix.h>
+#include <pointerTo.h>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TrackerNode
-// Description : Reads the position, velocity and acceleration
-//               information from one sensor on a tracker and sends it
-//               down the DataGraph
+// Description : Reads the data associated with a single tracker
+//               sensor accessed on some ClientBase, and makes the
+//               data available to user code.  Also places the current
+//               tracker's transform on the data graph.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA TrackerNode : public DataNode {
 PUBLISHED:
-  TrackerNode(PT(ClientBase) client, const string &tracker, 
-	      int sensor);
+  TrackerNode(ClientBase *client, const string &device_name);
+  virtual ~TrackerNode();
 
+  INLINE bool is_valid() const;
+
+  INLINE const LPoint3f &get_pos() const;
+  INLINE const LOrientationf &get_orient() const;
+  INLINE const LMatrix4f &get_transform() const;
+
+
+////////////////////////////////////////////////////////////////////
+// From parent class DataNode
+////////////////////////////////////////////////////////////////////
 public:
-  virtual void transmit_data(NodeAttributes &data);
+  virtual void
+  transmit_data(NodeAttributes &data);
 
-public:
-  NodeAttributes _tracker_attrib;
+  NodeAttributes _attrib;
+  PT(MatrixDataAttribute) _transform_attrib;
 
-  PT(DoubleDataAttribute) _ptime;
-  PT(Vec3DataAttribute) _position;
-  PT(Vec4DataAttribute) _pquat;
-  
-  PT(DoubleDataAttribute) _vtime;
-  PT(Vec3DataAttribute) _velocity;
-  PT(Vec4DataAttribute) _vquat;
-  PT(DoubleDataAttribute) _vquat_dt;
+  // outputs
+  static TypeHandle _transform_type;
 
-  PT(DoubleDataAttribute) _atime;
-  PT(Vec3DataAttribute) _acceleration;
-  PT(Vec4DataAttribute) _aquat;
-  PT(DoubleDataAttribute) _aquat_dt;
-
-  static TypeHandle _ptime_type;
-  static TypeHandle _position_type;
-  static TypeHandle _pquat_type;
-
-  static TypeHandle _vtime_type;
-  static TypeHandle _velocity_type;
-  static TypeHandle _vquat_type;
-  static TypeHandle _vquat_dt_type;
-
-  static TypeHandle _atime_type;
-  static TypeHandle _acceleration_type;
-  static TypeHandle _aquat_type;
-  static TypeHandle _aquat_dt_type;
-  
-protected:
-  PT(ClientBase) _client;
-  string _tracker;
-  int _sensor;
+private:
+  PT(ClientTrackerDevice) _tracker;
+  TrackerData _data;
+  LMatrix4f _transform;
 
 public:
   virtual TypeHandle get_type() const {
@@ -84,5 +70,7 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+#include "trackerNode.I"
 
 #endif

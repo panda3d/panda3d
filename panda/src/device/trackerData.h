@@ -3,36 +3,54 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-#ifndef TRACKER_DATA
-#define TRACKER_DATA
+#ifndef TRACKERDATA_H
+#define TRACKERDATA_H
 
 #include <pandabase.h>
 #include <luse.h>
 
+////////////////////////////////////////////////////////////////////
+//       Class : TrackerData
+// Description : Stores the kinds of data that a tracker might output.
+////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA TrackerData {
 public:
   INLINE TrackerData();
   INLINE TrackerData(const TrackerData &copy);
-  INLINE TrackerData &operator = (const TrackerData &copy);
+  void operator = (const TrackerData &copy);
 
-  INLINE static const TrackerData &none();
+  INLINE void clear();
 
-  double ptime;
-  LPoint3f position;
-  LVector4f pquat;
-  
-  double vtime;
-  LVector3f velocity;
-  LVector4f vquat;
-  float vquat_dt;
+  INLINE void set_time(double time);
+  INLINE bool has_time() const;
+  INLINE double get_time() const;
 
-  double atime;
-  LVector3f acceleration;
-  LVector4f aquat;
-  float aquat_dt;
+  INLINE void set_pos(const LPoint3f &pos);
+  INLINE bool has_pos() const;
+  INLINE const LPoint3f &get_pos() const;
+
+  INLINE void set_orient(const LOrientationf &orient);
+  INLINE bool has_orient() const;
+  INLINE const LOrientationf &get_orient() const;
+
+  INLINE void set_dt(double dt);
+  INLINE bool has_dt() const;
+  INLINE double get_dt() const;
 
 private:
-  static TrackerData _none;
+  enum Flags {
+    F_has_time    = 0x0001,
+    F_has_pos     = 0x0002,
+    F_has_orient  = 0x0004,
+    F_has_dt      = 0x0008,
+  };
+
+  int _flags;
+
+  double _time;
+  LPoint3f _pos;
+  LOrientationf _orient;
+  double _dt;
 };
 
 #include "trackerData.I"

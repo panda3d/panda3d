@@ -3,109 +3,98 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-#ifndef VRPN_CLIENT
-#define VRPN_CLIENT
+#ifndef VRPNCLIENT_H
+#define VRPNCLIENT_H
 
 #include <pandabase.h>
 #include <clientBase.h>
 
-#ifdef CPPPARSER
-  // For correct interrogate parsing of UNC's vrpn library.
-  #ifdef WIN32_VC
-    #define _WIN32
-    #define SOCKET int
-  #else
-    #define linux
-    typedef struct timeval timeval;
-  #endif
-#endif
+#include "vrpn_interface.h"
 
-#include <vrpn_Connection.h>
-#include <vrpn_Tracker.h>
-#include <vrpn_Analog.h>
-#include <vrpn_Button.h>
-#include <vrpn_Dial.h>
+class VrpnTracker;
+class VrpnTrackerDevice;
+class VrpnButton;
+class VrpnButtonDevice;
+class VrpnAnalog;
+class VrpnAnalogDevice;
 
+////////////////////////////////////////////////////////////////////
+//       Class : VrpnClient
+// Description : A specific ClientBase that connects to a VRPN server
+//               and records information on the connected VRPN
+//               devices.
+////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA VrpnClient : public ClientBase {
 PUBLISHED:
-  INLINE VrpnClient(const string &server);
+  VrpnClient(const string &server_name);
+  ~VrpnClient();
+
+  INLINE const string &get_server_name() const;
+  INLINE bool is_valid() const;
+  INLINE bool is_connected() const;
+
+  void write(ostream &out, int indent_level = 0) const;
 
 public:
-  //ADD FUNCTIONS
-  virtual bool add_remote_tracker(const string &tracker, int sensor);
-  virtual bool add_remote_analog(const string &analog);
-  virtual bool add_remote_button(const string &button);
-  virtual bool add_remote_dial(const string &dial);
-
+  INLINE static double convert_to_secs(struct timeval msg_time);
+  
 protected:
-  virtual int max_analog_channels();
+  virtual PT(ClientDevice) make_device(TypeHandle device_type,
+				       const string &device_name);
 
-  //Device polling functions
-  virtual void poll_tracker(const string &tracker);
-  virtual void poll_analog(const string &analog);
-  virtual void poll_button(const string &button);
-  virtual void poll_dial(const string &dial);
+  virtual bool disconnect_device(TypeHandle device_type, 
+				 const string &device_name,
+				 ClientDevice *device);
+
+  virtual void do_poll();
 
 private:
-  //Private VRPN objects
-  typedef map <string, vrpn_Tracker*> VrpnTrackers;
-  typedef map <string, vrpn_Analog*> VrpnAnalogs;
-  typedef map <string, vrpn_Button*> VrpnButtons;
-  typedef map <string, vrpn_Dial*> VrpnDials;
+  PT(ClientDevice) make_tracker_device(const string &device_name);
+  PT(ClientDevice) make_button_device(const string &device_name);
+  PT(ClientDevice) make_analog_device(const string &device_name);
+  void disconnect_tracker_device(VrpnTrackerDevice *device);
+  void disconnect_button_device(VrpnButtonDevice *device);
+  void disconnect_analog_device(VrpnAnalogDevice *device);
 
+  VrpnTracker *get_tracker(const string &tracker_name);
+  void free_tracker(VrpnTracker *vrpn_tracker);
+
+  VrpnButton *get_button(const string &button_name);
+  void free_button(VrpnButton *vrpn_button);
+
+  VrpnAnalog *get_analog(const string &analog_name);
+  void free_analog(VrpnAnalog *vrpn_analog);
+
+private:
+  string _server_name;
   vrpn_Connection *_connection;
-  VrpnTrackers _vrpn_trackers;
-  VrpnAnalogs _vrpn_analogs;
-  VrpnButtons _vrpn_buttons;
-  VrpnDials _vrpn_dials;
 
-  //VRPN Callback functions.  Each callback actually needs to be a
-  //pair of two functions, one a static and one not.  The static is
-  //needed because we can't set member functions as callbacks (due to
-  //the implicity this pointer) and the non-static function is needed
-  //so that we can set the non-static data storage variables
-  //appropriately
-private:
-  static void st_tracker_position(void *userdata, const vrpn_TRACKERCB info);
-  INLINE void tracker_position(const string &tracker, const vrpn_TRACKERCB info);
+  typedef map<string, VrpnTracker *> Trackers;
+  typedef map<string, VrpnButton *> Buttons;
+  typedef map<string, VrpnAnalog *> Analogs;
 
-  static void st_tracker_velocity(void *userdata, const vrpn_TRACKERVELCB info);
-  INLINE void tracker_velocity(const string &tracker, const vrpn_TRACKERVELCB info);
+  Trackers _trackers;
+  Buttons _buttons;
+  Analogs _analogs;
 
-  static void st_tracker_acceleration(void *userdata, const vrpn_TRACKERACCCB info);
-  INLINE void tracker_acceleration(const string &tracker, const vrpn_TRACKERACCCB info);
-
-  static void st_analog(void *userdata, const vrpn_ANALOGCB info);
-  INLINE void analog(const string &analog, const vrpn_ANALOGCB info);
-
-  static void st_button(void *userdata, const vrpn_BUTTONCB info);
-  INLINE void button(const string &button, const vrpn_BUTTONCB info);
-
-  static void st_dial(void *userdata, const vrpn_DIALCB info);
-  INLINE void dial(const string &dial, const vrpn_DIALCB info);
 
 public:
-  static TypeHandle get_class_type( void ) {
-      return _type_handle;
+  static TypeHandle get_class_type() {
+    return _type_handle;
   }
-  static void init_type( void ) {
+  static void init_type() {
     ClientBase::init_type();
-    register_type( _type_handle, "VrpnClient",
-		   ClientBase::get_class_type() );
+    register_type(_type_handle, "VrpnClient",
+                  ClientBase::get_class_type());
   }
-  virtual TypeHandle get_type( void ) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type() {
-    init_type(); 
-    return get_class_type();
-  }
-
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+ 
 private:
-  static TypeHandle		_type_handle;
+  static TypeHandle _type_handle;
 };
-
-INLINE double convert_to_secs(struct timeval msg_time);
 
 #include "vrpnClient.I"
 

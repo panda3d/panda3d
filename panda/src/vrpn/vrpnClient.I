@@ -6,6 +6,57 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VrpnClient::get_server_name
+//       Access: Public
+//  Description: Returns the name of the server as passed to the
+//               VrpnClient constructor.
+////////////////////////////////////////////////////////////////////
+INLINE const string &VrpnClient::
+get_server_name() const {
+  return _server_name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VrpnClient::is_valid
+//       Access: Public
+//  Description: Returns true if everything seems to be kosher with
+//               the server (even if there is no connection), or false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool VrpnClient::
+is_valid() const {
+  return _connection->doing_okay();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VrpnClient::is_connected
+//       Access: Public
+//  Description: Returns true if the connection is established
+//               succesfully, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool VrpnClient::
+is_connected() const {
+  return _connection->connected();
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: VrpnClient::convert_to_secs
+//       Access: Public, Static
+//  Description: Little inline function to convert a struct timeval
+//               to only seconds
+////////////////////////////////////////////////////////////////////
+INLINE double VrpnClient::
+convert_to_secs(struct timeval msg_time) {
+  return (double)(msg_time.tv_sec) + (double)msg_time.tv_usec * 0.000001;
+}
+
+
+
+
+#if 0
+
+////////////////////////////////////////////////////////////////////
 //     Function: VrpnClient::constructor
 //       Access: Public
 //  Description: 
@@ -107,12 +158,4 @@ dial(const string &dial, const vrpn_DIALCB info) {
   push_dial(dial, dtime, info.dial, info.change);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: convert_to_secs
-//       Access: Public
-//  Description: Little inline function to convert a struct timeval
-//               to only seconds
-////////////////////////////////////////////////////////////////////
-INLINE double convert_to_secs(struct timeval msg_time) {
-  return (double)(msg_time.tv_sec) + (double)msg_time.tv_usec * 0.000001;
-}
+#endif

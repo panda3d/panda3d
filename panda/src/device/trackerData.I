@@ -10,7 +10,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE TrackerData::
 TrackerData() :
-  ptime(0), vtime(0), vquat_dt(0), atime(0), aquat_dt(0)
+  _flags(0)
 {
 }
 
@@ -25,35 +25,176 @@ TrackerData(const TrackerData &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TrackerData::Copy Assignment Operator
+//     Function: TrackerData::clear
 //       Access: Public
-//  Description: 
+//  Description: Removes all data from the structure.
 ////////////////////////////////////////////////////////////////////
-INLINE TrackerData &TrackerData::
-operator = (const TrackerData &copy) {
-  ptime = copy.ptime;
-  position = copy.position;
-  pquat = copy.pquat;
-
-  vtime = copy.vtime;
-  velocity = copy.velocity;
-  vquat = copy.vquat;
-  vquat_dt = copy.vquat_dt;
-
-  atime = copy.atime;
-  acceleration = copy.acceleration;
-  aquat = copy.aquat;
-  aquat_dt = copy.aquat_dt;
-
-  return *this;
+INLINE void TrackerData::
+clear() {
+  _flags = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TrackerData::none
-//       Access: Public, Static
-//  Description: Returns an empty TrackerData object
+//     Function: TrackerData::set_time
+//       Access: Public
+//  Description: Indicates the time at which the position information
+//               (pos and orient) are effective.  This is a time
+//               elapsed in seconds since some undefined epoch; it may
+//               or may not correspond to the clock time indicated in
+//               the global ClockObject.
 ////////////////////////////////////////////////////////////////////
-INLINE const TrackerData &TrackerData::
-none() {
- return _none; 
+INLINE void TrackerData::
+set_time(double time) {
+  _time = time;
+  _flags |= F_has_time;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TrackerData::has_time
+//       Access: Public
+//  Description: Returns true if the position information time is
+//               available.  See set_time().
+////////////////////////////////////////////////////////////////////
+INLINE bool TrackerData::
+has_time() const {
+  return (_flags & F_has_time) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TrackerData::get_time
+//       Access: Public
+//  Description: Returns the time at which the position information
+//               (pos and orient) are effective.  It is an error to
+//               call this if has_time() does not return true.  See
+//               set_time().
+////////////////////////////////////////////////////////////////////
+INLINE double TrackerData::
+get_time() const {
+  nassertr(has_time(), 0.0);
+  return _time;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TrackerData::set_pos
+//       Access: Public
+//  Description: Indicates the current position of the tracker sensor
+//               in space.  The coordinate system of this position is
+//               defined by the tracker.
+////////////////////////////////////////////////////////////////////
+INLINE void TrackerData::
+set_pos(const LPoint3f &pos) {
+  _pos = pos;
+  _flags |= F_has_pos;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TrackerData::has_pos
+//       Access: Public
+//  Description: Returns true if the current position is available.
+//               See set_pos().
+////////////////////////////////////////////////////////////////////
+INLINE bool TrackerData::
+has_pos() const {
+  return (_flags & F_has_pos) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TrackerData::get_pos
+//       Access: Public
+//  Description: Returns the current position of the tracker.  It is
+//               legal to call this if has_pos() returns false; in
+//               this case, the position will always be (0, 0, 0).
+////////////////////////////////////////////////////////////////////
+INLINE const LPoint3f &TrackerData::
+get_pos() const {
+  if (has_pos()) {
+    return _pos;
+  } else {
+    static LPoint3f zero(0.0, 0.0, 0.0);
+    return zero;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TrackerData::set_orient
+//       Access: Public
+//  Description: Indicates the current orientation of the tracker
+//               sensor in space.  The coordinate system of this
+//               orientation is defined by the tracker, but should be
+//               the same coordinate system as that reflected by
+//               set_pos().
+////////////////////////////////////////////////////////////////////
+INLINE void TrackerData::
+set_orient(const LOrientationf &orient) {
+  _orient = orient;
+  _flags |= F_has_orient;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TrackerData::has_orient
+//       Access: Public
+//  Description: Returns true if the current orientation is available.
+//               See set_orient().
+////////////////////////////////////////////////////////////////////
+INLINE bool TrackerData::
+has_orient() const {
+  return (_flags & F_has_orient) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TrackerData::get_orient
+//       Access: Public
+//  Description: Returns the current orientation of the tracker.  It
+//               is legal to call this if has_orient() returns false;
+//               in this case, the result is always the identity
+//               orientation.
+////////////////////////////////////////////////////////////////////
+INLINE const LOrientationf &TrackerData::
+get_orient() const {
+  if (has_orient()) {
+    return _orient;
+  } else {
+    static LOrientationf ident = LOrientationf::ident_quat();
+    return ident;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TrackerData::set_dt
+//       Access: Public
+//  Description: Indicates the amount of elapsed time over which which
+//               the information (pos and orient) were computed.  This
+//               only makes sense if the information represents
+//               velocity or acceleration, rather than position.  This
+//               is an elapsed time in seconds.
+////////////////////////////////////////////////////////////////////
+INLINE void TrackerData::
+set_dt(double dt) {
+  _dt = dt;
+  _flags |= F_has_dt;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TrackerData::has_dt
+//       Access: Public
+//  Description: Returns true if the computed elapsed time is
+//               available.  See set_dt().
+////////////////////////////////////////////////////////////////////
+INLINE bool TrackerData::
+has_dt() const {
+  return (_flags & F_has_dt) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TrackerData::get_dt
+//       Access: Public
+//  Description: Returns the amount of elapsed time over which the
+//               information (pos and orient) were computed.  It
+//               is an error to call this if has_dt() does not return
+//               true.  See set_dt().
+////////////////////////////////////////////////////////////////////
+INLINE double TrackerData::
+get_dt() const {
+  nassertr(has_dt(), 0.0);
+  return _dt;
 }

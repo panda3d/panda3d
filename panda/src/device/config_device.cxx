@@ -4,10 +4,15 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_device.h"
-#include "mouse.h"
+#include "analogNode.h"
+#include "buttonNode.h"
+#include "clientAnalogDevice.h"
 #include "clientBase.h"
+#include "clientButtonDevice.h"
+#include "clientDevice.h"
+#include "clientTrackerDevice.h"
+#include "mouse.h"
 #include "trackerNode.h"
-#include "adinputNode.h"
 
 #include <dconfig.h>
 
@@ -36,8 +41,13 @@ init_libdevice() {
   }
   initialized = true;
 
+  AnalogNode::init_type();
+  ButtonNode::init_type();
+  ClientAnalogDevice::init_type();
+  ClientBase::init_type();
+  ClientButtonDevice::init_type();
+  ClientDevice::init_type();
+  ClientTrackerDevice::init_type();
   MouseAndKeyboard::init_type();
   TrackerNode::init_type();
-  ADInputNode::init_type();
-  ClientBase::init_type();
 }

@@ -76,8 +76,8 @@ PUBLISHED:
   INLINE NodeRelation *get_geometry() const;
   INLINE void clear_geometry();
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent_level = 0) const;
 
 private:
   void set_current_region(MouseWatcherRegion *region);

@@ -8,18 +8,19 @@
 
 TypeHandle ClientBase::_type_handle;
 
-#include <algorithm>
-
 ////////////////////////////////////////////////////////////////////
 //     Function: ClientBase::constructor
-//       Access: Public
+//       Access: Protected
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 ClientBase::
-ClientBase(const string &server) :
-  _sleep_time(1000000/60), _server(server), _forked(false)
-{
+ClientBase() {
+  _forked = false;
+  _last_poll_time = 0.0;
+  _last_poll_frame = 0;
+
 #ifdef HAVE_IPC
+  _client_thread = (thread *)NULL;
   _shutdown = false;
 #endif
 }
@@ -31,20 +32,22 @@ ClientBase(const string &server) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 ClientBase::
-~ClientBase()
-{
-#ifdef HAVE_IPC
-  if (asynchronous_clients && _forked == true) {
-    {
-      //Make sure that you grab all locks before setting shutdown to
-      //true.  This ensures that all polling actions on the thread
-      //serving the devices have finished before we tell it to
-      //shutdown
-      mutex_lock t_lock(_tracker_lock);
-      mutex_lock a_lock(_analog_lock);
-      mutex_lock b_lock(_button_lock);
-      _shutdown = true;
+~ClientBase() {
+  // We have to disconnect all of our devices before destructing.
+  Devices::iterator di;
+  Devices devices_copy = _devices;
+  for (di = devices_copy.begin(); di != devices_copy.end(); ++di) {
+    DevicesByName &dbn = (*di).second;
+    DevicesByName::iterator dbni;
+    for (dbni = dbn.begin(); dbni != dbn.end(); ++dbni) {
+      ClientDevice *device = (*dbni).second;
+      device->disconnect();
     }
+  }
+
+#ifdef HAVE_IPC
+  if (_forked) {
+    _shutdown = true;
 
     // Join the loader thread - calling process blocks until the loader
     // thread returns.
@@ -53,15 +56,29 @@ ClientBase::
   }
 #endif
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ClientBase::fork_asynchronous_thread
 //       Access: Public
-//  Description:
+//  Description: Forks a separate thread to do all the polling of
+//               connected devices.  The forked thread will poll after
+//               every poll_time seconds has elapsed.  Returns true if
+//               the fork was successful, or false otherwise (for
+//               instance, because we were already forked, or because
+//               asynchronous threads are disabled).
 ////////////////////////////////////////////////////////////////////
-void ClientBase::
-fork_asynchronous_thread(void) {
+bool ClientBase::
+fork_asynchronous_thread(double poll_time) {
 #ifdef HAVE_IPC
+  if (_forked) {
+    device_cat.error()
+      << "Attempt to fork client thread twice.\n";
+    return false;
+  }
+
   if (asynchronous_clients) {
+    _sleep_time = (int)(1000000 * poll_time);
+
     _client_thread = thread::create(&st_callback, this);
     _forked = true;
     if (device_cat.is_debug()) {
@@ -69,21 +86,106 @@ fork_asynchronous_thread(void) {
 	<< "fork_asynchronous_thread() - forking client thread"
 	<< endl;
     }
+    return true;
   }
 #endif
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::set_poll_time
+//     Function: ClientBase::get_device
 //       Access: Public
-//  Description: Sets the time between polls.  The poll time is assumed
-//               to be in seconds
+//  Description: Returns a ClientDevice pointer that corresponds to
+//               the named device of the indicated device type.  The
+//               device_type should be one of ClientTrackerDevice,
+//               ClientAnalogDevice, etc.; the device_name is
+//               implementation defined.
+//
+//               Normally, the user does not need to call this
+//               function directly; it is called automatically by
+//               creating a TrackerNode or AnalogNode or some such
+//               data graph node.
+//
+//               The return value is the pointer to the created device
+//               (which might be the same pointer returned by a
+//               previous call to this function with the same
+//               parameters).  When the pointer destructs (i.e. its
+//               reference count reaches zero) it will automatically
+//               be disconnected.
+//
+//               If the named device does not exist or cannot be
+//               connected for some reason, NULL is returned.
+////////////////////////////////////////////////////////////////////
+PT(ClientDevice) ClientBase::
+get_device(TypeHandle device_type, const string &device_name) {
+  DevicesByName &dbn = _devices[device_type];
+
+  DevicesByName::iterator dbni;
+  dbni = dbn.find(device_name);
+  if (dbni != dbn.end()) {
+    // This device was previously connected.  Return it again.
+    return (*dbni).second;
+  }
+
+  // We need to create a new device for this name.
+  PT(ClientDevice) device = make_device(device_type, device_name);
+
+  if (device != (ClientDevice *)NULL) {
+    dbn.insert(DevicesByName::value_type(device_name, device));
+    device->_is_connected = true;
+  }
+
+  return device;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClientBase::disconnect_device
+//       Access: Protected, Virtual
+//  Description: Removes the device, which is presumably about to
+//               destruct, from the list of connected devices, and
+//               frees any data required to support it.  This device
+//               will no longer receive automatic updates with each
+//               poll.
+//
+//               The return value is true if the device was
+//               disconnected, or false if it was unknown (e.g. it was
+//               disconnected previously).
+////////////////////////////////////////////////////////////////////
+bool ClientBase::
+disconnect_device(TypeHandle device_type, const string &device_name,
+		  ClientDevice *device) {
+  DevicesByName &dbn = _devices[device_type];
+
+  DevicesByName::iterator dbni;
+  dbni = dbn.find(device_name);
+  if (dbni != dbn.end()) {
+    if ((*dbni).second == device) {
+      // We found it!
+      dbn.erase(dbni);
+      return true;
+    }
+  }
+
+  // The device was unknown.
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClientBase::do_poll
+//       Access: Protected, Virtual
+//  Description: Implements the polling and updating of connected
+//               devices, if the ClientBase requires this.  This may
+//               be called in a sub-thread if
+//               fork_asynchronous_thread() was called; otherwise, it
+//               will be called once per frame.
 ////////////////////////////////////////////////////////////////////
 void ClientBase::
-set_poll_time(float poll_time) {
-  _sleep_time = (int)(1000000 * poll_time);
+do_poll() {
+  ClockObject *global_clock = ClockObject::get_global_clock();
+  _last_poll_frame = global_clock->get_frame_count();
+  _last_poll_time = global_clock->get_time();
 }
-
 
 #ifdef HAVE_IPC
 ////////////////////////////////////////////////////////////////////
@@ -113,339 +215,13 @@ st_callback(void *arg) {
 //               being watched
 ////////////////////////////////////////////////////////////////////
 void ClientBase::
-callback(void) {
-  while(true) {
+callback() {
+  while (true) {
     if (_shutdown) {
       break;
     }
-    poll_trackers();
-    poll_analogs();
-    poll_buttons();
+    do_poll();
     ipc_traits::sleep(0, _sleep_time);
   }
 }
 #endif // HAVE_IPC
-
-////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::get_tracker_data
-//       Access: Public, Virtual
-//  Description: Returns the current data for the sensor of a particular
-//               tracker
-////////////////////////////////////////////////////////////////////
-const TrackerData& ClientBase::
-get_tracker_data(const string &tracker, int sensor) {
-
-  //Very important that this check and associated call are made before
-  //the mutex lock, otherwise if we are not forked and we lock before
-  //doing poll we will get into a deadlock condition when the
-  //associated push for this function is called
-  if (!_forked) {
-    poll_tracker(tracker);
-  }
-
-  //Make sure to prevent simultaneous write and read of device
-#ifdef HAVE_IPC
-  mutex_lock lock(_tracker_lock);
-#endif
-
-  if ((find(_trackers.begin(), _trackers.end(), tracker) != _trackers.end()) ||
-      (find(_sensors[tracker].begin(), _sensors[tracker].end(), sensor) 
-                                                != _sensors[tracker].end())) {
-    if (_tracker_datas.find(tracker) != _tracker_datas.end()) {
-      if (_tracker_datas[tracker].find(sensor) != _tracker_datas[tracker].end()) {
-	return _tracker_datas[tracker][sensor];
-      }
-    }
-  }
-  else {
-    device_cat.error() << "Request for either unknown sensor " << sensor 
-		       <<  " or unknown tracker " << tracker <<  " made" << endl;
-  }
-
-  return TrackerData::none();
-
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::get_analog_data
-//       Access: Public, Virtual
-//  Description: Returns the current data for the sensor of a particular
-//               analog
-////////////////////////////////////////////////////////////////////
-const AnalogData& ClientBase::
-get_analog_data(const string &analog) {
-
-  //Very important that this check and associated call are made before
-  //the mutex lock, otherwise if we are not forked and we lock before
-  //doing poll we will get into a deadlock condition when the
-  //associated push for this function is called
-  if (!_forked) {
-    poll_analog(analog);
-  }
-
-  //Make sure to prevent simultaneous write and read of device
-#ifdef HAVE_IPC
-  mutex_lock lock(_analog_lock);
-#endif
-
-  if (find(_analogs.begin(), _analogs.end(), analog) != _analogs.end()) {
-    if (_analog_datas.find(analog) != _analog_datas.end()) {
-      //Make sure to rotate the arrays to ensure access safety
-      swap(_analog_datas[analog].channels, _analog_datas[analog].stored_channels);
-      return _analog_datas[analog];
-    }
-  }
-  else {
-    device_cat.error() << "Request for unknown analog " << analog << " made" << endl;
-  }
-
-  return AnalogData::none();
-
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::get_button_data
-//       Access: Public, Virtual
-//  Description: Returns the current data for the sensor of a particular
-//               button
-////////////////////////////////////////////////////////////////////
-const ButtonData& ClientBase::
-get_button_data(const string &button) {
-
-  //Very important that this check and associated call are made before
-  //the mutex lock, otherwise if we are not forked and we lock before
-  //doing poll we will get into a deadlock condition when the
-  //associated push for this function is called
-  if (!_forked) {
-    poll_button(button);
-  }
-
-  //Make sure to prevent simultaneous write and read of device
-#ifdef HAVE_IPC
-  mutex_lock lock(_button_lock);
-#endif
-
-  if (find(_buttons.begin(), _buttons.end(), button) != _buttons.end()) {
-    if (_button_datas.find(button) != _button_datas.end()) {
-      return _button_datas[button];
-    }
-  }
-  else {
-    device_cat.error() << "Request for unknown button " << button << " made" << endl;
-  }
-
-  return ButtonData::none();
-
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::get_dial_data
-//       Access: Public, Virtual
-//  Description: Returns the current data for the sensor of a particular
-//               dial
-////////////////////////////////////////////////////////////////////
-const DialData& ClientBase::
-get_dial_data(const string &dial) {
-
-  //Very important that this check and associated call are made before
-  //the mutex lock, otherwise if we are not forked and we lock before
-  //doing poll we will get into a deadlock condition when the
-  //associated push for this function is called
-  if (!_forked) {
-    poll_dial(dial);
-  }
-
-  //Make sure to prevent simultaneous write and read of device
-#ifdef HAVE_IPC
-  mutex_lock lock(_dial_lock);
-#endif
-
-  if (find(_dials.begin(), _dials.end(), dial) != _dials.end()) {
-    if (_dial_datas.find(dial) != _dial_datas.end()) {
-      return _dial_datas[dial];
-    }
-  }
-  else {
-    device_cat.error() << "Request for unknown dial " << dial << " made" << endl;
-  }
-
-  return DialData::none();
-
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::push_tracker_position
-//       Access: Protected, Virtual
-//  Description: Use this function in the children class to fill in
-//               tracker data
-////////////////////////////////////////////////////////////////////
-void ClientBase::
-push_tracker_position(const string &tracker, const int &sensor, const double &ptime,
-		      const LPoint3f &pos, const LVector4f &pquat) {
-  //Make sure to prevent simultaneous write and read of device
-#ifdef HAVE_IPC
-  mutex_lock lock(_tracker_lock);  
-#endif
-
-  _tracker_datas[tracker][sensor].ptime = ptime;
-  _tracker_datas[tracker][sensor].position = pos;
-  _tracker_datas[tracker][sensor].pquat = pquat;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::push_tracker_position
-//       Access: Protected, Virtual
-//  Description: Use this function in the children class to fill in
-//               tracker data
-////////////////////////////////////////////////////////////////////
-void ClientBase::
-push_tracker_velocity(const string &tracker, int sensor, const double &vtime, 
-		      const LPoint3f &vel, const LVector4f &vquat, const float &dt) {
-  //Make sure to prevent simultaneous write and read of device
-#ifdef HAVE_IPC
-  mutex_lock lock(_tracker_lock);  
-#endif
-
-  _tracker_datas[tracker][sensor].vtime = vtime;
-  _tracker_datas[tracker][sensor].velocity = vel;
-  _tracker_datas[tracker][sensor].vquat = vquat;
-  _tracker_datas[tracker][sensor].vquat_dt = dt;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::push_tracker_position
-//       Access: Protected, Virtual
-//  Description: Use this function in the children class to fill in
-//               tracker data
-////////////////////////////////////////////////////////////////////
-void ClientBase::
-push_tracker_acceleration(const string &tracker, const int &sensor, const double &atime, 
-			  const LPoint3f &acc, const LVector4f &aquat, const float &dt) {
-  //Make sure to prevent simultaneous write and read of device
-#ifdef HAVE_IPC
-  mutex_lock lock(_tracker_lock);  
-#endif
-
-  _tracker_datas[tracker][sensor].atime = atime;
-  _tracker_datas[tracker][sensor].acceleration = acc;
-  _tracker_datas[tracker][sensor].aquat = aquat;
-  _tracker_datas[tracker][sensor].aquat_dt = dt;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::push_analog
-//       Access: Protected, Virtual
-//  Description: Use this function in the children class to fill in
-//               analog data
-////////////////////////////////////////////////////////////////////
-void ClientBase::
-push_analog(const string &analog, const float &atime, 
-	    const double *channels, int num_channels) {
-  //Make sure to prevent simultaneous write and read of device
-#ifdef HAVE_IPC
-  mutex_lock lock(_analog_lock);  
-#endif
-
-  _analog_datas[analog].atime = atime;
-
-  const double *head = channels;
-  const double *end = head + num_channels;
-  _analog_datas[analog].stored_channels->clear();
-  vector_double::iterator start = _analog_datas[analog].stored_channels->begin();
-  _analog_datas[analog].stored_channels->insert(start, head, end);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::push_button
-//       Access: Protected, Virtual
-//  Description: Use this function in the children class to fill in
-//               button data
-////////////////////////////////////////////////////////////////////
-void ClientBase::
-push_button(const string &button, const float &btime, const int &button_id, 
-	    const int &state) {
-  //Make sure to prevent simultaneous write and read of device
-#ifdef HAVE_IPC
-  mutex_lock lock(_button_lock);  
-#endif
-
-  _button_datas[button].btime = btime;
-  _button_datas[button].button_id = button_id;
-  _button_datas[button].state = state;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::push_dial
-//       Access: Protected, Virtual
-//  Description: Use this function in the children class to fill in
-//               dial data
-////////////////////////////////////////////////////////////////////
-void ClientBase::
-push_dial(const string &dial, const float &dtime, const int &dial_id, 
-	    const float &change) {
-  //Make sure to prevent simultaneous write and read of device
-#ifdef HAVE_IPC
-  mutex_lock lock(_dial_lock);  
-#endif
-
-  _dial_datas[dial].dtime = dtime;
-  _dial_datas[dial].dial_id = dial_id;
-  _dial_datas[dial].change = change;
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::poll_trackers()
-//       Access: Private
-//  Description: Polls all current trackers
-////////////////////////////////////////////////////////////////////
-void ClientBase::
-poll_trackers() {
-  Trackers::iterator ti = _trackers.begin();
-  for(; ti != _trackers.end(); ti++) {
-    poll_tracker((*ti));
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::poll_analogs()
-//       Access: Private
-//  Description: Polls all current analogs
-////////////////////////////////////////////////////////////////////
-void ClientBase::
-poll_analogs() {
-  Analogs::iterator ti = _analogs.begin();
-  for(; ti != _analogs.end(); ti++) {
-    poll_analog((*ti));
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::poll_buttons()
-//       Access: Private
-//  Description: Polls all current buttons
-////////////////////////////////////////////////////////////////////
-void ClientBase::
-poll_buttons() {
-  Buttons::iterator ti = _buttons.begin();
-  for(; ti != _buttons.end(); ti++) {
-    poll_button((*ti));
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::poll_dials()
-//       Access: Private
-//  Description: Polls all current dials
-////////////////////////////////////////////////////////////////////
-void ClientBase::
-poll_dials() {
-  Dials::iterator ti = _dials.begin();
-  for(; ti != _dials.end(); ti++) {
-    poll_dial((*ti));
-  }
-}
-
-
-
-

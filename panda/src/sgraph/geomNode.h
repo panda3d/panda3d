@@ -37,7 +37,7 @@ public:
   virtual void xform(const LMatrix4f &mat);
 
 PUBLISHED:
-  void write(ostream &out, int indent_level = 0) const;
+  virtual void write(ostream &out, int indent_level = 0) const;
   void write_verbose(ostream &out, int indent_level) const;
 
 public:

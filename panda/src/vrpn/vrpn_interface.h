@@ -1,0 +1,28 @@
+// Filename: vrpn_interface.h
+// Created by:  drose (25Jan01)
+// 
+////////////////////////////////////////////////////////////////////
+
+#ifndef VRPN_INTERFACE_H
+#define VRPN_INTERFACE_H
+
+#include <pandabase.h>
+
+#ifdef CPPPARSER
+  // For correct interrogate parsing of UNC's vrpn library.
+  #ifdef WIN32_VC
+    #define _WIN32
+    #define SOCKET int
+  #else
+    #define linux
+    typedef struct timeval timeval;
+  #endif
+#endif
+
+#include <vrpn_Connection.h>
+#include <vrpn_Tracker.h>
+#include <vrpn_Analog.h>
+#include <vrpn_Button.h>
+#include <vrpn_Dial.h>
+
+#endif
