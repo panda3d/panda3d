@@ -936,7 +936,7 @@ output(ostream &out) const {
 void DownloadDb::
 add_version(const Filename &name, Hash hash, Version version) {
   int name_code = atoi(name.get_fullpath().c_str());
-  _versions[name_code][version] = hash;
+  add_version(name_code, hash, version);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -945,8 +945,29 @@ add_version(const Filename &name, Hash hash, Version version) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::
-add_version(int name, Hash hash, Version version) {
-  _versions[name][version] = hash;
+add_version(int name_code, Hash hash, Version version) {
+  // Try to find this name_code in the map
+  VersionMap::iterator i = _versions.find(name_code);
+
+  // If we did not find it, put a new vector_ulong at this name_code
+  if (i == _versions.end()) {
+    vector_ulong v;
+    v.push_back(hash);
+    _versions[name_code] = v;
+  } else {
+    int size = (*i).second.size();
+
+    // Assert that this version is the next version in the list
+    nassertv(version<=size);
+
+    // If you are overwriting an old hash value, just insert the new value
+    if (version < size) {
+      (*i).second[version] = hash;
+    } else {
+      //  add this hash at the end of the vector
+      (*i).second.push_back(hash);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -957,10 +978,14 @@ add_version(int name, Hash hash, Version version) {
 int DownloadDb::
 get_version(const Filename &name, Hash hash) {
   int name_code = atoi(name.get_fullpath().c_str());
-  vector_ulong ulvec = _versions[name_code];
+  VersionMap::const_iterator vmi = _versions.find(name_code);
+  if (vmi == _versions.end()) {
+    return -1;
+  }
+  vector_ulong ulvec = (*vmi).second;
   vector_ulong::iterator i = find(ulvec.begin(), ulvec.end(), hash);
   if (i != ulvec.end())
-    return (ulvec.begin() - i);
+    return (i - ulvec.begin());
   return -1;
 }
 

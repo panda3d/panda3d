@@ -203,7 +203,7 @@ public:
   typedef vector<unsigned long> vector_ulong;
   typedef map<int, vector_ulong> VersionMap;
   void add_version(const Filename &name, Hash hash, Version version);
-  void add_version(int name, Hash hash, Version version);
+  void add_version(int name_code, Hash hash, Version version);
   int get_version(const Filename &name, Hash hash);
 
 protected:
