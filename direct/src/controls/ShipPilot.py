@@ -478,7 +478,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             onScreenDebug.add("w acForce len",
                 "% 10.4f"%acForce.length())
 
-            onScreenDebug.add("avatarViscosity",
+            onScreenDebug.add("w avatarViscosity",
                 "% 10.4f"%(self.avatarViscosity.getCoef(),))
 
             #onScreenDebug.add("physMgr",
@@ -507,9 +507,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         if 0:
             onScreenDebug.add("w priorParent po",
                 self.priorParent.getVector(physObject).pPrintValues())
-        if 0:
-            onScreenDebug.add("w __posDelta",
-                self.__oldPosDelta.pPrintValues())
+
         if 1:
             onScreenDebug.add("w contact",
                 self.actorNode.getContactVector().pPrintValues())
@@ -602,21 +600,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         if self.needToDeltaPos:
             self.setPriorParentVector()
             self.needToDeltaPos = 0
-        #self.__oldPosDelta = render.getRelativeVector(
-        #    self.avatarNodePath,
-        #    self.avatarNodePath.getPosDelta(render))
-        #self.__oldPosDelta = self.avatarNodePath.getRelativeVector(
-        #    render,
-        #    self.avatarNodePath.getPosDelta(render))
-        self.__oldPosDelta = self.avatarNodePath.getPosDelta(render)
-        self.__oldDt = dt
-        #posDelta = self.avatarNodePath.getPosDelta(render)
-        #if posDelta==Vec3.zero():
-        #    self.priorParent.setVector(self.__oldPosDelta)
-        #else:
-        #    self.priorParent.setVector(Vec3.zero())
-        #    # We must copy the vector to preserve it:
-        #    self.__oldPosDelta=Vec3(posDelta)
+
         airborneHeight=self.getAirborneHeight()
         if airborneHeight > self.highMark:
             self.highMark = airborneHeight
@@ -815,6 +799,23 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
 
         # Clear the contact vector so we can tell if we contact something next frame:
         self.actorNode.setContactVector(Vec3.zero())
+
+        self.__oldPosDelta = self.avatarNodePath.getPosDelta(render)
+        self.__oldDt = dt
+        assert hasattr(self.ship, 'worldVelocity')
+        self.ship.worldVelocity = self.__oldPosDelta*(1/self.__oldDt)
+        if self.wantDebugIndicator:
+            onScreenDebug.add("w __oldPosDelta vec",
+                self.__oldPosDelta.pPrintValues())
+            onScreenDebug.add("w __oldPosDelta len",
+                "% 10.4f"%self.__oldPosDelta.length())
+            onScreenDebug.add("w __oldDt",
+                "% 10.4f"%self.__oldDt)
+            onScreenDebug.add("w worldVelocity vec",
+                self.ship.worldVelocity.pPrintValues())
+            onScreenDebug.add("w worldVelocity len",
+                "% 10.4f"%self.ship.worldVelocity.length())
+
         return Task.cont
     
     def doDeltaPos(self):
