@@ -23,7 +23,7 @@
 // Where should we find the DTOOL source directory?
 #if $[or $[CTPROJS],$[DTOOL]]
   // If we are presently attached, use the environment variable.
-  #define DTOOL_SOURCE $[DTOOL]
+  #define DTOOL_SOURCE $[unixfilename $[DTOOL]]
   #if $[eq $[DTOOL],]
     #error You seem to be attached to some trees, but not DTOOL!
   #endif
@@ -35,14 +35,15 @@
 
 // Where should we install PANDA?
 #if $[or $[CTPROJS],$[PANDA]]
+  #set PANDA $[unixfilename $[PANDA]]
   #define PANDA_INSTALL $[PANDA]
   #define PANDA_INSTALL_OTHER $(PANDA)
   #if $[eq $[PANDA],]
     #error You seem to be attached to some trees, but not PANDA!
   #endif
 #else
-  #defer PANDA_INSTALL $[INSTALL_DIR]
-  #defer PANDA_INSTALL_OTHER $[INSTALL_DIR]
+  #defer PANDA_INSTALL $[unixfilename $[INSTALL_DIR]]
+  #defer PANDA_INSTALL_OTHER $[unixfilename $[INSTALL_DIR]]
 #endif
 
 

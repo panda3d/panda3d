@@ -22,7 +22,7 @@
 // Where should we find the PANDA source directory?
 #if $[or $[CTPROJS],$[PANDA]]
   // If we are presently attached, use the environment variable.
-  #define PANDA_SOURCE $[PANDA]
+  #define PANDA_SOURCE $[unixfilename $[PANDA]]
   #if $[eq $[PANDA],]
     #error You seem to be attached to some trees, but not PANDA!
   #endif
@@ -34,14 +34,15 @@
 
 // Where should we install DIRECT?
 #if $[or $[CTPROJS],$[DIRECT]]
+  #set DTOOL $[unixfilename $[DIRECT]]
   #define DIRECT_INSTALL $[DIRECT]
   #define DIRECT_INSTALL_OTHER $(DIRECT)
   #if $[eq $[DIRECT],]
     #error You seem to be attached to some trees, but not DIRECT!
   #endif
 #else
-  #defer DIRECT_INSTALL $[INSTALL_DIR]
-  #defer DIRECT_INSTALL_OTHER $[INSTALL_DIR]
+  #defer DIRECT_INSTALL $[unixfilename $[INSTALL_DIR]]
+  #defer DIRECT_INSTALL_OTHER $[unixfilename $[INSTALL_DIR]]
 #endif
 
 

@@ -23,7 +23,7 @@
   #define VERSION 0.80
 #endif
 
-// Where should install DTOOL, specifically?
+// Where should we install DTOOL, specifically?
 #if $[or $[CTPROJS],$[DTOOL]]
   // If we are presently attached, use the environment variable.
   // We define two variables: one for ourselves, which burns in the
@@ -34,6 +34,7 @@
   // ordinary reference to the DTOOL environment variable, so
   // they will read from the right tree no matter which DTOOL they're
   // attached to.
+  #set DTOOL $[unixfilename $[DTOOL]]
   #define DTOOL_INSTALL $[DTOOL]
   #define DTOOL_INSTALL_OTHER $(DTOOL)
   #if $[eq $[DTOOL],]
@@ -42,8 +43,8 @@
 #else
   // Otherwise, if we are not attached, install in the standard place
   // (unless the user specifies otherwise).
-  #defer DTOOL_INSTALL $[INSTALL_DIR]
-  #defer DTOOL_INSTALL_OTHER $[INSTALL_DIR]
+  #defer DTOOL_INSTALL $[unixfilename $[INSTALL_DIR]]
+  #defer DTOOL_INSTALL_OTHER $[unixfilename $[INSTALL_DIR]]
 #endif
 
 
@@ -73,6 +74,7 @@
 // directory.  This file might redefine any of the variables defined
 // above.
 #if $[ne $[PPREMAKE_CONFIG],]
+  #set PPREMAKE_CONFIG $[unixfilename $[PPREMAKE_CONFIG]]
   #print Reading $[PPREMAKE_CONFIG]
   #include $[PPREMAKE_CONFIG]
 #else
@@ -81,71 +83,71 @@
 
 // Now evaluate all of our deferred variable definitions from
 // Config.pp.
-#set PYTHON_IPATH $[PYTHON_IPATH]
-#set PYTHON_LPATH $[PYTHON_LPATH]
+#set PYTHON_IPATH $[unixfilename $[PYTHON_IPATH]]
+#set PYTHON_LPATH $[unixfilename $[PYTHON_LPATH]]
 #set HAVE_PYTHON $[HAVE_PYTHON]
 
-#set NSPR_IPATH $[NSPR_IPATH]
-#set NSPR_LPATH $[NSPR_LPATH]
+#set NSPR_IPATH $[unixfilename $[NSPR_IPATH]]
+#set NSPR_LPATH $[unixfilename $[NSPR_LPATH]]
 #set NSPR_LIBS $[NSPR_LIBS]
 #set HAVE_NSPR $[HAVE_NSPR]
 
-#set CRYPTO_IPATH $[CRYPTO_IPATH]
-#set CRYPTO_LPATH $[CRYPTO_LPATH]
+#set CRYPTO_IPATH $[unixfilename $[CRYPTO_IPATH]]
+#set CRYPTO_LPATH $[unixfilename $[CRYPTO_LPATH]]
 #set CRYPTO_LIBS $[CRYPTO_LIBS]
 #set HAVE_CRYPTO $[HAVE_CRYPTO]
 
-#set JPEG_IPATH $[JPEG_IPATH]
-#set JPEG_LPATH $[JPEG_LPATH]
+#set JPEG_IPATH $[unixfilename $[JPEG_IPATH]]
+#set JPEG_LPATH $[unixfilename $[JPEG_LPATH]]
 #set JPEG_LIBS $[JPEG_LIBS]
 #set HAVE_JPEG $[HAVE_JPEG]
 
-#set JPEG2000_IPATH $[JPEG2000_IPATH]
-#set JPEG2000_LPATH $[JPEG2000_LPATH]
+#set JPEG2000_IPATH $[unixfilename $[JPEG2000_IPATH]]
+#set JPEG2000_LPATH $[unixfilename $[JPEG2000_LPATH]]
 #set JPEG2000_LIBS $[JPEG2000_LIBS]
 #set HAVE_JPEG2000 $[HAVE_JPEG2000]
 
-#set TIFF_IPATH $[TIFF_IPATH]
-#set TIFF_LPATH $[TIFF_LPATH]
+#set TIFF_IPATH $[unixfilename $[TIFF_IPATH]]
+#set TIFF_LPATH $[unixfilename $[TIFF_LPATH]]
 #set TIFF_LIBS $[TIFF_LIBS]
 #set HAVE_TIFF $[HAVE_TIFF]
 
-#set FFTW_IPATH $[FFTW_IPATH]
-#set FFTW_LPATH $[FFTW_LPATH]
+#set FFTW_IPATH $[unixfilename $[FFTW_IPATH]]
+#set FFTW_LPATH $[unixfilename $[FFTW_LPATH]]
 #set FFTW_LIBS $[FFTW_LIBS]
 #set HAVE_FFTW $[HAVE_FFTW]
 
-#set VRPN_IPATH $[VRPN_IPATH]
-#set VRPN_LPATH $[VRPN_LPATH]
+#set VRPN_IPATH $[unixfilename $[VRPN_IPATH]]
+#set VRPN_LPATH $[unixfilename $[VRPN_LPATH]]
 #set VRPN_LIBS $[VRPN_LIBS]
 #set HAVE_VRPN $[HAVE_VRPN]
 
-#set ZLIB_IPATH $[ZLIB_IPATH]
-#set ZLIB_LPATH $[ZLIB_LPATH]
+#set ZLIB_IPATH $[unixfilename $[ZLIB_IPATH]]
+#set ZLIB_LPATH $[unixfilename $[ZLIB_LPATH]]
 #set ZLIB_LIBS $[ZLIB_LIBS]
 #set HAVE_ZLIB $[HAVE_ZLIB]
 
-#set SOXST_IPATH $[SOXST_IPATH]
-#set SOXST_LPATH $[SOXST_LPATH]
+#set SOXST_IPATH $[unixfilename $[SOXST_IPATH]]
+#set SOXST_LPATH $[unixfilename $[SOXST_LPATH]]
 #set SOXST_LIBS $[SOXST_LIBS]
 #set HAVE_SOXST $[HAVE_SOXST]
 
-#set GL_IPATH $[GL_IPATH]
-#set GL_LPATH $[GL_LPATH]
+#set GL_IPATH $[unixfilename $[GL_IPATH]]
+#set GL_LPATH $[unixfilename $[GL_LPATH]]
 #set GL_LIBS $[GL_LIBS]
 #set HAVE_GL $[HAVE_GL]
 
-#set CHROMIUM_IPATH $[CHROMIUM_IPATH]
-#set CHROMIUM_LPATH $[CHROMIUM_LPATH]
+#set CHROMIUM_IPATH $[unixfilename $[CHROMIUM_IPATH]]
+#set CHROMIUM_LPATH $[unixfilename $[CHROMIUM_LPATH]]
 #set CHROMIUM_LIBS $[CHROMIUM_LIBS]
 #set HAVE_CHROMIUM $[HAVE_CHROMIUM]
 
-#set GLX_IPATH $[GLX_IPATH]
-#set GLX_LPATH $[GLX_LPATH]
+#set GLX_IPATH $[unixfilename $[GLX_IPATH]]
+#set GLX_LPATH $[unixfilename $[GLX_LPATH]]
 #set HAVE_GLX $[HAVE_GLX]
 
-#set GLUT_IPATH $[GLUT_IPATH]
-#set GLUT_LPATH $[GLUT_LPATH]
+#set GLUT_IPATH $[unixfilename $[GLUT_IPATH]]
+#set GLUT_LPATH $[unixfilename $[GLUT_LPATH]]
 #set GLUT_LIBS $[GLUT_LIBS]
 #set HAVE_GLUT $[HAVE_GLUT]
 
@@ -153,8 +155,8 @@
 
 #set HAVE_SGIGL $[HAVE_SGIGL]
 
-#set DX_IPATH $[DX_IPATH]
-#set DX_LPATH $[DX_LPATH]
+#set DX_IPATH $[unixfilename $[DX_IPATH]]
+#set DX_LPATH $[unixfilename $[DX_LPATH]]
 #set DX_LIBS $[DX_LIBS]
 #set HAVE_DX $[HAVE_DX]
 
@@ -163,25 +165,25 @@
 #set MIKMOD_CONFIG $[MIKMOD_CONFIG]
 #set HAVE_MIKMOD $[HAVE_MIKMOD]
 
-#set IPC_IPATH $[IPC_IPATH]
-#set IPC_LPATH $[IPC_LPATH]
+#set IPC_IPATH $[unixfilename $[IPC_IPATH]]
+#set IPC_LPATH $[unixfilename $[IPC_LPATH]]
 #set IPC_LIBS $[IPC_LIBS]
 #set HAVE_IPC $[HAVE_IPC]
 
-#set NET_IPATH $[NET_IPATH]
-#set NET_LPATH $[NET_LPATH]
+#set NET_IPATH $[unixfilename $[NET_IPATH]]
+#set NET_LPATH $[unixfilename $[NET_LPATH]]
 #set NET_LIBS $[NET_LIBS]
 #set HAVE_NET $[HAVE_NET]
 
 #set DO_PSTATS $[DO_PSTATS]
 
-#set RAD_MSS_IPATH $[RAD_MSS_IPATH]
-#set RAD_MSS_LPATH $[RAD_MSS_LPATH]
+#set RAD_MSS_IPATH $[unixfilename $[RAD_MSS_IPATH]]
+#set RAD_MSS_LPATH $[unixfilename $[RAD_MSS_LPATH]]
 #set RAD_MSS_LIBS $[RAD_MSS_LIBS]
 #set HAVE_RAD_MSS $[HAVE_RAD_MSS]
 
-#set CHROMIUM_IPATH $[CHROMIUM_IPATH]
-#set CHROMIUM_LPATH $[CHROMIUM_LPATH]
+#set CHROMIUM_IPATH $[unixfilename $[CHROMIUM_IPATH]]
+#set CHROMIUM_LPATH $[unixfilename $[CHROMIUM_LPATH]]
 #set CHROMIUM_LIBS $[CHROMIUM_LIBS]
 #set HAVE_CHROMIUM $[HAVE_CHROMIUM]
 
@@ -191,12 +193,12 @@
 #set FREETYPE_CONFIG $[FREETYPE_CONFIG]
 #set HAVE_FREETYPE $[HAVE_FREETYPE]
 #set FREETYPE_CFLAGS $[FREETYPE_CFLAGS]
-#set FREETYPE_IPATH $[FREETYPE_IPATH]
-#set FREETYPE_LPATH $[FREETYPE_LPATH]
+#set FREETYPE_IPATH $[unixfilename $[FREETYPE_IPATH]]
+#set FREETYPE_LPATH $[unixfilename $[FREETYPE_LPATH]]
 #set FREETYPE_LIBS $[FREETYPE_LIBS]
 
 
-#set MAYA_LOCATION $[MAYA_LOCATION]
+#set MAYA_LOCATION $[unixfilename $[MAYA_LOCATION]]
 #set HAVE_MAYA $[HAVE_MAYA]
 
 
