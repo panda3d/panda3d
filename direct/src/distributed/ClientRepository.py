@@ -181,6 +181,28 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             # updateRequiredFields calls announceGenerate
         return distObj
 
+    def generateGlobalObject(self , doId, dcname):
+        # Look up the dclass
+        dclass = self.dclassesByName[dcname]
+        # Create a new distributed object, and put it in the dictionary
+        #distObj = self.generateWithRequiredFields(dclass, doId, di)
+        
+        # Construct a new one
+        classDef = dclass.getClassDef()
+        if classDef == None:
+             self.notify.error("Could not create an undefined %s object." % (dclass.getName()))
+        distObj = classDef(self)
+        distObj.dclass = dclass
+        # Assign it an Id
+        distObj.doId = doId
+        # Put the new do in the dictionary
+        self.doId2do[doId] = distObj
+        # Update the required fields
+        distObj.generateInit()  # Only called when constructed
+        distObj.generate()
+        # updateRequiredFields calls announceGenerate
+        return  distObj       
+
     def generateWithRequiredOtherFields(self, dclass, doId, di):
         if self.doId2do.has_key(doId):
             # ...it is in our dictionary.

@@ -88,3 +88,7 @@ QUIET_ZONE_IGNORED_LIST = [
 CLIENT_LOGIN_2_GREEN = 1       # Disney's GoReg subscription token, not used.
 CLIENT_LOGIN_2_PLAY_TOKEN = 2  # VR Studio PlayToken.
 CLIENT_LOGIN_2_BLUE = 3        # The international GoReg token.
+
+
+# Global Object ID 's 
+GLOBAL_ID_FRIEND_MANAGER=  4501
