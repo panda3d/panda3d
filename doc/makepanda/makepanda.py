@@ -190,6 +190,7 @@ PREFIX="built"
 COMPILER=COMPILERS[0]
 OPTIMIZE="3"
 INSTALLER=0
+PPGAME=0
 COMPLETE=0
 THIRDPARTY="thirdparty"
 VERSION="0.0.0"
@@ -459,6 +460,7 @@ def usage(problem):
     print "  --thirdparty X    (directory containing third-party software)"
     print "  --complete        (copy samples and direct into the build)"
     print "  --installer       (build an executable installer)"
+    print "  --ppgame X        (build a prepackaged game - see manual)"
     print "  --v1 X            (set the major version number)"
     print "  --v2 X            (set the minor version number)"
     print "  --v3 X            (set the sequence version number)"
@@ -481,11 +483,11 @@ def usage(problem):
     sys.exit(1)
 
 def parseopts(args):
-    global PREFIX,COMPILER,OPTIMIZE,OMIT,THIRDPARTY,INSTALLER
+    global PREFIX,COMPILER,OPTIMIZE,OMIT,THIRDPARTY,INSTALLER,PPGAME
     global COPYEXTRAS,VERSION,COMPRESSOR,DIRECTXSDK,VERBOSE
     longopts = [
         "help","package-info","prefix=","compiler=","directx-sdk=","thirdparty=",
-        "optimize=","everything","nothing","installer","quiet","verbose",
+        "optimize=","everything","nothing","installer","ppgame=","quiet","verbose",
         "complete","version=","lzma"]
     anything = 0
     for pkg in PACKAGES: longopts.append("no-"+pkg.lower())
@@ -503,6 +505,7 @@ def parseopts(args):
             elif (option=="--quiet"): VERBOSE-=1
             elif (option=="--verbose"): VERBOSE+=1
             elif (option=="--installer"): INSTALLER=1
+            elif (option=="--ppgame"): PPGAME=value
             elif (option=="--complete"): COMPLETE=1
             elif (option=="--everything"): OMIT=[]
             elif (option=="--nothing"): OMIT=PACKAGES[:]
@@ -821,7 +824,11 @@ def printStatus(header,warnings):
         print "Makepanda: Thirdparty dir:",THIRDPARTY
         print "Makepanda: DirectX SDK dir:",DIRECTXSDK
         print "Makepanda: Verbose vs. Quiet Level:",VERBOSE
-        print "Makepanda: Build installer:",INSTALLER,COMPRESSOR
+        if (sys.platform == "win32"):
+            if INSTALLER:  print "Makepanda: Build installer, using",COMPRESSOR
+            else        :  print "Makepanda: Don't build installer"
+            if PPGAME!=0:  print "Makepanda: Build pprepackaged game ",PPGAME,"using",COMPRESSOR
+            else        :  print "Makepanda: Don't build pprepackaged game"
         print "Makepanda: Version ID: "+VERSION
         for x in warnings: print "Makepanda: "+x
         print "-------------------------------------------------------------------"
@@ -6203,23 +6210,43 @@ if (COMPLETE):
 
 ##########################################################################################
 #
-# The Installer
+# The Installers
 #
 ##########################################################################################
 
-if (INSTALLER):
-    if (sys.platform == "win32"):
-        if (older('panda3d-install.exe', ALLTARGETS)):
-            VERSION = str(VERSION1)+"-"+str(VERSION2)+"-"+str(VERSION3)
-            print("Building installer. This can take up to an hour.")
-            if (COMPRESSOR != "lzma"): print("Note: you are using zlib, which is faster, but lzma gives better compression.")
-            if (os.path.exists("panda3d-"+VERSION+".exe")):
-                os.remove("panda3d-"+VERSION+".exe")
-            oscmd("thirdparty/win-nsis/makensis.exe /V2 /DCOMPRESSOR="+COMPRESSOR+" /DVERSION="+VERSION+" thirdparty/win-nsis/panda.nsi")
-            os.rename("panda3d-install-TMP.exe", "panda3d-"+VERSION+".exe")
-    else:
-        # Do an rpmbuild or something like that.
-        pass
+if (sys.platform == "win32"):
+
+    def MakeInstaller(file,fullname,smdirectory,uninstallkey,installdir,ppgame):
+        if (older(file, ALLTARGETS)):
+            print "Building "+fullname+" installer. This can take up to an hour."
+            if (COMPRESSOR != "lzma"):
+                print("Note: you are using zlib, which is faster, but lzma gives better compression.")
+            if (os.path.exists(file)):
+                os.remove(file)
+            if (os.path.exists("nsis-output.exe")):
+                os.remove("nsis-output.exe")
+            def0 = '/DCOMPRESSOR="'   + COMPRESSOR   + '" '
+            def1 = '/DFULLNAME="'     + fullname     + '" '
+            def2 = '/DSMDIRECTORY="'  + smdirectory  + '" '
+            def3 = '/DUNINSTALLKEY="' + uninstallkey + '" '
+            def4 = '/DINSTALLDIR="'   + installdir   + '" '
+            def5 = ''
+            if (ppgame): def5 = '/DPPGAME="' + ppgame + '" '
+            oscmd("thirdparty/win-nsis/makensis.exe /V2 "+def0+def1+def2+def3+def4+def5+" thirdparty/win-nsis/panda.nsi")
+            os.rename("nsis-output.exe", file)
+
+    if (INSTALLER!=0):
+        MakeInstaller("Panda3D-"+VERSION+".exe", "Panda3D", "Panda3D "+VERSION,
+                      "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION, 0)
+
+    if (PPGAME!=0):
+        if (os.path.isdir(PPGAME)==0):
+            sys.exit("No such directory "+PPGAME)
+        if (os.path.exists(os.path.join(PPGAME,PPGAME+".py"))==0):
+            sys.exit("No such file "+PPGAME+"/"+PPGAME+".py")
+        MakeInstaller(PPGAME+"-"+VERSION+".exe", PPGAME, PPGAME,
+                      PPGAME+" "+VERSION, "C:\\"+PPGAME+"-"+VERSION, PPGAME)
+
 
 ##########################################################################################
 #
