@@ -343,18 +343,19 @@
 //    MIPS   (Irix MIPSPro compiler)
 //
 // If BUILD_TYPE is "msvc" or "gmsvc", this may be one of:
-//    MSVC   (Microsoft Visual C++)
+//    MSVC   (Microsoft Visual C++ 6.0)
+//    MSVC7  (Microsoft Visual C++ 7.0)
 //    BOUNDS (BoundsChecker)
 //    INTEL  (Intel C/C++ compiler)
 
-#if $[eq $[PLATFORM], Irix]
+#if $[eq $[PLATFORM], Win32]
+#if $[eq $[USE_COMPILER],]
+  #define USE_COMPILER MSVC
+#endif    
+#elif $[eq $[PLATFORM], Irix]
   #define USE_COMPILER MIPS
 #elif $[eq $[PLATFORM], Linux]
   #define USE_COMPILER GCC
-#elif $[eq $[PLATFORM], Win32]
-#if $[eq $[USE_COMPILER],]
-  #define USE_COMPILER MSVC
-#endif  
 #endif
 
 ///////////////////////////////////////////////////////////////////////
