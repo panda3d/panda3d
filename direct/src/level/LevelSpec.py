@@ -33,7 +33,7 @@ class LevelSpec:
                 newSpec = 1
                 self.specDict = {
                     'globalEntities': {},
-                    'scenarios': [[{}, 1]],
+                    'scenarios': [{}],
                     }
 
         assert hasattr(self, 'specDict')
@@ -75,12 +75,6 @@ class LevelSpec:
                                        
     def getNumScenarios(self):
         return len(self.specDict['scenarios'])
-
-    def getScenarioWeights(self):
-        weights = []
-        for entry in self.specDict['scenarios']:
-            weights.append(entry[1])
-        return weights
 
     def setScenario(self, scenario):
         assert scenario in range(0, self.getNumScenarios())
@@ -141,7 +135,7 @@ class LevelSpec:
         return self.specDict['globalEntities']
 
     def privGetScenarioEntityDict(self, scenario):
-        return self.specDict['scenarios'][scenario][0]
+        return self.specDict['scenarios'][scenario]
 
     def printZones(self):
         """currently prints list of zoneNum->zone name"""
@@ -319,7 +313,6 @@ class LevelSpec:
             # structure names
             globalEntitiesName = 'GlobalEntities'
             scenarioEntitiesName = 'Scenario%s'
-            scenarioWeightName = 'Scenarios'
             topLevelName = 'levelSpec'
             def getPrettyEntityDictStr(name, dict, tabs=0):
                 def t(n):
@@ -369,21 +362,15 @@ class LevelSpec:
                         
                 str += t(1)+'}\n'
                 return str
-            def getPrettyScenarioWeightTableStr(tabs=0, self=self):
-                def t(n):
-                    return (tabs+n)*tab
-                str  = t(0)+'%s = [\n' % scenarioWeightName
-                for i in range(self.getNumScenarios()):
-                    str += t(1)+'[%s, %s],\n' % (scenarioEntitiesName % i,
-                                                  self.getScenarioWeights()[i])
-                str += t(1)+']\n'
-                return str
             def getPrettyTopLevelDictStr(tabs=0):
                 def t(n):
                     return (tabs+n)*tab
                 str  = t(0)+'%s = {\n' % topLevelName
                 str += t(1)+"'globalEntities': %s,\n" % globalEntitiesName
-                str += t(1)+"'scenarios': %s,\n" % scenarioWeightName
+                str += t(1)+"'scenarios': [\n"
+                for i in range(self.getNumScenarios()):
+                    str += t(2)+'%s,\n' % (scenarioEntitiesName % i)
+                str += t(2)+'],\n'
                 str += t(1)+'}\n'
                 return str
             
@@ -401,10 +388,6 @@ class LevelSpec:
                 str += getPrettyEntityDictStr('Scenario%s' % i,
                                               self.privGetScenarioEntityDict(i))
                 str += '\n'
-
-            # add the scenario weight table
-            str += getPrettyScenarioWeightTableStr()
-            str += '\n'
 
             # add the top-level table
             str += getPrettyTopLevelDictStr()

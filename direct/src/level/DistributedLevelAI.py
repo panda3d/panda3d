@@ -72,7 +72,7 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
 
         # choose a scenario
         # make list of lists: [(weight, scenarioIndex), ...]
-        lol = zip(levelSpec.getScenarioWeights(),
+        lol = zip([1] * levelSpec.getNumScenarios(),
                   range(levelSpec.getNumScenarios()))
         wc = WeightedChoice.WeightedChoice(lol)
         scenarioIndex = wc.choose()[1]
