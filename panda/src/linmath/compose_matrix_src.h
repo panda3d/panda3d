@@ -174,6 +174,8 @@ decompose_matrix_new_hpr(const FLOATNAME(LMatrix4) &mat, FLOATTYPE components[nu
 
 EXPCL_PANDA FLOATNAME(LVecBase3)
 old_to_new_hpr(const FLOATNAME(LVecBase3) &old_hpr);
+EXPCL_PANDA FLOATNAME(LVecBase3)
+new_to_old_hpr(const FLOATNAME(LVecBase3) &new_hpr);
 
 END_PUBLISH
 

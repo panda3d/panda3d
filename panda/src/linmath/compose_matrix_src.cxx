@@ -633,3 +633,29 @@ old_to_new_hpr(const FLOATNAME(LVecBase3) &old_hpr) {
   decompose_matrix_new_hpr(mat, new_scale, new_shear, new_hpr);
   return new_hpr;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: new_to_old_hpr
+//  Description: Converts the HPR as represented in the new, correct
+//               representation to the old, broken way.  Returns the
+//               old HPR.  Useful only for backporting.
+//
+//               This function is provided to ease transition from new
+//               systems that relied on Panda's original broken HPR
+//               calculation.
+////////////////////////////////////////////////////////////////////
+FLOATNAME(LVecBase3)
+new_to_old_hpr(const FLOATNAME(LVecBase3) &new_hpr) {
+  FLOATNAME(LMatrix3) mat;
+  compose_matrix_new_hpr(mat, 
+                         FLOATNAME(LVecBase3)(1.0f, 1.0f, 1.0f),
+                         FLOATNAME(LVecBase3)::zero(),
+                         new_hpr);
+
+  FLOATNAME(LVecBase3) old_scale;
+  FLOATNAME(LVecBase3) old_shear;
+  FLOATNAME(LVecBase3) old_hpr;
+  
+  decompose_matrix_old_hpr(mat, old_scale, old_shear, old_hpr);
+  return old_hpr;
+}
