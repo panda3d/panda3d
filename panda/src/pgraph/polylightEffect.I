@@ -35,10 +35,10 @@ PolylightEffect() {
 ////////////////////////////////////////////////////////////////////
 INLINE PolylightEffect::
 PolylightEffect(const PolylightEffect &copy) :
-_lightgroup(copy._lightgroup),
-_effect_center(copy._effect_center),
-_contribution_type(copy._contribution_type),
-_weight(copy._weight)
+  _contribution_type(copy._contribution_type),
+  _weight(copy._weight),
+  _lightgroup(copy._lightgroup),
+  _effect_center(copy._effect_center)
 {
 }
 
