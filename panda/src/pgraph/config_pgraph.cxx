@@ -80,6 +80,7 @@
 #include "texMatrixAttrib.h"
 #include "textureApplyAttrib.h"
 #include "textureAttrib.h"
+#include "texGenAttrib.h"
 #include "transformState.h"
 #include "transparencyAttrib.h"
 #include "nodePathLerps.h"
@@ -231,6 +232,7 @@ init_libpgraph() {
   TexMatrixAttrib::init_type();
   TextureApplyAttrib::init_type();
   TextureAttrib::init_type();
+  TexGenAttrib::init_type();
   TransformState::init_type();
   TransparencyAttrib::init_type();
   PosLerpFunctor::init_type();
@@ -282,6 +284,7 @@ init_libpgraph() {
   TexMatrixAttrib::register_with_read_factory();
   TextureApplyAttrib::register_with_read_factory();
   TextureAttrib::register_with_read_factory();
+  TexGenAttrib::register_with_read_factory();
   TransformState::register_with_read_factory();
   TransparencyAttrib::register_with_read_factory();
 

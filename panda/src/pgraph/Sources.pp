@@ -89,6 +89,7 @@
     texMatrixAttrib.I texMatrixAttrib.h \
     textureApplyAttrib.I textureApplyAttrib.h \
     textureAttrib.I textureAttrib.h \
+    texGenAttrib.I texGenAttrib.h \
     textureCollection.I textureCollection.h \
     transformState.I transformState.h \
     transparencyAttrib.I transparencyAttrib.h \
@@ -177,6 +178,7 @@
     texMatrixAttrib.cxx \
     textureApplyAttrib.cxx \
     textureAttrib.cxx \
+    texGenAttrib.cxx \
     textureCollection.cxx \
     transformState.cxx \
     transparencyAttrib.cxx \
@@ -262,6 +264,7 @@
     texMatrixAttrib.I texMatrixAttrib.h \
     textureApplyAttrib.I textureApplyAttrib.h \
     textureAttrib.I textureAttrib.h \
+    texGenAttrib.I texGenAttrib.h \
     textureCollection.I textureCollection.h \
     transformState.I transformState.h \
     transparencyAttrib.I transparencyAttrib.h \

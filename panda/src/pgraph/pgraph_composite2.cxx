@@ -38,6 +38,7 @@
 #include "texMatrixAttrib.cxx"
 #include "textureApplyAttrib.cxx"
 #include "textureAttrib.cxx"
+#include "texGenAttrib.cxx"
 #include "textureCollection.cxx"
 #include "transformState.cxx"
 #include "transparencyAttrib.cxx"
