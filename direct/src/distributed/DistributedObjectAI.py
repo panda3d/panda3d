@@ -166,7 +166,7 @@ class DistributedObjectAI(DirectObject.DirectObject):
                         lastLogicalZone = self.lastNonQuietZone
                     self.handleLogicalZoneChange(zoneId, lastLogicalZone)
                     self.lastNonQuietZone = zoneId
-                # self.air.storeObjectLocation(self.doId, parentId, zoneId)
+                #self.air.storeObjectLocation(self.doId, parentId, zoneId)
                 self.__location = (parentId, zoneId)
 
         def getLocation(self):
@@ -284,7 +284,7 @@ class DistributedObjectAI(DirectObject.DirectObject):
         if wantOtpServer:
             #HACK:
             if not hasattr(self, 'parentId'):
-                parentId = simbase.air.districtId
+                parentId = self.air.districtId
                 self.parentId = parentId
         self.zoneId = zoneId
         self.generate()
@@ -303,7 +303,7 @@ class DistributedObjectAI(DirectObject.DirectObject):
         if wantOtpServer:
             #HACK:
             if not hasattr(self, 'parentId'):
-                parentId = simbase.air.districtId
+                parentId = self.air.districtId
                 self.parentId = parentId
         self.zoneId = zoneId
         self.generate()

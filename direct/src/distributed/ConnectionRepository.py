@@ -324,11 +324,11 @@ class ConnectionRepository(DoInterestManager, CConnectionRepository):
         self.stopReaderPollTask()
         self.accept(CConnectionRepository.getOverflowEventName(),
                     self.handleReaderOverflow)
-        taskMgr.add(self.readerPollUntilEmpty, "readerPollTask",
+        taskMgr.add(self.readerPollUntilEmpty, self.uniqueName("readerPollTask"),
                     priority = self.taskPriority)
 
     def stopReaderPollTask(self):
-        taskMgr.remove("readerPollTask")
+        taskMgr.remove(self.uniqueName("readerPollTask"))
         self.ignore(CConnectionRepository.getOverflowEventName())
 
     def readerPollUntilEmpty(self, task):

@@ -57,7 +57,7 @@ class DistributedCartesianGridAI(DistributedNodeAI.DistributedNodeAI,
     def removeObjectFromGrid(self, av):
         # TODO: WHAT LOCATION SHOULD WE SET THIS TO?
         #av.wrtReparentTo(self.parentNP)
-        av.setLocation(simbase.air.districtId, PiratesGlobals.TestZone)
+        av.setLocation(self.air.districtId, PiratesGlobals.TestZone)
 
         # Remove grid parent for this av
         avId = av.doId

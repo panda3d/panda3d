@@ -81,6 +81,10 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         self.DOIDnext = 0
         self.DOIDlast = 0
 
+    # Define uniqueName 
+    def uniqueName(self, desc):
+        return desc
+
     def abruptCleanup(self):
         """
         Call this method to clean up any pending hooks or tasks on

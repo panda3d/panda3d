@@ -1465,6 +1465,12 @@ class Actor(PandaObject, NodePath):
                 if effect > 0.:
                     totalEffect += effect
                     thisAnim += ('%s:%.3f, ' % (name, effect))
+            thisAnim += "\n"
+            for control in controls:
+                part = control.getPart()
+                name = part.getName()
+                rate = control.getPlayRate()
+                thisAnim += ('%s:%.1f, ' % (name, rate))
             # don't display anything if this animation is not being played
             itemName = 'anim %s' % animName
             if totalEffect > 0.:
