@@ -43,6 +43,17 @@ else
     install_dir=./install
 fi
 
+if [ "$DIRECT" == "" ]; then
+  if [ "$PANDA_SRC" != "" -a -d "$PANDA_SRC/direct" ]; then
+    DIRECT="$PANDA_SRC/direct"
+  elif [ -d direct ]; then
+    DIRECT=direct
+  else
+    echo "Define PANDA_SRC to point to the panda & direct source root."
+    exit 1
+  fi
+fi
+
 pyDir=$DIRECT/lib/py
 extDir=$DIRECT/src/extensions
 pSqueezer=$DIRECT/src/showbase/pandaSqueezer.py
@@ -77,14 +88,13 @@ elif [ "$buildType" = "install" ]; then
     # Use relative paths; as installed on a machine without ctattach etc.
     pyDir=$install_dir/lib/py
     ppython=$install_dir/bin/ppython
-    $ppython -d $install_dir/bin/generatePythonCode -O -v -d $pyDir -e direct/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
+    $ppython -d $install_dir/bin/generatePythonCode -O -v -d $pyDir -e $DIRECT/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
 
 elif [ "$buildType" = "release" ]; then
     # Use relative paths; as installed on a machine without ctattach etc.
     pyDir=$install_dir/lib/py
     ppython=$install_dir/bin/ppython
-    $ppython $install_dir/bin/generatePythonCode -v -d $pyDir -e direct/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
-    pSqueezer="$(cygpath -w $base_dir/direct/src/showbase/pandaSqueezer.py)" || exit
+    $ppython $install_dir/bin/generatePythonCode -v -d $pyDir -e $DIRECT/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
 else
     echo "Invalid parameter: $buildType"
     exit 1
@@ -96,7 +106,7 @@ if [ "$fSqueeze" = "squeezeMe" ]; then
     rm -f PandaModules.py* || exit
     $ppython $ppythonOptimizeFlag $pSqueezer $optimizeFlag || exit
 else
-    echo RENAMING PandaModulesUnsqueezed.py to PandaModules.py
+    # renaming PandaModulesUnsqueezed.py to PandaModules.py
     cd $pyDir              || exit
     rm -f PandaModules.py* || exit
     echo # junk line needed to keep mv from failing
