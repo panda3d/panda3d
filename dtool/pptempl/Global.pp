@@ -35,13 +35,13 @@
 // variable as set for the dconfig library (that is, the expression
 // $[SOURCES] is evaluated within the named scope whose key is
 // "dconfig"--whose variable $[TARGET] was defined to be "dconfig").
-#map all_libs TARGET(*/static_lib_target */lib_target */noinst_lib_target */metalib_target)
+#map all_libs TARGET(*/static_lib_target */ss_lib_target */lib_target */noinst_lib_target */metalib_target)
 
 // These allow us to determine whether a particular local library is a
 // static or a dynamic library.  If the library name appears in the
 // static_libs map, it is a static library (i.e. libname.a);
 // otherwise, it is a dynamic library (libname.so).
-#map static_libs TARGET(*/static_lib_target)
+#map static_libs TARGET(*/static_lib_target */ss_lib_target)
 #map dynamic_libs TARGET(*/lib_target */noinst_lib_target */metalib_target)
 
 // This lets us identify which metalib, if any, is including each
@@ -507,7 +507,7 @@
   #end lib_target noinst_lib_target
   
   // These will never be part of a metalib.
-  #forscopes static_lib_target bin_target noinst_bin_target metalib_target
+  #forscopes static_lib_target ss_lib_target bin_target noinst_bin_target metalib_target
     #foreach depend $[LOCAL_LIBS]
       #define depend_metalib $[module $[TARGET],$[depend]]
       #if $[ne $[depend_metalib],]
@@ -518,7 +518,7 @@
         #set depend_libs $[depend_libs] $[depend]
       #endif
     #end depend
-  #end static_lib_target bin_target noinst_bin_target metalib_target
+  #end static_lib_target ss_lib_target bin_target noinst_bin_target metalib_target
 
   // In case we're defining any metalibs, these depend directly on
   // their components as well.

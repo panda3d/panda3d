@@ -1,4 +1,4 @@
-#begin lib_target
+#begin ss_lib_target
   #define TARGET stitchviewer
   #define LOCAL_LIBS \
     stitchbase
@@ -15,5 +15,5 @@
   #define INSTALL_HEADERS \
     stitchImageConverter.h stitchImageVisualizer.h triangleMesh.h
 
-#end lib_target
+#end ss_lib_target
 

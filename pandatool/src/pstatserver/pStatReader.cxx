@@ -12,6 +12,7 @@
 #include <pStatFrameData.h>
 #include <datagram.h>
 #include <datagramIterator.h>
+#include <connectionManager.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatReader::Constructor
@@ -118,10 +119,8 @@ idle() {
 string PStatReader::
 get_hostname() {
   if (_hostname.empty()) {
-    char temp_buff[1024];
-    if (gethostname(temp_buff, 1024) == 0) {
-      _hostname = temp_buff;
-    } else {
+    _hostname = ConnectionManager::get_host_name();
+    if (_hostname.empty()) {
       _hostname = "unknown";
     }
   }

@@ -49,6 +49,8 @@ public:
 					    int timeout_ms);
 
   bool close_connection(const PT(Connection) &connection);
+
+  static string get_host_name();
  
 protected:
   void new_connection(const PT(Connection) &connection);

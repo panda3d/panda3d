@@ -1,7 +1,7 @@
 #define DIRECTORY_IF_GTKMM yes
 #define USE_GTKMM yes
 
-#begin lib_target
+#begin ss_lib_target
   #define TARGET gtkbase
   #define LOCAL_LIBS \
     progbase
@@ -14,5 +14,5 @@
   #define INSTALL_HEADERS \
     basicGtkDialog.h basicGtkWindow.h gtkBase.h request_initial_size.h
 
-#end lib_target
+#end ss_lib_target
 

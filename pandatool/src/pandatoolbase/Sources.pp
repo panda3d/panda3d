@@ -1,4 +1,4 @@
-#begin lib_target
+#begin ss_lib_target
   #define TARGET pandatoolbase
   
   #define SOURCES \
@@ -7,4 +7,4 @@
   #define INSTALL_HEADERS \
     pandatoolbase.h
 
-#end lib_target
+#end ss_lib_target

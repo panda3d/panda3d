@@ -13,10 +13,10 @@ int stitch_error_count();
 int stitch_warning_count();
 
 void stitchyyerror(const string &msg);
-void stitchyyerror(ostrstream &strm);
+void stitchyyerror(ostringstream &strm);
 
 void stitchyywarning(const string &msg);
-void stitchyywarning(ostrstream &strm);
+void stitchyywarning(ostringstream &strm);
 
 int stitchyylex();
 

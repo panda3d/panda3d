@@ -95,6 +95,7 @@ private:
   };
 
   TriangleTree *_tree;
+  friend class TriangleTree;
 };
 
 #endif

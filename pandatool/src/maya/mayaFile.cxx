@@ -15,8 +15,6 @@
 #include <eggNurbsCurve.h>
 #include <eggPolygon.h>
 
-#include <iostream.h>
-
 #include <maya/MArgList.h>
 #include <maya/MColor.h>
 #include <maya/MDagPath.h>

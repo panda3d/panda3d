@@ -9,8 +9,6 @@
 #include "stitchParserDefs.h"
 #include "stitchLexerDefs.h"
 
-#include <fstream.h>
-
 StitchFile::
 StitchFile() {
 }

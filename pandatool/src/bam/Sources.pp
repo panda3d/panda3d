@@ -4,8 +4,8 @@
     eggbase progbase
   #define OTHER_LIBS \
     loader:c egg:c sgraphutil:c sgattrib:c sgraph:c pnmimagetypes:c \
-    graph:c putil:c express:c panda:m \
-    interrogatedb:c dtoolutil:c dconfig:c dtool:m
+    graph:c putil:c express:c panda:m pandaexpress:m \
+    interrogatedb:c dtoolutil:c dconfig:c dtool:m pystub
   #define UNIX_SYS_LIBS \
     m
 
@@ -22,8 +22,8 @@
     eggbase progbase
   #define OTHER_LIBS \
     loader:c egg2sg:c builder:c egg:c pnmimagetypes:c graph:c putil:c \
-    express:c panda:m interrogatedb:c \
-    interrogatedb:c dtoolutil:c dconfig:c dtool:m
+    express:c pandaegg:m panda:m pandaexpress:m \
+    interrogatedb:c dtoolutil:c dconfig:c dtool:m pystub
   #define UNIX_SYS_LIBS \
     m
 

@@ -9,6 +9,7 @@
 #include <mathNumbers.h>
 
 #include <math.h>
+#include <assert.h>
 
 MorphGrid::Vertex::
 Vertex(const LPoint2d &p) {

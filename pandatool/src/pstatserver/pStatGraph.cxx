@@ -13,6 +13,32 @@
 #include <stdio.h>  // for sprintf
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PStatGraph::GuideBar::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PStatGraph::GuideBar::
+GuideBar(double height, const string &label, bool is_target) :
+  _height(height),
+  _label(label),
+  _is_target(is_target)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatGraph::GuideBar::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PStatGraph::GuideBar::
+GuideBar(const PStatGraph::GuideBar &copy) :
+  _height(copy._height),
+  _label(copy._label),
+  _is_target(copy._is_target)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PStatGraph::Constructor
 //       Access: Public
 //  Description: 
@@ -65,7 +91,7 @@ get_num_guide_bars() const {
 const PStatGraph::GuideBar &PStatGraph::
 get_guide_bar(int n) const {
 #ifndef NDEBUG
-  static GuideBar bogus_bar = { 0.0, "bogus", false };
+  static GuideBar bogus_bar(0.0, "bogus", false);
   nassertr(n >= 0 && n < _guide_bars.size(), bogus_bar);
 #endif
   return _guide_bars[n];
@@ -171,9 +197,6 @@ make_guide_bar(double time) const {
     }
   }
 
-  GuideBar bar;
-  bar._height = time;
-  bar._label = label;
-  bar._is_target = (IS_NEARLY_EQUAL(1.0 / time, _target_frame_rate));
-  return bar;
+  return GuideBar(time, label,
+		  IS_NEARLY_EQUAL(1.0 / time, _target_frame_rate));
 }

@@ -9,8 +9,8 @@
 #include <pandatoolbase.h>
 
 #include <filename.h>
+#include <vector_string.h>
 
-#include <iostream.h>
 #include <string>
 #include <vector>
 #include <map>
@@ -36,7 +36,7 @@ public:
 
   virtual void parse_command_line(int argc, char *argv[]);
 
-  typedef vector<string> Args;
+  typedef vector_string Args;
   Filename _program_name;
   Args _program_args;
 
@@ -94,7 +94,7 @@ private:
   };
 
   string _description;
-  typedef vector<string> Runlines;
+  typedef vector_string Runlines;
   Runlines _runlines;
 
   typedef map<string, Option> OptionsByName;

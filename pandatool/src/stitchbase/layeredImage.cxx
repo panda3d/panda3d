@@ -6,9 +6,9 @@
 #include "layeredImage.h"
 
 #include <pnmImage.h>
-#include <fstream.h>
+#include <datagram.h>
+
 #include <stdarg.h>
-#include <netinet/in.h>
 
 // Constants taken from various header files in Gimp.
 #define TILE_WIDTH 64
@@ -287,13 +287,13 @@ xcf_write_int8(const int8_t *data, int num) {
 
 int LayeredImage::
 xcf_write_int32(const int32_t *data, int num) {
-  int32_t *tmp = new int32_t[num];
+  // We need to write a bunch of big-endian int32's.
+  Datagram dg;
   for (int i = 0; i < num; i++) {
-    tmp[i] = htonl(data[i]);
+    dg.add_be_int32(data[i]);
   }
-  _out->write((const char *)tmp, num * sizeof(int32_t));
-  delete[] tmp;
-  return _pos += num * sizeof(int32_t);
+  _out->write((const char *)dg.get_data(), dg.get_length());
+  return _pos += dg.get_length();
 }
 
 int LayeredImage::

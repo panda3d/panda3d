@@ -93,10 +93,8 @@ stitchyyerror(const string &msg) {
 }
 
 void
-stitchyyerror(ostrstream &strm) {
-  char *s = strm.str();
-  stitchyyerror(s);
-  delete[] s;
+stitchyyerror(ostringstream &strm) {
+  stitchyyerror(strm.str());
 }
 
 void
@@ -110,10 +108,8 @@ stitchyywarning(const string &msg) {
 }
 
 void
-stitchyywarning(ostrstream &strm) {
-  char *s = strm.str();
-  stitchyywarning(s);
-  delete[] s;
+stitchyywarning(ostringstream &strm) {
+  stitchyywarning(strm);
 }
 
 // Now define a function to take input from an istream instead of a
@@ -216,10 +212,9 @@ eat_c_comment() {
   c = read_char(line, col);
   while (c != EOF && !(last_c == '*' && c == '/')) {
     if (last_c == '/' && c == '*') {
-      ostrstream errmsg;
+      ostringstream errmsg;
       errmsg << "This comment contains a nested /* symbol at line "
-	     << line << ", column " << col-1 << "--possibly unclosed?"
-	     << ends;
+	     << line << ", column " << col-1 << "--possibly unclosed?";
       stitchyywarning(errmsg);
     }
     last_c = c;

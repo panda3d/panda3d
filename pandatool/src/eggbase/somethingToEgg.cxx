@@ -77,7 +77,7 @@ handle_args(Args &args) {
 
   _input_filename = args[0];
 
-  if (access(_input_filename.c_str(), R_OK) != 0) {
+  if (!_input_filename.exists()) {
     nout << "Cannot find input file " << _input_filename << "\n";
     return false;
   }

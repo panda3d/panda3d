@@ -54,7 +54,7 @@
 // list of binaries that are to be built only when specifically asked
 // for.
 #define lib_targets $[patsubst %,$[so_dir]\lib%$[dllext].dll,$[active_target(metalib_target noinst_lib_target)] $[real_lib_targets]]
-#define static_lib_targets $[active_target(static_lib_target):%=$[st_dir]\lib%$[dllext].lib]
+#define static_lib_targets $[active_target(static_lib_target ss_lib_target):%=$[st_dir]\lib%$[dllext].lib]
 #define bin_targets \
     $[active_target(bin_target noinst_bin_target):%=$[st_dir]\%.exe] \
     $[active_target(sed_bin_target):%=$[st_dir]\%]
@@ -62,13 +62,13 @@
 
 // And these variables will define the various things we need to
 // install.
-#define install_lib $[active_target(metalib_target static_lib_target)] $[real_lib_targets]
+#define install_lib $[active_target(metalib_target static_lib_target ss_lib_target)] $[real_lib_targets]
 #define install_bin $[active_target(bin_target)]
-#define install_scripts $[sort $[INSTALL_SCRIPTS(metalib_target lib_target static_lib_target bin_target)] $[INSTALL_SCRIPTS]]
-#define install_headers $[sort $[INSTALL_HEADERS(metalib_target lib_target static_lib_target bin_target)] $[INSTALL_HEADERS]]
+#define install_scripts $[sort $[INSTALL_SCRIPTS(metalib_target lib_target static_lib_target ss_lib_target bin_target)] $[INSTALL_SCRIPTS]]
+#define install_headers $[sort $[INSTALL_HEADERS(metalib_target lib_target static_lib_target ss_lib_target bin_target)] $[INSTALL_HEADERS]]
 #define install_parser_inc $[sort $[INSTALL_PARSER_INC]]
-#define install_data $[sort $[INSTALL_DATA(metalib_target lib_target static_lib_target bin_target)] $[INSTALL_DATA]]
-#define install_config $[sort $[INSTALL_CONFIG(metalib_target lib_target static_lib_target bin_target)] $[INSTALL_CONFIG]]
+#define install_data $[sort $[INSTALL_DATA(metalib_target lib_target static_lib_target ss_lib_target bin_target)] $[INSTALL_DATA]]
+#define install_config $[sort $[INSTALL_CONFIG(metalib_target lib_target static_lib_target ss_lib_target bin_target)] $[INSTALL_CONFIG]]
 #define install_igatedb $[sort $[get_igatedb(metalib_target lib_target)]]
 
 // $[so_sources] is the set of sources that belong on a shared object,
@@ -77,7 +77,7 @@
 // don't need to make this distinction, but we do anyway in case we
 // might in the future for some nutty reason.
 #define so_sources $[get_sources(metalib_target lib_target noinst_lib_target)]
-#define st_sources $[get_sources(static_lib_target bin_target noinst_bin_target test_bin_target)]
+#define st_sources $[get_sources(static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]
 
 // These are the source files that our dependency cache file will
 // depend on.  If it's an empty list, we won't bother writing rules to
@@ -106,7 +106,7 @@
 // which to build a particular source file, since some targets may
 // have different requirements (e.g. different local_libs, or
 // different USE_this or USE_that) than other targets.
-#map all_sources get_sources(metalib_target lib_target noinst_lib_target static_lib_target bin_target noinst_bin_target test_bin_target)
+#map all_sources get_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)
 
 // We define $[complete_local_libs] as the full set of libraries (from
 // within this tree) that we must link a particular target with.  It
@@ -214,13 +214,13 @@ cleanall : clean
        $[if $[install_config],$[install_config_dir]] \
        $[if $[install_igatedb],$[install_igatedb_dir]] \
      ] \
-     $[active_target(metalib_target lib_target static_lib_target):%=install-lib%] \
+     $[active_target(metalib_target lib_target static_lib_target ss_lib_target):%=install-lib%] \
      $[active_target(bin_target sed_bin_target):%=install-%] \
      $[installed_files]
 
 install : all $[install_targets]
 
-uninstall : $[active_target(metalib_target lib_target static_lib_target):%=uninstall-lib%] $[active_target(bin_target):%=uninstall-%]
+uninstall : $[active_target(metalib_target lib_target static_lib_target ss_lib_target):%=uninstall-lib%] $[active_target(bin_target):%=uninstall-%]
 #if $[installed_files]
 	del /f $[sort $[installed_files]]
 #endif
@@ -297,9 +297,10 @@ $[osfilename $[directory]] :
   #define sources \
    $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]\%.obj,%,,$[get_sources] $[igateoutput] $[igatemout]]] \
    $[components $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[RELDIR]\$[so_dir]\%.obj,%,,$[get_sources] $[get_igateoutput]]],$[active_component_libs]]
-lib_$[TARGET]_so = $[osfilename $[sources]]
+#define varname $[subst -,_,lib$[TARGET]_so]
+$[varname] = $[osfilename $[sources]]
   #define target $[so_dir]\lib$[TARGET]$[dllext].dll
-  #define sources $(lib_$[TARGET]_so)
+  #define sources $($[varname])
 $[target] : $[sources]
   #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 	$[SHARED_LIB_C++]
@@ -357,7 +358,7 @@ $[install_igatedb_dir]\$[igatedb] : $[so_dir]\$[igatedb]
 	copy $[so_dir]\$[local] $[dest]
 
 lib$[TARGET]_igatescan = $[osfilename $[igatescan]]
-$[so_dir]\$[igatedb] $[so_dir]\$[igateoutput] : $[filter-out .c .cxx,$[igatescan]]
+$[so_dir]\$[igatedb] $[so_dir]\$[igateoutput] : $[filter-out %.c %.cxx,$[igatescan]]
 // We use forward slash for interrogate because it prefers those.
 	interrogate -od $[so_dir]/$[igatedb] -oc $[so_dir]/$[igateoutput] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $(lib$[TARGET]_igatescan)
 
@@ -405,9 +406,10 @@ $[target] : $[source]
 /////////////////////////////////////////////////////////////////////
 
 #forscopes noinst_lib_target
-lib_$[TARGET]_so = $[osfilename $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]\%.obj,%,,$[get_sources]]]]
+#define varname $[subst -,_,lib$[TARGET]_so]
+$[varname] = $[osfilename $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]\%.obj,%,,$[get_sources]]]]
 #define target $[so_dir]\lib$[TARGET]$[dllext].dll
-#define sources $(lib_$[TARGET]_so)
+#define sources $($[varname])
 $[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 	$[SHARED_LIB_C++]
@@ -425,10 +427,11 @@ $[target] : $[sources]
 // a metalib, making the rules relatively simple.
 /////////////////////////////////////////////////////////////////////
 
-#forscopes static_lib_target
-lib_$[TARGET]_a = $[osfilename $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]\%.obj,%,,$[get_sources]]]]
+#forscopes static_lib_target ss_lib_target
+#define varname $[subst -,_,lib$[TARGET]_a]
+$[varname] = $[osfilename $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]\%.obj,%,,$[get_sources]]]]
 #define target $[st_dir]\lib$[TARGET]$[dllext].lib
-#define sources $(lib_$[TARGET]_a)
+#define sources $($[varname])
 $[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 	$[STATIC_LIB_C++]
@@ -455,7 +458,7 @@ $[install_lib_dir]\lib$[TARGET]$[dllext].lib : $[st_dir]\lib$[TARGET]$[dllext].l
 #define dest $[install_lib_dir]
 	copy $[st_dir]\$[local] $[dest]
 
-#end static_lib_target
+#end static_lib_target ss_lib_target
 
 
 
@@ -500,9 +503,10 @@ $[install_bin_dir]\$[TARGET] : $[st_dir]\$[TARGET]
 #forscopes bin_target
 $[TARGET] : $[st_dir]\$[TARGET].exe
 
-bin_$[TARGET] = $[osfilename $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]\%.obj,%,,$[get_sources]]]]
+#define varname $[subst -,_,bin_$[TARGET]]
+$[varname] = $[osfilename $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]\%.obj,%,,$[get_sources]]]]
 #define target $[st_dir]\$[TARGET].exe
-#define sources $(bin_$[TARGET])
+#define sources $($[varname])
 #define ld $[get_ld]
 $[target] : $[sources]
 #if $[ld]
@@ -548,9 +552,10 @@ $[install_bin_dir]\$[TARGET].exe : $[st_dir]\$[TARGET].exe
 #forscopes noinst_bin_target test_bin_target
 $[TARGET] : $[st_dir]\$[TARGET].exe
 
-bin_$[TARGET] = $[osfilename $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]\%.obj,%,,$[get_sources]]]]
+#define varname $[subst -,_,bin_$[TARGET]]
+$[varname] = $[osfilename $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]\%.obj,%,,$[get_sources]]]]
 #define target $[st_dir]\$[TARGET].exe
-#define sources $(bin_$[TARGET])
+#define sources $($[varname])
 $[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 	$[LINK_BIN_C++]

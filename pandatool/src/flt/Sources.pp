@@ -1,4 +1,4 @@
-#begin lib_target
+#begin ss_lib_target
   #define TARGET flt
   #define LOCAL_LIBS pandatoolbase
   #define OTHER_LIBS \
@@ -43,7 +43,7 @@
     fltTransformTranslate.h fltUnsupportedRecord.h fltVertex.I \
     fltVertex.h fltVertexList.h
 
-#end lib_target
+#end ss_lib_target
 
 #begin test_bin_target
   #define TARGET test_flt

@@ -1,4 +1,4 @@
-#begin lib_target
+#begin ss_lib_target
   #define TARGET imagebase
   #define LOCAL_LIBS \
     progbase
@@ -13,5 +13,5 @@
   #define INSTALL_HEADERS \
     imageBase.h imageFilter.h imageReader.h imageWriter.I imageWriter.h
 
-#end lib_target
+#end ss_lib_target
 

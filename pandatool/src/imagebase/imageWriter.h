@@ -12,8 +12,6 @@
 
 #include <filename.h>
 
-#include <fstream.h>
-
 ////////////////////////////////////////////////////////////////////
 // 	 Class : ImageWriter
 // Description : This is the base class for a program that generates

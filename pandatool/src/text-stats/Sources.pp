@@ -6,8 +6,8 @@
   #define LOCAL_LIBS \
     progbase pstatserver
   #define OTHER_LIBS \
-    pstatclient:c linmath:c putil:c express:c panda:m \
-    dtoolutil:c dconfig:c dtool:m
+    pstatclient:c linmath:c putil:c express:c panda:m pandaexpress:m \
+    dtoolutil:c dconfig:c dtool:m pystub
   #define UNIX_SYS_LIBS \
     m
 

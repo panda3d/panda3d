@@ -23,7 +23,7 @@
 //               force a line break without a paragraph break, use
 //               '\r'.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA WordWrapStream : public ostream {
+class WordWrapStream : public ostream {
 public:
   WordWrapStream(ProgramBase *program);
 

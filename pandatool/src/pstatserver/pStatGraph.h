@@ -44,6 +44,9 @@ public:
 
   class GuideBar {
   public:
+    GuideBar(double height, const string &label, bool is_target);
+    GuideBar(const GuideBar &copy);
+
     double _height;
     string _label;
     bool _is_target;

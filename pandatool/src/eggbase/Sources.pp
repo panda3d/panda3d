@@ -1,4 +1,4 @@
-#begin lib_target
+#begin ss_lib_target
   #define TARGET eggbase
   #define LOCAL_LIBS \
     progbase
@@ -15,5 +15,5 @@
     eggBase.h eggConverter.h eggFilter.h eggReader.h eggToSomething.h \
     eggWriter.h somethingToEgg.h
 
-#end lib_target
+#end ss_lib_target
 

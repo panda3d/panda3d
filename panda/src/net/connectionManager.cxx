@@ -13,6 +13,10 @@
 
 #include <prerror.h>
 
+#ifdef WIN32_VC
+#include <winsock.h>  // For gethostname()
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionManager::Constructor
 //       Access: Public
@@ -250,6 +254,23 @@ close_connection(const PT(Connection) &connection) {
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionManager::get_host_name
+//       Access: Public, Static
+//  Description: Returns the name of this particular machine on the
+//               network, if available, or the empty string if the
+//               hostname cannot be determined.
+////////////////////////////////////////////////////////////////////
+string ConnectionManager::
+get_host_name() {
+  char temp_buff[1024];
+  if (gethostname(temp_buff, 1024) == 0) {
+    return string(temp_buff);
+  }
+
+  return string();
 }
 
 ////////////////////////////////////////////////////////////////////

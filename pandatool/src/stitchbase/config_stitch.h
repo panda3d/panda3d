@@ -6,9 +6,7 @@
 #ifndef CONFIG_STITCH_H
 #define CONFIG_STITCH_H
 
-#include <string>
-
-using namespace std;
+#include <pandatoolbase.h>
 
 extern string chan_cfg;
 

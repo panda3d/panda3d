@@ -233,7 +233,7 @@ parse_command_line(int argc, char *argv[]) {
 
     // Now add it to the GNU data structures.
     struct option gopt;
-    gopt.name = opt._option.c_str();
+    gopt.name = (char *)opt._option.c_str();
     gopt.has_arg = (opt._parm_name.empty()) ? 
       no_argument : required_argument;
     gopt.flag = (int *)NULL;

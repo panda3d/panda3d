@@ -1,7 +1,7 @@
 #define DIRECTORY_IF_NET yes
 #define USE_NET yes
 
-#begin lib_target
+#begin ss_lib_target
   #define TARGET pstatserver
   #define LOCAL_LIBS pandatoolbase
   #define OTHER_LIBS \
@@ -26,5 +26,5 @@
     pStatThreadData.I pStatThreadData.h pStatView.I pStatView.h \
     pStatViewLevel.I pStatViewLevel.h
 
-#end lib_target
+#end ss_lib_target
 

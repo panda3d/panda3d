@@ -1,4 +1,4 @@
-#begin lib_target
+#begin ss_lib_target
   #define TARGET progbase
   #define LOCAL_LIBS \
     pandatoolbase
@@ -14,7 +14,7 @@
     programBase.I programBase.h wordWrapStream.h wordWrapStreamBuf.I \
     wordWrapStreamBuf.h
 
-#end lib_target
+#end ss_lib_target
 
 #begin test_bin_target
   #define TARGET test_prog

@@ -1,7 +1,7 @@
 #define YACC_PREFIX stitchyy
 #define LFLAGS -i
 
-#begin lib_target
+#begin ss_lib_target
   #define TARGET stitchbase
   #define LOCAL_LIBS \
     progbase
@@ -35,4 +35,4 @@
     stitchParserDefs.h stitchPerspectiveLens.h stitchPoint.h \
     stitcher.h triangle.h triangleRasterizer.h
 
-#end lib_target
+#end ss_lib_target

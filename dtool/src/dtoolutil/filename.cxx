@@ -677,6 +677,7 @@ open_read(ifstream &stream) const {
   }
 #endif
 
+  stream.clear();
   stream.open(to_os_specific().c_str(), open_mode);
   return (!stream.fail());
 }
@@ -706,6 +707,7 @@ open_write(ofstream &stream) const {
   }
 #endif
 
+  stream.clear();
 #ifdef WIN32_VC
   stream.open(to_os_specific().c_str(), open_mode);
 #else
@@ -740,6 +742,7 @@ open_append(ofstream &stream) const {
   }
 #endif
 
+  stream.clear();
 #ifdef WIN32_VC
   stream.open(to_os_specific().c_str(), open_mode);
 #else
@@ -774,6 +777,7 @@ open_read_write(fstream &stream) const {
   }
 #endif
 
+  stream.clear();
 #ifdef WIN32_VC
   stream.open(to_os_specific().c_str(), open_mode);
 #else

@@ -2,6 +2,8 @@
   #define TARGET stitch-command
   #define LOCAL_LIBS \
     stitchbase progbase
+  #define OTHER_LIBS \
+    linmath:c putil:c express:c panda:m pandaexpress:m pystub dtool
 
   #define SOURCES \
     stitchCommandProgram.cxx stitchCommandProgram.h
@@ -14,6 +16,8 @@
   #define TARGET stitch-image
   #define LOCAL_LIBS \
     stitchbase progbase
+  #define OTHER_LIBS \
+    linmath:c putil:c express:c panda:m pandaexpress:m pystub dtool
 
   #define SOURCES \
     stitchImageProgram.cxx stitchImageProgram.h
@@ -27,8 +31,8 @@
   #define OTHER_LIBS \
     device:c tform:c graph:c dgraph:c sgraph:c gobj:c sgattrib:c \
     event:c chancfg:c display:c sgraphutil:c light:c putil:c express:c \
-    panda:m \
-    dtoolutil:c dconfig:c dtool:m
+    panda:m pandaexpress:m \
+    dtoolutil:c dconfig:c dtool:m pystub
 
   #define SOURCES \
     stitchViewerProgram.cxx stitchViewerProgram.h
