@@ -41,6 +41,8 @@
 // somewhat different from the STL standard.  Irix uses this one too.
 // It might be inherited from an early draft of the STL standard.
 
+#pragma message("xxxxxxxxx using old style allocator")
+
 template<class Type>
 class dallocator : public alloc {
 public:
@@ -53,6 +55,8 @@ public:
 #elif defined(GNU_STYLE_ALLOCATOR)
 // Later versions of gcc want to use a still different, nonstandard
 // definition.  Sheesh.
+
+#pragma message("xxxxxxxxx using gnu style allocator")
 
 template<class Type>
 class dallocator : public allocator<Type> {
@@ -72,6 +76,8 @@ public:
 };
 
 #else  // *_STYLE_ALLOCATOR
+
+#pragma message("xxxxxxxxx using default allocator")
 
 // This is the correct allocator declaration as the current C++
 // standard defines it.
