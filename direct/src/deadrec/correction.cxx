@@ -17,9 +17,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "correction.h"
-#include <clockObject.h>
+#include "clockObject.h"
 
-#include <notifyCategoryProxy.h>
+#include "notifyCategoryProxy.h"
 NotifyCategoryDeclNoExport(correction);
 NotifyCategoryDef(correction, "");
 
