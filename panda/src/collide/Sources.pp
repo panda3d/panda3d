@@ -6,27 +6,32 @@
   #define LOCAL_LIBS \
     sgmanip light tform sgraphutil gobj graph putil \
     pstatclient
+    
+  #define COMBINED_SOURCES composite1.cxx composite2.cxx    
 
   #define SOURCES \
-    collisionEntry.I collisionEntry.cxx collisionEntry.h \
-    collisionHandler.cxx collisionHandler.h collisionHandlerEvent.I \
-    collisionHandlerEvent.cxx collisionHandlerEvent.h \
-    collisionHandlerFloor.I collisionHandlerFloor.cxx \
-    collisionHandlerFloor.h collisionHandlerPhysical.I \
-    collisionHandlerPhysical.cxx collisionHandlerPhysical.h \
-    collisionHandlerPusher.I collisionHandlerPusher.cxx \
-    collisionHandlerPusher.h collisionHandlerQueue.cxx \
-    collisionHandlerQueue.h collisionLevelState.I collisionLevelState.N \
-    collisionLevelState.cxx collisionLevelState.h collisionNode.I \
-    collisionNode.cxx collisionNode.h collisionPlane.I \
-    collisionPlane.cxx collisionPlane.h collisionPolygon.I \
-    collisionPolygon.cxx collisionPolygon.h collisionRay.I \
-    collisionRay.cxx collisionRay.h collisionSegment.I \
-    collisionSegment.cxx collisionSegment.h \
-    collisionSolid.I collisionSolid.cxx \
-    collisionSolid.h collisionSphere.I collisionSphere.cxx \
-    collisionSphere.h collisionTraverser.I collisionTraverser.cxx \
-    collisionTraverser.h config_collide.cxx config_collide.h
+     collisionEntry.I collisionEntry.h collisionHandler.h  \
+     collisionHandlerEvent.I collisionHandlerEvent.h  \
+     collisionHandlerFloor.I collisionHandlerFloor.h  \
+     collisionHandlerPhysical.I collisionHandlerPhysical.h  \
+     collisionHandlerPusher.I collisionHandlerPusher.h  \
+     collisionHandlerQueue.h collisionLevelState.I  \
+     collisionLevelState.N collisionLevelState.h collisionNode.I  \
+     collisionNode.h collisionPlane.I collisionPlane.h  \
+     collisionPolygon.I collisionPolygon.h collisionRay.I  \
+     collisionRay.h collisionSegment.I collisionSegment.h  \
+     collisionSolid.I collisionSolid.h collisionSphere.I  \
+     collisionSphere.h collisionTraverser.I collisionTraverser.h  \
+     config_collide.h  $[COMBINED_SOURCES]
+    
+ #define INCLUDED_SOURCES \
+     collisionEntry.cxx collisionHandler.cxx collisionHandlerEvent.cxx  \
+     collisionHandlerFloor.cxx collisionHandlerPhysical.cxx  \
+     collisionHandlerPusher.cxx collisionHandlerQueue.cxx  \
+     collisionLevelState.cxx collisionNode.cxx collisionPlane.cxx  \
+     collisionPolygon.cxx collisionRay.cxx collisionSegment.cxx  \
+     collisionSolid.cxx collisionSphere.cxx  \
+     collisionTraverser.cxx config_collide.cxx 
 
   #define INSTALL_HEADERS \
     collisionEntry.I collisionEntry.h collisionHandler.h \
@@ -41,7 +46,7 @@
     collisionSolid.I collisionSolid.h collisionSphere.I \
     collisionSphere.h collisionTraverser.I collisionTraverser.h
 
-    #define PRECOMPILED_HEADER collide_headers.h
+//    #define PRECOMPILED_HEADER collide_headers.h
 
   #define IGATESCAN all
 
