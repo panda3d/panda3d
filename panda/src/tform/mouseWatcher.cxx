@@ -60,33 +60,9 @@ MouseWatcher::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcher::add_region
-//       Access: Published
-//  Description: Adds the indicated region to the set of regions that
-//               are to be watched.  Returns true if it was
-//               successfully added, or false if it was already on the
-//               list.
-////////////////////////////////////////////////////////////////////
-bool MouseWatcher::
-add_region(MouseWatcherRegion *region) {
-  return _regions.insert(region).second;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcher::has_region
-//       Access: Published
-//  Description: Returns true if the indicated region has already been
-//               added to the MouseWatcher, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool MouseWatcher::
-has_region(MouseWatcherRegion *region) const {
-  return _regions.count(region) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::remove_region
 //       Access: Published
-//  Description: Removes the indicated region from the Watcher.
+//  Description: Removes the indicated region from the group.
 //               Returns true if it was successfully removed, or false
 //               if it wasn't there in the first place.
 ////////////////////////////////////////////////////////////////////
@@ -98,27 +74,7 @@ remove_region(MouseWatcherRegion *region) {
   if (region == _button_down_region) {
     _button_down_region = (MouseWatcherRegion *)NULL;
   }
-  return _regions.erase(region) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcher::find_region
-//       Access: Published
-//  Description: Returns a pointer to the first region found with the
-//               indicated name.  If multiple regions share the same
-//               name, the one that is returned is indeterminate.
-////////////////////////////////////////////////////////////////////
-MouseWatcherRegion *MouseWatcher::
-find_region(const string &name) const {
-  Regions::const_iterator ri;
-  for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
-    MouseWatcherRegion *region = (*ri);
-    if (region->get_name() == name) {
-      return region;
-    }
-  }
-
-  return (MouseWatcherRegion *)NULL;
+  return MouseWatcherGroup::remove_region(region);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -147,6 +103,27 @@ get_over_region(const LPoint2f &pos) const {
       if (over_region == (MouseWatcherRegion *)NULL ||
           *region < *over_region) {
         over_region = region;
+      }
+    }
+  }
+
+  // Also check all of our sub-groups.
+  Groups::const_iterator gi;
+  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
+    MouseWatcherGroup *group = (*gi);
+    for (ri = group->_regions.begin(); ri != group->_regions.end(); ++ri) {
+      MouseWatcherRegion *region = (*ri);
+      const LVecBase4f &frame = region->get_frame();
+      
+      if (region->get_active() &&
+          pos[0] >= frame[0] && pos[0] <= frame[1] &&
+          pos[1] >= frame[2] && pos[1] <= frame[3]) {
+        
+        // We're over this region.  Is it preferred to the other one?
+        if (over_region == (MouseWatcherRegion *)NULL ||
+            *region < *over_region) {
+          over_region = region;
+        }
       }
     }
   }
@@ -180,6 +157,59 @@ write(ostream &out, int indent_level) const {
     MouseWatcherRegion *region = (*ri);
     region->write(out, indent_level + 2);
   }
+
+  if (!_groups.empty()) {
+    Groups::const_iterator gi;
+    for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
+      MouseWatcherGroup *group = (*gi);
+      indent(out, indent_level + 2)
+        << "Subgroup:\n";
+      for (ri = group->_regions.begin(); ri != group->_regions.end(); ++ri) {
+        MouseWatcherRegion *region = (*ri);
+        region->write(out, indent_level + 4);
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::add_group
+//       Access: Public
+//  Description: Adds the indicated group of regions to the set of
+//               regions the MouseWatcher will monitor each frame.
+//
+//               Since the MouseWatcher itself inherits from
+//               MouseWatcherGroup, this operation is normally not
+//               necessary--you can simply add the Regions you care
+//               about one at a time.  Adding a complete group is
+//               useful when you may want to explicitly remove the
+//               regions as a group later.
+//
+//               Returns true if the group was successfully added, or
+//               false if it was already on the list.
+////////////////////////////////////////////////////////////////////
+bool MouseWatcher::
+add_group(MouseWatcherGroup *group) {
+  return _groups.insert(group).second;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::remove_group
+//       Access: Public
+//  Description: Removes the indicated group from the set of extra
+//               groups associated with the MouseWatcher.  Returns
+//               true if successful, or false if the group was already
+//               removed or was never added via add_group().
+////////////////////////////////////////////////////////////////////
+bool MouseWatcher::
+remove_group(MouseWatcherGroup *group) {
+  if (group->has_region(_current_region)) {
+    _current_region = (MouseWatcherRegion *)NULL;
+  }
+  if (group->has_region(_button_down_region)) {
+    _button_down_region = (MouseWatcherRegion *)NULL;
+  }
+  return _groups.erase(group) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -198,10 +228,12 @@ set_current_region(MouseWatcherRegion *region) {
 #endif
   if (region != _current_region) {
     if (_current_region != (MouseWatcherRegion *)NULL) {
+      _current_region->exit();
       throw_event_pattern(_leave_pattern, _current_region);
     }
     _current_region = region;
     if (_current_region != (MouseWatcherRegion *)NULL) {
+      _current_region->enter();
       throw_event_pattern(_enter_pattern, _current_region);
     }
   }
@@ -219,9 +251,11 @@ throw_event_pattern(const string &pattern, const MouseWatcherRegion *region,
   if (pattern.empty()) {
     return;
   }
+#ifndef NDEBUG
   if (region != (MouseWatcherRegion *)NULL) {
     region->test_ref_count_integrity();
   }
+#endif
 
   string event;
   for (size_t p = 0; p < pattern.size(); ++p) {
@@ -323,13 +357,9 @@ transmit_data(NodeAttributes &data) {
         // There is some danger of losing button-up events here.  If
         // more than one button goes down together, we won't detect
         // both of the button-up events properly.
-
-        // We should probably throw a different button_up event based
-        // on whether the _current_region is NULL or not, so the
-        // calling code can differentiate between button_up within the
-        // starting region, and button_up outside the region.
-        // Presently, changing this will break the GUI code.
         if (_button_down_region != (MouseWatcherRegion *)NULL) {
+          bool is_within = (_current_region == _button_down_region);
+          _button_down_region->button_up(be._button, is_within);
           throw_event_pattern(_button_up_pattern, _button_down_region,
                               be._button.get_name());
         }
@@ -343,6 +373,7 @@ transmit_data(NodeAttributes &data) {
         }
         _button_down = true;
         if (_button_down_region != (MouseWatcherRegion *)NULL) {
+          _button_down_region->button_down(be._button);
           throw_event_pattern(_button_down_pattern, _button_down_region,
                               be._button.get_name());
         }

@@ -22,6 +22,7 @@
 #include <pandabase.h>
 
 #include "mouseWatcherRegion.h"
+#include "mouseWatcherGroup.h"
 
 #include <dataNode.h>
 #include <vec3DataTransition.h>
@@ -52,15 +53,12 @@
 //               scene graph.  It will move the geometry around
 //               according to the mouse's known position.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MouseWatcher : public DataNode {
+class EXPCL_PANDA MouseWatcher : public DataNode, public MouseWatcherGroup {
 PUBLISHED:
   MouseWatcher(const string &name = "");
   ~MouseWatcher();
 
-  bool add_region(MouseWatcherRegion *region);
-  bool has_region(MouseWatcherRegion *region) const;
   bool remove_region(MouseWatcherRegion *region);
-  MouseWatcherRegion *find_region(const string &name) const;
 
   INLINE bool has_mouse() const;
   INLINE const LPoint2f &get_mouse() const;
@@ -93,11 +91,14 @@ PUBLISHED:
   INLINE void clear_geometry();
 
   INLINE void set_extra_handler(EventHandler *eh);
-  INLINE EventHandler* get_extra_handler(void) const;
+  INLINE EventHandler *get_extra_handler(void) const;
 
 public:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
+
+  bool add_group(MouseWatcherGroup *group);
+  bool remove_group(MouseWatcherGroup *group);
 
 private:
   void set_current_region(MouseWatcherRegion *region);
@@ -105,14 +106,14 @@ private:
                            const MouseWatcherRegion *region,
                            const string &button_name = string());
 
-  typedef pset< PT(MouseWatcherRegion) > Regions;
-  Regions _regions;
+  typedef pset< PT(MouseWatcherGroup) > Groups;
+  Groups _groups;
 
   bool _has_mouse;
   LPoint2f _mouse;
 
-  MouseWatcherRegion *_current_region;
-  MouseWatcherRegion *_button_down_region;
+  PT(MouseWatcherRegion) _current_region;
+  PT(MouseWatcherRegion) _button_down_region;
   bool _button_down;
 
   string _button_down_pattern;

@@ -74,7 +74,7 @@ FrustumCullTraverser(ArcChain &arc_chain, Node *root,
     }
   }
 
-  bool needs_top_node = !_arc_chain.has_node();
+  bool needs_top_node = _arc_chain.is_empty();
   if (needs_top_node) {
     // If the ArcChain supplied in is initially empty, put the root
     // node in it.

@@ -150,16 +150,6 @@ extend_by(NodeRelation *darc) {
     return false;
   }
 
-  if (darc->get_type() != get_graph_type() &&
-      darc->get_type() != NodeRelation::get_stashed_type()) {
-    if (sgmanip_cat.is_debug()) {
-      sgmanip_cat.debug()
-        << "Cannot extend " << *this << " by arc " << *darc
-        << "; wrong graph type.\n";
-    }
-    return false;
-  }
-
   _head = new ArcComponent(darc, _head);
 
   return true;
@@ -416,95 +406,6 @@ find_singular_transform() const {
   }
 
   return NodePath::not_found();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_node
-//       Access: Public
-//  Description: Returns the nth node of the path, where 0 is the
-//               bottom node and get_num_nodes() - 1 is the top node.
-//               This requires iterating through the path.
-////////////////////////////////////////////////////////////////////
-Node *NodePath::
-get_node(int index) const {
-  nassertr(index >= 0 && index < get_num_nodes(), NULL);
-
-  ArcComponent *comp = _head;
-  while (index > 0) {
-    // If this assertion fails, the index was out of range.
-    nassertr(comp != (ArcComponent *)NULL, NULL);
-    comp = comp->get_next();
-    index--;
-  }
-
-  // If this assertion fails, the index was out of range.
-  nassertr(comp != (ArcComponent *)NULL, NULL);
-  return comp->get_node();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_num_nodes
-//       Access: Public
-//  Description: Returns the number of nodes in the path.  This is
-//               always one more than the number of arcs (except for
-//               a completely empty path).
-////////////////////////////////////////////////////////////////////
-int NodePath::
-get_num_nodes() const {
-  int num = 0;
-  ArcComponent *comp = _head;
-  while (comp != (ArcComponent *)NULL) {
-    num++;
-    comp = comp->get_next();
-  }
-  return num;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_arc
-//       Access: Public
-//  Description: Returns the nth arc of the path, where 0 is the arc
-//               above the bottom node node and get_num_arcs() - 1 is
-//               the arc below the top node.  This requires iterating
-//               through the path.
-////////////////////////////////////////////////////////////////////
-NodeRelation *NodePath::
-get_arc(int index) const {
-  nassertr(index >= 0 && index < get_num_arcs(), NULL);
-
-  ArcComponent *comp = _head;
-  while (index > 0) {
-    // If this assertion fails, the index was out of range.
-    nassertr(comp != (ArcComponent *)NULL, NULL);
-    comp = comp->get_next();
-    index--;
-  }
-
-  // If either assertion fails, the index was out of range.
-  nassertr(comp != (ArcComponent *)NULL, NULL);
-  nassertr(comp->has_arc(), NULL);
-  return comp->get_arc();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_top_node
-//       Access: Public
-//  Description: Returns the top node of the path, or NULL if the path
-//               is empty.  This requires iterating through the path.
-////////////////////////////////////////////////////////////////////
-Node *NodePath::
-get_top_node() const {
-  if (is_empty()) {
-    return (Node *)NULL;
-  }
-
-  ArcComponent *comp = _head;
-  while (!comp->is_top_node()) {
-    comp = comp->get_next();
-    nassertr(comp != (ArcComponent *)NULL, NULL);
-  }
-
-  return comp->get_node();
 }
 
 ////////////////////////////////////////////////////////////////////

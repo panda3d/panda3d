@@ -1,5 +1,5 @@
-// Filename: mouseWatcherRegion.cxx
-// Created by:  drose (13Jul00)
+// Filename: pgMouseWatcherRegion.cxx
+// Created by:  drose (02Jul01)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,66 +16,80 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "mouseWatcherRegion.h"
+#include "pgMouseWatcherRegion.h"
+#include "pgItem.h"
 
-#include <indent.h>
+#include "string_utils.h"
 
-
-TypeHandle MouseWatcherRegion::_type_handle;
+TypeHandle PGMouseWatcherRegion::_type_handle;
+int PGMouseWatcherRegion::_next_index = 0;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcherRegion::output
-//       Access: Published
-//  Description:
+//     Function: PGMouseWatcherRegion::Constructor
+//       Access: Public
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-void MouseWatcherRegion::
-output(ostream &out) const {
-  out << get_name() << " lrbt = " << _frame;
+PGMouseWatcherRegion::
+PGMouseWatcherRegion(PGItem *item) :
+#ifndef CPPPARSER
+  MouseWatcherRegion("pg" + format_string(_next_index++), 0, 0, 0, 0),
+#endif
+  _item(item)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcherRegion::write
-//       Access: Published
-//  Description:
+//     Function: PGMouseWatcherRegion::Destructor
+//       Access: Public, Virtual
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-void MouseWatcherRegion::
-write(ostream &out, int indent_level) const {
-  indent(out, indent_level) << get_name() << " lrbt = " << _frame << "\n";
+PGMouseWatcherRegion::
+~PGMouseWatcherRegion() {
 }
 
+
 ////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcherRegion::enter
+//     Function: PGMouseWatcherRegion::enter
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever the
 //               mouse enters the region.
 ////////////////////////////////////////////////////////////////////
-void MouseWatcherRegion::
+void PGMouseWatcherRegion::
 enter() {
+  if (_item != (PGItem *)NULL) {
+    _item->enter();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcherRegion::exit
+//     Function: PGMouseWatcherRegion::exit
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever the
 //               mouse exits the region.
 ////////////////////////////////////////////////////////////////////
-void MouseWatcherRegion::
+void PGMouseWatcherRegion::
 exit() {
+  if (_item != (PGItem *)NULL) {
+    _item->exit();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcherRegion::button_down
+//     Function: PGMouseWatcherRegion::button_down
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever a
 //               mouse or keyboard button is depressed while the mouse
 //               is within the region.
 ////////////////////////////////////////////////////////////////////
-void MouseWatcherRegion::
-button_down(ButtonHandle) {
+void PGMouseWatcherRegion::
+button_down(ButtonHandle button) {
+  if (_item != (PGItem *)NULL) {
+    _item->button_down(button);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcherRegion::button_up
+//     Function: PGMouseWatcherRegion::button_up
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever a
 //               mouse or keyboard button previously depressed with
@@ -84,6 +98,9 @@ button_down(ButtonHandle) {
 //               still within the region, or false if it was released
 //               outside the region.
 ////////////////////////////////////////////////////////////////////
-void MouseWatcherRegion::
-button_up(ButtonHandle, bool) {
+void PGMouseWatcherRegion::
+button_up(ButtonHandle button, bool is_within) {
+  if (_item != (PGItem *)NULL) {
+    _item->button_up(button, is_within);
+  }
 }

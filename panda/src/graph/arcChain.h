@@ -141,8 +141,23 @@ public:
   INLINE_GRAPH ArcChain(const ArcChain &copy);
   INLINE_GRAPH void operator = (const ArcChain &copy);
 
-  INLINE_GRAPH bool has_node() const;
+  // Methods to query an ArcChain's contents.
+PUBLISHED:
+  INLINE_GRAPH bool is_empty() const;
+  INLINE_GRAPH bool is_singleton() const;
   INLINE_GRAPH bool has_arcs() const;
+  int get_num_nodes() const;
+  Node *get_node(int index) const;
+
+  INLINE_GRAPH int get_num_arcs() const;
+  NodeRelation *get_arc(int index) const;
+
+  Node *get_top_node() const;
+  INLINE_GRAPH Node *node() const;
+  INLINE_GRAPH NodeRelation *arc() const;
+
+public:
+  // Methods to make an ArcChain behave like an STL container.
 
   INLINE_GRAPH const_iterator begin() const;
   INLINE_GRAPH const_iterator end() const;

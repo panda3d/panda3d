@@ -1,7 +1,7 @@
 
 #include "mouseWatcher.cxx"
+#include "mouseWatcherGroup.cxx"
 #include "mouseWatcherRegion.cxx"
-#include "planarSlider.cxx"
 #include "trackball.cxx"
 #include "transform2sg.cxx"
 

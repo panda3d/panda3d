@@ -301,25 +301,80 @@ operator = (const ArcChain &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ArcChain::has_node
+//     Function: ArcChain::is_empty
 //       Access: Public
-//  Description: Returns true if there is at least a top node in the
-//               chain, or false otherwise.
+//  Description: Returns true if the ArcChain contains no nodes and no
+//               arcs.
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH bool ArcChain::
-has_node() const {
-  return (_head != (ArcComponent *)NULL);
+is_empty() const {
+  return (_head == (ArcComponent *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ArcChain::is_singleton
+//       Access: Public
+//  Description: Returns true if the ArcChain contains exactly one
+//               node, and no arcs.
+////////////////////////////////////////////////////////////////////
+INLINE_GRAPH bool ArcChain::
+is_singleton() const {
+  return (_head != (ArcComponent *)NULL && _head->is_top_node());
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ArcChain::has_arcs
 //       Access: Public
-//  Description: Returns true if there are any arcs in the chain, or
-//               false otherwise.
+//  Description: Returns true if the ArcChain contains at least one
+//               arc, and therefore at least two nodes.  This is the
+//               same thing as asking get_num_arcs() > 0, but is
+//               easier to compute.
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH bool ArcChain::
 has_arcs() const {
   return (_head != (ArcComponent *)NULL && !_head->is_top_node());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ArcChain::get_num_arcs
+//       Access: Public
+//  Description: Returns the number of arcs in the path.
+////////////////////////////////////////////////////////////////////
+INLINE_GRAPH int ArcChain::
+get_num_arcs() const {
+  if (!has_arcs()) {
+    return 0;
+  }
+  return get_num_nodes() - 1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ArcChain::node
+//       Access: Public
+//  Description: Returns the bottom node of the path, or NULL if the
+//               path is empty.
+////////////////////////////////////////////////////////////////////
+INLINE_GRAPH Node *ArcChain::
+node() const {
+  if (is_empty()) {
+    return (Node *)NULL;
+  }
+  return _head->get_node();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ArcChain::arc
+//       Access: Public
+//  Description: Returns the bottom arc of the path, or NULL if the
+//               path is empty or is a singleton.
+////////////////////////////////////////////////////////////////////
+INLINE_GRAPH NodeRelation *ArcChain::
+arc() const {
+  if (!has_arcs()) {
+    // A singleton or empty list.
+    return (NodeRelation *)NULL;
+  }
+  return _head->get_arc();
 }
 
 ////////////////////////////////////////////////////////////////////

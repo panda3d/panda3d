@@ -48,8 +48,8 @@
 
    #define INCLUDED_SOURCES \
      allAttributesWrapper.cxx allTransitionsWrapper.cxx \
-     arcChain.cxxbitMask32Transition.cxx   \
-     boundedObject.cxxconfig_graph.cxx graphReducer.cxx   \
+     arcChain.cxx bitMask32Transition.cxx   \
+     boundedObject.cxx config_graph.cxx graphReducer.cxx   \
      immediateAttribute.cxx immediateTransition.cxx   \
      lmatrix4fTransition.cxx multiNodeAttribute.cxx   \
      multiNodeTransition.cxx namedNode.cxx node.cxx   \
@@ -58,7 +58,7 @@
      nodeTransition.cxx nodeTransitionCache.cxx   \
      nodeTransitionCacheEntry.cxx nodeTransitionWrapper.cxx   \
      nodeTransitions.cxx   \
-     nullAttributeWrapper.cxxnullLevelState.cxx   \
+     nullAttributeWrapper.cxx nullLevelState.cxx   \
      nullTransitionWrapper.cxx onAttribute.cxx onOffAttribute.cxx   \
      onOffTransition.cxx onTransition.cxx pt_NamedNode.cxx   \
      pt_Node.cxx pt_NodeRelation.cxx vector_PT_Node.cxx   \

@@ -22,6 +22,7 @@
 #include "driveInterface.h"
 #include "buttonThrower.h"
 #include "mouseWatcher.h"
+#include "mouseWatcherGroup.h"
 #include "mouseWatcherRegion.h"
 #include "planarSlider.h"
 #include "trackball.h"
@@ -49,6 +50,7 @@ ConfigureFn(config_tform) {
   DriveInterface::init_type();
   ButtonThrower::init_type();
   MouseWatcher::init_type();
+  MouseWatcherGroup::init_type();
   MouseWatcherRegion::init_type();
   PlanarSlider::init_type();
   Trackball::init_type();

@@ -54,6 +54,26 @@ NodePath(Node *top_node, TypeHandle graph_type) :
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::Constructor
 //       Access: Public
+//  Description: Creates a NodePath that contains one arc, and the two
+//               Nodes connected to that arc.
+//
+//               If the NodeRelation pointer is NULL, this quietly
+//               creates an empty NodePath.
+////////////////////////////////////////////////////////////////////
+INLINE NodePath::
+NodePath(NodeRelation *arc) :
+  _graph_type(RenderRelation::get_class_type()),
+  _error_type(ET_ok)
+{
+  if (arc != (NodeRelation *)NULL) {
+    _graph_type = arc->get_type();
+    extend_by(arc);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::Constructor
+//       Access: Public
 //  Description: This constructor creates a new NodePath given an
 //               ArcChain, which is a more primitive version of a
 //               NodePath.  Some graph-traversal operations generate
@@ -183,12 +203,9 @@ compare_to(const NodePath &other) const {
 //       Access: Public
 //  Description: Changes the type of graph that the NodePath will
 //               search for.  By default, this is RenderRelation.
-//               This may only be called when the NodePath contains no
-//               arcs (e.g. is_empty() || is_singleton()).
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 set_graph_type(TypeHandle graph_type) {
-  nassertv(_head == (ArcComponent *)NULL);
   _graph_type = graph_type;
 }
 
@@ -243,17 +260,6 @@ get_max_search_depth() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::is_empty
-//       Access: Public
-//  Description: Returns true if the NodePath contains no nodes and no
-//               arcs.
-////////////////////////////////////////////////////////////////////
-INLINE bool NodePath::
-is_empty() const {
-  return !ArcChain::has_node();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_error_type
 //       Access: Public
 //  Description: If is_empty() is true, this returns a code that
@@ -262,74 +268,6 @@ is_empty() const {
 INLINE NodePath::ErrorType NodePath::
 get_error_type() const {
   return _error_type;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::is_singleton
-//       Access: Public
-//  Description: Returns true if the NodePath contains exactly one
-//               node, and no arcs.
-////////////////////////////////////////////////////////////////////
-INLINE bool NodePath::
-is_singleton() const {
-  return ArcChain::has_node() && !ArcChain::has_arcs();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::has_arcs
-//       Access: Public
-//  Description: Returns true if the NodePath contains at least one
-//               arc, and therefore at least two nodes.  This is the
-//               same thing as asking get_num_arcs() > 0, but is
-//               easier to compute.
-////////////////////////////////////////////////////////////////////
-INLINE bool NodePath::
-has_arcs() const {
-  return ArcChain::has_arcs();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_num_arcs
-//       Access: Public
-//  Description: Returns the number of arcs in the path.
-////////////////////////////////////////////////////////////////////
-INLINE int NodePath::
-get_num_arcs() const {
-  if (!has_arcs()) {
-    return 0;
-  }
-  return get_num_nodes() - 1;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::node
-//       Access: Public
-//  Description: Returns the bottom node of the path, or NULL if the
-//               path is empty.
-////////////////////////////////////////////////////////////////////
-INLINE Node *NodePath::
-node() const {
-  nassertr(_error_type == ET_ok, (Node *)NULL);
-  if (is_empty()) {
-    return (Node *)NULL;
-  }
-  return _head->get_node();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::arc
-//       Access: Public
-//  Description: Returns the bottom arc of the path, or NULL if the
-//               path is empty or is a singleton.
-////////////////////////////////////////////////////////////////////
-INLINE NodeRelation *NodePath::
-arc() const {
-  nassertr(_error_type == ET_ok, (NodeRelation *)NULL);
-  if (!has_arcs()) {
-    // A singleton or empty list.
-    return (NodeRelation *)NULL;
-  }
-  return _head->get_arc();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -449,7 +387,11 @@ attach_new_node(const string &name, int sort) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 output(ostream &out) const {
-  out << as_string(0);
+  if (_error_type == ET_ok && is_empty()) {
+    out << "**empty**";
+  } else {
+    out << as_string(0);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

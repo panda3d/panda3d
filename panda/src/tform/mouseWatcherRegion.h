@@ -24,6 +24,7 @@
 #include <namable.h>
 #include <typedReferenceCount.h>
 #include <luse.h>
+#include <buttonHandle.h>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MouseWatcherRegion
@@ -55,6 +56,11 @@ PUBLISHED:
 
 public:
   INLINE bool operator < (const MouseWatcherRegion &other) const;
+
+  virtual void enter();
+  virtual void exit();
+  virtual void button_down(ButtonHandle button);
+  virtual void button_up(ButtonHandle button, bool is_within);
 
 private:
   LVecBase4f _frame;

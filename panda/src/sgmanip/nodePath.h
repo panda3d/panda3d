@@ -148,6 +148,7 @@ PUBLISHED:
 
   INLINE NodePath(TypeHandle graph_type = RenderRelation::get_class_type());
   INLINE NodePath(Node *top_node, TypeHandle graph_type = RenderRelation::get_class_type());
+  INLINE NodePath(NodeRelation *arc);
   INLINE NodePath(const ArcChain &chain, TypeHandle graph_type);
 
   INLINE NodePath(const NodePath &copy);
@@ -183,19 +184,9 @@ PUBLISHED:
 
   // Methods to query a NodePath's contents.
 
-  INLINE bool is_empty() const;
   INLINE ErrorType get_error_type() const;
-  INLINE bool is_singleton() const;
-  INLINE bool has_arcs() const;
-  int get_num_nodes() const;
-  Node *get_node(int index) const;
 
-  INLINE int get_num_arcs() const;
-  NodeRelation *get_arc(int index) const;
-
-  Node *get_top_node() const;
-  INLINE Node *node() const;
-  INLINE NodeRelation *arc() const;
+  // Most of these methods are inherited from ArcChain.
 
 
   // Methods to manage the disconnected NodePaths that can result if

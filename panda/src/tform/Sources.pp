@@ -10,15 +10,17 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 
   #define SOURCES  \
-     buttonThrower.h config_tform.h dataValve.I dataValve.h  \
-     driveInterface.I driveInterface.h mouseWatcher.I  \
-     mouseWatcher.h mouseWatcherRegion.I mouseWatcherRegion.h  \
-     planarSlider.h trackball.h transform2sg.h  
+    buttonThrower.h config_tform.h dataValve.I dataValve.h  \
+    driveInterface.I driveInterface.h mouseWatcher.I  \
+    mouseWatcher.h mouseWatcherGroup.h \
+    mouseWatcherRegion.I mouseWatcherRegion.h  \
+    planarSlider.h trackball.h transform2sg.h  
      
   #define INCLUDED_SOURCES  \
-     buttonThrower.cxx config_tform.cxx dataValve.cxx  \
-     driveInterface.cxx mouseWatcher.cxx mouseWatcherRegion.cxx  \
-     planarSlider.cxx trackball.cxx transform2sg.cxx 
+    buttonThrower.cxx config_tform.cxx dataValve.cxx  \
+    driveInterface.cxx mouseWatcher.cxx mouseWatcherGroup.cxx \
+    mouseWatcherRegion.cxx  \
+    planarSlider.cxx trackball.cxx transform2sg.cxx 
 
   #define INSTALL_HEADERS \
     buttonThrower.h dataValve.I dataValve.h \

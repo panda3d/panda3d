@@ -1,0 +1,150 @@
+// Filename: pgFrameStyle.I
+// Created by:  drose (03Jul01)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PGFrameStyle::
+PGFrameStyle() {
+  _type = T_none;
+  _color.set(1.0, 1.0, 1.0, 1.0);
+  _width = 0.01;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::Copy Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PGFrameStyle::
+PGFrameStyle(const PGFrameStyle &copy) :
+  _type(copy._type),
+  _color(copy._color),
+  _width(copy._width)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::Copy Assignment Operator
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void PGFrameStyle::
+operator = (const PGFrameStyle &copy) {
+  _type = copy._type;
+  _color = copy._color;
+  _width = copy._width;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::Destructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PGFrameStyle::
+~PGFrameStyle() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::set_type
+//       Access: Published
+//  Description: Sets the basic type of frame.
+////////////////////////////////////////////////////////////////////
+INLINE void PGFrameStyle::
+set_type(PGFrameStyle::Type type) {
+  _type = type;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::get_type
+//       Access: Published
+//  Description: Returns the basic type of frame.
+////////////////////////////////////////////////////////////////////
+INLINE PGFrameStyle::Type PGFrameStyle::
+get_type() const {
+  return _type;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::set_color
+//       Access: Published
+//  Description: Sets the dominant color of the frame.
+////////////////////////////////////////////////////////////////////
+INLINE void PGFrameStyle::
+set_color(float r, float g, float b, float a) {
+  set_color(Colorf(r, g, b, a));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::set_color
+//       Access: Published
+//  Description: Sets the dominant color of the frame.
+////////////////////////////////////////////////////////////////////
+INLINE void PGFrameStyle::
+set_color(const Colorf &color) {
+  _color = color;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::set_color
+//       Access: Published
+//  Description: Returns the dominant color of the frame.
+////////////////////////////////////////////////////////////////////
+INLINE const Colorf &PGFrameStyle::
+get_color() const {
+  return _color;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::set_width
+//       Access: Published
+//  Description: Sets the width parameter, which has meaning only for
+//               certain frame types.  For instance, this is the width
+//               of the bevel for T_bevel_in or T_bevel_out.  The
+//               units are in screen units.
+////////////////////////////////////////////////////////////////////
+INLINE void PGFrameStyle::
+set_width(float width) {
+  _width = width;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::get_width
+//       Access: Published
+//  Description: Returns the width parameter, which has meaning only
+//               for certain frame types.  For instance, this is the
+//               width of the bevel for T_bevel_in or T_bevel_out.
+//               The units are in screen units.
+////////////////////////////////////////////////////////////////////
+INLINE float PGFrameStyle::
+get_width() const {
+  return _width;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle ostream output
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ostream &
+operator << (ostream &out, const PGFrameStyle &pfs) {
+  pfs.output(out);
+  return out;
+}

@@ -296,7 +296,7 @@ set_extra_handler(EventHandler *eh) {
 //               can be registered with a mouseWatcher so that events
 //               can be dealt with much sooner.
 ////////////////////////////////////////////////////////////////////
-INLINE EventHandler* MouseWatcher::
+INLINE EventHandler *MouseWatcher::
 get_extra_handler(void) const {
   return _eh;
 }
