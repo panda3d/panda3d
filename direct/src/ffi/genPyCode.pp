@@ -26,14 +26,14 @@
 
 #output genPyCode.bat
 @echo off
-python $[osfilename $[install_bin_dir]/genPyCode.py]
+python $[osfilename $[install_bin_dir]/genPyCode.py] %1 %2 %3 %4 %5 %6 %7 %8 %9
 #end genPyCode.bat
 
 #else  // Win32
 
 #output genPyCode
 $[hash]! /bin/sh
-ppython '$[osfilename $[install_bin_dir]/genPyCode.py]'
+ppython '$[osfilename $[install_bin_dir]/genPyCode.py]' "$@"
 #end genPyCode
 
 #endif  // Win32
