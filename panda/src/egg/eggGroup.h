@@ -172,6 +172,7 @@ public:
   INLINE CollideMask get_into_collide_mask() const;
 
   INLINE void set_lod(const EggSwitchCondition &lod);
+  INLINE void clear_lod();
   INLINE bool has_lod() const;
   INLINE const EggSwitchCondition &get_lod() const;
 
