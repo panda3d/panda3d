@@ -38,8 +38,8 @@
                 func(t)
 
     def popupControls(self, tl = None):
-        """ popupControls()
-            Popup control panel for interval.
+        """
+        Popup control panel for interval.
         """
         from TkGlobal import Toplevel, Frame, Button, LEFT, X, Pmw
         import math

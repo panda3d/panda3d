@@ -16,8 +16,6 @@ class Interval(DirectObject):
 
     # Class methods
     def __init__(self, name, duration, openEnded=1):
-        """__init__(name, duration, openEnded)
-        """
         self.name = name
         self.duration = max(duration, 0.0)
         self.state = CInterval.SInitial
@@ -299,8 +297,6 @@ class Interval(DirectObject):
         return shouldContinue
 
     def __repr__(self, indent=0):
-        """ __repr__(indent)
-        """
         space = ''
         for l in range(indent):
             space = space + ' '
@@ -359,8 +355,8 @@ class Interval(DirectObject):
             return Task.done
 
     def popupControls(self, tl = None):
-        """ popupControls()
-            Popup control panel for interval.
+        """
+        Popup control panel for interval.
         """
         import TkGlobal
         import math

@@ -4,14 +4,12 @@ from PandaObject import *
 import LODNode
 
 class Actor(PandaObject, NodePath):
-    """Actor class: Contains methods for creating, manipulating
-    and playing animations on characters"""
-
-    #create the Actor class globals (ewww!)
+    """
+    Actor class: Contains methods for creating, manipulating
+    and playing animations on characters
+    """
     notify = directNotify.newCategory("Actor")
     partPrefix = "__Actor_"
-    
-    #special methods
     
     def __init__(self, models=None, anims=None, other=None):
         """__init__(self, string | string:string{}, string:string{} |
@@ -69,9 +67,7 @@ class Actor(PandaObject, NodePath):
             #fix bounding volumes - this must be done after drawing
             #the actor for a few frames, otherwise it has no effect
             a.fixBounds()
-            
         """
-
         try:
             self.Actor_initialized
             return
@@ -231,13 +227,14 @@ class Actor(PandaObject, NodePath):
             return 1
 
     def __str__(self):
-        """__str__(self)
-        Actor print function"""
+        """
+        Actor print function
+        """
         return "Actor: partBundleDict = %s,\n animControlDict = %s" % \
                (self.__partBundleDict, self.__animControlDict)
 
     def getActorInfo(self):
-        """getActorInfo(self)
+        """
         Utility function to create a list of information about a actor.
         Useful for iterating over details of an actor.
         """
@@ -267,7 +264,7 @@ class Actor(PandaObject, NodePath):
         return animNames
 
     def pprint(self):
-        """pprint(self)
+        """
         Pretty print actor's details
         """
         for lodName, lodInfo in self.getActorInfo():
@@ -286,7 +283,7 @@ class Actor(PandaObject, NodePath):
                                 animControl.getPlayRate()))
 
     def cleanup(self):
-        """cleanup(self)
+        """
         Actor cleanup function
         """
         self.stop()
@@ -332,17 +329,17 @@ class Actor(PandaObject, NodePath):
         return self.__geomNode
 
     def setGeomNode(self, node):
-        """setGeomNode(self, node)
+        """
         Set the node that contains all actor geometry"""
         self.__geomNode = node
 
     def getLODNode(self):
-        """getLODNode(self)
+        """
         Return the node that switches actor geometry in and out"""
         return self.__LODNode.node()
 
     def setLODNode(self, node=None):
-        """setLODNode(self, LODNode=None)
+        """
         Set the node that switches actor geometry in and out.
         If one is not supplied as an argument, make one"""
         if (node == None):
@@ -386,7 +383,7 @@ class Actor(PandaObject, NodePath):
                                                         
             
     def resetLOD(self):
-        """resetLOD(self)
+        """
         Restore all switch distance info (usually after a useLOD call)"""
         sortedKeys = self.switches.keys()
         sortedKeys.sort()

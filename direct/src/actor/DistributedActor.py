@@ -16,8 +16,6 @@ class DistributedActor(DistributedNode.DistributedNode, Actor.Actor):
             # Since actors are probably fairly heavyweight, we'd
             # rather cache them than delete them if possible.
             self.setCacheable(1)
-            
-        return None
 
     def disable(self):
         # remove all anims, on all parts and all lods
