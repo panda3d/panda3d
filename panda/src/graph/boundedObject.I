@@ -40,6 +40,34 @@ BoundedObject() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BoundedObject::Copy Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_GRAPH BoundedObject::
+BoundedObject(const BoundedObject &copy) {
+  CDWriter cdata(_cycler);
+  CDReader copy_cdata(copy._cycler);
+  cdata->_flags = copy_cdata->_flags;
+  cdata->_bound_type = copy_cdata->_bound_type;
+  cdata->_bound = copy_cdata->_bound;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundedObject::Copy Assignment Operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_GRAPH void BoundedObject::
+operator = (const BoundedObject &copy) {
+  CDWriter cdata(_cycler);
+  CDReader copy_cdata(copy._cycler);
+  cdata->_flags = copy_cdata->_flags;
+  cdata->_bound_type = copy_cdata->_bound_type;
+  cdata->_bound = copy_cdata->_bound;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BoundedObject::set_bound
 //       Access: Published
 //  Description: Sets the type of the bounding volume that will be

@@ -40,6 +40,8 @@
 class EXPCL_PANDA BoundedObject {
 public:
   INLINE_GRAPH BoundedObject();
+  INLINE_GRAPH BoundedObject(const BoundedObject &copy);
+  INLINE_GRAPH void operator = (const BoundedObject &copy);
   virtual ~BoundedObject();
 
 PUBLISHED:
