@@ -269,7 +269,7 @@ hilight(int n, float hr, float hg, float hb) {
     _cvs.set_vertex_color(n, hr, hg, hb);
   }
   if (_show_knots) {
-    ///dnassert(_knotnums[n] >= 0 && _knotnums[n] < _knots.get_num_vertices());
+    nassertr(_knotnums[n] >= 0 && _knotnums[n] < _knots.get_num_vertices(), false);
     _knots.set_vertex_color(_knotnums[n], hr, hg, hb);
   }
 
@@ -297,7 +297,7 @@ unhilight(int n) {
     _cvs.set_vertex_color(n, _cv_color[0], _cv_color[1], _cv_color[2]);
   }
   if (_show_knots) {
-    ///dnassert(_knotnums[n] >= 0 && _knotnums[n] < _knots.get_num_vertices());
+    nassertr(_knotnums[n] >= 0 && _knotnums[n] < _knots.get_num_vertices(), false);
     _knots.set_vertex_color(_knotnums[n],
 			    _knot_color[0], _knot_color[1], _knot_color[2]);
   }
