@@ -109,8 +109,14 @@ class DistributedObject(PandaObject):
         """disableAndAnnounce(self)
         Inheritors should *not* redefine this function.
         """
-        self.disable()
+        # We must send the disable announce message *before* we
+        # actually disable the object.  That way, the various cleanup
+        # tasks can run first and take care of restoring the object to
+        # a normal, nondisabled state; and *then* the disable function
+        # can properly disable it (for instance, by parenting it to
+        # hidden).
         messenger.send(self.uniqueName("disable"))
+        self.disable()
         return None
 
     def announceGenerate(self):
