@@ -1136,6 +1136,10 @@ class MopathRecorder(AppShell, PandaObject):
                 if name == 'widget':
                     # Record relationship between selected nodes and widget
                     direct.selected.getWrtAll()                    
+                if name == 'marker':
+                    self.playbackMarker.show()
+                else:
+                    self.playbackMarker.hide()
         # Update active node path
         self.setRecordNodePath(nodePath)
 
