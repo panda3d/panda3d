@@ -45,6 +45,7 @@ EggTexture(const string &tref_name, const string &filename)
   _env_type = ET_unspecified;
   _flags = 0;
   _transform = LMatrix3d::ident_mat();
+  _alpha_file_channel = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -79,6 +80,7 @@ operator = (const EggTexture &copy) {
   _transform = copy._transform;
   _alpha_filename = copy._alpha_filename;
   _alpha_fullpath = copy._alpha_fullpath;
+  _alpha_file_channel = copy._alpha_file_channel;
 
   return *this;
 }
@@ -99,6 +101,12 @@ write(ostream &out, int indent_level) const {
       << "<Scalar> alpha-file { ";
     enquote_string(out, get_alpha_filename());
     out << " }\n";
+  }
+
+  if (has_alpha_file_channel()) {
+    indent(out, indent_level + 2)
+      << "<Scalar> alpha-file-channel { " 
+      << get_alpha_file_channel() << " }\n";
   }
 
   if (get_format() != F_unspecified) {

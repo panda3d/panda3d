@@ -236,8 +236,9 @@ write(ostream &out, int indent_level) const {
     out << " }\n";
   }
 
-  if (get_dcs_flag()) {
-    indent(out, indent_level + 2) << "<DCS> { 1 }\n";
+  if (get_dcs_type() != DC_none) {
+    indent(out, indent_level + 2) 
+      << "<DCS> { " << get_dcs_type() << " }\n";
   }
 
   if (get_dart_type() != DT_none) {
@@ -539,6 +540,26 @@ string_dart_type(const string &string) {
     return DT_default;
   } else {
     return DT_none;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::string_dcs_type
+//       Access: Public, Static
+//  Description: Returns the DCSType value associated with the given
+//               string representation, or DC_none if the string
+//               does not match any known DCSType value.
+////////////////////////////////////////////////////////////////////
+EggGroup::DCSType EggGroup::
+string_dcs_type(const string &string) {
+  if (cmp_nocase_uh(string, "local") == 0) {
+    return DC_local;
+  } else if (cmp_nocase_uh(string, "net") == 0) {
+    return DC_net;
+  } else if (cmp_nocase_uh(string, "default") == 0) {
+    return DC_default;
+  } else {
+    return DC_none;
   }
 }
 
@@ -890,6 +911,26 @@ ostream &operator << (ostream &out, EggGroup::DartType t) {
   case EggGroup::DT_nosync:
     return out << "nosync";
   case EggGroup::DT_default:
+    return out << "1";
+  }
+
+  nassertr(false, out);
+  return out << "(**invalid**)";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSType output operator
+//  Description:
+////////////////////////////////////////////////////////////////////
+ostream &operator << (ostream &out, EggGroup::DCSType t) {
+  switch (t) {
+  case EggGroup::DC_none:
+    return out << "none";
+  case EggGroup::DC_local:
+    return out << "local";
+  case EggGroup::DC_net:
+    return out << "net";
+  case EggGroup::DC_default:
     return out << "1";
   }
 

@@ -476,21 +476,24 @@ load_textures() {
 ////////////////////////////////////////////////////////////////////
 bool EggLoader::
 load_texture(TextureDef &def, const EggTexture *egg_tex) {
-  // Check to see if we should reduce the number of components in
+  // Check to see if we should reduce the number of channels in
   // the texture.
-  int wanted_components = 0;
+  int wanted_channels = 0;
+  bool wanted_alpha = false;
   switch (egg_tex->get_format()) {
   case EggTexture::F_red:
   case EggTexture::F_green:
   case EggTexture::F_blue:
   case EggTexture::F_alpha:
   case EggTexture::F_luminance:
-    wanted_components = 1;
+    wanted_channels = 1;
+    wanted_alpha = false;
     break;
 
   case EggTexture::F_luminance_alpha:
   case EggTexture::F_luminance_alphamask:
-    wanted_components = 2;
+    wanted_channels = 2;
+    wanted_alpha = true;
     break;
 
   case EggTexture::F_rgb:
@@ -498,7 +501,8 @@ load_texture(TextureDef &def, const EggTexture *egg_tex) {
   case EggTexture::F_rgb8:
   case EggTexture::F_rgb5:
   case EggTexture::F_rgb332:
-    wanted_components = 3;
+    wanted_channels = 3;
+    wanted_alpha = false;
     break;
 
   case EggTexture::F_rgba:
@@ -507,7 +511,8 @@ load_texture(TextureDef &def, const EggTexture *egg_tex) {
   case EggTexture::F_rgba8:
   case EggTexture::F_rgba4:
   case EggTexture::F_rgba5:
-    wanted_components = 4;
+    wanted_channels = 4;
+    wanted_alpha = true;
     break;
 
   case EggTexture::F_unspecified:
@@ -515,13 +520,14 @@ load_texture(TextureDef &def, const EggTexture *egg_tex) {
   }
 
   Texture *tex;
-  if (egg_tex->has_alpha_filename()) {
+  if (egg_tex->has_alpha_filename() && wanted_alpha) {
     tex = TexturePool::load_texture(egg_tex->get_fullpath(),
                                     egg_tex->get_alpha_fullpath(),
-                                    wanted_components);
+                                    wanted_channels,
+                                    egg_tex->get_alpha_file_channel());
   } else {
     tex = TexturePool::load_texture(egg_tex->get_fullpath(),
-                                    wanted_components);
+                                    wanted_channels);
   }
   if (tex == (Texture *)NULL) {
     return false;
@@ -531,7 +537,7 @@ load_texture(TextureDef &def, const EggTexture *egg_tex) {
   // egg file).  These filenames will be written back to the bam file
   // if the bam file is written out.
   tex->set_filename(egg_tex->get_filename());
-  if (egg_tex->has_alpha_filename()) {
+  if (egg_tex->has_alpha_filename() && wanted_alpha) {
     tex->set_alpha_filename(egg_tex->get_alpha_filename());
   }
 
@@ -1373,10 +1379,23 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
       make_node(*ci, node);
     }
 
-  } else if (egg_group->get_model_flag() || egg_group->get_dcs_flag()) {
+  } else if (egg_group->get_model_flag() || 
+             egg_group->get_dcs_type() != EggGroup::DC_none) {
     // A model or DCS flag; create a model node.
     node = new ModelNode(egg_group->get_name());
-    DCAST(ModelNode, node)->set_preserve_transform(egg_group->get_dcs_flag());
+    switch (egg_group->get_dcs_type()) {
+    case EggGroup::DC_net:
+      DCAST(ModelNode, node)->set_preserve_transform(ModelNode::PT_net);
+      break;
+
+    case EggGroup::DC_local:
+    case EggGroup::DC_default:
+      DCAST(ModelNode, node)->set_preserve_transform(ModelNode::PT_local);
+      break;
+
+    case EggGroup::DC_none:
+      break;
+    }
 
     EggGroup::const_iterator ci;
     for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {

@@ -206,15 +206,13 @@ has_anisotropic_degree() const {
 //     Function: EggTexture::get_anisotropic_degree
 //       Access: Public
 //  Description: Returns the anisotropic filtering degree that has
-//               been specified for this texture.  It is an error to
-//               call this unless has_anisotropic_degree() returns
-//               true.
+//               been specified for this texture, or 0 if nothing has
+//               been specified.
 ////////////////////////////////////////////////////////////////////
 INLINE int EggTexture::
 get_anisotropic_degree() const {
-  //  nassertr(has_anisotropic_degree(), 1);
-
-  // note: _anisotropic_degree's of 0 and 1 are equivalent (no anisotropic filtering to be done by gsg)
+  // note: _anisotropic_degree of 0 and 1 are equivalent (no
+  // anisotropic filtering to be done by gsg)
   return _anisotropic_degree;
 }
 
@@ -380,6 +378,60 @@ get_alpha_fullpath() const {
 INLINE void EggTexture::
 set_alpha_fullpath(const Filename &alpha_fullpath) {
   _alpha_fullpath = alpha_fullpath;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::set_alpha_file_channel
+//       Access: Public
+//  Description: If a separate alpha-file is specified, this indicates
+//               which channel number should be extracted from this
+//               file to derive the alpha channel for the final image.
+//               The default is 0, which means the grayscale
+//               combination of r, g, b.  Otherwise, this should be
+//               the 1-based channel number, for instance 1, 2, or 3
+//               for r, g, or b, respectively, or 4 for the alpha
+//               channel of a four-component image.
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+set_alpha_file_channel(int alpha_file_channel) {
+  _alpha_file_channel = alpha_file_channel;
+  _flags |= F_has_alpha_file_channel;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::clear_alpha_file_channel
+//       Access: Public
+//  Description: Removes the specification of a particular channel to
+//               use from the alpha-file image.
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+clear_alpha_file_channel() {
+  _alpha_file_channel = 0;
+  _flags &= ~F_has_alpha_file_channel;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::has_alpha_file_channel
+//       Access: Public
+//  Description: Returns true if a particular channel has been
+//               specified for the alpha-file image, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggTexture::
+has_alpha_file_channel() const {
+  return (_flags & F_has_alpha_file_channel) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::get_alpha_file_channel
+//       Access: Public
+//  Description: Returns the particular channel that has been
+//               specified for the alpha-file image, or 0 if no
+//               channel has been specified.  See
+//               set_alpha_file_channel().
+////////////////////////////////////////////////////////////////////
+INLINE int EggTexture::
+get_alpha_file_channel() const {
+  return _alpha_file_channel;
 }
 
 ////////////////////////////////////////////////////////////////////

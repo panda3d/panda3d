@@ -397,6 +397,9 @@ texture_body:
   } else if (cmp_nocase_uh(name, "alpha_file") == 0) {
     texture->set_alpha_filename(strval);
 
+  } else if (cmp_nocase_uh(name, "alpha_file_channel") == 0) {
+    texture->set_alpha_file_channel((int)value);
+
   } else {
     eggyywarning("Unsupported texture scalar: " + name);
   }
@@ -940,7 +943,20 @@ group_body:
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   int value = (int)$4;
-  group->set_dcs_flag(value!=0);
+  group->set_dcs_type(value!=0 ? EggGroup::DC_default : EggGroup::DC_none);
+}
+        | group_body DCS '{' STRING '}'
+{
+  // The special flavor of DCS, with { sync } or { nosync }.
+  EggGroup *group = DCAST(EggGroup, egg_stack.back());
+  string strval = $4;
+
+  EggGroup::DCSType f = EggGroup::string_dcs_type(strval);
+  if (f == EggGroup::DC_none) {
+    eggyywarning("Unknown DCS type " + strval);
+  } else {
+    group->set_dcs_type(f);
+  }
 }
         | group_body DART '{' integer '}'
 {

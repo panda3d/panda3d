@@ -128,6 +128,11 @@ public:
   INLINE void set_alpha_fullpath(const Filename &fullpath);
   INLINE const Filename &get_alpha_fullpath() const;
 
+  INLINE void set_alpha_file_channel(int alpha_file_channel);
+  INLINE void clear_alpha_file_channel();
+  INLINE bool has_alpha_file_channel() const;
+  INLINE int get_alpha_file_channel() const;
+
   static Format string_format(const string &string);
   static WrapMode string_wrap_mode(const string &string);
   static FilterType string_filter_type(const string &string);
@@ -141,6 +146,7 @@ private:
     F_has_transform          = 0x0001,
     F_has_alpha_filename     = 0x0002,
     F_has_anisotropic_degree = 0x0004,
+    F_has_alpha_file_channel = 0x0008,
   };
 
   Format _format;
@@ -152,6 +158,7 @@ private:
   LMatrix3d _transform;
   Filename _alpha_filename;
   Filename _alpha_fullpath;
+  int _alpha_file_channel;
 
 
 public:

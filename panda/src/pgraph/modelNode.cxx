@@ -62,7 +62,7 @@ safe_to_flatten() const {
 ////////////////////////////////////////////////////////////////////
 bool ModelNode::
 safe_to_transform() const {
-  return !_preserve_transform;
+  return _preserve_transform == PT_none;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -79,7 +79,7 @@ safe_to_transform() const {
 ////////////////////////////////////////////////////////////////////
 bool ModelNode::
 safe_to_modify_transform() const {
-  return !_preserve_transform;
+  return _preserve_transform != PT_local;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -129,7 +129,7 @@ register_with_read_factory() {
 void ModelNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   PandaNode::write_datagram(manager, dg);
-  dg.add_bool(_preserve_transform);
+  dg.add_uint8((int)_preserve_transform);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -163,5 +163,5 @@ void ModelNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);
 
-  _preserve_transform = scan.get_bool();
+  _preserve_transform = (PreserveTransform)scan.get_uint8();
 }

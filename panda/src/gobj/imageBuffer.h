@@ -27,10 +27,6 @@
 #include "filename.h"
 #include "namable.h"
 
-////////////////////////////////////////////////////////////////////
-// Defines
-////////////////////////////////////////////////////////////////////
-
 class RenderBuffer;
 class DisplayRegion;
 
@@ -41,8 +37,8 @@ class DisplayRegion;
 class EXPCL_PANDA ImageBuffer : public ReferenceCount,
                                 public WritableConfigurable, public Namable {
 PUBLISHED:
-  ImageBuffer() { }
-  virtual ~ImageBuffer() { }
+  ImageBuffer();
+  virtual ~ImageBuffer();
 
 public:
   virtual void config( void ) { WritableConfigurable::config(); }
@@ -79,12 +75,24 @@ private:
   Filename _fullpath;
   Filename _alpha_fullpath;
 
+protected:
+  // These are set by (and read by) the derived Texture class.
+
+  // The number of channels of the primary file we use.  1, 2, 3, or 4.
+  int _primary_file_num_channels;
+
+  // If we have a separate alpha file, this designates which channel
+  // in the alpha file provides the alpha channel.  0 indicates the
+  // combined grayscale value of rgb; otherwise, 1, 2, 3, or 4 are
+  // valid.
+  int _alpha_file_channel;
+
 public:
-  //Abstract class, so no factory methods for Reading and Writing
-  virtual void write_datagram(BamWriter* manager, Datagram &me);
+  // Abstract class, so no factory methods for Reading and Writing
+  virtual void write_datagram(BamWriter *manager, Datagram &me);
 
 protected:
-  void fillin(DatagramIterator& scan, BamReader* manager);
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
 

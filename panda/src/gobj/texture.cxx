@@ -106,22 +106,22 @@ consider_rescale(PNMImage &pnmimage, const string &name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: consider_downgrade
 //  Description: Reduces the number of channels in the texture, if
-//               necessary, according to num_components.
+//               necessary, according to num_channels.
 ////////////////////////////////////////////////////////////////////
 static void
-consider_downgrade(PNMImage &pnmimage, int num_components, 
+consider_downgrade(PNMImage &pnmimage, int num_channels, 
                    const string &name) {
-  if (num_components != 0 && num_components < pnmimage.get_num_channels()) {
+  if (num_channels != 0 && num_channels < pnmimage.get_num_channels()) {
     // One special case: we can't reduce from 3 to 2 components, since
     // that would require adding an alpha channel.
-    if (pnmimage.get_num_channels() == 3 && num_components == 2) {
+    if (pnmimage.get_num_channels() == 3 && num_channels == 2) {
       return;
     }
 
     gobj_cat.info()
       << "Downgrading " << name << " from " << pnmimage.get_num_channels()
-      << " components to " << num_components << ".\n";
-    pnmimage.set_num_channels(num_components);
+      << " components to " << num_channels << ".\n";
+    pnmimage.set_num_channels(num_channels);
   }
 }
 
@@ -179,12 +179,12 @@ Texture::
 //     Function: read
 //       Access: Published
 //  Description: Reads the texture from the indicated filename.  If
-//               num_components is not 0, it specifies the number of
+//               num_channels is not 0, it specifies the number of
 //               components to downgrade the image to if it is greater
 //               than this number.
 ////////////////////////////////////////////////////////////////////
 bool Texture::
-read(const Filename &fullpath, int num_components) {
+read(const Filename &fullpath, int primary_file_num_channels) {
   PNMImage image;
 
   if (!image.read(fullpath)) {
@@ -206,7 +206,11 @@ read(const Filename &fullpath, int num_components) {
 
   // Check to see if we need to scale it.
   consider_rescale(image, get_name());
-  consider_downgrade(image, num_components, get_name());
+  consider_downgrade(image, primary_file_num_channels, get_name());
+
+  _primary_file_num_channels = image.get_num_channels();
+  _alpha_file_channel = 0;
+
   return load(image);
 }
 
@@ -218,7 +222,7 @@ read(const Filename &fullpath, int num_components) {
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 read(const Filename &fullpath, const Filename &alpha_fullpath,
-     int num_components) {
+     int primary_file_num_channels, int alpha_file_channel) {
   PNMImage image;
   if (!image.read(fullpath)) {
     gobj_cat.error()
@@ -263,16 +267,44 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
     alpha_image = scaled;
   }
 
+  consider_downgrade(image, primary_file_num_channels, get_name());
+
+  _primary_file_num_channels = image.get_num_channels();
+
   // Make the original image a 4-component image by taking the
   // grayscale value from the second image.
   image.add_alpha();
-  for (int x = 0; x < image.get_x_size(); x++) {
-    for (int y = 0; y < image.get_y_size(); y++) {
-      image.set_alpha(x, y, alpha_image.get_gray(x, y));
+
+  if (alpha_file_channel == 4 || 
+      (alpha_file_channel == 2 && alpha_image.get_num_channels() == 2)) {
+    // Use the alpha channel.
+    for (int x = 0; x < image.get_x_size(); x++) {
+      for (int y = 0; y < image.get_y_size(); y++) {
+        image.set_alpha(x, y, alpha_image.get_alpha(x, y));
+      }
     }
+    _alpha_file_channel = alpha_image.get_num_channels();
+
+  } else if (alpha_file_channel >= 1 && alpha_file_channel <= 3 &&
+             alpha_image.get_num_channels() >= 3) {
+    // Use the appropriate red, green, or blue channel.
+    for (int x = 0; x < image.get_x_size(); x++) {
+      for (int y = 0; y < image.get_y_size(); y++) {
+        image.set_alpha(x, y, alpha_image.get_channel_val(x, y, alpha_file_channel - 1));
+      }
+    }
+    _alpha_file_channel = alpha_file_channel;
+
+  } else {
+    // Use the grayscale channel.
+    for (int x = 0; x < image.get_x_size(); x++) {
+      for (int y = 0; y < image.get_y_size(); y++) {
+        image.set_alpha(x, y, alpha_image.get_gray(x, y));
+      }
+    }
+    _alpha_file_channel = 0;
   }
 
-  consider_downgrade(image, num_components, get_name());
   return load(image);
 }
 
@@ -697,18 +729,16 @@ make_Texture(const FactoryParams &params) {
 
   parse_params(params, scan, manager);
 
-  string name;
-  Filename filename, alpha_filename;
-
   // Get the properties written by ImageBuffer::write_datagram().
-  name = scan.get_string();
-  filename = scan.get_string();
-  alpha_filename = scan.get_string();
+  string name = scan.get_string();
+  Filename filename = scan.get_string();
+  Filename alpha_filename = scan.get_string();
+  int primary_file_num_channels = 0;  
+  int alpha_file_channel = 0;  
 
-  // Get the expected number of components.
-  int num_components = 0;
-  if (manager->get_file_minor_ver() >= 2) {
-    num_components = scan.get_uint8();
+  if (manager->get_file_minor_ver() >= 3) {
+    primary_file_num_channels = scan.get_uint8();
+    alpha_file_channel = scan.get_uint8();
   }
 
   PT(Texture) me;
@@ -722,9 +752,10 @@ make_Texture(const FactoryParams &params) {
   } else {
     // This texture does have a filename, so try to load it from disk.
     if (alpha_filename.empty()) {
-      me = TexturePool::load_texture(filename, num_components);
+      me = TexturePool::load_texture(filename, primary_file_num_channels);
     } else {
-      me = TexturePool::load_texture(filename, alpha_filename, num_components);
+      me = TexturePool::load_texture(filename, alpha_filename, 
+                                     primary_file_num_channels, alpha_file_channel);
     }
   }
 
@@ -766,21 +797,17 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _magfilter = (enum FilterType) scan.get_uint8();
   _anisotropic_degree = scan.get_int16();
 
-  if (scan.get_remaining_size() > 0) {
-    bool has_pbuffer = scan.get_bool();
-    if (has_pbuffer) {
-      PixelBuffer::Format format = (PixelBuffer::Format)scan.get_uint8();
-      int num_components = -1;
-      if (scan.get_remaining_size() > 0) {
-        num_components = scan.get_uint8();
-      }
+  bool has_pbuffer = scan.get_bool();
+  if (has_pbuffer) {
+    PixelBuffer::Format format = (PixelBuffer::Format)scan.get_uint8();
+    int num_channels = -1;
+    num_channels = scan.get_uint8();
 
-      if (_pbuffer != (PixelBuffer *)NULL) {
-        if (num_components == _pbuffer->get_num_components()) {
-          // Only reset the format if the number of components hasn't
-          // changed.
-          _pbuffer->set_format(format);
-        }
+    if (_pbuffer != (PixelBuffer *)NULL) {
+      if (num_channels == _pbuffer->get_num_components()) {
+        // Only reset the format if the number of components hasn't
+        // changed.
+        _pbuffer->set_format(format);
       }
     }
   }
@@ -800,11 +827,6 @@ write_datagram(BamWriter *manager, Datagram &me) {
 
   // These properties are read in again by make_Texture(), above.
   ImageBuffer::write_datagram(manager, me);
-  if (has_pbuffer) {
-    me.add_uint8(_pbuffer->get_num_components());
-  } else {
-    me.add_uint8(0);
-  }
 
   // These properties are read in again by fillin(), above.
   me.add_uint8(_wrapu);
@@ -816,7 +838,6 @@ write_datagram(BamWriter *manager, Datagram &me) {
   me.add_bool(has_pbuffer);
   if (has_pbuffer) {
     me.add_uint8(_pbuffer->get_format());
-    // I know this has already been written, above.
     me.add_uint8(_pbuffer->get_num_components());
   }
 }

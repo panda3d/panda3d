@@ -16,23 +16,37 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "imageBuffer.h"
 #include "config_gobj.h"
 #include "config_util.h"
 
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+
+TypeHandle ImageBuffer::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-// Static variables
+//     Function: ImageBuffer::Constructor
+//       Access: Public
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-TypeHandle ImageBuffer::_type_handle;
+ImageBuffer::
+ImageBuffer() {
+  _primary_file_num_channels = 0;
+  _alpha_file_channel = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageBuffer::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+ImageBuffer::
+~ImageBuffer() {
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ImageBuffer::write_datagram
@@ -85,6 +99,8 @@ write_datagram(BamWriter *, Datagram &me)
   me.add_string(get_name());
   me.add_string(filename);
   me.add_string(alpha_filename);
+  me.add_uint8(_primary_file_num_channels);
+  me.add_uint8(_alpha_file_channel);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -100,4 +116,12 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   set_name(scan.get_string());
   set_filename(scan.get_string());
   set_alpha_filename(scan.get_string());
+
+  if (manager->get_file_minor_ver() < 3) {
+    _primary_file_num_channels = 0;
+    _alpha_file_channel = 0;
+  } else {
+    _primary_file_num_channels = scan.get_uint8();
+    _alpha_file_channel = scan.get_uint8();
+  }
 }

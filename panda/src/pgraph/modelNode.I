@@ -26,20 +26,32 @@ INLINE ModelNode::
 ModelNode(const string &name) :
   PandaNode(name)
 {
-  _preserve_transform = false;
+  _preserve_transform = PT_none;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ModelNode::set_preserve_transform
 //       Access: Public
-//  Description: Sets the preserve_transform flag.  When this flag is
-//               true, flattening the scene graph will not flatten out
-//               any transformation assigned above this node;
-//               otherwise, any transforms applying to this node may
-//               or may not be flattened.
+//  Description: Sets the preserve_transform flag.  This restricts the
+//               ability of a flatten operation to affect the
+//               transform stored on this node.  If the flag is:
+//
+//               PT_none - the transform may be adjusted at will.
+//
+//               PT_local - the local (and net) transform should not
+//               be changed in any way.  If necessary, an extra
+//               transform will be left on the node above to guarantee
+//               this.  This is the strongest restriction.
+//
+//               PT_net - preserve the net transform from the
+//               root, but it's acceptable to modify the local
+//               transform stored on this particular node if
+//               necessary, so long as the net transform is not
+//               changed.  This eliminates the need to drop an extra
+//               transform on the node above.
 ////////////////////////////////////////////////////////////////////
 INLINE void ModelNode::
-set_preserve_transform(bool preserve_transform) {
+set_preserve_transform(ModelNode::PreserveTransform preserve_transform) {
   _preserve_transform = preserve_transform;
 }
 
@@ -49,7 +61,7 @@ set_preserve_transform(bool preserve_transform) {
 //  Description: Returns the current setting of the preserve_transform
 //               flag.  See set_preserve_transform().
 ////////////////////////////////////////////////////////////////////
-INLINE bool ModelNode::
+INLINE ModelNode::PreserveTransform ModelNode::
 get_preserve_transform() const {
   return _preserve_transform;
 }

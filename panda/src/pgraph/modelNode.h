@@ -52,11 +52,17 @@ public:
   virtual bool preserve_name() const;
 
 PUBLISHED:
-  INLINE void set_preserve_transform(bool preserve_transform);
-  INLINE bool get_preserve_transform() const;
+  enum PreserveTransform {
+    PT_none,
+    PT_local,
+    PT_net
+  };
+
+  INLINE void set_preserve_transform(PreserveTransform preserve_transform);
+  INLINE PreserveTransform get_preserve_transform() const;
 
 private:
-  bool _preserve_transform;
+  PreserveTransform _preserve_transform;
 
 public:
   static void register_with_read_factory();

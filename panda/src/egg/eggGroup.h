@@ -56,6 +56,13 @@ public:
     DT_nosync                = 0x00000008,
     DT_default               = 0x0000000c,
   };
+  enum DCSType {
+    // The bits here must correspond to those in Flags2, below.
+    DC_none                  = 0x00000000,
+    DC_local                 = 0x00000010,
+    DC_net                   = 0x00000020,
+    DC_default               = 0x00000030,
+  };
   enum BillboardType {
     // The bits here must correspond to those in Flags, below.
     BT_none                  = 0x00000000,
@@ -121,8 +128,8 @@ public:
   INLINE bool has_collision_name() const;
   INLINE const string &get_collision_name() const;
 
-  INLINE void set_dcs_flag(bool flag);
-  INLINE bool get_dcs_flag() const;
+  INLINE void set_dcs_type(DCSType type);
+  INLINE DCSType get_dcs_type() const;
 
   INLINE void set_dart_type(DartType type);
   INLINE DartType get_dart_type() const;
@@ -192,6 +199,7 @@ public:
 
   static GroupType string_group_type(const string &string);
   static DartType string_dart_type(const string &string);
+  static DCSType string_dcs_type(const string &string);
   static BillboardType string_billboard_type(const string &string);
   static CollisionSolidType string_cs_type(const string &string);
   static CollideFlags string_collide_flags(const string &string);
@@ -211,7 +219,7 @@ private:
   enum Flags {
     F_group_type             = 0x00000003,
     F_dart_type              = 0x0000000c,
-    F_dcs_flag               = 0x00000010,
+
     F_billboard_type         = 0x000000e0,
     F_switch_flag            = 0x00000100,
     F_model_flag             = 0x00000400,
@@ -227,6 +235,8 @@ private:
     F2_from_collide_mask     = 0x00000002,
     F2_into_collide_mask     = 0x00000004,
     F2_billboard_center      = 0x00000008,
+
+    F2_dcs_type              = 0x00000030,
   };
 
   int _flags;
@@ -263,6 +273,7 @@ private:
 
 ostream &operator << (ostream &out, EggGroup::GroupType t);
 ostream &operator << (ostream &out, EggGroup::DartType t);
+ostream &operator << (ostream &out, EggGroup::DCSType t);
 ostream &operator << (ostream &out, EggGroup::BillboardType t);
 ostream &operator << (ostream &out, EggGroup::CollisionSolidType t);
 ostream &operator << (ostream &out, EggGroup::CollideFlags t);

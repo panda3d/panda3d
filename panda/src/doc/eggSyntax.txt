@@ -761,26 +761,30 @@ GROUPING ENTRIES
 
   <DCS> { boolean-value }
 
-    This indicates that this group contains geometry that might need
-    to be repositioned interactively relative to the rest of the
-    scene.  The egg loader interprets this by creating a pfDCS node
-    instead of a pfGroup node.  This also implies <Model>, below.
+    DCS stands for Dynamic Coordinate System.  This indicates that
+    show code will expect to be able to read the transform set on this
+    node at run time, and may need to modify the transform further.
+    This is a special case of <Model>, below.
 
-  <TexList> { boolean-value }
+  <DCS> { dcs-type }
 
-    This indicates that this group contains geometry whose textures
-    might need to be separately managed.  A special xpfTexListNode is
-    created for this group.  This also implies <Model>.
+    This is another syntax for the <DCS> flag.  The dcs-type string
+    should be one of either "local" or "net", which specifies the kind
+    of preserve_transform flag that will be set on the corresponding
+    ModelNode.  If the string is "local", it indicates that the local
+    transform on this node (as well as the net transform) will not be
+    affected by any flattening operation and will be preserved through
+    the entire model loading process.  If the string is "net", then
+    only the net transform will be preserved; the local transform may
+    be adjusted in the event of a flatten operation.
 
   <Model> { boolean-value }
 
     This indicates that the show code might need a pointer to this
-    particular group.  If any nodes in the egg file have the <Model>
-    flag set, the egg loader creates an xpfModelRoot node as the root
-    node of the file, which keeps a short list of all the nodes with
-    the <Model> flag set.  This allows quick access to these nodes by
-    the show code at run time.  In the old player this also implied
-    <DCS>, but it doesn't any more.
+    particular group.  This creates a ModelNode at the corresponding
+    level, which is guaranteed not to be removed by any flatten
+    operation.  However, its transform might still be changed, but see
+    also the <DCS> flag, above.
 
 
   <Dart> { boolean-value }

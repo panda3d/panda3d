@@ -185,7 +185,7 @@ build_joint_hierarchy(EggNode *egg_node, PartGroup *part) {
       index = _parts.size();
       _parts.push_back(joint);
 
-      if (egg_group->get_dcs_flag()) {
+      if (egg_group->get_dcs_type() != EggGroup::DC_none) {
         // If the joint requested an explicit DCS, create a node for
         // it.
         joint->_geom_node = new PandaNode(egg_group->get_name());
@@ -375,7 +375,7 @@ determine_primitive_home(EggPrimitive *egg_primitive) {
 
   if (egg_group != (EggGroup *)NULL &&
       egg_group->get_group_type() == EggGroup::GT_joint &&
-      !egg_group->get_dcs_flag()) {
+      egg_group->get_dcs_type() == EggGroup::DC_none) {
     // If the home is a joint without a <DCS> flag--this is the normal
     // case--we'll move the polygon under the character node and
     // animate it from there explicitly.

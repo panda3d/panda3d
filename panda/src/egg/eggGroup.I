@@ -217,27 +217,25 @@ get_collide_flags() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::set_dcs_flag
+//     Function: EggGroup::set_dcs_type
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggGroup::
-set_dcs_flag(bool flag) {
-  if (flag) {
-    _flags |= F_dcs_flag;
-  } else {
-    _flags &= ~F_dcs_flag;
-  }
+set_dcs_type(EggGroup::DCSType type) {
+  // Make sure the user didn't give us any stray bits.
+  nassertv((type & ~F2_dcs_type)==0);
+  _flags2 = (_flags2 & ~F2_dcs_type) | type;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::get_dcs_flag
+//     Function: EggGroup::get_dcs_type
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool EggGroup::
-get_dcs_flag() const {
-  return ((_flags & F_dcs_flag) != 0);
+INLINE EggGroup::DCSType EggGroup::
+get_dcs_type() const {
+  return (DCSType)(_flags2 & F2_dcs_type);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -246,7 +244,7 @@ get_dcs_flag() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggGroup::
-set_dart_type(DartType type) {
+set_dart_type(EggGroup::DartType type) {
   // Make sure the user didn't give us any stray bits.
   nassertv((type & ~F_dart_type)==0);
   _flags = (_flags & ~F_dart_type) | type;

@@ -165,7 +165,16 @@ read(istream &in) {
 ////////////////////////////////////////////////////////////////////
 void EggData::
 merge(EggData &other) {
-  other.set_coordinate_system(get_coordinate_system());
+  if (get_coordinate_system() == CS_default) {
+    // If we haven't specified a coordinate system yet, we inherit the
+    // other one's.
+    set_coordinate_system(other.get_coordinate_system());
+
+  } else {
+    // Otherwise, the other one is forced into our coordinate system
+    // before we merge.
+    other.set_coordinate_system(get_coordinate_system());
+  }
   steal_children(other);
 }
 
