@@ -132,7 +132,10 @@ dc_cleanup_parser() {
 %type <u.parameter> type_definition
 %type <u.parameter> named_parameter
 %type <u.parameter> unnamed_parameter
+%type <u.parameter> named_parameter_with_default
+%type <u.parameter> unnamed_parameter_with_default
 %type <u.parameter> parameter
+%type <u.parameter> parameter_with_default
 %type <u.parameter> parameter_definition
 %type <str> import_identifier
 %type <str> slash_identifier
@@ -223,7 +226,7 @@ import_symbol_list:
 	;
 
 typedef_decl:
-        KW_TYPEDEF parameter
+        KW_TYPEDEF parameter_with_default
 {
   DCTypedef *dtypedef = new DCTypedef($2);
 
@@ -311,12 +314,12 @@ dclass_field:
   $$->set_flags($2);
 }
 	| molecular_field
-	| unnamed_parameter server_flags ';'
+	| unnamed_parameter_with_default server_flags ';'
 {
   $$ = $1;
   $$->set_flags($2);
 }
-	| named_parameter server_flags
+	| named_parameter_with_default server_flags
 {
   $$ = $1;
   $$->set_flags($2);
@@ -387,11 +390,11 @@ struct_fields:
 struct_field:
 	atomic_field
 	| molecular_field
-	| unnamed_parameter ';'
+	| unnamed_parameter_with_default ';'
 {
   $$ = $1;
 }
-	| named_parameter
+	| named_parameter_with_default
 {
   $$ = $1;
 }
@@ -421,30 +424,8 @@ nonempty_parameter_list:
         ;
 
 atomic_element:
-        parameter
+        parameter_with_default
 {
-  current_atomic->add_element($1);
-}
-	| parameter '=' 
-{
-  current_packer = &default_packer;
-  current_packer->clear_data();
-  current_packer->begin_pack($1);
-}
-	parameter_value
-{
-  bool is_valid = $1->is_valid();
-  if (current_packer->end_pack()) {
-    $1->set_default_value(current_packer->get_string());
-
-  } else {
-    if (is_valid) {
-      yyerror("Invalid default value for type");
-    }
-    // If the current parameter isn't valid, we don't mind a pack
-    // error (there's no way for us to validate the syntax).  So we'll
-    // just ignore the default value in this case.
-  }
   current_atomic->add_element($1);
 }
 	;
@@ -464,9 +445,64 @@ unnamed_parameter:
 	type_definition
 	;
 
+named_parameter_with_default:
+        named_parameter
+	| named_parameter '=' 
+{
+  current_packer = &default_packer;
+  current_packer->clear_data();
+  current_packer->begin_pack($1);
+}
+	parameter_value
+{
+  bool is_valid = $1->is_valid();
+  if (current_packer->end_pack()) {
+    $1->set_default_value(current_packer->get_string());
+
+  } else {
+    if (is_valid) {
+      yyerror("Invalid default value for type");
+    }
+    // If the current parameter isn't valid, we don't mind a pack
+    // error (there's no way for us to validate the syntax).  So we'll
+    // just ignore the default value in this case.
+  }
+}
+	;
+
+unnamed_parameter_with_default:
+        unnamed_parameter
+	| unnamed_parameter '=' 
+{
+  current_packer = &default_packer;
+  current_packer->clear_data();
+  current_packer->begin_pack($1);
+}
+	parameter_value
+{
+  bool is_valid = $1->is_valid();
+  if (current_packer->end_pack()) {
+    $1->set_default_value(current_packer->get_string());
+
+  } else {
+    if (is_valid) {
+      yyerror("Invalid default value for type");
+    }
+    // If the current parameter isn't valid, we don't mind a pack
+    // error (there's no way for us to validate the syntax).  So we'll
+    // just ignore the default value in this case.
+  }
+}
+	;
+
 parameter:
         named_parameter
         | unnamed_parameter
+        ;
+
+parameter_with_default:
+        named_parameter_with_default
+        | unnamed_parameter_with_default
         ;
 
 type_name:
@@ -1052,11 +1088,11 @@ switch_case:
 	;
 
 switch_field:
-	unnamed_parameter ';'
+	unnamed_parameter_with_default ';'
 {
   $$ = $1;
 }
-	| named_parameter
+	| named_parameter_with_default
 {
   $$ = $1;
 }
