@@ -305,7 +305,7 @@ set_dirname(const string &s) {
     // Remove the directory prefix altogether.
     _filename.replace(0, _basename_start, "");
 
-    int length_change = -_basename_start;
+    int length_change = - ((int)_basename_start);
 
     _dirname_end = 0;
     _basename_start += length_change;
