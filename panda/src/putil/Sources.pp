@@ -5,44 +5,53 @@
 #begin lib_target
   #define TARGET putil
 
+  #define COMBINED_SOURCES composite1.cxx composite2.cxx
+  
   #define SOURCES \
-    bam.h bamReader.I bamReader.N bamReader.cxx \
-    bamReader.h bamReaderParam.I \
-    bamReaderParam.cxx bamReaderParam.h bamWriter.I bamWriter.cxx \
-    bamWriter.h bitMask.I bitMask.cxx bitMask.h buttonEvent.I \
-    buttonEvent.cxx buttonEvent.h buttonHandle.I buttonHandle.cxx \
-    buttonHandle.h buttonRegistry.I buttonRegistry.cxx buttonRegistry.h \
-    collideMask.h \
-    config_util.N config_util.cxx config_util.h configurable.cxx \
-    configurable.h factoryBase.I factoryBase.cxx factoryBase.h \
-    factoryParam.I factoryParam.cxx factoryParam.h factoryParams.I \
-    factoryParams.cxx factoryParams.h \
-    globPattern.I globPattern.cxx \
-    globPattern.h globalPointerRegistry.I globalPointerRegistry.cxx \
-    globalPointerRegistry.h indirectCompareNames.I \
-    indirectCompareNames.h indirectCompareTo.I \
-    indirectCompareTo.h ioPtaDatagramFloat.cxx ioPtaDatagramFloat.h \
-    ioPtaDatagramInt.cxx ioPtaDatagramInt.h ioPtaDatagramShort.cxx \
-    ioPtaDatagramShort.h keyboardButton.cxx keyboardButton.h \
-    lineStream.I lineStream.cxx lineStream.h lineStreamBuf.I \
-    lineStreamBuf.cxx lineStreamBuf.h modifierButtons.I \
-    modifierButtons.cxx modifierButtons.h \
-    mouseButton.cxx mouseButton.h mouseData.cxx mouseData.h \
-    nameUniquifier.I nameUniquifier.cxx nameUniquifier.h \
-    pointerToArray.I pointerToArray.h pta_double.cxx \
-    pta_double.h pta_float.cxx pta_float.h pta_int.cxx pta_int.h \
-    pta_uchar.cxx pta_uchar.h pta_ushort.cxx pta_ushort.h \
-    string_utils.I string_utils.N string_utils.cxx string_utils.h \
-    timedCycle.I timedCycle.cxx timedCycle.h typedWritable.I \
-    typedWritable.cxx typedWritable.h typedWritableReferenceCount.I \
-    typedWritableReferenceCount.cxx typedWritableReferenceCount.h \
-    updateSeq.I updateSeq.cxx updateSeq.h vector_double.cxx \
-    vector_double.h vector_float.cxx vector_float.h \
-    vector_typedWritable.cxx vector_typedWritable.h vector_uchar.cxx \
-    vector_uchar.h vector_ushort.cxx vector_ushort.h \
-    vector_writable.cxx vector_writable.h writable.I writable.cxx \
-    writable.h writableConfigurable.cxx writableConfigurable.h \
-    writableParam.I writableParam.cxx writableParam.h
+     bam.h bamReader.I bamReader.N bamReader.h bamReaderParam.I \
+     bamReaderParam.h bamWriter.I bamWriter.h bitMask.I \
+     bitMask.h buttonEvent.I buttonEvent.h buttonHandle.I \
+     buttonHandle.h buttonRegistry.I buttonRegistry.h \
+     collideMask.h config_util.N config_util.h \
+     configurable.h factoryBase.I factoryBase.h \
+     factoryParam.I factoryParam.h factoryParams.I \
+     factoryParams.h globPattern.I globPattern.h \
+     globalPointerRegistry.I globalPointerRegistry.h \
+     indirectCompareNames.I indirectCompareNames.h \
+     indirectCompareTo.I indirectCompareTo.h \
+     ioPtaDatagramFloat.h ioPtaDatagramInt.h \
+     ioPtaDatagramShort.h keyboardButton.h lineStream.I \
+     lineStream.h lineStreamBuf.I lineStreamBuf.h \
+     modifierButtons.I modifierButtons.h mouseButton.h \
+     mouseData.h nameUniquifier.I nameUniquifier.h \
+     pointerToArray.I pointerToArray.h pta_double.h \
+     pta_float.h pta_int.h pta_uchar.h pta_ushort.h \
+     string_utils.I string_utils.N string_utils.h \
+     timedCycle.I timedCycle.h typedWritable.I \
+     typedWritable.h typedWritableReferenceCount.I \
+     typedWritableReferenceCount.h updateSeq.I updateSeq.h \
+     vector_double.h vector_float.h vector_typedWritable.h \
+     vector_uchar.h vector_ushort.h vector_writable.h \
+     writable.I writable.h writableConfigurable.h \
+     writableParam.I writableParam.h $[COMBINED_SOURCES] 
+    
+ #define INCLUDED_SOURCES \
+     bamReader.cxx bamReaderParam.cxx bamWriter.cxx bitMask.cxx \
+     buttonEvent.cxx buttonHandle.cxx buttonRegistry.cxx \
+     config_util.cxx configurable.cxx factoryBase.cxx \
+     factoryParam.cxx factoryParams.cxx globPattern.cxx \
+     globalPointerRegistry.cxx ioPtaDatagramFloat.cxx \
+     ioPtaDatagramInt.cxx ioPtaDatagramShort.cxx \
+     keyboardButton.cxx lineStream.cxx lineStreamBuf.cxx \
+     modifierButtons.cxx mouseButton.cxx mouseData.cxx \
+     nameUniquifier.cxx pta_double.cxx pta_float.cxx \
+     pta_int.cxx pta_uchar.cxx pta_ushort.cxx \
+     string_utils.cxx timedCycle.cxx typedWritable.cxx \
+     typedWritableReferenceCount.cxx updateSeq.cxx \
+     vector_double.cxx vector_float.cxx \
+     vector_typedWritable.cxx vector_uchar.cxx \
+     vector_ushort.cxx vector_writable.cxx writable.cxx \
+     writableConfigurable.cxx writableParam.cxx 
 
   #define INSTALL_HEADERS \
     bam.h bamReader.I bamReader.h bamReaderParam.I bamReaderParam.h \
