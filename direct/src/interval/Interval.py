@@ -97,6 +97,7 @@ class Interval(DirectObject):
         self.startT = globalClock.getFrameTime()
         assert(scale > 0.0)
         self.scale = scale
+        self.vernier = 0.0
         self.firstTime = 1
         if (duration == 0.0):
             # If no play duration specified, use duration of Interval
@@ -134,7 +135,7 @@ class Interval(DirectObject):
         """ __playTask(task)
         """
         t = globalClock.getFrameTime()
-        te = self.offset + ((t - self.startT) * self.scale)
+        te = self.offset + ((t - self.startT) * self.scale + self.vernier)
         if (te < self.endTime):
             if (self.firstTime):
                 # If first call, init intervals
