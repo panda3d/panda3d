@@ -384,7 +384,7 @@ count_vert_edges(const EdgePtrs &edges) const {
 }
 
 template <class PrimType>
-plist<MesherTempl<PrimType>::Strip> &MesherTempl<PrimType>::
+plist<TYPENAME MesherTempl<PrimType>::Strip> &MesherTempl<PrimType>::
 choose_strip_list(const Strip &strip) {
   switch (strip._status) {
   case MS_done:

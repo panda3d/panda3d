@@ -452,7 +452,7 @@ set_type(BuilderPrimType t) {
 //               one of has_normal() or has_overall_normal() is true.
 ////////////////////////////////////////////////////////////////////
 template <class VTX>
-INLINE BuilderPrimTempl<VTX>::NType BuilderPrimTempl<VTX>::
+INLINE TYPENAME BuilderPrimTempl<VTX>::NType BuilderPrimTempl<VTX>::
 get_normal() const {
   return DAttrib::get_normal();
 }
@@ -481,7 +481,7 @@ set_normal(const NType &n) {
 //               one of has_color() or has_overall_color() is true.
 ////////////////////////////////////////////////////////////////////
 template <class VTX>
-INLINE BuilderPrimTempl<VTX>::CType BuilderPrimTempl<VTX>::
+INLINE TYPENAME BuilderPrimTempl<VTX>::CType BuilderPrimTempl<VTX>::
 get_color() const {
   return DAttrib::get_color();
 }
@@ -570,7 +570,7 @@ get_num_verts() const {
 //               the primitive.
 ////////////////////////////////////////////////////////////////////
 template <class VTX>
-INLINE BuilderPrimTempl<VTX>::Vertex &BuilderPrimTempl<VTX>::
+INLINE TYPENAME BuilderPrimTempl<VTX>::Vertex &BuilderPrimTempl<VTX>::
 get_vertex(int n) {
   nassertr(n >= 0 && n < (int)_verts.size(), *(new Vertex));
   return _verts[n];
@@ -583,7 +583,7 @@ get_vertex(int n) {
 //               < get_num_verts().
 ////////////////////////////////////////////////////////////////////
 template <class VTX>
-INLINE const BuilderPrimTempl<VTX>::Vertex &BuilderPrimTempl<VTX>::
+INLINE const TYPENAME BuilderPrimTempl<VTX>::Vertex &BuilderPrimTempl<VTX>::
 get_vertex(int n) const {
   nassertr(n >= 0 && n < (int)_verts.size(), *(new Vertex));
   return _verts[n];
@@ -645,7 +645,7 @@ get_num_components() const {
 //               add_component() and get_num_components().
 ////////////////////////////////////////////////////////////////////
 template <class VTX>
-INLINE BuilderPrimTempl<VTX>::DAttrib &BuilderPrimTempl<VTX>::
+INLINE TYPENAME BuilderPrimTempl<VTX>::DAttrib &BuilderPrimTempl<VTX>::
 get_component(int n) {
   nassertr(n >= 0 && n < (int)_components.size(), *(new DAttrib));
   return _components[n];
@@ -660,7 +660,7 @@ get_component(int n) {
 //               add_component() and get_num_components().
 ////////////////////////////////////////////////////////////////////
 template <class VTX>
-INLINE const BuilderPrimTempl<VTX>::DAttrib &BuilderPrimTempl<VTX>::
+INLINE const TYPENAME BuilderPrimTempl<VTX>::DAttrib &BuilderPrimTempl<VTX>::
 get_component(int n) const {
   nassertr(n >= 0 && n < (int)_components.size(), *(new DAttrib));
   return _components[n];

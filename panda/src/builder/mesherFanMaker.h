@@ -65,8 +65,8 @@ public:
   float compute_angle() const;
 
   int build(pvector<Prim> &unrolled_tris);
-  int unroll(Strips::iterator strip_begin, Strips::iterator strip_end,
-             Edges::iterator edge_begin, Edges::iterator edge_end,
+  int unroll(TYPENAME Strips::iterator strip_begin, TYPENAME Strips::iterator strip_end,
+             TYPENAME Edges::iterator edge_begin, TYPENAME Edges::iterator edge_end,
              pvector<Prim> &unrolled_tris);
 
   ostream &output(ostream &out) const;

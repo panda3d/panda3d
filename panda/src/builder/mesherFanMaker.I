@@ -260,8 +260,8 @@ build(pvector<Prim> &unrolled_tris) {
 
 template <class PrimType>
 int MesherFanMaker<PrimType>::
-unroll(Strips::iterator strip_begin, Strips::iterator strip_end,
-       Edges::iterator edge_begin, Edges::iterator edge_end,
+unroll(TYPENAME Strips::iterator strip_begin, TYPENAME Strips::iterator strip_end,
+       TYPENAME Edges::iterator edge_begin, TYPENAME Edges::iterator edge_end,
        pvector<Prim> &unrolled_tris) {
   Edges::iterator ei;
   Strips::iterator si;

@@ -78,7 +78,7 @@ protected:
   Edges _edges;
   int _stripIndex;
   BuilderBucket *_bucket;
-  Strips::iterator _next_strip;
+  TYPENAME Strips::iterator _next_strip;
   Colors _colors;
   ColorSheetMap _color_sheets;
 

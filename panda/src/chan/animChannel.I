@@ -68,7 +68,7 @@ AnimChannel(AnimGroup *parent, const string &name)
 ////////////////////////////////////////////////////////////////////
 template<class SwitchType>
 void AnimChannel<SwitchType>::
-get_value(int, AnimChannel<SwitchType>::ValueType &) {
+get_value(int, TYPENAME AnimChannel<SwitchType>::ValueType &) {
 }
 #endif
 

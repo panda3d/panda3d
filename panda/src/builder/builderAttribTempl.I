@@ -92,7 +92,7 @@ has_normal() const {
 //               true.
 ////////////////////////////////////////////////////////////////////
 template <class VT, class NT, class TT, class CT>
-INLINE BuilderAttribTempl<VT, NT, TT, CT>::NType BuilderAttribTempl<VT, NT, TT, CT>::
+INLINE TYPENAME BuilderAttribTempl<VT, NT, TT, CT>::NType BuilderAttribTempl<VT, NT, TT, CT>::
 get_normal() const {
   nassertr(has_normal(), _normal);
   return _normal;
@@ -145,7 +145,7 @@ has_color() const {
 //               true.
 ////////////////////////////////////////////////////////////////////
 template <class VT, class NT, class TT, class CT>
-INLINE BuilderAttribTempl<VT, NT, TT, CT>::CType BuilderAttribTempl<VT, NT, TT, CT>::
+INLINE TYPENAME BuilderAttribTempl<VT, NT, TT, CT>::CType BuilderAttribTempl<VT, NT, TT, CT>::
 get_color() const {
   nassertr(has_color(), _color);
   return _color;

@@ -128,7 +128,7 @@ rotate_back() {
 //               pointer equality with any shared Edge.
 ////////////////////////////////////////////////////////////////////
 template <class PrimType>
-INLINE MesherStrip<PrimType>::Edge MesherStrip<PrimType>::
+INLINE TYPENAME MesherStrip<PrimType>::Edge MesherStrip<PrimType>::
 get_head_edge() const {
   Verts::const_iterator vi = _verts.begin();
   return Edge(_verts.front(), *++vi);
@@ -143,7 +143,7 @@ get_head_edge() const {
 //               pointer equality with any shared Edge.
 ////////////////////////////////////////////////////////////////////
 template <class PrimType>
-INLINE MesherStrip<PrimType>::Edge MesherStrip<PrimType>::
+INLINE TYPENAME MesherStrip<PrimType>::Edge MesherStrip<PrimType>::
 get_tail_edge() const {
   Verts::const_reverse_iterator vi = _verts.rbegin();
   return Edge(*++vi, _verts.back());
@@ -220,7 +220,7 @@ MesherStrip(const PrimType &prim, int index, const BuilderBucket &bucket) {
     _plane_normal = cross(p1-p2, p2-p3);
     float l = length(_plane_normal);
 
-    if (l != 0.0) {
+    if (l != 0.0f) {
       _plane_normal /= l;
       _planar = true;
       _plane_offset = -dot(_plane_normal, p1);
@@ -1046,7 +1046,7 @@ show_neighbors(ostream &out) const {
 //               the given edge.
 ////////////////////////////////////////////////////////////////////
 template <class PrimType>
-const MesherStrip<PrimType>::Vertex *MesherStrip<PrimType>::
+const TYPENAME MesherStrip<PrimType>::Vertex *MesherStrip<PrimType>::
 find_uncommon_vertex(const Edge *edge) const {
   const Vertex *a = edge->_a;
   const Vertex *b = edge->_b;
@@ -1073,7 +1073,7 @@ find_uncommon_vertex(const Edge *edge) const {
 //               opposite the given vertex.
 ////////////////////////////////////////////////////////////////////
 template <class PrimType>
-const MesherStrip<PrimType>::Edge *MesherStrip<PrimType>::
+const TYPENAME MesherStrip<PrimType>::Edge *MesherStrip<PrimType>::
 find_opposite_edge(const Vertex *vertex) const {
   Edges::const_iterator ei;
   for (ei = _edges.begin(); ei != _edges.end(); ++ei) {
@@ -1094,7 +1094,7 @@ find_opposite_edge(const Vertex *vertex) const {
 //               edge opposite the given edge.
 ////////////////////////////////////////////////////////////////////
 template <class PrimType>
-const MesherStrip<PrimType>::Edge *MesherStrip<PrimType>::
+const TYPENAME MesherStrip<PrimType>::Edge *MesherStrip<PrimType>::
 find_opposite_edge(const Edge *edge) const {
   const Vertex *a = edge->_a;
   const Vertex *b = edge->_b;
@@ -1118,7 +1118,7 @@ find_opposite_edge(const Edge *edge) const {
 //               one of two edges adjacent to the given edge.
 ////////////////////////////////////////////////////////////////////
 template <class PrimType>
-const MesherStrip<PrimType>::Edge *MesherStrip<PrimType>::
+const TYPENAME MesherStrip<PrimType>::Edge *MesherStrip<PrimType>::
 find_adjacent_edge(const Edge *edge) const {
   const Vertex *a = edge->_a;
   const Vertex *b = edge->_b;
@@ -1560,7 +1560,7 @@ pick_sheet_mate(const MesherStrip &a_strip, const MesherStrip &b_strip) const {
     float a_diff = dot(_plane_normal, a_strip._plane_normal);
     float b_diff = dot(_plane_normal, b_strip._plane_normal);
 
-    if (fabs(a_diff - b_diff) > 0.0001) {
+    if (fabs(a_diff - b_diff) > 0.0001f) {
       return a_diff > b_diff;
     }
   }

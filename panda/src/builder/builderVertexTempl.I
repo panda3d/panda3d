@@ -113,7 +113,7 @@ has_coord() const {
 //               true.
 ////////////////////////////////////////////////////////////////////
 template <class VT, class NT, class TT, class CT>
-INLINE BuilderVertexTempl<VT, NT, TT, CT>::VType BuilderVertexTempl<VT, NT, TT, CT>::
+INLINE TYPENAME BuilderVertexTempl<VT, NT, TT, CT>::VType BuilderVertexTempl<VT, NT, TT, CT>::
 get_coord() const {
   nassertr(has_coord(), _coord);
   return _coord;
@@ -209,7 +209,7 @@ clear_texcoord() {
 //               has_texcoord() is true.
 ////////////////////////////////////////////////////////////////////
 template <class VT, class NT, class TT, class CT>
-INLINE BuilderVertexTempl<VT, NT, TT, CT>::TType BuilderVertexTempl<VT, NT, TT, CT>::
+INLINE TYPENAME BuilderVertexTempl<VT, NT, TT, CT>::TType BuilderVertexTempl<VT, NT, TT, CT>::
 get_texcoord() const {
   nassertr(has_texcoord(), _texcoord);
   return _texcoord;
