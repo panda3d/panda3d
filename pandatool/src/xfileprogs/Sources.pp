@@ -5,7 +5,7 @@
     egg:c pandaegg:m \
     mathutil:c linmath:c putil:c panda:m \
     express:c pandaexpress:m \
-    dtoolconfig dtool pystub \
+    dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
 
   #define SOURCES \
     eggToX.cxx eggToX.h
@@ -19,7 +19,7 @@
     egg:c pandaegg:m \
     mathutil:c linmath:c putil:c panda:m \
     express:c pandaexpress:m \
-    dtoolconfig dtool pystub \
+    dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
 
   #define SOURCES \
     xFileToEgg.cxx xFileToEgg.h

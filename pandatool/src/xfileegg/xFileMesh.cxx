@@ -691,7 +691,7 @@ fill_mesh(XFileDataNode *obj) {
 
   // Some properties are stored as children of the mesh.
   int num_objects = obj->get_num_objects();
-  for (int i = 0; i < num_objects; i++) {
+  for (i = 0; i < num_objects; i++) {
     if (!fill_mesh_child(obj->get_object(i))) {
       return false;
     }
@@ -918,7 +918,7 @@ fill_material_list(XFileDataNode *obj) {
   // Now look for children of the MaterialList object.  These should
   // all be Material objects.
   int num_objects = obj->get_num_objects();
-  for (int i = 0; i < num_objects; i++) {
+  for (i = 0; i < num_objects; i++) {
     XFileDataNode *child = obj->get_object(i);
     if (child->is_standard_object("Material")) {
       XFileMaterial *material = new XFileMaterial;
