@@ -128,7 +128,7 @@ void Config<GetConfig>::Init(void)
       return;
    total_time_config_init -= clock();
    Flag(true);
-   ConfigTable::Instance();
+   ConfigTable* tab = ConfigTable::Instance();
 
    if (Defined("notify-level-config")) {
       ConfigString s = Get("notify-level-config");
@@ -141,8 +141,10 @@ void Config<GetConfig>::Init(void)
          dconfig_cat->set_severity(NS_info);
       }
    } else {
-      microconfig_cat->set_severity(NS_info);
-      dconfig_cat->set_severity(NS_info);
+      if(!tab->IsConfigDbg()) {
+          microconfig_cat->set_severity(NS_info);
+          dconfig_cat->set_severity(NS_info);
+      }
    }
 
    total_time_config_init += clock();

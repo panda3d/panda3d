@@ -87,6 +87,7 @@ class EXPCL_DTOOLCONFIG ConfigTable {
       const Symbol& GetSym(const ConfigString& sym,
                            const ConfigString qual = "");
       INLINE ConfigString GetConfigPath(void) const;
+      INLINE bool IsConfigDbg(void) { return configdbg; };
 };
 
 #include "configTable.I"

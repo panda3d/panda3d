@@ -18,22 +18,15 @@
 
 
 INLINE void ConfigTable::ConfigDbgDefault(void) {
-/*
 #ifdef NDEBUG
-*/
-
   configdbg = false;
   microconfig_cat->set_severity(NS_info);
   dconfig_cat->set_severity(NS_info);
-
-/*
-#else * NDEBUG *
-
+#else
   configdbg = true;
-  microconfig_cat->set_severity(NS_debug);
-  config_cat->set_severity(NS_debug);
-#endif * NDEBUG *
-*/
+  microconfig_cat->set_severity(NS_spam);
+  dconfig_cat->set_severity(NS_spam);
+#endif 
 }
 
 INLINE void ConfigTable::ReadArgsDefault(void) {
