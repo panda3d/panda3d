@@ -61,6 +61,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         self.isAirborne = 0
         self.highMark = 0
 
+    """
     def spawnTest(self):
         assert(self.debugPrint("\n\nspawnTest()\n"))
         if not self.wantAvatarPhysicsIndicator:
@@ -103,6 +104,7 @@ class PhysicsWalker(DirectObject.DirectObject):
             name='platformIval%s' % fakeId,
             )
         self.moveIval.loop()
+    """
 
     def setWalkSpeed(self, forward, jump, reverse, rotate):
         assert(self.debugPrint("setWalkSpeed()"))
