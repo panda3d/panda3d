@@ -106,7 +106,7 @@ copy_flt_file(const Filename &source, const Filename &dest,
 
   FltError result = header->read_flt(source);
   if (result != FE_ok) {
-    nout << "Cannot read " << source << "\n";
+    nout << "Cannot read " << source << ": " << result << "\n";
     return false;
   }
 
