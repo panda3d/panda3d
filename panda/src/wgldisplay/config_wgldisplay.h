@@ -7,11 +7,12 @@
 #define __CONFIG_WGLDISPLAY_H__
 
 #include <pandabase.h>
+#include <filename.h>
 #include <notifyCategoryProxy.h>
 
 NotifyCategoryDecl(wgldisplay, EXPCL_PANDAGL, EXPTP_PANDAGL);
 
-extern string IconFileName;
+extern Filename get_icon_filename();
 
 extern EXPCL_PANDAGL void init_libwgldisplay();
 

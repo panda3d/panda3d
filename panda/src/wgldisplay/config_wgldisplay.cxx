@@ -16,8 +16,6 @@ ConfigureFn(config_wgldisplay) {
   init_libwgldisplay();
 }
 
-string IconFileName = config_wgldisplay.GetString("win32-window-icon","");
-
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libwgldisplay
 //  Description: Initializes the library.  This must be called at
@@ -43,3 +41,10 @@ init_libwgldisplay() {
 			wglGraphicsWindow::get_class_type(),
 		    	wglGraphicsWindow::make_wglGraphicsWindow);
 }
+
+// cant use global var cleanly because global var static init executed after init_libwgl(), incorrectly reiniting var
+Filename get_icon_filename() {
+  string iconname = config_wgldisplay.GetString("win32-window-icon","");
+  return ExecutionEnvironment::expand_string(iconname);
+}
+
