@@ -92,6 +92,14 @@
 #define _LARGEFILE_SOURCE 1
 #endif
 
+#ifdef HAVE_TYPES_H
+#include <types.h>
+#endif
+
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+
 #ifdef HAVE_MALLOC_H
 #include <malloc.h>
 #endif
@@ -118,10 +126,6 @@
 
 #ifdef HAVE_MINMAX_H
 #include <minmax.h>
-#endif
-
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h>
 #endif
 
 #ifdef HAVE_SYS_TIME_H
