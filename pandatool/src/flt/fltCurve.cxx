@@ -1,84 +1,88 @@
-// Filename: fltGroup.cxx
-// Created by:  drose (24Aug00)
+// Filename: fltCurve.cxx
+// Created by:  drose (28Feb01)
 // 
 ////////////////////////////////////////////////////////////////////
 
-#include "fltGroup.h"
+#include "fltCurve.h"
 #include "fltRecordReader.h"
 #include "fltRecordWriter.h"
+#include "fltHeader.h"
+#include "fltMaterial.h"
 
-TypeHandle FltGroup::_type_handle;
+TypeHandle FltCurve::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FltGroup::Constructor
+//     Function: FltCurve::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-FltGroup::
-FltGroup(FltHeader *header) : FltBeadID(header) {
-  _relative_priority = 0;
-  _flags = 0;
-  _special_id1 = 0;
-  _special_id2 = 0;
-  _significance = 0;
-  _layer_id = 0;
+FltCurve::
+FltCurve(FltHeader *header) : FltBeadID(header) {
+  _curve_type = CT_b_spline;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FltGroup::extract_record
+//     Function: FltCurve::extract_record
 //       Access: Protected, Virtual
 //  Description: Fills in the information in this bead based on the
 //               information given in the indicated datagram, whose
 //               opcode has already been read.  Returns true on
 //               success, false if the datagram is invalid.
 ////////////////////////////////////////////////////////////////////
-bool FltGroup::
+bool FltCurve::
 extract_record(FltRecordReader &reader) {
   if (!FltBeadID::extract_record(reader)) {
     return false;
   }
 
-  nassertr(reader.get_opcode() == FO_group, false);
+  nassertr(reader.get_opcode() == FO_curve, false);
   DatagramIterator &iterator = reader.get_iterator();
 
-  _relative_priority = iterator.get_be_int16();
-  iterator.skip_bytes(2);
-  _flags = iterator.get_be_uint32();
-  _special_id1 = iterator.get_be_int16();
-  _special_id2 = iterator.get_be_int16();
-  _significance = iterator.get_be_int16();
-  _layer_id = iterator.get_int8();
-  iterator.skip_bytes(5);
+  iterator.skip_bytes(4);
+  _curve_type = (CurveType)iterator.get_be_int32();
+
+  int num_control_points = iterator.get_be_int32();
+  iterator.skip_bytes(8);
+  for (int i = 0; i < num_control_points; i++) {
+    double x = iterator.get_be_float64();
+    double y = iterator.get_be_float64();
+    double z = iterator.get_be_float64();
+    _control_points.push_back(LPoint3d(x, y, z));
+  }
 
   check_remaining_size(iterator);
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FltGroup::build_record
+//     Function: FltCurve::build_record
 //       Access: Protected, Virtual
 //  Description: Fills up the current record on the FltRecordWriter with
 //               data for this record, but does not advance the
 //               writer.  Returns true on success, false if there is
 //               some error.
 ////////////////////////////////////////////////////////////////////
-bool FltGroup::
+bool FltCurve::
 build_record(FltRecordWriter &writer) const {
   if (!FltBeadID::build_record(writer)) {
     return false;
   }
 
-  writer.set_opcode(FO_group);
+  writer.set_opcode(FO_curve);
   Datagram &datagram = writer.update_datagram();
 
-  datagram.add_be_int16(_relative_priority);
-  datagram.pad_bytes(2);
-  datagram.add_be_uint32(_flags);
-  datagram.add_be_int16(_special_id1);
-  datagram.add_be_int16(_special_id2);
-  datagram.add_be_int16(_significance);
-  datagram.add_int8(_layer_id);
-  datagram.pad_bytes(5);
+  datagram.pad_bytes(4);
+  datagram.add_be_int32(_curve_type);
+  datagram.add_be_int32(_control_points.size());
+  datagram.pad_bytes(8);
+
+  ControlPoints::const_iterator ci;
+  for (ci = _control_points.begin(); ci != _control_points.end(); ++ci) {
+    const LPoint3d &p = (*ci);
+    datagram.add_be_float64(p[0]);
+    datagram.add_be_float64(p[1]);
+    datagram.add_be_float64(p[2]);
+  }
 
   return true;
 }

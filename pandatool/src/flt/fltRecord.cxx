@@ -10,6 +10,10 @@
 #include "fltGroup.h"
 #include "fltObject.h"
 #include "fltFace.h"
+#include "fltCurve.h"
+#include "fltMesh.h"
+#include "fltLocalVertexPool.h"
+#include "fltMeshPrimitive.h"
 #include "fltVertexList.h"
 #include "fltLOD.h"
 #include "fltInstanceDefinition.h"
@@ -19,6 +23,7 @@
 #include "config_flt.h"
 
 #include <indent.h>
+#include <datagramIterator.h>
 
 #include <assert.h>
 
@@ -133,6 +138,52 @@ add_subface(FltRecord *subface) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::get_num_extensions
+//       Access: Public
+//  Description: Returns the number of extension attribute records for
+//               this object.  These are auxiliary nodes, presumably
+//               of type FO_extension, that have some local meaning to
+//               the object.
+////////////////////////////////////////////////////////////////////
+int FltRecord::
+get_num_extensions() const {
+  return _extensions.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::get_extension
+//       Access: Public
+//  Description: Returns the nth extension of this record.
+////////////////////////////////////////////////////////////////////
+FltRecord *FltRecord::
+get_extension(int n) const {
+  nassertr(n >= 0 && n < (int)_extensions.size(), (FltRecord *)NULL);
+  return _extensions[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::clear_extensions
+//       Access: Public
+//  Description: Removes all extensions from this record.
+////////////////////////////////////////////////////////////////////
+void FltRecord::
+clear_extensions() {
+  _extensions.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::add_extension
+//       Access: Public
+//  Description: Adds a new extension to the end of the list of
+//               extensions for this record.  This should be a record
+//               of type FO_extension.
+////////////////////////////////////////////////////////////////////
+void FltRecord::
+add_extension(FltRecord *extension) {
+  _extensions.push_back(extension);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FltRecord::get_num_ancillary
 //       Access: Public
 //  Description: Returns the number of unsupported ancillary records
@@ -234,6 +285,31 @@ set_comment(const string &comment) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::check_remaining_size
+//       Access: Public
+//  Description: Checks that the iterator has no bytes left, as it
+//               should at the end of a successfully read record.  If
+//               there *are* remaining bytes, print a warning message
+//               but otherwise don't worry about it.
+//
+//               If we are attempting to read a flt file whose version
+//               is newer than the newest this program understands,
+//               don't even print a warning message, since this is
+//               exactly the sort of thing we expect.
+////////////////////////////////////////////////////////////////////
+void FltRecord::
+check_remaining_size(const DatagramIterator &iterator) const {
+  if (iterator.get_remaining_size() == 0) {
+    return;
+  }
+
+  if (_header->get_flt_version() <= _header->max_flt_version()) {
+    nout << "Warning!  Ignoring extra " << iterator.get_remaining_size()
+	 << " bytes at the end of a " << get_type() << " record.\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FltRecord::output
 //       Access: Public
 //  Description: Writes a quick one-line description of the record, but
@@ -271,6 +347,9 @@ void FltRecord::
 write_children(ostream &out, int indent_level) const {
   if (!_ancillary.empty()) {
     out << " + " << _ancillary.size() << " ancillary";
+  }
+  if (!_extensions.empty()) {
+    out << " + " << _extensions.size() << " extensions";
   }
   if (!_subfaces.empty()) {
     out << " [";
@@ -313,6 +392,8 @@ is_ancillary(FltOpcode opcode) {
   switch (opcode) {
   case FO_comment:
   case FO_long_id:
+  case FO_multitexture:
+  case FO_uv_list:
   case FO_replicate:
   case FO_road_zone:
   case FO_transform_matrix:
@@ -329,13 +410,16 @@ is_ancillary(FltOpcode opcode) {
   case FO_bounding_cylinder:
   case FO_bv_center:
   case FO_bv_orientation:
+  case FO_local_vertex_pool:
+  case FO_cat_data:
+
   case FO_vertex_palette:
   case FO_vertex_c:
   case FO_vertex_cn:
   case FO_vertex_cnu:
   case FO_vertex_cu:
   case FO_color_palette:
-  case FO_color_name_palette:
+  case FO_name_table:
   case FO_15_material:
   case FO_texture:
   case FO_eyepoint_palette:
@@ -344,9 +428,12 @@ is_ancillary(FltOpcode opcode) {
     return true;
 
   case FO_header:
+  case FO_mesh:
+  case FO_mesh_primitive:
   case FO_group:
   case FO_object:
   case FO_face:
+  case FO_light_point:
   case FO_dof:
   case FO_vertex_list:
   case FO_morph_list:
@@ -356,10 +443,14 @@ is_ancillary(FltOpcode opcode) {
   case FO_sound:
   case FO_light_source:
   case FO_road_segment:
+  case FO_road_construction:
   case FO_road_path:
   case FO_clip_region:
   case FO_text:
   case FO_switch:
+  case FO_cat:
+  case FO_extension:
+  case FO_curve:
     return false;
 
   case FO_push:
@@ -368,6 +459,8 @@ is_ancillary(FltOpcode opcode) {
   case FO_pop_face:
   case FO_push_attribute:
   case FO_pop_attribute:
+  case FO_push_extension:
+  case FO_pop_extension:
   case FO_instance:
   case FO_instance_ref:
     return false;
@@ -396,6 +489,18 @@ create_new_record(FltOpcode opcode) const {
 
   case FO_face:
     return new FltFace(_header);
+
+  case FO_curve:
+    return new FltCurve(_header);
+
+  case FO_mesh:
+    return new FltMesh(_header);
+
+  case FO_local_vertex_pool:
+    return new FltLocalVertexPool(_header);
+
+  case FO_mesh_primitive:
+    return new FltMeshPrimitive(_header);
 
   case FO_vertex_list:
     return new FltVertexList(_header);
@@ -491,6 +596,26 @@ read_record_and_children(FltRecordReader &reader) {
 	  return result;
 	}
 	add_subface(subface);
+	if (reader.eof() || reader.error()) {
+	  assert(!flt_error_abort);
+	  return FE_end_of_file;
+	}
+      }
+
+    } else if (reader.get_opcode() == FO_push_extension) {
+      // A push extension begins a new list of extensions.
+      result = reader.advance();
+      if (result != FE_ok) {
+	return result;
+      }
+      
+      while (reader.get_opcode() != FO_pop_extension) {
+	PT(FltRecord) extension = create_new_record(reader.get_opcode());
+	FltError result = extension->read_record_and_children(reader);
+	if (result != FE_ok) {
+	  return result;
+	}
+	add_extension(extension);
 	if (reader.eof() || reader.error()) {
 	  assert(!flt_error_abort);
 	  return FE_end_of_file;
@@ -593,6 +718,23 @@ write_record_and_children(FltRecordWriter &writer) const {
     }
 
     for (ci = _subfaces.begin(); ci != _subfaces.end(); ++ci) {
+      (*ci)->write_record_and_children(writer);
+    }
+
+    result = writer.write_record(FO_pop_face);
+    if (result != FE_ok) {
+      return result;
+    }
+  }
+
+  // Any extensions?
+  if (!_extensions.empty()) {
+    result = writer.write_record(FO_push_face);
+    if (result != FE_ok) {
+      return result;
+    }
+
+    for (ci = _extensions.begin(); ci != _extensions.end(); ++ci) {
       (*ci)->write_record_and_children(writer);
     }
 

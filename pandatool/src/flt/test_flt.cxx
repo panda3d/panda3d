@@ -48,8 +48,8 @@ main(int argc, char *argv[]) {
   header->set_texture_path(texture_path);
 
   FltError result = header->read_flt(filename);
-  cerr << "Read result is " << result << "\n\n";
-  cerr << "Version is " << header->get_flt_version() << "\n";
+  cerr << "Read result is " << result << "\n"
+       << "Version is " << header->get_flt_version() << "\n";
   header->check_version();
 
   if (result == FE_ok) {

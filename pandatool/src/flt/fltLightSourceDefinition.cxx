@@ -76,7 +76,7 @@ extract_record(FltRecordReader &reader) {
   _modeling_light = (iterator.get_be_int32() != 0);
   iterator.skip_bytes(4*19);
 
-  nassertr(iterator.get_remaining_size() == 0, true);
+  check_remaining_size(iterator);
   return true;
 }
 

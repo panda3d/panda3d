@@ -18,6 +18,7 @@
 class FltHeader;
 class FltRecordReader;
 class FltRecordWriter;
+class DatagramIterator;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : FltRecord
@@ -42,6 +43,11 @@ public:
   void clear_subfaces();
   void add_subface(FltRecord *subface);
 
+  int get_num_extensions() const;
+  FltRecord *get_extension(int n) const;
+  void clear_extensions();
+  void add_extension(FltRecord *extension);
+
   int get_num_ancillary() const;
   FltRecord *get_ancillary(int n) const;
   void clear_ancillary();
@@ -51,6 +57,8 @@ public:
   const string &get_comment() const;
   void clear_comment();
   void set_comment(const string &comment);
+
+  void check_remaining_size(const DatagramIterator &iterator) const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
@@ -76,6 +84,7 @@ private:
   typedef vector<PT(FltRecord)> Records;
   Records _children;
   Records _subfaces;
+  Records _extensions;
   Records _ancillary;
 
   string _comment;

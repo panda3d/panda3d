@@ -20,8 +20,8 @@ TypeHandle FltHeader::_type_handle;
 ////////////////////////////////////////////////////////////////////
 FltHeader::
 FltHeader() : FltBeadID(this) {
-  _format_revision_level = 1520;
-  _edit_revision_level = 1520;
+  _format_revision_level = 1570;
+  _edit_revision_level = 1570;
   _next_group_id = 1;
   _next_lod_id = 1;
   _next_object_id = 1;
@@ -56,6 +56,15 @@ FltHeader() : FltBeadID(this) {
   _next_road_id = 1;
   _next_cat_id = 1;
   _earth_model = EM_wgs84;
+
+  // New with 15.6
+  _next_adaptive_id = 0;
+  _next_curve_id = 0;
+
+  // New with 15.7
+  _delta_z = 0.0;
+  _radius = 0.0;
+  _next_mesh_id = 0;
 
   _vertex_lookups_stale = false;
   _current_vertex_offset = 0;
@@ -239,15 +248,15 @@ min_flt_version() {
 ////////////////////////////////////////////////////////////////////
 double FltHeader::
 max_flt_version() {
-  return 15.2;
+  return 15.7;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FltHeader::check_version
 //       Access: Public
 //  Description: Verifies that the version number read from the header
-//               is an understand version number, and prints a warning
-//               to the user if this is not so--the reading may or may
+//               is an understood version number, and prints a warning
+//               to the user if this is not so--the read may or may
 //               not succeed.  Returns true if the version number is
 //               acceptable (and no warning is printed), or false if
 //               it is questionable (and a warning is printed).
@@ -593,7 +602,7 @@ get_closest_color(Colorf color) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_closest_color
+//     Function: FltHeader::get_closest_rgb
 //       Access: Public
 //  Description: Returns the color index of the nearest color in the
 //               palette that matches the given three-component color,
@@ -1144,10 +1153,26 @@ extract_record(FltRecordReader &reader) {
   iterator.skip_bytes(2 + 2 + 2 + 2);
   _earth_model = (EarthModel)iterator.get_be_int32();
 
-  // Undocumented additional padding.
+  // Undocumented padding.
   iterator.skip_bytes(4);
 
-  //  nassertr(iterator.get_remaining_size() == 0, true);
+  if (get_flt_version() >= 15.6 && iterator.get_remaining_size() > 0) {
+    _next_adaptive_id = iterator.get_be_int16();
+    _next_curve_id = iterator.get_be_int16();
+    iterator.skip_bytes(4);
+    
+    if (get_flt_version() >= 15.7 && iterator.get_remaining_size() > 0) {
+      _delta_z = iterator.get_be_float64();
+      _radius = iterator.get_be_float64();
+      _next_mesh_id = iterator.get_be_int16();
+      iterator.skip_bytes(2);
+
+      // Undocumented padding.
+      iterator.skip_bytes(4);
+    }
+  }
+
+  check_remaining_size(iterator);
   return true;
 }
 
@@ -1260,8 +1285,23 @@ build_record(FltRecordWriter &writer) const {
   datagram.pad_bytes(2 + 2 + 2 + 2);
   datagram.add_be_int32(_earth_model);
 
-  // Undocumented additional padding.
-  datagram.pad_bytes(4);
+  datagram.pad_bytes(4);    
+
+  if (get_flt_version() >= 15.6) {
+    // New with 15.6
+    datagram.add_be_int16(_next_adaptive_id);
+    datagram.add_be_int16(_next_curve_id);
+    datagram.pad_bytes(4);
+
+    if (get_flt_version() >= 15.7) {
+      // New with 15.7
+      datagram.add_be_float64(_delta_z);
+      datagram.add_be_float64(_radius);
+      datagram.add_be_int16(_next_mesh_id);
+      datagram.pad_bytes(2);
+      datagram.pad_bytes(4);
+    }
+  }
 
   return true;
 }
@@ -1377,7 +1417,7 @@ extract_color_palette(FltRecordReader &reader) {
     _color_names[color_index] = iterator.get_fixed_string(name_length);
   }
 
-  nassertr(iterator.get_remaining_size() == 0, true);
+  check_remaining_size(iterator);
   return true;
 }
 
@@ -1479,7 +1519,7 @@ extract_eyepoint_palette(FltRecordReader &reader) {
   }
 
   _got_eyepoint_trackplane_palette = true;
-  nassertr(iterator.get_remaining_size() == 0, true);
+  check_remaining_size(iterator);
   return true;
 }
 

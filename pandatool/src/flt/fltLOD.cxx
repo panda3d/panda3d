@@ -55,7 +55,7 @@ extract_record(FltRecordReader &reader) {
   _center_z = iterator.get_be_float64();
   _transition_range = iterator.get_be_float64();
 
-  nassertr(iterator.get_remaining_size() == 0, true);
+  check_remaining_size(iterator);
   return true;
 }
 

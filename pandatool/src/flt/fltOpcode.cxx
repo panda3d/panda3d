@@ -69,6 +69,15 @@ operator << (ostream &out, FltOpcode opcode) {
   case FO_pop_face:
     return out << "pop subface";
 
+  case FO_push_extension:
+    return out << "push extension";
+
+  case FO_pop_extension:
+    return out << "pop extension";
+
+  case FO_continuation:
+    return out << "continuation";
+
   case FO_comment:
     return out << "comment";
 
@@ -102,6 +111,12 @@ operator << (ostream &out, FltOpcode opcode) {
 
   case FO_vector:
     return out << "vector";
+
+  case FO_multitexture:
+    return out << "multitexture";
+
+  case FO_uv_list:
+    return out << "UV list";
 
   case FO_bsp:
     return out << "BSP";
@@ -172,6 +187,15 @@ operator << (ostream &out, FltOpcode opcode) {
   case FO_eyepoint_palette:
     return out << "eyepoint palette";
 
+  case FO_mesh:
+    return out << "mesh";
+
+  case FO_local_vertex_pool:
+    return out << "local vertex pool";
+
+  case FO_mesh_primitive:
+    return out << "mesh primitive";
+
   case FO_road_segment:
     return out << "road segment";
 
@@ -226,14 +250,17 @@ operator << (ostream &out, FltOpcode opcode) {
   case FO_bv_orientation:
     return out << "bounding volume orientation";
 
+  case FO_light_point:
+    return out << "light point";
+
   case FO_texture_map_palette:
     return out << "texture mapping palette";
 
   case FO_15_material:
     return out << "material";
 
-  case FO_color_name_palette:
-    return out << "color name palette";
+  case FO_name_table:
+    return out << "name table";
 
   case FO_cat:
     return out << "continuously adaptive terrain";
@@ -246,6 +273,15 @@ operator << (ostream &out, FltOpcode opcode) {
 
   case FO_pop_attribute:
     return out << "pop attribute";
+
+  case FO_adaptive_attribute:
+    return out << "adaptive attribute";
+
+  case FO_curve:
+    return out << "curve";
+
+  case FO_road_construction:
+    return out << "road construction";
 
   default:
     return out << "unknown opcode " << (int)opcode;

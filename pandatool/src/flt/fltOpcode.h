@@ -29,6 +29,10 @@ enum FltOpcode {
   FO_OB_instance         = 17,   // obsolete
   FO_push_face           = 19,
   FO_pop_face            = 20,
+  FO_push_extension      = 21,
+  FO_pop_extension       = 22,
+  FO_continuation        = 23,
+
   FO_comment             = 31,
   FO_color_palette       = 32,
   FO_long_id             = 33,
@@ -44,6 +48,8 @@ enum FltOpcode {
   FO_transform_matrix    = 49,
   FO_vector              = 50,
   FO_OB_bounding_box     = 51,   // obsolete
+  FO_multitexture        = 52,
+  FO_uv_list             = 53,
   FO_bsp                 = 55,
   FO_replicate           = 60,
   FO_instance_ref        = 61,
@@ -68,6 +74,9 @@ enum FltOpcode {
   FO_rotate_and_scale    = 81,
   FO_put                 = 82,
   FO_eyepoint_palette    = 83,
+  FO_mesh                = 84,
+  FO_local_vertex_pool   = 85,
+  FO_mesh_primitive      = 86,
   FO_road_segment        = 87,
   FO_road_zone           = 88,
   FO_morph_list          = 89,
@@ -80,19 +89,24 @@ enum FltOpcode {
   FO_switch              = 96,
   FO_line_style          = 97,
   FO_clip_region         = 98,
+  FO_extension           = 100,
   FO_light_source        = 101,
   FO_light_definition    = 102,
   FO_bounding_sphere     = 105,
   FO_bounding_cylinder   = 106,
   FO_bv_center           = 108,
   FO_bv_orientation      = 109,
+  FO_light_point         = 111,
   FO_texture_map_palette = 112,
   FO_15_material         = 113,
-  FO_color_name_palette  = 114,
+  FO_name_table          = 114,
   FO_cat                 = 115,
   FO_cat_data            = 116,
   FO_push_attribute      = 122,
   FO_pop_attribute       = 123,
+  FO_adaptive_attribute  = 125,
+  FO_curve               = 126,
+  FO_road_construction   = 127
 };
 
 ostream &operator << (ostream &out, FltOpcode opcode);

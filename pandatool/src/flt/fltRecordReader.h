@@ -38,11 +38,17 @@ public:
   bool error() const;
 
 private:
+  void read_next_header();
+
   istream &_in;
   Datagram _datagram;
   FltOpcode _opcode;
   int _record_length;
   DatagramIterator *_iterator;
+  
+  FltError _next_error;
+  FltOpcode _next_opcode;
+  int _next_record_length;
 
   enum State {
     S_begin,

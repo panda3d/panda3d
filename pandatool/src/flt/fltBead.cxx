@@ -229,7 +229,9 @@ extract_ancillary(FltRecordReader &reader) {
 
   // A transform step.
   nassertr(step != (FltTransformRecord *)NULL, false);
-  step->extract_record(reader);
+  if (!step->extract_record(reader)) {
+    return false;
+  }
   _transform_steps.push_back(DCAST(FltTransformRecord, step));
 
   /*
@@ -305,7 +307,7 @@ extract_transform_matrix(FltRecordReader &reader) {
       matrix(r, c) = iterator.get_be_float32();
     }
   }
-  nassertr(iterator.get_remaining_size() == 0, true);
+  check_remaining_size(iterator);
 
   _transform_steps.clear();
   _has_transform = true;
@@ -327,8 +329,7 @@ extract_replicate_count(FltRecordReader &reader) {
   _replicate_count = iterator.get_be_int16();
   iterator.skip_bytes(2);
 
-  nassertr(iterator.get_remaining_size() == 0, true);
-
+  check_remaining_size(iterator);
   return true;
 }
 

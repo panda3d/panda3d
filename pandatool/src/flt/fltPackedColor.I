@@ -45,3 +45,32 @@ INLINE RGBColorf FltPackedColor::
 get_rgb() const {
   return RGBColorf(_r / 255.0, _g / 255.0, _b / 255.0);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltPackedColor::set_color
+//       Access: Public
+//  Description: Sets the color according to the indicated
+//               four-component Colorf value (including alpha).
+////////////////////////////////////////////////////////////////////
+INLINE void FltPackedColor::
+set_color(const Colorf &color) {
+  _r = (int)floor(color[0] * 255.0);
+  _g = (int)floor(color[0] * 255.0);
+  _b = (int)floor(color[0] * 255.0);
+  _a = (int)floor(color[0] * 255.0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltPackedColor::set_rgb
+//       Access: Public
+//  Description: Sets the color according to the indicated
+//               three-component RGBColorf value, and set the alpha to
+//               1.0.
+////////////////////////////////////////////////////////////////////
+INLINE void FltPackedColor::
+set_rgb(const RGBColorf &color) {
+  _r = (int)floor(color[0] * 255.0);
+  _g = (int)floor(color[0] * 255.0);
+  _b = (int)floor(color[0] * 255.0);
+  _a = 255;
+}

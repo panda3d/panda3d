@@ -8,13 +8,18 @@
 
   #define SOURCES \
     config_flt.cxx config_flt.h fltBead.cxx fltBead.h fltBeadID.cxx \
-    fltBeadID.h fltError.cxx fltError.h fltExternalReference.cxx \
+    fltBeadID.h fltCurve.I fltCurve.cxx fltCurve.h \
+    fltError.cxx fltError.h fltExternalReference.cxx \
     fltExternalReference.h fltEyepoint.cxx fltEyepoint.h fltFace.I \
-    fltFace.cxx fltFace.h fltGroup.cxx fltGroup.h fltHeader.cxx \
+    fltFace.cxx fltFace.h fltGeometry.I fltGeometry.cxx fltGeometry.h \
+    fltGroup.cxx fltGroup.h fltHeader.cxx \
     fltHeader.h fltInstanceDefinition.cxx fltInstanceDefinition.h \
     fltInstanceRef.cxx fltInstanceRef.h fltLOD.cxx fltLOD.h \
     fltLightSourceDefinition.cxx fltLightSourceDefinition.h \
-    fltMaterial.cxx fltMaterial.h fltObject.cxx fltObject.h \
+    fltLocalVertexPool.I fltLocalVertexPool.cxx fltLocalVertexPool.h \
+    fltMaterial.cxx fltMaterial.h fltMesh.I fltMesh.cxx fltMesh.h \
+    fltMeshPrimitive.I fltMeshPrimitive.cxx fltMeshPrimitive.h \
+    fltObject.cxx fltObject.h \
     fltOpcode.cxx fltOpcode.h fltPackedColor.I fltPackedColor.cxx \
     fltPackedColor.h fltRecord.I fltRecord.cxx fltRecord.h \
     fltRecordReader.cxx fltRecordReader.h fltRecordWriter.cxx \
@@ -31,10 +36,15 @@
     fltVertexList.cxx fltVertexList.h
 
   #define INSTALL_HEADERS \
-    fltBead.h fltBeadID.h fltError.h fltExternalReference.h \
-    fltEyepoint.h fltFace.I fltFace.h fltGroup.h fltHeader.h \
+    fltBead.h fltBeadID.h fltCurve.I fltCurve.h \
+    fltError.h fltExternalReference.h \
+    fltEyepoint.h fltFace.I fltFace.h fltGeometry.I fltGeometry.h \
+    fltGroup.h fltHeader.h \
     fltInstanceDefinition.h fltInstanceRef.h fltLOD.h \
-    fltLightSourceDefinition.h fltMaterial.h fltObject.h fltOpcode.h \
+    fltLightSourceDefinition.h fltLocalVertexPool.I fltLocalVertexPool.h \
+    fltMaterial.h fltMesh.I fltMesh.h \
+    fltMeshPrimitive.I fltMeshPrimitive.h \
+    fltObject.h fltOpcode.h \
     fltPackedColor.I fltPackedColor.h fltRecord.I fltRecord.h \
     fltRecordReader.h fltRecordWriter.h fltTexture.h fltTrackplane.h \
     fltTransformGeneralMatrix.h fltTransformPut.h fltTransformRecord.h \

@@ -12,6 +12,13 @@
 
 #include <assert.h>
 
+static const int header_size = 4;
+
+// Don't attempt to write more than this number of bytes in one
+// record.  If the record requires more than this, use continuation
+// records.
+static const int max_write_length = 65532;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: FltRecordWriter::Constructor
 //       Access: Public
@@ -76,33 +83,43 @@ update_datagram() {
 ////////////////////////////////////////////////////////////////////
 FltError FltRecordWriter::
 advance() {
-  if (flt_cat.is_debug()) {
-    flt_cat.debug()
-      << "Writing " << _opcode << " of length "
-      << _datagram.get_length() << "\n";
-  }
+  int start_byte = 0;
+  int write_length = 
+    min((int)_datagram.get_length() - start_byte, max_write_length - header_size);
+  FltOpcode opcode = _opcode;
 
-  // Build a mini-datagram to write the header.
-  static const int header_size = 4;
+  do {
+    if (flt_cat.is_debug()) {
+      flt_cat.debug()
+	<< "Writing " << opcode << " of length "
+	<< write_length + header_size << "\n";
+    }
 
-  Datagram dg;
-  dg.add_be_int16(_opcode);
-  dg.add_be_int16(_datagram.get_length() + header_size);
+    // Build a mini-datagram to write the header.
+    Datagram dg;
+    dg.add_be_int16(opcode);
+    dg.add_be_int16(write_length + header_size);
 
-  nassertr((int)dg.get_length() == header_size, FE_internal);
+    nassertr((int)dg.get_length() == header_size, FE_internal);
 
-  _out.write(dg.get_message().data(), dg.get_length());
-  if (_out.fail()) {
-    assert(!flt_error_abort);
-    return FE_write_error;
-  }
+    _out.write((const char *)dg.get_data(), dg.get_length());
+    if (_out.fail()) {
+      assert(!flt_error_abort);
+      return FE_write_error;
+    }
 
-  // Now write the rest of the record.
-  _out.write(_datagram.get_message().data(), _datagram.get_length());
-  if (_out.fail()) {
-    assert(!flt_error_abort);
-    return FE_write_error;
-  }
+    // Now write the rest of the record.
+    _out.write((const char *)_datagram.get_data() + start_byte, write_length);
+    if (_out.fail()) {
+      assert(!flt_error_abort);
+      return FE_write_error;
+    }
+
+    start_byte += write_length;
+    write_length = 
+      min((int)_datagram.get_length() - start_byte, max_write_length - header_size);
+    opcode = FO_continuation;
+  } while (write_length > 0);
 
   _datagram.clear();
   _opcode = FO_none;

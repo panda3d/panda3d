@@ -214,7 +214,7 @@ extract_record(FltRecordReader &reader) {
     nout << "Unable to read attribute file " << get_attr_filename() << "\n";
   }
 
-  nassertr(iterator.get_remaining_size() == 0, true);
+  check_remaining_size(iterator);
   return true;
 }
 
@@ -343,7 +343,19 @@ unpack_attr(const Datagram &datagram) {
     }
   }
 
-  nassertr(iterator.get_remaining_size() == 0, FE_ok);
+  if (iterator.get_remaining_size() != 0) {
+    int num_defs = iterator.get_be_int32();
+    while (num_defs > 0) {
+      SubtextureDef def;
+      def._name = iterator.get_fixed_string(32);
+      def._left = iterator.get_be_int32();
+      def._bottom = iterator.get_be_int32();
+      def._right = iterator.get_be_int32();
+      def._top = iterator.get_be_int32();
+    }
+  }
+
+  check_remaining_size(iterator);
   return FE_ok;
 }
 
@@ -430,11 +442,27 @@ pack_attr(Datagram &datagram) const {
     for (pi = _geospecific_control_points.begin();
 	 pi != _geospecific_control_points.end();
 	 ++pi) {
-      datagram.add_be_float64((*pi)._uv[0]);
-      datagram.add_be_float64((*pi)._uv[1]);
-      datagram.add_be_float64((*pi)._real_earth[0]);
-      datagram.add_be_float64((*pi)._real_earth[1]);
+      const GeospecificControlPoint &gcp = (*pi);
+      datagram.add_be_float64(gcp._uv[0]);
+      datagram.add_be_float64(gcp._uv[1]);
+      datagram.add_be_float64(gcp._real_earth[0]);
+      datagram.add_be_float64(gcp._real_earth[1]);
     }
+  }
+
+  // Also write out the subtexture definitions.
+  datagram.add_be_int32(_subtexture_defs.size());
+  SubtextureDefs::const_iterator di;
+  for (di = _subtexture_defs.begin();
+       di != _subtexture_defs.end();
+       ++di) {
+    const SubtextureDef &def = (*di);
+    datagram.add_fixed_string(def._name, 31);
+    datagram.add_int8(0);
+    datagram.add_be_int32(def._left);
+    datagram.add_be_int32(def._bottom);
+    datagram.add_be_int32(def._right);
+    datagram.add_be_int32(def._top);
   }
 
   return FE_ok;

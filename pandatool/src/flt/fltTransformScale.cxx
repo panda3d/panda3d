@@ -96,7 +96,7 @@ extract_record(FltRecordReader &reader) {
 
   recompute_matrix();
 
-  nassertr(iterator.get_remaining_size() == 0, true);
+  check_remaining_size(iterator);
   return true;
 }
 

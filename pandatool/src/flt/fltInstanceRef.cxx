@@ -61,7 +61,7 @@ extract_record(FltRecordReader &reader) {
   iterator.skip_bytes(2);
   _instance_index = iterator.get_be_int16();
 
-  nassertr(iterator.get_remaining_size() == 0, true);
+  check_remaining_size(iterator);
   return true;
 }
 

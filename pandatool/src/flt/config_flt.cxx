@@ -9,7 +9,12 @@
 #include "fltBeadID.h"
 #include "fltGroup.h"
 #include "fltObject.h"
+#include "fltGeometry.h"
 #include "fltFace.h"
+#include "fltCurve.h"
+#include "fltMesh.h"
+#include "fltLocalVertexPool.h"
+#include "fltMeshPrimitive.h"
 #include "fltVertexList.h"
 #include "fltLOD.h"
 #include "fltInstanceDefinition.h"
@@ -48,7 +53,12 @@ ConfigureFn(config_flt) {
   FltBeadID::init_type();
   FltGroup::init_type();
   FltObject::init_type();
+  FltGeometry::init_type();
   FltFace::init_type();
+  FltCurve::init_type();
+  FltMesh::init_type();
+  FltLocalVertexPool::init_type();
+  FltMeshPrimitive::init_type();
   FltVertexList::init_type();
   FltLOD::init_type();
   FltInstanceDefinition::init_type();

@@ -120,6 +120,11 @@ public:
   int _next_road_id;
   int _next_cat_id;
   EarthModel _earth_model;
+  int _next_adaptive_id;
+  int _next_curve_id;
+  double _delta_z;
+  double _radius;
+  int _next_mesh_id;
 
 public:
   double get_flt_version() const;

@@ -145,6 +145,15 @@ public:
 
   typedef vector<GeospecificControlPoint> GeospecificControlPoints;
 
+  struct SubtextureDef {
+    string _name;
+    int _left;
+    int _bottom;
+    int _right;
+    int _top;
+  };
+  typedef vector<SubtextureDef> SubtextureDefs;
+
   int _num_texels_u;
   int _num_texels_v;
   int _real_world_size_u;
@@ -199,6 +208,7 @@ public:
   string _comment;
   int _file_version;
   GeospecificControlPoints _geospecific_control_points;
+  SubtextureDefs _subtexture_defs;
 
 protected:
   virtual bool extract_record(FltRecordReader &reader);

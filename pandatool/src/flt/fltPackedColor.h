@@ -9,6 +9,7 @@
 #include <pandatoolbase.h>
 
 #include <luse.h>
+#include <math.h>
 
 class FltRecordReader;
 class FltRecordWriter;
@@ -24,6 +25,8 @@ public:
 
   INLINE Colorf get_color() const;
   INLINE RGBColorf get_rgb() const;
+  INLINE void set_color(const Colorf &color);
+  INLINE void set_rgb(const RGBColorf &rgb);
 
   void output(ostream &out) const;
   bool extract_record(FltRecordReader &reader);

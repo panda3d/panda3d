@@ -1,27 +1,35 @@
-// Filename: fltFace.h
-// Created by:  drose (25Aug00)
+// Filename: fltMesh.h
+// Created by:  drose (28Feb01)
 // 
 ////////////////////////////////////////////////////////////////////
 
-#ifndef FLTFACE_H
-#define FLTFACE_H
+#ifndef FLTMESH_H
+#define FLTMESH_H
 
 #include <pandatoolbase.h>
 
 #include "fltGeometry.h"
+#include "fltLocalVertexPool.h"
+
+#include <pointerTo.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : FltFace
-// Description : A single face bead, e.g. a polygon.
+// 	 Class : FltMesh
+// Description : A mesh of connected polygons and tristrips, etc.,
+//               with a local vertex pool.
 ////////////////////////////////////////////////////////////////////
-class FltFace : public FltGeometry {
+class FltMesh : public FltGeometry {
 public:
-  FltFace(FltHeader *header);
+  FltMesh(FltHeader *header);
 
+  PT(FltLocalVertexPool) _vpool;
 
 protected:
   virtual bool extract_record(FltRecordReader &reader);
+  virtual bool extract_ancillary(FltRecordReader &reader);
+
   virtual bool build_record(FltRecordWriter &writer) const;
+  virtual FltError write_ancillary(FltRecordWriter &writer) const;
 
 public:
   virtual TypeHandle get_type() const {
@@ -33,7 +41,7 @@ public:
   }
   static void init_type() {
     FltGeometry::init_type();
-    register_type(_type_handle, "FltFace",
+    register_type(_type_handle, "FltMesh",
 		  FltGeometry::get_class_type());
   }
 
@@ -41,7 +49,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "fltFace.I"
+#include "fltMesh.I"
 
 #endif
 
