@@ -56,7 +56,7 @@ in_range(float dist_squared) const {
 //  Description: Scales the switching distances by the square root of
 //               the indicated factor.
 ////////////////////////////////////////////////////////////////////
-void LODSwitch::
+INLINE void LODSwitch::
 rescale(float factor_squared) {
   _in *= factor_squared;
   _out *= factor_squared;
