@@ -20,3 +20,8 @@ class EditMgr(Entity.Entity):
     def setRemoveEntity(self, data):
         self.level.levelSpec.removeEntity(data['entId'],
                                           )
+
+    def getSpecSaveEvent(self):
+        return 'requestSave-%s' % self.level.levelId
+    def setRequestSave(self, data):
+        messenger.send(self.getSpecSaveEvent())

@@ -18,7 +18,9 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         Level.Level.__init__(self)
         # this is one of the required fields
         self.zoneId = zoneId
-        self.modified = 0
+        if __debug__:
+            self.modified = 0
+            self.makeBackup = 1
 
     def generate(self, levelSpec):
         self.notify.debug('generate')
@@ -57,6 +59,12 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         scenarioIndex = wc.choose()[1]
 
         Level.Level.initializeLevel(self, self.doId, levelSpec, scenarioIndex)
+
+        if __debug__:
+            # listen for requests to save the spec
+            editMgrEntId = self.entType2ids['editMgr'][0]
+            editMgr = self.getEntity(editMgrEntId)
+            self.accept(editMgr.getSpecSaveEvent(), self.saveSpec)
 
     def createEntityCreator(self):
         """Create the object that will be used to create Entities.
@@ -98,7 +106,8 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
             self.modified = 1
             self.scheduleSave()
 
-        SavePeriod = simbase.config.GetFloat('factory-save-period', 10)
+        SavePeriod = simbase.config.GetInt('factory-save-period', 10)
+        BackupPeriod = simbase.config.GetInt('factory-backup-period-minutes',5)
 
         def scheduleSave(self):
             if hasattr(self, 'saveTask'):
@@ -112,9 +121,18 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
             DistributedLevelAI.notify.info('saving spec')
             if hasattr(self, 'saveTask'):
                 del self.saveTask
-            if self.modified:
-                self.levelSpec.saveToDisk()
-                self.modified = 0
+            if not self.modified:
+                DistributedLevelAI.notify.info('no changes to save')
+                return
+            self.levelSpec.saveToDisk(createBackup=self.makeBackup)
+            self.modified = 0
+            self.makeBackup = 0
+            def setMakeBackup(task, self=self):
+                self.makeBackup = 1
+            self.backupTask = taskMgr.doMethodLater(
+                DistributedLevelAI.BackupPeriod * 60,
+                setMakeBackup,
+                self.uniqueName('setMakeBackup'))
 
         def requestCurrentLevelSpec(self, specHash, entTypeRegHash):
             senderId = self.air.msgSender
