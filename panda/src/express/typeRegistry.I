@@ -71,7 +71,7 @@ INLINE bool TypeRegistry::
 is_derived_from(TypeHandle child, TypeHandle base,
                 TypedObject *child_object) {
   const TypeRegistryNode *child_node = look_up(child, child_object);
-  const TypeRegistryNode *base_node = look_up(base, NULL);
+  const TypeRegistryNode *base_node = look_up(base, (TypedObject *)NULL);
   nassertr(child_node != (TypeRegistryNode *)NULL &&
            base_node != (TypeRegistryNode *)NULL, false);
   freshen_derivations();
