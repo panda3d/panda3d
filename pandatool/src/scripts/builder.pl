@@ -7,7 +7,7 @@ $WIN_INSTALLDIR="\\\\nufat\\mass\\pandabuilds\\win";
 
 #$WIN_INSTALLDIR="\\\\cxgeorge-d01\\c\\pandabuilds\\win";
 
-#$DEBUG_TREECOPY = 1;
+# $DEBUG_TREECOPY = 1;
 
 $DEBUG_GENERATE_PYTHON_CODE_ONLY = 0;
 $DONT_ARCHIVE_OLD_BUILDS = 0;
@@ -490,18 +490,38 @@ sub archivetree() {
     &mymkdir($newdayarchivedirname);
     &myrename($olddirname,$archdirname);
 
-    # now delete old objs/pdbs/etc out of archived trees (just blow away the Opt[Win32] dir)
-    
     foreach my $dir1 (@dirstodolist) {    
-        # NT cmd 'for' always returns 144 for some reason, impossible to detect error cond, so just dont check retval
-        &myexecstr("( for /D /R ".$archdirname."\\".$dir1."\\src %i in (Opt*Win32) do rd /s /q %i )","nomsg","DO_LOG","NT cmd");
+        # copy DLL .pdb up to lib dir so we can blow away metalibs subdir
+        # could do this is the makefiles instead
+        &myexecstr("( for /R ".$archdirname."\\".$dir1."\\metalibs %i in (lib*.pdb) do copy %i ".$archdirname."\\".$dir1."\\lib )","nomsg","DO_LOG","NT cmd");
 
-        # doing this twice since samba-link seems to screw up and cause some files to not be deleted
-        &myexecstr("( for /D /R ".$archdirname."\\".$dir1."\\src %i in (Opt*Win32) do rd /s /q %i )","nomsg","DO_LOG","NT cmd");
+        if($dir1 eq "panda") {
+            # audio libs seem to not have a metalib dir
+            &myexecstr("( for /R ".$archdirname."\\".$dir1."\\src\audiotraits %i in (lib*.pdb) do copy %i ".$archdirname."\\".$dir1."\\lib )","nomsg","DO_LOG","NT cmd");
+        }
+
+        # NT cmd 'for' always returns 144 for some reason, impossible to detect error cond, so just dont check retval
+        # delete old objs/pdbs/etc out of archived trees (just blow away the Opt[Win32] dir)
+        # &myexecstr("( for /D /R ".$archdirname."\\".$dir1."\\src %i in (Opt*Win32) do rd /s /q %i )","nomsg","DO_LOG","NT cmd");
+        
+        # instead blow away src,CVS,include,metalibs dirs completely
+        # doing every rd twice since samba-netapp-RAID link seems to screw up and cause some files to not be deleted the 1st time
+        &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\src","nomsg","DO_LOG","NT cmd");
+        &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\CVS","nomsg","DO_LOG","NT cmd");
+        &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\include","nomsg","DO_LOG","NT cmd");
+        &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\metalibs","nomsg","DO_LOG","NT cmd");
+
+        &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\src","nomsg","DO_LOG","NT cmd");
+        &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\CVS","nomsg","DO_LOG","NT cmd");
+        &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\include","nomsg","DO_LOG","NT cmd");
+        &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\metalibs","nomsg","DO_LOG","NT cmd");
+
+        # del xtra files at root of subdirs
+        &myexecstr("del /Q /F ".$archdirname."\\".$dir1."\\*","nomsg","DO_LOG","NT cmd");
     }
 
     # delete old browse files
-    &myexecstr("del /q ".$archdirname."\\*.bsc ".$dirstodostr,"nomsg","DO_LOG","NT cmd");
+    &myexecstr("del /q ".$archdirname."\\*.bsc","nomsg","DO_LOG","NT cmd");
 
     # could also move .pdb from metalibs to lib, then del metalibs, include, src dirs
 }
