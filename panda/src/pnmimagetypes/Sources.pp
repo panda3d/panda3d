@@ -28,11 +28,11 @@
      pnmFileTypeTGA.cxx pnmFileTypeYUV.cxx
      
   #define IF_JPEG_INCLUDED_SOURCES \
-    pnmFileTypeJPG2000.cxx \
-    pnmFileTypeJPG2000Reader.cxx pnmFileTypeJPG2000Writer.cxx
+    pnmFileTypeJPG.cxx \
+    pnmFileTypeJPGReader.cxx pnmFileTypeJPGWriter.cxx
     
   #define IF_JPEG_SOURCES \
-    pnmFileTypeJPG2000.h 
+    pnmFileTypeJPG.h 
     
   #define IF_JPEG_COMBINED_SOURCES \    
     $[TARGET]_composite3.cxx        
