@@ -82,7 +82,13 @@ bool dx_force_16bpptextures = config_dxgsg7.GetBool("dx-force-16bpptextures", fa
 bool dx_no_dithering = config_dxgsg7.GetBool("dx-no-dithering", false);
 bool dx_force_16bpp_zbuffer = config_dxgsg7.GetBool("dx-force-16bpp-zbuffer", false);
 bool dx_do_vidmemsize_check = config_dxgsg7.GetBool("do-vidmemsize-check", true);
-bool dx_preserve_fpu_state = config_dxgsg7.GetBool("dx-preserve-fpu-state", false);
+// Setting this true theoretically hinders render performance, because
+// it forces the FPU to go through some extra work to clean itself up
+// after rendering a frame, but the performance cost seems to be
+// small.  On the other hand, setting it false can force the
+// application to run in single-precision arithmetic mode, even if
+// it believes it is using double-precision variables.
+bool dx_preserve_fpu_state = config_dxgsg7.GetBool("dx-preserve-fpu-state", true);
 
 // Configure this true to try to implement decals using a
 // DepthOffsetAttrib, false to do them with the more reliable 3-pass
