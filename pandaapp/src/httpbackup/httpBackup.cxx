@@ -31,6 +31,7 @@ HTTPBackup::
 HTTPBackup() {
   clear_runlines();
   add_runline("[opts] url");
+  add_runline("-check <days> url");
 
   set_program_description
     ("This program is designed to run periodically as a "
@@ -118,6 +119,14 @@ HTTPBackup() {
      "deleting versions older than -maxage.  The default is 1.",
      &HTTPBackup::dispatch_int, NULL, &_min_keep_versions);
 
+  add_option
+    ("check", "days", 0,
+     "Instead of downloading any document, check the date of the most recent "
+     "document downloaded.  Returns success if that date is no more than the "
+     "indicated number of days old (which may be a floating-point number), "
+     "or failure otherwise.",
+     &HTTPBackup::dispatch_double, &_got_check_days, &_check_days);
+
   _dirname = ".";
   _catalog_name = "Catalog";
   _version_append = ".%Y-%m-%d.%H-%M";
@@ -138,6 +147,12 @@ HTTPBackup() {
 ////////////////////////////////////////////////////////////////////
 bool HTTPBackup::
 handle_args(ProgramBase::Args &args) {
+  if (_got_check_days && !_document_name.empty() && args.empty()) {
+    // If -check and -n are both specified, we don't really need to
+    // specify an URL.  Accept it if we don't.
+    return true;
+  }
+
   if (args.size() != 1) {
     nout << 
       "You must specify the URL of the document to download "
@@ -250,24 +265,47 @@ run() {
     }
   }
 
-  // Now try to fetch the document.
-  if (!fetch_latest()) {
-    nout << "Errors while processing latest.\n";
-    exit(1);
-  }
-
-  if (!cleanup_old()) {
-    nout << "Errors while cleaning up old versions.\n";
-    // We don't bother to exit the program in this case.
-  }
-
-  if (_catalog._dirty) {
-    // Now write out the modified catalog.
-    nout << "Writing " << _catalog_name << "\n";
-    _catalog_name.make_dir();
-    if (!_catalog.write(_catalog_name)) {
-      nout << "Unable to rewrite " << _catalog_name << ".\n";
+  if (_got_check_days) {
+    // We're only checking the date of the latest download.
+    BackupCatalog::Entries &entries = _catalog._table[_document_name];
+    if (entries.empty()) {
+      nout << "No previous downloads for " << _document_name << ".\n";
       exit(1);
+    }
+    BackupCatalog::Entry *latest = entries[entries.size() - 1];
+    int diff_secs = _now - latest->get_date();
+    double diff_days = (double)diff_secs / (double)seconds_per_day;
+    nout << "Most recent at " << latest->get_date().get_string()
+         << ", " << diff_days << " days old.\n";
+    if (diff_days <= _check_days) {
+      nout << "OK.\n";
+    } else {
+      nout << "Too old!\n";
+      exit(1);
+    }
+    
+  } else {
+    // Try to do the download.
+
+    // Now try to fetch the document.
+    if (!fetch_latest()) {
+      nout << "Errors while processing latest.\n";
+      exit(1);
+    }
+    
+    if (!cleanup_old()) {
+      nout << "Errors while cleaning up old versions.\n";
+      // We don't bother to exit the program in this case.
+    }
+    
+    if (_catalog._dirty) {
+      // Now write out the modified catalog.
+      nout << "Writing " << _catalog_name << "\n";
+      _catalog_name.make_dir();
+      if (!_catalog.write(_catalog_name)) {
+        nout << "Unable to rewrite " << _catalog_name << ".\n";
+        exit(1);
+      }
     }
   }
 }

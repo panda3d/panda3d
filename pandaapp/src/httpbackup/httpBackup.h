@@ -74,6 +74,8 @@ private:
   int _max_keep_versions;
   bool _got_max_keep_versions;
   int _min_keep_versions;
+  double _check_days;
+  bool _got_check_days;
 
   HTTPDate _max_keep_date;
   HTTPDate _min_keep_date;
