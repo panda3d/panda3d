@@ -30,7 +30,7 @@ TypeHandle CLerpAnimEffectInterval::_type_handle;
 //               (e.g. if the interval is being played by a slider).
 ////////////////////////////////////////////////////////////////////
 void CLerpAnimEffectInterval::
-step(double t) {
+priv_step(double t) {
   check_started("step");
   _state = S_started;
   double d = compute_delta(t);

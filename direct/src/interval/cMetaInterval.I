@@ -101,8 +101,8 @@ get_ext_index(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CMetaInterval::is_event_ready
 //       Access: Published
-//  Description: Returns true if a recent call to initialize(),
-//               step(), or finalize() has left some external
+//  Description: Returns true if a recent call to priv_initialize(),
+//               priv_step(), or priv_finalize() has left some external
 //               intervals ready to play.  If this returns true, call
 //               get_event_index(), get_event_t(), and pop_event() to
 //               retrieve the relevant information.

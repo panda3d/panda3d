@@ -36,7 +36,7 @@ TypeHandle CLerpNodePathInterval::_type_handle;
 //
 //               You must call set_end_pos(), etc. for the various
 //               properties you wish to lerp before the first call to
-//               initialize().  If you want to set a starting value
+//               priv_initialize().  If you want to set a starting value
 //               for any of the properties, you may call
 //               set_start_pos(), etc.; otherwise, the starting value
 //               is taken from the actual node's value at the time the
@@ -57,35 +57,35 @@ CLerpNodePathInterval(const string &name, double duration,
 ////////////////////////////////////////////////////////////////////
 //     Function: CLerpNodePathInterval::initialize
 //       Access: Published, Virtual
-//  Description: This replaces the first call to step(), and indicates
+//  Description: This replaces the first call to priv_step(), and indicates
 //               that the interval has just begun.  This may be
 //               overridden by derived classes that need to do some
 //               explicit initialization on the first call.
 ////////////////////////////////////////////////////////////////////
 void CLerpNodePathInterval::
-initialize(double t) {
+priv_initialize(double t) {
   check_stopped("initialize");
   recompute();
   _prev_d = 0.0;
   _state = S_started;
-  step(t);
+  priv_step(t);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLerpNodePathInterval::instant
 //       Access: Published, Virtual
-//  Description: This is called in lieu of initialize() .. step()
-//               .. finalize(), when everything is to happen within
+//  Description: This is called in lieu of priv_initialize() .. priv_step()
+//               .. priv_finalize(), when everything is to happen within
 //               one frame.  The interval should initialize itself,
 //               then leave itself in the final state.
 ////////////////////////////////////////////////////////////////////
 void CLerpNodePathInterval::
-instant() {
+priv_instant() {
   check_stopped("instant");
   recompute();
   _prev_d = 0.0;
   _state = S_started;
-  step(get_duration());
+  priv_step(get_duration());
   _state = S_final;
 }
 
@@ -97,7 +97,7 @@ instant() {
 //               (e.g. if the interval is being played by a slider).
 ////////////////////////////////////////////////////////////////////
 void CLerpNodePathInterval::
-step(double t) {
+priv_step(double t) {
   check_started("step");
   _state = S_started;
   double d = compute_delta(t);
@@ -187,7 +187,7 @@ step(double t) {
 
     default:
       interval_cat.error()
-        << "Internal error in CLerpNodePathInterval::step().\n";
+        << "Internal error in CLerpNodePathInterval::priv_step().\n";
     }
 
     // Now apply the new transform back to the node.
@@ -278,36 +278,36 @@ step(double t) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CLerpNodePathInterval::reverse_initialize
 //       Access: Published, Virtual
-//  Description: Similar to initialize(), but this is called when the
+//  Description: Similar to priv_initialize(), but this is called when the
 //               interval is being played backwards; it indicates that
 //               the interval should start at the finishing state and
 //               undo any intervening intervals.
 ////////////////////////////////////////////////////////////////////
 void CLerpNodePathInterval::
-reverse_initialize(double t) {
+priv_reverse_initialize(double t) {
   check_stopped("reverse_initialize");
   recompute();
   _state = S_started;
   _prev_d = 1.0;
-  step(t);
+  priv_step(t);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLerpNodePathInterval::reverse_instant
 //       Access: Published, Virtual
-//  Description: This is called in lieu of reverse_initialize()
-//               .. step() .. reverse_finalize(), when everything is
+//  Description: This is called in lieu of priv_reverse_initialize()
+//               .. priv_step() .. priv_reverse_finalize(), when everything is
 //               to happen within one frame.  The interval should
 //               initialize itself, then leave itself in the initial
 //               state.
 ////////////////////////////////////////////////////////////////////
 void CLerpNodePathInterval::
-reverse_instant() {
+priv_reverse_instant() {
   check_stopped("reverse_initialize");
   recompute();
   _state = S_started;
   _prev_d = 1.0;
-  step(0.0);
+  priv_step(0.0);
   _state = S_initial;
 }
 

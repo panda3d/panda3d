@@ -30,30 +30,28 @@ class ParticleInterval(Interval.Interval):
         Interval.Interval.__init__(self, name, duration)
         self.cleanedUp = 0
 
-    def updateFunc(self, t, event=Interval.IVAL_NONE):
-        """ updateFunc(t, event)
-        Go to time t
-        """
-        if (self.cleanedUp == 1):
-            self.notify.warning('updateFunc() - already cleaned up!')
-            return
-        # Update particle effect based on current time
-        if (t >= self.getDuration()):
-            # If duration reached or stop event received, stop particle effect 
-            self.particleEffect.cleanup()
-            self.cleanedUp = 1
-        elif (event == Interval.IVAL_INIT):
-            # IVAL_INIT event, start new particle effect
-            renderParent = None
-            if self.worldRelative:
-                renderParent = render
-            self.particleEffect.start(self.parent, renderParent)
-        # Print debug information
-        assert(self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t)))
+    def privInitialize(self, t):
+        renderParent = None
+        if self.worldRelative:
+            renderParent = render
+        self.particleEffect.start(self.parent, renderParent)
+        self.state = CInterval.SStarted
+        self.currT = t
 
-    def interrupt(self):
+    def privStep(self, t):
+        if self.state == CInterval.SPaused:
+            # Restarting from a pause.
+            self.particleEffect.start(self.parent, renderParent)
+        self.state = CInterval.SStarted
+        self.currT = t
+
+    def privFinalize(self):
         self.particleEffect.cleanup()
         self.cleanedUp = 1
+        self.currT = self.getDuration()
+        self.state = CInterval.SFinal
 
-
-
+    def privInterrupt(self):
+        self.particleEffect.cleanup()
+        self.cleanedUp = 1
+        self.state = CInterval.SPaused

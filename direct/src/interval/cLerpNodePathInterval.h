@@ -50,11 +50,11 @@ PUBLISHED:
   INLINE void set_start_color_scale(const LVecBase4f &color_scale);
   INLINE void set_end_color_scale(const LVecBase4f &color_scale);
 
-  virtual void initialize(double t);
-  virtual void instant();
-  virtual void step(double t);
-  virtual void reverse_initialize(double t);
-  virtual void reverse_instant();
+  virtual void priv_initialize(double t);
+  virtual void priv_instant();
+  virtual void priv_step(double t);
+  virtual void priv_reverse_initialize(double t);
+  virtual void priv_reverse_instant();
 
   virtual void output(ostream &out) const;
 

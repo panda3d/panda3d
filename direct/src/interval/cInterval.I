@@ -67,56 +67,23 @@ get_state() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CInterval::set_t
+//     Function: CInterval::is_stopped
 //       Access: Published
-//  Description: Advances the interval.  This function is provided
-//               mainly to provide compatibility with the Python
-//               Interval class; you should use initialize(), step(),
-//               and finalize() instead.
+//  Description: Returns true if the interval is in either its initial
+//               or final states (but not in a running or paused
+//               state).
 ////////////////////////////////////////////////////////////////////
-INLINE void CInterval::
-set_t(double t, CInterval::EventType event) {
-  switch (event) {
-  case ET_initialize:
-    initialize(t);
-    break;
-
-  case ET_instant:
-    instant();
-    break;
-
-  case ET_step:
-    step(t);
-    break;
-
-  case ET_finalize:
-    finalize();
-    break;
-
-  case ET_reverse_initialize:
-    reverse_initialize(t);
-    break;
-
-  case ET_reverse_instant:
-    reverse_instant();
-    break;
-
-  case ET_reverse_finalize:
-    reverse_finalize();
-    break;
-
-  case ET_interrupt:
-    interrupt();
-    break;
-  }
+INLINE bool CInterval::
+is_stopped() const {
+  return (_state == S_initial || _state == S_final);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CInterval::get_t
 //       Access: Published
 //  Description: Returns the current time of the interval: the last
-//               value of t passed to initialize(), step(), or
-//               finalize() (or set_t()).
+//               value of t passed to priv_initialize(), priv_step(), or
+//               priv_finalize().
 ////////////////////////////////////////////////////////////////////
 INLINE double CInterval::
 get_t() const {

@@ -81,13 +81,13 @@ class LerpPosInterval(LerpNodePathInterval):
             if startPos != None:
                 self.setStartPos(startPos)
 
-    def setT(self, t, event = Interval.IVAL_NONE):
+    def privDoEvent(self, t, event):
         # This function is only used if Python functors were passed in
         # for some of the input parameters.
-        if self.paramSetup and event == Interval.IVAL_INIT:
+        if self.paramSetup and event == CInterval.ETInitialize:
             self.setupParam(self.setEndPos, self.endPos)
             self.setupParam(self.setStartPos, self.startPos)
-        LerpNodePathInterval.setT(self, t, event)
+        LerpNodePathInterval.privDoEvent(self, t, event)
                 
 
 class LerpHprInterval(LerpNodePathInterval):
@@ -107,13 +107,13 @@ class LerpHprInterval(LerpNodePathInterval):
             if startHpr != None:
                 self.setStartHpr(startHpr)
 
-    def setT(self, t, event = Interval.IVAL_NONE):
+    def privDoEvent(self, t, event):
         # This function is only used if Python functors were passed in
         # for some of the input parameters.
-        if self.paramSetup and event == Interval.IVAL_INIT:
+        if self.paramSetup and event == CInterval.ETInitialize:
             self.setupParam(self.setEndHpr, self.endHpr)
             self.setupParam(self.setStartHpr, self.startHpr)
-        LerpNodePathInterval.setT(self, t, event)
+        LerpNodePathInterval.privDoEvent(self, t, event)
 
 class LerpScaleInterval(LerpNodePathInterval):
     def __init__(self, node, duration, scale, startScale = None,
@@ -131,13 +131,13 @@ class LerpScaleInterval(LerpNodePathInterval):
             if startScale != None:
                 self.setStartScale(startScale)
 
-    def setT(self, t, event = Interval.IVAL_NONE):
+    def privDoEvent(self, t, event):
         # This function is only used if Python functors were passed in
         # for some of the input parameters.
-        if self.paramSetup and event == Interval.IVAL_INIT:
+        if self.paramSetup and event == CInterval.ETInitialize:
             self.setupParam(self.setEndScale, self.endScale)
             self.setupParam(self.setStartScale, self.startScale)
-        LerpNodePathInterval.setT(self, t, event)
+        LerpNodePathInterval.privDoEvent(self, t, event)
 
 class LerpPosHprInterval(LerpNodePathInterval):
     def __init__(self, node, duration, pos, hpr,
@@ -161,15 +161,15 @@ class LerpPosHprInterval(LerpNodePathInterval):
             if startHpr != None:
                 self.setStartHpr(startHpr)
 
-    def setT(self, t, event = Interval.IVAL_NONE):
+    def privDoEvent(self, t, event):
         # This function is only used if Python functors were passed in
         # for some of the input parameters.
-        if self.paramSetup and event == Interval.IVAL_INIT:
+        if self.paramSetup and event == CInterval.ETInitialize:
             self.setupParam(self.setEndPos, self.endPos)
             self.setupParam(self.setStartPos, self.startPos)
             self.setupParam(self.setEndHpr, self.endHpr)
             self.setupParam(self.setStartHpr, self.startHpr)
-        LerpNodePathInterval.setT(self, t, event)
+        LerpNodePathInterval.privDoEvent(self, t, event)
 
 class LerpHprScaleInterval(LerpNodePathInterval):
     def __init__(self, node, duration, hpr, scale,
@@ -194,15 +194,15 @@ class LerpHprScaleInterval(LerpNodePathInterval):
             if startScale != None:
                 self.setStartScale(startScale)
 
-    def setT(self, t, event = Interval.IVAL_NONE):
+    def privDoEvent(self, t, event):
         # This function is only used if Python functors were passed in
         # for some of the input parameters.
-        if self.paramSetup and event == Interval.IVAL_INIT:
+        if self.paramSetup and event == CInterval.ETInitialize:
             self.setupParam(self.setEndHpr, self.endHpr)
             self.setupParam(self.setStartHpr, self.startHpr)
             self.setupParam(self.setEndScale, self.endScale)
             self.setupParam(self.setStartScale, self.startScale)
-        LerpNodePathInterval.setT(self, t, event)
+        LerpNodePathInterval.privDoEvent(self, t, event)
 
 class LerpPosHprScaleInterval(LerpNodePathInterval):
     def __init__(self, node, duration, pos, hpr, scale,
@@ -231,17 +231,17 @@ class LerpPosHprScaleInterval(LerpNodePathInterval):
             if startScale != None:
                 self.setStartScale(startScale)
 
-    def setT(self, t, event = Interval.IVAL_NONE):
+    def privDoEvent(self, t, event):
         # This function is only used if Python functors were passed in
         # for some of the input parameters.
-        if self.paramSetup and event == Interval.IVAL_INIT:
+        if self.paramSetup and event == CInterval.ETInitialize:
             self.setupParam(self.setEndPos, self.endPos)
             self.setupParam(self.setStartPos, self.startPos)
             self.setupParam(self.setEndHpr, self.endHpr)
             self.setupParam(self.setStartHpr, self.startHpr)
             self.setupParam(self.setEndScale, self.endScale)
             self.setupParam(self.setStartScale, self.startScale)
-        LerpNodePathInterval.setT(self, t, event)
+        LerpNodePathInterval.privDoEvent(self, t, event)
 
 class LerpColorScaleInterval(LerpNodePathInterval):
     def __init__(self, node, duration, colorScale, startColorScale = None,
@@ -266,53 +266,6 @@ class LerpColorInterval(LerpNodePathInterval):
 # The remaining intervals defined in this module are the old-school
 # Python-based intervals.
 #
-
-class LerpInterval(Interval.Interval):
-    # create LerpInterval DirectNotify category
-    notify = directNotify.newCategory('LerpInterval')
-    # Class methods
-    def __init__(self, name, duration, functorFunc, blendType='noBlend'):
-        """__init__(name, duration, functorFunc, blendType)
-        """
-        # Record instance variables
-        self.lerp = None
-        self.functorFunc = functorFunc
-        self.blendType = self.getBlend(blendType)
-        # Initialize superclass
-        Interval.Interval.__init__(self, name, duration)
-
-    def updateFunc(self, t, event = Interval.IVAL_NONE):
-        """ updateFunc(t, event)
-        """
-        # Check to see if we need to create the lerp
-        if (event == Interval.IVAL_INIT):
-            self.lerp = Lerp(self.functorFunc(), self.duration, 
-                                  self.blendType)
-        # Make sure lerp exists
-        if (not self.lerp):
-            self.lerp = Lerp(self.functorFunc(), self.duration, 
-                                  self.blendType)
-        # Evaluate the lerp
-        self.lerp.setT(t)
-        # Print debug information
-        self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t))
-
-    def getBlend(self, blendType):
-        """__getBlend(self, string)
-        Return the C++ blend class corresponding to blendType string
-        """
-        if (blendType == "easeIn"):
-            return LerpBlendHelpers.easeIn
-        elif (blendType == "easeOut"):
-            return LerpBlendHelpers.easeOut
-        elif (blendType == "easeInOut"):
-            return LerpBlendHelpers.easeInOut
-        elif (blendType == "noBlend"):
-            return LerpBlendHelpers.noBlend
-        else:
-            raise Exception(
-                'Error: LerpInterval.__getBlend: Unknown blend type')
-
 
 class LerpFunctionInterval(Interval.Interval):
     """
@@ -344,9 +297,7 @@ class LerpFunctionInterval(Interval.Interval):
         # Initialize superclass
         Interval.Interval.__init__(self, name, duration)
 
-    def updateFunc(self, t, event = Interval.IVAL_NONE):
-        """ updateFunc(t, event)
-        """
+    def privStep(self, t):
         # Evaluate the function
         if (t >= self.duration):
             # Set to end value
@@ -362,6 +313,8 @@ class LerpFunctionInterval(Interval.Interval):
             apply(self.function, [data] + self.extraArgs)
         # Print debug information
         self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t))
+        self.state = CInterval.SStarted
+        self.currT = t
             
     def getBlend(self, blendType):
         """__getBlend(self, string)

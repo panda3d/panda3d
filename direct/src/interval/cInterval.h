@@ -65,25 +65,30 @@ PUBLISHED:
   };
 
   INLINE State get_state() const;
-
-  INLINE void set_t(double t, EventType event = ET_step);
+  INLINE bool is_stopped() const;
   INLINE double get_t() const;
 
   void setup_play(double start_time, double end_time, double play_rate);
+  void setup_resume();
   int step_play();
 
   // These functions control the actual playback of the interval.
   // Don't call them directly; they're intended to be called from a
   // supervising object, e.g. the Python start() .. finish()
   // interface.
-  virtual void initialize(double t);
-  virtual void instant();
-  virtual void step(double t);
-  virtual void finalize();
-  virtual void reverse_initialize(double t);
-  virtual void reverse_instant();
-  virtual void reverse_finalize();
-  virtual void interrupt();
+
+  // These cannot be declared private because they must be accessible
+  // Python, but the method names are prefixed with priv_ to remind
+  // you that you probably don't want to be using them directly.
+  void priv_do_event(double t, EventType event);
+  virtual void priv_initialize(double t);
+  virtual void priv_instant();
+  virtual void priv_step(double t);
+  virtual void priv_finalize();
+  virtual void priv_reverse_initialize(double t);
+  virtual void priv_reverse_instant();
+  virtual void priv_reverse_finalize();
+  virtual void priv_interrupt();
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
@@ -110,7 +115,6 @@ protected:
   bool _start_t_at_start;
   double _play_rate;
   int _loop_count;
-  bool _restart;
 
 private:
   bool _open_ended;

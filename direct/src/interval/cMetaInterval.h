@@ -74,14 +74,14 @@ PUBLISHED:
   INLINE CInterval *get_c_interval(int n) const;
   INLINE int get_ext_index(int n) const;
 
-  virtual void initialize(double t);
-  virtual void instant();
-  virtual void step(double t);
-  virtual void finalize();
-  virtual void reverse_initialize(double t);
-  virtual void reverse_instant();
-  virtual void reverse_finalize();
-  virtual void interrupt();
+  virtual void priv_initialize(double t);
+  virtual void priv_instant();
+  virtual void priv_step(double t);
+  virtual void priv_finalize();
+  virtual void priv_reverse_initialize(double t);
+  virtual void priv_reverse_instant();
+  virtual void priv_reverse_finalize();
+  virtual void priv_interrupt();
 
   INLINE bool is_event_ready();
   INLINE int get_event_index() const;
@@ -167,7 +167,7 @@ private:
   size_t _next_event_index;
 
   // This is the queue of events that have occurred due to a recent
-  // initialize(), step(), etc., but have not yet been serviced, due
+  // priv_initialize(), priv_step(), etc., but have not yet been serviced, due
   // to an embedded external (e.g. Python) interval that the scripting
   // language must service.  This queue should be considered precious,
   // and should never be arbitrarily flushed without servicing all of

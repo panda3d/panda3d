@@ -24,11 +24,11 @@ class MopathInterval(Interval.Interval):
         # Initialize superclass
         Interval.Interval.__init__(self, name, duration)
 
-    def updateFunc(self, t, event = Interval.IVAL_NONE):
+    def privStep(self, t):
         """ updateFunc(t, event)
             Go to time t
         """
         self.mopath.goTo(self.node, t)
-        # Print debug information
-        self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t))
+        self.state = CInterval.SStarted
+        self.currT = t
 

@@ -39,12 +39,11 @@ CInterval(const string &name, double duration, bool open_ended) :
 {
   _clock_start = 0.0;
   _start_t = 0.0;
-  _end_t = 0.0;
-  _start_t_at_start = false;
-  _end_t_at_end = false;
+  _end_t = _duration;
+  _start_t_at_start = true;
+  _end_t_at_end = true;
   _play_rate = 1.0;
   _loop_count = 0;
-  _restart = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -70,7 +69,7 @@ setup_play(double start_t, double end_t, double play_rate) {
 
   double duration = get_duration();
 
-  if (start_t < 0.0) {
+  if (start_t <= 0.0) {
     _start_t = 0.0;
     _start_t_at_start = true;
   } else if (start_t > duration) {
@@ -91,7 +90,25 @@ setup_play(double start_t, double end_t, double play_rate) {
   _clock_start = ClockObject::get_global_clock()->get_frame_time();
   _play_rate = play_rate;
   _loop_count = 0;
-  _restart = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CInterval::setup_resume
+//       Access: Published
+//  Description: Called to prepare the interval for restarting at the
+//               current point within the interval after an
+//               interruption.
+////////////////////////////////////////////////////////////////////
+void CInterval::
+setup_resume() {
+  double now = ClockObject::get_global_clock()->get_frame_time();
+  if (_play_rate > 0.0) {
+    _clock_start = now - ((get_t() - _start_t) / _play_rate);
+
+  } else if (_play_rate < 0.0) {
+    _clock_start = now - ((get_t() - _end_t) / _play_rate);
+  }
+  _loop_count = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -109,14 +126,17 @@ step_play() {
 
   if (_play_rate >= 0.0) {
     double t = (now - _clock_start) * _play_rate + _start_t;
+
+    if (_end_t_at_end) {
+      _end_t = get_duration();
+    }
     
     if (t < _end_t) {
       // In the middle of the interval, not a problem.
-      if (_restart) {
-        initialize(t);
-        _restart = false;
+      if (is_stopped()) {
+        priv_initialize(t);
       } else {
-        step(t);
+        priv_step(t);
       }
       
     } else {
@@ -124,20 +144,18 @@ step_play() {
       if (_end_t_at_end) {
         // Only finalize if the playback cycle includes the whole
         // interval.
-        if (_restart) {
+        if (is_stopped()) {
           if (get_open_ended() || _loop_count != 0) {
-            instant();
+            priv_instant();
           }
         } else {
-          finalize();
-          _restart = true;
+          priv_finalize();
         }
       } else {
-        if (_restart) {
-          initialize(_end_t);
-          _restart = false;
+        if (is_stopped()) {
+          priv_initialize(_end_t);
         } else {
-          step(_end_t);
+          priv_step(_end_t);
         }
       }
       
@@ -165,11 +183,10 @@ step_play() {
     
     if (t >= _start_t) {
       // In the middle of the interval, not a problem.
-      if (_restart) {
-        reverse_initialize(t);
-        _restart = false;
+      if (is_stopped()) {
+        priv_reverse_initialize(t);
       } else {
-        step(t);
+        priv_step(t);
       }
       
     } else {
@@ -177,20 +194,18 @@ step_play() {
       if (_start_t_at_start) {
         // Only finalize if the playback cycle includes the whole
         // interval.
-        if (_restart) {
+        if (is_stopped()) {
           if (get_open_ended() || _loop_count != 0) {
-            reverse_instant();
+            priv_reverse_instant();
           }
         } else {
-          reverse_finalize();
-          _restart = true;
+          priv_reverse_finalize();
         }
       } else {
-        if (_restart) {
-          reverse_initialize(_start_t);
-          _restart = false;
+        if (is_stopped()) {
+          priv_reverse_initialize(_start_t);
         } else {
-          step(_start_t);
+          priv_step(_start_t);
         }
       }
       
@@ -217,54 +232,100 @@ step_play() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CInterval::initialize
+//     Function: CInterval::priv_do_event
+//       Access: Published
+//  Description: Calls the appropriate event function indicated by the
+//               EventType.
+////////////////////////////////////////////////////////////////////
+void CInterval::
+priv_do_event(double t, EventType event) {
+  switch (event) {
+  case ET_initialize:
+    priv_initialize(t);
+    return;
+
+  case ET_instant:
+    priv_instant();
+    return;
+
+  case ET_step:
+    priv_step(t);
+    return;
+
+  case ET_finalize:
+    priv_finalize();
+    return;
+
+  case ET_reverse_initialize:
+    priv_reverse_initialize(t);
+    return;
+
+  case ET_reverse_instant:
+    priv_reverse_instant();
+    return;
+
+  case ET_reverse_finalize:
+    priv_reverse_finalize();
+    return;
+
+  case ET_interrupt:
+    priv_interrupt();
+    return;
+  }
+
+  interval_cat.warning()
+    << "Invalid event type: " << (int)event << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CInterval::priv_initialize
 //       Access: Published, Virtual
-//  Description: This replaces the first call to step(), and indicates
+//  Description: This replaces the first call to priv_step(), and indicates
 //               that the interval has just begun.  This may be
 //               overridden by derived classes that need to do some
 //               explicit initialization on the first call.
 ////////////////////////////////////////////////////////////////////
 void CInterval::
-initialize(double t) {
-  check_stopped("initialize");
+priv_initialize(double t) {
+  check_stopped("priv_initialize");
   recompute();
   _state = S_started;
-  step(t);
+  priv_step(t);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CInterval::instant
+//     Function: CInterval::priv_instant
 //       Access: Published, Virtual
-//  Description: This is called in lieu of initialize() .. step()
-//               .. finalize(), when everything is to happen within
+//  Description: This is called in lieu of priv_initialize() .. priv_step()
+//               .. priv_finalize(), when everything is to happen within
 //               one frame.  The interval should initialize itself,
 //               then leave itself in the final state.
 ////////////////////////////////////////////////////////////////////
 void CInterval::
-instant() {
-  check_stopped("instant");
+priv_instant() {
+  check_stopped("priv_instant");
   recompute();
   _state = S_started;
-  step(get_duration());
+  priv_step(get_duration());
   _state = S_final;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CInterval::step
+//     Function: CInterval::priv_step
 //       Access: Published, Virtual
 //  Description: Advances the time on the interval.  The time may
 //               either increase (the normal case) or decrease
 //               (e.g. if the interval is being played by a slider).
 ////////////////////////////////////////////////////////////////////
 void CInterval::
-step(double t) {
-  check_started("step");
+priv_step(double t) {
+  check_started("priv_step");
   _state = S_started;
   _curr_t = t;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CInterval::finalize
+//     Function: CInterval::priv_finalize
 //       Access: Published, Virtual
 //  Description: This is called to stop an interval, forcing it to
 //               whatever state it would be after it played all the
@@ -272,86 +333,79 @@ step(double t) {
 //               set_final_t().
 ////////////////////////////////////////////////////////////////////
 void CInterval::
-finalize() {
+priv_finalize() {
+  check_started("priv_step");
   double duration = get_duration();
-  if (_state == S_initial) {
-    initialize(duration);
-  }
-
-  step(duration);
+  priv_step(duration);
   _state = S_final;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CInterval::reverse_initialize
 //       Access: Published, Virtual
-//  Description: Similar to initialize(), but this is called when the
+//  Description: Similar to priv_initialize(), but this is called when the
 //               interval is being played backwards; it indicates that
 //               the interval should start at the finishing state and
 //               undo any intervening intervals.
 ////////////////////////////////////////////////////////////////////
 void CInterval::
-reverse_initialize(double t) {
-  check_stopped("reverse_initialize");
+priv_reverse_initialize(double t) {
+  check_stopped("priv_reverse_initialize");
   recompute();
   _state = S_started;
-  step(t);
+  priv_step(t);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CInterval::reverse_instant
 //       Access: Published, Virtual
-//  Description: This is called in lieu of reverse_initialize()
-//               .. step() .. reverse_finalize(), when everything is
+//  Description: This is called in lieu of priv_reverse_initialize()
+//               .. priv_step() .. priv_reverse_finalize(), when everything is
 //               to happen within one frame.  The interval should
 //               initialize itself, then leave itself in the initial
 //               state.
 ////////////////////////////////////////////////////////////////////
 void CInterval::
-reverse_instant() {
-  check_stopped("reverse_instant");
+priv_reverse_instant() {
+  check_stopped("priv_reverse_instant");
   recompute();
   _state = S_started;
-  step(0.0);
+  priv_step(0.0);
   _state = S_initial;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CInterval::reverse_finalize
 //       Access: Published, Virtual
-//  Description: Called generally following a reverse_initialize(),
+//  Description: Called generally following a priv_reverse_initialize(),
 //               this indicates the interval should set itself to the
 //               initial state.
 ////////////////////////////////////////////////////////////////////
 void CInterval::
-reverse_finalize() {
-  if (_state == S_initial) {
-    initialize(0.0);
-  }
-
-  step(0.0);
+priv_reverse_finalize() {
+  check_started("priv_reverse_finalize");
+  priv_step(0.0);
   _state = S_initial;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CInterval::interrupt
+//     Function: CInterval::priv_interrupt
 //       Access: Published, Virtual
 //  Description: This is called while the interval is playing to
 //               indicate that it is about to be interrupted; that is,
-//               step() will not be called for a length of time.  But
+//               priv_step() will not be called for a length of time.  But
 //               the interval should remain in its current state in
 //               anticipation of being eventually restarted when the
-//               calls to step() eventually resume.
+//               calls to priv_step() eventually resume.
 //
 //               The purpose of this function is to allow self-running
 //               intervals like sound intervals to stop the actual
 //               sound playback during the pause.
 ////////////////////////////////////////////////////////////////////
 void CInterval::
-interrupt() {
-  if (_state == S_started) {
-    _state = S_paused;
-  }
+priv_interrupt() {
+  check_started("priv_interrupt");
+  _state = S_paused;
 }
 
 ////////////////////////////////////////////////////////////////////

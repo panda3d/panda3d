@@ -45,32 +45,31 @@ class SoundInterval(Interval.Interval):
         # Initialize superclass
         Interval.Interval.__init__(self, name, duration)
 
-    def updateFunc(self, t, event = Interval.IVAL_NONE):
-        """ updateFunc(t, event)
-        Go to time t
-        """
-        # Update sound based on current time
-        if (t >= self.getDuration()):
-            # If end of sound reached, stop sound
-            if self.sound:
-                self.sound.stop()
-        elif (event == Interval.IVAL_INIT):
-            # IVAL_INIT event, start new sound
-            # If its within a 10th of a second of the start,
-            # start at the beginning
-            t1 = t + self.startTime
-            if (t1 < 0.1):
-                t1 = 0.0
-            if self.sound:
-                # Start sound
-                self.sound.setVolume(self.volume)
-                self.sound.setTime(t1)
-                self.sound.setLoop(self.loop)
-                self.sound.play()
+    def privInitialize(self, t):
+        # If its within a 10th of a second of the start,
+        # start at the beginning
+        t1 = t + self.startTime
+        if (t1 < 0.1):
+            t1 = 0.0
+        self.sound.setVolume(self.volume)
+        self.sound.setTime(t1)
+        self.sound.setLoop(self.loop)
+        self.sound.play()
+        self.state = CInterval.SStarted
+        self.currT = t1
 
-        # Print debug information
-        self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t))
-            
-    def interrupt(self):
-        if self.sound:
-            self.sound.stop()
+    def privStep(self, t):
+        if self.state == CInterval.SPaused:
+            # Restarting from a pause.
+            self.sound.play()
+        self.state = CInterval.SStarted
+        self.currT = t
+
+    def privFinalize(self):
+        self.sound.stop()
+        self.currT = self.getDuration()
+        self.state = CInterval.SFinal
+
+    def privInterrupt(self):
+        self.sound.stop()
+        self.state = CInterval.SPaused

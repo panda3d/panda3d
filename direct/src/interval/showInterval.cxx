@@ -43,13 +43,13 @@ ShowInterval(const NodePath &node, const string &name) :
 ////////////////////////////////////////////////////////////////////
 //     Function: ShowInterval::instant
 //       Access: Published, Virtual
-//  Description: This is called in lieu of initialize() .. step()
-//               .. finalize(), when everything is to happen within
+//  Description: This is called in lieu of priv_initialize() .. priv_step()
+//               .. priv_finalize(), when everything is to happen within
 //               one frame.  The interval should initialize itself,
 //               then leave itself in the final state.
 ////////////////////////////////////////////////////////////////////
 void ShowInterval::
-instant() {
+priv_instant() {
   check_stopped("instant");
   _node.show();
   _state = S_final;
@@ -58,14 +58,14 @@ instant() {
 ////////////////////////////////////////////////////////////////////
 //     Function: ShowInterval::reverse_instant
 //       Access: Published, Virtual
-//  Description: This is called in lieu of reverse_initialize()
-//               .. step() .. reverse_finalize(), when everything is
+//  Description: This is called in lieu of priv_reverse_initialize()
+//               .. priv_step() .. priv_reverse_finalize(), when everything is
 //               to happen within one frame.  The interval should
 //               initialize itself, then leave itself in the initial
 //               state.
 ////////////////////////////////////////////////////////////////////
 void ShowInterval::
-reverse_instant() {
+priv_reverse_instant() {
   check_stopped("instant");
   _node.hide();
   _state = S_initial;

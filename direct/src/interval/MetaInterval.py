@@ -272,66 +272,18 @@ class MetaInterval(CMetaInterval):
             self.popEvent()
             
             ival = self.pythonIvals[index]
-            if eventType == CInterval.ETStep:
-                ival.setT(t, Interval.IVAL_NONE)
+            ival.privDoEvent(t, eventType)
+            ival.privPostEvent()
 
-            elif eventType == CInterval.ETFinalize:
-                ival.setT(ival.getDuration(), Interval.IVAL_DONE)
-
-            elif eventType == CInterval.ETReverseFinalize:
-                ival.setT(0, Interval.IVAL_NONE)
-
-            elif eventType == CInterval.ETInitialize or \
-                 eventType == CInterval.ETReverseInitialize:
-                ival.setT(t, Interval.IVAL_INIT)
-
-            elif eventType == CInterval.ETInstant:
-                ival.setT(ival.getDuration(), Interval.IVAL_INIT)
-
-            elif eventType == CInterval.ETReverseInstant:
-                ival.setT(0, Interval.IVAL_INIT)
-
-            elif eventType == CInterval.ETInterrupt:
-                ival.interrupt()
-
-            else:
-                self.notify.error("Unhandled event type %s" % (eventType))
-
-    def stepPlay(self):
-        # This function overrides the function defined in the C++
-        # CInterval code that is called every frame while the interval
-        # is playing, to check for Python callbacks aftwards.
-        result = CMetaInterval.stepPlay(self)
-        self.__doPythonCallbacks()
-        return result
-
-    def setT(self, t, event = Interval.IVAL_NONE):
-        # This function overrides the C++ function to check for Python
-        # callbacks afterwards.
+    def privDoEvent(self, t, event):
+        # This function overrides the C++ function to initialize the
+        # intervals first if necessary.
         self.__updateIvals()
-        CMetaInterval.setT(self, t, event)
-        self.__doPythonCallbacks()
+        CMetaInterval.privDoEvent(self, t, event)
 
-    def interrupt(self):
-        # This function overrides the C++ function to check for Python
-        # callbacks afterwards.
-        self.__updateIvals()
-        CMetaInterval.interrupt(self)
+    def privPostEvent(self):
         self.__doPythonCallbacks()
-
-    def finish(self):
-        # This function overrides from the parent level to check for Python
-        # callbacks afterwards.
-        self.__updateIvals()
-        CMetaInterval.finish(self)
-        self.__doPythonCallbacks()
-
-    def setFinalT(self):
-        # This function overrides from the parent level to check for Python
-        # callbacks afterwards.
-        self.__updateIvals()
-        CMetaInterval.setFinalT(self)
-        self.__doPythonCallbacks()
+        CMetaInterval.privPostEvent(self)
 
     def setIntervalStartTime(self, *args, **kw):
         # This function overrides from the parent level to force it to

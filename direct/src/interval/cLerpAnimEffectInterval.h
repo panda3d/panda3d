@@ -44,7 +44,7 @@ PUBLISHED:
   INLINE void add_control(AnimControl *control, const string &name,
                           float begin_effect, float end_effect);
 
-  virtual void step(double t);
+  virtual void priv_step(double t);
 
   virtual void output(ostream &out) const;
 

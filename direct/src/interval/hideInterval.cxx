@@ -43,26 +43,26 @@ HideInterval(const NodePath &node, const string &name) :
 ////////////////////////////////////////////////////////////////////
 //     Function: HideInterval::instant
 //       Access: Published, Virtual
-//  Description: This is called in lieu of initialize() .. step()
-//               .. finalize(), when everything is to happen within
+//  Description: This is called in lieu of priv_initialize() .. priv_step()
+//               .. priv_finalize(), when everything is to happen within
 //               one frame.  The interval should initialize itself,
 //               then leave itself in the final state.
 ////////////////////////////////////////////////////////////////////
 void HideInterval::
-instant() {
+priv_instant() {
   _node.hide();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HideInterval::reverse_instant
 //       Access: Published, Virtual
-//  Description: This is called in lieu of reverse_initialize()
-//               .. step() .. reverse_finalize(), when everything is
+//  Description: This is called in lieu of priv_reverse_initialize()
+//               .. priv_step() .. priv_reverse_finalize(), when everything is
 //               to happen within one frame.  The interval should
 //               initialize itself, then leave itself in the initial
 //               state.
 ////////////////////////////////////////////////////////////////////
 void HideInterval::
-reverse_instant() {
+priv_reverse_instant() {
   _node.show();
 }

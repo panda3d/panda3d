@@ -4,6 +4,17 @@
     of the CInterval class
     """
 
+    def setT(self, t):
+        t = min(max(t, 0.0), self.getDuration())
+        state = self.getState()
+        if state == CInterval.SInitial:
+            self.privInitialize(t)
+        elif state == CInterval.SFinal:
+            self.privReverseInitialize(t)
+        else:
+            self.privStep(t)
+        self.privPostEvent()
+
     def start(self, t0 = 0.0, duration = None, scale = 1.0):
         if self.isPlaying():
             self.finish()
@@ -11,8 +22,9 @@
             self.setupPlay(t0, t0 + duration, scale)
         else:
             self.setupPlay(t0, -1, scale)
+        self.privPostEvent()
         self.__loop = 0
-        self.resume()
+        self.__spawnTask()
 
     def loop(self, t0 = 0.0, duration = None, scale = 1.0):
         self.start(t0, duration, scale)
@@ -20,35 +32,29 @@
         return
 
     def pause(self):
-        self.interrupt()
-        # Kill old task(s), including those from a similarly-named but
-        # different interval.
-        taskName = self.getName() + '-play'
-        oldTasks = taskMgr.getTasksNamed(taskName)
-        for task in oldTasks:
-            if hasattr(task, "interval"):
-                task.interval.interrupt()
-                taskMgr.remove(task)
+        if self.getState() == CInterval.SStarted:
+            self.privInterrupt()
+        self.privPostEvent()
+        self.__removeTask()
         return self.getT()
 
-    def resume(self):
-        # Spawn task
-        import Task
-        taskName = self.getName() + '-play'
-        task = Task.Task(self.__playTask)
-        task.interval = self
-        taskMgr.add(task, taskName)
-    
+    def resume(self, t0 = None):
+        if not hasattr(self, "_CInterval__loop"):
+            self.__loop = 0
+        if t0 != None:
+            self.setT(t0)
+        self.setupResume()
+        if not self.isPlaying():
+            self.__spawnTask()
+        
     def finish(self):
-        # Nowadays, finish() will implicitly set the interval to its
-        # terminal state, like setFinalT() used to.  Use pause()
-        # instead if you just want to leave the interval in its
-        # current state, whatever that may be.
-        self.pause()
-        self.finalize()
-        if hasattr(self, "setTHooks"):
-            for func in self.setTHooks:
-                func(self.getT())
+        state = self.getState()
+        if state == CInterval.SInitial:
+            self.privInstant()
+        elif state != CInterval.SFinal:
+            self.privFinalize()
+        self.privPostEvent()
+        self.__removeTask()
 
     def play(self, *args, **kw):
         self.start(*args, **kw)
@@ -59,23 +65,39 @@
     def setFinalT(self):
         self.finish()
 
-    def setT(self, t, event = ETStep):
-        # Overridden from the C++ layer.  We rename the C++ function
-        # in FFIRename to make this possible.
-        self.__cSetT(t, event)
+    def isPlaying(self):
+        return taskMgr.hasTaskNamed(self.getName() + '-play')
+
+    def privPostEvent(self):
+        # Call after calling any of the priv* methods to do any required
+        # Python finishing steps.
+        t = self.getT()
         if hasattr(self, "setTHooks"):
             for func in self.setTHooks:
                 func(t)
 
-    def isPlaying(self):
-        return taskMgr.hasTaskNamed(self.getName() + '-play')
+    def __spawnTask(self):
+        # Spawn task
+        import Task
+        taskName = self.getName() + '-play'
+        task = Task.Task(self.__playTask)
+        task.interval = self
+        taskMgr.add(task, taskName)
+
+    def __removeTask(self):
+        # Kill old task(s), including those from a similarly-named but
+        # different interval.
+        taskName = self.getName() + '-play'
+        oldTasks = taskMgr.getTasksNamed(taskName)
+        for task in oldTasks:
+            if hasattr(task, "interval"):
+                task.interval.privInterrupt()
+                taskMgr.remove(task)
 
     def __playTask(self, task):
         import Task
         loopCount = self.stepPlay()
-        if hasattr(self, "setTHooks"):
-            for func in self.setTHooks:
-                func(self.getT())
+        self.privPostEvent()
         if loopCount == 0 or self.__loop:
             return Task.cont
         else:
@@ -86,8 +108,7 @@
             Popup control panel for interval.
         """
         import TkGlobal
-        import fpformat
-        import string
+        import math
         # I moved this here because Toontown does not ship Tk
         from Tkinter import Toplevel, Frame, Button, LEFT, X
         import Pmw
@@ -96,40 +117,33 @@
             tl = Toplevel()
             tl.title('Interval Controls')
         outerFrame = Frame(tl)
+        def entryScaleCommand(t,s=self):
+            s.pause()
+            s.setT(t)
         self.es = es = EntryScale.EntryScale(
             outerFrame, text = self.getName(),
-            min = 0, max = string.atof(fpformat.fix(self.getDuration(), 2)),
-            command = lambda t, s = self: s.setT(t))
-        # So when you drag scale with mouse its like you started a playback
-        def onPress(s=self,es=es):
-            # Kill playback task
-            s.pause()
-            # INIT interval
-            s.setT(es.get(), CInterval.ETInitialize)
-        es.onPress = onPress
-        # To make sure you stop free running intervals
-        es.onRelease = lambda s=self: s.pause()
-        # To update scale and execute intervals with ETInitialize
-        def onReturn(s = self, es = es):
-            s.setT(es.get(), CInterval.ETInitialize)
-            s.pause()
-        es.onReturnRelease = onReturn
+            min = 0, max = math.floor(self.getDuration() * 100) / 100,
+            command = entryScaleCommand)
+        es.set(self.getT(), fCommand = 0)
         es.pack(expand = 1, fill = X)
         bf = Frame(outerFrame)
         # Jump to start and end
         def toStart(s=self, es=es):
-            s.setT(0.0, CInterval.ETInitialize)
             s.pause()
+            s.setT(0.0)
         def toEnd(s=self):
-            s.setT(s.getDuration(), CInterval.ETInitialize)
             s.pause()
+            s.setT(s.getDuration())
         jumpToStart = Button(bf, text = '<<', command = toStart)
         # Stop/play buttons
+        def doPlay(s=self, es=es):
+            s.resume(es.get())
+                       
         stop = Button(bf, text = 'Stop',
                       command = lambda s=self: s.pause())
         play = Button(
             bf, text = 'Play',
-            command = lambda s=self, es=es: s.start(es.get()))
+            command = doPlay)
         jumpToEnd = Button(bf, text = '>>', command = toEnd)
         jumpToStart.pack(side = LEFT, expand = 1, fill = X)
         play.pack(side = LEFT, expand = 1, fill = X)
@@ -148,6 +162,3 @@
             if u in s.setTHooks:
                 s.setTHooks.remove(u)
         tl.bind('<Destroy>', onDestroy)
-
-        
-        

@@ -95,29 +95,29 @@ class ActorInterval(Interval.Interval):
             
         return frame
 
-    def updateFunc(self, t, event=Interval.IVAL_NONE):
-        """ updateFunc(t, event)
-            Go to time t
-        """
-        if (self.actor.isEmpty()):
-            self.notify.warning('updateFunc() - %s empty actor!' % self.name)
-            return
-        # Update animation based upon current time
-        # Pose or stop anim
-        if (t >= self.duration):
-            self.actor.stop(self.animName)
-            frame = self.goToT(self.duration)
-        elif self.loopAnim == 1:
-            if event == Interval.IVAL_INIT:
-                # Pose anim
-                self.goToT(t)
-                # And start loop, restart flag says continue from current frame
-                self.actor.loop(self.animName, restart=0)
+    def privInitialize(self, t):
+        self.state = CInterval.SStarted
+        self.goToT(t)
+        if self.loopAnim:
+            self.actor.loop(self.animName, restart = 0)
+        self.currT = t
+
+    def privFinalize(self):
+        if self.loopAnim:
+            self.actor.stop()
         else:
-            # Pose anim
+            self.goToT(self.getDuration())
+        self.currT = self.getDuration()
+        self.state = CInterval.SFinal
+            
+    def privStep(self, t):
+        if not self.loopAnim:
             self.goToT(t)
 
-    def interrupt(self):
+        self.state = CInterval.SStarted
+        self.currT = t
+
+    def privInterrupt(self):
         if self.loopAnim:
             self.actor.stop
         

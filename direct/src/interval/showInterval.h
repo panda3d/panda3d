@@ -31,8 +31,8 @@ class EXPCL_DIRECT ShowInterval : public CInterval {
 PUBLISHED:
   ShowInterval(const NodePath &node, const string &name = string());
 
-  virtual void instant();
-  virtual void reverse_instant();
+  virtual void priv_instant();
+  virtual void priv_reverse_instant();
 
 private:
   NodePath _node;

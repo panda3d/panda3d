@@ -323,14 +323,14 @@ get_interval_end_time(const string &name) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CMetaInterval::initialize
 //       Access: Published, Virtual
-//  Description: This replaces the first call to step(), and indicates
+//  Description: This replaces the first call to priv_step(), and indicates
 //               that the interval has just begun.  This may be
 //               overridden by derived classes that need to do some
 //               explicit initialization on the first call.
 ////////////////////////////////////////////////////////////////////
 void CMetaInterval::
-initialize(double t) {
-  check_stopped("initialize");
+priv_initialize(double t) {
+  check_stopped("priv_initialize");
   // It may be tempting to flush the event_queue here, but don't do
   // it.  Those are events that must still be serviced from some
   // previous interval operation.  Throwing them away would be a
@@ -361,14 +361,14 @@ initialize(double t) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CMetaInterval::instant
 //       Access: Published, Virtual
-//  Description: This is called in lieu of initialize() .. step()
-//               .. finalize(), when everything is to happen within
+//  Description: This is called in lieu of priv_initialize() .. priv_step()
+//               .. priv_finalize(), when everything is to happen within
 //               one frame.  The interval should initialize itself,
 //               then leave itself in the final state.
 ////////////////////////////////////////////////////////////////////
 void CMetaInterval::
-instant() {
-  check_stopped("instant");
+priv_instant() {
+  check_stopped("priv_instant");
   recompute();
   _active.clear();
 
@@ -395,8 +395,8 @@ instant() {
 //               (e.g. if the interval is being played by a slider).
 ////////////////////////////////////////////////////////////////////
 void CMetaInterval::
-step(double t) {
-  check_started("step");
+priv_step(double t) {
+  check_started("priv_step");
   int now = double_to_int_time(t);
 
   // Now look for events between the last time we ran and the current
@@ -438,14 +438,14 @@ step(double t) {
 //     Function: CMetaInterval::finalize
 //       Access: Published, Virtual
 //  Description: This is called when an interval is interrupted.  It
-//               should advance the time as if step() were called, and
+//               should advance the time as if priv_step() were called, and
 //               also perform whatever cleanup might be required.
 ////////////////////////////////////////////////////////////////////
 void CMetaInterval::
-finalize() {
+priv_finalize() {
   double duration = get_duration();
   if (_state == S_initial) {
-    initialize(duration);
+    priv_initialize(duration);
   }
 
   // Do all remaining events.
@@ -465,14 +465,14 @@ finalize() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CMetaInterval::reverse_initialize
 //       Access: Published, Virtual
-//  Description: Similar to initialize(), but this is called when the
+//  Description: Similar to priv_initialize(), but this is called when the
 //               interval is being played backwards; it indicates that
 //               the interval should start at the finishing state and
 //               undo any intervening intervals.
 ////////////////////////////////////////////////////////////////////
 void CMetaInterval::
-reverse_initialize(double t) {
-  check_stopped("reverse_initialize");
+priv_reverse_initialize(double t) {
+  check_stopped("priv_reverse_initialize");
   // It may be tempting to flush the event_queue here, but don't do
   // it.  Those are events that must still be serviced from some
   // previous interval operation.  Throwing them away would be a
@@ -503,15 +503,15 @@ reverse_initialize(double t) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CMetaInterval::reverse_instant
 //       Access: Published, Virtual
-//  Description: This is called in lieu of reverse_initialize()
-//               .. step() .. reverse_finalize(), when everything is
+//  Description: This is called in lieu of priv_reverse_initialize()
+//               .. priv_step() .. priv_reverse_finalize(), when everything is
 //               to happen within one frame.  The interval should
 //               initialize itself, then leave itself in the initial
 //               state.
 ////////////////////////////////////////////////////////////////////
 void CMetaInterval::
-reverse_instant() {
-  check_stopped("reverse_instant");
+priv_reverse_instant() {
+  check_stopped("priv_reverse_instant");
   recompute();
   _active.clear();
 
@@ -533,14 +533,14 @@ reverse_instant() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CMetaInterval::reverse_finalize
 //       Access: Published, Virtual
-//  Description: Called generally following a reverse_initialize(),
+//  Description: Called generally following a priv_reverse_initialize(),
 //               this indicates the interval should set itself to the
 //               initial state.
 ////////////////////////////////////////////////////////////////////
 void CMetaInterval::
-reverse_finalize() {
+priv_reverse_finalize() {
   if (_state == S_initial) {
-    initialize(0.0);
+    priv_initialize(0.0);
   }
 
   // Do all remaining events at the beginning.
@@ -562,17 +562,17 @@ reverse_finalize() {
 //       Access: Published, Virtual
 //  Description: This is called while the interval is playing to
 //               indicate that it is about to be interrupted; that is,
-//               step() will not be called for a length of time.  But
+//               priv_step() will not be called for a length of time.  But
 //               the interval should remain in its current state in
 //               anticipation of being eventually restarted when the
-//               calls to step() eventually resume.
+//               calls to priv_step() eventually resume.
 //
 //               The purpose of this function is to allow self-running
 //               intervals like sound intervals to stop the actual
 //               sound playback during the pause.
 ////////////////////////////////////////////////////////////////////
 void CMetaInterval::
-interrupt() {
+priv_interrupt() {
   ActiveEvents::iterator ai;
   for (ai = _active.begin(); ai != _active.end(); ++ai) {
     PlaybackEvent *event = (*ai);
@@ -744,8 +744,8 @@ do_event_forward(CMetaInterval::PlaybackEvent *event,
 //       Access: Private
 //  Description: After walking through the event list and adding a
 //               bunch of new events to new_active, finished up by
-//               calling step() on all of the events still in _active
-//               and initialize() on all the events in new_active,
+//               calling priv_step() on all of the events still in _active
+//               and priv_initialize() on all the events in new_active,
 //               then copying the events from new_active to active.
 ////////////////////////////////////////////////////////////////////
 void CMetaInterval::
@@ -824,8 +824,8 @@ do_event_reverse(CMetaInterval::PlaybackEvent *event,
 //       Access: Private
 //  Description: After walking through the event list and adding a
 //               bunch of new events to new_active, finishes up by
-//               calling step() on all of the events still in _active
-//               and reverse_initialize() on all the events in
+//               calling priv_step() on all of the events still in _active
+//               and priv_reverse_initialize() on all the events in
 //               new_active, then copying the events from new_active
 //               to active.
 ////////////////////////////////////////////////////////////////////
@@ -856,8 +856,8 @@ finish_events_reverse(int now, CMetaInterval::ActiveEvents &new_active) {
 //
 //               is_initial is only relevant for event types
 //               ET_instant or ET_reverse_instant, and indicates
-//               whether we are in the initialize() (or
-//               reverse_initialize()) call, and should therefore only
+//               whether we are in the priv_initialize() (or
+//               priv_reverse_initialize()) call, and should therefore only
 //               invoke open-ended intervals.
 //
 //               time is only relevant for ET_initialize,
@@ -873,7 +873,7 @@ enqueue_event(int n, CInterval::EventType event_type, bool is_initial, int time)
         (event_type == ET_instant || event_type == ET_reverse_instant) &&
         !def._c_interval->get_open_ended()) {
       // Ignore a non-open-ended interval that we skipped completely
-      // past on initialize().
+      // past on priv_initialize().
       return;
     } else {
       if (_event_queue.empty()) {
@@ -881,7 +881,7 @@ enqueue_event(int n, CInterval::EventType event_type, bool is_initial, int time)
         // interval immediately.  We only need to defer it if there
         // are external (e.g. Python) intervals in the queue that need
         // to be processed first.
-        def._c_interval->set_t(int_to_double_time(time), event_type);
+        def._c_interval->priv_do_event(int_to_double_time(time), event_type);
         return;
       }
     }
@@ -892,7 +892,7 @@ enqueue_event(int n, CInterval::EventType event_type, bool is_initial, int time)
         (event_type == ET_instant || event_type == ET_reverse_instant) &&
         !def._ext_open_ended) {
       // Ignore a non-open-ended interval that we skipped completely
-      // past on initialize().
+      // past on priv_initialize().
       return;
     }
     break;
@@ -925,7 +925,7 @@ service_event_queue() {
     switch (def._type) {
     case DT_c_interval:
       // Handle the C++ event.
-      def._c_interval->set_t(int_to_double_time(entry._time), entry._event_type);
+      def._c_interval->priv_do_event(int_to_double_time(entry._time), entry._event_type);
       break;
 
     case DT_ext_index:

@@ -60,7 +60,7 @@ set_start_pos(const LVecBase3f &pos) {
 //       Access: Published
 //  Description: Indicates that the position of the node should be
 //               lerped, and specifies the final position of the node.
-//               This should be called before initialize().  If this
+//               This should be called before priv_initialize().  If this
 //               is not called, the node's position will not be
 //               affected by the lerp.
 ////////////////////////////////////////////////////////////////////
@@ -90,7 +90,7 @@ set_start_hpr(const LVecBase3f &hpr) {
 //       Access: Published
 //  Description: Indicates that the rotation of the node should be
 //               lerped, and specifies the final rotation of the node.
-//               This should be called before initialize().  If this
+//               This should be called before priv_initialize().  If this
 //               is not called, the node's rotation will not be
 //               affected by the lerp.
 ////////////////////////////////////////////////////////////////////
@@ -134,7 +134,7 @@ set_start_scale(float scale) {
 //       Access: Published
 //  Description: Indicates that the scale of the node should be
 //               lerped, and specifies the final scale of the node.
-//               This should be called before initialize().  If this
+//               This should be called before priv_initialize().  If this
 //               is not called, the node's scale will not be
 //               affected by the lerp.
 ////////////////////////////////////////////////////////////////////
@@ -149,7 +149,7 @@ set_end_scale(const LVecBase3f &scale) {
 //       Access: Published
 //  Description: Indicates that the scale of the node should be
 //               lerped, and specifies the final scale of the node.
-//               This should be called before initialize().  If this
+//               This should be called before priv_initialize().  If this
 //               is not called, the node's scale will not be
 //               affected by the lerp.
 ////////////////////////////////////////////////////////////////////
@@ -178,7 +178,7 @@ set_start_color(const LVecBase4f &color) {
 //       Access: Published
 //  Description: Indicates that the color of the node should be
 //               lerped, and specifies the final color of the node.
-//               This should be called before initialize().  If this
+//               This should be called before priv_initialize().  If this
 //               is not called, the node's color will not be
 //               affected by the lerp.
 ////////////////////////////////////////////////////////////////////
@@ -208,7 +208,7 @@ set_start_color_scale(const LVecBase4f &color_scale) {
 //       Access: Published
 //  Description: Indicates that the color scale of the node should be
 //               lerped, and specifies the final color scale of the node.
-//               This should be called before initialize().  If this
+//               This should be called before priv_initialize().  If this
 //               is not called, the node's color scale will not be
 //               affected by the lerp.
 ////////////////////////////////////////////////////////////////////
