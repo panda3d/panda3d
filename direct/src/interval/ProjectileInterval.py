@@ -172,7 +172,7 @@ class ProjectileInterval(Interval):
              (.5 * self.zAcc * t * t)))
 
     def privStep(self, t):
-        self.node.setPos(self.__calcPos(t))
+        self.node.setFluidPos(self.__calcPos(t))
         Interval.privStep(self, t)
 
 """
