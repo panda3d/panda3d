@@ -8,7 +8,7 @@
 #define BUILDING_DLL BUILDING_DTOOLCONFIG
 
 #define COMPONENT_LIBS interrogatedb dconfig
-#define OTHER_LIBS dtool:m
+#define LOCAL_LIBS dtoolutil dtoolbase
 
 #begin metalib_target
   #define TARGET dtoolconfig
