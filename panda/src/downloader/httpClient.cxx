@@ -33,6 +33,11 @@
 #include <openssl/err.h>
 #endif
 
+// Windows may define this macro inappropriately.
+#ifdef X509_NAME
+#undef X509_NAME
+#endif
+
 bool HTTPClient::_ssl_initialized = false;
 
 // This is created once and never freed.
