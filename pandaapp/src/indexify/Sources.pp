@@ -1,3 +1,5 @@
+#define BUILD_DIRECTORY $[HAVE_FREETYPE]
+
 #begin bin_target
   #define USE_PACKAGES freetype
 
