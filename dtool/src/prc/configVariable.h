@@ -47,7 +47,7 @@ PUBLISHED:
 
   INLINE const ConfigDeclaration *get_default_value() const;
 
-  INLINE string get_string_value() const;
+  INLINE const string &get_string_value() const;
   INLINE void set_string_value(const string &value);
 
   INLINE int get_num_words() const;

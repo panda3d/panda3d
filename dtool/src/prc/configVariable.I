@@ -84,7 +84,7 @@ get_default_value() const {
 //  Description: Returns the toplevel value of the variable, formatted
 //               as a string.
 ////////////////////////////////////////////////////////////////////
-INLINE string ConfigVariable::
+INLINE const string &ConfigVariable::
 get_string_value() const {
   const ConfigDeclaration *decl = _core->get_declaration(0);
   return decl->get_string_value();

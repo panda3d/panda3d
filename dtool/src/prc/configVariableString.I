@@ -59,18 +59,49 @@ operator = (const string &value) {
 //  Description: Returns the variable's value.
 ////////////////////////////////////////////////////////////////////
 INLINE ConfigVariableString::
-operator string () const {
+operator const string & () const {
   return get_value();
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableString::c_str
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE const char *ConfigVariableString::
+c_str() const {
+  return get_value().c_str();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableString::empty
-//       Access: Published
-//  Description: Returns true if the string is empty, false otherwise.
+//       Access: Public
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigVariableString::
 empty() const {
   return get_value().empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableString::length
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE size_t ConfigVariableString::
+length() const {
+  return get_value().length();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableString::Indexing operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE char ConfigVariableString::
+operator [] (int n) const {
+  assert(n >= 0 && n < (int)length());
+  return get_value()[n];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -118,7 +149,7 @@ set_value(const string &value) {
 //       Access: Published
 //  Description: Returns the variable's value.
 ////////////////////////////////////////////////////////////////////
-INLINE string ConfigVariableString::
+INLINE const string &ConfigVariableString::
 get_value() const {
   return get_string_value();
 }

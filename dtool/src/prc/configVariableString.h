@@ -34,8 +34,14 @@ PUBLISHED:
                               const string &description = string(), int flags = 0);
 
   INLINE void operator = (const string &value);
-  INLINE operator string () const;
+  INLINE operator const string & () const;
+
+  // These methods help the ConfigVariableString act like a C++ string
+  // object.
+  INLINE const char *c_str() const;
   INLINE bool empty() const;
+  INLINE size_t length() const;
+  INLINE char operator [] (int n) const;
 
   // Comparison operators are handy.
   INLINE bool operator == (const string &other) const;
@@ -43,7 +49,7 @@ PUBLISHED:
   INLINE bool operator < (const string &other) const;
 
   INLINE void set_value(const string &value);
-  INLINE string get_value() const;
+  INLINE const string &get_value() const;
   INLINE string get_default_value() const;
 
   INLINE string get_word(int n) const;
