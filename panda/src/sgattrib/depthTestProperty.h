@@ -8,13 +8,16 @@
 
 #include <pandabase.h>
 
+class Datagram;
+class DatagramIterator;
+
 ////////////////////////////////////////////////////////////////////
 // 	 Class : DepthTestProperty
 // Description : This defines the types of depth testing we can
 //               enable.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DepthTestProperty {
-public:
+PUBLISHED:
   enum Mode {
     M_none,             // No depth test; may still write to depth buffer.
     M_never,            // Never draw.
@@ -28,7 +31,7 @@ public:
   };
 
 public:
-  INLINE DepthTestProperty(Mode mode);
+  INLINE DepthTestProperty(Mode mode = M_none);
 
   INLINE void set_mode(Mode mode);
   INLINE Mode get_mode() const;
@@ -36,6 +39,10 @@ public:
   INLINE int compare_to(const DepthTestProperty &other) const;
 
   void output(ostream &out) const;
+
+public:
+  void write_datagram(Datagram &destination);
+  void read_datagram(DatagramIterator &source);
 
 private:
   Mode _mode;

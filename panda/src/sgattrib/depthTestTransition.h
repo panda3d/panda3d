@@ -21,22 +21,33 @@
 //               DepthWriteTransition.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DepthTestTransition : public OnTransition {
-public:
+PUBLISHED:
   INLINE DepthTestTransition(DepthTestProperty::Mode mode);
 
   INLINE void set_mode(DepthTestProperty::Mode mode);
   INLINE DepthTestProperty::Mode get_mode() const;
-  
+
+public:  
   virtual NodeTransition *make_copy() const;
   virtual NodeAttribute *make_attrib() const;
 
 protected:
+  INLINE DepthTestTransition();
   virtual void set_value_from(const OnTransition *other);
   virtual int compare_values(const OnTransition *other) const;
   virtual void output_value(ostream &out) const;
   virtual void write_value(ostream &out, int indent_level) const;
 
   DepthTestProperty _value;
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &me);  
+
+  static TypedWriteable *make_DepthTestTransition(const FactoryParams &params);
+
+protected:
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
   virtual TypeHandle get_type() const {

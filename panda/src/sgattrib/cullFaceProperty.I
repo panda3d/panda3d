@@ -15,20 +15,6 @@ CullFaceProperty(Mode mode) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullFaceProperty::Constructor
-//       Access: Public
-//  Description: This should only be called in the Protected 
-//               constructor of CullFaceTransition.  It is made 
-//               public, only for that to access, and is necessary
-//               for creating an object in make_CullFaceTransition
-//               before any information has been read
-////////////////////////////////////////////////////////////////////
-INLINE CullFaceProperty::
-CullFaceProperty(void)
-{
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CullFaceProperty::set_mode
 //       Access: Public
 //  Description: 

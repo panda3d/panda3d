@@ -41,6 +41,7 @@
 #include <directRenderTransition.h>
 #include <pruneTransition.h>
 #include <depthWriteTransition.h>
+#include <depthTestTransition.h>
 #include <animBundleNode.h>
 #include <character.h>
 #include <notify.h>
@@ -898,33 +899,42 @@ setup_bucket(BuilderBucket &bucket, NamedNode *parent,
 
   // Assign the appropriate properties to the bucket.
 
-  // The three "alpha mode"-associated properties--alpha mode, draw
-  // order, and bin--can be defined directly at the primitive, at a
-  // group above the primitive, or an a texture applied to the
-  // primitive.  The EggNode::determine_*() functions can find the
-  // right pointer to the level at which this is actually defined for
-  // a given primitive.
-  EggAlphaMode::AlphaMode am = EggAlphaMode::AM_unspecified;
+  // The various EggRenderMode properties can be defined directly at
+  // the primitive, at a group above the primitive, or an a texture
+  // applied to the primitive.  The EggNode::determine_*() functions
+  // can find the right pointer to the level at which this is actually
+  // defined for a given primitive.
+  EggRenderMode::AlphaMode am = EggRenderMode::AM_unspecified;
+  EggRenderMode::DepthWriteMode dwm = EggRenderMode::DWM_unspecified;
+  EggRenderMode::DepthTestMode dtm = EggRenderMode::DTM_unspecified;
   bool implicit_alpha = false;
   bool has_draw_order = false;
   int draw_order = 0;
   bool has_bin = false;
   string bin;
 
-  EggAlphaMode *egg_alpha;
-  egg_alpha = egg_prim->determine_alpha_mode();
-  if (egg_alpha != (EggAlphaMode *)NULL) {
-    am = egg_alpha->get_alpha_mode();
+  EggRenderMode *render_mode;
+  render_mode = egg_prim->determine_alpha_mode();
+  if (render_mode != (EggRenderMode *)NULL) {
+    am = render_mode->get_alpha_mode();
   }
-  egg_alpha = egg_prim->determine_draw_order();
-  if (egg_alpha != (EggAlphaMode *)NULL) {
+  render_mode = egg_prim->determine_depth_write_mode();
+  if (render_mode != (EggRenderMode *)NULL) {
+    dwm = render_mode->get_depth_write_mode();
+  }
+  render_mode = egg_prim->determine_depth_test_mode();
+  if (render_mode != (EggRenderMode *)NULL) {
+    dtm = render_mode->get_depth_test_mode();
+  }
+  render_mode = egg_prim->determine_draw_order();
+  if (render_mode != (EggRenderMode *)NULL) {
     has_draw_order = true;
-    draw_order = egg_alpha->get_draw_order();
+    draw_order = render_mode->get_draw_order();
   }
-  egg_alpha = egg_prim->determine_bin();
-  if (egg_alpha != (EggAlphaMode *)NULL) {
+  render_mode = egg_prim->determine_bin();
+  if (render_mode != (EggRenderMode *)NULL) {
     has_bin = true;
-    bin = egg_alpha->get_bin();
+    bin = render_mode->get_bin();
   }
 
   bucket._trans.set_transition(new TextureTransition(TextureTransition::off()));
@@ -939,7 +949,7 @@ setup_bucket(BuilderBucket &bucket, NamedNode *parent,
       // If neither the primitive nor the texture specified an alpha
       // mode, assume it should be alpha'ed if the texture has an
       // alpha channel.
-      if (am == EggAlphaMode::AM_unspecified) {
+      if (am == EggRenderMode::AM_unspecified) {
 	Texture *tex = def._texture->get_texture();
 	nassertv(tex != (Texture *)NULL);
 	int num_components = tex->_pbuffer->get_num_components();
@@ -952,7 +962,7 @@ setup_bucket(BuilderBucket &bucket, NamedNode *parent,
 
   // Also check the color of the primitive to see if we should assume
   // alpha based on the alpha values specified in the egg file.
-  if (am == EggAlphaMode::AM_unspecified) {
+  if (am == EggRenderMode::AM_unspecified) {
     if (egg_prim->has_color()) {
       if (egg_prim->get_color()[3] != 1.0) {
 	implicit_alpha = true;
@@ -970,31 +980,57 @@ setup_bucket(BuilderBucket &bucket, NamedNode *parent,
     }
     
     if (implicit_alpha) {
-      am = EggAlphaMode::AM_on;
+      am = EggRenderMode::AM_on;
     }
   }
 
   switch (am) {
-  case EggAlphaMode::AM_on:
-  case EggAlphaMode::AM_blend:
+  case EggRenderMode::AM_on:
+  case EggRenderMode::AM_blend:
     bucket._trans.set_transition(new TransparencyTransition(TransparencyProperty::M_alpha));
     break;
 
-  case EggAlphaMode::AM_blend_no_occlude:
+  case EggRenderMode::AM_blend_no_occlude:
     bucket._trans.set_transition(new TransparencyTransition(TransparencyProperty::M_alpha));
     bucket._trans.set_transition(new DepthWriteTransition(DepthWriteTransition::off()));
     break;
 
-  case EggAlphaMode::AM_ms:
+  case EggRenderMode::AM_ms:
     bucket._trans.set_transition(new TransparencyTransition(TransparencyProperty::M_multisample));
     break;
 
-  case EggAlphaMode::AM_ms_mask:
+  case EggRenderMode::AM_ms_mask:
     bucket._trans.set_transition(new TransparencyTransition(TransparencyProperty::M_multisample_mask));
     break;
 
   default:
     //    bucket._trans.set_transition(new TransparencyTransition(TransparencyProperty::M_none));
+    break;
+  }
+
+  switch (dwm) {
+  case EggRenderMode::DWM_on:
+    bucket._trans.set_transition(new DepthWriteTransition);
+    break;
+
+  case EggRenderMode::DWM_off:
+    bucket._trans.set_transition(new DepthWriteTransition(DepthWriteTransition::off()));
+    break;
+
+  default:
+    break;
+  }
+
+  switch (dtm) {
+  case EggRenderMode::DTM_on:
+    bucket._trans.set_transition(new DepthTestTransition(DepthTestProperty::M_less));
+    break;
+
+  case EggRenderMode::DTM_off:
+    bucket._trans.set_transition(new DepthTestTransition(DepthTestProperty::M_none));
+    break;
+
+  default:
     break;
   }
 

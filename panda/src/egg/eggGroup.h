@@ -9,7 +9,7 @@
 #include <pandabase.h>
 
 #include "eggGroupNode.h"
-#include "eggAlphaMode.h"
+#include "eggRenderMode.h"
 #include "eggVertex.h"
 #include "eggSwitchCondition.h"
 
@@ -21,7 +21,7 @@
 // Description : The main glue of the egg hierarchy, this corresponds
 //               to the <Group>, <Instance>, and <Joint> type nodes.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEGG EggGroup : public EggGroupNode, public EggAlphaMode {
+class EXPCL_PANDAEGG EggGroup : public EggGroupNode, public EggRenderMode {
 public:
   typedef map<PT(EggVertex), double> VertexRef;
 
@@ -77,9 +77,11 @@ public:
   virtual void write(ostream &out, int indent_level) const;
   bool parse_egg(const string &egg_syntax);
 
-  virtual EggAlphaMode *determine_alpha_mode();
-  virtual EggAlphaMode *determine_draw_order();
-  virtual EggAlphaMode *determine_bin();
+  virtual EggRenderMode *determine_alpha_mode();
+  virtual EggRenderMode *determine_depth_write_mode();
+  virtual EggRenderMode *determine_depth_test_mode();
+  virtual EggRenderMode *determine_draw_order();
+  virtual EggRenderMode *determine_bin();
 
   void set_group_type(GroupType type);
   INLINE GroupType get_group_type() const;
@@ -224,10 +226,10 @@ public:
   }
   static void init_type() {
     EggGroupNode::init_type();
-    EggAlphaMode::init_type();
+    EggRenderMode::init_type();
     register_type(_type_handle, "EggGroup",
                   EggGroupNode::get_class_type(),
-		  EggAlphaMode::get_class_type());
+		  EggRenderMode::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

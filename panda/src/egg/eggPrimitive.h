@@ -13,7 +13,7 @@
 #include "eggVertex.h"
 #include "eggTexture.h"
 #include "eggMaterial.h"
-#include "eggAlphaMode.h"
+#include "eggRenderMode.h"
 #include <pointerTo.h>
 #include <vector>
 
@@ -33,7 +33,7 @@ class EggVertexPool;
 //               the same vertex pool.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggPrimitive : public EggNode, public EggAttributes,
-		     public EggAlphaMode
+		     public EggRenderMode
 {
 
   // This is a bit of private interface stuff that must be here as a
@@ -51,9 +51,11 @@ public:
   INLINE EggPrimitive &operator = (const EggPrimitive &copy);
   INLINE ~EggPrimitive();
 
-  virtual EggAlphaMode *determine_alpha_mode();
-  virtual EggAlphaMode *determine_draw_order();
-  virtual EggAlphaMode *determine_bin();
+  virtual EggRenderMode *determine_alpha_mode();
+  virtual EggRenderMode *determine_depth_write_mode();
+  virtual EggRenderMode *determine_depth_test_mode();
+  virtual EggRenderMode *determine_draw_order();
+  virtual EggRenderMode *determine_bin();
 
   INLINE void set_texture(PT(EggTexture) texture);
   INLINE void clear_texture();
@@ -154,11 +156,11 @@ public:
   static void init_type() {
     EggNode::init_type();
     EggAttributes::init_type();
-    EggAlphaMode::get_class_type();
+    EggRenderMode::get_class_type();
     register_type(_type_handle, "EggPrimitive",
                   EggNode::get_class_type(),
                   EggAttributes::get_class_type(),
-		  EggAlphaMode::get_class_type());
+		  EggRenderMode::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

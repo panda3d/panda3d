@@ -27,8 +27,7 @@ public:
   };
 
 public:
-  INLINE CullFaceProperty(Mode mode);
-  INLINE CullFaceProperty(void);
+  INLINE CullFaceProperty(Mode mode = M_cull_none);
 
   INLINE void set_mode(Mode mode);
   INLINE Mode get_mode() const;

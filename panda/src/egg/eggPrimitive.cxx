@@ -19,10 +19,10 @@ TypeHandle EggPrimitive::_type_handle;
 //  Description: Walks back up the hierarchy, looking for an EggPrimitive
 //               or EggPrimitive or some such object at this level or
 //               above this primitive that has an alpha_mode other than
-//               AM_unspecified.  Returns a valid EggAlphaMode pointer
+//               AM_unspecified.  Returns a valid EggRenderMode pointer
 //               if one is found, or NULL otherwise.
 ////////////////////////////////////////////////////////////////////
-EggAlphaMode *EggPrimitive::
+EggRenderMode *EggPrimitive::
 determine_alpha_mode() {
   if (get_alpha_mode() != AM_unspecified) {
     return this;
@@ -34,15 +34,57 @@ determine_alpha_mode() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::determine_depth_write_mode
+//       Access: Public, Virtual
+//  Description: Walks back up the hierarchy, looking for an EggGroup
+//               or EggPrimitive or some such object at this level or
+//               above this node that has a depth_write_mode other than
+//               DWM_unspecified.  Returns a valid EggRenderMode pointer
+//               if one is found, or NULL otherwise.
+////////////////////////////////////////////////////////////////////
+EggRenderMode *EggPrimitive::
+determine_depth_write_mode() {
+  if (get_depth_write_mode() != DWM_unspecified) {
+    return this;
+  }
+  if (has_texture() && 
+      get_texture()->get_depth_write_mode() != DWM_unspecified) {
+    return get_texture();
+  }
+  return EggNode::determine_depth_write_mode();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::determine_depth_test_mode
+//       Access: Public, Virtual
+//  Description: Walks back up the hierarchy, looking for an EggGroup
+//               or EggPrimitive or some such object at this level or
+//               above this node that has a depth_test_mode other than
+//               DTM_unspecified.  Returns a valid EggRenderMode pointer
+//               if one is found, or NULL otherwise.
+////////////////////////////////////////////////////////////////////
+EggRenderMode *EggPrimitive::
+determine_depth_test_mode() {
+  if (get_depth_test_mode() != DTM_unspecified) {
+    return this;
+  }
+  if (has_texture() && 
+      get_texture()->get_depth_test_mode() != DTM_unspecified) {
+    return get_texture();
+  }
+  return EggNode::determine_depth_test_mode();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::determine_draw_order
 //       Access: Public, Virtual
 //  Description: Walks back up the hierarchy, looking for an EggPrimitive
 //               or EggPrimitive or some such object at this level or
 //               above this primitive that has a draw_order specified.
-//               Returns a valid EggAlphaMode pointer if one is found,
+//               Returns a valid EggRenderMode pointer if one is found,
 //               or NULL otherwise.
 ////////////////////////////////////////////////////////////////////
-EggAlphaMode *EggPrimitive::
+EggRenderMode *EggPrimitive::
 determine_draw_order() {
   if (has_draw_order()) {
     return this;
@@ -59,10 +101,10 @@ determine_draw_order() {
 //  Description: Walks back up the hierarchy, looking for an EggPrimitive
 //               or EggPrimitive or some such object at this level or
 //               above this primitive that has a bin specified.  Returns a
-//               valid EggAlphaMode pointer if one is found, or NULL
+//               valid EggRenderMode pointer if one is found, or NULL
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
-EggAlphaMode *EggPrimitive::
+EggRenderMode *EggPrimitive::
 determine_bin() {
   if (has_bin()) {
     return this;
@@ -379,7 +421,7 @@ write_body(ostream &out, int indent_level) const {
   test_vref_integrity();
 
   EggAttributes::write(out, indent_level);
-  EggAlphaMode::write(out, indent_level);
+  EggRenderMode::write(out, indent_level);
 
   if (has_texture()) {
     EggTexture *texture = get_texture();

@@ -272,7 +272,9 @@ write(ostream &out, int indent_level) const {
   Transitions::const_iterator ti;
   for (ti = _transitions.begin(); ti != _transitions.end(); ++ti) {
     if ((*ti).second != (NodeTransition *)NULL) {
-      (*ti).second->write(out, indent_level);
+      indent(out, indent_level)
+	<< (*ti).first << " = " << *(*ti).second << "\n";
+      //      (*ti).second->write(out, indent_level + 2);
     }
   }
 }

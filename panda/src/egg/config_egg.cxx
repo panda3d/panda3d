@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_egg.h"
-#include "eggAlphaMode.h"
+#include "eggRenderMode.h"
 #include "eggAnimData.h"
 #include "eggAttributes.h"
 #include "eggBin.h"
@@ -44,7 +44,7 @@ Configure(config_egg);
 NotifyCategoryDef(egg, "");
 
 ConfigureFn(config_egg) {
-  EggAlphaMode::init_type();
+  EggRenderMode::init_type();
   EggAnimData::init_type();
   EggAttributes::init_type();
   EggBin::init_type();

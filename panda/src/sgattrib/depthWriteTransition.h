@@ -16,10 +16,11 @@
 //               buffer.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DepthWriteTransition : public OnOffTransition {
-public:
+PUBLISHED:
   INLINE DepthWriteTransition();
   INLINE static DepthWriteTransition off();
-  
+
+public:  
   virtual NodeTransition *make_copy() const;
   virtual NodeAttribute *make_attrib() const;
 

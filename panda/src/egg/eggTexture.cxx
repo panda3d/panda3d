@@ -53,7 +53,7 @@ EggTexture(const EggTexture &copy) {
 EggTexture &EggTexture::
 operator = (const EggTexture &copy) {
   EggFilenameNode::operator = (copy);
-  EggAlphaMode::operator = (copy);
+  EggRenderMode::operator = (copy);
   
   _format = copy._format;
   _wrap_mode = copy._wrap_mode;
@@ -139,7 +139,7 @@ write(ostream &out, int indent_level) const {
     out << " }\n";
   }
 
-  EggAlphaMode::write(out, indent_level + 2);
+  EggRenderMode::write(out, indent_level + 2);
 
   if (has_transform()) {
     write_transform(out, _transform, indent_level + 2);
@@ -234,7 +234,7 @@ is_equivalent_to(const EggTexture &other, int eq) const {
     _env_type != other._env_type) {
       return false;
     }
-    if (EggAlphaMode::operator != (other)) {
+    if (EggRenderMode::operator != (other)) {
       return false;
     }
   }
@@ -328,8 +328,8 @@ sorts_less_than(const EggTexture &other, int eq) const {
       return (int)_env_type < (int)other._env_type;
     }
 
-    if (EggAlphaMode::operator != (other)) {
-      return EggAlphaMode::operator < (other);
+    if (EggRenderMode::operator != (other)) {
+      return EggRenderMode::operator < (other);
     }
   }
 

@@ -8,7 +8,7 @@
 
 #include <pandabase.h>
 
-#include "eggAlphaMode.h"
+#include "eggRenderMode.h"
 #include "eggFilenameNode.h"
 
 #include <luse.h>
@@ -19,7 +19,7 @@
 // Description : Defines a texture map that may be applied to
 //               geometry.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEGG EggTexture : public EggFilenameNode, public EggAlphaMode {
+class EXPCL_PANDAEGG EggTexture : public EggFilenameNode, public EggRenderMode {
 public:
   EggTexture(const string &tref_name, const string &filename);
   EggTexture(const EggTexture &copy);
@@ -147,10 +147,10 @@ public:
   }
   static void init_type() {
     EggFilenameNode::init_type();
-    EggAlphaMode::init_type();
+    EggRenderMode::init_type();
     register_type(_type_handle, "EggTexture",
                   EggFilenameNode::get_class_type(),
-          EggAlphaMode::get_class_type());
+          EggRenderMode::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

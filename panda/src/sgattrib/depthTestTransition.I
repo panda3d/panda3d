@@ -34,3 +34,13 @@ INLINE DepthTestProperty::Mode DepthTestTransition::
 get_mode() const {
   return _value.get_mode();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: DepthTestTransition::Default Constructor
+//       Access: Protected
+//  Description: This constructor is only for the benefit of the Bam
+//               reader.
+////////////////////////////////////////////////////////////////////
+INLINE DepthTestTransition::
+DepthTestTransition() {
+}

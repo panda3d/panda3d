@@ -9,8 +9,7 @@
     linmath putil
 
   #define SOURCES \
-    config_egg.cxx config_egg.h eggAlphaMode.I eggAlphaMode.cxx \
-    eggAlphaMode.h eggAnimData.I eggAnimData.cxx eggAnimData.h \
+    config_egg.cxx config_egg.h eggAnimData.I eggAnimData.cxx eggAnimData.h \
     eggAttributes.I eggAttributes.cxx eggAttributes.h eggBin.cxx \
     eggBin.h eggBinMaker.cxx eggBinMaker.h eggComment.I eggComment.cxx \
     eggComment.h eggCoordinateSystem.I eggCoordinateSystem.cxx \
@@ -28,7 +27,9 @@
     eggObject.h eggParameters.cxx eggParameters.h eggPoint.I \
     eggPoint.cxx eggPoint.h eggPolygon.I eggPolygon.cxx eggPolygon.h \
     eggPoolUniquifier.cxx eggPoolUniquifier.h \
-    eggPrimitive.I eggPrimitive.cxx eggPrimitive.h eggSAnimData.I \
+    eggPrimitive.I eggPrimitive.cxx eggPrimitive.h \
+    eggRenderMode.I eggRenderMode.cxx \
+    eggRenderMode.h eggSAnimData.I \
     eggSAnimData.cxx eggSAnimData.h eggSurface.I eggSurface.cxx \
     eggSurface.h eggSwitchCondition.cxx eggSwitchCondition.h eggTable.I \
     eggTable.cxx eggTable.h eggTexture.I eggTexture.cxx eggTexture.h \
@@ -40,7 +41,7 @@
     eggXfmSAnim.h parserDefs.h parser.yxx lexerDefs.h lexer.lxx
 
   #define INSTALL_HEADERS \
-    eggAlphaMode.I eggAlphaMode.h eggAnimData.I eggAnimData.h \
+    eggAnimData.I eggAnimData.h \
     eggAttributes.I eggAttributes.h eggBin.h eggBinMaker.h eggComment.I \
     eggComment.h eggCoordinateSystem.I eggCoordinateSystem.h eggCurve.I \
     eggCurve.h eggData.I eggData.h eggExternalReference.I \
@@ -51,7 +52,7 @@
     eggNurbsCurve.I eggNurbsCurve.h eggNurbsSurface.I eggNurbsSurface.h \
     eggObject.I eggObject.h eggParameters.h eggPoint.I eggPoint.h \
     eggPolygon.I eggPolygon.h eggPoolUniquifier.h \
-    eggPrimitive.I eggPrimitive.h \
+    eggPrimitive.I eggPrimitive.h eggRenderMode.I eggRenderMode.h \
     eggSAnimData.I eggSAnimData.h eggSurface.I eggSurface.h \
     eggSwitchCondition.h eggTable.I eggTable.h eggTexture.I \
     eggTexture.h eggTextureCollection.I eggTextureCollection.h \

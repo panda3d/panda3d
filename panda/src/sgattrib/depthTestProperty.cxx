@@ -4,6 +4,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "depthTestProperty.h"
+#include <datagram.h>
+#include <datagramIterator.h>
 
 ostream &
 operator << (ostream &out, DepthTestProperty::Mode mode) {
@@ -37,6 +39,28 @@ operator << (ostream &out, DepthTestProperty::Mode mode) {
   }
 
   return out << "**invalid**(" << (int)mode << ")";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DepthTestProperty::write_datagram
+//       Access: Public
+//  Description: Function to write the important information in
+//               this object to a Datagram
+////////////////////////////////////////////////////////////////////
+void DepthTestProperty::
+write_datagram(Datagram &destination) {
+  destination.add_uint8(_mode);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DepthTestProperty::read_datagram
+//       Access: Public
+//  Description: Function to write the important information into
+//               this object out of a Datagram
+////////////////////////////////////////////////////////////////////
+void DepthTestProperty::
+read_datagram(DatagramIterator &source) {
+  _mode = (Mode)source.get_uint8();
 }
 
 ////////////////////////////////////////////////////////////////////

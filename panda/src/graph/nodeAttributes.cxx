@@ -204,13 +204,21 @@ compare_to(const NodeAttributes &other) const {
 ////////////////////////////////////////////////////////////////////
 void NodeAttributes::
 apply_from(const NodeAttributes &other, const NodeTransitionCache &trans) {
-  Attributes temp;
+  if (&other == this && trans._cache.empty()) {
+    // In this case, we don't need to do anything--we're not updating
+    // the attributes at all.
 
-  tmap_apply(other._attributes.begin(), other._attributes.end(),
-	     trans._cache.begin(), trans._cache.end(),
-	     inserter(temp, temp.begin()));
+  } else {
+    // Otherwise, even if the cache is empty, we do need to at least
+    // copy the other attributes, so we go ahead and do this work.
+    Attributes temp;
 
-  _attributes.swap(temp);
+    tmap_apply(other._attributes.begin(), other._attributes.end(),
+	       trans._cache.begin(), trans._cache.end(),
+	       inserter(temp, temp.begin()));
+    
+    _attributes.swap(temp);
+  }
 }
 
 

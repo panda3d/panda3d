@@ -376,11 +376,29 @@ texture_body:
     }
 
   } else if (cmp_nocase_uh(name, "alpha") == 0) {
-    EggAlphaMode::AlphaMode a = EggAlphaMode::string_alpha_mode(strval);
-    if (a == EggAlphaMode::AM_unspecified) {
+    EggRenderMode::AlphaMode a = EggRenderMode::string_alpha_mode(strval);
+    if (a == EggRenderMode::AM_unspecified) {
       eggyywarning("Unknown alpha mode " + strval);
     } else {
       texture->set_alpha_mode(a);
+    }
+
+  } else if (cmp_nocase_uh(name, "depth_write") == 0) {
+    EggRenderMode::DepthWriteMode m = 
+      EggRenderMode::string_depth_write_mode(strval);
+    if (m == EggRenderMode::DWM_unspecified) {
+      eggyywarning("Unknown depth-write mode " + strval);
+    } else {
+      texture->set_depth_write_mode(m);
+    }
+
+  } else if (cmp_nocase_uh(name, "depth_test") == 0) {
+    EggRenderMode::DepthTestMode m = 
+      EggRenderMode::string_depth_test_mode(strval);
+    if (m == EggRenderMode::DTM_unspecified) {
+      eggyywarning("Unknown depth-test mode " + strval);
+    } else {
+      texture->set_depth_test_mode(m);
     }
 
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
@@ -807,11 +825,28 @@ group_body:
   } else if (cmp_nocase_uh(name, "direct") == 0) {
     group->set_direct_flag(value != 0);
   } else if (cmp_nocase_uh(name, "alpha") == 0) {
-    EggAlphaMode::AlphaMode a = EggAlphaMode::string_alpha_mode(strval);
-    if (a == EggAlphaMode::AM_unspecified) {
+    EggRenderMode::AlphaMode a = EggRenderMode::string_alpha_mode(strval);
+    if (a == EggRenderMode::AM_unspecified) {
       eggyywarning("Unknown alpha mode " + strval);
     } else {
       group->set_alpha_mode(a);
+    }
+  } else if (cmp_nocase_uh(name, "depth_write") == 0) {
+    EggRenderMode::DepthWriteMode m = 
+      EggRenderMode::string_depth_write_mode(strval);
+    if (m == EggRenderMode::DWM_unspecified) {
+      eggyywarning("Unknown depth-write mode " + strval);
+    } else {
+      group->set_depth_write_mode(m);
+    }
+
+  } else if (cmp_nocase_uh(name, "depth_test") == 0) {
+    EggRenderMode::DepthTestMode m = 
+      EggRenderMode::string_depth_test_mode(strval);
+    if (m == EggRenderMode::DTM_unspecified) {
+      eggyywarning("Unknown depth-test mode " + strval);
+    } else {
+      group->set_depth_test_mode(m);
     }
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
     group->set_draw_order((int)value);
@@ -1323,11 +1358,28 @@ primitive_body:
   string strval = $<_string>5;
   
   if (cmp_nocase_uh(name, "alpha") == 0) {
-    EggAlphaMode::AlphaMode a = EggAlphaMode::string_alpha_mode(strval);
-    if (a == EggAlphaMode::AM_unspecified) {
+    EggRenderMode::AlphaMode a = EggRenderMode::string_alpha_mode(strval);
+    if (a == EggRenderMode::AM_unspecified) {
       eggyywarning("Unknown alpha mode " + strval);
     } else {
       primitive->set_alpha_mode(a);
+    }
+  } else if (cmp_nocase_uh(name, "depth_write") == 0) {
+    EggRenderMode::DepthWriteMode m = 
+      EggRenderMode::string_depth_write_mode(strval);
+    if (m == EggRenderMode::DWM_unspecified) {
+      eggyywarning("Unknown depth-write mode " + strval);
+    } else {
+      primitive->set_depth_write_mode(m);
+    }
+
+  } else if (cmp_nocase_uh(name, "depth_test") == 0) {
+    EggRenderMode::DepthTestMode m = 
+      EggRenderMode::string_depth_test_mode(strval);
+    if (m == EggRenderMode::DTM_unspecified) {
+      eggyywarning("Unknown depth-test mode " + strval);
+    } else {
+      primitive->set_depth_test_mode(m);
     }
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
     primitive->set_draw_order((int)value);
@@ -1373,11 +1425,28 @@ nurbs_surface_body:
   string strval = $<_string>5;
   
   if (cmp_nocase_uh(name, "alpha") == 0) {
-    EggAlphaMode::AlphaMode a = EggAlphaMode::string_alpha_mode(strval);
-    if (a == EggAlphaMode::AM_unspecified) {
+    EggRenderMode::AlphaMode a = EggRenderMode::string_alpha_mode(strval);
+    if (a == EggRenderMode::AM_unspecified) {
       eggyywarning("Unknown alpha mode " + strval);
     } else {
       primitive->set_alpha_mode(a);
+    }
+  } else if (cmp_nocase_uh(name, "depth_write") == 0) {
+    EggRenderMode::DepthWriteMode m = 
+      EggRenderMode::string_depth_write_mode(strval);
+    if (m == EggRenderMode::DWM_unspecified) {
+      eggyywarning("Unknown depth-write mode " + strval);
+    } else {
+      primitive->set_depth_write_mode(m);
+    }
+
+  } else if (cmp_nocase_uh(name, "depth_test") == 0) {
+    EggRenderMode::DepthTestMode m = 
+      EggRenderMode::string_depth_test_mode(strval);
+    if (m == EggRenderMode::DTM_unspecified) {
+      eggyywarning("Unknown depth-test mode " + strval);
+    } else {
+      primitive->set_depth_test_mode(m);
     }
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
     primitive->set_draw_order((int)value);
@@ -1420,11 +1489,28 @@ nurbs_curve_body:
   string strval = $<_string>5;
   
   if (cmp_nocase_uh(name, "alpha") == 0) {
-    EggAlphaMode::AlphaMode a = EggAlphaMode::string_alpha_mode(strval);
-    if (a == EggAlphaMode::AM_unspecified) {
+    EggRenderMode::AlphaMode a = EggRenderMode::string_alpha_mode(strval);
+    if (a == EggRenderMode::AM_unspecified) {
       eggyywarning("Unknown alpha mode " + strval);
     } else {
       primitive->set_alpha_mode(a);
+    }
+  } else if (cmp_nocase_uh(name, "depth_write") == 0) {
+    EggRenderMode::DepthWriteMode m = 
+      EggRenderMode::string_depth_write_mode(strval);
+    if (m == EggRenderMode::DWM_unspecified) {
+      eggyywarning("Unknown depth-write mode " + strval);
+    } else {
+      primitive->set_depth_write_mode(m);
+    }
+
+  } else if (cmp_nocase_uh(name, "depth_test") == 0) {
+    EggRenderMode::DepthTestMode m = 
+      EggRenderMode::string_depth_test_mode(strval);
+    if (m == EggRenderMode::DTM_unspecified) {
+      eggyywarning("Unknown depth-test mode " + strval);
+    } else {
+      primitive->set_depth_test_mode(m);
     }
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
     primitive->set_draw_order((int)value);

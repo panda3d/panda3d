@@ -17,16 +17,52 @@ TypeHandle EggNode::_type_handle;
 //  Description: Walks back up the hierarchy, looking for an EggGroup
 //               or EggPrimitive or some such object at this level or
 //               above this node that has an alpha_mode other than
-//               AM_unspecified.  Returns a valid EggAlphaMode pointer
+//               AM_unspecified.  Returns a valid EggRenderMode pointer
 //               if one is found, or NULL otherwise.
 ////////////////////////////////////////////////////////////////////
-EggAlphaMode *EggNode::
+EggRenderMode *EggNode::
 determine_alpha_mode() {
   if (_parent == (EggGroupNode *)NULL) {
     // Too bad; we're done.
-    return (EggAlphaMode *)NULL;
+    return (EggRenderMode *)NULL;
   }
   return _parent->determine_alpha_mode();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggNode::determine_depth_write_mode
+//       Access: Public, Virtual
+//  Description: Walks back up the hierarchy, looking for an EggGroup
+//               or EggPrimitive or some such object at this level or
+//               above this node that has a depth_write_mode other than
+//               DWM_unspecified.  Returns a valid EggRenderMode pointer
+//               if one is found, or NULL otherwise.
+////////////////////////////////////////////////////////////////////
+EggRenderMode *EggNode::
+determine_depth_write_mode() {
+  if (_parent == (EggGroupNode *)NULL) {
+    // Too bad; we're done.
+    return (EggRenderMode *)NULL;
+  }
+  return _parent->determine_depth_write_mode();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggNode::determine_depth_test_mode
+//       Access: Public, Virtual
+//  Description: Walks back up the hierarchy, looking for an EggGroup
+//               or EggPrimitive or some such object at this level or
+//               above this node that has a depth_test_mode other than
+//               DTM_unspecified.  Returns a valid EggRenderMode pointer
+//               if one is found, or NULL otherwise.
+////////////////////////////////////////////////////////////////////
+EggRenderMode *EggNode::
+determine_depth_test_mode() {
+  if (_parent == (EggGroupNode *)NULL) {
+    // Too bad; we're done.
+    return (EggRenderMode *)NULL;
+  }
+  return _parent->determine_depth_test_mode();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -35,14 +71,14 @@ determine_alpha_mode() {
 //  Description: Walks back up the hierarchy, looking for an EggGroup
 //               or EggPrimitive or some such object at this level or
 //               above this node that has a draw_order specified.
-//               Returns a valid EggAlphaMode pointer if one is found,
+//               Returns a valid EggRenderMode pointer if one is found,
 //               or NULL otherwise.
 ////////////////////////////////////////////////////////////////////
-EggAlphaMode *EggNode::
+EggRenderMode *EggNode::
 determine_draw_order() {
   if (_parent == (EggGroupNode *)NULL) {
     // Too bad; we're done.
-    return (EggAlphaMode *)NULL;
+    return (EggRenderMode *)NULL;
   }
   return _parent->determine_draw_order();
 }
@@ -53,14 +89,14 @@ determine_draw_order() {
 //  Description: Walks back up the hierarchy, looking for an EggGroup
 //               or EggPrimitive or some such object at this level or
 //               above this node that has a bin specified.  Returns a
-//               valid EggAlphaMode pointer if one is found, or NULL
+//               valid EggRenderMode pointer if one is found, or NULL
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
-EggAlphaMode *EggNode::
+EggRenderMode *EggNode::
 determine_bin() {
   if (_parent == (EggGroupNode *)NULL) {
     // Too bad; we're done.
-    return (EggAlphaMode *)NULL;
+    return (EggRenderMode *)NULL;
   }
   return _parent->determine_bin();
 }

@@ -16,7 +16,7 @@
 #include <referenceCount.h>
 
 class EggGroupNode;
-class EggAlphaMode;
+class EggRenderMode;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : EggNode
@@ -37,9 +37,11 @@ public:
   INLINE bool is_under_transform() const;
   INLINE bool is_local_coord() const;
 
-  virtual EggAlphaMode *determine_alpha_mode();
-  virtual EggAlphaMode *determine_draw_order();
-  virtual EggAlphaMode *determine_bin();
+  virtual EggRenderMode *determine_alpha_mode();
+  virtual EggRenderMode *determine_depth_write_mode();
+  virtual EggRenderMode *determine_depth_test_mode();
+  virtual EggRenderMode *determine_draw_order();
+  virtual EggRenderMode *determine_bin();
 
   INLINE const LMatrix4d &get_vertex_frame() const;
   INLINE const LMatrix4d &get_node_frame() const;

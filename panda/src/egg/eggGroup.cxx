@@ -74,7 +74,7 @@ operator = (const EggGroup &copy) {
   // will force an update_under().  Therefore, we can't call it until
   // all the attributes that affect adjust_under() are in place.
   EggGroupNode::operator = (copy);
-  EggAlphaMode::operator = (copy);
+  EggRenderMode::operator = (copy);
 
   return *this;
 }
@@ -257,7 +257,7 @@ write(ostream &out, int indent_level) const {
     indent(out, indent_level + 2) << "<Scalar> direct { 1 }\n";
   }
 
-  EggAlphaMode::write(out, indent_level + 2);
+  EggRenderMode::write(out, indent_level + 2);
 
   write_vertex_ref(out, indent_level + 2);
 
@@ -271,10 +271,10 @@ write(ostream &out, int indent_level) const {
 //  Description: Walks back up the hierarchy, looking for an EggGroup
 //               or EggPrimitive or some such object at this level or
 //               above this group that has an alpha_mode other than
-//               AM_unspecified.  Returns a valid EggAlphaMode pointer
+//               AM_unspecified.  Returns a valid EggRenderMode pointer
 //               if one is found, or NULL otherwise.
 ////////////////////////////////////////////////////////////////////
-EggAlphaMode *EggGroup::
+EggRenderMode *EggGroup::
 determine_alpha_mode() {
   if (get_alpha_mode() != AM_unspecified) {
     return this;
@@ -283,15 +283,49 @@ determine_alpha_mode() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::determine_depth_write_mode
+//       Access: Public, Virtual
+//  Description: Walks back up the hierarchy, looking for an EggGroup
+//               or EggPrimitive or some such object at this level or
+//               above this group that has an depth_write_mode other
+//               than DWM_unspecified.  Returns a valid EggRenderMode
+//               pointer if one is found, or NULL otherwise.
+////////////////////////////////////////////////////////////////////
+EggRenderMode *EggGroup::
+determine_depth_write_mode() {
+  if (get_depth_write_mode() != DWM_unspecified) {
+    return this;
+  }
+  return EggGroupNode::determine_depth_write_mode();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::determine_depth_test_mode
+//       Access: Public, Virtual
+//  Description: Walks back up the hierarchy, looking for an EggGroup
+//               or EggPrimitive or some such object at this level or
+//               above this group that has an depth_test_mode other
+//               than DTM_unspecified.  Returns a valid EggRenderMode
+//               pointer if one is found, or NULL otherwise.
+////////////////////////////////////////////////////////////////////
+EggRenderMode *EggGroup::
+determine_depth_test_mode() {
+  if (get_depth_test_mode() != DTM_unspecified) {
+    return this;
+  }
+  return EggGroupNode::determine_depth_test_mode();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::determine_draw_order
 //       Access: Public, Virtual
 //  Description: Walks back up the hierarchy, looking for an EggGroup
 //               or EggPrimitive or some such object at this level or
 //               above this group that has a draw_order specified.
-//               Returns a valid EggAlphaMode pointer if one is found,
+//               Returns a valid EggRenderMode pointer if one is found,
 //               or NULL otherwise.
 ////////////////////////////////////////////////////////////////////
-EggAlphaMode *EggGroup::
+EggRenderMode *EggGroup::
 determine_draw_order() {
   if (has_draw_order()) {
     return this;
@@ -305,10 +339,10 @@ determine_draw_order() {
 //  Description: Walks back up the hierarchy, looking for an EggGroup
 //               or EggPrimitive or some such object at this level or
 //               above this group that has a bin specified.  Returns a
-//               valid EggAlphaMode pointer if one is found, or NULL
+//               valid EggRenderMode pointer if one is found, or NULL
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
-EggAlphaMode *EggGroup::
+EggRenderMode *EggGroup::
 determine_bin() {
   if (has_bin()) {
     return this;

@@ -98,14 +98,14 @@ from_egg(EggFile *egg_file, EggData *data, EggTexture *egg_tex) {
   _source_texture->update_properties(_properties);
 
   _uses_alpha = false;
-  EggAlphaMode::AlphaMode alpha_mode = _egg_tex->get_alpha_mode();
-  if (alpha_mode == EggAlphaMode::AM_unspecified) {
+  EggRenderMode::AlphaMode alpha_mode = _egg_tex->get_alpha_mode();
+  if (alpha_mode == EggRenderMode::AM_unspecified) {
     if (_source_texture->get_size()) {
       _uses_alpha = 
 	_egg_tex->has_alpha_channel(_source_texture->get_num_channels());
     }
 
-  } else if (alpha_mode == EggAlphaMode::AM_off) {
+  } else if (alpha_mode == EggRenderMode::AM_off) {
     _uses_alpha = false;
     
   } else {
