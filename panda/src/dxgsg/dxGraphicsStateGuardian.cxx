@@ -2416,6 +2416,19 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
 
         size_t vertex_size = draw_prim_setup(geom);
 
+        // Note: draw_prim_setup could unset color flags if global color is set, so must
+        //       recheck this flag here!  
+        bPerPrimColor=(_perPrim & PER_COLOR)!=0x0;  
+
+        #ifdef _DEBUG
+          // is it Ok not to recompute bUseTexCoordOnlyLoop even if draw_prim_setup unsets color flags?
+          // add this check to make sure
+           bool bNewUseTexCoordOnlyLoop = (((_perVertex & PER_COLOR)==0x0) &&
+                                           ((_curFVFflags & D3DFVF_NORMAL)==0x0) &&
+                                           ((_curFVFflags & D3DFVF_TEX1)!=0x0));
+           assert(bNewUseTexCoordOnlyLoop == bUseTexCoordOnlyLoop);
+        #endif
+
         nassertv(_pCurFvfBufPtr == NULL);    // make sure the storage pointer is clean.
         nassertv(nPrims * 3 * vertex_size < VERT_BUFFER_SIZE);
         _pCurFvfBufPtr = _pFvfBufBasePtr;          // _pCurFvfBufPtr changes,  _pFvfBufBasePtr doesn't
@@ -2814,8 +2827,20 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
         // draw_prim_setup() REQUIRES _perVertex, etc flags setup properly prior to call
         size_t vertex_size = draw_prim_setup(geom);
 
-        // iterate through the triangle primitives
+        // Note: draw_prim_setup could unset color flags if global color is set, so must
+        //       recheck this flag here!  
+        bPerPrimColor=(_perPrim & PER_COLOR)!=0;        
 
+        #ifdef _DEBUG
+          // is it Ok not to recompute bUseTexCoordOnlyLoop even if draw_prim_setup unsets color flags?
+          // add this check to make sure.  texcoordonly needs input that with unchanging color, except per-prim
+           bool bNewUseTexCoordOnlyLoop = ((((_perComp|_perVertex) & PER_COLOR)==0x0) &&
+                                           ((_curFVFflags & D3DFVF_NORMAL)==0x0) &&
+                                           ((_curFVFflags & D3DFVF_TEX1)!=0x0));
+           assert(bNewUseTexCoordOnlyLoop == bUseTexCoordOnlyLoop);
+        #endif
+
+        // iterate through the triangle primitives
         int nVerts;
         if(pLengthArr==NULL) {
            // we've been called by draw_quad, which has no lengths array
@@ -2828,7 +2853,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
               nVerts = *(pLengthArr++);
             } 
 
-            if(bPerPrimColor) {  // remember color might be G_OVERALL too!
+            if(bPerPrimColor) {
                 GET_NEXT_COLOR();
             }
 
