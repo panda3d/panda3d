@@ -59,6 +59,9 @@ PUBLISHED:
   INLINE static void clear_fake_texture_image();
   INLINE static bool has_fake_texture_image();
   INLINE static const string &get_fake_texture_image();
+  
+  // static void output(ostream &out);
+  static void write(ostream &out, unsigned int indent=0);
 
 private:
   INLINE TexturePool();
@@ -73,7 +76,7 @@ private:
   void ns_release_texture(Texture *texture);
   void ns_release_all_textures();
   int ns_garbage_collect();
-  void ns_list_contents(ostream &out);
+  void ns_list_contents(ostream &out) const;
 
   static TexturePool *get_ptr();
 

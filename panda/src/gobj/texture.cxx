@@ -264,7 +264,7 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
   PNMImage alpha_image;
   if (!alpha_image.read(alpha_fullpath)) {
     gobj_cat.error()
-      << "Texture::read() - couldn't read: " << alpha_fullpath << endl;
+      << "Texture::read() - couldn't read (alpha): " << alpha_fullpath << endl;
     return false;
   }
 

@@ -43,7 +43,6 @@ ns_has_texture(const Filename &orig_filename) {
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     vfs->resolve_filename(filename, get_texture_path());
     vfs->resolve_filename(filename, get_model_path());
-
   } else {
     filename.resolve_filename(get_texture_path());
     filename.resolve_filename(get_model_path());
@@ -76,7 +75,6 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels) {
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     vfs->resolve_filename(filename, get_texture_path()) ||
       vfs->resolve_filename(filename, get_model_path());
-
   } else {
     filename.resolve_filename(get_texture_path()) ||
       filename.resolve_filename(get_model_path());
@@ -95,7 +93,10 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels) {
   if (!tex->read(filename, primary_file_num_channels)) {
     // This texture was not found.
     gobj_cat.error()
-      << "Unable to read texture " << filename << "\n";
+      << "Unable to read texture \"" << filename << "\""
+      << (use_vfs ? " (using vfs) ": "")
+      << " on texture_path " << texture_path
+      << " or model_path " << model_path <<"\n";
     return NULL;
   }
 
@@ -224,7 +225,7 @@ ns_garbage_collect() {
         gobj_cat.debug()
           << "Releasing " << (*ti).first << "\n";
       }
-      num_released++;
+      ++num_released;
     } else {
       new_set.insert(new_set.end(), *ti);
     }
@@ -240,9 +241,9 @@ ns_garbage_collect() {
 //  Description: The nonstatic implementation of list_contents().
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
-ns_list_contents(ostream &out) {
+ns_list_contents(ostream &out) const {
   out << _textures.size() << " textures:\n";
-  Textures::iterator ti;
+  Textures::const_iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
     Texture *texture = (*ti).second;
     out << "  " << (*ti).first
@@ -263,4 +264,16 @@ get_ptr() {
     _global_ptr = new TexturePool;
   }
   return _global_ptr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::write
+//       Access: Published, Static
+//  Description: Lists the contents of the texture pool to the
+//               indicated output stream.
+//               For debugging.
+////////////////////////////////////////////////////////////////////
+void TexturePool::
+write(ostream &out, unsigned int) {
+  get_ptr()->ns_list_contents(out);
 }

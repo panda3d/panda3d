@@ -51,13 +51,14 @@ PUBLISHED:
   INLINE static const Material *get_material(const CPT(Material) &temp);
   INLINE static int garbage_collect();
   INLINE static void list_contents(ostream &out);
+  static void write(ostream &out, unsigned int indent=0);
 
 private:
   INLINE MaterialPool();
 
   const Material *ns_get_material(const CPT(Material) &temp);
   int ns_garbage_collect();
-  void ns_list_contents(ostream &out);
+  void ns_list_contents(ostream &out) const;
 
   static MaterialPool *get_ptr();
 

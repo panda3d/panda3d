@@ -121,7 +121,7 @@ ns_garbage_collect() {
         loader_cat.debug()
           << "Releasing " << (*ti).first << "\n";
       }
-      num_released++;
+      ++num_released;
     } else {
       new_set.insert(new_set.end(), *ti);
     }
@@ -137,9 +137,9 @@ ns_garbage_collect() {
 //  Description: The nonstatic implementation of list_contents().
 ////////////////////////////////////////////////////////////////////
 void ModelPool::
-ns_list_contents(ostream &out) {
+ns_list_contents(ostream &out) const {
   out << _models.size() << " models:\n";
-  Models::iterator ti;
+  Models::const_iterator ti;
   for (ti = _models.begin(); ti != _models.end(); ++ti) {
     out << "  " << (*ti).first
         << " (count = " << (*ti).second->get_ref_count() << ")\n";
@@ -158,4 +158,16 @@ get_ptr() {
     _global_ptr = new ModelPool;
   }
   return _global_ptr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ModelPool::write
+//       Access: Public, Static
+//  Description: Lists the contents of the model pool to the
+//               indicated output stream.
+//               Helps with debugging.
+////////////////////////////////////////////////////////////////////
+void ModelPool::
+write(ostream &out, unsigned int) {
+  get_ptr()->ns_list_contents(out);
 }

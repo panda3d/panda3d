@@ -49,6 +49,7 @@ PUBLISHED:
   INLINE static int garbage_collect();
 
   INLINE static void list_contents(ostream &out);
+  static void write(ostream &out, unsigned int indent=0);
 
 private:
   INLINE FontPool();
@@ -59,7 +60,7 @@ private:
   void ns_release_font(const string &filename);
   void ns_release_all_fonts();
   int ns_garbage_collect();
-  void ns_list_contents(ostream &out);
+  void ns_list_contents(ostream &out) const;
 
   static void lookup_filename(const string &str, string &index_str,
                               Filename &filename, int &face_index);

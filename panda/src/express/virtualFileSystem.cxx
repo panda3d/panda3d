@@ -102,7 +102,6 @@ mount(const Filename &physical_filename, const string &mount_point,
                                  flags);
     _mounts.push_back(mount);
     return true;
-
   } else {
     // It's not a directory; it must be a Multifile.
     PT(Multifile) multifile = new Multifile;
@@ -308,7 +307,6 @@ get_file(const Filename &filename) const {
       if (found_match(found_file, composite_file, mount, "")) {
         return found_file;
       }
-
     } else if (mount_point.empty()) {
       // This is the root mount point; all files are in here.
       if (mount->has_file(strpath)) {
@@ -317,7 +315,6 @@ get_file(const Filename &filename) const {
           return found_file;
         }
       }            
-
     } else if (strpath.length() > mount_point.length() &&
                strpath.substr(0, mount_point.length()) == mount_point &&
                strpath[mount_point.length()] == '/') {
@@ -349,7 +346,7 @@ find_file(const Filename &filename, const DSearchPath &searchpath) const {
   }
 
   int num_directories = searchpath.get_num_directories();
-  for (int i = 0; i < num_directories; i++) {
+  for (int i = 0; i < num_directories; ++i) {
     Filename match(searchpath.get_directory(i), filename);
     if (searchpath.get_directory(i) == "." && 
         filename.is_fully_qualified()) {
@@ -395,12 +392,10 @@ resolve_filename(Filename &filename,
         found = find_file(try_ext.get_fullpath(), searchpath);
       }
     }
-
   } else {
     if (exists(filename)) {
       // The full pathname exists.  Return true.
       return true;
-
     } else {
       // The full pathname doesn't exist with the given extension;
       // does it exist with the default extension?
@@ -439,10 +434,10 @@ find_all_files(const Filename &filename, const DSearchPath &searchpath,
 
   if (filename.is_local()) {
     int num_directories = searchpath.get_num_directories();
-    for (int i = 0; i < num_directories; i++) {
+    for (int i = 0; i < num_directories; ++i) {
       Filename match(searchpath.get_directory(i), filename);
       if (exists(match)) {
-        if (searchpath.get_directory(i) == "." && 
+        if (searchpath.get_directory(i) == "." &&
             filename.is_fully_qualified()) {
           // A special case for the "." directory: to avoid prefixing
           // an endless stream of ./ in front of files, if the
@@ -453,7 +448,7 @@ find_all_files(const Filename &filename, const DSearchPath &searchpath,
         } else {
           results.add_file(match);
         }
-        num_added++;
+        ++num_added;
       }
     }
   }
@@ -464,10 +459,12 @@ find_all_files(const Filename &filename, const DSearchPath &searchpath,
 ////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSystem::write
 //       Access: Published
-//  Description: 
+//  Description: Print debugging information.
+//               (e.g. from Python or gdb prompt).
 ////////////////////////////////////////////////////////////////////
 void VirtualFileSystem::
 write(ostream &out) const {
+  out << "_cwd" << _cwd << "\n_mounts:\n";
   Mounts::const_iterator mi;
   for (mi = _mounts.begin(); mi != _mounts.end(); ++mi) {
     VirtualFileMount *mount = (*mi);
@@ -541,7 +538,7 @@ get_global_ptr() {
           options = mount_point;
           mount_point = mount_desc.substr(space + 1);
           while (space > 0 && isspace(mount_desc[space - 1])) {
-            space--;
+            --space;
           }
           mount_desc = mount_desc.substr(0, space);
         }
@@ -587,12 +584,12 @@ close_read_file(istream *stream) const {
     // the stream pointer does not call the appropriate global delete
     // function; instead apparently calling the system delete
     // function.  So we call the delete function by hand instead.
-#ifndef NDEBUG
+    #ifndef NDEBUG
     stream->~istream();
     (*global_operator_delete)(stream);
-#else
+    #else
     delete stream;
-#endif
+    #endif
   }
 }
 
@@ -681,7 +678,6 @@ found_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_file,
       // If it's not a directory, we're done.
       return true;
     }
-    
   } else {
     // This was our second match.  The previous match(es) must
     // have been directories.
@@ -715,13 +711,10 @@ void VirtualFileSystem::
 parse_option(const string &option, int &flags, string &password) {
   if (option == "0" || option.empty()) {
     // 0 is the null option.
-
   } else if (option == "ro") {
     flags |= MF_read_only;
-
   } else if (option.substr(0, 3) == "pw:") {
     password = option.substr(3);
-
   } else {
     express_cat.warning()
       << "Invalid option on vfs-mount: \"" << option << "\"\n";

@@ -52,7 +52,7 @@ ns_garbage_collect() {
         gobj_cat.debug()
           << "Releasing " << *mat << "\n";
       }
-      num_released++;
+      ++num_released;
     } else {
       new_set.insert(new_set.end(), *mi);
     }
@@ -68,9 +68,9 @@ ns_garbage_collect() {
 //  Description: The nonstatic implementation of list_contents().
 ////////////////////////////////////////////////////////////////////
 void MaterialPool::
-ns_list_contents(ostream &out) {
+ns_list_contents(ostream &out) const {
   out << _materials.size() << " materials:\n";
-  Materials::iterator mi;
+  Materials::const_iterator mi;
   for (mi = _materials.begin(); mi != _materials.end(); ++mi) {
     const Material *mat = (*mi);
     out << "  " << *mat
@@ -90,4 +90,15 @@ get_ptr() {
     _global_ptr = new MaterialPool;
   }
   return _global_ptr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MaterialPool::write
+//       Access: Public, Static
+//  Description: Lists the contents of the material pool to the
+//               indicated output stream.
+////////////////////////////////////////////////////////////////////
+INLINE void MaterialPool::
+write(ostream &out, unsigned int) {
+  get_ptr()->ns_list_contents(out);
 }

@@ -59,6 +59,7 @@ PUBLISHED:
   INLINE static int garbage_collect();
 
   INLINE static void list_contents(ostream &out);
+  static void write(ostream &out, unsigned int indent=0);
 
 private:
   INLINE ModelPool();
@@ -69,7 +70,7 @@ private:
   void ns_release_model(const string &filename);
   void ns_release_all_models();
   int ns_garbage_collect();
-  void ns_list_contents(ostream &out);
+  void ns_list_contents(ostream &out) const;
 
   static ModelPool *get_ptr();
 

@@ -176,9 +176,9 @@ ns_garbage_collect() {
 //  Description: The nonstatic implementation of list_contents().
 ////////////////////////////////////////////////////////////////////
 void FontPool::
-ns_list_contents(ostream &out) {
+ns_list_contents(ostream &out) const {
   out << _fonts.size() << " fonts:\n";
-  Fonts::iterator ti;
+  Fonts::const_iterator ti;
   for (ti = _fonts.begin(); ti != _fonts.end(); ++ti) {
     TextFont *font = (*ti).second;
     out << "  " << (*ti).first
@@ -205,13 +205,12 @@ lookup_filename(const string &str, string &index_str,
   int colon = (int)str.length() - 1;
   // Scan backwards over digits for a colon.
   while (colon >= 0 && isdigit(str[colon])) {
-    colon--;
+    --colon;
   }
   if (colon >= 0 && str[colon] == ':') {
     string digits = str.substr(colon + 1);
     filename = str.substr(0, colon);
     face_index = atoi(digits.c_str());
-
   } else {
     filename = str;
     face_index = 0;
@@ -243,4 +242,15 @@ get_ptr() {
     _global_ptr = new FontPool;
   }
   return _global_ptr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FontPool::write
+//       Access: Public, Static
+//  Description: Lists the contents of the font pool to the
+//               indicated output stream.
+////////////////////////////////////////////////////////////////////
+void FontPool::
+write(ostream &out, unsigned int) {
+  get_ptr()->ns_list_contents(out);
 }
