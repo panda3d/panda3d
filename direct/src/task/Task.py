@@ -1,4 +1,5 @@
 
+from pandac.PandaModules import *
 from pandac.libpandaexpressModules import *
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase.PythonUtil import *
