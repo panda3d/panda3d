@@ -25,8 +25,10 @@
 
 #ifdef HAVE_SSL
 
+#define REPORT_SSL_ERRORS 1
+
 #include <openssl/rand.h>
-#ifndef NDEBUG
+#ifdef REPORT_SSL_ERRORS
 #include <openssl/err.h>
 #endif
 
@@ -148,7 +150,7 @@ load_certificates(const Filename &filename) {
   if (result <= 0) {
     downloader_cat.info()
       << "Could not load certificates from " << filename << ".\n";
-#ifndef NDEBUG
+#ifdef REPORT_SSL_ERRORS
     ERR_print_errors_fp(stderr);
 #endif
     return false;
@@ -298,7 +300,7 @@ make_ctx() {
 ////////////////////////////////////////////////////////////////////
 void HTTPClient::
 initialize_ssl() {
-#ifndef NDEBUG
+#ifdef REPORT_SSL_ERRORS
   ERR_load_crypto_strings();
   ERR_load_SSL_strings();
 #endif
@@ -423,7 +425,7 @@ get_http(const string &method, const URLSpec &url, const string &body) {
   if (BIO_do_connect(bio) <= 0) {
     downloader_cat.info()
       << "Could not contact server " << server_str << "\n";
-#ifndef NDEBUG
+#ifdef REPORT_SSL_ERRORS
     ERR_print_errors_fp(stderr);
 #endif
     return NULL;
@@ -453,7 +455,7 @@ get_https(const string &method, const URLSpec &url, const string &body) {
   if (BIO_do_connect(bio) <= 0) {
     downloader_cat.info()
       << "Could not contact server " << server_str << "\n";
-#ifndef NDEBUG
+#ifdef REPORT_SSL_ERRORS
     ERR_print_errors_fp(stderr);
 #endif
     return NULL;
@@ -488,7 +490,7 @@ get_http_proxy(const string &method, const URLSpec &url, const string &body) {
   if (BIO_do_connect(bio) <= 0) {
     downloader_cat.info()
       << "Could not contact proxy " << proxy_server_str << "\n";
-#ifndef NDEBUG
+#ifdef REPORT_SSL_ERRORS
     ERR_print_errors_fp(stderr);
 #endif
     return NULL;
@@ -520,7 +522,7 @@ get_https_proxy(const string &method, const URLSpec &url, const string &body) {
   if (BIO_do_connect(bio) <= 0) {
     downloader_cat.info()
       << "Could not contact proxy " << proxy_server_str << "\n";
-#ifndef NDEBUG
+#ifdef REPORT_SSL_ERRORS
     ERR_print_errors_fp(stderr);
 #endif
     return NULL;
@@ -612,7 +614,7 @@ make_https_connection(BIO *bio, const URLSpec &url) const {
     downloader_cat.info()
       << "Could not establish SSL handshake with " 
       << url.get_server() << ":" << url.get_port() << "\n";
-#ifndef NDEBUG
+#ifdef REPORT_SSL_ERRORS
     ERR_print_errors_fp(stderr);
 #endif
     BIO_free_all(bio);
@@ -868,8 +870,14 @@ send_request(BIO *bio, const string &method,
       << "Connection: close\r\n";
   }
 
+  if (!body.empty()) {
+    request
+      << "Content-type: application/x-www-form-urlencoded\r\n"
+      << "Content-Length: " << body.length() << "\r\n";
+  }
+
   request
-    << "\r\n" 
+    << "\r\n"
     << body;
 
   string request_str = request.str();
