@@ -46,7 +46,7 @@ public:
   bool exists() const;
 
   bool read(PNMImage &image) const;
-  bool write(PNMImage &image) const;
+  bool write(const PNMImage &image) const;
   void unlink();
 
   void update_egg_tex(EggTexture *egg_tex) const;

@@ -285,12 +285,10 @@ read(PNMImage &image) const {
 //       Access: Public
 //  Description: Writes out the image in the indicated PNMImage to the
 //               _filename and/or _alpha_filename.  Returns true on
-//               success, false on failure.  Warning: this may change
-//               the PNMImage.  In particular, it may remove the alpha
-//               channel.
+//               success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool ImageFile::
-write(PNMImage &image) const {
+write(const PNMImage &image) const {
   nassertr(!_filename.empty(), false);
 
   if (!image.has_alpha() || 
@@ -317,13 +315,15 @@ write(PNMImage &image) const {
     }
   }
 
-  image.remove_alpha();
+  PNMImage image_copy(image);
+  image_copy.remove_alpha();
   nout << "Writing " << FilenameUnifier::make_user_filename(_filename) << "\n";
   _filename.make_dir();
-  if (!image.write(_filename, _properties._color_type)) {
+  if (!image_copy.write(_filename, _properties._color_type)) {
     nout << "Unable to write.\n";
     return false;
   }
+
   nout << "Writing " << FilenameUnifier::make_user_filename(_alpha_filename) << "\n";
   _alpha_filename.make_dir();
   if (!alpha_image.write(_alpha_filename, _properties._alpha_type)) {

@@ -49,8 +49,7 @@ DestTextureImage(TexturePlacement *placement) {
 ////////////////////////////////////////////////////////////////////
 void DestTextureImage::
 copy(TextureImage *texture) {
-  PNMImage image = texture->get_dest_image();
-  write(image);
+  write(texture->get_dest_image());
 }
 
 ////////////////////////////////////////////////////////////////////

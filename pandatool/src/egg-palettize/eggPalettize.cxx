@@ -313,6 +313,55 @@ describe_input_file() {
 	    "also be overridden for a particular texture using the 'coverage' "
 	    "keyword on the texture line.\n\n");
 
+  show_text("  :round fraction fuzz", 10,
+	    "When the coverage area is computed, it may optionally be "
+	    "rounded up to the next sizeable unit before placing the "
+	    "texture within the palette.  This helps reduce constant "
+	    "repalettization caused by slight differences in coverage "
+	    "between egg files.  For instance, say file a.egg references a "
+	    "texture with a coverage of 0.91, and then later file b.egg "
+	    "is discovered to reference the same texture with a coverage of "
+	    "0.92.  If the texture was already palettized with the original "
+	    "coverage of 0.91, it must now be moved in the palette.\n\n"
+
+	    "Rounding the coverage area up to some fixed unit reduces this "
+	    "problem.  For instance, if you specified a value 0.5 for "
+	    "fraction in the above command, it would round both of these "
+	    "values up to the next half-unit, or 1.0.\n\n"
+
+	    "The second number is a fuzz factor, and should be a small "
+	    "number; if the coverage area is just slightly larger than "
+	    "the last unit (within the fuzz factor), it is rounded down "
+	    "instead of up.  This is intended to prevent UV coordinates "
+	    "that are just slightly out of the range [0, 1] (which happens "
+	    "fairly often) from forcing the palettization area all the "
+	    "way up to the next stop.\n\n"
+
+	    "The default if this is unspecified is 0.1 0.01.  That is, "
+	    "round up to the next tenth, unless within a hundredth of the "
+	    "last tenth.  To disable rounding, specify ':round no'.\n\n");
+
+  show_text("  :remap (never | group | poly)", 10,
+	    "Sometimes two different parts of an egg file may reference "
+	    "different regions of a repeating texture.  For instance, "
+	    "group A may reference UV coordinate values ranging from (0,5) "
+	    "to (1,6), for a coverage of 1.0, while group B references "
+	    "values ranging from (0,2) to (1,4), for a coverage of 2.0.  "
+	    "The maximum coverage used is only 2.0, and thus the texture "
+	    "only needs to appear in the palette once, but the total range "
+	    "of UV's is from (0,2) to (1,6), causing an apparent coverage "
+	    "of 4.0.\n\n"
+
+	    "It's possible for egg-palettize to reduce this kind of mistake "
+	    "by remapping both groups of UV's so that they overlap.  This "
+	    "parameter specifies how this operation should be done.  If "
+	    "the option is 'never', remapping will not be performed; if "
+	    "'group', entire groups will be remapped as a unit, of 'poly', "
+	    "individual polygons within a group may be remapped.  This last "
+	    "option provides the greatest minimization of UV coverage, "
+	    "but possibly at the expense of triangle strips in the resulting "
+	    "model (since some vertices can no longer be shared).\n\n");
+
   show_text("  :imagetype type[,alpha_type]", 10,
 	    "This specifies the default type of image file that should be "
 	    "generated for each palette image and for each unplaced texture "
@@ -357,9 +406,10 @@ describe_input_file() {
 	    "assigned to one of this group's dependent groups, it will "
 	    "be considered to be assigned to this group.\n\n");
 
+
   nout <<
     "Comments may appear freely throughout the file, and are set off by a "
-    "hash mark (#).\n";
+    "hash mark (#).\n\n";
 }
 
 
