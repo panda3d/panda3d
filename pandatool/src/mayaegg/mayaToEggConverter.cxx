@@ -1940,6 +1940,11 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader) {
     }
   }
 
+  // But the color gain always gets applied.
+  rgba[0] *= color_def._color_gain[0];
+  rgba[1] *= color_def._color_gain[1];
+  rgba[2] *= color_def._color_gain[2];
+
   primitive.set_color(rgba);
 }
 

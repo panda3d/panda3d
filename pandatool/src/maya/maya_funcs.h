@@ -64,6 +64,10 @@ get_vec2f_attribute(MObject &node, const string &attribute_name,
                     LVecBase2f &value);
 
 bool
+get_vec3f_attribute(MObject &node, const string &attribute_name,
+                    LVecBase3f &value);
+
+bool
 get_vec2d_attribute(MObject &node, const string &attribute_name,
                     LVecBase2d &value);
 

@@ -58,6 +58,7 @@ public:
 
   bool _has_texture;
   Filename _texture;
+  RGBColorf _color_gain;
   
   bool _has_flat_color;
   Colord _flat_color;

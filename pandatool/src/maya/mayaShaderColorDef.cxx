@@ -37,6 +37,8 @@
 ////////////////////////////////////////////////////////////////////
 MayaShaderColorDef::
 MayaShaderColorDef() {
+  _color_gain.set(1.0f, 1.0f, 1.0f);
+
   _has_flat_color = false;
   _flat_color.set(0.0, 0.0, 0.0, 0.0);
 
@@ -137,7 +139,8 @@ write(ostream &out) const {
         << "    wrap_v is " << _wrap_v << "\n"
         << "    repeat_uv is " << _repeat_uv << "\n"
         << "    offset is " << _offset << "\n"
-        << "    rotate_uv is " << _rotate_uv << "\n";
+        << "    rotate_uv is " << _rotate_uv << "\n"
+        << "    color_gain is " << _color_gain << "\n";
 
   } else if (_has_flat_color) {
     out << "    flat color is " << _flat_color << "\n";
@@ -179,6 +182,13 @@ reset_maya_texture(const Filename &texture) {
 ////////////////////////////////////////////////////////////////////
 void MayaShaderColorDef::
 read_surface_color(MObject color) {
+  RGBColorf color_gain;
+  if (get_vec3f_attribute(color, "colorGain", color_gain)) {
+    _color_gain[0] *= color_gain[0];
+    _color_gain[1] *= color_gain[1];
+    _color_gain[2] *= color_gain[2];
+  }
+
   if (color.hasFn(MFn::kFileTexture)) {
     _color_object = new MObject(color);
     string filename;

@@ -173,6 +173,43 @@ get_vec2f_attribute(MObject &node, const string &attribute_name,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: get_vec3f_attribute
+//  Description: Extracts the named three-component vector from the
+//               MObject.
+////////////////////////////////////////////////////////////////////
+bool
+get_vec3f_attribute(MObject &node, const string &attribute_name,
+                    LVecBase3f &value) {
+  MStatus status;
+
+  MObject vec3f_object;
+  if (!get_maya_attribute(node, attribute_name, vec3f_object)) {
+    maya_cat.error()
+      << "Attribute " << attribute_name
+      << " does not have a vec3f object value.\n";
+    describe_maya_attribute(node, attribute_name);
+    return false;
+  }
+
+  MFnNumericData data(vec3f_object, &status);
+  if (!status) {
+    maya_cat.error()
+      << "Attribute " << attribute_name << " is of type "
+      << vec3f_object.apiTypeStr() << ", not a NumericData.\n";
+    return false;
+  }
+
+  status = data.getData(value[0], value[1], value[2]);
+  if (!status) {
+    maya_cat.error()
+      << "Unable to extract 3 floats from " << attribute_name
+      << ", of type " << vec3f_object.apiTypeStr() << "\n";
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: get_vec2d_attribute
 //  Description: Extracts the named two-component vector from the
 //               MObject.
