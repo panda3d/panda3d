@@ -409,6 +409,23 @@ class Actor(PandaObject, NodePath):
             Actor.notify.warning("no part named %s" % (partName))
 
         return None
+
+    def getNumFrames(self, animName=None, partName=None):
+	""" getNumFrames(animName, partName)
+	"""
+	lodName = self.__animControlDict.keys()[0]
+	if (partName == None):
+	    partName = self.__animControlDict[lodName].keys()[0]
+	if (animName == None):
+	    animName = self.getCurrentAnim(partName)
+	if (self.__animControlDict[lodName].has_key(partName)):
+	    animControl = self.getAnimControl(animName, partName, lodName)
+	    if (animControl != None):
+		return animControl.getNumFrames()
+	    else:
+		Actor.notify.error('no anim control!')
+	else:
+	    Actor.notify.warning('no part named: %s' % (partName))
         
     def getCurrentAnim(self, partName=None):
         """getCurrentAnim(self, string=None)

@@ -3,6 +3,7 @@
 from DirectObject import *
 from Interval import *
 from AnimInterval import *
+from ActorInterval import *
 from FunctionInterval import *
 from LerpInterval import *
 from MopathInterval import *

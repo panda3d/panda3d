@@ -547,6 +547,7 @@ class DirectCameraControl(PandaObject):
 	# Ignore events
         for event in self.actionEvents:
             self.ignore(event[0])
+	base.enableMouse()
 
     def removeManipulateCameraTask(self):
         taskMgr.removeTasksNamed('manipulateCamera')
