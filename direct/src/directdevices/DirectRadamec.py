@@ -13,7 +13,6 @@ Handle interaction between widget, followSelectedTask and updateTask
 """
 
 # ANALOGS
-NULL_AXIS = -1
 RAD_PAN = 0
 RAD_TILT = 1
 RAD_ZOOM = 2
@@ -28,22 +27,19 @@ class DirectRadamec(PandaObject):
         if direct.deviceManager == None:
             direct.deviceManager = DirectDeviceManager()
         # Set name
-        DirectRadamec.radamecCount += 1
         self.name = 'Radamec-' + `DirectRadamec.radamecCount`
+        DirectRadamec.radamecCount += 1
         # Get analogs
         self.device = device
         self.analogs = direct.deviceManager.createAnalogs(self.device)
+        self.numAnalogs = len(self.analogs)
         self.aList = [0,0,0,0,0,0,0,0]
-        # Radamec device max/mins - measured on 7/31/2001 - Samir
+        # Radamec device max/mins 
         # Note:  These values change quite often, i.e. everytime
         #        you unplug the radamec cords, or jostle them too
         #        much.  For best results, re-record these values often.
         self.minRange = [-180.0, -90, 524285.0, 504790.0]
         self.maxRange = [180.0, 90, 548897.0, 534569.0]
-        #self.minRange = [-180.0, -90, 516880.0, 516873.0]
-        #self.maxRange = [180.0, 90, 541491.0, 556087.0]
-        # Pick initial mode
-        self.updateFunc = self.radamecUpdate
         # Spawn update task
         self.enable()
         
@@ -60,18 +56,12 @@ class DirectRadamec(PandaObject):
         self.disable()
 
     def updateTask(self, state):
-        self.updateVals()
-        self.updateFunc()
+        # Update analogs
+        for i in range(self.numAnalogs):
+            self.aList[i] = self.analogs.getControlState(i)
         return Task.cont
     
-    def updateVals(self):
-        numControls = self.analogs.__len__()
-        self.notify.debug("We have %s analog controls." % numControls)
-        # Update analogs
-        for i in range(len(self.analogs)):
-            self.aList[i] = self.analogs[i]
-
-    def radamecUpdate(self):
+    def radamecDebug(self):
         panVal = self.normalizeChannel(RAD_PAN,-180,180)
         tiltVal = self.normalizeChannel(RAD_TILT,-90,90)
 
