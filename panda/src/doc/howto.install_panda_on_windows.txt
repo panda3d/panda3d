@@ -103,7 +103,7 @@ Step 2:
     or from CD. You may need to run P:\msvc-sp5\mdac_typ.exe first 
     (setup will tell you if so)
   - Install the MSDN Library documentation if this is a primary dev 
-    machine. Install from the MSDN CD, or by running P:\msdn-apr01\setup.exe.  
+    machine. Install from the MSDN CD.
     To save time and disk space, choose custom install and uncheck 
     everything but Text-Search, Index, VC++, Platform SDK, Knowledge 
     Base, and All Other Files.
