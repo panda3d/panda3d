@@ -1127,17 +1127,20 @@ make_node(EggGroup *egg_group, NamedNode *parent) {
 	} else if (cmp_nocase_uh(objecttype, "turnstile") == 0) {
 	  egg_syntax = "<Collide> { Polyset descend turnstile }";
 	  
+	} else if (cmp_nocase_uh(objecttype, "sphere") == 0) {
+	  egg_syntax = "<Collide> { Sphere descend }";
+	  
 	} else if (cmp_nocase_uh(objecttype, "trigger") == 0) {
 	  egg_syntax = "<Collide> { Polyset descend intangible }";
+	  
+	} else if (cmp_nocase_uh(objecttype, "trigger_sphere") == 0) {
+	  egg_syntax = "<Collide> { Sphere descend intangible }";
 	  
 	} else if (cmp_nocase_uh(objecttype, "eye_trigger") == 0) {
 	  egg_syntax = "<Collide> { Polyset descend intangible center }";
 	  
 	} else if (cmp_nocase_uh(objecttype, "bubble") == 0) {
 	  egg_syntax = "<Collide> { Sphere keep descend }";
-	  
-	} else if (cmp_nocase_uh(objecttype, "missile") == 0) {
-	  egg_syntax = "<Collide> missile { Sphere keep descend event }";
 	  
 	} else if (cmp_nocase_uh(objecttype, "ghost") == 0) {
 	  egg_syntax = "<Scalar> collide-mask { 0 }";
@@ -1391,19 +1394,19 @@ make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
     break;
 
   case EggGroup::CST_plane:
-    make_collision_plane(egg_group, cnode);
+    make_collision_plane(egg_group, cnode, start_group->get_collide_flags());
     break;
 
   case EggGroup::CST_polygon:
-    make_collision_polygon(egg_group, cnode);
+    make_collision_polygon(egg_group, cnode, start_group->get_collide_flags());
     break;
 
   case EggGroup::CST_polyset:
-    make_collision_polyset(egg_group, cnode);
+    make_collision_polyset(egg_group, cnode, start_group->get_collide_flags());
     break;
 
   case EggGroup::CST_sphere:
-    make_collision_sphere(egg_group, cnode);
+    make_collision_sphere(egg_group, cnode, start_group->get_collide_flags());
     break;
   }
 
@@ -1425,7 +1428,8 @@ make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
 //               to the first polygon associated with this group.
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
-make_collision_plane(EggGroup *egg_group, CollisionNode *cnode) {
+make_collision_plane(EggGroup *egg_group, CollisionNode *cnode,
+		     EggGroup::CollideFlags flags) {
   EggGroup *geom_group = find_collision_geometry(egg_group);
   if (geom_group != (EggGroup *)NULL) {
     EggGroup::const_iterator ci;
@@ -1434,6 +1438,7 @@ make_collision_plane(EggGroup *egg_group, CollisionNode *cnode) {
 	CollisionPlane *csplane =
 	  create_collision_plane(DCAST(EggPolygon, *ci));
 	if (csplane != (CollisionPlane *)NULL) {
+	  apply_collision_flags(csplane, flags);
 	  cnode->add_solid(csplane);
 	  return;
 	}
@@ -1449,7 +1454,9 @@ make_collision_plane(EggGroup *egg_group, CollisionNode *cnode) {
 //               to the first polygon associated with this group.
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
-make_collision_polygon(EggGroup *egg_group, CollisionNode *cnode) {
+make_collision_polygon(EggGroup *egg_group, CollisionNode *cnode,
+		       EggGroup::CollideFlags flags) {
+
   EggGroup *geom_group = find_collision_geometry(egg_group);
   if (geom_group != (EggGroup *)NULL) {
     EggGroup::const_iterator ci;
@@ -1458,6 +1465,7 @@ make_collision_polygon(EggGroup *egg_group, CollisionNode *cnode) {
 	CollisionPolygon *cspoly =
 	  create_collision_polygon(DCAST(EggPolygon, *ci));
 	if (cspoly != (CollisionPolygon *)NULL) {
+	  apply_collision_flags(cspoly, flags);
 	  cnode->add_solid(cspoly);
 	  return;
 	}
@@ -1473,7 +1481,8 @@ make_collision_polygon(EggGroup *egg_group, CollisionNode *cnode) {
 //               to the polygons associated with this group.
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
-make_collision_polyset(EggGroup *egg_group, CollisionNode *cnode) {
+make_collision_polyset(EggGroup *egg_group, CollisionNode *cnode,
+		       EggGroup::CollideFlags flags) {
   EggGroup *geom_group = find_collision_geometry(egg_group);
   if (geom_group != (EggGroup *)NULL) {
     EggGroup::const_iterator ci;
@@ -1482,6 +1491,7 @@ make_collision_polyset(EggGroup *egg_group, CollisionNode *cnode) {
 	CollisionPolygon *cspoly =
 	  create_collision_polygon(DCAST(EggPolygon, *ci));
 	if (cspoly != (CollisionPolygon *)NULL) {
+	  apply_collision_flags(cspoly, flags);
 	  cnode->add_solid(cspoly);
 	}
       }
@@ -1496,7 +1506,8 @@ make_collision_polyset(EggGroup *egg_group, CollisionNode *cnode) {
 //               to the polygons associated with this group.
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
-make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode) {
+make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
+		      EggGroup::CollideFlags flags) {
   EggGroup *geom_group = find_collision_geometry(egg_group);
   if (geom_group != (EggGroup *)NULL) {
     // Collect all of the vertices.
@@ -1556,8 +1567,24 @@ make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode) {
       float radius = sqrtf(radius2);
       CollisionSphere *cssphere = 
 	new CollisionSphere(LCAST(float, center), radius);
+      apply_collision_flags(cssphere, flags);
       cnode->add_solid(cssphere);
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::apply_collision_flags
+//       Access: Private
+//  Description: Does funny stuff to the CollisionSolid as
+//               appropriate, based on the settings of the given
+//               CollideFlags.
+////////////////////////////////////////////////////////////////////
+void EggLoader:: 
+apply_collision_flags(CollisionSolid *solid, 
+		      EggGroup::CollideFlags flags) {
+  if ((flags & EggGroup::CF_intangible) != 0) {
+    solid->set_tangible(false);
   }
 }
 

@@ -12,6 +12,7 @@
 
 #include <eggData.h>
 #include <eggTexture.h>
+#include <eggGroup.h>
 #include <texture.h>
 #include <namedNode.h>
 #include <pt_NamedNode.h>
@@ -24,12 +25,12 @@
 
 class EggNode;
 class EggBin;
-class EggGroup;
 class EggTable;
 class EggPrimitive;
 class EggPolygon;
 class ComputedVerticesMaker;
 class RenderRelation;
+class CollisionSolid;
 class CollisionNode;
 class CollisionPlane;
 class CollisionPolygon;
@@ -86,10 +87,16 @@ private:
 
   void make_collision_solids(EggGroup *start_group, EggGroup *egg_group, 
 			     CollisionNode *cnode);
-  void make_collision_plane(EggGroup *egg_group, CollisionNode *cnode);
-  void make_collision_polygon(EggGroup *egg_group, CollisionNode *cnode);
-  void make_collision_polyset(EggGroup *egg_group, CollisionNode *cnode);
-  void make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode);
+  void make_collision_plane(EggGroup *egg_group, CollisionNode *cnode,
+			    EggGroup::CollideFlags flags);
+  void make_collision_polygon(EggGroup *egg_group, CollisionNode *cnode,
+			      EggGroup::CollideFlags flags);
+  void make_collision_polyset(EggGroup *egg_group, CollisionNode *cnode,
+			      EggGroup::CollideFlags flags);
+  void make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
+			     EggGroup::CollideFlags flags);
+  void apply_collision_flags(CollisionSolid *solid, 
+			     EggGroup::CollideFlags flags);
   EggGroup *find_collision_geometry(EggGroup *egg_group);
   CollisionPlane *create_collision_plane(EggPolygon *egg_poly);
   CollisionPolygon *create_collision_polygon(EggPolygon *egg_poly);
