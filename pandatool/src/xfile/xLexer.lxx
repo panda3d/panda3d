@@ -604,3 +604,8 @@ SEPARATOR            [ \t;,]+
 }
 
   
+. {
+  // Any other character is invalid.
+  accept();
+  xyyerror("Invalid character '" + string(xyytext) + "'.");
+}
