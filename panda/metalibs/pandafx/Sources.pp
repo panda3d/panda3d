@@ -9,6 +9,8 @@
 
 #define COMPONENT_LIBS \
     distort effects
+#define LOCAL_LIBS putil express
+#define OTHER_LIBS dtoolconfig dtool
 
 #begin metalib_target
   #define TARGET pandafx

@@ -35,7 +35,7 @@ class DatagramIterator;
 //               place to scope these static methods which should be
 //               called directly.
 ////////////////////////////////////////////////////////////////////
-class IoPtaDatagramShort {
+class EXPCL_PANDA IoPtaDatagramShort {
 public:
   static void write_datagram(Datagram &dest, CPTA_ushort array);
   static PTA_ushort read_datagram(DatagramIterator &source);
