@@ -183,27 +183,8 @@ get_override(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderState::get_bin_index
-//       Access: Public
-//  Description: Returns the bin index indicated by the CullBinAttrib,
-//               if any, associated by this state (or the default bin
-//               index if there is no CullBinAttrib).  This function
-//               is provided as an optimization for determining this
-//               at render time.
-////////////////////////////////////////////////////////////////////
-INLINE int RenderState::
-get_bin_index() const {
-  if ((_flags & F_checked_bin_index) == 0) {
-    // We pretend this function is const, even though it transparently
-    // modifies the internal bin_index cache.
-    ((RenderState *)this)->determine_bin_index();
-  }
-  return _bin_index;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: RenderState::get_draw_order
-//       Access: Public
+//       Access: Published
 //  Description: Returns the draw order indicated by the
 //               CullBinAttrib, if any, associated by this state (or 0
 //               if there is no CullBinAttrib).  See get_bin_index().
@@ -220,7 +201,7 @@ get_draw_order() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::get_fog
-//       Access: Public
+//       Access: Published
 //  Description: This function is provided as an optimization, to
 //               speed up the render-time checking for the existance
 //               of a FogAttrib on this state.  It returns a
@@ -239,7 +220,7 @@ get_fog() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::get_bin
-//       Access: Public
+//       Access: Published
 //  Description: This function is provided as an optimization, to
 //               speed up the render-time checking for the existance
 //               of a BinAttrib on this state.  It returns a
@@ -258,7 +239,7 @@ get_bin() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::get_transparency
-//       Access: Public
+//       Access: Published
 //  Description: This function is provided as an optimization, to
 //               speed up the render-time checking for the existance
 //               of a TransparencyAttrib on this state.  It returns a
@@ -273,6 +254,25 @@ get_transparency() const {
     ((RenderState *)this)->determine_transparency();
   }
   return _transparency;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_bin_index
+//       Access: Published
+//  Description: Returns the bin index indicated by the CullBinAttrib,
+//               if any, associated by this state (or the default bin
+//               index if there is no CullBinAttrib).  This function
+//               is provided as an optimization for determining this
+//               at render time.
+////////////////////////////////////////////////////////////////////
+INLINE int RenderState::
+get_bin_index() const {
+  if ((_flags & F_checked_bin_index) == 0) {
+    // We pretend this function is const, even though it transparently
+    // modifies the internal bin_index cache.
+    ((RenderState *)this)->determine_bin_index();
+  }
+  return _bin_index;
 }
 
 ////////////////////////////////////////////////////////////////////

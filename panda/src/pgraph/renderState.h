@@ -99,13 +99,16 @@ PUBLISHED:
   static int get_num_unused_states();
   static int clear_cache();
 
-public:
-  INLINE int get_bin_index() const;
+PUBLISHED:
+  // These methods are intended for use by low-level code, but they're
+  // also handy enough to expose to high-level users.
   INLINE int get_draw_order() const;
   INLINE const FogAttrib *get_fog() const;
   INLINE const CullBinAttrib *get_bin() const;
   INLINE const TransparencyAttrib *get_transparency() const;
+  INLINE int get_bin_index() const;
 
+public:
   CPT(RenderState) issue_delta_modify(const RenderState *other, 
                                       GraphicsStateGuardianBase *gsg) const;
   CPT(RenderState) issue_delta_set(const RenderState *other, 
