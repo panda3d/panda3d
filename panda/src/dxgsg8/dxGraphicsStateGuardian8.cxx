@@ -2445,7 +2445,17 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
            bool bNewUseTexCoordOnlyLoop = (((_perVertex & PER_COLOR)==0x0) &&
                                            ((_CurFVFType & D3DFVF_NORMAL)==0x0) &&
                                            ((_CurFVFType & D3DFVF_TEX1)!=0x0));
-           assert(bNewUseTexCoordOnlyLoop == bUseTexCoordOnlyLoop);
+           if(bUseTexCoordOnlyLoop && (!bNewUseTexCoordOnlyLoop)) {
+               // ok for bUseTexCoordOnlyLoop to be false, and bNew to be true.
+               // draw_prim_setup can sometimes turn off the _perComp color for
+               // G_OVERALL and scene-graph-color cases, which causes bNew to be true,
+               // while the original bUseTexCoordOnly is still false.
+               // the case we want to prevent is accidently using the texcoordloop
+               // instead of the general one, using the general one should always work.
+
+               DebugBreak();
+               assert(0);
+           }
         #endif
 
         nassertv(_pCurFvfBufPtr == NULL);    // make sure the storage pointer is clean.
@@ -2632,7 +2642,19 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
            bool bNewUseTexCoordOnlyLoop = ((((_perComp|_perVertex) & PER_COLOR)==0x0) &&
                                            ((_CurFVFType & D3DFVF_NORMAL)==0x0) &&
                                            ((_CurFVFType & D3DFVF_TEX1)!=0x0));
-           assert(bNewUseTexCoordOnlyLoop == bUseTexCoordOnlyLoop);
+
+           if(bUseTexCoordOnlyLoop && (!bNewUseTexCoordOnlyLoop)) {
+               // ok for bUseTexCoordOnlyLoop to be false, and bNew to be true.
+               // draw_prim_setup can sometimes turn off the _perComp color for
+               // G_OVERALL and scene-graph-color cases, which causes bNew to be true,
+               // while the original bUseTexCoordOnly is still false.
+               // the case we want to prevent is accidently using the texcoordloop
+               // instead of the general one, using the general one should always work.
+
+               DebugBreak();
+               assert(0);
+           }
+
         #endif
 
         // iterate through the triangle primitives
@@ -3198,7 +3220,7 @@ apply_texture(TextureContext *tc) {
     if(aniso_degree>=2) {
         newMinFilter=D3DTEXF_ANISOTROPIC;
     }
-    
+
     if(newMinFilter!=_CurTexMinFilter) {
         _CurTexMinFilter = newMinFilter;
         scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MINFILTER, newMinFilter);
