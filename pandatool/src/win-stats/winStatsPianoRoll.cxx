@@ -423,8 +423,9 @@ consider_drag_start(int mouse_x, int mouse_y, int width, int height) {
         return DM_guide_bar;
       }
 
-    } else {
-      // The mouse is above or below the graph; maybe create a new
+    } else if (mouse_x < _left_margin - 2 ||
+               mouse_x > width - _right_margin + 2) {
+      // The mouse is left or right of the graph; maybe create a new
       // guide bar.
       return DM_new_guide_bar;
     }
