@@ -80,7 +80,7 @@ public:
 private:
   static TypeHandle _type_handle;
 
-  friend DynamicTextFont;
+  friend class DynamicTextFont;
 };
 
 #include "dynamicTextPage.I"
