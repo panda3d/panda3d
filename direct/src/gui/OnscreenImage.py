@@ -95,6 +95,7 @@ class OnscreenImage(PandaObject, NodePath):
             self.setColor(color[0], color[1], color[2], color[3])
 
     def setImage(self, image):
+        parent = self.getParent()
         # Assign geometry
         self.removeNode()
         if isinstance(image, NodePath):
