@@ -244,6 +244,9 @@ $[cdefine HAVE_UNISTD_H]
 /* Define if you have the <utime.h> header file.  */
 $[cdefine HAVE_UTIME_H]
 
+/* Define if you have the <glob.h> header file.  */
+$[cdefine HAVE_GLOB_H]
+
 /* Define if you have the <dirent.h> header file.  */
 $[cdefine HAVE_DIRENT_H]
 

@@ -120,6 +120,9 @@
 // Do we have <dirent.h>?
 #define HAVE_DIRENT_H 1
 
+// Do we have <glob.h> (and do we want to use it instead of dirent.h)?
+#define HAVE_GLOB_H 1
+
 // Do we have <sys/soundcard.h> (and presumably a Linux-style audio
 // interface)?
 #define HAVE_SYS_SOUNDCARD_H 1
