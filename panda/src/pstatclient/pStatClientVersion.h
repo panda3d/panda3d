@@ -17,7 +17,7 @@
 //               Normally this will be the same as
 //               get_current_pstat_major/minor_version().
 ////////////////////////////////////////////////////////////////////
-class PStatClientVersion : public ReferenceCount {
+class EXPCL_PANDA PStatClientVersion : public ReferenceCount {
 public:
   PStatClientVersion();
 
