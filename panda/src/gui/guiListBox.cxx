@@ -216,7 +216,7 @@ int GuiListBox::freeze(void) {
   ItemVector::iterator i;
   ItemDeque::iterator j;
 
-  gui_cat->debug() << "GuiListBox::freeze()" << endl;
+  gui_cat->spam() << "GuiListBox::freeze()" << endl;
   for (i=_top_stack.begin(); i!=_top_stack.end(); ++i) {
     if (*i == _up_arrow)
       continue;
@@ -251,7 +251,7 @@ int GuiListBox::thaw(void) {
   ItemVector::iterator i;
   ItemDeque::iterator j;
 
-  gui_cat->debug() << "GuiListBox::thaw()" << endl;
+  gui_cat->spam() << "GuiListBox::thaw()" << endl;
   for (i=_top_stack.begin(); i!=_top_stack.end(); ++i) {
     if (*i == _up_arrow)
       continue;

@@ -915,9 +915,9 @@ static void setup_gui(void) {
   // test 13
   //  test13(mgr, font);
   // test 14
-  test14(mgr, font);
+  //  test14(mgr, font);
   // test 15
-  //  test15(mgr, font);
+  test15(mgr, font);
 }
 
 static void event_2(CPT_Event) {

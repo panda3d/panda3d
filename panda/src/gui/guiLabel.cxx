@@ -220,8 +220,8 @@ int GuiLabel::freeze() {
   switch (_type) {
   case SIMPLE_TEXT:
     {
-      gui_cat->debug() << "GuiLabel:: freezing text node (0x" << (void*)this
-		       << ")" << endl;
+      gui_cat->spam() << "GuiLabel:: freezing text node (0x" << (void*)this
+		      << ")" << endl;
       TextNode* n = DCAST(TextNode, _geom);
       return n->freeze();
     }
@@ -235,8 +235,8 @@ int GuiLabel::thaw() {
   switch (_type) {
   case SIMPLE_TEXT:
     {
-      gui_cat->debug() << "GuiLabel:: thawing text node (0x" << (void*)this
-		       << ")" << endl;
+      gui_cat->spam() << "GuiLabel:: thawing text node (0x" << (void*)this
+		      << ")" << endl;
       TextNode* n = DCAST(TextNode, _geom);
       return n->thaw();
     }
