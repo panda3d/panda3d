@@ -1,6 +1,7 @@
 """Track module: contains the Track class"""
 
 import Interval
+import types
 
 class Track(Interval.Interval):
 
@@ -12,54 +13,105 @@ class Track(Interval.Interval):
         """__init__(intervalList, name)
         """
 	if (name == None):
-	    self.name = 'Track-%d' % self.trackNum
-	    self.trackNum = self.trackNum + 1
+	    self.name = 'Track-%d' % Track.trackNum
+	    Track.trackNum = Track.trackNum + 1
 	else:
 	    self.name = name
+
 	self.ilist = intervalList
-	self.dlist = []
-	self.computeDuration()
+	self.duration = self.__computeDuration(len(self.ilist))
+	self.startTime = 0.0
+	self.type = Interval.Interval.PrevEndRelative
 
-    def computeDuration(self):
-	""" computeDuration()
+    def __computeDuration(self, length):
+	""" __computeDuration(length)
 	"""
-	self.duration = 0.0
-	for i in self.ilist:
-	    dur = i.getDuration()
-	    self.duration = self.duration + dur
-	    self.dlist.append(dur)
+	assert(length <= len(self.ilist))
+	duration = 0.0
+	prev = None
+	for i in self.ilist[0:length]:
+	    type = i.getType()
+	    t0 = i.getStartTime()
+	    assert(t0 >= 0.0)
+	    fillTime = t0 
+	    if (type == Interval.Interval.PrevEndRelative):
+		pass
+	    elif (type == Interval.Interval.PrevStartRelative):
+		if (prev != None):
+		    fillTime = t0 - prev.getDuration()
+	    elif (type == Interval.Interval.TrackStartRelative):
+		fillTime = t0 - duration
+	    else:
+		Interval.notify.error(
+			'Track.__computeDuration(): unknown type: %d' % type)
+	    if (fillTime < 0.0):
+		Interval.notify.error(
+			'Track.__computeDuration(): overlap detected')
+	    duration = duration + fillTime + i.getDuration()
+	    prev = i
+	return duration
 
-    def getStartTimeOf(self, name):
-	""" getStartTimeOf(name)
+    def getTrackRelativeStartTime(self, name):
+	""" getTrackRelativeStartTime(name)
 	"""
-	t = 0.0
 	for i in range(len(self.ilist)):
-	    if (self.ilist[i].getName() == name):
-		return t 
-	    t = t + self.dlist[i]
-	Interval.notify.warning('Track.getStartOf(): no Interval named: %s' %
-					name)
+	    if (self.ilist[i].getName() == name):	
+		return self.__computeDuration(i) - self.ilist[i].getDuration()
+	Interval.notify.warning(
+		'Track.getRelativeStartTime(): no Interval named: %s' % name)
 	return 0.0
 
-    def getEndTimeOf(self, name):
-	""" getEndTimeOf(name)
+    def __getTrackRelativeStartTime(self, interval):
+	""" __getTrackRelativeStartTime(interval)
 	"""
-	t = 0.0
+	return (self.__computeDuration(self.ilist.index(interval)+1) -
+			interval.getDuration())
+
+    def getTrackRelativeEndTime(self, name):
+	""" getTrackRelativeEndTime(name)
+	"""
 	for i in range(len(self.ilist)):
-	    t = t + self.dlist[i]
-	    if (self.ilist[i].getName() == name):
-		return t 
-	Interval.notify.warning('Track.getStartOf(): no Interval named: %s' %
-					name)
+	    if (self.ilist[i].getName() == name):	
+		return self.__computeDuration(i)
+	Interval.notify.warning(
+		'Track.getRelativeEndTime(): no Interval named: %s' % name)
 	return 0.0
 
     def setT(self, t):
 	""" setT(t)
 	    Go to time t
 	"""
-	if (t > self.duration):
-	    Interval.notify.warning('Track.setT(): t = %f > duration' % t)
+	if (len(self.ilist) == 0):
+	    Interval.notify.warning('Track.setT(): track has no intervals')
 	    return
-	for i in range(len(self.dlist)):
-	    if (t <= self.dlist[i]):
-		self.ilist[i].setT(t)
+	elif (t > self.duration):
+	    # Anything beyond the end of the track is assumed to be the 
+	    # final state of the last Interval on the track
+	    self.ilist[len(self.ilist)-1].setT(t)
+	    print self.name + ': t > self.duration'
+	else:
+	    # Find out which Interval applies
+	    prev = None
+	    print self.name
+	    for i in self.ilist:
+		# Calculate the track relative start time for the interval
+		t0 = self.__getTrackRelativeStartTime(i)
+
+		# Determine if the Interval is applicable
+		if (t < t0):
+		    if (prev != None):
+			print 'in a gap at t: %f' % t
+			# Gaps between Intervals take the final state of
+			# the previous Interval
+			prev.setT(t)
+			return
+		    else:
+			Interval.Interval.notify.warning(
+				'Track.setT(): state undefined at t: %f' % t)
+			return
+		elif (t0 <= t) and (t <= t0 + i.getDuration()):
+		    print 'in interval: ' + i.getName() + ' at t: %f' % t
+		    i.setT(t - t0)
+		    return
+		prev = i
+	    print 'no intervals apply at t: %f' % t

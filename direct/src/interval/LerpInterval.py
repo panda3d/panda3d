@@ -2,33 +2,33 @@
 
 import Interval
 import Lerp
+import PosHprInterval
 
 class LerpInterval(Interval.Interval):
 
     # special methods
     
-    def __init__(self, name, node, duration):
-        """__init__(name, node, duration)
+    def __init__(self, name, node, duration, t0=0.0, 
+				type=Interval.Interval.PrevEndRelative):
+        """__init__(name, node, duration, t0, type)
         """
 	self.name = name
 	self.node = node	
 	self.duration = duration
-
-    def setT(self, t):
-	""" setT(t)
-	    Go to time t
-	"""
-	pass
+	self.startTime = t0
+	self.type = type
 
 class LerpPosHprInterval(LerpInterval):
 
-    def __init__(self, name, node, pos, hpr, duration, other=None,
+    def __init__(self, name, node, pos, hpr, duration, t0=0.0, 
+		type=Interval.Interval.PrevEndRelative, other=None,
 			blendType='noBlend'):
-	""" __init__(name, node, pos, hpr, duration, other, blendType)
+	""" __init__(name, node, pos, hpr, duration, t0, type, other, 
+					blendType)
 	"""
         import PosHprLerpFunctor
 
-	LerpInterval.__init__(self, name, node, duration)
+	LerpInterval.__init__(self, name, node, duration, t0, type)
 	self.pos = pos
 	self.hpr = hpr
 
@@ -52,10 +52,11 @@ class LerpPosHprInterval(LerpInterval):
     def setT(self, t):
 	""" setT(t)
 	"""
+	assert(t >= 0.0)
 	if (t > self.duration):
-	    return
-	assert(t >= 0)
-	self.lerp.setT(t)
+	    self.lerp.setT(self.duration)
+	else:
+	    self.lerp.setT(t)
 
     def __getBlend(self, blendType):
         """__getBlend(self, string)

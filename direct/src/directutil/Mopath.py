@@ -62,6 +62,17 @@ class Mopath(PandaObject):
             for child in nodePath.getChildrenAsList():
                 self.__extractCurves(child)
 
+    def getFinalState(self):
+	""" getFinalState()
+	"""
+	pos = Point3(0)
+	if (self.xyzNurbsCurve != None):
+	    self.xyzNurbsCurve.getPoint(self.maxT, pos)
+	hpr = Point3(0)
+	if (self.hprNurbsCurve != None):
+	    self.hprNurbsCurve.getPoint(self.maxT, hpr)
+	return (pos, hpr)
+
     def goTo(self, node, time):
 	if (self.xyzNurbsCurve == None) and (self.hprNurbsCurve == None):
 	    print 'Mopath: Mopath has no curves'

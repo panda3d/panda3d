@@ -13,31 +13,32 @@ class MultiTrack(Interval.Interval):
         """__init__(trackList, name)
         """
 	if (name == None):
-	    self.name = 'MultiTrack-%d' % self.multiTrackNum
-	    self.multiTrackNum = self.multiTrackNum + 1
+	    self.name = 'MultiTrack-%d' % MultiTrack.multiTrackNum
+	    MultiTrack.multiTrackNum = MultiTrack.multiTrackNum + 1
 	else:
 	    self.name = name
 	self.tlist = trackList
-	self.getDuration()
+	self.duration = self.getDuration()
+	self.startTime = 0.0
+	self.type = Interval.Interval.PrevEndRelative
 
     def getDuration(self):
 	""" getDuration()
+	    Returns the duration of the longest Track 
 	"""
-	#if (len(self.tlist == 0)):
-	#    Interval.notify.warning('MultiTrack.getDuration(): no Tracks')
-	#    return 0.0
-	self.duration = self.tlist[0].getDuration()
+	duration = 0.0
 	for t in self.tlist:
-	    if (self.duration != t.getDuration()):
-		Interval.Interval.notify.warning('MultiTrack.getDuration(): tracks not all same duration')
-	return self.duration
+	    dur = t.getDuration()
+	    if (dur > duration):
+		duration = dur
+	return duration
 
     def setT(self, t):
 	""" setT(t)
 	    Go to time t
 	"""
 	if (t > self.duration):
-	    Interval.notify.warning('MultiTrack.setT(): t = %f > duration' % t)
-	    return
+	    Interval.notify.warning(
+		'MultiTrack.setT(): t = %f > duration' % t)
 	for track in self.tlist:
 	    track.setT(t)

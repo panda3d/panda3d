@@ -9,13 +9,19 @@ class Interval(DirectObject):
     notify = directNotify.newCategory("Interval")
     #notify.setDebug(1)
 
+    PrevEndRelative = 1
+    PrevStartRelative = 2
+    TrackStartRelative = 3
+
     # special methods
     
-    def __init__(self, name, duration):
-        """__init__(name, duration)
+    def __init__(self, name, duration, t0 = 0.0, type = PrevEndRelative):
+        """__init__(name, duration, t0, type)
         """
 	self.name = name
 	self.duration = duration
+	self.startTime = t0
+	self.type = type
 
     def getName(self):
 	""" getName()
@@ -26,6 +32,16 @@ class Interval(DirectObject):
 	""" getDuration()
 	"""
 	return self.duration
+
+    def getStartTime(self):
+	""" getStartTime()
+	"""
+	return self.startTime
+
+    def getType(self):
+	""" getType()
+	"""
+	return self.type
 
     def setT(self, t):
 	""" setT(t)
