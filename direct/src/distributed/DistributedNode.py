@@ -65,7 +65,7 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
         DistributedAvatar) to override the behavior of setParent if
         desired.
         """
-        if not self.disabled:
+        if not self.isDisabled():
             assert(self.cr.token2nodePath.has_key(parentToken))
             parent = self.cr.token2nodePath[parentToken]
             self.wrtReparentTo(parent)

@@ -3,6 +3,15 @@
 from PandaObject import *
 from DirectNotifyGlobal import *
 
+# Values for DistributedObject.activeState
+
+ESNew          = 1
+ESDeleted      = 2
+ESDisabling    = 3
+ESDisabled     = 4  # values here and lower are considered "disabled"
+ESGenerating   = 5  # values here and greater are considered "generated"
+ESGenerated    = 6
+
 class DistributedObject(PandaObject):
     """Distributed Object class:"""
     notify = directNotify.newCategory("DistributedObject")
@@ -35,10 +44,10 @@ class DistributedObject(PandaObject):
             # object.
             self.deleteImminent = 0
 
-            # It's useful to have a "disabled" flag.  This is only
-            # trustworthy if the inheriting class properly calls up
-            # the chain for disable() and generate().
-            self.disabled = 1
+            # Keep track of our state as a distributed object.  This
+            # is only trustworthy if the inheriting class properly
+            # calls up the chain for disable() and generate().
+            self.activeState = ESNew
             
         return None
 
@@ -115,6 +124,7 @@ class DistributedObject(PandaObject):
         # a normal, nondisabled state; and *then* the disable function
         # can properly disable it (for instance, by parenting it to
         # hidden).
+        self.activeState = ESDisabling
         messenger.send(self.uniqueName("disable"))
         self.disable()
         return None
@@ -124,13 +134,21 @@ class DistributedObject(PandaObject):
         Sends a message to the world after the object has been
         generated and all of its required fields filled in.
         """
+        self.activeState = ESGenerated
         messenger.send(self.uniqueName("generate"), [self])
 
     def disable(self):
         """disable(self)
         Inheritors should redefine this to take appropriate action on disable
         """
-        self.disabled = 1
+        self.activeState = ESDisabled
+
+    def isDisabled(self):
+        """isDisabled(self)
+        Returns true if the object has been disabled and/or deleted,
+        or if it is brand new and hasn't yet been generated.
+        """
+        return (self.activeState < ESGenerating)
 
     def delete(self):
         """delete(self)
@@ -147,13 +165,14 @@ class DistributedObject(PandaObject):
         """generate(self)
         Inheritors should redefine this to take appropriate action on generate
         """
-        self.disabled = 0
+        self.activeState = ESGenerating
 
     def generateInit(self):
         """generateInit(self)
         This method is called when the DistributedObject is first introduced
         to the world... Not when it is pulled from the cache.
         """
+        self.activeState = ESGenerating
     
     def getDoId(self):
         """getDoId(self)
