@@ -7,6 +7,8 @@
 #include "config_notify.h"
 #include "dconfig.h"
 
+#include <filename.h>
+
 #include <ctype.h>
 
 Notify *Notify::_global_ptr = (Notify *)NULL;
@@ -434,5 +436,38 @@ string_severity(const string &str) {
 
   } else {
     return NS_unspecified;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Notify::config_initialized
+//       Access: Public
+//  Description: Intended to be called only by Config, this is a
+//               callback that indicated to Notify when Config has
+//               done initializing and Notify can safely set up some
+//               internal state variables that depend on Config
+//               variables.
+////////////////////////////////////////////////////////////////////
+void Notify::
+config_initialized() {
+  static bool already_initialized = false;
+  if (already_initialized) {
+    nout << "Notify::config_initialized() called more than once.\n";
+    return;
+  }
+  already_initialized = true;
+
+  if (_ostream_ptr == &cerr) {
+    Filename notify_output = config_notify.GetString("notify-output", "");
+    if (!notify_output.empty()) {
+      notify_output.set_text();
+      ofstream *out = new ofstream;
+      if (!notify_output.open_write(*out)) {
+	nout << "Unable to open file " << notify_output << " for output.\n";
+	delete out;
+      } else {
+	set_ostream_ptr(out, true);
+      }
+    }
   }
 }

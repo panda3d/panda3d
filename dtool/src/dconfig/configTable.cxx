@@ -590,6 +590,7 @@ ConfigTable* ConfigTable::Instance(void) {
     _instance = new ConfigTable;
     _instance->GetData();
     _instance->_initializing = false;
+    Notify::ptr()->config_initialized();
   }
   return _instance;
 }

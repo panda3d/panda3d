@@ -61,12 +61,15 @@ PUBLISHED:
   static void write_string(const string &str);
   static Notify *ptr();
 
+public:
   static long get_literal_flag();
 
   bool assert_failure(const char *expression, int line,
 		      const char *source_file);
 
   static NotifySeverity string_severity(const string &string);
+
+  void config_initialized();
 
 private:
   ostream *_ostream_ptr;
