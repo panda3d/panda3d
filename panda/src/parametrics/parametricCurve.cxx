@@ -718,28 +718,28 @@ r_calc_length(float t1, float t2, const LPoint3f &p1, const LPoint3f &p2,
     // Stop recursing--we've just walked off the limit for
     // representing smaller values of t.
     return 0.0f;
+  }
+
+  float tmid;
+  LPoint3f pmid;
+  float left, right;
+
+  // Calculate the point on the curve midway between the two
+  // endpoints.
+  tmid = (t1+t2)*0.5f;
+  get_point(tmid, pmid);
+
+  // Did we increase the length of the segment measurably?
+  left = (p1 - pmid).length();
+  right = (pmid - p2).length();
+
+  if ((left + right) - seglength < length_tolerance) {
+    // No.  We're done.
+    return seglength;
   } else {
-    float tmid;
-    LPoint3f pmid;
-    float left, right;
-
-    // Calculate the point on the curve midway between the two
-    // endpoints.
-    tmid = (t1+t2)*0.5f;
-    get_point(tmid, pmid);
-
-    // Did we increase the length of the segment measurably?
-    left = (p1 - pmid).length();
-    right = (pmid - p2).length();
-
-    if ((left + right) - seglength < length_tolerance) {
-      // No.  We're done.
-      return seglength;
-    } else {
-      // Yes.  Keep going.
-      return r_calc_length(t1, tmid, p1, pmid, left) +
-             r_calc_length(tmid, t2, pmid, p2, right);
-    }
+    // Yes.  Keep going.
+    return r_calc_length(t1, tmid, p1, pmid, left) +
+      r_calc_length(tmid, t2, pmid, p2, right);
   }
 }
 
@@ -752,8 +752,8 @@ r_calc_length(float t1, float t2, const LPoint3f &p1, const LPoint3f &p2,
 //               find.  If the indicated target_length falls within
 //               this segment, returns true and sets found_t to the
 //               point along the segment.  Otherwise, updates
-//               seglength with the calculated length of the segment
-//               and returns false.
+//               seglength with the accurate calculated length of the
+//               segment and returns false.
 ////////////////////////////////////////////////////////////////////
 bool ParametricCurve::
 r_find_length(float target_length, float &found_t,
@@ -769,52 +769,52 @@ r_find_length(float target_length, float &found_t,
     found_t = t1;
     return true;
 
-  } else {
-    float tmid;
-    LPoint3f pmid;
-    float left, right;
+  }
 
-    // Calculate the point on the curve midway between the two
-    // endpoints.
-    tmid = (t1+t2)*0.5f;
-    get_point(tmid, pmid);
+  float tmid;
+  LPoint3f pmid;
+  float left, right;
 
-    // Did we increase the length of the segment measurably?
-    left = (p1 - pmid).length();
-    right = (pmid - p2).length();
+  // Calculate the point on the curve midway between the two
+  // endpoints.
+  tmid = (t1+t2)*0.5f;
+  get_point(tmid, pmid);
 
-    if ((left + right) - seglength < length_tolerance) {
-      // No.  Curve is relatively straight at this point.
-      if (target_length <= seglength) {
-        // Compute t value that corresponds to target_length
-        // Maybe the point is in the left half of the segment?
-        if (r_find_t(target_length, found_t, t1, tmid, p1, pmid)) {
-          return true;
-        }
-        // Maybe it's on the right half?
-        if (r_find_t(target_length - left, found_t, tmid, t2, pmid, p2)) {
-          return true;
-        }
-      }
-      return false;
+  // Did we increase the length of the segment measurably?
+  left = (p1 - pmid).length();
+  right = (pmid - p2).length();
 
-    } else {
-      // Yes.  Keep going.
-
+  if ((left + right) - seglength < length_tolerance) {
+    // No.  Curve is relatively straight at this point.
+    if (target_length <= seglength) {
+      // Compute t value that corresponds to target_length
       // Maybe the point is in the left half of the segment?
-      if (r_find_length(target_length, found_t, t1, tmid, p1, pmid, left)) {
-        return true;
+      if (r_find_t(target_length, found_t, t1, tmid, p1, pmid)) {
+	return true;
       }
-
       // Maybe it's on the right half?
-      if (r_find_length(target_length - left, found_t, tmid, t2, pmid, p2, right)) {
-        return true;
+      if (r_find_t(target_length - left, found_t, tmid, t2, pmid, p2)) {
+	return true;
       }
-
-      // Neither.  Keep going.
-      seglength = left + right;
-      return false;
     }
+    return false;
+
+  } else {
+    // Yes.  Keep going.
+
+    // Maybe the point is in the left half of the segment?
+    if (r_find_length(target_length, found_t, t1, tmid, p1, pmid, left)) {
+      return true;
+    }
+
+    // Maybe it's on the right half?
+    if (r_find_length(target_length - left, found_t, tmid, t2, pmid, p2, right)) {
+      return true;
+    }
+
+    // Neither.  Keep going.
+    seglength = left + right;
+    return false;
   }
 }
 
@@ -823,8 +823,8 @@ r_find_length(float target_length, float &found_t,
 ////////////////////////////////////////////////////////////////////
 //     Function: ParametricCurve::r_find_t
 //       Access: Private
-//  Description: The recursive function to compute t value of a 
-//               target point along a staight section of a curve.
+//  Description: computes the t value in the parametric domain of a 
+//               target point along a straight section of a curve.
 //               This is similar to r_calc_length, above.  
 //               target_length is the length along the curve past t1 
 //               that we hope to find.  If the indicated target_length 
@@ -835,7 +835,8 @@ bool ParametricCurve::
 r_find_t(float target_length, float &found_t,
          float t1, float t2,
          const LPoint3f &p1, const LPoint3f &p2) const {
-  static const float t_tolerance = 0.001f;
+  static const float length_tolerance = 0.0001f;
+  static const float t_tolerance = 0.0001f;
 
   if (parametrics_cat.is_spam()) {
     parametrics_cat.spam()
@@ -843,7 +844,7 @@ r_find_t(float target_length, float &found_t,
   }
 
   // Is the target point close to the near endpoint
-  if (target_length < t_tolerance) {
+  if (target_length < length_tolerance) {
     found_t = t1;
     return true;
   } 
@@ -858,8 +859,15 @@ r_find_t(float target_length, float &found_t,
   }
    
   // Is the target point close to far endpoint?
-  if ( (point_dist - target_length ) < t_tolerance ) {
+  if ( (point_dist - target_length ) < length_tolerance ) {
     found_t = t2;
+    return true;
+  }
+
+  
+  // are we running out of parametric precision?
+  if ((t2 - t1) < t_tolerance) {
+    found_t = t1;
     return true;
   }
 
@@ -882,6 +890,9 @@ r_find_t(float target_length, float &found_t,
   if (r_find_t(target_length - left, found_t, tmid, t2, pmid, p2)) {
     return true;
   }
+
+  // not found in either half, keep looking
+  return false;
 }
 
 
