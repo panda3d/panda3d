@@ -58,50 +58,65 @@ cleanup() {
 ////////////////////////////////////////////////////////////////////
 bool EggPolygon::
 calculate_normal(Normald &result, CoordinateSystem cs) const {
-  // Get the first three unique vertices.
-  Vertexd v[3];
-  int i = 0;
+  // We need to find the largest vector resulting from the cross of
+  // three consecutive vertices.  If we just pick the first vector, we
+  // can be fooled by a slightly bow-tie polygon.
 
-  const_iterator vi = begin();
-  while (vi != end()) {
-    EggVertex *vertex = (*vi);
-    v[i] = vertex->get_pos3();
+  // To avoid being fooled by a concave polygon, we must eliminate
+  // from consideration any three vertices in which the middle vertex
+  // is closer to the centroid than the outer two.
+  size_t num_vertices = size();
+  LPoint3d centroid = LPoint3d::zero();
+  size_t index;
+  for (index = 0; index < num_vertices; index++) {
+    centroid += get_vertex(index)->get_pos3();
+  }
+  centroid /= (double)num_vertices;
 
-    // Make sure the vertex is unique.
-    bool is_unique = true;
-    for (int j = 0; j < i && is_unique; j++) {
-      is_unique = !v[i].almost_equal(v[j]);
-    }
+  LVector3d max_normal;
+  float max_normal_length;
+  bool got_max_normal = false;
 
-    if (is_unique) {
-      if (i < 2) {
-        i++;
+  for (index = 0; index < num_vertices; index++) {
+    LPoint3d v0 = get_vertex(index)->get_pos3();
+    LPoint3d v1 = get_vertex((index + 1) % num_vertices)->get_pos3();
+    LPoint3d v2 = get_vertex((index + 2) % num_vertices)->get_pos3();
 
-      } else {
-        // Ok, we have three vertices.  Do they determine a plane?
-        LVector3d a = v[1] - v[0];
-        LVector3d b = v[2] - v[0];
-        LVector3d normal = a.cross(b);
-
-        if (normal.normalize()) {
-          // If we are in a left-handed coordinate system, we must
-          // reverse the normal.
-          if (cs == CS_default) {
-            cs = default_coordinate_system;
-          }
-          if (cs == CS_zup_left || cs == CS_yup_left) {
-            normal = -normal;
-          }
-
-          result = normal;
-          return true;
-        }
-
-        // No, the three vertices must have been collinear.  Carry on
-        // and get another vertex.
+    double d0 = (v0 - centroid).length_squared();
+    double d1 = (v1 - centroid).length_squared();
+    double d2 = (v2 - centroid).length_squared();
+    
+    if (d1 > d0 && d1 > d2) {
+      // Ok, we have three vertices.  Do they determine a plane?
+      LVector3d a = v1 - v0;
+      LVector3d b = v2 - v0;
+      LVector3d normal = a.cross(b);
+      float normal_length = normal.length();
+      
+      if (!got_max_normal || normal_length > max_normal_length) {
+        max_normal = normal;
+        max_normal_length = normal_length;
+        got_max_normal = true;
       }
     }
-    ++vi;
+  }
+
+  if (got_max_normal) {
+    if (!IS_NEARLY_ZERO(max_normal_length)) {
+      max_normal /= max_normal_length;
+
+      // If we are in a left-handed coordinate system, we must
+      // reverse the normal.
+      if (cs == CS_default) {
+        cs = default_coordinate_system;
+      }
+      if (cs == CS_zup_left || cs == CS_yup_left) {
+        max_normal = -max_normal;
+      }
+      
+      result = max_normal;
+      return true;
+    }
   }
 
   // The polygon is degenerate: we don't have enough unique vertices
