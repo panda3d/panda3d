@@ -144,25 +144,14 @@ is_clrecv() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::is_aisend
+//     Function: DCAtomicField::is_ownsend
 //       Access: Public
-//  Description: Returns true if the "aisend" flag is set for this
+//  Description: Returns true if the "ownsend" flag is set for this
 //               field, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool DCAtomicField::
-is_aisend() const {
-  return (_flags & F_aisend) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::is_airecv
-//       Access: Public
-//  Description: Returns true if the "airecv" flag is set for this
-//               field, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCAtomicField::
-is_airecv() const {
-  return (_flags & F_airecv) != 0;
+is_ownsend() const {
+  return (_flags & F_ownsend) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -219,11 +208,8 @@ write(ostream &out, int indent_level) const {
   if ((_flags & F_clrecv) != 0) {
     out << " clrecv";
   }
-  if ((_flags & F_aisend) != 0) {
-    out << " aisend";
-  }
-  if ((_flags & F_airecv) != 0) {
-    out << " airecv";
+  if ((_flags & F_ownsend) != 0) {
+    out << " ownsend";
   }
 
   out << ";  // field " << _number << "\n";

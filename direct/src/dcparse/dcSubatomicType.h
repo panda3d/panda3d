@@ -29,7 +29,12 @@ enum DCSubatomicType {
 
   ST_float64,
 
-  ST_string,
+  ST_string,      // a human-printable string
+  ST_blob,        // any variable length message, stored as a string
+  ST_int16array,
+  ST_int32array,
+  ST_uint16array,
+  ST_uint32array,
 };
 END_PUBLISH
 

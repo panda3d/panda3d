@@ -37,6 +37,21 @@ operator << (ostream &out, DCSubatomicType type) {
 
   case ST_string:
     return out << "string";
+
+  case ST_blob:
+    return out << "blob";
+
+  case ST_int16array:
+    return out << "int16array";
+
+  case ST_int32array:
+    return out << "int32array";
+
+  case ST_uint16array:
+    return out << "uint16array";
+
+  case ST_uint32array:
+    return out << "uint32array";
   }
 
   return out << "invalid type: " << (int)type;

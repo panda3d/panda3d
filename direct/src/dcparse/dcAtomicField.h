@@ -34,8 +34,7 @@ PUBLISHED:
   bool is_db() const;
   bool is_clsend() const;
   bool is_clrecv() const;
-  bool is_aisend() const;
-  bool is_airecv() const;
+  bool is_ownsend() const;
 
 public:
   DCAtomicField();
@@ -61,8 +60,7 @@ public:
     F_db              = 0x0010,
     F_clsend          = 0x0020,
     F_clrecv          = 0x0040,
-    F_aisend          = 0x0080,
-    F_airecv          = 0x0100
+    F_ownsend         = 0x0080,
   };
 
   int _flags;  // A bitmask union of any of the above values.

@@ -323,6 +323,31 @@ REALNUM          ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   return KW_STRING;
 }
 
+"blob" {
+  accept();
+  return KW_BLOB;
+}
+
+"int16array" {
+  accept();
+  return KW_INT16ARRAY;
+}
+
+"int32array" {
+  accept();
+  return KW_INT32ARRAY;
+}
+
+"uint16array" {
+  accept();
+  return KW_UINT16ARRAY;
+}
+
+"uint32array" {
+  accept();
+  return KW_UINT32ARRAY;
+}
+
 mol[0-9]+ {
   // A molecular keyword.
   accept();
@@ -366,14 +391,9 @@ mol[0-9]+ {
   return KW_CLRECV;
 }
 
-"aisend" {
+"ownsend" {
   accept();
-  return KW_AISEND;
-}
-
-"airecv" {
-  accept();
-  return KW_AIRECV;
+  return KW_OWNSEND;
 }
 
 {INTEGERNUM} { 

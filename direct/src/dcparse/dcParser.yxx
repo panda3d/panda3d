@@ -57,6 +57,11 @@ dc_cleanup_parser() {
 %token KW_UINT64
 %token KW_FLOAT64
 %token KW_STRING
+%token KW_BLOB
+%token KW_INT16ARRAY
+%token KW_INT32ARRAY
+%token KW_UINT16ARRAY
+%token KW_UINT32ARRAY
 
 %token KW_MOL
 
@@ -67,8 +72,7 @@ dc_cleanup_parser() {
 %token KW_DB
 %token KW_CLSEND
 %token KW_CLRECV
-%token KW_AISEND
-%token KW_AIRECV
+%token KW_OWNSEND
 
 %type <u.dclass> dclass_name
 %type <u.atomic> atomic_name
@@ -229,6 +233,26 @@ type_token:
 {
   $$ = ST_string;
 }
+	| KW_BLOB
+{
+  $$ = ST_blob;
+}
+	| KW_INT16ARRAY
+{
+  $$ = ST_int16array;
+}
+	| KW_INT32ARRAY
+{
+  $$ = ST_int32array;
+}
+	| KW_UINT16ARRAY
+{
+  $$ = ST_uint16array;
+}
+	| KW_UINT32ARRAY
+{
+  $$ = ST_uint32array;
+}
 	;
 
 atomic_flags:
@@ -261,13 +285,9 @@ atomic_flags:
 {
   current_atomic->_flags |= DCAtomicField::F_clrecv;
 }
-	| atomic_flags KW_AISEND
+	| atomic_flags KW_OWNSEND
 {
-  current_atomic->_flags |= DCAtomicField::F_aisend;
-}
-	| atomic_flags KW_AIRECV
-{
-  current_atomic->_flags |= DCAtomicField::F_airecv;
+  current_atomic->_flags |= DCAtomicField::F_ownsend;
 }
 	;
 
