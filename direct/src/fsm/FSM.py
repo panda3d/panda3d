@@ -64,7 +64,9 @@ class FSM(DirectObject):
     # Jesse decided that simpler was better with the __str__ function
     def __str_not__(self):
         """__str__(self)"""
-        return "FSM: name = %s \n states = %s \n initial = %s \n final = %s \n current = %s" % (self.__name, self.__states, self.__initialState, self.__finalState, self.__currentState)
+        return "FSM: name = %s \n states = %s \n initial = %s \n final = %s \n current = %s" \
+            % (self.__name, self.__states, self.__initialState, 
+               self.__finalState, self.__currentState)
 
 
     # setters and getters
