@@ -25,7 +25,7 @@ EnablePrediction = base.config.GetBool("smooth-enable-prediction", 1)
 # each avatar, which is intended to compensate for relative clock
 # skew.
 Lag = base.config.GetDouble("smooth-lag", 0.1)
-PredictionLag = base.config.GetDouble("smooth-prediction-lag", -0.1)
+PredictionLag = base.config.GetDouble("smooth-prediction-lag", 0.0)
 
 
 

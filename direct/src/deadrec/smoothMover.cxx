@@ -212,6 +212,7 @@ compute_smooth_position(double timestamp) {
   }
 
   // First, back up in time by the specified delay factor.
+  double orig_timestamp = timestamp;
   timestamp -= _delay;
   if (_accept_clock_skew) {
     timestamp -= get_avg_timestamp_delay();
@@ -304,7 +305,7 @@ compute_smooth_position(double timestamp) {
       set_smooth_pos(point._pos, point._hpr, timestamp);
     }
 
-    if (timestamp - _last_heard_from > _reset_velocity_age) {
+    if (orig_timestamp - _last_heard_from > _reset_velocity_age) {
       // Furthermore, if we haven't heard from this client in a while,
       // reset the velocity.  This decision is based entirely on our
       // local timestamps, not on the other client's reported
