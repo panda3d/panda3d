@@ -704,6 +704,7 @@ set_prev_transform(const NodePath &other, const TransformState *transform) {
 //               collision system will see the node as having suddenly
 //               appeared in the new position, without passing any
 //               points in between.
+//     See Also: NodePath::set_fluid_pos
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_pos(const LVecBase3f &pos) {
@@ -743,6 +744,7 @@ set_z(float z) {
 //               "previous" position, so that the collision system
 //               will see the node as moving fluidly from its previous
 //               position to its new position.
+//     See Also: NodePath::set_pos
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_fluid_pos(const LVecBase3f &pos) {
