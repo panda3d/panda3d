@@ -20,7 +20,7 @@ TypeHandle EggNode::_type_handle;
 //               vertices that reference them, and then removes the
 //               texture matrices from the textures themselves.
 ////////////////////////////////////////////////////////////////////
-INLINE void EggNode::
+void EggNode::
 apply_texmats() {
   EggTextureCollection textures;
   textures.find_used_textures(this);
