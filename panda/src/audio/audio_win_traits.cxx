@@ -509,6 +509,14 @@ void WinMusic::init(void) {
   // add the synth to the performance
   // result = _performance->AddPort(_synth);
   result = _performance->AddPort(NULL);
+  if (result == DMUS_E_NOT_INIT)
+    audio_cat->error() << "got DMUS_N_NOT_INIT" << endl;
+  else if (result == DMUS_E_CANNOT_OPEN_PORT)
+    audio_cat->error() << "got DMUS_E_CANNOT_OPEN_PORT" << endl;
+  else if (result == E_OUTOFMEMORY)
+    audio_cat->error() << "got E_OUTOFMEMORY" << endl;
+  else if (result == E_POINTER)
+    audio_cat->error() << "got E_POINTER" << endl;
   CHECK_RESULT(result, "failed to add synth to performance");
 
 /*
