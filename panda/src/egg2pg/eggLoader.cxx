@@ -1648,18 +1648,23 @@ make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
     if (num_vertices > 0) {
       center /= (double)num_vertices;
 
+      LMatrix4d mat = egg_group->get_vertex_to_node();
+      center = center * mat;
+
       // And the furthest vertex determines the radius.
       double radius2 = 0.0;
       for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
         EggVertex *vtx = (*vi);
         if (vtx->get_num_dimensions() == 3) {
-          LVector3d v = vtx->get_pos3() - center;
+          LPoint3d p3 = vtx->get_pos3();
+          LVector3d v = p3 * mat - center;
           radius2 = max(radius2, v.length_squared());
 
         } else if (vtx->get_num_dimensions() == 4) {
-          LPoint4d p = vtx->get_pos4();
-          if (p[3] != 0.0) {
-            LVector3d v = LPoint3d(p[0], p[1], p[2]) / p[3] - center;
+          LPoint4d p4 = vtx->get_pos4();
+          if (p4[3] != 0.0) {
+            LPoint3d p3 = LPoint3d(p4[0], p4[1], p4[2]) / p4[3];
+            LVector3d v = p3 * mat - center;
             radius2 = max(radius2, v.length_squared());
           }
         }
@@ -1743,18 +1748,20 @@ create_collision_plane(EggPolygon *egg_poly, EggGroup *parent_group) {
     return NULL;
   }
 
+  LMatrix4d mat = egg_poly->get_vertex_to_node();
+
   pvector<Vertexf> vertices;
   if (!egg_poly->empty()) {
     EggPolygon::const_iterator vi;
     vi = egg_poly->begin();
 
-    Vertexd vert = (*vi)->get_pos3();
+    Vertexd vert = (*vi)->get_pos3() * mat;
     vertices.push_back(LCAST(float, vert));
 
     Vertexd last_vert = vert;
     ++vi;
     while (vi != egg_poly->end()) {
-      vert = (*vi)->get_pos3();
+      vert = (*vi)->get_pos3() * mat;
       if (!vert.almost_equal(last_vert)) {
         vertices.push_back(LCAST(float, vert));
       }
@@ -1782,6 +1789,7 @@ void EggLoader::
 create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
                           EggGroup *parent_group,
                           EggGroup::CollideFlags flags) {
+  LMatrix4d mat = egg_poly->get_vertex_to_node();
 
   PT(EggGroup) group = new EggGroup;
 
@@ -1809,13 +1817,13 @@ create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
       EggPolygon::const_iterator vi;
       vi = poly->begin();
 
-      Vertexd vert = (*vi)->get_pos3();
+      Vertexd vert = (*vi)->get_pos3() * mat;
       vertices.push_back(LCAST(float, vert));
 
       Vertexd last_vert = vert;
       ++vi;
       while (vi != poly->end()) {
-        vert = (*vi)->get_pos3();
+        vert = (*vi)->get_pos3() * mat;
         if (!vert.almost_equal(last_vert)) {
           vertices.push_back(LCAST(float, vert));
         }
