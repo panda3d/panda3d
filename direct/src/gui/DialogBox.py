@@ -50,7 +50,7 @@ class DialogBox(OnscreenPanel.OnscreenPanel):
 	"""
 	if self.isLoaded == 0:
 	    self.load()
-
+        base.transitions.fadeScreen()
         OnscreenPanel.OnscreenPanel.show(self)
         
 	return None
@@ -60,7 +60,7 @@ class DialogBox(OnscreenPanel.OnscreenPanel):
 	"""
 	if self.isLoaded == 0:
 	    return None
-        
+        base.transitions.noTransitions()        
         OnscreenPanel.OnscreenPanel.hide(self)
 
 	return None
@@ -83,12 +83,12 @@ class DialogBox(OnscreenPanel.OnscreenPanel):
         if (self.style == TwoChoice):
             # create OK and CANCEL buttons
             self.makeButton("OK", pos = (-0.325, -0.25),
-                            func = self.__handleOk)
+                            func = self.handleOk)
             self.makeButton("Cancel", pos = (0.2, -0.25),
-                            func = self.__handleCancel)
+                            func = self.handleCancel)
         elif (self.style == Acknowledge):
             # create a centered OK  button
-            self.makeButton("OK", pos = (0.0, -0.25), func = self.__handleOk)
+            self.makeButton("OK", pos = (0.0, -0.25), func = self.handleOk)
         elif (self.style == NoButtons):
             # No buttons at all
             pass
@@ -111,15 +111,15 @@ class DialogBox(OnscreenPanel.OnscreenPanel):
 	self.isLoaded = 0
 	return None
 
-    def __handleRollover(self):
+    def handleRollover(self):
 	return None
 
-    def __handleOk(self):
+    def handleOk(self):
         assert(self.style != NoButtons)
 	self.doneStatus = "ok"	
 	messenger.send(self.doneEvent)
 
-    def __handleCancel(self):
+    def handleCancel(self):
         assert(self.style == TwoChoice)
         self.doneStatus = "cancel"
 	messenger.send(self.doneEvent)
