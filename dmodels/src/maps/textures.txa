@@ -11,17 +11,16 @@
 :group fonts
 
 # The following line flags all textures to use the most generic image
-# type (e.g. 'rgba' as opposed to 'rgba8') and also turns off
-# mipmapping for all textures ('linear').  This enables more textures
-# to be grouped together on the same palettes.  We can turn these back
-# on for individual textures later.  The 'cont' keyword indicates that
-# a texture should not consider itself having matched a line in this
-# file just because it matches this line.
+# type (e.g. 'rgba' as opposed to 'rgba8') and also turns on
+# mipmapping for all textures ('mipmap').  This enables more textures
+# to be grouped together on the same palettes.  The 'cont' keyword 
+# indicates that we should not stop scanning this file for a particular
+# texture just because we matched this first line.
 
-* : rgba linear cont
+* : generic mipmap cont
 
-Comic.rgb : 256 256 alpha
-Humanist.rgb : 256 256 alpha
+Comic.rgb : 256 256
+Humanist.rgb : 256 256
   
 Comic.egg : fonts
 Humanist.egg : fonts
