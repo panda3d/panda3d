@@ -525,6 +525,7 @@ class TaskManager:
             task.avgDt = 0
             task.maxDt = 0
             task.runningTotal = 0
+            task.setStartTimeFrame(self.currentTime, self.currentFrame)
 
     def popupControls(self):
         from TaskManagerPanel import *
