@@ -1484,18 +1484,18 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
                 elif (suffix==".lib"): cmd = cmd + ' ' + PREFIX + '/lib/' + x[:-4] + '.a'
             if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -L' + THIRDPARTY + 'fmod/lib -lfmod-3.74'
             if (PkgSelected(opts,"NVIDIACG")):
-                cmd = cmd + ' -L"' + THIRDPARTY + 'nvidiacg/lib" '
+                cmd = cmd + ' -L' + THIRDPARTY + 'nvidiacg/lib '
                 if (opts.count("CGGL")): cmd = cmd + " -lCgGL"
                 cmd = cmd + " -lCg"
-            if (PkgSelected(opts,"NSPR")):     cmd = cmd + ' -L"' + THIRDPARTY + 'nspr/lib" -lpandanspr4'
+            if (PkgSelected(opts,"NSPR")):     cmd = cmd + ' -L' + THIRDPARTY + 'nspr/lib -lpandanspr4'
             if (PkgSelected(opts,"ZLIB")):     cmd = cmd + " -lz"
             if (PkgSelected(opts,"PNG")):      cmd = cmd + " -lpng"
             if (PkgSelected(opts,"JPEG")):     cmd = cmd + " -ljpeg"
             if (PkgSelected(opts,"TIFF")):     cmd = cmd + " -ltiff"
             if (PkgSelected(opts,"SSL")):      cmd = cmd + " -lssl"
             if (PkgSelected(opts,"FREETYPE")): cmd = cmd + " -lfreetype"
-            if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -L"' + THIRDPARTY + 'vrpn/lib" -lvrpn -lquat'
-            if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -L"' + THIRDPARTY + 'fftw/lib" -lrfftw -lfftw'
+            if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -L' + THIRDPARTY + 'vrpn/lib -lvrpn -lquat'
+            if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -L' + THIRDPARTY + 'fftw/lib -lrfftw -lfftw'
             if (opts.count("GLUT")):           cmd = cmd + " -lGL -lGLU"
             oscmd(cmd)
             updatefiledate(wdll)
