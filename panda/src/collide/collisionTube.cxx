@@ -30,6 +30,7 @@
 #include "datagramIterator.h"
 #include "bamReader.h"
 #include "bamWriter.h"
+#include "cmath.h"
 
 TypeHandle CollisionTube::_type_handle;
 
@@ -373,15 +374,15 @@ calc_sphere1_vertex(int ri, int si, int num_rings, int num_slices) {
 
   // Find the point on the rim, based on the slice.
   float theta = s * 2.0f * MathNumbers::pi_f;
-  float x_rim = cos(theta);
-  float z_rim = sin(theta);
+  float x_rim = ccos(theta);
+  float z_rim = csin(theta);
 
   // Now pull that point in towards the pole, based on the ring.
   float phi = r * 0.5f * MathNumbers::pi_f;
-  float to_pole = sin(phi);
+  float to_pole = csin(phi);
 
   float x = _radius * x_rim * to_pole;
-  float y = -_radius * cos(phi);
+  float y = -_radius * ccos(phi);
   float z = _radius * z_rim * to_pole;
 
   return Vertexf(x, y, z);
@@ -402,15 +403,15 @@ calc_sphere2_vertex(int ri, int si, int num_rings, int num_slices,
 
   // Find the point on the rim, based on the slice.
   float theta = s * 2.0f * MathNumbers::pi_f;
-  float x_rim = cos(theta);
-  float z_rim = sin(theta);
+  float x_rim = ccos(theta);
+  float z_rim = csin(theta);
 
   // Now pull that point in towards the pole, based on the ring.
   float phi = r * 0.5f * MathNumbers::pi_f;
-  float to_pole = sin(phi);
+  float to_pole = csin(phi);
 
   float x = _radius * x_rim * to_pole;
-  float y = length + _radius * cos(phi);
+  float y = length + _radius * ccos(phi);
   float z = _radius * z_rim * to_pole;
 
   return Vertexf(x, y, z);
