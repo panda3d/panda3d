@@ -2,11 +2,13 @@
 
 from ClockDelta import *
 from direct.task import Task
-from direct.showbase.PythonUtil import randFloat
+from direct.showbase.PythonUtil import randFloat, Enum
 
 class DistributedSmoothNodeBase:
     """common base class for DistributedSmoothNode and DistributedSmoothNodeAI
     """
+    BroadcastTypes = Enum('FULL, XYH')
+    
     def __init__(self):
         pass
 
@@ -62,7 +64,19 @@ class DistributedSmoothNodeBase:
     def stopPosHprBroadcast(self):
         taskMgr.remove(self.getPosHprBroadcastTaskName())
 
-    def startPosHprBroadcast(self, period=.2, stagger=0):
+    def startPosHprBroadcast(self, period=.2, stagger=0, type=None):
+        BT = DistributedSmoothNodeBase.BroadcastTypes
+        if type is None:
+            type = BT.FULL
+        # set the broadcast type
+        self.broadcastType = type
+
+        broadcastFuncs = {
+            BT.FULL: self.d_broadcastPosHpr_FULL,
+            BT.XYH:  self.d_broadcastPosHpr_XYH,
+            }
+        self.d_broadcastPosHpr = broadcastFuncs[self.broadcastType]
+        
         # Set stagger to non-zero to randomly delay the initial task execution
         # over 'period' seconds, to spread out task processing over time
         # when a large number of SmoothNodes are created simultaneously.
@@ -103,7 +117,7 @@ class DistributedSmoothNodeBase:
                               self.posHprBroadcast, taskName)
         return Task.done
 
-    def d_broadcastPosHpr(self):
+    def d_broadcastPosHpr_FULL(self):
         # send out the minimal bits to describe our new position
         xyz = self.getPos()
         hpr = self.getHpr()
@@ -183,3 +197,50 @@ class DistributedSmoothNodeBase:
             self.d_setSmPosHpr(self.__storeX, self.__storeY, self.__storeZ,
                                self.__storeH, self.__storeP, self.__storeR)
             # print ("XYZHPR change")
+
+    def d_broadcastPosHpr_XYH(self):
+        # send out the minimal bits to describe our new position
+        xyz = self.getPos()
+        h   = self.getH()
+
+        if abs(self.__storeX - xyz[0]) > self.__epsilon:
+            self.__storeX = xyz[0]
+            newX = 1
+        else:
+            newX = 0
+
+        if abs(self.__storeY - xyz[1]) > self.__epsilon:
+            self.__storeY = xyz[1]
+            newY = 1
+        else:
+            newY = 0
+
+        if abs(self.__storeH - h) > self.__epsilon:
+            self.__storeH = h
+            newH = 1
+        else:
+            newH = 0
+
+        # Check for changes:
+        if not(newX or newY or newH):
+            # No change
+            # Send one and only one "stop" message.
+            if not self.__storeStop:
+                self.__storeStop = 1
+                self.d_setSmStop()
+            # print 'no change'
+        elif (newH) and not(newX or newY):
+            # Only change in H
+            self.__storeStop = 0
+            self.d_setSmH(self.__storeH)
+            # print ("H change")
+        elif (newX or newY) and not(newH):
+            # Only change in X, Y
+            self.__storeStop = 0
+            self.d_setSmXY(self.__storeX, self.__storeY)
+            # print ("XY change")
+        else:
+            # Only change in X, Y, H
+            self.__storeStop = 0
+            self.d_setSmXYH(self.__storeX, self.__storeY, self.__storeH)
+            # print ("XYH change")
