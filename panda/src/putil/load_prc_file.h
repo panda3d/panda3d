@@ -46,6 +46,21 @@ EXPCL_PANDA ConfigPage *
 load_prc_file(const string &filename);
 
 ////////////////////////////////////////////////////////////////////
+//     Function: load_prc_file_data
+//  Description: Another convenience function to load a prc file from
+//               an explicit string, which represents the contents of
+//               the prc file.
+//
+//               The first parameter is an arbitrary name to assign to
+//               this in-memory prc file.  Supply a filename if the
+//               data was read from a file, or use any other name that
+//               is meaningful to you.  The name is only used when the
+//               set of loaded prc files is listed.
+////////////////////////////////////////////////////////////////////
+EXPCL_PANDA ConfigPage *
+load_prc_file_data(const string &name, const string &data);
+
+////////////////////////////////////////////////////////////////////
 //     Function: unload_prc_file
 //  Description: Unloads (and deletes) a ConfigPage that represents a
 //               prc file that was previously loaded by
