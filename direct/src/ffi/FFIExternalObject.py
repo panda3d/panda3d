@@ -54,8 +54,6 @@ class FFIExternalObject:
             for base in thisClass.__bases__:
                 res = self.getLineageInternal(base, targetBaseClass, chain+[base])
                 if res:
-                    # Actually, we want them in the reverse order
-                    res.reverse()
                     FFIConstants.notify.debug('getLineageInternal: found path: ' + `res`)
                     return res
             # Not found anywhere
