@@ -278,7 +278,7 @@
 // How about GLX?
 #define GLX_IPATH
 #define GLX_LPATH
-#defer HAVE_WGL $[and $[HAVE_GL],$[UNIX_PLATFORM]]
+#defer HAVE_GLX $[and $[HAVE_GL],$[UNIX_PLATFORM]]
 
 // Glut?
 #define GLUT_IPATH
@@ -295,12 +295,10 @@
 #define HAVE_SGIGL $[eq $[PLATFORM],Irix]
 
 // Is DirectX available, and should we try to build with it?
-#if $[WINDOWS_PLATFORM]
-  #define DX_IPATH
-  #define DX_LPATH
-  #define DX_LIBS d3d8.lib d3dx8.lib dxerr8.lib
-  #defer HAVE_DX $[libtest $[DX_LPATH],$[DX_LIBS]]
-#endif
+#define DX_IPATH
+#define DX_LPATH
+#define DX_LIBS d3d8.lib d3dx8.lib dxerr8.lib
+#defer HAVE_DX $[libtest $[DX_LPATH],$[DX_LIBS]]
 
 // Do you want to build the Renderman interface?
 #define HAVE_RIB
@@ -421,10 +419,6 @@
   #define USE_COMPILER GCC
 #endif
 
-///////////////////////////////////////////////////////////////////////
-// The following variables are meaningful when BUILD_TYPE is "unix" or
-// "msvc".  They define a few environmental things.
-//////////////////////////////////////////////////////////////////////
 
 // How to invoke bison and flex.  Panda takes advantage of some
 // bison/flex features, and therefore specifically requires bison and
@@ -435,6 +429,12 @@
 // sources.
 #defer BISON bison
 #defer FLEX flex 
+
+// You may not even have bison and flex installed.  If you don't, no
+// sweat; Panda ships with the pre-generated output of these programs,
+// so you don't need them unless you want to make changes to the
+// grammars themselves (files named *.yxx or *.lxx).
+#defer HAVE_BISON $[bintest $[BISON]]
 
 // How to invoke sed.  A handful of make rules use this.  Since some
 // platforms (specifically, non-Unix platforms like Windows) don't

@@ -135,6 +135,9 @@ $[cdefine HAVE_AUDIO]
    makes sense to MSVC++. */
 $[cdefine EXPORT_TEMPLATES]
 
+/* Define if we have bison and flex available. */
+$[cdefine HAVE_BISON]
+
 /* Define if we are linking PANDAGL in with PANDA. */
 $[cdefine LINK_IN_GL]
 

@@ -137,6 +137,9 @@
 // And $[libs] is the set of libraries we will link with.
 #defer libs $[unique $[complete_local_libs] $[patsubst %:m,,%:c %,%,$[OTHER_LIBS]] $[get_libs]]
 
+// This is the set of files we might copy into *.prebuilt, if we have
+// bison and flex (or copy from *.prebuilt if we don't have them).
+#define bison_prebuilt $[patsubst %.yxx,%.h,$[yxx_so_sources] $[yxx_st_sources]] $[patsubst %.yxx,%.cxx,$[yxx_so_sources] $[yxx_st_sources]] $[patsubst %.lxx,%.cxx,$[lxx_so_sources] $[lxx_st_sources]]
 
 // Okay, we're ready.  Start outputting the Makefile now.
 #output Makefile
@@ -239,6 +242,9 @@ uninstall-igate :
 $[TAB]rm -f $[sort $[installed_igate_files]]
 #endif
 
+#if $[HAVE_BISON]
+prebuild-bison : $[patsubst %,%.prebuilt,$[bison_prebuilt]]
+#endif
 
 // We need a rule for each directory we might need to make.  This
 // loops through the full set of directories and creates a rule to
@@ -584,17 +590,30 @@ $[TAB]$[LINK_BIN_C]
 // Rules to generate a C++ file from a Bison input file.
 #foreach file $[sort $[yxx_so_sources] $[yxx_st_sources]]
 #define target $[patsubst %.yxx,%.cxx,$[file]]
+#define target_header $[patsubst %.yxx,%.h,$[file]]
+#if $[HAVE_BISON]
 #define source $[file]
 $[target] : $[source]
 $[TAB]$[BISON] -y $[YFLAGS] $[if $[YACC_PREFIX],-d --name-prefix=$[YACC_PREFIX]] $[source]
 $[TAB]mv y.tab.c $[target]
-$[TAB]mv y.tab.h $[patsubst %.yxx,%.h,$[source]]
-
+$[TAB]mv y.tab.h $[target_header]
+$[target].prebuilt : $[target]
+$[TAB]cp $[target] $[target].prebuilt
+$[target_header].prebuilt : $[target_header]
+$[TAB]cp $[target_header] $[target_header].prebuilt
+#else // HAVE_BISON
+#define source $[target].prebuilt
+$[target] : $[source]
+$[TAB]cp $[source] $[target]
+$[target_header] : $[source]
+$[TAB]cp $[source] $[target_header]
+#endif // HAVE_BISON
 #end file
 
 // Rules to generate a C++ file from a Flex input file.
 #foreach file $[sort $[lxx_so_sources] $[lxx_st_sources]]
 #define target $[patsubst %.lxx,%.cxx,$[file]]
+#if $[HAVE_BISON]
 #define source $[file]
 $[target] : $[source]
 $[TAB]$[FLEX] $[LFLAGS] $[if $[YACC_PREFIX],-P$[YACC_PREFIX]] -olex.yy.c $[source]
@@ -602,8 +621,15 @@ $[TAB]$[FLEX] $[LFLAGS] $[if $[YACC_PREFIX],-P$[YACC_PREFIX]] -olex.yy.c $[sourc
 #define script /#include <unistd.h>/d
 $[TAB]$[SED]
 $[TAB]rm $[source]
-
+$[target].prebuilt : $[target]
+$[TAB]cp $[target] $[target].prebuilt
+#else // HAVE_BISON
+#define source $[target].prebuilt
+$[target] : $[source]
+$[TAB]cp $[source] $[target]
+#endif // HAVE_BISON
 #end file
+
 
 // Rules to compile ordinary C files that appear on a shared library.
 #foreach file $[sort $[c_so_sources]]
@@ -788,6 +814,10 @@ $[TAB]rm -f $[install_headers_dir]/$[CONFIG_HEADER]
 #endif
 uninstall-igate : $[subdirs:%=uninstall-igate-%]
 
+#if $[HAVE_BISON]
+prebuild-bison : $[subdirs:%=prebuild-bison-%]
+#endif
+
 // Somehow, something in the cttools confuses some shells, so that
 // when we are attached, 'cd foo' doesn't work, but 'cd ./foo' does.
 // Weird.  We get around this by putting a ./ in front of each cd
@@ -843,6 +873,13 @@ $[TAB]cd ./$[PATH] && $(MAKE) uninstall
 uninstall-igate-$[dirname] :
 $[TAB]cd ./$[PATH] && $(MAKE) uninstall-igate
 #end dirname
+
+#if $[HAVE_BISON]
+#formap dirname subdirs
+prebuild-bison-$[dirname] :
+$[TAB]cd ./$[PATH] && $(MAKE) prebuild-bison
+#end dirname
+#endif
 
 #if $[ne $[CONFIG_HEADER],]
 $[install_headers_dir] :
