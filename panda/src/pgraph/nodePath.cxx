@@ -75,6 +75,11 @@ get_num_nodes() const {
 //               referenced (bottom) node and get_num_nodes() - 1 is
 //               the top node.  This requires iterating through the
 //               path.
+//
+//               Also see node(), which is a convenience function to
+//               return the same thing as get_node(0) (since the
+//               bottom node is the most important node in the
+//               NodePath, and is the one most frequently referenced).
 ////////////////////////////////////////////////////////////////////
 PandaNode *NodePath::
 get_node(int index) const {
@@ -496,10 +501,12 @@ remove_node() {
 //       Access: Published
 //  Description: Disconnects the referenced node from its parent, but
 //               does not immediately delete it.  The NodePath retains
-//               a pointer to the node.  If there are no other
-//               instances to the node, this becomes a singleton
-//               NodePath; otherwise, this NodePath becomes the same
-//               as another arbitrary instance.
+//               a pointer to the node, and becomes a singleton
+//               NodePath.
+//
+//               This should be called to detach a node from the scene
+//               graph, with the option of reattaching it later to the
+//               same parent or to a different parent.
 //
 //               In practice, the only difference between
 //               remove_node() and detach_node() is that remove_node()

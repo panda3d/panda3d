@@ -151,9 +151,6 @@ PUBLISHED:
     ET_not_found,  // returned from a failed find() or similar function.
     ET_removed,    // remove_node() was previously called on this NodePath.
     ET_fail,       // general failure return from some function.
-
-    // Also see NodePathComponent::_next_key, which initializes
-    // itself to the last enumerated type here plus one.
   };
 
   INLINE NodePath();
