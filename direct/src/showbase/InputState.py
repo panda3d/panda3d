@@ -19,6 +19,7 @@ class InputState(DirectObject.DirectObject):
     def __init__(self):
         self.state = {}
         assert(self.debugPrint("InputState()"))
+        self.watching = {}
     
     def delete(self):
         self.ignoreAll()
@@ -41,15 +42,18 @@ class InputState(DirectObject.DirectObject):
         self.accept(eventOn, self.set, [name, 1])
         self.accept(eventOff, self.set, [name, 0])
         self.state[name] = default
+        self.watching[name] = (eventOn, eventOff)
     
     def ignore(self, name):
         """
         The opposite of watch(name, ...)
         See Also: watch()
         """
-        self.ignore(eventOn)
-        self.ignore(eventOff)
-        del state[name]
+        eventOn, eventOff = self.watching[name]
+        DirectObject.DirectObject.ignore(self, eventOn)
+        DirectObject.DirectObject.ignore(self, eventOff)
+        del self.watching[name]
+        del self.state[name]
     
     def set(self, name, isSet):
         assert(self.debugPrint("set(name=%s, isSet=%s)"%(name, isSet)))
