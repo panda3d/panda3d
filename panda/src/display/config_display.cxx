@@ -25,35 +25,7 @@ static Config::ConfigTable::Symbol *preferred_window;
 static Config::ConfigTable::Symbol *preferred_gsg;
 
 ConfigureFn(config_display) {
-  GraphicsStateGuardian::init_type();
-  GraphicsStateGuardian::GsgParam::init_type();
-  GraphicsStateGuardian::GsgWindow::init_type();
-  SavedFrameBuffer::init_type();
-  GraphicsPipe::init_type();
-  GraphicsPipe::PipeParam::init_type();
-  GraphicsPipe::PipeSpec::init_type();
-  InteractiveGraphicsPipe::init_type();
-  NoninteractiveGraphicsPipe::init_type();
-  GraphicsWindow::init_type();
-  GraphicsWindow::WindowParam::init_type();
-  GraphicsWindow::WindowProps::init_type();
-  GraphicsWindow::WindowPipe::init_type();
-  GraphicsChannel::init_type();
-  HardwareChannel::init_type();
-  TextureContext::init_type();
-
-  disp = new Config::ConfigTable::Symbol;
-  guard = new Config::ConfigTable::Symbol;
-  preferred_pipe = new Config::ConfigTable::Symbol;
-  preferred_window = new Config::ConfigTable::Symbol;
-  preferred_gsg = new Config::ConfigTable::Symbol;
-
-  config_display.GetAll("load-display", *disp);
-  config_display.GetAll("load-gsg", *guard);
-
-  config_display.GetAll("preferred-pipe", *preferred_pipe);
-  config_display.GetAll("preferred-window", *preferred_window);
-  config_display.GetAll("preferred-gsg", *preferred_gsg);
+  init_libdisplay();
 }
 
 const string pipe_spec_machine = config_display.GetString("pipe-machine", "");
@@ -110,4 +82,51 @@ Config::ConfigTable::Symbol::iterator preferred_gsg_begin(void) {
 
 Config::ConfigTable::Symbol::iterator preferred_gsg_end(void) {
   return preferred_gsg->end();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: init_libdisplay
+//  Description: Initializes the library.  This must be called at
+//               least once before any of the functions or classes in
+//               this library can be used.  Normally it will be
+//               called by the static initializers and need not be
+//               called explicitly, but special cases exist.
+////////////////////////////////////////////////////////////////////
+void
+init_libdisplay() {
+  static bool initialized = false;
+  if (initialized) {
+    return;
+  }
+  initialized = true;
+
+  GraphicsStateGuardian::init_type();
+  GraphicsStateGuardian::GsgParam::init_type();
+  GraphicsStateGuardian::GsgWindow::init_type();
+  SavedFrameBuffer::init_type();
+  GraphicsPipe::init_type();
+  GraphicsPipe::PipeParam::init_type();
+  GraphicsPipe::PipeSpec::init_type();
+  InteractiveGraphicsPipe::init_type();
+  NoninteractiveGraphicsPipe::init_type();
+  GraphicsWindow::init_type();
+  GraphicsWindow::WindowParam::init_type();
+  GraphicsWindow::WindowProps::init_type();
+  GraphicsWindow::WindowPipe::init_type();
+  GraphicsChannel::init_type();
+  HardwareChannel::init_type();
+  TextureContext::init_type();
+
+  disp = new Config::ConfigTable::Symbol;
+  guard = new Config::ConfigTable::Symbol;
+  preferred_pipe = new Config::ConfigTable::Symbol;
+  preferred_window = new Config::ConfigTable::Symbol;
+  preferred_gsg = new Config::ConfigTable::Symbol;
+
+  config_display.GetAll("load-display", *disp);
+  config_display.GetAll("load-gsg", *guard);
+
+  config_display.GetAll("preferred-pipe", *preferred_pipe);
+  config_display.GetAll("preferred-window", *preferred_window);
+  config_display.GetAll("preferred-gsg", *preferred_gsg);
 }

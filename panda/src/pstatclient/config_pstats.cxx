@@ -11,6 +11,7 @@ Configure(config_pstats);
 NotifyCategoryDef(pstats, "");
 
 ConfigureFn(config_pstats) {
+  init_libpstatclient();
 }
 
 string get_pstats_name() {
@@ -29,3 +30,21 @@ const double pstats_target_frame_rate = config_pstats.GetDouble("pstats-target-f
 // not the client.
 const bool pstats_scroll_mode = config_pstats.GetBool("pstats-scroll-mode", true);
 const double pstats_history = config_pstats.GetDouble("pstats-history", 30.0);
+
+////////////////////////////////////////////////////////////////////
+//     Function: init_libpstatclient
+//  Description: Initializes the library.  This must be called at
+//               least once before any of the functions or classes in
+//               this library can be used.  Normally it will be
+//               called by the static initializers and need not be
+//               called explicitly, but special cases exist.
+////////////////////////////////////////////////////////////////////
+void
+init_libpstatclient() {
+  static bool initialized = false;
+  if (initialized) {
+    return;
+  }
+  initialized = true;
+}
+

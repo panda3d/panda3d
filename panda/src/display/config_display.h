@@ -38,4 +38,6 @@ extern Config::ConfigTable::Symbol::iterator preferred_window_end();
 extern Config::ConfigTable::Symbol::iterator preferred_gsg_begin();
 extern Config::ConfigTable::Symbol::iterator preferred_gsg_end();
 
+extern EXPCL_PANDA void init_libdisplay();
+
 #endif /* CONFIG_DISPLAY_H */

@@ -25,6 +25,7 @@
     textureContext.cxx textureContext.h
 
   #define INSTALL_HEADERS \
+    config_display.h \
     displayRegion.I displayRegion.h displayRegionStack.I \
     displayRegionStack.h frameBufferStack.I frameBufferStack.h \
     graphicsChannel.I graphicsChannel.h graphicsLayer.I graphicsLayer.h \

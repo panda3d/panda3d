@@ -55,7 +55,7 @@ static ButtonHandle _shift_lock;
 ////////////////////////////////////////////////////////////////////
 ButtonHandle KeyboardButton::
 ascii_key(char ascii_equivalent) {
-  return ButtonRegistry::ptr()->find_button(ascii_equivalent);
+  return ButtonRegistry::ptr()->find_ascii_button(ascii_equivalent);
 }
 
 ////////////////////////////////////////////////////////////////////

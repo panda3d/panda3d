@@ -31,19 +31,21 @@ protected:
     string _name;
   };
 
-PUBLISHED:
+public:
   bool register_button(ButtonHandle &button_handle, const string &name,
 		       char ascii_equivalent = '\0');
 
-  ButtonHandle find_button(const string &name) const;
-  ButtonHandle find_button(char ascii_equivalent) const;
-
-  INLINE string get_name(ButtonHandle button) const;
-
-  void write(ostream &out) const;
+PUBLISHED:
+  ButtonHandle get_button(const string &name);
+  ButtonHandle find_ascii_button(char ascii_equivalent) const;
 
   // ptr() returns the pointer to the global ButtonRegistry object.
   INLINE static ButtonRegistry *ptr();
+
+public:
+  INLINE string get_name(ButtonHandle button) const;
+
+  void write(ostream &out) const;
 
 private:
   // The ButtonRegistry class should never be constructed by user code.

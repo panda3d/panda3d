@@ -17,9 +17,17 @@ ButtonRegistry *ButtonRegistry::_global_pointer = NULL;
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ButtonRegistry::register_type
+//     Function: ButtonRegistry::register_button
 //       Access: Public
-//  Description: 
+//  Description: Registers a new ButtonHandle with the indicated name,
+//               and if specified, the indicated ASCII equivalent.
+//               Returns true if the button was registered, or false
+//               it was already registered; in either case, the new
+//               ButtonHandle is loaded into the first parameter.
+//
+//               This defines a new kind of button matching the
+//               indicated name.  The ButtonHandle can then be passed
+//               around to devices as a button in its own right.
 ////////////////////////////////////////////////////////////////////
 bool ButtonRegistry::
 register_button(ButtonHandle &button_handle, const string &name,
@@ -82,28 +90,35 @@ register_button(ButtonHandle &button_handle, const string &name,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ButtonRegistry::find_button
+//     Function: ButtonRegistry::get_button
 //       Access: Public
-//  Description: 
+//  Description: Finds a ButtonHandle in the registry matching the
+//               indicated name.  If there is no such ButtonHandle,
+//               registers a new one and returns it.
 ////////////////////////////////////////////////////////////////////
 ButtonHandle ButtonRegistry::
-find_button(const string &name) const {
+get_button(const string &name) {
   NameRegistry::const_iterator ri;
   ri = _name_registry.find(name);
-  if (ri == _name_registry.end()) {
-    return ButtonHandle::none();
-  } else {
+
+  if (ri != _name_registry.end()) {
     return (*ri).second->_handle;
   }
+
+  ButtonHandle button;
+  register_button(button, name);
+  return button;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ButtonRegistry::find_button
+//     Function: ButtonRegistry::find_ascii_button
 //       Access: Public
-//  Description: 
+//  Description: Finds a ButtonHandle in the registry matching the
+//               indicated ASCII equivalent character.  If there is no
+//               such ButtonHandle, returns ButtonHandle::none().
 ////////////////////////////////////////////////////////////////////
 ButtonHandle ButtonRegistry::
-find_button(char ascii_equivalent) const {
+find_ascii_button(char ascii_equivalent) const {
   if (_handle_registry[ascii_equivalent] == (RegistryNode *)NULL) {
     return ButtonHandle::none();
   }

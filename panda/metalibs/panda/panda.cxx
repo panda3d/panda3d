@@ -6,9 +6,11 @@
 #include "panda.h"
 
 #include <config_device.h>
+#include <config_display.h>
 #include <config_graph.h>
-#include <config_sgraph.h>
 #include <config_pnmimagetypes.h>
+#include <config_pstats.h>
+#include <config_sgraph.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpanda
@@ -21,7 +23,9 @@
 void
 init_libpanda() {
   init_libdevice();
+  init_libdisplay();
   init_libgraph();
-  init_libsgraph();
   init_libpnmimagetypes();
+  init_libpstatclient();
+  init_libsgraph();
 }
