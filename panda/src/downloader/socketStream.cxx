@@ -20,6 +20,8 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+#ifdef HAVE_SSL
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ISocketStream::receive_datagram
 //       Access: Public
@@ -163,3 +165,5 @@ send_datagram(const Datagram &dg) {
 
   return !is_closed();
 }
+
+#endif  // HAVE_SSL

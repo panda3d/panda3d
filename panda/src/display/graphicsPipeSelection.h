@@ -24,7 +24,7 @@
 #include "graphicsPipe.h"
 #include "pointerTo.h"
 #include "typeHandle.h"
-#include "mutex.h"
+#include "pmutex.h"
 
 class HardwareChannel;
 class GraphicsWindow;

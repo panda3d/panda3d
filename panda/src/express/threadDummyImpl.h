@@ -26,11 +26,17 @@
 
 #include "notify.h"
 #include "threadPriority.h"
-#include "mutex.h"
+#include "pmutex.h"
 
 #include <prthread.h>
 
 class Thread;
+
+// The Irix system headers may define this as a macro.  Get it out of
+// the way.
+#ifdef atomic_set
+#undef atomic_set
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ThreadDummyImpl

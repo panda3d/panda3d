@@ -24,7 +24,7 @@
 #include "sceneSetup.h"
 #include "pointerTo.h"
 #include "thread.h"
-#include "mutex.h"
+#include "pmutex.h"
 #include "conditionVar.h"
 #include "pset.h"
 #include "pStatCollector.h"

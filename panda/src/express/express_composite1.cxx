@@ -23,7 +23,7 @@
 #include "memoryUsagePointerCounts.cxx"
 #include "memoryUsagePointers.cxx"
 #include "multifile.cxx"
-#include "mutex.cxx"
+#include "pmutex.cxx"
 #include "mutexHolder.cxx"
 #include "mutexDummyImpl.cxx"
 #include "mutexNsprImpl.cxx"

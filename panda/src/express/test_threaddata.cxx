@@ -18,7 +18,7 @@
 
 #include "pandabase.h"
 #include "thread.h"
-#include "mutex.h"
+#include "pmutex.h"
 #include "mutexHolder.h"
 #include "pointerTo.h"
 

@@ -33,13 +33,8 @@ public:
   void open(istream *source, streampos start, streampos end);
   void close();
 
-#ifdef HAVE_IOSTREAM
-  virtual streampos seekoff(streamoff off, ios::seekdir dir, ios::openmode mode);
-  virtual streampos seekpos(streampos pos, ios::openmode mode);
-#else
-  virtual streampos seekoff(streamoff off, ios::seek_dir dir, int mode);
-  virtual streampos seekpos(streampos pos, int mode);
-#endif
+  virtual streampos seekoff(streamoff off, ios_seekdir dir, ios_openmode mode);
+  virtual streampos seekpos(streampos pos, ios_openmode mode);
 
 protected:
   virtual int overflow(int c);

@@ -13,7 +13,6 @@
   // directly into Panda.
   #define COMPONENT_LIBS \
       glgsg glxdisplay  \
-      sgidisplay sgiglxdisplay \
       wgldisplay
 #endif
 

@@ -25,7 +25,7 @@
 #include "nodePath.h"
 #include "cullResult.h"
 #include "pointerTo.h"
-#include "mutex.h"
+#include "pmutex.h"
 
 #include "plist.h"
 

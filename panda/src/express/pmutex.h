@@ -1,4 +1,4 @@
-// Filename: mutex.h
+// Filename: pmutex.h
 // Created by:  cary (16Sep98)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef MUTEX_H
-#define MUTEX_H
+#ifndef PMUTEX_H
+#define PMUTEX_H
 
 #include "pandabase.h"
 #include "mutexImpl.h"
@@ -47,6 +47,6 @@ private:
   friend class ConditionVar;
 };
 
-#include "mutex.I"
+#include "pmutex.I"
 
 #endif

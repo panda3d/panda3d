@@ -51,7 +51,7 @@ ISubStream(istream *source, streampos start, streampos end) : istream(&_buf) {
 ////////////////////////////////////////////////////////////////////
 INLINE ISubStream &ISubStream::
 open(istream *source, streampos start, streampos end) {
-  clear((ios::iostate)0);
+  clear((ios_iostate)0);
   _buf.open(source, start, end);
   return *this;
 }

@@ -43,7 +43,7 @@ IChunkedStream(BioStreamPtr *source, HTTPChannel *doc) : ISocketStream(&_buf) {
 ////////////////////////////////////////////////////////////////////
 INLINE IChunkedStream &IChunkedStream::
 open(BioStreamPtr *source, HTTPChannel *doc) {
-  clear((ios::iostate)0);
+  clear((ios_iostate)0);
   _buf.open_read(source, doc);
   return *this;
 }

@@ -262,5 +262,4 @@ run() {
       return false;
     }
   }
-  return false;
 }

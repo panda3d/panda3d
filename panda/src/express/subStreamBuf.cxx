@@ -142,12 +142,7 @@ close() {
 //  Description: Implements seeking within the stream.
 ////////////////////////////////////////////////////////////////////
 streampos SubStreamBuf::
-#ifdef HAVE_IOSTREAM
-seekoff(streamoff off, ios::seekdir dir, ios::openmode mode)
-#else
-seekoff(streamoff off, ios::seek_dir dir, int mode)
-#endif
-{
+seekoff(streamoff off, ios_seekdir dir, ios_openmode mode) {
   // Invariant: _cur points to the file location of the buffer at
   // egptr().
 
@@ -216,12 +211,7 @@ seekoff(streamoff off, ios::seek_dir dir, int mode)
 //               function as well.
 ////////////////////////////////////////////////////////////////////
 streampos SubStreamBuf::
-#ifdef HAVE_IOSTREAM
-seekpos(streampos pos, ios::openmode mode) 
-#else
-seekpos(streampos pos, int mode) 
-#endif
-{
+seekpos(streampos pos, ios_openmode mode) {
   return seekoff(pos, ios::beg, mode);
 }
 

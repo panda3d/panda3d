@@ -34,7 +34,7 @@
 #include "buttonEvent.h"
 #include "iterator_types.h"
 #include "notify.h"
-#include "mutex.h"
+#include "pmutex.h"
 
 #include "pvector.h"
 #include "pdeque.h"

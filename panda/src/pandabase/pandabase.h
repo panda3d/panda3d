@@ -23,7 +23,7 @@
 #ifndef PANDABASE_H
 #define PANDABASE_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 #include "pandasymbols.h"
 
 #endif

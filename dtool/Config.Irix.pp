@@ -7,7 +7,7 @@
 //
 
 // What additional flags should we pass to interrogate?
-#define -D__mips__ -D__MIPSEB__
+#define SYSTEM_IGATE_FLAGS -D__mips__ -D__MIPSEB__ -D_LANGUAGE_C_PLUS_PLUS -D_MIPS_SZINT=32 -D_MIPS_SZLONG=32 -D_MIPS_SZPTR=32
 
 // Is the platform big-endian (like an SGI workstation) or
 // little-endian (like a PC)?  Define this to the empty string to

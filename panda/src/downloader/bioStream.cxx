@@ -18,6 +18,9 @@
 
 #include "bioStream.h"
 
+
+#ifdef HAVE_SSL
+
 ////////////////////////////////////////////////////////////////////
 //     Function: IBioStream::is_closed
 //       Access: Public, Virtual
@@ -67,3 +70,5 @@ is_closed() {
   clear();
   return false;
 }
+
+#endif  // HAVE_SSL

@@ -40,6 +40,12 @@ using namespace std;
 // this maps to public.
 #define PUBLISHED __published
 
+typedef int streamsize;
+typedef int ios_openmode;
+typedef int ios_fmtflags;
+typedef int ios_iostate;
+typedef int ios_seekdir;
+
 #else  // CPPPARSER
 
 #ifdef HAVE_IOSTREAM
@@ -82,11 +88,13 @@ typedef int streamsize;
 #ifndef HAVE_IOS_TYPEDEFS
 typedef int ios_openmode;
 typedef int ios_fmtflags;
+typedef int ios_iostate;
 // Old iostream libraries used ios::seek_dir instead of ios::seekdir.
 typedef ios::seek_dir ios_seekdir;
 #else
 typedef ios::openmode ios_openmode;
 typedef ios::fmtflags ios_fmtflags;
+typedef ios::iostate ios_iostate;
 typedef ios::seekdir ios_seekdir;
 #endif
 

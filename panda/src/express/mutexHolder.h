@@ -20,7 +20,7 @@
 #define MUTEXHOLDER_H
 
 #include "pandabase.h"
-#include "mutex.h"
+#include "pmutex.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MutexHolder

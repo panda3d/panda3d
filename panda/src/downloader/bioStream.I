@@ -43,7 +43,7 @@ IBioStream(BioPtr *source) : ISocketStream(&_buf) {
 ////////////////////////////////////////////////////////////////////
 INLINE IBioStream &IBioStream::
 open(BioPtr *source) {
-  clear((ios::iostate)0);
+  clear((ios_iostate)0);
   _buf.open(source);
   return *this;
 }
@@ -86,7 +86,7 @@ OBioStream(BioPtr *source) : OSocketStream(&_buf) {
 ////////////////////////////////////////////////////////////////////
 INLINE OBioStream &OBioStream::
 open(BioPtr *source) {
-  clear((ios::iostate)0);
+  clear((ios_iostate)0);
   _buf.open(source);
   return *this;
 }
@@ -129,7 +129,7 @@ BioStream(BioPtr *source) : SocketStream(&_buf) {
 ////////////////////////////////////////////////////////////////////
 INLINE BioStream &BioStream::
 open(BioPtr *source) {
-  clear((ios::iostate)0);
+  clear((ios_iostate)0);
   _buf.open(source);
   return *this;
 }

@@ -22,7 +22,7 @@
 #include "graphicsLayer.h"
 #include "typedReferenceCount.h"
 #include "pointerTo.h"
-#include "mutex.h"
+#include "pmutex.h"
 #include "pvector.h"
 
 class GraphicsChannel;

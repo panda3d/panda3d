@@ -26,7 +26,7 @@
 
 #include "notify.h"
 #include "threadPriority.h"
-#include "mutex.h"
+#include "pmutex.h"
 
 #include <prthread.h>
 #include <prinit.h>

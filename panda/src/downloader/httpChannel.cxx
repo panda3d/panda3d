@@ -1785,7 +1785,7 @@ bool HTTPChannel::
 parse_http_response(const string &line) {
   // The first line back should include the HTTP version and the
   // result code.
-  if (line.length() < 5 || line.substr(0, 5) != "HTTP/") {
+  if (line.length() < 5 || line.substr(0, 5) != string("HTTP/")) {
     // Not an HTTP response.
     _status_code = 0;
     _status_string = "Not an HTTP response";
@@ -2000,7 +2000,7 @@ verify_server(X509_NAME *subject) const {
          ++ei) {
       X509_NAME *expected_name = (*ei);
       X509_NAME_print_ex_fp(stderr, expected_name, 0, 0);
-      fprintf(stderr, "\n");
+      fputs("\n", stderr);
     }
     fflush(stderr);      
   }

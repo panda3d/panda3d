@@ -33,8 +33,8 @@
     memoryUsagePointerCounts.I memoryUsagePointerCounts.h \
     memoryUsagePointers.I memoryUsagePointers.h \
     multifile.I multifile.h \
-    mutexDummyImpl.h mutexDummyImpl.I mutex.h mutexHolder.h \
-    mutexHolder.I mutex.I mutexImpl.h mutexNsprImpl.h mutexNsprImpl.I \
+    mutexDummyImpl.h mutexDummyImpl.I pmutex.h mutexHolder.h \
+    mutexHolder.I pmutex.I mutexImpl.h mutexNsprImpl.h mutexNsprImpl.I \
     namable.I \
     namable.h nativeNumericData.I nativeNumericData.h \
     numeric_types.h \
@@ -79,7 +79,7 @@
     hashGeneratorBase.cxx hashVal.cxx indent.cxx \
     memoryInfo.cxx memoryUsage.cxx memoryUsagePointerCounts.cxx \
     memoryUsagePointers.cxx multifile.cxx \
-    mutex.cxx mutexHolder.cxx mutexDummyImpl.cxx mutexNsprImpl.cxx \
+    pmutex.cxx mutexHolder.cxx mutexDummyImpl.cxx mutexNsprImpl.cxx \
     namable.cxx \
     nativeNumericData.cxx \
     ordered_vector.cxx \
@@ -120,8 +120,8 @@
     memoryUsage.h memoryUsagePointerCounts.I \
     memoryUsagePointerCounts.h memoryUsagePointers.I \
     memoryUsagePointers.h multifile.I multifile.h \
-    mutexDummyImpl.h mutexDummyImpl.I mutex.h mutexHolder.h \
-    mutexHolder.I mutex.I mutexImpl.h mutexNsprImpl.h mutexNsprImpl.I \
+    mutexDummyImpl.h mutexDummyImpl.I pmutex.h mutexHolder.h \
+    mutexHolder.I pmutex.I mutexImpl.h mutexNsprImpl.h mutexNsprImpl.I \
     namable.I namable.h \
     nativeNumericData.I nativeNumericData.h numeric_types.h \
     ordered_vector.h ordered_vector.I ordered_vector.T \
