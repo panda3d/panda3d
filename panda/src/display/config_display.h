@@ -22,6 +22,10 @@ extern const int pipe_spec_pipe_number;
 extern const bool pipe_spec_is_file;
 extern const bool pipe_spec_is_remote;
 
+extern const float gsg_clear_r;
+extern const float gsg_clear_g;
+extern const float gsg_clear_b;
+
 extern Config::ConfigTable::Symbol::iterator pipe_modules_begin(void);
 extern Config::ConfigTable::Symbol::iterator pipe_modules_end(void);
 extern Config::ConfigTable::Symbol::iterator gsg_modules_begin(void);

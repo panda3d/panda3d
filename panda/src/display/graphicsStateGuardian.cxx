@@ -89,7 +89,7 @@ reset() {
   _state.clear();
 
   _buffer_mask = 0;
-  _color_clear_value.set(0.0, 0.0, 0.0, 0.0);
+  _color_clear_value.set(gsg_clear_r, gsg_clear_g, gsg_clear_b, 0.0);
   _depth_clear_value = 1.0;
   _stencil_clear_value = 0.0;
   _accum_clear_value.set(0.0, 0.0, 0.0, 0.0);
