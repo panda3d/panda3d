@@ -66,6 +66,17 @@ handle_entries() {
   bool okflag = true;
   _outer_space = true;
 
+  if (0) {
+    cout << endl;
+    cerr
+      << "CollisionHandlerGravity.handle_entries {\n"
+      << "_from_entries has " << _from_entries.size()
+      << "_colliders has " << _colliders.size()
+      << "current_colliding has " << _current_colliding.size()
+      << " entries, last_colliding has " << _last_colliding.size()
+      << "\n}" << endl;
+  }
+
   FromEntries::const_iterator fi;
   for (fi = _from_entries.begin(); fi != _from_entries.end(); ++fi) {
     const NodePath &from_node_path = (*fi).first;
@@ -88,6 +99,7 @@ handle_entries() {
         bool got_max = false;
         float max_height = 0.0f;
         
+        CollisionEntry* highest;
         if (!entries.empty()) {
           _outer_space = false;
         }
@@ -108,6 +120,7 @@ handle_entries() {
             if (!got_max || height > max_height) {
               got_max = true;
               max_height = height;
+              highest = entry;
             }
           }
         }
@@ -144,11 +157,18 @@ handle_entries() {
             _airborne_height = -max_height + adjust;
           }
           
+          // ...we are airborne.
+          // We only collide with things we are impacting with.
+          // Remove the collisions:
+          _current_colliding.clear();
+
           if (_airborne_height < 0.001f && _current_velocity < 0.001f) {
             // ...the node is under the floor, so it has landed.
             _impact_velocity = _current_velocity;
             // These values are used by is_on_ground().
             _current_velocity = _airborne_height = 0.0f;
+            // Add only the one that we're impacting with:
+            add_entry(highest);
           }
 
           CPT(TransformState) trans = def._target.get_transform();
