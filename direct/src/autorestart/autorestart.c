@@ -38,6 +38,7 @@
 char **params = NULL;
 char *logfile_name = NULL;
 int logfile_fd = -1;
+int stop_on_terminate = 0;
 
 pid_t child_pid = 0;
 
@@ -104,13 +105,13 @@ spawn_process() {
     fprintf(stderr, "\nprocess caught signal %d.\n\n", signal);
     /* A signal exit is a reason to respawn unless the signal is TERM
        or KILL. */
-    return (signal != SIGTERM && signal != SIGKILL);
+    return !stop_on_terminate || (signal != SIGTERM && signal != SIGKILL);
 
   } else {
     int exit_status = WEXITSTATUS(status);
     fprintf(stderr, "\nprocess exited with status %d.\n\n", WEXITSTATUS(status));
     /* Normal exit is a reason to respawn if the status indicates failure. */
-    return (exit_status != 0);
+    return !stop_on_terminate || (exit_status != 0);
   }
 }
 
@@ -287,7 +288,7 @@ main(int argc, char *argv[]) {
   extern char *optarg;
   extern int optind;
   /* The initial '+' instructs GNU getopt not to reorder switches. */
-  static const char *optflags = "+l:h";
+  static const char *optflags = "+l:th";
   int flag;
 
   flag = getopt(argc, argv, optflags);
@@ -295,6 +296,10 @@ main(int argc, char *argv[]) {
     switch (flag) {
     case 'l':
       logfile_name = optarg;
+      break;
+
+    case 't':
+      stop_on_terminate = 1;
       break;
 
     case 'h':
