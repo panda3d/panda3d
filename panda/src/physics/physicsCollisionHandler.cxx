@@ -58,7 +58,7 @@ apply_friction(ColliderDef &def, LVector3f& vel, const LVector3f& force, float a
   if (vel!=LVector3f::zero()) {
     float friction_coefficient=0.0f;
     // Determine the friction:
-    if (fabs(force.dot(LVector3f::unit_z())<0.5f)) {
+    if (fabs(force.dot(LVector3f::unit_z()))<0.5f) {
       // ...The force is nearly horizontal, it is probably a wall.
       physics_debug("  wall friction");
       friction_coefficient=0.0f;
