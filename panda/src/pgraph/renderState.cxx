@@ -852,6 +852,7 @@ do_invert_compose(const RenderState *other) const {
 void RenderState::
 determine_billboard() {
   const RenderAttrib *attrib = get_attrib(BillboardAttrib::get_class_type());
+  _billboard = (const BillboardAttrib *)NULL;
   if (attrib != (const RenderAttrib *)NULL) {
     _billboard = DCAST(BillboardAttrib, attrib);
   }
