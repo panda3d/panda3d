@@ -399,9 +399,22 @@ inline static void predict_null(void) {
 }
 
 inline static void predict_linear(void) {
+  static bool have_vel = false;
+
   // DO THIS
+  if (reinit_prediction) {
+    have_vel = false;
+    target_vel = LVector3f(0., 0., 0.);
+    reinit_prediction = false;
+  }
+  if (have_vel) {
+    if (new_telemetry)
+      target_vel = target_pos - telemetry_pos;
+  } else {
+    if (new_telemetry)
+      have_vel = true;
+  }
   target_pos = telemetry_pos;
-  reinit_prediction = false;
 }
 
 inline static void run_predict(void) {

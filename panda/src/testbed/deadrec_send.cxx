@@ -64,16 +64,62 @@ static inline void send(NetDatagram& d) {
   writer->send(d, conn);
 }
 
-static void event_frame(CPT_Event) {
-  // send deadrec data
-  NetDatagram d;
-  send(add_time(add_pos(d)));
-}
-
 static void sync_clock(void) {
   NetDatagram d;
   d.add_uint8(T_Sync);
   send(add_time(d));
+}
+
+static bool verify_connection(void) {
+  static float time = 0.;
+
+  if (conn.is_null()) {
+    if (time <= 0.) {
+      NetAddress host;
+      if (!host.set_host(hostname, hostport)) {
+	deadrec_cat->warning() << "unknown host: " << hostname << endl;
+	time = 100.;
+	return false;
+      }
+      PT(Connection) local_conn = cm.open_TCP_client_connection(host, 5000);
+      if (local_conn.is_null()) {
+	deadrec_cat->warning() << "no connection" << endl;
+	time = 5.;
+	return false;
+      }
+      conn = local_conn;
+      // sync clock
+      sync_clock();
+      return true;
+    }
+    time -= ClockObject::get_global_clock()->get_dt();
+    return false;
+  }
+  if (cm.reset_connection_available()) {
+    PT(Connection) local_conn;
+    if (cm.get_reset_connection(local_conn)) {
+      if (local_conn == conn) {
+	cm.close_connection(conn);
+	conn = (Connection*)0L;
+	time = 5.;
+	return false;
+      } else
+	deadrec_cat->error()
+	  << "got a report of a closed connection that I've never heard of"
+	  << endl;
+    } else
+      deadrec_cat->error()
+	<< "a closed connection was reported, but none was listed" << endl;
+  }
+  return true;
+}
+
+static void event_frame(CPT_Event) {
+  // send deadrec data
+  if (verify_connection()) {
+    NetDatagram d;
+    send(add_time(add_pos(d)));
+  }
 }
 
 enum MotionType { M_None, M_Line, M_SLine, M_Box, M_SBox, M_Circle, M_SCircle,
@@ -472,6 +518,9 @@ static void deadrec_setup(EventHandler& eh) {
   smiley = ModelPool::load_model("smiley");
   nassertv(smiley != (Node*)0L);
   my_arc = new RenderRelation(render, smiley);
+
+  writer = new ConnectionWriter(&cm, 0);
+  /*
   // open a connection to the receiver
   NetAddress host;
   if (!host.set_host(hostname, hostport)) {
@@ -488,6 +537,7 @@ static void deadrec_setup(EventHandler& eh) {
 			 << " on port " << conn->get_address().get_port()
 			 << " and IP " << conn->get_address() << endl;
   writer = new ConnectionWriter(&cm, 0);
+  */
 
   // create an interface
   GuiManager* mgr = GuiManager::get_ptr(main_win, mak);
@@ -542,9 +592,6 @@ static void deadrec_setup(EventHandler& eh) {
   f1->align_to_top(0.05);
   f1->recompute();
   f1->manage(mgr, eh);
-
-  // sync clock
-  sync_clock();
 }
 
 static void event_lerp(CPT_Event) {
