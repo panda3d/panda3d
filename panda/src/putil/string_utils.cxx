@@ -51,12 +51,32 @@ cmp_nocase_uh(const string &s, const string &s2) {
 
 
 
+////////////////////////////////////////////////////////////////////
+//     Function: downcase
+//  Description: Returns the input string with all uppercase letters
+//               converted to lowercase.
+////////////////////////////////////////////////////////////////////
 string
 downcase(const string &s) {
   string result;
   string::const_iterator p;
   for (p = s.begin(); p != s.end(); ++p) {
     result += tolower(*p);
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: upcase
+//  Description: Returns the input string with all lowercase letters
+//               converted to uppercase.
+////////////////////////////////////////////////////////////////////
+string
+upcase(const string &s) {
+  string result;
+  string::const_iterator p;
+  for (p = s.begin(); p != s.end(); ++p) {
+    result += toupper(*p);
   }
   return result;
 }

@@ -487,6 +487,10 @@ union_format(EggTexture::Format a, EggTexture::Format b) {
     case EggTexture::F_rgba8:
     case EggTexture::F_rgba4:
     case EggTexture::F_rgba5:
+    case EggTexture::F_red:
+    case EggTexture::F_green:
+    case EggTexture::F_blue:
+    case EggTexture::F_alpha:
       return b;
 
     default:

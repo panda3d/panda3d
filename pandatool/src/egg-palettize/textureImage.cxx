@@ -17,6 +17,7 @@
 #include <datagramIterator.h>
 #include <bamReader.h>
 #include <bamWriter.h>
+#include <pnmFileType.h>
 
 TypeHandle TextureImage::_type_handle;
 
@@ -295,6 +296,11 @@ post_txa_file() {
   }
   if (_request._magfilter != EggTexture::FT_unspecified) {
     _properties._magfilter = _request._magfilter;
+  }
+
+  if (_properties._color_type == (PNMFileType *)NULL) {
+    _properties._color_type = _request._properties._color_type;
+    _properties._alpha_type = _request._properties._alpha_type;
   }
 
   // Finally, make sure our properties are fully defined.

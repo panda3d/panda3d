@@ -21,6 +21,9 @@ EXPCL_PANDA int cmp_nocase_uh(const string &s, const string &s2);
 // Returns the string converted to lowercase.
 EXPCL_PANDA string downcase(const string &s);
 
+// Returns the string converted to uppercase.
+EXPCL_PANDA string upcase(const string &s);
+
 // Separates the string into words according to whitespace.
 EXPCL_PANDA int extract_words(const string &str, vector_string &words);
 

@@ -470,6 +470,10 @@ output(ostream &out) const {
     out << " " << (*gi)->get_name();
   }
 
+  if (_format != EggTexture::F_unspecified) {
+    out << " " << _format;
+  }
+
   if (_color_type != (PNMFileType *)NULL) {
     out << " " << _color_type->get_suggested_extension();
     if (_alpha_type != (PNMFileType *)NULL) {
