@@ -500,12 +500,16 @@ find_fans() {
 
   Verts::iterator vi;
 
-  // Build up a list of far fan edges.
+  // Build up several lists of far fan edges.
   typedef pvector<FanMaker> FanMakers;
-  FanMakers fans;
+  typedef pvector<FanMakers> FanGroups;
+  FanGroups fan_groups;
 
   for (vi = _verts.begin(); vi != _verts.end(); ++vi) {
     EdgePtrs &edges = (*vi).second;
+
+    fan_groups.push_back(FanMakers());
+    FanMakers &fans = fan_groups.back();
 
     // 14 is the magic number of edges.  12 edges or fewer are likely
     // to be found on nearly every vertex in a quadsheet (six edges
@@ -529,34 +533,41 @@ find_fans() {
         }
       }
     }
-  }
   
-  // Sort the fans list by edge pointers, and remove duplicates.
-  sort(fans.begin(), fans.end());
-  fans.erase(unique(fans.begin(), fans.end()), fans.end());
+    // Sort the fans list by edge pointers, and remove duplicates.
+    sort(fans.begin(), fans.end());
+    fans.erase(unique(fans.begin(), fans.end()), fans.end());
+    
+    FanMakers::iterator fi, fi2;
   
-  FanMakers::iterator fi, fi2;
-  
-  // Now pull out connected edges.
-  int joined_any;
-  do {
-    joined_any = false;
-    for (fi = fans.begin(); fi != fans.end(); ++fi) {
-      if (!(*fi).is_empty()) {
-        fi2 = fi;
-        for (++fi2; fi2 != fans.end(); ++fi2) {
-          if (!(*fi2).is_empty()) {
-            joined_any = (*fi).join(*fi2);
+    // Now pull out connected edges.
+    int joined_any;
+    do {
+      joined_any = false;
+      for (fi = fans.begin(); fi != fans.end(); ++fi) {
+        if (!(*fi).is_empty()) {
+          fi2 = fi;
+          for (++fi2; fi2 != fans.end(); ++fi2) {
+            if (!(*fi2).is_empty()) {
+              joined_any = (*fi).join(*fi2);
+            }
           }
         }
       }
-    }
-  } while (joined_any);
+    } while (joined_any);
+  }
 
-  for (fi = fans.begin(); fi != fans.end(); ++fi) {
-    cerr << "Got fan, is_valid = " << (*fi).is_valid() << "\n";
-    if ((*fi).is_valid()) {
-      (*fi).build();
+  // Now try to make all the fans.  We do this after we have gone
+  // completely through the list of vertices, above, since making fans
+  // may add more (false) triangles to the pool.
+  FanGroups::iterator gi;
+  for (gi = fan_groups.begin(); gi != fan_groups.end(); ++gi) {
+    FanMakers &fans = (*gi);
+    FanMakers::iterator fi;
+    for (fi = fans.begin(); fi != fans.end(); ++fi) {
+      if ((*fi).is_valid()) {
+        (*fi).build();
+      }
     }
   }
 #endif
