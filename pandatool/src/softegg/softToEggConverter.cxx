@@ -1609,6 +1609,7 @@ make_soft_skin() {
     node_desc = _tree.get_node(i);
     SAA_modelIsSkeleton( &scene, node_desc->get_model(), &isSkeleton );
 
+    softegg_cat.spam() << "??checking node " << node_desc->get_name() << " isSkel " << isSkeleton << " isJoint " << node_desc->is_joint() << endl;
     if (isSkeleton && node_desc->is_joint()) {
 
       if (node_desc->is_partial(search_prefix))
@@ -1804,7 +1805,9 @@ make_soft_skin() {
                 exit(1);
               }
               string vpool_name = s_name + ".verts";
-              DCAST_INTO_R(vpool, _tree.get_egg_root()->find_child(vpool_name), NULL);
+              EggNode *t = _tree.get_egg_root()->find_child(vpool_name);
+              if (t)
+                DCAST_INTO_R(vpool, t, NULL);
 
               // find the mapping of the vertices that match this envelop
               if (vpool) {
@@ -1814,8 +1817,8 @@ make_soft_skin() {
                 }
               }
               else {
-                softegg_cat.debug() << "error: vpool " << vpool_name << " not found\n";
-                exit(1);
+                softegg_cat.debug() << "warning: vpool " << vpool_name << " not found\n";
+                continue; // could be because of not visible
               }
 
               joint = node_desc->get_egg_group();

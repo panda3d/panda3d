@@ -203,17 +203,27 @@ build_complete_hierarchy(SAA_Scene &scene, SAA_Database &database) {
     }
   }
 
+  softegg_cat.spam() << "jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj\n";
+
   // check the nodes that are junk for animation/artist control purposes
   _root->check_junk(false);
+
+  softegg_cat.spam() << "jpjpjpjpjpjpjpjpjpjpjpjpjpjpjpjpjpjpjpjpjpjpjpjpjpjpjpjp\n";
 
   // check the nodes that are parent of ancestors of a joint
   _root->check_joint_parent();
 
+  softegg_cat.spam() << "pppppppppppppppppppppppppppppppppppppppppppppppppppppppp\n";
+
   // check the nodes that are pseudo joints
   _root->check_pseudo_joints(false);
 
+  softegg_cat.spam() << "========================================================\n";
+
   // find _parentJoint for each node
   _root->set_parentJoint(&scene, NULL);
+
+  softegg_cat.spam() << "========================================================\n";
 
   return all_ok;
 }
