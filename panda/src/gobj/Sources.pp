@@ -1,5 +1,6 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
+#define OSX_SYS_LIBS mx
 
 #begin lib_target
   #define TARGET gobj

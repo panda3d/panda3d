@@ -22,6 +22,14 @@
 #include <float.h>
 #endif
 
+#ifdef __APPLE__
+#define      isnan( x )         ( ( sizeof ( x ) == sizeof(double) ) ?           \
+                              __isnand ( x ) :                                 \
+                                ( sizeof ( x ) == sizeof( float) ) ?            \
+                              __isnanf ( x ) :                                 \
+                              __isnan  ( x ) )
+#endif
+
 INLINE_LINMATH float csqrt(float v) {
   return sqrtf(v);
 }

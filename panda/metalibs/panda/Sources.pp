@@ -19,11 +19,11 @@
     switchnode pnmtext text tform tiff lerp loader putil \
     audio pgui pandabase glstuff
 
-
-
-
-#define LOCAL_LIBS downloader express pandabase
-#define OTHER_LIBS dtoolconfig dtool
+#define LOCAL_LIBS \
+  downloader event express pandabase
+#define OTHER_LIBS \
+  interrogatedb:c dconfig:c dtoolconfig:m \
+  dtoolutil:c dtoolbase:c dtool:m
 
 #if $[LINK_IN_GL]
   #define BUILDING_DLL $[BUILDING_DLL] BUILDING_PANDAGL

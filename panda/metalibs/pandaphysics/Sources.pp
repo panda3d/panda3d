@@ -15,7 +15,8 @@
 #endif
 
 #define LOCAL_LIBS linmath putil express
-#define OTHER_LIBS dtoolconfig dtool
+#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
+    dtoolbase:c dtoolutil:c dtool:m
 
 #begin metalib_target
   #define TARGET pandaphysics
