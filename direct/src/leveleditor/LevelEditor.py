@@ -75,6 +75,10 @@ OBJECT_SNAP_POINTS = {
                      (Vec3(0), Vec3(0))],
     'street_40x40': [(Vec3(40.0,0,0), Vec3(0)),
                      (Vec3(0), Vec3(0))],
+    'street_20x60': [(Vec3(20.0,0,0), Vec3(0)),
+                     (Vec3(0), Vec3(0))],
+    'street_40x60': [(Vec3(40.0,0,0), Vec3(0)),
+                     (Vec3(0), Vec3(0))],
     'street_40x40_15': [(Vec3(40.0,0,0), Vec3(0)),
                         (Vec3(0), Vec3(0))],
     'street_80x40': [(Vec3(80.0,0,0), Vec3(0)),
@@ -90,6 +94,10 @@ OBJECT_SNAP_POINTS = {
     'street_outer_corner': [(Vec3(20.0,0,0), Vec3(0)),
                             (Vec3(0), Vec3(0))],
     'street_full_corner': [(Vec3(40.0,0,0), Vec3(0)),
+                           (Vec3(0), Vec3(0))],
+    'street_tight_corner': [(Vec3(40.0,0,0), Vec3(0)),
+                           (Vec3(0), Vec3(0))],
+    'street_double_corner': [(Vec3(40.0,0,0), Vec3(0)),
                            (Vec3(0), Vec3(0))],
     'street_curved_corner': [(Vec3(40.0,0,0), Vec3(0)),
                            (Vec3(0), Vec3(0))],
@@ -121,21 +129,23 @@ OBJECT_SNAP_POINTS = {
                                  (Vec3(0), Vec3(0))],
     'street_incline_40x40x5': [(Vec3(40.0,0,0), Vec3(0)),
                                (Vec3(0), Vec3(0))],
-    'street_courtyard_70': [(Vec3(0.0,0,0), Vec3(45,0,0)),
+    'street_square_courtyard': [(Vec3(0.0,0,0), Vec3(0)),
                             (Vec3(0), Vec3(0))],
-    'street_courtyard_70_exit': [(Vec3(0.0,0,0), Vec3(45,0,0)),
-                                 (Vec3(0), Vec3(0))],
-    'street_courtyard_90': [(Vec3(0.0,0,0), Vec3(45,0,0)),
+    'street_courtyard_70': [(Vec3(0.0,0,0), Vec3(0)),
                             (Vec3(0), Vec3(0))],
-    'street_courtyard_90_exit': [(Vec3(0.0,0,0), Vec3(45,0,0)),
+    'street_courtyard_70_exit': [(Vec3(0.0,0,0), Vec3(0)),
                                  (Vec3(0), Vec3(0))],
-    'street_courtyard_70_15': [(Vec3(0.0,0,0), Vec3(45,0,0)),
+    'street_courtyard_90': [(Vec3(0.0,0,0), Vec3(0)),
+                            (Vec3(0), Vec3(0))],
+    'street_courtyard_90_exit': [(Vec3(0.0,0,0), Vec3(0)),
+                                 (Vec3(0), Vec3(0))],
+    'street_courtyard_70_15': [(Vec3(0.0,0,0), Vec3(0)),
                                (Vec3(0), Vec3(0))],
-    'street_courtyard_70_15_exit': [(Vec3(0.0,0,0), Vec3(45,0,0)),
+    'street_courtyard_70_15_exit': [(Vec3(0.0,0,0), Vec3(0)),
                                     (Vec3(0), Vec3(0))],
-    'street_courtyard_90_15': [(Vec3(0.0,0,0), Vec3(45,0,0)),
+    'street_courtyard_90_15': [(Vec3(0.0,0,0), Vec3(0)),
                             (Vec3(0), Vec3(0))],
-    'street_courtyard_90_15_exit': [(Vec3(0.0,0,0), Vec3(45,0,0)),
+    'street_courtyard_90_15_exit': [(Vec3(0.0,0,0), Vec3(0)),
                                  (Vec3(0), Vec3(0))],
     'street_50_transition': [(Vec3(10.0,0,0), Vec3(0)),
                              (Vec3(0), Vec3(0))],
@@ -2710,7 +2720,8 @@ class LevelStyleManager:
             # Sort through the styles and store in separate lists
             for style in styleDict[neighborhood].getList():
                 heightType = string.strip(string.split(style.name, ':')[1])
-                styleLists[heightType].append(style)
+                if styleLists.has_key(heightType):
+                    styleLists[heightType].append(style)
                 
             # Now put these lists in appropriate neighborhood attribute
             for type in BUILDING_TYPES:
