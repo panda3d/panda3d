@@ -1264,6 +1264,19 @@ GROUPING ENTRIES
       The geometry defined at this root and below defines an invisible
       trigger surface.
 
+    sphere
+
+      Equivalent to <Collide> { Sphere descend }.  The geometry is
+      replaced with the smallest collision sphere that will enclose
+      it.  Typically you model a sphere in polygons and put this flag
+      on it to create a collision sphere of the same size.
+
+    tube
+
+      Equivalent to <Collide> { Tube descend }.  As in sphere, above,
+      but the geometry is replaced with a collision tube (a capsule).
+      Typically you will model a capsule or a cylinder in polygons.
+
     bubble
 
       Equivalent to <Collide> { Sphere keep descend }.  A collision
