@@ -85,7 +85,7 @@ protected:
 
 private:
   typedef pset<const RenderAttrib *, IndirectCompareTo<RenderAttrib> > Attribs;
-  static Attribs _attribs;
+  static Attribs *_attribs;
 
   Attribs::iterator _saved_entry;
 

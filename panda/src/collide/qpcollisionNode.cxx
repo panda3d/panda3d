@@ -39,6 +39,8 @@ qpCollisionNode(const string &name) :
   _into_collide_mask(CollideMask::all_on()),
   _collide_geom(false)
 {
+  // CollisionNodes are hidden by default.
+  set_draw_mask(DrawMask::all_off());
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -109,7 +109,7 @@ private:
 
 private:
   typedef pset<const TransformState *, IndirectLess<TransformState> > States;
-  static States _states;
+  static States *_states;
   static CPT(TransformState) _identity_state;
 
   // This iterator records the entry corresponding to this TransformState

@@ -50,17 +50,29 @@ PUBLISHED:
   bool add_net_transform(NodeRelation *arc);
   bool remove_net_transform(NodeRelation *arc);
   bool has_net_transform(NodeRelation *arc) const;
-  void clear_net_transforms();
 
   bool add_local_transform(NodeRelation *arc);
   bool remove_local_transform(NodeRelation *arc);
   bool has_local_transform(NodeRelation *arc) const;
+
+  bool add_net_transform(PandaNode *node);
+  bool remove_net_transform(PandaNode *node);
+  bool has_net_transform(PandaNode *node) const;
+  void clear_net_transforms();
+
+  bool add_local_transform(PandaNode *node);
+  bool remove_local_transform(PandaNode *node);
+  bool has_local_transform(PandaNode *node) const;
   void clear_local_transforms();
 
 private:
   typedef pset< PT_NodeRelation > ArcList;
   ArcList _net_transform_arcs;
   ArcList _local_transform_arcs;
+
+  typedef pset< PT(PandaNode) > NodeList;
+  NodeList _net_transform_nodes;
+  NodeList _local_transform_nodes;
 
 public:
   static void register_with_read_factory(void);

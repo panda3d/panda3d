@@ -20,7 +20,7 @@
 #include "bamReader.h"
 #include "indent.h"
 
-RenderAttrib::Attribs RenderAttrib::_attribs;
+RenderAttrib::Attribs *RenderAttrib::_attribs = NULL;
 TypeHandle RenderAttrib::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -30,7 +30,15 @@ TypeHandle RenderAttrib::_type_handle;
 ////////////////////////////////////////////////////////////////////
 RenderAttrib::
 RenderAttrib() {
-  _saved_entry = _attribs.end();
+  if (_attribs == (Attribs *)NULL) {
+    // Make sure the global _attribs map is allocated.  This only has
+    // to be done once.  We could make this map static, but then we
+    // run into problems if anyone creates a RenderState object at
+    // static init time; it also seems to cause problems when the
+    // Panda shared library is unloaded at application exit time.
+    _attribs = new Attribs;
+  }
+  _saved_entry = _attribs->end();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -61,9 +69,23 @@ operator = (const RenderAttrib &) {
 ////////////////////////////////////////////////////////////////////
 RenderAttrib::
 ~RenderAttrib() {
-  if (_saved_entry != _attribs.end()) {
-    _attribs.erase(_saved_entry);
-    _saved_entry = _attribs.end();
+  if (_saved_entry != _attribs->end()) {
+    // We cannot make this assertion, because the RenderAttrib has
+    // already partially destructed--this means we cannot look up the
+    // object in the map.  In fact, the map is temporarily invalid
+    // until we finish destructing, since we screwed up the ordering
+    // when we changed the return value of get_type().
+    //    nassertv(_attribs->find(this) == _saved_entry);
+
+    // Note: this isn't thread-safe, because once the derived class
+    // destructor exits and before this destructor completes, the map
+    // is invalid, and other threads may inadvertently attempt to read
+    // the invalid map.  To make it thread-safe, we need to move this
+    // functionality to a separate method, that is to be called from
+    // *each* derived class's destructor (and then we can put the
+    // above assert back in).
+    _attribs->erase(_saved_entry);
+    _saved_entry = _attribs->end();
   }
 }
 
@@ -120,13 +142,13 @@ return_new(RenderAttrib *attrib) {
 
   // This should be a newly allocated pointer, not one that was used
   // for anything else.
-  nassertr(attrib->_saved_entry == _attribs.end(), attrib);
+  nassertr(attrib->_saved_entry == _attribs->end(), attrib);
 
   // Save the attrib in a local PointerTo so that it will be freed at
   // the end of this function if no one else uses it.
   CPT(RenderAttrib) pt_attrib = attrib;
 
-  pair<Attribs::iterator, bool> result = _attribs.insert(attrib);
+  pair<Attribs::iterator, bool> result = _attribs->insert(attrib);
   if (result.second) {
     // The attribute was inserted; save the iterator and return the
     // input attribute.

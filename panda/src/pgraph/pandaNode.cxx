@@ -398,6 +398,7 @@ PandaNode(const PandaNode &copy) :
   cdata->_state = copy_cdata->_state;
   cdata->_effects = copy_cdata->_effects;
   cdata->_transform = copy_cdata->_transform;
+  cdata->_draw_mask = copy_cdata->_draw_mask;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1261,12 +1262,6 @@ children_changed() {
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) PandaNode::
 r_copy_subgraph(PandaNode::InstanceMap &inst_map) const {
-  if (!safe_to_flatten()) {
-    // If this kind of node cannot be copied, quietly return the same
-    // pointer, making an instance instead of a copy.
-    return (PandaNode *)this;
-  }
-
   PT(PandaNode) copy = make_copy();
   nassertr(copy != (PandaNode *)NULL, NULL);
   if (copy->get_type() != get_type()) {

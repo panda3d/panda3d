@@ -81,10 +81,13 @@ init_libtext() {
   string text_encoding = config_text.GetString("text-encoding", "iso8859");
   if (text_encoding == "iso8859") {
     TextNode::_default_encoding = TextNode::E_iso8859;
+    qpTextNode::_default_encoding = qpTextNode::E_iso8859;
   } else if (text_encoding == "utf8") {
     TextNode::_default_encoding = TextNode::E_utf8;
+    qpTextNode::_default_encoding = qpTextNode::E_utf8;
   } else if (text_encoding == "unicode") {
     TextNode::_default_encoding = TextNode::E_unicode;
+    qpTextNode::_default_encoding = qpTextNode::E_unicode;
   } else {
     text_cat.error()
       << "Invalid text-encoding: " << text_encoding << "\n";

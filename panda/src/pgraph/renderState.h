@@ -106,7 +106,7 @@ private:
 
 private:
   typedef pset<const RenderState *, IndirectLess<RenderState> > States;
-  static States _states;
+  static States *_states;
   static CPT(RenderState) _empty_state;
 
   // This iterator records the entry corresponding to this RenderState

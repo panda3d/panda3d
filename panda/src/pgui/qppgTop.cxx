@@ -20,6 +20,7 @@
 #include "pgItem.h"
 #include "pgMouseWatcherGroup.h"
 #include "pgCullTraverser.h"
+#include "cullBinAttrib.h"
 
 #include "omniBoundingVolume.h"
 
@@ -40,6 +41,14 @@ qpPGTop(const string &name) :
   // culling.
   set_bound(OmniBoundingVolume());
   set_final(true);
+
+  // Also, screw state sorting.  By default, everything under PGTop
+  // will be unsorted: rendered in scene graph order.  This is closer
+  // to what the user wants anyway in a 2-d scene graph.
+
+  // This override of 1000 should really be a system constant
+  // somewhere.
+  set_attrib(CullBinAttrib::make("unsorted", 0), 1000);
 }
 
 ////////////////////////////////////////////////////////////////////

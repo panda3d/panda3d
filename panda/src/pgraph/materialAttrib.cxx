@@ -98,7 +98,14 @@ int MaterialAttrib::
 compare_to_impl(const RenderAttrib *other) const {
   const MaterialAttrib *ta;
   DCAST_INTO_R(ta, other, 0);
-  return (int)(_material - ta->_material);
+
+  // Comparing pointers by subtraction is problematic.  Instead of
+  // doing this, we'll just depend on the built-in != and < operators
+  // for comparing pointers.
+  if (_material != ta->_material) {
+    return _material < ta->_material ? -1 : 1;
+  }
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////

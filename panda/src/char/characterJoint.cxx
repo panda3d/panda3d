@@ -160,6 +160,30 @@ update_internals(PartGroup *parent, bool self_changed, bool parent_changed) {
     }
   }
 
+  if (net_changed && !_net_transform_nodes.empty()) {
+    CPT(TransformState) t = TransformState::make_mat(_net_transform);
+
+    NodeList::iterator ai;
+    ai = _net_transform_nodes.begin();
+    while (ai != _net_transform_nodes.end()) {
+      PandaNode *node = *ai;
+      node->set_transform(t);
+      ++ai;
+    }
+  }
+
+  if (self_changed && !_local_transform_nodes.empty()) {
+    CPT(TransformState) t = TransformState::make_mat(_value);
+
+    NodeList::iterator ai;
+    ai = _local_transform_nodes.begin();
+    while (ai != _local_transform_nodes.end()) {
+      PandaNode *node = *ai;
+      node->set_transform(t);
+      ++ai;
+    }
+  }
+
   return self_changed || net_changed;
 }
 
@@ -204,18 +228,6 @@ has_net_transform(NodeRelation *arc) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CharacterJoint::clear_net_transforms
-//       Access: Public
-//  Description: Removes all arcs from the list of arcs that will be
-//               updated each frame with the joint's net transform
-//               from the root.
-////////////////////////////////////////////////////////////////////
-void CharacterJoint::
-clear_net_transforms() {
-  _net_transform_arcs.clear();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CharacterJoint::add_local_transform
 //       Access: Public
 //  Description: Adds the indicated arc to the list of arcs that will
@@ -256,15 +268,109 @@ has_local_transform(NodeRelation *arc) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CharacterJoint::add_net_transform
+//       Access: Public
+//  Description: Adds the indicated node to the list of nodes that will
+//               be updated each frame with the joint's net transform
+//               from the root.  Returns true if the node is
+//               successfully added, false if it had already been
+//               added.
+////////////////////////////////////////////////////////////////////
+bool CharacterJoint::
+add_net_transform(PandaNode *node) {
+  return _net_transform_nodes.insert(node).second;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CharacterJoint::remove_net_transform
+//       Access: Public
+//  Description: Removes the indicated node from the list of nodes that
+//               will be updated each frame with the joint's net
+//               transform from the root.  Returns true if the node is
+//               successfully removed, false if it was not on the
+//               list.
+////////////////////////////////////////////////////////////////////
+bool CharacterJoint::
+remove_net_transform(PandaNode *node) {
+  return (_net_transform_nodes.erase(node) > 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CharacterJoint::has_net_transform
+//       Access: Public
+//  Description: Returns true if the node is on the list of nodes that
+//               will be updated each frame with the joint's net
+//               transform from the root, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool CharacterJoint::
+has_net_transform(PandaNode *node) const {
+  return (_net_transform_nodes.count(node) > 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CharacterJoint::clear_net_transforms
+//       Access: Public
+//  Description: Removes all nodes from the list of nodes that will be
+//               updated each frame with the joint's net transform
+//               from the root.
+////////////////////////////////////////////////////////////////////
+void CharacterJoint::
+clear_net_transforms() {
+  _net_transform_arcs.clear();
+  _net_transform_nodes.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CharacterJoint::add_local_transform
+//       Access: Public
+//  Description: Adds the indicated node to the list of nodes that will
+//               be updated each frame with the joint's local
+//               transform from its parent.  Returns true if the node
+//               is successfully added, false if it had already been
+//               added.
+////////////////////////////////////////////////////////////////////
+bool CharacterJoint::
+add_local_transform(PandaNode *node) {
+  return _local_transform_nodes.insert(node).second;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CharacterJoint::remove_local_transform
+//       Access: Public
+//  Description: Removes the indicated node from the list of nodes that
+//               will be updated each frame with the joint's local
+//               transform from its parent.  Returns true if the node
+//               is successfully removed, false if it was not on the
+//               list.
+////////////////////////////////////////////////////////////////////
+bool CharacterJoint::
+remove_local_transform(PandaNode *node) {
+  return (_local_transform_nodes.erase(node) > 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CharacterJoint::has_local_transform
+//       Access: Public
+//  Description: Returns true if the node is on the list of nodes that
+//               will be updated each frame with the joint's local
+//               transform from its parent, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool CharacterJoint::
+has_local_transform(PandaNode *node) const {
+  return (_local_transform_nodes.count(node) > 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CharacterJoint::clear_local_transforms
 //       Access: Public
-//  Description: Removes all arcs from the list of arcs that will be
+//  Description: Removes all nodes from the list of nodes that will be
 //               updated each frame with the joint's local transform
 //               from its parent.
 ////////////////////////////////////////////////////////////////////
 void CharacterJoint::
 clear_local_transforms() {
   _local_transform_arcs.clear();
+  _local_transform_nodes.clear();
 }
 
 ////////////////////////////////////////////////////////////////////

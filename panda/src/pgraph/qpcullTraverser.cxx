@@ -131,19 +131,21 @@ traverse_below(PandaNode *node, const CullTraverserData &data) {
       }
     }
     
-    // Now visit all the node's children.
-    PandaNode::Children cr = node->get_children();
-    int num_children = cr.get_num_children();
+    // Now visit all the node's children.  We cannot use the
+    // node->get_children() interface, because that will keep a read
+    // pointer open, and we might end up changing this node during the
+    // traversal.
+    int num_children = node->get_num_children();
     if (node->has_selective_visibility()) {
       int i = node->get_first_visible_child();
       while (i < num_children) {
-        traverse(cr.get_child(i), data);
+        traverse(node->get_child(i), data);
         i = node->get_next_visible_child(i);
       }
       
     } else {
       for (int i = 0; i < num_children; i++) {
-        traverse(cr.get_child(i), data);
+        traverse(node->get_child(i), data);
       }
     }
   }

@@ -98,7 +98,14 @@ int TextureAttrib::
 compare_to_impl(const RenderAttrib *other) const {
   const TextureAttrib *ta;
   DCAST_INTO_R(ta, other, 0);
-  return (int)(_texture - ta->_texture);
+  
+  // Comparing pointers by subtraction is problematic.  Instead of
+  // doing this, we'll just depend on the built-in != and < operators
+  // for comparing pointers.
+  if (_texture != ta->_texture) {
+    return _texture < ta->_texture ? -1 : 1;
+  }
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -98,7 +98,14 @@ int FogAttrib::
 compare_to_impl(const RenderAttrib *other) const {
   const FogAttrib *ta;
   DCAST_INTO_R(ta, other, 0);
-  return (int)(_fog - ta->_fog);
+
+  // Comparing pointers by subtraction is problematic.  Instead of
+  // doing this, we'll just depend on the built-in != and < operators
+  // for comparing pointers.
+  if (_fog != ta->_fog) {
+    return _fog < ta->_fog ? -1 : 1;
+  }
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////

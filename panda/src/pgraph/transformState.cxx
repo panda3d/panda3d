@@ -24,7 +24,7 @@
 #include "indent.h"
 #include "compareTo.h"
 
-TransformState::States TransformState::_states;
+TransformState::States *TransformState::_states = NULL;
 CPT(TransformState) TransformState::_identity_state;
 TypeHandle TransformState::_type_handle;
 
@@ -37,7 +37,15 @@ TypeHandle TransformState::_type_handle;
 ////////////////////////////////////////////////////////////////////
 TransformState::
 TransformState() {
-  _saved_entry = _states.end();
+  if (_states == (States *)NULL) {
+    // Make sure the global _states map is allocated.  This only has
+    // to be done once.  We could make this map static, but then we
+    // run into problems if anyone creates a RenderState object at
+    // static init time; it also seems to cause problems when the
+    // Panda shared library is unloaded at application exit time.
+    _states = new States;
+  }
+  _saved_entry = _states->end();
   _self_compose = (TransformState *)NULL;
   _flags = F_is_identity | F_singular_known;
   _inv_mat = (LMatrix4f *)NULL;
@@ -77,9 +85,10 @@ TransformState::
   }
 
   // Remove the deleted TransformState object from the global pool.
-  if (_saved_entry != _states.end()) {
-    _states.erase(_saved_entry);
-    _saved_entry = _states.end();
+  if (_saved_entry != _states->end()) {
+    nassertv(_states->find(this) == _saved_entry);
+    _states->erase(_saved_entry);
+    _saved_entry = _states->end();
   }
 
   // Now make sure we clean up all other floating pointers to the
@@ -540,13 +549,13 @@ return_new(TransformState *state) {
 
   // This should be a newly allocated pointer, not one that was used
   // for anything else.
-  nassertr(state->_saved_entry == _states.end(), state);
+  nassertr(state->_saved_entry == _states->end(), state);
 
   // Save the state in a local PointerTo so that it will be freed at
   // the end of this function if no one else uses it.
   CPT(TransformState) pt_state = state;
 
-  pair<States::iterator, bool> result = _states.insert(state);
+  pair<States::iterator, bool> result = _states->insert(state);
   if (result.second) {
     // The state was inserted; save the iterator and return the
     // input state.

@@ -113,7 +113,7 @@ compare_to(const Attribute &other) const {
     return _type.get_index() - other._type.get_index();
   }
   if (_attrib != other._attrib) {
-    return _attrib - other._attrib;
+    return _attrib < other._attrib ? -1 : 1;
   }
   return _override - other._override;
 }

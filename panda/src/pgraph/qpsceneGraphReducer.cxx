@@ -713,7 +713,7 @@ do_flatten_siblings(PandaNode *parent_node, PandaNode *child1,
       << "Collapsing " << *child1 << " and " << *child2 << "\n";
   }
 
-  PT(PandaNode) new_child = collapse_nodes(child1, child2, true);
+  PT(PandaNode) new_child = collapse_nodes(child2, child1, true);
   if (new_child == (PandaNode *)NULL) {
     if (pgraph_cat.is_debug()) {
       pgraph_cat.debug()
@@ -722,7 +722,7 @@ do_flatten_siblings(PandaNode *parent_node, PandaNode *child1,
     return NULL;
   }
 
-  choose_name(new_child, child1, child2);
+  choose_name(new_child, child2, child1);
 
   if (new_child == child1) {
     new_child->steal_children(child2);

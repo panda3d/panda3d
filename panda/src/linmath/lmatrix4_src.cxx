@@ -129,8 +129,17 @@ convert_mat(CoordinateSystem from, CoordinateSystem to) {
 ////////////////////////////////////////////////////////////////////
 int FLOATNAME(LMatrix4)::
 compare_to(const FLOATNAME(LMatrix4) &other, FLOATTYPE threshold) const {
-  for (int i = 0; i < 16; i++) {
-    if (!IS_THRESHOLD_EQUAL(_m.data[i], other._m.data[i], threshold)) {
+  FLOATTYPE scale = 1.0f / threshold;
+
+  // We compare values in reverse order, since the last row of the
+  // matrix is most likely to be different between different matrices.
+  for (int i = 15; i >= 0; i--) {
+    // We scale both elements into the same range and truncate, rather
+    // than comparing the absolute values of their differences with
+    // IS_THRESHOLD_EQUAL.  This prevents a slippery-slope effect
+    // where a == b and b == c but a != c.
+    if (cfloor(_m.data[i] * scale + 0.5) != 
+        cfloor(other._m.data[i] * scale + 0.5)) {
       return (_m.data[i] < other._m.data[i]) ? -1 : 1;
     }
   }
