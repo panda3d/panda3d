@@ -20,8 +20,8 @@ class Interval(DirectObject):
     clock = ClockObject.ClockObject.getGlobalClock()
 
     # Class methods
-    def __init__(self, name, duration, openEnded = 1):
-        """__init__(name, duration)
+    def __init__(self, name, duration, openEnded=1, reverse=0):
+        """__init__(name, duration, openEnded, reverse)
         """
 	self.name = name
 	self.duration = duration
@@ -31,6 +31,7 @@ class Interval(DirectObject):
         self.setTHooks = []
         # Set true if interval responds to setT(t): t>duration
         self.fOpenEnded = openEnded
+	self.reverse = reverse
 
     def getName(self):
 	""" getName()

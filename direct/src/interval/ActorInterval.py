@@ -24,7 +24,7 @@ class ActorInterval(Interval):
     # will play once and then nothing will happen for the remainder of the
     # interval
     def __init__(self, actor, animName, loop=0, duration=0.0,
-                 startTime = 0.0, name=None):
+                 startTime=0.0, endTime=None, name=None):
         """__init__(name)
         """
         # Generate unique id
@@ -42,19 +42,37 @@ class ActorInterval(Interval):
 	if (name == None):
 	    name = id
         # Compute duration if no duration specified
+	reverse = 0
         if duration == 0.0:
-	    duration = max(self.actor.getDuration(self.animName) - startTime,
-                           0.0)
+	    if (endTime == None):
+	    	duration = max(self.actor.getDuration(self.animName) - \
+				startTime, 0.0)
+	    else:
+		duration = endTime - startTime
+		if (duration < 0.0):
+	    	    duration = -duration
+	if (endTime == None):
+	    self.finishTime = self.startTime + duration
+	else:
+	    self.finishTime = endTime
+	if (self.startTime > self.finishTime):
+	    reverse = 1
+		
         # Initialize superclass
-	Interval.__init__(self, name, duration)
+	Interval.__init__(self, name, duration, reverse=reverse)
         # Update stopEvent
         if self.loop:
             self.stopEvent = id + '_stopEvent'
             self.stopEventList = [self.stopEvent]
 
     def calcFrame(self, t):
+	offset = t % abs(self.finishTime - self.startTime)
         # Compute current frame based upon current time
-        floatFrame = self.frameRate * (self.startTime + t)
+	if (self.reverse == 0):
+            floatFrame = self.frameRate * (self.startTime + offset)
+	else:
+	    negOffset = (self.startTime - self.finishTime) - offset
+	    floatFrame = self.frameRate * (self.finishTime + negOffset)
         # Need max to avoid frame = -1 when t = 0
         frame = max(0, int(math.ceil(floatFrame)) - 1)
         # Modulo in case of looping anim
@@ -70,7 +88,7 @@ class ActorInterval(Interval):
                           (self.name,frame))
         return frame
 
-    def updateFunc(self, t, event = IVAL_NONE):
+    def updateFunc(self, t, event=IVAL_NONE):
 	""" updateFunc(t, event)
 	    Go to time t
 	"""
@@ -79,7 +97,7 @@ class ActorInterval(Interval):
 	    return
         # Update animation based upon current time
         # Pose or stop anim
-        if (t >= (self.startTime + self.getDuration())):
+	if (t >= self.getDuration()):
             self.actor.stop()
             frame = self.goToT(self.getDuration())
             if self.loop:
