@@ -186,20 +186,24 @@ get_page() const {
 //     Function: PaletteImage::is_empty
 //       Access: Public
 //  Description: Returns true if there are no textures, or only one
-//               texture, placed on the image.  In either case, the
-//               PaletteImage need not be generated.
+//               "solitary" texture, placed on the image.  In either
+//               case, the PaletteImage need not be generated.
 ////////////////////////////////////////////////////////////////////
 bool PaletteImage::
 is_empty() const {
-  if (pal->_omit_solitary) {
-    // If we're omitting solitary textures, the image is considered
-    // empty even if it has one texture.
-    return _placements.size() < 2;
+  if (_placements.empty()) {
+    // The image is genuinely empty.
+    return true;
+
+  } else if (_placements.size() == 1) {
+    // If the image has exactly one texture, we consider the image
+    // empty only if the texture is actually flagged as 'solitary'.
+    return (_placements[0]->get_omit_reason() == OR_solitary);
 
   } else {
-    // If we're not omitting solitary textures, the image is only
-    // empty if it has no textures.
-    return _placements.empty();
+    // The image has more than one texture, so it's definitely not
+    // empty.
+    return false;
   }
 }
 
