@@ -15,6 +15,7 @@ INLINE GuiLabel::GuiLabel(void) : _type(GuiLabel::NONE),
 				  _background(0., 0., 0., 0.),
 				  _have_width(false), _width(0.),
 				  _have_height(false), _height(0.),
+				  _mirror_x(false), _mirror_y(false),
 				  _hard_pri(0), _highest_pri(false) {
 }
 
@@ -35,8 +36,11 @@ INLINE void GuiLabel::set_width(float f) {
     _have_width = false;
     _width = 0.;
   } else {
+    if (_type == MODEL)
+      _width = f / this->get_width();
+    else
+      _width = f;
     _have_width = true;
-    _width = f;
   }
   this->set_properties();
 }
@@ -46,8 +50,11 @@ INLINE void GuiLabel::set_height(float f) {
     _have_height = false;
     _height = 0.;
   } else {
+    if (_type == MODEL)
+      _height = f / this->get_height();
+    else
+      _height = f;
     _have_height = true;
-    _height = f;
   }
   this->set_properties();
 }
@@ -55,6 +62,14 @@ INLINE void GuiLabel::set_height(float f) {
 INLINE void GuiLabel::set_scale(float f) {
   _scale = f;
   recompute_transform();
+}
+
+INLINE void GuiLabel::set_mirror_x(bool b) {
+  _mirror_x = b;
+}
+
+INLINE void GuiLabel::set_mirror_y(bool b) {
+  _mirror_y = b;
 }
 
 INLINE void GuiLabel::set_pos(float x, float y, float z) {
@@ -68,6 +83,14 @@ INLINE void GuiLabel::set_pos(const LVector3f& p) {
 
 INLINE float GuiLabel::get_scale(void) const {
   return _scale;
+}
+
+INLINE bool GuiLabel::get_mirror_x(void) const {
+  return _mirror_x;
+}
+
+INLINE bool GuiLabel::get_mirror_y(void) const {
+  return _mirror_y;
 }
 
 INLINE LVector3f GuiLabel::get_pos(void) const {

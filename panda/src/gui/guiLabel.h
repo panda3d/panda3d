@@ -44,6 +44,8 @@ private:
   float _width;
   bool _have_height;
   float _height;
+  bool _mirror_x;
+  bool _mirror_y;
 
   PriorityMap _priorities;
   int _hard_pri;
@@ -79,10 +81,14 @@ PUBLISHED:
   INLINE void set_height(float);
 
   INLINE void set_scale(float);
+  INLINE void set_mirror_x(bool);
+  INLINE void set_mirror_y(bool);
   INLINE void set_pos(float, float, float);
   INLINE void set_pos(const LVector3f&);
 
   INLINE float get_scale(void) const;
+  INLINE bool get_mirror_x(void) const;
+  INLINE bool get_mirror_y(void) const;
   INLINE LVector3f get_pos(void) const;
 
   INLINE void set_foreground_color(float, float, float, float);

@@ -16,6 +16,8 @@ void GuiLabel::recompute_transform(void) {
   case SIMPLE_TEXT:
     {
       LMatrix4f mat = LMatrix4f::scale_mat(_scale) *
+	LMatrix4f::scale_mat(LVector3f::rfu((_mirror_x?-1.:1.), 1.,
+					    (_mirror_y?-1.:1.))) *
 	LMatrix4f::translate_mat(_pos);
       TextNode* n = DCAST(TextNode, _geom);
       n->set_transform(mat);
@@ -25,6 +27,8 @@ void GuiLabel::recompute_transform(void) {
   case SIMPLE_CARD:
     {
       LMatrix4f mat = LMatrix4f::scale_mat(_scale) *
+	LMatrix4f::scale_mat(LVector3f::rfu((_mirror_x?-1.:1.), 1.,
+					    (_mirror_y?-1.:1.))) *
 	LMatrix4f::translate_mat(_pos);
       _internal->set_transition(new TransformTransition(mat));
     }
@@ -34,6 +38,8 @@ void GuiLabel::recompute_transform(void) {
       float w=_have_width?_scale*_width:_scale;
       float h=_have_height?_scale*_height:_scale;
       LMatrix4f mat = LMatrix4f::scale_mat(LVector3f::rfu(w, 1., h)) *
+	LMatrix4f::scale_mat(LVector3f::rfu((_mirror_x?-1.:1.), 1.,
+					    (_mirror_y?-1.:1.))) *
 	LMatrix4f::translate_mat(_pos);
       _internal->set_transition(new TransformTransition(mat));
     }
