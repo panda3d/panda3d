@@ -135,14 +135,16 @@ void GuiLabel::set_properties(void) {
     }
     break;
   default:
-    gui_cat->warning() << "recompute_transform on invalid label type ("
+    gui_cat->warning() << "set_properties on invalid label type ("
 		       << (int)_type << ")" << endl;
   }
 }
 
 GuiLabel::~GuiLabel(void) {
+#ifdef _DEBUG
   if (gui_cat->is_debug())
     gui_cat->debug() << "deleting label (0x" << (void*)this << ")" << endl;
+#endif
 }
 
 #include <textureTransition.h>
@@ -268,10 +270,12 @@ GuiLabel* GuiLabel::make_model_label(Node* geom, float w, float h) {
   ret->_model_width = w;
   ret->_model_height = h;
   ret->_internal = new RenderRelation(ret->_geom, geom);
+#ifdef _DEBUG
   gui_cat->debug() << "created model label 0x" << (void*)ret 
 		   << " from node 0x" << (void*)geom
 		   << ", set _type(" << (int)(ret->_type) << ") to MODEL("
 		   << (int)MODEL << ")" << endl;
+#endif
   return ret;
 }
 
@@ -285,10 +289,12 @@ GuiLabel* GuiLabel::make_model_label(Node* geom, float left, float right,
   ret->_model_width = right - left;
   ret->_model_height = top - bottom;
   ret->_internal = new RenderRelation(ret->_geom, geom);
+#ifdef _DEBUG
   gui_cat->debug() << "created model label 0x" << (void*)ret 
 		   << " from node 0x" << (void*)geom
 		   << ", set _type(" << (int)(ret->_type) << ") to MODEL("
 		   << (int)MODEL << ")" << endl;
+#endif
   return ret;
 }
 
@@ -296,8 +302,10 @@ int GuiLabel::freeze() {
   switch (_type) {
   case SIMPLE_TEXT:
     {
+#ifdef _DEBUG
       gui_cat->spam() << "GuiLabel:: freezing text node (0x" << (void*)this
 		      << ")" << endl;
+#endif
       TextNode* n = DCAST(TextNode, _geom);
       return n->freeze();
     }
@@ -311,8 +319,10 @@ int GuiLabel::thaw() {
   switch (_type) {
   case SIMPLE_TEXT:
     {
+#ifdef _DEBUG
       gui_cat->spam() << "GuiLabel:: thawing text node (0x" << (void*)this
 		      << ")" << endl;
+#endif
       TextNode* n = DCAST(TextNode, _geom);
       return n->thaw();
     }
