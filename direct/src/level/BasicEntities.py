@@ -1,4 +1,4 @@
-"""BasicEntities module: contains the BasicEntities class"""
+"""BasicEntities module: contains fundamental entity types and base classes"""
 
 import Entity
 import DistributedEntity
@@ -17,6 +17,8 @@ class privNodePathImpl(NodePath.NodePath):
 
         if hasattr(self, 'parent'):
             self.level.requestReparent(self, self.parent)
+        else:
+            self.level.requestReparent(self, 'zone')
         
     def destroy(self):
         self.removeNode()
