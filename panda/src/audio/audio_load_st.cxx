@@ -28,7 +28,9 @@ extern "C" {
 #define COPYFORMAT copyformat
 #define UPDATEEFFECT(a, b, c, d) \
   (a)->ininfo.channels = (b)->info.channels; \
-  (a)->outinfo.channels = (c)->info.channels;
+  (a)->outinfo.channels = (c)->info.channels; \
+  (a)->ininfo.rate = (b)->info.rate; \
+  (a)->outinfo.rate = (c)->info.rate;
 #else /* PATCHLEVEL != 16 */
 #define FORMATS st_formats
 #define ENCODEFIELD encoding
