@@ -16,9 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "lerp.h"
-#include <clockObject.h>
-#include <throw_event.h>
+#include "lerp_headers.h"
+#pragma hdrstop
 
 TypeHandle Lerp::_type_handle;
 TypeHandle AutonomousLerp::_type_handle;

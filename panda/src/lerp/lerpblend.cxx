@@ -16,7 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "lerpblend.h"
+#include "lerp_headers.h"
+#pragma hdrstop
 
 TypeHandle LerpBlendType::_type_handle;
 TypeHandle EaseInBlendType::_type_handle;

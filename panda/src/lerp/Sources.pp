@@ -12,6 +12,8 @@
 
   #define INSTALL_HEADERS \
     lerp.h lerpblend.h lerpfunctor.h
+    
+  #define PRECOMPILED_HEADER lerp_headers.h
 
   #define IGATESCAN all
 

@@ -16,7 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "lerpfunctor.h"
+#include "lerp_headers.h"
+#pragma hdrstop
 
 TypeHandle LerpFunctor::_type_handle;
 TypeHandle MultiLerpFunctor::_type_handle;

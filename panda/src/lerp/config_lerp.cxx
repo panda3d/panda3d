@@ -16,9 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_lerp.h"
-#include "lerp.h"
-#include "lerpfunctor.h"
+#include "lerp_headers.h"
+#pragma hdrstop
 
 Configure(config_lerp);
 NotifyCategoryDef(lerp, "");
