@@ -45,6 +45,7 @@ typedef int XIC;
   // defined as SGI extensions.
   #define GLX_RGBA_TYPE GLX_RGBA_TYPE_SGIX
   #define GLXFBConfig GLXFBConfigSGIX
+  #define GLXPbuffer GLXPbufferSGIX
   #define glXChooseFBConfig glXChooseFBConfigSGIX
   #define glXCreateNewContext glXCreateContextWithConfigSGIX
   #define glXGetVisualFromFBConfig glXGetVisualFromFBConfigSGIX
