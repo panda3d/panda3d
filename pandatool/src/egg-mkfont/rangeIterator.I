@@ -1,5 +1,5 @@
-// Filename: charPlacement.I
-// Created by:  drose (16Feb01)
+// Filename: rangeIterator.I
+// Created by:  drose (07Sep03)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,17 +18,23 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CharPlacement::Constructor
+//     Function: RangeIterator::get_code
 //       Access: Public
-//  Description:
+//  Description: Returns the current Unicode value represented by the
+//               iterator, or -1 if the iterator has reached the end.
 ////////////////////////////////////////////////////////////////////
-INLINE CharPlacement::
-CharPlacement(const CharBitmap *bm, int x, int y,
-              int width, int height) :
-  _bm(bm),
-  _x(x),
-  _y(y),
-  _width(width),
-  _height(height)
-{
+INLINE int RangeIterator::
+get_code() const {
+  return _code;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RangeIterator::eof
+//       Access: Public
+//  Description: Returns true if all the code have been retrieved,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool RangeIterator::
+eof() const {
+  return (_it == _desc._range_list.end());
 }

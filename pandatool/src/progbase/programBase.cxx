@@ -944,9 +944,8 @@ dispatch_double_quad(const string &opt, const string &arg, void *var) {
 //     Function: ProgramBase::dispatch_color
 //       Access: Protected, Static
 //  Description: Standard dispatch function for an option that takes a
-//               color, either as r,g,b or as r,g,b,a.  The data
-//               pointer is to an array of four floats, e.g. a
-//               Colorf.
+//               color, as l or l,a or r,g,b or r,g,b,a.  The data
+//               pointer is to an array of four floats, e.g. a Colorf.
 ////////////////////////////////////////////////////////////////////
 bool ProgramBase::
 dispatch_color(const string &opt, const string &arg, void *var) {
@@ -956,24 +955,43 @@ dispatch_color(const string &opt, const string &arg, void *var) {
   tokenize(arg, words, ",");
 
   bool okflag = false;
-  if (words.size() == 4) {
+  switch (words.size()) {
+  case 4:
     okflag =
       string_to_float(words[0], ip[0]) &&
       string_to_float(words[1], ip[1]) &&
       string_to_float(words[2], ip[2]) &&
       string_to_float(words[3], ip[3]);
+    break;
 
-  } else if (words.size() == 3) {
+  case 3:
     okflag =
       string_to_float(words[0], ip[0]) &&
       string_to_float(words[1], ip[1]) &&
       string_to_float(words[2], ip[2]);
     ip[3] = 1.0;
+    break;
+
+  case 2:
+    okflag =
+      string_to_float(words[0], ip[0]) &&
+      string_to_float(words[1], ip[3]);
+    ip[1] = ip[0];
+    ip[2] = ip[0];
+    break;
+
+  case 1:
+    okflag =
+      string_to_float(words[0], ip[0]);
+    ip[1] = ip[0];
+    ip[2] = ip[0];
+    ip[3] = 1.0;
+    break;
   }
 
   if (!okflag) {
     nout << "-" << opt
-         << " requires three or four numbers separated by commas.\n";
+         << " requires one through four numbers separated by commas.\n";
     return false;
   }
 

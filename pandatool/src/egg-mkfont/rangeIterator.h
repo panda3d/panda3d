@@ -1,5 +1,5 @@
-// Filename: charBitmap.I
-// Created by:  drose (16Feb01)
+// Filename: rangeIterator.h
+// Created by:  drose (07Sep03)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,23 +16,37 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifndef RANGEITERATOR_H
+#define RANGEITERATOR_H
+
+#include "pandatoolbase.h"
+#include "rangeDescription.h"
+
+#include "pset.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CharBitmap::get_width
-//       Access: Public
-//  Description: Returns the width of the character in pixels.
+//       Class : RangeIterator
+// Description : Walks through all the Unicode characters described by
+//               a RangeDescription class.
 ////////////////////////////////////////////////////////////////////
-INLINE int CharBitmap::
-get_width() const {
-  return _block.empty() ? 0 : _block[0].size();
-}
+class RangeIterator {
+public:
+  RangeIterator(const RangeDescription &desc);
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharBitmap::get_height
-//       Access: Public
-//  Description: Returns the height of the character in pixels.
-////////////////////////////////////////////////////////////////////
-INLINE int CharBitmap::
-get_height() const {
-  return _block.size();
-}
+  INLINE int get_code() const;
+  bool next();
+  INLINE bool eof() const;
+
+private:
+  const RangeDescription &_desc;
+  RangeDescription::RangeList::const_iterator _it;
+  int _code;
+
+  typedef pset<int> Codes;
+  Codes _codes_generated;
+};
+
+#include "rangeIterator.I"
+
+#endif
+
