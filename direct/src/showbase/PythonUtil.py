@@ -32,12 +32,33 @@ def apropos(obj, str = None, fOverloaded = 0, width = None,
     """
     Print out a formatted list of members and methods of an instance or class
     """
+    def printHeader(name):
+        name = ' ' + name + ' '
+        length = len(name)
+        if length < 70:
+            padBefore = int((70 - length)/2.0)
+            padAfter = max(0,70 - length - padBefore)
+            header = '*' * padBefore + name + '*' * padAfter
+        print header
+    def printInstanceHeader(i, printHeader = printHeader):
+        printHeader(i.__class__.__name__ + ' INSTANCE INFO')
+    def printClassHeader(c, printHeader = printHeader):
+        printHeader(c.__name__ + ' CLASS INFO')
+    def printDictionaryHeader(d, printHeader = printHeader):
+        printHeader('DICTIONARY INFO')
+    # Print Header
     if type(obj) == types.InstanceType:
-        print "***************************INSTANCE INFO*****************************"
+        printInstanceHeader(obj)
+    elif type(obj) == types.ClassType:
+        printClassHeader(obj)
+    elif type (obj) == types.DictionaryType:
+        printDictionaryHeader(obj)
+    # Get dict
     if type(obj) == types.DictionaryType:
         dict = obj
     else:
         dict = obj.__dict__
+    # Adjust width
     if width:
         maxWidth = width
     else:
@@ -86,8 +107,12 @@ def apropos(obj, str = None, fOverloaded = 0, width = None,
             value = value[:max(1,lineWidth - maxWidth)]
         print (format % key)[:maxWidth] + '\t' + value
     if type(obj) == types.InstanceType:
-        print "*****************************CLASS INFO******************************"
+        print
         apropos(obj.__class__, str = str )
+    elif type(obj) == types.ClassType:
+        for parentClass in obj.__bases__:
+            print
+            apropos(parentClass, str = str)
 
 def aproposAll(obj):
     """

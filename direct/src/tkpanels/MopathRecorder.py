@@ -10,7 +10,7 @@ import Dial
 import Floater
 import EntryScale
 
-class MopathRecorder(AppShell):
+class MopathRecorder(AppShell, PandaObject):
     # Override class variables here
     appname = 'Mopath Recorder Panel'
     frameWidth      = 450
@@ -43,6 +43,10 @@ class MopathRecorder(AppShell):
         self.tempCS = direct.group.attachNewNode('mopathRecorderTempCS')
         # Count of point sets recorded
         self.pointSetCount = 0
+        # Count of number of points in a point set
+        self.pointCount = 0
+        # Curve fitter object
+        self.curveFitter = CurveFitter()
         # Set up event hooks
         self.undoEvents = [('undo', self.undoHook),
                            ('pushUndo', self.pushUndoHook),
@@ -213,7 +217,7 @@ class MopathRecorder(AppShell):
             relief = RAISED, borderwidth = 2, anchor = CENTER)
         self.getWidget('CV Controls', 'Constant Velocity').pack(
             fill = 'x', expand = 1)
-        self.createLabeledEntry(frame, 'CV Controls', 'Total Time',
+        self.createLabeledEntry(frame, 'CV Controls', 'Path Duration',
                                 'Set total curve duration',
                                 command = self.setTotalTime)
         frame.pack(fill = 'x', expand = 1)
@@ -240,17 +244,17 @@ class MopathRecorder(AppShell):
                           'Zero refine curve offset',
                           self.resetOffset, side = 'left')
         self.createLabeledEntry(offsetFrame, 'Refine Page', 'X',
-                                'Refine pass X offset', expand = 1)
+                                'Refine pass X offset', width = 3, expand = 1)
         self.createLabeledEntry(offsetFrame, 'Refine Page', 'Y',
-                                'Refine pass Y offset', expand = 1)
+                                'Refine pass Y offset', width = 3, expand = 1)
         self.createLabeledEntry(offsetFrame, 'Refine Page', 'Z',
-                                'Refine pass Z offset', expand = 1)
+                                'Refine pass Z offset', width = 3, expand = 1)
         self.createLabeledEntry(offsetFrame, 'Refine Page', 'H',
-                                'Refine pass H offset', expand = 1)
+                                'Refine pass H offset', width = 3, expand = 1)
         self.createLabeledEntry(offsetFrame, 'Refine Page', 'P',
-                                'Refine pass P offset', expand = 1)
+                                'Refine pass P offset', width = 3, expand = 1)
         self.createLabeledEntry(offsetFrame, 'Refine Page', 'R',
-                                'Refine pass R offset', expand = 1)
+                                'Refine pass R offset', width = 3, expand = 1)
         offsetFrame.pack(fill = 'x')
 
         frame = Frame(self.refinePage)
@@ -321,6 +325,7 @@ class MopathRecorder(AppShell):
         print self.getVariable('Recording', 'Recording Path').get()
 
     def setStartStopHook(self):
+        self.
         print 'start stop'
 
     def setPlaybackTime(self, time):
@@ -348,7 +353,7 @@ class MopathRecorder(AppShell):
         print self.getWidget('CV Controls', 'Constant Velocity').get()
 
     def setTotalTime(self):
-        print 'total time'
+        print 'path duration'
 
     def setRefineStart(self,value):
         print 'refine start'
@@ -379,9 +384,10 @@ class MopathRecorder(AppShell):
         Label(frame, text = text).pack(side = 'left', fill = 'x')
         entry = Entry(frame, width = width, relief = relief)
         entry.pack(side = 'left', fill = 'x', expand = expand)
+        self.widgetDict[category + '-' + text] = entry
         if command:
             entry.bind('<Return>', command)
-        frame.pack(side = side, expand = expand)
+        frame.pack(side = side, fill = 'x', expand = expand)
 
     def createButton(self, parent, category, text, balloonHelp, command,
                      side = 'top', expand = 0):
