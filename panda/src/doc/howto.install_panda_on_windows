@@ -160,9 +160,10 @@ Step 6: (Optional) Build $DTOOL
     > ppremake
     > nmake install
 
-Step 7: (Optional) Install DirectX
-  - Install DirectX 7.0 (by default into C:\mssdk).  You need this to
-    successfully build all of panda.
+Step 7: Install MS Platform SDK to get updated VC libs and headers
+  - Install July 2000 or newer MS Platform SDK MSDN CD in default location.
+    This should prepend the Platform SDK paths to your PATH,INCLUDE, and
+    LIB dirs.  Building libpandadx requires this step (needs DX7 headers/libs)
 
 Step 8: (Optional) Build $PANDA 
   - Build panda
