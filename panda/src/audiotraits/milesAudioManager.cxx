@@ -787,6 +787,7 @@ vfs_close_callback(U32 file_handle) {
     return;
   }
   istream *istr = (istream *)file_handle;
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   vfs->close_read_file(istr);
 }
 
