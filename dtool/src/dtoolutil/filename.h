@@ -150,7 +150,7 @@ PUBLISHED:
   bool scan_directory(vector_string &contents) const;
 
   bool open_read(ifstream &stream) const;
-  bool open_write(ofstream &stream) const;
+  bool open_write(ofstream &stream, bool truncate = false) const;
   bool open_append(ofstream &stream) const;
   bool open_read_write(fstream &stream) const;
 
