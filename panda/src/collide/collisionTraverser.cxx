@@ -142,11 +142,14 @@ remove_collider(CollisionNode *node) {
 
   // Update the set of handlers.
   Handlers::iterator hi = _handlers.find(handler);
-  nassertr(hi != _handlers.end(), false);
-  (*hi).second--;
-  nassertr((*hi).second >= 0, false);
-  if ((*hi).second == 0) {
-    _handlers.erase(hi);
+  // It's possible that the handler doesn't exist in the list (it may
+  // have removed itself if it detected some internal error).
+  if (hi != _handlers.end()) {
+    (*hi).second--;
+    nassertr((*hi).second >= 0, false);
+    if ((*hi).second == 0) {
+      _handlers.erase(hi);
+    }
   }
 
   _colliders.erase(ci);
