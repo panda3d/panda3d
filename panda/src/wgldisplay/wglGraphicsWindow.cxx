@@ -530,6 +530,8 @@ int wglGraphicsWindow::choose_visual(void) {
           drvtype=ICD;
        else {
          drvtype=Software;
+	 if (wgldisplay_cat->is_debug())
+	   wgldisplay_cat->debug() << "skipping software driver" << endl;
          continue;  // skipping all SW fmts
        }
 
@@ -544,6 +546,24 @@ int wglGraphicsWindow::choose_visual(void) {
 #endif
 
        DWORD dwReqFlags=(PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW);
+
+       if (wgldisplay_cat->is_debug()) {
+	 if (mask & W_ALPHA)
+	   wgldisplay_cat->debug() << "want alpha, pfd says '"
+				   << pfd.cAlphaBits << "'" << endl;
+	 if (mask & W_DEPTH)
+	   wgldisplay_cat->debug() << "want depth, pfd says '"
+				   << pfd.cDepthBits << "'" << endl;
+	 if (mask & W_STENCIL)
+	   wgldisplay_cat->debug() << "want stencil, pfd says '"
+				   << pfd.cStencilBits << "'" << endl;
+	 wgldisplay_cat->debug() << "final flag check "
+				 << (pfd.dwFlags & dwReqFlags) << " =? "
+				 << dwReqFlags << endl;
+	 wgldisplay_cat->debug() << "pfd bits = " << pfd.cColorBits << endl;
+	 wgldisplay_cat->debug() << "cur_bpp = " << cur_bpp << endl;
+       }
+
        if(mask & W_DOUBLE)
            dwReqFlags|= PFD_DOUBLEBUFFER;
        if((mask & W_ALPHA) && (pfd.cAlphaBits==0))
