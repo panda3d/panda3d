@@ -294,7 +294,8 @@ generate() {
     assemble_text(wtext.begin(), wtext.end(), font, 
                   ul, lr, num_rows);
 
-  // Parent the text in.
+  // Parent the text in.  We create an intermediate node so we can
+  // choose to reinstance the text_root as the shadow, below.
   PT(PandaNode) text = new PandaNode("text");
   root->add_child(text, _draw_order + 2);
   text->add_child(text_root);
@@ -883,7 +884,7 @@ do_measure() {
 ////////////////////////////////////////////////////////////////////
 float TextNode::
 assemble_row(wstring::iterator &si, const wstring::iterator &send, 
-             TextFont *font, PandaNode *dest) {
+             TextFont *font, GeomNode *dest, const LMatrix4f &mat) {
   float xpos = 0.0f;
   while (si != send && (*si) != '\n') {
     wchar_t character = *si;
@@ -914,14 +915,26 @@ assemble_row(wstring::iterator &si, const wstring::iterator &send,
         const RenderState *state = glyph->get_state();
 
         if (char_geom != (Geom *)NULL) {
-          LMatrix4f mat = LMatrix4f::scale_mat(glyph_scale);
-          mat.set_row(3, LVector3f(xpos, 0.0f, 0.0f));
+          LMatrix4f mat2 = LMatrix4f::scale_mat(glyph_scale);
+          mat2.set_row(3, LVector3f(xpos, 0.0f, 0.0f));
+          LMatrix4f xform = mat2 * mat;
 
-          string ch(1, (char)character);
-          PT(GeomNode) geode = new GeomNode(ch);
-          geode->add_geom(char_geom, state);
-          dest->add_child(geode);
-          geode->set_transform(TransformState::make_mat(mat));
+          // Transform the vertices of the geom appropriately.  We
+          // assume the geom is non-indexed.
+          PTA_Vertexf coords;
+          PTA_ushort index;
+          char_geom->get_coords(coords, index);
+          PTA_Vertexf new_coords;
+          new_coords.reserve(coords.size());
+          PTA_Vertexf::const_iterator vi;
+          for (vi = coords.begin(); vi != coords.end(); ++vi) {
+            new_coords.push_back((*vi) * xform);
+          }
+          nassertr(new_coords.size() == coords.size(), false);
+          char_geom->set_coords(new_coords);
+
+          // Now add the geom to the destination node.
+          dest->add_geom(char_geom, state);
         }
 
         xpos += glyph->get_advance() * glyph_scale;
@@ -943,27 +956,21 @@ assemble_row(wstring::iterator &si, const wstring::iterator &send,
 PT(PandaNode) TextNode::
 assemble_text(wstring::iterator si, const wstring::iterator &send,
               TextFont *font, LVector2f &ul, LVector2f &lr, int &num_rows) {
-  float line_height = get_line_height();
+  float line_height = font->get_line_height();
 
   ul.set(0.0f, 0.8f * line_height);
   lr.set(0.0f, 0.0f);
 
-  // Make a group node to hold our formatted text geometry.
-  PT(PandaNode) root_node = new PandaNode("text");
+  // Make a geom node to hold our formatted text geometry.
+  PT(GeomNode) root_node = new GeomNode("text");
 
   float posy = 0.0f;
-  int row_index = 0;
   while (si != send) {
-    char numstr[20];
-    sprintf(numstr, "row%d", row_index);
-    nassertr(strlen(numstr) < 20, root_node);
-
-    PT(PandaNode) row = new PandaNode(numstr);
-    float row_width = assemble_row(si, send, font, row);
-    if (si != send) {
-      // Skip past the newline.
-      ++si;
-    }
+    // First, just measure the row, so we know how wide it is.
+    // (Centered or right-justified text will require us to know this
+    // up front.)
+    wstring::iterator tsi = si;
+    float row_width = measure_row(tsi, send, font);
 
     LMatrix4f mat = LMatrix4f::ident_mat();
     if (_align == A_left) {
@@ -991,8 +998,13 @@ assemble_text(wstring::iterator si, const wstring::iterator &send,
       mat = shear * mat;
     }
 
-    row->set_transform(TransformState::make_mat(mat));
-    root_node->add_child(row);
+    // Now that we've computed the row's transform matrix, generate
+    // the actual geoms for the row.
+    assemble_row(si, send, font, root_node, mat);
+    if (si != send) {
+      // Skip past the newline.
+      ++si;
+    }
 
     posy -= line_height;
     num_rows++;
@@ -1000,7 +1012,7 @@ assemble_text(wstring::iterator si, const wstring::iterator &send,
 
   lr[1] = posy + 0.8f * line_height;
 
-  return root_node;
+  return root_node.p();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1046,7 +1058,7 @@ measure_row(wstring::iterator &si, const wstring::iterator &send,
 void TextNode::
 measure_text(wstring::iterator si, const wstring::iterator &send,
              TextFont *font, LVector2f &ul, LVector2f &lr, int &num_rows) {
-  float line_height = get_line_height();
+  float line_height = font->get_line_height();
 
   ul.set(0.0f, 0.8f * line_height);
   lr.set(0.0f, 0.0f);

@@ -34,5 +34,13 @@ TextGlyph::
 ////////////////////////////////////////////////////////////////////
 PT(Geom) TextGlyph::
 get_geom() const {
-  return _geom;
+  if (_geom == (Geom *)NULL) {
+    return _geom;
+  }
+
+  // We always return a copy of the geom.  That will allow the caller
+  // to modify its vertices without fear of stomping on other copies;
+  // it is also critical for the DynamicTextGlyph, which depends on
+  // this behavior to properly count references to this glyph.
+  return _geom->make_copy();
 }

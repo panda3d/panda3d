@@ -206,6 +206,7 @@ PUBLISHED:
 
   PT(PandaNode) generate();
   INLINE void update();
+  INLINE void force_update();
 
 public:
   // Direct support for wide-character strings.
@@ -249,8 +250,8 @@ private:
   void do_measure();
 
 #ifndef CPPPARSER  // interrogate has a bit of trouble with wstring.
-  float assemble_row(wstring::iterator &si, const wstring::iterator &send,
-                     TextFont *font, PandaNode *dest);
+  float assemble_row(wstring::iterator &si, const wstring::iterator &send, 
+                     TextFont *font, GeomNode *dest, const LMatrix4f &mat);
   PT(PandaNode) assemble_text(wstring::iterator si, const wstring::iterator &send,
                               TextFont *font,
                               LVector2f &ul, LVector2f &lr, int &num_rows);

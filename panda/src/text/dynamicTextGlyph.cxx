@@ -53,7 +53,7 @@ get_geom() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextGlyph::get_row
-//       Access: Publiic
+//       Access: Public
 //  Description: Returns a pointer to the first byte in the pixel
 //               buffer associated with the leftmost pixel in the
 //               indicated row, where 0 is the topmost row and _y_size
@@ -79,7 +79,7 @@ get_row(int y) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextGlyph::erase
-//       Access: Publiic
+//       Access: Public
 //  Description: Erases the glyph from the texture map.
 ////////////////////////////////////////////////////////////////////
 void DynamicTextGlyph::
@@ -99,7 +99,7 @@ erase() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextGlyph::make_geom
-//       Access: Publiic
+//       Access: Public
 //  Description: Creates the actual geometry for the glyph.  The
 //               parameters bitmap_top and bitmap_left are from
 //               FreeType, and indicate the position of the top left

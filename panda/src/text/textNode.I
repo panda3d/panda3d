@@ -194,7 +194,12 @@ get_expand_amp() const {
 ////////////////////////////////////////////////////////////////////
 INLINE float TextNode::
 get_line_height() const {
-  return (_font == (TextFont *)NULL) ? 0.0 : _font->get_line_height();
+  if (_font != (TextFont *)NULL) {
+    return _font->get_line_height();
+  } else if (get_default_font() != (TextFont *)NULL) {
+    return _default_font->get_line_height();
+  }
+  return 0.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1302,6 +1307,21 @@ get_num_rows() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 update() {
+  check_rebuild();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::force_update
+//       Access: Published
+//  Description: Forces the TextNode to recompute itself now, even if
+//               it believes nothing has changed.  Normally, this
+//               should not need to be called, but it may be useful if
+//               some properties change outside of the TextNode's
+//               knowledge (for instance, within the font).
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+force_update() {
+  invalidate_with_measure();
   check_rebuild();
 }
 
