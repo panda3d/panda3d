@@ -1427,11 +1427,9 @@ IDirect3DTexture8 *DXTextureContext8::CreateTexture(DXScreenData &scrn) {
 #endif
 #endif
 
-    if(_texture->has_ram_image()) {
-        hr = FillDDSurfTexturePixels();
-        if(FAILED(hr)) {
-           goto error_exit;
-        }
+    hr = FillDDSurfTexturePixels();
+    if(FAILED(hr)) {
+      goto error_exit;
     }
 
     // Return the newly created texture
@@ -1448,10 +1446,21 @@ FillDDSurfTexturePixels(void) {
     HRESULT hr=E_FAIL;
     assert(IS_VALID_PTR(_texture));
 
+    // It is a mistake to insist that has_ram_image() be true before
+    // we try to load the texture.  This function only indicates
+    // whether the texture image is already present in main ram or
+    // not; it has nothing to do with whether get_ram_image() will
+    // fail.  When there is only one GSG in the world, has_ram_image()
+    // will generally be true whenever the texture has not been loaded
+    // before, but when there are multiple GSG's (for instance, if we
+    // close and reopen the main window), then has_ram_image() is
+    // largely irrelevant to the GSG.
+    /*
     if(!_texture->has_ram_image()) {
       dxgsg8_cat.warning() << "CreateTexture: tried to fill surface that has no ram image!\n";
       return S_OK;
     }
+    */
 
     PixelBuffer *pbuf = _texture->get_ram_image();
     if (pbuf == (PixelBuffer *)NULL) {
