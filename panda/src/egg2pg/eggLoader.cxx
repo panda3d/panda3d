@@ -1139,8 +1139,8 @@ make_texture_stage(const EggTexture *egg_tex) {
   if (!egg_tex->has_stage_name() &&
       !egg_tex->has_uv_name() &&
       !egg_tex->has_color() && 
-      egg_tex->get_env_type() == EggTexture::ET_unspecified &&
-      egg_tex->get_env_type() == EggTexture::ET_modulate &&
+      (egg_tex->get_env_type() == EggTexture::ET_unspecified ||
+       egg_tex->get_env_type() == EggTexture::ET_modulate) &&
       egg_tex->get_combine_mode(EggTexture::CC_rgb) == EggTexture::CM_unspecified &&
       egg_tex->get_combine_mode(EggTexture::CC_alpha) == EggTexture::CM_unspecified &&
 
