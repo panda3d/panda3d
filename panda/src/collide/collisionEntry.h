@@ -60,8 +60,8 @@ PUBLISHED:
 
   INLINE CollisionNode *get_from_node() const;
   INLINE PandaNode *get_into_node() const;
-  INLINE const NodePath &get_from_node_path() const;
-  INLINE const NodePath &get_into_node_path() const;
+  INLINE NodePath get_from_node_path() const;
+  INLINE NodePath get_into_node_path() const;
 
   INLINE bool get_respect_prev_transform() const;
 

@@ -104,7 +104,7 @@ get_into_node() const {
 //               that has been added to a CollisionTraverser via
 //               add_collider().
 ////////////////////////////////////////////////////////////////////
-INLINE const NodePath &CollisionEntry::
+INLINE NodePath CollisionEntry::
 get_from_node_path() const {
   return _from_node_path;
 }
@@ -120,7 +120,7 @@ get_from_node_path() const {
 //               resolve the particular instance of the node, if there
 //               is more than one.
 ////////////////////////////////////////////////////////////////////
-INLINE const NodePath &CollisionEntry::
+INLINE NodePath CollisionEntry::
 get_into_node_path() const {
   return _into_node_path;
 }
