@@ -1287,7 +1287,7 @@ calc_width(const wstring &line) const {
 //               wordwrap_width (and does not break any words, if
 //               possible).  Returns the new string.
 ////////////////////////////////////////////////////////////////////
-wstring TextNode::
+INLINE wstring TextNode::
 wordwrap_to(const wstring &wtext, float wordwrap_width,
             bool preserve_trailing_whitespace) const {
   nassertr(_font != (TextFont *)NULL, wtext);
