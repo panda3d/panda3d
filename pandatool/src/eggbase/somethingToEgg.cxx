@@ -28,6 +28,9 @@ SomethingToEgg(const string &format_name,
     add_runline("[opts] input" + _preferred_extension + " >output.egg");
   }
 
+  // -f doesn't make sense if we aren't reading egg files.
+  remove_option("f");
+
   redescribe_option
     ("cs",
      "Specify the coordinate system of the resulting egg file.  This may be "
