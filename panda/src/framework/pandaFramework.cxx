@@ -151,6 +151,9 @@ get_default_window_props(GraphicsWindow::Properties &props) {
   props._ysize = win_height;
   props._fullscreen = fullscreen;
   props._title = _window_title;
+
+  props.set_clear_color(Colorf(win_background_r, win_background_g, 
+                               win_background_b, 1.0f));
 }
 
 ////////////////////////////////////////////////////////////////////

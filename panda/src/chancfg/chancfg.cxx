@@ -393,6 +393,10 @@ ChanConfig::ChanConfig(GraphicsPipe* pipe, std::string cfg, const NodePath &rend
   int want_depth_bits = chanconfig.GetInt("want-depth-bits", 1);
   int want_color_bits = chanconfig.GetInt("want-color-bits", 1);
 
+  float win_background_r = chanconfig.GetFloat("win-background-r", 0.41);
+  float win_background_g = chanconfig.GetFloat("win-background-g", 0.41);
+  float win_background_b = chanconfig.GetFloat("win-background-b", 0.41);
+
   // visual?  nope, that's handled with the mode.
   uint mask = 0x0;  // ?!  this really should come from the win config
   mask = overrides.defined(ChanCfgOverrides::Mask) ?
@@ -413,6 +417,10 @@ ChanConfig::ChanConfig(GraphicsPipe* pipe, std::string cfg, const NodePath &rend
   props._want_depth_bits = want_depth_bits;
   props._want_color_bits = want_color_bits;
   props._bCursorIsVisible = use_cursor;
+
+  props.set_clear_color(Colorf(win_background_r, win_background_g, 
+                               win_background_b, 1.0f));
+
 
   // stereo prep?
   // DVR prep?

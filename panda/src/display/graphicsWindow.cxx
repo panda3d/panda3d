@@ -66,6 +66,10 @@ Properties() {
   _want_depth_bits = 1;
   _want_color_bits = 1;
   _bCursorIsVisible=true;
+
+  // By default, windows are set up to clear color and depth.
+  set_clear_color_active(true);
+  set_clear_depth_active(true);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -138,32 +142,11 @@ TypeHandle GraphicsWindow::WindowPipe::force_init_type(void) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsWindow::
-GraphicsWindow(GraphicsPipe *pipe) : Configurable() {
-#ifdef DO_MEMORY_USAGE
-  MemoryUsage::update_type(this, this);
-#endif
-  _pipe = pipe;
-
-  _draw_callback = NULL;
-  _idle_callback = NULL;
-  _frame_number = 0;
-  _is_synced = false;
-  _window_active = true;
-  _display_regions_stale = false;
-
-  // By default, windows are set up to clear color and depth.
-  set_clear_color_active(true);
-  set_clear_depth_active(true);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-GraphicsWindow::
 GraphicsWindow(GraphicsPipe *pipe,
-               const GraphicsWindow::Properties &props) : Configurable() {
+               const GraphicsWindow::Properties &props) : 
+  Configurable(),
+  ClearableRegion(props)
+{
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
 #endif
@@ -176,10 +159,6 @@ GraphicsWindow(GraphicsPipe *pipe,
   _is_synced = false;
   _window_active = true;
   _display_regions_stale = false;
-
-  // By default, windows are set up to clear color and depth.
-  set_clear_color_active(true);
-  set_clear_depth_active(true);
 }
 
 ////////////////////////////////////////////////////////////////////

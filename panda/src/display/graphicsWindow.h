@@ -68,10 +68,11 @@ class CullHandler;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GraphicsWindow : public Configurable, public ReferenceCount, public ClearableRegion {
 PUBLISHED:
-  class EXPCL_PANDA Properties {
+  class EXPCL_PANDA Properties : public ClearableRegion {
   PUBLISHED:
     Properties();
-    INLINE Properties(const Properties &);
+    INLINE Properties(const Properties &copy);
+    INLINE void operator = (const Properties &copy);
     INLINE ~Properties();
 
     INLINE void set_origin(int xorg, int yorg);
@@ -107,8 +108,7 @@ public:
 
 public:
 
-  GraphicsWindow(GraphicsPipe*);
-  GraphicsWindow(GraphicsPipe*, const Properties&);
+  GraphicsWindow(GraphicsPipe *pipe, const Properties &props = Properties());
   virtual ~GraphicsWindow();
 
   INLINE const Properties& get_properties() const;

@@ -19,12 +19,34 @@
 #include <notify.h>
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::Properties::Destructor
+//     Function: GraphicsWindow::Properties::Copy Constructor
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GraphicsWindow::Properties::
-~Properties() {
+Properties(const Properties &copy) {
+  (*this) = copy;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::Properties::Copy Assignment Operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsWindow::Properties::
+operator = (const Properties &copy) {
+  ClearableRegion::operator = (copy);
+  _xorg = copy._xorg;
+  _yorg = copy._yorg;
+  _xsize = copy._xsize;
+  _ysize = copy._ysize;
+  _title = copy._title;
+  _border = copy._border;
+  _fullscreen = copy._fullscreen;
+  _mask = copy._mask;
+  _want_depth_bits = copy._want_depth_bits;
+  _want_color_bits = copy._want_color_bits;
+  _bCursorIsVisible = copy._bCursorIsVisible;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -32,18 +54,8 @@ INLINE GraphicsWindow::Properties::
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE GraphicsWindow::Properties::Properties(const Properties &InitProp) {
-    _xorg=InitProp._xorg;
-    _yorg=InitProp._yorg;
-    _xsize=InitProp._xsize;
-    _ysize=InitProp._ysize;
-    _title=InitProp._title;
-    _border=InitProp._border;
-    _fullscreen=InitProp._fullscreen;
-    _mask=InitProp._mask;
-    _want_depth_bits=InitProp._want_depth_bits;
-    _want_color_bits=InitProp._want_color_bits;
-    _bCursorIsVisible=InitProp._bCursorIsVisible;
+INLINE GraphicsWindow::Properties::
+~Properties() {
 }
 
 ////////////////////////////////////////////////////////////////////

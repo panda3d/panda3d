@@ -29,8 +29,8 @@ extern const int win_width;
 extern const int win_height;
 extern const bool fullscreen;
 
-extern const float background_r;
-extern const float background_g;
-extern const float background_b;
+extern const float win_background_r;
+extern const float win_background_g;
+extern const float win_background_b;
 
 #endif
