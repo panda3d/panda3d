@@ -983,7 +983,6 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   // will certainly look close enough.  Then, we transform to camera-space
   // by hand and apply the inverse frustum to the transformed point.
   // For some cracked out reason, this actually works.
-
 #ifdef GSG_VERBOSE
   crgsg_cat.debug() << "draw_sprite()" << endl;
 #endif
@@ -1010,35 +1009,27 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
 
   Texture *tex = geom->get_texture();
   if(tex != NULL) {
-      // set up the texture-rendering state
-      NodeTransitions state;
-
-      TextureTransition *ta = new TextureTransition;
-      ta->set_on(tex);
-      state.set_transition(ta);
-
-      TextureApplyTransition *taa = new TextureApplyTransition;
-      taa->set_mode(TextureApplyProperty::M_modulate);
-      state.set_transition(taa);
-
-      modify_state(state);
-
-      tex_xsize = tex->_pbuffer->get_xsize();
-      tex_ysize = tex->_pbuffer->get_ysize();
+    // set up the texture-rendering state
+    modify_state(RenderState::make
+                 (TextureAttrib::make(tex),
+                  TextureApplyAttrib::make(TextureApplyAttrib::M_modulate)));
+    tex_xsize = tex->_pbuffer->get_xsize();
+    tex_ysize = tex->_pbuffer->get_ysize();
   }
 
   // save the modelview matrix
-  LMatrix4f modelview_mat;
-
-  const TransformTransition *ctatt;
-  if (!get_attribute_into(ctatt, this))
-    modelview_mat = LMatrix4f::ident_mat();
-  else
-    modelview_mat = ctatt->get_matrix();
+  const LMatrix4f &modelview_mat = _transform->get_mat();
 
   // get the camera information
-  float aspect_ratio = 
-    get_current_camera()->get_lens()->get_aspect_ratio();
+
+  // Hmm, this doesn't work any more, since we don't store the camera
+  // pointer in new scene graph land.  Need to find a better way to
+  // get the current window's aspect ratio.  Here's a temporary hack
+  // for now.
+
+  //  float aspect_ratio = 
+  //    get_current_camera()->get_lens()->get_aspect_ratio();
+  float aspect_ratio = 1.333333;
 
   // load up our own matrices
   chromium.MatrixMode(GL_MODELVIEW);
@@ -1058,11 +1049,12 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   // the user can override alpha sorting if they want
   bool alpha = false;
 
-  if (geom->get_alpha_disable() == false) {
+  if (!geom->get_alpha_disable()) {
     // figure out if alpha's enabled (if not, no reason to sort)
-    const TransparencyTransition *ctratt;
-    if (get_attribute_into(ctratt, this))
-      alpha = (ctratt->get_mode() != TransparencyProperty::M_none);
+    const TransparencyAttrib *trans = _qpstate->get_transparency();
+    if (trans != (const TransparencyAttrib *)NULL) {
+      alpha = (trans->get_mode() != TransparencyAttrib::M_none);
+    }
   }
 
   // sort container and iterator
@@ -1088,7 +1080,7 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   bool theta_on = !(geom->get_theta_bind_type() == G_OFF);
 
   // x direction
-  if (x_overall == true)
+  if (x_overall)
     scaled_width = geom->_x_texel_ratio[0] * half_width;
   else {
     nassertv(((int)geom->_x_texel_ratio.size() >= geom->get_num_prims()));
@@ -1096,7 +1088,7 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   }
 
   // y direction
-  if (y_overall == true)
+  if (y_overall)
     scaled_height = geom->_y_texel_ratio[0] * half_height * aspect_ratio;
   else {
     nassertv(((int)geom->_y_texel_ratio.size() >= geom->get_num_prims()));
@@ -1105,7 +1097,7 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
 
   // theta
   if (theta_on) {
-    if (theta_overall == true)
+    if (theta_overall)
       theta = geom->_theta[0];
     else {
       nassertv(((int)geom->_theta.size() >= geom->get_num_prims()));
@@ -1132,14 +1124,14 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
     // build the final object that will go into the vector.
     ws._v.set(cameraspace_vert[0],cameraspace_vert[1],cameraspace_vert[2]);
 
-    if (color_overall == false)
+    if (!color_overall)
       ws._c = geom->get_next_color(ci);
-    if (x_overall == false)
+    if (!x_overall)
       ws._x_ratio = *x_walk++;
-    if (y_overall == false)
+    if (!y_overall)
       ws._y_ratio = *y_walk++;
     if (theta_on) {
-      if (theta_overall == false)
+      if (!theta_overall)
         ws._theta = *theta_walk++;
     }
 
@@ -1154,13 +1146,13 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
     sort(cameraspace_vector.begin(), cameraspace_vector.end(),
          draw_sprite_vertex_less());
 
-     if(_dithering_enabled)
+     if (_dithering_enabled)
          chromium.Disable(GL_DITHER);
   }
 
   Vertexf ul, ur, ll, lr;
 
-  if (color_overall == true)
+  if (color_overall)
     chromium.Color4fv(geom->get_next_color(ci).get_data());
 
   ////////////////////////////////////////////////////////////////////////////
@@ -3946,7 +3938,13 @@ void report_errors_loop(GLenum error_code) {
 #define MAXGLERRORSREPORTED 20
   int cnt=0;
   while ((cnt<MAXGLERRORSREPORTED) && (error_code != GL_NO_ERROR)) {
-    crgsg_cat.error() << gluErrorString(error_code) << "\n";
+    const GLubyte *error_string = gluErrorString(error_code);
+    if (error_string != (const GLubyte *)NULL) {
+      crgsg_cat.error() << error_string << "\n";
+    } else {
+      crgsg_cat.error()
+        << "Error number " << (int)error_code << "; no string available.\n";
+    }
     error_code = chromium.GetError();
     cnt++;
   }
@@ -5477,6 +5475,7 @@ ostream &output_cr_enum(ostream &out, GLenum v) {
     return out << "GL_ONE_MINUS_DST_ALPHA";
   case GL_SRC_ALPHA_SATURATE:
     return out << "GL_SRC_ALPHA_SATURATE";
+  #ifdef USING_OPENGL_1_2 //[
   case GL_CONSTANT_COLOR:
     return out << "GL_CONSTANT_COLOR";
   case GL_ONE_MINUS_CONSTANT_COLOR:
@@ -5485,6 +5484,7 @@ ostream &output_cr_enum(ostream &out, GLenum v) {
     return out << "GL_CONSTANT_ALPHA";
   case GL_ONE_MINUS_CONSTANT_ALPHA:
     return out << "GL_ONE_MINUS_CONSTANT_ALPHA";
+  #endif //]
 
     /* Render Mode */
   case GL_FEEDBACK:
@@ -6076,6 +6076,7 @@ ostream &output_cr_enum(ostream &out, GLenum v) {
     */
 
     /* GL 1.2 texturing */
+  #ifdef USING_OPENGL_1_2 //[
   case GL_PACK_SKIP_IMAGES:
     return out << "GL_PACK_SKIP_IMAGES";
   case GL_PACK_IMAGE_HEIGHT:
@@ -6098,6 +6099,7 @@ ostream &output_cr_enum(ostream &out, GLenum v) {
   case GL_TEXTURE_BINDING_3D:
     return out << "GL_TEXTURE_BINDING_3D";
 #endif
+  #endif //]
 
     /* Internal texture formats (GL 1.1) */
   case GL_ALPHA4:
@@ -6192,6 +6194,7 @@ ostream &output_cr_enum(ostream &out, GLenum v) {
     return out << "GL_OUT_OF_MEMORY";
 
     /* OpenGL 1.2 */
+  #ifdef USING_OPENGL_1_2 //[
   case GL_RESCALE_NORMAL:
     return out << "GL_RESCALE_NORMAL";
   case GL_CLAMP_TO_EDGE:
@@ -6242,6 +6245,7 @@ ostream &output_cr_enum(ostream &out, GLenum v) {
     return out << "GL_TEXTURE_BASE_LEVEL";
   case GL_TEXTURE_MAX_LEVEL:
     return out << "GL_TEXTURE_MAX_LEVEL";
+  #endif //]
   }
 
   return out << (int)v;

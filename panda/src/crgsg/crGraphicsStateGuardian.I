@@ -331,7 +331,7 @@ INLINE void CRGraphicsStateGuardian::
 call_glStencilOp(GLenum fail,GLenum zfail,GLenum zpass) {
 #ifdef GSG_VERBOSE
     crgsg_cat.debug() << "crStencilOp(fail, zfail, ";
-    switch (op) {
+    switch (zpass) {
     case GL_KEEP:
       crgsg_cat.debug(false) << "GL_KEEP)";
       break;
