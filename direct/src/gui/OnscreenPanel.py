@@ -120,7 +120,12 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
         self.panelButtons = []
         self.panelText = []
 
-        if isinstance(geom, types.StringType):
+        if geom == None:
+            # If 'geom' is None, it means not to have a background
+            # panel at all.
+            self.panelGeom = None
+            
+        elif isinstance(geom, types.StringType):
             # If 'geom' is a string, it's the name of a model to load.
             self.panelGeom = loader.loadModelCopy(geom)
             self.panelGeom.reparentTo(self)
@@ -132,40 +137,42 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
         centerY = (rect[2] + rect[3]) / 2.0
         NodePath.setPos(self, centerX, 0, centerY)
 
-        # Scale and position the geometry to fill up our desired
-        # rectangle.
-        gCenterX = (geomRect[0] + geomRect[1]) / 2.0
-        gCenterY = (geomRect[2] + geomRect[3]) / 2.0
-
-        self.panelGeom.setPos(-gCenterX, 0, -gCenterY)
-        self.panelGeom.setScale((rect[1] - rect[0]) / (geomRect[1] - geomRect[0]), 1,
-                                (rect[3] - rect[2]) / (geomRect[3] - geomRect[2]))
-
-        if bg[3] != 1:
-            self.panelGeom.setTransparency(1)
-        self.panelGeom.setColor(bg[0], bg[1], bg[2], bg[3])
-
         self.setBin('fixed', self.panelDrawOrder)
+        self.panelRegion = None
 
-        if support3d:
-            # If we're supposed to support 3-d geometry in front of
-            # the panel, set a few extra attributes to ensure the
-            # panel geometry fills up the depth buffer as it goes,
-            # making it safe to put 3-d geometry in front of it.
-            dw = DepthWriteTransition()
-            self.panelGeom.setY(100)
-            self.panelGeom.arc().setTransition(dw, 2)
+        if self.panelGeom != None:
+            # Scale and position the geometry to fill up our desired
+            # rectangle.
+            gCenterX = (geomRect[0] + geomRect[1]) / 2.0
+            gCenterY = (geomRect[2] + geomRect[3]) / 2.0
 
-        # Set up the panel as its own mouse region so mouse clicks on
-        # the panel don't inadvertently drive the toon around.  This
-        # must be done after the panelGeom has been scaled
-        # appropriately, above.
-        self.geomRect = geomRect
-        self.panelRegion = MouseWatcherRegion(uniqueName, 0, 0, 0, 0)
-        self.panelRegion.setRelative(self.panelGeom,
-                                     geomRect[0], geomRect[1],
-                                     geomRect[2], geomRect[3])
-        self.panelRegion.setSort(self.panelDrawOrder)
+            self.panelGeom.setPos(-gCenterX, 0, -gCenterY)
+            self.panelGeom.setScale((rect[1] - rect[0]) / (geomRect[1] - geomRect[0]), 1,
+                                    (rect[3] - rect[2]) / (geomRect[3] - geomRect[2]))
+
+            if bg[3] != 1:
+                self.panelGeom.setTransparency(1)
+            self.panelGeom.setColor(bg[0], bg[1], bg[2], bg[3])
+
+            if support3d:
+                # If we're supposed to support 3-d geometry in front of
+                # the panel, set a few extra attributes to ensure the
+                # panel geometry fills up the depth buffer as it goes,
+                # making it safe to put 3-d geometry in front of it.
+                dw = DepthWriteTransition()
+                self.panelGeom.setY(100)
+                self.panelGeom.arc().setTransition(dw, 2)
+
+            # Set up the panel as its own mouse region so mouse clicks on
+            # the panel don't inadvertently drive the toon around.  This
+            # must be done after the panelGeom has been scaled
+            # appropriately, above.
+            self.geomRect = geomRect
+            self.panelRegion = MouseWatcherRegion(uniqueName, 0, 0, 0, 0)
+            self.panelRegion.setRelative(self.panelGeom,
+                                         geomRect[0], geomRect[1],
+                                         geomRect[2], geomRect[3])
+            self.panelRegion.setSort(self.panelDrawOrder)
 
     def cleanup(self):
         """cleanup(self):
@@ -222,8 +229,9 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
                     self.accept(button.button.getDownRolloverEvent(),
                                 button.func, [button.button])
                 button.startBehavior()
-                
-        base.mouseWatcherNode.addRegion(self.panelRegion)
+
+        if self.panelRegion != None:
+            base.mouseWatcherNode.addRegion(self.panelRegion)
         
     def hide(self):
         """hide(self):
@@ -242,8 +250,9 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
                 self.ignore(button.button.getDownRolloverEvent())
             if button.panelManage:
                 button.unmanage()
-                
-        base.mouseWatcherNode.removeRegion(self.panelRegion)
+
+        if self.panelRegion != None:
+            base.mouseWatcherNode.removeRegion(self.panelRegion)
 
     def makeButton(self, name,
                    func = None,
@@ -397,7 +406,8 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
                 button.unmanage()
                 button.manage(self)
 
-        self.panelRegion.setRelative(self.panelGeom,
-                                     self.geomRect[0], self.geomRect[1],
-                                     self.geomRect[2], self.geomRect[3])
+        if self.panelRegion != None:
+            self.panelRegion.setRelative(self.panelGeom,
+                                         self.geomRect[0], self.geomRect[1],
+                                         self.geomRect[2], self.geomRect[3])
 
