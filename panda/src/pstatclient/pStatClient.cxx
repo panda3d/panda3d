@@ -451,6 +451,9 @@ client_connect(string hostname, int port) {
       << port << "\n";
     return false;
   }
+  // Make sure we're not queuing up multiple TCP sockets--we expect
+  // immediate writes of our TCP datagrams.
+  _tcp_connection->set_collect_tcp(false);
 
   _reader.add_connection(_tcp_connection);
   _is_connected = true;

@@ -50,6 +50,10 @@ connection_opened(const PT(Connection) &,
 
   nout << "Got new connection from " << address << "\n";
 
+  // Make sure this connection doesn't queue up TCP packets we write
+  // to it.
+  new_connection->set_collect_tcp(false);
+
   PStatReader *reader = new PStatReader(_manager, monitor);
   _manager->add_reader(new_connection, reader);
   reader->set_tcp_connection(new_connection);
