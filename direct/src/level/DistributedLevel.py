@@ -85,9 +85,6 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # all our entities at that time.
         base.cr.timeManager.synchronize('DistributedLevel.generate')
 
-        # add factory menu to SpeedChat
-        base.localAvatar.chatMgr.chatInputSpeedChat.addFactoryMenu()
-
         # add special camera views
         self.factoryViews = FactoryCameraViews.FactoryCameraViews(self)
 
@@ -349,8 +346,6 @@ class DistributedLevel(DistributedObject.DistributedObject,
     def delete(self):
         DistributedLevel.notify.debug('delete')
         DistributedObject.DistributedObject.delete(self)
-        # remove factory menu to SpeedChat
-        base.localAvatar.chatMgr.chatInputSpeedChat.removeFactoryMenu()
         # remove special camera views
         del self.factoryViews
         # make sure the ouch task is stopped
