@@ -619,7 +619,7 @@ class ShowBase:
         # Replace spaces with dashes because unix does not like spaces in the filename
         date = date.replace(' ', '-')
         date = date.replace(':', '-')
-        imageName = (namePrefix + '-' + date + '-' + str(frameCount) + '.pnm')
+        imageName = (namePrefix + '-' + date + '-' + str(frameCount) + '.bmp')
         self.notify.info("Taking screenshot: " + imageName)
         takeSnapshot(self.win, imageName)
 
