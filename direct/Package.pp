@@ -14,14 +14,6 @@
 
 
 
-// Check the version of ppremake in use.  This is temporary until
-// everyone gets up to at least 0.50.  After that, the test in dtool
-// will suffice.
-#if $[not $[>= $[PPREMAKE_VERSION],0.50]]
-  #error You need at least ppremake version 0.50 to process this tree.
-#endif
-
-
 // What is the name and version of this source tree?
 #if $[eq $[PACKAGE],]
   #define PACKAGE direct

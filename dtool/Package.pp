@@ -13,7 +13,7 @@
 // files.
 
 // Check the version of ppremake in use.
-#if $[not $[>= $[PPREMAKE_VERSION],0.50]]
+#if $[< $[PPREMAKE_VERSION],0.50]
   #error You need at least ppremake version 0.50 to process this tree.
 #endif
 
