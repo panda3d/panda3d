@@ -375,6 +375,7 @@ unify_attributes(EggPrimitive::Shading shading) {
         EggVertexPool *vertex_pool = orig_vertex->get_pool();
         nassertv(vertex_pool != (EggVertexPool *)NULL);
         vertex = vertex_pool->create_unique_vertex(*vertex);
+        vertex->copy_grefs_from(*orig_vertex);
         replace(pi, vertex);
       }
       clear_normal();
@@ -406,6 +407,7 @@ unify_attributes(EggPrimitive::Shading shading) {
         EggVertexPool *vertex_pool = orig_vertex->get_pool();
         nassertv(vertex_pool != (EggVertexPool *)NULL);
         vertex = vertex_pool->create_unique_vertex(*vertex);
+        vertex->copy_grefs_from(*orig_vertex);
         replace(pi, vertex);
       }
     }
@@ -1123,6 +1125,7 @@ do_apply_flat_attribute(int vertex_index, EggAttributes *attrib) {
 
   if (significant_change) {
     new_vertex = get_pool()->create_unique_vertex(*new_vertex);
+    new_vertex->copy_grefs_from(*orig_vertex);
     set_vertex(vertex_index, new_vertex);
   } else {
     // Just copy the new attributes back into the pool.

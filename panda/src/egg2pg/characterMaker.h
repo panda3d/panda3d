@@ -22,7 +22,7 @@
 #include "pandabase.h"
 
 #include "computedVerticesMaker.h"
-
+#include "vertexTransform.h"
 #include "vector_PartGroupStar.h"
 #include "typedef.h"
 #include "pmap.h"
@@ -31,6 +31,7 @@ class EggNode;
 class EggGroup;
 class EggGroupNode;
 class EggPrimitive;
+class EggBin;
 class PartGroup;
 class CharacterJointBundle;
 class Character;
@@ -51,7 +52,9 @@ public:
 
   Character *make_node();
 
+  string get_name() const;
   PartGroup *egg_to_part(EggNode *egg_node) const;
+  VertexTransform *egg_to_transform(EggNode *egg_node);
   int egg_to_index(EggNode *egg_node) const;
   PandaNode *part_to_node(PartGroup *part) const;
 
@@ -63,18 +66,25 @@ private:
   void parent_joint_nodes(PartGroup *part);
 
   void make_geometry(EggNode *egg_node);
+  void make_qpgeometry(EggNode *egg_node);
 
   void make_static_primitive(EggPrimitive *egg_primitive,
                              EggGroupNode *prim_home);
   void make_dynamic_primitive(EggPrimitive *egg_primitive,
                               EggGroupNode *prim_home);
   EggGroupNode *determine_primitive_home(EggPrimitive *egg_primitive);
+  EggGroupNode *determine_bin_home(EggBin *egg_bin);
+  VertexTransform *get_identity_transform();
 
   typedef pmap<EggNode *, int> NodeMap;
   NodeMap _node_map;
 
   typedef vector_PartGroupStar Parts;
   Parts _parts;
+
+  typedef pmap<int, PT(VertexTransform) > VertexTransforms;
+  VertexTransforms _vertex_transforms;
+  PT(VertexTransform) _identity_transform;
 
   EggLoader &_loader;
   EggGroup *_egg_root;

@@ -64,7 +64,7 @@ PUBLISHED:
   void remove_blend(int n);
   int add_blend(const TransformBlend &blend);
 
-  void write(ostream &out) const;
+  void write(ostream &out, int indent_level) const;
 
 private:
   void clear_index();

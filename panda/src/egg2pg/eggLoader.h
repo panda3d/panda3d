@@ -58,6 +58,7 @@ class CollisionPolygon;
 class PortalNode;
 class PolylightNode;
 class EggRenderState;
+class CharacterMaker;
 
 ///////////////////////////////////////////////////////////////////
 //       Class : EggLoader
@@ -82,6 +83,10 @@ public:
   void make_indexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
                               const LMatrix4d *transform,
                               ComputedVerticesMaker &comp_verts_maker);
+
+  void make_polyset(EggBin *egg_bin, PandaNode *parent, 
+                    const LMatrix4d *transform, bool is_dynamic,
+                    CharacterMaker *character_maker);
 
 private:
   class TextureDef {
@@ -137,9 +142,10 @@ private:
 
   void check_for_polysets(EggGroup *egg_group, bool &all_polysets, 
                           bool &any_hidden);
-  PT(qpGeomVertexData) make_vertex_data(const EggRenderState *render_state,
-                                        EggVertexPool *vertex_pool, 
-                                        const LMatrix4d &transform);
+  PT(qpGeomVertexData) make_vertex_data
+  (const EggRenderState *render_state, EggVertexPool *vertex_pool, 
+   const LMatrix4d &transform, bool is_dynamic, 
+   CharacterMaker *character_maker);
   void make_primitive(const EggRenderState *render_state, 
                       EggPrimitive *egg_prim, Primitives &primitives);
 

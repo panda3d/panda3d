@@ -633,7 +633,7 @@ load_default_model(const NodePath &parent) {
   if (use_qpgeom) {
     // New, experimental Geom code.
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      (qpGeomVertexFormat::get_v3n3cpt2(),
+      (string(), qpGeomVertexFormat::get_v3n3cpt2(),
        qpGeomUsageHint::UH_static);
     qpGeomVertexIterator vertex(vdata, InternalName::get_vertex());
     qpGeomVertexIterator normal(vdata, InternalName::get_normal());
@@ -1060,7 +1060,7 @@ load_image_as_model(const Filename &filename) {
 
   if (use_qpgeom) {
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      (qpGeomVertexFormat::get_v3t2(),
+      (string(), qpGeomVertexFormat::get_v3t2(),
        qpGeomUsageHint::UH_static);
     qpGeomVertexIterator vertex(vdata, InternalName::get_vertex());
     qpGeomVertexIterator texcoord(vdata, InternalName::get_texcoord());

@@ -944,7 +944,9 @@ rebuild_vertex_pool(EggVertexPool *vertex_pool, bool recurse) {
       Vertices::const_iterator vi;
       for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
         EggVertex *vertex = (*vi);
-        prim->add_vertex(vertex_pool->create_unique_vertex(*vertex));
+        EggVertex *new_vertex = vertex_pool->create_unique_vertex(*vertex);
+        new_vertex->copy_grefs_from(*vertex);
+        prim->add_vertex(new_vertex);
       }
       for (i = 0; i < num_components; i++) {
         prim->set_component(i, &attributes[i]);
@@ -965,7 +967,9 @@ rebuild_vertex_pool(EggVertexPool *vertex_pool, bool recurse) {
       Vertices::const_iterator vi;
       for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
         EggVertex *vertex = (*vi);
-        prim->add_vertex(vertex_pool->create_unique_vertex(*vertex));
+        EggVertex *new_vertex = vertex_pool->create_unique_vertex(*vertex);
+        new_vertex->copy_grefs_from(*vertex);
+        prim->add_vertex(new_vertex);
       }
 
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {

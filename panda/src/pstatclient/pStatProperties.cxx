@@ -123,6 +123,7 @@ static TimeCollectorProperties time_properties[] = {
   { 0, "App:Show code:Nametags:3d:Contents", { 0.0, 0.5, 0.0 } },
   { 0, "App:Show code:Nametags:3d:Adjust",   { 0.5, 0.0, 0.5 } },
   { 1, "Cull",                             { 0.0, 1.0, 0.0 },  1.0 / 30.0 },
+  { 1, "Cull:Animate vertices",            { 1.0, 0.5, 0.3 },  1.0 / 30.0 },
   { 1, "Cull:Show fps",                    { 0.5, 0.8, 1.0 } },
   { 1, "Cull:Bins",                        { 0.3, 0.6, 0.3 } },
   { 1, "Cull:Munge",                       { 0.3, 0.3, 0.9 } },

@@ -119,9 +119,10 @@ add_blend(const TransformBlend &blend) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void TransformBlendPalette::
-write(ostream &out) const {
+write(ostream &out, int indent_level) const {
   for (int i = 0; i < (int)_blends.size(); i++) {
-    out << i << ". " << _blends[i] << "\n";
+    indent(out, indent_level)
+      << i << ". " << _blends[i] << "\n";
   }
 }
 

@@ -64,11 +64,15 @@ class EXPCL_PANDA qpGeomVertexData : public TypedWritableReferenceCount {
 private:
   qpGeomVertexData();
 PUBLISHED:
-  qpGeomVertexData(const qpGeomVertexFormat *format, 
+  qpGeomVertexData(const string &name,
+                   const qpGeomVertexFormat *format, 
                    qpGeomUsageHint::UsageHint usage_hint);
   qpGeomVertexData(const qpGeomVertexData &copy);
   void operator = (const qpGeomVertexData &copy);
   virtual ~qpGeomVertexData();
+
+  INLINE const string &get_name() const;
+  INLINE void set_name(const string &name);
 
   INLINE const qpGeomVertexFormat *get_format() const;
   INLINE qpGeomUsageHint::UsageHint get_usage_hint() const;
@@ -98,7 +102,7 @@ PUBLISHED:
     set_color(const Colorf &color, int num_components,
               qpGeomVertexDataType::NumericType numeric_type) const;
 
-  CPT(qpGeomVertexData) compute_vertices() const;
+  CPT(qpGeomVertexData) animate_vertices() const;
 
   PT(qpGeomVertexData) 
     replace_data_type(const InternalName *name, int num_components,
@@ -135,6 +139,7 @@ public:
   static void unpack_argb(int data[4], unsigned int packed_argb);
 
 private:
+  string _name;
   CPT(qpGeomVertexFormat) _format;
   qpGeomUsageHint::UsageHint _usage_hint;
 
@@ -152,8 +157,8 @@ private:
 
     Arrays _arrays;
     PT(TransformBlendPalette) _transform_blend_palette;
-    PT(qpGeomVertexData) _computed_vertices;
-    UpdateSeq _computed_vertices_modified;
+    PT(qpGeomVertexData) _animated_vertices;
+    UpdateSeq _animated_vertices_modified;
     UpdateSeq _modified;
   };
 
@@ -163,13 +168,15 @@ private:
 
 private:
   bool do_set_num_vertices(int n, CDWriter &cdata);
-  void make_computed_vertices(CDWriter &cdata);
-  void update_computed_vertices(CDWriter &cdata);
+  void make_animated_vertices(CDWriter &cdata);
+  void update_animated_vertices(CDWriter &cdata);
 
   static PStatCollector _convert_pcollector;
   static PStatCollector _scale_color_pcollector;
   static PStatCollector _set_color_pcollector;
-  static PStatCollector _compute_vertices_pcollector;
+  static PStatCollector _animate_vertices_pcollector;
+
+  PStatCollector _this_animate_vertices_pcollector;
 
 public:
   static void register_with_read_factory();

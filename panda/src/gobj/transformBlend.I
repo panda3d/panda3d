@@ -178,21 +178,52 @@ get_weight(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformBlend::update_blend
+//       Access: Published
+//  Description: Recomputes the internal representation of the blend
+//               value, if necessary.  You should call this before
+//               calling get_blend() or transform_point().
+////////////////////////////////////////////////////////////////////
+INLINE void TransformBlend::
+update_blend() const {
+  CDReader cdata(_cycler);
+  if (cdata->_global_modified != VertexTransform::get_global_modified()) {
+    CDWriter cdataw(((TransformBlend *)this)->_cycler, cdata);
+    ((TransformBlend *)this)->recompute_result(cdataw);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformBlend::get_blend
 //       Access: Published
 //  Description: Returns the current value of the blend, based on the
 //               current value of all of the nested transform objects
 //               and their associated weights.
+//
+//               You should call update_blend() to ensure that the
+//               cache is up-to-date before calling this.
 ////////////////////////////////////////////////////////////////////
 INLINE void TransformBlend::
 get_blend(LMatrix4f &result) const {
   CDReader cdata(_cycler);
-  if (cdata->_global_modified != VertexTransform::get_global_modified()) {
-    CDWriter cdataw(((TransformBlend *)this)->_cycler, cdata);
-    ((TransformBlend *)this)->recompute_result(cdataw);
-    result = cdataw->_result;
-  } else {
-    result = cdata->_result;
+  nassertv(cdata->_global_modified == VertexTransform::get_global_modified());
+  result = cdata->_result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformBlend::transform_point
+//       Access: Published
+//  Description: Transforms the indicated point by the blend matrix.
+//
+//               You should call update_blend() to ensure that the
+//               cache is up-to-date before calling this.
+////////////////////////////////////////////////////////////////////
+INLINE void TransformBlend::
+transform_point(LPoint4f &point) const {
+  if (!_entries.empty()) {
+    CDReader cdata(_cycler);
+    nassertv(cdata->_global_modified == VertexTransform::get_global_modified());
+    point = point * cdata->_result;
   }
 }
 
@@ -200,18 +231,16 @@ get_blend(LMatrix4f &result) const {
 //     Function: TransformBlend::transform_point
 //       Access: Published
 //  Description: Transforms the indicated point by the blend matrix.
+//
+//               You should call update_blend() to ensure that the
+//               cache is up-to-date before calling this.
 ////////////////////////////////////////////////////////////////////
 INLINE void TransformBlend::
-transform_point(LPoint4f &point) const {
+transform_point(LPoint3f &point) const {
   if (!_entries.empty()) {
     CDReader cdata(_cycler);
-    if (cdata->_global_modified != VertexTransform::get_global_modified()) {
-      CDWriter cdataw(((TransformBlend *)this)->_cycler, cdata);
-      ((TransformBlend *)this)->recompute_result(cdataw);
-      point = point * cdataw->_result;
-    } else {
-      point = point * cdata->_result;
-    }
+    nassertv(cdata->_global_modified == VertexTransform::get_global_modified());
+    point = point * cdata->_result;
   }
 }
 

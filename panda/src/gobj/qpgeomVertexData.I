@@ -18,6 +18,30 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::get_name
+//       Access: Published
+//  Description: Returns the name passed to the constructor, if any.
+//               This name is reported on the PStats graph for vertex
+//               computations.
+////////////////////////////////////////////////////////////////////
+INLINE const string &qpGeomVertexData::
+get_name() const {
+  return _name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::set_name
+//       Access: Published
+//  Description: Changes the name of the vertex data.  This name is
+//               reported on the PStats graph for vertex computations.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexData::
+set_name(const string &name) {
+  _name = name;
+  _this_animate_vertices_pcollector = PStatCollector(_animate_vertices_pcollector, name);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::get_format
 //       Access: Published
 //  Description: Returns a pointer to the GeomVertexFormat structure
@@ -154,8 +178,8 @@ INLINE qpGeomVertexData::CData::
 CData(const qpGeomVertexData::CData &copy) :
   _arrays(copy._arrays),
   _transform_blend_palette(copy._transform_blend_palette),
-  _computed_vertices(copy._computed_vertices),
-  _computed_vertices_modified(copy._computed_vertices_modified),
+  _animated_vertices(copy._animated_vertices),
+  _animated_vertices_modified(copy._animated_vertices_modified),
   _modified(copy._modified)
 {
 }

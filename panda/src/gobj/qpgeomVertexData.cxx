@@ -22,13 +22,14 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "pset.h"
+#include "indent.h"
 
 TypeHandle qpGeomVertexData::_type_handle;
 
 PStatCollector qpGeomVertexData::_convert_pcollector("Cull:Munge:Convert");
 PStatCollector qpGeomVertexData::_scale_color_pcollector("Cull:Munge:Scale color");
 PStatCollector qpGeomVertexData::_set_color_pcollector("Cull:Munge:Set color");
-PStatCollector qpGeomVertexData::_compute_vertices_pcollector("Cull:Compute vertices");
+PStatCollector qpGeomVertexData::_animate_vertices_pcollector("Cull:Animate vertices");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::Default Constructor
@@ -37,7 +38,9 @@ PStatCollector qpGeomVertexData::_compute_vertices_pcollector("Cull:Compute vert
 //               reading from the bam file.
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexData::
-qpGeomVertexData() {
+qpGeomVertexData() :
+  _this_animate_vertices_pcollector(_animate_vertices_pcollector)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -46,10 +49,13 @@ qpGeomVertexData() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexData::
-qpGeomVertexData(const qpGeomVertexFormat *format,
+qpGeomVertexData(const string &name,
+                 const qpGeomVertexFormat *format,
                  qpGeomUsageHint::UsageHint usage_hint) :
+  _name(name),
   _format(format),
-  _usage_hint(usage_hint)
+  _usage_hint(usage_hint),
+  _this_animate_vertices_pcollector(_animate_vertices_pcollector, name)
 {
   nassertv(_format->is_registered());
 
@@ -72,8 +78,10 @@ qpGeomVertexData(const qpGeomVertexFormat *format,
 qpGeomVertexData::
 qpGeomVertexData(const qpGeomVertexData &copy) :
   TypedWritableReferenceCount(copy),
+  _name(copy._name),
   _format(copy._format),
-  _cycler(copy._cycler)  
+  _cycler(copy._cycler),
+  _this_animate_vertices_pcollector(copy._this_animate_vertices_pcollector)
 {
 }
   
@@ -85,8 +93,10 @@ qpGeomVertexData(const qpGeomVertexData &copy) :
 void qpGeomVertexData::
 operator = (const qpGeomVertexData &copy) {
   TypedWritableReferenceCount::operator = (copy);
+  _name = copy._name;
   _format = copy._format;
   _cycler = copy._cycler;
+  _this_animate_vertices_pcollector = copy._this_animate_vertices_pcollector;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -138,7 +148,7 @@ clear_vertices() {
     (*ai)->clear_vertices();
   }
   cdata->_modified = qpGeom::get_next_modified();
-  cdata->_computed_vertices.clear();
+  cdata->_animated_vertices.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -162,7 +172,7 @@ modify_array(int i) {
     cdata->_arrays[i] = new qpGeomVertexArrayData(*cdata->_arrays[i]);
   }
   cdata->_modified = qpGeom::get_next_modified();
-  cdata->_computed_vertices_modified = UpdateSeq();
+  cdata->_animated_vertices_modified = UpdateSeq();
 
   return cdata->_arrays[i];
 }
@@ -181,7 +191,7 @@ set_array(int i, const qpGeomVertexArrayData *array) {
   nassertv(i >= 0 && i < (int)cdata->_arrays.size());
   cdata->_arrays[i] = (qpGeomVertexArrayData *)array;
   cdata->_modified = qpGeom::get_next_modified();
-  cdata->_computed_vertices_modified = UpdateSeq();
+  cdata->_animated_vertices_modified = UpdateSeq();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -203,7 +213,7 @@ modify_transform_blend_palette() {
     cdata->_transform_blend_palette = new TransformBlendPalette(*cdata->_transform_blend_palette);
   }
   cdata->_modified = qpGeom::get_next_modified();
-  cdata->_computed_vertices_modified = UpdateSeq();
+  cdata->_animated_vertices_modified = UpdateSeq();
 
   return cdata->_transform_blend_palette;
 }
@@ -222,7 +232,7 @@ set_transform_blend_palette(const TransformBlendPalette *palette) {
   CDWriter cdata(_cycler);
   cdata->_transform_blend_palette = (TransformBlendPalette *)palette;
   cdata->_modified = qpGeom::get_next_modified();
-  cdata->_computed_vertices_modified = UpdateSeq();
+  cdata->_animated_vertices_modified = UpdateSeq();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -270,7 +280,7 @@ convert_to(const qpGeomVertexFormat *new_format) const {
   PStatTimer timer(_convert_pcollector);
 
   PT(qpGeomVertexData) new_data = 
-    new qpGeomVertexData(new_format, get_usage_hint());
+    new qpGeomVertexData(get_name(), new_format, get_usage_hint());
   new_data->set_transform_blend_palette(get_transform_blend_palette());
 
   pset<int> done_arrays;
@@ -420,7 +430,7 @@ set_color(const Colorf &color, int num_components,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::compute_vertices
+//     Function: qpGeomVertexData::animate_vertices
 //       Access: Published
 //  Description: Returns a GeomVertexData that represents the results
 //               of computing the vertex animation on the CPU for this
@@ -438,27 +448,27 @@ set_color(const Colorf &color, int num_components,
 //               graphics backend to update vertex buffers optimally).
 ////////////////////////////////////////////////////////////////////
 CPT(qpGeomVertexData) qpGeomVertexData::
-compute_vertices() const {
+animate_vertices() const {
   CDReader cdata(_cycler);
   if (cdata->_transform_blend_palette == (TransformBlendPalette *)NULL) {
     // No vertex animation.
     return this;
   }
 
-  if (cdata->_computed_vertices == (qpGeomVertexData *)NULL) {
+  if (cdata->_animated_vertices == (qpGeomVertexData *)NULL) {
     CDWriter cdataw(((qpGeomVertexData *)this)->_cycler, cdata);
-    ((qpGeomVertexData *)this)->make_computed_vertices(cdataw);
-    return cdataw->_computed_vertices;
+    ((qpGeomVertexData *)this)->make_animated_vertices(cdataw);
+    return cdataw->_animated_vertices;
   } else {
     UpdateSeq blend_modified = cdata->_transform_blend_palette->get_modified();
-    if (cdata->_computed_vertices_modified == blend_modified) {
+    if (cdata->_animated_vertices_modified == blend_modified) {
       // No changes.
-      return cdata->_computed_vertices;
+      return cdata->_animated_vertices;
     }
     CDWriter cdataw(((qpGeomVertexData *)this)->_cycler, cdata);
-    cdataw->_computed_vertices_modified = blend_modified;
-    ((qpGeomVertexData *)this)->update_computed_vertices(cdataw);
-    return cdataw->_computed_vertices;
+    cdataw->_animated_vertices_modified = blend_modified;
+    ((qpGeomVertexData *)this)->update_animated_vertices(cdataw);
+    return cdataw->_animated_vertices;
   }
 }
 
@@ -510,7 +520,8 @@ replace_data_type(const InternalName *name, int num_components,
   }
     
   PT(qpGeomVertexData) new_data = 
-    new qpGeomVertexData(qpGeomVertexFormat::register_format(new_format),
+    new qpGeomVertexData(get_name(),
+                         qpGeomVertexFormat::register_format(new_format),
                          usage_hint);
   if (keep_animation) {
     new_data->set_transform_blend_palette(get_transform_blend_palette());
@@ -567,6 +578,11 @@ output(ostream &out) const {
 void qpGeomVertexData::
 write(ostream &out, int indent_level) const {
   _format->write_with_data(out, indent_level, this);
+  if (get_transform_blend_palette() != (TransformBlendPalette *)NULL) {
+    indent(out, indent_level)
+      << "Transform blend palette:\n";
+    get_transform_blend_palette()->write(out, indent_level + 2);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1155,63 +1171,80 @@ do_set_num_vertices(int n, qpGeomVertexData::CDWriter &cdata) {
 
   if (any_changed) {
     cdata->_modified = qpGeom::get_next_modified();
-    cdata->_computed_vertices.clear();
+    cdata->_animated_vertices.clear();
   }
 
   return any_changed;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::make_computed_vertices
+//     Function: qpGeomVertexData::make_animated_vertices
 //       Access: Private
 //  Description: Creates the GeomVertexData that represents the
 //               results of computing the vertex animation on the CPU.
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexData::
-make_computed_vertices(qpGeomVertexData::CDWriter &cdata) {
+make_animated_vertices(qpGeomVertexData::CDWriter &cdata) {
   // First, make a new format that doesn't have the transform_blend
   // array.
-  cdata->_computed_vertices = replace_data_type
+  cdata->_animated_vertices = replace_data_type
     (InternalName::get_transform_blend(), 0, qpGeomVertexDataType::NT_uint16,
      min(get_usage_hint(), qpGeomUsageHint::UH_dynamic), false);
 
   // Now fill it up with the appropriate data.
-  update_computed_vertices(cdata);
+  update_animated_vertices(cdata);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::update_computed_vertices
+//     Function: qpGeomVertexData::update_animated_vertices
 //       Access: Private
 //  Description: Recomputes the results of computing the vertex
 //               animation on the CPU, and applies them to the
-//               existing computed_vertices object.
+//               existing animated_vertices object.
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexData::
-update_computed_vertices(qpGeomVertexData::CDWriter &cdata) {
+update_animated_vertices(qpGeomVertexData::CDWriter &cdata) {
   int num_vertices = get_num_vertices();
 
   if (gobj_cat.is_debug()) {
     gobj_cat.debug()
-      << "Computing " << num_vertices << " vertices.\n";
+      << "Animating " << num_vertices << " vertices for " << get_name()
+      << "\n";
   }
-  PStatTimer timer(_compute_vertices_pcollector);
+
+  PStatTimer timer(_this_animate_vertices_pcollector);
 
   CPT(TransformBlendPalette) palette = cdata->_transform_blend_palette;
   nassertv(palette != (TransformBlendPalette *)NULL);
-  PT(qpGeomVertexData) new_data = cdata->_computed_vertices;
+
+  // Recompute all the blends up front.
+  int num_blends = palette->get_num_blends();
+  int bi;
+  for (bi = 0; bi < num_blends; bi++) {
+    palette->get_blend(bi).update_blend();
+  }
+
+  PT(qpGeomVertexData) new_data = cdata->_animated_vertices;
 
   // Now go through and apply the scale, copying it to the new data.
   qpGeomVertexIterator from(this, InternalName::get_vertex());
   qpGeomVertexIterator blendi(this, InternalName::get_transform_blend());
   qpGeomVertexIterator to(new_data, InternalName::get_vertex());
 
-  for (int i = 0; i < num_vertices; i++) {
-    LPoint4f vertex = from.get_data4f();
-    int bi = blendi.get_data1i();
-    const TransformBlend &blend = palette->get_blend(bi);
-    blend.transform_point(vertex);
-
-    to.set_data4f(vertex);
+  if (from.get_data_type()->get_num_values() == 4) {
+    for (int i = 0; i < num_vertices; i++) {
+      LPoint4f vertex = from.get_data4f();
+      int bi = blendi.get_data1i();
+      palette->get_blend(bi).transform_point(vertex);
+      to.set_data4f(vertex);
+    }
+  } else {
+    for (int i = 0; i < num_vertices; i++) {
+      LPoint3f vertex = from.get_data3f();
+      int bi = blendi.get_data1i();
+      palette->get_blend(bi).transform_point(vertex);
+      to.set_data3f(vertex);
+    }
   }
 }
 

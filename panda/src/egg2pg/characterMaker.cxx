@@ -19,10 +19,11 @@
 #include "characterMaker.h"
 #include "eggLoader.h"
 #include "config_egg2pg.h"
-
+#include "eggBinner.h"
 #include "computedVertices.h"
 #include "eggGroup.h"
 #include "eggPrimitive.h"
+#include "eggBin.h"
 #include "partGroup.h"
 #include "characterJoint.h"
 #include "characterJointBundle.h"
@@ -32,6 +33,8 @@
 #include "eggSurface.h"
 #include "eggCurve.h"
 #include "modelNode.h"
+#include "jointVertexTransform.h"
+#include "userVertexTransform.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterMaker::Construtor
@@ -61,6 +64,15 @@ make_node() {
   return _character_node;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: CharacterMaker::get_name
+//       Access: Public
+//  Description: Returns the name of the character.
+////////////////////////////////////////////////////////////////////
+string CharacterMaker::
+get_name() const {
+  return _egg_root->get_name();
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterMaker::egg_to_part
@@ -80,6 +92,38 @@ egg_to_part(EggNode *egg_node) const {
   }
   nassertr(index < (int)_parts.size(), NULL);
   return _parts[index];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CharacterMaker::egg_to_transform
+//       Access: Public
+//  Description: Returns a JointVertexTransform suitable for
+//               applying the animation associated with the given
+//               egg node (which should be a joint).  Returns an
+//               identity transform if the egg node is not a joint in
+//               the character's hierarchy.
+////////////////////////////////////////////////////////////////////
+VertexTransform *CharacterMaker::
+egg_to_transform(EggNode *egg_node) {
+  int index = egg_to_index(egg_node);
+  if (index < 0) {
+    // Not a joint in the hierarchy.
+    return get_identity_transform();
+  }
+
+  VertexTransforms::iterator vi = _vertex_transforms.find(index);
+  if (vi != _vertex_transforms.end()) {
+    return (*vi).second;
+  }
+
+  PartGroup *part = _parts[index];
+  CharacterJoint *joint;
+  DCAST_INTO_R(joint, part, get_identity_transform());
+
+  PT(VertexTransform) vt = new JointVertexTransform(joint);
+  _vertex_transforms[index] = vt;
+
+  return vt;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -148,12 +192,19 @@ make_bundle() {
   build_joint_hierarchy(_egg_root, _skeleton_root);
   _bundle->sort_descendants();
 
+  if (use_qpgeom) {
+    // The new, experimental Geom system.
+    make_qpgeometry(_egg_root);
+
+  } else {
+    // The old Geom system.
+    make_geometry(_egg_root);
+    
+    _character_node->_computed_vertices =
+      _comp_verts_maker.make_computed_vertices(_character_node, *this);
+  }
   parent_joint_nodes(_skeleton_root);
-  make_geometry(_egg_root);
-
-  _character_node->_computed_vertices =
-    _comp_verts_maker.make_computed_vertices(_character_node, *this);
-
+    
   return _bundle;
 }
 
@@ -272,6 +323,57 @@ make_geometry(EggNode *egg_node) {
     EggGroupNode::const_iterator ci;
     for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
       make_geometry(*ci);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CharacterMaker::make_qpgeometry
+//       Access: Private
+//  Description: Walks the hierarchy, looking for bins that represent
+//               polysets, which are to be animated with the
+//               character.  Invokes the egg loader to create the
+//               animated geometry.
+//
+//               This is part of the experimental Geom rewrite.
+////////////////////////////////////////////////////////////////////
+void CharacterMaker::
+make_qpgeometry(EggNode *egg_node) {
+  if (egg_node->is_of_type(EggBin::get_class_type())) {
+    EggBin *egg_bin = DCAST(EggBin, egg_node);
+
+    if (!egg_bin->empty() && 
+        egg_bin->get_bin_number() == EggBinner::BN_polyset) {
+      EggGroupNode *bin_home = determine_bin_home(egg_bin);
+
+      bool is_dynamic;
+      if (bin_home == (EggGroupNode *)NULL) {
+        // This is a dynamic polyset that lives under the character's
+        // root node.
+        bin_home = _egg_root;
+        is_dynamic = true;
+      } else {
+        // This is a totally static polyset that is parented under
+        // some animated joint node.
+        is_dynamic = false;
+      }
+
+      PandaNode *parent = part_to_node(egg_to_part(bin_home));
+      LMatrix4d transform =
+        egg_bin->get_vertex_frame() *
+        bin_home->get_node_frame_inv();
+      
+      _loader.make_polyset(egg_bin, parent, &transform, is_dynamic,
+                           this);
+    }
+  }
+
+  if (egg_node->is_of_type(EggGroupNode::get_class_type())) {
+    EggGroupNode *egg_group = DCAST(EggGroupNode, egg_node);
+
+    EggGroupNode::const_iterator ci;
+    for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
+      make_qpgeometry(*ci);
     }
   }
 }
@@ -418,4 +520,143 @@ determine_primitive_home(EggPrimitive *egg_primitive) {
   // We'll also create static geometry for polygons that have no
   // explicit joint assignment.
   return home;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CharacterMaker::determine_bin_home
+//       Access: Private
+//  Description: Examines the joint assignment of the vertices of all
+//               of the primitives within this bin to determine which
+//               parent node the bin's polyset should be created
+//               under.
+////////////////////////////////////////////////////////////////////
+EggGroupNode *CharacterMaker::
+determine_bin_home(EggBin *egg_bin) {
+  // A primitive's vertices may be referenced by any joint in the
+  // character.  Or, the primitive itself may be explicitly placed
+  // under a joint.
+
+  // If any of the vertices, in any primitive, are referenced by
+  // multiple joints, or if any two vertices are referenced by
+  // different joints, then the entire bin must be considered dynamic.
+  // (We'll indicate a dynamic bin by returning NULL.)
+
+  // We need to keep track of the one joint we've encountered so far,
+  // to see if all the vertices are referenced by the same joint.
+  EggGroupNode *home = NULL;
+
+  EggGroupNode::const_iterator ci;
+  for (ci = egg_bin->begin(); ci != egg_bin->end(); ++ci) {
+    CPT(EggPrimitive) egg_primitive = DCAST(EggPrimitive, (*ci));
+
+    EggPrimitive::const_iterator vi;
+    for (vi = egg_primitive->begin();
+         vi != egg_primitive->end();
+         ++vi) {
+      EggVertex *vertex = (*vi);
+      if (vertex->gref_size() > 1) {
+        // This vertex is referenced by multiple joints; the primitive
+        // is dynamic.
+        return NULL;
+      }
+      
+      if (!vertex->_dxyzs.empty() ||
+          !vertex->_dnormals.empty() ||
+          !vertex->_drgbas.empty()) {
+        // This vertex has some morph slider definitions; therefore, the
+        // primitive is dynamic.
+        return NULL;
+      }
+      EggVertex::const_uv_iterator uvi;
+      for (uvi = vertex->uv_begin(); uvi != vertex->uv_end(); ++uvi) {
+        if (!(*uvi)->_duvs.empty()) {
+          // Ditto: the vertex has some UV morphs; therefore the
+          // primitive is dynamic.
+          return NULL;
+        }
+      }
+
+      EggGroupNode *vertex_home;
+      
+      if (vertex->gref_size() == 0) {
+        // This vertex is not referenced at all, which means it belongs
+        // right where it is.
+        vertex_home = egg_primitive->get_parent();
+      } else {
+        nassertr(vertex->gref_size() == 1, NULL);
+        // This vertex is referenced exactly once.
+        vertex_home = *vertex->gref_begin();
+      }
+      
+      if (home != NULL && home != vertex_home) {
+        // Oops, two vertices are referenced by different joints!  The
+        // primitive is dynamic.
+        return NULL;
+      }
+
+      home = vertex_home;
+    }
+  }
+
+  // This shouldn't be possible, unless there are no vertices--but we
+  // eliminate invalid primitives before we begin, so all primitives
+  // should have vertices, and all bins should have primitives.
+  nassertr(home != NULL, NULL);
+
+  // So, all the vertices are assigned to the same group.  This means
+  // all the primitives in the bin belong entirely to one joint.
+
+  // If the group is not, in fact, a joint then we return the first
+  // joint above the group.
+  EggGroup *egg_group = (EggGroup *)NULL;
+  if (home->is_of_type(EggGroup::get_class_type())) {
+    egg_group = DCAST(EggGroup, home);
+  }
+  while (egg_group != (EggGroup *)NULL &&
+         egg_group->get_group_type() != EggGroup::GT_joint &&
+         egg_group->get_dart_type() == EggGroup::DT_none) {
+    nassertr(egg_group->get_parent() != (EggGroupNode *)NULL, NULL);
+    home = egg_group->get_parent();
+    egg_group = (EggGroup *)NULL;
+    if (home->is_of_type(EggGroup::get_class_type())) {
+      egg_group = DCAST(EggGroup, home);
+    }
+  }
+
+  if (egg_group != (EggGroup *)NULL &&
+      egg_group->get_group_type() == EggGroup::GT_joint &&
+      egg_group->get_dcs_type() == EggGroup::DC_none) {
+    // If we have rigid geometry that is assigned to a joint without a
+    // <DCS> flag, which means the joint didn't get created as its own
+    // node, go ahead and make an implicit <DCS> flag for the joint.
+
+    // The alternative is to return NULL to treat the geometry as
+    // dynamic (and animate it by animating its vertices), but display
+    // lists and vertex buffers will perform better if as much
+    // geometry as possible is rigid.
+
+    egg_group->set_dcs_type(EggGroup::DC_default);
+    PT(ModelNode) geom_node = new ModelNode(egg_group->get_name());
+    geom_node->set_preserve_transform(ModelNode::PT_local);
+
+    CharacterJoint *joint;
+    DCAST_INTO_R(joint, egg_to_part(egg_group), home);
+    joint->_geom_node = geom_node.p();
+  }
+
+  return home;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CharacterMaker::get_identity_transform
+//       Access: Private
+//  Description: Returns a VertexTransform that represents the root of
+//               the character--it never animates.
+////////////////////////////////////////////////////////////////////
+VertexTransform *CharacterMaker::
+get_identity_transform() {
+  if (_identity_transform == (VertexTransform *)NULL) {
+    _identity_transform = new UserVertexTransform("root");
+  }
+  return _identity_transform;
 }

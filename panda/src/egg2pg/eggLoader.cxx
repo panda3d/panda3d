@@ -89,6 +89,8 @@
 #include "sheetNode.h"
 #include "look_at.h"
 #include "configVariableString.h"
+#include "transformBlendPalette.h"
+#include "transformBlend.h"
 
 #include <ctype.h>
 #include <algorithm>
@@ -525,6 +527,135 @@ make_indexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
   }
 
   _builder.add_prim(bucket, bprim);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::make_polyset
+//       Access: Public
+//  Description: Creates a polyset--that is, a Geom--from the
+//               primitives that have already been grouped into a bin.
+//               If transform is non-NULL, it represents the transform
+//               to apply to the vertices (instead of the default
+//               transform based on the bin's position within the
+//               hierarchy).
+////////////////////////////////////////////////////////////////////
+void EggLoader::
+make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
+             bool is_dynamic, CharacterMaker *character_maker) {
+  if (egg_bin->empty()) {
+    // If there are no children--no primitives--never mind.
+    return;
+  }
+
+  // We know that all of the primitives in the bin have the same
+  // render state, so we can get that information from the first
+  // primitive.
+  EggGroupNode::const_iterator ci = egg_bin->begin();
+  nassertv(ci != egg_bin->end());
+  CPT(EggPrimitive) first_prim = DCAST(EggPrimitive, (*ci));
+  nassertv(first_prim != (EggPrimitive *)NULL);
+  const EggRenderState *render_state;
+  DCAST_INTO_V(render_state, first_prim->get_user_data(EggRenderState::get_class_type()));
+
+  if (render_state->_hidden && egg_suppress_hidden) {
+    // Eat this polyset.
+    return;
+  }
+
+  if (!use_qpgeom) {
+    // In the old Geom system, just send each primitive to the
+    // Builder.
+    for (ci = egg_bin->begin(); ci != egg_bin->end(); ++ci) {
+      EggPrimitive *egg_prim;
+      DCAST_INTO_V(egg_prim, (*ci));
+      make_nonindexed_primitive(egg_prim, parent, transform, _comp_verts_maker);
+    }
+
+    return;
+  }
+
+  // Generate an optimal vertex pool for the polygons within just the
+  // bin (which translates directly to an optimal GeomVertexData
+  // structure).
+  PT(EggVertexPool) vertex_pool = new EggVertexPool("bin");
+  egg_bin->rebuild_vertex_pool(vertex_pool, false);
+
+  if (egg_mesh) {
+    // If we're using the mesher, mesh now.
+    egg_bin->mesh_triangles(0);
+
+  } else {
+    // If we're not using the mesher, at least triangulate any
+    // higher-order polygons we might have.
+    egg_bin->triangulate_polygons(EggGroupNode::T_polygon | EggGroupNode::T_convex);
+  }
+
+  // Now that we've meshed, apply the per-prim attributes onto the
+  // vertices, so we can copy them to the GeomVertexData.
+  egg_bin->apply_last_attribute(false);
+  egg_bin->post_apply_flat_attribute(false);
+  vertex_pool->remove_unused_vertices();
+
+  //  vertex_pool->write(cerr, 0);
+  //  egg_bin->write(cerr, 0);
+
+  // Now create a handful of GeomPrimitives corresponding to the
+  // various types of primitives we have.
+  Primitives primitives;
+  for (ci = egg_bin->begin(); ci != egg_bin->end(); ++ci) {
+    EggPrimitive *egg_prim;
+    DCAST_INTO_V(egg_prim, (*ci));
+    make_primitive(render_state, egg_prim, primitives);
+  }
+
+  if (!primitives.empty()) {
+    LMatrix4d mat;
+    if (transform != NULL) {
+      mat = (*transform);
+    } else {
+      mat = egg_bin->get_vertex_to_node();
+    }
+
+    // Now convert the vertex pool to a GeomVertexData.
+    nassertv(vertex_pool != (EggVertexPool *)NULL);
+    PT(qpGeomVertexData) vertex_data = 
+      make_vertex_data(render_state, vertex_pool, mat,
+                       is_dynamic, character_maker);
+    nassertv(vertex_data != (qpGeomVertexData *)NULL);
+
+    // And create a Geom to hold the primitives.
+    PT(qpGeom) geom = new qpGeom;
+    geom->set_vertex_data(vertex_data);
+
+    // Add each new primitive to the Geom.
+    Primitives::const_iterator pi;
+    for (pi = primitives.begin(); pi != primitives.end(); ++pi) {
+      qpGeomPrimitive *primitive = (*pi).second;
+      geom->add_primitive(primitive);
+    }
+
+    //    vertex_data->write(cerr);
+    //    geom->write(cerr);
+    //    render_state->_state->write(cerr, 0);
+    
+    // Now, is our parent node a GeomNode, or just an ordinary
+    // PandaNode?  If it's a GeomNode, we can add the new Geom directly
+    // to our parent; otherwise, we need to create a new node.
+    if (parent->is_geom_node() && !render_state->_hidden) {
+      DCAST(GeomNode, parent)->add_geom(geom, render_state->_state);
+      
+    } else {
+      PT(GeomNode) geom_node = new GeomNode(egg_bin->get_name());
+      if (render_state->_hidden) {
+        parent->add_stashed(geom_node);
+      } else {
+        parent->add_child(geom_node);
+      }
+      geom_node->add_geom(geom, render_state->_state);
+    }
+  }
+
+  return;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1404,7 +1535,8 @@ make_node(EggBin *egg_bin, PandaNode *parent) {
   // node (a parent of one or more similar EggPrimitives).
   switch (egg_bin->get_bin_number()) {
   case EggBinner::BN_polyset:
-    return make_polyset(egg_bin, parent);
+    make_polyset(egg_bin, parent, NULL, false, NULL);
+    return NULL;
 
   case EggBinner::BN_lod:
     return make_lod(egg_bin, parent);
@@ -1415,122 +1547,6 @@ make_node(EggBin *egg_bin, PandaNode *parent) {
 
   // Shouldn't get here.
   return (PandaNode *)NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggLoader::make_polyset
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
-PandaNode *EggLoader::
-make_polyset(EggBin *egg_bin, PandaNode *parent) {
-  if (egg_bin->empty()) {
-    // If there are no children--no primitives--never mind.
-    return NULL;
-  }
-
-  // We know that all of the primitives in the bin have the same
-  // render state, so we can get that information from the first
-  // primitive.
-  EggGroup::const_iterator ci = egg_bin->begin();
-  nassertr(ci != egg_bin->end(), NULL);
-  CPT(EggPrimitive) first_prim = DCAST(EggPrimitive, (*ci));
-  nassertr(first_prim != (EggPrimitive *)NULL, NULL);
-  const EggRenderState *render_state;
-  DCAST_INTO_R(render_state, first_prim->get_user_data(EggRenderState::get_class_type()), NULL);
-
-  if (render_state->_hidden && egg_suppress_hidden) {
-    // Eat this polyset.
-    return NULL;
-  }
-
-  if (!use_qpgeom) {
-    // In the old Geom system, just send each primitive to the
-    // Builder.
-    for (ci = egg_bin->begin(); ci != egg_bin->end(); ++ci) {
-      EggPrimitive *egg_prim;
-      DCAST_INTO_R(egg_prim, (*ci), NULL);
-      make_nonindexed_primitive(egg_prim, parent, NULL, _comp_verts_maker);
-    }
-
-    return NULL;
-  }
-
-  // Generate an optimal vertex pool for the polygons within just the
-  // bin (which translates directly to an optimal GeomVertexData
-  // structure).
-  PT(EggVertexPool) vertex_pool = new EggVertexPool("bin");
-  egg_bin->rebuild_vertex_pool(vertex_pool, false);
-
-  if (egg_mesh) {
-    // If we're using the mesher, mesh now.
-    egg_bin->mesh_triangles(0);
-
-  } else {
-    // If we're not using the mesher, at least triangulate any
-    // higher-order polygons we might have.
-    egg_bin->triangulate_polygons(EggGroupNode::T_polygon | EggGroupNode::T_convex);
-  }
-
-  // Now that we've meshed, apply the per-prim attributes onto the
-  // vertices, so we can copy them to the GeomVertexData.
-  egg_bin->apply_last_attribute(false);
-  egg_bin->post_apply_flat_attribute(false);
-  vertex_pool->remove_unused_vertices();
-
-  //  vertex_pool->write(cerr, 0);
-  //  egg_bin->write(cerr, 0);
-
-  // Now create a handful of GeomPrimitives corresponding to the
-  // various types of primitives we have.
-  Primitives primitives;
-  for (ci = egg_bin->begin(); ci != egg_bin->end(); ++ci) {
-    EggPrimitive *egg_prim;
-    DCAST_INTO_R(egg_prim, (*ci), NULL);
-    make_primitive(render_state, egg_prim, primitives);
-  }
-
-  if (!primitives.empty()) {
-    // Now convert the vertex pool to a GeomVertexData.
-    nassertr(vertex_pool != (EggVertexPool *)NULL, NULL);
-    PT(qpGeomVertexData) vertex_data = 
-      make_vertex_data(render_state, vertex_pool, 
-                       egg_bin->get_vertex_to_node());
-    nassertr(vertex_data != (qpGeomVertexData *)NULL, NULL);
-
-    // And create a Geom to hold the primitives.
-    PT(qpGeom) geom = new qpGeom;
-    geom->set_vertex_data(vertex_data);
-
-    // Add each new primitive to the Geom.
-    Primitives::const_iterator pi;
-    for (pi = primitives.begin(); pi != primitives.end(); ++pi) {
-      qpGeomPrimitive *primitive = (*pi).second;
-      geom->add_primitive(primitive);
-    }
-
-    //    vertex_data->write(cerr);
-    //    geom->write(cerr);
-    //    render_state->_state->write(cerr, 0);
-    
-    // Now, is our parent node a GeomNode, or just an ordinary
-    // PandaNode?  If it's a GeomNode, we can add the new Geom directly
-    // to our parent; otherwise, we need to create a new node.
-    if (parent->is_geom_node() && !render_state->_hidden) {
-      DCAST(GeomNode, parent)->add_geom(geom, render_state->_state);
-      
-    } else {
-      PT(GeomNode) geom_node = new GeomNode(egg_bin->get_name());
-      if (render_state->_hidden) {
-        parent->add_stashed(geom_node);
-      } else {
-        parent->add_child(geom_node);
-      }
-      geom_node->add_geom(geom, render_state->_state);
-    }
-  }
-
-  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1888,7 +1904,8 @@ check_for_polysets(EggGroup *egg_group, bool &all_polysets, bool &any_hidden) {
 ////////////////////////////////////////////////////////////////////
 PT(qpGeomVertexData) EggLoader::
 make_vertex_data(const EggRenderState *render_state, 
-                 EggVertexPool *vertex_pool, const LMatrix4d &transform) {
+                 EggVertexPool *vertex_pool, const LMatrix4d &transform,
+                 bool is_dynamic, CharacterMaker *character_maker) {
   VertexPoolTransform vpt;
   vpt._vertex_pool = vertex_pool;
   vpt._bake_in_uvs = render_state->_bake_in_uvs;
@@ -1928,12 +1945,39 @@ make_vertex_data(const EggRenderState *render_state,
     array_format->add_data_type(iname, 2, qpGeomVertexDataType::NT_float32);
   }
 
-  CPT(qpGeomVertexFormat) format = 
-    qpGeomVertexFormat::register_format(new qpGeomVertexFormat(array_format));
+  PT(qpGeomVertexFormat) temp_format = new qpGeomVertexFormat(array_format);
 
-  // Now create a new GeomVertexData using the indicated format.
-  PT(qpGeomVertexData) vertex_data = 
-    new qpGeomVertexData(format, qpGeomUsageHint::UH_static);
+  PT(TransformBlendPalette) blend_palette;
+  string name;
+
+  if (is_dynamic) {
+    // If it's a dynamic object, we need a TransformBlendPalette, and
+    // another array that indexes into the palette per vertex.
+    blend_palette = new TransformBlendPalette;
+    PT(qpGeomVertexArrayFormat) blend_array_format = new qpGeomVertexArrayFormat;
+    blend_array_format->add_data_type
+      (InternalName::get_transform_blend(), 1, qpGeomVertexDataType::NT_uint16);
+    temp_format->add_array(blend_array_format);
+
+    // We'll also assign the character name to the vertex data, so it
+    // will show up in PStats.
+    name = character_maker->get_name();
+  }
+
+  CPT(qpGeomVertexFormat) format =
+    qpGeomVertexFormat::register_format(temp_format);
+
+  // Now create a new GeomVertexData using the indicated format.  It
+  // is actually correct to create it with UH_static even it
+  // represents a dynamic object, because the vertex data itself won't
+  // be changing--just the result of applying the animation is
+  // dynamic.
+  PT(qpGeomVertexData) vertex_data =
+    new qpGeomVertexData(name, format, qpGeomUsageHint::UH_static);
+
+  if (is_dynamic) {
+    vertex_data->set_transform_blend_palette(blend_palette);
+  }
 
   // And fill the data from the vertex pool.
   EggVertexPool::const_iterator vi;
@@ -1974,6 +2018,25 @@ make_vertex_data(const EggRenderState *render_state,
       }
 
       gvi.set_data2f(LCAST(float, uv));
+    }
+
+    if (is_dynamic) {
+      // Figure out the transforms affecting this particular vertex.
+      TransformBlend blend;
+      EggVertex::GroupRef::const_iterator gri;
+      for (gri = vertex->gref_begin(); gri != vertex->gref_end(); ++gri) {
+        EggGroup *egg_joint = (*gri);
+        double membership = egg_joint->get_vertex_membership(vertex);
+
+        PT(VertexTransform) vt = character_maker->egg_to_transform(egg_joint);
+        nassertr(vt != (VertexTransform *)NULL, vertex_data);
+        blend.add_transform(vt, membership);
+      }
+      blend.normalize_weights();
+
+      int palette_index = blend_palette->add_blend(blend);
+      gvi.set_data_type(InternalName::get_transform_blend());
+      gvi.set_data1i(palette_index);
     }
   }
 

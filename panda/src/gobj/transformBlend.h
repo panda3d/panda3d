@@ -70,8 +70,11 @@ PUBLISHED:
   INLINE const VertexTransform *get_transform(int n) const;
   INLINE float get_weight(int n) const;
 
+  INLINE void update_blend() const;
+
   INLINE void get_blend(LMatrix4f &result) const;
   INLINE void transform_point(LPoint4f &point) const;
+  INLINE void transform_point(LPoint3f &point) const;
   INLINE UpdateSeq get_modified() const;
 
   void output(ostream &out) const;
