@@ -99,6 +99,11 @@ run() {
   for (si = _scene_files.begin(); si != _scene_files.end(); ++si) {
     consider_scene_file(*si);
   }
+
+  // Finally, add everything to CVS that needs to be added.  We do
+  // this all at once at the end, instead of one at a time as we
+  // encounter each file, to speed things up a bit.
+  cvs_add_all();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -126,6 +131,17 @@ traverse(const string &dirname) {
   }
   closedir(root);
 
+  // Sort the directory entries just for the user's sanity.
+  sort(files.begin(), files.end());
+
+  // We need to know the set of files in this directory that are CVS
+  // elements.
+  set<string> cvs_elements;
+  bool in_cvs = false;
+  if (!_no_cvs) {
+    in_cvs = scan_cvs(dirname, cvs_elements);
+  }
+
   // Now go through and identify files with version numbers, and
   // collect together those files that are different versions of the
   // same file.
@@ -133,7 +149,8 @@ traverse(const string &dirname) {
   vector_string::const_iterator fi;
   for (fi = files.begin(); fi != files.end(); ++fi) {
     const string &filename = (*fi);
-    if (!filename.empty() && filename[0] != '.') {
+    if (!filename.empty() && filename[0] != '.' && 
+	!(filename == "CVS")) {
       SoftFilename v(filename);
       if (v.has_version()) {
 	versions.push_back(v);
@@ -142,21 +159,18 @@ traverse(const string &dirname) {
 	Filename subdir = dirname + "/" + filename;
 	if (subdir.is_directory()) {
 	  traverse(subdir);
+	} else {
+	  // No, not a subdirectory; maybe a regular file that needs
+	  // to get added to CVS?
+	  if (in_cvs) {
+	    consider_add_cvs(dirname, filename, cvs_elements);
+	  }
 	}
       }
     }
   }
 
   if (!versions.empty()) {
-    // We actually have some versioned filenames in this directory.
-    // We'll therefore need to know the set of files that are CVS
-    // elements.
-    set<string> cvs_elements;
-    bool in_cvs = false;
-    if (!_no_cvs) {
-      in_cvs = scan_cvs(dirname, cvs_elements);
-    }
-
     // Now sort the versioned filenames in order so we can scan for
     // higher versions.
     sort(versions.begin(), versions.end());
@@ -334,8 +348,8 @@ consider_add_cvs(const string &dirname, const string &filename,
       return;
     }
   }
-  
-  cvs_add(path);
+
+  _cvs_paths.push_back(path);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -442,8 +456,9 @@ scan_scene_file(istream &in, ostream &out) {
 ////////////////////////////////////////////////////////////////////
 //     Function: SoftCVS::cvs_add
 //       Access: Private
-//  Description: Invokes CVS to add the file to the repository.
-//               Returns true on success, false on failure.
+//  Description: Invokes CVS to add just the named file to the
+//               repository.  Returns true on success, false on
+//               failure.
 ////////////////////////////////////////////////////////////////////
 bool SoftCVS::
 cvs_add(const string &path) {
@@ -454,6 +469,33 @@ cvs_add(const string &path) {
   if (result != 0) {
     nout << "Failure invoking cvs.\n";
     return false;
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SoftCVS::cvs_add_all
+//       Access: Private
+//  Description: Invokes CVS to add all of the files in _cvs_paths to
+//               the repository.  Returns true on success, false on
+//               failure.
+////////////////////////////////////////////////////////////////////
+bool SoftCVS::
+cvs_add_all() {
+  if (!_cvs_paths.empty()) {
+    string command = _cvs_binary + " add";
+    vector_string::const_iterator pi;
+    for (pi = _cvs_paths.begin(); pi != _cvs_paths.end(); ++pi) {
+      command += ' ';
+      command += (*pi);
+    }
+    nout << command << "\n";
+    int result = system(command.c_str());
+    
+    if (result != 0) {
+      nout << "Failure invoking cvs.\n";
+      return false;
+    }
   }
   return true;
 }

@@ -11,6 +11,7 @@
 #include "softFilename.h"
 
 #include <programBase.h>
+#include <vector_string.h>
 
 #include <vector>
 #include <set>
@@ -40,12 +41,15 @@ private:
   bool scan_scene_file(istream &in, ostream &out);
 
   bool cvs_add(const string &path);
+  bool cvs_add_all();
 
   bool prompt_yesno(const string &message);
   string prompt(const string &message);
 
   set<string> _scene_files;
   set<string> _versioned_files;
+
+  vector_string _cvs_paths;
   
 protected:
   bool _interactive;
