@@ -61,7 +61,10 @@
 // directory.  This file might redefine any of the variables defined
 // above.
 #if $[ne $[PPREMAKE_CONFIG],]
+  #print Reading $[PPREMAKE_CONFIG]
   #include $[PPREMAKE_CONFIG]
+#else
+  #print Environment variable PPREMAKE_CONFIG not set; using defaults.
 #endif
 
 // Now evaluate all of our deferred variable definitions from

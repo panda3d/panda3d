@@ -8,6 +8,23 @@
 // assumptions.
 //
 
+// Before this file is processed, the following files are read and
+// processed (in order):
+
+// The Package.pp file in the root of the current source hierarchy
+//   (e.g. $PANDA/Package.pp)
+// $DTOOL/Package.pp
+// $DTOOL/Config.pp
+// $DTOOL/Config.Platform.pp
+// $DTOOL/pptempl/System.pp
+// The user's PPREMAKE_CONFIG file.
+// $DTOOL/pptempl/Global.pp
+// $DTOOL/pptempl/Global.unix.pp
+// All of the Sources.pp files in the current source hierarchy
+// $DTOOL/Depends.pp, once for each Sources.pp file
+// Template.unix.pp (this file), once for each Sources.pp file
+
+
 //////////////////////////////////////////////////////////////////////
 #if $[or $[eq $[DIR_TYPE], src],$[eq $[DIR_TYPE], metalib]]
 //////////////////////////////////////////////////////////////////////
@@ -15,11 +32,19 @@
 // For a source directory, build a single Makefile with rules to build
 // each target.
 
+// We need to know the various targets we'll be building.
+// $[lib_targets] will be the list of dynamic libraries,
+// $[static_lib_targets] the list of static libraries, and
+// $[bin_targets] the list of binaries.  $[test_bin_targets] is the
+// list of binaries that are to be built only when specifically asked
+// for.
 #define lib_targets $[TARGET(metalib_target lib_target noinst_lib_target):%=$[so_dir]/lib%.so]
 #define static_lib_targets $[TARGET(static_lib_target):%=$[st_dir]/lib%.a]
 #define bin_targets $[TARGET(bin_target noinst_bin_target sed_bin_target):%=$[st_dir]/%]
 #define test_bin_targets $[TARGET(test_bin_target):%=$[st_dir]/%]
 
+// And these variables will define the various things we need to
+// install.
 #define install_lib $[TARGET(metalib_target lib_target static_lib_target)]
 #define install_bin $[TARGET(bin_target)]
 #define install_scripts $[TARGET(sed_bin_target)] $[sort $[INSTALL_SCRIPTS(metalib_target lib_target static_lib_target bin_target)] $[INSTALL_SCRIPTS]]
@@ -29,6 +54,12 @@
 #define install_config $[sort $[INSTALL_CONFIG(metalib_target lib_target static_lib_target bin_target)] $[INSTALL_CONFIG]]
 #define install_igatedb $[sort $[get_igatedb(metalib_target lib_target)]]
 
+// $[so_sources] is the set of sources that belong on a shared object,
+// and $[st_sources] is the set of sources that belong on a static
+// object, like a static library or an executable.  We make the
+// distinction because some architectures require a special parameter
+// to the compiler when we're compiling something to be put in a
+// shared object (to make the code relocatable).
 #define so_sources $[get_sources(metalib_target lib_target noinst_lib_target)]
 #define st_sources $[get_sources(static_lib_target bin_target noinst_bin_target test_bin_target)]
 
@@ -44,6 +75,7 @@
   #set so_sources
 #endif
 
+// And these are the various source files, extracted out by type.
 #define cxx_so_sources $[filter %.cxx,$[so_sources]]
 #define cxx_st_sources $[filter %.cxx,$[st_sources]]
 #define c_so_sources $[filter %.c,$[so_sources]]
@@ -56,7 +88,8 @@
 // This map variable gets us all the various source files from all the
 // targets in this directory.  We need it to look up the context in
 // which to build a particular source file, since some targets may
-// have different requirements than other targets.
+// have different requirements (e.g. different local_libs, or
+// different USE_this or USE_that) than other targets.
 #map all_sources get_sources(metalib_target lib_target noinst_lib_target static_lib_target bin_target noinst_bin_target test_bin_target)
 
 // We define $[complete_local_libs] as the full set of libraries (from
@@ -82,6 +115,8 @@
 // the target the source file belongs on, to get the proper context.
 #defer file_ipath $[all_sources $[target_ipath],$[file]]
 
+// These are the complete set of extra flags the compiler requires,
+// from the context of a particular file, given in $[file].
 #defer cflags $[all_sources $[get_cflags] $[CFLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]]
 #defer c++flags $[all_sources $[get_cflags] $[C++FLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]]
 
@@ -90,15 +125,22 @@
 #defer complete_lpath $[static_libs $[RELDIR:%=%/$[st_dir]],$[complete_local_libs]] $[dynamic_libs $[RELDIR:%=%/$[so_dir]],$[complete_local_libs]]
 
 // $[lpath] is like $[target_ipath]: it's the list of directories we
-// should add to our -L list.
+// should add to our -L list, from the context of a particular target.
 #defer lpath $[other_trees:%=%/lib] $[sort $[complete_lpath]] $[get_lpath]
+
+// And $[libs] is the set of libraries we will link with.
 #defer libs $[unique $[complete_local_libs] $[patsubst %:m,,%:c %,%,$[OTHER_LIBS]] $[get_libs]]
 
+
+// Okay, we're ready.  Start outputting the Makefile now.
 #output Makefile
 #format makefile
 #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE].
 ################################# DO NOT EDIT ###########################
 
+
+// The 'all' rule makes all the stuff in the directory except for the
+// test_bin_targets.  It doesn't do any installation, however.
 #define all_targets \
     Makefile \
     $[if $[dep_sources],$[DEPENDENCY_CACHE_FILENAME]] \
@@ -107,8 +149,12 @@
     $[sort $[lib_targets] $[static_lib_targets] $[bin_targets]]
 all : $[all_targets]
 
+// The 'test' rule makes all the test_bin_targets.
 test : $[test_bin_targets]
 
+// We implement 'clean' simply by removing the odirs, since all of our
+// generated output ends up in one or the other of these.  Effective.
+// It does assume that the odirs are not '.', however.
 clean :
 #if $[so_sources]
 	rm -rf $[so_dir]
@@ -117,6 +163,9 @@ clean :
 	rm -rf $[st_dir]
 #endif
 
+// 'cleanall' is not much more thorough than 'clean': At the moment,
+// it also cleans up the bison and flex output, as well as the
+// dependency cache file.
 cleanall : clean
 #if $[yxx_so_sources] $[yxx_st_sources] $[lxx_so_sources] $[lxx_st_sources]
 	rm -f $[patsubst %.yxx %.lxx,%.cxx,$[yxx_so_sources] $[yxx_st_sources] $[lxx_so_sources] $[lxx_st_sources]]
@@ -125,6 +174,9 @@ cleanall : clean
 	rm -f $[DEPENDENCY_CACHE_FILENAME]
 #endif
 
+// Now, 'install' and 'uninstall'.  These simply copy files into the
+// install directory (or remove them).  The 'install' rule also makes
+// the directories if necessary.
 #define installed_files \
      $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
      $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
@@ -152,7 +204,9 @@ uninstall : $[TARGET(metalib_target lib_target static_lib_target):%=uninstall-li
 #endif
 
 
-// Define rules to create each install directory when needed.
+// We need a rule for each directory we might need to make.  This
+// loops through the full set of directories and creates a rule to
+// make each one, as needed.
 #foreach directory $[sort \
     $[if $[so_sources],$[so_dir]] \
     $[if $[st_sources],$[st_dir]] \
@@ -169,16 +223,44 @@ $[directory] :
 	@test -d $[directory] || mkdir -p $[directory]
 #end directory
 
+
+// Now it's time to start generating the rules to make our actual
+// targets.
+
+
+/////////////////////////////////////////////////////////////////////
+// First, the dynamic libraries.  Each lib_target and metalib_target
+// is a dynamic library.
+/////////////////////////////////////////////////////////////////////
+
 #forscopes metalib_target lib_target
+
+// $[igatescan] is the set of C++ headers and source files that we
+// need to scan for interrogate.  $[igateoutput] is the name of the
+// generated .cxx file that interrogate will produce (and which we
+// should compile into the library).  $[igatedb] is the name of the
+// generated .in file that interrogate will produce (and which should
+// be installed into the /etc directory).
 #define igatescan $[get_igatescan]
 #define igateoutput $[if $[igatescan],lib$[TARGET]_igate.cxx]
 #define igatedb $[get_igatedb]
 
-// Should we build a metalib module for all the interrogated libraries
-// that are included on this metalib?
+// If this is a metalib, it may have a number of components that
+// include interrogated interfaces.  If so, we need to generate a
+// 'module' file within this library.  This is mainly necessary for
+// Python; it contains a table of all of the interrogated functions,
+// so we can load the library as a Python module and have access to
+// the interrogated functions.
+
+// $[igatemscan] is the set of .in files generated by all of our
+// component libraries.  If it is nonempty, then we do need to
+// generate a module, and $[igatemout] is the name of the .cxx file
+// that interrogate will produce to make this module.
 #define igatemscan $[components $[get_igatedb:%=$[RELDIR]/$[so_dir]/%],$[active_component_libs]]
 #define igatemout $[if $[igatemscan],lib$[TARGET]_module.cxx]
 
+// Now output the rule to actually link the library from all of its
+// various .o files.
 lib_$[TARGET]_so = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]/%.o,%,,$[get_sources] $[igateoutput] $[igatemout]]]
 $[so_dir]/lib$[TARGET].so : $(lib_$[TARGET]_so)
 #define target $@
@@ -189,6 +271,8 @@ $[so_dir]/lib$[TARGET].so : $(lib_$[TARGET]_so)
 	$[SHARED_LIB_C]
 #endif
 
+// Here are the rules to install and uninstall the library and
+// everything that goes along with it.
 #define installed_files \
     $[install_lib_dir]/lib$[TARGET].so \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
@@ -210,8 +294,8 @@ $[install_lib_dir]/lib$[TARGET].so : $[so_dir]/lib$[TARGET].so
 	cd ./$[so_dir]; $[INSTALL]
 
 #if $[igatescan]
-// Now, some additional rules to build the interrogate file into the
-// library, if requested.
+// Now, some additional rules to generate and compile the interrogate
+// data, if needed.
 
 // The library name is based on this library.
 #define igatelib lib$[TARGET]
@@ -237,7 +321,7 @@ $[igateoutput:%.cxx=$[so_dir]/%.o] : $[so_dir]/$[igateoutput]
 #define ipath . $[target_ipath]
 #define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED]
 	$[COMPILE_C++]
-#endif
+#endif  // $[igatescan]
 
 #if $[igatemout]
 // And finally, some additional rules to build the interrogate module
@@ -257,11 +341,20 @@ $[igatemout:%.cxx=$[so_dir]/%.o] : $[so_dir]/$[igatemout]
 #define ipath . $[target_ipath]
 #define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED]
 	$[COMPILE_C++]
-#endif
+#endif  // $[igatescan]
 
 #end metalib_target lib_target
 
 
+
+
+/////////////////////////////////////////////////////////////////////
+// Now, the noninstalled dynamic libraries.  These are presumably used
+// only within this directory, or at the most within this tree, and
+// also presumably will never include interrogate data.  That, plus
+// the fact that we don't need to generate install rules, makes it a
+// lot simpler.
+/////////////////////////////////////////////////////////////////////
 
 #forscopes noinst_lib_target
 lib_$[TARGET]_so = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]/%.o,%,,$[get_sources]]]
@@ -277,6 +370,12 @@ $[so_dir]/lib$[TARGET].so : $(lib_$[TARGET]_so)
 #end noinst_lib_target
 
 
+
+/////////////////////////////////////////////////////////////////////
+// Now the static libraries.  Again, we assume there's no interrogate
+// interfaces going on in here, and there's no question of this being
+// a metalib, making the rules relatively simple.
+/////////////////////////////////////////////////////////////////////
 
 #forscopes static_lib_target
 lib_$[TARGET]_a = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.o,%,,$[get_sources]]]
@@ -314,10 +413,14 @@ $[install_lib_dir]/lib$[TARGET].a : $[st_dir]/lib$[TARGET].a
 #end static_lib_target
 
 
+
+/////////////////////////////////////////////////////////////////////
+// The sed_bin_targets are a special bunch.  These are scripts that
+// are to be preprocessed with sed before being installed, for
+// instance to insert a path or something in an appropriate place.
+/////////////////////////////////////////////////////////////////////
+
 #forscopes sed_bin_target
-// The sed_bin_target is a special target: it defines a file that is to
-// be processed with sed to produce an executable script.  Pretty 
-// Unix-specific, so we'd better not have too many of these.
 $[st_dir]/$[TARGET] : $[SOURCE]
 	$[SED] $[COMMAND] $[SOURCE] >$@
 	chmod +x $@
@@ -339,6 +442,11 @@ $[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET]
 
 #end sed_bin_target
 
+
+/////////////////////////////////////////////////////////////////////
+// And now, the bin_targets.  These are normal C++ executables.  No
+// interrogate, metalibs, or any such nonsense here.
+/////////////////////////////////////////////////////////////////////
 
 #forscopes bin_target
 bin_$[TARGET] = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.o,%,,$[get_sources]]]
@@ -381,6 +489,11 @@ $[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET]
 
 
 
+/////////////////////////////////////////////////////////////////////
+// The noinst_bin_targets and the test_bin_targets share the property
+// of being built (when requested), but having no install rules.
+/////////////////////////////////////////////////////////////////////
+
 #forscopes noinst_bin_target test_bin_target
 bin_$[TARGET] = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.o,%,,$[get_sources]]]
 $[st_dir]/$[TARGET] : $(bin_$[TARGET])
@@ -396,6 +509,13 @@ $[st_dir]/$[TARGET] : $(bin_$[TARGET])
 
 
 
+
+/////////////////////////////////////////////////////////////////////
+// Finally, we put in the rules to compile each source file into a .o
+// file.
+/////////////////////////////////////////////////////////////////////
+
+// Rules to generate a C++ file from a Bison input file.
 #foreach file $[sort $[yxx_so_sources] $[yxx_st_sources]]
 $[patsubst %.yxx,%.cxx,$[file]] : $[file]
 	$[BISON] -y $[if $[YACC_PREFIX],-d --name-prefix=$[YACC_PREFIX]] $[file]
@@ -403,6 +523,8 @@ $[patsubst %.yxx,%.cxx,$[file]] : $[file]
 	mv y.tab.h $[patsubst %.yxx,%.h,$[file]]
 
 #end file
+
+// Rules to generate a C++ file from a Flex input file.
 #foreach file $[sort $[lxx_so_sources] $[lxx_st_sources]]
 $[patsubst %.lxx,%.cxx,$[file]] : $[file]
 	$[FLEX] $[if $[YACC_PREFIX],-P$[YACC_PREFIX]] -olex.yy.c $[file]
@@ -410,6 +532,8 @@ $[patsubst %.lxx,%.cxx,$[file]] : $[file]
 	rm lex.yy.c
 
 #end file
+
+// Rules to compile ordinary C files that appear on a shared library.
 #foreach file $[sort $[c_so_sources]]
 $[patsubst %.c,$[so_dir]/%.o,$[file]] : $[file] $[dependencies $[file]]
 #define target $@
@@ -419,6 +543,9 @@ $[patsubst %.c,$[so_dir]/%.o,$[file]] : $[file] $[dependencies $[file]]
 	$[COMPILE_C]
 
 #end file
+
+// Rules to compile ordinary C files that appear on a static library
+// or in an executable.
 #foreach file $[sort $[c_st_sources]]
 $[patsubst %.c,$[st_dir]/%.o,$[file]] : $[file] $[dependencies $[file]]
 #define target $@
@@ -428,6 +555,8 @@ $[patsubst %.c,$[st_dir]/%.o,$[file]] : $[file] $[dependencies $[file]]
 	$[COMPILE_C]
 
 #end file
+
+// Rules to compile C++ files that appear on a shared library.
 #foreach file $[sort $[cxx_so_sources] $[yxx_so_sources] $[lxx_so_sources]]
 #define source $[patsubst %.cxx %.lxx %.yxx,%.cxx,$[file]]
 $[patsubst %.cxx %.lxx %.yxx,$[so_dir]/%.o,$[file]] : $[source] $[dependencies $[file]]
@@ -437,6 +566,9 @@ $[patsubst %.cxx %.lxx %.yxx,$[so_dir]/%.o,$[file]] : $[source] $[dependencies $
 	$[COMPILE_C++]
 
 #end file
+
+// Rules to compile C++ files that appear on a static library or in an
+// executable.
 #foreach file $[sort $[cxx_st_sources] $[yxx_st_sources] $[lxx_st_sources]]
 #define source $[patsubst %.cxx %.lxx %.yxx,%.cxx,$[file]]
 $[patsubst %.cxx %.lxx %.yxx,$[st_dir]/%.o,$[file]] : $[source] $[dependencies $[file]]
