@@ -42,6 +42,7 @@ TypeHandle qpCullTraverser::_type_handle;
 ////////////////////////////////////////////////////////////////////
 qpCullTraverser::
 qpCullTraverser() {
+  _camera_mask = DrawMask::all_on();
   _initial_state = RenderState::make_empty();
   _depth_offset_decals = false;
   _cull_handler = (CullHandler *)NULL;
@@ -55,6 +56,7 @@ qpCullTraverser() {
 qpCullTraverser::
 qpCullTraverser(const qpCullTraverser &copy) :
   _scene_setup(copy._scene_setup),
+  _camera_mask(copy._camera_mask),
   _initial_state(copy._initial_state),
   _depth_offset_decals(copy._depth_offset_decals),
   _view_frustum(copy._view_frustum),
@@ -72,7 +74,7 @@ void qpCullTraverser::
 traverse(const qpNodePath &root) {
   nassertv(_cull_handler != (CullHandler *)NULL);
   nassertv(_scene_setup != (SceneSetup *)NULL);
-  
+
   CullTraverserData data(root, get_render_transform(),
                          TransformState::make_identity(),
                          _initial_state, _view_frustum, _guard_band);
