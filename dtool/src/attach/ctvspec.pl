@@ -20,31 +20,32 @@ sub CTReadVSpec {
     local( $ret ) = "" ;
     local( $thisproj ) = $_[0] ;
     if ( -e "$ctvspec_path/$thisproj.vspec" ) {
-	%ctvspecs = () ;
-	local( *SPECFILE ) ;
-	open( SPECFILE, "<$ctvspec_path/$thisproj.vspec" ) ;
-	local( @partlist ) ;
-	while ( $_ = <SPECFILE> ) {
-	    s/\n$// ;
-	    @partlist = split( /\#/ ) ;
-	    $_ = $partlist[0] ;
-	    if ( $_ ne "" ) {
-		@partlist = split( /:/ );
-		local( $tag ) = $partlist[0] ;
-		shift( @partlist ) ;
-		local( $spec ) = join( ":", @partlist ) ;
-		if ( &CTValidateSpec( $spec ) ) {
-		    $ctvspecs{$tag} = $spec ;
-		    if ( $ctdebug ) {
-			print STDERR "tag(" . $tag . ") = " . $spec . "\n" ;
-		    }
-		}
-	    }
-	}
-	close( SPECFILE ) ;
-	$ctvspec_read = $_[0] ;
+        %ctvspecs = () ;
+        local( *SPECFILE ) ;
+        open( SPECFILE, "<$ctvspec_path/$thisproj.vspec" ) ;
+        local( @partlist ) ;
+        while ( $_ = <SPECFILE> ) {
+            s/\n$// ;
+            @partlist = split( /\#/ ) ;
+            $_ = $partlist[0] ;
+            if ( $_ ne "" ) {
+                @partlist = split( /:/ );
+                local( $tag ) = $partlist[0] ;
+                shift( @partlist ) ;
+                local( $spec ) = join( ":", @partlist ) ;
+                if ( &CTValidateSpec( $spec ) ) {
+                    $ctvspecs{$tag} = $spec ;
+                    if ( $ctdebug ) {
+                        print STDERR "tag(" . $tag . ") = " . $spec . "\n" ;
+                    }
+                }
+            }
+        }
+        close( SPECFILE ) ;
+        $ctvspec_read = $_[0] ;
     } else {
-	print STDERR "CTReadVSpec: cannot locate '$ctvspec_path/$thisproj.vspec'\n" ;
+        print STDERR "CTReadVSpec: cannot locate '$ctvspec_path/$thisproj.vspec'\n" ;
+        print STDERR "(did you forget to run the \$WINTOOLS/cp_vspec script?)\n" ;
     }
 }
 
@@ -75,10 +76,10 @@ sub CTSpecFindOption {
     local( $item ) ;
     local( @itemlist ) ;
     foreach $item ( @options ) {
-	@itemlist = split( /=/, $item ) ;
-	if ( $itemlist[0] eq $_[1] ) {
-	    $ret = $itemlist[1] ;
-	}
+        @itemlist = split( /=/, $item ) ;
+        if ( $itemlist[0] eq $_[1] ) {
+            $ret = $itemlist[1] ;
+        }
     }
     $ret ;
 }
@@ -92,33 +93,33 @@ sub CTResolveSpec {
     local( $proj ) = $_[0] ;
     $proj =~ tr/A-Z/a-z/ ;
     if ( $ctvspec_read ne $proj ) {
-	&CTReadVSpec( $proj ) ;
+        &CTReadVSpec( $proj ) ;
     }
     local( $spec ) = $ctvspecs{$_[1]} ;
     local( $ret ) = "" ;
     if ( $spec ne "" ) {
-	local( $type ) = &CTSpecType( $spec ) ;
-	local( @speclist ) = split( /:/, &CTSpecOptions( $spec ) ) ;
-	if ( $type eq "ref" ) {
-	    local( @optionlist ) = split( /=/, $speclist[0] ) ;
-	    if ( $optionlist[0] ne "name" ) {
-		print STDERR "bad data attached to flavor " . $_[1] .
-		    " of project " . $proj . "\n" ;
-	    } else {
-		local( $tmp ) = &CTUShellEval( $optionlist[1] ) ;
-		if ( $ctdebug ) {
-		    print STDERR "resolved a 'ref' to " . $tmp .
-			", recuring\n" ;
-		}
-		$ret = &CTResolveSpec( $proj, $tmp ) ;
-	    }
-	} else {
-	    $ret = $spec ;
-	}
+        local( $type ) = &CTSpecType( $spec ) ;
+        local( @speclist ) = split( /:/, &CTSpecOptions( $spec ) ) ;
+        if ( $type eq "ref" ) {
+            local( @optionlist ) = split( /=/, $speclist[0] ) ;
+            if ( $optionlist[0] ne "name" ) {
+                print STDERR "bad data attached to flavor " . $_[1] .
+                    " of project " . $proj . "\n" ;
+            } else {
+                local( $tmp ) = &CTUShellEval( $optionlist[1] ) ;
+                if ( $ctdebug ) {
+                    print STDERR "resolved a 'ref' to " . $tmp .
+                        ", recuring\n" ;
+                }
+                $ret = &CTResolveSpec( $proj, $tmp ) ;
+            }
+        } else {
+            $ret = $spec ;
+        }
     }
     if ( $ret eq "" ) {
-	print STDERR "unknown flavor " . $_[1] . " of project " . $proj .
-	    "\n" ;
+        print STDERR "unknown flavor " . $_[1] . " of project " . $proj .
+            "\n" ;
     }
     &CTUDebug( "out of CTResolveSpec\n" ) ;
     $ret ;
@@ -133,31 +134,31 @@ sub CTResolveSpecName {
     local( $proj ) = $_[0] ;
     $proj =~ tr/A-Z/a-z/ ;
     if ( $ctvspec_read ne $proj ) {
-	&CTReadVSpec( $proj ) ;
+        &CTReadVSpec( $proj ) ;
     }
     local( $spec ) = $ctvspecs{$_[1]} ;
     local( $ret ) = $_[1] ;
     if ( $spec ne "" ) {
-	local( $type ) = &CTSpecType( $spec ) ;
-	local( @speclist ) = split( /:/, &CTSpecOptions( $spec ) ) ;
-	if ( $type eq "ref" ) {
-	    local( @optionlist ) = split( /=/, $speclist[0] ) ;
-	    if ( $optionlist[0] ne "name" ) {
-		print STDERR "bad data attached to flavor " . $_[1] .
-		    " of project " . $proj . "\n" ;
-	    } else {
-		local( $tmp ) = &CTUShellEval( $optionlist[1] ) ;
-		if ( $ctdebug ) {
-		    print STDERR "resolved a 'ref' to " . $tmp .
-			", recuring\n" ;
-		}
-		$ret = &CTResolveSpecName( $proj, $tmp ) ;
-	    }
-	}
+        local( $type ) = &CTSpecType( $spec ) ;
+        local( @speclist ) = split( /:/, &CTSpecOptions( $spec ) ) ;
+        if ( $type eq "ref" ) {
+            local( @optionlist ) = split( /=/, $speclist[0] ) ;
+            if ( $optionlist[0] ne "name" ) {
+                print STDERR "bad data attached to flavor " . $_[1] .
+                    " of project " . $proj . "\n" ;
+            } else {
+                local( $tmp ) = &CTUShellEval( $optionlist[1] ) ;
+                if ( $ctdebug ) {
+                    print STDERR "resolved a 'ref' to " . $tmp .
+                        ", recuring\n" ;
+                }
+                $ret = &CTResolveSpecName( $proj, $tmp ) ;
+            }
+        }
     }
     if ( $ret eq "" ) {
-	print STDERR "unknown flavor " . $_[1] . " of project " . $proj .
-	    "\n" ;
+        print STDERR "unknown flavor " . $_[1] . " of project " . $proj .
+            "\n" ;
     }
     &CTUDebug( "out of CTResolveSpecName\n" ) ;
     $ret ;
@@ -174,92 +175,92 @@ sub CTValidateSpec {
     local( $item ) ;
     local( @itemlist ) ;
     if ( $type eq "ref" ) {
-	local( $have_name ) = 0 ;
-	foreach $item ( @speclist ) {
-	    @itemlist = split( /=/, $item ) ;
-	    if ( $itemlist[0] eq "name" ) {
-		if ( $have_name ) {
-		    $have_error = 1;
-		    &CTUDebug( "multiple name options on 'ref'\n" ) ;
-		}
-		$have_name = 1;
-	    } else {
-		&CTUDebug( "invalid option on 'ref' = " . $item . "\n" ) ;
-		$have_error = 1 ;
-	    }
-  	}
-	if ( ! $have_error ) {
-	    if ( $have_name ) {
-		$ret = 1 ;
-	    }
-	}
+        local( $have_name ) = 0 ;
+        foreach $item ( @speclist ) {
+            @itemlist = split( /=/, $item ) ;
+            if ( $itemlist[0] eq "name" ) {
+                if ( $have_name ) {
+                    $have_error = 1;
+                    &CTUDebug( "multiple name options on 'ref'\n" ) ;
+                }
+                $have_name = 1;
+            } else {
+                &CTUDebug( "invalid option on 'ref' = " . $item . "\n" ) ;
+                $have_error = 1 ;
+            }
+        }
+        if ( ! $have_error ) {
+            if ( $have_name ) {
+                $ret = 1 ;
+            }
+        }
     } elsif ( $type eq "root" ) {
-	local( $have_path ) = 0 ;
-	foreach $item ( @speclist ) {
-	    @itemlist = split( /=/, $item ) ;
-	    if ( $itemlist[0] eq "path" ) {
-		if ( $have_path ) {
-		    $have_error = 1 ;
-		    &CTUDebug( "multiple path options on 'root'\n" ) ;
-		}
-		$have_path = 1 ;
-	    } else {
-		&CTUDebug( "invalid option on 'root' = " . $item . "\n" ) ;
-		$have_error = 1 ;
-	    }
-	}
-	if ( ! $have_error ) {
-	    if ( $have_path ) {
-		$ret = 1 ;
-	    }
-	}
+        local( $have_path ) = 0 ;
+        foreach $item ( @speclist ) {
+            @itemlist = split( /=/, $item ) ;
+            if ( $itemlist[0] eq "path" ) {
+                if ( $have_path ) {
+                    $have_error = 1 ;
+                    &CTUDebug( "multiple path options on 'root'\n" ) ;
+                }
+                $have_path = 1 ;
+            } else {
+                &CTUDebug( "invalid option on 'root' = " . $item . "\n" ) ;
+                $have_error = 1 ;
+            }
+        }
+        if ( ! $have_error ) {
+            if ( $have_path ) {
+                $ret = 1 ;
+            }
+        }
     } elsif ( $type eq "vroot" ) {
-	local( $have_name ) = 0 ;
-	foreach $item ( @speclist ) {
-	    @itemlist = split( /=/, $item ) ;
-	    if ( $itemlist[0] eq "name" ) {
-		if ( $have_name ) {
-		    $have_error = 1 ;
-		    &CTUDebug( "multiple name options on 'vroot'\n" ) ;
-		}
-		$have_name = 1 ;
-	    } else {
-		&CTUDebug( "invalid option on 'vroot' = " . $item . "\n" ) ;
-		$have_error = 1 ;
-	    }
-	}
-	if ( ! $have_error ) {
-	    $ret = 1 ;
-	}
+        local( $have_name ) = 0 ;
+        foreach $item ( @speclist ) {
+            @itemlist = split( /=/, $item ) ;
+            if ( $itemlist[0] eq "name" ) {
+                if ( $have_name ) {
+                    $have_error = 1 ;
+                    &CTUDebug( "multiple name options on 'vroot'\n" ) ;
+                }
+                $have_name = 1 ;
+            } else {
+                &CTUDebug( "invalid option on 'vroot' = " . $item . "\n" ) ;
+                $have_error = 1 ;
+            }
+        }
+        if ( ! $have_error ) {
+            $ret = 1 ;
+        }
     } elsif ( $type eq "croot" ) {
-	local( $have_path ) = 0 ;
-	local( $have_server ) = 0 ;
-	foreach $item ( @speclist ) {
-	    @itemlist = split( /=/, $item ) ;
-	    if ( $itemlist[0] eq "path" ) {
-		if ( $have_path ) {
-		    $have_error = 1 ;
-		    &CTUDebug( "multiple path options on 'croot'\n" ) ;
-		}
-		$have_path = 1 ;
-	    } elsif ( $itemlist[0] eq "server" ) {
-		if ( $have_server ) {
-		    $have_error = 1 ;
-		    &CTUDebug( "multiple server options on 'croot'\n" ) ;
-		}
-		$have_server = 1 ;
-	    } else {
-		&CTUDebug( "invalid option on 'croot' = " . $item . "\n" ) ;
-		$have_error = 1 ;
-	    }
-	}
-	if ( ! $have_error ) {
-	    if ( $have_path && $have_server ) {
-		$ret = 1 ;
-	    }
-	}
+        local( $have_path ) = 0 ;
+        local( $have_server ) = 0 ;
+        foreach $item ( @speclist ) {
+            @itemlist = split( /=/, $item ) ;
+            if ( $itemlist[0] eq "path" ) {
+                if ( $have_path ) {
+                    $have_error = 1 ;
+                    &CTUDebug( "multiple path options on 'croot'\n" ) ;
+                }
+                $have_path = 1 ;
+            } elsif ( $itemlist[0] eq "server" ) {
+                if ( $have_server ) {
+                    $have_error = 1 ;
+                    &CTUDebug( "multiple server options on 'croot'\n" ) ;
+                }
+                $have_server = 1 ;
+            } else {
+                &CTUDebug( "invalid option on 'croot' = " . $item . "\n" ) ;
+                $have_error = 1 ;
+            }
+        }
+        if ( ! $have_error ) {
+            if ( $have_path && $have_server ) {
+                $ret = 1 ;
+            }
+        }
     } else {
-	&CTUDebug( "unknow spec type '" . $speclist[0] . "'\n" ) ;
+        &CTUDebug( "unknow spec type '" . $speclist[0] . "'\n" ) ;
     }
     $ret ;
 }
@@ -273,24 +274,24 @@ sub CTListAllProjects {
     local( *DIRFILES ) ;
     open( DIRFILES, "(cd $ctvspec_path ; /bin/ls -1 *.vspec ; echo blahblah) |" ) ;
     while ( ! $done ) {
-	$_ = <DIRFILES> ;
-	s/\n$// ;
-	if ( $_ eq "blahblah" ) {
-	    $done = 1 ;
-	} else {
-	    s/.vspec$// ;
-	    if ( $_ ne "" ) {
-		if ( $ret eq "" ) {
-		    $ret = $_ ;
-		} else {
-		    $ret = $ret . " " . $_ ;
-		}
-	    }
-	}
+        $_ = <DIRFILES> ;
+        s/\n$// ;
+        if ( $_ eq "blahblah" ) {
+            $done = 1 ;
+        } else {
+            s/.vspec$// ;
+            if ( $_ ne "" ) {
+                if ( $ret eq "" ) {
+                    $ret = $_ ;
+                } else {
+                    $ret = $ret . " " . $_ ;
+                }
+            }
+        }
     }
     close( DIRFILES ) ;
     &CTUDebug( "final list of projects '" . $ret . "'\n" .
-	       "out of CTListAllProjects\n" ) ;
+               "out of CTListAllProjects\n" ) ;
     $ret ;
 }
 
@@ -302,16 +303,16 @@ sub CTListAllFlavors {
     local( $proj ) = $_[0] ;
     $proj =~ tr/A-Z/a-z/ ;
     if ( $ctvspec_read ne $proj ) {
-	&CTReadVSpec( $proj ) ;
+        &CTReadVSpec( $proj ) ;
     }
     local( $ret ) = "";
     local( $item ) ;
     foreach $item ( keys %ctvspecs ) {
-	if ( $ret eq "" ) {
-	    $ret = $item ;
-	} else {
-	    $ret = $ret . " " . $item ;
-	}
+        if ( $ret eq "" ) {
+            $ret = $item ;
+        } else {
+            $ret = $ret . " " . $item ;
+        }
     }
     &CTUDebug( "out of CTListAllFlavors\n" ) ;
     $ret ;
@@ -327,7 +328,7 @@ sub CTComputeRoot {
     local( $proj ) = $_[0] ;
     $proj =~ tr/A-Z/a-z/ ;
     if ( $ctvspec_read ne $proj ) {
-	&CTReadVSpec( $proj ) ;
+        &CTReadVSpec( $proj ) ;
     }
     local( $ret ) = "" ;
     local( $type ) = &CTSpecType( $_[2] ) ;
@@ -335,18 +336,18 @@ sub CTComputeRoot {
     local( $vname ) = &CTResolveSpecName( $proj, $_[1] ) ;
     &CTUDebug( "type = '" . $type . "' with options '" . $options . "'\n" ) ;
     if ( $type eq "root" ) {
-	$ret = &CTSpecFindOption( $options, "path" ) ;
+        $ret = &CTSpecFindOption( $options, "path" ) ;
     } elsif ( $type eq "vroot" ) {
-	local( $name ) = &CTSpecFindOption( $options, "name" ) ;
-	if ( $name ne "" ) {
-	    $ret = "/view/$name/vobs/$proj" ;
-	} else {
-	    $ret = "/view/$vname/vobs/$proj" ;
-	}
+        local( $name ) = &CTSpecFindOption( $options, "name" ) ;
+        if ( $name ne "" ) {
+            $ret = "/view/$name/vobs/$proj" ;
+        } else {
+            $ret = "/view/$vname/vobs/$proj" ;
+        }
     } elsif ( $type eq "croot" ) {
-	$ret = &CTSpecFindOption( $options, "path" ) ;
+        $ret = &CTSpecFindOption( $options, "path" ) ;
     } elsif ( $ctdebug) {
-	print STDERR "unknown flavor type '" . $type . "'\n" ;
+        print STDERR "unknown flavor type '" . $type . "'\n" ;
     }
     &CTUDebug( "returning '" . $ret . "'\n" ) ;
     &CTUDebug( "out of CTComputeRoot\n" ) ;
