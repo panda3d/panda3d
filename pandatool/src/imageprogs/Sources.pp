@@ -1,4 +1,6 @@
-#begin bin_target
+// We won't install image-trans for now, since the one in $DWDTOOL
+// is better.
+#begin noinst_bin_target
   #define TARGET image-trans
   #define LOCAL_LIBS \
     imagebase progbase
@@ -12,5 +14,5 @@
 
   #define INSTALL_HEADERS \
 
-#end bin_target
+#end noinst_bin_target
 
