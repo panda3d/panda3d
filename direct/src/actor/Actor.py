@@ -1,14 +1,16 @@
 """Actor module: contains the Actor class"""
 
 from PandaObject import *
+import LODNode
 
 class Actor(PandaObject, NodePath):
     """Actor class: Contains methods for creating, manipulating
     and playing animations on characters"""
 
-    #create the Actor class DirectNotify category
+    #create the Actor class globals (ewww!)
     notify = directNotify.newCategory("Actor")
     partPrefix = "__Actor_"
+
     
     #special methods
     
@@ -56,8 +58,11 @@ class Actor(PandaObject, NodePath):
             a.attach("head", "torso", "joint-head")
             a.attach("torso", "legs", "joint-hips")
 
+        #
+        # ADD LOD COMMENT HERE!
+        #
 
-        Other useful Acotr class functions:
+        Other useful Actor class functions:
 
             #fix actor eye rendering
             a.drawInFront("joint-pupil?", "eyes*")
@@ -68,64 +73,117 @@ class Actor(PandaObject, NodePath):
             
         """
 
-        try:
-            self.Actor_initialized
-        except:
-            self.Actor_initialized = 1
-            # initial our NodePath essence
-            NodePath.__init__(self)
+        # initialize our NodePath essence
+        NodePath.__init__(self)
+
+        # create data structures
+        self.__partBundleDict = {}
+        self.__animControlDict = {}
+
+        if (other == None):
+            # act like a normal contructor
+
+            # create base hierarchy
+            self.assign(hidden.attachNewNode('actor'))
+            self.setGeomNode(self.attachNewNode('actorGeom'))
+            self.__LODNode = None
+            self.__hasLOD = 0
             
-            # create data structures
-            self.__partBundleDict = {}
-            self.__animControlDict = {}
-            
-            if (other == None):
-                # act like a normal contructor
-                
-                # create base hierarchy
-                self.assign(hidden.attachNewNode('actor'))
-                self.setGeomNode(self.attachNewNode('actorGeom'))
-                
-                # load models
-                # make sure we have models
-                if (models):
-                    # if this is a dictionary
-                    if (type(models)==type({})):
-                        # then it must be multipart actor
+            # load models
+            #
+            # four cases:
+            #
+            #   models, anims{} = single part actor
+            #   models{}, anims{} =  single part actor w/ LOD
+            #   models{}, anims{}{} = multi-part actor
+            #   models{}{}, anims{}{} = multi-part actor w/ LOD
+            #
+            # make sure we have models
+            if (models):
+                # do we have a dictionary of models?
+                if (type(models)==type({})):
+                    # if this is a dictionary of dictionaries
+                    if (type(models[models.keys()[0]]) == type({})):
+                        # then it must be a multipart actor w/LOD
+                        self.setLODNode()
+                        # preserve numerical order for lod's
+                        # this will make it easier to set ranges
+                        sortedKeys = models.keys()
+                        sortedKeys.sort()
+                        for lodName in sortedKeys:
+                            # make a node under the LOD switch
+                            # for each lod (just because!)
+                            self.addLOD(str(lodName))
+                            # iterate over both dicts
+                            for modelName in models[lodName].keys():
+                                self.loadModel(models[lodName][modelName],
+                                               modelName, lodName)
+                    # then if there is a dictionary of dictionaries of anims
+                    elif (type(anims[anims.keys()[0]])==type({})):
+                        # then this is a multipart actor w/o LOD
                         for partName in models.keys():
+                            # pass in each part
                             self.loadModel(models[partName], partName)
                     else:
-                        # else it is a single part actor
-                        self.loadModel(models)
+                        # it is a single part actor w/LOD
+                        self.setLODNode()
+                        # preserve order of LOD's
+                        sortedKeys = models.keys()
+                        sortedKeys.sort()
+                        for lodName in sortedKeys:
+                            self.addLOD(str(lodName))
+                            # pass in dictionary of parts
+                            self.loadModel(models[lodName], lodName=lodName)
+                else:
+                    # else it is a single part actor
+                    self.loadModel(models)
 
-                # load anims
-                # make sure the actor has animations
-                if (anims):
-                    if (len(anims) >= 1):
-                        # if so, does it have a dictionary of dictionaries
-                        if (type(anims[anims.keys()[0]])==type({})):
-                            # then it must be multipart
-                            for partName in anims.keys():
-                                self.loadAnims(anims[partName], partName)
-                        else:
-                            # else it is not multipart
-                            self.loadAnims(anims)
+            # load anims
+            # make sure the actor has animations
+            if (anims):
+                if (len(anims) >= 1):
+                    # if so, does it have a dictionary of dictionaries?
+                    if (type(anims[anims.keys()[0]])==type({})):
+                        # are the models a dict of dicts too?
+                        if (type(models)==type({})):
+                            if (type(models[models.keys()[0]]) == type({})):
+                                # then we have a multi-part w/ LOD
+                                sortedKeys = models.keys()
+                                sortedKeys.sort()
+                                for lodName in sortedKeys:
+                                    # iterate over both dicts
+                                    for partName in anims.keys():
+                                        self.loadAnims(
+                                            anims[partName], partName, lodName)
+                            else:
+                                # then it must be multi-part w/o LOD
+                                for partName in anims.keys():
+                                    self.loadAnims(anims[partName], partName)
+                    elif (type(models)==type({})):
+                        # then we have single-part w/ LOD
+                        sortedKeys = models.keys()
+                        sortedKeys.sort()
+                        for lodName in sortedKeys:
+                            self.loadAnims(anims, lodName=lodName)
+                    else:
+                        # else it is single-part w/o LOD
+                        self.loadAnims(anims)
 
-            else:
-                # act like a copy constructor
-                
-                # copy the scene graph elements of other
-                otherCopy = other.copyTo(hidden)
-                # assign these elements to ourselve
-                self.assign(otherCopy)
-                self.setGeomNode(otherCopy.getChild(0))
-                
-                # copy the part dictionary from other
-                self.__copyPartBundles(other)
-                
-                # copy the anim dictionary from other
-                self.__copyAnimControls(other)
-        return None
+        else:
+            # act like a copy constructor
+
+            # copy the scene graph elements of other
+            otherCopy = other.copyTo(hidden)
+            # assign these elements to ourselve
+            self.assign(otherCopy)
+            self.setGeomNode(otherCopy.getChild(0))
+            
+            # copy the part dictionary from other
+            self.__copyPartBundles(other)
+            
+            # copy the anim dictionary from other
+            self.__copyAnimControls(other)
+            
  
     def __str__(self):
         """__str__(self)
@@ -136,11 +194,17 @@ class Actor(PandaObject, NodePath):
 
     # accessing
     
+    def getLODNames(self):
+        """getLODNames(self):
+        Return list of Actor LOD names. If not an LOD actor,
+        returns 'lodRoot'"""
+        return self.__partBundleDict.keys()
+    
     def getPartNames(self):
         """getPartNames(self):
-        Return list of Actor part names. If not multipart,
-        returns modelRoot"""
-        return self.__partBundleDict.keys()
+        Return list of Actor part names. If not an multipart actor,
+        returns 'modelRoot' NOTE: returns parts of first LOD"""
+        return self.__partBundleDict[0].keys()
     
     def getGeomNode(self):
         """getGeomNode(self)
@@ -152,19 +216,115 @@ class Actor(PandaObject, NodePath):
         Set the node that contains all actor geometry"""
         self.__geomNode = node
 
+    def getLODNode(self):
+        """getLODNode(self)
+        Return the node that switches actor geometry in and out"""
+        return self.__LODNode.node()
+
+    def setLODNode(self, node=None):
+        """setLODNode(self, LODNode=None)
+        Set the node that switches actor geometry in and out.
+        If one is not supplied as an argument, make one"""
+        if (node == None):
+            lod = LODNode.LODNode("lod")
+            self.__LODNode = self.__geomNode.attachNewNode(lod)
+        else:
+            self.__LODNode = self.__geomNode.attachNewNode(node)            
+        self.__hasLOD = 1
+        self.switches = {}
+
+    def useLOD(self, lodName):
+        """useLOD(self, string)
+        Make the Actor ONLY display the given LOD"""
+        # make sure we don't call this twice in a row
+        # and pollute the the switches dictionary
+        self.resetLOD()
+        # store the data in the switches for later use
+        sortedKeys = self.switches.keys()
+        sortedKeys.sort()
+        for eachLod in sortedKeys:
+            index = sortedKeys.index(eachLod)
+            # set the switches to not display ever
+            self.__LODNode.node().setSwitch(index, 0, 10000)
+        # turn the given LOD on 'always'
+        index = sortedKeys.index(lodName)
+        self.__LODNode.node().setSwitch(index, 10000, 0)
+
+    def printLOD(self):
+        sortedKeys = self.switches.keys()
+        sortedKeys.sort()
+        for eachLod in sortedKeys:
+            print "python switches for %s: in: %d, out %d" % (eachLod,
+                                              self.switches[eachLod][0],
+                                              self.switches[eachLod][1])
+
+        switchNum = self.__LODNode.node().getNumSwitches()
+        for eachSwitch in range(0, switchNum):
+            print "c++ switches for %d: in: %d, out: %d" % (eachSwitch,
+                   self.__LODNode.node().getIn(eachSwitch),
+                   self.__LODNode.node().getOut(eachSwitch))
+                                                        
+            
+    def resetLOD(self):
+        """resetLOD(self)
+        Restore all switch distance info (usually after a useLOD call)"""
+        sortedKeys = self.switches.keys()
+        sortedKeys.sort()
+        for eachLod in sortedKeys:
+            index = sortedKeys.index(eachLod)
+            self.__LODNode.node().setSwitch(index, self.switches[eachLod][0],
+                                     self.switches[eachLod][1])
+                    
+    def addLOD(self, lodName, inDist=0, outDist=0):
+        """addLOD(self, string) 
+        Add a named node under the LODNode to parent all geometry
+        of a specific LOD under."""
+        self.__LODNode.attachNewNode(str(lodName))
+        # save the switch distance info
+        self.switches[lodName] = [inDist, outDist]
+        # add the switch distance info
+        self.__LODNode.node().addSwitch(inDist, outDist)
+
+    def setLOD(self, lodName, inDist=0, outDist=0):
+        """setLOD(self, string)
+        Set the switch distance for given LOD"""
+        # save the switch distance info
+        self.switches[lodName] = [inDist, outDist]
+        # add the switch distance info
+        sortedKeys = self.switches.keys()
+        sortedKeys.sort()
+        index = sortedKeys.index(lodName)
+        self.__LODNode.node().setSwitch(index, inDist, outDist)
+
+    def getLOD(self, lodName):
+        """getLOD(self, string)
+        Get the named node under the LOD to which we parent all LOD
+        specific geometry to. Returns 'None' if not found"""
+        lod = self.__LODNode.find("**/" + str(lodName))
+        if lod.isEmpty():
+            return None
+        else:
+            return lod
+        
+    def hasLOD(self):
+        """hasLOD(self)
+        Return 1 if the actor has LODs, 0 otherwise"""
+        return self.__hasLOD
+    
     def getFrameRate(self, animName=None, partName=None):
         """getFrameRate(self, string, string=None)
         Return duration of given anim name and given part.
         If no anim specified, use the currently playing anim.
-        If no part specified, return anim durations of first part"""
+        If no part specified, return anim durations of first part.
+        NOTE: returns info only for the first LOD"""
         if (partName == None):
-            partName = self.__animControlDict.keys()[0]
+            partName = self.__animControlDict[0].keys()[0]
     
         if (animName==None):
             animName = self.getCurrentAnim(partName)
 
         # get duration for named part only
-        if (self.__animControlDict.has_key(partName)):        
+        if (self.__animControlDict[0].has_key(partName)):        
             animControl = self.__getAnimControl(animName, partName)
             if (animControl != None):
                 return animControl.getFrameRate()
@@ -177,9 +337,10 @@ class Actor(PandaObject, NodePath):
         """getPlayRate(self, string=None, string=None)
         Return the play rate of given anim for a given part.
         If no part is given, assume first part in dictionary.
-        If no anim is given, find the current anim for the part"""
+        If no anim is given, find the current anim for the part.
+        NOTE: Returns info only for the first LOD"""
         if (partName==None):
-            partName = self.__animControlDict.keys()[0]
+            partName = self.__animControlDict[0].keys()[0]
 
         if (animName==None):
             animName = self.getCurrentAnim(partName)
@@ -194,35 +355,39 @@ class Actor(PandaObject, NodePath):
         """getPlayRate(self, float, string=None, string=None)
         Set the play rate of given anim for a given part.
         If no part is given, set for all parts in dictionary.
-        If no anim is given, find the current anim for the part"""
+        If no anim is given, find the current anim for the part.
+        NOTE: sets play rate on all LODs"""
         # make a list of partNames for loop below
-        if (partName==None):
-            partNames = self.__animControlDict.keys()
-        else:
-            partNames = []
-            partNames.append(partName)
+        for lodName in self.__animControlDict.keys():
+            animControlDict = self.__animControlDict[lodName]
+            if (partName==None):
+                partNames = animControlDict.keys()
+            else:
+                partNames = []
+                partNames.append(partName)
 
-        # for each part in list, set play rate on given or current anim
-        for partName in partNames:
-            if (animName==None):
-                animName = self.getCurrentAnim(partName)          
-            animControl = self.__getAnimControl(animName, partName)
-            if (animControl != None):
-                animControl.setPlayRate(rate)
+            # for each part in list, set play rate on given or current anim
+            for partName in partNames:
+                if (animName==None):
+                    animName = self.getCurrentAnim(partName)          
+                animControl = self.__getAnimControl(animName, partName)
+                if (animControl != None):
+                    animControl.setPlayRate(rate)
             
     def getDuration(self, animName=None, partName=None):
         """getDuration(self, string, string=None)
         Return duration of given anim name and given part.
         If no anim specified, use the currently playing anim.
-        If no part specified, return anim duration of first part"""
+        If no part specified, return anim duration of first part.
+        NOTE: returns info for first LOD only"""
         if (partName == None):
-            partName = self.__animControlDict.keys()[0]
+            partName = self.__animControlDict[0].keys()[0]
 
         if (animName==None):
             animName = self.getCurrentAnim(partName)          
 
         # get duration for named part only
-        if (self.__animControlDict.has_key(partName)):        
+        if (self.__animControlDict[0].has_key(partName)):        
             animControl = self.__getAnimControl(animName, partName)
             if (animControl != None):
                 return (animControl.getNumFrames() / \
@@ -235,12 +400,13 @@ class Actor(PandaObject, NodePath):
     def getCurrentAnim(self, partName=None):
         """getCurrentAnim(self, string=None)
         Return the anim current playing on the actor. If part not
-        specified return current anim of first part in dictionary"""
+        specified return current anim of first part in dictionary.
+        NOTE: only returns info for the first LOD"""
         if (partName==None):
-            partName = self.__animControlDict.keys()[0]
+            partName = self.__animControlDict[0].keys()[0]
 
         # loop through all anims for named part and find if any are playing
-        if (self.__animControlDict.has_key(partName)):
+        if (self.__animControlDict[0].has_key(partName)):
             for animName in self.__animControlDict[partName].keys():
                 if (self.__getAnimControl(animName, partName).isPlaying()):
                     return animName
@@ -251,102 +417,156 @@ class Actor(PandaObject, NodePath):
         return None
 
 
-
     # arranging
 
-    def getPart(self, partName):
-        """getPart(self, string)
-        Find the named part in the partBundleDict and return it, or
+    def getPart(self, partName, lodName="lodRoot"):
+        """getPart(self, string, key="lodRoot")
+        Find the named part in the optional named lod and return it, or
         return None if not present"""
-        if (self.__partBundleDict.has_key(partName)):
-            return self.__partBundleDict[partName]
+        if (self.__partBundleDict.has_key(lodName)):
+            partBundleDict = self.__partBundleDict[lodName]
+        else:
+            Actor.notify.warning("no lod named: %s" % (lodName))
+            return None
+                
+        if (partBundleDict.has_key(partName)):
+            return partBundleDict[partName]
         else:
             return None
 
-    def removePart(self, partName):
-        """removePart(Self, string)
-        Remove the geometry and animations of the named part if present
-        NOTE: this will remove parented geometry also!"""
-        # remove the geometry
-        if (self.__partBundleDict.has_key(partName)):
-            self.__partBundleDict[partName].removeNode()
-            del(self.__partBundleDict[partName])
+    def removePart(self, partName, lodName="lodRoot"):
+        """removePart(self, string, key="lodRoot")
+        Remove the geometry and animations of the named part of the
+        optional named lod if present.
+        NOTE: this will remove child geometry also!"""
+        # find the corresponding part bundle dict
+        if (self.__partBundleDict.has_key(lodName)):
+            partBundleDict = self.__partBundleDict[lodName]
+        else:
+            Actor.notify.warning("no lod named: %s" % (lodName))
+            return None
+
+        # find the corresponding anim control dict
+        if (self.__animControlDict.has_key(lodName)):
+            animControlDict = self.__animControlDict[lodName]
+        else:
+            Actor.notify.warning("no lod named: %s" % (lodName))
+            return None
+
+        # remove the part
+        if (partBundleDict.has_key(partName)):
+            partBundleDict[partName].removeNode()
+            del(partBundleDict[partName])
+
         # remove the animations
-        if (self.__animControlDict.has_key(partName)):
-            del(self.__animControlDict[partName])
-
+        if (animControlDict.has_key(partName)):
+            del(animControlDict[partName])
             
-    def hidePart(self, partName):
-        """hidePart(self, string)
-        Make the given part not render, even though still in the tree.
-        NOTE: this functionality will be effected by the 'attach' method"""
-        if (self.__partBundleDict.has_key(partName)):
-            self.__partBundleDict[partName].hide()
+    def hidePart(self, partName, lodName="lodName"):
+        """hidePart(self, string, key="lodName")
+        Make the given part of the optional given lod not render,
+        even though still in the tree.
+        NOTE: this will affect child geometry"""
+        if (self.__partBundleDict.has_key(lodName)):
+            partBundleDict = self.__partBundleDict[lodName]
+        else:
+            Actor.notify.warning("no lod named: %s" % (lodName))
+            return None
+
+        if (partBundleDict.has_key(partName)):
+            partBundleDict[partName].hide()
         else:
             Actor.notify.warning("no part named %s!" % (partName))
 
-    def showPart(self, partName):
-        """showPart(self, string)
+    def showPart(self, partName, lodName="lodRoot"):
+        """showPart(self, string, key="lodRoot")
         Make the given part render while in the tree.
-        NOTE: this functionality will be effected by the 'attach' method"""
-        if (self.__partBundleDict.has_key(partName)):
-            self.__partBundleDict[partName].show()
+        NOTE: this will affect child geometry"""
+        if (self.__partBundleDict.has_key(lodName)):
+            partBundleDict = self.__partBundleDict[lodName]
+        else:
+            Actor.notify.warning("no lod named: %s" % (lodName))
+            return None
+
+        if (partBundleDict.has_key(partName)):
+            partBundleDict[partName].show()
         else:
             Actor.notify.warning("no part named %s!" % (partName))
             
-    def instance(self, partName, anotherPart, jointName):
-        """instance(self, string, string, string)
+    def instance(self, partName, anotherPart, jointName, lodName="lodRoot"):
+        """instance(self, string, string, string, key="lodRoot")
         Instance one actor part to another at a joint called jointName"""
-        if (self.__partBundleDict.has_key(partName)):
-            if (self.__partBundleDict.has_key(anotherPart)):
-                joint = NodePath(self.__partBundleDict[anotherPart], \
-                                 "**/" + jointName)
-                if (joint.isEmpty()):
-                    Actor.notify.warning("%s not found!" % (jointName))
+        if (self.__partBundleDict.has_key(lodName)):
+            partBundleDict = self.__partBundleDict[lodName]
+            if (partBundleDict.has_key(partName)):
+                if (partBundleDict.has_key(anotherPart)):
+                    joint = NodePath(partBundleDict[anotherPart],
+                                     "**/" + jointName)
+                    if (joint.isEmpty()):
+                        Actor.notify.warning("%s not found!" % (jointName))
+                    else:
+                        return partBundleDict[partName].instanceTo(joint)
                 else:
-                    return self.__partBundleDict[partName].instanceTo(joint)
+                    Actor.notify.warning("no part named %s!" % (anotherPart))
             else:
-                Actor.notify.warning("no part named %s!" % (anotherPart))
+                Actor.notify.warning("no part named %s!" % (partName))
         else:
-            Actor.notify.warning("no part named %s!" % (partName))
+            Actor.notify.warning("no lod named %s!" % (lodName))
 
-
-    def attach(self, partName, anotherPart, jointName):
-        """attach(self, string, string, string)
+    def attach(self, partName, anotherPart, jointName, lodName="lodRoot"):
+        """attach(self, string, string, string, key="lodRoot")
         Attach one actor part to another at a joint called jointName"""
-        if (self.__partBundleDict.has_key(partName)):
-            if (self.__partBundleDict.has_key(anotherPart)):
-                joint = NodePath(self.__partBundleDict[anotherPart], \
+        if (self.__partBundleDict.has_key(lodName)):
+            partBundleDict = self.__partBundleDict[lodName]
+            if (partBundleDict.has_key(partName)):
+                if (partBundleDict.has_key(anotherPart)):
+                    joint = NodePath(partBundleDict[anotherPart],
                                  "**/" + jointName)
-                if (joint.isEmpty()):
-                    Actor.notify.warning("%s not found!" % (jointName))
+                    if (joint.isEmpty()):
+                        Actor.notify.warning("%s not found!" % (jointName))
+                    else:
+                        partBundleDict[partName].reparentTo(joint)
                 else:
-                    self.__partBundleDict[partName].reparentTo(joint)
+                    Actor.notify.warning("no part named %s!" % (anotherPart))
             else:
-                Actor.notify.warning("no part named %s!" % (anotherPart))
+                Actor.notify.warning("no part named %s!" % (partName))
         else:
-            Actor.notify.warning("no part named %s!" % (partName))
+            Actor.notify.warning("no lod named %s!" % (lodName))
 
                     
-    def drawInFront(self, frontPartName, backPartName, root=None):
-        """drawInFront(self, string, string=None)
+    def drawInFront(self, frontPartName, backPartName, root=None,
+                    lodName=None):
+        """drawInFront(self, string, string=None, key=None)
         Arrange geometry so the frontPart is drawn properly wrt backPart.
         Takes an optional argument root as the start of the search for the
-        given parts"""
+        given parts. Also takes optional lod name to refine search for the
+        named parts. If root and lod are defined, we search for the given
+        root under the given lod."""
 
-        # start search from self if no root given
-        if (root==None):
-            root = self
-            
+        # check to see if we are working within an lod
+        if (lodName != None):
+            # find the named lod node
+            lodRoot = self.find("**/" + str(lodName))
+            if (root == None):
+                # no need to look further
+                root = lodRoot
+            else:
+                # look for root under lod
+                root = lodRoot.find("**/" + root)
+        else:
+            # start search from self if no root and no lod given
+            if (root == None):
+                root = self
+
         # make the back part have the proper transition
-        backPart = NodePath(root, "**/"+backPartName)
+        backPart = NodePath(root, "**/" + backPartName)
         if (backPart.isEmpty()):
             Actor.notify.warning("no part named %s!" % (backPartName))
         else:
             (backPart.getBottomArc()).setTransition(DirectRenderTransition())
 
-        #reparent the front parts to the back parts
-        frontParts = self.findAllMatches( "**/"+frontPartName)
+        #reparent the front parts to the back part
+        frontParts = root.findAllMatches( "**/" + frontPartName)
         numFrontParts = frontParts.getNumPaths()
         for partNum in range(0, numFrontParts):
             (frontParts.getPath(partNum)).reparentTo(backPart)
@@ -406,140 +626,198 @@ class Actor(PandaObject, NodePath):
     def stop(self, animName=None, partName=None):
         """stop(self, string=None, string=None)
         Stop named animation on the given part of the actor.
-        If no name specified then stop all animations on the actor"""
-        if (animName == None):
-            #loop and stop ALL anims
-            for animControl in self.__animControlDict[partName].keys():
-                self.__animControlDict[partName][animControl].stop()
-        else:
-            #stop the specified anim
-            animControl = self.__getAnimControl(animName, partName)
-            if (animControl != None):
-                animControl.stop()
+        If no name specified then stop all animations on the actor.
+        NOTE: stops all LODs"""
+        for lodName in self.__animControlDict.keys():
+            animControlDict = self.__animControlDict[lodName]
+            if (animName == None):
+                # loop and stop all anims
+                if (partName == None):
+                    # loop over all parts
+                    for thisPart in animControlDict.keys():
+                        for thisAnim in animControlDict[thisPart].keys():
+                            animControlDict[thisPart][thisAnim].stop()
+                else:
+                    # stop just this part
+                    for thisAnim in animControlDict[partName].keys():
+                        animControlDict[partName][thisAnim].stop()
+            else:
+                # stop the specified anim
+                if (partName == None):
+                    # loop over all parts
+                    for thisPart in animControlDict.keys():
+                        animControlDict[thisPart][animName].stop()
+                else:
+                    animControlDict[partName][animName].stop()
+                    
         
     def play(self, animName, partName=None):
         """play(self, string, string=None)
         Play the given animation on the given part of the actor.
-        If no part is specified, try to play on all parts"""
-        if (partName == None):
-            # loop all parts
-            for partName in self.__animControlDict.keys():            
-                animControl = self.__getAnimControl(animName, partName)
+        If no part is specified, try to play on all parts. NOTE:
+        plays over ALL LODs"""
+        for lodName in self.__animControlDict.keys():
+            animControlDict = self.__animControlDict[lodName]
+            if (partName == None):
+                # loop all parts
+                for thisPart in animControlDict.keys():            
+                    animControl = self.__getAnimControl(animName, thisPart,
+                                                        lodName)
+                    if (animControl != None):
+                        animControl.play()
+
+            else:
+                animControl = self.__getAnimControl(animName, partName,
+                                                    lodName)
                 if (animControl != None):
                     animControl.play()
-        else:
-            animControl = self.__getAnimControl(animName, partName)
-            if (animControl != None):
-                animControl.play()
 
 
     def loop(self, animName, restart=1, partName=None):
         """loop(self, string, int=1, string=None)
         Loop the given animation on the given part of the actor,
         restarting at zero frame if requested. If no part name
-        is given then try to loop on all parts"""
-        if (partName == None):
-            # loop all parts
-            for partName in self.__animControlDict.keys():
-                animControl = self.__getAnimControl(animName, partName)
+        is given then try to loop on all parts. NOTE: loops on
+        all LOD's"""
+        for lodName in self.__animControlDict.keys():
+            animControlDict = self.__animControlDict[lodName]
+            if (partName == None):
+                # loop all parts
+                for thisPart in animControlDict.keys():
+                    animControl = self.__getAnimControl(animName, thisPart,
+                                                        lodName)
+                    if (animControl != None):
+                        animControl.loop(restart)
+            else:
+                # loop a specific part
+                animControl = self.__getAnimControl(animName, partName,
+                                                    lodName)
                 if (animControl != None):
                     animControl.loop(restart)
-        else:
-            # loop a specific part
-            animControl = self.__getAnimControl(animName, partName)
-            if (animControl != None):
-                animControl.loop(restart)
         
     def pose(self, animName, frame, partName=None):
         """pose(self, string, int, string=None)
         Pose the actor in position found at given frame in the specified
         animation for the specified part. If no part is specified attempt
-        to apply pose to all parts"""
-        if (partName==None):
-            # pose all parts
-            for partName in self.__animControlDict.keys():
-                animControl = self.__getAnimControl(animName, partName)
+        to apply pose to all parts. NOTE: poses all LODs"""
+        for lodName in self.__animControlDict.keys():
+            animControlDict = self.__animControlDict[lodName]
+            if (partName==None):
+                # pose all parts
+                for thisPart in animControlDict.keys():
+                    animControl = self.__getAnimControl(animName, thisPart,
+                                                        lodName)
+                    if (animControl != None):
+                        animControl.pose(frame)
+            else:
+                # pose a specific part
+                animControl = self.__getAnimControl(animName, partName,
+                                                    lodName)
                 if (animControl != None):
                     animControl.pose(frame)
-        else:
-            # pose a specific part
-            animControl = self.__getAnimControl(animName, partName)
-            if (animControl != None):
-                animControl.pose(frame)
         
-
     #private
     
-    def __getAnimControl(self, animName, partName):
-        """__getAnimControl(self, string, string)
-        Search the animControl dictionary for given anim and part.
-        Return the animControl if present, or None otherwise"""
-        if (self.__animControlDict.has_key(partName)):
-            if (self.__animControlDict[partName].has_key(animName)):
-                return self.__animControlDict[partName][animName]
+    def __getAnimControl(self, animName, partName, lodName="lodRoot"):
+        """__getAnimControl(self, string, string, string="lodRoot")
+        Search the animControl dictionary indicated by lodName for
+        a given anim and part. Return the animControl if present,
+        or None otherwise
+        """
+        if (self.__animControlDict.has_key(lodName)):
+            animControlDict = self.__animControlDict[lodName]
+            if (animControlDict.has_key(partName)):
+                if (animControlDict[partName].has_key(animName)):
+                    return animControlDict[partName][animName]
+                else:
+                    # anim was not present
+                    Actor.notify.warning("couldn't find anim: %s" % (animName))
             else:
-                # anim was not present
-                Actor.notify.warning("couldn't find anim: %s" % (animName))
+                # part was not present
+                Actor.notify.warning("couldn't find part: %s" % (partName))
         else:
-            # part was not present
-            Actor.notify.warning("couldn't find part: %s" % (partName))
-                
+            # lod was not present
+            Actor.notify.warning("couldn't find lod: %s" % (lodName))
+            
         return None
 
             
-    def loadModel(self, modelPath, partName="modelRoot"):
-        """loadModel(self, string, string="modelRoot")
-        Actor model loader. Takes a model name (ie file path) and
-        a partName (defaults to "modelRoot")"""
-        
-        Actor.notify.info("in loadModel: %s , part: %s" % \
-            (modelPath, partName))
+    def loadModel(self, modelPath, partName="modelRoot", lodName="lodRoot"):
+        """loadModel(self, string, string="modelRoot", string="base")
+        Actor model loader. Takes a model name (ie file path), a part
+        name(defaults to "modelRoot") and an lod name(defaults to "lodRoot").
+        """
+        Actor.notify.warning("in loadModel: %s , part: %s, lod: %s" % \
+            (modelPath, partName, lodName))
 
         # load the model and extract its part bundle
         model = loader.loadModelCopy(modelPath)
-
-
         bundle = NodePath(model, "**/+PartBundleNode")
         if (bundle.isEmpty()):
             Actor.notify.warning("%s is not a character!" % (modelPath))
         else:
             # we rename this node to make Actor copying easier
             bundle.node().setName(Actor.partPrefix + partName)
-            bundle.reparentTo(self.__geomNode)
+
+            if (self.__partBundleDict.has_key(lodName) == 0):
+                # make a dictionary to store these parts in
+                needsDict = 1
+                bundleDict = {}
+            else:
+                needsDict = 0
+                
+            if (lodName!="lodRoot"):
+                # reparent to appropriate node under LOD switch
+                bundle.reparentTo(self.__LODNode.find("**/" + str(lodName)))
+            else:
+                bundle.reparentTo(self.__geomNode)
+
+            if (needsDict):
+                bundleDict[partName] = bundle
+                self.__partBundleDict[lodName] = bundleDict
+            else:
+                self.__partBundleDict[lodName][partName] = bundle
+
             model.removeNode()        
 
-        #make this mimic mutli-part by giving it a default part anme
-        self.__partBundleDict[partName] = bundle
-        
 
-    def loadAnims(self, anims, partName="modelRoot"):
-        """loadAnims(self, string:string{}, string="modelRoot")
+    def loadAnims(self, anims, partName="modelRoot", lodName="lodRoot"):
+        """loadAnims(self, string:string{}, string='modelRoot',
+        string='lodRoot')
         Actor anim loader. Takes an optional partName (defaults to
-        'modelRoot' for non-multipart actors) and dict of corresponding
+        'modelRoot' for non-multipart actors) and lodName (defaults
+        to 'lodRoot' for non-LOD actors) and dict of corresponding
         anims in the form animName:animPath{}"""
         
-        Actor.notify.info("in loadAnims: %s, part: %s" % (anims, partName))
+        Actor.notify.warning("in loadAnims: %s, part: %s, lod: %s" %
+                          (anims, partName, lodName))
 
         animDict = {}
 
         for animName in anims.keys():
             
-            #load the anim and get its anim bundle
-            anim = loader.loadModelCopy(anims[animName])
+            # load the anim and get its anim bundle
+            anim = loader.loadModelOnce(anims[animName])
             animBundle = \
                 (NodePath(anim, "**/+AnimBundleNode").node()).getBundle()
 
-            #bind anim
-            bundleNode = (self.__partBundleDict[partName]).node()
+            # bind anim
+            bundleNode = (
+                self.__partBundleDict[lodName][partName]).node()
+                
             animControl = (bundleNode.getBundle()).bindAnim(animBundle, -1)
             if (animControl == None):
                 Actor.notify.error("Null AnimControl: %s" % (animName))
             else:
                 animDict[animName] = animControl
             
-        # add this part's dictionary to animation dictionary
-        self.__animControlDict[partName] = animDict
-    
+            # add this part's dictionary to animation dictionary
+            if not (self.__animControlDict.has_key(lodName)):
+                lodDict = {}
+                self.__animControlDict[lodName] = lodDict
+                
+            self.__animControlDict[lodName][partName] = animDict
+                
 
     def __copyPartBundles(self, other):
         """__copyPartBundles(self, Actor)
