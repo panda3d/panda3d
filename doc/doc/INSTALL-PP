@@ -1,4 +1,11 @@
-Panda3D Install
+
+///////////////////////////////////////////////////////////////////////
+// Caution: there are two separate, independent build systems:
+// 'makepanda', and 'ppremake'.  Use one or the other, do not attempt
+// to use both.  This file is part of the 'ppremake' system.
+///////////////////////////////////////////////////////////////////////
+
+Panda3D Install --- using the 'ppremake' system.
 
 This document describes how to compile and install Panda 3D on a
 system for the first time.  Panda is a complex project and is not

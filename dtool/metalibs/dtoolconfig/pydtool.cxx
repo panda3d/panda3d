@@ -5,17 +5,15 @@
  */
 
 
-#include "../../src/interrogatedb/interrogate_interface.h"
-#include "dtoolbase.h"
-
-#undef HAVE_LONG_LONG
-
 #if PYTHON_FRAMEWORK
   #include "Python/Python.h"
 #else
   #include "Python.h"
 #endif
+#undef HAVE_LONG_LONG
 
+#include "../../src/interrogatedb/interrogate_interface.h"
+#include "dtoolbase.h"
 
 static PyObject *_inPfd5RtbRf(PyObject *self, PyObject *args);
 static PyObject *_inPfd5R4RgX(PyObject *self, PyObject *args);

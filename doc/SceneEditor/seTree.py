@@ -19,9 +19,7 @@ from direct.showbase.TkGlobal import *
 from direct.showbase.PandaObject import *
 
 # Initialize icon directory
-f = Filename('icons')
-f.resolveFilename(getModelPath())
-ICONDIR = f.toOsSpecific()
+ICONDIR = getModelPath().findFile(Filename('icons')).toOsSpecific()
 if not os.path.isdir(ICONDIR):
     raise RuntimeError, "can't find DIRECT icon directory (%s)" % `ICONDIR`
 

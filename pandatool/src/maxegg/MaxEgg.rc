@@ -1,0 +1,180 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_PANEL DIALOGEX 0, 0, 374, 169
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | 
+    WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    CTEXT           "MaxToEgg Exporter",IDC_STATIC,7,7,360,10
+    CTEXT           "By Corey Revilla, Ken Strickland, and Steve Osman.",
+                    IDC_STATIC,7,21,360,19
+    CONTROL         "Also create .BAM file",IDC_MAKE_BAM,"Button",
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,35,138,81,10
+    PUSHBUTTON      "Done",IDC_DONE,303,139,50,14
+    GROUPBOX        "",IDC_STATIC,21,38,333,93
+    CONTROL         "Animation",IDC_ANIMATION,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,27,38,49,10
+    CONTROL         "model only",IDC_MODEL,"Button",BS_AUTORADIOBUTTON | 
+                    WS_DISABLED | WS_GROUP | WS_TABSTOP,35,51,60,12
+    CONTROL         "animation channel only",IDC_CHAN,"Button",
+                    BS_AUTORADIOBUTTON | WS_DISABLED | WS_TABSTOP,35,65,92,
+                    12
+    CONTROL         "pose",IDC_POSE,"Button",BS_AUTORADIOBUTTON | 
+                    WS_DISABLED | WS_TABSTOP,35,80,60,12
+    CONTROL         "strobe",IDC_STROBE,"Button",BS_AUTORADIOBUTTON | 
+                    WS_DISABLED | WS_TABSTOP,35,95,60,12
+    CONTROL         "model and animation channel",IDC_BOTH,"Button",
+                    BS_AUTORADIOBUTTON | WS_DISABLED | WS_TABSTOP,35,110,110,
+                    12
+    EDITTEXT        IDC_CN,254,54,71,12,ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_SF,303,70,22,12,ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_IF,303,103,22,12,ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_EF,303,87,22,12,ES_AUTOHSCROLL | WS_DISABLED
+    LTEXT           "Character Name",IDC_CN_LABEL,187,56,54,10,WS_DISABLED
+    LTEXT           "Start Frame",IDC_SF_LABEL,187,72,48,10,WS_DISABLED
+    LTEXT           "End Frame",IDC_EF_LABEL,187,88,45,10,WS_DISABLED
+    LTEXT           "Frame Increment",IDC_IF_LABEL,187,105,64,10,WS_DISABLED
+    PUSHBUTTON      "Cancel",IDC_CANCEL,250,139,50,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_PANEL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 367
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 162
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 3,0,0,0
+ PRODUCTVERSION 3,0,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "FileVersion", "4.0.0.0"
+            VALUE "InternalName", "MaxEgg"
+//            VALUE "OriginalFilename", "MaxEgg.dle"
+            VALUE "ProductName", "3ds max"
+            VALUE "ProductVersion", "4.0.0.0"
+            VALUE "FileDescription", "Panda3D .egg exporter"
+            VALUE "Comments", "TECH: "
+            VALUE "LegalTrademarks", "3D Studio MAX, Biped, Character Studio, Heidi, Kinetix and Physique are registered trademarks and 3ds max, combustion, Discreet, DWG Unplugged, DXF, FLI and FLC are trademarks of Autodesk, Inc."
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_LIBDESCRIPTION      "Panda3D .egg exporter"
+    IDS_CATEGORY            "egg"
+    IDS_CLASS_NAME          "MaxEgg"
+    IDS_PARAMS              "Parameters"
+    IDS_SPIN                "Spin"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

@@ -1,8 +1,12 @@
+///////////////////////////////////////////////////////////////////////
+// Caution: there are two separate, independent build systems:
+// 'makepanda', and 'ppremake'.  Use one or the other, do not attempt
+// to use both.  This file is part of the 'ppremake' system.
+///////////////////////////////////////////////////////////////////////
+
 // This is a sample Config.pp that you may wish to use for your own
 // needs.  For a longer list of configuration variables that you may
 // set in your own Config.pp file, see dtool/Config.pp.
-
-
 
 // What level of compiler optimization/debug symbols should we build?
 // The various optimize levels are defined as follows:

@@ -1,5 +1,5 @@
-// Filename: dcPython.h
-// Created by:  drose (22Jun04)
+// Filename: zlib.h
+// Created by:  drose (14Sep00)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,23 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef DCPYTHON_H
-#define DCPYTHON_H
+// This file, and all the other files in this directory, aren't
+// intended to be compiled--they're just parsed by CPPParser (and
+// interrogate) in lieu of the actual system headers, to generate the
+// interrogate database.
 
-// The only purpose of this file is to serve as a common place to put
-// the nonsense associated with #including <Python.h>.
-
-#ifdef HAVE_PYTHON
-
-#undef HAVE_LONG_LONG  // NSPR and Python both define this.
-#undef _POSIX_C_SOURCE
-#include <Python.h>
-
-// Several interfaces in this module that use Python also require
-// these header files, so we might as well pick them up too.
-#include "datagram.h"
-#include "datagramIterator.h"
-
-#endif  // HAVE_PYTHON
+#ifndef IPARAMB2_H
+#define IPARAMB2_H
 
 #endif
+

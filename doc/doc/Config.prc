@@ -40,16 +40,13 @@ framebuffer-mode rgba double-buffer depth multisample hardware software
 
 
 # These specify where model files may be loaded from.  You probably
-# want to set this to a sensible path for yourself.  Note the use of
-# the Panda convention of forward slashes (instead of backslash)
-# separating directory names.  (You may also use Windows-native paths
-# here if you prefer.)
+# want to set this to a sensible path for yourself.  $THIS_PRC_DIR is
+# a special variable that indicates the same directory as this
+# particular Config.prc file.
 model-path  .
-model-path  $PRC_DIR
-model-path  $PRC_DIR/..
+model-path  $THIS_PRC_DIR
 sound-path  .
-sound-path  $PRC_DIR
-sound-path  $PRC_DIR/..
+sound-path  $THIS_PRC_DIR
 
 # This makes the egg loader available to load egg files.
 load-file-type pandaegg
@@ -60,8 +57,9 @@ load-file-type pandaegg
 # Lightwave) directly into Panda.
 # load-file-type ptloader
 
-# Turn off audio:
-audio-library-name null
+# Enable audio using the FMod audio library by default:
+audio-library-name fmod_audio
+#audio-library-name miles_audio
 
 # This enable the automatic creation of a TK window when running
 # Direct.

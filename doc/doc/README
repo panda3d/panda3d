@@ -1,0 +1,32 @@
+Panda3D is an open source 3D Engine originally developed, and still
+actively maintained, by the Walt Disney VR Studio.  Additional
+development and support for the open source community is provided by
+the Entertainment Technology Center of Carnegie-Mellon University.
+
+At the present, we are providing two completely unrelated systems for
+building Panda.  The original build system, ppremake, is still in
+active use by the VR Studio, but will probably eventually be phased
+out in favor of the new build system, makepanda.
+
+The ppremake system is a makefile generator, and allows you to
+configure your build environment to a high degree of customization.
+It is a fairly complex build system, and it requires some comfort with
+using the command-line make utilities.
+
+The makepanda system is a Python script that directly invokes the
+compiler to build the Panda sources.  Its emphasis is on providing a
+hands-off, simple approach to building Panda.
+
+Both systems may require you to first install a number of third-party
+tools if you would like to make them available for Panda, such as
+FreeType or OpenSSL.  You may also download a zip file that contains
+precompiled versions of these third-party libraries from the Panda
+website, which is especially useful when used in conjunction with the
+makepanda system.
+
+If you are interested in compiling Panda for yourself, you are welcome
+to use either build system.  Please refer to the documents INSTALL-PP
+or INSTALL-MK, in this directory, for build instructions for ppremake
+and makepanda, respectively.  You may also be interested in
+downloading the prebuilt Panda3D binaries from the Panda website at
+http://panda3d.etc.cmu.edu/ .

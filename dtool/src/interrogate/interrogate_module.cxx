@@ -82,6 +82,7 @@ int
 write_python_table(ostream &out) {
   out << "\n#include \"dtoolbase.h\"\n"
       << "#include \"interrogate_request.h\"\n\n"
+      << "#undef _POSIX_C_SOURCE\n"
       << "#include \"Python.h\"\n\n";
 
   int count = 0;

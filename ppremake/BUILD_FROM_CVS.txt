@@ -1,3 +1,9 @@
+///////////////////////////////////////////////////////////////////////
+// Caution: there are two separate, independent build systems:
+// 'makepanda', and 'ppremake'.  Use one or the other, do not attempt
+// to use both.  This file is part of the 'ppremake' system.
+///////////////////////////////////////////////////////////////////////
+
 To build ppremake on Unix (or Windows Cygwin) using autoconf, follow
 the following steps. 
 

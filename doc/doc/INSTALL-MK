@@ -1,0 +1,180 @@
+
+///////////////////////////////////////////////////////////////////////
+// Caution: there are two separate, independent build systems:
+// 'makepanda', and 'ppremake'.  Use one or the other, do not attempt
+// to use both.  This file is part of the 'makepanda' system.
+///////////////////////////////////////////////////////////////////////
+
+Panda3D Install --- using the 'makepanda' system.
+
+INVOKING MAKEPANDA
+
+Makepanda is a script that builds panda, all the way through. To
+invoke it under windows, type this:
+
+	makepanda
+
+To invoke it under Linux, you need to type the 'py' extension
+explicitly:
+
+	makepanda.py
+
+From this point forward, I will not be including the 'py' extension
+in my examples, I will simply assume that you know to add it if your
+OS requires it.
+
+
+BUILDING PANDA: QUICK START
+
+The easy way to build panda is to type:
+
+	makepanda --default
+
+This will compile panda with all the default options.  The default is
+to compile every feature, every subsystem, and every tool that can
+possibly be built.  It can take several hours, depending on the speed
+of your machine.
+
+The resulting copy of panda will be found in a subdirectory 'built'
+inside the source tree.  You can invoke panda programs directly out of
+the built subdirectory.
+
+You can also move the built subdirectory elsewhere on your machine.
+If you choose to do so, you must first copy the subdirectories
+'models', 'samples', and 'SceneEditor' into the built subdirectory,
+and 'direct/src' into 'built/direct/src'.
+
+
+BUILDING PANDA: COMMAND-LINE OPTIONS
+
+The default invocation of makepanda is a good way to test panda on
+your machine.  However, it compiles several features that you probably
+don't need.  To disable the extra features, you need to specify
+command-line options to makepanda.  If you invoke:
+
+	makepanda --help
+
+it will show you the available command-line options:
+
+  --compiler X      (currently, compiler can only be MSVC7,LINUXA)
+  --optimize X      (optimization level can be 1,2,3,4)
+  --thirdparty X    (directory containing third-party software)
+  --complete        (copy models, samples, direct into the build)
+  --no-installer    (don't bother building the executable installer)
+  --v1 X            (set the major version number)
+  --v2 X            (set the minor version number)
+  --v3 X            (set the sequence version number)
+  --lzma            (use lzma compression when building installer)
+
+  --no-zlib         (disable the use of ZLIB)
+  --no-png          (disable the use of PNG)
+  --no-jpeg         (disable the use of JPEG)
+  --no-tiff         (disable the use of TIFF)
+  --no-vrpn         (disable the use of VRPN)
+  --no-fmod         (disable the use of FMOD)
+  --no-nvidiacg     (disable the use of NVIDIACG)
+  --no-helix        (disable the use of HELIX)
+  --no-nspr         (disable the use of NSPR)
+  --no-openssl      (disable the use of OPENSSL)
+  --no-freetype     (disable the use of FREETYPE)
+  --no-fftw         (disable the use of FFTW)
+  --no-miles        (disable the use of MILES)
+  --no-maya5        (disable the use of MAYA5)
+  --no-maya6        (disable the use of MAYA6)
+  --no-max5         (disable the use of MAX5)
+  --no-max6         (disable the use of MAX6)
+  --no-max7         (disable the use of MAX7)
+
+  --no-nothing      (don't use any of the third-party packages)
+  --default         (use default options for everything not specified)
+
+Makepanda shows you all the available options, not all of which may be
+relevant to your operating system.  For example, makepanda can build a
+plugin for 3D Studio Max 5.  However, there is no 3D Studio Max for
+linux, so the option --no-max5 is largely irrelevant under Linux.
+
+Note that 'makepanda' is a new tool.  The panda3d team has not had
+time to test all the options.  It is very likely that several do not
+work.  However, we have thoroughly tested the --default configuration,
+which works flawlessly on the machines we own.
+
+The options you are most likely to be interested in are:
+
+--no-installer: Under Windows, makepanda builds an installer --- a
+neatly packaged EXE file containing a panda distribution.  This takes
+time and disk space, and you probably don't need to build your own
+installer.  This option is only relevant under Windows.
+
+--no-helix: Helix is realmedia's library of subroutines for playing
+realvideo files, realaudio files, and streaming video and audio.  It's
+a large library, and unless you're planning on using this feature, you
+might be able to shave several megabytes off your panda tree.  This
+option is only relevant under Windows.
+
+--no-openssl: Panda3D can download resources from encrypted websites.
+Again, this is a large library, and unless you're planning on using
+this feature, you might be able to shave several megabytes off your
+panda tree.  This option is much less useful under Linux, where openssl
+is normally provided as a shared library, and therefore doesn't really
+cost any disk space.
+
+--thirdparty: Panda3D uses a number of third-party libraries: libpng,
+fftw, nspr, etc.  Panda3D obtains these libraries from the host
+operating system where possible, so if your OS comes with a copy of
+libpng, Panda3D uses that.  Those libraries which are not provided by
+the host operating system are included in the source tar-ball under a
+subdirectory 'thirdparty'.  If you are not satisfied with the versions
+of the libraries we have provided, you may supply your own versions.
+To do so, duplicate the 'thirdparty' tree, substitute your own
+libraries, and then use the --thirdparty option to point makepanda to
+your libraries.
+
+
+THE EDIT-COMPILE-DEBUG CYCLE
+
+A small caution: if you invoke 'makepanda' with one set of options,
+and then invoke 'makepanda' using the *exact same* set of options, the
+second time will be fast.  It will see that everything has already
+been built, and it will do no actual compilation.  As a result,
+makepanda can be used as part of an edit-compile-debug cycle.
+
+However, if you invoke makepanda with a *different* set of options,
+makepanda may need to recompile and relink a lot of files.  This is
+because several of those options change the values of '#define'
+headers, so changing the options requires a recompilation.
+
+It is all too easy to accidentally invoke 'makepanda' with the wrong
+options, thereby triggering an hour-long recompilation.  To avoid this
+situation, we recommend that you write a short script containing the
+options you intend to use regularly.  For example, I regularly compile
+panda without helix and without the installer.  I have a very short
+Windows BAT file called "mkp.bat" that looks like this:
+
+	@echo off
+	makepanda --no-installer --no-helix
+
+This helps me avoid accidentally typing makepanda with the wrong
+options.
+
+We have included a Visual Studio project file that simply invokes
+'makepanda' whenever you click 'compile', and it runs ppython when you
+click 'run'.  This is a handy way to edit, compile, and debug the
+panda3d sources.
+
+
+BUILDING THE SOURCE TAR-BALL AND THE RPM
+
+If you want to build an RPM, it is fairly easy to do so.  First, you
+need a panda source tar-ball.  If you do not already have one, build
+one using 'maketarball.py'.  You will need to specify a version
+number.
+
+	maketarball.py --v1 58 --v2 23 --v3 95
+
+This builds panda3d-58.23.95.tar.gz.  Once you have the tar-ball,
+it is easy to turn it into a binary RPM:
+
+	rpmbuild -tb panda3d-58.23.95.tar.gz
+
+Before you use rpmbuild, you need to set up an RPM workspace.  Doing
+so is beyond the scope of this document.
