@@ -29,8 +29,8 @@
  *
  * Auxiliary Support Routines.
  */
-#include "tiffiop.h"
 #include "cmath.h"
+#include "tiffiop.h"
 
 #ifdef COLORIMETRY_SUPPORT
 #include <math.h>

@@ -149,7 +149,9 @@ typedef double dblparam_t;
 #define INLINE  inline
 #endif
 #else /* !__GNUC__ */
-#define INLINE
+#ifndef INLINE
+#define INLINE 
+#endif
 #endif
 
 /*
