@@ -47,6 +47,7 @@
 #include "eggSwitchCondition.h"
 #include "eggTable.h"
 #include "eggTexture.h"
+#include "eggTriangleFan.h"
 #include "eggTriangleStrip.h"
 #include "eggUserData.h"
 #include "eggVertex.h"
@@ -75,27 +76,79 @@ ConfigVariableBool egg_support_old_anims
           "had the convention that the order \"phr\" implied a reversed roll."));
 
 ConfigVariableBool egg_mesh
-("egg-mesh", true);
+("egg-mesh", true,
+ PRC_DESC("Set this true to convert triangles and higher-order polygons "
+          "into triangle strips and triangle fans when an egg file is "
+          "loaded or converted to bam.  Set this false just to triangulate "
+          "everything into independent triangles."));
+
 ConfigVariableBool egg_retesselate_coplanar
-("egg-retesselate-coplanar", true);
+("egg-retesselate-coplanar", true,
+ PRC_DESC("If this is true, the egg loader may reverse the "
+          "tesselation direction of a single pair of planar triangles that "
+          "share the same properties, if that will help get a better "
+          "triangle strip.  In some rare cases, doing so can distort the "
+          "UV's on a face; turning this off should eliminate that artifact "
+          "(at the cost of less-effective triangle stripping)."));
+
 ConfigVariableBool egg_unroll_fans
-("egg-unroll-fans", true);
+("egg-unroll-fans", true,
+ PRC_DESC("Set this true to allow the egg loader to convert weak triangle "
+          "fans--triangles that share the same vertex but aren't "
+          "connected enough to justify making a triangle fan primitive "
+          "from them--into a series of zig-zag triangles that can make "
+          "a triangle strip that might connect better with its neighbors."));
+
 ConfigVariableBool egg_show_tstrips
-("egg-show-tstrips", false);
+("egg-show-tstrips", false,
+ PRC_DESC("Set this true to color each triangle strip a random color, with "
+          "the leading triangle a little bit darker, so you can visually "
+          "observe the quality of the triangle stripping algorithm."));
+
 ConfigVariableBool egg_show_qsheets
-("egg-show-qsheets", false);
+("egg-show-qsheets", false,
+ PRC_DESC("Set this true to color each quadsheet a random color, so you "
+          "can visually observe the quadsheet algorithm."));
+
 ConfigVariableBool egg_show_quads
-("egg-show-quads", false);
+("egg-show-quads", false,
+ PRC_DESC("Set this true to color each detected quad a random color, so "
+          "you can visually observe the algorithm that unifies pairs of "
+          "triangles into quads (prior to generating triangle strips)."));
+
 ConfigVariableBool egg_subdivide_polys
-("egg-subdivide-polys", true);
+("egg-subdivide-polys", true,
+ PRC_DESC("This is obsolete.  In the old Geom implementation, it used to "
+          "be true to force higher-order polygons that were not otherwise "
+          "meshed to be subdivided into triangles.  In the new experimental "
+          "Geom implementation, this happens anyway."));
+
 ConfigVariableBool egg_consider_fans
-("egg-consider-fans", true);
+("egg-consider-fans", true,
+ PRC_DESC("Set this true to enable the egg mesher to consider making "
+          "triangle fans out of triangles that are connected at a common "
+          "vertex.  This may help if your scene involves lots of such "
+          "connected triangles, but it can also make the overall stripping "
+          "less effective (by interfering with triangle strips)."));
+ 
 ConfigVariableDouble egg_max_tfan_angle
-("egg-max-tfan-angle", 40.0);
+("egg-max-tfan-angle", 40.0,
+ PRC_DESC("The maximum average angle per triangle to allow in a triangle "
+          "fan.  If triangles are larger than this--that is, more loosely "
+          "packed--then we figure a triangle strip is likely to do a "
+          "more effective job than a triangle fan, and the fan maker leaves "
+          "it alone."));
+
 ConfigVariableInt egg_min_tfan_tris
-("egg-min-tfan-tris", 4);
+("egg-min-tfan-tris", 4,
+ PRC_DESC("The minimum number of triangles that must be involved in order "
+          "to generate a triangle fan.  Fewer than this is just interrupting "
+          "a triangle strip."));
+
 ConfigVariableDouble egg_coplanar_threshold
-("egg-coplanar-threshold", 0.01);
+("egg-coplanar-threshold", 0.01,
+ PRC_DESC("The numerical threshold below which polygons are considered "
+          "to be coplanar.  Determined empirically."));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libegg
@@ -145,6 +198,7 @@ init_libegg() {
   EggSwitchConditionDistance::init_type();
   EggTable::init_type();
   EggTexture::init_type();
+  EggTriangleFan::init_type();
   EggTriangleStrip::init_type();
   EggUserData::init_type();
   EggVertex::init_type();

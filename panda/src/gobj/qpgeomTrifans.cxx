@@ -125,6 +125,8 @@ decompose_impl() const {
       triangles->add_vertex(v0);
       triangles->add_vertex(v1);
       triangles->add_vertex(vertices[vi]);
+      nassertr(vi < (int)vertices.size(), this);
+      v1 = vertices[vi];
       triangles->close_primitive();
       ++vi;
     }

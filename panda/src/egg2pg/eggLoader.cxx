@@ -40,6 +40,7 @@
 #include "qpgeom.h"
 #include "qpgeomTriangles.h"
 #include "qpgeomTristrips.h"
+#include "qpgeomTrifans.h"
 #include "qpgeomLines.h"
 #include "qpgeomLinestrips.h"
 #include "qpgeomPoints.h"
@@ -61,6 +62,7 @@
 #include "eggGroup.h"
 #include "eggPolygon.h"
 #include "eggTriangleStrip.h"
+#include "eggTriangleFan.h"
 #include "eggBin.h"
 #include "eggTable.h"
 #include "eggBinner.h"
@@ -1999,6 +2001,9 @@ make_primitive(const EggRenderState *render_state, EggPrimitive *egg_prim,
 
   } else if (egg_prim->is_of_type(EggTriangleStrip::get_class_type())) {
     primitive = new qpGeomTristrips(qpGeomUsageHint::UH_static);
+
+  } else if (egg_prim->is_of_type(EggTriangleFan::get_class_type())) {
+    primitive = new qpGeomTrifans(qpGeomUsageHint::UH_static);
 
   } else if (egg_prim->is_of_type(EggLine::get_class_type())) {
     if (egg_prim->size() == 2) {

@@ -19,6 +19,7 @@
 #include "eggMesherStrip.h"
 #include "eggMesherEdge.h"
 #include "eggPrimitive.h"
+#include "eggTriangleFan.h"
 #include "eggTriangleStrip.h"
 #include "eggPolygon.h"
 #include "dcast.h"
@@ -115,7 +116,11 @@ make_prim(const EggVertexPool *vertex_pool) {
   } else {
     // The harder case: a tristrip of some kind.
     convert_to_type(dest_type);
-    prim = new EggTriangleStrip;
+    if (dest_type == PT_trifan) {
+      prim = new EggTriangleFan;
+    } else {
+      prim = new EggTriangleStrip;
+    }
     prim->copy_attributes(*_prims.front());
 
     // Now store all the vertices.  Each individual triangle's

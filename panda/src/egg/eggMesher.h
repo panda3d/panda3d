@@ -22,7 +22,6 @@
 #include "pandabase.h"
 #include "eggMesherEdge.h"
 #include "eggMesherStrip.h"
-//#include "eggMesherFanMaker.h"
 #include "eggPolygon.h"
 #include "pvector.h"
 #include "plist.h"
@@ -30,8 +29,6 @@
 #include "pmap.h"
 
 #include <algorithm>
-
-class MesherFanMaker;
 
 ///////////////////////////////////////////////////////////////////
 //       Class : EggMesher

@@ -142,7 +142,7 @@ public:
   int _index;
   MesherStatus _status;
 
-  int _planar;
+  bool _planar;
   Normald _plane_normal;
   float _plane_offset;
   int _row_id, _row_distance;

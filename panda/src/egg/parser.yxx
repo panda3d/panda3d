@@ -16,6 +16,7 @@
 #include "eggVertexUV.h"
 #include "eggPolygon.h"
 #include "eggCompositePrimitive.h"
+#include "eggTriangleFan.h"
 #include "eggTriangleStrip.h"
 #include "eggPoint.h"
 #include "eggLine.h"
@@ -182,6 +183,7 @@ egg_cleanup_parser() {
 %type <_egg> joint
 %type <_egg> line
 %type <_egg> polygon
+%type <_egg> trianglefan
 %type <_egg> trianglestrip
 %type <_egg> point_light
 %type <_egg> nurbs_surface
@@ -252,6 +254,7 @@ node:
         | joint 
         | instance
         | polygon
+        | trianglefan
         | trianglestrip
         | point_light
         | line
@@ -1588,6 +1591,25 @@ polygon:
         POLYGON optional_name
 {
   egg_stack.push_back(new EggPolygon($2));
+}
+        '{' primitive_body '}'
+{
+  $$ = egg_stack.back();
+  egg_stack.pop_back();
+}
+        ;
+
+/*
+ * trianglefan
+ *
+ * enter:
+ * exit: returns a new EggTriangleFan.
+ *
+ */
+trianglefan:
+        TRIANGLEFAN optional_name
+{
+  egg_stack.push_back(new EggTriangleFan($2));
 }
         '{' primitive_body '}'
 {

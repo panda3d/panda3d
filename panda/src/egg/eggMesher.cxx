@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "eggMesher.h"
+#include "eggMesherFanMaker.h"
 #include "eggPolygon.h"
 #include "eggCompositePrimitive.h"
 #include "eggTriangleStrip.h"
@@ -80,7 +81,7 @@ mesh(EggGroupNode *group) {
           add_polygon(poly, EggMesherStrip::MO_user);
 
         } else {
-          // A different vertex pool; save this one for next pass.
+          // A different vertex pool; save this one for the next pass.
           next_children->add_child(poly);
         }
 
@@ -320,8 +321,8 @@ get_prim(EggMesherStrip &strip) {
 
     Colorf color1, color2;
 
-    if (egg_prim->is_of_type(EggTriangleStrip::get_class_type()) /*||
-                egg_prim->is_of_type(EggTriangleFan::get_class_type())*/) {
+    if (egg_prim->is_of_type(EggTriangleStrip::get_class_type()) ||
+        egg_prim->is_of_type(EggTriangleFan::get_class_type())) {
       make_random_color(color2);
       color1 = (color2 * 0.8);   // somewhat darker.
 
@@ -621,8 +622,7 @@ build_sheets() {
 ////////////////////////////////////////////////////////////////////
 void EggMesher::
 find_fans() {
-#if 0
-  pvector<Prim> unrolled_tris;
+  PT(EggGroupNode) unrolled_tris = new EggGroup;
 
   // Consider all vertices.  Any vertex with over a certain number of
   // edges connected to it is eligible to become a fan.
@@ -639,22 +639,21 @@ find_fans() {
     // the quadsheets anyway.  We bump this up to 14 because some
     // quadsheets are defined with triangles flipped here and there.
     if (edges.size() > 6) {
-      const Vertex &v = (*vi).first;
+      int v = (*vi).first;
 
       // Build up a list of far fan edges.
-      typedef pvector<FanMaker> FanMakers;
-
+      typedef pvector<EggMesherFanMaker> FanMakers;
       FanMakers fans;
 
       EdgePtrs::iterator ei;
-      Edge::Strips::iterator si;
+      EggMesherEdge::Strips::iterator si;
       for (ei = edges.begin(); ei != edges.end(); ++ei) {
         for (si = (*ei)->_strips.begin();
              si != (*ei)->_strips.end();
              ++si) {
           EggMesherStrip *strip = *si;
           if (strip->_type == EggMesherStrip::PT_tri) {
-            FanMaker fan(&v, strip, this);
+            EggMesherFanMaker fan(v, strip, this);
             if (!fan._edges.empty()) {
               fans.push_back(fan);
             }
@@ -670,7 +669,7 @@ find_fans() {
       FanMakers::iterator fi, fi2;
 
       // Now pull out connected edges.
-      int joined_any;
+      bool joined_any;
       do {
         joined_any = false;
         for (fi = fans.begin(); fi != fans.end(); ++fi) {
@@ -698,11 +697,10 @@ find_fans() {
   // until we're done traversing all the vertices and primitives we
   // had in the first place (since adding them will affect the edge
   // lists).
-  pvector<Prim>::iterator ti;
-  for (ti = unrolled_tris.begin(); ti != unrolled_tris.end(); ++ti) {
-    add_prim(*ti);
+  EggGroupNode::iterator ti;
+  for (ti = unrolled_tris->begin(); ti != unrolled_tris->end(); ++ti) {
+    add_polygon(DCAST(EggPolygon, (*ti)), EggMesherStrip::MO_fanpoly);
   }
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////

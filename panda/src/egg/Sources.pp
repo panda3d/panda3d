@@ -25,6 +25,7 @@
      eggMaterialCollection.h \
      eggMesher.h eggMesher.I \
      eggMesherEdge.h eggMesherEdge.I \
+     eggMesherFanMaker.h eggMesherFanMaker.I \
      eggMesherStrip.h eggMesherStrip.I \
      eggMiscFuncs.I eggMiscFuncs.h  \
      eggMorph.I eggMorph.h eggMorphList.I eggMorphList.h  \
@@ -38,6 +39,7 @@
      eggSAnimData.I eggSAnimData.h eggSurface.I eggSurface.h  \
      eggSwitchCondition.h eggTable.I eggTable.h eggTexture.I  \
      eggTexture.h eggTextureCollection.I eggTextureCollection.h  \
+     eggTriangleFan.I eggTriangleFan.h \
      eggTriangleStrip.I eggTriangleStrip.h \
      eggTransform3d.I eggTransform3d.h \
      eggUserData.I eggUserData.h \
@@ -61,6 +63,7 @@
      eggMaterialCollection.cxx \
      eggMesher.cxx \
      eggMesherEdge.cxx \
+     eggMesherFanMaker.cxx \
      eggMesherStrip.cxx \
      eggMiscFuncs.cxx eggMorphList.cxx  \
      eggNamedObject.cxx eggNameUniquifier.cxx eggNode.cxx  \
@@ -70,6 +73,7 @@
      eggSAnimData.cxx eggSurface.cxx eggSwitchCondition.cxx  \
      eggTable.cxx eggTexture.cxx eggTextureCollection.cxx  \
      eggTransform3d.cxx \
+     eggTriangleFan.cxx \
      eggTriangleStrip.cxx \
      eggUserData.cxx \
      eggUtilities.cxx eggVertex.cxx eggVertexPool.cxx eggVertexUV.cxx \
@@ -101,6 +105,7 @@
     eggSwitchCondition.h eggTable.I eggTable.h eggTexture.I \
     eggTexture.h eggTextureCollection.I eggTextureCollection.h \
     eggTransform3d.I eggTransform3d.h \
+    eggTriangleFan.I eggTriangleFan.h \
     eggTriangleStrip.I eggTriangleStrip.h \
     eggUserData.I eggUserData.h \
     eggUtilities.I eggUtilities.h eggVertex.I eggVertex.h \

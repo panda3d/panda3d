@@ -13,6 +13,7 @@
 #include "eggTexture.cxx"
 #include "eggTextureCollection.cxx"
 #include "eggTransform3d.cxx"
+#include "eggTriangleFan.cxx"
 #include "eggTriangleStrip.cxx"
 #include "eggUserData.cxx"
 #include "eggUtilities.cxx"

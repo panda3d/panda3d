@@ -157,15 +157,32 @@ unify_attributes(EggPrimitive::Shading shading) {
     shading = get_shading();
   }
 
-  // Not having a color is implicitly white.
-  if (!has_color() && shading != S_overall) {
-    set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
-  }
-
   switch (shading) {
   case S_per_vertex:
     // Propagate everything to the vertices.
     {
+      Components::iterator ci;
+      for (ci = _components.begin(); ci != _components.end(); ++ci) {
+        EggAttributes *component = (*ci);
+        if (component->has_normal()) {
+          if (!has_normal()) {
+            copy_normal(*component);
+          }
+          component->clear_normal();
+        }
+        if (component->has_color()) {
+          if (!has_color()) {
+            copy_color(*component);
+          }
+          component->clear_color();
+        }
+      }
+
+      // Not having a color is implicitly white.
+      if (!has_color()) {
+        set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+      }
+
       iterator pi;
       for (pi = begin(); pi != end(); ++pi) {
         EggVertex *orig_vertex = (*pi);
@@ -182,11 +199,6 @@ unify_attributes(EggPrimitive::Shading shading) {
         vertex = vertex_pool->create_unique_vertex(*vertex);
         replace(pi, vertex);
       }
-      Components::iterator ci;
-      for (ci = _components.begin(); ci != _components.end(); ++ci) {
-        (*ci)->clear_normal();
-        (*ci)->clear_color();
-      }
       clear_normal();
       clear_color();
     }
@@ -195,20 +207,17 @@ unify_attributes(EggPrimitive::Shading shading) {
   case S_per_face:
     // Propagate everything to the components.
     {
-      Components::iterator ci;
-      for (ci = _components.begin(); ci != _components.end(); ++ci) {
-        EggAttributes *component = (*ci);
-        if (!component->has_normal() && has_normal()) {
-          component->copy_normal(*this);
-        }
-        if (!component->has_color() && has_color()) {
-          component->copy_color(*this);
-        }
-      }
       iterator pi;
       for (pi = begin(); pi != end(); ++pi) {
         EggVertex *orig_vertex = (*pi);
         if (orig_vertex->has_normal() || orig_vertex->has_color()) {
+          if (orig_vertex->has_normal() && !has_normal()) {
+            copy_normal(*orig_vertex);
+          }
+          if (orig_vertex->has_color() && !has_color()) {
+            copy_color(*orig_vertex);
+          }
+
           PT(EggVertex) vertex = new EggVertex(*orig_vertex);
           vertex->clear_normal();
           vertex->clear_color();
@@ -217,6 +226,22 @@ unify_attributes(EggPrimitive::Shading shading) {
           nassertv(vertex_pool != (EggVertexPool *)NULL);
           vertex = vertex_pool->create_unique_vertex(*vertex);
           replace(pi, vertex);
+        }
+      }
+
+      // Not having a color is implicitly white.
+      if (!has_color()) {
+        set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+      }
+
+      Components::iterator ci;
+      for (ci = _components.begin(); ci != _components.end(); ++ci) {
+        EggAttributes *component = (*ci);
+        if (!component->has_normal() && has_normal()) {
+          component->copy_normal(*this);
+        }
+        if (!component->has_color() && has_color()) {
+          component->copy_color(*this);
         }
       }
       clear_normal();
@@ -259,15 +284,16 @@ unify_attributes(EggPrimitive::Shading shading) {
           component->clear_color();
         }
       }
+
+      // Not having a color is implicitly white.
+      if (!has_color()) {
+        set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+      }
     }
     break;
 
   case S_unknown:
     break;
-  }
-
-  if (!has_color() && shading == S_overall) {
-    set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
   }
 }
 

@@ -18,6 +18,7 @@
 #include "eggMaterialCollection.cxx"
 #include "eggMesher.cxx"
 #include "eggMesherEdge.cxx"
+#include "eggMesherFanMaker.cxx"
 #include "eggMesherStrip.cxx"
 #include "eggMiscFuncs.cxx"
 #include "eggMorphList.cxx"
