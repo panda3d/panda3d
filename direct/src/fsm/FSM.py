@@ -132,8 +132,9 @@ class FSM(DirectObject):
     def __exitCurrent(self, argList):
         """__exitCurrent(self)
         Exit the current state"""
-        FSM.notify.debug("[%s]: exiting %s" % (self.__name,
-                                               self.__currentState.getName()))
+        if FSM.notify.getDebug():
+            FSM.notify.debug("[%s]: exiting %s" % (self.__name,
+                                                   self.__currentState.getName()))
         self.__currentState.exit(argList)
         # Only send the state change event if we are inspecting it
         # If this event turns out to be generally useful, we can
@@ -147,8 +148,9 @@ class FSM(DirectObject):
         """__enter(self, State)
         Enter a given state, if it exists"""
         if (aState in self.__states):
-            FSM.notify.debug("[%s]: entering %s" % (self.__name,
-                                                    aState.getName()))
+            if FSM.notify.getDebug():
+                FSM.notify.debug("[%s]: entering %s" % (self.__name,
+                                                        aState.getName()))
             self.__currentState = aState
             # Only send the state change event if we are inspecting it
             # If this event turns out to be generally useful, we can
@@ -200,27 +202,31 @@ class FSM(DirectObject):
         elif (aStateName == self.__finalState.getName()):
             if (self.__currentState == self.__finalState):
                 # Do not do the transition if we are already in the final state
-                FSM.notify.debug("[%s]: already in final state: %s" %
-                                 (self.__name, aStateName))
+                if FSM.notify.getDebug():
+                    FSM.notify.debug("[%s]: already in final state: %s" %
+                                     (self.__name, aStateName))
                 return 1
             else:
                 # Force a transition to allow for cleanup
-                FSM.notify.debug("[%s]: implicit transition to final state: %s" %
-                                 (self.__name, aStateName))
+                if FSM.notify.getDebug():
+                    FSM.notify.debug("[%s]: implicit transition to final state: %s" %
+                                     (self.__name, aStateName))
                 self.__transition(aState,
                                   enterArgList,
                                   exitArgList)
                 return 1
         # are we already in this state?
         elif (aStateName == self.__currentState.getName()):
-            FSM.notify.debug("[%s]: already in state %s and no self transition" %
-                             (self.__name, aStateName))
+            if FSM.notify.getDebug():
+                FSM.notify.debug("[%s]: already in state %s and no self transition" %
+                                 (self.__name, aStateName))
             return 0
         else:
-            FSM.notify.warning("[%s]: no transition exists from %s to %s" %
-                               (self.__name,
-                                self.__currentState.getName(),
-                                aStateName))
+            if FSM.notify.getDebug():
+                FSM.notify.warning("[%s]: no transition exists from %s to %s" %
+                                   (self.__name,
+                                    self.__currentState.getName(),
+                                    aStateName))
             return 0
 
 

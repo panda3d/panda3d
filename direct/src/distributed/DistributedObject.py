@@ -6,18 +6,19 @@ from DirectNotifyGlobal import *
 class DistributedObject(PandaObject):
     """Distributed Object class:"""
     notify = directNotify.newCategory("DistributedObject")
+
+    # A few objects will set neverDisable to 1... Examples are
+    # localToon, and anything that lives in the UberZone. This
+    # keeps them from being disabled when you change zones,
+    # even to the quiet zone.
+    neverDisable = 0
+
     def __init__(self, cr):
         try:
             self.DistributedObject_initialized
         except:
             self.DistributedObject_initialized = 1
             self.cr = cr
-
-            # A few objects will set neverDisable to 1... Examples are
-            # localToon, and anything that lives in the UberZone. This
-            # keeps them from being disabled when you change zones,
-            # even to the quiet zone.
-            self.setNeverDisable(0)
 
             # Most DistributedObjects are simple and require no real
             # effort to load.  Some, particularly actors, may take

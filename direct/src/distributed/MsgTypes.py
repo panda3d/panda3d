@@ -11,9 +11,14 @@ CLIENT_CREATE_OBJECT_REQUIRED_OTHER =        35
 
 # These messages are ignored when the client is headed to the quiet zone
 QUIET_ZONE_IGNORED_LIST = [
+
     # We mustn't ignore updates, because some updates for localToon
     # are always important.
     #CLIENT_OBJECT_UPDATE_FIELD,
-    CLIENT_CREATE_OBJECT_REQUIRED,
-    CLIENT_CREATE_OBJECT_REQUIRED_OTHER,
+    
+    # These are now handled. If it is a create for a class that is in the
+    # uber zone, we should create it.
+    #CLIENT_CREATE_OBJECT_REQUIRED,
+    #CLIENT_CREATE_OBJECT_REQUIRED_OTHER,
+
     ]

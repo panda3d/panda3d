@@ -155,8 +155,6 @@ class ClientRepository(DirectObject.DirectObject):
         cdc = self.number2cdc[classId]
         # Create a new distributed object, and put it in the dictionary
         distObj = self.generateWithRequiredFields(cdc, doId, di)
-        # Call "generate" for the dist obj
-        #distObj.generate()
         return None
 
     def handleGenerateWithRequiredOther(self, di):
@@ -168,8 +166,36 @@ class ClientRepository(DirectObject.DirectObject):
         cdc = self.number2cdc[classId]
         # Create a new distributed object, and put it in the dictionary
         distObj = self.generateWithRequiredOtherFields(cdc, doId, di)
-        # Call "generate" for the distObj
-        #distObj.generate()
+        return None
+
+    def handleQuietZoneGenerateWithRequired(self, di):
+        # Special handler for quiet zone generates -- we need to filter
+        # Get the class Id
+        classId = di.getArg(STUint16);
+        # Get the DO Id
+        doId = di.getArg(STUint32)
+        # Look up the cdc
+        cdc = self.number2cdc[classId]
+        # If the class is a neverDisable class (which implies uberzone) we
+        # should go ahead and generate it even though we are in the quiet zone
+        if cdc.constructor.neverDisable:
+            # Create a new distributed object, and put it in the dictionary
+            distObj = self.generateWithRequiredFields(cdc, doId, di)
+        return None
+
+    def handleQuietZoneGenerateWithRequiredOther(self, di):
+        # Special handler for quiet zone generates -- we need to filter
+        # Get the class Id
+        classId = di.getArg(STUint16);
+        # Get the DO Id
+        doId = di.getArg(STUint32)
+        # Look up the cdc
+        cdc = self.number2cdc[classId]
+        # If the class is a neverDisable class (which implies uberzone) we
+        # should go ahead and generate it even though we are in the quiet zone
+        if cdc.constructor.neverDisable:
+            # Create a new distributed object, and put it in the dictionary
+            distObj = self.generateWithRequiredOtherFields(cdc, doId, di)
         return None
 
     def generateWithRequiredFields(self, cdc, doId, di):
