@@ -6,14 +6,18 @@
   #define LOCAL_LIBS \
     event linmath putil
 
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
+
   #define SOURCES \
-    config_lerp.cxx config_lerp.h lerp.cxx lerp.h lerpblend.cxx \
-    lerpblend.h lerpfunctor.cxx lerpfunctor.h
+    config_lerp.h lerp.h lerpblend.h 
+    
+  #define INCLUDED_SOURCES \
+    config_lerp.cxx lerp.cxx lerpblend.cxx lerpfunctor.cxx 
 
   #define INSTALL_HEADERS \
     lerp.h lerpblend.h lerpfunctor.h
     
-  #define PRECOMPILED_HEADER lerp_headers.h
+//  #define PRECOMPILED_HEADER lerp_headers.h
 
   #define IGATESCAN all
 

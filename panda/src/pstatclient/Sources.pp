@@ -6,21 +6,22 @@
     net linmath putil express
 
   #define TARGET pstatclient
+  
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx   
 
   #define SOURCES \
-    config_pstats.cxx config_pstats.h pStatClient.I pStatClient.cxx \
-    pStatClient.h \
-    pStatClientVersion.I pStatClientVersion.cxx pStatClientVersion.h \
-    pStatClientControlMessage.cxx \
-    pStatClientControlMessage.h \
-    pStatCollector.I pStatCollector.h \
-    pStatCollectorDef.cxx \
-    pStatCollectorDef.h pStatFrameData.I pStatFrameData.cxx \
-    pStatFrameData.h pStatProperties.cxx pStatProperties.h \
-    pStatServerControlMessage.cxx \
-    pStatServerControlMessage.h \
-    pStatThread.I pStatThread.h \
-    pStatTimer.I pStatTimer.h
+     config_pstats.h pStatClient.I pStatClient.h pStatClientVersion.I  \
+     pStatClientVersion.h pStatClientControlMessage.h  \
+     pStatCollector.I pStatCollector.h pStatCollectorDef.h  \
+     pStatFrameData.I pStatFrameData.h pStatProperties.h  \
+     pStatServerControlMessage.h pStatThread.I pStatThread.h  \
+     pStatTimer.I pStatTimer.h
+
+  #define INCLUDED_SOURCES  \
+     config_pstats.cxx pStatClient.cxx pStatClientVersion.cxx  \
+     pStatClientControlMessage.cxx pStatCollectorDef.cxx  \
+     pStatFrameData.cxx pStatProperties.cxx  \
+     pStatServerControlMessage.cxx 
 
   #define INSTALL_HEADERS \
     config_pstats.h pStatClient.I pStatClient.h \

@@ -8,14 +8,19 @@
   #define LOCAL_LIBS \
     parametrics cull collide egg builder loader chan char switchnode
 
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
+
   #define SOURCES \
-    animBundleMaker.cxx animBundleMaker.h characterMaker.cxx \
-    characterMaker.h computedVerticesMaker.I computedVerticesMaker.cxx \
-    computedVerticesMaker.h config_egg2sg.cxx config_egg2sg.h \
-    deferredArcProperty.cxx deferredArcProperty.h \
-    deferredArcTraverser.cxx deferredArcTraverser.h eggBinner.cxx \
-    eggBinner.h eggLoader.cxx eggLoader.h load_egg_file.cxx \
-    load_egg_file.h loaderFileTypeEgg.cxx loaderFileTypeEgg.h
+     animBundleMaker.h characterMaker.h computedVerticesMaker.I  \
+     computedVerticesMaker.h config_egg2sg.h  \
+     deferredArcProperty.h deferredArcTraverser.h eggBinner.h  \
+     eggLoader.h load_egg_file.h loaderFileTypeEgg.h 
+
+  #define INCLUDED_SOURCES \
+     animBundleMaker.cxx characterMaker.cxx computedVerticesMaker.cxx  \
+     config_egg2sg.cxx deferredArcProperty.cxx  \
+     deferredArcTraverser.cxx eggBinner.cxx eggLoader.cxx  \
+     load_egg_file.cxx loaderFileTypeEgg.cxx 
 
   #define INSTALL_HEADERS \
     load_egg_file.h config_egg2sg.h
