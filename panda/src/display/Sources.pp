@@ -10,7 +10,9 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
  
   #define SOURCES  \
-     config_display.h displayRegion.I displayRegion.h  \
+     config_display.h \
+     clearableRegion.I clearableRegion.h \
+     displayRegion.I displayRegion.h  \
      displayRegionStack.I \
      displayRegionStack.h \
      frameBufferStack.I frameBufferStack.h \
@@ -31,7 +33,9 @@
      savedFrameBuffer.I savedFrameBuffer.h
      
  #define INCLUDED_SOURCES  \
-     config_display.cxx displayRegion.cxx \
+     config_display.cxx \
+     clearableRegion.cxx \
+     displayRegion.cxx \
      geomContext.cxx geomNodeContext.cxx graphicsChannel.cxx  \
      graphicsEngine.cxx \
      graphicsLayer.cxx graphicsPipe.cxx graphicsStateGuardian.cxx  \
@@ -42,6 +46,7 @@
 
   #define INSTALL_HEADERS \
     config_display.h \
+    clearableRegion.I clearableRegion.h \
     displayRegion.I displayRegion.h displayRegionStack.I \
     displayRegionStack.h \
     frameBufferStack.I frameBufferStack.h \

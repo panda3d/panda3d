@@ -150,6 +150,10 @@ GraphicsWindow(GraphicsPipe *pipe) : Configurable() {
   _is_synced = false;
   _window_active = true;
   _display_regions_stale = false;
+
+  // By default, windows are set up to clear color and depth.
+  set_clear_color_active(true);
+  set_clear_depth_active(true);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -159,7 +163,7 @@ GraphicsWindow(GraphicsPipe *pipe) : Configurable() {
 ////////////////////////////////////////////////////////////////////
 GraphicsWindow::
 GraphicsWindow(GraphicsPipe *pipe,
-               const GraphicsWindow::Properties& props) : Configurable() {
+               const GraphicsWindow::Properties &props) : Configurable() {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
 #endif
@@ -168,8 +172,14 @@ GraphicsWindow(GraphicsPipe *pipe,
 
   _draw_callback = NULL;
   _idle_callback = NULL;
+  _frame_number = 0;
   _is_synced = false;
   _window_active = true;
+  _display_regions_stale = false;
+
+  // By default, windows are set up to clear color and depth.
+  set_clear_color_active(true);
+  set_clear_depth_active(true);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -408,7 +418,7 @@ resized(const unsigned int x, const unsigned int y) {
 //               DisplayRegion is not associated with any layer.
 //
 //               To allocate a normal DisplayRegion for rendering, use
-//               the interface provded in GraphicsLayer.
+//               the interface provided in GraphicsLayer.
 ////////////////////////////////////////////////////////////////////
 PT(DisplayRegion) GraphicsWindow::
 make_scratch_display_region(int xsize, int ysize) const {
@@ -425,7 +435,9 @@ make_scratch_display_region(int xsize, int ysize) const {
     ysize = _props._ysize;
   }
 
-  return new DisplayRegion(xsize, ysize);
+  PT(DisplayRegion) region = new DisplayRegion(xsize, ysize);
+  region->copy_clear_settings(*this);
+  return region;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -493,14 +505,22 @@ begin_frame() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::clear
 //       Access: Public
-//  Description: Invokes the GSG to clear the entire contents of the
-//               window prior to drawing into it.  This is normally
-//               called only by the draw process at the beginning of
-//               the frame.
+//  Description: Clears the entire framebuffer before rendering,
+//               according to the settings of get_color_clear_active()
+//               and get_depth_clear_active() (inherited from
+//               ClearableRegion).
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 clear() {
-  _gsg->clear_framebuffer();
+  if (is_any_clear_active()) {
+    nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+
+    PT(DisplayRegion) win_dr =
+      make_scratch_display_region(get_width(), get_height());
+    DisplayRegionStack old_dr = _gsg->push_display_region(win_dr);
+    _gsg->clear(this);
+    _gsg->pop_display_region(old_dr);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

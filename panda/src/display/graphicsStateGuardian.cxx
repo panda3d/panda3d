@@ -174,72 +174,6 @@ get_render_buffer(int buffer_type) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::set_color_clear_value
-//       Access: Public
-//  Description: Sets the color that the next clear() command will set
-//               the color buffer to
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-set_color_clear_value(const Colorf& value) {
-  _color_clear_value = value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::set_depth_clear_value
-//       Access: Public
-//  Description: Sets the depth that the next clear() command will set
-//               the depth buffer to
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-set_depth_clear_value(const float value) {
-  _depth_clear_value = value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::set_stencil_clear_value
-//       Access: Public
-//  Description: Sets the value that the next clear() command will set
-//               the stencil buffer to
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-set_stencil_clear_value(const bool value) {
-  _stencil_clear_value = value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::set_accum_clear_value
-//       Access: Public
-//  Description: Sets the color that the next clear() command will set
-//               the accumulation buffer to
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-set_accum_clear_value(const Colorf& value) {
-  _accum_clear_value = value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::enable_frame_clear
-//       Access: Public
-//  Description: Activates or deactivates the automatic clearing of
-//               the frame buffer and/or depth buffer at the beginning
-//               of each frame.
-//
-//               If clear_color is true, the color buffer will be
-//               cleared; if clear_depth is true, the depth buffer
-//               will be cleared.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-enable_frame_clear(bool clear_color, bool clear_depth) {
-  _clear_buffer_type = 0;
-  if (clear_color) {
-    _clear_buffer_type |= RenderBuffer::T_back;
-  }
-  if (clear_depth) {
-    _clear_buffer_type |= RenderBuffer::T_depth;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::release_all_textures
 //       Access: Public
 //  Description: Frees the resources for all textures associated with
@@ -410,25 +344,49 @@ set_state_and_transform(const RenderState *state,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::clear_framebuffer
-//       Access: Public, Virtual
-//  Description: Erases the contents of the framebuffer, according to
-//               _clear_buffer_type, which is set by
-//               enable_frame_clear().
-//
-//               This is used to prepare the framebuffer for drawing
-//               a new frame.
+//     Function: GraphicsStateGuardian::set_color_clear_value
+//       Access: Public
+//  Description: Sets the color that the next do_clear() command will set
+//               the color buffer to
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-clear_framebuffer() {
-  if (_clear_buffer_type != 0) {
-    PT(DisplayRegion) win_dr =
-      _win->make_scratch_display_region(_win->get_width(), _win->get_height());
-    nassertv(win_dr != (DisplayRegion*)NULL);
-    DisplayRegionStack old_dr = push_display_region(win_dr);
+set_color_clear_value(const Colorf& value) {
+  _color_clear_value = value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::set_depth_clear_value
+//       Access: Public
+//  Description: Sets the depth that the next do_clear() command will set
+//               the depth buffer to
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+set_depth_clear_value(const float value) {
+  _depth_clear_value = value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::clear
+//       Access: Public
+//  Description: Clears the framebuffer within the current
+//               DisplayRegion, according to the flags indicated by
+//               the given ClearableRegion object.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+clear(ClearableRegion *clearable) {
+  int clear_buffer_type = 0;
+  if (clearable->get_clear_color_active()) {
+    clear_buffer_type |= RenderBuffer::T_back;
+    set_color_clear_value(clearable->get_clear_color());
+  }
+  if (clearable->get_clear_depth_active()) {
+    clear_buffer_type |= RenderBuffer::T_depth;
+    set_depth_clear_value(clearable->get_clear_depth());
+  }
+
+  if (clear_buffer_type != 0) {
     prepare_display_region();
-    clear(get_render_buffer(_clear_buffer_type));
-    pop_display_region(old_dr);
+    do_clear(get_render_buffer(clear_buffer_type));
   }
 }
 

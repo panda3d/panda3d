@@ -64,6 +64,24 @@ get_scene() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::clear
+//       Access: Public
+//  Description: Clears the framebuffer within the indicated
+//               DisplayRegion, according to the flags indicated by
+//               the DisplayRegion object (inheriting from
+//               ClearableRegion).  Note that by default, a
+//               DisplayRegion does not have any clear flags set, in
+//               which case this function will do nothing.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsStateGuardian::
+clear(DisplayRegion *dr) {
+  DisplayRegionStack old_dr = push_display_region(dr);
+  prepare_display_region();
+  clear((ClearableRegion *)dr);
+  pop_display_region(old_dr);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::modify_state
 //       Access: Public
 //  Description: Applies the attributes indicated in the state set to

@@ -20,6 +20,7 @@
 
 #include "pandabase.h"
 
+#include "clearableRegion.h"
 #include "referenceCount.h"
 #include "nodePath.h"
 #include "cullResult.h"
@@ -38,7 +39,7 @@ class Camera;
 //       Class : DisplayRegion
 // Description :
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DisplayRegion : public ReferenceCount {
+class EXPCL_PANDA DisplayRegion : public ReferenceCount, public ClearableRegion {
 public:
   DisplayRegion(GraphicsLayer *);
   DisplayRegion(GraphicsLayer *,

@@ -1,4 +1,3 @@
-
 #include "config_display.cxx"
 #include "hardwareChannel.cxx"
 #include "interactiveGraphicsPipe.cxx"

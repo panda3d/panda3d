@@ -601,10 +601,6 @@ render_screen(GraphicsEngine *engine, NonlinearImager::Screen &screen) {
   PT(DisplayRegion) scratch_region =
     _gsg->get_window()->make_scratch_display_region(screen._tex_width, screen._tex_height);
   scratch_region->set_camera(screen._source_camera);
-
-  _gsg->clear(_gsg->get_render_buffer(RenderBuffer::T_back |
-                                      RenderBuffer::T_depth), 
-              scratch_region);
   engine->render_subframe(_gsg, scratch_region);
 
   // Copy the results of the render from the frame buffer into the

@@ -17,28 +17,25 @@
 ////////////////////////////////////////////////////////////////////
 #ifndef GRAPHICSWINDOW_H
 #define GRAPHICSWINDOW_H
-//
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
+
+#include "pandabase.h"
 
 #include "graphicsWindowInputDevice.h"
 #include "graphicsChannel.h"
 #include "displayRegion.h"
 #include "graphicsStateGuardian.h"
+#include "clearableRegion.h"
 
-#include <typedef.h>
-#include <configurable.h>
-#include <referenceCount.h>
-#include <mouseData.h>
-#include <modifierButtons.h>
-#include <buttonEvent.h>
-#include <iterator_types.h>
-#include <factory.h>
-#include <pStatCollector.h>
+#include "typedef.h"
+#include "configurable.h"
+#include "referenceCount.h"
+#include "mouseData.h"
+#include "modifierButtons.h"
+#include "buttonEvent.h"
+#include "iterator_types.h"
+#include "factory.h"
+#include "pStatCollector.h"
 
-#include <string>
 #include "pvector.h"
 #include "pdeque.h"
 
@@ -69,7 +66,7 @@ class CullHandler;
 //       Class : GraphicsWindow
 // Description :
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GraphicsWindow : public Configurable, public ReferenceCount {
+class EXPCL_PANDA GraphicsWindow : public Configurable, public ReferenceCount, public ClearableRegion {
 PUBLISHED:
   class EXPCL_PANDA Properties {
   PUBLISHED:

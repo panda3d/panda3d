@@ -159,6 +159,9 @@ cull_and_draw_together(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
   if (setup_gsg(gsg, scene_setup)) {
     DisplayRegionStack old_dr = gsg->push_display_region(dr);
     gsg->prepare_display_region();
+    if (dr->is_any_clear_active()) {
+      gsg->clear(dr);
+    }
     
     DrawCullHandler cull_handler(gsg);
     do_cull(&cull_handler, scene_setup, gsg);
@@ -346,6 +349,9 @@ do_draw(CullResult *cull_result, SceneSetup *scene_setup,
   if (setup_gsg(gsg, scene_setup)) {
     DisplayRegionStack old_dr = gsg->push_display_region(dr);
     gsg->prepare_display_region();
+    if (dr->is_any_clear_active()) {
+      gsg->clear(dr);
+    }
     cull_result->draw();
     gsg->pop_display_region(old_dr);
   }

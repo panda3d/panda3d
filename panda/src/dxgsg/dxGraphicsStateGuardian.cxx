@@ -928,13 +928,13 @@ dx_init( void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::clear
+//     Function: DXGraphicsStateGuardian::do_clear
 //       Access: Public, Virtual
 //  Description: Clears all of the indicated buffers to their assigned
 //               colors.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-clear(const RenderBuffer &buffer) {
+do_clear(const RenderBuffer &buffer) {
     DO_PSTATS_STUFF(PStatTimer timer(_win->_clear_pcollector));
 
     nassertv(buffer._gsg == this);
@@ -961,20 +961,6 @@ clear(const RenderBuffer &buffer) {
     _color_clear_value[0] += .001;
      if (_color_clear_value[0] > 1.0f) _color_clear_value[0] = 0.0f;
      */
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::clear
-//       Access: Public, Virtual
-//  Description: Clears all of the indicated buffers to their assigned
-//               colors.
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-clear(const RenderBuffer &buffer, const DisplayRegion *region) {
-    DisplayRegionStack old_dr = push_display_region(region);
-    prepare_display_region();
-    clear(buffer);
-    pop_display_region(old_dr);
 }
 
 ////////////////////////////////////////////////////////////////////

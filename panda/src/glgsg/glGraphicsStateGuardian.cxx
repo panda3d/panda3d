@@ -316,7 +316,7 @@ reset() {
 //               colors.
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-clear(const RenderBuffer &buffer) {
+do_clear(const RenderBuffer &buffer) {
   DO_PSTATS_STUFF(PStatTimer timer(_win->_clear_pcollector);)
   //  activate();
 
@@ -379,20 +379,6 @@ clear(const RenderBuffer &buffer) {
 
   modify_state(state);
   glClear(mask);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::clear
-//       Access: Public, Virtual
-//  Description: Clears all of the indicated buffers to their assigned
-//               colors.
-////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
-clear(const RenderBuffer &buffer, const DisplayRegion *region) {
-  DisplayRegionStack old_dr = push_display_region(region);
-  prepare_display_region();
-  clear(buffer);
-  pop_display_region(old_dr);
 }
 
 ////////////////////////////////////////////////////////////////////

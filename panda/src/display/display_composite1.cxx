@@ -1,4 +1,4 @@
-
+#include "clearableRegion.cxx"
 #include "displayRegion.cxx"
 #include "geomContext.cxx"
 #include "geomNodeContext.cxx"

@@ -43,6 +43,8 @@
 #include "notify.h"
 #include "pvector.h"
 
+class ClearableRegion;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsStateGuardian
 // Description : Encapsulates all the communication with a particular
@@ -62,24 +64,6 @@ public:
   virtual ~GraphicsStateGuardian();
 
 PUBLISHED:
-  virtual void set_color_clear_value(const Colorf& value);
-  virtual void set_depth_clear_value(const float value);
-  virtual void set_stencil_clear_value(const bool value);
-  virtual void set_accum_clear_value(const Colorf& value);
-  INLINE Colorf get_color_clear_value(void) const {
-    return _color_clear_value;
-  }
-  INLINE float get_depth_clear_value(void) const {
-    return _depth_clear_value;
-  }
-  INLINE bool get_stencil_clear_value(void) const {
-    return _stencil_clear_value;
-  }
-  INLINE Colorf get_accum_clear_value(void) const {
-    return _accum_clear_value;
-  }
-
-  void enable_frame_clear(bool clear_color, bool clear_depth);
   void release_all_textures();
   void release_all_geoms();
 
@@ -104,9 +88,12 @@ public:
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform);
 
-  virtual void clear(const RenderBuffer &buffer)=0;
-  virtual void clear(const RenderBuffer &buffer, const DisplayRegion* region)=0;
-  virtual void clear_framebuffer();
+  virtual void set_color_clear_value(const Colorf &value);
+  virtual void set_depth_clear_value(const float value);
+  virtual void do_clear(const RenderBuffer &buffer)=0;
+
+  void clear(ClearableRegion *clearable);
+  INLINE void clear(DisplayRegion *dr);
 
   virtual void prepare_display_region()=0;
   virtual bool prepare_lens();

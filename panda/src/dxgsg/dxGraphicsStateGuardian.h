@@ -68,8 +68,7 @@ public:
 
   virtual void reset();
 
-  virtual void clear(const RenderBuffer &buffer);
-  virtual void clear(const RenderBuffer &buffer, const DisplayRegion* region);
+  virtual void do_clear(const RenderBuffer &buffer);
 
   virtual void prepare_display_region();
   virtual bool prepare_lens();
