@@ -27,6 +27,10 @@ EggFilter::
 EggFilter(bool allow_last_param, bool allow_stdout) :
   EggWriter(allow_last_param, allow_stdout)
 {
+  // The default path store for programs that read egg files and write
+  // them again is PS_relative.
+  _path_replace->_path_store = PS_relative;
+
   clear_runlines();
   if (allow_last_param) {
     add_runline("[opts] input.egg output.egg");
