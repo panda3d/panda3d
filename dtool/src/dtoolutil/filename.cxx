@@ -32,31 +32,6 @@
 
 #include <direct.h>
 
-static const string & 
-get_panda_root() {
-  static string panda_root;
-  static bool got_panda_root = false;
-  
-  if (!got_panda_root) {
-    const char *envvar = getenv("PANDA_ROOT");
-    if (envvar == (const char *)NULL) {
-      envvar = getenv("CYGWIN_ROOT");
-    }
-    
-    if (envvar != (const char *)NULL) {
-      panda_root = front_to_back_slash(envvar);
-    }
-    
-    if (!panda_root.empty() && panda_root[panda_root.length() - 1] != '\\') {
-      panda_root += '\\';
-    }
-    
-    got_panda_root = true;
-  }
-
-  return panda_root;
-}
-
 static string
 front_to_back_slash(const string &str) {
   string result = str;
@@ -81,6 +56,31 @@ back_to_front_slash(const string &str) {
   }
 
   return result;
+}
+
+static const string & 
+get_panda_root() {
+  static string panda_root;
+  static bool got_panda_root = false;
+  
+  if (!got_panda_root) {
+    const char *envvar = getenv("PANDA_ROOT");
+    if (envvar == (const char *)NULL) {
+      envvar = getenv("CYGWIN_ROOT");
+    }
+    
+    if (envvar != (const char *)NULL) {
+      panda_root = front_to_back_slash(envvar);
+    }
+    
+    if (!panda_root.empty() && panda_root[panda_root.length() - 1] != '\\') {
+      panda_root += '\\';
+    }
+    
+    got_panda_root = true;
+  }
+
+  return panda_root;
 }
 
 static string
