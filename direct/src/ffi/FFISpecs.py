@@ -6,6 +6,10 @@ import string
 
 from PythonUtil import *
 
+augmentedAssignments = ['__iadd__', '__isub__', '__imul__', '__idiv__',
+                        '__ior__', '__iand__', '__ixor__',
+                        '__ilshift__', '__irshift__']
+
 class FunctionSpecification:
     def __init__(self):
         self.name = ''
@@ -364,8 +368,18 @@ class MethodSpecification(FunctionSpecification):
                 if (i < (len(thislessArgTypes)-1)):
                     file.write(', ')
         file.write(')\n')
-        returnType = self.typeDescriptor.returnType.recursiveTypeDescriptor()
-        returnType.generateReturnValueWrapper(file, self.typeDescriptor.userManagesMemory, needsDowncast, nesting+2)
+        # If this is an augmented assignment operator like +=, we have special rules
+        # In this case we simply call the C++ function, make sure we got the same
+        # return value back, then return self. Otherwise if you let it go through the
+        # normal system, it actually deletes the old Python object causing the C++ memory
+        # to be deleted then returns a new Python shadow object with the old C++ pointer... BAD!
+        if self.getFinalName() in augmentedAssignments:
+            indent(file, nesting+2, 'assert(self.this == returnValue)\n')
+            indent(file, nesting+2, 'return self\n')
+        else:
+            returnType = self.typeDescriptor.returnType.recursiveTypeDescriptor()
+            returnType.generateReturnValueWrapper(file, self.typeDescriptor.userManagesMemory,
+                                                  needsDowncast, nesting+2)
  
     def outputMethodFooter(self, methodClass, file, nesting):
         indent(file, nesting+1, '\n')
