@@ -359,22 +359,6 @@ of the world, see INSTALL.txt in this directory.
       > mount -s C:/Program\ Files/Intel /intel
       > mount -s C:/Program\ Files/Intel/Compiler60/IA32 /ia32
 
-    These are optional, but handy aliases for our common unix locations:
-      > mkdir /fat /for /bit /ful /alpha /beta /gamma
-      
-      > mount -s -b F:/ /fat
-      > mount -s -b G: /bit
-      > mount -s -b H:/fit/ /fit
-      > mount -s -b H:/ful/ /ful
-      > mount -s -b I:/alpha/ /alpha
-      > mount -s -b I:/beta /beta
-      > mount -s -b I:/gamma /gamma
-      > mount -s -b J:/ /for
-
-    Note that these mount points may "hide" any local directories with 
-      the same path from cygwin apps (e.g. C:\Cygwin\beta will be not 
-      be accessible via /beta)
-
 *********************************************************************
   Step 7:  Setup VC7 environment in shell (skip if you have VC6)
 *********************************************************************
