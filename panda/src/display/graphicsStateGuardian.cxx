@@ -24,6 +24,7 @@
 #include "colorAttrib.h"
 #include "colorScaleAttrib.h"
 #include "lightAttrib.h"
+#include "textureAttrib.h"
 #include "renderState.h"
 #include "depthWriteAttrib.h"
 #include "colorWriteAttrib.h"
@@ -852,24 +853,15 @@ prepare_lens() {
   return false;
 }
 
-static CPT(RenderState) 
-get_unlit_state() {
-  static CPT(RenderState) state = NULL;
-  if (state == (const RenderState *)NULL) {
-    state = RenderState::make(LightAttrib::make_all_off());
-  }
-  return state;
-}
-
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::reset_frame
+//     Function: GraphicsStateGuardian::begin_frame
 //       Access: Public, Virtual
 //  Description: Called before each frame is rendered, to allow the
 //               GSG a chance to do any internal cleanup before
 //               beginning the frame.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-reset_frame() {
+begin_frame() {
   // Undo any lighting we had enabled last frame, to force the lights
   // to be reissued, in case their parameters or positions have
   // changed between frames.
@@ -886,6 +878,29 @@ reset_frame() {
 
     _lighting_enabled_this_frame = false;
   }
+
+#ifdef DO_PSTATS
+  // For Pstats to track our current texture memory usage, we have to
+  // reset the set of current textures each frame.
+  init_frame_pstats();
+
+  // But since we don't get sent a new issue_texture() unless our
+  // texture state has changed, we have to be sure to clear the
+  // current texture state now.  A bit unfortunate, but probably not
+  // measurably expensive.
+  modify_state(get_untextured_state());
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::end_frame
+//       Access: Public, Virtual
+//  Description: Called after each frame is rendered, to allow the
+//               GSG a chance to do any internal cleanup after
+//               rendering the frame, and before the window flips.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+end_frame() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1701,6 +1716,33 @@ record_state_change(TypeHandle type) {
 }
 #endif  // DO_PSTATS
 
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_unlit_state
+//       Access: Protected, Static
+//  Description: 
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) GraphicsStateGuardian::
+get_unlit_state() {
+  static CPT(RenderState) state = NULL;
+  if (state == (const RenderState *)NULL) {
+    state = RenderState::make(LightAttrib::make_all_off());
+  }
+  return state;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_untextured_state
+//       Access: Protected, Static
+//  Description: 
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) GraphicsStateGuardian::
+get_untextured_state() {
+  static CPT(RenderState) state = NULL;
+  if (state == (const RenderState *)NULL) {
+    state = RenderState::make(TextureAttrib::make_off());
+  }
+  return state;
+}
 
 void GraphicsStateGuardian::
 traverse_prepared_textures(bool (*pertex_callbackfn)(TextureContext *,void *),void *callback_arg) {

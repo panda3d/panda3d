@@ -132,7 +132,8 @@ public:
 
   INLINE void enable_normals(bool val) { _normals_enabled = val; }
 
-  virtual void reset_frame();
+  virtual void begin_frame();
+  virtual void end_frame();
 
   // These functions will be queried by the GeomIssuer to determine if
   // it should issue normals, texcoords, and/or colors, based on the
@@ -244,6 +245,9 @@ protected:
   INLINE void record_state_change(TypeHandle) { }
   INLINE void count_node(Node *) { }
 #endif
+
+  static CPT(RenderState) get_unlit_state();
+  static CPT(RenderState) get_untextured_state();
 
 protected:
   PT(SceneSetup) _scene_setup;
@@ -385,7 +389,6 @@ public:
 
 private:
   static void read_priorities(void);
-
   static GsgFactory *_factory;
 
 public:

@@ -123,8 +123,6 @@ class LensNode;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GraphicsStateGuardianBase : public TypedReferenceCount {
 public:
-  virtual void reset_frame()=0;
-
   // These functions will be queried by the GeomIssuer to determine if
   // it should issue normals, texcoords, and/or colors, based on the
   // GSG's current state.

@@ -200,11 +200,8 @@ PUBLISHED:
   INLINE void render_and_update();
 
 public:
-  // New-style scene graph rendering (not yet complete).
-  void clear();
-  virtual void flip();
-
   virtual void begin_frame();
+  void clear();
   virtual void end_frame();
   virtual void deactivate_window(void);
   virtual void reactivate_window(void);

@@ -528,18 +528,7 @@ render_frame() {
   report_errors();
   _decal_level = 0;
 
-#ifdef DO_PSTATS
-  // For Pstats to track our current texture memory usage, we have to
-  // reset the set of current textures each frame.
-  init_frame_pstats();
   _vertices_display_list_pcollector.clear_level();
-
-  // But since we don't get sent a new issue_texture() unless our
-  // texture state has changed, we have to be sure to clear the
-  // current texture state now.  A bit unfortunate, but probably not
-  // measurably expensive.
-  clear_attribute(TextureTransition::get_class_type());
-#endif
 
   // First, clear the entire window.
   clear_framebuffer();

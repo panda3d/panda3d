@@ -455,6 +455,18 @@ update() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::begin_frame
+//       Access: Public, Virtual
+//  Description: This function will be called by the GSG before
+//               beginning processing for a given frame.  It should do
+//               whatever setup is required.
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+begin_frame() {
+  _gsg->begin_frame();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::clear
 //       Access: Public
 //  Description: Invokes the GSG to clear the entire contents of the
@@ -468,31 +480,6 @@ clear() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::flip
-//       Access: Public, Virtual
-//  Description: Flips the back buffer and front buffer, or does
-//               whatever other processing is appropriate, after the
-//               frame has been completely drawn.  Normally this is
-//               only called by the draw process between frames, in
-//               sync with all the other windows.
-////////////////////////////////////////////////////////////////////
-void GraphicsWindow::
-flip() {
-  end_frame();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called by the GSG before
-//               beginning processing for a given frame.  It should do
-//               whatever setup is required.
-////////////////////////////////////////////////////////////////////
-void GraphicsWindow::
-begin_frame() {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::end_frame
 //       Access: Public, Virtual
 //  Description: This function will be called by the GSG after
@@ -501,6 +488,7 @@ begin_frame() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 end_frame() {
+  _gsg->end_frame();
   _frame_number++;
 }
 

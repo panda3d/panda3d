@@ -111,7 +111,7 @@ cull_and_draw_together() {
   Windows::iterator wi;
   for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
     GraphicsWindow *win = (*wi);
-    win->get_gsg()->reset_frame();
+    win->begin_frame();
     win->clear();
 
     int num_display_regions = win->get_num_display_regions();
@@ -119,7 +119,7 @@ cull_and_draw_together() {
       DisplayRegion *dr = win->get_display_region(i);
       cull_and_draw_together(win, dr);
     }
-    win->flip();
+    win->end_frame();
     win->process_events();
   }
 }
@@ -160,7 +160,7 @@ cull_bin_draw() {
   Windows::iterator wi;
   for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
     GraphicsWindow *win = (*wi);
-    win->get_gsg()->reset_frame();
+    win->begin_frame();
     win->clear();
 
     int num_display_regions = win->get_num_display_regions();
@@ -168,7 +168,7 @@ cull_bin_draw() {
       DisplayRegion *dr = win->get_display_region(i);
       cull_bin_draw(win, dr);
     }
-    win->flip();
+    win->end_frame();
     win->process_events();
   }
 }
