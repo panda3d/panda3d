@@ -226,7 +226,7 @@ $[cdefine GLOBAL_OPERATOR_NEW_EXCEPTIONS]
 #elif $[eq $[STL_ALLOCATOR], OLD]
   // "OLD": Irix 6.2-era STL.
   #set OLD_STYLE_ALLOCATOR 1
-#elif $[eq $[STL_ALLOCATOR], ECGS]
+#elif $[eq $[STL_ALLOCATOR], GNU]
   // "GNU": gcc 2.95-era.
   #set GNU_STYLE_ALLOCATOR 1
 #elif $[eq $[STL_ALLOCATOR], VC6]
