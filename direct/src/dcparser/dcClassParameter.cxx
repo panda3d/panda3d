@@ -35,13 +35,8 @@ DCClassParameter(const DCClass *dclass) :
   int num_fields = _dclass->get_num_inherited_fields();
 
   _has_nested_fields = true;
-  _num_nested_fields = num_fields;
-  if (_dclass->has_constructor()) {
-    _num_nested_fields++;
-  }
   _pack_type = PT_class;
 
-  _nested_fields.reserve(_num_nested_fields);
   if (_dclass->has_constructor()) {
     DCField *field = _dclass->get_constructor();
     _nested_fields.push_back(field);
@@ -50,9 +45,12 @@ DCClassParameter(const DCClass *dclass) :
   int i;
   for (i = 0 ; i < num_fields; i++) {
     DCField *field = _dclass->get_inherited_field(i);
-    _nested_fields.push_back(field);
-    _has_default_value = _has_default_value || field->has_default_value();
+    if (!field->as_molecular_field()) {
+      _nested_fields.push_back(field);
+      _has_default_value = _has_default_value || field->has_default_value();
+    }
   }
+  _num_nested_fields = _nested_fields.size();
 
   // If all of the nested fields have a fixed byte size, then so does
   // the class (and its byte size is the sum of all of the nested
