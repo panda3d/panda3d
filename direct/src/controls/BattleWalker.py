@@ -82,16 +82,16 @@ class BattleWalker(GravityWalker.GravityWalker):
         self.__oldDt = ClockObject.getGlobalClock().getDt()
         dt=self.__oldDt
 
+        # Before we do anything with position or orientation, make the avatar
+        # face it's target
+        self.avatarNodePath.headsUp(self.targetNp)
+
         # Check to see if we're moving at all:
         self.moving = self.speed or self.slideSpeed or self.rotationSpeed or (self.priorParent!=Vec3.zero())
         if self.moving:
             distance = dt * self.speed
             slideDistance = dt * self.slideSpeed
             rotation = dt * self.rotationSpeed
-
-            # Before we do anything with position or orientation, make the avatar
-            # face it's target
-            self.avatarNodePath.headsUp(self.targetNp)
 
             # Take a step in the direction of our previous heading.
             self.vel=Vec3(Vec3.forward() * distance + 
