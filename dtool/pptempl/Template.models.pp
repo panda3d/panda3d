@@ -436,9 +436,9 @@ fix-pal :
 $[TAB]egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -dm $[install_dir]/%g/maps -redo -all -egg
 
 #
-# redo-pal : blow away all the palettization information and start fresh.
+# undo-pal : blow away all the palettization information and start fresh.
 #
-redo-pal : clean-pal
+undo-pal : clean-pal
 $[TAB]rm -f $[texattrib_file:%.txa=%.boo]
 
 #
