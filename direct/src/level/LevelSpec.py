@@ -15,7 +15,8 @@ class LevelSpec:
     notify = DirectNotifyGlobal.directNotify.newCategory("LevelSpec")
     
     def __init__(self, spec=None, scenario=0):
-        """spec must be passed in as a python module or a dictionary"""
+        """spec must be passed in as a python module or a dictionary.
+        If not passed in, will create a new spec."""
         newSpec = 0
         if type(spec) is types.ModuleType:
             self.specDict = spec.levelSpec
@@ -144,7 +145,7 @@ class LevelSpec:
 
         def setAttribChange(self, entId, attrib, value, username):
             """ we're being asked to change an attribute """
-            LevelSpec.notify.info("setAttribChange(%s): %s, %s = '%s'" %
+            LevelSpec.notify.info("setAttribChange(%s): %s, %s = %s" %
                                   (username, entId, attrib, repr(value)))
             self.doSetAttrib(entId, attrib, value)
             if self.hasLevel():
@@ -198,20 +199,18 @@ class LevelSpec:
         def getFilename(self):
             return self.filename
 
-        def privGetBackupFilename(self):
-            return '%s.bak' % self.getFilename()
+        def privGetBackupFilename(self, filename):
+            return '%s.bak' % filename
 
         def saveToDisk(self, filename=None, makeBackup=1):
             """returns zero on failure"""
-            print 'saveToDisk', filename
             if filename is None:
                 filename = self.filename
 
             if makeBackup and self.privFileExists(filename):
-                print 'HERE'
                 # create a backup
                 try:
-                    backupFilename = self.privGetBackupFilename()
+                    backupFilename = self.privGetBackupFilename(filename)
                     self.privRemoveFile(backupFilename)
                     os.rename(filename, backupFilename)
                 except OSError, e:
@@ -303,7 +302,8 @@ class LevelSpec:
                         for attrib in attribs:
                             str += t(2)+"'%s': %s,\n" % (attrib,
                                                          repr(spec[attrib]))
-                        str += t(2)+'},\n'
+                        # maybe this will help with CVS merges?
+                        str += t(2)+'}, # end entity %s\n' % entId
                         
                 str += t(1)+'}\n'
                 return str
