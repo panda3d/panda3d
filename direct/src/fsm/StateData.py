@@ -33,7 +33,7 @@ class StateData(DirectObject):
         
         self.load()
         self.isEntered = 1
-        self.notify.debug('enter()')
+        StateData.notify.debug('enter()')
         return 1
 
     def exit(self):
@@ -46,7 +46,7 @@ class StateData(DirectObject):
         if not self.isEntered:
             return 0
         self.isEntered = 0
-        self.notify.debug('exit()')
+        StateData.notify.debug('exit()')
         return 1
 
     def load(self):
@@ -63,7 +63,7 @@ class StateData(DirectObject):
             return 0
 
         self.isLoaded = 1
-        self.notify.debug('load()')
+        StateData.notify.debug('load()')
         return 1
 
     def unload(self):
@@ -81,7 +81,7 @@ class StateData(DirectObject):
 
         self.exit()
         self.isLoaded = 0
-        self.notify.debug('unload()')
+        StateData.notify.debug('unload()')
         return 1
 
     def getDoneStatus(self):
