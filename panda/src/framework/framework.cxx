@@ -385,11 +385,6 @@ void idle_func( void )
     event_handler.process_events();
 }
 
-void resize_func(int w, int h)
-{
-  main_win->resized(w, h);
-}
-
 void unpause_draw(void);
 
 void event_esc(CPT_Event ev) {
@@ -857,6 +852,22 @@ void event_D(CPT_Event) {
     start_drive();
     set_alt_trackball(drive_interface);
   }
+}
+
+//  sample code to verify and pick a new fullscreen size dynamically
+#define NUMWINDOWSIZES 4
+static int cur_winsize_idx=0;
+static unsigned int window_sizearr[NUMWINDOWSIZES*2] = 
+      {640,480, 1024,768, 800,600, 454,656};
+
+void event_3(CPT_Event) {
+  do {
+    cur_winsize_idx++;
+    cur_winsize_idx %= NUMWINDOWSIZES;
+    // skip over the ones marked as bad (0)
+  } while(window_sizearr[cur_winsize_idx*2]==0);
+
+  main_win->resize(window_sizearr[cur_winsize_idx*2],window_sizearr[cur_winsize_idx*2+1]);
 }
 
 void event_p(CPT_Event) {
@@ -1520,6 +1531,7 @@ int framework_main(int argc, char *argv[]) {
   // Set up keyboard events.
   event_handler.add_hook("escape", event_esc);
   event_handler.add_hook("q", event_esc);
+  event_handler.add_hook("3", event_3);
   event_handler.add_hook("f", event_f);
   event_handler.add_hook("shift-F", event_f_full);
   event_handler.add_hook("t", event_t);
@@ -1550,6 +1562,13 @@ int framework_main(int argc, char *argv[]) {
   // set have_dlight), we can turn on lighting.
   set_lighting(false);
 
+  //  sample code to verify and pick a new fullscreen size dynamically
+  if(main_win->verify_window_sizes(NUMWINDOWSIZES,window_sizearr)==0) {
+      framework_cat.error()
+        << "None of the potential new fullscreen sizes are valid\n";
+      exit(1);
+  }
+
   // Tick the clock once so we won't count the time spent loading up
   // files, above, in our frame rate average.
   ClockObject::get_global_clock()->tick();
@@ -1557,19 +1576,18 @@ int framework_main(int argc, char *argv[]) {
   start_frame_count = ClockObject::get_global_clock()->get_frame_count();
 
   if (framework.Defined("clear-value")) {
-    float cf = framework.GetFloat("clear-value", 0.);
-    Colorf c(cf, cf, cf, 1.);
+    float cf = framework.GetFloat("clear-value", 0.0f);
+    Colorf c(cf, cf, cf, 1.0f);
     main_win->get_gsg()->set_color_clear_value(c);
   }
 
   if (!main_win->supports_update()) {
-    framework_cat.info()
-      << "Window type " << main_win->get_type()
+      framework_cat.info()
+        << "Window type " << main_win->get_type()
       << " supports only the glut-style main loop interface.\n";
 
     main_win->register_draw_function(display_func);
     main_win->register_idle_function(idle_func);
-    main_win->register_resize_function(resize_func);
     main_win->main_loop();
 
   } else {
