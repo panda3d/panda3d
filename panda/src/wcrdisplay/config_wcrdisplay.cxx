@@ -72,8 +72,6 @@ init_libwcrdisplay() {
                 wcrGraphicsWindow::make_wcrGraphicsWindow);
 
   atexit(AtExitFn);
-
-  set_global_parameters();
 }
 
 // cant use global var cleanly because global var static init executed after init_libwcr(), incorrectly reiniting var
