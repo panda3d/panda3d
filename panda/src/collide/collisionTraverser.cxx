@@ -716,6 +716,12 @@ remove_handler(CollisionTraverser::Handlers::iterator hi) {
       
       nassertr(_ordered_colliders.size() == _colliders.size(), false);
 
+      if (auto_clear_velocity) {
+        // Clear the velocity on the removed node, to be consistent
+        // with nodes that were not removed.
+        node->clear_velocity();
+      }
+
     } else {
       // This collider references some other handler; keep it.
       ++ci;
