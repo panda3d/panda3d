@@ -233,11 +233,7 @@ class ClientRepository(DirectObject.DirectObject):
 
         # Make sure any recently-sent datagrams are flushed when the
         # time expires, if we're in collect-tcp mode.
-        # Temporary try .. except for old Pandas.
-        try:
-            self.tcpConn.considerFlush()
-        except:
-            pass
+        self.tcpConn.considerFlush()
 
         if self.rsDoReport:
             self.reportReaderStatistics()

@@ -38,11 +38,7 @@ class Notifier:
         Notifier.serverDelta = delta + time.timezone - timezone
 
         import NotifyCategory
-        # Temporary try .. except for old Panda.
-        try:
-            NotifyCategory.NotifyCategory.setServerDelta(self.serverDelta)
-        except:
-            pass
+        NotifyCategory.NotifyCategory.setServerDelta(self.serverDelta)
             
         self.info("Notify clock adjusted by %s (and timezone adjusted by %s hours) to synchronize with server." % (PythonUtil.formatElapsedSeconds(delta), (time.timezone - timezone) / 3600))
 
