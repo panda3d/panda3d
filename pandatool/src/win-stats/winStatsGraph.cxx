@@ -202,6 +202,11 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     close();
     break;
 
+  case WM_SIZE:
+    move_label_stack();
+    InvalidateRect(hwnd, NULL, FALSE);
+    break;
+
   case WM_PAINT:
     {
       PAINTSTRUCT ps;
@@ -227,7 +232,6 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           // Oops, we need to change the bitmap (and graph) size.
           changed_graph_size(graph_xsize, graph_ysize);
           move_graph_window(rect.left, rect.top, graph_xsize, graph_ysize);
-          move_label_stack();
           force_redraw();
         }
       }

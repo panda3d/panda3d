@@ -338,10 +338,6 @@ static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 LONG WinStatsStripChart::
 window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
-  case WM_SIZE:
-    InvalidateRect(hwnd, NULL, FALSE);
-    break;
-
   default:
     break;
   }
