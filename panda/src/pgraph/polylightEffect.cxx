@@ -165,16 +165,7 @@ do_poly_light(const NodePath & root, const CullTraverserData *data, const Transf
         dist = xz.length(); // this does not count height difference
       }
 
-      if (polylight_info) {
-        pgraph_cat.debug() << "light's position = " << light->get_pos() << endl;
-        pgraph_cat.debug() << "relative position = " << point << endl;
-        pgraph_cat.debug() << "effect center = " << _effect_center << endl;
-        //pgraph_cat.info() << "close to this light = " << light->get_name() << endl;
-        pgraph_cat.info() << "dist = " << dist << ";radius = " << light_radius << endl;
-      }
-
       if (dist <= light_radius) { // If node is in range of this light
-        /*
         if (polylight_info) {
           pgraph_cat.debug() << "light's position = " << light->get_pos() << endl;
           pgraph_cat.debug() << "relative position = " << point << endl;
@@ -182,7 +173,6 @@ do_poly_light(const NodePath & root, const CullTraverserData *data, const Transf
           //pgraph_cat.info() << "close to this light = " << light->get_name() << endl;
           pgraph_cat.info() << "dist = " << dist << ";radius = " << light_radius << endl;
         }
-        */
 
         PolylightNode::Attenuation_Type light_attenuation = light->get_attenuation();
         Colorf light_color;
