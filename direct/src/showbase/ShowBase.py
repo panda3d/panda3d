@@ -857,9 +857,9 @@ class ShowBase(DirectObject.DirectObject):
           for bt in self.buttonThrowers:
             mw = bt.getParent()
             mk = mw.getParent()
-            bt.remove()
-            mw.remove()
-            mk.remove()
+            bt.removeNode()
+            mw.removeNode()
+            mk.removeNode()
         
         # For each mouse/keyboard device, we create
         #  - MouseAndKeyboard
