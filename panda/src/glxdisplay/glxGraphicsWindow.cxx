@@ -142,7 +142,13 @@ begin_frame() {
 void glxGraphicsWindow::
 begin_flip() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
-    make_current();
+
+    // It doesn't appear to be necessary to ensure the graphics
+    // context is current before flipping the windows, and insisting
+    // on doing so can be a significant performance hit.
+
+    //    make_current();
+
     glXSwapBuffers(_display, _xwindow);
   }
 }
