@@ -93,6 +93,10 @@ bool DXFToEggConverter::
 convert_file(const Filename &filename) {
   _error = false;
 
+  if (_egg_data->get_coordinate_system() == CS_default) {
+    _egg_data->set_coordinate_system(CS_zup_right);
+  }
+
   process(filename);
   return !_error;
 }

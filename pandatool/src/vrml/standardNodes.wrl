@@ -1,0 +1,488 @@
+#VRML V2.0 utf8
+#
+# **************************************************
+# * VRML 2.0 Parser
+# * Copyright (C) 1996 Silicon Graphics, Inc.
+# *
+# * Author(s)    : Gavin Bell
+# *                Daniel Woods (first port)
+# **************************************************
+#
+# Definitions for all of the nodes built-in to the spec.
+# Taken almost directly from the VRML 2.0 final spec:
+
+PROTO Anchor [
+  eventIn      MFNode   addChildren
+  eventIn      MFNode   removeChildren
+  exposedField MFNode   children        []
+  exposedField SFString description     "" 
+  exposedField MFString parameter       []
+  exposedField MFString url             []
+  field        SFVec3f  bboxCenter      0 0 0
+  field        SFVec3f  bboxSize        -1 -1 -1
+] { }
+
+PROTO Appearance [
+  exposedField SFNode material          NULL
+  exposedField SFNode texture           NULL
+  exposedField SFNode textureTransform  NULL
+] { }
+
+PROTO AudioClip [
+  exposedField   SFString description  ""
+  exposedField   SFBool   loop         FALSE
+  exposedField   SFFloat  pitch        1.0
+  exposedField   SFTime   startTime    0
+  exposedField   SFTime   stopTime     0
+  exposedField   MFString url          []
+  eventOut       SFTime   duration_changed
+  eventOut       SFBool   isActive
+] { }
+
+PROTO Background [
+  eventIn      SFBool   set_bind
+  exposedField MFFloat  groundAngle  []
+  exposedField MFColor  groundColor  []
+  exposedField MFString backUrl      []
+  exposedField MFString bottomUrl    []
+  exposedField MFString frontUrl     []
+  exposedField MFString leftUrl      []
+  exposedField MFString rightUrl     []
+  exposedField MFString topUrl       []
+  exposedField MFFloat  skyAngle     []
+  exposedField MFColor  skyColor     [ 0 0 0  ]
+  eventOut     SFBool   isBound
+] { }
+
+PROTO Billboard [
+  eventIn      MFNode   addChildren
+  eventIn      MFNode   removeChildren
+  exposedField SFVec3f  axisOfRotation  0 1 0
+  exposedField MFNode   children        []
+  field        SFVec3f  bboxCenter      0 0 0
+  field        SFVec3f  bboxSize        -1 -1 -1
+] { }
+
+PROTO Box [
+  field    SFVec3f size  2 2 2 
+] { }
+
+PROTO Collision [ 
+  eventIn      MFNode   addChildren
+  eventIn      MFNode   removeChildren
+  exposedField MFNode   children        []
+  exposedField SFBool   collide         TRUE
+  field        SFVec3f  bboxCenter      0 0 0
+  field        SFVec3f  bboxSize        -1 -1 -1
+  field        SFNode   proxy           NULL
+  eventOut     SFTime   collideTime
+] { }
+
+PROTO Color [
+  exposedField MFColor color     []
+] { }
+
+PROTO ColorInterpolator [
+  eventIn      SFFloat set_fraction
+  exposedField MFFloat key       []
+  exposedField MFColor keyValue  []
+  eventOut     SFColor value_changed
+] { }
+
+PROTO Cone [
+  field     SFFloat   bottomRadius 1
+  field     SFFloat   height       2
+  field     SFBool    side         TRUE
+  field     SFBool    bottom       TRUE
+] { }
+
+PROTO Coordinate [
+  exposedField MFVec3f point  []
+] { }
+
+PROTO CoordinateInterpolator [
+  eventIn      SFFloat set_fraction
+  exposedField MFFloat key       []
+  exposedField MFVec3f keyValue  []
+  eventOut     MFVec3f value_changed
+] { }
+
+PROTO Cylinder [
+  field    SFBool    bottom  TRUE
+  field    SFFloat   height  2
+  field    SFFloat   radius  1
+  field    SFBool    side    TRUE
+  field    SFBool    top     TRUE
+] { }
+
+PROTO CylinderSensor [
+  exposedField SFBool     autoOffset TRUE
+  exposedField SFFloat    diskAngle  0.262
+  exposedField SFBool     enabled    TRUE
+  exposedField SFFloat    maxAngle   -1
+  exposedField SFFloat    minAngle   0
+  exposedField SFFloat    offset     0
+  eventOut     SFBool     isActive
+  eventOut     SFRotation rotation_changed
+  eventOut     SFVec3f    trackPoint_changed
+] { }
+
+PROTO DirectionalLight [
+  exposedField SFFloat ambientIntensity  0 
+  exposedField SFColor color             1 1 1
+  exposedField SFVec3f direction         0 0 -1
+  exposedField SFFloat intensity         1 
+  exposedField SFBool  on                TRUE 
+] { }
+
+PROTO ElevationGrid [
+  eventIn      MFFloat  set_height
+  exposedField SFNode   color             NULL
+  exposedField SFNode   normal            NULL
+  exposedField SFNode   texCoord          NULL
+  field        SFBool   ccw               TRUE
+  field        SFBool   colorPerVertex    TRUE
+  field        SFFloat  creaseAngle       0
+  field        MFFloat  height            []
+  field        SFBool   normalPerVertex   TRUE
+  field        SFBool   solid             TRUE
+  field        SFInt32  xDimension        0
+  field        SFFloat  xSpacing          0.0
+  field        SFInt32  zDimension        0
+  field        SFFloat  zSpacing          0.0
+
+] { }
+
+PROTO Extrusion [
+  eventIn MFVec2f    set_crossSection
+  eventIn MFRotation set_orientation
+  eventIn MFVec2f    set_scale
+  eventIn MFVec3f    set_spine
+  field   SFBool     beginCap         TRUE
+  field   SFBool     ccw              TRUE
+  field   SFBool     convex           TRUE
+  field   SFFloat    creaseAngle      0
+  field   MFVec2f    crossSection     [ 1 1, 1 -1, -1 -1, -1 1, 1 1 ]
+  field   SFBool     endCap           TRUE
+  field   MFRotation orientation      0 0 1 0
+  field   MFVec2f    scale            1 1
+  field   SFBool     solid            TRUE
+  field   MFVec3f    spine            [ 0 0 0, 0 1 0 ]
+] { }
+
+PROTO Fog [
+  exposedField SFColor  color            1 1 1
+  exposedField SFString fogType          "LINEAR"
+  exposedField SFFloat  visibilityRange  0
+  eventIn      SFBool   set_bind
+  eventOut     SFBool   isBound
+] { }
+
+PROTO FontStyle [
+  field SFString family     "SERIF"
+  field SFBool   horizontal  TRUE
+  field MFString justify     "BEGIN"
+  field SFString language    ""
+  field SFBool   leftToRight TRUE
+  field SFFloat  size       1.0
+  field SFFloat  spacing     1.0
+  field SFString style       "PLAIN"
+  field SFBool   topToBottom TRUE
+] { }
+
+PROTO Group [
+  eventIn      MFNode  addChildren
+  eventIn      MFNode  removeChildren
+  exposedField MFNode  children   []
+  field        SFVec3f bboxCenter 0 0 0
+  field        SFVec3f bboxSize   -1 -1 -1
+] { }
+
+PROTO ImageTexture [
+  exposedField MFString url     []
+  field        SFBool   repeatS TRUE
+  field        SFBool   repeatT TRUE
+] { }
+
+PROTO IndexedFaceSet [ 
+  eventIn       MFInt32 set_colorIndex
+  eventIn       MFInt32 set_coordIndex
+  eventIn       MFInt32 set_normalIndex
+  eventIn       MFInt32 set_texCoordIndex
+  exposedField  SFNode  color             NULL
+  exposedField  SFNode  coord             NULL
+  exposedField  SFNode  normal            NULL
+  exposedField  SFNode  texCoord          NULL
+  field         SFBool  ccw               TRUE
+  field         MFInt32 colorIndex        []
+  field         SFBool  colorPerVertex    TRUE
+  field         SFBool  convex            TRUE
+  field         MFInt32 coordIndex        []
+  field         SFFloat creaseAngle       0
+  field         MFInt32 normalIndex       []
+  field         SFBool  normalPerVertex   TRUE
+  field         SFBool  solid             TRUE
+  field         MFInt32 texCoordIndex     []
+] { }
+
+PROTO IndexedLineSet [
+  eventIn       MFInt32 set_colorIndex
+  eventIn       MFInt32 set_coordIndex
+  exposedField  SFNode  color             NULL
+  exposedField  SFNode  coord             NULL
+  field         MFInt32 colorIndex        []
+  field         SFBool  colorPerVertex    TRUE
+  field         MFInt32 coordIndex        []
+] { }
+
+PROTO Inline [
+  exposedField MFString url        []
+  field        SFVec3f  bboxCenter 0 0 0
+  field        SFVec3f  bboxSize   -1 -1 -1
+] { }
+
+PROTO LOD [
+  exposedField MFNode  level    [] 
+  field        SFVec3f center   0 0 0
+  field        MFFloat range    [] 
+] { }
+
+PROTO Material [
+  exposedField SFFloat ambientIntensity  0.2
+  exposedField SFColor diffuseColor      0.8 0.8 0.8
+  exposedField SFColor emissiveColor     0 0 0
+  exposedField SFFloat shininess         0.2
+  exposedField SFColor specularColor     0 0 0
+  exposedField SFFloat transparency      0
+] { }
+
+PROTO MovieTexture [
+  exposedField SFBool   loop       FALSE
+  exposedField SFFloat  speed      1
+  exposedField SFTime   startTime  0
+  exposedField SFTime   stopTime   0
+  exposedField MFString url       []
+  field        SFBool   repeatS    TRUE
+  field        SFBool   repeatT    TRUE
+  eventOut     SFFloat  duration_changed
+  eventOut     SFBool   isActive
+] { }
+
+PROTO NavigationInfo [
+  eventIn      SFBool   set_bind
+  exposedField MFFloat  avatarSize       [ 0.25, 1.6, 0.75 ]
+  exposedField SFBool   headlight        TRUE
+  exposedField SFFloat  speed            1.0 
+  exposedField MFString type             "WALK" 
+  exposedField SFFloat  visibilityLimit  0.0 
+  eventOut     SFBool   isBound
+] { }
+
+PROTO Normal [
+  exposedField MFVec3f vector []
+] { }
+
+PROTO NormalInterpolator [
+  eventIn      SFFloat set_fraction
+  exposedField MFFloat key       []
+  exposedField MFVec3f keyValue  []
+  eventOut     MFVec3f value_changed
+] { }
+
+PROTO OrientationInterpolator [
+  eventIn      SFFloat    set_fraction
+  exposedField MFFloat    key       []
+  exposedField MFRotation keyValue  []
+  eventOut     SFRotation value_changed
+] { }
+
+PROTO PixelTexture [
+  exposedField SFImage  image      0 0 0
+  field        SFBool   repeatS    TRUE
+  field        SFBool   repeatT    TRUE
+] { }
+
+PROTO PlaneSensor [
+  exposedField SFBool  autoOffset  TRUE
+  exposedField SFBool  enabled     TRUE
+  exposedField SFVec2f maxPosition -1 -1
+  exposedField SFVec2f minPosition 0 0
+  exposedField SFVec3f offset      0 0 0
+  eventOut     SFBool  isActive
+  eventOut     SFVec3f trackPoint_changed
+  eventOut     SFVec3f translation_changed
+] { }
+
+PROTO PointLight [
+  exposedField SFFloat ambientIntensity  0 
+  exposedField SFVec3f attenuation       1 0 0
+  exposedField SFColor color             1 1 1 
+  exposedField SFFloat intensity         1
+  exposedField SFVec3f location          0 0 0
+  exposedField SFBool  on                TRUE 
+  exposedField SFFloat radius            100
+] { }
+
+PROTO PointSet [
+  exposedField  SFNode  color      NULL
+  exposedField  SFNode  coord      NULL
+] { }
+
+PROTO PositionInterpolator [
+  eventIn      SFFloat set_fraction
+  exposedField MFFloat key       []
+  exposedField MFVec3f keyValue  []
+  eventOut     SFVec3f value_changed
+] { }
+
+PROTO ProximitySensor [
+  exposedField SFVec3f    center      0 0 0
+  exposedField SFVec3f    size        0 0 0
+  exposedField SFBool     enabled     TRUE
+  eventOut     SFBool     isActive
+  eventOut     SFVec3f    position_changed
+  eventOut     SFRotation orientation_changed
+  eventOut     SFTime     enterTime
+  eventOut     SFTime     exitTime
+] { }
+
+PROTO ScalarInterpolator [
+  eventIn      SFFloat set_fraction
+  exposedField MFFloat key       []
+  exposedField MFFloat keyValue  []
+  eventOut     SFFloat value_changed
+] { }
+
+PROTO Script [
+  exposedField MFString url           [ ] 
+  field        SFBool   directOutput  FALSE
+  field        SFBool   mustEvaluate  FALSE
+] { }
+
+PROTO Shape [
+  field SFNode appearance NULL
+  field SFNode geometry   NULL
+] { }
+
+PROTO Sound [
+  exposedField SFVec3f  direction     0 0 1
+  exposedField SFFloat  intensity     1
+  exposedField SFVec3f  location      0 0 0
+  exposedField SFFloat  maxBack       10
+  exposedField SFFloat  maxFront      10
+  exposedField SFFloat  minBack       1
+  exposedField SFFloat  minFront      1
+  exposedField SFFloat  priority      0
+  exposedField SFNode   source        NULL
+  field        SFBool   spatialize    TRUE
+] { }
+
+PROTO Sphere [
+  field SFFloat radius  1
+] { }
+
+PROTO SphereSensor [
+  exposedField SFBool     autoOffset TRUE
+  exposedField SFBool     enabled    TRUE
+  exposedField SFRotation offset     0 1 0 0
+  eventOut     SFBool     isActive
+  eventOut     SFRotation rotation_changed
+  eventOut     SFVec3f    trackPoint_changed
+] { }
+
+PROTO SpotLight [
+  exposedField SFFloat ambientIntensity  0 
+  exposedField SFVec3f attenuation       1 0 0
+  exposedField SFFloat beamWidth         1.570796
+  exposedField SFColor color             1 1 1 
+  exposedField SFFloat cutOffAngle       0.785398 
+  exposedField SFVec3f direction         0 0 -1
+  exposedField SFFloat intensity         1  
+  exposedField SFVec3f location          0 0 0  
+  exposedField SFBool  on                TRUE
+  exposedField SFFloat radius            100
+] { }
+
+PROTO Switch [
+  exposedField    MFNode  choice     []
+  exposedField    SFInt32 whichChild -1
+] { }
+
+PROTO Text [
+  exposedField  MFString string    []
+  field         SFNode   fontStyle NULL
+  field         MFFloat  length    []
+  field         SFFloat  maxExtent 0.0
+] { }
+
+PROTO TextureCoordinate [
+  exposedField MFVec2f point []
+] { }
+
+PROTO TextureTransform [
+  exposedField SFVec2f center      0 0
+  exposedField SFFloat rotation    0
+  exposedField SFVec2f scale       1 1
+  exposedField SFVec2f translation 0 0
+] { }
+
+PROTO TimeSensor [
+  exposedField SFTime   cycleInterval 1
+  exposedField SFBool   enabled       TRUE
+  exposedField SFBool   loop          FALSE
+  exposedField SFTime   startTime     0
+  exposedField SFTime   stopTime      0
+  eventOut     SFTime   cycleTime
+  eventOut     SFFloat  fraction_changed
+  eventOut     SFBool   isActive
+  eventOut     SFTime   time
+] { }
+
+PROTO TouchSensor [
+  exposedField SFBool  enabled TRUE
+  eventOut     SFVec3f hitNormal_changed
+  eventOut     SFVec3f hitPoint_changed
+  eventOut     SFVec2f hitTexCoord_changed
+  eventOut     SFBool  isActive
+  eventOut     SFBool  isOver
+  eventOut     SFTime  touchTime
+] { }
+
+PROTO Transform [
+  eventIn      MFNode      addChildren
+  eventIn      MFNode      removeChildren
+  exposedField SFVec3f     center           0 0 0
+  exposedField MFNode      children         []
+  exposedField SFRotation  rotation         0 0 1  0
+  exposedField SFVec3f     scale            1 1 1
+  exposedField SFRotation  scaleOrientation 0 0 1  0
+  exposedField SFVec3f     translation      0 0 0
+  field        SFVec3f     bboxCenter       0 0 0
+  field        SFVec3f     bboxSize         -1 -1 -1
+] { }
+
+PROTO Viewpoint [
+  eventIn      SFBool     set_bind
+  exposedField SFFloat    fieldOfView    0.785398
+  exposedField SFBool     jump           TRUE
+  exposedField SFRotation orientation    0 0 1  0
+  exposedField SFVec3f    position       0 0 10
+  field        SFString   description    ""
+  eventOut     SFTime     bindTime
+  eventOut     SFBool     isBound
+] { }
+
+PROTO VisibilitySensor [
+  exposedField SFVec3f center   0 0 0
+  exposedField SFBool  enabled  TRUE
+  exposedField SFVec3f size     0 0 0
+  eventOut     SFTime  enterTime
+  eventOut     SFTime  exitTime
+  eventOut     SFBool  isActive
+] { }
+
+PROTO WorldInfo [
+  field MFString info  []
+  field SFString title ""
+] { }
+

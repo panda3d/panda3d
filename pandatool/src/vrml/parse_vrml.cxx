@@ -1,0 +1,142 @@
+// Filename: parse_vrml.cxx
+// Created by:  drose (01Oct04)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+/**************************************************
+ * VRML 2.0, Draft 2 Parser
+ * Copyright (C) 1996 Silicon Graphics, Inc.
+ *
+ * Author(s)    : Gavin Bell
+ *                Daniel Woods (first port)
+ **************************************************
+ */
+
+#include "pandatoolbase.h"
+
+#include "parse_vrml.h"
+#include "vrmlParserDefs.h"
+#include "vrmlNodeType.h"
+#include "vrmlNode.h"
+#include "standard_nodes.h"
+#include "zStream.h"
+
+extern int vrmlyyparse();
+extern void vrmlyyResetLineNumber();
+extern int vrmlyydebug;
+extern int vrmlyy_flex_debug;
+extern FILE *vrmlyyin;
+
+extern VrmlScene *parsed_scene;
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_standard_nodes
+//  Description: Loads the set of standard VRML node definitions into
+//               the parser, if it has not already been loaded.
+////////////////////////////////////////////////////////////////////
+static bool
+get_standard_nodes() {
+  static bool got_standard_nodes = false;
+  static bool read_ok = true;
+  if (got_standard_nodes) {
+    return read_ok;
+  }
+
+  // The standardNodes.wrl file has been compiled into this binary.
+  // Extract it out.
+
+  string data((const char *)standard_nodes_data, standard_nodes_data_len);
+
+#ifdef HAVE_ZLIB
+  // The data is stored compressed; decompress it on-the-fly.
+  istringstream inz(data);
+  IDecompressStream in(&inz, false);
+  
+#else
+  // The data is stored uncompressed, so just load it.
+  istringstream in(data);
+#endif  // HAVE_ZLIB
+
+  vrml_init_parser(in, "standardNodes.wrl");
+  if (vrmlyyparse() != 0) {
+    read_ok = false;
+  }
+  vrml_cleanup_parser();
+
+  got_standard_nodes = true;
+  return read_ok;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: parse_vrml
+//  Description: Reads the named VRML file and returns a corresponding
+//               VrmlScene, or NULL if there is a parse error.
+////////////////////////////////////////////////////////////////////
+VrmlScene *
+parse_vrml(Filename filename) {
+  filename.set_text();
+  ifstream infile;
+  if (!filename.open_read(infile)) {
+    cerr << "Error, couldn't open " << filename << "\n";
+    return NULL;
+  }
+
+  return parse_vrml(infile, filename);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: parse_vrml
+//  Description: Reads the indicated input stream and returns a corresponding
+//               VrmlScene, or NULL if there is a parse error.
+////////////////////////////////////////////////////////////////////
+VrmlScene *
+parse_vrml(istream &in, const string &filename) {
+  if (!get_standard_nodes()) {
+    cerr << "Internal error--unable to parse VRML.\n";
+    return NULL;
+  }
+
+  VrmlScene *scene = NULL;
+  VrmlNodeType::pushNameSpace();
+
+  vrml_init_parser(in, filename);
+  if (vrmlyyparse() == 0) {
+    scene = parsed_scene;
+  }
+  vrml_cleanup_parser();
+
+  VrmlNodeType::popNameSpace();
+
+  return scene;
+}
+
+#if 0
+int
+main(int argc, char *argv[]) {
+  if (argc < 2) {
+    cerr << "parse_vrml filename.wrl\n";
+    exit(1);
+  }
+
+  VrmlScene *scene = parse_vrml(argv[1]);
+  if (scene == (VrmlScene *)NULL) {
+    exit(1);
+  }
+
+  cout << *scene << "\n";
+  return (0);
+}
+#endif

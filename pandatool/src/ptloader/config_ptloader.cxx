@@ -24,6 +24,7 @@
 #include "config_lwo.h"
 #include "lwoToEggConverter.h"
 #include "dxfToEggConverter.h"
+#include "vrmlToEggConverter.h"
 
 /*
 #ifdef HAVE_DX
@@ -84,6 +85,9 @@ init_libptloader() {
 
   DXFToEggConverter *dxf = new DXFToEggConverter;
   reg->register_type(new LoaderFileTypePandatool(dxf));
+
+  VRMLToEggConverter *vrml = new VRMLToEggConverter;
+  reg->register_type(new LoaderFileTypePandatool(vrml));
 
   /*
 #ifdef HAVE_DX

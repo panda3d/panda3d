@@ -1,0 +1,574 @@
+/*
+// Filename: vrmlLexer.lxx
+// Created by:  drose (01Oct04)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+*/
+
+/**************************************************
+ * VRML 2.0 Parser
+ * Copyright (C) 1996 Silicon Graphics, Inc.
+ *
+ * Author(s)    : Gavin Bell
+ *                Daniel Woods (first port)
+ **************************************************
+ */
+%{
+#include "pandatoolbase.h"
+
+#include "vrmlNode.h"
+#include "vrmlParser.h"
+#include "indent.h"
+#include "notify.h"
+
+static int yyinput(void);        // declared by flex.
+extern "C" int vrmlyywrap();
+
+////////////////////////////////////////////////////////////////////
+// Static variables
+////////////////////////////////////////////////////////////////////
+
+// We'll increment line_number and col_number as we parse the file, so
+// that we can report the position of an error.
+static int line_number = 0;
+static int col_number = 0;
+
+// current_line holds as much of the current line as will fit.  Its
+// only purpose is for printing it out to report an error to the user.
+static const int max_error_width = 1024;
+static char current_line[max_error_width + 1];
+
+static int error_count = 0;
+static int warning_count = 0;
+
+// This is the pointer to the current input stream.
+static istream *inp = NULL;
+
+// This is the name of the vrml file we're parsing.  We keep it so we
+// can print it out for error messages.
+static string vrml_filename;
+
+int vrmlyy_flex_debug = 0;
+
+extern void vrmlyyerror(const string &);
+
+    /* The YACC parser sets this to a token to direct the lexer */
+    /* in cases where just syntax isn't enough: */
+int expectToken = 0;
+
+    /* True when parsing a multiple-valued field: */
+static int parsing_mf = 0;
+
+    /* These are used when parsing SFImage fields: */
+static int sfImageIntsParsed = 0;
+static int sfImageIntsExpected = 0;
+
+// This is used while scanning a quoted string.
+static string quoted_string;
+
+// And this keeps track of the currently-parsing array.
+static MFArray *mfarray;
+
+void
+vrml_init_lexer(istream &in, const string &filename) {
+  vrmlyy_flex_debug = 0;
+  inp = &in;
+  vrml_filename = filename;
+  line_number = 0;
+  col_number = 0;
+  error_count = 0;
+  warning_count = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+// Internal support functions.
+////////////////////////////////////////////////////////////////////
+
+int
+vrmlyywrap(void) {
+  return 1;
+}
+
+void
+vrmlyyerror(const string &msg) {
+  cerr << "\nError";
+  if (!vrml_filename.empty()) {
+    cerr << " in " << vrml_filename;
+  }
+  cerr 
+    << " at line " << line_number << ", column " << col_number << ":\n"
+    << current_line << "\n";
+  indent(cerr, col_number-1) 
+    << "^\n" << msg << "\n\n";
+  
+  error_count++;
+}
+
+void
+vrmlyywarning(const string &msg) {
+  cerr << "\nWarning";
+  if (!vrml_filename.empty()) {
+    cerr << " in " << vrml_filename;
+  }
+  cerr 
+    << " at line " << line_number << ", column " << col_number << ":\n"
+    << current_line << "\n";
+  indent(cerr, col_number-1) 
+    << "^\n" << msg << "\n\n";
+
+  warning_count++;
+}
+
+// Now define a function to take input from an istream instead of a
+// stdio FILE pointer.  This is flex-specific.
+static void
+input_chars(char *buffer, int &result, int max_size) {
+  nassertv(inp != NULL);
+  if (*inp) {
+    inp->read(buffer, max_size);
+    result = inp->gcount();
+    if (result >= 0 && result < max_size) {
+      // Truncate at the end of the read.
+      buffer[result] = '\0';
+    }
+
+    if (line_number == 0) {
+      // This is a special case.  If we are reading the very first bit
+      // from the stream, copy it into the current_line array.  This
+      // is because the \n.* rule below, which fills current_line
+      // normally, doesn't catch the first line.
+      strncpy(current_line, vrmlyytext, max_error_width);
+      current_line[max_error_width] = '\0';
+      line_number++;
+      col_number = 0;
+
+      // Truncate it at the newline.
+      char *end = strchr(current_line, '\n');
+      if (end != NULL) {
+        *end = '\0';
+      }
+    }
+
+  } else {
+    // End of file or I/O error.
+    result = 0;
+  }
+}
+#undef YY_INPUT
+#define YY_INPUT(buffer, result, max_size) input_chars(buffer, result, max_size)
+
+int extract_int() {
+  return strtol(yytext, NULL, 0);
+}
+
+double extract_float() {
+  return atof(yytext);
+}
+
+void extract_vec(double vec[], int num_elements) {
+  char *p = yytext;
+  for (int i = 0; i < num_elements; i++) {
+    vec[i] = strtod(p, &p);
+  }
+}
+
+%}
+
+    /* Normal state:  parsing nodes.  The initial start state is used */
+    /* only to recognize the VRML header. */
+%x NODE
+
+    /* Start tokens for all of the field types, */
+    /* except for MFNode and SFNode, which are almost completely handled */
+    /* by the parser: */
+%x SFB SFC SFF SFIMG SFI SFR SFS SFT SFV2 SFV3
+%x MFC MFF MFI MFR MFS MFV2 MFV3
+%x IN_SFS IN_MFS IN_SFIMG
+
+    /* Big hairy expression for floating point numbers: */
+float (-?(([0-9]+)|([0-9]*\.[0-9]+)([eE][+\-]?[0-9]+)?))
+
+    /* Ints are decimal or hex (0x##): */
+int (-?([0-9]+)|(0[xX][0-9a-fA-F]*))
+
+    /* Whitespace.  Using this pattern can screw up currentLineNumber, */
+    /* so it is only used wherever it is really convenient and it is */
+    /* extremely unlikely that the user will put in a carriage return */
+    /* (example: between the floats in an SFVec3f) */
+ws ([ \t\r\n,]|(#.*))+
+    /* And the same pattern without the newline */
+wsnnl ([ \t\r,]|(#.*))
+
+    /* Legal characters to start an identifier */
+idStartChar ([^\x30-\x39\x00-\x20\x22\x23\x27\x2b-\x2e\x5b-\x5d\x7b\x7d])
+    /* Legal other characters in an identifier */
+  /*idRestChar  ([^\x00-\x20\x22\x23\x27\x2b-\x2e\x5b-\x5d\x7b\x7d])*/
+
+  /* Allow hyphen (0x2d) in identifiers. */
+idRestChar  ([^\x00-\x20\x22\x23\x27\x2b-\x2c\x2e\x5b-\x5d\x7b\x7d])
+%%
+
+%{
+    /* Switch into a new start state if the parser */
+    /* just told us that we've read a field name */
+    /* and should expect a field value (or IS) */
+    if (expectToken != 0) {
+      if (vrmlyy_flex_debug)
+          fprintf(stderr,"LEX--> Start State %d\n", expectToken);
+      
+      /*
+       * Annoying.  This big switch is necessary because
+       * LEX wants to assign particular numbers to start
+       * tokens, and YACC wants to define all the tokens
+       * used, too.  Sigh.
+       */
+      switch(expectToken) {
+        case SFBOOL: BEGIN SFB; break;
+        case SFCOLOR: BEGIN SFC; break;
+        case SFFLOAT: BEGIN SFF; break;
+        case SFIMAGE: BEGIN SFIMG; break;
+        case SFINT32: BEGIN SFI; break;
+        case SFROTATION: BEGIN SFR; break;
+        case SFSTRING: BEGIN SFS; break;
+        case SFTIME: BEGIN SFT; break;
+        case SFVEC2F: BEGIN SFV2; break;
+        case SFVEC3F: BEGIN SFV3; break;
+        case MFCOLOR: BEGIN MFC; break;
+        case MFFLOAT: BEGIN MFF; break;
+        case MFINT32: BEGIN MFI; break;
+        case MFROTATION: BEGIN MFR; break;
+        case MFSTRING: BEGIN MFS; break;
+        case MFVEC2F: BEGIN MFV2; break;
+        case MFVEC3F: BEGIN MFV3; break;
+
+        /* SFNode and MFNode are special.  Here the lexer just returns */
+        /* "marker tokens" so the parser knows what type of field is */
+        /* being parsed; unlike the other fields, parsing of SFNode/MFNode */
+        /* field happens in the parser. */
+        case MFNODE: expectToken = 0; return MFNODE;
+        case SFNODE: expectToken = 0; return SFNODE;
+        
+        default: vrmlyyerror("ACK: Bad expectToken"); break;
+      }
+    }
+%}
+
+    /* This is more complicated than they really need to be because */
+    /* I was ambitious and made the whitespace-matching rule aggressive */
+<INITIAL>"#VRML V2.0 utf8".*\n{wsnnl}* {
+  BEGIN NODE; 
+}
+
+    /* The lexer is in the NODE state when parsing nodes, either */
+    /* top-level nodes in the .wrl file, in a prototype implementation, */
+    /* or when parsing the contents of SFNode or MFNode fields. */
+<NODE>PROTO         { return PROTO; }
+<NODE>EXTERNPROTO   { return EXTERNPROTO; }
+<NODE>DEF           { return DEF; }
+<NODE>USE           { return USE; }
+<NODE>TO            { return TO; }
+<NODE>IS            { return IS; }
+<NODE>ROUTE         { return ROUTE; }
+<NODE>NULL          { return SFN_NULL; }
+<NODE>eventIn       { return EVENTIN; }
+<NODE>eventOut      { return EVENTOUT; }
+<NODE>field         { return FIELD; }
+<NODE>exposedField  { return EXPOSEDFIELD; }
+
+    /* Legal identifiers: */
+<NODE>{idStartChar}{idRestChar}* {
+  vrmlyylval.string = strdup(yytext);
+  return IDENTIFIER; 
+}
+   /* This hopefully won't bitch things too much.  It's not legal for
+      an identifier to begin with a digit, but Form-Z writes out VRML
+      files that do.  So we'll allow it.  Hopefully the start states
+      will keep them sorted out. */
+<NODE>[0-9]{idRestChar}* {
+  vrmlyylval.string = strdup(yytext);
+  return IDENTIFIER; 
+}
+
+    /* All fields may have an IS declaration: */
+<SFB,SFC,SFF,SFIMG,SFI,SFR,SFS,SFT,SFV2,SFV3>IS {
+  BEGIN NODE;
+  expectToken = 0;
+  yyless(0);
+}
+
+<MFC,MFF,MFI,MFR,MFS,MFV2,MFV3>IS {
+  BEGIN NODE;
+  expectToken = 0;
+  yyless(0); /* put back the IS */
+}
+
+  /* All MF field types other than MFNode are completely parsed here */
+  /* in the lexer, and one token is returned to the parser.  They all */
+  /* share the same rules for open and closing brackets: */
+<MFC,MFF,MFI,MFR,MFS,MFV2,MFV3>\[ {
+  if (parsing_mf) vrmlyyerror("Double [");
+  parsing_mf = 1;
+  mfarray = new MFArray;
+}
+
+<MFC,MFF,MFI,MFR,MFS,MFV2,MFV3>\] {
+  if (!parsing_mf) vrmlyyerror("Unmatched ]");
+  int fieldType = expectToken;
+  BEGIN NODE;
+  parsing_mf = 0;
+  expectToken = 0;
+  vrmlyylval.fv._mf = mfarray;
+  return fieldType;
+}
+                                      
+<SFB>TRUE {
+  BEGIN NODE;
+  expectToken = 0;
+  vrmlyylval.fv._sfbool = true;
+  return SFBOOL; 
+}
+
+<SFB>FALSE { 
+  BEGIN NODE; 
+  expectToken = 0; 
+  vrmlyylval.fv._sfbool = false;
+  return SFBOOL; 
+}
+
+<SFI>{int} {
+  BEGIN NODE; 
+  expectToken = 0; 
+  vrmlyylval.fv._sfint32 = extract_int();
+  return SFINT32; 
+}
+
+<MFI>{int} { 
+  VrmlFieldValue v;
+  v._sfint32 = extract_int();
+  if (parsing_mf) {
+    mfarray->push_back(v);
+  } else {
+    BEGIN NODE; 
+    expectToken = 0;
+    vrmlyylval.fv._mf = new MFArray;
+    vrmlyylval.fv._mf->push_back(v);
+    return MFINT32;
+  }
+}
+
+  /* All the floating-point types are pretty similar: */
+<SFF>{float} {
+  BEGIN NODE; 
+  expectToken = 0; 
+  vrmlyylval.fv._sffloat = extract_float();
+  return SFFLOAT; 
+}
+
+<MFF>{float} { 
+  VrmlFieldValue v;
+  v._sffloat = extract_float();
+  if (parsing_mf) {
+    /* Add to array... */
+    mfarray->push_back(v);
+  } else {
+    /* No open bracket means a single value: */
+    BEGIN NODE; 
+    expectToken = 0;
+    vrmlyylval.fv._mf = new MFArray;
+    vrmlyylval.fv._mf->push_back(v);
+    return MFFLOAT;
+  }
+}
+
+<SFV2>{float}{ws}{float} { 
+  BEGIN NODE;
+  expectToken = 0;
+  extract_vec(vrmlyylval.fv._sfvec, 2);
+  return SFVEC2F; 
+}
+
+<MFV2>{float}{ws}{float} { 
+  VrmlFieldValue v;
+  extract_vec(v._sfvec, 2);
+  if (parsing_mf) {
+    mfarray->push_back(v);
+  } else {
+    BEGIN NODE;
+    expectToken = 0;
+    vrmlyylval.fv._mf = new MFArray;
+    vrmlyylval.fv._mf->push_back(v);
+    return MFVEC2F;
+  }
+}
+
+<SFV3>({float}{ws}){2}{float} { 
+  BEGIN NODE;
+  expectToken = 0;
+  extract_vec(vrmlyylval.fv._sfvec, 3);
+  return SFVEC3F; 
+}
+
+<MFV3>({float}{ws}){2}{float} { 
+  VrmlFieldValue v;
+  extract_vec(v._sfvec, 3);
+  if (parsing_mf) {
+    mfarray->push_back(v);
+  } else {
+    BEGIN NODE;
+    expectToken = 0;
+    vrmlyylval.fv._mf = new MFArray;
+    vrmlyylval.fv._mf->push_back(v);
+    return MFVEC3F;
+  }
+}
+
+<SFR>({float}{ws}){3}{float} { 
+  BEGIN NODE;
+  expectToken = 0;
+  extract_vec(vrmlyylval.fv._sfvec, 4);
+  return SFROTATION; 
+}
+
+<MFR>({float}{ws}){3}{float} { 
+  VrmlFieldValue v;
+  extract_vec(v._sfvec, 4);
+  if (parsing_mf) {
+    mfarray->push_back(v);
+  } else {
+    BEGIN NODE;
+    expectToken = 0;
+    vrmlyylval.fv._mf = new MFArray;
+    vrmlyylval.fv._mf->push_back(v);
+    return MFROTATION;
+  }
+}
+
+<SFC>({float}{ws}){2}{float} { 
+  BEGIN NODE;
+  expectToken = 0;
+  extract_vec(vrmlyylval.fv._sfvec, 3);
+  return SFCOLOR; 
+}
+
+<MFC>({float}{ws}){2}{float} { 
+  VrmlFieldValue v;
+  extract_vec(v._sfvec, 3);
+  if (parsing_mf) {
+    mfarray->push_back(v);
+  } else {
+    BEGIN NODE;
+    expectToken = 0;
+    vrmlyylval.fv._mf = new MFArray;
+    vrmlyylval.fv._mf->push_back(v);
+    return MFCOLOR;
+  }
+}
+
+<SFT>{float} {
+  BEGIN NODE; 
+  expectToken = 0; 
+  vrmlyylval.fv._sffloat = extract_float();
+  return SFTIME; 
+}
+               
+    /* SFString/MFString */
+<SFS>\" {
+  BEGIN IN_SFS;
+  quoted_string = ""; 
+}
+
+<MFS>\" {
+  BEGIN IN_MFS;
+  quoted_string = ""; 
+}
+
+    /* Anything besides open-quote (or whitespace) is an error: */
+<SFS>[^ \"\t\r\,\n]+ {
+  vrmlyyerror("String missing open-quote");
+  BEGIN NODE; 
+  expectToken = 0; 
+  vrmlyylval.fv._sfstring = strdup(""); 
+  return SFSTRING;
+}
+
+    /* Expect open-quote, open-bracket, or whitespace: */
+<MFS>[^ \[\]\"\t\r\,\n]+ {
+  vrmlyyerror("String missing open-quote");
+  BEGIN NODE;
+  expectToken = 0;
+  return MFSTRING;
+}
+
+    /* Backslashed-quotes are OK: */
+<IN_SFS,IN_MFS>\\\" {
+  quoted_string += '"'; 
+}
+
+    /* Gobble up anything besides quotes and newlines. */
+    /* Newlines are legal in strings, but we exclude them here so */
+    /* that line number are counted correctly by the catch-all newline */
+    /* rule that applies to everything. */
+<IN_SFS,IN_MFS>[^\"\n]+ { 
+  quoted_string += yytext; 
+}
+
+    /* Quote ends the string: */
+<IN_SFS>\" { 
+  BEGIN NODE;
+  expectToken = 0;
+  vrmlyylval.fv._sfstring = strdup(quoted_string.c_str());
+  return SFSTRING; 
+}
+
+<IN_MFS>\" {
+  VrmlFieldValue v;
+  v._sfstring = strdup(quoted_string.c_str());
+  if (parsing_mf) { 
+    BEGIN MFS;
+    mfarray->push_back(v);
+    quoted_string = "";
+  } else {
+    BEGIN NODE;
+    expectToken = 0;
+    vrmlyylval.fv._mf = new MFArray;
+    vrmlyylval.fv._mf->push_back(v);
+    return MFSTRING;
+  }
+}
+
+    /* SFImage: width height numComponents then width*height integers: */
+<SFIMG>{int}{ws}{int}   { int w, h;
+                          sscanf(yytext, "%d %d", &w, &h);
+                          sfImageIntsExpected = 1+w*h;
+                          sfImageIntsParsed = 0;                          
+                          BEGIN IN_SFIMG;
+                        }
+<IN_SFIMG>{int}         { ++sfImageIntsParsed;
+                          if (sfImageIntsParsed == sfImageIntsExpected) {
+                              BEGIN NODE; expectToken = 0; return SFIMAGE;
+                          }
+                        }
+
+    /* Whitespace and catch-all rules apply to all start states: */
+<*>{wsnnl}+     ;
+    /* This is also whitespace, but we'll keep track of line number */
+    /* to report in errors: */
+<*>{wsnnl}*\n{wsnnl}*	;
+
+    /* This catch-all rule catches anything not covered by any of */
+    /* the above: */
+<*>.            { return yytext[0]; }
+

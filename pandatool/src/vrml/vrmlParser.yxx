@@ -1,0 +1,570 @@
+// Filename: vrmlParser.yxx
+// Created by:  drose (01Oct04)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+// *******************************************************
+// VRML 2.0 Parser
+// Copyright (C) 1996 Silicon Graphics, Inc.
+//
+// Author(s)    : Gavin Bell
+//                Daniel Woods (first port, minor fixes)
+// *******************************************************
+//
+%{
+
+//
+// Parser for VRML 2.0 files.
+// This is a minimal parser that does NOT generate an in-memory scene graph.
+// 
+
+// The original parser was developed on a Windows 95 PC with
+// Borland's C++ 5.0 development tools.  This was then ported
+// to a Windows 95 PC with Microsoft's MSDEV C++ 4.0 development
+// tools.  The port introduced the ifdef's for
+//    USING_BORLAND_CPP_5          : since this provides a "std namespace",
+//    TWO_ARGUMENTS_FOR_STL_STACK  : STL is a moving target.  The stack template
+//                                     class takes either one or two arguments.
+
+#include "pandatoolbase.h"
+#include "vrmlLexerDefs.h"
+#include "vrmlNodeType.h"
+#include "vrmlNode.h"
+#include "notify.h"
+#include "plist.h"
+#include <stack>
+
+//#define YYDEBUG 1
+
+// Currently-being-define proto.  Prototypes may be nested, so a stack
+// is needed:
+
+stack< VrmlNodeType*, plist<VrmlNodeType*> > currentProtoStack;
+
+// This is used to keep track of which field in which type of node is being
+// parsed.  Field are nested (nodes are contained inside MFNode/SFNode fields)
+// so a stack of these is needed:
+typedef struct {
+    const VrmlNodeType *nodeType;
+    const char *fieldName;
+    const VrmlNodeType::NameTypeRec *typeRec;
+} FieldRec;
+
+stack< FieldRec*, plist<FieldRec*> > currentField;
+
+// Similarly for the node entries (which contain the actual values for
+// the fields as they are encountered):
+
+stack< VrmlNode*, plist<VrmlNode*> > currentNode;
+
+// This is used when the parser knows what kind of token it expects
+// to get next-- used when parsing field values (whose types are declared
+// and read by the parser) and at certain other places:
+extern int expectToken;
+
+// This is where we store the parsed scene.
+VrmlScene *parsed_scene = NULL;
+
+// Some helper routines defined below:
+static void beginProto(const char *);
+static void endProto();
+int addField(const char *type, const char *name, const VrmlFieldValue *dflt = NULL);
+int addEventIn(const char *type, const char *name, const VrmlFieldValue *dflt = NULL);
+int addEventOut(const char *type, const char *name, const VrmlFieldValue *dflt = NULL);
+int addExposedField(const char *type, const char *name, const VrmlFieldValue *dflt = NULL);
+int add(void (VrmlNodeType::*func)(const char *, int, const VrmlFieldValue *), 
+	const char *typeString, const char *name,
+	const VrmlFieldValue *dflt);
+int fieldType(const char *type);
+void enterNode(const char *);
+VrmlNode *exitNode();
+void inScript();
+void enterField(const char *);
+void storeField(const VrmlFieldValue &value);
+void exitField();
+void expect(int type);
+
+extern void vrmlyyerror(const string &);
+
+////////////////////////////////////////////////////////////////////
+// Defining the interface to the parser.
+////////////////////////////////////////////////////////////////////
+
+void
+vrml_init_parser(istream &in, const string &filename) {
+  //yydebug = 0;
+  vrml_init_lexer(in, filename);
+}
+
+void
+vrml_cleanup_parser() {
+}
+
+%}
+
+%union {
+  char *string;
+  VrmlFieldValue fv;
+  VrmlNode *node;
+  MFArray *mfarray;
+  SFNodeRef nodeRef;
+  VrmlScene *scene;
+};
+
+%type <fv> fieldValue
+%type <node> node
+%type <nodeRef> nodeDeclaration
+%type <mfarray> mfnodeValue nodes
+%type <scene> declarations
+
+/*
+ * And types that will be needed by a true VRML implementation:
+ * %type <nodeList> vrmlscene declarations
+ */
+
+%token <string> IDENTIFIER 
+%token DEF USE PROTO EXTERNPROTO TO IS ROUTE SFN_NULL
+%token EVENTIN EVENTOUT FIELD EXPOSEDFIELD
+
+%token <fv> SFBOOL SFCOLOR SFFLOAT SFIMAGE SFINT32 SFNODE SFROTATION
+%token <fv> SFSTRING SFTIME SFVEC2F SFVEC3F
+%token <fv> MFCOLOR MFFLOAT MFINT32 MFROTATION MFSTRING MFVEC2F MFVEC3F
+%token <fv> MFNODE
+
+%%
+
+vrmlscene:  declarations
+{
+  parsed_scene = $1;
+}
+    ;
+
+declarations:
+    /* Empty is OK */ 
+{
+  $$ = new VrmlScene;
+}
+    |  declarations nodeDeclaration
+{
+  Declaration d;
+  d._node = $2;
+  $1->push_back(d);
+  $$ = $1;
+}
+    |  declarations protoDeclaration
+    |  declarations routeDeclaration
+    ;
+
+nodeDeclaration:
+        node
+{
+  $$._p = $1;
+  $$._type = SFNodeRef::T_unnamed;
+  $$._name = NULL;
+}
+    |   DEF IDENTIFIER node    
+{
+  $$._p = $3;
+  $$._type = SFNodeRef::T_def;
+  $$._name = $2;
+}
+    |   USE IDENTIFIER
+{
+  $$._p = NULL;
+  $$._type = SFNodeRef::T_use;
+  $$._name = $2;
+}
+    ;
+
+protoDeclaration:
+        proto
+    |   externproto
+    ;
+
+proto:
+         PROTO IDENTIFIER           { beginProto($2); }                     
+            '[' interfaceDeclarations ']'
+            '{' declarations '}'    { endProto();  free($2);}
+    ;
+
+externproto:
+         EXTERNPROTO IDENTIFIER         { beginProto($2); }                     
+            '[' externInterfaceDeclarations ']' 
+                                        { expect(MFSTRING); }
+            fieldValue                  { endProto();  free($2); }
+    ;
+interfaceDeclarations:
+        /* Empty is OK */
+    |   interfaceDeclarations interfaceDeclaration
+    ;
+
+interfaceDeclaration:
+        EVENTIN IDENTIFIER IDENTIFIER       { addEventIn($2, $3);
+                                              free($2); free($3); }
+    |   EVENTOUT IDENTIFIER IDENTIFIER      { addEventOut($2, $3);
+                                              free($2); free($3); }
+    |   FIELD IDENTIFIER IDENTIFIER         
+{
+  int type = fieldType($2);
+  expect(type); 
+}
+            fieldValue                      
+{
+  addField($2, $3, &($5));
+  free($2); 
+  free($3); 
+}
+    |   EXPOSEDFIELD IDENTIFIER IDENTIFIER  
+{ 
+  int type = fieldType($2);
+  expect(type); 
+}
+            fieldValue                      
+{ 
+  addExposedField($2, $3, &($5));
+  free($2); 
+  free($3); 
+}
+    ;
+
+externInterfaceDeclarations:
+        /* Empty is OK */
+     |  externInterfaceDeclarations externInterfaceDeclaration
+     ;
+
+externInterfaceDeclaration:
+        EVENTIN IDENTIFIER IDENTIFIER       { addEventIn($2, $3);
+                                              free($2); free($3); }
+    |   EVENTOUT IDENTIFIER IDENTIFIER      { addEventOut($2, $3);
+                                              free($2); free($3); }
+    |   FIELD IDENTIFIER IDENTIFIER         { addField($2, $3);
+                                              free($2); free($3); }
+    |   EXPOSEDFIELD IDENTIFIER IDENTIFIER  { addExposedField($2, $3);
+                                              free($2); free($3); }
+    ;
+
+routeDeclaration:
+        ROUTE IDENTIFIER '.' IDENTIFIER TO IDENTIFIER '.' IDENTIFIER
+                { free($2); free($4); free($6); free($8); }
+    ; 
+
+node:
+        IDENTIFIER                  { enterNode($1); }
+            '{' nodeGuts '}'        { $$ = exitNode(); free($1);}
+    ;
+
+nodeGuts:
+        /* Empty is OK */
+    |   nodeGuts nodeGut
+    ;
+
+nodeGut:
+        IDENTIFIER                  { enterField($1); }
+                fieldValue          
+{
+  storeField($3);
+  exitField(); 
+  free($1); 
+}
+    |   routeDeclaration
+    |   protoDeclaration
+
+        /* The following are only valid for Script nodes: */
+    |   EVENTIN IDENTIFIER IDENTIFIER       { inScript(); free($2); free($3); }
+    |   EVENTOUT IDENTIFIER IDENTIFIER      { inScript(); free($2); free($3); }
+    |   FIELD IDENTIFIER IDENTIFIER         { inScript(); 
+                                              int type = fieldType($2);
+                                              expect(type); }
+            fieldValue                      { free($2); free($3); }
+    |   EVENTIN IDENTIFIER IDENTIFIER IS IDENTIFIER
+                { inScript(); free($2); free($3); free($5); }
+    |   EVENTOUT IDENTIFIER IDENTIFIER IS IDENTIFIER
+                { inScript(); free($2); free($3); free($5); }
+   ;
+
+fieldValue:
+	SFBOOL
+    |   SFCOLOR
+    |   MFCOLOR
+    |   SFFLOAT
+    |   MFFLOAT
+    |   SFIMAGE
+    |   SFINT32
+    |   MFINT32
+    |   SFROTATION
+    |   MFROTATION
+    |   SFSTRING
+    |   MFSTRING
+    |   SFTIME
+    |   SFVEC2F
+    |   MFVEC2F
+    |   SFVEC3F
+    |   MFVEC3F
+    
+    |   SFNODE nodeDeclaration { $$._sfnode = $2; }
+    |   SFNODE SFN_NULL 
+{ 
+  $$._sfnode._p = NULL;
+  $$._sfnode._type = SFNodeRef::T_null;
+  $$._sfnode._name = NULL;
+}
+    |   MFNODE mfnodeValue { $$._mf = $2; }
+    |   IS IDENTIFIER               { free($2); }
+    ;
+
+mfnodeValue:
+    '[' nodes ']' 
+{
+  $$ = $2; 
+}
+    |  nodeDeclaration 
+{
+  $$ = new MFArray;
+  VrmlFieldValue v;
+  v._sfnode = $1;
+  $$->push_back(v);
+}
+     ;
+
+nodes:
+    /* Empty is OK */ 
+{
+  $$ = new MFArray;
+}
+     |  nodes nodeDeclaration
+{
+  VrmlFieldValue v;
+  v._sfnode = $2;
+  $1->push_back(v);
+  $$ = $1;
+}
+     ;
+
+%%
+
+static void
+beginProto(const char *protoName)
+{
+    // Any protos in the implementation are in a local namespace:
+    VrmlNodeType::pushNameSpace();
+
+    VrmlNodeType *t = new VrmlNodeType(protoName);
+    currentProtoStack.push(t);
+}
+
+static void
+endProto()
+{
+    // Make any protos defined in implementation unavailable:
+    VrmlNodeType::popNameSpace();
+
+    // Add this proto definition:
+    if (currentProtoStack.empty()) {
+        cerr << "Error: Empty PROTO stack!\n";
+    }
+    else {
+        VrmlNodeType *t = currentProtoStack.top();
+        currentProtoStack.pop();
+        VrmlNodeType::addToNameSpace(t);
+    }
+}
+
+int
+addField(const char *type, const char *name,
+	 const VrmlFieldValue *dflt)
+{
+    return add(&VrmlNodeType::addField, type, name, dflt);
+}
+
+int
+addEventIn(const char *type, const char *name,
+	   const VrmlFieldValue *dflt)
+{
+    return add(&VrmlNodeType::addEventIn, type, name, dflt);
+}
+int
+addEventOut(const char *type, const char *name,
+	    const VrmlFieldValue *dflt)
+{
+  return add(&VrmlNodeType::addEventOut, type, name, dflt);
+}
+int
+addExposedField(const char *type, const char *name,
+		const VrmlFieldValue *dflt)
+{
+    return add(&VrmlNodeType::addExposedField, type, name, dflt);
+}
+
+int
+add(void (VrmlNodeType::*func)(const char *, int, const VrmlFieldValue *), 
+    const char *typeString, const char *name,
+    const VrmlFieldValue *dflt)
+{
+    int type = fieldType(typeString);
+
+    if (type == 0) {
+        cerr << "Error: invalid field type: " << type << "\n";
+    }
+
+    // Need to add support for Script nodes:
+    // if (inScript) ... ???
+
+    if (currentProtoStack.empty()) {
+        cerr << "Error: declaration outside of prototype\n";
+        return 0;
+    }
+    VrmlNodeType *t = currentProtoStack.top();
+    (t->*func)(name, type, dflt);
+
+    return type;
+}
+
+int
+fieldType(const char *type)
+{
+    if (strcmp(type, "SFBool") == 0) return SFBOOL;
+    if (strcmp(type, "SFColor") == 0) return SFCOLOR;
+    if (strcmp(type, "SFFloat") == 0) return SFFLOAT;
+    if (strcmp(type, "SFImage") == 0) return SFIMAGE;
+    if (strcmp(type, "SFInt32") == 0) return SFINT32;
+    if (strcmp(type, "SFNode") == 0) return SFNODE;
+    if (strcmp(type, "SFRotation") == 0) return SFROTATION;
+    if (strcmp(type, "SFString") == 0) return SFSTRING;
+    if (strcmp(type, "SFTime") == 0) return SFTIME;
+    if (strcmp(type, "SFVec2f") == 0) return SFVEC2F;
+    if (strcmp(type, "SFVec3f") == 0) return SFVEC3F;
+    if (strcmp(type, "MFColor") == 0) return MFCOLOR;
+    if (strcmp(type, "MFFloat") == 0) return MFFLOAT;
+    if (strcmp(type, "MFInt32") == 0) return MFINT32;
+    if (strcmp(type, "MFNode") == 0) return MFNODE;
+    if (strcmp(type, "MFRotation") == 0) return MFROTATION;
+    if (strcmp(type, "MFString") == 0) return MFSTRING;
+    if (strcmp(type, "MFVec2f") == 0) return MFVEC2F;
+    if (strcmp(type, "MFVec3f") == 0) return MFVEC3F;
+
+    cerr << "Illegal field type: " << type << "\n";
+
+    return 0;
+}
+
+void
+enterNode(const char *nodeType)
+{
+    const VrmlNodeType *t = VrmlNodeType::find(nodeType);
+    if (t == NULL) {
+        char tmp[1000];
+        sprintf(tmp, "Unknown node type '%s'", nodeType);
+        vrmlyyerror(tmp);
+    }
+    FieldRec *fr = new FieldRec;
+    fr->nodeType = t;
+    fr->fieldName = NULL;
+    fr->typeRec = NULL;
+    currentField.push(fr);
+
+    VrmlNode *node = new VrmlNode(t);
+    currentNode.push(node);
+}
+
+VrmlNode *
+exitNode()
+{
+    FieldRec *fr = currentField.top();
+    nassertr(fr != NULL, NULL);
+    currentField.pop();
+
+    VrmlNode *node = currentNode.top();
+    nassertr(node != NULL, NULL);
+    currentNode.pop();
+
+    //    cerr << "Just defined node:\n" << *node << "\n\n";
+
+    delete fr;
+    return node;
+}
+
+void
+inScript()
+{
+    FieldRec *fr = currentField.top();
+    if (fr->nodeType == NULL ||
+        strcmp(fr->nodeType->getName(), "Script") != 0) {
+        vrmlyyerror("interface declaration outside of Script or prototype");
+    }
+}
+
+void
+enterField(const char *fieldName)
+{
+    FieldRec *fr = currentField.top();
+    nassertv(fr != NULL);
+
+    fr->fieldName = fieldName;
+    fr->typeRec = NULL;
+    if (fr->nodeType != NULL) {
+        // enterField is called when parsing eventIn and eventOut IS
+        // declarations, in which case we don't need to do anything special--
+        // the IS IDENTIFIER will be returned from the lexer normally.
+        if (fr->nodeType->hasEventIn(fieldName) ||
+            fr->nodeType->hasEventOut(fieldName))
+            return;
+    
+        const VrmlNodeType::NameTypeRec *typeRec =
+	  fr->nodeType->hasField(fieldName);
+        if (typeRec != NULL) {
+	    fr->typeRec = typeRec;
+            // Let the lexer know what field type to expect:
+            expect(typeRec->type);
+        }
+        else {
+            cerr << "Error: Nodes of type " << fr->nodeType->getName() <<
+                " do not have fields/eventIn/eventOut named " <<
+                fieldName << "\n";
+            // expect(ANY_FIELD);
+        }
+    }
+    // else expect(ANY_FIELD);
+}
+
+void
+storeField(const VrmlFieldValue &value) {
+  FieldRec *fr = currentField.top();
+  nassertv(fr != NULL);
+
+  VrmlNode *node = currentNode.top();
+  nassertv(node != NULL);
+
+  if (fr->typeRec != NULL) {
+    node->_fields.push_back(VrmlNode::Field(fr->typeRec, value));
+  }
+}
+
+void
+exitField()
+{
+    FieldRec *fr = currentField.top();
+    nassertv(fr != NULL);
+
+    fr->fieldName = NULL;
+    fr->typeRec = NULL;
+}
+
+void
+expect(int type)
+{
+    expectToken = type;
+}
+
