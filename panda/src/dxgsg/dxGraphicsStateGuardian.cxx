@@ -647,9 +647,23 @@ void DXGraphicsStateGuardian::
 render_frame(const AllAttributesWrapper &initial_state) {
 	if (!_dx_ready)	return;
 
-    _lighting_enabled_this_frame = false;
-
 	_win->begin_frame();
+  _lighting_enabled_this_frame = false;
+
+#ifdef DO_PSTATS
+  // For Pstats to track our current texture memory usage, we have to
+  // reset the set of current textures each frame.
+  init_frame_pstats();
+
+  // But since we don't get sent a new issue_texture() unless our
+  // texture state has changed, we have to be sure to clear the
+  // current texture state now.  A bit unfortunate, but probably not
+  // measurably expensive.
+  NodeAttributes state;
+  state.set_attribute(TextureTransition::get_class_type(), new TextureAttribute);
+  set_state(state, false);
+#endif
+
 	_d3dDevice->BeginScene();
 
 /* _d3dDevice->SetTransform(D3DTRANSFORMSTATE_VIEW, &matIdentity); */
@@ -1166,6 +1180,7 @@ draw_point(const GeomPoint *geom) {
 #ifdef GSG_VERBOSE
 	dxgsg_cat.debug() << "draw_point()" << endl;
 #endif
+  _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
 	// The DX Way
 
@@ -1309,6 +1324,7 @@ draw_line(const GeomLine* geom) {
 #ifdef GSG_VERBOSE
 	dxgsg_cat.debug() << "draw_line()" << endl;
 #endif
+  _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
 #ifdef _DEBUG
 	static BOOL bPrintedMsg=FALSE;
@@ -1419,6 +1435,7 @@ draw_linestrip(const GeomLinestrip* geom) {
 #ifdef GSG_VERBOSE
 	dxgsg_cat.debug() << "draw_linestrip()" << endl;
 #endif
+  _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
 #ifdef _DEBUG
 	static BOOL bPrintedMsg=FALSE;
@@ -1593,6 +1610,7 @@ draw_sprite(const GeomSprite *geom) {
 #ifdef GSG_VERBOSE
 	dxgsg_cat.debug() << "draw_sprite()" << endl;
 #endif
+  _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
 	Texture *tex = geom->get_texture();
 	nassertv(tex != (Texture *) NULL);
@@ -1900,6 +1918,7 @@ draw_polygon(const GeomPolygon *geom) {
 #ifdef GSG_VERBOSE
 	dxgsg_cat.debug() << "draw_polygon()" << endl;
 #endif
+  _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
 /*  wireframe polygon will be drawn as multi-tri trifan until I get this casting issue straightened out
    DWORD rstate;
@@ -1980,6 +1999,7 @@ draw_tri(const GeomTri *geom) {
 #ifdef GSG_VERBOSE
 	dxgsg_cat.debug() << "draw_tri()" << endl;
 #endif
+  _vertices_tri_pcollector.add_level(geom->get_num_vertices());
 
 #ifdef _DEBUG
 	if (_pCurTexContext!=NULL) {
@@ -2288,6 +2308,7 @@ draw_quad(const GeomQuad *geom) {
 #ifdef GSG_VERBOSE
 	dxgsg_cat.debug() << "draw_quad()" << endl;
 #endif
+  _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
 #ifdef WBD_GL_MODE
 	int nprims = geom->get_num_prims();
@@ -2346,6 +2367,7 @@ draw_tristrip(const GeomTristrip *geom) {
 #ifdef GSG_VERBOSE
 	dxgsg_cat.debug() << "draw_tristrip()" << endl;
 #endif
+  _vertices_tristrip_pcollector.add_level(geom->get_num_vertices());
 
 	draw_multitri(geom, D3DPT_TRIANGLESTRIP);
 }
@@ -2361,6 +2383,7 @@ draw_trifan(const GeomTrifan *geom) {
 #ifdef GSG_VERBOSE
 	dxgsg_cat.debug() << "draw_trifan()" << endl;
 #endif
+  _vertices_trifan_pcollector.add_level(geom->get_num_vertices());
 
 	draw_multitri(geom, D3DPT_TRIANGLEFAN);
 }
@@ -2988,6 +3011,7 @@ draw_sphere(const GeomSphere *geom) {
 #ifdef GSG_VERBOSE
 	dxgsg_cat.debug() << "draw_sphere()" << endl;
 #endif
+  _vertices_other_pcollector.add_level(geom->get_num_vertices());
 
 	int nprims = geom->get_num_prims();
 
@@ -3116,6 +3140,7 @@ apply_texture(TextureContext *tc) {
 	if (tc==NULL) {
 		return;	 // use enable_texturing to disable/enable 
 	}
+  add_to_texture_record(tc);
 
 //  activate();  inactive
 //	bind_texture(tc);

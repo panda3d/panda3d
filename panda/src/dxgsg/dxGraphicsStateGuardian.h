@@ -60,7 +60,12 @@ INLINE ostream &operator << (ostream &out, GLenum v) {
 
 #define RELEASE(object) if (object!=NULL) {object->Release(); object = NULL;}
 
-#ifdef _DEBUG
+#if defined(NOTIFY_DEBUG) || defined(DO_PSTATS)
+// This function now serves both to print a debug message to the
+// console, as well as to notify PStats about the change in texture
+// memory.  Thus, we compile it in if we are building with support for
+// either notify debug messages or PStats; otherwise, we compile it
+// out.
 extern void dbgPrintVidMem(LPDIRECTDRAW7 pDD, LPDDSCAPS2 lpddsCaps,const char *pMsg);
 #define PRINTVIDMEM(pDD,pCaps,pMsg) dbgPrintVidMem(pDD,pCaps,pMsg)
 #else

@@ -198,10 +198,9 @@ LONG WINAPI wdxGraphicsWindow::static_window_proc(HWND hwnd, UINT msg, WPARAM wp
 	return global_dxwin->window_proc(hwnd, msg, wparam, lparam);
 }
 
-#ifdef _DEBUG
+#if defined(NOTIFY_DEBUG) || defined(DO_PSTATS)
 extern void dbgPrintVidMem(LPDIRECTDRAW7 pDD, LPDDSCAPS2 lpddsCaps,const char *pMsg) {
 	DWORD dwTotal,dwFree;
-	char tmpstr[100],tmpstr2[100];
 	HRESULT hr;
 
 /*
@@ -227,9 +226,20 @@ extern void dbgPrintVidMem(LPDIRECTDRAW7 pDD, LPDDSCAPS2 lpddsCaps,const char *p
 		wdxdisplay_cat.debug() << "wdxGraphicsWindow::GetAvailableVidMem failed : result = " << ConvD3DErrorToString(hr) << endl;
 		exit(1);
 	}
+
+  #ifdef NOTIFY_DEBUG
+  // Write a debug message to the console reporting the texture memory.
+	char tmpstr[100],tmpstr2[100];
 	sprintf(tmpstr,"%.4g",dwTotal/1000000.0);
 	sprintf(tmpstr2,"%.4g",dwFree/1000000.0);
 	wdxdisplay_cat.debug() << "AvailableVidMem before creating "<< pMsg << ",(megs) total: " << tmpstr << "  free:" << tmpstr2 <<endl;
+  #endif
+
+  #ifdef DO_PSTATS
+  // Tell PStats about the state of the texture memory.
+  GraphicsStateGuardian::_total_texmem_pcollector.set_level(dwTotal);
+  GraphicsStateGuardian::_used_texmem_pcollector.set_level(dwTotal - dwFree);
+  #endif  
 }
 #endif
 
