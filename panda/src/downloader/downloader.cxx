@@ -469,6 +469,9 @@ run(void) {
         if (write_to_disk(_current_status) == false)
           return DS_error_write;
       }
+      if (downloader_cat.is_debug())
+        downloader_cat.debug()
+	  << "Downloader::run() - Got eof" << endl;
       cleanup();
       return DS_success;
     } else {
