@@ -422,13 +422,13 @@ compare_to(const FLOATNAME(LVecBase3) &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH int FLOATNAME(LVecBase3)::
 compare_to(const FLOATNAME(LVecBase3) &other, FLOATTYPE threshold) const {
-  if (!IS_THRESHOLD_EQUAL(_v.v._0, other._v.v._0, threshold)) {
+  if (!IS_THRESHOLD_COMPEQ(_v.v._0, other._v.v._0, threshold)) {
     return (_v.v._0 < other._v.v._0) ? -1 : 1;
   }
-  if (!IS_THRESHOLD_EQUAL(_v.v._1, other._v.v._1, threshold)) {
+  if (!IS_THRESHOLD_COMPEQ(_v.v._1, other._v.v._1, threshold)) {
     return (_v.v._1 < other._v.v._1) ? -1 : 1;
   }
-  if (!IS_THRESHOLD_EQUAL(_v.v._2, other._v.v._2, threshold)) {
+  if (!IS_THRESHOLD_COMPEQ(_v.v._2, other._v.v._2, threshold)) {
     return (_v.v._2 < other._v.v._2) ? -1 : 1;
   }
   return 0;

@@ -40,17 +40,17 @@ get_nearly_zero_value(float) {
   ((value) < (threshold) && (value) > -(threshold))
 
 // IS_THRESHOLD_EQUAL(value1, value2, threshold) returns true if the
-// two values are within threshold of each other.  The transitive
-// principle is guaranteed: IS_THRESHOLD_EQUAL(a, b, t) &&
-// IS_THRESHOLD_EQUAL(b, c, t) implies IS_THRESHOLD_EQUAL(a, c, t).
-
-// We could define this via IS_THRESHOLD_ZERO(a - b, t) that wouldn't
-// guarantee the transitive principle, stated above.  So we need a
-// more complex definition that rounds these to the nearest multiples
-// of threshold before comparing them.
+// two values are within threshold of each other.
 #define IS_THRESHOLD_EQUAL(value1, value2, threshold) \
-  (cfloor(value1 / threshold + 0.5f) == cfloor(value2 / threshold + 0.5f))
+  (IS_THRESHOLD_ZERO((value1) - (value2), threshold))
 
+// IS_THRESHOLD_COMPEQ(value1, value2, threshold) returns true if
+// the two values are equal within threshold tolerance.  Unlike
+// IS_THRESHOLD_EQUAL, the transitive principle is guaranteed:
+// IS_THRESHOLD_COMPEQ(a, b, t) && IS_THRESHOLD_COMPEQ(b, c, t)
+// implies IS_THRESHOLD_COMPEQ(a, c, t).
+#define IS_THRESHOLD_COMPEQ(value1, value2, threshold) \
+  (cfloor(value1 / threshold + 0.5f) == cfloor(value2 / threshold + 0.5f))
 
 // NEARLY_ZERO(float) returns a number that is considered to be so
 // close to zero as not to matter for a float.  NEARLY_ZERO(double)
