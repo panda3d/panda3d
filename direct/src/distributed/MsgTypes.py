@@ -71,6 +71,10 @@ CLIENT_GET_PET_DETAILS_RESP =                82
 
 # (Proposed new message): CLIENT_SET_WORLD_POS =                       83
 
+CLIENT_ADD_INTEREST =                        97
+CLEINT_ALTER_INTEREST =                      98
+CLEINT_REMOVE_INTEREST =                     99
+
 # These messages are ignored when the client is headed to the quiet zone
 QUIET_ZONE_IGNORED_LIST = [
 
