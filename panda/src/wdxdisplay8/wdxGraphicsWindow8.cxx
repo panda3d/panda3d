@@ -3209,6 +3209,8 @@ void wdxGraphicsWindowGroup::initWindowGroup(void) {
         _windows[i]->_dxgsg->SetDXReady(true);
     }
 
+    dx_pick_best_screenres = false;   // only want to do this on startup, not resize
+
   #ifdef DINPUT_DEBUG_POLL
     if(dx_use_joystick) {
         _pDInputInfo = new DInput8Info;
