@@ -21,7 +21,7 @@ GuiItem::GuiItem(const string& name) : Namable(name), _added_hooks(false),
 GuiItem::~GuiItem(void) {
   if (gui_cat->is_debug())
     gui_cat->debug() << "deleting item '" << this->get_name() << "'" << endl;
-  this->unmanage();
+  //  this->unmanage();
 }
 
 int GuiItem::freeze() {

@@ -11,6 +11,9 @@
 #include <vector>
 
 class EXPCL_PANDA GuiListBox : public GuiItem {
+private:
+  INLINE GuiListBox(void);
+  virtual void recompute_frame(void);
 PUBLISHED:
   GuiListBox(const string&);
   ~GuiListBox(void);
