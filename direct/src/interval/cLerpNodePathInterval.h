@@ -66,28 +66,32 @@ PUBLISHED:
   virtual void output(ostream &out) const;
 
 private:
+  void setup_slerp();
+
   NodePath _node;
   NodePath _other;
 
   enum Flags {
-    F_end_pos            = 0x0001,
-    F_end_hpr            = 0x0002,
-    F_end_quat           = 0x0004,
-    F_end_scale          = 0x0008,
-    F_end_color          = 0x0010,
-    F_end_color_scale    = 0x0020,
-    F_end_shear          = 0x0040,
+    F_end_pos            = 0x000001,
+    F_end_hpr            = 0x000002,
+    F_end_quat           = 0x000004,
+    F_end_scale          = 0x000008,
+    F_end_color          = 0x000010,
+    F_end_color_scale    = 0x000020,
+    F_end_shear          = 0x000040,
 
-    F_start_pos          = 0x0080,
-    F_start_hpr          = 0x0100,
-    F_start_quat         = 0x0200,
-    F_start_scale        = 0x0400,
-    F_start_color        = 0x0800,
-    F_start_color_scale  = 0x1000,
-    F_start_shear        = 0x2000,
+    F_start_pos          = 0x000080,
+    F_start_hpr          = 0x000100,
+    F_start_quat         = 0x000200,
+    F_start_scale        = 0x000400,
+    F_start_color        = 0x000800,
+    F_start_color_scale  = 0x001000,
+    F_start_shear        = 0x002000,
 
-    F_fluid              = 0x4000,
-    F_bake_in_start      = 0x8000,
+    F_fluid              = 0x004000,
+    F_bake_in_start      = 0x008000,
+    
+    F_slerp_setup        = 0x010000,
   };
   
   unsigned int _flags;
@@ -100,6 +104,16 @@ private:
   LVecBase4f _start_color_scale, _end_color_scale;
 
   double _prev_d;
+  float _slerp_angle;
+  float _slerp_denom;
+  LQuaternionf _slerp_c;
+
+  void slerp_basic(LQuaternionf &result, float t) const;
+  void slerp_angle_0(LQuaternionf &result, float t) const;
+  void slerp_angle_180(LQuaternionf &result, float t) const;
+
+  // Define a pointer to one of the above three methods.
+  void (CLerpNodePathInterval::*_slerp)(LQuaternionf &result, float t) const;
   
 public:
   static TypeHandle get_class_type() {

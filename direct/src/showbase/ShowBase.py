@@ -749,7 +749,6 @@ class ShowBase(DirectObject.DirectObject):
         lens.setAspectRatio(aspectRatio)
             
         camNode.setLens(lens)
-        camNode.setScene(scene)
 
         # self.camera is the parent node of all cameras: a node that
         # we can move around to move all cameras as a group.
@@ -791,7 +790,6 @@ class ShowBase(DirectObject.DirectObject):
         lens.setFilmOffset((right + left) * 0.5, (top + bottom) * 0.5)
         lens.setNearFar(-1000, 1000)
         cam2dNode.setLens(lens)
-        cam2dNode.setScene(self.render2d)
 
         # self.camera2d is the analog of self.camera, although it's
         # not as clear how useful it is.
@@ -825,7 +823,6 @@ class ShowBase(DirectObject.DirectObject):
         lens.setFilmOffset((right + left) * 0.5, (top + bottom) * 0.5)
         lens.setNearFar(-1000, 1000)
         cam2dNode.setLens(lens)
-        cam2dNode.setScene(self.render2dp)
 
         # self.camera2d is the analog of self.camera, although it's
         # not as clear how useful it is.

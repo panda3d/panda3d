@@ -83,7 +83,7 @@ set_end_pos(const LVecBase3f &pos) {
 INLINE void CLerpNodePathInterval::
 set_start_hpr(const LVecBase3f &hpr) {
   _start_hpr = hpr;
-  _flags |= F_start_hpr;
+  _flags = (_flags & ~(F_slerp_setup | F_start_quat)) | F_start_hpr;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -135,7 +135,7 @@ set_end_hpr(const LQuaternionf &quat) {
 INLINE void CLerpNodePathInterval::
 set_start_quat(const LQuaternionf &quat) {
   _start_quat = quat;
-  _flags |= F_start_quat;
+  _flags = (_flags & ~(F_slerp_setup | F_start_hpr)) | F_start_quat;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -158,7 +158,7 @@ set_start_quat(const LQuaternionf &quat) {
 INLINE void CLerpNodePathInterval::
 set_end_quat(const LVecBase3f &hpr) {
   _end_quat.set_hpr(hpr);
-  _flags = (_flags & ~F_end_hpr) | F_end_quat;
+  _flags = (_flags & ~(F_slerp_setup | F_end_hpr)) | F_end_quat;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -175,7 +175,7 @@ set_end_quat(const LVecBase3f &hpr) {
 INLINE void CLerpNodePathInterval::
 set_end_quat(const LQuaternionf &quat) {
   _end_quat = quat;
-  _flags = (_flags & ~F_end_hpr) | F_end_quat;
+  _flags = (_flags & ~(F_slerp_setup | F_end_hpr)) | F_end_quat;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -66,7 +66,8 @@ CLerpNodePathInterval(const string &name, double duration,
   CLerpInterval(name, duration, blend_type),
   _node(node),
   _other(other),
-  _flags(0)
+  _flags(0),
+  _slerp(NULL)
 {
   if (bake_in_start) {
     _flags |= F_bake_in_start;
@@ -181,23 +182,35 @@ priv_step(double t) {
       }
     }
     if ((_flags & F_end_quat) != 0) {
-      if ((_flags & F_start_quat) != 0) {
-        lerp_value(quat, d, _start_quat, _end_quat);
+      if ((_flags & F_slerp_setup) == 0) {
+        if ((_flags & F_start_quat) != 0) {
+          setup_slerp();
 
-      } else if ((_flags & F_start_hpr) != 0) {
-        _start_quat.set_hpr(_start_hpr);
-        _flags |= F_start_quat;
-        lerp_value(quat, d, _start_quat, _end_quat);
+        } else if ((_flags & F_start_hpr) != 0) {
+          _start_quat.set_hpr(_start_hpr);
+          _flags |= F_start_quat;
+          setup_slerp();
 
-      } else if ((_flags & F_bake_in_start) != 0) {
-        set_start_quat(transform->get_quat());
-        lerp_value(quat, d, _start_quat, _end_quat);
+        } else if ((_flags & F_bake_in_start) != 0) {
+          set_start_quat(transform->get_quat());
+          setup_slerp();
 
-      } else {
-        quat = transform->get_quat();
-        lerp_value_from_prev(quat, d, _prev_d, quat, _end_quat);
+        } else {
+          if (_prev_d == 1.0) {
+            _start_quat = _end_quat;
+          } else {
+            LQuaternionf prev_value = transform->get_quat();
+            _start_quat = (prev_value - _prev_d * _end_quat) / (1.0 - _prev_d);
+          }
+          setup_slerp();
+
+          // In this case, clear the slerp_setup flag because we need
+          // to re-setup the slerp each time.
+          _flags &= ~F_slerp_setup;
+        }
       }
-      quat.normalize();
+      nassertv(_slerp != NULL);
+      (this->*_slerp)(quat, d);
     }
     if ((_flags & F_end_scale) != 0) {
       if ((_flags & F_start_scale) != 0) {
@@ -557,4 +570,119 @@ output(ostream &out) const {
   }
 
   out << " dur " << get_duration();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLerpNodePathInterval::setup_slerp
+//       Access: Private
+//  Description: Sets up a spherical lerp from _start_quat to
+//               _end_quat.  This precomputes some important values
+//               (like the angle between the quaternions) and sets up
+//               the _slerp method pointer.
+////////////////////////////////////////////////////////////////////
+void CLerpNodePathInterval::
+setup_slerp() {
+  if (_start_quat.dot(_end_quat) < 0.0f) {
+    // Make sure both quaternions are on the same side.
+    _start_quat = -_start_quat;
+  }
+
+  _slerp_angle = _start_quat.angle_rad(_end_quat);
+
+  if (_slerp_angle < 0.1f) {
+    // If the angle is small, use sin(angle)/angle as the denominator,
+    // to provide better behavior with small divisors.  This is Don
+    // Hatch's suggestion from http://www.hadron.org/~hatch/rightway.php .
+    _slerp_denom = csin_over_x(_slerp_angle);
+    _slerp = &CLerpNodePathInterval::slerp_angle_0;
+
+  } else if (_slerp_angle > 3.14) {
+    // If the angle is close to 180 degrees, the lerp is ambiguous.
+    // which plane should we lerp through?  Better pick an
+    // intermediate point to resolve the ambiguity up front.
+
+    // We pick it by choosing a linear point between the quats and
+    // normalizing it out; this will give an arbitrary point when the
+    // angle is exactly 180, but will behave sanely as the angle
+    // approaches 180.
+    _slerp_c = (_start_quat + _end_quat);
+    _slerp_c.normalize();
+    _slerp_angle = _end_quat.angle_rad(_slerp_c);
+    _slerp_denom = csin(_slerp_angle);
+
+    _slerp = &CLerpNodePathInterval::slerp_angle_180;
+    
+  } else {
+    // Otherwise, use the original Shoemake equation for spherical
+    // lerp.
+    _slerp_denom = csin(_slerp_angle);
+    _slerp = &CLerpNodePathInterval::slerp_basic;
+  }
+
+  _flags |= F_slerp_setup;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLerpNodePathInterval::slerp_basic
+//       Access: Private
+//  Description: Implements Ken Shoemake's spherical lerp equation.
+//               This is appropriate when the angle between the
+//               quaternions is not near one extreme or the other.
+////////////////////////////////////////////////////////////////////
+void CLerpNodePathInterval::
+slerp_basic(LQuaternionf &result, float t) const {
+  float ti = 1.0f - t;
+  float ta = t * _slerp_angle;
+  float tia = ti * _slerp_angle;
+
+  result = (csin(tia) * _start_quat + csin(ta) * _end_quat) / _slerp_denom;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLerpNodePathInterval::slerp_angle_0
+//       Access: Private
+//  Description: Implements Don Hatch's modified spherical lerp
+//               equation, appropriate for when the angle between the
+//               quaternions approaches zero.
+////////////////////////////////////////////////////////////////////
+void CLerpNodePathInterval::
+slerp_angle_0(LQuaternionf &result, float t) const {
+  float ti = 1.0f - t;
+  float ta = t * _slerp_angle;
+  float tia = ti * _slerp_angle;
+
+  result = (csin_over_x(tia) * ti * _start_quat + csin_over_x(ta) * t * _end_quat) / _slerp_denom;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLerpNodePathInterval::slerp_angle_180
+//       Access: Private
+//  Description: Implements a two-part slerp, to an intermediate point
+//               and out again, appropriate for when the angle between
+//               the quaternions approaches 180 degrees.
+////////////////////////////////////////////////////////////////////
+void CLerpNodePathInterval::
+slerp_angle_180(LQuaternionf &result, float t) const {
+  if (t < 0.5) {
+    // The first half of the lerp: _start_quat to _slerp_c.
+
+    t *= 2.0f;
+
+    float ti = 1.0f - t;
+    float ta = t * _slerp_angle;
+    float tia = ti * _slerp_angle;
+    
+    result = (csin(tia) * _start_quat + csin(ta) * _slerp_c) / _slerp_denom;
+
+  } else {
+    // The second half of the lerp: _slerp_c to _end_quat.
+    t = t * 2.0f - 1.0f;
+
+    float ti = 1.0f - t;
+    float ta = t * _slerp_angle;
+    float tia = ti * _slerp_angle;
+    
+    result = (csin(tia) * _slerp_c + csin(ta) * _end_quat) / _slerp_denom;
+  }
 }
