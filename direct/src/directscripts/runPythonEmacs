@@ -65,6 +65,11 @@ if [ "$FOURD" ]; then
     FOURD=`cygpath -w $FOURD`
     export FOURD
 fi
+if [ "$PARALLAX" ]; then
+    if [ "$debug" ]; then echo "PARALLAX   $PARALLAX"; fi
+    PARALLAX=`cygpath -w $PARALLAX`
+    export PARALLAX
+fi
 if [ "$WINTOOLS" ]; then
     if [ "$debug" ]; then echo "WINTOOLS  $WINTOOLS"; fi
     WINTOOLS=`cygpath -w $WINTOOLS`
