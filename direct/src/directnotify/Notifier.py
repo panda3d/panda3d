@@ -2,7 +2,6 @@
    for the programmer/user"""
 
 from LoggerGlobal import *
-from NotifySeverity import *
 import time
 
 class Notifier:
@@ -43,32 +42,34 @@ class Notifier:
 
     # Severity funcs
     def setSeverity(self, severity):
-        if severity >= NSError:
+        import NotifySeverity
+        if severity >= NotifySeverity.NSError:
             self.setWarning(0)
             self.setInfo(0)
             self.setDebug(0)
-        elif severity == NSWarning:
+        elif severity == NotifySeverity.NSWarning:
             self.setWarning(1)
             self.setInfo(0)
             self.setDebug(0)
-        elif severity == NSInfo:
+        elif severity == NotifySeverity.NSInfo:
             self.setWarning(1)
             self.setInfo(1)
             self.setDebug(0)
-        elif severity <= NSDebug:
+        elif severity <= NotifySeverity.NSDebug:
             self.setWarning(1)
             self.setInfo(1)
             self.setDebug(1)
 
     def getSeverity(self):
+        import NotifySeverity
         if self.getDebug():
-            return NSDebug
+            return NotifySeverity.NSDebug
         elif self.getInfo():
-            return NSInfo
+            return NotifySeverity.NSInfo
         elif self.getWarning():
-            return NSWarning
+            return NotifySeverity.NSWarning
         else:
-            return NSError
+            return NotifySeverity.NSError
 
     # error funcs
     def error(self, errorString, exception=StandardError):
