@@ -41,3 +41,15 @@ INLINE LensNode *NonlinearImager::
 get_camera() const {
   return _camera;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: NonlinearImager::get_internal_scene
+//       Access: Published
+//  Description: Returns a pointer to the root node of the internal
+//               scene graph, which is used to render all of the
+//               screen meshes.
+////////////////////////////////////////////////////////////////////
+INLINE Node *NonlinearImager::
+get_internal_scene() const {
+  return _internal_scene_top;
+}

@@ -109,10 +109,10 @@ app_traverse(const ArcChain &) {
 //     Function: ProjectionScreen::generate_screen
 //       Access: Published
 //  Description: Synthesizes a polygon mesh based on the projection
-//               area of the indicated projector.  This generates a
-//               new GeomNode and automatically parents it to the
-//               ProjectionScreen; the new GeomNode is also returned
-//               for reference.
+//               area of the indicated projector.  This generates and
+//               returns a new GeomNode but does not automatically
+//               parent it to the ProjectionScreen node; see
+//               regenerate_screen().
 //
 //               The specified projector need not be the same as the
 //               projector given to the ProjectionScreen with
@@ -125,7 +125,7 @@ app_traverse(const ArcChain &) {
 //               respectively; distance represents the approximate
 //               distance of the screen from the lens center.
 ////////////////////////////////////////////////////////////////////
-GeomNode *ProjectionScreen::
+PT(GeomNode) ProjectionScreen::
 generate_screen(LensNode *projector, const string &screen_name,
                 int num_x_verts, int num_y_verts, float distance) {
   nassertr(projector != (LensNode *)NULL, NULL);
@@ -204,14 +204,33 @@ generate_screen(LensNode *projector, const string &screen_name,
   geom->set_colors(colors, G_OVERALL);
 
   // Now create a GeomNode to hold this mesh.
-  GeomNode *geom_node = new GeomNode(screen_name);
+  PT(GeomNode) geom_node = new GeomNode(screen_name);
   geom_node->add_geom(geom);
 
-  // And parent it to ourselves.
-  new RenderRelation(this, geom_node);
   _stale = true;
-
   return geom_node;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProjectionScreen::regenerate_screen
+//       Access: Published
+//  Description: Removes all the children from the ProjectionScreen
+//               node, and adds the newly generated child returned by
+//               generate_screen().
+////////////////////////////////////////////////////////////////////
+void ProjectionScreen::
+regenerate_screen(LensNode *projector, const string &screen_name,
+                  int num_x_verts, int num_y_verts, float distance) {
+  // First, remove all existing children.
+  while (get_num_children(RenderRelation::get_class_type()) > 0) {
+    remove_arc(get_child(RenderRelation::get_class_type(), 0));
+  }
+
+  // And attach a new child.
+  PT(GeomNode) geom_node = 
+    generate_screen(projector, screen_name, num_x_verts, num_y_verts, 
+                    distance);
+  new RenderRelation(this, geom_node);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -518,7 +537,8 @@ make_mesh_geom_node(GeomNode *node, LensNode *camera,
 //       Access: Private
 //  Description: Makes a new Geom, just like the given one, except
 //               flattened into two dimensions as seen by the
-//               indicated lens.
+//               indicated lens.  Any triangle in the original mesh
+//               that involves an unprojectable vertex is eliminated.
 ////////////////////////////////////////////////////////////////////
 PT(dDrawable) ProjectionScreen::
 make_mesh_geom(Geom *geom, Lens *lens, LMatrix4f &rel_mat) {

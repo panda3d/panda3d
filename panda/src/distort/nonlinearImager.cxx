@@ -24,6 +24,7 @@
 #include "matrixLens.h"
 #include "renderRelation.h"
 #include "graphicsWindow.h"
+#include "cullFaceTransition.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NonlinearImager::Constructor
@@ -40,9 +41,19 @@ NonlinearImager(DisplayRegion *dr) {
 
   _internal_camera = new Camera("NonlinearImager");
   _internal_camera->set_lens(new MatrixLens);
-  _internal_scene = new NamedNode("NonlinearImager");
-  _internal_camera->set_scene(_internal_scene);
+  _internal_scene_top = new NamedNode("NonlinearImager");
+  _internal_scene = new NamedNode("screens");
+  _internal_camera->set_scene(_internal_scene_top);
   _dr->set_camera(_internal_camera);
+
+  RenderRelation *top_arc = 
+    new RenderRelation(_internal_scene_top, _internal_scene);
+
+  // Enable face culling on the wireframe mesh.  This will help us to
+  // cull out invalid polygons that result from vertices crossing a
+  // singularity (for instance, at the back of a fisheye lens).
+  CullFaceTransition *cfa = new CullFaceTransition(CullFaceProperty::M_cull_clockwise);
+  top_arc->set_transition(cfa);
 
   _stale = true;
 }
@@ -93,6 +104,7 @@ add_screen(ProjectionScreen *screen) {
   new_screen._texture = (Texture *)NULL;
   new_screen._tex_width = 256;
   new_screen._tex_height = 256;
+  new_screen._active = true;
 
   // If the LensNode associated with the ProjectionScreen is an actual
   // Camera, then it has a scene associated.  Otherwise, the user will
@@ -233,6 +245,43 @@ set_source(int index, Camera *source) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NonlinearImager::set_active
+//       Access: Published
+//  Description: Sets the active flag on the indicated screen.  If the
+//               active flag is true, the screen will be used;
+//               otherwise, it will not appear.
+////////////////////////////////////////////////////////////////////
+void NonlinearImager::
+set_active(int index, bool active) {
+  nassertv(index >= 0 && index < (int)_screens.size());
+  _screens[index]._active = active;
+
+  if (!active) {
+    Screen &screen = _screens[index];
+    // If we've just made this screen inactive, remove its mesh.
+    if (screen._mesh_arc != (NodeRelation *)NULL) {
+      remove_arc(screen._mesh_arc);
+      screen._mesh_arc = (NodeRelation *)NULL;
+    }
+    screen._texture.clear();
+  } else {
+    // If we've just made it active, it needs to be recomputed.
+    _stale = true;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NonlinearImager::get_active
+//       Access: Published
+//  Description: Returns the active flag on the indicated screen.
+////////////////////////////////////////////////////////////////////
+bool NonlinearImager::
+get_active(int index) const {
+  nassertr(index >= 0 && index < (int)_screens.size(), false);
+  return _screens[index]._active;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NonlinearImager::recompute
 //       Access: Published
 //  Description: Forces a regeneration of all the mesh objects, etc.
@@ -241,7 +290,9 @@ void NonlinearImager::
 recompute() {
   Screens::iterator si;
   for (si = _screens.begin(); si != _screens.end(); ++si) {
-    recompute_screen(*si);
+    if ((*si)._active) {
+      recompute_screen(*si);
+    }
   }
 
   if (_camera != (LensNode *)NULL && _camera->get_lens() != (Lens *)NULL) {
@@ -266,7 +317,9 @@ render() {
 
   Screens::iterator si;
   for (si = _screens.begin(); si != _screens.end(); ++si) {
-    render_screen(*si);
+    if ((*si)._active) {
+      render_screen(*si);
+    }
   }
 }
 
@@ -299,7 +352,7 @@ recompute_screen(NonlinearImager::Screen &screen) {
     screen._mesh_arc = (NodeRelation *)NULL;
   }
   screen._texture.clear();
-  if (_camera == (LensNode *)NULL) {
+  if (_camera == (LensNode *)NULL || !screen._active) {
     // Not much we can do without a camera.
     return;
   }

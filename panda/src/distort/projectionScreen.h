@@ -61,8 +61,10 @@ PUBLISHED:
   INLINE void set_projector(LensNode *projector);
   INLINE LensNode *get_projector() const;
 
-  GeomNode *generate_screen(LensNode *projector, const string &screen_name,
-                            int num_x_verts, int num_y_verts, float distance);
+  PT(GeomNode) generate_screen(LensNode *projector, const string &screen_name,
+                               int num_x_verts, int num_y_verts, float distance);
+  void regenerate_screen(LensNode *projector, const string &screen_name,
+                         int num_x_verts, int num_y_verts, float distance);
   PT_Node make_flat_mesh(LensNode *camera);
 
   INLINE void set_vignette_on(bool vignette_on);

@@ -61,8 +61,13 @@ PUBLISHED:
   void set_source(int index, LensNode *source, Node *scene);
   void set_source(int index, Camera *source);
 
+  void set_active(int index, bool active);
+  bool get_active(int index) const;
+
   INLINE void set_camera(LensNode *camera);
   INLINE LensNode *get_camera() const;
+
+  INLINE Node *get_internal_scene() const;
 
   void recompute();
   void render();
@@ -76,6 +81,7 @@ private:
     PT(LensNode) _source;
     PT_Node _scene;
     int _tex_width, _tex_height;
+    bool _active;
   };
 
   void recompute_if_stale();
@@ -90,6 +96,7 @@ private:
   PT(LensNode) _camera;
 
   PT(Camera) _internal_camera;
+  PT_Node _internal_scene_top;
   PT_Node _internal_scene;
 
   bool _stale;

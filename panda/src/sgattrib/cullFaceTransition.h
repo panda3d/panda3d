@@ -23,7 +23,9 @@
 
 #include "cullFaceProperty.h"
 
-#include <onTransition.h>
+#include "nodeTransition.h"
+#include "pointerTo.h"
+#include "onTransition.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CullFaceTransition
