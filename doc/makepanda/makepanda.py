@@ -1518,14 +1518,14 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
 #
 ##########################################################################################
 
-def CompileBAM(bam, egg):
+def CompileBAM(preconv, bam, egg):
     dotexe = ".exe"
     if (sys.platform != "win32"): dotexe = ""
     if (egg[-4:]==".flt"):
-        oscmd(PREFIX + "/built/bin/flt2egg" + dotexe + " " + egg + " " + PREFIX + "/tmp/tmp.egg")
-        oscmd(PREFIX + "/built/bin/egg2bam" + dotexe + " " + PREFIX + "/tmp/tmp.egg" + " " + bam)
+        oscmd(PREFIX + "/built/bin/flt2egg" + dotexe + " -pr " + preconv + " -o " + PREFIX + "/tmp/tmp.egg" + " " + egg)
+        oscmd(PREFIX + "/built/bin/egg2bam" + dotexe + " -o " + bam + " " + PREFIX + "/tmp/tmp.egg")
     else:
-        oscmd(PREFIX + "/built/bin/egg2bam" + dotexe + " " + egg + " " + bam)
+        oscmd(PREFIX + "/built/bin/egg2bam" + dotexe + " -pr " + preconv + " -o " + bam + " " + egg)
 
 ##########################################################################################
 #
@@ -4056,7 +4056,7 @@ if (OMIT.count("VRPN")==0):
 #
 
 IPATH=['panda/metalibs/panda']
-OPTS=['BUILDING_PANDA', 'ZLIB', 'VRPN', 'JPEG', 'PNG', 'TIFF', 'NSPR', 'FREETYPE', 'HELIX', 
+OPTS=['BUILDING_PANDA', 'ZLIB', 'VRPN', 'JPEG', 'PNG', 'TIFF', 'NSPR', 'FREETYPE', 'HELIX', 'FFTW',
       'ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM']
 INFILES=['librecorder.in', 'libpgraph.in', 'libgrutil.in', 'libchan.in', 'libpstatclient.in',
          'libchar.in', 'libcollide.in', 'libdevice.in', 'libdgraph.in', 'libdisplay.in', 'libevent.in',
@@ -5962,26 +5962,33 @@ CopyAllFiles(PREFIX+"/icons/",       "dmodels/src/icons/",     ".gif")
 
 CopyAllFiles(PREFIX+"/models/",     "models/",                ".egg")
 CopyAllFiles(PREFIX+"/models/",     "models/",                ".bam")
+
 CopyAllFiles(PREFIX+"/maps/",       "models/maps/",           ".jpg")
 CopyAllFiles(PREFIX+"/maps/",       "models/maps/",           ".png")
 CopyAllFiles(PREFIX+"/maps/",       "models/maps/",           ".rgb")
+CopyAllFiles(PREFIX+"/maps/",       "models/maps/",           ".rgba")
 
-CompileBAM(PREFIX+"/models/gui/dialog_box_gui.bam",  "dmodels/src/gui/dialog_box_gui.flt")
+CopyAllFiles(PREFIX+"/maps/",       "dmodels/src/maps/",      ".jpg")
+CopyAllFiles(PREFIX+"/maps/",       "dmodels/src/maps/",      ".png")
+CopyAllFiles(PREFIX+"/maps/",       "dmodels/src/maps/",      ".rgb")
+CopyAllFiles(PREFIX+"/maps/",       "dmodels/src/maps/",      ".rgba")
 
-CompileBAM(PREFIX+"/models/misc/camera.bam",         "dmodels/src/misc/camera.flt")
-CompileBAM(PREFIX+"/models/misc/fade.bam",           "dmodels/src/misc/fade.flt")
-CompileBAM(PREFIX+"/models/misc/fade_sphere.bam",    "dmodels/src/misc/fade_sphere.flt")
-CompileBAM(PREFIX+"/models/misc/gridBack.bam",       "dmodels/src/misc/gridBack.flt")
-CompileBAM(PREFIX+"/models/misc/iris.bam",           "dmodels/src/misc/iris.flt")
-CompileBAM(PREFIX+"/models/misc/lilsmiley.bam",      "dmodels/src/misc/lilsmiley.egg")
-CompileBAM(PREFIX+"/models/misc/objectHandles.bam",  "dmodels/src/misc/objectHandles.flt")
-CompileBAM(PREFIX+"/models/misc/rgbCube.bam",        "dmodels/src/misc/rgbCube.flt")
-CompileBAM(PREFIX+"/models/misc/smiley.bam",         "dmodels/src/misc/smiley.egg")
-CompileBAM(PREFIX+"/models/misc/sphere.bam",         "dmodels/src/misc/sphere.flt")
-CompileBAM(PREFIX+"/models/misc/xyzAxis.bam",        "dmodels/src/misc/xyzAxis.flt")
-CompileBAM(PREFIX+"/models/misc/Pointlight.bam",     "dmodels/src/misc/Pointlight.egg")
-CompileBAM(PREFIX+"/models/misc/Dirlight.bam",       "dmodels/src/misc/Dirlight.egg")
-CompileBAM(PREFIX+"/models/misc/Spotlight.bam",      "dmodels/src/misc/Spotlight.egg")
+CompileBAM("../=", PREFIX+"/models/gui/dialog_box_gui.bam",  "dmodels/src/gui/dialog_box_gui.flt")
+
+CompileBAM("../=", PREFIX+"/models/misc/camera.bam",         "dmodels/src/misc/camera.flt")
+CompileBAM("../=", PREFIX+"/models/misc/fade.bam",           "dmodels/src/misc/fade.flt")
+CompileBAM("../=", PREFIX+"/models/misc/fade_sphere.bam",    "dmodels/src/misc/fade_sphere.flt")
+CompileBAM("../=", PREFIX+"/models/misc/gridBack.bam",       "dmodels/src/misc/gridBack.flt")
+CompileBAM("../=", PREFIX+"/models/misc/iris.bam",           "dmodels/src/misc/iris.flt")
+CompileBAM("../=", PREFIX+"/models/misc/lilsmiley.bam",      "dmodels/src/misc/lilsmiley.egg")
+CompileBAM("../=", PREFIX+"/models/misc/objectHandles.bam",  "dmodels/src/misc/objectHandles.flt")
+CompileBAM("../=", PREFIX+"/models/misc/rgbCube.bam",        "dmodels/src/misc/rgbCube.flt")
+CompileBAM("../=", PREFIX+"/models/misc/smiley.bam",         "dmodels/src/misc/smiley.egg")
+CompileBAM("../=", PREFIX+"/models/misc/sphere.bam",         "dmodels/src/misc/sphere.flt")
+CompileBAM("../=", PREFIX+"/models/misc/xyzAxis.bam",        "dmodels/src/misc/xyzAxis.flt")
+CompileBAM("../=", PREFIX+"/models/misc/Pointlight.bam",     "dmodels/src/misc/Pointlight.egg")
+CompileBAM("../=", PREFIX+"/models/misc/Dirlight.bam",       "dmodels/src/misc/Dirlight.egg")
+CompileBAM("../=", PREFIX+"/models/misc/Spotlight.bam",      "dmodels/src/misc/Spotlight.egg")
 
 ##########################################################################################
 #
