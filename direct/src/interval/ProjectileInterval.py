@@ -26,12 +26,13 @@ class ProjectileInterval(Interval):
     def __init__(self, node, startPos = None,
                  endPos = None, duration = None,
                  startVel = None, endZ = None,
+                 wayPoint = None, timeToWayPoint = None,
                  gravityMult = None, name = None):
         """
         You may specify several different sets of input parameters.
         (If startPos is not provided, it will be obtained from the node's
         position at the time that the interval is first started. Note that
-        in this case you must provide a duration.)
+        in this case you must provide a duration of some kind.)
         
         # go from startPos to endPos in duration seconds
         startPos, endPos, duration
@@ -39,6 +40,9 @@ class ProjectileInterval(Interval):
         startPos, startVel, duration
         # given a starting velocity, go until you hit a given Z plane
         startPos, startVel, endZ
+        # pass through wayPoint at time 'timeToWayPoint'. Go until
+        # you hit a given Z plane
+        startPos, wayPoint, timeToWayPoint, endZ
         
         You may alter gravity by providing a multiplier in 'gravityMult'.
         '2.' will make gravity twice as strong, '.5' half as strong.
@@ -58,8 +62,8 @@ class ProjectileInterval(Interval):
                 name += '-%s:%s:%s' % (file, line, func)
             """
 
-        args = (startPos, endPos, duration,
-                startVel, endZ, gravityMult)
+        args = (startPos, endPos, duration, startVel, endZ,
+                wayPoint, timeToWayPoint, gravityMult)
         self.implicitStartPos = 0
         if startPos is None:
             if duration is None:
@@ -77,6 +81,7 @@ class ProjectileInterval(Interval):
     def __calcTrajectory(self, startPos = None,
                          endPos = None, duration = None,
                          startVel = None, endZ = None,
+                         wayPoint = None, timeToWayPoint = None,
                          gravityMult = None):
         if startPos is None:
             startPos = self.node.getPos()
@@ -89,8 +94,10 @@ class ProjectileInterval(Interval):
                 result.append(item)
             return result
 
-        startPos, endPos, startVel, endZ, gravityMult = \
-                  doIndirections(startPos, endPos, startVel, endZ, gravityMult)
+        startPos, endPos, startVel, endZ, gravityMult, wayPoint, \
+                  timeToWayPoint = \
+                  doIndirections(startPos, endPos, startVel, endZ, gravityMult,
+                                 wayPoint, timeToWayPoint)
 
         # we're guaranteed to know the starting position at this point
         self.startPos = startPos
@@ -112,29 +119,12 @@ class ProjectileInterval(Interval):
             return PythonUtil.solveQuadratic(accel * .5, startVel,
                                              startHeight-endHeight)
 
-        # which set of input parameters do we have?
-        if (None not in (endPos, duration)):
-            assert not startVel
-            assert not endZ
-            self.duration = duration
-            self.endPos = endPos
-            self.startVel = calcStartVel(self.startPos, self.endPos,
-                                         self.duration, self.zAcc)
-        elif (None not in (startVel, duration)):
-            assert not endPos
-            assert not endZ
-            self.duration = duration
-            self.startVel = startVel
-            self.endPos = self.__calcPos(self.duration)
-        elif (None not in (startVel, endZ)):
-            assert not endPos
-            assert not duration
-            self.startVel = startVel
-            time = calcTimeOfImpactOnPlane(self.startPos[2], endZ,
-                                           self.startVel[2], self.zAcc)
+        def calcTimeOfLastImpactOnPlane(startHeight, endHeight,
+                                        startVel, accel):
+            time = calcTimeOfImpactOnPlane(startHeight, endHeight,
+                                           startVel, accel)
             if not time:
-                self.notify.error(
-                    'projectile never reaches plane Z=%s' % endZ)
+                return None
             if type(time) == type([]):
                 # projectile hits plane once going up, once going down
                 # assume they want the one on the way down
@@ -144,11 +134,56 @@ class ProjectileInterval(Interval):
             else:
                 self.notify.debug('projectile hits plane once at time: %s' %
                                   time)
+            return time
+
+        # now all we need is startVel, duration, and endPos.
+
+        # which set of input parameters do we have?
+        if (None not in (endPos, duration)):
+            assert not startVel
+            assert not endZ
+            assert not wayPoint
+            assert not timeToWayPoint
+            self.duration = duration
+            self.endPos = endPos
+            self.startVel = calcStartVel(self.startPos, self.endPos,
+                                         self.duration, self.zAcc)
+        elif (None not in (startVel, duration)):
+            assert not endPos
+            assert not endZ
+            assert not wayPoint
+            assert not timeToWayPoint
+            self.duration = duration
+            self.startVel = startVel
+            self.endPos = self.__calcPos(self.duration)
+        elif (None not in (startVel, endZ)):
+            assert not endPos
+            assert not duration
+            assert not wayPoint
+            assert not timeToWayPoint
+            self.startVel = startVel
+            time = calcTimeOfLastImpactOnPlane(self.startPos[2], endZ,
+                                               self.startVel[2], self.zAcc)
+            if time is None:
+                self.notify.error(
+                    'projectile never reaches plane Z=%s' % endZ)
             self.duration = time
+            self.endPos = self.__calcPos(self.duration)
+        elif (None not in (wayPoint, timeToWayPoint, endZ)):
+            assert not endPos
+            assert not duration
+            assert not startVel
+            # we pass through wayPoint at time 'timeToWayPoint', and we
+            # stop when we reach endZ
+            self.startVel = calcStartVel(self.startPos, wayPoint,
+                                         timeToWayPoint, self.zAcc)
+            self.duration = calcTimeOfLastImpactOnPlane(
+                self.startPos[2], endZ, self.startVel[2], self.zAcc)
             self.endPos = self.__calcPos(self.duration)
         else:
             self.notify.error('invalid set of inputs to ProjectileInterval')
 
+        # these are the parameters that we need to know:
         self.notify.debug('startPos: %s' % `self.startPos`)
         self.notify.debug('endPos:   %s' % `self.endPos`)
         self.notify.debug('duration: %s' % self.duration)
