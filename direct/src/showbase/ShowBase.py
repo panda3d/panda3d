@@ -259,9 +259,12 @@ class ShowBase(DirectObject.DirectObject):
         __builtins__["directNotify"] = directNotify
         __builtins__["globalClock"] = ClockObject.getGlobalClock()
         __builtins__["vfs"] = vfs
+        __builtins__["__dev__"] = base.config.GetBool('want-dev', 0)
         if __debug__:
             __builtins__["deltaProfiler"] = DeltaProfiler.DeltaProfiler("ShowBase")
             __builtins__["onScreenDebug"] = OnScreenDebug.OnScreenDebug()
+
+        ShowBase.notify.info('__dev__ == %s' % __dev__)
 
         # Now hang a hook on the window-event from Panda.  This allows
         # us to detect when the user resizes, minimizes, or closes the
