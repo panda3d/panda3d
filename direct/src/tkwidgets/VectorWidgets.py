@@ -213,7 +213,7 @@ class VectorEntry(Pmw.MegaWidget):
         
     def action(self, fCommand = 1):
         self._refreshFloaters()
-        if fCommand & (self['command'] != None):
+        if fCommand and (self['command'] != None):
             self['command'](self._value)        
         
     def reset(self):

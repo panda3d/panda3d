@@ -232,9 +232,9 @@ class Dial(Pmw.MegaWidget):
         delta = self.delta
         dialAngle = dialAngle % TWO_PI
         # Check for rollover, if necessary
-        if (self.lastAngle > ONEPOINTFIVE_PI) & (dialAngle < POINTFIVE_PI):
+        if (self.lastAngle > ONEPOINTFIVE_PI) and (dialAngle < POINTFIVE_PI):
             self.baseVal = self.baseVal + delta
-        elif (self.lastAngle < POINTFIVE_PI) & (dialAngle > ONEPOINTFIVE_PI):
+        elif (self.lastAngle < POINTFIVE_PI) and (dialAngle > ONEPOINTFIVE_PI):
             self.baseVal = self.baseVal - delta
         self.lastAngle = dialAngle
         # Update value and entry
@@ -257,7 +257,7 @@ class Dial(Pmw.MegaWidget):
             self.dialAngle = None
         else:
             self.updateIndicator(value)
-        if fCommand & (self['command'] != None):
+        if fCommand and (self['command'] != None):
             apply(self['command'], [value] + self['commandData'])
 
     def updateIndicator(self, value):

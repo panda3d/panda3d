@@ -672,7 +672,7 @@ class MopathRecorder(AppShell, PandaObject):
         Hook called upon deselection of a node path used to select playback
         marker if subnode selected
         """
-        if ((nodePath.id() == self.playbackMarker.id()) |
+        if ((nodePath.id() == self.playbackMarker.id()) or
             (nodePath.id() == self.tangentMarker.id())):
             self.tangentGroup.hide()
 
@@ -947,7 +947,7 @@ class MopathRecorder(AppShell, PandaObject):
                 self.recordPoint(self.recordStart)
             # Everything else
             else:
-                if ((self.recordingType.get() == 'Refine') |
+                if ((self.recordingType.get() == 'Refine') or
                     (self.recordingType.get() == 'Extend')):
                     # Turn off looping playback
                     self.loopPlayback = 0
@@ -972,7 +972,7 @@ class MopathRecorder(AppShell, PandaObject):
             if self.samplingMode == 'Continuous':
                 # Kill old task
                 taskMgr.removeTasksNamed(self.name + '-recordTask')
-                if ((self.recordingType.get() == 'Refine') |
+                if ((self.recordingType.get() == 'Refine') or
                     (self.recordingType.get() == 'Extend')):
                     # Reparent node path back to parent
                     self['nodePath'].wrtReparentTo(self.nodePathParent)
@@ -988,7 +988,7 @@ class MopathRecorder(AppShell, PandaObject):
             self.setSamplingMode('Continuous')
             self.enableKeyframeButton()
             # Clean up after refine or extend
-            if ((self.recordingType.get() == 'Refine') |
+            if ((self.recordingType.get() == 'Refine') or
                 (self.recordingType.get() == 'Extend')):
                 # Merge prePoints, pointSet, postPoints
                 self.mergePoints()
@@ -1008,7 +1008,7 @@ class MopathRecorder(AppShell, PandaObject):
 
     def addKeyframe(self, fToggleRecord = 1):
         # Make sure we're in a recording mode!
-        if (fToggleRecord &
+        if (fToggleRecord and
             (not self.getVariable('Recording', 'Record').get())):
             # Set sampling mode
             self.setSamplingMode('Keyframe')
@@ -1042,16 +1042,16 @@ class MopathRecorder(AppShell, PandaObject):
 
     def recordPoint(self, time):
         # Call user define callback before recording point
-        if (self.getVariable('Recording', 'PRF Active').get() &
+        if (self.getVariable('Recording', 'PRF Active').get() and
             (self.preRecordFunc != None)):
             self.preRecordFunc()
         # Get point
         pos = self['nodePath'].getPos(self.nodePathParent)
         hpr = self['nodePath'].getHpr(self.nodePathParent)
         # Blend between recordNodePath and self['nodePath']
-        if ((self.recordingType.get() == 'Refine') |
+        if ((self.recordingType.get() == 'Refine') or
             (self.recordingType.get() == 'Extend')):
-            if ((time < self.controlStart) &
+            if ((time < self.controlStart) and
                 ((self.controlStart - self.recordStart) != 0.0)):
                 rPos = self.playbackNodePath.getPos(self.nodePathParent)
                 rHpr = self.playbackNodePath.getHpr(self.nodePathParent)
@@ -1060,8 +1060,8 @@ class MopathRecorder(AppShell, PandaObject):
                 # Transition between the recorded node path and the driven one
                 pos = (rPos * (1 - t)) + (pos * t)
                 hpr = (rHpr * (1 - t)) + (hpr * t)
-            elif ((self.recordingType.get() == 'Refine') &
-                  (time > self.controlStop) &
+            elif ((self.recordingType.get() == 'Refine') and
+                  (time > self.controlStop) and
                   ((self.recordStop - self.controlStop) != 0.0)):
                 rPos = self.playbackNodePath.getPos(self.nodePathParent)
                 rHpr = self.playbackNodePath.getHpr(self.nodePathParent)
@@ -1084,7 +1084,7 @@ class MopathRecorder(AppShell, PandaObject):
 
     def computeCurves(self):
         # Check to make sure curve fitters have points
-        if ((self.xyzCurveFitter.getNumSamples() == 0) |
+        if ((self.xyzCurveFitter.getNumSamples() == 0) or
             (self.hprCurveFitter.getNumSamples() == 0)):
             print 'MopathRecorder.computeCurves: Must define curve first'
             return
@@ -1288,7 +1288,7 @@ class MopathRecorder(AppShell, PandaObject):
         self.loopPlayback = self.getVariable('Playback', 'Loop').get()
 
     def playbackGoTo(self, time):
-        if (self.xyzNurbsCurve == None) & (self.hprNurbsCurve == None):
+        if (self.xyzNurbsCurve == None) and (self.hprNurbsCurve == None):
             return
         self.playbackTime = CLAMP(time, 0.0, self.maxT)
         if self.xyzNurbsCurve != None:
@@ -1301,7 +1301,7 @@ class MopathRecorder(AppShell, PandaObject):
             self.playbackNodePath.setHpr(self.nodePathParent, hpr)
 
     def startPlayback(self):
-        if (self.xyzNurbsCurve == None) & (self.hprNurbsCurve == None):
+        if (self.xyzNurbsCurve == None) and (self.hprNurbsCurve == None):
             return
         # Kill any existing tasks
         self.stopPlayback()
@@ -1329,7 +1329,7 @@ class MopathRecorder(AppShell, PandaObject):
             cTime = state.currentTime + dTime
         # Stop task if not looping and at end of curve
         # Or if refining curve and past recordStop
-        if ((self.recordingType.get() == 'Refine') &
+        if ((self.recordingType.get() == 'Refine') and
               (cTime > self.recordStop)):
             # Go to recordStop
             self.getWidget('Playback', 'Time').set(self.recordStop)
@@ -1338,8 +1338,8 @@ class MopathRecorder(AppShell, PandaObject):
             # Also kill record task
             self.toggleRecordVar()
             return Task.done
-        elif (((self.loopPlayback == 0) & (cTime > self.maxT)) |
-            ((self.recordingType.get() == 'Extend') & (cTime > self.maxT))):
+        elif (((self.loopPlayback == 0) and (cTime > self.maxT)) or
+            ((self.recordingType.get() == 'Extend') and (cTime > self.maxT))):
             # Go to maxT
             self.getWidget('Playback', 'Time').set(self.maxT)
             # Then stop playback
@@ -1373,7 +1373,7 @@ class MopathRecorder(AppShell, PandaObject):
         self.desampleFrequency = frequency
         
     def desampleCurve(self):
-        if ((self.xyzCurveFitter.getNumSamples() == 0) |
+        if ((self.xyzCurveFitter.getNumSamples() == 0) or
             (self.hprCurveFitter.getNumSamples() == 0)):
             print 'MopathRecorder.desampleCurve: Must define curve first'
             return
@@ -1393,7 +1393,7 @@ class MopathRecorder(AppShell, PandaObject):
         self.numSamples = int(numSamples)
         
     def sampleCurve(self, even = 'None Given'):
-        if (self.xyzNurbsCurve == None) & (self.hprNurbsCurve == None):
+        if (self.xyzNurbsCurve == None) and (self.hprNurbsCurve == None):
             print 'MopathRecorder.sampleCurve: Must define curve first'
             return
         # Reset curve fitters
@@ -1662,7 +1662,7 @@ class MopathRecorder(AppShell, PandaObject):
         # Get points within bounds
         for time, pos, hpr in oldPoints:
             # Is it within the time?
-            if ((time > self.cropFrom) &
+            if ((time > self.cropFrom) and
                 (time < self.cropTo)):
                 # Add it to the curve fitters
                 t = time - self.cropFrom
@@ -1707,7 +1707,7 @@ class MopathRecorder(AppShell, PandaObject):
             nodePath = loader.loadModel(mopathFilename)
             if nodePath:
                 self.extractCurves(nodePath)
-                if ((self.xyzNurbsCurve != None) & 
+                if ((self.xyzNurbsCurve != None) and 
                     (self.hprNurbsCurve != None)):
                     # Save a pointset for this curve
                     self.savePointSet()

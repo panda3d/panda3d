@@ -57,7 +57,7 @@ class DirectCameraControl(PandaObject):
         # Record undo point
         direct.pushUndo([direct.camera])
 	# Where are we in the display region?
-        if ((abs(direct.dr.mouseX) < 0.9) & (abs(direct.dr.mouseY) < 0.9)):
+        if ((abs(direct.dr.mouseX) < 0.9) and (abs(direct.dr.mouseY) < 0.9)):
             # MOUSE IS IN CENTRAL REGION
             # Hide the marker for this kind of motion
             self.coaMarker.hide()
@@ -73,7 +73,7 @@ class DirectCameraControl(PandaObject):
                 coa.assign(hitPt)
                 coaDist = hitPtDist
                 # Handle case of bad coa point (too close or too far)
-                if ((coaDist < (1.1 * direct.dr.near)) |
+                if ((coaDist < (1.1 * direct.dr.near)) or
                     (coaDist > direct.dr.far)):
                     # Just use existing point
                     coa.assign(self.coaMarker.getPos(direct.camera))
@@ -96,7 +96,7 @@ class DirectCameraControl(PandaObject):
             self.spawnXZTranslateOrHPanYZoom()
             # END MOUSE IN CENTRAL REGION
         else:
-            if ((abs(direct.dr.mouseX) > 0.9) & (abs(direct.dr.mouseY) > 0.9)):
+            if ((abs(direct.dr.mouseX) > 0.9) and (abs(direct.dr.mouseY) > 0.9)):
                 # Mouse is in corners, spawn roll task
                 self.spawnMouseRollTask()
             else:
@@ -217,10 +217,10 @@ class DirectCameraControl(PandaObject):
 
     def mouseRotateTask(self, state):
         # If moving outside of center, ignore motion perpendicular to edge
-        if ((state.constrainedDir == 'y') & (abs(direct.dr.mouseX) > 0.9)):
+        if ((state.constrainedDir == 'y') and (abs(direct.dr.mouseX) > 0.9)):
             deltaX = 0
             deltaY = direct.dr.mouseDeltaY
-        elif ((state.constrainedDir == 'x') & (abs(direct.dr.mouseY) > 0.9)):
+        elif ((state.constrainedDir == 'x') and (abs(direct.dr.mouseY) > 0.9)):
             deltaX = direct.dr.mouseDeltaX
             deltaY = 0
         else:
@@ -291,6 +291,7 @@ class DirectCameraControl(PandaObject):
     def homeCam(self):
         # Record undo point
         direct.pushUndo([direct.camera])
+        direct.camera.reparentTo(render)
         direct.camera.setMat(Mat4.identMat())
         # Resize coa marker
         self.updateCoaMarkerSize()

@@ -71,7 +71,7 @@ class DirectManipulationControl(PandaObject):
         return Task.done
 
     def watchMouseTask(self, state):
-        if (((abs (state.initX - direct.dr.mouseX)) > 0.01) |
+        if (((abs (state.initX - direct.dr.mouseX)) > 0.01) or
             ((abs (state.initY - direct.dr.mouseY)) > 0.01)):
             taskMgr.removeTasksNamed('manip-move-wait')
             self.mode = 'move'
@@ -197,7 +197,7 @@ class DirectManipulationControl(PandaObject):
         # Compute widget's xy coords in screen space
         t.coaCenter = getScreenXY(direct.widget)
         # These are used to rotate about view vector
-        if t.fMouseX & t.fMouseY:
+        if t.fMouseX and t.fMouseY:
             t.lastAngle = getCrankAngle(t.coaCenter)
         taskMgr.spawnTaskNamed(t, 'manipulateObject')
 
@@ -214,7 +214,7 @@ class DirectManipulationControl(PandaObject):
         # No widget interaction, determine free manip mode
         elif self.fFreeManip:
             # If we've been scaling and changed modes, reset object handles
-            if 0 & self.fScaling & (not direct.fAlt):
+            if 0 and self.fScaling and (not direct.fAlt):
                 self.objectHandles.transferObjectHandlesScale()
                 self.fScaling = 0
             # Alt key switches to a scaling mode
@@ -222,10 +222,10 @@ class DirectManipulationControl(PandaObject):
                 self.fScaling = 1
                 self.scale3D(state)
             # Otherwise, manip mode depends on where you started
-            elif state.fMouseX & state.fMouseY:
+            elif state.fMouseX and state.fMouseY:
                 # In the corner, spin around camera's axis
                 self.rotateAboutViewVector(state)
-            elif state.fMouseX | state.fMouseY:
+            elif state.fMouseX or state.fMouseY:
                 # Mouse started elsewhere in the outer frame, rotate
                 self.rotate2D(state)
             else:
@@ -393,10 +393,10 @@ class DirectManipulationControl(PandaObject):
         self.fScaleInit = 1
         tumbleRate = 360
         # If moving outside of center, ignore motion perpendicular to edge
-        if ((state.constrainedDir == 'y') & (abs(direct.dr.mouseX) > 0.9)):
+        if ((state.constrainedDir == 'y') and (abs(direct.dr.mouseX) > 0.9)):
             deltaX = 0
             deltaY = direct.dr.mouseDeltaY
-        elif ((state.constrainedDir == 'x') & (abs(direct.dr.mouseY) > 0.9)):
+        elif ((state.constrainedDir == 'x') and (abs(direct.dr.mouseY) > 0.9)):
             deltaX = direct.dr.mouseDeltaX
             deltaY = 0
         else:
@@ -450,7 +450,7 @@ class DirectManipulationControl(PandaObject):
         node, hitPt, hitPtDist = direct.iRay.pickGeom(
             fIntersectUnpickable = 1)
         # MRM: Need to handle moving COA
-        if (node != None) & (direct.selected.last != None):
+        if (node != None) and (direct.selected.last != None):
             # Record undo point
             direct.pushUndo(direct.selected)
             # Record wrt matrix

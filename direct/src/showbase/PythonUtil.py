@@ -109,21 +109,21 @@ def _pdir(obj, str = None, fOverloaded = 0, width = None,
         if str:
             if re.search(str, key, re.I):
                 aproposKeys.append(key)
-                if (not width) & (keyWidth > maxWidth):
+                if (not width) and (keyWidth > maxWidth):
                     maxWidth = keyWidth
         else:
             if key[:2] == '__':
                 privateKeys.append(key)
-                if (not width) & (keyWidth > maxWidth):
+                if (not width) and (keyWidth > maxWidth):
                     maxWidth = keyWidth
             elif (key[:10] == 'overloaded'):
                 if fOverloaded:
                     overloadedKeys.append(key)
-                    if (not width) & (keyWidth > maxWidth):
+                    if (not width) and (keyWidth > maxWidth):
                         maxWidth = keyWidth
             else:
                 remainingKeys.append(key)
-                if (not width) & (keyWidth > maxWidth):
+                if (not width) and (keyWidth > maxWidth):
                     maxWidth = keyWidth
     # Sort appropriate keys
     if str:

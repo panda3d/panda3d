@@ -45,7 +45,7 @@ class DirectButtons(ButtonNode, PandaObject):
         self.nodePath = base.dataRoot.attachNewNode(self)
     
     def __getitem__(self, index):
-        if (index < 0) | (index > self.getNumButtons()):
+        if (index < 0) or (index > self.getNumButtons()):
             raise IndexError
         return self.getButtonState(index)
     
@@ -83,7 +83,7 @@ class DirectAnalogs(AnalogNode, PandaObject):
         self.nodePath = base.dataRoot.attachNewNode(self)
     
     def __getitem__(self, index):
-        if (index < 0) | (index > self.getNumControls()):
+        if (index < 0) or (index > self.getNumControls()):
             raise IndexError
         return self.getControlState(index)
     
@@ -111,7 +111,7 @@ class DirectAnalogs(AnalogNode, PandaObject):
     
     def normalizeChannel(self, chan, minVal = -1, maxVal = 1):
         try:
-            if (chan == 2) | (chan == 6):
+            if (chan == 2) or (chan == 6):
                 # These channels have reduced range
                 return self.normalize(self[chan] * 3.0, minVal, maxVal)
             else:
@@ -144,7 +144,7 @@ class DirectDials(DialNode, PandaObject):
         self.nodePath = base.dataRoot.attachNewNode(self)
     
     def __getitem__(self, index):
-        if (index < 0) | (index > self.getNumDials()):
+        if (index < 0) or (index > self.getNumDials()):
             raise IndexError
         return self.readDial(index)
     

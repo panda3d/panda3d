@@ -239,9 +239,9 @@ class DirectSession(PandaObject):
             self.selected.toggleVisAll()
         elif input == 'w':
             base.toggleWireframe()
-        elif (input == '[') | (input == '{'):
+        elif (input == '[') or (input == '{'):
             self.undo()
-        elif (input == ']') | (input == '}'):
+        elif (input == ']') or (input == '}'):
             self.redo()
         
     def select(self, nodePath, fMultiSelect = 0, fResetAncestry = 1):
@@ -402,7 +402,7 @@ class DirectSession(PandaObject):
             if i < l:
                 np = self.ancestry[i]
                 name = np.getName()
-                if (name != 'render') & (name != 'renderTop'):
+                if (name != 'render') and (name != 'renderTop'):
                     self.ancestryIndex = i
                     self.select(np, 0, 0)
                     self.flash(np)
@@ -414,7 +414,7 @@ class DirectSession(PandaObject):
             if i >= 0:
                 np = self.ancestry[i]
                 name = np.getName()
-                if (name != 'render') & (name != 'renderTop'):
+                if (name != 'render') and (name != 'renderTop'):
                     self.ancestryIndex = i
                     self.select(np, 0, 0)
                     self.flash(np)
@@ -434,7 +434,7 @@ class DirectSession(PandaObject):
         self.undoList = self.undoList[-25:]
         # Alert anyone who cares
         messenger.send('pushUndo')
-        if fResetRedo & (nodePathList != []):
+        if fResetRedo and (nodePathList != []):
             self.redoList = []
             messenger.send('redoListEmpty')
 

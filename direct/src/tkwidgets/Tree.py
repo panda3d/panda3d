@@ -5,7 +5,7 @@
 # - key bindings (instead of quick-n-dirty bindings on Canvas):
 #   - up/down arrow keys to move focus around
 #   - ditto for page up/down, home/end
-#   - left/right arrows to expand/collapse & move out/in
+#   - left/right arrows to expand/collapse and move out/in
 # - more doc strings
 # - add icons for "file", "module", "class", "method"; better "python" icon
 # - callback for selection???

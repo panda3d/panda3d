@@ -182,7 +182,7 @@ class Floater(Pmw.MegaWidget):
         self.entry.checkentry()
         
         # execute command
-        if fCommand & (self['command'] is not None):
+        if fCommand and (self['command'] is not None):
             apply(self['command'], [newVal] + self['commandData'])
 
     def reset(self):
@@ -305,7 +305,7 @@ class FloaterGroup(Pmw.MegaToplevel):
             self._value[i] = value[i]
             # Update floater, but don't execute its command
             self.floaterList[i].set(value[i], 0)
-        if fCommand & (self['command'] is not None):
+        if fCommand and (self['command'] is not None):
             self['command'](self._value)
 
     def setAt(self, index, value):

@@ -223,7 +223,7 @@ class EntryScale(Pmw.MegaWidget):
         self.entry.checkentry()
         
         # execute command
-        if fCommand & (self['command'] is not None):
+        if fCommand and (self['command'] is not None):
             self['command']( newVal )
 
     def onReturn(self, *args):
@@ -349,7 +349,7 @@ class EntryScaleGroup(Pmw.MegaToplevel):
             self._value[i] = value[i]
             # Update entryScale, but don't execute its command
             self.entryScaleList[i].set(value[i], 0)
-        if fCommand & (self['command'] is not None):
+        if fCommand and (self['command'] is not None):
             self['command'](self._value)
 
     def setAt(self, index, value):

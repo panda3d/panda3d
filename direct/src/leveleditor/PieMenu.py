@@ -74,7 +74,7 @@ class PieMenu(NodePath, PandaObject):
         self.lines.setVertex(1,(deltaX/self.sfx),0.0,(deltaY/self.sfz))
 
         # How far from starting point has user moved the cursor?
-        if ((abs(deltaX) < 0.1) & (abs(deltaY) < 0.1)):
+        if ((abs(deltaX) < 0.1) and (abs(deltaY) < 0.1)):
             # In the center
             if self.fUpdateOnlyOnChange:
                 # Only do this when things change

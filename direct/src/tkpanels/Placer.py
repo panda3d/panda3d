@@ -455,7 +455,7 @@ class Placer(AppShell):
             self.nodePathMenuEntry.configure(
                 background = self.nodePathMenuBG)
             # Check to see if node path and ref node path are the same
-            if ((self.refCS != None) &
+            if ((self.refCS != None) and
                 (self.refCS.id() == self['nodePath'].id())):
                 # Yes they are, use temp CS as ref
                 # This calls updatePlacer
@@ -499,7 +499,7 @@ class Placer(AppShell):
                     listbox = self.refNodePathMenu.component('scrolledlist')
                     listbox.setlist(self.refNodePathNames)
         # Check to see if node path and ref node path are the same
-        if (nodePath != None) & (nodePath.id() == self['nodePath'].id()):
+        if (nodePath != None) and (nodePath.id() == self['nodePath'].id()):
             # Yes they are, use temp CS and update listbox accordingly
             nodePath = self.tempCS
             self.refNodePathMenu.selectitem('self')
@@ -549,7 +549,7 @@ class Placer(AppShell):
         hpr = Vec3(0)
         scale = Vec3(1)
         np = self['nodePath']
-        if (np != None) & isinstance(np, NodePath):
+        if (np != None) and isinstance(np, NodePath):
             # Update temp CS
             self.updateAuxiliaryCoordinateSystems()
             # Update widgets
@@ -620,7 +620,7 @@ class Placer(AppShell):
 
     def xformRelative(self, value, axis):
         nodePath = self['nodePath']
-        if (nodePath != None) & (self.refCS != None):
+        if (nodePath != None) and (self.refCS != None):
             if axis == 'x':
                 nodePath.setX(self.refCS, value)
             elif axis == 'y':
@@ -639,8 +639,8 @@ class Placer(AppShell):
 
     def xformOrbit(self, value, axis):
         nodePath = self['nodePath']
-        if ((nodePath != None) & (self.refCS != None) &
-            (self.orbitFromCS != None) & (self.orbitToCS != None)):
+        if ((nodePath != None) and (self.refCS != None) and
+            (self.orbitFromCS != None) and (self.orbitToCS != None)):
             if axis == 'x':
                 self.posOffset.setX(value)
             elif axis == 'y':

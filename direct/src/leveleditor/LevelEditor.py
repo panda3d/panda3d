@@ -571,7 +571,7 @@ class LevelEditor(NodePath, PandaObject):
                 if parentDNAObject:
                     # Yes it does, move node path (and DNA)
                     # to new parent (if active parent set)
-                    if ((self.NPParent != None) &
+                    if ((self.NPParent != None) and
                         (self.DNAParent != None)):
                         nodePath.reparentTo(self.NPParent)
                         parentDNAObject.remove(dnaNode)
@@ -702,11 +702,11 @@ class LevelEditor(NodePath, PandaObject):
 	chance = randint(0,100)
         if chance <= 15:
             return 5.0
-        elif (chance > 15) & (chance <= 30):
+        elif (chance > 15) and (chance <= 30):
             return 10.0
-        elif (chance > 30) & (chance <= 65):
+        elif (chance > 30) and (chance <= 65):
             return 15.0
-        elif (chance > 65) & (chance <= 85):
+        elif (chance > 65) and (chance <= 85):
             return 20.0
         elif (chance > 85):
             return 25.0
@@ -748,7 +748,7 @@ class LevelEditor(NodePath, PandaObject):
         # destination (part of cleanup
         taskMgr.removeTasksNamed('autoPositionGrid')
         # Now find where to put node path
-        if (hotKey is not None) & nodeClass.eq(DNA_PROP):
+        if (hotKey is not None) and nodeClass.eq(DNA_PROP):
             # If its a prop and a copy, place it based upon current
             # mouse position
             hitPt = self.getGridIntersectionPoint()
@@ -1023,7 +1023,7 @@ class LevelEditor(NodePath, PandaObject):
                     menuMode = 'cornice_orientation'
                 else:
                     menuMode = 'cornice_texture'
-            elif ((xPt < 0.3) | (xPt > 0.7)):
+            elif ((xPt < 0.3) or (xPt > 0.7)):
                 # Do wall operations
                 if direct.fControl:
                     menuMode = 'wall_color'
@@ -1061,10 +1061,10 @@ class LevelEditor(NodePath, PandaObject):
         # Update panel color if appropriate
         if self.DNATarget:
             objClass = DNAGetClassType(self.DNATarget)
-            if ((objClass.eq(DNA_WALL)) |
-                (objClass.eq(DNA_WINDOWS)) |
-                (objClass.eq(DNA_DOOR)) |
-                (objClass.eq(DNA_CORNICE)) |
+            if ((objClass.eq(DNA_WALL)) or
+                (objClass.eq(DNA_WINDOWS)) or
+                (objClass.eq(DNA_DOOR)) or
+                (objClass.eq(DNA_CORNICE)) or
                 (objClass.eq(DNA_PROP))
                 ):
                 self.panel.setCurrentColor(self.DNATarget.getColor())
@@ -1075,10 +1075,10 @@ class LevelEditor(NodePath, PandaObject):
             self.replaceSelected()
             
     def setDNATargetCode(self, type, code):
-        if (self.DNATarget != None) & (code != None):
+        if (self.DNATarget != None) and (code != None):
             # Update code
             self.DNATarget.setCode(code)
-        elif (self.DNATarget != None) & (code == None):
+        elif (self.DNATarget != None) and (code == None):
             # Delete object, record pertinant properties before
             # you delete the object so you can restore them later
             # Remove object
@@ -1092,7 +1092,7 @@ class LevelEditor(NodePath, PandaObject):
                 self.removeWindows(self.DNATarget, self.DNATargetParent)
             # Clear out DNATarget
             self.DNATarget = None
-        elif (self.DNATarget == None) & (code != None):
+        elif (self.DNATarget == None) and (code != None):
             # Add new object
             if (type == 'cornice'):
                 self.DNATarget = self.createCornice()
@@ -1114,13 +1114,13 @@ class LevelEditor(NodePath, PandaObject):
         self.replaceSelected()
         
     def setDNATargetOrientation(self, orientation):
-        if (self.DNATarget != None) & (orientation != None):
+        if (self.DNATarget != None) and (orientation != None):
             oldCode = self.DNATarget.getCode()[:-3]
             self.DNATarget.setCode(oldCode + '_' + orientation)
             self.replaceSelected()
             
     def setBuildingStyle(self, style):
-        if (self.DNATarget != None) & (style != None):
+        if (self.DNATarget != None) and (style != None):
             self.styleManager.setDNAFlatBuildingStyle(
                 self.DNATarget, style, 
                 width = self.DNATarget.getWidth(),
@@ -1139,19 +1139,19 @@ class LevelEditor(NodePath, PandaObject):
             self.replaceSelected()
             
     def setWindowCount(self, count):
-        if (self.DNATarget != None) & (count != 0):
+        if (self.DNATarget != None) and (count != 0):
             self.DNATarget.setWindowCount(count)
-        elif (self.DNATarget != None) & (count == 0):
+        elif (self.DNATarget != None) and (count == 0):
             # Remove windows and clear out DNATarget
             self.removeWindows(self.DNATarget, self.DNATargetParent)
             self.DNATarget = None
-        elif (self.DNATarget == None) & (count != 0):
+        elif (self.DNATarget == None) and (count != 0):
             self.DNATarget = self.createWindows()
             self.DNATargetParent.add(self.DNATarget)
         self.replaceSelected()
             
     def setWallStyle(self, style):
-        if (self.DNATarget != None) & (style != None):
+        if (self.DNATarget != None) and (style != None):
             self.styleManager.setDNAWallStyle(
                 self.DNATarget, style,
                 self.DNATarget.getHeight())
@@ -1241,7 +1241,7 @@ class LevelEditor(NodePath, PandaObject):
     # MANIPULATION FUNCTIONS
     def keyboardRotateSelected(self, arrowDirection):
         """ Rotate selected objects using arrow keys """
-        if ((arrowDirection == 'left') | (arrowDirection == 'up')):
+        if ((arrowDirection == 'left') or (arrowDirection == 'up')):
             self.setLastAngle(self.getLastAngle() + SNAP_ANGLE)
         else:
             self.setLastAngle(self.getLastAngle() - SNAP_ANGLE)
@@ -1401,7 +1401,7 @@ class LevelEditor(NodePath, PandaObject):
             return None
 
     def getRandomWindowCount(self):
-        if ((self.lastWall != None) & (self.lastBuilding != None)):
+        if ((self.lastWall != None) and (self.lastBuilding != None)):
             h = ROUND_INT(self.lastWall.getHeight())
             w = ROUND_INT(self.lastBuilding.getWidth())
             # Otherwise....
@@ -1460,7 +1460,7 @@ class LevelEditor(NodePath, PandaObject):
 	taskMgr.removeTasksNamed('autoMoveDelay')
 	handlesToCam = direct.widget.getPos(direct.camera)
 	handlesToCam = handlesToCam * ( direct.dr.near/handlesToCam[1])
-	if ((abs(handlesToCam[0]) > (direct.dr.nearWidth * 0.4)) |
+	if ((abs(handlesToCam[0]) > (direct.dr.nearWidth * 0.4)) or
             (abs(handlesToCam[2]) > (direct.dr.nearHeight * 0.4))):
             taskMgr.removeTasksNamed('manipulateCamera')
             direct.cameraControl.centerCamIn(0.5)
@@ -1701,7 +1701,7 @@ class LevelEditor(NodePath, PandaObject):
         xPt = hitPt[0]
         zPt = hitPt[2]
         # Left or right of building
-        if ((xPt < 0) | (xPt > aDNAFlatBuilding.getWidth())):
+        if ((xPt < 0) or (xPt > aDNAFlatBuilding.getWidth())):
             return -1
         # Below the building
         if zPt < 0:
@@ -2079,7 +2079,7 @@ class LevelStyleManager:
                 pair = map(string.strip, l.split(':'))
                 if style.__dict__.has_key(pair[0]):
                     # Convert colors and count strings to numerical values
-                    if ((string.find(pair[0],'_color') >= 0) |
+                    if ((string.find(pair[0],'_color') >= 0) or
                         (string.find(pair[0],'_count') >= 0)):
                         style[pair[0]] = eval(pair[1])
                     else:
@@ -2482,7 +2482,7 @@ class LevelStyleManager:
         for dnaType in DNA_TYPES:
             # Create a dictionary of dna types
             dict = {}
-            if ((dnaType == 'street') | (dnaType == 'prop') |
+            if ((dnaType == 'street') or (dnaType == 'prop') or
                 (dnaType == 'toon_landmark')):
                 dnaList = self.getCatalogCodes(dnaType)
             else:
@@ -2494,7 +2494,7 @@ class LevelStyleManager:
             attribute = LevelAttribute(dnaType + '_texture')
             attribute.setDict(dict)
             # Prepend None to allow option of no item
-            if ((dnaType == 'street') | (dnaType == 'prop') |
+            if ((dnaType == 'street') or (dnaType == 'prop') or
                 (dnaType == 'toon_landmark')):
                 attribute.setMenu(self.createTextPieMenu(dnaType, dnaList))
             elif (dnaType == 'wall'):
@@ -3320,12 +3320,12 @@ class LevelEditorPanel(Pmw.MegaToplevel):
     def updateSelectedObjColor(self, color):
         try:
             obj = self.levelEditor.DNATarget
-            if self.fUpdateSelected & (obj != None):
+            if self.fUpdateSelected and (obj != None):
                 objClass = DNAGetClassType(obj)
-                if ((objClass.eq(DNA_WALL)) |
-                    (objClass.eq(DNA_WINDOWS)) |
-                    (objClass.eq(DNA_DOOR)) |
-                    (objClass.eq(DNA_CORNICE)) |
+                if ((objClass.eq(DNA_WALL)) or
+                    (objClass.eq(DNA_WINDOWS)) or
+                    (objClass.eq(DNA_DOOR)) or
+                    (objClass.eq(DNA_CORNICE)) or
                     (objClass.eq(DNA_PROP))
                     ):
                     self.levelEditor.setDNATargetColor(
