@@ -176,6 +176,5 @@ def relHpr(nodePath, base, h, p, r):
 # Set direct drawing style for an object
 # Never light object or draw in wireframe
 def useDirectRenderStyle(nodePath):
-    # TODO: Turn this back on when Dave fixes this interrogate problem
-    # nodePath.arc().setTransition(LightTransition.allOff())
+    nodePath.arc().setTransition(LightTransition.allOff())
     nodePath.setRenderModeFilled()
