@@ -19,11 +19,11 @@
 #include "sceneGraphReducer.h"
 #include "config_sgraphutil.h"
 
-#include <geomNode.h>
-#include <geom.h>
-#include <indent.h>
-#include <billboardTransition.h>
-#include <decalTransition.h>
+#include "geomNode.h"
+#include "geom.h"
+#include "indent.h"
+#include "billboardTransition.h"
+#include "decalTransition.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -54,6 +54,18 @@ apply_to_arc(NodeRelation *arc, int transition_types) {
     }
     _texture_matrix = new TexMatrixTransition;
   }
+
+  if ((transition_types & TT_color_matrix) != 0) {
+    if (!_color_matrix->get_matrix().almost_equal(LMatrix4f::ident_mat())) {
+      arc->set_transition(_color_matrix);
+    }
+    if (_alpha_transform->get_scale() != 1.0f ||
+        _alpha_transform->get_offset() != 0.0f) {
+      arc->set_transition(_alpha_transform);
+    }
+    _color_matrix = new ColorMatrixTransition;
+    _alpha_transform = new AlphaTransformTransition;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -71,6 +83,10 @@ write(ostream &out, int transition_types, int indent_level) const {
   }
   if ((transition_types & TT_texture_matrix) != 0) {
     _texture_matrix->write(out, indent_level);
+  }
+  if ((transition_types & TT_color_matrix) != 0) {
+    _color_matrix->write(out, indent_level);
+    _alpha_transform->write(out, indent_level);
   }
 }
 
@@ -113,6 +129,10 @@ apply_transitions(NodeRelation *arc, int transition_types) {
   }
   if ((transition_types & TT_texture_matrix) != 0) {
     trans._texture_matrix = new TexMatrixTransition;
+  }
+  if ((transition_types & TT_color_matrix) != 0) {
+    trans._color_matrix = new ColorMatrixTransition;
+    trans._alpha_transform = new AlphaTransformTransition;
   }
 
   r_apply_transitions(arc, transition_types, trans, false);
@@ -160,6 +180,24 @@ r_apply_transitions(NodeRelation *arc, int transition_types,
       trans._texture_matrix =
         DCAST(TexMatrixTransition, trans._texture_matrix->compose(tmt));
       arc->clear_transition(TexMatrixTransition::get_class_type());
+    }
+  }
+
+  if ((transition_types & TT_color_matrix) != 0) {
+    nassertv(trans._color_matrix != (ColorMatrixTransition *)NULL);
+    ColorMatrixTransition *cmt;
+    if (get_transition_into(cmt, arc)) {
+      trans._color_matrix =
+        DCAST(ColorMatrixTransition, trans._color_matrix->compose(cmt));
+      arc->clear_transition(ColorMatrixTransition::get_class_type());
+    }
+
+    nassertv(trans._alpha_transform != (AlphaTransformTransition *)NULL);
+    AlphaTransformTransition *att;
+    if (get_transition_into(att, arc)) {
+      trans._alpha_transform =
+        DCAST(AlphaTransformTransition, trans._alpha_transform->compose(att));
+      arc->clear_transition(AlphaTransformTransition::get_class_type());
     }
   }
 
@@ -265,6 +303,16 @@ r_apply_transitions(NodeRelation *arc, int transition_types,
       if (trans._texture_matrix->get_matrix() != LMatrix4f::ident_mat()) {
         _transformer.transform_texcoords(gnode,
                                          trans._texture_matrix->get_matrix());
+      }
+    }
+    if ((transition_types & TT_color_matrix) != 0) {
+      if (trans._color_matrix->get_matrix() != LMatrix4f::ident_mat() ||
+          trans._alpha_transform->get_scale() != 1.0f ||
+          trans._alpha_transform->get_offset() != 0.0f) {
+        _transformer.transform_colors(gnode,
+                                      trans._color_matrix->get_matrix(),
+                                      trans._alpha_transform->get_scale(),
+                                      trans._alpha_transform->get_offset());
       }
     }
 

@@ -262,7 +262,7 @@ set_color(Geom *geom, const Colorf &color) {
   // with a new color array containing just this color.
 
   // We do want to share this one-element array between Geoms, though.
-  PTA_Colorf &new_colors = _colors[color];
+  PTA_Colorf &new_colors = _fcolors[color];
 
   if (new_colors.is_null()) {
     // We haven't seen this color before; define a new color array.
@@ -295,6 +295,105 @@ set_color(GeomNode *node, const Colorf &color) {
       Geom *geom = DCAST(Geom, drawable);
       PT(Geom) new_geom = geom->make_copy();
       if (set_color(new_geom, color)) {
+        new_geoms.push_back(new_geom.p());
+        any_changed = true;
+      } else {
+        new_geoms.push_back(geom);
+      }
+    } else {
+      new_geoms.push_back(drawable);
+    }
+  }
+
+  if (any_changed) {
+    node->_geoms = new_geoms;
+    return true;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::transform_colors
+//       Access: Public
+//  Description: Transforms the colors in the indicated
+//               Geom by the indicated matrix.  Returns true if the
+//               Geom was changed, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool GeomTransformer::
+transform_colors(Geom *geom, const LMatrix4f &mat,
+                 float alpha_scale, float alpha_offset) {
+  bool transformed = false;
+
+  nassertr(geom != (Geom *)NULL, false);
+
+  PTA_Colorf colors;
+  GeomBindType bind;
+  PTA_ushort index;
+
+  geom->get_colors(colors, bind, index);
+
+  if (bind != G_OFF) {
+    // Look up the Geom's colors in our table--have we already
+    // transformed this array?
+    SourceColors sc;
+    sc._mat = mat;
+    sc._alpha_scale = alpha_scale;
+    sc._alpha_offset = alpha_offset;
+    sc._colors = colors;
+
+    PTA_Colorf &new_colors = _tcolors[sc];
+
+    if (new_colors.is_null()) {
+      // We have not transformed the array yet.  Do so now.
+      new_colors.reserve(colors.size());
+      PTA_Colorf::const_iterator ci;
+      for (ci = colors.begin(); ci != colors.end(); ++ci) {
+        const Colorf &c = (*ci);
+
+        LPoint3f temp(c[0], c[1], c[2]);
+        temp = temp * mat;
+        float alpha = (c[3] * alpha_scale) + alpha_offset;
+        
+        Colorf transformed(temp[0], temp[1], temp[2], alpha);
+        new_colors.push_back(transformed);
+      }
+      nassertr(new_colors.size() == colors.size(), false);
+    }
+
+    geom->set_colors(new_colors, bind, index);
+    transformed = true;
+  }
+
+  return transformed;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::transform_colors
+//       Access: Public
+//  Description: Transforms the colors and the normals in all of the
+//               Geoms within the indicated GeomNode by the indicated
+//               matrix.  Does not destructively change Geoms;
+//               instead, a copy will be made of each Geom to be
+//               changed, in case multiple GeomNodes reference the
+//               same Geom. Returns true if the GeomNode was changed,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool GeomTransformer::
+transform_colors(GeomNode *node, const LMatrix4f &mat,
+                 float alpha_scale, float alpha_offset) {
+  bool any_changed = false;
+
+  GeomNode::Geoms new_geoms;
+
+  GeomNode::Geoms::const_iterator gi;
+  for (gi = node->_geoms.begin(); gi != node->_geoms.end(); ++gi) {
+    dDrawable *drawable = (*gi);
+    if (drawable->is_of_type(Geom::get_class_type())) {
+      Geom *geom = DCAST(Geom, drawable);
+      PT(Geom) new_geom = geom->make_copy();
+      if (transform_colors(new_geom, mat, alpha_scale, alpha_offset)) {
         new_geoms.push_back(new_geom.p());
         any_changed = true;
       } else {

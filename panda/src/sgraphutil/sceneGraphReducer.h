@@ -19,16 +19,18 @@
 #ifndef SCENEGRAPHREDUCER_H
 #define SCENEGRAPHREDUCER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <graphReducer.h>
-#include <typedObject.h>
-#include <pointerTo.h>
-#include <transformTransition.h>
-#include <colorTransition.h>
-#include <texMatrixTransition.h>
-#include <geomTransformer.h>
-#include <renderRelation.h>
+#include "graphReducer.h"
+#include "typedObject.h"
+#include "pointerTo.h"
+#include "transformTransition.h"
+#include "colorTransition.h"
+#include "texMatrixTransition.h"
+#include "colorMatrixTransition.h"
+#include "alphaTransformTransition.h"
+#include "geomTransformer.h"
+#include "renderRelation.h"
 
 class Geom;
 
@@ -47,6 +49,7 @@ public:
     TT_transform       = 0x001,
     TT_color           = 0x002,
     TT_texture_matrix  = 0x004,
+    TT_color_matrix    = 0x008,
   };
 
   void apply_transitions(NodeRelation *arc, int transition_types = ~0);
@@ -64,6 +67,8 @@ protected:
     PT(TransformTransition) _transform;
     PT(ColorTransition) _color;
     PT(TexMatrixTransition) _texture_matrix;
+    PT(ColorMatrixTransition) _color_matrix;
+    PT(AlphaTransformTransition) _alpha_transform;
   };
 
   void r_apply_transitions(NodeRelation *arc, int transition_types,

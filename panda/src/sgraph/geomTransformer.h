@@ -56,6 +56,11 @@ public:
   bool set_color(Geom *geom, const Colorf &color);
   bool set_color(GeomNode *node, const Colorf &color);
 
+  bool transform_colors(Geom *geom, const LMatrix4f &mat, 
+                        float alpha_scale, float alpha_offset);
+  bool transform_colors(GeomNode *node, const LMatrix4f &mat,
+                        float alpha_scale, float alpha_offset);
+
 private:
   class SourceVertices {
   public:
@@ -87,8 +92,25 @@ private:
   typedef pmap<SourceTexCoords, PTA_TexCoordf> TexCoords;
   TexCoords _texcoords;
 
-  typedef pmap<Colorf, PTA_Colorf> Colors;
-  Colors _colors;
+  // We have two concepts of colors: the "fixed" colors, which are
+  // slapped in complete replacement of the original colors (e.g. via
+  // a ColorTransition), and the "transformed" colors, which are
+  // modified from the original colors (e.g. via a
+  // ColorMatrixTransition).
+  typedef pmap<Colorf, PTA_Colorf> FColors;
+  FColors _fcolors;
+
+  class SourceColors {
+  public:
+    INLINE bool operator < (const SourceColors &other) const;
+
+    LMatrix4f _mat;
+    float _alpha_scale;
+    float _alpha_offset;
+    PTA_Colorf _colors;
+  };
+  typedef pmap<SourceColors, PTA_Colorf> TColors;
+  TColors _tcolors;
 };
 
 #include "geomTransformer.I"

@@ -55,3 +55,22 @@ operator < (const GeomTransformer::SourceTexCoords &other) const {
   }
   return (_mat.compare_to(other._mat) < 0);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::SourceColors::Ordering Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool GeomTransformer::SourceColors::
+operator < (const GeomTransformer::SourceColors &other) const {
+  if (_colors != other._colors) {
+    return _colors < other._colors;
+  }
+  if (_alpha_scale != other._alpha_scale) {
+    return _alpha_scale < other._alpha_scale;
+  }
+  if (_alpha_offset != other._alpha_offset) {
+    return _alpha_offset < other._alpha_offset;
+  }
+  return (_mat.compare_to(other._mat) < 0);
+}

@@ -35,7 +35,9 @@ INLINE SceneGraphReducer::AccumulatedTransitions::
 AccumulatedTransitions(const SceneGraphReducer::AccumulatedTransitions &copy) :
   _transform(copy._transform),
   _color(copy._color),
-  _texture_matrix(copy._texture_matrix)
+  _texture_matrix(copy._texture_matrix),
+  _color_matrix(copy._color_matrix),
+  _alpha_transform(copy._alpha_transform)
 {
 }
 
@@ -49,4 +51,6 @@ operator = (const SceneGraphReducer::AccumulatedTransitions &copy) {
   _transform = copy._transform;
   _color = copy._color;
   _texture_matrix = copy._texture_matrix;
+  _color_matrix = copy._color_matrix;
+  _alpha_transform = copy._alpha_transform;
 }
