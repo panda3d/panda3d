@@ -94,6 +94,11 @@ if [ "$PMODELS" ]; then
     PMODELS=`cygpath -w $PMODELS`
     export PMODELS
 fi
+# Gateway models
+if [ "$GWMODELS" ]; then
+    GWMODELS=`cygpath -w $GWMODELS`
+    export GWMODELS
+fi
 
 # Export the proper home environment variable
 HOME=`cygpath -w "$HOME"`
