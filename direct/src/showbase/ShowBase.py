@@ -293,7 +293,7 @@ class ShowBase:
         cam2dNode = Camera('cam2d')
         lens = OrthographicLens()
         lens.setFilmSize(right - left, top - bottom)
-        lens.setFilmOffset((right + left) / 2.0, (top + bottom) / 2.0)
+        lens.setFilmOffset((right + left) * 0.5, (top + bottom) * 0.5)
         lens.setNearFar(-1000, 1000)
         cam2dNode.setLens(lens)
         cam2dNode.setScene(self.render2d)
