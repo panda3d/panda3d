@@ -11,7 +11,9 @@ CLIENT_CREATE_OBJECT_REQUIRED_OTHER =        35
 
 # These messages are ignored when the client is headed to the quiet zone
 QUIET_ZONE_IGNORED_LIST = [
-    CLIENT_OBJECT_UPDATE_FIELD,
+    # We mustn't ignore updates, because some updates for localToon
+    # are always important.
+    #CLIENT_OBJECT_UPDATE_FIELD,
     CLIENT_CREATE_OBJECT_REQUIRED,
     CLIENT_CREATE_OBJECT_REQUIRED_OTHER,
     ]
