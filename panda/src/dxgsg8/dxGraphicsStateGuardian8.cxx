@@ -2620,9 +2620,9 @@ begin_draw_primitives(const qpGeomVertexData *vertex_data) {
   // the first array.
   const qpGeomVertexArrayData *data = _vertex_data->get_array(0);
 
-  VertexBufferContext *dc = ((qpGeomVertexArrayData *)data)->prepare_now(get_prepared_objects(), this);
-  nassertr(dc != (VertexBufferContext *)NULL, false);
-  apply_data(dc);
+  VertexBufferContext *vbc = ((qpGeomVertexArrayData *)data)->prepare_now(get_prepared_objects(), this);
+  nassertr(vbc != (VertexBufferContext *)NULL, false);
+  apply_vertex_buffer(vbc);
 
   return true;
 }
