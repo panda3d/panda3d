@@ -7,7 +7,7 @@
 #include "numeric_types.h"
 #include "datagramIterator.h"
 #include "profileTimer.h"
-#define SKYLER_TIMER 1
+//#define SKYLER_TIMER 1
 #ifdef SKYLER_TIMER //[
   EXPCL_PANDAEXPRESS ProfileTimer Skyler_timer_file;
 #endif //]
