@@ -22,6 +22,8 @@
 #include "pandabase.h"
 #include "renderAttrib.h"
 
+class FactoryParams;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : AlphaTestAttrib
 // Description : Enables or disables writing of pixel to framebuffer
