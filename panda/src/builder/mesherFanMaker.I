@@ -149,7 +149,7 @@ compute_angle() const {
 
 template <class PrimType>
 int MesherFanMaker<PrimType>::
-build() {
+build(pvector<Prim> &unrolled_tris) {
   nassertr(_edges.size() == _strips.size(), 0);
 
   int num_tris = _edges.size();
@@ -215,12 +215,12 @@ build() {
       if ( !((*si)->_prims.front() == (*last_si)->_prims.front()) ||
            !(*si)->is_coplanar_with(*(*last_si), _bucket->_coplanar_threshold)) {
         // Here's the end of a run of matching pieces.
-        count += unroll(last_si, si, last_ei, ei);
+        count += unroll(last_si, si, last_ei, ei, unrolled_tris);
         last_si = si;
         last_ei = ei;
       }
     }
-    count += unroll(last_si, si, last_ei, ei);
+    count += unroll(last_si, si, last_ei, ei, unrolled_tris);
 
     return count;
 
@@ -261,7 +261,8 @@ build() {
 template <class PrimType>
 int MesherFanMaker<PrimType>::
 unroll(Strips::iterator strip_begin, Strips::iterator strip_end,
-       Edges::iterator edge_begin, Edges::iterator edge_end) {
+       Edges::iterator edge_begin, Edges::iterator edge_end,
+       pvector<Prim> &unrolled_tris) {
   Edges::iterator ei;
   Strips::iterator si;
 
@@ -300,7 +301,13 @@ unroll(Strips::iterator strip_begin, Strips::iterator strip_end,
 
   if (_bucket->_show_quads) {
     // If we're showing quads, also show retesselated triangles.
-    _mesher->add_prim(poly, MO_fanpoly);
+
+    // We can't add it directly to the mesher, that's unsafe; instead,
+    // we'll just add it to the end of the unrolled_tris list.  This
+    // does mean we won't be able to color it a fancy color, but too
+    // bad.
+    //_mesher->add_prim(poly, MO_fanpoly);
+    unrolled_tris.push_back(poly);
 
   } else {
     // Now decompose the new polygon into triangles.
@@ -308,12 +315,8 @@ unroll(Strips::iterator strip_begin, Strips::iterator strip_end,
     result = expand(poly, *_bucket, back_inserter(tris));
 
     if (result) {
-      // Now add each triangle back into the mesher.
-      pvector<Prim>::iterator ti;
-
-      for (ti = tris.begin(); ti != tris.end(); ++ti) {
-        _mesher->add_prim(*ti);
-      }
+      unrolled_tris.insert(unrolled_tris.end(),
+                           tris.begin(), tris.end());
     }
   }
 

@@ -495,6 +495,8 @@ template <class PrimType>
 void MesherTempl<PrimType>::
 find_fans() {
 #ifdef SUPPORT_FANS
+  pvector<Prim> unrolled_tris;
+
   // Consider all vertices.  Any vertex with over a certain number of
   // edges connected to it is eligible to become a fan.
 
@@ -555,10 +557,20 @@ find_fans() {
 
       for (fi = fans.begin(); fi != fans.end(); ++fi) {
         if ((*fi).is_valid()) {
-          (*fi).build();
+          (*fi).build(unrolled_tris);
         }
       }
     }
+  }
+
+  // Finally, add back in the triangles we might have produced by
+  // unrolling some of the fans.  We can't add these back in safely
+  // until we're done traversing all the vertices and primitives we
+  // had in the first place (since adding them will affect the edge
+  // lists).
+  pvector<Prim>::iterator ti;
+  for (ti = unrolled_tris.begin(); ti != unrolled_tris.end(); ++ti) {
+    add_prim(*ti);
   }
 #endif
 }
