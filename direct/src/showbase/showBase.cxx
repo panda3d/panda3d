@@ -72,7 +72,7 @@ make_graphics_window(GraphicsPipe *pipe, const NodePath &render) {
 
   // Now use ChanConfig to create the window.
   override.setField(ChanCfgOverrides::Mask,
-                    ((unsigned int)(W_DOUBLE|W_DEPTH|W_MULTISAMPLE)));
+                    ((unsigned int)(W_DOUBLE|W_DEPTH)));
 
   std::string title = config_showbase.GetString("window-title", window_title);
   override.setField(ChanCfgOverrides::Title, title);
