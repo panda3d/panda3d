@@ -66,9 +66,9 @@ void SetupParseFunctor::operator()(std::string S) {
   if (S[0] == '#') {
     bool b = ChanReadNextBool(S);
     if (b) {
-  // error, #t is not allowed here
-  nout << "error, cannot have #t for FOV spec" << endl;
-  b = false;
+        // error, #t is not allowed here
+        nout << "error, cannot have #t for FOV spec" << endl;
+        b = false;
     }
     fov.setFOV();
   } else if (S[0] == '(') {
@@ -78,9 +78,9 @@ void SetupParseFunctor::operator()(std::string S) {
     ChanEatFrontWhite(S);
     fov.setFOV(ChanReadNextFloat(stmp), ChanReadNextFloat(stmp));
     if (!stmp.empty()) {
-  // error, there shouldn't be anything left after eating the fov
-  nout << "error, trailing text after fov spec '" << stmp << "'" << endl;
-  stmp.erase(0, std::string::npos);
+        // error, there shouldn't be anything left after eating the fov
+        nout << "error, trailing text after fov spec '" << stmp << "'" << endl;
+        stmp.erase(0, std::string::npos);
     }
   } else {
     fov.setFOV(ChanReadNextFloat(S));
@@ -89,18 +89,18 @@ void SetupParseFunctor::operator()(std::string S) {
   if (!S.empty()) {
     stmp = ChanReadNextWord(S);
     if (stmp == "up") {
-  // nothing really to do
-  orie = SetupItem::Up;
+      // nothing really to do
+      orie = SetupItem::Up;
     } else if (stmp == "down") {
-  orie = SetupItem::Down;
+      orie = SetupItem::Down;
     } else if (stmp == "left") {
-  orie = SetupItem::Left;
+      orie = SetupItem::Left;
     } else if (stmp == "right") {
-  orie = SetupItem::Right;
+      orie = SetupItem::Right;
     } else {
-  // error, not a recognized orientation
-  nout << "error, invalid orientation '" << stmp << "'" << endl;
-  stmp.erase(0, std::string::npos);
+      // error, not a recognized orientation
+      nout << "error, invalid orientation '" << stmp << "'" << endl;
+      stmp.erase(0, std::string::npos);
     }
   }
   if (!S.empty()) {

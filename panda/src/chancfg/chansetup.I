@@ -16,7 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-INLINE SetupFOV::SetupFOV(void) : _type(Invalid) {}
+INLINE SetupFOV::SetupFOV(void) : _type(Invalid),
+                                  _horiz(0.0f),
+                                  _vert(0.0f) {}
 
 INLINE SetupFOV::SetupFOV(const SetupFOV& c) : _type(c._type),
                                                _horiz(c._horiz),

@@ -178,28 +178,28 @@ SetupFOV ChanResolveFOV(SetupFOV& fov, float sizeX, float sizeY) {
   float vert;
   SetupFOV ret;
   switch (fov.getType()) {
-  case SetupFOV::Horizontal:
-    horiz = fov.getHoriz();
-    if (chancfg_cat.is_debug())
-      chancfg_cat->debug() << "ChanResolveFOV:: setting default horiz = "
-               << horiz << endl;
-  case SetupFOV::Default:
-    horiz = chanconfig.GetFloat("fov", horiz);
-    vert = 2.0f*rad_2_deg(atan((sizeY/sizeX)*tan(0.5f*deg_2_rad(horiz))));
-    if (chancfg_cat.is_debug())
-      chancfg_cat->debug() << "ChanResolveFOV:: setting horiz = " << horiz
-               << " and vert = " << vert << endl;
-    break;
-  case SetupFOV::Both:
-    horiz = fov.getHoriz();
-    vert = fov.getVert();
-    if (chancfg_cat.is_debug())
-      chancfg_cat->debug() << "ChanResolveFOV:: setting horiz = " << horiz
-               << " and vert = " << vert << endl;
-    break;
-
-  default:
-    break;
+      case SetupFOV::Horizontal:
+        horiz = fov.getHoriz();
+        if (chancfg_cat.is_debug())
+          chancfg_cat->debug() << "ChanResolveFOV:: setting default horiz = "
+                   << horiz << endl;
+      case SetupFOV::Default:
+        horiz = chanconfig.GetFloat("fov", horiz);
+        vert = 2.0f*rad_2_deg(atan((sizeY/sizeX)*tan(0.5f*deg_2_rad(horiz))));
+        if (chancfg_cat.is_debug())
+          chancfg_cat->debug() << "ChanResolveFOV:: setting horiz = " << horiz
+                   << " and vert = " << vert << endl;
+        break;
+      case SetupFOV::Both:
+        horiz = fov.getHoriz();
+        vert = fov.getVert();
+        if (chancfg_cat.is_debug())
+          chancfg_cat->debug() << "ChanResolveFOV:: setting horiz = " << horiz
+                   << " and vert = " << vert << endl;
+        break;
+    
+      default:
+        break;
   }
 
   ret.setFOV(horiz, vert);
@@ -224,7 +224,7 @@ void ChanConfig::chan_eval(GraphicsWindow* win, WindowItem& W, LayoutItem& L,
     camera[icam] = new NamedNode(nodeName.c_str());
   }
   for (j=0, k=S.begin(); j<i; ++j, ++k) {
- ChanViewport v(ChanScaleViewport(V, L[j]));
+   ChanViewport v(ChanScaleViewport(V, L[j]));
    PT(GraphicsChannel) chan;
    if ((*k).getHWChan() && W.getHWChans()) {
      if ((*k).getChan() == -1) {
@@ -349,7 +349,9 @@ ChanConfig::ChanConfig(GraphicsPipe* pipe, std::string cfg, Node *render,
     _graphics_window = (GraphicsWindow*)0;
     return;
   }
+
   SVec S;
+  S.reserve(s.size());
   for (SetupSyms::iterator i=s.begin(); i!=s.end(); ++i)
     S.push_back((*SetupDB)[(*i)]);
 
@@ -362,6 +364,8 @@ ChanConfig::ChanConfig(GraphicsPipe* pipe, std::string cfg, Node *render,
     sizeY = overrides.getInt(ChanCfgOverrides::SizeY);
   if (sizeX < 0) {
     if (sizeY < 0) {
+      if(chancfg_cat.is_debug())
+          chancfg_cat.debug() << "Using default chan-window size\n";
       // take the default size
       sizeX = W.getSizeX();
       sizeY = W.getSizeY();
@@ -370,8 +374,7 @@ ChanConfig::ChanConfig(GraphicsPipe* pipe, std::string cfg, Node *render,
       // the default
       sizeX = (W.getSizeX() * sizeY) / W.getSizeY();
     }
-  }
-  if (sizeY < 0) {
+  } else if (sizeY < 0) {
     // horizontal size is defined, compute vertical keeping the aspect from the
     // default
     sizeY = (W.getSizeY() * sizeX) / W.getSizeX();
@@ -433,56 +436,48 @@ ChanConfig::ChanConfig(GraphicsPipe* pipe, std::string cfg, Node *render,
 
   // sanity check
   if (config_sanity_check) {
-    nout << "ChanConfig Sanity check:" << endl;
-    nout << "window - " << (void*)win << endl;
-    nout << "  width = " << win->get_width() << "  height = "
-     << win->get_height() << endl;
-    nout << "  xorig = " << win->get_xorg() << "  yorig = " << win->get_yorg()
-     << endl;
-    {
-      int max_channel_index = win->get_max_channel_index();
-      for (int c = 0; c < max_channel_index; c++) {
-    if (win->is_channel_defined(c)) {
-      GraphicsChannel *chan = win->get_channel(c);
-      nout << "  Chan - " << (void*)chan << endl;
-      nout << "    window = " << (void*)(chan->get_window()) << endl;
-      nout << "    active = " << chan->is_active() << endl;;
+    nout << "ChanConfig Sanity check:" << endl
+         << "window - " << (void*)win << endl
+         << "  width = " << win->get_width() << "  height = " << win->get_height() << endl
+         << "  xorig = " << win->get_xorg() << "  yorig = " << win->get_yorg()<< endl;
 
-      int num_layers = chan->get_num_layers();
-      for (int l = 0; l < num_layers; l++) {
-        GraphicsLayer *layer = chan->get_layer(l);
-        nout << "    Layer - " << (void*)layer << endl;
-        nout << "      channel = " << (void*)(layer->get_channel()) << endl;
-        nout << "      active = " << layer->is_active() << endl;;
-
-        int num_drs = layer->get_num_drs();
-        for (int d = 0; d < num_drs; d++) {
-          DisplayRegion *dr = layer->get_dr(d);
-          nout << "      DR - " << (void*)dr << endl;
-          nout << "        layer = " << (void*)(dr->get_layer()) << endl;
-          float ll, rr, bb, tt;
-          dr->get_dimensions(ll, rr, bb, tt);
-          nout << "        (" << ll << " " << rr << " " << bb << " " << tt << ")"
-           << endl;
-          nout << "        camera = " << (void*)(dr->get_camera()) << endl;
-          {
-        Camera* cmm = dr->get_camera();
-        if (cmm != (Camera*)0L) {
-          nout << "          active = " << cmm->is_active() << endl;;
-          int num_cam_drs = cmm->get_num_drs();
-          for (int cd = 0; cd < num_cam_drs; cd++) {
-            nout << "          dr = " << (void*)cmm->get_dr(cd) << endl;
+    int max_channel_index = win->get_max_channel_index();
+    for (int c = 0; c < max_channel_index; c++) {
+        if (win->is_channel_defined(c)) {
+          GraphicsChannel *chan = win->get_channel(c);
+          nout << "  Chan - " << (void*)chan << endl
+               << "    window = " << (void*)(chan->get_window()) << endl
+               << "    active = " << chan->is_active() << endl;
+        
+          int num_layers = chan->get_num_layers();
+          for (int l = 0; l < num_layers; l++) {
+            GraphicsLayer *layer = chan->get_layer(l);
+            nout << "    Layer - " << (void*)layer << endl
+                 << "      channel = " << (void*)(layer->get_channel()) << endl
+                 << "      active = " << layer->is_active() << endl;
+        
+            int num_drs = layer->get_num_drs();
+            for (int d = 0; d < num_drs; d++) {
+              DisplayRegion *dr = layer->get_dr(d);
+              nout << "      DR - " << (void*)dr << endl
+                   << "        layer = " << (void*)(dr->get_layer()) << endl;
+              float ll, rr, bb, tt;
+              dr->get_dimensions(ll, rr, bb, tt);
+              nout << "        (" << ll << " " << rr << " " << bb << " " << tt << ")" << endl
+                   << "        camera = " << (void*)(dr->get_camera()) << endl;
+              Camera* cmm = dr->get_camera();
+              if (cmm != (Camera*)0L) {
+                  nout << "          active = " << cmm->is_active() << endl;
+                  int num_cam_drs = cmm->get_num_drs();
+                  for (int cd = 0; cd < num_cam_drs; cd++) 
+                      nout << "          dr = " << (void*)cmm->get_dr(cd) << endl;
+              }
+              nout << "      active = " << dr->is_active() << endl;
+            }
           }
         }
-          }
-          nout << "      active = " << dr->is_active() << endl;
-        }
-      }
-    }
-      }
     }
   }
-    
   _graphics_window = win;
   return;
 }
