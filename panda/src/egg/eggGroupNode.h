@@ -34,6 +34,7 @@ class EggTextureCollection;
 class EggMaterialCollection;
 class EggPolygon;
 class EggVertex;
+class EggVertexPool;
 class DSearchPath;
 
 ////////////////////////////////////////////////////////////////////
@@ -130,9 +131,10 @@ PUBLISHED:
   void strip_normals();
 
   enum TriangulateFlags {
-    T_convex    = 0x001,
-    T_composite = 0x002,
-    T_recurse   = 0x004
+    T_polygon   = 0x001,
+    T_convex    = 0x002,
+    T_composite = 0x004,
+    T_recurse   = 0x008
   };
 
   int triangulate_polygons(int flags);
@@ -140,6 +142,10 @@ PUBLISHED:
 
   int remove_unused_vertices();
   int remove_invalid_primitives();
+  void rebuild_vertex_pool(EggVertexPool *vertex_pool, bool recurse);
+  void unify_attributes(bool recurse);
+  void apply_last_attribute(bool recurse);
+  void post_apply_last_attribute(bool recurse);
   virtual bool has_primitives() const;
   virtual bool joint_has_primitives() const;
   virtual bool has_normals() const;

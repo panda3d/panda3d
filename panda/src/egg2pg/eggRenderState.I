@@ -26,6 +26,7 @@ EggRenderState::
 EggRenderState(EggLoader &loader) :
   _state(RenderState::make_empty()),
   _hidden(false),
+  _indexed(false),
   _loader(loader)
 {
 }
@@ -42,17 +43,22 @@ add_attrib(const RenderAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggRenderState::operator <
+//     Function: EggRenderState::int compare_to
 //       Access: Public
 //  Description: Provides a unique ordering for different
 //               EggRenderState objects, so that primitives of similar
 //               state can be grouped together by the EggBinner.
 ////////////////////////////////////////////////////////////////////
-INLINE bool EggRenderState::
-operator < (const EggRenderState &other) const {
+INLINE int EggRenderState::
+compare_to(const EggRenderState &other) const {
   if (_state != other._state) {
-    return _state < other._state;
+    return _state < other._state ? -1 : 1;
   }
-
-  return (int)_hidden < (int)other._hidden;
+  if (_hidden != other._hidden) {
+    return (int)_hidden - (int)other._hidden;
+  }
+  if (_indexed != other._indexed) {
+    return (int)_indexed - (int)other._indexed;
+  }
+  return 0;
 }

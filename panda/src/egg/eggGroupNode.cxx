@@ -703,10 +703,11 @@ strip_normals() {
 //               the total number of new triangles produced, less
 //               degenerate polygons removed.
 //
-//               If flags contains T_convex, both concave and convex
-//               polygons will be subdivided into triangles;
-//               otherwise, only concave polygons will be subdivided,
-//               and convex polygons will be largely unchanged.
+//               If flags contains T_polygon and T_convex, both
+//               concave and convex polygons will be subdivided into
+//               triangles; with only T_polygon, only concave polygons
+//               will be subdivided, and convex polygons will be
+//               largely unchanged.
 ////////////////////////////////////////////////////////////////////
 int EggGroupNode::
 triangulate_polygons(int flags) {
@@ -721,15 +722,19 @@ triangulate_polygons(int flags) {
     EggNode *child = (*ci);
 
     if (child->is_of_type(EggPolygon::get_class_type())) {
-      EggPolygon *poly = DCAST(EggPolygon, child);
-      poly->triangulate_in_place((flags & T_convex) != 0);
+      if ((flags & T_polygon) != 0) {
+        EggPolygon *poly = DCAST(EggPolygon, child);
+        poly->triangulate_in_place((flags & T_convex) != 0);
+      }
 
     } else if (child->is_of_type(EggCompositePrimitive::get_class_type())) {
-      EggCompositePrimitive *comp = DCAST(EggCompositePrimitive, child);
-      comp->triangulate_in_place();
+      if ((flags & T_composite) != 0) {
+        EggCompositePrimitive *comp = DCAST(EggCompositePrimitive, child);
+        comp->triangulate_in_place();
+      }
 
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
-      if (flags & T_recurse) {
+      if ((flags & T_recurse) != 0) {
         num_produced += DCAST(EggGroupNode, child)->triangulate_polygons(flags);
       }
     }
@@ -750,7 +755,7 @@ mesh_triangles(int flags) {
   EggMesher mesher;
   mesher.mesh(this);
 
-  if (flags & T_recurse) {
+  if ((flags & T_recurse) != 0) {
     EggGroupNode::iterator ci;
     for (ci = begin(); ci != end(); ++ci) {
       if ((*ci)->is_of_type(EggGroupNode::get_class_type())) {
@@ -843,6 +848,136 @@ remove_invalid_primitives() {
   }
 
   return num_removed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::rebuild_vertex_pool
+//       Access: Published
+//  Description: Copies vertices used by the primitives at this group
+//               node (and below, if recurse is true) into the
+//               indicated vertex pool, and updates the primitives to
+//               reference this pool.  It is up to the caller to
+//               parent the new vertex pool somewhere appropriate in
+//               the egg hierarchy.
+////////////////////////////////////////////////////////////////////
+void EggGroupNode::
+rebuild_vertex_pool(EggVertexPool *vertex_pool, bool recurse) {
+  Children::iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    EggNode *child = *ci;
+
+    if (child->is_of_type(EggPrimitive::get_class_type())) {
+      typedef pvector< PT(EggVertex) > Vertices;
+      Vertices vertices;
+
+      EggPrimitive *prim = DCAST(EggPrimitive, child);
+      EggPrimitive::const_iterator pi;
+      for (pi = prim->begin(); pi != prim->end(); ++pi) {
+        vertices.push_back(*pi);
+      }
+
+      prim->clear();
+
+      Vertices::const_iterator vi;
+      for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
+        EggVertex *vertex = (*vi);
+        prim->add_vertex(vertex_pool->create_unique_vertex(*vertex));
+      }
+
+    } else if (child->is_of_type(EggGroupNode::get_class_type())) {
+      if (recurse) {
+        DCAST(EggGroupNode, child)->rebuild_vertex_pool(vertex_pool, recurse);
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::unify_attributes
+//       Access: Published
+//  Description: Applies per-vertex normal and color to all vertices,
+//               if they are in fact per-vertex (and different for
+//               each vertex), or moves them to the primitive if they
+//               are all the same.
+//
+//               After this call, either the primitive will have
+//               normals or its vertices will, but not both.  Ditto
+//               for colors.
+//
+//               This may create redundant vertices in the vertex
+//               pool, so it may be a good idea to follow this up with
+//               remove_unused_vertices().
+////////////////////////////////////////////////////////////////////
+void EggGroupNode::
+unify_attributes(bool recurse) {
+  Children::iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    EggNode *child = *ci;
+
+    if (child->is_of_type(EggPrimitive::get_class_type())) {
+      EggPrimitive *prim = DCAST(EggPrimitive, child);
+      prim->unify_attributes();
+    } else if (child->is_of_type(EggGroupNode::get_class_type())) {
+      if (recurse) {
+        DCAST(EggGroupNode, child)->unify_attributes(recurse);
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::apply_last_attribute
+//       Access: Published
+//  Description: Sets the last vertex of the triangle (or each
+//               component) to the primitive normal and/or color, if
+//               they exist.  This reflects the Panda convention of
+//               storing flat-shaded properties on the last vertex,
+//               although it is not usually a convention in Egg.
+//
+//               This may create redundant vertices in the vertex
+//               pool, so it may be a good idea to follow this up with
+//               remove_unused_vertices().
+////////////////////////////////////////////////////////////////////
+void EggGroupNode::
+apply_last_attribute(bool recurse) {
+  Children::iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    EggNode *child = *ci;
+
+    if (child->is_of_type(EggPrimitive::get_class_type())) {
+      EggPrimitive *prim = DCAST(EggPrimitive, child);
+      prim->apply_last_attribute();
+    } else if (child->is_of_type(EggGroupNode::get_class_type())) {
+      if (recurse) {
+        DCAST(EggGroupNode, child)->apply_last_attribute(recurse);
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::post_apply_last_attribute
+//       Access: Published
+//  Description: Intended as a followup to apply_last_attribute(),
+//               this also sets an attribute on the first vertices of
+//               the primitive, if they don't already have an
+//               attribute set, just so they end up with *something*.
+////////////////////////////////////////////////////////////////////
+void EggGroupNode::
+post_apply_last_attribute(bool recurse) {
+  Children::iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    EggNode *child = *ci;
+
+    if (child->is_of_type(EggPrimitive::get_class_type())) {
+      EggPrimitive *prim = DCAST(EggPrimitive, child);
+      prim->post_apply_last_attribute();
+    } else if (child->is_of_type(EggGroupNode::get_class_type())) {
+      if (recurse) {
+        DCAST(EggGroupNode, child)->post_apply_last_attribute(recurse);
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

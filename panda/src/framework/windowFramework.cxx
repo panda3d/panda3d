@@ -48,6 +48,7 @@
 #include "depthWriteAttrib.h"
 #include "cullFaceAttrib.h"
 #include "rescaleNormalAttrib.h"
+#include "shadeModelAttrib.h"
 #include "pgTop.h"
 #include "geomNode.h"
 #include "geomTristrip.h"
@@ -238,6 +239,7 @@ get_render() {
     _render = NodePath("render");
 
     _render.node()->set_attrib(RescaleNormalAttrib::make_default());
+    _render.node()->set_attrib(ShadeModelAttrib::make(ShadeModelAttrib::M_smooth));
 
     // This is maybe here temporarily, and maybe not.
     _render.set_two_sided(0);

@@ -27,6 +27,7 @@
 #include "eggSurface.h"
 #include "cullBinAttrib.h"
 #include "cullFaceAttrib.h"
+#include "shadeModelAttrib.h"
 #include "transparencyAttrib.h"
 #include "depthWriteAttrib.h"
 #include "depthTestAttrib.h"
@@ -337,6 +338,30 @@ fill_state(EggPrimitive *egg_prim) {
   case EggRenderMode::VM_normal:
   default:
     break;
+  }
+
+  _indexed = egg_prim->determine_indexed();
+
+  bool flat_shaded;
+
+  if (!_indexed) {
+    // If the primitive is not indexed, we're allowed to call
+    // unify_attributes(), which will modify the vertex pool.
+    egg_prim->unify_attributes();
+    flat_shaded = egg_prim->is_flat_shaded();
+
+  } else {
+    // If the primitive *is* indexed, we're not allowed to modify the
+    // vertex pool, and so we won't have flat shading anyway.
+    flat_shaded = false;
+  }
+
+  if (use_qpgeom) {
+    if (flat_shaded) {
+      add_attrib(ShadeModelAttrib::make(ShadeModelAttrib::M_flat));
+    } else {
+      add_attrib(ShadeModelAttrib::make(ShadeModelAttrib::M_smooth));
+    }
   }
 
   if (has_bin) {

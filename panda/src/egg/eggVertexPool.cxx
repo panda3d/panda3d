@@ -31,7 +31,7 @@ TypeHandle EggVertexPool::_type_handle;
 ////////////////////////////////////////////////////////////////////
 EggVertexPool::
 EggVertexPool(const string &name) : EggNode(name) {
-  _highest_index = 0;
+  _highest_index = -1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -171,7 +171,8 @@ get_forward_vertex(int index) {
 //     Function: EggVertexPool::get_highest_index
 //       Access: Public
 //  Description: Returns the highest index number used by any vertex
-//               in the pool (except forward references).
+//               in the pool (except forward references).  Returns -1
+//               if the pool is empty.
 ////////////////////////////////////////////////////////////////////
 int EggVertexPool::
 get_highest_index() const {
@@ -434,7 +435,7 @@ remove_vertex(EggVertex *vertex) {
   if (_highest_index == vertex->_index) {
     // Find the new highest vertex index.
     if (_index_vertices.empty()) {
-      _highest_index = 0;
+      _highest_index = -1;
     } else {
       IndexVertices::reverse_iterator ivi = _index_vertices.rbegin();
       while (ivi != _index_vertices.rend() &&
@@ -444,7 +445,7 @@ remove_vertex(EggVertex *vertex) {
       if (ivi != _index_vertices.rend()) {
         _highest_index = (*ivi).first;
       } else {
-        _highest_index = 0;
+        _highest_index = -1;
       }
     }
   }
@@ -507,7 +508,7 @@ remove_unused_vertices() {
   // All done.  Lose the old lists.
   _unique_vertices.swap(new_unique_vertices);
   _index_vertices.swap(new_index_vertices);
-  _highest_index = _index_vertices.size() - 1;
+  _highest_index = (int)_index_vertices.size() - 1;
 
   nassertr(_index_vertices.size() == _unique_vertices.size(), num_removed);
 

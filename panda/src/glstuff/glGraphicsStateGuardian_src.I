@@ -500,3 +500,29 @@ issue_scene_graph_color() {
     _scene_graph_color_stale = false;
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::issue_flat_shading
+//       Access: Public
+//  Description: Checks whether the indicated geom requires flat
+//               shading or smooth shading, and sets the appropriate
+//               mode.
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+issue_flat_shading(Geom *geom) {
+  if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) ||
+      (geom->get_binding(G_NORMAL) == G_PER_VERTEX && wants_normals())) {
+    // With per-vertex colors or normals, we need smooth shading.
+    if (_flat_shade_model) {
+      modify_state(get_smooth_state());
+    }
+  } else if ((geom->get_binding(G_COLOR) == G_PER_COMPONENT && wants_colors()) ||
+             (geom->get_binding(G_NORMAL) == G_PER_COMPONENT && wants_normals())) {
+    // With per-component colors or normals, we need flat shading.
+    if (!_flat_shade_model) {
+      modify_state(get_flat_state());
+    }
+  } else {
+    // Otherwise, it's a uniform-colored primitive; we can take either one.
+  }
+}

@@ -29,20 +29,6 @@ TypeHandle EggTriangleStrip::_type_handle;
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggTriangleStrip::cleanup
-//       Access: Published, Virtual
-//  Description: Cleans up modeling errors in whatever context this
-//               makes sense.  For instance, for a polygon, this calls
-//               remove_doubled_verts(true).  For a point, it calls
-//               remove_nonunique_verts().  Returns true if the
-//               primitive is valid, or false if it is degenerate.
-////////////////////////////////////////////////////////////////////
-bool EggTriangleStrip::
-cleanup() {
-  return size() >= 3;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: EggTriangleStrip::write
 //       Access: Published, Virtual
 //  Description: Writes the triangle strip to the indicated output

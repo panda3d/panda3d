@@ -86,16 +86,25 @@ sorts_less(int bin_number, const EggNode *a, const EggNode *b) {
       DCAST_INTO_R(pa, a, false);
       DCAST_INTO_R(pb, b, false);
 
-      // Different vertex pools have to be binned separately.
-      if (pa->get_pool() != pb->get_pool()) {
-        return pa->get_pool() < pb->get_pool();
-      }
-      
-      // Otherwise, different render states are binned separately.
+      // Different render states are binned separately.
       const EggRenderState *rsa, *rsb;
       DCAST_INTO_R(rsa, a->get_user_data(EggRenderState::get_class_type()), false);
       DCAST_INTO_R(rsb, b->get_user_data(EggRenderState::get_class_type()), false);
-      return (*rsa) < (*rsb);
+      int compare = rsa->compare_to(*rsb);
+      if (compare != 0) {
+        return (compare < 0);
+      }
+
+      // If the render state indicates indexed, meaning we keep the
+      // existing vertex pools, then different pools get sorted
+      // separately.
+      if (rsa->_indexed) {
+        if (pa->get_pool() != pb->get_pool()) {
+          return pa->get_pool() < pb->get_pool();
+        }
+      }
+
+      return false;
     }
 
   case BN_lod:

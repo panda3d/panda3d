@@ -158,6 +158,7 @@ build_graph() {
   load_textures();
 
   // Then bin up the polysets and LOD nodes.
+  _data->remove_invalid_primitives();
   EggBinner binner(*this);
   binner.make_bins(_data);
 
@@ -1412,8 +1413,8 @@ make_polyset(EggBin *egg_bin, PandaNode *parent) {
   }
 
   // We know that all of the primitives in the bin have the same
-  // vertex pool and same render state, so we can get that information
-  // from the first primitive.
+  // render state, so we can get that information from the first
+  // primitive.
   EggGroup::const_iterator ci = egg_bin->begin();
   nassertr(ci != egg_bin->end(), NULL);
   CPT(EggPrimitive) first_prim = DCAST(EggPrimitive, (*ci));
@@ -1438,29 +1439,40 @@ make_polyset(EggBin *egg_bin, PandaNode *parent) {
     return NULL;
   }
 
-  // Convert the primitives' vertex pool to a GeomVertexData.
-  if (first_prim->get_pool() == (EggVertexPool *)NULL) {
-    // Whoops, must be a degenerate primitive.
-    return NULL;
+  // In the normal case--not indexed--we can generate an optimal
+  // vertex pool for the polygons in the bin (which translates
+  // directly to an optimal GeomVertexData structure).  However, if
+  // the indexed flag is set on these polygons, we don't do this,
+  // since the indexed flag means to use the supplied vertex pool
+  // exactly as it is.
+  PT(EggVertexPool) vertex_pool;
+  if (!render_state->_indexed) {
+    vertex_pool = new EggVertexPool("bin");
+    egg_bin->rebuild_vertex_pool(vertex_pool, false);
+  } else {
+    vertex_pool = first_prim->get_pool();
   }
-  PT(qpGeomVertexData) vertex_data = 
-    make_vertex_data(first_prim->get_pool(), first_prim->get_vertex_to_node());
-  nassertr(vertex_data != (qpGeomVertexData *)NULL, NULL);
-
-  // And now create a Geom to hold the primitives.
-  PT(qpGeom) geom = new qpGeom;
-  geom->set_vertex_data(vertex_data);
 
   if (egg_mesh) {
     // If we're using the mesher, mesh now.
     egg_bin->mesh_triangles(0);
-    egg_bin->write(cerr, 0);
 
   } else {
     // If we're not using the mesher, at least triangulate any
     // higher-order polygons we might have.
-    egg_bin->triangulate_polygons(EggGroupNode::T_convex);
+    egg_bin->triangulate_polygons(EggGroupNode::T_polygon | EggGroupNode::T_convex);
   }
+
+  if (!render_state->_indexed) {
+    // Now that we've meshed, apply the per-prim attributes onto the
+    // vertices, so we can copy them to the GeomVertexData.
+    egg_bin->apply_last_attribute(false);
+    egg_bin->post_apply_last_attribute(false);
+    vertex_pool->remove_unused_vertices();
+  }
+
+  //  vertex_pool->write(cerr, 0);
+  //  egg_bin->write(cerr, 0);
 
   // Now create a handful of GeomPrimitives corresponding to the
   // various types of primitives we have.
@@ -1472,6 +1484,16 @@ make_polyset(EggBin *egg_bin, PandaNode *parent) {
   }
 
   if (!primitives.empty()) {
+    // Now convert the vertex pool to a GeomVertexData.
+    nassertr(vertex_pool != (EggVertexPool *)NULL, NULL);
+    PT(qpGeomVertexData) vertex_data = 
+      make_vertex_data(vertex_pool, first_prim->get_vertex_to_node());
+    nassertr(vertex_data != (qpGeomVertexData *)NULL, NULL);
+
+    // And create a Geom to hold the primitives.
+    PT(qpGeom) geom = new qpGeom;
+    geom->set_vertex_data(vertex_data);
+
     // Add each new primitive to the Geom.
     Primitives::const_iterator pi;
     for (pi = primitives.begin(); pi != primitives.end(); ++pi) {
@@ -1479,7 +1501,9 @@ make_polyset(EggBin *egg_bin, PandaNode *parent) {
       geom->add_primitive(primitive);
     }
 
-    geom->write(cerr);
+    //    vertex_data->write(cerr);
+    //    geom->write(cerr);
+    //    render_state->_state->write(cerr, 0);
     
     // Now, is our parent node a GeomNode, or just an ordinary
     // PandaNode?  If it's a GeomNode, we can add the new Geom directly

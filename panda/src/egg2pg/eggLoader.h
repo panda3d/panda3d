@@ -198,7 +198,7 @@ private:
   class VertexPoolTransform {
   public:
     INLINE bool operator < (const VertexPoolTransform &other) const;
-    EggVertexPool *_vertex_pool;
+    PT(EggVertexPool) _vertex_pool;
     LMatrix4d _transform;
   };
   typedef pmap<VertexPoolTransform, PT(qpGeomVertexData) > VertexPoolData;

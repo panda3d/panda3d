@@ -64,6 +64,7 @@ output(ostream &out) const {
   switch (get_mode()) {
   case M_flat:
     out << "flat";
+    break;
 
   case M_smooth:
     out << "smooth";

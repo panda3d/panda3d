@@ -45,6 +45,11 @@ PUBLISHED:
   INLINE bool triangulate_into(EggGroupNode *container) const;
   PT(EggCompositePrimitive) triangulate_in_place();
 
+  virtual void unify_attributes();
+  virtual void apply_last_attribute();
+  virtual void post_apply_last_attribute();
+  virtual bool cleanup();
+
 protected:
   virtual void prepare_add_vertex(EggVertex *vertex, int i, int n);
   virtual void prepare_remove_vertex(EggVertex *vertex, int i, int n);

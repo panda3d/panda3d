@@ -47,6 +47,7 @@
 #include "rescaleNormalAttrib.h"
 #include "fogAttrib.h"
 #include "depthOffsetAttrib.h"
+#include "shadeModelAttrib.h"
 #include "fog.h"
 #include "clockObject.h"
 #include "string_utils.h"
@@ -600,6 +601,7 @@ reset() {
   _fog_enabled = false;
   _alpha_test_enabled = false;
   _polygon_offset_enabled = false;
+  _flat_shade_model = false;
   _decal_level = 0;
 
   // Dither is on by default in GL; let's turn it off
@@ -1023,14 +1025,7 @@ draw_line(GeomLine *geom, GeomContext *gc) {
                     issue_texcoord_multi_gl,
                     ti);
 
-  // If we have per-vertex colors or normals, we need smooth shading.
-  // Otherwise we want flat shading for performance reasons.
-  if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) ||
-      (geom->get_binding(G_NORMAL) == G_PER_VERTEX && wants_normals())) {
-    GLP(ShadeModel)(GL_SMOOTH);
-  } else {
-    GLP(ShadeModel)(GL_FLAT);
-  }
+  issue_flat_shading(geom);
 
   // Draw overall
   issuer.issue_color(G_OVERALL, ci);
@@ -1107,14 +1102,7 @@ draw_linestrip(GeomLinestrip *geom, GeomContext *gc) {
                     issue_texcoord_multi_gl,
                     ti);
 
-  // If we have per-vertex colors or normals, we need smooth shading.
-  // Otherwise we want flat shading for performance reasons.
-  if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) ||
-      (geom->get_binding(G_NORMAL) == G_PER_VERTEX && wants_normals())) {
-    GLP(ShadeModel)(GL_SMOOTH);
-  } else {
-    GLP(ShadeModel)(GL_FLAT);
-  }
+  issue_flat_shading(geom);
 
   // Draw overall
   issuer.issue_color(G_OVERALL, ci);
@@ -1489,14 +1477,7 @@ draw_polygon(GeomPolygon *geom, GeomContext *gc) {
                     issue_texcoord_multi_gl,
                     ti);
 
-  // If we have per-vertex colors or normals, we need smooth shading.
-  // Otherwise we want flat shading for performance reasons.
-  if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) ||
-      (geom->get_binding(G_NORMAL) == G_PER_VERTEX && wants_normals())) {
-    GLP(ShadeModel)(GL_SMOOTH);
-  } else {
-    GLP(ShadeModel)(GL_FLAT);
-  }
+  issue_flat_shading(geom);
 
   // Draw overall
   issuer.issue_color(G_OVERALL, ci);
@@ -1577,14 +1558,7 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
                     issue_texcoord_multi_gl,
                     ti);
 
-  // If we have per-vertex colors or normals, we need smooth shading.
-  // Otherwise we want flat shading for performance reasons.
-  if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) ||
-      (geom->get_binding(G_NORMAL) == G_PER_VERTEX && wants_normals())) {
-    GLP(ShadeModel)(GL_SMOOTH);
-  } else {
-    GLP(ShadeModel)(GL_FLAT);
-  }
+  issue_flat_shading(geom);
 
   // Draw overall
   issuer.issue_color(G_OVERALL, ci);
@@ -1663,14 +1637,7 @@ draw_quad(GeomQuad *geom, GeomContext *gc) {
                     issue_texcoord_multi_gl,
                     ti);
 
-  // If we have per-vertex colors or normals, we need smooth shading.
-  // Otherwise we want flat shading for performance reasons.
-  if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) ||
-      (geom->get_binding(G_NORMAL) == G_PER_VERTEX && wants_normals())) {
-    GLP(ShadeModel)(GL_SMOOTH);
-  } else {
-    GLP(ShadeModel)(GL_FLAT);
-  }
+  issue_flat_shading(geom);
 
   // Draw overall
   issuer.issue_color(G_OVERALL, ci);
@@ -1753,14 +1720,7 @@ draw_tristrip(GeomTristrip *geom, GeomContext *gc) {
                     issue_texcoord_multi_gl,
                     ti);
 
-  // If we have per-vertex colors or normals, we need smooth shading.
-  // Otherwise we want flat shading for performance reasons.
-  if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) ||
-      (geom->get_binding(G_NORMAL) == G_PER_VERTEX && wants_normals())) {
-    GLP(ShadeModel)(GL_SMOOTH);
-  } else {
-    GLP(ShadeModel)(GL_FLAT);
-  }
+  issue_flat_shading(geom);
 
   // Draw overall
   issuer.issue_color(G_OVERALL, ci);
@@ -1861,14 +1821,7 @@ draw_trifan(GeomTrifan *geom, GeomContext *gc) {
                     issue_texcoord_multi_gl,
                     ti);
 
-  // If we have per-vertex colors or normals, we need smooth shading.
-  // Otherwise we want flat shading for performance reasons.
-  if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) ||
-      (geom->get_binding(G_NORMAL) == G_PER_VERTEX && wants_normals())) {
-    GLP(ShadeModel)(GL_SMOOTH);
-  } else {
-    GLP(ShadeModel)(GL_FLAT);
-  }
+  issue_flat_shading(geom);
 
   // Draw overall
   issuer.issue_color(G_OVERALL, ci);
@@ -1967,9 +1920,9 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
                     ti);
 
   if (wants_normals()) {
-    GLP(ShadeModel)(GL_SMOOTH);
-  } else {
-    GLP(ShadeModel)(GL_FLAT);
+    if (_flat_shade_model) {
+      modify_state(get_smooth_state());
+    }
   }
 
   // Draw overall
@@ -2048,7 +2001,6 @@ begin_draw_primitives(const qpGeomVertexData *vertex_data) {
     return false;
   }
 
-  bool has_normals = false;
   if (wants_normals() && 
       _vertex_data->get_array_info(InternalName::get_normal(),
                                    array_data, num_components, numeric_type, 
@@ -2056,12 +2008,10 @@ begin_draw_primitives(const qpGeomVertexData *vertex_data) {
     GLP(NormalPointer)(get_numeric_type(numeric_type), stride, 
                        array_data + start);
     GLP(EnableClientState)(GL_NORMAL_ARRAY);
-    has_normals = true;
   } else {
     GLP(DisableClientState)(GL_NORMAL_ARRAY);
   }
 
-  bool has_colors = false;
   if (wants_colors()) {
     if (_vertex_data->get_array_info(InternalName::get_color(),
                                      array_data, num_components, numeric_type, 
@@ -2075,7 +2025,6 @@ begin_draw_primitives(const qpGeomVertexData *vertex_data) {
                           stride, array_data + start);
       }
       GLP(EnableClientState)(GL_COLOR_ARRAY);
-      has_colors = true;
 
     } else {
       // We wanted colors, but the geom didn't have any; just issue
@@ -2096,14 +2045,6 @@ begin_draw_primitives(const qpGeomVertexData *vertex_data) {
     GLP(EnableClientState)(GL_TEXTURE_COORD_ARRAY);
   } else {
     GLP(DisableClientState)(GL_TEXTURE_COORD_ARRAY);
-  }
-
-  // If we have per-vertex colors or normals, we need smooth shading.
-  // Otherwise we want flat shading for performance reasons.
-  if (has_colors || has_normals) {
-    GLP(ShadeModel)(GL_SMOOTH);
-  } else {
-    GLP(ShadeModel)(GL_FLAT);
   }
 
   issue_scene_graph_color();
@@ -2641,6 +2582,42 @@ issue_tex_matrix(const TexMatrixAttrib *attrib) {
   _needs_tex_mat = true;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::issue_tex_gen
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+issue_tex_gen(const TexGenAttrib *attrib) {
+  // We don't apply the texture coordinate generation commands right
+  // away, since we might yet get a TextureAttrib that changes the set
+  // of TextureStages we have active.  Instead, we simply set a flag
+  // that indicates we need to re-issue the TexGenAttrib after all of
+  // the other attribs are done being issued.
+  _current_tex_gen = attrib;
+  _needs_tex_gen = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::issue_shade_model
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+issue_shade_model(const ShadeModelAttrib *attrib) {
+  switch (attrib->get_mode()) {
+  case ShadeModelAttrib::M_smooth:
+    GLP(ShadeModel)(GL_SMOOTH);
+    _flat_shade_model = false;
+    break;
+
+  case ShadeModelAttrib::M_flat:
+    GLP(ShadeModel)(GL_FLAT);
+    _flat_shade_model = true;
+    break;
+  }
+}
+
 
 
 
@@ -2683,22 +2660,6 @@ issue_cg_shader_bind(const CgShaderAttrib *attrib) {
   }
 }
 #endif
-
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::issue_tex_gen
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-issue_tex_gen(const TexGenAttrib *attrib) {
-  // We don't apply the texture coordinate generation commands right
-  // away, since we might yet get a TextureAttrib that changes the set
-  // of TextureStages we have active.  Instead, we simply set a flag
-  // that indicates we need to re-issue the TexGenAttrib after all of
-  // the other attribs are done being issued.
-  _current_tex_gen = attrib;
-  _needs_tex_gen = true;
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::issue_material
@@ -5078,6 +5039,36 @@ get_untextured_state() {
   static CPT(RenderState) state;
   if (state == (RenderState *)NULL) {
     state = RenderState::make(TextureAttrib::make_off());
+  }
+  return state;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::get_smooth_state
+//       Access: Protected, Static
+//  Description: Returns a RenderState object that represents
+//               smooth, per-vertex shading.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) CLP(GraphicsStateGuardian)::
+get_smooth_state() {
+  static CPT(RenderState) state;
+  if (state == (RenderState *)NULL) {
+    state = RenderState::make(ShadeModelAttrib::make(ShadeModelAttrib::M_smooth));
+  }
+  return state;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::get_flat_state
+//       Access: Protected, Static
+//  Description: Returns a RenderState object that represents
+//               flat, per-primitive shading.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) CLP(GraphicsStateGuardian)::
+get_flat_state() {
+  static CPT(RenderState) state;
+  if (state == (RenderState *)NULL) {
+    state = RenderState::make(ShadeModelAttrib::make(ShadeModelAttrib::M_flat));
   }
   return state;
 }

@@ -89,9 +89,6 @@ make_prim(const EggVertexPool *vertex_pool) {
 
   switch (_type) {
   case PT_quad:
-    dest_type = egg_show_quads ? PT_poly : PT_tristrip;
-    break;
-
   case PT_tristrip:
   case PT_quadstrip:
     dest_type = PT_tristrip;

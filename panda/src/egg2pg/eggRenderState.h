@@ -49,7 +49,7 @@ public:
 
   void fill_state(EggPrimitive *egg_prim);
 
-  INLINE bool operator < (const EggRenderState &other) const;
+  INLINE int compare_to(const EggRenderState &other) const;
 
 private:
   CPT(RenderAttrib) get_material_attrib(const EggMaterial *egg_mat,
@@ -63,6 +63,7 @@ private:
 public:
   CPT(RenderState) _state;
   bool _hidden;
+  bool _indexed;
 
   typedef EggLoader::BakeInUVs BakeInUVs;
   typedef EggLoader::TextureDef TextureDef;

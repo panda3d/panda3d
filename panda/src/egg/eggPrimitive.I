@@ -370,7 +370,7 @@ replace(iterator position, EggVertex *x) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::clear
 //       Access: Published
-//  Description:
+//  Description: Removes all of the vertices from the primitive.
 ////////////////////////////////////////////////////////////////////
 INLINE void EggPrimitive::
 clear() {
@@ -422,5 +422,5 @@ get_vertex(int index) const {
 ////////////////////////////////////////////////////////////////////
 INLINE EggVertexPool *EggPrimitive::
 get_pool() const {
-  return empty() ? (EggVertexPool *)0L : _vertices.front()->get_pool();
+  return empty() ? (EggVertexPool *)NULL : _vertices.front()->get_pool();
 }

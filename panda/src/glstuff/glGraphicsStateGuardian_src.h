@@ -127,9 +127,9 @@ public:
   virtual void issue_fog(const FogAttrib *attrib);
   virtual void issue_depth_offset(const DepthOffsetAttrib *attrib);
   virtual void issue_tex_gen(const TexGenAttrib *attrib);
+  virtual void issue_shade_model(const ShadeModelAttrib *attrib);
 #ifdef HAVE_CGGL
   virtual void issue_cg_shader_bind(const CgShaderAttrib *attrib);
-  //  virtual void issue_stencil(const StencilAttrib *attrib);
 #endif
 
   virtual void bind_light(PointLight *light_obj, const NodePath &light, 
@@ -207,6 +207,7 @@ protected:
   INLINE GLenum get_clip_plane_id(int index) const;
 
   INLINE void issue_scene_graph_color();
+  INLINE void issue_flat_shading(Geom *geom);
 
   void set_draw_buffer(const RenderBuffer &rb);
   void set_read_buffer(const RenderBuffer &rb);
@@ -236,6 +237,8 @@ protected:
   static GLenum get_blend_func(ColorBlendAttrib::Operand operand);
 
   static CPT(RenderState) get_untextured_state();
+  static CPT(RenderState) get_smooth_state();
+  static CPT(RenderState) get_flat_state();
 
   void do_auto_rescale_normal();
   void do_issue_texture();
@@ -269,6 +272,7 @@ protected:
   bool _fog_enabled;
   bool _alpha_test_enabled;
   bool _polygon_offset_enabled;
+  bool _flat_shade_model;
   int _decal_level;
 
   bool _dithering_enabled;

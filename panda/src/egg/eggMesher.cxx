@@ -374,6 +374,13 @@ get_prim(EggMesherStrip &strip) {
     // Now color1 is the color we want to assign to the whole
     // primitive.
     egg_prim->set_color(color1);
+    if (egg_prim->is_of_type(EggCompositePrimitive::get_class_type())) {
+      EggCompositePrimitive *egg_comp = DCAST(EggCompositePrimitive, egg_prim);
+      int num_components = egg_comp->get_num_components();
+      for (int i = 0; i < num_components; i++) {
+        egg_comp->get_component(i)->clear_color();
+      }
+    }
     int num_verts = egg_prim->size();
     for (int i = 0; i < num_verts; i++) {
       egg_prim->get_vertex(i)->clear_color();
@@ -446,6 +453,13 @@ get_prim(EggMesherStrip &strip) {
     // Now color1 is the color we want to assign to the whole
     // primitive.
     egg_prim->set_color(color1);
+    if (egg_prim->is_of_type(EggCompositePrimitive::get_class_type())) {
+      EggCompositePrimitive *egg_comp = DCAST(EggCompositePrimitive, egg_prim);
+      int num_components = egg_comp->get_num_components();
+      for (int i = 0; i < num_components; i++) {
+        egg_comp->get_component(i)->clear_color();
+      }
+    }
     int num_verts = egg_prim->size();
     for (int i = 0; i < num_verts; i++) {
       egg_prim->get_vertex(i)->clear_color();

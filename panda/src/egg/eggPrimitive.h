@@ -101,7 +101,11 @@ PUBLISHED:
 
   bool has_vertex_normal() const;
   bool has_vertex_color() const;
+  bool is_flat_shaded() const;
 
+  virtual void unify_attributes();
+  virtual void apply_last_attribute();
+  virtual void post_apply_last_attribute();
   virtual void reverse_vertex_ordering();
   virtual bool cleanup();
 

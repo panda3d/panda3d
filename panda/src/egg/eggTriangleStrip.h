@@ -35,8 +35,6 @@ PUBLISHED:
   INLINE EggTriangleStrip(const EggTriangleStrip &copy);
   INLINE EggTriangleStrip &operator = (const EggTriangleStrip &copy);
 
-  virtual bool cleanup();
-
   virtual void write(ostream &out, int indent_level) const;
 
 protected:

@@ -220,6 +220,9 @@ copy_attributes(const EggPrimitive &other) {
 //       Access: Published
 //  Description: Returns true if any vertex on the primitive has a
 //               specific normal set, false otherwise.
+//
+//               For the most accurate measure of this, call
+//               unify_attributes() first.
 ////////////////////////////////////////////////////////////////////
 bool EggPrimitive::
 has_vertex_normal() const {
@@ -237,6 +240,9 @@ has_vertex_normal() const {
 //       Access: Published
 //  Description: Returns true if any vertex on the primitive has a
 //               specific color set, false otherwise.
+//
+//               For the most accurate measure of this, call
+//               unify_attributes() first.
 ////////////////////////////////////////////////////////////////////
 bool EggPrimitive::
 has_vertex_color() const {
@@ -247,6 +253,226 @@ has_vertex_color() const {
     }
   }
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::is_flat_shaded
+//       Access: Published
+//  Description: Returns true if the primitive is flat shaded, meaning
+//               it has no per-vertex normal and no per-vertex color
+//               (but in the case of a composite primitive, it may
+//               still have per-component normal and color).
+//
+//               For the most accurate measure of this, call
+//               unify_attributes() first.
+////////////////////////////////////////////////////////////////////
+bool EggPrimitive::
+is_flat_shaded() const {
+  return !has_vertex_normal() && !has_vertex_color();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::unify_attributes
+//       Access: Published, Virtual
+//  Description: Applies per-vertex normal and color to all vertices,
+//               if they are in fact per-vertex (and actually
+//               different for each vertex), or moves them to the
+//               primitive if they are all the same.
+//
+//               After this call, either the primitive will have
+//               normals or its vertices will, but not both.  Ditto
+//               for colors.
+//
+//               This may create redundant vertices in the vertex
+//               pool.
+////////////////////////////////////////////////////////////////////
+void EggPrimitive::
+unify_attributes() {
+  typedef pvector< PT(EggVertex) > Vertices;
+  Vertices vertices;
+
+  // First, go through the vertices and apply the primitive overall
+  // attributes to any vertex that omits them.
+  bool all_have_normal = true;
+  bool all_have_color = true;
+  iterator pi;
+  for (pi = begin(); pi != end(); ++pi) {
+    EggVertex *orig_vertex = (*pi);
+    PT(EggVertex) vertex = new EggVertex(*orig_vertex);
+
+    if (!vertex->has_normal()) {
+      if (has_normal()) {
+        vertex->set_normal(get_normal());
+        vertex->_dnormals = _dnormals;
+      } else {
+        all_have_normal = false;
+      }
+    }
+    if (!vertex->has_color()) {
+      if (has_color()) {
+        vertex->set_color(get_color());
+        vertex->_drgbas = _drgbas;
+      } else {
+        all_have_color = false;
+      }
+    }
+
+    vertices.push_back(vertex);
+  }
+
+  clear_normal();
+  clear_color();
+
+  // Now see if any ended up different.
+  EggAttributes overall;
+  bool normal_different = false;
+  bool color_different = false;
+
+  Vertices::iterator vi;
+  for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
+    EggVertex *vertex = (*vi);
+    if (!all_have_normal) {
+      vertex->clear_normal();
+    } else if (!normal_different) {
+      if (!overall.has_normal()) {
+        overall.set_normal(vertex->get_normal());
+        overall._dnormals = vertex->_dnormals;
+      } else if (overall.get_normal() != vertex->get_normal() ||
+                 overall._dnormals.compare_to(vertex->_dnormals) != 0) {
+        normal_different = true;
+      }
+    }
+    if (!all_have_color) {
+      vertex->clear_color();
+    } else if (!color_different) {
+      if (!overall.has_color()) {
+        overall.set_color(vertex->get_color());
+        overall._drgbas = vertex->_drgbas;
+      } else if (overall.get_color() != vertex->get_color() ||
+                 overall._drgbas.compare_to(vertex->_drgbas) != 0) {
+        color_different = true;
+      }
+    }
+  }
+
+  if (!overall.has_normal()) {
+    normal_different = true;
+  }
+  if (!overall.has_color()) {
+    color_different = true;
+  }
+
+  if (!color_different || !normal_different) {
+    // Ok, it's flat-shaded after all.  Go back through and remove
+    // this stuff from the vertices.
+    if (!normal_different) {
+      set_normal(overall.get_normal());
+      _dnormals = overall._dnormals;
+    }
+    if (!color_different) {
+      set_color(overall.get_color());
+      _drgbas = overall._drgbas;
+    }
+    for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
+      EggVertex *vertex = (*vi);
+      if (!normal_different) {
+        vertex->clear_normal();
+      }
+      if (!color_different) {
+        vertex->clear_color();
+      }
+    }
+  }
+
+  // Finally, move the new vertices to the vertex pool.
+  EggVertexPool *vertex_pool = get_pool();
+  for (size_t i = 0; i < vertices.size(); i++) {
+    EggVertex *vertex = vertices[i];
+    vertex = vertex_pool->create_unique_vertex(*vertex);
+    set_vertex(i, vertex);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::apply_last_attribute
+//       Access: Published, Virtual
+//  Description: Sets the last vertex of the triangle (or each
+//               component) to the primitive normal and/or color, if
+//               the primitive is flat-shaded.  This reflects the
+//               Panda convention of storing flat-shaded properties on
+//               the last vertex, although it is not usually a
+//               convention in Egg.
+//
+//               This may introduce redundant vertices to the vertex
+//               pool.
+////////////////////////////////////////////////////////////////////
+void EggPrimitive::
+apply_last_attribute() {
+  if (!empty()) {
+    // The significant_change flag is set if we have changed the
+    // vertex in some important way, that will invalidate it for other
+    // primitives that might share it.  We don't consider *adding* a
+    // normal where there wasn't one before to be significant, but we
+    // do consider it significant to change a vertex's normal to
+    // something different.  Similarly for color.
+    bool significant_change = false;
+
+    EggVertex *orig_vertex = get_vertex(size() - 1);
+    PT(EggVertex) new_vertex = new EggVertex(*orig_vertex);
+
+    if (has_normal()) {
+      new_vertex->set_normal(get_normal());
+      new_vertex->_dnormals = _dnormals;
+
+      if (orig_vertex->has_normal() &&
+          (orig_vertex->get_normal() != new_vertex->get_normal() ||
+           orig_vertex->_dnormals.compare_to(new_vertex->_dnormals) != 0)) {
+        significant_change = true;
+      }
+    }
+    if (has_color()) {
+      new_vertex->set_color(get_color());
+      new_vertex->_drgbas = _drgbas;
+
+      if (orig_vertex->has_color() &&
+          (orig_vertex->get_color() != new_vertex->get_color() ||
+           orig_vertex->_drgbas.compare_to(new_vertex->_drgbas) != 0)) {
+        significant_change = true;
+      }
+    }
+
+    if (significant_change) {
+      new_vertex = get_pool()->create_unique_vertex(*new_vertex);
+      set_vertex(size() - 1, new_vertex);
+    } else {
+      // Just copy the new attributes back into the pool.
+      ((EggAttributes *)orig_vertex)->operator = (*new_vertex);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::post_apply_last_attribute
+//       Access: Published, Virtual
+//  Description: Intended as a followup to apply_last_attribute(),
+//               this also sets an attribute on the first vertices of
+//               the primitive, if they don't already have an
+//               attribute set, just so they end up with *something*.
+////////////////////////////////////////////////////////////////////
+void EggPrimitive::
+post_apply_last_attribute() {
+  if (!empty()) {
+    for (int i = 0; i < (int)size(); i++) {
+      EggVertex *vertex = get_vertex(i);
+
+      if (has_normal() && !vertex->has_normal()) {
+        vertex->set_normal(get_normal());
+      }
+      if (has_color() && !vertex->has_color()) {
+        vertex->set_color(get_color());
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
