@@ -10,6 +10,12 @@ import Dial
 import Floater
 import EntryScale
 
+"""
+To Add
+Num Segs lines between knots
+Num Ticks
+"""
+
 class MopathRecorder(AppShell, PandaObject):
     # Override class variables here
     appname = 'Mopath Recorder Panel'
@@ -42,11 +48,24 @@ class MopathRecorder(AppShell, PandaObject):
         # Initialize state
         self.tempCS = direct.group.attachNewNode('mopathRecorderTempCS')
         # Count of point sets recorded
+        self.pointSet = []
+        self.pointSetDict = {}
         self.pointSetCount = 0
-        # Count of number of points in a point set
-        self.pointCount = 0
+        self.pointSetName = self['name'] + '-ps-' + `self.pointSetCount`
+        # Hook to start/stop recording
+        self.startStopHook = 'f6'
         # Curve fitter object
-        self.curveFitter = CurveFitter()
+        self.xyzCurveFitter = CurveFitter()
+        self.hprCurveFitter = CurveFitter()
+        # Curve objects
+        self.nurbsCurve = NurbsCurve()
+        self.nurbsCurveDrawer = NurbsCurveDrawer(self.nurbsCurve)
+        self.curveNodePath = None
+        # Number of ticks per parametric unit
+        self.numTicks = 1
+        # Number of segments to represent each parametric unit
+        # This just affects the visual appearance of the curve
+        self.numSegs = 2
         # Set up event hooks
         self.undoEvents = [('undo', self.undoHook),
                            ('pushUndo', self.pushUndoHook),
@@ -69,13 +88,6 @@ class MopathRecorder(AppShell, PandaObject):
             'Recorder', 'Show/Hide',
             statusHelp = 'Show/Hide Mopath Recorder Objects',
             tearoff = 1)
-        self.pathVis = BooleanVar()
-        self.pathVis.set(1)
-        self.menuBar.addmenuitem('Show/Hide', 'checkbutton',
-                                 'Toggle Path Visability',
-                                 label = 'Toggle Path Vis',
-                                 variable = self.pathVis,
-                                 command = self.setPathVis)
         self.traceVis = BooleanVar()
         self.traceVis.set(1)
         self.menuBar.addmenuitem('Show/Hide', 'checkbutton',
@@ -83,6 +95,20 @@ class MopathRecorder(AppShell, PandaObject):
                                  label = 'Toggle Trace Vis',
                                  variable = self.traceVis,
                                  command = self.setTraceVis)
+        self.pathVis = BooleanVar()
+        self.pathVis.set(1)
+        self.menuBar.addmenuitem('Show/Hide', 'checkbutton',
+                                 'Toggle Path Visability',
+                                 label = 'Toggle Path Vis',
+                                 variable = self.pathVis,
+                                 command = self.setPathVis)
+        self.hullVis = BooleanVar()
+        self.hullVis.set(1)
+        self.menuBar.addmenuitem('Show/Hide', 'checkbutton',
+                                 'Toggle Hull Visability',
+                                 label = 'Toggle Hull Vis',
+                                 variable = self.hullVis,
+                                 command = self.setHullVis)
         self.cvVis = BooleanVar()
         self.cvVis.set(1)
         self.menuBar.addmenuitem('Show/Hide', 'checkbutton',
@@ -90,13 +116,13 @@ class MopathRecorder(AppShell, PandaObject):
                                  label = 'Toggle CV Vis',
                                  variable = self.cvVis,
                                  command = self.setCvVis)
-        self.markerVis = BooleanVar()
-        self.markerVis.set(1)
+        self.knotVis = BooleanVar()
+        self.knotVis.set(1)
         self.menuBar.addmenuitem('Show/Hide', 'checkbutton',
-                                 'Toggle Marker Visability',
-                                 label = 'Toggle Marker Vis',
-                                 variable = self.markerVis,
-                                 command = self.setMarkerVis)
+                                 'Toggle Knot Visability',
+                                 label = 'Toggle Knot Vis',
+                                 variable = self.knotVis,
+                                 command = self.setKnotVis)
         self.tickVis = BooleanVar()
         self.tickVis.set(1)
         self.menuBar.addmenuitem('Show/Hide', 'checkbutton',
@@ -104,6 +130,13 @@ class MopathRecorder(AppShell, PandaObject):
                                  label = 'Toggle Tick Vis',
                                  variable = self.tickVis,
                                  command = self.setTickVis)
+        self.markerVis = BooleanVar()
+        self.markerVis.set(1)
+        self.menuBar.addmenuitem('Show/Hide', 'checkbutton',
+                                 'Toggle Marker Visability',
+                                 label = 'Toggle Marker Vis',
+                                 variable = self.markerVis,
+                                 command = self.setMarkerVis)
         self.menuBar.addmenuitem(
             'Recorder', 'command',
             'Toggle widget visability',
@@ -116,8 +149,7 @@ class MopathRecorder(AppShell, PandaObject):
             command = direct.manipulationControl.toggleObjectHandlesMode)
 
         self.createComboBox(self.menuFrame, 'Mopath', 'Point Set',
-                            'Select input points to fit curve to',
-                            [self['name'] + '-ps-' + `self.pointSetCount`],
+                            'Select input points to fit curve to', '',
                             self.selectPointSetNamed)
 
         self.undoButton = Button(self.menuFrame, text = 'Undo',
@@ -166,7 +198,9 @@ class MopathRecorder(AppShell, PandaObject):
             fill = 'x', expand = 1)
         self.createLabeledEntry(frame, 'Recording', 'Start/Stop Hook',
                                 'Hook used to start/stop recording',
+                                initialValue = self.startStopHook,
                                 command = self.setStartStopHook)
+        self.setStartStopHook(None)
         frame.pack(fill = 'x', expand = 1)
         recordFrame.pack(fill = 'x')
         # Playback controls
@@ -301,33 +335,113 @@ class MopathRecorder(AppShell, PandaObject):
         # Remove hooks
         for event, method in self.undoEvents:
             self.ignore(event)
+        # remove start stop hook
+        self.ignore(self.startStopHook)
         self.tempCS.removeNode()
 
-    def selectPointSetNamed(self, setName):
-        print setName
+    def createNewPointSet(self):
+        self.pointSet = []
+        self.pointSetName = self['name'] + '-ps-' + `self.pointSetCount`
+        # Update dictionary
+        self.pointSetDict[self.pointSetName] = self.pointSet
+        # Update combo box
+        comboBox = self.getWidget('Mopath', 'Point Set')
+        scrolledList = comboBox.component('scrolledlist')
+        listbox = scrolledList.component('listbox')
+        names = list(listbox.get(0,'end'))
+        names.append(self.pointSetName)
+        scrolledList.setlist(names)
+        # Update count
+        self.pointSetCount += 1
 
-    def setPathVis(self):
-        print self.pathVis.get()
-        
+    def selectPointSetNamed(self, name):
+        self.pointSet = self.pointSetDict.get(name, None)
+
     def setTraceVis(self):
         print self.traceVis.get()
         
-    def setCvVis(self):
-        print self.cvVis.get()
+    def setHullVis(self):
+        self.nurbsCurveDrawer.setShowHull(self.hullVis.get())
         
+    def setPathVis(self):
+        if self.pathVis.get():
+            self.curveNodePath.show()
+        else:
+            self.curveNodePath.hide()
+        
+    def setCvVis(self):
+        self.nurbsCurveDrawer.setShowCvs(self.cvVis.get())
+        
+    def setKnotVis(self):
+        self.nurbsCurveDrawer.setShowKnots(self.knotVis.get())
+
+    def setTickVis(self):
+        if self.tickVis.get():
+            self.nurbsCurveDrawer.setNumTicks(self.numTicks)
+        else:
+            self.nurbsCurveDrawer.setNumTicks(0)
+
     def setMarkerVis(self):
         print self.markerVis.get()
         
-    def setTickVis(self):
-        print self.tickVis.get()
+    def setStartStopHook(self, event):
+        # Clear out old hook
+        self.ignore(self.startStopHook)
+        # Record new one
+        hook = self.getVariable('Recording', 'Start/Stop Hook').get()
+        self.startStopHook = hook
+        # Add new one
+        self.accept(self.startStopHook, self.toggleRecordVar)
+
+    def toggleRecordVar(self):
+        # Get recording variable
+        v = self.getVariable('Recording', 'Recording Path')
+        # Toggle it
+        v.set(1 - v.get())
+        # Call the command
+        self.toggleRecord()
 
     def toggleRecord(self):
-        print self.getVariable('Recording', 'Recording Path').get()
+        if self.getVariable('Recording', 'Recording Path').get():
+            # Kill old task
+            taskMgr.removeTasksNamed(self['name'] + '-recordTask')
+            # Reset curve fitters
+            self.xyzCurveFitter.reset()
+            self.hprCurveFitter.reset()
+            # Create a new point set to hold raw data
+            self.createNewPointSet()
+            # Start new task
+            t = taskMgr.spawnMethodNamed(
+                self.recordTask, self['name'] + '-recordTask')
+            t.startTime = globalClock.getTime()
+            t.uponDeath = self.endRecordTask
+        else:
+            # Kill old task
+            taskMgr.removeTasksNamed(self['name'] + '-recordTask')
+            
+    def recordTask(self, state):
+        # Record raw data point
+        time = globalClock.getTime() - state.startTime
+        pos = self['nodePath'].getPos()
+        hpr = self['nodePath'].getHpr()
+        # Add it to the point set
+        self.pointSet.append([time, pos, hpr])
+        # Add it to the curve fitters
+        self.xyzCurveFitter.addPoint(time, pos )
+        self.hprCurveFitter.addPoint(time, hpr)
+        return Task.cont
 
-    def setStartStopHook(self):
-        self.
-        print 'start stop'
-
+    def endRecordTask(self, state):
+        # Create curve
+        self.xyzCurveFitter.computeTangents(1)
+        self.hprCurveFitter.computeTangents(1)
+        self.nurbsCurve = self.xyzCurveFitter.makeNurbs()
+        self.nurbsCurveDrawer.setCurve(self.nurbsCurve)
+        self.nurbsCurveDrawer.setNumSegs(self.numSegs)
+        self.nurbsCurveDrawer.draw()
+        self.curveNodePath = render.attachNewNode(
+            self.nurbsCurveDrawer.getGeomNode())
+        
     def setPlaybackTime(self, time):
         print time
 
@@ -378,13 +492,18 @@ class MopathRecorder(AppShell, PandaObject):
         return self.variableDict[category + '-' + text]
 
     def createLabeledEntry(self, parent, category, text, balloonHelp,
+                           initialValue = '',
                            command = None, relief = 'sunken',
                            side = 'left', expand = 1, width = 12):
+        variable = StringVar()
+        variable.set(initialValue)
         frame = Frame(parent)
         Label(frame, text = text).pack(side = 'left', fill = 'x')
-        entry = Entry(frame, width = width, relief = relief)
+        entry = Entry(frame, width = width, relief = relief,
+                      textvariable = variable)
         entry.pack(side = 'left', fill = 'x', expand = expand)
         self.widgetDict[category + '-' + text] = entry
+        self.variableDict[category + '-' + text] = variable
         if command:
             entry.bind('<Return>', command)
         frame.pack(side = side, fill = 'x', expand = expand)

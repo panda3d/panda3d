@@ -107,7 +107,6 @@ PUBLISHED:
 
   void ascii_draw() const;
 
-public:
   virtual bool get_point(double t, LVecBase3f &point) const=0;
   virtual bool get_tangent(double t, LVecBase3f &tangent) const=0;
   virtual bool get_pt(double t, LVecBase3f &point, LVecBase3f &tangent) const=0;
