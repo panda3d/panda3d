@@ -101,3 +101,15 @@ def doc(obj):
        (isinstance(obj, types.FunctionType)):
         print obj.__doc__
 
+def intersection(a, b):
+    """
+    intersection(list, list):
+    """
+    c = a + b
+    d = []
+    for i in c:
+        if (i in a) and (i in b):
+            # make it unique, like a set
+            if (i not in d):
+                d.append(i)
+    return d   
