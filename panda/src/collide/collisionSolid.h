@@ -77,7 +77,8 @@ public:
 
   virtual void xform(const LMatrix4f &mat);
 
-  virtual PT(PandaNode) get_viz(const CullTraverserData &data) const;
+  virtual PT(PandaNode) get_viz(const CullTraverserData &data,
+                                bool bounds_only) const;
 
 PUBLISHED:
   virtual void output(ostream &out) const;
@@ -103,8 +104,12 @@ protected:
   CPT(RenderState) get_solid_viz_state();
   CPT(RenderState) get_wireframe_viz_state();
   CPT(RenderState) get_other_viz_state();
+  CPT(RenderState) get_solid_bounds_viz_state();
+  CPT(RenderState) get_wireframe_bounds_viz_state();
+  CPT(RenderState) get_other_bounds_viz_state();
 
   PT(GeomNode) _viz_geom;
+  PT(GeomNode) _bounds_viz_geom;
 
 private:
   LVector3f _effective_normal;

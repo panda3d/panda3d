@@ -145,19 +145,14 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       // tests that are being made.
       const CollisionSolid *solid = (*si).first;
       const SolidInfo &solid_info = (*si).second;
-      PT(PandaNode) node = solid->get_viz(xform_data);
+      bool was_detected = (solid_info._detected_count > 0);
+      PT(PandaNode) node = solid->get_viz(xform_data, !was_detected);
       if (node != (PandaNode *)NULL) {
         CullTraverserData next_data(xform_data, node);
         
         // We don't want to inherit the render state from above for
-        // these guys.  Instead, we choose the state according to
-        // whether a collision was detected or not.
-        if (solid_info._detected_count > 0) {
-          next_data._state = get_detected_state();
-        } else {
-          next_data._state = get_tested_state();
-        }
-        
+        // these guys.
+        next_data._state = get_viz_state();
         trav->traverse(next_data);
       }
     }
@@ -287,42 +282,19 @@ collision_tested(const CollisionEntry &entry, bool detected) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionVisualizer::get_detected_state
+//     Function: CollisionVisualizer::get_viz_state
 //       Access: Private
 //  Description: Returns a RenderState suitable for rendering the
 //               collision solids with which a collision was detected.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) CollisionVisualizer::
-get_detected_state() {
+get_viz_state() {
   // Once someone asks for this pointer, we hold its reference count
   // and never free it.
   static CPT(RenderState) state = (const RenderState *)NULL;
   if (state == (const RenderState *)NULL) {
     state = RenderState::make
       (DepthOffsetAttrib::make());
-  }
-
-  return state;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionVisualizer::get_tested_state
-//       Access: Private
-//  Description: Returns a RenderState suitable for rendering the
-//               collision solids with which a collision was tested,
-//               but no collision was detected..
-////////////////////////////////////////////////////////////////////
-CPT(RenderState) CollisionVisualizer::
-get_tested_state() {
-  // Once someone asks for this pointer, we hold its reference count
-  // and never free it.
-  static CPT(RenderState) state = (const RenderState *)NULL;
-  if (state == (const RenderState *)NULL) {
-    state = RenderState::make
-      (ColorScaleAttrib::make(LVecBase4f(1.0f, 1.0f, 0.5f, 0.5f)),
-       DepthOffsetAttrib::make());
-    state = state->add_attrib
-      (TransparencyAttrib::make(TransparencyAttrib::M_alpha), 1);
   }
 
   return state;

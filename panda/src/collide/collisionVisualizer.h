@@ -59,8 +59,7 @@ public:
   virtual void collision_tested(const CollisionEntry &entry, bool detected);
 
 private:
-  CPT(RenderState) get_detected_state();
-  CPT(RenderState) get_tested_state();
+  CPT(RenderState) get_viz_state();
 
 private:
   class SolidInfo {

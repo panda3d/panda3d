@@ -275,13 +275,13 @@ get_collision_origin() const {
 //               made visible.
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) CollisionPolygon::
-get_viz(const CullTraverserData &data) const {
+get_viz(const CullTraverserData &data, bool bounds_only) const {
   const RenderAttrib *cpa_attrib =
     data._state->get_attrib(ClipPlaneAttrib::get_class_type());
   if (cpa_attrib == (const RenderAttrib *)NULL) {
     // Fortunately, the polygon is not clipped.  This is the normal,
     // easy case.
-    return CollisionSolid::get_viz(data);
+    return CollisionSolid::get_viz(data, bounds_only);
   }
 
   if (collide_cat.is_debug()) {
@@ -300,7 +300,7 @@ get_viz(const CullTraverserData &data) const {
   if (apply_clip_plane(new_points, cpa, data._net_transform)) {
     // All points are behind the clip plane; just draw the original
     // polygon.
-    return CollisionSolid::get_viz(data);
+    return CollisionSolid::get_viz(data, bounds_only);
   }
 
   if (new_points.empty()) {
@@ -309,10 +309,15 @@ get_viz(const CullTraverserData &data) const {
   }
 
   // Draw the clipped polygon.
-  PT(GeomNode) geom_node = new GeomNode("viz");
-  draw_polygon(geom_node, new_points);
+  PT(GeomNode) viz_geom_node = new GeomNode("viz");
+  PT(GeomNode) bounds_viz_geom_node = new GeomNode("bounds_viz");
+  draw_polygon(viz_geom_node, bounds_viz_geom_node, new_points);
 
-  return geom_node.p();
+  if (bounds_only) {
+    return bounds_viz_geom_node.p();
+  } else {
+    return viz_geom_node.p();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -769,7 +774,7 @@ fill_viz_geom() {
     collide_cat.debug()
       << "Recomputing viz for " << *this << "\n";
   }
-  draw_polygon(_viz_geom, _points);
+  draw_polygon(_viz_geom, _bounds_viz_geom, _points);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -796,7 +801,8 @@ compute_vectors(Points &points) {
 //               points.
 ////////////////////////////////////////////////////////////////////
 void CollisionPolygon::
-draw_polygon(GeomNode *geom_node, const CollisionPolygon::Points &points) const {
+draw_polygon(GeomNode *viz_geom_node, GeomNode *bounds_viz_geom_node,
+             const CollisionPolygon::Points &points) const {
   if (points.size() < 3) {
     if (collide_cat.is_debug()) {
       collide_cat.debug()
@@ -821,8 +827,11 @@ draw_polygon(GeomNode *geom_node, const CollisionPolygon::Points &points) const 
   polygon->set_num_prims(1);
   polygon->set_lengths(lengths);
 
-  geom_node->add_geom(polygon, ((CollisionPolygon *)this)->get_solid_viz_state());
-  geom_node->add_geom(polygon, ((CollisionPolygon *)this)->get_wireframe_viz_state());
+  viz_geom_node->add_geom(polygon, ((CollisionPolygon *)this)->get_solid_viz_state());
+  viz_geom_node->add_geom(polygon, ((CollisionPolygon *)this)->get_wireframe_viz_state());
+
+  bounds_viz_geom_node->add_geom(polygon, ((CollisionPolygon *)this)->get_solid_bounds_viz_state());
+  bounds_viz_geom_node->add_geom(polygon, ((CollisionPolygon *)this)->get_wireframe_bounds_viz_state());
 }
 
 

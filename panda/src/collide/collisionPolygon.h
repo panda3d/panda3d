@@ -61,7 +61,8 @@ public:
   virtual void xform(const LMatrix4f &mat);
   virtual LPoint3f get_collision_origin() const;
 
-  virtual PT(PandaNode) get_viz(const CullTraverserData &data) const;
+  virtual PT(PandaNode) get_viz(const CullTraverserData &data,
+                                bool bounds_only) const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
@@ -94,7 +95,8 @@ private:
   typedef pvector<PointDef> Points;
 
   static void compute_vectors(Points &points);
-  void draw_polygon(GeomNode *geom_node, const Points &points) const;
+  void draw_polygon(GeomNode *viz_geom_node, GeomNode *bounds_viz_geom_node,
+                    const Points &points) const;
 
   bool point_is_inside(const LPoint2f &p, const Points &points) const;
   float dist_to_polygon(const LPoint2f &p, const Points &points) const;

@@ -169,6 +169,7 @@ fill_viz_geom() {
   segment->set_num_prims(1);
 
   _viz_geom->add_geom(segment, get_other_viz_state());
+  _bounds_viz_geom->add_geom(segment, get_other_bounds_viz_state());
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -224,7 +224,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   Solids::iterator si;
   for (si = _solids.begin(); si != _solids.end(); ++si) {
     CollisionSolid *solid = (*si);
-    PT(PandaNode) node = solid->get_viz(data);
+    PT(PandaNode) node = solid->get_viz(data, false);
     if (node != (PandaNode *)NULL) {
       CullTraverserData next_data(data, node);
 
@@ -246,7 +246,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
     for (si = _solids.begin(); si != _solids.end(); ++si) {
       CollisionSolid *solid = (*si);
-      PT(PandaNode) node = solid->get_viz(data);
+      PT(PandaNode) node = solid->get_viz(data, false);
       if (node != (PandaNode *)NULL) {
         CullTraverserData next_data(data, node);
 

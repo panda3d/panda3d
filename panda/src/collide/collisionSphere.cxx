@@ -350,6 +350,7 @@ fill_viz_geom() {
   sphere->set_num_prims(num_slices);
 
   _viz_geom->add_geom(sphere, get_solid_viz_state());
+  _bounds_viz_geom->add_geom(sphere, get_solid_bounds_viz_state());
 }
 
 ////////////////////////////////////////////////////////////////////

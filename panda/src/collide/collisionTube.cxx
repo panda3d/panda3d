@@ -436,7 +436,7 @@ fill_viz_geom() {
   tube->set_lengths(lengths);
 
   _viz_geom->add_geom(tube, get_solid_viz_state());
-  //_viz_geom->add_geom(tube, get_wireframe_viz_state());
+  _bounds_viz_geom->add_geom(tube, get_solid_bounds_viz_state());
 }
 
 ////////////////////////////////////////////////////////////////////

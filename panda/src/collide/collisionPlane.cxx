@@ -334,6 +334,8 @@ fill_viz_geom() {
 
   _viz_geom->add_geom(quad, get_solid_viz_state());
   _viz_geom->add_geom(quad, get_wireframe_viz_state());
+  _bounds_viz_geom->add_geom(quad, get_solid_bounds_viz_state());
+  _bounds_viz_geom->add_geom(quad, get_wireframe_bounds_viz_state());
 }
 
 ////////////////////////////////////////////////////////////////////
