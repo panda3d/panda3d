@@ -115,19 +115,14 @@ def privUpdateSpec(spec, modelPath, entTypeModule):
             # by default, new zone can't see any other zones
             spec.doSetAttrib(entId, 'visibility', [])
 
-    # make sure none of the zones reference removed zones, and add
-    # the new zones to each zone's visibility list
+    # make sure none of the zones reference removed zones
+    # TODO: prune from other zoneList attribs
     for entId in zoneEntIds:
         visList = spec.getEntitySpec(entId)['visibility']
         visDict = list2dict(visList)
         for zoneNum in removedZoneNums:
             if zoneNum in visDict:
                 del visDict[zoneNum]
-        """
-        for zoneNum in newZoneNums:
-            if zoneNum not in visDict:
-                visDict[zoneNum]=None
-                """
         visList = visDict.keys()
         visList.sort()
         spec.doSetAttrib(entId, 'visibility', visList)
