@@ -85,7 +85,7 @@ get_num_nested_fields() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool DCPacker::
 more_nested_fields() const {
-  return (_current_field != (DCPackerInterface *)NULL);
+  return (_current_field != (DCPackerInterface *)NULL && !_pack_error);
 }
 
 ////////////////////////////////////////////////////////////////////

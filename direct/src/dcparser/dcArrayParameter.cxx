@@ -251,7 +251,11 @@ generate_hash(HashGenerator &hashgen) const {
 ////////////////////////////////////////////////////////////////////
 bool DCArrayParameter::
 pack_default_value(DCPackData &pack_data, bool &pack_error) const {
-  if (has_default_value()) {
+  // We only want to call up if the DCField can pack the value
+  // immediately--we don't trust the DCField to generate the default
+  // value (since it doesn't know how large the minimum length array
+  // is).
+  if (_has_default_value && !_default_value_stale) {
     return DCField::pack_default_value(pack_data, pack_error);
   }
 

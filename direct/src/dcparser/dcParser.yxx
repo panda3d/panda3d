@@ -160,6 +160,7 @@ dc_cleanup_parser() {
 %type <str> optional_name
 %type <u.s_uint> char_or_uint
 %type <u.s_uint> small_unsigned_integer
+%type <u.s_uint> small_negative_integer
 %type <u.int64> signed_integer
 %type <u.uint64> unsigned_integer
 %type <u.real> char_or_number
@@ -780,6 +781,13 @@ uint_range:
     yyerror("Overlapping range");
   }
 }
+	| char_or_uint small_negative_integer
+{
+  uint_range.clear();
+  if (!uint_range.add_range($1, $2)) {
+    yyerror("Overlapping range");
+  }
+}
 	| uint_range ',' char_or_uint
 {
   if (!uint_range.add_range($3, $3)) {
@@ -789,6 +797,12 @@ uint_range:
 	| uint_range ',' char_or_uint '-' char_or_uint
 {
   if (!uint_range.add_range($3, $5)) {
+    yyerror("Overlapping range");
+  }
+}
+	| uint_range ',' char_or_uint small_negative_integer
+{
+  if (!uint_range.add_range($3, $4)) {
     yyerror("Overlapping range");
   }
 }
@@ -850,6 +864,20 @@ small_unsigned_integer:
 {
   $$ = (unsigned int)$1;
   if ($$ != $1) {
+    yyerror("Number out of range.");
+    $$ = 1;
+  }
+}
+	;
+
+small_negative_integer:
+	SIGNED_INTEGER
+{
+  $$ = (unsigned int)-$1;
+  if ($1 >= 0) {
+    yyerror("Syntax error.");
+
+  } else if ($$ != -$1) {
     yyerror("Number out of range.");
     $$ = 1;
   }
