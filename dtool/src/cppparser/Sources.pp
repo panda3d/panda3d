@@ -4,31 +4,39 @@
 #begin static_lib_target
   #define TARGET cppParser
   
-  #define SOURCES                                                         \
-    cppArrayType.cxx cppArrayType.h \
-    cppBison.yxx cppBisonDefs.h                                           \
-    cppClassTemplateParameter.cxx cppClassTemplateParameter.h             \
-    cppCommentBlock.cxx cppCommentBlock.h cppConstType.cxx                \
-    cppConstType.h cppDeclaration.cxx cppDeclaration.h cppEnumType.cxx    \
-    cppEnumType.h cppExpression.cxx cppExpression.h                       \
-    cppExpressionParser.cxx cppExpressionParser.h cppExtensionType.cxx    \
-    cppExtensionType.h cppFile.cxx cppFile.h cppFunctionGroup.cxx         \
-    cppFunctionGroup.h cppFunctionType.cxx cppFunctionType.h              \
-    cppGlobals.cxx cppGlobals.h cppIdentifier.cxx cppIdentifier.h         \
-    cppInstance.cxx cppInstance.h cppInstanceIdentifier.cxx               \
-    cppInstanceIdentifier.h cppManifest.cxx cppManifest.h                 \
-    cppNameComponent.cxx cppNameComponent.h cppNamespace.cxx              \
-    cppNamespace.h cppParameterList.cxx cppParameterList.h cppParser.cxx  \
-    cppParser.h cppPointerType.cxx cppPointerType.h cppPreprocessor.cxx   \
-    cppPreprocessor.h cppReferenceType.cxx cppReferenceType.h             \
-    cppScope.cxx cppScope.h cppSimpleType.cxx cppSimpleType.h             \
-    cppStructType.cxx cppStructType.h cppTBDType.cxx cppTBDType.h         \
-    cppTemplateParameterList.cxx cppTemplateParameterList.h               \
-    cppTemplateScope.cxx cppTemplateScope.h cppToken.cxx cppToken.h       \
-    cppType.cxx cppType.h cppTypeDeclaration.cxx cppTypeDeclaration.h     \
-    cppTypeParser.cxx cppTypeParser.h cppTypeProxy.cxx cppTypeProxy.h     \
-    cppTypedef.cxx cppTypedef.h cppUsing.cxx cppUsing.h cppVisibility.cxx \
-    cppVisibility.h indent.cxx indent.h
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx  $[TARGET]_composite2.cxx  
+  
+  #define SOURCES \
+     cppArrayType.h cppBison.yxx cppBisonDefs.h  \
+     cppClassTemplateParameter.h cppCommentBlock.h cppConstType.h  \
+     cppDeclaration.h cppEnumType.h cppExpression.h  \
+     cppExpressionParser.h cppExtensionType.h cppFile.h  \
+     cppFunctionGroup.h cppFunctionType.h cppGlobals.h  \
+     cppIdentifier.h cppInstance.h cppInstanceIdentifier.h  \
+     cppManifest.h cppNameComponent.h cppNamespace.h  \
+     cppParameterList.h cppParser.h cppPointerType.h  \
+     cppPreprocessor.h cppReferenceType.h cppScope.h  \
+     cppSimpleType.h cppStructType.h cppTBDType.h  \
+     cppTemplateParameterList.h cppTemplateScope.h cppToken.h  \
+     cppType.h cppTypeDeclaration.h cppTypeParser.h  \
+     cppTypeProxy.h cppTypedef.h cppUsing.h cppVisibility.h  \
+     indent.h 
+
+  #define INCLUDED_SOURCES  \
+     cppArrayType.cxx cppClassTemplateParameter.cxx  \
+     cppCommentBlock.cxx cppConstType.cxx cppDeclaration.cxx  \
+     cppEnumType.cxx cppExpression.cxx cppExpressionParser.cxx  \
+     cppExtensionType.cxx cppFile.cxx cppFunctionGroup.cxx  \
+     cppFunctionType.cxx cppGlobals.cxx cppIdentifier.cxx  \
+     cppInstance.cxx cppInstanceIdentifier.cxx cppManifest.cxx  \
+     cppNameComponent.cxx cppNamespace.cxx cppParameterList.cxx  \
+     cppParser.cxx cppPointerType.cxx cppPreprocessor.cxx  \
+     cppReferenceType.cxx cppScope.cxx cppSimpleType.cxx  \
+     cppStructType.cxx cppTBDType.cxx  \
+     cppTemplateParameterList.cxx cppTemplateScope.cxx  \
+     cppToken.cxx cppType.cxx cppTypeDeclaration.cxx  \
+     cppTypeParser.cxx cppTypeProxy.cxx cppTypedef.cxx  \
+     cppUsing.cxx cppVisibility.cxx indent.cxx 
 
 // These are temporary; they need not be installed in the future.  These are
 // necessary only when using template stopgap.
