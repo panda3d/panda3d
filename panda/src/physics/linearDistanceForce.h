@@ -8,12 +8,6 @@
 
 #include "linearForce.h"
 
-enum FalloffType {
-  FT_ONE_OVER_R,
-  FT_ONE_OVER_R_SQUARED,
-  FT_ONE_OVER_R_CUBED
-};
-
 class BamReader;
 
 ////////////////////////////////////////////////////////////////////
@@ -22,6 +16,12 @@ class BamReader;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS LinearDistanceForce : public LinearForce {
 PUBLISHED:
+  enum FalloffType {
+    FT_ONE_OVER_R,
+    FT_ONE_OVER_R_SQUARED,
+    FT_ONE_OVER_R_CUBED
+  };
+
   INLINE void set_radius(float r);
   INLINE void set_falloff_type(FalloffType ft);
   INLINE void set_force_center(const LPoint3f& p);
