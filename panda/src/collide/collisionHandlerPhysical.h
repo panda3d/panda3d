@@ -52,15 +52,12 @@ PUBLISHED:
   bool has_collider(const NodePath &collider) const;
   void clear_colliders();
 
-  // The following method is deprecated and exists only as a temporary
-  // transition to the above new NodePath-based methods.
-  void add_collider_node(CollisionNode *node, PandaNode *target);
+  INLINE void set_center(const NodePath &center);
+  INLINE void clear_center();
+  INLINE const NodePath &get_center() const;
+  INLINE bool has_center() const;
 
 protected:
-  typedef pvector< PT(CollisionEntry) > Entries;
-  typedef pmap<NodePath, Entries> FromEntries;
-  FromEntries _from_entries;
-
   class ColliderDef {
   public:
     INLINE void set_target(const NodePath &target,
@@ -71,11 +68,17 @@ protected:
     PT(DriveInterface) _drive_interface;
   };
 
+  virtual bool handle_entries()=0;
+  virtual void apply_linear_force(ColliderDef &def, const LVector3f &force)=0;
+
+  typedef pvector< PT(CollisionEntry) > Entries;
+  typedef pmap<NodePath, Entries> FromEntries;
+  FromEntries _from_entries;
+
   typedef pmap<NodePath, ColliderDef> Colliders;
   Colliders _colliders;
 
-  virtual bool handle_entries()=0;
-  virtual void apply_linear_force(ColliderDef &def, const LVector3f &force)=0;
+  NodePath _center;
 
 public:
   static TypeHandle get_class_type() {

@@ -69,6 +69,21 @@ add_entry(CollisionEntry *entry) {
 
   if (entry->get_from()->is_tangible() &&
       (!entry->has_into() || entry->get_into()->is_tangible())) {
+
+    if (has_center()) {
+      // If a center is specified, we have to make sure the surface is
+      // more-or-less facing it.
+      if (!entry->has_surface_point() || !entry->has_surface_normal()) {
+        return;
+      }
+
+      LPoint3f point = entry->get_surface_point(_center);
+      LVector3f normal = entry->get_surface_normal(_center);
+       if (point.dot(normal) > 0) {
+         return;
+       }
+    }
+
     _from_entries[entry->get_from_node_path()].push_back(entry);
   }
 }
@@ -162,15 +177,4 @@ has_collider(const NodePath &target) const {
 void CollisionHandlerPhysical::
 clear_colliders() {
   _colliders.clear();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerPhysical::add_collider_node
-//       Access: Published
-//  Description: This method is deprecated and will shortly be removed
-//               in favor of the newer NodePath-based method, above.
-////////////////////////////////////////////////////////////////////
-void CollisionHandlerPhysical::
-add_collider_node(CollisionNode *node, PandaNode *target) {
-  add_collider(NodePath(node), NodePath(target));
 }
