@@ -42,7 +42,7 @@ TrueClock *TrueClock::_global_ptr = NULL;
 static BOOL _has_high_res;
 static PN_int64 _frequency;
 static PN_int64 _init_count;
-static long _init_sec;
+static DWORD _init_tc;
 static bool _paranoid_clock;
 
 void get_true_time_of_day(ulong &sec, ulong &usec) {
@@ -60,34 +60,30 @@ get_real_time() const {
 
     double time = (double)(count.QuadPart - _init_count) / (double)_frequency;
 
-#ifndef NDEBUG
     if (_paranoid_clock) {
       // Now double-check the high-resolution clock against the system
       // clock.
-      struct timeb tb;
-      ftime(&tb);
-      double sys_time = (double)(tb.time - _init_sec) + (double)tb.millitm / 1000.0;
+      DWORD tc = GetTickCount();
+      double sys_time = (double)(tc - _init_tc) / 1000.0;
       if (fabs(time - sys_time) > 0.5) {
         // Too much variance!
-        express_cat.error()
+        express_cat.info()
           << "Clock error!  High resolution clock reads " << time 
           << " while system clock reads " << sys_time << ".\n";
         _init_count = 
           (PN_int64)(count.QuadPart - sys_time * (double)_frequency);
         time = (double)(count.QuadPart - _init_count) / (double)_frequency;
-        express_cat.error()
+        express_cat.info()
           << "High resolution clock reset to " << time << ".\n";
       }
     }
-#endif  // NDEBUG
 
     return time;
 
   } else {
     // No high-resolution clock; return the best information we have.
-    struct timeb tb;
-    ftime(&tb);
-    return (double)(tb.time - _init_sec) + (double)tb.millitm / 1000.0;
+    DWORD tc = GetTickCount();
+    return (double)(tc - _init_tc) / 1000.0;
   }
 }
 
@@ -110,36 +106,21 @@ TrueClock() {
         << "TrueClock::get_real_time() - frequency is negative!" << endl;
       _has_high_res = false;
     }
-
   }
+
+  // Also store the initial tick count.  We'll need this if we're not
+  // using the high resolution clock, or to cross-check the high
+  // resolution clock if we are using it.
+  _init_tc = GetTickCount();
 
   if (!_has_high_res) {
     express_cat.warning()
       << "No high resolution clock available." << endl;
 
-    struct timeb tb;
-    ftime(&tb);
-    _init_sec = tb.time;
-  }
-#ifndef NDEBUG
-  else if (_paranoid_clock) {
-    express_cat.warning()
+  } else if (_paranoid_clock) {
+    express_cat.info()
       << "Not trusting the high resolution clock." << endl;
-
-    struct timeb tb;
-    ftime(&tb);
-    _init_sec = tb.time;
-
-    // Also set the QueryPerformance counter to exactly match the sys
-    // time, before we get started.
-    double sys_time = (double)(tb.time - _init_sec) + (double)tb.millitm / 1000.0;
-    LARGE_INTEGER count;
-    QueryPerformanceCounter(&count);
-    _init_count = 
-      (PN_int64)(count.QuadPart - sys_time * (double)_frequency);
   }
-#endif
-
 }
 
 
