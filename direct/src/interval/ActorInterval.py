@@ -16,7 +16,8 @@ class ActorInterval(Interval):
     # Note: if loop == 0 and duration > anim duration then the animation
     # will play once and then nothing will happen for the remainder of the
     # interval
-    def __init__(self, actor, animName, loop=0, duration=0.0, name=None):
+    def __init__(self, actor, animName, loop=0, duration=0.0,
+                 startTime = 0.0, name=None):
         """__init__(name)
         """
         # Generate unique id
@@ -27,12 +28,15 @@ class ActorInterval(Interval):
 	self.animName = animName
         self.loop = loop
 	self.numFrames = self.actor.getNumFrames(self.animName)
+        # Compute start time
+        self.startTime = startTime
         # If no name specified, use id as name
 	if (name == None):
 	    name = id
         # Compute duration if no duration specified
         if duration == 0.0:
-	    duration = self.actor.getDuration(self.animName)
+	    duration = max(self.actor.getDuration(self.animName) - startTime,
+                           0.0)
         # Initialize superclass
 	Interval.__init__(self, name, duration)
         # Update stopEvent
@@ -53,8 +57,11 @@ class ActorInterval(Interval):
         elif self.loop == 1:
             if event == IVAL_INIT:
                 # Determine the current frame
-                frame = (int(self.actor.getFrameRate(self.animName) * t) %
-                         self.numFrames)
+                currT = (self.actor.getFrameRate(self.animName) *
+                         (self.startTime + t))
+                print t, currT
+                frame = int(currT) % self.numFrames
+                print frame
                 # Pose anim
                 self.actor.pose(self.animName, frame)
                 # And start loop, restart flag says continue from current frame
@@ -62,8 +69,9 @@ class ActorInterval(Interval):
                 self.accept(self.stopEvent, self.actor.stop)
         else:
             # Determine the current frame
-            frame = (int(self.actor.getFrameRate(self.animName) * t) %
-                     self.numFrames)
+            currT = (self.actor.getFrameRate(self.animName) *
+                     (self.startTime + t))
+            frame = int(currT) % self.numFrames
             # Pose anim
             self.actor.pose(self.animName, frame)
             
