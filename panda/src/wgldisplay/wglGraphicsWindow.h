@@ -21,12 +21,17 @@
 ////////////////////////////////////////////////////////////////////
 // Includes
 ////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
 
-#include <graphicsWindow.h>
+// include win32 defns for everything up to XP, and assume I'm smart enough to
+// use GetProcAddress for backward compat on w95/w98 for newer fns
+#define _WIN32_WINNT 0x0501
+
 #define WINDOWS_LEAN_AND_MEAN
 #include <windows.h>
 #undef WINDOWS_LEAN_AND_MEAN
+
+#include <pandabase.h>
+#include <graphicsWindow.h>
 
 ////////////////////////////////////////////////////////////////////
 // Defines
@@ -76,33 +81,17 @@ public:
 public:
   virtual void make_current();
   virtual void unmake_current();
-
-  INLINE bool mouse_entry_enabled() { return _mouse_entry_enabled; }
-  INLINE bool mouse_motion_enabled() { return _mouse_motion_enabled; }
-  INLINE bool mouse_passive_motion_enabled() {
-    return _mouse_passive_motion_enabled;
-  }
-//  void handle_reshape(int w, int h);
-
   void handle_mouse_motion(int x, int y);
-  void handle_mouse_entry(int state);
+  void handle_mouse_exit(void);
+  INLINE void track_mouse_leaving(HWND hwnd);
   void handle_keypress(ButtonHandle key, int x, int y);
   void handle_keyrelease(ButtonHandle key);
 
 protected:
-//  PIXELFORMATDESCRIPTOR* try_for_visual(wglGraphicsPipe *pipe,
-//                              int mask, int want_depth_bits = 1, int want_color_bits = 1);
-//  static void get_config(PIXELFORMATDESCRIPTOR* visual, int attrib, int *value);
   int choose_visual(void);
   int find_pixfmtnum(bool bLookforHW);
   virtual void config();
   void setup_colormap(void);
-
-  void enable_mouse_input(bool val);
-  void enable_mouse_motion(bool val);
-  void enable_mouse_passive_motion(bool val);
-  void enable_mouse_entry(bool val);
-
   void handle_reshape();
   void process_events();
 
@@ -126,11 +115,8 @@ private:
   bool              _active_minimized_fullscreen;
   bool              _return_control_to_app;
   bool              _exiting_window;
-
-  bool              _mouse_input_enabled;
-  bool              _mouse_motion_enabled;
-  bool              _mouse_passive_motion_enabled;
-  bool              _mouse_entry_enabled;
+  bool              _cursor_in_windowclientarea;
+  bool              _tracking_mouse_leaving;
   bool              _ime_open;
   bool              _ime_active;
   bool              _ime_composition_w;
@@ -142,6 +128,9 @@ private:
   float _current_fps;
 
   string _extensions_str;
+
+  typedef BOOL (WINAPI* PFN_TRACKMOUSEEVENT)(LPTRACKMOUSEEVENT);
+  PFN_TRACKMOUSEEVENT _pfnTrackMouseEvent;
 
 public:
   static TypeHandle get_class_type();
