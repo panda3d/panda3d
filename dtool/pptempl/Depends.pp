@@ -6,7 +6,10 @@
 // determining build order.
 //
 
-#if $[or $[eq $[DIR_TYPE], src], $[eq $[DIR_TYPE], metalib]]
+#if $[eq $[DIR_TYPE], toplevel]
+  #define DEPENDABLE_HEADERS $[CONFIG_HEADER]
+
+#elif $[or $[eq $[DIR_TYPE], src], $[eq $[DIR_TYPE], metalib]]
 #if $[eq $[DEPEND_DIRS],]
 
   // DEPENDABLE_HEADERS is supposed to be the primary purpose of this
