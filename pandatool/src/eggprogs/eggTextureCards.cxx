@@ -248,10 +248,13 @@ run() {
   EggGroup *group = new EggGroup();
   _data.add_child(group);
 
-  // Make the group a sequence, as a convenience.  If we view the
-  // egg file directly we can see all the tiles one at a time.
-  group->set_switch_flag(true);
-  group->set_switch_fps(2.0);
+  // If we have more than one tile, make the group a sequence, as a
+  // convenience.  If we view the egg file directly we can see all the
+  // tiles one at a time.
+  if (_texture_names.size() > 1) {
+    group->set_switch_flag(true);
+    group->set_switch_fps(2.0);
+  }
 
   EggVertexPool *vpool = new EggVertexPool("vpool");
   group->add_child(vpool);
