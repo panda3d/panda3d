@@ -77,8 +77,8 @@ PUBLISHED:
   INLINE Mode get_mode() const;
 
   INLINE double get_frame_time() const;
-  INLINE double get_intra_frame_time() const;
   INLINE double get_real_time() const;
+  INLINE double get_long_time() const;
 
   INLINE void reset();
   void set_real_time(double time);
@@ -101,7 +101,8 @@ PUBLISHED:
 private:
   TrueClock *_true_clock;
   Mode _mode;
-  double _start_time;
+  double _start_short_time;
+  double _start_long_time;
   int _frame_count;
   double _actual_frame_time;
   double _reported_frame_time;

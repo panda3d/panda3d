@@ -70,34 +70,41 @@ get_frame_time() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClockObject::get_intra_frame_time
-//       Access: Published
-//  Description: Returns the number of seconds that have elapsed since
-//               the start of the frame.  This might be useful for
-//               certain specialty applications, for instance to
-//               measure how much time we've spent working on this one
-//               particular frame.
-//
-//               This function returns an honest value whether the
-//               ClockObject is in normal, real-time mode or in
-//               non-real-time mode.
-////////////////////////////////////////////////////////////////////
-INLINE double ClockObject::
-get_intra_frame_time() const {
-  return get_real_time() - _actual_frame_time;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::get_real_time
 //       Access: Published
 //  Description: Returns the actual number of seconds elapsed since
 //               the ClockObject was created, or since it was last
 //               reset.  This is useful for doing real timing
 //               measurements, e.g. for performance statistics.
+//
+//               This returns the most precise timer we have for short
+//               time intervals, but it may tend to drift over the
+//               long haul.  If more accurate timekeeping is needed
+//               over a long period of time, use get_long_time()
+//               instead.
 ////////////////////////////////////////////////////////////////////
 INLINE double ClockObject::
 get_real_time() const {
-  return (_true_clock->get_real_time() - _start_time);
+  return (_true_clock->get_short_time() - _start_short_time);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::get_long_time
+//       Access: Published
+//  Description: Returns the actual number of seconds elapsed since
+//               the ClockObject was created, or since it was last
+//               reset.
+//
+//               This is similar to get_real_time(), except that it
+//               uses the most accurate counter we have over a long
+//               period of time, and so it is less likely to drift.
+//               However, it may not be very precise for measuring
+//               short intervals.  On Windows, for instace, this is
+//               only accurate to within about 55 milliseconds.
+////////////////////////////////////////////////////////////////////
+INLINE double ClockObject::
+get_long_time() const {
+  return (_true_clock->get_long_time() - _start_long_time);
 }
 
 ////////////////////////////////////////////////////////////////////

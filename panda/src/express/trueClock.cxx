@@ -53,7 +53,13 @@ void get_true_time_of_day(ulong &sec, ulong &usec) {
 }
 
 double TrueClock::
-get_real_time() const {
+get_long_time() const {
+  DWORD tc = GetTickCount();
+  return (double)(tc - _init_tc) / 1000.0;
+}
+
+double TrueClock::
+get_short_time() const {
   if (_has_high_res) {
     LARGE_INTEGER count;
     QueryPerformanceCounter(&count);
@@ -108,7 +114,8 @@ TrueClock() {
     }
   }
 
-  // Also store the initial tick count.  We'll need this if we're not
+  // Also store the initial tick count.  We'll need this for
+  // get_long_time(), as well as for get_short_time() if we're not
   // using the high resolution clock, or to cross-check the high
   // resolution clock if we are using it.
   _init_tc = GetTickCount();
@@ -158,7 +165,12 @@ void get_true_time_of_day(ulong &sec, ulong &msec) {
 }
 
 double TrueClock::
-get_real_time() const {
+get_long_time() const {
+  return (double) _sec + ((double) _msec / 1000.0);
+}
+
+double TrueClock::
+get_short_time() const {
   return (double) _sec + ((double) _msec / 1000.0);
 }
 
@@ -219,7 +231,31 @@ void get_true_time_of_day(ulong &sec, ulong &msec) {
 }
 
 double TrueClock::
-get_real_time() const {
+get_long_time() const {
+  struct timeval tv;
+
+  int result;
+
+#ifdef GETTIMEOFDAY_ONE_PARAM
+  result = gettimeofday(&tv);
+#else
+  result = gettimeofday(&tv, (struct timezone *)NULL);
+#endif
+
+  if (result < 0) {
+    // Error in gettimeofday().
+    return 0.0;
+  }
+
+  // We subtract out the time at which the clock was initialized,
+  // because we don't care about the number of seconds all the way
+  // back to 1970, and we want to leave the double with as much
+  // precision as it can get.
+  return (double)(tv.tv_sec - _init_sec) + (double)tv.tv_usec / 1000000.0;
+}
+
+double TrueClock::
+get_short_time() const {
   struct timeval tv;
 
   int result;

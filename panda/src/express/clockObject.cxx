@@ -32,7 +32,8 @@ ClockObject::
 ClockObject() {
   _true_clock = TrueClock::get_ptr();
   _mode = M_normal;
-  _start_time = _true_clock->get_real_time();
+  _start_short_time = _true_clock->get_short_time();
+  _start_long_time = _true_clock->get_long_time();
   _frame_count = 0;
   _actual_frame_time = 0.0;
   _reported_frame_time = 0.0;
@@ -59,7 +60,8 @@ set_real_time(double time) {
       << " seconds.\n";
   }
 #endif  // NOTIFY_DEBUG
-  _start_time = _true_clock->get_real_time() - time;
+  _start_short_time = _true_clock->get_short_time() - time;
+  _start_long_time = _true_clock->get_long_time() - time;
 }
 
 ////////////////////////////////////////////////////////////////////
