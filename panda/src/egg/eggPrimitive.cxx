@@ -30,7 +30,7 @@ TypeHandle EggPrimitive::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::determine_alpha_mode
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Walks back up the hierarchy, looking for an EggPrimitive
 //               or EggPrimitive or some such object at this level or
 //               above this primitive that has an alpha_mode other than
@@ -54,7 +54,7 @@ determine_alpha_mode() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::determine_depth_write_mode
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Walks back up the hierarchy, looking for an EggGroup
 //               or EggPrimitive or some such object at this level or
 //               above this node that has a depth_write_mode other than
@@ -79,7 +79,7 @@ determine_depth_write_mode() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::determine_depth_test_mode
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Walks back up the hierarchy, looking for an EggGroup
 //               or EggPrimitive or some such object at this level or
 //               above this node that has a depth_test_mode other than
@@ -104,7 +104,7 @@ determine_depth_test_mode() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::determine_visibility_mode
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Walks back up the hierarchy, looking for an EggGroup
 //               or EggPrimitive or some such object at this level or
 //               above this node that has a visibility_mode other than
@@ -129,7 +129,7 @@ determine_visibility_mode() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::determine_draw_order
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Walks back up the hierarchy, looking for an EggPrimitive
 //               or EggPrimitive or some such object at this level or
 //               above this primitive that has a draw_order specified.
@@ -153,7 +153,7 @@ determine_draw_order() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::determine_bin
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Walks back up the hierarchy, looking for an EggPrimitive
 //               or EggPrimitive or some such object at this level or
 //               above this primitive that has a bin specified.  Returns a
@@ -177,7 +177,7 @@ determine_bin() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::copy_attributes
-//       Access: Public
+//       Access: Published
 //  Description: Copies the rendering attributes from the indicated
 //               primitive.
 ////////////////////////////////////////////////////////////////////
@@ -191,7 +191,7 @@ copy_attributes(const EggPrimitive &other) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::has_vertex_normal
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if any vertex on the primitive has a
 //               specific normal set, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -208,7 +208,7 @@ has_vertex_normal() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::has_vertex_color
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if any vertex on the primitive has a
 //               specific color set, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -225,7 +225,7 @@ has_vertex_color() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::reverse_vertex_ordering
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Reverses the ordering of the vertices in this
 //               primitive, if appropriate, in order to change the
 //               direction the polygon appears to be facing.  Does not
@@ -241,7 +241,7 @@ reverse_vertex_ordering() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::cleanup
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Cleans up modeling errors in whatever context this
 //               makes sense.  For instance, for a polygon, this calls
 //               remove_doubled_verts(true).  For a point, it calls
@@ -255,7 +255,7 @@ cleanup() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::remove_doubled_verts
-//       Access: Public
+//       Access: Published
 //  Description: Certain kinds of primitives, particularly polygons,
 //               don't like to have the same vertex repeated
 //               consecutively.  Unfortunately, some modeling programs
@@ -305,7 +305,7 @@ remove_doubled_verts(bool closed) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::remove_nonunique_verts
-//       Access: Public
+//       Access: Published
 //  Description: Removes any multiple appearances of the same vertex
 //               from the primitive.  This primarily makes sense for a
 //               point primitive, which is really a collection of
@@ -332,6 +332,18 @@ remove_nonunique_verts() {
   _vertices.swap(new_vertices);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::has_primitives
+//       Access: Published, Virtual
+//  Description: Returns true if there are any primitives
+//               (e.g. polygons) defined within this group or below,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggPrimitive::
+has_primitives() const {
+  return true;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::erase
@@ -355,7 +367,7 @@ erase(iterator first, iterator last) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::add_vertex
-//       Access: Public
+//       Access: Published
 //  Description: Adds the indicated vertex to the end of the
 //               primitive's list of vertices, and returns it.
 ////////////////////////////////////////////////////////////////////
@@ -372,7 +384,7 @@ add_vertex(EggVertex *vertex) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::remove_vertex
-//       Access: Public
+//       Access: Published
 //  Description: Removes the indicated vertex from the
 //               primitive and returns it.  If the vertex was not
 //               already in the primitive, does nothing and returns
@@ -398,7 +410,7 @@ remove_vertex(EggVertex *vertex) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::copy_vertices
-//       Access: Public
+//       Access: Published
 //  Description: Replaces the current primitive's list of vertices
 //               with a copy of the list of vertices on the other
 //               primitive.
@@ -421,7 +433,7 @@ copy_vertices(const EggPrimitive &other) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::test_vref_integrity
-//       Access: Public
+//       Access: Published
 //  Description: Verifies that each vertex in the primitive exists and
 //               that it knows it is referenced by the primitive.
 ////////////////////////////////////////////////////////////////////

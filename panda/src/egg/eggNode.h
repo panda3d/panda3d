@@ -100,6 +100,7 @@ protected:
 
   virtual void update_under(int depth_offset);
   virtual void adjust_under();
+  virtual bool has_primitives() const;
 
   virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
                            CoordinateSystem to_cs);

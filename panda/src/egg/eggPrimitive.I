@@ -16,11 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <algorithm>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggPrimitive::
@@ -30,7 +29,7 @@ EggPrimitive(const string &name): EggNode(name) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::Copy constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggPrimitive::
@@ -46,7 +45,7 @@ EggPrimitive(const EggPrimitive &copy) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::Copy assignment operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggPrimitive &EggPrimitive::
@@ -62,7 +61,7 @@ operator = (const EggPrimitive &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::Destructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggPrimitive::
@@ -72,7 +71,7 @@ INLINE EggPrimitive::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::set_texture
-//       Access: Public
+//       Access: Published
 //  Description: Applies the indicated texture to the primitive.
 ////////////////////////////////////////////////////////////////////
 INLINE void EggPrimitive::
@@ -82,7 +81,7 @@ set_texture(EggTexture *texture) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::clear_texture
-//       Access: Public
+//       Access: Published
 //  Description: Removes any texturing from the primitive.
 ////////////////////////////////////////////////////////////////////
 INLINE void EggPrimitive::
@@ -92,7 +91,7 @@ clear_texture() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::get_texture
-//       Access: Public
+//       Access: Published
 //  Description: Returns a pointer to the applied texture, or NULL if
 //               there is no texture applied.
 ////////////////////////////////////////////////////////////////////
@@ -104,7 +103,7 @@ get_texture() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::has_texture
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the primitive is textured (and
 //               get_texture() will return a real pointer), false
 //               otherwise (and get_texture() will return NULL).
@@ -116,7 +115,7 @@ has_texture() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::set_material
-//       Access: Public
+//       Access: Published
 //  Description: Applies the indicated material to the primitive.
 ////////////////////////////////////////////////////////////////////
 INLINE void EggPrimitive::
@@ -126,7 +125,7 @@ set_material(EggMaterial *material) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::clear_material
-//       Access: Public
+//       Access: Published
 //  Description: Removes any material from the primitive.
 ////////////////////////////////////////////////////////////////////
 INLINE void EggPrimitive::
@@ -136,7 +135,7 @@ clear_material() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::get_material
-//       Access: Public
+//       Access: Published
 //  Description: Returns a pointer to the applied material, or NULL if
 //               there is no material applied.
 ////////////////////////////////////////////////////////////////////
@@ -148,7 +147,7 @@ get_material() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::has_material
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the primitive is materiald (and
 //               get_material() will return a real pointer), false
 //               otherwise (and get_material() will return NULL).
@@ -161,7 +160,7 @@ has_material() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::set_bface_flag
-//       Access: Public
+//       Access: Published
 //  Description: Sets the backfacing flag of the polygon.  If this is
 //               true, the polygon will be rendered so that both faces
 //               are visible; if it is false, only the front face of
@@ -175,7 +174,7 @@ set_bface_flag(bool flag) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::get_bface_flag
-//       Access: Public
+//       Access: Published
 //  Description: Retrieves the backfacing flag of the polygon.  See
 //               set_bface_flag().
 ////////////////////////////////////////////////////////////////////
@@ -305,7 +304,7 @@ replace(iterator position, EggVertex *x) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::clear
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggPrimitive::
@@ -315,7 +314,7 @@ clear() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::get_num_vertices
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE int EggPrimitive::
@@ -325,7 +324,7 @@ get_num_vertices() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::set_vertex
-//       Access: Public
+//       Access: Published
 //  Description: Replaces a particular vertex based on its index
 //               number in the list of vertices.  This is just a
 //               convenience function for people who don't want to
@@ -339,7 +338,7 @@ set_vertex(int index, EggVertex *vertex) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::get_vertex
-//       Access: Public
+//       Access: Published
 //  Description: Returns a particular index based on its index number.
 ////////////////////////////////////////////////////////////////////
 INLINE EggVertex *EggPrimitive::
@@ -351,7 +350,7 @@ get_vertex(int index) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::get_pool
-//       Access: Public
+//       Access: Published
 //  Description: Returns the vertex pool associated with the vertices
 //               of the primitive, or NULL if the primitive has no
 //               vertices.

@@ -34,6 +34,8 @@
 #include "pointerTo.h"
 #include "pvector.h"
 
+#include <algorithm>
+
 class EggVertexPool;
 
 ////////////////////////////////////////////////////////////////////
@@ -98,6 +100,7 @@ PUBLISHED:
 
   void remove_doubled_verts(bool closed);
   void remove_nonunique_verts();
+  virtual bool has_primitives() const;
 
 
   // The EggPrimitive itself appears to be an STL container of

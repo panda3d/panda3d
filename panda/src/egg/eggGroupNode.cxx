@@ -41,7 +41,7 @@ TypeHandle EggGroupNode::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::Copy constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroupNode::
@@ -54,7 +54,7 @@ EggGroupNode(const EggGroupNode &copy) : EggNode(copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::Copy assignment operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroupNode &EggGroupNode::
@@ -69,7 +69,7 @@ operator =(const EggGroupNode &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::Destructor
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroupNode::
@@ -79,7 +79,7 @@ EggGroupNode::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::write
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Writes the group and all of its children to the
 //               indicated output stream in Egg format.
 ////////////////////////////////////////////////////////////////////
@@ -110,7 +110,7 @@ write(ostream &out, int indent_level) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::begin
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroupNode::iterator EggGroupNode::
@@ -120,7 +120,7 @@ begin() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::end
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroupNode::iterator EggGroupNode::
@@ -130,7 +130,7 @@ end() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::rbegin
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroupNode::reverse_iterator EggGroupNode::
@@ -140,7 +140,7 @@ rbegin() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::rend
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroupNode::reverse_iterator EggGroupNode::
@@ -150,7 +150,7 @@ rend() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::insert
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroupNode::iterator EggGroupNode::
@@ -161,7 +161,7 @@ insert(iterator position, PT(EggNode) x) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::erase
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroupNode::iterator EggGroupNode::
@@ -172,7 +172,7 @@ erase(iterator position) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::erase
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroupNode::iterator EggGroupNode::
@@ -187,7 +187,7 @@ erase(iterator first, iterator last) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::replace
-//       Access: Public
+//       Access: Published
 //  Description: Replaces the node at the indicated position with
 //               the indicated node.  It is an error to call this
 //               with an invalid position iterator (e.g. end()).
@@ -203,7 +203,7 @@ replace(iterator position, PT(EggNode) x) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::empty
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool EggGroupNode::
@@ -213,7 +213,7 @@ empty() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::size
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroupNode::size_type EggGroupNode::
@@ -223,7 +223,7 @@ size() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::clear
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void EggGroupNode::
@@ -233,7 +233,7 @@ clear() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::get_first_child
-//       Access: Public
+//       Access: Published
 //  Description: Returns the first child in the group's list of
 //               children, or NULL if the list of children is empty.
 //               Can be used with get_next_child() to return the
@@ -250,7 +250,7 @@ get_first_child() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::get_next_child
-//       Access: Public
+//       Access: Published
 //  Description: Returns the next child in the group's list of
 //               children since the last call to get_first_child() or
 //               get_next_child(), or NULL if the last child has been
@@ -273,7 +273,7 @@ get_next_child() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::add_child
-//       Access: Public
+//       Access: Published
 //  Description: Adds the indicated child to the group and returns it.
 //               If the child node is already a child of some other
 //               node, removes it first.
@@ -291,7 +291,7 @@ add_child(EggNode *node) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::remove_child
-//       Access: Public
+//       Access: Published
 //  Description: Removes the indicated child node from the group and
 //               returns it.  If the child was not already in the
 //               group, does nothing and returns NULL.
@@ -312,7 +312,7 @@ remove_child(EggNode *node) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::steal_children
-//       Access: Public
+//       Access: Published
 //  Description: Moves all the children from the other node to this
 //               one.  This is especially useful because the group
 //               node copy assignment operator does not copy children.
@@ -332,7 +332,7 @@ steal_children(EggGroupNode &other) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::find_child
-//       Access: Public
+//       Access: Published
 //  Description: Returns the child of this node whose name is the
 //               indicated string, or NULL if there is no child of
 //               this node by that name.  Does not search recursively.
@@ -352,7 +352,7 @@ find_child(const string &name) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::resolve_filenames
-//       Access: Public
+//       Access: Published
 //  Description: Walks the tree and attempts to resolve any filenames
 //               encountered.  This looks up filenames in the search
 //               path, etc.  It does not automatically search the
@@ -391,7 +391,7 @@ resolve_filenames(const DSearchPath &searchpath) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::force_filenames
-//       Access: Public
+//       Access: Published
 //  Description: Similar to resolve_filenames, but each non-absolute
 //               filename encountered is arbitrarily taken to be in
 //               the indicated directory, whether or not the so-named
@@ -433,7 +433,7 @@ force_filenames(const Filename &directory) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::reverse_vertex_ordering
-//       Access: Public
+//       Access: Published
 //  Description: Reverses the vertex ordering of all polygons defined
 //               at this node and below.  Does not change the surface
 //               normals, if any.
@@ -457,7 +457,7 @@ reverse_vertex_ordering() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::recompute_vertex_normals
-//       Access: Public
+//       Access: Published
 //  Description: Recomputes all the vertex normals for polygon
 //               geometry at this group node and below so that they
 //               accurately reflect the vertex positions.  A shared
@@ -531,7 +531,7 @@ recompute_vertex_normals(double threshold, CoordinateSystem cs) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::recompute_polygon_normals
-//       Access: Public
+//       Access: Published
 //  Description: Recomputes all the polygon normals for polygon
 //               geometry at this group node and below so that they
 //               accurately reflect the vertex positions.  Normals are
@@ -593,7 +593,7 @@ recompute_polygon_normals(CoordinateSystem cs) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::strip_normals
-//       Access: Public
+//       Access: Published
 //  Description: Removes all normals from primitives, and the vertices
 //               they reference, at this node and below.
 //
@@ -636,7 +636,7 @@ strip_normals() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::triangulate_polygons
-//       Access: Public
+//       Access: Published
 //  Description: Replace all higher-order polygons at this point in
 //               the scene graph and below with triangles.  Returns
 //               the total number of new triangles produced, less
@@ -675,7 +675,7 @@ triangulate_polygons(bool convex_also) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::remove_unused_vertices
-//       Access: Public
+//       Access: Published
 //  Description: Removes all vertices from VertexPools within this
 //               group or below that are not referenced by at least
 //               one primitive.  Also renumbers all vertices after the
@@ -723,7 +723,7 @@ remove_unused_vertices() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::remove_invalid_primitives
-//       Access: Public
+//       Access: Published
 //  Description: Removes primitives at this level and below which
 //               appear to be degenerate; e.g. polygons with fewer
 //               than 3 vertices, etc.  Returns the number of
@@ -755,6 +755,27 @@ remove_invalid_primitives() {
   }
 
   return num_removed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::has_primitives
+//       Access: Published, Virtual
+//  Description: Returns true if there are any primitives
+//               (e.g. polygons) defined within this group or below,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggGroupNode::
+has_primitives() const {
+  Children::const_iterator ci;
+  for (ci = _children.begin();
+       ci != _children.end();
+       ++ci) {
+    if ((*ci)->has_primitives()) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

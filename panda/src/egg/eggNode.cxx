@@ -311,6 +311,18 @@ void EggNode::
 adjust_under() {
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggNode::has_primitives
+//       Access: Protected, Virtual
+//  Description: Returns true if there are any primitives
+//               (e.g. polygons) defined within this group or below,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggNode::
+has_primitives() const {
+  return false;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggNode::r_transform

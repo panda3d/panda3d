@@ -132,6 +132,7 @@ PUBLISHED:
 
   int remove_unused_vertices();
   int remove_invalid_primitives();
+  virtual bool has_primitives() const;
 
 protected:
   virtual void update_under(int depth_offset);
