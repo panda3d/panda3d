@@ -9,6 +9,7 @@ src/fsm
 src/gui
 src/leveleditor
 src/net
+src/particles
 src/showbase
 src/task
 src/tkpanels
