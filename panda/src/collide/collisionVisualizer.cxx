@@ -267,13 +267,8 @@ collision_tested(const CollisionEntry &entry, bool detected) {
 
     if (entry.has_surface_point()) {
       CollisionPoint p;
-      p._surface_point = entry.get_surface_point(entry.get_into_node_path());
-      if (entry.has_surface_normal()) {
-        p._surface_normal = entry.get_surface_normal(entry.get_into_node_path());
-      } else {
-        p._surface_normal = LVector3f::zero();
-      }
-      p._interior_point = entry.get_interior_point(entry.get_into_node_path());
+      entry.get_all(entry.get_into_node_path(),
+                    p._surface_point, p._surface_normal, p._interior_point);
       viz_info._points.push_back(p);
     }
 
