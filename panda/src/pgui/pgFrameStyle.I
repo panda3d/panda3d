@@ -38,6 +38,7 @@ INLINE PGFrameStyle::
 PGFrameStyle(const PGFrameStyle &copy) :
   _type(copy._type),
   _color(copy._color),
+  _texture(copy._texture),
   _width(copy._width)
 {
 }
@@ -51,6 +52,7 @@ INLINE void PGFrameStyle::
 operator = (const PGFrameStyle &copy) {
   _type = copy._type;
   _color = copy._color;
+  _texture = copy._texture;
   _width = copy._width;
 }
 
@@ -111,6 +113,49 @@ set_color(const Colorf &color) {
 INLINE const Colorf &PGFrameStyle::
 get_color() const {
   return _color;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::set_texture
+//       Access: Published
+//  Description: Specifies a texture that should be applied to the
+//               frame.
+////////////////////////////////////////////////////////////////////
+INLINE void PGFrameStyle::
+set_texture(Texture *texture) {
+  _texture = texture;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::has_texture
+//       Access: Published
+//  Description: Returns true if a texture has been applied to the
+//               frame.
+////////////////////////////////////////////////////////////////////
+INLINE bool PGFrameStyle::
+has_texture() const {
+  return !_texture.is_null();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::get_texture
+//       Access: Published
+//  Description: Returns the texture that has been applied to the
+//               frame, or NULL if no texture has been applied.
+////////////////////////////////////////////////////////////////////
+INLINE Texture *PGFrameStyle::
+get_texture() const {
+  return _texture;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::clear_texture
+//       Access: Published
+//  Description: Removes the texture from the frame.
+////////////////////////////////////////////////////////////////////
+INLINE void PGFrameStyle::
+clear_texture() {
+  _texture.clear();
 }
 
 ////////////////////////////////////////////////////////////////////

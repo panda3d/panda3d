@@ -24,6 +24,14 @@
 #include "transparencyAttrib.h"
 #include "pointerTo.h"
 #include "nodePath.h"
+#include "textureAttrib.h"
+#include "renderState.h"
+
+// Specifies the UV range of textures applied to the frame.  Maybe
+// we'll have a reason to make this a parameter of the frame style one
+// day, but for now it's hardcoded to fit the entire texture over the
+// rectangular frame.
+static const LVecBase4f uv_range = LVecBase4f(0.0f, 1.0f, 0.0f, 1.0f);
 
 ostream &
 operator << (ostream &out, PGFrameStyle::Type type) {
@@ -58,6 +66,9 @@ operator << (ostream &out, PGFrameStyle::Type type) {
 void PGFrameStyle::
 output(ostream &out) const {
   out << _type << " color = " << _color << " width = " << _width;
+  if (has_texture()) {
+    out << " texture = " << *get_texture();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -167,7 +178,7 @@ generate_flat_geom(const LVecBase4f &frame) {
   float bottom = frame[2];
   float top = frame[3];
 
-  PTA_int lengths=PTA_int::empty_array(0);
+  PTA_int lengths;
   lengths.push_back(4);
 
   PTA_Vertexf verts;
@@ -184,6 +195,25 @@ generate_flat_geom(const LVecBase4f &frame) {
   PTA_Colorf colors;
   colors.push_back(_color);
   geom->set_colors(colors, G_OVERALL);
+
+  if (has_texture()) {
+    // Generate UV's.
+    left = uv_range[0];
+    right = uv_range[1];
+    bottom = uv_range[2];
+    top = uv_range[3];
+    
+    PTA_TexCoordf uvs;
+    uvs.push_back(TexCoordf(left, top));
+    uvs.push_back(TexCoordf(left, bottom));
+    uvs.push_back(TexCoordf(right, top));
+    uvs.push_back(TexCoordf(right, bottom));
+    geom->set_texcoords(uvs, G_PER_VERTEX);
+
+    CPT(RenderState) state = 
+      RenderState::make(TextureAttrib::make(get_texture()));
+    gnode->set_geom_state(0, state);
+  }
   
   return gnode.p();
 }
@@ -344,6 +374,9 @@ generate_bevel_geom(const LVecBase4f &frame, bool in) {
   geom->set_lengths(lengths);
   geom->set_coords(verts);
   geom->set_colors(colors, G_PER_COMPONENT);
+
+  // For now, beveled and grooved geoms don't support textures.  Easy
+  // to add if anyone really wants this.
   
   return gnode.p();
 }
@@ -573,6 +606,9 @@ generate_groove_geom(const LVecBase4f &frame, bool in) {
   geom->set_lengths(lengths);
   geom->set_coords(verts);
   geom->set_colors(colors, G_PER_COMPONENT);
+
+  // For now, beveled and grooved geoms don't support textures.  Easy
+  // to add if anyone really wants this.
   
   return gnode.p();
 }

@@ -22,6 +22,8 @@
 #include "pandabase.h"
 
 #include "luse.h"
+#include "texture.h"
+#include "pointerTo.h"
 
 class PandaNode;
 class NodePath;
@@ -54,6 +56,11 @@ PUBLISHED:
   INLINE void set_color(const Colorf &color);
   INLINE const Colorf &get_color() const;
 
+  INLINE void set_texture(Texture *texture);
+  INLINE bool has_texture() const;
+  INLINE Texture *get_texture() const;
+  INLINE void clear_texture();
+
   INLINE void set_width(float x, float y);
   INLINE void set_width(const LVecBase2f &width);
   INLINE const LVecBase2f &get_width() const;
@@ -72,6 +79,7 @@ private:
 private:
   Type _type;
   Colorf _color;
+  PT(Texture) _texture;
   LVecBase2f _width;
 };
 
