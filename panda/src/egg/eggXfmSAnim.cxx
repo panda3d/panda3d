@@ -590,6 +590,42 @@ add_data(const LMatrix4d &mat) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggXfmSAnim::add_component_data
+//       Access: Public
+//  Description: Adds a new row to the named component (one of
+//               matrix_component_letters) of the table.
+////////////////////////////////////////////////////////////////////
+void EggXfmSAnim::
+add_component_data(const string &component_name, double value) {
+  EggNode *child = find_child(component_name);
+  EggSAnimData *sanim;
+  if (child == (EggNode *)NULL) {
+    // We don't have this component yet; create it.
+    sanim = new EggSAnimData(component_name);
+    add_child(sanim);
+
+  } else {
+    DCAST_INTO_V(sanim, child);
+  }
+
+  sanim->add_data(value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggXfmSAnim::add_component_data
+//       Access: Public
+//  Description: Adds a new row to the indicated component (0-12) of
+//               the table.
+////////////////////////////////////////////////////////////////////
+void EggXfmSAnim::
+add_component_data(int component, double value) {
+  nassertv(component >= 0 && component < num_matrix_components);
+
+  string name(1, matrix_component_letters[component]);
+  add_component_data(name, value);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggXfmSAnim::r_transform
 //       Access: Protected, Virtual
 //  Description: Applies the indicated transform to all the rows of

@@ -66,6 +66,8 @@ PUBLISHED:
 
   INLINE void clear_data();
   bool add_data(const LMatrix4d &mat);
+  void add_component_data(const string &component_name, double value);
+  void add_component_data(int component, double value);
 
   virtual void write(ostream &out, int indent_level) const;
 
