@@ -1321,7 +1321,36 @@ open_read_write(fstream &stream) const {
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 touch() const {
-#ifdef HAVE_UTIME_H
+#ifdef WIN32_VC
+  // In Windows, we have to use the Windows API to do this reliably.
+
+  // First, guarantee the file exists (and also get its handle).
+  string os_specific = to_os_specific();
+  HANDLE fhandle;
+  fhandle = CreateFile(os_specific.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE,
+                       NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+  if (fhandle == INVALID_HANDLE_VALUE) {
+    return false;
+  }
+
+  // Now update the file time and date.
+  SYSTEMTIME sysnow;
+  FILETIME ftnow;
+  GetSystemTime(&sysnow);
+  if (!SystemTimeToFileTime(&sysnow, &ftnow)) {
+    CloseHandle(fhandle);
+    return false;
+  }
+  
+  if (!SetFileTime(fhandle, NULL, NULL, &ftnow)) {
+    CloseHandle(fhandle);
+    return false;
+  }
+
+  CloseHandle(fhandle);
+  return true;
+
+#elif defined(HAVE_UTIME_H)
   // Most Unix systems can do this explicitly.
 
   string os_specific = to_os_specific();
@@ -1354,14 +1383,14 @@ touch() const {
     return false;
   }
   return true;
-#else  // HAVE_UTIME_H
+#else  // WIN32, HAVE_UTIME_H
   // Other systems may not have an explicit control over the
   // modification time.  For these systems, we'll just temporarily
   // open the file in append mode, then close it again (it gets closed
   // when the ofstream goes out of scope).
   ofstream file;
   return open_append(file);
-#endif  // HAVE_UTIME_H
+#endif  // WIN32, HAVE_UTIME_H
 }
 
 ////////////////////////////////////////////////////////////////////

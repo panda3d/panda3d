@@ -31,3 +31,10 @@
   #define SOURCES test_pfstream.cxx
 #end test_bin_target
 
+#begin test_bin_target
+  #define TARGET test_touch
+  #define LOCAL_LIBS dtoolbase dtoolutil
+
+  #define SOURCES test_touch.cxx
+#end test_bin_target
+
