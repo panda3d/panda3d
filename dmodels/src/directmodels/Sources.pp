@@ -3,5 +3,5 @@
 
 #begin install_egg
   #define SOURCES \
-    happy.egg
+    smiley.egg
 #end install_egg

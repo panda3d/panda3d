@@ -1,7 +1,7 @@
 <CoordinateSystem> { Y-Up }
 
 <Texture> tex1 {
-  "../maps/happy.rgb"
+  "../maps/smiley.rgb"
   <Scalar> minfilter { BILINEAR }
   <Scalar> magfilter { BILINEAR }
   <Scalar> wrap { REPEAT }
