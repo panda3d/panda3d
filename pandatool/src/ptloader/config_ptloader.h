@@ -10,7 +10,7 @@
 
 #include <dconfig.h>
 
-ConfigureDecl(config_ptloader, EXPCL_PANDAEGG, EXPTP_PANDAEGG);
+ConfigureDecl(config_ptloader, EXPCL_PTLOADER, EXPTP_PTLOADER);
 
 extern EXPCL_PTLOADER void init_libptloader();
 

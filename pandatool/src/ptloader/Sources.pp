@@ -4,7 +4,9 @@
   #define LOCAL_LIBS fltegg flt lwoegg lwo converter pandatoolbase
   #define OTHER_LIBS \
     egg2sg:c builder:c egg:c pandaegg:m \
-    mathutil:c linmath:c putil:c express:c panda:m dtoolconfig dtool
+    mathutil:c linmath:c putil:c panda:m \
+    express:c pandaexpress:m \
+    dtoolconfig dtool
   #define UNIX_SYS_LIBS \
     m
 

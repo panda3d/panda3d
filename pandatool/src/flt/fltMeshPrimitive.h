@@ -12,6 +12,7 @@
 #include "fltHeader.h"
 
 #include <luse.h>
+#include <vector_int.h>
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : FltMeshPrimitive
@@ -29,7 +30,7 @@ public:
     PT_polygon             = 4,
   };
 
-  typedef vector<int> Vertices;
+  typedef vector_int Vertices;
 
   PrimitiveType _primitive_type;
   Vertices _vertices;

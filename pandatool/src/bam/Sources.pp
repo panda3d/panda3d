@@ -3,6 +3,7 @@
   #define LOCAL_LIBS \
     progbase
   #define OTHER_LIBS \
+    parametrics:c collide:c chan:c char:c switchnode:c \
     cull:c loader:c egg:c sgraphutil:c sgattrib:c \
     sgraph:c pnmimagetypes:c \
     graph:c putil:c linmath:c express:c panda:m pandaexpress:m \
