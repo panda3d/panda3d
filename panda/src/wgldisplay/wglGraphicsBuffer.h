@@ -65,7 +65,6 @@ private:
 
   HPBUFFERARB _pbuffer;
   HDC _pbuffer_dc;
-  bool _render_texture;
 
 public:
   static TypeHandle get_class_type() {
