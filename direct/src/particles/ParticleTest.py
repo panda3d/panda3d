@@ -11,9 +11,8 @@ base.enableParticles()
 
 # ForceGroup
 fg = ForceGroup.ForceGroup()
-if 0:
-    gravity = LinearVectorForce(Vec3(0.0, 0.0, -10.0))
-    fg.addForce(gravity)
+gravity = LinearVectorForce(Vec3(0.0, 0.0, -10.0))
+fg.addForce(gravity)
 
 # Particle effect
 pe = ParticleEffect.ParticleEffect('particle-fx')
@@ -22,5 +21,4 @@ pe.reparentTo(render)
 pe.addForceGroup(fg)
 
 # Particle Panel
-#*#pp = ParticlePanel.ParticlePanel(pe)
-pp = ParticlePanel.ParticlePanel()
+pp = ParticlePanel.ParticlePanel(pe)
